@@ -2,8 +2,10 @@ package lan
 
 import (
 	"archive/tar"
+	"bytes"
 	"cmp"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -18,6 +20,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 const (
@@ -57,16 +60,16 @@ type incomingTransfer struct {
 var errRemoteStoreEntryMissing = errors.New("peer does not have this store entry")
 
 // Transfer copies missing store entries for an accepted paired share.
-func (s *Service) Transfer(ctx context.Context, id int) error {
+func (s *Service) Transfer(ctx context.Context, id int) (err error) {
 	s.mu.Lock()
 	incoming, ok := s.incoming[id]
 	if !ok || time.Now().After(incoming.Expires) {
 		s.mu.Unlock()
-		return errors.New("LAN transfer is no longer available")
+		return usererr.New(usererr.NotFound, "this share has expired; ask them to send it again")
 	}
 	if _, running := s.active[id]; running {
 		s.mu.Unlock()
-		return errors.New("LAN transfer is already running")
+		return usererr.New(usererr.Busy, "the files for this share are already being copied")
 	}
 	ctx, cancel := context.WithCancel(ctx)
 	s.active[id] = cancel
@@ -80,8 +83,31 @@ func (s *Service) Transfer(ctx context.Context, id int) error {
 	if s.deps.Store == nil {
 		return errors.New("local store is unavailable")
 	}
+	// A cancelled transfer must still tell the sender it was cancelled.
+	detached := context.WithoutCancel(ctx)
+	missing := make([]string, 0, len(incoming.Items))
+	for _, item := range incoming.Items {
+		if has, err := s.storeHas(incoming.Game, item.Key); err == nil && !has {
+			missing = append(missing, item.Key)
+		}
+	}
+	s.reportOutgoing(detached, incoming, outgoingReport{State: outgoingPlan, Keys: missing})
 	started := time.Now()
 	var bytes int64
+	log.Printf("lan: copying %d of %d files from %s", len(missing), len(incoming.Items), incoming.Sender)
+	defer func() {
+		switch {
+		case err == nil:
+			log.Printf("lan: copied %d files, %d bytes from %s in %s", len(missing), bytes, incoming.Sender, time.Since(started).Round(time.Millisecond))
+			s.reportOutgoing(detached, incoming, outgoingReport{State: OutgoingDone})
+		case errors.Is(err, context.Canceled):
+			log.Printf("lan: copying files from %s cancelled", incoming.Sender)
+			s.reportOutgoing(detached, incoming, outgoingReport{State: OutgoingCancelled})
+		default:
+			log.Printf("lan: copying files from %s failed: %v", incoming.Sender, err)
+			s.reportOutgoing(detached, incoming, outgoingReport{State: OutgoingFailed, Reason: err.Error()})
+		}
+	}()
 	total := len(incoming.Items)
 	for current, item := range incoming.Items {
 		if err := ctx.Err(); err != nil {
@@ -111,6 +137,30 @@ func (s *Service) Transfer(ctx context.Context, id int) error {
 		ID: id, Current: total, Total: total, Bytes: bytes, Rate: transferRate(bytes, started), Done: true,
 	})
 	return nil
+}
+
+// reportOutgoing tells the sender how the pull stands, so its window can show it; the pull itself never depends on
+// the answer.
+func (s *Service) reportOutgoing(ctx context.Context, incoming incomingTransfer, report outgoingReport) {
+	body, err := json.Marshal(report)
+	if err != nil {
+		return
+	}
+	endpoint, err := shareEndpoint(incoming.Peer, "/outgoing")
+	if err != nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
+	if err != nil {
+		return
+	}
+	request.Header.Set("Authorization", "Bearer "+incoming.Token)
+	request.Header.Set("Content-Type", "application/json")
+	if response, err := (&http.Client{}).Do(request); err == nil {
+		_ = response.Body.Close()
+	}
 }
 
 // CancelTransfer stops an accepted share's active file transfer.
@@ -155,14 +205,14 @@ func (s *Service) fetchEntry(
 	request.Header.Set("Authorization", "Bearer "+incoming.Token)
 	response, err := (&http.Client{}).Do(request)
 	if err != nil {
-		return 0, fmt.Errorf("fetch store entry %s: %w", key, err)
+		return 0, usererr.Wrap(usererr.Network, fmt.Errorf("%s went away before sending a file: %w", incoming.Sender, err))
 	}
 	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode == http.StatusNotFound {
 		return 0, errRemoteStoreEntryMissing
 	}
 	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
-		return 0, fmt.Errorf("fetch store entry %s: HTTP %d", key, response.StatusCode)
+		return 0, usererr.New(usererr.Network, fmt.Sprintf("%s refused to send a file (HTTP %d)", incoming.Sender, response.StatusCode))
 	}
 	temp, err := os.MkdirTemp("", "mortar-lan-transfer-")
 	if err != nil {
@@ -181,14 +231,14 @@ func (s *Service) fetchEntry(
 			ID: id, Current: current, Total: total, Bytes: bytes + n, Rate: transferRate(bytes+n, started),
 		})
 	}); err != nil {
-		return 0, fmt.Errorf("receive store entry %s: %w", key, err)
+		return 0, receiveError(incoming.Sender, err)
 	}
 	got, err := store.HashDir(temp)
 	if err != nil {
 		return 0, fmt.Errorf("check store entry %s: %w", key, err)
 	}
 	if item.Hash == "" || got != item.Hash {
-		return 0, fmt.Errorf("store entry %s does not match what the sender vouched for", key)
+		return 0, usererr.New(usererr.Damaged, fmt.Sprintf("a file from %s arrived damaged: it does not match what they vouched for", incoming.Sender))
 	}
 	// The hash the sender vouched for is the check: a local key names the archive it came from, not this folder.
 	if err := s.deps.Store.AddDir(incoming.Game, key, temp); err != nil {
@@ -199,8 +249,21 @@ func (s *Service) fetchEntry(
 			return 0, fmt.Errorf("record store entry %s: %w", key, err)
 		}
 	}
-	log.Printf("lan: %s from %s", cmp.Or(item.Package, key), incoming.Peer)
+	log.Printf("lan: %s from %s", cmp.Or(item.Package, "a file"), incoming.Sender)
 	return received, nil
+}
+
+// receiveError says what stopped a file's copy: the disk, the sender going away, or a file that cannot be unpacked.
+func receiveError(sender string, err error) error {
+	switch {
+	case errors.Is(err, context.Canceled):
+		return err
+	case usererr.IsDiskFull(err):
+		return usererr.Wrap(usererr.DiskFull, fmt.Errorf("there is no room left to copy files from %s: %w", sender, err))
+	case errors.Is(err, io.ErrUnexpectedEOF), errors.Is(err, io.EOF), usererr.KindOf(err) == usererr.Network:
+		return usererr.Wrap(usererr.Network, fmt.Errorf("%s went away while sending files: %w", sender, err))
+	}
+	return usererr.Wrap(usererr.Damaged, fmt.Errorf("a file from %s could not be unpacked: %w", sender, err))
 }
 
 func (s *Service) handleStore(w http.ResponseWriter, r *http.Request) {
@@ -233,9 +296,13 @@ func (s *Service) handleStore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/x-tar")
-	if err := writeTar(r.Context(), w, root); err != nil {
+	counted := countingWriter{ResponseWriter: w, add: func(n int64) {
+		s.updateOutgoing(token, func(o *OutgoingTransfer) { o.Bytes += n })
+	}}
+	if err := writeTar(r.Context(), counted, root); err != nil {
 		return
 	}
+	s.updateOutgoing(token, func(o *OutgoingTransfer) { o.Current++ })
 }
 
 func (s *Service) grantAllows(token, game, key string) bool {

@@ -107,10 +107,14 @@ type Service struct {
 	book    peerBook
 	pairing pairHost
 
-	nonces   map[string]nonceRecord
-	grants   map[string]transferGrant
-	incoming map[int]incomingTransfer
-	active   map[int]context.CancelFunc
+	nonces map[string]nonceRecord
+	grants map[string]transferGrant
+
+	outMu        sync.Mutex
+	outgoing     map[string]*outgoingState
+	nextOutgoing int
+	incoming     map[int]incomingTransfer
+	active       map[int]context.CancelFunc
 
 	configuredPort int
 
@@ -158,6 +162,7 @@ func NewService(deps Deps) *Service {
 		lastReceive: map[string]time.Time{},
 		nonces:      map[string]nonceRecord{},
 		grants:      map[string]transferGrant{},
+		outgoing:    map[string]*outgoingState{},
 		incoming:    map[int]incomingTransfer{},
 		active:      map[int]context.CancelFunc{},
 	}
@@ -420,7 +425,13 @@ func (s *Service) Send(ctx context.Context, peerID, game, profileID string) erro
 }
 
 // sendPayload sends the payload build makes, told whether the peer is paired with this computer.
-func (s *Service) sendPayload(ctx context.Context, peerID, game string, build func(paired bool) ([]byte, error)) error {
+func (s *Service) sendPayload(ctx context.Context, peerID, game string, build func(paired bool) ([]byte, error)) (err error) {
+	name := s.peerName(peerID)
+	defer func() {
+		if err != nil {
+			log.Printf("lan: send to %s failed: %v", name, err)
+		}
+	}()
 	hello, err := s.hello(ctx, peerID)
 	if err != nil {
 		return err
@@ -435,6 +446,7 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game string, build fu
 	if err != nil {
 		return err
 	}
+	log.Printf("lan: sending %q (%s) to %s, paired %t, %d files, %d bytes", shared.Name, game, name, key != nil, len(transferItems(shared)), len(payload))
 	selfID, err := s.book.self()
 	if err != nil {
 		return err
@@ -469,18 +481,21 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game string, build fu
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := (&http.Client{}).Do(req)
 	if err != nil {
-		return fmt.Errorf("send profile share: %w", err)
+		return usererr.Wrap(usererr.Network, fmt.Errorf("%s could not be reached: %w", name, err))
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == http.StatusTooManyRequests {
 		return usererr.Wrap(usererr.Busy, ErrPeerBusy)
 	}
+	refused := func(text string) error {
+		return usererr.New(usererr.Invalid, fmt.Sprintf("%s refused the profile: %s", name, text))
+	}
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
 		message, _ := io.ReadAll(io.LimitReader(resp.Body, 4<<10))
 		if text := strings.TrimSpace(string(message)); text != "" {
-			return fmt.Errorf("peer rejected profile share: %s", text)
+			return refused(text)
 		}
-		return fmt.Errorf("peer rejected profile share: HTTP %d", resp.StatusCode)
+		return refused(fmt.Sprintf("HTTP %d", resp.StatusCode))
 	}
 	var result shareResponse
 	if err := json.NewDecoder(io.LimitReader(resp.Body, 64<<10)).Decode(&result); err != nil && !errors.Is(err, io.EOF) {
@@ -488,7 +503,9 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game string, build fu
 	}
 	if result.Paired && result.TransferToken != "" && proofMatches(key, hello.Nonce, "response|"+result.TransferToken+"|"+strings.Join(result.EntryKeys, ","), result.Proof) {
 		s.rememberGrant(result.TransferToken, game, result.EntryKeys)
+		s.startOutgoing(result.TransferToken, game, name, shared.Name, len(result.EntryKeys))
 	}
+	log.Printf("lan: %s took %q, paired %t", name, shared.Name, result.Paired)
 	s.rememberAddress(peerID)
 	return nil
 }
@@ -523,11 +540,11 @@ func (s *Service) hello(ctx context.Context, peerID string) (helloResponse, erro
 	}
 	resp, err := (&http.Client{}).Do(req)
 	if err != nil {
-		return helloResponse{}, fmt.Errorf("contact LAN peer: %w", err)
+		return helloResponse{}, usererr.Wrap(usererr.Network, fmt.Errorf("contact LAN peer: %w", err))
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
-		return helloResponse{}, fmt.Errorf("LAN peer handshake failed: HTTP %d", resp.StatusCode)
+		return helloResponse{}, usererr.New(usererr.Network, fmt.Sprintf("LAN peer handshake failed: HTTP %d", resp.StatusCode))
 	}
 	var hello helloResponse
 	if err := json.NewDecoder(io.LimitReader(resp.Body, 16<<10)).Decode(&hello); err != nil {
@@ -601,6 +618,7 @@ func (s *Service) handler() http.Handler {
 	mux.HandleFunc("/hello", s.handleHello)
 	mux.HandleFunc("/share", s.handleShare)
 	mux.HandleFunc("/store/", s.handleStore)
+	mux.HandleFunc("/outgoing", s.handleOutgoing)
 	mux.HandleFunc("/pair/begin", s.handlePairBegin)
 	mux.HandleFunc("/pair/finish", s.handlePairFinish)
 	return mux
@@ -679,6 +697,7 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	log.Printf("lan: received %q from %s, paired %t, %d files", shared.Name, request.Sender, paired, len(items))
 	response := shareResponse{Paired: paired}
 	var arrivalTransfer incomingTransfer
 	if paired {
@@ -1083,4 +1102,14 @@ type cancelOnClose struct {
 func (c cancelOnClose) Close() error {
 	defer c.cancel()
 	return c.ReadCloser.Close()
+}
+
+// peerName is the name a discovered peer goes by, or its address when it is no longer listed.
+func (s *Service) peerName(peerID string) string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if record, ok := s.peers[peerID]; ok && record.peer.Name != "" {
+		return record.peer.Name
+	}
+	return peerID
 }
