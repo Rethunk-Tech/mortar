@@ -56,6 +56,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/savessvc"
+	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/share"
@@ -461,6 +462,10 @@ func run() error {
 	}
 	emit := func(name string, data any) { app.Event.Emit(name, data) }
 	netstate.OnChange = func() { app.Event.Emit("netstate:changed", nil) }
+	secret.OnUnlocked = func() {
+		app.Event.Emit("keyring:unlocked", nil)
+		app.Event.Emit(nexussvc.ChangedEvent, nil)
+	}
 	plays.Emit = emit
 	queueSvc, err := queue.New(queue.Deps{
 		Client:  func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },

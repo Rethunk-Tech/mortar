@@ -1,3 +1,4 @@
+import { Events } from '@wailsio/runtime'
 import { useEffect } from 'react'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -31,10 +32,13 @@ export function useLoadProblemsOnFocus() {
         scan()
       }
     }
+    // A scan that was waiting on the keyring prompt retries once the user unlocks it.
+    const offUnlocked = Events.On('keyring:unlocked', scan)
     globalThis.addEventListener('focus', scan)
     document.addEventListener('visibilitychange', onVisible)
     return () => {
       globalThis.clearTimeout(timer)
+      offUnlocked()
       globalThis.removeEventListener('focus', scan)
       document.removeEventListener('visibilitychange', onVisible)
     }

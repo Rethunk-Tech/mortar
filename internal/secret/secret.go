@@ -5,7 +5,7 @@ package secret
 import (
 	"errors"
 	"strings"
-	"sync/atomic"
+	"sync"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -17,52 +17,102 @@ const service = "mortar"
 // ErrNotFound means no secret is stored for the name.
 var ErrNotFound = keyring.ErrNotFound
 
-// getTimeout bounds a read: Secret Service can wait forever on an unlock prompt nobody can answer (a headless
-// session), and a caller holding an HTTP request open on it starves every other request.
+// getTimeout bounds how long a caller waits on a read: Secret Service can hold an unlock prompt open for as long as
+// the user takes (or forever, headless), and a caller holding an HTTP request open on it starves every other one.
 const getTimeout = 3 * time.Second
 
-var errKeyringBusy = usererr.New(usererr.Unknown, "The keyring is waiting for an unlock prompt. Unlock it, then try again.")
+// ErrWaitingForUnlock is a read whose keyring prompt is still open. It is not a failure: the read keeps running
+// and OnUnlocked fires when it completes.
+var ErrWaitingForUnlock = usererr.New(usererr.Busy, "Waiting for you to unlock the keyring.")
 
-// getStuck counts reads that timed out and have not returned; while any is, later reads fail at once instead of
-// each waiting out the timeout and leaking a goroutine.
-var getStuck atomic.Int32
+// keyringGet is the backend read, replaced in tests.
+var keyringGet = func(name string) (string, error) { return keyring.Get(service, name) }
+
+// OnUnlocked is called after a read that outlived getTimeout completes, so the app can retry what it deferred.
+var OnUnlocked = func() {}
+
+type flight struct {
+	done  chan struct{}
+	value string
+	err   error
+	// stuck is set once a caller gave up on it; later callers then fail at once instead of each waiting.
+	stuck bool
+}
+
+var (
+	mu       sync.Mutex
+	inflight = map[string]*flight{}
+	// late holds the values of reads that finished after their caller gave up, for the next Get of that name.
+	late = map[string]string{}
+)
 
 // Get returns the secret stored under name.
 func Get(name string) (string, error) {
-	if getStuck.Load() > 0 {
-		return "", errKeyringBusy
+	mu.Lock()
+	if v, ok := late[name]; ok {
+		delete(late, name)
+		mu.Unlock()
+		return v, nil
 	}
-	type result struct {
-		v   string
-		err error
+	f, running := inflight[name]
+	if running && f.stuck {
+		mu.Unlock()
+		return "", ErrWaitingForUnlock
 	}
-	done := make(chan result, 1)
-	var state atomic.Int32 // 0 running, 1 returned in time, 2 timed out
-	go func() {
-		v, err := keyring.Get(service, name)
-		if !state.CompareAndSwap(0, 1) {
-			getStuck.Add(-1)
-		}
-		done <- result{v, err}
-	}()
+	if !running {
+		f = &flight{done: make(chan struct{})}
+		inflight[name] = f
+		go run(name, f)
+	}
+	mu.Unlock()
 	select {
-	case r := <-done:
-		return r.v, explain(r.err)
+	case <-f.done:
+		return f.value, explain(f.err)
 	case <-time.After(getTimeout):
-		if state.CompareAndSwap(0, 2) {
-			getStuck.Add(1)
-			return "", errKeyringBusy
+		mu.Lock()
+		select {
+		case <-f.done:
+			mu.Unlock()
+			return f.value, explain(f.err)
+		default:
 		}
-		r := <-done
-		return r.v, explain(r.err)
+		f.stuck = true
+		mu.Unlock()
+		return "", ErrWaitingForUnlock
+	}
+}
+
+func run(name string, f *flight) {
+	v, err := keyringGet(name)
+	mu.Lock()
+	f.value, f.err = v, err
+	delete(inflight, name)
+	wasStuck := f.stuck
+	if wasStuck && err == nil {
+		late[name] = v
+	}
+	close(f.done)
+	mu.Unlock()
+	if wasStuck && err == nil {
+		OnUnlocked()
 	}
 }
 
 // Set stores value under name, replacing any earlier one.
-func Set(name, value string) error { return explain(keyring.Set(service, name, value)) }
+func Set(name, value string) error {
+	forget(name)
+	return explain(keyring.Set(service, name, value))
+}
+
+func forget(name string) {
+	mu.Lock()
+	delete(late, name)
+	mu.Unlock()
+}
 
 // Delete removes the secret under name; one that is already gone is not an error.
 func Delete(name string) error {
+	forget(name)
 	if err := keyring.Delete(service, name); err != nil && !errors.Is(err, ErrNotFound) {
 		return explain(err)
 	}
