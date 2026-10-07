@@ -239,7 +239,7 @@ sudo dnf install mortar</code></pre>
             repository to <code>/etc/pacman.conf</code> and install.
           </p>
           <pre><code>curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | sudo pacman-key --add -
-sudo pacman-key --lsign-key 3283604606CAE2295D476F9883BC8751EE6F773D
+sudo pacman-key --lsign-key D8B1C4C205C5FB3633CB8B9900B75959B637DCB5
 curl -fsSL https://mortar.rethunk.tech/packages/pacman.conf | sudo tee -a /etc/pacman.conf
 sudo pacman -Sy mortar</code></pre>
           <p class="muted">
@@ -347,8 +347,8 @@ sudo pacman -Sy mortar</code></pre>
 
         <p class="fingerprint">
           Packages are signed by “Mortar packages
-          &lt;security@rethunk.tech&gt;”, fingerprint
-          <code>3283 6046 06CA E229 5D47 6F98 83BC 8751 EE6F 773D</code>.
+          &lt;opensource@rethunk.tech&gt;”, fingerprint
+          <code>D8B1 C4C2 05C5 FB36 33CB 8B99 00B7 5959 B637 DCB5</code>.
           <a href="/packages/">Repository details</a>
         </p>
       </section>
@@ -404,7 +404,7 @@ curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | gpg
 gpg --verify SHA256SUMS.asc SHA256SUMS
 sha256sum --check --ignore-missing SHA256SUMS
 gh attestation verify &lt;file&gt; --repo Rethunk-Tech/mortar</code></pre>
-        <p class="muted">The key's fingerprint is <code>3283 6046 06CA E229 5D47 6F98 83BC 8751 EE6F 773D</code>. More in the <a href="/code-signing/">code signing policy</a>.</p>
+        <p class="muted">The key's fingerprint is <code>D8B1 C4C2 05C5 FB36 33CB 8B99 00B7 5959 B637 DCB5</code>. More in the <a href="/code-signing/">code signing policy</a>.</p>
       </section>
 
 

@@ -28,7 +28,7 @@ With [Scoop](https://scoop.sh): `scoop bucket add mortar https://github.com/Reth
 
 ### Linux package repository
 
-On Debian, Ubuntu, Fedora and Arch, install Mortar from its package repository and it updates with the rest of your system; Settings › Updates says "Updated by your package manager". The repository is signed by the key "Mortar packages <security@rethunk.tech>", fingerprint `3283 6046 06CA E229 5D47 6F98 83BC 8751 EE6F 773D`.
+On Debian, Ubuntu, Fedora and Arch, install Mortar from its package repository and it updates with the rest of your system; Settings › Updates says "Updated by your package manager". The repository is signed by the key "Mortar packages <opensource@rethunk.tech>", fingerprint `D8B1 C4C2 05C5 FB36 33CB 8B99 00B7 5959 B637 DCB5`.
 
 Debian and Ubuntu (amd64, arm64):
 
@@ -50,7 +50,7 @@ Arch (x86_64, aarch64):
 
 ```sh
 curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | sudo pacman-key --add -
-sudo pacman-key --lsign-key 3283604606CAE2295D476F9883BC8751EE6F773D
+sudo pacman-key --lsign-key D8B1C4C205C5FB3633CB8B9900B75959B637DCB5
 curl -fsSL https://mortar.rethunk.tech/packages/pacman.conf | sudo tee -a /etc/pacman.conf
 sudo pacman -Sy mortar
 ```

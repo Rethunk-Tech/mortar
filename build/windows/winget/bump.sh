@@ -10,7 +10,7 @@ tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 curl -fsSLo "$tmp/S" "$base/SHA256SUMS"; curl -fsSLo "$tmp/S.asc" "$base/SHA256SUMS.asc"
 export GNUPGHOME=$tmp/g; install -d -m 700 "$GNUPGHOME"
 gpg --batch --quiet --import "$repo/build/linux/repo/mortar-archive-keyring.asc"
-gpg --batch --status-fd 1 --verify "$tmp/S.asc" "$tmp/S" 2>/dev/null | grep -q "VALIDSIG 3283604606CAE2295D476F9883BC8751EE6F773D"
+gpg --batch --status-fd 1 --verify "$tmp/S.asc" "$tmp/S" 2>/dev/null | grep -q "VALIDSIG D8B1C4C205C5FB3633CB8B9900B75959B637DCB5"
 h() { awk -v f="$1" '$2==f{print toupper($1)}' "$tmp/S"; }
 amd=$(h mortar-amd64-installer.exe); arm=$(h mortar-arm64-installer.exe); [ -n "$amd" ] && [ -n "$arm" ]
 mkdir -p "$dst"
