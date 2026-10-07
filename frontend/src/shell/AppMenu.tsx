@@ -5,6 +5,7 @@ import {
   Bug,
   ChevronDown,
   Code2,
+  Download,
   FolderOpen,
   Info,
   LifeBuoy,
@@ -23,6 +24,7 @@ import { compact } from '../game/compact.ts'
 import { useTab } from '../game/tab.ts'
 import { openPage } from '../mods/menu.ts'
 import { openSettings, routeGame, useNav } from '../nav/store.ts'
+import { useQueue } from '../queue/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
 import { useShortcutHint } from '../settings/useShortcutHint.ts'
@@ -97,6 +99,7 @@ export function AppMenu() {
   const version = useMortarUpdate((s) => s.info?.version)
   const settingsKeys = useShortcutHint('open-settings')
   const helpKeys = useShortcutHint('help')
+  const downloadsKeys = useShortcutHint('downloads')
   useEffect(() => {
     useMortarUpdate
       .getState()
@@ -167,6 +170,15 @@ export function AppMenu() {
             }}
           />
         ) : null}
+        <TitleMenuItem
+          icon={<Download size={ICON_PX} />}
+          label={t`Downloads`}
+          hint={downloadsKeys}
+          onClick={() => {
+            close()
+            useQueue.getState().setOpen(true)
+          }}
+        />
         <TitleMenuItem
           icon={<FolderOpen size={ICON_PX} />}
           label={t`Open data folder`}

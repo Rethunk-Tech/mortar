@@ -103,25 +103,27 @@ function Header({
           <X size={16} />
         </TipIconButton>
       </Box>
-      <Box
-        role="progressbar"
-        aria-label={t`Download progress`}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(sum.doneShare)}
-        sx={{
-          display: 'flex',
-          height: 6,
-          mx: 2.5,
-          borderRadius: '3px',
-          overflow: 'hidden',
-          bgcolor: 'var(--mortar-hairline)',
-        }}
-      >
-        <Box sx={{ width: `${sum.doneShare}%`, bgcolor: 'success.main' }} />
-        <Box sx={{ width: `${sum.activeShare}%`, bgcolor: 'info.main' }} />
-        <Box sx={{ width: `${sum.failedShare}%`, bgcolor: 'error.main' }} />
-      </Box>
+      {items.length === 0 || view === 'history' ? null : (
+        <Box
+          role="progressbar"
+          aria-label={t`Download progress`}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(sum.doneShare)}
+          sx={{
+            display: 'flex',
+            height: 6,
+            mx: 2.5,
+            borderRadius: '3px',
+            overflow: 'hidden',
+            bgcolor: 'var(--mortar-hairline)',
+          }}
+        >
+          <Box sx={{ width: `${sum.doneShare}%`, bgcolor: 'success.main' }} />
+          <Box sx={{ width: `${sum.activeShare}%`, bgcolor: 'info.main' }} />
+          <Box sx={{ width: `${sum.failedShare}%`, bgcolor: 'error.main' }} />
+        </Box>
+      )}
       {limitedUntil > 0 ? (
         <Typography
           title={clockTime(limitedUntil)}

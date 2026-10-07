@@ -344,7 +344,7 @@ msgstr "The downloads folder…"
 msgid "Restored {detail} of {name}"
 msgstr "Restored {detail} of {name}"
 
-#: src/shell/AppMenu.tsx:72
+#: src/shell/AppMenu.tsx:74
 msgid "Sign out of Nexus"
 msgstr "Sign out of Nexus"
 
@@ -887,7 +887,7 @@ msgstr "Installed by Mortar"
 
 #: src/commandPalette/paletteLabels.ts:8
 #: src/settings/shortcutLabels.ts:11
-#: src/shell/AppMenu.tsx:153
+#: src/shell/AppMenu.tsx:155
 msgid "Check mods and Mortar for updates"
 msgstr "Check mods and Mortar for updates"
 
@@ -1421,7 +1421,7 @@ msgstr "{0, plural, one {# setting is still waiting for its mod to install.} oth
 msgid "Enable scheduled save backups first."
 msgstr "Enable scheduled save backups first."
 
-#: src/shell/AppMenu.tsx:142
+#: src/shell/AppMenu.tsx:144
 msgid "Mortar settings…"
 msgstr "Mortar settings…"
 
@@ -2046,7 +2046,7 @@ msgstr "Pre-releases and unofficial SMAPI updates. Show lists them; Include lets
 msgid "{0, plural, one {# copy of {1}} other {# copies of {2}}}"
 msgstr "{0, plural, one {# copy of {1}} other {# copies of {2}}}"
 
-#: src/shell/AppMenu.tsx:110
+#: src/shell/AppMenu.tsx:112
 msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
 
@@ -2545,7 +2545,7 @@ msgstr "{0, plural, one {# tracked mod on Nexus is not in this profile} other {#
 msgid "One step in Steam"
 msgstr "One step in Steam"
 
-#: src/shell/AppMenu.tsx:81
+#: src/shell/AppMenu.tsx:83
 msgid "Sign in to Nexus…"
 msgstr "Sign in to Nexus…"
 
@@ -2983,7 +2983,7 @@ msgid "Not loaded in the running game"
 msgstr "Not loaded in the running game"
 
 #: src/settings/shortcutLabels.ts:39
-#: src/shell/AppMenu.tsx:200
+#: src/shell/AppMenu.tsx:202
 msgid "Get help"
 msgstr "Get help"
 
@@ -3520,7 +3520,7 @@ msgid "{0, plural, one {# mod checked} other {# mods checked}}"
 msgstr "{0, plural, one {# mod checked} other {# mods checked}}"
 
 #: src/settings/sections/General.tsx:213
-#: src/shell/AppMenu.tsx:197
+#: src/shell/AppMenu.tsx:199
 msgid "Help"
 msgstr "Help"
 
@@ -3842,6 +3842,10 @@ msgstr "Could not read the game log"
 msgid "Disable"
 msgstr "Disable"
 
+#: src/mods/redundantReason.ts:115
+msgid "{count, plural, one {${by} already includes everything it changes} other {${by} together include everything it changes}}"
+msgstr "{count, plural, one {${by} already includes everything it changes} other {${by} together include everything it changes}}"
+
 #: src/install/overlayPlace.ts:35
 #: src/install/store.ts:88
 msgid "Added {mods} to {profile}"
@@ -3901,6 +3905,10 @@ msgstr "Should Mortar open Nexus \"Mod Manager Download\" links, so a click on N
 #: src/mods/storeView.ts:58
 msgid "Also enabled {0}"
 msgstr "Also enabled {0}"
+
+#: src/mods/redundantReason.ts:120
+msgid "{count, plural, one {Overlaps with ${by}: both change ${detail}} other {Overlaps with ${by}: all change ${detail}}}"
+msgstr "{count, plural, one {Overlaps with ${by}: both change ${detail}} other {Overlaps with ${by}: all change ${detail}}}"
 
 #: src/games/useGameTiles.ts:98
 msgid "Coming in a later Mortar version"
@@ -4280,6 +4288,10 @@ msgstr "Done"
 msgid "Content pack for {hostName}"
 msgstr "Content pack for {hostName}"
 
+#: src/mods/redundantReason.ts:110
+msgid "{count, plural, one {Replaced by ${by}, which is also enabled} other {Replaced by ${by}, which are also enabled}}"
+msgstr "{count, plural, one {Replaced by ${by}, which is also enabled} other {Replaced by ${by}, which are also enabled}}"
+
 #: src/settings/sections/NexusMods.tsx:84
 msgid "Untrack the {gameName} mods none of your profiles use, out of {trackedCount} tracked? Nexus has no undo for this."
 msgstr "Untrack the {gameName} mods none of your profiles use, out of {trackedCount} tracked? Nexus has no undo for this."
@@ -4467,8 +4479,8 @@ msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 #: src/settings/sections/Updates.tsx:164
 #: src/share/DestinationGrid.tsx:51
 #: src/share/ShareDialog.tsx:40
-#: src/shell/AppMenu.tsx:136
-#: src/shell/AppMenu.tsx:139
+#: src/shell/AppMenu.tsx:138
+#: src/shell/AppMenu.tsx:141
 msgid "Mortar"
 msgstr "Mortar"
 
@@ -4541,7 +4553,7 @@ msgstr "Just this mod"
 msgid "Links for games Mortar does not manage open in the app that had them before."
 msgstr "Links for games Mortar does not manage open in the app that had them before."
 
-#: src/mods/describe.ts:330
+#: src/mods/describe.ts:334
 msgid "{name} was changed outside Mortar."
 msgstr "{name} was changed outside Mortar."
 
@@ -4937,7 +4949,7 @@ msgstr "Connection"
 msgid "Harmless"
 msgstr "Harmless"
 
-#: src/mods/redundantReason.ts:98
+#: src/mods/redundantReason.ts:99
 msgid "{list} do the same job: both change {detail}"
 msgstr "{list} do the same job: both change {detail}"
 
@@ -5123,11 +5135,6 @@ msgstr "Could not check the store files"
 msgid "Rename…"
 msgstr "Rename…"
 
-#. placeholder {0}: p.pluginClash.guid
-#: src/mods/describe.ts:295
-msgid "{names} all ship the plugin {0}, and BepInEx loads only one."
-msgstr "{names} all ship the plugin {0}, and BepInEx loads only one."
-
 #: src/game/FarmMenuItem.tsx:112
 msgid "This profile matches {host}."
 msgstr "This profile matches {host}."
@@ -5264,6 +5271,11 @@ msgstr "No profile holds a mod by that name or id."
 msgid "Could not export the modpack"
 msgstr "Could not export the modpack"
 
+#. placeholder {0}: copies.length
+#: src/mods/describe.ts:299
+msgid "{names} all {0} ship the plugin {guid}, and BepInEx loads only one."
+msgstr "{names} all {0} ship the plugin {guid}, and BepInEx loads only one."
+
 #: src/share/Included.tsx:102
 msgid "Added from an archive, so it only exists on this computer."
 msgstr "Added from an archive, so it only exists on this computer."
@@ -5275,7 +5287,7 @@ msgstr "Added from an archive, so it only exists on this computer."
 #: src/queue/QueueSheet.tsx:72
 #: src/queue/QueueSheet.tsx:186
 #: src/settings/SettingsPage.tsx:42
-#: src/shell/AppMenu.tsx:173
+#: src/shell/AppMenu.tsx:175
 msgid "Downloads"
 msgstr "Downloads"
 
@@ -5375,7 +5387,7 @@ msgstr "A friend's link or file…"
 msgid "Created · updated"
 msgstr "Created · updated"
 
-#: src/shell/AppMenu.tsx:211
+#: src/shell/AppMenu.tsx:213
 msgid "Report a bug…"
 msgstr "Report a bug…"
 
@@ -5606,7 +5618,7 @@ msgstr "Another file from a mod you have"
 msgid "Could not run the command"
 msgstr "Could not run the command"
 
-#: src/shell/AppMenu.tsx:190
+#: src/shell/AppMenu.tsx:192
 msgid "About Mortar"
 msgstr "About Mortar"
 
@@ -5819,10 +5831,6 @@ msgstr "Background"
 #: src/profiles/HealthDialog.tsx:57
 msgid "The folder of {name} was deleted outside Mortar"
 msgstr "The folder of {name} was deleted outside Mortar"
-
-#: src/mods/redundantReason.ts:107
-msgid "Replaced by {by}, which is also enabled"
-msgstr "Replaced by {by}, which is also enabled"
 
 #: src/share/ImportPreview.tsx:338
 msgid "Ready to import"
@@ -6553,7 +6561,7 @@ msgid "Nothing would change."
 msgstr "Nothing would change."
 
 #: src/settings/sections/Updates.tsx:130
-#: src/shell/AppMenu.tsx:164
+#: src/shell/AppMenu.tsx:166
 msgid "What's new in {version}"
 msgstr "What's new in {version}"
 
@@ -6717,7 +6725,7 @@ msgstr "Create a profile first."
 msgid "Which?"
 msgstr "Which?"
 
-#: src/shell/AppMenu.tsx:182
+#: src/shell/AppMenu.tsx:184
 msgid "Open data folder"
 msgstr "Open data folder"
 
@@ -6978,6 +6986,10 @@ msgstr "Use theirs"
 msgid "Direct launch preview"
 msgstr "Direct launch preview"
 
+#: src/mods/describe.ts:298
+msgid "{names} both ship the plugin {guid}, and BepInEx loads only one."
+msgstr "{names} both ship the plugin {guid}, and BepInEx loads only one."
+
 #: src/lan/SendPanel.tsx:331
 msgid "Send"
 msgstr "Send"
@@ -7027,7 +7039,7 @@ msgstr "Could not change how Nexus links open"
 msgid "requirements"
 msgstr "requirements"
 
-#: src/shell/AppMenu.tsx:219
+#: src/shell/AppMenu.tsx:221
 msgid "Source code"
 msgstr "Source code"
 
@@ -8264,7 +8276,7 @@ msgstr "A game update replaced {0}'s launcher"
 msgid "Could not undo. Missing from the store: {list}"
 msgstr "Could not undo. Missing from the store: {list}"
 
-#: src/shell/AppMenu.tsx:58
+#: src/shell/AppMenu.tsx:60
 msgid "Nexus Mods · Not signed in"
 msgstr "Nexus Mods · Not signed in"
 
@@ -8763,10 +8775,6 @@ msgstr "That request was not valid."
 msgid "Description"
 msgstr "Description"
 
-#: src/mods/redundantReason.ts:111
-msgid "Overlaps with {by}: both change {detail}"
-msgstr "Overlaps with {by}: both change {detail}"
-
 #: src/console/ConsoleTab.tsx:65
 msgid "No mods have logged yet"
 msgstr "No mods have logged yet"
@@ -9201,10 +9209,6 @@ msgstr "Problems"
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
-#: src/mods/redundantReason.ts:109
-msgid "{by} already includes everything it changes"
-msgstr "{by} already includes everything it changes"
-
 #: src/settings/sections/Appearance.tsx:70
 msgid "Moss"
 msgstr "Moss"
@@ -9239,7 +9243,7 @@ msgstr "Combat skill"
 msgid "Could not add the optional file"
 msgstr "Could not add the optional file"
 
-#: src/mods/redundantReason.ts:105
+#: src/mods/redundantReason.ts:108
 msgid "Every edit it makes is overwritten by {by}"
 msgstr "Every edit it makes is overwritten by {by}"
 
@@ -9913,7 +9917,7 @@ msgid "Review collection update"
 msgstr "Review collection update"
 
 #. placeholder {0}: d.folder
-#: src/mods/describe.ts:324
+#: src/mods/describe.ts:328
 msgid "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 msgstr "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 
@@ -10412,7 +10416,7 @@ msgid "Enabled"
 msgstr "Enabled"
 
 #: src/settings/sections/NexusMods.tsx:155
-#: src/shell/AppMenu.tsx:64
+#: src/shell/AppMenu.tsx:66
 msgid "Premium"
 msgstr "Premium"
 
@@ -10820,7 +10824,7 @@ msgstr "Save backups"
 msgid "The game's first frames; mods doing setup work in update events show up here"
 msgstr "The game's first frames; mods doing setup work in update events show up here"
 
-#: src/shell/AppMenu.tsx:116
+#: src/shell/AppMenu.tsx:118
 msgid "Mortar menu"
 msgstr "Mortar menu"
 
@@ -11106,7 +11110,7 @@ msgid "Required"
 msgstr "Required"
 
 #. placeholder {0}: choices.length
-#: src/mods/redundantReason.ts:99
+#: src/mods/redundantReason.ts:100
 msgid "{list} do the same job: all {0} change {detail}"
 msgstr "{list} do the same job: all {0} change {detail}"
 
@@ -11900,7 +11904,7 @@ msgstr "No problems found"
 msgid "Manage templates…"
 msgstr "Manage templates…"
 
-#: src/mods/describe.ts:328
+#: src/mods/describe.ts:332
 msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
@@ -12539,7 +12543,7 @@ msgstr "No differences."
 msgid "{0, plural, one {# more pack} other {# more packs}}"
 msgstr "{0, plural, one {# more pack} other {# more packs}}"
 
-#: src/shell/AppMenu.tsx:58
+#: src/shell/AppMenu.tsx:60
 msgid "Nexus Mods · Signed in as {name}"
 msgstr "Nexus Mods · Signed in as {name}"
 
@@ -13213,7 +13217,7 @@ msgstr "{0, plural, one {# download needs your decision} other {# downloads need
 msgid "Save current as…"
 msgstr "Save current as…"
 
-#: src/shell/AppMenu.tsx:228
+#: src/shell/AppMenu.tsx:230
 msgid "Quit Mortar"
 msgstr "Quit Mortar"
 
