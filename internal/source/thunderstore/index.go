@@ -1,6 +1,7 @@
 package thunderstore
 
 import (
+	"bufio"
 	"bytes"
 	"cmp"
 	"compress/gzip"
@@ -94,6 +95,20 @@ type memoEntry struct {
 }
 
 var (
+	buildLocksMu sync.Mutex
+	buildLocks   = map[string]*sync.Mutex{}
+)
+
+func buildLock(key string) *sync.Mutex {
+	buildLocksMu.Lock()
+	defer buildLocksMu.Unlock()
+	if buildLocks[key] == nil {
+		buildLocks[key] = &sync.Mutex{}
+	}
+	return buildLocks[key]
+}
+
+var (
 	memoMu sync.Mutex
 	// memo holds one listing per community key, the one built from the blob at path.
 	memo = map[string]memoEntry{}
@@ -150,12 +165,13 @@ func (d Driver) cacheRoot() string {
 	return filepath.Join(base, "mortar")
 }
 
-func (d Driver) get(ctx context.Context, url, ua string) ([]byte, error) {
+// open starts a GET and returns its body, which the caller reads before calling done.
+func (d Driver) open(ctx context.Context, url, ua string) (body io.Reader, done func(), err error) {
 	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
-	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		cancel()
+		return nil, nil, err
 	}
 	req.Header.Set("User-Agent", ua)
 	client := cmp.Or(d.HTTP, http.DefaultClient)
@@ -166,20 +182,73 @@ func (d Driver) get(ctx context.Context, url, ua string) ([]byte, error) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		cancel()
+		return nil, nil, err
 	}
-	defer func() { _ = resp.Body.Close() }()
+	done = func() { _ = resp.Body.Close(); cancel() }
 	if resp.StatusCode == http.StatusNotFound {
-		return nil, errNotFound
+		done()
+		return nil, nil, errNotFound
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("thunderstore answered %s", resp.Status)
+		done()
+		return nil, nil, fmt.Errorf("thunderstore answered %s", resp.Status)
 	}
-	raw, err := io.ReadAll(io.LimitReader(resp.Body, source.MaxBody))
+	return io.LimitReader(resp.Body, source.MaxBody), done, nil
+}
+
+func (d Driver) get(ctx context.Context, url, ua string) ([]byte, error) {
+	body, done, err := d.open(ctx, url, ua)
 	if err != nil {
 		return nil, err
 	}
-	return raw, nil
+	defer done()
+	return io.ReadAll(body)
+}
+
+// streamPackages decodes a package-list chunk one package at a time, so only the package being read is held.
+func expectArray(dec *json.Decoder) error {
+	tok, err := dec.Token()
+	if err != nil {
+		return err
+	}
+	if tok != json.Delim('[') {
+		return errors.New("package list is not a JSON array")
+	}
+	return nil
+}
+
+func (d Driver) streamPackages(ctx context.Context, url, ua string, fn func(*wirePackage) error) error {
+	body, done, err := d.open(ctx, url, ua)
+	if err != nil {
+		return err
+	}
+	defer done()
+	br := bufio.NewReader(body)
+	var r io.Reader = br
+	if magic, _ := br.Peek(2); len(magic) == 2 && magic[0] == 0x1f && magic[1] == 0x8b {
+		zr, err := gzip.NewReader(br)
+		if err != nil {
+			return err
+		}
+		r = io.LimitReader(zr, source.MaxBody*4)
+	}
+	dec := json.NewDecoder(r)
+	if err := expectArray(dec); err != nil {
+		return err
+	}
+	var w wirePackage
+	for dec.More() {
+		w = wirePackage{}
+		if err := dec.Decode(&w); err != nil {
+			return err
+		}
+		if err := fn(&w); err != nil {
+			return err
+		}
+	}
+	_, err = dec.Token()
+	return err
 }
 
 // getJSON fetches url and decodes it, gunzipping a body that is still compressed.
@@ -213,6 +282,10 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 	if !communityKey.MatchString(key) {
 		return nil, fmt.Errorf("%q is not a Thunderstore community key", key)
 	}
+	// One build per community: a second caller waits, then finds the listing the first one wrote.
+	mu := buildLock(key)
+	mu.Lock()
+	defer mu.Unlock()
 	dir := filepath.Join(d.cacheRoot(), "thunderstore")
 	metaPath := filepath.Join(dir, key+".meta.json")
 	var meta cacheMeta
@@ -265,35 +338,67 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 	return loadPackages(key, pkgPath(hash))
 }
 
-// build downloads every chunk and writes the slimmed listing to path.
-func (d Driver) build(ctx context.Context, chunks []string, path, ua string) error {
-	var all []pkg
-	for _, u := range chunks {
-		var wire []wirePackage
-		if _, err := d.getJSON(ctx, u, ua, &wire); err != nil {
-			return err
-		}
-		for _, w := range wire {
-			if len(w.Versions) == 0 {
-				continue
-			}
-			p := pkg{
-				Owner: w.Owner, Name: w.Name, URL: w.PackageURL, Updated: w.DateUpdated, Created: w.DateCreated, Rating: w.RatingScore,
-				Hidden: w.IsDeprecated, Categories: w.Categories, Adult: w.HasNSFWContent, Summary: w.Versions[0].Description, Icon: w.Versions[0].Icon,
-				Repo: source.GitHubRepo(w.Versions[0].WebsiteURL),
-			}
-			for _, v := range w.Versions {
-				p.Downloads += v.Downloads
-				p.Versions = append(p.Versions, version{Number: v.VersionNumber, Size: v.FileSize, Deps: v.Dependencies})
-			}
-			all = append(all, p)
-		}
-	}
-	b, err := json.Marshal(all)
+// build downloads every chunk and writes the slimmed listing to path as it goes, so neither a chunk nor the whole
+// listing is held in memory.
+func (d Driver) build(ctx context.Context, chunks []string, path, ua string) (err error) {
+	tmp, err := fsx.Create(path + ".tmp")
 	if err != nil {
 		return err
 	}
-	return datadir.WriteFile(path, b, 0o644)
+	defer func() {
+		if err != nil {
+			_ = tmp.Close()
+			_ = os.Remove(path + ".tmp")
+		}
+	}()
+	bw := bufio.NewWriter(tmp)
+	enc := json.NewEncoder(bw)
+	if err = bw.WriteByte('['); err != nil {
+		return err
+	}
+	first := true
+	for _, u := range chunks {
+		err = d.streamPackages(ctx, u, ua, func(w *wirePackage) error {
+			if len(w.Versions) == 0 {
+				return nil
+			}
+			if !first {
+				if err := bw.WriteByte(','); err != nil {
+					return err
+				}
+			}
+			first = false
+			return enc.Encode(slim(w))
+		})
+		if err != nil {
+			return err
+		}
+	}
+	if err = bw.WriteByte(']'); err != nil {
+		return err
+	}
+	if err = bw.Flush(); err != nil {
+		return err
+	}
+	if err = tmp.Close(); err != nil {
+		return err
+	}
+	return fsx.Rename(path+".tmp", path)
+}
+
+// slim keeps the fields of a wire package that search and install use.
+func slim(w *wirePackage) pkg {
+	p := pkg{
+		Owner: w.Owner, Name: w.Name, URL: w.PackageURL, Updated: w.DateUpdated, Created: w.DateCreated, Rating: w.RatingScore,
+		Hidden: w.IsDeprecated, Categories: w.Categories, Adult: w.HasNSFWContent, Summary: w.Versions[0].Description, Icon: w.Versions[0].Icon,
+		Repo: source.GitHubRepo(w.Versions[0].WebsiteURL),
+	}
+	p.Versions = make([]version, len(w.Versions))
+	for i, v := range w.Versions {
+		p.Downloads += v.Downloads
+		p.Versions[i] = version{Number: v.VersionNumber, Size: v.FileSize, Deps: v.Dependencies}
+	}
+	return p
 }
 
 func loadPackages(key, path string) ([]pkg, error) {
@@ -302,15 +407,28 @@ func loadPackages(key, path string) ([]pkg, error) {
 	if m, ok := memo[key]; ok && m.path == path {
 		return m.pk, nil
 	}
-	b, err := fsx.ReadFile(path)
+	f, err := fsx.Open(path)
 	if err != nil {
 		return nil, err
 	}
-	var pk []pkg
-	if err := json.Unmarshal(b, &pk); err != nil {
+	defer func() { _ = f.Close() }()
+	dec := json.NewDecoder(bufio.NewReader(f))
+	if err := expectArray(dec); err != nil {
 		return nil, err
 	}
-	compactDeps(pk)
+	var pk []pkg
+	c := newDepCompactor()
+	for dec.More() {
+		var p pkg
+		if err := dec.Decode(&p); err != nil {
+			return nil, err
+		}
+		c.add(&p)
+		pk = append(pk, p)
+	}
+	if _, err := dec.Token(); err != nil {
+		return nil, err
+	}
 	memo[key] = memoEntry{path, pk}
 	return pk, nil
 }
@@ -318,37 +436,41 @@ func loadPackages(key, path string) ([]pkg, error) {
 // depTable holds each distinct dependency string of a listing once; versions refer to them by index.
 type depTable struct{ names []string }
 
-// compactDeps moves every version's dependency strings into one shared table: most of a listing's bytes are the
+// depCompactor moves every version's dependency strings into one shared table: most of a listing's bytes are the
 // same "Owner-Name-1.2.3" pins named again by every version, and a version whose list equals the previous one's
 // shares its index list.
-func compactDeps(pk []pkg) {
-	tab := &depTable{}
-	index := map[string]uint32{}
-	for i := range pk {
-		pk[i].tab = tab
-		vs := slices.Clone(pk[i].Versions)
-		pk[i].Versions = vs
-		var prev []uint32
-		for j := range vs {
-			if len(vs[j].Deps) == 0 {
-				prev = nil
-				continue
-			}
-			ids := make([]uint32, len(vs[j].Deps))
-			for k, d := range vs[j].Deps {
-				id, ok := index[d]
-				if !ok {
-					id = uint32(len(tab.names) & math.MaxUint32)
-					tab.names = append(tab.names, d)
-					index[d] = id
-				}
-				ids[k] = id
-			}
-			if slices.Equal(ids, prev) {
-				ids = prev
-			}
-			vs[j].ids, vs[j].Deps, prev = ids, nil, ids
+type depCompactor struct {
+	tab   *depTable
+	index map[string]uint32
+}
+
+func newDepCompactor() *depCompactor {
+	return &depCompactor{tab: &depTable{}, index: map[string]uint32{}}
+}
+
+func (c *depCompactor) add(p *pkg) {
+	p.tab = c.tab
+	var prev []uint32
+	for j := range p.Versions {
+		v := &p.Versions[j]
+		if len(v.Deps) == 0 {
+			prev = nil
+			continue
 		}
+		ids := make([]uint32, len(v.Deps))
+		for k, d := range v.Deps {
+			id, ok := c.index[d]
+			if !ok {
+				id = uint32(len(c.tab.names) & math.MaxUint32)
+				c.tab.names = append(c.tab.names, d)
+				c.index[d] = id
+			}
+			ids[k] = id
+		}
+		if slices.Equal(ids, prev) {
+			ids = prev
+		}
+		v.ids, v.Deps, prev = ids, nil, ids
 	}
 }
 
