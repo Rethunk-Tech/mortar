@@ -2,6 +2,7 @@ package profile
 
 import (
 	"os"
+	"path/filepath"
 	"slices"
 	"testing"
 )
@@ -43,5 +44,32 @@ func TestScratchCopyIsNeverListedAndIsPurged(t *testing.T) {
 	}
 	if err := e.DropScratch("stardew", src.ID); err == nil {
 		t.Fatal("DropScratch removed a real profile")
+	}
+}
+
+func TestDroppingAScratchProfileForgetsItsParsedCopy(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p := mustCreate(t, e, "P")
+	scratch, err := e.ScratchCopy("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, err := e.profileDir("stardew", scratch.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(dir, fileName)
+	if _, err := e.read("stardew", scratch.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := parsedProfiles.Load(path); !ok {
+		t.Fatal("the read did not cache the scratch profile")
+	}
+	if err := e.DropScratch("stardew", scratch.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := parsedProfiles.Load(path); ok {
+		t.Fatal("a dropped scratch profile stays cached")
 	}
 }

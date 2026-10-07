@@ -52,6 +52,7 @@ func (s *Store) DropScratch(game, id string) error {
 	if err != nil {
 		return err
 	}
+	forgetProfile(filepath.Join(dir, fileName))
 	return fsx.RemoveAll(dir)
 }
 
@@ -63,6 +64,7 @@ func (s *Store) PurgeScratch() error {
 	}
 	for _, d := range dirs {
 		if scratchPattern.MatchString(filepath.Base(d)) {
+			forgetProfile(filepath.Join(d, fileName))
 			if err := fsx.RemoveAll(d); err != nil {
 				return err
 			}
