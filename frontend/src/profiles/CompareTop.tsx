@@ -13,6 +13,8 @@ import {
 import { Check, ChevronDown, Search, Users, X } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { modsLabel } from '../i18n/counts.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { colorHex } from './appearance.ts'
 import { userModCount } from './count.ts'
 import { useProfiles } from './store.ts'
@@ -79,24 +81,22 @@ function OtherPicker({
             <ListItemIcon>
               <Dot profile={p} />
             </ListItemIcon>
-            <ListItemText>{t`${p.name} · ${userModCount(p)} mods`}</ListItemText>
+            <ListItemText>{t`${p.name} · ${modsLabel(userModCount(p))}`}</ListItemText>
             {p.id === profileB?.id ? <Check size={16} aria-hidden={true} /> : null}
           </MenuItem>
         ))}
         <ListSubheader sx={heading}>{t`SOMEONE ELSE'S`}</ListSubheader>
-        <MenuItem onClick={choose(onFriend)}>
-          <ListItemIcon>
-            <Users size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`A friend's link or file…`}</ListItemText>
-        </MenuItem>
+        <MenuAction
+          icon={<Users size={16} />}
+          label={t`A friend's link or file…`}
+          onClick={choose(onFriend)}
+        />
         {gameId === 'stardew' ? (
-          <MenuItem onClick={choose(onHost)}>
-            <ListItemIcon>
-              <Users size={16} />
-            </ListItemIcon>
-            <ListItemText>{t`A multiplayer host's list…`}</ListItemText>
-          </MenuItem>
+          <MenuAction
+            icon={<Users size={16} />}
+            label={t`A multiplayer host's list…`}
+            onClick={choose(onHost)}
+          />
         ) : null}
       </Menu>
     </>

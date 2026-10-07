@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Divider, ListItemIcon, ListItemText, MenuItem } from '@mui/material'
+import { Divider } from '@mui/material'
 import { CopyPlus, FileJson, FolderTree, PackagePlus, Trash2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type {
@@ -73,17 +73,17 @@ function RemoveMenuItem({
   close: () => void
 }) {
   return (
-    <MenuItem
+    <MenuAction
       disabled={locked}
-      sx={{ color: 'error.main' }}
+      tone="error"
+      icon={item.icon}
+      label={item.label}
+      tooltip={locked ? tooltip : undefined}
       onClick={() => {
         close()
         item.run()
       }}
-    >
-      <ListItemIcon sx={{ color: 'inherit' }}>{item.icon}</ListItemIcon>
-      <ListItemText secondary={locked ? tooltip : undefined}>{item.label}</ListItemText>
-    </MenuItem>
+    />
   )
 }
 

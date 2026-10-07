@@ -1,18 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Button,
-  ButtonGroup,
-  type ButtonGroupProps,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
-} from '@mui/material'
+import { Button, ButtonGroup, type ButtonGroupProps, Menu } from '@mui/material'
 import { ChevronDown, Download, FolderOpen } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { ExtraFolderDialog } from './ExtraFolderDialog.tsx'
 
 // The chevron of the Add split button: an archive from the downloads folder, or the mods in the game's extra mods
@@ -51,29 +44,23 @@ export function ExtraFolderMenu({
         </DisabledReason>
       </ButtonGroup>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
-        <MenuItem
+        <MenuAction
+          icon={<Download size={16} aria-hidden={true} />}
+          label={t`From the downloads folder…`}
           onClick={() => {
             setAnchor(null)
             openDownloadsDialog()
           }}
-        >
-          <ListItemIcon>
-            <Download size={16} aria-hidden={true} />
-          </ListItemIcon>
-          <ListItemText>{t`From the downloads folder…`}</ListItemText>
-        </MenuItem>
+        />
         {folder === '' ? null : (
-          <MenuItem
+          <MenuAction
+            icon={<FolderOpen size={16} aria-hidden={true} />}
+            label={t`From the extra mods folder…`}
             onClick={() => {
               setAnchor(null)
               setOpen(true)
             }}
-          >
-            <ListItemIcon>
-              <FolderOpen size={16} aria-hidden={true} />
-            </ListItemIcon>
-            <ListItemText>{t`From the extra mods folder…`}</ListItemText>
-          </MenuItem>
+          />
         )}
       </Menu>
       <ExtraFolderDialog open={open} game={game} folder={folder} onClose={() => setOpen(false)} />

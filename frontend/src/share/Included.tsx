@@ -4,6 +4,7 @@ import { Box, Button, Chip, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { IncludeOptions } from './IncludeOptions.tsx'
 import { type ShownInfo, sharedMods } from './logic.ts'
@@ -92,10 +93,7 @@ export function Included({
   }
   const shared = sharedMods(info)
   const count = total
-  const mods =
-    shared < total
-      ? t`${shared} of ${total} mods`
-      : plural(count, { one: '# mod', other: '# mods' })
+  const mods = shared < total ? t`${shared} of ${total} mods` : modsLabel(count)
   const line = [mods, ...includedKeys(include, { target, fomod }).map((k) => labels[k])].join(' · ')
   const { local, other } = leftOutCounts(info.leftOut)
   const reason = (id: string) => {

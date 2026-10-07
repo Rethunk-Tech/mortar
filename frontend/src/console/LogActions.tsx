@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
+import { Box, Menu } from '@mui/material'
 import {
   ChevronDown,
   ChevronUp,
@@ -22,6 +22,7 @@ import { Log } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/supp
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { IconAction } from '../shell/IconAction.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { firstError, formatAll } from './filter.ts'
 import { useShownEntries, useVisible } from './logHooks.ts'
@@ -142,35 +143,31 @@ export function LogActions({ game }: { game: string }) {
       />
       <ShareLog />
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
-        <MenuItem
+        <MenuAction
           disabled={rows.length === 0}
+          icon={<Copy size={16} />}
+          label={t`Copy log`}
           onClick={pick(() => {
             copyText(formatAll(rows), t`Log copied`)
           })}
-        >
-          <ListItemIcon>
-            <Copy size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Copy log`}</ListItemText>
-        </MenuItem>
-        <MenuItem disabled={!canSave} onClick={pick(saveLog)}>
-          <ListItemIcon>
-            <Download size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Save log…`}</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={pick(() => setSearching(true))}>
-          <ListItemIcon>
-            <FileSearch size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Search all runs…`}</ListItemText>
-        </MenuItem>
-        <MenuItem disabled={rows.length === 0} onClick={pick(clear)}>
-          <ListItemIcon>
-            <Eraser size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Clear`}</ListItemText>
-        </MenuItem>
+        />
+        <MenuAction
+          disabled={!canSave}
+          icon={<Download size={16} />}
+          label={t`Save log…`}
+          onClick={pick(saveLog)}
+        />
+        <MenuAction
+          icon={<FileSearch size={16} />}
+          label={t`Search all runs…`}
+          onClick={pick(() => setSearching(true))}
+        />
+        <MenuAction
+          disabled={rows.length === 0}
+          icon={<Eraser size={16} />}
+          label={t`Clear`}
+          onClick={pick(clear)}
+        />
       </Menu>
       <SearchRunsDialog open={searching} onClose={() => setSearching(false)} />
     </Box>

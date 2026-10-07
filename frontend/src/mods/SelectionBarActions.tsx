@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material'
+import { Box, Button, Menu, Typography } from '@mui/material'
 import {
   BellOff,
   BellRing,
@@ -19,6 +19,7 @@ import {
 import { type ReactNode, useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { IconAction } from '../shell/IconAction.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
 import type { SourceGroups } from './skipSources.ts'
@@ -162,10 +163,13 @@ export function SelectionBarActions({
       <IconAction label={t`Clear selection`} icon={<X size={18} />} onClick={clear} />
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
         {more.map((m) => (
-          <MenuItem key={m.label} disabled={m.edits && locked} onClick={pick(m.run)}>
-            <ListItemIcon>{m.icon}</ListItemIcon>
-            <ListItemText>{m.label}</ListItemText>
-          </MenuItem>
+          <MenuAction
+            key={m.label}
+            disabled={m.edits && locked}
+            icon={m.icon}
+            label={m.label}
+            onClick={pick(m.run)}
+          />
         ))}
       </Menu>
     </Box>
