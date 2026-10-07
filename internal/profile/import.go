@@ -255,7 +255,7 @@ func scanGameMods(modsDir string) ([]gameModSlot, error) {
 	if err != nil {
 		return nil, err
 	}
-	root, err := filepath.EvalSymlinks(modsDir)
+	root, err := fsx.EvalSymlinks(modsDir)
 	if err != nil {
 		return nil, err
 	}

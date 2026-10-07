@@ -159,7 +159,7 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 					return fs.SkipDir
 				}
 				if info, infoErr := os.Stat(filepath.Clean(p)); infoErr == nil && info.Mode().IsRegular() {
-					if resolved, resErr := filepath.EvalSymlinks(p); resErr == nil && datadir.UnderRoot(root, resolved) {
+					if resolved, resErr := fsx.EvalSymlinks(p); resErr == nil && datadir.UnderRoot(root, resolved) {
 						share.addFollowed(info)
 					}
 				}

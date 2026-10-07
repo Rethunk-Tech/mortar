@@ -51,7 +51,7 @@ func copyTreeFirst(src, dst, first string, report func(CopyProgress), put func(f
 	if put == nil {
 		put = func(from, to, _ string) error { return CopyFile(from, to) }
 	}
-	root, err := filepath.EvalSymlinks(src)
+	root, err := fsx.EvalSymlinks(src)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func walkCopy(src, dst, first string, pass int, progress *CopyProgress, report f
 			*skipped = append(*skipped, p)
 			return nil
 		}
-		resolved, err := filepath.EvalSymlinks(p)
+		resolved, err := fsx.EvalSymlinks(p)
 		if err != nil {
 			return err
 		}
@@ -180,11 +180,11 @@ func RealDirUnder(root, p string) bool {
 	if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
 		return false
 	}
-	resolved, err := filepath.EvalSymlinks(p)
+	resolved, err := fsx.EvalSymlinks(p)
 	if err != nil {
 		return false
 	}
-	parent, err := filepath.EvalSymlinks(filepath.Dir(p))
+	parent, err := fsx.EvalSymlinks(filepath.Dir(p))
 	if err != nil {
 		return false
 	}

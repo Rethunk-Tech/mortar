@@ -251,7 +251,7 @@ type Mod struct {
 // subfolders whose names start with a dot. A manifest that does not parse is skipped, as SMAPI reports it
 // as invalid rather than loading it.
 func Scan(root string) ([]Mod, error) {
-	base, err := filepath.EvalSymlinks(root)
+	base, err := fsx.EvalSymlinks(root)
 	if err != nil {
 		return nil, err
 	}

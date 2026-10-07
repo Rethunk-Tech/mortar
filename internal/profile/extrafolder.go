@@ -4,6 +4,8 @@ import (
 	"errors"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
@@ -28,7 +30,7 @@ func (s *Service) InstallExtraFolderMod(game, id, folder string) (InstallResult,
 	if root == "" {
 		return InstallResult{}, errors.New("no extra mods folder is set")
 	}
-	resolved, err := filepath.EvalSymlinks(root)
+	resolved, err := fsx.EvalSymlinks(root)
 	if err != nil {
 		return InstallResult{}, err
 	}

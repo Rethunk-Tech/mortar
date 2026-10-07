@@ -26,7 +26,7 @@ func (s *Store) MoveGameMods(game, id, modsDir string, folders []string) (GameMo
 	if s.GameRunning != nil && s.GameRunning(game) {
 		return GameModsResult{}, usererr.Wrap(usererr.Busy, errors.New("the game is running: close it before moving mods out of its Mods folder"))
 	}
-	root, err := filepath.EvalSymlinks(modsDir)
+	root, err := fsx.EvalSymlinks(modsDir)
 	if err != nil {
 		return GameModsResult{}, err
 	}

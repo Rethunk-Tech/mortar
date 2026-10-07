@@ -190,7 +190,7 @@ func stripDots(root, rel string, ours map[string]bool) (string, error) {
 }
 
 func hiddenUnder(root string, ours map[string]bool) ([]HiddenMod, error) {
-	base, err := filepath.EvalSymlinks(root)
+	base, err := fsx.EvalSymlinks(root)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil, nil
 	}

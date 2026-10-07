@@ -480,7 +480,7 @@ func exists(p string) bool {
 
 // HashDir is the content key of a folder: a hash of its file paths and bytes.
 func HashDir(root string) (string, error) {
-	base, err := filepath.EvalSymlinks(root)
+	base, err := fsx.EvalSymlinks(root)
 	if err != nil {
 		return "", err
 	}
@@ -503,7 +503,7 @@ func HashDir(root string) (string, error) {
 		if datadir.LinkedDir(p, info) {
 			return nil
 		}
-		resolved, err := filepath.EvalSymlinks(p)
+		resolved, err := fsx.EvalSymlinks(p)
 		if err != nil {
 			return err
 		}
