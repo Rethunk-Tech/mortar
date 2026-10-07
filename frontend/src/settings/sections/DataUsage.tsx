@@ -7,6 +7,7 @@ import { DataLocation } from '../../../bindings/github.com/Rethunk-Tech/mortar/i
 import { OpenDataFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { cmpText } from '../../mods/cmpText.ts'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { MoveDataButton } from './DataMove.tsx'
@@ -78,7 +79,7 @@ function Legend({
 }) {
   const colors = useSegmentColors()
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2, rowGap: 0.75, pt: 1.5 }}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2, rowGap: 0.75, pt: space.pad }}>
       {legendIds(sizes).map((id) => (
         <Box
           key={id}
@@ -137,8 +138,8 @@ function StorageBar({
     : null
   const total = Math.max(1, usage?.total ?? 1)
   return (
-    <Box sx={{ px: 2.5, py: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2, pb: 1.5 }}>
+    <Box sx={{ px: space.pad, py: space.pad }}>
+      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: space.pad, pb: space.pad }}>
         <Box sx={{ flex: 1, fontSize: 16 }}>
           {usage ? t`${formatBytes(usage.total)} used` : t`Measuring… ${formatBytes(bytes)}`}
         </Box>
@@ -180,7 +181,7 @@ function StorageBar({
         <LinearProgress sx={{ height: BAR_HEIGHT, borderRadius: `${END_RADIUS}px` }} />
       )}
       <Legend sizes={sizes} labels={labels} />
-      <Box sx={{ display: 'flex', gap: 1, pt: 2, flexWrap: 'wrap' }}>{actions}</Box>
+      <Box sx={{ display: 'flex', gap: space.gap, pt: space.pad, flexWrap: 'wrap' }}>{actions}</Box>
     </Box>
   )
 }
@@ -271,7 +272,7 @@ export function Location({
   return (
     <SettingsSection title={t`Location`}>
       <SettingRow label={t`Mortar's data`} description={description}>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: space.gap }}>
           <Button
             variant="outlined"
             startIcon={<FolderOpen size={16} />}

@@ -20,6 +20,7 @@ import {
 import { TourAgainButton } from '../../firstrunTour/TourAgainButton.tsx'
 import { availableLocales } from '../../i18n/locales.ts'
 import { PairedComputers } from '../../lan/PairedComputers.tsx'
+import { space } from '../../theme/density.ts'
 import { reportError, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
@@ -241,7 +242,7 @@ function SettingsFile() {
         label={t`Settings file`}
         description={t`Save these settings to a file, or load them on another computer.`}
       >
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: space.gap }}>
           <Button
             variant="outlined"
             onClick={() => ExportSettings().catch(reportUnexpected)}
@@ -281,7 +282,7 @@ function SettingsFile() {
 
 export function General() {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
       <StartupAndWindow />
       <Language />
       <Sharing />

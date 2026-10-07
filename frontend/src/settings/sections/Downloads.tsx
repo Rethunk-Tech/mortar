@@ -20,6 +20,7 @@ import {
 import { ExtensionContact } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { When } from '../../i18n/When.tsx'
 import { openPage } from '../../mods/menu.ts'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected, toastError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSelect, PrefSwitch } from '../PrefControls.tsx'
@@ -143,7 +144,15 @@ function ExtensionSteps() {
   return (
     <Box
       component="ol"
-      sx={{ m: 0, px: 2.5, pl: 5, pb: 1.5, fontSize: 14, color: 'text.secondary', lineHeight: 1.6 }}
+      sx={{
+        m: 0,
+        px: space.pad,
+        pl: 5,
+        pb: space.pad,
+        fontSize: 14,
+        color: 'text.secondary',
+        lineHeight: 1.6,
+      }}
     >
       <li>
         {t`Chrome, Edge or another Chromium browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder.`}

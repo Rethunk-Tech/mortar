@@ -23,6 +23,7 @@ import { routeGame, useNav } from '../../nav/store.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { copyText } from '../../share/copyText.ts'
 import { saveDiagnostics } from '../../shell/saveDiagnostics.ts'
+import { space } from '../../theme/density.ts'
 import { usePending } from '../../toasts/usePending.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 
@@ -175,10 +176,16 @@ function Diagnostics() {
         scroll="paper"
       >
         <DialogTitle>{t`Diagnostics`}</DialogTitle>
-        <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <DialogContent
+          dividers={true}
+          sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
+        >
           {busy && !report ? <LinearProgress /> : null}
           {failed ? (
-            <Box role="alert" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 15 }}>
+            <Box
+              role="alert"
+              sx={{ display: 'flex', alignItems: 'center', gap: space.gap, fontSize: 15 }}
+            >
               {t`Could not run diagnostics`}
               <Button size="small" variant="outlined" disabled={busy} onClick={run}>
                 {t`Run again`}
@@ -189,7 +196,7 @@ function Diagnostics() {
             <Box sx={{ fontSize: 15 }}>{t`All checks passed`}</Box>
           ) : null}
           {groups.map((g) => (
-            <Box key={g.kind} sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
+            <Box key={g.kind} sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-start' }}>
               <Box sx={{ pt: '3px' }}>
                 <StatusIcon status={g.status} />
               </Box>

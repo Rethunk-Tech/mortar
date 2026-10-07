@@ -153,7 +153,7 @@ export function SettingsShell<Id extends string>({
             py: space.gutter,
             display: 'flex',
             flexDirection: 'column',
-            gap: 2,
+            gap: space.pad,
           }}
         >
           <Box
@@ -162,7 +162,7 @@ export function SettingsShell<Id extends string>({
               maxWidth: CONTENT_MAX,
               display: 'flex',
               alignItems: 'center',
-              gap: 2,
+              gap: space.pad,
             }}
           >
             <Typography
@@ -187,7 +187,7 @@ export function SettingsShell<Id extends string>({
               maxWidth: CONTENT_MAX,
               display: 'flex',
               flexDirection: 'column',
-              gap: 2,
+              gap: space.pad,
             }}
           >
             {query && hits === 0 && relatedLabels.length === 0 ? (
@@ -210,7 +210,7 @@ export function SettingsShell<Id extends string>({
                     sx={{
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: 2,
+                      gap: space.pad,
                       mb: 2,
                       [`&:not(:has(${SEARCH_HIT}))`]: {
                         display: 'none',

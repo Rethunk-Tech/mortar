@@ -7,6 +7,7 @@ import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { SourceLogo } from '../../brand/sources/SourceLogo.tsx'
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { IconAction } from '../../shell/IconAction.tsx'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { persist } from '../persist.ts'
@@ -53,7 +54,7 @@ function SourceOrder() {
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         {list.map((s, i) => (
-          <Box key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
             <SourceLogo id={s.id} size={16} />
             <Typography sx={{ minWidth: 120 }}>{s.name}</Typography>
             <IconAction

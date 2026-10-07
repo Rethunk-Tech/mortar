@@ -4,6 +4,7 @@ import { type ReactNode, useState } from 'react'
 import { useGameInfo } from '../games/info.ts'
 import { EditProfileDialog } from '../profiles/EditProfileDialog.tsx'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { space } from '../theme/density.ts'
 import { matchPerProfile } from './perProfileMatch.ts'
 import type { SettingsShell } from './SettingsShell.tsx'
 
@@ -32,7 +33,7 @@ export function usePerProfileRelated(game: string): { related?: Related; dialog:
     related: {
       match: (query) => matchPerProfile(query, labels),
       row: (label) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.pad }}>
           <Typography sx={{ flex: 1, fontSize: 14 }}>{t`${label} is set per profile`}</Typography>
           <Button onClick={() => setEditing(true)}>{t`Edit ${profile.name}`}</Button>
         </Box>

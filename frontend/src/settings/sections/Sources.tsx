@@ -12,6 +12,7 @@ import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { formatWhen } from '../../i18n/formatWhen.ts'
 import { openSettings } from '../../nav/store.ts'
 import { refresh, useOffline } from '../../shell/offline.ts'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { usePending } from '../../toasts/usePending.ts'
 import { NexusMeter } from '../NexusMeter.tsx'
@@ -52,7 +53,7 @@ function Connection({ id, state }: { id: SourceId; state: State | undefined }) {
   }
   return (
     <SettingRow label={t`Connection`} description={detail}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         {chip}
         <Button
           variant="outlined"

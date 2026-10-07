@@ -8,6 +8,7 @@ import {
   SSOAvailable,
   StartSSO,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected, toastError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 
@@ -45,7 +46,7 @@ export function NexusSSO() {
     StartSSO().catch(() => setStage('idle'))
   }
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pb: 1.5 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, pb: space.pad }}>
       <Button
         variant="contained"
         startIcon={stage === 'idle' ? <LogIn size={16} /> : <CircularProgress size={16} />}

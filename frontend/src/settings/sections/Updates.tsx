@@ -8,6 +8,7 @@ import {
   SetIncludePrereleaseModVersions,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { isGameId, useNav } from '../../nav/store.ts'
+import { space } from '../../theme/density.ts'
 import { errorMessage, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { showWhatsNew } from '../../updates/whatsNew.ts'
@@ -116,7 +117,7 @@ function MortarUpdate() {
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 1,
+              gap: space.gap,
               color: phase === 'error' ? 'error.main' : 'inherit',
             }}
           >
@@ -139,8 +140,8 @@ function MortarUpdate() {
             whiteSpace: 'pre-wrap',
             maxHeight: 200,
             overflow: 'auto',
-            px: 2,
-            py: 1.5,
+            px: space.pad,
+            py: space.pad,
           }}
         >
           {release.notes}

@@ -36,12 +36,12 @@ export function SettingsNav<Id extends string>({
         display: 'flex',
         flexDirection: 'column',
         gap: '2px',
-        px: 1,
-        py: 2,
+        px: space.gap,
+        py: space.pad,
         bgcolor: 'var(--mortar-nav)',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pb: 1.25 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pb: space.gap }}>
         <ButtonBase
           aria-label={backLabel}
           onClick={onBack}
@@ -91,7 +91,7 @@ export function SettingsNav<Id extends string>({
               aria-current={active ? 'page' : undefined}
               sx={{
                 justifyContent: 'flex-start',
-                gap: 1.5,
+                gap: space.gap,
                 height: 42,
                 px: '12px',
                 borderRadius: '6px',

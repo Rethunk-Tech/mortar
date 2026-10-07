@@ -3,6 +3,7 @@ import { Box, Button, ButtonBase } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
 import { SetShortcuts } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { shortcutLabels } from '../shortcutLabels.ts'
@@ -65,7 +66,7 @@ function ShortcutRow({
         ) : undefined
       }
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexShrink: 0 }}>
         <ButtonBase
           aria-label={t`Change shortcut for ${label}, currently ${shown}`}
           onClick={onRecord}
@@ -181,7 +182,7 @@ export function Shortcuts() {
   ]
   const rows = SHORTCUTS.filter((row) => labels[row.id].toLowerCase().includes(q))
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 14 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad, fontSize: 14 }}>
       {groups.map(([group, name]) => {
         const grouped = rows.filter((row) => row.group === group)
         return grouped.length > 0 ? (

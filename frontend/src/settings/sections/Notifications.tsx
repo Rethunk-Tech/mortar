@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
 import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { space } from '../../theme/density.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefKeys } from '../PrefRow.tsx'
@@ -53,7 +54,7 @@ function ChannelHeader() {
   return (
     <Box component="span" sx={{ display: 'flex', alignItems: 'baseline' }}>
       <Box component="span" sx={{ flex: 1 }}>{t`When`}</Box>
-      <Box component="span" sx={{ display: 'flex', pr: 2.5 }}>
+      <Box component="span" sx={{ display: 'flex', pr: space.pad }}>
         <Box component="span" sx={cell}>{t`In Mortar`}</Box>
         <Box component="span" sx={cell}>{t`Desktop`}</Box>
       </Box>

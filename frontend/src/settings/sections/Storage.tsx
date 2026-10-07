@@ -3,6 +3,7 @@ import { Box, Button } from '@mui/material'
 import { useState } from 'react'
 import { MoveDataFolderPreview } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
 import { useNav } from '../../nav/store.ts'
+import { space } from '../../theme/density.ts'
 import { type InlineError, reportError } from '../../toasts/report.ts'
 import { PrefKeys } from '../PrefRow.tsx'
 import { SettingsSection } from '../SettingsSection.tsx'
@@ -72,7 +73,14 @@ export function Storage() {
       {error ? (
         <Box
           role="alert"
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2.5, py: 1.5, fontSize: 15 }}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: space.gap,
+            px: space.pad,
+            py: space.pad,
+            fontSize: 15,
+          }}
         >
           {t`Could not measure disk use`}
           <Button variant="outlined" onClick={restart}>

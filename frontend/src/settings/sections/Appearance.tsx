@@ -11,6 +11,7 @@ import {
 import { columnLabel } from '../../mods/columnLabel.ts'
 import { LIST_COLUMN_IDS, sanitizeListSort } from '../../mods/listColumns.ts'
 import { type AccentName, accents } from '../../theme/accents.ts'
+import { space } from '../../theme/density.ts'
 import { PAD_FOCUS } from '../../theme/theme.ts'
 import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -76,13 +77,13 @@ export function Appearance() {
     { name: 'slate', label: t`Slate`, note: t`Quiet grey-blue` },
   ]
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
       <SettingsSection title={t`Theme`}>
         <PrefKeys keys={['theme']} />
       </SettingsSection>
       <SettingsSection title={t`Accent colour`}>
         <Searchable terms={`${t`Accent colour`} ${t`Colour`} ${t`color`} ${t`Theme`}`}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', p: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', p: space.pad }}>
             <RadioGroup
               aria-label={t`Accent colour`}
               value={isAccent(accent) ? accent : ''}

@@ -12,6 +12,7 @@ import { useLoader } from '../../loader/store.ts'
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
+import { space } from '../../theme/density.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSelect } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
@@ -120,7 +121,7 @@ function LoaderRow({
         {installing ? (
           <InstallSteps steps={steps} />
         ) : (
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center' }}>
             <PrefSelect
               value={selected}
               onChange={savePin}

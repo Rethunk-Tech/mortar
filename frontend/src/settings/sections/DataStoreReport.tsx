@@ -30,6 +30,7 @@ import { gameInfo } from '../../games/info.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { space } from '../../theme/density.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
 import { nowrap } from './dataStyles.ts'
@@ -148,9 +149,9 @@ function Row({
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1.5,
+        gap: space.gap,
         minHeight: 44,
-        px: 1.5,
+        px: space.pad,
         borderRadius: '6px',
         cursor: 'pointer',
         '&:hover': { bgcolor: 'action.hover' },
@@ -207,8 +208,8 @@ function Section({
           letterSpacing: '0.06em',
           textTransform: 'uppercase',
           color: 'text.secondary',
-          px: 1.5,
-          pt: 1.5,
+          px: space.pad,
+          pt: space.pad,
           pb: 0.5,
         }}
       >
@@ -278,7 +279,7 @@ function CleanupBody({
   )
   const sum = (rows: Sel[]) => rows.reduce((n, s) => n + s.item.size, 0)
   if (allIds.length === 0) {
-    return <Box sx={{ fontSize: 15, px: 1.5, py: 1.5 }}>{t`Nothing to clean up.`}</Box>
+    return <Box sx={{ fontSize: 15, px: space.pad, py: space.pad }}>{t`Nothing to clean up.`}</Box>
   }
   return (
     <>
@@ -383,7 +384,14 @@ function CleanupDialog({
         {error ? (
           <Box
             role="alert"
-            sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1.5, fontSize: 15 }}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: space.gap,
+              px: space.pad,
+              py: space.pad,
+              fontSize: 15,
+            }}
           >
             {t`Could not load what can be cleaned up`}
             <Button variant="outlined" onClick={load}>
@@ -401,7 +409,7 @@ function CleanupDialog({
         )}
       </DialogContent>
       <DialogActions>
-        <Box sx={{ flex: 1, pl: 1, fontSize: 15 }}>
+        <Box sx={{ flex: 1, pl: space.gap, fontSize: 15 }}>
           {picked.size > 0 ? t`${picked.size} selected · ${formatBytes(bytes)}` : ''}
         </Box>
         <Button onClick={close}>{t`Close`}</Button>

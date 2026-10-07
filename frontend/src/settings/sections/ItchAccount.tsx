@@ -6,6 +6,7 @@ import {
   SignIn,
   SignOut,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/source/itch/service.ts'
+import { space } from '../../theme/density.ts'
 import { errorKind } from '../../toasts/errorKind.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
@@ -65,9 +66,9 @@ export function ItchAccount() {
           <Box
             component="form"
             onSubmit={test}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+            sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
               <TextField
                 id={keyId}
                 slotProps={{ htmlInput: { 'aria-label': t`API key` } }}

@@ -36,7 +36,7 @@ export function SettingsSection({
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 1,
+        gap: space.gap,
         // A section whose rows all filtered out (each row renders nothing) hides with its heading. Rows sit
         // inside components (PrefKeys, sub-sections), so only the rendered result says whether any matched.
         '&:has(> .settings-tiles:empty)': { display: 'none' },
@@ -56,7 +56,7 @@ export function SettingsSection({
           sx={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 1,
+            gap: space.gap,
             containerType: 'inline-size',
             // Every setting is its own tile; a section is the heading above a stack of tiles.
             // Light mode uses opaque paper: a dark tint over the wallpaper reads as grey.
@@ -134,7 +134,7 @@ export function SettingRow({
         [`@container (max-width: ${STACK_BELOW}px)`]: {
           flexDirection: 'column',
           alignItems: 'stretch',
-          gap: 1,
+          gap: space.gap,
         },
       }}
     >

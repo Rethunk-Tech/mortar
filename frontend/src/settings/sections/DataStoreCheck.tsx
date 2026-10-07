@@ -11,6 +11,7 @@ import {
   Check,
   CheckProgress,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/storecheck/service.ts'
+import { space } from '../../theme/density.ts'
 import { usePending } from '../../toasts/usePending.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 
@@ -47,7 +48,7 @@ function Result({ summary }: { summary: Summary }) {
       <Typography
         sx={{ fontSize: 14 }}
       >{t`${checked}; ${bad}. Repair them from each profile's Problems tab.`}</Typography>
-      <Box component="ul" sx={{ m: 0, mt: 0.5, pl: 2.5, color: 'text.secondary' }}>
+      <Box component="ul" sx={{ m: 0, mt: 0.5, pl: space.pad, color: 'text.secondary' }}>
         {damaged.map((item) => (
           <li key={`${item.game}/${item.key}`}>
             {t`${item.name}: ${item.missing} missing, ${item.changed} changed, ${item.extra} extra`}
@@ -75,12 +76,12 @@ export function StoreCheckRow() {
       description={t`Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly.`}
       block={true}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.pad }}>
         <Button variant="outlined" disabled={running} onClick={start}>
           {t`Check now`}
         </Button>
         {running ? (
-          <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: space.gap }}>
             <LinearProgress variant="determinate" value={percent} sx={{ flex: 1 }} />
             <Typography sx={{ fontSize: 14, fontVariantNumeric: 'tabular-nums' }}>
               {t`${progress.done} of ${progress.total}`}

@@ -11,6 +11,7 @@ import {
 import { copyText } from '../../share/copyText.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { TipIconButton } from '../../shell/TipIconButton.tsx'
+import { space } from '../../theme/density.ts'
 import { reportError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
@@ -139,7 +140,7 @@ function OverlayValues({
   const row = (key: string, label: ReactNode, field?: Field) => {
     const preview = overlayPreview(snapshot, field)
     return (
-      <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 32 }}>
+      <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minHeight: 32 }}>
         <Box sx={{ width: 140, flexShrink: 0, fontSize: 13 }}>{label}</Box>
         <Box
           sx={{
@@ -166,7 +167,7 @@ function OverlayValues({
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: space.gap }}>
         <Box sx={{ fontSize: 14, fontWeight: 600 }}>{t`Values`}</Box>
         {status ? <Box sx={{ fontSize: 12, color: 'text.secondary' }}>{status}</Box> : null}
       </Box>
@@ -289,7 +290,7 @@ function OverlayConnection({
         label={t`Token`}
         description={t`Part of the OBS address; regenerate it if it leaks`}
       >
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center' }}>
           <TextField
             type={shown ? 'text' : 'password'}
             size="small"
@@ -413,7 +414,7 @@ export function StreamOverlay() {
         </SettingRow>
       ) : null}
       {enabled ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, p: space.pad }}>
           <OverlayValues
             snapshot={snapshot}
             labels={labels}

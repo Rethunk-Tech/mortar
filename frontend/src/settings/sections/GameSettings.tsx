@@ -25,6 +25,7 @@ import { storeName } from '../../games/storeName.ts'
 import { currentGame, useCurrentGame } from '../../nav/currentGame.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { FlatpakGrant } from '../../shell/FlatpakGrant.tsx'
+import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError, reportError, toastError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
@@ -130,7 +131,7 @@ function ExtraInstalls({
           value={item.store}
           control={<Radio size="small" />}
           label={
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minWidth: 0 }}>
               <LauncherLogo id={launcherOf(item.store)} size={22} />
               <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                 <StoreLabel store={item.store} />
@@ -196,7 +197,7 @@ function GameFolder({
           label={t`Game folder`}
           description={`${folder || t`Not found`} · ${source}${versionNote}`}
         >
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: space.gap }}>
             <Button
               variant="outlined"
               startIcon={<FolderOpen size={16} />}
@@ -237,7 +238,7 @@ function GameFolder({
           <Box
             role="alert"
             title={error.details}
-            sx={{ px: 2.5, py: 1.5, fontSize: 14, color: 'error.light' }}
+            sx={{ px: space.pad, py: space.pad, fontSize: 14, color: 'error.light' }}
           >
             {error.message}
           </Box>
@@ -246,7 +247,7 @@ function GameFolder({
           <Searchable
             terms={`${t`Game folder`} ${installs.map((i) => `${i.store} ${i.dir}`).join(' ')}`}
           >
-            <Box sx={{ px: 2.5, py: 1.5 }}>
+            <Box sx={{ px: space.pad, py: space.pad }}>
               <ExtraInstalls
                 installs={installs}
                 store={store}
@@ -373,7 +374,7 @@ function ExtraModsFolder() {
       prefKey="extraModsFolder"
       game={game}
       extra={
-        <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
+        <Box sx={{ display: 'flex', gap: space.gap, flexShrink: 0 }}>
           {folder ? (
             <Button onClick={clear} sx={noShrink}>
               {t`Clear`}

@@ -3,6 +3,7 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link } 
 import { useState } from 'react'
 import { Logo } from '../../brand/Logo.tsx'
 import { openPage } from '../../mods/menu.ts'
+import { space } from '../../theme/density.ts'
 import credits from '../generated/credits.json' with { type: 'json' }
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { Diagnostics } from './AboutDiagnostics.tsx'
@@ -60,7 +61,15 @@ export function About() {
   return (
     <>
       <SettingsSection title={t`Mortar`}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2.5, py: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: space.pad,
+            px: space.pad,
+            py: space.pad,
+          }}
+        >
           <Logo size={40} />
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <Box component="span" sx={{ fontSize: 18, fontWeight: 700 }}>

@@ -12,6 +12,7 @@ import {
   ToggleButtonGroup,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 
 export function PrefSelect({
@@ -73,7 +74,7 @@ export function PrefSegmented({
         '& .MuiToggleButton-root': {
           border: 0,
           borderRadius: '4px !important',
-          px: 1.75,
+          px: space.pad,
           color: 'text.secondary',
         },
         '& .MuiToggleButton-root.Mui-selected, & .MuiToggleButton-root.Mui-selected:hover': {
@@ -114,7 +115,7 @@ export function PrefCards({
       aria-label={label}
       value={value}
       onChange={(_, v) => onChange(v)}
-      sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
     >
       {options.map((o) => (
         <FormControlLabel
@@ -130,9 +131,9 @@ export function PrefCards({
           sx={{
             m: 0,
             alignItems: 'flex-start',
-            gap: 1.5,
-            px: 1.5,
-            py: 1.25,
+            gap: space.gap,
+            px: space.pad,
+            py: space.gap,
             borderRadius: '6px',
             bgcolor: 'var(--mortar-raised)',
             // The tint sits over the card's opaque fill; a translucent bgcolor would let the panel behind show through.

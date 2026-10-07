@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import type { PrefSpec } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { space } from '../theme/density.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
   PrefCards,
@@ -95,7 +96,7 @@ function PrefRow({
     <SettingRow label={copy.label} description={copy.description} block={style === 'cards'}>
       <DisabledReason title={disabledReason} disabled={disabledReason !== ''}>
         {extra ? (
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center' }}>
             {control}
             {extra}
           </Box>

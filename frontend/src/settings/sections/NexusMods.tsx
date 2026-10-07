@@ -17,6 +17,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { space } from '../../theme/density.ts'
 import { errorKind } from '../../toasts/errorKind.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -124,7 +125,7 @@ function NexusModsSignedIn({
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
       <Searchable terms={`${t`Nexus account`} Nexus ${t`Sign out`} ${name}`}>
         <Alert
           severity="success"
@@ -160,7 +161,7 @@ function NexusModsSignedIn({
       <SettingsSection title={t`Tracking`}>
         <PrefByKey prefKey="autoTrackNexus" />
         <SettingRow label={t`Untrack on Nexus`} description={trackedText}>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: space.gap }}>
             <Button
               variant="outlined"
               disabled={untrackOff}
@@ -256,7 +257,7 @@ export function NexusSignIn() {
             <Box component="label" htmlFor={keyId} sx={{ fontSize: 14, fontWeight: 600 }}>
               {t`Personal API key`}
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: space.gap }}>
               <TextField
                 id={keyId}
                 type="password"
