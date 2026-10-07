@@ -20,7 +20,7 @@ msgid "Allow shows Nexus pages what Mortar has. Off hides that; download links s
 msgstr "Allow shows Nexus pages what Mortar has. Off hides that; download links still arrive"
 
 #: src/console/PerformancePanelParts.tsx:178
-#: src/game/Sidebar.tsx:194
+#: src/game/Sidebar.tsx:196
 msgid "Performance"
 msgstr "Performance"
 
@@ -625,7 +625,7 @@ msgstr "Also adds what it needs: {0}"
 #. placeholder {0}: update.installed
 #. placeholder {1}: official.version
 #. placeholder {1}: update.version
-#: src/mods/parts.tsx:349
+#: src/mods/parts.tsx:351
 #: src/mods/Sidebar.tsx:207
 msgid "Update available: {0} → {1}"
 msgstr "Update available: {0} → {1}"
@@ -1304,7 +1304,7 @@ msgstr "An r2modman code or modpack"
 msgid "{count, plural, one {# update for {profileName}} other {# updates for {profileName}}}"
 msgstr "{count, plural, one {# update for {profileName}} other {# updates for {profileName}}}"
 
-#: src/install/RemapDialog.tsx:216
+#: src/install/RemapDialog.tsx:218
 msgid "Use this folder"
 msgstr "Use this folder"
 
@@ -1335,7 +1335,7 @@ msgstr "Create a bundle to reuse a set of mods."
 
 #: src/mods/ModMenu.tsx:145
 #: src/mods/OldFilesCallouts.tsx:83
-#: src/mods/parts.tsx:424
+#: src/mods/parts.tsx:426
 msgid "Show files"
 msgstr "Show files"
 
@@ -1489,7 +1489,7 @@ msgstr "Keep {0}'s old files"
 #. placeholder {0}: crash.cause.modName
 #: src/console/ConsoleTab.tsx:129
 #: src/console/CrashDialog.tsx:260
-#: src/launch/LaunchLayer.tsx:262
+#: src/launch/LaunchLayer.tsx:263
 msgid "Caused by {0}"
 msgstr "Caused by {0}"
 
@@ -1755,7 +1755,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/firstrun/LoaderStep.tsx:272
 #: src/game/detailStates.tsx:26
 #: src/lan/SendPanel.tsx:194
-#: src/launch/LaunchLayer.tsx:295
+#: src/launch/LaunchLayer.tsx:296
 #: src/mods/LoadOrderTab.tsx:391
 #: src/mods/ModsTab.tsx:115
 #: src/mods/typedConfig/ConfigPane.tsx:173
@@ -2471,7 +2471,7 @@ msgstr "Why?"
 msgid "Upload log"
 msgstr "Upload log"
 
-#: src/launch/LaunchLayer.tsx:317
+#: src/launch/LaunchLayer.tsx:318
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
@@ -3243,7 +3243,7 @@ msgstr "Keep my changes"
 msgid "Unpinned selected mods"
 msgstr "Unpinned selected mods"
 
-#: src/game/Sidebar.tsx:229
+#: src/game/Sidebar.tsx:231
 msgid "Profile sections"
 msgstr "Profile sections"
 
@@ -3523,7 +3523,7 @@ msgid "{0, plural, one {# download added} other {# downloads added}}"
 msgstr "{0, plural, one {# download added} other {# downloads added}}"
 
 #: src/firstrun/LoaderStep.tsx:95
-#: src/launch/LaunchLayer.tsx:210
+#: src/launch/LaunchLayer.tsx:211
 msgid "Launch options copied"
 msgstr "Launch options copied"
 
@@ -3670,7 +3670,7 @@ msgstr "Grid card size"
 msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
-#: src/game/Sidebar.tsx:195
+#: src/game/Sidebar.tsx:197
 #: src/settings/GameSettingsPage.tsx:76
 #: src/settings/GameSettingsPage.tsx:142
 msgid "Console"
@@ -4110,7 +4110,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/game/NewProfileDialog.tsx:233
 #: src/install/DownloadsDialog.tsx:264
 #: src/install/OverlayPlaceDialog.tsx:125
-#: src/install/RemapDialog.tsx:210
+#: src/install/RemapDialog.tsx:212
 #: src/lan/IncomingPrompt.tsx:83
 #: src/lan/IncomingPrompt.tsx:116
 #: src/lan/PairedComputers.tsx:106
@@ -4714,7 +4714,7 @@ msgid "Where the profile comes from"
 msgstr "Where the profile comes from"
 
 #: src/install/NeedsRootCallout.tsx:26
-#: src/install/RemapDialog.tsx:168
+#: src/install/RemapDialog.tsx:170
 msgid "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 msgstr "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 
@@ -4912,7 +4912,7 @@ msgstr "Changed outside Mortar"
 msgid " · {name} {0}"
 msgstr " · {name} {0}"
 
-#: src/game/Sidebar.tsx:196
+#: src/game/Sidebar.tsx:198
 msgid "Library"
 msgstr "Library"
 
@@ -5469,7 +5469,7 @@ msgstr "Clear finished"
 #. placeholder {0}: mod.name
 #. placeholder {0}: overlay.label
 #: src/mods/OverlayRow.tsx:58
-#: src/mods/parts.tsx:404
+#: src/mods/parts.tsx:406
 msgid "Enable {0}"
 msgstr "Enable {0}"
 
@@ -5641,7 +5641,7 @@ msgstr "{0, plural, one {# change} other {# changes}}"
 msgid "You started this download on Nexus. Show Mortar to choose the profile it goes into."
 msgstr "You started this download on Nexus. Show Mortar to choose the profile it goes into."
 
-#: src/mods/parts.tsx:319
+#: src/mods/parts.tsx:321
 msgid "Pinned at this version"
 msgstr "Pinned at this version"
 
@@ -5784,8 +5784,8 @@ msgstr "Mortar cannot download {0} again."
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
-#: src/launch/LaunchLayer.tsx:314
 #: src/launch/LaunchLayer.tsx:315
+#: src/launch/LaunchLayer.tsx:316
 msgid "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 msgstr "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 
@@ -5935,7 +5935,7 @@ msgstr "Day"
 msgid "Allow"
 msgstr "Allow"
 
-#: src/game/Sidebar.tsx:287
+#: src/game/Sidebar.tsx:299
 msgid "Collapse"
 msgstr "Collapse"
 
@@ -6004,7 +6004,7 @@ msgstr "Show slowest mods"
 
 #: src/console/HelpDialog.tsx:55
 #: src/firstrun/LoaderStep.tsx:142
-#: src/launch/LaunchLayer.tsx:214
+#: src/launch/LaunchLayer.tsx:215
 #: src/saves/lackChipActions.tsx:74
 #: src/shell/FlatpakGrant.tsx:76
 msgid "Copy"
@@ -6301,7 +6301,7 @@ msgstr "Create and add"
 msgid "Add from the extra mods folder"
 msgstr "Add from the extra mods folder"
 
-#: src/game/Sidebar.tsx:188
+#: src/game/Sidebar.tsx:190
 msgid "Home"
 msgstr "Home"
 
@@ -6357,7 +6357,7 @@ msgstr "Console command"
 msgid "Share as r2modman code…"
 msgstr "Share as r2modman code…"
 
-#: src/game/Sidebar.tsx:193
+#: src/game/Sidebar.tsx:195
 msgid "Load order"
 msgstr "Load order"
 
@@ -6711,7 +6711,7 @@ msgid "{0} hidden"
 msgstr "{0} hidden"
 
 #: src/install/NeedsRootCallout.tsx:23
-#: src/install/RemapDialog.tsx:177
+#: src/install/RemapDialog.tsx:179
 msgid "Choose a variant"
 msgstr "Choose a variant"
 
@@ -6961,7 +6961,7 @@ msgstr "Send"
 #: src/commandPalette/CommandPalette.tsx:101
 #: src/console/ConsoleTab.tsx:61
 #: src/firstrunTour/TourPopover.tsx:46
-#: src/game/Sidebar.tsx:189
+#: src/game/Sidebar.tsx:191
 #: src/mods/ModListVirtual.tsx:284
 #: src/settings/GameSettingsPage.tsx:73
 #: src/settings/GameSettingsPage.tsx:115
@@ -7590,7 +7590,7 @@ msgstr "Zip, RAR and 7z. Mortar reads the mods inside and shows you what was add
 msgid "Unofficial"
 msgstr "Unofficial"
 
-#: src/install/RemapDialog.tsx:143
+#: src/install/RemapDialog.tsx:145
 msgid "Hide archive contents"
 msgstr "Hide archive contents"
 
@@ -8176,7 +8176,7 @@ msgstr "{0, plural, one {Undo this and # later change?} other {Undo this and # l
 msgid "No profile"
 msgstr "No profile"
 
-#: src/game/Sidebar.tsx:264
+#: src/game/Sidebar.tsx:276
 msgid "Collapse sidebar"
 msgstr "Collapse sidebar"
 
@@ -8326,7 +8326,7 @@ msgstr "Firefox:"
 msgid "Could not restore the collection link"
 msgstr "Could not restore the collection link"
 
-#: src/install/RemapDialog.tsx:143
+#: src/install/RemapDialog.tsx:145
 msgid "Show archive contents"
 msgstr "Show archive contents"
 
@@ -8795,7 +8795,7 @@ msgstr "Undo only this mod's change from this entry. Everything else stays as it
 
 #. placeholder {0}: unofficial.version
 #. placeholder {0}: update.version
-#: src/mods/parts.tsx:348
+#: src/mods/parts.tsx:350
 #: src/mods/Sidebar.tsx:212
 #: src/mods/updateReview/RowCopy.tsx:27
 msgid "Unofficial update available: {0}"
@@ -8869,7 +8869,7 @@ msgid "Bundle added"
 msgstr "Bundle added"
 
 #: src/firstrunTour/TourPopover.tsx:34
-#: src/game/Sidebar.tsx:191
+#: src/game/Sidebar.tsx:193
 msgid "Browse"
 msgstr "Browse"
 
@@ -9035,7 +9035,7 @@ msgstr "Could not read the window state"
 msgid "Uncategorised"
 msgstr "Uncategorised"
 
-#: src/launch/LaunchLayer.tsx:311
+#: src/launch/LaunchLayer.tsx:312
 msgid "Steam was not found"
 msgstr "Steam was not found"
 
@@ -9159,7 +9159,7 @@ msgid "{0} failed"
 msgstr "{0} failed"
 
 #: src/firstrunTour/TourPopover.tsx:58
-#: src/game/Sidebar.tsx:192
+#: src/game/Sidebar.tsx:194
 msgid "Problems"
 msgstr "Problems"
 
@@ -9282,7 +9282,7 @@ msgstr "Enable"
 msgid "Check updates and problems in the background for profiles you are not looking at"
 msgstr "Check updates and problems in the background for profiles you are not looking at"
 
-#: src/install/RemapDialog.tsx:177
+#: src/install/RemapDialog.tsx:179
 msgid "Choose the mod folder"
 msgstr "Choose the mod folder"
 
@@ -9621,7 +9621,7 @@ msgid "You endorsed this mod."
 msgstr "You endorsed this mod."
 
 #: src/console/CrashDialog.tsx:134
-#: src/launch/LaunchLayer.tsx:285
+#: src/launch/LaunchLayer.tsx:286
 #: src/mods/modActions.ts:53
 #: src/mods/TrackedNotInProfile.tsx:72
 #: src/mods/updateReview/WithheldGroup.tsx:48
@@ -10033,8 +10033,8 @@ msgstr "Adds"
 
 #: src/console/CrashDialog.tsx:156
 #: src/console/CrashDialog.tsx:208
-#: src/launch/LaunchLayer.tsx:172
-#: src/launch/LaunchLayer.tsx:278
+#: src/launch/LaunchLayer.tsx:173
+#: src/launch/LaunchLayer.tsx:279
 msgid "Open Console"
 msgstr "Open Console"
 
@@ -10521,7 +10521,7 @@ msgstr "Could not set the default launch preset"
 msgid "Files"
 msgstr "Files"
 
-#: src/launch/LaunchLayer.tsx:254
+#: src/launch/LaunchLayer.tsx:255
 msgid "{name} did not start"
 msgstr "{name} did not start"
 
@@ -10820,7 +10820,7 @@ msgstr "Got a Mortar link? You see what it holds first. Nexus mods need your Nex
 #: src/mods/ModMenu.tsx:173
 #: src/mods/ModMenu.tsx:272
 #: src/mods/parts.tsx:141
-#: src/mods/parts.tsx:442
+#: src/mods/parts.tsx:444
 #: src/mods/SelectionBarActions.tsx:153
 #: src/mods/SelectionBarDialogs.tsx:83
 #: src/settings/sections/WatchFolders.tsx:48
@@ -10836,7 +10836,7 @@ msgstr "Running {who}"
 msgid "{total, plural, one {Filter # mod} other {Filter # mods}}"
 msgstr "{total, plural, one {Filter # mod} other {Filter # mods}}"
 
-#: src/game/Sidebar.tsx:197
+#: src/game/Sidebar.tsx:199
 msgid "Get mods"
 msgstr "Get mods"
 
@@ -11099,7 +11099,7 @@ msgid "Keep mine"
 msgstr "Keep mine"
 
 #: src/mods/ModSections.tsx:63
-#: src/mods/parts.tsx:319
+#: src/mods/parts.tsx:320
 #: src/mods/updateReview/Row.tsx:36
 msgid "Pinned: {pinned}"
 msgstr "Pinned: {pinned}"
@@ -11144,7 +11144,12 @@ msgstr "All games"
 msgid "No startup measured yet"
 msgstr "No startup measured yet"
 
-#: src/game/Sidebar.tsx:264
+#. placeholder {0}: node.name
+#: src/install/RemapDialog.tsx:61
+msgid "Collapse {0}"
+msgstr "Collapse {0}"
+
+#: src/game/Sidebar.tsx:276
 msgid "Expand sidebar"
 msgstr "Expand sidebar"
 
@@ -11215,8 +11220,8 @@ msgstr "Settings"
 msgid "Could not read the details of {0}"
 msgstr "Could not read the details of {0}"
 
-#: src/launch/LaunchLayer.tsx:106
-#: src/launch/LaunchLayer.tsx:119
+#: src/launch/LaunchLayer.tsx:107
+#: src/launch/LaunchLayer.tsx:120
 msgid "Launching {name}"
 msgstr "Launching {name}"
 
@@ -11471,7 +11476,7 @@ msgstr "Mortar installs the loader for you."
 msgid "Automatic port"
 msgstr "Automatic port"
 
-#: src/game/Sidebar.tsx:198
+#: src/game/Sidebar.tsx:200
 #: src/settings/sections/StreamOverlay.tsx:79
 msgid "Health"
 msgstr "Health"
@@ -11638,7 +11643,7 @@ msgid "Templates are shared by every profile of this game. Adding one copies it 
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
 #: src/game/Home.tsx:96
-#: src/game/Sidebar.tsx:190
+#: src/game/Sidebar.tsx:192
 #: src/saves/SaveListRow.tsx:42
 msgid "Saves"
 msgstr "Saves"
@@ -11915,7 +11920,7 @@ msgid "Did not load"
 msgstr "Did not load"
 
 #: src/browse/BrowseShow.tsx:31
-#: src/launch/LaunchLayer.tsx:175
+#: src/launch/LaunchLayer.tsx:176
 #: src/profiles/CompareDialog.tsx:185
 #: src/profiles/LaunchPresetDialog.tsx:86
 #: src/saves/SaveGapLine.tsx:57
@@ -12051,7 +12056,7 @@ msgstr "Could not create the profile"
 msgid "Into a deleted profile"
 msgstr "Into a deleted profile"
 
-#: src/game/Sidebar.tsx:199
+#: src/game/Sidebar.tsx:201
 msgid "Logs"
 msgstr "Logs"
 
@@ -12124,7 +12129,7 @@ msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style 
 msgid "Could not restore the backup"
 msgstr "Could not restore the backup"
 
-#: src/launch/LaunchLayer.tsx:258
+#: src/launch/LaunchLayer.tsx:259
 msgid "The game exited before it started. The console has its output."
 msgstr "The game exited before it started. The console has its output."
 
@@ -12400,6 +12405,11 @@ msgstr "Icon"
 msgid "Play this profile and save a game. Each save shows here, with its backups."
 msgstr "Play this profile and save a game. Each save shows here, with its backups."
 
+#. placeholder {0}: node.name
+#: src/install/RemapDialog.tsx:61
+msgid "Expand {0}"
+msgstr "Expand {0}"
+
 #: src/mods/problemText.ts:93
 msgid "A plugin it needs failed"
 msgstr "A plugin it needs failed"
@@ -12611,14 +12621,14 @@ msgstr "Continue"
 msgid "Dependencies"
 msgstr "Dependencies"
 
-#: src/launch/LaunchLayer.tsx:121
+#: src/launch/LaunchLayer.tsx:122
 #: src/share/PreviewDialog.tsx:79
 #: src/share/ShareDialog.tsx:89
 msgid "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 msgstr "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 
 #: src/mods/ModMenu.tsx:165
-#: src/mods/parts.tsx:381
+#: src/mods/parts.tsx:383
 #: src/mods/SelectionBarActions.tsx:84
 #: src/mods/Sidebar.tsx:234
 #: src/mods/updateReview/UpdateActions.tsx:122
@@ -12927,7 +12937,7 @@ msgstr "Sort: most popular"
 #. placeholder {0}: mod.name
 #. placeholder {0}: overlay.label
 #: src/mods/OverlayRow.tsx:57
-#: src/mods/parts.tsx:404
+#: src/mods/parts.tsx:406
 msgid "Disable {0}"
 msgstr "Disable {0}"
 
@@ -13283,7 +13293,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/console/HelpDialog.tsx:257
 #: src/console/SearchRunsDialog.tsx:177
 #: src/game/FarmMenuItem.tsx:132
-#: src/launch/LaunchLayer.tsx:271
+#: src/launch/LaunchLayer.tsx:272
 #: src/launch/SweepDialog.tsx:137
 #: src/mods/AssetMapDialog.tsx:283
 #: src/mods/AuthorDialog.tsx:166

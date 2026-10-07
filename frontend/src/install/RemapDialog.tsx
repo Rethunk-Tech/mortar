@@ -7,7 +7,9 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   List,
+  ListItem,
   ListItemButton,
   ListItemText,
   Typography,
@@ -34,6 +36,7 @@ function NodeRow({
   selected: string
   onSelect: (path: string, dir: boolean) => void
 }) {
+  const { t } = useLingui()
   const [open, setOpen] = useState(true)
   if (!node.dir) {
     return (
@@ -52,44 +55,43 @@ function NodeRow({
   }
   return (
     <>
-      <ListItemButton
-        selected={selected === node.path}
-        onClick={() => onSelect(node.path, true)}
-        aria-expanded={open}
-        onKeyDown={(ev) => {
-          // Tree keys: Right opens a folder and Left closes it, so subfolders are reachable without a mouse.
-          if (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft') {
-            ev.preventDefault()
-            setOpen(ev.key === 'ArrowRight')
-          }
-        }}
-        sx={{ py: 0.25 }}
-      >
-        <Box
-          component="span"
-          aria-hidden={true}
-          onClick={(ev) => {
-            ev.stopPropagation()
-            setOpen((v) => !v)
-          }}
-          sx={{ display: 'flex', mr: 0.5 }}
+      <ListItem disablePadding={true}>
+        <IconButton
+          size="small"
+          aria-label={open ? t`Collapse ${node.name}` : t`Expand ${node.name}`}
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          sx={{ p: 0, ml: 2, mr: 0.5, height: 'auto', minHeight: 0, minWidth: 0 }}
         >
           {open ? (
             <ChevronDown size={14} strokeWidth={1.75} />
           ) : (
             <ChevronRight size={14} strokeWidth={1.75} />
           )}
-        </Box>
-        <Box component={Folder} size={14} strokeWidth={1.75} sx={{ mr: 1, flexShrink: 0 }} />
-        <ListItemText
-          primary={node.name}
-          secondary={formatBytes(node.size)}
-          slotProps={{
-            primary: { noWrap: true, title: node.name },
-            secondary: { noWrap: true },
+        </IconButton>
+        <ListItemButton
+          selected={selected === node.path}
+          onClick={() => onSelect(node.path, true)}
+          onKeyDown={(ev) => {
+            // Tree keys: Right opens a folder and Left closes it, so subfolders are reachable without a mouse.
+            if (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft') {
+              ev.preventDefault()
+              setOpen(ev.key === 'ArrowRight')
+            }
           }}
-        />
-      </ListItemButton>
+          sx={{ py: 0.25, pl: 0.5 }}
+        >
+          <Box component={Folder} size={14} strokeWidth={1.75} sx={{ mr: 1, flexShrink: 0 }} />
+          <ListItemText
+            primary={node.name}
+            secondary={formatBytes(node.size)}
+            slotProps={{
+              primary: { noWrap: true, title: node.name },
+              secondary: { noWrap: true },
+            }}
+          />
+        </ListItemButton>
+      </ListItem>
       <Collapse in={open}>
         <List disablePadding={true} sx={{ pl: space.pad }}>
           {(node.children ?? []).map((c) => (
