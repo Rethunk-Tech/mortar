@@ -362,7 +362,7 @@ type Service struct {
 }
 
 // New reads the saved queue: what was under way is queued again so a partial file can resume, and a file
-// waiting for a click is clicked again.
+// waiting for a click is clicked again once the user resumes a queue that holds Nexus files.
 func New(d Deps) (*Service, error) {
 	if d.Now == nil {
 		d.Now = time.Now
@@ -412,6 +412,13 @@ func New(d Deps) (*Service, error) {
 			it.State, it.Progress, it.Speed = StateQueued, 0, 0
 		}
 		s.items = append(s.items, &it)
+	}
+	// A Nexus file left over from the last session is not fetched, nor its page opened, until the user resumes the
+	// queue: nothing unattended starts a Nexus download.
+	if slices.ContainsFunc(s.items, func(it *Item) bool {
+		return it.State == StateQueued && it.Repo == "" && it.Package == ""
+	}) {
+		s.paused = true
 	}
 	return s, nil
 }

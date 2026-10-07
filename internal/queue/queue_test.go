@@ -565,6 +565,29 @@ func TestQueueSurvivesARestart(t *testing.T) {
 	}
 }
 
+func TestRestartPausesAQueueHoldingNexusFiles(t *testing.T) {
+	f := newFixture(t)
+	f.add(req(10))
+	again, err := New(f.s.d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !again.State().Paused {
+		t.Fatal("a Nexus file resumed on its own after a restart")
+	}
+	other := newFixture(t)
+	if _, err := other.s.Add(t.Context(), []Request{{Kind: KindInstall, Game: "stardew", Profile: "p1", Repo: "o/r"}}); err != nil {
+		t.Fatal(err)
+	}
+	again, err = New(other.s.d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if again.State().Paused {
+		t.Fatal("a GitHub-only queue was paused")
+	}
+}
+
 func TestSignedOutRefusesToQueue(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.Client = func() (*nexus.Client, error) { return nil, fmt.Errorf("sign in") }
