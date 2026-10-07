@@ -20,6 +20,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -75,6 +76,36 @@ type SourceFile struct {
 	Games      []GameInfo        `json:"games"`
 }
 
+// KnownBroken is one curated entry: a mod or package that does not work in some versions of the game's mods or of the
+// game itself.
+type KnownBroken struct {
+	// ID is the mod id or, for a Thunderstore package, its "Namespace-Name"; matched without regard to case.
+	ID string `json:"id"`
+	// Versions limits the entry to the affected versions of the mod: constraints separated by spaces, each one of
+	// <, <=, >, >= or = followed by a version ("<2.1.0", ">=1.0 <1.5"). Empty means every version.
+	Versions string `json:"versions,omitempty"`
+	// Reason is the sentence the Problems row shows.
+	Reason string `json:"reason"`
+	// Replacement is a package ("Namespace-Name") to use instead, optional.
+	Replacement string `json:"replacement,omitempty"`
+}
+
+// versionConstraint is one operator and version of KnownBroken.Versions.
+var versionConstraint = regexp.MustCompile(`^(<=|>=|<|>|=)\S+$`)
+
+// Validate checks that an entry names a mod, gives a reason and has a readable version range.
+func (k KnownBroken) Validate() error {
+	if strings.TrimSpace(k.ID) == "" || strings.TrimSpace(k.Reason) == "" {
+		return errors.New("a known-broken entry needs an id and a reason")
+	}
+	for c := range strings.FieldsSeq(k.Versions) {
+		if !versionConstraint.MatchString(c) {
+			return fmt.Errorf("known-broken entry %q has an unreadable version range %q", k.ID, k.Versions)
+		}
+	}
+	return nil
+}
+
 // GameInfo is one game's catalog entry: the names and ids the stores and mod sites know it by, its loaders and its mod
 // sources. How a game is launched or modded stays in its Go implementation; this is only what can change without a
 // Mortar release.
@@ -105,6 +136,9 @@ type GameInfo struct {
 	// SaveCompanions are extensions of files beside a save file, sharing its stem, that belong to that save (a Valheim
 	// world's .db beside its .fwl).
 	SaveCompanions []string `json:"saveCompanions,omitempty"`
+	// KnownBroken is Mortar's curated list of mods and packages of this game that are known not to work; an older
+	// Mortar ignores the field.
+	KnownBroken []KnownBroken `json:"knownBroken,omitempty"`
 	// TitleScene is the Unity scene of the game's main menu, where a BepInEx startup measurement ends; without it the
 	// first scene ends it.
 	TitleScene string `json:"titleScene,omitempty"`
@@ -339,6 +373,11 @@ func (g GameInfo) Validate() error {
 	for _, name := range names {
 		if strings.ContainsAny(name, "/\\") || name == "." || name == ".." {
 			return fmt.Errorf("game %q has an unsafe file or folder name %q", g.ID, name)
+		}
+	}
+	for _, k := range g.KnownBroken {
+		if err := k.Validate(); err != nil {
+			return fmt.Errorf("game %q: %w", g.ID, err)
 		}
 	}
 	for _, p := range g.SaveFiles {
