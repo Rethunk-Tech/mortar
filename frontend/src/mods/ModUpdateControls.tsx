@@ -27,6 +27,7 @@ function ModUpdateControls({ mod, entry }: { mod: Mod; entry: Entry | undefined 
   return (
     <>
       <Tooltip
+        describeChild={true}
         title={
           entry?.pinned
             ? t`Pinned: Mortar offers no update for this mod until you unpin it.`

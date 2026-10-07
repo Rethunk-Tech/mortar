@@ -12,6 +12,7 @@ import { modsLabel } from '../i18n/counts.ts'
 import { useNav } from '../nav/store.ts'
 import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from '../shell/TitleMenu.tsx'
 import { useTitleMenu } from '../shell/titleMenus.ts'
+import { visuallyHidden } from '../shell/visuallyHidden.ts'
 import { ManageTemplatesDialog } from '../templates/TemplateDialogs.tsx'
 import { useTemplates } from '../templates/useTemplates.ts'
 import { space } from '../theme/density.ts'
@@ -53,10 +54,8 @@ function ProfileButton({
   onContext: (id: string, position: Position) => void
 }) {
   const { t } = useLingui()
-  const mods = current ? modsLabel(userModCount(current)) : ''
   return (
     <ButtonBase
-      aria-label={current ? t`Switch profile: ${current.name} ${mods}` : t`No profile`}
       data-tour="profile-switcher"
       aria-haspopup="menu"
       aria-expanded={expanded}
@@ -91,6 +90,12 @@ function ProfileButton({
       }}
     >
       <Dot mark={current} />
+      {/* Named by its content, so the visible text is inside the accessible name. */}
+      {current ? (
+        <Box component="span" sx={visuallyHidden}>
+          {`${t`Switch profile`}:`}
+        </Box>
+      ) : null}
       <Box
         component="span"
         sx={{

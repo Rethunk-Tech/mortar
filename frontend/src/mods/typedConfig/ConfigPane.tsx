@@ -208,9 +208,11 @@ function Sections({ shown }: { shown: ReturnType<typeof filterFile> | null }) {
           component="section"
           sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
         >
-          <Typography component="h3" sx={{ fontSize: 16, fontWeight: 600, mt: 1 }}>
-            {section.name}
-          </Typography>
+          {section.name ? (
+            <Typography component="h2" sx={{ fontSize: 16, fontWeight: 600, mt: 1 }}>
+              {section.name}
+            </Typography>
+          ) : null}
           {section.entries.map((entry) => (
             <EntryRow key={entry.key} section={section.name} entry={entry} />
           ))}

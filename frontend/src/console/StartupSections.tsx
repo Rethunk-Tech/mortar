@@ -24,7 +24,7 @@ function Section({
       component="section"
       sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
     >
-      <Typography component="h3" sx={{ fontSize: 18, fontWeight: 600 }}>
+      <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600 }}>
         {title}
       </Typography>
       {children}

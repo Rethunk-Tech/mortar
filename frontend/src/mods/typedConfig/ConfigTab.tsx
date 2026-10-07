@@ -204,7 +204,7 @@ function OtherFiles({
   const { t } = useLingui()
   return (
     <>
-      <ListSubheader sx={{ bgcolor: 'transparent', lineHeight: '32px' }}>
+      <ListSubheader component="div" sx={{ bgcolor: 'transparent', lineHeight: '32px' }}>
         {t`Loader and other`}
       </ListSubheader>
       {other.map((f) => (
@@ -341,7 +341,12 @@ function ModsColumn({
         borderRight: '1px solid var(--mortar-hairline)',
       }}
     >
-      <List aria-label={t`Mods with settings`} sx={{ flex: 1, overflowY: 'auto', py: 0 }}>
+      <List
+        component="div"
+        role="group"
+        aria-label={t`Mods with settings`}
+        sx={{ flex: 1, overflowY: 'auto', py: 0 }}
+      >
         {listed.map((item) => (
           <ListEntry
             key={item.key}

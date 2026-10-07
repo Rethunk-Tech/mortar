@@ -55,7 +55,7 @@ function InGame({ game }: { game: string }) {
         sx={{ gap: 0.75, borderRadius: '4px', justifyContent: 'flex-start' }}
       >
         {open ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-        <Typography component="h3" sx={{ fontSize: 18, fontWeight: 600 }}>
+        <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600 }}>
           {t`In game`}
         </Typography>
       </ButtonBase>

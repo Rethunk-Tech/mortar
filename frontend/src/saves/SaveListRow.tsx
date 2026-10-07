@@ -6,6 +6,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import { saveCalendar, saveCalendarUnknown } from '../game/homeView.ts'
 import { heading } from '../mods/paper.ts'
+import { visuallyHidden } from '../shell/visuallyHidden.ts'
 import { space } from '../theme/density.ts'
 import { SaveGapLine } from './SaveGapLine.tsx'
 import { FitStatus, SaveButtons } from './SaveRow.tsx'
@@ -62,7 +63,11 @@ function SaveListTable({ name, children }: { name: string; children: ReactNode }
           <TableCell role="columnheader" sx={{ ...cellReset, ...heading }}>
             {t`Fits ${{ name }}`}
           </TableCell>
-          <TableCell role="columnheader" aria-label={t`Actions`} sx={cellReset} />
+          <TableCell role="columnheader" sx={cellReset}>
+            <Box component="span" sx={visuallyHidden}>
+              {t`Actions`}
+            </Box>
+          </TableCell>
         </TableRow>
       </TableHead>
       <TableBody role="rowgroup">{children}</TableBody>

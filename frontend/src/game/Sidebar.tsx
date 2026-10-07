@@ -247,8 +247,8 @@ function Sections({ rail }: { rail: boolean }) {
       {sidebarGroups(caps, { updates, problems }).map((group) => (
         <Box
           key={group.id}
-          role="group"
-          aria-label={labels[group.id]}
+          // A tablist owns only tabs, so the visible group headings are layout, not a role.
+          role="presentation"
           sx={{
             display: 'flex',
             flexDirection: 'column',
