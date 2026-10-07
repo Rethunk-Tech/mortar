@@ -123,3 +123,21 @@ test('a null loader never runs', () => {
   const { result } = testing.renderHook(() => useLoaded<number>(null, [], 7))
   expect(result.current).toMatchObject({ data: 7, loading: false })
 })
+
+test('a failed reload keeps the last good data', async () => {
+  let fail = false
+  const { result } = testing.renderHook(() =>
+    useLoaded(
+      () => (fail ? Promise.reject(new Error('offline')) : Promise.resolve('good')),
+      [],
+      '',
+    ),
+  )
+  await settle()
+  expect(result.current.data).toBe('good')
+  fail = true
+  testing.act(() => result.current.reload())
+  await settle()
+  expect(result.current.data).toBe('good')
+  expect(result.current.error).toBeInstanceOf(Error)
+})

@@ -4,8 +4,9 @@ const sameDeps = (a: DependencyList | null, b: DependencyList) =>
   a !== null && a.length === b.length && b.every((dep, i) => Object.is(dep, a[i]))
 
 // Runs `load` whenever `deps` change (never while `load` is null) and drops the answer of any run that has been
-// superseded or unmounted. New deps, a skipped load and a failed load leave `initial` in `data`. `reload` runs it again with the same deps
-// and keeps the old value until the answer arrives; `setData` edits the loaded value in place.
+// superseded or unmounted. New deps and a skipped load reset `data` to `initial`; a failed load keeps the last good
+// `data` and sets `error`. `reload` runs it again with the same deps and keeps the old value until the answer
+// arrives; `setData` edits the loaded value in place.
 export function useLoaded<T>(
   load: (() => Promise<T>) | null,
   deps: DependencyList,
@@ -39,7 +40,6 @@ export function useLoaded<T>(
       })
       .catch((e: unknown) => {
         if (current()) {
-          setData(initial)
           setError(e)
           onError?.(e)
         }

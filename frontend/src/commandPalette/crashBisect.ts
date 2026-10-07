@@ -5,7 +5,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useCommandPalette } from './store.ts'
 
-export async function startCrashBisectFromPalette(): Promise<string | null> {
+async function startCrashBisectFromPalette(): Promise<string | null> {
   const { game, openId } = useProfiles.getState()
   if (!(game?.id && openId)) {
     return 'Open a profile first.'
