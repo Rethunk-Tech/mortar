@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -226,5 +227,22 @@ func TestRecordWritePrunesPastBudget(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(c.dir, "f")); err != nil {
 		t.Fatal("dropped the newest file")
+	}
+}
+
+func TestMiddlewareAnswersAnUnavailableAllowedPictureWithNoContent(t *testing.T) {
+	srv := httptest.NewTLSServer(http.NotFoundHandler())
+	t.Cleanup(srv.Close)
+	host := "staticdelivery.nexusmods.com"
+	h := Middleware(func() *Cache { return New(t.TempDir(), tlsClient(srv, host)) })(http.NotFoundHandler())
+	for u, want := range map[string]int{
+		pictureURL(host, "/gone.png"): http.StatusNoContent,
+		"https://evil.example/x.png":  http.StatusNotFound,
+	} {
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?u="+url.QueryEscape(u), nil))
+		if rec.Code != want {
+			t.Errorf("%s: %d, want %d", u, rec.Code, want)
+		}
 	}
 }

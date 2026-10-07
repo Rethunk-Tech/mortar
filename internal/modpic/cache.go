@@ -304,6 +304,12 @@ func Middleware(cache func() *Cache) func(http.Handler) http.Handler {
 			size, _ := strconv.Atoi(r.URL.Query().Get("s"))
 			b, typ, err := c.get(r.Context(), picture, sizeOf(size))
 			if err != nil {
+				// A picture a CDN no longer serves is an empty answer, not a failed request: the window falls back
+				// to its placeholder without the browser logging a 404 for every card.
+				if _, perr := parsePicture(picture); perr == nil {
+					w.WriteHeader(http.StatusNoContent)
+					return
+				}
 				http.NotFound(w, r)
 				return
 			}
