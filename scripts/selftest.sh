@@ -18,8 +18,8 @@
 # with Xwayland, its own D-Bus and runtime dir; the desktop's DISPLAY, WAYLAND_DISPLAY and bus are unset) through
 # scripts/launch-guard.sh, without the network, and each session gets at most 3 launches across all its sandboxes.
 #
-# --copy-data copies the real Mortar profiles and settings into the sandbox once (downloads, cache, trash and
-# backups are left out). Every sandbox root carries a .mortar-selftest marker, and only a marked folder directly under
+# --copy-data copies the real Mortar profiles and settings (or those in MORTAR_SELFTEST_DATA, a Mortar data folder) into
+# the sandbox once (downloads, cache, trash and backups are left out). Every sandbox root carries a .mortar-selftest marker, and only a marked folder directly under
 # $MORTAR_SELFTEST_BASE (default /var/tmp) is ever deleted: by destroy, or by reap once nothing runs from it and nothing
 # in it changed for N hours (default 6). reap only lists unless given --yes.
 #
@@ -264,7 +264,7 @@ setup() {
 }
 
 copy_data() {
-  local real=$HOME/.local/share/mortar dest=$SANDBOX_HOME/.local/share/mortar
+  local real=${MORTAR_SELFTEST_DATA:-$HOME/.local/share/mortar} dest=$SANDBOX_HOME/.local/share/mortar
   if [ -d "$dest/profiles" ]; then
     echo "sandbox already has profile data; leaving it"
     return

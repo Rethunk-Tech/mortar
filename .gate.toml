@@ -12,3 +12,8 @@ e2e = true
 run = "bun run perf"
 timeout = "2m"
 e2e = true
+
+[gates.mem]
+run = "scripts/mem-budget.sh"
+timeout = "20m"
+e2e = true
