@@ -2697,12 +2697,6 @@ msgstr "This bundle will be deleted."
 msgid "Required by ({0})"
 msgstr "Required by ({0})"
 
-#. placeholder {0}: calendar.year
-#. placeholder {1}: seasons[calendar.season] ?? ''
-#: src/game/Home.tsx:103
-msgid "{name} · Year {0} {1}"
-msgstr "{name} · Year {0} {1}"
-
 #: src/profiles/ProfilesPage.tsx:258
 msgid "No mod matches"
 msgstr "No mod matches"
@@ -6325,7 +6319,7 @@ msgstr "In Mortar"
 msgid "Edit profile…"
 msgstr "Edit profile…"
 
-#: src/game/Home.tsx:162
+#: src/game/Home.tsx:175
 #: src/settings/GameSettingsPage.tsx:162
 msgid "{name} settings"
 msgstr "{name} settings"
@@ -7838,7 +7832,7 @@ msgstr "More details"
 msgid "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 msgstr "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 
-#: src/game/Home.tsx:157
+#: src/game/Home.tsx:170
 msgid "Share…"
 msgstr "Share…"
 
@@ -8287,7 +8281,7 @@ msgstr "Source health"
 msgid "{0}: desktop notification"
 msgstr "{0}: desktop notification"
 
-#: src/game/Home.tsx:113
+#: src/game/Home.tsx:126
 msgid "All saves"
 msgstr "All saves"
 
@@ -12095,10 +12089,6 @@ msgstr "Clean up storage"
 msgid "Mods view"
 msgstr "Mods view"
 
-#: src/game/Home.tsx:113
-msgid "{more} more · All saves"
-msgstr "{more} more · All saves"
-
 #: src/mods/problemText.ts:34
 msgid "Did not load"
 msgstr "Did not load"
@@ -12380,6 +12370,10 @@ msgstr "Share selection"
 #: src/queue/RetryAllButton.tsx:25
 msgid "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
 msgstr "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
+
+#: src/game/Home.tsx:126
+msgid "All saves ({total})"
+msgstr "All saves ({total})"
 
 #: src/queue/QueueSheet.tsx:120
 msgid "Download progress"
@@ -13445,6 +13439,7 @@ msgstr "{0} ({1})"
 
 #. placeholder {0}: calendar.year
 #. placeholder {1}: seasons[calendar.season] ?? ''
+#: src/game/Home.tsx:115
 #: src/saves/SaveListRow.tsx:93
 msgid "Year {0} {1}"
 msgstr "Year {0} {1}"

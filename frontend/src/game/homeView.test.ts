@@ -8,12 +8,12 @@ test('changesView shows three lines until expanded', () => {
   expect(changesView(['a'], false).canExpand).toBe(false)
 })
 
-test('savesView drops the calendar for saves without one and counts the rest', () => {
+test('savesView drops the calendar for saves without one and counts them all', () => {
   const base = { farm: 'Cookie', folder: 'Cookie_1', year: 3, season: 2, unrecorded: false }
   const lc = { farm: '', folder: 'LCSaveFile1', year: 0, season: 0, unrecorded: true }
   const view = savesView([base, lc, base, base, base, base])
   expect(view.shown).toHaveLength(4)
-  expect(view.more).toBe(2)
+  expect(view.total).toBe(6)
   expect(view.shown[0]?.calendar).toEqual({ year: 3, season: 2 })
   expect(view.shown[1]?.calendar).toBeNull()
 })

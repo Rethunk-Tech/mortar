@@ -43,7 +43,7 @@ function savesView<T extends SaveLike>(saves: T[]) {
       save,
       calendar: saveCalendar(save),
     })),
-    more: Math.max(0, saves.length - SAVES_SHOWN),
+    total: saves.length,
   }
 }
 

@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, List, ListItem, Typography } from '@mui/material'
 import { Settings2, Share2, TriangleAlert } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -90,27 +90,40 @@ function SavesPanel() {
   const { t } = useLingui()
   const setTab = useTab((s) => s.setTab)
   const fits = useSaves((s) => s.fits)
-  const { shown, more } = savesView(filterAndSortSaves(fits, ''))
+  const { shown, total } = savesView(filterAndSortSaves(fits, ''))
   const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
   return (
     <HomePanel title={t`Saves`} card="saves">
       {shown.length === 0 ? (
         <Typography color="text.secondary">{t`No saves yet`}</Typography>
       ) : (
-        shown.map(({ save, calendar }) => {
-          const name = saveName(save)
-          const line = calendar
-            ? t`${name} · Year ${calendar.year} ${seasons[calendar.season] ?? ''}`
-            : name
-          return (
-            <Typography key={save.folder} noWrap={true} sx={{ maxWidth: '100%' }}>
-              {line}
-            </Typography>
-          )
-        })
+        <List disablePadding={true} sx={{ width: '100%' }}>
+          {shown.map(({ save, calendar }) => (
+            <ListItem
+              key={save.folder}
+              disablePadding={true}
+              sx={{ minHeight: space.row, gap: space.gap, justifyContent: 'space-between' }}
+            >
+              <Typography noWrap={true} sx={{ minWidth: 0 }}>
+                {saveName(save)}
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
+              >
+                {calendar ? t`Year ${calendar.year} ${seasons[calendar.season] ?? ''}` : '—'}
+              </Typography>
+            </ListItem>
+          ))}
+        </List>
       )}
-      <Button size="small" onClick={() => setTab('saves')}>
-        {more > 0 ? t`${more} more · All saves` : t`All saves`}
+      <Button
+        color="inherit"
+        sx={{ p: 0, minWidth: 0, fontSize: 'inherit' }}
+        onClick={() => setTab('saves')}
+      >
+        {total > 0 ? t`All saves (${total})` : t`All saves`}
       </Button>
     </HomePanel>
   )
