@@ -265,7 +265,7 @@ A full-height tab holding one section of the profile's problems at a time. Under
   - Dismissed (dismissed rows are muted and can be restored)
   - Compatibility (the profile's rows from SMAPI's compatibility list; never counted)
   - Slow startup (from the latest startup report: a mod adding 3 s or more, or a content pack adding 1 s or more, named with its framework; a framework that loads content packs, such as Content Patcher, is never a row itself since so many mods need it; never counted)
-  - Redundant (mods replaced by an enabled replacement, packs every edit of which later packs overwrite, and C# mods doing the same job, where a smaller one may be "covered" by a larger; each same-job group is one row; counted among the profile's warnings, never toward the chip)
+  - Redundant (mods replaced by an enabled replacement, packs every edit of which later packs overwrite, and C# mods doing the same job, where a smaller one may be "covered" by a larger; each same-job group is one row reading "A and B do the same job: both change X" for two mods or "all N change X" for more, with a **Remove one…** menu whose items name the mod each removes (**Remove A**); counted among the profile's warnings, never toward the chip)
   - Cleanup (unused frameworks, conservatively detected unused tilesheet packs, and add-ons made for a recolour the profile does not have enabled; never counted)
 
 Conflicts between the same mods with the same winner and fix show as one row listing every asset.

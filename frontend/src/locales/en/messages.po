@@ -336,7 +336,7 @@ msgstr "How Play starts the game. Direct skips Steam's overlay and playtime."
 msgid "Copying mod files"
 msgstr "Copying mod files"
 
-#: src/mods/ExtraFolderMenu.tsx:59
+#: src/mods/ExtraFolderMenu.tsx:58
 msgid "The downloads folder…"
 msgstr "The downloads folder…"
 
@@ -781,7 +781,7 @@ msgid "More…"
 msgstr "More…"
 
 #: src/game/ProfileMenuItems.tsx:335
-#: src/mods/ExtraFolderMenu.tsx:81
+#: src/mods/ExtraFolderMenu.tsx:80
 msgid "Add a bundle…"
 msgstr "Add a bundle…"
 
@@ -869,7 +869,7 @@ msgstr "Mods' Entry is timed only on a measured launch."
 msgid "Mark a known good point first."
 msgstr "Mark a known good point first."
 
-#: src/game/ProfileMenu.tsx:42
+#: src/game/ProfileMenu.tsx:41
 msgid "This profile"
 msgstr "This profile"
 
@@ -978,10 +978,6 @@ msgstr "gone"
 #: src/saves/BackupsDialog.tsx:71
 msgid "{0} · {1}"
 msgstr "{0} · {1}"
-
-#: src/mods/redundantReason.ts:96
-msgid "{list} do the same job: all change {detail}"
-msgstr "{list} do the same job: all change {detail}"
 
 #: src/profiles/AppearancePickers.tsx:58
 msgid "Star"
@@ -1364,7 +1360,7 @@ msgstr "{count, plural, one {{name} was updated since this run and logged # erro
 msgid "Settings from the mod's in-game menu"
 msgstr "Settings from the mod's in-game menu"
 
-#: src/launch/VanillaPlay.tsx:106
+#: src/launch/VanillaPlay.tsx:105
 msgid "More play options"
 msgstr "More play options"
 
@@ -1576,7 +1572,7 @@ msgstr "Share log…"
 
 #: src/downloads/newDownloads.ts:46
 #: src/game/Hero.tsx:77
-#: src/game/ProfileMenu.tsx:64
+#: src/game/ProfileMenu.tsx:63
 #: src/launch/events.ts:48
 #: src/mods/updateDigestToast.ts:61
 #: src/mods/updates.ts:108
@@ -2026,6 +2022,11 @@ msgstr "{pickedName} is used after Save."
 msgid "Actions"
 msgstr "Actions"
 
+#. placeholder {0}: view.onlyA
+#: src/profiles/CompareDialog.tsx:165
+msgid "{0} only in {aName}"
+msgstr "{0} only in {aName}"
+
 #: src/mods/ModMenu.tsx:209
 msgid "Add to bundle…"
 msgstr "Add to bundle…"
@@ -2233,7 +2234,7 @@ msgstr "Mortar is up to date"
 #: src/mods/Toolbar.tsx:333
 #: src/mods/Toolbar.tsx:359
 #: src/mods/Toolbar.tsx:377
-#: src/profiles/CompareDialog.tsx:275
+#: src/profiles/CompareDialog.tsx:283
 #: src/profiles/CompareTop.tsx:170
 msgid "Filter mods"
 msgstr "Filter mods"
@@ -2341,6 +2342,11 @@ msgstr "Prerelease"
 msgid "Follow new lines"
 msgstr "Follow new lines"
 
+#. placeholder {0}: view.identical
+#: src/profiles/CompareDialog.tsx:166
+msgid "{0} identical"
+msgstr "{0} identical"
+
 #: src/share/ImportPreview.tsx:162
 msgid "{name} was removed from Nexus"
 msgstr "{name} was removed from Nexus"
@@ -2374,7 +2380,7 @@ msgstr "Show the first-run tips again"
 #: src/mods/Toolbar.tsx:131
 #: src/mods/Toolbar.tsx:150
 #: src/nxm/store.ts:53
-#: src/profiles/CompareDialog.tsx:176
+#: src/profiles/CompareDialog.tsx:184
 #: src/profiles/LaunchPresetDialog.tsx:85
 #: src/queue/actions.ts:97
 #: src/queue/store.ts:245
@@ -2940,7 +2946,7 @@ msgstr "{count} checked later"
 msgid "Find a mod in all profiles…"
 msgstr "Find a mod in all profiles…"
 
-#: src/game/ProfileMenu.tsx:75
+#: src/game/ProfileMenu.tsx:74
 #: src/game/ProfileMenuItems.tsx:324
 msgid "Compare…"
 msgstr "Compare…"
@@ -3323,7 +3329,7 @@ msgstr "Search GitHub for mods published as releases. Add puts the latest releas
 msgid "And {0} more on the Nexus page"
 msgstr "And {0} more on the Nexus page"
 
-#: src/profiles/CompareDialog.tsx:306
+#: src/profiles/CompareDialog.tsx:322
 msgid "Neither profile has a mod that matches the filter."
 msgstr "Neither profile has a mod that matches the filter."
 
@@ -3500,7 +3506,7 @@ msgid "{0, plural, one {# other mod} other {# other mods}}"
 msgstr "{0, plural, one {# other mod} other {# other mods}}"
 
 #. placeholder {0}: profileA.name
-#: src/profiles/CompareDialog.tsx:365
+#: src/profiles/CompareDialog.tsx:381
 msgid "Pick what to compare {0} with"
 msgstr "Pick what to compare {0} with"
 
@@ -3630,7 +3636,7 @@ msgstr "Skip sharing"
 msgid "The game is using this profile. Stop the game to change mods."
 msgstr "The game is using this profile. Stop the game to change mods."
 
-#: src/profiles/CompareDialog.tsx:389
+#: src/profiles/CompareDialog.tsx:405
 msgid "Compare against a friend's profile or a multiplayer host's list."
 msgstr "Compare against a friend's profile or a multiplayer host's list."
 
@@ -3779,7 +3785,7 @@ msgstr "Could not back up saves before Play"
 msgid "Computer paired"
 msgstr "Computer paired"
 
-#: src/launch/VanillaPlay.tsx:261
+#: src/launch/VanillaPlay.tsx:260
 msgid "Default launch preset"
 msgstr "Default launch preset"
 
@@ -4128,7 +4134,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/launch/PrePlayDialog.tsx:151
 #: src/launch/SaveWarnDialog.tsx:69
 #: src/launch/UpdateWarnDialog.tsx:50
-#: src/launch/VanillaPlay.tsx:281
+#: src/launch/VanillaPlay.tsx:280
 #: src/mods/AddToGroupDialog.tsx:99
 #: src/mods/CategoryEditor.tsx:155
 #: src/mods/CategoryEditor.tsx:235
@@ -4282,7 +4288,7 @@ msgstr "Untrack the {gameName} mods none of your profiles use, out of {trackedCo
 msgid "Could not read that list"
 msgstr "Could not read that list"
 
-#: src/mods/ExtraFolderMenu.tsx:45
+#: src/mods/ExtraFolderMenu.tsx:44
 msgid "More ways to add mods"
 msgstr "More ways to add mods"
 
@@ -4393,7 +4399,7 @@ msgstr "Show in queue"
 #: src/mods/Sidebar.tsx:315
 #: src/mods/Sidebar.tsx:328
 #: src/mods/Toolbar.tsx:61
-#: src/profiles/CompareTable.tsx:70
+#: src/profiles/CompareTable.tsx:75
 #: src/profiles/GameModsDialog.tsx:37
 #: src/profiles/PackImportDialog.tsx:111
 #: src/profiles/ProfilesPage.tsx:267
@@ -4600,7 +4606,7 @@ msgstr "Unknown"
 msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 
-#: src/game/ProfileMenu.tsx:67
+#: src/game/ProfileMenu.tsx:66
 #: src/game/ProfileMenuItems.tsx:304
 #: src/profiles/SinceLastRun.tsx:112
 msgid "History…"
@@ -4850,7 +4856,7 @@ msgstr "Enter text to search stored runs."
 msgid "No backups to delete"
 msgstr "No backups to delete"
 
-#: src/game/ProfileMenu.tsx:55
+#: src/game/ProfileMenu.tsx:54
 #: src/game/ProfileMenuItems.tsx:314
 #: src/profiles/LaunchPresetsBlock.tsx:52
 msgid "Duplicate"
@@ -4930,6 +4936,10 @@ msgstr "Connection"
 #: src/mods/ProblemsTab.tsx:392
 msgid "Harmless"
 msgstr "Harmless"
+
+#: src/mods/redundantReason.ts:98
+msgid "{list} do the same job: both change {detail}"
+msgstr "{list} do the same job: both change {detail}"
 
 #: src/mods/updateReview/UpdateActions.tsx:67
 msgid "This mod is not in the profile."
@@ -5034,8 +5044,8 @@ msgid "Log copied"
 msgstr "Log copied"
 
 #: src/launch/SmapiWarnDialog.tsx:23
-#: src/launch/VanillaPlay.tsx:144
-#: src/launch/VanillaPlay.tsx:255
+#: src/launch/VanillaPlay.tsx:143
+#: src/launch/VanillaPlay.tsx:254
 msgid "Play without mods"
 msgstr "Play without mods"
 
@@ -5117,10 +5127,6 @@ msgstr "Rename…"
 #: src/mods/describe.ts:295
 msgid "{names} all ship the plugin {0}, and BepInEx loads only one."
 msgstr "{names} all ship the plugin {0}, and BepInEx loads only one."
-
-#: src/profiles/CompareDialog.tsx:163
-msgid " · {onlyA} only in {aName}, {identical} identical, shown"
-msgstr " · {onlyA} only in {aName}, {identical} identical, shown"
 
 #: src/game/FarmMenuItem.tsx:112
 msgid "This profile matches {host}."
@@ -5359,7 +5365,7 @@ msgstr "Copy the command"
 msgid "Background preview"
 msgstr "Background preview"
 
-#: src/profiles/CompareDialog.tsx:374
+#: src/profiles/CompareDialog.tsx:390
 #: src/profiles/CompareTop.tsx:91
 msgid "A friend's link or file…"
 msgstr "A friend's link or file…"
@@ -5389,7 +5395,7 @@ msgstr "Problem sections"
 msgid "Restarting…"
 msgstr "Restarting…"
 
-#: src/game/ProfileMenu.tsx:84
+#: src/game/ProfileMenu.tsx:83
 #: src/game/ProfileMenuItems.tsx:349
 msgid "Delete profile…"
 msgstr "Delete profile…"
@@ -5813,7 +5819,7 @@ msgstr "Background"
 msgid "The folder of {name} was deleted outside Mortar"
 msgstr "The folder of {name} was deleted outside Mortar"
 
-#: src/mods/redundantReason.ts:104
+#: src/mods/redundantReason.ts:107
 msgid "Replaced by {by}, which is also enabled"
 msgstr "Replaced by {by}, which is also enabled"
 
@@ -6210,7 +6216,7 @@ msgid "In Mortar"
 msgstr "In Mortar"
 
 #: src/game/ProfileContextMenu.tsx:48
-#: src/game/ProfileMenu.tsx:45
+#: src/game/ProfileMenu.tsx:44
 #: src/profiles/ProfileRow.tsx:82
 msgid "Edit profile…"
 msgstr "Edit profile…"
@@ -6496,7 +6502,7 @@ msgstr "Unity starts"
 msgid "There is not enough free space at the destination."
 msgstr "There is not enough free space at the destination."
 
-#: src/profiles/CompareDialog.tsx:383
+#: src/profiles/CompareDialog.tsx:399
 #: src/profiles/CompareTop.tsx:97
 msgid "A multiplayer host's list…"
 msgstr "A multiplayer host's list…"
@@ -6922,7 +6928,7 @@ msgstr "only {mods} is shown"
 msgid "Last used"
 msgstr "Last used"
 
-#: src/mods/ExtraFolderMenu.tsx:56
+#: src/mods/ExtraFolderMenu.tsx:55
 msgid "Add from"
 msgstr "Add from"
 
@@ -7309,6 +7315,11 @@ msgstr "Skip all"
 msgid "Could not list backups: {error}"
 msgstr "Could not list backups: {error}"
 
+#. placeholder {0}: target.name
+#: src/profiles/CompareDialog.tsx:132
+msgid "Nothing selected would change {0}."
+msgstr "Nothing selected would change {0}."
+
 #: src/toasts/report.ts:38
 msgid "Something went wrong."
 msgstr "Something went wrong."
@@ -7346,7 +7357,7 @@ msgstr "Looking in the downloads folder…"
 msgid "{count, plural, one {# mod update available} other {# mod updates available}}"
 msgstr "{count, plural, one {# mod update available} other {# mod updates available}}"
 
-#: src/launch/VanillaPlay.tsx:142
+#: src/launch/VanillaPlay.tsx:141
 msgid "Play without Steam overlay"
 msgstr "Play without Steam overlay"
 
@@ -7803,7 +7814,7 @@ msgstr "Dismiss {0}"
 msgid "Choose an option in {invalidGroup}."
 msgstr "Choose an option in {invalidGroup}."
 
-#: src/launch/VanillaPlay.tsx:143
+#: src/launch/VanillaPlay.tsx:142
 msgid "Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running."
 msgstr "Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running."
 
@@ -8304,6 +8315,10 @@ msgstr "The page reads the profile from the link itself. Nothing is uploaded or 
 msgid "Restart now"
 msgstr "Restart now"
 
+#: src/mods/CleanupSection.tsx:36
+msgid "Remove one…"
+msgstr "Remove one…"
+
 #: src/saves/SaveRow.tsx:164
 msgid "Backed up {label}"
 msgstr "Backed up {label}"
@@ -8747,7 +8762,7 @@ msgstr "That request was not valid."
 msgid "Description"
 msgstr "Description"
 
-#: src/mods/redundantReason.ts:108
+#: src/mods/redundantReason.ts:111
 msgid "Overlaps with {by}: both change {detail}"
 msgstr "Overlaps with {by}: both change {detail}"
 
@@ -9008,7 +9023,7 @@ msgstr "Profile settings"
 msgid "Make {0} match {1}"
 msgstr "Make {0} match {1}"
 
-#: src/launch/VanillaPlay.tsx:238
+#: src/launch/VanillaPlay.tsx:237
 msgid "Set default preset…"
 msgstr "Set default preset…"
 
@@ -9143,7 +9158,7 @@ msgstr "{count, plural, one {# thing to repair} other {# things to repair}}"
 msgid "Downloads: {downloading} {percent}%"
 msgstr "Downloads: {downloading} {percent}%"
 
-#: src/launch/VanillaPlay.tsx:220
+#: src/launch/VanillaPlay.tsx:219
 #: src/profiles/LaunchPresetsBlock.tsx:44
 #: src/settings/sections/Appearance.tsx:69
 msgid "Default"
@@ -9185,7 +9200,7 @@ msgstr "Problems"
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
-#: src/mods/redundantReason.ts:106
+#: src/mods/redundantReason.ts:109
 msgid "{by} already includes everything it changes"
 msgstr "{by} already includes everything it changes"
 
@@ -9223,7 +9238,7 @@ msgstr "Combat skill"
 msgid "Could not add the optional file"
 msgstr "Could not add the optional file"
 
-#: src/mods/redundantReason.ts:102
+#: src/mods/redundantReason.ts:105
 msgid "Every edit it makes is overwritten by {by}"
 msgstr "Every edit it makes is overwritten by {by}"
 
@@ -9374,7 +9389,7 @@ msgstr "Could not reset the settings of {0}"
 msgid "Could not rename the group"
 msgstr "Could not rename the group"
 
-#: src/launch/VanillaPlay.tsx:202
+#: src/launch/VanillaPlay.tsx:201
 msgid "Play with"
 msgstr "Play with"
 
@@ -9619,6 +9634,11 @@ msgstr "{0}: {1} missing, {2} changed, {3} extra"
 msgid "Settings file"
 msgstr "Settings file"
 
+#. placeholder {0}: other.name
+#: src/profiles/CompareTable.tsx:69
+msgid "Not in {0}"
+msgstr "Not in {0}"
+
 #: src/console/StartupPanel.tsx:26
 msgid "Play now"
 msgstr "Play now"
@@ -9670,7 +9690,7 @@ msgid "Signed in"
 msgstr "Signed in"
 
 #. placeholder {0}: view.differences
-#: src/profiles/CompareDialog.tsx:169
+#: src/profiles/CompareDialog.tsx:176
 msgid "{0, plural, one {# difference} other {# differences}}"
 msgstr "{0, plural, one {# difference} other {# differences}}"
 
@@ -9762,7 +9782,7 @@ msgstr "Nothing downloading"
 msgid "What the sidebar shows on profile badges"
 msgstr "What the sidebar shows on profile badges"
 
-#: src/mods/ExtraFolderMenu.tsx:76
+#: src/mods/ExtraFolderMenu.tsx:75
 msgid "Add a set"
 msgstr "Add a set"
 
@@ -9879,7 +9899,7 @@ msgstr "Focus the search"
 msgid "No app opens these links now."
 msgstr "No app opens these links now."
 
-#: src/profiles/CompareDialog.tsx:304
+#: src/profiles/CompareDialog.tsx:320
 msgid "These profiles have the same mods."
 msgstr "These profiles have the same mods."
 
@@ -10268,7 +10288,7 @@ msgstr "Optional: {label}"
 msgid "Combine with…"
 msgstr "Combine with…"
 
-#: src/profiles/CompareDialog.tsx:304
+#: src/profiles/CompareDialog.tsx:320
 msgid "No matching mods"
 msgstr "No matching mods"
 
@@ -10383,7 +10403,7 @@ msgstr "Auto-enable requirements"
 #: src/mods/ModList.tsx:389
 #: src/mods/Sidebar.tsx:315
 #: src/mods/Sidebar.tsx:328
-#: src/profiles/CompareTable.tsx:70
+#: src/profiles/CompareTable.tsx:75
 #: src/profiles/ProfilesPage.tsx:267
 #: src/profiles/ProfilesPage.tsx:276
 #: src/share/ListFormat.tsx:21
@@ -10760,7 +10780,7 @@ msgstr "Ask before removing mods from a profile"
 msgid "This start was {by} slower than the one before."
 msgstr "This start was {by} slower than the one before."
 
-#: src/mods/ExtraFolderMenu.tsx:68
+#: src/mods/ExtraFolderMenu.tsx:67
 msgid "The extra mods folder…"
 msgstr "The extra mods folder…"
 
@@ -10836,7 +10856,6 @@ msgstr "Got a Mortar link? You see what it holds first. Nexus mods need your Nex
 
 #: src/console/RunProblems.tsx:147
 #: src/console/RunProblems.tsx:195
-#: src/mods/CleanupSection.tsx:36
 #: src/mods/CleanupSection.tsx:110
 #: src/mods/ModMenu.tsx:177
 #: src/mods/ModMenu.tsx:276
@@ -10924,7 +10943,7 @@ msgstr "The game crashed"
 
 #: src/console/PerformanceComparison.tsx:54
 #: src/console/StartupTable.tsx:265
-#: src/profiles/CompareTable.tsx:33
+#: src/profiles/CompareTable.tsx:34
 msgid "Mod"
 msgstr "Mod"
 
@@ -11034,8 +11053,8 @@ msgstr "Don't check before Play"
 msgid "Keep Mortar in the tray"
 msgstr "Keep Mortar in the tray"
 
-#: src/launch/VanillaPlay.tsx:219
-#: src/launch/VanillaPlay.tsx:275
+#: src/launch/VanillaPlay.tsx:218
+#: src/launch/VanillaPlay.tsx:274
 #: src/profiles/LaunchPresetsBlock.tsx:142
 #: src/profiles/LaunchPresetsBlock.tsx:146
 #: src/profiles/LoaderLaunchSettings.tsx:21
@@ -11084,6 +11103,11 @@ msgstr "FromArea {0}"
 #: src/mods/ModDependencyTree.tsx:97
 msgid "Required"
 msgstr "Required"
+
+#. placeholder {0}: choices.length
+#: src/mods/redundantReason.ts:99
+msgid "{list} do the same job: all {0} change {detail}"
+msgstr "{list} do the same job: all {0} change {detail}"
 
 #: src/profiles/historyLabel.ts:54
 msgid "{count, plural, one {Restored # mod} other {Restored # mods}}"
@@ -11463,10 +11487,6 @@ msgstr "Tag"
 msgid "Diagnostics"
 msgstr "Diagnostics"
 
-#: src/profiles/CompareDialog.tsx:164
-msgid " · {onlyA} only in {aName}, {identical} identical, hidden"
-msgstr " · {onlyA} only in {aName}, {identical} identical, hidden"
-
 #: src/profiles/HistoryEventRow.tsx:106
 msgid "Hide mods"
 msgstr "Hide mods"
@@ -11479,7 +11499,7 @@ msgstr "Add category"
 msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
 msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
 
-#: src/game/ProfileMenu.tsx:52
+#: src/game/ProfileMenu.tsx:51
 msgid "Copies"
 msgstr "Copies"
 
@@ -11831,7 +11851,7 @@ msgid "From the downloads folder"
 msgstr "From the downloads folder"
 
 #: src/bundles/ApplyBundleToProfile.tsx:61
-#: src/game/ProfileMenu.tsx:38
+#: src/game/ProfileMenu.tsx:37
 msgid "Profile"
 msgstr "Profile"
 
@@ -11935,7 +11955,7 @@ msgstr "Did not load"
 
 #: src/browse/BrowseShow.tsx:30
 #: src/launch/LaunchLayer.tsx:189
-#: src/profiles/CompareDialog.tsx:176
+#: src/profiles/CompareDialog.tsx:184
 #: src/profiles/LaunchPresetDialog.tsx:86
 #: src/saves/SaveGapLine.tsx:56
 msgid "Hide"
@@ -12101,6 +12121,11 @@ msgstr "Now needs {0}"
 #: src/saves/SaveRow.tsx:141
 msgid "New profile from this save"
 msgstr "New profile from this save"
+
+#. placeholder {0}: choice.name
+#: src/mods/CleanupSection.tsx:52
+msgid "Remove {0}"
+msgstr "Remove {0}"
 
 #: src/settings/prefCopy.ts:396
 msgid "How profiles are ordered in the sidebar"
@@ -12503,7 +12528,7 @@ msgstr "Tips"
 msgid "Failed, retry"
 msgstr "Failed, retry"
 
-#: src/profiles/CompareDialog.tsx:168
+#: src/profiles/CompareDialog.tsx:175
 #: src/profiles/HistoryDiffView.tsx:29
 msgid "No differences."
 msgstr "No differences."
@@ -13074,7 +13099,7 @@ msgid "Reinstall"
 msgstr "Reinstall"
 
 #: src/console/StartupSections.tsx:49
-#: src/profiles/CompareDialog.tsx:200
+#: src/profiles/CompareDialog.tsx:208
 #: src/profiles/CompareTop.tsx:134
 #: src/profiles/HistoryToolbar.tsx:58
 msgid "Compare"

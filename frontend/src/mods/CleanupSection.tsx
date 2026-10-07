@@ -33,7 +33,7 @@ function RemoveOne({ choices }: { choices: { key: string; name: string }[] }) {
         aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
       >
-        {t`Remove`}
+        {t`Remove one…`}
       </Button>
       <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
         {choices.map((choice) => {
@@ -49,7 +49,7 @@ function RemoveOne({ choices }: { choices: { key: string; name: string }[] }) {
                 }
               }}
             >
-              {choice.name}
+              {t`Remove ${choice.name}`}
             </MenuItem>
           )
         })}

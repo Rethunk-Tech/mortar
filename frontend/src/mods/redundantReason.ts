@@ -93,7 +93,10 @@ export function useRedundantRows() {
         name: '',
         reason: '',
         choices,
-        text: t`${list} do the same job: all change ${detail}`,
+        text:
+          choices.length === 2
+            ? t`${list} do the same job: both change ${detail}`
+            : t`${list} do the same job: all ${choices.length} change ${detail}`,
       })
     }
     for (const item of items.filter((x) => x.kind !== 'sameJob' || x.covered)) {
