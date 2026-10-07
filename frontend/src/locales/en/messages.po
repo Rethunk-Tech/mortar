@@ -20,7 +20,7 @@ msgid "Allow shows Nexus pages what Mortar has. Off hides that; download links s
 msgstr "Allow shows Nexus pages what Mortar has. Off hides that; download links still arrive"
 
 #: src/console/PerformancePanelParts.tsx:177
-#: src/game/Sidebar.tsx:188
+#: src/game/Sidebar.tsx:193
 msgid "Performance"
 msgstr "Performance"
 
@@ -3096,7 +3096,7 @@ msgstr "Search all runs…"
 
 #: src/firstrun/FindStep.tsx:213
 #: src/install/NeedsRootCallout.tsx:24
-#: src/profiles/ImportWizard.tsx:147
+#: src/profiles/VortexFolderPrompt.tsx:58
 #: src/settings/sections/GameSettings.tsx:383
 #: src/tools/ToolEditorDialog.tsx:112
 msgid "Choose folder…"
@@ -3162,7 +3162,7 @@ msgstr "Keep my changes"
 msgid "Unpinned selected mods"
 msgstr "Unpinned selected mods"
 
-#: src/game/Sidebar.tsx:223
+#: src/game/Sidebar.tsx:228
 msgid "Profile sections"
 msgstr "Profile sections"
 
@@ -3395,9 +3395,13 @@ msgstr "Downloaded mods no profile uses"
 msgid "Needs a newer loader"
 msgstr "Needs a newer loader"
 
-#: src/profiles/ImportWizard.tsx:130
+#: src/profiles/ImportWizard.tsx:104
 msgid "Mortar found no other mod manager's profiles for this game on this computer."
 msgstr "Mortar found no other mod manager's profiles for this game on this computer."
+
+#: src/profiles/VortexFolderPrompt.tsx:22
+msgid "This Vortex folder has no profiles for {gameName}: found {found}."
+msgstr "This Vortex folder has no profiles for {gameName}: found {found}."
 
 #. placeholder {0}: folded.count
 #: src/console/StartupTable.tsx:336
@@ -3581,7 +3585,7 @@ msgstr "Grid card size"
 msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
-#: src/game/Sidebar.tsx:189
+#: src/game/Sidebar.tsx:194
 #: src/settings/GameSettingsPage.tsx:76
 #: src/settings/GameSettingsPage.tsx:142
 msgid "Console"
@@ -4032,7 +4036,7 @@ msgstr "Share as r2modman code?"
 #: src/mods/SelectionBarDialogs.tsx:136
 #: src/profiles/EditProfileDialog.tsx:485
 #: src/profiles/GameModsDialog.tsx:164
-#: src/profiles/ImportWizard.tsx:174
+#: src/profiles/ImportWizard.tsx:132
 #: src/profiles/LaunchPresetDialog.tsx:91
 #: src/profiles/PackImportDialog.tsx:170
 #: src/settings/sections/NexusSSO.tsx:67
@@ -4804,7 +4808,7 @@ msgstr "Changed outside Mortar"
 msgid " · {name} {0}"
 msgstr " · {name} {0}"
 
-#: src/game/Sidebar.tsx:190
+#: src/game/Sidebar.tsx:195
 msgid "Library"
 msgstr "Library"
 
@@ -5836,7 +5840,7 @@ msgstr "Day"
 msgid "Allow"
 msgstr "Allow"
 
-#: src/game/Sidebar.tsx:281
+#: src/game/Sidebar.tsx:286
 msgid "Collapse"
 msgstr "Collapse"
 
@@ -6113,7 +6117,7 @@ msgstr "{0, plural, one {Removed # mod} other {Removed # mods}}"
 msgid "{found, plural, one {# mod update} other {# mod updates}}"
 msgstr "{found, plural, one {# mod update} other {# mod updates}}"
 
-#: src/profiles/ImportWizard.tsx:129
+#: src/profiles/ImportWizard.tsx:103
 msgid "No profiles found."
 msgstr "No profiles found."
 
@@ -6196,7 +6200,7 @@ msgstr "Create and add"
 msgid "Add from the extra mods folder"
 msgstr "Add from the extra mods folder"
 
-#: src/game/Sidebar.tsx:182
+#: src/game/Sidebar.tsx:187
 msgid "Home"
 msgstr "Home"
 
@@ -6248,7 +6252,7 @@ msgstr "Console command"
 msgid "Share as r2modman code…"
 msgstr "Share as r2modman code…"
 
-#: src/game/Sidebar.tsx:187
+#: src/game/Sidebar.tsx:192
 msgid "Load order"
 msgstr "Load order"
 
@@ -6459,7 +6463,7 @@ msgstr "Download missing"
 msgid "Could not back up the profile"
 msgstr "Could not back up the profile"
 
-#: src/profiles/ImportWizard.tsx:145
+#: src/profiles/VortexFolderPrompt.tsx:17
 msgid "Use Vortex from another folder?"
 msgstr "Use Vortex from another folder?"
 
@@ -6845,7 +6849,7 @@ msgstr "Send"
 
 #: src/console/ConsoleTab.tsx:56
 #: src/firstrunTour/TourPopover.tsx:45
-#: src/game/Sidebar.tsx:183
+#: src/game/Sidebar.tsx:188
 #: src/mods/ModListVirtual.tsx:283
 #: src/settings/GameSettingsPage.tsx:73
 #: src/settings/GameSettingsPage.tsx:115
@@ -7297,7 +7301,7 @@ msgstr "Pinned"
 msgid "Could not dismiss the overlap"
 msgstr "Could not dismiss the overlap"
 
-#: src/profiles/ImportWizard.tsx:171
+#: src/profiles/ImportWizard.tsx:129
 msgid "Use a code or file…"
 msgstr "Use a code or file…"
 
@@ -7933,10 +7937,6 @@ msgstr "Crash finding was stopped."
 msgid "Approve Mortar in your browser…"
 msgstr "Approve Mortar in your browser…"
 
-#: src/profiles/ImportWizard.tsx:157
-msgid "That folder has no Vortex data (state.v2)."
-msgstr "That folder has no Vortex data (state.v2)."
-
 #: src/share/MethodPanes.tsx:52
 msgid "{length} of {limit} characters · close to the Discord message limit"
 msgstr "{length} of {limit} characters · close to the Discord message limit"
@@ -8054,7 +8054,7 @@ msgstr "{0, plural, one {Undo this and # later change?} other {Undo this and # l
 msgid "No profile"
 msgstr "No profile"
 
-#: src/game/Sidebar.tsx:258
+#: src/game/Sidebar.tsx:263
 msgid "Collapse sidebar"
 msgstr "Collapse sidebar"
 
@@ -8749,7 +8749,7 @@ msgid "Bundle added"
 msgstr "Bundle added"
 
 #: src/firstrunTour/TourPopover.tsx:33
-#: src/game/Sidebar.tsx:185
+#: src/game/Sidebar.tsx:190
 msgid "Browse"
 msgstr "Browse"
 
@@ -9056,7 +9056,7 @@ msgid "{0} failed"
 msgstr "{0} failed"
 
 #: src/firstrunTour/TourPopover.tsx:57
-#: src/game/Sidebar.tsx:186
+#: src/game/Sidebar.tsx:191
 msgid "Problems"
 msgstr "Problems"
 
@@ -9226,7 +9226,7 @@ msgstr "Mortar offers prereleases only when Settings allows them."
 msgid "Downloads and updates"
 msgstr "Downloads and updates"
 
-#: src/profiles/ImportWizard.tsx:60
+#: src/profiles/VortexFolderPrompt.tsx:37
 msgid "Vortex data folder"
 msgstr "Vortex data folder"
 
@@ -9282,6 +9282,10 @@ msgstr "From the game's Mods folder…"
 #: src/settings/prefCopy.ts:451
 msgid "Default for Share and Export. You can change it per share."
 msgstr "Default for Share and Export. You can change it per share."
+
+#: src/profiles/VortexFolderPrompt.tsx:20
+msgid "The Vortex folder {folder} has no profiles."
+msgstr "The Vortex folder {folder} has no profiles."
 
 #: src/App.tsx:78
 #: src/games/useGameTiles.ts:89
@@ -10689,7 +10693,7 @@ msgstr "Running {who}"
 msgid "{total, plural, one {Filter # mod} other {Filter # mods}}"
 msgstr "{total, plural, one {Filter # mod} other {Filter # mods}}"
 
-#: src/game/Sidebar.tsx:191
+#: src/game/Sidebar.tsx:196
 msgid "Get mods"
 msgstr "Get mods"
 
@@ -10991,7 +10995,7 @@ msgstr "{0} · in use"
 msgid "No startup measured yet"
 msgstr "No startup measured yet"
 
-#: src/game/Sidebar.tsx:258
+#: src/game/Sidebar.tsx:263
 msgid "Expand sidebar"
 msgstr "Expand sidebar"
 
@@ -11308,7 +11312,7 @@ msgstr "Mortar installs the loader for you."
 msgid "Automatic port"
 msgstr "Automatic port"
 
-#: src/game/Sidebar.tsx:192
+#: src/game/Sidebar.tsx:197
 #: src/settings/sections/StreamOverlay.tsx:84
 msgid "Health"
 msgstr "Health"
@@ -11476,7 +11480,7 @@ msgid "Templates are shared by every profile of this game. Adding one copies it 
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
 #: src/game/Home.tsx:92
-#: src/game/Sidebar.tsx:184
+#: src/game/Sidebar.tsx:189
 msgid "Saves"
 msgstr "Saves"
 
@@ -11593,7 +11597,7 @@ msgstr "Unknown mod"
 msgid "No changelog for this update"
 msgstr "No changelog for this update"
 
-#: src/profiles/ImportWizard.tsx:126
+#: src/profiles/ImportWizard.tsx:100
 #: src/share/ImportDialog.tsx:259
 msgid "Import a profile"
 msgstr "Import a profile"
@@ -11868,7 +11872,7 @@ msgstr "Could not create the profile"
 msgid "Into a deleted profile"
 msgstr "Into a deleted profile"
 
-#: src/game/Sidebar.tsx:193
+#: src/game/Sidebar.tsx:198
 msgid "Logs"
 msgstr "Logs"
 
