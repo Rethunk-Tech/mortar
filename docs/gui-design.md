@@ -283,7 +283,7 @@ Each row shows the full wrapped text, severity icon, the Nexus author note when 
 
 - A missing or optional-dependency row links to that UniqueID in the Load order tab (falling back to the dependent).
 - Every menu divider is the shared `MenuRule` (4px above and below); no menu hand-rolls one.
-- A load-order dependency chip names the dependency: an installed copy's name, else the page the Problems check found, else its bare id; a missing required one reads "Needs <name> (missing)". "Unknown mod" appears only when no id is known.
+- A load-order dependency chip names the dependency: an installed copy's name, else the Nexus page the metadata dataset lists for its id (`DependencyNames`, fetched for ids with no row), else its bare id; a missing required one reads "Needs <name> (missing)". "Unknown mod" appears only when no id is known.
 - A source that cannot be searched (no API key) shows its reason as a capitalised sentence in the Browse source tooltip; change lines (Home's Changes since last run, history) also start with a capital ("Added <mod>").
 - The mod list shows the same problem triangle and tooltip as a card, beside the name so it stays visible when the Status column is narrow or hidden.
 - Conflict rows expand a **Why?** section listing each pack's clashing patch (source file and index, Action, Target, ToArea/FromArea, When, Priority) and, for image edits, a cropped preview of that pack's overlapping source region loaded when the section opens.

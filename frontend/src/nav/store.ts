@@ -23,7 +23,8 @@ type SettingsSection =
 type Route =
   | { name: 'game-select' }
   | { name: 'setup' }
-  | { name: 'game-setup'; game: GameId }
+  // from is the game that was open when the setup began, for the way back.
+  | { name: 'game-setup'; game: GameId; from?: GameId }
   | { name: 'game'; game: GameId }
   | { name: 'profiles'; game: GameId }
   // query opens the page already searching.
@@ -58,7 +59,11 @@ const useNav = create<{
   openGame: (game) => set({ route: { name: 'game', game } }),
   openGameSelect: () => set({ route: { name: 'game-select' } }),
   openSetup: () => set({ route: { name: 'setup' } }),
-  openGameSetup: (game) => set({ route: { name: 'game-setup', game } }),
+  openGameSetup: (game) =>
+    set(({ route }) => {
+      const from = routeGame(route) ?? (route.name === 'game-setup' ? route.from : undefined)
+      return { route: { name: 'game-setup', game, ...(from && from !== game ? { from } : {}) } }
+    }),
   openProfiles: () =>
     set(({ route }) => {
       const game = routeGame(route)

@@ -1,11 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, TextField, Typography } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import type { VortexInventory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/migrate/models.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { ExternalVortexContents } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useGameName } from '../games/info.ts'
+import { TypedFolder } from '../shell/TypedFolder.tsx'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 
 function useVortexNote(game: string, contents: VortexInventory | null): string {
@@ -34,7 +35,6 @@ export function VortexFolderPrompt({ game, onChosen }: { game: string; onChosen:
   useEffect(load, [load])
   const note = useVortexNote(game, contents)
   const [typing, setTyping] = useState(false)
-  const [typed, setTyped] = useState('')
   const apply = async (dir: string) => {
     try {
       await SetByKey('vortexFolder', dir, '')
@@ -58,20 +58,7 @@ export function VortexFolderPrompt({ game, onChosen }: { game: string; onChosen:
       <Button size="small" onClick={choose}>
         {t`Choose folder…`}
       </Button>
-      {typing ? (
-        <Box component="span" sx={{ display: 'flex', gap: 1, pt: 1 }}>
-          <TextField
-            size="small"
-            fullWidth={true}
-            value={typed}
-            onChange={(e) => setTyped(e.target.value)}
-            label={t`Vortex data folder`}
-          />
-          <Button disabled={!typed.trim()} onClick={() => apply(typed.trim())}>
-            {t`Use folder`}
-          </Button>
-        </Box>
-      ) : null}
+      {typing ? <TypedFolder label={t`Vortex data folder`} onUse={apply} /> : null}
       {error ? (
         <Typography
           component="span"

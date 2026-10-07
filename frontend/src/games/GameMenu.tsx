@@ -37,7 +37,10 @@ function Thumb({ game }: { game: GameInfo | undefined }) {
 // The title bar's game switcher: the open game's art and name (or "Choose a game") over a menu of the playable games.
 export function GameMenu() {
   const { t } = useLingui()
-  const game = useNav((s) => routeGame(s.route) ?? '')
+  // The game being set up has no game route yet but is still the one the title bar names.
+  const game = useNav(
+    (s) => routeGame(s.route) ?? (s.route.name === 'game-setup' ? s.route.game : ''),
+  )
   const info = useGameInfo(game)
   const games = useGames()
   const lastGame = useSettings((s) => s.lastGame)

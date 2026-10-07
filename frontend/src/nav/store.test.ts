@@ -10,3 +10,12 @@ test('route switches between game select and a game', () => {
   useNav.getState().openGameSelect()
   expect(useNav.getState().route).toEqual({ name: 'game-select' })
 })
+
+test('a setup remembers the game it was opened from', () => {
+  useNav.setState(useNav.getInitialState(), true)
+  useNav.getState().openGameSetup('valheim')
+  expect(useNav.getState().route).toEqual({ name: 'game-setup', game: 'valheim' })
+  useNav.getState().openGame('stardew')
+  useNav.getState().openGameSetup('valheim')
+  expect(useNav.getState().route).toEqual({ name: 'game-setup', game: 'valheim', from: 'stardew' })
+})

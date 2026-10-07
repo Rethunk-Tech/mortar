@@ -12,6 +12,7 @@ import { SetGameFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/int
 import { gameArt } from '../games/art.ts'
 import { storeName } from '../games/storeName.ts'
 import { useLoader } from '../loader/store.ts'
+import { TypedFolder } from '../shell/TypedFolder.tsx'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { Panel } from './Panel.tsx'
 import { useRefreshOnFocus } from './useRefreshOnFocus.ts'
@@ -117,6 +118,7 @@ export function FindStep({
   const check = useLoader((s) => s.check)
   const [error, setError] = useState<InlineError | null>(null)
   const [editing, setEditing] = useState(false)
+  const [typing, setTyping] = useState(false)
   const dir = game.installDir
   const named = storeName(game.store)
   const caption = named ? t`Found in ${{ path: t(named) }}` : t`Folder chosen by you`
@@ -127,18 +129,21 @@ export function FindStep({
     }
   }, [dir, check, game.id])
 
-  const browse = async () => {
+  const use = async (chosen: string) => {
     try {
-      const picked = await PickFolder(t`Choose your ${game.name} folder`)
-      if (!picked) {
-        return
-      }
-      await SetGameFolder(game.id, picked)
+      await SetGameFolder(game.id, chosen)
       setError(null)
+      setTyping(false)
       refresh()
     } catch (e) {
       setError(inlineError(e))
     }
+  }
+  // Without a native folder dialog (server mode) the path is typed instead.
+  const browse = () => {
+    PickFolder(t`Choose your ${game.name} folder`)
+      .then((picked) => (picked ? use(picked) : undefined))
+      .catch(() => setTyping(true))
   }
 
   const details = [
@@ -223,6 +228,7 @@ export function FindStep({
           </Box>
         </Box>
       )}
+      {typing ? <TypedFolder label={t`${game.name} folder`} onUse={use} /> : null}
       {error ? (
         <Typography role="alert" title={error.details} sx={{ fontSize: 13, color: 'error.light' }}>
           {error.message}
