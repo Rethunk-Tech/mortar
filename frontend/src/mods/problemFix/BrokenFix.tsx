@@ -65,7 +65,8 @@ export function BrokenFix({
   } else if (
     broken.status === 'abandoned' ||
     broken.status === 'obsolete' ||
-    broken.status === 'deprecated'
+    broken.status === 'deprecated' ||
+    (broken.source ?? '') !== ''
   ) {
     dismiss = (
       <Button

@@ -25,6 +25,10 @@ import (
 // same hour, so a shorter one would only repeat its answers.
 const updatesTTL = time.Hour
 
+// standingTTL is how long a site's flags on a set of installed projects are served without asking again; it matches
+// the cache rule in Clean up (datasvc.standingTTL).
+const standingTTL = 24 * time.Hour
+
 var semverPrerelease = regexp.MustCompile(`^[vV]?(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?-([0-9A-Za-z].*)$`)
 
 // hasPrerelease reports a semver prerelease suffix. Authors also tag releases "-stable" or "-release", which

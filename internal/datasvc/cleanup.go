@@ -22,6 +22,7 @@ const (
 	datasetTTL    = 30 * 24 * time.Hour
 	changelogsTTL = 4 * time.Hour
 	collectionTTL = 15 * time.Minute
+	standingTTL   = 24 * time.Hour
 	releasesTTL   = time.Hour
 	updatesTTL    = time.Hour
 )
@@ -196,6 +197,8 @@ func cacheTTL(rel string) (time.Duration, bool) {
 		return categoriesTTL, true
 	case strings.HasPrefix(rel, meta.NexusChangelogsPrefix):
 		return changelogsTTL, true
+	case strings.HasPrefix(rel, meta.StandingPrefix):
+		return standingTTL, true
 	case strings.HasPrefix(rel, meta.CollectionPrefix):
 		return collectionTTL, true
 	case strings.HasPrefix(rel, meta.DatasetPrefix):

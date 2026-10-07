@@ -93,6 +93,10 @@ function describeBroken(p: Extract<Problem, { kind: 'broken' }>): string {
       ? describeLoaderCycle(p.broken.cycle ?? [])
       : describeCycle(p.broken.cycle ?? [], p.broken.cycleBlocksAll === true)
   }
+  // A site's own flag: Go words the sentence and names the site.
+  if (p.broken.source && summary) {
+    return i18n._(msg`${name}: ${summary}`)
+  }
   if (status === 'abandoned') {
     return summary
       ? i18n._(msg`${name} is abandoned: ${summary}`)

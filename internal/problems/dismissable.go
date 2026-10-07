@@ -26,7 +26,7 @@ func DismissableRows(r Result) []Dismissable {
 		}
 	}
 	for _, x := range r.Broken {
-		if x.Status == "abandoned" {
+		if dismissibleBroken(x) {
 			out = append(out, Dismissable{Kind: "abandoned", ID: x.ID})
 		}
 	}
@@ -39,6 +39,12 @@ func DismissableRows(r Result) []Dismissable {
 		out = append(out, Dismissable{Kind: "setting", ID: x.ID, Field: x.Field})
 	}
 	return out
+}
+
+// dismissibleBroken is advice rather than a fault to fix: an abandoned, obsolete or deprecated mod, or one its source
+// flags.
+func dismissibleBroken(b Broken) bool {
+	return b.Status == "abandoned" || b.Status == "obsolete" || b.Status == "deprecated" || b.Source != ""
 }
 
 func dismissBucket(gameID, profileID string) string {
@@ -68,7 +74,7 @@ func hideDismissedBroken(broken []Broken, tokens []string) ([]Broken, []Dismisse
 	dismissed := []DismissedProblem{}
 	for _, b := range broken {
 		token := dismissToken("broken", b.ID.Fold())
-		if (b.Status == "abandoned" || b.Status == "obsolete" || b.Status == "deprecated") && skip[token] {
+		if dismissibleBroken(b) && skip[token] {
 			dismissed = append(dismissed, DismissedProblem{Token: token, Broken: &b})
 			continue
 		}

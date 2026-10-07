@@ -8,6 +8,7 @@ const (
 	NexusCategoriesPrefix = "nexus/categories-"
 	NexusChangelogsPrefix = "nexus/changelogs-"
 	CollectionPrefix      = "nexus-collection-"
+	StandingPrefix        = "standing-"
 	DatasetPrefix         = "dataset-"
 )
 

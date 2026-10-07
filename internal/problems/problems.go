@@ -111,7 +111,8 @@ type NexusFile struct {
 	Remove   bool   `json:"remove"`
 }
 
-// Broken is an enabled mod SMAPI's API marks broken, obsolete or abandoned for the game version, or, with Status
+// Broken is an enabled mod SMAPI's API marks broken, obsolete or abandoned for the game version, a mod its own source
+// flags (Source says which site: archived, removed, hidden...), a mod the catalog's known-broken list names, or, with Status
 // "cycle", one of enabled mods that wait for each other (see dependencyCycles and pluginCycles).
 type Broken struct {
 	Key         string `json:"key"`
@@ -121,6 +122,9 @@ type Broken struct {
 	BrokeIn     string `json:"brokeIn"`
 	Summary     string `json:"summary,omitempty"`
 	Replacement *Ref   `json:"replacement,omitempty"`
+	// Source names the site whose own flag makes this row (Nexus Mods, Modrinth, CurseForge, GitHub, Thunderstore);
+	// empty for SMAPI's list, the author's wording and dependency loops.
+	Source string `json:"source,omitempty"`
 	// Cycle is the loop's mods in dependency order; the last waits for the first.
 	Cycle []Dependent `json:"cycle,omitempty"`
 	// CycleBlocksAll is set when every link of the loop is required, so SMAPI loads none of its mods.
