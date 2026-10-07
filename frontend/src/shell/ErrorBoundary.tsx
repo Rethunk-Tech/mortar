@@ -1,19 +1,15 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
-import { Clipboard } from '@wailsio/runtime'
 import { Bug, Copy, RotateCcw } from 'lucide-react'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
-import { reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { copyText } from '../share/copyText.ts'
 import { EmptyState } from './EmptyState.tsx'
 import { reportBug } from './reportBug.ts'
 
 function Fallback({ error, stack, onRetry }: { error: Error; stack: string; onRetry: () => void }) {
   const { t } = useLingui()
   const copy = () => {
-    Clipboard.SetText(`${error.stack ?? error.message}\n${stack}`)
-      .then(() => useToasts.getState().push({ kind: 'success', title: t`Details copied` }))
-      .catch(reportUnexpected)
+    void copyText(`${error.stack ?? error.message}\n${stack}`, t`Details copied`)
   }
   return (
     <EmptyState

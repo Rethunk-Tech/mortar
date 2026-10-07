@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { Clipboard } from '@wailsio/runtime'
 import { Copy, Map as MapIcon, ShieldCheck } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
@@ -10,13 +9,13 @@ import { download } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
+import { copyText } from '../share/copyText.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { SectionStrip } from '../shell/SectionStrip.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { AssetMapDialog } from './AssetMapDialog.tsx'
 import { CleanupSection } from './CleanupSection.tsx'
@@ -317,65 +316,58 @@ function ProblemActions() {
               return row.kind === 'asset' ? [row.asset] : []
             }),
           )
-          Promise.all(
+          void Promise.all(
             assets.map((asset) =>
               game && openId
                 ? ConflictEvidence(game.id, openId, asset.kind, asset.target)
                 : Promise.resolve([]),
             ),
-          )
-            .then((rows) => {
-              const evidenceOf = new Map(assets.map((asset, i) => [asset, rows[i]]))
-              const text = formatProblemReport(
-                [
-                  ...sections.map((section) => ({
-                    title: sectionTitle(section.id),
-                    count: section.rows.length,
-                    whyKeys: section.rows.flatMap((entry) => {
-                      const row = isDismissedRow(entry) ? entry.row : entry
-                      return row.kind === 'asset' ? whyKeysOf(evidenceOf.get(row.asset)) : []
-                    }),
-                    lines: section.rows.map((entry) => {
-                      const row = isDismissedRow(entry) ? entry.row : entry
-                      const { text: sentence, note } = rowText(row)
-                      return note === '' ? sentence : `${sentence} ${note}`
-                    }),
-                  })),
-                  ...(cleanup.length === 0
-                    ? []
-                    : [
-                        {
-                          title: t`Cleanup`,
-                          count: cleanup.length,
-                          lines: cleanup.map((item) => {
-                            const who = item.name.trim() === '' ? t`Unknown mod` : item.name
-                            const reason = item.reason || t`Not needed by any enabled mod`
-                            return `${who}: ${reason}`
-                          }),
-                        },
-                      ]),
-                  ...(redundant.length === 0
-                    ? []
-                    : [
-                        {
-                          title: t`Redundant`,
-                          count: redundant.length,
-                          lines: redundant.map(
-                            (item) => item.text ?? `${item.name}: ${item.reason}`,
-                          ),
-                        },
-                      ]),
-                  ...compatReportChunks(compat, t`Compatibility`),
-                ],
-                t`Harmless`,
-                harmlessCount,
-              )
-              return Clipboard.SetText(text)
-            })
-            .then(
-              () => useToasts.getState().push({ kind: 'success', title: t`Report copied` }),
-              reportUnexpected,
+          ).then((rows) => {
+            const evidenceOf = new Map(assets.map((asset, i) => [asset, rows[i]]))
+            const text = formatProblemReport(
+              [
+                ...sections.map((section) => ({
+                  title: sectionTitle(section.id),
+                  count: section.rows.length,
+                  whyKeys: section.rows.flatMap((entry) => {
+                    const row = isDismissedRow(entry) ? entry.row : entry
+                    return row.kind === 'asset' ? whyKeysOf(evidenceOf.get(row.asset)) : []
+                  }),
+                  lines: section.rows.map((entry) => {
+                    const row = isDismissedRow(entry) ? entry.row : entry
+                    const { text: sentence, note } = rowText(row)
+                    return note === '' ? sentence : `${sentence} ${note}`
+                  }),
+                })),
+                ...(cleanup.length === 0
+                  ? []
+                  : [
+                      {
+                        title: t`Cleanup`,
+                        count: cleanup.length,
+                        lines: cleanup.map((item) => {
+                          const who = item.name.trim() === '' ? t`Unknown mod` : item.name
+                          const reason = item.reason || t`Not needed by any enabled mod`
+                          return `${who}: ${reason}`
+                        }),
+                      },
+                    ]),
+                ...(redundant.length === 0
+                  ? []
+                  : [
+                      {
+                        title: t`Redundant`,
+                        count: redundant.length,
+                        lines: redundant.map((item) => item.text ?? `${item.name}: ${item.reason}`),
+                      },
+                    ]),
+                ...compatReportChunks(compat, t`Compatibility`),
+              ],
+              t`Harmless`,
+              harmlessCount,
             )
+            return copyText(text, t`Report copied`)
+          })
         }}
       />
     </>

@@ -1,12 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
-import { Clipboard } from '@wailsio/runtime'
 import { Copy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
   GrantSteamAccess,
   SteamAccess,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
+import { copyText } from '../share/copyText.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -60,10 +60,7 @@ export function FlatpakGrant() {
             variant="outlined"
             startIcon={<Copy size={16} />}
             onClick={() => {
-              Clipboard.SetText(cmd).then(
-                () => useToasts.getState().push({ kind: 'success', title: t`Command copied` }),
-                reportUnexpected,
-              )
+              void copyText(cmd, t`Command copied`)
             }}
             sx={{ flexShrink: 0 }}
           >

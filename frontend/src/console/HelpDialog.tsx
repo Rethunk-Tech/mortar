@@ -12,7 +12,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Clipboard } from '@wailsio/runtime'
 import { Copy, ExternalLink, TriangleAlert } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -25,10 +24,10 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { openPage } from '../mods/menu.ts'
 import { useProfileLoader } from '../profiles/store.ts'
+import { copyText } from '../share/copyText.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MONO } from '../theme/theme.ts'
-import { reportError, reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { reportError, } from '../toasts/report.ts'
 import { anonymize } from './anonymize.ts'
 import { pasteLogConfirm, shareLogConfirm, shareLogText } from './shareLog.ts'
 import { useConsole } from './store.ts'
@@ -182,21 +181,19 @@ export function HelpDialog({ game }: { game: string }) {
     }
   }, [open, game, profile, viewingRun, paste, setHelping, t])
 
-  const copy = (text: string) =>
-    Clipboard.SetText(text).then(
-      () => useToasts.getState().push({ kind: 'success', title: t`Link copied` }),
-      reportUnexpected,
-    )
+  const copy = (text: string) => copyText(text, t`Link copied`)
 
   const copyAndOpen = () => {
     if (!log) {
       return
     }
-    Clipboard.SetText(hideUserName ? anonymize(log) : log).then(() => {
-      useToasts.getState().push({ kind: 'success', title: t`Log copied` })
+    void copyText(hideUserName ? anonymize(log) : log, t`Log copied`).then((ok) => {
+      if (!ok) {
+        return
+      }
       close()
       return openPage(paste)
-    }, reportUnexpected)
+    })
   }
 
   const upload = () => {

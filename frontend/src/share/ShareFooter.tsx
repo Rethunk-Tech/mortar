@@ -23,7 +23,7 @@ export function MessageFooter({ info, message }: { info: ShownInfo; message: str
         color="inherit"
         startIcon={<MessageSquare size={16} />}
         disabled={info.count === 0 || info.tooLarge}
-        onClick={() => copyText(message, t`Message copied`)}
+        onClick={() => void copyText(message, t`Message copied`)}
         sx={{ height: 34 }}
       >
         {t`Copy as a message`}

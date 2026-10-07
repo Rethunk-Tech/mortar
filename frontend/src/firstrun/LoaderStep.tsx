@@ -14,6 +14,7 @@ import {
 import { useGameName } from '../games/info.ts'
 import { useLoader } from '../loader/store.ts'
 import type { GameId } from '../nav/store.ts'
+import { copyText } from '../share/copyText.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { MONO } from '../theme/theme.ts'
@@ -90,10 +91,7 @@ function LaunchLine({
   const gameName = useGameName(game)
   const line = useLaunchLine(game, gameDir)
   const copy = () => {
-    navigator.clipboard
-      .writeText(line)
-      .then(() => useToasts.getState().push({ kind: 'success', title: t`Launch options copied` }))
-      .catch(reportUnexpected)
+    void copyText(line, t`Launch options copied`)
   }
   const [writing, setWriting] = useState(false)
   const write = () => {

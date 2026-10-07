@@ -8,6 +8,7 @@ import {
   SetOverlayEnabled,
   SetOverlayPort,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { copyText } from '../../share/copyText.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { TipIconButton } from '../../shell/TipIconButton.tsx'
 import { reportError } from '../../toasts/report.ts'
@@ -40,13 +41,6 @@ function previewLine(kind: OverlayPreview['kind'], value: string, idle: string, 
     return idle
   }
   return value
-}
-
-function copyText(text: string, push: Push, copied: string, failCopy: string) {
-  return navigator.clipboard.writeText(text).then(
-    () => push({ kind: 'success', title: copied }),
-    (err: unknown) => reportError(failCopy)(err),
-  )
 }
 
 const WORLD_FIELDS: ReadonlySet<string> = new Set([
@@ -109,7 +103,6 @@ function OverlayValues({
   wait,
   copied,
   failCopy,
-  push,
 }: {
   snapshot: Snapshot
   labels: boolean
@@ -118,12 +111,14 @@ function OverlayValues({
   wait: string
   copied: string
   failCopy: string
-  push: Push
 }) {
   const { t } = useLingui()
   const [copiedKey, setCopiedKey] = useState('')
   const copy = (text: string, key: string) => {
-    copyText(text, push, copied, failCopy).then(() => {
+    copyText(text, copied).then((ok) => {
+      if (!ok) {
+        return
+      }
       setCopiedKey(key)
       globalThis.setTimeout(() => setCopiedKey((cur) => (cur === key ? '' : cur)), COPIED_MS)
     })
@@ -191,15 +186,7 @@ function OverlayValues({
   )
 }
 
-function OverlayHowTo({
-  push,
-  copied,
-  failCopy,
-}: {
-  push: Push
-  copied: string
-  failCopy: string
-}) {
+function OverlayHowTo({ copied }: { copied: string }) {
   const { t } = useLingui()
   const [done, setDone] = useState(false)
   return (
@@ -210,7 +197,10 @@ function OverlayHowTo({
         size="small"
         startIcon={<Copy size={14} />}
         onClick={() => {
-          copyText(OVERLAY_EXAMPLE_CSS, push, copied, failCopy).then(() => {
+          copyText(OVERLAY_EXAMPLE_CSS, copied).then((ok) => {
+            if (!ok) {
+              return
+            }
             setDone(true)
             globalThis.setTimeout(() => setDone(false), COPIED_MS)
           })
@@ -326,7 +316,7 @@ function OverlayConnection({
                     <TipIconButton
                       label={t`Copy token`}
                       disabled={!token}
-                      onClick={() => copyText(token, push, copied, failCopy)}
+                      onClick={() => void copyText(token, copied)}
                       edge="end"
                     >
                       <Copy size={16} />
@@ -439,9 +429,8 @@ export function StreamOverlay() {
             wait={wait}
             copied={copied}
             failCopy={failCopy}
-            push={push}
           />
-          <OverlayHowTo push={push} copied={copied} failCopy={failCopy} />
+          <OverlayHowTo copied={copied} />
         </Box>
       ) : null}
       {enabled ? <OverlayConnection port={port} token={token} push={push} fail={fail} /> : null}

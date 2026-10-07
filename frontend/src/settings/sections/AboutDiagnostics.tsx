@@ -21,9 +21,8 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { routeGame, useNav } from '../../nav/store.ts'
 import { useProfiles } from '../../profiles/store.ts'
+import { copyText } from '../../share/copyText.ts'
 import { saveDiagnostics } from '../../shell/saveDiagnostics.ts'
-import { reportError } from '../../toasts/report.ts'
-import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 
@@ -108,7 +107,6 @@ function useCheckTitle() {
 
 function Diagnostics() {
   const { t } = useLingui()
-  const push = useToasts((s) => s.push)
   const title = useCheckTitle()
   const game = useNav((s) => routeGame(s.route) ?? '')
   const profile = useProfiles((s) => s.openId)
@@ -135,9 +133,10 @@ function Diagnostics() {
     const text = groups
       .map((g) => `${title(g.kind)} (${g.status})\n${g.details.join('\n')}`)
       .join('\n\n')
-    navigator.clipboard.writeText(`${text}\n`).then(
-      () => push({ kind: 'success', title: t`Report copied` }),
-      (err: unknown) => reportError(t`Could not copy the report`)(err),
+    void copyText(
+      `${text}
+`,
+      t`Report copied`,
     )
   }
   return (

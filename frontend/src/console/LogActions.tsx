@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material'
-import { Clipboard } from '@wailsio/runtime'
 import {
   ChevronDown,
   ChevronUp,
@@ -21,9 +20,9 @@ import {
 import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { Log } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
+import { copyText } from '../share/copyText.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
 import { firstError, formatAll } from './filter.ts'
 import { useShownEntries, useVisible } from './logHooks.ts'
 import { SearchRunsDialog } from './SearchRunsDialog.tsx'
@@ -146,10 +145,7 @@ export function LogActions({ game }: { game: string }) {
         <MenuItem
           disabled={rows.length === 0}
           onClick={pick(() => {
-            Clipboard.SetText(formatAll(rows)).then(
-              () => useToasts.getState().push({ kind: 'success', title: t`Log copied` }),
-              reportUnexpected,
-            )
+            void copyText(formatAll(rows), t`Log copied`)
           })}
         >
           <ListItemIcon>

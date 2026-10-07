@@ -14,6 +14,7 @@ import {
 import { type FocusEvent, type MouseEvent, useState } from 'react'
 import { LetterTile } from '../mods/parts.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
+import { copyText } from '../share/copyText.ts'
 import { HistoryFallback } from './HistoryButton.tsx'
 import { reportUnexpected } from './report.ts'
 import { type Toast, type ToastKind, useToasts } from './store.ts'
@@ -46,12 +47,7 @@ function CopyDetail({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
   return (
     <ButtonBase
-      onClick={() =>
-        navigator.clipboard
-          .writeText(text)
-          .then(() => setCopied(true))
-          .catch(reportUnexpected)
-      }
+      onClick={() => copyText(text, t`Details copied`).then(setCopied)}
       sx={{
         alignSelf: 'flex-start',
         mt: '4px',

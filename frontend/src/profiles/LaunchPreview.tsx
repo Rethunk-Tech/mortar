@@ -1,13 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Typography } from '@mui/material'
-import { Clipboard } from '@wailsio/runtime'
 import { Copy } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import type { CommandPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { PreviewCommand } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { copyText } from '../share/copyText.ts'
 import { MONO } from '../theme/theme.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
+import { errorMessage, } from '../toasts/report.ts'
 
 const PREVIEW_DEBOUNCE_MS = 300
 
@@ -54,10 +53,7 @@ export function LaunchPreview({
     return () => clearTimeout(timer)
   }, [read])
   const copyCommand = () => {
-    Clipboard.SetText(formatShellLine(preview)).then(
-      () => useToasts.getState().push({ kind: 'success', title: t`Command copied` }),
-      reportUnexpected,
-    )
+    void copyText(formatShellLine(preview), t`Command copied`)
   }
 
   return (

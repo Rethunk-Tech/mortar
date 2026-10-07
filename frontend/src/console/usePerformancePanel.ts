@@ -1,4 +1,4 @@
-import { Clipboard } from '@wailsio/runtime'
+
 import { useEffect, useMemo, useState } from 'react'
 import type {
   PerformanceRow,
@@ -11,8 +11,8 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { copyText } from '../share/copyText.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
 import { canSendTo, useConsole } from './store.ts'
 
 const ENABLE_COMMAND = 'performance enable'
@@ -123,10 +123,7 @@ function useParsedReport(
 }
 
 function copyReportLines(reportLines: string[], copiedTitle: string) {
-  Clipboard.SetText(reportLines.join('\n')).then(
-    () => useToasts.getState().push({ kind: 'success', title: copiedTitle }),
-    reportUnexpected,
-  )
+  void copyText(reportLines.join('\n'), copiedTitle)
 }
 
 function usePanelControls(opts: {

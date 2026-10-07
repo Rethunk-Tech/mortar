@@ -2,7 +2,6 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, Link, Skeleton, Tooltip, Typography } from '@mui/material'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Clipboard } from '@wailsio/runtime'
 import { Copy, ListOrdered, TriangleAlert } from 'lucide-react'
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import type { Row } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadorder/models.ts'
@@ -10,10 +9,10 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { LoadOrder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useTab } from '../game/tab.ts'
 import { useGameLoader } from '../games/info.ts'
+import { copyText } from '../share/copyText.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
 import { idKey, localId } from './dependents.ts'
 import { useDetail } from './detail.ts'
 import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
@@ -194,10 +193,7 @@ function OrderList({
           size="small"
           startIcon={<Copy size={14} />}
           onClick={() => {
-            Clipboard.SetText(formatLoadOrderCopy(rows)).then(
-              () => useToasts.getState().push({ kind: 'success', title: t`Load order copied` }),
-              reportUnexpected,
-            )
+            void copyText(formatLoadOrderCopy(rows), t`Load order copied`)
           }}
         >
           {t`Copy load order`}

@@ -1,20 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Menu } from '@mui/material'
 import { ExternalLink, Info, Link2, Plus } from 'lucide-react'
+import { copyText } from '../share/copyText.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
-import { useToasts } from '../toasts/store.ts'
 import { NEXUS } from './browseConstants.ts'
 import type { BrowseItem } from './browseTypes.ts'
 import { useBrowseSelection } from './selection.ts'
 import { type ActionProps, useCardAction } from './useCardAction.tsx'
-
-function copyLink(url: string, copied: string, failed: string) {
-  const { push } = useToasts.getState()
-  navigator.clipboard.writeText(url).then(
-    () => push({ kind: 'success', title: copied }),
-    () => push({ kind: 'error', title: failed }),
-  )
-}
 
 function Items({
   item,
@@ -79,7 +71,9 @@ function Items({
       key="copy"
       icon={<Link2 size={16} />}
       label={t`Copy link`}
-      onClick={run(() => copyLink(url, t`Link copied`, t`Could not copy the link`))}
+      onClick={run(() => {
+        void copyText(url, t`Link copied`)
+      })}
     />,
   ]
 }

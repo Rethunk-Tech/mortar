@@ -12,7 +12,6 @@ import {
   Typography,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { Clipboard } from '@wailsio/runtime'
 import { CircleAlert, Copy } from 'lucide-react'
 import { useEffect } from 'react'
 import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
@@ -30,13 +29,13 @@ import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { copyText } from '../share/copyText.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { controlsCutout } from '../shell/controlsCutout.ts'
 import { FlatpakGrant } from '../shell/FlatpakGrant.tsx'
 import { SyncOffers } from '../sync/SyncOffers.tsx'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { useToasts } from '../toasts/store.ts'
 import { holdFocus, launchEscHides } from './holdFocus.ts'
 import { KnownGoodOffer } from './KnownGoodOffer.tsx'
 import { PrePlayDialog } from './PrePlayDialog.tsx'
@@ -221,10 +220,7 @@ function LaunchLine({ line }: { line: string }) {
         variant="outlined"
         startIcon={<Copy size={16} />}
         onClick={() => {
-          Clipboard.SetText(line).then(
-            () => useToasts.getState().push({ kind: 'success', title: t`Launch options copied` }),
-            reportUnexpected,
-          )
+          void copyText(line, t`Launch options copied`)
         }}
         sx={{ flexShrink: 0 }}
       >
