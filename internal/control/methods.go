@@ -982,9 +982,8 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		var reqs []queue.Request
 		for _, u := range r.Updates {
-			if u.Unofficial || u.PickFile || (!p.All && len(p.IDs) > 0 && !slices.ContainsFunc(typedIDs(p.IDs), func(want mod.ID) bool {
-				return mod.Equal(want, u.ID)
-			})) {
+			named := len(p.IDs) > 0 && slices.ContainsFunc(typedIDs(p.IDs), func(want mod.ID) bool { return mod.Equal(want, u.ID) })
+			if !queueableUpdate(u, named) || (!p.All && len(p.IDs) > 0 && !named) {
 				continue
 			}
 			reqs = append(reqs, updateRequest(p.Game, id, u))
@@ -1731,6 +1730,13 @@ func typedIDs(ids []string) []mod.ID {
 }
 
 // updateRequest is the queue request that installs an update, from the source the update names.
+// queueableUpdate reports whether updates.queue may queue u. An unofficial update or one that needs a file picked is left
+// to the review, and so is one whose project forbids outside downloads (the review links its page). A switch to another
+// site is offered, never applied on its own: only a mod the caller named is switched.
+func queueableUpdate(u problems.Update, named bool) bool {
+	return !u.Unofficial && !u.PickFile && !u.NotDistributable && (!u.Switch || named)
+}
+
 func updateRequest(game, profileID string, u problems.Update) queue.Request {
 	req := queue.Request{Kind: queue.KindUpdate, Game: game, Profile: profileID, Name: u.Name, Version: u.Version, CurrentKey: u.Key}
 	switch {
