@@ -28,7 +28,7 @@
 !define UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${UNINST_KEY_NAME}"
 
 !ifndef WAILS_INSTALL_SCOPE
-    !define WAILS_INSTALL_SCOPE "machine"
+    !define WAILS_INSTALL_SCOPE "user"
 !endif
 
 !ifndef REQUEST_EXECUTION_LEVEL

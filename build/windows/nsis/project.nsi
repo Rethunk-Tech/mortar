@@ -70,11 +70,8 @@ ManifestDPIAware true
 Name "${INFO_PRODUCTNAME}"
 BrandingText "${INFO_PRODUCTNAME} ${INFO_PRODUCTVERSION}"
 OutFile "..\..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe" # Name of the installer's file.
-!if "${WAILS_INSTALL_SCOPE}" == "user"
-    InstallDir "$LOCALAPPDATA\Programs\${INFO_PRODUCTNAME}"
-!else
-    InstallDir "$PROGRAMFILES64\${INFO_COMPANYNAME}\${INFO_PRODUCTNAME}"
-!endif
+# Per-user only: a second scope would install a second, separately registered copy beside this one.
+InstallDir "$LOCALAPPDATA\Programs\${INFO_PRODUCTNAME}"
 ShowInstDetails show # This will always show the installation details.
 
 Function .onInit
@@ -122,9 +119,6 @@ Section
     !insertmacro wails.files
     File "/oname=LICENSE" "..\..\..\LICENSE"
     File "/oname=THIRD_PARTY_NOTICES" "..\..\..\THIRD_PARTY_NOTICES"
-!if "${WAILS_INSTALL_SCOPE}" != "user"
-    ExecWait '"$SYSDIR\netsh.exe" advfirewall firewall add rule name="Mortar" dir=in action=allow program="$INSTDIR\${PRODUCT_EXECUTABLE}" enable=yes profile=private,domain'
-!endif
 
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
     CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
@@ -133,7 +127,7 @@ Section
     !insertmacro wails.associateCustomProtocols
     
     !insertmacro wails.writeUninstaller
-    # SHCTX follows wails.setShellContext, so these land beside the per-user or per-machine entry it wrote.
+    # SHCTX follows wails.setShellContext, so these land beside the per-user entry it wrote.
     WriteRegStr SHCTX "${UNINST_KEY}" "URLInfoAbout" "https://mortar.rethunk.tech"
     WriteRegStr SHCTX "${UNINST_KEY}" "HelpLink" "https://github.com/Rethunk-Tech/mortar/issues"
     WriteRegStr SHCTX "${UNINST_KEY}" "URLUpdateInfo" "https://github.com/Rethunk-Tech/mortar/releases"
@@ -152,9 +146,6 @@ Section "uninstall"
     DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "Mortar"
     # Profile shortcuts are always per-user, whatever the install scope.
     RMDir /r "$APPDATA\Microsoft\Windows\Start Menu\Programs\Mortar"
-!if "${WAILS_INSTALL_SCOPE}" != "user"
-    ExecWait '"$SYSDIR\netsh.exe" advfirewall firewall delete rule name="Mortar"'
-!endif
 
     RMDir /r "$AppData\${PRODUCT_EXECUTABLE}" # Remove the WebView2 DataPath
 

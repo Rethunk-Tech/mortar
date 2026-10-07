@@ -157,9 +157,9 @@ jobs:
         run: |
           # Both architectures write bin/mortar.exe, so each is copied out before the next build. NSIS builds
           # an arm64-native installer from the arm64 exe (bin/mortar-arm64-installer.exe).
-          wails3 task windows:package INSTALL_SCOPE=user ARCH=amd64
+          wails3 task windows:package ARCH=amd64
           cp bin/mortar.exe bin/mortar-windows-amd64.exe
-          wails3 task windows:package INSTALL_SCOPE=user ARCH=arm64
+          wails3 task windows:package ARCH=arm64
           cp bin/mortar.exe bin/mortar-windows-arm64.exe
 
       - name: Stage artifacts
