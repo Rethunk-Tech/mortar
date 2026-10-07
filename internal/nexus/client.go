@@ -98,6 +98,8 @@ type Client struct {
 	scanMu   *sync.Mutex
 	scans    map[scanKey]map[int]string
 	onLimits func(Limits)
+	// Servers is set by the app so mirror choices share its settings; empty in other processes.
+	Servers DownloadServers
 }
 
 // New returns a client that identifies itself as Mortar version.
@@ -107,7 +109,7 @@ func New(version string) *Client {
 
 // WithKey returns a client that authenticates with key and shares c's rate-limit and tracked-list state.
 func (c *Client) WithKey(key string) *Client {
-	return &Client{HTTP: c.HTTP, BaseURL: c.BaseURL, CacheDir: c.CacheDir, Now: c.Now, key: key, version: c.version, lim: c.lim, track: c.track, scanMu: c.scanMu, scans: c.scans, onLimits: c.onLimits}
+	return &Client{HTTP: c.HTTP, BaseURL: c.BaseURL, CacheDir: c.CacheDir, Now: c.Now, key: key, version: c.version, lim: c.lim, track: c.track, scanMu: c.scanMu, scans: c.scans, onLimits: c.onLimits, Servers: c.Servers}
 }
 
 // SetLimitsHook is called after a response updates the rate-limit budget.
@@ -416,5 +418,5 @@ func (c *Client) DownloadLinks(ctx context.Context, t Title, modID, fileID int, 
 	for i, l := range raw {
 		links[i] = Link{Name: l.Name, ShortName: l.ShortName, URI: l.URI}
 	}
-	return applyDownloadPreferences(links), nil
+	return c.applyDownloadPreferences(links), nil
 }

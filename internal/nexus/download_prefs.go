@@ -1,27 +1,26 @@
 package nexus
 
-import (
-	"slices"
+import "slices"
 
-	"github.com/Rethunk-Tech/mortar/internal/settings"
-)
+// DownloadServers connects a client to the app's shared settings: Remember records the mirrors a file offered and
+// Preferred returns the short name the user picked, empty for none. Both are optional.
+type DownloadServers struct {
+	Remember  func(shortNames []string)
+	Preferred func() string
+}
 
-func applyDownloadPreferences(links []Link) []Link {
-	store, err := settings.Open()
-	if err != nil || len(links) == 0 {
+func (c *Client) applyDownloadPreferences(links []Link) []Link {
+	if len(links) == 0 || c.Servers.Preferred == nil {
 		return links
 	}
-	shortNames := make([]string, len(links))
-	for i, l := range links {
-		if l.ShortName != "" {
+	if c.Servers.Remember != nil {
+		shortNames := make([]string, len(links))
+		for i, l := range links {
 			shortNames[i] = l.ShortName
 		}
+		c.Servers.Remember(shortNames)
 	}
-	_, _ = store.Update(func(v *settings.Settings) {
-		settings.RememberNexusDownloadServers(v, shortNames)
-	})
-	cur := store.Get()
-	picked, _ := PickDownloadLink(links, cur.NexusPreferredDownloadServer)
+	picked, _ := PickDownloadLink(links, c.Servers.Preferred())
 	if picked.URI == links[0].URI {
 		return links
 	}

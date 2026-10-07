@@ -80,6 +80,11 @@ func (s *Service) SetNexusPreferredDownloadServer(shortName string) error {
 	return s.set(func(v *Settings) { v.NexusPreferredDownloadServer = shortName })
 }
 
+// RememberNexusDownloadServers records the mirrors Nexus offered so the settings page can list them.
+func (s *Service) RememberNexusDownloadServers(shortNames []string) error {
+	return s.set(func(v *Settings) { RememberNexusDownloadServers(v, shortNames) })
+}
+
 func (s *Service) SetNxmRedirectOtherGames(on bool) error {
 	return s.set(func(v *Settings) { v.NxmRedirectOtherGames = &on })
 }

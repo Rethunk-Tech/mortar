@@ -432,6 +432,14 @@ func run() error {
 	launches.OnSavePlayed = savesSvc.NotePlayed
 
 	nexusClient := nexus.New(version)
+	nexusClient.Servers = nexus.DownloadServers{
+		Remember: func(shortNames []string) {
+			if err := svc.RememberNexusDownloadServers(shortNames); err != nil {
+				slog.Warn("could not record Nexus download servers", "err", err)
+			}
+		},
+		Preferred: func() string { return svc.Get().NexusPreferredDownloadServer },
+	}
 	nexusSvc := nexussvc.NewService(store, nexusClient, modMeta)
 	nexusSvc.Profiles = profiles
 	nexusSvc.GitHub = &github.Client{}
