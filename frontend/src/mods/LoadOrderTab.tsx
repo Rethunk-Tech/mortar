@@ -5,6 +5,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { Copy, ListOrdered, TriangleAlert } from 'lucide-react'
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import type { Row } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadorder/models.ts'
+import { DependencyNames } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { LoadOrder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { PageActions } from '../game/PageActions.tsx'
@@ -353,13 +354,27 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
     }
   }, [rows])
 
+  // Dependencies that are not installed have no row to name them; the dataset names them by their Nexus page.
+  const unlisted = useMemo(() => {
+    const listed = new Set((rows ?? []).map((row) => idKey(row.id)))
+    const ids = (rows ?? []).flatMap((row) => [...(row.required ?? []), ...(row.optional ?? [])])
+    return [...new Set(ids.filter((id) => !listed.has(idKey(id))))].sort()
+  }, [rows])
+  const { data: pageNames } = useLoaded<Record<string, string | undefined>>(
+    unlisted.length === 0 ? null : () => DependencyNames(game, unlisted).then((n) => n ?? {}),
+    [game, unlisted.join('\0')],
+    {},
+  )
   const names = useMemo(() => {
     const map = new Map<string, string>()
+    for (const [id, name] of Object.entries(pageNames)) {
+      map.set(idKey(id), name ?? '')
+    }
     for (const row of rows ?? []) {
       map.set(idKey(row.id), row.name)
     }
     return map
-  }, [rows])
+  }, [rows, pageNames])
 
   if (rows === null) {
     return <OrderSkeleton label={t`Reading load order…`} />
