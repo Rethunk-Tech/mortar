@@ -5,8 +5,15 @@ import (
 	"time"
 )
 
-// waitBounded runs wait and reports whether it returned within limit; a wait that is still running is left behind.
-func waitBounded(wait func(), limit time.Duration) bool {
+// installPoll is how often StopWait looks again for installs still under way.
+const installPoll = 100 * time.Millisecond
+
+// StopWait waits for the workers Run started once its context has ended. Downloads end with the context, but a worker
+// can be stuck where none reaches (a keyring prompt), so after limit Mortar exits without it, naming the items
+// still under way. An install is never cut off: it keeps writing into the store, so StopWait waits for every
+// install to finish however long that takes. A download left partial keeps its resume sidecar, and a restart queues
+// every item that was downloading or installing again (the loader in New).
+func (s *Service) StopWait(wait func(), limit time.Duration) {
 	done := make(chan struct{})
 	go func() {
 		wait()
@@ -14,27 +21,39 @@ func waitBounded(wait func(), limit time.Duration) bool {
 	}()
 	select {
 	case <-done:
-		return true
+		return
 	case <-time.After(limit):
-		return false
+	}
+	logged := false
+	for {
+		installing, others := s.inFlight()
+		if len(installing) == 0 {
+			log.Printf("queue: workers still running after %s at quit, abandoned: %v", limit, others)
+			return
+		}
+		if !logged {
+			log.Printf("queue: finishing %d installs before quit", len(installing))
+			logged = true
+		}
+		select {
+		case <-done:
+			return
+		case <-time.After(installPoll):
+		}
 	}
 }
 
-// StopWait waits up to limit for the workers Run started once its context has ended. A worker can be stuck where no
-// context reaches (a keyring prompt), so past the limit Mortar exits anyway, naming the items still under way. A
-// download left partial keeps its resume sidecar, and a restart queues every item that was downloading or
-// installing again (the loader in New).
-func (s *Service) StopWait(wait func(), limit time.Duration) {
-	if waitBounded(wait, limit) {
-		return
-	}
+// inFlight lists the ids of the items being installed and of those being downloaded.
+func (s *Service) inFlight() (installing, downloading []string) {
 	s.mu.Lock()
-	var names []string
+	defer s.mu.Unlock()
 	for _, it := range s.items {
-		if it.State == StateDownloading || it.State == StateInstalling {
-			names = append(names, it.ID+" ("+it.State+")")
+		switch it.State {
+		case StateInstalling:
+			installing = append(installing, it.ID)
+		case StateDownloading:
+			downloading = append(downloading, it.ID)
 		}
 	}
-	s.mu.Unlock()
-	log.Printf("queue: workers still running after %s at quit, abandoned: %v", limit, names)
+	return installing, downloading
 }
