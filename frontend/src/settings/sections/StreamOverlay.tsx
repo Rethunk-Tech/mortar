@@ -115,10 +115,7 @@ function OverlayValues({
   const { t } = useLingui()
   const [copiedKey, setCopiedKey] = useState('')
   const copy = (text: string, key: string) => {
-    void copyText(text, copied).then((ok) => {
-      if (!ok) {
-        return
-      }
+    copyText(text, copied, () => {
       setCopiedKey(key)
       globalThis.setTimeout(() => setCopiedKey((cur) => (cur === key ? '' : cur)), COPIED_MS)
     })
@@ -197,10 +194,7 @@ function OverlayHowTo({ copied }: { copied: string }) {
         size="small"
         startIcon={<Copy size={14} />}
         onClick={() => {
-          void copyText(OVERLAY_EXAMPLE_CSS, copied).then((ok) => {
-            if (!ok) {
-              return
-            }
+          copyText(OVERLAY_EXAMPLE_CSS, copied, () => {
             setDone(true)
             globalThis.setTimeout(() => setDone(false), COPIED_MS)
           })
@@ -315,7 +309,7 @@ function OverlayConnection({
                     <TipIconButton
                       label={t`Copy token`}
                       disabled={!token}
-                      onClick={() => void copyText(token, copied)}
+                      onClick={() => copyText(token, copied)}
                       edge="end"
                     >
                       <Copy size={16} />

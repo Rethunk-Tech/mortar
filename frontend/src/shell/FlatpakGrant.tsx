@@ -60,7 +60,7 @@ export function FlatpakGrant() {
             variant="outlined"
             startIcon={<Copy size={16} />}
             onClick={() => {
-              void copyText(cmd, t`Command copied`)
+              copyText(cmd, t`Command copied`)
             }}
             sx={{ flexShrink: 0 }}
           >

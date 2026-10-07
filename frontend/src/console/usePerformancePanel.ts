@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from 'react'
 import type {
   PerformanceRow,
@@ -123,7 +122,7 @@ function useParsedReport(
 }
 
 function copyReportLines(reportLines: string[], copiedTitle: string) {
-  void copyText(reportLines.join('\n'), copiedTitle)
+  copyText(reportLines.join('\n'), copiedTitle)
 }
 
 function usePanelControls(opts: {

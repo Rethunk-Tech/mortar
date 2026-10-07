@@ -123,7 +123,7 @@ export function LinkPane({
               variant="contained"
               startIcon={<Copy size={16} />}
               disabled={info.count === 0}
-              onClick={() => void copyText(info.web, t`Link copied`)}
+              onClick={() => copyText(info.web, t`Link copied`)}
               sx={{ height: 40, px: '18px', fontSize: 14, whiteSpace: 'nowrap' }}
             >
               {t`Copy link`}
@@ -283,7 +283,7 @@ export function ThunderstorePane({ game, profileId }: { game: string; profileId:
           kind: 'success',
           title: t`Code published`,
           body: code,
-          action: { label: t`Copy code`, run: () => void copyText(code, t`Code copied`) },
+          action: { label: t`Copy code`, run: () => copyText(code, t`Code copied`) },
         }),
       )
       .catch((error: unknown) => toastError(t`Could not publish the code`, error))

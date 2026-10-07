@@ -193,7 +193,7 @@ function OrderList({
           size="small"
           startIcon={<Copy size={14} />}
           onClick={() => {
-            void copyText(formatLoadOrderCopy(rows), t`Load order copied`)
+            copyText(formatLoadOrderCopy(rows), t`Load order copied`)
           }}
         >
           {t`Copy load order`}

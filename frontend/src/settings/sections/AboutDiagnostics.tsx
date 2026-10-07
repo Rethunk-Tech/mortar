@@ -133,7 +133,7 @@ function Diagnostics() {
     const text = groups
       .map((g) => `${title(g.kind)} (${g.status})\n${g.details.join('\n')}`)
       .join('\n\n')
-    void copyText(
+    copyText(
       `${text}
 `,
       t`Report copied`,

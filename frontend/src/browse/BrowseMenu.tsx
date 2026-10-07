@@ -72,7 +72,7 @@ function Items({
       icon={<Link2 size={16} />}
       label={t`Copy link`}
       onClick={run(() => {
-        void copyText(url, t`Link copied`)
+        copyText(url, t`Link copied`)
       })}
     />,
   ]

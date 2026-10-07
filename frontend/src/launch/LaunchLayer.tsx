@@ -220,7 +220,7 @@ function LaunchLine({ line }: { line: string }) {
         variant="outlined"
         startIcon={<Copy size={16} />}
         onClick={() => {
-          void copyText(line, t`Launch options copied`)
+          copyText(line, t`Launch options copied`)
         }}
         sx={{ flexShrink: 0 }}
       >

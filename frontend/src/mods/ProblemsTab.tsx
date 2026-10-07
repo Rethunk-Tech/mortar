@@ -316,58 +316,62 @@ function ProblemActions() {
               return row.kind === 'asset' ? [row.asset] : []
             }),
           )
-          void Promise.all(
+          Promise.all(
             assets.map((asset) =>
               game && openId
                 ? ConflictEvidence(game.id, openId, asset.kind, asset.target)
                 : Promise.resolve([]),
             ),
-          ).then((rows) => {
-            const evidenceOf = new Map(assets.map((asset, i) => [asset, rows[i]]))
-            const text = formatProblemReport(
-              [
-                ...sections.map((section) => ({
-                  title: sectionTitle(section.id),
-                  count: section.rows.length,
-                  whyKeys: section.rows.flatMap((entry) => {
-                    const row = isDismissedRow(entry) ? entry.row : entry
-                    return row.kind === 'asset' ? whyKeysOf(evidenceOf.get(row.asset)) : []
-                  }),
-                  lines: section.rows.map((entry) => {
-                    const row = isDismissedRow(entry) ? entry.row : entry
-                    const { text: sentence, note } = rowText(row)
-                    return note === '' ? sentence : `${sentence} ${note}`
-                  }),
-                })),
-                ...(cleanup.length === 0
-                  ? []
-                  : [
-                      {
-                        title: t`Cleanup`,
-                        count: cleanup.length,
-                        lines: cleanup.map((item) => {
-                          const who = item.name.trim() === '' ? t`Unknown mod` : item.name
-                          const reason = item.reason || t`Not needed by any enabled mod`
-                          return `${who}: ${reason}`
-                        }),
-                      },
-                    ]),
-                ...(redundant.length === 0
-                  ? []
-                  : [
-                      {
-                        title: t`Redundant`,
-                        count: redundant.length,
-                        lines: redundant.map((item) => item.text ?? `${item.name}: ${item.reason}`),
-                      },
-                    ]),
-                ...compatReportChunks(compat, t`Compatibility`),
-              ],
-              t`Harmless`,
-              harmlessCount,
-            )
-            return copyText(text, t`Report copied`)
-          })
+          )
+            .then((rows) => {
+              const evidenceOf = new Map(assets.map((asset, i) => [asset, rows[i]]))
+              const text = formatProblemReport(
+                [
+                  ...sections.map((section) => ({
+                    title: sectionTitle(section.id),
+                    count: section.rows.length,
+                    whyKeys: section.rows.flatMap((entry) => {
+                      const row = isDismissedRow(entry) ? entry.row : entry
+                      return row.kind === 'asset' ? whyKeysOf(evidenceOf.get(row.asset)) : []
+                    }),
+                    lines: section.rows.map((entry) => {
+                      const row = isDismissedRow(entry) ? entry.row : entry
+                      const { text: sentence, note } = rowText(row)
+                      return note === '' ? sentence : `${sentence} ${note}`
+                    }),
+                  })),
+                  ...(cleanup.length === 0
+                    ? []
+                    : [
+                        {
+                          title: t`Cleanup`,
+                          count: cleanup.length,
+                          lines: cleanup.map((item) => {
+                            const who = item.name.trim() === '' ? t`Unknown mod` : item.name
+                            const reason = item.reason || t`Not needed by any enabled mod`
+                            return `${who}: ${reason}`
+                          }),
+                        },
+                      ]),
+                  ...(redundant.length === 0
+                    ? []
+                    : [
+                        {
+                          title: t`Redundant`,
+                          count: redundant.length,
+                          lines: redundant.map(
+                            (item) => item.text ?? `${item.name}: ${item.reason}`,
+                          ),
+                        },
+                      ]),
+                  ...compatReportChunks(compat, t`Compatibility`),
+                ],
+                t`Harmless`,
+                harmlessCount,
+              )
+              copyText(text, t`Report copied`)
+            })
+            .catch(reportUnexpected)
         }}
       />
     </>

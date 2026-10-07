@@ -91,7 +91,7 @@ function LaunchLine({
   const gameName = useGameName(game)
   const line = useLaunchLine(game, gameDir)
   const copy = () => {
-    void copyText(line, t`Launch options copied`)
+    copyText(line, t`Launch options copied`)
   }
   const [writing, setWriting] = useState(false)
   const write = () => {

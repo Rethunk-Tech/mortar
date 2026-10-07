@@ -517,7 +517,7 @@ msgstr "Older copies of the same mod"
 msgid "How many times to retry a failed download"
 msgstr "How many times to retry a failed download"
 
-#: src/console/SearchRunsDialog.tsx:102
+#: src/console/SearchRunsDialog.tsx:106
 msgid "Search all runs"
 msgstr "Search all runs"
 
@@ -538,7 +538,7 @@ msgstr "{count, plural, one {Moved # mod from the game's Mods folder} other {Mov
 msgid "Back up saves every time the game starts."
 msgstr "Back up saves every time the game starts."
 
-#: src/settings/sections/StreamOverlay.tsx:309
+#: src/settings/sections/StreamOverlay.tsx:303
 msgid "Show token"
 msgstr "Show token"
 
@@ -952,7 +952,7 @@ msgstr "gone"
 #. placeholder {1}: e.index
 #. placeholder {1}: formatBytes(backup.size)
 #. placeholder {1}: formatKb(file.sizeKb)
-#: src/console/SearchRunsDialog.tsx:132
+#: src/console/SearchRunsDialog.tsx:136
 #: src/mods/ConflictWhy.tsx:104
 #: src/nxm/ArrivalDialog.tsx:111
 #: src/saves/BackupsDialog.tsx:71
@@ -1416,7 +1416,7 @@ msgstr "Small"
 msgid "From a shared link"
 msgstr "From a shared link"
 
-#: src/console/SearchRunsDialog.tsx:116
+#: src/console/SearchRunsDialog.tsx:120
 msgid "No matches"
 msgstr "No matches"
 
@@ -1543,7 +1543,7 @@ msgid "Clear cache?"
 msgstr "Clear cache?"
 
 #: src/console/CrashDialog.tsx:143
-#: src/console/HelpDialog.tsx:239
+#: src/console/HelpDialog.tsx:236
 #: src/console/LogActions.tsx:42
 msgid "Share log…"
 msgstr "Share log…"
@@ -1873,8 +1873,8 @@ msgstr "Saved {name} as a launch preset template"
 msgid "Copy mod list"
 msgstr "Copy mod list"
 
-#: src/settings/sections/StreamOverlay.tsx:251
-#: src/settings/sections/StreamOverlay.tsx:400
+#: src/settings/sections/StreamOverlay.tsx:245
+#: src/settings/sections/StreamOverlay.tsx:394
 #: src/toasts/ToastHost.tsx:69
 msgid "Copied"
 msgstr "Copied"
@@ -2192,7 +2192,7 @@ msgstr "Mortar is up to date"
 #: src/mods/Toolbar.tsx:328
 #: src/mods/Toolbar.tsx:354
 #: src/mods/Toolbar.tsx:372
-#: src/profiles/CompareDialog.tsx:274
+#: src/profiles/CompareDialog.tsx:275
 #: src/profiles/CompareTop.tsx:170
 msgid "Filter mods"
 msgstr "Filter mods"
@@ -2432,7 +2432,7 @@ msgstr "Hill-top farm"
 msgid "Why?"
 msgstr "Why?"
 
-#: src/console/HelpDialog.tsx:268
+#: src/console/HelpDialog.tsx:265
 msgid "Upload log"
 msgstr "Upload log"
 
@@ -2796,7 +2796,7 @@ msgid "No enabled mods"
 msgstr "No enabled mods"
 
 #: src/mods/ProblemsTab.tsx:134
-#: src/mods/ProblemsTab.tsx:346
+#: src/mods/ProblemsTab.tsx:347
 msgid "Cleanup"
 msgstr "Cleanup"
 
@@ -2833,7 +2833,7 @@ msgstr "Live log starts at this level and above"
 msgid "No fix yet"
 msgstr "No fix yet"
 
-#: src/settings/sections/StreamOverlay.tsx:398
+#: src/settings/sections/StreamOverlay.tsx:392
 msgid "Load a save to see values"
 msgstr "Load a save to see values"
 
@@ -3078,7 +3078,7 @@ msgstr "Show report"
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
-#: src/settings/sections/StreamOverlay.tsx:316
+#: src/settings/sections/StreamOverlay.tsx:310
 msgid "Copy token"
 msgstr "Copy token"
 
@@ -3201,7 +3201,7 @@ msgstr "Fullscreen resolution height"
 msgid "Shared by every game"
 msgstr "Shared by every game"
 
-#: src/console/HelpDialog.tsx:230
+#: src/console/HelpDialog.tsx:227
 #: src/mods/ReportToAuthorButton.tsx:220
 msgid "Reading the log…"
 msgstr "Reading the log…"
@@ -3246,7 +3246,7 @@ msgstr "Modpack saved"
 msgid "Save as template"
 msgstr "Save as template"
 
-#: src/console/HelpDialog.tsx:228
+#: src/console/HelpDialog.tsx:225
 msgid "No log for this profile yet. Play it once, then try again."
 msgstr "No log for this profile yet. Play it once, then try again."
 
@@ -3259,7 +3259,7 @@ msgstr "Search GitHub for mods published as releases. Add puts the latest releas
 msgid "And {0} more on the Nexus page"
 msgstr "And {0} more on the Nexus page"
 
-#: src/profiles/CompareDialog.tsx:305
+#: src/profiles/CompareDialog.tsx:306
 msgid "Neither profile has a mod that matches the filter."
 msgstr "Neither profile has a mod that matches the filter."
 
@@ -3436,7 +3436,7 @@ msgid "{0, plural, one {# other mod} other {# other mods}}"
 msgstr "{0, plural, one {# other mod} other {# other mods}}"
 
 #. placeholder {0}: profileA.name
-#: src/profiles/CompareDialog.tsx:364
+#: src/profiles/CompareDialog.tsx:365
 msgid "Pick what to compare {0} with"
 msgstr "Pick what to compare {0} with"
 
@@ -3455,7 +3455,7 @@ msgid "Help"
 msgstr "Help"
 
 #. placeholder {0}: hit.lineNumber
-#: src/console/SearchRunsDialog.tsx:146
+#: src/console/SearchRunsDialog.tsx:150
 msgid "L{0}"
 msgstr "L{0}"
 
@@ -3566,7 +3566,7 @@ msgstr "Skip sharing"
 msgid "The game is using this profile. Stop the game to change mods."
 msgstr "The game is using this profile. Stop the game to change mods."
 
-#: src/profiles/CompareDialog.tsx:388
+#: src/profiles/CompareDialog.tsx:389
 msgid "Compare against a friend's profile or a multiplayer host's list."
 msgstr "Compare against a friend's profile or a multiplayer host's list."
 
@@ -3781,7 +3781,7 @@ msgstr "Added {mods} to {profile}"
 msgid "Timed out waiting for mod updates"
 msgstr "Timed out waiting for mod updates"
 
-#: src/settings/sections/StreamOverlay.tsx:401
+#: src/settings/sections/StreamOverlay.tsx:395
 msgid "Could not copy"
 msgstr "Could not copy"
 
@@ -3876,7 +3876,7 @@ msgstr "Grid"
 msgid "Could not duplicate the profile"
 msgstr "Could not duplicate the profile"
 
-#: src/settings/sections/StreamOverlay.tsx:210
+#: src/settings/sections/StreamOverlay.tsx:204
 msgid "Copy CSS"
 msgstr "Copy CSS"
 
@@ -3927,7 +3927,7 @@ msgstr "{0, plural, one {# mod in the game's Mods folder isn't in Mortar.} other
 msgid "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order."
 msgstr "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order."
 
-#: src/settings/sections/StreamOverlay.tsx:296
+#: src/settings/sections/StreamOverlay.tsx:290
 msgid "Part of the OBS address; regenerate it if it leaks"
 msgstr "Part of the OBS address; regenerate it if it leaks"
 
@@ -4038,7 +4038,7 @@ msgstr "Share as r2modman code?"
 #: src/bundles/ApplyBundleToProfile.tsx:74
 #: src/bundles/dialogs.tsx:223
 #: src/bundles/dialogs.tsx:285
-#: src/console/HelpDialog.tsx:259
+#: src/console/HelpDialog.tsx:256
 #: src/console/StartupPanel.tsx:58
 #: src/fomod/Dialog.tsx:254
 #: src/game/NewProfileDialog.tsx:233
@@ -4237,7 +4237,7 @@ msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
 #: src/mods/CleanupSection.tsx:66
-#: src/mods/ProblemsTab.tsx:350
+#: src/mods/ProblemsTab.tsx:351
 msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
@@ -4369,7 +4369,7 @@ msgstr "Include disabled mods"
 msgid "slow Entry {ms}"
 msgstr "slow Entry {ms}"
 
-#: src/settings/sections/StreamOverlay.tsx:408
+#: src/settings/sections/StreamOverlay.tsx:402
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
 msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 
@@ -4702,7 +4702,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/sections/ModsProfiles.tsx:21
 #: src/settings/sections/Notifications.tsx:35
 #: src/settings/sections/SourceOrder.tsx:46
-#: src/settings/sections/StreamOverlay.tsx:397
+#: src/settings/sections/StreamOverlay.tsx:391
 #: src/settings/sections/SyncFolder.tsx:15
 #: src/settings/sections/SyncFolder.tsx:36
 #: src/settings/sections/Updates.tsx:161
@@ -4759,7 +4759,7 @@ msgstr "Added to Steam"
 msgid "That is for another game. Open that game and import it there."
 msgstr "That is for another game. Open that game and import it there."
 
-#: src/console/SearchRunsDialog.tsx:121
+#: src/console/SearchRunsDialog.tsx:125
 msgid "Enter text to search stored runs."
 msgstr "Enter text to search stored runs."
 
@@ -4779,7 +4779,7 @@ msgstr "Duplicate"
 msgid "and {count} more"
 msgstr "and {count} more"
 
-#: src/settings/sections/StreamOverlay.tsx:274
+#: src/settings/sections/StreamOverlay.tsx:268
 msgid "The local port OBS reads the overlay from"
 msgstr "The local port OBS reads the overlay from"
 
@@ -4839,7 +4839,7 @@ msgstr "Library"
 msgid "Connection"
 msgstr "Connection"
 
-#: src/mods/ProblemsTab.tsx:366
+#: src/mods/ProblemsTab.tsx:369
 msgid "Harmless"
 msgstr "Harmless"
 
@@ -5272,7 +5272,7 @@ msgstr "Copy the command"
 msgid "Background preview"
 msgstr "Background preview"
 
-#: src/profiles/CompareDialog.tsx:373
+#: src/profiles/CompareDialog.tsx:374
 #: src/profiles/CompareTop.tsx:91
 msgid "A friend's link or file…"
 msgstr "A friend's link or file…"
@@ -5294,7 +5294,7 @@ msgid "Backups ({count})"
 msgstr "Backups ({count})"
 
 #: src/mods/ProblemsTab.tsx:216
-#: src/mods/ProblemsTab.tsx:385
+#: src/mods/ProblemsTab.tsx:389
 msgid "Problem sections"
 msgstr "Problem sections"
 
@@ -5334,7 +5334,7 @@ msgstr "Files set aside"
 msgid "{name} profile history"
 msgstr "{name} profile history"
 
-#: src/settings/sections/StreamOverlay.tsx:173
+#: src/settings/sections/StreamOverlay.tsx:170
 msgid "Values"
 msgstr "Values"
 
@@ -5484,7 +5484,7 @@ msgstr "A share link names this profile and where each mod comes from, not the f
 msgid "Template saved"
 msgstr "Template saved"
 
-#: src/console/HelpDialog.tsx:268
+#: src/console/HelpDialog.tsx:265
 #: src/mods/ReportToAuthorButton.tsx:255
 msgid "Uploading…"
 msgstr "Uploading…"
@@ -5514,7 +5514,7 @@ msgid "Lavender"
 msgstr "Lavender"
 
 #: src/mods/ProblemsTab.tsx:122
-#: src/mods/ProblemsTab.tsx:359
+#: src/mods/ProblemsTab.tsx:360
 msgid "Redundant"
 msgstr "Redundant"
 
@@ -5795,9 +5795,9 @@ msgid "Game and SMAPI"
 msgstr "Game and SMAPI"
 
 #: src/commandPalette/paletteLabels.ts:18
-#: src/settings/sections/StreamOverlay.tsx:405
+#: src/settings/sections/StreamOverlay.tsx:399
+#: src/settings/sections/StreamOverlay.tsx:401
 #: src/settings/sections/StreamOverlay.tsx:407
-#: src/settings/sections/StreamOverlay.tsx:413
 msgid "Stream overlay"
 msgstr "Stream overlay"
 
@@ -6203,12 +6203,12 @@ msgstr "Create"
 msgid "Console level"
 msgstr "Console level"
 
-#: src/settings/sections/StreamOverlay.tsx:176
+#: src/settings/sections/StreamOverlay.tsx:173
 msgid "All values"
 msgstr "All values"
 
-#: src/settings/sections/StreamOverlay.tsx:274
-#: src/settings/sections/StreamOverlay.tsx:289
+#: src/settings/sections/StreamOverlay.tsx:268
+#: src/settings/sections/StreamOverlay.tsx:283
 msgid "Port"
 msgstr "Port"
 
@@ -6250,7 +6250,7 @@ msgstr "Skip image overlap analysis"
 msgid "config.json, made by the mod"
 msgstr "config.json, made by the mod"
 
-#: src/settings/sections/StreamOverlay.tsx:342
+#: src/settings/sections/StreamOverlay.tsx:336
 msgid "Token regenerated"
 msgstr "Token regenerated"
 
@@ -6263,7 +6263,7 @@ msgstr "{0} in progress"
 msgid "Read from the game's install."
 msgstr "Read from the game's install."
 
-#: src/settings/sections/StreamOverlay.tsx:399
+#: src/settings/sections/StreamOverlay.tsx:393
 msgid "Start the game to see values"
 msgstr "Start the game to see values"
 
@@ -6399,7 +6399,7 @@ msgstr "Unity starts"
 msgid "There is not enough free space at the destination."
 msgstr "There is not enough free space at the destination."
 
-#: src/profiles/CompareDialog.tsx:382
+#: src/profiles/CompareDialog.tsx:383
 #: src/profiles/CompareTop.tsx:98
 msgid "A multiplayer host's list…"
 msgstr "A multiplayer host's list…"
@@ -7114,7 +7114,7 @@ msgstr "Download them"
 msgid "Installed and up to date"
 msgstr "Installed and up to date"
 
-#: src/settings/sections/StreamOverlay.tsx:231
+#: src/settings/sections/StreamOverlay.tsx:225
 msgid "Regenerate token"
 msgstr "Regenerate token"
 
@@ -7139,7 +7139,7 @@ msgstr "Large"
 msgid "Category"
 msgstr "Category"
 
-#: src/console/HelpDialog.tsx:263
+#: src/console/HelpDialog.tsx:260
 msgid "Copy log and open {pasteHost}"
 msgstr "Copy log and open {pasteHost}"
 
@@ -7176,7 +7176,7 @@ msgstr "Hide mods of {0}"
 msgid "Could not sign in with Nexus Mods"
 msgstr "Could not sign in with Nexus Mods"
 
-#: src/console/SearchRunsDialog.tsx:165
+#: src/console/SearchRunsDialog.tsx:169
 msgid "Showing the first 500 matches."
 msgstr "Showing the first 500 matches."
 
@@ -7819,7 +7819,7 @@ msgstr "{0} · {1} mods"
 msgid "{0} goes back to {previous}, keeping its settings. Your saves are backed up first."
 msgstr "{0} goes back to {previous}, keeping its settings. Your saves are backed up first."
 
-#: src/console/HelpDialog.tsx:217
+#: src/console/HelpDialog.tsx:214
 #: src/mods/ReportToAuthorButton.tsx:201
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
@@ -7836,7 +7836,7 @@ msgstr "Created {name}"
 msgid "Updated {mods} in {profileName}"
 msgstr "Updated {mods} in {profileName}"
 
-#: src/console/SearchRunsDialog.tsx:116
+#: src/console/SearchRunsDialog.tsx:120
 msgid "Search every run"
 msgstr "Search every run"
 
@@ -8120,7 +8120,7 @@ msgstr "Disable suggested"
 msgid "Cosmetic"
 msgstr "Cosmetic"
 
-#: src/settings/sections/StreamOverlay.tsx:161
+#: src/settings/sections/StreamOverlay.tsx:158
 msgid "Copy OBS URL"
 msgstr "Copy OBS URL"
 
@@ -8391,7 +8391,7 @@ msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:63
 #: src/mods/ProblemsTab.tsx:108
-#: src/mods/ProblemsTab.tsx:364
+#: src/mods/ProblemsTab.tsx:367
 msgid "Compatibility"
 msgstr "Compatibility"
 
@@ -8452,7 +8452,7 @@ msgstr "Cached Nexus mod details"
 msgid "Mortar offers this update in the profile's update list."
 msgstr "Mortar offers this update in the profile's update list."
 
-#: src/settings/sections/StreamOverlay.tsx:309
+#: src/settings/sections/StreamOverlay.tsx:303
 msgid "Hide token"
 msgstr "Hide token"
 
@@ -8660,7 +8660,7 @@ msgstr "Copy the mods already in {gameName}'s Mods folder into a new profile. Th
 msgid "Money"
 msgstr "Money"
 
-#: src/settings/sections/StreamOverlay.tsx:229
+#: src/settings/sections/StreamOverlay.tsx:223
 msgid "Regenerate token?"
 msgstr "Regenerate token?"
 
@@ -9239,7 +9239,7 @@ msgstr "Also add selected mods to…"
 msgid "{0} is not syncing yet"
 msgstr "{0} is not syncing yet"
 
-#: src/settings/sections/StreamOverlay.tsx:138
+#: src/settings/sections/StreamOverlay.tsx:135
 msgid "Skills"
 msgstr "Skills"
 
@@ -9379,7 +9379,7 @@ msgid "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
 #: src/console/PerformancePanel.tsx:150
-#: src/mods/ProblemsTab.tsx:369
+#: src/mods/ProblemsTab.tsx:372
 #: src/mods/ReportToAuthorButton.tsx:175
 #: src/settings/sections/AboutDiagnostics.tsx:139
 msgid "Report copied"
@@ -9568,7 +9568,7 @@ msgstr "Signed in"
 msgid "{0, plural, one {# difference} other {# differences}}"
 msgstr "{0, plural, one {# difference} other {# differences}}"
 
-#: src/console/SearchRunsDialog.tsx:105
+#: src/console/SearchRunsDialog.tsx:109
 msgid "Search run logs"
 msgstr "Search run logs"
 
@@ -9629,7 +9629,7 @@ msgstr "SMAPI console window"
 msgid "{name} (disabled)"
 msgstr "{name} (disabled)"
 
-#: src/settings/sections/StreamOverlay.tsx:230
+#: src/settings/sections/StreamOverlay.tsx:224
 msgid "Existing OBS sources stop working until their URLs are copied again."
 msgstr "Existing OBS sources stop working until their URLs are copied again."
 
@@ -9769,7 +9769,7 @@ msgstr "Focus the search"
 msgid "No app opens these links now."
 msgstr "No app opens these links now."
 
-#: src/profiles/CompareDialog.tsx:303
+#: src/profiles/CompareDialog.tsx:304
 msgid "These profiles have the same mods."
 msgstr "These profiles have the same mods."
 
@@ -10152,7 +10152,7 @@ msgstr "Optional: {label}"
 msgid "Combine with…"
 msgstr "Combine with…"
 
-#: src/profiles/CompareDialog.tsx:303
+#: src/profiles/CompareDialog.tsx:304
 msgid "No matching mods"
 msgstr "No matching mods"
 
@@ -10203,7 +10203,7 @@ msgstr "Delete the template {0}?"
 
 #: src/settings/PrefControls.tsx:230
 #: src/settings/sections/General.tsx:111
-#: src/settings/sections/StreamOverlay.tsx:260
+#: src/settings/sections/StreamOverlay.tsx:254
 msgid "Enter a number from {min} to {max}"
 msgstr "Enter a number from {min} to {max}"
 
@@ -10371,7 +10371,7 @@ msgid "the mod"
 msgstr "the mod"
 
 #: src/browse/BrowseBody.tsx:73
-#: src/console/SearchRunsDialog.tsx:112
+#: src/console/SearchRunsDialog.tsx:116
 msgid "Searching…"
 msgstr "Searching…"
 
@@ -10448,8 +10448,8 @@ msgstr "Press Play. The BepInEx Bridge times each plugin's load and the start up
 msgid "Mortar checks Steam's settings for it: not found yet."
 msgstr "Mortar checks Steam's settings for it: not found yet."
 
-#: src/settings/sections/StreamOverlay.tsx:417
-#: src/settings/sections/StreamOverlay.tsx:418
+#: src/settings/sections/StreamOverlay.tsx:411
+#: src/settings/sections/StreamOverlay.tsx:412
 msgid "Show labels"
 msgstr "Show labels"
 
@@ -10898,7 +10898,7 @@ msgstr "the connection was refused"
 msgid "Removed the tag {detail} from {name}"
 msgstr "Removed the tag {detail} from {name}"
 
-#: src/settings/sections/StreamOverlay.tsx:330
+#: src/settings/sections/StreamOverlay.tsx:324
 msgid "Regenerate…"
 msgstr "Regenerate…"
 
@@ -10982,13 +10982,13 @@ msgstr "Mods are up to date"
 msgid "Redo update"
 msgstr "Redo update"
 
-#: src/settings/sections/StreamOverlay.tsx:295
-#: src/settings/sections/StreamOverlay.tsx:304
+#: src/settings/sections/StreamOverlay.tsx:289
+#: src/settings/sections/StreamOverlay.tsx:298
 msgid "Token"
 msgstr "Token"
 
 #: src/mods/ProblemBar.tsx:64
-#: src/mods/ProblemsTab.tsx:392
+#: src/mods/ProblemsTab.tsx:396
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -11531,7 +11531,7 @@ msgid "Saves"
 msgstr "Saves"
 
 #: src/saves/saveName.ts:29
-#: src/settings/sections/StreamOverlay.tsx:133
+#: src/settings/sections/StreamOverlay.tsx:130
 msgid "World"
 msgstr "World"
 
@@ -11635,7 +11635,7 @@ msgstr "Until the game's first scene has loaded"
 #: src/mods/EnableRequirementsDialog.tsx:55
 #: src/mods/LoadOrderTab.tsx:59
 #: src/mods/LoadOrderTab.tsx:98
-#: src/mods/ProblemsTab.tsx:349
+#: src/mods/ProblemsTab.tsx:350
 msgid "Unknown mod"
 msgstr "Unknown mod"
 
@@ -11834,7 +11834,7 @@ msgid "Unpair"
 msgstr "Unpair"
 
 #: src/settings/sections/StreamOverlay.tsx:62
-#: src/settings/sections/StreamOverlay.tsx:135
+#: src/settings/sections/StreamOverlay.tsx:132
 msgid "Player"
 msgstr "Player"
 
@@ -11988,7 +11988,7 @@ msgstr "Could not remove the mod from the bundle"
 msgid "Could not install {0}"
 msgstr "Could not install {0}"
 
-#: src/settings/sections/StreamOverlay.tsx:194
+#: src/settings/sections/StreamOverlay.tsx:191
 msgid "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
 msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
 
@@ -12749,7 +12749,7 @@ msgstr "{0} {1}"
 msgid "No mods yet"
 msgstr "No mods yet"
 
-#: src/console/SearchRunsDialog.tsx:120
+#: src/console/SearchRunsDialog.tsx:124
 msgid "No stored run contains that text."
 msgstr "No stored run contains that text."
 
@@ -12916,6 +12916,7 @@ msgid "Reinstall"
 msgstr "Reinstall"
 
 #: src/console/StartupSections.tsx:49
+#: src/profiles/CompareDialog.tsx:200
 #: src/profiles/CompareTop.tsx:134
 msgid "Compare"
 msgstr "Compare"
@@ -13138,8 +13139,8 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 
 #: src/console/BisectDialog.tsx:174
 #: src/console/BisectDialog.tsx:185
-#: src/console/HelpDialog.tsx:259
-#: src/console/SearchRunsDialog.tsx:172
+#: src/console/HelpDialog.tsx:256
+#: src/console/SearchRunsDialog.tsx:176
 #: src/game/FarmMenuItem.tsx:131
 #: src/launch/LaunchLayer.tsx:284
 #: src/launch/SweepDialog.tsx:136

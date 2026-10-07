@@ -27,7 +27,7 @@ import { useProfileLoader } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MONO } from '../theme/theme.ts'
-import { reportError, } from '../toasts/report.ts'
+import { reportError } from '../toasts/report.ts'
 import { anonymize } from './anonymize.ts'
 import { pasteLogConfirm, shareLogConfirm, shareLogText } from './shareLog.ts'
 import { useConsole } from './store.ts'
@@ -187,10 +187,7 @@ export function HelpDialog({ game }: { game: string }) {
     if (!log) {
       return
     }
-    void copyText(hideUserName ? anonymize(log) : log, t`Log copied`).then((ok) => {
-      if (!ok) {
-        return
-      }
+    copyText(hideUserName ? anonymize(log) : log, t`Log copied`, () => {
       close()
       return openPage(paste)
     })

@@ -9,7 +9,7 @@ import { reportBug } from './reportBug.ts'
 function Fallback({ error, stack, onRetry }: { error: Error; stack: string; onRetry: () => void }) {
   const { t } = useLingui()
   const copy = () => {
-    void copyText(`${error.stack ?? error.message}\n${stack}`, t`Details copied`)
+    copyText(`${error.stack ?? error.message}\n${stack}`, t`Details copied`)
   }
   return (
     <EmptyState

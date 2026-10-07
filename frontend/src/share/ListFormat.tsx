@@ -37,7 +37,7 @@ export function ListFormat({ disabled }: { disabled: boolean }) {
               setPartsAnchor(e.currentTarget)
               return
             }
-            void copyText(parts[0]?.text ?? '', t`Mod list copied`)
+            copyText(parts[0]?.text ?? '', t`Mod list copied`)
           }}
           disabled={disabled}
           sx={{ height: 40, px: '14px', fontSize: 14 }}
@@ -87,7 +87,7 @@ export function ListFormat({ disabled }: { disabled: boolean }) {
           <MenuItem
             key={part.id}
             onClick={() => {
-              void copyText(part.text, t`Part ${part.n} copied`)
+              copyText(part.text, t`Part ${part.n} copied`)
               setPartsAnchor(null)
             }}
           >

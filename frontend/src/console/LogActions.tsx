@@ -145,7 +145,7 @@ export function LogActions({ game }: { game: string }) {
         <MenuItem
           disabled={rows.length === 0}
           onClick={pick(() => {
-            void copyText(formatAll(rows), t`Log copied`)
+            copyText(formatAll(rows), t`Log copied`)
           })}
         >
           <ListItemIcon>

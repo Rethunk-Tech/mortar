@@ -6,7 +6,7 @@ import type { CommandPreview } from '../../bindings/github.com/Rethunk-Tech/mort
 import { PreviewCommand } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { copyText } from '../share/copyText.ts'
 import { MONO } from '../theme/theme.ts'
-import { errorMessage, } from '../toasts/report.ts'
+import { errorMessage } from '../toasts/report.ts'
 
 const PREVIEW_DEBOUNCE_MS = 300
 
@@ -53,7 +53,7 @@ export function LaunchPreview({
     return () => clearTimeout(timer)
   }, [read])
   const copyCommand = () => {
-    void copyText(formatShellLine(preview), t`Command copied`)
+    copyText(formatShellLine(preview), t`Command copied`)
   }
 
   return (
