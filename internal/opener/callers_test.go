@@ -15,6 +15,10 @@ import (
 // that starts a handler has to be added here on purpose.
 var handlerStarts = regexp.MustCompile(`Browser\.(OpenURL|OpenFile)\(|"xdg-open"|"explorer"|rundll32|ShellExecute|"gio",\s*"open"`)
 
+func rel0(root, path string) string {
+	return filepath.ToSlash(strings.TrimPrefix(path, root+string(filepath.Separator)))
+}
+
 func TestOnlyTheGuardedCallersStartTheSystemHandler(t *testing.T) {
 	root := filepath.Join("..", "..")
 	allowed := map[string]bool{
@@ -28,10 +32,12 @@ func TestOnlyTheGuardedCallersStartTheSystemHandler(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() && (d.Name() == "node_modules" || d.Name() == ".git" || d.Name() == "frontend") {
+		// tmp holds gitignored scratch (tens of thousands of files, none of it shipped code); walking it costs seconds
+		// and its churn keeps go test from caching this package.
+		if d.IsDir() && (d.Name() == "node_modules" || d.Name() == ".git" || d.Name() == "frontend" || rel0(root, path) == "tmp") {
 			return fs.SkipDir
 		}
-		rel := filepath.ToSlash(strings.TrimPrefix(path, root+string(filepath.Separator)))
+		rel := rel0(root, path)
 		if d.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") || allowed[rel] {
 			return nil
 		}
