@@ -33,7 +33,7 @@ The frontend build first runs `scripts/gen-credits.ts`, which rewrites `frontend
 
 ## Command line
 
-With Mortar running, `mortar <command>` asks the open app and prints a table, or JSON with `--json`; `mortar help` lists every command. `<profile>` is a profile id or name.
+With Mortar running, `mortar <command>` asks the open app and prints a table, or JSON with `--json` (output flags `--json` and `-v` may come before the verb: `mortar --json install ...`); `mortar help` lists every command. `<profile>` is a profile id or name.
 
 | Command | Does |
 | --- | --- |
@@ -50,11 +50,13 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `history <game> --all` | recent changes across that game's profiles |
 | `profile load-order <game> <profile>` | enabled mods (BepInEx: plugins) in the loader's load order |
 | `mods <game> <profile>`, `mods enable\|disable\|pin\|unpin\|remove ... <mod id>...`, `mod ... <mod id>` | list, change and inspect mods (a mod id is `<format>:<local id>`; a bare id means the game's own format, SMAPI's UniqueID for Stardew) |
-| `install <game> <profile> <archive>` | install a local archive |
+| `install <game> <profile> <archive> [--allow-unscanned]` | install a local archive; `--allow-unscanned` installs it although the antivirus flagged it (recorded in the profile's history) |
+| `antivirus status` | the scanner in use (`amsi`, `clamd`, `command`, `off`), its product, and whether a scan can start now |
 | `conflicts`, `problems [--format text]`, `updates`, `saves <game> <profile>` | what the Problems, Mods and Saves tabs show |
 | `problems dismissed`, `problems dismiss <index>`, `problems restore <token\|index>` (`--profile`, `--game stardew`) | dismiss and restore Problems-tab warnings like the GUI |
 | `share`, `export <game> <profile> [file]`, `open <link\|file>` | share links and `.mortar` files |
 | `launch <game> <profile> [--preset NAME] [--wait]`, `status`, `stop <game>`, `runs`, `logs`, `logs search <query> [--profile <name>]` | play and read past runs |
+| `perf reports <game> <profile>` | saved performance reports |
 | `launchers`, `launchers add\|remove <id> <folder>` | what Settings › Launchers shows and changes |
 | `tools <game>`, `tools run <game> <profile> <tool>` | configured external tools; start one |
 | `bundles <game>`, `bundles apply <game> <bundle> <profile>` | list saved bundles; copy one into a profile |
@@ -70,7 +72,7 @@ With Mortar running, `mortar <command>` asks the open app and prints a table, or
 | `queue retry-failed`, `data location`, `archive preview <path>`, `archive downloads <game>` | retry every failed download; where the data folder is and whether it is portable; an archive's contents; archives in the downloads folder |
 | `queue`, `doctor`, `version`, `completion bash\|zsh\|fish` | the download queue, the environment, shell completion |
 
-`--json` writes failures to stderr as `{"error":"...","code":...}`. Exit code 2 means usage or confirmation was required, 3 means Mortar was not running or `play --check` found issues, and 1 means another failure. `mortar doctor` falls back to read-only offline checks when Mortar is not running: it exits 1 when those checks find problems and 3 when they find none, never 0.
+`--json` writes failures to stderr as `{"error":"...","kind":"...","code":...}`, plus a `detail` object when the failure carries typed fields (a flagged install names `game`, `key`, `name`, `file` and `scanner`). Exit code 2 means usage or confirmation was required, 3 means Mortar was not running or `play --check` found issues, and 1 means another failure. `mortar doctor` falls back to read-only offline checks when Mortar is not running: it exits 1 when those checks find problems and 3 when they find none, never 0.
 
 ```sh
 mortar conflicts stardew "Profile 2"

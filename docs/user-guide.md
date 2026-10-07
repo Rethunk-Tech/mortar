@@ -8,7 +8,7 @@ Download from [Releases](https://github.com/Rethunk-Tech/mortar/releases/latest)
 
 ### Windows
 
-Use `mortar-amd64-installer.exe` on most PCs, or `mortar-arm64-installer.exe` on an ARM PC. The installer puts Mortar in `%LOCALAPPDATA%\Programs\Mortar` and adds Start Menu and Desktop shortcuts. `mortar-windows-amd64.exe` and `mortar-windows-arm64.exe` are the bare program: run them from any folder, with nothing installed.
+Use `mortar-amd64-installer.exe` on most PCs, or `mortar-arm64-installer.exe` on an ARM PC. The installer puts Mortar in `%LOCALAPPDATA%\Programs\Mortar` and adds Start Menu and Desktop shortcuts. It installs for your account only, so it never asks for administrator rights. `mortar-windows-amd64.exe` and `mortar-windows-arm64.exe` are the bare program: run them from any folder, with nothing installed.
 
 The Windows builds are not code-signed, so SmartScreen shows "Windows protected your PC" the first time. Choose **More info**, then **Run anyway**.
 
@@ -117,14 +117,14 @@ Modrinth and itch.io are mod sites Mortar can search and install from for a game
 
 ## Edit a mod's settings
 
-Mortar edits a mod's config file as a form, so you never open a text file.
+Mortar edits a mod's config file as a form, so you never open a text file. The **Config** tab (Ctrl+6) lists every mod that has settings, with a **Changed** chip on the ones that differ from the mod's own defaults, and edits the one you pick beside the list. Mods that have not run yet have no config; they write it the first time the game runs.
 
-1. In the **Mods** tab, select a mod. The details panel opens beside the list; drag its left edge to resize it.
+1. In the **Mods** tab, select a mod. The details panel opens beside the list; drag its left edge to resize it. (Right-click a mod, or open its **⋯** menu, and choose **Edit config** to jump straight there.)
 2. Under **Config**, choose **Edit config**. (The **More details** dialog has the same button under **Settings**.)
-3. The editor takes over the tab. The mod's config files are listed on the left (`config.json` for a SMAPI mod, each BepInEx `.cfg` for a Lethal Company plugin). Pick one.
+3. The editor opens on the Config tab with the mod selected. The mod's config files are listed on the left (`config.json` for a SMAPI mod, each BepInEx `.cfg` for a Lethal Company plugin). Pick one.
 4. Change a value. On and off settings are switches, numbers are fields (sliders when the mod gives a small range), choices are drop-downs, colours open a colour picker and lists are chips you add to and remove from. A setting's info button shows the mod's own description of it.
 5. Each change saves as you make it. A setting that is not the mod's default shows a **Reset to default** button; **Reset all** puts the whole file back after you confirm. **Search entries** filters the long ones.
-6. **Presets** saves the file's values under a name (**Save current as…**) and applies a saved set to any profile's copy. The **X** closes the editor.
+6. **Presets** saves the file's values under a name (**Save current as…**) and applies a saved set to any profile's copy.
 
 Mortar does not save a change while the game runs the profile.
 
@@ -192,11 +192,11 @@ A profile is one set of mods. Switching profiles never touches the game folder's
 
 Press **Play** in Mortar. It applies the profile's mod list, then starts the game through SMAPI.
 
-When a run crashes, a card appears at the top of the profile. Mortar reads the loader's log (and, for a Lethal Company run, Unity's player log, where a crash prints `Crash!!!` or `Fatal error`) and names the likely cause:
+When a run crashes, a card appears on the profile's Home. Mortar names the likely cause from the loader's log (and, for a Lethal Company run, Unity's player log, where a crash prints `Crash!!!` or `Fatal error`). For a SMAPI run it also reads the .NET stack in the log and blames the first mod frame nearest the error. When the logs name no mod, it reads the crash dump the game left (Unity's crash folder, a Windows error report or, on Linux, `coredumpctl`) and blames a mod whose DLL held the fault.
 
-- **Mortar thinks \<mod\> caused the crash** with the log's line. **Disable and retry** switches that mod off and starts the game again.
-- **The last run crashed.** with the log's line, when the log names no mod you have.
-- **Bisect from here** halves the mods and relaunches until one mod is left, and **Dismiss** hides the card for that run.
+- **Most likely cause: \<mod\>** with the log's line, and under it the **Stack frame** or dump line that points at the mod. **Disable it and play** switches that mod off and starts the game again.
+- When nothing names a mod you have, the card shows the log's line, or says the log does not name a mod.
+- **Find the cause…** halves the mods and relaunches until one mod is left. **Dismiss** hides the card for that run.
 
 On Windows, Steam's own **Play** button is different: it starts SMAPI with the game's own `Mods` folder, not a profile. To play a profile, press Play in Mortar, or use a profile shortcut. A profile's menu has **Add a shortcut that plays this profile** (a Start Menu shortcut on Windows, a launcher entry on Linux) and **Add this profile to Steam**, which adds the profile to your Steam library as a non-Steam game. Close Steam before adding.
 
@@ -220,7 +220,7 @@ A mod you enabled needs another mod that is not in the profile, or is disabled. 
 
 #### Broken mod
 
-SMAPI's list marks the mod as broken, obsolete or abandoned for your game version. It may crash, do nothing, or stop working after the next game update. Update it, or replace it with the mod the row names.
+Something marks the mod as broken, obsolete, abandoned or gone: SMAPI's list for your game version, Mortar's own list of known-broken mods, or the mod's site (Nexus when the page is hidden, removed or under moderation; Modrinth, CurseForge and GitHub when the project is archived, inactive, abandoned or deleted). The row names who said so. It may crash, do nothing, or stop working after the next game update. Update it, or replace it with the mod the row names.
 
 #### Duplicate mod
 
@@ -323,6 +323,16 @@ To move the data, stop the game and open **Settings › Storage**, then **Move�
 - **Linux:** first run `mortar --release-links && mortar uninstall-cleanup` (for the AppImage, `./Mortar.AppImage --release-links && ./Mortar.AppImage uninstall-cleanup`; for the Flatpak, `flatpak run tech.rethunk.Mortar` with the same two arguments). That gives nxm:// links back to the app that had them, removes the browser extension's connection, the start-at-login entry, your profile shortcuts, the profiles you added to Steam, and the menu entry, icon and file types an AppImage or the portable binary added. Then remove the package, the AppImage or the Flatpak. Removing the `.deb`, `.rpm` or Arch package with `sudo` runs those two steps for you, for your own account only; other accounts on the machine, or a removal from a software centre, need the commands. Delete the data folder by hand to remove profiles and mods.
 
 Close Steam before uninstalling so the Steam cleanup sticks: Steam rewrites its shortcut list when it exits.
+
+## Stream overlay
+
+For OBS: Mortar's bridge in the game serves live values (the player, the day, money and skills in Stardew Valley; the moon, crew and quota in Lethal Company; the biome, day and defeated bosses in Valheim) to a browser source. In the game's **Settings**, open **Stream overlay**, turn it on and press Play (the bridge reads the setting when the game starts). Each value has a live preview and a copy button for its OBS URL. The page also gives the OBS steps and the **Port** and **Token** the overlay uses. It listens on this computer only. Pick **Stream overlay** in the command palette (Ctrl+K) to jump there.
+
+## Antivirus scan
+
+Before a mod enters Mortar's store, Mortar scans its files with your antivirus: Windows Security on Windows, or ClamAV's clamd on Linux when it runs. If the scan flags a file, the install is refused and the extracted files are deleted. A flagged download shows **Flagged by \<scanner\>: \<name\> in \<file\>** with **Install anyway**, and a flagged local install shows an error with the same button. **Install anyway** asks you to confirm, installs that mod once without a scan and records it in the profile's history. When Windows' real-time protection removes a file itself, there is nothing left to install anyway; restore it from Windows Security's protection history. A scan that cannot finish installs the mod and warns you.
+
+In **Settings › General › Antivirus**, choose **Automatic** (the default), **clamd socket** (with its socket path), **Custom command** (a program that gets the folder as `{path}`: exit 0 is clean, any other code is a detection named by the first line it prints) or **Off**. **Scanner in use** names what Mortar found, or "No antivirus found". The setting belongs to this computer and is not part of an exported settings file.
 
 ## Troubleshooting
 
