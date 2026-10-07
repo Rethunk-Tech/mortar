@@ -1,8 +1,14 @@
 import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import MenuItem from '@mui/material/MenuItem'
-import Tooltip from '@mui/material/Tooltip'
 import type { ReactNode } from 'react'
+import { OneTip } from './OneTip.tsx'
+
+// The one destructive menu item look: error.main alone is too dark on the dark menu paper and reads as disabled.
+const destructiveSx = {
+  color: 'error.light',
+  '&:hover': { bgcolor: 'rgba(244, 67, 54, 0.14)' },
+} as const
 
 export function MenuAction({
   icon,
@@ -20,11 +26,7 @@ export function MenuAction({
   onClick: () => void
 }) {
   const item = (
-    <MenuItem
-      disabled={disabled}
-      onClick={onClick}
-      sx={tone ? { color: `${tone}.main` } : undefined}
-    >
+    <MenuItem disabled={disabled} onClick={onClick} sx={tone ? destructiveSx : undefined}>
       <ListItemIcon sx={{ color: 'inherit' }}>{icon}</ListItemIcon>
       {disabled && tooltip ? (
         <ListItemText
@@ -40,9 +42,9 @@ export function MenuAction({
   )
   // A disabled item cannot be focused or hovered reliably, so its reason is shown as text instead of a tooltip.
   return tooltip && !disabled ? (
-    <Tooltip title={tooltip} placement="left" describeChild={true}>
+    <OneTip title={tooltip} placement="left" describeChild={true}>
       <span>{item}</span>
-    </Tooltip>
+    </OneTip>
   ) : (
     item
   )
