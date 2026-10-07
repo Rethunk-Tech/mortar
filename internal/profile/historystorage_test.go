@@ -13,12 +13,8 @@ func TestTrimHistoryDropsOldEventsAndRecordsIt(t *testing.T) {
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := addFarmMod(t, e)
 	for range 3 {
-		if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", false); err != nil {
-			t.Fatal(err)
-		}
-		if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", true); err != nil {
-			t.Fatal(err)
-		}
+		e.mustSetMeA(t, p.ID, false)
+		e.mustSetMeA(t, p.ID, true)
 	}
 	before, err := e.History("stardew", p.ID)
 	if err != nil || len(before) < 6 {

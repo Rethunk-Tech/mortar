@@ -14,9 +14,7 @@ func TestHistoryRecordsAFinishedDownload(t *testing.T) {
 	f.start()
 	r := req(10)
 	r.BatchID = "batch-1"
-	if _, err := f.s.Add(t.Context(), []Request{r}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(r)
 	f.wait("done", f.item(StateDone))
 	got := f.s.History()
 	if len(got) != 1 {
@@ -34,9 +32,7 @@ func TestHistoryRecordsAFinishedDownload(t *testing.T) {
 func TestHistoryRecordsSkipAndClear(t *testing.T) {
 	f := newFixture(t)
 	f.s.Pause()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	id := f.s.State().Items[0].ID
 	f.s.Skip(id)
 	got := f.s.History()
@@ -80,9 +76,7 @@ func TestHistoryFileIsJSON(t *testing.T) {
 func TestRetryAllFailed(t *testing.T) {
 	f := newFixture(t)
 	f.s.Pause()
-	if _, err := f.s.Add(t.Context(), []Request{req(30)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(30))
 	base := HistoryEntry{Game: "stardew", Profile: "p1", ModID: 1, Kind: "nexus"}
 	mk := func(file int, outcome string) HistoryEntry {
 		e := base

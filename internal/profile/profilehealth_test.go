@@ -110,10 +110,7 @@ func TestHealthUnusedStoreItems(t *testing.T) {
 func TestHealthUnreadableSnapshotIsDropped(t *testing.T) {
 	t.Parallel()
 	e, svc, p := healthEnv(t)
-	events, err := e.History("stardew", p.ID)
-	if err != nil || len(events) == 0 {
-		t.Fatalf("history = %v, %v", events, err)
-	}
+	events := e.mustHistory(t, p.ID)
 	broken := events[0]
 	path, _ := snapshotFilePath(filepath.Dir(e.mods(p.ID)), broken.SnapshotID)
 	if err := os.WriteFile(path, []byte("not gzip"), 0o600); err != nil {

@@ -225,10 +225,7 @@ func TestSplitAndCombineEntries(t *testing.T) {
 	if _, err := e.SplitExtra("stardew", p.ID, entryKey, "missing-extra"); err == nil {
 		t.Fatal("split of an unknown extra must fail")
 	}
-	before, err := e.History("stardew", p.ID)
-	if err != nil || len(before) == 0 {
-		t.Fatalf("history before split: %v %v", before, err)
-	}
+	before := e.mustHistory(t, p.ID)
 	got, err := e.SplitExtra("stardew", p.ID, entryKey, extraKey)
 	if err != nil {
 		t.Fatal(err)

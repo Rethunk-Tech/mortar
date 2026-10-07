@@ -37,11 +37,33 @@ func signedManifest(t *testing.T, serial uint64, public ed25519.PrivateKey) ([]b
 	return body, ed25519.Sign(public, body)
 }
 
-func TestVerifySignature(t *testing.T) {
+func newKey(t *testing.T) (ed25519.PublicKey, ed25519.PrivateKey) {
+	t.Helper()
 	public, private, err := ed25519.GenerateKey(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+	return public, private
+}
+
+// signedServer serves body and its signature where Load looks for them and returns a client pointed at it.
+func signedServer(t *testing.T, body, signature []byte) *Client {
+	t.Helper()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/components.json.sig" {
+			_, _ = w.Write(signature)
+			return
+		}
+		_, _ = w.Write(body)
+	}))
+	t.Cleanup(server.Close)
+	client := NewClient(server.Client())
+	client.ManifestURL = server.URL + "/components.json"
+	return client
+}
+
+func TestVerifySignature(t *testing.T) {
+	public, private := newKey(t)
 	body, signature := signedManifest(t, 1, private)
 	if err := Verify(body, signature, public); err != nil {
 		t.Fatalf("valid signature: %v", err)
@@ -51,10 +73,7 @@ func TestVerifySignature(t *testing.T) {
 	if err := Verify(tampered, signature, public); err == nil {
 		t.Fatal("tampered manifest was accepted")
 	}
-	wrong, _, err := ed25519.GenerateKey(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	wrong, _ := newKey(t)
 	if err := Verify(body, signature, wrong); err == nil {
 		t.Fatal("signature verified with the wrong key")
 	}
@@ -75,14 +94,7 @@ func TestManifestRejectsUntrustedHost(t *testing.T) {
 }
 
 func TestLoadRefusesSerialRollbackAndKeepsCachedManifest(t *testing.T) {
-	_, private, err := ed25519.GenerateKey(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	public, ok := private.Public().(ed25519.PublicKey)
-	if !ok {
-		t.Fatal("generated key is not Ed25519")
-	}
+	public, private := newKey(t)
 	base := bundledSerial(t)
 	body, signature := signedManifest(t, base+2, private)
 	rollback, rollbackSignature := signedManifest(t, base+1, private)
@@ -136,14 +148,7 @@ func TestLoadRefusesSerialRollbackAndKeepsCachedManifest(t *testing.T) {
 }
 
 func TestLoadTellsABadSignatureFromAnUnavailableManifest(t *testing.T) {
-	_, private, err := ed25519.GenerateKey(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	public, ok := private.Public().(ed25519.PublicKey)
-	if !ok {
-		t.Fatal("generated key is not Ed25519")
-	}
+	public, private := newKey(t)
 	body, signature := signedManifest(t, bundledSerial(t)+1, private)
 	signature[0] ^= 0xff
 	missing := false
@@ -234,26 +239,10 @@ func bundledSerial(t *testing.T) uint64 {
 }
 
 func TestLoadRefusesManifestOlderThanBundled(t *testing.T) {
-	_, private, err := ed25519.GenerateKey(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	public, ok := private.Public().(ed25519.PublicKey)
-	if !ok {
-		t.Fatal("generated key is not Ed25519")
-	}
+	public, private := newKey(t)
 	base := bundledSerial(t)
 	body, signature := signedManifest(t, base-1, private)
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/components.json.sig" {
-			_, _ = w.Write(signature)
-			return
-		}
-		_, _ = w.Write(body)
-	}))
-	t.Cleanup(server.Close)
-	client := NewClient(server.Client())
-	client.ManifestURL = server.URL + "/components.json"
+	client := signedServer(t, body, signature)
 	manifest, err := client.Load(t.Context(), nil, public)
 	if err == nil || manifest.Serial != base {
 		t.Fatalf("older signed manifest = serial %d, %v; want the bundled serial %d and an error", manifest.Serial, err, base)
@@ -278,27 +267,11 @@ func TestGameFallsBackToBundledAndRejectsUnsafeNames(t *testing.T) {
 }
 
 func TestLoadRefusesManifestWithoutCatalogShape(t *testing.T) {
-	_, private, err := ed25519.GenerateKey(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	public, ok := private.Public().(ed25519.PublicKey)
-	if !ok {
-		t.Fatal("generated key is not Ed25519")
-	}
+	public, private := newKey(t)
 	base := bundledSerial(t)
 	body := []byte(`{"serial":` + strconv.FormatUint(base+1, 10) + `,"components":[],"games":[{"id":"stardew","name":"Stardew Valley","steamAppId":"413150","marker":"Stardew Valley.dll","loader":"SMAPI"}]}`)
 	signature := ed25519.Sign(private, body)
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/components.json.sig" {
-			_, _ = w.Write(signature)
-			return
-		}
-		_, _ = w.Write(body)
-	}))
-	t.Cleanup(server.Close)
-	client := NewClient(server.Client())
-	client.ManifestURL = server.URL + "/components.json"
+	client := signedServer(t, body, signature)
 	manifest, err := client.Load(t.Context(), nil, public)
 	if err == nil || manifest.Serial != base {
 		t.Fatalf("old-shape manifest = serial %d, %v; want the bundled serial %d and an error", manifest.Serial, err, base)
@@ -466,14 +439,7 @@ func TestACommunityBepInExPackIsTheLoaderPackage(t *testing.T) {
 // The catalog's serial is not bumped with every change to it, so a manifest cached by another build, or by one that did
 // not stamp its cache, is fetched again instead of shadowing what this build ships.
 func TestLoadFetchesAgainAManifestCachedWithoutThisBuildsStamp(t *testing.T) {
-	_, private, err := ed25519.GenerateKey(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	public, ok := private.Public().(ed25519.PublicKey)
-	if !ok {
-		t.Fatal("generated key is not Ed25519")
-	}
+	public, private := newKey(t)
 	base := bundledSerial(t)
 	oldBody, oldSignature := signedManifest(t, base+1, private)
 	body, signature := signedManifest(t, base+2, private)

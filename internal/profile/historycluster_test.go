@@ -94,9 +94,7 @@ func TestRevertHistoryItemKinds(t *testing.T) {
 	if err != nil || len(cur.Entries) != 1 {
 		t.Fatalf("after revert add: %+v %v", cur.Entries, err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", false); err != nil {
-		t.Fatal(err)
-	}
+	e.mustSetMeA(t, p.ID, false)
 	evs, err := e.History("stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)

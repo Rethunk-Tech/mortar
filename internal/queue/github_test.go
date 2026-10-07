@@ -101,9 +101,7 @@ func ghReq(version string) Request {
 func TestGitHubSingleAssetInstalls(t *testing.T) {
 	g := newGitHubFixture(t)
 	g.start()
-	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
-		t.Fatal(err)
-	}
+	g.add(ghReq("2.0.0"))
 	st := g.wait("done", g.item(StateDone))
 	it := st.Items[0]
 	want := profile.Source{Kind: profile.KindGitHub, Name: "mod-2.0.0.zip", Version: "2.0.0", Repo: "me/mod", Tag: "v2.0.0", Asset: "mod-2.0.0.zip"}
@@ -119,9 +117,7 @@ func TestGitHubSeveralAssetsWaitForAChoice(t *testing.T) {
 	g := newGitHubFixture(t)
 	g.multi.Store(true)
 	g.start()
-	if _, err := g.s.Add(t.Context(), []Request{ghReq("")}); err != nil {
-		t.Fatal(err)
-	}
+	g.add(ghReq(""))
 	st := g.wait("the choice", g.item(StateNeedsChoice))
 	if got := st.Items[0].Assets; len(got) != 2 || got[0] != "mod-2.0.0.zip" || got[1] != "mod-2.0.0-alt.zip" {
 		t.Fatalf("choices %v", got)
@@ -183,14 +179,17 @@ func TestGitHubAssetPrefersTheLoadersShape(t *testing.T) {
 	}
 }
 
-func TestGitHubMismatchWaitsForConfirmation(t *testing.T) {
-	g := newGitHubFixture(t)
+// awaitConfirmation queues a release whose archive fails the check and returns the state once it waits.
+func (g *ghFixture) awaitConfirmation() State {
 	g.ok.Store(false)
 	g.start()
-	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
-		t.Fatal(err)
-	}
-	st := g.wait("the confirmation", g.item(StateNeedsConfirm))
+	g.add(ghReq("2.0.0"))
+	return g.wait("the confirmation", g.item(StateNeedsConfirm))
+}
+
+func TestGitHubMismatchWaitsForConfirmation(t *testing.T) {
+	g := newGitHubFixture(t)
+	st := g.awaitConfirmation()
 	if len(g.final) != 0 {
 		t.Fatal("installed before the user decided")
 	}
@@ -215,9 +214,7 @@ func TestGitHubUnknownSourceInstallsWithANote(t *testing.T) {
 	g := newGitHubFixture(t)
 	g.verdict.Store(github.ErrUnknown)
 	g.start()
-	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
-		t.Fatal(err)
-	}
+	g.add(ghReq("2.0.0"))
 	st := g.wait("done", g.item(StateDone))
 	if !st.Items[0].Unverified || len(g.final) != 1 {
 		t.Errorf("item %+v installed %+v", st.Items[0], g.final)
@@ -228,9 +225,7 @@ func TestGitHubRateLimitPausesUntilTheReset(t *testing.T) {
 	g := newGitHubFixture(t)
 	g.limited.Store(true)
 	g.start()
-	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
-		t.Fatal(err)
-	}
+	g.add(ghReq("2.0.0"))
 	st := g.wait("the limit", func(st State) bool { return st.LimitedUntil != 0 })
 	if st.LimitedUntil != g.now().Add(time.Hour).Unix() || st.Items[0].State != StateQueued {
 		t.Fatalf("state %+v", st)
@@ -257,12 +252,7 @@ func TestGitHubRequestsNeedNoSignInButAValidRepo(t *testing.T) {
 
 func TestConfirmSurvivesARestartAndItsInstallIgnoresCancel(t *testing.T) {
 	g := newGitHubFixture(t)
-	g.ok.Store(false)
-	g.start()
-	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
-		t.Fatal(err)
-	}
-	id := g.wait("the confirmation", g.item(StateNeedsConfirm)).Items[0].ID
+	id := g.awaitConfirmation().Items[0].ID
 
 	again, err := New(g.s.d)
 	if err != nil {
@@ -309,12 +299,7 @@ func TestConfirmSurvivesARestartAndItsInstallIgnoresCancel(t *testing.T) {
 
 func TestAStagedKeyIsKeptAndALostOneDownloadsAgain(t *testing.T) {
 	g := newGitHubFixture(t)
-	g.ok.Store(false)
-	g.start()
-	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
-		t.Fatal(err)
-	}
-	id := g.wait("the confirmation", g.item(StateNeedsConfirm)).Items[0].ID
+	id := g.awaitConfirmation().Items[0].ID
 	if keys := g.s.StagedKeys()["stardew"]; len(keys) != 1 || keys[0] != "github-key" {
 		t.Fatalf("staged keys %v", keys)
 	}
@@ -340,12 +325,7 @@ func TestAStagedKeyIsKeptAndALostOneDownloadsAgain(t *testing.T) {
 
 func TestSkippingAConfirmationReleasesItsStagedKey(t *testing.T) {
 	g := newGitHubFixture(t)
-	g.ok.Store(false)
-	g.start()
-	if _, err := g.s.Add(t.Context(), []Request{ghReq("2.0.0")}); err != nil {
-		t.Fatal(err)
-	}
-	id := g.wait("the confirmation", g.item(StateNeedsConfirm)).Items[0].ID
+	id := g.awaitConfirmation().Items[0].ID
 	g.s.Skip(id)
 	if keys := g.s.StagedKeys(); len(keys) != 0 {
 		t.Fatalf("a skipped item keeps its staged key: %v", keys)

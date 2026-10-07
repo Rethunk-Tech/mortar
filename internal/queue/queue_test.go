@@ -179,6 +179,15 @@ func (f *fixture) start() {
 	})
 }
 
+func (f *fixture) add(reqs ...Request) []Item {
+	f.t.Helper()
+	items, err := f.s.Add(f.t.Context(), reqs)
+	if err != nil {
+		f.t.Fatal(err)
+	}
+	return items
+}
+
 func (f *fixture) wait(what string, ok func(State) bool) State {
 	f.t.Helper()
 	deadline := time.Now().Add(5 * time.Second)
@@ -243,9 +252,7 @@ func TestPremiumDownloadsAndInstallsWithoutClicks(t *testing.T) {
 func TestSkipProfileHoldsDownloadsUntilRestore(t *testing.T) {
 	f := newFixture(t)
 	f.s.Pause()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	f.s.SkipProfile("stardew", "p1")
 	st := f.s.State()
 	if len(st.Items) != 1 || st.Items[0].State != StateSkipped || st.Items[0].Error != "profile deleted" {
@@ -268,9 +275,7 @@ func TestSkipCancelsAFetch(t *testing.T) {
 		fmt.Fprint(w, payload)
 	}
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	<-entered
 	f.s.Skip(f.s.State().Items[0].ID)
 	close(release)
@@ -364,9 +369,7 @@ func TestAStoredFileInstallsFromTheStoreWithoutAClick(t *testing.T) {
 	f.premium.Store(false)
 	f.stored = map[string]profile.Source{"nexus-1-10": {Kind: "nexus", Name: "a-1.0.zip", ModID: 1, FileID: 10, Version: "1.0", Picture: "https://img/a.png", EndorsementCount: 7}}
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	st := f.wait("done", f.item(StateDone))
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -398,9 +401,7 @@ func TestFreeAccountWaitsForTheClickThenTakesTheLink(t *testing.T) {
 	f := newFixture(t)
 	f.premium.Store(false)
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	f.wait("the click", f.item(StateWaitingClick))
 	f.wait("the page", func(State) bool {
 		f.mu.Lock()
@@ -432,9 +433,7 @@ func TestWaitingLatestItemIsSkippedOnceTheProfileHasANewerFile(t *testing.T) {
 	f.start()
 	exact, latest := req(10), req(10)
 	exact.Profile, latest.Latest = "p2", true
-	if _, err := f.s.Add(t.Context(), []Request{latest, exact}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(latest, exact)
 	f.wait("the click", f.item(StateWaitingClick))
 	f.newest.Store(11)
 	f.s.poke()
@@ -450,9 +449,7 @@ func TestExpiredKeyReopensThePage(t *testing.T) {
 	f := newFixture(t)
 	f.premium.Store(false)
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	f.wait("the click", f.item(StateWaitingClick))
 	f.s.Route(nxm.Link{ModID: 1, FileID: 10, Key: "old", Expires: f.now().Unix() + 1})
 	f.wait("the page again", func(State) bool {
@@ -469,9 +466,7 @@ func TestRateLimitPausesUntilTheReset(t *testing.T) {
 	f := newFixture(t)
 	f.limitNow.Store(true)
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	st := f.wait("the limit", func(st State) bool { return st.LimitedUntil != 0 })
 	if st.LimitedUntil != f.now().Add(time.Hour).Unix() || st.Items[0].State != StateQueued {
 		t.Fatalf("state %+v", st)
@@ -507,9 +502,7 @@ func TestFailedRetrySkipAndCancel(t *testing.T) {
 	}
 	t.Cleanup(func() { close(block) })
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	st := f.wait("failure", f.item(StateFailed))
 	if !strings.Contains(st.Items[0].Error, "500") {
 		t.Errorf("error %q", st.Items[0].Error)
@@ -519,17 +512,13 @@ func TestFailedRetrySkipAndCancel(t *testing.T) {
 	f.wait("done after retry", f.item(StateDone))
 
 	fail.Store(true)
-	if _, err := f.s.Add(t.Context(), []Request{req(11)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(11))
 	st = f.wait("second failure", func(st State) bool { return len(st.Items) == 2 && st.Items[1].State == StateFailed })
 	f.s.Skip(st.Items[1].ID)
 	f.wait("skipped", func(st State) bool { return st.Items[1].State == StateSkipped })
 
 	hold.Store(true)
-	if _, err := f.s.Add(t.Context(), []Request{req(12)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(12))
 	st = f.wait("downloading", func(st State) bool { return len(st.Items) == 3 && st.Items[2].State == StateDownloading })
 	f.s.Cancel(st.Items[2].ID)
 	f.wait("cancelled", func(st State) bool { return st.Items[2].State == StateCancelled })
@@ -543,9 +532,7 @@ func TestPauseHoldsBackNewDownloads(t *testing.T) {
 	f := newFixture(t)
 	f.start()
 	f.s.Pause()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	time.Sleep(50 * time.Millisecond)
 	if st := f.s.State(); !st.Paused || st.Items[0].State != StateQueued {
 		t.Fatalf("state %+v", st)
@@ -557,9 +544,7 @@ func TestPauseHoldsBackNewDownloads(t *testing.T) {
 func TestQueueSurvivesARestart(t *testing.T) {
 	f := newFixture(t)
 	f.s.Pause()
-	if _, err := f.s.Add(t.Context(), []Request{req(10), req(11)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10), req(11))
 	f.s.mu.Lock()
 	f.s.items[0].State = StateDownloading
 	f.s.mu.Unlock()
@@ -595,9 +580,7 @@ func TestNexusDownloadOverTheCapFails(t *testing.T) {
 		fmt.Fprint(w, payload)
 	}
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	st := f.wait("failed", f.item(StateFailed))
 	if !strings.Contains(st.Items[0].Error, "larger than") || len(f.installs) != 0 {
 		t.Fatalf("item %+v installs %v", st.Items[0], f.installs)
@@ -611,9 +594,7 @@ func TestItemsForARunningProfileWait(t *testing.T) {
 	running.Store(true)
 	f.s.d.Running = func(_, id string) bool { return id == "p1" && running.Load() }
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	time.Sleep(100 * time.Millisecond)
 	if st := f.s.State(); st.Items[0].State != StateQueued || len(f.installs) != 0 {
 		t.Fatalf("item for a running profile moved on: %+v", st.Items[0])
@@ -749,9 +730,7 @@ func TestAutoRetryFetchesBeforeFailing(t *testing.T) {
 	}
 	f.s.d.RetryFetches = func() int { return 2 }
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	f.wait("done after retries", f.item(StateDone))
 	if hits.Load() != 3 {
 		t.Fatalf("fetches = %d", hits.Load())
@@ -765,9 +744,7 @@ func TestPauseDownloadsWhileGameRuns(t *testing.T) {
 	f.s.d.PauseWhilePlaying = func() bool { return true }
 	f.s.d.GameBusy = busy.Load
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	time.Sleep(80 * time.Millisecond)
 	if st := f.s.State(); len(st.Items) != 1 || st.Items[0].State != StateQueued {
 		t.Fatalf("while busy %+v", f.s.State())
@@ -784,9 +761,7 @@ func TestNexusMD5MismatchFailsDownload(t *testing.T) {
 		fmt.Fprint(w, "not the archive")
 	}
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	st := f.wait("md5 failed", f.item(StateFailed))
 	if !strings.Contains(st.Items[0].Error, "MD5") {
 		t.Fatalf("error %q", st.Items[0].Error)
@@ -797,9 +772,7 @@ func TestNexusMD5MatchAllowsInstall(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.VerifyNexusMD5 = func() bool { return true }
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	f.wait("md5 ok", f.item(StateDone))
 }
 
@@ -820,9 +793,7 @@ func TestNexusMD5OfANamedFileIsLookedUpAndRetryRefetches(t *testing.T) {
 	f.start()
 	named := req(10)
 	named.FileName = "a-1.0.zip"
-	if _, err := f.s.Add(t.Context(), []Request{named}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(named)
 	st := f.wait("md5 failed", f.item(StateFailed))
 	if !strings.Contains(st.Items[0].Error, "MD5") {
 		t.Fatalf("error %q", st.Items[0].Error)

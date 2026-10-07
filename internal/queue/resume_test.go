@@ -36,76 +36,84 @@ func rangeSvc(t *testing.T, client *http.Client) *Service {
 	}
 }
 
-func TestFetchStartsOverWhenTheServerIgnoresRange(t *testing.T) {
-	const body = "abcdefghij0123456789"
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Length", fmt.Sprint(len(body)))
-		_, _ = io.WriteString(w, body)
+const rangeBody = "abcdefghij0123456789"
+
+// bodyServer serves rangeBody whole with hdr set, ignoring Range.
+func bodyServer(t *testing.T, hdr map[string]string) *httptest.Server {
+	t.Helper()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		for k, v := range hdr {
+			w.Header().Set(k, v)
+		}
+		w.Header().Set("Content-Length", fmt.Sprint(len(rangeBody)))
+		_, _ = io.WriteString(w, rangeBody)
 	}))
 	t.Cleanup(srv.Close)
+	return srv
+}
 
+// fetchFrom runs one fetch of srv into a fresh service and returns its destination and the error.
+func fetchFrom(t *testing.T, srv *httptest.Server) (string, error) {
+	t.Helper()
 	s := rangeSvc(t, srv.Client())
 	path := s.dest("item", "m.zip")
-	if err := os.WriteFile(path, []byte("PARTIAL!!"), 0o600); err != nil {
+	return path, s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path)
+}
+
+// serveRange answers only a resume from byte from, as the CDN does for a partial it handed out.
+func serveRange(w http.ResponseWriter, r *http.Request, body string, from int) {
+	if r.Header.Get("Range") != fmt.Sprintf("bytes=%d-", from) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Accept-Ranges", "bytes")
+	w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", from, len(body)-1, len(body)))
+	w.WriteHeader(http.StatusPartialContent)
+	_, _ = io.WriteString(w, body[from:])
+}
+
+// seedPartial leaves partial at path with the sidecar a stopped download writes.
+func seedPartial(t *testing.T, path, partial string, resume map[string]any) {
+	t.Helper()
+	if err := os.WriteFile(path, []byte(partial), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	_ = datadir.WriteJSON(path+".resume.json", map[string]any{"expectedSize": int64(len(body)), "url": srv.URL})
+	_ = datadir.WriteJSON(path+".resume.json", resume)
+}
+
+func TestFetchStartsOverWhenTheServerIgnoresRange(t *testing.T) {
+	srv := bodyServer(t, nil)
+	s := rangeSvc(t, srv.Client())
+	path := s.dest("item", "m.zip")
+	seedPartial(t, path, "PARTIAL!!", map[string]any{"expectedSize": int64(len(rangeBody)), "url": srv.URL})
 
 	if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
 		t.Fatal(err)
 	}
 	got, err := fsx.ReadFile(path)
-	if err != nil || string(got) != body {
+	if err != nil || string(got) != rangeBody {
 		t.Fatalf("got %q err %v", got, err)
 	}
 }
 
 func TestFetchVerifiesAChecksumFromTheSource(t *testing.T) {
-	const body = "abcdefghij0123456789"
-	sum := sha256.Sum256([]byte(body))
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("X-Checksum-Sha256", hex.EncodeToString(sum[:]))
-		w.Header().Set("Content-Length", fmt.Sprint(len(body)))
-		_, _ = io.WriteString(w, body)
-	}))
-	t.Cleanup(srv.Close)
-
-	s := rangeSvc(t, srv.Client())
-	path := s.dest("item", "m.zip")
-	if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
+	sum := sha256.Sum256([]byte(rangeBody))
+	if _, err := fetchFrom(t, bodyServer(t, map[string]string{"X-Checksum-Sha256": hex.EncodeToString(sum[:])})); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestFetchContentMD5(t *testing.T) {
-	const body = "abcdefghij0123456789"
-	sum := md5.Sum([]byte(body)) // #nosec G401 -- Content-MD5 is MD5 by RFC 1864
-	ok := base64.StdEncoding.EncodeToString(sum[:])
+	sum := md5.Sum([]byte(rangeBody)) // #nosec G401 -- Content-MD5 is MD5 by RFC 1864
 
 	t.Run("match", func(t *testing.T) {
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-			w.Header().Set("Content-MD5", ok)
-			w.Header().Set("Content-Length", fmt.Sprint(len(body)))
-			_, _ = io.WriteString(w, body)
-		}))
-		t.Cleanup(srv.Close)
-		s := rangeSvc(t, srv.Client())
-		path := s.dest("item", "m.zip")
-		if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
+		if _, err := fetchFrom(t, bodyServer(t, map[string]string{"Content-MD5": base64.StdEncoding.EncodeToString(sum[:])})); err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("mismatch", func(t *testing.T) {
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-			w.Header().Set("Content-MD5", base64.StdEncoding.EncodeToString(make([]byte, md5.Size)))
-			w.Header().Set("Content-Length", fmt.Sprint(len(body)))
-			_, _ = io.WriteString(w, body)
-		}))
-		t.Cleanup(srv.Close)
-		s := rangeSvc(t, srv.Client())
-		path := s.dest("item", "m.zip")
-		err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path)
+		path, err := fetchFrom(t, bodyServer(t, map[string]string{"Content-MD5": base64.StdEncoding.EncodeToString(make([]byte, md5.Size))}))
 		if err == nil || !strings.Contains(err.Error(), "Content-MD5") {
 			t.Fatalf("err = %v", err)
 		}
@@ -115,14 +123,7 @@ func TestFetchContentMD5(t *testing.T) {
 	})
 
 	t.Run("absent", func(t *testing.T) {
-		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-			w.Header().Set("Content-Length", fmt.Sprint(len(body)))
-			_, _ = io.WriteString(w, body)
-		}))
-		t.Cleanup(srv.Close)
-		s := rangeSvc(t, srv.Client())
-		path := s.dest("item", "m.zip")
-		if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
+		if _, err := fetchFrom(t, bodyServer(t, nil)); err != nil {
 			t.Fatal(err)
 		}
 	})
@@ -132,30 +133,14 @@ func TestTruncatedPartialResumesAfterRestart(t *testing.T) {
 	f := newFixture(t)
 	const body = payload
 	half := len(body) / 2
-	f.cdn = func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Range") != fmt.Sprintf("bytes=%d-", half) {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		w.Header().Set("Accept-Ranges", "bytes")
-		w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", half, len(body)-1, len(body)))
-		w.WriteHeader(http.StatusPartialContent)
-		_, _ = io.WriteString(w, body[half:])
-	}
+	f.cdn = func(w http.ResponseWriter, r *http.Request) { serveRange(w, r, body, half) }
 	f.s.Pause()
-	items, err := f.s.Add(t.Context(), []Request{req(10)})
-	if err != nil {
-		t.Fatal(err)
-	}
-	id := items[0].ID
+	id := f.add(req(10))[0].ID
 	if err := os.MkdirAll(filepath.Join(f.dir, downloadsDir), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	path := filepath.Join(f.dir, downloadsDir, id+filepath.Ext("a-1.0.zip"))
-	if err := os.WriteFile(path, []byte(body[:half]), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	_ = datadir.WriteJSON(path+".resume.json", map[string]any{"expectedSize": int64(len(body)), "url": "stale"})
+	seedPartial(t, path, body[:half], map[string]any{"expectedSize": int64(len(body)), "url": "stale"})
 	f.s.mu.Lock()
 	f.s.items[0].State = StateDownloading
 	f.s.items[0].FileName = "a-1.0.zip"
@@ -204,16 +189,7 @@ func TestExpiredNexusLinkRefetchesThenRanges(t *testing.T) {
 	mux.HandleFunc("/cdn/old.zip", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
 	})
-	mux.HandleFunc("/cdn/new.zip", func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Range") != fmt.Sprintf("bytes=%d-", half) {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		w.Header().Set("Accept-Ranges", "bytes")
-		w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", half, len(body)-1, len(body)))
-		w.WriteHeader(http.StatusPartialContent)
-		_, _ = io.WriteString(w, body[half:])
-	})
+	mux.HandleFunc("/cdn/new.zip", func(w http.ResponseWriter, r *http.Request) { serveRange(w, r, body, half) })
 	srv = httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 
@@ -246,10 +222,7 @@ func TestExpiredNexusLinkRefetchesThenRanges(t *testing.T) {
 		t.Fatal(err)
 	}
 	path := filepath.Join(dir, downloadsDir, items[0].ID+filepath.Ext("a-1.0.zip"))
-	if err := os.WriteFile(path, []byte(body[:half]), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	_ = datadir.WriteJSON(path+".resume.json", map[string]any{"expectedSize": int64(len(body)), "url": srv.URL + "/cdn/old.zip"})
+	seedPartial(t, path, body[:half], map[string]any{"expectedSize": int64(len(body)), "url": srv.URL + "/cdn/old.zip"})
 
 	ctx, cancel := context.WithCancel(context.Background())
 	wait := Run(ctx, s, make(chan nxmsvc.Assignment))
@@ -304,10 +277,7 @@ func TestFetchGivesUpOnALoopingPartialRange(t *testing.T) {
 	t.Cleanup(srv.Close)
 	s := rangeSvc(t, srv.Client())
 	path := s.dest("item", "m.zip")
-	if err := os.WriteFile(path, []byte("PARTIAL!!"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	_ = datadir.WriteJSON(path+".resume.json", map[string]any{"expectedSize": 10, "etag": `"v1"`, "url": srv.URL})
+	seedPartial(t, path, "PARTIAL!!", map[string]any{"expectedSize": 10, "etag": `"v1"`, "url": srv.URL})
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	t.Cleanup(cancel)
 	err := s.fetch(ctx, Item{ID: "item"}, srv.URL, path)

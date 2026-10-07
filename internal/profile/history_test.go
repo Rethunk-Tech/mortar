@@ -27,6 +27,24 @@ func addFarmMod(t *testing.T, e env) Profile {
 	return p
 }
 
+// mustHistory is the profile's non-empty event list.
+func (e env) mustHistory(t *testing.T, profileID string) []HistoryEvent {
+	t.Helper()
+	events, err := e.History("stardew", profileID)
+	if err != nil || len(events) == 0 {
+		t.Fatalf("history: %v %v", events, err)
+	}
+	return events
+}
+
+// mustSetMeA turns the Me.A mod that addFarmMod adds on or off.
+func (e env) mustSetMeA(t *testing.T, profileID string, enabled bool) {
+	t.Helper()
+	if _, err := e.SetModEnabled("stardew", profileID, "local-a", "smapi:Me.A", enabled); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestHistoryRecordsEachOperation(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
@@ -37,12 +55,8 @@ func TestHistoryRecordsEachOperation(t *testing.T) {
 	if _, err := e.AddEntry("stardew", p.ID, "local-b", Source{Kind: KindLocal, Name: "b.zip"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", false); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", true); err != nil {
-		t.Fatal(err)
-	}
+	e.mustSetMeA(t, p.ID, false)
+	e.mustSetMeA(t, p.ID, true)
 	if _, err := e.SetPinned("stardew", p.ID, "local-a", true, ""); err != nil {
 		t.Fatal(err)
 	}
@@ -104,10 +118,7 @@ func TestHistoryRevertRestoresEntries(t *testing.T) {
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
 	p := addFarmMod(t, e)
-	afterAdd, err := e.History("stardew", p.ID)
-	if err != nil || len(afterAdd) == 0 {
-		t.Fatalf("history after add: %v %v", afterAdd, err)
-	}
+	afterAdd := e.mustHistory(t, p.ID)
 	snap, err := e.Snapshot("stardew", p.ID, afterAdd[0].SnapshotID)
 	if err != nil {
 		t.Fatal(err)
@@ -139,14 +150,9 @@ func TestHistoryRevertCarriesModifiedConfig(t *testing.T) {
 		"config.json":   "shipped",
 	})
 	p := addFarmMod(t, e)
-	afterAdd, err := e.History("stardew", p.ID)
-	if err != nil || len(afterAdd) == 0 {
-		t.Fatalf("history after add: %v %v", afterAdd, err)
-	}
+	afterAdd := e.mustHistory(t, p.ID)
 	writeFile(t, e.mods(p.ID), "local-a/config.json", "mine")
-	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", false); err != nil {
-		t.Fatal(err)
-	}
+	e.mustSetMeA(t, p.ID, false)
 	if _, err := e.Revert("stardew", p.ID, afterAdd[0].ID); err != nil {
 		t.Fatal(err)
 	}
@@ -160,14 +166,11 @@ func TestHistoryRevertMissingStoreKeys(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := addFarmMod(t, e)
-	events, err := e.History("stardew", p.ID)
-	if err != nil || len(events) == 0 {
-		t.Fatal(err)
-	}
+	events := e.mustHistory(t, p.ID)
 	if err := e.items.Remove([]store.Ref{{Game: "stardew", Key: "local-a"}}); err != nil {
 		t.Fatal(err)
 	}
-	_, err = e.Revert("stardew", p.ID, events[0].ID)
+	_, err := e.Revert("stardew", p.ID, events[0].ID)
 	missing, ok := errors.AsType[*MissingKeys](err)
 	if !ok || len(missing.Keys) == 0 {
 		t.Fatalf("Revert = %v, want MissingKeys", err)
@@ -353,12 +356,9 @@ func TestHistoryRevertRefusedWhileRunning(t *testing.T) {
 	e := newEnv(t)
 	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
 	p := addFarmMod(t, e)
-	events, err := e.History("stardew", p.ID)
-	if err != nil || len(events) == 0 {
-		t.Fatal(err)
-	}
+	events := e.mustHistory(t, p.ID)
 	e.Running = func(game, id string) bool { return game == "stardew" && id == p.ID }
-	_, err = e.Revert("stardew", p.ID, events[0].ID)
+	_, err := e.Revert("stardew", p.ID, events[0].ID)
 	if _, ok := errors.AsType[*RunningError](err); !ok {
 		t.Fatalf("Revert = %v, want RunningError", err)
 	}
@@ -748,10 +748,7 @@ func TestAChangeReturnsTheIDOfItsHistoryEventWithoutWritingIt(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	events, err := e.History("stardew", p.ID)
-	if err != nil || len(events) == 0 {
-		t.Fatalf("history: %v %v", events, err)
-	}
+	events := e.mustHistory(t, p.ID)
 	if changed.LastChange == "" || changed.LastChange != events[0].ID {
 		t.Fatalf("LastChange %q, newest event %q", changed.LastChange, events[0].ID)
 	}

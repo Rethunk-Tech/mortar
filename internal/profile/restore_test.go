@@ -16,9 +16,7 @@ func TestRestoreEntriesReappliesEntryFields(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:Me.A", false); err != nil {
-		t.Fatal(err)
-	}
+	e.mustSetMeA(t, p.ID, false)
 	if _, err := e.SetPinned("stardew", p.ID, "local-a", true, ""); err != nil {
 		t.Fatal(err)
 	}

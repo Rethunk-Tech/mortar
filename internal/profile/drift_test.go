@@ -33,14 +33,8 @@ func TestScanDriftUnknownDeletedChanged(t *testing.T) {
 	when := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
 	writeTimed(t, filepath.Join(mods, "keep-me", "manifest.json"), "a", when)
 	writeTimed(t, filepath.Join(mods, "changed", "manifest.json"), "old", when)
-	keepStat, err := walkFolderStat(filepath.Join(mods, "keep-me"), "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	changeStat, err := walkFolderStat(filepath.Join(mods, "changed"), "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	keepStat := mustFolderStat(t, filepath.Join(mods, "keep-me"), "")
+	changeStat := mustFolderStat(t, filepath.Join(mods, "changed"), "")
 	snap := ModsSnapshot{Folders: map[string]FolderStat{
 		"keep-me": keepStat,
 		"changed": changeStat,
@@ -80,20 +74,39 @@ func TestScanDriftUnknownDeletedChanged(t *testing.T) {
 	}
 }
 
+func mustFolderStat(t *testing.T, root, peer string) FolderStat {
+	t.Helper()
+	st, err := walkFolderStat(root, peer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return st
+}
+
+func (e env) mustInstall(t *testing.T, profileID, zip string) {
+	t.Helper()
+	if _, err := e.InstallArchive("stardew", profileID, zip); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func (e env) mustScanDrift(t *testing.T, profileID string) []Drift {
+	t.Helper()
+	got, err := e.ScanModsDrift("stardew", profileID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return got
+}
+
 func TestScanDriftIgnoresConfigJSON(t *testing.T) {
 	t.Parallel()
 	mods := t.TempDir()
 	when := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
 	writeTimed(t, filepath.Join(mods, "mod", "manifest.json"), "a", when)
-	st, err := walkFolderStat(filepath.Join(mods, "mod"), "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	st := mustFolderStat(t, filepath.Join(mods, "mod"), "")
 	writeTimed(t, filepath.Join(mods, "mod", "config.json"), `{"x":1}`, when.Add(time.Hour))
-	after, err := walkFolderStat(filepath.Join(mods, "mod"), "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	after := mustFolderStat(t, filepath.Join(mods, "mod"), "")
 	if after != st {
 		t.Fatalf("config.json counted as an outside edit: %+v vs %+v", st, after)
 	}
@@ -112,15 +125,9 @@ func TestScanDriftIgnoresModDataWrites(t *testing.T) {
 	mods := t.TempDir()
 	when := time.Date(2026, 3, 1, 12, 0, 0, 0, time.UTC)
 	writeTimed(t, filepath.Join(mods, "mod", "manifest.json"), "a", when)
-	st, err := walkFolderStat(filepath.Join(mods, "mod"), "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	st := mustFolderStat(t, filepath.Join(mods, "mod"), "")
 	writeTimed(t, filepath.Join(mods, "mod", "data", "x.json"), `{"x":1}`, when.Add(time.Hour))
-	after, err := walkFolderStat(filepath.Join(mods, "mod"), "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	after := mustFolderStat(t, filepath.Join(mods, "mod"), "")
 	if after != st {
 		t.Fatalf("data/ counted as an outside edit: %+v vs %+v", st, after)
 	}
@@ -138,14 +145,8 @@ func TestScanDriftLinkedShippedFileUnchanged(t *testing.T) {
 	if err := os.Link(filepath.Join(store, "manifest.json"), filepath.Join(mods, "mod", "manifest.json")); err != nil {
 		t.Fatal(err)
 	}
-	st, err := walkFolderStat(filepath.Join(mods, "mod"), store)
-	if err != nil {
-		t.Fatal(err)
-	}
-	after, err := walkFolderStat(filepath.Join(mods, "mod"), store)
-	if err != nil {
-		t.Fatal(err)
-	}
+	st := mustFolderStat(t, filepath.Join(mods, "mod"), store)
+	after := mustFolderStat(t, filepath.Join(mods, "mod"), store)
 	if after != st {
 		t.Fatalf("hardlink counted as modified: %+v vs %+v", st, after)
 	}
@@ -210,13 +211,8 @@ func TestInstallThenScanReportsNoDrift(t *testing.T) {
 	e := newEnv(t)
 	p := mustCreate(t, e, "Farm")
 	zip := buildZip(t, "mod.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
-	if _, err := e.InstallArchive("stardew", p.ID, zip); err != nil {
-		t.Fatal(err)
-	}
-	got, err := e.ScanModsDrift("stardew", p.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
+	e.mustInstall(t, p.ID, zip)
+	got := e.mustScanDrift(t, p.ID)
 	if len(got) != 0 {
 		t.Fatalf("after Mortar install: %#v", got)
 	}
@@ -253,19 +249,14 @@ func TestSwitchingAModOffIsNotDrift(t *testing.T) {
 		"A/assets/a.png":  "a",
 		"B/manifest.json": manifestJSON("X.B"),
 	})
-	if _, err := e.InstallArchive("stardew", p.ID, zip); err != nil {
-		t.Fatal(err)
-	}
+	e.mustInstall(t, p.ID, zip)
 	if _, err := e.ScanModsDrift("stardew", p.ID); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.SetModEnabled("stardew", p.ID, "", "smapi:X.A", false); err != nil {
 		t.Fatal(err)
 	}
-	got, err := e.ScanModsDrift("stardew", p.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
+	got := e.mustScanDrift(t, p.ID)
 	if len(got) != 0 {
 		t.Fatalf("after switching a mod off: %#v", got)
 	}
@@ -278,9 +269,7 @@ func TestRefreshDependenciesReadsOptionalFromStoreManifest(t *testing.T) {
 	zip := buildZip(t, "pack.zip", map[string]string{
 		"A/manifest.json": `{"UniqueID":"X.A","Name":"A","Version":"1.0","Dependencies":[{"UniqueID":"X.Opt","IsRequired":"false"}]}`,
 	})
-	if _, err := e.InstallArchive("stardew", p.ID, zip); err != nil {
-		t.Fatal(err)
-	}
+	e.mustInstall(t, p.ID, zip)
 	if _, err := e.update("stardew", p.ID, func(p *Profile, _ string) error {
 		p.Entries[0].Mods[0].Optional = nil
 		return nil
@@ -358,10 +347,7 @@ func TestListStoreItemMatchesSeparateWalks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	st, err := walkFolderStat(root, "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	st := mustFolderStat(t, root, "")
 	if len(got.files) != len(files) || got.stat != st {
 		t.Fatalf("one walk = %v %+v, separate walks = %v %+v", got.files, got.stat, files, st)
 	}
@@ -456,28 +442,19 @@ func TestFolderStatKeptListingsStillSeeEditsAndNewFiles(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	first, err := walkFolderStat(root, "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	first := mustFolderStat(t, root, "")
 	saveDirListings()
 	reset()
 
 	// An edit in place leaves every folder's time alone; the file's own stat still shows it.
 	writeTimed(t, filepath.Join(root, "sub", "a.json"), "edited", old.Add(time.Minute))
-	edited, err := walkFolderStat(root, "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	edited := mustFolderStat(t, root, "")
 	if edited.Files != 1 || edited.Size == first.Size || edited.Newest == first.Newest {
 		t.Fatalf("in-place edit unseen: %+v, was %+v", edited, first)
 	}
 
 	writeTimed(t, filepath.Join(root, "sub", "b.json"), "b", old)
-	added, err := walkFolderStat(root, "")
-	if err != nil {
-		t.Fatal(err)
-	}
+	added := mustFolderStat(t, root, "")
 	if added.Files != 2 {
 		t.Fatalf("new nested file unseen: %+v", added)
 	}
@@ -504,10 +481,7 @@ func TestSetWinnerThenScanReportsNoDrift(t *testing.T) {
 	if _, err := e.SetWinner("stardew", p.ID, winner, "smapi:X.Win", "smapi:X.Lose", true); err != nil {
 		t.Fatal(err)
 	}
-	got, err := e.ScanModsDrift("stardew", p.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
+	got := e.mustScanDrift(t, p.ID)
 	if len(got) != 0 {
 		t.Fatalf("after Mortar's own make-win: %#v", got)
 	}

@@ -26,9 +26,7 @@ func TestNexusOptionalFileOffersMergeIntoTheSamePageEntry(t *testing.T) {
 		return profile.InstallResult{}, nil
 	}
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	st := f.wait("merge choice", f.item(StateNeedsMerge))
 	if st.Items[0].Merge == nil || st.Items[0].Merge.EntryKey != "nexus-1-9" || !st.Items[0].Merge.DefaultAdd {
 		t.Fatalf("ask %+v", st.Items[0].Merge)
@@ -47,9 +45,7 @@ func TestNexusSecondMainFileCanStayASeparateEntry(t *testing.T) {
 		return profile.MergeAsk{EntryKey: "nexus-1-9", Label: "Alpha", DefaultAdd: false}, 0, true
 	}
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	st := f.wait("merge choice", f.item(StateNeedsMerge))
 	f.s.AnswerMerge(st.Items[0].ID, false)
 	f.wait("separate", f.item(StateDone))
@@ -68,9 +64,7 @@ func TestNexusUpdateFromTheSamePageInstallsInPlaceOfTheEntry(t *testing.T) {
 		return profile.MergeAsk{}, 9, false
 	}
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	st := f.wait("updated", f.item(StateDone))
 	if st.Items[0].Current != 9 || len(f.installs) != 1 {
 		t.Fatalf("current %d installs %d", st.Items[0].Current, len(f.installs))
@@ -82,9 +76,7 @@ func TestAnInstalledArchiveIsKeptWhenThePlayerKeepsArchives(t *testing.T) {
 	f := newFixture(t)
 	f.keep.Store(true)
 	f.start()
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	st := f.wait("installed", f.item(StateDone))
 	if _, err := os.Stat(f.s.dest(st.Items[0].ID, st.Items[0].FileName)); err != nil {
 		t.Fatalf("the kept archive is gone: %v", err)
@@ -93,9 +85,7 @@ func TestAnInstalledArchiveIsKeptWhenThePlayerKeepsArchives(t *testing.T) {
 
 func TestAWantJoiningAFailedItemTakesItsBatch(t *testing.T) {
 	f := newFixture(t)
-	if _, err := f.s.Add(t.Context(), []Request{req(10)}); err != nil {
-		t.Fatal(err)
-	}
+	f.add(req(10))
 	f.s.mu.Lock()
 	f.s.items[0].State = StateFailed
 	f.s.mu.Unlock()
