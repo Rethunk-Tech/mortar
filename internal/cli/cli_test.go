@@ -107,6 +107,10 @@ func TestCommandsSendTheirArguments(t *testing.T) {
 	if r.code != 0 || len(r.calls) != 1 || r.calls[0].method != "launch" || !r.calls[0].params.Force {
 		t.Fatalf("--force: %+v", r)
 	}
+	r = invoke(t, map[string]any{"install": map[string]any{}}, "install", "stardew", "abc", "mod.zip", "--allow-unscanned")
+	if r.code != 0 || len(r.calls) != 1 || r.calls[0].method != "install" || !r.calls[0].params.Unscanned {
+		t.Fatalf("--allow-unscanned: %+v", r)
+	}
 	r = invoke(t, map[string]any{"launch": nil}, "launch", "stardew", "abc", "--preset", "Debug")
 	if r.code != 0 || len(r.calls) != 1 || r.calls[0].params.Preset != "Debug" {
 		t.Fatalf("--preset: %+v", r)

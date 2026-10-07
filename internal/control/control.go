@@ -55,14 +55,16 @@ type Params struct {
 	Yes    bool     `json:"yes,omitempty"`
 	Sub    string   `json:"sub,omitempty"`
 	Force  bool     `json:"force,omitempty"`
-	Key    string   `json:"key,omitempty"`
-	Value  string   `json:"value,omitempty"`
-	Remove bool     `json:"remove,omitempty"`
-	Set    bool     `json:"set,omitempty"`
-	Clear  bool     `json:"clear,omitempty"`
-	Unlink bool     `json:"unlink,omitempty"`
-	Keep   int      `json:"keep,omitempty"`
-	Preset string   `json:"preset,omitempty"`
+	// Unscanned is "Install anyway" for an install the antivirus flagged.
+	Unscanned bool   `json:"unscanned,omitempty"`
+	Key       string `json:"key,omitempty"`
+	Value     string `json:"value,omitempty"`
+	Remove    bool   `json:"remove,omitempty"`
+	Set       bool   `json:"set,omitempty"`
+	Clear     bool   `json:"clear,omitempty"`
+	Unlink    bool   `json:"unlink,omitempty"`
+	Keep      int    `json:"keep,omitempty"`
+	Preset    string `json:"preset,omitempty"`
 	// Loader names one of the game's loaders; empty means the catalog's first.
 	Loader string `json:"loader,omitempty"`
 }

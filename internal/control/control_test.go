@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -23,7 +24,10 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func waitFile(t *testing.T, path string, present bool) {
@@ -162,6 +166,12 @@ func TestCheckProtocolRefusesAnotherProtocol(t *testing.T) {
 
 func services(t *testing.T) *Services {
 	t.Helper()
+	s, _ := servicesWithItems(t)
+	return s
+}
+
+func servicesWithItems(t *testing.T) (*Services, *store.Store) {
+	t.Helper()
 	tmp := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", filepath.Join(tmp, "data"))
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(tmp, "config"))
@@ -171,11 +181,37 @@ func services(t *testing.T) *Services {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, profiles := testenv.Stores(t)
+	items, profiles := testenv.Stores(t)
 	return &Services{
 		Version: "test", Settings: st, Games: game.NewService(home, st), Store: profiles,
 		Profiles: profile.NewService(profiles, home, st),
 		Problems: problems.NewService(home, st, profiles, &meta.Client{CacheDir: filepath.Join(tmp, "cache")}),
+	}, items
+}
+
+type flaggingScanner struct{}
+
+func (flaggingScanner) Scan(context.Context, string) (avscan.Detection, bool, error) {
+	return avscan.Detection{Name: "Test.Threat", File: "Mod/a.dll", Scanner: "fake"}, true, nil
+}
+
+func TestInstallAnywayInstallsAFlaggedArchiveOnlyWhenAsked(t *testing.T) {
+	s, items := servicesWithItems(t)
+	items.SetScanner(func() avscan.Scanner { return flaggingScanner{} }, nil)
+	prof, err := s.Profiles.Create("stardew", "Farm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "mod.zip"), map[string]string{
+		"Mod/manifest.json": `{"Name":"Flagged","UniqueID":"Test.Flagged","Version":"1.0.0","MinimumApiVersion":"4.0.0"}`,
+		"Mod/a.dll":         "x",
+	})
+	if _, err := s.install("stardew", prof.ID, zip, false); usererr.KindOf(err) != usererr.Malware {
+		t.Fatalf("a flagged archive installed or failed another way: %v", err)
+	}
+	out, err := s.install("stardew", prof.ID, zip, true)
+	if err != nil || len(out.Added) == 0 {
+		t.Fatalf("install anyway = %+v, %v", out, err)
 	}
 }
 

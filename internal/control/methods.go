@@ -36,6 +36,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 	"github.com/Rethunk-Tech/mortar/internal/shortcut"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/storecheck"
 	"github.com/Rethunk-Tech/mortar/internal/support"
 	"github.com/Rethunk-Tech/mortar/internal/templates"
@@ -918,7 +919,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "mods.group":
 		return s.modsGroup(p, prof, id)
 	case "install":
-		return s.changed(p.Game, func() (any, error) { return s.install(p.Game, id, p.Path) })
+		return s.changed(p.Game, func() (any, error) { return s.install(p.Game, id, p.Path, p.Unscanned) })
 	case "conflicts":
 		res, err := s.Problems.ProblemsWithEvidence(ctx, p.Game, id)
 		if err != nil {
@@ -1252,11 +1253,16 @@ func (s *Services) remove(gameID, id string, p profile.Profile, keys []string) (
 	return out, nil
 }
 
-func (s *Services) install(gameID, id, path string) (InstallOutcome, error) {
+func (s *Services) install(gameID, id, path string, unscanned bool) (InstallOutcome, error) {
 	if _, err := os.Stat(path); err != nil {
 		return InstallOutcome{}, err
 	}
 	res, err := s.Profiles.InstallArchive(gameID, id, path)
+	if det, ok := errors.AsType[*store.DetectedError](err); ok && unscanned {
+		if err = s.Profiles.AllowUnscanned(gameID, id, det.Key, filepath.Base(path), det.Name); err == nil {
+			res, err = s.Profiles.InstallArchive(gameID, id, path)
+		}
+	}
 	if err != nil {
 		if _, ok := errors.AsType[*profile.NeedChoicesError](err); ok {
 			return InstallOutcome{Needs: "fomod"}, nil

@@ -71,58 +71,59 @@ func Is(args []string) bool {
 type caller func(method string, p control.Params, out any, timeout time.Duration) error
 
 type cmd struct {
-	version       string
-	call          caller
-	out           io.Writer
-	errOut        io.Writer
-	json          bool
-	verbose       bool
-	all           bool
-	unused        bool
-	missing       bool
-	yesFlag       bool
-	force         bool
-	presetFlag    string
-	wait          bool
-	vanilla       bool
-	byMod         bool
-	check         bool
-	format        string
-	run           string
-	game          string
-	profileFlag   string
-	nameFlag      string
-	noConfigs     bool
-	noMods        bool
-	updateFlag    bool
-	unlinkFlag    bool
-	reasonFlag    string
-	undoFlag      bool
-	changelogFlag bool
-	everywhere    bool
-	removeFlag    bool
-	setFlag       bool
-	clearFlag     bool
-	testFlag      bool
-	filter        string
-	item          string
-	mark          bool
-	restore       bool
-	sourceFlag    string
-	fromFlag      string
-	codeFlag      string
-	peerFlag      string
-	loaderFlag    string
-	previewFlag   bool
-	fileFlag      string
-	versionFlag   string
-	installFlag   string
-	pageFlag      int
-	keepFlag      string
-	deleteFlag    string
-	dismissFlag   string
-	moveFlag      []string
-	args          []string
+	version        string
+	call           caller
+	out            io.Writer
+	errOut         io.Writer
+	json           bool
+	verbose        bool
+	all            bool
+	unused         bool
+	missing        bool
+	yesFlag        bool
+	force          bool
+	allowUnscanned bool
+	presetFlag     string
+	wait           bool
+	vanilla        bool
+	byMod          bool
+	check          bool
+	format         string
+	run            string
+	game           string
+	profileFlag    string
+	nameFlag       string
+	noConfigs      bool
+	noMods         bool
+	updateFlag     bool
+	unlinkFlag     bool
+	reasonFlag     string
+	undoFlag       bool
+	changelogFlag  bool
+	everywhere     bool
+	removeFlag     bool
+	setFlag        bool
+	clearFlag      bool
+	testFlag       bool
+	filter         string
+	item           string
+	mark           bool
+	restore        bool
+	sourceFlag     string
+	fromFlag       string
+	codeFlag       string
+	peerFlag       string
+	loaderFlag     string
+	previewFlag    bool
+	fileFlag       string
+	versionFlag    string
+	installFlag    string
+	pageFlag       int
+	keepFlag       string
+	deleteFlag     string
+	dismissFlag    string
+	moveFlag       []string
+	args           []string
 }
 
 // refusedError is a destructive action blocked until the user passes --yes: exit 2 with the message only.
@@ -243,6 +244,8 @@ func (c *cmd) parse(args []string) error {
 			c.yesFlag = true
 		case a == "--force":
 			c.force = true
+		case a == "--allow-unscanned":
+			c.allowUnscanned = true
 		case a == "--preset":
 			if i+1 >= len(args) {
 				return usageError{"--preset needs a name"}
@@ -683,7 +686,7 @@ func (c *cmd) dispatch() error {
 	if err != nil {
 		return err
 	}
-	p := control.Params{Game: a[0], Profile: a[1], All: c.all, Run: c.run, Force: c.force, Preset: c.presetFlag, Install: c.installFlag}
+	p := control.Params{Game: a[0], Profile: a[1], All: c.all, Run: c.run, Force: c.force, Unscanned: c.allowUnscanned, Preset: c.presetFlag, Install: c.installFlag}
 	switch verb {
 	case "mods":
 		return c.mods(p)
@@ -858,6 +861,8 @@ func historySummary(ev profile.HistoryEvent) string {
 		return "Unlinked the collection"
 	case profile.ChangeTrimmed:
 		return fmt.Sprintf("Trimmed history, dropped %d older changes", ev.Count)
+	case profile.ChangeUnscanned:
+		return fmt.Sprintf("Installed %s although the antivirus flagged it: %s", ev.Name, ev.Detail)
 	case profile.ChangeKnownGood:
 		return "Known good"
 	case profile.ChangeGroups:
@@ -2483,7 +2488,8 @@ takes --game <id>, which may be left out when exactly one game is installed.
   mods by-author <game> <author>            mods installed in any profile for this author
   mod <game> <profile> <mod id>           one mod: dependencies, dependents, conflicts, settings
                                           (mod id is the SMAPI id)
-  install <game> <profile> <archive>      install a local archive
+  install <game> <profile> <archive> [--allow-unscanned]
+                                       install a local archive; --allow-unscanned installs it although the antivirus flagged it
   conflicts <game> <profile> [--all]      asset conflicts (--all includes cosmetic ones)
   conflicts map <game> <profile> [--filter x]
                                           every touched asset, with who writes it
