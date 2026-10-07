@@ -169,6 +169,9 @@ const syncScan = time.Minute
 // any pre-Play dialog, before it gives up and lets Steam see the session end.
 const steamSessionPatience = 15 * time.Minute
 
+// serverShutdownTimeout bounds how long server mode waits for in-flight requests once Mortar quits.
+const serverShutdownTimeout = time.Second
+
 func run() error {
 	if len(os.Args) > 1 && os.Args[1] == "--release-links" {
 		return releaseLinks()
@@ -249,6 +252,9 @@ func run() error {
 		Name:         "Mortar",
 		Icon:         appIcon,
 		ErrorHandler: logAppError,
+		// Server mode only: a request still running at quit (a bound call waiting on a locked keyring's prompt) is
+		// abandoned after this long, not waited for 30 s by Wails' default.
+		Server: application.ServerOptions{ShutdownTimeout: serverShutdownTimeout},
 		// A bound call's error reaches the window with its usererr kind as the Wails cause.
 		MarshalError: usererr.Marshal,
 		PanicHandler: panicHandler(dataDir),
@@ -1161,6 +1167,10 @@ func run() error {
 	closeReady()
 	err = app.Run()
 	stopQueue()
+	if errors.Is(err, context.DeadlineExceeded) {
+		// Requests abandoned at the end of serverShutdownTimeout; the shutdown hooks have already run.
+		return nil
+	}
 	return err
 }
 
