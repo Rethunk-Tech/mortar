@@ -37,13 +37,24 @@ foreach ($i in 1..30) {
     if ($LASTEXITCODE -eq 0) { $set = $true; break }
 }
 Check 'launchAtLogin set through the running app' $set
-$run = $null
-foreach ($i in 1..15) {
-    $run = Get-ItemProperty $runKey -Name Mortar -ErrorAction SilentlyContinue
-    if ($run) { break }
-    Start-Sleep 1
+# A cold first start can take a while to apply the setting, so wait on state: the setting reads back true, then the Run key appears.
+$reported = $false
+if ($set) {
+    foreach ($i in 1..30) {
+        if ((& $exe settings get launchAtLogin 2>&1 | Out-String).Trim() -eq 'true') { $reported = $true; break }
+        Start-Sleep 2
+    }
 }
-Check 'autostart Run key written' ($null -ne $run)
+$run = $null
+if ($reported) {
+    foreach ($i in 1..30) {
+        $run = Get-ItemProperty $runKey -Name Mortar -ErrorAction SilentlyContinue
+        if ($run) { break }
+        Start-Sleep 1
+    }
+}
+$why = if (-not $set) { 'launchAtLogin never set' } elseif (-not $reported) { 'launchAtLogin never read back true within 60s' } else { 'Run key not written within 30s of launchAtLogin true' }
+Check $(if ($null -ne $run) { 'autostart Run key written' } else { "autostart Run key written ($why)" }) ($null -ne $run)
 Stop-Process -Id $app.Id -Force -ErrorAction SilentlyContinue
 Start-Sleep 2
 
