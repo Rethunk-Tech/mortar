@@ -8,15 +8,15 @@ const DESTINATIONS = ['mortar', 'nexus', 'thunderstore', 'nearby', 'list'] as co
 // local archives too.
 const SITE_ONLY: readonly Destination[] = ['nexus', 'thunderstore']
 
+// Why a tile cannot be used: nothing at all to send, or only local archives, which a collection cannot carry.
+type DisabledReason = 'empty' | 'local-only'
+
 export type Destination = (typeof DESTINATIONS)[number]
 
 export const isDestination = (v: unknown): v is Destination => DESTINATIONS.some((d) => d === v)
 
 // What Mortar sends: a link, or a .mortar file with the mod settings.
 export type MortarFormat = 'link' | 'file'
-
-// Why a tile cannot be used: nothing at all to send, or only local archives, which a collection cannot carry.
-type DisabledReason = 'empty' | 'local-only'
 
 export interface DestinationEntry {
   id: Destination
