@@ -336,7 +336,7 @@ msgstr "Copying mod files"
 msgid "Restored {detail} of {name}"
 msgstr "Restored {detail} of {name}"
 
-#: src/shell/AppMenu.tsx:57
+#: src/shell/AppMenu.tsx:71
 msgid "Sign out of Nexus"
 msgstr "Sign out of Nexus"
 
@@ -1369,7 +1369,7 @@ msgstr "{0, plural, one {# setting is still waiting for its mod to install.} oth
 msgid "Enable scheduled save backups first."
 msgstr "Enable scheduled save backups first."
 
-#: src/shell/AppMenu.tsx:124
+#: src/shell/AppMenu.tsx:140
 msgid "Mortar settings…"
 msgstr "Mortar settings…"
 
@@ -1988,7 +1988,7 @@ msgstr "Pre-releases and unofficial SMAPI updates. Show lists them; Include lets
 msgid "{0, plural, one {# copy of {1}} other {# copies of {2}}}"
 msgstr "{0, plural, one {# copy of {1}} other {# copies of {2}}}"
 
-#: src/shell/AppMenu.tsx:93
+#: src/shell/AppMenu.tsx:108
 msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
 
@@ -2225,7 +2225,7 @@ msgstr "Installed in your profiles"
 msgid "Switch the focused mod on or off"
 msgstr "Switch the focused mod on or off"
 
-#: src/profiles/ProfileMenu.tsx:146
+#: src/profiles/ProfileMenu.tsx:148
 msgid "{name} · {mods}"
 msgstr "{name} · {mods}"
 
@@ -2463,7 +2463,7 @@ msgstr "{0, plural, one {# tracked mod on Nexus is not in this profile} other {#
 msgid "One step in Steam"
 msgstr "One step in Steam"
 
-#: src/shell/AppMenu.tsx:65
+#: src/shell/AppMenu.tsx:80
 msgid "Sign in to Nexus…"
 msgstr "Sign in to Nexus…"
 
@@ -2837,7 +2837,7 @@ msgstr "Abandoned"
 msgid "{count} checked later"
 msgstr "{count} checked later"
 
-#: src/profiles/ProfileMenu.tsx:199
+#: src/profiles/ProfileMenu.tsx:205
 msgid "Find a mod in all profiles…"
 msgstr "Find a mod in all profiles…"
 
@@ -2877,7 +2877,7 @@ msgid "Not loaded in the running game"
 msgstr "Not loaded in the running game"
 
 #: src/settings/shortcutLabels.ts:39
-#: src/shell/AppMenu.tsx:168
+#: src/shell/AppMenu.tsx:189
 msgid "Get help"
 msgstr "Get help"
 
@@ -3401,7 +3401,7 @@ msgid "{0, plural, one {# mod checked} other {# mods checked}}"
 msgstr "{0, plural, one {# mod checked} other {# mods checked}}"
 
 #: src/settings/sections/General.tsx:212
-#: src/shell/AppMenu.tsx:166
+#: src/shell/AppMenu.tsx:186
 msgid "Help"
 msgstr "Help"
 
@@ -4312,8 +4312,8 @@ msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 #: src/settings/sections/About.tsx:62
 #: src/settings/sections/About.tsx:67
 #: src/settings/sections/Updates.tsx:164
-#: src/shell/AppMenu.tsx:119
-#: src/shell/AppMenu.tsx:122
+#: src/shell/AppMenu.tsx:134
+#: src/shell/AppMenu.tsx:137
 msgid "Mortar"
 msgstr "Mortar"
 
@@ -5190,7 +5190,7 @@ msgstr "Background preview"
 msgid "Created · updated"
 msgstr "Created · updated"
 
-#: src/shell/AppMenu.tsx:178
+#: src/shell/AppMenu.tsx:200
 msgid "Report a bug…"
 msgstr "Report a bug…"
 
@@ -5408,7 +5408,7 @@ msgstr "Another file from a mod you have"
 msgid "Could not run the command"
 msgstr "Could not run the command"
 
-#: src/shell/AppMenu.tsx:159
+#: src/shell/AppMenu.tsx:179
 msgid "About Mortar"
 msgstr "About Mortar"
 
@@ -5426,7 +5426,7 @@ msgstr "Redundant"
 msgid "Play with {0}"
 msgstr "Play with {0}"
 
-#: src/profiles/ProfileMenu.tsx:180
+#: src/profiles/ProfileMenu.tsx:184
 #: src/profiles/ProfilesPage.tsx:363
 #: src/profiles/ProfilesPage.tsx:443
 msgid "New profile…"
@@ -6325,7 +6325,7 @@ msgid "Nothing would change."
 msgstr "Nothing would change."
 
 #: src/settings/sections/Updates.tsx:130
-#: src/shell/AppMenu.tsx:144
+#: src/shell/AppMenu.tsx:162
 msgid "What's new in {version}"
 msgstr "What's new in {version}"
 
@@ -6485,7 +6485,7 @@ msgstr "The log does not name a mod."
 msgid "Create a profile first."
 msgstr "Create a profile first."
 
-#: src/shell/AppMenu.tsx:152
+#: src/shell/AppMenu.tsx:171
 msgid "Open data folder"
 msgstr "Open data folder"
 
@@ -6780,7 +6780,7 @@ msgstr "Could not change how Nexus links open"
 msgid "requirements"
 msgstr "requirements"
 
-#: src/shell/AppMenu.tsx:185
+#: src/shell/AppMenu.tsx:208
 msgid "Source code"
 msgstr "Source code"
 
@@ -7125,7 +7125,7 @@ msgstr "Back up {0}?"
 msgid "Each mod's Entry method, run one after another"
 msgstr "Each mod's Entry method, run one after another"
 
-#: src/games/GameMenu.tsx:107
+#: src/games/GameMenu.tsx:103
 msgid "All games…"
 msgstr "All games…"
 
@@ -7361,7 +7361,7 @@ msgstr "Copy {0} to {1}"
 #: src/commandPalette/paletteLabels.ts:11
 #: src/profiles/GameModsDialog.tsx:172
 #: src/profiles/PackImportDialog.tsx:173
-#: src/profiles/ProfileMenu.tsx:186
+#: src/profiles/ProfileMenu.tsx:190
 #: src/profiles/ProfilesPage.tsx:336
 msgid "Import"
 msgstr "Import"
@@ -7509,7 +7509,7 @@ msgid "{gameName}'s Steam launch options run {loader} in place of the game. Stea
 msgstr "{gameName}'s Steam launch options run {loader} in place of the game. Steam will still start {loader} unless that launch option is removed. Mortar will not change it."
 
 #. placeholder {0}: current.name
-#: src/profiles/ProfileMenu.tsx:56
+#: src/profiles/ProfileMenu.tsx:58
 msgid "Switch profile: {0} {mods}"
 msgstr "Switch profile: {0} {mods}"
 
@@ -7925,8 +7925,8 @@ msgstr "Set to {value}"
 msgid "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
 msgstr "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
 
-#: src/profiles/ProfileMenu.tsx:56
-#: src/profiles/ProfileMenu.tsx:101
+#: src/profiles/ProfileMenu.tsx:58
+#: src/profiles/ProfileMenu.tsx:103
 msgid "No profile"
 msgstr "No profile"
 
@@ -7990,7 +7990,7 @@ msgstr "A game update replaced {0}'s launcher"
 msgid "Could not undo. Missing from the store: {list}"
 msgstr "Could not undo. Missing from the store: {list}"
 
-#: src/shell/AppMenu.tsx:44
+#: src/shell/AppMenu.tsx:57
 msgid "Nexus Mods · Not signed in"
 msgstr "Nexus Mods · Not signed in"
 
@@ -10056,7 +10056,7 @@ msgstr "Open the folder of {label}"
 msgid "Sign in to Nexus Mods to download"
 msgstr "Sign in to Nexus Mods to download"
 
-#: src/profiles/ProfileMenu.tsx:207
+#: src/profiles/ProfileMenu.tsx:214
 msgid "Manage profiles…"
 msgstr "Manage profiles…"
 
@@ -10096,7 +10096,7 @@ msgid "Enabled"
 msgstr "Enabled"
 
 #: src/settings/sections/NexusMods.tsx:154
-#: src/shell/AppMenu.tsx:50
+#: src/shell/AppMenu.tsx:63
 msgid "Premium"
 msgstr "Premium"
 
@@ -10492,7 +10492,7 @@ msgstr "Save backups"
 msgid "The game's first frames; mods doing setup work in update events show up here"
 msgstr "The game's first frames; mods doing setup work in update events show up here"
 
-#: src/shell/AppMenu.tsx:99
+#: src/shell/AppMenu.tsx:114
 msgid "Mortar menu"
 msgstr "Mortar menu"
 
@@ -11502,7 +11502,7 @@ msgstr "No problems found"
 
 #: src/game/NewProfileDialog.tsx:92
 #: src/game/TemplateMenuItems.tsx:77
-#: src/profiles/ProfileMenu.tsx:215
+#: src/profiles/ProfileMenu.tsx:223
 msgid "Manage templates…"
 msgstr "Manage templates…"
 
@@ -11602,7 +11602,7 @@ msgid "Player"
 msgstr "Player"
 
 #: src/firstrunTour/TourPopover.tsx:29
-#: src/profiles/ProfileMenu.tsx:157
+#: src/profiles/ProfileMenu.tsx:159
 #: src/profiles/ProfilesPage.tsx:324
 #: src/settings/sections/AboutDiagnostics.tsx:96
 #: src/settings/sections/DataUsage.tsx:206
@@ -11878,7 +11878,7 @@ msgstr "Signed in as {name}"
 
 #: src/commandPalette/paletteLabels.ts:8
 #: src/settings/shortcutLabels.ts:11
-#: src/shell/AppMenu.tsx:134
+#: src/shell/AppMenu.tsx:151
 msgid "Check for updates"
 msgstr "Check for updates"
 
@@ -12126,7 +12126,7 @@ msgstr "No differences."
 msgid "{0, plural, one {# more pack} other {# more packs}}"
 msgstr "{0, plural, one {# more pack} other {# more packs}}"
 
-#: src/shell/AppMenu.tsx:44
+#: src/shell/AppMenu.tsx:57
 msgid "Nexus Mods · Signed in as {name}"
 msgstr "Nexus Mods · Signed in as {name}"
 
@@ -12285,7 +12285,7 @@ msgstr "Changed mods"
 msgid "this version skipped"
 msgstr "this version skipped"
 
-#: src/profiles/ProfileMenu.tsx:158
+#: src/profiles/ProfileMenu.tsx:160
 msgid "{gameName} profiles"
 msgstr "{gameName} profiles"
 
@@ -12781,7 +12781,7 @@ msgstr "{0, plural, one {# download needs your decision} other {# downloads need
 msgid "Save current as…"
 msgstr "Save current as…"
 
-#: src/shell/AppMenu.tsx:194
+#: src/shell/AppMenu.tsx:217
 msgid "Quit Mortar"
 msgstr "Quit Mortar"
 

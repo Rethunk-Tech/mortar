@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, LayoutTemplate, ListOrdered, Plus, Search } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
@@ -19,6 +19,8 @@ import { requestFindAllFocus } from './findMod.ts'
 import { ProfileMark } from './ProfileMark.tsx'
 import { openProfileOf, useProfiles } from './store.ts'
 import { useProfileImport } from './useProfileImport.tsx'
+
+const ICON_PX = 18
 
 interface Position {
   top: number
@@ -159,6 +161,7 @@ export function ProfileMenu({ game }: { game: string }) {
         {profiles.map((p) => (
           <TitleMenuItem
             key={p.id}
+            icon={<Dot mark={p} />}
             label={profileRowLabel(p)}
             checked={p.id === openId}
             onClick={() => {
@@ -177,6 +180,7 @@ export function ProfileMenu({ game }: { game: string }) {
         ))}
         <MenuRule />
         <TitleMenuItem
+          icon={<Plus size={ICON_PX} />}
           label={t`New profile…`}
           onClick={() => {
             close()
@@ -187,6 +191,7 @@ export function ProfileMenu({ game }: { game: string }) {
         {entries.map((entry) => (
           <TitleMenuItem
             key={entry.key}
+            icon={<entry.icon size={ICON_PX} />}
             label={entry.label}
             onClick={() => {
               close()
@@ -196,6 +201,7 @@ export function ProfileMenu({ game }: { game: string }) {
         ))}
         <MenuRule />
         <TitleMenuItem
+          icon={<Search size={ICON_PX} />}
           label={t`Find a mod in all profiles…`}
           onClick={() => {
             close()
@@ -204,6 +210,7 @@ export function ProfileMenu({ game }: { game: string }) {
           }}
         />
         <TitleMenuItem
+          icon={<ListOrdered size={ICON_PX} />}
           label={t`Manage profiles…`}
           onClick={() => {
             close()
@@ -212,6 +219,7 @@ export function ProfileMenu({ game }: { game: string }) {
         />
         {templates.length > 0 ? (
           <TitleMenuItem
+            icon={<LayoutTemplate size={ICON_PX} />}
             label={t`Manage templates…`}
             onClick={() => {
               close()

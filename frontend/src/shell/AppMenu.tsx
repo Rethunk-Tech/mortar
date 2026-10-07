@@ -1,7 +1,19 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Tooltip } from '@mui/material'
 import { Application } from '@wailsio/runtime'
-import { ChevronDown } from 'lucide-react'
+import {
+  Bug,
+  ChevronDown,
+  Code2,
+  FolderOpen,
+  Info,
+  LifeBuoy,
+  LogIn,
+  LogOut,
+  RefreshCw,
+  Settings,
+  Sparkles,
+} from 'lucide-react'
 import { type ReactNode, useEffect } from 'react'
 import { SignOut } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { OpenDataFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
@@ -22,6 +34,7 @@ import { reportBug } from './reportBug.ts'
 import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from './TitleMenu.tsx'
 import { useTitleMenu } from './titleMenus.ts'
 
+const ICON_PX = 18
 const SOURCE = 'https://github.com/Rethunk-Tech/mortar'
 
 // A disabled row cannot take hover, so its reason rides on a wrapper.
@@ -54,6 +67,7 @@ function NexusLines({ close }: { close: () => void }) {
       {signedIn ? (
         <TitleMenuItem
           dim={true}
+          icon={<LogOut size={ICON_PX} />}
           label={t`Sign out of Nexus`}
           onClick={() => {
             close()
@@ -62,6 +76,7 @@ function NexusLines({ close }: { close: () => void }) {
         />
       ) : (
         <TitleMenuItem
+          icon={<LogIn size={ICON_PX} />}
           label={t`Sign in to Nexus…`}
           onClick={() => {
             close()
@@ -121,6 +136,7 @@ export function AppMenu() {
       </ButtonBase>
       <TitleMenu anchorEl={anchor} onClose={close} label={t`Mortar`} width={280}>
         <TitleMenuItem
+          icon={<Settings size={ICON_PX} />}
           label={t`Mortar settings…`}
           hint={settingsKeys}
           onClick={() => {
@@ -131,6 +147,7 @@ export function AppMenu() {
         <MenuRule />
         <Reason reason={updatesOffline}>
           <TitleMenuItem
+            icon={<RefreshCw size={ICON_PX} />}
             label={t`Check for updates`}
             disabled={updatesOffline !== ''}
             onClick={() => {
@@ -141,6 +158,7 @@ export function AppMenu() {
         </Reason>
         {version ? (
           <TitleMenuItem
+            icon={<Sparkles size={ICON_PX} />}
             label={t`What's new in ${version}`}
             onClick={() => {
               close()
@@ -149,6 +167,7 @@ export function AppMenu() {
           />
         ) : null}
         <TitleMenuItem
+          icon={<FolderOpen size={ICON_PX} />}
           label={t`Open data folder`}
           onClick={() => {
             close()
@@ -156,6 +175,7 @@ export function AppMenu() {
           }}
         />
         <TitleMenuItem
+          icon={<Info size={ICON_PX} />}
           label={t`About Mortar`}
           onClick={() => {
             close()
@@ -165,6 +185,7 @@ export function AppMenu() {
         <MenuRule />
         <MenuHeading>{t`Help`}</MenuHeading>
         <TitleMenuItem
+          icon={<LifeBuoy size={ICON_PX} />}
           label={t`Get help`}
           hint={helpKeys}
           disabled={game === ''}
@@ -175,6 +196,7 @@ export function AppMenu() {
           }}
         />
         <TitleMenuItem
+          icon={<Bug size={ICON_PX} />}
           label={t`Report a bug…`}
           onClick={() => {
             close()
@@ -182,6 +204,7 @@ export function AppMenu() {
           }}
         />
         <TitleMenuItem
+          icon={<Code2 size={ICON_PX} />}
           label={t`Source code`}
           onClick={() => {
             close()
@@ -191,7 +214,7 @@ export function AppMenu() {
         <MenuRule />
         <NexusLines close={close} />
         <MenuRule />
-        <TitleMenuItem label={t`Quit Mortar`} onClick={quit} />
+        <TitleMenuItem icon={<LogOut size={ICON_PX} />} label={t`Quit Mortar`} onClick={quit} />
       </TitleMenu>
     </>
   )

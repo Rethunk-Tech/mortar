@@ -7,6 +7,7 @@ const ITEM_INSET_PX = 14
 const HEADING_FONT_PX = 11
 const HINT_FONT_PX = 12
 const HINT_GAP_PX = 24
+const ICON_COLUMN_PX = 22
 
 // A dropdown under a title bar button: the menu surface, a fixed width, compact rows and small-caps headings.
 export function TitleMenu({
@@ -71,6 +72,7 @@ export function MenuRule() {
 
 // A menu row. `checked` makes it a radio row: the choice among a list, marked with a tick at the end.
 export function TitleMenuItem({
+  icon,
   label,
   hint,
   checked,
@@ -80,6 +82,8 @@ export function TitleMenuItem({
   onClick,
   onContextMenu,
 }: {
+  // Leads the row in a fixed column, so every row of a menu lines up.
+  icon?: ReactNode
   label: ReactNode
   hint?: ReactNode
   checked?: boolean
@@ -110,6 +114,22 @@ export function TitleMenuItem({
         color,
       }}
     >
+      {icon ? (
+        <Box
+          component="span"
+          aria-hidden={true}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: ICON_COLUMN_PX,
+            mr: '10px',
+            flexShrink: 0,
+          }}
+        >
+          {icon}
+        </Box>
+      ) : null}
       <Box component="span" sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
         {label}
       </Box>

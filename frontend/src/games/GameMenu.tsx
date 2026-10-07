@@ -89,12 +89,8 @@ export function GameMenu() {
         {playable.map((g) => (
           <TitleMenuItem
             key={g.id}
-            label={
-              <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Thumb game={g} />
-                {g.name}
-              </Box>
-            }
+            icon={<Thumb game={g} />}
+            label={g.name}
             checked={g.id === game}
             onClick={() => {
               close()
