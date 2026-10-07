@@ -137,8 +137,15 @@ function pickProfile(): Profile {
     .stdout.split('\n')
     .filter(Boolean)
     .map((line) => {
-      const [id = '', ...rest] = line.split(/\t|\s{2,}/)
-      return { id, name: rest.join(' ').trim() }
+      // "<id>  <name>  <enabled>/<mods>  <updated>": the name ends where the counts start.
+      const [id = '', ...rest] = line.split(/\s+/)
+      return {
+        id,
+        name: rest
+          .join(' ')
+          .replace(/\s+\d+\/\d+.*$/, '')
+          .trim(),
+      }
     })
   const want = process.env.MORTAR_MEM_PROFILE
   const named = rows.find((r) => r.id === want || r.name === want)
@@ -168,10 +175,15 @@ async function openProfile(page: Page, name: string) {
     await page.getByRole('button', { name: /^(Switch game|Choose a game)/ }).click()
     await page.getByRole('menuitem', { name: /^All games/ }).click()
   }
-  if (await profile.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await profile.click()
+  const mods = page.getByRole('tab', { name: 'Mods' })
+  // The tiles animate under the pointer, so a click can land between them; clicking again settles it.
+  for (let attempt = 0; attempt < 3 && !(await mods.isVisible()); attempt++) {
+    if (await profile.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await profile.click()
+    }
+    await mods.waitFor({ timeout: 8000 }).catch(() => undefined)
   }
-  await page.getByRole('tab', { name: 'Mods' }).waitFor()
+  await mods.waitFor({ timeout: 1000 })
   const skip = page.getByRole('button', { name: 'Skip tour' })
   if (await skip.isVisible({ timeout: 1500 }).catch(() => false)) {
     await skip.click()
