@@ -33,7 +33,7 @@ function useRowNotes(update: Update, profileId: string) {
   const notes = [
     ...(mod ? siblingsOf(mods, mod).map((o) => t`Also updates ${o.name} (same download)`) : []),
     ...(mod && !mod.enabled ? [t`Disabled in this profile`] : []),
-    ...(entry?.pinned && entry.pinReason ? [t`Pinned: ${entry.pinReason}`] : []),
+    ...(entry?.pinned && entry.pinReason ? [t`Pinned: ${{ pinned: entry.pinReason }}`] : []),
     ...(optional > 0
       ? [
           t`${plural(optional, { one: '# optional file will be re-applied; check it still fits this version', other: '# optional files will be re-applied; check they still fit this version' })}`,

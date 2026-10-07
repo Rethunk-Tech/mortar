@@ -316,7 +316,9 @@ export function PinBadge({ mod }: { mod: Mod }) {
   if (!entry?.pinned) {
     return null
   }
-  const text = entry.pinReason ? t`Pinned: ${entry.pinReason}` : t`Pinned at this version`
+  const text = entry.pinReason
+    ? t`Pinned: ${{ pinned: entry.pinReason }}`
+    : t`Pinned at this version`
   return (
     <Tooltip title={text}>
       <Box

@@ -1489,7 +1489,7 @@ msgstr "Keep {0}'s old files"
 #. placeholder {0}: crash.cause.modName
 #: src/console/ConsoleTab.tsx:129
 #: src/console/CrashDialog.tsx:260
-#: src/launch/LaunchLayer.tsx:276
+#: src/launch/LaunchLayer.tsx:262
 msgid "Caused by {0}"
 msgstr "Caused by {0}"
 
@@ -1755,7 +1755,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/firstrun/LoaderStep.tsx:272
 #: src/game/detailStates.tsx:26
 #: src/lan/SendPanel.tsx:194
-#: src/launch/LaunchLayer.tsx:309
+#: src/launch/LaunchLayer.tsx:295
 #: src/mods/LoadOrderTab.tsx:391
 #: src/mods/ModsTab.tsx:115
 #: src/mods/typedConfig/ConfigPane.tsx:173
@@ -2471,7 +2471,7 @@ msgstr "Why?"
 msgid "Upload log"
 msgstr "Upload log"
 
-#: src/launch/LaunchLayer.tsx:331
+#: src/launch/LaunchLayer.tsx:317
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
@@ -3523,7 +3523,7 @@ msgid "{0, plural, one {# download added} other {# downloads added}}"
 msgstr "{0, plural, one {# download added} other {# downloads added}}"
 
 #: src/firstrun/LoaderStep.tsx:95
-#: src/launch/LaunchLayer.tsx:224
+#: src/launch/LaunchLayer.tsx:210
 msgid "Launch options copied"
 msgstr "Launch options copied"
 
@@ -3620,7 +3620,7 @@ msgstr "{size} in {path}"
 msgid "Skip sharing"
 msgstr "Skip sharing"
 
-#: src/mods/LockedNote.tsx:29
+#: src/mods/LockedNote.tsx:30
 msgid "The game is using this profile. Stop the game to change mods."
 msgstr "The game is using this profile. Stop the game to change mods."
 
@@ -5784,8 +5784,8 @@ msgstr "Mortar cannot download {0} again."
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
-#: src/launch/LaunchLayer.tsx:328
-#: src/launch/LaunchLayer.tsx:329
+#: src/launch/LaunchLayer.tsx:314
+#: src/launch/LaunchLayer.tsx:315
 msgid "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 msgstr "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 
@@ -6004,7 +6004,7 @@ msgstr "Show slowest mods"
 
 #: src/console/HelpDialog.tsx:55
 #: src/firstrun/LoaderStep.tsx:142
-#: src/launch/LaunchLayer.tsx:228
+#: src/launch/LaunchLayer.tsx:214
 #: src/saves/lackChipActions.tsx:74
 #: src/shell/FlatpakGrant.tsx:76
 msgid "Copy"
@@ -7135,7 +7135,7 @@ msgstr "Updated {name} from {from} to {to}"
 #: src/launch/PlayControl.tsx:143
 #: src/launch/PlayControl.tsx:164
 #: src/launch/StopDialog.tsx:25
-#: src/mods/LockedNote.tsx:25
+#: src/mods/LockedNote.tsx:26
 msgid "Stop game"
 msgstr "Stop game"
 
@@ -9035,7 +9035,7 @@ msgstr "Could not read the window state"
 msgid "Uncategorised"
 msgstr "Uncategorised"
 
-#: src/launch/LaunchLayer.tsx:325
+#: src/launch/LaunchLayer.tsx:311
 msgid "Steam was not found"
 msgstr "Steam was not found"
 
@@ -9621,7 +9621,7 @@ msgid "You endorsed this mod."
 msgstr "You endorsed this mod."
 
 #: src/console/CrashDialog.tsx:134
-#: src/launch/LaunchLayer.tsx:299
+#: src/launch/LaunchLayer.tsx:285
 #: src/mods/modActions.ts:53
 #: src/mods/TrackedNotInProfile.tsx:72
 #: src/mods/updateReview/WithheldGroup.tsx:48
@@ -10033,8 +10033,8 @@ msgstr "Adds"
 
 #: src/console/CrashDialog.tsx:156
 #: src/console/CrashDialog.tsx:208
-#: src/launch/LaunchLayer.tsx:187
-#: src/launch/LaunchLayer.tsx:292
+#: src/launch/LaunchLayer.tsx:172
+#: src/launch/LaunchLayer.tsx:278
 msgid "Open Console"
 msgstr "Open Console"
 
@@ -10521,7 +10521,7 @@ msgstr "Could not set the default launch preset"
 msgid "Files"
 msgstr "Files"
 
-#: src/launch/LaunchLayer.tsx:268
+#: src/launch/LaunchLayer.tsx:254
 msgid "{name} did not start"
 msgstr "{name} did not start"
 
@@ -11099,6 +11099,8 @@ msgid "Keep mine"
 msgstr "Keep mine"
 
 #: src/mods/ModSections.tsx:63
+#: src/mods/parts.tsx:319
+#: src/mods/updateReview/Row.tsx:36
 msgid "Pinned: {pinned}"
 msgstr "Pinned: {pinned}"
 
@@ -11213,8 +11215,8 @@ msgstr "Settings"
 msgid "Could not read the details of {0}"
 msgstr "Could not read the details of {0}"
 
+#: src/launch/LaunchLayer.tsx:106
 #: src/launch/LaunchLayer.tsx:119
-#: src/launch/LaunchLayer.tsx:134
 msgid "Launching {name}"
 msgstr "Launching {name}"
 
@@ -11225,12 +11227,6 @@ msgstr "Disabled while the mod above is disabled"
 #: src/settings/sections/About.tsx:91
 msgid "View licences…"
 msgstr "View licences…"
-
-#. placeholder {0}: entry.pinReason
-#: src/mods/parts.tsx:319
-#: src/mods/updateReview/Row.tsx:36
-msgid "Pinned: {0}"
-msgstr "Pinned: {0}"
 
 #: src/mods/ModMenu.tsx:160
 #: src/mods/ModUpdateControls.tsx:40
@@ -11919,7 +11915,7 @@ msgid "Did not load"
 msgstr "Did not load"
 
 #: src/browse/BrowseShow.tsx:31
-#: src/launch/LaunchLayer.tsx:190
+#: src/launch/LaunchLayer.tsx:175
 #: src/profiles/CompareDialog.tsx:185
 #: src/profiles/LaunchPresetDialog.tsx:86
 #: src/saves/SaveGapLine.tsx:57
@@ -12128,7 +12124,7 @@ msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style 
 msgid "Could not restore the backup"
 msgstr "Could not restore the backup"
 
-#: src/launch/LaunchLayer.tsx:272
+#: src/launch/LaunchLayer.tsx:258
 msgid "The game exited before it started. The console has its output."
 msgstr "The game exited before it started. The console has its output."
 
@@ -12615,7 +12611,7 @@ msgstr "Continue"
 msgid "Dependencies"
 msgstr "Dependencies"
 
-#: src/launch/LaunchLayer.tsx:136
+#: src/launch/LaunchLayer.tsx:121
 #: src/share/PreviewDialog.tsx:79
 #: src/share/ShareDialog.tsx:89
 msgid "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
@@ -13287,7 +13283,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/console/HelpDialog.tsx:257
 #: src/console/SearchRunsDialog.tsx:177
 #: src/game/FarmMenuItem.tsx:132
-#: src/launch/LaunchLayer.tsx:285
+#: src/launch/LaunchLayer.tsx:271
 #: src/launch/SweepDialog.tsx:137
 #: src/mods/AssetMapDialog.tsx:283
 #: src/mods/AuthorDialog.tsx:166
