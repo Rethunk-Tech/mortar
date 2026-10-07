@@ -8,6 +8,7 @@ import { ProblemsTab } from '../mods/ProblemsTab.tsx'
 import { usePasteLink } from '../share/usePasteLink.ts'
 import { ErrorBoundary } from '../shell/ErrorBoundary.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
+import { space } from '../theme/density.ts'
 import { Home } from './Home.tsx'
 import { TabHeader } from './TabHeader.tsx'
 import { useTab } from './tab.ts'
@@ -28,7 +29,7 @@ const PerformanceTab = lazy(() =>
 function TabLoading() {
   const { t } = useLingui()
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: space.pad }}>
       <SkeletonRows label={t`Loading…`} count={8} height={36} />
     </Box>
   )

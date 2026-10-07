@@ -20,6 +20,7 @@ import { saveName } from '../saves/saveName.ts'
 import { useSaves } from '../saves/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openShare } from '../share/store.ts'
+import { space } from '../theme/density.ts'
 import { compact } from './compact.ts'
 import { Hero } from './Hero.tsx'
 import { HomeButton } from './HomeButton.tsx'
@@ -146,10 +147,9 @@ export function Home({
           display: 'flex',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: 1.25,
-          px: 4,
-          pt: 2,
-          [compact]: { px: 2 },
+          gap: space.gap,
+          px: space.gutter,
+          pt: space.gutter,
         }}
       >
         <ProfileMenu profile={profile} />
@@ -166,14 +166,13 @@ export function Home({
         sx={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-          gap: 2,
-          px: 4,
-          py: 2.5,
+          gap: space.pad,
+          px: space.gutter,
+          py: space.gutter,
           // Saves right after At a glance means no Changes card shares its row, so it takes the whole row.
           '& [data-card="glance"] + [data-card="saves"]': { gridColumn: 'span 3' },
           [compact]: {
             gridTemplateColumns: 'minmax(0, 1fr)',
-            px: 2,
             '& [data-card="glance"] + [data-card="saves"]': { gridColumn: 'auto' },
           },
         }}

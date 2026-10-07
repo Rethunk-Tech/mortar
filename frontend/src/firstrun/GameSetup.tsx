@@ -34,7 +34,7 @@ type SetupStep = typeof FIND | typeof NEXUS | typeof LOADER | typeof PROFILE
 function BackButton() {
   const { t } = useLingui()
   const from = useNav((s) => (s.route.name === 'game-setup' ? s.route.from : undefined))
-  const previous = useGameName(from)
+  const name = useGameName(from)
   return (
     <Button
       color="inherit"
@@ -48,7 +48,7 @@ function BackButton() {
         }
       }}
     >
-      {from ? t`Back to ${previous}` : t`All games`}
+      {from ? t`Back to ${{ name: previous }}` : t`All games`}
     </Button>
   )
 }

@@ -25,6 +25,7 @@ import { useLocked } from '../mods/useLocked.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -209,8 +210,8 @@ export function SaveRow({
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 1.25,
-        p: 1.75,
+        gap: space.gap,
+        p: space.pad,
         bgcolor: 'var(--mortar-paper-78)',
         border: '1px solid var(--mortar-hairline-faint)',
         borderRadius: '8px',

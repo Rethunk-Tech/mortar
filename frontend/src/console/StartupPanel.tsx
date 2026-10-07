@@ -7,6 +7,7 @@ import { playOpenProfile } from '../launch/playOpen.ts'
 import { useGameBusy } from '../launch/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
+import { space } from '../theme/density.ts'
 import { Findings, Phases, Section } from './StartupSections.tsx'
 import { ModTable } from './StartupTable.tsx'
 import { useSmapiStartup } from './startupHooks.ts'
@@ -60,7 +61,7 @@ export function StartupPanel({
   const banner: ReactNode = pending ? <MeasureBanner onCancel={cancelMeasure} /> : null
   if (reports === null) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad, p: space.pad }}>
         <SkeletonRows label={t`Reading startup reports…`} count={1} height={72} />
         <SkeletonRows label={t`Reading startup reports…`} count={6} height={36} />
       </Box>
@@ -91,7 +92,7 @@ export function StartupPanel({
     modsSection.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
   }
   return (
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
+    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: space.pad, p: space.pad }}>
       {banner}
       {report ? (
         <>

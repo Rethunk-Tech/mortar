@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
+import { space } from '../theme/density.ts'
 import { compact } from './compact.ts'
 
 // One card of the Home grid; the grid is three columns wide and one in the compact layout.
@@ -26,8 +27,8 @@ export function HomePanel({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
-        gap: 1,
-        p: 2,
+        gap: space.gap,
+        p: space.pad,
         minWidth: 0,
         bgcolor: 'var(--mortar-panel-85)',
         border: '1px solid var(--mortar-hairline)',

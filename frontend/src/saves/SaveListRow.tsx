@@ -6,6 +6,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import { saveCalendar, saveCalendarUnknown } from '../game/homeView.ts'
 import { heading } from '../mods/paper.ts'
+import { space } from '../theme/density.ts'
 import { SaveGapLine } from './SaveGapLine.tsx'
 import { FitStatus, SaveButtons } from './SaveRow.tsx'
 import { saveName } from './saveName.ts'
@@ -16,9 +17,9 @@ const COLUMNS = 'minmax(0,1fr) 160px 220px 148px'
 const rowGrid = {
   display: 'grid',
   gridTemplateColumns: COLUMNS,
-  gap: '10px',
+  gap: space.gap,
   alignItems: 'center',
-  px: 2,
+  px: space.gutter,
 } as const
 
 const cellReset = { p: 0, border: 0, fontSize: 'inherit', color: 'inherit' } as const
@@ -46,7 +47,7 @@ function SaveListTable({ name, children }: { name: string; children: ReactNode }
           role="row"
           sx={{
             ...rowGrid,
-            height: 30,
+            height: `calc(${space.row} - 6px)`,
             bgcolor: 'var(--mortar-console-90)',
             ...heading,
             borderBottom: '1px solid var(--mortar-hairline-muted)',
@@ -100,7 +101,7 @@ function SaveListRow({
       hover={true}
       sx={{
         ...rowGrid,
-        minHeight: 36,
+        minHeight: space.row,
         fontSize: 14,
         borderBottom: '1px solid var(--mortar-hairline-faint)',
       }}

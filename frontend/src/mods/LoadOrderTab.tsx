@@ -16,6 +16,7 @@ import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { idKey, localId } from './dependents.ts'
 import { useDetail } from './detail.ts'
@@ -205,7 +206,10 @@ function OrderList({
       <ControlsRow>
         <SearchField value={query} onChange={setQuery} label={t`Filter load order`} grow={true} />
       </ControlsRow>
-      <Box ref={parentRef} sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: 2, py: 1.5 }}>
+      <Box
+        ref={parentRef}
+        sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: space.gutter, pb: space.gutter }}
+      >
         <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1.5 }}>
           {t`The game loader chooses this order. Mortar does not change it.`}
         </Typography>
@@ -291,7 +295,7 @@ function OrderSkeleton({ label }: { label: string }) {
     <Box
       role="status"
       aria-label={label}
-      sx={{ px: 2, py: 1.5, display: 'flex', flexDirection: 'column' }}
+      sx={{ px: space.gutter, pb: space.gutter, display: 'flex', flexDirection: 'column' }}
     >
       <Skeleton variant="rounded" height={34} sx={{ mb: 1.5 }} />
       {SKELETON_KEYS.map((key, i) => (

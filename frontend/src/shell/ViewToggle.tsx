@@ -1,11 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
 import { LayoutGrid, List } from 'lucide-react'
+import { space } from '../theme/density.ts'
 import type { ViewMode } from './viewMode.ts'
 
 const viewButton = (active: boolean) => ({
   width: 34,
-  height: 30,
+  height: `calc(${space.control} - 6px)`,
   borderRadius: '6px',
   bgcolor: active ? 'var(--mortar-hairline-16)' : 'transparent',
   color: active ? 'var(--mortar-ink)' : 'text.secondary',

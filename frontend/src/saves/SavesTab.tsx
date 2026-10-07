@@ -13,6 +13,7 @@ import { SearchField } from '../shell/SearchField.tsx'
 import { useStoredState } from '../shell/useStoredState.ts'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import type { ViewMode } from '../shell/viewMode.ts'
+import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { BackupsDialog } from './BackupsDialog.tsx'
@@ -125,10 +126,9 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
           display: fits.length > 0 && !list ? 'grid' : 'flex',
           gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
           flexDirection: 'column',
-          gap: 1.25,
-          px: 2,
-          pt: 0.75,
-          pb: 1.5,
+          gap: space.gap,
+          px: space.gutter,
+          pb: space.gutter,
         }}
       >
         {body}
