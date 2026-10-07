@@ -1,22 +1,15 @@
-import { afterAll, beforeAll, expect, test } from 'bun:test'
+import { afterAll, expect, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 
-type Testing = typeof import('@testing-library/react')
-let testing: Testing
-let useLoaded: typeof import('./useLoaded.ts').useLoaded
-
-// The DOM and the React testing helpers are set up per file: another file's teardown would otherwise strip the
-// document these tests render into.
-let owned = false
-beforeAll(async () => {
-  owned = !GlobalRegistrator.isRegistered
-  if (owned) {
-    GlobalRegistrator.register({ url: 'http://localhost/' })
-  }
-  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
-  testing = await import('@testing-library/react')
-  ;({ useLoaded } = await import('./useLoaded.ts'))
-})
+// The DOM is registered at module load, before the testing library is imported: the library registers its own
+// beforeAll hooks when it loads, which bun refuses from inside another hook.
+const owned = !GlobalRegistrator.isRegistered
+if (owned) {
+  GlobalRegistrator.register({ url: 'http://localhost/' })
+}
+Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
+const testing = await import('@testing-library/react')
+const { useLoaded } = await import('./useLoaded.ts')
 
 afterAll(async () => {
   testing.cleanup()
