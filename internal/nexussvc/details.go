@@ -57,7 +57,7 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 			return Details{}, err
 		}
 		// The category name is a label only: a failed lookup leaves it out rather than losing the rest.
-		cats, _ := meta.Cached(s.meta, "nexus/categories-"+t.Domain+".json", categoriesTTL, func() (map[int]string, error) {
+		cats, _ := meta.Cached(s.meta, meta.NexusCategoriesPrefix+t.Domain+".json", categoriesTTL, func() (map[int]string, error) {
 			return c.Categories(ctx, t)
 		})
 		return Details{Page: page, Category: cats[page.CategoryID], Files: files, Changelogs: logs}, nil
@@ -66,7 +66,7 @@ func (s *Service) Details(ctx context.Context, gameID string, modID int) (Detail
 
 // DetailsName is the cache file under cache/ for a Nexus mod's details.
 func DetailsName(domain string, modID int) string {
-	return fmt.Sprintf("nexus/details-v4-%s-%d.json", domain, modID)
+	return fmt.Sprintf("%sv4-%s-%d.json", meta.NexusDetailsPrefix, domain, modID)
 }
 
 // CachedFiles returns the cached file list of each mod that has one, however old, without a network call.

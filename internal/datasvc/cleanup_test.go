@@ -100,3 +100,49 @@ func TestApplySkipsAStoreKeyThatBecameReferenced(t *testing.T) {
 		t.Fatal("store item referenced after preview was removed")
 	}
 }
+
+func TestSelectDropsRetiredCacheAndExpiresNexusPages(t *testing.T) {
+	t.Parallel()
+	root := t.TempDir()
+	items := store.OpenAt(filepath.Join(root, "store"))
+	now := time.Date(2026, 9, 30, 12, 0, 0, 0, time.UTC)
+	old, _ := json.Marshal(fetchedFile{Fetched: now.Add(-48 * time.Hour)})
+	fresh, _ := json.Marshal(fetchedFile{Fetched: now.Add(-time.Hour)})
+	files := map[string][]byte{
+		"cache/nexus-requirements-stardewvalley-1.json":   fresh,
+		"cache/nexus/page-v1-stardewvalley-1.json":        fresh,
+		"cache/nexus/page-v2-stardewvalley-1.json":        old,
+		"cache/nexus/page-absent-v1-stardewvalley-2.json": old,
+		"cache/nexus/page-v2-stardewvalley-3.json":        fresh,
+		"cache/smapi-compat.json":                         old,
+	}
+	for rel, body := range files {
+		p := filepath.Join(root, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, body, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	preview, err := Select(root, items, nil, now, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]bool{}
+	for _, it := range preview.Items {
+		got[it.Rel] = true
+	}
+	want := []string{
+		"cache/nexus-requirements-stardewvalley-1.json", "cache/nexus/page-v1-stardewvalley-1.json",
+		"cache/nexus/page-v2-stardewvalley-1.json", "cache/nexus/page-absent-v1-stardewvalley-2.json",
+	}
+	if len(got) != len(want) {
+		t.Fatalf("listed %v, want %v", got, want)
+	}
+	for _, rel := range want {
+		if !got[rel] {
+			t.Fatalf("%s not listed: %v", rel, got)
+		}
+	}
+}

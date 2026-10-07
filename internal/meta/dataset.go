@@ -154,7 +154,7 @@ func (c *Client) Page(ctx context.Context, id int) (Page, error) {
 }
 
 func (c *Client) page(ctx context.Context, id int) (Page, error) {
-	return Cached(c, "dataset-nexus-"+strconv.Itoa(id)+".json", datasetTTL, func() (Page, error) {
+	return Cached(c, DatasetPrefix+"nexus-"+strconv.Itoa(id)+".json", datasetTTL, func() (Page, error) {
 		base := c.PageBase
 		if base == "" {
 			base = defaultPageBase

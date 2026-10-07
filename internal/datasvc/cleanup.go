@@ -6,11 +6,13 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -180,13 +182,17 @@ func Apply(root string, items *store.Store, preview Preview, keep map[string][]s
 	return errors.Join(items.Remove(refs), items.PruneDangling(keep))
 }
 
+// cacheTTL is how long the cache file rel may sit; a retired file has none.
 func cacheTTL(rel string) (time.Duration, bool) {
+	if slices.ContainsFunc(meta.RetiredCachePrefixes, func(p string) bool { return strings.HasPrefix(rel, p) }) {
+		return 0, true
+	}
 	switch {
-	case strings.HasPrefix(rel, "nexus/details-"):
+	case strings.HasPrefix(rel, meta.NexusDetailsPrefix), strings.HasPrefix(rel, meta.NexusPagePrefix):
 		return detailsTTL, true
-	case strings.HasPrefix(rel, "nexus/categories-"):
+	case strings.HasPrefix(rel, meta.NexusCategoriesPrefix):
 		return categoriesTTL, true
-	case strings.HasPrefix(rel, "dataset-"):
+	case strings.HasPrefix(rel, meta.DatasetPrefix):
 		return datasetTTL, true
 	case rel == "smapi-updates.json":
 		return updatesTTL, true
