@@ -31,7 +31,7 @@ if [ "$mode" = --local ]; then
   source_edit="s|url: https://github.com/Rethunk-Tech/mortar.git|url: file://$root|; /^        tag: v/d"
 else
   # A dry run renders before the tag exists; its manifest names the commit the tag will point at.
-  commit="$(git -C "$root" rev-parse "v$version^{commit}" 2>/dev/null || git -C "$root" rev-parse HEAD)"
+  commit="$(git -C "$root" rev-parse --verify --quiet "v$version^{commit}" || git -C "$root" rev-parse HEAD)"
   source_edit=""
 fi
 {
