@@ -8,7 +8,13 @@
       "project": ["site/**/*.js", "scripts/**/*.ts"]
     },
     "frontend": {
-      "entry": ["src/main.tsx", "lingui.config.ts", "vite.config.ts", "e2e/mem-budget.ts", "e2e/screens.ts"],
+      "entry": [
+        "src/main.tsx",
+        "lingui.config.ts",
+        "vite.config.ts",
+        "e2e/mem-budget.ts",
+        "e2e/screens.ts"
+      ],
       "vite": false,
       "ignoreDependencies": ["@lingui/native-tools"]
     }
