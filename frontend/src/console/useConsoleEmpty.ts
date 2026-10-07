@@ -1,33 +1,16 @@
-import { useEffect, useState } from 'react'
 import { Runs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { useShownEntries } from './logHooks.ts'
 import { canSendTo, useConsole } from './store.ts'
 
 function useHasRuns(game: string, profile: string, running: boolean): boolean {
-  const [hasRuns, setHasRuns] = useState(true)
-  useEffect(() => {
-    if (running) {
-      return
-    }
-    let live = true
-    Runs(game, profile).then(
-      (list) => {
-        if (live) {
-          setHasRuns((list ?? []).length > 0)
-        }
-      },
-      () => {
-        if (live) {
-          setHasRuns(true)
-        }
-      },
-    )
-    return () => {
-      live = false
-    }
-  }, [game, profile, running])
+  const { data: hasRuns } = useLoaded(
+    running ? null : () => Runs(game, profile).then((list) => (list ?? []).length > 0),
+    [game, profile, running],
+    true,
+  )
   return hasRuns
 }
 

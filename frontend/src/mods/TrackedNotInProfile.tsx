@@ -19,6 +19,7 @@ import { currentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { openImport } from '../share/store.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { openPage } from './menu.ts'
@@ -41,24 +42,12 @@ function TrackedRow({
   locked: boolean
 }) {
   const { t } = useLingui()
-  const [name, setName] = useState(`${FALLBACK_PREFIX}${mod.modId}`)
-  useEffect(() => {
-    let live = true
-    setName(`${FALLBACK_PREFIX}${mod.modId}`)
-    ModName(currentGame(), mod.modId)
-      .then((n) => {
-        if (live && n) {
-          setName(n)
-        }
-      })
-      .catch(() => {
-        // Keep the #id fallback when the name lookup fails.
-      })
-
-    return () => {
-      live = false
-    }
-  }, [mod.modId])
+  const fallback = `${FALLBACK_PREFIX}${mod.modId}`
+  const { data: name } = useLoaded(
+    () => ModName(currentGame(), mod.modId).then((n) => n || fallback),
+    [mod.modId],
+    fallback,
+  )
   const url = nexusModUrl(mod.modId, mod.domainName || nexusDomain())
   return (
     <Box

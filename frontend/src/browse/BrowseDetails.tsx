@@ -17,6 +17,7 @@ import { heading } from '../mods/paper.ts'
 import { useReleases } from '../mods/releases.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { GITHUB, NEXUS } from './browseConstants.ts'
 import type { BrowseItem } from './browseTypes.ts'
@@ -153,23 +154,13 @@ type Read = { details: Details } | { error: InlineError } | null
 
 // One read per open; the browse service keeps each answer for the session.
 function useSiteDetails(game: string, source: string, id: string) {
-  const [state, setState] = useState<Read>(null)
-  const [attempt, setAttempt] = useState(0)
-  useEffect(() => {
-    if (attempt < 0) {
-      return
-    }
-    let live = true
-    setState(null)
-    ReadDetails(game, source, id).then(
-      (details) => live && setState({ details }),
-      (e: unknown) => live && setState({ error: inlineError(e) }),
-    )
-    return () => {
-      live = false
-    }
-  }, [game, source, id, attempt])
-  return { state, retry: () => setAttempt((n) => n + 1) }
+  const { data, error, reload } = useLoaded<Read>(
+    () => ReadDetails(game, source, id).then((details) => ({ details })),
+    [game, source, id],
+    null,
+  )
+  const state: Read = error === null ? data : { error: inlineError(error) }
+  return { state, retry: reload }
 }
 
 // Thunderstore and GitHub pages: the README and what the site lists; a GitHub repo's releases are its versions and

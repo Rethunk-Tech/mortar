@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
 import type { Changelog } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import { UpdateChangelog } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
@@ -8,6 +7,7 @@ import { useProfiles } from '../../profiles/store.ts'
 import { PageLink } from '../../share/CollectionNotes.tsx'
 import { parseInstructions } from '../../share/instructions.ts'
 import { Fold } from '../../shell/Fold.tsx'
+import { useLoaded } from '../../shell/useLoaded.ts'
 import { changelogNoteIsRisky } from '../changelogRange.ts'
 
 function ChangelogText({ text, risky }: { text: string; risky?: boolean }) {
@@ -42,17 +42,19 @@ function Version({ entry }: { entry: Changelog }) {
 function Loaded({ update }: { update: Update }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
-  const [logs, setLogs] = useState<Changelog[] | 'failed' | undefined>(undefined)
-  useEffect(() => {
-    let cancelled = false
-    UpdateChangelog(game, update.nexusId, update.githubRepo, update.installed, update.version).then(
-      (got) => !cancelled && setLogs(got ?? []),
-      () => !cancelled && setLogs('failed'),
-    )
-    return () => {
-      cancelled = true
-    }
-  }, [game, update.githubRepo, update.installed, update.nexusId, update.version])
+  const { data, error } = useLoaded<Changelog[] | undefined>(
+    () =>
+      UpdateChangelog(
+        game,
+        update.nexusId,
+        update.githubRepo,
+        update.installed,
+        update.version,
+      ).then((got) => got ?? []),
+    [game, update.githubRepo, update.installed, update.nexusId, update.version],
+    undefined,
+  )
+  const logs = error === null ? data : 'failed'
   if (logs === undefined) {
     return <Box role="status" aria-busy={true} sx={{ minHeight: 20 }} />
   }

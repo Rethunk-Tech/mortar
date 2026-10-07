@@ -16,6 +16,7 @@ import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { lockedIn, useLaunchLocks } from './useLocked.ts'
@@ -76,22 +77,16 @@ function useNeeds(
   on: boolean,
   { game, from, to, ids }: { game: string; from: string; to: string[]; ids: string[] },
 ) {
-  const [needs, setNeeds] = useState<DiffSide[]>([])
   const toKey = to.join('\n')
   const idsKey = ids.join('\n')
-  useEffect(() => {
-    setNeeds([])
-    if (!on || toKey === '') {
-      return
-    }
-    let live = true
-    NeedsToCopy(game, from, toKey.split('\n'), idsKey.split('\n'))
-      .then((list) => live && setNeeds(list ?? []))
-      .catch(() => undefined)
-    return () => {
-      live = false
-    }
-  }, [on, game, from, toKey, idsKey])
+  const { data: needs } = useLoaded<DiffSide[]>(
+    on && toKey !== ''
+      ? () =>
+          NeedsToCopy(game, from, toKey.split('\n'), idsKey.split('\n')).then((list) => list ?? [])
+      : null,
+    [on, game, from, toKey, idsKey],
+    [],
+  )
   return needs
 }
 

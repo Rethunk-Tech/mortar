@@ -2,12 +2,13 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ListItemText, Menu, MenuItem } from '@mui/material'
 import { ChevronDown, History } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Run } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { Runs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { useOutcomeLabel } from './outcome.ts'
 import { runExitText } from './runExit.ts'
 import { useConsole } from './store.ts'
@@ -19,30 +20,11 @@ export function RunsPicker({ game }: { game: string }) {
   const viewRun = useConsole((s) => s.viewRun)
   const crashId = useLaunch((s) => s.crash?.runId ?? '')
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  const [runs, setRuns] = useState<Run[]>([])
-  useEffect(() => {
-    if (!profile) {
-      setRuns([])
-      return
-    }
-    let live = true
-    const token = crashId
-    Runs(game, profile).then(
-      (list) => {
-        if (live && token === crashId) {
-          setRuns(list ?? [])
-        }
-      },
-      () => {
-        if (live) {
-          setRuns([])
-        }
-      },
-    )
-    return () => {
-      live = false
-    }
-  }, [game, profile, crashId])
+  const { data: runs } = useLoaded<Run[]>(
+    profile ? () => Runs(game, profile).then((list) => list ?? []) : null,
+    [game, profile, crashId],
+    [],
+  )
   const outcome = useOutcomeLabel()
   const label = (r: Run) => {
     const when = r.started ? formatWhen(r.started, { withTime: true }) : r.id

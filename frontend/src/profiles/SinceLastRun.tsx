@@ -15,6 +15,7 @@ import {
 } from '../console/startupView.ts'
 import { HomePanel } from '../game/HomePanel.tsx'
 import { changesView } from '../game/homeView.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { HistoryDialog } from './HistoryDialog.tsx'
 import { diffLines } from './historyDiff.ts'
 import { useProfiles } from './store.ts'
@@ -28,26 +29,17 @@ function useStartupRegressions(
   updated: string,
 ): StartupRegression[] {
   const key = `${game}\0${profileId}\0${updated}`
-  const [regressions, setRegressions] = useState<StartupRegression[]>([])
-  useEffect(() => {
-    const [g = '', id = ''] = key.split('\0')
-    let live = true
-    StartupReports(g, id)
-      .then((reports) => {
+  const { data: regressions } = useLoaded<StartupRegression[]>(
+    () => {
+      const [g = '', id = ''] = key.split('\0')
+      return StartupReports(g, id).then((reports) => {
         const [latest, previous] = reports ?? []
-        if (live) {
-          setRegressions(latest ? startupRegressions(latest, previous) : [])
-        }
+        return latest ? startupRegressions(latest, previous) : []
       })
-      .catch(() => {
-        if (live) {
-          setRegressions([])
-        }
-      })
-    return () => {
-      live = false
-    }
-  }, [key])
+    },
+    [key],
+    [],
+  )
   return regressions
 }
 

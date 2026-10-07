@@ -11,6 +11,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 function previewKey(e: ConflictEvidence) {
@@ -36,22 +37,15 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
   const gameId = useProfiles((s) => s.game?.id) ?? ''
   const openId = useProfiles((s) => s.openId)
   const [previews, setPreviews] = useState<Record<string, string>>({})
-  const [evidence, setEvidence] = useState<ConflictEvidence[]>([])
-  useEffect(() => {
-    let cancelled = false
-    if (gameId !== '' && openId !== '') {
-      FetchConflictEvidence(gameId, openId, asset.kind, asset.target)
-        .then((rows) => {
-          if (!cancelled) {
-            setEvidence(rows ?? [])
-          }
-        })
-        .catch(reportUnexpected)
-    }
-    return () => {
-      cancelled = true
-    }
-  }, [asset.kind, asset.target, gameId, openId])
+  const { data: evidence } = useLoaded<ConflictEvidence[]>(
+    gameId !== '' && openId !== ''
+      ? () =>
+          FetchConflictEvidence(gameId, openId, asset.kind, asset.target).then((rows) => rows ?? [])
+      : null,
+    [asset.kind, asset.target, gameId, openId],
+    [],
+    reportUnexpected,
+  )
   useEffect(() => {
     let cancelled = false
     const crops = evidence.filter(

@@ -23,6 +23,7 @@ import {
 import { bundleWants } from '../bundles/missingWants.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -120,26 +121,18 @@ export function ApplyTemplateDialog({
 }) {
   const { t } = useLingui()
   const [name, setName] = useState('')
-  const [preview, setPreview] = useState<Preview | null>(null)
   const { busy, apply } = useApply(game, profileId, onClose)
+  const { data: preview } = useLoaded<Preview | null>(
+    open && name ? () => PreviewApplyTemplate(game, name, profileId) : null,
+    [open, game, name, profileId],
+    null,
+    reportError(t`Could not preview the template`),
+  )
   useEffect(() => {
     if (open) {
       setName(templates[0]?.name ?? '')
     }
   }, [open, templates])
-  useEffect(() => {
-    setPreview(null)
-    if (!(open && name)) {
-      return
-    }
-    let live = true
-    PreviewApplyTemplate(game, name, profileId)
-      .then((found) => live && setPreview(found))
-      .catch(reportError(t`Could not preview the template`))
-    return () => {
-      live = false
-    }
-  }, [open, game, name, profileId, t])
   return (
     <Dialog open={open} onClose={busy ? undefined : onClose}>
       <DialogTitle>{t`Apply a template`}</DialogTitle>

@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, List, ListItem, ListItemText, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type {
   HiddenMod,
   Mod,
@@ -15,6 +15,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { heading } from './paper.ts'
@@ -26,23 +27,17 @@ export function HiddenInside({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
   const on = useSettings((s) => s.games?.[game]?.showDotHiddenMods === true)
-  const [hidden, setHidden] = useState<HiddenMod[]>([])
   const [unhiding, setUnhiding] = useState<HiddenMod | null>(null)
   const [busy, run] = usePending()
   const locked = useLocked()
-  useEffect(() => {
-    if (!on || game === '' || profile.updated === '') {
-      setHidden([])
-      return
-    }
-    let live = true
-    DotHiddenMods(game, profile.id, mod.key)
-      .then((list) => live && setHidden(list ?? []))
-      .catch(reportUnexpected)
-    return () => {
-      live = false
-    }
-  }, [on, game, profile.id, profile.updated, mod.key])
+  const { data: hidden } = useLoaded<HiddenMod[]>(
+    !on || game === '' || profile.updated === ''
+      ? null
+      : () => DotHiddenMods(game, profile.id, mod.key).then((list) => list ?? []),
+    [on, game, profile.id, profile.updated, mod.key],
+    [],
+    reportUnexpected,
+  )
   if (hidden.length === 0) {
     return null
   }

@@ -13,6 +13,7 @@ import { useGameLoader } from '../games/info.ts'
 import { copyText } from '../share/copyText.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { idKey, localId } from './dependents.ts'
 import { useDetail } from './detail.ts'
@@ -321,43 +322,24 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
   const { t } = useLingui()
   const loader = useGameLoader(game)
   const mods = useMods((s) => s.mods)
-  const [retry, setRetry] = useState(0)
   const enabledKey = mods
     .filter((mod) => mod.enabled)
     .map((mod) => `${mod.id}:${mod.needs?.join(',')}:${mod.optional?.join(',')}`)
     .join('|')
-  const request = `${game}\0${profile.id}\0${enabledKey}\0${retry}`
-  const [rows, setRows] = useState<Row[] | null>(null)
-  const [failed, setFailed] = useState(false)
   const scrollRef = useRef<(id: string) => boolean>(() => false)
 
-  useEffect(() => {
-    let cancelled = false
-    setRows(null)
-    setFailed(false)
-    const cut = request.indexOf('\0')
-    const gameId = request.slice(0, cut)
-    const rest = request.slice(cut + 1)
-    const cut2 = rest.indexOf('\0')
-    LoadOrder(gameId, rest.slice(0, cut2)).then(
-      (next) => {
-        if (!cancelled) {
-          setFailed(false)
-          setRows(next ?? [])
-        }
-      },
-      (err) => {
-        if (!cancelled) {
-          setFailed(true)
-          setRows([])
-          reportUnexpected(err)
-        }
-      },
-    )
-    return () => {
-      cancelled = true
-    }
-  }, [request])
+  const {
+    data: loadedRows,
+    error,
+    reload,
+  } = useLoaded<Row[] | null>(
+    () => LoadOrder(game, profile.id).then((next) => next ?? []),
+    [game, profile.id, enabledKey],
+    null,
+    reportUnexpected,
+  )
+  const failed = error !== null
+  const rows = failed ? [] : loadedRows
 
   useEffect(() => {
     if (rows === null) {
@@ -387,7 +369,7 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
   if (kind === 'error') {
     return (
       <EmptyState icon={<ListOrdered size={40} />} title={t`Could not read load order`}>
-        <Button size="small" onClick={() => setRetry((n) => n + 1)}>
+        <Button size="small" onClick={reload}>
           {t`Retry`}
         </Button>
       </EmptyState>

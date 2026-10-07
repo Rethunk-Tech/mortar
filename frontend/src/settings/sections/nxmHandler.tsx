@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import {
   DeclineOffer,
   Disable,
@@ -7,6 +7,7 @@ import {
   Owner,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
+import { useLoaded } from '../../shell/useLoaded.ts'
 import { toastError } from '../../toasts/report.ts'
 import { useSettings } from '../store.ts'
 
@@ -26,25 +27,12 @@ export function useNxmHandler(): {
 } {
   const { t } = useLingui()
   const handled = useSettings((s) => s.nxmHandled)
-  const [owner, setOwner] = useState('')
   const [prompt, setPrompt] = useState<Prompt | null>(null)
-  useEffect(() => {
-    let live = true
-    Owner()
-      .then((name) => {
-        if (live) {
-          setOwner(handled ? '' : name)
-        }
-      })
-      .catch(() => {
-        if (live) {
-          setOwner('')
-        }
-      })
-    return () => {
-      live = false
-    }
-  }, [handled])
+  const { data: owner } = useLoaded(
+    () => Owner().then((name) => (handled ? '' : name)),
+    [handled],
+    '',
+  )
   const fail = (e: unknown) => toastError(t`Could not change how Nexus links open`, e)
   const change = (on: boolean) => {
     const done = on ? Enable() : Disable()

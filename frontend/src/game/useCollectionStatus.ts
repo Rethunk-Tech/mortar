@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { CollectionStatus } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import { CollectionStatus as loadCollectionStatus } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import type { CollectionLink } from './collectionHeader.ts'
 
 function fallbackStatus(profile: Profile): CollectionLink | null {
@@ -21,28 +21,11 @@ export function useCollectionStatus(
   game: string,
   profile: Profile | undefined,
 ): CollectionLink | null {
-  const [status, setStatus] = useState<CollectionStatus | null>(null)
-  useEffect(() => {
-    if (!profile?.collection) {
-      setStatus(null)
-      return
-    }
-    let cancelled = false
-    loadCollectionStatus(game, profile.id)
-      .then((next) => {
-        if (!cancelled) {
-          setStatus(next)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setStatus(fallbackStatus(profile))
-        }
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [game, profile])
+  const { data: status } = useLoaded<CollectionStatus | null>(
+    profile?.collection ? () => loadCollectionStatus(game, profile.id) : null,
+    [game, profile],
+    null,
+  )
   if (!profile?.collection) {
     return null
   }

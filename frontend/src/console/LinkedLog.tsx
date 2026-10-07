@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
-import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import { type ReactNode, useMemo } from 'react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
   ModsDir,
@@ -9,6 +9,7 @@ import {
 import { openMod } from '../mods/openMod.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import type { InstalledMod } from './consoleLinks.ts'
@@ -51,28 +52,11 @@ export function LinkedLog({
   const installed = useMemo(() => installedOf(profileEntries), [profileEntries])
   const updates = useUpdates((s) => s.updates)
   const notes = useMemo(() => smapiUpdateNotes(rows, updates), [rows, updates])
-  const [modsDir, setModsDir] = useState('')
-  useEffect(() => {
-    if (profile === '') {
-      setModsDir('')
-      return
-    }
-    let live = true
-    ModsDir(game, profile)
-      .then((dir) => {
-        if (live) {
-          setModsDir(dir ?? '')
-        }
-      })
-      .catch(() => {
-        if (live) {
-          setModsDir('')
-        }
-      })
-    return () => {
-      live = false
-    }
-  }, [game, profile])
+  const { data: modsDir } = useLoaded(
+    profile === '' ? null : () => ModsDir(game, profile).then((dir) => dir ?? ''),
+    [game, profile],
+    '',
+  )
   return (
     <Box
       sx={{

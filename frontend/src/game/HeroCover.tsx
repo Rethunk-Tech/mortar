@@ -1,34 +1,28 @@
 import { Box } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { Covers } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { firstCoverSrc } from './cover.ts'
 
 // The first of the profile's covers that loads (picked, Nexus, Steam), else a solid tone.
 export function HeroCover({ game, profile }: { game: string; profile: Profile }) {
   // Kept with the `updated` it was read for: the profile's cover and mods change with it.
-  const [covers, setCovers] = useState<{ stamp: string; list: string[] } | null>(null)
   const [failed, setFailed] = useState<{ stamp: string; urls: string[] }>({ stamp: '', urls: [] })
   const updated = String(profile.updated)
-  useEffect(() => {
-    let live = true
-    Covers(game, profile.id)
-      .then((list) => {
-        if (live) {
-          setCovers({ stamp: updated, list: list ?? [] })
-        }
-      })
-      .catch((e: unknown) => {
-        reportUnexpected(e)
-        if (live) {
-          setCovers({ stamp: updated, list: [] })
-        }
-      })
-    return () => {
-      live = false
-    }
-  }, [game, profile.id, updated])
+  const { data: covers } = useLoaded<{ stamp: string; list: string[] } | null>(
+    () =>
+      Covers(game, profile.id).then(
+        (list) => ({ stamp: updated, list: list ?? [] }),
+        (e: unknown) => {
+          reportUnexpected(e)
+          return { stamp: updated, list: [] }
+        },
+      ),
+    [game, profile.id, updated],
+    null,
+  )
   if (covers === null) {
     return <Box sx={{ width: '100%', height: '100%', bgcolor: 'var(--mortar-panel-solid)' }} />
   }

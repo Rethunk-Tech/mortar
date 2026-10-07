@@ -17,6 +17,7 @@ import { openModInProfile } from '../profiles/findMod.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { OfflineGate } from '../shell/OfflineGate.tsx'
 import { updateSources, useOfflineReason } from '../shell/offlineText.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { ChangelogDialog } from './ChangelogDialog.tsx'
@@ -290,25 +291,17 @@ function LastRunLine({ mod, profile }: { mod: Mod; profile: Profile }) {
 function AlsoInProfiles({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id)
-  const [rows, setRows] = useState<ModInProfile[]>([])
-  useEffect(() => {
-    if (!game) {
-      return
-    }
-    let live = true
-    setRows([])
-    ProfilesWithMod(game, mod.id)
-      .then((list) => {
-        if (live) {
-          setRows((list ?? []).filter((r) => r.profileId !== profile.id))
-        }
-      })
-      .catch(reportUnexpected)
-
-    return () => {
-      live = false
-    }
-  }, [game, mod.id, profile.id])
+  const { data: rows } = useLoaded<ModInProfile[]>(
+    game
+      ? () =>
+          ProfilesWithMod(game, mod.id).then((list) =>
+            (list ?? []).filter((r) => r.profileId !== profile.id),
+          )
+      : null,
+    [game, mod.id, profile.id],
+    [],
+    reportUnexpected,
+  )
   if (rows.length === 0) {
     return null
   }

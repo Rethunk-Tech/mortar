@@ -1,14 +1,33 @@
-import { afterAll, expect, test } from 'bun:test'
+import { afterAll, beforeAll, expect, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 
-GlobalRegistrator.register({ url: 'http://localhost/' })
-const { act, cleanup, renderHook, waitFor } = await import('@testing-library/react')
-const { useLoaded } = await import('./useLoaded.ts')
+type Testing = typeof import('@testing-library/react')
+let testing: Testing
+let useLoaded: typeof import('./useLoaded.ts').useLoaded
+
+// The DOM and the React testing helpers are set up per file: another file's teardown would otherwise strip the
+// document these tests render into.
+let owned = false
+beforeAll(async () => {
+  owned = !GlobalRegistrator.isRegistered
+  if (owned) {
+    GlobalRegistrator.register({ url: 'http://localhost/' })
+  }
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
+  testing = await import('@testing-library/react')
+  ;({ useLoaded } = await import('./useLoaded.ts'))
+})
 
 afterAll(async () => {
-  cleanup()
-  await GlobalRegistrator.unregister()
+  testing.cleanup()
+  if (owned) {
+    await GlobalRegistrator.unregister()
+  }
 })
+
+// Flushes pending promises inside act: React's scheduler may belong to another file's closed DOM, so a state update
+// made outside act never renders.
+const settle = () => testing.act(async () => new Promise<void>((resolve) => setTimeout(resolve, 0)))
 
 function deferred<T>() {
   let resolve: (v: T) => void = () => undefined
@@ -26,33 +45,36 @@ test('loads, then reloads with the same deps', async () => {
     n += 1
     return Promise.resolve(n)
   }
-  const { result } = renderHook(() => useLoaded(next, [], 0))
+  const { result } = testing.renderHook(() => useLoaded(next, [], 0))
   expect(result.current.loading).toBe(true)
-  await waitFor(() => expect(result.current.data).toBe(1))
+  await settle()
+  expect(result.current.data).toBe(1)
   expect(result.current.loading).toBe(false)
-  act(() => result.current.reload())
-  await waitFor(() => expect(result.current.data).toBe(2))
+  testing.act(() => result.current.reload())
+  await settle()
+  expect(result.current.data).toBe(2)
 })
 
 test('a run superseded by new deps is dropped', async () => {
   const first = deferred<string>()
   const second = deferred<string>()
-  const { result, rerender } = renderHook(
+  const { result, rerender } = testing.renderHook(
     ({ key }) => useLoaded(() => (key === 'a' ? first.promise : second.promise), [key], ''),
     { initialProps: { key: 'a' } },
   )
   rerender({ key: 'b' })
   second.resolve('b')
-  await waitFor(() => expect(result.current.data).toBe('b'))
+  await settle()
+  expect(result.current.data).toBe('b')
   first.resolve('a')
-  await act(() => first.promise)
+  await testing.act(() => first.promise)
   expect(result.current.data).toBe('b')
 })
 
 test('an answer after unmount is ignored and errors reach onError once', async () => {
   const late = deferred<string>()
   const seen: unknown[] = []
-  const gone = renderHook(() =>
+  const gone = testing.renderHook(() =>
     useLoaded(
       () => late.promise,
       [],
@@ -66,7 +88,7 @@ test('an answer after unmount is ignored and errors reach onError once', async (
   expect(seen).toEqual([])
 
   const boom = new Error('boom')
-  const { result } = renderHook(() =>
+  const { result } = testing.renderHook(() =>
     useLoaded(
       () => Promise.reject(boom),
       [],
@@ -74,13 +96,30 @@ test('an answer after unmount is ignored and errors reach onError once', async (
       (e) => seen.push(e),
     ),
   )
-  await waitFor(() => expect(result.current.error).toBe(boom))
+  await settle()
+  expect(result.current.error).toBe(boom)
   expect(result.current.data).toBe('fallback')
   expect(result.current.loading).toBe(false)
   expect(seen).toEqual([boom])
 })
 
+test('new deps clear the old answer until the new one arrives', async () => {
+  const second = deferred<string>()
+  const { result, rerender } = testing.renderHook(
+    ({ key }) => useLoaded(() => (key === 'a' ? Promise.resolve('a') : second.promise), [key], ''),
+    { initialProps: { key: 'a' } },
+  )
+  await settle()
+  expect(result.current.data).toBe('a')
+  rerender({ key: 'b' })
+  await settle()
+  expect(result.current.data).toBe('')
+  second.resolve('b')
+  await settle()
+  expect(result.current.data).toBe('b')
+})
+
 test('a null loader never runs', () => {
-  const { result } = renderHook(() => useLoaded<number>(null, [], 7))
+  const { result } = testing.renderHook(() => useLoaded<number>(null, [], 7))
   expect(result.current).toMatchObject({ data: 7, loading: false })
 })

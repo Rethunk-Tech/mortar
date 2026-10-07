@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
 import type { File } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import type {
   Mod,
@@ -9,6 +8,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { OverlayFiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { entryOf } from './lookup.ts'
 import { useNexusEntry } from './nexusDetails.ts'
@@ -22,25 +22,15 @@ import type { OverlayRow } from './virtualRows.ts'
 // What each optional file replaces and adds, read again whenever the profile changes.
 function useOverlaySets(profile: Profile, baseKey: string, count: number) {
   const game = useProfiles((s) => s.game?.id ?? '')
-  const [sets, setSets] = useState<OverlayFileSet[]>([])
   const updated = String(profile.updated)
-  useEffect(() => {
-    if (!(game && baseKey && count > 0 && updated)) {
-      setSets([])
-      return
-    }
-    let live = true
-    OverlayFiles(game, profile.id, baseKey)
-      .then((list) => {
-        if (live) {
-          setSets(list ?? [])
-        }
-      })
-      .catch(reportUnexpected)
-    return () => {
-      live = false
-    }
-  }, [game, profile.id, baseKey, count, updated])
+  const { data: sets } = useLoaded<OverlayFileSet[]>(
+    game && baseKey && count > 0 && updated
+      ? () => OverlayFiles(game, profile.id, baseKey).then((list) => list ?? [])
+      : null,
+    [game, profile.id, baseKey, count, updated],
+    [],
+    reportUnexpected,
+  )
   return sets
 }
 

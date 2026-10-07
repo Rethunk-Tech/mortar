@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useLoaded } from '../shell/useLoaded.ts'
 
 // The source's category names; empty while loading, when the source has none, or when the lookup fails.
 function useCategoryNames({
@@ -12,20 +12,11 @@ function useCategoryNames({
   source: string
   skip: boolean
 }): string[] {
-  const [names, setNames] = useState<string[]>([])
-  useEffect(() => {
-    if (skip || source === '') {
-      setNames([])
-      return
-    }
-    let cancelled = false
-    categories(game, source)
-      .then((next) => !cancelled && setNames(next))
-      .catch(() => !cancelled && setNames([]))
-    return () => {
-      cancelled = true
-    }
-  }, [categories, game, source, skip])
+  const { data: names } = useLoaded<string[]>(
+    skip || source === '' ? null : () => categories(game, source),
+    [categories, game, source, skip],
+    [],
+  )
   return names
 }
 
