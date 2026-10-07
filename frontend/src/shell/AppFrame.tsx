@@ -31,7 +31,8 @@ export function AppFrame({ children }: { children: ReactNode }) {
         inset: 0,
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
+        // A hidden overflow is still a scroll container: focusing a child below the fold slid the whole window up.
+        overflow: 'clip',
         boxSizing: 'border-box',
         border: maximised ? 0 : '1px solid var(--mortar-hairline-12)',
         borderRadius: maximised ? 0 : '10px',
