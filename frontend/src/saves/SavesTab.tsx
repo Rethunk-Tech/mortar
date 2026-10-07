@@ -4,6 +4,7 @@ import { Box, Button, Typography } from '@mui/material'
 import { History, Search, Sprout } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { PageActions } from '../game/PageActions.tsx'
 import { useGameInfo } from '../games/info.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
@@ -85,6 +86,17 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <PageActions>
+        <Button
+          variant="outlined"
+          color="inherit"
+          startIcon={<History size={16} />}
+          sx={{ height: 34 }}
+          onClick={() => setBackupsOpen(true)}
+        >
+          {t`Save backups…`}
+        </Button>
+      </PageActions>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 0.75 }}>
         {fits.length === 0 ? null : (
           <SearchField
@@ -95,10 +107,6 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
             sx={{ width: 360, maxWidth: '50%' }}
           />
         )}
-        <Box sx={{ flex: 1 }} />
-        <Button size="small" startIcon={<History size={14} />} onClick={() => setBackupsOpen(true)}>
-          {t`Save backups…`}
-        </Button>
       </Box>
       <Box
         sx={{
