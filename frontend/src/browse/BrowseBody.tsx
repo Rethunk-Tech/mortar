@@ -2,6 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Pagination, Typography } from '@mui/material'
 import { CloudOff, Search, SearchX } from 'lucide-react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { arrowFocus } from '../shell/arrowFocus.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { unreachableNote } from '../shell/offlineText.ts'
@@ -14,11 +15,11 @@ import {
   list,
   PICTURE_PX,
   ROW_PICTURE_PX,
-  SKELETON_KEYS,
   STALE_OPACITY,
 } from './browseConstants.ts'
 import type { ResultCardProps } from './browseTypes.ts'
 import { ResultCard } from './ResultCard.tsx'
+import { skeletonCount } from './skeletonCount.ts'
 import type { BrowseResult, Status } from './useBrowseQuery.ts'
 
 // cardAction is what an arrow key lands on in a result card: its last control, the Add or Download action.
@@ -46,6 +47,36 @@ interface BrowseBodyProps {
   onRetry: () => void
   onClear: () => void
   onPage: (page: number) => void
+}
+
+// Fills the results area with placeholders in the results' own grid, so nothing moves when they arrive.
+function BrowseSkeleton({ view }: { view: string }) {
+  const { t } = useLingui()
+  const box = useRef<HTMLDivElement>(null)
+  const [size, setSize] = useState({ width: 0, height: 0 })
+  useLayoutEffect(() => {
+    const el = box.current
+    if (!el) {
+      return
+    }
+    const measure = () => setSize({ width: el.clientWidth, height: el.clientHeight })
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    measure()
+    return () => ro.disconnect()
+  }, [])
+  const isGrid = view === 'grid'
+  const rowPx = (isGrid ? PICTURE_PX : ROW_PICTURE_PX) + CARD_PAD_PX
+  return (
+    <Box ref={box} sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      <SkeletonRows
+        label={t`Searching…`}
+        count={skeletonCount({ ...size, grid: isGrid, rowPx })}
+        height={rowPx}
+        sx={isGrid ? grid : list}
+      />
+    </Box>
+  )
 }
 
 function ResultList({
@@ -109,12 +140,7 @@ function BrowseBody(props: BrowseBodyProps) {
   }
   if (result.items.length === 0) {
     return status === 'loading' ? (
-      <SkeletonRows
-        label={t`Searching…`}
-        count={SKELETON_KEYS.length}
-        height={(props.view === 'grid' ? PICTURE_PX : ROW_PICTURE_PX) + CARD_PAD_PX}
-        sx={props.view === 'grid' ? grid : list}
-      />
+      <BrowseSkeleton view={props.view} />
     ) : (
       <EmptyState
         icon={<SearchX size={ICON_SIZE} />}

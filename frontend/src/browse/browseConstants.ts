@@ -10,7 +10,7 @@ const FIRST_PAGE = 1
 const PICTURE_PX = 72
 const ROW_PICTURE_PX = 40
 const CARD_MIN_PX = 340
-const SKELETON_KEYS = ['a', 'b', 'c', 'd', 'e', 'f']
+const GAP_PX = 6
 const ICON_SIZE = 40
 const STALE_OPACITY = 0.6
 const GRAY_OPACITY = 0.5
@@ -39,17 +39,19 @@ function openPageLabel(source: string): string {
   return i18n._(msg`Open on ${label}`)
 }
 
-const list = { display: 'flex', flexDirection: 'column', gap: 0.75 } as const
+const list = { display: 'flex', flexDirection: 'column', gap: `${GAP_PX}px` } as const
 
 const grid = {
   display: 'grid',
   gridTemplateColumns: `repeat(auto-fill, minmax(${CARD_MIN_PX}px, 1fr))`,
-  gap: '6px',
+  gap: `${GAP_PX}px`,
 } as const
 
 export {
   ALL,
+  CARD_MIN_PX,
   FIRST_PAGE,
+  GAP_PX,
   GITHUB,
   GRAY_OPACITY,
   grid,
@@ -59,7 +61,6 @@ export {
   openPageLabel,
   PICTURE_PX,
   ROW_PICTURE_PX,
-  SKELETON_KEYS,
   STALE_OPACITY,
   searchHint,
   THUNDERSTORE,
