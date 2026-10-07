@@ -85,7 +85,12 @@ func facet(key string) string {
 	return "categories:" + key
 }
 
-// sortIndex maps a Sort to Modrinth's index; Modrinth has no name sort, so that keeps relevance.
+// Sorts are Modrinth's search indexes other than relevance; it has no name sort.
+func (Driver) Sorts() []string {
+	return []string{source.SortDownloads, source.SortEndorsements, source.SortUpdated, source.SortNewest}
+}
+
+// sortIndex maps a Sort to Modrinth's index.
 func sortIndex(sort string) string {
 	switch sort {
 	case source.SortDownloads:
@@ -94,6 +99,8 @@ func sortIndex(sort string) string {
 		return "updated"
 	case source.SortEndorsements:
 		return "follows"
+	case source.SortNewest:
+		return "newest"
 	}
 	return "relevance"
 }

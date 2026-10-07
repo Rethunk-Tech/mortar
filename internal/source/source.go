@@ -12,6 +12,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 )
@@ -75,13 +77,31 @@ type Query struct {
 	Sort string
 }
 
-// Sort orders a search; each source maps it to what it can.
+// Sort orders a search; "" is best match. A source honours only the sorts its Sorter lists, in its own API, so a
+// page is never re-sorted client-side. SortEndorsements is the source's community score (Nexus endorsements,
+// Thunderstore rating, Modrinth follows, CurseForge popularity).
 const (
 	SortDownloads    = "downloads"
 	SortUpdated      = "updated"
+	SortNewest       = "newest"
 	SortEndorsements = "endorsements"
 	SortName         = "name"
+	SortStars        = "stars"
+	SortForks        = "forks"
 )
+
+// Sorter is a source that sorts a search server-side; Sorts lists the Sort values it honours besides best match.
+type Sorter interface {
+	Sorts() []string
+}
+
+// SortsOf lists the sorts src honours, none when it has no sorting.
+func SortsOf(src Source) []string {
+	if s, ok := src.(Sorter); ok {
+		return s.Sorts()
+	}
+	return []string{}
+}
 
 // Item is one search hit.
 type Item struct {
@@ -183,12 +203,19 @@ type Gated interface {
 	Unavailable() string
 }
 
-// Unavailable is why src cannot be used now, or "" when it can.
+// Unavailable is why src cannot be used now, or "" when it can. Drivers return it as an error string (lowercase);
+// it reaches the UI as a sentence.
 func Unavailable(src Source) string {
-	if g, ok := src.(Gated); ok {
-		return g.Unavailable()
+	g, ok := src.(Gated)
+	if !ok {
+		return ""
 	}
-	return ""
+	reason := g.Unavailable()
+	if reason == "" {
+		return ""
+	}
+	r, n := utf8.DecodeRuneInString(reason)
+	return string(unicode.ToUpper(r)) + reason[n:]
 }
 
 // Schemer is a source whose links open Mortar through a URL scheme.

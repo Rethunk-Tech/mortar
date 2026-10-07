@@ -60,6 +60,8 @@ function BrowseFilters({
   modes,
   onModes,
   hasCompat,
+  source,
+  sorts,
 }: {
   categories: string[]
   filter: BrowseFilter
@@ -67,8 +69,26 @@ function BrowseFilters({
   modes: BrowseModes
   onModes: (next: BrowseModes) => void
   hasCompat: boolean
+  source: string
+  sorts: string[]
 }) {
   const { t } = useLingui()
+  // The metric is named per source, since "most endorsed" on Nexus is "most followed" on Modrinth.
+  const labels: Record<string, string> = {
+    downloads: t`Sort: most downloaded`,
+    endorsements:
+      {
+        nexus: t`Sort: most endorsed`,
+        thunderstore: t`Sort: top rated`,
+        modrinth: t`Sort: most followed`,
+        curseforge: t`Sort: most popular`,
+      }[source] ?? t`Sort: most endorsed`,
+    stars: t`Sort: most stars`,
+    forks: t`Sort: most forks`,
+    updated: t`Sort: recently updated`,
+    newest: t`Sort: newest`,
+    name: t`Sort: name (A to Z)`,
+  }
   const none = categories.length === 0
   const title = t`This source has no categories to filter by`
   return (
@@ -96,10 +116,7 @@ function BrowseFilters({
         onChange={(sort) => onFilter({ ...filter, sort })}
         options={[
           { value: '', label: t`Sort: best match` },
-          { value: 'downloads', label: t`Sort: most downloaded` },
-          { value: 'endorsements', label: t`Sort: most endorsed` },
-          { value: 'updated', label: t`Sort: recently updated` },
-          { value: 'name', label: t`Sort: name` },
+          ...sorts.map((value) => ({ value, label: labels[value] ?? value })),
         ]}
       />
     </Box>

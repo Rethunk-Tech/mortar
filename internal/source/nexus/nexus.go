@@ -186,12 +186,19 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	return source.Page{Total: parsed.Data.Mods.TotalCount, Items: items}, nil
 }
 
+// Sorts are the values of Nexus's ModsSort the driver offers (checked against the v2 schema's introspection).
+func (Driver) Sorts() []string {
+	return []string{source.SortEndorsements, source.SortDownloads, source.SortUpdated, source.SortNewest, source.SortName}
+}
+
 func sortClause(sort string) string {
 	switch sort {
 	case source.SortDownloads:
 		return "downloads:{direction:DESC}"
 	case source.SortUpdated:
 		return "updatedAt:{direction:DESC}"
+	case source.SortNewest:
+		return "createdAt:{direction:DESC}"
 	case source.SortName:
 		return "name:{direction:ASC}"
 	}

@@ -37,7 +37,7 @@ func TestLooksComeFromTheIndexAndTheCacheAlone(t *testing.T) {
 	}
 	// A name the listing lacks was looked up once; asking again must not read the listing, so a damaged one goes
 	// unnoticed.
-	listings, _ := filepath.Glob(filepath.Join(d.CacheDir, "thunderstore", "lethal-company-c1-*.json"))
+	listings, _ := filepath.Glob(filepath.Join(d.CacheDir, "thunderstore", "lethal-company-c2-*.json"))
 	if len(listings) != 1 || os.WriteFile(listings[0], []byte("not json"), 0o600) != nil {
 		t.Fatal(listings)
 	}

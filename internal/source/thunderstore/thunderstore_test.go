@@ -35,9 +35,17 @@ type ver struct {
 	FileSize      int64    `json:"file_size"`
 }
 
+// created makes Library the newest package and the rest older, in name order.
+func created(name string) string {
+	if name == "Library" {
+		return "2026-02-01T00:00:00Z"
+	}
+	return "2025-01-01T00:00:00Z"
+}
+
 func listing(owner, name, desc string, downloads int, dep, nsfw bool) map[string]any {
 	return map[string]any{
-		"name": name, "owner": owner, "package_url": "https://x/p/" + owner + "/" + name + "/", "date_updated": "2026-01-01",
+		"name": name, "owner": owner, "package_url": "https://x/p/" + owner + "/" + name + "/", "date_updated": "2026-01-01", "date_created": created(name),
 		"rating_score": 3, "is_deprecated": dep, "has_nsfw_content": nsfw,
 		"versions": []ver{
 			{Description: desc, VersionNumber: "2.0.0", Dependencies: []string{"BepInEx-BepInExPack-5.4.2100"}, Downloads: downloads, FileSize: 99},
@@ -188,6 +196,10 @@ func TestCategoryFilterSortAndList(t *testing.T) {
 	q = source.Query{Game: "lethal-company", Key: "lethal-company", Page: 1, Version: "1.2.3", ExcludeCategories: []string{"Cheats"}, Sort: source.SortName}
 	if p, err = d.Search(t.Context(), q); err != nil || len(p.Items) != 4 || p.Items[0].Name != "Library" {
 		t.Fatalf("exclude cheats by name: %v %v", names(p), err)
+	}
+	q.Sort = source.SortNewest
+	if p, err = d.Search(t.Context(), q); err != nil || p.Items[0].Name != "Library" {
+		t.Fatalf("newest: %v %v", names(p), err)
 	}
 	got, err := d.Categories(t.Context(), "lethal-company")
 	if err != nil || len(got) != 3 || got[0] != "Cheats" {

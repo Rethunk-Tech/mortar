@@ -135,7 +135,13 @@ const (
 	sortUpdated   = 3
 	sortName      = 4
 	sortDownloads = 6
+	sortReleased  = 11
 )
+
+// Sorts are the ModsSearchSortField values the driver offers besides Featured, its best match.
+func (Driver) Sorts() []string {
+	return []string{source.SortEndorsements, source.SortDownloads, source.SortUpdated, source.SortNewest, source.SortName}
+}
 
 func sortField(sort string) int {
 	switch sort {
@@ -145,6 +151,8 @@ func sortField(sort string) int {
 		return sortUpdated
 	case source.SortEndorsements:
 		return sortPopular
+	case source.SortNewest:
+		return sortReleased
 	case source.SortName:
 		return sortName
 	}

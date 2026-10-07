@@ -32,8 +32,24 @@ func TestSearchQueryAndPaging(t *testing.T) {
 	if !strings.Contains(gotURL, "topic%3Astardew-valley-mod") {
 		t.Fatalf("topic missing: %s", gotURL)
 	}
-	if !strings.Contains(gotURL, "sort=stars") || !strings.Contains(gotURL, "per_page=20") || !strings.Contains(gotURL, "page=2") {
+	if strings.Contains(gotURL, "sort=") || !strings.Contains(gotURL, "per_page=20") || !strings.Contains(gotURL, "page=2") {
 		t.Fatalf("paging %s", gotURL)
+	}
+}
+
+func TestSortParamNeverMapsDownloadsToStars(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct{ sort, text, want string }{
+		{source.SortStars, "x", "stars"},
+		{source.SortForks, "x", "forks"},
+		{source.SortUpdated, "", "updated"},
+		{"", "x", ""},
+		{"", " ", "stars"},
+		{source.SortDownloads, "x", ""},
+	} {
+		if got := sortParam(c.sort, c.text); got != c.want {
+			t.Errorf("sortParam(%q, %q) = %q, want %q", c.sort, c.text, got, c.want)
+		}
 	}
 }
 

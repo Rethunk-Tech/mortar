@@ -17,6 +17,8 @@ interface BrowseSource {
   name: string
   // Why the source cannot be searched now, such as a missing API key; empty when it can.
   unavailable?: string
+  // The sorts the source orders by on its own server, besides best match.
+  sorts?: string[] | null
 }
 
 interface BrowseQuery {
@@ -69,4 +71,11 @@ interface ResultCardProps {
   sourceNames: Map<string, string>
 }
 
-export type { BrowseFilter, BrowseItem, BrowsePageProps, BrowseSearch, ResultCardProps }
+export type {
+  BrowseFilter,
+  BrowseItem,
+  BrowsePageProps,
+  BrowseSearch,
+  BrowseSource,
+  ResultCardProps,
+}

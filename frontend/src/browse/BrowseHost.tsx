@@ -10,7 +10,7 @@ import { download } from '../queue/actions.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { BrowsePage } from './BrowsePage.tsx'
-import type { BrowseSearch } from './browseTypes.ts'
+import type { BrowseSearch, BrowseSource } from './browseTypes.ts'
 
 const KIND_INSTALL = 'install'
 
@@ -39,7 +39,7 @@ const search: BrowseSearch = async ({
 
 function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
   const premium = useNexus((state) => state.premium)
-  const [sources, setSources] = useState<{ id: string; name: string }[]>([])
+  const [sources, setSources] = useState<BrowseSource[]>([])
   const [hasCompat, setHasCompat] = useState(false)
   useEffect(() => {
     HasCompat(game).then(setHasCompat).catch(reportUnexpected)

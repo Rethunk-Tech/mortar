@@ -62,7 +62,7 @@ func TestSearchRefusesSourcesTheGameLacksOrCannotSearch(t *testing.T) {
 
 func TestSearchableSourcesFollowCatalogOrder(t *testing.T) {
 	got := (&Service{}).SearchableSources("stardew")
-	if len(got) != 3 || got[0] != (SourceInfo{ID: "nexus", Name: "Nexus Mods"}) || got[1].ID != "curseforge" || got[2].ID != "github" {
+	if len(got) != 3 || got[0].ID != "nexus" || got[0].Name != "Nexus Mods" || len(got[0].Sorts) == 0 || got[1].ID != "curseforge" || got[2].ID != "github" {
 		t.Fatalf("got %v", got)
 	}
 	if got := (&Service{}).SearchableSources("nope"); got == nil || len(got) != 0 {

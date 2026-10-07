@@ -95,7 +95,30 @@ func (d *Driver) remember(key string, page source.Page) {
 	d.cache[key] = cacheEntry{page: page, until: now.Add(cacheTTL)}
 }
 
-// Search lists repositories tagged with the game's topic (q.Key), most starred first. Answers are cached for ten
+// Sorts are the sorts the repository search honours. It has no download count (a repository's downloads are
+// release-asset counts that need a request per repository), no name sort and none by creation date.
+func (*Driver) Sorts() []string {
+	return []string{source.SortStars, source.SortForks, source.SortUpdated}
+}
+
+// sortParam is the search's sort value; "" leaves GitHub's best match. With no text best match is arbitrary within
+// the topic, so the star order is the default there.
+func sortParam(sort, text string) string {
+	switch sort {
+	case source.SortForks:
+		return "forks"
+	case source.SortUpdated:
+		return "updated"
+	case source.SortStars:
+		return "stars"
+	}
+	if strings.TrimSpace(text) == "" {
+		return "stars"
+	}
+	return ""
+}
+
+// Search lists repositories tagged with the game's topic (q.Key), by q.Sort. Answers are cached for ten
 // minutes because GitHub's anonymous search limit is small.
 func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	// Without a topic the query would search every repository on GitHub, which is noise in a game's browse.
@@ -111,10 +134,8 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 	terms := strings.TrimSpace(q.Text + " topic:" + q.Key)
 	params := url.Values{}
 	params.Set("q", terms)
-	// GitHub has no download count or name sort, so those keep the star order.
-	params.Set("sort", "stars")
-	if q.Sort == source.SortUpdated {
-		params.Set("sort", "updated")
+	if by := sortParam(q.Sort, q.Text); by != "" {
+		params.Set("sort", by)
 	}
 	params.Set("per_page", strconv.Itoa(source.PageSize))
 	params.Set("page", strconv.Itoa(q.Page))

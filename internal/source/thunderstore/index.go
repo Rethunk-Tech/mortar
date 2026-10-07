@@ -46,6 +46,7 @@ type pkg struct {
 	Icon      string `json:"icon"`
 	URL       string `json:"url"`
 	Updated   string `json:"updated"`
+	Created   string `json:"created"`
 	Rating    int    `json:"rating"`
 	Downloads int    `json:"downloads"`
 	// Hidden is a deprecated package: not searchable, but still resolvable as a dependency.
@@ -65,6 +66,7 @@ type wirePackage struct {
 	Owner          string   `json:"owner"`
 	PackageURL     string   `json:"package_url"`
 	DateUpdated    string   `json:"date_updated"`
+	DateCreated    string   `json:"date_created"`
 	RatingScore    int      `json:"rating_score"`
 	IsDeprecated   bool     `json:"is_deprecated"`
 	HasNSFWContent bool     `json:"has_nsfw_content"`
@@ -217,8 +219,8 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 	if b, err := fsx.ReadFile(metaPath); err == nil {
 		_ = json.Unmarshal(b, &meta)
 	}
-	// The schema tag keeps a listing built before categories were kept from being reused.
-	pkgPath := func(hash string) string { return filepath.Join(dir, key+"-c1-"+hash+".json") }
+	// The schema tag keeps a listing built before creation dates were kept from being reused.
+	pkgPath := func(hash string) string { return filepath.Join(dir, key+"-c2-"+hash+".json") }
 	if meta.Hash != "" && d.now().Sub(meta.Fetched) < refreshAfter {
 		if pk, err := loadPackages(key, pkgPath(meta.Hash)); err == nil {
 			return pk, nil
@@ -276,7 +278,7 @@ func (d Driver) build(ctx context.Context, chunks []string, path, ua string) err
 				continue
 			}
 			p := pkg{
-				Owner: w.Owner, Name: w.Name, URL: w.PackageURL, Updated: w.DateUpdated, Rating: w.RatingScore,
+				Owner: w.Owner, Name: w.Name, URL: w.PackageURL, Updated: w.DateUpdated, Created: w.DateCreated, Rating: w.RatingScore,
 				Hidden: w.IsDeprecated, Categories: w.Categories, Adult: w.HasNSFWContent, Summary: w.Versions[0].Description, Icon: w.Versions[0].Icon,
 				Repo: source.GitHubRepo(w.Versions[0].WebsiteURL),
 			}

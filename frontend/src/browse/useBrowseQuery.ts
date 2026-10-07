@@ -3,6 +3,7 @@ import { useSettings } from '../settings/store.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { ALL, FIRST_PAGE } from './browseConstants.ts'
 import { parseModes } from './browseModes.ts'
+import { effectiveSort, sortsFor } from './browseSort.ts'
 import { clampPage, DEBOUNCE_MS, PAGE_SIZE } from './browseState.ts'
 import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts'
 import { useBrowseView } from './view.ts'
@@ -41,12 +42,16 @@ function useBrowseQuery({
   const stored = useBrowseView((s) => s.filters[game]) ?? NO_FILTER
   const saved = useSettings((s) => s.games?.[game]?.browseFilters ?? '')
   const modes = useMemo(() => parseModes(saved), [saved])
-  const filter = useMemo(() => ({ ...stored, ...modes }), [stored, modes])
   const [chosen, setSource] = useState(ALL)
   const merged = sources.length > 1
   const known = sources.some((s) => s.id === chosen) || (chosen === ALL && merged)
   const fallback = merged ? ALL : (sources[0]?.id ?? '')
   const source = known ? chosen : fallback
+  const sorts = sortsFor(source, sources)
+  const filter = useMemo(
+    () => ({ ...stored, ...modes, sort: effectiveSort(stored.sort, sorts) }),
+    [stored, modes, sorts],
+  )
   const [draft, setDraft] = useState('')
   const [text, setText] = useState('')
   const [page, setPage] = useState(FIRST_PAGE)
@@ -103,6 +108,7 @@ function useBrowseQuery({
 
   return {
     filter,
+    sorts,
     modes,
     source,
     setSource,

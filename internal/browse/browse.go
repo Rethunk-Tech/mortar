@@ -153,7 +153,9 @@ func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text s
 	for i, s := range sources {
 		ids[i] = s.ID()
 	}
-	merged.Items = mergeSame(interleave(answered), ranked(c.Prefer, ids), c.identity(ctx))
+	items := interleave(answered)
+	sortMerged(items, f.Sort)
+	merged.Items = mergeSame(items, ranked(c.Prefer, ids), c.identity(ctx))
 	return merged, nil
 }
 

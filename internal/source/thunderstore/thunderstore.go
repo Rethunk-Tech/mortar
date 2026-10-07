@@ -72,6 +72,11 @@ func score(p pkg, tokens []string) int {
 	return total
 }
 
+// Sorts are the orders of the cached full listing, so they cover every package, not one page.
+func (Driver) Sorts() []string {
+	return []string{source.SortDownloads, source.SortEndorsements, source.SortUpdated, source.SortNewest, source.SortName}
+}
+
 // Search lists the community's packages matching the text, best match first and most downloaded among equals.
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	if q.Key == "" {
@@ -103,6 +108,8 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 			return b.p.Rating - a.p.Rating
 		case source.SortUpdated:
 			return strings.Compare(b.p.Updated, a.p.Updated)
+		case source.SortNewest:
+			return strings.Compare(b.p.Created, a.p.Created)
 		case source.SortName:
 			return strings.Compare(strings.ToLower(a.p.Name), strings.ToLower(b.p.Name))
 		}

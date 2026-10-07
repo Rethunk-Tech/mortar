@@ -60,6 +60,8 @@ type SourceInfo struct {
 	Name string `json:"name"`
 	// Unavailable says why the source cannot be searched now (for example a missing API key); empty when it can.
 	Unavailable string `json:"unavailable"`
+	// Sorts are the Sort values the source orders by on its own server, besides best match.
+	Sorts []string `json:"sorts"`
 }
 
 // SearchableSources lists the game's sources that can be searched, in catalog order.
@@ -67,7 +69,7 @@ func (s *Service) SearchableSources(game string) []SourceInfo {
 	out := []SourceInfo{}
 	if info, ok := catalogGame(game); ok {
 		for _, src := range source.Searchable(info) {
-			out = append(out, SourceInfo{ID: src.ID(), Name: src.Name(), Unavailable: source.Unavailable(src)})
+			out = append(out, SourceInfo{ID: src.ID(), Name: src.Name(), Unavailable: source.Unavailable(src), Sorts: source.SortsOf(src)})
 		}
 	}
 	return out
