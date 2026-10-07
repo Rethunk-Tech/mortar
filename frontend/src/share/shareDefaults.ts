@@ -28,14 +28,9 @@ export function toShareInclude(value: ShareInclude) {
   }
 }
 
-// FOMOD installers come from Nexus, so the option means nothing on a game modded only from elsewhere unless an
-// entry already carries choices (an archive installed by hand).
+// FOMOD choices exist only on entries installed through a FOMOD installer; with none, the option has nothing to carry.
 export function offersFomod(
   entries: readonly { fomod?: object | null }[] | null | undefined,
-  sources: readonly string[] | null | undefined,
 ): boolean {
-  return (
-    (sources ?? []).includes('nexus') ||
-    (entries ?? []).some((e) => Object.keys(e.fomod ?? {}).length > 0)
-  )
+  return (entries ?? []).some((e) => Object.keys(e.fomod ?? {}).length > 0)
 }

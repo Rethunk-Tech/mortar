@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { IncludeOptions } from './IncludeOptions.tsx'
-import type { ShownInfo } from './logic.ts'
+import { type ShownInfo, sharedMods } from './logic.ts'
 import { includedKeys, leftOutCounts } from './methods.ts'
 import { offersFomod, type ShareInclude } from './shareDefaults.ts'
 import { useShareDialog } from './store.ts'
@@ -74,30 +74,33 @@ export function Included({
   include,
   onInclude,
   file,
+  total,
 }: {
   info: ShownInfo
   include: ShareInclude
   onInclude: (next: ShareInclude) => void
   file: boolean
+  // The profile's mod count, as the title bar shows it.
+  total: number
 }) {
   const { t, i18n } = useLingui()
   const [changing, setChanging] = useState(false)
   const [which, setWhich] = useState(false)
   const [showMods, setShowMods] = useState(false)
   const profileId = useShareDialog((s) => s.profileId)
-  const fomod = useProfiles((s) =>
-    offersFomod(s.profiles.find((p) => p.id === profileId)?.entries, s.game?.sources),
-  )
+  const fomod = useProfiles((s) => offersFomod(s.profiles.find((p) => p.id === profileId)?.entries))
   const labels = {
-    notes: t`Notes`.toLocaleLowerCase(i18n.locale),
+    notes: (file ? t`Notes` : t`Mod notes`).toLocaleLowerCase(i18n.locale),
     fomodChoices: t`FOMOD choices`,
     configFiles: t`Config files`.toLocaleLowerCase(i18n.locale),
     disabledMods: '',
   }
-  const { count } = info
-  const mods = include.disabledMods
-    ? plural(count, { one: '# mod', other: '# mods' })
-    : plural(count, { one: '# enabled mod', other: '# enabled mods' })
+  const shared = sharedMods(info)
+  const count = total
+  const mods =
+    shared < total
+      ? t`${shared} of ${total} mods`
+      : plural(count, { one: '# mod', other: '# mods' })
   const line = [mods, ...includedKeys(include, { file, fomod }).map((k) => labels[k])].join(' · ')
   const { local, other } = leftOutCounts(info.leftOut)
   const reason = (id: string) => {

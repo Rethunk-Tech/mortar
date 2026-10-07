@@ -1,5 +1,7 @@
 import type { ShareInclude } from './shareDefaults.ts'
 
+const MAX_COLUMNS = 3
+const SQUARE_TILES = 4
 const DESTINATIONS = ['mortar', 'nexus', 'thunderstore', 'nearby', 'list'] as const
 
 export type Destination = (typeof DESTINATIONS)[number]
@@ -25,6 +27,10 @@ export function shareDestinations(opts: {
     disabled: opts.count === 0,
   }))
 }
+
+// Columns that leave no lone tile on the last row: one row up to three tiles, 2x2 for four, 3 for five.
+export const gridColumns = (tiles: number): number =>
+  tiles === SQUARE_TILES ? 2 : Math.min(tiles, MAX_COLUMNS)
 
 // The remembered destination when it still has a tile that can be used.
 export function lastUsedDestination(

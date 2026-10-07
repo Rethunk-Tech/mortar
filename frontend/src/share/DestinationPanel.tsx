@@ -1,6 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { useState } from 'react'
+import { userModCount } from '../profiles/count.ts'
+import { useProfiles } from '../profiles/store.ts'
+import { TipBanner } from '../tips/TipBanner.tsx'
 import {
   FilePane,
   LinkPane,
@@ -17,6 +20,10 @@ function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
   const { t } = useLingui()
   const { profileId, keys, game, format, setFormat, info, include, setInclude } = built
   const [previewing, setPreviewing] = useState(false)
+  const total = useProfiles((s) => {
+    const p = s.profiles.find((x) => x.id === profileId)
+    return p ? userModCount(p) : (info?.count ?? 0)
+  })
   if (!info) {
     return null
   }
@@ -42,8 +49,14 @@ function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
         </ToggleButton>
       </ToggleButtonGroup>
       {format === 'link' ? (
+        <TipBanner tip="share">
+          {t`A share link names this profile and where each mod comes from, not the files themselves.`}
+        </TipBanner>
+      ) : null}
+      {format === 'link' ? (
         <LinkPane
           info={info}
+          total={total}
           include={include}
           onInclude={setInclude}
           onFile={() => setFormat('file')}
@@ -51,6 +64,7 @@ function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
       ) : (
         <FilePane
           info={info}
+          total={total}
           game={game}
           profileId={profileId}
           keys={keys}

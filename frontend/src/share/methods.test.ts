@@ -1,5 +1,11 @@
 import { expect, test } from 'bun:test'
-import { includedKeys, lastUsedDestination, leftOutCounts, shareDestinations } from './methods.ts'
+import {
+  gridColumns,
+  includedKeys,
+  lastUsedDestination,
+  leftOutCounts,
+  shareDestinations,
+} from './methods.ts'
 
 const on = { disabledMods: false, fomodChoices: true, notes: true, configFiles: true }
 
@@ -44,4 +50,8 @@ test('leftOutCounts separates archive mods', () => {
     local: 2,
     other: 1,
   })
+})
+
+test('gridColumns never leaves an orphan tile', () => {
+  expect([1, 2, 3, 4, 5].map(gridColumns)).toEqual([1, 2, 3, 2, 3])
 })

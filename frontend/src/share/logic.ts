@@ -56,6 +56,10 @@ export function meter(length: number, limit: number): { ratio: number; level: Me
   return { ratio: Math.min(1, ratio), level }
 }
 
+// Mods the share carries, counted the way the profile's own mod count is (mods, not install entries).
+export const sharedMods = (info: ShownInfo): number =>
+  info.groups.reduce((n, g) => n + g.mods.length, 0)
+
 export const suggestFile = (count: number, tooLarge: boolean): boolean =>
   tooLarge || count > SUGGEST_FILE_AT
 

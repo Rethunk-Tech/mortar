@@ -77,12 +77,14 @@ function Meter({ info }: { info: ShownInfo }) {
 
 interface IncludeProps {
   info: ShownInfo
+  total: number
   include: ShareInclude
   onInclude: (next: ShareInclude) => void
 }
 
 export function LinkPane({
   info,
+  total,
   include,
   onInclude,
   onFile,
@@ -143,13 +145,14 @@ export function LinkPane({
           </Button>
         </Box>
       ) : null}
-      <Included info={info} include={include} onInclude={onInclude} file={false} />
+      <Included info={info} total={total} include={include} onInclude={onInclude} file={false} />
     </Pane>
   )
 }
 
 export function FilePane({
   info,
+  total,
   game,
   profileId,
   keys,
@@ -207,7 +210,7 @@ export function FilePane({
           </Box>
         </Box>
       ) : null}
-      <Included info={info} include={include} onInclude={onInclude} file={true} />
+      <Included info={info} total={total} include={include} onInclude={onInclude} file={true} />
     </Pane>
   )
 }

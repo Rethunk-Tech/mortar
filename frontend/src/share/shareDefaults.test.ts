@@ -23,9 +23,9 @@ test('share include defaults match registry defaults', () => {
   })
 })
 
-test('FOMOD choices are offered only with Nexus or an entry that has choices', () => {
-  expect(offersFomod([], ['thunderstore', 'github'])).toBe(false)
-  expect(offersFomod([{ fomod: {} }, {}], ['thunderstore'])).toBe(false)
-  expect(offersFomod([{ fomod: { Main: { Pick: ['A'] } } }], ['thunderstore'])).toBe(true)
-  expect(offersFomod(null, ['nexus'])).toBe(true)
+test('FOMOD choices are offered only when an entry has choices', () => {
+  expect(offersFomod([])).toBe(false)
+  expect(offersFomod([{ fomod: {} }, {}])).toBe(false)
+  expect(offersFomod([{ fomod: { Main: { Pick: ['A'] } } }])).toBe(true)
+  expect(offersFomod(null)).toBe(false)
 })

@@ -79,6 +79,10 @@ msgstr "Other"
 msgid "Could not reach GitHub. Check your connection and try again."
 msgstr "Could not reach GitHub. Check your connection and try again."
 
+#: src/share/IncludeOptions.tsx:32
+msgid "Include mod notes"
+msgstr "Include mod notes"
+
 #: src/templates/ApplyTemplateDialog.tsx:150
 msgid "Template"
 msgstr "Template"
@@ -105,6 +109,7 @@ msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 msgid "Failed ({0})"
 msgstr "Failed ({0})"
 
+#: src/profiles/CompareDialog.tsx:224
 #: src/settings/sections/SyncFolder.tsx:40
 msgid "Choose…"
 msgstr "Choose…"
@@ -268,7 +273,7 @@ msgstr "Could not queue the downloads"
 #. placeholder {0}: plan.copy.length
 #. placeholder {1}: to.name
 #. placeholder {2}: to.name
-#: src/profiles/CompareDialog.tsx:95
+#: src/profiles/CompareDialog.tsx:96
 msgid "{0, plural, one {Copied # mod to {1}} other {Copied # mods to {2}}}"
 msgstr "{0, plural, one {Copied # mod to {1}} other {Copied # mods to {2}}}"
 
@@ -299,7 +304,7 @@ msgstr "Snapshot diff"
 msgid "{name} is missing from the store"
 msgstr "{name} is missing from the store"
 
-#: src/share/MethodPanes.tsx:171
+#: src/share/MethodPanes.tsx:174
 msgid "Could not save the file"
 msgstr "Could not save the file"
 
@@ -426,7 +431,7 @@ msgid "Always"
 msgstr "Always"
 
 #: src/share/DestinationGrid.tsx:66
-#: src/share/ShareDialog.tsx:26
+#: src/share/ShareDialog.tsx:39
 msgid "Nearby computer"
 msgstr "Nearby computer"
 
@@ -434,7 +439,7 @@ msgstr "Nearby computer"
 msgid "Unlinked the collection"
 msgstr "Unlinked the collection"
 
-#: src/share/MethodPanes.tsx:142
+#: src/share/MethodPanes.tsx:144
 msgid "Use a file"
 msgstr "Use a file"
 
@@ -565,7 +570,7 @@ msgid "Search settings"
 msgstr "Search settings"
 
 #: src/game/HomeNotes.tsx:117
-#: src/share/Included.tsx:92
+#: src/share/Included.tsx:93
 msgid "Notes"
 msgstr "Notes"
 
@@ -757,7 +762,7 @@ msgstr "{0} was changed on {1} and here"
 msgid "More…"
 msgstr "More…"
 
-#: src/game/ProfileMenuItems.tsx:346
+#: src/game/ProfileMenuItems.tsx:345
 msgid "Add a bundle…"
 msgstr "Add a bundle…"
 
@@ -1057,7 +1062,7 @@ msgstr "Mod updates are found"
 msgid "Find a mod in all profiles"
 msgstr "Find a mod in all profiles"
 
-#: src/share/MethodPanes.tsx:347
+#: src/share/MethodPanes.tsx:350
 msgid "Turn on sharing nearby?"
 msgstr "Turn on sharing nearby?"
 
@@ -1181,7 +1186,7 @@ msgstr "{a} and {b} each wait for the other, so SMAPI loads neither."
 msgid "Could not dismiss that folder"
 msgstr "Could not dismiss that folder"
 
-#: src/share/MethodPanes.tsx:261
+#: src/share/MethodPanes.tsx:264
 msgid "Could not export the collection draft"
 msgstr "Could not export the collection draft"
 
@@ -1297,7 +1302,7 @@ msgstr "Mod Manager Download on Nexus Mods only works in Mortar when you are sig
 msgid "Could not add the update downloads"
 msgstr "Could not add the update downloads"
 
-#: src/share/MethodPanes.tsx:286
+#: src/share/MethodPanes.tsx:289
 msgid "Could not publish the code"
 msgstr "Could not publish the code"
 
@@ -2035,7 +2040,7 @@ msgstr "Fullscreen resolution width"
 msgid "These come from a different site than you installed them from. Update all skips them."
 msgstr "These come from a different site than you installed them from. Update all skips them."
 
-#: src/share/MethodPanes.tsx:349
+#: src/share/MethodPanes.tsx:352
 msgid "Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General."
 msgstr "Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General."
 
@@ -2169,7 +2174,7 @@ msgstr "Mortar is up to date"
 #: src/mods/Toolbar.tsx:354
 #: src/mods/Toolbar.tsx:372
 #: src/profiles/CompareDialog.tsx:356
-#: src/profiles/CompareDialog.tsx:432
+#: src/profiles/CompareDialog.tsx:458
 msgid "Filter mods"
 msgstr "Filter mods"
 
@@ -2215,7 +2220,7 @@ msgstr "Will update"
 msgid "{0} fps over {1} s. Frame ms: average {2}, 95th {3}, 99th {4}, worst {5}. Mono heap {6} of {7} MiB, {8} garbage collections."
 msgstr "{0} fps over {1} s. Frame ms: average {2}, 95th {3}, 99th {4}, worst {5}. Mono heap {6} of {7} MiB, {8} garbage collections."
 
-#: src/profiles/CompareDialog.tsx:161
+#: src/profiles/CompareDialog.tsx:162
 msgid "{count} selected"
 msgstr "{count} selected"
 
@@ -2537,7 +2542,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/mods/storeEntries.ts:60
 #: src/mods/storeEntries.ts:99
 #: src/profiles/collectionUnlink.ts:36
-#: src/profiles/CompareDialog.tsx:81
+#: src/profiles/CompareDialog.tsx:82
 #: src/profiles/HistoryEventRow.tsx:45
 #: src/profiles/historyRevert.ts:110
 #: src/profiles/store.ts:194
@@ -2832,7 +2837,7 @@ msgstr "{0, plural, one {# update for {1, plural, one {# profile} other {# profi
 msgid "Not signed in. Add your API key in Accounts."
 msgstr "Not signed in. Add your API key in Accounts."
 
-#: src/share/MethodPanes.tsx:240
+#: src/share/MethodPanes.tsx:243
 msgid "Collection draft saved"
 msgstr "Collection draft saved"
 
@@ -2915,7 +2920,7 @@ msgstr "Load"
 msgid "New profile from link"
 msgstr "New profile from link"
 
-#: src/profiles/CompareDialog.tsx:341
+#: src/profiles/CompareDialog.tsx:343
 msgid "with"
 msgstr "with"
 
@@ -3203,7 +3208,7 @@ msgstr "different file"
 msgid "Set it in Steam for me"
 msgstr "Set it in Steam for me"
 
-#: src/share/MethodPanes.tsx:296
+#: src/share/MethodPanes.tsx:299
 msgid "Modpack saved"
 msgstr "Modpack saved"
 
@@ -3227,7 +3232,7 @@ msgstr "Search GitHub for mods published as releases. Add puts the latest releas
 msgid "And {0} more on the Nexus page"
 msgstr "And {0} more on the Nexus page"
 
-#: src/profiles/CompareDialog.tsx:463
+#: src/profiles/CompareDialog.tsx:489
 msgid "Neither profile has a mod that matches the filter."
 msgstr "Neither profile has a mod that matches the filter."
 
@@ -3399,6 +3404,11 @@ msgstr "Mortar found no other mod manager's profiles for this game on this compu
 msgid "{0, plural, one {# other mod} other {# other mods}}"
 msgstr "{0, plural, one {# other mod} other {# other mods}}"
 
+#. placeholder {0}: profileA.name
+#: src/profiles/CompareDialog.tsx:548
+msgid "Pick what to compare {0} with"
+msgstr "Pick what to compare {0} with"
+
 #: src/lan/SendPanel.tsx:182
 msgid "Try again in a few seconds."
 msgstr "Try again in a few seconds."
@@ -3418,7 +3428,7 @@ msgstr "Help"
 msgid "L{0}"
 msgstr "L{0}"
 
-#: src/share/Included.tsx:127
+#: src/share/Included.tsx:130
 msgid "Included"
 msgstr "Included"
 
@@ -3432,7 +3442,7 @@ msgstr "{0, plural, one {# download added} other {# downloads added}}"
 msgid "Launch options copied"
 msgstr "Launch options copied"
 
-#: src/share/DestinationPanel.tsx:69
+#: src/share/DestinationPanel.tsx:83
 msgid "Preview what they see"
 msgstr "Preview what they see"
 
@@ -3447,7 +3457,7 @@ msgstr "config.json, changed from the mod's own"
 #: src/game/FarmMenuItem.tsx:86
 #: src/launch/SaveWarnDialog.tsx:61
 #: src/mods/updateReview/Row.tsx:34
-#: src/share/Included.tsx:108
+#: src/share/Included.tsx:111
 msgid "Disabled in this profile"
 msgstr "Disabled in this profile"
 
@@ -3525,11 +3535,15 @@ msgstr "Skip sharing"
 msgid "The game is using this profile. Stop the game to change mods."
 msgstr "The game is using this profile. Stop the game to change mods."
 
+#: src/profiles/CompareDialog.tsx:572
+msgid "Compare against a friend's profile or a multiplayer host's list."
+msgstr "Compare against a friend's profile or a multiplayer host's list."
+
 #: src/share/DestinationGrid.tsx:72
 msgid "Text for Discord or a forum"
 msgstr "Text for Discord or a forum"
 
-#: src/share/IncludeOptions.tsx:33
+#: src/share/IncludeOptions.tsx:31
 msgid "Include FOMOD choices"
 msgstr "Include FOMOD choices"
 
@@ -3591,7 +3605,7 @@ msgstr "Device name"
 msgid "{0} · {1} · {farms}"
 msgstr "{0} · {1} · {farms}"
 
-#: src/share/Included.tsx:93
+#: src/share/Included.tsx:94
 msgid "FOMOD choices"
 msgstr "FOMOD choices"
 
@@ -3987,7 +4001,7 @@ msgstr "Cover image"
 msgid "Where save backups are kept. Empty uses the default."
 msgstr "Where save backups are kept. Empty uses the default."
 
-#: src/share/MethodPanes.tsx:328
+#: src/share/MethodPanes.tsx:331
 msgid "Share as r2modman code?"
 msgstr "Share as r2modman code?"
 
@@ -4132,6 +4146,10 @@ msgstr "Reported by {0}"
 msgid "Automatic"
 msgstr "Automatic"
 
+#: src/share/Included.tsx:93
+msgid "Mod notes"
+msgstr "Mod notes"
+
 #: src/templates/ApplyTemplateDialog.tsx:138
 msgid "Could not preview the template"
 msgstr "Could not preview the template"
@@ -4234,7 +4252,7 @@ msgstr "A mod with several tags appears under its first tag."
 msgid "Summary"
 msgstr "Summary"
 
-#: src/share/MethodPanes.tsx:283
+#: src/share/MethodPanes.tsx:286
 msgid "Code copied"
 msgstr "Code copied"
 
@@ -4317,7 +4335,7 @@ msgstr "{names} seems to cause the crash"
 msgid "Dismiss all harmless overlaps?"
 msgstr "Dismiss all harmless overlaps?"
 
-#: src/share/IncludeOptions.tsx:32
+#: src/share/IncludeOptions.tsx:30
 msgid "Include disabled mods"
 msgstr "Include disabled mods"
 
@@ -4334,7 +4352,7 @@ msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 #: src/settings/sections/About.tsx:67
 #: src/settings/sections/Updates.tsx:164
 #: src/share/DestinationGrid.tsx:51
-#: src/share/ShareDialog.tsx:23
+#: src/share/ShareDialog.tsx:36
 #: src/shell/AppMenu.tsx:134
 #: src/shell/AppMenu.tsx:137
 msgid "Mortar"
@@ -4439,7 +4457,7 @@ msgstr "None"
 
 #: src/browse/BrowseMenu.tsx:82
 #: src/console/HelpDialog.tsx:187
-#: src/share/MethodPanes.tsx:124
+#: src/share/MethodPanes.tsx:126
 msgid "Link copied"
 msgstr "Link copied"
 
@@ -4682,7 +4700,7 @@ msgstr "Freed {0}"
 msgid "Set category"
 msgstr "Set category"
 
-#: src/share/MethodPanes.tsx:168
+#: src/share/MethodPanes.tsx:171
 msgid "File saved"
 msgstr "File saved"
 
@@ -4703,7 +4721,7 @@ msgstr "{name} has no file Mortar can use in place of the one shared"
 msgid "They move to Dismissed. Restore them from that section."
 msgstr "They move to Dismissed. Restore them from that section."
 
-#: src/profiles/CompareDialog.tsx:225
+#: src/profiles/CompareDialog.tsx:227
 msgid "YOUR PROFILES"
 msgstr "YOUR PROFILES"
 
@@ -4923,7 +4941,7 @@ msgid "Entry, event handlers and asset work the SMAPI Bridge timed before the ti
 msgstr "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
 
 #. placeholder {0}: skipped.length
-#: src/share/MethodPanes.tsx:198
+#: src/share/MethodPanes.tsx:201
 msgid "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
 msgstr "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
 
@@ -5074,7 +5092,7 @@ msgstr "Filter by profile"
 msgid "· revision {0}"
 msgstr "· revision {0}"
 
-#: src/share/MethodPanes.tsx:363
+#: src/share/MethodPanes.tsx:366
 msgid "Turn on and continue"
 msgstr "Turn on and continue"
 
@@ -5127,11 +5145,11 @@ msgstr "Could not check for updates."
 msgid "No profile holds a mod by that name or id."
 msgstr "No profile holds a mod by that name or id."
 
-#: src/share/MethodPanes.tsx:319
+#: src/share/MethodPanes.tsx:322
 msgid "Could not export the modpack"
 msgstr "Could not export the modpack"
 
-#: src/share/Included.tsx:106
+#: src/share/Included.tsx:109
 msgid "Added from an archive, so it only exists on this computer."
 msgstr "Added from an archive, so it only exists on this computer."
 
@@ -5229,6 +5247,7 @@ msgid "Background preview"
 msgstr "Background preview"
 
 #: src/profiles/CompareDialog.tsx:242
+#: src/profiles/CompareDialog.tsx:557
 msgid "A friend's link or file…"
 msgstr "A friend's link or file…"
 
@@ -5252,8 +5271,8 @@ msgstr "Problem sections"
 msgid "Restarting…"
 msgstr "Restarting…"
 
-#: src/game/ProfileMenu.tsx:85
-#: src/game/ProfileMenuItems.tsx:360
+#: src/game/ProfileMenu.tsx:84
+#: src/game/ProfileMenuItems.tsx:359
 msgid "Delete profile…"
 msgstr "Delete profile…"
 
@@ -5426,7 +5445,7 @@ msgstr "Cosmetic overlaps on the Problems tab"
 msgid "Tagged {name} with {detail}"
 msgstr "Tagged {name} with {detail}"
 
-#: src/share/ShareDialog.tsx:87
+#: src/share/DestinationPanel.tsx:53
 msgid "A share link names this profile and where each mod comes from, not the files themselves."
 msgstr "A share link names this profile and where each mod comes from, not the files themselves."
 
@@ -5691,7 +5710,7 @@ msgstr "This source has no categories to filter by"
 msgid "Download folder"
 msgstr "Download folder"
 
-#: src/share/DestinationPanel.tsx:29
+#: src/share/DestinationPanel.tsx:36
 msgid "How to send it"
 msgstr "How to send it"
 
@@ -5775,7 +5794,7 @@ msgstr "Allow cleanup before deleting."
 msgid "Starter templates"
 msgstr "Starter templates"
 
-#: src/share/Included.tsx:118
+#: src/share/Included.tsx:121
 msgid "{local, plural, one {# mod you added from an archive can't be linked} other {# mods you added from archives can't be linked}}"
 msgstr "{local, plural, one {# mod you added from an archive can't be linked} other {# mods you added from archives can't be linked}}"
 
@@ -5981,7 +6000,7 @@ msgid "Skip for now"
 msgstr "Skip for now"
 
 #: src/mods/typedConfig/ConfigPane.tsx:179
-#: src/share/Included.tsx:94
+#: src/share/Included.tsx:95
 msgid "Config files"
 msgstr "Config files"
 
@@ -6220,7 +6239,7 @@ msgstr "{summary} · {0}"
 msgid "Console command"
 msgstr "Console command"
 
-#: src/share/MethodPanes.tsx:312
+#: src/share/MethodPanes.tsx:315
 msgid "Share as r2modman code…"
 msgstr "Share as r2modman code…"
 
@@ -6344,6 +6363,7 @@ msgid "There is not enough free space at the destination."
 msgstr "There is not enough free space at the destination."
 
 #: src/profiles/CompareDialog.tsx:249
+#: src/profiles/CompareDialog.tsx:566
 msgid "A multiplayer host's list…"
 msgstr "A multiplayer host's list…"
 
@@ -6370,7 +6390,7 @@ msgstr "{0, plural, one {Stopped asking about # folder} other {Stopped asking ab
 #: src/lan/SendPanel.tsx:120
 #: src/profiles/ProfilesPage.tsx:312
 #: src/settings/SettingsPage.tsx:69
-#: src/share/ShareDialog.tsx:64
+#: src/share/ShareDialog.tsx:73
 msgid "Back"
 msgstr "Back"
 
@@ -6552,7 +6572,7 @@ msgstr "The log does not name a mod."
 msgid "Create a profile first."
 msgstr "Create a profile first."
 
-#: src/share/Included.tsx:156
+#: src/share/Included.tsx:159
 msgid "Which?"
 msgstr "Which?"
 
@@ -6647,17 +6667,13 @@ msgstr "Open author page on Nexus"
 msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
 
-#: src/share/DestinationPanel.tsx:41
+#: src/share/DestinationPanel.tsx:48
 msgid "File"
 msgstr "File"
 
 #: src/mods/NexusAccountActions.tsx:155
 msgid "Track"
 msgstr "Track"
-
-#: src/share/Included.tsx:100
-msgid "{count, plural, one {# enabled mod} other {# enabled mods}}"
-msgstr "{count, plural, one {# enabled mod} other {# enabled mods}}"
 
 #. placeholder {0}: item.name || i18n._(msg`the mod`)
 #: src/launch/autoUpdate.ts:114
@@ -7039,7 +7055,7 @@ msgstr "Notes and tags"
 msgid "Current files on Nexus ({0})"
 msgstr "Current files on Nexus ({0})"
 
-#: src/share/MethodPanes.tsx:220
+#: src/share/MethodPanes.tsx:223
 msgid "Copies the mod names as text. Pick a format; a long list is copied in parts that fit one message."
 msgstr "Copies the mod names as text. Pick a format; a long list is copied in parts that fit one message."
 
@@ -7650,7 +7666,7 @@ msgid "This pack has files that always install."
 msgstr "This pack has files that always install."
 
 #: src/share/DestinationGrid.tsx:71
-#: src/share/ShareDialog.tsx:27
+#: src/share/ShareDialog.tsx:40
 msgid "Mod list"
 msgstr "Mod list"
 
@@ -7807,7 +7823,7 @@ msgid "Crashed"
 msgstr "Crashed"
 
 #: src/i18n/counts.ts:3
-#: src/share/Included.tsx:99
+#: src/share/Included.tsx:103
 msgid "{count, plural, one {# mod} other {# mods}}"
 msgstr "{count, plural, one {# mod} other {# mods}}"
 
@@ -7969,7 +7985,7 @@ msgstr "Add {0} to a profile"
 #. placeholder {0}: plan.moves.length
 #. placeholder {1}: to.name
 #. placeholder {2}: to.name
-#: src/profiles/CompareDialog.tsx:105
+#: src/profiles/CompareDialog.tsx:106
 msgid "{0, plural, one {Matched # version in {1}} other {Matched # versions in {2}}}"
 msgstr "{0, plural, one {Matched # version in {1}} other {Matched # versions in {2}}}"
 
@@ -8480,7 +8496,7 @@ msgstr "On Nexus"
 msgid "Grant the Steam sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
 msgstr "Grant the Steam sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
 
-#: src/share/MethodPanes.tsx:283
+#: src/share/MethodPanes.tsx:286
 msgid "Copy code"
 msgstr "Copy code"
 
@@ -8614,7 +8630,7 @@ msgstr "Regenerate token?"
 msgid "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 msgstr "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 
-#: src/share/MethodPanes.tsx:358
+#: src/share/MethodPanes.tsx:361
 msgid "Could not turn on sharing nearby"
 msgstr "Could not turn on sharing nearby"
 
@@ -8684,7 +8700,7 @@ msgstr "What Mortar shows when it opens."
 
 #: src/console/PerformanceComparison.tsx:57
 #: src/console/StartupTable.tsx:278
-#: src/share/Included.tsx:136
+#: src/share/Included.tsx:139
 msgid "Change"
 msgstr "Change"
 
@@ -8766,7 +8782,7 @@ msgstr "Mod or event"
 msgid "Untrack every {gameName} mod on Nexus"
 msgstr "Untrack every {gameName} mod on Nexus"
 
-#: src/share/Included.tsx:122
+#: src/share/Included.tsx:125
 msgid "{other, plural, one {# more mod is left out} other {# more mods are left out}}"
 msgstr "{other, plural, one {# more mod is left out} other {# more mods are left out}}"
 
@@ -8844,8 +8860,8 @@ msgstr "Profile settings"
 #. placeholder {0}: profileB.name
 #. placeholder {1}: profileA.name
 #. placeholder {1}: profileB.name
-#: src/profiles/CompareDialog.tsx:140
-#: src/profiles/CompareDialog.tsx:145
+#: src/profiles/CompareDialog.tsx:141
+#: src/profiles/CompareDialog.tsx:146
 msgid "Make {0} match {1}"
 msgstr "Make {0} match {1}"
 
@@ -8928,7 +8944,7 @@ msgstr "From the downloads folder…"
 msgid "No Mortar computers found nearby."
 msgstr "No Mortar computers found nearby."
 
-#: src/share/MethodPanes.tsx:330
+#: src/share/MethodPanes.tsx:333
 msgid "Upload"
 msgstr "Upload"
 
@@ -9065,7 +9081,7 @@ msgstr "{0} was updated: mods to check"
 msgid "Click a mod to open its details: versions, what it needs and what needs it, and its update."
 msgstr "Click a mod to open its details: versions, what it needs and what needs it, and its update."
 
-#: src/share/MethodPanes.tsx:281
+#: src/share/MethodPanes.tsx:284
 msgid "Code published"
 msgstr "Code published"
 
@@ -9292,7 +9308,7 @@ msgstr "Switch to Performance"
 msgid "{0} {1} is available"
 msgstr "{0} {1} is available"
 
-#: src/share/IncludeOptions.tsx:35
+#: src/share/IncludeOptions.tsx:33
 msgid "Include config files"
 msgstr "Include config files"
 
@@ -9708,11 +9724,11 @@ msgstr "Focus the search"
 msgid "No app opens these links now."
 msgstr "No app opens these links now."
 
-#: src/profiles/CompareDialog.tsx:461
+#: src/profiles/CompareDialog.tsx:487
 msgid "These profiles have the same mods."
 msgstr "These profiles have the same mods."
 
-#: src/share/MethodPanes.tsx:265
+#: src/share/MethodPanes.tsx:268
 msgid "Export as Nexus collection draft…"
 msgstr "Export as Nexus collection draft…"
 
@@ -9813,7 +9829,7 @@ msgstr "Move up"
 msgid "Open download page"
 msgstr "Open download page"
 
-#: src/share/Included.tsx:144
+#: src/share/Included.tsx:147
 msgid "Show mods"
 msgstr "Show mods"
 
@@ -9884,7 +9900,7 @@ msgstr "Open Console"
 msgid "Could not read the templates"
 msgstr "Could not read the templates"
 
-#: src/share/MethodPanes.tsx:323
+#: src/share/MethodPanes.tsx:326
 msgid "Export as Thunderstore modpack…"
 msgstr "Export as Thunderstore modpack…"
 
@@ -9901,7 +9917,7 @@ msgstr "Follow live log"
 msgid "The next launch will be measured"
 msgstr "The next launch will be measured"
 
-#: src/share/MethodPanes.tsx:139
+#: src/share/MethodPanes.tsx:141
 msgid "A .mortar file suits a profile this size better, and carries your mod settings too."
 msgstr "A .mortar file suits a profile this size better, and carries your mod settings too."
 
@@ -10021,7 +10037,7 @@ msgstr "Report it so it can be fixed."
 msgid "GitHub"
 msgstr "GitHub"
 
-#: src/share/MethodPanes.tsx:237
+#: src/share/MethodPanes.tsx:240
 msgid "Nexus expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
 msgstr "Nexus expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
 
@@ -10043,7 +10059,7 @@ msgstr "Actions for {0}"
 msgid "Add from game presets…"
 msgstr "Add from game presets…"
 
-#: src/share/IncludeOptions.tsx:34
+#: src/share/IncludeOptions.tsx:32
 msgid "Include notes"
 msgstr "Include notes"
 
@@ -10091,7 +10107,7 @@ msgstr "Optional: {label}"
 msgid "Combine with…"
 msgstr "Combine with…"
 
-#: src/profiles/CompareDialog.tsx:461
+#: src/profiles/CompareDialog.tsx:487
 msgid "No matching mods"
 msgstr "No matching mods"
 
@@ -10150,7 +10166,7 @@ msgstr "Enter a number from {min} to {max}"
 msgid "Close downloads"
 msgstr "Close downloads"
 
-#: src/share/MethodPanes.tsx:177
+#: src/share/MethodPanes.tsx:180
 msgid "A .mortar file holds the link's mods plus their settings files. Send it; they open it from Mortar's Import."
 msgstr "A .mortar file holds the link's mods plus their settings files. Send it; they open it from Mortar's Import."
 
@@ -10450,7 +10466,7 @@ msgstr "{name} is deprecated on Thunderstore; its page points to {replacement}."
 #. placeholder {1}: info.web
 #. placeholder {2}: info.name
 #. placeholder {3}: info.web
-#: src/share/ShareDialog.tsx:30
+#: src/share/ShareDialog.tsx:17
 msgid "{count, plural, one {Try my Mortar profile \"{0}\" for {gameName} (# mod): {1}} other {Try my Mortar profile \"{2}\" for {gameName} (# mods): {3}}}"
 msgstr "{count, plural, one {Try my Mortar profile \"{0}\" for {gameName} (# mod): {1}} other {Try my Mortar profile \"{2}\" for {gameName} (# mods): {3}}}"
 
@@ -10594,7 +10610,7 @@ msgid "Hourly count resets {0} · daily count resets {1}"
 msgstr "Hourly count resets {0} · daily count resets {1}"
 
 #: src/settings/store.ts:140
-#: src/share/MethodPanes.tsx:246
+#: src/share/MethodPanes.tsx:249
 #: src/shell/saveDiagnostics.ts:27
 msgid "Show file"
 msgstr "Show file"
@@ -10620,7 +10636,7 @@ msgid "Kept forever"
 msgstr "Kept forever"
 
 #. placeholder {0}: profile.name
-#: src/profiles/CompareDialog.tsx:76
+#: src/profiles/CompareDialog.tsx:77
 msgid "{0} is in use by the running game. Close the game to change its mods."
 msgstr "{0} is in use by the running game. Close the game to change its mods."
 
@@ -10680,7 +10696,7 @@ msgstr "No problems"
 msgid "Add one to group your mods your own way."
 msgstr "Add one to group your mods your own way."
 
-#: src/share/MethodPanes.tsx:254
+#: src/share/MethodPanes.tsx:257
 msgid "Saves this profile as a collection draft to finish and upload on Nexus Mods."
 msgstr "Saves this profile as a collection draft to finish and upload on Nexus Mods."
 
@@ -10761,7 +10777,7 @@ msgstr "Your profiles have {0}. Update replaces each profile's copy."
 msgid "Done ({0}): {1}"
 msgstr "Done ({0}): {1}"
 
-#: src/share/Included.tsx:114
+#: src/share/Included.tsx:117
 msgid "{local, plural, one {# mod you added from an archive can't go in the file} other {# mods you added from archives can't go in the file}}"
 msgstr "{local, plural, one {# mod you added from an archive can't go in the file} other {# mods you added from archives can't go in the file}}"
 
@@ -11142,7 +11158,7 @@ msgstr "Status"
 msgid "itch.io rejected your API key"
 msgstr "itch.io rejected your API key"
 
-#: src/share/MethodPanes.tsx:132
+#: src/share/MethodPanes.tsx:134
 msgid "They see the profile name, the mod list and where each mod comes from."
 msgstr "They see the profile name, the mod list and where each mod comes from."
 
@@ -11174,9 +11190,13 @@ msgid "Checked in {0}: {parts}"
 msgstr "Checked in {0}: {parts}"
 
 #. placeholder {0}: saved.path
-#: src/share/MethodPanes.tsx:193
+#: src/share/MethodPanes.tsx:196
 msgid "Saved to {0}"
 msgstr "Saved to {0}"
+
+#: src/share/Included.tsx:102
+msgid "{shared} of {total} mods"
+msgstr "{shared} of {total} mods"
 
 #: src/bundles/ApplyBundleToProfile.tsx:50
 #: src/bundles/dialogs.tsx:278
@@ -11498,11 +11518,11 @@ msgstr "{0, plural, one {Last run: {list}} other {Last # runs: {list}}}"
 msgid "You can roll back the completed updates from the profile history."
 msgstr "You can roll back the completed updates from the profile history."
 
-#: src/share/Included.tsx:110
+#: src/share/Included.tsx:113
 msgid "Its source is not known."
 msgstr "Its source is not known."
 
-#: src/share/MethodPanes.tsx:329
+#: src/share/MethodPanes.tsx:332
 msgid "This uploads the profile to Thunderstore and gives a public code."
 msgstr "This uploads the profile to Thunderstore and gives a public code."
 
@@ -12207,7 +12227,7 @@ msgstr "{0} was installed from another site. Updating installs {1} from {2} inst
 #: src/mods/Sidebar.tsx:558
 #: src/settings/sections/NexusMods.tsx:300
 #: src/share/DestinationGrid.tsx:56
-#: src/share/ShareDialog.tsx:24
+#: src/share/ShareDialog.tsx:37
 msgid "Nexus Mods"
 msgstr "Nexus Mods"
 
@@ -12403,7 +12423,7 @@ msgstr "Dependencies"
 
 #: src/launch/LaunchLayer.tsx:136
 #: src/share/PreviewDialog.tsx:64
-#: src/share/ShareDialog.tsx:75
+#: src/share/ShareDialog.tsx:84
 msgid "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 msgstr "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 
@@ -12448,8 +12468,8 @@ msgstr "{gameName} profiles"
 
 #. placeholder {0}: listNames(left)
 #. placeholder {0}: listNames(skipped, skipped.length)
-#: src/share/MethodPanes.tsx:243
-#: src/share/MethodPanes.tsx:297
+#: src/share/MethodPanes.tsx:246
+#: src/share/MethodPanes.tsx:300
 msgid "Left out: {0}"
 msgstr "Left out: {0}"
 
@@ -12562,7 +12582,7 @@ msgid "Check this download"
 msgstr "Check this download"
 
 #: src/settings/sections/AboutDiagnostics.tsx:168
-#: src/share/MethodPanes.tsx:187
+#: src/share/MethodPanes.tsx:190
 msgid "Save…"
 msgstr "Save…"
 
@@ -12644,8 +12664,8 @@ msgstr "Save log…"
 #. placeholder {0}: info.name
 #. placeholder {0}: profile.name
 #: src/profiles/ProfileRow.tsx:248
-#: src/share/ShareDialog.tsx:46
-#: src/share/ShareDialog.tsx:70
+#: src/share/ShareDialog.tsx:54
+#: src/share/ShareDialog.tsx:79
 msgid "Share {0}"
 msgstr "Share {0}"
 
@@ -12687,7 +12707,7 @@ msgid "This mod is no longer in the profile."
 msgstr "This mod is no longer in the profile."
 
 #: src/browse/BrowseMenu.tsx:81
-#: src/share/MethodPanes.tsx:127
+#: src/share/MethodPanes.tsx:129
 msgid "Copy link"
 msgstr "Copy link"
 
@@ -12829,7 +12849,7 @@ msgid "Reinstall"
 msgstr "Reinstall"
 
 #: src/console/StartupSections.tsx:49
-#: src/profiles/CompareDialog.tsx:318
+#: src/profiles/CompareDialog.tsx:320
 msgid "Compare"
 msgstr "Compare"
 
@@ -12884,7 +12904,7 @@ msgstr "You have not endorsed this mod. Nexus asks that you download and play it
 msgid "Restore all"
 msgstr "Restore all"
 
-#: src/share/MethodPanes.tsx:96
+#: src/share/MethodPanes.tsx:98
 msgid "This profile is too large for a link."
 msgstr "This profile is too large for a link."
 
@@ -13062,7 +13082,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/mods/ModDetail.tsx:351
 #: src/mods/updateReview/ReviewFooter.tsx:61
 #: src/mods/updateReview/ReviewTitle.tsx:43
-#: src/profiles/CompareDialog.tsx:322
+#: src/profiles/CompareDialog.tsx:324
 #: src/profiles/HealthDialog.tsx:255
 #: src/profiles/HistoryPanel.tsx:131
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:70
@@ -13073,14 +13093,14 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/share/ImportDialog.tsx:186
 #: src/share/ImportDialog.tsx:189
 #: src/share/ImportFooter.tsx:88
-#: src/share/ShareDialog.tsx:82
+#: src/share/ShareDialog.tsx:91
 #: src/shell/TitleBar.tsx:114
 #: src/templates/TemplateDialogs.tsx:179
 #: src/tools/ToolsManageDialog.tsx:79
 msgid "Close"
 msgstr "Close"
 
-#: src/share/DestinationPanel.tsx:38
+#: src/share/DestinationPanel.tsx:45
 #: src/share/ImportDialog.tsx:183
 msgid "Link"
 msgstr "Link"
@@ -13150,7 +13170,7 @@ msgid "Open in the tray instead of showing the window"
 msgstr "Open in the tray instead of showing the window"
 
 #: src/share/DestinationGrid.tsx:95
-#: src/share/DestinationPanel.tsx:93
+#: src/share/DestinationPanel.tsx:107
 msgid "No mods to share."
 msgstr "No mods to share."
 
@@ -13169,7 +13189,7 @@ msgid "Start measuring first."
 msgstr "Start measuring first."
 
 #. placeholder {0}: to.name
-#: src/profiles/CompareDialog.tsx:113
+#: src/profiles/CompareDialog.tsx:114
 msgid "Could not change {0}"
 msgstr "Could not change {0}"
 
@@ -13185,7 +13205,7 @@ msgstr "No saves yet"
 #: src/mods/listRows.ts:120
 #: src/mods/Sidebar.tsx:560
 #: src/share/DestinationGrid.tsx:61
-#: src/share/ShareDialog.tsx:25
+#: src/share/ShareDialog.tsx:38
 msgid "Thunderstore"
 msgstr "Thunderstore"
 
@@ -13329,7 +13349,7 @@ msgstr "Recently deleted retention"
 msgid "Forest farm"
 msgstr "Forest farm"
 
-#: src/share/MethodPanes.tsx:303
+#: src/share/MethodPanes.tsx:306
 msgid "For r2modman and other Thunderstore managers: a code anyone can enter, or a modpack zip with your config folder."
 msgstr "For r2modman and other Thunderstore managers: a code anyone can enter, or a modpack zip with your config folder."
 

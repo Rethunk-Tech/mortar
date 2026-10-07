@@ -4,6 +4,7 @@ import {
   meter,
   missingModName,
   SUGGEST_FILE_AT,
+  sharedMods,
   shownInfo,
   shownPreview,
   suggestFile,
@@ -83,4 +84,22 @@ test('missing mods list a known name and keep the UniqueID for the title', () =>
   const mods = [{ name: 'Content Patcher', ids: ['Pathoschild.ContentPatcher'] }]
   expect(missingModName('Pathoschild.ContentPatcher', mods)).toBe('Content Patcher')
   expect(missingModName('Unknown.Mod', mods)).toBeUndefined()
+})
+
+test('sharedMods adds the mod names of every group', () => {
+  const info = shownInfo({
+    name: 'p',
+    web: '',
+    app: '',
+    length: 0,
+    limit: 0,
+    count: 2,
+    tooLarge: false,
+    groups: [
+      { source: 'nexus', count: 1, mods: ['A', 'B'] },
+      { source: 'github', count: 1, mods: ['C'] },
+    ],
+    leftOut: null,
+  })
+  expect(sharedMods(info)).toBe(3)
 })

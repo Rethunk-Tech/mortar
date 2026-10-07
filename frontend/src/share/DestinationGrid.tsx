@@ -4,7 +4,7 @@ import { List, Wifi } from 'lucide-react'
 import { type KeyboardEvent, type ReactNode, useRef } from 'react'
 import { Logo } from '../brand/Logo.tsx'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
-import type { Destination, DestinationEntry } from './methods.ts'
+import { type Destination, type DestinationEntry, gridColumns } from './methods.ts'
 
 const ICON = 32
 const DISABLED_OPACITY = 0.45
@@ -80,7 +80,7 @@ export function DestinationGrid({
       onKeyDown={moveFocus}
       sx={{
         display: 'grid',
-        gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))' },
+        gridTemplateColumns: `repeat(${gridColumns(entries.length)}, minmax(0, 1fr))`,
         gap: 1.5,
         p: '24px',
         alignContent: 'start',

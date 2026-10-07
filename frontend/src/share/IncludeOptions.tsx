@@ -15,9 +15,7 @@ export function IncludeOptions({
 }) {
   const { t } = useLingui()
   const profileId = useShareDialog((s) => s.profileId)
-  const fomod = useProfiles((s) =>
-    offersFomod(s.profiles.find((p) => p.id === profileId)?.entries, s.game?.sources),
-  )
+  const fomod = useProfiles((s) => offersFomod(s.profiles.find((p) => p.id === profileId)?.entries))
   const row = (key: keyof ShareInclude, label: string) => (
     <FormControlLabel
       key={key}
@@ -31,7 +29,7 @@ export function IncludeOptions({
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
       {row('disabledMods', t`Include disabled mods`)}
       {fomod ? row('fomodChoices', t`Include FOMOD choices`) : null}
-      {row('notes', t`Include notes`)}
+      {row('notes', file ? t`Include notes` : t`Include mod notes`)}
       {file ? row('configFiles', t`Include config files`) : null}
     </Box>
   )

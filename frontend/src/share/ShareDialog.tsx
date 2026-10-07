@@ -2,14 +2,23 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, Typography } from '@mui/material'
 import { ArrowLeft, X } from 'lucide-react'
+import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
-import { TipBanner } from '../tips/TipBanner.tsx'
 import { DestinationGrid } from './DestinationGrid.tsx'
 import { DestinationPanel } from './DestinationPanel.tsx'
+import { type ShownInfo, sharedMods } from './logic.ts'
 import { shareDestinations } from './methods.ts'
 import { CancelFooter, MessageFooter } from './ShareFooter.tsx'
 import { useShareBuild } from './useShareBuild.ts'
+
+function shareMessage(info: ShownInfo, gameName: string): string {
+  const count = sharedMods(info)
+  return plural(count, {
+    one: `Try my Mortar profile "${info.name}" for ${gameName} (# mod): ${info.web}`,
+    other: `Try my Mortar profile "${info.name}" for ${gameName} (# mods): ${info.web}`,
+  })
+}
 
 export function ShareDialog() {
   const { t } = useLingui()
@@ -17,8 +26,12 @@ export function ShareDialog() {
   const built = useShareBuild()
   const { profileId, close, destination, setDestination, choose, lastUsed, thunderstore, info } =
     built
-  const count = info?.count ?? 0
-  const entries = shareDestinations({ thunderstore, count })
+  const shareable = info?.count ?? 0
+  const count = useProfiles((st) => {
+    const p = st.profiles.find((x) => x.id === profileId)
+    return p ? userModCount(p) : shareable
+  })
+  const entries = shareDestinations({ thunderstore, count: shareable })
   const names = {
     mortar: t`Mortar`,
     nexus: t`Nexus Mods`,
@@ -26,12 +39,7 @@ export function ShareDialog() {
     nearby: t`Nearby computer`,
     list: t`Mod list`,
   }
-  const message = info
-    ? plural(count, {
-        one: `Try my Mortar profile "${info.name}" for ${gameName} (# mod): ${info.web}`,
-        other: `Try my Mortar profile "${info.name}" for ${gameName} (# mods): ${info.web}`,
-      })
-    : ''
+  const message = info ? shareMessage(info, gameName) : ''
   return (
     <Dialog
       open={profileId !== '' && info !== null}
@@ -50,7 +58,8 @@ export function ShareDialog() {
             bgcolor: 'var(--mortar-panel-solid)',
             border: '1px solid var(--mortar-hairline-12)',
             width: 'min(880px, calc(100% - 48px))',
-            height: 'min(600px, calc(100% - 48px))',
+            height: destination ? 'min(600px, calc(100% - 48px))' : 'auto',
+            maxHeight: 'calc(100% - 48px)',
             overflow: 'hidden',
             borderRadius: '12px',
           },
@@ -58,7 +67,7 @@ export function ShareDialog() {
       }}
     >
       {info ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: '20px 24px 16px' }}>
             {destination ? (
               <TipIconButton label={t`Back`} onClick={() => setDestination(null)}>
@@ -83,9 +92,6 @@ export function ShareDialog() {
               <X size={18} />
             </TipIconButton>
           </Box>
-          <TipBanner tip="share">
-            {t`A share link names this profile and where each mod comes from, not the files themselves.`}
-          </TipBanner>
           <Box
             sx={{
               flex: 1,
