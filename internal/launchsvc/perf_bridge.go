@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -39,10 +40,16 @@ type bridgePerf struct {
 	MonoUsedBytes int64 `json:"monoUsedBytes"`
 	MonoHeapBytes int64 `json:"monoHeapBytes"`
 	GCCollections int   `json:"gcCollections"`
-	Plugins       []struct {
+	Baseline      struct {
+		ModsMs        float64 `json:"modsMs"`
+		WithoutModsMs float64 `json:"withoutModsMs"`
+	} `json:"baseline"`
+	Plugins []struct {
 		GUID          string  `json:"guid"`
 		MsPerFrame    float64 `json:"msPerFrame"`
+		P95Ms         float64 `json:"p95Ms"`
 		PeakMs        float64 `json:"peakMs"`
+		Share         float64 `json:"share"`
 		CallsPerFrame float64 `json:"callsPerFrame"`
 	} `json:"plugins"`
 }
@@ -72,7 +79,7 @@ func (s *Service) MeasureInGame(gameID, profileID string, start bool) (InGameRes
 	if !got.Measured || start {
 		return InGameResult{Measured: got.Measured}, nil
 	}
-	rows := perfRows(got, s.pluginPackages(gameID, profileID))
+	rows := perfRows(got, s.perfOwners(l, gameID, profileID))
 	if len(rows) == 0 {
 		return InGameResult{Measured: true}, errors.New("the game has not timed any plugin yet; start measuring first")
 	}
@@ -80,6 +87,7 @@ func (s *Service) MeasureInGame(gameID, profileID string, start bool) (InGameRes
 		Seconds: got.Seconds, Frames: got.Frames, FPS: got.FPS,
 		AvgMs: got.FrameMs.Avg, P50Ms: got.FrameMs.P50, P95Ms: got.FrameMs.P95, P99Ms: got.FrameMs.P99, MaxMs: got.FrameMs.Max,
 		MonoUsed: got.MonoUsedBytes, MonoHeap: got.MonoHeapBytes, GCCollections: got.GCCollections,
+		ModsMs: got.Baseline.ModsMs, WithoutModsMs: got.Baseline.WithoutModsMs,
 	})
 	if err != nil {
 		return InGameResult{}, err
@@ -87,8 +95,29 @@ func (s *Service) MeasureInGame(gameID, profileID string, start bool) (InGameRes
 	return InGameResult{Measured: true, Report: &saved}, nil
 }
 
+// perfOwners maps what the companion names a timed unit to the package that holds it: a BepInEx plugin GUID by the
+// DLLs the packages declare, a SMAPI mod's UniqueID by the installed mod.
+func (s *Service) perfOwners(l loader.Loader, gameID, profileID string) func() map[string]startupOwner {
+	if c, ok := l.(loader.WithCompanion); ok && c.Companion().ID == bridge.SMAPI.ID {
+		return func() map[string]startupOwner {
+			owners := map[string]startupOwner{}
+			installed, err := s.profiles.Installed(gameID, profileID)
+			if err != nil {
+				return owners
+			}
+			for _, im := range installed {
+				if im.Enabled {
+					owners[strings.ToLower(im.ModID().Local())] = startupOwner{ID: im.ModID(), Name: im.Name, Version: im.Version}
+				}
+			}
+			return owners
+		}
+	}
+	return s.pluginPackages(gameID, profileID)
+}
+
 // perfRows turns the companion's plugin rows into one row per package, its plugins' times and calls added (a peak
-// is the sum of the plugins' peaks, an upper bound since they need not fall in one frame). A plugin no package
+// or 95th percentile is the sum of the plugins', an upper bound since they need not fall in one frame). A plugin no package
 // declares keeps its GUID; a plugin that cost nothing is left out.
 func perfRows(got bridgePerf, owners func() map[string]startupOwner) []PerformanceRow {
 	rows := []PerformanceRow{}
@@ -104,11 +133,13 @@ func perfRows(got bridgePerf, owners func() map[string]startupOwner) []Performan
 		if i, seen := at[name]; seen {
 			rows[i].AverageMs += p.MsPerFrame
 			rows[i].PeakMs += p.PeakMs
+			rows[i].P95Ms += p.P95Ms
+			rows[i].Share += p.Share
 			rows[i].Calls += p.CallsPerFrame
 			continue
 		}
 		at[name] = len(rows)
-		rows = append(rows, PerformanceRow{Name: name, AverageMs: p.MsPerFrame, PeakMs: p.PeakMs, Calls: p.CallsPerFrame})
+		rows = append(rows, PerformanceRow{Name: name, AverageMs: p.MsPerFrame, PeakMs: p.PeakMs, P95Ms: p.P95Ms, Share: p.Share, Calls: p.CallsPerFrame})
 	}
 	slices.SortStableFunc(rows, func(a, b PerformanceRow) int { return cmp.Compare(b.AverageMs, a.AverageMs) })
 	return rows

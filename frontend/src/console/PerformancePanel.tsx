@@ -5,7 +5,7 @@ import type {
   FrameSummary,
   PerformanceRow,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { useStoredState } from '../shell/useStoredState.ts'
 import { space } from '../theme/density.ts'
 import { formatTiming } from './formatTiming.ts'
@@ -25,7 +25,7 @@ import {
 } from './usePerformancePanel.ts'
 
 const MIB = 1_048_576
-const SORT_COLUMNS: readonly unknown[] = ['name', 'averageMs', 'peakMs', 'calls']
+const SORT_COLUMNS: readonly unknown[] = ['name', 'averageMs', 'p95Ms', 'peakMs', 'share', 'calls']
 
 const isStoredSort = (value: unknown): value is { column: SortColumn; direction: SortDirection } =>
   typeof value === 'object' &&
@@ -84,15 +84,20 @@ function BridgePanel({ game }: { game: string }) {
   const running = usePerformanceRunning(game)
   const saved = useSavedReports(game, openId)
   const perf = useBridgePerf({ game, openId, running, setSavedReports: saved[1] })
+  const smapi = useProfileLoader()?.id === 'smapi'
+  let hint = t`Use Measure next launch under Startup and play; then start measuring here to time each plugin per frame.`
+  if (smapi) {
+    hint = t`Start the game, then start measuring here to time each mod's event handlers per frame.`
+  } else if (perf.unmeasured) {
+    hint = t`This launch was not measured. Use Measure next launch under Startup, play again, then start measuring here.`
+  }
   return (
     <PanelView
       source={{
         ...perf,
         running,
-        summary: <FrameLine frame={perf.frame} />,
-        hint: perf.unmeasured
-          ? t`This launch was not measured. Use Measure next launch under Startup, play again, then start measuring here.`
-          : t`Use Measure next launch under Startup and play; then start measuring here to time each plugin per frame.`,
+        summary: <FrameLine frame={perf.frame} smapi={smapi} />,
+        hint,
       }}
       saved={saved}
     />
@@ -180,7 +185,7 @@ function PanelView({
   )
 }
 
-function FrameLine({ frame }: { frame: FrameSummary | null }) {
+function FrameLine({ frame, smapi }: { frame: FrameSummary | null; smapi: boolean }) {
   const { t, i18n } = useLingui()
   const ms = (v: number) => formatTiming(v, i18n.locale)
   const mib = (bytes: number) => Math.round(bytes / MIB).toLocaleString(i18n.locale)
@@ -198,11 +203,18 @@ function FrameLine({ frame }: { frame: FrameSummary | null }) {
     >
       {frame ? (
         <span>
-          {t`${Math.round(frame.fps)} fps over ${Math.round(frame.seconds)} s. Frame ms: average ${ms(frame.avgMs)}, 95th ${ms(frame.p95Ms)}, 99th ${ms(frame.p99Ms)}, worst ${ms(frame.maxMs)}. Mono heap ${mib(frame.monoUsed)} of ${mib(frame.monoHeap)} MiB, ${frame.gcCollections} garbage collections.`}
+          {t`${Math.round(frame.fps)} fps over ${Math.round(frame.seconds)} s. Frame ms: average ${ms(frame.avgMs)}, 95th ${ms(frame.p95Ms)}, 99th ${ms(frame.p99Ms)}, worst ${ms(frame.maxMs)}. Managed heap ${mib(frame.monoUsed)} of ${mib(frame.monoHeap)} MiB, ${frame.gcCollections} garbage collections.`}
+        </span>
+      ) : null}
+      {frame && frame.modsMs > 0 ? (
+        <span>
+          {t`Baseline: the mods' timed code is ${ms(frame.modsMs)} ms of the ${ms(frame.avgMs)} ms average frame; the game and loader alone take about ${ms(frame.withoutModsMs)} ms.`}
         </span>
       ) : null}
       <span>
-        {t`Each plugin's main-thread time per frame: its Harmony prefixes, postfixes and finalizers and its own Update, LateUpdate and FixedUpdate, less any timed call inside them. Code a transpiler rewrote and work on other threads are not counted.`}
+        {smapi
+          ? t`Each mod's time in its per-frame event handlers (update, render and one-second ticks), summed per frame, averaged over every frame. The 95th percentile and peak are per frame. Harmony patches and work outside events are in the baseline, not in a mod's row.`
+          : t`Each plugin's main-thread time per frame: its Harmony prefixes, postfixes and finalizers and its own Update, LateUpdate and FixedUpdate, less any timed call inside them. Code a transpiler rewrote and work on other threads are not counted.`}
       </span>
     </Box>
   )

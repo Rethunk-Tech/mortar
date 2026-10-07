@@ -32,6 +32,10 @@ function callsLabel(value: number, locale: string) {
   return Number.isInteger(value) ? value.toLocaleString(locale) : formatTiming(value, locale)
 }
 
+function percentLabel(share: number, locale: string) {
+  return `${(share * 100).toLocaleString(locale, { maximumFractionDigits: 1 })}%`
+}
+
 interface HeaderProps {
   running: boolean
   busy: PanelBusy
@@ -80,10 +84,14 @@ function ReportTable({
   onSort: (column: SortColumn) => void
 }) {
   const { t, i18n } = useLingui()
+  // A companion's rows carry the 95th percentile and the share of the frame; SMAPI's console report has neither.
+  const framed = rows.some((row) => (row.p95Ms ?? 0) > 0 || (row.share ?? 0) > 0)
   const headers: { column: SortColumn; label: string }[] = [
     { column: 'name', label: t`Mod or event` },
     { column: 'averageMs', label: t`Average ms` },
+    ...(framed ? [{ column: 'p95Ms' as const, label: t`95th ms` }] : []),
     { column: 'peakMs', label: t`Peak ms` },
+    ...(framed ? [{ column: 'share' as const, label: t`% of frame` }] : []),
     { column: 'calls', label: t`Calls` },
   ]
   const orderedRows = useMemo(
@@ -93,7 +101,7 @@ function ReportTable({
           const result = cmpText(a.name, b.name)
           return sort.direction === 'asc' ? result : -result
         }
-        const result = a[sort.column] - b[sort.column]
+        const result = (a[sort.column] ?? 0) - (b[sort.column] ?? 0)
         return sort.direction === 'asc' ? result : -result
       }),
     [rows, sort],
@@ -138,7 +146,13 @@ function ReportTable({
                 {row.name}
               </TableCell>
               <TableCell align="right">{formatTiming(row.averageMs, i18n.locale)}</TableCell>
+              {framed ? (
+                <TableCell align="right">{formatTiming(row.p95Ms ?? 0, i18n.locale)}</TableCell>
+              ) : null}
               <TableCell align="right">{formatTiming(row.peakMs, i18n.locale)}</TableCell>
+              {framed ? (
+                <TableCell align="right">{percentLabel(row.share ?? 0, i18n.locale)}</TableCell>
+              ) : null}
               <TableCell align="right">{callsLabel(row.calls, i18n.locale)}</TableCell>
             </TableRow>
           ))}

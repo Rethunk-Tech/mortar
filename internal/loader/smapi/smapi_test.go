@@ -1,6 +1,7 @@
 package smapi
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"slices"
@@ -115,5 +116,12 @@ func TestOrderNeverReportsAnOptionalDependencyMissing(t *testing.T) {
 	}
 	if len(r.Optional) != 1 || len(r.Required) != 1 {
 		t.Fatalf("required = %v, optional = %v", r.Required, r.Optional)
+	}
+}
+
+func TestSMAPIMeasuresInGameThroughItsBridge(t *testing.T) {
+	var _ loader.InGamePerf = Loader{}
+	if _, err := (Loader{}).Perf(context.Background(), loader.ProfileView{}, true); err == nil {
+		t.Fatal("a profile with no bridge answered a perf query")
 	}
 }

@@ -19,6 +19,10 @@ type PerformanceRow struct {
 	AverageMs float64 `json:"averageMs"`
 	PeakMs    float64 `json:"peakMs"`
 	Calls     float64 `json:"calls"`
+	// P95Ms is the 95th-percentile cost per frame and Share the average's fraction of the average frame, both from a
+	// companion's measurement; zero in SMAPI's own console report, which has neither.
+	P95Ms float64 `json:"p95Ms,omitempty"`
+	Share float64 `json:"share,omitempty"`
 }
 
 type SavedReport struct {
@@ -43,6 +47,10 @@ type FrameSummary struct {
 	MonoUsed      int64   `json:"monoUsed"`
 	MonoHeap      int64   `json:"monoHeap"`
 	GCCollections int     `json:"gcCollections"`
+	// ModsMs is the average frame's time in the mods' timed code and WithoutModsMs the rest of it (the game, the loader
+	// and what a mod does outside its handlers): the baseline the mods are measured against.
+	ModsMs        float64 `json:"modsMs"`
+	WithoutModsMs float64 `json:"withoutModsMs"`
 }
 
 type performanceReportsIndex struct {

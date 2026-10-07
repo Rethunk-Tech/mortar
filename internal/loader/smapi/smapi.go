@@ -2,6 +2,7 @@ package smapi
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"path"
@@ -149,6 +150,19 @@ func (Loader) Ready(line string) bool { return strings.Contains(line, " SMAPI] L
 
 // Analyzers is none: SMAPI's log problems are found by internal/launch.
 func (Loader) Analyzers() []loader.Analyzer { return nil }
+
+// Perf asks the bridge mod for its per-frame measurement of each mod's handlers; start restarts the window, which is
+// also what begins the timing.
+func (Loader) Perf(ctx context.Context, p loader.ProfileView, start bool) (json.RawMessage, error) {
+	if p.Companion == "" {
+		return nil, fmt.Errorf("this profile has no console bridge")
+	}
+	what := "perf"
+	if start {
+		what = "perf start"
+	}
+	return bridge.Query(ctx, filepath.Join(p.Companion, bridge.SMAPI.StateFile), what)
+}
 
 // Send runs command in the game through the bridge mod in the profile.
 func (Loader) Send(ctx context.Context, _ loader.Target, p loader.ProfileView, command string) (string, error) {

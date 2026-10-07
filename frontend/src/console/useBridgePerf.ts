@@ -71,9 +71,16 @@ export function useBridgePerf(opts: {
     rows.length === 0
       ? []
       : [
-          'Plugin | Average ms | Peak ms | Calls per frame',
+          'Mod | Average ms | 95th ms | Peak ms | % of frame | Calls per frame',
           ...rows.map((r) =>
-            [r.name, r.averageMs, r.peakMs, r.calls]
+            [
+              r.name,
+              r.averageMs,
+              r.p95Ms ?? 0,
+              r.peakMs,
+              `${((r.share ?? 0) * 100).toFixed(1)}%`,
+              r.calls,
+            ]
               .map((v) => (typeof v === 'number' ? formatTiming(v, i18n.locale) : v))
               .join(' | '),
           ),
