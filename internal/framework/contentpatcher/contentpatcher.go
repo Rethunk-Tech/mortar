@@ -2095,6 +2095,7 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 			if p.kind == "other" || !p.when.holds(seen) || !dynamicWhenHolds(p.when, pack.tokens, seen, pack.schema, config) {
 				continue
 			}
+			p = withTokenFarmTypes(p, pack.tokens, seen, pack.schema, config)
 			hits := at[p.kind][p.target]
 			k := hitAt{p.kind, p.target, im.ModID().Fold()}
 			i, found := index[k]
@@ -2391,14 +2392,15 @@ func clashingLoads(hits []packHit) (out []packHit) {
 
 // fallbackLoad reports a load below default priority that another pack's load of the same asset outranks:
 // the author made it the fallback for when no stronger load is installed. Under a Medium load it is a
-// fallback only when its pack names the other one; one a blank load wipes stays reported.
+// fallback only when one of the two packs names the other (the stronger pack naming it means its author
+// built the priority gap on purpose); one a blank load wipes stays reported.
 func fallbackLoad(h packHit, load cpPatch, other packHit, otherLoad cpPatch) bool {
 	rank := contentPatcherPriority("load", load.priority)
 	otherRank := contentPatcherPriority("load", otherLoad.priority)
 	if rank >= 0 || rank >= otherRank {
 		return false
 	}
-	if h.mentions[other.id.Fold()] {
+	if h.mentions[other.id.Fold()] || other.mentions[h.id.Fold()] {
 		return true
 	}
 	return otherRank >= 1000 && (loadFileBlank(h, load, load.target) || !loadFileBlank(other, otherLoad, otherLoad.target))

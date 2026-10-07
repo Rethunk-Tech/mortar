@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -530,6 +531,20 @@ func TestLowLoadThatNamesTheOtherPackIsAFallback(t *testing.T) {
 	}
 }
 
+func TestLowLoadUnderAPackThatDependsOnItsPackIsAFallback(t *testing.T) {
+	sve := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Town","FromFile":"town.tmx","Priority":"Low"}]}`, map[string]string{"town.tmx": "sve town"})
+	sve.UniqueID = "FlashShifter.StardewValleyExpandedCP"
+	vpe := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Town","FromFile":"town.tmx","Priority":"Medium"}]}`, map[string]string{"town.tmx": "vpe town"})
+	vpe.Dependencies = []manifest.Dependency{{UniqueID: sve.UniqueID, Required: true}}
+	if conflicts := assetConflicts([]framework.Mod{sve, vpe}); len(conflicts) != 0 {
+		t.Fatalf("a Low load under a Medium load from a pack that depends on it is a fallback, got %#v", conflicts)
+	}
+	vpe.Dependencies = nil
+	if conflicts := assetConflicts([]framework.Mod{sve, vpe}); len(conflicts) != 1 {
+		t.Fatalf("an unrelated Medium load still conflicts, got %#v", conflicts)
+	}
+}
+
 func TestConfigTokenInConditionIsItsConfiguredValue(t *testing.T) {
 	blackberry := func(config string) framework.Mod {
 		files := map[string]string{"Farm_Greenhouse_Dirt.tbin": "tBIN10 blackberry"}
@@ -680,6 +695,31 @@ func assetConflicts(mods []framework.Mod) []framework.AssetConflict {
 func assetConflictResults(mods []framework.Mod) ([]framework.AssetConflict, []framework.SettingHint) {
 	conflicts, settings, _ := conflictScanOf(mods)
 	return conflicts, settings
+}
+
+func TestDynamicTokenPinnedToAFarmTypeIsExclusiveWithOtherFarmTypes(t *testing.T) {
+	farm := func(replaceStandard string) framework.Mod {
+		files := map[string]string{}
+		if replaceStandard != "" {
+			files["config.json"] = `{"ReplaceStandardFarm": "` + replaceStandard + `"}`
+		}
+		return syntheticLoadPack(t, `{
+			"ConfigSchema": {"ReplaceStandardFarm": {"AllowValues": "true, false", "Default": "false"}},
+			"DynamicTokens": [
+				{"Name": "IsUsingIF2Farm", "Value": "false"},
+				{"Name": "IsUsingIF2Farm", "Value": "true", "When": {"FarmType": "zanderb14_IF2Fix"}},
+				{"Name": "IsUsingIF2Farm", "Value": "true", "When": {"FarmType": "Standard", "ReplaceStandardFarm": "true"}}
+			],
+			"Changes": [{"Action": "EditData", "Target": "Data/Farms", "Entries": {"Pond": "if2"}, "When": {"IsUsingIF2Farm": "true"}}]
+		}`, files)
+	}
+	grandpa := syntheticLoadPack(t, `{"Changes":[{"Action":"EditData","Target":"Data/Farms","Entries":{"Pond":"grandpa"},"When":{"FarmType":"Standard"}}]}`, nil)
+	if conflicts := assetConflicts([]framework.Mod{farm(""), grandpa}); len(conflicts) != 0 {
+		t.Fatalf("a token true only on the custom farm never applies on the Standard farm, got %#v", conflicts)
+	}
+	if conflicts := assetConflicts([]framework.Mod{farm("true"), grandpa}); len(conflicts) != 1 {
+		t.Fatalf("with ReplaceStandardFarm on, the token is also true on the Standard farm, got %#v", conflicts)
+	}
 }
 
 func TestQuerySpouseGatedEditsNeverApplyTogether(t *testing.T) {

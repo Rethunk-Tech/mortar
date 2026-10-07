@@ -1628,6 +1628,49 @@ func tokenSpouse(name string, tokens []cpTokenDefinition) string {
 	return partner
 }
 
+// withTokenFarmTypes pins a patch to the farm types its dynamic token conditions can only be true on, which a
+// FarmType condition written in the patch itself does not show: once config elimination has dropped the
+// definitions that cannot hold, every definition left that yields a wanted value is gated on a FarmType.
+func withTokenFarmTypes(p cpPatch, tokens []cpTokenDefinition, present map[string]bool, schema map[string]cpSchema, config map[string]string) cpPatch {
+	if len(p.when.dynamic) == 0 || len(p.places["farmtype"]) > 0 {
+		return p
+	}
+	reachable := cachedReachableTokens(tokens, present, schema, config, p.when.flags)
+	for _, condition := range p.when.dynamic {
+		var types []string
+		pinned := true
+		for _, definition := range tokens {
+			if definition.name != condition.name {
+				continue
+			}
+			if hasToken(definition.value) {
+				pinned = false
+				break
+			}
+			if !dynamicConditionMatchesValue(condition, definition.value) ||
+				dynamicWhenState(definition.when, tokens, reachable, present, schema, config, p.when.flags) == cpConditionFalse {
+				continue
+			}
+			farms := placesOf(definition.when)["farmtype"]
+			if len(farms) == 0 {
+				pinned = false
+				break
+			}
+			types = append(types, farms...)
+		}
+		if pinned && len(types) > 0 {
+			places := maps.Clone(p.places)
+			if places == nil {
+				places = map[string][]string{}
+			}
+			places["farmtype"] = types
+			p.places = places
+			return p
+		}
+	}
+	return p
+}
+
 func spouseAlias(name string, tokens []cpTokenDefinition) bool {
 	found := false
 	for _, definition := range tokens {
