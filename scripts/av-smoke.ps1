@@ -45,6 +45,13 @@ function Write-Zip($scanner) {
     Remove-Item -Recurse -Force $work -ErrorAction SilentlyContinue
 }
 
+# Runs mortar.exe and returns its stdout and stderr as text plus its exit code. Stderr lines arrive as ErrorRecords in
+# Windows PowerShell 5.1, so each is turned into its string; the exit code is read before anything else runs.
+function Invoke-Mortar {
+    $text = (& $Exe @args 2>&1 | ForEach-Object { "$_" } | Out-String)
+    [pscustomobject]@{ Text = $text; Code = $LASTEXITCODE }
+}
+
 function Note($text) { $text | Tee-Object -FilePath $Out -Append }
 
 Check "mortar.exe present ($Exe)" (Test-Path $Exe)
@@ -75,9 +82,11 @@ Check "Mortar's scanner is ready ($scanner)" ($status -match '(?m)^ready:\s*true
 Write-Zip $scanner
 Check "test zip written ($zip)" (Test-Path $zip)
 
-$refused = (& $Exe --json install $game $profile $zip 2>&1 | Out-String)
-$refusedCode = $LASTEXITCODE
-Note "install output: $($refused.Trim())"
+# --json goes after the verb: a first word that is not a verb makes mortar.exe open its window instead.
+$first = Invoke-Mortar install $game $profile $zip --json
+$refused, $refusedCode = $first.Text, $first.Code
+Note "install exit code: $refusedCode"
+Note "install output (raw): [$refused]"
 Check "install refused (exit $refusedCode)" ($refusedCode -ne 0)
 $refusal = try { $refused | ConvertFrom-Json } catch { $null }
 Check 'install refused with kind malware' ($refusal -and $refusal.kind -eq 'malware')
@@ -90,8 +99,10 @@ if ($refusal -and $refusal.detail.removed) {
     Note '--allow-unscanned skipped: Windows removed the file itself, so there is nothing to install anyway'
 } else {
     Write-Zip $scanner
-    $anyway = (& $Exe install $game $profile $zip --allow-unscanned 2>&1 | Out-String)
-    Check "install --allow-unscanned succeeds ($($anyway.Trim()))" (($LASTEXITCODE -eq 0) -and ($anyway -match 'Installed'))
+    $second = Invoke-Mortar install $game $profile $zip --allow-unscanned
+    $anyway = $second.Text
+    Note "install --allow-unscanned output (raw, exit $($second.Code)): [$anyway]"
+    Check "install --allow-unscanned succeeds" (($second.Code -eq 0) -and ($anyway -match 'Installed'))
     $history = (& $Exe profile history $game $profile 2>&1 | Out-String)
     Check 'history records the override' ($history -match 'although the antivirus flagged')
 }
