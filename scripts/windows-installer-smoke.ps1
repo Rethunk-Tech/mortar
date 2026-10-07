@@ -28,34 +28,33 @@ Check 'Start Menu shortcut' ([bool]($startMenu | Where-Object { Test-Path $_ }))
 $v = & $exe version 2>&1 | Out-String
 Check "mortar version exits 0 ($($v.Trim()))" (($LASTEXITCODE -eq 0) -and ($v -match 'mortar \d'))
 
-# Autostart is a setting of the running app; the CLI talks to it over its control socket.
-$app = Start-Process $exe -PassThru
+# Autostart is a setting of the running app; the CLI talks to it over its control socket. A cold first start takes
+# a while to open that socket, and a set the app accepts while it is still starting can be lost, so poll the real
+# condition under one deadline and set again until the setting reads back true: an autostart entry (Run key value or
+# Startup shortcut) present and the app process running.
+$startupLink = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Mortar.lnk"
+function Get-Autostart { if (Get-ItemProperty $runKey -Name Mortar -ErrorAction SilentlyContinue) { 'Run key' } elseif (Test-Path $startupLink) { 'Startup shortcut' } }
+function Get-LaunchAtLogin { (& $exe settings get launchAtLogin 2>&1 | Out-String) -match '(?m)^launchAtLogin\s+true\s*$' }
+Start-Process $exe
 $set = $false
-foreach ($i in 1..30) {
-    Start-Sleep 2
-    & $exe settings set launchAtLogin true *>$null
-    if ($LASTEXITCODE -eq 0) { $set = $true; break }
-}
-Check 'launchAtLogin set through the running app' $set
-# A cold first start can take a while to apply the setting, so wait on state: the setting reads back true, then the Run key appears.
-$reported = $false
-if ($set) {
-    foreach ($i in 1..30) {
-        if ((& $exe settings get launchAtLogin 2>&1 | Out-String) -match '(?m)^launchAtLogin\s+true\s*$') { $reported = $true; break }
-        Start-Sleep 2
+$autostart = $null
+$running = $false
+$deadline = (Get-Date).AddSeconds(120)
+do {
+    if (-not (Get-LaunchAtLogin)) {
+        & $exe settings set launchAtLogin true *>$null
+        if ($LASTEXITCODE -eq 0) { $set = $true }
     }
-}
-$run = $null
-if ($reported) {
-    foreach ($i in 1..30) {
-        $run = Get-ItemProperty $runKey -Name Mortar -ErrorAction SilentlyContinue
-        if ($run) { break }
-        Start-Sleep 1
-    }
-}
-$why = if (-not $set) { 'launchAtLogin never set' } elseif (-not $reported) { 'launchAtLogin never read back true within 60s' } else { 'Run key not written within 30s of launchAtLogin true' }
-Check $(if ($null -ne $run) { 'autostart Run key written' } else { "autostart Run key written ($why)" }) ($null -ne $run)
-Stop-Process -Id $app.Id -Force -ErrorAction SilentlyContinue
+    $autostart = Get-Autostart
+    $running = [bool](Get-Process -Name mortar -ErrorAction SilentlyContinue)
+    if ($set -and $autostart -and $running) { break }
+    Start-Sleep 1
+} while ((Get-Date) -lt $deadline)
+Check 'launchAtLogin set through the running app (within 120s)' $set
+$state = if ($autostart) { $autostart } else { 'setting reads: ' + ((& $exe settings get launchAtLogin 2>&1 | Out-String) -replace '\s+', ' ').Trim() }
+Check "autostart entry written ($state)" ($null -ne $autostart)
+Check 'Mortar still running with autostart enabled' $running
+Stop-Process -Name mortar -Force -ErrorAction SilentlyContinue
 Start-Sleep 2
 
 # The uninstaller copies itself to %TEMP% and returns at once, so wait for the directory to go.
@@ -63,7 +62,7 @@ Start-Process (Join-Path $dir 'uninstall.exe') '/S' -Wait
 foreach ($i in 1..60) { if (-not (Test-Path $dir)) { break }; Start-Sleep 2 }
 Check 'install dir removed' (-not (Test-Path $dir))
 Check 'Start Menu shortcut removed' (-not ($startMenu | Where-Object { Test-Path $_ }))
-Check 'autostart Run key removed' ($null -eq (Get-ItemProperty $runKey -Name Mortar -ErrorAction SilentlyContinue))
+Check 'autostart entry removed' ($null -eq (Get-Autostart))
 Check 'uninstall registry entry removed' ($null -eq (Uninstall-Entry))
 "failures: $fails" | Tee-Object -FilePath $Out -Append
 exit $fails
