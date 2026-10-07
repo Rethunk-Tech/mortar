@@ -7,6 +7,7 @@ import { ProblemsTab } from '../mods/ProblemsTab.tsx'
 import { usePasteLink } from '../share/usePasteLink.ts'
 import { ErrorBoundary } from '../shell/ErrorBoundary.tsx'
 import { Home } from './Home.tsx'
+import { TabHeader } from './TabHeader.tsx'
 import { useTab } from './tab.ts'
 
 // Tabs other than Mods, Problems and Browse load on first open, which keeps them out of the startup bundle.
@@ -37,6 +38,7 @@ export function ProfileWorkspace({
       {tab === 'home' ? (
         <Home key={`home-${profile.id}`} profile={profile} game={game} gameName={gameName} />
       ) : null}
+      {tab === 'home' ? null : <TabHeader profile={profile} />}
       <ErrorBoundary resetKey={`${tab}-${profile.id}`}>
         <Suspense fallback={null}>
           {tab === 'console' ? <ConsoleTab game={game} /> : null}

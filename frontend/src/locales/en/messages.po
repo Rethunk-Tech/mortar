@@ -24,7 +24,7 @@ msgstr "Allow shows Nexus pages what Mortar has. Off hides that; download links 
 msgid "Performance"
 msgstr "Performance"
 
-#: src/console/ConsoleTab.tsx:457
+#: src/console/ConsoleTab.tsx:455
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
@@ -490,7 +490,7 @@ msgstr "Reinstall loader"
 msgid "Required: {label}"
 msgstr "Required: {label}"
 
-#: src/console/StartupPanel.tsx:162
+#: src/console/StartupPanel.tsx:158
 msgid "Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu."
 msgstr "Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu."
 
@@ -852,7 +852,7 @@ msgstr "Untrack"
 msgid "More"
 msgstr "More"
 
-#: src/console/StartupPanel.tsx:140
+#: src/console/StartupPanel.tsx:137
 msgid "Mods' Entry is timed only on a measured launch."
 msgstr "Mods' Entry is timed only on a measured launch."
 
@@ -1108,7 +1108,7 @@ msgstr "That item could not be found."
 msgid "Switch to Problems"
 msgstr "Switch to Problems"
 
-#: src/console/StartupPanel.tsx:82
+#: src/console/PerformanceTab.tsx:61
 msgid "Measure next launch"
 msgstr "Measure next launch"
 
@@ -1823,7 +1823,6 @@ msgstr "Mortar does not have permission to do that."
 msgid "Could not ignore updates from {source}"
 msgstr "Could not ignore updates from {source}"
 
-#: src/console/StartupPanel.tsx:123
 #: src/mods/columnLabel.ts:23
 msgid "Startup"
 msgstr "Startup"
@@ -2293,7 +2292,7 @@ msgstr "A mod works better, or only works, with a setting changed. Nothing is wr
 msgid "Prerelease"
 msgstr "Prerelease"
 
-#: src/console/ConsoleTab.tsx:423
+#: src/console/ConsoleTab.tsx:424
 msgid "Follow new lines"
 msgstr "Follow new lines"
 
@@ -2622,7 +2621,7 @@ msgstr "{gameName} save backups"
 msgid "Unofficial update"
 msgstr "Unofficial update"
 
-#: src/mods/ProblemsTab.tsx:310
+#: src/mods/ProblemsTab.tsx:322
 msgid "No problems to copy."
 msgstr "No problems to copy."
 
@@ -2796,8 +2795,8 @@ msgstr "{label} is replaced by the copy in this backup. The current {label} is b
 msgid "No enabled mods"
 msgstr "No enabled mods"
 
-#: src/mods/ProblemsTab.tsx:134
-#: src/mods/ProblemsTab.tsx:347
+#: src/mods/ProblemsTab.tsx:136
+#: src/mods/ProblemsTab.tsx:359
 msgid "Cleanup"
 msgstr "Cleanup"
 
@@ -4040,7 +4039,7 @@ msgstr "Share as r2modman code?"
 #: src/bundles/dialogs.tsx:223
 #: src/bundles/dialogs.tsx:285
 #: src/console/HelpDialog.tsx:256
-#: src/console/StartupPanel.tsx:58
+#: src/console/StartupPanel.tsx:60
 #: src/fomod/Dialog.tsx:254
 #: src/game/NewProfileDialog.tsx:233
 #: src/install/DownloadsDialog.tsx:252
@@ -4238,7 +4237,7 @@ msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
 #: src/mods/CleanupSection.tsx:66
-#: src/mods/ProblemsTab.tsx:351
+#: src/mods/ProblemsTab.tsx:363
 msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
@@ -4358,7 +4357,7 @@ msgstr "Skip every waiting download"
 msgid "{names} seems to cause the crash"
 msgstr "{names} seems to cause the crash"
 
-#: src/mods/ProblemsTab.tsx:259
+#: src/mods/ProblemsTab.tsx:263
 msgid "Dismiss all harmless overlaps?"
 msgstr "Dismiss all harmless overlaps?"
 
@@ -4744,7 +4743,7 @@ msgstr "Take Nexus links from {0}?"
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
-#: src/mods/ProblemsTab.tsx:260
+#: src/mods/ProblemsTab.tsx:264
 msgid "They move to Dismissed. Restore them from that section."
 msgstr "They move to Dismissed. Restore them from that section."
 
@@ -4840,7 +4839,7 @@ msgstr "Library"
 msgid "Connection"
 msgstr "Connection"
 
-#: src/mods/ProblemsTab.tsx:369
+#: src/mods/ProblemsTab.tsx:381
 msgid "Harmless"
 msgstr "Harmless"
 
@@ -5294,8 +5293,8 @@ msgstr "Read the release notes on GitHub"
 msgid "Backups ({count})"
 msgstr "Backups ({count})"
 
-#: src/mods/ProblemsTab.tsx:216
-#: src/mods/ProblemsTab.tsx:389
+#: src/mods/ProblemsTab.tsx:219
+#: src/mods/ProblemsTab.tsx:401
 msgid "Problem sections"
 msgstr "Problem sections"
 
@@ -5514,8 +5513,8 @@ msgstr "About Mortar"
 msgid "Lavender"
 msgstr "Lavender"
 
-#: src/mods/ProblemsTab.tsx:122
-#: src/mods/ProblemsTab.tsx:360
+#: src/mods/ProblemsTab.tsx:124
+#: src/mods/ProblemsTab.tsx:372
 msgid "Redundant"
 msgstr "Redundant"
 
@@ -5685,7 +5684,7 @@ msgstr "Launch options"
 msgid "Up next: {0}"
 msgstr "Up next: {0}"
 
-#: src/console/ConsoleTab.tsx:459
+#: src/console/ConsoleTab.tsx:457
 msgid "Remove filter {mod}"
 msgstr "Remove filter {mod}"
 
@@ -5892,6 +5891,10 @@ msgstr "{0, plural, one {+# file} other {+# files}}"
 msgid "Farming skill"
 msgstr "Farming skill"
 
+#: src/mods/ProblemsTab.tsx:306
+msgid "Find a bad mod…"
+msgstr "Find a bad mod…"
+
 #. placeholder {0}: loader.name
 #: src/settings/sections/LoaderRow.tsx:80
 msgid "Stop the game to install {0}."
@@ -6067,8 +6070,8 @@ msgstr "Honour OS"
 msgid "Download progress for {0}"
 msgstr "Download progress for {0}"
 
-#: src/mods/ProblemsTab.tsx:188
-#: src/mods/ProblemsTab.tsx:261
+#: src/mods/ProblemsTab.tsx:191
+#: src/mods/ProblemsTab.tsx:265
 msgid "Dismiss all"
 msgstr "Dismiss all"
 
@@ -6285,7 +6288,7 @@ msgstr "Share as r2modman code…"
 msgid "Load order"
 msgstr "Load order"
 
-#: src/mods/ProblemsTab.tsx:115
+#: src/mods/ProblemsTab.tsx:117
 msgid "Slow startup"
 msgstr "Slow startup"
 
@@ -6905,7 +6908,7 @@ msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
 #: src/mods/AssetMapDialog.tsx:228
-#: src/mods/ProblemsTab.tsx:299
+#: src/mods/ProblemsTab.tsx:311
 msgid "Asset map"
 msgstr "Asset map"
 
@@ -6946,7 +6949,7 @@ msgstr "The service may be busy. Try again in a minute."
 msgid "Reason (optional)"
 msgstr "Reason (optional)"
 
-#: src/console/StartupPanel.tsx:137
+#: src/console/StartupPanel.tsx:134
 msgid "Slowest mods"
 msgstr "Slowest mods"
 
@@ -8279,6 +8282,12 @@ msgstr "Could not offer the folder again"
 msgid "Problems and updates"
 msgstr "Problems and updates"
 
+#. placeholder {0}: saves.fitting
+#. placeholder {1}: saves.recorded
+#: src/game/TabHeader.tsx:96
+msgid "Saves {0} of {1}"
+msgstr "Saves {0} of {1}"
+
 #. placeholder {0}: loader.name
 #. placeholder {1}: action.version
 #: src/settings/sections/LoaderRow.tsx:147
@@ -8388,8 +8397,8 @@ msgid "Main only"
 msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:63
-#: src/mods/ProblemsTab.tsx:108
-#: src/mods/ProblemsTab.tsx:367
+#: src/mods/ProblemsTab.tsx:110
+#: src/mods/ProblemsTab.tsx:379
 msgid "Compatibility"
 msgstr "Compatibility"
 
@@ -8642,7 +8651,7 @@ msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the nex
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
 #: src/mods/ProblemBar.tsx:77
-#: src/mods/ProblemsTab.tsx:63
+#: src/mods/ProblemsTab.tsx:64
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
@@ -9370,7 +9379,7 @@ msgid "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
 #: src/console/PerformancePanel.tsx:150
-#: src/mods/ProblemsTab.tsx:372
+#: src/mods/ProblemsTab.tsx:384
 #: src/mods/ReportToAuthorButton.tsx:175
 #: src/settings/sections/AboutDiagnostics.tsx:139
 msgid "Report copied"
@@ -9504,7 +9513,7 @@ msgstr "{0}: {1} missing, {2} changed, {3} extra"
 msgid "Settings file"
 msgstr "Settings file"
 
-#: src/console/StartupPanel.tsx:55
+#: src/console/StartupPanel.tsx:57
 msgid "Play now"
 msgstr "Play now"
 
@@ -9573,7 +9582,7 @@ msgid "{names} can't be reached; nothing saved to show yet"
 msgstr "{names} can't be reached; nothing saved to show yet"
 
 #: src/console/PerformancePanelParts.tsx:213
-#: src/mods/ProblemsTab.tsx:307
+#: src/mods/ProblemsTab.tsx:319
 #: src/settings/sections/AboutDiagnostics.tsx:220
 msgid "Copy report"
 msgstr "Copy report"
@@ -9586,7 +9595,7 @@ msgstr "Changes to keep"
 msgid "Music volume ({value}%)"
 msgstr "Music volume ({value}%)"
 
-#: src/console/StartupPanel.tsx:65
+#: src/console/StartupPanel.tsx:67
 msgid "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
 msgstr "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
 
@@ -9949,7 +9958,7 @@ msgstr "{0} in total"
 msgid "Follow live log"
 msgstr "Follow live log"
 
-#: src/console/StartupPanel.tsx:63
+#: src/console/StartupPanel.tsx:65
 msgid "The next launch will be measured"
 msgstr "The next launch will be measured"
 
@@ -10353,7 +10362,7 @@ msgstr "{a} and {b} each wait for the other, so SMAPI skips at least one of them
 msgid "GOG via Heroic"
 msgstr "GOG via Heroic"
 
-#: src/console/StartupPanel.tsx:161
+#: src/console/StartupPanel.tsx:157
 msgid "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 msgstr "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 
@@ -10431,7 +10440,7 @@ msgstr "An empty profile. Add mods from {site} or from archives."
 msgid "{0, plural, one {{1}/# file · {2} / {3}} other {{4}/# files · {5} / {6}}}"
 msgstr "{0, plural, one {{1}/# file · {2} / {3}} other {{4}/# files · {5} / {6}}}"
 
-#: src/console/StartupPanel.tsx:66
+#: src/console/StartupPanel.tsx:68
 msgid "Press Play. The BepInEx Bridge times each plugin's load and the start up to the main menu, and shows the results here. Unity's Mono runtime cannot be sampled, so there is no Sampled column."
 msgstr "Press Play. The BepInEx Bridge times each plugin's load and the start up to the main menu, and shows the results here. Unity's Mono runtime cannot be sampled, so there is no Sampled column."
 
@@ -10872,8 +10881,8 @@ msgstr "No mods in {folder}"
 msgid "From Nexus"
 msgstr "From Nexus"
 
-#: src/console/StartupPanel.tsx:89
-#: src/console/StartupPanel.tsx:90
+#: src/console/StartupPanel.tsx:95
+#: src/console/StartupPanel.tsx:96
 msgid "Reading startup reports…"
 msgstr "Reading startup reports…"
 
@@ -10979,7 +10988,7 @@ msgid "Token"
 msgstr "Token"
 
 #: src/mods/ProblemBar.tsx:64
-#: src/mods/ProblemsTab.tsx:396
+#: src/mods/ProblemsTab.tsx:408
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -11028,7 +11037,7 @@ msgstr "Switch {0} to {1}?"
 msgid "{0} · in use"
 msgstr "{0} · in use"
 
-#: src/console/StartupPanel.tsx:157
+#: src/console/StartupPanel.tsx:154
 msgid "No startup measured yet"
 msgstr "No startup measured yet"
 
@@ -11177,7 +11186,7 @@ msgstr "Could not cancel transfer"
 msgid "Could not dismiss the setting warning"
 msgstr "Could not dismiss the setting warning"
 
-#: src/console/ConsoleTab.tsx:430
+#: src/console/ConsoleTab.tsx:431
 msgid "Clear filters"
 msgstr "Clear filters"
 
@@ -11358,7 +11367,7 @@ msgstr "Health"
 msgid "Could not rename the bundle"
 msgstr "Could not rename the bundle"
 
-#: src/console/PerformanceTab.tsx:27
+#: src/console/PerformanceTab.tsx:28
 msgid "In game"
 msgstr "In game"
 
@@ -11626,7 +11635,7 @@ msgstr "Until the game's first scene has loaded"
 #: src/mods/EnableRequirementsDialog.tsx:55
 #: src/mods/LoadOrderTab.tsx:59
 #: src/mods/LoadOrderTab.tsx:98
-#: src/mods/ProblemsTab.tsx:350
+#: src/mods/ProblemsTab.tsx:362
 msgid "Unknown mod"
 msgstr "Unknown mod"
 
@@ -11702,7 +11711,7 @@ msgstr "A preset with this name already exists."
 
 #. placeholder {0}: installable.length
 #. placeholder {0}: wants.length
-#: src/mods/ProblemsTab.tsx:173
+#: src/mods/ProblemsTab.tsx:175
 #: src/saves/lackChips.tsx:112
 msgid "Add all {0}"
 msgstr "Add all {0}"
@@ -11715,7 +11724,7 @@ msgstr "{gameName} crashed"
 msgid "{names} can't be reached; showing what Mortar saved ({asOf})"
 msgstr "{names} can't be reached; showing what Mortar saved ({asOf})"
 
-#: src/mods/ProblemsTab.tsx:239
+#: src/mods/ProblemsTab.tsx:255
 msgid "No problems found"
 msgstr "No problems found"
 
@@ -12690,7 +12699,7 @@ msgstr "This template will be deleted. Presets already copied into profiles stay
 msgid "Mark these mods known good so History can restore them if a later change breaks the game."
 msgstr "Mark these mods known good so History can restore them if a later change breaks the game."
 
-#: src/console/ConsoleTab.tsx:417
+#: src/console/ConsoleTab.tsx:418
 msgid "Show times"
 msgstr "Show times"
 
@@ -13314,11 +13323,11 @@ msgstr "{downloading, plural, one {# downloading} other {# downloading}} · {wai
 msgid "1 time"
 msgstr "1 time"
 
-#: src/mods/ProblemsTab.tsx:241
+#: src/mods/ProblemsTab.tsx:257
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 
-#: src/console/StartupPanel.tsx:33
+#: src/console/StartupPanel.tsx:35
 #: src/game/LaunchMenu.tsx:36
 #: src/profiles/EditProfileDialog.tsx:171
 msgid "Launch"
