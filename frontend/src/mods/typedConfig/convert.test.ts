@@ -28,3 +28,20 @@ test('wire text becomes typed values, with the default standing in when none is 
   expect(formatValue(['a'])).toBe('["a"]')
   expect(formatValue(false)).toBe('false')
 })
+
+test('a value keeps its JSON type through a read and the text written back', () => {
+  const [section] = toSections([
+    {
+      name: '',
+      entries: [
+        { key: 'On', type: 'bool', value: 'false', hasDefault: false },
+        { key: 'Count', type: 'int', value: '7', hasDefault: false },
+        { key: 'Ratio', type: 'float', value: '0.25', hasDefault: false },
+        { key: 'Name', type: 'string', value: 'true', hasDefault: false },
+      ],
+    },
+  ])
+  const values = section?.entries.map((e) => e.value)
+  expect(values).toEqual([false, 7, 0.25, 'true'])
+  expect(values?.map(formatValue)).toEqual(['false', '7', '0.25', 'true'])
+})

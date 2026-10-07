@@ -113,6 +113,7 @@ func jsonSchema(file ConfigFile, current, shipped string, capture *gmcm.Capture)
 		e := f.Entry
 		if d, ok := defaults[path(f.section, f.Key)]; ok {
 			e.Default, e.HasDefault = d.Value, true
+			e.Type = typeFromDefault(e, d)
 		}
 		if o, ok := opts[strings.ToLower(path(f.section, f.Key))]; ok {
 			applyOption(&e, o)
@@ -127,6 +128,26 @@ func jsonSchema(file ConfigFile, current, shipped string, capture *gmcm.Capture)
 		s.Sections[i].Entries = append(s.Sections[i].Entries, e)
 	}
 	return s, nil
+}
+
+// typeFromDefault is the type a setting shows as: the shipped default's when the current value cannot say (a JSON null,
+// or text that reads as the default's number or boolean), else its own.
+func typeFromDefault(cur, def Entry) string {
+	if cur.Type != TypeString || def.Type == TypeString {
+		return cur.Type
+	}
+	v := strings.TrimSpace(cur.Value)
+	switch def.Type {
+	case TypeBool:
+		if v == "" || v == "true" || v == "false" {
+			return TypeBool
+		}
+	case TypeInt, TypeFloat:
+		if _, err := strconv.ParseFloat(v, 64); v == "" || err == nil {
+			return def.Type
+		}
+	}
+	return cur.Type
 }
 
 func path(section, key string) string {

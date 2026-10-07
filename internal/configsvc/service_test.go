@@ -150,3 +150,23 @@ func TestSetRefusesNamesOutsideTheConfigFolder(t *testing.T) {
 		}
 	}
 }
+
+func TestSMAPITypesComeFromTheValueThenTheShippedDefault(t *testing.T) {
+	t.Parallel()
+	shipped := `{"Enabled":true,"Count":3,"Ratio":0.5,"Name":"x","Mode":true}`
+	current := `{"Enabled":null,"Count":"7","Ratio":0.25,"Name":"y","Mode":"maybe","Extra":false}`
+	sc, err := jsonSchema(ConfigFile{Name: jsonName, Format: FormatSMAPI}, current, shipped, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]string{}
+	for _, e := range sc.Sections[0].Entries {
+		got[e.Key] = e.Type
+	}
+	want := map[string]string{"Enabled": TypeBool, "Count": TypeInt, "Ratio": TypeFloat, "Name": TypeString, "Mode": TypeString, "Extra": TypeBool}
+	for k, w := range want {
+		if got[k] != w {
+			t.Errorf("%s is %s, want %s", k, got[k], w)
+		}
+	}
+}
