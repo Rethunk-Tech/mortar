@@ -16,6 +16,7 @@ Remaining ([architecture.md](architecture.md#release)):
 Decided 2026-10-07 (NOMAD), from the audit of how Mortar was described to CurseForge.
 
 - **Archives: tar and stream formats** beside zip, RAR and 7z in `internal/archive/archive.go` (magic-byte dispatch): tar, tar.gz, tar.xz, tar.zst, tar.bz2 and bare gz, xz, zst and lzma, under the same entry, size, path and bomb guards.
+- **Memory budget: the Problems check peaks about 60 MiB over 1 GiB.** Measured numbers and what did not help: [architecture.md](architecture.md#measured-costs). What is left is the Go heap (about 245 MiB live during a check: Content Patcher footprints 90 to 110 MB, where each `cpPatch` is 440 bytes and each `cpShape` 112, and the 65 MiB Thunderstore listing) plus the collector's headroom, which a lower soft limit trades for several times the CPU; the browser holds 335 MiB of Chromium baseline after a purge. Options: shrink `cpPatch` and `cpShape` (an estimated 10 to 15 MB), or accept a budget of about 1.1 GiB. `scripts/mem-budget.sh` prints Chromium roles, the JS heap, DOM and image counts, Go CPU, GC counts and, with `MORTAR_PPROF`, the heap profile at the in-scenario peak.
 - **Profiles for any game, and shared-state games (The Sims 4 first).** To be designed before building: a generic catalog entry with no loader (a mod folder swapped per profile), plus isolation for games whose mods and saves live in a Documents folder shared by every launch. Today each game is a catalog entry plus a loader, and three are enabled.
 
 ## Later
