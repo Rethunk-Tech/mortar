@@ -54,12 +54,19 @@ function parents(): Map<number, number> {
   return map
 }
 
+function verdict(failure: string | undefined, over: boolean): string {
+  if (failure) {
+    return `FAILED: ${failure}`
+  }
+  return over ? 'OVER BUDGET' : 'ok'
+}
+
 function tree(root: number): number[] {
   const kids = parents()
   const out = [root]
-  for (let i = 0; i < out.length; i++) {
+  for (const parent of out) {
     for (const [pid, ppid] of kids) {
-      if (ppid === out[i]) {
+      if (ppid === parent) {
         out.push(pid)
       }
     }
@@ -383,7 +390,7 @@ async function main(): Promise<number> {
         code = 1
       }
       rows.push(
-        `${scenario.name.padEnd(9)} ${p.go.toFixed(0).padStart(8)} ${p.browser.toFixed(0).padStart(8)} ${p.total.toFixed(0).padStart(8)} ${p.game.toFixed(0).padStart(8)}  ${failure ? `FAILED: ${failure}` : over ? 'OVER BUDGET' : 'ok'}`,
+        `${scenario.name.padEnd(9)} ${p.go.toFixed(0).padStart(8)} ${p.browser.toFixed(0).padStart(8)} ${p.total.toFixed(0).padStart(8)} ${p.game.toFixed(0).padStart(8)}  ${verdict(failure, over)}`,
       )
       rows.push(
         `          top at peak: ${p.top.map((t) => `${t.comm}[${t.pid}] ${t.mib.toFixed(0)}`).join(', ')}`,

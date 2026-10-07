@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreBinaries": ["appstreamcli", "bwrap", "go", "golangci-lint", "govulncheck", "wails3"],
+  "ignoreBinaries": ["appstreamcli", "bwrap", "go", "golangci-lint", "govulncheck", "ss", "wails3"],
   "ignore": ["site/vendor/**"],
   "workspaces": {
     ".": {
@@ -8,7 +8,7 @@
       "project": ["site/**/*.js", "scripts/**/*.ts"]
     },
     "frontend": {
-      "entry": ["src/main.tsx", "lingui.config.ts", "vite.config.ts"],
+      "entry": ["src/main.tsx", "lingui.config.ts", "vite.config.ts", "e2e/mem-budget.ts"],
       "vite": false,
       "ignoreDependencies": ["@lingui/native-tools"]
     }
