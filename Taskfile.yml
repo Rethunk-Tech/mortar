@@ -57,6 +57,8 @@ tasks:
     summary: Resolves, hashes and refreshes the bundled component manifest
     cmds:
       - GOTMPDIR=/var/tmp TMPDIR=/var/tmp go run ./cmd/components
+      # The embedded copy is unsigned and checked by the gate's formatter; the published one is signed in components.yml.
+      - bunx biome format --write internal/components/components.json
 
   release:manifest:
     summary: Names the release assets in bin/ and writes the signed bin/manifest.json for VERSION

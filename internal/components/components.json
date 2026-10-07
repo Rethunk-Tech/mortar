@@ -69,11 +69,7 @@
         "mo2": "Stardew Valley"
       },
       "marker": "Stardew Valley.dll",
-      "metadata": [
-        "smapi-updates",
-        "smapi-compat",
-        "stardew-dataset"
-      ],
+      "metadata": ["smapi-updates", "smapi-compat", "stardew-dataset"],
       "paths": {
         "errorLogs": {
           "windows": "{appData}/StardewValley/ErrorLogs",
@@ -189,10 +185,7 @@
           "linux": "{xdgConfig}/unity3d/ZeekerssRBLX/Lethal Company/Player.log"
         }
       },
-      "saveFiles": [
-        "LCSaveFile*",
-        "LCChallengeFile"
-      ],
+      "saveFiles": ["LCSaveFile*", "LCChallengeFile"],
       "titleScene": "MainMenu",
       "deploy": "profile",
       "targets": [
@@ -252,14 +245,8 @@
           "linux": "{xdgConfig}/unity3d/IronGate/Valheim/Player.log"
         }
       },
-      "saveFiles": [
-        "characters_local/*.fch",
-        "worlds_local/*.fwl",
-        "!*_backup_*"
-      ],
-      "saveCompanions": [
-        ".db"
-      ],
+      "saveFiles": ["characters_local/*.fch", "worlds_local/*.fwl", "!*_backup_*"],
+      "saveCompanions": [".db"],
       "titleScene": "start",
       "deploy": "profile",
       "targets": [
