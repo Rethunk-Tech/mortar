@@ -14,7 +14,7 @@ import {
   Typography,
 } from '@mui/material'
 import { Events } from '@wailsio/runtime'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   PairedPeer,
   Peer,
@@ -118,6 +118,10 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
 export function ShowCodeDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
   const [code, setCode] = useState('')
+  // Callers pass a fresh onClose on every render (the peer list re-renders every few seconds); keyed on it, each
+  // render would request a new code and replace the one the user is typing.
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
   useEffect(() => {
     if (!open) {
       setCode('')
@@ -127,9 +131,9 @@ export function ShowCodeDialog({ open, onClose }: { open: boolean; onClose: () =
       .then(setCode)
       .catch((error: unknown) => {
         toastError(t`Could not start pairing`, error)
-        onClose()
+        onCloseRef.current()
       })
-  }, [open, onClose, t])
+  }, [open, t])
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
       <DialogTitle>{t`Pair a computer`}</DialogTitle>
