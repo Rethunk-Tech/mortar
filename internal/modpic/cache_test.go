@@ -51,11 +51,11 @@ func TestGetCachesOnce(t *testing.T) {
 	host := "staticdelivery.nexusmods.com"
 	c := New(t.TempDir(), tlsClient(srv, host))
 	u := pictureURL(host, "/mods/1.png")
-	b, typ, err := c.get(t.Context(), u)
+	b, typ, err := c.get(t.Context(), u, Thumb)
 	if err != nil || typ != "image/png" || len(b) != len(png1x1) {
 		t.Fatalf("get: %s %v %d", typ, err, len(b))
 	}
-	if _, _, err := c.get(t.Context(), u); err != nil {
+	if _, _, err := c.get(t.Context(), u, Thumb); err != nil {
 		t.Fatal(err)
 	}
 	if hits.Load() != 1 {
@@ -70,7 +70,7 @@ func TestFetchRejectsNonImage(t *testing.T) {
 	t.Cleanup(srv.Close)
 	host := "staticdelivery.nexusmods.com"
 	c := New(t.TempDir(), tlsClient(srv, host))
-	_, _, err := c.get(t.Context(), pictureURL(host, "/mods/1.bin"))
+	_, _, err := c.get(t.Context(), pictureURL(host, "/mods/1.bin"), Thumb)
 	if err == nil {
 		t.Fatal("accepted a non-image body")
 	}
@@ -85,7 +85,7 @@ func TestFetchRejectsOversized(t *testing.T) {
 	t.Cleanup(srv.Close)
 	host := "images.nexusmods.com"
 	c := New(t.TempDir(), tlsClient(srv, host))
-	_, _, err := c.get(t.Context(), pictureURL(host, "/big.jpg"))
+	_, _, err := c.get(t.Context(), pictureURL(host, "/big.jpg"), Thumb)
 	if err == nil {
 		t.Fatal("accepted an oversized body")
 	}
@@ -97,7 +97,7 @@ func TestFetchRejectsDisallowedHost(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	c := New(t.TempDir(), srv.Client())
-	_, _, err := c.get(t.Context(), "https://example.com/x.png")
+	_, _, err := c.get(t.Context(), "https://example.com/x.png", Thumb)
 	if err == nil {
 		t.Fatal("accepted a disallowed host")
 	}

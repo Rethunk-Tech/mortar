@@ -13,10 +13,14 @@ import (
 	_ "golang.org/x/image/webp" // registers the WebP decoder for image.Decode
 )
 
-// thumbPx is the longest side a cached picture keeps. The UI shows pictures at most 72 CSS pixels wide, and the
-// browser decodes every picture it shows at full size (a 5334x3122 mod banner is 66 MiB of pixels), so the cache
-// stores a thumbnail instead of the original.
-const thumbPx = 192
+// Thumb and Hero are the longest sides a cached picture keeps. Every tile and card shows a picture at most 72 CSS
+// pixels wide (144 on a 2x screen), and the browser decodes a picture it shows at full size (a 5334x3122 mod banner
+// is 66 MiB of pixels), so the cache stores a Thumb copy; only a profile's hero banner, which spans the window, asks
+// for Hero.
+const (
+	Thumb = 192
+	Hero  = 1920
+)
 
 // maxSourcePixels refuses to decode a picture that would need more than about 400 MiB of pixels.
 const maxSourcePixels = 100_000_000
@@ -24,14 +28,14 @@ const maxSourcePixels = 100_000_000
 // decodeMu runs one downscale at a time, so a burst of large pictures holds one decoded original, not one per worker.
 var decodeMu sync.Mutex
 
-// thumbnail shrinks b to thumbPx on its longest side. A picture already that small is returned as it is; a
+// thumbnail shrinks b to px on its longest side. A picture already that small is returned as it is; a
 // downscaled JPEG stays a JPEG and anything else becomes a PNG, which keeps transparency.
-func thumbnail(b []byte, typ string) ([]byte, string, error) {
+func thumbnail(b []byte, typ string, px int) ([]byte, string, error) {
 	cfg, _, err := image.DecodeConfig(bytes.NewReader(b))
 	if err != nil {
 		return nil, "", err
 	}
-	if cfg.Width <= thumbPx && cfg.Height <= thumbPx {
+	if cfg.Width <= px && cfg.Height <= px {
 		return b, typ, nil
 	}
 	if cfg.Width*cfg.Height > maxSourcePixels {
@@ -43,11 +47,11 @@ func thumbnail(b []byte, typ string) ([]byte, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
-	w, h := thumbPx, thumbPx
+	w, h := px, px
 	if cfg.Width > cfg.Height {
-		h = max(1, cfg.Height*thumbPx/cfg.Width)
+		h = max(1, cfg.Height*px/cfg.Width)
 	} else {
-		w = max(1, cfg.Width*thumbPx/cfg.Height)
+		w = max(1, cfg.Width*px/cfg.Height)
 	}
 	dst := image.NewNRGBA(image.Rect(0, 0, w, h))
 	xdraw.CatmullRom.Scale(dst, dst.Bounds(), src, src.Bounds(), xdraw.Src, nil)

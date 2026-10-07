@@ -130,18 +130,30 @@ func (c *Cache) pruneTo(budget int64) int64 {
 	return total
 }
 
-// AssetURL is the app-local URL for a remote picture, or empty when the remote URL is not cacheable.
-func AssetURL(picture string) string {
+// AssetURL is the app-local URL of a remote picture's thumbnail, or empty when the remote URL is not cacheable.
+func AssetURL(picture string) string { return SizedURL(picture, Thumb) }
+
+// SizedURL is AssetURL for a picture shown larger than a thumbnail (px is Thumb or Hero).
+func SizedURL(picture string, px int) string {
 	if _, err := parsePicture(picture); err != nil {
 		return ""
 	}
-	return Path + "?u=" + url.QueryEscape(picture)
+	return Path + "?u=" + url.QueryEscape(picture) + "&s=" + strconv.Itoa(sizeOf(px))
 }
 
-// key names a picture's cached thumbnail; the prefix keeps full-size pictures cached before thumbnails existed from
+// sizeOf is the cached variant that serves a request for px: the hero size when asked for exactly that, else the
+// thumbnail.
+func sizeOf(px int) int {
+	if px == Hero {
+		return Hero
+	}
+	return Thumb
+}
+
+// key names one size variant of a picture; the prefix keeps full-size pictures cached before variants existed from
 // being served.
-func key(picture string) string {
-	sum := sha256.Sum256([]byte("thumb" + strconv.Itoa(thumbPx) + ":" + picture))
+func key(picture string, px int) string {
+	sum := sha256.Sum256([]byte("thumb" + strconv.Itoa(px) + ":" + picture))
 	return hex.EncodeToString(sum[:])
 }
 
@@ -162,8 +174,8 @@ func parsePicture(raw string) (*url.URL, error) {
 	return u, nil
 }
 
-func (c *Cache) file(picture string) string {
-	return filepath.Join(c.dir, key(picture))
+func (c *Cache) file(picture string, px int) string {
+	return filepath.Join(c.dir, key(picture, px))
 }
 
 // Ensure fetches picture when it is not already on disk. Missing or invalid URLs are ignored.
@@ -171,15 +183,15 @@ func (c *Cache) Ensure(ctx context.Context, picture string) {
 	if c == nil || picture == "" {
 		return
 	}
-	_, _, err := c.get(ctx, picture)
+	_, _, err := c.get(ctx, picture, Thumb)
 	_ = err
 }
 
-func (c *Cache) get(ctx context.Context, picture string) ([]byte, string, error) {
+func (c *Cache) get(ctx context.Context, picture string, px int) ([]byte, string, error) {
 	if _, err := parsePicture(picture); err != nil {
 		return nil, "", err
 	}
-	path := c.file(picture)
+	path := c.file(picture, px)
 	if b, typ, err := readFile(path); err == nil {
 		return b, typ, nil
 	}
@@ -192,7 +204,7 @@ func (c *Cache) get(ctx context.Context, picture string) ([]byte, string, error)
 	if b, typ, err := readFile(path); err == nil {
 		return b, typ, nil
 	}
-	return c.fetch(ctx, picture, path)
+	return c.fetch(ctx, picture, path, px)
 }
 
 func readFile(path string) ([]byte, string, error) {
@@ -237,7 +249,7 @@ func readImage(r io.Reader) ([]byte, string, error) {
 
 var errNotImage = fmt.Errorf("the picture is not a PNG, JPEG, WebP or GIF image")
 
-func (c *Cache) fetch(ctx context.Context, picture, path string) ([]byte, string, error) {
+func (c *Cache) fetch(ctx context.Context, picture, path string, px int) ([]byte, string, error) {
 	u, err := parsePicture(picture)
 	if err != nil {
 		return nil, "", err
@@ -261,7 +273,7 @@ func (c *Cache) fetch(ctx context.Context, picture, path string) ([]byte, string
 	if err != nil {
 		return nil, "", err
 	}
-	if b, typ, err = thumbnail(b, typ); err != nil {
+	if b, typ, err = thumbnail(b, typ, px); err != nil {
 		return nil, "", err
 	}
 	if err := os.MkdirAll(c.dir, 0o700); err != nil {
@@ -274,7 +286,7 @@ func (c *Cache) fetch(ctx context.Context, picture, path string) ([]byte, string
 	return b, typ, nil
 }
 
-// Middleware serves GET /mod-picture/?u=<picture URL>: the cached bytes, fetching once if missing.
+// Middleware serves GET /mod-picture/?u=<picture URL>&s=<Thumb or Hero>: the cached bytes, fetching once if missing.
 func Middleware(cache func() *Cache) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -289,7 +301,8 @@ func Middleware(cache func() *Cache) func(http.Handler) http.Handler {
 				return
 			}
 			picture := r.URL.Query().Get("u")
-			b, typ, err := c.get(r.Context(), picture)
+			size, _ := strconv.Atoi(r.URL.Query().Get("s"))
+			b, typ, err := c.get(r.Context(), picture, sizeOf(size))
 			if err != nil {
 				http.NotFound(w, r)
 				return

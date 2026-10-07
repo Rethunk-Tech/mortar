@@ -129,7 +129,7 @@ func Covers(gameID string, p Profile) []string {
 		}
 	}
 	if picture != "" {
-		if local := modpic.AssetURL(picture); local != "" {
+		if local := modpic.SizedURL(picture, modpic.Hero); local != "" {
 			out = append(out, local)
 		}
 		out = append(out, picture)

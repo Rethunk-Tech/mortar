@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
+	"strings"
 	"testing"
 )
 
@@ -26,10 +27,10 @@ func TestThumbnailShrinksLargePicturesAndKeepsSmallOnes(t *testing.T) {
 		typ, wantTyp string
 		w, h         int
 	}{
-		{"wide jpeg", encode(1920, 1080, true), "image/jpeg", "image/jpeg", thumbPx, thumbPx * 1080 / 1920},
-		{"tall png", encode(500, 2000, false), "image/png", "image/png", thumbPx * 500 / 2000, thumbPx},
+		{"wide jpeg", encode(1920, 1080, true), "image/jpeg", "image/jpeg", Thumb, Thumb * 1080 / 1920},
+		{"tall png", encode(500, 2000, false), "image/png", "image/png", Thumb * 500 / 2000, Thumb},
 	} {
-		out, typ, err := thumbnail(tc.src, tc.typ)
+		out, typ, err := thumbnail(tc.src, tc.typ, Thumb)
 		if err != nil || typ != tc.wantTyp {
 			t.Fatalf("%s: type %q err %v", tc.name, typ, err)
 		}
@@ -39,7 +40,19 @@ func TestThumbnailShrinksLargePicturesAndKeepsSmallOnes(t *testing.T) {
 		}
 	}
 	small := encode(96, 96, false)
-	if out, _, err := thumbnail(small, "image/png"); err != nil || !bytes.Equal(out, small) {
+	if out, _, err := thumbnail(small, "image/png", Thumb); err != nil || !bytes.Equal(out, small) {
 		t.Fatalf("a picture under the limit must pass through unchanged: %v", err)
+	}
+}
+
+func TestSizeOfPicksHeroOnlyWhenAsked(t *testing.T) {
+	t.Parallel()
+	for px, want := range map[int]int{0: Thumb, Thumb: Thumb, 640: Thumb, -1: Thumb, Hero: Hero} {
+		if got := sizeOf(px); got != want {
+			t.Errorf("sizeOf(%d) = %d, want %d", px, got, want)
+		}
+	}
+	if !strings.HasSuffix(SizedURL("https://gcdn.thunderstore.io/a.png", Hero), "&s=1920") {
+		t.Error("a hero URL must name its size")
 	}
 }
