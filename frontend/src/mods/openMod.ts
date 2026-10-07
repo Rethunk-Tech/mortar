@@ -14,7 +14,7 @@ interface Target {
 const findMod = ({ id, key }: Target) =>
   useMods.getState().mods.find((m) => sameId(m.id, id) && (!key || m.key === key))
 
-// openMod switches to the Mods tab and opens the open profile's mod's details, loading the list first when the mod
+// openMod switches to the Mods tab and shows the open profile's mod in the details panel, loading the list first when the mod
 // is not in it yet.
 export async function openMod(target: Target): Promise<void> {
   useTab.getState().setTab('mods')
@@ -27,7 +27,6 @@ export async function openMod(target: Target): Promise<void> {
     return
   }
   useDetail.getState().show(mod)
-  useDetail.getState().setOpen(true)
 }
 
 // openModHandlers are the click and right-click that open a mod's details, as a Mods row does.

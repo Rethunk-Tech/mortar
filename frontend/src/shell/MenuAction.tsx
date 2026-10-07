@@ -2,13 +2,8 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import MenuItem from '@mui/material/MenuItem'
 import type { ReactNode } from 'react'
+import { destructiveSx } from './destructive.ts'
 import { OneTip } from './OneTip.tsx'
-
-// The one destructive menu item look: error.main alone is too dark on the dark menu paper and reads as disabled.
-const destructiveSx = {
-  color: 'error.light',
-  '&:hover': { bgcolor: 'rgba(244, 67, 54, 0.14)' },
-} as const
 
 export function MenuAction({
   icon,

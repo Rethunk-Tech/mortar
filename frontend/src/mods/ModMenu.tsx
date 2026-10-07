@@ -107,7 +107,6 @@ function ModMenuItems({
   const setPinned = useMods((s) => s.setPinned)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const show = useDetail((s) => s.show)
-  const setOpen = useDetail((s) => s.setOpen)
   const page = useMods((s) => s.pages[modId(mod)])
   const state = useMenuState(mod)
   const locked = useLocked()
@@ -131,10 +130,7 @@ function ModMenuItems({
     details: {
       label: t`More details`,
       icon: <Info size={ICON_SIZE} />,
-      run: () => {
-        show(mod)
-        setOpen(true)
-      },
+      run: () => show(mod),
     },
     page: {
       label: openPageLabel(i18n, state.host),

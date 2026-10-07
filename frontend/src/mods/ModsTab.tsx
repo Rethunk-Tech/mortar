@@ -23,7 +23,6 @@ import { LockedNote } from './LockedNote.tsx'
 import { useLastRun } from './lastRun.ts'
 import { entryOf, modId, modStatusProblem, updateFor } from './lookup.ts'
 import { Cards } from './ModCards.tsx'
-import { ModDetail } from './ModDetail.tsx'
 import { ModList } from './ModList.tsx'
 import { ModContextMenu } from './ModMenu.tsx'
 import { ModsHeaderActions } from './ModsHeaderActions.tsx'
@@ -315,7 +314,6 @@ export function ModsTab({ profile }: { profile: Profile }) {
           setTagFilter(profile.id, [])
         }}
       />
-      <ModDetail profile={profile} />
       <UpdateReview profile={profile} />
       <ModContextMenu />
       <RemoveDialog />

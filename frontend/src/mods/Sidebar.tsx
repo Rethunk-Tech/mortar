@@ -15,12 +15,14 @@ import {
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { Fold } from '../shell/Fold.tsx'
 import { OfflineGate } from '../shell/OfflineGate.tsx'
 import { updateSources, useOfflineReason } from '../shell/offlineText.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { ChangelogDialog } from './ChangelogDialog.tsx'
+import { CompatDetail } from './CompatChip.tsx'
 import { useCustomCategories } from './customCategories.ts'
 import { DetailsAside } from './DetailsAside.tsx'
 import { DetailsHeader } from './DetailsHeader.tsx'
@@ -45,9 +47,11 @@ import {
 } from './lookup.ts'
 import { ModDependencyTree } from './ModDependencyTree.tsx'
 import { ModNoteTags } from './ModNoteTags.tsx'
+import { ModVersionsAndSettings } from './ModSections.tsx'
 import { ModUpdateControls } from './ModUpdateControls.tsx'
 import { openPage } from './menu.ts'
 import { hostOf, openPageLabel } from './modActions.ts'
+import { NexusDetails } from './NexusDetails.tsx'
 import { useLookedSnapshot, useNexusEntry, useNexusFresh } from './nexusDetails.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
@@ -58,7 +62,6 @@ import { accent, heading } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
 import { useRequirementName } from './requirementName.ts'
 import { useMods } from './store.ts'
-import { EditConfigButton } from './typedConfig/EditConfigButton.tsx'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
 import { useUpdates } from './updates.ts'
 
@@ -372,15 +375,8 @@ function ActionRows({
   const pageUrl = mine?.relations.pageUrl ?? ''
   const neededBy = mine?.relations.neededBy ?? []
   const optionalFor = mine?.relations.optionalFor ?? []
-  const hasConfig = (mine?.configFiles.length ?? 0) > 0
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-      {hasConfig ? (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography sx={{ flex: 1, fontSize: 13 }}>{t`Config`}</Typography>
-          <EditConfigButton mod={mod} />
-        </Box>
-      ) : null}
       {nexusId > 0 || githubRepo !== '' || packageChangelog !== '' ? (
         <>
           <Link component="button" onClick={() => setShowChangelog(true)} sx={rowLink}>
@@ -522,12 +518,24 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
       <ProblemLine mod={mod} />
       <LastRunLine mod={mod} profile={profile} />
       <ModDependencyTree mod={mod} />
+      <ModVersionsAndSettings mod={mod} profile={profile} />
+      <CompatDetail mod={mod} />
       <ActionRows
         mod={mod}
         nexusId={nexusId}
         githubRepo={entry?.source?.kind === 'github' ? (entry.source.repo ?? '') : ''}
         thunderstorePackage={entry?.source?.kind === 'thunderstore' ? entry.source.name : ''}
       />
+      {entry?.source?.kind === 'nexus' && entry.source.modId ? (
+        <Fold title={t`More from the Nexus page`}>
+          <NexusDetails
+            mod={mod}
+            modId={entry.source.modId}
+            fileId={entry.source.fileId ?? 0}
+            inPanel={true}
+          />
+        </Fold>
+      ) : null}
       <AlsoInProfiles mod={mod} profile={profile} />
       <HiddenInside mod={mod} profile={profile} />
       <ModNoteTags profile={profile} mod={mod} />
@@ -543,7 +551,6 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const { t } = useLingui()
   const all = useMods((s) => s.mods)
   const others = siblingsOf(all, mod)
-  const setOpen = useDetail((s) => s.setOpen)
   const kind = sourceKind(profile, mod)
   const fresh = useNexusFresh(nexusIdOf(profile, mod))
   const sourceName = kindLabel(kind, {
@@ -588,9 +595,6 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
         </Box>
       ) : null}
       <Box sx={{ flexGrow: 1 }} />
-      <Button variant="outlined" onClick={() => setOpen(true)}>
-        {t`More…`}
-      </Button>
       <Box
         sx={{
           display: 'grid',

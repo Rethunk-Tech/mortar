@@ -61,32 +61,28 @@ function keyAfterRollBack(
 const showModId = (id: string) =>
   useDetail.getState().show(useMods.getState().mods.find((m) => modId(m) === id) ?? null)
 
-// The selected mod (by modId) shown in the sidebar, whether its details dialog is open, and what the dialog reads beyond the mod list.
+// The selected mod (by modId) shown in the sidebar, and what the panel reads beyond the mod list.
 export const useDetail = create<{
   detailId: string
   pendingId: string
-  open: boolean
   extras: Extras | null
   show: (mod: Mod | null) => void
   showAfterLoad: (mod: Pick<Mod, 'key' | 'id'>) => void
   takePending: () => string
-  setOpen: (isOpen: boolean) => void
   loadExtras: (mod: Mod) => Promise<void>
   rollBack: (mod: Mod) => Promise<void>
   resetConfig: (mod: Mod) => Promise<void>
 }>((set, get) => ({
   detailId: '',
   pendingId: '',
-  open: false,
   extras: null,
-  show: (mod) => set((s) => ({ ...reshow(s, mod), open: false })),
+  show: (mod) => set((s) => reshow(s, mod)),
   showAfterLoad: (mod) => set({ pendingId: modId(mod) }),
   takePending: () => {
     const id = get().pendingId
     set({ pendingId: '' })
     return id
   },
-  setOpen: (isOpen) => set({ open: isOpen }),
   loadExtras: async (mod) => {
     const target = openTarget()
     if (!target) {
@@ -137,7 +133,7 @@ export const useDetail = create<{
           ),
       },
     })
-    set({ open: false, extras: null })
+    set({ extras: null })
     await useMods.getState().load()
   },
   resetConfig: async (mod) => {

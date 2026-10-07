@@ -23,6 +23,7 @@ import { errorsLabel } from '../i18n/counts.ts'
 import { listNames } from '../i18n/list.ts'
 import { useLive } from '../launch/live.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { destructiveSx } from '../shell/destructive.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { dependentsOf, idKey, localId } from './dependents.ts'
 import { useDescribe } from './describe.ts'
@@ -145,6 +146,9 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
     </>
   )
 }
+
+// The panel footer's two buttons share one height.
+const footerButtonSx = { height: 36 } as const
 
 export function LetterTile({
   mod,
@@ -411,6 +415,8 @@ export function ShowFilesButton({ mod }: { mod: Mod }) {
   return (
     <Button
       variant="outlined"
+      fullWidth={true}
+      sx={footerButtonSx}
       onClick={() => {
         showFiles(mod).catch(reportUnexpected)
       }}
@@ -428,10 +434,10 @@ export function RemoveButton({ mod }: { mod: Mod }) {
     <LockedReason locked={locked}>
       <Button
         variant="outlined"
-        color="error"
+        fullWidth={true}
         disabled={locked}
         onClick={() => askRemove(mod)}
-        sx={{ borderColor: 'error.main' }}
+        sx={{ ...footerButtonSx, ...destructiveSx, borderColor: 'error.light' }}
       >
         {t`Remove`}
       </Button>

@@ -23,5 +23,4 @@ test('openMod opens the details of the mod with that id and entry key, loading t
   expect(loads).toBe(1)
   expect(useTab.getState().tab).toBe('mods')
   expect(useDetail.getState().detailId).toBe('b/Same.Id')
-  expect(useDetail.getState().open).toBe(true)
 })

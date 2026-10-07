@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
@@ -21,15 +22,18 @@ const TINT = 0.16
 function Chip({
   label,
   tone,
+  title,
   onClick,
 }: {
   label: string
   tone?: 'primary.main' | 'warning.main'
+  title?: string
   onClick: () => void
 }) {
   return (
     <ButtonBase
       onClick={onClick}
+      title={title}
       sx={{
         height: 26,
         px: 1.25,
@@ -61,6 +65,11 @@ export function TabHeader({ profile }: { profile: Profile }) {
   const saves = saveFits(fits)
   const notes = notesFirstLine(profile.notes ?? '')
   const go = (tab: TabId) => () => setTab(tab)
+  // A save that records no mod list cannot fit or miss, so a game with only those shows the plain count.
+  const savesLabel = (s: typeof saves) =>
+    s.recorded > 0
+      ? t`${s.fitting} of ${s.recorded} saves fit`
+      : plural(s.total, { one: '# save', other: '# saves' })
   return (
     <Box
       component="header"
@@ -94,7 +103,11 @@ export function TabHeader({ profile }: { profile: Profile }) {
           <Chip label={problemsLabel(problems)} tone="warning.main" onClick={go('problems')} />
         ) : null}
         {saves.total > 0 ? (
-          <Chip label={t`Saves ${saves.fitting} of ${saves.recorded}`} onClick={go('saves')} />
+          <Chip
+            label={savesLabel(saves)}
+            title={t`Saves whose recorded mod list this profile covers, out of the saves that record one`}
+            onClick={go('saves')}
+          />
         ) : null}
       </Box>
       <Typography

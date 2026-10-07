@@ -29,6 +29,8 @@ const text = { fontSize: 13 } as const
 const muted = { fontSize: 12, color: 'text.secondary' } as const
 const noWrap = { whiteSpace: 'nowrap' } as const
 const FILES_SHOWN = 5
+const PANEL_COLUMNS = 2
+const WIDE_COLUMNS = 3
 const BOLD = 700
 
 function Rich({ blocks }: { blocks: Block[] }) {
@@ -83,13 +85,15 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-function Facts({ details, mod }: { details: Details; mod: Mod }) {
+function Facts({ details, mod, columns }: { details: Details; mod: Mod; columns: number }) {
   const { t, i18n } = useLingui()
   const { page, category } = details
   const uploader = safeUrl(page.uploaderUrl)
   const newer = isNewer(page.version, mod.version)
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 1.5 }}>
+    <Box
+      sx={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gap: 1.5 }}
+    >
       <Fact label={t`Latest on Nexus`}>
         <Box component="span" sx={{ color: newer ? 'primary.main' : undefined }}>
           {page.version || '—'}
@@ -181,11 +185,13 @@ function Loaded({
   mod,
   fileId,
   modId,
+  inPanel,
 }: {
   details: Details
   mod: Mod
   fileId: number
   modId: number
+  inPanel: boolean
 }) {
   const { t } = useLingui()
   const { page } = details
@@ -223,10 +229,10 @@ function Loaded({
           })()}
         </Box>
       ) : null}
-      {page.summary ? (
+      {page.summary && !inPanel ? (
         <Typography sx={{ ...text, color: 'text.secondary' }}>{page.summary}</Typography>
       ) : null}
-      <Facts details={details} mod={mod} />
+      <Facts details={details} mod={mod} columns={inPanel ? PANEL_COLUMNS : WIDE_COLUMNS} />
       <NexusAccountActions modId={modId} version={mod.version} endorsement={page.endorsement} />
       {(page.requirements ?? []).length > 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
@@ -260,12 +266,32 @@ function Loaded({
 }
 
 // What Nexus says about a Nexus-installed mod: served from Mortar's cache, which refreshes once a day while signed in.
-export function NexusDetails({ mod, modId, fileId }: { mod: Mod; modId: number; fileId: number }) {
+// `inPanel` is the narrow details panel, which already shows the page's summary.
+export function NexusDetails({
+  mod,
+  modId,
+  fileId,
+  inPanel = false,
+}: {
+  mod: Mod
+  modId: number
+  fileId: number
+  inPanel?: boolean
+}) {
   const { t } = useLingui()
   const signedIn = useNexus((s) => s.signedIn)
   const entry = useNexusEntry(modId)
   if (entry?.details) {
-    return <Loaded key={modId} details={entry.details} mod={mod} fileId={fileId} modId={modId} />
+    return (
+      <Loaded
+        key={modId}
+        details={entry.details}
+        mod={mod}
+        fileId={fileId}
+        modId={modId}
+        inPanel={inPanel}
+      />
+    )
   }
   if (!entry) {
     return <LoadingRow>{t`Reading the Nexus page…`}</LoadingRow>
