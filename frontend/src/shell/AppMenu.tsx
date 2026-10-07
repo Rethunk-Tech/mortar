@@ -28,6 +28,7 @@ import { useQueue } from '../queue/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
 import { useShortcutHint } from '../settings/useShortcutHint.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { showWhatsNew } from '../updates/whatsNew.ts'
 import { checkForUpdates } from './checkForUpdates.ts'
@@ -123,7 +124,7 @@ export function AppMenu() {
         sx={{
           '--wails-draggable': 'no-drag',
           gap: '8px',
-          height: 34,
+          height: space.control,
           px: '10px',
           borderRadius: '8px',
           fontSize: 15,

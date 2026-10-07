@@ -11,6 +11,7 @@ import { useHistoryPanel } from '../profiles/useHistoryPanel.ts'
 import { useQueue } from '../queue/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { closeTitleMenu } from '../shell/titleMenus.ts'
+import { space } from '../theme/density.ts'
 import { EarlierChanges } from './EarlierChanges.tsx'
 import { historyActionState } from './history.ts'
 import { reportUnexpected } from './report.ts'
@@ -242,7 +243,12 @@ export function HistoryButton() {
         aria-haspopup="dialog"
         aria-expanded={historyOpen}
         onClick={(e) => open(e.currentTarget)}
-        sx={{ '--wails-draggable': 'no-drag', width: 36, height: 34, borderRadius: '8px' }}
+        sx={{
+          '--wails-draggable': 'no-drag',
+          width: space.control,
+          height: space.control,
+          borderRadius: '8px',
+        }}
       >
         <Badge
           // None rather than 0: a hidden badge still holds its 0, text the button's name would then lack.

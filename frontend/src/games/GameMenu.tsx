@@ -7,6 +7,7 @@ import { routeGame, useNav } from '../nav/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from '../shell/TitleMenu.tsx'
 import { useTitleMenu } from '../shell/titleMenus.ts'
+import { space } from '../theme/density.ts'
 import { gameArt } from './art.ts'
 import { useGameInfo, useGames } from './info.ts'
 import { useOpenGame } from './useOpenGame.ts'
@@ -61,7 +62,7 @@ export function GameMenu() {
         sx={{
           '--wails-draggable': 'no-drag',
           gap: '8px',
-          height: 34,
+          height: space.control,
           minWidth: 0,
           px: '10px',
           borderRadius: '8px',

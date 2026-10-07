@@ -4,6 +4,7 @@ import { Box, ButtonBase } from '@mui/material'
 import { Download } from 'lucide-react'
 import { compact } from '../game/compact.ts'
 import { closeTitleMenu } from '../shell/titleMenus.ts'
+import { space } from '../theme/density.ts'
 import { useQueue } from './store.ts'
 import { pillProgress } from './totals.ts'
 
@@ -28,7 +29,7 @@ export function DownloadsPill() {
       sx={{
         '--wails-draggable': 'no-drag',
         gap: '8px',
-        height: 34,
+        height: space.control,
         px: '12px',
         borderRadius: '8px',
         fontFamily: 'inherit',

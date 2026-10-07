@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
 import { ArrowLeft } from 'lucide-react'
 import { SearchField } from '../shell/SearchField.tsx'
+import { space } from '../theme/density.ts'
 import type { ShellPage } from './SettingsShell.tsx'
 
 const ACTIVE_WEIGHT = 600
@@ -46,7 +47,7 @@ export function SettingsNav<Id extends string>({
           onClick={onBack}
           sx={{
             width: 36,
-            height: 36,
+            height: space.row,
             flexShrink: 0,
             borderRadius: '6px',
             '&:hover': { bgcolor: 'action.hover' },

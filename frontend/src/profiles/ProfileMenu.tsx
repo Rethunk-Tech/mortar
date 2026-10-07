@@ -14,6 +14,7 @@ import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from '../shell/TitleM
 import { useTitleMenu } from '../shell/titleMenus.ts'
 import { ManageTemplatesDialog } from '../templates/TemplateDialogs.tsx'
 import { useTemplates } from '../templates/useTemplates.ts'
+import { space } from '../theme/density.ts'
 import { userModCount } from './count.ts'
 import { requestFindAllFocus } from './findMod.ts'
 import { ProfileMark } from './ProfileMark.tsx'
@@ -76,7 +77,7 @@ function ProfileButton({
       sx={{
         '--wails-draggable': 'no-drag',
         gap: '8px',
-        height: 34,
+        height: space.control,
         minWidth: 0,
         px: '10px',
         borderRadius: '8px',
