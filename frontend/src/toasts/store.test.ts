@@ -162,3 +162,14 @@ test('a batched change notification keeps the history events it was given', () =
   update(id, { title: 'Updated 4 mods', changes: ['bulk', 'other'] })
   expect(useToasts.getState().history[0]?.changes).toEqual(['bulk', 'other'])
 })
+
+test('a sticky toast stays until an update releases it, then clears after 8s', () => {
+  const id = useToasts.getState().push({ kind: 'info', title: 'sending', sticky: true })
+  jest.advanceTimersByTime(60_000)
+  expect(useToasts.getState().toasts).toHaveLength(1)
+  useToasts.getState().update(id, { kind: 'success', title: 'done', sticky: false })
+  jest.advanceTimersByTime(7999)
+  expect(useToasts.getState().toasts).toHaveLength(1)
+  jest.advanceTimersByTime(1)
+  expect(useToasts.getState().toasts).toHaveLength(0)
+})

@@ -333,7 +333,6 @@ msgid "How Play starts the game. Direct skips Steam's overlay and playtime."
 msgstr "How Play starts the game. Direct skips Steam's overlay and playtime."
 
 #: src/lan/IncomingPrompt.tsx:169
-#: src/lan/OutgoingProgress.tsx:43
 msgid "Copying mod files"
 msgstr "Copying mod files"
 
@@ -1524,7 +1523,7 @@ msgstr "Launch options set in Steam"
 msgid "Choose an existing bundle or create one."
 msgstr "Choose an existing bundle or create one."
 
-#: src/lan/OutgoingProgress.tsx:30
+#: src/lan/OutgoingProgress.tsx:20
 msgid "Sending to {peer}: {current} of {total} files"
 msgstr "Sending to {peer}: {current} of {total} files"
 
@@ -8599,7 +8598,7 @@ msgid "Clicking these links on Nexus starts the download in Mortar."
 msgstr "Clicking these links on Nexus starts the download in Mortar."
 
 #. placeholder {0}: expired.sender
-#: src/lan/incoming.ts:42
+#: src/lan/incoming.ts:40
 msgid "A share from {0} expired. Ask them to send it again."
 msgstr "A share from {0} expired. Ask them to send it again."
 
@@ -9946,7 +9945,7 @@ msgstr "Not used by any profile"
 msgid "Add an item"
 msgstr "Add an item"
 
-#: src/lan/OutgoingProgress.tsx:34
+#: src/lan/OutgoingProgress.tsx:17
 msgid "{peer} cancelled it"
 msgstr "{peer} cancelled it"
 
@@ -11825,7 +11824,7 @@ msgstr "Launcher replaced"
 msgid "System default"
 msgstr "System default"
 
-#: src/lan/OutgoingProgress.tsx:32
+#: src/lan/OutgoingProgress.tsx:14
 msgid "{peer} has all the files for {profile}"
 msgstr "{peer} has all the files for {profile}"
 
@@ -11986,7 +11985,7 @@ msgstr "Applied when the game next starts"
 msgid "Search Nexus Mods. Download installs the mod into this profile."
 msgstr "Search Nexus Mods. Download installs the mod into this profile."
 
-#: src/lan/OutgoingProgress.tsx:35
+#: src/lan/OutgoingProgress.tsx:18
 msgid "Sending to {peer} stopped: {why}"
 msgstr "Sending to {peer} stopped: {why}"
 
@@ -12805,7 +12804,6 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/console/HelpDialog.tsx:262
 #: src/console/SearchRunsDialog.tsx:171
 #: src/game/FarmMenuItem.tsx:131
-#: src/lan/OutgoingProgress.tsx:51
 #: src/launch/LaunchLayer.tsx:288
 #: src/launch/SweepDialog.tsx:136
 #: src/mods/AssetMapDialog.tsx:279

@@ -5,6 +5,8 @@ import { HISTORY_CAP, type HistoryActionState, prependHistory } from './history.
 const QUICK_MS = 5000
 const SLOW_MS = 10_000
 const MAX_SHOWN = 3
+// How long a sticky toast that finished well stays up.
+const DONE_MS = 8000
 
 const timers = new Map<number, ReturnType<typeof setTimeout>>()
 
@@ -70,6 +72,8 @@ export interface ToastInput {
   picture?: string
   count?: number
   action?: ToastAction
+  // Stays until dismissed, or until an update sets this false, which starts its countdown.
+  sticky?: boolean
   // History events a change reports that the profiles store cannot answer for: those a batch wrote.
   changes?: string[]
 }
@@ -106,11 +110,11 @@ export const useToasts = create<{
   historyOpen: boolean
   setHistoryOpen: (open: boolean) => void
 }>((set, get) => {
-  const arm = (id: number, kind: ToastKind) => {
+  const arm = (id: number, kind: ToastKind, ms = lifetime(kind)) => {
     clearTimeout(timers.get(id))
     timers.set(
       id,
-      setTimeout(() => get().dismiss(id), lifetime(kind)),
+      setTimeout(() => get().dismiss(id), ms),
     )
   }
   return {
@@ -159,7 +163,9 @@ export const useToasts = create<{
         unread: Math.min(HISTORY_CAP, get().unread + 1),
       })
       saveHistory(get().history)
-      arm(id, input.kind)
+      if (!input.sticky) {
+        arm(id, input.kind)
+      }
       return id
     },
     update: (id, input) => {
@@ -174,6 +180,9 @@ export const useToasts = create<{
         }),
       }))
       saveHistory(get().history)
+      if (input.sticky === false) {
+        arm(id, input.kind ?? 'info', DONE_MS)
+      }
     },
     dismiss: (id) => {
       clearTimeout(timers.get(id))
@@ -184,7 +193,7 @@ export const useToasts = create<{
     hold: (id) => clearTimeout(timers.get(id)),
     release: (id) => {
       const toast = get().toasts.find((t) => t.id === id)
-      if (toast) {
+      if (toast && !toast.sticky) {
         arm(id, toast.kind)
       }
     },

@@ -23,11 +23,9 @@ interface IncomingState {
   removeFirst: () => void
   remove: (id: number) => boolean
   setProgress: (progress: TransferProgress) => void
-  // What paired computers are pulling from this one, by transfer id; hidden ones were closed by the person.
+  // What paired computers are pulling from this one, by transfer id.
   outgoing: Record<number, OutgoingTransfer>
-  hidden: number[]
   setOutgoing: (transfer: OutgoingTransfer) => void
-  hideOutgoing: (id: number) => void
 }
 
 let initialized = false
@@ -72,7 +70,6 @@ const useIncomingShares = create<IncomingState>((set, get) => ({
   items: [],
   progress: {},
   outgoing: {},
-  hidden: [],
   add: (arrival) => set((state) => ({ items: [...state.items, arrival] })),
   // Answering a share also drops it from the service, which keeps it until then and would hand it to the window
   // again after a reload.
@@ -92,7 +89,6 @@ const useIncomingShares = create<IncomingState>((set, get) => ({
     set((state) => ({ progress: { ...state.progress, [progress.id]: progress } })),
   setOutgoing: (transfer) =>
     set((state) => ({ outgoing: { ...state.outgoing, [transfer.id]: transfer } })),
-  hideOutgoing: (id) => set((state) => ({ hidden: [...state.hidden, id] })),
 }))
 
 export { initIncoming, useIncomingShares }

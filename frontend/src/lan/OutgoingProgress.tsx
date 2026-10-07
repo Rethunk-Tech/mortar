@@ -1,55 +1,51 @@
-import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from '@mui/material'
+import { msg } from '@lingui/core/macro'
+import { useEffect, useRef } from 'react'
+import type { OutgoingTransfer } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
 import { formatBytes } from '../i18n/bytes.ts'
+import { i18n } from '../i18n/index.ts'
+import { useToasts } from '../toasts/store.ts'
 import { useIncomingShares } from './incoming.ts'
 
-// What a paired computer pulling a sent profile's files looks like from the sending side: the receiver's
-// "Copying mod files" dialog, without the cancel the receiver owns.
-export function OutgoingProgress() {
-  const { t } = useLingui()
-  const transfer = useIncomingShares((shares) =>
-    Object.values(shares.outgoing)
-      .filter((o) => !shares.hidden.includes(o.id))
-      .sort((a, b) => b.id - a.id)
-      .at(0),
-  )
-  const hide = useIncomingShares((shares) => shares.hideOutgoing)
-  if (!transfer) {
-    return null
-  }
+const KINDS: Record<string, 'info' | 'success' | 'error'> = { sending: 'info', done: 'success' }
+
+function lineOf(transfer: OutgoingTransfer): string {
   const { peer, profile, current, total, bytes, totalBytes, state, reason } = transfer
-  let text = t`Sending to ${peer}: ${current} of ${total} files`
   if (state === 'done') {
-    text = t`${peer} has all the files for ${profile}`
-  } else if (state !== 'sending') {
-    const why = state === 'cancelled' ? t`${peer} cancelled it` : reason
-    text = t`Sending to ${peer} stopped: ${why}`
+    return i18n._(msg`${peer} has all the files for ${profile}`)
   }
-  const line =
-    state === 'sending' && totalBytes > 0
-      ? `${text} · ${formatBytes(bytes)} of ${formatBytes(totalBytes)}`
-      : text
-  return (
-    <Dialog open={true} onClose={() => hide(transfer.id)}>
-      <DialogTitle>{t`Copying mod files`}</DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {state === 'sending' && <CircularProgress size={24} />}
-          <Typography>{line}</Typography>
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => hide(transfer.id)}>{t`Close`}</Button>
-      </DialogActions>
-    </Dialog>
-  )
+  if (state !== 'sending') {
+    const why = state === 'cancelled' ? i18n._(msg`${peer} cancelled it`) : (reason ?? '')
+    return i18n._(msg`Sending to ${peer} stopped: ${why}`)
+  }
+  const line = i18n._(msg`Sending to ${peer}: ${current} of ${total} files`)
+  return totalBytes > 0 ? `${line} · ${formatBytes(bytes)} of ${formatBytes(totalBytes)}` : line
+}
+
+// A paired computer pulling a sent profile's files is one toast per transfer, updated in place, so the sender
+// keeps using Mortar meanwhile. A finished transfer clears itself; a failed one stays until dismissed.
+export function OutgoingProgress() {
+  const outgoing = useIncomingShares((shares) => shares.outgoing)
+  const toastOf = useRef(new Map<number, number>())
+  const lastState = useRef(new Map<number, string>())
+
+  useEffect(() => {
+    for (const transfer of Object.values(outgoing)) {
+      const { id, state } = transfer
+      const title = lineOf(transfer)
+      const kind = KINDS[state] ?? 'error'
+      const toastId = toastOf.current.get(id)
+      const finishedWell = state === 'done' && lastState.current.get(id) !== 'done'
+      const sticky = finishedWell ? { sticky: false } : {}
+      if (toastId === undefined) {
+        toastOf.current.set(id, useToasts.getState().push({ kind, title, sticky: true }))
+        if (finishedWell) {
+          useToasts.getState().update(toastOf.current.get(id) ?? 0, sticky)
+        }
+      } else {
+        useToasts.getState().update(toastId, { kind, title, ...sticky })
+      }
+      lastState.current.set(id, state)
+    }
+  }, [outgoing])
+  return null
 }

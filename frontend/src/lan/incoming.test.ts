@@ -42,7 +42,7 @@ test('answering a share drops it from the service so a reload does not bring it 
   expect(useIncomingShares.getState().items.map((a) => a.id)).toEqual([2])
 })
 
-test('an outgoing transfer keeps its latest progress until the person closes it', () => {
+test('an outgoing transfer keeps its latest progress', () => {
   const transfer = {
     id: 1,
     peer: 'Alex',
@@ -56,6 +56,4 @@ test('an outgoing transfer keeps its latest progress until the person closes it'
   useIncomingShares.getState().setOutgoing(transfer)
   useIncomingShares.getState().setOutgoing({ ...transfer, current: 2, state: 'done' })
   expect(useIncomingShares.getState().outgoing[1]?.state).toBe('done')
-  useIncomingShares.getState().hideOutgoing(1)
-  expect(useIncomingShares.getState().hidden).toEqual([1])
 })
