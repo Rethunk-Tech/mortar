@@ -5,9 +5,9 @@ import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 're
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SEARCH_HIT } from './prefFilter.ts'
 import { SettingsNav } from './SettingsNav.tsx'
-import { SettingsSearchProvider } from './SettingsSearch.tsx'
 import { dialogOpen } from './shortcuts.ts'
 import { shouldLeavePageOnEscape } from './shouldLeavePageOnEscape.ts'
+import { SettingsSearchContext } from './useSettingsSearch.ts'
 
 // One readable column: wider rows push controls too far from their labels, so the content stops growing here.
 const CONTENT_MAX = 880
@@ -122,7 +122,7 @@ export function SettingsShell<Id extends string>({
     pane.current?.scrollTo(0, 0)
   }
   return (
-    <SettingsSearchProvider query={query}>
+    <SettingsSearchContext value={query}>
       <Box
         sx={{
           height: '100%',
@@ -224,6 +224,6 @@ export function SettingsShell<Id extends string>({
           </Box>
         </Box>
       </Box>
-    </SettingsSearchProvider>
+    </SettingsSearchContext>
   )
 }
