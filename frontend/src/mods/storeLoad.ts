@@ -24,7 +24,7 @@ let latestLoad = 0
 
 async function scanProblems(
   target: { game: string; id: string },
-  set: (p: { problems: Result | null; problemsFor?: string }) => void,
+  set: (p: { problems: Result | null; problemsFor?: string; problemsAt?: number }) => void,
   get: () => { problemsFor: string },
 ) {
   if (get().problemsFor !== target.id) {
@@ -33,7 +33,7 @@ async function scanProblems(
   try {
     const problems = await Problems(target.game, target.id)
     if (openTarget()?.id === target.id) {
-      set({ problems, problemsFor: target.id })
+      set({ problems, problemsFor: target.id, problemsAt: Date.now() })
     }
     const missing = missingCount(problems)
     useBadges.getState().patch(target.id, {
@@ -103,7 +103,7 @@ export async function loadMods(
 
 // One Problems scan per profile at a time, since a scan is slow and the page, the sidebar and a profile switch all ask.
 export function loadModProblems(
-  set: (p: { problems: Result | null; problemsFor?: string }) => void,
+  set: (p: { problems: Result | null; problemsFor?: string; problemsAt?: number }) => void,
   get: () => { problemsFor: string },
 ): Promise<void> {
   const target = openTarget()

@@ -417,7 +417,7 @@ msgid "Pick the file on Nexus: its page has several downloads and none replaces 
 msgstr "Pick the file on Nexus: its page has several downloads and none replaces the one you have."
 
 #. placeholder {0}: row.name
-#: src/mods/SlowStartupSection.tsx:18
+#: src/mods/SlowStartupSection.tsx:20
 msgid "{0} adds {time} to startup"
 msgstr "{0} adds {time} to startup"
 
@@ -801,7 +801,7 @@ msgstr "Find mods to add"
 msgid "More languages are coming."
 msgstr "More languages are coming."
 
-#: src/mods/SlowStartupSection.tsx:74
+#: src/mods/SlowStartupSection.tsx:77
 msgid "other checks"
 msgstr "other checks"
 
@@ -2598,7 +2598,7 @@ msgstr "{gameName} save backups"
 msgid "Unofficial update"
 msgstr "Unofficial update"
 
-#: src/mods/ProblemsTab.tsx:310
+#: src/mods/ProblemsTab.tsx:311
 msgid "No problems to copy."
 msgstr "No problems to copy."
 
@@ -2769,7 +2769,7 @@ msgid "No enabled mods"
 msgstr "No enabled mods"
 
 #: src/mods/ProblemsTab.tsx:135
-#: src/mods/ProblemsTab.tsx:347
+#: src/mods/ProblemsTab.tsx:348
 msgid "Cleanup"
 msgstr "Cleanup"
 
@@ -3688,10 +3688,6 @@ msgstr "Computer paired"
 msgid "Default launch preset"
 msgstr "Default launch preset"
 
-#: src/mods/SlowStartupSection.tsx:83
-msgid "Checked just now"
-msgstr "Checked just now"
-
 #: src/mods/CategoryEditor.tsx:120
 msgid "Custom categories"
 msgstr "Custom categories"
@@ -3740,7 +3736,7 @@ msgstr "Could not read the game log"
 #: src/mods/problemFix/LoadFailureFix.tsx:60
 #: src/mods/runErrorFixButtons.tsx:48
 #: src/mods/SelectionBarActions.tsx:143
-#: src/mods/SlowStartupSection.tsx:56
+#: src/mods/SlowStartupSection.tsx:58
 #: src/settings/sections/SyncFolder.tsx:42
 msgid "Disable"
 msgstr "Disable"
@@ -4215,7 +4211,7 @@ msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
 #: src/mods/CleanupSection.tsx:66
-#: src/mods/ProblemsTab.tsx:351
+#: src/mods/ProblemsTab.tsx:352
 msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
@@ -4335,7 +4331,7 @@ msgstr "Skip every waiting download"
 msgid "{names} seems to cause the crash"
 msgstr "{names} seems to cause the crash"
 
-#: src/mods/ProblemsTab.tsx:259
+#: src/mods/ProblemsTab.tsx:260
 msgid "Dismiss all harmless overlaps?"
 msgstr "Dismiss all harmless overlaps?"
 
@@ -4721,7 +4717,7 @@ msgstr "Take Nexus links from {0}?"
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
-#: src/mods/ProblemsTab.tsx:260
+#: src/mods/ProblemsTab.tsx:261
 msgid "They move to Dismissed. Restore them from that section."
 msgstr "They move to Dismissed. Restore them from that section."
 
@@ -4817,7 +4813,7 @@ msgstr "Library"
 msgid "Connection"
 msgstr "Connection"
 
-#: src/mods/ProblemsTab.tsx:369
+#: src/mods/ProblemsTab.tsx:370
 msgid "Harmless"
 msgstr "Harmless"
 
@@ -5271,8 +5267,8 @@ msgstr "Read the release notes on GitHub"
 msgid "Backups ({count})"
 msgstr "Backups ({count})"
 
-#: src/mods/ProblemsTab.tsx:216
-#: src/mods/ProblemsTab.tsx:392
+#: src/mods/ProblemsTab.tsx:217
+#: src/mods/ProblemsTab.tsx:393
 msgid "Problem sections"
 msgstr "Problem sections"
 
@@ -5492,7 +5488,7 @@ msgid "Lavender"
 msgstr "Lavender"
 
 #: src/mods/ProblemsTab.tsx:123
-#: src/mods/ProblemsTab.tsx:360
+#: src/mods/ProblemsTab.tsx:361
 msgid "Redundant"
 msgstr "Redundant"
 
@@ -6044,7 +6040,7 @@ msgid "Download progress for {0}"
 msgstr "Download progress for {0}"
 
 #: src/mods/ProblemsTab.tsx:189
-#: src/mods/ProblemsTab.tsx:261
+#: src/mods/ProblemsTab.tsx:262
 msgid "Dismiss all"
 msgstr "Dismiss all"
 
@@ -6876,7 +6872,7 @@ msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
 #: src/mods/AssetMapDialog.tsx:228
-#: src/mods/ProblemsTab.tsx:299
+#: src/mods/ProblemsTab.tsx:300
 msgid "Asset map"
 msgstr "Asset map"
 
@@ -6888,7 +6884,7 @@ msgstr "Every change waiting for the next start is discarded."
 msgid "Could not change how Nexus links open"
 msgstr "Could not change how Nexus links open"
 
-#: src/mods/SlowStartupSection.tsx:72
+#: src/mods/SlowStartupSection.tsx:75
 msgid "requirements"
 msgstr "requirements"
 
@@ -7181,7 +7177,7 @@ msgid "Could not save: {error}"
 msgstr "Could not save: {error}"
 
 #: src/mods/problemText.ts:26
-#: src/mods/SlowStartupSection.tsx:71
+#: src/mods/SlowStartupSection.tsx:74
 msgid "Conflicts"
 msgstr "Conflicts"
 
@@ -8074,7 +8070,7 @@ msgstr "Current scene"
 msgid "Copy log"
 msgstr "Copy log"
 
-#: src/mods/SlowStartupSection.tsx:47
+#: src/mods/SlowStartupSection.tsx:49
 msgid "See startup"
 msgstr "See startup"
 
@@ -8366,7 +8362,7 @@ msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:63
 #: src/mods/ProblemsTab.tsx:109
-#: src/mods/ProblemsTab.tsx:367
+#: src/mods/ProblemsTab.tsx:368
 msgid "Compatibility"
 msgstr "Compatibility"
 
@@ -9347,7 +9343,7 @@ msgid "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
 #: src/console/PerformancePanel.tsx:150
-#: src/mods/ProblemsTab.tsx:375
+#: src/mods/ProblemsTab.tsx:376
 #: src/mods/ReportToAuthorButton.tsx:175
 #: src/settings/sections/AboutDiagnostics.tsx:139
 msgid "Report copied"
@@ -9550,7 +9546,7 @@ msgid "{names} can't be reached; nothing saved to show yet"
 msgstr "{names} can't be reached; nothing saved to show yet"
 
 #: src/console/PerformancePanelParts.tsx:213
-#: src/mods/ProblemsTab.tsx:307
+#: src/mods/ProblemsTab.tsx:308
 #: src/settings/sections/AboutDiagnostics.tsx:221
 msgid "Copy report"
 msgstr "Copy report"
@@ -9619,7 +9615,7 @@ msgid "Slate"
 msgstr "Slate"
 
 #: src/commandPalette/CommandPalette.tsx:154
-#: src/mods/SlowStartupSection.tsx:73
+#: src/mods/SlowStartupSection.tsx:76
 #: src/settings/SettingsPage.tsx:45
 msgid "Updates"
 msgstr "Updates"
@@ -9867,7 +9863,7 @@ msgstr "Handle Nexus download links?"
 msgid "From {0}, not the site you installed it from. Updating switches its source."
 msgstr "From {0}, not the site you installed it from. Updating switches its source."
 
-#: src/mods/SlowStartupSection.tsx:70
+#: src/mods/SlowStartupSection.tsx:73
 msgid "Content Patcher packs"
 msgstr "Content Patcher packs"
 
@@ -10450,7 +10446,7 @@ msgstr "Reset the settings of {0}?"
 
 #. placeholder {0}: row.name
 #. placeholder {1}: row.framework
-#: src/mods/SlowStartupSection.tsx:20
+#: src/mods/SlowStartupSection.tsx:22
 msgid "{0} adds {time} to startup (through {1})"
 msgstr "{0} adds {time} to startup (through {1})"
 
@@ -10942,7 +10938,7 @@ msgid "Token"
 msgstr "Token"
 
 #: src/mods/ProblemBar.tsx:64
-#: src/mods/ProblemsTab.tsx:399
+#: src/mods/ProblemsTab.tsx:400
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -11198,7 +11194,7 @@ msgid "First profile"
 msgstr "First profile"
 
 #. placeholder {0}: formatDuration(total, i18n.locale)
-#: src/mods/SlowStartupSection.tsx:81
+#: src/mods/SlowStartupSection.tsx:84
 msgid "Checked in {0}: {parts}"
 msgstr "Checked in {0}: {parts}"
 
@@ -11589,7 +11585,7 @@ msgstr "Until the game's first scene has loaded"
 #: src/mods/EnableRequirementsDialog.tsx:55
 #: src/mods/LoadOrderTab.tsx:60
 #: src/mods/LoadOrderTab.tsx:99
-#: src/mods/ProblemsTab.tsx:350
+#: src/mods/ProblemsTab.tsx:351
 msgid "Unknown mod"
 msgstr "Unknown mod"
 
@@ -11678,7 +11674,7 @@ msgstr "{gameName} crashed"
 msgid "{names} can't be reached; showing what Mortar saved ({asOf})"
 msgstr "{names} can't be reached; showing what Mortar saved ({asOf})"
 
-#: src/mods/ProblemsTab.tsx:239
+#: src/mods/ProblemsTab.tsx:240
 msgid "No problems found"
 msgstr "No problems found"
 
@@ -13234,6 +13230,11 @@ msgstr "Copy as a message"
 msgid "Before a restore"
 msgstr "Before a restore"
 
+#. placeholder {0}: formatWhen(at)
+#: src/mods/SlowStartupSection.tsx:86
+msgid "Checked {0}"
+msgstr "Checked {0}"
+
 #: src/launch/UpdateWarnDialog.tsx:27
 msgid "The game was updated"
 msgstr "The game was updated"
@@ -13262,7 +13263,7 @@ msgstr "{downloading, plural, one {# downloading} other {# downloading}} · {wai
 msgid "1 time"
 msgstr "1 time"
 
-#: src/mods/ProblemsTab.tsx:241
+#: src/mods/ProblemsTab.tsx:242
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 

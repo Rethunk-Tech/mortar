@@ -196,6 +196,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
     return {}
   }
 
+  const problemsAt = useMods((s) => s.problemsAt)
   const openId = useProfiles((s) => s.openId)
   const remembered = useProblemSection((s) => s.byProfile[openId])
   const choose = useProblemSection((s) => s.choose)
@@ -266,7 +267,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
           }}
         />
         {result.unknown ? <OfflineChecksNote /> : null}
-        {empty ? null : <CheckTimings timings={result.timings ?? []} />}
+        {empty ? null : <CheckTimings timings={result.timings ?? []} at={problemsAt} />}
       </Box>
     </>
   )

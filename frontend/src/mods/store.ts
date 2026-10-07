@@ -56,6 +56,8 @@ export const useMods = create<{
   problems: Result | null
   // problemsFor is the profile problems belongs to, so another profile's result is never shown as this one's.
   problemsFor: string
+  // problemsAt is when that result arrived, in epoch ms.
+  problemsAt: number
   resolving: Duplicate | null
   setView: (view: View) => void
   load: () => Promise<void>
@@ -105,6 +107,7 @@ export const useMods = create<{
   removing: [],
   problems: null,
   problemsFor: '',
+  problemsAt: 0,
   resolving: null,
   ...viewActions(set),
   load: () => loadMods(set, get),

@@ -3,6 +3,8 @@ import { Box, Button, Tooltip, Typography } from '@mui/material'
 import type { CheckTiming } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { formatDuration, type SlowStartup } from '../console/startupView.ts'
 import { useTab } from '../game/tab.ts'
+import { formatWhen } from '../i18n/formatWhen.ts'
+import { useNow } from '../i18n/useNow.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { sameId } from './lookup.ts'
@@ -61,8 +63,9 @@ function SlowRow({ row }: { row: SlowStartup }) {
 }
 
 /** How long the last Problems check took, by check family, so a slow check is visible rather than guessed at. */
-export function CheckTimings({ timings }: { timings: CheckTiming[] }) {
+export function CheckTimings({ timings, at }: { timings: CheckTiming[]; at: number }) {
   const { t, i18n } = useLingui()
+  useNow()
   if (timings.length === 0) {
     return null
   }
@@ -80,7 +83,7 @@ export function CheckTimings({ timings }: { timings: CheckTiming[] }) {
   return (
     <Tooltip title={t`Checked in ${formatDuration(total, i18n.locale)}: ${parts}`}>
       <Typography sx={{ fontSize: 12, color: 'text.secondary', width: 'fit-content' }}>
-        {t`Checked just now`}
+        {t`Checked ${formatWhen(at)}`}
       </Typography>
     </Tooltip>
   )

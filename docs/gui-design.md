@@ -270,7 +270,7 @@ While the tab is open, the tab row holds an **Asset map** icon button and **Copy
 - **Copy report** a plain-text count of problems by section, each row's sentence, each conflict's **Why?** keys, Dismissed, Cleanup, Redundant, Compatibility, and the harmless count.
 - Empty or still loading: the disabled tooltip is **No problems to copy.** **Add all** on missing requirements disables while the queue call is in flight.
 - **Dismiss all** on cosmetic overlaps asks first.
-- Under the section body a muted **Checked just now** line carries the check timings by family in its tooltip ("Checked in 626 ms: requirements 89 ms, ...").
+- Under the section body a muted **Checked <relative time>** line (updating as time passes) carries the check timings by family in its tooltip ("Checked in 626 ms: requirements 89 ms, ...").
 
 Each row shows the full wrapped text, severity icon, the Nexus author note when a listed requirement has one, and its fix actions.
 
