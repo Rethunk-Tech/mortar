@@ -245,7 +245,7 @@ func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResu
 		return RestoreResult{}, err
 	}
 	if gameID != "" && gameID != doc.Game {
-		return RestoreResult{}, fmt.Errorf("this backup is of a %s profile, not %s", doc.Game, gameID)
+		return RestoreResult{}, usererr.Wrap(usererr.OtherGame, fmt.Errorf("this backup is of a %s profile, not %s", doc.Game, gameID))
 	}
 	dirs := map[string]string{}
 	if dir := filepath.Join(tmp, "saves"); exists(dir) {
@@ -351,7 +351,7 @@ func restoreRequest(game, profileID string, e profile.Entry) (queue.Request, boo
 func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 	zr, err := zip.OpenReader(path)
 	if err != nil {
-		return backupJSON{}, nil, fmt.Errorf("not a Mortar profile backup: %w", err)
+		return backupJSON{}, nil, usererr.Wrap(usererr.Invalid, fmt.Errorf("not a Mortar profile backup: %w", err))
 	}
 	defer func() { _ = zr.Close() }()
 	files := map[string][]byte{}
@@ -391,10 +391,14 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 		return backupJSON{}, nil, usererr.New(usererr.Invalid, "not a Mortar profile backup: no "+backupDoc)
 	}
 	if err := json.Unmarshal(doc, &b); err != nil {
-		return backupJSON{}, nil, fmt.Errorf("%s: %w", backupDoc, err)
+		return backupJSON{}, nil, usererr.Wrap(usererr.Damaged, fmt.Errorf("%s: %w", backupDoc, err))
 	}
 	if b.Version != backupVersion {
-		return backupJSON{}, nil, fmt.Errorf("this backup is format %d; this Mortar reads format %d", b.Version, backupVersion)
+		kind := usererr.Invalid
+		if b.Version > backupVersion {
+			kind = usererr.Outdated
+		}
+		return backupJSON{}, nil, usererr.Wrap(kind, fmt.Errorf("this backup is format %d; this Mortar reads format %d", b.Version, backupVersion))
 	}
 	if b.Game == "" {
 		return backupJSON{}, nil, usererr.New(usererr.Invalid, backupDoc+" names no game")
@@ -407,7 +411,7 @@ func unpack(f *zip.File, tmp string, total *int64) error {
 	name := f.Name
 	_, inStore := storeKeyOf(name)
 	if (!inStore && !strings.HasPrefix(name, savesPrefix)) || strings.Contains(name, "\\") || !filepath.IsLocal(filepath.FromSlash(name)) {
-		return fmt.Errorf("the backup holds %q, which Mortar does not write", name)
+		return usererr.Wrap(usererr.Invalid, fmt.Errorf("the backup holds %q, which Mortar does not write", name))
 	}
 	rc, err := f.Open()
 	if err != nil {
