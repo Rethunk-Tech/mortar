@@ -20,6 +20,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
@@ -691,6 +692,35 @@ type storedEntry struct {
 	source profile.Source
 }
 
+// storedEntry is the entry that places m's store item, for a source whose store key m names exactly.
+func (m Mod) storedEntry() (storedEntry, bool) {
+	switch m.Site {
+	case SiteThunderstore:
+		src := profile.Source{Kind: profile.KindThunderstore, Name: m.Package, Version: m.Version}.WithDisabled(m.Disabled)
+		return storedEntry{key: store.PackageKey(m.Package, m.Version), source: src}, true
+	case SiteGitHub:
+		src := profile.Source{Kind: profile.KindGitHub, Name: m.Asset, Version: m.Tag, Repo: m.Repo, Tag: m.Tag, Asset: m.Asset}
+		return storedEntry{key: github.Key(m.Author, m.Name, m.Tag, m.Asset), source: withChoices(src, m)}, true
+	case SiteNexus:
+		if m.Different {
+			return storedEntry{}, false
+		}
+		src := profile.Source{Kind: profile.KindNexus, Name: m.fileName, ModID: m.ModID, FileID: m.FileID, Version: m.Version, ModName: m.Name}
+		if o := m.Overlay; o != nil {
+			src = src.WithOverlay(o.From, o.To).WithOverlayOff(o.Off)
+		}
+		return storedEntry{key: m.Key, source: withChoices(src, m)}, true
+	}
+	return storedEntry{}, false
+}
+
+func withChoices(src profile.Source, m Mod) profile.Source {
+	if len(m.Fomod) > 0 {
+		src = src.WithFomod(m.Fomod)
+	}
+	return src.WithDisabled(m.Disabled)
+}
+
 func requestFor(game, profileID string, m Mod) queue.Request {
 	kind := queue.KindInstall
 	if m.State == StateDependency {
@@ -817,8 +847,8 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	var reqs []queue.Request
 	var wanted []wantedFile
 	var local []profile.ExternalMod
-	// fromStore are packages and archives already in the store, a paired computer's copies: they are placed from
-	// there, not downloaded again.
+	// fromStore are files already in the store, whatever their source: a paired computer's copies, placed from there
+	// instead of downloaded again.
 	var fromStore []storedEntry
 	external := make(map[string]migrate.ModPreview, len(cur.external))
 	for i, im := range cur.external {
@@ -837,9 +867,8 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			}
 			continue
 		}
-		if m.Site == SiteThunderstore && stored[m.Key] {
-			src := profile.Source{Kind: profile.KindThunderstore, Name: m.Package, Version: m.Version}.WithDisabled(m.Disabled)
-			fromStore = append(fromStore, storedEntry{key: store.PackageKey(m.Package, m.Version), source: src})
+		if e, ok := m.storedEntry(); ok && stored[m.Key] {
+			fromStore = append(fromStore, e)
 			continue
 		}
 		reqs = append(reqs, requestFor(game, "", m))

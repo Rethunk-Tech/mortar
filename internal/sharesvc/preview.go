@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -65,6 +66,8 @@ type Mod struct {
 	Repo    string `json:"repo"`
 	Tag     string `json:"tag"`
 	Asset   string `json:"asset"`
+	// fileName is the Nexus archive's name, which its entry records as the source name.
+	fileName string
 	// Package is a Thunderstore "Namespace-Name"; Version then names the version, or the newest when empty.
 	Package    string                         `json:"package,omitempty"`
 	PageURL    string                         `json:"pageUrl"`
@@ -272,6 +275,7 @@ func (r *resolver) nexus(modID, fileID int, state string) Mod {
 		m.Name, m.Author = info.page.Name, info.page.Author
 	}
 	fallbackName := func(fileName string) {
+		m.fileName = fileName
 		if m.Name == "" {
 			m.Name = cleanFileName(fileName)
 		}
@@ -353,8 +357,8 @@ func (r *resolver) github(ref share.Ref) Mod {
 	}
 	if r.hasGitHub(repo, tag, asset) {
 		m.State = StateInstalled
-	} else if r.storedKey(m.Key) {
-		m.State = StateInstalled
+	} else if r.storedKey(github.Key(owner, name, tag, asset)) {
+		m.State, r.storedKeys[m.Key] = StateInstalled, true
 	}
 	return m
 }
