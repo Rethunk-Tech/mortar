@@ -3,7 +3,7 @@ import type {
   Component,
   Entry,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { compareProfiles } from './compare.ts'
+import { applyPlan, compareProfiles, compareView } from './compare.ts'
 import { testProfile } from './testProfile.ts'
 
 function mod(id: string, name: string, version: string): Component {
@@ -80,4 +80,41 @@ test('the same mod from two sources is one mod with different sources', () => {
   const d = compareProfiles(a, testProfile({ id: 'b', name: 'B', entries: [fromThunderstore] }))
   expect(d.differentSource.map((p) => p.id)).toEqual(['Me.More'])
   expect([d.onlyA, d.onlyB, d.identical]).toEqual([[], [], []])
+})
+
+test('compareView hides only-in-A and identical until shown; applyPlan picks per kind and direction', () => {
+  const a = testProfile({
+    id: 'a',
+    name: 'A',
+    entries: [
+      entry('only-a', [mod('Me.OnlyA', 'Only A', '1.0')]),
+      entry('ver-a', [mod('Me.Ver', 'Version', '1.0')]),
+      entry('same', [mod('Me.Same', 'Same', '1.0')]),
+    ],
+  })
+  const b = testProfile({
+    id: 'b',
+    name: 'B',
+    entries: [
+      entry('only-b', [mod('Me.OnlyB', 'Only B', '1.0')]),
+      entry('ver-b', [mod('Me.Ver', 'Version', '2.0')]),
+      entry('same', [mod('Me.Same', 'Same', '1.0')]),
+    ],
+  })
+  const diff = compareProfiles(a, b)
+  const hidden = compareView(diff, '', false)
+  expect(hidden.groups.map((g) => g.kind)).toEqual(['version', 'onlyB'])
+  expect([hidden.differences, hidden.onlyA, hidden.identical]).toEqual([2, 1, 1])
+  const all = compareView(diff, '', true)
+  expect(all.groups.map((g) => g.kind)).toEqual(['version', 'onlyB', 'onlyA', 'identical'])
+  expect(compareView(diff, 'only b', true).groups.map((g) => g.kind)).toEqual(['onlyB'])
+  const rows = all.groups.flatMap((g) => g.rows)
+  expect(applyPlan(rows, true)).toEqual({
+    copy: ['Me.OnlyA'],
+    moves: [{ oldKey: 'ver-b', newKey: 'ver-a' }],
+  })
+  expect(applyPlan(rows, false)).toEqual({
+    copy: ['Me.OnlyB'],
+    moves: [{ oldKey: 'ver-a', newKey: 'ver-b' }],
+  })
 })

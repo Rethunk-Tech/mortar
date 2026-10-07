@@ -4,7 +4,7 @@ import type {
   Source,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { cmpText } from '../mods/cmpText.ts'
-import { idKey } from '../mods/dependents.ts'
+import { idKey, localId } from '../mods/dependents.ts'
 import { sameId } from '../mods/lookup.ts'
 import { userModEntries } from './count.ts'
 
@@ -145,17 +145,101 @@ function compareProfiles(a: Profile, b: Profile): ProfileCompare {
   }
 }
 
-function sideLabel(side: CompareSide, enabled: string, disabled: string): string {
-  const state = side.enabled ? enabled : disabled
-  return `${side.name} · ${side.version} · ${side.source.kind} · ${state}`
+type GroupKind = 'version' | 'onlyB' | 'onlyA' | 'enabled' | 'source' | 'identical'
+
+interface CompareRow {
+  id: string
+  name: string
+  kind: GroupKind
+  a: CompareSide | null
+  b: CompareSide | null
 }
 
-interface SectionShared {
-  enabled: string
-  disabled: string
-  pending: boolean
-  lockedReason: (profile: Profile) => string
+interface CompareGroup {
+  kind: GroupKind
+  rows: CompareRow[]
 }
 
-export type { ComparePair, CompareSide, ProfileCompare, SectionShared }
-export { compareProfiles, sideLabel }
+interface CompareView {
+  groups: CompareGroup[]
+  /** Distinct mods that differ and exist in both profiles or only in B: what a bare compare is about. */
+  differences: number
+  onlyA: number
+  identical: number
+}
+
+function matchesNeedle(name: string, id: string, needle: string): boolean {
+  return (
+    !needle || name.toLowerCase().includes(needle) || localId(id).toLowerCase().includes(needle)
+  )
+}
+
+function pairRows(pairs: ComparePair[], kind: GroupKind): CompareRow[] {
+  return pairs.map((p) => ({ id: p.id, name: p.name, kind, a: p.a, b: p.b }))
+}
+
+/**
+ * Groups a compare for the dialog: differences first; mods only in A (the profile being edited from) and identical
+ * mods appear only when `showAll`, because they are usually the long tail. Counts always cover the whole filtered set.
+ */
+function compareView(diff: ProfileCompare, needle: string, showAll: boolean): CompareView {
+  const keep = <T extends { name: string; id: string }>(rows: T[]) =>
+    rows.filter((r) => matchesNeedle(r.name, r.id, needle))
+  const onlyA = keep(diff.onlyA)
+  const onlyB = keep(diff.onlyB)
+  const version = keep(diff.differentVersion)
+  const enabled = keep(diff.differentEnabled)
+  const source = keep(diff.differentSource)
+  const identical = keep(diff.identical)
+  const side = (s: CompareSide, kind: GroupKind): CompareRow => ({
+    id: s.id,
+    name: s.name,
+    kind,
+    a: kind === 'onlyA' ? s : null,
+    b: kind === 'onlyB' ? s : null,
+  })
+  const all: CompareGroup[] = [
+    { kind: 'version', rows: pairRows(version, 'version') },
+    { kind: 'onlyB', rows: onlyB.map((s) => side(s, 'onlyB')) },
+    { kind: 'onlyA', rows: showAll ? onlyA.map((s) => side(s, 'onlyA')) : [] },
+    { kind: 'enabled', rows: pairRows(enabled, 'enabled') },
+    { kind: 'source', rows: pairRows(source, 'source') },
+    { kind: 'identical', rows: showAll ? pairRows(identical, 'identical') : [] },
+  ]
+  const groups = all.filter((g) => g.rows.length > 0)
+  const differing = new Set([...version, ...enabled, ...source, ...onlyB].map((r) => r.id))
+  return { groups, differences: differing.size, onlyA: onlyA.length, identical: identical.length }
+}
+
+interface ApplyPlan {
+  copy: string[]
+  moves: { oldKey: string; newKey: string }[]
+}
+
+/**
+ * What "make the target match the source" does for the selected rows: mods only in the source and enabled-state
+ * differences are copied, version and source differences switch the target's entry to the source's. Mods only in the
+ * target stay, since there is no removal here.
+ */
+function applyPlan(rows: CompareRow[], toB: boolean): ApplyPlan {
+  const copy = new Set<string>()
+  const moves = new Map<string, string>()
+  for (const row of rows) {
+    const from = toB ? row.a : row.b
+    const to = toB ? row.b : row.a
+    const copies =
+      row.kind === 'enabled' || (row.kind === 'onlyA' && toB) || (row.kind === 'onlyB' && !toB)
+    if (from && copies) {
+      copy.add(row.id)
+    } else if (from && to && (row.kind === 'version' || row.kind === 'source')) {
+      moves.set(to.key, from.key)
+    }
+  }
+  return {
+    copy: [...copy],
+    moves: [...moves].map(([oldKey, newKey]) => ({ oldKey, newKey })),
+  }
+}
+
+export type { CompareGroup, CompareRow, CompareSide, CompareView, GroupKind }
+export { applyPlan, compareProfiles, compareView }

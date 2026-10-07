@@ -25,7 +25,7 @@ import { MenuAction } from '../shell/MenuAction.tsx'
 import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
-function FarmDialog({
+export function FarmDialog({
   open,
   profile,
   onClose,
