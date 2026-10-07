@@ -34,7 +34,7 @@ func (f fakeProfiles) ShippedConfig(string, string, string, mod.ID) (string, boo
 }
 
 func (fakeProfiles) ContentSchema(string, string, string, mod.ID) (modconfig.Schema, error) {
-	return nil, nil
+	return modconfig.Schema{}, nil
 }
 
 func (f fakeProfiles) UserMods(string, string) ([]profile.Mod, error) { return f.mods, nil }
