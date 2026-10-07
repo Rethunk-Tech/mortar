@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, List, ListItem, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight, Pin } from 'lucide-react'
 import { useState } from 'react'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
@@ -58,10 +58,10 @@ export function KeptGroup({ kept, mods }: { kept: Update[]; mods: Mod[] }) {
                     {t`Unpin`}
                   </Button>
                 ) : null}
-              </Box>
+              </ListItem>
             )
           })}
-        </Box>
+        </List>
       ) : null}
     </Box>
   )

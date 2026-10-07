@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip, Tooltip } from '@mui/material'
+import { Box, Button, Chip, ListItem, Tooltip } from '@mui/material'
 import { ArrowRight, ExternalLink } from 'lucide-react'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { formatKb } from '../../i18n/bytes.ts'
@@ -170,8 +170,8 @@ function Row({
   const reportedElsewhere =
     entry?.source.kind === 'nexus' && update.source !== '' && update.source !== 'Nexus'
   return (
-    <Box
-      role="listitem"
+    <ListItem
+      disablePadding={true}
       sx={{
         display: 'grid',
         gridTemplateColumns: caution
@@ -227,7 +227,7 @@ function Row({
         onAck={onAck}
         onInclude={onInclude}
       />
-    </Box>
+    </ListItem>
   )
 }
 

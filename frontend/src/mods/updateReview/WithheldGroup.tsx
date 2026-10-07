@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, List, ListItem, Typography } from '@mui/material'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { space } from '../../theme/density.ts'
@@ -51,10 +51,10 @@ export function WithheldGroup({ withheld, mods }: { withheld: Update[]; mods: Mo
                   {t`Skip this version`}
                 </Button>
               ) : null}
-            </Box>
+            </ListItem>
           )
         })}
-      </Box>
+      </List>
     </Box>
   )
 }

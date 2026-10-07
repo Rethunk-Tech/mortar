@@ -1,4 +1,4 @@
-import { Box } from '@mui/material'
+import { List } from '@mui/material'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type {
   Mod,
@@ -27,7 +27,7 @@ export function ReviewList({
   onInclude: (id: string, on: boolean) => void
 }) {
   return (
-    <Box role="list">
+    <List disablePadding={true}>
       {list.map((u) => {
         const caution = installedCaution(mods, u)
         const id = modId(u)
@@ -49,6 +49,6 @@ export function ReviewList({
           />
         )
       })}
-    </Box>
+    </List>
   )
 }
