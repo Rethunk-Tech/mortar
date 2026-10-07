@@ -273,7 +273,7 @@ func (c *Cache) fetch(ctx context.Context, picture, path string, px int) ([]byte
 	if err != nil {
 		return nil, "", err
 	}
-	if b, typ, err = thumbnail(b, typ, px); err != nil {
+	if b, typ, err = Shrink(b, typ, px); err != nil {
 		return nil, "", err
 	}
 	if err := os.MkdirAll(c.dir, 0o700); err != nil {

@@ -2,6 +2,8 @@ package backdrop
 
 import (
 	"bytes"
+	"image"
+	_ "image/jpeg"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -183,5 +185,30 @@ func TestJXLNeedsAClientThatAcceptsIt(t *testing.T) {
 		if got := rec.Header().Get("Content-Type"); got != want || rec.Header().Get("Vary") != "Accept" {
 			t.Errorf("Accept %q: type %q, want %q", accept, got, want)
 		}
+	}
+}
+
+func TestWidthParameterShrinksTheBackdrop(t *testing.T) {
+	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) })
+	h := Middleware(func() settings.Settings { return settings.Defaults() }, "", none)(next)
+	width := func(query string) int {
+		t.Helper()
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+query, nil))
+		cfg, _, err := image.DecodeConfig(rec.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return cfg.Width
+	}
+	full := width("")
+	if full <= 1280 {
+		t.Skipf("bundled wallpaper is only %dpx wide", full)
+	}
+	if got := width("?w=1280"); got != 1280 {
+		t.Errorf("w=1280 served %dpx", got)
+	}
+	if got := width("?w=100"); got != full {
+		t.Errorf("a width below the minimum must serve the original, got %dpx", got)
 	}
 }

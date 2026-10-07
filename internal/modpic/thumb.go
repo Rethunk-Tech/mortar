@@ -28,9 +28,9 @@ const maxSourcePixels = 100_000_000
 // decodeMu runs one downscale at a time, so a burst of large pictures holds one decoded original, not one per worker.
 var decodeMu sync.Mutex
 
-// thumbnail shrinks b to px on its longest side. A picture already that small is returned as it is; a
+// Shrink shrinks b to px on its longest side. A picture already that small is returned as it is; a
 // downscaled JPEG stays a JPEG and anything else becomes a PNG, which keeps transparency.
-func thumbnail(b []byte, typ string, px int) ([]byte, string, error) {
+func Shrink(b []byte, typ string, px int) ([]byte, string, error) {
 	cfg, _, err := image.DecodeConfig(bytes.NewReader(b))
 	if err != nil {
 		return nil, "", err

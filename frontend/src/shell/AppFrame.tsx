@@ -10,12 +10,23 @@ import { TitleBar } from './TitleBar.tsx'
 import { win } from './win.ts'
 
 const TINT = 'var(--mortar-tint)'
+const WIDTH_STEP_PX = 320
+const MAX_BACKDROP_PX = 2560
+
+// The backdrop is asked for at the window's pixel width (rounded up to a step, capped), so a 4K wallpaper is not
+// decoded in full behind a smaller window.
+const backdropWidth = (): number =>
+  Math.min(
+    MAX_BACKDROP_PX,
+    Math.ceil((window.innerWidth * window.devicePixelRatio) / WIDTH_STEP_PX) * WIDTH_STEP_PX,
+  )
 
 export function AppFrame({ children }: { children: ReactNode }) {
   const [maximised, setMaximised] = useState(false)
   const showBackdrop = useSettings((s) => s.background !== 'solid')
   const backdropImage = useSettings((s) => s.backgroundImage)
   const backdropMode = useSettings((s) => s.background)
+  const [width] = useState(backdropWidth)
   const [frame, setFrame] = useState<HTMLElement | null>(null)
   useEffect(() => {
     const sync = () => win.reportMaximised(setMaximised)
@@ -45,7 +56,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
             component="img"
             alt=""
             draggable={false}
-            src={`/backdrop?mode=${backdropMode}&v=${encodeURIComponent(backdropImage)}`}
+            src={`/backdrop?mode=${backdropMode}&w=${width}&v=${encodeURIComponent(backdropImage)}`}
             sx={{
               position: 'absolute',
               inset: 0,

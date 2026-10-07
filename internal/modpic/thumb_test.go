@@ -30,7 +30,7 @@ func TestThumbnailShrinksLargePicturesAndKeepsSmallOnes(t *testing.T) {
 		{"wide jpeg", encode(1920, 1080, true), "image/jpeg", "image/jpeg", Thumb, Thumb * 1080 / 1920},
 		{"tall png", encode(500, 2000, false), "image/png", "image/png", Thumb * 500 / 2000, Thumb},
 	} {
-		out, typ, err := thumbnail(tc.src, tc.typ, Thumb)
+		out, typ, err := Shrink(tc.src, tc.typ, Thumb)
 		if err != nil || typ != tc.wantTyp {
 			t.Fatalf("%s: type %q err %v", tc.name, typ, err)
 		}
@@ -40,7 +40,7 @@ func TestThumbnailShrinksLargePicturesAndKeepsSmallOnes(t *testing.T) {
 		}
 	}
 	small := encode(96, 96, false)
-	if out, _, err := thumbnail(small, "image/png", Thumb); err != nil || !bytes.Equal(out, small) {
+	if out, _, err := Shrink(small, "image/png", Thumb); err != nil || !bytes.Equal(out, small) {
 		t.Fatalf("a picture under the limit must pass through unchanged: %v", err)
 	}
 }

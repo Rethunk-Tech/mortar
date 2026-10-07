@@ -8,15 +8,18 @@ import (
 	_ "embed" // bundled wallpaper
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/modpic"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -121,12 +124,38 @@ func Middleware(current func() settings.Settings, system string, desktop func() 
 					continue
 				}
 				defer func() { _ = f.Close() }()
-				w.Header().Set("Content-Type", typ)
-				http.ServeContent(w, r, "", time.Time{}, f)
+				serve(w, r, f, typ)
 				return
 			}
-			w.Header().Set("Content-Type", "image/jpeg")
-			http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(bundled))
+			serve(w, r, bytes.NewReader(bundled), "image/jpeg")
 		})
 	}
 }
+
+// Widths the page may ask for: below the first the window is too small to matter, above the last no screen needs more.
+const (
+	minWidthPx = 640
+	maxWidthPx = 2560
+)
+
+// serve writes the image as it is, or shrunk to the width the page asked for with ?w=, so the browser does not decode
+// a 4K wallpaper to fill a smaller window. JPEG XL cannot be decoded here and is served whole.
+func serve(w http.ResponseWriter, r *http.Request, src io.ReadSeeker, typ string) {
+	if px, err := strconv.Atoi(r.URL.Query().Get("w")); err == nil && px >= minWidthPx && px <= maxWidthPx && typ != "image/jxl" {
+		if b, err := modpic.ReadCapped(src, maxSourceBytes); err == nil {
+			if out, outTyp, err := modpic.Shrink(b, typ, px); err == nil {
+				w.Header().Set("Content-Type", outTyp)
+				http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(out))
+				return
+			}
+		}
+		if _, err := src.Seek(0, io.SeekStart); err != nil {
+			http.Error(w, "the backdrop could not be read", http.StatusInternalServerError)
+			return
+		}
+	}
+	w.Header().Set("Content-Type", typ)
+	http.ServeContent(w, r, "", time.Time{}, src)
+}
+
+const maxSourceBytes = 64 << 20
