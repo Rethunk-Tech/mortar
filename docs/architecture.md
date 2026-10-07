@@ -205,7 +205,7 @@ The registry (`internal/settings/registry.go`) lists each key with its scope, ty
 - `autoTrackNexus` (false): track a Nexus mod after install.
 - `lanSharing` (false): find nearby Mortars and send or receive profiles over the local network. `lanPort` (47630): the port Mortar listens on for them; 0 lets the system choose. `lanName` (empty): advertised LAN device name; empty uses the host name. `lanAutoAcceptPaired` (false): auto-accept LAN shares from paired computers.
 - `downloadFolder` (empty): archive landing folder; empty is `<datadir>/downloads`.
-- `profileOrder` (`manual`): `manual`, `name`, or `lastPlayed` for the sidebar profile list. `lastPlayed` puts this game's last launched profile first (`lastPlayed` in settings).
+- `profileOrder` (`manual`): `manual`, `name`, or `lastPlayed` for the profile switcher and the Profiles page. `lastPlayed` puts this game's last launched profile first (`lastPlayed` in settings).
 - `autoRetryDownloads` (`off`): `off`, `1`, or `3` extra fetch attempts with backoff after a failed download.
 - `pauseDownloadsWhilePlaying` (false): pause new fetches while a game is launching or running; installs already wait for that profile.
 - `sidebarBadges` (`problemsAndUpdates`): `problemsAndUpdates`, `problems`, or `off`. `off` also skips background badge checks.

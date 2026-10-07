@@ -22,12 +22,12 @@ export function paletteActionLabels(i18n: I18n): PaletteLabels {
     modHint: i18n._(msg`Open mod`),
     settingsHint: i18n._(msg`Settings`),
     tabs: {
+      home: i18n._(msg`Switch to Home`),
       browse: i18n._(msg`Switch to Browse`),
       mods: i18n._(msg`Switch to Mods`),
       problems: i18n._(msg`Switch to Problems`),
       'load-order': i18n._(msg`Switch to Load order`),
       saves: i18n._(msg`Switch to Saves`),
-      notes: i18n._(msg`Switch to Notes`),
       console: i18n._(msg`Switch to Console`),
       performance: i18n._(msg`Switch to Performance`),
     },

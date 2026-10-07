@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from 'react'
-import { problemCount } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useSaves } from '../saves/store.ts'
@@ -10,8 +9,6 @@ import { ProfileWorkspace } from './ProfileWorkspace.tsx'
 export function Detail() {
   const loaded = useProfiles((s) => s.loaded)
   const failed = useProfiles((s) => s.failed)
-  const problemsResult = useMods((s) => s.problems)
-  const problemsTabCount = problemsResult === null ? null : problemCount(problemsResult)
   const game = useProfiles((s) => s.game?.id ?? '')
   const gameName = useProfiles((s) => s.game?.name ?? '')
   const profile = useProfiles(openProfileOf)
@@ -37,12 +34,5 @@ export function Detail() {
   if (!profile) {
     return <ProfilesEmpty />
   }
-  return (
-    <ProfileWorkspace
-      profile={profile}
-      game={game}
-      gameName={gameName}
-      problemsTabCount={problemsTabCount}
-    />
-  )
+  return <ProfileWorkspace profile={profile} game={game} gameName={gameName} />
 }

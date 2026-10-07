@@ -14,13 +14,13 @@ const SPOTLIGHT_PAD = 6
 
 const placements = [
   'bottom-start',
+  'right',
   'bottom',
-  'bottom',
+  'right',
   'right',
   'bottom',
   'bottom',
-  'bottom',
-  'bottom',
+  'right',
   'bottom-start',
 ] as const
 

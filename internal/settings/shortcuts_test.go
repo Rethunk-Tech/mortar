@@ -83,7 +83,7 @@ func TestAFileHoldingAnOldDefaultTableLoadsSavesAndStoresNothing(t *testing.T) {
 	old := DefaultShortcuts()
 	maps.Copy(old, map[string]string{
 		"tab-mods": "Ctrl+1", "tab-problems": "Ctrl+2", "tab-saves": "Ctrl+3",
-		"tab-notes": "Ctrl+4", "tab-console": "Ctrl+5", "tab-performance": "Ctrl+6",
+		"tab-console": "Ctrl+5", "tab-performance": "Ctrl+6",
 	})
 	delete(old, "tab-browse")
 	delete(old, "tab-load-order")

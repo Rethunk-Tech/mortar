@@ -86,29 +86,30 @@ A grid of game tiles, at least 560px wide and 240px tall, that grows with the ca
 
 ## Main screen
 
-A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
+A left sidebar and a detail pane:
 
-- **Sidebar** (150-300px, resized from an 8px handle on its right edge, 2px primary right border): a 40px "Profiles" header that opens profile management, then one row per profile in the user's order, the open one selected. Each row shows a problem or update badge when it has any, and a small coloured mark with the profile's icon when it has either. Right-click, the Menu key or Shift+F10 on a focused row opens the shared profile menu ([Profile management](#profile-management)).
-- **Bottom block** pinned under the sidebar:
-  - A 40px **New profile** row at the foot of the list.
-  - Then a full-width **Play** button (58px) in the primary colour, split with a caret (More play options) whose dark menu holds, when the open profile has named launch presets, one **Play with <name>** row per preset (**Standard** is the profile's own settings; the default one shows **Default** as secondary text) above a divider, then **Set default preset…** (Lucide Star; opens a radio list that applies on pick) and **Play without mods** (Lucide Gamepad2); every row is one plain menu item, so arrow keys visit rows in that order and Enter acts on the focused one; in the compact layout the menu opens on right-click only.
+- **Sidebar**, 220px expanded and 76px as a rail, a `--mortar-nav` surface with a 1px hairline on its right edge. It is a vertical tab list ("Profile sections"; arrow keys move between sections, and the shoulder buttons of a gamepad switch them):
+  - **Home**, then small-caps groups of 38px rows (18px Lucide icon, label): **Library** (Mods, with a primary-colour badge of the open profile's available updates; Saves), **Get mods** (Browse), **Health** (Problems, with a warning-colour badge of its problem count; Load order; Performance) and **Logs** (Console). Load order, Performance and Console show only when the profile's loader supports them, and a group left empty loses its header. The open row has a filled background and a 3px primary bar at its left edge. The sections have Ctrl+1 to Ctrl+8 shortcuts as Settings › Shortcuts lists them; there is none for Home.
+  - **Collapse** (chevron) and then **Play** pin to the foot. The rail shows icon-only buttons with a name and tooltip, badges in the top-right corner, an **Expand sidebar** chevron and an icon-only Play. The choice is saved per viewer (Ctrl+B toggles it); below 960px wide the sidebar is always the rail.
+  - With no profile open (a game with none yet) only Play is shown.
+- **Play**, at the foot of the sidebar:
+  - A full-width **Play** button (64px) in the primary colour, split with a caret (More play options) whose dark menu holds, when the open profile has named launch presets, one **Play with <name>** row per preset (**Standard** is the profile's own settings; the default one shows **Default** as secondary text) above a divider, then **Set default preset…** (Lucide Star; opens a radio list that applies on pick) and **Play without mods** (Lucide Gamepad2); every row is one plain menu item, so arrow keys visit rows in that order and Enter acts on the focused one; in the compact layout the menu opens on right-click only.
   - Play without mods starts the game with no profile and does not lock mods.
   - On Windows, when Steam's launch options run SMAPI, a dialog says "Steam will still start SMAPI" before offering Cancel or **Play without mods**.
-  - There is no Settings icon here: it displaced Play, and Settings stays in the app menu and on Ctrl+,.
+  - There is no Settings icon here: it displaced Play, and Settings stays in the Mortar menu and on Ctrl+,.
 - **Detail pane** for the open profile:
-  - A hero, 190px tall in every view and tab ( only the minimum-size layout folds it to one line), bleeding to the pane's edges.
-    - **Cover:** the profile's cover image at full opacity under a light solid dim layer (`rgba(20,20,24,0.18)`), its alpha fading to transparent over the bottom 20% by an alpha mask, so the art reaches the top of the tab row so the backdrop shows through into the tab row (the hero has no background of its own).
+  - **Home** shows the profile header, a hero 190px tall (only the minimum-size layout folds it to one line), bleeding to the pane's edges; the other sections show their content without it, and Home holds nothing else yet.
+    - **Cover:** the profile's cover image at full opacity under a light solid dim layer (`rgba(20,20,24,0.18)`), its alpha fading to transparent over the bottom 20% by an alpha mask, so the backdrop shows through its lower edge (the hero has no background of its own).
     - **Cover source, in order:** an image the user picked, else the Nexus picture of the profile's most-endorsed mod (`endorsement_count` from the mod endpoint), else Steam's own hero art for the game, else a solid tone; never a random image. Steam's art is read at runtime from `<Steam>/appcache/librarycache/413150/library_hero.jpg` (Steam also keeps a `library_hero_blur.jpg`) and never bundled with Mortar.
     - **Text:** the profile name large and bold with a soft white glow, and always the same cards (Mods, Saves, Updated, Created) so the name sits at the same place for every profile.
-      - Before them, when there is something to act on, **Updates** (count, accent edge; opens the update review). The Problems tab carries its own count chip.
-      - This replaces the Mods tab's update bar, which returns only while the header is compact or hidden, along with the problem bar.
-      - The hero has no actions beside the name; Rename, Edit profile, the cover image and the rest live in the sidebar and Profiles page menus ([Profile management](#profile-management)).
+      - Before them, when there is something to act on, **Updates** (count, accent edge; opens the update review). The sidebar's Problems entry carries its own count badge, and the Mods tab has its own update and problem bars.
+      - The hero has no actions beside the name; Rename, Edit profile, the cover image and the rest live in the profile switcher's and Profiles page menus ([Profile management](#profile-management)).
       - Under the name, the profile's description shows as one truncated line with the whole text in a tooltip, when it has one (hidden in the compact layout).
   - A **Saves** card in the hero with how many saves fit this profile ("2 of 4", "None" when there are none), opening the **Saves** tab:
     - each save in the Saves folder with its fit: "all mods present" or "has used N mods this profile lacks" with their names, from the save scan ([architecture.md](architecture.md#saves))
     - a mod can be dismissed for a save
     - Players pick their save inside the game; Play also warns from the newest save ([architecture.md](architecture.md#launch)).
-  - Tabs: **Browse**, **Mods** (default), **Problems** (a count chip when the open profile has any problems), **Load order**, **Saves**, **Notes**, **Console**, **Performance** (Load order, Console and Performance show only when the profile's loader supports them), then 32px bordered icon buttons with tooltips at the right of the row: a **Tools** menu (Wrench; lists configured tools for one-click launch, **Add tool…** and **Manage tools** for edit and remove, with **Add tool…** and a line saying what tools are for when none exist; the editor uses the native executable picker and documents placeholders), **Share**, and the game settings icon at the end of the tab row.
+  - A slim row above the section's content holds, at the right, 32px bordered icon buttons with tooltips: a **Tools** menu (Wrench; lists configured tools for one-click launch, **Add tool…** and **Manage tools** for edit and remove, with **Add tool…** and a line saying what tools are for when none exist; the editor uses the native executable picker and documents placeholders), **Share**, and the game settings icon; the Problems section adds its own actions before them.
 - **Launching** covers the whole window with the launch overlay, the title bar inert except its window controls:
   - a spinner, "Launching Stardew Valley", and SMAPI's first log lines as they arrive (started, mods loading, mods it will skip), with Open console and Hide, until the game is up or the launch fails
   - a launch where SMAPI exits without writing a log fails with its exit code
@@ -117,9 +118,9 @@ A grid of a resizable sidebar and a detail pane, as Concrete's dashboard:
   - When Play is pressed, a **Before you play** dialog lists missing required dependencies, unresolved non-cosmetic conflicts, pending updates, and broken or obsolete mods (each group with a count and up to five names) and, when the newest save was last played with a different profile, that save and profile. It offers **Play anyway**, **Open Problems** (the Problems tab), **Switch profile** when the last-played group is present, and, when updates are pending, **Update and play**. Groups with more than five names add **and N more**. A **Don't check before Play** checkbox is remembered on that profile when the dialog is closed with Play or Cancel. The dialog is omitted when nothing is wrong or the profile has opted out
   - When the installed Stardew version differs from the one the last launch recorded, a dialog, "The game was updated", says which version the profile last launched on and which is installed, lists the profile's mods SMAPI's API marks broken for the new one (or that none are), and offers **Cancel**, **Open problems** (the Mods tab) and **Play anyway**; a first launch does not ask
   - When the newest save uses mods this profile lacks or has disabled, a dialog, **Your last save needs other mods**, names the farm and lists those mods (**Not in this profile** or **Disabled in this profile**; an empty name is **Unknown mod**, UniqueID in the tooltip), with **Cancel**, **Open saves** and **Play anyway**; an unreadable save does not ask
-  - After a crashed run, a **crash card** sits between the hero and the tab row: a warning icon and one line, **Mortar thinks <mod> caused the crash: <the log's line>** with a contained **Disable and retry** (switches that mod off, then starts the game again), or **The last run crashed. <the log's line>** when the log names no mod you have; **Bisect from here** (a crash bisect, [architecture.md](architecture.md#launch)) and **Dismiss** (hides the card for that run). The card is absent when the latest run did not crash.
+  - After a crashed run, a **crash card** sits above the section's content: a warning icon and one line, **Mortar thinks <mod> caused the crash: <the log's line>** with a contained **Disable and retry** (switches that mod off, then starts the game again), or **The last run crashed. <the log's line>** when the log names no mod you have; **Bisect from here** (a crash bisect, [architecture.md](architecture.md#launch)) and **Dismiss** (hides the card for that run). The card is absent when the latest run did not crash.
   - When a launch Mortar started ends with errors or a SMAPI crash, a dialog, "Stardew Valley closed with errors", lists the mods that logged errors ("mod · N errors", each with its first message) and, when identified, shows **Caused by `<ModName>`** with its plain-language detail and **Disable** / **Open page** actions, alongside **Open Console**, **Share log** and **Dismiss**. When that list is empty, **Find the mod causing this** starts a crash bisect ([architecture.md](architecture.md#launch)).
-- **Compact layout** (below 960px wide; the minimum window is 768×432): the sidebar collapses to a rail of profile initials with Play at its foot, the hero gives way to a one-line header (the name and "N mods · N updates · N problems", a part that is zero left out), the mods search folds into a filter icon that expands into the field, other actions fold into icon buttons, and the mod grid drops to two columns.
+- **Compact layout** (below 960px wide; the minimum window is 768×432): the sidebar is always the icon rail with Play at its foot, the hero gives way to a one-line header (the name and "N mods · N updates · N problems", a part that is zero left out), the mods search folds into a filter icon that expands into the field, other actions fold into icon buttons, and the mod grid drops to two columns.
 
 ## Mods tab
 
@@ -296,10 +297,6 @@ A read-only list of the open profile's enabled mods in the order the game loader
 - Error: "Could not read load order" with **Retry**
 - None: "No enabled mods."
 
-## Notes tab
-
-A full-height text field fills the tab. Its placeholder explains that notes travel in a shared `.mortar` file, not in a share link. The save status ("Saved · 2 min ago", **Saving…**, or **Retry** after a failed save) floats in the field's bottom-right corner and takes no extra row. Notes save automatically. What a share carries is in [architecture.md](architecture.md#sharing).
-
 ## In-between moments
 
 - **Dropping an archive:** while an archive is dragged over the window, a dashed drop zone filling the window 12px in from its edges says where it goes ("Drop to install into Cookie farm") and the supported formats. It shows no file name: WebKitGTK and Wails expose none before the drop.
@@ -456,9 +453,9 @@ Short toasts, bottom right, stacked (at most three; the oldest goes first), each
 The downloads folder raises "Add X to Y?" (Add) for one new archive in the Downloads or download folder and "N new archives in your downloads folder" (Review, opening **From the downloads folder**) for several (setting **Offer new downloads**; never while the game runs). Undo is offered after a history revert, deleting a profile, removing a mod, dismissing a save warning, and the Mods selection bar's bulk Tag / Set category / Pin / Skip updates.
 
 - A toast about a mod shows its picture, from the same cache as the cards.
-- Toasts stay in the session's notification history, the **New** and **Earlier** lists of the sidebar bell ([Main screen](#main-screen); [architecture.md](architecture.md#stack)).
+- Toasts stay in the session's notification history, the **New** and **Earlier** lists of the title bar bell ([Main screen](#main-screen); [architecture.md](architecture.md#stack)).
 
-**Times:** a moment within the last week reads relative ("a few seconds ago", "3 minutes ago", "yesterday", "3 days ago"); older ones show the date, with the time where the list is a timeline (runs, backups, profile history, notifications). This covers the mod list's Updated and Installed columns, the hero's Updated and Created, save cards, Game Select's last played, and the Notes and update-check status lines.
+**Times:** a moment within the last week reads relative ("a few seconds ago", "3 minutes ago", "yesterday", "3 days ago"); older ones show the date, with the time where the list is a timeline (runs, backups, profile history, notifications). This covers the mod list's Updated and Installed columns, the hero's Updated and Created, save cards, Game Select's last played, and the update-check status lines.
 
 **Empty states:** a tab with nothing to show centres an icon, a title, a line on how to fill it and, where one helps, a button: Saves with no saves, Problems with none found, Load order with no enabled mods, Console for a profile that has never run (an empty log with past runs shows the log), and Performance before a report.
 

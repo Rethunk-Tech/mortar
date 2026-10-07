@@ -22,7 +22,6 @@ export function shortcutLabels(i18n: I18n): Record<ShortcutId, string> {
     'tab-mods': i18n._(msg`Switch to Mods`),
     'tab-problems': i18n._(msg`Switch to Problems`),
     'tab-saves': i18n._(msg`Switch to Saves`),
-    'tab-notes': i18n._(msg`Switch to Notes`),
     'tab-console': i18n._(msg`Switch to Console`),
     'tab-performance': i18n._(msg`Switch to Performance`),
     'new-profile': i18n._(msg`Create a new profile`),

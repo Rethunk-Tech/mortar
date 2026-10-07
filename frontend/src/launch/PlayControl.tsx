@@ -8,7 +8,6 @@ import {
   type Status,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { SetDefaultLaunchPreset } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { compact } from '../game/compact.ts'
 import { useGameLoader } from '../games/info.ts'
 import { useLoader } from '../loader/store.ts'
 import { BASE_PRESET, playPresets } from '../profiles/profilePresets.ts'
@@ -16,6 +15,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { reportError } from '../toasts/report.ts'
 import { playDirect } from './directPref.ts'
 import { useLive } from './live.ts'
+import { PLAY_HEIGHT_PX } from './playHeight.ts'
 import { StopDialog } from './StopDialog.tsx'
 import { useLaunch } from './store.ts'
 import { VanillaPlay } from './VanillaPlay.tsx'
@@ -59,7 +59,8 @@ function useElapsed(since: number, active: boolean): string {
   return elapsed(now - since)
 }
 
-export function PlayControl({ game }: { game: string }) {
+// `rail` is the narrow sidebar: Play and Stop shrink to icons.
+export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
   const { t } = useLingui()
   const loaderName = useGameLoader(game) || t`the mod loader`
   const status = useLaunch((s) => s.status)
@@ -84,86 +85,78 @@ export function PlayControl({ game }: { game: string }) {
     return (
       <>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          <Box
-            title={runningProfile?.name}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              px: 1.5,
-              py: 1,
-              [compact]: { display: 'none' },
-            }}
-          >
+          {rail ? null : (
             <Box
-              aria-hidden={true}
-              sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                bgcolor: 'success.main',
-                flexShrink: 0,
-              }}
-            />
-            <Typography
-              role="status"
-              noWrap={true}
-              sx={{ fontSize: 14, fontWeight: 600, minWidth: 0, flex: 1 }}
+              title={runningProfile?.name}
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1 }}
             >
-              {who === '' ? t`Running` : t`Running ${who}`}
-            </Typography>
-            {scene ? (
+              <Box
+                aria-hidden={true}
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  bgcolor: 'success.main',
+                  flexShrink: 0,
+                }}
+              />
+              <Typography
+                role="status"
+                noWrap={true}
+                sx={{ fontSize: 14, fontWeight: 600, minWidth: 0, flex: 1 }}
+              >
+                {who === '' ? t`Running` : t`Running ${who}`}
+              </Typography>
+              {scene ? (
+                <Typography
+                  noWrap={true}
+                  title={t`Current scene`}
+                  sx={{ fontSize: 13, color: 'var(--mortar-ink-soft)', minWidth: 0 }}
+                >
+                  {scene}
+                </Typography>
+              ) : null}
               <Typography
                 noWrap={true}
-                title={t`Current scene`}
-                sx={{ fontSize: 13, color: 'var(--mortar-ink-soft)', minWidth: 0 }}
+                sx={{
+                  fontSize: 15,
+                  fontWeight: 600,
+                  fontVariantNumeric: 'tabular-nums',
+                  color: 'var(--mortar-ink-soft)',
+                }}
               >
-                {scene}
+                {time}
               </Typography>
-            ) : null}
-            <Typography
-              noWrap={true}
-              sx={{
-                fontSize: 15,
-                fontWeight: 600,
-                fontVariantNumeric: 'tabular-nums',
-                color: 'var(--mortar-ink-soft)',
-              }}
+            </Box>
+          )}
+          {rail ? (
+            <Tooltip title={t`Stop game`} describeChild={true}>
+              <span>
+                <IconButton
+                  aria-label={t`Stop game`}
+                  title={t`Running for ${time}`}
+                  color="error"
+                  disabled={stopping}
+                  onClick={() => setConfirming(true)}
+                  sx={{ width: '100%', height: PLAY_HEIGHT_PX, borderRadius: 0 }}
+                >
+                  <Square size={24} />
+                </IconButton>
+              </span>
+            </Tooltip>
+          ) : (
+            <Button
+              variant="contained"
+              color="error"
+              fullWidth={true}
+              disabled={stopping}
+              startIcon={<Square size={18} fill="currentColor" />}
+              onClick={() => setConfirming(true)}
+              sx={{ height: PLAY_HEIGHT_PX, borderRadius: 0, fontSize: 20, fontWeight: 700 }}
             >
-              {time}
-            </Typography>
-          </Box>
-          <Button
-            variant="contained"
-            color="error"
-            fullWidth={true}
-            disabled={stopping}
-            startIcon={<Square size={18} fill="currentColor" />}
-            onClick={() => setConfirming(true)}
-            sx={{
-              height: 58,
-              borderRadius: 0,
-              fontSize: 18,
-              fontWeight: 600,
-              [compact]: { display: 'none' },
-            }}
-          >
-            {t`Stop game`}
-          </Button>
-          <Tooltip title={t`Stop game`} describeChild={true}>
-            <span>
-              <IconButton
-                aria-label={t`Stop game`}
-                title={t`Running for ${time}`}
-                color="error"
-                disabled={stopping}
-                onClick={() => setConfirming(true)}
-                sx={{ display: 'none', [compact]: { display: 'inline-flex' } }}
-              >
-                <Square size={20} />
-              </IconButton>
-            </span>
-          </Tooltip>
+              {t`Stop game`}
+            </Button>
+          )}
         </Box>
         <StopDialog open={confirming} game={game} onClose={() => setConfirming(false)} />
       </>
@@ -185,6 +178,7 @@ export function PlayControl({ game }: { game: string }) {
       playDisabled={openId === '' || launching || busy}
       vanillaDisabled={launching || busy}
       label={label}
+      rail={rail}
       play={() => start(game, openId, playDirect(), '')}
       presets={presets}
       playWith={(key) => start(game, openId, playDirect(), key)}

@@ -2,12 +2,12 @@ import { create } from 'zustand'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
 
 const TABS = [
+  'home',
   'browse',
   'mods',
   'problems',
   'load-order',
   'saves',
-  'notes',
   'console',
   'performance',
 ] as const

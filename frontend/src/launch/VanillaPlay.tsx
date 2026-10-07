@@ -19,14 +19,100 @@ import {
 } from '@mui/material'
 import { ChevronDown, Gamepad2, Play, Star } from 'lucide-react'
 import { type MouseEvent, useState } from 'react'
-import { compact } from '../game/compact.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import type { PlayPreset } from '../profiles/profilePresets.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { PLAY_HEIGHT_PX } from './playHeight.ts'
 import { playMenuEntries } from './playMenu.ts'
 import { playVanillaOpen, rememberLinuxVanillaDirect, useVanillaPrompt } from './playOpen.ts'
 import { SmapiWarnDialog } from './SmapiWarnDialog.tsx'
 import { useLaunch } from './store.ts'
+
+// Play with its menu caret, or on the narrow rail Play alone as an icon (its menu then opens on right-click).
+function PlayButtons({
+  rail,
+  label,
+  playDisabled,
+  vanillaDisabled,
+  menuOpen,
+  onPlay,
+  onMenu,
+  onContext,
+}: {
+  rail: boolean
+  label: string
+  playDisabled: boolean
+  vanillaDisabled: boolean
+  menuOpen: boolean
+  onPlay: () => void
+  onMenu: (el: HTMLElement) => void
+  onContext: (e: MouseEvent<HTMLElement>) => void
+}) {
+  const { t } = useLingui()
+  return rail ? (
+    // The button carries its own name; a plain span may not take the label Tooltip would give it.
+    <Tooltip title={label} describeChild={true}>
+      <span>
+        <IconButton
+          aria-label={label}
+          title={label}
+          disabled={playDisabled}
+          onClick={onPlay}
+          onContextMenu={onContext}
+          sx={{
+            display: 'flex',
+            width: '100%',
+            height: PLAY_HEIGHT_PX,
+            borderRadius: 0,
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            '&:hover': { bgcolor: 'primary.dark' },
+          }}
+        >
+          <Play size={28} fill="currentColor" />
+        </IconButton>
+      </span>
+    </Tooltip>
+  ) : (
+    <ButtonGroup
+      variant="contained"
+      fullWidth={true}
+      sx={{
+        height: PLAY_HEIGHT_PX,
+        borderRadius: 0,
+        boxShadow: 'none',
+        '& .MuiButtonGroup-grouped': { minWidth: 0 },
+      }}
+    >
+      <Button
+        disabled={playDisabled}
+        startIcon={<Play size={20} fill="currentColor" />}
+        onClick={onPlay}
+        onContextMenu={onContext}
+        sx={{
+          flex: 1,
+          height: PLAY_HEIGHT_PX,
+          borderRadius: 0,
+          fontSize: 20,
+          fontWeight: 700,
+          '& .MuiButton-startIcon': { mr: '10px' },
+        }}
+      >
+        {label}
+      </Button>
+      <Button
+        disabled={vanillaDisabled}
+        aria-label={t`More play options`}
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        onClick={(e) => onMenu(e.currentTarget)}
+        sx={{ width: 40, minWidth: 40, px: 0, height: PLAY_HEIGHT_PX, borderRadius: 0 }}
+      >
+        <ChevronDown size={18} />
+      </Button>
+    </ButtonGroup>
+  )
+}
 
 export function VanillaPlayDialogs() {
   const { t } = useLingui()
@@ -70,6 +156,7 @@ export function VanillaPlay({
   playDisabled,
   vanillaDisabled,
   label,
+  rail,
   play,
   presets,
   playWith,
@@ -79,6 +166,7 @@ export function VanillaPlay({
   playDisabled: boolean
   vanillaDisabled: boolean
   label: string
+  rail: boolean
   play: () => void
   presets: PlayPreset[]
   playWith: (key: string) => void
@@ -99,66 +187,16 @@ export function VanillaPlay({
   }
   return (
     <>
-      <ButtonGroup
-        variant="contained"
-        fullWidth={true}
-        sx={{
-          height: 58,
-          borderRadius: 0,
-          boxShadow: 'none',
-          [compact]: { display: 'none' },
-          '& .MuiButtonGroup-grouped': { minWidth: 0 },
-        }}
-      >
-        <Button
-          disabled={playDisabled}
-          startIcon={<Play size={22} fill="currentColor" />}
-          onClick={play}
-          onContextMenu={onContext}
-          sx={{
-            flex: 1,
-            height: 58,
-            borderRadius: 0,
-            fontSize: 22,
-            fontWeight: 700,
-            '& .MuiButton-startIcon': { mr: '10px' },
-          }}
-        >
-          {label}
-        </Button>
-        <Button
-          disabled={vanillaDisabled}
-          aria-label={t`More play options`}
-          aria-haspopup="menu"
-          aria-expanded={menu !== null}
-          onClick={(e) => openMenu(e.currentTarget)}
-          sx={{ width: 40, minWidth: 40, px: 0, height: 58, borderRadius: 0 }}
-        >
-          <ChevronDown size={18} />
-        </Button>
-      </ButtonGroup>
-      {/* The button carries its own name; a plain span may not take the label Tooltip would give it. */}
-      <Tooltip title={label} describeChild={true}>
-        <span>
-          <IconButton
-            aria-label={label}
-            title={label}
-            disabled={playDisabled}
-            onClick={play}
-            onContextMenu={onContext}
-            sx={{
-              display: 'none',
-              borderRadius: 0,
-              bgcolor: 'primary.main',
-              color: 'primary.contrastText',
-              '&:hover': { bgcolor: 'primary.dark' },
-              [compact]: { display: 'flex', width: '100%', height: 50 },
-            }}
-          >
-            <Play size={20} fill="currentColor" />
-          </IconButton>
-        </span>
-      </Tooltip>
+      <PlayButtons
+        rail={rail}
+        label={label}
+        playDisabled={playDisabled}
+        vanillaDisabled={vanillaDisabled}
+        menuOpen={menu !== null}
+        onPlay={play}
+        onMenu={openMenu}
+        onContext={onContext}
+      />
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
         {entries.map((entry) => {
           if (entry.kind === 'play') {

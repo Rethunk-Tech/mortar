@@ -7,7 +7,6 @@ import { When } from '../i18n/When.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { openPage } from '../mods/menu.ts'
 import { useUpdates } from '../mods/updates.ts'
-import { useLoadProblemsOnFocus } from '../mods/useLoadProblemsOnFocus.ts'
 import { unlinkCollection } from '../profiles/collectionUnlink.ts'
 import { userModCount } from '../profiles/count.ts'
 import { ProfileMark } from '../profiles/ProfileMark.tsx'
@@ -241,14 +240,13 @@ function HeroName({
   )
 }
 
-// Updates live in the header so the Mods tab keeps its rows for the list; the Problems tab carries its own count.
+// Updates live in the header so the Mods tab keeps its rows for the list; the sidebar's Mods and Problems entries carry the counts.
 function AttentionCards() {
   const { t } = useLingui()
   const setReviewing = useUpdates((s) => s.setReviewing)
   const setTab = useTab((s) => s.setTab)
   const openId = useProfiles((s) => s.openId)
   const updateN = useBadges((s) => s.byProfile[openId]?.updates ?? 0)
-  useLoadProblemsOnFocus()
   return updateN > 0 ? (
     <Card
       label={t`Updates`}

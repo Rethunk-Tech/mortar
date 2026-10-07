@@ -65,7 +65,6 @@ export type ShortcutId =
   | 'tab-problems'
   | 'tab-load-order'
   | 'tab-saves'
-  | 'tab-notes'
   | 'tab-console'
   | 'tab-performance'
   | 'new-profile'
@@ -126,7 +125,6 @@ export const SHORTCUTS: readonly Shortcut[] = [
       ['tab-problems', 'Ctrl+3'],
       ['tab-load-order', 'Ctrl+4'],
       ['tab-saves', 'Ctrl+5'],
-      ['tab-notes', 'Ctrl+6'],
       ['tab-console', 'Ctrl+7'],
       ['tab-performance', 'Ctrl+8'],
     ] as const

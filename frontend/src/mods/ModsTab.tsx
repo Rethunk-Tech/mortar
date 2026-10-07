@@ -1,12 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Skeleton, Typography, useMediaQuery } from '@mui/material'
+import { Box, Button, Skeleton, Typography } from '@mui/material'
 import { SearchX } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { compactQuery } from '../game/compact.ts'
 import { useGameBusy } from '../launch/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -173,21 +172,6 @@ const LOADING_ROW_COUNT = 8
 const LOADING_ROWS = Array.from({ length: LOADING_ROW_COUNT }, (_, i) => i)
 const ROW_HEIGHT = 44
 
-// The header carries Problems and Updates; these bars stand in when the header is compact or hidden.
-function AttentionBars() {
-  const heroMode = useSettings((st) => st.profileHero) || 'full'
-  const narrow = useMediaQuery(compactQuery)
-  if (heroMode === 'full' && !narrow) {
-    return null
-  }
-  return (
-    <>
-      <ProblemBar />
-      <UpdateBar />
-    </>
-  )
-}
-
 function useSelectedTags(profileId: string): string[] {
   const saved = useMemo(() => storedTags(profileId), [profileId])
   return useMods((s) => s.tagFilters[profileId]) ?? saved
@@ -302,7 +286,9 @@ export function ModsTab({ profile }: { profile: Profile }) {
       <TipBanner tip="mods">
         {t`Drop archives anywhere on the window, or use Browse to find mods.`}
       </TipBanner>
-      <AttentionBars />
+      {/* The profile header is on Home only, so this tab carries its own Problems and Updates bars. */}
+      <ProblemBar />
+      <UpdateBar />
       <OldFilesCallouts profile={profile} />
       <NewFoldersCallout profile={profile} />
       <Toolbar
