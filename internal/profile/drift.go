@@ -675,6 +675,53 @@ func (s *Store) liveDriftState(game, id string) (Profile, string, map[string]str
 	return p, dir, names, stats, nil
 }
 
+// repairSnapshot records the folders of entries profile.json lists that a recorded snapshot lacks: a kill after an
+// install wrote profile.json but before its snapshot. Only those entries are added, so drift in any other folder
+// stays visible; a profile with no snapshot yet has no baseline to complete.
+func (s *Store) repairSnapshot(game, dir string, p Profile) error {
+	if _, err := os.Stat(snapshotPath(dir)); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	snap, err := loadSnapshot(dir)
+	if err != nil {
+		return err
+	}
+	var missing []string
+	for _, key := range entryKeys(p) {
+		if _, ok := snap.Folders[key]; !ok {
+			missing = append(missing, key)
+		}
+	}
+	if len(missing) == 0 {
+		return nil
+	}
+	modsDir, held := filepath.Join(dir, "mods"), holdDir(dir)
+	names, err := liveFolders(modsDir, held)
+	if err != nil {
+		return err
+	}
+	changed := false
+	for _, key := range missing {
+		folder, ok := names[key]
+		if !ok {
+			continue
+		}
+		st, err := folderStatAt(modsDir, held, folder, storePeer(s, game, key))
+		if err != nil {
+			return err
+		}
+		snap.Folders[key] = st
+		changed = true
+	}
+	if !changed {
+		return nil
+	}
+	return writeSnapshot(dir, snap)
+}
+
 func reconcileSnapshot(snap ModsSnapshot, keys []string, stats, storeStats map[string]FolderStat) ModsSnapshot {
 	if snap.Folders == nil {
 		snap.Folders = map[string]FolderStat{}

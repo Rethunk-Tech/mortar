@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -146,13 +147,25 @@ func materialize(tmp string, e Entry) (string, error) {
 
 // place lays the store item for e out as mods/<key> through a temp sibling and renames it into position.
 func (s *Store) place(game, modsDir string, e Entry) error {
+	_, err := s.placeStaged(game, modsDir, e, func(final string) string { return final })
+	return err
+}
+
+// pendingPrefix names a folder laid out in full but not yet renamed to its entry's name, because profile.json does not
+// record the entry yet. Its suffix is the folder's final name, so rebuild can finish the rename when Mortar stopped
+// after profile.json was written, and sweeps the folder (a temp prefix) when it was not.
+const pendingPrefix = tempPrefix + "pending_"
+
+// placeStaged is place with the final rename aimed at stage(final) in mods/. It returns final, the folder name e belongs
+// under, or "" when e has no folder of its own.
+func (s *Store) placeStaged(game, modsDir string, e Entry, stage func(final string) string) (string, error) {
 	arch, l, driver, err := s.layoutOf(game, filepath.Base(filepath.Dir(modsDir)), e.Key, e.Fomod)
 	if err != nil || driver == driverThunderstore {
-		return err
+		return "", err
 	}
 	scratch, err := os.MkdirTemp(modsDir, tempPrefix)
 	if err != nil {
-		return err
+		return "", err
 	}
 	final, err := func() (string, error) {
 		if err := writeLayout(arch, l, scratch); err != nil {
@@ -161,12 +174,12 @@ func (s *Store) place(game, modsDir string, e Entry) error {
 		return materialize(scratch, e)
 	}()
 	if err == nil {
-		err = fsx.Rename(scratch, filepath.Join(modsDir, final))
+		err = fsx.Rename(scratch, filepath.Join(modsDir, stage(final)))
 	}
 	if err != nil {
-		return errors.Join(err, fsx.RemoveAll(scratch))
+		return "", errors.Join(err, fsx.RemoveAll(scratch))
 	}
-	return nil
+	return final, nil
 }
 
 func entryMods(found []manifest.Mod) []Component {
@@ -228,14 +241,21 @@ func (s Source) Bundled() bool { return s.Kind == SourceSMAPI || s.Kind == Sourc
 // addTo copies the store item key into the profile's mods/ and records its entry, switching off the
 // mods in disabled that it holds. placed is the new folder, for the caller to remove if a later step fails.
 func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, disabled []mod.ID) (placed string, err error) {
+	placed, _, err = s.addToStaged(game, p, dir, key, source, disabled, false)
+	return placed, err
+}
+
+// addToStaged is addTo that, when staged, leaves the folder under its pending name and returns that as placed and the
+// name to give it once profile.json records the entry as final. A folder that needs no staging has them equal.
+func (s *Store) addToStaged(game string, p *Profile, dir, key string, source Source, disabled []mod.ID, staged bool) (placed, final string, err error) {
 	for _, e := range p.Entries {
 		if e.Key == key {
-			return "", &DuplicateError{Key: key, Label: entryLabel(e)}
+			return "", "", &DuplicateError{Key: key, Label: entryLabel(e)}
 		}
 	}
 	mods, isPackage, err := s.packageMods(game, key)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	if isPackage {
 		mods[0].Version = cmp.Or(mods[0].Version, source.Version)
@@ -245,14 +265,14 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 			defer func() { _ = fsx.RemoveAll(tmp) }()
 		}
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		found, err := manifest.Scan(src)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		if len(found) == 0 {
-			return "", &NoModError{Key: key}
+			return "", "", &NoModError{Key: key}
 		}
 		mods = entryMods(found)
 	}
@@ -271,13 +291,32 @@ func (s *Store) addTo(game string, p *Profile, dir, key string, source Source, d
 	}
 	modsDir := filepath.Join(dir, "mods")
 	if err := os.MkdirAll(modsDir, 0o700); err != nil {
-		return "", err
+		return "", "", err
 	}
-	if err := s.place(game, modsDir, e); err != nil {
-		return "", err
+	stage := func(name string) string { return name }
+	if staged {
+		stage = func(name string) string { return pendingPrefix + name }
+	}
+	name, err := s.placeStaged(game, modsDir, e, stage)
+	if err != nil {
+		return "", "", err
 	}
 	p.Entries = append(p.Entries, e)
-	return filepath.Join(modsDir, key), nil
+	if name == "" {
+		name = key
+	}
+	return filepath.Join(modsDir, stage(name)), filepath.Join(modsDir, name), nil
+}
+
+// commitPlaced gives a staged folder its entry's name once profile.json records the entry. A rename that fails is left
+// for rebuild, which finishes it because profile.json now lists the entry.
+func commitPlaced(placed, final string) {
+	if placed == final {
+		return
+	}
+	if err := fsx.Rename(placed, final); err != nil {
+		log.Printf("profile: could not move %s into place; the next rebuild will: %v", filepath.Base(placed), err)
+	}
 }
 
 // AddEntry copies the store item key into the profile and records the mods it holds.
@@ -296,11 +335,11 @@ func (s *Store) addEntryLocked(game, id, key string, source Source) (Profile, er
 	} else if over {
 		return s.placeOverlayLocked(game, id, key, source)
 	}
-	var placed string
-	p, err := s.updateLocked(game, id, func(p *Profile, dir string) (err error) {
-		placed, err = s.addTo(game, p, dir, key, source, nil)
+	var placed, final string
+	p, err := s.updateLockedCommit(game, id, func(p *Profile, dir string) (err error) {
+		placed, final, err = s.addToStaged(game, p, dir, key, source, nil, true)
 		return err
-	})
+	}, func() { commitPlaced(placed, final) })
 	if err != nil {
 		if placed != "" {
 			err = errors.Join(err, fsx.RemoveAll(placed))
@@ -850,14 +889,8 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 		if exists(filepath.Join(modsDir, e.Key)) || exists(filepath.Join(modsDir, "."+e.Key)) {
 			continue
 		}
-		for _, name := range []string{e.Key, "." + e.Key} {
-			if aside := filepath.Join(modsDir, asidePrefix+name); exists(aside) {
-				if err := fsx.Rename(aside, filepath.Join(modsDir, name)); err != nil {
-					return err
-				}
-				s.tidied("Put back a mod folder an interrupted update left aside", p.Name, name)
-				break
-			}
+		if err := s.finishInterrupted(modsDir, p.Name, e.Key); err != nil {
+			return err
 		}
 	}
 	items, err := os.ReadDir(modsDir)
@@ -888,6 +921,25 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 			return fmt.Errorf("rebuild %s: %w", e.Key, err)
 		}
 		s.tidied("Rebuilt a mod folder from the store", p.Name, e.Key)
+	}
+	return s.repairSnapshot(game, dir, p)
+}
+
+// finishInterrupted renames the folder an interrupted run left under a temp name back to the entry's own: an update's
+// aside copy, or an install's pending folder, whose entry profile.json already lists.
+func (s *Store) finishInterrupted(modsDir, profileName, key string) error {
+	for _, name := range []string{key, "." + key} {
+		for _, prefix := range []string{asidePrefix, pendingPrefix} {
+			left := filepath.Join(modsDir, prefix+name)
+			if !exists(left) {
+				continue
+			}
+			if err := fsx.Rename(left, filepath.Join(modsDir, name)); err != nil {
+				return err
+			}
+			s.tidied("Put back a mod folder an interrupted install or update left aside", profileName, name)
+			return nil
+		}
 	}
 	return nil
 }

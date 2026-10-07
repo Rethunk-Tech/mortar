@@ -650,6 +650,12 @@ func (s *Store) update(game, id string, fn func(p *Profile, dir string) error) (
 }
 
 func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) error) (Profile, error) {
+	return s.updateLockedCommit(game, id, fn, nil)
+}
+
+// updateLockedCommit is updateLocked that runs commit once profile.json is written: the step that makes a change fn
+// staged on disk final.
+func (s *Store) updateLockedCommit(game, id string, fn func(p *Profile, dir string) error, commit func()) (Profile, error) {
 	p, dir, err := s.readDir(game, id)
 	if err != nil {
 		return Profile{}, err
@@ -665,6 +671,9 @@ func (s *Store) updateLocked(game, id string, fn func(p *Profile, dir string) er
 		s.historyKind, s.historyNote, s.historyConfigs = "", HistoryEvent{}, nil
 		restoreModsOld(dir)
 		return Profile{}, err
+	}
+	if commit != nil {
+		commit()
 	}
 	_ = fsx.RemoveAll(filepath.Join(dir, "mods") + ".old")
 	kind, note, configs := s.historyKind, s.historyNote, s.historyConfigs
