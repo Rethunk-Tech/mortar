@@ -7,6 +7,7 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -18,7 +19,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -437,40 +437,63 @@ func loadPackages(key, path string) ([]pkg, error) {
 type depTable struct{ names []string }
 
 // depCompactor moves every version's dependency strings into one shared table: most of a listing's bytes are the
-// same "Owner-Name-1.2.3" pins named again by every version, and a version whose list equals the previous one's
-// shares its index list.
+// same "Owner-Name-1.2.3" pins named again by every version. Identical dependency lists, version numbers and the other
+// strings that repeat across packages (owners, categories, repositories) are held once.
 type depCompactor struct {
 	tab   *depTable
 	index map[string]uint32
+	lists map[string][]uint32
+	words map[string]string
+	key   []byte
 }
 
 func newDepCompactor() *depCompactor {
-	return &depCompactor{tab: &depTable{}, index: map[string]uint32{}}
+	return &depCompactor{tab: &depTable{}, index: map[string]uint32{}, lists: map[string][]uint32{}, words: map[string]string{}}
+}
+
+// word returns the one copy of s held for the listing.
+func (c *depCompactor) word(s string) string {
+	if w, ok := c.words[s]; ok {
+		return w
+	}
+	c.words[s] = s
+	return s
 }
 
 func (c *depCompactor) add(p *pkg) {
 	p.tab = c.tab
-	var prev []uint32
+	// The decoder grows slices by doubling; the listing keeps them at their length.
+	p.Versions = append(make([]version, 0, len(p.Versions)), p.Versions...)
+	p.Categories = append(make([]string, 0, len(p.Categories)), p.Categories...)
+	p.Owner, p.Repo = c.word(p.Owner), c.word(p.Repo)
+	for i, cat := range p.Categories {
+		p.Categories[i] = c.word(cat)
+	}
 	for j := range p.Versions {
 		v := &p.Versions[j]
+		v.Number = c.word(v.Number)
 		if len(v.Deps) == 0 {
-			prev = nil
 			continue
 		}
-		ids := make([]uint32, len(v.Deps))
-		for k, d := range v.Deps {
+		c.key = c.key[:0]
+		for _, d := range v.Deps {
 			id, ok := c.index[d]
 			if !ok {
 				id = uint32(len(c.tab.names) & math.MaxUint32)
 				c.tab.names = append(c.tab.names, d)
 				c.index[d] = id
 			}
-			ids[k] = id
+			c.key = binary.LittleEndian.AppendUint32(c.key, id)
 		}
-		if slices.Equal(ids, prev) {
-			ids = prev
+		ids, ok := c.lists[string(c.key)]
+		if !ok {
+			ids = make([]uint32, len(v.Deps))
+			for k := range ids {
+				ids[k] = binary.LittleEndian.Uint32(c.key[k*4:])
+			}
+			c.lists[string(c.key)] = ids
 		}
-		v.ids, v.Deps, prev = ids, nil, ids
+		v.ids, v.Deps = ids, nil
 	}
 }
 
