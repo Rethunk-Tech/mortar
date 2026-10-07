@@ -1,21 +1,25 @@
 import { expect, test } from 'bun:test'
-import { parseDetection } from './avOverride.ts'
+import { detectionOf } from './avOverride.ts'
 
-test('parseDetection reads the key, scanner, threat and file out of a refused install', () => {
-  const e = new Error(
-    'store stardew/local-abc123: [malware] the antivirus (clamd) reports Test.Threat in Mod/a.dll',
-  )
-  expect(parseDetection(e)).toEqual({
-    key: 'local-abc123',
-    scanner: 'clamd',
-    name: 'Test.Threat',
-    file: 'Mod/a.dll',
+const detail = {
+  game: 'stardew',
+  key: 'local-abc123',
+  scanner: 'clamd',
+  name: 'Test.Threat',
+  file: 'Mod/a.dll',
+}
+
+test('detectionOf reads the typed detail a malware error carries', () => {
+  const e = new Error('[malware] the antivirus (clamd) reports Test.Threat', {
+    cause: { kind: 'malware', detail },
   })
+  expect(detectionOf(e)).toEqual(detail)
 })
 
-test('parseDetection copes with a scanner that names no file and ignores other errors', () => {
+test('detectionOf ignores errors without a complete detail', () => {
+  expect(detectionOf(new Error('disk full', { cause: { kind: 'disk_full' } }))).toBeNull()
   expect(
-    parseDetection('store lethal-company/pkg-1f: [malware] the antivirus (sh) reports Win.Bad'),
-  ).toEqual({ key: 'pkg-1f', scanner: 'sh', name: 'Win.Bad', file: '' })
-  expect(parseDetection(new Error('disk full'))).toBeNull()
+    detectionOf(new Error('x', { cause: { kind: 'malware', detail: { key: 'k' } } })),
+  ).toBeNull()
+  expect(detectionOf('store a/b: nope')).toBeNull()
 })

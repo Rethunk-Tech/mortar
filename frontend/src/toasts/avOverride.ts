@@ -1,23 +1,28 @@
 import { create } from 'zustand'
 
-// store.Error is "store <game>/<key>: [malware] the antivirus (<scanner>) reports <name>[ in <file>]".
-const detected = /store [^/\s]+\/(\S+): .*?the antivirus \(([^)]*)\) reports (.+?)(?: in (.+))?$/s
+const isDetected = (d: unknown): d is DetectedFile =>
+  typeof d === 'object' &&
+  d !== null &&
+  ['game', 'key', 'scanner', 'name', 'file'].every(
+    (k) => typeof (d as Record<string, unknown>)[k] === 'string',
+  )
 
-/** What the antivirus flagged, read out of the error a refused install raised. */
+/** What the antivirus flagged, as the malware error's `detail` (store.DetectedError) carries it. */
 export interface DetectedFile {
+  game: string
   key: string
   scanner: string
   name: string
   file: string
 }
 
-export function parseDetection(e: unknown): DetectedFile | null {
-  const text = e instanceof Error ? e.message : String(e)
-  const m = detected.exec(text)
-  if (!(m?.[1] && m[2] && m[3])) {
+/** The detection a refused install raised, or null for any other error. */
+export function detectionOf(e: unknown): DetectedFile | null {
+  const cause: unknown = e instanceof Error ? e.cause : undefined
+  if (typeof cause !== 'object' || cause === null || !('detail' in cause)) {
     return null
   }
-  return { key: m[1], scanner: m[2], name: m[3].trim(), file: m[4]?.trim() ?? '' }
+  return isDetected(cause.detail) ? cause.detail : null
 }
 
 /** A refused install waiting for the player's "Install anyway" answer. */

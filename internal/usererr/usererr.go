@@ -3,6 +3,7 @@ package usererr
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io/fs"
 	"net"
@@ -142,12 +143,31 @@ func Parse(s string) (kind Kind, raw string) {
 	return Unknown, s
 }
 
-// Marshal is the cause a bound call's error carries to the GUI: {"kind": ...}, so a bare stdlib error (a
-// read-only folder, a refused connection) is classified like a tagged one. Nil for Unknown keeps Wails' default.
+// Detailer is an error that carries data the GUI reads beside its kind (what the antivirus flagged, say). Detail
+// must marshal to a JSON object.
+type Detailer interface {
+	error
+	Detail() any
+}
+
+// Marshal is the cause a bound call's error carries to the GUI: {"kind": ...} plus {"detail": ...} from a Detailer in
+// the chain, so a bare stdlib error (a read-only folder, a refused connection) is classified like a tagged one. Nil for
+// Unknown keeps Wails' default.
 func Marshal(err error) []byte {
 	kind := KindOf(err)
 	if kind == Unknown {
 		return nil
 	}
-	return []byte(`{"kind":"` + string(kind) + `"}`)
+	cause := struct {
+		Kind   Kind `json:"kind"`
+		Detail any  `json:"detail,omitempty"`
+	}{Kind: kind}
+	if d, ok := errors.AsType[Detailer](err); ok {
+		cause.Detail = d.Detail()
+	}
+	b, err := json.Marshal(cause)
+	if err != nil {
+		return []byte(`{"kind":"` + string(kind) + `"}`)
+	}
+	return b
 }

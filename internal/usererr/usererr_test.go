@@ -90,3 +90,17 @@ func TestMarshalCarriesTheKindOfAnUntaggedError(t *testing.T) {
 		t.Fatalf("tagged: %s", got)
 	}
 }
+
+type flagged struct {
+	Key string `json:"key"`
+}
+
+func (flagged) Error() string { return "flagged" }
+func (f flagged) Detail() any { return f }
+
+func TestMarshalCarriesADetailFromTheChain(t *testing.T) {
+	err := fmt.Errorf("add: %w", Wrap(Malware, flagged{Key: "k1"}))
+	if got := string(Marshal(err)); got != `{"kind":"malware","detail":{"key":"k1"}}` {
+		t.Fatalf("Marshal = %s", got)
+	}
+}

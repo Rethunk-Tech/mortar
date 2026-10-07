@@ -34,7 +34,7 @@ import { routeGame, useNav } from '../nav/store.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
-import { type DetectedFile, parseDetection, useOverride } from '../toasts/avOverride.ts'
+import { type DetectedFile, detectionOf, useOverride } from '../toasts/avOverride.ts'
 import { changeStillLatest } from '../toasts/history.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -386,7 +386,7 @@ async function runInstalls(
       await install()
     } catch (e) {
       failed += 1
-      const flagged = parseDetection(e)
+      const flagged = detectionOf(e)
       const title = i18n._(msg`Could not add ${fileName(item)}`)
       if (flagged) {
         offerInstallAnyway({

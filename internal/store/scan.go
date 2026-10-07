@@ -16,9 +16,13 @@ const scanTimeout = 2 * time.Minute
 
 // DetectedError is an item the antivirus flagged before it entered the store.
 type DetectedError struct {
-	Game, Key string
+	Game string `json:"game"`
+	Key  string `json:"key"`
 	avscan.Detection
 }
+
+// Detail is what the GUI reads off the error (usererr.Detailer): which store item, and what was flagged in it.
+func (e *DetectedError) Detail() any { return e }
 
 func (e *DetectedError) Error() string {
 	if e.File == "" {
