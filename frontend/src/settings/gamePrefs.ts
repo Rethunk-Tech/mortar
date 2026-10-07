@@ -24,7 +24,7 @@ const defaultGamePrefs: GamePrefBlock = {
   defaultLaunchMethod: 'steam',
   showSmapiConsole: true,
   consoleLevel: 'warn',
-  consoleTimestamps: true,
+  consoleTimestamps: false,
   consoleFollow: true,
 }
 
@@ -72,7 +72,7 @@ export function gamePrefs(s: Settings, game = currentGame()): GamePrefBlock {
     missingRequirements: got.missingRequirements || defaultGamePrefs.missingRequirements,
     defaultLaunchMethod: got.defaultLaunchMethod || defaultGamePrefs.defaultLaunchMethod,
     consoleLevel: got.consoleLevel || defaultGamePrefs.consoleLevel,
-    consoleTimestamps: on(got.consoleTimestamps, true),
+    consoleTimestamps: on(got.consoleTimestamps, false),
     consoleFollow: on(got.consoleFollow, true),
     ...loader,
   }

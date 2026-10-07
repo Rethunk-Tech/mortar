@@ -52,7 +52,7 @@ function PlayButtons({
   return rail ? (
     // The button carries its own name; a plain span may not take the label Tooltip would give it.
     <Tooltip title={label} describeChild={true}>
-      <span>
+      <span style={{ display: 'flex' }}>
         <IconButton
           aria-label={label}
           title={label}

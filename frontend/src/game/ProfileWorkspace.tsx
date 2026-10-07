@@ -78,8 +78,8 @@ export function ProfileWorkspace({
   return (
     <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
       {tab === 'home' ? <Hero key={`hero-${profile.id}`} profile={profile} game={game} /> : null}
+      {tab === 'home' ? <SinceLastRun game={game} profileId={profile.id} /> : null}
       <CrashHintCard game={game} profileId={profile.id} />
-      <SinceLastRun game={game} profileId={profile.id} />
       <Box
         sx={{
           display: 'flex',

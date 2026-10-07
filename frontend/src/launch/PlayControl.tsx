@@ -131,7 +131,7 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
           )}
           {rail ? (
             <Tooltip title={t`Stop game`} describeChild={true}>
-              <span>
+              <span style={{ display: 'flex' }}>
                 <IconButton
                   aria-label={t`Stop game`}
                   title={t`Running for ${time}`}
