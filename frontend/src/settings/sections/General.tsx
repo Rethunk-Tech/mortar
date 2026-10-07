@@ -26,7 +26,7 @@ import { space } from '../../theme/density.ts'
 import { reportError, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
-import { PrefKeys } from '../PrefRow.tsx'
+import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { ImportSettingsDialog } from './DataImport.tsx'
@@ -75,10 +75,12 @@ function Antivirus() {
   )
   return (
     <SettingsSection title={t`Antivirus`}>
-      <PrefKeys keys={['antivirus', 'antivirusSocket', 'antivirusCommand']} />
+      <PrefByKey prefKey="antivirus" hideTitle={true} />
       <SettingRow label={t`Scanner in use`}>
         <Typography sx={{ fontSize: 14 }}>{product || t`Checking…`}</Typography>
       </SettingRow>
+      {mode === 'clamd' ? <PrefByKey prefKey="antivirusSocket" /> : null}
+      {mode === 'command' ? <PrefByKey prefKey="antivirusCommand" /> : null}
     </SettingsSection>
   )
 }

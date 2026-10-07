@@ -21,17 +21,29 @@ import { prefAsBool, prefAsNumber, prefAsString, prefRaw, specGameArg } from './
 import { SettingRow } from './SettingsSection.tsx'
 import { useSettings } from './store.ts'
 
+// Out of sight but still read by screen readers and matched by the settings search.
+const hiddenTitle = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+} as const
+
 // Game-scope prefs render only where a game is passed, so global pages never write to a guessed game.
 function PrefRow({
   spec,
   extra,
   game,
   disabledReason = '',
+  hideTitle = false,
 }: {
   spec: PrefSpec
   extra?: ReactNode
   game?: string
   disabledReason?: string
+  hideTitle?: boolean
 }) {
   const { t, i18n } = useLingui()
   const fail = t`Could not save that setting`
@@ -91,7 +103,19 @@ function PrefRow({
     )
   }
   return (
-    <SettingRow label={copy.label} description={copy.description} block={style === 'cards'}>
+    <SettingRow
+      label={
+        hideTitle ? (
+          <Box component="span" sx={hiddenTitle}>
+            {copy.label}
+          </Box>
+        ) : (
+          copy.label
+        )
+      }
+      description={copy.description}
+      block={style === 'cards'}
+    >
       <DisabledReason title={disabledReason} disabled={disabledReason !== ''}>
         {extra ? (
           <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center' }}>
@@ -111,11 +135,14 @@ export function PrefByKey({
   extra,
   game,
   disabledReason,
+  hideTitle,
 }: {
   prefKey: string
   extra?: ReactNode
   game?: string
   disabledReason?: string
+  // For a section whose heading already names the one row: the title stays for screen readers and search.
+  hideTitle?: boolean
 }) {
   const spec = specByKey(usePrefSpecs(), prefKey)
   if (!spec) {
@@ -127,6 +154,7 @@ export function PrefByKey({
       extra={extra}
       {...(game ? { game } : {})}
       {...(disabledReason ? { disabledReason } : {})}
+      {...(hideTitle ? { hideTitle } : {})}
     />
   )
 }
