@@ -107,7 +107,12 @@ function freshSandbox(): () => void {
   // which teardown and reapStale remove whole.
   process.env.TMPDIR = `${dir}/tmp`
   mkdirSync(process.env.TMPDIR, { recursive: true })
+  let tornDown = false
   const teardown = () => {
+    if (tornDown) {
+      return
+    }
+    tornDown = true
     try {
       selftest(dir, 'destroy')
     } catch {
@@ -116,6 +121,14 @@ function freshSandbox(): () => void {
     rmSync(dir, { recursive: true, force: true })
     rmSync(launchCounter(dir), { force: true })
     rmSync(`${launchCounter(dir)}.lock`, { force: true })
+  }
+  // A run stopped by a signal (a timeout, Ctrl+C, a closed terminal) removes its sandbox, which stops the server and the
+  // hidden display recorded in it, then lets the signal take its course so Playwright still stops its workers.
+  for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP'] as const) {
+    process.once(signal, () => {
+      teardown()
+      process.kill(process.pid, signal)
+    })
   }
   try {
     selftest(dir, 'start')
