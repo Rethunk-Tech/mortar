@@ -2,6 +2,7 @@
 package settings
 
 import (
+	"bytes"
 	"fmt"
 	"maps"
 	"path/filepath"
@@ -257,6 +258,8 @@ type Store struct {
 	path        string
 	cur         Settings
 	corruptPath string
+	// seen is the file's bytes as last read or written here; a different file on disk was written by someone else.
+	seen []byte
 }
 
 // Open loads settings from the data folder; a corrupt file is preserved beside it and yields defaults.
@@ -270,7 +273,11 @@ func Open() (*Store, error) {
 
 // OpenIn is Open for the data folder dir.
 func OpenIn(dir string) (*Store, error) {
-	s := &Store{path: filepath.Join(dir, FileName), cur: Defaults()}
+	return openFile(filepath.Join(dir, FileName))
+}
+
+func openFile(path string) (*Store, error) {
+	s := &Store{path: path, cur: Defaults()}
 	if b, err := fsx.ReadFile(s.path); err == nil {
 		loaded, err := decodeFile(b)
 		if err != nil {
@@ -281,8 +288,15 @@ func OpenIn(dir string) (*Store, error) {
 			s.corruptPath = corrupt
 		} else {
 			s.cur = loaded
+			s.seen = b
 		}
 	}
+	s.normalize()
+	return s, nil
+}
+
+// normalize fills the maps and clamps the values a file written by an older or hand-edited copy may lack.
+func (s *Store) normalize() {
 	if s.cur.LastProfile == nil {
 		s.cur.LastProfile = map[string]string{}
 	}
@@ -323,7 +337,6 @@ func OpenIn(dir string) (*Store, error) {
 	normalizeNexus(&s.cur)
 	normalizeLAN(&s.cur)
 	normalizeShortcuts(&s.cur)
-	return s, nil
 }
 
 // CorruptPath returns the one-time path of settings preserved during Open, if any.
@@ -357,6 +370,7 @@ func (s *Store) AppendDismissed(bucket, token string) error {
 func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.adoptOutsideWrite()
 	next := s.cur
 	fn(&next)
 	if !slices.Contains(accents, next.Accent) {
@@ -416,7 +430,24 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 		return s.cur, err
 	}
 	s.cur = next
+	s.seen, _ = fsx.ReadFile(s.path)
 	return next, nil
+}
+
+// adoptOutsideWrite reloads the file when something else saved it since this Store last did, so an update builds
+// on that write instead of overwriting it with a stale snapshot.
+func (s *Store) adoptOutsideWrite() {
+	b, err := fsx.ReadFile(s.path)
+	if err != nil || bytes.Equal(b, s.seen) {
+		return
+	}
+	loaded, err := decodeFile(b)
+	if err != nil {
+		return
+	}
+	s.cur = loaded
+	s.seen = b
+	s.normalize()
 }
 
 func normalizeStores(s *Settings) {

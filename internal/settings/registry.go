@@ -137,7 +137,6 @@ var registry = []pref{
 	sourcePref("nexus", boolPref("verifyNexusMD5", ScopeSource, func(s Settings, _ string) bool { return s.VerifyNexusMD5 }, func(s *Settings, _ string, on bool) { s.VerifyNexusMD5 = on })),
 	boolPref("launchAtLogin", ScopeApp, func(s Settings, _ string) bool { return s.LaunchAtLogin }, func(s *Settings, _ string, on bool) {
 		s.LaunchAtLogin = on
-		_ = applyAutostart(on)
 	}),
 	boolPref("showAdultContent", ScopeApp, func(s Settings, _ string) bool { return s.ShowAdultContent }, func(s *Settings, _ string, on bool) { s.ShowAdultContent = on }),
 	boolPref("startMinimised", ScopeApp, func(s Settings, _ string) bool { return s.StartMinimised }, func(s *Settings, _ string, on bool) { s.StartMinimised = on }),

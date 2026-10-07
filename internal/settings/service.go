@@ -319,7 +319,7 @@ func (s *Service) PrefSpecs() []PrefSpec { return PrefSpecs() }
 // SetByKey writes one CLI-visible setting.
 func (s *Service) SetByKey(key, value, game string) error {
 	var applyErr error
-	err := s.set(func(cur *Settings) {
+	err := s.setReapplying(key == "launchAtLogin", func(cur *Settings) {
 		applyErr = ApplyKeyGame(cur, key, value, game)
 	})
 	if applyErr != nil {
@@ -338,13 +338,27 @@ func (s *Service) SetShortcuts(chords map[string]string) error {
 	})
 }
 
-func (s *Service) set(fn func(*Settings)) error {
-	next, err := s.store.Update(fn)
+func (s *Service) set(fn func(*Settings)) error { return s.setReapplying(false, fn) }
+
+// setReapplying persists fn's change, then brings the sign-in autostart entry in line with launchAtLogin when that
+// changed or force is set, so an accepted write has its effect and a lost entry is rewritten by setting true again.
+func (s *Service) setReapplying(force bool, fn func(*Settings)) error {
+	var before bool
+	next, err := s.store.Update(func(v *Settings) {
+		before = v.LaunchAtLogin
+		fn(v)
+	})
 	if err != nil {
 		return err
+	}
+	var autostartErr error
+	if force || next.LaunchAtLogin != before {
+		if err := applyAutostart(next.LaunchAtLogin); err != nil {
+			autostartErr = fmt.Errorf("saved, but the sign-in autostart entry was not updated: %w", err)
+		}
 	}
 	if s.App != nil {
 		s.App.Event.Emit(ChangedEvent, next)
 	}
-	return nil
+	return autostartErr
 }
