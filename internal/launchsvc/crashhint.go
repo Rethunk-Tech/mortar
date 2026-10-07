@@ -19,6 +19,8 @@ type CrashHint struct {
 	ModName string `json:"modName"`
 	// Reason is one line from the log, empty when it showed nothing usable.
 	Reason string `json:"reason"`
+	// Evidence is the log line behind the blame, such as the stack frame that runs through the mod's code.
+	Evidence string `json:"evidence"`
 }
 
 // CrashHint explains the profile's latest recorded run: the mod its log blames, or what the log showed when none.
@@ -35,18 +37,25 @@ func (s *Service) CrashHint(gameID, profileID string) (*CrashHint, error) {
 		return hint, nil
 	}
 	found := s.loaderFindings(gameID, profileID)
-	if len(found) == 0 {
-		return hint, nil
+	if len(found) > 0 {
+		mods, err := s.profiles.UserMods(gameID, profileID)
+		if err != nil {
+			return nil, err
+		}
+		if m, f, ok := pickCulprit(found, mods); ok {
+			hint.ModKey, hint.ModName, hint.Reason = m.Key, m.Name, f.Message
+			return hint, nil
+		}
 	}
-	mods, err := s.profiles.UserMods(gameID, profileID)
-	if err != nil {
-		return nil, err
+	if installed, err := s.profiles.Installed(gameID, profileID); err == nil {
+		if m, b, ok := blamedMod(s.stackBlames(gameID, profileID), installed); ok {
+			hint.ModKey, hint.ModName, hint.Reason, hint.Evidence = m.Key, m.Name, b.Exception, b.Frame
+			return hint, nil
+		}
 	}
-	if m, f, ok := pickCulprit(found, mods); ok {
-		hint.ModKey, hint.ModName, hint.Reason = m.Key, m.Name, f.Message
-		return hint, nil
+	if len(found) > 0 {
+		hint.Reason = found[0].Message
 	}
-	hint.Reason = found[0].Message
 	return hint, nil
 }
 
@@ -60,19 +69,11 @@ func (s *Service) loaderFindings(gameID, profileID string) []loader.Finding {
 	if !ok || len(logs.Analyzers()) == 0 {
 		return nil
 	}
-	dir, err := s.profiles.ProfileDir(gameID, profileID)
-	if err != nil {
+	raw, ok := s.loaderLog(logs, gameID, profileID)
+	if !ok {
 		return nil
 	}
-	path, err := logs.Path(loader.ProfileView{Game: gameID, Dir: dir})
-	if err != nil {
-		return nil
-	}
-	raw, err := fsx.ReadFile(path)
-	if err != nil {
-		return nil
-	}
-	in := loader.Logs{Loader: string(raw)}
+	in := loader.Logs{Loader: raw}
 	if w, ok := l.(loader.WithPlayerLog); ok && s.settings != nil {
 		if p, err := game.PathFor(s.home, s.settings.Get(), gameID, "", w.PlayerLogRole()); err == nil {
 			b, _ := fsx.ReadFile(p)
@@ -84,6 +85,38 @@ func (s *Service) loaderFindings(gameID, profileID string) []loader.Finding {
 		out = append(out, a.Analyze(in)...)
 	}
 	return out
+}
+
+// loaderLog reads the profile loader's log.
+func (s *Service) loaderLog(logs loader.WithLogs, gameID, profileID string) (string, bool) {
+	dir, err := s.profiles.ProfileDir(gameID, profileID)
+	if err != nil {
+		return "", false
+	}
+	path, err := logs.Path(loader.ProfileView{Game: gameID, Dir: dir})
+	if err != nil {
+		return "", false
+	}
+	raw, err := fsx.ReadFile(path)
+	return string(raw), err == nil
+}
+
+// stackBlames reads the exception stacks of the loader's log that run through a mod; nil for a loader without them.
+func (s *Service) stackBlames(gameID, profileID string) []loader.Blame {
+	l, ok := s.loaderOf(gameID, profileID)
+	if !ok {
+		return nil
+	}
+	logs, isLogs := l.(loader.WithLogs)
+	stacks, hasStacks := l.(loader.WithStackBlame)
+	if !isLogs || !hasStacks {
+		return nil
+	}
+	raw, ok := s.loaderLog(logs, gameID, profileID)
+	if !ok {
+		return nil
+	}
+	return stacks.StackBlame(raw)
 }
 
 // pickCulprit is the first finding, in log order, whose plugin is an enabled installed mod. A log names a plugin by

@@ -113,6 +113,24 @@ type WithLogs interface {
 	Analyzers() []Analyzer
 }
 
+// Blame is one exception a loader's log holds whose stack runs through a mod's code.
+type Blame struct {
+	// Exception is the exception's first line, such as "System.NullReferenceException: Object reference not set".
+	Exception string
+	// Frame is the stack frame that names the mod, trimmed of its file and line.
+	Frame string
+	// Namespace is the frame's type namespace, whose segments name the mod's assembly.
+	Namespace string
+	// PatchOwner is the Harmony id of the patching mod when the stack holds only patch frames; empty otherwise.
+	PatchOwner string
+}
+
+// WithStackBlame is a loader whose log holds .NET exception stacks that name the mod that threw.
+type WithStackBlame interface {
+	// StackBlame lists the exceptions of a log that blame a mod, in log order.
+	StackBlame(log string) []Blame
+}
+
 // InstalledVersion is a loader that can read the game's version from an install.
 type InstalledVersion interface {
 	InstalledVersion(installDir string) string
