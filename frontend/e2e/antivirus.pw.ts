@@ -66,7 +66,9 @@ test('a flagged archive is refused, installs after Install anyway, and History r
 
   await page.getByRole('tab', { name: 'Mods' }).click()
   await expect(page.getByText('Flagged Test', { exact: true })).toBeVisible()
-  expect(cli('profile', 'history', 'stardew', 'Seed Farm')).toContain(
-    'although the antivirus flagged it',
-  )
+  await page.getByRole('button', { name: /^Notifications/ }).click()
+  await page.getByRole('button', { name: 'All changes…' }).click()
+  await expect(
+    page.getByRole('dialog', { name: 'History' }).getByText(/although the antivirus flagged it/),
+  ).toBeVisible()
 })
