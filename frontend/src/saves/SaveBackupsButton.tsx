@@ -1,12 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
-import { ChevronDown, ChevronRight, Pin, PinOff, RotateCcw, Trash2 } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { Badge, Box, Popover, Typography } from '@mui/material'
+import { History, Pin, PinOff, RotateCcw, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import type { Backup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
 import {
   DeleteBackup,
   RestoreBackup,
-  SaveBackups,
   SetBackupPinned,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { formatBytes } from '../i18n/bytes.ts'
@@ -77,59 +76,72 @@ function Row({
   )
 }
 
-export function SaveBackupsSection({
+// A save's backups: an icon button with the count, opening a popover with the list, whose rows keep, restore and
+// delete (each restore and delete asks first).
+export function SaveBackupsButton({
   folder,
   label,
   profile,
+  backups,
+  onChanged,
 }: {
   folder: string
   label: string
   profile: string
+  // Null until the page has read the backups.
+  backups: Backup[] | null
+  onChanged: () => Promise<void>
 }) {
   const { t } = useLingui()
-  const [open, setOpen] = useState(false)
-  const [items, setItems] = useState<Backup[] | null>(null)
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [ask, setAsk] = useState<Ask | null>(null)
   const [pending, run] = usePending()
   const busyGame = useGameBusy()
   const game = useCurrentGame()
-  const load = useCallback(
-    () =>
-      SaveBackups(game, folder)
-        .then((rows) => setItems(rows ?? []))
-        .catch(reportUnexpected),
-    [game, folder],
-  )
-  useEffect(() => {
-    if (open) {
-      load()
-    }
-  }, [open, load])
+  const count = backups?.length ?? 0
+  const tip = count > 0 ? t`Backups (${count})` : t`No backups yet`
   const refresh = async () => {
-    await load()
+    await onChanged()
     await useSaveBackups.getState().reload()
   }
   const when = ask ? formatWhen(ask.backup.at, { withTime: true }) : ''
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-      <Button
-        size="small"
-        color="inherit"
-        aria-expanded={open}
-        startIcon={open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-        onClick={() => setOpen(!open)}
-        sx={{ alignSelf: 'flex-start', color: 'text.secondary' }}
+    <>
+      <TipIconButton
+        label={tip}
+        aria-haspopup="dialog"
+        aria-expanded={anchor !== null}
+        onClick={(e) => setAnchor(e.currentTarget)}
       >
-        {t`Backups`}
-      </Button>
-      {open && items === null ? <LoadingRow>{t`Reading backups…`}</LoadingRow> : null}
-      {open && items?.length === 0 ? (
-        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-          {t`No backup contains this save yet.`}
-        </Typography>
-      ) : null}
-      {open
-        ? (items ?? []).map((b) => (
+        <Badge badgeContent={count} color="primary" max={99} overlap="circular">
+          <History size={16} />
+        </Badge>
+      </TipIconButton>
+      <Popover
+        open={anchor !== null}
+        anchorEl={anchor}
+        onClose={() => setAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{ paper: { 'aria-label': t`Backups of ${label}` } }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0.5,
+            p: 1.5,
+            width: 420,
+            maxWidth: '90vw',
+          }}
+        >
+          {backups === null ? <LoadingRow>{t`Reading backups…`}</LoadingRow> : null}
+          {backups?.length === 0 ? (
+            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+              {t`No backup contains this save yet.`}
+            </Typography>
+          ) : null}
+          {(backups ?? []).map((b) => (
             <Row
               key={b.name}
               backup={b}
@@ -140,8 +152,9 @@ export function SaveBackupsSection({
                 SetBackupPinned(game, x.name, !x.pinned).then(refresh).catch(reportUnexpected)
               }}
             />
-          ))
-        : null}
+          ))}
+        </Box>
+      </Popover>
       <ConfirmDialog
         open={ask !== null}
         title={ask?.kind === 'delete' ? t`Delete this backup?` : t`Restore ${label} to ${when}?`}
@@ -171,6 +184,6 @@ export function SaveBackupsSection({
           })
         }}
       />
-    </Box>
+    </>
   )
 }

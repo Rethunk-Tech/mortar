@@ -11,9 +11,11 @@ import { SearchField } from '../shell/SearchField.tsx'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { BackupsDialog } from './BackupsDialog.tsx'
+import { backupsOf } from './backupsOf.ts'
 import { filterAndSortSaves } from './filterAndSortSaves.ts'
 import { SaveRow } from './SaveRow.tsx'
 import { useSaves } from './store.ts'
+import { useAllBackups } from './useAllBackups.ts'
 
 export function SavesTab({ profile, game }: { profile: Profile; game: string }) {
   const { t } = useLingui()
@@ -23,6 +25,10 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   const recordsMods = useGameInfo(game)?.loaderId === 'smapi'
   const [backupsOpen, setBackupsOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const { all, reload: reloadBackups } = useAllBackups(
+    game,
+    fits.map((f) => `${f.folder}:${f.played}`).join('|'),
+  )
   const shown = filterAndSortSaves(fits, query)
   let body: ReactNode = null
   if (status === 'error') {
@@ -66,7 +72,16 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
       </EmptyState>
     )
   } else {
-    body = shown.map((fit) => <SaveRow key={fit.folder} fit={fit} profile={profile} game={game} />)
+    body = shown.map((fit) => (
+      <SaveRow
+        key={fit.folder}
+        fit={fit}
+        profile={profile}
+        game={game}
+        backups={all === null ? null : backupsOf(all, fit.folder)}
+        onBackupsChanged={reloadBackups}
+      />
+    ))
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>

@@ -14,6 +14,7 @@ import {
   TriangleAlert,
   UserPlus,
 } from 'lucide-react'
+import type { Backup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import {
@@ -29,7 +30,7 @@ import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useSaveBackups } from './backups.ts'
 import { newProfileFromSave } from './recordedActions.ts'
-import { SaveBackupsSection } from './SaveBackupsSection.tsx'
+import { SaveBackupsButton } from './SaveBackupsButton.tsx'
 import { SaveDetails } from './SaveDetails.tsx'
 import { SaveGapLine } from './SaveGapLine.tsx'
 import { saveKind, saveName } from './saveName.ts'
@@ -104,11 +105,15 @@ function SaveButtons({
   game,
   profileId,
   label,
+  backups,
+  onBackupsChanged,
 }: {
   fit: Fit
   game: string
   profileId: string
   label: string
+  backups: Backup[] | null
+  onBackupsChanged: () => Promise<void>
 }) {
   const { t } = useLingui()
   const [backingUp, runBackup] = usePending()
@@ -117,6 +122,13 @@ function SaveButtons({
   const canFromSave = (fit.lastMods ?? []).length > 0
   return (
     <>
+      <SaveBackupsButton
+        folder={fit.folder}
+        label={label}
+        profile={profileId}
+        backups={backups}
+        onChanged={onBackupsChanged}
+      />
       {/* A save that never records its mods (Lethal Company's) can never seed a profile. */}
       {fit.unrecorded ? null : (
         <DisabledReason
@@ -148,7 +160,7 @@ function SaveButtons({
                 await useSaves.getState().reload()
                 return
               }
-              await useSaveBackups.getState().reload()
+              await Promise.all([useSaveBackups.getState().reload(), onBackupsChanged()])
               useToasts.getState().push({ kind: 'success', title: t`Backed up ${label}` })
             },
             { errorTitle: t`Could not back up ${label}` },
@@ -169,7 +181,19 @@ function SaveButtons({
   )
 }
 
-export function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; game: string }) {
+export function SaveRow({
+  fit,
+  profile,
+  game,
+  backups,
+  onBackupsChanged,
+}: {
+  fit: Fit
+  profile: Profile
+  game: string
+  backups: Backup[] | null
+  onBackupsChanged: () => Promise<void>
+}) {
   const { t } = useLingui()
   const missing = fit.missing ?? []
   const style = fit.unrecorded ? FILE_STYLE : (SEASON_STYLE[fit.season] ?? SEASON_STYLE[0])
@@ -217,7 +241,14 @@ export function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; ga
             {subtitle}
           </Typography>
         </Box>
-        <SaveButtons fit={fit} game={game} profileId={profile.id} label={label} />
+        <SaveButtons
+          fit={fit}
+          game={game}
+          profileId={profile.id}
+          label={label}
+          backups={backups}
+          onBackupsChanged={onBackupsChanged}
+        />
       </Box>
       <SaveDetails
         fit={fit}
@@ -233,7 +264,6 @@ export function SaveRow({ fit, profile, game }: { fit: Fit; profile: Profile; ga
         profile={profile}
         game={game}
       />
-      <SaveBackupsSection folder={fit.folder} label={label} profile={profile.id} />
     </Box>
   )
 }

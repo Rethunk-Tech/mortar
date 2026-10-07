@@ -7,7 +7,7 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/saves/SavesTab.tsx:58
+#: src/saves/SavesTab.tsx:64
 msgid "No saves match"
 msgstr "No saves match"
 
@@ -155,7 +155,7 @@ msgstr "Show failed"
 msgid "Streaming"
 msgstr "Streaming"
 
-#: src/saves/SaveRow.tsx:154
+#: src/saves/SaveRow.tsx:166
 msgid "Could not back up {label}"
 msgstr "Could not back up {label}"
 
@@ -184,7 +184,7 @@ msgid "Where it came in one download with other mods, it is disabled instead."
 msgstr "Where it came in one download with other mods, it is disabled instead."
 
 #: src/saves/BackupsDialog.tsx:211
-#: src/saves/SaveBackupsButton.tsx:57
+#: src/saves/SaveBackupsButton.tsx:56
 msgid "Allow cleanup"
 msgstr "Allow cleanup"
 
@@ -246,7 +246,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/mods/Toolbar.tsx:268
 #: src/saves/lackChipActions.tsx:44
 #: src/saves/lackChips.tsx:59
-#: src/saves/SaveRow.tsx:124
+#: src/saves/SaveRow.tsx:136
 #: src/share/usePasteLink.ts:29
 #: src/share/usePasteLink.ts:64
 #: src/toasts/HistoryButton.tsx:32
@@ -876,7 +876,7 @@ msgstr "{n, plural, one {Also update # optional file} other {Also update # optio
 msgid "Start the game without a backup."
 msgstr "Start the game without a backup."
 
-#: src/saves/SaveRow.tsx:73
+#: src/saves/SaveRow.tsx:74
 msgid "Mods not recorded"
 msgstr "Mods not recorded"
 
@@ -1735,7 +1735,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/queue/QueueBody.tsx:255
 #: src/queue/store.ts:164
 #: src/saves/BackupsDialog.tsx:160
-#: src/saves/SavesTab.tsx:40
+#: src/saves/SavesTab.tsx:46
 #: src/settings/sections/DataStoreReport.tsx:390
 #: src/settings/sections/Storage.tsx:79
 #: src/settings/sections/Updates.tsx:38
@@ -1921,7 +1921,7 @@ msgstr "Got it"
 msgid "New launch preset"
 msgstr "New launch preset"
 
-#: src/lan/PairedComputers.tsx:176
+#: src/lan/PairedComputers.tsx:180
 msgid "Paired computers"
 msgstr "Paired computers"
 
@@ -2070,7 +2070,7 @@ msgstr "More actions for {0}"
 msgid "Update mods before Play"
 msgstr "Update mods before Play"
 
-#: src/saves/SaveBackupsButton.tsx:53
+#: src/saves/SaveBackupsButton.tsx:52
 msgid " · {cause} · {size} · Kept"
 msgstr " · {cause} · {size} · Kept"
 
@@ -2086,7 +2086,7 @@ msgstr "Enter a name for the profile."
 msgid "Already has it"
 msgstr "Already has it"
 
-#: src/saves/SavesTab.tsx:78
+#: src/saves/SavesTab.tsx:93
 msgid "Filter saves"
 msgstr "Filter saves"
 
@@ -2375,7 +2375,7 @@ msgstr "Repaired {name}"
 msgid "Copy load order"
 msgstr "Copy load order"
 
-#: src/saves/SavesTab.tsx:65
+#: src/saves/SavesTab.tsx:71
 msgid "Try a different search."
 msgstr "Try a different search."
 
@@ -2400,7 +2400,7 @@ msgstr "Game folder"
 msgid "Remove from other profiles…"
 msgstr "Remove from other profiles…"
 
-#: src/saves/SaveRow.tsx:56
+#: src/saves/SaveRow.tsx:57
 msgid "Hill-top farm"
 msgstr "Hill-top farm"
 
@@ -2450,7 +2450,7 @@ msgstr "Downloading"
 msgid "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 msgstr "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 
-#: src/saves/SaveRow.tsx:81
+#: src/saves/SaveRow.tsx:82
 msgid "This game's saves do not record which mods they used."
 msgstr "This game's saves do not record which mods they used."
 
@@ -2760,7 +2760,7 @@ msgstr "Dismissed folders"
 msgid "Ignore updates from {0}"
 msgstr "Ignore updates from {0}"
 
-#: src/saves/SaveBackupsButton.tsx:154
+#: src/saves/SaveBackupsButton.tsx:167
 msgid "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 msgstr "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 
@@ -2863,7 +2863,7 @@ msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
 #: src/games/GameSelect.tsx:138
-#: src/saves/SaveRow.tsx:182
+#: src/saves/SaveRow.tsx:206
 msgid "Last played with {profile}"
 msgstr "Last played with {profile}"
 
@@ -2881,7 +2881,7 @@ msgstr "Waiting for {0}'s profile file to finish syncing. Changes made here are 
 msgid "Reading the Nexus page…"
 msgstr "Reading the Nexus page…"
 
-#: src/saves/SaveRow.tsx:77
+#: src/saves/SaveRow.tsx:78
 msgid "All mods present"
 msgstr "All mods present"
 
@@ -3196,7 +3196,7 @@ msgstr "Measuring… {0}"
 msgid "Check again"
 msgstr "Check again"
 
-#: src/saves/SaveRow.tsx:146
+#: src/saves/SaveRow.tsx:158
 msgid "{label} is no longer in the saves folder"
 msgstr "{label} is no longer in the saves folder"
 
@@ -3308,7 +3308,7 @@ msgstr "Unreachable"
 msgid "Updated tags"
 msgstr "Updated tags"
 
-#: src/lan/PairedComputers.tsx:129
+#: src/lan/PairedComputers.tsx:133
 msgid "Could not start pairing"
 msgstr "Could not start pairing"
 
@@ -3706,8 +3706,8 @@ msgstr "Custom categories"
 #: src/profiles/LaunchPresetsBlock.tsx:53
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:64
 #: src/profiles/ProfilesPage.tsx:171
-#: src/saves/SaveBackupsButton.tsx:70
-#: src/saves/SaveBackupsButton.tsx:148
+#: src/saves/SaveBackupsButton.tsx:69
+#: src/saves/SaveBackupsButton.tsx:161
 #: src/settings/prefCopy.ts:258
 #: src/settings/sections/DataStoreReport.tsx:414
 #: src/settings/sections/DataStoreReport.tsx:421
@@ -4022,7 +4022,7 @@ msgstr "Share as r2modman code?"
 #: src/lan/IncomingPrompt.tsx:82
 #: src/lan/IncomingPrompt.tsx:115
 #: src/lan/PairedComputers.tsx:105
-#: src/lan/PairedComputers.tsx:145
+#: src/lan/PairedComputers.tsx:149
 #: src/launch/PrePlayDialog.tsx:151
 #: src/launch/SaveWarnDialog.tsx:69
 #: src/launch/UpdateWarnDialog.tsx:50
@@ -4082,7 +4082,7 @@ msgstr "Could not unpin the selected mods"
 msgid "Nothing to download"
 msgstr "Nothing to download"
 
-#: src/saves/SaveRow.tsx:53
+#: src/saves/SaveRow.tsx:54
 msgid "Standard farm"
 msgstr "Standard farm"
 
@@ -4229,7 +4229,7 @@ msgstr "In progress ({0})"
 msgid "Choose your {0} folder"
 msgstr "Choose your {0} folder"
 
-#: src/saves/SaveBackupsButton.tsx:53
+#: src/saves/SaveBackupsButton.tsx:52
 msgid " · {cause} · {size}"
 msgstr " · {cause} · {size}"
 
@@ -4444,7 +4444,7 @@ msgstr "{0, plural, one {# config file comes with it.} other {# config files com
 msgid "Needs your click"
 msgstr "Needs your click"
 
-#: src/saves/SaveRow.tsx:124
+#: src/saves/SaveRow.tsx:136
 msgid "This save has no recorded mod list yet."
 msgstr "This save has no recorded mod list yet."
 
@@ -4791,7 +4791,7 @@ msgstr "Ungrouped"
 msgid "Include beta releases"
 msgstr "Include beta releases"
 
-#: src/saves/SaveRow.tsx:60
+#: src/saves/SaveRow.tsx:61
 msgid "Meadowlands farm"
 msgstr "Meadowlands farm"
 
@@ -5196,7 +5196,7 @@ msgstr "{0, plural, one {Add # mod} other {Add # mods}}"
 msgid "Resolution"
 msgstr "Resolution"
 
-#: src/lan/PairedComputers.tsx:191
+#: src/lan/PairedComputers.tsx:195
 msgid "Could not unpair"
 msgstr "Could not unpair"
 
@@ -5266,6 +5266,10 @@ msgstr "Report a bug…"
 #: src/updates/WhatsNewDialog.tsx:133
 msgid "Read the release notes on GitHub"
 msgstr "Read the release notes on GitHub"
+
+#: src/saves/SaveBackupsButton.tsx:102
+msgid "Backups ({count})"
+msgstr "Backups ({count})"
 
 #: src/mods/ProblemsTab.tsx:216
 #: src/mods/ProblemsTab.tsx:392
@@ -5366,7 +5370,7 @@ msgstr "Clear finished"
 msgid "Enable {0}"
 msgstr "Enable {0}"
 
-#: src/saves/SavesTab.tsx:85
+#: src/saves/SavesTab.tsx:100
 msgid "Save backups…"
 msgstr "Save backups…"
 
@@ -5511,7 +5515,7 @@ msgstr "The files will download from each mod's source."
 msgid "Mortar found nothing to repair in this profile."
 msgstr "Mortar found nothing to repair in this profile."
 
-#: src/saves/SaveRow.tsx:69
+#: src/saves/SaveRow.tsx:70
 msgid "Has used {missing, plural, one {# mod it lacks} other {# mods it lacks}}"
 msgstr "Has used {missing, plural, one {# mod it lacks} other {# mods it lacks}}"
 
@@ -5791,7 +5795,7 @@ msgstr "Retry failed"
 msgid "Zoom ({value}%)"
 msgstr "Zoom ({value}%)"
 
-#: src/saves/SaveBackupsButton.tsx:70
+#: src/saves/SaveBackupsButton.tsx:69
 msgid "Allow cleanup before deleting."
 msgstr "Allow cleanup before deleting."
 
@@ -5987,7 +5991,7 @@ msgid "Disable it and play"
 msgstr "Disable it and play"
 
 #: src/saves/BackupsDialog.tsx:211
-#: src/saves/SaveBackupsButton.tsx:57
+#: src/saves/SaveBackupsButton.tsx:56
 msgid "Keep forever"
 msgstr "Keep forever"
 
@@ -6060,7 +6064,7 @@ msgstr "This profile has no mods to download"
 msgid "Relative"
 msgstr "Relative"
 
-#: src/saves/SaveRow.tsx:181
+#: src/saves/SaveRow.tsx:205
 msgid "a deleted profile"
 msgstr "a deleted profile"
 
@@ -6334,7 +6338,7 @@ msgstr "{optional, plural, one {# optional file will be re-applied; check it sti
 msgid "This download's mod is not known to come from {0}."
 msgstr "This download's mod is not known to come from {0}."
 
-#: src/saves/SaveBackupsButton.tsx:128
+#: src/saves/SaveBackupsButton.tsx:141
 msgid "No backup contains this save yet."
 msgstr "No backup contains this save yet."
 
@@ -6799,8 +6803,8 @@ msgstr "Last used"
 msgid "Add to group…"
 msgstr "Add to group…"
 
-#: src/lan/PairedComputers.tsx:135
-#: src/lan/PairedComputers.tsx:180
+#: src/lan/PairedComputers.tsx:139
+#: src/lan/PairedComputers.tsx:184
 msgid "Pair a computer"
 msgstr "Pair a computer"
 
@@ -7148,7 +7152,7 @@ msgstr "Could not sign in with Nexus Mods"
 msgid "Showing the first 500 matches."
 msgstr "Showing the first 500 matches."
 
-#: src/lan/PairedComputers.tsx:177
+#: src/lan/PairedComputers.tsx:181
 msgid "Profiles you send between paired computers carry their mod files, whatever the source."
 msgstr "Profiles you send between paired computers carry their mod files, whatever the source."
 
@@ -7465,7 +7469,7 @@ msgstr "Unofficial"
 msgid "Hide archive contents"
 msgstr "Hide archive contents"
 
-#: src/saves/SaveRow.tsx:58
+#: src/saves/SaveRow.tsx:59
 msgid "Four Corners farm"
 msgstr "Four Corners farm"
 
@@ -7694,10 +7698,6 @@ msgstr "Added {name}"
 msgid "Optional"
 msgstr "Optional"
 
-#: src/saves/SaveBackupsButton.tsx:123
-msgid "Backups"
-msgstr "Backups"
-
 #: src/console/BisectDialog.tsx:156
 msgid "Crash finding failed."
 msgstr "Crash finding failed."
@@ -7735,7 +7735,7 @@ msgid "Check interval"
 msgstr "Check interval"
 
 #: src/lan/PairedComputers.tsx:66
-#: src/lan/PairedComputers.tsx:181
+#: src/lan/PairedComputers.tsx:185
 msgid "Enter code"
 msgstr "Enter code"
 
@@ -7840,7 +7840,7 @@ msgstr "{count, plural, one {# mod} other {# mods}}"
 msgid "{cause}. Retry or skip it from the queue."
 msgstr "{cause}. Retry or skip it from the queue."
 
-#: src/saves/SaveRow.tsx:57
+#: src/saves/SaveRow.tsx:58
 msgid "Wilderness farm"
 msgstr "Wilderness farm"
 
@@ -7886,7 +7886,7 @@ msgid "Add"
 msgstr "Add"
 
 #. placeholder {0}: fits.length
-#: src/saves/SavesTab.tsx:79
+#: src/saves/SavesTab.tsx:94
 msgid "{0, plural, one {Filter # save} other {Filter # saves}}"
 msgstr "{0, plural, one {Filter # save} other {Filter # saves}}"
 
@@ -8170,7 +8170,7 @@ msgstr "The page reads the profile from the link itself. Nothing is uploaded or 
 msgid "Restart now"
 msgstr "Restart now"
 
-#: src/saves/SaveRow.tsx:152
+#: src/saves/SaveRow.tsx:164
 msgid "Backed up {label}"
 msgstr "Backed up {label}"
 
@@ -8586,6 +8586,10 @@ msgstr "An install is already running."
 #: src/mods/CleanupSection.tsx:157
 msgid "This change can be undone from History."
 msgstr "This change can be undone from History."
+
+#: src/saves/SaveBackupsButton.tsx:102
+msgid "No backups yet"
+msgstr "No backups yet"
 
 #. placeholder {0}: mod.name
 #: src/mods/storeEntries.ts:316
@@ -9519,7 +9523,7 @@ msgstr "Steps to reproduce"
 msgid "Their folders are removed from this profile. You can undo this."
 msgstr "Their folders are removed from this profile. You can undo this."
 
-#: src/saves/SavesTab.tsx:61
+#: src/saves/SavesTab.tsx:67
 msgid "Clear filter"
 msgstr "Clear filter"
 
@@ -10191,7 +10195,7 @@ msgstr "A collection draft"
 msgid "Open focused mod details"
 msgstr "Open focused mod details"
 
-#: src/saves/SaveRow.tsx:161
+#: src/saves/SaveRow.tsx:173
 msgid "Open the folder of {label}"
 msgstr "Open the folder of {label}"
 
@@ -10588,7 +10592,7 @@ msgstr "Details of {0}"
 msgid "Carry them into the new version's folder."
 msgstr "Carry them into the new version's folder."
 
-#: src/saves/SaveBackupsButton.tsx:147
+#: src/saves/SaveBackupsButton.tsx:160
 msgid "Delete this backup?"
 msgstr "Delete this backup?"
 
@@ -10803,7 +10807,7 @@ msgstr "{local, plural, one {# mod you added from an archive can't go in the fil
 msgid "Delete {0}?"
 msgstr "Delete {0}?"
 
-#: src/saves/SaveRow.tsx:59
+#: src/saves/SaveRow.tsx:60
 msgid "Beach farm"
 msgstr "Beach farm"
 
@@ -10882,7 +10886,7 @@ msgstr "Standard"
 msgid "Could not disable the other copy of {0}"
 msgstr "Could not disable the other copy of {0}"
 
-#: src/saves/SaveBackupsButton.tsx:153
+#: src/saves/SaveBackupsButton.tsx:166
 msgid "The backup from {when} is deleted for good, with every save in it."
 msgstr "The backup from {when} is deleted for good, with every save in it."
 
@@ -10959,7 +10963,7 @@ msgstr "{0, plural, one {# result} other {# results}}"
 msgid "This launch was not measured. Use Measure next launch under Startup, play again, then start measuring here."
 msgstr "This launch was not measured. Use Measure next launch under Startup, play again, then start measuring here."
 
-#: src/saves/SaveRow.tsx:54
+#: src/saves/SaveRow.tsx:55
 msgid "Riverland farm"
 msgstr "Riverland farm"
 
@@ -11239,7 +11243,7 @@ msgid "Mortar backs up your saves before playing and before updates. Use Back up
 msgstr "Mortar backs up your saves before playing and before updates. Use Back up now on a save to make one yourself."
 
 #: src/saves/BackupsDialog.tsx:109
-#: src/saves/SaveBackupsButton.tsx:63
+#: src/saves/SaveBackupsButton.tsx:62
 msgid "Stop the game to restore saves."
 msgstr "Stop the game to restore saves."
 
@@ -11337,7 +11341,7 @@ msgstr "{0, plural, one {Keep {1} and remove {2}.} other {Keep {3} and remove # 
 msgid "{count, plural, one {# update is available} other {# updates are available}}"
 msgstr "{count, plural, one {# update is available} other {# updates are available}}"
 
-#: src/saves/SaveBackupsButton.tsx:147
+#: src/saves/SaveBackupsButton.tsx:160
 msgid "Restore {label} to {when}?"
 msgstr "Restore {label} to {when}?"
 
@@ -11700,6 +11704,10 @@ msgstr "SMAPI version"
 msgid "Entry"
 msgstr "Entry"
 
+#: src/saves/SaveBackupsButton.tsx:126
+msgid "Backups of {label}"
+msgstr "Backups of {label}"
+
 #. placeholder {0}: d.name
 #: src/mods/describe.ts:231
 msgid "{0} has multiple Nexus files installed: {files}. One may be an add-on."
@@ -11775,7 +11783,7 @@ msgstr "This launch preset will be deleted."
 msgid "Update in all profiles ({n})"
 msgstr "Update in all profiles ({n})"
 
-#: src/lan/PairedComputers.tsx:194
+#: src/lan/PairedComputers.tsx:198
 msgid "Unpair"
 msgstr "Unpair"
 
@@ -11895,7 +11903,7 @@ msgstr "Jump to first error"
 msgid "Now needs {0}"
 msgstr "Now needs {0}"
 
-#: src/saves/SaveRow.tsx:129
+#: src/saves/SaveRow.tsx:141
 msgid "New profile from this save"
 msgstr "New profile from this save"
 
@@ -12198,7 +12206,7 @@ msgstr "Could not add to the group"
 msgid "Switch to {switchName}"
 msgstr "Switch to {switchName}"
 
-#: src/lan/PairedComputers.tsx:138
+#: src/lan/PairedComputers.tsx:142
 msgid "On the other computer, choose Enter code and type this. It works once, for five minutes."
 msgstr "On the other computer, choose Enter code and type this. It works once, for five minutes."
 
@@ -12216,7 +12224,7 @@ msgstr "Also in these profiles"
 msgid "Icon"
 msgstr "Icon"
 
-#: src/saves/SavesTab.tsx:51
+#: src/saves/SavesTab.tsx:57
 msgid "Play this profile and save a game. Each save shows here, with its backups."
 msgstr "Play this profile and save a game. Each save shows here, with its backups."
 
@@ -12699,7 +12707,7 @@ msgstr "No stored run contains that text."
 msgid "Each plugin's main-thread time per frame: its Harmony prefixes, postfixes and finalizers and its own Update, LateUpdate and FixedUpdate, less any timed call inside them. Code a transpiler rewrote and work on other threads are not counted."
 msgstr "Each plugin's main-thread time per frame: its Harmony prefixes, postfixes and finalizers and its own Update, LateUpdate and FixedUpdate, less any timed call inside them. Code a transpiler rewrote and work on other threads are not counted."
 
-#: src/saves/SavesTab.tsx:45
+#: src/saves/SavesTab.tsx:51
 msgid "Reading your saves…"
 msgstr "Reading your saves…"
 
@@ -12804,7 +12812,7 @@ msgstr "Your notes for this profile, for example: Friday co-op profile. Keep eve
 msgid "imported from a .mortar file"
 msgstr "imported from a .mortar file"
 
-#: src/saves/SavesTab.tsx:50
+#: src/saves/SavesTab.tsx:56
 msgid "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
 msgstr "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
 
@@ -12895,8 +12903,8 @@ msgstr "Installers ask as usual; Premium accounts also get the curator's choices
 #: src/mods/problemFixButtons.tsx:218
 #: src/profiles/HistoryEventRow.tsx:72
 #: src/saves/BackupsDialog.tsx:247
-#: src/saves/SaveBackupsButton.tsx:63
-#: src/saves/SaveBackupsButton.tsx:148
+#: src/saves/SaveBackupsButton.tsx:62
+#: src/saves/SaveBackupsButton.tsx:161
 #: src/shell/TitleBar.tsx:111
 msgid "Restore"
 msgstr "Restore"
@@ -13002,7 +13010,7 @@ msgstr "Untrack unused…"
 msgid "{gameName} was not found. Browse to its folder."
 msgstr "{gameName} was not found. Browse to its folder."
 
-#: src/saves/SaveRow.tsx:138
+#: src/saves/SaveRow.tsx:150
 msgid "Back up {label} now"
 msgstr "Back up {label} now"
 
@@ -13207,7 +13215,7 @@ msgid "Leave out"
 msgstr "Leave out"
 
 #: src/game/Home.tsx:94
-#: src/saves/SavesTab.tsx:48
+#: src/saves/SavesTab.tsx:54
 msgid "No saves yet"
 msgstr "No saves yet"
 
@@ -13265,7 +13273,7 @@ msgid "Launch"
 msgstr "Launch"
 
 #: src/saves/BackupsDialog.tsx:165
-#: src/saves/SaveBackupsButton.tsx:125
+#: src/saves/SaveBackupsButton.tsx:138
 msgid "Reading backups…"
 msgstr "Reading backups…"
 
@@ -13354,7 +13362,7 @@ msgstr "Confirm removals"
 msgid "Recently deleted retention"
 msgstr "Recently deleted retention"
 
-#: src/saves/SaveRow.tsx:55
+#: src/saves/SaveRow.tsx:56
 msgid "Forest farm"
 msgstr "Forest farm"
 
