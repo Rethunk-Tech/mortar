@@ -52,6 +52,16 @@ func (s *Service) CrashHint(gameID, profileID string) (*CrashHint, error) {
 			hint.ModKey, hint.ModName, hint.Reason, hint.Evidence = m.Key, m.Name, b.Exception, b.Frame
 			return hint, nil
 		}
+		if m, reason, evidence, ok := s.dumpBlame(gameID, run, installed); ok {
+			hint.Evidence = evidence
+			if m.Key != "" {
+				hint.ModKey, hint.ModName, hint.Reason = m.Key, m.Name, "The game crashed inside this mod's code."
+				return hint, nil
+			}
+			if len(found) == 0 {
+				hint.Reason = reason
+			}
+		}
 	}
 	if len(found) > 0 {
 		hint.Reason = found[0].Message

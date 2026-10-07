@@ -3,6 +3,8 @@ package game
 import (
 	"fmt"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
+
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -38,6 +40,13 @@ func PathFor(home string, s settings.Settings, id, pin, role string) (string, er
 	if !ok || !has {
 		return "", usererr.Wrap(usererr.NotFound, fmt.Errorf("game %q has no %s path", id, role))
 	}
+	return PathIn(home, s, id, pin, t)
+}
+
+// PathIn resolves the path template t for game id's install pin names (the selected install when empty), inside its
+// Wine or Proton prefix when it runs in one.
+func PathIn(home string, s settings.Settings, id, pin string, t components.PathTemplate) (string, error) {
+	g, _ := catalogGame(id)
 	in, err := ResolveInstall(home, s, id, pin)
 	if err != nil {
 		return "", err
