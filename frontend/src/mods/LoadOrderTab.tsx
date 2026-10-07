@@ -7,6 +7,7 @@ import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import type { Row } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadorder/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { LoadOrder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { PageActions } from '../game/PageActions.tsx'
 import { useTab } from '../game/tab.ts'
 import { useGameLoader } from '../games/info.ts'
 import { copyText } from '../share/copyText.ts'
@@ -182,6 +183,19 @@ function OrderList({
   scrollRef.current = onScroll
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <PageActions>
+        <Button
+          variant="outlined"
+          color="inherit"
+          startIcon={<Copy size={16} />}
+          sx={{ height: 34 }}
+          onClick={() => {
+            copyText(formatLoadOrderCopy(rows), t`Load order copied`)
+          }}
+        >
+          {t`Copy load order`}
+        </Button>
+      </PageActions>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 0.5 }}>
         <SearchField
           value={query}
@@ -189,15 +203,6 @@ function OrderList({
           label={t`Filter load order`}
           sx={{ flex: 1, minWidth: 0 }}
         />
-        <Button
-          size="small"
-          startIcon={<Copy size={14} />}
-          onClick={() => {
-            copyText(formatLoadOrderCopy(rows), t`Load order copied`)
-          }}
-        >
-          {t`Copy load order`}
-        </Button>
       </Box>
       <Box ref={parentRef} sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: 2, py: 1.5 }}>
         <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1.5 }}>
