@@ -299,9 +299,10 @@ func TestRecoverGoesOnPastProfilesItCannotUse(t *testing.T) {
 	}
 }
 
-// setAndPrepare saves a window mode for the profile and starts a launch, returning the record that undoes it.
-func setAndPrepare(t *testing.T, svc *Service, profileID, mode string) *settingsRestore {
+// setAndPrepare saves windowed mode for the profile and starts a launch, returning the record that undoes it.
+func setAndPrepare(t *testing.T, svc *Service, profileID string) *settingsRestore {
 	t.Helper()
+	mode := "windowed"
 	if err := svc.SetGameSettings("stardew", profileID, gamesettings.Settings{WindowMode: &mode}); err != nil {
 		t.Fatal(err)
 	}
@@ -337,7 +338,7 @@ func TestRestoreBringsBackTheExactBytes(t *testing.T) {
 func TestRestoreWritesNothingTheSecondTime(t *testing.T) {
 	svc, p, config := newGameSettingsService(t)
 	path := writePrefs(t, config, prefsXML)
-	restore := setAndPrepare(t, svc, p.ID, "windowed")
+	restore := setAndPrepare(t, svc, p.ID)
 	if err := svc.restoreGameSettings(restore); err != nil {
 		t.Fatal(err)
 	}
@@ -413,7 +414,7 @@ func TestPrepareWritesNothingWhenThereIsNothingToChange(t *testing.T) {
 func TestRestoreKeepsCorruptPrefsAndTheRecord(t *testing.T) {
 	svc, p, config := newGameSettingsService(t)
 	path := writePrefs(t, config, prefsXML)
-	restore := setAndPrepare(t, svc, p.ID, "windowed")
+	restore := setAndPrepare(t, svc, p.ID)
 	// The game crashed halfway through writing its preferences.
 	torn := "<startup_preferences><windowMode>windowed"
 	if err := os.WriteFile(path, []byte(torn), 0o600); err != nil {
@@ -433,7 +434,7 @@ func TestRestoreKeepsCorruptPrefsAndTheRecord(t *testing.T) {
 func TestRestoreLeavesPrefsTheGameChangedEverywhere(t *testing.T) {
 	svc, p, config := newGameSettingsService(t)
 	path := writePrefs(t, config, prefsXML)
-	restore := setAndPrepare(t, svc, p.ID, "windowed")
+	restore := setAndPrepare(t, svc, p.ID)
 	changed := bytes.Replace(readBytes(t, path), []byte("windowed"), []byte("borderless"), 1)
 	if err := os.WriteFile(path, changed, 0o600); err != nil {
 		t.Fatal(err)
@@ -452,7 +453,7 @@ func TestRestoreLeavesPrefsTheGameChangedEverywhere(t *testing.T) {
 func TestRestoreWithPrefsAlreadyAsTheyWereDropsTheRecord(t *testing.T) {
 	svc, p, config := newGameSettingsService(t)
 	path := writePrefs(t, config, prefsXML)
-	restore := setAndPrepare(t, svc, p.ID, "windowed")
+	restore := setAndPrepare(t, svc, p.ID)
 	// The game rewrote the file back to the original on its own.
 	if err := os.WriteFile(path, []byte(prefsXML), 0o600); err != nil {
 		t.Fatal(err)
