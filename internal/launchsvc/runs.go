@@ -596,8 +596,7 @@ func (s *Service) logPath(gameID, profileID string) (path string, own bool, err 
 	if err != nil {
 		return "", false, err
 	}
-	rel, relErr := filepath.Rel(dir, path)
-	return path, relErr == nil && !strings.HasPrefix(rel, ".."), nil
+	return path, datadir.UnderRoot(dir, path), nil
 }
 
 func readOwnedLog(path string, own bool, home, modsDir string, since time.Time) (string, bool) {
