@@ -15,7 +15,7 @@ import {
   ShowExportedCollection,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { listNames } from '../i18n/list.ts'
-import { SendDialog } from '../lan/SendDialog.tsx'
+import { SendPanel } from '../lan/SendPanel.tsx'
 import { useSettings } from '../settings/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { MONO } from '../theme/theme.ts'
@@ -338,42 +338,31 @@ export function ThunderstorePane({ game, profileId }: { game: string; profileId:
 export function NearbyPane({ game, profileId }: { game: string; profileId: string }) {
   const { t } = useLingui()
   const lanSharing = useSettings((s) => s.lanSharing)
-  const [open, setOpen] = useState(false)
-  const [asking, setAsking] = useState(false)
   const [enabling, setEnabling] = useState(false)
+  if (lanSharing) {
+    return <SendPanel game={game} profileId={profileId} onSent={() => undefined} />
+  }
   return (
     <Pane>
+      <Typography sx={{ fontSize: 15, fontWeight: 600 }}>{t`Turn on sharing nearby?`}</Typography>
       <Typography sx={note}>
-        {t`Send this profile to a computer on your network that runs Mortar. Paired computers get the whole file; the others get only the link.`}
+        {t`Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General.`}
       </Typography>
       <Box>
         <Button
           variant="contained"
-          onClick={() => (lanSharing ? setOpen(true) : setAsking(true))}
+          disabled={enabling}
+          onClick={() => {
+            setEnabling(true)
+            SetLanSharing(true)
+              .catch(reportError(t`Could not turn on sharing nearby`))
+              .finally(() => setEnabling(false))
+          }}
           sx={{ height: 40 }}
         >
-          {t`Choose a computer…`}
+          {t`Turn on and continue`}
         </Button>
       </Box>
-      <ConfirmDialog
-        open={asking}
-        title={t`Turn on sharing nearby?`}
-        body={t`Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General.`}
-        confirmLabel={t`Turn on and continue`}
-        busy={enabling}
-        onCancel={() => setAsking(false)}
-        onConfirm={() => {
-          setEnabling(true)
-          SetLanSharing(true)
-            .then(() => {
-              setAsking(false)
-              setOpen(true)
-            })
-            .catch(reportError(t`Could not turn on sharing nearby`))
-            .finally(() => setEnabling(false))
-        }}
-      />
-      <SendDialog open={open} game={game} profileId={profileId} onClose={() => setOpen(false)} />
     </Pane>
   )
 }

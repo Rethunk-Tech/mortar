@@ -424,7 +424,7 @@ msgstr "Mortar leaves the taskbar and waits in the tray until the game exits."
 msgid "Always"
 msgstr "Always"
 
-#: src/share/DestinationGrid.tsx:65
+#: src/share/DestinationGrid.tsx:66
 #: src/share/ShareDialog.tsx:26
 msgid "Nearby computer"
 msgstr "Nearby computer"
@@ -1272,7 +1272,7 @@ msgstr "Untrack on Nexus"
 msgid "Select all mods"
 msgstr "Select all mods"
 
-#: src/share/DestinationGrid.tsx:61
+#: src/share/DestinationGrid.tsx:62
 msgid "An r2modman code or modpack"
 msgstr "An r2modman code or modpack"
 
@@ -3524,7 +3524,7 @@ msgstr "Skip sharing"
 msgid "The game is using this profile. Stop the game to change mods."
 msgstr "The game is using this profile. Stop the game to change mods."
 
-#: src/share/DestinationGrid.tsx:71
+#: src/share/DestinationGrid.tsx:72
 msgid "Text for Discord or a forum"
 msgstr "Text for Discord or a forum"
 
@@ -4018,7 +4018,7 @@ msgstr "Share as r2modman code?"
 #: src/profiles/PackImportDialog.tsx:170
 #: src/settings/sections/NexusSSO.tsx:67
 #: src/settings/sections/nxmHandler.tsx:77
-#: src/share/ShareFooter.tsx:33
+#: src/share/ShareFooter.tsx:41
 #: src/shell/BugReportDialog.tsx:102
 #: src/shell/ConfirmDialog.tsx:57
 #: src/shell/PromptDialog.tsx:67
@@ -4328,7 +4328,7 @@ msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 #: src/settings/sections/About.tsx:62
 #: src/settings/sections/About.tsx:67
 #: src/settings/sections/Updates.tsx:164
-#: src/share/DestinationGrid.tsx:50
+#: src/share/DestinationGrid.tsx:51
 #: src/share/ShareDialog.tsx:23
 #: src/shell/AppMenu.tsx:134
 #: src/shell/AppMenu.tsx:137
@@ -4951,7 +4951,7 @@ msgstr "Unlinked the collection {name}"
 msgid "Could not permanently delete the profile"
 msgstr "Could not permanently delete the profile"
 
-#: src/share/DestinationGrid.tsx:66
+#: src/share/DestinationGrid.tsx:67
 msgid "Send over your network"
 msgstr "Send over your network"
 
@@ -5655,7 +5655,7 @@ msgstr "Mortar can start {name} directly instead, without the Steam overlay or S
 msgid "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 
-#: src/share/DestinationGrid.tsx:78
+#: src/share/DestinationGrid.tsx:79
 msgid "Where to share"
 msgstr "Where to share"
 
@@ -6764,7 +6764,7 @@ msgstr "Changelog: {name}"
 msgid "only {mods} is shown"
 msgstr "only {mods} is shown"
 
-#: src/share/DestinationGrid.tsx:125
+#: src/share/DestinationGrid.tsx:126
 msgid "Last used"
 msgstr "Last used"
 
@@ -7644,7 +7644,7 @@ msgstr "No update checks, and it can't go in a share link."
 msgid "This pack has files that always install."
 msgstr "This pack has files that always install."
 
-#: src/share/DestinationGrid.tsx:70
+#: src/share/DestinationGrid.tsx:71
 #: src/share/ShareDialog.tsx:27
 msgid "Mod list"
 msgstr "Mod list"
@@ -8723,7 +8723,7 @@ msgstr "Bundle added"
 msgid "Browse"
 msgstr "Browse"
 
-#: src/share/ShareFooter.tsx:18
+#: src/share/ShareFooter.tsx:26
 msgid "Message copied"
 msgstr "Message copied"
 
@@ -10153,7 +10153,7 @@ msgstr "A .mortar file holds the link's mods plus their settings files. Send it;
 msgid "{count, plural, one {{name} was updated since this run and logged # error. First: {first}} other {{name} was updated since this run and logged # errors. First: {first}}}"
 msgstr "{count, plural, one {{name} was updated since this run and logged # error. First: {first}} other {{name} was updated since this run and logged # errors. First: {first}}}"
 
-#: src/share/DestinationGrid.tsx:56
+#: src/share/DestinationGrid.tsx:57
 msgid "A collection draft"
 msgstr "A collection draft"
 
@@ -12201,7 +12201,7 @@ msgstr "{0} was installed from another site. Updating installs {1} from {2} inst
 #: src/mods/listRows.ts:118
 #: src/mods/Sidebar.tsx:558
 #: src/settings/sections/NexusMods.tsx:300
-#: src/share/DestinationGrid.tsx:55
+#: src/share/DestinationGrid.tsx:56
 #: src/share/ShareDialog.tsx:24
 msgid "Nexus Mods"
 msgstr "Nexus Mods"
@@ -13144,7 +13144,7 @@ msgstr "Send links only"
 msgid "Open in the tray instead of showing the window"
 msgstr "Open in the tray instead of showing the window"
 
-#: src/share/DestinationGrid.tsx:94
+#: src/share/DestinationGrid.tsx:95
 #: src/share/DestinationPanel.tsx:93
 msgid "No mods to share."
 msgstr "No mods to share."
@@ -13179,12 +13179,12 @@ msgstr "No saves yet"
 
 #: src/mods/listRows.ts:120
 #: src/mods/Sidebar.tsx:560
-#: src/share/DestinationGrid.tsx:60
+#: src/share/DestinationGrid.tsx:61
 #: src/share/ShareDialog.tsx:25
 msgid "Thunderstore"
 msgstr "Thunderstore"
 
-#: src/share/ShareFooter.tsx:21
+#: src/share/ShareFooter.tsx:29
 msgid "Copy as a message"
 msgstr "Copy as a message"
 
@@ -13354,7 +13354,7 @@ msgstr "Using your gh login"
 msgid "Share profiles on the local network"
 msgstr "Share profiles on the local network"
 
-#: src/share/DestinationGrid.tsx:51
+#: src/share/DestinationGrid.tsx:52
 msgid "A link or .mortar file"
 msgstr "A link or .mortar file"
 

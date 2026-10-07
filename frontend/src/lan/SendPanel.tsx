@@ -3,10 +3,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
   List,
   ListItem,
@@ -44,13 +40,6 @@ function sendPeerView(
     return 'looking'
   }
   return 'list'
-}
-
-interface SendDialogProps {
-  open: boolean
-  game: string
-  profileId: string
-  onClose: () => void
 }
 
 interface SendTarget {
@@ -116,8 +105,8 @@ function LinksOnlyView({
   const { t } = useLingui()
   return (
     <>
-      <DialogTitle>{t`Send only links to ${name}?`}</DialogTitle>
-      <DialogContent dividers={true}>
+      <Typography sx={{ fontWeight: 600 }}>{t`Send only links to ${name}?`}</Typography>
+      <Box>
         <Stack spacing={1.5}>
           <Typography variant="body2">
             {t`${name} is not paired with this computer, so Mortar sends the list of mods, not their files. ${name} will download each mod from its site, one click per mod on a free Nexus account.`}
@@ -126,14 +115,14 @@ function LinksOnlyView({
             {t`Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on ${name}.`}
           </Typography>
         </Stack>
-      </DialogContent>
-      <DialogActions>
+      </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
         <Button onClick={onBack}>{t`Back`}</Button>
         <Button variant="outlined" onClick={onPair}>{t`Pair`}</Button>
         <Button variant="contained" disabled={busy} onClick={onSend}>
           {t`Send links only`}
         </Button>
-      </DialogActions>
+      </Box>
     </>
   )
 }
@@ -202,12 +191,21 @@ function useSend(game: string, profileId: string, onSent: () => void) {
   return { sending, send }
 }
 
-export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) {
+// Peer list, links-only confirmation, pairing and send-to-an-address for one profile, shown inside the Share dialog.
+export function SendPanel({
+  game,
+  profileId,
+  onSent,
+}: {
+  game: string
+  profileId: string
+  onSent: () => void
+}) {
   const { t } = useLingui()
   const [peers, setPeers] = useState<Peer[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [looked, setLooked] = useState(false)
-  const { sending, send } = useSend(game, profileId, onClose)
+  const { sending, send } = useSend(game, profileId, onSent)
   const [manual, setManual] = useState('')
   const [addressPicker, setAddressPicker] = useState(false)
   const [pairing, setPairing] = useState(false)
@@ -228,18 +226,10 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
   }, [t])
 
   useEffect(() => {
-    if (!open) {
-      setPeers([])
-      setManual('')
-      setAddressPicker(false)
-      setLooked(false)
-      setLinksOnly(null)
-      return
-    }
     refresh()
     const timer = globalThis.setInterval(refresh, refreshInterval)
     return () => globalThis.clearInterval(timer)
-  }, [open, refresh])
+  }, [refresh])
 
   useEffect(
     () =>
@@ -256,7 +246,7 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
   )
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       {linksOnly ? (
         <LinksOnlyView
           name={linksOnly.name}
@@ -271,15 +261,13 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
         />
       ) : (
         <>
-          <DialogTitle
-            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-          >
-            {t`Send to…`}
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography sx={{ fontWeight: 600 }}>{t`Send to…`}</Typography>
             <IconButton aria-label={t`Refresh`} onClick={refresh} disabled={refreshing}>
               {refreshing ? <CircularProgress size={18} /> : <RefreshCw size={18} />}
             </IconButton>
-          </DialogTitle>
-          <DialogContent dividers={true}>
+          </Box>
+          <Box>
             {sendPeerView(looked, refreshing, peers.length) === 'empty' ? (
               <EmptyState
                 compact={true}
@@ -331,13 +319,10 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
                 </Button>
               </Box>
             ) : null}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={onClose}>{t`Cancel`}</Button>
-          </DialogActions>
+          </Box>
         </>
       )}
       <ShowCodeDialog open={pairing} onClose={() => setPairing(false)} />
-    </Dialog>
+    </Box>
   )
 }

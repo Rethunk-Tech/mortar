@@ -9,11 +9,12 @@ import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { toastError } from '../toasts/report.ts'
 import { type ShownInfo, shownInfo, suggestFile } from './logic.ts'
 import {
-  isShareMethod,
-  methodStorageKey,
-  pickMethod,
-  type ShareMethod,
-  shareMethods,
+  type Destination,
+  destinationStorageKey,
+  isDestination,
+  lastUsedDestination,
+  type MortarFormat,
+  shareDestinations,
 } from './methods.ts'
 import { shareIncludeDefaults, toShareInclude } from './shareDefaults.ts'
 import { useShareDialog } from './store.ts'
@@ -25,10 +26,13 @@ export function useShareBuild() {
   const close = useShareDialog((s) => s.close)
   const game = useCurrentGame()
   const thunderstore = useProfiles((s) => hasThunderstore(s.game))
-  const [method, setMethodState] = useState<ShareMethod>('link')
-  const setMethod = (next: ShareMethod) => {
-    setMethodState(next)
-    writeStored(methodStorageKey(game), next)
+  // null is the destination grid.
+  const [destination, setDestination] = useState<Destination | null>(null)
+  const [format, setFormat] = useState<MortarFormat>('link')
+  const [lastUsed, setLastUsed] = useState<Destination | null>(null)
+  const choose = (next: Destination) => {
+    setDestination(next)
+    writeStored(destinationStorageKey(game), next)
   }
   const [info, setInfo] = useState<ShownInfo | null>(null)
   const [include, setInclude] = useState(() => shareIncludeDefaults(useSettings.getState()))
@@ -38,7 +42,9 @@ export function useShareBuild() {
       return
     }
     setInclude(shareIncludeDefaults(useSettings.getState()))
-    setMethodState('link')
+    setDestination(null)
+    setFormat('link')
+    setLastUsed(null)
     setInfo(null)
     pickTab.current = true
   }, [profileId])
@@ -53,18 +59,18 @@ export function useShareBuild() {
           setInfo(shownInfo(next))
           if (pickTab.current) {
             pickTab.current = false
-            const remembered = readStored<ShareMethod | null>(
-              methodStorageKey(game),
+            const remembered = readStored<Destination | null>(
+              destinationStorageKey(game),
               null,
-              (v): v is ShareMethod => isShareMethod(v),
+              (v): v is Destination => isDestination(v),
             )
-            setMethodState(
-              pickMethod(
+            setLastUsed(
+              lastUsedDestination(
                 remembered,
-                suggestFile(next.count, next.tooLarge) ? 'file' : 'link',
-                shareMethods({ thunderstore, count: next.count }),
+                shareDestinations({ thunderstore, count: next.count }),
               ),
             )
+            setFormat(suggestFile(next.count, next.tooLarge) ? 'file' : 'link')
           }
         }
       },
@@ -85,8 +91,12 @@ export function useShareBuild() {
     keys,
     close,
     game,
-    method,
-    setMethod,
+    destination,
+    setDestination,
+    choose,
+    format,
+    setFormat,
+    lastUsed,
     thunderstore,
     info,
     include,

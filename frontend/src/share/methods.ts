@@ -1,40 +1,40 @@
 import type { ShareInclude } from './shareDefaults.ts'
 
-const SHARE_METHODS = ['link', 'file', 'list', 'nexus', 'nearby', 'thunderstore'] as const
+const DESTINATIONS = ['mortar', 'nexus', 'thunderstore', 'nearby', 'list'] as const
 
-export type ShareMethod = (typeof SHARE_METHODS)[number]
+export type Destination = (typeof DESTINATIONS)[number]
 
-export const isShareMethod = (v: unknown): v is ShareMethod => SHARE_METHODS.some((m) => m === v)
+export const isDestination = (v: unknown): v is Destination => DESTINATIONS.some((d) => d === v)
 
-export interface MethodEntry {
-  id: ShareMethod
-  // Nothing to send yet: the method stays listed so the rail does not shift.
+// What Mortar sends: a link, or a .mortar file with the mod settings.
+export type MortarFormat = 'link' | 'file'
+
+export interface DestinationEntry {
+  id: Destination
+  // Nothing to send yet: the tile stays in place so the grid does not shift.
   disabled: boolean
 }
 
-// The rail's methods in order. Thunderstore's r2modman code and modpack only exist for games modded from Thunderstore.
-export function shareMethods(opts: { thunderstore: boolean; count: number }): MethodEntry[] {
-  return SHARE_METHODS.filter((id) => id !== 'thunderstore' || opts.thunderstore).map((id) => ({
+// The grid's tiles in order. Thunderstore's r2modman code and modpack only exist for games modded from Thunderstore.
+export function shareDestinations(opts: {
+  thunderstore: boolean
+  count: number
+}): DestinationEntry[] {
+  return DESTINATIONS.filter((id) => id !== 'thunderstore' || opts.thunderstore).map((id) => ({
     id,
     disabled: opts.count === 0,
   }))
 }
 
-// The remembered method when it is still usable, else the suggested one, else the link.
-export function pickMethod(
-  remembered: ShareMethod | null,
-  suggested: ShareMethod,
-  methods: readonly MethodEntry[],
-): ShareMethod {
-  const usable = (id: ShareMethod | null) =>
-    id !== null && methods.some((m) => m.id === id && !m.disabled)
-  if (usable(remembered)) {
-    return remembered as ShareMethod
-  }
-  return usable(suggested) ? suggested : 'link'
+// The remembered destination when it still has a tile that can be used.
+export function lastUsedDestination(
+  remembered: Destination | null,
+  entries: readonly DestinationEntry[],
+): Destination | null {
+  return entries.some((e) => e.id === remembered && !e.disabled) ? remembered : null
 }
 
-export const methodStorageKey = (game: string) => `mortar.share.method.${game}`
+export const destinationStorageKey = (game: string) => `mortar.share.method.${game}`
 
 // Which of the "Included" settings a method honours, in the order the line lists them.
 export function includedKeys(
