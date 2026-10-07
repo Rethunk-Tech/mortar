@@ -30,8 +30,8 @@ Check "mortar version exits 0 ($($v.Trim()))" (($LASTEXITCODE -eq 0) -and ($v -m
 
 # Autostart is a setting of the running app; the CLI talks to it over its control socket, which a cold first start
 # opens a few seconds in, so the set is issued until the app accepts it, once. Then poll under one deadline for the
-# setting reading back true, an autostart entry (Run key value or Startup shortcut) and the app process. The exit code is read from a captured call:
-# Windows PowerShell 5.1 reports 0 for the first failing native call whose output is discarded with *>$null.
+# setting reading back true, an autostart entry (Run key value or Startup shortcut) and the app process. The output is piped
+# to Out-String rather than assigned to $null: Windows PowerShell 5.1 leaves $LASTEXITCODE unset after `$null = & exe 2>&1`.
 function Get-LaunchAtLogin { (& $exe settings get launchAtLogin 2>&1 | Out-String) -match '(?m)^launchAtLogin\s+true\s*$' }
 $startupLink = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Mortar.lnk"
 function Get-Autostart { if (Get-ItemProperty $runKey -Name Mortar -ErrorAction SilentlyContinue) { 'Run key' } elseif (Test-Path $startupLink) { 'Startup shortcut' } }
@@ -43,7 +43,7 @@ $value = $false
 $deadline = (Get-Date).AddSeconds(120)
 do {
     if (-not $set) {
-        $null = & $exe settings set launchAtLogin true 2>&1
+        $null = (& $exe settings set launchAtLogin true 2>&1 | Out-String)
         $set = ($LASTEXITCODE -eq 0)
     }
     if ($set) { $value = Get-LaunchAtLogin }
