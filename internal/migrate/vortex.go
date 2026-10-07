@@ -419,3 +419,13 @@ func cleanVortexPath(root, path string) string {
 	}
 	return filepath.Join(root, path)
 }
+
+// vortexMultiUser reads the flag Vortex stores at user###multiUser in the per-user database
+// (src/main/src/Application.ts, setupPersistence: SubPersistor "user", key ["multiUser"]).
+func vortexMultiUser(root string) bool {
+	state, err := readVortexState(root)
+	if err != nil {
+		return false
+	}
+	return string(objectValue(state, "user")["multiUser"]) == "true"
+}

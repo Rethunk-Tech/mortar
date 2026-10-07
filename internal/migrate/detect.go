@@ -89,20 +89,12 @@ func detect(home, modsPath, gameID, vortexFolder string) ([]installation, error)
 		if programData == "" {
 			programData = `C:\ProgramData`
 		}
-		for _, vortexRoot := range vortexRoots(config, vortexFolder, programData, runtime.GOOS == "windows") {
-			profiles, resolvedModsPath, err := vortexProfiles(vortexRoot, ids.Vortex)
-			if err != nil && !errors.Is(err, os.ErrNotExist) {
-				return nil, err
-			}
-			if err == nil && len(profiles) > 0 {
-				out = append(out, installation{
-					info:     SourceInfo{Kind: KindVortex, Name: "Vortex", Profiles: profileInfos(profiles)},
-					root:     vortexRoot,
-					modsPath: resolvedModsPath,
-					vortexID: ids.Vortex,
-				})
-				break
-			}
+		found, ok, err := detectVortex(config, vortexFolder, programData, ids.Vortex, runtime.GOOS == "windows")
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			out = append(out, found)
 		}
 	}
 
@@ -175,15 +167,38 @@ func importIDs(gameID string) components.ImportIDs {
 // vortexRoots lists where Vortex may keep its state.v2, most specific first: the folder the user chose, the
 // per-user folder, then (Windows only) the shared folder multi-user mode moves it to. Vortex derives the shared
 // path from %ProgramData%\vortex and the per-user one from <appData>\vortex (src/main/src/Application.ts
-// multiUserPath and onReady).
-func vortexRoots(config, chosen, programData string, windows bool) []string {
+// multiUserPath and onReady). In multi-user mode the per-user database only holds the flag and stale data, so
+// it is skipped.
+func vortexRoots(config, chosen, programData string, windows, multiUser bool) []string {
 	var roots []string
 	if chosen != "" {
 		roots = append(roots, filepath.Clean(chosen))
 	}
-	roots = append(roots, filepath.Join(config, "Vortex"))
+	if !multiUser {
+		roots = append(roots, filepath.Join(config, "Vortex"))
+	}
 	if windows {
 		roots = append(roots, filepath.Join(programData, "vortex"))
 	}
 	return roots
+}
+
+// detectVortex returns the first Vortex data folder that has profiles for the game.
+func detectVortex(config, chosen, programData, vortexID string, windows bool) (installation, bool, error) {
+	multiUser := windows && vortexMultiUser(filepath.Join(config, "Vortex"))
+	for _, root := range vortexRoots(config, chosen, programData, windows, multiUser) {
+		profiles, modsPath, err := vortexProfiles(root, vortexID)
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return installation{}, false, err
+		}
+		if err == nil && len(profiles) > 0 {
+			return installation{
+				info:     SourceInfo{Kind: KindVortex, Name: "Vortex", Profiles: profileInfos(profiles)},
+				root:     root,
+				modsPath: modsPath,
+				vortexID: vortexID,
+			}, true, nil
+		}
+	}
+	return installation{}, false, nil
 }

@@ -153,12 +153,15 @@ func TestVortexStagingFolderDefaultsAndPlaceholders(t *testing.T) {
 }
 
 func TestVortexRootsOrder(t *testing.T) {
-	got := vortexRoots("cfg", "chosen", "pd", true)
+	got := vortexRoots("cfg", "chosen", "pd", true, false)
 	want := []string{"chosen", filepath.Join("cfg", "Vortex"), filepath.Join("pd", "vortex")}
 	if !slices.Equal(got, want) {
 		t.Fatalf("windows roots = %v, want %v", got, want)
 	}
-	got = vortexRoots("cfg", "", "pd", false)
+	if got = vortexRoots("cfg", "chosen", "pd", true, true); !slices.Equal(got, []string{"chosen", filepath.Join("pd", "vortex")}) {
+		t.Fatalf("multi-user roots = %v", got)
+	}
+	got = vortexRoots("cfg", "", "pd", false, false)
 	if want = []string{filepath.Join("cfg", "Vortex")}; !slices.Equal(got, want) {
 		t.Fatalf("linux roots = %v, want %v", got, want)
 	}
@@ -191,5 +194,50 @@ func TestVortexStagingOutsideRootResolves(t *testing.T) {
 	}
 	if want := filepath.Join(other, "stardewvalley"); preview.ModsPath != want {
 		t.Fatalf("modsPath = %q, want %q", preview.ModsPath, want)
+	}
+}
+
+func TestMultiUserPrefersSharedFolder(t *testing.T) {
+	home, state, _ := newVortexHome(t, "custom")
+	db, err := leveldb.OpenFile(state, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Put([]byte("user###multiUser"), []byte("true"), nil); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Close(); err != nil {
+		t.Fatal(err)
+	}
+	programData := t.TempDir()
+	shared := filepath.Join(programData, "vortex", "state.v2")
+	if err := os.MkdirAll(shared, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	sdb, err := leveldb.OpenFile(shared, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for k, v := range map[string]string{
+		"persistent###profiles###current###id":     `"current"`,
+		"persistent###profiles###current###gameId": `"stardewvalley"`,
+		"persistent###profiles###current###name":   `"Shared"`,
+	} {
+		if err := sdb.Put([]byte(k), []byte(v), nil); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := sdb.Close(); err != nil {
+		t.Fatal(err)
+	}
+	got, ok, err := detectVortex(configDir(home), "", programData, "stardewvalley", true)
+	if err != nil || !ok {
+		t.Fatalf("detect = %v, %v", ok, err)
+	}
+	if got.root != filepath.Join(programData, "vortex") || got.info.Profiles[0].ID != "current" {
+		t.Fatalf("used %q with %#v", got.root, got.info.Profiles)
+	}
+	if got, ok, _ := detectVortex(configDir(home), "", programData, "stardewvalley", false); !ok || got.info.Profiles[0].ID != "p1" {
+		t.Fatalf("per-user only = %#v", got)
 	}
 }
