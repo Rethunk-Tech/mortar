@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"embed"
 	"errors"
@@ -612,11 +613,36 @@ func run() error {
 	}
 	problemsSvc.NexusPages = nexusPages
 	problemsSvc.NexusFiles = func(ctx context.Context, t nexus.Title, ids []int) (map[int][]nexus.BatchFile, error) {
-		c, err := nexussvc.Authed(store, nexusClient)
-		if err != nil {
-			return nil, err
+		var out map[int][]nexus.BatchFile
+		var err error
+		if c, authErr := nexussvc.Authed(store, nexusClient); authErr == nil {
+			out, err = c.FilesOf(ctx, t, ids)
 		}
-		return c.FilesOf(ctx, t, ids)
+		if out == nil {
+			out = map[int][]nexus.BatchFile{}
+		}
+		var missing []int
+		for _, id := range ids {
+			if len(out[id]) == 0 {
+				missing = append(missing, id)
+			}
+		}
+		cached := nexusSvc.CachedFiles(t, ids)
+		for _, id := range missing {
+			if len(cached[id]) > 0 {
+				out[id] = cached[id]
+			}
+		}
+		for id, files := range out {
+			successors := map[int]int{}
+			for _, f := range cached[id] {
+				successors[f.FileID] = f.ReplacedBy
+			}
+			for i := range files {
+				files[i].ReplacedBy = cmp.Or(files[i].ReplacedBy, successors[files[i].FileID])
+			}
+		}
+		return out, err
 	}
 	supportSvc := support.NewService(version, problemsSvc.Environment, home, profiles.ModsDir)
 	supportSvc.RecentLog = func(gameID, profileID string) string {

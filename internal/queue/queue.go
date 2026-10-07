@@ -78,6 +78,9 @@ const (
 	StateCancelled    = "cancelled"
 )
 
+// AlreadyNewest is the reason of an update skipped because the profile already holds that file or a newer one.
+const AlreadyNewest = "Already the newest file"
+
 // packagePattern is a Thunderstore "Namespace-Name"; neither part holds a dash.
 var packagePattern = regexp.MustCompile(`^[A-Za-z0-9_]+-[A-Za-z0-9_]+$`)
 
@@ -943,13 +946,19 @@ func (s *Service) Cancel(id string) {
 	s.end(id, StateCancelled, StateQueued, StateWaitingClick, StateDownloading)
 }
 
-func (s *Service) end(id, to string, from ...string) {
+func (s *Service) end(id, to string, from ...string) { s.endWith(id, to, "", from...) }
+
+// endWith is end that also leaves msg as the item's reason when it is not empty.
+func (s *Service) endWith(id, to, msg string, from ...string) {
 	var rec *Item
 	s.mu.Lock()
 	if it := s.find(id); it != nil && slices.Contains(from, it.State) {
 		snap := *it
 		rec = &snap
 		it.State, it.Progress, it.Speed, it.key, it.staged = to, 0, 0, "", ""
+		if msg != "" {
+			it.Error = msg
+		}
 		if cancel := s.cancels[id]; cancel != nil {
 			cancel()
 		}

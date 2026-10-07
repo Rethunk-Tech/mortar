@@ -441,6 +441,9 @@ func TestWaitingLatestItemIsSkippedOnceTheProfileHasANewerFile(t *testing.T) {
 	f.wait("the skip", func(st State) bool {
 		return len(st.Items) == 2 && st.Items[0].State == StateSkipped && st.Items[1].State == StateWaitingClick
 	})
+	if got := f.s.State().Items[0].Error; got != AlreadyNewest {
+		t.Errorf("skip reason = %q, want %q", got, AlreadyNewest)
+	}
 }
 
 func TestExpiredKeyReopensThePage(t *testing.T) {

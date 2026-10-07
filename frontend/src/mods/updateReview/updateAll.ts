@@ -19,10 +19,17 @@ const needChoiceUpdates = (list: readonly Update[]): Update[] =>
 
 function summarize(
   at: { game: string; profileId: string; beforeId: string },
-  counts: { installed: number; failed: number; changes: string[] },
+  counts: { installed: number; failed: number; skipped: number; changes: string[] },
   needChoice: number,
 ) {
   const toasts = useToasts.getState()
+  if (counts.installed === 0 && counts.failed === 0 && counts.skipped > 0 && needChoice === 0) {
+    toasts.push({
+      kind: 'info',
+      title: i18n._(msg`Nothing to update: those mods already have their newest file`),
+    })
+    return
+  }
   const updated = i18n._(
     msg`${plural(counts.installed, { one: 'Updated # mod', other: 'Updated # mods' })}`,
   )

@@ -576,10 +576,7 @@ func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexus.Title, as
 	if len(ids) == 0 {
 		return nil
 	}
-	files, err := filesOf(ctx, t, ids)
-	if err != nil {
-		return nil
-	}
+	files, _ := filesOf(ctx, t, ids)
 	return files
 }
 
@@ -594,7 +591,7 @@ func supersedingFile(files []nexus.BatchFile, x framework.Mod, modID int, versio
 	}
 	list := make([]nexus.File, len(files))
 	for i, f := range files {
-		list[i] = nexus.File{FileID: f.FileID, Name: f.Name, Version: f.Version, Category: f.Category}
+		list[i] = nexus.File{FileID: f.FileID, Name: f.Name, Version: f.Version, Category: f.Category, ReplacedBy: f.ReplacedBy}
 	}
 	installed := nexus.FileByID(list, have)
 	if installed.FileID == 0 {

@@ -17,6 +17,9 @@ type BatchFile struct {
 	Name     string `json:"name"`
 	Version  string `json:"version"`
 	Category string `json:"category"`
+	// ReplacedBy is the author's file_updates successor. The batched query does not carry it, so it comes from a
+	// mod's cached full file list when there is one.
+	ReplacedBy int `json:"replacedBy,omitempty"`
 }
 
 // FilesOf lists the files of many mods with one GraphQL request per 50 mods (aliased modFiles queries), instead

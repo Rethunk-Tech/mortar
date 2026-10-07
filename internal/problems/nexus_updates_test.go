@@ -214,3 +214,40 @@ func TestCheckUpdatesPicksTheBundlePacksOwnFile(t *testing.T) {
 		t.Errorf("the row shows the downloaded file's version, not the page's: %+v", u)
 	}
 }
+
+// Earthy Cursor: the page says 1.0.1 but its only file is the installed 1.0.0.
+func TestCheckUpdatesIgnoresAPageVersionWithoutANewFile(t *testing.T) {
+	const id = "Example.EarthyCursor"
+	rm := fakeMeta{compat: map[string]meta.UpdateResult{
+		id: {Known: true, Suggested: &meta.Update{Version: "1.0.1", URL: "https://www.nexusmods.com/stardewvalley/mods/33076"}},
+	}}
+	installed := inst("nexus-33076-129465", id, "1.0.0", true)
+	installed.UpdateKeys = []string{"Nexus:33076"}
+	filesOf := func(context.Context, nexus.Title, []int) (map[int][]nexus.BatchFile, error) {
+		return map[int][]nexus.BatchFile{33076: {{FileID: 129465, Name: "Earthy Cursor", Version: "1.0.0", Category: "MAIN"}}}, nil
+	}
+	if got := checkUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf).Updates; len(got) != 0 {
+		t.Fatalf("updates = %+v, want none", got)
+	}
+}
+
+// A file whose author uploaded a successor updates to that file's id, whatever the page says.
+func TestCheckUpdatesFollowsTheReplacedByChain(t *testing.T) {
+	const id = "Example.Chain"
+	rm := fakeMeta{compat: map[string]meta.UpdateResult{
+		id: {Known: true, Suggested: &meta.Update{Version: "3.0", URL: "https://www.nexusmods.com/stardewvalley/mods/5"}},
+	}}
+	installed := inst("nexus-5-10", id, "1.0", true)
+	installed.UpdateKeys = []string{"Nexus:5"}
+	filesOf := func(context.Context, nexus.Title, []int) (map[int][]nexus.BatchFile, error) {
+		return map[int][]nexus.BatchFile{5: {
+			{FileID: 10, Name: "Chain", Version: "1.0", Category: "OLD_VERSION", ReplacedBy: 20},
+			{FileID: 20, Name: "Chain", Version: "2.0", Category: "OLD_VERSION", ReplacedBy: 30},
+			{FileID: 30, Name: "Chain", Version: "3.0", Category: "MAIN"},
+		}}, nil
+	}
+	got := checkUpdates(context.Background(), rm, testEnv, []framework.Mod{installed}, false, false, filesOf).Updates
+	if len(got) != 1 || got[0].FileID != 30 || got[0].Version != "3.0" {
+		t.Fatalf("updates = %+v, want file 30", got)
+	}
+}

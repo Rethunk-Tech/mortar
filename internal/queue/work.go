@@ -257,7 +257,7 @@ func (s *Service) skipHeld() {
 	for _, it := range cands {
 		if have := s.d.Newest(it.Game, it.Profile, it.ModID, it.Current); have >= it.FileID {
 			log.Printf("queue: mod %d file %d skipped as %s, profile %s already has file %d", it.ModID, it.FileID, it.ID, it.Profile, have)
-			s.end(it.ID, StateSkipped, StateQueued, StateWaitingClick)
+			s.endWith(it.ID, StateSkipped, AlreadyNewest, StateQueued, StateWaitingClick)
 		}
 	}
 }

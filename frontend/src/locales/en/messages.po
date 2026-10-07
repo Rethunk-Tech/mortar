@@ -360,6 +360,10 @@ msgstr "Switch game"
 msgid "Sand"
 msgstr "Sand"
 
+#: src/mods/updateReview/updateAll.ts:29
+msgid "Nothing to update: those mods already have their newest file"
+msgstr "Nothing to update: those mods already have their newest file"
+
 #: src/settings/prefCopy.ts:375
 msgid "Premium and GitHub downloads at once"
 msgstr "Premium and GitHub downloads at once"
@@ -1738,7 +1742,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/mods/LoadOrderTab.tsx:390
 #: src/mods/ModsTab.tsx:115
 #: src/mods/typedConfig/ConfigPane.tsx:170
-#: src/mods/updateReview/updateAll.ts:54
+#: src/mods/updateReview/updateAll.ts:61
 #: src/profiles/GameModsDialog.tsx:135
 #: src/profiles/HealthDialog.tsx:228
 #: src/profiles/LaunchPreview.tsx:85
@@ -2250,7 +2254,7 @@ msgstr "Switch the focused mod on or off"
 msgid "{name} · {mods}"
 msgstr "{name} · {mods}"
 
-#: src/mods/updateReview/updateAll.ts:32
+#: src/mods/updateReview/updateAll.ts:39
 msgid "{needChoice} need your choice"
 msgstr "{needChoice} need your choice"
 
@@ -2343,7 +2347,7 @@ msgid "Queued"
 msgstr "Queued"
 
 #. placeholder {0}: i.name
-#: src/queue/QueueBody.tsx:403
+#: src/queue/QueueBody.tsx:411
 msgid "Skip {0}"
 msgstr "Skip {0}"
 
@@ -2494,7 +2498,7 @@ msgid "Track a Nexus mod when Mortar installs it"
 msgstr "Track a Nexus mod when Mortar installs it"
 
 #: src/mods/updateReview/EverywhereDialog.tsx:50
-#: src/queue/QueueBody.tsx:445
+#: src/queue/QueueBody.tsx:346
 #: src/queue/QueueHistory.tsx:69
 msgid "Skipped"
 msgstr "Skipped"
@@ -4050,7 +4054,7 @@ msgstr "Share as r2modman code?"
 #: src/mods/SelectionBarDialogs.tsx:136
 #: src/profiles/EditProfileDialog.tsx:485
 #: src/profiles/GameModsDialog.tsx:164
-#: src/profiles/ImportWizard.tsx:132
+#: src/profiles/ImportWizard.tsx:139
 #: src/profiles/LaunchPresetDialog.tsx:91
 #: src/profiles/PackImportDialog.tsx:170
 #: src/settings/sections/NexusSSO.tsx:67
@@ -4234,7 +4238,7 @@ msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
 #. placeholder {0}: active.length
-#: src/queue/QueueBody.tsx:383
+#: src/queue/QueueBody.tsx:391
 msgid "In progress ({0})"
 msgstr "In progress ({0})"
 
@@ -4705,7 +4709,7 @@ msgid "Could not save that setting"
 msgstr "Could not save that setting"
 
 #: src/mods/Toolbar.tsx:247
-#: src/queue/QueueBody.tsx:360
+#: src/queue/QueueBody.tsx:368
 msgid "Browse mods"
 msgstr "Browse mods"
 
@@ -5672,7 +5676,7 @@ msgid "Launch options"
 msgstr "Launch options"
 
 #. placeholder {0}: names(next)
-#: src/queue/QueueBody.tsx:390
+#: src/queue/QueueBody.tsx:398
 msgid "Up next: {0}"
 msgstr "Up next: {0}"
 
@@ -7321,7 +7325,7 @@ msgstr "Pinned"
 msgid "Could not dismiss the overlap"
 msgstr "Could not dismiss the overlap"
 
-#: src/profiles/ImportWizard.tsx:129
+#: src/profiles/ImportWizard.tsx:136
 msgid "Use a code or file…"
 msgstr "Use a code or file…"
 
@@ -8234,7 +8238,7 @@ msgstr "Windowed"
 
 #: src/install/store.ts:295
 #: src/mods/updateReview/UndoAllConfirm.tsx:19
-#: src/mods/updateReview/updateAll.ts:41
+#: src/mods/updateReview/updateAll.ts:48
 msgid "Undo all"
 msgstr "Undo all"
 
@@ -9069,7 +9073,7 @@ msgstr "{0, plural, one {with # settings file, written once its mod is installed
 #. placeholder {0}: res.failed
 #. placeholder {0}: sum.failed
 #: src/mods/MoveFoldersDialog.tsx:74
-#: src/mods/updateReview/updateAll.ts:31
+#: src/mods/updateReview/updateAll.ts:38
 #: src/queue/QueueSheet.tsx:54
 #: src/share/importCompletion.ts:25
 msgid "{0} failed"
@@ -9645,7 +9649,7 @@ msgstr "Slate"
 msgid "Updates"
 msgstr "Updates"
 
-#: src/queue/QueueBody.tsx:357
+#: src/queue/QueueBody.tsx:365
 msgid "Nothing downloading"
 msgstr "Nothing downloading"
 
@@ -9910,7 +9914,7 @@ msgid "Paste it on the mod's bug tracker."
 msgstr "Paste it on the mod's bug tracker."
 
 #. placeholder {0}: counts.failed
-#: src/mods/updateReview/updateAll.ts:52
+#: src/mods/updateReview/updateAll.ts:59
 msgid "{0, plural, one {# update failed} other {# updates failed}}"
 msgstr "{0, plural, one {# update failed} other {# updates failed}}"
 
@@ -10815,7 +10819,7 @@ msgstr "Your profiles have {0}. Update replaces each profile's copy."
 
 #. placeholder {0}: done.length
 #. placeholder {1}: names(done)
-#: src/queue/QueueBody.tsx:417
+#: src/queue/QueueBody.tsx:425
 msgid "Done ({0}): {1}"
 msgstr "Done ({0}): {1}"
 
@@ -10919,7 +10923,7 @@ msgstr "Could not disable the other copy of {0}"
 msgid "The backup from {when} is deleted for good, with every save in it."
 msgstr "The backup from {when} is deleted for good, with every save in it."
 
-#: src/queue/QueueBody.tsx:427
+#: src/queue/QueueBody.tsx:435
 msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
@@ -11866,7 +11870,7 @@ msgstr "Update digest notification"
 msgid "Downloaded"
 msgstr "Downloaded"
 
-#: src/queue/QueueBody.tsx:445
+#: src/queue/QueueBody.tsx:342
 #: src/queue/QueueHistory.tsx:71
 msgid "Cancelled"
 msgstr "Cancelled"
@@ -11949,7 +11953,7 @@ msgid "Could not repair the profile"
 msgstr "Could not repair the profile"
 
 #. placeholder {0}: counts.installed
-#: src/mods/updateReview/updateAll.ts:27
+#: src/mods/updateReview/updateAll.ts:34
 msgid "{0, plural, one {Updated # mod} other {Updated # mods}}"
 msgstr "{0, plural, one {Updated # mod} other {Updated # mods}}"
 
@@ -12078,7 +12082,7 @@ msgstr "This is not a Mod Manager Download link from Nexus."
 msgid "Location"
 msgstr "Location"
 
-#: src/queue/QueueBody.tsx:364
+#: src/queue/QueueBody.tsx:372
 msgid "Updates, missing dependencies and links from mod sites land here."
 msgstr "Updates, missing dependencies and links from mod sites land here."
 
@@ -13179,6 +13183,10 @@ msgstr "Update and play"
 msgid "{0}: {1} → {2}"
 msgstr "{0}: {1} → {2}"
 
+#: src/queue/QueueBody.tsx:345
+msgid "Already the newest file"
+msgstr "Already the newest file"
+
 #: src/mods/DuplicateDialog.tsx:40
 msgid "Older."
 msgstr "Older."
@@ -13453,7 +13461,7 @@ msgstr "CurseForge page"
 
 #. placeholder {0}: dropped.length
 #. placeholder {1}: names(dropped)
-#: src/queue/QueueBody.tsx:437
+#: src/queue/QueueBody.tsx:445
 msgid "Skipped ({0}): {1}"
 msgstr "Skipped ({0}): {1}"
 

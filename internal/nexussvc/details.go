@@ -69,6 +69,25 @@ func DetailsName(domain string, modID int) string {
 	return fmt.Sprintf("nexus/details-v4-%s-%d.json", domain, modID)
 }
 
+// CachedFiles returns the cached file list of each mod that has one, however old, without a network call.
+//
+//wails:ignore
+func (s *Service) CachedFiles(t nexus.Title, modIDs []int) map[int][]nexus.BatchFile {
+	out := make(map[int][]nexus.BatchFile, len(modIDs))
+	for _, id := range modIDs {
+		d, ok := meta.Peek[Details](s.meta, DetailsName(t.Domain, id))
+		if !ok || len(d.Files) == 0 {
+			continue
+		}
+		list := make([]nexus.BatchFile, len(d.Files))
+		for i, f := range d.Files {
+			list[i] = nexus.BatchFile{FileID: f.FileID, Name: f.Name, Version: f.Version, Category: f.Category, ReplacedBy: f.ReplacedBy}
+		}
+		out[id] = list
+	}
+	return out
+}
+
 // CachedDetails returns whatever details are cached for modIDs, however old, without a network call, so a list of
 // many mods can show them without a burst of requests. Uncached mods are absent from the map.
 func (s *Service) CachedDetails(gameID string, modIDs []int) map[int]Details {

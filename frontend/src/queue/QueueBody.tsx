@@ -337,6 +337,14 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
   const active = items.filter(isActive)
   const next = items.filter((i) => i.state === 'queued')
   const done = items.filter((i) => i.state === 'done')
+  const droppedReason = (i: Item) => {
+    if (i.state === 'cancelled') {
+      return t`Cancelled`
+    }
+    return i.error === 'Already the newest file'
+      ? t`Already the newest file`
+      : i.error || t`Skipped`
+  }
   const dropped = items.filter((i) => i.state === 'skipped' || i.state === 'cancelled')
   if (
     click.length +
@@ -442,7 +450,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
               sx={{ bgcolor: 'var(--mortar-raised-60)' }}
               sub={
                 <Typography sx={{ ...detail, color: 'text.secondary' }}>
-                  {i.state === 'cancelled' ? t`Cancelled` : t`Skipped`}
+                  {droppedReason(i)}
                 </Typography>
               }
               actions={<DismissButton item={i} />}
