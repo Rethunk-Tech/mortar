@@ -202,7 +202,7 @@ func TestIncompleteItemIsReinstalled(t *testing.T) {
 	if err != nil || string(got) != "new" {
 		t.Fatalf("reinstalled item = %q, %v", got, err)
 	}
-	if !completeItem(dir) {
+	if !s.completeItem(dir) {
 		t.Fatal("reinstalled item has no completion marker")
 	}
 }
@@ -223,7 +223,7 @@ func TestItemsWithoutTheCompleteMarkerAreIncomplete(t *testing.T) {
 	if !errors.Is(err, ErrIncomplete) {
 		t.Fatalf("Path = %v", err)
 	}
-	if completeItem(dir) {
+	if s.completeItem(dir) {
 		t.Fatal("incomplete item was marked complete")
 	}
 }
@@ -654,5 +654,32 @@ func TestUnreferencedMatchesReportAndDanglingEntriesArePruned(t *testing.T) {
 	}
 	if _, ok := idx["stardew"]["local-b"]; ok || len(idx["stardew"]) != 2 {
 		t.Fatalf("index after prune = %v", idx["stardew"])
+	}
+}
+
+func TestKeysAndRootsCannotLeaveTheStore(t *testing.T) {
+	s := newStore(t)
+	src := t.TempDir()
+	testfs.WriteFile(t, src, "mod.dll", "x")
+	if err := s.AddDir("stardew", "local-item", src); err != nil {
+		t.Fatal(err)
+	}
+	outside := t.TempDir()
+	for _, key := range []string{"../x", "/etc", outside, "a/../../x", "..", "bepinex-../..", "local-item/../.."} {
+		if _, err := s.Path("stardew", key); err == nil {
+			t.Errorf("Path accepted key %q", key)
+		}
+		if _, err := s.Dir("stardew", key); err == nil {
+			t.Errorf("Dir accepted key %q", key)
+		}
+	}
+	for _, root := range []string{"../", "../..", outside, "/", `..\\..`, "a/../../.."} {
+		if err := s.SetRoot("stardew", "local-item", root); err == nil && CleanRoot(root) != "" {
+			t.Errorf("SetRoot accepted root %q", root)
+		}
+		dir, _ := s.Dir("stardew", "local-item")
+		if sub, ok := resolveRoot(dir, root); ok {
+			t.Errorf("resolveRoot(%q) = %q", root, sub)
+		}
 	}
 }

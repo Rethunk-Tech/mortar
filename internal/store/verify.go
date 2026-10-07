@@ -306,7 +306,7 @@ func (s *Store) Refs(due bool, now time.Time) ([]Ref, error) {
 	for game, keys := range idx {
 		for key, r := range keys {
 			dir, err := s.destOf(game, key, r.Blob)
-			if err != nil || !completeItem(dir) {
+			if err != nil || !s.completeItem(dir) {
 				continue
 			}
 			at := st.Items[game][key].Verified

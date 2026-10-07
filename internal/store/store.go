@@ -258,13 +258,17 @@ func (s *Store) folder(game, key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	dir = filepath.Clean(dir)
+	if !strings.HasPrefix(dir, filepath.Clean(s.root)+string(os.PathSeparator)) {
+		return "", fmt.Errorf("invalid store key %q", key)
+	}
 	if _, err := os.Stat(dir); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			return "", usererr.Wrap(usererr.NotFound, &Error{Game: game, Key: key, Err: ErrNotFound})
 		}
 		return "", err
 	}
-	if !completeItem(dir) {
+	if !s.completeItem(dir) {
 		return "", &Error{Game: game, Key: key, Err: ErrIncomplete}
 	}
 	return dir, nil
@@ -284,7 +288,7 @@ func (s *Store) ready(game, key string, idx index) (bool, error) {
 }
 
 func (s *Store) dirReady(game, key, dir string) (bool, error) {
-	if completeItem(dir) {
+	if s.completeItem(dir) {
 		return true, nil
 	}
 	if exists(dir) {
@@ -433,7 +437,12 @@ func (s *Store) install(game, key, final string, fill func(tmp string) error, ne
 	return nil
 }
 
-func completeItem(dir string) bool {
+// completeItem reports whether dir, which must lie under the store's root, holds a whole item.
+func (s *Store) completeItem(dir string) bool {
+	dir = filepath.Clean(dir)
+	if !strings.HasPrefix(dir, filepath.Clean(s.root)+string(os.PathSeparator)) {
+		return false
+	}
 	info, err := os.Lstat(dir)
 	if err != nil || !info.IsDir() {
 		return false
@@ -736,7 +745,7 @@ func (s *Store) Entries() ([]Entry, error) {
 	for _, game := range slices.Sorted(maps.Keys(idx)) {
 		for _, key := range slices.Sorted(maps.Keys(idx[game])) {
 			r := idx[game][key]
-			if dir, err := s.destOf(game, key, r.Blob); err == nil && completeItem(dir) {
+			if dir, err := s.destOf(game, key, r.Blob); err == nil && s.completeItem(dir) {
 				out = append(out, Entry{Game: game, Key: key, Dir: dir, LastUsed: r.Used, Size: r.Size})
 			}
 		}
@@ -951,7 +960,7 @@ func (s *Store) Unreferenced(referenced map[string][]string) ([]Ref, error) {
 // folder is gone is PruneDangling's, and a partial one is left to the store check.
 func (s *Store) listed(game, key string, r record) (string, bool) {
 	dir, err := s.destOf(game, key, r.Blob)
-	return dir, err == nil && completeItem(dir)
+	return dir, err == nil && s.completeItem(dir)
 }
 
 // PruneDangling drops the index entries no referenced key names whose folder is gone, which nothing could use or

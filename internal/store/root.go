@@ -42,7 +42,7 @@ func resolveRoot(dir, rel string) (string, bool) {
 		return "", false
 	}
 	sub := filepath.Join(dir, local)
-	if !datadir.UnderRoot(dir, sub) {
+	if !strings.HasPrefix(sub, filepath.Clean(dir)+string(os.PathSeparator)) {
 		return "", false
 	}
 	if _, err := os.Stat(sub); err != nil {
