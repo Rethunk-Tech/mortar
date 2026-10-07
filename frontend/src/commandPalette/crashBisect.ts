@@ -1,6 +1,8 @@
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bisect/service.ts'
 import { Runs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
+import { useToasts } from '../toasts/store.ts'
 import { useCommandPalette } from './store.ts'
 
 export async function startCrashBisectFromPalette(): Promise<string | null> {
@@ -22,4 +24,15 @@ export async function startCrashBisectFromPalette(): Promise<string | null> {
   const id = await StartBisect(game.id, openId)
   useCommandPalette.getState().setBisect({ id, game: game.id, profile: openId })
   return null
+}
+
+// findCrashCause starts the bisect or, when it cannot, says why in a toast.
+export function findCrashCause(): void {
+  startCrashBisectFromPalette()
+    .then((message) => {
+      if (message) {
+        useToasts.getState().push({ kind: 'info', title: message })
+      }
+    })
+    .catch(reportUnexpected)
 }

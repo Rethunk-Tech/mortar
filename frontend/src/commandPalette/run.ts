@@ -12,7 +12,7 @@ import { runShortcut } from '../settings/useShortcuts.ts'
 import { openImport, openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { startCrashBisectFromPalette } from './crashBisect.ts'
+import { findCrashCause } from './crashBisect.ts'
 import { useCommandPalette } from './store.ts'
 
 const sections = new Set<SettingsSection>([
@@ -115,13 +115,7 @@ function runAction(id: string): void {
     return
   }
   if (id === 'action:find-crash-cause') {
-    startCrashBisectFromPalette()
-      .then((message) => {
-        if (message) {
-          useToasts.getState().push({ kind: 'info', title: message })
-        }
-      })
-      .catch(reportUnexpected)
+    findCrashCause()
     return
   }
   if (id === 'action:share') {

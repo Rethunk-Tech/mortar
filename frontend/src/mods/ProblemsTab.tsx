@@ -1,9 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { Copy, Map as MapIcon, ShieldCheck } from 'lucide-react'
+import { Copy, Map as MapIcon, Plus, ShieldCheck } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
+import { findCrashCause } from '../commandPalette/crashBisect.ts'
+import { PageActions } from '../game/PageActions.tsx'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'
@@ -67,6 +69,7 @@ function OfflineChecksNote() {
 
 interface SectionAction {
   label: string
+  icon?: ReactNode
   onClick: () => void
   disabled?: boolean
 }
@@ -171,6 +174,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
       return {
         action: {
           label: t`Add all ${installable.length}`,
+          icon: <Plus size={16} />,
           disabled: addingAll,
           onClick: () => {
             const wants = installable.flatMap(({ missing }) => {
@@ -212,12 +216,26 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
 
   return (
     <>
+      <ProblemActions />
       <SectionStrip
         label={t`Problem sections`}
         tabs={tabs}
         current={current}
         onChoose={(id) => choose(openId, id)}
-        actions={<ProblemActions />}
+        actions={
+          shown?.action ? (
+            <Button
+              variant="outlined"
+              color="inherit"
+              disabled={shown.action.disabled}
+              onClick={shown.action.onClick}
+              startIcon={shown.action.icon}
+              sx={{ height: 34, borderColor: 'var(--mortar-hairline-20)' }}
+            >
+              {shown.action.label}
+            </Button>
+          ) : null
+        }
       />
       <Box
         sx={{
@@ -240,18 +258,6 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
           >
             {t`Every mod has what it needs and nothing clashes.`}
           </EmptyState>
-        ) : null}
-        {shown?.action ? (
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: -0.5 }}>
-            <Button
-              size="small"
-              variant="outlined"
-              disabled={shown.action.disabled}
-              onClick={shown.action.onClick}
-            >
-              {shown.action.label}
-            </Button>
-          </Box>
         ) : null}
         {shown?.body}
         <ConfirmDialog
@@ -292,7 +298,15 @@ function ProblemActions() {
       cleanup.length + redundant.length + compat.length === 0 &&
       harmlessCount === 0)
   return (
-    <>
+    <PageActions>
+      <Button
+        variant="outlined"
+        color="inherit"
+        onClick={findCrashCause}
+        sx={{ height: 34, borderColor: 'var(--mortar-hairline-20)' }}
+      >
+        {t`Find a bad mod…`}
+      </Button>
       {hasAssetMap ? (
         <>
           <IconAction
@@ -374,7 +388,7 @@ function ProblemActions() {
             .catch(reportUnexpected)
         }}
       />
-    </>
+    </PageActions>
   )
 }
 
@@ -385,12 +399,13 @@ function ProblemsTab() {
   if (result === null) {
     return (
       <>
+        <ProblemActions />
         <SectionStrip
           label={t`Problem sections`}
           tabs={[]}
           current=""
           onChoose={() => undefined}
-          actions={<ProblemActions />}
+          actions={null}
         />
         <SkeletonRows
           label={t`Checking the mods for problems…`}
