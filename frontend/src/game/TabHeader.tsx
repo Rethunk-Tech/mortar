@@ -4,6 +4,8 @@ import { alpha } from '@mui/material/styles'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { useBadges } from '../mods/badges.ts'
+import { problemCount } from '../mods/lookup.ts'
+import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { colorHex } from '../profiles/appearance.ts'
 import { userModCount } from '../profiles/count.ts'
@@ -54,7 +56,7 @@ export function TabHeader({ profile }: { profile: Profile }) {
   const fits = useSaves((s) => s.fits)
   const setSlot = usePageActionsSlot((s) => s.setSlot)
   const updates = badges?.updates ?? 0
-  const problems = badges?.problems ?? 0
+  const problems = useMods((s) => (s.problems === null ? 0 : problemCount(s.problems)))
   const saves = saveFits(fits)
   const notes = notesFirstLine(profile.notes ?? '')
   const go = (tab: TabId) => () => setTab(tab)

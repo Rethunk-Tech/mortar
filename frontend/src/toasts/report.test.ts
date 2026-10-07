@@ -13,5 +13,5 @@ test('toastError puts the mapped sentence in body and raw text in detail', () =>
   expect(src).toContain('const action = extra.action ?? nextStep(e, extra.retry)')
   expect(src).toContain("run: () => openSettings('about')")
   expect(src).toContain('toastError(errorMessage(null), e)')
-  expect(src).toContain("if (kindOf(e) === 'network') {")
+  expect(src).toContain("if (kindOf(e) === 'network' || kindOf(e) === 'locked') {")
 })

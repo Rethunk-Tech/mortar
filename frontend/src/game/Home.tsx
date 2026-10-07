@@ -7,6 +7,8 @@ import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { When } from '../i18n/When.tsx'
 import { useBadges } from '../mods/badges.ts'
+import { problemCount } from '../mods/lookup.ts'
+import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { useNav } from '../nav/store.ts'
 import { CrashHintCard } from '../profiles/CrashHintCard.tsx'
@@ -39,7 +41,8 @@ function AtAGlance({ profile, game }: { profile: Profile; game: string }) {
   const badges = useBadges((s) => s.byProfile[profile.id])
   const lastRun = useLastRun(game, profile.id, String(profile.updated))
   const when = formatWhen(lastRun)
-  const view = glance(userModCount(profile), badges?.updates ?? 0, badges?.problems ?? null)
+  const problems = useMods((s) => (s.problems === null ? null : problemCount(s.problems)))
+  const view = glance(userModCount(profile), badges?.updates ?? 0, problems)
   return (
     <HomePanel title={t`At a glance`}>
       <Typography>

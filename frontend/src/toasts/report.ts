@@ -116,7 +116,8 @@ export const reportError = (title: string, retry?: () => unknown) => (e: unknown
 // The sink for a promise nobody awaits. Stores report their own failures, so this only fires for one they did not expect.
 // A network failure is expected whenever a source is down, and the offline banner already says so.
 export const reportUnexpected = (e: unknown) => {
-  if (kindOf(e) === 'network') {
+  // Locked: the keyring prompt is waiting on the user, and the unlock event retries what was deferred.
+  if (kindOf(e) === 'network' || kindOf(e) === 'locked') {
     return
   }
   toastError(errorMessage(null), e)
