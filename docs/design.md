@@ -11,15 +11,10 @@ Remaining ([architecture.md](architecture.md#release)):
 - The fork's fixes are offered upstream as wailsapp/wails#6200 (EXDEV staging), #6201 (AppImage), #6202 (OnUpdateApplied, a draft waiting on its WEP, #6203) and #6239 (service methods fall back to `Options.MarshalError`, which `errorkind_test.go` relies on). With #6197 (GTK4 transparency) all six are open and rebased on v3.0.0-beta.28, and Mortar pins the fork branch `mortar/v3.0.0-beta.28`. Once #6200, #6201, #6202 and #6239 ship in a tagged v3 beta, pin that beta and drop the `Rethunk-AI/wails` replace in `go.mod`; #6197 does not gate this, since it only serves the translucent window below. #6201 and #6202 both add `resolveTarget` in `v3/pkg/updater/spawn.go`, so whichever merges second conflicts and needs a rebase.
 - **NOMAD-only, needs Windows Steam with Stardew and SMAPI** (the test VM has neither): with `"<game>\StardewModdingAPI.exe" %command%` set, Play once from a Windows account whose user name has a space, then read the first lines of `%APPDATA%\StardewValley\ErrorLogs\SMAPI-latest.txt`. Done when the log's mods path is the profile's `mods` folder (Steam forwarded `-applaunch … --mods-path <dir>` intact and kept the spaced path as one argument); if it is the game's `Mods` folder or a cut-off path, the Steam path needs a different hand-off ([architecture.md](architecture.md#launch) Windows). Whether a direct launch with **SMAPI console window** on shows SMAPI's output, given that Mortar redirects the game's stdout to its log file, is checked in the same sitting.
 
-## Queued for v1
-
-- **CurseForge** as a third source: apply for a 3rd-party API key, then build it without caching API data, with a User-Agent on every request, and honouring each author's distribution setting.
-
 ## Later
 
 - **UI translations** beyond English, as Stardrop (17+), MO2 and r2modman ship: every string already goes through Lingui and the catalogs are extracted; needs chosen languages and translators. Parked 2026-10-02 (not v1).
 - **macOS build**: Stardew runs on macOS, and Stardrop ships for x64 and arm64, but Mortar has no macOS CI or test machine; it needs an Apple developer account for signing and notarization, Mac Steam paths and nxm registration, and a Mac to test on. Parked 2026-10-02 (not v1).
-- **One top toolbar** (Gale-style: game switcher and profile switcher with mod count side by side in the title bar, download status next to them): parked 2026-10-05. Play stays at the foot of the sidebar; a Play control in the top-left corner is rejected.
 - **EA App** as a game store, beside the drivers in `internal/gamestore/drivers.go` (Steam, Steam (Flatpak), GOG, Heroic, Lutris, Minigalaxy, Bottles): to be designed. Queued 2026-10-07.
 - **Patreon** as a mod source, beside the drivers in `internal/source/`: to be designed, including how it treats creator-gated posts under the no-re-hosting rule. Queued 2026-10-07.
 
