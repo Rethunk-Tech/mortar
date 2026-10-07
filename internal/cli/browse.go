@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"cmp"
 	"fmt"
 	"strconv"
 	"strings"
@@ -15,10 +16,7 @@ func (c *cmd) browse() error {
 	}
 	game := c.args[1]
 	text := strings.Join(c.args[2:], " ")
-	source := c.sourceFlag
-	if source == "" {
-		source = browse.AllSources
-	}
+	source := cmp.Or(c.sourceFlag, browse.AllSources)
 	page := max(c.pageFlag, 1)
 	var result browse.Page
 	if err := c.call("browse", control.Params{

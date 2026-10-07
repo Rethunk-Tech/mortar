@@ -1,6 +1,7 @@
 package game
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -117,10 +118,7 @@ func onHost(cmd launch.Command) launch.Command {
 func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env StartEnv, steamPath, flatpakPath string) (launch.Command, error) {
 	// A loader that replaces the executable cannot be reproduced by a store's relay.
 	if env.Direct || plan.Exe != "" {
-		exe := plan.Exe
-		if exe == "" {
-			exe = plan.Entry
-		}
+		exe := cmp.Or(plan.Exe, plan.Entry)
 		// A loader that injects into the game (BepInEx) names no executable of its own: the game's is the start.
 		if info, ok := catalogGame(inst.Game); ok && exe == "" && strings.HasSuffix(strings.ToLower(info.Marker), ".exe") {
 			exe = filepath.Join(inst.Dir, info.Marker)

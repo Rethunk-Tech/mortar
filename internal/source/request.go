@@ -2,6 +2,7 @@ package source
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -40,10 +41,7 @@ type Request struct {
 // DoJSON sends r and decodes a 200 answer into out. A 429 is a *BusyError and any other status a *StatusError; the
 // body of those is never parsed.
 func DoJSON(ctx context.Context, r Request, out any) error {
-	client := r.Client
-	if client == nil {
-		client = http.DefaultClient
-	}
+	client := cmp.Or(r.Client, http.DefaultClient)
 	ctx, cancel := context.WithTimeout(ctx, RequestTimeout)
 	defer cancel()
 	u := r.URL
@@ -58,10 +56,7 @@ func DoJSON(ctx context.Context, r Request, out any) error {
 		}
 		payload = bytes.NewReader(raw)
 	}
-	method := r.Method
-	if method == "" {
-		method = http.MethodGet
-	}
+	method := cmp.Or(r.Method, http.MethodGet)
 	req, err := http.NewRequestWithContext(ctx, method, u, payload)
 	if err != nil {
 		return err

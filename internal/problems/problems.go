@@ -476,10 +476,7 @@ func listedRequirements(ctx context.Context, m Meta, reqs RequirementsOf, domain
 			if miss.Reason == "" {
 				miss.Reason = "absent"
 			}
-			pageName := page.Name
-			if pageName == "" {
-				pageName = req.Name
-			}
+			pageName := cmp.Or(page.Name, req.Name)
 			pageRef := &Ref{
 				Site:     "Nexus",
 				PageID:   req.ModID,

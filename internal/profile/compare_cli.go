@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"slices"
 )
 
@@ -32,10 +33,7 @@ func CompareProfilesCLI(a, b Profile) CLICompare {
 			out.OnlyA = append(out.OnlyA, side)
 			continue
 		}
-		name := side.Name
-		if name == "" {
-			name = other.Name
-		}
+		name := cmp.Or(side.Name, other.Name)
 		pair := DiffPair{ID: side.ID, Name: name, A: side, B: other}
 		versionDiff := side.Version != other.Version
 		enabledDiff := side.Enabled != other.Enabled

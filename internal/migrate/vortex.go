@@ -1,6 +1,7 @@
 package migrate
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -374,10 +375,7 @@ func vortexUsername() string {
 }
 
 func vortexModPath(modsPath string, vm vortexMod) string {
-	path := vm.InstallationPath
-	if path == "" {
-		path = vm.ID
-	}
+	path := cmp.Or(vm.InstallationPath, vm.ID)
 	return cleanVortexPath(modsPath, path)
 }
 

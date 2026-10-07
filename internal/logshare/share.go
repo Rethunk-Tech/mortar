@@ -2,6 +2,7 @@
 package logshare
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -52,10 +53,7 @@ func (c *Client) Upload(ctx context.Context, logText string) (string, error) {
 	if len(logText) > launch.MaxLogBytes {
 		return "", ErrLarge
 	}
-	base := c.BaseURL
-	if base == "" {
-		base = DefaultURL
-	}
+	base := cmp.Or(c.BaseURL, DefaultURL)
 	httpClient := c.HTTP
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: Timeout, CheckRedirect: noFollow}

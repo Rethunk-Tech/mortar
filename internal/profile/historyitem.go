@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"fmt"
 )
 
@@ -94,10 +95,7 @@ func (s *Store) revertItemUpdate(game, id string, hit HistoryItem) (Profile, err
 	if err != nil {
 		return Profile{}, err
 	}
-	cur := hit.NewKey
-	if cur == "" {
-		cur = hit.Key
-	}
+	cur := cmp.Or(hit.NewKey, hit.Key)
 	for _, e := range p.Entries {
 		if e.Key != cur {
 			continue

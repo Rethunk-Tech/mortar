@@ -3,6 +3,7 @@
 package thunderstore
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"net/http"
@@ -44,10 +45,7 @@ func (d Driver) ModPageURL(gameKey, id string) string {
 	if !ok {
 		return ""
 	}
-	base := d.URL
-	if base == "" {
-		base = BaseURL
-	}
+	base := cmp.Or(d.URL, BaseURL)
 	return base + "/c/" + gameKey + "/p/" + owner + "/" + name + "/"
 }
 

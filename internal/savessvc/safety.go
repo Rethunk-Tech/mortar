@@ -1,6 +1,7 @@
 package savessvc
 
 import (
+	"cmp"
 	"context"
 	"errors"
 
@@ -87,10 +88,7 @@ func (s *Service) Check(ctx context.Context, game, saveFolder, profileID string)
 	out.LastProfileID = rec.ProfileID
 	out.LastMods = rec.Mods
 	out.LastProfileExists = profileExists(s.profiles, game, rec.ProfileID)
-	id := profileID
-	if id == "" {
-		id = rec.ProfileID
-	}
+	id := cmp.Or(profileID, rec.ProfileID)
 	if s.profiles == nil || id == "" {
 		out.Missing = MissingFrom(rec.Mods, nil, nil)
 		out.ContentMissing = contentMissingCount(rec.Mods, out.Missing)

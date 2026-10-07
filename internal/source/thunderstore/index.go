@@ -2,6 +2,7 @@ package thunderstore
 
 import (
 	"bytes"
+	"cmp"
 	"compress/gzip"
 	"context"
 	"crypto/sha256"
@@ -121,10 +122,7 @@ func (d Driver) chunkAllowed(raw string) bool {
 	if err != nil || u.Host == "" {
 		return false
 	}
-	base := d.URL
-	if base == "" {
-		base = BaseURL
-	}
+	base := cmp.Or(d.URL, BaseURL)
 	if b, err := url.Parse(base); err == nil && u.Scheme == b.Scheme && u.Host == b.Host {
 		return true
 	}
@@ -158,10 +156,7 @@ func (d Driver) get(ctx context.Context, url, ua string) ([]byte, error) {
 		return nil, err
 	}
 	req.Header.Set("User-Agent", ua)
-	client := d.HTTP
-	if client == nil {
-		client = http.DefaultClient
-	}
+	client := cmp.Or(d.HTTP, http.DefaultClient)
 	if client.CheckRedirect == nil {
 		secured := *client
 		secured.CheckRedirect = noDowngrade
@@ -206,10 +201,7 @@ func (d Driver) getJSON(ctx context.Context, url, ua string, out any) (hash stri
 }
 
 func (d Driver) indexURL(key string) string {
-	base := d.URL
-	if base == "" {
-		base = BaseURL
-	}
+	base := cmp.Or(d.URL, BaseURL)
 	return base + "/c/" + key + "/api/v1/package-listing-index/"
 }
 

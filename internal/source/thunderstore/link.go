@@ -1,6 +1,7 @@
 package thunderstore
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -154,10 +155,7 @@ func (d Driver) Dependencies(ctx context.Context, key, mortarVersion string, ref
 }
 
 func (d Driver) resolved(p pkg, v version) Resolved {
-	base := d.URL
-	if base == "" {
-		base = BaseURL
-	}
+	base := cmp.Or(d.URL, BaseURL)
 	return Resolved{
 		Namespace: p.Owner, Name: p.Name, Version: v.Number, Size: v.Size, Dependencies: p.depsOf(v),
 		URL:  base + "/package/download/" + p.Owner + "/" + p.Name + "/" + v.Number + "/",

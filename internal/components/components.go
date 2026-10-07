@@ -848,14 +848,8 @@ func (c *Client) Download(ctx context.Context, component Component, dest string)
 	if strings.ToLower(component.Source.Host) != "github.com" {
 		return fmt.Errorf("component source host %q is not supported for downloads", component.Source.Host)
 	}
-	tag := component.Tag
-	if tag == "" {
-		tag = component.Version
-	}
-	base := c.GitHubBaseURL
-	if base == "" {
-		base = "https://github.com"
-	}
+	tag := cmp.Or(component.Tag, component.Version)
+	base := cmp.Or(c.GitHubBaseURL, "https://github.com")
 	address := strings.TrimRight(base, "/") + "/" + component.Source.Owner + "/" + component.Source.Repo +
 		"/releases/download/" + tag + "/" + component.Asset
 	dir := filepath.Dir(dest)

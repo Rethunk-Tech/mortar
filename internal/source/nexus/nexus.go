@@ -3,6 +3,7 @@ package nexus
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -75,14 +76,8 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	if q.Key == "" {
 		return source.Page{}, fmt.Errorf("game %q has no Nexus domain", q.Game)
 	}
-	base := d.URL
-	if base == "" {
-		base = nexus.BaseURL
-	}
-	client := d.HTTP
-	if client == nil {
-		client = http.DefaultClient
-	}
+	base := cmp.Or(d.URL, nexus.BaseURL)
+	client := cmp.Or(d.HTTP, http.DefaultClient)
 	offset := (q.Page - source.FirstPage) * source.PageSize
 	// A JSON string is a valid GraphQL string, so no input can end the literal or inject a field.
 	key, err := json.Marshal(q.Key)

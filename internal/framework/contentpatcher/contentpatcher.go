@@ -2,6 +2,7 @@ package contentpatcher
 
 import (
 	"bytes"
+	"cmp"
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/binary"
@@ -2350,10 +2351,7 @@ func (p *cachedPack) recordFarms(raw json.RawMessage) {
 		if entry.MapName == "" || hasToken(entry.MapName) {
 			continue
 		}
-		id := entry.ID
-		if id == "" {
-			id = key
-		}
+		id := cmp.Or(entry.ID, key)
 		if p.farms == nil {
 			p.farms = map[string]string{}
 		}

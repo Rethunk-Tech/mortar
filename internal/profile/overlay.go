@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -35,10 +36,7 @@ type NoBaseError struct {
 }
 
 func (e *NoBaseError) Error() string {
-	name := e.ModName
-	if name == "" {
-		name = "this mod"
-	}
+	name := cmp.Or(e.ModName, "this mod")
 	return fmt.Sprintf("%s has no manifest. Install the main file of %s first, then this optional file goes on top of it.", e.Archive, name)
 }
 

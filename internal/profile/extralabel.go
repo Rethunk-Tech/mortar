@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"fmt"
 	"strings"
 
@@ -14,10 +15,7 @@ func ExtraFileLabel(e Entry, extraKey string, files []nexus.File) string {
 	if nexusKey {
 		for _, f := range files {
 			if f.FileID == fileID {
-				title := f.FileName
-				if title == "" {
-					title = f.Name
-				}
+				title := cmp.Or(f.FileName, f.Name)
 				if f.Version != "" {
 					return fmt.Sprintf("%s (%s)", title, f.Version)
 				}

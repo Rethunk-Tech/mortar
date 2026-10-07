@@ -3,6 +3,7 @@ package pack
 import (
 	"archive/zip"
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -80,10 +81,7 @@ func (c Code) ExportCode(ctx context.Context, d Draft) (string, error) {
 		return "", err
 	}
 	body := codePrefix + "\n" + base64.StdEncoding.EncodeToString(z)
-	base := c.URL
-	if base == "" {
-		base = BaseURL
-	}
+	base := cmp.Or(c.URL, BaseURL)
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, base+"/api/experimental/legacyprofile/create/", strings.NewReader(body))
@@ -92,10 +90,7 @@ func (c Code) ExportCode(ctx context.Context, d Draft) (string, error) {
 	}
 	req.Header.Set("Content-Type", "application/octet-stream")
 	req.Header.Set("User-Agent", "Mortar (+https://mortar.rethunk.tech)")
-	client := c.HTTP
-	if client == nil {
-		client = http.DefaultClient
-	}
+	client := cmp.Or(c.HTTP, http.DefaultClient)
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err

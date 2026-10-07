@@ -73,10 +73,7 @@ func (s *Service) recordHistory(it *Item, outcome string) {
 	if !it.started.IsZero() {
 		started = it.started.Unix()
 	}
-	name := it.Name
-	if name == "" {
-		name = it.FileName
-	}
+	name := cmp.Or(it.Name, it.FileName)
 	src := profile.KindNexus
 	switch {
 	case it.Package != "":

@@ -1,6 +1,7 @@
 package nexus
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -42,10 +43,7 @@ func (c *Client) CollectionArchive(ctx context.Context, downloadLink string) ([]
 		return nil, err
 	}
 	req.Header.Set("User-Agent", "Mortar/"+c.version)
-	hc := c.HTTP
-	if hc == nil {
-		hc = http.DefaultClient
-	}
+	hc := cmp.Or(c.HTTP, http.DefaultClient)
 	resp, err := hc.Do(req)
 	if err != nil {
 		return nil, err

@@ -1,6 +1,7 @@
 package pack
 
 import (
+	"cmp"
 	"context"
 	"encoding/base64"
 	"errors"
@@ -123,10 +124,7 @@ func (c Code) Parse(ctx context.Context, in Input) (Draft, error) {
 }
 
 func (c Code) fetch(ctx context.Context, key string) (string, error) {
-	base := c.URL
-	if base == "" {
-		base = BaseURL
-	}
+	base := cmp.Or(c.URL, BaseURL)
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, base+"/api/experimental/legacyprofile/get/"+key+"/", nil)
@@ -134,10 +132,7 @@ func (c Code) fetch(ctx context.Context, key string) (string, error) {
 		return "", err
 	}
 	req.Header.Set("User-Agent", "Mortar (+https://mortar.rethunk.tech)")
-	client := c.HTTP
-	if client == nil {
-		client = http.DefaultClient
-	}
+	client := cmp.Or(c.HTTP, http.DefaultClient)
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err

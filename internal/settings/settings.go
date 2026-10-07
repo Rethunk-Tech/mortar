@@ -3,6 +3,7 @@ package settings
 
 import (
 	"bytes"
+	"cmp"
 	"fmt"
 	"maps"
 	"path/filepath"
@@ -523,10 +524,7 @@ func (s *Store) RecordLastPlayed(game, profile string, at time.Time, gameVersion
 			cur.LastPlayed = map[string]Played{}
 		}
 		prev := cur.LastPlayed[game]
-		ver := gameVersion
-		if ver == "" {
-			ver = prev.GameVersion
-		}
+		ver := cmp.Or(gameVersion, prev.GameVersion)
 		cur.LastPlayed[game] = Played{Profile: profile, At: at.UTC().Format(time.RFC3339), GameVersion: ver, PlaytimeMs: prev.PlaytimeMs}
 	})
 }

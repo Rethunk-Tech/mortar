@@ -196,10 +196,7 @@ func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (
 	if err := c.blocked(); err != nil {
 		return 0, "", nil, err
 	}
-	base := c.BaseURL
-	if base == "" {
-		base = BaseURL
-	}
+	base := cmp.Or(c.BaseURL, BaseURL)
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
 	defer cancel()
 	var rdr io.Reader
@@ -222,10 +219,7 @@ func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	hc := c.HTTP
-	if hc == nil {
-		hc = http.DefaultClient
-	}
+	hc := cmp.Or(c.HTTP, http.DefaultClient)
 	resp, err := hc.Do(req)
 	netstate.Record("nexus", err)
 	if err != nil {

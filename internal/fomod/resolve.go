@@ -1,6 +1,7 @@
 package fomod
 
 import (
+	"cmp"
 	"slices"
 	"strings"
 
@@ -83,10 +84,7 @@ func gameDepOK(installed, minimum string) bool {
 }
 
 func fileOK(d FileDep, files FileIndex) bool {
-	want := d.State
-	if want == "" {
-		want = FileActive
-	}
+	want := cmp.Or(d.State, FileActive)
 	got := FileMissing
 	if files != nil {
 		got = files(d.File)

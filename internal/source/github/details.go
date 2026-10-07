@@ -1,6 +1,7 @@
 package github
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"io"
@@ -19,14 +20,8 @@ func (d *Driver) Details(ctx context.Context, _, id, mortarVersion string) (sour
 	if !ok || owner == "" || repo == "" || strings.Contains(repo, "/") {
 		return source.Details{}, fmt.Errorf("%q is not an owner/repo", id)
 	}
-	base := d.URL
-	if base == "" {
-		base = apiURL
-	}
-	client := d.HTTP
-	if client == nil {
-		client = http.DefaultClient
-	}
+	base := cmp.Or(d.URL, apiURL)
+	client := cmp.Or(d.HTTP, http.DefaultClient)
 	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
 	defer cancel()
 	u := strings.TrimRight(base, "/") + "/repos/" + url.PathEscape(owner) + "/" + url.PathEscape(repo) + "/readme"

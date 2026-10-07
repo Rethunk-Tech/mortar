@@ -3,6 +3,7 @@
 package github
 
 import (
+	"cmp"
 	"context"
 	"crypto/md5" // #nosec G501 -- Content-MD5 is MD5 by RFC 1864
 	"crypto/sha256"
@@ -511,10 +512,7 @@ func (c *Client) cacheDir() (string, error) {
 // Releases lists owner/repo's releases, newest first. An answer younger than an hour comes from the cache and a
 // stale one stands in when the lookup fails, rate limit included.
 func (c *Client) Releases(ctx context.Context, owner, repo string) ([]Release, error) {
-	base := c.APIBase
-	if base == "" {
-		base = apiBase
-	}
+	base := cmp.Or(c.APIBase, apiBase)
 	dir, err := c.cacheDir()
 	if err != nil {
 		return nil, err

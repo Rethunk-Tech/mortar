@@ -106,14 +106,8 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 	if hit, ok := d.cached(key); ok {
 		return hit, nil
 	}
-	base := d.URL
-	if base == "" {
-		base = apiURL
-	}
-	client := d.HTTP
-	if client == nil {
-		client = http.DefaultClient
-	}
+	base := cmp.Or(d.URL, apiURL)
+	client := cmp.Or(d.HTTP, http.DefaultClient)
 	terms := strings.TrimSpace(q.Text + " topic:" + q.Key)
 	params := url.Values{}
 	params.Set("q", terms)

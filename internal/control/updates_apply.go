@@ -1,16 +1,14 @@
 package control
 
 import (
+	"cmp"
 	"context"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 func (s *Services) applyEverywhere(ctx context.Context, p Params) (profile.EverywhereResult, error) {
-	key := p.Key
-	if key == "" {
-		key = "latest"
-	}
+	key := cmp.Or(p.Key, "latest")
 	if len(p.IDs) > 0 {
 		return s.Profiles.UpdateEverywhere(p.Game, p.IDs[0], key)
 	}

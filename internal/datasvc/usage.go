@@ -1,6 +1,7 @@
 package datasvc
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"io/fs"
@@ -338,10 +339,7 @@ func MeasureMods(root string) (ModUsage, error) {
 		if n == 0 {
 			n = dirSize(e.Dir)
 		}
-		name := names[id]
-		if name == "" {
-			name = e.Key
-		}
+		name := cmp.Or(names[id], e.Key)
 		lastUsed := ""
 		if !e.LastUsed.IsZero() {
 			lastUsed = e.LastUsed.UTC().Format(time.RFC3339)

@@ -1,6 +1,7 @@
 package thunderstore
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -48,10 +49,7 @@ func (d Driver) Details(ctx context.Context, key, id, mortarVersion string) (sou
 
 // doc is one version's README or CHANGELOG as Markdown; errNotFound when the version has none.
 func (d Driver) doc(ctx context.Context, p pkg, ver, kind, ua string) (string, error) {
-	base := d.URL
-	if base == "" {
-		base = BaseURL
-	}
+	base := cmp.Or(d.URL, BaseURL)
 	u := base + "/api/experimental/package/" + url.PathEscape(p.Owner) + "/" + url.PathEscape(p.Name) + "/" +
 		url.PathEscape(ver) + "/" + kind + "/"
 	var body struct {

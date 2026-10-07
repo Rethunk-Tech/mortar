@@ -199,10 +199,7 @@ func resolve(ctx context.Context, client *github.Client, source components.Sourc
 
 func downloadURL(client *github.Client, source components.SourceComponent, asset github.Asset) string {
 	if asset.ID != 0 {
-		base := client.APIBase
-		if base == "" {
-			base = "https://api.github.com"
-		}
+		base := cmp.Or(client.APIBase, "https://api.github.com")
 		return fmt.Sprintf("%s/repos/%s/%s/releases/assets/%d", base, source.Source.Owner, source.Source.Repo, asset.ID)
 	}
 	return asset.URL

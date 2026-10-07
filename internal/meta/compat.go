@@ -2,6 +2,7 @@ package meta
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -115,10 +116,7 @@ func (c *Client) CompatList(ctx context.Context) (CompatIndex, error) {
 }
 
 func (c *Client) fetchCompat(ctx context.Context) (CompatIndex, error) {
-	u := c.CompatURL
-	if u == "" {
-		u = defaultCompatURL
-	}
+	u := cmp.Or(c.CompatURL, defaultCompatURL)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
 		return CompatIndex{}, err

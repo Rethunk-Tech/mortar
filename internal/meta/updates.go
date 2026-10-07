@@ -2,6 +2,7 @@ package meta
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -230,10 +231,7 @@ func (c *Client) askUpdates(ctx context.Context, req UpdateRequest, mods []Insta
 	if err != nil {
 		return nil, err
 	}
-	u := c.UpdatesURL
-	if u == "" {
-		u = defaultUpdatesURL
-	}
+	u := cmp.Or(c.UpdatesURL, defaultUpdatesURL)
 	hr, err := http.NewRequestWithContext(ctx, http.MethodPost, u, bytes.NewReader(body))
 	if err != nil {
 		return nil, err

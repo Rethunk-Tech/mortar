@@ -1,6 +1,7 @@
 package meta
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -61,10 +62,7 @@ func (c *Client) loadIndex(ctx context.Context) (map[string][]Ref, error) {
 }
 
 func (c *Client) fetchIndex(ctx context.Context) (map[string][]Ref, error) {
-	u := c.IndexURL
-	if u == "" {
-		u = defaultIndexURL
-	}
+	u := cmp.Or(c.IndexURL, defaultIndexURL)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
@@ -155,10 +153,7 @@ func (c *Client) Page(ctx context.Context, id int) (Page, error) {
 
 func (c *Client) page(ctx context.Context, id int) (Page, error) {
 	return Cached(c, DatasetPrefix+"nexus-"+strconv.Itoa(id)+".json", datasetTTL, func() (Page, error) {
-		base := c.PageBase
-		if base == "" {
-			base = defaultPageBase
-		}
+		base := cmp.Or(c.PageBase, defaultPageBase)
 		u, err := url.JoinPath(base, strconv.Itoa(id/1000), strconv.Itoa(id)+".json")
 		if err != nil {
 			return Page{}, err

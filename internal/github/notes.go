@@ -1,6 +1,7 @@
 package github
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -35,10 +36,7 @@ func (c *Client) ReleaseNotes(ctx context.Context, owner, repo, tag string) (str
 			return hit.Notes, nil
 		}
 	}
-	base := c.APIBase
-	if base == "" {
-		base = apiBase
-	}
+	base := cmp.Or(c.APIBase, apiBase)
 	ctx, cancel := context.WithTimeout(ctx, apiTimeout)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, base+"/repos/"+owner+"/"+repo+"/releases/tags/"+tag, nil)
@@ -47,10 +45,7 @@ func (c *Client) ReleaseNotes(ctx context.Context, owner, repo, tag string) (str
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
 	DefaultAuth.Apply(req)
-	hc := c.HTTP
-	if hc == nil {
-		hc = http.DefaultClient
-	}
+	hc := cmp.Or(c.HTTP, http.DefaultClient)
 	resp, err := hc.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("could not reach GitHub: %w", err)
