@@ -9,16 +9,13 @@ import {
   ImageOff,
   ImagePlus,
   PackagePlus,
-  Send as SendIcon,
   ShieldCheck,
   SquareArrowOutUpRight,
   Trash2,
-  Users,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { SetLanSharing } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import {
   AddToSteam,
   Create as CreateShortcut,
@@ -29,12 +26,9 @@ import {
 import { AddResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/steam/models.ts'
 import { bundleApplied } from '../bundles/applied.ts'
 import { ApplyBundleDialog } from '../bundles/dialogs.tsx'
-import { SendDialog } from '../lan/SendDialog.tsx'
 import { CompareDialog } from '../profiles/CompareDialog.tsx'
 import { HealthDialog } from '../profiles/HealthDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
-import { useSettings } from '../settings/store.ts'
-import { openImport } from '../share/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
@@ -198,56 +192,6 @@ function CheckProfileMenuItem({ profile, close }: { profile: Profile; close: () 
   )
 }
 
-function SendProfileMenuItem({ profile, close }: { profile: Profile; close: () => void }) {
-  const { t } = useLingui()
-  const currentGame = useProfiles((s) => s.game)
-  const lanSharing = useSettings((s) => s.lanSharing)
-  const [open, setOpen] = useState(false)
-  const [askSharing, setAskSharing] = useState(false)
-  const [enabling, setEnabling] = useState(false)
-  return (
-    <>
-      <ProfileMenuItem
-        icon={<SendIcon size={16} />}
-        label={t`Send to…`}
-        disabled={!currentGame}
-        onClick={() => {
-          close()
-          if (lanSharing) {
-            setOpen(true)
-          } else {
-            setAskSharing(true)
-          }
-        }}
-      />
-      <ConfirmDialog
-        open={askSharing}
-        title={t`Turn on sharing nearby?`}
-        body={t`Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General.`}
-        confirmLabel={t`Turn on and continue`}
-        busy={enabling}
-        onCancel={() => setAskSharing(false)}
-        onConfirm={() => {
-          setEnabling(true)
-          SetLanSharing(true)
-            .then(() => {
-              setAskSharing(false)
-              setOpen(true)
-            })
-            .catch(reportError(t`Could not turn on sharing nearby`))
-            .finally(() => setEnabling(false))
-        }}
-      />
-      <SendDialog
-        open={open}
-        game={currentGame?.id ?? ''}
-        profileId={profile.id}
-        onClose={() => setOpen(false)}
-      />
-    </>
-  )
-}
-
 function CoverMenuItems({
   game,
   profile,
@@ -333,7 +277,6 @@ function ProfileDialogs({
 // Sharing, exporting and backing up the profile, as one menu group.
 function ShareMenuItems({ profile, close }: { profile: Profile; close: () => void }) {
   return [
-    <SendProfileMenuItem key="send" profile={profile} close={close} />,
     <FarmMenuItem key="farm" profile={profile} close={close} />,
     <BackupMenuItems key="backup" profile={profile} close={close} />,
   ]
@@ -359,7 +302,7 @@ function MoreMenuItems({
     <ProfileMenuItem
       key="history"
       icon={<History size={16} />}
-      label={t`History`}
+      label={t`History…`}
       onClick={() => {
         close()
         onHistory()
@@ -386,18 +329,9 @@ function MoreMenuItems({
     />,
     <Divider key="sharing-divider" />,
     <ProfileMenuItem
-      key="match"
-      icon={<Users size={16} />}
-      label={t`Match a friend's profile…`}
-      onClick={() => {
-        close()
-        openImport({ profileId: profile.id })
-      }}
-    />,
-    <ProfileMenuItem
       key="compare"
       icon={<GitCompare size={16} />}
-      label={t`Compare with…`}
+      label={t`Compare…`}
       disabled={profiles.length < 2}
       onClick={() => {
         close()
@@ -423,7 +357,7 @@ function MoreMenuItems({
     <ProfileMenuItem
       key="delete"
       icon={<Trash2 size={16} />}
-      label={t`Delete`}
+      label={t`Delete profile…`}
       onClick={() => {
         close()
         setDeleting(true)

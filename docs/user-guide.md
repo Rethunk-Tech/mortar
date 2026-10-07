@@ -150,7 +150,7 @@ Pairing makes two of your own computers trust each other, so a profile sent betw
 3. On the second choose **Enter code**, pick the first computer from the nearby list (or type its `host:port` when none is listed) and type the code. Five wrong codes lock the entry from that computer for ten minutes.
 4. Both computers now list each other under **Paired computers**; **Unpair** forgets one. From the command line, `mortar lan pair` shows a code and `mortar lan pair --code <code>` enters one.
 
-To send, use **Share profile** then **Send to…** and pick the computer. The receiver is asked to accept; **Auto-accept from paired computers** in the same settings skips the question.
+To send, use **Share…**, choose **Nearby** and pick the computer. The receiver is asked to accept; **Auto-accept from paired computers** in the same settings skips the question.
 
 ## Switch games
 

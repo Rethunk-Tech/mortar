@@ -78,7 +78,7 @@ function RowMenu({
         />
         <ProfileMenuItem
           icon={<Palette size={16} />}
-          label={t`Edit profile`}
+          label={t`Edit profile…`}
           onClick={choose(onEdit, false)}
         />
         <CoverMenuItems game={game} profile={profile} close={choose(() => undefined)} />

@@ -44,7 +44,7 @@ export function ProfileContextMenu({
         />
         <ProfileMenuItem
           icon={<Palette size={16} />}
-          label={t`Edit profile`}
+          label={t`Edit profile…`}
           onClick={() => {
             onClose()
             setEditing(true)
