@@ -16,6 +16,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/control"
@@ -54,7 +55,7 @@ var verbs = map[string]bool{
 	"templates": true, "library": true, "archive": true,
 	"browse":  true,
 	"bundles": true, "source": true, "trash": true, "cache": true, "data": true, "store": true, "bisect": true, "lan": true, "app": true, "support": true, "links": true,
-	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "loader": true, "sweep": true, "uninstall-cleanup": true, "quit": true, "version": true, "--version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
+	"update": true, "backups": true, "doctor": true, "launchers": true, "tools": true, "settings": true, "antivirus": true, "loader": true, "sweep": true, "uninstall-cleanup": true, "quit": true, "version": true, "--version": true, "completion": true, "help": true, "--help": true, "-h": true, "__complete": true,
 }
 
 // Is reports whether args (without the program name) are a command-line call: a known verb, or a bare word that
@@ -551,6 +552,8 @@ func (c *cmd) dispatch() error {
 		return c.loader()
 	case "settings":
 		return c.settings()
+	case "antivirus":
+		return c.antivirus()
 	case "bundles":
 		return c.bundles()
 	case "source":
@@ -1140,6 +1143,18 @@ func relativeDeleted(when time.Time) string {
 		}
 		return fmt.Sprintf("%d days ago", n)
 	}
+}
+
+func (c *cmd) antivirus() error {
+	if len(c.args) != 2 || c.args[1] != "status" {
+		return usageError{"antivirus needs status"}
+	}
+	return show(c, "antivirus.status", control.Params{}, func(st avscan.Status) {
+		fmt.Fprintf(c.out, "mode: %s\nscanner: %s\nproduct: %s\nready: %t\n", st.Mode, st.Scanner, st.Product, st.Ready)
+		if st.Problem != "" {
+			fmt.Fprintf(c.out, "problem: %s\n", st.Problem)
+		}
+	})
 }
 
 func (c *cmd) settings() error {
@@ -2411,6 +2426,7 @@ const usage = `Usage: mortar <command> [arguments] [--json]
 Mortar must be running; these commands ask the open app. <profile> is an id or a name. A verb without <game>
 takes --game <id>, which may be left out when exactly one game is installed.
 
+  antivirus status                     the scanner in use (amsi, clamd, command, off) and whether it can scan
   settings get [--game <id>] [key]     list settings, or one key
   settings set [--game <id>] <key> <value>  change a setting
   settings export <file>                  write portable settings JSON

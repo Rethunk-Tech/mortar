@@ -791,3 +791,13 @@ func TestProblemsTextSettingWithoutTargetModsGivesItsReason(t *testing.T) {
 		t.Fatalf("output = %q", r.out)
 	}
 }
+
+func TestAntivirusStatusPrintsTheScanner(t *testing.T) {
+	r := invoke(t, map[string]any{"antivirus.status": map[string]any{"mode": "automatic", "scanner": "amsi", "product": "Windows Defender (AMSI)", "ready": true}}, "antivirus", "status")
+	if r.code != 0 || r.calls[0].method != "antivirus.status" || !strings.Contains(r.out, "scanner: amsi") || !strings.Contains(r.out, "ready: true") {
+		t.Fatalf("antivirus status: %+v", r)
+	}
+	if r := invoke(t, nil, "antivirus"); r.code != 2 {
+		t.Fatalf("antivirus alone: %+v", r)
+	}
+}

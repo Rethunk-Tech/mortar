@@ -3,6 +3,7 @@ package avscan
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
@@ -56,4 +57,57 @@ func windowsProduct(ctx context.Context) string {
 		return fmt.Sprintf("%s (AMSI)", name)
 	}
 	return fallback
+}
+
+// Status is what Settings and `mortar antivirus status` report: which scanner the settings resolve to, the product
+// behind it, and whether a scan can run now.
+type Status struct {
+	Mode    string `json:"mode"`
+	Scanner string `json:"scanner"`
+	Product string `json:"product"`
+	Ready   bool   `json:"ready"`
+	Problem string `json:"problem,omitempty"`
+}
+
+// StatusOf resolves c. Ready comes from scanning an empty folder, which opens the scanner (an AMSI session, a clamd
+// connection, the command's program) without any file to flag.
+func StatusOf(ctx context.Context, c Config) Status {
+	st := Status{Mode: c.Mode, Scanner: kindOf(c), Product: Product(ctx, c)}
+	if st.Mode == "" {
+		st.Mode = ModeAutomatic
+	}
+	dir, err := os.MkdirTemp("", "mortar-av-status-")
+	if err != nil {
+		st.Problem = err.Error()
+		return st
+	}
+	defer func() { _ = os.RemoveAll(dir) }()
+	ctx, cancel := context.WithTimeout(ctx, productTimeout)
+	defer cancel()
+	_, _, err = New(c).Scan(ctx, dir)
+	if err == nil && st.Scanner == "clamd" {
+		// An empty folder never reaches the daemon, so ask it directly.
+		_, err = clamd{socket: c.Socket}.Version(ctx)
+	}
+	if err != nil {
+		st.Problem = err.Error()
+		return st
+	}
+	st.Ready = true
+	return st
+}
+
+func kindOf(c Config) string {
+	switch c.Mode {
+	case ModeOff:
+		return "off"
+	case ModeClamd:
+		return "clamd"
+	case ModeCommand:
+		return "command"
+	}
+	if runtime.GOOS == "windows" {
+		return "amsi"
+	}
+	return "clamd"
 }

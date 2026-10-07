@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
+	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/bisect"
 	"github.com/Rethunk-Tech/mortar/internal/bundles"
@@ -313,6 +314,9 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.gameSteamLaunchOption(p.Game, p.Set, p.Clear)
 	case "game.launchPresetTemplates":
 		return s.gameLaunchPresetTemplates(p)
+	case "antivirus.status":
+		v := s.Settings.Get()
+		return avscan.StatusOf(ctx, avscan.Config{Mode: v.Antivirus, Socket: v.AntivirusSocket, Command: v.AntivirusCommand}), nil
 	case "settings.get":
 		cur := s.Settings.Get()
 		if p.Key == "" {

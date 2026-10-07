@@ -34,7 +34,7 @@ type amsi struct{}
 
 func (amsi) Scan(ctx context.Context, dir string) (Detection, bool, error) {
 	if err := amsiDLL.Load(); err != nil {
-		return Detection{}, false, ErrNoScanner
+		return Detection{}, false, fmt.Errorf("%w: amsi.dll: %w", ErrNoScanner, err)
 	}
 	app, err := windows.UTF16PtrFromString("Mortar")
 	if err != nil {
@@ -42,7 +42,7 @@ func (amsi) Scan(ctx context.Context, dir string) (Detection, bool, error) {
 	}
 	var actx uintptr
 	if hr, _, _ := amsiInitialize.Call(uintptr(unsafe.Pointer(app)), uintptr(unsafe.Pointer(&actx))); hr != 0 {
-		return Detection{}, false, ErrNoScanner
+		return Detection{}, false, fmt.Errorf("%w: AmsiInitialize HRESULT 0x%x", ErrNoScanner, hr)
 	}
 	defer func() { _, _, _ = amsiUninitialize.Call(actx) }()
 	var session uintptr

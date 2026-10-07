@@ -194,3 +194,17 @@ func TestACancelledContextStopsEveryScanner(t *testing.T) {
 		}
 	}
 }
+
+func TestStatusSaysWhetherTheScannerCanRun(t *testing.T) {
+	t.Parallel()
+	if st := StatusOf(t.Context(), Config{Mode: ModeOff}); !st.Ready || st.Scanner != "off" || st.Mode != ModeOff {
+		t.Fatalf("off = %+v", st)
+	}
+	st := StatusOf(t.Context(), Config{Mode: ModeCommand})
+	if st.Ready || st.Problem == "" || st.Scanner != "command" {
+		t.Fatalf("a command mode with no command is not ready: %+v", st)
+	}
+	if st := StatusOf(t.Context(), Config{Mode: ModeClamd, Socket: filepath.Join(t.TempDir(), "none.sock")}); st.Ready || st.Problem == "" {
+		t.Fatalf("clamd without a daemon is not ready: %+v", st)
+	}
+}
