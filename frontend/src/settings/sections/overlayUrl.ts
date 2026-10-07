@@ -1,4 +1,4 @@
-const OVERLAY_FIELDS = [
+const STARDEW_FIELDS = [
   'location',
   'player',
   'season',
@@ -18,6 +18,17 @@ const OVERLAY_FIELDS = [
   'skill.luck',
 ] as const
 
+// The bridge names its game in /state; a snapshot without one (the SMAPI bridge's) is Stardew Valley's.
+const GAME_FIELDS: Record<string, readonly string[]> = {
+  'lethal-company': ['player', 'moon', 'crew', 'day', 'quota', 'daysLeft', 'credits'],
+  valheim: ['player', 'biome', 'day', 'bosses', 'bossList'],
+}
+
+function overlayFields(game: string): readonly string[] {
+  return GAME_FIELDS[game] ?? STARDEW_FIELDS
+}
+
+const BOSS_COUNT = 7
 const TIME_SCALE = 100
 const HALF_DAY_HOURS = 12
 
@@ -77,7 +88,34 @@ function missing(value: unknown): boolean {
   return value === undefined || value === null
 }
 
+function fraction(a: unknown, b: unknown, suffix = ''): string {
+  return missing(a) || missing(b) ? '' : `${a}/${b}${suffix}`
+}
+
+function gameField(body: Record<string, unknown>, field: string): string {
+  const text = (v: unknown) => (missing(v) ? '' : String(v))
+  switch (field) {
+    case 'player':
+      return text(body.playerName)
+    case 'crew':
+      return fraction(body.crewAlive, body.crewTotal, ' alive')
+    case 'quota':
+      return fraction(body.quotaProgress, body.quota)
+    case 'credits':
+      return missing(body.credits) ? '' : `\u25A0${body.credits}`
+    case 'bosses':
+      return missing(body.bossCount) ? '' : `${body.bossCount}/${BOSS_COUNT} defeated`
+    case 'bossList':
+      return Array.isArray(body.bossesDefeated) ? body.bossesDefeated.join(', ') : ''
+    default:
+      return text(body[field])
+  }
+}
+
 function formatField(body: Record<string, unknown>, field: string): string {
+  if (typeof body.game === 'string' && body.game in GAME_FIELDS) {
+    return gameField(body, field)
+  }
   switch (field) {
     case 'location':
       return String(body.location ?? '')
@@ -121,7 +159,12 @@ function overlayPreview(
     return { kind: 'notInGame' }
   }
   if (!field) {
-    return { kind: 'value', text: OVERLAY_FIELDS.map((f) => formatField(body, f)).join(' · ') }
+    return {
+      kind: 'value',
+      text: overlayFields(String(body.game ?? ''))
+        .map((f) => formatField(body, f))
+        .join(' · '),
+    }
   }
   return { kind: 'value', text: formatField(body, field) }
 }
@@ -133,4 +176,11 @@ const OVERLAY_EXAMPLE_CSS = `body { background: transparent; margin: 0; padding:
 #time, .time { font-variant-numeric: tabular-nums; }
 `
 
-export { OVERLAY_EXAMPLE_CSS, OVERLAY_FIELDS, type OverlayPreview, overlayPageUrl, overlayPreview }
+export {
+  OVERLAY_EXAMPLE_CSS,
+  type OverlayPreview,
+  overlayFields,
+  overlayPageUrl,
+  overlayPreview,
+  STARDEW_FIELDS,
+}

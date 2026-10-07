@@ -20,10 +20,11 @@ import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import {
   OVERLAY_EXAMPLE_CSS,
-  OVERLAY_FIELDS,
   type OverlayPreview,
+  overlayFields,
   overlayPageUrl,
   overlayPreview,
+  STARDEW_FIELDS,
 } from './overlayUrl.ts'
 
 const MIN_PORT = 1024
@@ -54,7 +55,7 @@ const WORLD_FIELDS: ReadonlySet<string> = new Set([
   'weather',
 ])
 
-function OverlayFieldLabel({ field }: { field: (typeof OVERLAY_FIELDS)[number] }) {
+function OverlayFieldLabel({ field }: { field: string }) {
   const { t } = useLingui()
   switch (field) {
     case 'location':
@@ -91,12 +92,29 @@ function OverlayFieldLabel({ field }: { field: (typeof OVERLAY_FIELDS)[number] }
       return t`Combat skill`
     case 'skill.luck':
       return t`Luck skill`
+    case 'moon':
+      return t`Moon`
+    case 'crew':
+      return t`Crew`
+    case 'quota':
+      return t`Quota`
+    case 'daysLeft':
+      return t`Days left`
+    case 'credits':
+      return t`Credits`
+    case 'biome':
+      return t`Biome`
+    case 'bosses':
+      return t`Bosses defeated`
+    case 'bossList':
+      return t`Boss names`
     default:
       return field
   }
 }
 
 function OverlayValues({
+  game,
   snapshot,
   labels,
   token,
@@ -105,6 +123,7 @@ function OverlayValues({
   copied,
   failCopy,
 }: {
+  game: string
   snapshot: Snapshot
   labels: boolean
   token: string
@@ -126,15 +145,22 @@ function OverlayValues({
       .then((base) => copy(overlayPageUrl(base, field, labels), key))
       .catch(reportError(failCopy))
   }
-  type Field = (typeof OVERLAY_FIELDS)[number]
-  const groups: { title: string; fields: Field[] }[] = [
-    { title: t`World`, fields: OVERLAY_FIELDS.filter((f) => WORLD_FIELDS.has(f)) },
-    {
-      title: t`Player`,
-      fields: OVERLAY_FIELDS.filter((f) => !(WORLD_FIELDS.has(f) || f.startsWith('skill.'))),
-    },
-    { title: t`Skills`, fields: OVERLAY_FIELDS.filter((f) => f.startsWith('skill.')) },
-  ]
+  type Field = string
+  const fields = overlayFields(game)
+  const groups: { title: string; fields: Field[] }[] =
+    fields === STARDEW_FIELDS
+      ? [
+          { title: t`World`, fields: fields.filter((f) => WORLD_FIELDS.has(f)) },
+          {
+            title: t`Player`,
+            fields: fields.filter((f) => !(WORLD_FIELDS.has(f) || f.startsWith('skill.'))),
+          },
+          { title: t`Skills`, fields: fields.filter((f) => f.startsWith('skill.')) },
+        ]
+      : [
+          { title: t`Player`, fields: fields.filter((f) => f === 'player') },
+          { title: t`Game`, fields: fields.filter((f) => f !== 'player') },
+        ]
   const overall = overlayPreview(snapshot, undefined).kind
   const status = overall === 'value' ? '' : previewLine(overall, '', idle, wait)
   const row = (key: string, label: ReactNode, field?: Field) => {
@@ -382,7 +408,7 @@ function useOverlaySnapshot(enabled: boolean, port: number, token: string): Snap
   return snapshot
 }
 
-export function StreamOverlay() {
+export function StreamOverlay({ game }: { game: string }) {
   const { t } = useLingui()
   const enabled = useSettings((s) => s.overlayEnabled)
   const port = useSettings((s) => s.overlayPort)
@@ -415,6 +441,7 @@ export function StreamOverlay() {
       {enabled ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, p: space.pad }}>
           <OverlayValues
+            game={game}
             snapshot={snapshot}
             labels={labels}
             token={token}

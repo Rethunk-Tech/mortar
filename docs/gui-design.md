@@ -549,7 +549,7 @@ Mortar's Settings holds only what is Mortar-wide, never one game's (the one exce
 - **Stream overlay** (a titled section card):
   - A **Stream overlay** switch row (off by default) whose description says changes apply on the next Play.
   - When enabled: **Show labels** for this visit (not stored); **Values** with "Load a save to see values" when `inGame` is false, or "Start the game to see values" when the bridge is unreachable.
-  - Groups World, Player and Skills. Each overlay field (plus All values) is a row with a live preview (polled from `/state` every 2 s) and a copy icon for that OBS `file://` URL (`field` omitted on All values; `label=1` when Show labels is on). An empty value is an em dash.
+  - Groups World, Player and Skills for Stardew Valley; Player and Game for Lethal Company (moon, crew, day, quota, days left, credits) and Valheim (biome, day, bosses defeated, boss names), whose bridge reports a `game` in `/state` that also selects the OBS page's layout. Each overlay field (plus All values) is a row with a live preview (polled from `/state` every 2 s) and a copy icon for that OBS `file://` URL (`field` omitted on All values; `label=1` when Show labels is on). An empty value is an em dash.
   - OBS how-to under the list (Sources, +, Browser, width 400, height 80, Custom CSS) with **Copy CSS** using `#player` / `.player`, `#money` / `.money`, `#skill-mining` / `.skill.mining`.
   - **Port** (default 8123, 1024 to 65535) and **Token**, a password field with show/hide and copy beside **Regenerate…**.
   - Stored as `overlayEnabled`, `overlayPort`, `overlayToken`. The command palette's Stream overlay action opens this page.

@@ -153,7 +153,7 @@ function GamePages({
           </SettingsSection>
         )
       default:
-        return loader?.overlay ? <StreamOverlay /> : null
+        return loader?.overlay ? <StreamOverlay game={game} /> : null
     }
   }
   return (
