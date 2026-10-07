@@ -601,3 +601,27 @@ func TestExtensionsStripLongestEndingFirst(t *testing.T) {
 		t.Error(PickerPattern())
 	}
 }
+
+func TestSavedNameKeepsABareFilesOriginalNameForExtraction(t *testing.T) {
+	saved := SavedName("0a1b2c", "notes.txt.gz")
+	if SavedID(saved) != "0a1b2c" || SavedID("0a1b2c.partial.json") != "0a1b2c.partial" {
+		t.Fatalf("SavedID = %q", SavedID(saved))
+	}
+	src, err := fsx.ReadFile(filepath.Join("testdata", "bare.txt.gz"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	dest, err := extract(t, writeTemp(t, saved, src), options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := readFile(t, filepath.Join(dest, "notes.txt")); got != "hello archive\n" {
+		t.Fatalf("notes.txt = %q", got)
+	}
+	if SavedName("id", "m.zip") != "id.zip" || SavedName("id", "m.tar.gz") != "id.gz" {
+		t.Fatal("only a bare compressed file keeps its name")
+	}
+	if got := SavedName("id", "a/b:c.xz"); got != "id~~b_c.xz" {
+		t.Fatalf("unsafe characters: %q", got)
+	}
+}

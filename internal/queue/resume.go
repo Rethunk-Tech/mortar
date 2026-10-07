@@ -24,7 +24,7 @@ func (s *Service) downloadRoot() string {
 }
 
 func (s *Service) dest(id, fileName string) string {
-	return filepath.Join(s.downloadRoot(), id+filepath.Ext(fileName))
+	return filepath.Join(s.downloadRoot(), archive.SavedName(id, fileName))
 }
 
 func dropDownload(path string) {
@@ -59,7 +59,7 @@ func (s *Service) sweepDownloads() {
 	for _, e := range entries {
 		name := e.Name()
 		id := strings.TrimSuffix(name, github.ResumeSuffix)
-		id = strings.TrimSuffix(id, filepath.Ext(id))
+		id = archive.SavedID(id)
 		if keep[id] {
 			continue
 		}

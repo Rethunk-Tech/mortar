@@ -17,6 +17,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -304,5 +305,30 @@ func TestDownloadRootUsesSeparateFolder(t *testing.T) {
 	plain := &Service{d: Deps{Dir: dir}}
 	if plain.downloadRoot() != filepath.Join(dir, downloadsDir) {
 		t.Fatalf("default root = %s", plain.downloadRoot())
+	}
+}
+
+func TestDestKeepsABareCompressedDownloadsName(t *testing.T) {
+	s := &Service{d: Deps{Dir: t.TempDir()}}
+	got := s.dest("item", "Cool Mod.dll.gz")
+	if filepath.Base(got) != "item~~Cool Mod.dll.gz" {
+		t.Fatalf("dest = %s", got)
+	}
+	if err := os.MkdirAll(filepath.Dir(got), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	src, err := os.ReadFile(filepath.Join("..", "archive", "testdata", "bare.txt.gz"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(got, src, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	out := t.TempDir()
+	if err := archive.Extract(got, out); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(out, "Cool Mod.dll")); err != nil {
+		t.Fatalf("extracted under the queue id, not the file's name: %v", err)
 	}
 }

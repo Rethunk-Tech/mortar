@@ -11,6 +11,7 @@ import (
 	"io"
 	"math"
 	"path/filepath"
+	"strings"
 
 	"github.com/klauspost/compress/zstd"
 	"github.com/ulikunitz/xz"
@@ -144,7 +145,11 @@ func openPayload(r io.Reader, kind int, opts options) (*payload, error) {
 
 // singleName is the name a bare compressed file extracts under: the archive's own, without its suffix.
 func singleName(archivePath string) string {
-	name := StripExtension(filepath.Base(archivePath))
+	base := filepath.Base(archivePath)
+	if _, original, ok := strings.Cut(base, nameSep); ok {
+		base = original
+	}
+	name := StripExtension(base)
 	if name == "" || name == "." {
 		return "file"
 	}
