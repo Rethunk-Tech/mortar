@@ -56,7 +56,7 @@ func compatibilitySettings(mods []framework.Mod, run *partsRun) []framework.Sett
 		enabled := enabledRecolours(recolours, packMod.ModID())
 		sig, stable := packSig(packMod, pack, seen)
 		fields := []string{"settings", sig}
-		for _, id := range sortedKeys(seen) {
+		for _, id := range slices.Sorted(maps.Keys(seen)) {
 			fields = append(fields, fmt.Sprintf("%q %q", byID[id].ModID(), byID[id].Name))
 		}
 		for i := range recolourFamilies {
@@ -176,11 +176,7 @@ func enabledRequirements(when cpWhen, present map[string]bool, own mod.ID) []str
 			}
 		}
 	}
-	out := make([]string, 0, len(ids))
-	for id := range ids {
-		out = append(out, id)
-	}
-	slices.Sort(out)
+	out := slices.Sorted(maps.Keys(ids))
 	return out
 }
 

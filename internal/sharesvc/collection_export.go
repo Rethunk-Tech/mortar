@@ -6,8 +6,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -83,23 +84,14 @@ type choicePlugin struct {
 // unknown (signed out, offline, file gone).
 type fileFacts func(modID, fileID int) (nexus.File, bool)
 
-func sortedKeys[V any](m map[string]V) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	return keys
-}
-
 func choicesOf(fomod map[string]map[string][]string) *collectionChoices {
 	if len(fomod) == 0 {
 		return nil
 	}
 	c := &collectionChoices{Type: "fomod"}
-	for _, step := range sortedKeys(fomod) {
+	for _, step := range slices.Sorted(maps.Keys(fomod)) {
 		st := choiceStep{Name: step}
-		for _, group := range sortedKeys(fomod[step]) {
+		for _, group := range slices.Sorted(maps.Keys(fomod[step])) {
 			g := choiceGroup{Name: group}
 			for i, plugin := range fomod[step][group] {
 				g.Choices = append(g.Choices, choicePlugin{Name: plugin, Idx: i})

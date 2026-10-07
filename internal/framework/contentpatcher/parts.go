@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -213,21 +214,12 @@ func packSig(im framework.Mod, pack cachedPack, present map[string]bool) (sig st
 	for _, id := range im.LoadAfter {
 		_, _ = fmt.Fprintf(&b, "a%q", id)
 	}
-	for _, id := range sortedKeys(present) {
+	for _, id := range slices.Sorted(maps.Keys(present)) {
 		_, _ = fmt.Fprintf(&b, "p%q", id)
 	}
 	cutoff := time.Now().Add(-racyStampWindow).UnixNano()
 	stable = pack.fingerprint != "" && !slices.ContainsFunc(pack.files, func(f packFileStamp) bool { return f.ModTime > cutoff })
 	return b.String(), stable
-}
-
-func sortedKeys(m map[string]bool) []string {
-	out := make([]string, 0, len(m))
-	for k := range m {
-		out = append(out, k)
-	}
-	slices.Sort(out)
-	return out
 }
 
 // partKey also covers what every part reads besides its packs: the build and the scan depth.

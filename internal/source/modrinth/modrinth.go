@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"net/http"
 	"net/url"
 	"slices"
@@ -311,11 +312,7 @@ func (d Driver) Latest(ctx context.Context, src components.GameSource, mortarVer
 	if len(byHash) == 0 {
 		return out, nil
 	}
-	hashes := make([]string, 0, len(byHash))
-	for h := range byHash {
-		hashes = append(hashes, h)
-	}
-	slices.Sort(hashes)
+	hashes := slices.Sorted(maps.Keys(byHash))
 	var newest map[string]versionResp
 	if err := d.post(ctx, "/version_files/update", struct {
 		Hashes       []string `json:"hashes"`

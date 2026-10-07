@@ -1,6 +1,7 @@
 package updatesvc
 
 import (
+	"maps"
 	"slices"
 	"time"
 
@@ -43,11 +44,7 @@ func digestKeysFromUpdates(updates []problems.Update) []string {
 		k := digestKey(u.Key, u.Version)
 		seen[k] = struct{}{}
 	}
-	out := make([]string, 0, len(seen))
-	for k := range seen {
-		out = append(out, k)
-	}
-	slices.Sort(out)
+	out := slices.Sorted(maps.Keys(seen))
 	return out
 }
 
@@ -58,11 +55,7 @@ func mergeDigestKeys(profiles []ProfileModUpdates) []string {
 			seen[k] = struct{}{}
 		}
 	}
-	out := make([]string, 0, len(seen))
-	for k := range seen {
-		out = append(out, k)
-	}
-	slices.Sort(out)
+	out := slices.Sorted(maps.Keys(seen))
 	return out
 }
 

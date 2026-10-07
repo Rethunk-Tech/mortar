@@ -1,6 +1,7 @@
 package dotnet
 
 import (
+	"maps"
 	"slices"
 	"strings"
 
@@ -42,11 +43,7 @@ func LoadOrder(assemblies []Declared) []Loaded {
 			newest[key] = l
 		}
 	}
-	keys := make([]string, 0, len(newest))
-	for k := range newest {
-		keys = append(keys, k)
-	}
-	slices.Sort(keys)
+	keys := slices.Sorted(maps.Keys(newest))
 	var order []string
 	cycle := map[string]bool{}
 	done := map[string]bool{}
