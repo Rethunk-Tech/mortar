@@ -30,7 +30,7 @@ export function HeroCover({ game, profile }: { game: string; profile: Profile })
     }
   }, [game, profile.id, updated])
   if (covers === null) {
-    return <Box sx={{ width: '100%', height: '100%', bgcolor: 'rgb(44,44,54)' }} />
+    return <Box sx={{ width: '100%', height: '100%', bgcolor: 'var(--mortar-panel-solid)' }} />
   }
   const skip = failed.stamp === covers.stamp ? failed.urls : []
   const src = firstCoverSrc(covers.list, skip)
@@ -43,6 +43,6 @@ export function HeroCover({ game, profile }: { game: string; profile: Profile })
       sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
     />
   ) : (
-    <Box sx={{ width: '100%', height: '100%', bgcolor: 'rgb(44,44,54)' }} />
+    <Box sx={{ width: '100%', height: '100%', bgcolor: 'var(--mortar-panel-solid)' }} />
   )
 }

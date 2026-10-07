@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, Chip, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
@@ -25,19 +25,12 @@ function ModNames({ info }: { info: ShownInfo }) {
         {info.groups.map((g) => {
           const { count } = g
           return (
-            <Box
+            <Chip
               key={g.source}
-              component="span"
-              sx={{
-                px: 1,
-                py: '2px',
-                borderRadius: '10px',
-                bgcolor: 'var(--mortar-hairline-muted)',
-                fontSize: 12,
-              }}
-            >
-              {t`${count} ${{ source: sourceLabel(g.source) }}`}
-            </Box>
+              size="small"
+              label={t`${count} ${{ source: sourceLabel(g.source) }}`}
+              sx={{ bgcolor: 'var(--mortar-hairline-muted)', fontSize: 12 }}
+            />
           )
         })}
       </Box>

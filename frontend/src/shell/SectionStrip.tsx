@@ -1,9 +1,9 @@
-import { Box, ToggleButton, ToggleButtonGroup } from '@mui/material'
-import type { KeyboardEvent, ReactNode } from 'react'
-import { type SectionTab, stepSection } from '../mods/problemSection.ts'
+import { Box, Chip, Tab, Tabs } from '@mui/material'
+import type { ReactNode } from 'react'
+import type { SectionTab } from '../mods/problemSection.ts'
 
-// The Problems tab's header row: an exclusive segment per section with its count, scrolling sideways when they do not
-// fit beside the row's actions. Left and Right move between segments.
+// The Problems tab's header row: a tab per section with its count, scrolling sideways when they do not fit beside
+// the row's actions. The chosen tab is filled in the primary colour.
 export function SectionStrip({
   tabs,
   current,
@@ -17,16 +17,6 @@ export function SectionStrip({
   label: string
   actions: ReactNode
 }) {
-  const onKeyDown = (e: KeyboardEvent<HTMLElement>) => {
-    const delta = { ArrowLeft: -1, ArrowRight: 1 }[e.key]
-    if (delta === undefined) {
-      return
-    }
-    e.preventDefault()
-    const next = stepSection(tabs, current, delta)
-    onChoose(next)
-    e.currentTarget.querySelector<HTMLElement>(`[data-section="${next}"]`)?.focus()
-  }
   return (
     <Box
       sx={{
@@ -36,32 +26,27 @@ export function SectionStrip({
         borderBottom: '1px solid var(--mortar-hairline)',
       }}
     >
-      <ToggleButtonGroup
-        exclusive={true}
-        value={current}
+      <Tabs
+        value={tabs.some((tab) => tab.id === current) ? current : false}
         aria-label={label}
-        onKeyDown={onKeyDown}
-        onChange={(_e, id: string | null) => {
-          if (id !== null) {
-            onChoose(id)
-          }
-        }}
+        variant="scrollable"
+        allowScrollButtonsMobile={true}
+        onChange={(_e, id: string) => onChoose(id)}
+        slotProps={{ indicator: { sx: { display: 'none' } } }}
         sx={{
           flex: 1,
           minWidth: 0,
-          overflowX: 'auto',
-          scrollbarWidth: 'thin',
-          '& .MuiToggleButton-root': {
+          '& .MuiTab-root': {
             flex: '1 0 auto',
+            flexDirection: 'row',
             whiteSpace: 'nowrap',
             gap: 1,
-            border: 0,
-            borderRadius: 0,
             py: 1.25,
+            maxWidth: 'none',
             textTransform: 'none',
             fontSize: 14,
+            fontWeight: 400,
             color: 'text.primary',
-            bgcolor: 'transparent',
             '&:hover': { bgcolor: 'action.hover' },
             '&.Mui-selected': {
               bgcolor: 'primary.main',
@@ -72,29 +57,23 @@ export function SectionStrip({
         }}
       >
         {tabs.map((tab) => (
-          <ToggleButton
+          <Tab
             key={tab.id}
             value={tab.id}
-            data-section={tab.id}
-            tabIndex={tab.id === current ? 0 : -1}
-          >
-            <Box component="span">{tab.label}</Box>
-            <Box
-              component="span"
-              sx={{
-                px: 0.75,
-                minWidth: 20,
-                borderRadius: '10px',
-                fontSize: 12,
-                lineHeight: '20px',
-                bgcolor: 'var(--mortar-overlay-30)',
-              }}
-            >
-              {tab.count}
-            </Box>
-          </ToggleButton>
+            label={
+              <>
+                <Box component="span">{tab.label}</Box>
+                <Chip
+                  size="small"
+                  component="span"
+                  label={tab.count}
+                  sx={{ bgcolor: 'var(--mortar-overlay-30)', color: 'inherit', fontSize: 12 }}
+                />
+              </>
+            }
+          />
         ))}
-      </ToggleButtonGroup>
+      </Tabs>
       <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, px: 1 }}>{actions}</Box>
     </Box>
   )

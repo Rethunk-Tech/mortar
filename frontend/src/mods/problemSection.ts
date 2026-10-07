@@ -18,12 +18,6 @@ function chosenSection(tabs: readonly SectionTab[], remembered: string | undefin
   return tabs.some((t) => t.id === remembered) ? (remembered ?? '') : defaultSection(tabs)
 }
 
-/** The neighbouring section's id for an arrow key, stopping at the ends. */
-function stepSection(tabs: readonly SectionTab[], from: string, delta: number): string {
-  const at = tabs.findIndex((t) => t.id === from)
-  return tabs[Math.min(Math.max(at + delta, 0), tabs.length - 1)]?.id ?? from
-}
-
 // The section chosen in each profile, kept for the session.
 const useProblemSection = create<{
   byProfile: Record<string, string | undefined>
@@ -34,4 +28,4 @@ const useProblemSection = create<{
 }))
 
 export type { SectionTab }
-export { chosenSection, defaultSection, stepSection, useProblemSection }
+export { chosenSection, defaultSection, useProblemSection }

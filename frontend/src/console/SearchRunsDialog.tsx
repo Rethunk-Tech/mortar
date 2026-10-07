@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import {
+  alpha,
   Box,
   Button,
   Dialog,
@@ -26,6 +27,7 @@ import { useOutcomeLabel } from './outcome.ts'
 import { useConsole } from './store.ts'
 
 const SEARCH_DEBOUNCE_MS = 250
+const HIT_ALPHA = 0.35
 
 function Highlight({ text, query }: { text: string; query: string }) {
   if (!query) {
@@ -39,7 +41,10 @@ function Highlight({ text, query }: { text: string; query: string }) {
           <Box
             component="mark"
             key={part}
-            sx={{ bgcolor: 'rgba(255,193,7,0.35)', color: 'inherit' }}
+            sx={{
+              bgcolor: (theme) => alpha(theme.palette.warning.main, HIT_ALPHA),
+              color: 'inherit',
+            }}
           >
             {part}
           </Box>

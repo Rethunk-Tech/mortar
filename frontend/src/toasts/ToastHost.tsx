@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, IconButton, Tooltip } from '@mui/material'
+import { Box, Button, IconButton, Tooltip } from '@mui/material'
 import {
   Check,
   ChevronDown,
@@ -42,52 +42,47 @@ function KindIcon({ kind }: { kind: ToastKind }) {
   )
 }
 
+const toastButtonSx = {
+  height: 34,
+  bgcolor: 'var(--mortar-hairline)',
+  color: 'var(--mortar-ink)',
+  fontSize: 13,
+  fontWeight: 600,
+} as const
+
 function CopyDetail({ text }: { text: string }) {
   const { t } = useLingui()
   const [copied, setCopied] = useState(false)
   return (
-    <ButtonBase
-      onClick={() => copyText(text, t`Details copied`).then(setCopied)}
+    <Button
+      size="small"
+      onClick={() => copyText(text, t`Details copied`, () => setCopied(true))}
+      startIcon={copied ? <Check size={12} /> : <Copy size={12} />}
       sx={{
         alignSelf: 'flex-start',
         mt: '4px',
-        gap: '4px',
         fontSize: 12,
-        fontFamily: 'inherit',
         color: 'var(--mortar-ink-soft)',
         textDecoration: 'underline',
       }}
     >
-      {copied ? <Check size={12} /> : <Copy size={12} />}
       {copied ? t`Copied` : t`Copy details`}
-    </ButtonBase>
+    </Button>
   )
 }
 
 function DetailsButton({ open, onToggle }: { open: boolean; onToggle: () => void }) {
   const { t } = useLingui()
   return (
-    <ButtonBase
+    <Button
+      size="small"
       onClick={onToggle}
       aria-expanded={open}
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        height: 34,
-        px: '12px',
-        bgcolor: 'var(--mortar-hairline)',
-        borderRadius: '6px',
-        color: 'var(--mortar-ink)',
-        fontSize: 13,
-        fontWeight: 600,
-        fontFamily: 'inherit',
-        whiteSpace: 'nowrap',
-        gap: '4px',
-      }}
+      startIcon={open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+      sx={toastButtonSx}
     >
-      {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
       {open ? t`Hide details` : t`Details`}
-    </ButtonBase>
+    </Button>
   )
 }
 
@@ -208,23 +203,9 @@ function ToastCard({ toast }: { toast: Toast }) {
             {action ? (
               <Tooltip title={locked ? lockHint : ''} describeChild={true}>
                 <span>
-                  <ButtonBase
-                    disabled={locked}
-                    onClick={run}
-                    sx={{
-                      height: 34,
-                      px: '12px',
-                      bgcolor: 'var(--mortar-hairline)',
-                      borderRadius: '6px',
-                      color: 'var(--mortar-ink)',
-                      fontSize: 13,
-                      fontWeight: 600,
-                      fontFamily: 'inherit',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
+                  <Button size="small" disabled={locked} onClick={run} sx={toastButtonSx}>
                     {action.label}
-                  </ButtonBase>
+                  </Button>
                 </span>
               </Tooltip>
             ) : null}

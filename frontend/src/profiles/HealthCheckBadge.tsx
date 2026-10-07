@@ -1,8 +1,7 @@
 import { plural } from '@lingui/core/macro'
-import { Box, ButtonBase, Tooltip } from '@mui/material'
+import { Chip, Tooltip } from '@mui/material'
 import { ShieldAlert } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { pill } from '../mods/pills.ts'
 import { HealthDialog } from './HealthDialog.tsx'
 import { useHealthBadges } from './healthBadges.ts'
 
@@ -17,20 +16,15 @@ export function HealthCheckBadge({ game, profileId }: { game: string; profileId:
     <>
       {count > 0 ? (
         <Tooltip title={label} disableInteractive={true}>
-          <ButtonBase
+          <Chip
+            size="small"
+            color="warning"
             aria-label={label}
             onClick={() => setOpen(true)}
-            sx={{
-              ...pill,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '3px',
-              bgcolor: 'warning.main',
-            }}
-          >
-            <ShieldAlert size={12} />
-            <Box component="span">{count}</Box>
-          </ButtonBase>
+            icon={<ShieldAlert size={12} />}
+            label={count}
+            sx={{ flexShrink: 0, ml: 0.5, fontWeight: 700 }}
+          />
         </Tooltip>
       ) : null}
       <HealthDialog profileId={profileId} open={open} onClose={() => setOpen(false)} />

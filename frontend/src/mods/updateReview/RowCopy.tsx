@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Tooltip, Typography } from '@mui/material'
+import { Box, Chip, Tooltip, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { ModNameLink } from '../ModNameLink.tsx'
@@ -41,17 +41,11 @@ export function RowCopy({
         ) : null}
       </Box>
       {notes.length > 0 ? (
-        <Typography
-          sx={{
-            alignSelf: 'flex-start',
-            px: 1,
-            borderRadius: '10px',
-            bgcolor: 'var(--mortar-hairline-muted)',
-            fontSize: 12,
-          }}
-        >
-          {notes.join(' · ')}
-        </Typography>
+        <Chip
+          size="small"
+          label={notes.join(' · ')}
+          sx={{ alignSelf: 'flex-start', bgcolor: 'var(--mortar-hairline-muted)', fontSize: 12 }}
+        />
       ) : null}
       {caution ? (
         <Typography sx={{ fontSize: 12, color: 'warning.main', overflowWrap: 'anywhere' }}>
