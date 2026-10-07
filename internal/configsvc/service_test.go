@@ -8,9 +8,13 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
-type fakeProfiles struct{ dir, folder, config, shipped string }
+type fakeProfiles struct {
+	dir, folder, config, shipped string
+	mods                         []profile.Mod
+}
 
 func (f fakeProfiles) ProfileDir(string, string) (string, error) { return f.dir, nil }
 func (f fakeProfiles) ModFolder(_, _, _ string, id mod.ID) (string, error) {
@@ -27,6 +31,8 @@ func (f fakeProfiles) ReadConfig(string, string, string, mod.ID) (string, error)
 func (f fakeProfiles) ShippedConfig(string, string, string, mod.ID) (string, bool) {
 	return f.shipped, f.shipped != ""
 }
+
+func (f fakeProfiles) UserMods(string, string) ([]profile.Mod, error) { return f.mods, nil }
 
 func (fakeProfiles) SeedConfigs(string, string) error { return nil }
 

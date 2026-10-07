@@ -29,6 +29,7 @@ type Profiles interface {
 	ShippedConfig(game, id, key string, uniqueID mod.ID) (string, bool)
 	PluginGUIDs(game, id string, uniqueID mod.ID) []string
 	SeedConfigs(game, id string) error
+	UserMods(game, id string) ([]profile.Mod, error)
 }
 
 // Service edits the config files a profile holds. A modID is a SMAPI UniqueID, a package's id (whose plugins' GUIDs
@@ -82,6 +83,40 @@ func (s *Service) Files(game, profileID, modID string) ([]ConfigFile, error) {
 			}
 		}
 	}
+	docs, err := s.cfgDocs(game, profileID)
+	if err != nil {
+		return nil, err
+	}
+	for _, d := range docs {
+		if modID != "" && !d.ownedBy(names) {
+			continue
+		}
+		out = append(out, d.file())
+	}
+	return out, nil
+}
+
+// cfgOnDisk is one .cfg of the profile's BepInEx config folder, read once.
+type cfgOnDisk struct {
+	name string
+	stem string
+	doc  cfgDoc
+}
+
+func (d cfgOnDisk) ownedBy(names []string) bool {
+	return slices.ContainsFunc(names, func(n string) bool { return strings.EqualFold(d.stem, n) || strings.EqualFold(d.doc.guid, n) })
+}
+
+func (d cfgOnDisk) file() ConfigFile {
+	label := d.doc.plugin
+	if label == "" {
+		label = d.name
+	}
+	return ConfigFile{Name: d.name, Format: FormatBepInEx, Label: label}
+}
+
+// cfgDocs reads every .cfg of the profile's BepInEx config folder, after seeding the shipped ones.
+func (s *Service) cfgDocs(game, profileID string) ([]cfgOnDisk, error) {
 	dir, err := s.cfgDir(game, profileID)
 	if err != nil {
 		return nil, err
@@ -93,6 +128,7 @@ func (s *Service) Files(game, profileID, modID string) ([]ConfigFile, error) {
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return nil, err
 	}
+	var out []cfgOnDisk
 	for _, e := range ents {
 		if e.IsDir() || !strings.EqualFold(filepath.Ext(e.Name()), cfgExt) {
 			continue
@@ -101,16 +137,7 @@ func (s *Service) Files(game, profileID, modID string) ([]ConfigFile, error) {
 		if err != nil {
 			continue
 		}
-		doc := parseCfg(string(raw))
-		stem := strings.TrimSuffix(e.Name(), filepath.Ext(e.Name()))
-		if modID != "" && !slices.ContainsFunc(names, func(n string) bool { return strings.EqualFold(stem, n) || strings.EqualFold(doc.guid, n) }) {
-			continue
-		}
-		label := doc.plugin
-		if label == "" {
-			label = e.Name()
-		}
-		out = append(out, ConfigFile{Name: e.Name(), Format: FormatBepInEx, Label: label})
+		out = append(out, cfgOnDisk{name: e.Name(), stem: strings.TrimSuffix(e.Name(), filepath.Ext(e.Name())), doc: parseCfg(string(raw))})
 	}
 	return out, nil
 }
