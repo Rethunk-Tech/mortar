@@ -6,7 +6,7 @@ import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/intern
 import { ExternalVortexContents } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useGameName } from '../games/info.ts'
-import { reportUnexpected } from '../toasts/report.ts'
+import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 
 function useVortexNote(game: string, contents: VortexInventory | null): string {
   const { t } = useLingui()
@@ -27,7 +27,7 @@ function useVortexNote(game: string, contents: VortexInventory | null): string {
 export function VortexFolderPrompt({ game, onChosen }: { game: string; onChosen: () => void }) {
   const { t } = useLingui()
   const [contents, setContents] = useState<VortexInventory | null>(null)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<InlineError | null>(null)
   const load = useCallback(() => {
     ExternalVortexContents().then(setContents).catch(reportUnexpected)
   }, [])
@@ -39,10 +39,10 @@ export function VortexFolderPrompt({ game, onChosen }: { game: string; onChosen:
     try {
       await SetByKey('vortexFolder', dir, '')
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      setError(inlineError(e))
       return
     }
-    setError('')
+    setError(null)
     load()
     onChosen()
   }
@@ -73,8 +73,15 @@ export function VortexFolderPrompt({ game, onChosen }: { game: string; onChosen:
         </Box>
       ) : null}
       {error ? (
-        <Typography component="span" variant="body2" color="error" role="alert" sx={{ ml: 1 }}>
-          {error}
+        <Typography
+          component="span"
+          variant="body2"
+          color="error"
+          role="alert"
+          title={error.details}
+          sx={{ ml: 1 }}
+        >
+          {error.message}
         </Typography>
       ) : null}
     </Typography>
