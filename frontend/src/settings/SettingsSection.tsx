@@ -1,5 +1,6 @@
 import { Box, type SxProps, type Theme } from '@mui/material'
 import type { ReactNode } from 'react'
+import { space } from '../theme/density.ts'
 import { prefMatches, SEARCH_HIT } from './prefFilter.ts'
 import { useSettingsSearch } from './useSettingsSearch.ts'
 
@@ -118,8 +119,8 @@ export function SettingRow({
         flexDirection: block ? 'column' : 'row',
         gap: block ? BLOCK_GAP : ROW_GAP,
         minHeight: 64,
-        px: 2.5,
-        py: 1.5,
+        px: space.pad,
+        py: space.gap,
         // Controls inside a row are filled blocks rather than outlined, so the tile reads as one surface.
         '& .MuiOutlinedInput-notchedOutline': { borderColor: 'transparent' },
         '& .MuiInputBase-root': { bgcolor: 'var(--mortar-raised)' },

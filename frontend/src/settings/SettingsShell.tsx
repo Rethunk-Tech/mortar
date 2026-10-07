@@ -3,6 +3,7 @@ import { Box, Button, Typography } from '@mui/material'
 import { type LucideIcon, Search, SearchX } from 'lucide-react'
 import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { space } from '../theme/density.ts'
 import { SEARCH_HIT } from './prefFilter.ts'
 import { SettingsNav } from './SettingsNav.tsx'
 import { dialogOpen } from './shortcuts.ts'
@@ -148,9 +149,8 @@ export function SettingsShell<Id extends string>({
           sx={{
             minWidth: 0,
             overflow: 'auto',
-            px: 3.5,
-            pt: 2,
-            pb: 1.5,
+            px: space.gutter,
+            py: space.gutter,
             display: 'flex',
             flexDirection: 'column',
             gap: 2,
