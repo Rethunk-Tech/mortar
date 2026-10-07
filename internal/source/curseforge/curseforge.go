@@ -6,13 +6,11 @@
 package curseforge
 
 import (
-	"bytes"
 	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -118,60 +116,13 @@ func (d Driver) do(ctx context.Context, method, path string, params url.Values, 
 	if key == "" {
 		return ErrNoKey
 	}
-	base := cmp.Or(d.URL, BaseURL)
-	client := d.HTTP
-	if client == nil {
-		client = http.DefaultClient
-	}
-	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
-	defer cancel()
-	u := strings.TrimRight(base, "/") + path
-	if len(params) > 0 {
-		u += "?" + params.Encode()
-	}
-	var payload io.Reader
-	if body != nil {
-		raw, err := json.Marshal(body)
-		if err != nil {
-			return err
-		}
-		payload = bytes.NewReader(raw)
-	}
-	req, err := http.NewRequestWithContext(ctx, method, u, payload)
-	if err != nil {
-		return err
-	}
-	req.Header.Set("X-Api-Key", key)
-	req.Header.Set("User-Agent", source.UserAgent(""))
-	req.Header.Set("Accept", "application/json")
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	switch resp.StatusCode {
-	case http.StatusOK:
-	case http.StatusTooManyRequests:
-		return source.Busy("CurseForge", resp)
-	case http.StatusUnauthorized, http.StatusForbidden:
-		return &statusError{code: resp.StatusCode}
-	default:
-		return fmt.Errorf("curseforge answered %s", resp.Status)
-	}
-	raw, err := io.ReadAll(io.LimitReader(resp.Body, source.MaxBody))
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(raw, out)
+	u := strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + path
+	return source.DoJSON(ctx, source.Request{
+		Service: "CurseForge", Client: d.HTTP, Method: method, URL: u, Params: params, Body: body,
+		UserAgent: source.UserAgent(""),
+		Header:    func(h http.Header) { h.Set("X-Api-Key", key) },
+	}, out)
 }
-
-// statusError is a 401 or 403, which a caller may read as "not allowed" for one request.
-type statusError struct{ code int }
-
-func (e *statusError) Error() string { return fmt.Sprintf("curseforge answered HTTP %d", e.code) }
 
 func (d Driver) get(ctx context.Context, path string, params url.Values, out any) error {
 	return d.do(ctx, http.MethodGet, path, params, nil, out)
@@ -529,7 +480,7 @@ func (d Driver) Resolve(ctx context.Context, id, version string) (Resolved, erro
 	if link == "" {
 		link, err = d.downloadURL(ctx, id, f.ID)
 		if err != nil {
-			if _, denied := errors.AsType[*statusError](err); denied {
+			if se, ok := errors.AsType[*source.StatusError](err); ok && se.Auth() {
 				return Resolved{}, &NotDistributableError{Mod: m.Name, PageURL: page}
 			}
 			return Resolved{}, err

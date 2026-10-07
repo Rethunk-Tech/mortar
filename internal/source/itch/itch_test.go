@@ -77,3 +77,17 @@ func TestKeyHandling(t *testing.T) {
 		t.Fatalf("search without key: %v", err)
 	}
 }
+
+func TestOtherStatusIsReportedNotParsed(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusBadGateway)
+		_, _ = w.Write([]byte(`{"games":[{"id":1}]}`))
+	}))
+	t.Cleanup(srv.Close)
+	d := Driver{URL: srv.URL, Key: func() (string, error) { return "k1", nil }}
+	_, err := d.Search(context.Background(), source.Query{Text: "x"})
+	if se, ok := errors.AsType[*source.StatusError](err); !ok || se.Code != http.StatusBadGateway {
+		t.Fatalf("err = %v, want the 502 as a status error", err)
+	}
+}

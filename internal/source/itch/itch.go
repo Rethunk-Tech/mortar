@@ -5,11 +5,11 @@
 package itch
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"slices"
@@ -89,39 +89,15 @@ func (d Driver) Unavailable() string {
 
 // call GETs an API path with the key, which itch.io may answer with HTTP 200 and an errors list.
 func (d Driver) call(ctx context.Context, key, path string, params url.Values, out any) error {
-	base := d.URL
-	if base == "" {
-		base = BaseURL
-	}
-	client := d.HTTP
-	if client == nil {
-		client = http.DefaultClient
-	}
-	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
-	defer cancel()
-	u := strings.TrimRight(base, "/") + path
-	if len(params) > 0 {
-		u += "?" + params.Encode()
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Authorization", "Bearer "+key)
-	req.Header.Set("User-Agent", source.UserAgent(""))
-	req.Header.Set("Accept", "application/json")
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode == http.StatusTooManyRequests {
-		return source.Busy("itch.io", resp)
-	}
-	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusUnauthorized {
+	var body json.RawMessage
+	err := source.DoJSON(ctx, source.Request{
+		Service: "itch.io", Client: d.HTTP, URL: strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + path, Params: params,
+		UserAgent: source.UserAgent(""),
+		Header:    func(h http.Header) { h.Set("Authorization", "Bearer "+key) },
+	}, &body)
+	if se, ok := errors.AsType[*source.StatusError](err); ok && se.Auth() {
 		return ErrBadKey
 	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, source.MaxBody))
 	if err != nil {
 		return err
 	}
@@ -133,9 +109,6 @@ func (d Driver) call(ctx context.Context, key, path string, params url.Values, o
 			return ErrBadKey
 		}
 		return fmt.Errorf("itch.io: %s", strings.Join(env.Errors, "; "))
-	}
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("itch.io answered %s", resp.Status)
 	}
 	return json.Unmarshal(body, out)
 }

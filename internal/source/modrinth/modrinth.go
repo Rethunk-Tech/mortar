@@ -4,11 +4,10 @@
 package modrinth
 
 import (
-	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"slices"
@@ -70,53 +69,11 @@ func (d Driver) post(ctx context.Context, path string, body any, version string,
 }
 
 func (d Driver) do(ctx context.Context, method, path string, params url.Values, body any, version string, out any) error {
-	base := d.URL
-	if base == "" {
-		base = BaseURL
-	}
-	client := d.HTTP
-	if client == nil {
-		client = http.DefaultClient
-	}
-	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
-	defer cancel()
-	u := strings.TrimRight(base, "/") + path
-	if len(params) > 0 {
-		u += "?" + params.Encode()
-	}
-	var payload io.Reader
-	if body != nil {
-		raw, err := json.Marshal(body)
-		if err != nil {
-			return err
-		}
-		payload = bytes.NewReader(raw)
-	}
-	req, err := http.NewRequestWithContext(ctx, method, u, payload)
-	if err != nil {
-		return err
-	}
-	req.Header.Set("User-Agent", userAgent(version))
-	req.Header.Set("Accept", "application/json")
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode == http.StatusTooManyRequests {
-		return source.Busy("Modrinth", resp)
-	}
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("modrinth answered %s", resp.Status)
-	}
-	raw, err := io.ReadAll(io.LimitReader(resp.Body, source.MaxBody))
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(raw, out)
+	u := strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + path
+	return source.DoJSON(ctx, source.Request{
+		Service: "Modrinth", Client: d.HTTP, Method: method, URL: u, Params: params, Body: body,
+		UserAgent: userAgent(version),
+	}, out)
 }
 
 // facet turns the catalog key into one facet group; a key without a colon is a category.
