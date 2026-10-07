@@ -12,7 +12,6 @@ import { refWant } from '../queue/refWant.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { copyText } from '../share/copyText.ts'
-import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { SectionStrip } from '../shell/SectionStrip.tsx'
@@ -43,20 +42,6 @@ const PROBLEM_SKELETON_HEIGHT = 56
 function useOpenProblems() {
   const openId = useProfiles((s) => s.openId)
   return useMods((s) => (s.problemsFor === openId ? s.problems : null))
-}
-
-function dismissCosmetic(
-  sections: ReturnType<typeof problemSections>,
-  dismissAsset: ReturnType<typeof useMods.getState>['dismissAsset'],
-) {
-  const cosmetic = sections.find((section) => section.id === 'cosmetic')
-  for (const row of cosmetic?.rows ?? []) {
-    if (!isDismissedRow(row) && row.kind === 'asset') {
-      for (const asset of [row.asset, ...(row.siblings ?? [])]) {
-        dismissAsset(asset).catch(reportUnexpected)
-      }
-    }
-  }
 }
 
 function OfflineChecksNote() {
@@ -145,8 +130,6 @@ function useProblemTabs({
 
 function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof useOpenProblems>> }) {
   const { t } = useLingui()
-  const dismissAsset = useMods((s) => s.dismissAsset)
-  const [confirmDismissCosmetic, setConfirmDismissCosmetic] = useState(false)
   const [addingAll, runAddAll] = usePending()
   const cosmeticConflicts = useSettings((s) => gamePrefs(s).cosmeticConflicts)
   const redundantRows = useRedundantRows()
@@ -183,16 +166,6 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
               return want ? [want] : []
             })
             runAddAll(() => download(wants))
-          },
-        },
-      }
-    }
-    if (section.id === 'cosmetic') {
-      return {
-        action: {
-          label: t`Dismiss all`,
-          onClick: () => {
-            setConfirmDismissCosmetic(true)
           },
         },
       }
@@ -260,17 +233,6 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
           </EmptyState>
         ) : null}
         {shown?.body}
-        <ConfirmDialog
-          open={confirmDismissCosmetic}
-          title={t`Dismiss all harmless overlaps?`}
-          body={t`They move to Dismissed. Restore them from that section.`}
-          confirmLabel={t`Dismiss all`}
-          onCancel={() => setConfirmDismissCosmetic(false)}
-          onConfirm={() => {
-            setConfirmDismissCosmetic(false)
-            dismissCosmetic(sections, dismissAsset)
-          }}
-        />
         {result.unknown ? <OfflineChecksNote /> : null}
         {empty ? null : <CheckTimings timings={result.timings ?? []} at={problemsAt} />}
       </Box>

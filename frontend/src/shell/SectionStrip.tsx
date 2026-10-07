@@ -4,8 +4,8 @@ import type { SectionTab } from '../mods/problemSection.ts'
 import { space } from '../theme/density.ts'
 
 // The Problems tab's header: a tab per section with its count, scrolling sideways when they do not fit, the chosen one
-// filled in the primary colour. The chosen section's bulk action sits in a row of its own below, right-aligned and
-// always there (empty when the section has none), so the tabs and the content never shift between sections.
+// filled in the primary colour. The chosen section's bulk action, when it has one, sits in a row of its own below,
+// right-aligned; a section without one has no such row.
 export function SectionStrip({
   tabs,
   current,
@@ -73,7 +73,7 @@ export function SectionStrip({
           />
         ))}
       </Tabs>
-      {tabs.length > 0 ? (
+      {tabs.length > 0 && actions ? (
         <Box
           sx={{
             display: 'flex',

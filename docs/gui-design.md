@@ -289,7 +289,7 @@ Finds mods to add to the open profile. The shared header has no page actions her
 A full-height tab holding one section of the profile's problems at a time. Under the shared tab header (whose page actions are **Find the mod that crashes the game…**, **Asset map** and **Copy report**), a **section strip** runs full width: one MUI tab per section that has something in it, each with its label and a count chip, the chosen one filled in the primary colour. The tabs scroll sideways when they do not fit, and the strip's height never changes. Left and Right move between tabs (only the chosen one is in the tab order). The strip never shows an empty section.
 
 - **Which section shows:** the first section that holds something broken (missing requirements, broken mods, damaged files, errors in the last run, failed plugins, plugins shipped twice), else the first section with anything. A choice is remembered for each profile while Mortar runs, and counts only while its section still exists.
-- **Section action:** the chosen section's own action sits in an action row directly under the tabs, right-aligned and 44px tall in every section (the row stays, empty, for a section with no bulk action, so the tabs and the list below never move), outlined (**Add all N** has a Plus icon): **Add all N** on missing requirements (off while the queue call is in flight) and **Dismiss all** on cosmetic overlaps, which asks first.
+- **Section action:** only the missing-requirements section has one, **Add all N** (outlined, Plus icon, off while the queue call is in flight), in a right-aligned 44px row directly under the tabs; every other section has no such row, so its list starts under the tabs. Rows are dismissed and restored one at a time.
 - **Sections** (in this order, only the non-empty ones):
   - Missing requirements
   - Conflicts
@@ -317,7 +317,6 @@ While the tab is open, the tab header holds **Find the mod that crashes the game
 - Warnings are amber tiles; information rows (including Cleanup) are neutral tiles with an info icon.
 - **Copy report** a plain-text count of problems by section, each row's sentence, each conflict's **Why?** keys, Dismissed, Cleanup, Redundant, Compatibility, and the harmless count.
 - Empty or still loading: the disabled tooltip is **No problems to copy.** **Add all** on missing requirements disables while the queue call is in flight.
-- **Dismiss all** on cosmetic overlaps asks first.
 - Under the section body a muted **Checked <relative time>** line (updating as time passes) carries the check timings by family in its tooltip ("Checked in 626 ms: requirements 89 ms, ...").
 
 Each row shows the full wrapped text, severity icon, the Nexus author note when a listed requirement has one, and its fix actions.
