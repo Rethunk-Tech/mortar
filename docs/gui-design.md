@@ -297,7 +297,7 @@ Each row shows the full wrapped text, severity icon, the Nexus author note when 
 - None: "No problems found."
 - Some checks could not run offline: the connection warning from the summary
 
-The problem count is the **N problems** chip in the tab header, which opens this tab. The Mods tab carries no problems banner. While problems are still loading, the chip shows the profile's last known count.
+The problem count is the **N problems** chip in the tab header, which opens this tab. One helper (`problemCount`) feeds that chip, the sidebar badge, Home's At a glance and the cached profile badges: it counts every item this tab lists (missing requirements that are not optional, duplicates, broken mods, asset conflicts, run errors, load failures, settings, damaged and deprecated mods, plugin clashes, drift, cleanup, compatibility notes and one row per Redundant item or same-job group) except the harmless cosmetic asset conflicts, so the count is zero only when the tab has nothing to fix. The Mods tab carries no problems banner. While problems are still loading, the chip shows the profile's last known count.
 
 ## Load order tab
 

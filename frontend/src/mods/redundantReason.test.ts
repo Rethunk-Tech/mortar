@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { sameJobGroups } from './redundantReason.ts'
+import { sameJobGroups } from './sameJobGroups.ts'
 
 test('same-job pairs join into one group per job', () => {
   const pair = (key: string, others: string[], detail = 'Farmer.CurrentToolIndex') => ({

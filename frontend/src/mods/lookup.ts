@@ -26,6 +26,7 @@ import { useSettings } from '../settings/store.ts'
 import { idKey } from './dependents.ts'
 import { offersNexusDownload } from './nexusMark.ts'
 import { assetRows } from './problemGroups.ts'
+import { redundantRowCount } from './sameJobGroups.ts'
 
 type Entry = NonNullable<Profile['entries']>[number]
 
@@ -201,9 +202,14 @@ export function nexusKeepKey(copies: Copy[]): string | null {
 export const missingCount = (result: Result | null): number =>
   (result?.missing ?? []).filter(countsAsMissing).length
 
+// The one count the Problems chip, the sidebar badge, Home and the badges share: every item the Problems tab lists
+// except the harmless (cosmetic) asset conflicts, which that tab sets apart and which never need a fix.
 export const problemCount = (result: Result | null): number =>
   problemsOf(result).filter((p) => p.kind !== 'missing' || countsAsMissing(p.missing)).length +
-  (result?.drift?.length ?? 0)
+  (result?.drift?.length ?? 0) +
+  (result?.cleanup?.length ?? 0) +
+  (result?.compat?.length ?? 0) +
+  redundantRowCount(result?.redundant ?? [])
 
 export const offersUpdate = (
   entry: { pinned?: boolean; skipVersion?: string; skipSources?: string[] | null } | undefined,
