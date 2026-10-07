@@ -194,14 +194,12 @@ func TestRecordWritePrunesPastBudget(t *testing.T) {
 	base := time.Now().Add(-time.Hour)
 	for i := range 6 {
 		p := filepath.Join(c.dir, string(rune('a'+i)))
-		f, err := os.Create(p)
-		if err != nil {
+		if err := os.WriteFile(p, nil, 0o600); err != nil {
 			t.Fatal(err)
 		}
-		if err := f.Truncate(chunk); err != nil {
+		if err := os.Truncate(p, chunk); err != nil {
 			t.Fatal(err)
 		}
-		_ = f.Close()
 		at := base.Add(time.Duration(i) * time.Minute)
 		_ = os.Chtimes(p, at, at)
 		c.recordWrite(chunk)
