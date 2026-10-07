@@ -217,7 +217,18 @@ const SITE: Scene[] = [
         .waitFor({ timeout: STEP_MS })
     },
   },
-  { name: 'settings', ...DESK, profile: STARDEW, steps: (page) => settings(page, 'Appearance') },
+  {
+    name: 'settings',
+    ...DESK,
+    profile: STARDEW,
+    steps: async (page) => {
+      await settings(page, 'General')
+      await page
+        .getByText('Antivirus', { exact: true })
+        .first()
+        .evaluate((h) => h.scrollIntoView({ block: 'start' }))
+    },
+  },
 ]
 
 async function siteShots() {
