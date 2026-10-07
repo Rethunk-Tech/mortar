@@ -25,7 +25,7 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
   const [editing, setEditing] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [compare, setCompare] = useState<{ a: Profile; b: Profile } | null>(null)
+  const [compare, setCompare] = useState<{ a: Profile; b: Profile | null } | null>(null)
   const close = () => setAnchor(null)
   return (
     <>
@@ -73,10 +73,9 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
         <MenuAction
           icon={<GitCompare size={16} />}
           label={t`Compare…`}
-          disabled={profiles.length < 2}
           onClick={() => {
             close()
-            setCompare({ a: profile, b: profiles.find((p) => p.id !== profile.id) ?? profile })
+            setCompare({ a: profile, b: profiles.find((p) => p.id !== profile.id) ?? null })
           }}
         />
         <Divider />

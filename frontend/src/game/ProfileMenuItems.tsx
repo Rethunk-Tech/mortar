@@ -247,8 +247,8 @@ function ProfileDialogs({
 }: {
   profile: Profile
   currentGame: { id: string } | null
-  compare: { a: Profile; b: Profile } | null
-  setCompare: (value: { a: Profile; b: Profile } | null) => void
+  compare: { a: Profile; b: Profile | null } | null
+  setCompare: (value: { a: Profile; b: Profile | null } | null) => void
   deleting: boolean
   setDeleting: (value: boolean) => void
   bundleOpen: boolean
@@ -295,7 +295,7 @@ function MoreMenuItems({
   const profiles = useProfiles((s) => s.profiles)
   const currentGame = useProfiles((s) => s.game)
   const duplicate = useProfiles((s) => s.duplicate)
-  const [compare, setCompare] = useState<{ a: Profile; b: Profile } | null>(null)
+  const [compare, setCompare] = useState<{ a: Profile; b: Profile | null } | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [bundleOpen, setBundleOpen] = useState(false)
   return [
@@ -332,10 +332,9 @@ function MoreMenuItems({
       key="compare"
       icon={<GitCompare size={16} />}
       label={t`Compare…`}
-      disabled={profiles.length < 2}
       onClick={() => {
         close()
-        setCompare({ a: profile, b: profiles.find((p) => p.id !== profile.id) ?? profile })
+        setCompare({ a: profile, b: profiles.find((p) => p.id !== profile.id) ?? null })
       }}
     />,
     <ShareMenuItems key="share" profile={profile} close={close} />,
