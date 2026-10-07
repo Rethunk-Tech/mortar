@@ -12,6 +12,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"io"
 	"log"
 	"net"
@@ -145,7 +146,11 @@ func serveConn(ctx context.Context, conn net.Conn, token, version string, h Hand
 		res, err = h(ctx, req.Method, req.Params)
 	}
 	if err != nil {
-		writeReply(conn, controlwire.Reply{Error: err.Error()})
+		rep := controlwire.Reply{Error: err.Error()}
+		if d := usererr.DetailOf(err); d != nil {
+			rep.Detail, _ = json.Marshal(d)
+		}
+		writeReply(conn, rep)
 		return
 	}
 	b, err := json.Marshal(res)

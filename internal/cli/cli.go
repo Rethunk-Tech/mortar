@@ -193,7 +193,11 @@ func (c *cmd) fail(err error) int {
 		raw = err.Error()
 	}
 	if c.json {
-		_ = json.NewEncoder(c.errOut).Encode(map[string]any{"error": raw, "kind": string(kind), "code": code})
+		out := map[string]any{"error": raw, "kind": string(kind), "code": code}
+		if re, ok := errors.AsType[*controlwire.RemoteError](err); ok && len(re.Detail) > 0 {
+			out["detail"] = re.Detail
+		}
+		_ = json.NewEncoder(c.errOut).Encode(out)
 		return code
 	}
 	shown := err.Error()

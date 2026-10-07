@@ -801,3 +801,25 @@ func TestAntivirusStatusPrintsTheScanner(t *testing.T) {
 		t.Fatalf("antivirus alone: %+v", r)
 	}
 }
+
+func TestJSONErrorsCarryTheTypedDetail(t *testing.T) {
+	failing := func(string, control.Params, any, time.Duration) error {
+		return &controlwire.RemoteError{
+			Msg:    "[malware] the antivirus (AMSI) reports x",
+			Detail: json.RawMessage(`{"scanner":"AMSI","removed":false}`),
+		}
+	}
+	var o, e bytes.Buffer
+	if code := run("9.9.9", failing, []string{"--json", "install", "stardew", "abc", "mod.zip"}, &o, &e); code != 1 {
+		t.Fatalf("code = %d", code)
+	}
+	var got struct {
+		Kind   string `json:"kind"`
+		Detail struct {
+			Scanner string `json:"scanner"`
+		} `json:"detail"`
+	}
+	if err := json.Unmarshal(e.Bytes(), &got); err != nil || got.Kind != "malware" || got.Detail.Scanner != "AMSI" {
+		t.Fatalf("stderr = %q, %v", e.String(), err)
+	}
+}

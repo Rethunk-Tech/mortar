@@ -150,6 +150,14 @@ type Detailer interface {
 	Detail() any
 }
 
+// DetailOf is the detail of the first Detailer in err's chain, or nil.
+func DetailOf(err error) any {
+	if d, ok := errors.AsType[Detailer](err); ok {
+		return d.Detail()
+	}
+	return nil
+}
+
 // Marshal is the cause a bound call's error carries to the GUI: {"kind": ...} plus {"detail": ...} from a Detailer in
 // the chain, so a bare stdlib error (a read-only folder, a refused connection) is classified like a tagged one. Nil for
 // Unknown keeps Wails' default.
@@ -162,9 +170,7 @@ func Marshal(err error) []byte {
 		Kind   Kind `json:"kind"`
 		Detail any  `json:"detail,omitempty"`
 	}{Kind: kind}
-	if d, ok := errors.AsType[Detailer](err); ok {
-		cause.Detail = d.Detail()
-	}
+	cause.Detail = DetailOf(err)
 	b, err := json.Marshal(cause)
 	if err != nil {
 		return []byte(`{"kind":"` + string(kind) + `"}`)

@@ -47,7 +47,17 @@ type Hello struct {
 type Reply struct {
 	Result json.RawMessage `json:"result,omitempty"`
 	Error  string          `json:"error,omitempty"`
+	// Detail is the typed data the failure carries (usererr.Detailer), as the GUI reads it.
+	Detail json.RawMessage `json:"detail,omitempty"`
 }
+
+// RemoteError is a failure the app reported: its text and the typed detail it carried.
+type RemoteError struct {
+	Msg    string
+	Detail json.RawMessage
+}
+
+func (e *RemoteError) Error() string { return e.Msg }
 
 // Running reports whether a Mortar app with data folder dir is answering on its control channel.
 func Running(dir string) bool {
@@ -124,7 +134,7 @@ func CallDir(dir, method string, params, out any, timeout time.Duration) error {
 		return fmt.Errorf("control: reading the reply: %w", err)
 	}
 	if rep.Error != "" {
-		return errors.New(rep.Error)
+		return &RemoteError{Msg: rep.Error, Detail: rep.Detail}
 	}
 	if out == nil || len(rep.Result) == 0 {
 		return nil

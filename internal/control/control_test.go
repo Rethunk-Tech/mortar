@@ -73,6 +73,9 @@ func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 			if method == "fail" {
 				return nil, errors.New("boom")
 			}
+			if method == "flagged" {
+				return nil, usererr.Wrap(usererr.Malware, &store.DetectedError{Game: "stardew", Key: "k", Detection: avscan.Detection{Scanner: "AMSI"}})
+			}
 			return map[string]string{"method": method, "game": p.Game}, nil
 		})
 	}()
@@ -91,6 +94,12 @@ func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 	}
 	if err := controlwire.CallDir(dir, "fail", Params{}, nil, time.Second); err == nil || err.Error() != "boom" {
 		t.Fatalf("handler error not passed back: %v", err)
+	}
+
+	err := controlwire.CallDir(dir, "flagged", Params{}, nil, time.Second)
+	var remote *controlwire.RemoteError
+	if !errors.As(err, &remote) || !strings.Contains(string(remote.Detail), `"scanner":"AMSI"`) {
+		t.Fatalf("typed detail not passed back: %v", err)
 	}
 
 	var hello controlwire.Hello

@@ -77,12 +77,14 @@ $refused = (& $Exe --json install $game $profile $zip 2>&1 | Out-String)
 $refusedCode = $LASTEXITCODE
 Note "install output: $($refused.Trim())"
 Check "install refused (exit $refusedCode)" ($refusedCode -ne 0)
-Check 'install refused with kind malware' ($refused -match '"kind":\s*"malware"')
-# Either the AMSI scan of the extracted files or Windows real-time protection on a file Mortar wrote refuses the install.
-$caught = if ($refused -match 'Windows removed') { 'Windows real-time protection' } elseif ($refused -match 'antivirus \(([^)]+)\)') { $Matches[1] } else { 'unknown' }
+$refusal = try { $refused | ConvertFrom-Json } catch { $null }
+Check 'install refused with kind malware' ($refusal -and $refusal.kind -eq 'malware')
+# Either the AMSI scan of the extracted files or Windows real-time protection on a file Mortar wrote refuses the install;
+# the typed detail of the error names which.
+$caught = if ($refusal -and $refusal.detail.scanner) { $refusal.detail.scanner } else { 'unknown' }
 Note "refused by: $caught"
 
-if ($caught -eq 'Windows real-time protection') {
+if ($refusal -and $refusal.detail.removed) {
     Note '--allow-unscanned skipped: Windows removed the file itself, so there is nothing to install anyway'
 } else {
     Write-Zip $scanner
