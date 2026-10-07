@@ -46,7 +46,7 @@ function RemoveOne({ choices }: { choices: { key: string; name: string }[] }) {
               tone="error"
               disabled={mod === undefined}
               icon={<Trash2 size={16} />}
-              label={t`Remove ${choice.name}`}
+              label={t`Remove ${{ name: choice.name }}`}
               onClick={() => {
                 setAnchor(null)
                 if (mod !== undefined) {

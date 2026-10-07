@@ -16,7 +16,7 @@ export interface RedundantRow {
 
 // Each Redundant row's text, naming the enabled mods that make it redundant; mods doing the same job share one row.
 export function useRedundantRows() {
-  const { t, i18n } = useLingui()
+  const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   return (items: RedundantItem[]): RedundantRow[] => {
     const names = new Map<string, string>()
@@ -36,8 +36,9 @@ export function useRedundantRows() {
         return twin && author !== '' ? `${name} (${author})` : name
       }
       const choices = group.keys.map((key) => ({ key, name: label(key) }))
-      const list = new Intl.ListFormat(i18n.locale, { type: 'conjunction' }).format(
+      const list = listNames(
         choices.map((c) => c.name),
+        choices.length,
       )
       const { detail } = group
       rows.push({
