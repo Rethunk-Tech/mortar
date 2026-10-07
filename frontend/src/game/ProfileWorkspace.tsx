@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
 import { lazy, Suspense } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -6,6 +7,7 @@ import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemsTab } from '../mods/ProblemsTab.tsx'
 import { usePasteLink } from '../share/usePasteLink.ts'
 import { ErrorBoundary } from '../shell/ErrorBoundary.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { Home } from './Home.tsx'
 import { TabHeader } from './TabHeader.tsx'
 import { useTab } from './tab.ts'
@@ -21,6 +23,16 @@ const SavesTab = lazy(() => import('../saves/SavesTab.tsx').then((m) => ({ defau
 const PerformanceTab = lazy(() =>
   import('../console/PerformanceTab.tsx').then((m) => ({ default: m.PerformanceTab })),
 )
+
+// Shown while a tab's code chunk loads, before the tab can draw its own skeleton.
+function TabLoading() {
+  const { t } = useLingui()
+  return (
+    <Box sx={{ p: 2 }}>
+      <SkeletonRows label={t`Loading…`} count={8} height={36} />
+    </Box>
+  )
+}
 
 export function ProfileWorkspace({
   profile,
@@ -40,7 +52,7 @@ export function ProfileWorkspace({
       ) : null}
       {tab === 'home' ? null : <TabHeader profile={profile} />}
       <ErrorBoundary resetKey={`${tab}-${profile.id}`}>
-        <Suspense fallback={null}>
+        <Suspense fallback={<TabLoading />}>
           {tab === 'console' ? <ConsoleTab game={game} /> : null}
           {tab === 'performance' ? <PerformanceTab game={game} /> : null}
           {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}

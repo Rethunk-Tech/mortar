@@ -91,7 +91,7 @@ export function StartupPanel({
     modsSection.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
   }
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
+    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
       {banner}
       {report ? (
         <>
@@ -117,7 +117,7 @@ export function StartupPanel({
           </Section>
         </>
       ) : (
-        <EmptyState compact={true} icon={<Timer size={32} />} title={t`No startup measured yet`}>
+        <EmptyState icon={<Timer size={40} />} title={t`No startup measured yet`}>
           {smapi
             ? t`Play this profile. The SMAPI Bridge records how long each mod adds before the title screen.`
             : t`Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu.`}

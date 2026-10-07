@@ -94,7 +94,7 @@ export function PerformanceTab({ game }: { game: string }) {
       </>
     )
   return (
-    <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+    <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
       <PageActions>{actions}</PageActions>
       <StartupPanel
         reports={reports}
