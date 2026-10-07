@@ -273,7 +273,7 @@ export function NexusSignIn() {
                 variant="contained"
                 startIcon={<LogIn size={16} />}
                 disabled={busy || key.trim() === ''}
-                sx={{ flexShrink: 0, height: 40 }}
+                sx={{ flexShrink: 0, height: space.control }}
               >
                 {t`Sign in`}
               </Button>

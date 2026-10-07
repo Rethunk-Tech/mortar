@@ -49,6 +49,9 @@ function DefaultSort() {
   )
 }
 
+// The accent swatch's height: a picture of the colour, not a control, so it does not follow the density scale.
+const SWATCH_PX = 44
+
 const visuallyHidden = {
   position: 'absolute',
   opacity: 0,
@@ -105,7 +108,7 @@ export function Appearance() {
                       <Box
                         sx={{
                           width: '100%',
-                          height: 44,
+                          height: SWATCH_PX,
                           borderRadius: '6px',
                           bgcolor: accents[card.name],
                         }}

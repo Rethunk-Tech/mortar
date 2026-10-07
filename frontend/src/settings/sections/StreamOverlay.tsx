@@ -166,7 +166,10 @@ function OverlayValues({
   const row = (key: string, label: ReactNode, field?: Field) => {
     const preview = overlayPreview(snapshot, field)
     return (
-      <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minHeight: 32 }}>
+      <Box
+        key={key}
+        sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minHeight: space.control }}
+      >
         <Box sx={{ width: 140, flexShrink: 0, fontSize: 13 }}>{label}</Box>
         <Box
           sx={{

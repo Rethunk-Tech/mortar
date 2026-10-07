@@ -32,7 +32,7 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 
 ## Density
 
-One spacing scale, set once per **Density** level (Settings › Appearance › Display) as CSS variables on `:root` (`theme/density.ts`, applied in `theme/theme.ts`). Layout code reads them through `space` and never hand-sets pixels for these roles, so a level change moves every page together. Touch or a gamepad (`theme/roomy`) still raises every target to 44px.
+One spacing scale, set once per **Density** level (Settings › Appearance › Display) as CSS variables on `:root` (`theme/density.ts`, applied in `theme/theme.ts`). Layout code reads them through `space` and never hand-sets pixels for these roles, so a level change moves every page together. Its roles are gutter, gap, pad, row, menuY, control and nav (a navigation item such as a Settings page link). Touch or a gamepad (`theme/roomy`) still raises every target to 44px.
 
 | Token | Role | Comfortable | Compact |
 | ----- | ---- | ----------- | ------- |

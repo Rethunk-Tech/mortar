@@ -92,7 +92,7 @@ export function SettingsNav<Id extends string>({
               sx={{
                 justifyContent: 'flex-start',
                 gap: space.gap,
-                height: 42,
+                height: space.nav,
                 px: '12px',
                 borderRadius: '6px',
                 fontSize: 15,

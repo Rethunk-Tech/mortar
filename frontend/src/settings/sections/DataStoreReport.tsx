@@ -150,7 +150,7 @@ function Row({
         display: 'flex',
         alignItems: 'center',
         gap: space.gap,
-        minHeight: 44,
+        minHeight: space.row,
         px: space.pad,
         borderRadius: '6px',
         cursor: 'pointer',

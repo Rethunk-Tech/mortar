@@ -38,7 +38,7 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
         gridTemplateColumns: 'minmax(0, 1fr) auto 28px',
         alignItems: 'center',
         columnGap: 1.5,
-        minHeight: 48,
+        minHeight: space.row,
         px: space.pad,
         py: 0.5,
         borderRadius: '6px',

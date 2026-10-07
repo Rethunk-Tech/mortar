@@ -171,7 +171,7 @@ export function SettingsShell<Id extends string>({
                 flex: 1,
                 fontSize: 20,
                 fontWeight: 700,
-                minHeight: 36,
+                minHeight: space.control,
                 display: 'flex',
                 alignItems: 'center',
               }}
