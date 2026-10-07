@@ -160,6 +160,8 @@ interface CompareGroup {
   rows: CompareRow[]
 }
 
+type HideableKind = Extract<GroupKind, 'onlyA' | 'identical'>
+
 interface CompareView {
   groups: CompareGroup[]
   /** Distinct mods that differ and exist in both profiles or only in B: what a bare compare is about. */
@@ -180,9 +182,13 @@ function pairRows(pairs: ComparePair[], kind: GroupKind): CompareRow[] {
 
 /**
  * Groups a compare for the dialog: differences first; mods only in A (the profile being edited from) and identical
- * mods appear only when `showAll`, because they are usually the long tail. Counts always cover the whole filtered set.
+ * mods appear only when listed in `shown`, because they are usually the long tail. Counts always cover the whole filtered set.
  */
-function compareView(diff: ProfileCompare, needle: string, showAll: boolean): CompareView {
+function compareView(
+  diff: ProfileCompare,
+  needle: string,
+  shown: ReadonlySet<HideableKind>,
+): CompareView {
   const keep = <T extends { name: string; id: string }>(rows: T[]) =>
     rows.filter((r) => matchesNeedle(r.name, r.id, needle))
   const onlyA = keep(diff.onlyA)
@@ -201,10 +207,10 @@ function compareView(diff: ProfileCompare, needle: string, showAll: boolean): Co
   const all: CompareGroup[] = [
     { kind: 'version', rows: pairRows(version, 'version') },
     { kind: 'onlyB', rows: onlyB.map((s) => side(s, 'onlyB')) },
-    { kind: 'onlyA', rows: showAll ? onlyA.map((s) => side(s, 'onlyA')) : [] },
+    { kind: 'onlyA', rows: shown.has('onlyA') ? onlyA.map((s) => side(s, 'onlyA')) : [] },
     { kind: 'enabled', rows: pairRows(enabled, 'enabled') },
     { kind: 'source', rows: pairRows(source, 'source') },
-    { kind: 'identical', rows: showAll ? pairRows(identical, 'identical') : [] },
+    { kind: 'identical', rows: shown.has('identical') ? pairRows(identical, 'identical') : [] },
   ]
   const groups = all.filter((g) => g.rows.length > 0)
   const differing = new Set([...version, ...enabled, ...source, ...onlyB].map((r) => r.id))
@@ -241,5 +247,5 @@ function applyPlan(rows: CompareRow[], toB: boolean): ApplyPlan {
   }
 }
 
-export type { CompareGroup, CompareRow, CompareSide, CompareView, GroupKind }
+export type { CompareGroup, CompareRow, CompareSide, CompareView, GroupKind, HideableKind }
 export { applyPlan, compareProfiles, compareView }

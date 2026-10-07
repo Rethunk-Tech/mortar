@@ -20,7 +20,7 @@ import { pushUndoToast } from '../toasts/undo.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { CompareGroupView, CompareHeader } from './CompareTable.tsx'
 import { CompareTop } from './CompareTop.tsx'
-import type { CompareRow, CompareView } from './compare.ts'
+import type { CompareRow, CompareView, HideableKind } from './compare.ts'
 import { applyPlan, compareProfiles, compareView } from './compare.ts'
 import { useGroupTitle } from './compareTitle.ts'
 import { useProfiles } from './store.ts'
@@ -125,15 +125,18 @@ function CompareFooter({
       </Typography>
       <Box sx={{ flex: 1 }} />
       {actions.map(({ toB, icon, label }) => {
-        const reason = lockedReason(toB ? profileB : profileA)
+        const target = toB ? profileB : profileA
         const plan = applyPlan(selected, toB)
+        const idle = plan.copy.length + plan.moves.length === 0
+        const reason =
+          lockedReason(target) || (idle ? t`Nothing selected would change ${target.name}.` : '')
         return (
           <DisabledReason key={String(toB)} title={reason} disabled={reason !== ''}>
             <Button
               variant={toB ? 'outlined' : 'contained'}
               color={toB ? 'inherit' : 'primary'}
               startIcon={icon}
-              disabled={pending || reason !== '' || plan.copy.length + plan.moves.length === 0}
+              disabled={pending || reason !== ''}
               onClick={() => matchTo(toB)}
               sx={{ whiteSpace: 'nowrap' }}
             >
@@ -149,34 +152,39 @@ function CompareFooter({
 function Summary({
   view,
   aName,
-  showAll,
+  shown,
   onToggle,
 }: {
   view: CompareView
   aName: string
-  showAll: boolean
-  onToggle: () => void
+  shown: ReadonlySet<HideableKind>
+  onToggle: (kind: HideableKind) => void
 }) {
   const { t } = useLingui()
-  const { onlyA, identical } = view
-  const rest = showAll
-    ? t` · ${onlyA} only in ${aName}, ${identical} identical, shown`
-    : t` · ${onlyA} only in ${aName}, ${identical} identical, hidden`
+  const hideable: { kind: HideableKind; label: string }[] = [
+    { kind: 'onlyA', label: t`${view.onlyA} only in ${aName}` },
+    { kind: 'identical', label: t`${view.identical} identical` },
+  ]
   return (
-    <Typography component="div" sx={{ px: 3, pb: 1.5 }}>
-      {view.differences === 0
-        ? t`No differences.`
-        : plural(view.differences, { one: '# difference', other: '# differences' })}
-      {onlyA + identical > 0 ? (
-        <>
-          <Typography component="span" color="text.secondary">
-            {rest}
-          </Typography>{' '}
-          <Button size="small" onClick={onToggle} sx={{ minWidth: 0, p: 0.25 }}>
-            {showAll ? t`Hide` : t`Show`}
-          </Button>
-        </>
-      ) : null}
+    <Typography
+      component="div"
+      sx={{ px: 3, pb: 1.5, display: 'flex', flexWrap: 'wrap', gap: 1.5 }}
+    >
+      <span>
+        {view.differences === 0
+          ? t`No differences.`
+          : plural(view.differences, { one: '# difference', other: '# differences' })}
+      </span>
+      {hideable
+        .filter(({ kind }) => view[kind] > 0)
+        .map(({ kind, label }) => (
+          <Typography key={kind} component="span" color="text.secondary">
+            {label}{' '}
+            <Button size="small" onClick={() => onToggle(kind)} sx={{ minWidth: 0, p: 0.25 }}>
+              {shown.has(kind) ? t`Hide` : t`Show`}
+            </Button>
+          </Typography>
+        ))}
     </Typography>
   )
 }
@@ -228,14 +236,14 @@ function ComparePair({
   onHost,
 }: Picks & { profileA: Profile; profileB: Profile; open: boolean; onClose: () => void }) {
   const { t } = useLingui()
-  const [showAll, setShowAll] = useState(false)
+  const [shown, setShown] = useState<ReadonlySet<HideableKind>>(new Set())
   const [filterOpen, setFilterOpen] = useState(false)
   const [filter, setFilter] = useState('')
   const [toggled, setToggled] = useState<ReadonlySet<string>>(new Set())
 
   const diff = useMemo(() => compareProfiles(profileA, profileB), [profileA, profileB])
   const needle = filter.trim().toLowerCase()
-  const view = compareView(diff, needle, showAll)
+  const view = compareView(diff, needle, shown)
   const groupTitle = useGroupTitle(profileA.name, profileB.name)
 
   const keyOf = (row: CompareRow) => `${row.kind}:${row.id}`
@@ -283,8 +291,16 @@ function ComparePair({
       <Summary
         view={view}
         aName={profileA.name}
-        showAll={showAll}
-        onToggle={() => setShowAll((v) => !v)}
+        shown={shown}
+        onToggle={(kind) =>
+          setShown((prev) => {
+            const next = new Set(prev)
+            if (!next.delete(kind)) {
+              next.add(kind)
+            }
+            return next
+          })
+        }
       />
       <Box
         sx={{

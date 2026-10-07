@@ -102,12 +102,19 @@ test('compareView hides only-in-A and identical until shown; applyPlan picks per
     ],
   })
   const diff = compareProfiles(a, b)
-  const hidden = compareView(diff, '', false)
+  const hidden = compareView(diff, '', new Set())
   expect(hidden.groups.map((g) => g.kind)).toEqual(['version', 'onlyB'])
   expect([hidden.differences, hidden.onlyA, hidden.identical]).toEqual([2, 1, 1])
-  const all = compareView(diff, '', true)
+  const all = compareView(diff, '', new Set(['onlyA', 'identical']))
   expect(all.groups.map((g) => g.kind)).toEqual(['version', 'onlyB', 'onlyA', 'identical'])
-  expect(compareView(diff, 'only b', true).groups.map((g) => g.kind)).toEqual(['onlyB'])
+  expect(compareView(diff, '', new Set(['identical'])).groups.map((g) => g.kind)).toEqual([
+    'version',
+    'onlyB',
+    'identical',
+  ])
+  expect(
+    compareView(diff, 'only b', new Set(['onlyA', 'identical'])).groups.map((g) => g.kind),
+  ).toEqual(['onlyB'])
   const rows = all.groups.flatMap((g) => g.rows)
   expect(applyPlan(rows, true)).toEqual({
     copy: ['Me.OnlyA'],

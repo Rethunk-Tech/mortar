@@ -887,7 +887,7 @@ msgstr "Installed by Mortar"
 
 #: src/commandPalette/paletteLabels.ts:8
 #: src/settings/shortcutLabels.ts:11
-#: src/shell/AppMenu.tsx:152
+#: src/shell/AppMenu.tsx:153
 msgid "Check mods and Mortar for updates"
 msgstr "Check mods and Mortar for updates"
 
@@ -1421,7 +1421,7 @@ msgstr "{0, plural, one {# setting is still waiting for its mod to install.} oth
 msgid "Enable scheduled save backups first."
 msgstr "Enable scheduled save backups first."
 
-#: src/shell/AppMenu.tsx:141
+#: src/shell/AppMenu.tsx:142
 msgid "Mortar settings…"
 msgstr "Mortar settings…"
 
@@ -2046,7 +2046,7 @@ msgstr "Pre-releases and unofficial SMAPI updates. Show lists them; Include lets
 msgid "{0, plural, one {# copy of {1}} other {# copies of {2}}}"
 msgstr "{0, plural, one {# copy of {1}} other {# copies of {2}}}"
 
-#: src/shell/AppMenu.tsx:109
+#: src/shell/AppMenu.tsx:110
 msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
 
@@ -2983,7 +2983,7 @@ msgid "Not loaded in the running game"
 msgstr "Not loaded in the running game"
 
 #: src/settings/shortcutLabels.ts:39
-#: src/shell/AppMenu.tsx:190
+#: src/shell/AppMenu.tsx:200
 msgid "Get help"
 msgstr "Get help"
 
@@ -3520,7 +3520,7 @@ msgid "{0, plural, one {# mod checked} other {# mods checked}}"
 msgstr "{0, plural, one {# mod checked} other {# mods checked}}"
 
 #: src/settings/sections/General.tsx:213
-#: src/shell/AppMenu.tsx:187
+#: src/shell/AppMenu.tsx:197
 msgid "Help"
 msgstr "Help"
 
@@ -4467,8 +4467,8 @@ msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 #: src/settings/sections/Updates.tsx:164
 #: src/share/DestinationGrid.tsx:51
 #: src/share/ShareDialog.tsx:40
-#: src/shell/AppMenu.tsx:135
-#: src/shell/AppMenu.tsx:138
+#: src/shell/AppMenu.tsx:136
+#: src/shell/AppMenu.tsx:139
 msgid "Mortar"
 msgstr "Mortar"
 
@@ -5273,8 +5273,9 @@ msgstr "Added from an archive, so it only exists on this computer."
 #: src/mods/NexusDetails.tsx:109
 #: src/mods/Sidebar.tsx:155
 #: src/queue/QueueSheet.tsx:72
-#: src/queue/QueueSheet.tsx:184
+#: src/queue/QueueSheet.tsx:186
 #: src/settings/SettingsPage.tsx:42
+#: src/shell/AppMenu.tsx:173
 msgid "Downloads"
 msgstr "Downloads"
 
@@ -5374,7 +5375,7 @@ msgstr "A friend's link or file…"
 msgid "Created · updated"
 msgstr "Created · updated"
 
-#: src/shell/AppMenu.tsx:201
+#: src/shell/AppMenu.tsx:211
 msgid "Report a bug…"
 msgstr "Report a bug…"
 
@@ -5605,7 +5606,7 @@ msgstr "Another file from a mod you have"
 msgid "Could not run the command"
 msgstr "Could not run the command"
 
-#: src/shell/AppMenu.tsx:180
+#: src/shell/AppMenu.tsx:190
 msgid "About Mortar"
 msgstr "About Mortar"
 
@@ -6552,7 +6553,7 @@ msgid "Nothing would change."
 msgstr "Nothing would change."
 
 #: src/settings/sections/Updates.tsx:130
-#: src/shell/AppMenu.tsx:163
+#: src/shell/AppMenu.tsx:164
 msgid "What's new in {version}"
 msgstr "What's new in {version}"
 
@@ -6716,7 +6717,7 @@ msgstr "Create a profile first."
 msgid "Which?"
 msgstr "Which?"
 
-#: src/shell/AppMenu.tsx:172
+#: src/shell/AppMenu.tsx:182
 msgid "Open data folder"
 msgstr "Open data folder"
 
@@ -7026,7 +7027,7 @@ msgstr "Could not change how Nexus links open"
 msgid "requirements"
 msgstr "requirements"
 
-#: src/shell/AppMenu.tsx:209
+#: src/shell/AppMenu.tsx:219
 msgid "Source code"
 msgstr "Source code"
 
@@ -10819,7 +10820,7 @@ msgstr "Save backups"
 msgid "The game's first frames; mods doing setup work in update events show up here"
 msgstr "The game's first frames; mods doing setup work in update events show up here"
 
-#: src/shell/AppMenu.tsx:115
+#: src/shell/AppMenu.tsx:116
 msgid "Mortar menu"
 msgstr "Mortar menu"
 
@@ -11600,7 +11601,7 @@ msgid "Launch preset templates"
 msgstr "Launch preset templates"
 
 #. placeholder {0}: formatWhen(limitedUntil * UNIX_MS_PER_SECOND)
-#: src/queue/QueueSheet.tsx:130
+#: src/queue/QueueSheet.tsx:132
 msgid "Downloads resume {0}."
 msgstr "Downloads resume {0}."
 
@@ -12237,7 +12238,7 @@ msgstr "Share selection"
 msgid "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
 msgstr "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
 
-#: src/queue/QueueSheet.tsx:108
+#: src/queue/QueueSheet.tsx:109
 msgid "Download progress"
 msgstr "Download progress"
 
@@ -12999,7 +13000,7 @@ msgstr "{0, plural, one {# new archive} other {# new archives}} in your download
 msgid "Went back to {when}"
 msgstr "Went back to {when}"
 
-#: src/queue/QueueSheet.tsx:184
+#: src/queue/QueueSheet.tsx:186
 msgid "Download history"
 msgstr "Download history"
 
@@ -13212,7 +13213,7 @@ msgstr "{0, plural, one {# download needs your decision} other {# downloads need
 msgid "Save current as…"
 msgstr "Save current as…"
 
-#: src/shell/AppMenu.tsx:218
+#: src/shell/AppMenu.tsx:228
 msgid "Quit Mortar"
 msgstr "Quit Mortar"
 

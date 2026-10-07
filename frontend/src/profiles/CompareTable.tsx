@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Checkbox, Typography } from '@mui/material'
+import { Box, ButtonBase, Checkbox, Tooltip, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -8,6 +8,7 @@ import type { CompareGroup, CompareRow, CompareSide } from './compare.ts'
 import { compareOpen } from './compareOpen.ts'
 
 const ARROW = '→'
+const MISSING = '—'
 
 function openRow(row: CompareRow, profileA: Profile, profileB: Profile) {
   if (row.a) {
@@ -62,9 +63,13 @@ export function CompareGroupView({
   const { t } = useLingui()
   const [open, setOpen] = useState(true)
   const Chevron = open ? ChevronDown : ChevronRight
-  const cellText = (row: CompareRow, side: CompareSide | null) => {
+  const cellText = (row: CompareRow, side: CompareSide | null, other: Profile) => {
     if (!side) {
-      return '·'
+      return (
+        <Tooltip title={t`Not in ${other.name}`} describeChild={true}>
+          <span>{MISSING}</span>
+        </Tooltip>
+      )
     }
     if (row.kind === 'enabled') {
       return side.enabled ? t`Enabled` : t`Disabled`
@@ -139,13 +144,13 @@ export function CompareGroupView({
                   color="text.secondary"
                   sx={{ textAlign: 'right', fontSize: 14 }}
                 >
-                  {cellText(row, row.a)}
+                  {cellText(row, row.a, profileA)}
                 </Typography>
                 <Typography color="text.secondary" sx={{ textAlign: 'center' }}>
                   {ARROW}
                 </Typography>
                 <Typography noWrap={true} sx={{ fontSize: 14 }}>
-                  {cellText(row, row.b)}
+                  {cellText(row, row.b, profileB)}
                 </Typography>
               </Box>
             )
