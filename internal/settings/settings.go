@@ -158,10 +158,16 @@ type Settings struct {
 	// BackgroundBadgeChecks fills sidebar badges for other profiles. Nil means on.
 	BackgroundBadgeChecks *bool `json:"backgroundBadgeChecks"`
 	// StartScreen is last (last opened profile) or gameselect.
-	StartScreen            string `json:"startScreen"`
-	Dates                  string `json:"dates"`
-	TrashRetentionDays     int    `json:"trashRetentionDays"`
-	HistoryEventsKept      int    `json:"historyEventsKept"`
+	StartScreen        string `json:"startScreen"`
+	Dates              string `json:"dates"`
+	TrashRetentionDays int    `json:"trashRetentionDays"`
+	HistoryEventsKept  int    `json:"historyEventsKept"`
+	// Antivirus picks the scanner every extracted mod passes before entering the store: automatic, clamd, command or
+	// off. AntivirusSocket is clamd's socket path and AntivirusCommand the custom scanner's command line with {path};
+	// neither leaves this machine in an export.
+	Antivirus              string `json:"antivirus"`
+	AntivirusSocket        string `json:"antivirusSocket,omitempty"`
+	AntivirusCommand       string `json:"antivirusCommand,omitempty"`
 	NotifyDownloadFinished *bool  `json:"notifyDownloadFinished"`
 	NotifyDownloadFailed   *bool  `json:"notifyDownloadFailed"`
 	NotifyRunCrashed       *bool  `json:"notifyRunCrashed"`

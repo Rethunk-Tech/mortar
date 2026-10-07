@@ -20,6 +20,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
+	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/backdrop"
 	"github.com/Rethunk-Tech/mortar/internal/bisect"
 	"github.com/Rethunk-Tech/mortar/internal/browse"
@@ -349,6 +350,18 @@ func run() error {
 		tidied.Add("Removed leftover temporary folders", "store", 0, removed...)
 	}
 
+	items.SetScanner(
+		func() avscan.Scanner {
+			v := store.Get()
+			return avscan.New(avscan.Config{Mode: v.Antivirus, Socket: v.AntivirusSocket, Command: v.AntivirusCommand})
+		},
+		func(game, key string, err error) {
+			log.Printf("antivirus scan of %s/%s did not finish: %v", game, key, err)
+			if app != nil {
+				app.Event.Emit("avscan:failed", map[string]string{"game": game, "key": key, "error": err.Error()})
+			}
+		},
+	)
 	profiles, err = profile.Open(items)
 	if err != nil {
 		return err
@@ -496,10 +509,11 @@ func run() error {
 			}
 			return profiles.SourceOf(game, key), true
 		},
-		StoredOverlay: profiles.StoredOverlay,
-		Stage:         profiles.StageGitHub,
-		InstallStaged: profiles.InstallStaged,
-		InstallRemap:  profiles.InstallRemap,
+		StoredOverlay:  profiles.StoredOverlay,
+		AllowUnscanned: profiles.AllowUnscanned,
+		Stage:          profiles.StageGitHub,
+		InstallStaged:  profiles.InstallStaged,
+		InstallRemap:   profiles.InstallRemap,
 		Newest: func(game, profileID string, modID, current int) int {
 			all, err := profiles.List(game)
 			if err != nil {

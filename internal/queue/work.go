@@ -349,6 +349,7 @@ func (s *Service) settle(id string, err error) {
 	var ghLimit *github.RateLimitError
 	var busy *source.BusyError
 	var full *store.DiskFullError
+	var detected *store.DetectedError
 	switch {
 	case errors.Is(err, context.Canceled):
 		// Cancel already set the state; a shutdown leaves the item to start over next time.
@@ -374,6 +375,9 @@ func (s *Service) settle(id string, err error) {
 		it.State, it.Error = StateFailed, "Nexus has quarantined this file; Mortar will not download it"
 	case errors.As(err, &full):
 		it.State, it.Error = StateFailed, fmt.Sprintf("Not enough disk space: about %d MB is needed", full.NeedMB)
+	case errors.As(err, &detected):
+		it.State, it.Error = StateFailed, "The antivirus flagged this download, so it was not installed: "+detected.Error()
+		it.Detection = &Detection{Name: detected.Name, File: detected.File, Scanner: detected.Scanner, Key: detected.Key}
 	default:
 		it.State, it.Error = StateFailed, err.Error()
 	}

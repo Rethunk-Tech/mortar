@@ -27,13 +27,15 @@ const (
 	Outdated Kind = "outdated"
 	// External is a download its author only allows on the source's own page.
 	External Kind = "external"
+	// Malware is a download the antivirus flagged; it was not installed.
+	Malware Kind = "malware"
 	// Locked is a keyring read waiting on an unlock prompt the user has not answered yet.
 	Locked  Kind = "locked"
 	Unknown Kind = "unknown"
 )
 
 // Kinds lists every Kind, so a table over them (the CLI's sentences, the GUI's) can check it leaves none out.
-var Kinds = []Kind{NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Locked, Unknown}
+var Kinds = []Kind{NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Malware, Locked, Unknown}
 
 const (
 	prefix = "["
@@ -130,7 +132,7 @@ func Parse(s string) (kind Kind, raw string) {
 		if s[i] == ']' && i+1 < len(s) && s[i+1] == ' ' {
 			k := Kind(s[1:i])
 			switch k {
-			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Locked:
+			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Malware, Locked:
 				return k, s[i+2:]
 			case Unknown:
 			}

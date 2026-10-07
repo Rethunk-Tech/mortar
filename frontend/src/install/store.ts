@@ -10,6 +10,7 @@ import type {
   Source,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
+  AllowUnscanned,
   InstallArchive,
   InstallExtraFolderMod,
   InstallRemap,
@@ -33,10 +34,43 @@ import { routeGame, useNav } from '../nav/store.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
+import { type DetectedFile, parseDetection, useOverride } from '../toasts/avOverride.ts'
 import { changeStillLatest } from '../toasts/history.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type MissingOffer, offersFor, wantsOf } from './missingDeps.ts'
+
+// A refused install the player may overrule: the toast's action asks first, then records the choice and installs again.
+function offerInstallAnyway(o: {
+  title: string
+  name: string
+  flagged: DetectedFile
+  game: string
+  profile: string
+  install: () => Promise<unknown>
+}) {
+  const { title, name, flagged, game, profile, install } = o
+  useToasts.getState().push({
+    kind: 'error',
+    title,
+    body: i18n._(msg`The antivirus flagged it, so Mortar did not install it.`),
+    detail: `${flagged.scanner}: ${flagged.name}${flagged.file ? ` in ${flagged.file}` : ''}`,
+    action: {
+      label: i18n._(msg`Install anyway…`),
+      run: () =>
+        useOverride.getState().ask({
+          title: name,
+          scanner: flagged.scanner,
+          name: flagged.name,
+          file: flagged.file,
+          confirm: async () => {
+            await AllowUnscanned(game, profile, flagged.key, name, flagged.name)
+            await install()
+          },
+        }),
+    },
+  })
+}
 
 function dropInstallGate(hasRoute: boolean, hasTarget: boolean, locked: boolean) {
   if (!(hasRoute && hasTarget)) {
@@ -342,15 +376,30 @@ async function runInstalls(
   let failed = 0
   set((s) => ({ pending: s.pending + items.length }))
   for (const item of items) {
-    try {
-      await installOne(game, profile, callFor(game.id, profile.id, item), {
+    const install = () =>
+      installOne(game, profile, callFor(game.id, profile.id, item), {
         dependentIds,
         batch,
         ...(archives ? { archivePath: item } : {}),
       })
+    try {
+      await install()
     } catch (e) {
       failed += 1
-      toastError(i18n._(msg`Could not add ${fileName(item)}`), e)
+      const flagged = parseDetection(e)
+      const title = i18n._(msg`Could not add ${fileName(item)}`)
+      if (flagged) {
+        offerInstallAnyway({
+          title,
+          name: fileName(item),
+          flagged,
+          game: game.id,
+          profile: profile.id,
+          install,
+        })
+      } else {
+        toastError(title, e)
+      }
     } finally {
       set((s) => ({ pending: s.pending - 1 }))
     }

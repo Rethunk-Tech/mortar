@@ -90,6 +90,7 @@ type Store struct {
 	idxFile os.FileInfo
 	// UnusedFor is unused-item lifetime; 0 uses the built-in 30 days, negative means keep forever.
 	UnusedFor time.Duration
+	scan      scanning
 }
 
 // Open returns a store rooted at <datadir>/store.
@@ -410,6 +411,9 @@ func (s *Store) install(game, key, final string, fill func(tmp string) error, ne
 	}()
 	if err = fill(tmp); err == nil {
 		stripJunk(tmp)
+		err = s.checkExtracted(game, key, tmp)
+	}
+	if err == nil {
 		marker := filepath.Join(tmp, CompleteMarker)
 		if removeErr := os.Remove(marker); removeErr != nil && !errors.Is(removeErr, fs.ErrNotExist) {
 			err = removeErr

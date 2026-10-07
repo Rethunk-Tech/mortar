@@ -1,11 +1,13 @@
 package settings
 
 import (
+	"context"
 	"fmt"
 	"maps"
 	"path/filepath"
 	"slices"
 
+	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/picker"
@@ -366,4 +368,11 @@ func (s *Service) setReapplying(force bool, fn func(*Settings)) error {
 		s.App.Event.Emit(ChangedEvent, next)
 	}
 	return autostartErr
+}
+
+// AntivirusProduct names the scanner the antivirus settings resolve to now: the product Windows Security Center
+// lists, the clamd version found, the custom command's program, or "No antivirus found".
+func (s *Service) AntivirusProduct() string {
+	v := s.store.Get()
+	return avscan.Product(context.Background(), avscan.Config{Mode: v.Antivirus, Socket: v.AntivirusSocket, Command: v.AntivirusCommand})
 }

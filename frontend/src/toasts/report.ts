@@ -34,6 +34,8 @@ function sentence(kind: ReturnType<typeof kindOf>): string {
       return i18n._(
         msg`The author only allows this download on the source's own page. Download the file there and add it from your computer.`,
       )
+    case 'malware':
+      return i18n._(msg`The antivirus flagged this download, so Mortar did not install it.`)
     default:
       return i18n._(msg`Something went wrong.`)
   }

@@ -88,6 +88,8 @@ const (
 	ChangeSaves              HistoryChange = "saves"
 	ChangeLaunch             HistoryChange = "launch"
 	ChangeSettings           HistoryChange = "settings"
+	// ChangeUnscanned is a mod installed although the antivirus flagged it, at the player's say: Name, Detail: what it flagged.
+	ChangeUnscanned HistoryChange = "unscanned"
 )
 
 // HistoryEvent is metadata for one change to a profile's mod set.

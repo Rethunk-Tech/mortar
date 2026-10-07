@@ -17,6 +17,7 @@ const (
 	FailAuth    = "auth"
 	FailDisk    = "disk"
 	FailNoBase  = "nobase"
+	FailMalware = "malware"
 	FailOther   = "other"
 )
 
@@ -30,6 +31,8 @@ func failureKind(err error) string {
 		return FailBlocked
 	case errors.As(err, &full), usererr.IsDiskFull(err):
 		return FailDisk
+	case errors.As(err, new(*store.DetectedError)):
+		return FailMalware
 	case errors.As(err, new(*profile.NoBaseError)):
 		return FailNoBase
 	case usererr.KindOf(err) == usererr.Network,

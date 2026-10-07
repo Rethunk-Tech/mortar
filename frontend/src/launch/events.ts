@@ -68,6 +68,14 @@ export function initLaunch() {
       ...(details === '' ? {} : { detail: details }),
     })
   })
+  Events.On('avscan:failed', (event) => {
+    const data = event.data as { error?: string }
+    useToasts.getState().push({
+      kind: 'warning',
+      title: i18n._(msg`The antivirus scan could not finish, so a mod was installed unscanned`),
+      body: data.error ?? '',
+    })
+  })
   Events.On('launch:settings-restore-warning', (event) => {
     const data = event.data as { error?: string }
     toastError(i18n._(msg`Could not restore profile game settings`), data.error)

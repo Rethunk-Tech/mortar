@@ -12,6 +12,7 @@ const knownKinds = [
   'other_game',
   'outdated',
   'external',
+  'malware',
 ] as const
 
 const kinds = new Set<string>(knownKinds)

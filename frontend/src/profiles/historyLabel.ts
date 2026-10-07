@@ -89,6 +89,8 @@ export function historyLabel(ev: Worded): string {
         one: 'Trimmed history, dropped # older change',
         other: 'Trimmed history, dropped # older changes',
       })
+    case HistoryChange.ChangeUnscanned:
+      return i18n._(msg`Installed ${name} although the antivirus flagged it: ${detail}`)
     case HistoryChange.ChangeKnownGood:
       return i18n._(msg`Known good`)
     case HistoryChange.ChangeGroups:

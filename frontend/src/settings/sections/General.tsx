@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, MenuItem, Select, TextField } from '@mui/material'
+import { Box, Button, MenuItem, Select, TextField, Typography } from '@mui/material'
 import { Download, Upload } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import {
@@ -8,6 +8,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import type { ImportPreview } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import {
+  AntivirusProduct,
   ExportSettings,
   PickImportFile,
   PreviewImport,
@@ -20,6 +21,7 @@ import {
 import { TourAgainButton } from '../../firstrunTour/TourAgainButton.tsx'
 import { availableLocales } from '../../i18n/locales.ts'
 import { PairedComputers } from '../../lan/PairedComputers.tsx'
+import { useLoaded } from '../../shell/useLoaded.ts'
 import { space } from '../../theme/density.ts'
 import { reportError, reportUnexpected } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -54,6 +56,28 @@ function StartupAndWindow() {
           onChange={(on) => SetKeepInTray(on).catch(reportFailure)}
           label={t`Keep Mortar in the tray`}
         />
+      </SettingRow>
+    </SettingsSection>
+  )
+}
+
+function Antivirus() {
+  const { t } = useLingui()
+  const mode = useSettings((s) => s.antivirus)
+  const socket = useSettings((s) => s.antivirusSocket)
+  const command = useSettings((s) => s.antivirusCommand)
+  // The product line follows the choices that decide which scanner answers.
+  const { data: product } = useLoaded(
+    () => AntivirusProduct(),
+    [mode, socket, command],
+    '',
+    reportUnexpected,
+  )
+  return (
+    <SettingsSection title={t`Antivirus`}>
+      <PrefKeys keys={['antivirus', 'antivirusSocket', 'antivirusCommand']} />
+      <SettingRow label={t`Scanner in use`}>
+        <Typography sx={{ fontSize: 14 }}>{product || t`Checking…`}</Typography>
       </SettingRow>
     </SettingsSection>
   )
@@ -285,6 +309,7 @@ export function General() {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
       <StartupAndWindow />
       <Language />
+      <Antivirus />
       <Sharing />
       <Help />
       <SettingsFile />

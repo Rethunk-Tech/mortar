@@ -85,6 +85,7 @@ const defaults: Settings = {
   confirmRemovals: true,
   backgroundBadgeChecks: true,
   startScreen: 'last',
+  antivirus: 'automatic',
   dates: 'relative',
   trashRetentionDays: 30,
   historyEventsKept: 200,

@@ -26,6 +26,9 @@ import (
 const payload = "archive bytes"
 
 type fixture struct {
+	// installErr, when set, fails an install with the error it returns; allowed records AllowUnscanned calls.
+	installErr   func() error
+	allowed      []string
 	t            *testing.T
 	s            *Service
 	dir          string
@@ -113,6 +116,11 @@ func newFixture(t *testing.T) *fixture {
 		Client:  func() (*nexus.Client, error) { return client, nil },
 		Premium: f.premium.Load,
 		Install: func(_, _, path string, src profile.Source) (profile.InstallResult, error) {
+			if f.installErr != nil {
+				if err := f.installErr(); err != nil {
+					return profile.InstallResult{}, err
+				}
+			}
 			b, err := fsx.ReadFile(path)
 			if err != nil || string(b) != payload {
 				return profile.InstallResult{}, fmt.Errorf("installer read %q: %w", b, err)
@@ -121,6 +129,12 @@ func newFixture(t *testing.T) *fixture {
 			f.installs = append(f.installs, src)
 			f.mu.Unlock()
 			return profile.InstallResult{}, nil
+		},
+		AllowUnscanned: func(game, profileID, key, name, detection string) error {
+			f.mu.Lock()
+			f.allowed = append(f.allowed, game+"|"+profileID+"|"+key+"|"+name+"|"+detection)
+			f.mu.Unlock()
+			return nil
 		},
 		Newest:       func(_, _ string, _, _ int) int { return int(f.newest.Load()) },
 		KeepArchives: f.keep.Load,

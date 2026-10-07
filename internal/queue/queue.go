@@ -134,8 +134,12 @@ type Item struct {
 	Overlay *OverlayPlace `json:"overlay,omitempty"`
 	Speed   int64         `json:"speed"`
 	Error   string        `json:"error"`
-	// ErrorKind classes a failed item's Error: network, blocked, auth, disk or other.
+	// ErrorKind classes a failed item's Error: network, blocked, auth, disk, malware or other.
 	ErrorKind string `json:"errorKind,omitempty"`
+	// Detection is what the antivirus flagged when the item failed on it; InstallAnyway answers it.
+	Detection *Detection `json:"detection,omitempty"`
+	// ScanOverride is the detection the player chose to install despite, kept for the download history.
+	ScanOverride string `json:"scanOverride,omitempty"`
 
 	// Package is "Namespace-Name" of a Thunderstore package, downloaded from URL at Version; ModID and Repo stay empty.
 	Package string `json:"package,omitempty"`
@@ -298,6 +302,9 @@ type Deps struct {
 	Held func(game, profileID, pkg string) string
 	// InstallPackage adds a downloaded Thunderstore package archive to the profile; nil refuses packages.
 	InstallPackage func(game, profileID, path string, source profile.Source) (profile.InstallResult, error)
+	// AllowUnscanned records the player's choice to install key although the antivirus flagged it (the profile's
+	// history says so) and lets the next install of it skip the scan; nil means the choice is not offered.
+	AllowUnscanned func(game, profileID, key, name, detection string) error
 	// Direct resolves a Modrinth project or itch.io game to its file and required dependencies; nil refuses them.
 	Direct  func(ctx context.Context, source, id, version string, loaders []string) (DirectFile, error)
 	GitHub  *github.Client
@@ -762,6 +769,40 @@ func (s *Service) StagedKeys() map[string][]string {
 		}
 	}
 	return out
+}
+
+// Detection is the antivirus finding on an item, with the store key it was refused under.
+type Detection struct {
+	Name    string `json:"name"`
+	File    string `json:"file"`
+	Scanner string `json:"scanner"`
+	Key     string `json:"key"`
+}
+
+// InstallAnyway answers a detection: the player's confirmed choice to install the item although the antivirus flagged
+// it. It is recorded in the profile's history and in the download history, and the item runs again unscanned.
+func (s *Service) InstallAnyway(id string) error {
+	s.mu.Lock()
+	var it *Item
+	for _, cur := range s.items {
+		if cur.ID == id && cur.State == StateFailed && cur.Detection != nil {
+			it = cur
+		}
+	}
+	if it == nil || s.d.AllowUnscanned == nil {
+		s.mu.Unlock()
+		return errors.New("nothing to install anyway")
+	}
+	det, game, profileID, name := *it.Detection, it.Game, it.Profile, cmp.Or(it.Name, it.FileName)
+	s.mu.Unlock()
+	if err := s.d.AllowUnscanned(game, profileID, det.Key, name, det.Name); err != nil {
+		return err
+	}
+	s.mu.Lock()
+	it.ScanOverride, it.Detection = det.Name, nil
+	s.mu.Unlock()
+	s.Retry(id)
+	return nil
 }
 
 // Retry queues a failed item again.

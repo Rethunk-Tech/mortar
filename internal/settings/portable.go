@@ -17,7 +17,7 @@ var portableFields = []string{
 	"onPlay", "parallelDownloads", "updateCheckIntervalMinutes",
 	"notifyModUpdates", "keepDownloadArchives", "storeRetentionDays",
 	"defaultModsView", "confirmRemovals", "backgroundBadgeChecks",
-	"startScreen", "dates", "trashRetentionDays", "historyEventsKept",
+	"startScreen", "antivirus", "dates", "trashRetentionDays", "historyEventsKept",
 	"notifyDownloadFinished", "notifyDownloadFailed", "notifyRunCrashed",
 	"desktopDownloadFinished", "desktopDownloadFailed", "desktopRunCrashed", "desktopModUpdates",
 	"density", "theme", "gridCardSize", "showAuthorOnCards", "reduceMotion", "profileHero",

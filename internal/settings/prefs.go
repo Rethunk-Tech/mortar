@@ -21,6 +21,10 @@ const (
 	CosmeticExpanded  = "expanded"
 	CosmeticHidden    = "hidden"
 
+	AntivirusAutomatic    = "automatic"
+	AntivirusClamd        = "clamd"
+	AntivirusCommand      = "command"
+	AntivirusOff          = "off"
 	StartScreenLast       = "last"
 	StartScreenGameSelect = "gameselect"
 
@@ -140,6 +144,7 @@ func defaultPrefs() Settings {
 		Dates:                      DatesRelative,
 		TrashRetentionDays:         DefaultTrashRetentionDays,
 		HistoryEventsKept:          DefaultHistoryEventsKept,
+		Antivirus:                  AntivirusAutomatic,
 		NotifyDownloadFinished:     on(),
 		NotifyDownloadFailed:       on(),
 		NotifyRunCrashed:           on(),
@@ -203,6 +208,9 @@ func normalizePrefs(s *Settings) {
 	}
 	if !slices.Contains(startScreenValues, s.StartScreen) {
 		s.StartScreen = StartScreenLast
+	}
+	if !slices.Contains(antivirusValues, s.Antivirus) {
+		s.Antivirus = AntivirusAutomatic
 	}
 	if !slices.Contains(datesValues, s.Dates) {
 		s.Dates = DatesRelative
@@ -314,6 +322,9 @@ func validatePrefs(s Settings) error {
 	if !slices.Contains(startScreenValues, s.StartScreen) {
 		return fmt.Errorf("start screen must be last or gameselect, got %q", s.StartScreen)
 	}
+	if !slices.Contains(antivirusValues, s.Antivirus) {
+		return fmt.Errorf("antivirus must be automatic, clamd, command or off, got %q", s.Antivirus)
+	}
 	if !slices.Contains(datesValues, s.Dates) {
 		return fmt.Errorf("dates must be relative or absolute, got %q", s.Dates)
 	}
@@ -369,6 +380,7 @@ var (
 	backupBeforePlayValues    = []string{BackupBeforePlayChanged, BackupBeforePlayAlways, BackupBeforePlayNever}
 	cosmeticValues            = []string{CosmeticCollapsed, CosmeticExpanded, CosmeticHidden}
 	startScreenValues         = []string{StartScreenLast, StartScreenGameSelect}
+	antivirusValues           = []string{AntivirusAutomatic, AntivirusClamd, AntivirusCommand, AntivirusOff}
 	datesValues               = []string{DatesRelative, DatesAbsolute}
 	modsViewValues            = []string{ModsViewGrid, ModsViewList}
 	densityValues             = []string{DensityComfortable, DensityCompact}

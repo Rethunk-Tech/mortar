@@ -103,7 +103,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"notifyModUpdates": "true", "keepDownloadArchives": "true", "storeRetentionDays": "7",
 		"nxmDefaultProfile": "abc", "defaultModsView": "list", "listGroupBy": "author",
 		"listSortColumn": "version", "listSortDir": "desc", "confirmRemovals": "false",
-		"cosmeticConflicts": "hidden", "backgroundBadgeChecks": "false", "startScreen": "gameselect",
+		"cosmeticConflicts": "hidden", "backgroundBadgeChecks": "false", "startScreen": "gameselect", "antivirus": "clamd", "antivirusSocket": "/var/tmp/clamd.sock", "antivirusCommand": "scan {path}",
 		"dates": "absolute", "trashRetentionDays": "10", "historyEventsKept": "50",
 		"notifyDownloadFinished": "false", "notifyDownloadFailed": "false", "notifyRunCrashed": "false",
 		"desktopDownloadFinished": "true", "desktopDownloadFailed": "false", "desktopRunCrashed": "false",
@@ -158,6 +158,13 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		t.Fatal("portable-only fields did not round-trip")
 	}
 	for _, key := range registry {
+		// A command to run never travels in an export: an imported file must not be able to name a program.
+		if key.spec.Key == "antivirusSocket" || key.spec.Key == "antivirusCommand" {
+			if have, _ := got.LookupGame(key.spec.Key, ""); have != "" {
+				t.Fatalf("%s travelled in the export: %q", key.spec.Key, have)
+			}
+			continue
+		}
 		game := ""
 		if key.spec.Scope == ScopeGame {
 			game = "stardew"

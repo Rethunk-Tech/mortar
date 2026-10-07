@@ -62,3 +62,16 @@ func (s *Service) HistoryUsage(game string) ([]HistoryUsage, error) {
 func (s *Service) TrimHistory(game, id string, keepLast int) (HistoryUsage, error) {
 	return s.store.TrimHistory(game, id, keepLast)
 }
+
+// AllowUnscanned is the player's "Install anyway" for an item the antivirus flagged: the next install of key skips the
+// scan, and the profile's history records that it was allowed, naming the mod and what was flagged.
+func (s *Service) AllowUnscanned(game, id, key, name, detection string) error {
+	return s.store.AllowUnscanned(game, id, key, name, detection)
+}
+
+// AllowUnscanned makes the store skip the antivirus scan once for key and records the choice in the profile's history.
+func (s *Store) AllowUnscanned(game, id, key, name, detection string) error {
+	s.items.AllowUnscanned(game, key)
+	_, err := s.recordSnapshot(game, id, historyBulk, HistoryEvent{Change: ChangeUnscanned, Name: name, Detail: detection}, 1)
+	return err
+}

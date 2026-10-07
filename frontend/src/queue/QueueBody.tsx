@@ -15,6 +15,7 @@ import {
   Choose,
   Confirm,
   Dismiss,
+  InstallAnyway,
   OpenPage,
   Retry,
   RetryFailed,
@@ -29,6 +30,7 @@ import { LetterTile } from '../mods/parts.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
+import { useOverride } from '../toasts/avOverride.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -243,11 +245,14 @@ function Failed({ items }: { items: Item[] }) {
           }}
           sub={
             <Typography title={errorDetails(i.error)} sx={{ ...detail, color: error.light }}>
-              {errorMessage(i.error)}
+              {i.detection
+                ? t`Flagged by ${i.detection.scanner}: ${i.detection.name}${i.detection.file ? ` in ${i.detection.file}` : ''}`
+                : errorMessage(i.error)}
             </Typography>
           }
           actions={
             <>
+              {i.detection ? <InstallAnywayButton item={i} /> : null}
               <Button
                 size="small"
                 startIcon={<RotateCcw size={14} />}
@@ -261,6 +266,32 @@ function Failed({ items }: { items: Item[] }) {
         />
       ))}
     </>
+  )
+}
+
+// The antivirus flagged this download; installing it anyway is the player's call, behind a confirm.
+function InstallAnywayButton({ item }: { item: Item }) {
+  const { t } = useLingui()
+  const det = item.detection
+  if (!det) {
+    return null
+  }
+  return (
+    <Button
+      size="small"
+      color="error"
+      onClick={() =>
+        useOverride.getState().ask({
+          title: displayName(item),
+          scanner: det.scanner,
+          name: det.name,
+          file: det.file,
+          confirm: () => InstallAnyway(item.id),
+        })
+      }
+    >
+      {t`Install anyway`}
+    </Button>
   )
 }
 

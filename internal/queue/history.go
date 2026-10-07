@@ -37,6 +37,8 @@ type HistoryEntry struct {
 	Finished int64  `json:"finished"`
 	Outcome  string `json:"outcome"`
 	Error    string `json:"error,omitempty"`
+	// Override is the antivirus detection the player chose to install despite.
+	Override string `json:"override,omitempty"`
 }
 
 func (s *Service) historyPath() string {
@@ -85,7 +87,7 @@ func (s *Service) recordHistory(it *Item, outcome string) {
 	entry := HistoryEntry{
 		Name: name, Version: it.Version, Source: src, Profile: it.Profile, BatchID: it.BatchID,
 		Game: it.Game, ModID: it.ModID, FileID: it.FileID, Kind: it.Kind, Package: it.Package, Repo: it.Repo, Tag: it.Tag, Asset: it.Asset,
-		Latest: it.Latest, Size: size, Started: started, Finished: now, Outcome: outcome, Error: it.Error,
+		Latest: it.Latest, Size: size, Started: started, Finished: now, Outcome: outcome, Error: it.Error, Override: it.ScanOverride,
 	}
 	s.hist.Lock()
 	defer s.hist.Unlock()
