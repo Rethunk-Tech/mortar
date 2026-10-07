@@ -25,7 +25,7 @@ Where the tests are, what each opt-in run proves and how to start it. The gate t
 | Catalog and sources | `internal/components`, `internal/source/...` | `go test ./internal/source/all ./internal/components ./internal/gamestore ./internal/runtime` is the check for a catalog edit ([HUMANS.md](../HUMANS.md#adding-a-game)) |
 | Updater | `internal/updatesvc` | `testdata/fixture`, two server-mode builds behind a signed manifest |
 | Frontend unit | `frontend/src/**/*.test.ts`, run by `bun test` | Pure logic only; components are not rendered under jsdom |
-| Browser e2e | `frontend/e2e/*.pw.ts` | Playwright on Chromium against its own sandbox (`e2e/sandbox.ts`); named `.pw.ts` so `bun test` skips it |
+| Browser e2e | `frontend/e2e/*.pw.ts` | Playwright on Chromium against its own sandbox (`frontend/e2e/sandbox.ts`); named `.pw.ts` so `bun test` skips it |
 
 Threat-model guards and the test that proves each: [security.md](security.md).
 
@@ -42,7 +42,7 @@ go test -race ./internal/<pkg>
 | Run | Command | Proves |
 | --- | --- | --- |
 | Fuzz | `go test -fuzz=FuzzExtract -fuzztime=2m ./internal/archive`; every untrusted input's target is named in [security.md](security.md), each in its package's `fuzz_test.go` | Hostile input never panics, never writes outside its destination, and where a format round-trips, survives it. The default run replays each seed and every file in `testdata/fuzz` as a regression test |
-| Property | `MORTAR_SYNC_SEEDS=2000 go test ./internal/syncsvc -run Property` | Two machines editing at random never lose or invent a change (`syncsvc/property_test.go`) |
+| Property | `MORTAR_SYNC_SEEDS=2000 go test ./internal/syncsvc -run Property` | Two machines editing at random never lose or invent a change (`internal/syncsvc/property_test.go`) |
 | Updater e2e | `wails3 task test:updater` | The self-updater swaps the binary through a signed manifest (`-tags updatetest`; skipped under `-short`) |
 | Real SMAPI installer | `MORTAR_SMOKE=1 go test ./internal/loader/smapi -run Smoke` | The real installer works on a copy of a Stardew install (needs the network) |
 | Real Content Patcher profile | `MORTAR_CP_REAL=<game>/<profile id> HOME=<sandbox copy> go test ./internal/framework/contentpatcher -run RealIncremental` | An incremental check after a pack is edited, added or removed finds what a full check finds, on a real profile |
@@ -54,7 +54,7 @@ go test -race ./internal/<pkg>
 | BepInEx matrix | `MORTAR_REGRESS_MATRIX=1 scripts/selftest.sh regress --game lethal-company` | Each row of [bepinex-test-matrix.md](bepinex-test-matrix.md) passes: loader pins and Doorstop, a pinned modpack, probe plugins, updates, sharing and package-layout edge cases. It needs the network and the .NET SDK and starts the game once beyond the base run, whose launch it fills with the modpack and the probes, so with an r2 code the whole run is 3 launches, the session cap |
 | R2 step | `MORTAR_REGRESS_R2_CODE=<key> scripts/selftest.sh regress --game lethal-company` | An r2modman code imports into a new profile, downloads, launches, loads every plugin it counted, and the purge leaves the game folder unchanged |
 | Launch harness | `scripts/selftest.sh harness-check` | With a dummy GTK window (zenity) in place of a game: launches through the guard land on the hidden display and reach no socket of the desktop session (its X server, Wayland socket, bus or audio), the fourth launch is refused with exit 3, and stopping hits exactly the recorded pids. Starts no game |
-| Windows VM | `/var/tmp/win11-vm/` (`README.txt`, `start.sh`) | Quick Windows repros and one-fix smokes; `scripts/windows-installer-smoke.ps1` for the installer. Long soaks are a human's |
+| Windows VM | `/var/tmp/win11-vm/` (`README.txt`, `/var/tmp/win11-vm/start.sh`) | Quick Windows repros and one-fix smokes; `scripts/windows-installer-smoke.ps1` for the installer. Long soaks are a human's |
 
 The regress scripts need the real games and (for Lethal Company) Proton, so they never run in CI.
 

@@ -11,7 +11,7 @@ Mortar is a desktop mod manager for several games, with Stardew Valley, Lethal C
 
 `wails3 task selftest ARGS=seed` fills the running sandbox once, through the sandbox's own CLI, with two profiles (one from a template), mods from generated zips, history events, a manual and a scheduled backup, a stray game-Mods folder, a dot-hidden mod, an extra-mods folder and a failed download. The maintainer gets only the tests that need a human: a store login, owned games, hardware or a real desktop session.
 
-Windows bugs: the Windows 11 KVM VM in `/var/tmp/win11-vm/` (`README.txt`; `start.sh`, `vm.py`, a `clean-install` snapshot) is for quick repros and one-fix smokes only; long soaks are a human's.
+Windows bugs: the Windows 11 KVM VM in `/var/tmp/win11-vm/` (`README.txt`, `/var/tmp/win11-vm/start.sh`, `vm.py`, a `clean-install` snapshot) is for quick repros and one-fix smokes only; long soaks are a human's.
 
 ## Decided
 
