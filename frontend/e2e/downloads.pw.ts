@@ -5,7 +5,7 @@ test('Downloads history offers Retry all failed for the seeded failed download',
   page,
 }) => {
   await openSeedFarm(page)
-  await page.getByRole('button', { name: 'Downloads' }).click()
+  await page.keyboard.press('Control+j')
   await page
     .getByRole('dialog', { name: 'Downloads' })
     .getByRole('button', { name: 'History' })

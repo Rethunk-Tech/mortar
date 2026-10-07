@@ -65,6 +65,22 @@ export function totals(items: Item[]): Totals {
   }
 }
 
+// The title bar pill's figures: how many items are under way and how far the whole batch (those and the ones
+// waiting) has come, by size where sizes are known. Null while nothing is under way.
+export function pillProgress(items: Item[]): { active: number; percent: number } | null {
+  const active = items.filter(isActive).length
+  if (active === 0) {
+    return null
+  }
+  const batch = items.filter((i) => isActive(i) || isWaiting(i))
+  const kb = batch.reduce((sum, i) => sum + i.sizeKb, 0)
+  const done =
+    kb > 0
+      ? (batch.reduce((sum, i) => sum + downloadedKb(i), 0) * PERCENT) / kb
+      : batch.reduce((sum, i) => sum + i.progress, 0) / batch.length
+  return { active, percent: Math.round(Math.min(PERCENT, Math.max(0, done))) }
+}
+
 export const downloadedKb = (i: Item) => (i.sizeKb * i.progress) / PERCENT
 
 // The wall-clock time of a Unix timestamp, as "14:05".

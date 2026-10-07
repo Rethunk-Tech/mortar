@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import process from 'node:process'
 import { expect, test } from '@playwright/test'
-import { openSeedFarm } from './app.ts'
+import { openGameSelect, openSeedFarm } from './app.ts'
 import { serverEnv } from './sandbox.ts'
 
 const dir = process.env.MORTAR_E2E_DIR ?? ''
@@ -13,7 +13,7 @@ test('a remembered profile deleted behind the app falls back without an error', 
 }) => {
   const id = cli('profile', 'create', 'lethal-company', 'Stale Lobby').split('\t')[0] ?? ''
   await openSeedFarm(page)
-  await page.getByRole('button', { name: 'Game select' }).click()
+  await openGameSelect(page)
   await page
     .getByRole('button', { name: 'Open Lethal Company' })
     .click({ position: { x: 8, y: 8 } })

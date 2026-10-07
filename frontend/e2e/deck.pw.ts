@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { ENABLED_GAMES, openSeedFarm } from './app.ts'
+import { ENABLED_GAMES, openGameSelect, openSeedFarm, openSettings } from './app.ts'
 import { DOWN, installPad, press } from './pad.ts'
 
 // The Steam Deck's screen, which Mortar fills in Game Mode.
@@ -47,19 +47,18 @@ test('every main screen fits 1280x800 without scrolling sideways', async ({ page
     await page.getByRole('tab', { name: tab }).click()
     await expectNoSidewaysScroll(page, tab)
   }
-  await page.getByRole('button', { name: 'Mortar menu' }).click()
-  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  await openSettings(page)
   await expect(page.getByRole('navigation').first()).toBeVisible()
   await expectNoSidewaysScroll(page, 'Settings')
   await page.keyboard.press('Escape')
-  await page.getByRole('button', { name: 'Game select' }).click()
+  await openGameSelect(page)
   await expect(page.locator('[data-tile]').first()).toBeVisible()
   await expectNoSidewaysScroll(page, 'Game select')
 })
 
 test('the arrow keys walk the Game select tiles', async ({ page }) => {
   await openSeedFarm(page)
-  await page.getByRole('button', { name: 'Game select' }).click()
+  await openGameSelect(page)
   const tiles = page.locator('[data-tile]')
   await expect(tiles).toHaveCount(ENABLED_GAMES)
   await page.getByRole('button', { name: 'Open Stardew Valley' }).focus()

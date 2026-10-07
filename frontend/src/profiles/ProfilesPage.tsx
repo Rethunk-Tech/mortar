@@ -19,8 +19,6 @@ import { Box, Button, ButtonBase, Menu, Typography } from '@mui/material'
 import {
   ArrowLeft,
   Download,
-  FileUp,
-  FolderInput,
   FolderOpen,
   Plus,
   RotateCcw,
@@ -42,7 +40,6 @@ import { useCurrentGame } from '../nav/currentGame.ts'
 import { useNav } from '../nav/store.ts'
 import { dialogOpen, isTypingTarget } from '../settings/shortcuts.ts'
 import { shouldLeavePageOnEscape } from '../settings/shouldLeavePageOnEscape.ts'
-import { openImport } from '../share/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
@@ -52,13 +49,10 @@ import { errorDetails } from '../toasts/errorKind.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { findModInProfiles, onFindAllFocus, openModInProfile } from './findMod.ts'
-import { GameModsDialog } from './GameModsDialog.tsx'
-import { ImportWizard } from './ImportWizard.tsx'
-import { PackImportDialog } from './PackImportDialog.tsx'
 import { ProfileRow } from './ProfileRow.tsx'
-import { hasThunderstore } from './packImport.ts'
 import { useProfiles } from './store.ts'
 import { useBudgets } from './useBudgets.ts'
+import { useProfileImport } from './useProfileImport.tsx'
 
 function TrashRow({ item }: { item: TrashItem }) {
   const { t } = useLingui()
@@ -291,25 +285,16 @@ function FindModSearch({ profiles }: { profiles: Profile[] }) {
 function ProfilesHeader({
   game,
   onBack,
-  onImportGame,
-  onImport,
-  onRestoreZip,
   onCreate,
 }: {
   game: string
   onBack: () => void
-  onImportGame: () => void
-  onImport: () => void
-  onRestoreZip: () => void
   onCreate: () => void
 }) {
   const { t } = useLingui()
   const importMenuId = useId()
   const [importAnchor, setImportAnchor] = useState<HTMLElement | null>(null)
-  const [wizard, setWizard] = useState(false)
-  const [packImport, setPackImport] = useState(false)
-  const [packPath, setPackPath] = useState('')
-  const thunderstore = hasThunderstore(useProfiles((s) => s.game))
+  const { entries, dialogs } = useProfileImport(game)
   const closeImportMenu = () => setImportAnchor(null)
   return (
     <Box
@@ -356,62 +341,19 @@ function ProfilesHeader({
         open={importAnchor !== null}
         onClose={closeImportMenu}
       >
-        <MenuAction
-          icon={<FolderInput size={16} aria-hidden={true} />}
-          label={t`From the game's Mods folder…`}
-          onClick={() => {
-            closeImportMenu()
-            onImportGame()
-          }}
-        />
-        <MenuAction
-          icon={<Download size={16} aria-hidden={true} />}
-          label={t`From a link or file…`}
-          onClick={() => {
-            closeImportMenu()
-            onImport()
-          }}
-        />
-        <MenuAction
-          icon={<FileUp size={16} aria-hidden={true} />}
-          label={t`From a backup…`}
-          onClick={() => {
-            closeImportMenu()
-            onRestoreZip()
-          }}
-        />
-        <MenuAction
-          icon={<Download size={16} aria-hidden={true} />}
-          label={t`From another mod manager…`}
-          onClick={() => {
-            closeImportMenu()
-            setWizard(true)
-          }}
-        />
+        {entries.map((entry) => (
+          <MenuAction
+            key={entry.key}
+            icon={<entry.icon size={16} aria-hidden={true} />}
+            label={entry.label}
+            onClick={() => {
+              closeImportMenu()
+              entry.run()
+            }}
+          />
+        ))}
       </Menu>
-      <ImportWizard
-        open={wizard}
-        game={game}
-        onClose={() => setWizard(false)}
-        onPickPack={(path) => {
-          setPackPath(path)
-          setPackImport(true)
-        }}
-        onOwnCode={
-          thunderstore
-            ? () => {
-                setPackPath('')
-                setPackImport(true)
-              }
-            : null
-        }
-      />
-      <PackImportDialog
-        open={packImport}
-        game={game}
-        initialPath={packPath}
-        onClose={() => setPackImport(false)}
-      />
+      {dialogs}
       <Button
         variant="contained"
         startIcon={<Plus size={16} />}
@@ -436,11 +378,8 @@ export function ProfilesPage() {
   )
   const damaged = useProfiles((s) => s.damaged)
   const reorder = useProfiles((s) => s.reorder)
-  const restoreZip = useProfiles((s) => s.restoreZip)
   const loadTrash = useProfiles((s) => s.loadTrash)
   const [creating, setCreating] = useState(false)
-  const [importingGameMods, setImportingGameMods] = useState(false)
-  const openProfile = useProfiles((s) => s.open)
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -472,14 +411,7 @@ export function ProfilesPage() {
   }
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <ProfilesHeader
-        game={game}
-        onBack={closeProfiles}
-        onImportGame={() => setImportingGameMods(true)}
-        onImport={() => openImport()}
-        onRestoreZip={() => restoreZip().catch(reportUnexpected)}
-        onCreate={() => setCreating(true)}
-      />
+      <ProfilesHeader game={game} onBack={closeProfiles} onCreate={() => setCreating(true)} />
       <FindModSearch profiles={profiles} />
       <Box
         sx={{
@@ -532,15 +464,6 @@ export function ProfilesPage() {
         </Box>
       </Box>
       <NewProfileDialog open={creating} onClose={() => setCreating(false)} />
-      <GameModsDialog
-        open={importingGameMods}
-        game={game}
-        onClose={() => setImportingGameMods(false)}
-        onImported={(id) => {
-          openProfile(id)
-          closeProfiles()
-        }}
-      />
     </Box>
   )
 }

@@ -3,6 +3,7 @@ import { Events } from '@wailsio/runtime'
 import { type ReactNode, useEffect, useState } from 'react'
 import { DropOverlay } from '../install/DropOverlay.tsx'
 import { SweepDialog } from '../launch/SweepDialog.tsx'
+import { QueueSheet } from '../queue/QueueSheet.tsx'
 import { useSettings } from '../settings/store.ts'
 import { OfflineBanner } from './OfflineBanner.tsx'
 import { TitleBar } from './TitleBar.tsx'
@@ -70,6 +71,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
       <Box component="main" sx={{ flexGrow: 1, minHeight: 0 }}>
         {children}
       </Box>
+      <QueueSheet />
       <DropOverlay target={frame} />
       <SweepDialog />
     </Box>

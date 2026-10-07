@@ -1,49 +1,17 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
 import { Copy, Minus, Square, X } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
-import { compact } from '../game/compact.ts'
-import { GameSwitcher } from '../games/GameSwitcher.tsx'
-import { useNav } from '../nav/store.ts'
-import { useProfiles } from '../profiles/store.ts'
+import type { ReactNode } from 'react'
+import { GameMenu } from '../games/GameMenu.tsx'
+import { routeGame, useNav } from '../nav/store.ts'
+import { ProfileMenu } from '../profiles/ProfileMenu.tsx'
+import { DownloadsPill } from '../queue/DownloadsPill.tsx'
+import { HistoryButton } from '../toasts/HistoryButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AppMenu } from './AppMenu.tsx'
 import { win } from './win.ts'
 
 const noDrag = { '--wails-draggable': 'no-drag' } as const
-
-function Tab({
-  tour,
-  active,
-  onClick,
-  children,
-}: {
-  tour?: string
-  active: boolean
-  onClick?: () => void
-  children: ReactNode
-}) {
-  return (
-    <ButtonBase
-      onClick={onClick}
-      data-tour={tour}
-      aria-current={active ? 'page' : undefined}
-      sx={{
-        ...noDrag,
-        px: '12px',
-        fontSize: 15,
-        [compact]: { fontSize: 14 },
-        fontFamily: 'inherit',
-        whiteSpace: 'nowrap',
-        color: active ? 'var(--mortar-ink)' : 'var(--mortar-ink-dim-92)',
-        borderBottom: '2px solid',
-        borderColor: active ? 'primary.main' : 'transparent',
-      }}
-    >
-      {children}
-    </ButtonBase>
-  )
-}
 
 function WindowButton({
   label,
@@ -72,14 +40,22 @@ function WindowButton({
   )
 }
 
+const rule = { width: '1px', height: 22, flexShrink: 0, bgcolor: 'var(--mortar-hairline-14)' }
+
+function Slash() {
+  return (
+    <Box
+      component="span"
+      aria-hidden={true}
+      sx={{ color: 'var(--mortar-ink-dim-60)', '&::before': { content: '"/"' } }}
+    />
+  )
+}
+
 export function TitleBar({ maximised }: { maximised: boolean }) {
   const { t } = useLingui()
   const route = useNav((s) => s.route)
-  const openGameSelect = useNav((s) => s.openGameSelect)
-  const gameName = useProfiles((s) => s.game?.name)
-  const [switching, setSwitching] = useState(false)
-  // Any navigation, including choosing a game in the switcher, closes it.
-  useEffect(() => useNav.subscribe(() => setSwitching(false)), [])
+  const game = useNav((s) => routeGame(s.route))
   return (
     <Box
       component="header"
@@ -93,35 +69,42 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
         height: 'var(--title-bar)',
         flexShrink: 0,
         display: 'flex',
-        alignItems: 'stretch',
+        alignItems: 'center',
+        gap: '8px',
+        pl: '14px',
         bgcolor: 'var(--mortar-title-bar)',
       }}
     >
       <AppMenu />
+      <Box sx={rule} />
       {route.name === 'setup' ? (
-        <Tab active={true} onClick={() => undefined}>
+        <Box component="span" sx={{ px: '10px', fontSize: 14, fontWeight: 600 }}>
           {t`Setup`}
-        </Tab>
+        </Box>
       ) : (
-        <Tab active={route.name === 'game-select'} onClick={openGameSelect}>
-          {t`Game select`}
-        </Tab>
+        <GameMenu />
       )}
-      {(route.name === 'game' || route.name === 'profiles' || route.name === 'game-settings') && (
+      {game ? (
         <>
-          <Tab tour="game-tab" active={true} onClick={() => setSwitching((on) => !on)}>
-            {gameName ?? t`Game`}
-          </Tab>
-          <GameSwitcher current={route.game} open={switching} onClose={() => setSwitching(false)} />
+          <Slash />
+          <ProfileMenu game={game} />
         </>
-      )}
-      {route.name === 'settings' && (
-        <Tab active={true} onClick={() => undefined}>
-          {t`Settings`}
-        </Tab>
-      )}
+      ) : null}
+      {route.name === 'settings' ? (
+        <>
+          <Slash />
+          <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
+            {t`Settings`}
+          </Box>
+        </>
+      ) : null}
       <Box sx={{ flexGrow: 1 }} />
-      <Box data-window-controls="" sx={{ display: 'flex', alignItems: 'stretch' }}>
+      <DownloadsPill />
+      <HistoryButton />
+      <Box
+        data-window-controls=""
+        sx={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch', ml: '6px' }}
+      >
         <WindowButton label={t`Minimise`} onClick={win.minimise}>
           <Minus size={14} />
         </WindowButton>

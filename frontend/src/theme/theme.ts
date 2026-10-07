@@ -25,13 +25,13 @@ const MONO = 'ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace
 // MUI converts px to rem against this root size, so a larger value renders smaller text: compact shrinks type.
 const HTML_FONT_SIZE = 18
 const HTML_FONT_SIZE_COMPACT = 20
-const TITLE_BAR_PX = 36
-const TITLE_BAR_COMPACT_PX = 32
+const TITLE_BAR_PX = 48
+const TITLE_BAR_COMPACT_PX = 40
 const WINDOW_BUTTON_PX = 46
 const WINDOW_BUTTON_COMPACT_PX = 40
 const WINDOW_BUTTONS = 3
-const BUTTON_HEIGHT = TITLE_BAR_PX
-const BUTTON_HEIGHT_COMPACT = TITLE_BAR_COMPACT_PX
+const BUTTON_HEIGHT = 36
+const BUTTON_HEIGHT_COMPACT = 32
 // The smallest touch target on the Steam Deck's screen (WCAG 2.5.5), for every control while touch or a pad leads.
 const TARGET_ROOMY_PX = 44
 const FOCUS_OUTLINE_PX = 2

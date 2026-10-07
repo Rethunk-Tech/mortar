@@ -11,13 +11,12 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
-import { gameSetupNeeded } from '../firstrun/needed.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNow } from '../i18n/useNow.ts'
 import { absoluteWhen } from '../i18n/when.ts'
 import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
-import { type GameId, isGameId, openSettings, useNav } from '../nav/store.ts'
+import { type GameId, openSettings, useNav } from '../nav/store.ts'
 import { arrowFocus } from '../shell/arrowFocus.ts'
 import { CoverButton } from '../shell/CoverButton.tsx'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
@@ -27,6 +26,7 @@ import { ProfileCards } from './ProfileCards.tsx'
 import { formatPlaytime } from './playtime.ts'
 import { storeName } from './storeName.ts'
 import { ordered, useGameTiles } from './useGameTiles.ts'
+import { useOpenGame } from './useOpenGame.ts'
 
 type Game = GameInfo
 
@@ -34,8 +34,6 @@ const LONG_NAME = 8
 // Tiles share the window in a grid that grows with the catalog: two games sit side by side, more wrap into rows.
 const TILE_MIN_PX = 240
 const TILE_MIN_WIDTH_PX = 560
-// A compact tile: 96 px of badges between 24 px paddings.
-const TILE_COMPACT_PX = 144
 const SMALL_FONT = 13
 const NORMAL_FONT = 15
 const HOVER_MS = 200
@@ -155,22 +153,6 @@ function useLoaderLine({
   return lastLine ? t`${loader} · ${lastLine}` : loader
 }
 
-function useOpenGame(game: Game) {
-  const { t } = useLingui()
-  return () => {
-    if (!isGameId(game.id)) {
-      return
-    }
-    const { id } = game
-    SetLastGame(id).catch((err: unknown) => fail(t`Could not save the last game`, err))
-    gameSetupNeeded(game)
-      .then((needed) =>
-        needed ? useNav.getState().openGameSetup(id) : useNav.getState().openGame(id),
-      )
-      .catch((err: unknown) => fail(t`Could not read your games`, err))
-  }
-}
-
 function usePlayLast(game: Game, lastPlayedId: string) {
   const { t } = useLingui()
   const start = useLaunch((s) => s.start)
@@ -198,8 +180,6 @@ function Row({
   lastPlayedId,
   playtimeMs,
   cards,
-  selected = false,
-  compact = false,
 }: {
   game: Game
   openable: boolean
@@ -210,10 +190,6 @@ function Row({
   lastPlayedId: string
   playtimeMs: number
   cards: { gameId: GameId; profiles: Profile[]; lastPlayed: Played | undefined } | undefined
-  // The game already open, marked in the switcher.
-  selected?: boolean
-  // The switcher's card: the name, loader line, Play and sources, without the profile cards or count.
-  compact?: boolean
 }) {
   const { t, i18n } = useLingui()
   const loaderLine = useLoaderLine({ game, loader, lastPlayedName, lastPlayedAt, playtimeMs })
@@ -226,14 +202,7 @@ function Row({
   const content = (
     <>
       {gameArt(game) ? <Art src={gameArt(game)} openable={openable} /> : null}
-      {openable ? (
-        <CoverButton
-          data-game-cover=""
-          aria-current={selected ? 'true' : undefined}
-          onClick={open}
-          aria-label={t`Open ${game.name}`}
-        />
-      ) : null}
+      {openable ? <CoverButton onClick={open} aria-label={t`Open ${game.name}`} /> : null}
       <Box
         sx={{
           ...aboveOpen,
@@ -251,10 +220,8 @@ function Row({
         >
           {loaderLine}
         </Typography>
-        {compact ? null : (
-          <Typography sx={{ mt: '6px', fontSize: 16, fontWeight: 600 }}>{note}</Typography>
-        )}
-        {cards && !compact ? (
+        <Typography sx={{ mt: '6px', fontSize: 16, fontWeight: 600 }}>{note}</Typography>
+        {cards ? (
           <ProfileCards
             gameId={cards.gameId}
             gameName={game.name}
@@ -292,7 +259,7 @@ function Row({
   )
   const sx = {
     position: 'relative',
-    minHeight: compact ? TILE_COMPACT_PX : TILE_MIN_PX,
+    minHeight: TILE_MIN_PX,
     // Text above actions on every tile, so Play and the sources sit in the same place whatever the name's length.
     display: 'flex',
     flexDirection: 'column',
@@ -307,9 +274,6 @@ function Row({
     borderColor: openable ? 'primary.main' : 'transparent',
     borderTop: '1px solid rgba(0,0,0,0.8)',
     fontFamily: 'inherit',
-    ...(selected
-      ? { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: '-2px' }
-      : {}),
   } as const
   return (
     <Box data-tile="" sx={sx}>
@@ -383,4 +347,4 @@ function GameSelect() {
   )
 }
 
-export { GameSelect, Row }
+export { GameSelect }

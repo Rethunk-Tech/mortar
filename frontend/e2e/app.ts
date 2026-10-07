@@ -20,7 +20,7 @@ export async function openSeedFarm(page: Page) {
     await welcome.click()
   }
   if (!(await farm.isVisible())) {
-    await page.getByRole('button', { name: 'Game select' }).click()
+    await openGameSelect(page)
   }
   await farm.click()
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
@@ -29,4 +29,16 @@ export async function openSeedFarm(page: Page) {
   if (await skip.isVisible({ timeout: 1500 }).catch(() => false)) {
     await skip.click()
   }
+}
+
+/** Opens Game select from the title bar's game menu. */
+export async function openGameSelect(page: Page) {
+  await page.getByRole('button', { name: /^(Switch game|Choose a game)/ }).click()
+  await page.getByRole('menuitem', { name: /^All games/ }).click()
+}
+
+/** Opens Mortar's settings from the Mortar menu. */
+export async function openSettings(page: Page) {
+  await page.getByRole('button', { name: 'Mortar menu' }).click()
+  await page.getByRole('menuitem', { name: /^Mortar settings/ }).click()
 }

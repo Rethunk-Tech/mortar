@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Tooltip } from '@mui/material'
+import { Box, Tooltip } from '@mui/material'
 import { useState } from 'react'
 import { Runs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { HealthHistory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
@@ -9,21 +9,16 @@ import { useSettings } from '../settings/store.ts'
 import { healthView } from './badgeDisplay.ts'
 import type { Counts } from './badges.ts'
 import { HealthTooltipContent } from './HealthTooltipContent.tsx'
-import { pill, sidebarPill } from './pills.ts'
+import { pill } from './pills.ts'
 
 export function ProfileHealth({
   counts,
   game,
   profileId,
-  sidebar = false,
-  onClick,
 }: {
   counts?: Counts | undefined
   game?: string
   profileId?: string
-  sidebar?: boolean
-  // Opens the profile's Problems tab; the badge is a button only when it is set.
-  onClick?: () => void
 }) {
   const { t } = useLingui()
   const mode = useSettings((s) => s.sidebarBadges)
@@ -65,13 +60,11 @@ export function ProfileHealth({
   return (
     <Tooltip title={tooltipTitle} disableInteractive={true} onOpen={loadDetail}>
       <Box
-        component={onClick ? ButtonBase : 'span'}
-        role={onClick ? undefined : 'img'}
+        component="span"
+        role="img"
         aria-label={view.tooltip}
-        onClick={onClick}
         sx={{
-          ...(sidebar ? sidebarPill : pill),
-          cursor: onClick ? 'pointer' : 'default',
+          ...pill,
           bgcolor: view.tone === 'red' ? 'error.main' : 'warning.main',
           // Dark ink falls short of 4.5:1 on the error red.
           ...(view.tone === 'red' ? { color: 'error.contrastText' } : {}),

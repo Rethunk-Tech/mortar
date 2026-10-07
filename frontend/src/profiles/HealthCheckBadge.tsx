@@ -2,24 +2,12 @@ import { plural } from '@lingui/core/macro'
 import { Box, ButtonBase, Tooltip } from '@mui/material'
 import { ShieldAlert } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { compact } from '../game/compact.ts'
-import { pill, sidebarPill } from '../mods/pills.ts'
+import { pill } from '../mods/pills.ts'
 import { HealthDialog } from './HealthDialog.tsx'
 import { useHealthBadges } from './healthBadges.ts'
 
-// In the narrow sidebar the problem badge takes the top corner, so this one takes the bottom.
-const corner = { top: 'auto', bottom: 1 }
-
 // HealthCheckBadge shows that the profile's latest health check found something, and opens the check on click.
-export function HealthCheckBadge({
-  game,
-  profileId,
-  sidebar = false,
-}: {
-  game: string
-  profileId: string
-  sidebar?: boolean
-}) {
+export function HealthCheckBadge({ game, profileId }: { game: string; profileId: string }) {
   const count = useHealthBadges((s) => s.byProfile[profileId] ?? 0)
   const load = useHealthBadges((s) => s.load)
   const [open, setOpen] = useState(false)
@@ -33,17 +21,7 @@ export function HealthCheckBadge({
             aria-label={label}
             onClick={() => setOpen(true)}
             sx={{
-              ...(sidebar
-                ? { ...sidebarPill, [compact]: { ...sidebarPill[compact], ...corner } }
-                : pill),
-              ...(sidebar
-                ? {
-                    '[data-collapsed="true"] &': {
-                      ...sidebarPill['[data-collapsed="true"] &'],
-                      ...corner,
-                    },
-                  }
-                : {}),
+              ...pill,
               display: 'inline-flex',
               alignItems: 'center',
               gap: '3px',

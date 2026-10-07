@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { openSeedFarm } from './app.ts'
+import { openSeedFarm, openSettings } from './app.ts'
 
 /** Every row label on every page of the open settings screen, read with the search empty. */
 async function rowLabels(page: Page): Promise<string[]> {
@@ -42,8 +42,7 @@ test('settings search finds every row by its label, on Mortar and game settings'
   page,
 }) => {
   await openSeedFarm(page)
-  await page.getByRole('button', { name: 'Mortar menu' }).click()
-  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  await openSettings(page)
   const app = await rowLabels(page)
   expect(app.length).toBeGreaterThan(40)
   await expectSearchFinds(page, [...app.map((l): [string, string] => [l, l]), ...SYNONYMS])
@@ -62,8 +61,7 @@ test('a Mortar settings search that finds little offers the same search in the g
   page,
 }) => {
   await openSeedFarm(page)
-  await page.getByRole('button', { name: 'Mortar menu' }).click()
-  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  await openSettings(page)
   await page.getByRole('textbox', { name: 'Search settings' }).fill('Run logs kept')
   await page.getByRole('button', { name: 'Search Stardew Valley settings' }).click()
   await expect(page.getByRole('textbox', { name: 'Search settings' })).toHaveValue('Run logs kept')
@@ -74,8 +72,7 @@ test('a Mortar settings search that finds little offers the same search in the g
 
 test('a search for a per-profile setting such as zoom points at Edit profile', async ({ page }) => {
   await openSeedFarm(page)
-  await page.getByRole('button', { name: 'Mortar menu' }).click()
-  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  await openSettings(page)
   await page.getByRole('textbox', { name: 'Search settings' }).fill('zoom')
   await page.getByRole('button', { name: 'Search Stardew Valley settings' }).click()
   await expect(page.getByText('Zoom is set per profile')).toBeVisible()

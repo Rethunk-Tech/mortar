@@ -5,6 +5,7 @@ import {
   isClearableFinished,
   parallelDownloads,
   pendingFor,
+  pillProgress,
   profileOf,
   totals,
 } from './totals.ts'
@@ -96,4 +97,15 @@ test('a queue item always has a display name', () => {
   expect(displayName(bare({ name: 'A', modId: 5 }))).toBe('A')
   expect(displayName(bare({ fileName: 'a.zip', modId: 5 }))).toBe('a.zip')
   expect(displayName(bare({ modId: 25_328 }), 'ExtraAnimalConfig')).toBe('ExtraAnimalConfig')
+})
+
+test('the title bar pill appears only while something is under way and weights progress by size', () => {
+  expect(pillProgress([item('queued', 100), item('done', 100), item('failed', 100)])).toBeNull()
+  const under = { ...item('downloading', 100, 1), progress: 50 }
+  const waiting = { ...item('queued', 300, 2), progress: 0 }
+  expect(pillProgress([under, waiting, item('done', 999, 3)])).toEqual({ active: 1, percent: 13 })
+  expect(pillProgress([{ ...item('installing', 0, 1), progress: 100 }])).toEqual({
+    active: 1,
+    percent: 100,
+  })
 })

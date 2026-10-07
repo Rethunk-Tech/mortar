@@ -15,7 +15,7 @@ type TourStep = (typeof TOUR_STEPS)[number]
 // What each step spotlights: the first selector that matches wins.
 const MOD_ROW = ['main [data-mod-row]', 'main [data-mod-id]']
 const TOUR_ANCHORS: Record<TourStep, string[]> = {
-  profiles: ['main nav'],
+  profiles: ['[data-tour="profile-switcher"]'],
   browse: ['[data-tour="browse-tab"]'],
   game: ['[data-tour="game-tab"]'],
   play: ['main nav .MuiButtonGroup-root button', 'main nav button.MuiButton-contained', 'main nav'],

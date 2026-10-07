@@ -1,13 +1,15 @@
 import { Box } from '@mui/material'
 import { useEffect } from 'react'
+import { HelpDialog } from '../console/HelpDialog.tsx'
 import { LoaderBanner } from '../loader/Banner.tsx'
 import { useProfiles } from '../profiles/store.ts'
-import { QueueSheet } from '../queue/QueueSheet.tsx'
 import { Detail } from './Detail.tsx'
 import { Sidebar } from './Sidebar.tsx'
+import { useSidebarBadges } from './useSidebarProfiles.ts'
 
 export function MainScreen({ game }: { game: string }) {
   const load = useProfiles((s) => s.load)
+  useSidebarBadges(game)
   useEffect(() => {
     load(game)
   }, [game, load])
@@ -18,7 +20,7 @@ export function MainScreen({ game }: { game: string }) {
         <Sidebar game={game} />
         <Detail />
       </Box>
-      <QueueSheet />
+      <HelpDialog game={game} />
     </Box>
   )
 }

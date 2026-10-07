@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { openSeedFarm } from './app.ts'
+import { openSeedFarm, openSettings } from './app.ts'
 
 /** A task this long freezes the window noticeably; profile switches on a 400-mod profile stay under it. */
 const LONG_TASK_MS = 200
@@ -79,8 +79,7 @@ test('every tab and settings page opens without errors or long tasks', async ({
     }
   }
 
-  await page.getByRole('button', { name: 'Mortar menu' }).click()
-  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  await openSettings(page)
   const pages = page.getByRole('navigation').getByRole('button')
   for (let i = 0; i < (await pages.count()); i++) {
     const label = (await pages.nth(i).textContent()) ?? `page ${i}`

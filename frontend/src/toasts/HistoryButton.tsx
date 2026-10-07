@@ -9,6 +9,7 @@ import { useProfileLocked } from '../mods/useLocked.ts'
 import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useHistoryPanel } from '../profiles/useHistoryPanel.ts'
+import { useQueue } from '../queue/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { EarlierChanges } from './EarlierChanges.tsx'
 import { historyActionState } from './history.ts'
@@ -115,8 +116,8 @@ function HistoryPopover({
       onClose={onClose}
       anchorReference={anchorEl ? 'anchorEl' : 'anchorPosition'}
       anchorPosition={{ top: 80, left: 16 }}
-      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      transformOrigin={{ vertical: anchorEl ? 'top' : 'bottom', horizontal: 'right' }}
       slotProps={{
         paper: {
           role: 'dialog',
@@ -169,9 +170,26 @@ function HistoryPopover({
           </>
         )}
       </Box>
-      <Box sx={{ borderTop: '1px solid var(--mortar-hairline-muted)', px: 1.5, py: 0.5 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          borderTop: '1px solid var(--mortar-hairline-muted)',
+          px: 1.5,
+          py: 0.5,
+        }}
+      >
         <Button size="small" disabled={!panel.game || profileId === ''} onClick={onAll}>
           {t`All changes…`}
+        </Button>
+        <Button
+          size="small"
+          sx={{ ml: 'auto' }}
+          onClick={() => {
+            onClose()
+            useQueue.getState().setOpen(true)
+          }}
+        >
+          {t`Downloads…`}
         </Button>
       </Box>
     </Popover>
@@ -220,7 +238,7 @@ export function HistoryButton() {
         aria-haspopup="dialog"
         aria-expanded={historyOpen}
         onClick={(e) => open(e.currentTarget)}
-        sx={{ width: 40, height: 40, borderRadius: '6px' }}
+        sx={{ '--wails-draggable': 'no-drag', width: 36, height: 34, borderRadius: '8px' }}
       >
         <Badge
           // None rather than 0: a hidden badge still holds its 0, text the button's name would then lack.
@@ -229,7 +247,7 @@ export function HistoryButton() {
           max={99}
           slotProps={{ badge: { 'aria-hidden': true } }}
         >
-          <Bell size={18} aria-hidden={true} />
+          <Bell size={17} aria-hidden={true} />
         </Badge>
       </IconButton>
       <HistoryPopover

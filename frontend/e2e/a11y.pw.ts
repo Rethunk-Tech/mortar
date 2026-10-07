@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
-import { openSeedFarm } from './app.ts'
+import { openGameSelect, openSettings as openMortarSettings, openSeedFarm } from './app.ts'
 
 const WCAG_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 const THEMES = ['Dark', 'Light'] as const
@@ -36,8 +36,7 @@ async function openSettings(page: Page, button: string) {
 }
 
 async function setTheme(page: Page, theme: (typeof THEMES)[number]) {
-  await page.getByRole('button', { name: 'Mortar menu' }).click()
-  await openSettings(page, 'Settings')
+  await openMortarSettings(page)
   await page.getByRole('textbox', { name: 'Search settings' }).fill('Theme')
   await page.getByRole('group', { name: 'Theme' }).getByRole('button', { name: theme }).click()
   await page.keyboard.press('Escape')
@@ -121,12 +120,12 @@ test('every main screen of Stardew Valley and Lethal Company passes axe in dark 
   const found: string[] = []
   for (const theme of THEMES) {
     await setTheme(page, theme)
-    await page.getByRole('button', { name: 'Game select' }).click()
+    await openGameSelect(page)
     await expect(page.locator('[data-tile]').first()).toBeVisible()
     found.push(...(await scan(page, `${theme} › Game select`)))
     for (const game of GAMES) {
       found.push(...(await scanGame(page, game, theme)).map((v) => `${theme} › ${v}`))
-      await page.getByRole('button', { name: 'Game select' }).click()
+      await openGameSelect(page)
     }
     await page
       .getByRole('button', { name: 'Open Stardew Valley' })
@@ -141,8 +140,7 @@ test('every main screen of Stardew Valley and Lethal Company passes axe in dark 
     await expect(page.getByRole('dialog', { name: 'Notification history' })).toBeVisible()
     found.push(...(await scan(page, `${theme} › Notifications`)))
     await page.keyboard.press('Escape')
-    await page.getByRole('button', { name: 'Mortar menu' }).click()
-    await openSettings(page, 'Settings')
+    await openMortarSettings(page)
     found.push(...(await scanSettings(page, `${theme} › Mortar settings`)))
   }
   await setTheme(page, 'Dark')

@@ -1,12 +1,11 @@
 import { expect, test } from '@playwright/test'
-import { openSeedFarm } from './app.ts'
+import { openSeedFarm, openSettings } from './app.ts'
 
 test('Light theme paints the app light and shows a decodable background preview', async ({
   page,
 }) => {
   await openSeedFarm(page)
-  await page.getByRole('button', { name: 'Mortar menu' }).click()
-  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  await openSettings(page)
   await page
     .getByRole('navigation', { name: 'Settings sections' })
     .getByRole('button', { name: 'Appearance' })

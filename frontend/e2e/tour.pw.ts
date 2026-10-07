@@ -1,4 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
+import { openSettings } from './app.ts'
 
 // The tour opens from an effect once the reloaded app has its profile; this covers a slow first render.
 const REOPEN_MS = 500
@@ -13,7 +14,7 @@ async function serverUp(baseURL: string): Promise<boolean> {
 
 // Each step's spotlight must sit over the element the step talks about (in step order).
 const STEP_TARGETS = [
-  'main nav',
+  '[data-tour="profile-switcher"]',
   '[data-tour="browse-tab"]',
   '[data-tour="game-tab"]',
   'main nav button.MuiButton-contained, main nav .MuiButtonGroup-root button',
@@ -49,8 +50,7 @@ test('the replayed tour spotlights each step and Skip keeps it closed after a re
   }
   await page.goto('/')
   await expect(page.getByRole('tab').first()).toBeVisible({ timeout: 30_000 })
-  await page.getByRole('button', { name: 'Mortar menu' }).click()
-  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  await openSettings(page)
   await page.getByRole('button', { name: 'Show the tour again' }).click()
   await page.keyboard.press('Escape')
   const dialog = page.getByRole('dialog')

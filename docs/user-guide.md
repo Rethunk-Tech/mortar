@@ -154,7 +154,7 @@ To send, use **Share profile** then **Send to…** and pick the computer. The re
 
 ## Switch games
 
-Click the game's name in the title bar (the tab after **Game select**). A drawer drops from the title bar with a compact card for each playable game, the one you opened last first. Choose a card, or move with the Left and Right arrow keys and press Enter, and Mortar opens that game on the profile you used last. The **Game select** tab shows every game, including the ones Mortar did not find.
+Click the game's name in the title bar. A menu lists each playable game, the one you opened last first, with a tick on the current one. Choose a game and Mortar opens it on the profile you used last. **All games…** opens Game select, which shows every game, including the ones Mortar did not find.
 
 ## Game installs
 
@@ -174,7 +174,7 @@ The Mortar Flatpak is allowed to read and write the Bottles data folders, native
 
 A profile is one set of mods. Switching profiles never touches the game folder's own `Mods` folder.
 
-- **Create:** **New profile…** on the Profiles page, or **New profile** at the foot of the sidebar. Type a name, then pick **Start from**:
+- **Create:** **New profile…** on the Profiles page, or **New profile…** in the profile switcher in the title bar. Type a name, then pick **Start from**:
   - **Empty profile** holds only the loader.
   - **Copy of \<the open profile\>** duplicates the profile that is open now, with its mods, their settings and what the mods wrote, and opens the copy.
   - A template (one you saved with **Save as template…**) starts with the template's mods and its launch settings. Mods Mortar does not hold download in the background, and a toast says how many. **Manage templates…** renames or deletes templates.
@@ -275,7 +275,7 @@ Something changed a profile's mods folder without Mortar: a file added, removed 
 
 ## Notifications and change history
 
-The bell at the foot of the sidebar opens **Notifications** (Ctrl+Shift+N does the same). It holds two lists:
+The bell in the title bar opens **Notifications** (Ctrl+Shift+N does the same). It holds two lists:
 
 - **New** has this session's toasts you have not read, with their buttons (such as **Undo**) while they still apply.
 - **Earlier** has the open profile's own change history, newest first: mods added, removed, updated, rolled back and switched, each with when it happened. **Show diff** lists what changed and **Undo** puts the profile back to how it was before that change.

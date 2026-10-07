@@ -1,26 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  ButtonBase,
-  Divider,
-  Drawer,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-} from '@mui/material'
+import { Box, ButtonBase, Tooltip } from '@mui/material'
 import { Application } from '@wailsio/runtime'
-import {
-  Bug,
-  Code2,
-  FolderOpen,
-  Info,
-  LifeBuoy,
-  LogOut,
-  RefreshCw,
-  Settings,
-  Sparkles,
-} from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
+import { type ReactNode, useEffect, useState } from 'react'
+import { SignOut } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { OpenDataFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { Logo } from '../brand/Logo.tsx'
 import { useConsole } from '../console/store.ts'
@@ -28,31 +11,82 @@ import { compact } from '../game/compact.ts'
 import { useTab } from '../game/tab.ts'
 import { openPage } from '../mods/menu.ts'
 import { openSettings, routeGame, useNav } from '../nav/store.ts'
+import { useNexus } from '../settings/nexus.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
+import { useShortcutHint } from '../settings/useShortcutHint.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { showWhatsNew } from '../updates/whatsNew.ts'
 import { checkForUpdates } from './checkForUpdates.ts'
-import { NexusAccount } from './NexusAccount.tsx'
-import { OfflineGate } from './OfflineGate.tsx'
 import { useUpdatesOfflineReason } from './offlineText.ts'
 import { reportBug } from './reportBug.ts'
+import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from './TitleMenu.tsx'
 
 const SOURCE = 'https://github.com/Rethunk-Tech/mortar'
 
+// A disabled row cannot take hover, so its reason rides on a wrapper.
+function Reason({ reason, children }: { reason: string; children: ReactNode }) {
+  return reason === '' ? (
+    children
+  ) : (
+    <Tooltip title={reason} placement="left" describeChild={true}>
+      <span>{children}</span>
+    </Tooltip>
+  )
+}
+
+function NexusLines({ close }: { close: () => void }) {
+  const { t } = useLingui()
+  const { signedIn, name, premium } = useNexus()
+  return (
+    <>
+      <Box sx={{ px: '14px', py: '6px', fontSize: 13 }}>
+        {signedIn ? t`Nexus Mods · Signed in as ${name}` : t`Nexus Mods · Not signed in`}
+        {signedIn && premium ? (
+          <Box
+            component="span"
+            sx={{ color: 'var(--mortar-accent-ink)', '&::before': { content: '" · "' } }}
+          >
+            {t`Premium`}
+          </Box>
+        ) : null}
+      </Box>
+      {signedIn ? (
+        <TitleMenuItem
+          dim={true}
+          label={t`Sign out of Nexus`}
+          onClick={() => {
+            close()
+            SignOut().catch(reportUnexpected)
+          }}
+        />
+      ) : (
+        <TitleMenuItem
+          label={t`Sign in to Nexus…`}
+          onClick={() => {
+            close()
+            openSettings('accounts')
+          }}
+        />
+      )}
+    </>
+  )
+}
+
 export function AppMenu() {
   const { t } = useLingui()
-  const drawerId = useId()
-  const [open, setOpen] = useState(false)
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const updatesOffline = useUpdatesOfflineReason()
   const game = useNav((s) => routeGame(s.route) ?? '')
   const version = useMortarUpdate((s) => s.info?.version)
+  const settingsKeys = useShortcutHint('open-settings')
+  const helpKeys = useShortcutHint('help')
   useEffect(() => {
     useMortarUpdate
       .getState()
       .load()
       .catch(() => undefined)
   }, [])
-  const close = () => setOpen(false)
+  const close = () => setAnchor(null)
   const quit = (): void => {
     close()
     Application.Quit().catch((e: unknown) =>
@@ -64,151 +98,101 @@ export function AppMenu() {
       <ButtonBase
         aria-label={t`Mortar menu`}
         data-tour="app-menu"
-        aria-expanded={open}
-        aria-controls={open ? drawerId : undefined}
-        onClick={() => setOpen(true)}
+        aria-haspopup="menu"
+        aria-expanded={anchor !== null}
+        onClick={(e) => setAnchor(e.currentTarget)}
         sx={{
           '--wails-draggable': 'no-drag',
-          gap: '10px',
-          pl: '12px',
-          pr: '14px',
+          gap: '8px',
+          height: 34,
+          px: '10px',
+          borderRadius: '8px',
           fontSize: 15,
-          fontWeight: 600,
-          [compact]: { pl: '11px', pr: '11px', '& .label': { display: 'none' } },
+          fontWeight: 700,
           fontFamily: 'inherit',
           color: 'inherit',
-          bgcolor: 'var(--mortar-overlay-30)',
+          '&:hover, &[aria-expanded="true"]': { bgcolor: 'var(--mortar-hairline-faint)' },
+          [compact]: { px: '8px', '& .label': { display: 'none' } },
         }}
       >
-        <Logo size={20} />
+        <Logo size={18} />
         <span className="label">{t`Mortar`}</span>
+        <ChevronDown size={14} aria-hidden={true} className="label" />
       </ButtonBase>
-      <Drawer
-        id={drawerId}
-        anchor="left"
-        open={open}
-        onClose={close}
-        sx={{ top: 'var(--title-bar)' }}
-        slotProps={{
-          paper: {
-            role: 'dialog',
-            'aria-label': t`Mortar menu`,
-            sx: {
-              width: 280,
-              top: 'var(--title-bar)',
-              height: 'calc(100% - var(--title-bar))',
-              bgcolor: 'var(--mortar-panel-solid)',
-            },
-          },
-        }}
-      >
-        <List component="nav" aria-label={t`Mortar menu`}>
-          <ListItemButton
+      <TitleMenu anchorEl={anchor} onClose={close} label={t`Mortar`} width={280}>
+        <TitleMenuItem
+          label={t`Mortar settings…`}
+          hint={settingsKeys}
+          onClick={() => {
+            close()
+            openSettings()
+          }}
+        />
+        <MenuRule />
+        <Reason reason={updatesOffline}>
+          <TitleMenuItem
+            label={t`Check for updates`}
+            disabled={updatesOffline !== ''}
             onClick={() => {
               close()
-              openSettings()
+              checkForUpdates().catch(reportUnexpected)
             }}
-          >
-            <ListItemIcon>
-              <Settings size={18} />
-            </ListItemIcon>
-            <ListItemText primary={t`Settings`} />
-          </ListItemButton>
-          <OfflineGate reason={updatesOffline}>
-            <ListItemButton
-              onClick={() => {
-                close()
-                checkForUpdates().catch(reportUnexpected)
-              }}
-            >
-              <ListItemIcon>
-                <RefreshCw size={18} />
-              </ListItemIcon>
-              <ListItemText primary={t`Check for updates`} />
-            </ListItemButton>
-          </OfflineGate>
-          {version ? (
-            <ListItemButton
-              onClick={() => {
-                close()
-                showWhatsNew(version)
-              }}
-            >
-              <ListItemIcon>
-                <Sparkles size={18} />
-              </ListItemIcon>
-              <ListItemText primary={t`What's new in ${version}`} />
-            </ListItemButton>
-          ) : null}
-          <Divider />
-          <ListItemButton
+          />
+        </Reason>
+        {version ? (
+          <TitleMenuItem
+            label={t`What's new in ${version}`}
             onClick={() => {
               close()
-              OpenDataFolder().catch(reportUnexpected)
+              showWhatsNew(version)
             }}
-          >
-            <ListItemIcon>
-              <FolderOpen size={18} />
-            </ListItemIcon>
-            <ListItemText primary={t`Open data folder`} />
-          </ListItemButton>
-          <ListItemButton
-            disabled={game === ''}
-            onClick={() => {
-              close()
-              useTab.getState().setTab('console')
-              useConsole.getState().setHelping(true)
-            }}
-          >
-            <ListItemIcon>
-              <LifeBuoy size={18} />
-            </ListItemIcon>
-            <ListItemText primary={t`Get help`} />
-          </ListItemButton>
-          <ListItemButton
-            onClick={() => {
-              close()
-              reportBug(game)
-            }}
-          >
-            <ListItemIcon>
-              <Bug size={18} />
-            </ListItemIcon>
-            <ListItemText primary={t`Report a bug`} />
-          </ListItemButton>
-          <Divider />
-          <ListItemButton
-            onClick={() => {
-              close()
-              openSettings('about')
-            }}
-          >
-            <ListItemIcon>
-              <Info size={18} />
-            </ListItemIcon>
-            <ListItemText primary={t`About Mortar`} />
-          </ListItemButton>
-          <ListItemButton
-            onClick={() => {
-              close()
-              openPage(SOURCE).catch(reportUnexpected)
-            }}
-          >
-            <ListItemIcon>
-              <Code2 size={18} />
-            </ListItemIcon>
-            <ListItemText primary={t`Source code`} />
-          </ListItemButton>
-          <Divider />
-          <ListItemButton onClick={quit}>
-            <ListItemIcon>
-              <LogOut size={18} />
-            </ListItemIcon>
-            <ListItemText primary={t`Quit`} />
-          </ListItemButton>
-        </List>
-        <NexusAccount onNavigate={close} />
-      </Drawer>
+          />
+        ) : null}
+        <TitleMenuItem
+          label={t`Open data folder`}
+          onClick={() => {
+            close()
+            OpenDataFolder().catch(reportUnexpected)
+          }}
+        />
+        <TitleMenuItem
+          label={t`About Mortar`}
+          onClick={() => {
+            close()
+            openSettings('about')
+          }}
+        />
+        <MenuRule />
+        <MenuHeading>{t`Help`}</MenuHeading>
+        <TitleMenuItem
+          label={t`Get help`}
+          hint={helpKeys}
+          disabled={game === ''}
+          onClick={() => {
+            close()
+            useTab.getState().setTab('console')
+            useConsole.getState().setHelping(true)
+          }}
+        />
+        <TitleMenuItem
+          label={t`Report a bug…`}
+          onClick={() => {
+            close()
+            reportBug(game)
+          }}
+        />
+        <TitleMenuItem
+          label={t`Source code`}
+          onClick={() => {
+            close()
+            openPage(SOURCE).catch(reportUnexpected)
+          }}
+        />
+        <MenuRule />
+        <NexusLines close={close} />
+        <MenuRule />
+        <TitleMenuItem label={t`Quit Mortar`} onClick={quit} />
+      </TitleMenu>
     </>
   )
 }

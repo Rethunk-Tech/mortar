@@ -13,7 +13,7 @@ const POPPER_OFFSET = 12
 const SPOTLIGHT_PAD = 6
 
 const placements = [
-  'right-start',
+  'bottom-start',
   'bottom',
   'bottom',
   'right',
@@ -35,7 +35,7 @@ function useTourCopy(step: number, paletteKeys: string) {
       break
     case 'game':
       title = t`Switch game`
-      body = t`Click the game's name in the title bar to open the game drawer and jump to another game.`
+      body = t`Click the game's name in the title bar to open the game menu and jump to another game.`
       break
     case 'play':
       title = t`Play`

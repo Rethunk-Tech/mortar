@@ -44,6 +44,12 @@ export function useGameInfo(id?: string): GameInfo | undefined {
   return find(games, loaded, id ?? current)
 }
 
+// The catalog's games, [] until it answers.
+export function useGames(): GameInfo[] {
+  ensureLoaded()
+  return useGameList((s) => s.games)
+}
+
 export function useGameLoader(id?: string): string {
   return useGameInfo(id)?.loader ?? ''
 }
