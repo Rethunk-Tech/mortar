@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { filterFile, isModified, parseNumber, wantsSlider } from './entries.ts'
+import { filterFile, humanizeKey, isModified, parseNumber, wantsSlider } from './entries.ts'
 import type { ConfigEntry, ConfigFile } from './types.ts'
 
 const entry = (over: Partial<ConfigEntry>): ConfigEntry => ({
@@ -42,4 +42,15 @@ test('search matches keys and descriptions and a section name keeps its entries'
   expect(filterFile(file, 'speed').sections[0]?.entries).toHaveLength(2)
   expect(filterFile(file, 'audio').sections[0]?.entries).toHaveLength(1)
   expect(filterFile(file, 'zzz').sections).toHaveLength(0)
+})
+
+test('a key is split into words at camelCase and number boundaries', () => {
+  expect(humanizeKey('SpawnFreqCoal0To2')).toBe('Spawn Freq Coal 0 To 2')
+  expect(humanizeKey('RemoveTreeHidingBackyardMouseStatue')).toBe(
+    'Remove Tree Hiding Backyard Mouse Statue',
+  )
+  expect(humanizeKey('enableHTTPServer')).toBe('enable HTTP Server')
+  expect(humanizeKey('max_item-count.x')).toBe('max item count x')
+  expect(humanizeKey('Speed')).toBe('Speed')
+  expect(humanizeKey('')).toBe('')
 })

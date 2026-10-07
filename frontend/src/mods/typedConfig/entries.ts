@@ -57,4 +57,17 @@ const isHexColor = (s: string): boolean => HEX_COLOR.test(s)
 const modifiedCount = (file: ConfigFile): number =>
   file.sections.reduce((n, s) => n + s.entries.filter(isModified).length, 0)
 
-export { filterFile, isHexColor, isModified, modifiedCount, parseNumber, wantsSlider }
+const WORD_GAPS = [/([a-z])([A-Z])/g, /([A-Z]+)([A-Z][a-z])/g, /([A-Za-z])(\d)/g, /(\d)([A-Za-z])/g]
+const SEPARATORS = /[_\-.\s]+/g
+
+// A setting's key as words: split at camelCase and letter/number boundaries ("SpawnFreqCoal0To2" reads "Spawn Freq
+// Coal 0 To 2"), so a label only ever breaks between words.
+function humanizeKey(key: string): string {
+  let text = key.replace(SEPARATORS, ' ')
+  for (const gap of WORD_GAPS) {
+    text = text.replace(gap, '$1 $2')
+  }
+  return text.trim()
+}
+
+export { filterFile, humanizeKey, isHexColor, isModified, modifiedCount, parseNumber, wantsSlider }

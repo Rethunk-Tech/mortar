@@ -19,7 +19,7 @@ import { SearchField } from '../../shell/SearchField.tsx'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { PresetsButton } from '../ConfigPresets.tsx'
-import { filterFile, isModified, modifiedCount } from './entries.ts'
+import { filterFile, humanizeKey, isModified, modifiedCount } from './entries.ts'
 import { type Target, useTypedConfig } from './store.ts'
 import type { ConfigEntry } from './types.ts'
 import { EntryWidget } from './Widgets.tsx'
@@ -46,7 +46,9 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
-        <Typography sx={{ overflowWrap: 'anywhere' }}>{entry.label || entry.key}</Typography>
+        <Typography title={entry.key} sx={{ overflowWrap: 'normal', wordBreak: 'normal' }}>
+          {entry.label || humanizeKey(entry.key)}
+        </Typography>
         {entry.description ? (
           <Tooltip title={entry.description}>
             <IconButton
@@ -142,6 +144,8 @@ export function ConfigPane({
   }, [updated, current, select])
   const file = files.find((f) => f.name === current)
   const shown = file ? filterFile(file, query) : null
+  // One file needs no picker: the editor takes the width and the toolbar names the file.
+  const single = files.length <= 1
   return (
     <Box
       aria-label={t`Config of ${name}`}
@@ -151,8 +155,12 @@ export function ConfigPane({
       <Box
         sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: space.pad, py: space.gap }}
       >
-        <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600, flex: 1 }}>
-          {t`Config of ${name}`}
+        <Typography
+          noWrap={true}
+          title={file?.name ?? ''}
+          sx={{ flex: 1, minWidth: 0, fontSize: 12, color: 'text.secondary' }}
+        >
+          {single && file ? (file.format === 'gmcm' ? t`In-game menu` : file.name) : ''}
         </Typography>
         <SearchField
           label={t`Search entries`}
@@ -184,28 +192,30 @@ export function ConfigPane({
         </Alert>
       ) : null}
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
-        <List
-          aria-label={t`Config files`}
-          sx={{
-            width: FILES_WIDTH_PX,
-            flexShrink: 0,
-            overflowY: 'auto',
-            borderRight: '1px solid var(--mortar-hairline)',
-          }}
-        >
-          {files.map((f) => (
-            <ListItemButton
-              key={f.name}
-              selected={f.name === current}
-              onClick={() => select(f.name)}
-            >
-              <ListItemText
-                primary={f.format === 'gmcm' ? t`In-game menu` : f.label || f.name}
-                slotProps={{ primary: { noWrap: true } }}
-              />
-            </ListItemButton>
-          ))}
-        </List>
+        {single ? null : (
+          <List
+            aria-label={t`Config files`}
+            sx={{
+              width: FILES_WIDTH_PX,
+              flexShrink: 0,
+              overflowY: 'auto',
+              borderRight: '1px solid var(--mortar-hairline)',
+            }}
+          >
+            {files.map((f) => (
+              <ListItemButton
+                key={f.name}
+                selected={f.name === current}
+                onClick={() => select(f.name)}
+              >
+                <ListItemText
+                  primary={f.format === 'gmcm' ? t`In-game menu` : f.label || f.name}
+                  slotProps={{ primary: { noWrap: true } }}
+                />
+              </ListItemButton>
+            ))}
+          </List>
+        )}
         <Box
           sx={{
             flex: 1,
