@@ -17,11 +17,10 @@ import { HomePanel } from '../game/HomePanel.tsx'
 import { changesView } from '../game/homeView.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
+import { changesSinceCache } from './changesSinceCache.ts'
 import { HistoryDialog } from './HistoryDialog.tsx'
 import { diffLines } from './historyDiff.ts'
 import { useProfiles } from './store.ts'
-
-const changesSinceCache = new Map<string, HistoryDiff | null>()
 
 // Keyed by the profile's updated time, which changes after each run, when a new startup report may exist.
 function useStartupRegressions(

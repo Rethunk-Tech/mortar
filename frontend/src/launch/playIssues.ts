@@ -17,13 +17,12 @@ import { LastSaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { listNames } from '../i18n/list.ts'
 import { localId } from '../mods/dependents.ts'
 import { visibleUpdates } from '../mods/lookup.ts'
+import { changesSinceCache } from '../profiles/changesSinceCache.ts'
 import { diffLines } from '../profiles/historyDiff.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { saveName } from '../saves/saveName.ts'
 
 const PLAY_ISSUE_NAME_CAP = 5
-
-const changesSinceCache = new Map<string, HistoryDiff | null>()
 
 type PlayIssueKind =
   | 'missing'
