@@ -5,7 +5,7 @@ import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { persist } from '../settings/persist.ts'
 import { useOfflineEmpty } from '../shell/offlineText.ts'
 import { useToasts } from '../toasts/store.ts'
-import { BrowseBody } from './BrowseBody.tsx'
+import { BrowseBody, ResultFooter } from './BrowseBody.tsx'
 import { BrowseDetails } from './BrowseDetails.tsx'
 import { BrowseFilters } from './BrowseFilters.tsx'
 import { BrowseMenu } from './BrowseMenu.tsx'
@@ -149,33 +149,38 @@ function BrowsePage({
       <Box
         sx={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto' }}
       >
-        <Box
-          ref={results}
-          sx={{
-            flex: 1,
-            minHeight: 0,
-            overflowY: 'auto',
-            px: 2,
-            py: 1,
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          <BrowseBody
-            status={query.status}
-            result={result}
-            text={query.text}
-            hint={searchHint(source, premium)}
-            error={query.error}
-            offline={offline}
-            view={view}
-            page={page}
-            pageCount={pageCount}
-            card={card}
-            onRetry={() => query.setRetry((n) => n + 1)}
-            onClear={() => setDraft('')}
-            onPage={setPage}
-          />
+        <Box sx={{ minHeight: 0, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          <Box
+            ref={results}
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: 'auto',
+              px: 2,
+              py: 1,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <BrowseBody
+              status={query.status}
+              result={result}
+              text={query.text}
+              hint={searchHint(source, premium)}
+              error={query.error}
+              offline={offline}
+              view={view}
+              page={page}
+              pageCount={pageCount}
+              card={card}
+              onRetry={() => query.setRetry((n) => n + 1)}
+              onClear={() => setDraft('')}
+              onPage={setPage}
+            />
+          </Box>
+          {query.status !== 'idle' && query.status !== 'error' && result.items.length > 0 ? (
+            <ResultFooter result={result} />
+          ) : null}
         </Box>
         <BrowseDetails game={game} card={card} sourceNames={sourceNames} />
       </Box>

@@ -13,7 +13,7 @@ import { useSaves } from '../saves/store.ts'
 import { compact, saveFits } from './compact.ts'
 import { usePageActionsSlot } from './pageActions.ts'
 import { type TabId, useTab } from './tab.ts'
-import { notesFirstLine } from './tabHeader.ts'
+import { notesFirstLine, pageActionsSx } from './tabHeader.ts'
 
 const TINT = 0.16
 
@@ -111,7 +111,10 @@ export function TabHeader({ profile }: { profile: Profile }) {
         {notes}
       </Typography>
       <Box sx={{ flex: '1 0 12px' }} />
-      <Box ref={setSlot} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }} />
+      <Box
+        ref={setSlot}
+        sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0, ...pageActionsSx }}
+      />
     </Box>
   )
 }

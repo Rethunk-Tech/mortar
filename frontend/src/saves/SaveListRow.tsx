@@ -1,36 +1,71 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Typography } from '@mui/material'
+import { Box, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material'
+import type { ReactNode } from 'react'
 import type { Backup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import { saveCalendar } from '../game/homeView.ts'
+import { heading } from '../mods/paper.ts'
 import { SaveGapLine } from './SaveGapLine.tsx'
 import { FitStatus, SaveButtons } from './SaveRow.tsx'
 import { saveName } from './saveName.ts'
 
-const COLUMNS = 'minmax(0,1fr) 160px 220px auto'
+// The last column holds up to four icon buttons; a fixed width keeps it aligned when a save has fewer.
+const COLUMNS = 'minmax(0,1fr) 160px 220px 148px'
 
-function SaveListHeader({ name }: { name: string }) {
+const rowGrid = {
+  display: 'grid',
+  gridTemplateColumns: COLUMNS,
+  gap: '10px',
+  alignItems: 'center',
+  px: 2,
+} as const
+
+const cellReset = { p: 0, border: 0, fontSize: 'inherit', color: 'inherit' } as const
+
+function SaveCell({ children, title }: { children: ReactNode; title?: string }) {
+  return (
+    <TableCell role="cell" title={title} sx={{ ...cellReset, minWidth: 0 }}>
+      {children}
+    </TableCell>
+  )
+}
+
+// The Mods list's table: a header that stays put while rows scroll, one grid row per save, and ARIA that joins
+// header and rows into one table.
+function SaveListTable({ name, children }: { name: string; children: ReactNode }) {
   const { t } = useLingui()
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: COLUMNS,
-        gap: 3,
-        py: 1,
-        fontSize: 12,
-        fontWeight: 700,
-        letterSpacing: '0.06em',
-        color: 'text.secondary',
-        textTransform: 'uppercase',
-      }}
+    <Table
+      role="table"
+      aria-label={t`Saves`}
+      sx={{ display: 'block', '& thead, & tbody': { display: 'block' } }}
     >
-      <span>{t`Save`}</span>
-      <span>{t`Season`}</span>
-      <span>{t`Fits ${{ name }}`}</span>
-      <span />
-    </Box>
+      <TableHead role="rowgroup" sx={{ position: 'sticky', top: 0, zIndex: 1 }}>
+        <TableRow
+          role="row"
+          sx={{
+            ...rowGrid,
+            height: 30,
+            bgcolor: 'var(--mortar-console-90)',
+            ...heading,
+            borderBottom: '1px solid var(--mortar-hairline-muted)',
+          }}
+        >
+          <TableCell role="columnheader" sx={{ ...cellReset, ...heading }}>
+            {t`Save`}
+          </TableCell>
+          <TableCell role="columnheader" sx={{ ...cellReset, ...heading }}>
+            {t`Season`}
+          </TableCell>
+          <TableCell role="columnheader" sx={{ ...cellReset, ...heading }}>
+            {t`Fits ${{ name }}`}
+          </TableCell>
+          <TableCell role="columnheader" aria-label={t`Actions`} sx={cellReset} />
+        </TableRow>
+      </TableHead>
+      <TableBody role="rowgroup">{children}</TableBody>
+    </Table>
   )
 }
 
@@ -53,34 +88,53 @@ function SaveListRow({
   const calendar = saveCalendar(fit)
   const label = saveName(fit)
   return (
-    <Box sx={{ borderTop: '1px solid var(--mortar-hairline-faint)', py: 1 }}>
-      <Box sx={{ display: 'grid', gridTemplateColumns: COLUMNS, gap: 3, alignItems: 'center' }}>
-        <Typography noWrap={true} title={label} sx={{ fontWeight: 600 }}>
+    <TableRow
+      role="row"
+      hover={true}
+      sx={{
+        ...rowGrid,
+        minHeight: 36,
+        fontSize: 14,
+        borderBottom: '1px solid var(--mortar-hairline-faint)',
+      }}
+    >
+      <SaveCell title={label}>
+        <Typography noWrap={true} sx={{ fontWeight: 500, fontSize: 'inherit' }}>
           {label}
         </Typography>
-        <Typography noWrap={true} sx={{ fontSize: 13 }}>
+      </SaveCell>
+      <SaveCell>
+        <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
           {calendar ? t`Year ${calendar.year} ${seasons[calendar.season] ?? ''}` : '—'}
         </Typography>
+      </SaveCell>
+      <SaveCell>
         <Box sx={{ display: 'flex' }}>
           <FitStatus missing={(fit.missing ?? []).length} unrecorded={fit.unrecorded} />
         </Box>
-        <SaveButtons
+      </SaveCell>
+      <SaveCell>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <SaveButtons
+            fit={fit}
+            game={game}
+            profileId={profile.id}
+            label={label}
+            backups={backups}
+            onBackupsChanged={onBackupsChanged}
+          />
+        </Box>
+      </SaveCell>
+      <Box sx={{ gridColumn: '1 / -1', '&:empty': { display: 'none' }, pb: 0.5 }}>
+        <SaveGapLine
+          key={`${profile.updated}-${fit.lastProfileAt}`}
           fit={fit}
+          profile={profile}
           game={game}
-          profileId={profile.id}
-          label={label}
-          backups={backups}
-          onBackupsChanged={onBackupsChanged}
         />
       </Box>
-      <SaveGapLine
-        key={`${profile.updated}-${fit.lastProfileAt}`}
-        fit={fit}
-        profile={profile}
-        game={game}
-      />
-    </Box>
+    </TableRow>
   )
 }
 
-export { SaveListHeader, SaveListRow }
+export { SaveListRow, SaveListTable }

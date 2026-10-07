@@ -17,7 +17,7 @@ import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { BackupsDialog } from './BackupsDialog.tsx'
 import { backupsOf } from './backupsOf.ts'
 import { filterAndSortSaves } from './filterAndSortSaves.ts'
-import { SaveListHeader, SaveListRow } from './SaveListRow.tsx'
+import { SaveListRow, SaveListTable } from './SaveListRow.tsx'
 import { SaveRow } from './SaveRow.tsx'
 import { useSaves } from './store.ts'
 import { useAllBackups } from './useAllBackups.ts'
@@ -92,14 +92,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
         onBackupsChanged={reloadBackups}
       />
     ))
-    body = list ? (
-      <Box>
-        <SaveListHeader name={name} />
-        {rows}
-      </Box>
-    ) : (
-      rows
-    )
+    body = list ? <SaveListTable name={name}>{rows}</SaveListTable> : rows
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
@@ -108,7 +101,6 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
           variant="outlined"
           color="inherit"
           startIcon={<History size={16} />}
-          sx={{ height: 34 }}
           onClick={() => setBackupsOpen(true)}
         >
           {t`Save backups…`}

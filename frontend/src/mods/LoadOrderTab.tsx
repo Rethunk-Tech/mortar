@@ -189,7 +189,6 @@ function OrderList({
           variant="outlined"
           color="inherit"
           startIcon={<Copy size={16} />}
-          sx={{ height: 34 }}
           onClick={() => {
             copyText(formatLoadOrderCopy(rows), t`Load order copied`)
           }}

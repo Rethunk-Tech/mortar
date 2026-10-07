@@ -808,7 +808,7 @@ msgstr "Reorder {0}"
 msgid "{0, plural, one {Move # mod} other {Move # mods}}"
 msgstr "{0, plural, one {Move # mod} other {Move # mods}}"
 
-#: src/browse/BrowseBody.tsx:119
+#: src/browse/BrowseBody.tsx:128
 msgid "Find mods to add"
 msgstr "Find mods to add"
 
@@ -995,7 +995,7 @@ msgstr "Install by hand: {0}"
 msgid "Add to {targetName}"
 msgstr "Add to {targetName}"
 
-#: src/mods/LoadOrderTab.tsx:381
+#: src/mods/LoadOrderTab.tsx:380
 msgid "Enable mods in the Mods tab to see the order {loader} loads them."
 msgstr "Enable mods in the Mods tab to see the order {loader} loads them."
 
@@ -1749,13 +1749,13 @@ msgstr "Some mods could not be checked, so more updates may show up later."
 msgid "{path} depend on each other in a loop, so BepInEx stops before loading any plugin."
 msgstr "{path} depend on each other in a loop, so BepInEx stops before loading any plugin."
 
-#: src/browse/BrowseBody.tsx:131
+#: src/browse/BrowseBody.tsx:140
 #: src/firstrun/LoaderStep.tsx:199
 #: src/firstrun/LoaderStep.tsx:267
 #: src/game/detailStates.tsx:26
 #: src/lan/SendPanel.tsx:193
 #: src/launch/LaunchLayer.tsx:308
-#: src/mods/LoadOrderTab.tsx:373
+#: src/mods/LoadOrderTab.tsx:372
 #: src/mods/ModsTab.tsx:115
 #: src/mods/typedConfig/ConfigPane.tsx:170
 #: src/mods/updateReview/updateAll.ts:61
@@ -2004,6 +2004,10 @@ msgstr "Launch presets"
 msgid "{pickedName} is used after Save."
 msgstr "{pickedName} is used after Save."
 
+#: src/saves/SaveListRow.tsx:64
+msgid "Actions"
+msgstr "Actions"
+
 #: src/mods/ModMenu.tsx:212
 msgid "Add to bundle…"
 msgstr "Add to bundle…"
@@ -2115,7 +2119,7 @@ msgstr "Enter a name for the profile."
 msgid "Already has it"
 msgstr "Already has it"
 
-#: src/saves/SavesTab.tsx:123
+#: src/saves/SavesTab.tsx:115
 msgid "Filter saves"
 msgstr "Filter saves"
 
@@ -2150,7 +2154,7 @@ msgstr "This game has no compatibility list, so no mod is known to be broken."
 msgid "{0} (optional file)"
 msgstr "{0} (optional file)"
 
-#: src/mods/LoadOrderTab.tsx:210
+#: src/mods/LoadOrderTab.tsx:209
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr "The game loader chooses this order. Mortar does not change it."
 
@@ -2387,7 +2391,7 @@ msgstr "Not paired · only links"
 msgid "{0} {1}, year {2}"
 msgstr "{0} {1}, year {2}"
 
-#: src/mods/LoadOrderTab.tsx:253
+#: src/mods/LoadOrderTab.tsx:252
 msgid "Dependency cycle"
 msgstr "Dependency cycle"
 
@@ -2404,7 +2408,7 @@ msgstr "New profile"
 msgid "Repaired {name}"
 msgstr "Repaired {name}"
 
-#: src/mods/LoadOrderTab.tsx:197
+#: src/mods/LoadOrderTab.tsx:196
 msgid "Copy load order"
 msgstr "Copy load order"
 
@@ -2805,7 +2809,7 @@ msgstr "Ignore updates from {0}"
 msgid "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 msgstr "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 
-#: src/mods/LoadOrderTab.tsx:380
+#: src/mods/LoadOrderTab.tsx:379
 msgid "No enabled mods"
 msgstr "No enabled mods"
 
@@ -3636,7 +3640,7 @@ msgstr "Console"
 msgid "Try a different search or filter."
 msgstr "Try a different search or filter."
 
-#: src/browse/BrowseBody.tsx:128
+#: src/browse/BrowseBody.tsx:137
 msgid "Search did not work"
 msgstr "Search did not work"
 
@@ -4021,7 +4025,7 @@ msgstr "Apply"
 msgid "config.json, as the mod ships it"
 msgstr "config.json, as the mod ships it"
 
-#: src/mods/LoadOrderTab.tsx:262
+#: src/mods/LoadOrderTab.tsx:261
 msgid "The last launch loaded this here, not where its dependencies put it."
 msgstr "The last launch loaded this here, not where its dependencies put it."
 
@@ -5405,7 +5409,7 @@ msgstr "Clear finished"
 msgid "Enable {0}"
 msgstr "Enable {0}"
 
-#: src/saves/SavesTab.tsx:114
+#: src/saves/SavesTab.tsx:106
 msgid "Save backups…"
 msgstr "Save backups…"
 
@@ -5961,7 +5965,7 @@ msgstr "No settings match"
 msgid "Open the command palette"
 msgstr "Open the command palette"
 
-#: src/mods/LoadOrderTab.tsx:371
+#: src/mods/LoadOrderTab.tsx:370
 msgid "Could not read load order"
 msgstr "Could not read load order"
 
@@ -6469,7 +6473,7 @@ msgstr "What's new in {version}"
 msgid "Profiles already made from it are not changed."
 msgstr "Profiles already made from it are not changed."
 
-#: src/mods/LoadOrderTab.tsx:194
+#: src/mods/LoadOrderTab.tsx:193
 msgid "Load order copied"
 msgstr "Load order copied"
 
@@ -6642,7 +6646,7 @@ msgid "Chosen by you"
 msgstr "Chosen by you"
 
 #. placeholder {0}: result.hidden
-#: src/browse/BrowseBody.tsx:93
+#: src/browse/BrowseBody.tsx:116
 msgid "{0} hidden"
 msgstr "{0} hidden"
 
@@ -6953,7 +6957,7 @@ msgstr "imported from the game's Mods folder"
 msgid "View"
 msgstr "View"
 
-#: src/browse/BrowseBody.tsx:136
+#: src/browse/BrowseBody.tsx:145
 msgid "The service may be busy. Try again in a minute."
 msgstr "The service may be busy. Try again in a minute."
 
@@ -6993,7 +6997,7 @@ msgstr "config.json is deleted, and the mod writes a fresh one with its own defa
 msgid "Console log cap"
 msgstr "Console log cap"
 
-#: src/browse/BrowseBody.tsx:147
+#: src/browse/BrowseBody.tsx:156
 msgid "No mods match \"{text}\""
 msgstr "No mods match \"{text}\""
 
@@ -7678,7 +7682,7 @@ msgstr "Switch profile: {0} {mods}"
 
 #: src/game/Home.tsx:93
 #: src/saves/SaveDetails.tsx:54
-#: src/saves/SaveListRow.tsx:52
+#: src/saves/SaveListRow.tsx:87
 msgid "Summer"
 msgstr "Summer"
 
@@ -7932,7 +7936,7 @@ msgid "Add"
 msgstr "Add"
 
 #. placeholder {0}: fits.length
-#: src/saves/SavesTab.tsx:124
+#: src/saves/SavesTab.tsx:116
 msgid "{0, plural, one {Filter # save} other {Filter # saves}}"
 msgstr "{0, plural, one {Filter # save} other {Filter # saves}}"
 
@@ -8579,7 +8583,7 @@ msgstr "Keep the newest backups of each save and delete the rest. Pinned backups
 msgid "{0}: in Mortar"
 msgstr "{0}: in Mortar"
 
-#: src/mods/LoadOrderTab.tsx:250
+#: src/mods/LoadOrderTab.tsx:249
 msgid "These mods require each other."
 msgstr "These mods require each other."
 
@@ -8729,7 +8733,7 @@ msgstr "Last scheduled backup {when}"
 
 #: src/game/Home.tsx:93
 #: src/saves/SaveDetails.tsx:54
-#: src/saves/SaveListRow.tsx:52
+#: src/saves/SaveListRow.tsx:87
 msgid "Winter"
 msgstr "Winter"
 
@@ -8900,7 +8904,7 @@ msgstr "Stop the game first."
 
 #: src/game/Home.tsx:93
 #: src/saves/SaveDetails.tsx:54
-#: src/saves/SaveListRow.tsx:52
+#: src/saves/SaveListRow.tsx:87
 msgid "Spring"
 msgstr "Spring"
 
@@ -9391,7 +9395,7 @@ msgstr "Set as default"
 msgid "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
-#: src/saves/SaveListRow.tsx:31
+#: src/saves/SaveListRow.tsx:62
 msgid "Fits {name}"
 msgstr "Fits {name}"
 
@@ -9819,7 +9823,7 @@ msgstr "Retry all failed"
 msgid "Add it"
 msgstr "Add it"
 
-#: src/mods/LoadOrderTab.tsx:204
+#: src/mods/LoadOrderTab.tsx:203
 msgid "Filter load order"
 msgstr "Filter load order"
 
@@ -10879,7 +10883,7 @@ msgstr "Beach farm"
 #: src/mods/SelectionBar.tsx:38
 #: src/profiles/EditProfileDialog.tsx:488
 #: src/profiles/LaunchPresetDialog.tsx:96
-#: src/saves/SaveListRow.tsx:29
+#: src/saves/SaveListRow.tsx:56
 #: src/templates/TemplateDialogs.tsx:71
 #: src/tools/ToolEditorDialog.tsx:140
 msgid "Save"
@@ -11017,7 +11021,7 @@ msgid "Keep mine"
 msgstr "Keep mine"
 
 #. placeholder {0}: result.total
-#: src/browse/BrowseBody.tsx:92
+#: src/browse/BrowseBody.tsx:115
 msgid "{0, plural, one {# result} other {# results}}"
 msgstr "{0, plural, one {# result} other {# results}}"
 
@@ -11102,7 +11106,7 @@ msgstr "Changes from your other machines"
 msgid "{0} is not installed"
 msgstr "{0} is not installed"
 
-#: src/mods/LoadOrderTab.tsx:366
+#: src/mods/LoadOrderTab.tsx:365
 msgid "Reading load order…"
 msgstr "Reading load order…"
 
@@ -11543,6 +11547,7 @@ msgstr "Templates are shared by every profile of this game. Adding one copies it
 
 #: src/game/Home.tsx:95
 #: src/game/Sidebar.tsx:189
+#: src/saves/SaveListRow.tsx:41
 msgid "Saves"
 msgstr "Saves"
 
@@ -11605,7 +11610,7 @@ msgstr "This uploads the profile to Thunderstore and gives a public code."
 msgid "Move down (wins files)"
 msgstr "Move down (wins files)"
 
-#: src/browse/BrowseBody.tsx:150
+#: src/browse/BrowseBody.tsx:159
 msgid "Clear search"
 msgstr "Clear search"
 
@@ -12457,7 +12462,7 @@ msgstr "Clear"
 msgid "Handle links"
 msgstr "Handle links"
 
-#: src/saves/SaveListRow.tsx:30
+#: src/saves/SaveListRow.tsx:59
 #: src/settings/sections/StreamOverlay.tsx:64
 msgid "Season"
 msgstr "Season"
@@ -12671,11 +12676,11 @@ msgstr "Walk through profiles, Play, mods, and the command palette"
 
 #: src/game/Home.tsx:93
 #: src/saves/SaveDetails.tsx:54
-#: src/saves/SaveListRow.tsx:52
+#: src/saves/SaveListRow.tsx:87
 msgid "Fall"
 msgstr "Fall"
 
-#: src/browse/BrowseBody.tsx:154
+#: src/browse/BrowseBody.tsx:163
 msgid "Try fewer words, or the mod's exact name."
 msgstr "Try fewer words, or the mod's exact name."
 
@@ -12841,7 +12846,7 @@ msgstr "Went back to {when}"
 msgid "Download history"
 msgstr "Download history"
 
-#: src/mods/LoadOrderTab.tsx:266
+#: src/mods/LoadOrderTab.tsx:265
 msgid "Last launch"
 msgstr "Last launch"
 
@@ -13112,7 +13117,7 @@ msgstr "{0} ({1})"
 
 #. placeholder {0}: calendar.year
 #. placeholder {1}: seasons[calendar.season] ?? ''
-#: src/saves/SaveListRow.tsx:62
+#: src/saves/SaveListRow.tsx:108
 msgid "Year {0} {1}"
 msgstr "Year {0} {1}"
 

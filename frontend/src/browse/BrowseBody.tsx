@@ -85,28 +85,37 @@ function ResultList({
   view,
   card,
 }: Pick<BrowseBodyProps, 'result' | 'view' | 'card'> & { loading: boolean }) {
+  return (
+    <Box
+      sx={{ ...(view === 'grid' ? grid : list), opacity: loading ? STALE_OPACITY : 1 }}
+      onKeyDown={(e) => arrowFocus(e, ':scope > *', cardAction)}
+    >
+      {result.items.map((item) => (
+        <ResultCard key={`${item.source}:${item.id}`} row={view === 'list'} item={item} {...card} />
+      ))}
+    </Box>
+  )
+}
+
+// The bar under the results: how many there are, how many the Show rows hid and any source that did not answer.
+function ResultFooter({ result }: { result: BrowseResult }) {
   const { t } = useLingui()
   return (
-    <>
-      <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>
-        {plural(result.total, { one: '# result', other: '# results' })}
-        {result.hidden ? ` · ${t`${result.hidden} hidden`}` : ''}
-        {result.failed && result.failed.length > 0 ? ` · ${unreachableNote(result.failed)}` : ''}
-      </Typography>
-      <Box
-        sx={{ ...(view === 'grid' ? grid : list), opacity: loading ? STALE_OPACITY : 1 }}
-        onKeyDown={(e) => arrowFocus(e, ':scope > *', cardAction)}
-      >
-        {result.items.map((item) => (
-          <ResultCard
-            key={`${item.source}:${item.id}`}
-            row={view === 'list'}
-            item={item}
-            {...card}
-          />
-        ))}
-      </Box>
-    </>
+    <Typography
+      component="footer"
+      sx={{
+        flexShrink: 0,
+        px: 2,
+        py: 1,
+        fontSize: 13,
+        color: 'text.secondary',
+        borderTop: '1px solid var(--mortar-hairline-muted)',
+      }}
+    >
+      {plural(result.total, { one: '# result', other: '# results' })}
+      {result.hidden ? ` · ${t`${result.hidden} hidden`}` : ''}
+      {result.failed && result.failed.length > 0 ? ` · ${unreachableNote(result.failed)}` : ''}
+    </Typography>
   )
 }
 
@@ -175,4 +184,4 @@ function BrowseBody(props: BrowseBodyProps) {
   )
 }
 
-export { BrowseBody }
+export { BrowseBody, ResultFooter }
