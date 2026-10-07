@@ -192,7 +192,11 @@ func (s *Service) handleOutgoing(w http.ResponseWriter, r *http.Request) {
 		s.updateOutgoing(token, func(o *OutgoingTransfer) {
 			o.Current, o.Bytes, o.State = o.Total, o.TotalBytes, OutgoingDone
 		})
-	case OutgoingFailed, OutgoingCancelled:
+		s.revokeGrant(token)
+	case OutgoingCancelled:
+		s.updateOutgoing(token, func(o *OutgoingTransfer) { o.State, o.Reason = report.State, reason })
+		s.revokeGrant(token)
+	case OutgoingFailed:
 		s.updateOutgoing(token, func(o *OutgoingTransfer) { o.State, o.Reason = report.State, reason })
 	default:
 		http.Error(w, "unknown state", http.StatusBadRequest)
@@ -223,12 +227,15 @@ func (s *Service) entrySize(game, key string) int64 {
 }
 
 // countingWriter reports the bytes a served store entry has written.
+// Each write gets its own deadline, so only a puller that stops reading for idle is dropped.
 type countingWriter struct {
 	http.ResponseWriter
-	add func(int64)
+	add  func(int64)
+	idle time.Duration
 }
 
 func (w countingWriter) Write(p []byte) (int, error) {
+	_ = http.NewResponseController(w.ResponseWriter).SetWriteDeadline(time.Now().Add(w.idle))
 	n, err := w.ResponseWriter.Write(p)
 	w.add(int64(n))
 	return n, err

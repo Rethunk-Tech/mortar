@@ -50,6 +50,9 @@ const (
 	httpTimeout    = 5 * time.Second
 	nonceTTL       = time.Minute
 	transferTTL    = 5 * time.Minute
+	// storeIdle is how long a served store entry may make no progress before the connection is dropped; unlike the
+	// small request deadlines it bounds silence, not the whole stream, which can run for minutes.
+	storeIdle = time.Minute
 )
 
 // Arrival is a profile share received from another Mortar installation.
@@ -284,13 +287,7 @@ func (s *Service) start() error {
 		return fmt.Errorf("advertise LAN sharing: %w", err)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	server := &http.Server{
-		Handler:           s.handler(),
-		ReadHeaderTimeout: httpTimeout,
-		ReadTimeout:       httpTimeout,
-		WriteTimeout:      httpTimeout,
-		IdleTimeout:       httpTimeout,
-	}
+	server := newHTTPServer(s.handler())
 
 	s.mu.Lock()
 	if s.closed {
@@ -619,15 +616,36 @@ func (s *Service) rememberAddress(raw string) {
 	}
 }
 
+// newHTTPServer has no blanket read or write timeout: those would cut a long store stream, so each handler sets its
+// own deadline.
+func newHTTPServer(handler http.Handler) *http.Server {
+	return &http.Server{Handler: handler, ReadHeaderTimeout: httpTimeout, IdleTimeout: httpTimeout}
+}
+
 func (s *Service) handler() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/hello", s.handleHello)
-	mux.HandleFunc("/share", s.handleShare)
+	mux.HandleFunc("/hello", withDeadline(s.handleHello))
+	mux.HandleFunc("/share", withDeadline(s.handleShare))
 	mux.HandleFunc("/store/", s.handleStore)
-	mux.HandleFunc("/outgoing", s.handleOutgoing)
-	mux.HandleFunc("/pair/begin", s.handlePairBegin)
-	mux.HandleFunc("/pair/finish", s.handlePairFinish)
+	mux.HandleFunc("/outgoing", withDeadline(s.handleOutgoing))
+	mux.HandleFunc("/pair/begin", withDeadline(s.handlePairBegin))
+	mux.HandleFunc("/pair/finish", withDeadline(s.handlePairFinish))
 	return mux
+}
+
+// withDeadline bounds a small request's read and write, which the server no longer does for every handler; the
+// deadlines are cleared after, as the connection may serve a longer request next.
+func withDeadline(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		rc := http.NewResponseController(w)
+		_ = rc.SetReadDeadline(time.Now().Add(httpTimeout))
+		_ = rc.SetWriteDeadline(time.Now().Add(httpTimeout))
+		defer func() {
+			_ = rc.SetReadDeadline(time.Time{})
+			_ = rc.SetWriteDeadline(time.Time{})
+		}()
+		next(w, r)
+	}
 }
 
 func (s *Service) handleHello(w http.ResponseWriter, r *http.Request) {

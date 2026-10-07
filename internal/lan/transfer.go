@@ -185,7 +185,73 @@ func (s *Service) storeHas(game, key string) (bool, error) {
 	}
 }
 
+// fetchAttempts is how many times one store entry is tried before the pull fails.
+const fetchAttempts = 3
+
+// retryDelay is the pause after a failed attempt, growing with each one.
+var retryDelay = time.Second
+
+// refusedError is a sender's HTTP answer that is not a store stream; asking again gets the same answer.
+type refusedError struct {
+	sender string
+	status int
+}
+
+func (e refusedError) Error() string {
+	return fmt.Sprintf("%s refused to send a file (HTTP %d)", e.sender, e.status)
+}
+
+// retryable reports a failure a second try can fix: the connection dropping or stalling mid-entry.
+func retryable(err error) bool {
+	if errors.Is(err, context.Canceled) {
+		return false
+	}
+	if _, refused := errors.AsType[refusedError](err); refused {
+		return false
+	}
+	return usererr.KindOf(err) == usererr.Network
+}
+
 func (s *Service) fetchEntry(
+	ctx context.Context,
+	incoming incomingTransfer,
+	item transferItem,
+	id, current, total int,
+	bytes int64,
+	started time.Time,
+) (int64, error) {
+	var n int64
+	var err error
+	for attempt := 1; attempt <= fetchAttempts; attempt++ {
+		n, err = s.fetchOnce(ctx, incoming, item, id, current, total, bytes, started)
+		if err == nil || !retryable(err) || attempt == fetchAttempts {
+			return n, err
+		}
+		log.Printf("lan: retrying %s (%d/%d): %v", modName(item), attempt+1, fetchAttempts, err)
+		select {
+		case <-ctx.Done():
+			return 0, ctx.Err()
+		case <-time.After(time.Duration(attempt) * retryDelay):
+		}
+	}
+	return n, err
+}
+
+func modName(item transferItem) string { return cmp.Or(item.Package, "a file") }
+
+// installError names the step and the mod a receive failure stopped at, tagged with the cause the user can act on.
+func installError(step string, item transferItem, sender string, err error) error {
+	kind := usererr.Damaged
+	switch {
+	case usererr.IsDiskFull(err):
+		kind = usererr.DiskFull
+	case errors.Is(err, fs.ErrPermission):
+		kind = usererr.Permission
+	}
+	return usererr.Wrap(kind, fmt.Errorf("could not %s %s from %s: %w", step, modName(item), sender, err))
+}
+
+func (s *Service) fetchOnce(
 	ctx context.Context,
 	incoming incomingTransfer,
 	item transferItem,
@@ -205,6 +271,9 @@ func (s *Service) fetchEntry(
 	request.Header.Set("Authorization", "Bearer "+incoming.Token)
 	response, err := (&http.Client{}).Do(request)
 	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return 0, err
+		}
 		return 0, usererr.Wrap(usererr.Network, fmt.Errorf("%s went away before sending a file: %w", incoming.Sender, err))
 	}
 	defer func() { _ = response.Body.Close() }()
@@ -212,11 +281,11 @@ func (s *Service) fetchEntry(
 		return 0, errRemoteStoreEntryMissing
 	}
 	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
-		return 0, usererr.New(usererr.Network, fmt.Sprintf("%s refused to send a file (HTTP %d)", incoming.Sender, response.StatusCode))
+		return 0, usererr.Wrap(usererr.Network, refusedError{sender: incoming.Sender, status: response.StatusCode})
 	}
 	temp, err := os.MkdirTemp("", "mortar-lan-transfer-")
 	if err != nil {
-		return 0, err
+		return 0, installError("prepare room for", item, incoming.Sender, err)
 	}
 	defer func() { _ = fsx.RemoveAll(temp) }()
 	var received int64
@@ -235,21 +304,21 @@ func (s *Service) fetchEntry(
 	}
 	got, err := store.HashDir(temp)
 	if err != nil {
-		return 0, fmt.Errorf("check store entry %s: %w", key, err)
+		return 0, installError("check", item, incoming.Sender, err)
 	}
 	if item.Hash == "" || got != item.Hash {
-		return 0, usererr.New(usererr.Damaged, fmt.Sprintf("a file from %s arrived damaged: it does not match what they vouched for", incoming.Sender))
+		return 0, usererr.New(usererr.Damaged, fmt.Sprintf("%s from %s arrived damaged: it does not match what they vouched for", modName(item), incoming.Sender))
 	}
 	// The hash the sender vouched for is the check: a local key names the archive it came from, not this folder.
 	if err := s.deps.Store.AddDir(incoming.Game, key, temp); err != nil {
-		return 0, fmt.Errorf("install store entry %s: %w", key, err)
+		return 0, installError("install", item, incoming.Sender, err)
 	}
 	if item.Source != "" {
 		if err := s.deps.Store.Describe(incoming.Game, key, item.Source, item.Package, item.Version); err != nil {
-			return 0, fmt.Errorf("record store entry %s: %w", key, err)
+			return 0, installError("record", item, incoming.Sender, err)
 		}
 	}
-	log.Printf("lan: %s from %s", cmp.Or(item.Package, "a file"), incoming.Sender)
+	log.Printf("lan: %s from %s", modName(item), incoming.Sender)
 	return received, nil
 }
 
@@ -296,13 +365,35 @@ func (s *Service) handleStore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/x-tar")
-	counted := countingWriter{ResponseWriter: w, add: func(n int64) {
+	var written int64
+	counted := countingWriter{ResponseWriter: w, idle: storeIdle, add: func(n int64) {
+		written += n
 		s.updateOutgoing(token, func(o *OutgoingTransfer) { o.Bytes += n })
 	}}
+	// The grant slides while entries are being served, so a long pull outlives the first window.
+	defer s.touchGrant(token)
+	defer func() { _ = http.NewResponseController(w).SetWriteDeadline(time.Time{}) }()
 	if err := writeTar(r.Context(), counted, root); err != nil {
+		// The puller asks for this entry again, so what it did not get is not counted as sent.
+		s.updateOutgoing(token, func(o *OutgoingTransfer) { o.Bytes = max(0, o.Bytes-written) })
 		return
 	}
 	s.updateOutgoing(token, func(o *OutgoingTransfer) { o.Current++ })
+}
+
+func (s *Service) touchGrant(token string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if grant, ok := s.grants[token]; ok {
+		grant.Expires = time.Now().Add(transferTTL)
+		s.grants[token] = grant
+	}
+}
+
+func (s *Service) revokeGrant(token string) {
+	s.mu.Lock()
+	delete(s.grants, token)
+	s.mu.Unlock()
 }
 
 func (s *Service) grantAllows(token, game, key string) bool {
@@ -315,7 +406,12 @@ func (s *Service) grantAllows(token, game, key string) bool {
 		}
 	}
 	grant, ok := s.grants[token]
-	return ok && grant.Game == game && grant.Keys[key] && now.Before(grant.Expires)
+	allowed := ok && grant.Game == game && grant.Keys[key]
+	if allowed {
+		grant.Expires = now.Add(transferTTL)
+		s.grants[token] = grant
+	}
+	return allowed
 }
 
 func (s *Service) rememberGrant(token, game string, keys []string) {
