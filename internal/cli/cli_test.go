@@ -817,8 +817,9 @@ func TestAntivirusStatusPrintsTheScanner(t *testing.T) {
 func TestJSONErrorsCarryTheTypedDetail(t *testing.T) {
 	failing := func(string, control.Params, any, time.Duration) error {
 		return &controlwire.RemoteError{
-			Msg:    "[malware] the antivirus (AMSI) reports x",
+			Msg:    "store stardew/local-1: [malware] the antivirus (AMSI) reports x",
 			Detail: json.RawMessage(`{"scanner":"AMSI","removed":false}`),
+			Kind:   "malware",
 		}
 	}
 	var o, e bytes.Buffer

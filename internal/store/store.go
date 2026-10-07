@@ -433,7 +433,7 @@ func (s *Store) install(ctx context.Context, game, key, final string, fill func(
 		err = syncPath(parent)
 	}
 	if err != nil {
-		err = RealTimeBlock(game, err, tmp)
+		err = RealTimeBlock(game, key, err, tmp)
 		s.dropOverride(game, key)
 	}
 	if err != nil {

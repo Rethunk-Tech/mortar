@@ -100,7 +100,7 @@ func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 
 	err := controlwire.CallDir(dir, "flagged", Params{}, nil, time.Second)
 	var remote *controlwire.RemoteError
-	if !errors.As(err, &remote) || !strings.Contains(string(remote.Detail), `"scanner":"AMSI"`) {
+	if !errors.As(err, &remote) || remote.Kind != "malware" || !strings.Contains(string(remote.Detail), `"scanner":"AMSI"`) {
 		t.Fatalf("typed detail not passed back: %v", err)
 	}
 

@@ -138,7 +138,7 @@ func TestRealTimeBlockReportsAVirusErrnoAndAVanishedStagingFileAsMalware(t *test
 		"missing outside staging": {elsewhere, false},
 		"other error":             {errors.New("disk on fire"), false},
 	} {
-		got := RealTimeBlock("stardew", c.err, staging)
+		got := RealTimeBlock("stardew", "k1", c.err, staging)
 		var det *DetectedError
 		isMalware := usererr.KindOf(got) == usererr.Malware && errors.As(got, &det) && det.Removed && det.Scanner == RealTimeScanner && det.Name == ""
 		if isMalware != c.want {
@@ -154,7 +154,7 @@ func TestRealTimeBlockReportsAVirusErrnoAndAVanishedStagingFileAsMalware(t *test
 		t.Error("ENOENT is not a virus error")
 	}
 	already := usererr.Wrap(usererr.Malware, &DetectedError{Key: "k"})
-	if !errors.Is(RealTimeBlock("stardew", already, staging), already) {
+	if !errors.Is(RealTimeBlock("stardew", "k1", already, staging), already) {
 		t.Error("a detection already reported was rewrapped")
 	}
 }
@@ -191,5 +191,18 @@ func TestAnOverrideIsHandedOverOnlyWhenItsInstallSucceeds(t *testing.T) {
 	}
 	if _, ok := s.TakeOverride("stardew", "fine"); ok {
 		t.Fatal("an override was handed over twice")
+	}
+}
+
+func TestARealTimeRemovalDuringInstallKeepsItsMalwareKindAndKey(t *testing.T) {
+	s := newStore(t)
+	final := filepath.Join(s.root, "stardew", "gone")
+	fill := func(tmp string) error {
+		return &fs.PathError{Op: "open", Path: filepath.Join(tmp, "a.dll"), Err: fs.ErrNotExist}
+	}
+	err := s.install(t.Context(), "stardew", "gone", final, fill, func() int64 { return 0 })
+	var det *DetectedError
+	if usererr.KindOf(err) != usererr.Malware || !errors.As(err, &det) || !det.Removed || det.Key != "gone" || det.Game != "stardew" {
+		t.Fatalf("err = %v (kind %s, detection %+v)", err, usererr.KindOf(err), det)
 	}
 }

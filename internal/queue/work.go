@@ -345,7 +345,7 @@ func (s *Service) settle(id string, err error) {
 		s.mu.Unlock()
 		return
 	}
-	err = store.RealTimeBlock(it.Game, err, s.downloadRoot())
+	err = store.RealTimeBlock(it.Game, "", err, s.downloadRoot())
 	var limit *nexus.RateLimitError
 	var ghLimit *github.RateLimitError
 	var busy *source.BusyError

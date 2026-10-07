@@ -200,6 +200,9 @@ func (c *cmd) fail(err error) int {
 		kind = usererr.KindOf(err)
 		raw = err.Error()
 	}
+	if re, ok := errors.AsType[*controlwire.RemoteError](err); ok && re.Kind != "" && kind == usererr.Unknown {
+		kind = usererr.Kind(re.Kind)
+	}
 	if c.json {
 		out := map[string]any{"error": raw, "kind": string(kind), "code": code}
 		if re, ok := errors.AsType[*controlwire.RemoteError](err); ok && len(re.Detail) > 0 {

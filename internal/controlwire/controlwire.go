@@ -49,12 +49,15 @@ type Reply struct {
 	Error  string          `json:"error,omitempty"`
 	// Detail is the typed data the failure carries (usererr.Detailer), as the GUI reads it.
 	Detail json.RawMessage `json:"detail,omitempty"`
+	// Kind is the failure's usererr kind, which the text alone loses behind a prefix such as "store game/key: ".
+	Kind string `json:"kind,omitempty"`
 }
 
 // RemoteError is a failure the app reported: its text and the typed detail it carried.
 type RemoteError struct {
 	Msg    string
 	Detail json.RawMessage
+	Kind   string
 }
 
 func (e *RemoteError) Error() string { return e.Msg }
@@ -134,7 +137,7 @@ func CallDir(dir, method string, params, out any, timeout time.Duration) error {
 		return fmt.Errorf("control: reading the reply: %w", err)
 	}
 	if rep.Error != "" {
-		return &RemoteError{Msg: rep.Error, Detail: rep.Detail}
+		return &RemoteError{Msg: rep.Error, Detail: rep.Detail, Kind: rep.Kind}
 	}
 	if out == nil || len(rep.Result) == 0 {
 		return nil

@@ -147,6 +147,9 @@ func serveConn(ctx context.Context, conn net.Conn, token, version string, h Hand
 	}
 	if err != nil {
 		rep := controlwire.Reply{Error: err.Error()}
+		if k := usererr.KindOf(err); k != usererr.Unknown {
+			rep.Kind = string(k)
+		}
 		if d := usererr.DetailOf(err); d != nil {
 			rep.Detail, _ = json.Marshal(d)
 		}
