@@ -3,7 +3,7 @@ import { lazy, Suspense } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { BrowseHost } from '../browse/BrowseHost.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
-import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
+import { ProblemsTab } from '../mods/ProblemsTab.tsx'
 import { usePasteLink } from '../share/usePasteLink.ts'
 import { ErrorBoundary } from '../shell/ErrorBoundary.tsx'
 import { Home } from './Home.tsx'
@@ -36,21 +36,6 @@ export function ProfileWorkspace({
     <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
       {tab === 'home' ? (
         <Home key={`home-${profile.id}`} profile={profile} game={game} gameName={gameName} />
-      ) : null}
-      {tab === 'problems' ? (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            minHeight: 44,
-            px: 2,
-            borderBottom: '1px solid var(--mortar-hairline)',
-            flexShrink: 0,
-          }}
-        >
-          <ProblemActions />
-        </Box>
       ) : null}
       <ErrorBoundary resetKey={`${tab}-${profile.id}`}>
         <Suspense fallback={null}>

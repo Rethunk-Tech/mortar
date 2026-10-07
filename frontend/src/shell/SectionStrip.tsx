@@ -1,19 +1,21 @@
 import { Box, ToggleButton, ToggleButtonGroup } from '@mui/material'
-import type { KeyboardEvent } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 import { type SectionTab, stepSection } from '../mods/problemSection.ts'
 
-// The Problems tab's header row: an exclusive segment per section with its count. Nothing else shares the row, so
-// segment widths stay the same whichever section is chosen. Left and Right move between segments.
+// The Problems tab's header row: an exclusive segment per section with its count, scrolling sideways when they do not
+// fit beside the row's actions. Left and Right move between segments.
 export function SectionStrip({
   tabs,
   current,
   onChoose,
   label,
+  actions,
 }: {
   tabs: readonly SectionTab[]
   current: string
   onChoose: (id: string) => void
   label: string
+  actions: ReactNode
 }) {
   const onKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     const delta = { ArrowLeft: -1, ArrowRight: 1 }[e.key]
@@ -29,6 +31,7 @@ export function SectionStrip({
     <Box
       sx={{
         display: 'flex',
+        alignItems: 'center',
         bgcolor: 'var(--mortar-panel)',
         borderBottom: '1px solid var(--mortar-hairline)',
       }}
@@ -46,9 +49,10 @@ export function SectionStrip({
         sx={{
           flex: 1,
           minWidth: 0,
+          overflowX: 'auto',
+          scrollbarWidth: 'thin',
           '& .MuiToggleButton-root': {
-            flex: '1 1 auto',
-            minWidth: 0,
+            flex: '1 0 auto',
             whiteSpace: 'nowrap',
             gap: 1,
             border: 0,
@@ -74,13 +78,7 @@ export function SectionStrip({
             data-section={tab.id}
             tabIndex={tab.id === current ? 0 : -1}
           >
-            <Box
-              component="span"
-              sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
-              title={tab.label}
-            >
-              {tab.label}
-            </Box>
+            <Box component="span">{tab.label}</Box>
             <Box
               component="span"
               sx={{
@@ -97,6 +95,7 @@ export function SectionStrip({
           </ToggleButton>
         ))}
       </ToggleButtonGroup>
+      <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, px: 1 }}>{actions}</Box>
     </Box>
   )
 }

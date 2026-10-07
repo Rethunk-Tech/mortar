@@ -184,7 +184,7 @@ msgid "Where it came in one download with other mods, it is disabled instead."
 msgstr "Where it came in one download with other mods, it is disabled instead."
 
 #: src/saves/BackupsDialog.tsx:211
-#: src/saves/SaveBackupsSection.tsx:57
+#: src/saves/SaveBackupsButton.tsx:57
 msgid "Allow cleanup"
 msgstr "Allow cleanup"
 
@@ -2070,7 +2070,7 @@ msgstr "More actions for {0}"
 msgid "Update mods before Play"
 msgstr "Update mods before Play"
 
-#: src/saves/SaveBackupsSection.tsx:53
+#: src/saves/SaveBackupsButton.tsx:53
 msgid " · {cause} · {size} · Kept"
 msgstr " · {cause} · {size} · Kept"
 
@@ -2598,7 +2598,7 @@ msgstr "{gameName} save backups"
 msgid "Unofficial update"
 msgstr "Unofficial update"
 
-#: src/mods/ProblemsTab.tsx:311
+#: src/mods/ProblemsTab.tsx:310
 msgid "No problems to copy."
 msgstr "No problems to copy."
 
@@ -2760,7 +2760,7 @@ msgstr "Dismissed folders"
 msgid "Ignore updates from {0}"
 msgstr "Ignore updates from {0}"
 
-#: src/saves/SaveBackupsSection.tsx:154
+#: src/saves/SaveBackupsButton.tsx:154
 msgid "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 msgstr "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 
@@ -2769,7 +2769,7 @@ msgid "No enabled mods"
 msgstr "No enabled mods"
 
 #: src/mods/ProblemsTab.tsx:135
-#: src/mods/ProblemsTab.tsx:348
+#: src/mods/ProblemsTab.tsx:347
 msgid "Cleanup"
 msgstr "Cleanup"
 
@@ -3688,6 +3688,10 @@ msgstr "Computer paired"
 msgid "Default launch preset"
 msgstr "Default launch preset"
 
+#: src/mods/SlowStartupSection.tsx:83
+msgid "Checked just now"
+msgstr "Checked just now"
+
 #: src/mods/CategoryEditor.tsx:120
 msgid "Custom categories"
 msgstr "Custom categories"
@@ -3702,8 +3706,8 @@ msgstr "Custom categories"
 #: src/profiles/LaunchPresetsBlock.tsx:53
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:64
 #: src/profiles/ProfilesPage.tsx:171
-#: src/saves/SaveBackupsSection.tsx:70
-#: src/saves/SaveBackupsSection.tsx:148
+#: src/saves/SaveBackupsButton.tsx:70
+#: src/saves/SaveBackupsButton.tsx:148
 #: src/settings/prefCopy.ts:258
 #: src/settings/sections/DataStoreReport.tsx:414
 #: src/settings/sections/DataStoreReport.tsx:421
@@ -4211,7 +4215,7 @@ msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
 #: src/mods/CleanupSection.tsx:66
-#: src/mods/ProblemsTab.tsx:352
+#: src/mods/ProblemsTab.tsx:351
 msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
@@ -4225,7 +4229,7 @@ msgstr "In progress ({0})"
 msgid "Choose your {0} folder"
 msgstr "Choose your {0} folder"
 
-#: src/saves/SaveBackupsSection.tsx:53
+#: src/saves/SaveBackupsButton.tsx:53
 msgid " · {cause} · {size}"
 msgstr " · {cause} · {size}"
 
@@ -4331,7 +4335,7 @@ msgstr "Skip every waiting download"
 msgid "{names} seems to cause the crash"
 msgstr "{names} seems to cause the crash"
 
-#: src/mods/ProblemsTab.tsx:260
+#: src/mods/ProblemsTab.tsx:259
 msgid "Dismiss all harmless overlaps?"
 msgstr "Dismiss all harmless overlaps?"
 
@@ -4717,7 +4721,7 @@ msgstr "Take Nexus links from {0}?"
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
-#: src/mods/ProblemsTab.tsx:261
+#: src/mods/ProblemsTab.tsx:260
 msgid "They move to Dismissed. Restore them from that section."
 msgstr "They move to Dismissed. Restore them from that section."
 
@@ -4813,7 +4817,7 @@ msgstr "Library"
 msgid "Connection"
 msgstr "Connection"
 
-#: src/mods/ProblemsTab.tsx:370
+#: src/mods/ProblemsTab.tsx:369
 msgid "Harmless"
 msgstr "Harmless"
 
@@ -5263,7 +5267,8 @@ msgstr "Report a bug…"
 msgid "Read the release notes on GitHub"
 msgstr "Read the release notes on GitHub"
 
-#: src/mods/ProblemsTab.tsx:217
+#: src/mods/ProblemsTab.tsx:216
+#: src/mods/ProblemsTab.tsx:392
 msgid "Problem sections"
 msgstr "Problem sections"
 
@@ -5483,7 +5488,7 @@ msgid "Lavender"
 msgstr "Lavender"
 
 #: src/mods/ProblemsTab.tsx:123
-#: src/mods/ProblemsTab.tsx:361
+#: src/mods/ProblemsTab.tsx:360
 msgid "Redundant"
 msgstr "Redundant"
 
@@ -5786,7 +5791,7 @@ msgstr "Retry failed"
 msgid "Zoom ({value}%)"
 msgstr "Zoom ({value}%)"
 
-#: src/saves/SaveBackupsSection.tsx:70
+#: src/saves/SaveBackupsButton.tsx:70
 msgid "Allow cleanup before deleting."
 msgstr "Allow cleanup before deleting."
 
@@ -5982,7 +5987,7 @@ msgid "Disable it and play"
 msgstr "Disable it and play"
 
 #: src/saves/BackupsDialog.tsx:211
-#: src/saves/SaveBackupsSection.tsx:57
+#: src/saves/SaveBackupsButton.tsx:57
 msgid "Keep forever"
 msgstr "Keep forever"
 
@@ -6035,7 +6040,7 @@ msgid "Download progress for {0}"
 msgstr "Download progress for {0}"
 
 #: src/mods/ProblemsTab.tsx:189
-#: src/mods/ProblemsTab.tsx:262
+#: src/mods/ProblemsTab.tsx:261
 msgid "Dismiss all"
 msgstr "Dismiss all"
 
@@ -6329,7 +6334,7 @@ msgstr "{optional, plural, one {# optional file will be re-applied; check it sti
 msgid "This download's mod is not known to come from {0}."
 msgstr "This download's mod is not known to come from {0}."
 
-#: src/saves/SaveBackupsSection.tsx:128
+#: src/saves/SaveBackupsButton.tsx:128
 msgid "No backup contains this save yet."
 msgstr "No backup contains this save yet."
 
@@ -6867,7 +6872,7 @@ msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
 #: src/mods/AssetMapDialog.tsx:228
-#: src/mods/ProblemsTab.tsx:300
+#: src/mods/ProblemsTab.tsx:299
 msgid "Asset map"
 msgstr "Asset map"
 
@@ -7689,7 +7694,7 @@ msgstr "Added {name}"
 msgid "Optional"
 msgstr "Optional"
 
-#: src/saves/SaveBackupsSection.tsx:123
+#: src/saves/SaveBackupsButton.tsx:123
 msgid "Backups"
 msgstr "Backups"
 
@@ -8361,7 +8366,7 @@ msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:63
 #: src/mods/ProblemsTab.tsx:109
-#: src/mods/ProblemsTab.tsx:368
+#: src/mods/ProblemsTab.tsx:367
 msgid "Compatibility"
 msgstr "Compatibility"
 
@@ -9338,7 +9343,7 @@ msgid "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
 #: src/console/PerformancePanel.tsx:150
-#: src/mods/ProblemsTab.tsx:376
+#: src/mods/ProblemsTab.tsx:375
 #: src/mods/ReportToAuthorButton.tsx:175
 #: src/settings/sections/AboutDiagnostics.tsx:139
 msgid "Report copied"
@@ -9541,7 +9546,7 @@ msgid "{names} can't be reached; nothing saved to show yet"
 msgstr "{names} can't be reached; nothing saved to show yet"
 
 #: src/console/PerformancePanelParts.tsx:213
-#: src/mods/ProblemsTab.tsx:308
+#: src/mods/ProblemsTab.tsx:307
 #: src/settings/sections/AboutDiagnostics.tsx:221
 msgid "Copy report"
 msgstr "Copy report"
@@ -10583,7 +10588,7 @@ msgstr "Details of {0}"
 msgid "Carry them into the new version's folder."
 msgstr "Carry them into the new version's folder."
 
-#: src/saves/SaveBackupsSection.tsx:147
+#: src/saves/SaveBackupsButton.tsx:147
 msgid "Delete this backup?"
 msgstr "Delete this backup?"
 
@@ -10877,7 +10882,7 @@ msgstr "Standard"
 msgid "Could not disable the other copy of {0}"
 msgstr "Could not disable the other copy of {0}"
 
-#: src/saves/SaveBackupsSection.tsx:153
+#: src/saves/SaveBackupsButton.tsx:153
 msgid "The backup from {when} is deleted for good, with every save in it."
 msgstr "The backup from {when} is deleted for good, with every save in it."
 
@@ -10933,7 +10938,7 @@ msgid "Token"
 msgstr "Token"
 
 #: src/mods/ProblemBar.tsx:64
-#: src/mods/ProblemsTab.tsx:392
+#: src/mods/ProblemsTab.tsx:399
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -11189,7 +11194,7 @@ msgid "First profile"
 msgstr "First profile"
 
 #. placeholder {0}: formatDuration(total, i18n.locale)
-#: src/mods/SlowStartupSection.tsx:82
+#: src/mods/SlowStartupSection.tsx:81
 msgid "Checked in {0}: {parts}"
 msgstr "Checked in {0}: {parts}"
 
@@ -11234,7 +11239,7 @@ msgid "Mortar backs up your saves before playing and before updates. Use Back up
 msgstr "Mortar backs up your saves before playing and before updates. Use Back up now on a save to make one yourself."
 
 #: src/saves/BackupsDialog.tsx:109
-#: src/saves/SaveBackupsSection.tsx:63
+#: src/saves/SaveBackupsButton.tsx:63
 msgid "Stop the game to restore saves."
 msgstr "Stop the game to restore saves."
 
@@ -11332,7 +11337,7 @@ msgstr "{0, plural, one {Keep {1} and remove {2}.} other {Keep {3} and remove # 
 msgid "{count, plural, one {# update is available} other {# updates are available}}"
 msgstr "{count, plural, one {# update is available} other {# updates are available}}"
 
-#: src/saves/SaveBackupsSection.tsx:147
+#: src/saves/SaveBackupsButton.tsx:147
 msgid "Restore {label} to {when}?"
 msgstr "Restore {label} to {when}?"
 
@@ -11580,7 +11585,7 @@ msgstr "Until the game's first scene has loaded"
 #: src/mods/EnableRequirementsDialog.tsx:55
 #: src/mods/LoadOrderTab.tsx:60
 #: src/mods/LoadOrderTab.tsx:99
-#: src/mods/ProblemsTab.tsx:351
+#: src/mods/ProblemsTab.tsx:350
 msgid "Unknown mod"
 msgstr "Unknown mod"
 
@@ -11669,7 +11674,7 @@ msgstr "{gameName} crashed"
 msgid "{names} can't be reached; showing what Mortar saved ({asOf})"
 msgstr "{names} can't be reached; showing what Mortar saved ({asOf})"
 
-#: src/mods/ProblemsTab.tsx:240
+#: src/mods/ProblemsTab.tsx:239
 msgid "No problems found"
 msgstr "No problems found"
 
@@ -12890,8 +12895,8 @@ msgstr "Installers ask as usual; Premium accounts also get the curator's choices
 #: src/mods/problemFixButtons.tsx:218
 #: src/profiles/HistoryEventRow.tsx:72
 #: src/saves/BackupsDialog.tsx:247
-#: src/saves/SaveBackupsSection.tsx:63
-#: src/saves/SaveBackupsSection.tsx:148
+#: src/saves/SaveBackupsButton.tsx:63
+#: src/saves/SaveBackupsButton.tsx:148
 #: src/shell/TitleBar.tsx:111
 msgid "Restore"
 msgstr "Restore"
@@ -13249,7 +13254,7 @@ msgstr "{downloading, plural, one {# downloading} other {# downloading}} · {wai
 msgid "1 time"
 msgstr "1 time"
 
-#: src/mods/ProblemsTab.tsx:242
+#: src/mods/ProblemsTab.tsx:241
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 
@@ -13260,7 +13265,7 @@ msgid "Launch"
 msgstr "Launch"
 
 #: src/saves/BackupsDialog.tsx:165
-#: src/saves/SaveBackupsSection.tsx:125
+#: src/saves/SaveBackupsButton.tsx:125
 msgid "Reading backups…"
 msgstr "Reading backups…"
 

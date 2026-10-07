@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, Tooltip, Typography } from '@mui/material'
 import type { CheckTiming } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { formatDuration, type SlowStartup } from '../console/startupView.ts'
 import { useTab } from '../game/tab.ts'
@@ -78,9 +78,11 @@ export function CheckTimings({ timings }: { timings: CheckTiming[] }) {
     .map((x) => `${labels[x.name] ?? x.name} ${formatDuration(x.ms, i18n.locale)}`)
     .join(', ')
   return (
-    <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-      {t`Checked in ${formatDuration(total, i18n.locale)}: ${parts}`}
-    </Typography>
+    <Tooltip title={t`Checked in ${formatDuration(total, i18n.locale)}: ${parts}`}>
+      <Typography sx={{ fontSize: 12, color: 'text.secondary', width: 'fit-content' }}>
+        {t`Checked just now`}
+      </Typography>
+    </Tooltip>
   )
 }
 

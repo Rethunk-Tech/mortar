@@ -116,7 +116,6 @@ A left sidebar and a detail pane:
     - **At a glance:** the mod count, the update count (opens the update review) and the problem count (opens Problems; **No problems** at zero; absent until first read), and a muted "Created <date> · Updated <relative>" line, and **Last played** (**Not played yet**).
     - **Changes since last run** (two columns, only when there are changes): the first three lines, **Show all** (when there are more) and **History…**.
     - **Saves:** up to four saves, newest first, as "name · Year N Season" (name only for a save without a calendar), then **All saves** (with "N more" when cut) opening the Saves tab.
-  - The Problems section has a slim row above its content with its own actions; no other section has one.
 - **Launching** covers the whole window with the launch overlay, the title bar inert except its window controls:
   - a spinner, "Launching Stardew Valley", and SMAPI's first log lines as they arrive (started, mods loading, mods it will skip), with Open console and Hide, until the game is up or the launch fails
   - a launch where SMAPI exits without writing a log fails with its exit code
@@ -239,7 +238,7 @@ Finds mods to add to the open profile. The toolbar matches the Mods tab: the gri
 
 ## Problems tab
 
-A full-height tab holding one section of the profile's problems at a time. A **section strip** runs across its top, full width: one exclusive segment per section that has something in it, each with its label and count, the chosen one filled in the primary colour. Left and Right move between segments (only the chosen one is in the tab order). The strip never shows an empty section.
+A full-height tab holding one section of the profile's problems at a time. A **section strip** runs across its top, full width and with no header row above it: one exclusive segment per section that has something in it, each with its label and count, the chosen one filled in the primary colour. The segments scroll sideways when they do not fit; the **Asset map** and **Copy report** icon buttons end the same row, vertically centred, and never overlap the segments. Left and Right move between segments (only the chosen one is in the tab order). The strip never shows an empty section.
 
 - **Which section shows:** the first section that holds something broken (missing requirements, broken mods, damaged files, errors in the last run, failed plugins, plugins shipped twice), else the first section with anything. A choice is remembered for each profile while Mortar runs, and counts only while its section still exists.
 - **Section action:** the chosen section's own action sits at the end of the strip's row: **Add all N** on missing requirements (off while the queue call is in flight) and **Dismiss all** on cosmetic overlaps, which asks first.
@@ -271,6 +270,7 @@ While the tab is open, the tab row holds an **Asset map** icon button and **Copy
 - **Copy report** a plain-text count of problems by section, each row's sentence, each conflict's **Why?** keys, Dismissed, Cleanup, Redundant, Compatibility, and the harmless count.
 - Empty or still loading: the disabled tooltip is **No problems to copy.** **Add all** on missing requirements disables while the queue call is in flight.
 - **Dismiss all** on cosmetic overlaps asks first.
+- Under the section body a muted **Checked just now** line carries the check timings by family in its tooltip ("Checked in 626 ms: requirements 89 ms, ...").
 
 Each row shows the full wrapped text, severity icon, the Nexus author note when a listed requirement has one, and its fix actions.
 

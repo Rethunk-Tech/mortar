@@ -212,14 +212,13 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
 
   return (
     <>
-      {tabs.length > 0 ? (
-        <SectionStrip
-          label={t`Problem sections`}
-          tabs={tabs}
-          current={current}
-          onChoose={(id) => choose(openId, id)}
-        />
-      ) : null}
+      <SectionStrip
+        label={t`Problem sections`}
+        tabs={tabs}
+        current={current}
+        onChoose={(id) => choose(openId, id)}
+        actions={<ProblemActions />}
+      />
       <Box
         sx={{
           flex: empty ? 1 : '0 0 auto',
@@ -273,7 +272,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
   )
 }
 
-// ProblemActions sits in the profile's tab row while the Problems tab is open, like the Console's log actions.
+// ProblemActions ends the section strip's row.
 function ProblemActions() {
   const { t } = useLingui()
   const result = useOpenProblems()
@@ -388,15 +387,24 @@ function ProblemsTab() {
   useLoadProblemsOnFocus()
   if (result === null) {
     return (
-      <SkeletonRows
-        label={t`Checking the mods for problems…`}
-        count={PROBLEM_SKELETON_ROWS}
-        height={PROBLEM_SKELETON_HEIGHT}
-        sx={{ px: 2, py: 1.5 }}
-      />
+      <>
+        <SectionStrip
+          label={t`Problem sections`}
+          tabs={[]}
+          current=""
+          onChoose={() => undefined}
+          actions={<ProblemActions />}
+        />
+        <SkeletonRows
+          label={t`Checking the mods for problems…`}
+          count={PROBLEM_SKELETON_ROWS}
+          height={PROBLEM_SKELETON_HEIGHT}
+          sx={{ px: 2, py: 1.5 }}
+        />
+      </>
     )
   }
   return <ProblemsContent result={result} />
 }
 
-export { ProblemActions, ProblemsTab }
+export { ProblemsTab }
