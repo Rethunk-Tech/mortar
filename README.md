@@ -12,7 +12,7 @@ Mortar is a desktop mod manager, built for more than one game. It finds your gam
 
 The games Mortar supports come from its catalog: Stardew Valley, Lethal Company and Valheim, with mods from Nexus Mods, GitHub and Thunderstore. Mortar succeeds [Concrete](https://github.com/LethalModding/Concrete).
 
-<p align="center"><img src="build/linux/screenshots/mods.png" alt="Mortar showing a Stardew Valley profile of 817 mods with cover art" width="900"></p>
+<p align="center"><img src="build/linux/screenshots/mods.png" alt="Mortar showing a Stardew Valley profile of 805 mods with cover art" width="900"></p>
 
 ## Getting started
 

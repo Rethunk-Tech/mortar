@@ -5,6 +5,10 @@ import { chromium, type Page } from '@playwright/test'
 // Headless screenshots of the main screens, for a person whose own browser cannot capture the sandbox. Not a spec:
 //   bun frontend/e2e/screens.ts --url http://127.0.0.1:9455 --out /var/tmp/screens
 // A screen whose controls are not found is skipped with a note.
+// --set site instead writes the product screenshots the site, README and Linux metainfo cite (site/img, build/linux/screenshots),
+// each at its own size, as PNGs in --out; convert with
+//   for f in $out/*.png; do cwebp -q 82 $f -o site/img/$(basename $f .png).webp; done
+// and copy mods, problems, performance and settings to build/linux/screenshots as PNG.
 
 const arg = (name: string, fallback: string) => {
   const i = process.argv.indexOf(`--${name}`)
@@ -19,6 +23,17 @@ const written: string[] = []
 const skipped: string[] = []
 
 async function settle(page: Page) {
+  await page.evaluate(() => document.fonts.ready)
+  await page.waitForFunction(
+    () =>
+      [...document.images].every((img) => {
+        const r = img.getBoundingClientRect()
+        const offscreen = r.bottom < 0 || r.top > innerHeight || r.right < 0 || r.left > innerWidth
+        return offscreen || (img.complete && img.naturalWidth > 0)
+      }),
+    undefined,
+    { timeout: 15_000 },
+  )
   await page.waitForTimeout(SETTLE_MS)
 }
 
@@ -73,7 +88,171 @@ async function configOf(page: Page, mod: RegExp) {
     .click({ timeout: STEP_MS })
 }
 
+interface Scene {
+  name: string
+  width: number
+  height: number
+  pad?: boolean
+  profile?: { game: string; name: string }
+  steps: (page: Page) => Promise<void>
+}
+
+const DESK = { width: 1280, height: 800 }
+const WIDE = { width: 1400, height: 840 }
+
+// The sandbox remembers the last opened profile, so each scene names the one it needs.
+async function openNamedProfile(page: Page, game: string, name: string) {
+  const gameButton = page.getByRole('button', { name: /^Switch game/ })
+  await gameButton.waitFor({ timeout: STEP_MS })
+  if (!(await gameButton.getAttribute('aria-label'))?.includes(game)) {
+    await gameButton.click()
+    await click(page, 'menuitemradio', game)
+  }
+  await click(page, 'button', /^Switch profile/)
+  await click(page, 'menuitemradio', new RegExp(`^${name} ·`))
+  await page.getByRole('tab', { name: 'Mods' }).waitFor({ timeout: STEP_MS })
+}
+
+async function settings(page: Page, section: string) {
+  await click(page, 'button', 'Mortar menu')
+  await click(page, 'menuitem', /^Mortar settings/)
+  await click(page, 'button', section)
+}
+
+const STARDEW = { game: 'Stardew Valley', name: 'Main' }
+const LETHAL = { game: 'Lethal Company', name: 'Main' }
+
+// Steam Deck mode is the roomy theme a gamepad's first press turns on, so the scene drives a fake standard-mapping pad.
+const DPAD_DOWN = 13
+const FAKE_PAD = `
+  window.padDown = -1
+  navigator.getGamepads = () => [{
+    connected: true,
+    axes: [0, 0],
+    buttons: Array.from({ length: 17 }, (_, i) => ({ pressed: i === window.padDown })),
+  }]
+`
+
+async function padPress(page: Page, button: number) {
+  await page.evaluate((b) => {
+    ;(globalThis as unknown as { padDown: number }).padDown = b
+  }, button)
+  await page.waitForTimeout(150)
+  await page.evaluate(() => {
+    ;(globalThis as unknown as { padDown: number }).padDown = -1
+  })
+  await page.waitForTimeout(150)
+}
+
+const SITE: Scene[] = [
+  { name: 'games', ...WIDE, steps: openGameSelect },
+  { name: 'profile', ...DESK, profile: STARDEW, steps: (page) => click(page, 'tab', 'Home') },
+  {
+    name: 'mods',
+    ...DESK,
+    profile: STARDEW,
+    steps: async (page) => {
+      await click(page, 'tab', 'Mods')
+      await click(page, 'button', /^Details of Stardew Valley Expanded/)
+      await page
+        .getByRole('button', { name: 'Pin this version' })
+        .or(page.getByRole('button', { name: 'Pin version' }))
+        .first()
+        .waitFor({ timeout: STEP_MS })
+    },
+  },
+  { name: 'lethal-company', ...WIDE, profile: LETHAL, steps: (page) => click(page, 'tab', 'Mods') },
+  {
+    name: 'thunderstore',
+    ...WIDE,
+    profile: LETHAL,
+    steps: async (page) => {
+      await click(page, 'tab', 'Browse')
+      await click(page, 'button', /^Thunderstore/)
+      await page
+        .getByText(/results/)
+        .first()
+        .waitFor({ timeout: 20_000 })
+    },
+  },
+  {
+    name: 'problems',
+    ...DESK,
+    profile: STARDEW,
+    steps: async (page) => {
+      await click(page, 'tab', 'Problems')
+      await click(page, 'button', 'Why?')
+    },
+  },
+  {
+    name: 'performance',
+    ...DESK,
+    profile: STARDEW,
+    steps: (page) => click(page, 'tab', 'Performance'),
+  },
+  {
+    name: 'deck',
+    ...DESK,
+    pad: true,
+    steps: async (page) => {
+      await openGameSelect(page)
+      await page.evaluate(() => dispatchEvent(new Event('gamepadconnected')))
+      await padPress(page, DPAD_DOWN)
+      await page
+        .getByRole('button', { name: /Lethal Company/ })
+        .first()
+        .focus()
+    },
+  },
+  {
+    name: 'pairing',
+    ...WIDE,
+    profile: STARDEW,
+    steps: async (page) => {
+      await settings(page, 'General')
+      await click(page, 'button', 'Pair a computer')
+      await page
+        .getByRole('dialog')
+        .getByText(/works once/)
+        .waitFor({ timeout: STEP_MS })
+    },
+  },
+  { name: 'settings', ...DESK, profile: STARDEW, steps: (page) => settings(page, 'Appearance') },
+]
+
+async function siteShots() {
+  mkdirSync(out, { recursive: true })
+  const browser = await chromium.launch()
+  for (const scene of SITE) {
+    const context = await browser.newContext({
+      viewport: { width: scene.width, height: scene.height },
+      colorScheme: 'dark',
+    })
+    const page = await context.newPage()
+    if (scene.pad) {
+      await page.addInitScript(FAKE_PAD)
+    }
+    await shot(page, scene.name, async () => {
+      await start(page)
+      if (scene.profile) {
+        await openNamedProfile(page, scene.profile.game, scene.profile.name)
+      }
+      await scene.steps(page)
+      await page.mouse.move(scene.width / 2, 8)
+    })
+    await context.close()
+  }
+  await browser.close()
+  console.log(`wrote ${written.length}:\n${written.join('\n')}`)
+  if (skipped.length > 0) {
+    console.log(`skipped ${skipped.length}:\n${skipped.join('\n')}`)
+  }
+}
+
 async function main() {
+  if (arg('set', 'default') === 'site') {
+    return siteShots()
+  }
   mkdirSync(out, { recursive: true })
   const browser = await chromium.launch()
   const page = await (
