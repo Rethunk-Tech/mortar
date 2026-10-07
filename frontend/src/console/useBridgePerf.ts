@@ -10,6 +10,8 @@ import { reportError } from '../toasts/report.ts'
 import { formatTiming } from './formatTiming.ts'
 import type { PanelBusy } from './usePerformancePanel.ts'
 
+const PERCENT = 100
+
 const MAX_SAVED_REPORTS = 20
 
 /** The in-game measurement a loader's companion answers for as data (BepInEx): start it, then read a summary, which
@@ -78,7 +80,7 @@ export function useBridgePerf(opts: {
               r.averageMs,
               r.p95Ms ?? 0,
               r.peakMs,
-              `${((r.share ?? 0) * 100).toFixed(1)}%`,
+              `${((r.share ?? 0) * PERCENT).toFixed(1)}%`,
               r.calls,
             ]
               .map((v) => (typeof v === 'number' ? formatTiming(v, i18n.locale) : v))

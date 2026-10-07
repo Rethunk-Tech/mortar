@@ -32,8 +32,10 @@ function callsLabel(value: number, locale: string) {
   return Number.isInteger(value) ? value.toLocaleString(locale) : formatTiming(value, locale)
 }
 
+const PERCENT = 100
+
 function percentLabel(share: number, locale: string) {
-  return `${(share * 100).toLocaleString(locale, { maximumFractionDigits: 1 })}%`
+  return `${(share * PERCENT).toLocaleString(locale, { maximumFractionDigits: 1 })}%`
 }
 
 interface HeaderProps {
