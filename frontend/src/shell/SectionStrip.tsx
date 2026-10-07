@@ -35,7 +35,7 @@ export function SectionStrip({
         sx={{
           minWidth: 0,
           '& .MuiTab-root': {
-            flex: '1 0 auto',
+            flex: '0 0 auto',
             flexDirection: 'row',
             whiteSpace: 'nowrap',
             gap: 1,
