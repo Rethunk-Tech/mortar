@@ -125,7 +125,7 @@ function CauseBanner({ game, profile, run }: { game: string; profile: string; ru
     RunCause(game, profile, run).then(setCause, () => setCause(null))
   }, [game, profile, run])
   return cause?.modName ? (
-    <Alert severity="error" sx={{ mx: 2, mb: 1 }}>
+    <Alert severity="error" sx={{ mx: space.gutter, mb: space.gap }}>
       <strong>{t`Caused by ${cause.modName}`}</strong> {t`·`} {cause.detail}
     </Alert>
   ) : null
@@ -213,11 +213,10 @@ function CommandLine({ game }: { game: string }) {
       }}
       sx={{
         display: 'flex',
-        height: 38,
-        mx: 2,
-        mt: -0.5,
-        mb: 1.5,
-        px: 1.5,
+        height: space.control,
+        mx: space.gutter,
+        mb: space.gap,
+        px: space.gap,
         flexShrink: 0,
         // A light-mode tint over the wallpaper reads as grey; an opaque paper well stays legible.
         bgcolor: (theme) =>
@@ -251,8 +250,8 @@ function ReinstallLoader({ game }: { game: string }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'flex-end',
-        px: 2,
-        pb: 1,
+        px: space.gutter,
+        pb: space.gap,
         flexShrink: 0,
       }}
     >
@@ -408,10 +407,9 @@ export function ConsoleTab({ game }: { game: string }) {
           display: 'flex',
           flexWrap: 'nowrap',
           alignItems: 'center',
-          gap: 1,
-          px: 2,
-          pt: 1.25,
-          pb: 0.75,
+          gap: space.gap,
+          px: space.gutter,
+          py: space.gap,
           flexShrink: 0,
         }}
       >

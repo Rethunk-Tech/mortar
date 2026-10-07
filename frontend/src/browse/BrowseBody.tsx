@@ -7,6 +7,7 @@ import { arrowFocus } from '../shell/arrowFocus.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { unreachableNote } from '../shell/offlineText.ts'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
+import { space } from '../theme/density.ts'
 import type { InlineError } from '../toasts/report.ts'
 import {
   FIRST_PAGE,
@@ -105,8 +106,8 @@ function ResultFooter({ result }: { result: BrowseResult }) {
       component="footer"
       sx={{
         flexShrink: 0,
-        px: 2,
-        py: 1,
+        px: space.gutter,
+        py: space.gap,
         fontSize: 13,
         color: 'text.secondary',
         borderTop: '1px solid var(--mortar-hairline-muted)',

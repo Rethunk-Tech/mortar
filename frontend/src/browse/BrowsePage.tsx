@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { persist } from '../settings/persist.ts'
 import { useOfflineEmpty } from '../shell/offlineText.ts'
+import { space } from '../theme/density.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BrowseBody, ResultFooter } from './BrowseBody.tsx'
 import { BrowseDetails } from './BrowseDetails.tsx'
@@ -158,8 +159,8 @@ function BrowsePage({
               flex: 1,
               minHeight: 0,
               overflowY: 'auto',
-              px: 2,
-              py: 1,
+              px: space.gutter,
+              py: space.gap,
               display: 'flex',
               flexDirection: 'column',
             }}

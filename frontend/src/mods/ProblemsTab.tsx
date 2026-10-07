@@ -241,15 +241,14 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
       <Box
         sx={{
           flex: empty ? 1 : '0 0 auto',
-          px: 2,
-          pt: 1.5,
-          pb: 1.5,
+          px: space.gutter,
+          py: space.gutter,
           display: 'flex',
           flexDirection: 'column',
-          gap: 1.5,
+          gap: space.gap,
         }}
       >
-        <Box sx={{ mx: -2, mb: -1 }}>
+        <Box sx={{ mx: `calc(-1 * ${space.gutter})`, mb: -1 }}>
           <LockedNote />
         </Box>
         {empty ? (
@@ -421,7 +420,7 @@ function ProblemsTab() {
           label={t`Checking the mods for problems…`}
           count={PROBLEM_SKELETON_ROWS}
           height={PROBLEM_SKELETON_HEIGHT}
-          sx={{ px: 2, py: 1.5 }}
+          sx={{ px: space.gutter, py: space.gutter }}
         />
       </>
     )

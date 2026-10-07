@@ -100,7 +100,15 @@ function BrowseToolbar({
   const setView = useBrowseView((s) => s.setView)
   const offline = useOfflineReason(source === ALL ? [] : [source])
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.25, pb: 0.75 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: space.gap,
+        px: space.gutter,
+        py: space.gap,
+      }}
+    >
       <ViewToggle value={view} onChange={setView} />
       <SourceToggle sources={sources} value={source} onChange={onSource} />
       <Box sx={{ flex: 1, minWidth: 0 }}>
