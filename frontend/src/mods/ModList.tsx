@@ -15,6 +15,7 @@ import { useProfileLoader } from '../profiles/store.ts'
 import { boundShortcut, type ShortcutId } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { useWidth } from '../shell/useWidth.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { actingMods, toggleActing } from './actingMods.ts'
 import { CompatChip } from './CompatChip.tsx'
@@ -315,10 +316,10 @@ function ModRowView({ row, striped, cols, locale, orderedIds, profile, onArrow }
       sx={{
         display: 'grid',
         gridTemplateColumns: listGridColumns(cols),
-        gap: '10px',
+        gap: space.gap,
         alignItems: 'center',
-        px: 2,
-        height: 36,
+        px: space.gutter,
+        height: space.row,
         fontSize: 14,
         cursor: 'pointer',
         bgcolor: (th) => {

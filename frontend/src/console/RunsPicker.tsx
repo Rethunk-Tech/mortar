@@ -9,6 +9,7 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
+import { space } from '../theme/density.ts'
 import { useOutcomeLabel } from './outcome.ts'
 import { runExitText } from './runExit.ts'
 import { useConsole } from './store.ts'
@@ -47,7 +48,11 @@ export function RunsPicker({ game }: { game: string }) {
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
-        sx={{ height: 34, borderColor: 'var(--mortar-hairline-20)', color: 'var(--mortar-ink)' }}
+        sx={{
+          height: space.control,
+          borderColor: 'var(--mortar-hairline-20)',
+          color: 'var(--mortar-ink)',
+        }}
       >
         {button}
       </Button>

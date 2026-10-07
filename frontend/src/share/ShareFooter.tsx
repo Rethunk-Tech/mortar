@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
 import { MessageSquare } from 'lucide-react'
+import { space } from '../theme/density.ts'
 import { copyText } from './copyText.ts'
 import type { ShownInfo } from './logic.ts'
 
@@ -24,7 +25,7 @@ export function MessageFooter({ info, message }: { info: ShownInfo; message: str
         startIcon={<MessageSquare size={16} />}
         disabled={info.count === 0 || info.tooLarge}
         onClick={() => copyText(message, t`Message copied`)}
-        sx={{ height: 34 }}
+        sx={{ height: space.control }}
       >
         {t`Copy as a message`}
       </Button>

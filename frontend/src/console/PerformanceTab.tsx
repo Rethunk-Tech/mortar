@@ -6,6 +6,7 @@ import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/morta
 import { PageActions } from '../game/PageActions.tsx'
 import { absoluteWhen } from '../i18n/when.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { space } from '../theme/density.ts'
 import { PerformancePanel } from './PerformancePanel.tsx'
 import { StartupPanel } from './StartupPanel.tsx'
 import { usePerfQuery, useSmapiStartup } from './startupHooks.ts'
@@ -86,7 +87,7 @@ export function PerformanceTab({ game }: { game: string }) {
             color="inherit"
             startIcon={<Gauge size={16} />}
             onClick={measureNext}
-            sx={{ height: 34, borderColor: 'var(--mortar-hairline-20)' }}
+            sx={{ height: space.control, borderColor: 'var(--mortar-hairline-20)' }}
           >
             {t`Measure next launch`}
           </Button>

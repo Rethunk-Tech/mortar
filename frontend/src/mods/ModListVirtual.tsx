@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Table, TableBody, TableHead, TableRow } from '@mui/material'
 import { type MouseEvent, type ReactNode, type Ref, useCallback, useRef } from 'react'
+import { space } from '../theme/density.ts'
 import { showModId, useDetail } from './detail.ts'
 import type { sanitizeListGroupBy } from './group.ts'
 import { HeaderCells, ListColumnMenu } from './ListColumnMenu.tsx'
@@ -81,10 +82,10 @@ function ListShell({
             sx={{
               display: 'grid',
               gridTemplateColumns: grid,
-              gap: '10px',
+              gap: space.gap,
               alignItems: 'center',
-              px: 2,
-              height: 30,
+              px: space.gutter,
+              height: `calc(${space.row} - 6px)`,
               zIndex: 1,
               bgcolor: 'var(--mortar-console-90)',
               ...heading,

@@ -22,6 +22,7 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
+import { space } from '../theme/density.ts'
 import { MONO, PAD_FOCUS } from '../theme/theme.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { hiddenBy, incompatibleSMAPI, isFiltered, modsOf } from './filter.ts'
@@ -51,7 +52,11 @@ function ModPicker() {
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
-        sx={{ height: 34, borderColor: 'var(--mortar-hairline-20)', color: 'var(--mortar-ink)' }}
+        sx={{
+          height: space.control,
+          borderColor: 'var(--mortar-hairline-20)',
+          color: 'var(--mortar-ink)',
+        }}
       >
         {t`Mods`}
       </Button>

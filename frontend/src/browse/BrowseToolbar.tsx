@@ -8,6 +8,7 @@ import { OfflineGate } from '../shell/OfflineGate.tsx'
 import { useOfflineReason } from '../shell/offlineText.ts'
 import { SearchField } from '../shell/SearchField.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
+import { space } from '../theme/density.ts'
 import { ALL } from './browseConstants.ts'
 import { useBrowseView } from './view.ts'
 
@@ -19,7 +20,7 @@ interface SourceOption {
 
 const sourceButton = (active: boolean) => ({
   minWidth: 34,
-  height: 30,
+  height: `calc(${space.control} - 6px)`,
   px: 1,
   borderRadius: '6px',
   fontSize: 13,

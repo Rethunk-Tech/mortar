@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { space } from '../theme/density.ts'
 import type { CompareGroup, CompareRow, CompareSide } from './compare.ts'
 import { compareOpen } from './compareOpen.ts'
 
@@ -85,7 +86,7 @@ export function CompareGroupView({
           display: 'flex',
           alignItems: 'center',
           gap: 1,
-          height: 36,
+          height: space.row,
           width: 1,
           justifyContent: 'flex-start',
           font: 'inherit',

@@ -17,6 +17,7 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { SectionStrip } from '../shell/SectionStrip.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { AssetMapDialog } from './AssetMapDialog.tsx'
@@ -230,7 +231,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
               disabled={shown.action.disabled}
               onClick={shown.action.onClick}
               startIcon={shown.action.icon}
-              sx={{ height: 34, borderColor: 'var(--mortar-hairline-20)' }}
+              sx={{ height: space.control, borderColor: 'var(--mortar-hairline-20)' }}
             >
               {shown.action.label}
             </Button>
@@ -310,7 +311,7 @@ function ProblemActions() {
             color="inherit"
             disabled={bisectBlocked !== null}
             onClick={findCrashCause}
-            sx={{ height: 34, borderColor: 'var(--mortar-hairline-20)' }}
+            sx={{ height: space.control, borderColor: 'var(--mortar-hairline-20)' }}
           >
             {t`Find the mod that crashes the game…`}
           </Button>

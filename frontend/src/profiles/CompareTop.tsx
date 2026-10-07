@@ -15,6 +15,7 @@ import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { space } from '../theme/density.ts'
 import { colorHex } from './appearance.ts'
 import { userModCount } from './count.ts'
 import { useProfiles } from './store.ts'
@@ -70,7 +71,7 @@ function OtherPicker({
         aria-haspopup="menu"
         onClick={(e) => setMenu(e.currentTarget)}
         endIcon={<ChevronDown size={14} />}
-        sx={{ height: 36, whiteSpace: 'nowrap' }}
+        sx={{ height: space.control, whiteSpace: 'nowrap' }}
       >
         {profileB?.name ?? t`Choose…`}
       </Button>
@@ -145,7 +146,7 @@ export function CompareTop({
             display: 'flex',
             alignItems: 'center',
             gap: 1,
-            height: 36,
+            height: space.control,
             px: 1.5,
             borderRadius: '8px',
             bgcolor: 'var(--mortar-hairline-12)',
@@ -170,7 +171,13 @@ export function CompareTop({
             aria-label={t`Filter mods`}
             aria-pressed={filterOpen}
             onClick={() => onFilter()}
-            sx={{ width: 36, height: 36, borderRadius: '8px', border: 1, borderColor: 'divider' }}
+            sx={{
+              width: 36,
+              height: space.control,
+              borderRadius: '8px',
+              border: 1,
+              borderColor: 'divider',
+            }}
           >
             <Search size={16} />
           </IconButton>
