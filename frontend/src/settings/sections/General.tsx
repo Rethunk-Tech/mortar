@@ -94,6 +94,7 @@ function Language() {
     <SettingsSection title={t`Language`}>
       <SettingRow
         label={t`Language`}
+        hideTitle={true}
         {...(single ? { description: t`More languages are coming.` } : {})}
       >
         <Select
@@ -266,6 +267,7 @@ function SettingsFile() {
     <SettingsSection title={t`Settings file`}>
       <SettingRow
         label={t`Settings file`}
+        hideTitle={true}
         description={t`Save these settings to a file, or load them on another computer.`}
       >
         <Box sx={{ display: 'flex', gap: space.gap }}>

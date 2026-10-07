@@ -15,6 +15,15 @@ const STACK_BELOW = 560
 const ROW_GAP = 3
 const BLOCK_GAP = 1.5
 
+const hiddenTitle = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+} as const
+
 export function SettingsSection({
   title,
   description,
@@ -101,11 +110,15 @@ export function SettingRow({
   description,
   children,
   block = false,
+  hideTitle = false,
 }: {
   label: ReactNode
   description?: ReactNode
   children: ReactNode
   block?: boolean
+  // For a row that is the whole section: the heading already says what it is, so the title stays only for screen
+  // readers and search.
+  hideTitle?: boolean
 }) {
   const query = useSettingsSearch()
   if (!prefMatches(query, nodeText(label), nodeText(description))) {
@@ -139,7 +152,7 @@ export function SettingRow({
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box data-setting-label={true} sx={{ fontSize: 16 }}>
+        <Box data-setting-label={true} sx={hideTitle ? hiddenTitle : { fontSize: 16 }}>
           {label}
         </Box>
         {description ? (

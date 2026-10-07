@@ -21,16 +21,6 @@ import { prefAsBool, prefAsNumber, prefAsString, prefRaw, specGameArg } from './
 import { SettingRow } from './SettingsSection.tsx'
 import { useSettings } from './store.ts'
 
-// Out of sight but still read by screen readers and matched by the settings search.
-const hiddenTitle = {
-  position: 'absolute',
-  width: 1,
-  height: 1,
-  overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
-  whiteSpace: 'nowrap',
-} as const
-
 // Game-scope prefs render only where a game is passed, so global pages never write to a guessed game.
 function PrefRow({
   spec,
@@ -104,17 +94,10 @@ function PrefRow({
   }
   return (
     <SettingRow
-      label={
-        hideTitle ? (
-          <Box component="span" sx={hiddenTitle}>
-            {copy.label}
-          </Box>
-        ) : (
-          copy.label
-        )
-      }
+      label={copy.label}
       description={copy.description}
       block={style === 'cards'}
+      hideTitle={hideTitle}
     >
       <DisabledReason title={disabledReason} disabled={disabledReason !== ''}>
         {extra ? (

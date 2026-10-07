@@ -15,7 +15,7 @@ import { space } from '../../theme/density.ts'
 import { PAD_FOCUS } from '../../theme/theme.ts'
 import { reportError } from '../../toasts/report.ts'
 import { PrefSegmented, PrefSelect } from '../PrefControls.tsx'
-import { PrefKeys } from '../PrefRow.tsx'
+import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -80,7 +80,7 @@ export function Appearance() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
       <SettingsSection title={t`Theme`}>
-        <PrefKeys keys={['theme']} />
+        <PrefByKey prefKey="theme" hideTitle={true} />
       </SettingsSection>
       <SettingsSection title={t`Accent colour`}>
         <Searchable terms={`${t`Accent colour`} ${t`Colour`} ${t`color`} ${t`Theme`}`}>
