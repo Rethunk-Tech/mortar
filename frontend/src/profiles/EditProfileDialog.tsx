@@ -22,7 +22,7 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AppearancePickers } from './AppearancePickers.tsx'
-import { MAX_DESCRIPTION } from './appearance.ts'
+import { MAX_DESCRIPTION, MAX_NAME } from './appearance.ts'
 import { formSettingsFromBackend } from './formSettingsFromBackend.ts'
 import { GameSettings, type GameSettingsValues } from './GameSettings.tsx'
 import { LaunchOptionsBlock } from './LaunchOptionsBlock.tsx'
@@ -34,6 +34,7 @@ import { foldedOverrides } from './overrideValue.ts'
 import { SeparateSavesRow } from './SeparateSavesRow.tsx'
 import { saveProfile } from './saveProfile.ts'
 import { useProfiles } from './store.ts'
+import { useNameField } from './useNameField.ts'
 
 const PATH_SEPARATORS = /[\\/]/
 
@@ -183,6 +184,10 @@ interface ProfileFieldsProps {
   onIcon: (value: string) => void
   stagedCover: StagedCover
   onStageCover: (value: StagedCover) => void
+  name: string
+  onName: (value: string) => void
+  nameError: string
+  focusName: boolean
   description: string
   onDescription: (value: string) => void
   launchOptions: string
@@ -209,6 +214,10 @@ function ProfileFields({
   onIcon,
   stagedCover,
   onStageCover,
+  name,
+  onName,
+  nameError,
+  focusName,
   description,
   onDescription,
   launchOptions,
@@ -254,6 +263,21 @@ function ProfileFields({
         {panel(
           'appearance',
           <>
+            <TextField
+              fullWidth={true}
+              margin="dense"
+              autoFocus={focusName}
+              label={t`Name`}
+              value={name}
+              onChange={(event) => onName(event.target.value)}
+              onFocus={(event) => event.target.select()}
+              error={nameError !== ''}
+              helperText={nameError || undefined}
+              slotProps={{
+                htmlInput: { maxLength: MAX_NAME },
+                root: { sx: { userSelect: 'text' } },
+              }}
+            />
             <AppearancePickers
               profile={profile}
               color={color}
@@ -349,10 +373,12 @@ interface EditProfileDialogProps {
   onClose: () => void
   // The tab Edit profile opens on.
   initialTab?: FieldsTab
+  // Puts the cursor in the Name field, for a rename.
+  focusName?: boolean
 }
 
 export function EditProfileDialog(props: EditProfileDialogProps) {
-  const { profile, open, onClose, initialTab = 'appearance' } = props
+  const { profile, open, onClose, initialTab = 'appearance', focusName = false } = props
   const { t } = useLingui()
   const setAppearance = useProfiles((s) => s.setAppearance)
   const setLaunchOptions = useProfiles((s) => s.setLaunchOptions)
@@ -360,6 +386,7 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
   const gameId = useProfiles((s) => s.game?.id ?? '')
   const [color, setColor] = useState(profile.color ?? '')
   const [icon, setIcon] = useState(profile.icon ?? '')
+  const { name, setName, nameError, setNameError } = useNameField(profile.name, open)
   const [description, setDescription] = useState(profile.description ?? '')
   const [launchOptions, setLaunchOptionsField] = useState(profile.launchOptions ?? '')
   const [launchPrefix, setLaunchPrefix] = useState(profile.launchPrefix ?? '')
@@ -389,19 +416,12 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
       setStagedCover(undefined)
       setLaunchError(null)
     }
-  }, [
-    open,
-    profile.color,
-    profile.description,
-    profile.icon,
-    profile.launchOptions,
-    profile.launchPrefix,
-    profile.launchEnv,
-    profile,
-  ])
+  }, [open, profile])
   const save = () =>
     saveProfile({
       profile,
+      name,
+      setNameError,
       gameId,
       launchOptions,
       launchPrefix,
@@ -442,6 +462,10 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
           onIcon={edited(setIcon)}
           stagedCover={stagedCover}
           onStageCover={edited(setStagedCover)}
+          name={name}
+          onName={edited(setName)}
+          nameError={nameError}
+          focusName={focusName}
           description={description}
           onDescription={edited(setDescription)}
           launchOptions={launchOptions}

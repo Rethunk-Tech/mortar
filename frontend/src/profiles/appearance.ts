@@ -38,6 +38,7 @@ export const PROFILE_ICONS = [
 export type ProfileColor = (typeof PROFILE_COLORS)[number]
 export type ProfileIcon = (typeof PROFILE_ICONS)[number]
 
+export const MAX_NAME = 60
 export const MAX_DESCRIPTION = 280
 
 export function isProfileColor(value: string | undefined): value is ProfileColor {

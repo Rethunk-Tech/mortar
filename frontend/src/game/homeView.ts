@@ -42,4 +42,9 @@ function savesView<T extends SaveLike>(saves: T[]) {
   }
 }
 
-export { changesView, glance, savesView }
+// The hero holds the inline name field; with the hero hidden a rename goes to the Edit profile dialog.
+function renameSurface(hero: string): 'inline' | 'dialog' {
+  return hero === 'hidden' ? 'dialog' : 'inline'
+}
+
+export { changesView, glance, renameSurface, savesView }

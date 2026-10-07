@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { Settings2, Share2, TriangleAlert } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
@@ -9,19 +10,22 @@ import { useUpdates } from '../mods/updates.ts'
 import { useNav } from '../nav/store.ts'
 import { CrashHintCard } from '../profiles/CrashHintCard.tsx'
 import { userModCount } from '../profiles/count.ts'
+import { EditProfileDialog } from '../profiles/EditProfileDialog.tsx'
 import { SinceLastRun } from '../profiles/SinceLastRun.tsx'
 import { filterAndSortSaves } from '../saves/filterAndSortSaves.ts'
 import { saveName } from '../saves/saveName.ts'
 import { useSaves } from '../saves/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { openShare } from '../share/store.ts'
 import { compact } from './compact.ts'
 import { Hero } from './Hero.tsx'
 import { HomeButton } from './HomeButton.tsx'
 import { HomeNotes } from './HomeNotes.tsx'
 import { HomePanel } from './HomePanel.tsx'
-import { glance, savesView } from './homeView.ts'
+import { glance, renameSurface, savesView } from './homeView.ts'
 import { LaunchMenu } from './LaunchMenu.tsx'
 import { ProfileMenu } from './ProfileMenu.tsx'
+import { useRenameRequest } from './renameRequest.ts'
 import { useTab } from './tab.ts'
 import { useLastRun } from './useLastRun.ts'
 
@@ -113,6 +117,15 @@ export function Home({
 }) {
   const { t } = useLingui()
   const openGameSettings = useNav((s) => s.openGameSettings)
+  const hero = useSettings((s) => s.profileHero) || 'full'
+  const renameId = useRenameRequest((s) => s.id)
+  const [renaming, setRenaming] = useState(false)
+  useEffect(() => {
+    if (renameId === profile.id && renameSurface(hero) === 'dialog') {
+      useRenameRequest.getState().clear()
+      setRenaming(true)
+    }
+  }, [renameId, profile.id, hero])
   const crashedAt = useLastRun(game, profile.id, String(profile.updated))
   return (
     <Box
@@ -156,6 +169,12 @@ export function Home({
         <SinceLastRun game={game} profileId={profile.id} />
         <SavesPanel />
       </Box>
+      <EditProfileDialog
+        profile={profile}
+        open={renaming}
+        focusName={true}
+        onClose={() => setRenaming(false)}
+      />
     </Box>
   )
 }

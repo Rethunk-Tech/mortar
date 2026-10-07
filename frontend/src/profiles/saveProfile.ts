@@ -27,8 +27,23 @@ async function coverSaved(
   }
 }
 
+// A name the store rejects (a duplicate, say) stays in the form with its message.
+async function nameSaved(profile: Profile, name: string, setNameError: (m: string) => void) {
+  if (name.trim() === profile.name) {
+    return true
+  }
+  try {
+    return await useProfiles.getState().rename(profile.id, name)
+  } catch (error) {
+    setNameError(errorMessage(error))
+    return false
+  }
+}
+
 export async function saveProfile({
   profile,
+  name,
+  setNameError,
   gameId,
   launchOptions,
   launchPrefix,
@@ -48,6 +63,8 @@ export async function saveProfile({
   coverFailure,
 }: {
   profile: Profile
+  name: string
+  setNameError: (message: string) => void
   gameId: string
   launchOptions: string
   launchPrefix: string
@@ -68,7 +85,11 @@ export async function saveProfile({
 }) {
   setBusy(true)
   setLaunchError(null)
+  setNameError('')
   try {
+    if (!(await nameSaved(profile, name, setNameError))) {
+      return
+    }
     try {
       await setLaunchOptions(profile.id, launchOptions)
     } catch (error) {
