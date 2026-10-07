@@ -127,7 +127,7 @@ wails3 build GOOS=windows             # bin/mortar.exe (ARCH=arm64 for Windows o
 MORTAR_UPDATE_KEY=/path/to/updater.key wails3 task release:manifest VERSION=1.2.3
 ```
 
-The AppImage build fetches nothing but wails3's own small `AppRun`: linuxdeploy and the type2 runtime are pinned with SHA-256 in `build/linux/appimage/pins.txt`, kept in `$XDG_CACHE_HOME/mortar-build` (`MORTAR_BUILD_CACHE` overrides; CI caches `~/.cache/mortar-build`) and checked on every build, and the AppDir is packed once.
+The AppImage build fetches nothing unpinned: linuxdeploy and the type2 runtime are pinned with SHA-256 in `build/linux/appimage/pins.txt`, kept in `$XDG_CACHE_HOME/mortar-build` (`MORTAR_BUILD_CACHE` overrides; CI caches `~/.cache/mortar-build`) and checked on every build, and the AppDir is packed once.
 
 `linux:build:arm64` cross-compiles on an x86_64 machine with no emulator registered: it needs `zig`, `docker` (to download the arm64 Ubuntu packages it links against, extracted under `tmp/`), `nfpm` and `qemu-aarch64`, which checks that every shared library resolves. The arm64 AppImage is built only in CI.
 

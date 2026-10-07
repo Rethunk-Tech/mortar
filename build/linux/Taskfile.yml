@@ -68,7 +68,7 @@ tasks:
       - cp "{{.APP_BINARY}}" "{{.APP_NAME}}"
       - mkdir -p "{{.ROOT_DIR}}/build/linux/appimage/build"
       - cp ../../appicon.png "tech.rethunk.Mortar.png"
-      - wails3 generate appimage -binary "{{.APP_NAME}}" -icon {{.ICON}} -desktopfile {{.DESKTOP_FILE}} -outputdir {{.OUTPUT_DIR}} -builddir {{.ROOT_DIR}}/build/linux/appimage/build -apprun {{.TOOLS_CACHE}}/apprun-{{.ARCH_NAME}} -linuxdeploy {{.TOOLS_CACHE}}/linuxdeploy-{{.ARCH_NAME}} -nopack
+      - wails3 generate appimage -binary "{{.APP_NAME}}" -icon {{.ICON}} -desktopfile {{.DESKTOP_FILE}} -outputdir {{.OUTPUT_DIR}} -builddir {{.ROOT_DIR}}/build/linux/appimage/build -linuxdeploy {{.TOOLS_CACHE}}/linuxdeploy-{{.ARCH_NAME}} -nopack
       - |
         set -euo pipefail
         arch="${APPIMAGE_ARCH:-$(uname -m)}"
@@ -79,8 +79,6 @@ tasks:
         cp "{{.ROOT_DIR}}/build/linux/appimage/glibc-check.sh" "$appdir/glibc-check.sh"
         grep -q 'glibc-check.sh' "$appdir/AppRun" || sed -i '/^APPDIR=/a . "$APPDIR/glibc-check.sh"' "$appdir/AppRun"
         grep -q '^\. "$APPDIR/glibc-check.sh"$' "$appdir/AppRun"
-        # WebKit's bubblewrap sandbox cannot bind the relative helper path the Wails fork bakes into libwebkitgtk on Debian-family layouts.
-        "{{.ROOT_DIR}}/build/linux/appimage/webkit-sandbox.sh" "$appdir"
         mkdir -p "$appdir/usr/share/doc/mortar"
         cp "{{.ROOT_DIR}}/LICENSE" "{{.ROOT_DIR}}/THIRD_PARTY_NOTICES" "$appdir/usr/share/doc/mortar/"
         (cd "$build" && OUTPUT="{{.APP_NAME}}-linux-${arch}.AppImage" "$LINUXDEPLOY_REAL" --appimage-extract-and-run --appdir "$appdir" --output appimage)
