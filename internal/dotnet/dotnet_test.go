@@ -59,7 +59,8 @@ func TestPluginArgsReadsTheAttributeBlob(t *testing.T) {
 }
 
 func TestPluginsReadsTheAttributeAndItsClassNamespace(t *testing.T) {
-	got, err := Plugins(filepath.Join("testdata", "mod.dll"))
+	d, err := Scan(filepath.Join("testdata", "mod.dll"))
+	got := d.Plugins
 	want := []Plugin{{GUID: "com.fixture.plugin", Name: "Fixture Plugin", Version: "1.2.3", Namespace: "Fixture.Plugins"}}
 	if err != nil || !slices.Equal(got, want) {
 		t.Fatalf("got %+v, %v", got, err)

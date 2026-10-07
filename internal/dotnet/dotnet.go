@@ -779,12 +779,6 @@ type Declared struct {
 // maxRelations bounds what one assembly can make the reader allocate: a plugin declares a handful.
 const maxRelations = 1024
 
-// Plugins lists the BepInEx plugins the assembly at path declares; an assembly with none yields none.
-func Plugins(path string) ([]Plugin, error) {
-	d, err := Scan(path)
-	return d.Plugins, err
-}
-
 // Scan reads the plugins the assembly at path declares and the dependencies and incompatibilities they carry.
 func Scan(path string) (out Declared, err error) {
 	data, err := fsx.ReadFile(path)
