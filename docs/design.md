@@ -20,6 +20,8 @@ Remaining ([architecture.md](architecture.md#release)):
 - **UI translations** beyond English, as Stardrop (17+), MO2 and r2modman ship: every string already goes through Lingui and the catalogs are extracted; needs chosen languages and translators. Parked 2026-10-02 (not v1).
 - **macOS build**: Stardew runs on macOS, and Stardrop ships for x64 and arm64, but Mortar has no macOS CI or test machine; it needs an Apple developer account for signing and notarization, Mac Steam paths and nxm registration, and a Mac to test on. Parked 2026-10-02 (not v1).
 - **One top toolbar** (Gale-style: game switcher and profile switcher with mod count side by side in the title bar, download status next to them): parked 2026-10-05. Play stays at the foot of the sidebar; a Play control in the top-left corner is rejected.
+- **EA App** as a game store, beside the drivers in `internal/gamestore/drivers.go` (Steam, Steam (Flatpak), GOG, Heroic, Lutris, Minigalaxy, Bottles): to be designed. Queued 2026-10-07.
+- **Patreon** as a mod source, beside the drivers in `internal/source/`: to be designed, including how it treats creator-gated posts under the no-re-hosting rule. Queued 2026-10-07.
 
 Not in the first release; re-weigh only when asked:
 
