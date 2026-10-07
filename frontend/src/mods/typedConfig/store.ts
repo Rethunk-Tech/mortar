@@ -99,11 +99,13 @@ const useTypedConfig = create<{
       }
     },
     select: async (file) => {
-      const { target } = get()
-      set({ current: file })
-      if (!(target && file)) {
+      const { target, files } = get()
+      // A file the opened mod does not have is never asked for: a pane that renders before open() clears the previous
+      // mod's state would otherwise request that mod's file name.
+      if (!(target && files.some((f) => f.name === file))) {
         return
       }
+      set({ current: file })
       try {
         const sections = await configApi.schema(target, file)
         set((s) => ({ files: s.files.map((f) => (f.name === file ? { ...f, sections } : f)) }))
