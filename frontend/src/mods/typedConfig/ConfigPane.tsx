@@ -146,6 +146,10 @@ export function ConfigPane({
   const shown = file ? filterFile(file, query) : null
   // One file needs no picker: the editor takes the width and the toolbar names the file.
   const single = files.length <= 1
+  let fileCaption = ''
+  if (single && file) {
+    fileCaption = file.format === 'gmcm' ? t`In-game menu` : file.name
+  }
   return (
     <Box
       aria-label={t`Config of ${name}`}
@@ -160,7 +164,7 @@ export function ConfigPane({
           title={file?.name ?? ''}
           sx={{ flex: 1, minWidth: 0, fontSize: 12, color: 'text.secondary' }}
         >
-          {single && file ? (file.format === 'gmcm' ? t`In-game menu` : file.name) : ''}
+          {fileCaption}
         </Typography>
         <SearchField
           label={t`Search entries`}

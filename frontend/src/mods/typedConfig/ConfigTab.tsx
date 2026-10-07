@@ -27,7 +27,7 @@ import { LetterTile } from '../parts.tsx'
 import { useMods } from '../store.ts'
 import { useListHeading } from '../useListHeading.ts'
 import { useModGroups } from '../useModGroups.ts'
-import { flattenModGroups } from '../virtualRows.ts'
+import { flattenModGroups, type VirtualRow } from '../virtualRows.ts'
 import { ConfigPane } from './ConfigPane.tsx'
 import {
   type ConfigChip,
@@ -130,6 +130,93 @@ function ShowMenu({ show, onChange }: { show: ConfigShow; onChange: (show: Confi
           </MenuItem>
         ))}
       </Menu>
+    </>
+  )
+}
+
+type Listed = VirtualRow<ModConfig>
+type GroupsView = ReturnType<typeof useModGroups>
+
+function ListEntry({
+  item,
+  view,
+  heading,
+  headerGroups,
+  selection,
+  onChoose,
+}: {
+  item: Listed
+  view: GroupsView
+  heading: ReturnType<typeof useListHeading>
+  headerGroups: { key: string; items: GroupsView['groups'][number]['items'] }[]
+  selection: string | undefined
+  onChoose: (selection: string) => void
+}) {
+  const { t } = useLingui()
+  if (item.kind === 'header') {
+    return (
+      <GroupHeaderRow
+        groupKey={item.groupKey}
+        count={item.count}
+        label={heading(item.groupKey)}
+        collapsed={view.collapsed}
+        gameId={view.gameId}
+        setCollapsed={view.setCollapsed}
+        groupBy={view.groupBy}
+        tagHint={t`A mod with several tags appears under its first tag.`}
+        groups={headerGroups}
+      />
+    )
+  }
+  if (item.kind !== 'row') {
+    return null
+  }
+  return (
+    <ModRow
+      config={item.item}
+      selected={modSelection(item.item.id) === selection}
+      onSelect={() => onChoose(modSelection(item.item.id))}
+    />
+  )
+}
+
+function WithoutConfig({ count }: { count: number }) {
+  return (
+    <Typography sx={{ px: space.pad, py: space.gap, fontSize: 12, color: 'text.secondary' }}>
+      {plural(count, {
+        one: '# mod has no config yet; mods create it the first time the game runs.',
+        other: '# mods have no config yet; mods create it the first time the game runs.',
+      })}
+    </Typography>
+  )
+}
+
+function OtherFiles({
+  other,
+  selection,
+  onChoose,
+}: {
+  other: { name: string; changed?: boolean }[]
+  selection: string | undefined
+  onChoose: (selection: string) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <>
+      <ListSubheader sx={{ bgcolor: 'transparent', lineHeight: '32px' }}>
+        {t`Loader and other`}
+      </ListSubheader>
+      {other.map((f) => (
+        <ListItemButton
+          key={f.name}
+          selected={fileSelection(f.name) === selection}
+          onClick={() => onChoose(fileSelection(f.name))}
+          sx={{ minHeight: space.row }}
+        >
+          <ListItemText primary={f.name} slotProps={{ primary: { noWrap: true } }} />
+          {f.changed ? <Chip size="small" variant="outlined" label={t`Changed`} /> : null}
+        </ListItemButton>
+      ))}
     </>
   )
 }
@@ -241,63 +328,31 @@ export function ConfigTab({ profile, game }: { profile: Profile; game: string })
           }}
         >
           <List aria-label={t`Mods with settings`} sx={{ flex: 1, overflowY: 'auto', py: 0 }}>
-            {listed.map((item) =>
-              item.kind === 'header' ? (
-                <GroupHeaderRow
-                  key={item.key}
-                  groupKey={item.groupKey}
-                  count={item.count}
-                  label={heading(item.groupKey)}
-                  collapsed={view.collapsed}
-                  gameId={view.gameId}
-                  setCollapsed={view.setCollapsed}
-                  groupBy={view.groupBy}
-                  tagHint={t`A mod with several tags appears under its first tag.`}
-                  groups={headerGroups}
-                />
-              ) : item.kind === 'row' ? (
-                <ModRow
-                  key={item.key}
-                  config={item.item}
-                  selected={modSelection(item.item.id) === selection}
-                  onSelect={() => choose(profile.id, modSelection(item.item.id))}
-                />
-              ) : null,
-            )}
+            {listed.map((item) => (
+              <ListEntry
+                key={item.key}
+                item={item}
+                view={view}
+                heading={heading}
+                headerGroups={headerGroups}
+                selection={selection}
+                onChoose={(sel) => choose(profile.id, sel)}
+              />
+            ))}
             {shown.length === 0 && all.length > 0 ? (
               <Typography sx={{ px: space.pad, py: space.gap, color: 'text.secondary' }}>
                 {t`No mods match`}
               </Typography>
             ) : null}
             {other.length > 0 && show === 'all' && query.trim() === '' ? (
-              <>
-                <ListSubheader sx={{ bgcolor: 'transparent', lineHeight: '32px' }}>
-                  {t`Loader and other`}
-                </ListSubheader>
-                {other.map((f) => (
-                  <ListItemButton
-                    key={f.name}
-                    selected={fileSelection(f.name) === selection}
-                    onClick={() => choose(profile.id, fileSelection(f.name))}
-                    sx={{ minHeight: space.row }}
-                  >
-                    <ListItemText primary={f.name} slotProps={{ primary: { noWrap: true } }} />
-                    {f.changed ? <Chip size="small" variant="outlined" label={t`Changed`} /> : null}
-                  </ListItemButton>
-                ))}
-              </>
+              <OtherFiles
+                other={other}
+                selection={selection}
+                onChoose={(sel) => choose(profile.id, sel)}
+              />
             ) : null}
           </List>
-          {list.without > 0 ? (
-            <Typography
-              sx={{ px: space.pad, py: space.gap, fontSize: 12, color: 'text.secondary' }}
-            >
-              {plural(list.without, {
-                one: '# mod has no config yet; mods create it the first time the game runs.',
-                other: '# mods have no config yet; mods create it the first time the game runs.',
-              })}
-            </Typography>
-          ) : null}
+          {list.without > 0 ? <WithoutConfig count={list.without} /> : null}
         </Box>
         {editor}
       </Box>
