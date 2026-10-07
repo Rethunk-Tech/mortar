@@ -10,8 +10,9 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { CircleHelp, RotateCcw, X } from 'lucide-react'
+import { CircleHelp, RotateCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { SearchField } from '../../shell/SearchField.tsx'
@@ -19,7 +20,7 @@ import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { PresetsButton } from '../ConfigPresets.tsx'
 import { filterFile, isModified, modifiedCount } from './entries.ts'
-import { useTypedConfig } from './store.ts'
+import { type Target, useTypedConfig } from './store.ts'
 import type { ConfigEntry } from './types.ts'
 import { EntryWidget } from './Widgets.tsx'
 
@@ -105,18 +106,29 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
   )
 }
 
-// The full-pane editor of one mod's config files, over the Mods tab.
-export function ConfigPane() {
+// The editor of one selection's config files, beside the Config page's list. A selection without a mod (the unowned
+// .cfg files) opens on `file` and offers no presets.
+export function ConfigPane({
+  name,
+  mod,
+  target,
+  file: initialFile,
+}: {
+  name: string
+  mod: Mod | null
+  target: Target
+  file?: string
+}) {
   const { t } = useLingui()
-  const { mod, files, current, loadError } = useTypedConfig()
-  const close = useTypedConfig((s) => s.close)
+  const { files, current, loadError } = useTypedConfig()
   const select = useTypedConfig((s) => s.select)
-  const target = useTypedConfig((s) => s.target)
   const open = useTypedConfig((s) => s.open)
+  const { game, profile, key, id } = target
+  useEffect(() => {
+    open({ game, profile, key, id }, initialFile).catch(reportUnexpected)
+  }, [open, game, profile, key, id, initialFile])
   const reload = () => {
-    if (mod && target) {
-      open(mod, target).catch(reportUnexpected)
-    }
+    open(target, initialFile).catch(reportUnexpected)
   }
   const resetAll = useTypedConfig((s) => s.resetAll)
   const [query, setQuery] = useState('')
@@ -128,14 +140,11 @@ export function ConfigPane() {
       select(current).catch(() => undefined)
     }
   }, [updated, current, select])
-  if (!mod) {
-    return null
-  }
   const file = files.find((f) => f.name === current)
   const shown = file ? filterFile(file, query) : null
   return (
     <Box
-      aria-label={t`Config of ${mod.name}`}
+      aria-label={t`Config of ${name}`}
       role="region"
       sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
     >
@@ -143,7 +152,7 @@ export function ConfigPane() {
         sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: space.pad, py: space.gap }}
       >
         <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600, flex: 1 }}>
-          {t`Config of ${mod.name}`}
+          {t`Config of ${name}`}
         </Typography>
         <SearchField
           label={t`Search entries`}
@@ -151,7 +160,7 @@ export function ConfigPane() {
           onChange={setQuery}
           sx={{ width: 260 }}
         />
-        {file?.format === 'gmcm' ? null : <PresetsButton mod={mod} />}
+        {file?.format === 'gmcm' || !mod ? null : <PresetsButton mod={mod} />}
         <Button
           variant="outlined"
           size="small"
@@ -160,9 +169,6 @@ export function ConfigPane() {
         >
           {t`Reset all`}
         </Button>
-        <IconButton aria-label={t`Close config editor`} onClick={close}>
-          <X size={18} />
-        </IconButton>
       </Box>
       {loadError ? (
         <Alert

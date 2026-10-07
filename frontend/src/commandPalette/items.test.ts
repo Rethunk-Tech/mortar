@@ -65,10 +65,11 @@ const withShortcuts = (profileOpen: boolean) =>
       { id: 'play', keys: 'Ctrl+P', always: false, group: 'General' },
       { id: 'check-updates', keys: 'F5', always: false, group: 'General' },
       { id: 'tab-mods', keys: 'Ctrl+2', always: false, group: 'Tabs' },
+      { id: 'tab-config', keys: 'Ctrl+6', always: false, group: 'Tabs' },
       { id: 'mod-up', keys: '↑', always: false, group: 'Mods list' },
     ],
     shortcutLabels: { 'check-updates': 'Check mods and Mortar for updates' },
-    labels: { ...labels, tabs: { mods: 'Switch to Mods' } },
+    labels: { ...labels, tabs: { mods: 'Switch to Mods', config: 'Switch to Config' } },
     profileOpen,
   })
 
@@ -76,6 +77,8 @@ test('a shortcut that duplicates an action lends it its keys instead of a second
   const items = withShortcuts(true)
   expect(items.find((i) => i.id === 'action:play')?.shortcut).toBe('Ctrl+P')
   expect(items.find((i) => i.id === 'tab:mods')?.shortcut).toBe('Ctrl+2')
+  expect(items.find((i) => i.id === 'tab:config')?.label).toBe('Switch to Config')
+  expect(items.find((i) => i.id === 'tab:config')?.shortcut).toBe('Ctrl+6')
   expect(items.filter((i) => i.id === 'shortcut:play' || i.id === 'shortcut:tab-mods')).toEqual([])
   expect(items.filter((i) => i.label.includes('for updates'))).toHaveLength(1)
 })

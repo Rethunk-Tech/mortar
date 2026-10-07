@@ -8,6 +8,7 @@ const TABS = [
   'problems',
   'load-order',
   'saves',
+  'config',
   'console',
   'performance',
 ] as const

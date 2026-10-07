@@ -61,6 +61,7 @@ import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { SplitCombineItems } from './SplitCombineItems.tsx'
 import { useSelection } from './selection.ts'
 import { useMods } from './store.ts'
+import { hasConfig, openConfigPage, useConfigList } from './typedConfig/configList.ts'
 import { useUpdates } from './updates.ts'
 import { useLocked } from './useLocked.ts'
 
@@ -118,6 +119,7 @@ function ModMenuItems({
   const extras = currentEntry?.extraStoreKeys ?? []
   const siblings = samePageSiblings(profile, currentEntry)
   const files = useNexusDetails((s) => s.byId[currentEntry?.source?.modId ?? 0]?.details?.files)
+  const configured = useConfigList((st) => hasConfig(st.byProfile[profile?.id ?? '']?.list, mod.id))
   const items: Record<
     ModAction | 'reinstall',
     { label: string; icon: ReactNode; run: () => void }
@@ -199,7 +201,9 @@ function ModMenuItems({
       onAlsoAdd,
       onAddBundle,
       onRemoveOther,
+      onEditConfig: configured ? () => openConfigPage(mod.id) : undefined,
       labels: {
+        editConfig: t`Edit config`,
         category: t`Set category…`,
         alsoAdd: t`Also add to…`,
         addBundle: t`Add to bundle…`,

@@ -37,6 +37,7 @@ function sidebarGroups(caps: SidebarCaps, counts: SidebarCounts): SidebarGroup[]
       entries: [
         { id: 'mods', badge: count(counts.updates, 'primary') },
         { id: 'saves', badge: null },
+        { id: 'config', badge: null },
       ],
     },
     { id: 'get', entries: [{ id: 'browse', badge: null }] },

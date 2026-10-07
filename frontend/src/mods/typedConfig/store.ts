@@ -1,7 +1,7 @@
 import { create } from 'zustand'
-import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { errorMessage, reportUnexpected } from '../../toasts/report.ts'
 import { configApi } from './api.ts'
+import { useConfigList } from './configList.ts'
 import type { ConfigFile, ConfigValue } from './types.ts'
 
 const SAVE_DELAY_MS = 500
@@ -15,16 +15,14 @@ interface Target {
 
 const timers = new Map<string, ReturnType<typeof setTimeout>>()
 
-// The typed editor open on one mod: its config files, the one shown, and a write error per entry.
+// The typed editor open on one mod, or on the .cfg files no mod owns: its config files, the one shown, and a write error per entry.
 const useTypedConfig = create<{
-  mod: Mod | null
   target: Target | null
   files: ConfigFile[]
   current: string
   errors: Record<string, string>
   loadError: string
-  open: (mod: Mod, target: Target) => Promise<void>
-  close: () => void
+  open: (target: Target, file?: string) => Promise<void>
   select: (file: string) => Promise<void>
   set: (section: string, key: string, value: ConfigValue) => void
   reset: (section: string, key: string) => void
@@ -62,6 +60,11 @@ const useTypedConfig = create<{
       return
     }
     set((s) => ({ errors: { ...s.errors, [slot]: '' } }))
+    // The list's Changed and waiting chips follow the edit.
+    const { target } = get()
+    if (target) {
+      useConfigList.getState().load(target.game, target.profile, '', true).catch(reportUnexpected)
+    }
     // An in-game menu edit turns pending, or stops being, only as the profile records it.
     const { files, current } = get()
     if (files.find((f) => f.name === current)?.format === 'gmcm') {
@@ -80,23 +83,21 @@ const useTypedConfig = create<{
     )
   }
   return {
-    mod: null,
     target: null,
     files: [],
     current: '',
     errors: {},
     loadError: '',
-    open: async (mod, target) => {
-      set({ mod, target, files: [], current: '', errors: {}, loadError: '' })
+    open: async (target, file) => {
+      set({ target, files: [], current: '', errors: {}, loadError: '' })
       try {
         const files = await configApi.files(target)
         set({ files })
-        await get().select(files[0]?.name ?? '')
+        await get().select(files.find((f) => f.name === file)?.name ?? files[0]?.name ?? '')
       } catch (e) {
         set({ loadError: errorMessage(e) })
       }
     },
-    close: () => set({ mod: null, target: null }),
     select: async (file) => {
       const { target } = get()
       set({ current: file })

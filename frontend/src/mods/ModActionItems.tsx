@@ -1,6 +1,15 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Collapse, ListItemIcon, ListItemText, MenuItem } from '@mui/material'
-import { ChevronDown, ChevronRight, CopyPlus, PackagePlus, Tag, Trash2, Users } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronRight,
+  CopyPlus,
+  PackagePlus,
+  SlidersHorizontal,
+  Tag,
+  Trash2,
+  Users,
+} from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
@@ -93,6 +102,7 @@ function ModActionItems({
   onAlsoAdd,
   onAddBundle,
   onRemoveOther,
+  onEditConfig,
   labels,
   splitCombine,
   trailing,
@@ -106,7 +116,9 @@ function ModActionItems({
   onAlsoAdd: () => void
   onAddBundle: () => void
   onRemoveOther: () => void
-  labels: { category: string; alsoAdd: string; addBundle: string }
+  // Set only for a mod with a config source; the item is left out otherwise.
+  onEditConfig: (() => void) | undefined
+  labels: { category: string; alsoAdd: string; addBundle: string; editConfig: string }
   splitCombine: ReactNode
   trailing: ReactNode[]
 }) {
@@ -133,6 +145,16 @@ function ModActionItems({
   }
   if (has('details')) {
     result.push(renderAction('details'))
+  }
+  if (onEditConfig) {
+    result.push(
+      <MenuAction
+        key="edit-config"
+        icon={<SlidersHorizontal size={ICON_SIZE} />}
+        label={labels.editConfig}
+        onClick={closeThen(onEditConfig)}
+      />,
+    )
   }
   result.push(<MenuRule key="source-divider" />)
   if (has('page')) {

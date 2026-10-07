@@ -5,6 +5,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { BrowseHost } from '../browse/BrowseHost.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemsTab } from '../mods/ProblemsTab.tsx'
+import { useConfigListLoaded } from '../mods/typedConfig/configList.ts'
 import { usePasteLink } from '../share/usePasteLink.ts'
 import { ErrorBoundary } from '../shell/ErrorBoundary.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
@@ -19,6 +20,9 @@ const ConsoleTab = lazy(() =>
 )
 const LoadOrderTab = lazy(() =>
   import('../mods/LoadOrderTab.tsx').then((m) => ({ default: m.LoadOrderTab })),
+)
+const ConfigTab = lazy(() =>
+  import('../mods/typedConfig/ConfigTab.tsx').then((m) => ({ default: m.ConfigTab })),
 )
 const SavesTab = lazy(() => import('../saves/SavesTab.tsx').then((m) => ({ default: m.SavesTab })))
 const PerformanceTab = lazy(() =>
@@ -46,6 +50,7 @@ export function ProfileWorkspace({
 }) {
   const tab = useTab((s) => s.tab)
   usePasteLink(profile.id)
+  useConfigListLoaded(game, profile)
   return (
     <Box
       role="tabpanel"
@@ -61,6 +66,7 @@ export function ProfileWorkspace({
         <Suspense fallback={<TabLoading />}>
           {tab === 'console' ? <ConsoleTab game={game} /> : null}
           {tab === 'performance' ? <PerformanceTab game={game} /> : null}
+          {tab === 'config' ? <ConfigTab profile={profile} game={game} /> : null}
           {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}
           {tab === 'load-order' ? (
             <LoadOrderTab key={`load-order-${profile.id}`} profile={profile} game={game} />

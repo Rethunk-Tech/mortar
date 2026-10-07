@@ -41,8 +41,6 @@ import { useMods } from './store.ts'
 import { storedFilter, storedTags, type View } from './storeView.ts'
 import { EmptyMods, Toolbar } from './Toolbar.tsx'
 import { TrackedNotInProfile } from './TrackedNotInProfile.tsx'
-import { ConfigPane } from './typedConfig/ConfigPane.tsx'
-import { useTypedConfig } from './typedConfig/store.ts'
 import { UpdateBar, UpdateReview } from './UpdateReview.tsx'
 import { useUpdates } from './updates.ts'
 
@@ -101,10 +99,6 @@ function ModsBody({
   const loaded = useMods((s) => s.loaded)
   const loadError = useMods((s) => s.loadError)
   const load = useMods((s) => s.load)
-  const editingConfig = useTypedConfig((s) => s.mod !== null)
-  if (editingConfig) {
-    return <ConfigPane />
-  }
   if (!loaded) {
     return loadError ? (
       <Box sx={{ px: space.pad, display: 'flex', alignItems: 'center', gap: space.gap }}>

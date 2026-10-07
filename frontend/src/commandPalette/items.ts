@@ -15,6 +15,7 @@ const ACTION_OF_SHORTCUT: Partial<Record<ShortcutId, string>> = {
   'tab-problems': 'tab:problems',
   'tab-load-order': 'tab:load-order',
   'tab-saves': 'tab:saves',
+  'tab-config': 'tab:config',
   'tab-console': 'tab:console',
   'tab-performance': 'tab:performance',
 }
@@ -39,9 +40,17 @@ const PROFILE_ONLY = new Set([
   'shortcut:duplicate-profile',
   'shortcut:rename-profile',
   'shortcut:vanilla-play',
-  ...['home', 'browse', 'mods', 'problems', 'load-order', 'saves', 'console', 'performance'].map(
-    (tab) => `tab:${tab}`,
-  ),
+  ...[
+    'home',
+    'browse',
+    'mods',
+    'problems',
+    'load-order',
+    'saves',
+    'config',
+    'console',
+    'performance',
+  ].map((tab) => `tab:${tab}`),
 ])
 
 export interface PaletteLabels {

@@ -73,6 +73,8 @@ export function runShortcut(id: ShortcutId) {
       return useTab.getState().setTab('problems')
     case 'tab-saves':
       return useTab.getState().setTab('saves')
+    case 'tab-config':
+      return useTab.getState().setTab('config')
     case 'tab-console':
       return useTab.getState().setTab('console')
     case 'tab-performance':

@@ -30,6 +30,7 @@ var defaultShortcuts = map[string]string{
 	"tab-problems":      "Ctrl+3",
 	"tab-load-order":    "Ctrl+4",
 	"tab-saves":         "Ctrl+5",
+	"tab-config":        "Ctrl+6",
 	"tab-console":       "Ctrl+7",
 	"tab-performance":   "Ctrl+8",
 	"new-profile":       "Ctrl+N",

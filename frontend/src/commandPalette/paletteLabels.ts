@@ -28,6 +28,7 @@ export function paletteActionLabels(i18n: I18n): PaletteLabels {
       problems: i18n._(msg`Switch to Problems`),
       'load-order': i18n._(msg`Switch to Load order`),
       saves: i18n._(msg`Switch to Saves`),
+      config: i18n._(msg`Switch to Config`),
       console: i18n._(msg`Switch to Console`),
       performance: i18n._(msg`Switch to Performance`),
     },
