@@ -99,4 +99,4 @@ export function TemplateMenuItems({ profile, close }: Props) {
   ]
 }
 
-export { SaveTemplateMenuItem }
+export { ApplyTemplateMenuItem, SaveTemplateMenuItem }

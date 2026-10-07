@@ -26,12 +26,12 @@ import { Cards } from './ModCards.tsx'
 import { ModDetail } from './ModDetail.tsx'
 import { ModList } from './ModList.tsx'
 import { ModContextMenu } from './ModMenu.tsx'
+import { ModsHeaderActions } from './ModsHeaderActions.tsx'
 import { useContextMenu } from './menu.ts'
 import { hasAllTags, matchesQuery, searchFields } from './modSearch.ts'
 import { NewFoldersCallout } from './NewFoldersCallout.tsx'
 import { useNexusDetails } from './nexusDetails.ts'
 import { OldFilesCallouts } from './OldFilesCallouts.tsx'
-import { ProblemBar } from './ProblemBar.tsx'
 import { RemoveDialog } from './parts.tsx'
 import { addedWithin, WEEK_MS } from './recent.ts'
 import { SelectionBar } from './SelectionBar.tsx'
@@ -286,8 +286,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
       <TipBanner tip="mods">
         {t`Drop archives anywhere on the window, or use Browse to find mods.`}
       </TipBanner>
-      {/* The profile header is on Home only, so this tab carries its own Problems and Updates bars. */}
-      <ProblemBar />
+      <ModsHeaderActions />
       <UpdateBar />
       <OldFilesCallouts profile={profile} />
       <NewFoldersCallout profile={profile} />

@@ -17,6 +17,7 @@ import {
 import {
   Ban,
   Check,
+  ChevronDown,
   Download,
   Filter,
   FolderTree,
@@ -70,6 +71,7 @@ const iconWhenCompact = {
     minWidth: 36,
     px: 0,
     '& .MuiButton-startIcon': { m: 0 },
+    '& .MuiButton-endIcon': { display: 'none' },
     '& .label': { display: 'none' },
   },
 }
@@ -138,6 +140,7 @@ function ShowFilterControl({
           color={active || tagged ? 'primary' : 'inherit'}
           aria-label={showLabel}
           startIcon={<Filter size={14} />}
+          endIcon={<ChevronDown size={14} aria-hidden={true} />}
           aria-haspopup="menu"
           aria-expanded={anchor !== null}
           onClick={(e) => setAnchor(e.currentTarget)}
@@ -184,6 +187,7 @@ function GroupByControl() {
         variant="outlined"
         aria-label={t`Group by`}
         startIcon={<FolderTree size={14} />}
+        endIcon={<ChevronDown size={14} aria-hidden={true} />}
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
@@ -249,7 +253,7 @@ function BrowseMods() {
   )
 }
 
-function AddArchive({
+export function AddArchive({
   variant,
   toolbar = false,
   size,
@@ -391,7 +395,6 @@ export function Toolbar({
           )}
         </Button>
       ) : null}
-      <AddArchive variant="outlined" toolbar={true} />
     </Box>
   )
 }

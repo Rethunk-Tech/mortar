@@ -3,14 +3,14 @@ import type { Result } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import type { Drift } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Problem } from './lookup.ts'
 
+const driftRows = (result: Result | null): Row[] =>
+  (result?.drift ?? []).map((drift) => ({ kind: 'drift' as const, drift }))
+
 export type Row = Problem | { kind: 'drift'; drift: Drift }
 export interface DismissedRow {
   row: Problem
   token: string
 }
-
-export const driftRows = (result: Result | null): Row[] =>
-  (result?.drift ?? []).map((drift) => ({ kind: 'drift' as const, drift }))
 
 export const isInfoRow = (p: Row): boolean =>
   (p.kind === 'asset' && p.asset.kind === 'edit') ||
