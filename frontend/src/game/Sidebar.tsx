@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Tooltip } from '@mui/material'
+import { Box, ButtonBase } from '@mui/material'
 import {
   ChevronLeft,
   ChevronRight,
@@ -21,6 +21,7 @@ import { useMods } from '../mods/store.ts'
 import { useLoadProblemsOnFocus } from '../mods/useLoadProblemsOnFocus.ts'
 import { openProfileOf, useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { arrowFocus } from '../shell/arrowFocus.ts'
+import { OneTip } from '../shell/OneTip.tsx'
 import { useRail, useSidebarCollapsed } from './sidebarCollapsed.ts'
 import {
   type SidebarEntry,
@@ -153,9 +154,9 @@ function Item({
     </ButtonBase>
   )
   return rail ? (
-    <Tooltip title={label} placement="right">
+    <OneTip title={label} placement="right">
       {button}
-    </Tooltip>
+    </OneTip>
   ) : (
     button
   )
@@ -287,9 +288,9 @@ function CollapseButton({ rail }: { rail: boolean }) {
     </ButtonBase>
   )
   return rail ? (
-    <Tooltip title={label} placement="right">
+    <OneTip title={label} placement="right">
       {button}
-    </Tooltip>
+    </OneTip>
   ) : (
     button
   )
