@@ -19,7 +19,7 @@ const MIB = 1024
 const SAMPLE_MS = 100
 const BUDGET_MIB = Number(process.env.MORTAR_MEM_BUDGET_MIB ?? '1024')
 const ZIP_MIB = Number(process.env.MORTAR_MEM_ZIP_MIB ?? '500')
-const ZIP_FILE_KIB = 100
+const ZIP_FILE_KIB = Number(process.env.MORTAR_MEM_ZIP_FILE_KIB ?? '100')
 const BROWSE_QUERY = process.env.MORTAR_MEM_QUERY ?? 'content'
 const SCROLLS = 5
 const SCROLL_STEP_PX = 4000
@@ -266,6 +266,29 @@ function pollPeakHeap(addr: string, scenario: string): () => Promise<string> {
   }
 }
 
+const CLOCK_TICKS_PER_S = 100
+
+/** Seconds of CPU (user plus system) the process has used, 0 once it is gone. */
+function cpuSeconds(pid: number): number {
+  try {
+    const stat = readFileSync(`/proc/${pid}/stat`, 'utf8')
+    // The command name may hold spaces, so the numeric fields start after its closing parenthesis.
+    const fields = stat.slice(stat.lastIndexOf(')') + 2).split(' ')
+    return (Number(fields[11]) + Number(fields[12])) / CLOCK_TICKS_PER_S
+  } catch {
+    return 0
+  }
+}
+
+/** The server's completed GC cycles and its share of CPU spent collecting since start, from its pprof heap summary. */
+async function gcStats(addr: string): Promise<{ cycles: number; fraction: number }> {
+  const text = await (await fetch(`http://${addr}/debug/pprof/heap?debug=1`)).text()
+  return {
+    cycles: Number(/# NumGC = (\d+)/.exec(text)?.[1] ?? 0),
+    fraction: Number(/# GCCPUFraction = ([\d.e+-]+)/.exec(text)?.[1] ?? 0),
+  }
+}
+
 const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms))
 
 let env: Record<string, string> = {}
@@ -457,6 +480,9 @@ async function main(): Promise<number> {
     )
     for (const scenario of chosen) {
       const before = await domStats(page)
+      const wallStart = Date.now()
+      const cpuStart = cpuSeconds(serverPid())
+      const gcStart = process.env.MORTAR_PPROF ? await gcStats(process.env.MORTAR_PPROF) : null
       const stop = sample(serverPid, () => browserPid)
       const stopPeak = process.env.MORTAR_PPROF
         ? pollPeakHeap(process.env.MORTAR_PPROF, scenario.name)
@@ -468,6 +494,13 @@ async function main(): Promise<number> {
         failure = e instanceof Error ? e.message : String(e)
       }
       const p = stop()
+      const wall = (Date.now() - wallStart) / 1000
+      const cpu = cpuSeconds(serverPid()) - cpuStart
+      let gcNote = ''
+      if (gcStart && process.env.MORTAR_PPROF) {
+        const end = await gcStats(process.env.MORTAR_PPROF)
+        gcNote = `, ${end.cycles - gcStart.cycles} GCs, GC share of CPU since start ${(end.fraction * 100).toFixed(1)}%`
+      }
       const peakNote = stopPeak ? await stopPeak() : ''
       const over = p.total > BUDGET_MIB
       if (over || failure) {
@@ -479,6 +512,7 @@ async function main(): Promise<number> {
       rows.push(
         `          top at peak: ${p.top.map((t) => `${t.comm}[${t.pid}] ${t.mib.toFixed(0)}`).join(', ')}`,
       )
+      rows.push(`          Wall ${wall.toFixed(1)} s, Go CPU ${cpu.toFixed(1)} s${gcNote}`)
       rows.push(`          Before: ${before}`)
       rows.push(`          ${await browserHeap(page, scenario.name, browserPid)}`)
       if (peakNote) {
