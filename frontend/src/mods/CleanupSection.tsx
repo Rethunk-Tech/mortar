@@ -49,7 +49,7 @@ function RemoveOne({ choices }: { choices: { key: string; name: string }[] }) {
                 }
               }}
             >
-              {t`Remove ${choice.name}`}
+              {t`Remove ${{ name: choice.name }}`}
             </MenuItem>
           )
         })}

@@ -30,11 +30,9 @@ function summarize(
     })
     return
   }
-  const updated = i18n._(
-    msg`${plural(counts.installed, { one: 'Updated # mod', other: 'Updated # mods' })}`,
-  )
+  const { installed: updated } = counts
   const parts = [
-    updated,
+    i18n._(msg`${plural(updated, { one: 'Updated # mod', other: 'Updated # mods' })}`),
     ...(counts.failed > 0 ? [i18n._(msg`${counts.failed} failed`)] : []),
     ...(needChoice > 0 ? [i18n._(msg`${needChoice} need your choice`)] : []),
   ]

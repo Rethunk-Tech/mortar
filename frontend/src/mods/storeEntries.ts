@@ -87,14 +87,13 @@ function pushRemovedUndo(
 ) {
   const ids = entries.flatMap((entry) => (entry.mods ?? []).map((mod) => mod.id))
   const [first] = entries
+  const removed = new Set(ids).size
   useToasts.getState().push({
     kind: 'success',
     title:
-      new Set(ids).size === 1 && first?.mods?.[0]?.name
+      removed === 1 && first?.mods?.[0]?.name
         ? i18n._(msg`Removed ${first.mods[0].name}`)
-        : i18n._(
-            msg`${plural(new Set(ids).size, { one: 'Removed # mod', other: 'Removed # mods' })}`,
-          ),
+        : i18n._(msg`${plural(removed, { one: 'Removed # mod', other: 'Removed # mods' })}`),
     action: {
       label: i18n._(msg`Undo`),
       profileId,
