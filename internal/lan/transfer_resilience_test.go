@@ -62,7 +62,7 @@ func TestAReaderThatPausesMidEntryStillGetsTheWholeEntry(t *testing.T) {
 	if _, err := io.ReadFull(response.Body, head); err != nil {
 		t.Fatal(err)
 	}
-	// Longer than the request deadline the server used to put on the whole stream.
+	// Longer than the request deadline, which must not cap the whole stream.
 	time.Sleep(httpTimeout + time.Second)
 	rest, err := io.Copy(io.Discard, response.Body)
 	if err != nil {

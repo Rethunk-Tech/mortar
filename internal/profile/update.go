@@ -546,7 +546,7 @@ func (s *Store) savesDir(set settings.Settings, game, profileID string) (string,
 }
 
 // followKey is src corrected to the store item key, which names the file actually installed. An entry's recorded
-// source can lag behind its key (an update by key used to leave it), and a share names the file from the source.
+// source can lag behind its key (an update by key leaves it behind), and a share names the file from the source.
 func (s *Store) followKey(game string, src Source, key string) Source {
 	switch src.Kind {
 	case KindNexus:
