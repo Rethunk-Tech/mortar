@@ -130,7 +130,7 @@ Its notes are user-facing: `build/release/notes.sh` keeps the `feat`, `fix` and 
 
 Releases are immutable once published, so the release is created as a draft, every draft asset is downloaded and checked against the staged files and the manifest's digests (`build/release/verify.sh`), and only then published; a rerun finishes the existing draft. After publishing, `verify.sh --public` fetches the manifest, its assets, the pinned component assets and the newest components manifest without a token: a failure is a warning while a repo is private and fails the run once it is public.
 
-A manual dispatch (Actions › Release › Run workflow) is the dry run: both legs, the signed manifest, package-manager sources, the notes (in the run summary) and `verify.sh --staged` on the staged files, for `build/config.yml`'s version, with no GitHub release and no build attestation.
+A manual dispatch (Actions › Release › Run workflow) is the dry run: both legs, the signed manifest, package-manager sources, the notes (in the run summary) and `verify.sh --staged` on the staged files, for `build/config.yml`'s version, with no GitHub release and no build attestation. A tag run reads the caches a dispatch on `main` saved but cannot share its own, so the dry run is also what warms the Flatpak SDK, Go build and tool caches for the tag.
 
 CI reads the repository secret `MORTAR_UPDATE_KEY`, which holds the private key file's PEM contents, not its path:
 

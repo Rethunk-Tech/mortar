@@ -2,6 +2,9 @@ name: Set up Mortar
 description: GTK4/WebKitGTK, Go, the wails3 CLI from the fork go.mod pins, Bun and optionally the frontend build and lint or packaging tools.
 
 inputs:
+  native:
+    description: "false skips the GTK4 and WebKitGTK packages and the Go build cache, for a job that only runs Go tools and never compiles the app."
+    default: "true"
   apt-packages:
     description: Extra apt packages to install beside GTK4 and WebKitGTK.
     default: ""
@@ -18,18 +21,59 @@ inputs:
 runs:
   using: composite
   steps:
+    # One apt transaction: every package a job needs comes through apt-packages, so a later step never pays for
+    # a second dpkg run.
     - name: GTK4 and WebKitGTK 6.0
+      if: inputs.native == 'true'
       shell: bash
-      run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev ${{ inputs.apt-packages }}
+      env:
+        APT_PACKAGES: ${{ inputs.apt-packages }}
+      run: |
+        # APT_PACKAGES holds space-separated package names; word-splitting is intentional.
+        # shellcheck disable=SC2086
+        sudo apt-get update && sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev $APT_PACKAGES
 
     - name: Setup Go
+      if: inputs.native == 'true'
       uses: Rethunk-Tech/gh-actions/setup-go@99dfb9093ab089d28f76d8036322a7c062259e76 # v1.13
       with:
         go-version-file: go.mod
 
+    # Without the app's compile there is no build cache worth restoring (1.4 GB), so only the module cache is kept.
+    - name: Setup Go (no build cache)
+      id: setup-go-light
+      if: inputs.native != 'true'
+      uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    - name: Go cache paths
+      shell: bash
+      run: |
+        echo "MORTAR_GOBIN=$(go env GOPATH)/bin" >>"$GITHUB_ENV"
+        echo "MORTAR_GOMOD=$(go env GOMODCACHE)" >>"$GITHUB_ENV"
+
+    - name: Cache Go modules
+      if: inputs.native != 'true'
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ env.MORTAR_GOMOD }}
+        key: mortar-gomod-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('go.sum') }}
+
+    # The wails3, nfpm and lint binaries are compiled from source on every run otherwise. The key names everything
+    # that decides their content: the dependency graph (the fork pin), this file (tool versions) and the tool set.
+    - name: Cache Go tools
+      id: tools
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ env.MORTAR_GOBIN }}
+        key: mortar-tools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('go.mod', 'go.sum', '.github/actions/setup-mortar/action.yml') }}-lint-${{ inputs.lint-tools }}-nfpm-${{ inputs.nfpm }}
+
     # go.mod replaces wailsapp/wails/v3 with the Rethunk-AI fork, and `go install module@version` ignores
     # replace directives, so the CLI is built inside the fork's own module at the exact version go.mod pins.
     - name: Go tools
+      if: steps.tools.outputs.cache-hit != 'true'
       shell: bash
       env:
         LINT_TOOLS: ${{ inputs.lint-tools }}

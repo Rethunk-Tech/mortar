@@ -62,16 +62,19 @@ jobs:
             echo "run=true" >>"$GITHUB_OUTPUT"
           fi
 
+      # The GNOME SDK, the build and its repo need more space than the hosted runner leaves free, and deleting these
+      # preinstalled toolchains takes a minute, so it runs beside the build and the Flatpak step waits for it.
+      - name: Free disk space
+        if: matrix.flatpak
+        run: |
+          (sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL; touch "$RUNNER_TEMP/disk-freed") >/dev/null 2>&1 &
+
       - name: Set up Mortar
         uses: ./.github/actions/setup-mortar
         with:
-          apt-packages: appstream
+          apt-packages: appstream rpm flatpak dbus-daemon${{ matrix.windows && ' nsis' || '' }}
           lint-tools: ${{ steps.gate.outputs.run }}
           nfpm: "true"
-
-      - name: NSIS
-        if: matrix.windows
-        run: sudo apt-get install -y --no-install-recommends nsis
 
       - name: Version agreement
         env:
@@ -98,7 +101,7 @@ jobs:
       - name: Linux deb, rpm and Arch packages
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-        run: sudo apt-get install -y --no-install-recommends rpm && wails3 task linux:nfpm
+        run: wails3 task linux:nfpm
 
       - name: Flatpak runtime version
         id: flatpak-runtime
@@ -106,10 +109,12 @@ jobs:
         run: |
           echo "version=$(sed -n 's/^runtime-version: "\(.*\)"$/\1/p' build/linux/flatpak/tech.rethunk.Mortar.yml)" >>"$GITHUB_OUTPUT"
 
-      # The user installation holds the GNOME runtime, SDK and Flathub's builder, the slow part of the build.
+      # The user installation holds the GNOME runtime, SDK and Flathub's builder, the slow part of the build. A tag
+      # run reads the default branch's cache but cannot share its own save, so only a dispatch run on main saves.
       - name: Flatpak SDK cache
+        id: flatpak-cache
         if: matrix.flatpak
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.local/share/flatpak
           key: flatpak-user-gnome-${{ matrix.appimage_arch }}-${{ steps.flatpak-runtime.outputs.version }}
@@ -119,11 +124,8 @@ jobs:
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
         run: |
-          # The GNOME SDK, the build and its repo need more space than the hosted runner leaves free; these
-          # preinstalled toolchains are unused here.
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
+          until [ -e "$RUNNER_TEMP/disk-freed" ]; do sleep 1; done
           df -h / | tail -1
-          sudo apt-get install -y --no-install-recommends flatpak dbus-daemon
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           # Flathub's own builder: the distro flatpak-builder composes AppStream with the runner's older appstream,
           # which fails on the GNOME 51 SDK.
@@ -134,6 +136,13 @@ jobs:
           # The sandboxed builder installs the SDK through the host's flatpak over the session bus, which a headless
           # runner does not have.
           PATH="$RUNNER_TEMP/bin:$PATH" dbus-run-session -- wails3 task linux:flatpak
+
+      - name: Save Flatpak SDK cache
+        if: matrix.flatpak && steps.flatpak-cache.outputs.cache-hit != 'true' && github.ref_type != 'tag'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.local/share/flatpak
+          key: ${{ steps.flatpak-cache.outputs.cache-primary-key }}
 
       - name: Windows exe and installer
         if: matrix.windows
@@ -189,6 +198,7 @@ jobs:
       - name: Set up Mortar
         uses: ./.github/actions/setup-mortar
         with:
+          native: "false"
           frontend: "false"
 
       - name: Download artifacts
