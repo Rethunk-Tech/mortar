@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdirSync, readdirSync, readFileSync, readlinkSync, rmSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, readlinkSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { chromium, type Page } from '@playwright/test'
 import { sandboxPort, selftest, serverEnv } from './sandbox.ts'
@@ -162,6 +162,22 @@ function sample(listener: () => number, browser: () => number): () => Peak {
     clearInterval(timer)
     return peak
   }
+}
+
+const outDir = process.env.MORTAR_MEM_OUT ?? `${BASE}/mem-budget-${Date.now()}`
+
+/** With MORTAR_PPROF=<addr> (the server serves its pprof endpoints there), saves the server's heap and allocation profiles
+ * after a scenario and says where, so a figure over budget can be traced to the code that holds it. */
+async function saveProfiles(addr: string, scenario: string): Promise<string> {
+  mkdirSync(outDir, { recursive: true })
+  const files: string[] = []
+  for (const kind of ['heap', 'allocs']) {
+    const res = await fetch(`http://${addr}/debug/pprof/${kind}`)
+    const file = `${outDir}/${scenario}.${kind}.pb.gz`
+    writeFileSync(file, Buffer.from(await res.arrayBuffer()))
+    files.push(file)
+  }
+  return `profiles: ${files.join(' ')}`
 }
 
 const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms))
@@ -372,6 +388,9 @@ async function main(): Promise<number> {
       rows.push(
         `          top at peak: ${p.top.map((t) => `${t.comm}[${t.pid}] ${t.mib.toFixed(0)}`).join(', ')}`,
       )
+      if (process.env.MORTAR_PPROF) {
+        rows.push(`          ${await saveProfiles(process.env.MORTAR_PPROF, scenario.name)}`)
+      }
     }
     await browser.close()
   } finally {

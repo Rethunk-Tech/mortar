@@ -10,8 +10,9 @@ import (
 )
 
 // MORTAR_PPROF=<addr> serves Go's profiling endpoints (/debug/pprof/) in server mode, for the memory harness and for
-// profiling a self-test sandbox. Unset, nothing listens; the desktop build never has it.
-func init() {
+// profiling a self-test sandbox. Unset, nothing listens; the desktop build never has it. prepareServerMode starts it,
+// which only the long-running server reaches, not a CLI call of the same binary.
+func servePprof() {
 	addr := os.Getenv("MORTAR_PPROF")
 	if addr == "" {
 		return

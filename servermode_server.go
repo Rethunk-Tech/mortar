@@ -29,6 +29,7 @@ func prepareServerMode() error {
 		return errors.New("server mode does not run on your own Mortar data; set HOME to a sandbox " +
 			"(scripts/selftest.sh does), or set " + realDataOptIn + "=1 to run on it anyway")
 	}
+	servePprof()
 	if os.Getenv("WAILS_SERVER_PORT") != "" {
 		return nil
 	}
