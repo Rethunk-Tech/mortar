@@ -1658,7 +1658,7 @@ msgstr "Add preset"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
-#: src/games/GameSelect.tsx:365
+#: src/games/GameSelect.tsx:336
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -3008,7 +3008,6 @@ msgstr "No mod settings yet"
 msgid "The console fills when the game runs."
 msgstr "The console fills when the game runs."
 
-#: src/games/GameSelect.tsx:138
 #: src/saves/SaveRow.tsx:207
 msgid "Last played with {profile}"
 msgstr "Last played with {profile}"
@@ -3966,7 +3965,7 @@ msgstr "Should Mortar open Nexus \"Mod Manager Download\" links, so a click on N
 msgid "Also enabled {0}"
 msgstr "Also enabled {0}"
 
-#: src/games/useGameTiles.ts:98
+#: src/games/useGameTiles.ts:97
 msgid "Coming in a later Mortar version"
 msgstr "Coming in a later Mortar version"
 
@@ -4145,11 +4144,11 @@ msgstr "config.json, as the mod ships it"
 msgid "The last launch loaded this here, not where its dependencies put it."
 msgstr "The last launch loaded this here, not where its dependencies put it."
 
-#: src/games/GameSelect.tsx:368
+#: src/games/GameSelect.tsx:339
 msgid "Check launchers…"
 msgstr "Check launchers…"
 
-#: src/games/GameSelect.tsx:280
+#: src/games/GameSelect.tsx:261
 msgid "Set up"
 msgstr "Set up"
 
@@ -6143,10 +6142,6 @@ msgstr "Trace"
 msgid "Ask a ClamAV daemon at the socket path below."
 msgstr "Ask a ClamAV daemon at the socket path below."
 
-#: src/games/useGameTiles.ts:101
-msgid "Not set up · Open it to set it up"
-msgstr "Not set up · Open it to set it up"
-
 #: src/settings/prefCopy.ts:164
 msgid "Absolute"
 msgstr "Absolute"
@@ -6316,7 +6311,7 @@ msgid "No profiles found."
 msgstr "No profiles found."
 
 #. placeholder {0}: game.name
-#: src/games/GameSelect.tsx:210
+#: src/games/GameSelect.tsx:194
 msgid "Open {0}"
 msgstr "Open {0}"
 
@@ -6340,7 +6335,7 @@ msgstr "Could not move the old files to trash"
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
-#: src/games/GameSelect.tsx:166
+#: src/games/GameSelect.tsx:150
 #: src/games/ProfileCards.tsx:48
 #: src/profiles/store.ts:250
 #: src/profiles/store.ts:311
@@ -8081,7 +8076,7 @@ msgstr "Minutes between background update checks"
 msgid "Show all"
 msgstr "Show all"
 
-#: src/games/GameSelect.tsx:142
+#: src/games/GameSelect.tsx:135
 msgid "{playtime} played"
 msgstr "{playtime} played"
 
@@ -9499,7 +9494,7 @@ msgid "The Vortex folder {folder} has no profiles."
 msgstr "The Vortex folder {folder} has no profiles."
 
 #: src/App.tsx:79
-#: src/games/useGameTiles.ts:89
+#: src/games/useGameTiles.ts:88
 #: src/games/useOpenGame.ts:42
 msgid "Could not read your games"
 msgstr "Could not read your games"
@@ -9646,7 +9641,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/GameSetup.tsx:153
 #: src/firstrun/LoaderStep.tsx:222
 #: src/game/ProfileWorkspace.tsx:37
-#: src/games/GameSelect.tsx:339
+#: src/games/GameSelect.tsx:305
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
 msgstr "Loading…"
@@ -10232,6 +10227,7 @@ msgstr "{name} is deprecated on Thunderstore."
 msgid "Show conflicts"
 msgstr "Show conflicts"
 
+#: src/games/useGameTiles.ts:100
 #: src/settings/sections/Sources.tsx:131
 msgid "Not set up"
 msgstr "Not set up"
@@ -10710,10 +10706,6 @@ msgstr "Overrides"
 msgid "Import…"
 msgstr "Import…"
 
-#: src/games/GameSelect.tsx:151
-msgid "{loader} | {store}"
-msgstr "{loader} | {store}"
-
 #: src/nxm/ArrivalDialog.tsx:104
 msgid "Install {name}?"
 msgstr "Install {name}?"
@@ -10806,10 +10798,6 @@ msgstr "Sparkles"
 #: src/QuitPrompt.tsx:20
 msgid "Quit"
 msgstr "Quit"
-
-#: src/games/GameSelect.tsx:153
-msgid "{loader} · {lastLine}"
-msgstr "{loader} · {lastLine}"
 
 #: src/settings/sections/Shortcuts.tsx:62
 msgid "Use it anyway; {conflictName} becomes unbound"
@@ -10994,7 +10982,7 @@ msgid "Stop the game to test a launch."
 msgstr "Stop the game to test a launch."
 
 #: src/firstrunTour/TourPopover.tsx:42
-#: src/games/GameSelect.tsx:258
+#: src/games/GameSelect.tsx:248
 #: src/launch/PlayControl.tsx:175
 #: src/mods/typedConfig/ConfigTab.tsx:299
 #: src/settings/GameSettingsPage.tsx:72
@@ -11526,11 +11514,6 @@ msgstr "Errors"
 msgid "Diagnostics saved"
 msgstr "Diagnostics saved"
 
-#. placeholder {0}: st.profiles.length
-#: src/games/useGameTiles.ts:103
-msgid "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
-msgstr "{0, plural, one {Installed · # profile} other {Installed · # profiles}}"
-
 #: src/firstrun/ProfileStep.tsx:215
 #: src/share/ImportInput.tsx:57
 msgid "Share link"
@@ -11776,7 +11759,7 @@ msgstr "Sort: newest"
 msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
 
-#: src/games/GameSelect.tsx:244
+#: src/games/GameSelect.tsx:243
 msgid "Play {playName}"
 msgstr "Play {playName}"
 
@@ -12455,10 +12438,6 @@ msgstr "The author has not listed any versions here."
 msgid "Open Problems"
 msgstr "Open Problems"
 
-#: src/games/GameSelect.tsx:148
-msgid "{loader} | {store} · {lastLine}"
-msgstr "{loader} | {store} · {lastLine}"
-
 #: src/profiles/LaunchOptionsBlock.tsx:159
 msgid "One VAR=value per line, for direct launches only; Steam launches ignore them."
 msgstr "One VAR=value per line, for direct launches only; Steam launches ignore them."
@@ -12790,10 +12769,6 @@ msgstr "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 msgid "Skip this update"
 msgstr "Skip this update"
 
-#: src/games/GameSelect.tsx:136
-msgid "Last played with {profile} · {when}"
-msgstr "Last played with {profile} · {when}"
-
 #: src/settings/sections/AboutDiagnostics.tsx:98
 msgid "Command-line control"
 msgstr "Command-line control"
@@ -12802,7 +12777,7 @@ msgstr "Command-line control"
 msgid "Could not repair this profile"
 msgstr "Could not repair this profile"
 
-#: src/games/GameSelect.tsx:164
+#: src/games/GameSelect.tsx:148
 #: src/games/ProfileCards.tsx:46
 #: src/games/ProfileCards.tsx:60
 #: src/games/useOpenGame.ts:42
@@ -12978,7 +12953,7 @@ msgstr "See which mods slow the game"
 
 #. placeholder {0}: game.name
 #: src/firstrun/GameSetup.tsx:176
-#: src/games/GameSelect.tsx:266
+#: src/games/GameSelect.tsx:256
 msgid "Set up {0}"
 msgstr "Set up {0}"
 

@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Link, Typography } from '@mui/material'
+import { Box, Button, Link, Tooltip, Typography } from '@mui/material'
 import { Play, Settings } from 'lucide-react'
 import type { MouseEvent } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
@@ -30,15 +30,20 @@ import { useOpenGame } from './useOpenGame.ts'
 
 type Game = GameInfo
 
-const LONG_NAME = 8
-// Tiles share the window in a grid that grows with the catalog: two games sit side by side, more wrap into rows.
-const TILE_MIN_PX = 240
+// A short catalog reads as a list of full-width rows; past this many games the rows wrap into columns.
+const LIST_MAX_GAMES = 4
+const ROW_MIN_PX = 168
+const ROW_MAX_PX = 260
 const TILE_MIN_WIDTH_PX = 560
-const SMALL_FONT = 13
-const NORMAL_FONT = 15
 const HOVER_MS = 200
 const HOVER_EASE = 'cubic-bezier(0.2, 0.8, 0.2, 1)'
 const shadow = '0 1px 2px var(--mortar-overlay-90), 0 0 18px var(--mortar-overlay-85)'
+const actionSx = {
+  minWidth: 132,
+  height: 44,
+  fontSize: 16,
+  fontWeight: 700,
+} as const
 
 function fail(title: string, err: unknown) {
   reportError(title)(err)
@@ -83,35 +88,29 @@ function Art({ src, openable }: { src: string; openable: boolean }) {
   )
 }
 
+// Logos only: the names are well known, and the tooltip carries them for anyone who is not sure.
 function SourceBadges({ sources }: { sources: string[] }) {
   return (
-    <>
-      {sources.map((id) => {
-        const name = sourceLabel(id)
-        return (
+    <Box sx={{ display: 'flex', gap: '6px' }}>
+      {sources.map((id) => (
+        <Tooltip key={id} title={sourceLabel(id)}>
           <Box
-            key={id}
+            role="img"
+            aria-label={sourceLabel(id)}
             sx={{
-              width: 96,
-              height: 96,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
+              width: 36,
+              height: 36,
+              display: 'grid',
+              placeItems: 'center',
               bgcolor: 'var(--mortar-game-dim)',
-              fontSize: name.length > LONG_NAME ? SMALL_FONT : NORMAL_FONT,
-              fontWeight: 700,
-              // The tile is near-white in the light theme, so the label takes the theme's text colour.
-              color: 'text.primary',
+              borderRadius: '6px',
             }}
           >
-            <SourceLogo id={id} size={40} />
-            {name}
+            <SourceLogo id={id} size={22} />
           </Box>
-        )
-      })}
-    </>
+        </Tooltip>
+      ))}
+    </Box>
   )
 }
 
@@ -130,27 +129,12 @@ function useLoaderLine({
 }) {
   const { t, i18n } = useLingui()
   useNow()
-  const ago = formatWhen(lastPlayedAt)
-  let lastLine = ''
-  if (lastPlayedName && ago) {
-    lastLine = t`Last played with ${{ profile: lastPlayedName }} · ${{ when: ago }}`
-  } else if (lastPlayedName) {
-    lastLine = t`Last played with ${{ profile: lastPlayedName }}`
-  }
+  const ago = lastPlayedName ? formatWhen(lastPlayedAt) : ''
   const playtime = formatPlaytime(playtimeMs, i18n.locale)
-  if (playtime) {
-    const total = t`${playtime} played`
-    lastLine = lastLine ? `${lastLine} · ${total}` : total
-  }
   const named = game.store ? storeName(game.store) : null
-  const store = named ? t(named) : ''
-  if (store && lastLine) {
-    return t`${loader} | ${store} · ${lastLine}`
-  }
-  if (store) {
-    return t`${loader} | ${store}`
-  }
-  return lastLine ? t`${loader} · ${lastLine}` : loader
+  return [loader, named ? t(named) : '', ago, playtime ? t`${playtime} played` : '']
+    .filter(Boolean)
+    .join(' · ')
 }
 
 function usePlayLast(game: Game, lastPlayedId: string) {
@@ -211,21 +195,26 @@ function Row({
       <Box
         sx={{
           ...aboveOpen,
+          flex: 1,
           minWidth: 0,
           overflow: 'hidden',
           textShadow: hasArt ? shadow : 'none',
           textAlign: 'left',
           color: hasArt ? 'common.white' : 'text.primary',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
         }}
       >
-        <Typography sx={{ fontSize: 34, fontWeight: 600, lineHeight: 1.2 }}>{game.name}</Typography>
+        <Typography sx={{ fontSize: 30, fontWeight: 600, lineHeight: 1.15 }}>
+          {game.name}
+        </Typography>
         <Typography
           title={lastPlayedAt ? absoluteWhen(lastPlayedAt, i18n.locale) || undefined : undefined}
-          sx={{ fontSize: 17 }}
+          sx={{ fontSize: 15, opacity: 0.9 }}
         >
-          {loaderLine}
+          {[loaderLine, note].filter(Boolean).join(' · ')}
         </Typography>
-        <Typography sx={{ mt: '6px', fontSize: 16, fontWeight: 600 }}>{note}</Typography>
         {cards ? (
           <ProfileCards
             gameId={cards.gameId}
@@ -235,25 +224,26 @@ function Row({
           />
         ) : null}
       </Box>
-      <Box sx={{ ...aboveOpen, display: 'flex', alignItems: 'center', gap: '14px' }}>
+      <Box
+        sx={{
+          ...aboveOpen,
+          flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: '12px',
+        }}
+      >
+        <SourceBadges sources={game.sources ?? []} />
         {openable && playId ? (
           <Button
             type="button"
             variant="contained"
             size="large"
             aria-label={t`Play ${playName}`}
-            startIcon={<Play size={22} fill="currentColor" />}
+            startIcon={<Play size={18} fill="currentColor" />}
             onClick={playLast}
-            sx={{
-              flexShrink: 0,
-              height: 96,
-              minWidth: 120,
-              px: 3,
-              borderRadius: 0,
-              fontSize: 17,
-              fontWeight: 700,
-              '& .MuiButton-startIcon': { mr: '10px' },
-            }}
+            sx={actionSx}
           >
             {t`Play`}
           </Button>
@@ -264,43 +254,30 @@ function Row({
             variant="contained"
             size="large"
             aria-label={t`Set up ${game.name}`}
-            startIcon={<Settings size={22} />}
+            startIcon={<Settings size={18} />}
             onClick={open}
-            sx={{
-              flexShrink: 0,
-              height: 96,
-              minWidth: 120,
-              px: 3,
-              borderRadius: 0,
-              fontSize: 17,
-              fontWeight: 700,
-              '& .MuiButton-startIcon': { mr: '10px' },
-            }}
+            sx={actionSx}
           >
             {t`Set up`}
           </Button>
         ) : null}
-        <SourceBadges sources={game.sources ?? []} />
       </Box>
     </>
   )
   const sx = {
     position: 'relative',
-    minHeight: TILE_MIN_PX,
-    // Text above actions on every tile, so Play and the sources sit in the same place whatever the name's length.
+    // Name and profiles on the left, sources and Play on the right, so every row lines its actions up the same way.
     display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    gap: '16px',
-    px: '48px',
-    py: '24px',
+    alignItems: 'center',
+    gap: '24px',
+    px: '40px',
+    py: '20px',
     overflow: 'hidden',
     // Art tiles keep a solid dark base so white text stays readable while or after the image fails to load.
     bgcolor: hasArt ? 'var(--mortar-overlay-90)' : 'background.paper',
     borderLeft: '4px solid',
     borderColor: openable ? 'primary.main' : 'transparent',
-    borderTop: '1px solid var(--mortar-overlay-80)',
+    borderRadius: '8px',
     fontFamily: 'inherit',
   } as const
   return (
@@ -310,22 +287,11 @@ function Row({
   )
 }
 
-// Hover focus on the grid: the hovered tile grows, the rest shrink (never dim: with the pointer resting on one tile
-// the others looked darkened for good), and the art drifts opposite ways. Only
-// transform and filter change, so the grid never reflows (animating flex-grow or width jumped in WebKitGTK).
+// Hovering a row drifts its art; the rows themselves never move, so the list stays aligned under the pointer.
 const hoverFocus = {
   '@media (hover: hover) and (prefers-reduced-motion: no-preference)': {
-    '& [data-tile]': {
-      willChange: 'transform',
-      transition: `transform ${HOVER_MS}ms ${HOVER_EASE}`,
-    },
     '& [data-art]': { transition: `transform ${HOVER_MS}ms ${HOVER_EASE}` },
-    '& [data-tile]:hover': { transform: 'scale(1.04)', zIndex: 1 },
-    '&:has([data-tile]:hover) [data-tile]:not(:hover)': { transform: 'scale(0.96)' },
-    '& [data-tile]:hover [data-art]': { transform: 'scale(1.12) translateX(-2%)' },
-    '&:has([data-tile]:hover) [data-tile]:not(:hover) [data-art]': {
-      transform: 'scale(1.12) translateX(2%)',
-    },
+    '& [data-tile]:hover [data-art]': { transform: 'scale(1.1) translateX(-2%)' },
   },
 } as const
 
@@ -349,8 +315,13 @@ function GameSelect() {
           // Room for the hovered tile's growth, so it is not cut at the grid's edge.
           p: '8px 16px',
           display: 'grid',
-          gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${TILE_MIN_WIDTH_PX}px), 1fr))`,
-          gridAutoRows: `minmax(${TILE_MIN_PX}px, 1fr)`,
+          gridTemplateColumns:
+            status.games.length <= LIST_MAX_GAMES
+              ? '1fr'
+              : `repeat(auto-fit, minmax(min(100%, ${TILE_MIN_WIDTH_PX}px), 1fr))`,
+          gridAutoRows: `minmax(${ROW_MIN_PX}px, ${ROW_MAX_PX}px)`,
+          alignContent: 'start',
+          gap: '10px',
           ...hoverFocus,
         }}
         onKeyDown={(e) => arrowFocus(e, '[data-tile]')}

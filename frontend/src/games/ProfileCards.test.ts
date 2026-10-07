@@ -14,7 +14,7 @@ test('profile cards have no per-card Play button', () => {
 
 test('Game Select renders profile cards inside the banner row', () => {
   const src = readFileSync(join(dir, 'GameSelect.tsx'), 'utf8')
-  expect(src).toContain('{note}</Typography>')
-  expect(src.indexOf('<ProfileCards')).toBeGreaterThan(src.indexOf('{note}</Typography>'))
+  expect(src).toContain('[loaderLine, note]')
+  expect(src.indexOf('<ProfileCards')).toBeGreaterThan(src.indexOf('[loaderLine, note]'))
   expect(src).not.toMatch(/<\/Row>[\s\S]{0,80}<ProfileCards/)
 })

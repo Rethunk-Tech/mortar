@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { useCallback, useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
@@ -98,12 +97,10 @@ function useGameTiles() {
       return t`Coming in a later Mortar version`
     }
     if (!st || st.setupNeeded) {
-      return t`Not set up · Open it to set it up`
+      return t`Not set up`
     }
-    return plural(st.profiles.length, {
-      one: 'Installed · # profile',
-      other: 'Installed · # profiles',
-    })
+    // The profile cards already name every profile.
+    return ''
   }
   const tileProps = (g: Game) => {
     const st = states[g.id]
