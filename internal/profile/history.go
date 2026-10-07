@@ -138,11 +138,36 @@ func (s *Store) History(game, id string) ([]HistoryEvent, error) {
 			return nil, err
 		}
 	}
+	p, err := s.read(game, id)
+	if err != nil {
+		return nil, err
+	}
 	out := make([]HistoryEvent, len(data.Events))
 	for i, e := range data.Events {
+		if modNamed(e.Change) {
+			e.Name = modDisplayName(p.Entries, e.Name)
+		}
 		out[len(data.Events)-1-i] = e
 	}
 	return out, nil
+}
+
+// modNamed reports whether a change's Name is a mod's id as the config code recorded it, which reads better as the
+// mod's name.
+func modNamed(c HistoryChange) bool {
+	return c == ChangeConfigEdited || c == ChangeConfigReset || c == ChangePresetApplied || c == ChangeOptionSet
+}
+
+// modDisplayName is the name of the mod whose unique id is local, or local itself when the profile no longer holds it.
+func modDisplayName(entries []Entry, local string) string {
+	for _, e := range entries {
+		for _, m := range e.Mods {
+			if m.ID.Local() == local && m.Name != "" {
+				return m.Name
+			}
+		}
+	}
+	return local
 }
 
 // countEvent stores how event i changed the mods from the event before it, whose snapshot after is.

@@ -229,6 +229,9 @@ func (s *Store) editConfigLocked(game, id string, note HistoryEvent, edit func()
 	if err := s.captureBeforeEdit(dir, p); err != nil {
 		return err
 	}
+	if modNamed(note.Change) {
+		note.Name = modDisplayName(p.Entries, note.Name)
+	}
 	if err := edit(); err != nil {
 		return err
 	}

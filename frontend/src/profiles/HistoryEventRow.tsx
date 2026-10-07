@@ -107,7 +107,18 @@ export function HistoryEventRow({
             {open ? t`Hide mods` : t`Show mods`}
           </Button>
         ) : null}
-        {trimmed || onUndo === undefined ? null : (
+        {trimmed || onUndo === undefined ? (
+          // The same button, hidden, so every row's columns line up whether or not it can be undone.
+          <Button
+            size="small"
+            disabled={true}
+            aria-hidden={true}
+            tabIndex={-1}
+            sx={{ visibility: 'hidden' }}
+          >
+            {t`Undo these changes`}
+          </Button>
+        ) : (
           <Tooltip
             describeChild={true}
             title={t`Put the profile back as it was before this entry. Newer entries are undone too.`}

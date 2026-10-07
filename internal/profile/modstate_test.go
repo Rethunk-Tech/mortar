@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -189,5 +190,38 @@ func TestRollBackThroughService(t *testing.T) {
 	got, err := svc.RollBack("stardew", p.ID, "a-2")
 	if err != nil || got.Entries[0].Key != "a-1" || got.Entries[0].PreviousKey != "a-2" {
 		t.Fatalf("rolled back = %+v, %v", got.Entries, err)
+	}
+}
+
+func TestConfigHistoryNamesTheModNotItsID(t *testing.T) {
+	t.Parallel()
+	m := `{"Name":"Alpha Mod","Author":"me","Version":"1.0.0","UniqueID":"me.a", /* c */}`
+	e, p := updEnv(t, map[string]string{"A/manifest.json": m, "A/config.json": `{"z":1}`}, map[string]string{"A/manifest.json": m + " "})
+	svc := NewService(e.Store, t.TempDir(), nil)
+	if err := svc.WriteConfig("stardew", p.ID, "a-1", "smapi:me.a", `{"z":2}`); err != nil {
+		t.Fatal(err)
+	}
+	cur, err := e.Store.read("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var want string
+	for _, en := range cur.Entries {
+		for _, c := range en.Mods {
+			if c.ID.Local() == "me.a" {
+				want = c.Name
+			}
+		}
+	}
+	events, err := svc.History("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	i := slices.IndexFunc(events, func(ev HistoryEvent) bool { return ev.Change == ChangeConfigEdited })
+	if want == "" || want == "me.a" || i < 0 || events[i].Name != want {
+		t.Fatalf("name = %q, want %q (events %+v)", events[i].Name, want, events)
+	}
+	if got := modDisplayName(cur.Entries, "gone.Mod"); got != "gone.Mod" {
+		t.Fatalf("a mod that is gone reads %q", got)
 	}
 }
