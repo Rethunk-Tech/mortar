@@ -2,7 +2,6 @@ import { type TabId, useTab } from '../game/tab.ts'
 import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { useMods } from '../mods/store.ts'
-import { useUpdates } from '../mods/updates.ts'
 import { type GameId, isGameId, type SettingsSection, useNav } from '../nav/store.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -13,6 +12,7 @@ import { openImport, openShare } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { findCrashCause } from './crashBisect.ts'
+import { rememberPicked } from './sections.ts'
 import { useCommandPalette } from './store.ts'
 
 const sections = new Set<SettingsSection>([
@@ -87,10 +87,6 @@ function runAction(id: string): void {
     playOpenProfile()
     return
   }
-  if (id === 'action:updates') {
-    useUpdates.getState().load().catch(reportUnexpected)
-    return
-  }
   if (id === 'action:recent-changes') {
     useToasts.getState().setHistoryOpen(true)
     return
@@ -138,6 +134,7 @@ function runAction(id: string): void {
 }
 
 export function runPaletteItem(id: string): void {
+  rememberPicked(id)
   useCommandPalette.getState().setOpen(false)
   if (id.startsWith('profile:')) {
     openProfile(id.slice('profile:'.length))

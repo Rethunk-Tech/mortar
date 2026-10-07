@@ -5,7 +5,6 @@ import type { PaletteLabels } from './items.ts'
 export function paletteActionLabels(i18n: I18n): PaletteLabels {
   return {
     play: i18n._(msg`Play the open profile`),
-    updates: i18n._(msg`Check mods and Mortar for updates`),
     downloads: i18n._(msg`Open Downloads`),
     downloadsFolder: i18n._(msg`Add from the downloads folder…`),
     import: i18n._(msg`Import`),
@@ -21,6 +20,7 @@ export function paletteActionLabels(i18n: I18n): PaletteLabels {
     profileHint: i18n._(msg`Open profile`),
     modHint: i18n._(msg`Open mod`),
     settingsHint: i18n._(msg`Settings`),
+    needProfile: i18n._(msg`Open a profile first.`),
     tabs: {
       home: i18n._(msg`Switch to Home`),
       browse: i18n._(msg`Switch to Browse`),

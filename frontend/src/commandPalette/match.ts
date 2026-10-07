@@ -7,7 +7,6 @@ const RANK_FUZZY = 1
 const RANK_WORD = 2
 const RANK_CONTIGUOUS = 3
 const RANK_EXACT = 4
-const MAX_RESULTS = 50
 
 function fuzzyRank(query: string, text: string): number {
   const q = needle(query)
@@ -77,5 +76,5 @@ export function matchPaletteItems(items: readonly PaletteItem[], query: string):
     }
     return a.item.label.localeCompare(b.item.label)
   })
-  return scored.slice(0, MAX_RESULTS).map((row) => row.item)
+  return scored.map((row) => row.item)
 }

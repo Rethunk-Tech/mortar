@@ -8,8 +8,8 @@ import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { SHORTCUTS, type ShortcutId } from '../settings/shortcuts.ts'
 import { useBisectBlockText } from './crashBisect.ts'
 import { buildPaletteItems } from './items.ts'
-import { matchPaletteItems, type PaletteItem } from './match.ts'
 import { paletteActionLabels } from './paletteLabels.ts'
+import { arrangePalette, type PaletteRow, readRecent } from './sections.ts'
 
 export function usePaletteShown(input: {
   i18n: I18n
@@ -20,7 +20,7 @@ export function usePaletteShown(input: {
   sections: { id: SettingsSection; label: string }[]
   shortcutLabels: Partial<Record<ShortcutId, string>>
   bindings: Record<ShortcutId, string>
-}): PaletteItem[] {
+}): PaletteRow[] {
   const { i18n, query, profiles, openId, gameId, sections, shortcutLabels, bindings } = input
   const profile = openProfileOf({ profiles, openId: openId ?? '' })
   const streamOverlay = useProfiles((s) => s.game?.loaders?.[0]?.overlay === true)
@@ -36,7 +36,7 @@ export function usePaletteShown(input: {
       name: mod.name,
     })),
   )
-  return matchPaletteItems(
+  return arrangePalette(
     buildPaletteItems({
       profiles: profiles.map((p) => ({ id: p.id, name: p.name })),
       mods,
@@ -47,7 +47,9 @@ export function usePaletteShown(input: {
       collectionReview,
       streamOverlay,
       crashCheckBlocked,
+      profileOpen: profile !== undefined,
     }),
     query,
+    readRecent(),
   )
 }

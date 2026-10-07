@@ -2017,6 +2017,7 @@ msgstr "Launch presets"
 msgid "{pickedName} is used after Save."
 msgstr "{pickedName} is used after Save."
 
+#: src/commandPalette/CommandPalette.tsx:98
 #: src/saves/SaveListRow.tsx:64
 msgid "Actions"
 msgstr "Actions"
@@ -2405,7 +2406,7 @@ msgstr "In-game menu"
 msgid "Queued"
 msgstr "Queued"
 
-#: src/mods/redundantReason.ts:120
+#: src/mods/redundantReason.ts:72
 msgid "{count, plural, one {Overlaps with {by}: both change {detail}} other {Overlaps with {by}: all change {detail}}}"
 msgstr "{count, plural, one {Overlaps with {by}: both change {detail}} other {Overlaps with {by}: all change {detail}}}"
 
@@ -2739,7 +2740,7 @@ msgstr "{0, plural, one {# has damaged files} other {# have damaged files}}"
 msgid "Add tool"
 msgstr "Add tool"
 
-#: src/commandPalette/CommandPalette.tsx:150
+#: src/commandPalette/CommandPalette.tsx:185
 #: src/profiles/EditProfileDialog.tsx:167
 #: src/settings/sections/DataImport.tsx:17
 #: src/settings/SettingsPage.tsx:40
@@ -2784,7 +2785,7 @@ msgstr "Zoom"
 msgid "Lutris"
 msgstr "Lutris"
 
-#: src/commandPalette/CommandPalette.tsx:151
+#: src/commandPalette/CommandPalette.tsx:186
 #: src/settings/SettingsPage.tsx:41
 msgid "Mods and profiles"
 msgstr "Mods and profiles"
@@ -3350,7 +3351,7 @@ msgstr "Open on Thunderstore"
 msgid "Show: {0}"
 msgstr "Show: {0}"
 
-#: src/commandPalette/CommandPalette.tsx:153
+#: src/commandPalette/CommandPalette.tsx:188
 #: src/settings/SettingsPage.tsx:43
 msgid "Accounts"
 msgstr "Accounts"
@@ -3389,7 +3390,7 @@ msgstr "Before updating a deleted profile"
 msgid "Local-only mods kept ({0})"
 msgstr "Local-only mods kept ({0})"
 
-#: src/commandPalette/CommandPalette.tsx:157
+#: src/commandPalette/CommandPalette.tsx:192
 #: src/settings/sections/DataImport.tsx:23
 #: src/settings/sections/DataUsage.tsx:230
 #: src/settings/SettingsPage.tsx:47
@@ -3620,6 +3621,10 @@ msgstr "Add to profile"
 #: src/profiles/HealthDialog.tsx:139
 msgid "Your edits to its files are replaced with the installed copy."
 msgstr "Your edits to its files are replaced with the installed copy."
+
+#: src/commandPalette/CommandPalette.tsx:96
+msgid "Recent"
+msgstr "Recent"
 
 #: src/settings/startupChecks.ts:37
 #: src/shell/BugReportDialog.tsx:58
@@ -3886,7 +3891,7 @@ msgstr "Bundle deleted"
 msgid "Optional for ({0})"
 msgstr "Optional for ({0})"
 
-#: src/commandPalette/CommandPalette.tsx:159
+#: src/commandPalette/CommandPalette.tsx:194
 #: src/game/LaunchMenu.tsx:74
 #: src/settings/SettingsPage.tsx:49
 msgid "Shortcuts"
@@ -4651,8 +4656,8 @@ msgstr "You started this download on {site}, but you have no {gameName} profile 
 msgid "Game and BepInEx"
 msgstr "Game and BepInEx"
 
-#: src/commandPalette/CommandPalette.tsx:227
-#: src/commandPalette/CommandPalette.tsx:230
+#: src/commandPalette/CommandPalette.tsx:263
+#: src/commandPalette/CommandPalette.tsx:266
 msgid "Search actions and destinations"
 msgstr "Search actions and destinations"
 
@@ -4940,7 +4945,7 @@ msgstr "Connection"
 msgid "Harmless"
 msgstr "Harmless"
 
-#: src/mods/redundantReason.ts:99
+#: src/mods/redundantReason.ts:51
 msgid "{list} do the same job: both change {detail}"
 msgstr "{list} do the same job: both change {detail}"
 
@@ -5271,7 +5276,7 @@ msgstr "{names} all {0} ship the plugin {guid}, and BepInEx loads only one."
 msgid "Added from an archive, so it only exists on this computer."
 msgstr "Added from an archive, so it only exists on this computer."
 
-#: src/commandPalette/CommandPalette.tsx:152
+#: src/commandPalette/CommandPalette.tsx:187
 #: src/mods/columnLabel.ts:15
 #: src/mods/NexusDetails.tsx:109
 #: src/mods/Sidebar.tsx:155
@@ -6442,7 +6447,7 @@ msgstr "Could not remove the selected mods"
 msgid "Saved"
 msgstr "Saved"
 
-#: src/commandPalette/CommandPalette.tsx:156
+#: src/commandPalette/CommandPalette.tsx:191
 #: src/settings/sections/DataImport.tsx:19
 #: src/settings/SettingsPage.tsx:46
 #: src/toasts/HistoryButton.tsx:148
@@ -6985,6 +6990,7 @@ msgstr "{names} both ship the plugin {guid}, and BepInEx loads only one."
 msgid "Send"
 msgstr "Send"
 
+#: src/commandPalette/CommandPalette.tsx:100
 #: src/console/ConsoleTab.tsx:56
 #: src/firstrunTour/TourPopover.tsx:45
 #: src/game/Sidebar.tsx:189
@@ -7568,7 +7574,7 @@ msgstr "{name}, ascending"
 msgid "Game select"
 msgstr "Game select"
 
-#: src/commandPalette/CommandPalette.tsx:91
+#: src/commandPalette/CommandPalette.tsx:108
 msgid "Results"
 msgstr "Results"
 
@@ -7861,6 +7867,10 @@ msgstr "{count, plural, one {# update ready} other {# updates ready}}"
 #: src/mods/ModDetail.tsx:66
 msgid "Optional"
 msgstr "Optional"
+
+#: src/commandPalette/CommandPalette.tsx:97
+msgid "Go to"
+msgstr "Go to"
 
 #: src/mods/NexusDetails.tsx:208
 #: src/mods/parts.tsx:250
@@ -8171,7 +8181,7 @@ msgstr "Title"
 msgid "Open Saves"
 msgstr "Open Saves"
 
-#: src/commandPalette/CommandPalette.tsx:154
+#: src/commandPalette/CommandPalette.tsx:189
 #: src/settings/SettingsPage.tsx:44
 msgid "Source health"
 msgstr "Source health"
@@ -8284,7 +8294,7 @@ msgstr "Wine stopped on an error before {name} started: {0}"
 msgid "Reading the mod's page…"
 msgstr "Reading the mod's page…"
 
-#: src/mods/redundantReason.ts:115
+#: src/mods/redundantReason.ts:67
 msgid "{count, plural, one {{by} already includes everything it changes} other {{by} together include everything it changes}}"
 msgstr "{count, plural, one {{by} already includes everything it changes} other {{by} together include everything it changes}}"
 
@@ -8598,7 +8608,7 @@ msgstr "Hide token"
 msgid "{remaining} of {limit} left today; the count resets {when}."
 msgstr "{remaining} of {limit} left today; the count resets {when}."
 
-#: src/commandPalette/CommandPalette.tsx:158
+#: src/commandPalette/CommandPalette.tsx:193
 #: src/settings/sections/Launchers.tsx:23
 #: src/settings/SettingsPage.tsx:48
 msgid "Launchers"
@@ -9238,7 +9248,7 @@ msgstr "Combat skill"
 msgid "Could not add the optional file"
 msgstr "Could not add the optional file"
 
-#: src/mods/redundantReason.ts:108
+#: src/mods/redundantReason.ts:60
 msgid "Every edit it makes is overwritten by {by}"
 msgstr "Every edit it makes is overwritten by {by}"
 
@@ -9768,7 +9778,7 @@ msgstr "Could not enable {0}"
 msgid "Slate"
 msgstr "Slate"
 
-#: src/commandPalette/CommandPalette.tsx:155
+#: src/commandPalette/CommandPalette.tsx:190
 #: src/mods/SlowStartupSection.tsx:76
 #: src/settings/SettingsPage.tsx:45
 msgid "Updates"
@@ -11106,7 +11116,7 @@ msgid "Required"
 msgstr "Required"
 
 #. placeholder {0}: choices.length
-#: src/mods/redundantReason.ts:100
+#: src/mods/redundantReason.ts:52
 msgid "{list} do the same job: all {0} change {detail}"
 msgstr "{list} do the same job: all {0} change {detail}"
 
@@ -11241,6 +11251,7 @@ msgstr "Include"
 msgid "{count, plural, one {Changed # mod} other {Changed # mods}}"
 msgstr "{count, plural, one {Changed # mod} other {Changed # mods}}"
 
+#: src/commandPalette/CommandPalette.tsx:99
 #: src/commandPalette/paletteLabels.ts:22
 #: src/mods/ModDetail.tsx:168
 #: src/mods/problemText.ts:44
@@ -11649,7 +11660,7 @@ msgstr "Set {0} to {1}"
 msgid "Pick the computer showing the code, then type it."
 msgstr "Pick the computer showing the code, then type it."
 
-#: src/commandPalette/CommandPalette.tsx:160
+#: src/commandPalette/CommandPalette.tsx:195
 #: src/settings/SettingsPage.tsx:50
 msgid "About"
 msgstr "About"
@@ -12026,7 +12037,7 @@ msgstr "Your last save needs other mods"
 msgid "Delete category"
 msgstr "Delete category"
 
-#: src/mods/redundantReason.ts:110
+#: src/mods/redundantReason.ts:62
 msgid "{count, plural, one {Replaced by {by}, which is also enabled} other {Replaced by {by}, which are also enabled}}"
 msgstr "{count, plural, one {Replaced by {by}, which is also enabled} other {Replaced by {by}, which are also enabled}}"
 
@@ -12206,7 +12217,7 @@ msgstr "Framework"
 msgid "Source"
 msgstr "Source"
 
-#: src/commandPalette/CommandPalette.tsx:149
+#: src/commandPalette/CommandPalette.tsx:184
 #: src/settings/sections/DataImport.tsx:29
 #: src/settings/sections/Shortcuts.tsx:176
 #: src/settings/SettingsPage.tsx:39
@@ -13583,7 +13594,7 @@ msgstr "Start with a copy of my current saves"
 msgid "Last answered {0}"
 msgstr "Last answered {0}"
 
-#: src/commandPalette/CommandPalette.tsx:260
+#: src/commandPalette/CommandPalette.tsx:296
 #: src/firstrunTour/TourPopover.tsx:61
 msgid "Command palette"
 msgstr "Command palette"

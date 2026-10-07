@@ -3,9 +3,49 @@ import type { SettingsSection } from '../nav/store.ts'
 import type { Shortcut, ShortcutId } from '../settings/shortcuts.ts'
 import type { PaletteItem } from './match.ts'
 
+// A shortcut that does what a palette action does shows its keys on that action instead of as a second row.
+const ACTION_OF_SHORTCUT: Partial<Record<ShortcutId, string>> = {
+  play: 'action:play',
+  'new-profile': 'action:new-profile',
+  import: 'action:import',
+  downloads: 'action:downloads',
+  'export-profile': 'action:share',
+  'tab-browse': 'tab:browse',
+  'tab-mods': 'tab:mods',
+  'tab-problems': 'tab:problems',
+  'tab-load-order': 'tab:load-order',
+  'tab-saves': 'tab:saves',
+  'tab-console': 'tab:console',
+  'tab-performance': 'tab:performance',
+}
+
+// Shortcuts that act on the focused list or the window itself, which the palette has no focus to run.
+const KEYBOARD_ONLY = new Set<ShortcutId>([
+  'command-palette',
+  'dismiss',
+  'select-all-mods',
+  'mod-up',
+  'mod-down',
+  'mod-toggle',
+  'mod-details',
+  'mod-remove',
+  'filter-mods',
+])
+
+// Rows that need an open profile to do anything.
+const PROFILE_ONLY = new Set([
+  'action:play',
+  'action:share',
+  'shortcut:duplicate-profile',
+  'shortcut:rename-profile',
+  'shortcut:vanilla-play',
+  ...['home', 'browse', 'mods', 'problems', 'load-order', 'saves', 'console', 'performance'].map(
+    (tab) => `tab:${tab}`,
+  ),
+])
+
 export interface PaletteLabels {
   play: string
-  updates: string
   downloads: string
   downloadsFolder: string
   import: string
@@ -21,6 +61,8 @@ export interface PaletteLabels {
   profileHint: string
   modHint: string
   settingsHint: string
+  // Why an action that works on the open profile cannot run while none is open.
+  needProfile: string
   tabs: Record<string, string>
   toggle: (name: string) => string
 }
@@ -35,6 +77,7 @@ export function buildPaletteItems(input: {
   collectionReview?: boolean
   streamOverlay?: boolean
   crashCheckBlocked?: string | null
+  profileOpen: boolean
 }): PaletteItem[] {
   const {
     profiles,
@@ -46,8 +89,13 @@ export function buildPaletteItems(input: {
     collectionReview,
     streamOverlay,
     crashCheckBlocked,
+    profileOpen,
   } = input
   const items: PaletteItem[] = []
+  const needsProfile = (id: string) =>
+    PROFILE_ONLY.has(id) && !profileOpen
+      ? { hint: labels.needProfile, disabled: labels.needProfile }
+      : {}
   for (const profile of profiles) {
     items.push({
       id: `profile:${profile.id}`,
@@ -88,8 +136,7 @@ export function buildPaletteItems(input: {
     })
   }
   items.push(
-    { id: 'action:play', kind: 'action', label: labels.play },
-    { id: 'action:updates', kind: 'action', label: labels.updates },
+    { id: 'action:play', kind: 'action', label: labels.play, ...needsProfile('action:play') },
     { id: 'action:downloads', kind: 'action', label: labels.downloads },
     { id: 'action:downloads-folder', kind: 'action', label: labels.downloadsFolder },
     { id: 'action:import', kind: 'action', label: labels.import },
@@ -109,7 +156,7 @@ export function buildPaletteItems(input: {
       label: labels.findCrashCause,
       ...(crashCheckBlocked ? { hint: crashCheckBlocked, disabled: crashCheckBlocked } : {}),
     },
-    { id: 'action:share', kind: 'action', label: labels.share },
+    { id: 'action:share', kind: 'action', label: labels.share, ...needsProfile('action:share') },
     { id: 'action:new-profile', kind: 'action', label: labels.newProfile },
     ...(streamOverlay
       ? [{ id: 'action:stream-overlay', kind: 'action' as const, label: labels.streamOverlay }]
@@ -120,15 +167,23 @@ export function buildPaletteItems(input: {
       id: `tab:${id}`,
       kind: 'action' as const,
       label,
+      ...needsProfile(`tab:${id}`),
     })),
   )
   for (const row of shortcuts) {
-    items.push({
-      id: `shortcut:${row.id}`,
-      kind: 'shortcut',
-      label: shortcutLabels[row.id] ?? row.keys,
-      shortcut: row.keys,
-    })
+    const action = ACTION_OF_SHORTCUT[row.id]
+    const merged = action ? items.find((item) => item.id === action) : undefined
+    if (merged) {
+      merged.shortcut = row.keys
+    } else if (!KEYBOARD_ONLY.has(row.id)) {
+      items.push({
+        id: `shortcut:${row.id}`,
+        kind: 'shortcut',
+        label: shortcutLabels[row.id] ?? row.keys,
+        shortcut: row.keys,
+        ...needsProfile(`shortcut:${row.id}`),
+      })
+    }
   }
   return items
 }

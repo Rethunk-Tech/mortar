@@ -53,12 +53,3 @@ test('ranks contiguous and word-start matches above scattered matches', () => {
   )
   expect(ranked.map((item) => item.id)).toEqual(['contiguous', 'word', 'scattered'])
 })
-
-test('caps results at fifty', () => {
-  const many = Array.from({ length: 51 }, (_, i) => ({
-    id: `action:${i}`,
-    kind: 'action' as const,
-    label: `Action ${i}`,
-  }))
-  expect(matchPaletteItems(many, '').length).toBe(50)
-})

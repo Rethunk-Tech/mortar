@@ -1,7 +1,15 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Dialog, List, ListItemButton, ListItemIcon, ListItemText, TextField } from '@mui/material'
+import {
+  Box,
+  Dialog,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  TextField,
+} from '@mui/material'
 import {
   Download,
   FolderOpen,
@@ -16,6 +24,7 @@ import {
   User,
 } from 'lucide-react'
 import {
+  Fragment,
   type KeyboardEvent,
   type ReactNode,
   type RefObject,
@@ -32,6 +41,7 @@ import { mergeBindings } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import type { PaletteItem } from './match.ts'
 import { runPaletteItem } from './run.ts'
+import type { PaletteRow, PaletteSection } from './sections.ts'
 import { useCommandPalette } from './store.ts'
 import { usePaletteShown } from './usePaletteShown.ts'
 
@@ -51,7 +61,7 @@ function iconFor(item: PaletteItem): ReactNode {
   if (item.id === 'action:play') {
     return <Play size={16} />
   }
-  if (item.id === 'action:updates') {
+  if (item.id === 'shortcut:check-updates') {
     return <RefreshCw size={16} />
   }
   if (item.id === 'action:downloads') {
@@ -77,43 +87,68 @@ function PaletteRows({
   currentId,
   onPick,
 }: {
-  shown: PaletteItem[]
+  shown: PaletteRow[]
   currentId: string | undefined
   onPick: (id: string) => void
 }) {
   const { t } = useLingui()
+  const headings: Record<PaletteSection, string> = {
+    recent: t`Recent`,
+    goto: t`Go to`,
+    actions: t`Actions`,
+    settings: t`Settings`,
+    mods: t`Mods`,
+  }
   return (
     <List
       id={PALETTE_LIST_ID}
       dense={true}
-      sx={{ maxHeight: 420, overflow: 'auto', py: 1 }}
+      sx={{ height: '60vh', overflow: 'auto', py: 1 }}
       role="listbox"
       aria-label={t`Results`}
     >
-      {shown.map((item) => (
-        <ListItemButton
-          key={item.id}
-          id={optionId(item.id)}
-          // The search field keeps focus and arrow keys move the selection, so options are not Tab stops.
-          tabIndex={-1}
-          selected={item.id === currentId}
-          onClick={() => onPick(item.id)}
-          disabled={item.disabled !== undefined}
-          role="option"
-          aria-selected={item.id === currentId}
-        >
-          <ListItemIcon sx={{ minWidth: 32, color: 'var(--mortar-ink-sec)' }}>
-            {iconFor(item)}
-          </ListItemIcon>
-          <ListItemText
-            primary={item.label}
-            secondary={item.hint}
-            slotProps={{ primary: { noWrap: true }, secondary: { noWrap: true } }}
-          />
-          {item.shortcut ? (
-            <kbd style={{ color: 'var(--mortar-ink-sec)', fontSize: 12 }}>{item.shortcut}</kbd>
-          ) : null}
-        </ListItemButton>
+      {shown.map(({ item, section }, at) => (
+        <Fragment key={item.id}>
+          {section === shown[at - 1]?.section ? null : (
+            <Box
+              role="presentation"
+              sx={{
+                px: 2,
+                pt: at === 0 ? 0 : 1,
+                pb: 0.5,
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: 'var(--mortar-ink-sec)',
+              }}
+            >
+              {headings[section]}
+            </Box>
+          )}
+          <ListItemButton
+            id={optionId(item.id)}
+            // The search field keeps focus and arrow keys move the selection, so options are not Tab stops.
+            tabIndex={-1}
+            selected={item.id === currentId}
+            onClick={() => onPick(item.id)}
+            disabled={item.disabled !== undefined}
+            role="option"
+            aria-selected={item.id === currentId}
+          >
+            <ListItemIcon sx={{ minWidth: 32, color: 'var(--mortar-ink-sec)' }}>
+              {iconFor(item)}
+            </ListItemIcon>
+            <ListItemText
+              primary={item.label}
+              secondary={item.hint}
+              slotProps={{ primary: { noWrap: true }, secondary: { noWrap: true } }}
+            />
+            {item.shortcut ? (
+              <kbd style={{ color: 'var(--mortar-ink-sec)', fontSize: 12 }}>{item.shortcut}</kbd>
+            ) : null}
+          </ListItemButton>
+        </Fragment>
       ))}
     </List>
   )
@@ -173,7 +208,7 @@ function PaletteBody({ searchRef }: { searchRef: RefObject<HTMLInputElement | nu
   const sections: { id: SettingsSection; label: string }[] = paletteSections(i18n)
   const shortcutLabelMap = shortcutLabels(i18n)
   const bindings = mergeBindings(useSettings((s) => s.shortcuts))
-  const shown = usePaletteShown({
+  const rows = usePaletteShown({
     i18n,
     query,
     profiles,
@@ -183,6 +218,7 @@ function PaletteBody({ searchRef }: { searchRef: RefObject<HTMLInputElement | nu
     shortcutLabels: shortcutLabelMap,
     bindings,
   })
+  const shown = rows.map((row) => row.item)
   const current = shown[Math.min(index, Math.max(shown.length - 1, 0))]
   const pick = (id: string) => {
     if (shown.find((item) => item.id === id)?.disabled !== undefined) {
@@ -237,7 +273,7 @@ function PaletteBody({ searchRef }: { searchRef: RefObject<HTMLInputElement | nu
         }}
         sx={{ px: 2, pt: 2, '& .MuiInputBase-root': { userSelect: 'text' } }}
       />
-      <PaletteRows shown={shown} currentId={current?.id} onPick={pick} />
+      <PaletteRows shown={rows} currentId={current?.id} onPick={pick} />
     </>
   )
 }
