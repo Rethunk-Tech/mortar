@@ -48,7 +48,7 @@ function BackButton() {
         }
       }}
     >
-      {from ? t`Back to ${{ name: previous }}` : t`All games`}
+      {from ? t`Back to ${name}` : t`All games`}
     </Button>
   )
 }
