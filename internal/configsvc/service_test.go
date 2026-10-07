@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -30,6 +31,10 @@ func (f fakeProfiles) ReadConfig(string, string, string, mod.ID) (string, error)
 
 func (f fakeProfiles) ShippedConfig(string, string, string, mod.ID) (string, bool) {
 	return f.shipped, f.shipped != ""
+}
+
+func (fakeProfiles) ContentSchema(string, string, string, mod.ID) (modconfig.Schema, error) {
+	return nil, nil
 }
 
 func (f fakeProfiles) UserMods(string, string) ([]profile.Mod, error) { return f.mods, nil }
@@ -155,7 +160,7 @@ func TestSMAPITypesComeFromTheValueThenTheShippedDefault(t *testing.T) {
 	t.Parallel()
 	shipped := `{"Enabled":true,"Count":3,"Ratio":0.5,"Name":"x","Mode":true}`
 	current := `{"Enabled":null,"Count":"7","Ratio":0.25,"Name":"y","Mode":"maybe","Extra":false}`
-	sc, err := jsonSchema(ConfigFile{Name: jsonName, Format: FormatSMAPI}, current, shipped, nil)
+	sc, err := jsonSchema(ConfigFile{Name: jsonName, Format: FormatSMAPI}, current, shipped, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -167,6 +172,47 @@ func TestSMAPITypesComeFromTheValueThenTheShippedDefault(t *testing.T) {
 	for k, w := range want {
 		if got[k] != w {
 			t.Errorf("%s is %s, want %s", k, got[k], w)
+		}
+	}
+}
+
+func TestContentPatcherFieldsTypeFromConfigSchema(t *testing.T) {
+	t.Parallel()
+	cp, err := modconfig.Parse([]byte(`{"ConfigSchema":{
+		"MistEffects":{"AllowValues":"true, false","Default":"true","Description":"Mist"},
+		"Mixed":{"AllowValues":"False, True","Default":"False"},
+		"Season":{"AllowValues":"Spring, Summer","Default":"Spring"},
+		"Crops":{"AllowValues":"Corn, Kale","AllowMultiple":true,"Default":"Corn"},
+		"Nick":{},
+		"NotYet":{"AllowValues":"true, false","Default":"false"}}}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	current := `{"MistEffects":"true","Mixed":"True","Season":"Summer","Crops":"Corn, Kale","Nick":"default"}`
+	sc, err := jsonSchema(ConfigFile{Name: jsonName, Format: FormatSMAPI}, current, "", nil, cp)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type shape struct {
+		typ, def string
+		values   int
+		flags    bool
+	}
+	got := map[string]shape{}
+	for _, e := range sc.Sections[0].Entries {
+		got[e.Key] = shape{e.Type, e.Default, len(e.Values), e.Flags}
+	}
+	want := map[string]shape{
+		"MistEffects": {TypeBool, "true", 0, false},
+		"Mixed":       {TypeBool, "False", 0, false},
+		"Season":      {TypeEnum, "Spring", 2, false},
+		"Crops":       {TypeEnum, "Corn", 2, true},
+		"Nick":        {TypeString, "", 0, false},
+		"NotYet":      {TypeBool, "false", 0, false},
+	}
+	for k, w := range want {
+		if got[k] != w {
+			t.Errorf("%s = %+v, want %+v", k, got[k], w)
 		}
 	}
 }

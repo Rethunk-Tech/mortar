@@ -1,11 +1,12 @@
 type ConfigValue = boolean | number | string | string[]
 
-type EntryType = 'bool' | 'int' | 'float' | 'enum' | 'string' | 'color' | 'list'
+type EntryType = 'bool' | 'int' | 'float' | 'enum' | 'string' | 'color' | 'list' | 'multi'
 
 interface ConfigEntry {
   key: string
   // A friendlier name when the mod gave one; the key is still what is written.
   label?: string
+  // 'multi' is several of `options` at once, held as one comma-joined string.
   type: EntryType
   default: ConfigValue
   value: ConfigValue

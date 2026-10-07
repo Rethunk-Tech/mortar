@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -132,7 +133,8 @@ func (s *Service) SetConfigValue(game, id, key string, uniqueID mod.ID, field, v
 		return err
 	}
 	types := schemaFromDir(folder)
-	next, err := applyConfigSet(raw, field, value, types)
+	shipped, _ := s.store.ShippedConfig(game, id, key, uniqueID)
+	next, err := applyConfigSet(raw, field, value, types, shipped)
 	if err != nil {
 		return err
 	}
@@ -140,7 +142,12 @@ func (s *Service) SetConfigValue(game, id, key string, uniqueID mod.ID, field, v
 }
 
 func (s *Service) contentSchema(game, id, key string, uniqueID mod.ID) (modconfig.Schema, error) {
-	folder, err := s.store.ModFolder(game, id, key, uniqueID)
+	return s.store.ContentSchema(game, id, key, uniqueID)
+}
+
+// ContentSchema is the Content Patcher ConfigSchema of a content pack, or an empty schema for any other mod.
+func (s *Store) ContentSchema(game, id, key string, uniqueID mod.ID) (modconfig.Schema, error) {
+	folder, err := s.ModFolder(game, id, key, uniqueID)
 	if err != nil {
 		return nil, err
 	}
@@ -179,10 +186,16 @@ func decodeConfigBytes(raw []byte) (jsonNode, error) {
 	return decodeJSON(dec)
 }
 
-func applyConfigSet(raw []byte, field, value string, schema modconfig.Schema) ([]byte, error) {
+// applyConfigSet writes one value. shipped is the mod's own config.json, whose value kinds type a setting that is
+// null in the file.
+func applyConfigSet(raw []byte, field, value string, schema modconfig.Schema, shipped string) ([]byte, error) {
 	node, err := decodeConfigBytes(raw)
 	if err != nil {
 		return nil, err
+	}
+	var defaults jsonNode
+	if shipped != "" {
+		defaults, _ = decodeConfigBytes([]byte(shipped))
 	}
 	parts := strings.Split(field, ".")
 	for i := range parts {
@@ -191,7 +204,7 @@ func applyConfigSet(raw []byte, field, value string, schema modconfig.Schema) ([
 			return nil, fmt.Errorf("invalid config field %s", field)
 		}
 	}
-	next, err := setJSONPath(node, parts, value, schema)
+	next, err := setJSONPath(node, parts, value, schema, defaultKind(defaults, parts))
 	if err != nil {
 		return nil, err
 	}
@@ -203,9 +216,24 @@ func applyConfigSet(raw []byte, field, value string, schema modconfig.Schema) ([
 	return buf.Bytes(), nil
 }
 
-func setJSONPath(n jsonNode, parts []string, raw string, schema modconfig.Schema) (jsonNode, error) {
+// defaultKind is the JSON kind of the value at parts in the shipped config, or jsonNull when it has none.
+func defaultKind(n jsonNode, parts []string) byte {
+	for _, part := range parts {
+		if n.kind != jsonObj {
+			return jsonNull
+		}
+		i := slices.IndexFunc(n.obj, func(p jsonPair) bool { return strings.EqualFold(p.Key, part) })
+		if i < 0 {
+			return jsonNull
+		}
+		n = n.obj[i].Value
+	}
+	return n.kind
+}
+
+func setJSONPath(n jsonNode, parts []string, raw string, schema modconfig.Schema, def byte) (jsonNode, error) {
 	if len(parts) == 0 {
-		return coerceJSON(n, raw, schema, "")
+		return coerceJSON(n, raw, schema, "", def)
 	}
 	if n.kind != jsonObj {
 		return n, fmt.Errorf("%s is not an object", parts[0])
@@ -220,9 +248,9 @@ func setJSONPath(n jsonNode, parts []string, raw string, schema modconfig.Schema
 			err   error
 		)
 		if len(rest) == 0 {
-			child, err = coerceJSON(p.Value, raw, schema, p.Key)
+			child, err = coerceJSON(p.Value, raw, schema, p.Key, def)
 		} else {
-			child, err = setJSONPath(p.Value, rest, raw, schema)
+			child, err = setJSONPath(p.Value, rest, raw, schema, def)
 		}
 		if err != nil {
 			return n, err
@@ -237,7 +265,7 @@ func setJSONPath(n jsonNode, parts []string, raw string, schema modconfig.Schema
 	if f, ok := schema.Lookup(head); ok {
 		name = f.Name
 	}
-	child, err := coerceJSON(jsonNode{kind: jsonNull}, raw, schema, name)
+	child, err := coerceJSON(jsonNode{kind: jsonNull}, raw, schema, name, def)
 	if err != nil {
 		return n, err
 	}
@@ -245,16 +273,23 @@ func setJSONPath(n jsonNode, parts []string, raw string, schema modconfig.Schema
 	return n, nil
 }
 
-func coerceJSON(existing jsonNode, raw string, schema modconfig.Schema, field string) (jsonNode, error) {
-	f, _ := schema.Lookup(field)
-	if existing.kind == jsonBool || modconfig.IsBooleanField(f) {
+// coerceJSON types the new value like the one it replaces. A null setting has no type of its own: a Content Patcher
+// field is text (the pack's values are always strings), any other takes the kind of the shipped default.
+func coerceJSON(existing jsonNode, raw string, schema modconfig.Schema, field string, def byte) (jsonNode, error) {
+	kind := existing.kind
+	if kind == jsonNull {
+		if _, cp := schema.Lookup(field); !cp {
+			kind = def
+		}
+	}
+	switch kind {
+	case jsonBool:
 		parsed, err := strconv.ParseBool(strings.TrimSpace(raw))
 		if err != nil {
 			return jsonNode{}, fmt.Errorf("config field %s expects a boolean", field)
 		}
 		return jsonNode{kind: jsonBool, flag: parsed}, nil
-	}
-	if existing.kind == jsonNum {
+	case jsonNum:
 		if _, err := strconv.ParseFloat(strings.TrimSpace(raw), 64); err != nil {
 			return jsonNode{}, fmt.Errorf("config field %s expects a number", field)
 		}

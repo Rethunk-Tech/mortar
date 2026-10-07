@@ -163,6 +163,35 @@ function ListWidget({ entry, label, onChange }: WidgetProps) {
   )
 }
 
+const splitMembers = (value: ConfigValue): string[] =>
+  String(value)
+    .split(',')
+    .map((m) => m.trim())
+    .filter((m) => m !== '')
+
+function MultiWidget({ entry, label, onChange }: WidgetProps) {
+  return (
+    <Select
+      multiple={true}
+      size="small"
+      value={splitMembers(entry.value)}
+      onChange={(e) =>
+        onChange(
+          (typeof e.target.value === 'string' ? [e.target.value] : e.target.value).join(', '),
+        )
+      }
+      inputProps={{ 'aria-label': label }}
+      sx={{ minWidth: TEXT_WIDTH_PX }}
+    >
+      {(entry.options ?? []).map((o) => (
+        <MenuItem key={o} value={o}>
+          {o}
+        </MenuItem>
+      ))}
+    </Select>
+  )
+}
+
 function EntryWidget(props: WidgetProps) {
   const { entry, label, onChange } = props
   switch (entry.type) {
@@ -197,6 +226,8 @@ function EntryWidget(props: WidgetProps) {
       return <ColorWidget {...props} />
     case 'list':
       return <ListWidget {...props} />
+    case 'multi':
+      return <MultiWidget {...props} />
     default:
       return (
         <TextField

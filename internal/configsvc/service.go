@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/gmcm"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -28,6 +29,7 @@ type Profiles interface {
 	ModFolder(game, id, key string, uniqueID mod.ID) (string, error)
 	ReadConfig(game, id, key string, uniqueID mod.ID) (string, error)
 	ShippedConfig(game, id, key string, uniqueID mod.ID) (string, bool)
+	ContentSchema(game, id, key string, uniqueID mod.ID) (modconfig.Schema, error)
 	PluginGUIDs(game, id string, uniqueID mod.ID) []string
 	SeedConfigs(game, id string) error
 	UserMods(game, id string) ([]profile.Mod, error)
@@ -185,7 +187,11 @@ func (s *Service) Schema(game, profileID, modID, file string) (Schema, error) {
 			capture = &c
 		}
 	}
-	return jsonSchema(f, cur, shipped, capture)
+	cp, err := s.Profiles.ContentSchema(game, profileID, "", mod.ID(modID))
+	if err != nil {
+		return Schema{}, err
+	}
+	return jsonSchema(f, cur, shipped, capture, cp)
 }
 
 func (s *Service) refuseRunning(game, profileID string) error {

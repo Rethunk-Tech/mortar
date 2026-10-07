@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 func TestSetConfigValueDottedPathPreservesOrder(t *testing.T) {
@@ -58,5 +60,56 @@ func TestSetConfigValueDottedPathPreservesOrder(t *testing.T) {
 	var doc map[string]json.RawMessage
 	if err := json.Unmarshal([]byte(schema), &doc); err != nil || doc["Season"] == nil {
 		t.Fatalf("schema %s", schema)
+	}
+}
+
+func TestSetConfigValueKeepsEachFileKind(t *testing.T) {
+	t.Parallel()
+	cpManifest := `{"Name":"P","UniqueID":"me.cp","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}`
+	cpContent := `{"ConfigSchema":{"Mist":{"AllowValues":"true, false","Default":"true"},"Fog":{"AllowValues":"true, false","Default":"true"}}}`
+	smManifest := `{"Name":"S","UniqueID":"me.smapi"}`
+	e, p := updEnv(t,
+		map[string]string{
+			"A/manifest.json": cpManifest,
+			"A/content.json":  cpContent,
+			"A/config.json":   `{"Mist":"true","Fog":"true"}`,
+			"B/manifest.json": smManifest,
+			"B/config.json":   `{"On":true,"Count":3,"Flag":false,"Name":"x"}`,
+		},
+		map[string]string{"A/manifest.json": cpManifest + " "},
+	)
+	// The shipped files hold the defaults; the profile's copies have lost some values.
+	for id, text := range map[mod.ID]string{
+		"smapi:me.cp":    `{"Mist":"true","Fog":null}`,
+		"smapi:me.smapi": `{"On":true,"Count":null,"Flag":null,"Name":null}`,
+	} {
+		if err := e.Store.WriteConfig("stardew", p.ID, "a-1", id, text); err != nil {
+			t.Fatal(err)
+		}
+	}
+	svc := NewService(e.Store, t.TempDir(), nil)
+	set := func(key string, id mod.ID, field, value string) {
+		t.Helper()
+		if err := svc.SetConfigValue("stardew", p.ID, key, id, field, value); err != nil {
+			t.Fatal(err)
+		}
+	}
+	set("a-1", "smapi:me.cp", "Mist", "false")
+	set("a-1", "smapi:me.cp", "Fog", "false")
+	set("a-1", "smapi:me.smapi", "On", "false")
+	set("a-1", "smapi:me.smapi", "Count", "4")
+	set("a-1", "smapi:me.smapi", "Flag", "true")
+	set("a-1", "smapi:me.smapi", "Name", "y")
+	cp, _ := svc.ReadConfig("stardew", p.ID, "a-1", "smapi:me.cp")
+	sm, _ := svc.ReadConfig("stardew", p.ID, "a-1", "smapi:me.smapi")
+	for _, want := range []string{`"Mist": "false"`, `"Fog": "false"`} {
+		if !strings.Contains(cp, want) {
+			t.Errorf("content pack config lacks %s: %s", want, cp)
+		}
+	}
+	for _, want := range []string{`"On": false`, `"Count": 4`, `"Flag": true`, `"Name": "y"`} {
+		if !strings.Contains(sm, want) {
+			t.Errorf("SMAPI config lacks %s: %s", want, sm)
+		}
 	}
 }

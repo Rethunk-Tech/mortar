@@ -79,7 +79,7 @@ func TestJSONSchemaKeepsOrderAndTakesDefaultsAndGMCM(t *testing.T) {
 		{FieldID: &field, Name: "Move speed", Tooltip: "How fast.", Min: &lo, Max: &hi},
 		{FieldID: &mode, Choices: []gmcm.Choice{{Value: "a"}, {Value: "b"}}},
 	}}}}
-	s, err := jsonSchema(ConfigFile{Name: "config.json"}, cur, ship, capture)
+	s, err := jsonSchema(ConfigFile{Name: "config.json"}, cur, ship, capture, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

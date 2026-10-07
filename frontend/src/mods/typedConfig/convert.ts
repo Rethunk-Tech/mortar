@@ -25,7 +25,16 @@ interface WireSection {
   entries: WireEntry[] | null
 }
 
-const KNOWN: readonly EntryType[] = ['bool', 'int', 'float', 'enum', 'string', 'color', 'list']
+const KNOWN: readonly EntryType[] = [
+  'bool',
+  'int',
+  'float',
+  'enum',
+  'string',
+  'color',
+  'list',
+  'multi',
+]
 
 function parseValue(type: EntryType, text: string): ConfigValue {
   switch (type) {
@@ -53,9 +62,8 @@ function formatValue(value: ConfigValue): string {
 }
 
 function toEntry(w: WireEntry): ConfigEntry {
-  // A flags enum takes several members at once, which a single select cannot show.
   const known = KNOWN.find((k) => k === w.type) ?? 'string'
-  const type: EntryType = known === 'enum' && w.flags ? 'string' : known
+  const type: EntryType = known === 'enum' && w.flags ? 'multi' : known
   const value = parseValue(type, w.value)
   return {
     key: w.key,

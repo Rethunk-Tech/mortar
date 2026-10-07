@@ -141,20 +141,3 @@ func rawString(raw json.RawMessage) string {
 	}
 	return strings.TrimSpace(string(raw))
 }
-
-// IsBooleanField reports a schema entry whose default or allowed values are booleans.
-func IsBooleanField(f Field) bool {
-	if f.Default == "true" || f.Default == "false" {
-		return true
-	}
-	if len(f.AllowValues) == 0 {
-		return false
-	}
-	for _, v := range f.AllowValues {
-		low := strings.ToLower(v)
-		if low != "true" && low != "false" {
-			return false
-		}
-	}
-	return true
-}

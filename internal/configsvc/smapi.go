@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/gmcm"
+	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 )
 
 type flat struct {
@@ -93,8 +95,9 @@ func valueEntry(key string, val json.RawMessage) Entry {
 }
 
 // jsonSchema builds a SMAPI file's schema from its current text, the shipped config.json (defaults) and GMCM's
-// captured options. Either of the last two may be empty.
-func jsonSchema(file ConfigFile, current, shipped string, capture *gmcm.Capture) (Schema, error) {
+// captured options (either may be empty), and for a Content Patcher pack its ConfigSchema (cp), which says what its
+// string-valued settings really are.
+func jsonSchema(file ConfigFile, current, shipped string, capture *gmcm.Capture, cp modconfig.Schema) (Schema, error) {
 	cur, err := flatten(current)
 	if err != nil {
 		return Schema{}, err
@@ -115,6 +118,9 @@ func jsonSchema(file ConfigFile, current, shipped string, capture *gmcm.Capture)
 			e.Default, e.HasDefault = d.Value, true
 			e.Type = typeFromDefault(e, d)
 		}
+		if spec, ok := cp.Lookup(f.Key); ok && f.section == "" {
+			applyContentField(&e, spec)
+		}
 		if o, ok := opts[strings.ToLower(path(f.section, f.Key))]; ok {
 			applyOption(&e, o)
 		} else if o, ok := opts[strings.ToLower(f.Key)]; ok {
@@ -127,7 +133,58 @@ func jsonSchema(file ConfigFile, current, shipped string, capture *gmcm.Capture)
 		}
 		s.Sections[i].Entries = append(s.Sections[i].Entries, e)
 	}
+	addUnsetContentFields(&s, cp)
 	return s, nil
+}
+
+// applyContentField types a Content Patcher setting from its ConfigSchema entry: exactly true and false is a switch,
+// other allowed values a choice (several at once when AllowMultiple), and none a free text.
+func applyContentField(e *Entry, spec modconfig.Field) {
+	e.Description = spec.Description
+	if spec.Default != "" {
+		e.Default, e.HasDefault = spec.Default, true
+	}
+	switch {
+	case isSwitch(spec.AllowValues):
+		e.Type = TypeBool
+	case len(spec.AllowValues) > 0:
+		e.Type, e.Values, e.Flags = TypeEnum, spec.AllowValues, spec.AllowMultiple
+	default:
+		e.Type = TypeString
+	}
+}
+
+func isSwitch(allow []string) bool {
+	if len(allow) != 2 {
+		return false
+	}
+	a, b := strings.ToLower(allow[0]), strings.ToLower(allow[1])
+	return a == "true" && b == "false" || a == "false" && b == "true"
+}
+
+// addUnsetContentFields lists the ConfigSchema settings a pack has not written to config.json yet, at their default.
+func addUnsetContentFields(s *Schema, cp modconfig.Schema) {
+	have := map[string]bool{}
+	for _, sec := range s.Sections {
+		if sec.Name == "" {
+			for _, e := range sec.Entries {
+				have[strings.ToLower(e.Key)] = true
+			}
+		}
+	}
+	for _, name := range slices.Sorted(maps.Keys(cp)) {
+		if have[strings.ToLower(name)] {
+			continue
+		}
+		e := Entry{Key: name, Value: cp[name].Default}
+		applyContentField(&e, cp[name])
+		i := slices.IndexFunc(s.Sections, func(sec Section) bool { return sec.Name == "" })
+		if i < 0 {
+			s.Sections = append(s.Sections, Section{})
+			i = len(s.Sections) - 1
+		}
+		s.Sections[i].Entries = append(s.Sections[i].Entries, e)
+	}
 }
 
 // typeFromDefault is the type a setting shows as: the shipped default's when the current value cannot say (a JSON null,

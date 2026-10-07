@@ -96,7 +96,7 @@ func (s *Service) jsonChanged(game, profileID string, id mod.ID) bool {
 		return false
 	}
 	shipped, _ := s.Profiles.ShippedConfig(game, profileID, "", id)
-	sc, err := jsonSchema(ConfigFile{Name: jsonName, Format: FormatSMAPI, Label: jsonName}, cur, shipped, nil)
+	sc, err := jsonSchema(ConfigFile{Name: jsonName, Format: FormatSMAPI, Label: jsonName}, cur, shipped, nil, nil)
 	return err == nil && schemaChanged(sc)
 }
 
