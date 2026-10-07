@@ -166,22 +166,7 @@ func skipSevenZipFilesInfo(c *sevenZipCursor) error {
 	if err != nil || n > sevenZipMaxFolders {
 		return errSevenZipHeader
 	}
-	for {
-		id, err := c.byte()
-		if err != nil {
-			return err
-		}
-		if id == 0 {
-			return nil
-		}
-		size, err := c.uint()
-		if err != nil {
-			return err
-		}
-		if err := c.skip(size); err != nil {
-			return err
-		}
-	}
+	return skipSevenZipProperties(c)
 }
 
 func parseSevenZipStreamsInfo(c *sevenZipCursor) error {
