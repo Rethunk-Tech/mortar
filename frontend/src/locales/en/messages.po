@@ -267,7 +267,7 @@ msgstr "Could not queue the downloads"
 #. placeholder {0}: plan.copy.length
 #. placeholder {1}: to.name
 #. placeholder {2}: to.name
-#: src/profiles/CompareDialog.tsx:94
+#: src/profiles/CompareDialog.tsx:95
 msgid "{0, plural, one {Copied # mod to {1}} other {Copied # mods to {2}}}"
 msgstr "{0, plural, one {Copied # mod to {1}} other {Copied # mods to {2}}}"
 
@@ -564,7 +564,7 @@ msgid "Search settings"
 msgstr "Search settings"
 
 #: src/game/HomeNotes.tsx:117
-#: src/share/Included.tsx:33
+#: src/share/Included.tsx:92
 msgid "Notes"
 msgstr "Notes"
 
@@ -805,10 +805,6 @@ msgstr "Copy this profile's list"
 #: src/mods/NexusDetails.tsx:277
 msgid "Sign in to Nexus Mods in Settings to see more from this mod's page."
 msgstr "Sign in to Nexus Mods in Settings to see more from this mod's page."
-
-#: src/profiles/CompareTable.tsx:28
-msgid "Only in {bName}"
-msgstr "Only in {bName}"
 
 #: src/settings/sections/ItchAccount.tsx:53
 msgid "Your API key is kept in your system keyring."
@@ -2166,7 +2162,7 @@ msgstr "Mortar is up to date"
 #: src/mods/Toolbar.tsx:328
 #: src/mods/Toolbar.tsx:354
 #: src/mods/Toolbar.tsx:372
-#: src/profiles/CompareDialog.tsx:355
+#: src/profiles/CompareDialog.tsx:356
 #: src/profiles/CompareDialog.tsx:432
 msgid "Filter mods"
 msgstr "Filter mods"
@@ -2217,7 +2213,7 @@ msgstr "Will update"
 msgid "{0} fps over {1} s. Frame ms: average {2}, 95th {3}, 99th {4}, worst {5}. Mono heap {6} of {7} MiB, {8} garbage collections."
 msgstr "{0} fps over {1} s. Frame ms: average {2}, 95th {3}, 99th {4}, worst {5}. Mono heap {6} of {7} MiB, {8} garbage collections."
 
-#: src/profiles/CompareDialog.tsx:160
+#: src/profiles/CompareDialog.tsx:161
 msgid "{count} selected"
 msgstr "{count} selected"
 
@@ -2303,7 +2299,7 @@ msgstr "Show the first-run tips again"
 #: src/mods/Toolbar.tsx:128
 #: src/mods/Toolbar.tsx:146
 #: src/nxm/store.ts:53
-#: src/profiles/CompareDialog.tsx:283
+#: src/profiles/CompareDialog.tsx:284
 #: src/profiles/LaunchPresetDialog.tsx:85
 #: src/queue/actions.ts:97
 #: src/queue/store.ts:245
@@ -2496,7 +2492,7 @@ msgstr "Edit profile"
 msgid "The host's list"
 msgstr "The host's list"
 
-#: src/profiles/CompareTable.tsx:36
+#: src/profiles/compareTitle.ts:12
 msgid "Identical"
 msgstr "Identical"
 
@@ -2541,7 +2537,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/mods/storeEntries.ts:60
 #: src/mods/storeEntries.ts:99
 #: src/profiles/collectionUnlink.ts:36
-#: src/profiles/CompareDialog.tsx:80
+#: src/profiles/CompareDialog.tsx:81
 #: src/profiles/HistoryEventRow.tsx:45
 #: src/profiles/historyRevert.ts:110
 #: src/profiles/store.ts:194
@@ -2919,7 +2915,7 @@ msgstr "Load"
 msgid "New profile from link"
 msgstr "New profile from link"
 
-#: src/profiles/CompareDialog.tsx:340
+#: src/profiles/CompareDialog.tsx:341
 msgid "with"
 msgstr "with"
 
@@ -3106,7 +3102,7 @@ msgstr "Choose folder…"
 msgid "Changed since last run ({0})"
 msgstr "Changed since last run ({0})"
 
-#: src/profiles/CompareTable.tsx:26
+#: src/profiles/compareTitle.ts:7
 #: src/share/CompareSummary.tsx:22
 msgid "Different version"
 msgstr "Different version"
@@ -3341,6 +3337,8 @@ msgstr "{name} is marked abandoned and may no longer be maintained."
 msgid "Modrinth page"
 msgstr "Modrinth page"
 
+#: src/profiles/compareTitle.ts:8
+#: src/profiles/compareTitle.ts:9
 #: src/share/CompareSummary.tsx:23
 msgid "Only in {name}"
 msgstr "Only in {name}"
@@ -3421,7 +3419,7 @@ msgstr "Help"
 msgid "L{0}"
 msgstr "L{0}"
 
-#: src/share/Included.tsx:68
+#: src/share/Included.tsx:127
 msgid "Included"
 msgstr "Included"
 
@@ -3450,7 +3448,7 @@ msgstr "config.json, changed from the mod's own"
 #: src/game/FarmMenuItem.tsx:86
 #: src/launch/SaveWarnDialog.tsx:61
 #: src/mods/updateReview/Row.tsx:34
-#: src/share/Included.tsx:49
+#: src/share/Included.tsx:108
 msgid "Disabled in this profile"
 msgstr "Disabled in this profile"
 
@@ -3594,7 +3592,7 @@ msgstr "Device name"
 msgid "{0} · {1} · {farms}"
 msgstr "{0} · {1} · {farms}"
 
-#: src/share/Included.tsx:34
+#: src/share/Included.tsx:93
 msgid "FOMOD choices"
 msgstr "FOMOD choices"
 
@@ -3648,10 +3646,6 @@ msgstr "Stop the game?"
 #: src/settings/sections/GameSettings.tsx:268
 msgid "Delete the game folder, then reinstall {gameName} from your launcher."
 msgstr "Delete the game folder, then reinstall {gameName} from your launcher."
-
-#: src/profiles/CompareDialog.tsx:275
-msgid "No differences"
-msgstr "No differences"
 
 #: src/settings/shortcutLabels.ts:38
 msgid "Go back"
@@ -4272,7 +4266,7 @@ msgstr "Show in queue"
 #: src/mods/Sidebar.tsx:322
 #: src/mods/Sidebar.tsx:335
 #: src/mods/Toolbar.tsx:59
-#: src/profiles/CompareTable.tsx:90
+#: src/profiles/CompareTable.tsx:70
 #: src/profiles/GameModsDialog.tsx:37
 #: src/profiles/PackImportDialog.tsx:111
 #: src/profiles/ProfilesPage.tsx:267
@@ -4705,7 +4699,7 @@ msgstr "{name} has no file Mortar can use in place of the one shared"
 msgid "They move to Dismissed. Restore them from that section."
 msgstr "They move to Dismissed. Restore them from that section."
 
-#: src/profiles/CompareDialog.tsx:224
+#: src/profiles/CompareDialog.tsx:225
 msgid "YOUR PROFILES"
 msgstr "YOUR PROFILES"
 
@@ -4733,6 +4727,7 @@ msgstr "Duplicate"
 
 #: src/browse/BrowseDetails.tsx:58
 #: src/launch/PrePlayDialog.tsx:91
+#: src/share/Included.tsx:63
 msgid "and {count} more"
 msgstr "and {count} more"
 
@@ -4991,7 +4986,7 @@ msgstr "Rename…"
 msgid "{names} all ship the plugin {0}, and BepInEx loads only one."
 msgstr "{names} all ship the plugin {0}, and BepInEx loads only one."
 
-#: src/profiles/CompareDialog.tsx:270
+#: src/profiles/CompareDialog.tsx:271
 msgid " · {onlyA} only in {aName}, {identical} identical, shown"
 msgstr " · {onlyA} only in {aName}, {identical} identical, shown"
 
@@ -5141,7 +5136,7 @@ msgstr "No profile holds a mod by that name or id."
 msgid "Could not export the modpack"
 msgstr "Could not export the modpack"
 
-#: src/share/Included.tsx:47
+#: src/share/Included.tsx:106
 msgid "Added from an archive, so it only exists on this computer."
 msgstr "Added from an archive, so it only exists on this computer."
 
@@ -5238,7 +5233,7 @@ msgstr "Copy the command"
 msgid "Background preview"
 msgstr "Background preview"
 
-#: src/profiles/CompareDialog.tsx:241
+#: src/profiles/CompareDialog.tsx:242
 msgid "A friend's link or file…"
 msgstr "A friend's link or file…"
 
@@ -5789,7 +5784,7 @@ msgstr "Starter templates"
 msgid "Send this profile to a computer on your network that runs Mortar. Paired computers get the whole file; the others get only the link."
 msgstr "Send this profile to a computer on your network that runs Mortar. Paired computers get the whole file; the others get only the link."
 
-#: src/share/Included.tsx:59
+#: src/share/Included.tsx:118
 msgid "{local, plural, one {# mod you added from an archive can't be linked} other {# mods you added from archives can't be linked}}"
 msgstr "{local, plural, one {# mod you added from an archive can't be linked} other {# mods you added from archives can't be linked}}"
 
@@ -5995,7 +5990,7 @@ msgid "Skip for now"
 msgstr "Skip for now"
 
 #: src/mods/typedConfig/ConfigPane.tsx:179
-#: src/share/Included.tsx:35
+#: src/share/Included.tsx:94
 msgid "Config files"
 msgstr "Config files"
 
@@ -6355,7 +6350,7 @@ msgstr "Unity starts"
 msgid "There is not enough free space at the destination."
 msgstr "There is not enough free space at the destination."
 
-#: src/profiles/CompareDialog.tsx:248
+#: src/profiles/CompareDialog.tsx:249
 msgid "A multiplayer host's list…"
 msgstr "A multiplayer host's list…"
 
@@ -6563,7 +6558,7 @@ msgstr "The log does not name a mod."
 msgid "Create a profile first."
 msgstr "Create a profile first."
 
-#: src/share/Included.tsx:88
+#: src/share/Included.tsx:156
 msgid "Which?"
 msgstr "Which?"
 
@@ -6666,7 +6661,7 @@ msgstr "File"
 msgid "Track"
 msgstr "Track"
 
-#: src/share/Included.tsx:41
+#: src/share/Included.tsx:100
 msgid "{count, plural, one {# enabled mod} other {# enabled mods}}"
 msgstr "{count, plural, one {# enabled mod} other {# enabled mods}}"
 
@@ -7554,6 +7549,10 @@ msgstr "Mountain"
 msgid "Installing {loader}"
 msgstr "Installing {loader}"
 
+#: src/share/Included.tsx:39
+msgid "{count} {source}"
+msgstr "{count} {source}"
+
 #: src/mods/ModMenu.tsx:132
 msgid "More details"
 msgstr "More details"
@@ -7770,7 +7769,7 @@ msgstr "The profile itself stays as it is."
 
 #. placeholder {0}: p.name
 #. placeholder {1}: userModCount(p)
-#: src/profiles/CompareDialog.tsx:232
+#: src/profiles/CompareDialog.tsx:233
 msgid "{0} · {1} mods"
 msgstr "{0} · {1} mods"
 
@@ -7825,7 +7824,7 @@ msgid "Crashed"
 msgstr "Crashed"
 
 #: src/i18n/counts.ts:3
-#: src/share/Included.tsx:40
+#: src/share/Included.tsx:99
 msgid "{count, plural, one {# mod} other {# mods}}"
 msgstr "{count, plural, one {# mod} other {# mods}}"
 
@@ -7991,7 +7990,7 @@ msgstr "Add {0} to a profile"
 #. placeholder {0}: plan.moves.length
 #. placeholder {1}: to.name
 #. placeholder {2}: to.name
-#: src/profiles/CompareDialog.tsx:104
+#: src/profiles/CompareDialog.tsx:105
 msgid "{0, plural, one {Matched # version in {1}} other {Matched # versions in {2}}}"
 msgstr "{0, plural, one {Matched # version in {1}} other {Matched # versions in {2}}}"
 
@@ -8672,10 +8671,6 @@ msgstr "already listed"
 msgid "Could not untrack mods"
 msgstr "Could not untrack mods"
 
-#: src/profiles/CompareTable.tsx:30
-msgid "Only in {aName}"
-msgstr "Only in {aName}"
-
 #. placeholder {0}: unofficial.version
 #. placeholder {0}: update.version
 #: src/mods/parts.tsx:344
@@ -8715,7 +8710,7 @@ msgstr "What Mortar shows when it opens."
 
 #: src/console/PerformanceComparison.tsx:57
 #: src/console/StartupTable.tsx:278
-#: src/share/Included.tsx:77
+#: src/share/Included.tsx:136
 msgid "Change"
 msgstr "Change"
 
@@ -8797,7 +8792,7 @@ msgstr "Mod or event"
 msgid "Untrack every {gameName} mod on Nexus"
 msgstr "Untrack every {gameName} mod on Nexus"
 
-#: src/share/Included.tsx:63
+#: src/share/Included.tsx:122
 msgid "{other, plural, one {# more mod is left out} other {# more mods are left out}}"
 msgstr "{other, plural, one {# more mod is left out} other {# more mods are left out}}"
 
@@ -8875,8 +8870,8 @@ msgstr "Profile settings"
 #. placeholder {0}: profileB.name
 #. placeholder {1}: profileA.name
 #. placeholder {1}: profileB.name
-#: src/profiles/CompareDialog.tsx:139
-#: src/profiles/CompareDialog.tsx:144
+#: src/profiles/CompareDialog.tsx:140
+#: src/profiles/CompareDialog.tsx:145
 msgid "Make {0} match {1}"
 msgstr "Make {0} match {1}"
 
@@ -9536,7 +9531,7 @@ msgid "Signed in"
 msgstr "Signed in"
 
 #. placeholder {0}: view.differences
-#: src/profiles/CompareDialog.tsx:276
+#: src/profiles/CompareDialog.tsx:277
 msgid "{0, plural, one {# difference} other {# differences}}"
 msgstr "{0, plural, one {# difference} other {# differences}}"
 
@@ -9846,6 +9841,10 @@ msgstr "Move up"
 #: src/queue/QueueBody.tsx:141
 msgid "Open download page"
 msgstr "Open download page"
+
+#: src/share/Included.tsx:144
+msgid "Show mods"
+msgstr "Show mods"
 
 #: src/settings/sections/Launchers.tsx:27
 msgid "Mortar finds your games through these launchers. Choose a folder for a game it missed or you moved."
@@ -10238,7 +10237,7 @@ msgstr "Auto-enable requirements"
 #: src/mods/ModList.tsx:389
 #: src/mods/Sidebar.tsx:322
 #: src/mods/Sidebar.tsx:335
-#: src/profiles/CompareTable.tsx:90
+#: src/profiles/CompareTable.tsx:70
 #: src/profiles/ProfilesPage.tsx:267
 #: src/profiles/ProfilesPage.tsx:276
 #: src/share/ListFormat.tsx:21
@@ -10653,7 +10652,7 @@ msgid "Kept forever"
 msgstr "Kept forever"
 
 #. placeholder {0}: profile.name
-#: src/profiles/CompareDialog.tsx:75
+#: src/profiles/CompareDialog.tsx:76
 msgid "{0} is in use by the running game. Close the game to change its mods."
 msgstr "{0} is in use by the running game. Close the game to change its mods."
 
@@ -10768,7 +10767,7 @@ msgstr "The game crashed"
 
 #: src/console/PerformanceComparison.tsx:54
 #: src/console/StartupTable.tsx:265
-#: src/profiles/CompareTable.tsx:53
+#: src/profiles/CompareTable.tsx:33
 msgid "Mod"
 msgstr "Mod"
 
@@ -10794,7 +10793,7 @@ msgstr "Your profiles have {0}. Update replaces each profile's copy."
 msgid "Done ({0}): {1}"
 msgstr "Done ({0}): {1}"
 
-#: src/share/Included.tsx:55
+#: src/share/Included.tsx:114
 msgid "{local, plural, one {# mod you added from an archive can't go in the file} other {# mods you added from archives can't go in the file}}"
 msgstr "{local, plural, one {# mod you added from an archive can't go in the file} other {# mods you added from archives can't go in the file}}"
 
@@ -10980,7 +10979,7 @@ msgstr "The game crashed {0}"
 msgid "Toggle {name}"
 msgstr "Toggle {name}"
 
-#: src/profiles/CompareDialog.tsx:236
+#: src/profiles/CompareDialog.tsx:237
 msgid "SOMEONE ELSE'S"
 msgstr "SOMEONE ELSE'S"
 
@@ -11287,7 +11286,7 @@ msgstr "Tag"
 msgid "Diagnostics"
 msgstr "Diagnostics"
 
-#: src/profiles/CompareDialog.tsx:271
+#: src/profiles/CompareDialog.tsx:272
 msgid " · {onlyA} only in {aName}, {identical} identical, hidden"
 msgstr " · {onlyA} only in {aName}, {identical} identical, hidden"
 
@@ -11527,7 +11526,7 @@ msgstr "{0, plural, one {Last run: {list}} other {Last # runs: {list}}}"
 msgid "You can roll back the completed updates from the profile history."
 msgstr "You can roll back the completed updates from the profile history."
 
-#: src/share/Included.tsx:51
+#: src/share/Included.tsx:110
 msgid "Its source is not known."
 msgstr "Its source is not known."
 
@@ -11737,7 +11736,7 @@ msgstr "Did not load"
 
 #: src/browse/BrowseShow.tsx:30
 #: src/launch/LaunchLayer.tsx:190
-#: src/profiles/CompareDialog.tsx:283
+#: src/profiles/CompareDialog.tsx:284
 #: src/profiles/LaunchPresetDialog.tsx:86
 #: src/saves/SaveGapLine.tsx:56
 msgid "Hide"
@@ -12102,7 +12101,7 @@ msgstr "Broke in {0}"
 msgid "Open the previous profile"
 msgstr "Open the previous profile"
 
-#: src/profiles/CompareTable.tsx:32
+#: src/profiles/compareTitle.ts:10
 msgid "Enabled in one only"
 msgstr "Enabled in one only"
 
@@ -12309,6 +12308,7 @@ msgstr "Tips"
 msgid "Failed, retry"
 msgstr "Failed, retry"
 
+#: src/profiles/CompareDialog.tsx:276
 #: src/profiles/HistoryDiffView.tsx:29
 msgid "No differences."
 msgstr "No differences."
@@ -12863,7 +12863,7 @@ msgid "Reinstall"
 msgstr "Reinstall"
 
 #: src/console/StartupSections.tsx:49
-#: src/profiles/CompareDialog.tsx:317
+#: src/profiles/CompareDialog.tsx:318
 msgid "Compare"
 msgstr "Compare"
 
@@ -13032,7 +13032,7 @@ msgstr "Back up saves only if the profile's mods changed since the last run."
 msgid "Make win"
 msgstr "Make win"
 
-#: src/profiles/CompareTable.tsx:34
+#: src/profiles/compareTitle.ts:11
 msgid "Different source"
 msgstr "Different source"
 
@@ -13100,7 +13100,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/mods/ModDetail.tsx:351
 #: src/mods/updateReview/ReviewFooter.tsx:61
 #: src/mods/updateReview/ReviewTitle.tsx:43
-#: src/profiles/CompareDialog.tsx:321
+#: src/profiles/CompareDialog.tsx:322
 #: src/profiles/HealthDialog.tsx:255
 #: src/profiles/HistoryPanel.tsx:131
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:70
@@ -13206,7 +13206,7 @@ msgid "Start measuring first."
 msgstr "Start measuring first."
 
 #. placeholder {0}: to.name
-#: src/profiles/CompareDialog.tsx:112
+#: src/profiles/CompareDialog.tsx:113
 msgid "Could not change {0}"
 msgstr "Could not change {0}"
 

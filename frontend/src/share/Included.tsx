@@ -3,12 +3,70 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { IncludeOptions } from './IncludeOptions.tsx'
 import type { ShownInfo } from './logic.ts'
 import { includedKeys, leftOutCounts } from './methods.ts'
 import { offersFomod, type ShareInclude } from './shareDefaults.ts'
 import { useShareDialog } from './store.ts'
+
+const SHOWN_NAMES = 30
+
+function ModNames({ info }: { info: ShownInfo }) {
+  const { t } = useLingui()
+  const names = info.groups.flatMap((g) =>
+    g.mods.map((name) => ({ key: `${g.source}-${name}`, name, source: g.source })),
+  )
+  const shown = names.slice(0, SHOWN_NAMES)
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+        {info.groups.map((g) => {
+          const { count } = g
+          return (
+            <Box
+              key={g.source}
+              component="span"
+              sx={{
+                px: 1,
+                py: '2px',
+                borderRadius: '10px',
+                bgcolor: 'var(--mortar-hairline-muted)',
+                fontSize: 12,
+              }}
+            >
+              {t`${count} ${{ source: sourceLabel(g.source) }}`}
+            </Box>
+          )
+        })}
+      </Box>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+        {shown.map((m) => (
+          <Box
+            key={m.key}
+            component="span"
+            sx={{
+              px: 1.25,
+              py: 0.5,
+              borderRadius: '4px',
+              bgcolor: 'var(--mortar-card-hover)',
+              fontSize: 13,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {m.name}
+          </Box>
+        ))}
+        {names.length > shown.length ? (
+          <Box component="span" sx={{ px: 1.25, py: 0.5, fontSize: 13, color: 'text.secondary' }}>
+            {t`and ${{ count: names.length - shown.length }} more`}
+          </Box>
+        ) : null}
+      </Box>
+    </Box>
+  )
+}
 
 // What the share holds, the settings behind it (Change), and the mods it leaves out (Which?).
 export function Included({
@@ -25,6 +83,7 @@ export function Included({
   const { t, i18n } = useLingui()
   const [changing, setChanging] = useState(false)
   const [which, setWhich] = useState(false)
+  const [showMods, setShowMods] = useState(false)
   const profileId = useShareDialog((s) => s.profileId)
   const fomod = useProfiles((s) =>
     offersFomod(s.profiles.find((p) => p.id === profileId)?.entries, s.game?.sources),
@@ -76,7 +135,16 @@ export function Included({
         >
           {t`Change`}
         </Button>
+        <Button
+          variant="text"
+          sx={link}
+          aria-expanded={showMods}
+          onClick={() => setShowMods(!showMods)}
+        >
+          {t`Show mods`}
+        </Button>
       </Box>
+      {showMods ? <ModNames info={info} /> : null}
       {changing ? <IncludeOptions value={include} onChange={onInclude} file={file} /> : null}
       {info.leftOut.length > 0 ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
