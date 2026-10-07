@@ -9,7 +9,7 @@ Mortar is a desktop mod manager for several games, with Stardew Valley, Lethal C
 - A sandbox of your own (`MORTAR_SELFTEST_DIR=/var/tmp/<name>`, 2 to 6 GB) ends with `scripts/selftest.sh destroy` in the same environment when the task is done; `stop` leaves the folder.
 - `scripts/selftest.sh reap` lists marked sandboxes (regress failures included) that nothing runs from and that have been idle for 6 hours, and `--yes` deletes them.
 
-`wails3 task selftest ARGS=seed` fills the running sandbox once, through the sandbox's own CLI, with two profiles (one from a template), mods from generated zips, history events, a manual and a scheduled backup, a stray game-Mods folder, a dot-hidden mod, an extra-mods folder and a failed download. The maintainer gets only the tests that need a human: a store login, owned games, hardware or a real desktop session.
+`wails3 task selftest ARGS=seed` fills the running sandbox once, through the sandbox's own CLI, with two profiles (one from a template), mods from generated zips, history events, a manual and a scheduled backup, a stray game-Mods folder, a dot-hidden mod, an extra-mods folder, a failed download and the Config page's sources (a Stardew `config.json` changed from its shipped default, a GMCM capture with a pending edit and a result, a Lethal Company plugin's `.cfg` changed from its default, and an unowned `BepInEx.cfg`). The maintainer gets only the tests that need a human: a store login, owned games, hardware or a real desktop session.
 
 Windows bugs: the Windows 11 KVM VM in `/var/tmp/win11-vm/` (`README.txt`, `/var/tmp/win11-vm/start.sh`, `vm.py`, a `clean-install` snapshot) is for quick repros and one-fix smokes only; long soaks are a human's.
 

@@ -388,6 +388,9 @@ seed_lc() {
     mkdir -p "$fx/$name/plugins" "$fx/$name/config" "$fx/zips"
     printf '{"name":"%s","version_number":"1.0.0","author":"Self-test","website_url":"","description":"Fixture package","dependencies":[]}\n' "$name" >"$fx/$name/manifest.json"
     printf 'placeholder %s\n' "$name" >"$fx/$name/plugins/$name.dll"
+    if [ "$name" = SeedAlpha ]; then
+      cp "$REPO/internal/dotnet/testdata/e2e/Alpha.dll" "$fx/$name/plugins/$name.dll"
+    fi
     printf '[General]\nEnabled = true\n' >"$fx/$name/config/Self-test.$name.cfg"
     (cd "$fx/$name" && python3 -m zipfile -c "$fx/zips/$name.zip" ./*)
   done
@@ -395,6 +398,39 @@ seed_lc() {
   for name in SeedAlpha SeedBeta; do
     cli install lethal-company "Seed Lobby" "$fx/zips/$name.zip"
   done
+  seed_lc_configs "$fx"
+}
+
+# seed_lc_configs gives the Lethal Company profile what the Config page lists: SeedAlpha's plugin (the repo's
+# declared-plugin test assembly, com.e2e.alpha, copied in at seed time) owns a .cfg that differs from its default, and
+# BepInEx.cfg belongs to no mod.
+seed_lc_configs() {
+  local fx=$1 pid cfg
+  pid=$(cli profiles lethal-company --json | python3 -c 'import json,sys; print(next(p["id"] for p in json.load(sys.stdin) if p["name"] == "Seed Lobby"))')
+  cfg=$SANDBOX_HOME/.local/share/mortar/profiles/lethal-company/$pid/BepInEx/config
+  mkdir -p "$cfg"
+  printf '## Settings file was created by plugin E2E Alpha v1.0.0\n## Plugin GUID: com.e2e.alpha\n\n[General]\n\n## Turns the feature on.\n# Setting type: Boolean\n# Default value: true\nEnabled = false\n' >"$cfg/com.e2e.alpha.cfg"
+  printf '[Logging.Console]\n\n## Enables showing a console for log output.\n# Setting type: Boolean\n# Default value: false\nEnabled = true\n' >"$cfg/BepInEx.cfg"
+}
+
+# seed_gmcm writes what the bridge leaves for Seed.Beta in the profile folder dir: an in-game menu capture, one edit
+# waiting for the next start and the result of an earlier apply (shapes: internal/gmcm).
+seed_gmcm() {
+  python3 - "$1" <<'PY'
+import json, os, sys
+root = sys.argv[1]
+os.makedirs(os.path.join(root, "gmcm"), exist_ok=True)
+os.makedirs(os.path.join(root, "gmcm-pending"), exist_ok=True)
+option = lambda i, kind, field, name, value, **more: {"index": i, "kind": kind, "fieldId": field, "name": name, "tooltip": "", "value": value, "editable": True, "titleScreenOnly": False, **more}
+capture = {"schema": 1, "mod": {"id": "Seed.Beta", "name": "Seed Beta", "version": "1.0.0"}, "gmcmVersion": "1.12.0",
+           "capturedAt": "2026-01-02T03:04:05.0000000+00:00", "titleScreenOnlyDefault": False,
+           "pages": [{"id": "", "options": [option(0, "bool", "enabled", "Enabled", True),
+                                            option(1, "int", "count", "Count", 3, min=1, max=9, interval=1)]}]}
+edit = {"page": "", "index": 1, "kind": "int", "fieldId": "count", "name": "Count", "value": 5}
+json.dump(capture, open(os.path.join(root, "gmcm", "Seed.Beta.json"), "w"), indent=2)
+json.dump({"schema": 1, "edits": [edit]}, open(os.path.join(root, "gmcm-pending", "Seed.Beta.json"), "w"), indent=2)
+json.dump({"schema": 1, "applied": [{**edit, "value": 4}], "skipped": []}, open(os.path.join(root, "gmcm-pending", "Seed.Beta.result.json"), "w"), indent=2)
+PY
 }
 
 seed() {
@@ -411,6 +447,7 @@ seed() {
   rm -rf "$fx"
   mkdir -p "$fx/zips" "$ROOT/extra"
   make_mod "$fx/alpha/Seed.Alpha" Seed.Alpha "Seed Alpha"
+  printf '{"Speed":1,"Enabled":true}\n' >"$fx/alpha/Seed.Alpha/config.json"
   make_mod "$fx/beta/Seed.Beta" Seed.Beta "Seed Beta"
   # A pack folder with no manifest of its own is what lets a dotted sibling count as hidden rather than as the mod.
   make_mod "$fx/gamma/Seed.Pack/Seed.Gamma" Seed.Gamma "Seed Gamma"
@@ -431,6 +468,7 @@ seed() {
   for m in alpha beta gamma; do
     cli install stardew "Seed Farm" "$fx/zips/$m.zip"
   done
+  cli mods config stardew "Seed Farm" Seed.Alpha Speed 5
   cli mods disable stardew "Seed Farm" Seed.Beta
   cli mods enable stardew "Seed Farm" Seed.Beta
   cli templates save stardew "Seed Farm" "Seed Template"
@@ -449,6 +487,8 @@ entry = {"name": "Seed Failed Download", "version": "1.0.0", "source": "nexus", 
          "outcome": "failed", "error": "[network] connection reset"}
 json.dump([entry], open(path, "w"))
 PY
+
+  seed_gmcm "$data/profiles/stardew/$pid"
 
   # The scheduled backup runs on the server's first check after start, so enable it and restart without rebuilding.
   cli settings set --game stardew saveBackupHours 1
