@@ -26,7 +26,13 @@ Decided 2026-10-07 (NOMAD), from the audit of how Mortar was described to CurseF
   - **Backend:** one `configsvc.Mods(game, profile)` call builds the list (reusing `Files`, `internal/configsvc/service.go:69`).
 - **Antivirus scan of extracted mods.** Every mod is scanned after extraction and before it enters the store (`internal/store/store.go` `AddArchive` :304, `AddArchiveKey` :317, `AddHashedDir` :333; one hook every path goes through, LAN receives included).
   - **Windows:** AMSI. `AmsiInitialize`, `AmsiOpenSession`, then `AmsiScanBuffer` per file, which reaches the antivirus registered as the AMSI provider (Defender or a third party).
-  - **Linux:** clamd over its socket when one is reachable, otherwise skipped. Settings › General shows which scanner is in use, or "No antivirus found".
+  - **Linux:** clamd over its socket when one is reachable, otherwise skipped.
+  - **Settings › General › Antivirus:** the user picks the scanner.
+    - **Automatic** (default): AMSI on Windows, clamd on Linux. It names the product found (Windows Security Center `AntiVirusProduct` / the clamd version) or "No antivirus found".
+    - **clamd socket:** a path, so Linux users can point at a non-default socket.
+    - **Custom command:** an executable and arguments with a `{path}` placeholder. Exit 0 means clean, any other code a detection, and stdout supplies the detection name. Covers scanners with a CLI but no AMSI provider.
+    - **Off:** no scanning, with a one-line note that the mod sites' own scans still apply.
+    - **Placement:** it is app-wide, not per game: it guards Mortar's own store.
   - **On a detection:** the install is refused, the extracted files are deleted, and the user sees the scanner's detection name and the flagged file. **Install anyway** behind a confirm covers false positives (SMAPI and BepInEx DLLs often trip heuristics); the override is recorded in history.
   - **Errors:** a scanner error or timeout is not a detection. The mod installs and a notice names the error.
   - **Done when:** an EICAR test file in a zip is refused on Windows (Defender in the VM) and with clamd on Linux, and the override installs it.
