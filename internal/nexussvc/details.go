@@ -75,7 +75,7 @@ func DetailsName(domain string, modID int) string {
 func (s *Service) CachedFiles(t nexus.Title, modIDs []int) map[int][]nexus.BatchFile {
 	out := make(map[int][]nexus.BatchFile, len(modIDs))
 	for _, id := range modIDs {
-		d, ok := meta.Peek[Details](s.meta, DetailsName(t.Domain, id))
+		d, ok := PeekDetails(s.meta, t.Domain, id)
 		if !ok || len(d.Files) == 0 {
 			continue
 		}

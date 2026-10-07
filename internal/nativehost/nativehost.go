@@ -785,7 +785,7 @@ type cachedNexusFile struct {
 
 func cachedNexusDetails(root *os.Root, domain string, modID int) (string, []cachedNexusFile) {
 	c := &meta.Client{CacheDir: filepath.Join(root.Name(), "cache")}
-	d, ok := meta.Peek[nexussvc.Details](c, nexussvc.DetailsName(domain, modID))
+	d, ok := nexussvc.PeekDetails(c, domain, modID)
 	if !ok {
 		return "", nil
 	}

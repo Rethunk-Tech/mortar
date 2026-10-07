@@ -41,10 +41,7 @@ func nexusPageRequirements(domain string, modID int) []requirementItem {
 	defer func() { _ = root.Close() }()
 	// The requirements ride on the page data Mortar keeps for the mod: its full details, else the batched page.
 	cache := &meta.Client{}
-	d, ok := meta.Peek[nexussvc.Details](cache, nexussvc.DetailsName(domain, modID))
-	if !ok {
-		d, ok = meta.Peek[nexussvc.Details](cache, nexussvc.PageName(domain, modID))
-	}
+	d, ok := nexussvc.PeekDetails(cache, domain, modID)
 	if !ok {
 		return nil
 	}
