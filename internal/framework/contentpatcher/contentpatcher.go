@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"unique"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -134,7 +135,11 @@ type cpFlagCondition struct {
 }
 
 func (w cpWhen) with(o cpWhen) cpWhen {
-	places := map[string][]string{}
+	// Most changes name no place, so an empty map is not allocated for each.
+	var places map[string][]string
+	if len(w.places)+len(o.places) > 0 {
+		places = map[string][]string{}
+	}
 	for key, values := range w.places {
 		places[key] = slices.Clone(values)
 	}
@@ -191,7 +196,7 @@ type cachedPack struct {
 	farms map[string]string
 }
 
-const contentPackParserVersion = 21
+const contentPackParserVersion = 22
 
 // absentSize stamps a file that was not there, so the cache is dropped when it appears.
 const absentSize = -1
@@ -752,6 +757,8 @@ func readContentPackWithEnabled(im framework.Mod, requireEnabled bool) cachedPac
 	slices.SortFunc(pack.files, func(a, b packFileStamp) int {
 		return strings.Compare(a.Path, b.Path)
 	})
+	// Appending left spare capacity, up to the slice's own size again.
+	pack.patches = slices.Clip(pack.patches)
 	pack.fingerprint = packFilesFingerprint(pack.files)
 	if !packFingerprintValid(root, pack.files, pack.fingerprint) {
 		noteUnstampable()
@@ -1032,6 +1039,10 @@ func isContentPatcherPack(im framework.Mod) bool {
 	return mod.Equal(im.ContentPackForID(), contentPatcherID)
 }
 
+// intern shares one copy of a string a pack repeats on every change (its file names, targets and actions), so
+// parsed changes do not each hold their own.
+func intern(s string) string { return unique.Make(s).Value() }
+
 func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack *cachedPack) {
 	rel = filepath.ToSlash(rel)
 	key := strings.ToLower(rel)
@@ -1136,7 +1147,7 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 		}
 		// Changes that cannot conflict still count for compatibility settings, whatever their target.
 		if kind == "other" {
-			pack.patches = append(pack.patches, cpPatch{kind: kind, when: when, source: rel, index: i, action: action})
+			pack.patches = append(pack.patches, cpPatch{kind: kind, when: when, source: intern(rel), index: i, action: intern(action)})
 			continue
 		}
 		fromArea := string(jsonc.Clean(ch.FromArea))
@@ -1156,12 +1167,12 @@ func scanContentFile(root, rel string, seen map[string]bool, outer cpWhen, pack 
 			}
 			for _, tt := range targets {
 				pack.patches = append(pack.patches, cpPatch{
-					kind: kind, target: normalizeTarget(tt.target), fromFile: tt.fromFile, priority: strings.TrimSpace(priority),
-					patchMode: strings.TrimSpace(ch.PatchMode), when: tt.when,
+					kind: kind, target: intern(normalizeTarget(tt.target)), fromFile: intern(tt.fromFile), priority: intern(strings.TrimSpace(priority)),
+					patchMode: intern(strings.TrimSpace(ch.PatchMode)), when: tt.when,
 					shapes: shapes, spouse: tt.when.spouse, places: tt.when.places, image: action == kindEditImage,
 					imageDigest:   imageFileDigest(root, tt.fromFile, action == kindEditImage),
-					imageFromArea: fromArea,
-					source:        rel, index: i, action: action, toArea: toArea,
+					imageFromArea: intern(fromArea),
+					source:        intern(rel), index: i, action: intern(action), toArea: intern(toArea),
 					extra: extra,
 				})
 			}
@@ -1223,6 +1234,9 @@ func expandTargetTokens(target, fromFile string, when cpWhen, config, dynamic ma
 		w := when
 		if season != "" {
 			w = when.with(cpWhen{})
+			if w.places == nil {
+				w.places = map[string][]string{}
+			}
 			w.places["season"] = []string{season}
 		}
 		out = append(out, tokenTarget{target: t, fromFile: from, when: w})

@@ -5,8 +5,10 @@ import (
 	"cmp"
 	"compress/gzip"
 	"compress/zlib"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/xml"
 	"image"
@@ -291,7 +293,25 @@ func packConfigValues(schema map[string]cpSchema, root string) map[string]string
 // singleToken matches a value that is exactly one token, such as "{{Incubation time}}".
 var singleToken = regexp.MustCompile(`^"\s*\{\{\s*([^:|}]+?)\s*\}\}\s*"$`)
 
+// literalDigestOver is the length past which a data value is kept as a digest: overlaps only compare two values for
+// equality, and an entry's whole JSON text per shape is most of what a parsed pack holds.
+const literalDigestOver = 24
+
+// compactLiteral keeps a short value as it is and a longer one as a digest of its lower-cased text, so two values
+// compare equal exactly when their text does.
+func compactLiteral(s string) string {
+	if len(s) <= literalDigestOver {
+		return s
+	}
+	sum := sha256.Sum256([]byte(strings.ToLower(s)))
+	return "#" + hex.EncodeToString(sum[:12])
+}
+
 func dataLiteral(raw json.RawMessage, values map[string]string) string {
+	return compactLiteral(rawDataLiteral(raw, values))
+}
+
+func rawDataLiteral(raw json.RawMessage, values map[string]string) string {
 	if hasToken(string(raw)) {
 		// A value that is just one of the pack's config tokens is that token's configured value,
 		// so two packs set to the same value agree.
@@ -411,7 +431,7 @@ func editShapes(root string, ch cpChange, image bool) []cpShape {
 		if hasToken(value) {
 			value = ""
 		}
-		out = append(out, cpShape{kind: 'p', key: strings.ToLower(key), value: value})
+		out = append(out, cpShape{kind: 'p', key: strings.ToLower(key), value: compactLiteral(value)})
 	}
 	return out
 }
