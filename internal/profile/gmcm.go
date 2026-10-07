@@ -66,23 +66,7 @@ func (s *Service) GmcmMenu(game, profile string, uniqueID mod.ID) (gmcm.Capture,
 	return gmcm.ReadCapture(d, uniqueID)
 }
 
-func (s *Service) PendingGmcm(game, profile string, uniqueID mod.ID) (gmcm.Pending, error) {
-	d, err := s.store.ProfileDir(game, profile)
-	if err != nil {
-		return gmcm.Pending{}, err
-	}
-	return gmcm.ReadPending(d, uniqueID)
-}
-
 // SetGmcmOption sets one in-game menu option for the next start; see Store.SetGmcmOption.
 func (s *Service) SetGmcmOption(game, profile string, uniqueID mod.ID, page string, index int, value string) (gmcm.Pending, error) {
 	return s.store.SetGmcmOption(game, profile, uniqueID, page, index, value)
-}
-
-func (s *Service) GmcmResult(game, profile string, uniqueID mod.ID) (gmcm.Result, error) {
-	d, err := s.store.ProfileDir(game, profile)
-	if err != nil {
-		return gmcm.Result{}, err
-	}
-	return gmcm.ReadResult(d, uniqueID)
 }
