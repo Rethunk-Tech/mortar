@@ -88,8 +88,8 @@ func Apply(journal, saves, profile string, noLink bool) (Manifest, error) {
 		return Manifest{}, err
 	}
 	if m.Held != "" {
-		if err := os.Rename(saves, m.Held); err != nil {
-			_ = os.RemoveAll(journal)
+		if err := fsx.Rename(saves, m.Held); err != nil {
+			_ = fsx.RemoveAll(journal)
 			return Manifest{}, err
 		}
 	}
@@ -132,14 +132,14 @@ func Purge(m Manifest) error {
 	case m.Copied && m.Live && exists(m.Saves) && !isLink(m.Saves):
 		if !m.WrittenBack {
 			next := m.Profile + ".new"
-			_ = os.RemoveAll(next)
+			_ = fsx.RemoveAll(next)
 			if err := datadir.CopyTree(m.Saves, next); err != nil {
 				return err
 			}
-			if err := os.RemoveAll(m.Profile); err != nil {
+			if err := fsx.RemoveAll(m.Profile); err != nil {
 				return err
 			}
-			if err := os.Rename(next, m.Profile); err != nil {
+			if err := fsx.Rename(next, m.Profile); err != nil {
 				return err
 			}
 			m.WrittenBack = true
@@ -147,11 +147,11 @@ func Purge(m Manifest) error {
 				return err
 			}
 		}
-		if err := os.RemoveAll(m.Saves); err != nil {
+		if err := fsx.RemoveAll(m.Saves); err != nil {
 			return err
 		}
 	case m.Copied && exists(m.Saves) && !isLink(m.Saves):
-		if err := os.RemoveAll(m.Saves); err != nil {
+		if err := fsx.RemoveAll(m.Saves); err != nil {
 			return err
 		}
 	case isLink(m.Saves):
@@ -163,11 +163,11 @@ func Purge(m Manifest) error {
 		if exists(m.Saves) {
 			return fmt.Errorf("%s is in the way of the shared saves kept at %s", m.Saves, m.Held)
 		}
-		if err := os.Rename(m.Held, m.Saves); err != nil {
+		if err := fsx.Rename(m.Held, m.Saves); err != nil {
 			return err
 		}
 	}
-	return os.RemoveAll(m.Journal)
+	return fsx.RemoveAll(m.Journal)
 }
 
 // Recover finishes an unfinished swap found at journal: nothing while alive reports the game running, else Purge.

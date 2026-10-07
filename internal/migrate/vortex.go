@@ -165,7 +165,7 @@ func readVortexState(root string) (map[string]json.RawMessage, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = os.RemoveAll(tmp) }()
+	defer func() { _ = fsx.RemoveAll(tmp) }()
 	if err := copyLevelDB(src, tmp); err != nil {
 		return nil, err
 	}

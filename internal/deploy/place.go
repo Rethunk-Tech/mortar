@@ -149,7 +149,7 @@ func mkdirTracked(m *Manifest, dir string) error {
 
 // move renames, falling back to copy and remove across file systems.
 func move(src, dst string) error {
-	if err := os.Rename(src, dst); err == nil {
+	if err := fsx.Rename(src, dst); err == nil {
 		return nil
 	}
 	if err := datadir.CopyFile(src, dst); err != nil {
@@ -197,7 +197,7 @@ func (place) Purge(ctx context.Context, m Manifest) error {
 	for _, d := range slices.SortedFunc(slices.Values(m.Created), func(a, b string) int { return len(b) - len(a) }) {
 		_ = os.Remove(d)
 	}
-	return os.RemoveAll(m.View.JournalDir)
+	return fsx.RemoveAll(m.View.JournalDir)
 }
 
 func (p place) Recover(ctx context.Context, journalDir string, alive func() bool) error {

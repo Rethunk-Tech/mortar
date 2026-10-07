@@ -239,7 +239,7 @@ func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResu
 	if err != nil {
 		return RestoreResult{}, err
 	}
-	defer func() { _ = os.RemoveAll(tmp) }()
+	defer func() { _ = fsx.RemoveAll(tmp) }()
 	doc, files, err := readBackup(path, tmp)
 	if err != nil {
 		return RestoreResult{}, err

@@ -599,7 +599,7 @@ func (c *Client) Download(ctx context.Context, asset Asset, progress Progress) (
 	}}
 	path, err := h.Fetch(ctx, asset.URL, dir)
 	if err != nil {
-		_ = os.RemoveAll(dir)
+		_ = fsx.RemoveAll(dir)
 		return "", fmt.Errorf("download %s: %w", asset.Name, err)
 	}
 	return path, nil

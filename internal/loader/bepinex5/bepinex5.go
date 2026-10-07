@@ -53,7 +53,7 @@ func InstallPack(zipPath, profileRoot string) (Installed, error) {
 	if err != nil {
 		return Installed{}, err
 	}
-	defer func() { _ = os.RemoveAll(tmp) }()
+	defer func() { _ = fsx.RemoveAll(tmp) }()
 	if err := archive.Extract(zipPath, tmp); err != nil {
 		return Installed{}, err
 	}
