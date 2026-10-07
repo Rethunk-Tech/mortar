@@ -54,7 +54,7 @@ Downloads start only from Nexus's own Mod Manager Download button (an nxm:// lin
 - Every response's `X-RL-Daily-*` and `X-RL-Hourly-*` headers (remaining, limit, reset) are recorded and shown to the user.
 - Requests are refused locally once either window's remaining count reaches 5 (`LimitFloor`) until the window's reset time, so Mortar stops before Nexus has to answer 429.
 - A 429 from Nexus becomes a rate-limit error carrying the reset time (the daily reset if the daily budget is exhausted, else the hourly one); nothing retries blind.
-- Update checks use one batched GraphQL query for all flagged mods rather than one call per mod; request timeout 20 s; responses are cached under the app's cache directory.
+- Update checks use one batched GraphQL query for all flagged mods rather than one call per mod; request timeout 20 s. Only a mod's page data (`internal/nexus/mod.go`, kept on disk) and the tracked-mods list (`internal/nexus/account.go`, 30 s) are cached; update-check results are not.
 - Application metadata is real: not blank, not another app.
 
 ## Request identity
