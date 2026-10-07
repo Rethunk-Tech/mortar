@@ -19,6 +19,8 @@ const MIB = 1024
 const SAMPLE_MS = 100
 const BUDGET_MIB = Number(process.env.MORTAR_MEM_BUDGET_MIB ?? '1024')
 const ZIP_MIB = Number(process.env.MORTAR_MEM_ZIP_MIB ?? '500')
+// archive.DefaultMaxEntries: the largest archive in a real 811-mod store holds 2,438 files.
+const MAX_ZIP_ENTRIES = 20_000
 const ZIP_FILE_KIB = Number(process.env.MORTAR_MEM_ZIP_FILE_KIB ?? '100')
 const BROWSE_QUERY = process.env.MORTAR_MEM_QUERY ?? 'content'
 const SCROLLS = 5
@@ -364,6 +366,11 @@ const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 function bigZip(): string {
   const path = `${dir}/tmp/MemBigMod.zip`
   mkdirSync(`${dir}/tmp`, { recursive: true })
+  if ((ZIP_MIB * 1024) / ZIP_FILE_KIB > MAX_ZIP_ENTRIES) {
+    throw new Error(
+      `MORTAR_MEM_ZIP_MIB and MORTAR_MEM_ZIP_FILE_KIB make ${(ZIP_MIB * 1024) / ZIP_FILE_KIB} files; Mortar unpacks at most ${MAX_ZIP_ENTRIES}`,
+    )
+  }
   const py = `
 import os, sys, zipfile
 path, mib, kib = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
