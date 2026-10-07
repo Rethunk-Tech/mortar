@@ -331,8 +331,12 @@ func installError(err error) error {
 	case errors.Is(err, archive.ErrTraversal), errors.Is(err, archive.ErrUnsafeName),
 		errors.Is(err, archive.ErrLink), errors.Is(err, archive.ErrSpecialFile):
 		msg = "The archive holds files that are not safe to unpack"
-	case errors.Is(err, archive.ErrEntryTooLarge), errors.Is(err, archive.ErrArchiveTooLarge), errors.Is(err, archive.ErrTooManyEntries):
-		msg = "The archive is too large to unpack"
+	case errors.Is(err, archive.ErrEntryTooLarge):
+		msg = fmt.Sprintf("A file in the archive is over %d MB, more than Mortar unpacks", archive.DefaultMaxEntryBytes>>20)
+	case errors.Is(err, archive.ErrArchiveTooLarge):
+		msg = fmt.Sprintf("The archive unpacks to over %d GB, more than Mortar unpacks", archive.DefaultMaxTotalBytes>>30)
+	case errors.Is(err, archive.ErrTooManyEntries):
+		msg = fmt.Sprintf("The archive holds over %d files, more than Mortar unpacks", archive.DefaultMaxEntries)
 	case errors.As(err, &full):
 		msg = fmt.Sprintf("Not enough disk space: about %d MB is needed", full.NeedMB)
 	case errors.As(err, &dup):
