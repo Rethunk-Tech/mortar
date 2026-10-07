@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -137,8 +138,10 @@ func AssetURL(picture string) string {
 	return Path + "?u=" + url.QueryEscape(picture)
 }
 
+// key names a picture's cached thumbnail; the prefix keeps full-size pictures cached before thumbnails existed from
+// being served.
 func key(picture string) string {
-	sum := sha256.Sum256([]byte(picture))
+	sum := sha256.Sum256([]byte("thumb" + strconv.Itoa(thumbPx) + ":" + picture))
 	return hex.EncodeToString(sum[:])
 }
 
@@ -256,6 +259,9 @@ func (c *Cache) fetch(ctx context.Context, picture, path string) ([]byte, string
 	}
 	b, typ, err := readImage(resp.Body)
 	if err != nil {
+		return nil, "", err
+	}
+	if b, typ, err = thumbnail(b, typ); err != nil {
 		return nil, "", err
 	}
 	if err := os.MkdirAll(c.dir, 0o700); err != nil {
