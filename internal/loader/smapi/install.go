@@ -81,15 +81,10 @@ func launcherHasSMAPI(dir string) bool {
 	return bytes.Contains(b, []byte(smapiMarker))
 }
 
-func isFile(path string) bool {
-	st, err := os.Stat(path)
-	return err == nil && st.Mode().IsRegular()
-}
-
 // buildOS is the OS of the game build in dir: a Windows build on a Linux host (one in a Bottles bottle) is
 // recognised by its executable and is run and installed into the Windows way.
 func buildOS(dir string) string {
-	if hostOS == "linux" && isFile(filepath.Join(dir, "Stardew Valley.exe")) {
+	if hostOS == "linux" && fsx.IsFile(filepath.Join(dir, "Stardew Valley.exe")) {
 		return "windows"
 	}
 	return hostOS
@@ -102,10 +97,10 @@ var hostOS = runtime.GOOS
 // StardewValley-original and installs its own in its place, which a game update overwrites.
 func loaderState(dir, goos string) (installed, broken bool) {
 	if goos == "windows" {
-		return isFile(filepath.Join(dir, smapiMarker+".exe")), false
+		return fsx.IsFile(filepath.Join(dir, smapiMarker+".exe")), false
 	}
-	original := isFile(filepath.Join(dir, linuxOriginal))
-	smapiFiles := isFile(filepath.Join(dir, smapiMarker+".dll"))
+	original := fsx.IsFile(filepath.Join(dir, linuxOriginal))
+	smapiFiles := fsx.IsFile(filepath.Join(dir, smapiMarker+".dll"))
 	if !original && !smapiFiles {
 		return false, false
 	}

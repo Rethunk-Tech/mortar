@@ -60,7 +60,7 @@ func (bottlesStore) Discover(home string, roots map[string][]string, g component
 		}
 		for _, ent := range entries {
 			bottle := filepath.Join(dir, ent.Name())
-			if !fsx.IsDir(bottle) || !isFile(filepath.Join(bottle, "bottle.yml")) {
+			if !fsx.IsDir(bottle) || !fsx.IsFile(filepath.Join(bottle, "bottle.yml")) {
 				continue
 			}
 			for _, cand := range bottleGameDirs(bottle, g.Stores.Bottles.Folder) {
@@ -74,15 +74,10 @@ func (bottlesStore) Discover(home string, roots map[string][]string, g component
 	return out
 }
 
-func isFile(p string) bool {
-	st, err := os.Stat(p)
-	return err == nil && st.Mode().IsRegular()
-}
-
 // BottleOf is the bottle that holds dir, found by walking up to a folder with bottle.yml; "" when dir is in none.
 func BottleOf(dir string) string {
 	for d := filepath.Clean(dir); ; d = filepath.Dir(d) {
-		if isFile(filepath.Join(d, "bottle.yml")) {
+		if fsx.IsFile(filepath.Join(d, "bottle.yml")) {
 			return d
 		}
 		if filepath.Dir(d) == d {

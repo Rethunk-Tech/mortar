@@ -5,11 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"os"
 	"path/filepath"
 	goruntime "runtime"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
@@ -69,15 +69,10 @@ func newInstall(info components.GameInfo, store, dir, prefix, origin string) Ins
 // platformOf is the OS the build in dir is for: the native Linux build when dir holds the catalog's LinuxMarker and not
 // its Marker, else the platform Marker implies.
 func platformOf(info components.GameInfo, dir string) string {
-	if info.LinuxMarker != "" && goruntime.GOOS == "linux" && !isFile(filepath.Join(dir, info.Marker)) && isFile(filepath.Join(dir, info.LinuxMarker)) {
+	if info.LinuxMarker != "" && goruntime.GOOS == "linux" && !fsx.IsFile(filepath.Join(dir, info.Marker)) && fsx.IsFile(filepath.Join(dir, info.LinuxMarker)) {
 		return "linux"
 	}
 	return runtime.PlatformOf(info.Marker, goruntime.GOOS)
-}
-
-func isFile(p string) bool {
-	st, err := os.Stat(p)
-	return err == nil && st.Mode().IsRegular()
 }
 
 func (in Install) runtime(info components.GameInfo, home string) runtime.Install {

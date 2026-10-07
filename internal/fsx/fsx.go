@@ -96,6 +96,13 @@ func MD5(path string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
+// IsFile is true when path resolves to a regular file. Unlike IsDir it uses os.Stat, so a symlink whose target
+// is outside path's folder (a game exe linked from another library) still counts.
+func IsFile(path string) bool {
+	st, err := os.Stat(path)
+	return err == nil && st.Mode().IsRegular()
+}
+
 // Stat describes path.
 func Stat(path string) (os.FileInfo, error) {
 	return in(path, func(r *os.Root, name string) (os.FileInfo, error) { return r.Stat(name) })
