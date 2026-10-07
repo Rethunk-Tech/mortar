@@ -14,6 +14,8 @@ function sentence(kind: ReturnType<typeof kindOf>): string {
       return i18n._(msg`That item could not be found.`)
     case 'busy':
       return i18n._(msg`The game is already running.`)
+    case 'locked':
+      return i18n._(msg`Waiting for you to unlock the keyring.`)
     case 'network':
       return i18n._(msg`A network request failed.`)
     case 'permission':

@@ -27,7 +27,9 @@ const (
 	Outdated Kind = "outdated"
 	// External is a download its author only allows on the source's own page.
 	External Kind = "external"
-	Unknown  Kind = "unknown"
+	// Locked is a keyring read waiting on an unlock prompt the user has not answered yet.
+	Locked  Kind = "locked"
+	Unknown Kind = "unknown"
 )
 
 const (
@@ -125,7 +127,7 @@ func Parse(s string) (kind Kind, raw string) {
 		if s[i] == ']' && i+1 < len(s) && s[i+1] == ' ' {
 			k := Kind(s[1:i])
 			switch k {
-			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External:
+			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Locked:
 				return k, s[i+2:]
 			case Unknown:
 			}

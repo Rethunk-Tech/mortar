@@ -3,6 +3,7 @@ const kindRe = /^\[([a-z_]+)] ([\s\S]*)$/
 const knownKinds = [
   'not_found',
   'busy',
+  'locked',
   'network',
   'permission',
   'disk_full',

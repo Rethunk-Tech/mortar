@@ -25,6 +25,8 @@ func Sentence(kind usererr.Kind) string {
 		return "That was made by a newer Mortar. Update Mortar to open it."
 	case usererr.External:
 		return "The author only allows this download on the source's own page. Download the file there and add it from your computer."
+	case usererr.Locked:
+		return "Waiting for you to unlock the keyring."
 	case usererr.Unknown:
 		return "Something went wrong."
 	default:

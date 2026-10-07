@@ -23,7 +23,7 @@ const getTimeout = 3 * time.Second
 
 // ErrWaitingForUnlock is a read whose keyring prompt is still open. It is not a failure: the read keeps running
 // and OnUnlocked fires when it completes.
-var ErrWaitingForUnlock = usererr.New(usererr.Busy, "Waiting for you to unlock the keyring.")
+var ErrWaitingForUnlock = usererr.New(usererr.Locked, "Waiting for you to unlock the keyring.")
 
 // keyringGet is the backend read, replaced in tests.
 var keyringGet = func(name string) (string, error) { return keyring.Get(service, name) }

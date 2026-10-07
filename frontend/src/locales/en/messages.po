@@ -201,7 +201,7 @@ msgid "Updated categories"
 msgstr "Updated categories"
 
 #: src/queue/store.ts:149
-#: src/toasts/report.ts:59
+#: src/toasts/report.ts:61
 msgid "Open storage settings"
 msgstr "Open storage settings"
 
@@ -730,7 +730,7 @@ msgstr "Open"
 msgid "You started this download on {site}. Create a profile to put it in first."
 msgstr "You started this download on {site}. Create a profile to put it in first."
 
-#: src/toasts/report.ts:18
+#: src/toasts/report.ts:20
 msgid "A network request failed."
 msgstr "A network request failed."
 
@@ -1067,6 +1067,10 @@ msgstr "{0, plural, one {Adds # mod} other {Adds # mods}}"
 msgid "Mod updates are found"
 msgstr "Mod updates are found"
 
+#: src/toasts/report.ts:18
+msgid "Waiting for you to unlock the keyring."
+msgstr "Waiting for you to unlock the keyring."
+
 #: src/profiles/ProfilesPage.tsx:253
 #: src/settings/shortcutLabels.ts:30
 msgid "Find a mod in all profiles"
@@ -1399,7 +1403,7 @@ msgid "Mortar settings…"
 msgstr "Mortar settings…"
 
 #: src/settings/sections/AboutDiagnostics.tsx:227
-#: src/toasts/report.ts:66
+#: src/toasts/report.ts:68
 msgid "Save diagnostics…"
 msgstr "Save diagnostics…"
 
@@ -1757,7 +1761,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/shell/ErrorRetry.tsx:14
 #: src/shell/LoadingRow.tsx:26
 #: src/shell/OfflineBanner.tsx:72
-#: src/toasts/report.ts:62
+#: src/toasts/report.ts:64
 msgid "Retry"
 msgstr "Retry"
 
@@ -1809,7 +1813,7 @@ msgstr "Could not update mods before Play"
 msgid "{errors} with errors"
 msgstr "{errors} with errors"
 
-#: src/toasts/report.ts:20
+#: src/toasts/report.ts:22
 msgid "Mortar does not have permission to do that."
 msgstr "Mortar does not have permission to do that."
 
@@ -4322,7 +4326,7 @@ msgstr "Show in queue"
 msgid "Disabled"
 msgstr "Disabled"
 
-#: src/toasts/report.ts:33
+#: src/toasts/report.ts:35
 msgid "The author only allows this download on the source's own page. Download the file there and add it from your computer."
 msgstr "The author only allows this download on the source's own page. Download the file there and add it from your computer."
 
@@ -4402,7 +4406,7 @@ msgstr "{0} {1} has several archives. Which one should Mortar install?"
 msgid "Reset {label}"
 msgstr "Reset {label}"
 
-#: src/toasts/report.ts:68
+#: src/toasts/report.ts:70
 msgid "Open log"
 msgstr "Open log"
 
@@ -4755,7 +4759,7 @@ msgstr "YOUR PROFILES"
 msgid "Added to Steam"
 msgstr "Added to Steam"
 
-#: src/toasts/report.ts:28
+#: src/toasts/report.ts:30
 msgid "That is for another game. Open that game and import it there."
 msgstr "That is for another game. Open that game and import it there."
 
@@ -5122,7 +5126,7 @@ msgstr "· revision {0}"
 msgid "Turn on and continue"
 msgstr "Turn on and continue"
 
-#: src/toasts/report.ts:24
+#: src/toasts/report.ts:26
 msgid "That data could not be read."
 msgstr "That data could not be read."
 
@@ -6855,7 +6859,7 @@ msgstr "Multiplayer mod list…"
 msgid "Notes for {0}"
 msgstr "Notes for {0}"
 
-#: src/toasts/report.ts:22
+#: src/toasts/report.ts:24
 msgid "The disk is full."
 msgstr "The disk is full."
 
@@ -8625,7 +8629,7 @@ msgstr "No backups yet"
 msgid "Could not pin {0}"
 msgstr "Could not pin {0}"
 
-#: src/toasts/report.ts:26
+#: src/toasts/report.ts:28
 msgid "That request was not valid."
 msgstr "That request was not valid."
 
@@ -8689,8 +8693,8 @@ msgid "unverified until downloaded"
 msgstr "unverified until downloaded"
 
 #: src/firstrun/GameSetup.tsx:137
-#: src/toasts/report.ts:36
-#: src/toasts/report.ts:115
+#: src/toasts/report.ts:38
+#: src/toasts/report.ts:117
 #: src/toasts/usePending.ts:31
 msgid "Something went wrong"
 msgstr "Something went wrong"
@@ -12414,7 +12418,7 @@ msgstr "Test launch"
 msgid "Download and add on top"
 msgstr "Download and add on top"
 
-#: src/toasts/report.ts:30
+#: src/toasts/report.ts:32
 msgid "That was made by a newer Mortar. Update Mortar to open it."
 msgstr "That was made by a newer Mortar. Update Mortar to open it."
 
