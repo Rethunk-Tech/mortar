@@ -121,8 +121,8 @@ export function SaveBackupsButton({
         open={anchor !== null}
         anchorEl={anchor}
         onClose={() => setAnchor(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         slotProps={{ paper: { 'aria-label': t`Backups of ${label}` } }}
       >
         <Box
