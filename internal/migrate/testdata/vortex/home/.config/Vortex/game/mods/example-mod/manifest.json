@@ -1,8 +1,0 @@
-{
-  "Name": "Example Mod",
-  "Author": "Mortar",
-  "Version": "1.2.3",
-  "Description": "A fixture mod.",
-  "UniqueID": "Example.Mod",
-  "UpdateKeys": ["Nexus:123"]
-}

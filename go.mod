@@ -12,6 +12,7 @@ require (
 	github.com/godbus/dbus/v5 v5.2.2
 	github.com/hashicorp/mdns v1.0.7
 	github.com/nwaples/rardecode/v2 v2.4.1
+	github.com/syndtr/goleveldb v1.0.0
 	github.com/wailsapp/wails/v3 v3.0.0-beta.28
 	github.com/zalando/go-keyring v0.2.8
 	golang.org/x/sys v0.48.0
@@ -27,6 +28,7 @@ require (
 	github.com/bodgit/windows v1.0.1 // indirect
 	github.com/danieljoos/wincred v1.2.3 // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
+	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/klauspost/compress v1.20.1 // indirect

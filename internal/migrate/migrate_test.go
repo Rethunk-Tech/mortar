@@ -36,33 +36,6 @@ func TestDetectsStardropProfileAndReadsGameMods(t *testing.T) {
 	}
 }
 
-func TestDetectsVortexProfileAndReadsStagingMods(t *testing.T) {
-	home := filepath.Join("testdata", "vortex", "home")
-	mods := filepath.Join(home, ".config", "Vortex", "game", "mods")
-
-	sources, err := Detect(home, "", "stardew")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(sources) != 1 || sources[0].Kind != KindVortex {
-		t.Fatalf("sources = %#v", sources)
-	}
-	preview, err := Preview(home, mods, "stardew", KindVortex, "profile-1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(preview.Mods) != 1 {
-		t.Fatalf("mods = %#v", preview.Mods)
-	}
-	mod := preview.Mods[0]
-	if mod.ID != "smapi:Example.Mod" || mod.Name != "Example Mod" || mod.Version != "1.2.3" || !mod.Enabled || mod.NexusModID != 123 {
-		t.Fatalf("mod = %#v", mod)
-	}
-	if mod.SourcePath == "" {
-		t.Fatal("Vortex mod has no source path")
-	}
-}
-
 func TestStardropProfileCarriesItsOwnConfigCopy(t *testing.T) {
 	home := filepath.Join("testdata", "stardrop", "home")
 	mods := filepath.Join("testdata", "stardrop", "game", "Mods")

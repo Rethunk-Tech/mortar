@@ -150,6 +150,11 @@
     "url": "https://github.com/nwaples/rardecode"
   },
   {
+    "name": "github.com/syndtr/goleveldb",
+    "licence": "BSD-2-Clause",
+    "url": "https://github.com/syndtr/goleveldb"
+  },
+  {
     "name": "github.com/wailsapp/wails/v3",
     "licence": "MIT",
     "url": "https://github.com/wailsapp/wails"

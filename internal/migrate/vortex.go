@@ -4,13 +4,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/opt"
+
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
@@ -132,59 +137,121 @@ func vortexPreviewState(modsPath, domain string, state map[string]json.RawMessag
 	}, nil
 }
 
+// Vortex persists its Redux state as a LevelDB database at <root>/state.v2.
+// Each leaf is stored under a "###"-joined path (hive###key###...) with a
+// JSON-encoded value (src/main/src/store/LevelPersist.ts, SEPARATOR; values are
+// written via JSON.stringify in ReduxPersistorIPC.ts).
+const vortexKeySeparator = "###"
+
+// readVortexState reads a private copy of the database: Vortex normally holds
+// the LOCK, and a copy guarantees the live files are never written.
 func readVortexState(root string) (map[string]json.RawMessage, error) {
-	candidates := []string{
-		filepath.Join(root, "state.v2", "persistent.json"),
-		filepath.Join(root, "state.v2", "state.json"),
-		filepath.Join(root, "persistent.json"),
-		filepath.Join(root, "state.v2.json"),
-		filepath.Join(root, "state.v2"),
+	src := filepath.Join(root, "state.v2")
+	info, err := os.Stat(src)
+	if err != nil {
+		return nil, err
 	}
-	for _, path := range candidates {
-		info, err := os.Stat(path)
+	if !info.IsDir() {
+		return nil, fmt.Errorf("read Vortex state %s: not a LevelDB directory", src)
+	}
+	tmp, err := os.MkdirTemp("", "mortar-vortex-")
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = os.RemoveAll(tmp) }()
+	if err := copyLevelDB(src, tmp); err != nil {
+		return nil, err
+	}
+	db, err := leveldb.OpenFile(tmp, &opt.Options{ReadOnly: true})
+	if err != nil {
+		return nil, fmt.Errorf("read Vortex state %s: %w", src, err)
+	}
+	defer func() { _ = db.Close() }()
+	return vortexTree(db)
+}
+
+// copyLevelDB copies regular files except LOCK. Table files go first and CURRENT
+// last so a compaction racing the copy cannot leave CURRENT pointing at a
+// manifest newer than the tables copied.
+func copyLevelDB(src, dst string) error {
+	entries, err := os.ReadDir(src)
+	if err != nil {
+		return err
+	}
+	var names []string
+	for _, e := range entries {
+		if e.Type().IsRegular() && e.Name() != "LOCK" {
+			names = append(names, e.Name())
+		}
+	}
+	rank := func(n string) int {
+		switch {
+		case strings.HasSuffix(n, ".ldb"), strings.HasSuffix(n, ".sst"):
+			return 0
+		case n == "CURRENT":
+			return 2
+		}
+		return 1
+	}
+	sort.SliceStable(names, func(i, j int) bool { return rank(names[i]) < rank(names[j]) })
+	for _, name := range names {
+		data, err := fsx.ReadFile(filepath.Join(src, name))
 		if errors.Is(err, os.ErrNotExist) {
 			continue
 		}
 		if err != nil {
-			return nil, err
+			return err
 		}
-		if info.IsDir() {
+		if err := fsx.WriteFile(filepath.Join(dst, name), data, 0o600); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// vortexTree rebuilds the nested state map from the flat "###" keys. Parents
+// sort before their children, so a blob stored at an intermediate path is
+// extended by deeper leaf keys.
+func vortexTree(db *leveldb.DB) (map[string]json.RawMessage, error) {
+	root := map[string]any{}
+	it := db.NewIterator(nil, nil)
+	defer it.Release()
+	for it.Next() {
+		var value any
+		if json.Unmarshal(it.Value(), &value) != nil {
 			continue
 		}
-		data, err := fsx.ReadFile(path)
-		if err == nil {
-			state, parseErr := parseVortexJSON(data)
-			if parseErr == nil {
-				return state, nil
+		parts := strings.Split(string(it.Key()), vortexKeySeparator)
+		node := root
+		for _, part := range parts[:len(parts)-1] {
+			child, ok := node[part].(map[string]any)
+			if !ok {
+				child = map[string]any{}
+				node[part] = child
+			}
+			node = child
+		}
+		last := parts[len(parts)-1]
+		if existing, ok := node[last].(map[string]any); ok {
+			if incoming, ok := value.(map[string]any); ok {
+				maps.Copy(existing, incoming)
+				continue
 			}
 		}
+		node[last] = value
+	}
+	if err := it.Error(); err != nil {
+		return nil, err
+	}
+	out := make(map[string]json.RawMessage, len(root))
+	for k, v := range root {
+		data, err := json.Marshal(v)
 		if err != nil {
 			return nil, err
 		}
-		return nil, fmt.Errorf("read Vortex state %s: unsupported state format", path)
+		out[k] = data
 	}
-	return nil, os.ErrNotExist
-}
-
-func parseVortexJSON(data []byte) (map[string]json.RawMessage, error) {
-	var state map[string]json.RawMessage
-	if err := json.Unmarshal(data, &state); err != nil {
-		return nil, err
-	}
-	if _, ok := state["persistent"]; ok {
-		return state, nil
-	}
-	if _, ok := state["profiles"]; !ok {
-		return state, nil
-	}
-	persistent := map[string]json.RawMessage{}
-	for _, key := range []string{"profiles", "mods"} {
-		if value, ok := state[key]; ok {
-			persistent[key] = value
-		}
-	}
-	state["persistent"] = marshalVortexMap(persistent)
-	return state, nil
+	return out, nil
 }
 
 func vortexProfileList(state map[string]json.RawMessage, domain string) []vortexProfile {
@@ -327,9 +394,4 @@ func cleanVortexPath(root, path string) string {
 		return filepath.Clean(path)
 	}
 	return filepath.Join(root, path)
-}
-
-func marshalVortexMap(value map[string]json.RawMessage) json.RawMessage {
-	data, _ := json.Marshal(value)
-	return data
 }
