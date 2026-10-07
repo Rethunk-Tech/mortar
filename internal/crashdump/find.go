@@ -1,6 +1,7 @@
 package crashdump
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -17,7 +18,7 @@ const maxDumpBytes = 4 << 30
 func Windows(crashDumps, temp string, exes []string, since time.Time) []Fault {
 	var out []Fault
 	for _, dir := range unityCrashDirs(temp, since) {
-		if b, err := os.ReadFile(filepath.Join(dir, "error.log")); err == nil {
+		if b, err := readErrorLog(dir); err == nil {
 			if f, ok := ParseUnityErrorLog(string(b)); ok {
 				out = append(out, f)
 				continue
@@ -53,8 +54,18 @@ func unityCrashDirs(temp string, since time.Time) []string {
 	return out
 }
 
+// readErrorLog reads a Unity crash folder's error.log, which is a few KB; the cap keeps a damaged one from filling memory.
+func readErrorLog(dir string) ([]byte, error) {
+	f, err := os.OpenInRoot(dir, "error.log")
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = f.Close() }()
+	return io.ReadAll(io.LimitReader(f, 1<<20))
+}
+
 func readDump(path string) (Fault, bool) {
-	f, err := os.Open(path)
+	f, err := os.OpenInRoot(filepath.Dir(path), filepath.Base(path))
 	if err != nil {
 		return Fault{}, false
 	}

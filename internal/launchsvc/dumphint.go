@@ -30,14 +30,13 @@ func (s *Service) dumpBlame(gameID string, run Run, mods []profile.Installed) (m
 	exes := game.ProcessNames(g)
 	for _, fault := range s.faultsSince(gameID, exes, started) {
 		kind, mod := classifyFault(fault.Module, exes, mods)
-		if kind == faultUnknown {
-			continue
-		}
 		evidence = "crash dump: faulting module " + fault.Module
 		if fault.Detail != "" {
 			evidence += " (" + fault.Detail + ")"
 		}
 		switch kind {
+		case faultUnknown:
+			continue
 		case faultMod:
 			return mod, "", evidence, true
 		case faultGame:

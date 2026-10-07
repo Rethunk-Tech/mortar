@@ -3,6 +3,7 @@ package crashdump
 import (
 	"bytes"
 	"encoding/binary"
+	"math"
 	"os"
 	"path/filepath"
 	"testing"
@@ -14,6 +15,14 @@ type testModule struct {
 	name string
 	base uint64
 	size uint32
+}
+
+// u32 narrows a test fixture's offset or count, which always fits.
+func u32(n int) uint32 {
+	if n < 0 || n > math.MaxUint32 {
+		panic("fixture offset out of range")
+	}
+	return uint32(n)
 }
 
 // minidump builds the header, directory, exception stream and module list of a minidump.
@@ -28,22 +37,22 @@ func minidump(addr uint64, mods ...testModule) []byte {
 	put(uint32(dirRva))
 	put(make([]byte, 16))
 	put([]uint32{exceptionStream, 168, excRva})
-	put([]uint32{moduleListStream, uint32(4 + len(mods)*moduleEntrySize), modRva})
+	put([]uint32{moduleListStream, u32(4 + len(mods)*moduleEntrySize), modRva})
 	exc := make([]byte, 168)
 	le.PutUint32(exc[8:], 0xc0000005)
 	le.PutUint64(exc[24:], addr)
 	buf.Write(exc)
-	put(uint32(len(mods)))
+	put(u32(len(mods)))
 	strAt := modRva + 4 + len(mods)*moduleEntrySize
 	var strs bytes.Buffer
 	for _, m := range mods {
 		entry := make([]byte, moduleEntrySize)
 		le.PutUint64(entry[0:], m.base)
 		le.PutUint32(entry[8:], m.size)
-		le.PutUint32(entry[20:], uint32(strAt+strs.Len()))
+		le.PutUint32(entry[20:], u32(strAt+strs.Len()))
 		buf.Write(entry)
 		u := utf16.Encode([]rune(m.name))
-		_ = binary.Write(&strs, le, uint32(len(u)*2))
+		_ = binary.Write(&strs, le, u32(len(u)*2))
 		_ = binary.Write(&strs, le, u)
 	}
 	buf.Write(strs.Bytes())

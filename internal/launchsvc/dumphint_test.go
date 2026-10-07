@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -19,9 +18,9 @@ func TestFaultsAreClassifiedByWhoseCodeTheyAre(t *testing.T) {
 		t.Fatal(err)
 	}
 	mods := []profile.Installed{
-		{Key: "a", Enabled: true, Manifest: manifest.Manifest{EntryDll: "CoolMod.dll"}},
+		{Key: "a", Enabled: true, EntryDll: "CoolMod.dll"},
 		{Key: "b", Enabled: true, Folder: folder},
-		{Key: "c", Enabled: false, Manifest: manifest.Manifest{EntryDll: "Off.dll"}},
+		{Key: "c", Enabled: false, EntryDll: "Off.dll"},
 	}
 	exes := []string{"Lethal Company.exe"}
 	for module, want := range map[string]string{
