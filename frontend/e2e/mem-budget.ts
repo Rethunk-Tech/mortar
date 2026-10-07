@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, readlinkSync, rmSync } from 'node:fs'
 import process from 'node:process'
 import { chromium, type Page } from '@playwright/test'
 import { sandboxPort, selftest, serverEnv } from './sandbox.ts'
@@ -32,7 +32,10 @@ const dir = `${BASE}/mortar-mem-${process.pid}`
 interface Peak {
   go: number
   browser: number
+  game: number
   total: number
+  /** The five biggest processes at the total's peak. */
+  top: { pid: number; comm: string; mib: number }[]
 }
 
 /** pid -> parent pid of every process, from /proc. */
@@ -75,8 +78,6 @@ function pssKiB(pid: number): number {
   }
 }
 
-const sumMiB = (root: number) => tree(root).reduce((total, pid) => total + pssKiB(pid), 0) / MIB
-
 /** The browser's main process: the one of our descendants that is Chromium and has no --type (its helpers do). Playwright
  * no longer hands out the pid. */
 function browserRoot(): number {
@@ -105,15 +106,57 @@ function serverPid(): number {
   return Number(m[1])
 }
 
-/** Samples the two process trees until the returned function is called, which answers the peaks. */
-function sample(go: () => number, browser: () => number): () => Peak {
-  const peak: Peak = { go: 0, browser: 0, total: 0 }
+const exeOf = (pid: number) => {
+  try {
+    return readlinkSync(`/proc/${pid}/exe`).replace(/ \(deleted\)$/, '')
+  } catch {
+    return ''
+  }
+}
+
+const commOf = (pid: number) => {
+  try {
+    return readFileSync(`/proc/${pid}/comm`, 'utf8').trim()
+  } catch {
+    return '?'
+  }
+}
+
+interface Proc {
+  pid: number
+  comm: string
+  mib: number
+}
+
+/** Samples until the returned function is called, which answers the peaks. Go is the sandbox's mortar-server process
+ * alone: the tree around it holds the sandbox's display, D-Bus and reaper, which are not Mortar. A game it launches is
+ * reported apart and left out of the total. */
+function sample(listener: () => number, browser: () => number): () => Peak {
+  const peak: Peak = { go: 0, browser: 0, game: 0, total: 0, top: [] }
+  const server = `${dir}/mortar-server`
   const timer = setInterval(() => {
-    const g = sumMiB(go())
-    const b = sumMiB(browser())
-    peak.go = Math.max(peak.go, g)
-    peak.browser = Math.max(peak.browser, b)
-    peak.total = Math.max(peak.total, g + b)
+    const all = tree(listener())
+    const goPids = all.filter((pid) => exeOf(pid) === server)
+    const gamePids = new Set(
+      goPids.flatMap((root) => tree(root)).filter((pid) => !goPids.includes(pid)),
+    )
+    const mem = (pids: Iterable<number>): Proc[] =>
+      [...pids].map((pid) => ({ pid, comm: commOf(pid), mib: pssKiB(pid) / MIB }))
+    const goProcs = mem(goPids)
+    const browserProcs = mem(tree(browser()))
+    const gameProcs = mem(gamePids)
+    const sum = (procs: Proc[]) => procs.reduce((t, p) => t + p.mib, 0)
+    const go = sum(goProcs)
+    const web = sum(browserProcs)
+    peak.go = Math.max(peak.go, go)
+    peak.browser = Math.max(peak.browser, web)
+    peak.game = Math.max(peak.game, sum(gameProcs))
+    if (go + web > peak.total) {
+      peak.total = go + web
+      peak.top = [...goProcs, ...browserProcs, ...gameProcs]
+        .sort((x, y) => y.mib - x.mib)
+        .slice(0, 5)
+    }
   }, SAMPLE_MS)
   return () => {
     clearInterval(timer)
@@ -324,7 +367,10 @@ async function main(): Promise<number> {
         code = 1
       }
       rows.push(
-        `${scenario.name.padEnd(9)} ${p.go.toFixed(0).padStart(8)} ${p.browser.toFixed(0).padStart(8)} ${p.total.toFixed(0).padStart(8)}  ${failure ? `FAILED: ${failure}` : over ? 'OVER BUDGET' : 'ok'}`,
+        `${scenario.name.padEnd(9)} ${p.go.toFixed(0).padStart(8)} ${p.browser.toFixed(0).padStart(8)} ${p.total.toFixed(0).padStart(8)} ${p.game.toFixed(0).padStart(8)}  ${failure ? `FAILED: ${failure}` : over ? 'OVER BUDGET' : 'ok'}`,
+      )
+      rows.push(
+        `          top at peak: ${p.top.map((t) => `${t.comm}[${t.pid}] ${t.mib.toFixed(0)}`).join(', ')}`,
       )
     }
     await browser.close()
@@ -339,7 +385,7 @@ async function main(): Promise<number> {
     }
   }
   console.log(
-    `${'scenario'.padEnd(9)} ${'Go'.padStart(8)} ${'browser'.padStart(8)} ${'total'.padStart(8)}`,
+    `${'scenario'.padEnd(9)} ${'Go'.padStart(8)} ${'browser'.padStart(8)} ${'total'.padStart(8)} ${'game'.padStart(8)}   (game: a launched game, not in the total)`,
   )
   console.log(rows.join('\n'))
   return code
