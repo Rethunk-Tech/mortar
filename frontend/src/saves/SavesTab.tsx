@@ -6,6 +6,7 @@ import { type ReactNode, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { PageActions } from '../game/PageActions.tsx'
 import { useGameInfo } from '../games/info.ts'
+import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
@@ -106,18 +107,18 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
           {t`Save backups…`}
         </Button>
       </PageActions>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 0.75 }}>
-        {fits.length === 0 ? null : <ViewToggle value={view} onChange={setView} />}
-        {fits.length === 0 ? null : (
+      {fits.length === 0 ? null : (
+        <ControlsRow>
+          <ViewToggle value={view} onChange={setView} />
           <SearchField
             value={query}
             onChange={setQuery}
             label={t`Filter saves`}
             placeholder={plural(fits.length, { one: 'Filter # save', other: 'Filter # saves' })}
-            sx={{ width: 360, maxWidth: '50%' }}
+            grow={true}
           />
-        )}
-      </Box>
+        </ControlsRow>
+      )}
       <Box
         sx={{
           flex: fits.length > 0 ? undefined : 1,

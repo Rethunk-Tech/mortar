@@ -12,6 +12,7 @@ export function SearchField({
   inputRef,
   autoFocus,
   fullWidth,
+  grow,
   onBlur,
   onKeyDown,
   sx,
@@ -23,6 +24,8 @@ export function SearchField({
   inputRef?: Ref<HTMLInputElement>
   autoFocus?: boolean
   fullWidth?: boolean
+  /** Fill the free width of a flex row. */
+  grow?: boolean
   onBlur?: FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>
   onKeyDown?: KeyboardEventHandler<HTMLDivElement>
   sx?: SxProps<Theme>
@@ -59,7 +62,7 @@ export function SearchField({
           },
         },
       }}
-      sx={sx}
+      sx={grow ? [{ flex: 1, minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])] : sx}
     />
   )
 }

@@ -39,6 +39,7 @@ import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfileLoader } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
+import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
@@ -342,7 +343,7 @@ export function Toolbar({
   }, [expanded])
   useEffect(() => onFilterFocus(() => setExpanded(true)), [])
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1.25, flexShrink: 0 }}>
+    <ControlsRow>
       <ViewToggle value={view} onChange={setView} />
       <GroupByControl />
       {fieldOpen ? (
@@ -358,7 +359,7 @@ export function Toolbar({
           label={t`Filter mods`}
           placeholder={placeholder}
           inputRef={inputRef}
-          sx={{ flex: 1, minWidth: 0 }}
+          grow={true}
         />
       ) : (
         <Box sx={{ flex: 1, minWidth: 0 }} />
@@ -395,7 +396,7 @@ export function Toolbar({
           )}
         </Button>
       ) : null}
-    </Box>
+    </ControlsRow>
   )
 }
 
