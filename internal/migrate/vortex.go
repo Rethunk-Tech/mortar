@@ -256,6 +256,11 @@ func vortexTree(db *leveldb.DB) (map[string]json.RawMessage, error) {
 	return out, nil
 }
 
+// vortexGameMatches is true for every game when domain is empty.
+func vortexGameMatches(gameID, domain string) bool {
+	return domain == "" || strings.EqualFold(gameID, domain)
+}
+
 func vortexProfileList(state map[string]json.RawMessage, domain string) []vortexProfile {
 	persistent := objectValue(state, "persistent")
 	raw := persistent["profiles"]
@@ -273,7 +278,7 @@ func vortexProfileList(state map[string]json.RawMessage, domain string) []vortex
 			profile.ID = key
 		}
 		if profile.GameID != "" {
-			if strings.EqualFold(profile.GameID, domain) {
+			if vortexGameMatches(profile.GameID, domain) {
 				if profile.Name == "" {
 					profile.Name = profile.ID
 				}
@@ -289,7 +294,7 @@ func vortexProfileList(state map[string]json.RawMessage, domain string) []vortex
 			if err := json.Unmarshal(nestedValue, &profile); err != nil {
 				continue
 			}
-			if !strings.EqualFold(profile.GameID, domain) {
+			if !vortexGameMatches(profile.GameID, domain) {
 				continue
 			}
 			if profile.ID == "" {

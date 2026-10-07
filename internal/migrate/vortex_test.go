@@ -241,3 +241,37 @@ func TestMultiUserPrefersSharedFolder(t *testing.T) {
 		t.Fatalf("per-user only = %#v", got)
 	}
 }
+
+func TestVortexContentsListsGamesMortarDoesNotKnow(t *testing.T) {
+	home, state, _ := newVortexHome(t, "custom")
+	db, err := leveldb.OpenFile(state, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for k, v := range map[string]string{
+		"persistent###profiles###s1": `{"id":"s1","gameId":"skyrimse","name":"Skyrim"}`,
+		"persistent###profiles###s2": `{"id":"s2","gameId":"skyrimse","name":"Skyrim 2"}`,
+	} {
+		if err := db.Put([]byte(k), []byte(v), nil); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := db.Close(); err != nil {
+		t.Fatal(err)
+	}
+	got, err := VortexContents(home, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []VortexGame{{ID: "skyrimse", Profiles: 2}, {ID: "stardewvalley", Profiles: 1}}
+	if got.Folder != filepath.Dir(state) || !slices.Equal(got.Games, want) {
+		t.Fatalf("contents = %#v", got)
+	}
+	if sources, err := Detect(home, "", "valheim", ""); err != nil || len(sources) != 0 {
+		t.Fatalf("valheim sources = %#v, %v", sources, err)
+	}
+	empty, err := VortexContents(t.TempDir(), "")
+	if err != nil || empty.Folder != "" || len(empty.Games) != 0 {
+		t.Fatalf("no vortex = %#v, %v", empty, err)
+	}
+}

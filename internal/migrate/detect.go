@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 )
@@ -85,11 +86,7 @@ func detect(home, modsPath, gameID, vortexFolder string) ([]installation, error)
 	}
 
 	if ids.Vortex != "" {
-		programData := os.Getenv("ProgramData")
-		if programData == "" {
-			programData = `C:\ProgramData`
-		}
-		found, ok, err := detectVortex(config, vortexFolder, programData, ids.Vortex, runtime.GOOS == "windows")
+		found, ok, err := detectVortex(config, vortexFolder, programData(), ids.Vortex, runtime.GOOS == "windows")
 		if err != nil {
 			return nil, err
 		}
@@ -201,4 +198,57 @@ func detectVortex(config, chosen, programData, vortexID string, windows bool) (i
 		}
 	}
 	return installation{}, false, nil
+}
+
+func programData() string {
+	if dir := os.Getenv("ProgramData"); dir != "" {
+		return dir
+	}
+	return `C:\ProgramData`
+}
+
+// VortexGame is one game a Vortex data folder holds profiles for.
+type VortexGame struct {
+	// ID is Vortex's game id.
+	ID       string `json:"id"`
+	Profiles int    `json:"profiles"`
+}
+
+// VortexInventory says what the first readable Vortex data folder holds, whatever the game, so the importer can
+// tell the user why none of it matches instead of showing an empty list. Folder is empty when no Vortex data
+// exists at any location.
+type VortexInventory struct {
+	Folder string       `json:"folder"`
+	Games  []VortexGame `json:"games"`
+}
+
+// VortexContents reads the Vortex data folder the chosen path or the default locations point at.
+func VortexContents(home, chosen string) (VortexInventory, error) {
+	base, err := userHome(home)
+	if err != nil {
+		return VortexInventory{}, err
+	}
+	config := configDir(base)
+	windows := runtime.GOOS == "windows"
+	multiUser := windows && vortexMultiUser(filepath.Join(config, "Vortex"))
+	for _, root := range vortexRoots(config, chosen, programData(), windows, multiUser) {
+		state, err := readVortexState(root)
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return VortexInventory{}, err
+		}
+		counts := map[string]int{}
+		for _, p := range vortexProfileList(state, "") {
+			counts[p.GameID]++
+		}
+		games := make([]VortexGame, 0, len(counts))
+		for id, n := range counts {
+			games = append(games, VortexGame{ID: id, Profiles: n})
+		}
+		sort.Slice(games, func(i, j int) bool { return games[i].ID < games[j].ID })
+		return VortexInventory{Folder: root, Games: games}, nil
+	}
+	return VortexInventory{Games: []VortexGame{}}, nil
 }

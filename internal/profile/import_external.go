@@ -28,3 +28,9 @@ func (s *Service) ExternalVortexSupported(gameID string) bool {
 	info, _ := components.Game(gameID)
 	return info.ImportIDs.Vortex != ""
 }
+
+// ExternalVortexContents says which games the Vortex data folder holds profiles for, so the importer can explain
+// an empty list.
+func (s *Service) ExternalVortexContents() (migrate.VortexInventory, error) {
+	return migrate.VortexContents("", s.settings.Get().VortexFolder)
+}
