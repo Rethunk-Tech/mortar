@@ -1,3 +1,4 @@
 {
-  "allow_flags": ["--r2profile"]
+  "allow_flags": ["--r2profile"],
+  "skip_paths": ["internal/launch/testdata/*"]
 }

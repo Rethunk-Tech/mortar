@@ -934,7 +934,7 @@ PY
       lc_launch "$r2_profile" r2
       r2_plugins=$(grep -oE 'BepInEx\] [0-9]+ plugins? to load' "$log" 2>/dev/null | grep -oE '[0-9]+' | head -1)
       r2_loading=$(grep -cE 'BepInEx\] Loading \[' "$log" 2>/dev/null || true)
-      # A plugin's own errors (a transpiler that no longer matches the game) are the mod's, reported but not failed.
+      # A plugin's own errors (a transpiler that does not match the game) are the mod's, reported but not failed.
       r2_errors=$(grep -cE '^\[(Error|Fatal) ' "$log" 2>/dev/null || true)
       if [ ${#failures[@]} -eq 0 ] && { [ -z "$r2_plugins" ] || [ "$r2_loading" -ne "$r2_plugins" ]; }; then
         failures+=("r2: BepInEx counted ${r2_plugins:-no} plugins but logged $r2_loading Loading lines")

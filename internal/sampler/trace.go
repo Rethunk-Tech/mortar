@@ -40,7 +40,7 @@ type Sample struct {
 	Frames    []Frame
 }
 
-// Method is a method-load record used to resolve sampled instruction
+// Method is a method-load record for resolving sampled instruction
 // addresses.
 type Method struct {
 	StartAddress uint64
