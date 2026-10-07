@@ -43,15 +43,21 @@ func (s *Service) historyPath() string {
 	return filepath.Join(s.d.Dir, historyFile)
 }
 
+// loadHistory returns the in-memory history, reading the file on first use; callers hold s.hist.
 func (s *Service) loadHistory() []HistoryEntry {
-	var entries []HistoryEntry
-	if _, err := datadir.ReadJSON(s.historyPath(), &entries); err != nil || entries == nil {
-		return nil
+	if !s.histLoaded {
+		s.histLoaded = true
+		var entries []HistoryEntry
+		if _, err := datadir.ReadJSON(s.historyPath(), &entries); err == nil {
+			s.history = entries
+		}
 	}
-	return entries
+	return s.history
 }
 
+// writeHistory replaces the history and persists it; callers hold s.hist.
 func (s *Service) writeHistory(entries []HistoryEntry) {
+	s.histLoaded, s.history = true, entries
 	if entries == nil {
 		entries = []HistoryEntry{}
 	}
@@ -84,8 +90,8 @@ func (s *Service) recordHistory(it *Item, outcome string) {
 		Game: it.Game, ModID: it.ModID, FileID: it.FileID, Kind: it.Kind, Package: it.Package, Repo: it.Repo, Tag: it.Tag, Asset: it.Asset,
 		Latest: it.Latest, Size: size, Started: started, Finished: now, Outcome: outcome, Error: it.Error,
 	}
-	s.pub.Lock()
-	defer s.pub.Unlock()
+	s.hist.Lock()
+	defer s.hist.Unlock()
 	entries := append(s.loadHistory(), entry)
 	if len(entries) > historyLimit {
 		entries = entries[len(entries)-historyLimit:]
@@ -95,19 +101,15 @@ func (s *Service) recordHistory(it *Item, outcome string) {
 
 // History returns finished downloads, newest last, at most historyLimit.
 func (s *Service) History() []HistoryEntry {
-	s.pub.Lock()
-	defer s.pub.Unlock()
-	entries := s.loadHistory()
-	if entries == nil {
-		return []HistoryEntry{}
-	}
-	return entries
+	s.hist.Lock()
+	defer s.hist.Unlock()
+	return append([]HistoryEntry{}, s.loadHistory()...)
 }
 
 // ClearHistory wipes the download history file.
 func (s *Service) ClearHistory() {
-	s.pub.Lock()
-	defer s.pub.Unlock()
+	s.hist.Lock()
+	defer s.hist.Unlock()
 	s.writeHistory(nil)
 }
 

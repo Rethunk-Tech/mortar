@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 func TestHistoryRecordsAFinishedDownload(t *testing.T) {
@@ -111,5 +113,26 @@ func TestRetryAllFailed(t *testing.T) {
 	again, err := f.s.RetryAllFailed(t.Context())
 	if err != nil || again.Requeued != 0 || again.Skipped["queued"] != 4 {
 		t.Fatalf("second run %+v, %v", again, err)
+	}
+}
+
+func TestHistoryReadsFileOnceAndWritesThrough(t *testing.T) {
+	f := newFixture(t)
+	f.s.recordHistory(&Item{Name: "a", started: f.now()}, StateDone)
+	if err := os.Remove(f.s.historyPath()); err != nil {
+		t.Fatal(err)
+	}
+	f.s.recordHistory(&Item{Name: "b", started: f.now()}, StateDone)
+	var onDisk []HistoryEntry
+	if _, err := datadir.ReadJSON(f.s.historyPath(), &onDisk); err != nil {
+		t.Fatal(err)
+	}
+	if len(onDisk) != 2 || onDisk[0].Name != "a" || onDisk[1].Name != "b" {
+		t.Fatalf("history on disk %+v", onDisk)
+	}
+	got := f.s.History()
+	got[0].Name = "mutated"
+	if f.s.History()[0].Name != "a" {
+		t.Fatal("History handed out the cached slice")
 	}
 }

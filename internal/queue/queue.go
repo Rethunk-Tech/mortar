@@ -340,9 +340,13 @@ type Service struct {
 	Landed func(game string)
 	kick   chan struct{}
 	// pub orders publishes, so queue.json and the window always end on the latest state.
-	pub   sync.Mutex
-	mu    sync.Mutex
-	items []*Item
+	pub sync.Mutex
+	// hist guards history, the download history kept in memory and written through on every change.
+	hist       sync.Mutex
+	history    []HistoryEntry
+	histLoaded bool
+	mu         sync.Mutex
+	items      []*Item
 	// paused stops new downloads from starting; one under way finishes.
 	paused bool
 	// until is when each limiting source (sourceKey) may be asked again.
