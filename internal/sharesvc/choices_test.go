@@ -110,3 +110,32 @@ func TestSharedChoicesKeepTheReceiversOwnDecision(t *testing.T) {
 		t.Fatal("a win applied although the receiver lacks the loser")
 	}
 }
+
+// A profile written before updates moved the source can name an older file than the one its key holds; the share
+// must name the key's file.
+func TestShareNamesTheFileOfTheEntrysKeyNotItsStaleSource(t *testing.T) {
+	s, _ := newService(t, true)
+	items, profiles := testenv.Stores(t)
+	src := t.TempDir()
+	if err := fsx.WriteFile(filepath.Join(src, "manifest.json"), []byte(`{"Name":"Cursors","Author":"a","Version":"1.0.1","UniqueID":"Me.Cursors","EntryDll":"m.dll"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := items.AddDir("stardew", "nexus-5-11", src); err != nil {
+		t.Fatal(err)
+	}
+	p, err := profiles.Create("stardew", "Main")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := profiles.AddEntry("stardew", p.ID, "nexus-5-11", profile.Source{Kind: profile.KindNexus, ModID: 5, FileID: 10}); err != nil {
+		t.Fatal(err)
+	}
+	info, err := s.Share("stardew", p.ID, nil, share.DefaultInclude())
+	if err != nil {
+		t.Fatal(err)
+	}
+	shared, err := share.Parse(info.App)
+	if err != nil || len(shared.Entries) != 1 || shared.Entries[0].ModID != 5 || shared.Entries[0].FileID != 11 {
+		t.Fatalf("shared entries = %+v, %v; want mod 5 file 11", shared.Entries, err)
+	}
+}

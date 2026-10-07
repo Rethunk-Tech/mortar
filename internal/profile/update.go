@@ -8,12 +8,14 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -543,20 +545,39 @@ func (s *Store) savesDir(set settings.Settings, game, profileID string) (string,
 	return dir, err == nil
 }
 
-// followKey is src moved to the store item key: an update that names only the new key must not leave the entry
-// describing the old file, since a share names the file from it.
+// followKey is src corrected to the store item key, which names the file actually installed. An entry's recorded
+// source can lag behind its key (an update by key used to leave it), and a share names the file from the source.
 func (s *Store) followKey(game string, src Source, key string) Source {
 	switch src.Kind {
 	case KindNexus:
-		if modID, fileID, ok := store.NexusFile(key); ok {
+		if modID, fileID, ok := store.NexusFile(key); ok && (src.ModID != modID || src.FileID != fileID) {
 			src.ModID, src.FileID, src.Digest = modID, fileID, ""
 		}
 	case KindGitHub:
-		if kind, _, tag, ok := s.items.Meta(game, key); ok && kind == KindGitHub {
-			if asset := s.items.Asset(game, key); asset != "" {
+		owner, repo, _ := strings.Cut(src.Repo, "/")
+		if github.Key(owner, repo, src.Tag, src.Asset) == key {
+			return src
+		}
+		kind, _, tag, ok := s.items.Meta(game, key)
+		if !ok || kind != KindGitHub {
+			return src
+		}
+		// Items stored before the asset was recorded: the asset keeps its name across a release when the key matches.
+		for _, asset := range []string{s.items.Asset(game, key), src.Asset} {
+			if asset != "" && github.Key(owner, repo, tag, asset) == key {
 				src.Tag, src.Asset, src.Digest = tag, asset, ""
+				break
 			}
 		}
 	}
 	return src
+}
+
+// Current returns p with each entry's source corrected to its store key, so what is shared names the files installed.
+func (s *Store) Current(game string, p Profile) Profile {
+	p.Entries = slices.Clone(p.Entries)
+	for i, e := range p.Entries {
+		p.Entries[i].Source = s.followKey(game, e.Source, e.Key)
+	}
+	return p
 }

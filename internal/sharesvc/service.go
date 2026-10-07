@@ -204,7 +204,7 @@ func (s *Service) find(game, id string) (profile.Profile, error) {
 	if i < 0 {
 		return profile.Profile{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("profile %s not found", id))
 	}
-	return all[i], nil
+	return s.d.Profiles.Current(game, all[i]), nil
 }
 
 func entryNames(e profile.Entry, withDisabled bool) []string {
