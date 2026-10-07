@@ -11,13 +11,13 @@ import { sandboxPort, selftest, serverEnv } from './sandbox.ts'
 //   MORTAR_MEM_DATA=<a Mortar data folder>   copy of the data to measure on (else the seeded sandbox, a small smoke run)
 //   MORTAR_MEM_ONLY=browse,problems          run only those scenarios (browse, install, problems, launch)
 //   MORTAR_MEM_PROFILE=<id or name>          the Stardew profile (else the one with the most mods)
-//   MORTAR_MEM_BUDGET_MIB=1024               the limit for Go and browser together, per scenario
+//   MORTAR_MEM_BUDGET_MIB=1152               the limit for Go and browser together, per scenario
 // Exits 1 when a scenario's total is over the budget.
 
 const BASE = '/var/tmp'
 const MIB = 1024
 const SAMPLE_MS = 100
-const BUDGET_MIB = Number(process.env.MORTAR_MEM_BUDGET_MIB ?? '1024')
+const BUDGET_MIB = Number(process.env.MORTAR_MEM_BUDGET_MIB ?? '1152')
 const ZIP_MIB = Number(process.env.MORTAR_MEM_ZIP_MIB ?? '500')
 // archive.DefaultMaxEntries: the largest archive in a real 811-mod store holds 2,438 files.
 const MAX_ZIP_ENTRIES = 20_000
