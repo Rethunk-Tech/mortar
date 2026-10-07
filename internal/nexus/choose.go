@@ -14,7 +14,8 @@ const (
 
 var fileVersionSuffix = regexp.MustCompile(`(?i)(?:[\s._-]+v?\d+(?:[._-]\d+)+|[\s._-]+v?\d+)$`)
 
-func fileStem(name string) string {
+// FileStem is an archive name without its extension, version suffix and case, so two versions of one download match.
+func FileStem(name string) string {
 	name = strings.TrimSpace(name)
 	lower := strings.ToLower(name)
 	for _, ext := range []string{".zip", ".rar", ".7z"} {
@@ -43,7 +44,7 @@ func sameFileGroup(a, b File) bool {
 	if a.Name != "" && b.Name != "" {
 		return strings.EqualFold(strings.TrimSpace(a.Name), strings.TrimSpace(b.Name))
 	}
-	aStem, bStem := fileStem(a.FileName), fileStem(b.FileName)
+	aStem, bStem := FileStem(a.FileName), FileStem(b.FileName)
 	return aStem == "" || bStem == "" || aStem == bStem
 }
 
@@ -196,7 +197,7 @@ func NewestUpdate(files []File, file File) File {
 		}
 		file = next
 	}
-	if fileStem(file.FileName) != "" {
+	if FileStem(file.FileName) != "" {
 		for _, candidate := range files {
 			if sameFileGroup(candidate, file) && betterFile(candidate, file) {
 				file = candidate

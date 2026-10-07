@@ -475,34 +475,13 @@ func downloaded(x framework.Mod, version string) bool {
 	return ok && c >= 0
 }
 
-var nexusFileVersionSuffix = regexp.MustCompile(`(?i)(?:[\s._-]+v?\d+(?:[._-]\d+)+|[\s._-]+v?\d+)$`)
-
-func nexusFileStem(name string) string {
-	name = strings.TrimSpace(name)
-	lower := strings.ToLower(name)
-	for _, ext := range []string{".zip", ".rar", ".7z"} {
-		if strings.HasSuffix(lower, ext) {
-			name = strings.TrimSpace(name[:len(name)-len(ext)])
-			break
-		}
-	}
-	for {
-		stem := strings.TrimSpace(nexusFileVersionSuffix.ReplaceAllString(name, ""))
-		if stem == name {
-			break
-		}
-		name = stem
-	}
-	return strings.ToLower(strings.Join(strings.Fields(name), " "))
-}
-
 // sameNexusFileGroup prefers the manifests inside each file: two files carrying the same mod are versions of one
 // download. Archive names are the fallback; the dataset sometimes stores them as hashed paths.
 func sameNexusFileGroup(a, b meta.File) bool {
 	if len(a.Mods) > 0 && len(b.Mods) > 0 {
 		return slices.ContainsFunc(a.Mods, func(m meta.Mod) bool { return containsPreviewMod(b, m.ModID()) })
 	}
-	aStem, bStem := nexusFileStem(a.FileName), nexusFileStem(b.FileName)
+	aStem, bStem := nexus.FileStem(a.FileName), nexus.FileStem(b.FileName)
 	return aStem == "" || bStem == "" || aStem == bStem
 }
 
