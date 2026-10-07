@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { ProfilePreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/migrate/models.ts'
 import { Discard } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
+import type { LanOrigin } from '../lan/resume.ts'
 import { openSettings, useNav } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -54,6 +55,8 @@ export interface ImportOptions {
   data?: string
   external?: ProfilePreview
   collectionUpdate?: boolean
+  // The sending computer's profile, when a paired share carried one: where the import lands is remembered.
+  lan?: LanOrigin
 }
 
 export interface ImportRequest {
@@ -64,6 +67,7 @@ export interface ImportRequest {
   run: number
   external?: ProfilePreview
   collectionUpdate?: boolean
+  lan?: LanOrigin
 }
 
 export const useImportDialog = create<{
@@ -75,7 +79,7 @@ export const useImportDialog = create<{
 }>((set) => ({
   request: null,
   busy: false,
-  open: ({ profileId = '', link = '', file = '', data = '', external, collectionUpdate }) => {
+  open: ({ profileId = '', link = '', file = '', data = '', external, collectionUpdate, lan }) => {
     runs += 1
     let tab: ImportRequest['tab'] = 'link'
     if (file) {
@@ -92,6 +96,7 @@ export const useImportDialog = create<{
         run: runs,
         ...(external ? { external } : {}),
         ...(collectionUpdate ? { collectionUpdate: true } : {}),
+        ...(lan ? { lan } : {}),
       },
       busy: false,
     })

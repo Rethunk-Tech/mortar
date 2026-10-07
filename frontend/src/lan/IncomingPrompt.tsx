@@ -16,6 +16,10 @@ import {
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { List as ListGames } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
+import type {
+  Arrival,
+  TransferProgress,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
 import {
   CancelTransfer,
   Transfer,
@@ -29,6 +33,7 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { type InlineError, inlineError, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useIncomingShares } from './incoming.ts'
+import { choose, lanOriginOf, mappedProfile } from './resume.ts'
 
 // A share imports into its own game and compares against that game's profiles, whatever game is open when it arrives.
 async function openGameOf(game: string) {
@@ -41,25 +46,113 @@ async function openGameOf(game: string) {
   useNav.getState().openGame(game)
 }
 
+// The sender's profile, for remembering where this share lands.
+function lanOf(arrival: Arrival) {
+  const lan = lanOriginOf(arrival)
+  return lan ? { lan } : {}
+}
+
+function CopyingDialog({
+  open,
+  progress,
+  onCancel,
+}: {
+  open: boolean
+  progress: TransferProgress | undefined
+  onCancel: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Dialog open={open}>
+      <DialogTitle>{t`Copying mod files`}</DialogTitle>
+      <DialogContent>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <CircularProgress size={24} />
+          <Typography>
+            {progress
+              ? plural(progress.total, {
+                  one: `${progress.current} of # mod · ${formatBytes(progress.bytes)} · ${formatBytes(progress.rate)}/s`,
+                  other: `${progress.current} of # mods · ${formatBytes(progress.bytes)} · ${formatBytes(progress.rate)}/s`,
+                })
+              : t`Preparing transfer…`}
+          </Typography>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onCancel}>{t`Cancel`}</Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+function ChooseDialog({
+  open,
+  profiles,
+  onPick,
+  onClose,
+}: {
+  open: boolean
+  profiles: { id: string; name: string }[]
+  onPick: (profileId: string) => void
+  onClose: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
+      <DialogTitle>{t`Update an existing profile…`}</DialogTitle>
+      <DialogContent dividers={true}>
+        <List disablePadding={true}>
+          {profiles.map((profile) => (
+            <ListItem key={profile.id} disablePadding={true}>
+              <ListItemButton onClick={() => onPick(profile.id)}>
+                <ListItemText primary={profile.name} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>{t`Cancel`}</Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+// The profile an earlier share of the same sender profile went into. The profile list is the open game's, so a
+// share for another game cannot be matched until that game is open.
+function useResumedProfile(arrival: Arrival | undefined) {
+  const profiles = useProfiles((state) => state.profiles)
+  const loadedGame = useProfiles((state) => state.game?.id)
+  return mappedProfile(
+    arrival && loadedGame === arrival.game ? lanOriginOf(arrival) : undefined,
+    profiles,
+  )
+}
+
+function useGameName(game: string): string {
+  const [listedName, setListedName] = useState('')
+  useEffect(() => {
+    ListGames()
+      .then((games) => setListedName((games ?? []).find((g) => g.id === game)?.name ?? ''))
+      .catch(reportUnexpected)
+  }, [game])
+  return listedName || game
+}
+
 export function IncomingPrompt() {
   const { t } = useLingui()
   const incoming = useIncomingShares((state) => state.items[0])
   const removeFirst = useIncomingShares((state) => state.removeFirst)
   const profiles = useProfiles((state) => state.profiles)
   const incomingGame = incoming?.game ?? ''
-  const [listedName, setListedName] = useState('')
-  useEffect(() => {
-    ListGames()
-      .then((games) => setListedName((games ?? []).find((g) => g.id === incomingGame)?.name ?? ''))
-      .catch(reportUnexpected)
-  }, [incomingGame])
-  const gameName = listedName || incomingGame
+  const gameName = useGameName(incomingGame)
   const progress = useIncomingShares((state) =>
     incoming ? state.progress[incoming.id] : undefined,
   )
   const [choosing, setChoosing] = useState(false)
   const [transferring, setTransferring] = useState(false)
   const [transferError, setTransferError] = useState<InlineError | null>(null)
+  const mapped = useResumedProfile(incoming)
   const autoAccept = useSettings((s) => s.lanAutoAcceptPaired)
   const incomingId = incoming?.id ?? ''
   const paired = incoming?.paired === true
@@ -82,7 +175,7 @@ export function IncomingPrompt() {
       setTransferring(false)
     }
     await openGameOf(incoming.game)
-    openImport(profileId ? { profileId, data: incoming.payload } : { data: incoming.payload })
+    openImport({ ...(profileId ? { profileId } : {}), data: incoming.payload, ...lanOf(incoming) })
     removeFirst()
   }
 
@@ -105,7 +198,12 @@ export function IncomingPrompt() {
           return
         }
         setTransferring(false)
-        openImport({ data: item.payload })
+        const resumed = mappedProfile(lanOriginOf(item), useProfiles.getState().profiles)
+        openImport({
+          ...(resumed ? { profileId: resumed.id } : {}),
+          data: item.payload,
+          ...lanOf(item),
+        })
         removeFirst()
       })
       .catch((error: unknown) => {
@@ -127,6 +225,9 @@ export function IncomingPrompt() {
     setChoosing(false)
     removeFirst()
   }
+  const choice = choose(mapped)
+  const localName = choice.kind === 'update' ? choice.name : ''
+  const { sender } = incoming
   const compare = (profileId: string) => {
     accept(profileId).catch(reportUnexpected)
   }
@@ -157,58 +258,40 @@ export function IncomingPrompt() {
               }
               disabled={profiles.length === 0}
             >
-              {t`Compare with a profile…`}
+              {t`Update an existing profile…`}
             </Button>
           </DisabledReason>
-          <Button variant="contained" onClick={() => accept()}>
-            {t`Import as new profile`}
-          </Button>
+          {choice.kind === 'update' ? (
+            <>
+              <Button onClick={() => accept().catch(reportUnexpected)}>
+                {t`Import as new profile`}
+              </Button>
+              <Button variant="contained" onClick={() => compare(choice.profileId)}>
+                {t`Update ${localName} from ${sender}`}
+              </Button>
+            </>
+          ) : (
+            <Button variant="contained" onClick={() => accept()}>
+              {t`Import as new profile`}
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
-      <Dialog open={transferring}>
-        <DialogTitle>{t`Copying mod files`}</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <CircularProgress size={24} />
-            <Typography>
-              {progress
-                ? plural(progress.total, {
-                    one: `${progress.current} of # mod · ${formatBytes(progress.bytes)} · ${formatBytes(progress.rate)}/s`,
-                    other: `${progress.current} of # mods · ${formatBytes(progress.bytes)} · ${formatBytes(progress.rate)}/s`,
-                  })
-                : t`Preparing transfer…`}
-            </Typography>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              CancelTransfer(incoming.id).catch((error: unknown) => {
-                toastError(t`Could not cancel transfer`, error)
-              })
-            }}
-          >
-            {t`Cancel`}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={choosing} onClose={() => setChoosing(false)} fullWidth={true} maxWidth="xs">
-        <DialogTitle>{t`Compare with a profile…`}</DialogTitle>
-        <DialogContent dividers={true}>
-          <List disablePadding={true}>
-            {profiles.map((profile) => (
-              <ListItem key={profile.id} disablePadding={true}>
-                <ListItemButton onClick={() => compare(profile.id)}>
-                  <ListItemText primary={profile.name} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setChoosing(false)}>{t`Cancel`}</Button>
-        </DialogActions>
-      </Dialog>
+      <CopyingDialog
+        open={transferring}
+        progress={progress}
+        onCancel={() => {
+          CancelTransfer(incoming.id).catch((error: unknown) => {
+            toastError(t`Could not cancel transfer`, error)
+          })
+        }}
+      />
+      <ChooseDialog
+        open={choosing}
+        profiles={profiles}
+        onPick={compare}
+        onClose={() => setChoosing(false)}
+      />
     </>
   )
 }

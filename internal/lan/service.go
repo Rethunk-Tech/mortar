@@ -60,6 +60,10 @@ type Arrival struct {
 	Payload     string `json:"payload"`
 	ProfileName string `json:"profileName"`
 	Paired      bool   `json:"paired"`
+	// SenderID and ProfileID name the sender's computer and profile, so a later share of the same profile can update
+	// what this one made of it. SenderID is set only for a paired sender, whose id is proven.
+	SenderID  string `json:"senderId,omitempty"`
+	ProfileID string `json:"profileId,omitempty"`
 }
 
 // Expired names an incoming share that can no longer be transferred.
@@ -143,6 +147,7 @@ type shareRequest struct {
 	Nonce      string `json:"nonce,omitempty"`
 	Proof      string `json:"proof,omitempty"`
 	SenderPort int    `json:"senderPort"`
+	ProfileID  string `json:"profileId,omitempty"`
 	// Digests vouches for each store entry the share lists, by entry key; only a paired sender sends them.
 	Digests map[string]entryDigest `json:"digests,omitempty"`
 }
@@ -415,7 +420,7 @@ func (s *Service) Send(ctx context.Context, peerID, game, profileID string) erro
 	if s.deps.Shares == nil {
 		return errors.New("LAN sharing is unavailable")
 	}
-	return s.sendPayload(ctx, peerID, game, func(paired bool) ([]byte, error) {
+	return s.sendPayload(ctx, peerID, game, profileID, func(paired bool) ([]byte, error) {
 		inc := share.OwnInclude()
 		// Archives installed from disk exist nowhere else, so they go only to a paired computer, which copies them.
 		inc.LocalFiles = paired
@@ -425,7 +430,7 @@ func (s *Service) Send(ctx context.Context, peerID, game, profileID string) erro
 }
 
 // sendPayload sends the payload build makes, told whether the peer is paired with this computer.
-func (s *Service) sendPayload(ctx context.Context, peerID, game string, build func(paired bool) ([]byte, error)) (err error) {
+func (s *Service) sendPayload(ctx context.Context, peerID, game, profileID string, build func(paired bool) ([]byte, error)) (err error) {
 	name := s.peerName(peerID)
 	defer func() {
 		if err != nil {
@@ -459,6 +464,7 @@ func (s *Service) sendPayload(ctx context.Context, peerID, game string, build fu
 		Version:    protocolVersion,
 		Nonce:      hello.Nonce,
 		SenderPort: s.port(),
+		ProfileID:  profileID,
 	}
 	if key != nil {
 		request.Proof = hmacProof(key, hello.Nonce, encoded)
@@ -728,6 +734,10 @@ func (s *Service) handleShare(w http.ResponseWriter, r *http.Request) {
 		Payload:     request.Payload,
 		ProfileName: shared.Name,
 		Paired:      paired,
+		ProfileID:   request.ProfileID,
+	}
+	if paired {
+		arrival.SenderID = request.SenderID
 	}
 	s.mu.Lock()
 	s.nextID++

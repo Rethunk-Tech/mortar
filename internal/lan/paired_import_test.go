@@ -103,7 +103,7 @@ func TestPairedSendPlacesEverySourceWithoutDownloading(t *testing.T) {
 	build := fixed(payload.Bytes())
 	next := func() Arrival {
 		t.Helper()
-		if err := sender.sendPayload(t.Context(), receiverAddr, game, build); err != nil {
+		if err := sender.sendPayload(t.Context(), receiverAddr, game, "", build); err != nil {
 			t.Fatal(err)
 		}
 		select {

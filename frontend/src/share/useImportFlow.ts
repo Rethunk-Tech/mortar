@@ -20,6 +20,7 @@ import {
   Replace,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { rememberLanProfile } from '../lan/resume.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
@@ -272,6 +273,10 @@ export function useImportFlow(
       const result = replace
         ? await Replace(game, session, profileId, skip)
         : await Import(game, session, intoOpen ? profileId : '', skip)
+      const lan = useImportDialog.getState().request?.lan
+      if (lan) {
+        rememberLanProfile(lan, result.profile.id)
+      }
       await afterImport(game, replace || intoOpen, result, {
         name: preview?.name,
         settings: preview?.settings ?? 0,

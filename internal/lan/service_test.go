@@ -285,7 +285,7 @@ func TestLoopbackTransfer(t *testing.T) {
 			builtPaired = append(builtPaired, paired)
 			return payload.Bytes(), nil
 		}
-		if err := sender.sendPayload(t.Context(), receiverAddr, "stardew", build); err != nil {
+		if err := sender.sendPayload(t.Context(), receiverAddr, "stardew", "", build); err != nil {
 			t.Fatal(err)
 		}
 		select {
@@ -379,7 +379,7 @@ func TestLethalCompanyProfileOverLAN(t *testing.T) {
 	})
 	sender, _ := pairedService(t, senderStore, nil)
 	pair(t, receiver, sender, receiverAddr)
-	if err := sender.sendPayload(t.Context(), receiverAddr, "lethal-company", fixed(payload.Bytes())); err != nil {
+	if err := sender.sendPayload(t.Context(), receiverAddr, "lethal-company", "", fixed(payload.Bytes())); err != nil {
 		t.Fatal(err)
 	}
 	arrival := <-arrivals
@@ -428,7 +428,7 @@ func TestLoopbackSendReceive(t *testing.T) {
 	server := httptest.NewServer(service.handler())
 	defer server.Close()
 
-	if err := service.sendPayload(t.Context(), strings.TrimPrefix(server.URL, "http://"), "stardew", fixed(payload)); err != nil {
+	if err := service.sendPayload(t.Context(), strings.TrimPrefix(server.URL, "http://"), "stardew", "", fixed(payload)); err != nil {
 		t.Fatal(err)
 	}
 	select {
@@ -451,10 +451,10 @@ func TestASecondShareWithinTheRateLimitIsBusy(t *testing.T) {
 	server := httptest.NewServer(service.handler())
 	defer server.Close()
 	peer := strings.TrimPrefix(server.URL, "http://")
-	if err := service.sendPayload(t.Context(), peer, "stardew", fixed(payload)); err != nil {
+	if err := service.sendPayload(t.Context(), peer, "stardew", "", fixed(payload)); err != nil {
 		t.Fatal(err)
 	}
-	err = service.sendPayload(t.Context(), peer, "stardew", fixed(payload))
+	err = service.sendPayload(t.Context(), peer, "stardew", "", fixed(payload))
 	if !errors.Is(err, ErrPeerBusy) || usererr.KindOf(err) != usererr.Busy {
 		t.Fatalf("second send: %v", err)
 	}
@@ -499,7 +499,7 @@ func TestLoopbackLargeMortarRoundTrip(t *testing.T) {
 	}})
 	server := httptest.NewServer(service.handler())
 	defer server.Close()
-	if err := service.sendPayload(t.Context(), strings.TrimPrefix(server.URL, "http://"), "stardew", fixed(archive.Bytes())); err != nil {
+	if err := service.sendPayload(t.Context(), strings.TrimPrefix(server.URL, "http://"), "stardew", "", fixed(archive.Bytes())); err != nil {
 		t.Fatal(err)
 	}
 	arrival := <-arrivals
@@ -643,14 +643,14 @@ func TestPairedPeerIsExemptFromTheShareRateLimit(t *testing.T) {
 	pair(t, receiver, pairedSender, receiverAddr)
 
 	for i := range 2 {
-		if err := pairedSender.sendPayload(t.Context(), receiverAddr, "stardew", fixed(payload)); err != nil {
+		if err := pairedSender.sendPayload(t.Context(), receiverAddr, "stardew", "", fixed(payload)); err != nil {
 			t.Fatalf("paired send %d: %v", i+1, err)
 		}
 	}
-	if err := strangerSender.sendPayload(t.Context(), receiverAddr, "stardew", fixed(payload)); err != nil {
+	if err := strangerSender.sendPayload(t.Context(), receiverAddr, "stardew", "", fixed(payload)); err != nil {
 		t.Fatalf("first unpaired send: %v", err)
 	}
-	if err := strangerSender.sendPayload(t.Context(), receiverAddr, "stardew", fixed(payload)); !errors.Is(err, ErrPeerBusy) {
+	if err := strangerSender.sendPayload(t.Context(), receiverAddr, "stardew", "", fixed(payload)); !errors.Is(err, ErrPeerBusy) {
 		t.Fatalf("second unpaired send: %v, want ErrPeerBusy", err)
 	}
 }

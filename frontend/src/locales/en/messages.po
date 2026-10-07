@@ -332,7 +332,7 @@ msgstr "Found, with no supported games yet"
 msgid "How Play starts the game. Direct skips Steam's overlay and playtime."
 msgstr "How Play starts the game. Direct skips Steam's overlay and playtime."
 
-#: src/lan/IncomingPrompt.tsx:169
+#: src/lan/IncomingPrompt.tsx:67
 msgid "Copying mod files"
 msgstr "Copying mod files"
 
@@ -506,11 +506,6 @@ msgstr "Mod store"
 msgid "Older copies of the same mod"
 msgstr "Older copies of the same mod"
 
-#: src/lan/IncomingPrompt.tsx:160
-#: src/lan/IncomingPrompt.tsx:196
-msgid "Compare with a profile…"
-msgstr "Compare with a profile…"
-
 #: src/settings/prefCopy.ts:409
 msgid "How many times to retry a failed download"
 msgstr "How many times to retry a failed download"
@@ -582,7 +577,7 @@ msgstr "Last played {when}"
 #. placeholder {0}: applied.fomodMods
 #. placeholder {1}: applied.configs
 #. placeholder {2}: applied.configs
-#: src/share/useImportFlow.ts:114
+#: src/share/useImportFlow.ts:115
 msgid "{0, plural, one {Applied the curator's choices for # mod and {1, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {2, plural, one {# config file} other {# config files}}}}"
 msgstr "{0, plural, one {Applied the curator's choices for # mod and {1, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {2, plural, one {# config file} other {# config files}}}}"
 
@@ -624,7 +619,7 @@ msgstr "Add {0} to {1}?"
 
 #. placeholder {0}: incoming.sender
 #. placeholder {1}: incoming.profileName
-#: src/lan/IncomingPrompt.tsx:137
+#: src/lan/IncomingPrompt.tsx:238
 msgid "{0} sent you {1} ({gameName})"
 msgstr "{0} sent you {1} ({gameName})"
 
@@ -1249,6 +1244,11 @@ msgstr "How thoroughly Mortar analyses overlapping files"
 msgid "slow load {ms}"
 msgstr "slow load {ms}"
 
+#: src/lan/IncomingPrompt.tsx:102
+#: src/lan/IncomingPrompt.tsx:261
+msgid "Update an existing profile…"
+msgstr "Update an existing profile…"
+
 #: src/mods/DuplicateDialog.tsx:34
 msgid "Bundled with SMAPI"
 msgstr "Bundled with SMAPI"
@@ -1471,7 +1471,7 @@ msgstr "Mortar's colours. Follow system matches your computer."
 msgid "Play this profile to measure."
 msgstr "Play this profile to measure."
 
-#: src/lan/IncomingPrompt.tsx:142
+#: src/lan/IncomingPrompt.tsx:243
 msgid "The mod files can be copied directly from this Mortar."
 msgstr "The mod files can be copied directly from this Mortar."
 
@@ -2664,7 +2664,7 @@ msgstr "Lutris"
 msgid "Mods and profiles"
 msgstr "Mods and profiles"
 
-#: src/share/useImportFlow.ts:149
+#: src/share/useImportFlow.ts:150
 msgid "Imported {name}"
 msgstr "Imported {name}"
 
@@ -3093,6 +3093,10 @@ msgstr "Sky"
 msgid "Both set: {0}"
 msgstr "Both set: {0}"
 
+#: src/lan/IncomingPrompt.tsx:270
+msgid "Update {localName} from {sender}"
+msgstr "Update {localName} from {sender}"
+
 #. placeholder {0}: required.length - INLINE_REQUIRED
 #: src/mods/LoadOrderTab.tsx:136
 msgid " · {0} more required"
@@ -3163,7 +3167,7 @@ msgid "Modpack saved"
 msgstr "Modpack saved"
 
 #: src/profiles/LaunchPresetsBlock.tsx:48
-#: src/share/useImportFlow.ts:156
+#: src/share/useImportFlow.ts:157
 #: src/templates/TemplateDialogs.tsx:67
 #: src/templates/TemplateDialogs.tsx:86
 msgid "Save as template"
@@ -3953,8 +3957,8 @@ msgstr "Share as r2modman code?"
 #: src/install/DownloadsDialog.tsx:252
 #: src/install/OverlayPlaceDialog.tsx:118
 #: src/install/RemapDialog.tsx:209
-#: src/lan/IncomingPrompt.tsx:191
-#: src/lan/IncomingPrompt.tsx:209
+#: src/lan/IncomingPrompt.tsx:82
+#: src/lan/IncomingPrompt.tsx:115
 #: src/lan/PairedComputers.tsx:105
 #: src/lan/PairedComputers.tsx:145
 #: src/lan/SendDialog.tsx:318
@@ -4013,7 +4017,7 @@ msgid "Could not unpin the selected mods"
 msgstr "Could not unpin the selected mods"
 
 #: src/share/ImportPreview.tsx:330
-#: src/share/useImportFlow.ts:142
+#: src/share/useImportFlow.ts:143
 msgid "Nothing to download"
 msgstr "Nothing to download"
 
@@ -4146,7 +4150,7 @@ msgstr "Enable all"
 msgid "Could not copy the link"
 msgstr "Could not copy the link"
 
-#: src/share/useImportFlow.ts:149
+#: src/share/useImportFlow.ts:150
 msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
@@ -5390,7 +5394,7 @@ msgstr "Play with {0}"
 msgid "New profile…"
 msgstr "New profile…"
 
-#: src/lan/IncomingPrompt.tsx:143
+#: src/lan/IncomingPrompt.tsx:244
 msgid "The files will download from each mod's source."
 msgstr "The files will download from each mod's source."
 
@@ -6430,7 +6434,7 @@ msgstr "Load all changes"
 msgid "The log does not name a mod."
 msgstr "The log does not name a mod."
 
-#: src/lan/IncomingPrompt.tsx:151
+#: src/lan/IncomingPrompt.tsx:252
 msgid "Create a profile first."
 msgstr "Create a profile first."
 
@@ -6566,7 +6570,7 @@ msgstr "Reading {folder}…"
 msgid "{0} is installed twice, and only one of them loads."
 msgstr "{0} is installed twice, and only one of them loads."
 
-#: src/lan/IncomingPrompt.tsx:150
+#: src/lan/IncomingPrompt.tsx:251
 msgid "Decline"
 msgstr "Decline"
 
@@ -7199,7 +7203,7 @@ msgstr "GOG"
 msgid "Could not read the Nexus page: {0}"
 msgstr "Could not read the Nexus page: {0}"
 
-#: src/share/useImportFlow.ts:178
+#: src/share/useImportFlow.ts:179
 msgid "Imported, but could not show the profile"
 msgstr "Imported, but could not show the profile"
 
@@ -7215,7 +7219,7 @@ msgstr "No templates"
 msgid "Check for mod updates when Mortar starts"
 msgstr "Check for mod updates when Mortar starts"
 
-#: src/share/useImportFlow.ts:141
+#: src/share/useImportFlow.ts:142
 msgid "{queued, plural, one {# download queued} other {# downloads queued}}"
 msgstr "{queued, plural, one {# download queued} other {# downloads queued}}"
 
@@ -7250,7 +7254,7 @@ msgstr "Press {paletteKeys} to jump anywhere: profiles, settings, downloads and 
 msgid "Open backups folder"
 msgstr "Open backups folder"
 
-#: src/lan/IncomingPrompt.tsx:179
+#: src/lan/IncomingPrompt.tsx:77
 msgid "Preparing transfer…"
 msgstr "Preparing transfer…"
 
@@ -8774,7 +8778,7 @@ msgstr "Reset…"
 msgid "{0}'s {1} is {2}: {3}"
 msgstr "{0}'s {1} is {2}: {3}"
 
-#: src/share/useImportFlow.ts:143
+#: src/share/useImportFlow.ts:144
 msgid "A profile with that name already exists, so this one is \"{name}\""
 msgstr "A profile with that name already exists, so this one is \"{name}\""
 
@@ -9618,7 +9622,8 @@ msgstr "The log holds folder paths from this computer, which can include your us
 msgid "Open a profile first."
 msgstr "Open a profile first."
 
-#: src/lan/IncomingPrompt.tsx:164
+#: src/lan/IncomingPrompt.tsx:267
+#: src/lan/IncomingPrompt.tsx:275
 msgid "Import as new profile"
 msgstr "Import as new profile"
 
@@ -10895,7 +10900,7 @@ msgstr "{endorsements, plural, one {# endorsement} other {# endorsements}} · {d
 msgid "Markdown"
 msgstr "Markdown"
 
-#: src/lan/IncomingPrompt.tsx:187
+#: src/lan/IncomingPrompt.tsx:285
 msgid "Could not cancel transfer"
 msgstr "Could not cancel transfer"
 
@@ -11107,7 +11112,7 @@ msgstr "Minimise"
 #. placeholder {4}: progress.current
 #. placeholder {5}: formatBytes(progress.bytes)
 #. placeholder {6}: formatBytes(progress.rate)
-#: src/lan/IncomingPrompt.tsx:175
+#: src/lan/IncomingPrompt.tsx:73
 msgid "{0, plural, one {{1} of # mod · {2} · {3}/s} other {{4} of # mods · {5} · {6}/s}}"
 msgstr "{0, plural, one {{1} of # mod · {2} · {3}/s} other {{4} of # mods · {5} · {6}/s}}"
 

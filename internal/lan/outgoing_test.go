@@ -67,7 +67,7 @@ func sentRig(t *testing.T) outgoingRig {
 		}
 	})
 	pair(t, receiver, sender, receiverAddr)
-	if err := sender.sendPayload(t.Context(), receiverAddr, "stardew", fixed(payload.Bytes())); err != nil {
+	if err := sender.sendPayload(t.Context(), receiverAddr, "stardew", "p-1", fixed(payload.Bytes())); err != nil {
 		t.Fatal(err)
 	}
 	return outgoingRig{sender: sender, receiver: receiver, arrival: <-arrivals, events: func() []OutgoingTransfer {
@@ -165,5 +165,16 @@ func TestADamagedFileIsNotCalledADisconnect(t *testing.T) {
 	}
 	if kind := usererr.KindOf(receiveError("Desk", syscall.ENOSPC)); kind != usererr.DiskFull {
 		t.Fatalf("disk full classified as %s", kind)
+	}
+}
+
+func TestAPairedArrivalNamesTheSendersProfile(t *testing.T) {
+	r := sentRig(t)
+	self, err := r.sender.book.self()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r.arrival.SenderID != self || r.arrival.ProfileID != "p-1" {
+		t.Fatalf("arrival = %+v, want sender %s profile p-1", r.arrival, self)
 	}
 }
