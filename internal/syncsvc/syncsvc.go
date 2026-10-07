@@ -21,6 +21,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // Events.
@@ -481,14 +482,14 @@ func (s *Service) Resolve(ctx context.Context, game, remote, revision, choice st
 	folder := s.d.Folder()
 	o, ok := s.find(game, remote)
 	if folder == "" || !ok {
-		return errors.New("that change is no longer waiting")
+		return usererr.New(usererr.NotFound, "that change is no longer waiting")
 	}
 	sh, ok := s.readShared(folder, game, remote)
 	if !ok {
-		return errors.New("the synced profile is gone from the sync folder")
+		return usererr.New(usererr.NotFound, "the synced profile is gone from the sync folder")
 	}
 	if fmt.Sprint(sh.Vector) != revision {
-		return errors.New("that change was updated since you looked; review it again")
+		return usererr.New(usererr.Invalid, "that change was updated since you looked; review it again")
 	}
 	local := o.Profile
 	switch choice {
@@ -568,11 +569,11 @@ func (s *Service) Diff(ctx context.Context, game, remote string) (Diff, error) {
 	folder := s.d.Folder()
 	s.mu.Unlock()
 	if !ok {
-		return Diff{}, errors.New("that change is no longer waiting")
+		return Diff{}, usererr.New(usererr.NotFound, "that change is no longer waiting")
 	}
 	sh, ok := s.readShared(folder, game, remote)
 	if !ok {
-		return Diff{}, errors.New("the synced profile is gone from the sync folder")
+		return Diff{}, usererr.New(usererr.NotFound, "the synced profile is gone from the sync folder")
 	}
 	payload, ok := s.payload(folder, game, remote, sh)
 	if !ok {

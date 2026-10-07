@@ -3,7 +3,6 @@ package packsvc
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"slices"
 	"strings"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // farmGame is the game whose multiplayer the list serves.
@@ -73,7 +73,7 @@ type FarmFix struct {
 // ExportFarm lists the mods of a Stardew profile that a guest's must match.
 func (s *Service) ExportFarm(gameID, profileID string) (FarmList, error) {
 	if gameID != farmGame {
-		return FarmList{}, errors.New("multiplayer lists are for Stardew Valley")
+		return FarmList{}, usererr.New(usererr.OtherGame, "multiplayer lists are for Stardew Valley")
 	}
 	p, err := s.find(gameID, profileID)
 	if err != nil {
@@ -101,14 +101,14 @@ func shareable(s profile.Source) profile.Source {
 // ParseFarm reads a list a host copied out, refusing one for another game.
 func ParseFarm(text string) (FarmList, error) {
 	if len(text) > maxFarmBytes {
-		return FarmList{}, errors.New("the list is too large")
+		return FarmList{}, usererr.New(usererr.Invalid, "the list is too large")
 	}
 	var l FarmList
 	if err := json.Unmarshal([]byte(strings.TrimSpace(text)), &l); err != nil || len(l.Mods) == 0 || len(l.Mods) > maxFarmMods {
-		return FarmList{}, errors.New("this is not a farm list")
+		return FarmList{}, usererr.New(usererr.Invalid, "this is not a farm list")
 	}
 	if l.Game != farmGame {
-		return FarmList{}, errors.New("multiplayer lists are for Stardew Valley")
+		return FarmList{}, usererr.New(usererr.OtherGame, "multiplayer lists are for Stardew Valley")
 	}
 	return l, nil
 }
@@ -121,7 +121,7 @@ func (s *Service) CheckFarm(gameID, profileID, text string) (FarmCheck, error) {
 		return FarmCheck{}, err
 	}
 	if gameID != farmGame {
-		return FarmCheck{}, errors.New("multiplayer lists are for Stardew Valley")
+		return FarmCheck{}, usererr.New(usererr.OtherGame, "multiplayer lists are for Stardew Valley")
 	}
 	p, err := s.find(gameID, profileID)
 	if err != nil {
@@ -179,7 +179,7 @@ func (s *Service) FixFarm(ctx context.Context, gameID, profileID, text string, i
 		return FarmFix{}, err
 	}
 	if gameID != farmGame {
-		return FarmFix{}, errors.New("multiplayer lists are for Stardew Valley")
+		return FarmFix{}, usererr.New(usererr.OtherGame, "multiplayer lists are for Stardew Valley")
 	}
 	p, err := s.find(gameID, profileID)
 	if err != nil {

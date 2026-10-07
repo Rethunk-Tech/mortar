@@ -18,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 const (
@@ -345,7 +346,7 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 			return backupJSON{}, nil, err
 		}
 		if inMemory += int64(len(data)); inMemory > maxBackupBytes {
-			return backupJSON{}, nil, errors.New("the backup unpacks to too much")
+			return backupJSON{}, nil, usererr.New(usererr.Damaged, "the backup unpacks to too much")
 		}
 		if inFiles {
 			files[rel] = data
@@ -355,7 +356,7 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 	}
 	var b backupJSON
 	if doc == nil {
-		return backupJSON{}, nil, errors.New("not a Mortar profile backup: no " + backupDoc)
+		return backupJSON{}, nil, usererr.New(usererr.Invalid, "not a Mortar profile backup: no "+backupDoc)
 	}
 	if err := json.Unmarshal(doc, &b); err != nil {
 		return backupJSON{}, nil, fmt.Errorf("%s: %w", backupDoc, err)
@@ -364,7 +365,7 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 		return backupJSON{}, nil, fmt.Errorf("this backup is format %d; this Mortar reads format %d", b.Version, backupVersion)
 	}
 	if b.Game == "" {
-		return backupJSON{}, nil, errors.New(backupDoc + " names no game")
+		return backupJSON{}, nil, usererr.New(usererr.Invalid, backupDoc+" names no game")
 	}
 	return b, files, nil
 }
@@ -394,7 +395,7 @@ func unpack(f *zip.File, tmp string, total *int64) error {
 		return err
 	}
 	if *total += n; *total > maxBackupDisk {
-		return errors.New("the backup unpacks to too much")
+		return usererr.New(usererr.Damaged, "the backup unpacks to too much")
 	}
 	return nil
 }
