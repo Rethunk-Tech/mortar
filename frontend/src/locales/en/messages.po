@@ -3046,6 +3046,7 @@ msgstr "Search all runs…"
 
 #: src/firstrun/FindStep.tsx:213
 #: src/install/NeedsRootCallout.tsx:24
+#: src/profiles/ImportWizard.tsx:141
 #: src/settings/sections/GameSettings.tsx:383
 #: src/tools/ToolEditorDialog.tsx:112
 msgid "Choose folder…"
@@ -3344,7 +3345,7 @@ msgstr "Downloaded mods no profile uses"
 msgid "Needs a newer loader"
 msgstr "Needs a newer loader"
 
-#: src/profiles/ImportWizard.tsx:95
+#: src/profiles/ImportWizard.tsx:124
 msgid "Mortar found no other mod manager's profiles for this game on this computer."
 msgstr "Mortar found no other mod manager's profiles for this game on this computer."
 
@@ -3967,7 +3968,7 @@ msgstr "Share as r2modman code?"
 #: src/profiles/CompareDialog.tsx:62
 #: src/profiles/EditProfileDialog.tsx:461
 #: src/profiles/GameModsDialog.tsx:164
-#: src/profiles/ImportWizard.tsx:120
+#: src/profiles/ImportWizard.tsx:162
 #: src/profiles/LaunchPresetDialog.tsx:91
 #: src/profiles/PackImportDialog.tsx:170
 #: src/settings/sections/NexusSSO.tsx:67
@@ -5984,7 +5985,7 @@ msgstr "{0, plural, one {Removed # mod} other {Removed # mods}}"
 msgid "{found, plural, one {# mod update} other {# mod updates}}"
 msgstr "{found, plural, one {# mod update} other {# mod updates}}"
 
-#: src/profiles/ImportWizard.tsx:94
+#: src/profiles/ImportWizard.tsx:123
 msgid "No profiles found."
 msgstr "No profiles found."
 
@@ -6310,6 +6311,10 @@ msgstr "Download missing"
 #: src/game/BackupMenuItems.tsx:52
 msgid "Could not back up the profile"
 msgstr "Could not back up the profile"
+
+#: src/profiles/ImportWizard.tsx:139
+msgid "Use Vortex from another folder?"
+msgstr "Use Vortex from another folder?"
 
 #. placeholder {0}: why.event ?? ''
 #: src/console/startupHooks.ts:34
@@ -7118,7 +7123,7 @@ msgstr "Pinned"
 msgid "Could not dismiss the overlap"
 msgstr "Could not dismiss the overlap"
 
-#: src/profiles/ImportWizard.tsx:117
+#: src/profiles/ImportWizard.tsx:159
 msgid "Use a code or file…"
 msgstr "Use a code or file…"
 
@@ -7752,6 +7757,10 @@ msgstr "Crash finding was stopped."
 #: src/settings/sections/NexusSSO.tsx:61
 msgid "Approve Mortar in your browser…"
 msgstr "Approve Mortar in your browser…"
+
+#: src/profiles/ImportWizard.tsx:145
+msgid "That folder has no Vortex data (state.v2)."
+msgstr "That folder has no Vortex data (state.v2)."
 
 #: src/share/ShareDialog.tsx:59
 msgid "{length} of {limit} characters · close to the Discord message limit"
@@ -8988,6 +8997,10 @@ msgstr "Mortar offers prereleases only when Settings allows them."
 #: src/settings/sections/DataImport.tsx:21
 msgid "Downloads and updates"
 msgstr "Downloads and updates"
+
+#: src/profiles/ImportWizard.tsx:54
+msgid "Vortex data folder"
+msgstr "Vortex data folder"
 
 #. placeholder {0}: status.step
 #. placeholder {1}: status.total
@@ -11313,7 +11326,7 @@ msgstr "Unknown mod"
 msgid "No changelog for this update"
 msgstr "No changelog for this update"
 
-#: src/profiles/ImportWizard.tsx:91
+#: src/profiles/ImportWizard.tsx:120
 #: src/share/ImportDialog.tsx:259
 msgid "Import a profile"
 msgstr "Import a profile"

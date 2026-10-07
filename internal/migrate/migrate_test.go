@@ -10,14 +10,14 @@ func TestDetectsStardropProfileAndReadsGameMods(t *testing.T) {
 	home := filepath.Join("testdata", "stardrop", "home")
 	mods := filepath.Join("testdata", "stardrop", "game", "Mods")
 
-	sources, err := Detect(home, mods, "stardew")
+	sources, err := Detect(home, mods, "stardew", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(sources) != 1 || sources[0].Kind != KindStardrop {
 		t.Fatalf("sources = %#v", sources)
 	}
-	preview, err := Preview(home, mods, "stardew", KindStardrop, "Farm")
+	preview, err := Preview(home, mods, "stardew", "", KindStardrop, "Farm")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,7 +40,7 @@ func TestStardropProfileCarriesItsOwnConfigCopy(t *testing.T) {
 	home := filepath.Join("testdata", "stardrop", "home")
 	mods := filepath.Join("testdata", "stardrop", "game", "Mods")
 
-	preview, err := Preview(home, mods, "stardew", KindStardrop, "Kept")
+	preview, err := Preview(home, mods, "stardew", "", KindStardrop, "Kept")
 	if err != nil {
 		t.Fatal(err)
 	}

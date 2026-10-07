@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -95,14 +96,14 @@ func TestDetectsVortexLevelDBAndPreviewsMods(t *testing.T) {
 	}
 	defer func() { _ = holder.Close() }()
 
-	sources, err := Detect(home, "", "stardew")
+	sources, err := Detect(home, "", "stardew", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(sources) != 1 || sources[0].Kind != KindVortex || len(sources[0].Profiles) != 1 {
 		t.Fatalf("sources = %#v", sources)
 	}
-	preview, err := Preview(home, "", "stardew", KindVortex, "p1")
+	preview, err := Preview(home, "", "stardew", "", KindVortex, "p1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,7 +141,7 @@ func TestVortexStagingFolderDefaultsAndPlaceholders(t *testing.T) {
 	for name, pattern := range cases {
 		t.Run(name, func(t *testing.T) {
 			home, _, mods := newVortexHome(t, pattern)
-			preview, err := Preview(home, "", "stardew", KindVortex, "p1")
+			preview, err := Preview(home, "", "stardew", "", KindVortex, "p1")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -148,5 +149,47 @@ func TestVortexStagingFolderDefaultsAndPlaceholders(t *testing.T) {
 				t.Fatalf("modsPath = %q want %q, mods = %#v", preview.ModsPath, mods, preview.Mods)
 			}
 		})
+	}
+}
+
+func TestVortexRootsOrder(t *testing.T) {
+	got := vortexRoots("cfg", "chosen", "pd", true)
+	want := []string{"chosen", filepath.Join("cfg", "Vortex"), filepath.Join("pd", "vortex")}
+	if !slices.Equal(got, want) {
+		t.Fatalf("windows roots = %v, want %v", got, want)
+	}
+	got = vortexRoots("cfg", "", "pd", false)
+	if want = []string{filepath.Join("cfg", "Vortex")}; !slices.Equal(got, want) {
+		t.Fatalf("linux roots = %v, want %v", got, want)
+	}
+}
+
+func TestDetectUsesChosenVortexFolder(t *testing.T) {
+	home, state, _ := newVortexHome(t, "custom")
+	moved := filepath.Join(t.TempDir(), "elsewhere")
+	if err := os.Rename(filepath.Dir(state), moved); err != nil {
+		t.Fatal(err)
+	}
+	if sources, err := Detect(home, "", "stardew", ""); err != nil || len(sources) != 0 {
+		t.Fatalf("default lookup after move = %#v, %v", sources, err)
+	}
+	sources, err := Detect(home, "", "stardew", moved)
+	if err != nil || len(sources) != 1 || sources[0].Kind != KindVortex {
+		t.Fatalf("chosen folder = %#v, %v", sources, err)
+	}
+	if _, err := Preview(home, "", "stardew", moved, KindVortex, "p1"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestVortexStagingOutsideRootResolves(t *testing.T) {
+	other := filepath.Join(t.TempDir(), "Vortex Mods")
+	home, _, _ := newVortexHome(t, `"`+filepath.ToSlash(other)+`/{GAME}"`)
+	preview, err := Preview(home, "", "stardew", "", KindVortex, "p1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := filepath.Join(other, "stardewvalley"); preview.ModsPath != want {
+		t.Fatalf("modsPath = %q, want %q", preview.ModsPath, want)
 	}
 }

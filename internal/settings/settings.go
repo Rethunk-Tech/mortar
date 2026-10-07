@@ -187,7 +187,9 @@ type Settings struct {
 	// WatchFolders are extra folders, joined by the OS path-list separator, that new archives are offered from.
 	WatchFolders string `json:"watchFolders,omitempty"`
 	// SyncFolder is the folder profile state is shared through between this machine and others; empty is off.
-	SyncFolder                 string `json:"syncFolder,omitempty"`
+	SyncFolder string `json:"syncFolder,omitempty"`
+	// VortexFolder is the Vortex data folder (holding state.v2) to import from when it is not in a default place.
+	VortexFolder               string `json:"vortexFolder,omitempty"`
 	ProfileOrder               string `json:"profileOrder"`
 	AutoRetryDownloads         string `json:"autoRetryDownloads"`
 	PauseDownloadsWhilePlaying bool   `json:"pauseDownloadsWhilePlaying"`

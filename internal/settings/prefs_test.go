@@ -123,6 +123,11 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep",
 		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "watchFolders": "/var/tmp/mortar-watch", "syncFolder": "/var/tmp/mortar-sync", "browseFilters": "installed=hide", "showAdultContent": "true",
 	}
+	vortex := filepath.Join(t.TempDir(), "Vortex")
+	if err := os.MkdirAll(filepath.Join(vortex, "state.v2"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	overrides["vortexFolder"] = vortex
 	if len(overrides) != len(registry) {
 		t.Fatalf("%d overrides for %d registered keys", len(overrides), len(registry))
 	}
@@ -256,5 +261,23 @@ func TestWatchedFoldersKeepsAbsoluteUniquePaths(t *testing.T) {
 	s := Settings{WatchFolders: strings.Join([]string{a, "rel", a, " " + b + " "}, string(os.PathListSeparator))}
 	if got := s.WatchedFolders(); !slices.Equal(got, []string{a, b}) {
 		t.Errorf("WatchedFolders = %v", got)
+	}
+}
+
+func TestVortexFolderMustHoldState(t *testing.T) {
+	dir := t.TempDir()
+	var s Settings
+	p := vortexFolderPref()
+	if err := p.set(&s, "", dir); err == nil {
+		t.Fatal("folder without state.v2 accepted")
+	}
+	if err := os.MkdirAll(filepath.Join(dir, "state.v2"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := p.set(&s, "", dir); err != nil || s.VortexFolder != dir {
+		t.Fatalf("valid folder: %v, %q", err, s.VortexFolder)
+	}
+	if err := p.set(&s, "", ""); err != nil || s.VortexFolder != "" {
+		t.Fatalf("clear: %v, %q", err, s.VortexFolder)
 	}
 }

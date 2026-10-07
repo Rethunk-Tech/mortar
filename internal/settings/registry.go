@@ -2,6 +2,8 @@ package settings
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -121,6 +123,7 @@ var registry = []pref{
 	boolPref("lanAutoAcceptPaired", ScopeApp, func(s Settings, _ string) bool { return s.LanAutoAcceptPaired }, func(s *Settings, _ string, on bool) { s.LanAutoAcceptPaired = on }),
 	strPref("downloadFolder", ScopeApp, func(s Settings, _ string) string { return s.DownloadFolder }, func(s *Settings, _, v string) { s.DownloadFolder = v }),
 	strPref("syncFolder", ScopeApp, func(s Settings, _ string) string { return s.SyncFolder }, func(s *Settings, _, v string) { s.SyncFolder = v }),
+	vortexFolderPref(),
 	strPref("watchFolders", ScopeApp, func(s Settings, _ string) string { return s.WatchFolders }, func(s *Settings, _, v string) { s.WatchFolders = v }),
 	enumPref("profileOrder", ScopeApp, ProfileOrderManual, profileOrderValues, func(s Settings, _ string) string { return s.ProfileOrder }, func(s *Settings, _, v string) { s.ProfileOrder = v }),
 	enumPref("autoRetryDownloads", ScopeApp, AutoRetryOff, autoRetryValues, func(s Settings, _ string) string { return s.AutoRetryDownloads }, func(s *Settings, _, v string) { s.AutoRetryDownloads = v }),
@@ -575,6 +578,23 @@ func strPref(key, scope string, get func(Settings, string) string, set func(*Set
 		get:  get,
 		set: func(s *Settings, game, raw string) error {
 			set(s, game, raw)
+			return nil
+		},
+	}
+}
+
+// vortexFolderPref accepts only an existing folder holding Vortex's state.v2, or "" to clear it.
+func vortexFolderPref() pref {
+	return pref{
+		spec: PrefSpec{Key: "vortexFolder", Scope: ScopeApp, Type: TypeString, Default: ""},
+		get:  func(s Settings, _ string) string { return s.VortexFolder },
+		set: func(s *Settings, _, raw string) error {
+			if raw != "" {
+				if info, err := os.Stat(filepath.Join(raw, "state.v2")); err != nil || !info.IsDir() {
+					return fmt.Errorf("%s has no Vortex data (state.v2)", raw)
+				}
+			}
+			s.VortexFolder = raw
 			return nil
 		},
 	}

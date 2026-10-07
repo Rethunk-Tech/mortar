@@ -1,14 +1,27 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
+} from '@mui/material'
 import { Inbox } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { LocalProfiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
-import { ExternalPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
+import {
+  ExternalPreview,
+  ExternalVortexSupported,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { openImport } from '../share/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useExternalImportSources } from './externalImportSources.ts'
 import { FoundProfileRow } from './FoundProfileRow.tsx'
+import { offerVortexFolder } from './vortexFolderOffer.ts'
 
 interface Found {
   key: string
@@ -37,7 +50,29 @@ export function ImportWizard({
   onOwnCode: (() => void) | null
 }) {
   const { t } = useLingui()
-  const external = useExternalImportSources(game)
+  const { sources: external, reload } = useExternalImportSources(game)
+  const [vortexSupported, setVortexSupported] = useState(false)
+  const [folderError, setFolderError] = useState(false)
+  useEffect(() => {
+    ExternalVortexSupported(game).then(setVortexSupported).catch(reportUnexpected)
+  }, [game])
+  const chooseVortexFolder = () => {
+    PickFolder(t`Vortex data folder`)
+      .then(async (dir) => {
+        if (!dir) {
+          return
+        }
+        try {
+          await SetByKey('vortexFolder', dir, '')
+        } catch {
+          setFolderError(true)
+          return
+        }
+        setFolderError(false)
+        reload()
+      })
+      .catch(reportUnexpected)
+  }
   // null until this game's manager profiles are listed, so opening never flashes "No profiles found".
   const [packs, setPacks] = useState<Found[] | null>(null)
   useEffect(() => {
@@ -105,6 +140,25 @@ export function ImportWizard({
             />
           ))
         )}
+        {offerVortexFolder(vortexSupported, external) ? (
+          <Typography variant="body2" color="text.secondary" sx={{ pt: 1 }}>
+            {t`Use Vortex from another folder?`}{' '}
+            <Button size="small" onClick={chooseVortexFolder}>
+              {t`Choose folder…`}
+            </Button>
+            {folderError ? (
+              <Typography
+                component="span"
+                variant="body2"
+                color="error"
+                role="alert"
+                sx={{ ml: 1 }}
+              >
+                {t`That folder has no Vortex data (state.v2).`}
+              </Typography>
+            ) : null}
+          </Typography>
+        ) : null}
       </DialogContent>
       <DialogActions>
         {onOwnCode ? (

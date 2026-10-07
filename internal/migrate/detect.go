@@ -19,8 +19,10 @@ type installation struct {
 }
 
 // Detect lists the external mod managers whose profiles for the catalog game gameID can be imported.
-func Detect(home, modsPath, gameID string) ([]SourceInfo, error) {
-	installs, err := detect(home, modsPath, gameID)
+//
+// vortexFolder is the user-chosen Vortex data folder, tried before the default locations.
+func Detect(home, modsPath, gameID, vortexFolder string) ([]SourceInfo, error) {
+	installs, err := detect(home, modsPath, gameID, vortexFolder)
 	if err != nil {
 		return nil, err
 	}
@@ -31,8 +33,8 @@ func Detect(home, modsPath, gameID string) ([]SourceInfo, error) {
 	return out, nil
 }
 
-func Preview(home, modsPath, gameID, kind, id string) (ProfilePreview, error) {
-	installs, err := detect(home, modsPath, gameID)
+func Preview(home, modsPath, gameID, vortexFolder, kind, id string) (ProfilePreview, error) {
+	installs, err := detect(home, modsPath, gameID, vortexFolder)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
@@ -58,7 +60,7 @@ func Preview(home, modsPath, gameID, kind, id string) (ProfilePreview, error) {
 	return ProfilePreview{}, fmt.Errorf("%s is not detected", kind)
 }
 
-func detect(home, modsPath, gameID string) ([]installation, error) {
+func detect(home, modsPath, gameID, vortexFolder string) ([]installation, error) {
 	ids := importIDs(gameID)
 	base, err := userHome(home)
 	if err != nil {
@@ -83,18 +85,24 @@ func detect(home, modsPath, gameID string) ([]installation, error) {
 	}
 
 	if ids.Vortex != "" {
-		vortexRoot := filepath.Join(config, "Vortex")
-		profiles, resolvedModsPath, err := vortexProfiles(vortexRoot, ids.Vortex)
-		if err != nil && !errors.Is(err, os.ErrNotExist) {
-			return nil, err
+		programData := os.Getenv("ProgramData")
+		if programData == "" {
+			programData = `C:\ProgramData`
 		}
-		if err == nil && len(profiles) > 0 {
-			out = append(out, installation{
-				info:     SourceInfo{Kind: KindVortex, Name: "Vortex", Profiles: profileInfos(profiles)},
-				root:     vortexRoot,
-				modsPath: resolvedModsPath,
-				vortexID: ids.Vortex,
-			})
+		for _, vortexRoot := range vortexRoots(config, vortexFolder, programData, runtime.GOOS == "windows") {
+			profiles, resolvedModsPath, err := vortexProfiles(vortexRoot, ids.Vortex)
+			if err != nil && !errors.Is(err, os.ErrNotExist) {
+				return nil, err
+			}
+			if err == nil && len(profiles) > 0 {
+				out = append(out, installation{
+					info:     SourceInfo{Kind: KindVortex, Name: "Vortex", Profiles: profileInfos(profiles)},
+					root:     vortexRoot,
+					modsPath: resolvedModsPath,
+					vortexID: ids.Vortex,
+				})
+				break
+			}
 		}
 	}
 
@@ -162,4 +170,20 @@ func configDir(home string) string {
 func importIDs(gameID string) components.ImportIDs {
 	info, _ := components.Game(gameID)
 	return info.ImportIDs
+}
+
+// vortexRoots lists where Vortex may keep its state.v2, most specific first: the folder the user chose, the
+// per-user folder, then (Windows only) the shared folder multi-user mode moves it to. Vortex derives the shared
+// path from %ProgramData%\vortex and the per-user one from <appData>\vortex (src/main/src/Application.ts
+// multiUserPath and onReady).
+func vortexRoots(config, chosen, programData string, windows bool) []string {
+	var roots []string
+	if chosen != "" {
+		roots = append(roots, filepath.Clean(chosen))
+	}
+	roots = append(roots, filepath.Join(config, "Vortex"))
+	if windows {
+		roots = append(roots, filepath.Join(programData, "vortex"))
+	}
+	return roots
 }
