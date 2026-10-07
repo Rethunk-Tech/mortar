@@ -172,6 +172,9 @@ const steamSessionPatience = 15 * time.Minute
 // serverShutdownTimeout bounds how long server mode waits for in-flight requests once Mortar quits.
 const serverShutdownTimeout = time.Second
 
+// queueQuitWait bounds how long quit waits for the download workers to stop.
+const queueQuitWait = 5 * time.Second
+
 func run() error {
 	if len(os.Args) > 1 && os.Args[1] == "--release-links" {
 		return releaseLinks()
@@ -857,7 +860,7 @@ func run() error {
 	waitQueue := queue.Run(queueCtx, queueSvc, nxmSvc.Assigned)
 	defer func() {
 		stopQueue()
-		waitQueue()
+		queueSvc.StopWait(waitQueue, queueQuitWait)
 	}()
 	ctl := &control.Services{
 		Version: version, Settings: store, SettingsSvc: svc, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
