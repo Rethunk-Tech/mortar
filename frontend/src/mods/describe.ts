@@ -108,22 +108,29 @@ function describeBroken(p: Extract<Problem, { kind: 'broken' }>): string {
     : i18n._(msg`${name} is marked broken for this game version.`)
 }
 
+// A winner the user picked arrives as "<mod> wins"; one the checker found arrives as the bare name.
+function winnerSentence(winnerName: string | null | undefined, overridden: string[]): string {
+  if (winnerName === 'unclear') {
+    return i18n._(msg` The winner is unclear.`)
+  }
+  if (winnerName === 'decided per entry') {
+    return i18n._(msg` You chose which mod wins each clash.`)
+  }
+  if (!winnerName) {
+    return ''
+  }
+  const name = winnerName.endsWith(' wins') ? winnerName.slice(0, -' wins'.length) : winnerName
+  const losers = listNames(overridden)
+  return losers === ''
+    ? i18n._(msg` ${name} wins.`)
+    : i18n._(msg` ${name} wins; ${losers} overridden.`)
+}
+
 function describeAsset(p: Extract<Problem, { kind: 'asset' }>): string {
   const { names, kind, winnerName, overridden } = p.asset
   const target = listNames([p.asset.target, ...(p.siblings ?? []).map((s) => s.target)])
   const who = listNames(names ?? [])
-  let winner = ''
-  if (winnerName === 'unclear') {
-    winner = i18n._(msg` The winner is unclear.`)
-  } else if (winnerName === 'decided per entry') {
-    winner = i18n._(msg` You chose which mod wins each clash.`)
-  } else if (winnerName) {
-    const losers = listNames(overridden ?? [])
-    winner =
-      losers === ''
-        ? i18n._(msg` ${winnerName} wins.`)
-        : i18n._(msg` ${winnerName} wins; ${losers} overridden.`)
-  }
+  const winner = winnerSentence(winnerName, overridden ?? [])
   const pair = (names ?? []).length === 2
   let sentence: string
   if (kind === 'load') {
@@ -313,4 +320,4 @@ export function useDescribeDrift(): (d: Drift) => string {
   }
 }
 
-export { missingDepName }
+export { missingDepName, winnerSentence }
