@@ -66,6 +66,23 @@ else
   record "AppImage on ubuntu:latest" FAIL "$(printf '%s' "$out" | tail -3 | tr '\n' ' ')"
 fi
 
+# The container above only runs the CLI. The window needs WebKit's bubblewrap sandbox, which a container cannot nest, so
+# launch the AppImage on the host with a throwaway HOME and session bus: it must stay up for 15 s with no bwrap or GLib error.
+if [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] && command -v bwrap >/dev/null && command -v dbus-run-session >/dev/null; then
+  H=$WORK/launch; mkdir -p "$H"/{config,data,cache}
+  cp "$A"/*.AppImage "$H/m.AppImage" && chmod +x "$H/m.AppImage"
+  env -u DBUS_SESSION_BUS_ADDRESS HOME="$H" XDG_CONFIG_HOME="$H/config" XDG_DATA_HOME="$H/data" XDG_CACHE_HOME="$H/cache" \
+    timeout 15 dbus-run-session -- "$H/m.AppImage" >"$H/log" 2>&1
+  rc=$?
+  if [ $rc = 124 ] && ! grep -qE 'bwrap:|SIGTRAP|\*\* \(.*\): ERROR|ERROR \*\*' "$H/log"; then
+    record "AppImage window launch (host, sandbox)" PASS ""
+  else
+    record "AppImage window launch (host, sandbox)" FAIL "exit $rc: $(grep -E 'bwrap:|SIGTRAP|ERROR' "$H/log" | head -3 | tr '\n' ' ')"
+  fi
+else
+  record "AppImage window launch" SKIP "needs a display, bwrap and dbus-run-session"
+fi
+
 # Flatpak needs the host (a container would have to pull the GNOME runtime and run bwrap nested); a throwaway
 # FLATPAK_USER_DIR keeps the host's installations untouched.
 if command -v flatpak >/dev/null; then
