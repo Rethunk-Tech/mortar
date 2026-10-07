@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Tooltip } from '@mui/material'
 import { Application } from '@wailsio/runtime'
 import { ChevronDown } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { SignOut } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { OpenDataFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { Logo } from '../brand/Logo.tsx'
@@ -20,6 +20,7 @@ import { checkForUpdates } from './checkForUpdates.ts'
 import { useUpdatesOfflineReason } from './offlineText.ts'
 import { reportBug } from './reportBug.ts'
 import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from './TitleMenu.tsx'
+import { useTitleMenu } from './titleMenus.ts'
 
 const SOURCE = 'https://github.com/Rethunk-Tech/mortar'
 
@@ -74,7 +75,7 @@ function NexusLines({ close }: { close: () => void }) {
 
 export function AppMenu() {
   const { t } = useLingui()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, close, trigger } = useTitleMenu('app')
   const updatesOffline = useUpdatesOfflineReason()
   const game = useNav((s) => routeGame(s.route) ?? '')
   const version = useMortarUpdate((s) => s.info?.version)
@@ -86,7 +87,6 @@ export function AppMenu() {
       .load()
       .catch(() => undefined)
   }, [])
-  const close = () => setAnchor(null)
   const quit = (): void => {
     close()
     Application.Quit().catch((e: unknown) =>
@@ -100,7 +100,7 @@ export function AppMenu() {
         data-tour="app-menu"
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
-        onClick={(e) => setAnchor(e.currentTarget)}
+        {...trigger}
         sx={{
           '--wails-draggable': 'no-drag',
           gap: '8px',

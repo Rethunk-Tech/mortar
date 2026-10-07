@@ -11,6 +11,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useHistoryPanel } from '../profiles/useHistoryPanel.ts'
 import { useQueue } from '../queue/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { closeTitleMenu } from '../shell/titleMenus.ts'
 import { EarlierChanges } from './EarlierChanges.tsx'
 import { historyActionState } from './history.ts'
 import { reportUnexpected } from './report.ts'
@@ -219,6 +220,7 @@ export function HistoryButton() {
     }
   }, [])
   const open = (el: HTMLElement) => {
+    closeTitleMenu()
     setAnchor(el)
     setHistoryOpen(true)
   }

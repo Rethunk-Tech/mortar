@@ -11,6 +11,7 @@ import { useGameName } from '../games/info.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { useNav } from '../nav/store.ts'
 import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from '../shell/TitleMenu.tsx'
+import { useTitleMenu } from '../shell/titleMenus.ts'
 import { ManageTemplatesDialog } from '../templates/TemplateDialogs.tsx'
 import { useTemplates } from '../templates/useTemplates.ts'
 import { userModCount } from './count.ts'
@@ -40,12 +41,12 @@ function Dot({ mark }: { mark: Profile | undefined }) {
 function ProfileButton({
   current,
   expanded,
-  onOpen,
+  trigger,
   onContext,
 }: {
   current: Profile | undefined
   expanded: boolean
-  onOpen: (anchor: HTMLElement) => void
+  trigger: ReturnType<typeof useTitleMenu>['trigger']
   onContext: (id: string, position: Position) => void
 }) {
   const { t } = useLingui()
@@ -56,7 +57,7 @@ function ProfileButton({
       data-tour="profile-switcher"
       aria-haspopup="menu"
       aria-expanded={expanded}
-      onClick={(e) => onOpen(e.currentTarget)}
+      {...trigger}
       onContextMenu={(e) => {
         if (current) {
           e.preventDefault()
@@ -132,7 +133,7 @@ export function ProfileMenu({ game }: { game: string }) {
   const openId = useProfiles((s) => s.openId)
   const open = useProfiles((s) => s.open)
   const current = useProfiles(openProfileOf)
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, close, trigger } = useTitleMenu('profile')
   const [creating, setCreating] = useState(false)
   const [managing, setManaging] = useState(false)
   const [context, setContext] = useState<{ id: string; position: Position | null } | null>(null)
@@ -144,14 +145,13 @@ export function ProfileMenu({ game }: { game: string }) {
     const mods = modsLabel(userModCount(p))
     return t`${name} · ${mods}`
   }
-  const close = () => setAnchor(null)
   const showContext = (id: string, position: Position) => setContext({ id, position })
   return (
     <>
       <ProfileButton
         current={current}
         expanded={anchor !== null}
-        onOpen={setAnchor}
+        trigger={trigger}
         onContext={showContext}
       />
       <TitleMenu anchorEl={anchor} onClose={close} label={t`Profiles`} width={300}>

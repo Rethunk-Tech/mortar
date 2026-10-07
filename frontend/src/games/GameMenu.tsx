@@ -1,12 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
 import { ChevronDown } from 'lucide-react'
-import { useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { compact } from '../game/compact.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from '../shell/TitleMenu.tsx'
+import { useTitleMenu } from '../shell/titleMenus.ts'
 import { gameArt } from './art.ts'
 import { useGameInfo, useGames } from './info.ts'
 import { useOpenGame } from './useOpenGame.ts'
@@ -34,28 +34,6 @@ function Thumb({ game }: { game: GameInfo | undefined }) {
   )
 }
 
-function GameRow({
-  game,
-  current,
-  onChosen,
-}: {
-  game: GameInfo
-  current: boolean
-  onChosen: () => void
-}) {
-  const open = useOpenGame(game)
-  return (
-    <TitleMenuItem
-      label={game.name}
-      checked={current}
-      onClick={() => {
-        onChosen()
-        open()
-      }}
-    />
-  )
-}
-
 // The title bar's game switcher: the open game's art and name (or "Choose a game") over a menu of the playable games.
 export function GameMenu() {
   const { t } = useLingui()
@@ -64,11 +42,11 @@ export function GameMenu() {
   const games = useGames()
   const lastGame = useSettings((s) => s.lastGame)
   const played = useSettings((s) => s.lastPlayed)
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const { anchor, close, trigger } = useTitleMenu('game')
   const at = (id: string) => (id === lastGame ? NEWEST : (played?.[id]?.at ?? ''))
   const playable = games.filter((g) => g.available).sort((a, b) => at(b.id).localeCompare(at(a.id)))
   const gameLabel = info?.name ?? ''
-  const close = () => setAnchor(null)
+  const openGame = useOpenGame()
   return (
     <>
       <ButtonBase
@@ -76,7 +54,7 @@ export function GameMenu() {
         data-tour="game-tab"
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
-        onClick={(e) => setAnchor(e.currentTarget)}
+        {...trigger}
         sx={{
           '--wails-draggable': 'no-drag',
           gap: '8px',
@@ -109,7 +87,15 @@ export function GameMenu() {
       <TitleMenu anchorEl={anchor} onClose={close} label={t`Games`} width={300}>
         <MenuHeading>{t`Games`}</MenuHeading>
         {playable.map((g) => (
-          <GameRow key={g.id} game={g} current={g.id === game} onChosen={close} />
+          <TitleMenuItem
+            key={g.id}
+            label={g.name}
+            checked={g.id === game}
+            onClick={() => {
+              close()
+              openGame(g)
+            }}
+          />
         ))}
         <MenuRule />
         <TitleMenuItem

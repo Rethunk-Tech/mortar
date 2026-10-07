@@ -27,9 +27,12 @@ export function TitleMenu({
       anchorEl={anchorEl}
       open={anchorEl !== null}
       onClose={onClose}
+      disableEnforceFocus={true}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       slotProps={{
+        // The backdrop starts under the title bar so its triggers still take clicks and hover while a menu is open.
+        backdrop: { invisible: true, sx: { top: 'var(--title-bar)' } },
         paper: { sx: { width, maxWidth: 'calc(100vw - 16px)', mt: '4px' } },
         list: { 'aria-label': label, sx: { py: '6px' } },
       }}

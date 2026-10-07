@@ -193,7 +193,8 @@ function Row({
 }) {
   const { t, i18n } = useLingui()
   const loaderLine = useLoaderLine({ game, loader, lastPlayedName, lastPlayedAt, playtimeMs })
-  const open = useOpenGame(game)
+  const openGameTile = useOpenGame()
+  const open = () => openGameTile(game)
   // A game never played yet still gets Play, for its first profile.
   const first = cards?.profiles[0]
   const playId = lastPlayedId || first?.id || ''

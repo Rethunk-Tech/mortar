@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
 import { Download } from 'lucide-react'
 import { compact } from '../game/compact.ts'
+import { closeTitleMenu } from '../shell/titleMenus.ts'
 import { useQueue } from './store.ts'
 import { pillProgress } from './totals.ts'
 
@@ -19,7 +20,10 @@ export function DownloadsPill() {
   const downloading = plural(active, { one: '# downloading', other: '# downloading' })
   return (
     <ButtonBase
-      onClick={() => setOpen(true)}
+      onClick={() => {
+        closeTitleMenu()
+        setOpen(true)
+      }}
       aria-label={t`Downloads: ${downloading} ${percent}%`}
       sx={{
         '--wails-draggable': 'no-drag',

@@ -249,7 +249,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/saves/SaveRow.tsx:124
 #: src/share/usePasteLink.ts:29
 #: src/share/usePasteLink.ts:64
-#: src/toasts/HistoryButton.tsx:31
+#: src/toasts/HistoryButton.tsx:32
 #: src/toasts/ToastHost.tsx:132
 msgid "Stop the game to change mods."
 msgstr "Stop the game to change mods."
@@ -336,7 +336,7 @@ msgstr "Copying mod files"
 msgid "Restored {detail} of {name}"
 msgstr "Restored {detail} of {name}"
 
-#: src/shell/AppMenu.tsx:56
+#: src/shell/AppMenu.tsx:57
 msgid "Sign out of Nexus"
 msgstr "Sign out of Nexus"
 
@@ -626,7 +626,7 @@ msgstr "This log is {size}. Sharing uploads it to smapi.io as a public link."
 msgid "Mortar finds games through their launchers. Set each one up when you first open it."
 msgstr "Mortar finds games through their launchers. Set each one up when you first open it."
 
-#: src/games/GameMenu.tsx:75
+#: src/games/GameMenu.tsx:53
 msgid "Switch game: {gameLabel}"
 msgstr "Switch game: {gameLabel}"
 
@@ -658,7 +658,7 @@ msgstr "Add tool…"
 msgid "Showing the first 2,000 files"
 msgstr "Showing the first 2,000 files"
 
-#: src/toasts/HistoryButton.tsx:192
+#: src/toasts/HistoryButton.tsx:193
 msgid "Downloads…"
 msgstr "Downloads…"
 
@@ -1558,7 +1558,7 @@ msgstr "Changelog unavailable"
 msgid "List view"
 msgstr "List view"
 
-#: src/toasts/HistoryButton.tsx:165
+#: src/toasts/HistoryButton.tsx:166
 msgid "Earlier"
 msgstr "Earlier"
 
@@ -1595,7 +1595,7 @@ msgstr "Add preset"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
-#: src/games/GameSelect.tsx:339
+#: src/games/GameSelect.tsx:340
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -1778,7 +1778,7 @@ msgstr "Reset {0} to its default"
 msgid "Unpinned {name}"
 msgstr "Unpinned {name}"
 
-#: src/games/GameMenu.tsx:117
+#: src/games/GameMenu.tsx:103
 msgid "launchers, play last profile"
 msgstr "launchers, play last profile"
 
@@ -2229,7 +2229,7 @@ msgstr "Installed in your profiles"
 msgid "Switch the focused mod on or off"
 msgstr "Switch the focused mod on or off"
 
-#: src/profiles/ProfileMenu.tsx:145
+#: src/profiles/ProfileMenu.tsx:146
 msgid "{name} · {mods}"
 msgstr "{name} · {mods}"
 
@@ -2467,7 +2467,7 @@ msgstr "{0, plural, one {# tracked mod on Nexus is not in this profile} other {#
 msgid "One step in Steam"
 msgstr "One step in Steam"
 
-#: src/shell/AppMenu.tsx:64
+#: src/shell/AppMenu.tsx:65
 msgid "Sign in to Nexus…"
 msgstr "Sign in to Nexus…"
 
@@ -3948,7 +3948,7 @@ msgstr "config.json, as the mod ships it"
 msgid "The last launch loaded this here, not where its dependencies put it."
 msgstr "The last launch loaded this here, not where its dependencies put it."
 
-#: src/games/GameSelect.tsx:342
+#: src/games/GameSelect.tsx:343
 msgid "Check launchers…"
 msgstr "Check launchers…"
 
@@ -4988,8 +4988,8 @@ msgstr "When Mortar makes a save backup before launching"
 msgid "Settings backups"
 msgstr "Settings backups"
 
-#: src/games/GameMenu.tsx:75
-#: src/games/GameMenu.tsx:105
+#: src/games/GameMenu.tsx:53
+#: src/games/GameMenu.tsx:83
 msgid "Choose a game"
 msgstr "Choose a game"
 
@@ -5803,7 +5803,7 @@ msgstr "Farming skill"
 msgid "Stop the game to install {0}."
 msgstr "Stop the game to install {0}."
 
-#: src/toasts/HistoryButton.tsx:152
+#: src/toasts/HistoryButton.tsx:153
 msgid "No notifications yet"
 msgstr "No notifications yet"
 
@@ -6044,7 +6044,7 @@ msgid "No profiles found."
 msgstr "No profiles found."
 
 #. placeholder {0}: game.name
-#: src/games/GameSelect.tsx:205
+#: src/games/GameSelect.tsx:206
 msgid "Open {0}"
 msgstr "Open {0}"
 
@@ -6228,8 +6228,8 @@ msgstr "Could not remove the selected mods"
 #: src/commandPalette/CommandPalette.tsx:155
 #: src/settings/sections/DataImport.tsx:19
 #: src/settings/SettingsPage.tsx:46
-#: src/toasts/HistoryButton.tsx:145
-#: src/toasts/HistoryButton.tsx:236
+#: src/toasts/HistoryButton.tsx:146
+#: src/toasts/HistoryButton.tsx:238
 #: src/toasts/ToastHost.tsx:255
 msgid "Notifications"
 msgstr "Notifications"
@@ -6473,7 +6473,7 @@ msgstr "Press Play to start."
 #: src/console/PerformanceComparison.tsx:66
 #: src/mods/ChangelogDialog.tsx:35
 #: src/mods/NewSince.tsx:14
-#: src/toasts/HistoryButton.tsx:157
+#: src/toasts/HistoryButton.tsx:158
 msgid "New"
 msgstr "New"
 
@@ -7129,7 +7129,7 @@ msgstr "Back up {0}?"
 msgid "Each mod's Entry method, run one after another"
 msgstr "Each mod's Entry method, run one after another"
 
-#: src/games/GameMenu.tsx:116
+#: src/games/GameMenu.tsx:102
 msgid "All games…"
 msgstr "All games…"
 
@@ -7417,7 +7417,7 @@ msgstr "Remove {0} from other profiles"
 msgid "All sources"
 msgstr "All sources"
 
-#: src/toasts/HistoryButton.tsx:124
+#: src/toasts/HistoryButton.tsx:125
 msgid "Notification history"
 msgstr "Notification history"
 
@@ -7513,7 +7513,7 @@ msgid "{gameName}'s Steam launch options run {loader} in place of the game. Stea
 msgstr "{gameName}'s Steam launch options run {loader} in place of the game. Steam will still start {loader} unless that launch option is removed. Mortar will not change it."
 
 #. placeholder {0}: current.name
-#: src/profiles/ProfileMenu.tsx:55
+#: src/profiles/ProfileMenu.tsx:56
 msgid "Switch profile: {0} {mods}"
 msgstr "Switch profile: {0} {mods}"
 
@@ -7805,7 +7805,7 @@ msgstr "Choose cover image…"
 msgid "Search in Browse"
 msgstr "Search in Browse"
 
-#: src/toasts/HistoryButton.tsx:153
+#: src/toasts/HistoryButton.tsx:154
 msgid "Results of installs, updates and launches appear here."
 msgstr "Results of installs, updates and launches appear here."
 
@@ -7929,8 +7929,8 @@ msgstr "Set to {value}"
 msgid "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
 msgstr "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
 
-#: src/profiles/ProfileMenu.tsx:55
-#: src/profiles/ProfileMenu.tsx:100
+#: src/profiles/ProfileMenu.tsx:56
+#: src/profiles/ProfileMenu.tsx:101
 msgid "No profile"
 msgstr "No profile"
 
@@ -7994,7 +7994,7 @@ msgstr "A game update replaced {0}'s launcher"
 msgid "Could not undo. Missing from the store: {list}"
 msgstr "Could not undo. Missing from the store: {list}"
 
-#: src/shell/AppMenu.tsx:43
+#: src/shell/AppMenu.tsx:44
 msgid "Nexus Mods · Not signed in"
 msgstr "Nexus Mods · Not signed in"
 
@@ -8254,7 +8254,7 @@ msgstr "Reading the changelog…"
 msgid "After"
 msgstr "After"
 
-#: src/toasts/HistoryButton.tsx:182
+#: src/toasts/HistoryButton.tsx:183
 msgid "All changes…"
 msgstr "All changes…"
 
@@ -8874,7 +8874,7 @@ msgstr "Broken or obsolete ({0})"
 msgid "{count, plural, one {# thing to repair} other {# things to repair}}"
 msgstr "{count, plural, one {# thing to repair} other {# things to repair}}"
 
-#: src/queue/DownloadsPill.tsx:23
+#: src/queue/DownloadsPill.tsx:27
 msgid "Downloads: {downloading} {percent}%"
 msgstr "Downloads: {downloading} {percent}%"
 
@@ -9137,7 +9137,7 @@ msgstr "Default for Share and Export. You can change it per share."
 
 #: src/App.tsx:78
 #: src/games/useGameTiles.ts:89
-#: src/games/useOpenGame.ts:21
+#: src/games/useOpenGame.ts:42
 msgid "Could not read your games"
 msgstr "Could not read your games"
 
@@ -9292,7 +9292,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/FirstRun.tsx:43
 #: src/firstrun/GameSetup.tsx:134
 #: src/firstrun/LoaderStep.tsx:221
-#: src/games/GameSelect.tsx:313
+#: src/games/GameSelect.tsx:314
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
 msgstr "Loading…"
@@ -10100,7 +10100,7 @@ msgid "Enabled"
 msgstr "Enabled"
 
 #: src/settings/sections/NexusMods.tsx:154
-#: src/shell/AppMenu.tsx:49
+#: src/shell/AppMenu.tsx:50
 msgid "Premium"
 msgstr "Premium"
 
@@ -10583,7 +10583,7 @@ msgid "Stop the game to test a launch."
 msgstr "Stop the game to test a launch."
 
 #: src/firstrunTour/TourPopover.tsx:41
-#: src/games/GameSelect.tsx:253
+#: src/games/GameSelect.tsx:254
 #: src/launch/PlayControl.tsx:168
 #: src/settings/GameSettingsPage.tsx:72
 #: src/settings/GameSettingsPage.tsx:100
@@ -11290,7 +11290,7 @@ msgstr "it took too long to answer"
 msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
 
-#: src/games/GameSelect.tsx:239
+#: src/games/GameSelect.tsx:240
 msgid "Play {playName}"
 msgstr "Play {playName}"
 
@@ -11568,7 +11568,7 @@ msgstr "Hide"
 msgid "Hide details"
 msgstr "Hide details"
 
-#: src/toasts/HistoryButton.tsx:160
+#: src/toasts/HistoryButton.tsx:161
 msgid "Nothing new"
 msgstr "Nothing new"
 
@@ -11655,8 +11655,8 @@ msgstr "Downloaded"
 msgid "Cancelled"
 msgstr "Cancelled"
 
-#: src/games/GameMenu.tsx:109
-#: src/games/GameMenu.tsx:110
+#: src/games/GameMenu.tsx:87
+#: src/games/GameMenu.tsx:88
 #: src/settings/sections/AboutDiagnostics.tsx:85
 #: src/settings/sections/DataImport.tsx:27
 msgid "Games"
@@ -12072,7 +12072,7 @@ msgstr "Sending to {peer} stopped: {why}"
 msgid "Check only enabled mods"
 msgstr "Check only enabled mods"
 
-#: src/toasts/HistoryButton.tsx:235
+#: src/toasts/HistoryButton.tsx:237
 msgid "{unread, plural, one {Notifications, # unread} other {Notifications, # unread}}"
 msgstr "{unread, plural, one {Notifications, # unread} other {Notifications, # unread}}"
 
@@ -12130,7 +12130,7 @@ msgstr "No differences."
 msgid "{0, plural, one {# more pack} other {# more packs}}"
 msgstr "{0, plural, one {# more pack} other {# more packs}}"
 
-#: src/shell/AppMenu.tsx:43
+#: src/shell/AppMenu.tsx:44
 msgid "Nexus Mods · Signed in as {name}"
 msgstr "Nexus Mods · Signed in as {name}"
 
@@ -12190,7 +12190,7 @@ msgstr "Enable them too"
 
 #: src/console/LogActions.tsx:176
 #: src/settings/sections/GameSettings.tsx:379
-#: src/toasts/HistoryButton.tsx:147
+#: src/toasts/HistoryButton.tsx:148
 msgid "Clear"
 msgstr "Clear"
 
@@ -12277,7 +12277,7 @@ msgstr "Could not repair this profile"
 #: src/games/GameSelect.tsx:164
 #: src/games/ProfileCards.tsx:46
 #: src/games/ProfileCards.tsx:60
-#: src/games/useOpenGame.ts:16
+#: src/games/useOpenGame.ts:42
 msgid "Could not save the last game"
 msgstr "Could not save the last game"
 
@@ -12559,7 +12559,7 @@ msgstr "Compare {label}"
 msgid "Disable {0}"
 msgstr "Disable {0}"
 
-#: src/queue/DownloadsPill.tsx:19
+#: src/queue/DownloadsPill.tsx:20
 msgid "{active, plural, one {# downloading} other {# downloading}}"
 msgstr "{active, plural, one {# downloading} other {# downloading}}"
 
