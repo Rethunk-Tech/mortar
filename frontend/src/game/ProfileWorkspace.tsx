@@ -11,7 +11,7 @@ import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { space } from '../theme/density.ts'
 import { Home } from './Home.tsx'
 import { TabHeader } from './TabHeader.tsx'
-import { useTab } from './tab.ts'
+import { PANEL_ID, tabDomId, useTab } from './tab.ts'
 
 // Tabs other than Mods, Problems and Browse load on first open, which keeps them out of the startup bundle.
 const ConsoleTab = lazy(() =>
@@ -47,7 +47,12 @@ export function ProfileWorkspace({
   const tab = useTab((s) => s.tab)
   usePasteLink(profile.id)
   return (
-    <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+    <Box
+      role="tabpanel"
+      id={PANEL_ID}
+      aria-labelledby={tabDomId(tab)}
+      sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}
+    >
       {tab === 'home' ? (
         <Home key={`home-${profile.id}`} profile={profile} game={game} gameName={gameName} />
       ) : null}

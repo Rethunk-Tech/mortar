@@ -13,7 +13,7 @@ import {
   Table2,
   TriangleAlert,
 } from 'lucide-react'
-import { Fragment, type ReactNode, useEffect } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { PlayControl } from '../launch/PlayControl.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { problemCount } from '../mods/lookup.ts'
@@ -29,7 +29,7 @@ import {
   sidebarGroups,
   tabUnavailable,
 } from './sidebarTabs.ts'
-import { type TabId, useTab } from './tab.ts'
+import { PANEL_ID, type TabId, tabDomId, useTab } from './tab.ts'
 
 const WIDTH_PX = 220
 const RAIL_PX = 76
@@ -108,6 +108,8 @@ function Item({
   const button = (
     <ButtonBase
       role="tab"
+      id={tabDomId(tab)}
+      aria-controls={PANEL_ID}
       aria-selected={active}
       aria-label={rail ? railLabel(label, badge) : undefined}
       data-tour={tours[tab]}
@@ -165,7 +167,7 @@ function Item({
 function GroupHeading({ children }: { children: ReactNode }) {
   return (
     <Box
-      role="presentation"
+      aria-hidden={true}
       sx={{
         px: '20px',
         pt: '12px',
@@ -240,7 +242,17 @@ function Sections({ rail }: { rail: boolean }) {
     >
       <Item tab="home" label={labels.home} badge={null} active={current === 'home'} rail={rail} />
       {sidebarGroups(caps, { updates, problems }).map((group) => (
-        <Fragment key={group.id}>
+        <Box
+          key={group.id}
+          role="group"
+          aria-label={labels[group.id]}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1px',
+            alignItems: rail ? 'center' : 'stretch',
+          }}
+        >
           {rail ? null : <GroupHeading>{labels[group.id]}</GroupHeading>}
           {group.entries.map((entry) => (
             <Item
@@ -252,7 +264,7 @@ function Sections({ rail }: { rail: boolean }) {
               rail={rail}
             />
           ))}
-        </Fragment>
+        </Box>
       ))}
     </Box>
   )

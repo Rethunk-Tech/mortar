@@ -17,6 +17,10 @@ const isTabId = (value: unknown): value is TabId => (TABS as readonly unknown[])
 
 export type TabId = (typeof TABS)[number]
 
+// The sidebar's tabs and the workspace they switch share these ids, so each tab points at its panel.
+export const PANEL_ID = 'profile-panel'
+export const tabDomId = (tab: TabId) => `profile-tab-${tab}`
+
 export const useTab = create<{
   tab: TabId
   setTab: (tab: TabId) => void
