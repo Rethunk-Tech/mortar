@@ -1,6 +1,7 @@
 package contentpatcher
 
 import (
+	"fmt"
 	"slices"
 	"testing"
 
@@ -108,5 +109,28 @@ func TestAnAddOnByOneAuthorStillClashesWithAStranger(t *testing.T) {
 	child.Dependencies[0].Required = false
 	if got := check([]framework.Mod{base, child, other}); len(got.Redundant) != 1 || got.Redundant[0].Key != base.Key || got.Redundant[0].Kind != "shadowed" {
 		t.Fatalf("an optional dependent does not keep the base it overwrites: %+v", got.Redundant)
+	}
+}
+
+func BenchmarkMarkLoadAfterWinner(b *testing.B) {
+	const h = 64
+	hits := make([]packHit, h)
+	for i := range hits {
+		hits[i] = packHit{id: mod.ID(fmt.Sprintf("a.p%d", i)), loadAfter: map[string]bool{}, dependencies: map[string]bool{}}
+	}
+	for i := range hits {
+		for j := range hits {
+			if i != j {
+				hits[i].rivals = append(hits[i].rivals, hits[j].id)
+			}
+		}
+	}
+	// Only the last pack settles every pair, the slowest path through overwritten.
+	for i := range hits[:h-1] {
+		hits[h-1].loadAfter[hits[i].id.Fold()] = true
+	}
+	for b.Loop() {
+		var c framework.AssetConflict
+		markLoadAfterWinner(&c, hits)
 	}
 }

@@ -24,7 +24,7 @@ func markLoadAfterWinner(c *framework.AssetConflict, hits []packHit) {
 				winners[a.id.Fold()] = a
 			case settledAfter(b, a, byID):
 				winners[b.id.Fold()] = b
-			case !overwritten(a, b, hits):
+			case !overwritten(a, b, hits, byID):
 				return
 			}
 		}
@@ -55,9 +55,9 @@ func allAfter(w packHit, winners, byID map[string]packHit) bool {
 // overwritten reports a pack that clashes with both a and b and loads after both.
 // ponytail: compares whole packs, not the keys each pair fights over; a winner that clashes with a and b on other
 // keys than theirs still counts. Track rivals per key if that shows up.
-func overwritten(a, b packHit, hits []packHit) bool {
+func overwritten(a, b packHit, hits []packHit, byID map[string]packHit) bool {
 	for _, w := range hits {
-		if settledAfter(w, a, byIDOf(hits)) && settledAfter(w, b, byIDOf(hits)) && rivals(w, a) && rivals(w, b) {
+		if settledAfter(w, a, byID) && settledAfter(w, b, byID) && rivals(w, a) && rivals(w, b) {
 			return true
 		}
 	}
