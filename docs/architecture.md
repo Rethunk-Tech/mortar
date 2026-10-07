@@ -380,7 +380,7 @@ Measured on an 819-mod profile; each holds until the profile size or the code pa
 
 ## Tests
 
-Go tests run against local HTTP test servers replaying recorded Nexus, SMAPI API and dataset responses, inside the 10 s warm / 30 s cold gate budget. Recordings are scrubbed before commit: `users/validate.json` returns the account's name and email, so fixtures carry placeholder account fields. An opt-in smoke test copies a real Stardew install to scratch space, installs SMAPI with `--no-prompt`, launches a profile, and reads `SMAPI-latest.txt` for the loaded mods. Tests must set `XDG_DATA_HOME` (or `LOCALAPPDATA` on Windows) to a directory under `os.TempDir()`; `datadir.Dir` refuses any other location while `testing.Testing()` is true (`internal/datadir`).
+Go tests run against local HTTP test servers replaying recorded Nexus, SMAPI API and dataset responses, inside the 10 s warm gate budget. Recordings are scrubbed before commit: `users/validate.json` returns the account's name and email, so fixtures carry placeholder account fields. An opt-in smoke test copies a real Stardew install to scratch space, installs SMAPI with `--no-prompt`, launches a profile, and reads `SMAPI-latest.txt` for the loaded mods. Tests must set `XDG_DATA_HOME` (or `LOCALAPPDATA` on Windows) to a directory under `os.TempDir()`; `datadir.Dir` refuses any other location while `testing.Testing()` is true (`internal/datadir`).
 
 ## Games and the catalog
 

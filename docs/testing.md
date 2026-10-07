@@ -4,7 +4,7 @@ Where the tests are, what each opt-in run proves and how to start it. The gate t
 
 ## Budget
 
-- The whole default suite, Go with `-race` and `bun test`, runs in under 30 s cold and 10 s warm.
+- The whole default suite, Go with `-race` and `bun test`, runs in under 10 s warm. Cold (empty Go build and lint caches) it takes about 55 s on a 32-thread machine and is measured, not enforced: compiling the race test binaries alone takes 34 s, because the Wails-bound `service.go` packages (settings, picker, profile, launchsvc and others) link GTK and WebKit through cgo into about 40 of the 102 test binaries, each 25 s cold against 9 s without it. Moving those bindings into their own packages would cut the race tests to an estimated 28 to 32 s, with cold lint at 27.5 s beside them.
 - A slow path sits behind a flag below instead of in the default run.
 - `scripts/gate.sh` runs the suite in parallel with the lint steps, so the gate takes as long as its slowest step.
 - Every `dotnet` invocation leaves an empty six-character dir in `TMPDIR`, so a script that runs it gives it a per-run `TMPDIR`.
