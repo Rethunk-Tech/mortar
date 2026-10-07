@@ -11,6 +11,24 @@ Remaining ([architecture.md](architecture.md#release)):
 - The fork's fixes are offered upstream as wailsapp/wails#6200 (EXDEV staging), #6201 (AppImage), #6202 (OnUpdateApplied, a draft waiting on its WEP, #6203) and #6239 (service methods fall back to `Options.MarshalError`, which `errorkind_test.go` relies on). With #6197 (GTK4 transparency) all six are open and rebased on v3.0.0-beta.28, and Mortar pins the fork branch `mortar/v3.0.0-beta.28`. Once #6200, #6201, #6202 and #6239 ship in a tagged v3 beta, pin that beta and drop the `Rethunk-AI/wails` replace in `go.mod`; #6197 does not gate this, since it only serves the translucent window below. #6201 and #6202 both add `resolveTarget` in `v3/pkg/updater/spawn.go`, so whichever merges second conflicts and needs a rebase.
 - **NOMAD-only, needs Windows Steam with Stardew and SMAPI** (the test VM has neither): with `"<game>\StardewModdingAPI.exe" %command%` set, Play once from a Windows account whose user name has a space, then read the first lines of `%APPDATA%\StardewValley\ErrorLogs\SMAPI-latest.txt`. Done when the log's mods path is the profile's `mods` folder (Steam forwarded `-applaunch … --mods-path <dir>` intact and kept the spaced path as one argument); if it is the game's `Mods` folder or a cut-off path, the Steam path needs a different hand-off ([architecture.md](architecture.md#launch) Windows). Whether a direct launch with **SMAPI console window** on shows SMAPI's output, given that Mortar redirects the game's stdout to its log file, is checked in the same sitting.
 
+## Queued for v1
+
+Decided 2026-10-07 (NOMAD), from the audit of how Mortar was described to CurseForge.
+
+- **Known-broken from every source.** The broken, obsolete and abandoned feed is SMAPI-only today (smapi.io list, `internal/problems/compat.go`; `problems.go:114` `Broken`). Thunderstore deprecations already show (`internal/problems/deprecated.go`). Add each source's own signal, shown as the same `Broken` rows with the source named:
+  - Nexus mod `status` other than `published` (`internal/nexus/batch.go:65` already computes `Available`).
+  - Modrinth project status `archived`.
+  - CurseForge mod `status` Abandoned (8), Inactive (7) or Deleted (9), and `isAvailable: false`.
+  - A GitHub repository with `archived: true`.
+
+  Where no source publishes a signal for a game, a Mortar-curated known-broken list in the signed catalog (per game, per mod id and version range, with a reason and replacement) covers Lethal Company and Valheim, fed from load failures the BepInEx analyzer sees and game-version breaks. Done when each source's flag yields a Problems row with a test per source, and a catalog entry yields one for a BepInEx game.
+- **Archives: tar and stream formats** beside zip, RAR and 7z in `internal/archive/archive.go` (magic-byte dispatch): tar, tar.gz, tar.xz, tar.zst, tar.bz2 and bare gz, xz, zst and lzma, under the same entry, size, path and bomb guards.
+- **Crash analysis from stack traces and dumps.** SMAPI log exception frames map to the owning mod, as BepInEx Unity frames already do (`internal/loader/bepinex5/analyze.go:57`), and feed `launchsvc.CrashHint`. Then Windows minidumps (WER and Unity crash folders) and Linux cores, where present, name the faulting mod assembly. Done when a fixture crash of each kind names its mod.
+- **Per-frame time per mod.** The Stardew and BepInEx bridges time each mod's update and tick handlers per frame (average, p95, peak ms, share of frame), with an idle baseline (no mods vs all), shown in Performance. Today in-game numbers are SMAPI's own `performance` event timings, and BepInEx has only `perf start` on a measured launch.
+- **Stream overlay for BepInEx games.** `loader.StreamOverlay` is SMAPI-only (`internal/game/game_test.go:239-242`). Add Lethal Company (player, moon, crew, day, quota) and Valheim (player, biome, day, bosses) through the BepInEx bridge, served on the same `/state` shape.
+- **Memory budget.** Measure peak RSS of the Go process and the WebView across browse, a large install, a Content Patcher check and a launch on the 811-mod Stardew profile; set `debug.SetMemoryLimit` for the Go side and add a regress check that fails over budget. The target is under 1 GB for both processes together; record the measured numbers here or in architecture.md.
+- **Profiles for any game, and shared-state games (The Sims 4 first).** To be designed before building: a generic catalog entry with no loader (a mod folder swapped per profile), plus isolation for games whose mods and saves live in a Documents folder shared by every launch. Today each game is a catalog entry plus a loader, and three are enabled.
+
 ## Later
 
 - **UI translations** beyond English, as Stardrop (17+), MO2 and r2modman ship: every string already goes through Lingui and the catalogs are extracted; needs chosen languages and translators. Parked 2026-10-02 (not v1).
