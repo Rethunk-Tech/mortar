@@ -22,17 +22,17 @@ func fake(t *testing.T) Driver {
 			t.Errorf("key in address %s", r.URL)
 		}
 		switch r.URL.Path {
-		case "/me":
+		case "/profile":
 			_, _ = w.Write([]byte(`{"user":{"username":"farmer"}}`))
 		case "/search/games":
 			if r.URL.Query().Get("query") != "stardew cool" || r.URL.Query().Get("page") != "2" {
 				t.Errorf("params %v", r.URL.Query())
 			}
 			_, _ = w.Write([]byte(`{"games":[{"id":7,"title":"Cool Mod","short_text":"hi","url":"https://a.itch.io/cool","cover_url":"c.png","published_at":"2026-01-01","user":{"username":"a"}}]}`))
-		case "/game/7/uploads":
+		case "/games/7/uploads":
 			_, _ = w.Write([]byte(`{"uploads":[{"id":1,"filename":"demo.zip","demo":true},{"id":2,"filename":"cool.zip","size":9},{"id":3,"filename":"ost.zip","type":"soundtrack"}]}`))
-		case "/upload/2/download":
-			_, _ = w.Write([]byte(`{"url":"https://cdn/cool.zip"}`))
+		case "/uploads/2/download":
+			http.Redirect(w, r, "https://cdn/cool.zip", http.StatusFound)
 		default:
 			http.NotFound(w, r)
 		}

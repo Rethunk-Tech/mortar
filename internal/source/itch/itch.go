@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"slices"
@@ -20,9 +21,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
-// BaseURL is the real API root; the key rides in an Authorization header and never in an address, so an error
-// that quotes the address cannot leak it.
-const BaseURL = "https://itch.io/api/1/x"
+// BaseURL is the server-side API root (itch.io/docs/api/serverside). Only this host reads the key from the
+// Authorization header; itch.io/api/1 wants it in the address, where an error quoting the address would leak it.
+const BaseURL = "https://api.itch.io"
 
 const (
 	keyName = "itch"
@@ -113,6 +114,43 @@ func (d Driver) call(ctx context.Context, key, path string, params url.Values, o
 	return json.Unmarshal(body, out)
 }
 
+// downloadURL asks for an upload's file. The API answers with a redirect to a short-lived signed address rather than
+// JSON, so the redirect is read, not followed.
+func (d Driver) downloadURL(ctx context.Context, key, uploadID string) (string, error) {
+	client := *cmp.Or(d.HTTP, http.DefaultClient)
+	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
+	defer cancel()
+	u := strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + "/uploads/" + url.PathEscape(uploadID) + "/download"
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("User-Agent", source.UserAgent(""))
+	req.Header.Set("Authorization", "Bearer "+key)
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	switch {
+	case resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden:
+		return "", ErrBadKey
+	case resp.StatusCode >= 300 && resp.StatusCode < 400 && resp.Header.Get("Location") != "":
+		return resp.Header.Get("Location"), nil
+	}
+	var env struct {
+		Errors []string `json:"errors"`
+	}
+	if json.NewDecoder(io.LimitReader(resp.Body, source.MaxBody)).Decode(&env) == nil && len(env.Errors) > 0 {
+		if slices.Contains(env.Errors, "invalid key") {
+			return "", ErrBadKey
+		}
+		return "", fmt.Errorf("itch.io: %s", strings.Join(env.Errors, "; "))
+	}
+	return "", &source.StatusError{Service: "itch.io", Code: resp.StatusCode, Status: resp.Status}
+}
+
 type game struct {
 	ID          int    `json:"id"`
 	Title       string `json:"title"`
@@ -181,7 +219,7 @@ func (d Driver) Resolve(ctx context.Context, gameID, upload string) (Resolved, e
 			Demo     bool   `json:"demo"`
 		} `json:"uploads"`
 	}
-	if err := d.call(ctx, key, "/game/"+url.PathEscape(gameID)+"/uploads", nil, &ups); err != nil {
+	if err := d.call(ctx, key, "/games/"+url.PathEscape(gameID)+"/uploads", nil, &ups); err != nil {
 		return Resolved{}, err
 	}
 	for _, u := range ups.Uploads {
@@ -194,13 +232,11 @@ func (d Driver) Resolve(ctx context.Context, gameID, upload string) (Resolved, e
 		case u.Demo || u.Type == "soundtrack":
 			continue
 		}
-		var dl struct {
-			URL string `json:"url"`
-		}
-		if err := d.call(ctx, key, "/upload/"+id+"/download", nil, &dl); err != nil {
+		link, err := d.downloadURL(ctx, key, id)
+		if err != nil {
 			return Resolved{}, err
 		}
-		return Resolved{GameID: gameID, UploadID: id, FileName: u.Filename, Size: u.Size, URL: dl.URL}, nil
+		return Resolved{GameID: gameID, UploadID: id, FileName: u.Filename, Size: u.Size, URL: link}, nil
 	}
 	return Resolved{}, fmt.Errorf("game %s has no matching upload on itch.io", gameID)
 }
@@ -212,7 +248,7 @@ func (d Driver) Validate(ctx context.Context, key string) (string, error) {
 			Username string `json:"username"`
 		} `json:"user"`
 	}
-	if err := d.call(ctx, strings.TrimSpace(key), "/me", nil, &me); err != nil {
+	if err := d.call(ctx, strings.TrimSpace(key), "/profile", nil, &me); err != nil {
 		return "", err
 	}
 	if me.User.Username == "" {
