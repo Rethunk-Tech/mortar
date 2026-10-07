@@ -239,10 +239,10 @@ func configFileDiff(oldCfg, newCfg map[string][]byte) []string {
 func historyItems(d HistoryDiff) []HistoryItem {
 	var items []HistoryItem
 	for _, m := range d.Added {
-		items = append(items, HistoryItem{Kind: diffAdded, Mod: m.ID, Name: m.Name, Key: m.Key, Detail: "added " + m.Name})
+		items = append(items, HistoryItem{Kind: diffAdded, Mod: m.ID, Name: m.Name, Key: m.Key, Detail: "Added " + m.Name})
 	}
 	for _, m := range d.Removed {
-		items = append(items, HistoryItem{Kind: diffRemoved, Mod: m.ID, Name: m.Name, Key: m.Key, Detail: "removed " + m.Name})
+		items = append(items, HistoryItem{Kind: diffRemoved, Mod: m.ID, Name: m.Name, Key: m.Key, Detail: "Removed " + m.Name})
 	}
 	for _, v := range d.Versions {
 		items = append(items, HistoryItem{
