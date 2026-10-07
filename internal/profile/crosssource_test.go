@@ -12,7 +12,7 @@ func TestCurseForgeFileReplacesANexusEntryKeepingItsSettings(t *testing.T) {
 	e := newEnv(t)
 	p := mustCreate(t, e, "P")
 	v1 := buildZip(t, "a.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
-	res, err := e.InstallSource("stardew", p.ID, v1, Source{Kind: KindNexus, Name: "a.zip", ModID: 7, FileID: 1, Version: "1.0.0"})
+	res, err := e.InstallSource(t.Context(), "stardew", p.ID, v1, Source{Kind: KindNexus, Name: "a.zip", ModID: 7, FileID: 1, Version: "1.0.0"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,7 +20,7 @@ func TestCurseForgeFileReplacesANexusEntryKeepingItsSettings(t *testing.T) {
 		t.Fatal(err)
 	}
 	v2 := buildZip(t, "a2.zip", map[string]string{"A/manifest.json": `{"Name":"X.A","Author":"me","Version":"1.0.1","UniqueID":"X.A"}`})
-	got, err := e.InstallSource("stardew", p.ID, v2, Source{Kind: KindCurseForge, Name: "998265", Version: "X.A 1.0.1", FileID: 777})
+	got, err := e.InstallSource(t.Context(), "stardew", p.ID, v2, Source{Kind: KindCurseForge, Name: "998265", Version: "X.A 1.0.1", FileID: 777})
 	if err != nil {
 		t.Fatal(err)
 	}

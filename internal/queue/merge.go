@@ -93,9 +93,9 @@ func (s *Service) installNexusPath(ctx context.Context, it Item, path string, im
 	s.installMu.Lock()
 	defer s.installMu.Unlock()
 	if it.MergeAdd && it.Merge != nil && s.d.InstallExtra != nil {
-		res, err = s.d.InstallExtra(it.Game, it.Profile, it.Merge.EntryKey, path, src)
+		res, err = s.d.InstallExtra(ctx, it.Game, it.Profile, it.Merge.EntryKey, path, src)
 	} else {
-		res, err = s.d.Install(it.Game, it.Profile, path, src)
+		res, err = s.d.Install(ctx, it.Game, it.Profile, path, src)
 	}
 	if err == nil && src.ModID > 0 && s.d.Track != nil {
 		s.d.Track(ctx, it.Game, src.ModID)

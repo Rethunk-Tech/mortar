@@ -16,7 +16,7 @@ func TestBepInExArchiveWithoutAManifestInstallsAsAPlugin(t *testing.T) {
 		t.Fatal(err)
 	}
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "lbtokg.dll-17-1-0-0-1700625972.zip"), map[string]string{"lbtokg.dll": "MZ"})
-	res, err := e.InstallArchive("lethal-company", p.ID, zip)
+	res, err := e.InstallArchive(t.Context(), "lethal-company", p.ID, zip)
 	if err != nil || len(res.Profile.Entries) != 1 {
 		t.Fatalf("install = %+v, %v", res, err)
 	}

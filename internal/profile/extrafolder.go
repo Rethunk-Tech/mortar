@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"context"
 	"errors"
 	"path/filepath"
 
@@ -25,7 +26,7 @@ func (s *Service) ExtraFolderMods(game string) (GameModsPreview, error) {
 
 // InstallExtraFolderMod installs folder, a top-level folder of the extra mods folder as ExtraFolderMods returned it,
 // into the profile the way a dropped folder is installed.
-func (s *Service) InstallExtraFolderMod(game, id, folder string) (InstallResult, error) {
+func (s *Service) InstallExtraFolderMod(ctx context.Context, game, id, folder string) (InstallResult, error) {
 	root := s.extraModsFolder(game)
 	if root == "" {
 		return InstallResult{}, errors.New("no extra mods folder is set")
@@ -37,5 +38,5 @@ func (s *Service) InstallExtraFolderMod(game, id, folder string) (InstallResult,
 	if filepath.Dir(filepath.Clean(folder)) != filepath.Clean(root) || !datadir.RealDirUnder(resolved, folder) {
 		return InstallResult{}, errors.New("that folder is not in the extra mods folder")
 	}
-	return s.store.InstallFolder(game, id, folder)
+	return s.store.InstallFolder(ctx, game, id, folder)
 }

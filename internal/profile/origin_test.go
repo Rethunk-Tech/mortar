@@ -28,7 +28,7 @@ func TestImportGameModsRecordsOrigin(t *testing.T) {
 	mods := t.TempDir()
 	writeFile(t, mods, "Loud/manifest.json",
 		`{"Name":"Loud","Version":"3.0.0","UniqueID":"Me.Loud"}`)
-	res, err := e.ImportGameMods("stardew", mods)
+	res, err := e.ImportGameMods(t.Context(), "stardew", mods)
 	if err != nil {
 		t.Fatal(err)
 	}

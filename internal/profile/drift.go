@@ -3,6 +3,7 @@ package profile
 import (
 	"bytes"
 	"cmp"
+	"context"
 	"encoding/gob"
 	"errors"
 	"fmt"
@@ -887,7 +888,7 @@ func (s *Store) revertDriftEntry(game, id, key string) (Profile, error) {
 	})
 }
 
-func (s *Store) adoptDriftFolder(game, id, folder string) (Profile, error) {
+func (s *Store) adoptDriftFolder(ctx context.Context, game, id, folder string) (Profile, error) {
 	folder, err := safeFolder(folder)
 	if err != nil {
 		return Profile{}, err
@@ -903,7 +904,7 @@ func (s *Store) adoptDriftFolder(game, id, folder string) (Profile, error) {
 	if !exists(src) {
 		return Profile{}, os.ErrNotExist
 	}
-	res, err := s.InstallFolder(game, id, src)
+	res, err := s.InstallFolder(ctx, game, id, src)
 	if err != nil {
 		return Profile{}, err
 	}
@@ -1030,8 +1031,8 @@ func (s *Service) RevertDriftEntry(game, id, key string) (Profile, error) {
 	return p, nil
 }
 
-func (s *Service) AdoptDriftFolder(game, id, folder string) (Profile, error) {
-	return s.store.adoptDriftFolder(game, id, folder)
+func (s *Service) AdoptDriftFolder(ctx context.Context, game, id, folder string) (Profile, error) {
+	return s.store.adoptDriftFolder(ctx, game, id, folder)
 }
 
 // RemoveDriftFolder sets an untracked folder aside and returns the token RestoreDriftFolder takes to undo it.

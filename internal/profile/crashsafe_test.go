@@ -12,7 +12,7 @@ func stagedInstall(t *testing.T, s *Store, record bool) (dir, placed, final stri
 	t.Helper()
 	p := mustCreate(t, s, "Farm")
 	zip := buildZip(t, "mod.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
-	key, err := s.items.AddArchive("stardew", zip)
+	key, err := s.items.AddArchive(t.Context(), "stardew", zip)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func TestKillBeforeSnapshotIsRepairedFromProfile(t *testing.T) {
 	s := newEnv(t).Store
 	p := mustCreate(t, s, "Farm")
 	zip := buildZip(t, "mod.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
-	res, err := s.InstallArchive("stardew", p.ID, zip)
+	res, err := s.InstallArchive(t.Context(), "stardew", p.ID, zip)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -14,7 +14,7 @@ import (
 
 func addZip(t *testing.T, s *Store, files map[string]string) string {
 	t.Helper()
-	key, err := s.AddArchive("stardew", buildZip(t, files))
+	key, err := s.AddArchive(t.Context(), "stardew", buildZip(t, files))
 	if err != nil {
 		t.Fatal(err)
 	}

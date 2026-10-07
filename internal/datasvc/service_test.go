@@ -83,7 +83,7 @@ func addItem(t *testing.T, items *store.Store, key string, files map[string]stri
 	for rel, body := range files {
 		testfs.WriteFile(t, src, rel, body)
 	}
-	if err := items.AddDir("stardew", key, src); err != nil {
+	if err := items.AddDir(t.Context(), "stardew", key, src); err != nil {
 		t.Fatal(err)
 	}
 }

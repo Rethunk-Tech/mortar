@@ -48,7 +48,7 @@ func TestALocalBridgeBuildStandsInForTheRelease(t *testing.T) {
 	// The local zip replaces the catalog's release, so nothing is downloaded.
 	svc := testService(t, set, items, profiles, components.NewClient(http.DefaultClient))
 	t.Setenv(localBridgeEnv, folder)
-	b, err := svc.ensureBridge("lethal-company")
+	b, err := svc.ensureBridge(t.Context(), "lethal-company")
 	if err != nil {
 		t.Fatal(err)
 	}

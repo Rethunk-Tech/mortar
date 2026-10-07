@@ -206,10 +206,10 @@ func TestInstallAnywayInstallsAFlaggedArchiveOnlyWhenAsked(t *testing.T) {
 		"Mod/manifest.json": `{"Name":"Flagged","UniqueID":"Test.Flagged","Version":"1.0.0","MinimumApiVersion":"4.0.0"}`,
 		"Mod/a.dll":         "x",
 	})
-	if _, err := s.install("stardew", prof.ID, zip, false); usererr.KindOf(err) != usererr.Malware {
+	if _, err := s.install(t.Context(), "stardew", prof.ID, zip, false); usererr.KindOf(err) != usererr.Malware {
 		t.Fatalf("a flagged archive installed or failed another way: %v", err)
 	}
-	out, err := s.install("stardew", prof.ID, zip, true)
+	out, err := s.install(t.Context(), "stardew", prof.ID, zip, true)
 	if err != nil || len(out.Added) == 0 {
 		t.Fatalf("install anyway = %+v, %v", out, err)
 	}

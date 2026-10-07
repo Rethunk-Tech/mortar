@@ -2,6 +2,7 @@ package profile
 
 import (
 	"cmp"
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -343,8 +344,8 @@ func carryConfig(srcRoot, destDir, folder string) error {
 }
 
 // importFolder adds f to the profile and returns its store key and the history event the last of its changes recorded.
-func (s *Store) importFolder(game, id string, f gameModFolder) (key, change string, err error) {
-	key, err = s.items.AddHashedDir(game, f.dir)
+func (s *Store) importFolder(ctx context.Context, game, id string, f gameModFolder) (key, change string, err error) {
+	key, err = s.items.AddHashedDir(ctx, game, f.dir)
 	if err != nil {
 		return "", "", err
 	}
@@ -376,7 +377,7 @@ func (s *Store) importFolder(game, id string, f gameModFolder) (key, change stri
 
 // ImportGameMods copies each importable folder under modsDir into the store and a new "Imported mods" profile.
 // It never writes to modsDir.
-func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
+func (s *Store) ImportGameMods(ctx context.Context, game, modsDir string) (GameModsResult, error) {
 	slots, err := scanGameMods(modsDir)
 	if err != nil {
 		return GameModsResult{}, err
@@ -413,7 +414,7 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 			continue
 		}
 		outcome := GameModOutcome{Name: slot.folder.label, Status: outcomeImported}
-		if _, _, err := s.importFolder(game, created.ID, slot.folder); err != nil {
+		if _, _, err := s.importFolder(ctx, game, created.ID, slot.folder); err != nil {
 			outcome.Status, outcome.Reason = outcomeFailed, err.Error()
 			if ie, ok := errors.AsType[*InstallError](err); ok {
 				outcome.Reason = ie.Msg
@@ -445,7 +446,7 @@ func (s *Store) ImportGameMods(game, modsDir string) (GameModsResult, error) {
 
 // ImportExternalMods copies the selected external-manager folders into an existing profile and returns the history
 // events the import recorded, oldest first; under a history batch that is the batch's one event.
-func (s *Store) ImportExternalMods(game, id string, mods []ExternalMod) ([]string, error) {
+func (s *Store) ImportExternalMods(ctx context.Context, game, id string, mods []ExternalMod) ([]string, error) {
 	enabled := make(map[string]bool, len(mods))
 	paths := make(map[string]bool, len(mods))
 	for _, im := range mods {
@@ -469,7 +470,7 @@ func (s *Store) ImportExternalMods(game, id string, mods []ExternalMod) ([]strin
 		if !slot.ready {
 			continue
 		}
-		key, change, err := s.importFolder(game, id, slot.folder)
+		key, change, err := s.importFolder(ctx, game, id, slot.folder)
 		if err != nil {
 			return changes, err
 		}

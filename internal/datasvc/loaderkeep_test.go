@@ -22,7 +22,7 @@ func TestAPerProfileLoaderKeepsItsStoreItem(t *testing.T) {
 	const key = "bepinex5-5.4.2305"
 	src := t.TempDir()
 	testfs.WriteFile(t, src, "installer.zip", "pack")
-	if err := items.AddDir("lethal-company", key, src); err != nil {
+	if err := items.AddDir(t.Context(), "lethal-company", key, src); err != nil {
 		t.Fatal(err)
 	}
 	dir := filepath.Join(root, "profiles", "lethal-company", p.ID)

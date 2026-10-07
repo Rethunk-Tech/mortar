@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -70,12 +71,12 @@ func (s *Service) PreviewGameMods(gameID string) (GameModsPreview, error) {
 }
 
 // ImportGameMods copies the game folder's Mods into a new profile without changing that folder.
-func (s *Service) ImportGameMods(gameID string) (GameModsResult, error) {
+func (s *Service) ImportGameMods(ctx context.Context, gameID string) (GameModsResult, error) {
 	dir, err := s.gameModsDir(gameID)
 	if err != nil {
 		return GameModsResult{}, err
 	}
-	return s.store.ImportGameMods(gameID, dir)
+	return s.store.ImportGameMods(ctx, gameID, dir)
 }
 
 func (s *Service) List(game string) ([]Profile, error) { return s.store.List(game) }
@@ -246,8 +247,8 @@ func (s *Service) InstallFomod(game, id, key string, source Source, choices map[
 }
 
 // InstallArchive unpacks the archive at path into the store and adds it to the profile.
-func (s *Service) InstallArchive(game, id, path string) (InstallResult, error) {
-	return s.store.InstallArchive(game, id, path)
+func (s *Service) InstallArchive(ctx context.Context, game, id, path string) (InstallResult, error) {
+	return s.store.InstallArchive(ctx, game, id, path)
 }
 
 func (s *Service) RemoveEntry(game, id, key string) (Profile, error) {

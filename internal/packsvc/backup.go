@@ -233,7 +233,7 @@ func (s *Service) BackupDialog(gameID, profileID string, mods bool) (string, err
 // may be empty; when given it must be the backup's game.
 func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResult, error) {
 	if !isBackup(path) {
-		return s.restoreProfileZip(path, gameID)
+		return s.restoreProfileZip(ctx, path, gameID)
 	}
 	tmp, err := os.MkdirTemp("", "mortar-restore-")
 	if err != nil {
@@ -261,7 +261,7 @@ func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResu
 			dirs["store/"+key+"/"] = dir
 		}
 	}
-	p, missing, err := s.Profiles.RestoreBackup(doc.Game, doc.Profile, files, dirs)
+	p, missing, err := s.Profiles.RestoreBackup(ctx, doc.Game, doc.Profile, files, dirs)
 	if err != nil {
 		return RestoreResult{}, err
 	}
@@ -294,11 +294,11 @@ func isBackup(path string) bool {
 }
 
 // restoreProfileZip reads a profile zip, which names no game and holds every mod's files.
-func (s *Service) restoreProfileZip(path, gameID string) (RestoreResult, error) {
+func (s *Service) restoreProfileZip(ctx context.Context, path, gameID string) (RestoreResult, error) {
 	if gameID == "" {
 		return RestoreResult{}, usererr.New(usererr.Invalid, "name the game this profile zip is for")
 	}
-	p, err := s.Profiles.RestoreZip(gameID, path)
+	p, err := s.Profiles.RestoreZip(ctx, gameID, path)
 	if err != nil {
 		return RestoreResult{}, err
 	}

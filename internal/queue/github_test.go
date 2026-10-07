@@ -64,7 +64,7 @@ func newGitHubFixture(t *testing.T) *ghFixture {
 
 	g.s.d.Client = func() (*nexus.Client, error) { return nil, fmt.Errorf("signed out") }
 	g.s.d.GitHub = &github.Client{HTTP: srv.Client(), CacheDir: t.TempDir(), APIBase: srv.URL, Now: g.now}
-	g.s.d.Stage = func(_ string, src profile.Source, path string) (string, []mod.ID, error) {
+	g.s.d.Stage = func(_ context.Context, _ string, src profile.Source, path string) (string, []mod.ID, error) {
 		if b, err := fsx.ReadFile(path); err != nil || string(b) != payload {
 			return "", nil, fmt.Errorf("stage read %q: %w", b, err)
 		}

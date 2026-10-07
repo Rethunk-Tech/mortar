@@ -89,7 +89,7 @@ func TestACatalogOnlyGameBrowsesAndAdds(t *testing.T) {
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{
 		"manifest.json": `{"name":"MoreEmotes","version_number":"1.0.0"}`, "MoreEmotes.dll": "x",
 	})
-	res, err := profiles.InstallSource("content-warning", p.ID, zip,
+	res, err := profiles.InstallSource(t.Context(), "content-warning", p.ID, zip,
 		profile.Source{Kind: profile.KindThunderstore, Name: "Ns-MoreEmotes", Version: "1.0.0"})
 	if err != nil || len(res.Profile.Entries) != 1 || res.Profile.Entries[0].Mods[0].ID != "thunderstore:Ns-MoreEmotes" {
 		t.Fatalf("install = %+v, %v", res, err)

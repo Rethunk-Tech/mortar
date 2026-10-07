@@ -115,7 +115,7 @@ func newFixture(t *testing.T) *fixture {
 	s, err := New(Deps{
 		Client:  func() (*nexus.Client, error) { return client, nil },
 		Premium: f.premium.Load,
-		Install: func(_, _, path string, src profile.Source) (profile.InstallResult, error) {
+		Install: func(_ context.Context, _, _, path string, src profile.Source) (profile.InstallResult, error) {
 			if f.installErr != nil {
 				if err := f.installErr(); err != nil {
 					return profile.InstallResult{}, err
@@ -144,7 +144,7 @@ func newFixture(t *testing.T) *fixture {
 			}
 			return f.samePage(game, profileID, in)
 		},
-		InstallExtra: func(game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error) {
+		InstallExtra: func(_ context.Context, game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error) {
 			if f.installExtra == nil {
 				return profile.InstallResult{}, fmt.Errorf("unexpected extra install of %s", entryKey)
 			}
@@ -346,7 +346,7 @@ func TestInstallsAreSerialized(t *testing.T) {
 	entered := make(chan struct{}, 2)
 	release := make(chan struct{})
 	var active, maxActive atomic.Int32
-	f.s.d.Install = func(string, string, string, profile.Source) (profile.InstallResult, error) {
+	f.s.d.Install = func(context.Context, string, string, string, profile.Source) (profile.InstallResult, error) {
 		n := active.Add(1)
 		for {
 			old := maxActive.Load()

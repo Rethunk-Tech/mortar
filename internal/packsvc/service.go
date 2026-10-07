@@ -30,8 +30,8 @@ type profiles interface {
 	ProfileDir(game, id string) (string, error)
 	Backup(game, id string) (profile.Profile, map[string][]byte, error)
 	BackupDirs(game string, p profile.Profile, keep func(profile.Entry) bool) (map[string]string, error)
-	RestoreZip(game, zipPath string) (profile.Profile, error)
-	RestoreBackup(game string, p profile.Profile, files map[string][]byte, dirs map[string]string) (profile.Profile, []profile.Entry, error)
+	RestoreZip(ctx context.Context, game, zipPath string) (profile.Profile, error)
+	RestoreBackup(ctx context.Context, game string, p profile.Profile, files map[string][]byte, dirs map[string]string) (profile.Profile, []profile.Entry, error)
 }
 
 // downloads is the part of queue.Service the service uses.

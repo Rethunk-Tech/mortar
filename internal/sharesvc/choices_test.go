@@ -37,7 +37,7 @@ func storeMod(t *testing.T, items *store.Store, uniqueID string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := items.AddDir("stardew", key, src); err != nil {
+	if err := items.AddDir(t.Context(), "stardew", key, src); err != nil {
 		t.Fatal(err)
 	}
 	return key
@@ -120,7 +120,7 @@ func TestShareNamesTheFileOfTheEntrysKeyNotItsStaleSource(t *testing.T) {
 	if err := fsx.WriteFile(filepath.Join(src, "manifest.json"), []byte(`{"Name":"Cursors","Author":"a","Version":"1.0.1","UniqueID":"Me.Cursors","EntryDll":"m.dll"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := items.AddDir("stardew", "nexus-5-11", src); err != nil {
+	if err := items.AddDir(t.Context(), "stardew", "nexus-5-11", src); err != nil {
 		t.Fatal(err)
 	}
 	p, err := profiles.Create("stardew", "Main")

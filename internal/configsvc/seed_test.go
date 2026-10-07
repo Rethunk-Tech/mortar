@@ -25,7 +25,7 @@ func TestAPackagesShippedConfigIsEditableBeforeTheFirstLaunch(t *testing.T) {
 		"manifest.json":          `{"name":"A","version_number":"1.0.0"}`,
 		"config/ns.a.plugin.cfg": "[General]\nValue = shipped\n",
 	})
-	if _, err := ps.InstallSource(lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-A", Version: "1.0.0"}); err != nil {
+	if _, err := ps.InstallSource(t.Context(), lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-A", Version: "1.0.0"}); err != nil {
 		t.Fatal(err)
 	}
 	s := &configsvc.Service{Profiles: ps}

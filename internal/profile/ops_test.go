@@ -44,7 +44,7 @@ func (e env) item(t *testing.T, key string, files map[string]string) {
 	for rel, body := range files {
 		writeFile(t, src, rel, body)
 	}
-	if err := e.items.AddDir("stardew", key, src); err != nil {
+	if err := e.items.AddDir(t.Context(), "stardew", key, src); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -668,7 +668,7 @@ func TestRunningProfileIsLocked(t *testing.T) {
 	_, checks["SetModEnabled"] = e.SetModEnabled("stardew", p.ID, "", "smapi:me.a", false)
 	_, checks["SetModsEnabled"] = e.SetModsEnabled("stardew", p.ID, []EnableRef{{Key: "a-1.0", ID: "smapi:me.a"}}, false)
 	checks["Delete"] = e.Delete("stardew", p.ID)
-	_, checks["InstallArchive"] = e.InstallArchive("stardew", p.ID, "/nonexistent.zip")
+	_, checks["InstallArchive"] = e.InstallArchive(t.Context(), "stardew", p.ID, "/nonexistent.zip")
 	for name, err := range checks {
 		if !errors.As(err, &re) || !strings.Contains(err.Error(), "Stardew Valley is running this profile") {
 			t.Errorf("%s: err = %v, want a RunningError", name, err)

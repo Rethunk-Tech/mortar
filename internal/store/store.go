@@ -6,6 +6,7 @@
 package store
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -302,7 +303,7 @@ func (s *Store) dirReady(game, key, dir string) (bool, error) {
 
 // AddArchive extracts the archive into the store under its local key, or
 // returns the existing key when the same bytes are already there.
-func (s *Store) AddArchive(game, archivePath string) (string, error) {
+func (s *Store) AddArchive(ctx context.Context, game, archivePath string) (string, error) {
 	if err := checkGame(game); err != nil {
 		return "", err
 	}
@@ -310,18 +311,18 @@ func (s *Store) AddArchive(game, archivePath string) (string, error) {
 	if err != nil {
 		return "", &Error{Game: game, Err: err}
 	}
-	return key, s.AddArchiveKey(game, key, archivePath)
+	return key, s.AddArchiveKey(ctx, game, key, archivePath)
 }
 
 // AddArchiveKey extracts the archive into the store under key, for archives a source names itself. An existing
 // key is left as it is, and an archive with the same bytes as another key's shares its blob.
-func (s *Store) AddArchiveKey(game, key, archivePath string) error {
+func (s *Store) AddArchiveKey(ctx context.Context, game, key, archivePath string) error {
 	if err := checkKey(game, key); err != nil {
 		return err
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.admit(game, key, func() (string, error) { return fsx.SHA256(archivePath) }, func(tmp string) error {
+	return s.admit(ctx, game, key, func() (string, error) { return fsx.SHA256(archivePath) }, func(tmp string) error {
 		return archive.Extract(archivePath, tmp)
 	}, func() int64 {
 		n, _ := archive.DeclaredSize(archivePath)
@@ -331,7 +332,7 @@ func (s *Store) AddArchiveKey(game, key, archivePath string) error {
 
 // AddHashedDir copies srcDir into the store under a local key of its contents, or returns the existing
 // key when the same tree is already there.
-func (s *Store) AddHashedDir(game, srcDir string) (string, error) {
+func (s *Store) AddHashedDir(ctx context.Context, game, srcDir string) (string, error) {
 	if err := checkGame(game); err != nil {
 		return "", err
 	}
@@ -339,18 +340,18 @@ func (s *Store) AddHashedDir(game, srcDir string) (string, error) {
 	if err != nil {
 		return "", &Error{Game: game, Err: err}
 	}
-	return key, s.AddDir(game, key, srcDir)
+	return key, s.AddDir(ctx, game, key, srcDir)
 }
 
 // AddDir copies srcDir into the store under key, for entries Mortar builds
 // itself. An existing key is left as it is.
-func (s *Store) AddDir(game, key, srcDir string) error {
+func (s *Store) AddDir(ctx context.Context, game, key, srcDir string) error {
 	if err := checkKey(game, key); err != nil {
 		return err
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return s.admit(game, key, func() (string, error) {
+	return s.admit(ctx, game, key, func() (string, error) {
 		if _, _, ok := LoaderOf(key); ok {
 			return "", nil
 		}
@@ -365,7 +366,7 @@ func (s *Store) AddDir(game, key, srcDir string) error {
 // admit makes key name a complete folder. A key already in the index is left as it is; otherwise the content hash
 // (empty for a loader bundle, which is named by loader and version) picks the folder, and fill extracts into it
 // unless another key already put the same content there.
-func (s *Store) admit(game, key string, hash func() (string, error), fill func(tmp string) error, need func() int64) error {
+func (s *Store) admit(ctx context.Context, game, key string, hash func() (string, error), fill func(tmp string) error, need func() int64) error {
 	idx, err := s.loadIndex()
 	if err != nil {
 		return err
@@ -386,7 +387,7 @@ func (s *Store) admit(game, key string, hash func() (string, error), fill func(t
 	if ok, err := s.dirReady(game, key, dest); err != nil {
 		return err
 	} else if !ok {
-		if err := s.install(game, key, dest, fill, need); err != nil {
+		if err := s.install(ctx, game, key, dest, fill, need); err != nil {
 			return err
 		}
 	}
@@ -395,7 +396,7 @@ func (s *Store) admit(game, key string, hash func() (string, error), fill func(t
 
 // install fills a temp folder beside the final one and renames it into place,
 // removing the temp folder on any failure.
-func (s *Store) install(game, key, final string, fill func(tmp string) error, need func() int64) (err error) {
+func (s *Store) install(ctx context.Context, game, key, final string, fill func(tmp string) error, need func() int64) (err error) {
 	parent := filepath.Dir(final)
 	if err := os.MkdirAll(parent, 0o700); err != nil {
 		return &Error{Game: game, Key: key, Err: err}
@@ -411,7 +412,7 @@ func (s *Store) install(game, key, final string, fill func(tmp string) error, ne
 	}()
 	if err = fill(tmp); err == nil {
 		stripJunk(tmp)
-		err = s.checkExtracted(game, key, tmp)
+		err = s.checkExtracted(ctx, game, key, tmp)
 	}
 	if err == nil {
 		marker := filepath.Join(tmp, CompleteMarker)

@@ -274,14 +274,14 @@ type Deps struct {
 	// Client returns a client that carries the signed-in account's key, or an error when signed out.
 	Client  func() (*nexus.Client, error)
 	Premium func() bool
-	Install func(game, profileID, path string, source profile.Source) (profile.InstallResult, error)
+	Install func(ctx context.Context, game, profileID, path string, source profile.Source) (profile.InstallResult, error)
 	// Stored reports whether the game's store already holds key, as a Nexus file installed into another profile
 	// does, with the source a profile recorded for it (zero when none does). Such a file installs from the store
 	// without downloading or a click, and the recorded source spares the Nexus lookups.
 	Stored func(game, key string) (profile.Source, bool)
 	// Stage unpacks a downloaded GitHub asset into the store and returns the mod ids of its mods; InstallStaged
 	// then adds it to the profile. Between the two, Verify checks the source.
-	Stage         func(game string, source profile.Source, path string) (key string, uniqueIDs []mod.ID, err error)
+	Stage         func(ctx context.Context, game string, source profile.Source, path string) (key string, uniqueIDs []mod.ID, err error)
 	InstallStaged func(game, profileID, key string, source profile.Source) (profile.InstallResult, error)
 	InstallRemap  func(game, profileID, key, root string, source profile.Source) (profile.InstallResult, error)
 	// StoredOverlay reports a stored Nexus file that installs as an optional file over its mod's main file; nil
@@ -294,14 +294,14 @@ type Deps struct {
 	// it, or the installed file id it updates (profile.SamePageAsk).
 	SamePage func(game, profileID string, in profile.IncomingFile) (ask profile.MergeAsk, updates int, ok bool)
 	// InstallExtra adds a downloaded Nexus file to an existing same-page entry.
-	InstallExtra func(game, profileID, entryKey, path string, source profile.Source) (profile.InstallResult, error)
+	InstallExtra func(ctx context.Context, game, profileID, entryKey, path string, source profile.Source) (profile.InstallResult, error)
 	Verify       func(ctx context.Context, id mod.ID, owner, repo string) (bool, error)
 	// Closure resolves Thunderstore packages and their dependencies for a game, dependencies first; nil refuses packages.
 	Closure func(ctx context.Context, gameID string, roots []thunderstore.Ref) ([]thunderstore.Resolved, error)
 	// Held is the version of a Thunderstore package ("Namespace-Name") the profile holds, or empty; nil means none.
 	Held func(game, profileID, pkg string) string
 	// InstallPackage adds a downloaded Thunderstore package archive to the profile; nil refuses packages.
-	InstallPackage func(game, profileID, path string, source profile.Source) (profile.InstallResult, error)
+	InstallPackage func(ctx context.Context, game, profileID, path string, source profile.Source) (profile.InstallResult, error)
 	// AllowUnscanned records the player's choice to install key although the antivirus flagged it (the profile's
 	// history says so) and lets the next install of it skip the scan; nil means the choice is not offered.
 	AllowUnscanned func(game, profileID, key, name, detection string) error

@@ -228,7 +228,7 @@ func TestLoopbackTransfer(t *testing.T) {
 		t.Fatal(err)
 	}
 	key := store.NexusKey(7, 2)
-	if err := senderStore.AddDir("stardew", key, source); err != nil {
+	if err := senderStore.AddDir(t.Context(), "stardew", key, source); err != nil {
 		t.Fatal(err)
 	}
 	// An optional file laid over the main file travels as its own store item.
@@ -237,19 +237,19 @@ func TestLoopbackTransfer(t *testing.T) {
 		t.Fatal(err)
 	}
 	optKey := store.NexusKey(7, 3)
-	if err := senderStore.AddDir("stardew", optKey, optional); err != nil {
+	if err := senderStore.AddDir(t.Context(), "stardew", optKey, optional); err != nil {
 		t.Fatal(err)
 	}
 
 	// Files from a source other than Nexus travel too.
 	ghKey := github.Key("o", "r", "v1", "m.zip")
-	if err := senderStore.AddDir("stardew", ghKey, source); err != nil {
+	if err := senderStore.AddDir(t.Context(), "stardew", ghKey, source); err != nil {
 		t.Fatal(err)
 	}
 	// So does an archive the sender installed from disk, which exists nowhere else; its key names the archive's hash,
 	// not the folder's.
 	localKey := store.LocalKey(strings.Repeat("cd", 32))
-	if err := senderStore.AddDir("stardew", localKey, source); err != nil {
+	if err := senderStore.AddDir(t.Context(), "stardew", localKey, source); err != nil {
 		t.Fatal(err)
 	}
 
@@ -350,7 +350,7 @@ func TestLethalCompanyProfileOverLAN(t *testing.T) {
 		if err := os.WriteFile(filepath.Join(files, p.name+".dll"), []byte(p.name), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		if err := senderStore.AddDir("lethal-company", key, files); err != nil {
+		if err := senderStore.AddDir(t.Context(), "lethal-company", key, files); err != nil {
 			t.Fatal(err)
 		}
 		if err := os.MkdirAll(filepath.Join(modsDir, key), 0o700); err != nil {

@@ -25,7 +25,7 @@ func TestTemplateRoundTripFromProfileToNewProfile(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(src, "manifest.json"), []byte(`{"Name":"One","UniqueID":"A.One","Version":"1.0.0"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := items.AddDir("stardew", "local-a", src); err != nil {
+	if err := items.AddDir(t.Context(), "stardew", "local-a", src); err != nil {
 		t.Fatal(err)
 	}
 	from, err := profiles.Create("stardew", "Source")
@@ -151,7 +151,7 @@ func TestTemplateCarriesDisabledLaunchStateAndSkipsLoaderMods(t *testing.T) {
 		if err := os.WriteFile(filepath.Join(src, "manifest.json"), []byte(manifest), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		if err := items.AddDir("stardew", key, src); err != nil {
+		if err := items.AddDir(t.Context(), "stardew", key, src); err != nil {
 			t.Fatal(err)
 		}
 	}

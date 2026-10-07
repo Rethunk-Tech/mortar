@@ -138,7 +138,7 @@ func (s *Service) downloadPackage(ctx context.Context, it Item) error {
 	s.mu.Unlock()
 	s.publish(true)
 	s.installMu.Lock()
-	res, err := s.d.InstallPackage(it.Game, it.Profile, path, packageSource(it))
+	res, err := s.d.InstallPackage(ctx, it.Game, it.Profile, path, packageSource(it))
 	s.installMu.Unlock()
 	var dup *profile.DuplicateError
 	if err == nil || errors.As(err, &dup) {

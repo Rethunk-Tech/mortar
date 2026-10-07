@@ -36,7 +36,7 @@ func TestADetectionRefusesTheItemAndLeavesNothingInTheStore(t *testing.T) {
 	f := &fakeScanner{hit: &avscan.Detection{Name: "Test.Threat", File: "Mod/a.dll", Scanner: "fake"}}
 	s, _ := scanned(t, f)
 	p := buildZip(t, map[string]string{"Mod/a.dll": "x"})
-	_, err := s.AddArchive("stardew", p)
+	_, err := s.AddArchive(t.Context(), "stardew", p)
 	var det *DetectedError
 	if !errors.As(err, &det) || det.Name != "Test.Threat" || det.File != "Mod/a.dll" || det.Key == "" {
 		t.Fatalf("err = %v", err)
@@ -58,13 +58,13 @@ func TestInstallAnywayLetsTheItemInOnce(t *testing.T) {
 		t.Fatal(err)
 	}
 	s.AllowUnscanned("stardew", key)
-	if _, err := s.AddArchive("stardew", p); err != nil {
+	if _, err := s.AddArchive(t.Context(), "stardew", p); err != nil {
 		t.Fatalf("allowed install failed: %v", err)
 	}
 	if f.calls != 0 {
 		t.Fatalf("the scanner ran %d times for an allowed item", f.calls)
 	}
-	if err := s.AddArchiveKey("stardew", "other-key", buildZip(t, map[string]string{"b": "y"})); err == nil {
+	if err := s.AddArchiveKey(t.Context(), "stardew", "other-key", buildZip(t, map[string]string{"b": "y"})); err == nil {
 		t.Fatal("the allowance covered another item")
 	}
 }
@@ -72,7 +72,7 @@ func TestInstallAnywayLetsTheItemInOnce(t *testing.T) {
 func TestAScannerErrorInstallsAndIsReported(t *testing.T) {
 	f := &fakeScanner{err: errors.New("clamd went away")}
 	s, failures := scanned(t, f)
-	if _, err := s.AddArchive("stardew", buildZip(t, map[string]string{"a": "x"})); err != nil {
+	if _, err := s.AddArchive(t.Context(), "stardew", buildZip(t, map[string]string{"a": "x"})); err != nil {
 		t.Fatalf("install failed: %v", err)
 	}
 	if len(*failures) != 1 || !strings.Contains((*failures)[0].Error(), "clamd") {
@@ -83,7 +83,7 @@ func TestAScannerErrorInstallsAndIsReported(t *testing.T) {
 func TestNoScannerInstallsSilently(t *testing.T) {
 	f := &fakeScanner{err: avscan.ErrNoScanner}
 	s, failures := scanned(t, f)
-	if _, err := s.AddArchive("stardew", buildZip(t, map[string]string{"a": "x"})); err != nil || len(*failures) != 0 {
+	if _, err := s.AddArchive(t.Context(), "stardew", buildZip(t, map[string]string{"a": "x"})); err != nil || len(*failures) != 0 {
 		t.Fatalf("err = %v, failures = %v", err, *failures)
 	}
 }
@@ -92,10 +92,32 @@ func TestLoaderBundlesAreNotScanned(t *testing.T) {
 	f := &fakeScanner{hit: &avscan.Detection{Name: "Heuristic"}}
 	s, _ := scanned(t, f)
 	dir := t.TempDir()
-	if err := s.AddDir("lethal-company", LoaderKey("bepinex5", "5.4.2"), dir); err != nil {
+	if err := s.AddDir(t.Context(), "lethal-company", LoaderKey("bepinex5", "5.4.2"), dir); err != nil {
 		t.Fatalf("loader bundle was scanned: %v", err)
 	}
 	if f.calls != 0 {
 		t.Fatalf("scanner ran %d times", f.calls)
+	}
+}
+
+type ctxScanner struct{}
+
+func (ctxScanner) Scan(ctx context.Context, _ string) (avscan.Detection, bool, error) {
+	<-ctx.Done()
+	return avscan.Detection{}, false, ctx.Err()
+}
+
+func TestCancellingTheInstallStopsTheScanAndAddsNothing(t *testing.T) {
+	s := newStore(t)
+	s.SetScanner(func() avscan.Scanner { return ctxScanner{} }, nil)
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	p := buildZip(t, map[string]string{"a": "x"})
+	key, err := s.AddArchive(ctx, "stardew", p)
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("err = %v, want context.Canceled", err)
+	}
+	if _, perr := s.Path("stardew", key); perr == nil {
+		t.Fatal("a cancelled install left the item in the store")
 	}
 }

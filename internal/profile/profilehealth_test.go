@@ -15,7 +15,7 @@ func healthEnv(t *testing.T) (env, *Service, Profile) {
 	e := newEnv(t)
 	p := mustCreate(t, e, "Farm")
 	zip := buildZip(t, "mod.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
-	if _, err := e.InstallArchive("stardew", p.ID, zip); err != nil {
+	if _, err := e.InstallArchive(t.Context(), "stardew", p.ID, zip); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.ScanModsDrift("stardew", p.ID); err != nil {
@@ -159,7 +159,7 @@ func TestHealthRevertKeepsConfigAndData(t *testing.T) {
 		"A/manifest.json": manifestJSON("X.A"),
 		"A/assets/x.json": "{}",
 	})
-	if _, err := e.InstallArchive("stardew", p.ID, zip); err != nil {
+	if _, err := e.InstallArchive(t.Context(), "stardew", p.ID, zip); err != nil {
 		t.Fatal(err)
 	}
 	p, err := e.read("stardew", p.ID)
@@ -196,7 +196,7 @@ func TestRestoreLabelNamesWhatWasRestored(t *testing.T) {
 	t.Parallel()
 	e, svc, p := healthEnv(t)
 	zip := buildZip(t, "b.zip", map[string]string{"B/manifest.json": manifestJSON("X.B")})
-	if _, err := e.InstallArchive("stardew", p.ID, zip); err != nil {
+	if _, err := e.InstallArchive(t.Context(), "stardew", p.ID, zip); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := e.ScanModsDrift("stardew", p.ID); err != nil {

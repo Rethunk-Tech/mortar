@@ -106,7 +106,7 @@ func TestStoredOptionalFileInstallsOverItsMainFile(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		if err := items.AddDir("stardew", key, dir); err != nil {
+		if err := items.AddDir(t.Context(), "stardew", key, dir); err != nil {
 			t.Fatal(err)
 		}
 	}

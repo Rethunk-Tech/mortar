@@ -175,3 +175,22 @@ func TestOffScansNothing(t *testing.T) {
 		t.Fatalf("got %+v, %v", got, err)
 	}
 }
+
+func TestACancelledContextStopsEveryScanner(t *testing.T) {
+	t.Parallel()
+	dir := writeTree(t, map[string]string{"a.dll": "x", "b.dll": "y"})
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	scanners := map[string]Scanner{"clamd": clamd{dial: func(context.Context, string) (net.Conn, error) {
+		c, _ := net.Pipe()
+		return c, nil
+	}, socket: "x"}}
+	if runtime.GOOS != "windows" {
+		scanners["command"] = command{line: "sleep 30 {path}"}
+	}
+	for name, sc := range scanners {
+		if _, found, err := sc.Scan(ctx, dir); found || !errors.Is(err, context.Canceled) {
+			t.Errorf("%s: found=%v err=%v, want context.Canceled", name, found, err)
+		}
+	}
+}

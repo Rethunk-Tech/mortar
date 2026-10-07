@@ -54,7 +54,7 @@ func TestExportRestoreRoundTrip(t *testing.T) {
 	if err := e.ExportZip("stardew", src.ID, zipPath, "0.0.1"); err != nil {
 		t.Fatal(err)
 	}
-	got, err := e.RestoreZip("stardew", zipPath)
+	got, err := e.RestoreZip(t.Context(), "stardew", zipPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,7 +111,7 @@ func TestRestoreZipRejectsTamperedHash(t *testing.T) {
 		}
 		return body
 	})
-	if _, err := e.RestoreZip("stardew", bad); err == nil || !strings.Contains(err.Error(), "hash mismatch") {
+	if _, err := e.RestoreZip(t.Context(), "stardew", bad); err == nil || !strings.Contains(err.Error(), "hash mismatch") {
 		t.Fatalf("err = %v", err)
 	}
 	list, err := e.List("stardew")
@@ -125,7 +125,7 @@ func TestRestoreZipRejectsZipSlip(t *testing.T) {
 	e := newEnv(t)
 	evil := filepath.Join(t.TempDir(), "slip.zip")
 	writeRawZip(t, evil, map[string][]byte{"../evil": []byte("nope")})
-	if _, err := e.RestoreZip("stardew", evil); err == nil || !errors.Is(err, archive.ErrTraversal) {
+	if _, err := e.RestoreZip(t.Context(), "stardew", evil); err == nil || !errors.Is(err, archive.ErrTraversal) {
 		t.Fatalf("err = %v", err)
 	}
 	list, err := e.List("stardew")
@@ -282,7 +282,7 @@ func TestRestoreZipIgnoresAbsoluteCover(t *testing.T) {
 	}
 	zipPath := filepath.Join(t.TempDir(), "abs.zip")
 	writeRawZip(t, zipPath, map[string][]byte{zipProfileName: raw, zipManifestName: man})
-	got, err := e.RestoreZip("stardew", zipPath)
+	got, err := e.RestoreZip(t.Context(), "stardew", zipPath)
 	if err != nil {
 		t.Fatal(err)
 	}

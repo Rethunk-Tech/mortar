@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -359,12 +360,12 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 }
 
 // InstallNexusExtra unpacks a Nexus archive into the store and adds it as an extra file of entryKey.
-func (s *Store) InstallNexusExtra(game, id, entryKey, path string, source Source) (InstallResult, error) {
+func (s *Store) InstallNexusExtra(ctx context.Context, game, id, entryKey, path string, source Source) (InstallResult, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return InstallResult{}, err
 	}
 	key := store.NexusKey(source.ModID, source.FileID)
-	if err := s.items.AddArchiveKey(game, key, path); err != nil {
+	if err := s.items.AddArchiveKey(ctx, game, key, path); err != nil {
 		return InstallResult{}, installError(err)
 	}
 	if over, err := s.isOverlayItem(game, key, source); err != nil {

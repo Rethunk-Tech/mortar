@@ -310,7 +310,7 @@ func (s *Service) fetchOnce(
 		return 0, usererr.New(usererr.Damaged, fmt.Sprintf("%s from %s arrived damaged: it does not match what they vouched for", modName(item), incoming.Sender))
 	}
 	// The hash the sender vouched for is the check: a local key names the archive it came from, not this folder.
-	if err := s.deps.Store.AddDir(incoming.Game, key, temp); err != nil {
+	if err := s.deps.Store.AddDir(ctx, incoming.Game, key, temp); err != nil {
 		return 0, installError("install", item, incoming.Sender, err)
 	}
 	if item.Source != "" {

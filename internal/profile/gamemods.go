@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -19,7 +20,7 @@ import (
 // MoveGameMods moves the named top-level folders of modsDir (the game's own Mods folder) into the profile as local
 // entries: each is copied into the store and added like Import from the game's Mods folder, then deleted from modsDir.
 // A folder whose mods the profile already holds is skipped and left in place.
-func (s *Store) MoveGameMods(game, id, modsDir string, folders []string) (GameModsResult, error) {
+func (s *Store) MoveGameMods(ctx context.Context, game, id, modsDir string, folders []string) (GameModsResult, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return GameModsResult{}, err
 	}
@@ -70,7 +71,7 @@ func (s *Store) MoveGameMods(game, id, modsDir string, folders []string) (GameMo
 			out = GameModOutcome{Name: slot.folder.label, Status: outcomeSkipped, Reason: "already in this profile as " + held(slot.folder)}
 		default:
 			out = GameModOutcome{Name: slot.folder.label, Status: outcomeImported}
-			if _, _, err := s.importFolder(game, id, slot.folder); err != nil {
+			if _, _, err := s.importFolder(ctx, game, id, slot.folder); err != nil {
 				out.Status, out.Reason = outcomeFailed, err.Error()
 				if ie, ok := errors.AsType[*InstallError](err); ok {
 					out.Reason = ie.Msg
@@ -169,10 +170,10 @@ func (s *Service) UndismissGameModsFolders(game string, folders []string) error 
 }
 
 // MoveGameModsFolders moves the given top-level folders of the game's Mods folder into the profile.
-func (s *Service) MoveGameModsFolders(game, id string, folders []string) (GameModsResult, error) {
+func (s *Service) MoveGameModsFolders(ctx context.Context, game, id string, folders []string) (GameModsResult, error) {
 	dir, err := s.gameModsDir(game)
 	if err != nil {
 		return GameModsResult{}, err
 	}
-	return s.store.MoveGameMods(game, id, dir, folders)
+	return s.store.MoveGameMods(ctx, game, id, dir, folders)
 }

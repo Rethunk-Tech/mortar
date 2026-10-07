@@ -93,6 +93,9 @@ func (c clamd) scanFile(ctx context.Context, path string) (string, error) {
 		deadline = d
 	}
 	_ = conn.SetDeadline(deadline)
+	// A cancelled scan must not sit out a blocked read or write until the deadline.
+	stop := context.AfterFunc(ctx, func() { _ = conn.SetDeadline(time.Unix(1, 0)) })
+	defer stop()
 	in, err := fsx.Open(path)
 	if err != nil {
 		return "", err

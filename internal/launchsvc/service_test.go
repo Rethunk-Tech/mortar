@@ -261,7 +261,7 @@ func TestSendRunsThroughTheBridgeAndEchoesTheCommand(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(src, "manifest.json"), []byte(manifest), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := items.AddDir("stardew", "bridge-0.9.0", filepath.Dir(src)); err != nil {
+	if err := items.AddDir(t.Context(), "stardew", "bridge-0.9.0", filepath.Dir(src)); err != nil {
 		t.Fatal(err)
 	}
 	if err := profiles.ApplyBundled("stardew", profile.Bundle{Key: "bridge-0.9.0", Source: profile.Source{Kind: profile.SourceMortar, Name: "Bridge"}}); err != nil {

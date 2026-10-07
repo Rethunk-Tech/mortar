@@ -79,7 +79,7 @@ func TestImportGameModsCopiesIntoAProfileAndLeavesTheGameFolderUnchanged(t *test
 		t.Fatalf("preview = %+v", preview.Mods)
 	}
 
-	res, err := e.ImportGameMods("stardew", mods)
+	res, err := e.ImportGameMods(t.Context(), "stardew", mods)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +128,7 @@ func TestImportGameModsCopiesIntoAProfileAndLeavesTheGameFolderUnchanged(t *test
 		t.Fatalf("quiet config = %q %v", body, err)
 	}
 
-	again, err := e.ImportGameMods("stardew", mods)
+	again, err := e.ImportGameMods(t.Context(), "stardew", mods)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -176,7 +176,7 @@ func TestImportGameModsPrefersEnabledDuplicateAndOmitsBundled(t *testing.T) {
 		t.Fatalf("preview = %+v", preview.Mods)
 	}
 
-	res, err := e.ImportGameMods("stardew", mods)
+	res, err := e.ImportGameMods(t.Context(), "stardew", mods)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -227,7 +227,7 @@ func TestImportGameModsPicksNewestWhenBothCopiesAreOff(t *testing.T) {
 		t.Fatalf("preview = %+v", preview.Mods)
 	}
 
-	res, err := e.ImportGameMods("stardew", mods)
+	res, err := e.ImportGameMods(t.Context(), "stardew", mods)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -249,7 +249,7 @@ func TestInstallFolderUsesTheSameStorePathAsAnArchive(t *testing.T) {
 	p, _ := e.Create("stardew", "P")
 	src := t.TempDir()
 	writeFile(t, src, "manifest.json", manifestJSON("Me.Folder"))
-	res, err := e.InstallFolder("stardew", p.ID, src)
+	res, err := e.InstallFolder(t.Context(), "stardew", p.ID, src)
 	if err != nil || len(res.Added) != 1 || res.Profile.Entries[0].Source.Kind != KindLocal {
 		t.Fatalf("install folder: %+v %v", res, err)
 	}

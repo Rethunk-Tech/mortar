@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/dlwatch"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -271,7 +272,7 @@ func (s *Service) Repair(ctx context.Context, gameID, profileID, key string) (Re
 			Name: src.Repo, FileName: src.Asset, Version: src.Version,
 		})
 	case strings.HasPrefix(key, "local-"):
-		return s.reextract(gameID, key)
+		return s.reextract(ctx, gameID, key)
 	}
 	return RepairResult{}, usererr.New(usererr.Invalid, "This is part of the mod loader. Reinstall the loader from the game's page to repair it.")
 }
@@ -300,7 +301,7 @@ func (s *Service) refetch(ctx context.Context, gameID, key string, req queue.Req
 	return RepairResult{Status: "queued"}, nil
 }
 
-func (s *Service) reextract(gameID, key string) (RepairResult, error) {
+func (s *Service) reextract(ctx context.Context, gameID, key string) (RepairResult, error) {
 	path, ok := s.findArchive(key)
 	if !ok {
 		return RepairResult{}, usererr.New(usererr.NotFound, "The archive this mod was installed from is no longer in the downloads folder, so it cannot be repaired. Download it again and reinstall it.")
@@ -309,7 +310,7 @@ func (s *Service) reextract(gameID, key string) (RepairResult, error) {
 	if err != nil {
 		return RepairResult{}, err
 	}
-	if err := s.d.Items.AddArchiveKey(gameID, key, path); err != nil {
+	if err := s.d.Items.AddArchiveKey(ctx, gameID, key, path); err != nil {
 		return RepairResult{}, joinRestore(err, restore)
 	}
 	return RepairResult{Status: "restored"}, nil
@@ -333,9 +334,7 @@ func (s *Service) findArchive(key string) (string, bool) {
 		return "", false
 	}
 	for _, e := range ents {
-		switch strings.ToLower(filepath.Ext(e.Name())) {
-		case ".zip", ".7z", ".rar":
-		default:
+		if !archive.HasExtension(e.Name()) {
 			continue
 		}
 		path := filepath.Join(dir, e.Name())

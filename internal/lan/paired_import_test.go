@@ -64,7 +64,7 @@ func TestPairedSendPlacesEverySourceWithoutDownloading(t *testing.T) {
 	senderStore := store.OpenAt(t.TempDir())
 	nexusKey, ghKey, localKey := store.NexusKey(7, 2), github.Key("o", "r", "v1", "m.zip"), store.LocalKey(strings.Repeat("cd", 32))
 	for key, id := range map[string]string{nexusKey: "Me.Nexus", ghKey: "Me.GitHub", localKey: "Me.Local"} {
-		if err := senderStore.AddDir(game, key, smapiFolder(t, id)); err != nil {
+		if err := senderStore.AddDir(t.Context(), game, key, smapiFolder(t, id)); err != nil {
 			t.Fatal(err)
 		}
 	}

@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -140,7 +141,7 @@ const savesPrefix = "saves/"
 //
 // dirs are the backup's folders as BackupDirs names them, already unpacked: each store item is added to the store
 // first, so its entry is not missing, and the saves become the new profile's own.
-func (s *Store) RestoreBackup(game string, p Profile, files map[string][]byte, dirs map[string]string) (Profile, []Entry, error) {
+func (s *Store) RestoreBackup(ctx context.Context, game string, p Profile, files map[string][]byte, dirs map[string]string) (Profile, []Entry, error) {
 	for rel := range files {
 		if !backupPath(rel, p) {
 			return Profile{}, nil, fmt.Errorf("the backup holds %q, which is not a profile file", rel)
@@ -154,7 +155,7 @@ func (s *Store) RestoreBackup(game string, p Profile, files map[string][]byte, d
 		if !ok || !slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && !e.Source.Bundled() }) {
 			return Profile{}, nil, fmt.Errorf("the backup holds %q, which is no entry's store item", prefix)
 		}
-		if err := s.items.AddDir(game, key, dir); err != nil {
+		if err := s.items.AddDir(ctx, game, key, dir); err != nil {
 			return Profile{}, nil, err
 		}
 	}

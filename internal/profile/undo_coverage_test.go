@@ -379,7 +379,7 @@ func splitFixture(t *testing.T) (env, Profile, string, string) {
 	e := newEnv(t)
 	p := mustCreate(t, e, "P")
 	main := buildZip(t, "a.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
-	res, err := e.InstallSource("stardew", p.ID, main, Source{Kind: KindNexus, Name: "a.zip", ModID: 7, FileID: 1, Version: "1.0"})
+	res, err := e.InstallSource(t.Context(), "stardew", p.ID, main, Source{Kind: KindNexus, Name: "a.zip", ModID: 7, FileID: 1, Version: "1.0"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -435,7 +435,7 @@ func TestPackageBackedChangesUndoExactly(t *testing.T) {
 				"manifest.json":     `{"name":"` + name + `","version_number":"1.0.0"}`,
 				"config/Shared.cfg": name,
 			})
-			res, err := s.InstallSource(lc, p.ID, zip, Source{Kind: KindThunderstore, Name: "Ns-" + name, Version: "1.0.0"})
+			res, err := s.InstallSource(t.Context(), lc, p.ID, zip, Source{Kind: KindThunderstore, Name: "Ns-" + name, Version: "1.0.0"})
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -24,7 +24,7 @@ func addFiles(t *testing.T, items *modstore.Store, key string, files map[string]
 			t.Fatal(err)
 		}
 	}
-	if err := items.AddDir("stardew", key, src); err != nil {
+	if err := items.AddDir(t.Context(), "stardew", key, src); err != nil {
 		t.Fatal(err)
 	}
 }

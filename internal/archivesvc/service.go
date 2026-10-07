@@ -3,6 +3,7 @@
 package archivesvc
 
 import (
+	"context"
 	"errors"
 	"io/fs"
 	"os"
@@ -28,7 +29,7 @@ type Deps struct {
 	// entries are skipped and a path listed twice counts once.
 	Dirs func() []string
 	// Install adds a download to a profile; src carries the Nexus mod id when the file name has one.
-	Install func(game, profileID, path string, src profile.Source) (profile.InstallResult, error)
+	Install func(ctx context.Context, game, profileID, path string, src profile.Source) (profile.InstallResult, error)
 	// HashCache is the file that remembers each archive's SHA-256 by path, size and mtime; empty keeps hashes in
 	// memory for one listing only.
 	HashCache string
@@ -213,7 +214,7 @@ func (s *Service) dirs() []string {
 
 // InstallDownload adds the archive at path to the profile, recording its Nexus mod id when the file name has one so
 // the mod is tracked for updates.
-func (s *Service) InstallDownload(game, profileID, path string) (profile.InstallResult, error) {
+func (s *Service) InstallDownload(ctx context.Context, game, profileID, path string) (profile.InstallResult, error) {
 	if s.d.Install == nil {
 		return profile.InstallResult{}, errors.New("install is not available")
 	}
@@ -221,7 +222,7 @@ func (s *Service) InstallDownload(game, profileID, path string) (profile.Install
 	if inf := dlwatch.Identify(path); inf.ModID > 0 {
 		src = profile.Source{Kind: profile.KindNexus, Name: inf.Name, ModID: inf.ModID}
 	}
-	return s.d.Install(game, profileID, path, src)
+	return s.d.Install(ctx, game, profileID, path, src)
 }
 
 func (s *Service) storeKeys(game string) (map[string]bool, error) {
@@ -255,10 +256,4 @@ func (s *Service) profileNames(game string) (map[string]bool, error) {
 	return out, nil
 }
 
-func isArchive(name string) bool {
-	switch strings.ToLower(filepath.Ext(name)) {
-	case ".zip", ".7z", ".rar":
-		return true
-	}
-	return false
-}
+func isArchive(name string) bool { return archive.HasExtension(name) }

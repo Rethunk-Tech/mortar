@@ -32,7 +32,7 @@ func TestRestoreOnAnotherComputerQueuesTheModsFromTheirSources(t *testing.T) {
 		if err := os.WriteFile(filepath.Join(src, "manifest.json"), []byte(`{"Name":"`+id+`","Version":"1.0.0","UniqueID":"`+id+`"}`), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		if err := items.AddDir("stardew", key, src); err != nil {
+		if err := items.AddDir(t.Context(), "stardew", key, src); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -125,7 +125,7 @@ func TestBackupWithModsRestoresOffline(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(src, "manifest.json"), []byte(`{"Name":"X.A","Version":"1.0.0","UniqueID":"X.A"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := items.AddDir("stardew", "nexus-12-34", src); err != nil {
+	if err := items.AddDir(t.Context(), "stardew", "nexus-12-34", src); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := profiles.AddEntry("stardew", p.ID, "nexus-12-34", profile.Source{Kind: profile.KindNexus, Name: "a.zip", ModID: 12, FileID: 34}); err != nil {

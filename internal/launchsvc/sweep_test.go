@@ -45,7 +45,7 @@ func addSweepMod(t *testing.T, profiles *profile.Store, profileID, uniqueID, nam
 	if err := os.WriteFile(filepath.Join(dir, "manifest.json"), []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	_, err := profiles.ImportExternalMods("stardew", profileID, []profile.ExternalMod{
+	_, err := profiles.ImportExternalMods(t.Context(), "stardew", profileID, []profile.ExternalMod{
 		{SourcePath: dir, ID: mod.SMAPI(uniqueID), Enabled: true},
 	})
 	if err != nil {

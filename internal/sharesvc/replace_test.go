@@ -39,10 +39,10 @@ func TestReplaceRemovesExtrasAndQueuesTheShare(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.d.Profiles.InstallSource("stardew", prof.ID, modZip(t, "A.Keep"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
+	if _, err := s.d.Profiles.InstallSource(t.Context(), "stardew", prof.ID, modZip(t, "A.Keep"), profile.Source{Kind: profile.KindNexus, ModID: 100, FileID: 1}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.d.Profiles.InstallSource("stardew", prof.ID, modZip(t, "A.Drop"), profile.Source{Kind: profile.KindNexus, ModID: 600, FileID: 6}); err != nil {
+	if _, err := s.d.Profiles.InstallSource(t.Context(), "stardew", prof.ID, modZip(t, "A.Drop"), profile.Source{Kind: profile.KindNexus, ModID: 600, FileID: 6}); err != nil {
 		t.Fatal(err)
 	}
 	text := link(t, "Cozy", share.Ref{ModID: 100, FileID: 1})
@@ -86,7 +86,7 @@ func TestReplaceKeepsTheSharedOrderAsModsArrive(t *testing.T) {
 		name   string
 		id, fl int
 	}{{"A.One", 100, 1}, {"A.Two", 200, 2}} {
-		if _, err := s.d.Profiles.InstallSource("stardew", prof.ID, modZip(t, m.name), profile.Source{Kind: profile.KindNexus, ModID: m.id, FileID: m.fl}); err != nil {
+		if _, err := s.d.Profiles.InstallSource(t.Context(), "stardew", prof.ID, modZip(t, m.name), profile.Source{Kind: profile.KindNexus, ModID: m.id, FileID: m.fl}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -114,7 +114,7 @@ func TestReplaceKeepsTheSharedOrderAsModsArrive(t *testing.T) {
 		t.Fatalf("after the replace: %v, want the shared order [200 100]", got)
 	}
 	// The download lands at the end, as every install does, and takes its shared place once the queue says so.
-	if _, err := s.d.Profiles.InstallSource("stardew", prof.ID, modZip(t, "A.Three"), profile.Source{Kind: profile.KindNexus, ModID: 900, FileID: 9}); err != nil {
+	if _, err := s.d.Profiles.InstallSource(t.Context(), "stardew", prof.ID, modZip(t, "A.Three"), profile.Source{Kind: profile.KindNexus, ModID: 900, FileID: 9}); err != nil {
 		t.Fatal(err)
 	}
 	s.queueChanged(queue.State{Items: []queue.Item{{ID: "q", Game: "stardew", Profile: prof.ID, BatchID: res.BatchID, ModID: 900, FileID: 9, State: queue.StateDone}}})

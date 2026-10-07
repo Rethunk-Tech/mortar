@@ -84,7 +84,7 @@ func NewService(home string, s *settings.Store, items *store.Store, profiles *pr
 // Attach wires the service into the profile store: every profile gets the game's bundled mods, and creating a
 // profile installs a missing loader in the background. It also syncs the bundled mods into the existing profiles.
 func Attach(s *Service) {
-	s.profiles.Bundled = s.bundles
+	s.profiles.Bundled = func(id string) []profile.Bundle { return s.bundles(context.Background(), id) }
 	s.profiles.Created = s.ensureInBackground
 }
 
@@ -102,9 +102,9 @@ func EnsureExisting(s *Service, id string) {
 }
 
 // bundles returns the store items every profile of the game holds, building any that is missing.
-func (s *Service) bundles(id string) []profile.Bundle {
+func (s *Service) bundles(ctx context.Context, id string) []profile.Bundle {
 	var out []profile.Bundle
-	if key, err := s.ensureBundled(id); err != nil {
+	if key, err := s.ensureBundled(ctx, id); err != nil {
 		log.Printf("bundled mods for %s: %v", id, err)
 	} else if key != "" {
 		l, _ := game.PrimaryLoader(id)
@@ -112,7 +112,7 @@ func (s *Service) bundles(id string) []profile.Bundle {
 			out = append(out, b)
 		}
 	}
-	if b, err := s.ensureBridge(id); err != nil {
+	if b, err := s.ensureBridge(ctx, id); err != nil {
 		log.Printf("bridge for %s: %v", id, err)
 	} else if b.Key != "" {
 		out = append(out, b)
@@ -122,8 +122,8 @@ func (s *Service) bundles(id string) []profile.Bundle {
 
 // SyncBundled makes sure the game's bundled mods are in the store and in every profile. It never fails the
 // caller: the loader may be absent or the game not installed.
-func SyncBundled(s *Service, id string) {
-	for _, b := range s.bundles(id) {
+func SyncBundled(ctx context.Context, s *Service, id string) {
+	for _, b := range s.bundles(ctx, id) {
 		if err := s.profiles.ApplyBundled(id, b); err != nil {
 			log.Printf("bundled mods for %s: %v", id, err)
 		}
@@ -132,7 +132,7 @@ func SyncBundled(s *Service, id string) {
 
 // ensureBridge returns the manifest's console bridge entry, adding it to the store first when it is missing.
 // The bridge needs neither the loader nor the game folder, so every profile has it from creation.
-func (s *Service) ensureBridge(id string) (profile.Bundle, error) {
+func (s *Service) ensureBridge(ctx context.Context, id string) (profile.Bundle, error) {
 	component, localZip, local := localBridge(id)
 	if !local {
 		if s.components == nil {
@@ -158,7 +158,7 @@ func (s *Service) ensureBridge(id string) (profile.Bundle, error) {
 	archivePath := filepath.Join(tmp, "bridge.zip")
 	if local {
 		archivePath = localZip
-	} else if err := s.components.Download(context.Background(), component, archivePath); err != nil {
+	} else if err := s.components.Download(ctx, component, archivePath); err != nil {
 		return profile.Bundle{}, err
 	}
 	unpacked := filepath.Join(tmp, "unpacked")
@@ -168,7 +168,7 @@ func (s *Service) ensureBridge(id string) (profile.Bundle, error) {
 	if err := archive.Extract(archivePath, unpacked); err != nil {
 		return profile.Bundle{}, err
 	}
-	return b, s.items.AddDir(id, key, unpacked)
+	return b, s.items.AddDir(ctx, id, key, unpacked)
 }
 
 // ensureInBackground installs the game's loader when it is missing or broken, without blocking the caller.
@@ -183,7 +183,7 @@ func (s *Service) ensureInBackground(id string) {
 
 // ensureBundled returns the store key of the installed loader's bundled mods, building the entry from the game
 // folder when the loader was installed outside Mortar. It returns "" when no loader is installed.
-func (s *Service) ensureBundled(id string) (string, error) {
+func (s *Service) ensureBundled(ctx context.Context, id string) (string, error) {
 	st, err := s.LocalStatus(id, "")
 	if err != nil {
 		return "", err
@@ -217,7 +217,7 @@ func (s *Service) ensureBundled(id string) (string, error) {
 	if err := copier.CopyBundled(dir, tmp); err != nil {
 		return "", err
 	}
-	if err := s.items.AddDir(id, key, tmp); err != nil {
+	if err := s.items.AddDir(ctx, id, key, tmp); err != nil {
 		return "", err
 	}
 	if s.settings.Get().Loaders[settings.LoaderKey(id, l.ID())] == "" {

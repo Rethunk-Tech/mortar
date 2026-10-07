@@ -66,7 +66,7 @@ func TestInstallVersionUsesCache(t *testing.T) {
 	svc, fake := testServiceWithReleases(t, []string{"4.1.0", "4.0.0"})
 	dir := t.TempDir()
 	testfs.WriteFile(t, dir, "ok", "x")
-	if err := svc.items.AddDir("stardew", store.LoaderKey("smapi", "4.0.0"), dir); err != nil {
+	if err := svc.items.AddDir(t.Context(), "stardew", store.LoaderKey("smapi", "4.0.0"), dir); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := svc.InstallVersion(context.Background(), "stardew", "", "4.0.0"); err != nil {

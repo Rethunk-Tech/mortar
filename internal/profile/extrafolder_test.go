@@ -36,12 +36,12 @@ func TestExtraFolderListsAndInstallsOnlyItsOwnFolders(t *testing.T) {
 	if folder != filepath.Join(extra, "Pack") {
 		t.Fatalf("folder = %q", folder)
 	}
-	res, err := svc.InstallExtraFolderMod("stardew", p.ID, folder)
+	res, err := svc.InstallExtraFolderMod(t.Context(), "stardew", p.ID, folder)
 	if err != nil || len(res.Added) != 1 {
 		t.Fatalf("install = %+v, %v", res, err)
 	}
 	for _, bad := range []string{t.TempDir(), filepath.Join(extra, "Pack", "B"), extra} {
-		if _, err := svc.InstallExtraFolderMod("stardew", p.ID, bad); err == nil {
+		if _, err := svc.InstallExtraFolderMod(t.Context(), "stardew", p.ID, bad); err == nil {
 			t.Errorf("installed %s from outside the extra folder", bad)
 		}
 	}

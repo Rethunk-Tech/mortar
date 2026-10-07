@@ -56,7 +56,7 @@ func newService(t *testing.T) (*Service, string, *[]queue.Request) {
 func TestCheckFindsDamageAndRepairReextractsFromTheArchive(t *testing.T) {
 	s, downloads, _ := newService(t)
 	archive := zipFile(t, downloads, "Pack.zip", map[string]string{"Mod/a.txt": "aaa"})
-	key, err := s.d.Items.AddArchive("stardew", archive)
+	key, err := s.d.Items.AddArchive(t.Context(), "stardew", archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func TestCheckFindsDamageAndRepairReextractsFromTheArchive(t *testing.T) {
 func TestRepairSaysWhenTheArchiveIsGoneAndKeepsTheItem(t *testing.T) {
 	s, downloads, _ := newService(t)
 	archive := zipFile(t, downloads, "Pack.zip", map[string]string{"Mod/a.txt": "aaa"})
-	key, _ := s.d.Items.AddArchive("stardew", archive)
+	key, _ := s.d.Items.AddArchive(t.Context(), "stardew", archive)
 	if err := os.Remove(archive); err != nil {
 		t.Fatal(err)
 	}
@@ -97,7 +97,7 @@ func TestRepairSaysWhenTheArchiveIsGoneAndKeepsTheItem(t *testing.T) {
 func TestRepairQueuesANexusFileAndRestoresOnQueueFailure(t *testing.T) {
 	s, downloads, added := newService(t)
 	key := store.NexusKey(12, 34)
-	if err := s.d.Items.AddArchiveKey("stardew", key, zipFile(t, downloads, "n.zip", map[string]string{"Mod/a.txt": "a"})); err != nil {
+	if err := s.d.Items.AddArchiveKey(t.Context(), "stardew", key, zipFile(t, downloads, "n.zip", map[string]string{"Mod/a.txt": "a"})); err != nil {
 		t.Fatal(err)
 	}
 	if got, err := s.Repair(t.Context(), "stardew", "p1", key); err != nil || got.Status != "queued" {
@@ -108,7 +108,7 @@ func TestRepairQueuesANexusFileAndRestoresOnQueueFailure(t *testing.T) {
 	}
 	s2, d2, _ := newService(t)
 	s2.d.Add = func(context.Context, []queue.Request) ([]queue.Item, error) { return nil, errors.New("signed out") }
-	if err := s2.d.Items.AddArchiveKey("stardew", key, zipFile(t, d2, "n.zip", map[string]string{"Mod/a.txt": "a"})); err != nil {
+	if err := s2.d.Items.AddArchiveKey(t.Context(), "stardew", key, zipFile(t, d2, "n.zip", map[string]string{"Mod/a.txt": "a"})); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s2.Repair(t.Context(), "stardew", "p1", key); err == nil {
@@ -121,7 +121,7 @@ func TestRepairQueuesANexusFileAndRestoresOnQueueFailure(t *testing.T) {
 
 func TestPassWaitsWhileBusyThenVerifies(t *testing.T) {
 	s, downloads, _ := newService(t)
-	key, _ := s.d.Items.AddArchive("stardew", zipFile(t, downloads, "Pack.zip", map[string]string{"a": "a"}))
+	key, _ := s.d.Items.AddArchive(t.Context(), "stardew", zipFile(t, downloads, "Pack.zip", map[string]string{"a": "a"}))
 	s.d.Busy = func() bool { return true }
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
@@ -139,7 +139,7 @@ func TestCheckBaselinesANexusItemFromItsArchiveWhenTheMD5Matches(t *testing.T) {
 		t.Fatal(err)
 	}
 	key := store.NexusKey(5, 9)
-	if err := s.d.Items.AddArchiveKey("stardew", key, archive); err != nil {
+	if err := s.d.Items.AddArchiveKey(t.Context(), "stardew", key, archive); err != nil {
 		t.Fatal(err)
 	}
 	dir, _ := s.d.Items.Path("stardew", key)

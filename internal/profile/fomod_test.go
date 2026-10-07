@@ -26,7 +26,7 @@ func TestInstallArchiveAsksForFomodThenInstallsChoices(t *testing.T) {
 		"alpha/manifest.json":    manifestJSON("A.Alpha"),
 		"beta/manifest.json":     manifestJSON("A.Beta"),
 	})
-	res, err := e.InstallArchive("stardew", p.ID, z)
+	res, err := e.InstallArchive(t.Context(), "stardew", p.ID, z)
 	if err != nil {
 		t.Fatal(err)
 	}

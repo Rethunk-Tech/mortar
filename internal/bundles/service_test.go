@@ -42,7 +42,7 @@ func addItem(t *testing.T, items *modstore.Store, key, uniqueID, name string) {
 	if err := os.WriteFile(filepath.Join(src, "manifest.json"), []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := items.AddDir("stardew", key, src); err != nil {
+	if err := items.AddDir(t.Context(), "stardew", key, src); err != nil {
 		t.Fatal(err)
 	}
 }

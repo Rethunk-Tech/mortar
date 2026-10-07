@@ -12,7 +12,7 @@ func TestPackageEntryHasStateButNoModFolder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.InstallSource("lethal-company", p.ID, tsZip(t, "1.0.0"), Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"}); err != nil {
+	if _, err := e.InstallSource(t.Context(), "lethal-company", p.ID, tsZip(t, "1.0.0"), Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"}); err != nil {
 		t.Fatal(err)
 	}
 	got, _ := e.read("lethal-company", p.ID)

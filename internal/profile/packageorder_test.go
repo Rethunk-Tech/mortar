@@ -29,7 +29,7 @@ func TestMovePackageChangesWhoWins(t *testing.T) {
 			"manifest.json":     `{"name":"` + name + `","version_number":"1.0.0"}`,
 			"config/Shared.cfg": name,
 		})
-		if loaded, err = ps.InstallSource(lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-" + name, Version: "1.0.0"}); err != nil {
+		if loaded, err = ps.InstallSource(t.Context(), lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-" + name, Version: "1.0.0"}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -64,7 +64,7 @@ func TestSyncStoppedPartWayStillTakesItsFilesBack(t *testing.T) {
 		"plugins/a.dll": "a",
 		"plugins/z.dll": "z",
 	})
-	loaded, err := ps.InstallSource(lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-A", Version: "1.0.0"})
+	loaded, err := ps.InstallSource(t.Context(), lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-A", Version: "1.0.0"})
 	if err != nil {
 		t.Fatal(err)
 	}

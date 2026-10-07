@@ -425,7 +425,7 @@ func run() error {
 	implemented := game.Implemented()
 	loadersvc.Attach(loaders)
 	for _, id := range implemented {
-		loadersvc.SyncBundled(loaders, id)
+		loadersvc.SyncBundled(context.Background(), loaders, id)
 	}
 	launches.EnsureLoader = func(ctx context.Context, id, loaderID string, fromStart bool) error {
 		_, err := loaders.Ensure(ctx, id, loaderID, fromStart)
@@ -494,12 +494,12 @@ func run() error {
 	queueSvc, err := queue.New(queue.Deps{
 		Client:  func() (*nexus.Client, error) { return nexussvc.Authed(store, nexusClient) },
 		Premium: func() bool { return store.Get().NexusPremium },
-		Install: func(game, profileID, path string, src profile.Source) (profile.InstallResult, error) {
-			res, err := profiles.InstallSource(game, profileID, path, src)
+		Install: func(ctx context.Context, game, profileID, path string, src profile.Source) (profile.InstallResult, error) {
+			res, err := profiles.InstallSource(ctx, game, profileID, path, src)
 			if err == nil {
 				// Warm the detail dialog's cache while the account is known to be signed in and online.
-				go func() { _, _ = nexusSvc.Details(context.Background(), game, src.ModID) }()
-				go pictures.Ensure(context.Background(), src.Picture)
+				go func() { _, _ = nexusSvc.Details(context.WithoutCancel(ctx), game, src.ModID) }()
+				go pictures.Ensure(context.WithoutCancel(ctx), src.Picture)
 			}
 			return res, err
 		},
@@ -538,11 +538,11 @@ func run() error {
 			}
 			return profile.MergeAsk{}, 0, false
 		},
-		InstallExtra: func(game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error) {
-			res, err := profiles.InstallNexusExtra(game, profileID, entryKey, path, src)
+		InstallExtra: func(ctx context.Context, game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error) {
+			res, err := profiles.InstallNexusExtra(ctx, game, profileID, entryKey, path, src)
 			if err == nil {
-				go func() { _, _ = nexusSvc.Details(context.Background(), game, src.ModID) }()
-				go pictures.Ensure(context.Background(), src.Picture)
+				go func() { _, _ = nexusSvc.Details(context.WithoutCancel(ctx), game, src.ModID) }()
+				go pictures.Ensure(context.WithoutCancel(ctx), src.Picture)
 			}
 			return res, err
 		},
@@ -745,11 +745,11 @@ func run() error {
 
 	archivesSvc := archivesvc.NewService(archivesvc.Deps{
 		Dirs: func() []string { return downloadDirs(store, dataDir) },
-		Install: func(game, profileID, path string, src profile.Source) (profile.InstallResult, error) {
+		Install: func(ctx context.Context, game, profileID, path string, src profile.Source) (profile.InstallResult, error) {
 			if src.ModID > 0 {
-				return profiles.InstallSource(game, profileID, path, src)
+				return profiles.InstallSource(ctx, game, profileID, path, src)
 			}
-			return profileSvc.InstallArchive(game, profileID, path)
+			return profileSvc.InstallArchive(ctx, game, profileID, path)
 		},
 		HashCache: filepath.Join(dataDir, "cache", "archive-hashes.json"),
 		Offer:     func(g string) bool { return settings.ToggleOn(store.Get().GamePrefs(g).OfferNewDownloads) },
@@ -1121,7 +1121,7 @@ func run() error {
 		_ = os.Remove(failurePath)
 		// A fetched manifest can name a newer bridge than the one synced at startup from the bundled copy.
 		for _, id := range implemented {
-			loadersvc.SyncBundled(loaders, id)
+			loadersvc.SyncBundled(context.Background(), loaders, id)
 		}
 	}()
 	windowClosed = func() bool {

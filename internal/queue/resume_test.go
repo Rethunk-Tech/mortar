@@ -204,7 +204,7 @@ func TestExpiredNexusLinkRefetchesThenRanges(t *testing.T) {
 	s, err := New(Deps{
 		Client:  func() (*nexus.Client, error) { return client, nil },
 		Premium: func() bool { return true },
-		Install: func(_, _, path string, _ profile.Source) (profile.InstallResult, error) {
+		Install: func(_ context.Context, _, _, path string, _ profile.Source) (profile.InstallResult, error) {
 			b, err := fsx.ReadFile(path)
 			if err != nil || string(b) != body {
 				return profile.InstallResult{}, fmt.Errorf("installer read %q: %w", b, err)

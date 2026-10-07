@@ -118,11 +118,11 @@ func TestANewerMainFileReplacesItsEntryWhenItsModsWereRenamed(t *testing.T) {
 	e := newEnv(t)
 	p := mustCreate(t, e, "P")
 	old := buildZip(t, "a.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
-	if _, err := e.InstallSource("stardew", p.ID, old, Source{Kind: KindNexus, Name: "a.zip", ModID: 7, FileID: 1}); err != nil {
+	if _, err := e.InstallSource(t.Context(), "stardew", p.ID, old, Source{Kind: KindNexus, Name: "a.zip", ModID: 7, FileID: 1}); err != nil {
 		t.Fatal(err)
 	}
 	next := buildZip(t, "b.zip", map[string]string{"B/manifest.json": manifestJSON("X.B")})
-	got, err := e.InstallSource("stardew", p.ID, next, Source{Kind: KindNexus, Name: "b.zip", ModID: 7, FileID: 2}.WithReplacing(1))
+	got, err := e.InstallSource(t.Context(), "stardew", p.ID, next, Source{Kind: KindNexus, Name: "b.zip", ModID: 7, FileID: 2}.WithReplacing(1))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,7 +137,7 @@ func TestAddUpdateRemoveMultiFileEntry(t *testing.T) {
 	p := mustCreate(t, e, "P")
 	main := buildZip(t, "a.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	src := Source{Kind: KindNexus, Name: "a.zip", ModID: 7, FileID: 1, Version: "1.0"}
-	res, err := e.InstallSource("stardew", p.ID, main, src)
+	res, err := e.InstallSource(t.Context(), "stardew", p.ID, main, src)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -159,7 +159,7 @@ func TestAddUpdateRemoveMultiFileEntry(t *testing.T) {
 
 	next := buildZip(t, "a2.zip", map[string]string{"A/manifest.json": `{"Name":"X.A","Author":"me","Version":"2.0.0","UniqueID":"X.A"}`})
 	neu := Source{Kind: KindNexus, Name: "a2.zip", ModID: 7, FileID: 3, Version: "2.0"}
-	if err := e.items.AddArchiveKey("stardew", store.NexusKey(7, 3), next); err != nil {
+	if err := e.items.AddArchiveKey(t.Context(), "stardew", store.NexusKey(7, 3), next); err != nil {
 		t.Fatal(err)
 	}
 	got, err = e.UpdateMultiFile("stardew", p.ID, entryKey, store.NexusKey(7, 3), &neu)
@@ -212,7 +212,7 @@ func TestSplitAndCombineEntries(t *testing.T) {
 	p := mustCreate(t, e, "P")
 	main := buildZip(t, "a.zip", map[string]string{"A/manifest.json": manifestJSON("X.A")})
 	src := Source{Kind: KindNexus, Name: "a.zip", ModID: 7, FileID: 1, Version: "1.0"}
-	res, err := e.InstallSource("stardew", p.ID, main, src)
+	res, err := e.InstallSource(t.Context(), "stardew", p.ID, main, src)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -309,7 +309,7 @@ func TestSplitAndCombineEntries(t *testing.T) {
 
 	otherZip := buildZip(t, "c.zip", map[string]string{"C/manifest.json": manifestJSON("Y.C")})
 	otherSrc := Source{Kind: KindNexus, Name: "c.zip", ModID: 8, FileID: 1, Version: "1.0"}
-	if err := e.items.AddArchiveKey("stardew", store.NexusKey(8, 1), otherZip); err != nil {
+	if err := e.items.AddArchiveKey(t.Context(), "stardew", store.NexusKey(8, 1), otherZip); err != nil {
 		t.Fatal(err)
 	}
 	page, err := e.AddEntry("stardew", p.ID, store.NexusKey(8, 1), otherSrc)

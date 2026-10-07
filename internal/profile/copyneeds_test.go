@@ -24,7 +24,7 @@ func TestCopyModsWithNeedsBringsWhatTheTargetLacks(t *testing.T) {
 		zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{
 			"manifest.json": `{"name":"` + name + `","version_number":"` + version + `","dependencies":[` + deps + `]}`, name + ".dll": version,
 		})
-		if _, err := e.InstallSource(lc, profileID, zip, Source{Kind: KindThunderstore, Name: "Ns-" + name, Version: version}); err != nil {
+		if _, err := e.InstallSource(t.Context(), lc, profileID, zip, Source{Kind: KindThunderstore, Name: "Ns-" + name, Version: version}); err != nil {
 			t.Fatal(err)
 		}
 	}

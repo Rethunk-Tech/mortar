@@ -18,10 +18,10 @@ func TestMoveGameModsMovesNewFoldersAndSkipsHeldOnes(t *testing.T) {
 	if _, err := e.AddEntry("stardew", p.ID, "held", Source{Kind: KindLocal, Name: "held.zip"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.MoveGameMods("stardew", p.ID, game, []string{"../escape"}); err == nil {
+	if _, err := e.MoveGameMods(t.Context(), "stardew", p.ID, game, []string{"../escape"}); err == nil {
 		t.Fatal("moved a folder outside the Mods folder")
 	}
-	res, err := e.MoveGameMods("stardew", p.ID, game, []string{filepath.Join(game, "New"), ".Off", "Held"})
+	res, err := e.MoveGameMods(t.Context(), "stardew", p.ID, game, []string{filepath.Join(game, "New"), ".Off", "Held"})
 	if err != nil {
 		t.Fatal(err)
 	}

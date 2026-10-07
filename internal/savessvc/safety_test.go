@@ -107,7 +107,7 @@ func (e saveEnv) alphaItem(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if err := e.items.AddDir("stardew", key, src); err != nil {
+	if err := e.items.AddDir(t.Context(), "stardew", key, src); err != nil {
 		t.Fatal(err)
 	}
 }

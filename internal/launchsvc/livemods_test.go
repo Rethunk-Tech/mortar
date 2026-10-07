@@ -42,7 +42,7 @@ func TestOnlyTheCopyBepInExLoadedReadsLoaded(t *testing.T) {
 	}
 	for _, name := range []string{"DupA", "DupB"} {
 		zip := tsPackage(t, name, map[string]string{"plugins/Mod.dll": string(dll)})
-		if _, err := ps.InstallSource(lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-" + name, Version: "1.0.0"}); err != nil {
+		if _, err := ps.InstallSource(t.Context(), lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-" + name, Version: "1.0.0"}); err != nil {
 			t.Fatal(err)
 		}
 	}

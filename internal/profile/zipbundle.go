@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -30,7 +31,7 @@ type zipManifest struct {
 }
 
 // restoreOverlays adds each optional file of src back over its restored main entry, with its placement and switch.
-func (s *Store) restoreOverlays(game, id, tmp string, src Profile) (Profile, error) {
+func (s *Store) restoreOverlays(ctx context.Context, game, id, tmp string, src Profile) (Profile, error) {
 	var out Profile
 	keys := map[string]string{}
 	for _, e := range src.Entries {
@@ -41,7 +42,7 @@ func (s *Store) restoreOverlays(game, id, tmp string, src Profile) (Profile, err
 		if err := datadir.CopyTree(filepath.Join(tmp, zipOverlaysDir, e.Key), dst); err != nil {
 			return Profile{}, fmt.Errorf("%s/%s: %w", zipOverlaysDir, e.Key, err)
 		}
-		key, err := s.items.AddHashedDir(game, dst)
+		key, err := s.items.AddHashedDir(ctx, game, dst)
 		if err != nil {
 			return Profile{}, err
 		}
@@ -65,7 +66,7 @@ func (s *Store) restoreOverlays(game, id, tmp string, src Profile) (Profile, err
 }
 
 // RestoreZip imports a profile zip as a new profile with a unique name. It never overwrites an existing profile.
-func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
+func (s *Store) RestoreZip(ctx context.Context, game, zipPath string) (Profile, error) {
 	tmp, err := os.MkdirTemp(filepath.Dir(s.root), "mortar-restore-*")
 	if err != nil {
 		return Profile{}, err
@@ -144,7 +145,7 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 		if err := undotEntry(stage, e); err != nil {
 			return Profile{}, err
 		}
-		key, err := s.items.AddHashedDir(game, dst)
+		key, err := s.items.AddHashedDir(ctx, game, dst)
 		if err != nil {
 			return Profile{}, err
 		}
@@ -185,7 +186,7 @@ func (s *Store) RestoreZip(game, zipPath string) (Profile, error) {
 		}
 	}
 	if slices.ContainsFunc(src.Entries, Entry.IsOverlay) {
-		if out, err = s.restoreOverlays(game, created.ID, tmp, src); err != nil {
+		if out, err = s.restoreOverlays(ctx, game, created.ID, tmp, src); err != nil {
 			return Profile{}, err
 		}
 	}

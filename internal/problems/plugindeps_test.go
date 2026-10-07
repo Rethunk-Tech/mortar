@@ -133,7 +133,7 @@ func TestProblemsCountsAnInstalledPluginsMissingHardDependency(t *testing.T) {
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{
 		"manifest.json": `{"name":"Fixture","version_number":"1.0.0","dependencies":[]}`, "Fixture.dll": string(dll),
 	})
-	if _, err := profiles.InstallSource("lethal-company", p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-Fixture", Version: "1.0.0"}); err != nil {
+	if _, err := profiles.InstallSource(t.Context(), "lethal-company", p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-Fixture", Version: "1.0.0"}); err != nil {
 		t.Fatal(err)
 	}
 	source.Register(fakeThunderstore{id: "nexus"})
@@ -171,7 +171,7 @@ func manifestProblems(t *testing.T, disable []string, pkgs ...manifestPkg) Resul
 		zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{
 			"manifest.json": `{"name":"` + pk.name + `","version_number":"` + pk.version + `","dependencies":[` + pk.deps + `]}`, pk.name + ".dll": "x",
 		})
-		res, err := profiles.InstallSource("lethal-company", p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-" + pk.name, Version: pk.version})
+		res, err := profiles.InstallSource(t.Context(), "lethal-company", p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-" + pk.name, Version: pk.version})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -251,7 +251,7 @@ func TestProblemsReportsAMissingPackageOnceWhenManifestAndAssemblyBothNameIt(t *
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{
 		"manifest.json": `{"name":"Fixture","version_number":"1.0.0","dependencies":["Ns-Hard-1.0.0"]}`, "Fixture.dll": string(dll),
 	})
-	if _, err := profiles.InstallSource("lethal-company", p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-Fixture", Version: "1.0.0"}); err != nil {
+	if _, err := profiles.InstallSource(t.Context(), "lethal-company", p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-Fixture", Version: "1.0.0"}); err != nil {
 		t.Fatal(err)
 	}
 	source.Register(fakeThunderstore{id: "nexus"})

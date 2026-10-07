@@ -37,11 +37,11 @@ func sentRig(t *testing.T) outgoingRig {
 			t.Fatal(err)
 		}
 		key := store.NexusKey(7, i+1)
-		if err := senderStore.AddDir("stardew", key, dir); err != nil {
+		if err := senderStore.AddDir(t.Context(), "stardew", key, dir); err != nil {
 			t.Fatal(err)
 		}
 		if i == 0 {
-			if err := receiverStore.AddDir("stardew", key, dir); err != nil {
+			if err := receiverStore.AddDir(t.Context(), "stardew", key, dir); err != nil {
 				t.Fatal(err)
 			}
 		}

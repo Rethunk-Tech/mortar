@@ -54,7 +54,7 @@ func (amsi) Scan(ctx context.Context, dir string) (Detection, bool, error) {
 	var hit bool
 	errStop := errors.New("stop")
 	err = files(ctx, dir, func(abs, rel string) error {
-		flagged, err := scanFileAMSI(actx, session, abs, rel)
+		flagged, err := scanFileAMSI(ctx, actx, session, abs, rel)
 		if err != nil {
 			return err
 		}
@@ -70,7 +70,7 @@ func (amsi) Scan(ctx context.Context, dir string) (Detection, bool, error) {
 	return found, hit, nil
 }
 
-func scanFileAMSI(actx, session uintptr, path, rel string) (bool, error) {
+func scanFileAMSI(ctx context.Context, actx, session uintptr, path, rel string) (bool, error) {
 	in, err := fsx.Open(path)
 	if err != nil {
 		return false, err
@@ -82,6 +82,9 @@ func scanFileAMSI(actx, session uintptr, path, rel string) (bool, error) {
 	}
 	buf := make([]byte, amsiChunk)
 	for {
+		if err := ctx.Err(); err != nil {
+			return false, err
+		}
 		n, readErr := io.ReadFull(in, buf)
 		if n > 0 {
 			var result uint32

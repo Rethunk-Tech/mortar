@@ -98,7 +98,7 @@ func TestBundledBuiltFromGameFolder(t *testing.T) {
 		t.Fatalf("early = %+v, %v", early, err)
 	}
 	Attach(svc)
-	SyncBundled(svc, "stardew")
+	SyncBundled(t.Context(), svc, "stardew")
 	all, err := profiles.List("stardew")
 	if err != nil || len(all) != 1 || len(all[0].Entries) != 2 || all[0].Entries[0].Key != "smapi-4.5.2" || all[0].Entries[1].Key != store.BridgeKey("1.1.0", bridgeHash) || all[0].Entries[1].Source.Kind != profile.SourceMortar {
 		t.Fatalf("existing profile = %+v, %v", all, err)
@@ -163,7 +163,7 @@ func newEnsureEnv(t *testing.T) ensureEnv {
 		return loader.Status{Installed: true}, nil
 	}
 	Attach(svc)
-	SyncBundled(svc, "stardew")
+	SyncBundled(t.Context(), svc, "stardew")
 	return ensureEnv{svc, profiles, folder, &installs}
 }
 

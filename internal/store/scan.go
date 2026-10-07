@@ -60,7 +60,7 @@ func (s *Store) AllowUnscanned(game, key string) {
 
 // checkExtracted scans the folder an item was extracted into. A detection is returned as a malware error; a scan that
 // fails or finds no scanner lets the item in. Loader bundles are Mortar's own downloads and are not scanned.
-func (s *Store) checkExtracted(game, key, dir string) error {
+func (s *Store) checkExtracted(ctx context.Context, game, key, dir string) error {
 	s.scan.mu.Lock()
 	pick, failed := s.scan.scanner, s.scan.failed
 	allowed := s.scan.allowed[game+"\x00"+key]
@@ -72,12 +72,15 @@ func (s *Store) checkExtracted(game, key, dir string) error {
 	if _, _, loaderBundle := LoaderOf(key); loaderBundle {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), scanTimeout)
+	parent := ctx
+	ctx, cancel := context.WithTimeout(ctx, scanTimeout)
 	defer cancel()
 	hit, found, err := pick().Scan(ctx, dir)
 	switch {
 	case err == nil && !found:
 		return nil
+	case ctx.Err() != nil && parent.Err() != nil:
+		return parent.Err()
 	case err != nil:
 		if failed != nil && !isNoScanner(err) {
 			failed(game, key, err)

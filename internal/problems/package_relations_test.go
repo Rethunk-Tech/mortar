@@ -22,7 +22,7 @@ func TestRelationsOfAThunderstorePackage(t *testing.T) {
 	p := testenv.Profile(t, profiles, "lethal-company", "LC")
 	install := func(name, manifest string) string {
 		zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{"manifest.json": manifest, name + ".dll": "x"})
-		res, err := profiles.InstallSource("lethal-company", p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-" + name, Version: "1.0.0"})
+		res, err := profiles.InstallSource(t.Context(), "lethal-company", p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-" + name, Version: "1.0.0"})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -56,7 +56,7 @@ func TestUpdatesAfterAProblemsCheckStillAskTheGameSources(t *testing.T) {
 	_, profiles := testenv.Stores(t)
 	p := testenv.Profile(t, profiles, "lethal-company", "LC")
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{"manifest.json": `{"name":"Mod","version_number":"1.0.0","dependencies":[]}`, "Mod.dll": "x"})
-	if _, err := profiles.InstallSource("lethal-company", p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"}); err != nil {
+	if _, err := profiles.InstallSource(t.Context(), "lethal-company", p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"}); err != nil {
 		t.Fatal(err)
 	}
 	source.Register(fakeThunderstore{id: "nexus"})
@@ -87,7 +87,7 @@ func TestEnabledPackagesCoverEverySourceForPluginClashes(t *testing.T) {
 	install := func(src profile.Source) {
 		zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{"manifest.json": `{"name":"Mod","version_number":"1.0.0","dependencies":[]}`, "Mod.dll": "x"})
 		if src.Kind == profile.KindGitHub {
-			key, _, err := profiles.StageGitHub("lethal-company", src, zip)
+			key, _, err := profiles.StageGitHub(t.Context(), "lethal-company", src, zip)
 			if err == nil {
 				_, err = profiles.InstallStaged("lethal-company", p.ID, key, src)
 			}
@@ -96,7 +96,7 @@ func TestEnabledPackagesCoverEverySourceForPluginClashes(t *testing.T) {
 			}
 			return
 		}
-		if _, err := profiles.InstallSource("lethal-company", p.ID, zip, src); err != nil {
+		if _, err := profiles.InstallSource(t.Context(), "lethal-company", p.ID, zip, src); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -122,11 +122,11 @@ func TestAGitHubInstallFindsItsThunderstoreTwinByPluginGUID(t *testing.T) {
 	zip := func() string {
 		return testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{"manifest.json": `{"name":"ConfigurableCompany","version_number":"3.6.0","dependencies":[]}`, "ConfigurableCompany.dll": "x"})
 	}
-	if _, err := profiles.InstallSource("lethal-company", p.ID, zip(), profile.Source{Kind: profile.KindThunderstore, Name: "AMRV-ConfigurableCompany", Version: "3.6.0"}); err != nil {
+	if _, err := profiles.InstallSource(t.Context(), "lethal-company", p.ID, zip(), profile.Source{Kind: profile.KindThunderstore, Name: "AMRV-ConfigurableCompany", Version: "3.6.0"}); err != nil {
 		t.Fatal(err)
 	}
 	gh := profile.Source{Kind: profile.KindGitHub, Name: "github_release.zip", Repo: "TheAnsuz/Lethal-Company-Configurable-Company-API", Tag: "3.6.0", Version: "3.6.0"}
-	key, _, err := profiles.StageGitHub("lethal-company", gh, zip())
+	key, _, err := profiles.StageGitHub(t.Context(), "lethal-company", gh, zip())
 	if err == nil {
 		_, err = profiles.InstallStaged("lethal-company", p.ID, key, gh)
 	}

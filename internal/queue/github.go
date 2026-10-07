@@ -230,7 +230,7 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 	s.mu.Unlock()
 	s.publish(true)
 	source := sourceOf(it)
-	key, ids, err := s.d.Stage(it.Game, source, path)
+	key, ids, err := s.d.Stage(ctx, it.Game, source, path)
 	if err != nil {
 		return err
 	}

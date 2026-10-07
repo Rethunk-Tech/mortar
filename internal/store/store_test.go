@@ -51,7 +51,7 @@ func names(t *testing.T, dir string) []string {
 func TestAddArchiveIsIdempotent(t *testing.T) {
 	s := newStore(t)
 	p := buildZip(t, map[string]string{"Mod/manifest.json": "{}"})
-	key, err := s.AddArchive("stardew", p)
+	key, err := s.AddArchive(t.Context(), "stardew", p)
 	if err != nil || !strings.HasPrefix(key, "local-") || len(key) != len("local-")+64 {
 		t.Fatalf("key = %q, %v", key, err)
 	}
@@ -62,7 +62,7 @@ func TestAddArchiveIsIdempotent(t *testing.T) {
 	if b, err := fsx.ReadFile(filepath.Join(dir, "Mod", "manifest.json")); err != nil || string(b) != "{}" {
 		t.Fatalf("extracted = %q, %v", b, err)
 	}
-	again, err := s.AddArchive("stardew", p)
+	again, err := s.AddArchive(t.Context(), "stardew", p)
 	if err != nil || again != key {
 		t.Fatalf("re-add = %q, %v", again, err)
 	}
@@ -91,7 +91,7 @@ func TestLoadIndexRejectsSymlink(t *testing.T) {
 func TestKeysDoesNotStampCompleteMarkerVersion(t *testing.T) {
 	s := newStore(t)
 	p := buildZip(t, map[string]string{"Mod/manifest.json": "{}"})
-	if _, err := s.AddArchive("stardew", p); err != nil {
+	if _, err := s.AddArchive(t.Context(), "stardew", p); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s.Keys("stardew"); err != nil {
@@ -109,7 +109,7 @@ func TestKeysDoesNotStampCompleteMarkerVersion(t *testing.T) {
 func TestAddArchiveFailureLeavesNothing(t *testing.T) {
 	s := newStore(t)
 	p := buildZip(t, map[string]string{"ok.txt": "x", "../evil.txt": "y"})
-	_, err := s.AddArchive("stardew", p)
+	_, err := s.AddArchive(t.Context(), "stardew", p)
 	var ae *archive.Error
 	if !errors.As(err, &ae) || !errors.Is(err, archive.ErrTraversal) {
 		t.Fatalf("err = %v", err)
@@ -126,7 +126,7 @@ func TestDiskFullMessage(t *testing.T) {
 		t.Fatal(err)
 	}
 	n, _ := datadir.Size(src)
-	err := s.install("stardew", "smapi-1", filepath.Join(s.root, loadersDir, "stardew", "smapi", "1"), func(string) error { return syscall.ENOSPC }, func() int64 { return n })
+	err := s.install(t.Context(), "stardew", "smapi-1", filepath.Join(s.root, loadersDir, "stardew", "smapi", "1"), func(string) error { return syscall.ENOSPC }, func() int64 { return n })
 	if !errors.Is(err, syscall.ENOSPC) || !strings.Contains(err.Error(), "needs about 4 MB") {
 		t.Fatalf("err = %v", err)
 	}
@@ -138,7 +138,7 @@ func TestKeyAndGameValidation(t *testing.T) {
 		if _, err := s.Path("stardew", key); err == nil || errors.Is(err, ErrNotFound) {
 			t.Errorf("Path(%q) = %v, want validation error", key, err)
 		}
-		if err := s.AddDir("stardew", key, t.TempDir()); err == nil {
+		if err := s.AddDir(t.Context(), "stardew", key, t.TempDir()); err == nil {
 			t.Errorf("AddDir(%q) succeeded", key)
 		}
 	}
@@ -159,7 +159,7 @@ func TestAddDir(t *testing.T) {
 	if err := fsx.WriteFile(filepath.Join(src, "ConsoleCommands", "manifest.json"), []byte("{}"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.AddDir("stardew", LoaderKey("smapi", "4.1.0"), src); err != nil {
+	if err := s.AddDir(t.Context(), "stardew", LoaderKey("smapi", "4.1.0"), src); err != nil {
 		t.Fatal(err)
 	}
 	dir, err := s.Path("stardew", "smapi-4.1.0")
@@ -169,7 +169,7 @@ func TestAddDir(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, "ConsoleCommands", "manifest.json")); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.AddDir("stardew", "smapi-4.1.0", src); err != nil {
+	if err := s.AddDir(t.Context(), "stardew", "smapi-4.1.0", src); err != nil {
 		t.Fatalf("re-add: %v", err)
 	}
 }
@@ -178,7 +178,7 @@ func TestIncompleteItemIsReinstalled(t *testing.T) {
 	s := newStore(t)
 	first := t.TempDir()
 	testfs.WriteFile(t, first, "mod.dll", "old")
-	if err := s.AddDir("stardew", "local-item", first); err != nil {
+	if err := s.AddDir(t.Context(), "stardew", "local-item", first); err != nil {
 		t.Fatal(err)
 	}
 	dir, err := s.Path("stardew", "local-item")
@@ -191,7 +191,7 @@ func TestIncompleteItemIsReinstalled(t *testing.T) {
 	second := t.TempDir()
 	testfs.WriteFile(t, second, "mod.dll", "new")
 
-	if err := s.AddDir("stardew", "local-item", second); err != nil {
+	if err := s.AddDir(t.Context(), "stardew", "local-item", second); err != nil {
 		t.Fatal(err)
 	}
 	dir, err = s.Path("stardew", "local-item")
@@ -239,7 +239,7 @@ func TestCorruptIndexIsSetAsideForInstall(t *testing.T) {
 	src := t.TempDir()
 	testfs.WriteFile(t, src, "mod.dll", "mod")
 
-	if err := s.AddDir("stardew", "local-corrupt-index", src); err != nil {
+	if err := s.AddDir(t.Context(), "stardew", "local-corrupt-index", src); err != nil {
 		t.Fatal(err)
 	}
 	idx, err := s.loadIndex()
@@ -257,7 +257,7 @@ func TestCorruptIndexIsSetAsideForInstall(t *testing.T) {
 func TestCollect(t *testing.T) {
 	s := newStore(t)
 	for _, k := range []string{"smapi-1", "smapi-2", "smapi-3", "smapi-4"} {
-		if err := s.AddDir("stardew", k, t.TempDir()); err != nil {
+		if err := s.AddDir(t.Context(), "stardew", k, t.TempDir()); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -290,7 +290,7 @@ func TestCollect(t *testing.T) {
 func TestUnreferencedKeepsReferenced(t *testing.T) {
 	s := newStore(t)
 	for _, k := range []string{"smapi-1", "smapi-2"} {
-		if err := s.AddDir("stardew", k, t.TempDir()); err != nil {
+		if err := s.AddDir(t.Context(), "stardew", k, t.TempDir()); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -315,7 +315,7 @@ func TestUnreferencedKeepsReferenced(t *testing.T) {
 
 func TestTouchAndCleanup(t *testing.T) {
 	s := newStore(t)
-	if err := s.AddDir("stardew", "smapi-1", t.TempDir()); err != nil {
+	if err := s.AddDir(t.Context(), "stardew", "smapi-1", t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.saveIndex(index{"stardew": {"smapi-1": {Used: time.Unix(0, 0).UTC()}}}); err != nil {
@@ -357,7 +357,7 @@ func TestAddHashedDirCopiesInTreeSymlinksAndRejectsEscapes(t *testing.T) {
 	if err := os.Symlink(filepath.Join(src, "a.txt"), filepath.Join(src, "b.txt")); err != nil {
 		t.Fatal(err)
 	}
-	key, err := s.AddHashedDir("stardew", src)
+	key, err := s.AddHashedDir(t.Context(), "stardew", src)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -378,7 +378,7 @@ func TestAddHashedDirCopiesInTreeSymlinksAndRejectsEscapes(t *testing.T) {
 	if err := os.Symlink(outside, filepath.Join(escaped, "link")); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.AddHashedDir("stardew", escaped); err == nil {
+	if _, err := s.AddHashedDir(t.Context(), "stardew", escaped); err == nil {
 		t.Fatal("escaped symlink hashed")
 	}
 }
@@ -390,7 +390,7 @@ func TestAddArchiveStripsJunkFolders(t *testing.T) {
 		"Good/manifest.json":         `{"UniqueID":"Good.A"}`,
 		"thumbs/Thumbs.db":           "x",
 	})
-	key, err := s.AddArchive("stardew", p)
+	key, err := s.AddArchive(t.Context(), "stardew", p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -410,7 +410,7 @@ func TestAddArchiveStripsJunkFolders(t *testing.T) {
 func TestPathUsesStoredRootWhenPresent(t *testing.T) {
 	s := newStore(t)
 	p := buildZip(t, map[string]string{"Outer/Mod/manifest.json": `{"UniqueID":"M.A"}`, "readme.txt": "x"})
-	key, err := s.AddArchive("stardew", p)
+	key, err := s.AddArchive(t.Context(), "stardew", p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -470,7 +470,7 @@ func TestLoaderOf(t *testing.T) {
 
 func TestCollectWithRetentionOffRestartsTheClock(t *testing.T) {
 	s := newStore(t)
-	if err := s.AddDir("stardew", "smapi-1", t.TempDir()); err != nil {
+	if err := s.AddDir(t.Context(), "stardew", "smapi-1", t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 	old := time.Now().Add(-90 * 24 * time.Hour).UTC()
@@ -493,10 +493,10 @@ func TestCollectWithRetentionOffRestartsTheClock(t *testing.T) {
 func TestKeysWithTheSameBytesShareOneBlobAndAreFoundBySource(t *testing.T) {
 	s := newStore(t)
 	p := buildZip(t, map[string]string{"Mod/manifest.json": "{}"})
-	if err := s.AddArchiveKey("stardew", NexusKey(7, 9), p); err != nil {
+	if err := s.AddArchiveKey(t.Context(), "stardew", NexusKey(7, 9), p); err != nil {
 		t.Fatal(err)
 	}
-	local, err := s.AddArchive("stardew", p)
+	local, err := s.AddArchive(t.Context(), "stardew", p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -534,13 +534,13 @@ func TestKeysWithTheSameBytesShareOneBlobAndAreFoundBySource(t *testing.T) {
 func TestIndexReuseFollowsTheFile(t *testing.T) {
 	s := newStore(t)
 	other := &Store{root: s.root}
-	if err := s.AddDir("stardew", "smapi-1", t.TempDir()); err != nil {
+	if err := s.AddDir(t.Context(), "stardew", "smapi-1", t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s.Path("stardew", "smapi-1"); err != nil {
 		t.Fatal(err)
 	}
-	if err := other.AddDir("stardew", "smapi-2", t.TempDir()); err != nil {
+	if err := other.AddDir(t.Context(), "stardew", "smapi-2", t.TempDir()); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := s.Path("stardew", "smapi-2"); err != nil {
@@ -563,7 +563,7 @@ func BenchmarkPath(b *testing.B) {
 	for i := range 800 {
 		recs["local-"+strings.Repeat("0", 60)+strconv.Itoa(1000+i)] = record{Source: "local", Used: time.Now()}
 	}
-	if err := s.AddDir("stardew", "smapi-1", b.TempDir()); err != nil {
+	if err := s.AddDir(b.Context(), "stardew", "smapi-1", b.TempDir()); err != nil {
 		b.Fatal(err)
 	}
 	idx, err := s.loadIndex()
@@ -586,7 +586,7 @@ func TestEntriesCarryRecordedSizes(t *testing.T) {
 	s := newStore(t)
 	src := t.TempDir()
 	testfs.WriteFile(t, src, "mod.dll", "12345")
-	if err := s.AddDir("stardew", "local-sized", src); err != nil {
+	if err := s.AddDir(t.Context(), "stardew", "local-sized", src); err != nil {
 		t.Fatal(err)
 	}
 	entries, err := s.Entries()
@@ -620,7 +620,7 @@ func TestUnreferencedMatchesReportAndDanglingEntriesArePruned(t *testing.T) {
 		if err := os.WriteFile(filepath.Join(dir, "f"), []byte(k), 0o600); err != nil {
 			t.Fatal(err)
 		}
-		if err := s.AddDir("stardew", k, dir); err != nil {
+		if err := s.AddDir(t.Context(), "stardew", k, dir); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -661,7 +661,7 @@ func TestKeysAndRootsCannotLeaveTheStore(t *testing.T) {
 	s := newStore(t)
 	src := t.TempDir()
 	testfs.WriteFile(t, src, "mod.dll", "x")
-	if err := s.AddDir("stardew", "local-item", src); err != nil {
+	if err := s.AddDir(t.Context(), "stardew", "local-item", src); err != nil {
 		t.Fatal(err)
 	}
 	outside := t.TempDir()

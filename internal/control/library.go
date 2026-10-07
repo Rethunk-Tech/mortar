@@ -33,7 +33,7 @@ func (s *Services) handleLibrary(ctx context.Context, method string, p Params) (
 		res, err = s.Profiles.NewGameModsFolders(p.Game)
 	case "library.strays.move":
 		res, err = s.profileCall(p, func(id string) (any, error) {
-			return s.changed(p.Game, func() (any, error) { return s.Profiles.MoveGameModsFolders(p.Game, id, p.IDs) })
+			return s.changed(p.Game, func() (any, error) { return s.Profiles.MoveGameModsFolders(ctx, p.Game, id, p.IDs) })
 		})
 	case "library.strays.dismiss":
 		res, err = nil, s.Profiles.DismissGameModsFolder(p.Game, p.Name)

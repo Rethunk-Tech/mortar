@@ -57,7 +57,7 @@ func TestALethalCompanyLaunchKeepsBepInExInTheProfile(t *testing.T) {
 	var keyA string
 	for _, pkg := range []struct{ id, file string }{{"Ns-A", "A.dll"}, {"Ns-B", "B.dll"}} {
 		zip := tsPackage(t, pkg.id[3:], map[string]string{"plugins/" + pkg.file: pkg.id, "config/" + pkg.id + ".cfg": "default " + pkg.id})
-		res, err := ps.InstallSource(lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: pkg.id, Version: "1.0.0"})
+		res, err := ps.InstallSource(t.Context(), lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: pkg.id, Version: "1.0.0"})
 		if err != nil {
 			t.Fatal(err)
 		}

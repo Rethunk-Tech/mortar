@@ -25,7 +25,7 @@ func TestRemapJunkWrapperSkippedSilently(t *testing.T) {
 		"__MACOSX/foo/manifest.json": manifestJSON("Junk.A"),
 		"Good/manifest.json":         manifestJSON("Good.A"),
 	})
-	res, err := e.InstallArchive("stardew", p.ID, z)
+	res, err := e.InstallArchive(t.Context(), "stardew", p.ID, z)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,7 +43,7 @@ func TestRemapNestedManifestAsks(t *testing.T) {
 	e := newEnv(t)
 	p, _ := e.Create("stardew", "P")
 	z := buildZip(t, "loose.zip", map[string]string{"readme.txt": "hello", "notes.md": "x", "Mod/.hidden/manifest.json": manifestJSON("X.A")})
-	res, err := e.InstallArchive("stardew", p.ID, z)
+	res, err := e.InstallArchive(t.Context(), "stardew", p.ID, z)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,13 +67,13 @@ func TestRemapStoredRootReused(t *testing.T) {
 	})
 	src := Source{Kind: KindNexus, Name: "wrap.zip", ModID: 9, FileID: 4}
 	key := store.NexusKey(9, 4)
-	if err := e.items.AddArchiveKey("stardew", key, z); err != nil {
+	if err := e.items.AddArchiveKey(t.Context(), "stardew", key, z); err != nil {
 		t.Fatal(err)
 	}
 	if err := e.items.SetRoot("stardew", key, "Outer/Mod"); err != nil {
 		t.Fatal(err)
 	}
-	res, err := e.InstallSource("stardew", p.ID, z, src)
+	res, err := e.InstallSource(t.Context(), "stardew", p.ID, z, src)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +92,7 @@ func TestRemapStoredRootReused(t *testing.T) {
 	}
 
 	q, _ := e.Create("stardew", "Q")
-	res, err = e.InstallSource("stardew", q.ID, z, src)
+	res, err = e.InstallSource(t.Context(), "stardew", q.ID, z, src)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,7 +108,7 @@ func TestRemapStoredRootReused(t *testing.T) {
 		t.Fatal(err)
 	}
 	r, _ := e.Create("stardew", "R")
-	res, err = e.InstallSource("stardew", r.ID, z, src)
+	res, err = e.InstallSource(t.Context(), "stardew", r.ID, z, src)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,7 +129,7 @@ func TestRemapVariantsAskThenUpdateReuses(t *testing.T) {
 	}
 	install := func(fileID int, z string) InstallResult {
 		t.Helper()
-		res, err := e.InstallSource("stardew", p.ID, z, Source{Kind: KindNexus, Name: "v.zip", ModID: 9, FileID: fileID})
+		res, err := e.InstallSource(t.Context(), "stardew", p.ID, z, Source{Kind: KindNexus, Name: "v.zip", ModID: 9, FileID: fileID})
 		if err != nil {
 			t.Fatal(err)
 		}

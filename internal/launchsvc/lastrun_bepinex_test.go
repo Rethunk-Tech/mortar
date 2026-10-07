@@ -34,7 +34,7 @@ func TestLastRunIssuesNameTheBepInExPackageBehindAPlugin(t *testing.T) {
 		t.Fatal(err)
 	}
 	zip := tsPackage(t, "Fixture", map[string]string{"plugins/Mod.dll": string(dll)})
-	if _, err := ps.InstallSource(lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-Fixture", Version: "1.0.0"}); err != nil {
+	if _, err := ps.InstallSource(t.Context(), lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-Fixture", Version: "1.0.0"}); err != nil {
 		t.Fatal(err)
 	}
 	dir, err := ps.ProfileDir(lc, p.ID)

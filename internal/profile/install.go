@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -42,11 +43,11 @@ func (e *InstallError) Error() string { return e.Msg }
 func (e *InstallError) Unwrap() error { return e.Err }
 
 // InstallArchive unpacks the archive at path into the store and adds it to the profile as a local entry.
-func (s *Store) InstallArchive(game, id, path string) (InstallResult, error) {
+func (s *Store) InstallArchive(ctx context.Context, game, id, path string) (InstallResult, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return InstallResult{}, err
 	}
-	key, err := s.items.AddArchive(game, path)
+	key, err := s.items.AddArchive(ctx, game, path)
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
@@ -57,11 +58,11 @@ func (s *Store) InstallArchive(game, id, path string) (InstallResult, error) {
 }
 
 // InstallFolder copies the folder at path into the store under a content key and adds it to the profile as a local entry.
-func (s *Store) InstallFolder(game, id, path string) (InstallResult, error) {
+func (s *Store) InstallFolder(ctx context.Context, game, id, path string) (InstallResult, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return InstallResult{}, err
 	}
-	key, err := s.items.AddHashedDir(game, path)
+	key, err := s.items.AddHashedDir(ctx, game, path)
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
@@ -71,7 +72,7 @@ func (s *Store) InstallFolder(game, id, path string) (InstallResult, error) {
 // InstallSource unpacks the archive at path into the store under the key of its source's file and adds it to the profile,
 // replacing the version of a package the profile already holds. A Nexus file is keyed by mod and file id, a Thunderstore
 // package by name and version.
-func (s *Store) InstallSource(game, id, path string, source Source) (InstallResult, error) {
+func (s *Store) InstallSource(ctx context.Context, game, id, path string, source Source) (InstallResult, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return InstallResult{}, err
 	}
@@ -89,7 +90,7 @@ func (s *Store) InstallSource(game, id, path string, source Source) (InstallResu
 	default:
 		return InstallResult{}, installError(fmt.Errorf("cannot install a %q archive", source.Kind))
 	}
-	if err := s.items.AddArchiveKey(game, key, path); err != nil {
+	if err := s.items.AddArchiveKey(ctx, game, key, path); err != nil {
 		return InstallResult{}, installError(err)
 	}
 	if source.Kind != KindNexus {
@@ -102,10 +103,10 @@ func (s *Store) InstallSource(game, id, path string, source Source) (InstallResu
 
 // StageGitHub unpacks the archive at path into the store under the key of its GitHub asset and returns the key with
 // the mod ids of the mods it holds, so the source can be checked before anything lands in a profile.
-func (s *Store) StageGitHub(game string, source Source, path string) (key string, uniqueIDs []mod.ID, err error) {
+func (s *Store) StageGitHub(ctx context.Context, game string, source Source, path string) (key string, uniqueIDs []mod.ID, err error) {
 	owner, repo, _ := strings.Cut(source.Repo, "/")
 	key = github.Key(owner, repo, source.Tag, source.Asset)
-	if err := s.items.AddArchiveKey(game, key, path); err != nil {
+	if err := s.items.AddArchiveKey(ctx, game, key, path); err != nil {
 		return "", nil, installError(err)
 	}
 	if err := s.items.Describe(game, key, KindGitHub, source.Repo, source.Tag, source.Asset); err != nil {
@@ -313,7 +314,7 @@ func installError(err error) error {
 	var msg string
 	switch {
 	case errors.Is(err, archive.ErrUnsupportedFormat):
-		msg = "Mortar reads zip, RAR and 7z archives"
+		msg = "Mortar reads zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2 archives"
 	case errors.Is(err, archive.ErrEncrypted):
 		msg = "The archive is encrypted, and Mortar cannot open it"
 	case errors.Is(err, archive.ErrChecksum):

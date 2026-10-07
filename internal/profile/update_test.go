@@ -154,12 +154,12 @@ func TestInstallArchiveUpdatesHeldEntry(t *testing.T) {
 	p, _ := e.Create("stardew", "P")
 	v1 := buildZip(t, "A1.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/cfg.json": "v1"})
 	v2 := buildZip(t, "A2.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "A/cfg.json": "v2"})
-	if _, err := e.InstallArchive("stardew", p.ID, v1); err != nil {
+	if _, err := e.InstallArchive(t.Context(), "stardew", p.ID, v1); err != nil {
 		t.Fatal(err)
 	}
 	first := e.mods(p.ID)
 
-	res, err := e.InstallArchive("stardew", p.ID, v2)
+	res, err := e.InstallArchive(t.Context(), "stardew", p.ID, v2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,7 +168,7 @@ func TestInstallArchiveUpdatesHeldEntry(t *testing.T) {
 		t.Fatalf("result = %+v", res)
 	}
 
-	_, err = e.InstallArchive("stardew", p.ID, v2)
+	_, err = e.InstallArchive(t.Context(), "stardew", p.ID, v2)
 	var ie *InstallError
 	if !errors.As(err, &ie) || !errors.As(err, new(*DuplicateError)) || !strings.Contains(ie.Msg, "already in this profile") {
 		t.Fatalf("same key err = %v", err)
@@ -181,12 +181,12 @@ func TestInstallArchiveSpanningEntriesFails(t *testing.T) {
 	p, _ := e.Create("stardew", "P")
 	for _, id := range []string{"X.A", "X.B"} {
 		z := buildZip(t, id+".zip", map[string]string{id + "/manifest.json": manifestJSON(id)})
-		if _, err := e.InstallArchive("stardew", p.ID, z); err != nil {
+		if _, err := e.InstallArchive(t.Context(), "stardew", p.ID, z); err != nil {
 			t.Fatal(err)
 		}
 	}
 	both := buildZip(t, "Both.zip", map[string]string{"A/manifest.json": manifestJSON("X.A"), "B/manifest.json": manifestJSON("X.B")})
-	_, err := e.InstallArchive("stardew", p.ID, both)
+	_, err := e.InstallArchive(t.Context(), "stardew", p.ID, both)
 	var ie *InstallError
 	if !errors.As(err, &ie) || !errors.As(err, new(*SpansEntriesError)) || !strings.Contains(ie.Msg, "X.A; X.B") {
 		t.Fatalf("err = %v", err)
@@ -392,14 +392,14 @@ func TestPackageUpdatesBackUpSavesOncePerBatch(t *testing.T) {
 	b, _ := e.Create("lethal-company", "B")
 	v1 := Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.0.0"}
 	for _, p := range []Profile{a, b} {
-		if _, err := e.InstallSource("lethal-company", p.ID, tsZip(t, "1.0.0"), v1); err != nil {
+		if _, err := e.InstallSource(t.Context(), "lethal-company", p.ID, tsZip(t, "1.0.0"), v1); err != nil {
 			t.Fatal(err)
 		}
 	}
 	if _, err := os.Stat(backups); err == nil {
 		t.Fatal("an install took a backup")
 	}
-	res, err := e.InstallSource("lethal-company", a.ID, tsZip(t, "1.1.0"), Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.1.0"})
+	res, err := e.InstallSource(t.Context(), "lethal-company", a.ID, tsZip(t, "1.1.0"), Source{Kind: KindThunderstore, Name: "Ns-Mod", Version: "1.1.0"})
 	if err != nil || !res.Updated {
 		t.Fatalf("update = %+v, %v", res, err)
 	}

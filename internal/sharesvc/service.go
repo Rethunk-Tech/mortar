@@ -978,7 +978,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		change = added.LastChange
 	}
 	if len(local) > 0 {
-		imported, err := s.d.Profiles.ImportExternalMods(game, profileID, local)
+		imported, err := s.d.Profiles.ImportExternalMods(ctx, game, profileID, local)
 		if err != nil {
 			if created {
 				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))

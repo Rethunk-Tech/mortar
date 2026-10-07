@@ -83,7 +83,7 @@ func addTestItem(t *testing.T, s *Store, gameID string, it testItem) {
 	src := t.TempDir()
 	body := `{"Name":"` + it.name + `","UniqueID":"` + it.uniqueID + `","Version":"` + it.version + `"}`
 	testfs.WriteFile(t, src, "manifest.json", body)
-	if err := s.AddDir(gameID, it.key, src); err != nil {
+	if err := s.AddDir(t.Context(), gameID, it.key, src); err != nil {
 		t.Fatal(err)
 	}
 }

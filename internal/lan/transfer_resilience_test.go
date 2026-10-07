@@ -38,7 +38,7 @@ func TestAReaderThatPausesMidEntryStillGetsTheWholeEntry(t *testing.T) {
 	const size = 64 << 20
 	dir, _ := entryDir(t, size)
 	key := store.NexusKey(7, 1)
-	if err := senderStore.AddDir("stardew", key, dir); err != nil {
+	if err := senderStore.AddDir(t.Context(), "stardew", key, dir); err != nil {
 		t.Fatal(err)
 	}
 	sender := NewService(Deps{Store: senderStore})
