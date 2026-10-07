@@ -351,14 +351,14 @@ while True:
   display_up
   (cd "$ROOT" && hidden env -u XDG_DATA_HOME -u XDG_CONFIG_HOME -u XDG_CACHE_HOME HOME="$SANDBOX_HOME" PATH="$ROOT/bin:$PATH" \
     WAILS_SERVER_HOST=127.0.0.1 WAILS_SERVER_PORT="$PORT" nohup "${isolate[@]}" ./mortar-server >"$ROOT/server.log" 2>&1 &)
-  for _ in $(seq 1 30); do
+  for _ in $(seq 1 300); do
     if [ -n "$(listener || true)" ]; then
       # Recorded so a test run that dies can have its server stopped by pid later (frontend/e2e/sandbox.ts).
       listener >"$ROOT/server.pid"
       echo "self-test server on http://127.0.0.1:$PORT (pid $(listener), log $ROOT/server.log)"
       return
     fi
-    sleep 1
+    sleep 0.1
   done
   echo "server did not start; see $ROOT/server.log" >&2
   exit 1
@@ -495,13 +495,13 @@ PY
   stop
   start
   # stop waits for the old server to exit; the new one's first check runs at start and logs its pass.
-  for _ in $(seq 1 30); do
+  for _ in $(seq 1 300); do
     if cli backups list --game stardew --json | grep -q scheduled; then
       seed_lc
       echo "sandbox seeded"
       return
     fi
-    sleep 1
+    sleep 0.1
   done
   if ! grep -q "scheduled save backup:" "$ROOT/server.log"; then
     echo "the scheduled backup pass never ran: Mortar took the game for running (cli status stardew)" >&2
