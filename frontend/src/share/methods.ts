@@ -16,7 +16,7 @@ export const isDestination = (v: unknown): v is Destination => DESTINATIONS.some
 export type MortarFormat = 'link' | 'file'
 
 // Why a tile cannot be used: nothing at all to send, or only local archives, which a collection cannot carry.
-export type DisabledReason = 'empty' | 'local-only'
+type DisabledReason = 'empty' | 'local-only'
 
 export interface DestinationEntry {
   id: Destination
