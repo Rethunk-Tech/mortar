@@ -18,7 +18,7 @@ test('Game Select lists Stardew Valley before Lethal Company', async ({ page }) 
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
 })
 
-test('hovering a Game Select tile grows it and dims the others without changing layout', async ({
+test('hovering a Game Select tile grows it and leaves the others undimmed without changing layout', async ({
   page,
 }) => {
   await openSeedFarm(page)
@@ -28,7 +28,7 @@ test('hovering a Game Select tile grows it and dims the others without changing 
   const layout = () => tiles.evaluateAll((els) => els.map((e) => [e.clientWidth, e.clientHeight]))
   const before = await layout()
   await tiles.first().hover()
-  await expect(tiles.last()).toHaveCSS('filter', 'brightness(0.6)')
+  await expect(tiles.last()).toHaveCSS('filter', 'none')
   await expect(tiles.first()).toHaveCSS('transform', 'matrix(1.04, 0, 0, 1.04, 0, 0)')
   expect(await layout()).toEqual(before)
   const grid = tiles.first().locator('..')
@@ -52,12 +52,9 @@ test('Browse defaults to All sources and a search shows results from more than o
 test('the game title opens a switcher listing both playable games', async ({ page }) => {
   await openSeedFarm(page)
   await page.getByRole('button', { name: 'Stardew Valley' }).first().click()
-  const switcher = page.getByRole('dialog', { name: 'Switch game' })
-  await expect(switcher.getByRole('button', { name: 'Open Lethal Company' })).toBeVisible()
-  await expect(switcher.getByRole('button', { name: 'Open Stardew Valley' })).toHaveAttribute(
-    'aria-current',
-    'true',
-  )
+  const switcher = page.getByRole('menu', { name: 'Games' })
+  await expect(switcher.getByRole('menuitemradio', { name: 'Lethal Company' })).toBeVisible()
+  await expect(switcher.getByRole('menuitemradio', { name: 'Stardew Valley' })).toBeChecked()
   await page.keyboard.press('Escape')
   await expect(switcher).toBeHidden()
 })
@@ -71,10 +68,7 @@ test('switching games asks nothing about the previous game’s profiles', async 
     }
   })
   await page.getByRole('button', { name: 'Stardew Valley' }).first().click()
-  await page
-    .getByRole('dialog', { name: 'Switch game' })
-    .getByRole('button', { name: 'Open Lethal Company' })
-    .click()
+  await page.getByRole('menuitemradio', { name: 'Lethal Company' }).click()
   await expect(page.getByRole('button', { name: 'Seed Lobby' }).first()).toBeVisible()
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
   await page.waitForLoadState('networkidle')
