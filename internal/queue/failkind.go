@@ -3,6 +3,7 @@ package queue
 import (
 	"errors"
 	"io"
+	"runtime"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -27,12 +28,16 @@ func failureKind(err error) string {
 	switch {
 	case errors.Is(err, nexus.ErrUnauthorized):
 		return FailAuth
-	case errors.Is(err, nexus.ErrQuarantined), platformBlocked(err):
+	case errors.Is(err, nexus.ErrQuarantined):
+		return FailBlocked
+	case errors.As(err, new(*store.DetectedError)):
+		return FailMalware
+	// Windows reports an antivirus holding a file Mortar just wrote as access denied; store.RealTimeBlock has
+	// already turned its explicit virus errors into a detection.
+	case runtime.GOOS == "windows" && usererr.KindOf(err) == usererr.Permission:
 		return FailBlocked
 	case errors.As(err, &full), usererr.IsDiskFull(err):
 		return FailDisk
-	case errors.As(err, new(*store.DetectedError)):
-		return FailMalware
 	case errors.As(err, new(*profile.NoBaseError)):
 		return FailNoBase
 	case usererr.KindOf(err) == usererr.Network,

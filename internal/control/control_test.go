@@ -74,7 +74,8 @@ func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 				return nil, errors.New("boom")
 			}
 			if method == "flagged" {
-				return nil, usererr.Wrap(usererr.Malware, &store.DetectedError{Game: "stardew", Key: "k", Detection: avscan.Detection{Scanner: "AMSI"}})
+				hit := avscan.Detection{Scanner: "AMSI"}
+				return nil, usererr.Wrap(usererr.Malware, &store.DetectedError{Game: "stardew", Key: "k", Detection: hit})
 			}
 			return map[string]string{"method": method, "game": p.Game}, nil
 		})

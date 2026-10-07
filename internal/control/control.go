@@ -12,7 +12,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"io"
 	"log"
 	"net"
@@ -24,6 +23,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // Params is every argument a method takes; each method reads the fields it needs.

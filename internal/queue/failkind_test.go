@@ -10,6 +10,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestFailureKind(t *testing.T) {
@@ -20,6 +21,7 @@ func TestFailureKind(t *testing.T) {
 		{fmt.Errorf("x: %w", nexus.ErrUnauthorized), FailAuth},
 		{nexus.ErrQuarantined, FailBlocked},
 		{&store.DiskFullError{NeedMB: 5}, FailDisk},
+		{usererr.Wrap(usererr.Malware, &store.DetectedError{Removed: true}), FailMalware},
 		{&url.Error{Op: "Get", URL: "https://x", Err: &net.OpError{Op: "dial", Err: errors.New("refused")}}, FailNetwork},
 		{fmt.Errorf("read: %w", io.ErrUnexpectedEOF), FailNetwork},
 		{errors.New("hash mismatch"), FailOther},
