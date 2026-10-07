@@ -67,7 +67,11 @@ export function useShareBuild() {
             setLastUsed(
               lastUsedDestination(
                 remembered,
-                shareDestinations({ thunderstore, count: next.count }),
+                shareDestinations({
+                  thunderstore,
+                  count: next.count,
+                  leftOut: next.leftOut?.length ?? 0,
+                }),
               ),
             )
             setFormat(suggestFile(next.count, next.tooLarge) ? 'file' : 'link')

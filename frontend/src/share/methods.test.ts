@@ -17,28 +17,44 @@ const on = {
 }
 
 test('thunderstore is listed only for games that have it', () => {
-  expect(shareDestinations({ thunderstore: false, count: 3 }).map((d) => d.id)).toEqual([
-    'mortar',
-    'nexus',
-    'nearby',
-    'list',
-  ])
-  expect(shareDestinations({ thunderstore: true, count: 3 }).map((d) => d.id)).toContain(
-    'thunderstore',
+  expect(shareDestinations({ thunderstore: false, count: 3, leftOut: 0 }).map((d) => d.id)).toEqual(
+    ['mortar', 'nexus', 'nearby', 'list'],
   )
+  expect(
+    shareDestinations({ thunderstore: true, count: 3, leftOut: 0 }).map((d) => d.id),
+  ).toContain('thunderstore')
 })
 
 test('an empty share disables every destination', () => {
-  expect(shareDestinations({ thunderstore: true, count: 0 }).every((d) => d.disabled)).toBe(true)
+  expect(
+    shareDestinations({ thunderstore: true, count: 0, leftOut: 0 }).every((d) => d.disabled),
+  ).toBe(true)
+})
+
+const disabledIds = (count: number, leftOut: number) =>
+  shareDestinations({ thunderstore: true, count, leftOut })
+    .filter((d) => d.disabled)
+    .map((d) => d.id)
+
+test('a profile of local archives keeps every destination that can carry them', () => {
+  expect(disabledIds(0, 2)).toEqual(['nexus', 'thunderstore'])
+  expect(shareDestinations({ thunderstore: false, count: 0, leftOut: 2 })[1]?.reason).toBe(
+    'local-only',
+  )
+})
+
+test('a profile of site mods and a mixed one disable nothing', () => {
+  expect(disabledIds(3, 0)).toEqual([])
+  expect(disabledIds(1, 2)).toEqual([])
 })
 
 test('lastUsedDestination needs a usable tile', () => {
-  const ds = shareDestinations({ thunderstore: false, count: 5 })
+  const ds = shareDestinations({ thunderstore: false, count: 5, leftOut: 0 })
   expect(lastUsedDestination('list', ds)).toBe('list')
   expect(lastUsedDestination(null, ds)).toBeNull()
   expect(lastUsedDestination('thunderstore', ds)).toBeNull()
   expect(
-    lastUsedDestination('list', shareDestinations({ thunderstore: false, count: 0 })),
+    lastUsedDestination('list', shareDestinations({ thunderstore: false, count: 0, leftOut: 0 })),
   ).toBeNull()
 })
 

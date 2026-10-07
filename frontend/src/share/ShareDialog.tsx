@@ -31,7 +31,11 @@ export function ShareDialog() {
     const p = st.profiles.find((x) => x.id === profileId)
     return p ? userModCount(p) : shareable
   })
-  const entries = shareDestinations({ thunderstore, count: shareable })
+  const entries = shareDestinations({
+    thunderstore,
+    count: shareable,
+    leftOut: info?.leftOut.length ?? 0,
+  })
   const names = {
     mortar: t`Mortar`,
     nexus: t`Nexus Mods`,

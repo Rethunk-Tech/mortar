@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Tooltip, Typography } from '@mui/material'
+import { Box, ButtonBase, Typography } from '@mui/material'
 import { List, Wifi } from 'lucide-react'
 import { type KeyboardEvent, type ReactNode, useRef } from 'react'
 import { Logo } from '../brand/Logo.tsx'
@@ -89,47 +89,48 @@ export function DestinationGrid({
     >
       {entries.map((entry) => {
         const tile = tiles[entry.id]
+        const reasons = {
+          empty: t`No mods to share`,
+          'local-only': t`Local archives can't go here`,
+        }
         return (
-          <Tooltip
-            key={entry.id}
-            title={entry.disabled ? t`No mods to share.` : ''}
-            disableInteractive={true}
-          >
-            <Box component="span" sx={{ display: 'flex' }}>
-              <ButtonBase
-                disabled={entry.disabled}
-                autoFocus={entry.id === lastUsed}
-                onClick={() => onChoose(entry.id)}
-                sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  gap: 1,
-                  p: 2,
-                  textAlign: 'left',
-                  borderRadius: '10px',
-                  border: '1px solid var(--mortar-hairline-12)',
-                  bgcolor: 'var(--mortar-card-hover)',
-                  opacity: entry.disabled ? DISABLED_OPACITY : 1,
-                  '&:hover, &:focus-visible': { borderColor: 'primary.main' },
-                }}
-              >
-                {tile.icon}
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography sx={{ fontWeight: 600, fontSize: 15 }}>{tile.name}</Typography>
-                  <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-                    {tile.hint}
+          <Box key={entry.id} sx={{ display: 'flex' }}>
+            <ButtonBase
+              disabled={entry.disabled}
+              autoFocus={entry.id === lastUsed}
+              onClick={() => onChoose(entry.id)}
+              sx={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                gap: 1,
+                p: 2,
+                textAlign: 'left',
+                borderRadius: '10px',
+                border: '1px solid var(--mortar-hairline-12)',
+                bgcolor: 'var(--mortar-card-hover)',
+                opacity: entry.disabled ? DISABLED_OPACITY : 1,
+                '&:hover, &:focus-visible': { borderColor: 'primary.main' },
+              }}
+            >
+              {tile.icon}
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontWeight: 600, fontSize: 15 }}>{tile.name}</Typography>
+                <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{tile.hint}</Typography>
+                {entry.reason ? (
+                  <Typography sx={{ fontSize: 12, color: 'text.primary', mt: 0.5 }}>
+                    {reasons[entry.reason]}
                   </Typography>
-                  {entry.id === lastUsed ? (
-                    <Typography sx={{ fontSize: 11, color: 'var(--mortar-accent-ink)', mt: 0.5 }}>
-                      {t`Last used`}
-                    </Typography>
-                  ) : null}
-                </Box>
-              </ButtonBase>
-            </Box>
-          </Tooltip>
+                ) : null}
+                {entry.id === lastUsed ? (
+                  <Typography sx={{ fontSize: 11, color: 'var(--mortar-accent-ink)', mt: 0.5 }}>
+                    {t`Last used`}
+                  </Typography>
+                ) : null}
+              </Box>
+            </ButtonBase>
+          </Box>
         )
       })}
     </Box>

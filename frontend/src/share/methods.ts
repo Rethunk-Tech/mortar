@@ -4,6 +4,10 @@ const MAX_COLUMNS = 3
 const SQUARE_TILES = 4
 const DESTINATIONS = ['mortar', 'nexus', 'thunderstore', 'nearby', 'list'] as const
 
+// Destinations that carry only mods the source sites know; a mod list, a .mortar file and a paired computer carry
+// local archives too.
+const SITE_ONLY: readonly Destination[] = ['nexus', 'thunderstore']
+
 export type Destination = (typeof DESTINATIONS)[number]
 
 export const isDestination = (v: unknown): v is Destination => DESTINATIONS.some((d) => d === v)
@@ -11,21 +15,33 @@ export const isDestination = (v: unknown): v is Destination => DESTINATIONS.some
 // What Mortar sends: a link, or a .mortar file with the mod settings.
 export type MortarFormat = 'link' | 'file'
 
+// Why a tile cannot be used: nothing at all to send, or only local archives, which a collection cannot carry.
+export type DisabledReason = 'empty' | 'local-only'
+
 export interface DestinationEntry {
   id: Destination
-  // Nothing to send yet: the tile stays in place so the grid does not shift.
+  // The tile stays in place when disabled so the grid does not shift.
   disabled: boolean
+  reason: DisabledReason | null
 }
 
 // The grid's tiles in order. Thunderstore's r2modman code and modpack only exist for games modded from Thunderstore.
+// `count` is the mods a link carries; `leftOut` the enabled ones it cannot (local archives).
 export function shareDestinations(opts: {
   thunderstore: boolean
   count: number
+  leftOut: number
 }): DestinationEntry[] {
-  return DESTINATIONS.filter((id) => id !== 'thunderstore' || opts.thunderstore).map((id) => ({
-    id,
-    disabled: opts.count === 0,
-  }))
+  return DESTINATIONS.filter((id) => id !== 'thunderstore' || opts.thunderstore).map((id) => {
+    const needsSite = SITE_ONLY.includes(id)
+    let reason: DisabledReason | null = null
+    if (opts.count + opts.leftOut === 0) {
+      reason = 'empty'
+    } else if (needsSite && opts.count === 0) {
+      reason = 'local-only'
+    }
+    return { id, disabled: reason !== null, reason }
+  })
 }
 
 // Columns that leave no lone tile on the last row: one row up to three tiles, 2x2 for four, 3 for five.

@@ -439,7 +439,7 @@ msgid "Always"
 msgstr "Always"
 
 #: src/share/DestinationGrid.tsx:66
-#: src/share/ShareDialog.tsx:39
+#: src/share/ShareDialog.tsx:43
 msgid "Nearby computer"
 msgstr "Nearby computer"
 
@@ -1702,6 +1702,10 @@ msgstr "{0} removed from {1, plural, one {# profile} other {# profiles}}"
 msgid "{0} was changed on {1}"
 msgstr "{0} was changed on {1}"
 
+#: src/share/DestinationGrid.tsx:93
+msgid "No mods to share"
+msgstr "No mods to share"
+
 #: src/settings/sections/DataStoreCheck.tsx:75
 msgid "Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly."
 msgstr "Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly."
@@ -2763,6 +2767,10 @@ msgstr "Mods and profiles"
 #: src/share/useImportFlow.ts:150
 msgid "Imported {name}"
 msgstr "Imported {name}"
+
+#: src/share/DestinationGrid.tsx:94
+msgid "Local archives can't go here"
+msgstr "Local archives can't go here"
 
 #: src/settings/sections/ItchAccount.tsx:52
 #: src/settings/sections/Sources.tsx:133
@@ -4421,7 +4429,7 @@ msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 #: src/settings/sections/About.tsx:67
 #: src/settings/sections/Updates.tsx:164
 #: src/share/DestinationGrid.tsx:51
-#: src/share/ShareDialog.tsx:36
+#: src/share/ShareDialog.tsx:40
 #: src/shell/AppMenu.tsx:135
 #: src/shell/AppMenu.tsx:138
 msgid "Mortar"
@@ -6477,7 +6485,7 @@ msgstr "{0, plural, one {Stopped asking about # folder} other {Stopped asking ab
 #: src/lan/SendPanel.tsx:130
 #: src/profiles/ProfilesPage.tsx:312
 #: src/settings/SettingsPage.tsx:69
-#: src/share/ShareDialog.tsx:73
+#: src/share/ShareDialog.tsx:77
 msgid "Back"
 msgstr "Back"
 
@@ -6872,7 +6880,7 @@ msgstr "Changelog: {name}"
 msgid "only {mods} is shown"
 msgstr "only {mods} is shown"
 
-#: src/share/DestinationGrid.tsx:126
+#: src/share/DestinationGrid.tsx:128
 msgid "Last used"
 msgstr "Last used"
 
@@ -7773,7 +7781,7 @@ msgid "This pack has files that always install."
 msgstr "This pack has files that always install."
 
 #: src/share/DestinationGrid.tsx:71
-#: src/share/ShareDialog.tsx:40
+#: src/share/ShareDialog.tsx:44
 msgid "Mod list"
 msgstr "Mod list"
 
@@ -12001,7 +12009,7 @@ msgstr "Looking for Mortar users…"
 msgid "Only on {value}."
 msgstr "Only on {value}."
 
-#: src/share/useShareBuild.ts:81
+#: src/share/useShareBuild.ts:85
 msgid "Could not build the link"
 msgstr "Could not build the link"
 
@@ -12351,7 +12359,7 @@ msgstr "{0} was installed from another site. Updating installs {1} from {2} inst
 #: src/mods/Sidebar.tsx:551
 #: src/settings/sections/NexusMods.tsx:309
 #: src/share/DestinationGrid.tsx:56
-#: src/share/ShareDialog.tsx:37
+#: src/share/ShareDialog.tsx:41
 msgid "Nexus Mods"
 msgstr "Nexus Mods"
 
@@ -12548,7 +12556,7 @@ msgstr "Dependencies"
 
 #: src/launch/LaunchLayer.tsx:135
 #: src/share/PreviewDialog.tsx:70
-#: src/share/ShareDialog.tsx:84
+#: src/share/ShareDialog.tsx:88
 msgid "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 msgstr "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 
@@ -12786,8 +12794,8 @@ msgstr "Save log…"
 #. placeholder {0}: info.name
 #. placeholder {0}: profile.name
 #: src/profiles/ProfileRow.tsx:248
-#: src/share/ShareDialog.tsx:56
-#: src/share/ShareDialog.tsx:79
+#: src/share/ShareDialog.tsx:60
+#: src/share/ShareDialog.tsx:83
 msgid "Share {0}"
 msgstr "Share {0}"
 
@@ -13235,7 +13243,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/share/ImportDialog.tsx:189
 #: src/share/ImportFooter.tsx:89
 #: src/share/PreviewDialog.tsx:35
-#: src/share/ShareDialog.tsx:91
+#: src/share/ShareDialog.tsx:95
 #: src/shell/TitleBar.tsx:114
 #: src/templates/TemplateDialogs.tsx:179
 #: src/tools/ToolsManageDialog.tsx:79
@@ -13315,7 +13323,6 @@ msgstr "Send links only"
 msgid "Open in the tray instead of showing the window"
 msgstr "Open in the tray instead of showing the window"
 
-#: src/share/DestinationGrid.tsx:95
 #: src/share/DestinationPanel.tsx:111
 msgid "No mods to share."
 msgstr "No mods to share."
@@ -13351,7 +13358,7 @@ msgstr "No saves yet"
 #: src/mods/listRows.ts:120
 #: src/mods/Sidebar.tsx:553
 #: src/share/DestinationGrid.tsx:61
-#: src/share/ShareDialog.tsx:38
+#: src/share/ShareDialog.tsx:42
 msgid "Thunderstore"
 msgstr "Thunderstore"
 
