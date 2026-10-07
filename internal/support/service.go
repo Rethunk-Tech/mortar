@@ -2,6 +2,7 @@
 package support
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -154,9 +155,7 @@ func (s *Service) BugURL(gameID string, r BugReport) string {
 		}
 	}
 	title := strings.TrimSpace(r.Title)
-	if title == "" {
-		title = "Bug: "
-	}
+	title = cmp.Or(title, "Bug: ")
 	return issuesURL + "?" + url.Values{"title": {title}, "body": {body}}.Encode()
 }
 

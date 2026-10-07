@@ -2,6 +2,7 @@
 package tidy
 
 import (
+	"cmp"
 	"log"
 	"sync"
 )
@@ -33,9 +34,7 @@ type Collector struct {
 
 // Add records a repair. Count defaults to the number of names; an entry that touched nothing is dropped.
 func (c *Collector) Add(what, where string, count int, names ...string) {
-	if count == 0 {
-		count = len(names)
-	}
+	count = cmp.Or(count, len(names))
 	if count <= 0 {
 		return
 	}

@@ -177,9 +177,7 @@ func (s *Service) Import(ctx context.Context, src Source, gameID, profileID stri
 		return Result{}, err
 	}
 	gameID = strings.TrimSpace(gameID)
-	if gameID == "" {
-		gameID = d.Game
-	}
+	gameID = cmp.Or(gameID, d.Game)
 	if !slices.ContainsFunc(game.Catalog(), func(g components.GameInfo) bool { return g.ID == gameID }) {
 		return Result{}, errors.New("choose which game this pack is for")
 	}

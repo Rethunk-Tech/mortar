@@ -186,9 +186,7 @@ func parseCompatJSON(b []byte) (CompatIndex, error) {
 	for _, raw := range mods {
 		ids := uniqueIDsOf(raw)
 		nexus := int(raw.NexusID)
-		if nexus == 0 {
-			nexus = int(raw.Nexus)
-		}
+		nexus = cmp.Or(nexus, int(raw.Nexus))
 		// A page that publishes several mods names no single identity.
 		if len(ids) == 1 {
 			if nexus > 0 {
@@ -289,9 +287,7 @@ func entryFromRaw(raw rawCompatMod) CompatEntry {
 			Version string `json:"version"`
 		}
 		if json.Unmarshal(raw.UnofficialUpdate, &u) == nil {
-			if e.UnofficialURL == "" {
-				e.UnofficialURL = strings.TrimSpace(u.URL)
-			}
+			e.UnofficialURL = cmp.Or(e.UnofficialURL, strings.TrimSpace(u.URL))
 			e.UnofficialVersion = strings.TrimSpace(u.Version)
 		}
 	}

@@ -3,6 +3,7 @@
 package nativehost
 
 import (
+	"cmp"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
@@ -240,9 +241,7 @@ func requiredByMods(entries []diskEntry, targets []mod.ID) ([]string, []string) 
 				if requiresID(m, t) {
 					seen[id] = true
 					name := m.Name
-					if name == "" {
-						name = m.ID.Local()
-					}
+					name = cmp.Or(name, m.ID.Local())
 					refs = append(refs, requiredByRef{id: m.ID, name: name})
 					break
 				}

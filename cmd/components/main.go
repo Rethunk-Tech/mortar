@@ -261,9 +261,7 @@ func selectAsset(releases []github.Release, repo, version, pattern string) (gith
 				return github.Release{}, github.Asset{}, fmt.Errorf("invalid asset pattern %q: %w", pattern, err)
 			}
 			if matched {
-				if asset.URL == "" {
-					asset.URL = "https://github.com/" + repo + "/releases/download/" + release.Tag + "/" + asset.Name
-				}
+				asset.URL = cmp.Or(asset.URL, "https://github.com/"+repo+"/releases/download/"+release.Tag+"/"+asset.Name)
 				return release, asset, nil
 			}
 		}

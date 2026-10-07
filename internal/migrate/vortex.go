@@ -123,9 +123,7 @@ func vortexPreviewState(modsPath, domain string, state map[string]json.RawMessag
 			continue
 		}
 		name := rawString(vm.Attributes, "name", "modName")
-		if name == "" {
-			name = modID
-		}
+		name = cmp.Or(name, modID)
 		uniqueID := rawString(vm.Attributes, "uniqueId", "uniqueID")
 		out = append(out, ModPreview{
 			ID: mod.SMAPI(uniqueID), Name: name, Version: rawString(vm.Attributes, "version", "modVersion"),
@@ -282,14 +280,10 @@ func vortexProfileList(state map[string]json.RawMessage, domain string) []vortex
 		if json.Unmarshal(value, &profile) != nil {
 			continue
 		}
-		if profile.ID == "" {
-			profile.ID = key
-		}
+		profile.ID = cmp.Or(profile.ID, key)
 		if profile.GameID != "" {
 			if vortexGameMatches(profile.GameID, domain) {
-				if profile.Name == "" {
-					profile.Name = profile.ID
-				}
+				profile.Name = cmp.Or(profile.Name, profile.ID)
 				out = append(out, profile)
 			}
 			continue
@@ -305,12 +299,8 @@ func vortexProfileList(state map[string]json.RawMessage, domain string) []vortex
 			if !vortexGameMatches(profile.GameID, domain) {
 				continue
 			}
-			if profile.ID == "" {
-				profile.ID = nestedID
-			}
-			if profile.Name == "" {
-				profile.Name = profile.ID
-			}
+			profile.ID = cmp.Or(profile.ID, nestedID)
+			profile.Name = cmp.Or(profile.Name, profile.ID)
 			out = append(out, profile)
 		}
 	}
@@ -331,9 +321,7 @@ func vortexModList(state map[string]json.RawMessage, domain string) []vortexMod 
 		if json.Unmarshal(value, &vm) != nil {
 			continue
 		}
-		if vm.ID == "" {
-			vm.ID = key
-		}
+		vm.ID = cmp.Or(vm.ID, key)
 		out = append(out, vm)
 	}
 	return out
@@ -350,9 +338,7 @@ var vortexPlaceholder = regexp.MustCompile(`(?i)\{(userdata|username|game)\}`)
 // and a relative result is relative to the Vortex data dir (root).
 func vortexModsPath(root, domain string, state map[string]json.RawMessage) string {
 	pattern := rawString(objectValue(objectValue(objectValue(state, "settings"), "mods"), "installPath"), domain)
-	if pattern == "" {
-		pattern = vortexInstallPattern
-	}
+	pattern = cmp.Or(pattern, vortexInstallPattern)
 	expanded := vortexPlaceholder.ReplaceAllStringFunc(pattern, func(m string) string {
 		switch strings.ToLower(m[1 : len(m)-1]) {
 		case "userdata":

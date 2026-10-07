@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -277,9 +278,7 @@ func scanGameMods(modsDir string) ([]gameModSlot, error) {
 
 func previewMod(f gameModFolder, m manifest.Mod) GameModPreview {
 	name := m.Name
-	if name == "" {
-		name = m.ModID().Local()
-	}
+	name = cmp.Or(name, m.ModID().Local())
 	return GameModPreview{
 		ID: m.ModID(), Name: name, Version: m.Version, Source: sourceLabel(f.source),
 		NexusModID: f.source.ModID, Status: outcomeImported, Disabled: f.disabled, Folder: f.dir,

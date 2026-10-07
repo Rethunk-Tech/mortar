@@ -157,9 +157,7 @@ func packSettings(packMod framework.Mod, pack cachedPack, present map[string]boo
 		for _, im := range group.required {
 			hint.For = append(hint.For, im.ModID())
 			name := im.Name
-			if name == "" {
-				name = im.ModID().Local()
-			}
+			name = cmp.Or(name, im.ModID().Local())
 			hint.ForNames = append(hint.ForNames, name)
 		}
 		out = append(out, hint)

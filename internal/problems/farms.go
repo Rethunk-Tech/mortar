@@ -1,6 +1,7 @@
 package problems
 
 import (
+	"cmp"
 	"slices"
 	"strings"
 
@@ -62,9 +63,7 @@ func scopeToSaveFarms(conflicts []framework.AssetConflict, saves []SaveFarm) []f
 			labels := make([]string, len(need))
 			for j, t := range need {
 				labels[j] = farmLabels[t]
-				if labels[j] == "" {
-					labels[j] = t
-				}
+				labels[j] = cmp.Or(labels[j], t)
 			}
 			out[i].Cosmetic = true
 			out[i].Note = &framework.ConflictNote{Kind: "farm", Value: strings.Join(labels, " or ")}

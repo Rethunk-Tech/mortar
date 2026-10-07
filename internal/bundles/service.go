@@ -2,6 +2,7 @@
 package bundles
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"os"
@@ -163,9 +164,7 @@ func snapshot(p profile.Profile, uniqueIDs []mod.ID) ([]Mod, error) {
 				continue
 			}
 			name := m.Name
-			if name == "" {
-				name = m.ID.Local()
-			}
+			name = cmp.Or(name, m.ID.Local())
 			byID[id] = Mod{ID: m.ID, Name: name, EntryKey: e.Key, Source: e.Source}
 		}
 	}

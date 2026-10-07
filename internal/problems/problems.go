@@ -292,9 +292,7 @@ func duplicatesWithNexus(ctx context.Context, m Meta, scheme string, enabled []f
 			if !ok {
 				continue
 			}
-			if pageID == 0 {
-				pageID = page
-			}
+			pageID = cmp.Or(pageID, page)
 			if page != pageID {
 				continue
 			}
@@ -477,9 +475,7 @@ func listedRequirements(ctx context.Context, m Meta, reqs RequirementsOf, domain
 				Note:          req.Notes,
 				Optional:      optionalRequirement(req.Notes),
 			}
-			if miss.Reason == "" {
-				miss.Reason = "absent"
-			}
+			miss.Reason = cmp.Or(miss.Reason, "absent")
 			pageName := cmp.Or(page.Name, req.Name)
 			pageRef := &Ref{
 				Site:     "Nexus",

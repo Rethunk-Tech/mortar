@@ -3,6 +3,7 @@ package sharesvc
 import (
 	"archive/zip"
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -110,9 +111,7 @@ func modOf(e profile.Entry, domain string, facts fileFacts) collectionMod {
 	if len(e.Mods) > 0 && e.Mods[0].Name != "" {
 		name = e.Mods[0].Name
 	}
-	if name == "" {
-		name = e.Key
-	}
+	name = cmp.Or(name, e.Key)
 	m := collectionMod{Name: name, Version: e.Source.Version, DomainName: domain, Instructions: e.Note}
 	if len(e.Mods) > 0 && m.Version == "" {
 		m.Version = e.Mods[0].Version

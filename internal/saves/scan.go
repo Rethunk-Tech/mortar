@@ -4,6 +4,7 @@ package saves
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -159,9 +160,7 @@ func (s *Scanner) Newest(index map[string][]meta.Ref) (Info, error) {
 			continue
 		}
 		at := st.Info
-		if at == 0 {
-			at = st.Main
-		}
+		at = cmp.Or(at, st.Main)
 		if newest == "" || at > played || (at == played && entry > newest) {
 			newest, played = entry, at
 		}

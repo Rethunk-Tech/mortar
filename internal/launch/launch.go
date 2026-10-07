@@ -3,6 +3,7 @@ package launch
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -167,12 +168,8 @@ type Timing struct {
 }
 
 func (t Timing) withDefaults() Timing {
-	if t.Timeout == 0 {
-		t.Timeout = 60 * time.Second
-	}
-	if t.Poll == 0 {
-		t.Poll = 250 * time.Millisecond
-	}
+	t.Timeout = cmp.Or(t.Timeout, 60*time.Second)
+	t.Poll = cmp.Or(t.Poll, 250*time.Millisecond)
 	return t
 }
 

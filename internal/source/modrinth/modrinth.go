@@ -55,9 +55,7 @@ func (Driver) ModPageURL(_, id string) string {
 
 // userAgent is the identification Modrinth requires of every client.
 func userAgent(version string) string {
-	if version == "" {
-		version = "dev"
-	}
+	version = cmp.Or(version, "dev")
 	return "Rethunk-Tech/mortar/" + version + " (+https://mortar.rethunk.tech)"
 }
 

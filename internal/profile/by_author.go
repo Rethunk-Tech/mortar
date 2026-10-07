@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"slices"
 	"strings"
 
@@ -48,9 +49,7 @@ func (s *Store) ModsByAuthor(game, author string) ([]AuthorMod, error) {
 					}
 					continue
 				}
-				if existing.Name == "" {
-					existing.Name = m.Name
-				}
+				existing.Name = cmp.Or(existing.Name, m.Name)
 				existing.Profiles = append(existing.Profiles, row)
 			}
 		}

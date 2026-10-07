@@ -2,6 +2,7 @@ package nxm
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -227,9 +228,7 @@ func (l *System) integrator() string {
 		if marked {
 			return name
 		}
-		if found == "" {
-			found = name
-		}
+		found = cmp.Or(found, name)
 	}
 	return found
 }

@@ -1,6 +1,7 @@
 package nexus
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -192,9 +193,7 @@ func (c *Client) modsChunk(ctx context.Context, domain string, ids []int, out ma
 			PictureURL: n.PictureURL, Category: n.Category, Endorsements: n.Endorsements, Downloads: n.Downloads,
 			Adult: n.Adult, Endorsed: n.Endorsed != nil && *n.Endorsed, Created: n.Created.UTC(), Updated: n.Updated.UTC(),
 		}
-		if info.Author == "" {
-			info.Author = n.Uploader.Name
-		}
+		info.Author = cmp.Or(info.Author, n.Uploader.Name)
 		for _, r := range n.Requirements.Nexus.Nodes {
 			req := Requirement{Name: r.Name, URL: r.URL, Notes: r.Notes, External: true}
 			if id, err := strconv.Atoi(r.ModID); err == nil && id > 0 && !r.External && r.GameID == strconv.Itoa(n.GameID) {

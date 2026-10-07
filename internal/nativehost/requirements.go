@@ -1,6 +1,7 @@
 package nativehost
 
 import (
+	"cmp"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -57,18 +58,14 @@ func requirementItems(reqs []nexus.Requirement) []requirementItem {
 	for _, req := range reqs {
 		name := strings.TrimSpace(req.Name)
 		if req.External || req.ModID < 1 {
-			if name == "" {
-				name = strings.TrimSpace(req.Notes)
-			}
+			name = cmp.Or(name, strings.TrimSpace(req.Notes))
 			if name == "" {
 				continue
 			}
 			items = append(items, requirementItem{Name: name, External: true})
 			continue
 		}
-		if name == "" {
-			name = strconv.Itoa(req.ModID)
-		}
+		name = cmp.Or(name, strconv.Itoa(req.ModID))
 		items = append(items, requirementItem{Name: name, ModID: req.ModID})
 	}
 	if len(items) == 0 {

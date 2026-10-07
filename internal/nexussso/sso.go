@@ -3,6 +3,7 @@
 package nexussso
 
 import (
+	"cmp"
 	"context"
 	"crypto/rand"
 	"encoding/json"
@@ -76,18 +77,10 @@ func (l Legacy) Run(ctx context.Context) (string, error) {
 	if l.Slug == "" {
 		return "", ErrNoSlug
 	}
-	if l.SocketURL == "" {
-		l.SocketURL = SocketURL
-	}
-	if l.PageURL == "" {
-		l.PageURL = PageURL
-	}
-	if l.Timeout == 0 {
-		l.Timeout = defaultTimeout
-	}
-	if l.RetryDelay == 0 {
-		l.RetryDelay = time.Second
-	}
+	l.SocketURL = cmp.Or(l.SocketURL, SocketURL)
+	l.PageURL = cmp.Or(l.PageURL, PageURL)
+	l.Timeout = cmp.Or(l.Timeout, defaultTimeout)
+	l.RetryDelay = cmp.Or(l.RetryDelay, time.Second)
 	runCtx, cancel := context.WithTimeout(ctx, l.Timeout)
 	defer cancel()
 

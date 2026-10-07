@@ -1,6 +1,7 @@
 package savessvc
 
 import (
+	"cmp"
 	"slices"
 	"strings"
 	"time"
@@ -70,9 +71,7 @@ func MissingFrom(recorded []PlayedMod, present, enabled map[string]bool) []Lack 
 		}
 		seen[id] = true
 		name := m.Name
-		if name == "" {
-			name = m.ID.Local()
-		}
+		name = cmp.Or(name, m.ID.Local())
 		out = append(out, Lack{ID: m.ID, Name: name, Disabled: present[id]})
 	}
 	return out

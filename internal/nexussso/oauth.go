@@ -1,6 +1,7 @@
 package nexussso
 
 import (
+	"cmp"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
@@ -89,9 +90,7 @@ func (o OAuth) Authorize(ctx context.Context) (Tokens, error) {
 		return Tokens{}, ErrNoSlug
 	}
 	timeout := o.Timeout
-	if timeout == 0 {
-		timeout = defaultTimeout
-	}
+	timeout = cmp.Or(timeout, defaultTimeout)
 	runCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -223,8 +222,6 @@ func (o OAuth) Fresh(ctx context.Context) (Tokens, error) {
 	if err != nil {
 		return Tokens{}, err
 	}
-	if next.Refresh == "" {
-		next.Refresh = t.Refresh
-	}
+	next.Refresh = cmp.Or(next.Refresh, t.Refresh)
 	return next, Save(next)
 }

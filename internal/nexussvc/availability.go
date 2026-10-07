@@ -1,6 +1,7 @@
 package nexussvc
 
 import (
+	"cmp"
 	"strings"
 	"time"
 )
@@ -28,9 +29,7 @@ func (d Details) Mark() PageMark {
 // status other than "published", or available false, means updates cannot be downloaded.
 func PageAvailability(status string, available bool, updatedTime, createdTime string) PageMark {
 	date := strings.TrimSpace(updatedTime)
-	if date == "" {
-		date = strings.TrimSpace(createdTime)
-	}
+	date = cmp.Or(date, strings.TrimSpace(createdTime))
 	if i := strings.IndexByte(date, 'T'); i > 0 {
 		date = date[:i]
 	}

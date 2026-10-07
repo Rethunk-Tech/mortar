@@ -2,6 +2,7 @@ package profile
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/gob"
 	"errors"
 	"fmt"
@@ -917,9 +918,7 @@ func (s *Store) adoptDriftFolder(game, id, folder string) (Profile, error) {
 // trash/<game>/<profile id>.
 func (s *Store) removedModsDir(game, id string) string {
 	trash := s.trash
-	if trash == "" {
-		trash = filepath.Join(filepath.Dir(s.root), "trash")
-	}
+	trash = cmp.Or(trash, filepath.Join(filepath.Dir(s.root), "trash"))
 	return filepath.Join(trash, game, "removed-mods", id)
 }
 

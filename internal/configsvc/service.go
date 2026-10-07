@@ -1,6 +1,7 @@
 package configsvc
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -109,9 +110,7 @@ func (d cfgOnDisk) ownedBy(names []string) bool {
 
 func (d cfgOnDisk) file() ConfigFile {
 	label := d.doc.plugin
-	if label == "" {
-		label = d.name
-	}
+	label = cmp.Or(label, d.name)
 	return ConfigFile{Name: d.name, Format: FormatBepInEx, Label: label}
 }
 

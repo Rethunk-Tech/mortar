@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"cmp"
 	"log"
 	"path/filepath"
 
@@ -9,9 +10,7 @@ import (
 
 func launchTool(t Tool, ctx Context) error {
 	dir := expand(t.WorkingDir, ctx)
-	if dir == "" {
-		dir = ctx.Game
-	}
+	dir = cmp.Or(dir, ctx.Game)
 	args := expandArgs(t.Arguments, ctx)
 	exe := expand(t.Executable, ctx)
 	log.Printf("tools: starting %q (%s)", t.Name, exe)

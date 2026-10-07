@@ -1,6 +1,7 @@
 package problems
 
 import (
+	"cmp"
 	"slices"
 	"strings"
 	"sync"
@@ -73,9 +74,7 @@ func pluginClashes(pkgs []profile.PackageRef, deprecated map[string]bool) []Plug
 				continue
 			}
 			seen[g] = true
-			if display[g] == "" {
-				display[g] = pl.GUID
-			}
+			display[g] = cmp.Or(display[g], pl.GUID)
 			byGUID[g] = append(byGUID[g], owner{p, pl.Version})
 		}
 	}

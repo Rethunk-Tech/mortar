@@ -2,6 +2,7 @@
 package gog
 
 import (
+	"cmp"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -175,9 +176,7 @@ func heroicInstalls(cfg, productID string) []string {
 			return nil
 		}
 		for id, g := range keyed {
-			if g.AppName == "" {
-				g.AppName = id
-			}
+			g.AppName = cmp.Or(g.AppName, id)
 			games = append(games, g)
 		}
 	}

@@ -2,6 +2,7 @@ package profile
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -71,9 +72,7 @@ func salvageProfile(b []byte, id string) Profile {
 	p.Error = ""
 	p.RepairError = ""
 	p.Entries = nil
-	if p.Name == "" {
-		p.Name = id
-	}
+	p.Name = cmp.Or(p.Name, id)
 	if p.Created.IsZero() {
 		p.Created = time.Now().UTC().Truncate(time.Second)
 	}

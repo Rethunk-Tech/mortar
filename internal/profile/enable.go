@@ -1,6 +1,8 @@
 package profile
 
 import (
+	"cmp"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -75,9 +77,7 @@ func enableRequired(p *Profile, dir string, uniqueID mod.ID) []string {
 			continue
 		}
 		name := dep.Name
-		if name == "" {
-			name = dep.ID.Local()
-		}
+		name = cmp.Or(name, dep.ID.Local())
 		also = append(also, name)
 		queue = append(queue, requiredNeeds(dep)...)
 	}

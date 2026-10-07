@@ -5,6 +5,7 @@ package sharesvc
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/base64"
 	"errors"
@@ -568,9 +569,7 @@ func externalLocalMods(mods []migrate.ModPreview) []Mod {
 	for i, im := range mods {
 		if im.SourcePath != "" {
 			name := im.Name
-			if name == "" {
-				name = im.ID.Local()
-			}
+			name = cmp.Or(name, im.ID.Local())
 			out = append(out, Mod{
 				Key: externalKey(i), Site: SiteLocal, Name: name, Version: im.Version,
 				State: StateDownload, Enabled: im.Enabled, IDs: []mod.ID{im.ID},
@@ -579,9 +578,7 @@ func externalLocalMods(mods []migrate.ModPreview) []Mod {
 		}
 		if im.NexusModID == 0 {
 			name := im.Name
-			if name == "" {
-				name = im.ID.Local()
-			}
+			name = cmp.Or(name, im.ID.Local())
 			out = append(out, Mod{
 				Key: externalKey(i), Site: SiteLocal, Name: name, Version: im.Version,
 				State: StateUnavailable, Enabled: im.Enabled, Reason: ReasonNoFile, IDs: []mod.ID{im.ID},

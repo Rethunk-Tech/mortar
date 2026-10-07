@@ -1,6 +1,7 @@
 package sharesvc
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -278,12 +279,8 @@ func (r *resolver) nexus(modID, fileID int, state string) Mod {
 	}
 	fallbackName := func(fileName string) {
 		m.fileName = fileName
-		if m.Name == "" {
-			m.Name = cleanFileName(fileName)
-		}
-		if m.Name == "" {
-			m.Name = fmt.Sprintf("Nexus mod %d", modID)
-		}
+		m.Name = cmp.Or(m.Name, cleanFileName(fileName))
+		m.Name = cmp.Or(m.Name, fmt.Sprintf("Nexus mod %d", modID))
 	}
 	if r.hasNexus(modID, fileID) {
 		m.State = StateInstalled
@@ -329,12 +326,8 @@ func (r *resolver) nexus(modID, fileID int, state string) Mod {
 	}
 	df := datasetFile(info.page, m.FileID)
 	if df != nil {
-		if m.Version == "" {
-			m.Version = df.Version
-		}
-		if m.SizeKB == 0 {
-			m.SizeKB = df.SizeInBytes / 1024
-		}
+		m.Version = cmp.Or(m.Version, df.Version)
+		m.SizeKB = cmp.Or(m.SizeKB, df.SizeInBytes/1024)
 		for _, dm := range df.Mods {
 			m.IDs = append(m.IDs, dm.ModID())
 		}

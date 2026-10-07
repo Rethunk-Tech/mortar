@@ -1,6 +1,7 @@
 package migrate
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -94,9 +95,7 @@ func stardropPreviewFile(path, id, modsPath string) (ProfilePreview, error) {
 		return ProfilePreview{}, err
 	}
 	name := strings.TrimSpace(source.Name)
-	if name == "" {
-		name = id
-	}
+	name = cmp.Or(name, id)
 	enabled := make(map[string]bool, len(source.EnabledModIDs))
 	enabledIDs := make([]mod.ID, 0, len(source.EnabledModIDs))
 	for _, ref := range source.EnabledModIDs {

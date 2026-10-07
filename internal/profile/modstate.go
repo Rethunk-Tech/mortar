@@ -2,6 +2,7 @@ package profile
 
 import (
 	"bytes"
+	"cmp"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -161,9 +162,7 @@ func (s *Store) ResetConfig(game, id, key string, uniqueID mod.ID) error {
 // configInMod joins rel onto the mod folder and refuses anything that leaves it.
 func configInMod(modDir, rel string) (string, error) {
 	root := filepath.Clean(modDir)
-	if rel == "" {
-		rel = configFile
-	}
+	rel = cmp.Or(rel, configFile)
 	if filepath.IsAbs(rel) {
 		return "", fmt.Errorf("config.json is not in the mod folder")
 	}

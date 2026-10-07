@@ -1,6 +1,7 @@
 package modreport
 
 import (
+	"cmp"
 	"fmt"
 	"strings"
 
@@ -70,9 +71,7 @@ func Build(in Input) Result {
 	}
 	text := b.String()
 	title := in.IssueTitle
-	if title == "" {
-		title = "Error in " + in.ModName
-	}
+	title = cmp.Or(title, "Error in "+in.ModName)
 	repo := in.GitHubRepo
 	if repo == "" && in.Source.Kind == profile.KindGitHub {
 		repo = in.Source.Repo
@@ -82,9 +81,7 @@ func Build(in Input) Result {
 		modID = in.Source.ModID
 	}
 	domain := in.NexusDomain
-	if domain == "" {
-		domain = gameInfo.NexusDomain()
-	}
+	domain = cmp.Or(domain, gameInfo.NexusDomain())
 	if repo != "" {
 		return Result{Text: text, URL: GitHubIssueURL(repo, title, text), GitHub: true}
 	}
@@ -97,12 +94,8 @@ func Build(in Input) Result {
 // BuildFromLog fills version fields from the log summary when empty and collects error lines for modName.
 func BuildFromLog(log, modName string, in Input) Result {
 	summary := launch.Summarize(log)
-	if in.SMAPIVersion == "" {
-		in.SMAPIVersion = summary.SMAPI
-	}
-	if in.GameVersion == "" {
-		in.GameVersion = summary.Game
-	}
+	in.SMAPIVersion = cmp.Or(in.SMAPIVersion, summary.SMAPI)
+	in.GameVersion = cmp.Or(in.GameVersion, summary.Game)
 	if len(in.ErrorLines) == 0 {
 		in.ErrorLines = ErrorLines(log, modName)
 	}

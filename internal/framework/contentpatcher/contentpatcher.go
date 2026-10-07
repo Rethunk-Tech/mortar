@@ -2857,9 +2857,7 @@ func settingForDeadLoad(hit packHit, load cpPatch, winner packHit, conflict fram
 			continue
 		}
 		current := hit.config[strings.ToLower(condition.field)]
-		if current == "" {
-			current = schema.defaultValue
-		}
+		current = cmp.Or(current, schema.defaultValue)
 		if current == schema.defaultValue || !configHolds([]cpConfig{condition}, hit.schema, hit.config) {
 			continue
 		}

@@ -5,6 +5,7 @@
 package syncsvc
 
 import (
+	"cmp"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
@@ -295,9 +296,7 @@ func (s *Service) Scan(ctx context.Context) ([]Offer, error) {
 		}
 		for _, ref := range refs {
 			t := s.st.Profiles[key(game, ref.ID)]
-			if t.Remote == "" {
-				t.Remote = ref.ID
-			}
+			t.Remote = cmp.Or(t.Remote, ref.ID)
 			known[key(game, t.Remote)] = true
 			offer, waiting, err := s.scanOne(folder, ref, t, lagSeen)
 			if err != nil {

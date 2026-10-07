@@ -46,9 +46,7 @@ func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error)
 			return Layout{}, fmt.Errorf("%w: %q", ErrUnsafe, op.Source)
 		}
 		dest := op.Destination
-		if dest == "" {
-			dest = path.Base(src)
-		}
+		dest = cmp.Or(dest, path.Base(src))
 		// A leading slash means the package's folder, as no slash does.
 		dest = slash(cmp.Or(strings.TrimLeft(slash(dest), "/"), "."))
 		// A destination is inside the package's own folder: ".." would reach another mod's files.

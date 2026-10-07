@@ -1,6 +1,7 @@
 package control
 
 import (
+	"cmp"
 	"context"
 	"strings"
 
@@ -20,13 +21,9 @@ func (s *Services) Browse(ctx context.Context, game, source, text string, page i
 
 func (s *Services) browseFromParams(ctx context.Context, p Params) (browse.Page, error) {
 	text := strings.TrimSpace(p.Query)
-	if text == "" {
-		text = strings.TrimSpace(p.Name)
-	}
+	text = cmp.Or(text, strings.TrimSpace(p.Name))
 	source := strings.TrimSpace(p.Source)
-	if source == "" {
-		source = browse.AllSources
-	}
+	source = cmp.Or(source, browse.AllSources)
 	page := defaultPage
 	if p.Page > 0 {
 		page = p.Page

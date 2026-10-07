@@ -2,6 +2,7 @@ package contentpatcher
 
 import (
 	"bytes"
+	"cmp"
 	"compress/gzip"
 	"compress/zlib"
 	"encoding/base64"
@@ -1351,9 +1352,7 @@ func mapFileShapes(m decodedMap, ch cpChange) []cpShape {
 		return []cpShape{to}
 	}
 	mode := strings.ToLower(strings.TrimSpace(ch.PatchMode))
-	if mode == "" {
-		mode = "replacebylayer"
-	}
+	mode = cmp.Or(mode, "replacebylayer")
 	switch mode {
 	case "overlay":
 		var out []cpShape

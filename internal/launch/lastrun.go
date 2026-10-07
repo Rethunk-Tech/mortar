@@ -1,6 +1,7 @@
 package launch
 
 import (
+	"cmp"
 	"slices"
 	"strings"
 
@@ -57,9 +58,7 @@ func AttributeLog(log string, mods []ModRef, aliases map[string]ModRef) []ModRun
 			continue
 		}
 		key := string(ref.ID)
-		if key == "" {
-			key = ref.Name
-		}
+		key = cmp.Or(key, ref.Name)
 		row := byKey[key]
 		if row == nil {
 			row = &ModRunIssues{Name: ref.Name, ID: ref.ID}

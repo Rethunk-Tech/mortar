@@ -1,6 +1,7 @@
 package savessvc
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"strings"
@@ -79,9 +80,7 @@ func (s *Service) addRecorded(ctx context.Context, game, id string, mods []Playe
 			}
 		}
 		label := m.Name
-		if label == "" {
-			label = m.ID.Local()
-		}
+		label = cmp.Or(label, m.ID.Local())
 		missing = append(missing, label)
 	}
 	return added, queued, missing, s.enqueue(ctx, reqs)

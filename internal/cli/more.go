@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -200,9 +201,7 @@ func (c *cmd) more() (handled bool, err error) {
 		method = spec.method2
 	}
 	timeout := spec.timeout
-	if timeout == 0 {
-		timeout = readTimeout
-	}
+	timeout = cmp.Or(timeout, readTimeout)
 	var raw json.RawMessage
 	if err := c.call(method, p, &raw, timeout); err != nil {
 		return true, err

@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"strings"
@@ -57,12 +58,8 @@ func (it Item) incoming(category string, files []nexus.File, ids []mod.ID) profi
 
 func nexusSource(it Item, im nexus.Mod) profile.Source {
 	pic, end := im.PictureURL, im.EndorsementCount
-	if pic == "" {
-		pic = it.Picture
-	}
-	if end == 0 {
-		end = it.endorsed
-	}
+	pic = cmp.Or(pic, it.Picture)
+	end = cmp.Or(end, it.endorsed)
 	return sourceWithOptions(it, profile.Source{
 		Kind: profile.KindNexus, Name: it.FileName, ModID: it.ModID, FileID: it.FileID, Version: it.Version,
 		Picture: pic, EndorsementCount: end, ModName: it.Name, Category: it.Category,

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"cmp"
 	"fmt"
 	"strings"
 
@@ -41,18 +42,14 @@ func printAssetTargets(c *cmd, targets []contentpatcher.AssetTarget) {
 		winner := target.Winner.Local()
 		for _, m := range target.Mods {
 			name := m.ModName
-			if name == "" {
-				name = m.ModID.Local()
-			}
+			name = cmp.Or(name, m.ModID.Local())
 			if m.Winner {
 				name += "*"
 				winner = m.ModName
 			}
 			mods = append(mods, fmt.Sprintf("%s %s", name, m.Action))
 		}
-		if winner == "" {
-			winner = "unclear"
-		}
+		winner = cmp.Or(winner, "unclear")
 		rows = append(rows, []string{label, fmt.Sprint(len(target.Mods)), strings.Join(mods, ", "), winner})
 	}
 	c.table("TARGET\tMODS\tCHANGES\tWINNER", rows)
