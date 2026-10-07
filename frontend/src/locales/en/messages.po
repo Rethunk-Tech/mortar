@@ -204,6 +204,7 @@ msgstr "Open storage settings"
 msgid "Manage tools…"
 msgstr "Manage tools…"
 
+#: src/game/Home.tsx:79
 #: src/mods/Sidebar.tsx:155
 msgid "Updated"
 msgstr "Updated"
@@ -568,7 +569,7 @@ msgstr "Search settings"
 msgid "Notes"
 msgstr "Notes"
 
-#: src/game/Home.tsx:74
+#: src/game/Home.tsx:75
 #: src/saves/SaveDetails.tsx:82
 msgid "Last played {when}"
 msgstr "Last played {when}"
@@ -2570,7 +2571,7 @@ msgstr "Required by ({0})"
 
 #. placeholder {0}: calendar.year
 #. placeholder {1}: seasons[calendar.season] ?? ''
-#: src/game/Home.tsx:93
+#: src/game/Home.tsx:99
 msgid "{name} · Year {0} {1}"
 msgstr "{name} · Year {0} {1}"
 
@@ -3846,6 +3847,10 @@ msgstr "This profile skips this version, so Mortar does not offer it."
 #: src/install/DownloadsDialog.tsx:195
 msgid "Search archives"
 msgstr "Search archives"
+
+#: src/game/Home.tsx:77
+msgid "Created"
+msgstr "Created"
 
 #: src/launch/KnownGoodOffer.tsx:55
 msgid "The game started without errors"
@@ -6066,7 +6071,7 @@ msgstr "In Mortar"
 msgid "Edit profile…"
 msgstr "Edit profile…"
 
-#: src/game/Home.tsx:153
+#: src/game/Home.tsx:159
 #: src/settings/GameSettingsPage.tsx:162
 msgid "{name} settings"
 msgstr "{name} settings"
@@ -7550,7 +7555,7 @@ msgstr "More details"
 msgid "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 msgstr "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 
-#: src/game/Home.tsx:148
+#: src/game/Home.tsx:154
 msgid "Share…"
 msgstr "Share…"
 
@@ -7598,7 +7603,7 @@ msgstr "{gameName}'s Steam launch options run {loader} in place of the game. Ste
 msgid "Switch profile: {0} {mods}"
 msgstr "Switch profile: {0} {mods}"
 
-#: src/game/Home.tsx:84
+#: src/game/Home.tsx:90
 #: src/saves/SaveDetails.tsx:54
 msgid "Summer"
 msgstr "Summer"
@@ -8002,7 +8007,7 @@ msgstr "Source health"
 msgid "{0}: desktop notification"
 msgstr "{0}: desktop notification"
 
-#: src/game/Home.tsx:103
+#: src/game/Home.tsx:109
 msgid "All saves"
 msgstr "All saves"
 
@@ -8652,7 +8657,7 @@ msgstr "Unofficial update available: {0}"
 msgid "Last scheduled backup {when}"
 msgstr "Last scheduled backup {when}"
 
-#: src/game/Home.tsx:84
+#: src/game/Home.tsx:90
 #: src/saves/SaveDetails.tsx:54
 msgid "Winter"
 msgstr "Winter"
@@ -8822,7 +8827,7 @@ msgstr "Reset"
 msgid "Stop the game first."
 msgstr "Stop the game first."
 
-#: src/game/Home.tsx:84
+#: src/game/Home.tsx:90
 #: src/saves/SaveDetails.tsx:54
 msgid "Spring"
 msgstr "Spring"
@@ -8927,7 +8932,7 @@ msgstr "No Mortar computers found nearby."
 msgid "Upload"
 msgstr "Upload"
 
-#: src/game/Home.tsx:43
+#: src/game/Home.tsx:44
 msgid "At a glance"
 msgstr "At a glance"
 
@@ -10102,7 +10107,7 @@ msgstr "Removed from Nexus · {0}"
 msgid "Abstain"
 msgstr "Abstain"
 
-#: src/game/Home.tsx:74
+#: src/game/Home.tsx:75
 msgid "Not played yet"
 msgstr "Not played yet"
 
@@ -10667,7 +10672,7 @@ msgstr "Get mods"
 msgid "It encountered an error."
 msgstr "It encountered an error."
 
-#: src/game/Home.tsx:71
+#: src/game/Home.tsx:72
 msgid "No problems"
 msgstr "No problems"
 
@@ -11441,7 +11446,7 @@ msgstr "Play {playName}"
 msgid "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
-#: src/game/Home.tsx:86
+#: src/game/Home.tsx:92
 #: src/game/Sidebar.tsx:184
 msgid "Saves"
 msgstr "Saves"
@@ -11692,7 +11697,7 @@ msgstr "Clean up storage"
 msgid "Mods view"
 msgstr "Mods view"
 
-#: src/game/Home.tsx:103
+#: src/game/Home.tsx:109
 msgid "{more} more · All saves"
 msgstr "{more} more · All saves"
 
@@ -12565,7 +12570,7 @@ msgstr "Save…"
 msgid "Walk through profiles, Play, mods, and the command palette"
 msgstr "Walk through profiles, Play, mods, and the command palette"
 
-#: src/game/Home.tsx:84
+#: src/game/Home.tsx:90
 #: src/saves/SaveDetails.tsx:54
 msgid "Fall"
 msgstr "Fall"
@@ -13172,7 +13177,7 @@ msgstr "Could not change {0}"
 msgid "Leave out"
 msgstr "Leave out"
 
-#: src/game/Home.tsx:88
+#: src/game/Home.tsx:94
 #: src/saves/SavesTab.tsx:48
 msgid "No saves yet"
 msgstr "No saves yet"

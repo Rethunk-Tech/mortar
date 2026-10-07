@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { When } from '../i18n/When.tsx'
 import { useBadges } from '../mods/badges.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { useNav } from '../nav/store.ts'
@@ -72,6 +73,11 @@ function AtAGlance({ profile, game }: { profile: Profile; game: string }) {
         </Button>
       )}
       <Typography>{lastRun ? t`Last played ${when}` : t`Not played yet`}</Typography>
+      <Typography variant="body2" color="text.secondary">
+        {t`Created`} <When value={profile.created} />
+        {SEP}
+        {t`Updated`} <When value={profile.updated} />
+      </Typography>
     </HomePanel>
   )
 }
