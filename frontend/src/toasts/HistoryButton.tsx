@@ -43,8 +43,8 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
         display: 'flex',
         alignItems: 'flex-start',
         gap: 1,
-        px: 1.5,
-        py: 1,
+        px: space.pad,
+        py: space.gap,
         borderLeft: '3px solid',
         borderLeftColor: edge[item.kind],
       }}
@@ -80,7 +80,9 @@ let bellMounted = false
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <Typography sx={{ px: 1.5, pt: 1, fontSize: 11, fontWeight: 700, color: 'text.secondary' }}>
+    <Typography
+      sx={{ px: space.pad, pt: space.gap, fontSize: 11, fontWeight: 700, color: 'text.secondary' }}
+    >
       {children}
     </Typography>
   )
@@ -141,8 +143,8 @@ function HistoryPopover({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          px: 1.5,
-          py: 1,
+          px: space.pad,
+          py: space.gap,
           borderBottom: '1px solid var(--mortar-hairline-muted)',
         }}
       >
@@ -160,7 +162,9 @@ function HistoryPopover({
           <>
             <SectionLabel>{t`New`}</SectionLabel>
             {fresh.length === 0 ? (
-              <Typography sx={{ px: 1.5, pb: 1, fontSize: 13, color: 'text.secondary' }}>
+              <Typography
+                sx={{ px: space.pad, pb: space.gap, fontSize: 13, color: 'text.secondary' }}
+              >
                 {t`Nothing new`}
               </Typography>
             ) : (
@@ -178,7 +182,7 @@ function HistoryPopover({
         sx={{
           display: 'flex',
           borderTop: '1px solid var(--mortar-hairline-muted)',
-          px: 1.5,
+          px: space.pad,
           py: 0.5,
         }}
       >

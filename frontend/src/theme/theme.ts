@@ -257,7 +257,16 @@ function createMortarTheme(
       // MUI drops the content's top padding under a title, which clips the floating label of a leading
       // outlined field.
       MuiDialogContent: {
-        styleOverrides: { root: { '.MuiDialogTitle-root + &': { paddingTop: 8 } } },
+        styleOverrides: {
+          root: {
+            padding: space.pad,
+            '.MuiDialogTitle-root + &': { paddingTop: 8 },
+          },
+        },
+      },
+      MuiDialogTitle: { styleOverrides: { root: { padding: `${space.pad} ${space.pad} 0` } } },
+      MuiDialogActions: {
+        styleOverrides: { root: { padding: space.pad, gap: space.gap } },
       },
       MuiBackdrop: {
         defaultProps: { transitionDuration: 0 },

@@ -19,6 +19,7 @@ import { useTab } from '../game/tab.ts'
 import { formatKb } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import {
   emptyFilters,
@@ -66,7 +67,17 @@ function Header({
   const finished = items.filter((i) => isClearableFinished(i.state))
   return (
     <>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pt: 2, pr: 1, pb: 1.25, pl: 2.5 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          pt: space.pad,
+          pr: space.gap,
+          pb: space.gap,
+          pl: space.pad,
+        }}
+      >
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           <Typography component="h2" sx={{ fontSize: 18, fontWeight: 700 }}>
             {view === 'history' ? t`History` : t`Downloads`}
@@ -113,7 +124,7 @@ function Header({
           sx={{
             display: 'flex',
             height: 6,
-            mx: 2.5,
+            mx: space.pad,
             borderRadius: '3px',
             overflow: 'hidden',
             bgcolor: 'var(--mortar-hairline)',
@@ -127,7 +138,7 @@ function Header({
       {limitedUntil > 0 ? (
         <Typography
           title={clockTime(limitedUntil)}
-          sx={{ mx: 2.5, mt: 1, fontSize: 13, color: 'warning.main' }}
+          sx={{ mx: space.pad, mt: 1, fontSize: 13, color: 'warning.main' }}
         >
           {t`Downloads resume ${formatWhen(limitedUntil * UNIX_MS_PER_SECOND)}.`}
         </Typography>
