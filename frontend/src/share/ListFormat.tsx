@@ -4,6 +4,7 @@ import { Button, ButtonGroup, ListItemIcon, ListItemText, Menu, MenuItem } from 
 import { Check, ChevronDown, Copy, FileText, List, MessageSquare, Type } from 'lucide-react'
 import { useState } from 'react'
 import { useProfiles } from '../profiles/store.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { copyText } from './copyText.ts'
 import { formatModList, listItems, type ModListFormat } from './modList.ts'
 import { useShareDialog } from './store.ts'
@@ -84,18 +85,15 @@ export function ListFormat({ disabled }: { disabled: boolean }) {
       </Menu>
       <Menu open={Boolean(partsAnchor)} anchorEl={partsAnchor} onClose={() => setPartsAnchor(null)}>
         {parts.map((part) => (
-          <MenuItem
+          <MenuAction
             key={part.id}
+            icon={<Copy size={16} />}
+            label={t`Copy part ${part.n} of ${parts.length}`}
             onClick={() => {
               copyText(part.text, t`Part ${part.n} copied`)
               setPartsAnchor(null)
             }}
-          >
-            <ListItemIcon sx={{ color: 'inherit' }}>
-              <Copy size={16} />
-            </ListItemIcon>
-            <ListItemText>{t`Copy part ${part.n} of ${parts.length}`}</ListItemText>
-          </MenuItem>
+          />
         ))}
       </Menu>
     </>

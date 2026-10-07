@@ -8,10 +8,7 @@ import {
   DialogTitle,
   FormControlLabel,
   IconButton,
-  ListItemIcon,
-  ListItemText,
   Menu,
-  MenuItem,
   Radio,
   RadioGroup,
   Tooltip,
@@ -21,6 +18,7 @@ import { type MouseEvent, useState } from 'react'
 import { routeGame, useNav } from '../nav/store.ts'
 import type { PlayPreset } from '../profiles/profilePresets.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { PLAY_HEIGHT_PX } from './playHeight.ts'
 import { playMenuEntries } from './playMenu.ts'
@@ -203,56 +201,44 @@ export function VanillaPlay({
           if (entry.kind === 'play') {
             const preset = presets.find((p) => p.key === entry.key)
             return (
-              <MenuItem
+              <MenuAction
                 key={entry.key}
                 disabled={playDisabled}
+                icon={<Play size={16} />}
+                label={`${preset?.base ? t`Standard` : (preset?.name ?? '')}${preset?.isDefault ? ` (${t`Default`})` : ''}`}
                 onClick={() => {
                   setMenu(null)
                   playWith(entry.key)
                 }}
-              >
-                <ListItemIcon sx={{ color: 'inherit' }}>
-                  <Play size={16} />
-                </ListItemIcon>
-                <ListItemText>
-                  {preset?.base ? t`Standard` : preset?.name}
-                  {preset?.isDefault ? ` (${t`Default`})` : ''}
-                </ListItemText>
-              </MenuItem>
+              />
             )
           }
           if (entry.kind === 'setDefault') {
             return [
               <MenuRule key="divider" />,
-              <MenuItem
+              <MenuAction
                 key="setDefault"
+                icon={<Star size={16} />}
+                label={t`Set default preset…`}
                 onClick={() => {
                   setMenu(null)
                   setChoosing(true)
                 }}
-              >
-                <ListItemIcon sx={{ color: 'inherit' }}>
-                  <Star size={16} />
-                </ListItemIcon>
-                <ListItemText>{t`Set default preset…`}</ListItemText>
-              </MenuItem>,
+              />,
             ]
           }
           return [
             presets.length > 0 ? <MenuRule key="vanilla-divider" /> : null,
-            <MenuItem
+            <MenuAction
               key="vanilla"
               disabled={vanillaDisabled}
+              icon={<Gamepad2 size={16} />}
+              label={t`Play without mods`}
               onClick={() => {
                 setMenu(null)
                 playVanillaOpen()
               }}
-            >
-              <ListItemIcon sx={{ color: 'inherit' }}>
-                <Gamepad2 size={16} />
-              </ListItemIcon>
-              <ListItemText>{t`Play without mods`}</ListItemText>
-            </MenuItem>,
+            />,
           ]
         })}
       </Menu>
