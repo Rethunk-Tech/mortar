@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, IconButton, Tooltip, Typography } from '@mui/material'
+import { Check } from 'lucide-react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { colorHex, PROFILE_COLORS, PROFILE_ICONS } from './appearance.ts'
 import { ProfileMark } from './ProfileMark.tsx'
@@ -85,10 +86,12 @@ export function AppearancePickers({
                 height: 32,
                 bgcolor: colorHex(token),
                 outline: color === token ? '2px solid var(--mortar-ink)' : '2px solid transparent',
-                outlineOffset: 1,
+                outlineOffset: 2,
                 '&:hover': { bgcolor: colorHex(token) },
               }}
-            />
+            >
+              {color === token ? <Check size={16} color="#1a1a1a" aria-hidden={true} /> : null}
+            </IconButton>
           </Tooltip>
         ))}
       </Box>
@@ -105,6 +108,8 @@ export function AppearancePickers({
                 height: 36,
                 borderRadius: '6px',
                 bgcolor: icon === name ? 'var(--mortar-hairline-12)' : 'transparent',
+                outline: icon === name ? '2px solid var(--mortar-ink)' : '2px solid transparent',
+                outlineOffset: 1,
               }}
             >
               <ProfileMark profile={{ ...profile, color, icon: name }} size={28} />

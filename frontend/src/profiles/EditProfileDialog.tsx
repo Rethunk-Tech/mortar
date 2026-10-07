@@ -38,9 +38,6 @@ import { useNameField } from './useNameField.ts'
 
 const PATH_SEPARATORS = /[\\/]/
 
-// One size for every tab, so switching tabs neither resizes the dialog nor moves the tabs.
-const DIALOG_SLOTS = { paper: { sx: { height: 'calc(100% - 64px)' } } }
-
 type FieldsTab = 'appearance' | 'launch' | 'overrides' | 'game'
 
 // LaunchError is a rejected launch field: the extra SMAPI arguments, or the prefix and environment saved together.
@@ -92,6 +89,7 @@ function CoverField({
   onStage: (next: StagedCover) => void
 }) {
   const { t } = useLingui()
+  const picked = hasPickedCover(profile.cover, staged)
   const pickedName = typeof staged === 'string' ? (staged.split(PATH_SEPARATORS).pop() ?? '') : ''
   return (
     <>
@@ -120,10 +118,9 @@ function CoverField({
               .catch(reportUnexpected)
           }}
         >{t`Choose image…`}</Button>
-        <Button
-          disabled={!hasPickedCover(profile.cover, staged)}
-          onClick={() => onStage(null)}
-        >{t`Use default`}</Button>
+        <DisabledReason title={t`The automatic cover is already in use.`} disabled={!picked}>
+          <Button disabled={!picked} onClick={() => onStage(null)}>{t`Use default`}</Button>
+        </DisabledReason>
       </Box>
     </>
   )
@@ -245,13 +242,14 @@ function ProfileFields({
       setTab('launch')
     }
   }, [launchError])
-  // Every panel stays mounted, so a field keeps what was typed in it while another tab is open.
+  // Every panel stays mounted and shares one grid cell, so a field keeps what was typed in it and the dialog keeps
+  // the height of its tallest tab while another is open.
   const panel = (id: FieldsTab, children: ReactNode) => (
     <Box
       role="tabpanel"
       id={`${ids}-panel-${id}`}
       aria-labelledby={`${ids}-tab-${id}`}
-      hidden={tab !== id}
+      sx={{ gridArea: '1 / 1', visibility: tab === id ? 'visible' : 'hidden' }}
     >
       {children}
     </Box>
@@ -259,7 +257,7 @@ function ProfileFields({
   return (
     <>
       <FieldsTabs ids={ids} tab={tab} onTab={setTab} startupSettings={startupSettings} />
-      <DialogContent sx={{ pt: 2.5 }}>
+      <DialogContent sx={{ pt: 2.5, display: 'grid', alignContent: 'start' }}>
         {panel(
           'appearance',
           <>
@@ -441,8 +439,8 @@ export function EditProfileDialog(props: EditProfileDialogProps) {
       coverFailure: t`Could not use that image`,
     })
   return (
-    <Dialog open={open} onClose={guard.request} fullWidth={true} slotProps={DIALOG_SLOTS}>
-      {/* The form takes the dialog's height so only the fields scroll, under fixed tabs and above a fixed footer. */}
+    <Dialog open={open} onClose={guard.request} fullWidth={true}>
+      {/* The dialog is as tall as its tallest tab (capped by the window), so only the fields scroll, under fixed tabs and above a fixed footer. */}
       <Box
         component="form"
         onSubmit={(e) => {
