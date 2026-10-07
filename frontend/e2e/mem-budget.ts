@@ -123,7 +123,10 @@ const exeOf = (pid: number) => {
 
 const commOf = (pid: number) => {
   try {
-    return readFileSync(`/proc/${pid}/comm`, 'utf8').trim()
+    const comm = readFileSync(`/proc/${pid}/comm`, 'utf8').trim()
+    // A Chromium child names its role (renderer, gpu-process, utility) only on its command line.
+    const role = /--type=([\w-]+)/.exec(readFileSync(`/proc/${pid}/cmdline`, 'utf8'))
+    return role?.[1] ? `${comm}:${role[1]}` : comm
   } catch {
     return '?'
   }
@@ -185,6 +188,48 @@ async function saveProfiles(addr: string, scenario: string): Promise<string> {
     files.push(file)
   }
   return `profiles: ${files.join(' ')}`
+}
+
+/** What the renderer holds outside the JS heap: DOM nodes, mounted images and the pixels they decode to. */
+async function domStats(page: Page): Promise<string> {
+  const d = await page.evaluate(() => {
+    const imgs = [...document.images]
+    const px = imgs.reduce((t, i) => t + i.naturalWidth * i.naturalHeight, 0)
+    const big = imgs.reduce((m, i) => Math.max(m, i.naturalWidth * i.naturalHeight), 0)
+    return { nodes: document.getElementsByTagName('*').length, imgs: imgs.length, px, big }
+  })
+  const mib = (d.px * 4) / MIB / MIB
+  return `DOM ${d.nodes} nodes, ${d.imgs} images (${mib.toFixed(0)} MiB decoded, largest ${Math.sqrt(d.big).toFixed(0)}px square).`
+}
+
+/** The page's JS heap after a collection, and with MORTAR_PPROF set its heap snapshot beside the Go profiles, so the
+ * renderer's share of the browser figure can be told from the GPU's and traced to the objects that hold it. */
+async function browserHeap(page: Page, scenario: string, browserPid: number): Promise<string> {
+  const web = () => tree(browserPid).reduce((t, pid) => t + pssKiB(pid) / MIB, 0)
+  const held = web()
+  const cdp = await page.context().newCDPSession(page)
+  try {
+    await cdp.send('HeapProfiler.collectGarbage')
+    const { usedSize, totalSize } = await cdp.send('Runtime.getHeapUsage')
+    let saved = ''
+    if (process.env.MORTAR_PPROF) {
+      mkdirSync(outDir, { recursive: true })
+      const file = `${outDir}/${scenario}.browser.heapsnapshot`
+      const chunks: string[] = []
+      cdp.on('HeapProfiler.addHeapSnapshotChunk', (e) => chunks.push(e.chunk))
+      await cdp.send('HeapProfiler.takeHeapSnapshot', { reportProgress: false })
+      writeFileSync(file, chunks.join(''))
+      saved = ` snapshot: ${file}`
+    }
+    // A critical pressure notice makes Chromium drop its reclaimable caches (decoded images, resource cache), so what
+    // remains is memory the page itself holds.
+    await cdp.send('Memory.simulatePressureNotification', { level: 'critical' })
+    await sleep(SETTLE_MS)
+    const purged = web()
+    return `Browser PSS ${held.toFixed(0)} MiB, ${purged.toFixed(0)} MiB after a pressure purge. ${await domStats(page)} JS heap after GC: ${(usedSize / MIB / 1024).toFixed(0)} MiB used of ${(totalSize / MIB / 1024).toFixed(0)} MiB.${saved}`
+  } finally {
+    await cdp.detach()
+  }
 }
 
 const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms))
@@ -377,6 +422,7 @@ async function main(): Promise<number> {
       `Profile ${profile.name} (${profile.id}). Browser: headless Chromium via Playwright, a stand-in for the desktop WebView. PSS in MiB, budget ${BUDGET_MIB} MiB.`,
     )
     for (const scenario of chosen) {
+      const before = await domStats(page)
       const stop = sample(serverPid, () => browserPid)
       let failure = ''
       try {
@@ -395,6 +441,8 @@ async function main(): Promise<number> {
       rows.push(
         `          top at peak: ${p.top.map((t) => `${t.comm}[${t.pid}] ${t.mib.toFixed(0)}`).join(', ')}`,
       )
+      rows.push(`          Before: ${before}`)
+      rows.push(`          ${await browserHeap(page, scenario.name, browserPid)}`)
       if (process.env.MORTAR_PPROF) {
         rows.push(`          ${await saveProfiles(process.env.MORTAR_PPROF, scenario.name)}`)
       }
