@@ -43,6 +43,8 @@ One spacing scale, set once per **Density** level (Settings › Appearance › D
 | `--m-menu-y` | above and below a menu item's text, and a menu's own top and bottom | 6px | 4px |
 | `--m-control` | buttons, dropdowns, fields and the page-actions slot that share a row | 36px | 32px |
 
+Left as fixed values on purpose: spacing of 6px and under (icon-to-label gaps, chip and badge insets, a row's inner rhythm), vertical margins between a heading and its text, indents (`pl: 4`), zero padding resets, the 52px-style chrome that is not a layout role (window buttons, title bar), and widths such as grid column minimums and panel widths.
+
 The tab header is `--m-control` plus twice `--m-gap` tall (52px comfortable, 44px compact).
 
 ## Surfaces and colour
