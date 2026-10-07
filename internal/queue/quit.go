@@ -57,3 +57,9 @@ func (s *Service) inFlight() (installing, downloading []string) {
 	}
 	return installing, downloading
 }
+
+// Installing reports whether any item is being installed.
+func (s *Service) Installing() bool {
+	installing, _ := s.inFlight()
+	return len(installing) > 0
+}

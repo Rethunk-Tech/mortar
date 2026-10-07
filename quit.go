@@ -1,7 +1,11 @@
 package main
 
 import (
+	"log"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
@@ -13,8 +17,19 @@ import (
 
 const quitRequestedEvent = "quit:requested"
 
+// quitGrace is how long the graceful quit (window and webview teardown, shutdown hooks) gets before Mortar finishes
+// the shutdown itself and exits: a main thread stuck in a toolkit call must not keep a quit waiting for half a minute.
+const quitGrace = 2 * time.Second
+
 type QuitService struct {
-	app     *application.App
+	app *application.App
+	// finish runs the shutdown work once, whichever path reaches it first.
+	finish func()
+	// busy reports work a forced exit must not cut off (an install writing into the store).
+	busy    func() bool
+	exit    func(int)
+	grace   time.Duration
+	watch   sync.Once
 	queue   *queue.Service
 	lan     *lan.Service
 	launch  *launchsvc.Service
@@ -47,7 +62,36 @@ func (s *QuitService) ConfirmQuit() {
 	s.mu.Lock()
 	s.allowed = true
 	s.mu.Unlock()
+	s.armWatchdog()
 	s.app.Quit()
+}
+
+// WatchSignals arms the watchdog on SIGINT and SIGTERM, which Wails turns into a quit on the main thread.
+//
+//wails:ignore
+func (s *QuitService) WatchSignals() {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-ch
+		s.armWatchdog()
+	}()
+}
+
+// armWatchdog exits the process quitGrace after the first quit request unless the graceful path got there first,
+// holding off while an install runs.
+func (s *QuitService) armWatchdog() {
+	s.watch.Do(func() {
+		go func() {
+			time.Sleep(s.grace)
+			for s.busy() {
+				time.Sleep(100 * time.Millisecond)
+			}
+			log.Printf("quit: graceful shutdown took over %s; finishing it directly", s.grace)
+			s.finish()
+			s.exit(0)
+		}()
+	})
 }
 
 //wails:ignore

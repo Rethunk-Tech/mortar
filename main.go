@@ -252,6 +252,14 @@ func run() error {
 		return nil
 	}
 	updates := &updatesvc.Service{}
+	// Run by the shutdown hook or, when the graceful quit stalls, by the quit watchdog; whichever comes first.
+	shutdown := sync.OnceFunc(func() {
+		if lanSvc != nil {
+			lanSvc.Shutdown()
+		}
+		slog.Info("shutdown", "clean", true)
+		_ = updates.ApplyOnQuit(context.Background())
+	})
 	app := application.New(application.Options{
 		Name:         "Mortar",
 		Icon:         appIcon,
@@ -284,13 +292,7 @@ func run() error {
 				}, backdrop.SystemDefault, backdrop.DesktopWallpaper),
 			),
 		},
-		OnShutdown: func() {
-			if lanSvc != nil {
-				lanSvc.Shutdown()
-			}
-			slog.Info("shutdown", "clean", true)
-			_ = updates.ApplyOnQuit(context.Background())
-		},
+		OnShutdown: shutdown,
 		SingleInstance: &application.SingleInstanceOptions{
 			UniqueID: singleInstanceID(dataDir),
 			OnSecondInstanceLaunch: func(d application.SecondInstanceData) {
@@ -689,7 +691,8 @@ func run() error {
 		return err
 	}
 
-	quitSvc := &QuitService{app: app, queue: queueSvc, lan: lanSvc, launch: launches}
+	quitSvc := &QuitService{app: app, queue: queueSvc, lan: lanSvc, launch: launches, exit: os.Exit, grace: quitGrace, busy: queueSvc.Installing}
+	quitSvc.WatchSignals()
 
 	archivesSvc := archivesvc.NewService(archivesvc.Deps{
 		Dirs: func() []string { return downloadDirs(store, dataDir) },
@@ -863,6 +866,10 @@ func run() error {
 		emit(name, data)
 	})
 	waitQueue := queue.Run(queueCtx, queueSvc, nxmSvc.Assigned)
+	quitSvc.finish = func() {
+		shutdown()
+		stopQueue()
+	}
 	defer func() {
 		stopQueue()
 		queueSvc.StopWait(waitQueue, queueQuitWait)
