@@ -83,7 +83,7 @@ func TestSetConfigValueKeepsEachFileKind(t *testing.T) {
 		"smapi:me.cp":    `{"Mist":"true","Fog":null}`,
 		"smapi:me.smapi": `{"On":true,"Count":null,"Flag":null,"Name":null}`,
 	} {
-		if err := e.Store.WriteConfig("stardew", p.ID, "a-1", id, text); err != nil {
+		if err := e.WriteConfig("stardew", p.ID, "a-1", id, text); err != nil {
 			t.Fatal(err)
 		}
 	}
