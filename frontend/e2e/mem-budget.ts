@@ -232,6 +232,40 @@ async function browserHeap(page: Page, scenario: string, browserPid: number): Pr
   }
 }
 
+const PEAK_POLL_MS = 250
+
+/** With MORTAR_PPROF set, polls the server's heap while a scenario runs and keeps the profile taken when the heap in use
+ * was highest, so the code holding memory at the peak shows rather than what is left after the scenario. The returned
+ * function stops polling and says where the profile is. */
+function pollPeakHeap(addr: string, scenario: string): () => Promise<string> {
+  let best = 0
+  let running = true
+  const loop = (async () => {
+    mkdirSync(outDir, { recursive: true })
+    while (running) {
+      try {
+        const text = await (await fetch(`http://${addr}/debug/pprof/heap?debug=1`)).text()
+        const inuse = Number(/# HeapInuse = (\d+)/.exec(text)?.[1] ?? 0)
+        if (inuse > best) {
+          best = inuse
+          const body = Buffer.from(
+            await (await fetch(`http://${addr}/debug/pprof/heap`)).arrayBuffer(),
+          )
+          writeFileSync(`${outDir}/${scenario}.peak.heap.pb.gz`, body)
+        }
+      } catch {
+        // The server is busy or gone; the next poll tries again.
+      }
+      await sleep(PEAK_POLL_MS)
+    }
+  })()
+  return async () => {
+    running = false
+    await loop
+    return `peak heap in use ${(best / MIB / MIB).toFixed(0)} MiB: ${outDir}/${scenario}.peak.heap.pb.gz`
+  }
+}
+
 const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms))
 
 let env: Record<string, string> = {}
@@ -424,6 +458,9 @@ async function main(): Promise<number> {
     for (const scenario of chosen) {
       const before = await domStats(page)
       const stop = sample(serverPid, () => browserPid)
+      const stopPeak = process.env.MORTAR_PPROF
+        ? pollPeakHeap(process.env.MORTAR_PPROF, scenario.name)
+        : null
       let failure = ''
       try {
         await scenario.run(page, profile)
@@ -431,6 +468,7 @@ async function main(): Promise<number> {
         failure = e instanceof Error ? e.message : String(e)
       }
       const p = stop()
+      const peakNote = stopPeak ? await stopPeak() : ''
       const over = p.total > BUDGET_MIB
       if (over || failure) {
         code = 1
@@ -443,6 +481,9 @@ async function main(): Promise<number> {
       )
       rows.push(`          Before: ${before}`)
       rows.push(`          ${await browserHeap(page, scenario.name, browserPid)}`)
+      if (peakNote) {
+        rows.push(`          ${peakNote}`)
+      }
       if (process.env.MORTAR_PPROF) {
         rows.push(`          ${await saveProfiles(process.env.MORTAR_PPROF, scenario.name)}`)
       }
