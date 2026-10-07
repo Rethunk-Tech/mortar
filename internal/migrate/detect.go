@@ -84,7 +84,7 @@ func detect(home, modsPath, gameID string) ([]installation, error) {
 
 	if ids.Vortex != "" {
 		vortexRoot := filepath.Join(config, "Vortex")
-		profiles, resolvedModsPath, err := vortexProfiles(vortexRoot, modsPath, ids.Vortex)
+		profiles, resolvedModsPath, err := vortexProfiles(vortexRoot, ids.Vortex)
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
 			return nil, err
 		}
@@ -111,7 +111,7 @@ func previewInstallation(install installation, id string) (ProfilePreview, error
 	case KindStardrop:
 		return stardropPreview(install.root, install.modsPath, id)
 	case KindVortex:
-		return vortexPreview(install.root, install.modsPath, install.vortexID, id)
+		return vortexPreview(install.root, install.vortexID, id)
 	case KindMO2:
 		return mo2Preview(install.root, install.modsPath, id)
 	default:

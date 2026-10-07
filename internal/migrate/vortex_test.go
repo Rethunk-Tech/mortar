@@ -13,12 +13,15 @@ import (
 
 // newVortexHome builds a home whose Vortex config dir holds a real LevelDB at
 // state.v2 with Vortex-shaped keys, plus a custom staging folder with two mods.
-func newVortexHome(t *testing.T) (home, state, mods string) {
+func newVortexHome(t *testing.T, pattern string) (home, state, mods string) {
 	t.Helper()
 	root := t.TempDir()
 	home = filepath.Join(root, "home")
 	state = filepath.Join(configDir(home), "Vortex", "state.v2")
 	mods = filepath.Join(root, "staging")
+	if pattern != "custom" {
+		mods = filepath.Join(configDir(home), "Vortex", "stardewvalley", "mods")
+	}
 	for name, id := range map[string]string{"Enabled-1": "Example.Enabled", "Disabled-1": "Example.Disabled"} {
 		dir := filepath.Join(mods, name)
 		if err := os.MkdirAll(dir, 0o750); err != nil {
@@ -45,7 +48,13 @@ func newVortexHome(t *testing.T) (home, state, mods string) {
 		"persistent###mods###stardewvalley###enabled-1###id":               `"enabled-1"`,
 		"persistent###mods###stardewvalley###enabled-1###installationPath": `"Enabled-1"`,
 		"persistent###mods###stardewvalley###disabled-1":                   `{"id":"disabled-1","installationPath":"Disabled-1"}`,
-		"settings###mods###installPath###stardewvalley":                    `"` + filepath.ToSlash(mods) + `"`,
+	}
+	switch pattern {
+	case "custom":
+		kvs["settings###mods###installPath###stardewvalley"] = `"` + filepath.ToSlash(mods) + `"`
+	case "":
+	default:
+		kvs["settings###mods###installPath###stardewvalley"] = pattern
 	}
 	for k, v := range kvs {
 		if err := db.Put([]byte(k), []byte(v), nil); err != nil {
@@ -76,7 +85,7 @@ func hashTree(t *testing.T, dir string) map[string][32]byte {
 }
 
 func TestDetectsVortexLevelDBAndPreviewsMods(t *testing.T) {
-	home, state, mods := newVortexHome(t)
+	home, state, mods := newVortexHome(t, "custom")
 	before := hashTree(t, state)
 
 	// A second handle holding the source LOCK must not block the read.
@@ -120,5 +129,24 @@ func TestDetectsVortexLevelDBAndPreviewsMods(t *testing.T) {
 		if after[path] != sum {
 			t.Fatalf("%s modified", path)
 		}
+	}
+}
+
+func TestVortexStagingFolderDefaultsAndPlaceholders(t *testing.T) {
+	cases := map[string]string{
+		"unset":       "",
+		"placeholder": `"{USERDATA}\\{game}\\mods"`,
+	}
+	for name, pattern := range cases {
+		t.Run(name, func(t *testing.T) {
+			home, _, mods := newVortexHome(t, pattern)
+			preview, err := Preview(home, "", "stardew", KindVortex, "p1")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if preview.ModsPath != mods || len(preview.Mods) != 2 {
+				t.Fatalf("modsPath = %q want %q, mods = %#v", preview.ModsPath, mods, preview.Mods)
+			}
+		})
 	}
 }

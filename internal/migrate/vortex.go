@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"maps"
 	"os"
+	"os/user"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -36,7 +38,7 @@ type vortexMod struct {
 	Attributes       map[string]json.RawMessage `json:"attributes"`
 }
 
-func vortexProfiles(root, fallbackModsPath, domain string) ([]ProfilePreview, string, error) {
+func vortexProfiles(root, domain string) ([]ProfilePreview, string, error) {
 	state, err := readVortexState(root)
 	if err != nil {
 		return nil, "", err
@@ -45,7 +47,7 @@ func vortexProfiles(root, fallbackModsPath, domain string) ([]ProfilePreview, st
 	if len(profiles) == 0 {
 		return nil, "", nil
 	}
-	modsPath := vortexModsPath(root, fallbackModsPath, domain, state)
+	modsPath := vortexModsPath(root, domain, state)
 	out := make([]ProfilePreview, 0, len(profiles))
 	for _, profile := range profiles {
 		preview, err := vortexPreviewState(modsPath, domain, state, profile.ID)
@@ -57,12 +59,12 @@ func vortexProfiles(root, fallbackModsPath, domain string) ([]ProfilePreview, st
 	return out, modsPath, nil
 }
 
-func vortexPreview(root, fallbackModsPath, domain, id string) (ProfilePreview, error) {
+func vortexPreview(root, domain, id string) (ProfilePreview, error) {
 	state, err := readVortexState(root)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
-	modsPath := vortexModsPath(root, fallbackModsPath, domain, state)
+	modsPath := vortexModsPath(root, domain, state)
 	return vortexPreviewState(modsPath, domain, state, id)
 }
 
@@ -324,17 +326,39 @@ func vortexModList(state map[string]json.RawMessage, domain string) []vortexMod 
 	return out
 }
 
-func vortexModsPath(root, fallback, domain string, state map[string]json.RawMessage) string {
-	settings := objectValue(state, "settings")
-	mods := objectValue(settings, "mods")
-	paths := objectValue(mods, "installPath")
-	if path := rawString(paths, domain); path != "" {
-		return cleanVortexPath(root, path)
+// vortexInstallPattern is the staging folder Vortex uses when none is stored
+// (mod_management/util/getInstallPath.ts getInstallPathPattern).
+const vortexInstallPattern = "{USERDATA}/{GAME}/mods"
+
+var vortexPlaceholder = regexp.MustCompile(`(?i)\{(userdata|username|game)\}`)
+
+// vortexModsPath resolves settings.mods.installPath.<game> like Vortex's
+// resolveInstallPath: {USERDATA}, {USERNAME} and {GAME} expand case-insensitively
+// and a relative result is relative to the Vortex data dir (root).
+func vortexModsPath(root, domain string, state map[string]json.RawMessage) string {
+	pattern := rawString(objectValue(objectValue(objectValue(state, "settings"), "mods"), "installPath"), domain)
+	if pattern == "" {
+		pattern = vortexInstallPattern
 	}
-	if fallback != "" {
-		return filepath.Clean(fallback)
+	expanded := vortexPlaceholder.ReplaceAllStringFunc(pattern, func(m string) string {
+		switch strings.ToLower(m[1 : len(m)-1]) {
+		case "userdata":
+			return root
+		case "game":
+			return domain
+		}
+		return vortexUsername()
+	})
+	return cleanVortexPath(root, filepath.FromSlash(strings.ReplaceAll(expanded, `\`, "/")))
+}
+
+func vortexUsername() string {
+	u, err := user.Current()
+	if err != nil {
+		return ""
 	}
-	return filepath.Join(root, domain, "mods")
+	name := u.Username
+	return name[strings.LastIndexAny(name, `\/`)+1:]
 }
 
 func vortexModPath(modsPath string, vm vortexMod) string {
