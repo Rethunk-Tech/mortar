@@ -5,10 +5,11 @@
 # --allow-unscanned. The test strings are assembled from parts, so this file never holds it whole and Defender leaves the
 # script alone; Defender may still quarantine the zip, so it is rewritten right before each install.
 # Exits with the number of failed checks.
-# -ZipDir is where the test zip is written. Give it a Defender exclusion first (an admin runs
+# -ZipPath uses a zip built elsewhere (it holds the sample, so PowerShell never assembles it, which PowerShell's own AMSI
+# scan of this script could flag); the script then neither builds nor deletes it. -ZipDir is where the test zip is written. Give it a Defender exclusion first (an admin runs
 # Add-MpPreference -ExclusionPath C:\avsmoke), so the zip survives until Mortar reads it; Mortar's own staging folder is
 # not excluded, so the scan of the extracted files, or real-time protection on them, must still refuse the install.
-param([string]$Exe = "$env:LOCALAPPDATA\Programs\Mortar\mortar.exe", [string]$Out = "$env:LOCALAPPDATA\Temp\mortar-av-smoke.txt", [string]$ZipDir = 'C:\avsmoke')
+param([string]$Exe = "$env:LOCALAPPDATA\Programs\Mortar\mortar.exe", [string]$Out = "$env:LOCALAPPDATA\Temp\mortar-av-smoke.txt", [string]$ZipDir = 'C:\avsmoke', [string]$ZipPath = '')
 $ErrorActionPreference = 'Continue'
 $fails = 0
 Remove-Item $Out -ErrorAction SilentlyContinue
@@ -22,7 +23,7 @@ function Finish { "failures: $fails" | Tee-Object -FilePath $Out -Append; exit $
 $game = 'stardew'
 $profile = 'av-smoke-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
 New-Item -ItemType Directory -Path $ZipDir -Force | Out-Null
-$zip = Join-Path $ZipDir 'eicar-test.zip'
+$zip = if ($ZipPath) { $ZipPath } else { Join-Path $ZipDir 'eicar-test.zip' }
 
 # The detection input depends on the scanner: Defender's AMSI provider reliably reports Microsoft's documented AMSI test
 # sample, clamd reports EICAR. Both are assembled from parts, so this file never holds either whole.
@@ -32,6 +33,7 @@ function Get-Sample($scanner) {
 }
 
 function Write-Zip($scanner) {
+    if ($ZipPath) { return }
     $name, $body = Get-Sample $scanner
     $work = Join-Path $env:TEMP ('mortar-av-smoke-' + [guid]::NewGuid().ToString('N'))
     $inner = Join-Path $work 'FlaggedMod'
@@ -95,5 +97,5 @@ if ($refusal -and $refusal.detail.removed) {
 }
 
 $null = (& $Exe profile delete $game $profile 2>&1 | Out-String)
-Remove-Item $zip -ErrorAction SilentlyContinue
+if (-not $ZipPath) { Remove-Item $zip -ErrorAction SilentlyContinue }
 Finish
