@@ -3,7 +3,9 @@ import { Box, ButtonBase, Skeleton, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import { useTab } from '../game/tab.ts'
 import { problemsLabel } from '../i18n/counts.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
+import { useBadges } from './badges.ts'
 import { useDescribe, useDescribeDrift } from './describe.ts'
 import { problemsOf } from './lookup.ts'
 import { driftRows, isInfoRow } from './problemGroups.ts'
@@ -18,9 +20,43 @@ export function ProblemBar() {
   const describeDrift = useDescribeDrift()
   const setTab = useTab((s) => s.setTab)
   const result = useMods((s) => s.problems)
+  const openId = useProfiles((s) => s.openId)
   const problems = [...problemsOf(result), ...driftRows(result)]
+  const known = useBadges((s) => s.byProfile[openId ?? ''])
   useLoadProblemsOnFocus()
   if (result === null) {
+    // A slow scan shows the profile's last known count rather than a bare grey bar.
+    const lastCount = known === undefined ? 0 : known.problems + known.missing
+    if (lastCount > 0) {
+      return (
+        <Box
+          role="status"
+          aria-busy={true}
+          sx={{
+            mx: 2,
+            mt: 1.25,
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.25,
+            height: 38,
+            px: 1.5,
+            borderRadius: '6px',
+            border: '1px solid',
+            borderColor: 'divider',
+            color: 'text.secondary',
+          }}
+        >
+          <TriangleAlert size={16} aria-hidden={true} />
+          <Typography component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
+            {problemsLabel(lastCount)}
+          </Typography>
+          <Typography component="span" sx={{ fontSize: 14 }}>
+            {t`Checking again…`}
+          </Typography>
+        </Box>
+      )
+    }
     return (
       <Skeleton
         variant="rounded"

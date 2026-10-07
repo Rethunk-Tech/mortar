@@ -7305,6 +7305,10 @@ msgstr "Use a code or file…"
 msgid "{0}: {1}"
 msgstr "{0}: {1}"
 
+#: src/mods/ProblemBar.tsx:55
+msgid "Checking again…"
+msgstr "Checking again…"
+
 #: src/settings/sections/SyncFolder.tsx:18
 #: src/settings/sections/SyncFolder.tsx:30
 msgid "Sync folder"
@@ -8605,7 +8609,7 @@ msgstr "No mods have logged yet"
 msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
-#: src/mods/ProblemBar.tsx:41
+#: src/mods/ProblemBar.tsx:77
 #: src/mods/ProblemsTab.tsx:64
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
@@ -10928,7 +10932,7 @@ msgstr "Redo update"
 msgid "Token"
 msgstr "Token"
 
-#: src/mods/ProblemBar.tsx:28
+#: src/mods/ProblemBar.tsx:64
 #: src/mods/ProblemsTab.tsx:392
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
@@ -12110,7 +12114,7 @@ msgstr "The author has not listed any versions here."
 
 #: src/launch/PrePlayDialog.tsx:152
 #: src/launch/UpdateWarnDialog.tsx:51
-#: src/mods/ProblemBar.tsx:85
+#: src/mods/ProblemBar.tsx:121
 msgid "Open Problems"
 msgstr "Open Problems"
 
