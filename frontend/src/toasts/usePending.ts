@@ -1,7 +1,5 @@
-import { msg } from '@lingui/core/macro'
 import { useRef, useState } from 'react'
-import { i18n } from '../i18n/index.ts'
-import { reportError, toastError } from './report.ts'
+import { errorMessage, reportError, toastError } from './report.ts'
 
 function beginWork(lock: { current: boolean }) {
   if (lock.current) {
@@ -28,7 +26,7 @@ export function usePending() {
     action()
       .catch(
         title === undefined
-          ? (e: unknown) => toastError(i18n._(msg`Something went wrong`), e, { retry })
+          ? (e: unknown) => toastError(errorMessage(null), e, { retry })
           : reportError(title, retry),
       )
       .finally(() => {

@@ -35,7 +35,7 @@ function sentence(kind: ReturnType<typeof kindOf>): string {
         msg`The author only allows this download on the source's own page. Download the file there and add it from your computer.`,
       )
     default:
-      return i18n._(msg`Something went wrong`)
+      return i18n._(msg`Something went wrong.`)
   }
 }
 
@@ -97,7 +97,7 @@ export function toastError(
   useToasts.getState().push({
     kind: 'error',
     title,
-    // An untagged error's sentence is the generic title itself, which would only repeat it.
+    // An untagged error's sentence is the generic title itself which would only repeat it.
     ...(body === title ? {} : { body }),
     ...(details === '' ? {} : { detail: details }),
     action,
@@ -114,5 +114,5 @@ export const reportUnexpected = (e: unknown) => {
   if (kindOf(e) === 'network') {
     return
   }
-  toastError(i18n._(msg`Something went wrong`), e)
+  toastError(errorMessage(null), e)
 }

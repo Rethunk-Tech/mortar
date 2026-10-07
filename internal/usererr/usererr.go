@@ -32,6 +32,9 @@ const (
 	Unknown Kind = "unknown"
 )
 
+// Kinds lists every Kind, so a table over them (the CLI's sentences, the GUI's) can check it leaves none out.
+var Kinds = []Kind{NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Locked, Unknown}
+
 const (
 	prefix = "["
 	mid    = "] "

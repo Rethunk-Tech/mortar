@@ -2,7 +2,7 @@ package cli
 
 import "github.com/Rethunk-Tech/mortar/internal/usererr"
 
-// Sentence is the user-facing line for a kind. Same English as the GUI errorMessage mapper.
+// Sentence is the user-facing line for a kind. Same English as the GUI errorMessage mapper (frontend/src/toasts/report.ts), which a test compares.
 func Sentence(kind usererr.Kind) string {
 	switch kind {
 	case usererr.NotFound:
@@ -28,7 +28,7 @@ func Sentence(kind usererr.Kind) string {
 	case usererr.Locked:
 		return "Waiting for you to unlock the keyring."
 	case usererr.Unknown:
-		return "Something went wrong."
+		fallthrough
 	default:
 		return "Something went wrong."
 	}

@@ -7204,6 +7204,10 @@ msgstr "Skip all"
 msgid "Could not list backups: {error}"
 msgstr "Could not list backups: {error}"
 
+#: src/toasts/report.ts:38
+msgid "Something went wrong."
+msgstr "Something went wrong."
+
 #: src/mods/typedConfig/ConfigPane.tsx:100
 msgid "Could not save: {error}"
 msgstr "Could not save: {error}"
@@ -8683,13 +8687,6 @@ msgstr "The download queue is empty."
 #: src/share/ImportPreview.tsx:82
 msgid "unverified until downloaded"
 msgstr "unverified until downloaded"
-
-#: src/firstrun/GameSetup.tsx:137
-#: src/toasts/report.ts:38
-#: src/toasts/report.ts:117
-#: src/toasts/usePending.ts:31
-msgid "Something went wrong"
-msgstr "Something went wrong"
 
 #: src/mods/ModDependencyTree.tsx:98
 msgid "already listed"

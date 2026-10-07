@@ -134,7 +134,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>
   }
   if (loadError || !game) {
-    const alert = loadError ?? inlineError(null, t`Something went wrong`)
+    const alert = loadError ?? inlineError(null)
     return <LoadErrorRow error={alert} onRetry={refresh} />
   }
   const loaderState = loaderChip(step, LOADER, loaderInstalled)
