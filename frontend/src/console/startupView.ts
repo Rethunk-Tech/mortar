@@ -229,3 +229,8 @@ export {
   startupRegressions,
   whyOf,
 }
+
+/** The report the picker shows: the chosen one, else the newest. */
+export function pickReport(reports: StartupReport[], selected: string): StartupReport | undefined {
+  return reports.find((r) => r.id === selected) ?? reports[0]
+}

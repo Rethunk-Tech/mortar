@@ -1,45 +1,16 @@
 import { useLingui } from '@lingui/react/macro'
-import { Alert, AlertTitle, Box, Button, MenuItem, Select, Typography } from '@mui/material'
+import { Alert, AlertTitle, Box, Button, Typography } from '@mui/material'
 import { Gauge, Timer } from 'lucide-react'
 import { type ReactNode, useRef, useState } from 'react'
 import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
-import { absoluteWhen } from '../i18n/when.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { useGameBusy } from '../launch/store.ts'
-import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { Findings, Phases, Section } from './StartupSections.tsx'
 import { ModTable } from './StartupTable.tsx'
 import { useSmapiStartup } from './startupHooks.ts'
-import { type Finding, rowAnchor, startupFindings } from './startupView.ts'
-import { useStartupReports } from './useStartupReports.ts'
-
-function ReportPicker({
-  reports,
-  value,
-  onChange,
-}: {
-  reports: StartupReport[]
-  value: string
-  onChange: (id: string) => void
-}) {
-  const { t, i18n } = useLingui()
-  return (
-    <Select
-      size="small"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      inputProps={{ 'aria-label': t`Launch` }}
-    >
-      {reports.map((r) => (
-        <MenuItem key={r.id} value={r.id}>
-          {absoluteWhen(r.processStart, i18n.locale)}
-        </MenuItem>
-      ))}
-    </Select>
-  )
-}
+import { type Finding, pickReport, rowAnchor, startupFindings } from './startupView.ts'
 
 function MeasureBanner({ onCancel }: { onCancel: () => void }) {
   const { t } = useLingui()
@@ -68,20 +39,24 @@ function MeasureBanner({ onCancel }: { onCancel: () => void }) {
   )
 }
 
-export function StartupPanel({ game, children }: { game: string; children: ReactNode }) {
+export function StartupPanel({
+  reports,
+  pending,
+  cancelMeasure,
+  selected,
+  children,
+}: {
+  reports: StartupReport[] | null
+  pending: boolean
+  cancelMeasure: () => void
+  selected: string
+  children: ReactNode
+}) {
   const { t } = useLingui()
-  const openId = useProfiles((s) => s.openId)
-  const { reports, pending, measureNext, cancelMeasure } = useStartupReports(game, openId)
   const smapi = useSmapiStartup()
-  const [selected, setSelected] = useState('')
   const modsSection = useRef<HTMLElement>(null)
   const [comparing, setComparing] = useState(false)
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set())
-  const measure = pending ? null : (
-    <Button variant="outlined" size="small" startIcon={<Gauge size={16} />} onClick={measureNext}>
-      {t`Measure next launch`}
-    </Button>
-  )
   const banner: ReactNode = pending ? <MeasureBanner onCancel={cancelMeasure} /> : null
   if (reports === null) {
     return (
@@ -91,7 +66,7 @@ export function StartupPanel({ game, children }: { game: string; children: React
       </Box>
     )
   }
-  const report = reports.find((r) => r.id === selected) ?? reports[0]
+  const report = pickReport(reports, selected)
   const previous = report ? reports[reports.indexOf(report) + 1] : undefined
   const toggle = (id: string) =>
     setExpanded((cur) => {
@@ -118,15 +93,6 @@ export function StartupPanel({ game, children }: { game: string; children: React
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
       {banner}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-        <Typography component="h2" sx={{ fontSize: 20, fontWeight: 700, flex: '1 1 auto' }}>
-          {t`Startup`}
-        </Typography>
-        {report && reports.length > 1 ? (
-          <ReportPicker reports={reports} value={report.id} onChange={setSelected} />
-        ) : null}
-        {report ? measure : null}
-      </Box>
       {report ? (
         <>
           <Findings
@@ -151,12 +117,7 @@ export function StartupPanel({ game, children }: { game: string; children: React
           </Section>
         </>
       ) : (
-        <EmptyState
-          compact={true}
-          icon={<Timer size={32} />}
-          title={t`No startup measured yet`}
-          action={measure}
-        >
+        <EmptyState compact={true} icon={<Timer size={32} />} title={t`No startup measured yet`}>
           {smapi
             ? t`Play this profile. The SMAPI Bridge records how long each mod adds before the title screen.`
             : t`Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu.`}

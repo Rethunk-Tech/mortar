@@ -7,6 +7,7 @@ import {
   foldMods,
   modTotal,
   phaseSegments,
+  pickReport,
   slowestEvent,
   slowStartups,
   startupFindings,
@@ -141,4 +142,11 @@ test("why is the biggest of a mod's own costs", () => {
   })
   expect(whyOf(mod('b', {}, { loadMs: 40, assetMs: 60 }))?.kind).toBe('assets')
   expect(whyOf(mod('c', {}))).toBeNull()
+})
+
+test('pickReport shows the chosen report, else the newest', () => {
+  const reports = [{ id: 'new' }, { id: 'old' }] as StartupReport[]
+  expect(pickReport(reports, 'old')?.id).toBe('old')
+  expect(pickReport(reports, 'gone')?.id).toBe('new')
+  expect(pickReport([], '')).toBeUndefined()
 })
