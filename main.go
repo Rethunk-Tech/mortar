@@ -1050,6 +1050,13 @@ func run() error {
 				}
 			}
 		}
+		// Repaired folder names must reach the profiles that record them, or a mod cannot be switched off.
+		if n, err := profiles.RepairFolderRecords(); err != nil {
+			log.Printf("repair folder records: %v", err)
+		} else if n > 0 {
+			log.Printf("repaired %d mod folder records", n)
+			tidied.Add("Repaired mod folder records", "profiles", n)
+		}
 		if n, c, err := profiles.MigrateHistory(); err != nil {
 			log.Printf("history migration: %v", err)
 		} else if n > 0 || c > 0 {
