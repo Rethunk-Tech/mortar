@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { changesView, glance, renameSurface, savesView } from './homeView.ts'
+import { changesView, glance, renameSurface, saveCalendarUnknown, savesView } from './homeView.ts'
 
 test('changesView shows three lines until expanded', () => {
   const lines = ['a', 'b', 'c', 'd']
@@ -26,4 +26,11 @@ test('a hidden hero sends a rename to the dialog', () => {
   expect(renameSurface('hidden')).toBe('dialog')
   expect(renameSurface('full')).toBe('inline')
   expect(renameSurface('compact')).toBe('inline')
+})
+
+test('a calendar game save without a date is unknown, a calendar-less game save is not', () => {
+  const base = { farm: 'Farm', folder: 'Farm_1', year: 0, season: 0, unrecorded: false }
+  expect(saveCalendarUnknown(base)).toBe(true)
+  expect(saveCalendarUnknown({ ...base, year: 1 })).toBe(false)
+  expect(saveCalendarUnknown({ ...base, unrecorded: true })).toBe(false)
 })

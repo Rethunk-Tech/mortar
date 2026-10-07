@@ -32,6 +32,11 @@ function saveCalendar(save: SaveLike): { year: number; season: number } | null {
   return save.unrecorded || save.year <= 0 ? null : { year: save.year, season: save.season }
 }
 
+// A calendar game's save whose SaveGameInfo is missing or empty has no date to show, unlike a game with no calendar.
+function saveCalendarUnknown(save: SaveLike): boolean {
+  return !save.unrecorded && save.year <= 0
+}
+
 function savesView<T extends SaveLike>(saves: T[]) {
   return {
     shown: saves.slice(0, SAVES_SHOWN).map((save) => ({
@@ -47,4 +52,4 @@ function renameSurface(hero: string): 'inline' | 'dialog' {
   return hero === 'hidden' ? 'dialog' : 'inline'
 }
 
-export { changesView, glance, renameSurface, saveCalendar, savesView }
+export { changesView, glance, renameSurface, saveCalendar, saveCalendarUnknown, savesView }

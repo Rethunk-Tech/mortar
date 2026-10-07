@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import type { Backup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/backup/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
-import { saveCalendar } from '../game/homeView.ts'
+import { saveCalendar, saveCalendarUnknown } from '../game/homeView.ts'
 import { heading } from '../mods/paper.ts'
 import { SaveGapLine } from './SaveGapLine.tsx'
 import { FitStatus, SaveButtons } from './SaveRow.tsx'
@@ -69,7 +69,7 @@ function SaveListTable({ name, children }: { name: string; children: ReactNode }
   )
 }
 
-// The list form of a save: name, Stardew's calendar ("—" for games without one), fit and the same actions as the card.
+// The list form of a save: name, Stardew's calendar ("Unknown" with the reason when a save has no date, "—" for games without a calendar), fit and the same actions as the card.
 function SaveListRow({
   fit,
   profile,
@@ -86,6 +86,13 @@ function SaveListRow({
   const { t } = useLingui()
   const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
   const calendar = saveCalendar(fit)
+  const unknown = saveCalendarUnknown(fit)
+  let when = '—'
+  if (calendar) {
+    when = t`Year ${calendar.year} ${seasons[calendar.season] ?? ''}`
+  } else if (unknown) {
+    when = t`Unknown`
+  }
   const label = saveName(fit)
   return (
     <TableRow
@@ -103,9 +110,15 @@ function SaveListRow({
           {label}
         </Typography>
       </SaveCell>
-      <SaveCell>
+      <SaveCell
+        {...(unknown
+          ? {
+              title: t`This save has no SaveGameInfo date, so Mortar cannot tell when it is in the game.`,
+            }
+          : {})}
+      >
         <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
-          {calendar ? t`Year ${calendar.year} ${seasons[calendar.season] ?? ''}` : '—'}
+          {when}
         </Typography>
       </SaveCell>
       <SaveCell>

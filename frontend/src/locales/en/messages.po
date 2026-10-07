@@ -1408,7 +1408,7 @@ msgstr "Config files stay here: only a paired computer gets them. Everything els
 msgid "Fishing skill"
 msgstr "Fishing skill"
 
-#: src/games/ProfileCards.tsx:107
+#: src/games/ProfileCards.tsx:106
 msgid "+{more} more"
 msgstr "+{more} more"
 
@@ -1648,7 +1648,7 @@ msgstr "Add preset"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
-#: src/games/GameSelect.tsx:342
+#: src/games/GameSelect.tsx:365
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -4056,9 +4056,13 @@ msgstr "config.json, as the mod ships it"
 msgid "The last launch loaded this here, not where its dependencies put it."
 msgstr "The last launch loaded this here, not where its dependencies put it."
 
-#: src/games/GameSelect.tsx:345
+#: src/games/GameSelect.tsx:368
 msgid "Check launchers…"
 msgstr "Check launchers…"
+
+#: src/games/GameSelect.tsx:280
+msgid "Set up"
+msgstr "Set up"
 
 #: src/browse/BrowseFilters.tsx:90
 msgid "Sort: name (A to Z)"
@@ -6200,7 +6204,7 @@ msgid "No profiles found."
 msgstr "No profiles found."
 
 #. placeholder {0}: game.name
-#: src/games/GameSelect.tsx:207
+#: src/games/GameSelect.tsx:210
 msgid "Open {0}"
 msgstr "Open {0}"
 
@@ -9517,7 +9521,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/GameSetup.tsx:134
 #: src/firstrun/LoaderStep.tsx:219
 #: src/game/ProfileWorkspace.tsx:32
-#: src/games/GameSelect.tsx:316
+#: src/games/GameSelect.tsx:339
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
 msgstr "Loading…"
@@ -9659,7 +9663,7 @@ msgstr "Press Play. Mortar samples the game until the title screen, skipping the
 msgid "A launch ended without Mortar putting the game folder back as it was"
 msgstr "A launch ended without Mortar putting the game folder back as it was"
 
-#: src/games/ProfileCards.tsx:93
+#: src/games/ProfileCards.tsx:92
 msgid "Open {gameName} ({more, plural, one {# more profile} other {# more profiles}})"
 msgstr "Open {gameName} ({more, plural, one {# more profile} other {# more profiles}})"
 
@@ -10832,7 +10836,7 @@ msgid "Stop the game to test a launch."
 msgstr "Stop the game to test a launch."
 
 #: src/firstrunTour/TourPopover.tsx:41
-#: src/games/GameSelect.tsx:255
+#: src/games/GameSelect.tsx:258
 #: src/launch/PlayControl.tsx:168
 #: src/settings/GameSettingsPage.tsx:72
 #: src/settings/GameSettingsPage.tsx:100
@@ -11581,7 +11585,7 @@ msgstr "Sort: newest"
 msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
 
-#: src/games/GameSelect.tsx:241
+#: src/games/GameSelect.tsx:244
 msgid "Play {playName}"
 msgstr "Play {playName}"
 
@@ -12740,6 +12744,7 @@ msgstr "See which mods slow the game"
 
 #. placeholder {0}: game.name
 #: src/firstrun/GameSetup.tsx:161
+#: src/games/GameSelect.tsx:266
 msgid "Set up {0}"
 msgstr "Set up {0}"
 
