@@ -114,6 +114,8 @@ wails3 build GOOS=windows             # bin/mortar.exe (ARCH=arm64 for Windows o
 MORTAR_UPDATE_KEY=/path/to/updater.key wails3 task release:manifest VERSION=1.2.3
 ```
 
+The AppImage build fetches nothing but wails3's own small `AppRun`: linuxdeploy and the type2 runtime are pinned with SHA-256 in `build/linux/appimage/pins.txt`, kept in `$XDG_CACHE_HOME/mortar-build` (`MORTAR_BUILD_CACHE` overrides; CI caches `~/.cache/mortar-build`) and checked on every build, and the AppDir is packed once.
+
 `linux:build:arm64` cross-compiles on an x86_64 machine with no emulator registered: it needs `zig`, `docker` (to download the arm64 Ubuntu packages it links against, extracted under `tmp/`), `nfpm` and `qemu-aarch64`, which checks that every shared library resolves. The arm64 AppImage is built only in CI.
 
 `linux:flatpak:arm64` (`build/linux/flatpak/build-aarch64.sh`) runs that cross build with `linux:flatpak ARCH=arm64`. `flatpak-builder` runs the manifest's `build-commands` through the aarch64 SDK's `/bin/sh`, so the script registers `qemu-aarch64-static` in a user namespace's own `binfmt_misc` (Linux 6.7 or newer; no root and nothing system-wide). It needs the build:arm64 tools plus `flatpak`, and uses the host's `qemu-aarch64-static`, `flatpak-builder` and `appstreamcli-compose`, unpacking any that are missing from Fedora's packages into `tmp/rpm/` (`dnf download`, no install). The aarch64 GNOME runtime and SDK go into the user Flatpak installation. CI builds the release bundle natively on the arm64 leg.

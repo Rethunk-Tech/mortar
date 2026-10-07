@@ -93,6 +93,12 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         run: bun run gate
 
+      - name: Cache AppImage tools
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/mortar-build
+          key: appimage-tools-${{ matrix.appimage_arch }}-${{ hashFiles('build/linux/appimage/pins.txt') }}
+
       - name: Linux AppImage
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
