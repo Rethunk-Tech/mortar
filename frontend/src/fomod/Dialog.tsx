@@ -48,6 +48,7 @@ function PluginImage({ game, itemKey, rel }: { game: string; itemKey: string; re
         revoke = URL.createObjectURL(new Blob([copy]))
         setUrl(revoke)
       })
+      // Authors often name preview images that are not in the archive; the step is shown without one.
       .catch(() => undefined)
     return () => {
       alive = false

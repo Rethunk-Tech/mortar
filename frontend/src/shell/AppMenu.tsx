@@ -102,10 +102,7 @@ export function AppMenu() {
   const helpKeys = useShortcutHint('help')
   const downloadsKeys = useShortcutHint('downloads')
   useEffect(() => {
-    useMortarUpdate
-      .getState()
-      .load()
-      .catch(() => undefined)
+    useMortarUpdate.getState().load().catch(reportUnexpected)
   }, [])
   const quit = (): void => {
     close()

@@ -21,6 +21,7 @@ import { openPage } from '../mods/menu.ts'
 import { PageLink } from '../share/CollectionNotes.tsx'
 import { parseInstructions } from '../share/instructions.ts'
 import { space } from '../theme/density.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { showWhatsNew, useWhatsNew } from './whatsNew.ts'
 
 const HEADING = /^#+\s*/
@@ -94,19 +95,17 @@ export function WhatsNewDialog() {
   useEffect(() => {
     LoadWhatsNew()
       .then((w) => (w.notes && w.version ? showWhatsNew(w.version, w.notes) : undefined))
-      .catch(() => undefined)
+      .catch(reportUnexpected)
   }, [])
   useEffect(() => {
     setRelease(null)
     if (version) {
-      ReleaseNotes(version)
-        .then(setRelease)
-        .catch(() => undefined)
+      ReleaseNotes(version).then(setRelease).catch(reportUnexpected)
     }
   }, [version])
   const close = () => {
     useWhatsNew.setState(null, true)
-    AckWhatsNew().catch(() => undefined)
+    AckWhatsNew().catch(reportUnexpected)
   }
   return (
     <Dialog open={shown !== null} onClose={close} slotProps={{ paper: { sx: { maxWidth: 520 } } }}>
