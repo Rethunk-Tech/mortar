@@ -73,6 +73,22 @@ func withSameJob(r Result, rows []framework.Redundant) Result {
 	return r
 }
 
+// inputMembers are game members every mod that reads or fakes input assigns: they say how a mod drives the game,
+// not what job it does, so a pair sharing only these is not doing the same thing.
+var inputMembers = map[string]bool{"mouseClickPolling": true, "lastClick": true, "FacingDirection": true}
+
+func withoutInputMembers(fp map[string]map[string]bool) map[string]map[string]bool {
+	out := make(map[string]map[string]bool, len(fp))
+	for id, set := range fp {
+		out[id] = maps.Clone(set)
+		maps.DeleteFunc(out[id], func(member string, _ bool) bool {
+			_, name, _ := strings.Cut(member, "::")
+			return inputMembers[name]
+		})
+	}
+	return out
+}
+
 // footprints maps each enabled C# mod, by folded mod id, to the game members it changes: those its assembly
 // assigns, and the methods the bridge saw it replace through Harmony as "harmony:Type::Method". replaces is keyed by
 // Harmony ID, which mods set to their SMAPI id by convention.
@@ -111,6 +127,7 @@ func footprints(mods []framework.Mod, replaces map[string][]string) map[string]m
 // Pairs that are meant to run together are left out: one depends on the other, they share an author or download,
 // or either is something another enabled mod builds on, since a framework writes what its users write.
 func sameJob(fp map[string]map[string]bool, mods []framework.Mod) []framework.Redundant {
+	fp = withoutInputMembers(fp)
 	builtOn := map[string]bool{}
 	var code []framework.Mod
 	seen := map[string]bool{}

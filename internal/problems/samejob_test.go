@@ -162,6 +162,33 @@ func TestSameJobListsASmallerModALargerOneCovers(t *testing.T) {
 	}
 }
 
+func TestSameJobIgnoresSharedInputMembers(t *testing.T) {
+	fp := map[string]map[string]bool{}
+	var mods []framework.Mod
+	add := func(id string, members ...string) {
+		key := mod.SMAPI(id).Fold()
+		fp[key] = map[string]bool{}
+		for _, m := range members {
+			fp[key][m] = true
+		}
+		mods = append(mods, framework.Mod{Key: "k-" + id, Enabled: true, UniqueID: id, Name: id, Author: id})
+	}
+	input := []string{"StardewValley.Game1::mouseClickPolling", "StardewValley.Character::lastClick", "StardewValley.Character::FacingDirection"}
+	var large []string
+	for i := range 20 {
+		large = append(large, fmt.Sprint("L::", i))
+	}
+	add("large", slices.Concat(large, input)...)
+	add("small", input...)
+	for i := range 6 {
+		add(fmt.Sprint("other", i), fmt.Sprint("O::", i))
+	}
+
+	if got := sameJob(fp, mods); len(got) != 0 {
+		t.Fatalf("input members alone make no shared job, got %+v", got)
+	}
+}
+
 func TestSameJobListsEachSimilarPairOnce(t *testing.T) {
 	fp := map[string]map[string]bool{
 		"smapi:a": {"T::t": true},
