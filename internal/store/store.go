@@ -434,6 +434,7 @@ func (s *Store) install(ctx context.Context, game, key, final string, fill func(
 	}
 	if err != nil {
 		err = RealTimeBlock(game, err, tmp)
+		s.dropOverride(game, key)
 	}
 	if err != nil {
 		if usererr.IsDiskFull(err) {

@@ -42,7 +42,15 @@ type scanning struct {
 	mu      sync.Mutex
 	scanner func() avscan.Scanner
 	failed  func(game, key string, err error)
-	allowed map[string]bool
+	allowed map[string]Override
+	// applied holds the overrides whose scan was skipped, until the install that used them succeeds or fails.
+	applied map[string]Override
+}
+
+// Override is the player's "Install anyway" for one store item: the profile it goes into, the mod's name and what the
+// antivirus flagged, kept for the history entry that records the override once the item has been installed.
+type Override struct {
+	Profile, Name, Detection string
 }
 
 // SetScanner makes every item that enters the store pass through the scanner pick returns, which is asked each time so
@@ -54,13 +62,28 @@ func (s *Store) SetScanner(pick func() avscan.Scanner, failed func(game, key str
 }
 
 // AllowUnscanned lets the next install of key through without a scan, once: the player's answer to a detection.
-func (s *Store) AllowUnscanned(game, key string) {
+func (s *Store) AllowUnscanned(game, key string, ov Override) {
 	s.scan.mu.Lock()
 	defer s.scan.mu.Unlock()
 	if s.scan.allowed == nil {
-		s.scan.allowed = map[string]bool{}
+		s.scan.allowed = map[string]Override{}
 	}
-	s.scan.allowed[game+"\x00"+key] = true
+	s.scan.allowed[game+"\x00"+key] = ov
+}
+
+// TakeOverride returns the override whose scan was skipped for key, once: the caller records it when the item is in.
+func (s *Store) TakeOverride(game, key string) (Override, bool) {
+	s.scan.mu.Lock()
+	defer s.scan.mu.Unlock()
+	ov, ok := s.scan.applied[game+"\x00"+key]
+	delete(s.scan.applied, game+"\x00"+key)
+	return ov, ok
+}
+
+func (s *Store) dropOverride(game, key string) {
+	s.scan.mu.Lock()
+	defer s.scan.mu.Unlock()
+	delete(s.scan.applied, game+"\x00"+key)
 }
 
 // checkExtracted scans the folder an item was extracted into. A detection is returned as a malware error; a scan that
@@ -68,8 +91,14 @@ func (s *Store) AllowUnscanned(game, key string) {
 func (s *Store) checkExtracted(ctx context.Context, game, key, dir string) error {
 	s.scan.mu.Lock()
 	pick, failed := s.scan.scanner, s.scan.failed
-	allowed := s.scan.allowed[game+"\x00"+key]
+	ov, allowed := s.scan.allowed[game+"\x00"+key]
 	delete(s.scan.allowed, game+"\x00"+key)
+	if allowed {
+		if s.scan.applied == nil {
+			s.scan.applied = map[string]Override{}
+		}
+		s.scan.applied[game+"\x00"+key] = ov
+	}
 	s.scan.mu.Unlock()
 	if pick == nil || allowed {
 		return nil

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -60,7 +61,7 @@ func TestInstallAnywayLetsTheItemInOnce(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	s.AllowUnscanned("stardew", key)
+	s.AllowUnscanned("stardew", key, Override{})
 	if _, err := s.AddArchive(t.Context(), "stardew", p); err != nil {
 		t.Fatalf("allowed install failed: %v", err)
 	}
@@ -155,5 +156,40 @@ func TestRealTimeBlockReportsAVirusErrnoAndAVanishedStagingFileAsMalware(t *test
 	already := usererr.Wrap(usererr.Malware, &DetectedError{Key: "k"})
 	if !errors.Is(RealTimeBlock("stardew", already, staging), already) {
 		t.Error("a detection already reported was rewrapped")
+	}
+}
+
+func TestAnOverrideIsHandedOverOnlyWhenItsInstallSucceeds(t *testing.T) {
+	f := &fakeScanner{hit: &avscan.Detection{Name: "Test.Threat", Scanner: "fake"}}
+	s, _ := scanned(t, f)
+	ov := Override{Profile: "p1", Name: "mod.zip", Detection: "Test.Threat"}
+	fill := func(tmp string) error { return os.WriteFile(filepath.Join(tmp, "a"), []byte("x"), 0o600) }
+	root := filepath.Join(s.root, "stardew")
+
+	// The scan is skipped, then the rename into place fails because the final folder is not empty.
+	final := filepath.Join(root, "blocked")
+	if err := os.MkdirAll(final, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(final, "x"), []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s.AllowUnscanned("stardew", "blocked", ov)
+	if err := s.install(t.Context(), "stardew", "blocked", final, fill, func() int64 { return 0 }); err == nil {
+		t.Fatal("the install into a non-empty folder succeeded")
+	}
+	if _, ok := s.TakeOverride("stardew", "blocked"); ok {
+		t.Fatal("an override survived a failed install")
+	}
+
+	s.AllowUnscanned("stardew", "fine", ov)
+	if err := s.install(t.Context(), "stardew", "fine", filepath.Join(root, "fine"), fill, func() int64 { return 0 }); err != nil {
+		t.Fatal(err)
+	}
+	if got, ok := s.TakeOverride("stardew", "fine"); !ok || got != ov {
+		t.Fatalf("override = %+v, %v", got, ok)
+	}
+	if _, ok := s.TakeOverride("stardew", "fine"); ok {
+		t.Fatal("an override was handed over twice")
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -222,6 +223,13 @@ func TestInstallAnywayInstallsAFlaggedArchiveOnlyWhenAsked(t *testing.T) {
 	out, err := s.install(t.Context(), "stardew", prof.ID, zip, true)
 	if err != nil || len(out.Added) == 0 {
 		t.Fatalf("install anyway = %+v, %v", out, err)
+	}
+	events, err := s.Profiles.History("stardew", prof.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.ContainsFunc(events, func(e profile.HistoryEvent) bool { return e.Change == profile.ChangeUnscanned }) {
+		t.Fatal("the override was not recorded after the install succeeded")
 	}
 }
 

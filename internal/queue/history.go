@@ -87,7 +87,7 @@ func (s *Service) recordHistory(it *Item, outcome string) {
 	entry := HistoryEntry{
 		Name: name, Version: it.Version, Source: src, Profile: it.Profile, BatchID: it.BatchID,
 		Game: it.Game, ModID: it.ModID, FileID: it.FileID, Kind: it.Kind, Package: it.Package, Repo: it.Repo, Tag: it.Tag, Asset: it.Asset,
-		Latest: it.Latest, Size: size, Started: started, Finished: now, Outcome: outcome, Error: it.Error, Override: it.ScanOverride,
+		Latest: it.Latest, Size: size, Started: started, Finished: now, Outcome: outcome, Error: it.Error, Override: installedOverride(it, outcome),
 	}
 	s.hist.Lock()
 	defer s.hist.Unlock()
@@ -177,4 +177,13 @@ func (s *Service) RetryAllFailed(ctx context.Context) (RetryAllResult, error) {
 	}
 	res.Requeued = len(reqs)
 	return res, nil
+}
+
+// installedOverride is the detection the player installed despite, for an item that did install; a retry that
+// failed again has nothing to show.
+func installedOverride(it *Item, outcome string) string {
+	if outcome != StateDone {
+		return ""
+	}
+	return it.ScanOverride
 }

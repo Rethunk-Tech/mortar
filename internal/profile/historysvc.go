@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 func parseSince(since string) (time.Time, error) {
@@ -64,14 +66,24 @@ func (s *Service) TrimHistory(game, id string, keepLast int) (HistoryUsage, erro
 }
 
 // AllowUnscanned is the player's "Install anyway" for an item the antivirus flagged: the next install of key skips the
-// scan, and the profile's history records that it was allowed, naming the mod and what was flagged.
+// scan, and once that install has succeeded the profile's history records that it was allowed, naming the mod and what
+// was flagged.
 func (s *Service) AllowUnscanned(game, id, key, name, detection string) error {
 	return s.store.AllowUnscanned(game, id, key, name, detection)
 }
 
-// AllowUnscanned makes the store skip the antivirus scan once for key and records the choice in the profile's history.
+// AllowUnscanned makes the store skip the antivirus scan once for key; installKey records the choice once the item is in.
 func (s *Store) AllowUnscanned(game, id, key, name, detection string) error {
-	s.items.AllowUnscanned(game, key)
-	_, err := s.recordSnapshot(game, id, historyBulk, HistoryEvent{Change: ChangeUnscanned, Name: name, Detail: detection}, 1)
+	s.items.AllowUnscanned(game, key, store.Override{Profile: id, Name: name, Detection: detection})
+	return nil
+}
+
+// recordOverride writes the history entry for an "Install anyway" whose install has just succeeded.
+func (s *Store) recordOverride(game, id, key string) error {
+	ov, ok := s.items.TakeOverride(game, key)
+	if !ok || ov.Profile != id {
+		return nil
+	}
+	_, err := s.recordSnapshot(game, id, historyBulk, HistoryEvent{Change: ChangeUnscanned, Name: ov.Name, Detail: ov.Detection}, 1)
 	return err
 }
