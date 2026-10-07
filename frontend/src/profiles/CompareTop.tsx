@@ -130,7 +130,16 @@ export function CompareTop({
   const gameId = game?.id ?? ''
   return (
     <>
-      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.25, px: 3, pt: 2.5, pb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: space.gap,
+          px: space.pad,
+          pt: space.pad,
+          pb: space.pad,
+        }}
+      >
         <Typography component="h2" sx={{ fontSize: 20, fontWeight: 700 }}>
           {t`Compare`}
         </Typography>
@@ -140,14 +149,16 @@ export function CompareTop({
           <X size={18} />
         </IconButton>
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 3, pb: 2 }}>
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: space.pad, pb: space.pad }}
+      >
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 1,
+            gap: space.gap,
             height: space.control,
-            px: 1.5,
+            px: space.pad,
             borderRadius: '8px',
             bgcolor: 'var(--mortar-hairline-12)',
           }}

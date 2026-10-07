@@ -15,6 +15,7 @@ import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
+import { space } from '../theme/density.ts'
 import { useToasts } from '../toasts/store.ts'
 import { pushUndoToast } from '../toasts/undo.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -113,9 +114,9 @@ function CompareFooter({
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1.25,
-        px: 3,
-        py: 1.75,
+        gap: space.gap,
+        px: space.pad,
+        py: space.pad,
         borderTop: 1,
         borderColor: 'divider',
       }}
@@ -168,7 +169,7 @@ function Summary({
   return (
     <Typography
       component="div"
-      sx={{ px: 3, pb: 1.5, display: 'flex', flexWrap: 'wrap', gap: 1.5 }}
+      sx={{ px: space.pad, pb: space.pad, display: 'flex', flexWrap: 'wrap', gap: space.gap }}
     >
       <span>
         {view.differences === 0
@@ -278,7 +279,7 @@ function ComparePair({
         onHost={onHost}
       />
       {filterOpen ? (
-        <Box sx={{ px: 3, pb: 1.5 }}>
+        <Box sx={{ px: space.pad, pb: space.pad }}>
           <SearchField
             label={t`Filter mods`}
             fullWidth={true}
@@ -307,8 +308,8 @@ function ComparePair({
           flex: 1,
           minHeight: 0,
           overflowY: 'auto',
-          px: 3,
-          pt: 1,
+          px: space.pad,
+          pt: space.gap,
           borderTop: 1,
           borderColor: 'divider',
         }}
@@ -380,7 +381,9 @@ function CompareChoose({
           icon={<GitCompare size={28} />}
           title={t`Pick what to compare ${profileA.name} with`}
           action={
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Box
+              sx={{ display: 'flex', gap: space.gap, flexWrap: 'wrap', justifyContent: 'center' }}
+            >
               <Button
                 variant="outlined"
                 color="inherit"

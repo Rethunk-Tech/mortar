@@ -30,7 +30,7 @@ export function CompareHeader({ aName, bName }: { aName: string; bName: string }
     textTransform: 'uppercase',
   } as const
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: COLUMNS, gap: 1.25, px: 0.5, pb: 0.75 }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: COLUMNS, gap: space.gap, px: 0.5, pb: 0.75 }}>
       <span />
       <Typography sx={cell}>{t`Mod`}</Typography>
       <Typography noWrap={true} sx={{ ...cell, textAlign: 'right' }}>
@@ -85,7 +85,7 @@ export function CompareGroupView({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 1,
+          gap: space.gap,
           height: space.row,
           width: 1,
           justifyContent: 'flex-start',
@@ -108,7 +108,7 @@ export function CompareGroupView({
                 sx={{
                   display: 'grid',
                   gridTemplateColumns: COLUMNS,
-                  gap: 1.25,
+                  gap: space.gap,
                   alignItems: 'center',
                   height: 38,
                   px: 0.5,

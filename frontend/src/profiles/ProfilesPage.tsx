@@ -45,6 +45,7 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -67,8 +68,8 @@ function TrashRow({ item }: { item: TrashItem }) {
         display: 'flex',
         alignItems: 'center',
         gap: 0.5,
-        py: 1,
-        pl: 1.5,
+        py: space.gap,
+        pl: space.pad,
         pr: 0.5,
         bgcolor: 'var(--mortar-raised)',
         borderRadius: '6px',
@@ -125,7 +126,7 @@ function Damaged() {
     <Box
       component="section"
       aria-label={t`Damaged`}
-      sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, mb: 2 }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, mb: 2 }}
     >
       <Typography component="h2" sx={{ fontSize: 16, fontWeight: 700 }}>{t`Damaged`}</Typography>
       {damaged.map((item) => (
@@ -135,8 +136,8 @@ function Damaged() {
             display: 'flex',
             alignItems: 'center',
             gap: 0.5,
-            py: 1,
-            pl: 1.5,
+            py: space.gap,
+            pl: space.pad,
             pr: 0.5,
             bgcolor: 'var(--mortar-raised)',
             borderRadius: '6px',
@@ -194,8 +195,8 @@ function Trash() {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 1.25,
-        p: 2,
+        gap: space.gap,
+        p: space.pad,
         bgcolor: 'var(--mortar-panel)',
         borderRadius: '8px',
       }}
@@ -245,7 +246,7 @@ function FindModSearch({ profiles }: { profiles: Profile[] }) {
   const hits = findModInProfiles(profiles, query)
   useEffect(() => onFindAllFocus(() => inputRef.current?.focus()), [])
   return (
-    <Box sx={{ px: 2.5, pt: 1.5, flexShrink: 0 }}>
+    <Box sx={{ px: space.pad, pt: space.pad, flexShrink: 0 }}>
       <SearchField
         fullWidth={true}
         value={query}
@@ -301,10 +302,10 @@ function ProfilesHeader({
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1.5,
+        gap: space.gap,
         height: 64,
         flexShrink: 0,
-        px: 2.5,
+        px: space.pad,
         bgcolor: 'background.paper',
       }}
     >
@@ -331,7 +332,7 @@ function ProfilesHeader({
         aria-expanded={importAnchor !== null}
         aria-controls={importMenuId}
         onClick={(event) => setImportAnchor(event.currentTarget)}
-        sx={{ height: 40, px: 2, fontSize: 14 }}
+        sx={{ height: 40, px: space.pad, fontSize: 14 }}
       >
         {t`Import`}
       </Button>
@@ -358,7 +359,7 @@ function ProfilesHeader({
         variant="contained"
         startIcon={<Plus size={16} />}
         onClick={onCreate}
-        sx={{ height: 40, px: 2, fontSize: 14 }}
+        sx={{ height: 40, px: space.pad, fontSize: 14 }}
       >
         {t`New profile…`}
       </Button>
@@ -421,10 +422,10 @@ export function ProfilesPage() {
           display: 'grid',
           gridTemplateColumns: 'minmax(0, 1fr) 340px',
           alignContent: 'start',
-          gap: 2,
-          px: 2.5,
-          pt: 2,
-          pb: 1.5,
+          gap: space.pad,
+          px: space.pad,
+          pt: space.pad,
+          pb: space.pad,
           [compact]: { gridTemplateColumns: 'minmax(0, 1fr)' },
         }}
       >
@@ -458,7 +459,15 @@ export function ProfilesPage() {
             </DndContext>
           )}
         </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: 320, flexShrink: 0 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: space.pad,
+            width: 320,
+            flexShrink: 0,
+          }}
+        >
           <BundlesSection game={game} profiles={profiles} />
           <Trash />
         </Box>
