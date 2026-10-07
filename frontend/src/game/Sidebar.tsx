@@ -84,6 +84,11 @@ function Badge({ badge, rail }: { badge: NonNullable<SidebarEntry['badge']>; rai
   )
 }
 
+// A collapsed rail shows only icons, so the name (and any count) has to come from the label.
+function railLabel(label: string, badge: SidebarEntry['badge']): string {
+  return badge ? `${label}, ${badge.n}` : label
+}
+
 function Item({
   tab,
   label,
@@ -103,7 +108,7 @@ function Item({
     <ButtonBase
       role="tab"
       aria-selected={active}
-      aria-label={rail && badge ? `${label}, ${badge.n}` : undefined}
+      aria-label={rail ? railLabel(label, badge) : undefined}
       data-tour={tours[tab]}
       onClick={() => setTab(tab)}
       sx={{
