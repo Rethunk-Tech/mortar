@@ -248,10 +248,56 @@ func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID,
 	if !listed || !registered || !canSearch {
 		return Page{}, fmt.Errorf("%w: %s", ErrUnknownSource, sourceID)
 	}
-	result, err := searchCached(ctx, id, searcher, source.Query{
-		Game: info.ID, Key: gs.Key, Text: text, Page: max(page, source.FirstPage), Version: c.Version,
+	q := source.Query{
+		Game: info.ID, Key: gs.Key, Text: text, Version: c.Version,
 		Categories: f.Include, ExcludeCategories: f.Exclude, Sort: f.Sort,
-	})
+	}
+	first := max(page, source.FirstPage)
+	if f.Installed != ModeHide && f.Obsolete != ModeHide && f.Broken != ModeHide {
+		q.Page = first
+		result, err := c.fetchMarked(ctx, info, id, searcher, q)
+		if err != nil {
+			return Page{}, err
+		}
+		c.applyModes(&result, f)
+		return result, nil
+	}
+	return c.searchFilled(ctx, info, id, searcher, q, first, f)
+}
+
+// maxScan is the most upstream pages one visible page reads: a filter that hides nearly everything yields a short
+// page instead of a loop.
+const maxScan = 10
+
+// searchFilled serves page `first` of the visible stream: upstream pages are read from the start, hidden hits dropped,
+// and the (first-1)*PageSize visible hits before this page skipped, so consecutive pages neither repeat nor skip a hit
+// and each is full unless the upstream ends or maxScan is reached.
+// ponytail: rereads upstream pages 1..N for page N (topCache absorbs it for empty-text browse); a deep page past
+// maxScan upstream pages comes back short. Upgrade: a per-query cursor.
+func (c *Client) searchFilled(ctx context.Context, info components.GameInfo, id string, s source.Searcher, q source.Query, first int, f Filter) (Page, error) {
+	want := first * source.PageSize
+	out := Page{Items: []Item{}}
+	var visible []Item
+	for p := source.FirstPage; p < source.FirstPage+maxScan; p++ {
+		q.Page = p
+		raw, err := c.fetchMarked(ctx, info, id, s, q)
+		if err != nil {
+			return Page{}, err
+		}
+		c.applyModes(&raw, f)
+		out.Total, out.Hidden = raw.Total, out.Hidden+raw.Hidden
+		visible = append(visible, raw.Items...)
+		if len(visible) >= want || raw.Total <= p*source.PageSize {
+			break
+		}
+	}
+	out.Items = visible[min((first-1)*source.PageSize, len(visible)):min(want, len(visible))]
+	return out, nil
+}
+
+// fetchMarked reads one upstream page, dropping adult hits unless ShowAdult and marking each hit.
+func (c *Client) fetchMarked(ctx context.Context, info components.GameInfo, id string, s source.Searcher, q source.Query) (Page, error) {
+	result, err := searchCached(ctx, id, s, q)
 	if err != nil {
 		return Page{}, err
 	}
@@ -262,7 +308,6 @@ func (c *Client) search(ctx context.Context, info components.GameInfo, sourceID,
 	}
 	c.markInstalled(result.Items)
 	c.mark(ctx, info, result.Items)
-	c.applyModes(&result, f)
 	return result, nil
 }
 

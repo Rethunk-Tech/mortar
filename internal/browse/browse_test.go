@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -123,7 +124,10 @@ type adultSource struct{}
 func (adultSource) ID() string              { return "adultsrc" }
 func (adultSource) Name() string            { return "Adult" }
 func (adultSource) Modes() []source.Acquire { return nil }
-func (adultSource) Search(context.Context, source.Query) (source.Page, error) {
+func (adultSource) Search(_ context.Context, q source.Query) (source.Page, error) {
+	if q.Page > 1 {
+		return source.Page{Total: 30}, nil
+	}
 	return source.Page{Total: 30, Items: []source.Item{{ID: "1"}, {ID: "2", Adult: true}, {ID: "3"}}}, nil
 }
 
@@ -200,5 +204,44 @@ func TestCategoryHelpers(t *testing.T) {
 	}
 	if got := fmt.Sprint(source.UniqueNames([]string{"b", "A", "a", " "})); got != "[A b]" {
 		t.Fatalf("got %s", got)
+	}
+}
+
+type bigSource struct{}
+
+func (bigSource) ID() string              { return "bigsrc" }
+func (bigSource) Name() string            { return "Big" }
+func (bigSource) Modes() []source.Acquire { return nil }
+func (bigSource) Search(_ context.Context, q source.Query) (source.Page, error) {
+	p := source.Page{Total: 200}
+	for i := (q.Page - 1) * source.PageSize; i < q.Page*source.PageSize; i++ {
+		p.Items = append(p.Items, source.Item{Source: "bigsrc", ID: fmt.Sprint(i)})
+	}
+	return p, nil
+}
+
+var _ = source.Register(bigSource{})
+
+func TestHiddenHitsDoNotShortenAPage(t *testing.T) {
+	g := components.GameInfo{ID: "g", Sources: []components.GameSource{{ID: "bigsrc"}}}
+	c := &Client{ShowAdult: true, Installed: func(_, id string) bool {
+		n, _ := strconv.Atoi(id)
+		return n%2 != 0
+	}}
+	f := Filter{Installed: ModeHide}
+	var ids []string
+	for p := 1; p <= 3; p++ {
+		page, err := c.search(context.Background(), g, "bigsrc", "x", p, f)
+		if err != nil || len(page.Items) != source.PageSize || page.Total != 200 || page.Hidden == 0 {
+			t.Fatalf("page %d: %d items, %+v, %v", p, len(page.Items), page, err)
+		}
+		for _, it := range page.Items {
+			ids = append(ids, it.ID)
+		}
+	}
+	for i, id := range ids {
+		if id != fmt.Sprint(i*2) {
+			t.Fatalf("pages must continue without gaps or repeats: %v", ids)
+		}
 	}
 }
