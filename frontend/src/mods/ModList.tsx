@@ -134,6 +134,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
             </Box>
             <ExtraFilesChip mod={m} profile={profile} />
             <OverlayCountChip mod={m} profile={profile} />
+            <ProblemBadge mod={m} />
             {row.overrides ? <OverridesNote count={row.overrides} /> : null}
           </Box>
         </Cell>
@@ -215,7 +216,6 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
             <PinBadge mod={m} />
             <CompatChip mod={m} />
-            <ProblemBadge mod={m} />
             <LiveBadge mod={m} />
             <NexusGoneBadge mod={m} />
             <UpdateBadge mod={m} />
