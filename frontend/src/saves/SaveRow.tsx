@@ -63,7 +63,7 @@ function useFarmKind(which: number): string {
   return kinds[which] ?? ''
 }
 
-function FitStatus({ missing, unrecorded }: { missing: number; unrecorded: boolean }) {
+export function FitStatus({ missing, unrecorded }: { missing: number; unrecorded: boolean }) {
   const { t } = useLingui()
   let color = 'warning.main'
   let icon = <TriangleAlert size={13} />
@@ -100,7 +100,7 @@ function FitStatus({ missing, unrecorded }: { missing: number; unrecorded: boole
   )
 }
 
-function SaveButtons({
+export function SaveButtons({
   fit,
   game,
   profileId,

@@ -9,14 +9,20 @@ import { useGameInfo } from '../games/info.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
+import { useStoredState } from '../shell/useStoredState.ts'
+import { ViewToggle } from '../shell/ViewToggle.tsx'
+import type { ViewMode } from '../shell/viewMode.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { BackupsDialog } from './BackupsDialog.tsx'
 import { backupsOf } from './backupsOf.ts'
 import { filterAndSortSaves } from './filterAndSortSaves.ts'
+import { SaveListHeader, SaveListRow } from './SaveListRow.tsx'
 import { SaveRow } from './SaveRow.tsx'
 import { useSaves } from './store.ts'
 import { useAllBackups } from './useAllBackups.ts'
+
+const isViewMode = (v: unknown): v is ViewMode => v === 'list' || v === 'grid'
 
 export function SavesTab({ profile, game }: { profile: Profile; game: string }) {
   const { t } = useLingui()
@@ -26,6 +32,8 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   const recordsMods = useGameInfo(game)?.loaderId === 'smapi'
   const [backupsOpen, setBackupsOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const [view, setView] = useStoredState<ViewMode>(`mortar.savesView.${game}`, 'list', isViewMode)
+  const list = view === 'list'
   const { all, reload: reloadBackups } = useAllBackups(
     game,
     fits.map((f) => `${f.folder}:${f.played}`).join('|'),
@@ -73,8 +81,9 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
       </EmptyState>
     )
   } else {
-    body = shown.map((fit) => (
-      <SaveRow
+    const Row = list ? SaveListRow : SaveRow
+    const rows = shown.map((fit) => (
+      <Row
         key={fit.folder}
         fit={fit}
         profile={profile}
@@ -83,6 +92,14 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
         onBackupsChanged={reloadBackups}
       />
     ))
+    body = list ? (
+      <Box>
+        <SaveListHeader name={name} />
+        {rows}
+      </Box>
+    ) : (
+      rows
+    )
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
@@ -98,6 +115,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
         </Button>
       </PageActions>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 0.75 }}>
+        {fits.length === 0 ? null : <ViewToggle value={view} onChange={setView} />}
         {fits.length === 0 ? null : (
           <SearchField
             value={query}
@@ -111,7 +129,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
       <Box
         sx={{
           flex: fits.length > 0 ? undefined : 1,
-          display: fits.length > 0 ? 'grid' : 'flex',
+          display: fits.length > 0 && !list ? 'grid' : 'flex',
           gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
           flexDirection: 'column',
           gap: 1.25,

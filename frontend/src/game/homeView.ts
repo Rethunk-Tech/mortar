@@ -47,4 +47,4 @@ function renameSurface(hero: string): 'inline' | 'dialog' {
   return hero === 'hidden' ? 'dialog' : 'inline'
 }
 
-export { changesView, glance, renameSurface, savesView }
+export { changesView, glance, renameSurface, saveCalendar, savesView }
