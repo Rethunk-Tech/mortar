@@ -3,6 +3,7 @@ package archive
 import (
 	"archive/zip"
 	"bytes"
+	"compress/gzip"
 	"encoding/binary"
 	"errors"
 	"hash/crc32"
@@ -501,5 +502,102 @@ func TestRepairNamesRenamesLegacyEncodedEntries(t *testing.T) {
 	}
 	if n, err := RepairNames(root); err != nil || n != 0 {
 		t.Fatalf("second pass renamed %d, %v", n, err)
+	}
+}
+
+func TestStreamFormatsExtractATarByMagicBytes(t *testing.T) {
+	for _, name := range []string{"valid.tar", "valid.tar.gz", "valid.tar.xz", "valid.tar.zst", "valid.tar.bz2", "valid.tar.lzma"} {
+		t.Run(name, func(t *testing.T) {
+			// A copy with no extension: only the bytes may decide.
+			src, err := fsx.ReadFile(filepath.Join("testdata", name))
+			if err != nil {
+				t.Fatal(err)
+			}
+			dest, err := extract(t, writeTemp(t, "download", src), options{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := readFile(t, filepath.Join(dest, "Mod", "Fix.dll")); got != "dll" {
+				t.Fatalf("Fix.dll = %q", got)
+			}
+			if _, err := PreviewArchive(writeTemp(t, "download", src)); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
+func TestStreamFormatsExtractABareFileNamedWithoutItsSuffix(t *testing.T) {
+	for _, name := range []string{"bare.txt.gz", "bare.txt.xz", "bare.txt.zst", "bare.txt.bz2", "bare.txt.lzma"} {
+		t.Run(name, func(t *testing.T) {
+			dest, err := extract(t, filepath.Join("testdata", name), options{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := readFile(t, filepath.Join(dest, "bare.txt")); got != "hello archive\n" {
+				t.Fatalf("bare.txt = %q", got)
+			}
+			if n, err := DeclaredSize(filepath.Join("testdata", name)); err != nil || n != 14 {
+				t.Fatalf("DeclaredSize = %d, %v", n, err)
+			}
+		})
+	}
+}
+
+func TestStreamFormatsRefuseUnsafeEntries(t *testing.T) {
+	for file, reason := range map[string]error{
+		"traversal.tar.gz": ErrTraversal, "symlink.tar.gz": ErrLink, "hardlink.tar.gz": ErrLink, "fifo.tar.gz": ErrSpecialFile,
+	} {
+		t.Run(file, func(t *testing.T) {
+			_, err := extract(t, filepath.Join("testdata", file), options{})
+			if !errors.Is(err, reason) {
+				t.Fatalf("got %v, want %v", err, reason)
+			}
+		})
+	}
+}
+
+func TestStreamFormatsHonourTheSizeAndEntryCaps(t *testing.T) {
+	src := filepath.Join("testdata", "valid.tar.xz")
+	_, err := extract(t, src, options{MaxEntryBytes: 2})
+	if !errors.Is(err, ErrEntryTooLarge) {
+		t.Fatalf("got %v", err)
+	}
+	if _, err = extract(t, src, options{MaxEntries: 1}); !errors.Is(err, ErrTooManyEntries) {
+		t.Fatalf("got %v", err)
+	}
+	_, err = extract(t, filepath.Join("testdata", "bare.txt.gz"), options{MaxEntryBytes: 3})
+	wantReason(t, err, ErrEntryTooLarge, "bare.txt")
+}
+
+// A gzip of zeros unpacks to far more than the cap; the stream's own budget stops it before the disk fills.
+func TestStreamBombIsStoppedByTheDecompressionBudget(t *testing.T) {
+	var buf bytes.Buffer
+	zw := gzip.NewWriter(&buf)
+	if _, err := zw.Write(make([]byte, 8<<20)); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	_, err := extract(t, writeTemp(t, "bomb.gz", buf.Bytes()), options{MaxEntryBytes: 1 << 20, MaxTotalBytes: 1 << 20, MaxEntries: 10})
+	if !errors.Is(err, ErrEntryTooLarge) && !errors.Is(err, ErrArchiveTooLarge) {
+		t.Fatalf("got %v", err)
+	}
+}
+
+func TestExtensionsStripLongestEndingFirst(t *testing.T) {
+	for in, want := range map[string]string{
+		"Mod.TAR.GZ": "Mod", "mod.tgz": "mod", "mod.zip": "mod", "notes.txt.xz": "notes.txt", "plain": "plain", "mod.tar.zst": "mod",
+	} {
+		if got := StripExtension(in); got != want {
+			t.Errorf("StripExtension(%q) = %q, want %q", in, got, want)
+		}
+	}
+	if HasExtension("readme.txt") || !HasExtension("a.tar.bz2") {
+		t.Error("HasExtension wrong")
+	}
+	if !strings.Contains(PickerPattern(), "*.tar.xz;") {
+		t.Error(PickerPattern())
 	}
 }

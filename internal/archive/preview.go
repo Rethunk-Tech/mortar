@@ -103,7 +103,7 @@ func (v *previewer) full() bool {
 	return true
 }
 
-// PreviewArchive lists the zip, RAR or 7z archive at archivePath without extracting it.
+// PreviewArchive lists the archive at archivePath without extracting it.
 func PreviewArchive(archivePath string) (_ Preview, err error) {
 	defer RecoverMalformed(&err)
 	f, err := fsx.Open(archivePath)
@@ -115,7 +115,7 @@ func PreviewArchive(archivePath string) (_ Preview, err error) {
 	if err != nil {
 		return Preview{}, err
 	}
-	var magic [8]byte
+	var magic [headLen]byte
 	n, _ := io.ReadFull(f, magic[:])
 	v := &previewer{p: Preview{Entries: []PreviewEntry{}, Manifests: []PreviewManifest{}}}
 	switch detect(magic[:n]) {
@@ -126,6 +126,10 @@ func PreviewArchive(archivePath string) (_ Preview, err error) {
 	case fmtRAR:
 		if _, err = f.Seek(0, io.SeekStart); err == nil {
 			err = v.rar(f)
+		}
+	case fmtTar, fmtGzip, fmtXz, fmtLzma, fmtZstd, fmtBzip2:
+		if _, err = f.Seek(0, io.SeekStart); err == nil {
+			err = v.stream(f, detect(magic[:n]), archivePath)
 		}
 	default:
 		err = &Error{Reason: ErrUnsupportedFormat}

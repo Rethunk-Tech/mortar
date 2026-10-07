@@ -2,6 +2,7 @@
 package picker
 
 import (
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -19,7 +20,7 @@ type Service struct {
 func (s *Service) PickArchives() ([]string, error) {
 	d := s.App.Dialog.OpenFile().
 		SetTitle("Add archive").
-		AddFilter("Archives (zip, RAR, 7z)", "*.zip;*.rar;*.7z").
+		AddFilter("Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lzma)", archive.PickerPattern()).
 		AddFilter("All files", "*")
 	d.AttachToWindow(s.App.Window.Current())
 	return d.PromptForMultipleSelection()

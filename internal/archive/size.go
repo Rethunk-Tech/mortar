@@ -24,7 +24,7 @@ func DeclaredSize(archivePath string) (_ int64, err error) {
 	if err != nil {
 		return 0, err
 	}
-	var magic [8]byte
+	var magic [headLen]byte
 	n, _ := io.ReadFull(f, magic[:])
 
 	var total int64
@@ -63,6 +63,11 @@ func DeclaredSize(archivePath string) (_ int64, err error) {
 			}
 			total += h.UnPackedSize
 		}
+	case fmtTar, fmtGzip, fmtXz, fmtLzma, fmtZstd, fmtBzip2:
+		if _, err := f.Seek(0, io.SeekStart); err != nil {
+			return 0, err
+		}
+		return streamSize(f, detect(magic[:n]))
 	default:
 		return 0, &Error{Reason: ErrUnsupportedFormat}
 	}

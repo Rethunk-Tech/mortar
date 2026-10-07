@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -17,13 +18,7 @@ var fileVersionSuffix = regexp.MustCompile(`(?i)(?:[\s._-]+v?\d+(?:[._-]\d+)+|[\
 // FileStem is an archive name without its extension, version suffix and case, so two versions of one download match.
 func FileStem(name string) string {
 	name = strings.TrimSpace(name)
-	lower := strings.ToLower(name)
-	for _, ext := range []string{".zip", ".rar", ".7z"} {
-		if strings.HasSuffix(lower, ext) {
-			name = strings.TrimSpace(name[:len(name)-len(ext)])
-			break
-		}
-	}
+	name = strings.TrimSpace(archive.StripExtension(name))
 	for {
 		stem := strings.TrimSpace(fileVersionSuffix.ReplaceAllString(name, ""))
 		if stem == name {

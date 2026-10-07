@@ -19,6 +19,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -230,10 +231,7 @@ func (f fileResp) sha1() string {
 // version is the name a file goes by in Mortar: its display name without the archive extension.
 func (f fileResp) version() string {
 	name := cmp.Or(f.DisplayName, f.FileName, strconv.Itoa(f.ID))
-	for _, ext := range []string{".zip", ".7z", ".rar"} {
-		name = strings.TrimSuffix(name, ext)
-	}
-	return name
+	return archive.StripExtension(name)
 }
 
 func (f fileResp) required() []string {

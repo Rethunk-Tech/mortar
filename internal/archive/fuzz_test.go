@@ -163,3 +163,16 @@ func zipOf(f *testing.F, name string, mode fs.FileMode, data []byte) []byte {
 	}
 	return buf.Bytes()
 }
+
+// FuzzExtractStreams seeds the detection and every stream reader with each compressed format, around a tar and bare,
+// so mutations reach the decoders and the tar header parser.
+func FuzzExtractStreams(f *testing.F) {
+	seeds, _ := filepath.Glob("testdata/*.tar*")
+	bare, _ := filepath.Glob("testdata/bare.*")
+	for _, p := range append(seeds, bare...) {
+		if b, err := fsx.ReadFile(p); err == nil {
+			f.Add(b)
+		}
+	}
+	f.Fuzz(func(t *testing.T, archive []byte) { extractFuzzed(t, archive) })
+}

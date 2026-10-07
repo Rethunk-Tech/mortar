@@ -258,7 +258,7 @@ msgstr "Stop the game to change mods."
 msgid "Could not delete the template"
 msgstr "Could not delete the template"
 
-#: src/mods/typedConfig/ConfigPane.tsx:255
+#: src/mods/typedConfig/ConfigPane.tsx:259
 msgid "Every entry in {current} goes back to its default."
 msgstr "Every entry in {current} goes back to its default."
 
@@ -1354,7 +1354,7 @@ msgstr "Create a bundle to reuse a set of mods."
 msgid "Show files"
 msgstr "Show files"
 
-#: src/mods/typedConfig/ConfigTab.tsx:243
+#: src/mods/typedConfig/ConfigTab.tsx:330
 msgid "Mods with settings"
 msgstr "Mods with settings"
 
@@ -1555,8 +1555,8 @@ msgstr "The mod files can be copied directly from this Mortar."
 msgid "Newest lines kept in the Console"
 msgstr "Newest lines kept in the Console"
 
-#: src/mods/typedConfig/ConfigPane.tsx:178
-#: src/mods/typedConfig/ConfigPane.tsx:257
+#: src/mods/typedConfig/ConfigPane.tsx:182
+#: src/mods/typedConfig/ConfigPane.tsx:261
 #: src/settings/sections/Shortcuts.tsx:107
 #: src/settings/sections/Shortcuts.tsx:113
 msgid "Reset all"
@@ -1798,7 +1798,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/launch/LaunchLayer.tsx:296
 #: src/mods/LoadOrderTab.tsx:391
 #: src/mods/ModsTab.tsx:109
-#: src/mods/typedConfig/ConfigPane.tsx:187
+#: src/mods/typedConfig/ConfigPane.tsx:191
 #: src/mods/updateReview/updateAll.ts:59
 #: src/profiles/GameModsDialog.tsx:135
 #: src/profiles/HealthDialog.tsx:232
@@ -1959,7 +1959,7 @@ msgstr "Running for {time}"
 msgid "Name"
 msgstr "Name"
 
-#: src/mods/typedConfig/ConfigTab.tsx:275
+#: src/mods/typedConfig/ConfigTab.tsx:207
 msgid "Loader and other"
 msgstr "Loader and other"
 
@@ -2271,7 +2271,7 @@ msgstr "Mortar is up to date"
 #: src/mods/Toolbar.tsx:343
 #: src/mods/Toolbar.tsx:369
 #: src/mods/Toolbar.tsx:387
-#: src/mods/typedConfig/ConfigTab.tsx:225
+#: src/mods/typedConfig/ConfigTab.tsx:312
 #: src/profiles/CompareDialog.tsx:284
 #: src/profiles/CompareTop.tsx:182
 msgid "Filter mods"
@@ -2417,8 +2417,8 @@ msgstr "Show the first-run tips again"
 msgid "Show"
 msgstr "Show"
 
-#: src/mods/typedConfig/ConfigPane.tsx:163
-#: src/mods/typedConfig/ConfigPane.tsx:212
+#: src/mods/typedConfig/ConfigPane.tsx:151
+#: src/mods/typedConfig/ConfigPane.tsx:216
 #: src/mods/typedConfig/ConfigTab.tsx:52
 #: src/mods/typedConfig/ConfigTab.tsx:98
 msgid "In-game menu"
@@ -3000,7 +3000,7 @@ msgstr "Find a mod in all profiles…"
 msgid "Compare…"
 msgstr "Compare…"
 
-#: src/mods/typedConfig/ConfigTab.tsx:187
+#: src/mods/typedConfig/ConfigTab.tsx:274
 msgid "No mod settings yet"
 msgstr "No mod settings yet"
 
@@ -3881,7 +3881,7 @@ msgstr "Not checked yet."
 #: src/mods/problemText.ts:38
 #: src/mods/typedConfig/ConfigTab.tsx:52
 #: src/mods/typedConfig/ConfigTab.tsx:97
-#: src/mods/typedConfig/ConfigTab.tsx:285
+#: src/mods/typedConfig/ConfigTab.tsx:217
 msgid "Changed"
 msgstr "Changed"
 
@@ -4431,7 +4431,7 @@ msgstr "Mortar: {label}"
 #: src/mods/ModCards.tsx:462
 #: src/mods/ModList.tsx:364
 #: src/mods/Toolbar.tsx:194
-#: src/mods/typedConfig/ConfigTab.tsx:255
+#: src/mods/typedConfig/ConfigTab.tsx:166
 msgid "A mod with several tags appears under its first tag."
 msgstr "A mod with several tags appears under its first tag."
 
@@ -4765,11 +4765,6 @@ msgstr "Access granted"
 #: src/game/BackupMenuItems.tsx:49
 msgid "Back up to a file…"
 msgstr "Back up to a file…"
-
-#. placeholder {0}: list.without
-#: src/mods/typedConfig/ConfigTab.tsx:295
-msgid "{0, plural, one {# mod has no config yet; mods create it the first time the game runs.} other {# mods have no config yet; mods create it the first time the game runs.}}"
-msgstr "{0, plural, one {# mod has no config yet; mods create it the first time the game runs.} other {# mods have no config yet; mods create it the first time the game runs.}}"
 
 #. placeholder {0}: row.host
 #: src/game/FarmMenuItem.tsx:89
@@ -6212,7 +6207,7 @@ msgstr "Downloaded versions stay in the store for re-use."
 msgid "Skip for now"
 msgstr "Skip for now"
 
-#: src/mods/typedConfig/ConfigPane.tsx:197
+#: src/mods/typedConfig/ConfigPane.tsx:201
 #: src/share/ImportPreview.tsx:352
 #: src/share/Included.tsx:94
 msgid "Config files"
@@ -7093,7 +7088,7 @@ msgstr "Could not switch {0}"
 msgid "Asset map"
 msgstr "Asset map"
 
-#: src/mods/typedConfig/ConfigPane.tsx:254
+#: src/mods/typedConfig/ConfigPane.tsx:258
 msgid "Every change waiting for the next start is discarded."
 msgstr "Every change waiting for the next start is discarded."
 
@@ -7308,7 +7303,7 @@ msgstr "Installed and up to date"
 msgid "Regenerate token"
 msgstr "Regenerate token"
 
-#: src/mods/typedConfig/ConfigPane.tsx:151
+#: src/mods/typedConfig/ConfigPane.tsx:155
 msgid "Config of {name}"
 msgstr "Config of {name}"
 
@@ -8152,7 +8147,7 @@ msgstr "{gameName} save backups: {0}"
 msgid "Update all ({wantedCount})"
 msgstr "Update all ({wantedCount})"
 
-#: src/mods/typedConfig/ConfigPane.tsx:245
+#: src/mods/typedConfig/ConfigPane.tsx:249
 msgid "No entries match."
 msgstr "No entries match."
 
@@ -10958,7 +10953,7 @@ msgid "Flagged by {0}: {1}{2}"
 msgstr "Flagged by {0}: {1}{2}"
 
 #: src/mods/Toolbar.tsx:342
-#: src/mods/typedConfig/ConfigTab.tsx:226
+#: src/mods/typedConfig/ConfigTab.tsx:313
 msgid "{total, plural, one {Filter # mod} other {Filter # mods}}"
 msgstr "{total, plural, one {Filter # mod} other {Filter # mods}}"
 
@@ -11002,7 +10997,7 @@ msgstr "Stop the game to test a launch."
 #: src/firstrunTour/TourPopover.tsx:42
 #: src/games/GameSelect.tsx:258
 #: src/launch/PlayControl.tsx:175
-#: src/mods/typedConfig/ConfigTab.tsx:190
+#: src/mods/typedConfig/ConfigTab.tsx:277
 #: src/settings/GameSettingsPage.tsx:72
 #: src/settings/GameSettingsPage.tsx:100
 msgid "Play"
@@ -11192,7 +11187,7 @@ msgstr "Copy details"
 msgid "FromArea {0}"
 msgstr "FromArea {0}"
 
-#: src/mods/typedConfig/ConfigTab.tsx:194
+#: src/mods/typedConfig/ConfigTab.tsx:281
 msgid "Mods write their settings the first time the game runs."
 msgstr "Mods write their settings the first time the game runs."
 
@@ -12631,7 +12626,7 @@ msgstr "Replace {name}?"
 msgid "Mods you put there show up here to add."
 msgstr "Mods you put there show up here to add."
 
-#: src/mods/typedConfig/ConfigPane.tsx:251
+#: src/mods/typedConfig/ConfigPane.tsx:255
 msgid "Reset all entries?"
 msgstr "Reset all entries?"
 
@@ -13091,7 +13086,7 @@ msgstr "Mortar downloads and installs a mod when you click Mod Manager Download 
 msgid "Settings sections"
 msgstr "Settings sections"
 
-#: src/mods/typedConfig/ConfigPane.tsx:166
+#: src/mods/typedConfig/ConfigPane.tsx:170
 msgid "Search entries"
 msgstr "Search entries"
 
@@ -13264,6 +13259,10 @@ msgstr "Stay open"
 #: src/profiles/GameSettings.tsx:206
 msgid "UI scale ({value}%)"
 msgstr "UI scale ({value}%)"
+
+#: src/mods/typedConfig/ConfigTab.tsx:186
+msgid "{count, plural, one {# mod has no config yet; mods create it the first time the game runs.} other {# mods have no config yet; mods create it the first time the game runs.}}"
+msgstr "{count, plural, one {# mod has no config yet; mods create it the first time the game runs.} other {# mods have no config yet; mods create it the first time the game runs.}}"
 
 #: src/share/CollectionNotes.tsx:81
 msgid "Installers ask as usual; Premium accounts also get the curator's choices and configs."
@@ -13850,7 +13849,7 @@ msgid "Template deleted"
 msgstr "Template deleted"
 
 #: src/mods/ModsTab.tsx:133
-#: src/mods/typedConfig/ConfigTab.tsx:269
+#: src/mods/typedConfig/ConfigTab.tsx:344
 msgid "No mods match"
 msgstr "No mods match"
 

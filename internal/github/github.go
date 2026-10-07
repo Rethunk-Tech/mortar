@@ -22,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/host"
@@ -542,7 +543,7 @@ func (c *Client) Releases(ctx context.Context, owner, repo string) ([]Release, e
 // ErrNoRelease and ErrNoArchive say why Select found nothing to install.
 var (
 	ErrNoRelease = errors.New("GitHub lists no matching stable release")
-	ErrNoArchive = errors.New("the release has no zip, rar or 7z asset")
+	ErrNoArchive = errors.New("the release has no archive asset (zip, rar, 7z, tar, gz, xz, zst, bz2 or lzma)")
 )
 
 func tagVersion(tag string) string { return strings.TrimPrefix(strings.TrimPrefix(tag, "v"), "V") }
@@ -550,15 +551,16 @@ func tagVersion(tag string) string { return strings.TrimPrefix(strings.TrimPrefi
 var archiveTypes = map[string]bool{
 	"application/zip": true, "application/x-zip-compressed": true, "application/x-rar-compressed": true,
 	"application/vnd.rar": true, "application/x-7z-compressed": true, "application/octet-stream": true,
+	"application/x-tar": true, "application/gzip": true, "application/x-gzip": true, "application/x-xz": true,
+	"application/zstd": true, "application/x-zstd": true, "application/x-bzip2": true, "application/x-lzma": true,
 }
 
-// IsArchive reports whether a is a zip, rar or 7z by name, and by content type where GitHub set one.
+// IsArchive reports whether a is an archive Mortar reads by name, and by content type where GitHub set one.
 func IsArchive(a Asset) bool {
-	switch strings.ToLower(filepath.Ext(a.Name)) {
-	case ".zip", ".rar", ".7z":
-		return a.ContentType == "" || archiveTypes[strings.ToLower(a.ContentType)]
+	if !archive.HasExtension(a.Name) {
+		return false
 	}
-	return false
+	return a.ContentType == "" || archiveTypes[strings.ToLower(a.ContentType)]
 }
 
 // Select picks the newest non-prerelease, non-draft release whose tag is version (any when version is empty)

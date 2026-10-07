@@ -47,7 +47,7 @@ func TestSelect(t *testing.T) {
 		t.Fatal(err)
 	}
 	r, assets, err := Select(all, "")
-	if err != nil || r.Tag != "v2.1.0" || len(assets) != 2 {
+	if err != nil || r.Tag != "v2.1.0" || len(assets) != 3 {
 		t.Fatalf("newest = %q %v %v", r.Tag, assets, err)
 	}
 	r, assets, err = Select(all, "2.0.0")

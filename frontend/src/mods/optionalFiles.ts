@@ -10,7 +10,8 @@ import { parseBBCode } from './bbcode.ts'
 
 const OPTIONAL_CATEGORIES = new Set(['OPTIONAL', 'MISCELLANEOUS'])
 const RETIRED_CATEGORIES = new Set(['OLD_VERSION', 'ARCHIVED'])
-const ARCHIVE_EXT = /\.(zip|rar|7z)$/i
+const ARCHIVE_EXT =
+  /\.(tar\.(gz|xz|zst|bz2|lzma)|tgz|txz|tzst|tbz2?|zip|rar|7z|tar|gz|xz|zst|lzma|bz2)$/i
 const VERSION_SUFFIX = /(?:[\s._-]+v?\d+(?:[._-]\d+)+|[\s._-]+v?\d+)$/i
 
 type Entries = Pick<Profile, 'entries'> | null | undefined

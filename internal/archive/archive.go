@@ -1,9 +1,11 @@
-// Package archive extracts zip, RAR and 7z archives from an untrusted source into a directory.
+// Package archive extracts zip, RAR, 7z, tar and gzip, xz, lzma, zstd or bzip2 files (alone or around a tar) from an
+// untrusted source into a directory.
 package archive
 
 import (
 	"archive/zip"
 	"bytes"
+	"compress/gzip"
 	"errors"
 	"fmt"
 	"hash/crc32"
@@ -21,6 +23,7 @@ import (
 	"golang.org/x/text/encoding/simplifiedchinese"
 
 	"github.com/bodgit/sevenzip"
+	"github.com/klauspost/compress/zstd"
 	"github.com/nwaples/rardecode/v2"
 )
 
@@ -41,7 +44,7 @@ type options struct {
 // Reasons carried by Error. A disk-full write is reported as the underlying
 // error, so errors.Is(err, syscall.ENOSPC) holds.
 var (
-	ErrUnsupportedFormat = errors.New("not a zip, RAR or 7z archive")
+	ErrUnsupportedFormat = errors.New("not a zip, RAR, 7z, tar, gzip, xz, lzma, zstd or bzip2 archive")
 	ErrEncrypted         = errors.New("archive is encrypted")
 	ErrTraversal         = errors.New("path escapes the destination")
 	ErrUnsafeName        = errors.New("name is not allowed")
@@ -107,7 +110,7 @@ func extractWith(archivePath, dest string, opts options) (err error) {
 		return err
 	}
 
-	var magic [8]byte
+	var magic [headLen]byte
 	n, _ := io.ReadFull(f, magic[:])
 	head := magic[:n]
 
@@ -132,6 +135,11 @@ func extractWith(archivePath, dest string, opts options) (err error) {
 		return x.rar(f)
 	case fmtSevenZip:
 		return x.sevenZip(f, info.Size())
+	case fmtTar, fmtGzip, fmtXz, fmtLzma, fmtZstd, fmtBzip2:
+		if _, err := f.Seek(0, io.SeekStart); err != nil {
+			return err
+		}
+		return x.stream(f, detect(head), archivePath)
 	}
 	return &Error{Reason: ErrUnsupportedFormat}
 }
@@ -141,6 +149,12 @@ const (
 	fmtZip
 	fmtRAR
 	fmtSevenZip
+	fmtTar
+	fmtGzip
+	fmtXz
+	fmtLzma
+	fmtZstd
+	fmtBzip2
 )
 
 func detect(head []byte) int {
@@ -152,7 +166,7 @@ func detect(head []byte) int {
 	case bytes.HasPrefix(head, []byte("7z\xbc\xaf\x27\x1c")):
 		return fmtSevenZip
 	}
-	return fmtNone
+	return detectStream(head)
 }
 
 type extractor struct {
@@ -434,7 +448,8 @@ func wrap(entry string, err error) error {
 	}
 	var re *sevenzip.ReadError
 	switch {
-	case errors.Is(err, zip.ErrChecksum), errors.Is(err, rardecode.ErrBadFileChecksum):
+	case errors.Is(err, zip.ErrChecksum), errors.Is(err, rardecode.ErrBadFileChecksum), errors.Is(err, gzip.ErrChecksum),
+		errors.Is(err, zstd.ErrCRCMismatch):
 		err = ErrChecksum
 	case errors.As(err, &re) && re.Encrypted:
 		err = ErrEncrypted
