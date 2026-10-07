@@ -42,7 +42,7 @@ export function ImportWizard({
   onOwnCode: (() => void) | null
 }) {
   const { t } = useLingui()
-  const { sources: external, reload } = useExternalImportSources(game)
+  const { sources: external, reload } = useExternalImportSources(game, open)
   const [vortexSupported, setVortexSupported] = useState(false)
   useEffect(() => {
     ExternalVortexSupported(game).then(setVortexSupported).catch(reportUnexpected)

@@ -36,7 +36,7 @@ const cardSx = (borderColor: string) => ({
 // Shown only when another mod manager on this computer has profiles for the game.
 function ManagerImportCard({ game }: { game: GameId }) {
   const { t } = useLingui()
-  const { sources: external } = useExternalImportSources(game)
+  const { sources: external } = useExternalImportSources(game, true)
   const [packs, setPacks] = useState(0)
   const [wizard, setWizard] = useState(false)
   const [packPath, setPackPath] = useState<string | null>(null)

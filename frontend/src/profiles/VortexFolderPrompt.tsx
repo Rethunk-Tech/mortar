@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Typography } from '@mui/material'
+import { Box, Button, TextField, Typography } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import type { VortexInventory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/migrate/models.ts'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
@@ -33,23 +33,24 @@ export function VortexFolderPrompt({ game, onChosen }: { game: string; onChosen:
   }, [])
   useEffect(load, [load])
   const note = useVortexNote(game, contents)
+  const [typing, setTyping] = useState(false)
+  const [typed, setTyped] = useState('')
+  const apply = async (dir: string) => {
+    try {
+      await SetByKey('vortexFolder', dir, '')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+      return
+    }
+    setError('')
+    load()
+    onChosen()
+  }
+  // Without a native folder dialog (server mode) the path is typed instead.
   const choose = () => {
     PickFolder(t`Vortex data folder`)
-      .then(async (dir) => {
-        if (!dir) {
-          return
-        }
-        try {
-          await SetByKey('vortexFolder', dir, '')
-        } catch (e) {
-          setError(e instanceof Error ? e.message : String(e))
-          return
-        }
-        setError('')
-        load()
-        onChosen()
-      })
-      .catch(reportUnexpected)
+      .then((dir) => (dir ? apply(dir) : undefined))
+      .catch(() => setTyping(true))
   }
   return (
     <Typography variant="body2" color="text.secondary" sx={{ pt: 1 }}>
@@ -57,6 +58,20 @@ export function VortexFolderPrompt({ game, onChosen }: { game: string; onChosen:
       <Button size="small" onClick={choose}>
         {t`Choose folder…`}
       </Button>
+      {typing ? (
+        <Box component="span" sx={{ display: 'flex', gap: 1, pt: 1 }}>
+          <TextField
+            size="small"
+            fullWidth={true}
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            label={t`Vortex data folder`}
+          />
+          <Button disabled={!typed.trim()} onClick={() => apply(typed.trim())}>
+            {t`Use folder`}
+          </Button>
+        </Box>
+      ) : null}
       {error ? (
         <Typography component="span" variant="body2" color="error" role="alert" sx={{ ml: 1 }}>
           {error}
