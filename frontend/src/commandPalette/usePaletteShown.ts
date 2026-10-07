@@ -6,6 +6,7 @@ import type { SettingsSection } from '../nav/store.ts'
 import { userModEntries } from '../profiles/count.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { SHORTCUTS, type ShortcutId } from '../settings/shortcuts.ts'
+import { useBisectBlockText } from './crashBisect.ts'
 import { buildPaletteItems } from './items.ts'
 import { matchPaletteItems, type PaletteItem } from './match.ts'
 import { paletteActionLabels } from './paletteLabels.ts'
@@ -23,6 +24,7 @@ export function usePaletteShown(input: {
   const { i18n, query, profiles, openId, gameId, sections, shortcutLabels, bindings } = input
   const profile = openProfileOf({ profiles, openId: openId ?? '' })
   const streamOverlay = useProfiles((s) => s.game?.loaders?.[0]?.overlay === true)
+  const crashCheckBlocked = useBisectBlockText()
   const collectionStatus = useCollectionStatus(gameId, profile)
   const collectionReview = Boolean(
     profile?.collection && collectionHeader(collectionStatus).review !== null,
@@ -44,6 +46,7 @@ export function usePaletteShown(input: {
       labels: paletteActionLabels(i18n),
       collectionReview,
       streamOverlay,
+      crashCheckBlocked,
     }),
     query,
   )

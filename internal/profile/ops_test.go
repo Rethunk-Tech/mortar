@@ -744,3 +744,21 @@ func TestRunningIsCheckedUnderTheLock(t *testing.T) {
 		}
 	}
 }
+
+func TestSwitchingOffAModWhoseRecordedFolderIsGoneNamesTheFolder(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"Pack/A/manifest.json": manifestJSON("X.A")})
+	p, _ := e.Create("stardew", "P")
+	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{Kind: KindLocal, Name: "a.zip"}); err != nil {
+		t.Fatal(err)
+	}
+	pack := filepath.Join(e.mods(p.ID), "local-a", "Pack")
+	if err := os.Rename(filepath.Join(pack, "A"), filepath.Join(pack, "Renamed")); err != nil {
+		t.Fatal(err)
+	}
+	_, err := e.SetModEnabled("stardew", p.ID, "local-a", "smapi:X.A", false)
+	if err == nil || !strings.Contains(err.Error(), "mod folder A is missing") {
+		t.Fatalf("err = %v, want the missing folder named", err)
+	}
+}

@@ -1,12 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Menu } from '@mui/material'
+import { Box } from '@mui/material'
 import {
   ChevronDown,
   ChevronUp,
   CircleAlert,
   Copy,
   Download,
-  Ellipsis,
   Eraser,
   FileSearch,
   LifeBuoy,
@@ -23,7 +22,6 @@ import { PageActions } from '../game/PageActions.tsx'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { IconAction } from '../shell/IconAction.tsx'
-import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { firstError, formatAll } from './filter.ts'
 import { useShownEntries, useVisible } from './logHooks.ts'
@@ -32,7 +30,7 @@ import { logFileName, saveLogText } from './save.ts'
 import { useConsole } from './store.ts'
 import { useConsoleEmpty } from './useConsoleEmpty.ts'
 
-// Share log sits beside the menu for a loader that uploads to smapi.io or has a paste site; Save log lives in the menu.
+// Share log sits after the log actions for a loader that uploads to smapi.io or has a paste site.
 function ShareLog() {
   const { t } = useLingui()
   const loader = useProfileLoader()
@@ -62,7 +60,6 @@ export function LogActions({ game }: { game: string }) {
   const { clear, jumpTo } = useConsole.getState()
   const loaderName = useProfileLoader()?.name ?? ''
   const [searching, setSearching] = useState(false)
-  const [menu, setMenu] = useState<HTMLElement | null>(null)
   const [viewedStart, setViewedStart] = useState<Date | null>(null)
   useEffect(() => {
     if (!viewingRun) {
@@ -87,10 +84,6 @@ export function LogActions({ game }: { game: string }) {
       ? (errorRows[firstErrorPosition + 1] ?? -1)
       : -1
   const canSave = entries.length > 0 || cleared > 0
-  const pick = (run: () => void) => () => {
-    setMenu(null)
-    run()
-  }
   const saveLog = () => {
     const rawLog = viewingRun
       ? RunLog(shown.game, shown.profile, viewingRun)
@@ -135,41 +128,29 @@ export function LogActions({ game }: { game: string }) {
         />
       </Box>
       <IconAction
-        label={t`Log actions`}
-        icon={<Ellipsis size={16} />}
-        menu={true}
-        aria-haspopup="menu"
-        aria-expanded={menu !== null}
-        onClick={(e) => setMenu(e.currentTarget)}
+        label={t`Copy log`}
+        icon={<Copy size={16} />}
+        disabled={rows.length === 0}
+        onClick={() => copyText(formatAll(rows), t`Log copied`)}
+      />
+      <IconAction
+        label={t`Save log…`}
+        icon={<Download size={16} />}
+        disabled={!canSave}
+        onClick={saveLog}
+      />
+      <IconAction
+        label={t`Search all runs…`}
+        icon={<FileSearch size={16} />}
+        onClick={() => setSearching(true)}
+      />
+      <IconAction
+        label={t`Clear`}
+        icon={<Eraser size={16} />}
+        disabled={rows.length === 0}
+        onClick={clear}
       />
       <ShareLog />
-      <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
-        <MenuAction
-          disabled={rows.length === 0}
-          icon={<Copy size={16} />}
-          label={t`Copy log`}
-          onClick={pick(() => {
-            copyText(formatAll(rows), t`Log copied`)
-          })}
-        />
-        <MenuAction
-          disabled={!canSave}
-          icon={<Download size={16} />}
-          label={t`Save log…`}
-          onClick={pick(saveLog)}
-        />
-        <MenuAction
-          icon={<FileSearch size={16} />}
-          label={t`Search all runs…`}
-          onClick={pick(() => setSearching(true))}
-        />
-        <MenuAction
-          disabled={rows.length === 0}
-          icon={<Eraser size={16} />}
-          label={t`Clear`}
-          onClick={pick(clear)}
-        />
-      </Menu>
       <SearchRunsDialog open={searching} onClose={() => setSearching(false)} />
     </PageActions>
   )

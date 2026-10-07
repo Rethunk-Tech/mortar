@@ -120,7 +120,7 @@ function MoreActions({
         {onBisect ? (
           <MenuAction
             icon={<Search size={16} />}
-            label={t`Find the mod causing this`}
+            label={t`Find the mod that crashes the game…`}
             onClick={() => {
               close()
               onBisect()
@@ -198,7 +198,7 @@ function CrashPrimary({
   if (canBisect) {
     return (
       <Button variant="contained" startIcon={<Search size={16} />} onClick={onBisect}>
-        {t`Find the mod causing this`}
+        {t`Find the mod that crashes the game…`}
       </Button>
     )
   }
@@ -265,7 +265,7 @@ export function CrashDialog() {
           {crash.mods === null || crash.mods.length === 0 ? (
             <Typography sx={{ fontSize: 14 }}>
               {canBisect
-                ? t`Mortar could not tell which mod caused this. Find the mod causing this tries halves of your mods until the crash stops; your profile is not changed.`
+                ? t`Mortar could not tell which mod caused this. Finding the mod tries halves of your mods until the crash stops; your profile is not changed.`
                 : t`The game log has errors.`}
             </Typography>
           ) : (

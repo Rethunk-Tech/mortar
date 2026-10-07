@@ -63,6 +63,8 @@ export interface PaletteItem {
   hint?: string
   match?: string
   shortcut?: string
+  /** Why the action cannot run now; the row shows it in place of the hint and ignores picks. */
+  disabled?: string
 }
 
 export function matchPaletteItems(items: readonly PaletteItem[], query: string): PaletteItem[] {

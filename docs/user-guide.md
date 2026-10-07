@@ -206,7 +206,7 @@ The **Problems** tab checks the open profile for missing requirements, conflicts
 
 - A strip across the top of the tab has one segment for each kind of problem the profile has, each with its count. Choose a segment to see its rows; the others are hidden, so only one list is on screen at a time. Left and Right arrow keys move between segments.
 - Mortar opens on the first segment that holds something broken, and remembers your choice for each profile while Mortar runs. A kind with nothing in it has no segment.
-- The chosen segment's own action sits at the right end of the strip: **Add all** installs every missing requirement Mortar can find, and **Dismiss all** hides harmless overlaps.
+- The chosen segment's own action sits in a row under the strip, at its right end: **Add all** installs every missing requirement Mortar can find, and **Dismiss all** hides harmless overlaps.
 - Segments include **Failed to load** (a plugin the loader's log shows failed), **Plugins shipped twice** (two enabled packages carrying the same plugin, with **Keep newer**) and **Deprecated packages** (Thunderstore marks them, with **Replace with** where it names a replacement).
 - A mod's name in a row filters the **Mods** tab to that mod.
 

@@ -98,6 +98,7 @@ function PaletteRows({
           tabIndex={-1}
           selected={item.id === currentId}
           onClick={() => onPick(item.id)}
+          disabled={item.disabled !== undefined}
           role="option"
           aria-selected={item.id === currentId}
         >
@@ -184,6 +185,9 @@ function PaletteBody({ searchRef }: { searchRef: RefObject<HTMLInputElement | nu
   })
   const current = shown[Math.min(index, Math.max(shown.length - 1, 0))]
   const pick = (id: string) => {
+    if (shown.find((item) => item.id === id)?.disabled !== undefined) {
+      return
+    }
     runPaletteItem(id)
     closePalette()
   }

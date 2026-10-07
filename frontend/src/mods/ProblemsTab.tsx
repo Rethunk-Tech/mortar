@@ -1,10 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, Tooltip, Typography } from '@mui/material'
 import { Copy, Map as MapIcon, Plus, ShieldCheck } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
-import { findCrashCause } from '../commandPalette/crashBisect.ts'
+import { findCrashCause, useBisectBlockText } from '../commandPalette/crashBisect.ts'
 import { PageActions } from '../game/PageActions.tsx'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
@@ -284,6 +284,7 @@ function ProblemActions() {
   const result = useOpenProblems()
   const [mapOpen, setMapOpen] = useState(false)
   const hasAssetMap = useProfileLoader()?.assets
+  const bisectBlocked = useBisectBlockText()
   const sectionTitle = useSectionTitle()
   const rowText = useRowText()
   const sections = result === null ? [] : problemSections(result)
@@ -299,14 +300,22 @@ function ProblemActions() {
       harmlessCount === 0)
   return (
     <PageActions>
-      <Button
-        variant="outlined"
-        color="inherit"
-        onClick={findCrashCause}
-        sx={{ height: 34, borderColor: 'var(--mortar-hairline-20)' }}
+      <Tooltip
+        title={bisectBlocked ?? t`Turns mods off in halves and relaunches until the crash stops`}
       >
-        {t`Find a bad mod…`}
-      </Button>
+        {/* A disabled button fires no pointer events, so the tooltip needs a live wrapper. */}
+        <span>
+          <Button
+            variant="outlined"
+            color="inherit"
+            disabled={bisectBlocked !== null}
+            onClick={findCrashCause}
+            sx={{ height: 34, borderColor: 'var(--mortar-hairline-20)' }}
+          >
+            {t`Find the mod that crashes the game…`}
+          </Button>
+        </span>
+      </Tooltip>
       {hasAssetMap ? (
         <>
           <IconAction

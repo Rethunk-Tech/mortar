@@ -2,8 +2,9 @@ import { Box, Chip, Tab, Tabs } from '@mui/material'
 import type { ReactNode } from 'react'
 import type { SectionTab } from '../mods/problemSection.ts'
 
-// The Problems tab's header row: a tab per section with its count, scrolling sideways when they do not fit beside
-// the row's actions. The chosen tab is filled in the primary colour.
+// The Problems tab's header: a tab per section with its count, scrolling sideways when they do not fit, the chosen one
+// filled in the primary colour. The chosen section's bulk action sits in a row of its own below, right-aligned and
+// always there (empty when the section has none), so the tabs and the content never shift between sections.
 export function SectionStrip({
   tabs,
   current,
@@ -20,8 +21,6 @@ export function SectionStrip({
   return (
     <Box
       sx={{
-        display: 'flex',
-        alignItems: 'center',
         bgcolor: 'var(--mortar-panel)',
         borderBottom: '1px solid var(--mortar-hairline)',
       }}
@@ -34,7 +33,6 @@ export function SectionStrip({
         onChange={(_e, id: string) => onChoose(id)}
         slotProps={{ indicator: { sx: { display: 'none' } } }}
         sx={{
-          flex: 1,
           minWidth: 0,
           '& .MuiTab-root': {
             flex: '1 0 auto',
@@ -74,7 +72,19 @@ export function SectionStrip({
           />
         ))}
       </Tabs>
-      <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, px: 1 }}>{actions}</Box>
+      {tabs.length > 0 ? (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            height: 44,
+            px: 2,
+          }}
+        >
+          {actions}
+        </Box>
+      ) : null}
     </Box>
   )
 }

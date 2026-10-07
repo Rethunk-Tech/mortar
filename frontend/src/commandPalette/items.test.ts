@@ -38,3 +38,18 @@ test('the Stream overlay action shows only for a loader that feeds the overlay',
   expect(ids(true)).toContain('action:stream-overlay')
   expect(ids(false)).not.toContain('action:stream-overlay')
 })
+
+test('the crash check action carries the reason it cannot run', () => {
+  const find = (crashCheckBlocked: string | null) =>
+    buildPaletteItems({
+      profiles: [],
+      mods: [],
+      sections: [],
+      shortcuts: [],
+      shortcutLabels: {},
+      labels,
+      crashCheckBlocked,
+    }).find((item) => item.id === 'action:find-crash-cause')
+  expect(find(null)?.disabled).toBeUndefined()
+  expect(find('No crash to investigate.')?.disabled).toBe('No crash to investigate.')
+})

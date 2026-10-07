@@ -11,7 +11,7 @@ export function paletteActionLabels(i18n: I18n): PaletteLabels {
     import: i18n._(msg`Import`),
     pasteLink: i18n._(msg`Paste a link…`),
     collectionReview: i18n._(msg`Review collection update`),
-    findCrashCause: i18n._(msg`Find the crash cause`),
+    findCrashCause: i18n._(msg`Find the mod that crashes the game…`),
     configureMod: (name) => i18n._(msg`Configure ${name}…`),
     share: i18n._(msg`Share`),
     newProfile: i18n._(msg`New profile`),

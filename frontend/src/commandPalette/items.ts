@@ -34,6 +34,7 @@ export function buildPaletteItems(input: {
   labels: PaletteLabels
   collectionReview?: boolean
   streamOverlay?: boolean
+  crashCheckBlocked?: string | null
 }): PaletteItem[] {
   const {
     profiles,
@@ -44,6 +45,7 @@ export function buildPaletteItems(input: {
     labels,
     collectionReview,
     streamOverlay,
+    crashCheckBlocked,
   } = input
   const items: PaletteItem[] = []
   for (const profile of profiles) {
@@ -101,7 +103,12 @@ export function buildPaletteItems(input: {
           },
         ]
       : []),
-    { id: 'action:find-crash-cause', kind: 'action', label: labels.findCrashCause },
+    {
+      id: 'action:find-crash-cause',
+      kind: 'action',
+      label: labels.findCrashCause,
+      ...(crashCheckBlocked ? { hint: crashCheckBlocked, disabled: crashCheckBlocked } : {}),
+    },
     { id: 'action:share', kind: 'action', label: labels.share },
     { id: 'action:new-profile', kind: 'action', label: labels.newProfile },
     ...(streamOverlay

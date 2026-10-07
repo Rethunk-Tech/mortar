@@ -19,8 +19,9 @@ import { listNames } from '../i18n/list.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
-import { errorMessage, reportUnexpected } from '../toasts/report.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { bisectFailure } from './bisectBlock.ts'
 
 const pollDelayMs = 500
 
@@ -46,6 +47,22 @@ interface Props {
   profile: string
   jobID: string | null
   onClose: () => void
+}
+
+function FailureText({ error }: { error: string | undefined }) {
+  const { t } = useLingui()
+  const sentences = {
+    'no-mods': t`Every mod in this profile is already off, so there is nothing to turn off and test.`,
+    'missing-files': t`A mod's files are missing from this profile's folder, so Mortar cannot switch it off for the test.`,
+    other: t`The crash check could not finish.`,
+  }
+  const details = error ? errorDetails(error) : ''
+  return (
+    <>
+      <Typography color="error">{sentences[bisectFailure(error)]}</Typography>
+      {details ? <Typography color="text.secondary">{details}</Typography> : null}
+    </>
+  )
 }
 
 export function BisectDialog({ game, profile, jobID, onClose }: Props) {
@@ -151,11 +168,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
   } else if (stopped) {
     content = <Typography>{t`Crash finding was stopped.`}</Typography>
   } else if (failed) {
-    content = (
-      <Typography color="error" title={errorDetails(status.error)}>
-        {status.error ? errorMessage(status.error) : t`Crash finding failed.`}
-      </Typography>
-    )
+    content = <FailureText error={status.error} />
   } else {
     content = (
       <>
@@ -194,7 +207,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
   return (
     <Dialog open={jobID !== null} onClose={done || stopped || failed ? onClose : undefined}>
       <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>
-        {t`Finding the mod causing the crash`}
+        {t`Finding the mod that crashes the game`}
       </DialogTitle>
       <DialogContent sx={{ minWidth: 440, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         {content}
