@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -243,6 +244,9 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	}
 	prevSource := e.Source
 	ne := e
+	if source == nil {
+		ne.Source = s.followKey(game, e.Source, newKey)
+	}
 	ne.Key, ne.PreviousKey, ne.PreviousSource = newKey, e.Key, &prevSource
 	if newKey == e.PreviousKey && len(e.PreviousExtraStoreKeys) > 0 {
 		ne.ExtraStoreKeys = slices.Clone(e.PreviousExtraStoreKeys)
@@ -537,4 +541,22 @@ func (s *Store) saveBackup(game, profileID string) error {
 func (s *Store) savesDir(set settings.Settings, game, profileID string) (string, bool) {
 	dir, err := gamepkg.SavesDir(s.home, set, game, s.InstallOf(game, profileID))
 	return dir, err == nil
+}
+
+// followKey is src moved to the store item key: an update that names only the new key must not leave the entry
+// describing the old file, since a share names the file from it.
+func (s *Store) followKey(game string, src Source, key string) Source {
+	switch src.Kind {
+	case KindNexus:
+		if modID, fileID, ok := store.NexusFile(key); ok {
+			src.ModID, src.FileID, src.Digest = modID, fileID, ""
+		}
+	case KindGitHub:
+		if kind, _, tag, ok := s.items.Meta(game, key); ok && kind == KindGitHub {
+			if asset := s.items.Asset(game, key); asset != "" {
+				src.Tag, src.Asset, src.Digest = tag, asset, ""
+			}
+		}
+	}
+	return src
 }

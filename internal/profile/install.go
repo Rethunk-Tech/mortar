@@ -93,7 +93,7 @@ func (s *Store) InstallSource(game, id, path string, source Source) (InstallResu
 		return InstallResult{}, installError(err)
 	}
 	if source.Kind != KindNexus {
-		if err := s.items.Describe(game, key, source.Kind, source.Name, source.Version); err != nil {
+		if err := s.items.Describe(game, key, source.Kind, source.Name, source.Version, ""); err != nil {
 			return InstallResult{}, installError(err)
 		}
 	}
@@ -108,7 +108,7 @@ func (s *Store) StageGitHub(game string, source Source, path string) (key string
 	if err := s.items.AddArchiveKey(game, key, path); err != nil {
 		return "", nil, installError(err)
 	}
-	if err := s.items.Describe(game, key, KindGitHub, source.Repo, source.Tag); err != nil {
+	if err := s.items.Describe(game, key, KindGitHub, source.Repo, source.Tag, source.Asset); err != nil {
 		return "", nil, installError(err)
 	}
 	if err := s.namePackage(game, key, source.Asset, owner); err != nil {

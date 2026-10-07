@@ -314,7 +314,7 @@ func (s *Service) fetchOnce(
 		return 0, installError("install", item, incoming.Sender, err)
 	}
 	if item.Source != "" {
-		if err := s.deps.Store.Describe(incoming.Game, key, item.Source, item.Package, item.Version); err != nil {
+		if err := s.deps.Store.Describe(incoming.Game, key, item.Source, item.Package, item.Version, item.Asset); err != nil {
 			return 0, installError("record", item, incoming.Sender, err)
 		}
 	}

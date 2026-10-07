@@ -107,7 +107,7 @@ func TestLatestStoreKeyOrdersBySourceVersion(t *testing.T) {
 	e := newEnv(t)
 	pkg := func(key, source, name, version string, files map[string]string) {
 		e.item(t, key, files)
-		if err := e.items.Describe("stardew", key, source, name, version); err != nil {
+		if err := e.items.Describe("stardew", key, source, name, version, ""); err != nil {
 			t.Fatal(err)
 		}
 	}

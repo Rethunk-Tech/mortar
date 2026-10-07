@@ -509,7 +509,7 @@ func TestKeysWithTheSameBytesShareOneBlobAndAreFoundBySource(t *testing.T) {
 	if key, ok := s.Find("stardew", "nexus", "7", "9"); !ok || key != NexusKey(7, 9) {
 		t.Fatalf("Find = %q, %v", key, ok)
 	}
-	if err := s.Describe("stardew", local, "github", "o/r", "v1"); err != nil {
+	if err := s.Describe("stardew", local, "github", "o/r", "v1", ""); err != nil {
 		t.Fatal(err)
 	}
 	if key, ok := s.Find("stardew", "github", "o/r", "v1"); !ok || key != local {

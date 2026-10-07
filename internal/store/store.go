@@ -140,6 +140,17 @@ func (s *Store) Meta(game, key string) (source, pkg, version string, ok bool) {
 	return r.Source, r.Package, r.Version, ok
 }
 
+// Asset is the release asset name recorded for a GitHub item.
+func (s *Store) Asset(game, key string) string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	idx, err := s.loadIndex()
+	if err != nil {
+		return ""
+	}
+	return idx[game][key].Asset
+}
+
 // Keys lists the game's store keys.
 func (s *Store) Keys(game string) ([]string, error) {
 	s.mu.Lock()
@@ -563,11 +574,13 @@ func hashKey(path string) (string, error) {
 // bundle, whose folder is named by loader and version. Source, Package and Version say where the item came from, in
 // the source's own terms, so an item can be found by what it is instead of by the key it was stored under.
 type record struct {
-	Blob    string    `json:"blob,omitempty"`
-	Source  string    `json:"source,omitempty"`
-	Package string    `json:"package,omitempty"`
-	Version string    `json:"version,omitempty"`
-	Used    time.Time `json:"used"`
+	Blob    string `json:"blob,omitempty"`
+	Source  string `json:"source,omitempty"`
+	Package string `json:"package,omitempty"`
+	Version string `json:"version,omitempty"`
+	// Asset is the release asset name of a GitHub item, which its key hashes.
+	Asset string    `json:"asset,omitempty"`
+	Used  time.Time `json:"used"`
 	// Size is the folder's size on disk, measured once: an item never changes after it is added.
 	Size int64 `json:"size,omitempty"`
 }
@@ -684,7 +697,7 @@ func (s *Store) bind(game, key, blob string) error {
 }
 
 // Describe records where a stored item came from, for sources whose key does not say (a GitHub release asset).
-func (s *Store) Describe(game, key, source, pkg, version string) error {
+func (s *Store) Describe(game, key, source, pkg, version, asset string) error {
 	if err := checkKey(game, key); err != nil {
 		return err
 	}
@@ -698,7 +711,7 @@ func (s *Store) Describe(game, key, source, pkg, version string) error {
 	if !ok {
 		return usererr.Wrap(usererr.NotFound, &Error{Game: game, Key: key, Err: ErrNotFound})
 	}
-	r.Source, r.Package, r.Version = source, pkg, version
+	r.Source, r.Package, r.Version, r.Asset = source, pkg, version, asset
 	idx[game][key] = r
 	return s.saveIndex(idx)
 }

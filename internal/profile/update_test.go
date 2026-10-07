@@ -427,3 +427,27 @@ func TestPackageUpdatesBackUpSavesOncePerBatch(t *testing.T) {
 		t.Fatalf("the batch took %d backups, want 1", n)
 	}
 }
+
+// A share names a file from the entry's source, so updating to another store item must move the source with it.
+func TestUpdateEntryMovesNexusSourceToTheNewFile(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("stardew", "P")
+	if err != nil {
+		t.Fatal(err)
+	}
+	files := map[string]string{"A/manifest.json": manifestJSON("me.a")}
+	e.item(t, "nexus-5-10", files)
+	e.item(t, "nexus-5-11", files)
+	if _, err := e.AddEntry("stardew", p.ID, "nexus-5-10", Source{Kind: KindNexus, ModID: 5, FileID: 10, Digest: "sha512:old"}); err != nil {
+		t.Fatal(err)
+	}
+	got, err := e.UpdateEntry("stardew", p.ID, "nexus-5-10", "nexus-5-11")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := got.Entries[0].Source
+	if got.Entries[0].Key != "nexus-5-11" || src.ModID != 5 || src.FileID != 11 || src.Digest != "" {
+		t.Fatalf("entry %q source = %+v, want mod 5 file 11 with no stale digest", got.Entries[0].Key, src)
+	}
+}

@@ -88,6 +88,8 @@ type transferItem struct {
 	Source  string
 	Package string
 	Version string
+	// Asset is a GitHub item's release asset name.
+	Asset string
 }
 
 // transferItems lists the store entries a share's files live under, whatever their source. A package without a
@@ -102,7 +104,7 @@ func transferItems(shared share.Shared) []transferItem {
 		case ref.GitHub != "":
 			repo, tag, asset := ref.GitHubParts()
 			owner, name, _ := strings.Cut(repo, "/")
-			item = transferItem{Key: github.Key(owner, name, tag, asset), Source: profile.KindGitHub, Package: repo, Version: tag}
+			item = transferItem{Key: github.Key(owner, name, tag, asset), Source: profile.KindGitHub, Package: repo, Version: tag, Asset: asset}
 		case ref.Package != "":
 			if ref.Version == "" {
 				continue

@@ -151,7 +151,7 @@ func (s *Store) namePackage(game, key, fileName, fallback string) error {
 	if ns == "" {
 		return nil
 	}
-	return s.items.Describe(game, key, KindThunderstore, ns+"-"+m.Name, m.Version)
+	return s.items.Describe(game, key, KindThunderstore, ns+"-"+m.Name, m.Version, "")
 }
 
 func cutSuffixFold(s, suffix string) (string, bool) {
