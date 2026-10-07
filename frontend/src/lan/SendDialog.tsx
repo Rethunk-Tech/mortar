@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import {
+  Alert,
   Box,
   Button,
   CircularProgress,
@@ -74,8 +75,8 @@ function PeerRow({ peer, sharedName, disabled, sending, onSend, onPair }: PeerRo
           secondary={peerSecondary(
             peer,
             sharedName,
-            t`Paired · sends mod files`,
-            t`Not paired · they download each mod`,
+            t`Paired · whole files`,
+            t`Not paired · only links`,
           )}
         />
         {peer.paired ? null : (
@@ -96,15 +97,100 @@ function PeerRow({ peer, sharedName, disabled, sending, onSend, onPair }: PeerRo
   )
 }
 
+function LinksOnlyNotice({
+  name,
+  onPair,
+  onSend,
+}: {
+  name: string
+  onPair: () => void
+  onSend: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Alert
+      severity="warning"
+      sx={{ mt: 1 }}
+      action={
+        <Box sx={{ display: 'flex', gap: 0.5 }}>
+          <Button size="small" color="inherit" onClick={onPair}>{t`Pair`}</Button>
+          <Button size="small" color="inherit" onClick={onSend}>{t`Send links only`}</Button>
+        </Box>
+      }
+    >
+      {t`Only links: ${name} will download each mod from its site, one click per mod on a free Nexus account. Pair to send whole files.`}
+    </Alert>
+  )
+}
+
+function AddressRows({
+  addresses,
+  disabled,
+  onPick,
+  onSend,
+}: {
+  addresses: string[]
+  disabled: boolean
+  onPick: () => void
+  onSend: (address: string) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <>
+      <ListItem disablePadding={true}>
+        <ListItemButton disabled={disabled} onClick={onPick}>
+          <ListItemText primary={t`Send to an address…`} />
+        </ListItemButton>
+      </ListItem>
+      {addresses.map((address) => (
+        <ListItem key={address} disablePadding={true}>
+          <ListItemButton disabled={disabled} onClick={() => onSend(address)}>
+            <ListItemText primary={address} secondary={t`Recent address`} />
+          </ListItemButton>
+        </ListItem>
+      ))}
+    </>
+  )
+}
+
+function useSend(game: string, profileId: string, onSent: () => void) {
+  const { t } = useLingui()
+  const [sending, setSending] = useState<string | null>(null)
+  const send = (target: SendTarget) => {
+    setSending(target.id)
+    Send(target.id, game, profileId)
+      .then(() => {
+        useToasts.getState().push({ kind: 'success', title: t`Sent to ${target.name}` })
+        onSent()
+      })
+      .catch((error: unknown) => {
+        // Busy here is the other Mortar turning away a second share that came within seconds of the last.
+        if (errorKind(error) === 'busy') {
+          useToasts.getState().push({
+            kind: 'error',
+            title: t`${target.name} is still taking your last share`,
+            body: t`Try again in a few seconds.`,
+            action: { label: t`Retry`, run: () => send(target) },
+          })
+          return
+        }
+        toastError(t`Could not send to ${target.name}`, error)
+      })
+      .finally(() => setSending(null))
+  }
+  return { sending, send }
+}
+
 export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) {
   const { t } = useLingui()
   const [peers, setPeers] = useState<Peer[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [looked, setLooked] = useState(false)
-  const [sending, setSending] = useState<string | null>(null)
+  const { sending, send } = useSend(game, profileId, onClose)
   const [manual, setManual] = useState('')
   const [addressPicker, setAddressPicker] = useState(false)
   const [pairing, setPairing] = useState(false)
+  const [linksOnly, setLinksOnly] = useState<Peer | null>(null)
   const addresses = useSettings((state) => state.lanAddresses ?? [])
 
   const refresh = useCallback(() => {
@@ -126,6 +212,7 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
       setManual('')
       setAddressPicker(false)
       setLooked(false)
+      setLinksOnly(null)
       return
     }
     refresh()
@@ -137,33 +224,11 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
     () =>
       Events.On('lan:paired', () => {
         setPairing(false)
+        setLinksOnly(null)
         refresh()
       }),
     [refresh],
   )
-
-  const send = (target: SendTarget) => {
-    setSending(target.id)
-    Send(target.id, game, profileId)
-      .then(() => {
-        useToasts.getState().push({ kind: 'success', title: t`Sent to ${target.name}` })
-        onClose()
-      })
-      .catch((error: unknown) => {
-        // Busy here is the other Mortar turning away a second share that came within seconds of the last.
-        if (errorKind(error) === 'busy') {
-          useToasts.getState().push({
-            kind: 'error',
-            title: t`${target.name} is still taking your last share`,
-            body: t`Try again in a few seconds.`,
-            action: { label: t`Retry`, run: () => send(target) },
-          })
-          return
-        }
-        toastError(t`Could not send to ${target.name}`, error)
-      })
-      .finally(() => setSending(null))
-  }
 
   const sharedNames = new Set(
     peers.map((peer) => peer.name).filter((name, index, all) => all.indexOf(name) !== index),
@@ -198,30 +263,29 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
                 sharedName={sharedNames.has(peer.name)}
                 disabled={sending !== null}
                 sending={sending === peer.id}
-                onSend={() => send(peer)}
+                onSend={() => (peer.paired ? send(peer) : setLinksOnly(peer))}
                 onPair={() => setPairing(true)}
               />
             ))}
-            <ListItem disablePadding={true}>
-              <ListItemButton
-                disabled={sending !== null}
-                onClick={() => setAddressPicker((current) => !current)}
-              >
-                <ListItemText primary={t`Send to an address…`} />
-              </ListItemButton>
-            </ListItem>
-            {addresses.map((address) => (
-              <ListItem key={address} disablePadding={true}>
-                <ListItemButton
-                  disabled={sending !== null}
-                  onClick={() => send({ id: address, name: address })}
-                >
-                  <ListItemText primary={address} secondary={t`Recent address`} />
-                </ListItemButton>
-              </ListItem>
-            ))}
+            <AddressRows
+              addresses={addresses}
+              disabled={sending !== null}
+              onPick={() => setAddressPicker((current) => !current)}
+              onSend={(address) => send({ id: address, name: address })}
+            />
           </List>
         )}
+        {linksOnly ? (
+          <LinksOnlyNotice
+            name={linksOnly.name}
+            onPair={() => setPairing(true)}
+            onSend={() => {
+              const target = linksOnly
+              setLinksOnly(null)
+              send(target)
+            }}
+          />
+        ) : null}
         {addressPicker ? (
           <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
             <TextField

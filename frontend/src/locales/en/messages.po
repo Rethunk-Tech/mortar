@@ -1697,7 +1697,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/firstrun/LoaderStep.tsx:201
 #: src/firstrun/LoaderStep.tsx:269
 #: src/game/detailStates.tsx:26
-#: src/lan/SendDialog.tsx:159
+#: src/lan/SendDialog.tsx:173
 #: src/launch/LaunchLayer.tsx:312
 #: src/mods/LoadOrderTab.tsx:390
 #: src/mods/ModsTab.tsx:116
@@ -2023,8 +2023,8 @@ msgstr "These come from a different site than you installed them from. Update al
 msgid "the search is “{0}”"
 msgstr "the search is “{0}”"
 
-#: src/lan/PairedComputers.tsx:122
-#: src/lan/SendDialog.tsx:231
+#: src/lan/PairedComputers.tsx:89
+#: src/lan/SendDialog.tsx:295
 msgid "Host:port"
 msgstr "Host:port"
 
@@ -2257,7 +2257,7 @@ msgid "Enjoying {0}? Endorse it on Nexus"
 msgstr "Enjoying {0}? Endorse it on Nexus"
 
 #. placeholder {0}: target.name
-#: src/lan/SendDialog.tsx:149
+#: src/lan/SendDialog.tsx:163
 msgid "Sent to {0}"
 msgstr "Sent to {0}"
 
@@ -2310,6 +2310,10 @@ msgstr "Skip {0}"
 #: src/mods/Sidebar.tsx:146
 msgid "Latest on Nexus"
 msgstr "Latest on Nexus"
+
+#: src/lan/SendDialog.tsx:79
+msgid "Not paired · only links"
+msgstr "Not paired · only links"
 
 #. placeholder {0}: seasons[fit.season] ?? ''
 #. placeholder {1}: fit.day
@@ -2769,7 +2773,7 @@ msgstr "No fix yet"
 msgid "Load a save to see values"
 msgstr "Load a save to see values"
 
-#: src/lan/SendDialog.tsx:115
+#: src/lan/SendDialog.tsx:201
 msgid "Could not find Mortar users"
 msgstr "Could not find Mortar users"
 
@@ -2856,8 +2860,9 @@ msgstr "game running"
 msgid "Drag {path} into the GitHub issue to attach it."
 msgstr "Drag {path} into the GitHub issue to attach it."
 
-#: src/lan/PairedComputers.tsx:144
-#: src/lan/SendDialog.tsx:90
+#: src/lan/PairedComputers.tsx:111
+#: src/lan/SendDialog.tsx:91
+#: src/lan/SendDialog.tsx:116
 msgid "Pair"
 msgstr "Pair"
 
@@ -2971,7 +2976,7 @@ msgstr "Open the next profile"
 msgid "Desktop"
 msgstr "Desktop"
 
-#: src/lan/PairedComputers.tsx:94
+#: src/lan/PairedComputers.tsx:61
 msgid "Could not pair"
 msgstr "Could not pair"
 
@@ -3248,7 +3253,7 @@ msgstr "Unreachable"
 msgid "Updated tags"
 msgstr "Updated tags"
 
-#: src/lan/PairedComputers.tsx:44
+#: src/lan/PairedComputers.tsx:129
 msgid "Could not start pairing"
 msgstr "Could not start pairing"
 
@@ -3348,7 +3353,7 @@ msgstr "Mortar found no other mod manager's profiles for this game on this compu
 msgid "{0, plural, one {# other mod} other {# other mods}}"
 msgstr "{0, plural, one {# other mod} other {# other mods}}"
 
-#: src/lan/SendDialog.tsx:158
+#: src/lan/SendDialog.tsx:172
 msgid "Try again in a few seconds."
 msgstr "Try again in a few seconds."
 
@@ -3599,7 +3604,7 @@ msgstr "Quit Mortar?"
 msgid "Could not back up saves before Play"
 msgstr "Could not back up saves before Play"
 
-#: src/lan/PairedComputers.tsx:91
+#: src/lan/PairedComputers.tsx:58
 msgid "Computer paired"
 msgstr "Computer paired"
 
@@ -3945,9 +3950,9 @@ msgstr "Share as r2modman code?"
 #: src/install/RemapDialog.tsx:209
 #: src/lan/IncomingPrompt.tsx:191
 #: src/lan/IncomingPrompt.tsx:209
-#: src/lan/PairedComputers.tsx:60
-#: src/lan/PairedComputers.tsx:138
-#: src/lan/SendDialog.tsx:246
+#: src/lan/PairedComputers.tsx:105
+#: src/lan/PairedComputers.tsx:145
+#: src/lan/SendDialog.tsx:310
 #: src/launch/PrePlayDialog.tsx:151
 #: src/launch/SaveWarnDialog.tsx:69
 #: src/launch/UpdateWarnDialog.tsx:50
@@ -4119,7 +4124,7 @@ msgid "Back to {name}"
 msgstr "Back to {name}"
 
 #: src/game/ProfileMenuItems.tsx:211
-#: src/lan/SendDialog.tsx:175
+#: src/lan/SendDialog.tsx:240
 msgid "Send to…"
 msgstr "Send to…"
 
@@ -4682,7 +4687,7 @@ msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile 
 msgid "Main mod's folder"
 msgstr "Main mod's folder"
 
-#: src/lan/PairedComputers.tsx:131
+#: src/lan/PairedComputers.tsx:98
 msgid "Code"
 msgstr "Code"
 
@@ -5252,7 +5257,7 @@ msgstr "Stop the game before moving the data folder."
 msgid "Earthy green"
 msgstr "Earthy green"
 
-#: src/lan/SendDialog.tsx:185
+#: src/lan/SendDialog.tsx:250
 msgid "No Mortar users found nearby."
 msgstr "No Mortar users found nearby."
 
@@ -6626,7 +6631,7 @@ msgstr "only {mods} is shown"
 msgid "Add to group…"
 msgstr "Add to group…"
 
-#: src/lan/PairedComputers.tsx:50
+#: src/lan/PairedComputers.tsx:135
 #: src/lan/PairedComputers.tsx:180
 msgid "Pair a computer"
 msgstr "Pair a computer"
@@ -6666,7 +6671,7 @@ msgstr "Use theirs"
 msgid "Direct launch preview"
 msgstr "Direct launch preview"
 
-#: src/lan/SendDialog.tsx:240
+#: src/lan/SendDialog.tsx:304
 msgid "Send"
 msgstr "Send"
 
@@ -7376,7 +7381,7 @@ msgstr "older, profile has {0}"
 msgid "Share profile"
 msgstr "Share profile"
 
-#: src/lan/SendDialog.tsx:176
+#: src/lan/SendDialog.tsx:241
 msgid "Refresh"
 msgstr "Refresh"
 
@@ -7544,7 +7549,7 @@ msgstr "Not offered ({0})"
 msgid "Check interval"
 msgstr "Check interval"
 
-#: src/lan/PairedComputers.tsx:99
+#: src/lan/PairedComputers.tsx:66
 #: src/lan/PairedComputers.tsx:181
 msgid "Enter code"
 msgstr "Enter code"
@@ -8597,7 +8602,7 @@ msgstr "{profileName} has {0} more than once. {loader} loads only one, so pick w
 msgid "Discord"
 msgstr "Discord"
 
-#: src/lan/SendDialog.tsx:210
+#: src/lan/SendDialog.tsx:142
 msgid "Send to an address…"
 msgstr "Send to an address…"
 
@@ -8714,7 +8719,7 @@ msgstr "Nexus is throttling requests until the window resets."
 msgid "From the downloads folder…"
 msgstr "From the downloads folder…"
 
-#: src/lan/PairedComputers.tsx:107
+#: src/lan/PairedComputers.tsx:74
 msgid "No Mortar computers found nearby."
 msgstr "No Mortar computers found nearby."
 
@@ -8999,6 +9004,10 @@ msgstr "Mortar stays on screen beside the game."
 #: src/mods/detail.ts:151
 msgid "Could not reset the settings of {0}"
 msgstr "Could not reset the settings of {0}"
+
+#: src/lan/SendDialog.tsx:121
+msgid "Only links: {name} will download each mod from its site, one click per mod on a free Nexus account. Pair to send whole files."
+msgstr "Only links: {name} will download each mod from its site, one click per mod on a free Nexus account. Pair to send whole files."
 
 #: src/mods/storeEntries.ts:188
 msgid "Could not rename the group"
@@ -9550,7 +9559,7 @@ msgid "Pin"
 msgstr "Pin"
 
 #. placeholder {0}: target.name
-#: src/lan/SendDialog.tsx:163
+#: src/lan/SendDialog.tsx:177
 msgid "Could not send to {0}"
 msgstr "Could not send to {0}"
 
@@ -9732,7 +9741,7 @@ msgstr "More than one mod changes this; the winner's version is used."
 msgid "Borderless"
 msgstr "Borderless"
 
-#: src/lan/SendDialog.tsx:219
+#: src/lan/SendDialog.tsx:148
 msgid "Recent address"
 msgstr "Recent address"
 
@@ -10252,7 +10261,7 @@ msgstr "Error"
 msgid "Empty trash"
 msgstr "Empty trash"
 
-#: src/lan/SendDialog.tsx:186
+#: src/lan/SendDialog.tsx:251
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
 
@@ -10690,10 +10699,6 @@ msgstr "Checking the mods for problems…"
 msgid "Dismiss {name} for this save"
 msgstr "Dismiss {name} for this save"
 
-#: src/lan/SendDialog.tsx:77
-msgid "Paired · sends mod files"
-msgstr "Paired · sends mod files"
-
 #: src/sync/SyncOffers.tsx:65
 msgid "Keep mine"
 msgstr "Keep mine"
@@ -11129,7 +11134,7 @@ msgid "Mods in this category will move to Uncategorised."
 msgstr "Mods in this category will move to Uncategorised."
 
 #. placeholder {0}: target.name
-#: src/lan/SendDialog.tsx:157
+#: src/lan/SendDialog.tsx:171
 msgid "{0} is still taking your last share"
 msgstr "{0} is still taking your last share"
 
@@ -11156,7 +11161,7 @@ msgstr "Navigation"
 msgid "Set {0} to {1}"
 msgstr "Set {0} to {1}"
 
-#: src/lan/PairedComputers.tsx:102
+#: src/lan/PairedComputers.tsx:69
 msgid "Pick the computer showing the code, then type it."
 msgstr "Pick the computer showing the code, then type it."
 
@@ -11579,7 +11584,7 @@ msgstr "Could not create the profile"
 msgid "Into a deleted profile"
 msgstr "Into a deleted profile"
 
-#: src/lan/SendDialog.tsx:191
+#: src/lan/SendDialog.tsx:256
 msgid "Looking for Mortar users…"
 msgstr "Looking for Mortar users…"
 
@@ -11901,7 +11906,7 @@ msgstr "Could not add to the group"
 msgid "Switch to {switchName}"
 msgstr "Switch to {switchName}"
 
-#: src/lan/PairedComputers.tsx:53
+#: src/lan/PairedComputers.tsx:138
 msgid "On the other computer, choose Enter code and type this. It works once, for five minutes."
 msgstr "On the other computer, choose Enter code and type this. It works once, for five minutes."
 
@@ -12227,10 +12232,6 @@ msgstr "Measuring…"
 msgid "Hours between backups of saves that changed, while Mortar is open (24 is daily, 0 is Off). Waits until the game closes."
 msgstr "Hours between backups of saves that changed, while Mortar is open (24 is daily, 0 is Off). Waits until the game closes."
 
-#: src/lan/SendDialog.tsx:78
-msgid "Not paired · they download each mod"
-msgstr "Not paired · they download each mod"
-
 #: src/profiles/GameSettings.tsx:280
 msgid "Display number"
 msgstr "Display number"
@@ -12519,6 +12520,10 @@ msgstr "Report to author…"
 #: src/shell/BugReportDialog.tsx:98
 msgid "Opens a GitHub issue with these filled in. You review it before posting."
 msgstr "Opens a GitHub issue with these filled in. You review it before posting."
+
+#: src/lan/SendDialog.tsx:78
+msgid "Paired · whole files"
+msgstr "Paired · whole files"
 
 #: src/install/DownloadsDialog.tsx:197
 msgid "No archives match"
@@ -12858,6 +12863,10 @@ msgstr "On"
 #: src/settings/sections/NexusSSO.tsx:56
 msgid "Sign in to Nexus Mods"
 msgstr "Sign in to Nexus Mods"
+
+#: src/lan/SendDialog.tsx:117
+msgid "Send links only"
+msgstr "Send links only"
 
 #: src/settings/prefCopy.ts:469
 msgid "Open in the tray instead of showing the window"

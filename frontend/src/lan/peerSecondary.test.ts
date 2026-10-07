@@ -1,8 +1,8 @@
 import { expect, test } from 'bun:test'
 import { peerSecondary } from './peerSecondary.ts'
 
-const paired = 'Paired · sends mod files'
-const unpaired = 'Not paired · they download each mod'
+const paired = 'Paired · whole files'
+const unpaired = 'Not paired · only links'
 
 test('secondary text follows pairing and prefixes the id for shared names', () => {
   expect(peerSecondary({ id: 'a:1', paired: true }, false, paired, unpaired)).toBe(paired)
