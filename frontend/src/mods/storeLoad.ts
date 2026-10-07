@@ -10,6 +10,7 @@ import { SetListGroupBy } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
+import { coalescer } from '../shell/coalesce.ts'
 import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useBadges } from './badges.ts'
 import { loadCollapsed, persistCollapsed } from './group.ts'
@@ -20,6 +21,31 @@ import { useUpdates } from './updates.ts'
 // Loads overlap when installs finish back to back; only the newest one may write, or an older snapshot
 // replaces the newer list.
 let latestLoad = 0
+
+async function scanProblems(
+  target: { game: string; id: string },
+  set: (p: { problems: Result | null; problemsFor?: string }) => void,
+  get: () => { problemsFor: string },
+) {
+  if (get().problemsFor !== target.id) {
+    set({ problems: null })
+  }
+  try {
+    const problems = await Problems(target.game, target.id)
+    if (openTarget()?.id === target.id) {
+      set({ problems, problemsFor: target.id })
+    }
+    const missing = missingCount(problems)
+    useBadges.getState().patch(target.id, {
+      missing,
+      problems: problemCount(problems) - missing,
+    })
+  } catch (e) {
+    reportError(i18n._(msg`Could not check the mods for problems`))(e)
+  }
+}
+
+const coalesceProblems = coalescer()
 
 export function showUpdatesView() {
   useSettings.setState({ listGroupBy: 'status' })
@@ -75,28 +101,14 @@ export async function loadMods(
   await Promise.all([get().loadProblems(), useUpdates.getState().load()])
 }
 
-export async function loadModProblems(
+// One Problems scan per profile at a time, since a scan is slow and the page, the sidebar and a profile switch all ask.
+export function loadModProblems(
   set: (p: { problems: Result | null; problemsFor?: string }) => void,
   get: () => { problemsFor: string },
-) {
+): Promise<void> {
   const target = openTarget()
   if (!target) {
-    return
+    return Promise.resolve()
   }
-  if (get().problemsFor !== target.id) {
-    set({ problems: null })
-  }
-  try {
-    const problems = await Problems(target.game, target.id)
-    if (openTarget()?.id === target.id) {
-      set({ problems, problemsFor: target.id })
-    }
-    const missing = missingCount(problems)
-    useBadges.getState().patch(target.id, {
-      missing,
-      problems: problemCount(problems) - missing,
-    })
-  } catch (e) {
-    reportError(i18n._(msg`Could not check the mods for problems`))(e)
-  }
+  return coalesceProblems(target.id, () => scanProblems(target, set, get))
 }

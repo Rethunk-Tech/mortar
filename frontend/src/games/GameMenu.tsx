@@ -89,7 +89,12 @@ export function GameMenu() {
         {playable.map((g) => (
           <TitleMenuItem
             key={g.id}
-            label={g.name}
+            label={
+              <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Thumb game={g} />
+                {g.name}
+              </Box>
+            }
             checked={g.id === game}
             onClick={() => {
               close()
@@ -100,7 +105,6 @@ export function GameMenu() {
         <MenuRule />
         <TitleMenuItem
           label={t`All games…`}
-          hint={t`launchers, play last profile`}
           onClick={() => {
             close()
             useNav.getState().openGameSelect()

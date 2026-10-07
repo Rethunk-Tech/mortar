@@ -1778,10 +1778,6 @@ msgstr "Reset {0} to its default"
 msgid "Unpinned {name}"
 msgstr "Unpinned {name}"
 
-#: src/games/GameMenu.tsx:103
-msgid "launchers, play last profile"
-msgstr "launchers, play last profile"
-
 #: src/launch/playStart.ts:83
 msgid "Could not update mods before Play"
 msgstr "Could not update mods before Play"
@@ -6665,7 +6661,7 @@ msgstr "Start the game with this profile, then measure here while you play."
 msgid "Mortar sends GitHub requests without a login. Run gh auth login to raise the rate limit."
 msgstr "Mortar sends GitHub requests without a login. Run gh auth login to raise the rate limit."
 
-#: src/mods/storeLoad.ts:100
+#: src/mods/storeLoad.ts:44
 msgid "Could not check the mods for problems"
 msgstr "Could not check the mods for problems"
 
@@ -7129,7 +7125,7 @@ msgstr "Back up {0}?"
 msgid "Each mod's Entry method, run one after another"
 msgstr "Each mod's Entry method, run one after another"
 
-#: src/games/GameMenu.tsx:102
+#: src/games/GameMenu.tsx:107
 msgid "All games…"
 msgstr "All games…"
 

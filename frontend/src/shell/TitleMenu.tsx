@@ -32,8 +32,11 @@ export function TitleMenu({
       transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       slotProps={{
         // The backdrop starts under the title bar so its triggers still take clicks and hover while a menu is open.
-        backdrop: { invisible: true, sx: { top: 'var(--title-bar)' } },
-        paper: { sx: { width, maxWidth: 'calc(100vw - 16px)', mt: '4px' } },
+        // The popover's fixed root spans the window and would take the clicks meant for them, so only its backdrop and
+        // paper do.
+        root: { sx: { pointerEvents: 'none' } },
+        backdrop: { invisible: true, sx: { top: 'var(--title-bar)', pointerEvents: 'auto' } },
+        paper: { sx: { width, maxWidth: 'calc(100vw - 16px)', mt: '4px', pointerEvents: 'auto' } },
         list: { 'aria-label': label, sx: { py: '6px' } },
       }}
     >
