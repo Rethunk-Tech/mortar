@@ -10,6 +10,7 @@ import { useUpdates } from '../mods/updates.ts'
 import { colorHex } from '../profiles/appearance.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useSaves } from '../saves/store.ts'
+import { space } from '../theme/density.ts'
 import { compact, saveFits } from './compact.ts'
 import { usePageActionsSlot } from './pageActions.ts'
 import { type TabId, useTab } from './tab.ts'
@@ -64,14 +65,12 @@ export function TabHeader({ profile }: { profile: Profile }) {
     <Box
       component="header"
       sx={{
-        height: 52,
+        height: `calc(${space.control} + 2 * ${space.gap})`,
         flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
-        gap: 1.75,
-        pl: 4,
-        pr: 2.5,
-        [compact]: { pl: 2, pr: 1.5, gap: 1 },
+        gap: space.gap,
+        px: space.gutter,
         bgcolor: (th) => alpha(colorHex(profile.color) ?? th.palette.primary.main, TINT),
         borderBottom: '1px solid var(--mortar-hairline)',
       }}
@@ -79,7 +78,7 @@ export function TabHeader({ profile }: { profile: Profile }) {
       <Typography noWrap={true} component="h1" sx={{ fontSize: 18, fontWeight: 700, minWidth: 0 }}>
         {profile.name}
       </Typography>
-      <Box sx={{ display: 'flex', gap: 0.75, flexShrink: 0 }}>
+      <Box sx={{ display: 'flex', gap: space.gap, flexShrink: 0 }}>
         <Chip label={modsLabel(userModCount(profile))} onClick={go('mods')} />
         {updates > 0 ? (
           <Chip
@@ -113,7 +112,13 @@ export function TabHeader({ profile }: { profile: Profile }) {
       <Box sx={{ flex: '1 0 12px' }} />
       <Box
         ref={setSlot}
-        sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0, ...pageActionsSx }}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: space.gap,
+          flexShrink: 0,
+          ...pageActionsSx,
+        }}
       />
     </Box>
   )

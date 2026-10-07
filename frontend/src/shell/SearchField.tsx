@@ -1,6 +1,7 @@
 import { InputAdornment, type SxProps, TextField, type Theme } from '@mui/material'
 import { Search } from 'lucide-react'
 import type { FocusEventHandler, KeyboardEventHandler, Ref } from 'react'
+import { space } from '../theme/density.ts'
 
 // The app's one search box: a magnifier, a tinted field and the label as both its accessible name and, unless a
 // placeholder is given, its placeholder.
@@ -50,7 +51,7 @@ export function SearchField({
             </InputAdornment>
           ),
           sx: {
-            height: 36,
+            height: space.control,
             fontSize: 13,
             borderRadius: '6px',
             // Opaque paper in light mode: a dark tint over the wallpaper reads as grey.

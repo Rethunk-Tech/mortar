@@ -7,6 +7,7 @@ import {
 } from '@mui/material/styles'
 import { compact } from '../game/compact.ts'
 import { type AccentName, accents } from './accents.ts'
+import { densityVars, space } from './density.ts'
 import {
   contrastText,
   mortarPalette,
@@ -30,8 +31,6 @@ const TITLE_BAR_COMPACT_PX = 40
 const WINDOW_BUTTON_PX = 46
 const WINDOW_BUTTON_COMPACT_PX = 40
 const WINDOW_BUTTONS = 3
-const BUTTON_HEIGHT = 36
-const BUTTON_HEIGHT_COMPACT = 32
 // The smallest touch target on the Steam Deck's screen (WCAG 2.5.5), for every control while touch or a pad leads.
 const TARGET_ROOMY_PX = 44
 const FOCUS_OUTLINE_PX = 2
@@ -85,7 +84,11 @@ const roomyTargets = {
   },
 }
 
-function baselineCss(main: string, reduceMotion: boolean, mode: ThemeMode, roomy: boolean) {
+function baselineCss(
+  main: string,
+  mode: ThemeMode,
+  { reduceMotion, roomy, compactUi }: { reduceMotion: boolean; roomy: boolean; compactUi: boolean },
+) {
   const trackAlpha = mode === 'light' ? TRACK_ALPHA_LIGHT : TRACK_ALPHA_DARK
   return {
     ':root': {
@@ -93,6 +96,7 @@ function baselineCss(main: string, reduceMotion: boolean, mode: ThemeMode, roomy
       '--window-button': `${WINDOW_BUTTON_PX}px`,
       '--window-controls': `${WINDOW_BUTTON_PX * WINDOW_BUTTONS}px`,
       ...surfaceCssVars(mode),
+      ...densityVars(compactUi ? 'compact' : 'comfortable'),
       // Text and icons tinted with the accent; pastel accents are unreadable as ink on light surfaces.
       '--mortar-accent-ink': mode === 'light' ? 'var(--mortar-ink)' : main,
       colorScheme: mode,
@@ -161,7 +165,7 @@ function buttonOverrides(
         fontSize: BUTTON_FONT_PX,
         fontWeight: BUTTON_FONT_WEIGHT,
         lineHeight: BUTTON_LINE_HEIGHT,
-        height: compactUi ? BUTTON_HEIGHT_COMPACT : BUTTON_HEIGHT,
+        height: space.control,
         padding: compactUi ? BUTTON_PAD_COMPACT : BUTTON_PAD,
       },
       sizeSmall: { height: BUTTON_SMALL_HEIGHT, padding: BUTTON_SMALL_PAD },
@@ -239,7 +243,11 @@ function createMortarTheme(
     },
     components: {
       MuiCssBaseline: {
-        styleOverrides: baselineCss(pal.primaryMain, reduceMotion, mode, opts.roomy === true),
+        styleOverrides: baselineCss(pal.primaryMain, mode, {
+          reduceMotion,
+          roomy: opts.roomy === true,
+          compactUi,
+        }),
       },
       MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
       MuiDialog: {
@@ -258,6 +266,17 @@ function createMortarTheme(
             variants: [{ props: { invisible: false }, style: { backgroundColor: s.overlay30 } }],
           },
         },
+      },
+      // A dropdown or field beside buttons takes the buttons' height.
+      MuiInputBase: {
+        styleOverrides: {
+          root: {
+            '&.MuiInputBase-sizeSmall:not(.MuiInputBase-multiline)': { height: space.control },
+          },
+        },
+      },
+      MuiMenuItem: {
+        styleOverrides: { root: { paddingTop: space.menuY, paddingBottom: space.menuY } },
       },
       MuiMenu: {
         defaultProps: { transitionDuration: 0 },

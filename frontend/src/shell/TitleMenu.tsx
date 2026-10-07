@@ -1,8 +1,8 @@
 import { Box, Divider, Menu, MenuItem } from '@mui/material'
 import { Check } from 'lucide-react'
 import type { MouseEvent, ReactNode } from 'react'
+import { space } from '../theme/density.ts'
 
-const ITEM_HEIGHT_PX = 32
 const ITEM_INSET_PX = 14
 const HEADING_FONT_PX = 11
 const HINT_FONT_PX = 12
@@ -38,7 +38,7 @@ export function TitleMenu({
         root: { sx: { pointerEvents: 'none' } },
         backdrop: { invisible: true, sx: { top: 'var(--title-bar)', pointerEvents: 'auto' } },
         paper: { sx: { width, maxWidth: 'calc(100vw - 16px)', mt: '4px', pointerEvents: 'auto' } },
-        list: { 'aria-label': label, sx: { py: '6px' } },
+        list: { 'aria-label': label, sx: { py: space.menuY } },
       }}
     >
       {children}
@@ -106,8 +106,7 @@ export function TitleMenuItem({
       onClick={onClick}
       {...(onContextMenu ? { onContextMenu } : {})}
       sx={{
-        minHeight: ITEM_HEIGHT_PX,
-        height: ITEM_HEIGHT_PX,
+        minHeight: 0,
         px: `${ITEM_INSET_PX}px`,
         fontSize: 14,
         whiteSpace: 'nowrap',

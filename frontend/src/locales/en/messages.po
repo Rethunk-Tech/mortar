@@ -8425,7 +8425,7 @@ msgstr "Problems and updates"
 
 #. placeholder {0}: saves.fitting
 #. placeholder {1}: saves.recorded
-#: src/game/TabHeader.tsx:98
+#: src/game/TabHeader.tsx:97
 msgid "Saves {0} of {1}"
 msgstr "Saves {0} of {1}"
 

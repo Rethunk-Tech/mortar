@@ -1,3 +1,5 @@
+import { space } from '../theme/density.ts'
+
 // The first non-empty line of a profile's notes, for the one-line strip in the tab header.
 export function notesFirstLine(notes: string): string {
   return (
@@ -10,13 +12,13 @@ export function notesFirstLine(notes: string): string {
 
 // One height for every control a tab puts in the header's page-actions slot (icon buttons, buttons and both halves of
 // a split button). Set from the slot, so a tab's own sizes cannot drift from its neighbours.
-export const PAGE_ACTION_PX = 34
+export const PAGE_ACTION_HEIGHT = space.control
 
 export const pageActionsSx = {
   '& .MuiButton-root, & .MuiIconButton-root': {
-    height: PAGE_ACTION_PX,
-    minHeight: PAGE_ACTION_PX,
+    height: PAGE_ACTION_HEIGHT,
+    minHeight: PAGE_ACTION_HEIGHT,
     boxSizing: 'border-box',
   },
-  '& .MuiIconButton-root': { width: PAGE_ACTION_PX },
+  '& .MuiIconButton-root': { width: PAGE_ACTION_HEIGHT },
 } as const

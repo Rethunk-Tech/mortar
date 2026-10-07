@@ -20,7 +20,11 @@ test('choosing another game remembers it and opens it, or its setup when it has 
   await openGame(game('valheim'), messages, deps(false, remembered))
   expect(useNav.getState().route).toEqual({ name: 'game', game: 'valheim' })
   await openGame(game('lethal-company'), messages, deps(true, remembered))
-  expect(useNav.getState().route).toEqual({ name: 'game-setup', game: 'lethal-company' })
+  expect(useNav.getState().route).toEqual({
+    name: 'game-setup',
+    game: 'lethal-company',
+    from: 'valheim',
+  })
   expect(remembered).toEqual(['valheim', 'lethal-company'])
 })
 

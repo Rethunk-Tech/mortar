@@ -30,6 +30,21 @@ How Mortar's screens are laid out and styled. Concrete (`LethalModding/Concrete`
 - **Dialog actions:** Cancel or Close is always a text button, leftmost; at most one contained primary sits rightmost, and a destructive primary is contained `color="error"`. Other actions beside them stay text. Before you play, Diagnostics, Manage tools, Save backups, the update review and the import footer follow it. Saving a name that exists (launch preset, config preset, template) asks **Replace <name>?**; deleting a preset says **Delete preset**.
 - Button and chip labels never wrap (`white-space: nowrap`); a long message gets its own full-width row, truncating with an ellipsis rather than squeezing the buttons beside it.
 
+## Density
+
+One spacing scale, set once per **Density** level (Settings › Appearance › Display) as CSS variables on `:root` (`theme/density.ts`, applied in `theme/theme.ts`). Layout code reads them through `space` and never hand-sets pixels for these roles, so a level change moves every page together. Touch or a gamepad (`theme/roomy`) still raises every target to 44px.
+
+| Token | Role | Comfortable | Compact |
+| ----- | ---- | ----------- | ------- |
+| `--m-gutter` | a page's left and right edge, a controls row's inset | 16px | 12px |
+| `--m-gap` | between controls in a row; between a row and what follows | 8px | 6px |
+| `--m-pad` | inside a card or panel | 16px | 12px |
+| `--m-row` | a table or list row | 36px | 30px |
+| `--m-menu-y` | above and below a menu item's text, and a menu's own top and bottom | 6px | 4px |
+| `--m-control` | buttons, dropdowns, fields and the page-actions slot that share a row | 36px | 32px |
+
+The tab header is `--m-control` plus twice `--m-gap` tall (52px comfortable, 44px compact).
+
 ## Surfaces and colour
 
 - No gradients anywhere, not as backgrounds, scrims over art, fallbacks or placeholder art: legibility over art comes from a solid layer with alpha, and a missing image becomes a solid tone. The one exception: an image's edge may fade to transparent via an alpha mask; no coloured gradients.
