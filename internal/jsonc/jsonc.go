@@ -12,19 +12,24 @@ func Clean(b []byte) []byte {
 	return dropTrailingCommas(dropComments(b))
 }
 
+// stringEnd is the index of the quote closing the string literal that opens at b[i], or the last byte when it never closes.
+func stringEnd(b []byte, i int) int {
+	j := i + 1
+	for j < len(b) && b[j] != '"' {
+		if b[j] == '\\' {
+			j++
+		}
+		j++
+	}
+	return min(j, len(b)-1)
+}
+
 func dropComments(b []byte) []byte {
 	out := make([]byte, 0, len(b))
 	for i := 0; i < len(b); i++ {
 		switch {
 		case b[i] == '"':
-			j := i + 1
-			for j < len(b) && b[j] != '"' {
-				if b[j] == '\\' {
-					j++
-				}
-				j++
-			}
-			j = min(j, len(b)-1)
+			j := stringEnd(b, i)
 			out = append(out, b[i:j+1]...)
 			i = j
 		case b[i] == '/' && i+1 < len(b) && b[i+1] == '/':
@@ -51,14 +56,7 @@ func dropTrailingCommas(b []byte) []byte {
 	for i := 0; i < len(b); i++ {
 		switch b[i] {
 		case '"':
-			j := i + 1
-			for j < len(b) && b[j] != '"' {
-				if b[j] == '\\' {
-					j++
-				}
-				j++
-			}
-			j = min(j, len(b)-1)
+			j := stringEnd(b, i)
 			out = append(out, b[i:j+1]...)
 			i = j
 		case ',':
