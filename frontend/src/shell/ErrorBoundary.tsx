@@ -3,6 +3,7 @@ import { Box, Button } from '@mui/material'
 import { Bug, Copy, RotateCcw } from 'lucide-react'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { copyText } from '../share/copyText.ts'
+import { space } from '../theme/density.ts'
 import { EmptyState } from './EmptyState.tsx'
 import { reportBug } from './reportBug.ts'
 
@@ -16,7 +17,7 @@ function Fallback({ error, stack, onRetry }: { error: Error; stack: string; onRe
       icon={<Bug size={40} aria-hidden={true} />}
       title={t`Something went wrong in this view`}
       action={
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: space.gap }}>
           <Button variant="contained" startIcon={<RotateCcw size={16} />} onClick={onRetry}>
             {t`Retry`}
           </Button>

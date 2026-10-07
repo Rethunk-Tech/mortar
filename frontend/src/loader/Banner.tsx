@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { useGameInfo } from '../games/info.ts'
 import { useGameBusy } from '../launch/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { space } from '../theme/density.ts'
 import { InstallSteps } from './InstallSteps.tsx'
 import { useLoader } from './store.ts'
 
@@ -40,9 +41,9 @@ export function LoaderBanner({ game }: { game: string }) {
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 2,
-        px: 2,
-        py: 1,
+        gap: space.pad,
+        px: space.pad,
+        py: space.gap,
         flexShrink: 0,
         bgcolor: 'var(--mortar-panel)',
         borderLeft: '4px solid',

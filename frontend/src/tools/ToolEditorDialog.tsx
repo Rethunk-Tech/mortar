@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { PickExecutable } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Tool } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/tools/models.ts'
 import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 
@@ -90,7 +91,9 @@ export function ToolEditorDialog({ open, initial, onClose, onSave }: Props) {
         }}
       >
         <DialogTitle>{initial ? t`Edit tool` : t`Add tool`}</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+        <DialogContent
+          sx={{ display: 'flex', flexDirection: 'column', gap: space.pad, pt: space.gap }}
+        >
           <TextField
             label={t`Name`}
             value={name}

@@ -19,6 +19,7 @@ import type {
   RemapVariant,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { formatBytes } from '../i18n/bytes.ts'
+import { space } from '../theme/density.ts'
 import { ArchivePreview } from './ArchivePreview.tsx'
 import { useNoModText } from './noModText.ts'
 import { OverlayPlaceDialog } from './OverlayPlaceDialog.tsx'
@@ -90,7 +91,7 @@ function NodeRow({
         />
       </ListItemButton>
       <Collapse in={open}>
-        <List disablePadding={true} sx={{ pl: 2 }}>
+        <List disablePadding={true} sx={{ pl: space.pad }}>
           {(node.children ?? []).map((c) => (
             <NodeRow key={c.path} node={c} selected={selected} onSelect={onSelect} />
           ))}

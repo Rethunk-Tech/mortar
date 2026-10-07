@@ -21,6 +21,7 @@ import type {
 import { cmpText } from '../mods/cmpText.ts'
 import { openModHandlers } from '../mods/openMod.ts'
 import { useStoredState } from '../shell/useStoredState.ts'
+import { space } from '../theme/density.ts'
 import { useDuration, useSmapiStartup, useWhy } from './startupHooks.ts'
 import { foldMods, modTotal, rowAnchor, slowestEvent, whyOf } from './startupView.ts'
 
@@ -103,8 +104,8 @@ function ModDetails({ mod, sampled }: { mod: StartupMod; sampled: boolean }) {
     return (
       <Box
         sx={{
-          py: 1,
-          pl: 3,
+          py: space.gap,
+          pl: space.pad,
           display: 'grid',
           gridTemplateColumns: 'max-content max-content',
           columnGap: 3,
@@ -116,7 +117,16 @@ function ModDetails({ mod, sampled }: { mod: StartupMod; sampled: boolean }) {
     )
   }
   return (
-    <Box sx={{ py: 1, pl: 3, display: 'flex', flexDirection: 'column', gap: 1, fontSize: 13 }}>
+    <Box
+      sx={{
+        py: space.gap,
+        pl: space.pad,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: space.gap,
+        fontSize: 13,
+      }}
+    >
       <Box sx={{ display: 'grid', gridTemplateColumns: 'max-content max-content', columnGap: 3 }}>
         <Detail label={t`Entry`} value={mod.entryMs > 0 ? duration(mod.entryMs) : '—'} />
         <Detail

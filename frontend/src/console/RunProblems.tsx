@@ -20,6 +20,7 @@ import { refWant } from '../queue/refWant.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { duplicateCopies } from './runProblemsFix.ts'
@@ -161,7 +162,7 @@ function ProblemRow({
     applyFix(i18n, problem, game).catch(reportUnexpected)
   }
   return (
-    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, fontSize: 14 }}>
+    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: space.gap, fontSize: 14 }}>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ fontWeight: 600 }}>{problem.modName || problem.modId}</Box>
         <Box sx={{ color: 'text.secondary', mt: 0.25, whiteSpace: 'normal' }}>{problem.detail}</Box>
@@ -231,20 +232,20 @@ export function RunProblemsStrip({
   return (
     <Box
       sx={{
-        mx: 2,
+        mx: space.gutter,
         mb: 1,
-        px: 1.5,
-        py: 1,
+        px: space.pad,
+        py: space.gap,
         display: 'flex',
         flexDirection: 'column',
-        gap: 1,
+        gap: space.gap,
         bgcolor: calloutFill('warning'),
         border: '1px solid',
         borderColor: calloutLine('warning'),
         borderRadius: '6px',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Typography
           sx={{ fontSize: 13, fontWeight: 700, flex: 1 }}
         >{t`Problems in this run`}</Typography>

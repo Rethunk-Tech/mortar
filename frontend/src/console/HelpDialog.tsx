@@ -26,6 +26,7 @@ import { openPage } from '../mods/menu.ts'
 import { useProfileLoader } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportError } from '../toasts/report.ts'
 import { anonymize } from './anonymize.ts'
@@ -37,7 +38,7 @@ const button = { whiteSpace: 'nowrap' } as const
 function LinkRow({ link, onCopy }: { link: string; onCopy: () => void }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       <TextField
         size="small"
         value={link}
@@ -234,7 +235,7 @@ export function HelpDialog({ game }: { game: string }) {
       slotProps={{ paper: { sx: { width: 780, maxWidth: 'calc(100% - 32px)' } } }}
     >
       <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Share log…`}</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
         {body ? (
           <>
             {log === null ? <LoadingRow>{body}</LoadingRow> : null}
@@ -251,7 +252,7 @@ export function HelpDialog({ game }: { game: string }) {
           />
         )}
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2.5 }}>
+      <DialogActions sx={{ px: space.pad, pb: space.pad }}>
         <Button disabled={uploading} onClick={close} sx={button}>
           {link || !log ? t`Close` : t`Cancel`}
         </Button>

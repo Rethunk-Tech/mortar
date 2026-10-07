@@ -21,6 +21,7 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
+import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useOutcomeLabel } from './outcome.ts'
@@ -141,7 +142,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
                     dense={true}
                     key={`${hit.runId}-${hit.lineNumber}`}
                     onClick={() => choose(hit)}
-                    sx={{ gap: 1, borderRadius: 1, alignItems: 'flex-start' }}
+                    sx={{ gap: space.gap, borderRadius: 1, alignItems: 'flex-start' }}
                   >
                     <Typography
                       component="span"

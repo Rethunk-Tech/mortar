@@ -18,6 +18,7 @@ import { useReleases } from '../mods/releases.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
+import { space } from '../theme/density.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { GITHUB, NEXUS } from './browseConstants.ts'
 import type { BrowseItem } from './browseTypes.ts'
@@ -213,7 +214,15 @@ function Panel({
   const { shownItem, action } = useCardAction(card, item, source)
   const stats = useStats(shownItem)
   return (
-    <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1.25, minHeight: '100%' }}>
+    <Box
+      sx={{
+        p: space.pad,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: space.gap,
+        minHeight: '100%',
+      }}
+    >
       <DetailsHeader
         picture={<CardPicture picture={item.picture} size={PICTURE} dim={1} />}
         title={item.name}

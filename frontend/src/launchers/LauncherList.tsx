@@ -18,6 +18,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { LauncherLogo } from '../brand/launchers/LauncherLogo.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { space } from '../theme/density.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 
 const STATUS_ICON = 30
@@ -41,7 +42,9 @@ function FolderRow({
 }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minHeight: 44, px: 1.5 }}>
+    <Box
+      sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minHeight: 44, px: space.pad }}
+    >
       <Folder
         size={16}
         aria-hidden={true}
@@ -116,7 +119,9 @@ function LauncherRow({
     >
       <AccordionSummary
         expandIcon={<ChevronDown size={18} />}
-        sx={{ '& .MuiAccordionSummary-content': { alignItems: 'center', gap: 2, my: 1.25 } }}
+        sx={{
+          '& .MuiAccordionSummary-content': { alignItems: 'center', gap: space.pad, my: 1.25 },
+        }}
       >
         <Box sx={{ display: 'flex', flexShrink: 0 }}>
           <LauncherLogo id={launcher.id} size={STATUS_ICON} />
@@ -135,7 +140,7 @@ function LauncherRow({
           )}
         </Box>
       </AccordionSummary>
-      <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, pt: 0 }}>
+      <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, pt: 0 }}>
         <Box
           sx={{
             display: 'flex',
@@ -164,7 +169,9 @@ function LauncherRow({
             />
           ))}
         </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
+        <Box
+          sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: space.gap }}
+        >
           <Button
             variant="text"
             color="inherit"
@@ -213,7 +220,7 @@ export function LauncherList({
   ]
   // With nothing found at all, the first row starts open so a new user lands on Add folder.
   const first = launchers.every((l) => !l.found) ? launchers[0]?.id : undefined
-  const stack = { display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 } as const
+  const stack = { display: 'flex', flexDirection: 'column', gap: space.gap, minWidth: 0 } as const
   return (
     <Box sx={{ containerType: 'inline-size' }}>
       <Box
@@ -221,7 +228,7 @@ export function LauncherList({
           display: 'none',
           gridTemplateColumns: '1fr 1fr',
           alignItems: 'start',
-          gap: 1,
+          gap: space.gap,
           [`@container (min-width: ${2 * COLUMN_MIN}px)`]: { display: 'grid' },
         }}
       >

@@ -42,7 +42,7 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
       sx={{
         display: 'flex',
         alignItems: 'flex-start',
-        gap: 1,
+        gap: space.gap,
         px: space.pad,
         py: space.gap,
         borderLeft: '3px solid',

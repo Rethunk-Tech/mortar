@@ -8,6 +8,7 @@ import { useLocked } from '../mods/useLocked.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { openImport } from '../share/store.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { splitDropped } from './dropped.ts'
 import { MissingDepsDialog } from './MissingDepsDialog.tsx'
@@ -80,9 +81,9 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 2,
+              gap: space.pad,
               textAlign: 'center',
-              p: 3,
+              p: space.pad,
             })}
           >
             <Box sx={{ color: 'var(--mortar-accent-ink)', display: 'flex' }}>

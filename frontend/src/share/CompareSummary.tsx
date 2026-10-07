@@ -6,6 +6,7 @@ import type {
   Preview,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import { Fold } from '../shell/Fold.tsx'
+import { space } from '../theme/density.ts'
 
 // CompareSummary is how a shared profile lines up with the profile it would join, so friends can match mods before
 // playing together: what already matches, what this import would download, what differs in version, and what only
@@ -24,7 +25,16 @@ export function CompareSummary({ preview, targetName }: { preview: Preview; targ
     { label: t`Only in ${{ name: targetName }}`, items: onlyYours },
   ]
   return (
-    <Box sx={{ px: 1, pt: 0.5, pb: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+    <Box
+      sx={{
+        px: space.gap,
+        pt: 0.5,
+        pb: space.gap,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0.75,
+      }}
+    >
       <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
         {t`${plural(matching.length, { one: '# mod already matches', other: '# mods already match' })} ${targetName}.`}
       </Typography>

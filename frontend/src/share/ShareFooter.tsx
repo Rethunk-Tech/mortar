@@ -8,7 +8,7 @@ import type { ShownInfo } from './logic.ts'
 const footer = {
   display: 'flex',
   alignItems: 'center',
-  gap: 1.25,
+  gap: space.gap,
   p: '14px 24px',
   borderTop: '1px solid var(--mortar-hairline-muted)',
 } as const

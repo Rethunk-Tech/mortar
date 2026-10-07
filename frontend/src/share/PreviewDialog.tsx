@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import { Logo } from '../brand/Logo.tsx'
 import { heading } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { space } from '../theme/density.ts'
 import type { ShownInfo } from './logic.ts'
 
 const PAGE_HOST = 'mortar.rethunk.tech'
@@ -26,7 +27,7 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
     <Box
       component="aside"
       aria-label={t`What the person opening the link sees`}
-      sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2.5 }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, p: space.pad }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography sx={{ ...heading, display: 'flex', alignItems: 'center' }}>
@@ -40,14 +41,22 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 1.5,
+          gap: space.gap,
           p: '18px',
           bgcolor: '#f4f1ea',
           color: '#1b1a17',
           borderRadius: '8px',
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 13, fontWeight: 700 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: space.gap,
+            fontSize: 13,
+            fontWeight: 700,
+          }}
+        >
           <Logo size={16} fill="#1b1a17" />
           {PAGE_HOST}
         </Box>

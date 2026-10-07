@@ -22,6 +22,7 @@ import { useSettings } from '../settings/store.ts'
 import { includeAvailability } from '../share/methods.ts'
 import { type ShareInclude, toShareInclude } from '../share/shareDefaults.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { space } from '../theme/density.ts'
 import { errorKind } from '../toasts/errorKind.ts'
 import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -126,7 +127,7 @@ function LinksOnlyView({
           </Typography>
         </Stack>
       </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: space.gap }}>
         <Button onClick={onBack}>{t`Back`}</Button>
         <Button variant="outlined" onClick={onPair}>{t`Pair`}</Button>
         <Button variant="contained" disabled={busy} onClick={onSend}>
@@ -258,7 +259,7 @@ export function SendPanel({
   )
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       {linksOnly ? (
         <LinksOnlyView
           name={linksOnly.name}
@@ -314,7 +315,7 @@ export function SendPanel({
               </List>
             )}
             {addressPicker ? (
-              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+              <Box sx={{ display: 'flex', gap: space.gap, mt: 1 }}>
                 <TextField
                   autoFocus={true}
                   fullWidth={true}

@@ -27,6 +27,7 @@ import {
   Unpair,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { SettingRow } from '../settings/SettingsSection.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -141,7 +142,10 @@ export function ShowCodeDialog({ open, onClose }: { open: boolean; onClose: () =
         <Typography color="text.secondary">
           {t`On the other computer, choose Enter code and type this. It works once, for five minutes.`}
         </Typography>
-        <Typography variant="h4" sx={{ fontFamily: 'monospace', textAlign: 'center', py: 2 }}>
+        <Typography
+          variant="h4"
+          sx={{ fontFamily: 'monospace', textAlign: 'center', py: space.pad }}
+        >
           {code || '…'}
         </Typography>
       </DialogContent>
@@ -180,7 +184,7 @@ export function PairedComputers() {
         label={t`Paired computers`}
         description={t`Profiles you send between paired computers carry their mod files, whatever the source.`}
       >
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: space.gap }}>
           <Button onClick={() => setDialog('show')}>{t`Pair a computer`}</Button>
           <Button onClick={() => setDialog('enter')}>{t`Enter code`}</Button>
         </Box>

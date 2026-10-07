@@ -4,6 +4,7 @@ import { Lock } from 'lucide-react'
 import { useState } from 'react'
 import { StopDialog } from '../launch/StopDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
+import { space } from '../theme/density.ts'
 import { useLocked } from './useLocked.ts'
 
 export function LockedNote() {
@@ -19,7 +20,7 @@ export function LockedNote() {
       <Alert
         severity="info"
         icon={<Lock size={18} />}
-        sx={{ mx: 2, my: 1, fontSize: 14, alignItems: 'center' }}
+        sx={{ mx: space.gutter, my: 1, fontSize: 14, alignItems: 'center' }}
         action={
           <Button color="inherit" size="small" onClick={() => setAsking(true)}>
             {t`Stop game`}

@@ -12,6 +12,7 @@ import { useGameLoader } from '../games/info.ts'
 import { useLoader } from '../loader/store.ts'
 import { BASE_PRESET, playPresets } from '../profiles/profilePresets.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { playDirect } from './directPref.ts'
 import { useLive } from './live.ts'
@@ -88,7 +89,13 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
           {rail ? null : (
             <Box
               title={runningProfile?.name}
-              sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 1 }}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: space.gap,
+                px: space.pad,
+                py: space.gap,
+              }}
             >
               <Box
                 aria-hidden={true}

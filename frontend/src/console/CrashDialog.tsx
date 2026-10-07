@@ -29,6 +29,7 @@ import { useMods } from '../mods/store.ts'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -253,7 +254,7 @@ export function CrashDialog() {
         <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>
           {crash.crashed ? t`${gameName} crashed` : t`${gameName} closed with errors`}
         </DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           {crash.cause ? (
             <Box sx={{ fontSize: 14 }}>
               <Box sx={{ fontWeight: 700 }}>{t`Caused by ${crash.cause.modName}`}</Box>
@@ -290,7 +291,7 @@ export function CrashDialog() {
             />
           ) : null}
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+        <DialogActions sx={{ px: space.pad, pb: space.pad, gap: space.gap }}>
           <Button onClick={dismiss} sx={{ mr: 'auto' }}>
             {t`Dismiss`}
           </Button>

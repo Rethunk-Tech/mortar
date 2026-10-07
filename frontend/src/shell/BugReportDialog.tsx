@@ -13,6 +13,7 @@ import {
 import { type SyntheticEvent, useEffect, useState } from 'react'
 import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import { BugURL } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useBugReport } from './reportBug.ts'
 import { saveDiagnostics } from './saveDiagnostics.ts'
@@ -57,7 +58,7 @@ export function BugReportDialog() {
       <form onSubmit={submit}>
         <DialogTitle>{t`Report a bug`}</DialogTitle>
         <DialogContent
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '8px !important' }}
+          sx={{ display: 'flex', flexDirection: 'column', gap: space.pad, pt: '8px !important' }}
         >
           <TextField
             label={t`Title`}

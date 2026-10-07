@@ -7,6 +7,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useStoredState } from '../shell/useStoredState.ts'
+import { space } from '../theme/density.ts'
 import { formatTiming } from './formatTiming.ts'
 import { MeasuredPanel, PerformanceEmpty } from './PerformancePanelParts.tsx'
 import { usePerfQuery } from './startupHooks.ts'
@@ -186,8 +187,8 @@ function FrameLine({ frame }: { frame: FrameSummary | null }) {
   return (
     <Box
       sx={{
-        px: 1.5,
-        pb: 1,
+        px: space.pad,
+        pb: space.gap,
         fontSize: 12,
         color: 'text.secondary',
         display: 'flex',

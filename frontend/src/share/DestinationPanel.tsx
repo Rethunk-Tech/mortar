@@ -3,6 +3,7 @@ import { Box, Button, ToggleButton, ToggleButtonGroup, Typography } from '@mui/m
 import { useState } from 'react'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { space } from '../theme/density.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import {
   FilePane,
@@ -41,10 +42,10 @@ function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
         }}
         sx={{ alignSelf: 'flex-start', mb: 2.25 }}
       >
-        <ToggleButton value="link" sx={{ px: 2.5 }}>
+        <ToggleButton value="link" sx={{ px: space.pad }}>
           {t`Link`}
         </ToggleButton>
-        <ToggleButton value="file" sx={{ px: 2.5 }}>
+        <ToggleButton value="file" sx={{ px: space.pad }}>
           {t`File`}
         </ToggleButton>
       </ToggleButtonGroup>
@@ -73,7 +74,7 @@ function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
         />
       )}
       <Box sx={{ flex: 1 }} />
-      <Box sx={{ pt: 2 }}>
+      <Box sx={{ pt: space.pad }}>
         <Button
           variant="text"
           disabled={info.tooLarge}

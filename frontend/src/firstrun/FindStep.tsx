@@ -13,6 +13,7 @@ import { gameArt } from '../games/art.ts'
 import { storeName } from '../games/storeName.ts'
 import { useLoader } from '../loader/store.ts'
 import { TypedFolder } from '../shell/TypedFolder.tsx'
+import { space } from '../theme/density.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { Panel } from './Panel.tsx'
 import { useRefreshOnFocus } from './useRefreshOnFocus.ts'
@@ -84,7 +85,7 @@ function Looked({ game, launchers }: { game: GameInfo; launchers: StoreApp[] }) 
           <Box
             component="li"
             key={l.id}
-            sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 14 }}
+            sx={{ display: 'flex', alignItems: 'center', gap: space.gap, fontSize: 14 }}
           >
             {l.found ? <Check size={15} color={ok} /> : <X size={15} color={muted} />}
             <Box component="span" sx={{ fontWeight: 600 }}>
@@ -161,7 +162,7 @@ export function FindStep({
       {found ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <Typography sx={{ fontSize: 13 }}>{caption}</Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: space.gap }}>
             <TextField
               // Unfocused, the path is laid out right to left so a long one loses its start, not the game's folder
               // name; the mark keeps a leading slash at the start. Focused, it is the plain path, to select and copy.
@@ -200,15 +201,15 @@ export function FindStep({
           <Typography sx={{ fontSize: 13 }}>{details}</Typography>
         </Box>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
             <TriangleAlert size={18} color={warning.main} />
             <Typography sx={{ fontSize: 16, fontWeight: 600 }}>
               {t`${game.name} was not found in your launchers`}
             </Typography>
           </Box>
           <Looked game={game} launchers={launchers} />
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
             <Button
               variant="contained"
               startIcon={<FolderOpen size={16} />}

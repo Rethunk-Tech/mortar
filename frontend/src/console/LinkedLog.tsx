@@ -10,6 +10,7 @@ import { openMod } from '../mods/openMod.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
+import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import type { InstalledMod } from './consoleLinks.ts'
@@ -62,7 +63,7 @@ export function LinkedLog({
       sx={{
         flex: 1,
         minHeight: 0,
-        mx: 2,
+        mx: space.gutter,
         mb: 1.5,
         bgcolor: (theme) =>
           theme.palette.mode === 'light'
@@ -76,7 +77,7 @@ export function LinkedLog({
       }}
     >
       {empty ? (
-        <Typography component="div" sx={{ p: 2, font: 'inherit', color: 'text.secondary' }}>
+        <Typography component="div" sx={{ p: space.pad, font: 'inherit', color: 'text.secondary' }}>
           {empty}
         </Typography>
       ) : (

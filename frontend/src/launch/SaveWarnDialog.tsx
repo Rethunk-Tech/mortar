@@ -15,6 +15,7 @@ import { listNames } from '../i18n/list.ts'
 import { localId } from '../mods/dependents.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { addRecordedMods } from '../saves/recordedActions.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { cancelling } from './playModeState.ts'
 import { useLaunch } from './store.ts'
@@ -65,7 +66,7 @@ export function SaveWarnDialog() {
           </List>
         )}
       </DialogContent>
-      <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
+      <DialogActions sx={{ flexWrap: 'wrap', gap: space.gap }}>
         <Button onClick={quit}>{t`Cancel`}</Button>
         {switchTo ? (
           <Button

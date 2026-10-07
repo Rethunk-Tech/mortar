@@ -18,6 +18,7 @@ import { listNames } from '../i18n/list.ts'
 import { SendPanel } from '../lan/SendPanel.tsx'
 import { useSettings } from '../settings/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -53,7 +54,7 @@ function Meter({ info }: { info: ShownInfo }) {
     over: t`${length} of ${limit} characters · too long for one Discord message`,
   }[level]
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       <Box
         role="meter"
         aria-label={t`Link length`}
@@ -99,7 +100,7 @@ export function LinkPane({
         </Typography>
       ) : (
         <>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: space.gap }}>
             <Box
               sx={{
                 flex: 1,
@@ -107,7 +108,7 @@ export function LinkPane({
                 display: 'flex',
                 alignItems: 'center',
                 height: 40,
-                px: 1.5,
+                px: space.pad,
                 bgcolor: 'var(--mortar-overlay-30)',
                 borderRadius: '8px',
                 fontFamily: MONO,
@@ -136,7 +137,7 @@ export function LinkPane({
         </>
       )}
       {large ? (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
           <Typography sx={{ flex: 1, fontSize: 14, color: 'warning.light' }}>
             {t`A .mortar file suits a profile this size better, and carries your mod settings too.`}
           </Typography>
@@ -203,7 +204,7 @@ export function FilePane({
               other: '# settings files were left out (too large or an unusual name):',
             })}
           </Typography>
-          <Box component="ul" sx={{ m: 0, pl: 2.5, ...note }}>
+          <Box component="ul" sx={{ m: 0, pl: space.pad, ...note }}>
             {skipped.map((p) => (
               <li key={p}>{p}</li>
             ))}
@@ -305,7 +306,7 @@ export function ThunderstorePane({ game, profileId }: { game: string; profileId:
       <Typography sx={note}>
         {t`For r2modman and other Thunderstore managers: a code anyone can enter, or a modpack zip with your config folder.`}
       </Typography>
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', gap: space.gap, flexWrap: 'wrap' }}>
         <Button
           variant="contained"
           startIcon={<Share2 size={16} />}

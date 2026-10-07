@@ -7,6 +7,7 @@ import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CollectionNotes } from './CollectionNotes.tsx'
 import { CompareSummary } from './CompareSummary.tsx'
@@ -40,8 +41,8 @@ function MissingMods({
     <Box
       sx={{
         mb: 1,
-        px: 1.5,
-        py: 1,
+        px: space.pad,
+        py: space.gap,
         bgcolor: calloutFill('warning'),
         border: '1px solid',
         borderColor: calloutLine('warning'),
@@ -51,7 +52,7 @@ function MissingMods({
       <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
         {t`Not found in the Mods folder`}
       </Typography>
-      <Box component="ul" sx={{ m: 0, pl: 2.5, fontSize: 13, color: 'text.secondary' }}>
+      <Box component="ul" sx={{ m: 0, pl: space.pad, fontSize: 13, color: 'text.secondary' }}>
         {ids.map((id) => {
           const name = missingModName(id, mods)
           return (
@@ -203,7 +204,7 @@ function Body({ request }: { request: ImportRequest }) {
               flex: '1 1 auto',
               minHeight: 0,
               overflowY: 'auto',
-              p: 1,
+              p: space.gap,
               bgcolor: 'var(--mortar-overlay-20)',
             }}
           >
@@ -217,7 +218,7 @@ function Body({ request }: { request: ImportRequest }) {
             {hasMods ? (
               <Tiles mods={preview.mods} excluded={flow.excluded} onToggle={flow.toggle} />
             ) : (
-              <Typography sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
+              <Typography sx={{ p: space.pad, textAlign: 'center', color: 'text.secondary' }}>
                 {t`This profile has no mods to download`}
               </Typography>
             )}

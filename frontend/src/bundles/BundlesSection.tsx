@@ -12,6 +12,7 @@ import { idKey } from '../mods/dependents.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { space } from '../theme/density.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { ApplyBundleToProfile } from './ApplyBundleToProfile.tsx'
@@ -60,8 +61,8 @@ export function BundlesSection({ game, profiles }: { game: string; profiles: Pro
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 1.25,
-          p: 2,
+          gap: space.gap,
+          p: space.pad,
           bgcolor: 'var(--mortar-panel)',
           borderRadius: '8px',
         }}

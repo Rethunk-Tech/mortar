@@ -2,12 +2,13 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Link, Typography } from '@mui/material'
 import type { CollectionInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import { openPage } from '../mods/menu.ts'
+import { space } from '../theme/density.ts'
 import { type InstructionPart, parseInstructions } from './instructions.ts'
 
 const panelSx = {
   mb: 1,
-  px: 1.5,
-  py: 1,
+  px: space.pad,
+  py: space.gap,
   bgcolor: 'var(--mortar-card-hover)',
   borderRadius: '4px',
 }
@@ -59,7 +60,7 @@ function Externals({ items }: { items: NonNullable<CollectionInfo['external']> }
       <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 0.5 }}>
         {t`These come from outside Nexus, so Mortar does not download them.`}
       </Typography>
-      <Box component="ul" sx={{ m: 0, pl: 2.5, fontSize: 13 }}>
+      <Box component="ul" sx={{ m: 0, pl: space.pad, fontSize: 13 }}>
         {items.map((r) => (
           <li key={`${r.name}:${r.url}`}>
             {r.url ? <PageLink part={{ at: 0, text: r.name, url: r.url }} /> : r.name}

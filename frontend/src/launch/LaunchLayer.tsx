@@ -34,6 +34,7 @@ import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { controlsCutout } from '../shell/controlsCutout.ts'
 import { FlatpakGrant } from '../shell/FlatpakGrant.tsx'
 import { SyncOffers } from '../sync/SyncOffers.tsx'
+import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { holdFocus, launchEscHides } from './holdFocus.ts'
@@ -61,7 +62,7 @@ const scrim = {
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  p: 3,
+  p: space.pad,
   clipPath: controlsCutout,
 } as const
 
@@ -116,7 +117,7 @@ function Overlay({ game }: { game: string }) {
       role="dialog"
       aria-modal={true}
       aria-label={t`Launching ${name}`}
-      sx={{ ...scrim, gap: 2 }}
+      sx={{ ...scrim, gap: space.pad }}
     >
       <Box
         aria-hidden={true}
@@ -146,8 +147,8 @@ function Overlay({ game }: { game: string }) {
             maxWidth: 720,
             boxSizing: 'border-box',
             minHeight: VISIBLE_LINES * LINE_HEIGHT + 2 * LOG_PAD,
-            px: 1.75,
-            py: 1.5,
+            px: space.pad,
+            py: space.pad,
             bgcolor: 'var(--mortar-overlay-55)',
             fontFamily: MONO,
             fontSize: 13,
@@ -174,7 +175,7 @@ function Overlay({ game }: { game: string }) {
           })}
         </Box>
       )}
-      <Box sx={{ display: 'flex', gap: 1.25 }}>
+      <Box sx={{ display: 'flex', gap: space.gap }}>
         <Button
           variant="outlined"
           autoFocus={true}
@@ -196,14 +197,14 @@ function Overlay({ game }: { game: string }) {
 function LaunchLine({ line }: { line: string }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ display: 'flex', gap: 1 }}>
+    <Box sx={{ display: 'flex', gap: space.gap }}>
       <Box
         sx={{
           flex: 1,
           minWidth: 0,
           display: 'flex',
           alignItems: 'center',
-          px: 1.5,
+          px: space.pad,
           py: 0.75,
           bgcolor: 'var(--mortar-overlay-45)',
           border: '1px solid var(--mortar-hairline-15)',
@@ -262,11 +263,11 @@ function Failure({ game }: { game: string }) {
       maxWidth="sm"
       slotProps={{ paper: { sx: { bgcolor: 'var(--mortar-panel-solid)' } } }}
     >
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <CircleAlert size={22} color={theme.palette.error.light} aria-hidden={true} />
         {t`${name} did not start`}
       </DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
         <DialogContentText sx={{ whiteSpace: 'pre-wrap', userSelect: 'text' }}>
           {failure.body || t`The game exited before it started. The console has its output.`}
         </DialogContentText>

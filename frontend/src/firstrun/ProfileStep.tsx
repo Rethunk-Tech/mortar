@@ -20,6 +20,7 @@ import { GameModsDialog } from '../profiles/GameModsDialog.tsx'
 import { ImportWizard } from '../profiles/ImportWizard.tsx'
 import { PackImportDialog } from '../profiles/PackImportDialog.tsx'
 import { openImport } from '../share/store.ts'
+import { space } from '../theme/density.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 
 const cardSx = (borderColor: string) => ({
@@ -121,7 +122,7 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
         width: 'min(880px, calc(100% - 32px))',
         display: 'flex',
         flexDirection: 'column',
-        gap: 2,
+        gap: space.pad,
       }}
     >
       <Typography sx={{ textAlign: 'center', fontSize: 24, fontWeight: 700 }}>
@@ -132,7 +133,7 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
           display: 'grid',
           // Two to four cards: a fourth wraps into two rows rather than squeezing every card.
           gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-          gap: 2,
+          gap: space.pad,
         }}
       >
         {gameMods ? (

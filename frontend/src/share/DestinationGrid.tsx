@@ -4,6 +4,7 @@ import { List, Wifi } from 'lucide-react'
 import { type KeyboardEvent, type ReactNode, useRef } from 'react'
 import { Logo } from '../brand/Logo.tsx'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
+import { space } from '../theme/density.ts'
 import { type Destination, type DestinationEntry, gridColumns } from './methods.ts'
 
 const ICON = 32
@@ -81,7 +82,7 @@ export function DestinationGrid({
       sx={{
         display: 'grid',
         gridTemplateColumns: `repeat(${gridColumns(entries.length)}, minmax(0, 1fr))`,
-        gap: 1.5,
+        gap: space.gap,
         p: '24px',
         alignContent: 'start',
         overflowY: 'auto',
@@ -104,8 +105,8 @@ export function DestinationGrid({
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'flex-start',
-                gap: 1,
-                p: 2,
+                gap: space.gap,
+                p: space.pad,
                 textAlign: 'left',
                 borderRadius: '10px',
                 border: '1px solid var(--mortar-hairline-12)',

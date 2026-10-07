@@ -36,7 +36,7 @@ function Chip({
       title={title}
       sx={{
         height: 26,
-        px: 1.25,
+        px: space.gap,
         flexShrink: 0,
         whiteSpace: 'nowrap',
         borderRadius: '13px',

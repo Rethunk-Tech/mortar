@@ -167,7 +167,7 @@ export function ConfigPane() {
       {loadError ? (
         <Alert
           severity="error"
-          sx={{ mx: 2 }}
+          sx={{ mx: space.gutter }}
           action={
             <Button color="inherit" size="small" onClick={reload}>
               {t`Retry`}

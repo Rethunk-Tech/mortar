@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
 import { Check } from 'lucide-react'
+import { space } from '../theme/density.ts'
 
 export function InstallSteps({ steps }: { steps: string[] }) {
   const { t } = useLingui()
@@ -11,7 +12,7 @@ export function InstallSteps({ steps }: { steps: string[] }) {
     bundled: t`Bundled mods added`,
   }
   return (
-    <Box sx={{ display: 'flex', gap: 1.5, flexShrink: 0 }}>
+    <Box sx={{ display: 'flex', gap: space.gap, flexShrink: 0 }}>
       {steps.map((step) => (
         <Box
           key={step}

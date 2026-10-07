@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Tooltip, Typography } from '@mui/material'
 import type { ReactNode, Ref } from 'react'
 import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { space } from '../theme/density.ts'
 import { useDuration, useSmapiStartup } from './startupHooks.ts'
 import { type Finding, type PhaseId, phaseSegments } from './startupView.ts'
 
@@ -18,7 +19,11 @@ function Section({
   children: ReactNode
 }) {
   return (
-    <Box ref={anchor} component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <Box
+      ref={anchor}
+      component="section"
+      sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
+    >
       <Typography component="h3" sx={{ fontSize: 18, fontWeight: 600 }}>
         {title}
       </Typography>
@@ -60,8 +65,8 @@ function FindingLine({ finding, onAct }: { finding: Finding; onAct: (finding: Fi
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 2,
-        px: 1.75,
+        gap: space.pad,
+        px: space.pad,
         py: 0.75,
         borderRadius: '8px',
         bgcolor: 'var(--mortar-overlay-30)',

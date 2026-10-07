@@ -5,6 +5,7 @@ import { ArrowLeft, X } from 'lucide-react'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { space } from '../theme/density.ts'
 import { DestinationGrid } from './DestinationGrid.tsx'
 import { DestinationPanel } from './DestinationPanel.tsx'
 import { type ShownInfo, sharedMods } from './logic.ts'
@@ -72,7 +73,7 @@ export function ShareDialog() {
     >
       {info ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: '20px 24px 16px' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, p: '20px 24px 16px' }}>
             {destination ? (
               <TipIconButton label={t`Back`} onClick={() => setDestination(null)}>
                 <ArrowLeft size={18} />

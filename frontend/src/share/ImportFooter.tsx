@@ -7,6 +7,7 @@ import { useProfileLocked } from '../mods/useLocked.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { Fold } from '../shell/Fold.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { Problems, StatusBar } from './ImportPreview.tsx'
 import type { ShownPreview, Summary } from './logic.ts'
@@ -48,9 +49,9 @@ export function ImportFooter({
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 1.5,
+            gap: space.gap,
             m: '8px 8px 0',
-            p: 1.25,
+            p: space.gap,
             bgcolor: calloutFill('info'),
             border: '1px solid',
             borderColor: calloutLine('info'),
@@ -66,7 +67,10 @@ export function ImportFooter({
       ) : null}
       <StatusBar preview={preview} summary={summary} needsSignIn={needsSignIn} />
       {flow.error ? (
-        <Typography role="alert" sx={{ px: 1, pb: 1, fontSize: 14, color: 'error.light' }}>
+        <Typography
+          role="alert"
+          sx={{ px: space.gap, pb: space.gap, fontSize: 14, color: 'error.light' }}
+        >
           {flow.error}
         </Typography>
       ) : null}
@@ -74,9 +78,9 @@ export function ImportFooter({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 1,
-          px: 1,
-          pb: 1,
+          gap: space.gap,
+          px: space.gap,
+          pb: space.gap,
         }}
       >
         <Button

@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { space } from '../theme/density.ts'
 import { IncludeOptions } from './IncludeOptions.tsx'
 import { type ShownInfo, sharedMods } from './logic.ts'
 import { type IncludeTarget, includedKeys, leftOutCounts } from './methods.ts'
@@ -21,7 +22,7 @@ function ModNames({ info }: { info: ShownInfo }) {
   )
   const shown = names.slice(0, SHOWN_NAMES)
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
         {info.groups.map((g) => {
           const { count } = g
@@ -41,7 +42,7 @@ function ModNames({ info }: { info: ShownInfo }) {
             key={m.key}
             component="span"
             sx={{
-              px: 1.25,
+              px: space.gap,
               py: 0.5,
               borderRadius: '4px',
               bgcolor: 'var(--mortar-card-hover)',
@@ -53,7 +54,10 @@ function ModNames({ info }: { info: ShownInfo }) {
           </Box>
         ))}
         {names.length > shown.length ? (
-          <Box component="span" sx={{ px: 1.25, py: 0.5, fontSize: 13, color: 'text.secondary' }}>
+          <Box
+            component="span"
+            sx={{ px: space.gap, py: 0.5, fontSize: 13, color: 'text.secondary' }}
+          >
             {t`and ${{ count: names.length - shown.length }} more`}
           </Box>
         ) : null}
@@ -119,7 +123,7 @@ export function Included({
   const warning = [local > 0 ? archive : '', other > 0 ? rest : ''].filter(Boolean).join(' · ')
   const link = { minWidth: 0, p: 0, ml: 1, fontSize: 14 }
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       <Typography sx={{ fontWeight: 600 }}>{t`Included`}</Typography>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Typography sx={{ fontSize: 14 }}>{line}</Typography>
@@ -143,7 +147,7 @@ export function Included({
       {showMods ? <ModNames info={info} /> : null}
       {changing ? <IncludeOptions value={include} onChange={onInclude} target={target} /> : null}
       {info.leftOut.length > 0 ? (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
           <Box sx={{ display: 'flex', color: 'warning.main' }}>
             <TriangleAlert size={16} />
           </Box>
@@ -158,11 +162,16 @@ export function Included({
           {info.leftOut.map((o) => (
             <Box
               key={`${o.name}-${o.reason}`}
-              sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 13 }}
+              sx={{ display: 'flex', alignItems: 'center', gap: space.gap, fontSize: 13 }}
             >
               <Box
                 component="span"
-                sx={{ px: 1, py: '2px', borderRadius: '4px', bgcolor: 'var(--mortar-overlay-30)' }}
+                sx={{
+                  px: space.gap,
+                  py: '2px',
+                  borderRadius: '4px',
+                  bgcolor: 'var(--mortar-overlay-30)',
+                }}
               >
                 {o.name}
               </Box>

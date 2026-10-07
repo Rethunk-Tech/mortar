@@ -124,7 +124,7 @@ function TrackedNotInProfile({ profile }: { profile: Profile }) {
     <Accordion
       disableGutters={true}
       sx={{
-        mx: 2,
+        mx: space.gutter,
         mb: 1,
         bgcolor: 'transparent',
         boxShadow: 'none',

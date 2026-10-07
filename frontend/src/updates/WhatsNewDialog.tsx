@@ -20,6 +20,7 @@ import {
 import { openPage } from '../mods/menu.ts'
 import { PageLink } from '../share/CollectionNotes.tsx'
 import { parseInstructions } from '../share/instructions.ts'
+import { space } from '../theme/density.ts'
 import { showWhatsNew, useWhatsNew } from './whatsNew.ts'
 
 const HEADING = /^#+\s*/
@@ -74,7 +75,7 @@ function Notes({ text }: { text: string }) {
   }
   return groups.map((group) =>
     isBullet(group[0] as Line) ? (
-      <Box key={group[0]?.at} component="ul" sx={{ m: 0, pl: 2.5 }}>
+      <Box key={group[0]?.at} component="ul" sx={{ m: 0, pl: space.pad }}>
         {group.map((line) => (
           <NoteLine key={line.at} line={line} />
         ))}

@@ -6,6 +6,7 @@ import { ChevronDown } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { formatCount } from '../mods/nexusFormat.ts'
+import { space } from '../theme/density.ts'
 import { countByLevel, LEVELS } from './filter.ts'
 import { levelSwatch } from './levelPalette.ts'
 import { useLevelNames, useShownEntries } from './logHooks.ts'
@@ -54,7 +55,7 @@ export function LevelToggles() {
               alignItems: 'center',
               gap: '6px',
               height: 28,
-              px: 1.25,
+              px: space.gap,
               borderRadius: '6px',
               fontSize: 13,
               whiteSpace: 'nowrap',

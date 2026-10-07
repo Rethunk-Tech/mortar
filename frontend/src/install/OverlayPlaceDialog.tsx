@@ -14,6 +14,7 @@ import {
 import { Folder } from 'lucide-react'
 import { useState } from 'react'
 import type { RemapNode } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { chooseOverlay } from './overlayPlace.ts'
 import { useInstall } from './store.ts'
@@ -63,7 +64,7 @@ function FolderPick({
             key={o.path || '.'}
             selected={selected === o.path}
             onClick={() => onSelect(o.path)}
-            sx={{ py: 0.25, pl: 1 + o.depth * 2 }}
+            sx={{ py: 0.25, pl: space.gap + o.depth * 2 }}
           >
             <Box component={Folder} size={14} strokeWidth={1.75} sx={{ mr: 1, flexShrink: 0 }} />
             <ListItemText primary={o.name} slotProps={{ primary: { noWrap: true } }} />
@@ -97,7 +98,13 @@ export function OverlayPlaceDialog() {
         <Typography variant="body2" sx={{ mb: 1.5 }}>
           {t`This optional file has no manifest and replaces files of ${overlay.baseLabel}. Mortar could not tell where they go: pick the folder to take from it and the main mod folder it goes into.`}
         </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 2 }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+            gap: space.pad,
+          }}
+        >
           <FolderPick
             label={t`From this file`}
             root={t`Whole file`}

@@ -19,6 +19,7 @@ import type {
 import { modsLabel } from '../i18n/counts.ts'
 import { openPage } from '../mods/menu.ts'
 import { LetterTile } from '../mods/parts.tsx'
+import { space } from '../theme/density.ts'
 import {
   carriedBy,
   isModState,
@@ -88,9 +89,9 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1,
+        gap: space.gap,
         height: 52,
-        pr: 1,
+        pr: space.gap,
         minWidth: 0,
         bgcolor: 'var(--mortar-card-hover)',
         borderRadius: '3px',
@@ -181,9 +182,9 @@ function ProblemRow({
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1.25,
+        gap: space.gap,
         height: 44,
-        px: 1.5,
+        px: space.pad,
         minWidth: 0,
         bgcolor: calloutFill(tone),
         border: '1px solid',
@@ -238,7 +239,7 @@ function Pill({
         display: 'inline-flex',
         alignItems: 'center',
         gap: 0.75,
-        px: 1.25,
+        px: space.gap,
         py: 0.5,
         borderRadius: '12px',
         fontSize: 13,
@@ -384,7 +385,7 @@ export function StatusBar({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 1.25,
+          gap: space.gap,
           fontSize: 16,
           color: SHARE_CARD.accent,
           whiteSpace: 'nowrap',
@@ -409,7 +410,7 @@ export function StatusBar({
                 other: '# settings files were left out (too large):',
               })}
             </Typography>
-            <Box component="ul" sx={{ m: 0, pl: 2.5, fontSize: 13, color: SHARE_CARD.muted }}>
+            <Box component="ul" sx={{ m: 0, pl: space.pad, fontSize: 13, color: SHARE_CARD.muted }}>
               {skippedSettings.map((p) => (
                 <li key={p}>{p}</li>
               ))}
@@ -418,7 +419,7 @@ export function StatusBar({
         ) : null}
       </Box>
       <Box sx={{ flex: 1 }} />
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+      <Box sx={{ display: 'flex', gap: space.gap, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         {counts.map((s) => (
           <Pill key={s} {...SHARE_CARD.chip[s]}>
             <CountLabel state={s} count={summary.counts[s]} />

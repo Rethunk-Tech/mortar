@@ -15,6 +15,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { FomodImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type FomodSession, useFomod, watchFomodQueue } from './store.ts'
 
@@ -184,7 +185,7 @@ function FomodWizard({ session }: { session: FomodSession }) {
           </Typography>
         ) : null}
         {step ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
             <Typography variant="subtitle2">
               {t`Step ${index + 1} of ${steps.length}: ${step.name}`}
             </Typography>
@@ -212,7 +213,7 @@ function FomodWizard({ session }: { session: FomodSession }) {
                   </DisabledReason>
                 )
                 return (
-                  <Box key={p.name} sx={{ pl: 1 }}>
+                  <Box key={p.name} sx={{ pl: space.gap }}>
                     <FormControlLabel control={control} label={p.name} />
                     {p.image ? (
                       <PluginImage game={session.game} itemKey={session.key} rel={p.image} />

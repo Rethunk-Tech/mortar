@@ -7,6 +7,7 @@ import {
   SteamAccess,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { copyText } from '../share/copyText.ts'
+import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -33,17 +34,25 @@ export function FlatpakGrant() {
   }
   return (
     <>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, px: 2.5, py: 1.5 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: space.gap,
+          px: space.pad,
+          py: space.pad,
+        }}
+      >
         <Box sx={{ fontSize: 16 }}>{t`Flatpak Steam cannot read your mods`}</Box>
         <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
           {t`Grant the Steam sandbox read access to Mortar's data folder, or the game will not see this profile's mods.`}
         </Box>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+        <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-start' }}>
           <Box
             sx={{
               flex: 1,
               minWidth: 0,
-              px: 1.5,
+              px: space.pad,
               py: 0.75,
               bgcolor: 'var(--mortar-overlay-45)',
               border: '1px solid var(--mortar-hairline-15)',

@@ -19,7 +19,7 @@ export function UpdateBar() {
   const [first] = visibleUpdates(updates, profile)
   if (count === 0) {
     return updates?.unknown ? (
-      <Typography sx={{ mx: 2, mt: 1, fontSize: 12, color: 'text.secondary' }}>
+      <Typography sx={{ mx: space.gutter, mt: 1, fontSize: 12, color: 'text.secondary' }}>
         {t`Updates are unknown: the update service could not be reached.`}
       </Typography>
     ) : null
@@ -27,7 +27,7 @@ export function UpdateBar() {
   return (
     <Box
       sx={{
-        mx: 2,
+        mx: space.gutter,
         mt: 1.25,
         minHeight: 38,
         flexShrink: 0,

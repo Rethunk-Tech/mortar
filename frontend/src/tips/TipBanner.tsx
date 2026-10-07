@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 import { SetTipsSeen } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useSettings } from '../settings/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { type TipId, tipVisible } from './visible.ts'
 
@@ -20,10 +21,10 @@ export function TipBanner({ tip, children }: { tip: TipId; children: ReactNode }
       sx={{
         display: 'flex',
         alignItems: 'flex-start',
-        gap: 1,
-        px: 1.5,
-        py: 1,
-        mx: 2,
+        gap: space.gap,
+        px: space.pad,
+        py: space.gap,
+        mx: space.gutter,
         mt: 1.25,
         bgcolor: 'var(--mortar-panel-solid)',
         border: '1px solid var(--mortar-hairline-12)',

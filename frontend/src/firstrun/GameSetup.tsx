@@ -17,6 +17,7 @@ import { useLoader } from '../loader/store.ts'
 import { type GameId, useNav } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
+import { space } from '../theme/density.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { FindStep } from './FindStep.tsx'
 import { LoaderStep } from './LoaderStep.tsx'
@@ -165,7 +166,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
         alignItems: 'center',
         gap: '20px',
         pt: '34px',
-        pb: 3,
+        pb: space.pad,
       }}
     >
       <Box sx={{ alignSelf: 'flex-start', ml: 2, mt: -2 }}>

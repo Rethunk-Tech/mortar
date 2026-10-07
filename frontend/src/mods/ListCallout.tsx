@@ -20,7 +20,7 @@ export function ListCallout({
       aria-label={text}
       action={actions}
       sx={{
-        mx: 2,
+        mx: space.gutter,
         mt: 1.25,
         flexShrink: 0,
         flexWrap: 'wrap',

@@ -22,7 +22,7 @@ function MeasureBanner({ onCancel }: { onCancel: () => void }) {
       severity="info"
       icon={<Gauge size={18} aria-hidden={true} />}
       action={
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center' }}>
           <Button size="small" variant="contained" disabled={running} onClick={playOpenProfile}>
             {t`Play now`}
           </Button>

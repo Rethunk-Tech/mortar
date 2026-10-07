@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { ClipboardPaste, FolderOpen } from 'lucide-react'
 import { useCurrentGame } from '../nav/currentGame.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import type { ImportFlow } from './useImportFlow.ts'
 
@@ -11,7 +12,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
   const game = useCurrentGame()
   const canPreview = !flow.busy && flow.text.trim() !== ''
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: '20px 18px' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, p: '20px 18px' }}>
       {flow.tab === 'file' ? (
         <>
           <Typography sx={{ fontSize: 14 }}>
@@ -43,7 +44,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
                 flow.previewLink(flow.text).catch(reportUnexpected)
               }
             }}
-            sx={{ display: 'flex', gap: 1 }}
+            sx={{ display: 'flex', gap: space.gap }}
           >
             <TextField
               size="small"

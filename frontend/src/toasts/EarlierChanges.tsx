@@ -8,6 +8,7 @@ import { historyChangeSummary } from '../profiles/historyCounts.ts'
 import { historyLabel } from '../profiles/historyLabel.ts'
 import type { useHistoryPanel } from '../profiles/useHistoryPanel.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { space } from '../theme/density.ts'
 import { laterEvents, undoTarget } from './history.ts'
 
 type Panel = ReturnType<typeof useHistoryPanel>
@@ -29,8 +30,10 @@ function EarlierRow({
   const details = panel.items[ev.id] ?? []
   const trimmed = ev.kind === 'trimmed'
   return (
-    <Box sx={{ px: 1.5, py: 1, borderBottom: '1px solid var(--mortar-hairline-faint)' }}>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+    <Box
+      sx={{ px: space.pad, py: space.gap, borderBottom: '1px solid var(--mortar-hairline-faint)' }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: space.gap }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{label}</Typography>
           <Typography sx={{ fontSize: 11, color: 'text.secondary' }}>
@@ -55,7 +58,7 @@ function EarlierRow({
         )}
       </Box>
       <Collapse in={diff} unmountOnExit={true}>
-        <Box component="ul" sx={{ m: 0, mt: 0.5, pl: 2, fontSize: 12 }}>
+        <Box component="ul" sx={{ m: 0, mt: 0.5, pl: space.pad, fontSize: 12 }}>
           {details.map((item) => (
             <li key={`${item.kind}:${item.mod}:${item.file ?? ''}`}>{item.detail}</li>
           ))}
@@ -79,7 +82,7 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
   }
   if (panel.events.length === 0) {
     return (
-      <Typography sx={{ p: 1.75, fontSize: 13, color: 'text.secondary' }}>
+      <Typography sx={{ p: space.pad, fontSize: 13, color: 'text.secondary' }}>
         {t`No changes yet`}
       </Typography>
     )
@@ -122,7 +125,7 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
         ))}
       </ConfirmDialog>
       {panel.error === '' ? null : (
-        <Typography sx={{ px: 1.5, py: 1, fontSize: 13, color: 'error.main' }}>
+        <Typography sx={{ px: space.pad, py: space.gap, fontSize: 13, color: 'error.main' }}>
           {panel.error}
         </Typography>
       )}

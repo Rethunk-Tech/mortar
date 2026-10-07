@@ -14,6 +14,7 @@ import {
   Diff as ReadDiff,
   Resolve,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/syncsvc/service.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { diffIsStale, revisionToAnswer, type ShownDiff } from './revision.ts'
 import { useSync } from './store.ts'
@@ -46,7 +47,7 @@ function OfferRow({ offer }: { offer: Offer }) {
       .finally(() => setBusy(false))
   }
   return (
-    <Box sx={{ py: 1.25, borderBottom: '1px solid var(--mortar-hairline)' }}>
+    <Box sx={{ py: space.gap, borderBottom: '1px solid var(--mortar-hairline)' }}>
       <Typography sx={{ fontWeight: 600 }}>
         {offer.conflict
           ? t`${offer.name} was changed on ${offer.machine} and on this machine`
@@ -57,7 +58,7 @@ function OfferRow({ offer }: { offer: Offer }) {
           {t`Both sides changed it, so Mortar will not merge them. Pick one side.`}
         </Typography>
       ) : null}
-      <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', gap: space.gap, mt: 1, flexWrap: 'wrap' }}>
         <Button variant="contained" disabled={busy} onClick={() => answer('theirs')}>
           {offer.conflict ? t`Use theirs` : t`Apply`}
         </Button>
@@ -113,7 +114,7 @@ export function SyncOffers() {
         {stalled.map((st) => (
           <Box
             key={`stalled-${st.game}/${st.remote}`}
-            sx={{ py: 1.25, borderBottom: '1px solid var(--mortar-hairline)' }}
+            sx={{ py: space.gap, borderBottom: '1px solid var(--mortar-hairline)' }}
           >
             <Typography sx={{ fontWeight: 600 }}>{t`${st.name} is not syncing yet`}</Typography>
             <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>

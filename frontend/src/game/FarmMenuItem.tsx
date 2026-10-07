@@ -22,6 +22,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { space } from '../theme/density.ts'
 import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -92,7 +93,7 @@ export function FarmDialog({
     <Dialog open={open} onClose={done} fullWidth={true} maxWidth="sm">
       <DialogTitle>{t`Multiplayer mod list`}</DialogTitle>
       <DialogContent dividers={true}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           <Button disabled={busy} sx={{ alignSelf: 'flex-start' }} onClick={copyList}>
             {t`Copy this profile's list`}
           </Button>
@@ -111,7 +112,7 @@ export function FarmDialog({
           />
           {rows?.length === 0 ? <Typography>{t`This profile matches ${host}.`}</Typography> : null}
           {rows?.map((row) => (
-            <Box key={row.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box key={row.id} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
               <Typography sx={{ flex: 1, fontSize: 14 }}>
                 {row.name}
                 <Typography component="span" color="text.secondary" sx={{ fontSize: 13, ml: 1 }}>

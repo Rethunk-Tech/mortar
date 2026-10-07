@@ -21,6 +21,7 @@ import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { addRecordedMods, enableRecordedMods } from '../saves/recordedActions.ts'
+import { space } from '../theme/density.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -147,7 +148,7 @@ export function PrePlayDialog() {
           label={t`Don't check before Play`}
         />
       </DialogContent>
-      <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
+      <DialogActions sx={{ flexWrap: 'wrap', gap: space.gap }}>
         <Button onClick={() => persistThen(quit)}>{t`Cancel`}</Button>
         <Button onClick={() => persistThen(openProblems)}>{t`Open Problems`}</Button>
         {lastProfile?.switchProfileId ? (

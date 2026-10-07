@@ -6,6 +6,7 @@ import type { Bundle } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { RemoveMods } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/service.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 
 const ICON_SIZE = 15
@@ -33,7 +34,7 @@ export function BundleRow({
   const mods = bundle.mods ?? []
   const modCount = modsLabel(mods.length)
   return (
-    <Box sx={{ p: 1.25, bgcolor: 'var(--mortar-raised)', borderRadius: '6px' }}>
+    <Box sx={{ p: space.gap, bgcolor: 'var(--mortar-raised)', borderRadius: '6px' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
         <TipIconButton
           label={open ? t`Hide mods of ${bundle.name}` : t`Show mods of ${bundle.name}`}

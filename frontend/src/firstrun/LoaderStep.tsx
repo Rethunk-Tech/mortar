@@ -17,6 +17,7 @@ import type { GameId } from '../nav/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
+import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { type InlineError, inlineError, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -58,7 +59,7 @@ function InstallLog({ steps, installing }: { steps: string[]; installing: boolea
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 1,
+              gap: space.gap,
               color: done ? 'success.light' : 'var(--mortar-ink)',
             }}
           >
@@ -110,7 +111,7 @@ function LaunchLine({
       <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>
         {t`On Windows, Steam starts the game without ${loader} unless told to. With Steam closed, Mortar can set that up; or in Steam, right-click ${gameName}, choose Properties and paste this line into Launch Options:`}
       </Typography>
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: 'flex', gap: space.gap }}>
         <Box
           sx={{
             flex: 1,
@@ -118,7 +119,7 @@ function LaunchLine({
             display: 'flex',
             alignItems: 'center',
             minHeight: 44,
-            px: 1.5,
+            px: space.pad,
             py: 0.75,
             bgcolor: 'var(--mortar-overlay-45)',
             border: '1px solid var(--mortar-hairline-15)',
@@ -151,9 +152,9 @@ function LaunchLine({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 1.25,
-          px: 1.5,
-          py: 1.25,
+          gap: space.gap,
+          px: space.pad,
+          py: space.gap,
           fontSize: 14,
           borderRadius: '6px',
           border: '1px solid',
@@ -170,7 +171,9 @@ function LaunchLine({
           ? t`Mortar found it in Steam's settings.`
           : t`Mortar checks Steam's settings for it: not found yet.`}
       </Box>
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.25 }}>
+      <Box
+        sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: space.gap }}
+      >
         <Button
           variant="outlined"
           color="inherit"
@@ -253,7 +256,9 @@ function InstallFailed({
           {detail}
         </Typography>
       ) : null}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.25 }}>
+      <Box
+        sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: space.gap }}
+      >
         <Button variant="outlined" color="inherit" disabled={pending} onClick={onSkip} size="large">
           {t`Skip for now`}
         </Button>
@@ -362,7 +367,7 @@ export function LoaderStep({
     const showLaunch = windows && !launchReady
     return (
       <Panel width={720}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, fontSize: 15 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, fontSize: 15 }}>
           <Check size={18} color={ok} />
           {t`${loader} ${{ version: status.version }} installed`}
         </Box>

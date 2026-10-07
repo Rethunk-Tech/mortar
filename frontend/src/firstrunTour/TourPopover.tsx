@@ -4,6 +4,7 @@ import { useEffect, useId, useRef } from 'react'
 import { mergeBindings } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { controlsCutout } from '../shell/controlsCutout.ts'
+import { space } from '../theme/density.ts'
 import { tourShownSteps } from './anchors.ts'
 import { type TourRect, tourOnLastStep, tourStepBack, tourStepNext } from './logic.ts'
 import { TOUR_STEPS } from './steps.ts'
@@ -152,7 +153,7 @@ function TourPopover({
               elevation={8}
               sx={{
                 maxWidth: 320,
-                p: 2,
+                p: space.pad,
                 border: '1px solid var(--mortar-hairline-12)',
                 bgcolor: 'var(--mortar-panel-solid)',
               }}

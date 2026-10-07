@@ -20,6 +20,7 @@ import type {
 import { cmpText } from '../mods/cmpText.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { space } from '../theme/density.ts'
 import { formatTiming } from './formatTiming.ts'
 import { CompareTable, ReportSelect } from './PerformanceComparison.tsx'
 import type { PanelBusy, SortColumn, SortDirection } from './usePerformancePanel.ts'
@@ -168,9 +169,9 @@ function PanelHeader(props: HeaderProps) {
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
-        gap: 1,
-        px: 1.5,
-        py: 1,
+        gap: space.gap,
+        px: space.pad,
+        py: space.gap,
       }}
     >
       <Typography sx={{ flex: '1 1 auto', fontSize: 13, fontWeight: 600 }}>
@@ -238,7 +239,7 @@ function ReportBody({
   return rows.length > 0 ? (
     <ReportTable rows={rows} sort={sort} onSort={onSort} />
   ) : (
-    <Typography sx={{ px: 1.5, pb: 1, color: 'text.secondary', fontSize: 12 }}>
+    <Typography sx={{ px: space.pad, pb: space.gap, color: 'text.secondary', fontSize: 12 }}>
       {reportLines.length > 0
         ? t`No performance data was returned.`
         : t`Start measuring to view a report.`}
@@ -267,7 +268,7 @@ export function PerformanceEmpty({
       icon={<Gauge size={40} aria-hidden={true} />}
       title={t`See which mods slow the game`}
       action={
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: space.gap }}>
           <DisabledReason title={t`Play this profile to measure.`} disabled={!running}>
             <Button
               variant="contained"
@@ -319,7 +320,7 @@ export function MeasuredPanel({
     <Paper
       variant="outlined"
       sx={{
-        mx: 2,
+        mx: space.gutter,
         mb: 1.5,
         flexShrink: 0,
         overflow: 'hidden',

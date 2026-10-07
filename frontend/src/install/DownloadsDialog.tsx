@@ -30,6 +30,7 @@ import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { useFolderEvent } from '../shell/useFolderEvent.ts'
+import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportError } from '../toasts/report.ts'
 import { ArchivePreview } from './ArchivePreview.tsx'
 import { listArchives, useDownloadsDialog } from './downloadsDialog.ts'
@@ -80,7 +81,9 @@ function FolderLine({ open, onClose }: { open: boolean; onClose: () => void }) {
     return null
   }
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 3, pb: 1 }}>
+    <Box
+      sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: space.pad, pb: space.gap }}
+    >
       <Typography
         variant="body2"
         noWrap={true}
@@ -191,10 +194,14 @@ function Body({
   }
   return (
     <>
-      <Box sx={{ width: 340, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box
+        sx={{ width: 340, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: space.gap }}
+      >
         <SearchField label={t`Search archives`} value={query} onChange={onQuery} fullWidth={true} />
         {shown.length === 0 ? (
-          <Typography sx={{ color: 'text.secondary', px: 1 }}>{t`No archives match`}</Typography>
+          <Typography
+            sx={{ color: 'text.secondary', px: space.gap }}
+          >{t`No archives match`}</Typography>
         ) : (
           <ArchiveRows archives={shown} selected={selected} onSelect={onSelect} />
         )}
@@ -203,7 +210,7 @@ function Body({
         {selected ? (
           <ArchivePreview path={selected} />
         ) : (
-          <Typography sx={{ color: 'text.secondary', p: 1 }}>
+          <Typography sx={{ color: 'text.secondary', p: space.gap }}>
             {t`Choose an archive to see what is inside`}
           </Typography>
         )}
@@ -234,7 +241,12 @@ export function DownloadsDialog() {
       <DialogTitle>{t`From the downloads folder`}</DialogTitle>
       <FolderLine open={open} onClose={close} />
       <DialogContent
-        sx={{ width: 'min(900px, calc(100vw - 96px))', height: 460, display: 'flex', gap: 2 }}
+        sx={{
+          width: 'min(900px, calc(100vw - 96px))',
+          height: 460,
+          display: 'flex',
+          gap: space.pad,
+        }}
       >
         <Body
           archives={archives}

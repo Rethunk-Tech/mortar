@@ -16,6 +16,7 @@ import { UpdateEverywhere } from '../../bindings/github.com/Rethunk-Tech/mortar/
 import { useTab } from '../game/tab.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -67,7 +68,7 @@ function ProfileRows({
   close: () => void
 }) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       {(report.profiles ?? []).map((row) => (
         <Box key={row.profile}>
           <Link

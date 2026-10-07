@@ -7,6 +7,7 @@ import { ArchivePreview as ReadArchive } from '../../bindings/github.com/Rethunk
 import { formatBytes } from '../i18n/bytes.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { space } from '../theme/density.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { groupEntries, type TreeRow } from './archiveTree.ts'
 
@@ -96,8 +97,8 @@ export function ArchivePreview({ path }: { path: string }) {
     return <LoadingRow>{t`Reading the archive…`}</LoadingRow>
   }
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, gap: 1 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, gap: space.gap }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
           {t`${formatBytes(preview.totalSize)} in total`}
         </Typography>

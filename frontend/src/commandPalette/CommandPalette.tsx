@@ -39,6 +39,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { shortcutLabels } from '../settings/shortcutLabels.ts'
 import { mergeBindings } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
+import { space } from '../theme/density.ts'
 import type { PaletteItem } from './match.ts'
 import { runPaletteItem } from './run.ts'
 import type { PaletteRow, PaletteSection } from './sections.ts'
@@ -103,7 +104,7 @@ function PaletteRows({
     <List
       id={PALETTE_LIST_ID}
       dense={true}
-      sx={{ height: '60vh', overflow: 'auto', py: 1 }}
+      sx={{ height: '60vh', overflow: 'auto', py: space.gap }}
       role="listbox"
       aria-label={t`Results`}
     >
@@ -113,7 +114,7 @@ function PaletteRows({
             <Box
               role="presentation"
               sx={{
-                px: 2,
+                px: space.pad,
                 pt: at === 0 ? 0 : 1,
                 pb: 0.5,
                 fontSize: 11,
@@ -271,7 +272,7 @@ function PaletteBody({ searchRef }: { searchRef: RefObject<HTMLInputElement | nu
             'aria-activedescendant': current ? optionId(current.id) : undefined,
           },
         }}
-        sx={{ px: 2, pt: 2, '& .MuiInputBase-root': { userSelect: 'text' } }}
+        sx={{ px: space.pad, pt: space.pad, '& .MuiInputBase-root': { userSelect: 'text' } }}
       />
       <PaletteRows shown={rows} currentId={current?.id} onPick={pick} />
     </>

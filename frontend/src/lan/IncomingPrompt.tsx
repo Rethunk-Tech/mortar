@@ -31,6 +31,7 @@ import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
+import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useIncomingShares } from './incoming.ts'
 import { choose, lanOriginOf, mappedProfile } from './resume.ts'
@@ -66,7 +67,7 @@ function CopyingDialog({
     <Dialog open={open}>
       <DialogTitle>{t`Copying mod files`}</DialogTitle>
       <DialogContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.pad }}>
           <CircularProgress size={24} />
           <Typography>
             {progress

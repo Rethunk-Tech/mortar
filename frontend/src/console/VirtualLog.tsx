@@ -3,6 +3,7 @@ import { Box, Link } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
+import { space } from '../theme/density.ts'
 import {
   type ConsoleLink,
   type ConsoleLinkRoots,
@@ -109,7 +110,7 @@ function Row({
           : '4px 56px 150px minmax(0, 1fr)',
         gap: '10px',
         alignItems: 'center',
-        pr: 1.5,
+        pr: space.pad,
         bgcolor: look.row,
       }}
     >
