@@ -1,7 +1,6 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Collapse, Typography } from '@mui/material'
-import { ChevronDown, History } from 'lucide-react'
+import { Box, Button, Typography } from '@mui/material'
+import { History, List } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
   Runs,
@@ -14,6 +13,9 @@ import {
   type StartupRegression,
   startupRegressions,
 } from '../console/startupView.ts'
+import { HomePanel } from '../game/HomePanel.tsx'
+import { changesView } from '../game/homeView.ts'
+import { HistoryDialog } from './HistoryDialog.tsx'
 import { diffLines } from './historyDiff.ts'
 import { useProfiles } from './store.ts'
 
@@ -49,11 +51,10 @@ function useStartupRegressions(
   return regressions
 }
 
-export function SinceLastRun({ game, profileId }: { game: string; profileId: string }) {
+function useSinceLastRun(game: string, profileId: string): string[] {
   const { t, i18n } = useLingui()
   const updated = useProfiles((s) => s.profiles.find((p) => p.id === profileId)?.updated ?? '')
   const [diff, setDiff] = useState<HistoryDiff | null>(null)
-  const [open, setOpen] = useState(false)
   useEffect(() => {
     const key = `${game}\0${profileId}\0${updated}`
     if (changesSinceCache.has(key)) {
@@ -87,81 +88,43 @@ export function SinceLastRun({ game, profileId }: { game: string; profileId: str
     ),
     ...(diff ? diffLines(diff) : []),
   ]
+  return lines
+}
+
+// The latest changes as a short list; the full list and the history open on demand so a large change set never fills the page.
+export function SinceLastRun({ game, profileId }: { game: string; profileId: string }) {
+  const { t } = useLingui()
+  const lines = useSinceLastRun(game, profileId)
+  const [expanded, setExpanded] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
   if (lines.length === 0) {
     return null
   }
-  // One row like the Problems bar; the full list opens on demand so a large change set never hides the page.
+  const { shown, canExpand } = changesView(lines, expanded)
   return (
-    <Box sx={{ mx: 2, mt: 1.25, flexShrink: 0 }}>
-      <ButtonBase
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        sx={{
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.25,
-          height: 38,
-          pl: 1.5,
-          pr: 1,
-          textAlign: 'left',
-          bgcolor: (theme) =>
-            theme.palette.mode === 'light'
-              ? theme.palette.background.paper
-              : 'var(--mortar-hairline-faint)',
-          border: '1px solid var(--mortar-hairline-16)',
-          borderRadius: '6px',
-        }}
-      >
-        <Box component="span" sx={{ display: 'flex', flexShrink: 0, color: 'text.secondary' }}>
-          <History size={16} aria-hidden={true} />
-        </Box>
-        <Typography component="span" sx={{ flexShrink: 0, fontSize: 14, fontWeight: 600 }}>
-          {plural(lines.length, {
-            one: 'Since last run: # change',
-            other: 'Since last run: # changes',
-          })}
-        </Typography>
-        <Typography
-          title={lines[0]}
-          component="span"
-          noWrap={true}
-          sx={{ flex: 1, minWidth: 0, fontSize: 14, color: 'text.secondary' }}
-        >
-          {lines[0]}
-        </Typography>
-        <Box
-          component="span"
-          sx={{
-            display: 'flex',
-            flexShrink: 0,
-            transition: 'transform 150ms',
-            transform: open ? 'rotate(180deg)' : 'none',
-          }}
-        >
-          <ChevronDown size={16} aria-hidden={true} />
-        </Box>
-      </ButtonBase>
-      <Collapse in={open} unmountOnExit={true}>
-        <Box
-          component="ul"
-          aria-label={t`Changes since last run`}
-          sx={{
-            m: 0,
-            mt: 0.5,
-            py: 1,
-            pl: 4,
-            pr: 1.5,
-            fontSize: 13,
-            maxHeight: 240,
-            overflowY: 'auto',
-          }}
-        >
-          {lines.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </Box>
-      </Collapse>
-    </Box>
+    <HomePanel title={t`Changes since last run`} span={2}>
+      <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', width: '100%' }}>
+        {shown.map((line) => (
+          <Typography key={line} component="li" noWrap={true} title={line}>
+            {line}
+          </Typography>
+        ))}
+      </Box>
+      <Box sx={{ display: 'flex', gap: 1 }}>
+        {canExpand ? (
+          <Button size="small" startIcon={<List size={14} />} onClick={() => setExpanded(true)}>
+            {t`Show all`}
+          </Button>
+        ) : null}
+        <Button size="small" startIcon={<History size={14} />} onClick={() => setHistoryOpen(true)}>
+          {t`History…`}
+        </Button>
+      </Box>
+      <HistoryDialog
+        profileId={profileId}
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+      />
+    </HomePanel>
   )
 }

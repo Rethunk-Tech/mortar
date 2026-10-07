@@ -98,3 +98,5 @@ export function TemplateMenuItems({ profile, close }: Props) {
     <ManageTemplatesMenuItem key="manage-templates" close={close} />,
   ]
 }
+
+export { SaveTemplateMenuItem }

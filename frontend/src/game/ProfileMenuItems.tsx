@@ -30,7 +30,7 @@ import { AddResult } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import { bundleApplied } from '../bundles/applied.ts'
 import { ApplyBundleDialog } from '../bundles/dialogs.tsx'
 import { SendDialog } from '../lan/SendDialog.tsx'
-import { CompareDialog, PickCompareDialog } from '../profiles/CompareDialog.tsx'
+import { CompareDialog } from '../profiles/CompareDialog.tsx'
 import { HealthDialog } from '../profiles/HealthDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
@@ -41,8 +41,6 @@ import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BackupMenuItems } from './BackupMenuItems.tsx'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
-import { ExportCodeMenuItem, ExportModpackMenuItem } from './ExportCodeMenuItem.tsx'
-import { ExportCollectionMenuItem } from './ExportCollectionMenuItem.tsx'
 import { FarmMenuItem } from './FarmMenuItem.tsx'
 import { TemplateMenuItems } from './TemplateMenuItems.tsx'
 
@@ -119,7 +117,7 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
     <>
       <ProfileMenuItem
         icon={<SquareArrowOutUpRight size={16} />}
-        label={t`Add a shortcut that plays this profile`}
+        label={t`Add a desktop shortcut`}
         onClick={() => {
           close()
           const g = currentGame
@@ -296,8 +294,6 @@ function CoverMenuItems({
 function ProfileDialogs({
   profile,
   currentGame,
-  compareFrom,
-  setCompareFrom,
   compare,
   setCompare,
   deleting,
@@ -307,8 +303,6 @@ function ProfileDialogs({
 }: {
   profile: Profile
   currentGame: { id: string } | null
-  compareFrom: Profile | null
-  setCompareFrom: (profile: Profile | null) => void
   compare: { a: Profile; b: Profile } | null
   setCompare: (value: { a: Profile; b: Profile } | null) => void
   deleting: boolean
@@ -318,16 +312,6 @@ function ProfileDialogs({
 }) {
   return (
     <>
-      {compareFrom === null ? null : (
-        <PickCompareDialog
-          from={compareFrom}
-          onPicked={(other) => {
-            setCompare({ a: compareFrom, b: other })
-            setCompareFrom(null)
-          }}
-          onClose={() => setCompareFrom(null)}
-        />
-      )}
       <CompareDialog
         a={compare?.a ?? null}
         b={compare?.b ?? null}
@@ -350,9 +334,6 @@ function ProfileDialogs({
 function ShareMenuItems({ profile, close }: { profile: Profile; close: () => void }) {
   return [
     <SendProfileMenuItem key="send" profile={profile} close={close} />,
-    <ExportCollectionMenuItem key="export-collection" profile={profile} close={close} />,
-    <ExportCodeMenuItem key="export-code" profile={profile} close={close} />,
-    <ExportModpackMenuItem key="export-modpack" profile={profile} close={close} />,
     <FarmMenuItem key="farm" profile={profile} close={close} />,
     <BackupMenuItems key="backup" profile={profile} close={close} />,
   ]
@@ -371,7 +352,6 @@ function MoreMenuItems({
   const profiles = useProfiles((s) => s.profiles)
   const currentGame = useProfiles((s) => s.game)
   const duplicate = useProfiles((s) => s.duplicate)
-  const [compareFrom, setCompareFrom] = useState<Profile | null>(null)
   const [compare, setCompare] = useState<{ a: Profile; b: Profile } | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [bundleOpen, setBundleOpen] = useState(false)
@@ -421,7 +401,7 @@ function MoreMenuItems({
       disabled={profiles.length < 2}
       onClick={() => {
         close()
-        setCompareFrom(profile)
+        setCompare({ a: profile, b: profiles.find((p) => p.id !== profile.id) ?? profile })
       }}
     />,
     <ShareMenuItems key="share" profile={profile} close={close} />,
@@ -453,8 +433,6 @@ function MoreMenuItems({
       key="dialogs"
       profile={profile}
       currentGame={currentGame}
-      compareFrom={compareFrom}
-      setCompareFrom={setCompareFrom}
       compare={compare}
       setCompare={setCompare}
       deleting={deleting}
@@ -465,4 +443,4 @@ function MoreMenuItems({
   ]
 }
 
-export { CoverMenuItems, MoreMenuItems, ProfileMenuItem }
+export { CoverMenuItems, DeleteProfileDialog, MoreMenuItems, ProfileMenuItem, ShortcutMenuItems }

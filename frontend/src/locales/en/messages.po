@@ -200,7 +200,7 @@ msgstr "Updated categories"
 msgid "Open storage settings"
 msgstr "Open storage settings"
 
-#: src/game/LaunchMenu.tsx:68
+#: src/game/LaunchMenu.tsx:70
 msgid "Manage tools…"
 msgstr "Manage tools…"
 
@@ -392,7 +392,7 @@ msgstr "Balance only: one mod's prices win."
 msgid "Kept at this version ({0})"
 msgstr "Kept at this version ({0})"
 
-#: src/game/ProfileMenuItems.tsx:367
+#: src/game/ProfileMenuItems.tsx:362
 #: src/profiles/HistoryPanel.tsx:51
 #: src/queue/QueueSheet.tsx:72
 #: src/queue/QueueSheet.tsx:79
@@ -568,6 +568,7 @@ msgstr "Search settings"
 msgid "Notes"
 msgstr "Notes"
 
+#: src/game/Home.tsx:70
 #: src/saves/SaveDetails.tsx:82
 msgid "Last played {when}"
 msgstr "Last played {when}"
@@ -583,7 +584,7 @@ msgstr "{0, plural, one {Applied the curator's choices for # mod and {1, plural,
 msgid "Startup and window"
 msgstr "Startup and window"
 
-#: src/game/ProfileMenuItems.tsx:176
+#: src/game/ProfileMenuItems.tsx:174
 msgid "Could not add it to Steam"
 msgstr "Could not add it to Steam"
 
@@ -755,7 +756,7 @@ msgstr "{0} was changed on {1} and here"
 msgid "More…"
 msgstr "More…"
 
-#: src/game/ProfileMenuItems.tsx:417
+#: src/game/ProfileMenuItems.tsx:412
 msgid "Add a bundle…"
 msgstr "Add a bundle…"
 
@@ -763,7 +764,7 @@ msgstr "Add a bundle…"
 msgid "How timestamps are shown"
 msgstr "How timestamps are shown"
 
-#: src/game/ProfileMenuItems.tsx:140
+#: src/game/ProfileMenuItems.tsx:138
 msgid "Remove the shortcut"
 msgstr "Remove the shortcut"
 
@@ -839,11 +840,15 @@ msgstr "More"
 msgid "Mods' Entry is timed only on a measured launch."
 msgstr "Mods' Entry is timed only on a measured launch."
 
+#: src/game/ProfileMenu.tsx:42
+msgid "This profile"
+msgstr "This profile"
+
 #: src/mods/problemText.ts:89
 msgid "Game version not supported"
 msgstr "Game version not supported"
 
-#: src/game/ProfileMenuItems.tsx:122
+#: src/game/ProfileMenuItems.tsx:120
 msgid "Add a desktop shortcut"
 msgstr "Add a desktop shortcut"
 
@@ -1051,7 +1056,7 @@ msgstr "Mod updates are found"
 msgid "Find a mod in all profiles"
 msgstr "Find a mod in all profiles"
 
-#: src/game/ProfileMenuItems.tsx:227
+#: src/game/ProfileMenuItems.tsx:225
 msgid "Turn on sharing nearby?"
 msgstr "Turn on sharing nearby?"
 
@@ -1093,7 +1098,7 @@ msgstr "Something changed this profile's mods folder without Mortar, by adding, 
 msgid "Mod list copied"
 msgstr "Mod list copied"
 
-#: src/game/ProfileMenuItems.tsx:167
+#: src/game/ProfileMenuItems.tsx:165
 msgid "Already in Steam"
 msgstr "Already in Steam"
 
@@ -1175,7 +1180,6 @@ msgstr "{a} and {b} each wait for the other, so SMAPI loads neither."
 msgid "Could not dismiss that folder"
 msgstr "Could not dismiss that folder"
 
-#: src/game/ExportCollectionMenuItem.tsx:51
 #: src/share/MethodPanes.tsx:259
 msgid "Could not export the collection draft"
 msgstr "Could not export the collection draft"
@@ -1288,7 +1292,6 @@ msgstr "Mod Manager Download on Nexus Mods only works in Mortar when you are sig
 msgid "Could not add the update downloads"
 msgstr "Could not add the update downloads"
 
-#: src/game/ExportCodeMenuItem.tsx:45
 #: src/share/MethodPanes.tsx:284
 msgid "Could not publish the code"
 msgstr "Could not publish the code"
@@ -1392,7 +1395,7 @@ msgstr "No matches"
 msgid "Add a bundle to {profileName}"
 msgstr "Add a bundle to {profileName}"
 
-#: src/game/ProfileMenuItems.tsx:286
+#: src/game/ProfileMenuItems.tsx:284
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
 
@@ -1518,6 +1521,7 @@ msgstr "Share log…"
 
 #: src/downloads/newDownloads.ts:46
 #: src/game/Hero.tsx:77
+#: src/game/ProfileMenu.tsx:64
 #: src/launch/events.ts:48
 #: src/mods/updateDigestToast.ts:61
 #: src/mods/updateReview/UpdateBar.tsx:57
@@ -2025,7 +2029,7 @@ msgstr "Fullscreen resolution width"
 msgid "These come from a different site than you installed them from. Update all skips them."
 msgstr "These come from a different site than you installed them from. Update all skips them."
 
-#: src/game/ProfileMenuItems.tsx:228
+#: src/game/ProfileMenuItems.tsx:226
 msgid "Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General."
 msgstr "Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General."
 
@@ -2109,10 +2113,6 @@ msgstr "{0} (optional file)"
 #: src/mods/LoadOrderTab.tsx:208
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr "The game loader chooses this order. Mortar does not change it."
-
-#: src/game/ProfileMenu.tsx:50
-msgid "COPIES"
-msgstr "COPIES"
 
 #: src/mods/updateReview/Row.tsx:77
 msgid "Changes dependencies"
@@ -2571,7 +2571,7 @@ msgstr "Required by ({0})"
 
 #. placeholder {0}: calendar.year
 #. placeholder {1}: seasons[calendar.season] ?? ''
-#: src/game/Home.tsx:86
+#: src/game/Home.tsx:89
 msgid "{name} · Year {0} {1}"
 msgstr "{name} · Year {0} {1}"
 
@@ -2733,7 +2733,7 @@ msgstr "Medium"
 msgid "Delete permanently"
 msgstr "Delete permanently"
 
-#: src/game/ProfileMenuItems.tsx:192
+#: src/game/ProfileMenuItems.tsx:190
 #: src/profiles/HealthDialog.tsx:252
 msgid "Check this profile"
 msgstr "Check this profile"
@@ -2832,7 +2832,6 @@ msgstr "{0, plural, one {# update for {1, plural, one {# profile} other {# profi
 msgid "Not signed in. Add your API key in Accounts."
 msgstr "Not signed in. Add your API key in Accounts."
 
-#: src/game/ExportCollectionMenuItem.tsx:32
 #: src/share/MethodPanes.tsx:238
 msgid "Collection draft saved"
 msgstr "Collection draft saved"
@@ -2849,7 +2848,7 @@ msgstr "{count} checked later"
 msgid "Find a mod in all profiles…"
 msgstr "Find a mod in all profiles…"
 
-#: src/game/ProfileMenu.tsx:73
+#: src/game/ProfileMenu.tsx:75
 msgid "Compare…"
 msgstr "Compare…"
 
@@ -3203,7 +3202,6 @@ msgstr "different file"
 msgid "Set it in Steam for me"
 msgstr "Set it in Steam for me"
 
-#: src/game/ExportCodeMenuItem.tsx:84
 #: src/share/MethodPanes.tsx:294
 msgid "Modpack saved"
 msgstr "Modpack saved"
@@ -3272,7 +3270,7 @@ msgstr "Search GitHub releases"
 msgid "Mortar doesn't know where to get {id}"
 msgstr "Mortar doesn't know where to get {id}"
 
-#: src/game/ProfileMenuItems.tsx:172
+#: src/game/ProfileMenuItems.tsx:170
 msgid "It shows in your Steam library the next time Steam starts."
 msgstr "It shows in your Steam library the next time Steam starts."
 
@@ -3680,8 +3678,8 @@ msgid "Custom categories"
 msgstr "Custom categories"
 
 #: src/bundles/BundlesSection.tsx:148
-#: src/game/ProfileMenuItems.tsx:85
-#: src/game/ProfileMenuItems.tsx:431
+#: src/game/ProfileMenuItems.tsx:83
+#: src/game/ProfileMenuItems.tsx:426
 #: src/mods/CategoryEditor.tsx:170
 #: src/mods/OldFilesCallouts.tsx:103
 #: src/mods/problemFixButtons.tsx:201
@@ -3772,6 +3770,7 @@ msgid "Optional for ({0})"
 msgstr "Optional for ({0})"
 
 #: src/commandPalette/CommandPalette.tsx:158
+#: src/game/LaunchMenu.tsx:77
 #: src/settings/SettingsPage.tsx:49
 msgid "Shortcuts"
 msgstr "Shortcuts"
@@ -3984,7 +3983,6 @@ msgstr "Cover image"
 msgid "Where save backups are kept. Empty uses the default."
 msgstr "Where save backups are kept. Empty uses the default."
 
-#: src/game/ExportCodeMenuItem.tsx:59
 #: src/share/MethodPanes.tsx:326
 msgid "Share as r2modman code?"
 msgstr "Share as r2modman code?"
@@ -4169,7 +4167,7 @@ msgstr "Downloads paused"
 msgid "Back to {name}"
 msgstr "Back to {name}"
 
-#: src/game/ProfileMenuItems.tsx:214
+#: src/game/ProfileMenuItems.tsx:212
 #: src/lan/SendDialog.tsx:277
 msgid "Send to…"
 msgstr "Send to…"
@@ -4462,7 +4460,7 @@ msgstr "Unknown"
 msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 
-#: src/game/ProfileMenu.tsx:65
+#: src/game/ProfileMenu.tsx:67
 #: src/profiles/SinceLastRun.tsx:120
 msgid "History…"
 msgstr "History…"
@@ -4556,7 +4554,7 @@ msgstr "Back up to a file…"
 msgid "Host {0}"
 msgstr "Host {0}"
 
-#: src/game/LaunchMenu.tsx:42
+#: src/game/LaunchMenu.tsx:44
 msgid "Launch other apps with this profile."
 msgstr "Launch other apps with this profile."
 
@@ -4703,7 +4701,7 @@ msgstr "They move to Dismissed. Restore them from that section."
 msgid "YOUR PROFILES"
 msgstr "YOUR PROFILES"
 
-#: src/game/ProfileMenuItems.tsx:171
+#: src/game/ProfileMenuItems.tsx:169
 msgid "Added to Steam"
 msgstr "Added to Steam"
 
@@ -4719,8 +4717,8 @@ msgstr "Enter text to search stored runs."
 msgid "No backups to delete"
 msgstr "No backups to delete"
 
-#: src/game/ProfileMenu.tsx:53
-#: src/game/ProfileMenuItems.tsx:377
+#: src/game/ProfileMenu.tsx:55
+#: src/game/ProfileMenuItems.tsx:372
 #: src/profiles/LaunchPresetsBlock.tsx:52
 msgid "Duplicate"
 msgstr "Duplicate"
@@ -5074,11 +5072,7 @@ msgstr "Filter by profile"
 msgid "· revision {0}"
 msgstr "· revision {0}"
 
-#: src/game/LaunchMenu.tsx:75
-msgid "SHORTCUTS"
-msgstr "SHORTCUTS"
-
-#: src/game/ProfileMenuItems.tsx:229
+#: src/game/ProfileMenuItems.tsx:227
 msgid "Turn on and continue"
 msgstr "Turn on and continue"
 
@@ -5131,7 +5125,6 @@ msgstr "Could not check for updates."
 msgid "No profile holds a mod by that name or id."
 msgstr "No profile holds a mod by that name or id."
 
-#: src/game/ExportCodeMenuItem.tsx:94
 #: src/share/MethodPanes.tsx:317
 msgid "Could not export the modpack"
 msgstr "Could not export the modpack"
@@ -5257,7 +5250,7 @@ msgstr "Problem sections"
 msgid "Restarting…"
 msgstr "Restarting…"
 
-#: src/game/ProfileMenu.tsx:83
+#: src/game/ProfileMenu.tsx:85
 msgid "Delete profile…"
 msgstr "Delete profile…"
 
@@ -5736,11 +5729,6 @@ msgstr "Before you play"
 msgid "This is no longer the latest change to that mod."
 msgstr "This is no longer the latest change to that mod."
 
-#. placeholder {0}: formatWhen(lastRun)
-#: src/game/Home.tsx:68
-msgid "Last played {0}"
-msgstr "Last played {0}"
-
 #: src/settings/sections/GameSettings.tsx:231
 msgid "Chosen in the game's Steam properties."
 msgstr "Chosen in the game's Steam properties."
@@ -6074,10 +6062,11 @@ msgstr "Could not delete the bundle"
 msgid "In Mortar"
 msgstr "In Mortar"
 
-#: src/game/ProfileMenu.tsx:43
+#: src/game/ProfileMenu.tsx:45
 msgid "Edit profile…"
 msgstr "Edit profile…"
 
+#: src/game/Home.tsx:140
 #: src/settings/GameSettingsPage.tsx:162
 msgid "{name} settings"
 msgstr "{name} settings"
@@ -6226,7 +6215,6 @@ msgstr "{summary} · {0}"
 msgid "Console command"
 msgstr "Console command"
 
-#: src/game/ExportCodeMenuItem.tsx:51
 #: src/share/MethodPanes.tsx:310
 msgid "Share as r2modman code…"
 msgstr "Share as r2modman code…"
@@ -6934,9 +6922,13 @@ msgstr "Console log cap"
 msgid "No mods match \"{text}\""
 msgstr "No mods match \"{text}\""
 
-#: src/game/ProfileMenuItems.tsx:147
+#: src/game/ProfileMenuItems.tsx:145
 msgid "Shortcut removed"
 msgstr "Shortcut removed"
+
+#: src/game/LaunchMenu.tsx:40
+msgid "Run with this profile"
+msgstr "Run with this profile"
 
 #. placeholder {0}: item.name
 #: src/profiles/ProfilesPage.tsx:91
@@ -6947,7 +6939,7 @@ msgstr "Delete {0} permanently"
 msgid "Could not reach Nexus"
 msgstr "Could not reach Nexus"
 
-#: src/game/ProfileMenuItems.tsx:150
+#: src/game/ProfileMenuItems.tsx:148
 msgid "Could not remove the shortcut"
 msgstr "Could not remove the shortcut"
 
@@ -7016,7 +7008,7 @@ msgstr "New group"
 msgid "Unhide {0}?"
 msgstr "Unhide {0}?"
 
-#: src/game/ProfileMenuItems.tsx:84
+#: src/game/ProfileMenuItems.tsx:82
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
@@ -7071,7 +7063,7 @@ msgstr "New profile from file"
 msgid "Thunderstore games also offer an r2modman code."
 msgstr "Thunderstore games also offer an r2modman code."
 
-#: src/game/ProfileMenuItems.tsx:131
+#: src/game/ProfileMenuItems.tsx:129
 msgid "Shortcut added"
 msgstr "Shortcut added"
 
@@ -7532,7 +7524,7 @@ msgstr "older, profile has {0}"
 msgid "Refresh"
 msgstr "Refresh"
 
-#: src/game/ProfileMenuItems.tsx:271
+#: src/game/ProfileMenuItems.tsx:269
 msgid "Choose cover image"
 msgstr "Choose cover image"
 
@@ -7557,15 +7549,11 @@ msgstr "{count} {source}"
 msgid "More details"
 msgstr "More details"
 
-#: src/game/LaunchMenu.tsx:38
-msgid "RUN WITH THIS PROFILE"
-msgstr "RUN WITH THIS PROFILE"
-
 #: src/mods/problemWhy.ts:47
 msgid "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 msgstr "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 
-#: src/game/Home.tsx:132
+#: src/game/Home.tsx:135
 msgid "Share…"
 msgstr "Share…"
 
@@ -7613,7 +7601,7 @@ msgstr "{gameName}'s Steam launch options run {loader} in place of the game. Ste
 msgid "Switch profile: {0} {mods}"
 msgstr "Switch profile: {0} {mods}"
 
-#: src/game/Home.tsx:78
+#: src/game/Home.tsx:80
 #: src/saves/SaveDetails.tsx:54
 msgid "Summer"
 msgstr "Summer"
@@ -7668,7 +7656,7 @@ msgstr "Mod list"
 msgid "From the Nexus collection “{0}”"
 msgstr "From the Nexus collection “{0}”"
 
-#: src/game/ProfileMenuItems.tsx:396
+#: src/game/ProfileMenuItems.tsx:391
 msgid "Match a friend's profile…"
 msgstr "Match a friend's profile…"
 
@@ -7913,7 +7901,7 @@ msgstr "How to share"
 msgid "No entries match."
 msgstr "No entries match."
 
-#: src/game/ProfileMenuItems.tsx:280
+#: src/game/ProfileMenuItems.tsx:278
 msgid "Choose cover image…"
 msgstr "Choose cover image…"
 
@@ -8028,7 +8016,7 @@ msgstr "Source health"
 msgid "{0}: desktop notification"
 msgstr "{0}: desktop notification"
 
-#: src/game/Home.tsx:96
+#: src/game/Home.tsx:99
 msgid "All saves"
 msgstr "All saves"
 
@@ -8505,7 +8493,6 @@ msgstr "On Nexus"
 msgid "Grant the Steam sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
 msgstr "Grant the Steam sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
 
-#: src/game/ExportCodeMenuItem.tsx:39
 #: src/share/MethodPanes.tsx:281
 msgid "Copy code"
 msgstr "Copy code"
@@ -8640,7 +8627,7 @@ msgstr "Regenerate token?"
 msgid "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 msgstr "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 
-#: src/game/ProfileMenuItems.tsx:239
+#: src/game/ProfileMenuItems.tsx:237
 msgid "Could not turn on sharing nearby"
 msgstr "Could not turn on sharing nearby"
 
@@ -8683,7 +8670,7 @@ msgstr "Unofficial update available: {0}"
 msgid "Last scheduled backup {when}"
 msgstr "Last scheduled backup {when}"
 
-#: src/game/Home.tsx:78
+#: src/game/Home.tsx:80
 #: src/saves/SaveDetails.tsx:54
 msgid "Winter"
 msgstr "Winter"
@@ -8853,7 +8840,7 @@ msgstr "Reset"
 msgid "Stop the game first."
 msgstr "Stop the game first."
 
-#: src/game/Home.tsx:78
+#: src/game/Home.tsx:80
 #: src/saves/SaveDetails.tsx:54
 msgid "Spring"
 msgstr "Spring"
@@ -8954,12 +8941,11 @@ msgstr "From the downloads folder…"
 msgid "No Mortar computers found nearby."
 msgstr "No Mortar computers found nearby."
 
-#: src/game/ExportCodeMenuItem.tsx:61
 #: src/share/MethodPanes.tsx:328
 msgid "Upload"
 msgstr "Upload"
 
-#: src/game/Home.tsx:37
+#: src/game/Home.tsx:39
 msgid "At a glance"
 msgstr "At a glance"
 
@@ -9092,7 +9078,6 @@ msgstr "{0} was updated: mods to check"
 msgid "Click a mod to open its details: versions, what it needs and what needs it, and its update."
 msgstr "Click a mod to open its details: versions, what it needs and what needs it, and its update."
 
-#: src/game/ExportCodeMenuItem.tsx:37
 #: src/share/MethodPanes.tsx:279
 msgid "Code published"
 msgstr "Code published"
@@ -9740,7 +9725,6 @@ msgstr "No app opens these links now."
 msgid "These profiles have the same mods."
 msgstr "These profiles have the same mods."
 
-#: src/game/ExportCollectionMenuItem.tsx:46
 #: src/share/MethodPanes.tsx:263
 msgid "Export as Nexus collection draft…"
 msgstr "Export as Nexus collection draft…"
@@ -9867,10 +9851,6 @@ msgstr "Handle Nexus download links?"
 msgid "From {0}, not the site you installed it from. Updating switches its source."
 msgstr "From {0}, not the site you installed it from. Updating switches its source."
 
-#: src/game/ProfileMenu.tsx:40
-msgid "THIS PROFILE"
-msgstr "THIS PROFILE"
-
 #: src/mods/SlowStartupSection.tsx:70
 msgid "Content Patcher packs"
 msgstr "Content Patcher packs"
@@ -9917,7 +9897,6 @@ msgstr "Open Console"
 msgid "Could not read the templates"
 msgstr "Could not read the templates"
 
-#: src/game/ExportCodeMenuItem.tsx:91
 #: src/share/MethodPanes.tsx:321
 msgid "Export as Thunderstore modpack…"
 msgstr "Export as Thunderstore modpack…"
@@ -9955,7 +9934,7 @@ msgstr "{0} of {1} · {2}/s"
 msgid "Preview"
 msgstr "Preview"
 
-#: src/game/ProfileMenuItems.tsx:171
+#: src/game/ProfileMenuItems.tsx:169
 msgid "Updated in Steam"
 msgstr "Updated in Steam"
 
@@ -10055,7 +10034,6 @@ msgstr "Report it so it can be fixed."
 msgid "GitHub"
 msgstr "GitHub"
 
-#: src/game/ExportCollectionMenuItem.tsx:29
 #: src/share/MethodPanes.tsx:235
 msgid "Nexus expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
 msgstr "Nexus expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
@@ -10142,7 +10120,7 @@ msgstr "Removed from Nexus · {0}"
 msgid "Abstain"
 msgstr "Abstain"
 
-#: src/game/Home.tsx:68
+#: src/game/Home.tsx:70
 msgid "Not played yet"
 msgstr "Not played yet"
 
@@ -10365,7 +10343,7 @@ msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
 msgid "Combined"
 msgstr "Combined"
 
-#: src/game/ProfileMenuItems.tsx:386
+#: src/game/ProfileMenuItems.tsx:381
 msgid "Export profile…"
 msgstr "Export profile…"
 
@@ -10624,7 +10602,6 @@ msgstr "Bottles"
 msgid "Hourly count resets {0} · daily count resets {1}"
 msgstr "Hourly count resets {0} · daily count resets {1}"
 
-#: src/game/ExportCollectionMenuItem.tsx:38
 #: src/settings/store.ts:140
 #: src/share/MethodPanes.tsx:244
 #: src/shell/saveDiagnostics.ts:27
@@ -10704,7 +10681,7 @@ msgstr "Get mods"
 msgid "It encountered an error."
 msgstr "It encountered an error."
 
-#: src/game/Home.tsx:65
+#: src/game/Home.tsx:67
 msgid "No problems"
 msgstr "No problems"
 
@@ -10801,7 +10778,7 @@ msgstr "{local, plural, one {# mod you added from an archive can't go in the fil
 #. placeholder {0}: drift.folder
 #. placeholder {0}: pendingDelete ?? ''
 #: src/bundles/BundlesSection.tsx:146
-#: src/game/ProfileMenuItems.tsx:83
+#: src/game/ProfileMenuItems.tsx:81
 #: src/mods/CategoryEditor.tsx:168
 #: src/mods/ConfigPresets.tsx:155
 #: src/mods/problemFixButtons.tsx:204
@@ -11298,6 +11275,10 @@ msgstr "Add category"
 msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
 msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
 
+#: src/game/ProfileMenu.tsx:52
+msgid "Copies"
+msgstr "Copies"
+
 #: src/browse/CardAction.tsx:112
 msgid "Mortar installs the loader for you."
 msgstr "Mortar installs the loader for you."
@@ -11474,7 +11455,7 @@ msgstr "Play {playName}"
 msgid "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
-#: src/game/Home.tsx:80
+#: src/game/Home.tsx:82
 #: src/game/Sidebar.tsx:184
 msgid "Saves"
 msgstr "Saves"
@@ -11530,7 +11511,6 @@ msgstr "You can roll back the completed updates from the profile history."
 msgid "Its source is not known."
 msgstr "Its source is not known."
 
-#: src/game/ExportCodeMenuItem.tsx:60
 #: src/share/MethodPanes.tsx:327
 msgid "This uploads the profile to Thunderstore and gives a public code."
 msgstr "This uploads the profile to Thunderstore and gives a public code."
@@ -11607,7 +11587,7 @@ msgstr "{name} {0} is out"
 msgid "Move data folder"
 msgstr "Move data folder"
 
-#: src/game/ProfileMenuItems.tsx:273
+#: src/game/ProfileMenuItems.tsx:271
 #: src/profiles/EditProfileDialog.tsx:421
 msgid "Could not use that image"
 msgstr "Could not use that image"
@@ -11636,7 +11616,7 @@ msgid "From the downloads folder"
 msgstr "From the downloads folder"
 
 #: src/bundles/ApplyBundleToProfile.tsx:61
-#: src/game/ProfileMenu.tsx:36
+#: src/game/ProfileMenu.tsx:38
 msgid "Profile"
 msgstr "Profile"
 
@@ -11726,7 +11706,7 @@ msgstr "Clean up storage"
 msgid "Mods view"
 msgstr "Mods view"
 
-#: src/game/Home.tsx:96
+#: src/game/Home.tsx:99
 msgid "{more} more · All saves"
 msgstr "{more} more · All saves"
 
@@ -12411,7 +12391,7 @@ msgid "Nexus page"
 msgstr "Nexus page"
 
 #: src/console/PerformancePanelParts.tsx:64
-#: src/game/ProfileMenuItems.tsx:405
+#: src/game/ProfileMenuItems.tsx:400
 msgid "Compare with…"
 msgstr "Compare with…"
 
@@ -12480,8 +12460,6 @@ msgstr "{gameName} profiles"
 
 #. placeholder {0}: listNames(left)
 #. placeholder {0}: listNames(skipped, skipped.length)
-#: src/game/ExportCodeMenuItem.tsx:85
-#: src/game/ExportCollectionMenuItem.tsx:35
 #: src/share/MethodPanes.tsx:241
 #: src/share/MethodPanes.tsx:295
 msgid "Left out: {0}"
@@ -12604,7 +12582,7 @@ msgstr "Save…"
 msgid "Walk through profiles, Play, mods, and the command palette"
 msgstr "Walk through profiles, Play, mods, and the command palette"
 
-#: src/game/Home.tsx:78
+#: src/game/Home.tsx:80
 #: src/saves/SaveDetails.tsx:54
 msgid "Fall"
 msgstr "Fall"
@@ -12613,7 +12591,7 @@ msgstr "Fall"
 msgid "Try fewer words, or the mod's exact name."
 msgstr "Try fewer words, or the mod's exact name."
 
-#: src/game/ProfileMenuItems.tsx:158
+#: src/game/ProfileMenuItems.tsx:156
 msgid "Add this profile to Steam"
 msgstr "Add this profile to Steam"
 
@@ -12906,10 +12884,6 @@ msgstr "Installers ask as usual; Premium accounts also get the curator's choices
 msgid "Restore"
 msgstr "Restore"
 
-#: src/game/ProfileMenu.tsx:62
-msgid "REVIEW"
-msgstr "REVIEW"
-
 #: src/profiles/SinceLastRun.tsx:105
 msgid "Changes since last run"
 msgstr "Changes since last run"
@@ -12965,7 +12939,7 @@ msgstr "Take over"
 msgid "{0, plural, one {# day left} other {# days left}}"
 msgstr "{0, plural, one {# day left} other {# days left}}"
 
-#: src/game/ProfileMenuItems.tsx:133
+#: src/game/ProfileMenuItems.tsx:131
 msgid "Could not add the shortcut"
 msgstr "Could not add the shortcut"
 
@@ -13016,7 +12990,7 @@ msgid "Back up {label} now"
 msgstr "Back up {label} now"
 
 #. placeholder {0}: tool.name
-#: src/game/LaunchMenu.tsx:58
+#: src/game/LaunchMenu.tsx:60
 msgid "Could not start {0}"
 msgstr "Could not start {0}"
 
@@ -13214,7 +13188,7 @@ msgstr "Could not change {0}"
 msgid "Leave out"
 msgstr "Leave out"
 
-#: src/game/Home.tsx:82
+#: src/game/Home.tsx:84
 #: src/saves/SavesTab.tsx:48
 msgid "No saves yet"
 msgstr "No saves yet"
@@ -13265,7 +13239,7 @@ msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 
 #: src/console/StartupPanel.tsx:33
-#: src/game/LaunchMenu.tsx:34
+#: src/game/LaunchMenu.tsx:36
 #: src/profiles/EditProfileDialog.tsx:170
 msgid "Launch"
 msgstr "Launch"
@@ -13371,10 +13345,6 @@ msgstr "For r2modman and other Thunderstore managers: a code anyone can enter, o
 #: src/console/PerformancePanelParts.tsx:291
 msgid "Measure while you play, then report the mods that take the most time per frame."
 msgstr "Measure while you play, then report the mods that take the most time per frame."
-
-#: src/game/Home.tsx:137
-msgid "{gameName} settings"
-msgstr "{gameName} settings"
 
 #: src/settings/sections/Sources.tsx:46
 msgid "Could not be reached: {reason}"

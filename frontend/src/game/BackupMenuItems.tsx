@@ -96,3 +96,5 @@ export function BackupMenuItems({ profile, close }: { profile: Profile; close: (
     />,
   ]
 }
+
+export { BackupMenuItem }

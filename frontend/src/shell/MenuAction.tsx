@@ -9,16 +9,22 @@ export function MenuAction({
   label,
   disabled,
   tooltip,
+  tone,
   onClick,
 }: {
   icon: ReactNode
   label: ReactNode
   disabled?: boolean | undefined
   tooltip?: string | undefined
+  tone?: 'error' | undefined
   onClick: () => void
 }) {
   const item = (
-    <MenuItem disabled={disabled} onClick={onClick}>
+    <MenuItem
+      disabled={disabled}
+      onClick={onClick}
+      sx={tone ? { color: `${tone}.main` } : undefined}
+    >
       <ListItemIcon sx={{ color: 'inherit' }}>{icon}</ListItemIcon>
       {disabled && tooltip ? (
         <ListItemText

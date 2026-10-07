@@ -1,20 +1,12 @@
-import { useLingui } from '@lingui/react/macro'
-import { Box, Divider } from '@mui/material'
-import { Settings2, Share2 } from 'lucide-react'
+import { Box } from '@mui/material'
 import { lazy, Suspense } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { BrowseHost } from '../browse/BrowseHost.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemActions, ProblemsTab } from '../mods/ProblemsTab.tsx'
-import { useNav } from '../nav/store.ts'
-import { CrashHintCard } from '../profiles/CrashHintCard.tsx'
-import { SinceLastRun } from '../profiles/SinceLastRun.tsx'
-import { openShare } from '../share/store.ts'
 import { usePasteLink } from '../share/usePasteLink.ts'
 import { ErrorBoundary } from '../shell/ErrorBoundary.tsx'
-import { IconAction } from '../shell/IconAction.tsx'
-import { ToolsMenu } from '../tools/ToolsMenu.tsx'
-import { Hero } from './Hero.tsx'
+import { Home } from './Home.tsx'
 import { useTab } from './tab.ts'
 
 // Tabs other than Mods, Problems and Browse load on first open, which keeps them out of the startup bundle.
@@ -29,41 +21,6 @@ const PerformanceTab = lazy(() =>
   import('../console/PerformanceTab.tsx').then((m) => ({ default: m.PerformanceTab })),
 )
 
-function WorkspaceActions({
-  profile,
-  game,
-  gameName,
-}: {
-  profile: Profile
-  game: string
-  gameName: string
-}) {
-  const { t } = useLingui()
-  const tab = useTab((s) => s.tab)
-  const openGameSettings = useNav((s) => s.openGameSettings)
-  return (
-    <Box sx={{ display: 'flex', gap: 0.75 }}>
-      {tab === 'problems' ? (
-        <>
-          <ProblemActions />
-          <Divider orientation="vertical" flexItem={true} sx={{ mx: 0.5 }} />
-        </>
-      ) : null}
-      <ToolsMenu game={game} profileID={profile.id} />
-      <IconAction
-        label={t`Share`}
-        icon={<Share2 size={16} />}
-        onClick={() => openShare(profile.id)}
-      />
-      <IconAction
-        label={t`${{ name: gameName }} settings`}
-        icon={<Settings2 size={16} />}
-        onClick={openGameSettings}
-      />
-    </Box>
-  )
-}
-
 export function ProfileWorkspace({
   profile,
   game,
@@ -77,22 +34,24 @@ export function ProfileWorkspace({
   usePasteLink(profile.id)
   return (
     <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-      {tab === 'home' ? <Hero key={`hero-${profile.id}`} profile={profile} game={game} /> : null}
-      {tab === 'home' ? <SinceLastRun game={game} profileId={profile.id} /> : null}
-      <CrashHintCard game={game} profileId={profile.id} />
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          minHeight: 44,
-          px: 2,
-          borderBottom: '1px solid var(--mortar-hairline)',
-          flexShrink: 0,
-        }}
-      >
-        <WorkspaceActions profile={profile} game={game} gameName={gameName} />
-      </Box>
+      {tab === 'home' ? (
+        <Home key={`home-${profile.id}`} profile={profile} game={game} gameName={gameName} />
+      ) : null}
+      {tab === 'problems' ? (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            minHeight: 44,
+            px: 2,
+            borderBottom: '1px solid var(--mortar-hairline)',
+            flexShrink: 0,
+          }}
+        >
+          <ProblemActions />
+        </Box>
+      ) : null}
       <ErrorBoundary resetKey={`${tab}-${profile.id}`}>
         <Suspense fallback={null}>
           {tab === 'console' ? <ConsoleTab game={game} /> : null}
