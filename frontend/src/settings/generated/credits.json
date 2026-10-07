@@ -145,6 +145,11 @@
     "url": "https://github.com/hashicorp/mdns"
   },
   {
+    "name": "github.com/klauspost/compress",
+    "licence": "Apache-2.0",
+    "url": "https://github.com/klauspost/compress"
+  },
+  {
     "name": "github.com/nwaples/rardecode/v2",
     "licence": "BSD-2-Clause",
     "url": "https://github.com/nwaples/rardecode"
@@ -155,6 +160,11 @@
     "url": "https://github.com/syndtr/goleveldb"
   },
   {
+    "name": "github.com/ulikunitz/xz",
+    "licence": "BSD-2-Clause",
+    "url": "https://github.com/ulikunitz/xz"
+  },
+  {
     "name": "github.com/wailsapp/wails/v3",
     "licence": "MIT",
     "url": "https://github.com/wailsapp/wails"
@@ -163,6 +173,11 @@
     "name": "github.com/zalando/go-keyring",
     "licence": "MIT",
     "url": "https://github.com/zalando/go-keyring"
+  },
+  {
+    "name": "golang.org/x/image",
+    "licence": "BSD-3-Clause",
+    "url": "https://pkg.go.dev/golang.org/x/image"
   },
   {
     "name": "golang.org/x/sys",
