@@ -14,16 +14,12 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussso"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
-	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // ChangedEvent is emitted with the new Account after a sign-in or sign-out.
 const ChangedEvent = "nexus:changed"
-
-const keyName = "nexus"
 
 // Account is the signed-in Nexus account and the rate-limit budget last seen.
 type Account struct {
@@ -94,30 +90,9 @@ func (s *Service) GitHubRate() github.Rate {
 	return github.CurrentRate()
 }
 
-// SignIn checks the key against Nexus, then keeps it in the keyring. A rejected key stores nothing.
-func (s *Service) SignIn(ctx context.Context, key string) (Account, error) {
-	key = strings.TrimSpace(key)
-	if key == "" {
-		return Account{}, errors.New("paste your Nexus Mods personal API key")
-	}
-	user, err := s.client.WithKey(key).Validate(ctx)
-	if errors.Is(err, nexus.ErrUnauthorized) {
-		return Account{}, usererr.Wrap(usererr.Invalid, err)
-	}
-	if err != nil {
-		return Account{}, err
-	}
-	if err := secret.Set(keyName, key); err != nil {
-		return Account{}, err
-	}
-	return s.update(func(v *settings.Settings) {
-		v.NexusUserID, v.NexusName, v.NexusPremium = user.ID, user.Name, user.IsPremium
-	})
-}
-
 // SignOut deletes the key and forgets the account.
 func (s *Service) SignOut() (Account, error) {
-	if err := errors.Join(secret.Delete(keyName), nexussso.Forget()); err != nil {
+	if err := errors.Join(forgetKey(), nexussso.Forget()); err != nil {
 		return Account{}, err
 	}
 	return s.update(func(v *settings.Settings) { v.NexusUserID, v.NexusName, v.NexusPremium = 0, "", false })

@@ -22,14 +22,24 @@ Not verified: whether Nexus currently issues OAuth client ids to third parties, 
 - Testing build: attach the current release build from the GitHub releases page.
 - Contact: the maintainers through opensource@rethunk.tech.
 
+## Nexus's review (ticket 269342) and our answers
+
+Nexus's reply: the primary failing point is personal API keys, which must be removed; and a concern with an auto update system that appears to run every four hours, since systems that activate without the user's input are generally not allowed. OAuth registration needs an application name, a callback that is not dynamic, and scopes.
+
+| Nexus asked | Our answer |
+| --- | --- |
+| Application name | `Mortar` |
+| Callback (fixed, not dynamic) | `http://127.0.0.1:51762/oauth/callback`, constant `nexussso.RedirectURI`. 51762 is in the IANA dynamic range (49152 to 65535), so no registered service owns it. If it is busy the sign-in fails with "Port 51762 is in use; close the app using it and try again"; there is no fallback port. |
+| Scopes | `public openid profile` (constant `nexussso.Scope`). `public` is what authorises the API calls; `openid` and `profile` identify the account. Not independently confirmed on a Nexus help page (none was reachable); to be checked against the registration form. |
+| Access token on API calls | `Authorization: Bearer <token>` on REST v1 and GraphQL v2, with the usual `Application-Name` and `Application-Version`. Taken from a third-party reference that quotes Nexus's guide, not from a Nexus page. |
+| Personal API keys | Compiled in but inert whenever a client id is built in, and deleted in the release that turns OAuth on. |
+| Automatic updates | Update checks stay, including the four-hourly background check, which only notifies. Mortar never downloads or installs a Nexus file without the user's confirmation; nothing unattended queues one, and a queue left from a previous session stays paused at startup when it holds a Nexus file. Update before Play is an opt-in setting that runs only when the user presses Play. |
+
 ## Authentication requested
 
-Preferred: OAuth2 authorization code with PKCE as a public client (no client secret on the user's machine), because Mortar is a desktop app.
-Fallback: legacy SSO with slug `mortar`.
+OAuth2 authorization code with PKCE as a public client (no client secret on the user's machine), because Mortar is a desktop app. Redirect URI, scopes and token use are in the table above.
 
-- Redirect URI: `nxm://oauth/callback` (Mortar already registers as the system `nxm://` handler; the callback would arrive as `nxm://oauth/callback?code=...&state=...`). Alternative if Nexus requires it: loopback `http://127.0.0.1:<random port>`, as Vortex does. Nexus decides which it allows.
-- Scopes: the minimum needed to identify the user and call the API as them (Vortex uses `openid profile email`). Mortar needs no scope beyond reading the user's account, mod and file data, tracked mods, and endorse/abstain on request. Ask Nexus for the exact scope names.
-- Today Mortar uses the user's personal API key, held in the OS keyring and sent only from the user's own machine, never to a Mortar server (Mortar has none). Moving to OAuth/SSO is what registration is for.
+- Today, until Nexus issues the client id, Mortar uses the user's personal API key, held in the OS keyring and sent only from the user's own machine, never to a Mortar server (Mortar has none).
 
 ## What Mortar calls
 

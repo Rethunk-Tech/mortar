@@ -20,15 +20,31 @@ import (
 const (
 	// AuthBase is Nexus's OAuth2 server.
 	AuthBase = "https://users.nexusmods.com/oauth"
-	// Scope is what Vortex requests; Nexus has not published scopes for third-party clients.
-	Scope = "openid profile email"
+	// Scope is public, which authorises the REST and GraphQL calls, with openid and profile to identify the user.
+	Scope = "public openid profile"
+	// RedirectPort is the one loopback port the sign-in listens on. Nexus registers the callback as a fixed URI, so
+	// there is no fallback to another port. It sits in the IANA dynamic range, which no service owns.
+	RedirectPort = 51762
+	// CallbackPath is the path Nexus redirects to.
+	CallbackPath = "/oauth/callback"
+	// RedirectURI is the callback registered with Nexus.
+	RedirectURI  = "http://127.0.0.1:51762" + CallbackPath
+	redirectAddr = "127.0.0.1:51762"
 
 	keyringItem   = "nexus-oauth"
 	refreshMargin = time.Minute
 )
 
-// Tokens are the OAuth2 grant. Nexus's v1 API authenticates with the apikey header, and no documentation shows it
-// accepting these, so nothing in Mortar sends the access token yet.
+// ErrPortBusy means the fixed callback port could not be opened.
+var ErrPortBusy error = portBusy{}
+
+type portBusy struct{}
+
+func (portBusy) Error() string {
+	return fmt.Sprintf("Port %d is in use; close the app using it and try again", RedirectPort)
+}
+
+// Tokens are the OAuth2 grant; the access token goes in the Authorization header of every Nexus call.
 type Tokens struct {
 	Access  string    `json:"access"`
 	Refresh string    `json:"refresh"`
@@ -67,15 +83,6 @@ func (o OAuth) client() *http.Client {
 	return &http.Client{Timeout: 20 * time.Second}
 }
 
-// Key signs in and returns the access token for Service.SignIn to validate; the grant is kept in the keyring for Fresh.
-func (o OAuth) Key(ctx context.Context) (string, error) {
-	t, err := o.Authorize(ctx)
-	if err != nil {
-		return "", err
-	}
-	return t.Access, Save(t)
-}
-
 // Authorize runs the loopback authorization-code flow and returns the tokens.
 func (o OAuth) Authorize(ctx context.Context) (Tokens, error) {
 	if o.ClientID == "" {
@@ -88,11 +95,11 @@ func (o OAuth) Authorize(ctx context.Context) (Tokens, error) {
 	runCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	ln, err := (&net.ListenConfig{}).Listen(runCtx, "tcp", "127.0.0.1:0")
+	ln, err := (&net.ListenConfig{}).Listen(runCtx, "tcp", redirectAddr)
 	if err != nil {
-		return Tokens{}, err
+		return Tokens{}, ErrPortBusy
 	}
-	redirect := fmt.Sprintf("http://%s/callback", ln.Addr())
+	redirect := RedirectURI
 	verifier := rand.Text() + rand.Text()
 	state := rand.Text()
 	sum := sha256.Sum256([]byte(verifier))
@@ -101,7 +108,7 @@ func (o OAuth) Authorize(ctx context.Context) (Tokens, error) {
 	got := make(chan result, 1)
 	srv := &http.Server{ReadHeaderTimeout: 10 * time.Second, Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
-		if r.URL.Path != "/callback" || q.Get("state") != state {
+		if r.URL.Path != CallbackPath || q.Get("state") != state {
 			http.NotFound(w, r)
 			return
 		}

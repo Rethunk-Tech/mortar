@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/opener"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexussso"
 )
@@ -40,8 +41,7 @@ func (s *Service) SSOAvailable() bool {
 }
 
 // StartSSO signs in through the browser and returns the account. It streams SSOEvent states and ends when the
-// user approves, CancelSSO is called, the wait times out or Nexus refuses. The key is stored and validated exactly
-// like a pasted one.
+// user approves, CancelSSO is called, the wait times out or Nexus refuses. The account is validated before it is kept (OAuth keeps its tokens instead of a key).
 func (s *Service) StartSSO(ctx context.Context) (Account, error) {
 	if !s.SSOAvailable() {
 		return Account{}, errSSOOff
@@ -62,7 +62,7 @@ func (s *Service) StartSSO(ctx context.Context) (Account, error) {
 	}()
 
 	onState := func(st nexussso.State) { s.emitSSO(SSOState{State: string(st)}) }
-	var key string
+	var acct Account
 	var err error
 	if s.oauth.ClientID != "" {
 		o := s.oauth
@@ -70,18 +70,9 @@ func (s *Service) StartSSO(ctx context.Context) (Account, error) {
 			o.OpenBrowser = s.openBrowser
 		}
 		o.OnState = onState
-		key, err = o.Key(runCtx)
+		acct, err = s.signInOAuth(runCtx, o)
 	} else {
-		l := s.sso
-		if l.OpenBrowser == nil {
-			l.OpenBrowser = s.openBrowser
-		}
-		l.OnState = onState
-		key, err = l.Run(runCtx)
-	}
-	var acct Account
-	if err == nil {
-		acct, err = s.SignIn(runCtx, key)
+		acct, err = s.signInLegacy(runCtx, onState)
 	}
 	if err != nil {
 		s.emitSSO(SSOState{State: SSOFailed, Error: err.Error(), Cancelled: errors.Is(err, context.Canceled)})
@@ -117,4 +108,37 @@ func (s *Service) emitSSO(st SSOState) {
 	if s.App != nil {
 		s.App.Event.Emit(SSOEvent, st)
 	}
+}
+
+// signInLegacy runs the slug-based SSO, whose result is a personal API key.
+// Remove with the API-key path once OAuth ships.
+func (s *Service) signInLegacy(ctx context.Context, onState func(nexussso.State)) (Account, error) {
+	l := s.sso
+	if l.OpenBrowser == nil {
+		l.OpenBrowser = s.openBrowser
+	}
+	l.OnState = onState
+	key, err := l.Run(ctx)
+	if err != nil {
+		return Account{}, err
+	}
+	return s.SignIn(ctx, key)
+}
+
+// signInOAuth authorizes in the browser, checks the access token against Nexus and keeps the grant in the keyring.
+func (s *Service) signInOAuth(ctx context.Context, o nexussso.OAuth) (Account, error) {
+	t, err := o.Authorize(ctx)
+	if err != nil {
+		return Account{}, err
+	}
+	user, err := s.client.WithBearer(func(context.Context) (string, error) { return t.Access, nil }).Validate(ctx)
+	if err != nil {
+		return Account{}, err
+	}
+	if err := nexussso.Save(t); err != nil {
+		return Account{}, err
+	}
+	return s.update(func(v *settings.Settings) {
+		v.NexusUserID, v.NexusName, v.NexusPremium = user.ID, user.Name, user.IsPremium
+	})
 }

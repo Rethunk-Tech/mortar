@@ -5,6 +5,7 @@ import { Events } from '@wailsio/runtime'
 import { Check, LogIn, LogOut } from 'lucide-react'
 import { type SubmitEvent, useEffect, useId, useState } from 'react'
 import {
+  APIKeyAvailable,
   SignIn,
   SignOut,
   TrackedCount,
@@ -204,7 +205,11 @@ export function NexusSignIn() {
   const nxm = useNxmHandler()
   const [key, setKey] = useState('')
   const [busy, setBusy] = useState(false)
+  const [keyAllowed, setKeyAllowed] = useState(true)
   const [error, setError] = useState<InlineError | null>(null)
+  useEffect(() => {
+    APIKeyAvailable().then(setKeyAllowed).catch(reportUnexpected)
+  }, [])
   const submit = (e: SubmitEvent) => {
     e.preventDefault()
     setBusy(true)
@@ -246,30 +251,34 @@ export function NexusSignIn() {
         sx={{ display: 'flex', flexDirection: 'column', gap: '6px' }}
       >
         <NexusSSO />
-        <Box component="label" htmlFor={keyId} sx={{ fontSize: 14, fontWeight: 600 }}>
-          {t`Personal API key`}
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-          <TextField
-            id={keyId}
-            type="password"
-            size="small"
-            autoComplete="off"
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-            helperText={t`Kept in your system keyring. Find it on Nexus under Settings, API Keys.`}
-            sx={{ width: 420, maxWidth: '100%' }}
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            startIcon={<LogIn size={16} />}
-            disabled={busy || key.trim() === ''}
-            sx={{ flexShrink: 0, height: 40 }}
-          >
-            {t`Sign in`}
-          </Button>
-        </Box>
+        {keyAllowed ? (
+          <>
+            <Box component="label" htmlFor={keyId} sx={{ fontSize: 14, fontWeight: 600 }}>
+              {t`Personal API key`}
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+              <TextField
+                id={keyId}
+                type="password"
+                size="small"
+                autoComplete="off"
+                value={key}
+                onChange={(e) => setKey(e.target.value)}
+                helperText={t`Kept in your system keyring. Find it on Nexus under Settings, API Keys.`}
+                sx={{ width: 420, maxWidth: '100%' }}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                startIcon={<LogIn size={16} />}
+                disabled={busy || key.trim() === ''}
+                sx={{ flexShrink: 0, height: 40 }}
+              >
+                {t`Sign in`}
+              </Button>
+            </Box>
+          </>
+        ) : null}
         {error ? (
           <Alert severity="error" title={error.details}>
             {error.message}

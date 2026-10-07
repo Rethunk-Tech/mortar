@@ -92,6 +92,7 @@ type Client struct {
 	CacheDir string
 	Now      func() time.Time
 	key      string
+	bearer   TokenSource
 	version  string
 	lim      *limiter
 	track    *trackedCache
@@ -107,9 +108,9 @@ func New(version string) *Client {
 	return &Client{version: version, lim: &limiter{}, track: &trackedCache{}, scanMu: &sync.Mutex{}, scans: map[scanKey]map[int]string{}}
 }
 
-// WithKey returns a client that authenticates with key and shares c's rate-limit and tracked-list state.
-func (c *Client) WithKey(key string) *Client {
-	return &Client{HTTP: c.HTTP, BaseURL: c.BaseURL, CacheDir: c.CacheDir, Now: c.Now, key: key, version: c.version, lim: c.lim, track: c.track, scanMu: c.scanMu, scans: c.scans, onLimits: c.onLimits, Servers: c.Servers}
+// with returns a client that authenticates with key or bearer and shares c's rate-limit and tracked-list state.
+func (c *Client) with(key string, bearer TokenSource) *Client {
+	return &Client{HTTP: c.HTTP, BaseURL: c.BaseURL, CacheDir: c.CacheDir, Now: c.Now, key: key, bearer: bearer, version: c.version, lim: c.lim, track: c.track, scanMu: c.scanMu, scans: c.scans, onLimits: c.onLimits, Servers: c.Servers}
 }
 
 // SetLimitsHook is called after a response updates the rate-limit budget.
@@ -211,7 +212,9 @@ func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (
 	if err != nil {
 		return 0, "", nil, err
 	}
-	req.Header.Set("Apikey", c.key)
+	if err := c.authorize(ctx, req); err != nil {
+		return 0, "", nil, err
+	}
 	req.Header.Set("Application-Name", "Mortar")
 	req.Header.Set("Application-Version", c.version)
 	req.Header.Set("User-Agent", "Mortar/"+c.version)

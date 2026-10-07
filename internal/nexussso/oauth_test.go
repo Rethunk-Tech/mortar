@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -40,6 +41,9 @@ func TestOAuthPKCEAndRefresh(t *testing.T) {
 		u, _ := url.Parse(raw)
 		q := u.Query()
 		challenge = q.Get("code_challenge")
+		if q.Get("redirect_uri") != RedirectURI || q.Get("scope") != "public openid profile" {
+			t.Errorf("redirect %q scope %q", q.Get("redirect_uri"), q.Get("scope"))
+		}
 		if q.Get("client_id") != "cid" || q.Get("code_challenge_method") != "S256" {
 			t.Errorf("authorize query %v", q)
 		}
@@ -88,5 +92,28 @@ func TestOAuthTimeoutAndDeniedCallback(t *testing.T) {
 	}
 	if _, err := o.Authorize(context.Background()); err == nil {
 		t.Fatal("denied callback succeeded")
+	}
+}
+
+func TestRedirectURIIsTheFixedConstant(t *testing.T) {
+	if RedirectURI != "http://127.0.0.1:51762/oauth/callback" {
+		t.Fatalf("redirect %q", RedirectURI)
+	}
+}
+
+func TestBusyPortFailsWithoutFallingBack(t *testing.T) {
+	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", redirectAddr)
+	if err != nil {
+		t.Skipf("port %d is not free on this machine: %v", RedirectPort, err)
+	}
+	defer func() { _ = ln.Close() }()
+	opened := false
+	o := OAuth{ClientID: "c", OpenBrowser: func(string) error { opened = true; return nil }}
+	_, err = o.Authorize(context.Background())
+	if !errors.Is(err, ErrPortBusy) || err.Error() != "Port 51762 is in use; close the app using it and try again" {
+		t.Fatalf("error %v", err)
+	}
+	if opened {
+		t.Fatal("the browser opened although the callback could not listen")
 	}
 }

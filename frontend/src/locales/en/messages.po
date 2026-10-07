@@ -482,7 +482,7 @@ msgstr "Keep newer"
 msgid "Deleted profile"
 msgstr "Deleted profile"
 
-#: src/settings/sections/NexusMods.tsx:86
+#: src/settings/sections/NexusMods.tsx:87
 msgid "Untrack mods"
 msgstr "Untrack mods"
 
@@ -911,7 +911,7 @@ msgstr "Resize details"
 msgid "Delete group (mods stay)"
 msgstr "Delete group (mods stay)"
 
-#: src/settings/sections/NexusMods.tsx:154
+#: src/settings/sections/NexusMods.tsx:155
 msgid "Free"
 msgstr "Free"
 
@@ -1291,7 +1291,7 @@ msgstr "Update an existing profile…"
 msgid "Bundled with SMAPI"
 msgstr "Bundled with SMAPI"
 
-#: src/settings/sections/NexusMods.tsx:161
+#: src/settings/sections/NexusMods.tsx:162
 msgid "Untrack on Nexus"
 msgstr "Untrack on Nexus"
 
@@ -1588,8 +1588,8 @@ msgstr "Sending to {peer}: {current} of {total} files"
 msgid "Could not trim save backups"
 msgstr "Could not trim save backups"
 
-#: src/settings/sections/NexusMods.tsx:241
-#: src/settings/sections/NexusMods.tsx:270
+#: src/settings/sections/NexusMods.tsx:246
+#: src/settings/sections/NexusMods.tsx:277
 msgid "Sign in"
 msgstr "Sign in"
 
@@ -2083,8 +2083,8 @@ msgstr "the search is “{0}”"
 msgid "Host:port"
 msgstr "Host:port"
 
-#: src/settings/sections/NexusMods.tsx:127
-#: src/settings/sections/NexusMods.tsx:241
+#: src/settings/sections/NexusMods.tsx:128
+#: src/settings/sections/NexusMods.tsx:246
 msgid "Nexus account"
 msgstr "Nexus account"
 
@@ -3622,7 +3622,7 @@ msgid "Grid card size"
 msgstr "Grid card size"
 
 #. placeholder {0}: result.remaining
-#: src/settings/sections/NexusMods.tsx:65
+#: src/settings/sections/NexusMods.tsx:66
 msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
@@ -3803,8 +3803,8 @@ msgstr "Could not copy"
 msgid "No performance data was returned."
 msgstr "No performance data was returned."
 
-#: src/settings/sections/NexusMods.tsx:177
-#: src/settings/sections/NexusMods.tsx:181
+#: src/settings/sections/NexusMods.tsx:178
+#: src/settings/sections/NexusMods.tsx:182
 msgid "Ask me to endorse mods I keep using"
 msgstr "Ask me to endorse mods I keep using"
 
@@ -4209,7 +4209,7 @@ msgstr "Done"
 msgid "Content pack for {hostName}"
 msgstr "Content pack for {hostName}"
 
-#: src/settings/sections/NexusMods.tsx:83
+#: src/settings/sections/NexusMods.tsx:84
 msgid "Untrack the {gameName} mods none of your profiles use, out of {trackedCount} tracked? Nexus has no undo for this."
 msgstr "Untrack the {gameName} mods none of your profiles use, out of {trackedCount} tracked? Nexus has no undo for this."
 
@@ -5025,8 +5025,8 @@ msgstr "Steam build"
 msgid "Heart"
 msgstr "Heart"
 
-#: src/settings/sections/NexusMods.tsx:127
-#: src/settings/sections/NexusMods.tsx:144
+#: src/settings/sections/NexusMods.tsx:128
+#: src/settings/sections/NexusMods.tsx:145
 msgid "Sign out"
 msgstr "Sign out"
 
@@ -5083,7 +5083,7 @@ msgstr "Settings backups"
 msgid "Choose a game"
 msgstr "Choose a game"
 
-#: src/settings/sections/NexusMods.tsx:172
+#: src/settings/sections/NexusMods.tsx:173
 msgid "Untrack all…"
 msgstr "Untrack all…"
 
@@ -5714,7 +5714,7 @@ msgstr "The automatic cover is used after Save."
 msgid "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 msgstr "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 
-#: src/settings/sections/NexusMods.tsx:260
+#: src/settings/sections/NexusMods.tsx:267
 msgid "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 
@@ -5998,7 +5998,7 @@ msgstr "Enter 1 or more"
 #: src/mods/columnLabel.ts:14
 #: src/mods/NexusDetails.tsx:108
 #: src/mods/Sidebar.tsx:492
-#: src/settings/sections/NexusMods.tsx:176
+#: src/settings/sections/NexusMods.tsx:177
 msgid "Endorsements"
 msgstr "Endorsements"
 
@@ -6574,7 +6574,7 @@ msgstr "Moon"
 
 #: src/settings/sections/ItchAccount.tsx:62
 #: src/settings/sections/ItchAccount.tsx:73
-#: src/settings/sections/NexusMods.tsx:241
+#: src/settings/sections/NexusMods.tsx:246
 msgid "API key"
 msgstr "API key"
 
@@ -6590,7 +6590,7 @@ msgstr "Incompatible version"
 msgid "Share FOMOD choices"
 msgstr "Share FOMOD choices"
 
-#: src/settings/sections/NexusMods.tsx:118
+#: src/settings/sections/NexusMods.tsx:119
 msgid "Untrack every mod you track on Nexus"
 msgstr "Untrack every mod you track on Nexus"
 
@@ -7280,7 +7280,7 @@ msgid "Add a tag"
 msgstr "Add a tag"
 
 #: src/queue/store.ts:132
-#: src/settings/sections/NexusMods.tsx:220
+#: src/settings/sections/NexusMods.tsx:225
 msgid "Nexus rejected your API key"
 msgstr "Nexus rejected your API key"
 
@@ -7331,7 +7331,7 @@ msgstr "Reachable"
 msgid "Colour"
 msgstr "Colour"
 
-#: src/settings/sections/NexusMods.tsx:84
+#: src/settings/sections/NexusMods.tsx:85
 msgid "{trackedCount, plural, one {Untrack all # tracked {gameName} mod on Nexus? Nexus has no undo for this.} other {Untrack all # tracked {gameName} mods on Nexus? Nexus has no undo for this.}}"
 msgstr "{trackedCount, plural, one {Untrack all # tracked {gameName} mod on Nexus? Nexus has no undo for this.} other {Untrack all # tracked {gameName} mods on Nexus? Nexus has no undo for this.}}"
 
@@ -8189,7 +8189,7 @@ msgstr "Manage templates"
 msgid "Could not track"
 msgstr "Could not track"
 
-#: src/settings/sections/NexusMods.tsx:139
+#: src/settings/sections/NexusMods.tsx:140
 msgid "Signed out of Nexus"
 msgstr "Signed out of Nexus"
 
@@ -8711,7 +8711,7 @@ msgstr "unverified until downloaded"
 msgid "already listed"
 msgstr "already listed"
 
-#: src/settings/sections/NexusMods.tsx:72
+#: src/settings/sections/NexusMods.tsx:73
 msgid "Could not untrack mods"
 msgstr "Could not untrack mods"
 
@@ -8833,7 +8833,7 @@ msgstr "Archive contents"
 msgid "Mod or event"
 msgstr "Mod or event"
 
-#: src/settings/sections/NexusMods.tsx:122
+#: src/settings/sections/NexusMods.tsx:123
 msgid "Untrack every {gameName} mod on Nexus"
 msgstr "Untrack every {gameName} mod on Nexus"
 
@@ -9387,7 +9387,7 @@ msgid "Set as default"
 msgstr "Set as default"
 
 #. placeholder {0}: result.untracked
-#: src/settings/sections/NexusMods.tsx:60
+#: src/settings/sections/NexusMods.tsx:61
 msgid "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 
@@ -10295,7 +10295,7 @@ msgstr "Auto-enable requirements"
 msgid "Enabled"
 msgstr "Enabled"
 
-#: src/settings/sections/NexusMods.tsx:154
+#: src/settings/sections/NexusMods.tsx:155
 #: src/shell/AppMenu.tsx:63
 msgid "Premium"
 msgstr "Premium"
@@ -11154,7 +11154,7 @@ msgstr "Pinned: {0}"
 msgid "Unpin version"
 msgstr "Unpin version"
 
-#: src/settings/sections/NexusMods.tsx:159
+#: src/settings/sections/NexusMods.tsx:160
 msgid "Tracking"
 msgstr "Tracking"
 
@@ -12124,7 +12124,7 @@ msgid "Used by: {label}"
 msgstr "Used by: {label}"
 
 #: src/firstrun/NexusStep.tsx:26
-#: src/settings/sections/NexusMods.tsx:150
+#: src/settings/sections/NexusMods.tsx:151
 #: src/settings/sections/Sources.tsx:97
 msgid "Signed in as {name}"
 msgstr "Signed in as {name}"
@@ -12307,7 +12307,7 @@ msgstr "{0} was installed from another site. Updating installs {1} from {2} inst
 #: src/firstrun/GameSetup.tsx:165
 #: src/mods/listRows.ts:118
 #: src/mods/Sidebar.tsx:551
-#: src/settings/sections/NexusMods.tsx:300
+#: src/settings/sections/NexusMods.tsx:309
 #: src/share/DestinationGrid.tsx:56
 #: src/share/ShareDialog.tsx:37
 msgid "Nexus Mods"
@@ -13015,7 +13015,7 @@ msgstr "{0}'s farm ({1}) was last played with mods this profile lacks or has dis
 msgid "{0, plural, one {Deleted # backup} other {Deleted # backups}}, freed {1}"
 msgstr "{0, plural, one {Deleted # backup} other {Deleted # backups}}, freed {1}"
 
-#: src/settings/sections/NexusMods.tsx:120
+#: src/settings/sections/NexusMods.tsx:121
 msgid "{trackedCount, plural, one {# {gameName} mod tracked on Nexus} other {# {gameName} mods tracked on Nexus}}"
 msgstr "{trackedCount, plural, one {# {gameName} mod tracked on Nexus} other {# {gameName} mods tracked on Nexus}}"
 
@@ -13066,7 +13066,7 @@ msgstr "Steam must be installed and signed in for this game. Install Steam, sign
 msgid "What Mortar does when the game starts, then restore when it exits."
 msgstr "What Mortar does when the game starts, then restore when it exits."
 
-#: src/settings/sections/NexusMods.tsx:167
+#: src/settings/sections/NexusMods.tsx:168
 msgid "Untrack unused…"
 msgstr "Untrack unused…"
 
@@ -13528,7 +13528,7 @@ msgstr "Switch profile"
 msgid " · "
 msgstr " · "
 
-#: src/settings/sections/NexusMods.tsx:250
+#: src/settings/sections/NexusMods.tsx:257
 msgid "Personal API key"
 msgstr "Personal API key"
 
@@ -13560,7 +13560,7 @@ msgstr "{0} of {1} requests left · resets {2}"
 msgid "Focus the previous mod"
 msgstr "Focus the previous mod"
 
-#: src/settings/sections/NexusMods.tsx:80
+#: src/settings/sections/NexusMods.tsx:81
 msgid "Untrack mods?"
 msgstr "Untrack mods?"
 
