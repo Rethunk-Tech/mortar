@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
@@ -343,7 +344,7 @@ func compactDeps(pk []pkg) {
 			for k, d := range vs[j].Deps {
 				id, ok := index[d]
 				if !ok {
-					id = uint32(len(tab.names))
+					id = uint32(len(tab.names) & math.MaxUint32)
 					tab.names = append(tab.names, d)
 					index[d] = id
 				}
