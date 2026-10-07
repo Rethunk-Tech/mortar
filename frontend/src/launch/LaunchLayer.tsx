@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Modal,
   Typography,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -37,7 +38,6 @@ import { SyncOffers } from '../sync/SyncOffers.tsx'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { holdFocus, launchEscHides } from './holdFocus.ts'
 import { KnownGoodOffer } from './KnownGoodOffer.tsx'
 import { PrePlayDialog } from './PrePlayDialog.tsx'
 import { cancelling } from './playModeState.ts'
@@ -91,20 +91,6 @@ function Overlay({ game }: { game: string }) {
   const hide = useLaunch((s) => s.hide)
   const hidden = useLaunch((s) => s.hidden)
   const overlayOpen = status?.game === game && status.state === State.Launching && !hidden
-  useEffect(() => {
-    if (!overlayOpen) {
-      return
-    }
-    const onKey = (e: KeyboardEvent) => {
-      if (!launchEscHides(e.key, document.querySelectorAll('[role="dialog"]').length)) {
-        return
-      }
-      e.preventDefault()
-      hide()
-    }
-    globalThis.addEventListener('keydown', onKey)
-    return () => globalThis.removeEventListener('keydown', onKey)
-  }, [hide, overlayOpen])
   if (!overlayOpen) {
     return null
   }
@@ -112,85 +98,86 @@ function Overlay({ game }: { game: string }) {
   const count = profile ? userModCount(profile) : 0
   const shown = entries.slice(-VISIBLE_LINES)
   return (
-    <Box
-      ref={holdFocus}
-      role="dialog"
-      aria-modal={true}
-      aria-label={t`Launching ${name}`}
-      sx={{ ...scrim, gap: space.pad }}
+    <Modal
+      open={true}
+      onClose={hide}
+      hideBackdrop={true}
+      sx={{ zIndex: scrim.zIndex, clipPath: controlsCutout }}
     >
-      <Box
-        aria-hidden={true}
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 'var(--window-controls)',
-          height: 'var(--title-bar)',
-          '--wails-draggable': 'drag',
-        }}
-      />
-      <Spinner />
-      <Typography sx={{ fontSize: 30, fontWeight: 700 }}>{t`Launching ${name}`}</Typography>
-      <Typography sx={{ fontSize: 16 }}>
-        {plural(count, {
-          one: `${{ name: profileName }} · # mod`,
-          other: `${{ name: profileName }} · # mods`,
-        })}
-      </Typography>
-      {/* An empty log would be a blank band between the title and the buttons. */}
-      {shown.length > 0 && (
+      <Box role="dialog" aria-label={t`Launching ${name}`} sx={{ ...scrim, gap: space.pad }}>
         <Box
-          role="log"
+          aria-hidden={true}
           sx={{
-            width: '100%',
-            maxWidth: 720,
-            boxSizing: 'border-box',
-            minHeight: VISIBLE_LINES * LINE_HEIGHT + 2 * LOG_PAD,
-            px: space.pad,
-            py: space.pad,
-            bgcolor: 'var(--mortar-overlay-55)',
-            fontFamily: MONO,
-            fontSize: 13,
-            lineHeight: `${LINE_HEIGHT}px`,
-            color: 'text.secondary',
-            userSelect: 'text',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 'var(--window-controls)',
+            height: 'var(--title-bar)',
+            '--wails-draggable': 'drag',
           }}
-        >
-          {shown.map((line, i) => {
-            const text = format(line)
-            return (
-              <Typography
-                key={line.seq}
-                noWrap={true}
-                title={text}
-                sx={{
-                  font: 'inherit',
-                  color: i === shown.length - 1 ? 'var(--mortar-ink)' : 'inherit',
-                }}
-              >
-                {text}
-              </Typography>
-            )
+        />
+        <Spinner />
+        <Typography sx={{ fontSize: 30, fontWeight: 700 }}>{t`Launching ${name}`}</Typography>
+        <Typography sx={{ fontSize: 16 }}>
+          {plural(count, {
+            one: `${{ name: profileName }} · # mod`,
+            other: `${{ name: profileName }} · # mods`,
           })}
+        </Typography>
+        {/* An empty log would be a blank band between the title and the buttons. */}
+        {shown.length > 0 && (
+          <Box
+            role="log"
+            sx={{
+              width: '100%',
+              maxWidth: 720,
+              boxSizing: 'border-box',
+              minHeight: VISIBLE_LINES * LINE_HEIGHT + 2 * LOG_PAD,
+              px: space.pad,
+              py: space.pad,
+              bgcolor: 'var(--mortar-overlay-55)',
+              fontFamily: MONO,
+              fontSize: 13,
+              lineHeight: `${LINE_HEIGHT}px`,
+              color: 'text.secondary',
+              userSelect: 'text',
+            }}
+          >
+            {shown.map((line, i) => {
+              const text = format(line)
+              return (
+                <Typography
+                  key={line.seq}
+                  noWrap={true}
+                  title={text}
+                  sx={{
+                    font: 'inherit',
+                    color: i === shown.length - 1 ? 'var(--mortar-ink)' : 'inherit',
+                  }}
+                >
+                  {text}
+                </Typography>
+              )
+            })}
+          </Box>
+        )}
+        <Box sx={{ display: 'flex', gap: space.gap }}>
+          <Button
+            variant="outlined"
+            autoFocus={true}
+            onClick={() => {
+              setTab('console')
+              hide()
+            }}
+          >
+            {t`Open Console`}
+          </Button>
+          <Button variant="outlined" onClick={hide}>
+            {t`Hide`}
+          </Button>
         </Box>
-      )}
-      <Box sx={{ display: 'flex', gap: space.gap }}>
-        <Button
-          variant="outlined"
-          autoFocus={true}
-          onClick={() => {
-            setTab('console')
-            hide()
-          }}
-        >
-          {t`Open Console`}
-        </Button>
-        <Button variant="outlined" onClick={hide}>
-          {t`Hide`}
-        </Button>
       </Box>
-    </Box>
+    </Modal>
   )
 }
 
