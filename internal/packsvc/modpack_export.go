@@ -63,7 +63,7 @@ func (s *Service) ExportModpack(gameID, profileID, dest string, configs bool) (M
 	res := ModpackResult{Path: dest, Dependencies: []string{}, LeftOut: []string{}, Disabled: []string{}}
 	for _, e := range p.Entries {
 		switch {
-		case e.Source.Kind == profile.SourceSMAPI || e.Source.Kind == profile.SourceMortar:
+		case e.Source.Bundled():
 		case e.Source.Kind != profile.KindThunderstore:
 			res.LeftOut = append(res.LeftOut, entryName(e))
 		case allOff(e):

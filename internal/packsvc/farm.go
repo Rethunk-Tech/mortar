@@ -81,7 +81,7 @@ func (s *Service) ExportFarm(gameID, profileID string) (FarmList, error) {
 	}
 	out := FarmList{Game: gameID, Name: p.Name, Mods: []FarmMod{}}
 	for _, e := range p.Entries {
-		if e.Source.Kind == profile.SourceSMAPI || e.Source.Kind == profile.SourceMortar {
+		if e.Source.Bundled() {
 			continue
 		}
 		for _, c := range e.Mods {
