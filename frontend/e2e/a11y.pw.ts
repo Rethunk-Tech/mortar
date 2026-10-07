@@ -66,6 +66,9 @@ async function scanGame(
   theme: (typeof THEMES)[number],
 ): Promise<string[]> {
   const found: string[] = []
+  // The views, the profile editor's tabs and the settings pages are the same screens for every game and theme, so
+  // only the first game in Dark walks them all; the rest scan what is specific to them.
+  const deep = theme === 'Dark' && game === GAMES[0]
   await page.getByRole('button', { name: `Open ${game.name}` }).click({ position: { x: 8, y: 8 } })
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
   // Mods is scanned below in each of its views.
@@ -80,7 +83,7 @@ async function scanGame(
   }
 
   await page.getByRole('tab', { name: 'Mods' }).click()
-  for (const view of ['List view', 'Grid view']) {
+  for (const view of deep ? ['List view', 'Grid view'] : ['Grid view']) {
     await page.getByRole('button', { name: view }).click()
     found.push(...(await scan(page, `${game.name} › Mods ${view}`)))
   }
@@ -97,10 +100,11 @@ async function scanGame(
   await page.getByRole('menuitem', { name: 'Edit profile' }).click()
   const editor = page.getByRole('dialog', { name: 'Edit profile' })
   await expect(editor).toBeVisible()
-  for (const tab of await editor
+  const editorTabs = await editor
     .getByRole('tablist', { name: 'Profile settings' })
     .getByRole('tab')
-    .all()) {
+    .all()
+  for (const tab of deep ? editorTabs : editorTabs.slice(0, 1)) {
     await tab.click()
     found.push(...(await scan(page, `${game.name} › Edit profile › ${await tab.innerText()}`)))
   }
@@ -110,7 +114,7 @@ async function scanGame(
   await openGameSettings(page, game.name)
   await expect(page.getByRole('navigation', { name: 'Settings sections' })).toBeVisible()
   // The game's settings pages are built from the same rows as Mortar's, which are scanned in both themes.
-  found.push(...(await scanSettings(page, `${game.name} settings`, theme === 'Dark')))
+  found.push(...(await scanSettings(page, `${game.name} settings`, deep)))
   return found
 }
 
