@@ -22,12 +22,13 @@ export function ListCallout({
         mx: 2,
         mt: 1.25,
         flexShrink: 0,
+        flexWrap: 'wrap',
         alignItems: 'center',
         bgcolor: calloutFill('info'),
         border: '1px solid',
         borderColor: calloutLine('info'),
         '& .MuiAlert-message': { flex: 1, minWidth: 200 },
-        '& .MuiAlert-action': { gap: 1, flexShrink: 0, alignItems: 'center' },
+        '& .MuiAlert-action': { gap: 1, flexWrap: 'wrap', alignItems: 'center', ml: 'auto' },
       }}
     >
       <Typography sx={{ fontSize: 14 }}>{text}</Typography>
