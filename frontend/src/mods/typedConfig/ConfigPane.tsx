@@ -108,6 +108,121 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
   )
 }
 
+type PaneFile = ReturnType<typeof useTypedConfig.getState>['files'][number]
+
+function Toolbar({
+  file,
+  mod,
+  single,
+  query,
+  onQuery,
+  onReset,
+}: {
+  file: PaneFile | undefined
+  mod: Mod | null
+  single: boolean
+  query: string
+  onQuery: (query: string) => void
+  onReset: () => void
+}) {
+  const { t } = useLingui()
+  // One file needs no picker: the editor takes the width and the toolbar names the file.
+  let fileCaption = ''
+  if (single && file) {
+    fileCaption = file.format === 'gmcm' ? t`In-game menu` : file.name
+  }
+  return (
+    <Box
+      sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: space.pad, py: space.gap }}
+    >
+      <Typography
+        noWrap={true}
+        title={file?.name ?? ''}
+        sx={{ flex: 1, minWidth: 0, fontSize: 12, color: 'text.secondary' }}
+      >
+        {fileCaption}
+      </Typography>
+      <SearchField label={t`Search entries`} value={query} onChange={onQuery} sx={{ width: 260 }} />
+      {file?.format === 'gmcm' || !mod ? null : <PresetsButton mod={mod} />}
+      <Button
+        variant="outlined"
+        size="small"
+        disabled={!file || modifiedCount(file) === 0}
+        onClick={onReset}
+      >
+        {t`Reset all`}
+      </Button>
+    </Box>
+  )
+}
+
+function FileList({
+  files,
+  current,
+  onSelect,
+}: {
+  files: PaneFile[]
+  current: string
+  onSelect: (name: string) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <List
+      aria-label={t`Config files`}
+      sx={{
+        width: FILES_WIDTH_PX,
+        flexShrink: 0,
+        overflowY: 'auto',
+        borderRight: '1px solid var(--mortar-hairline)',
+      }}
+    >
+      {files.map((f) => (
+        <ListItemButton key={f.name} selected={f.name === current} onClick={() => onSelect(f.name)}>
+          <ListItemText
+            primary={f.format === 'gmcm' ? t`In-game menu` : f.label || f.name}
+            slotProps={{ primary: { noWrap: true } }}
+          />
+        </ListItemButton>
+      ))}
+    </List>
+  )
+}
+
+function Sections({ shown }: { shown: ReturnType<typeof filterFile> | null }) {
+  const { t } = useLingui()
+  return (
+    <Box
+      sx={{
+        flex: 1,
+        minWidth: 0,
+        overflowY: 'auto',
+        p: space.pad,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: space.gap,
+      }}
+    >
+      {shown?.sections.map((section) => (
+        <Box
+          key={section.name}
+          component="section"
+          sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
+        >
+          <Typography component="h3" sx={{ fontSize: 16, fontWeight: 600, mt: 1 }}>
+            {section.name}
+          </Typography>
+          {section.entries.map((entry) => (
+            <EntryRow key={entry.key} section={section.name} entry={entry} />
+          ))}
+        </Box>
+      ))}
+      {shown && shown.sections.length === 0 ? (
+        <Typography sx={{ color: 'text.secondary' }}>{t`No entries match.`}</Typography>
+      ) : null}
+    </Box>
+  )
+}
+
 // The editor of one selection's config files, beside the Config page's list. A selection without a mod (the unowned
 // .cfg files) opens on `file` and offers no presets.
 export function ConfigPane({
@@ -143,45 +258,21 @@ export function ConfigPane({
     }
   }, [updated, current, select])
   const file = files.find((f) => f.name === current)
-  const shown = file ? filterFile(file, query) : null
-  // One file needs no picker: the editor takes the width and the toolbar names the file.
   const single = files.length <= 1
-  let fileCaption = ''
-  if (single && file) {
-    fileCaption = file.format === 'gmcm' ? t`In-game menu` : file.name
-  }
   return (
     <Box
       aria-label={t`Config of ${name}`}
       role="region"
       sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
     >
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: space.pad, py: space.gap }}
-      >
-        <Typography
-          noWrap={true}
-          title={file?.name ?? ''}
-          sx={{ flex: 1, minWidth: 0, fontSize: 12, color: 'text.secondary' }}
-        >
-          {fileCaption}
-        </Typography>
-        <SearchField
-          label={t`Search entries`}
-          value={query}
-          onChange={setQuery}
-          sx={{ width: 260 }}
-        />
-        {file?.format === 'gmcm' || !mod ? null : <PresetsButton mod={mod} />}
-        <Button
-          variant="outlined"
-          size="small"
-          disabled={!file || modifiedCount(file) === 0}
-          onClick={() => setConfirming(true)}
-        >
-          {t`Reset all`}
-        </Button>
-      </Box>
+      <Toolbar
+        file={file}
+        mod={mod}
+        single={single}
+        query={query}
+        onQuery={setQuery}
+        onReset={() => setConfirming(true)}
+      />
       {loadError ? (
         <Alert
           severity="error"
@@ -196,59 +287,8 @@ export function ConfigPane({
         </Alert>
       ) : null}
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
-        {single ? null : (
-          <List
-            aria-label={t`Config files`}
-            sx={{
-              width: FILES_WIDTH_PX,
-              flexShrink: 0,
-              overflowY: 'auto',
-              borderRight: '1px solid var(--mortar-hairline)',
-            }}
-          >
-            {files.map((f) => (
-              <ListItemButton
-                key={f.name}
-                selected={f.name === current}
-                onClick={() => select(f.name)}
-              >
-                <ListItemText
-                  primary={f.format === 'gmcm' ? t`In-game menu` : f.label || f.name}
-                  slotProps={{ primary: { noWrap: true } }}
-                />
-              </ListItemButton>
-            ))}
-          </List>
-        )}
-        <Box
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            overflowY: 'auto',
-            p: space.pad,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: space.gap,
-          }}
-        >
-          {shown?.sections.map((section) => (
-            <Box
-              key={section.name}
-              component="section"
-              sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
-            >
-              <Typography component="h3" sx={{ fontSize: 16, fontWeight: 600, mt: 1 }}>
-                {section.name}
-              </Typography>
-              {section.entries.map((entry) => (
-                <EntryRow key={entry.key} section={section.name} entry={entry} />
-              ))}
-            </Box>
-          ))}
-          {shown && shown.sections.length === 0 ? (
-            <Typography sx={{ color: 'text.secondary' }}>{t`No entries match.`}</Typography>
-          ) : null}
-        </Box>
+        {single ? null : <FileList files={files} current={current} onSelect={(n) => select(n)} />}
+        <Sections shown={file ? filterFile(file, query) : null} />
       </Box>
       <ConfirmDialog
         open={confirming}

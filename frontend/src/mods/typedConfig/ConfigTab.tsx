@@ -13,15 +13,16 @@ import {
   Typography,
 } from '@mui/material'
 import { Check, ChevronDown, Filter, Play, SlidersHorizontal } from 'lucide-react'
-import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ModConfig } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/configsvc/models.ts'
 import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { playOpenProfile } from '../../launch/playOpen.ts'
 import { ControlsRow } from '../../shell/ControlsRow.tsx'
 import { EmptyState } from '../../shell/EmptyState.tsx'
+import { LoadErrorRow, LoadingRow } from '../../shell/LoadingRow.tsx'
 import { SearchField } from '../../shell/SearchField.tsx'
 import { space } from '../../theme/density.ts'
-import { reportUnexpected } from '../../toasts/report.ts'
+import { type InlineError, inlineError } from '../../toasts/report.ts'
 import { GroupHeaderRow } from '../ModsGroupHeader.tsx'
 import { LetterTile } from '../parts.tsx'
 import { useMods } from '../store.ts'
@@ -221,27 +222,8 @@ function OtherFiles({
   )
 }
 
-// The Config page: every mod with a config source on the left, the editor of the chosen one on the right.
-export function ConfigTab({ profile, game }: { profile: Profile; game: string }) {
-  const { t } = useLingui()
-  const list = useConfigList((s) => s.byProfile[profile.id]?.list)
-  const stored = useConfigList((s) => s.selected[profile.id])
-  const load = useConfigList((s) => s.load)
-  const choose = useConfigList((s) => s.select)
-  const mods = useMods((s) => s.mods)
-  const view = useModGroups(mods, profile)
-  const heading = useListHeading(view.groupBy)
-  const [query, setQuery] = useState('')
-  const [show, setShow] = useState<ConfigShow>('all')
-  const stamp = String(profile.updated)
-  useEffect(() => {
-    load(game, profile.id, stamp, true).catch(reportUnexpected)
-  }, [load, game, profile.id, stamp])
-  const all = list?.mods ?? []
-  const total = all.length
-  const other = list?.other ?? []
-  const shown = useMemo(() => filterConfigMods(all, query, show), [all, query, show])
-  // The list follows the Mods page's grouping and sort: its groups, filtered to the mods with a config source.
+// The list follows the Mods page's grouping and sort: its groups, filtered to the mods with a config source.
+function useListed(view: GroupsView, shown: ModConfig[]) {
   const listed = useMemo(() => {
     const byMod = new Map(shown.map((c) => [`${c.key}/${c.id}`, c]))
     const rows = view.groups
@@ -263,30 +245,26 @@ export function ConfigTab({ profile, game }: { profile: Profile; game: string })
     () => view.groups.map((g) => ({ key: g.key, items: g.items })),
     [view.groups],
   )
-  const selection = selectionOf(list, stored, profile.id)
-  if (!list) {
-    return null
-  }
-  if (all.length === 0 && other.length === 0) {
-    return (
-      <EmptyState
-        icon={<SlidersHorizontal size={40} />}
-        title={t`No mod settings yet`}
-        action={
-          <Button variant="contained" startIcon={<Play size={16} />} onClick={playOpenProfile}>
-            {t`Play`}
-          </Button>
-        }
-      >
-        {t`Mods write their settings the first time the game runs.`}
-      </EmptyState>
-    )
-  }
+  return { listed, headerGroups }
+}
+
+function Editor({
+  profile,
+  game,
+  selection,
+  all,
+  other,
+}: {
+  profile: Profile
+  game: string
+  selection: string | undefined
+  all: ModConfig[]
+  other: { name: string }[]
+}) {
+  const mods = useMods((s) => s.mods)
   const chosenMod = all.find((m) => modSelection(m.id) === selection)
-  const chosenFile = other.find((f) => fileSelection(f.name) === selection)
-  let editor: ReactNode = null
   if (chosenMod) {
-    editor = (
+    return (
       <ConfigPane
         key={`${profile.id}/${chosenMod.id}`}
         name={chosenMod.name}
@@ -294,16 +272,132 @@ export function ConfigTab({ profile, game }: { profile: Profile; game: string })
         target={{ game, profile: profile.id, key: chosenMod.key, id: chosenMod.id }}
       />
     )
-  } else if (chosenFile) {
-    editor = (
-      <ConfigPane
-        key={`${profile.id}/file/${chosenFile.name}`}
-        name={chosenFile.name}
-        mod={null}
-        target={{ game, profile: profile.id, key: '', id: '' }}
-        file={chosenFile.name}
-      />
+  }
+  const chosenFile = other.find((f) => fileSelection(f.name) === selection)
+  if (!chosenFile) {
+    return null
+  }
+  return (
+    <ConfigPane
+      key={`${profile.id}/file/${chosenFile.name}`}
+      name={chosenFile.name}
+      mod={null}
+      target={{ game, profile: profile.id, key: '', id: '' }}
+      file={chosenFile.name}
+    />
+  )
+}
+
+function NoSettings() {
+  const { t } = useLingui()
+  return (
+    <EmptyState
+      icon={<SlidersHorizontal size={40} />}
+      title={t`No mod settings yet`}
+      action={
+        <Button variant="contained" startIcon={<Play size={16} />} onClick={playOpenProfile}>
+          {t`Play`}
+        </Button>
+      }
+    >
+      {t`Mods write their settings the first time the game runs.`}
+    </EmptyState>
+  )
+}
+
+function ModsColumn({
+  profileId,
+  view,
+  shown,
+  all,
+  other,
+  without,
+  selection,
+  filtered,
+  showOther,
+}: {
+  profileId: string
+  view: GroupsView
+  shown: ModConfig[]
+  all: ModConfig[]
+  other: { name: string; changed?: boolean }[]
+  without: number
+  selection: string | undefined
+  filtered: boolean
+  showOther: boolean
+}) {
+  const { t } = useLingui()
+  const choose = useConfigList((s) => s.select)
+  const heading = useListHeading(view.groupBy)
+  const { listed, headerGroups } = useListed(view, shown)
+  const onChoose = (sel: string) => choose(profileId, sel)
+  return (
+    <Box
+      sx={{
+        width: LIST_WIDTH_PX,
+        flexShrink: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        borderRight: '1px solid var(--mortar-hairline)',
+      }}
+    >
+      <List aria-label={t`Mods with settings`} sx={{ flex: 1, overflowY: 'auto', py: 0 }}>
+        {listed.map((item) => (
+          <ListEntry
+            key={item.key}
+            item={item}
+            view={view}
+            heading={heading}
+            headerGroups={headerGroups}
+            selection={selection}
+            onChoose={onChoose}
+          />
+        ))}
+        {shown.length === 0 && all.length > 0 ? (
+          <Typography sx={{ px: space.pad, py: space.gap, color: 'text.secondary' }}>
+            {t`No mods match`}
+          </Typography>
+        ) : null}
+        {other.length > 0 && showOther && !filtered ? (
+          <OtherFiles other={other} selection={selection} onChoose={onChoose} />
+        ) : null}
+      </List>
+      {without > 0 ? <WithoutConfig count={without} /> : null}
+    </Box>
+  )
+}
+
+// The Config page: every mod with a config source on the left, the editor of the chosen one on the right.
+export function ConfigTab({ profile, game }: { profile: Profile; game: string }) {
+  const { t } = useLingui()
+  const list = useConfigList((s) => s.byProfile[profile.id]?.list)
+  const stored = useConfigList((s) => s.selected[profile.id])
+  const load = useConfigList((s) => s.load)
+  const mods = useMods((s) => s.mods)
+  const view = useModGroups(mods, profile)
+  const [query, setQuery] = useState('')
+  const [show, setShow] = useState<ConfigShow>('all')
+  const stamp = String(profile.updated)
+  const [failure, setFailure] = useState<InlineError | null>(null)
+  const reload = useCallback(() => {
+    setFailure(null)
+    load(game, profile.id, stamp, true).catch((e: unknown) => setFailure(inlineError(e)))
+  }, [load, game, profile.id, stamp])
+  useEffect(reload, [reload])
+  const all = list?.mods ?? []
+  const total = all.length
+  const other = list?.other ?? []
+  const shown = useMemo(() => filterConfigMods(all, query, show), [all, query, show])
+  const selection = selectionOf(list, stored, profile.id)
+  if (!list) {
+    return failure ? (
+      <LoadErrorRow error={failure} onRetry={reload} />
+    ) : (
+      <LoadingRow>{t`Reading mod settings…`}</LoadingRow>
     )
+  }
+  if (all.length === 0 && other.length === 0) {
+    return <NoSettings />
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
@@ -318,43 +412,18 @@ export function ConfigTab({ profile, game }: { profile: Profile; game: string })
         <ShowMenu show={show} onChange={setShow} />
       </ControlsRow>
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
-        <Box
-          sx={{
-            width: LIST_WIDTH_PX,
-            flexShrink: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            borderRight: '1px solid var(--mortar-hairline)',
-          }}
-        >
-          <List aria-label={t`Mods with settings`} sx={{ flex: 1, overflowY: 'auto', py: 0 }}>
-            {listed.map((item) => (
-              <ListEntry
-                key={item.key}
-                item={item}
-                view={view}
-                heading={heading}
-                headerGroups={headerGroups}
-                selection={selection}
-                onChoose={(sel) => choose(profile.id, sel)}
-              />
-            ))}
-            {shown.length === 0 && all.length > 0 ? (
-              <Typography sx={{ px: space.pad, py: space.gap, color: 'text.secondary' }}>
-                {t`No mods match`}
-              </Typography>
-            ) : null}
-            {other.length > 0 && show === 'all' && query.trim() === '' ? (
-              <OtherFiles
-                other={other}
-                selection={selection}
-                onChoose={(sel) => choose(profile.id, sel)}
-              />
-            ) : null}
-          </List>
-          {list.without > 0 ? <WithoutConfig count={list.without} /> : null}
-        </Box>
-        {editor}
+        <ModsColumn
+          profileId={profile.id}
+          view={view}
+          shown={shown}
+          all={all}
+          other={other}
+          without={list.without}
+          selection={selection}
+          filtered={query.trim() !== ''}
+          showOther={show === 'all'}
+        />
+        <Editor profile={profile} game={game} selection={selection} all={all} other={other} />
       </Box>
     </Box>
   )

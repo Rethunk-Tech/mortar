@@ -209,7 +209,7 @@ msgstr "Open storage settings"
 msgid "Manage tools…"
 msgstr "Manage tools…"
 
-#: src/game/Home.tsx:83
+#: src/game/Home.tsx:84
 #: src/mods/Sidebar.tsx:162
 msgid "Updated"
 msgstr "Updated"
@@ -258,7 +258,7 @@ msgstr "Stop the game to change mods."
 msgid "Could not delete the template"
 msgstr "Could not delete the template"
 
-#: src/mods/typedConfig/ConfigPane.tsx:259
+#: src/mods/typedConfig/ConfigPane.tsx:299
 msgid "Every entry in {current} goes back to its default."
 msgstr "Every entry in {current} goes back to its default."
 
@@ -592,7 +592,7 @@ msgstr "Search settings"
 msgid "Notes"
 msgstr "Notes"
 
-#: src/game/Home.tsx:79
+#: src/game/Home.tsx:80
 #: src/saves/SaveDetails.tsx:83
 msgid "Last played {when}"
 msgstr "Last played {when}"
@@ -1129,7 +1129,7 @@ msgstr "Measure next launch"
 msgid "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
 msgstr "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
 
-#: src/share/ListFormat.tsx:40
+#: src/share/ListFormat.tsx:41
 msgid "Mod list copied"
 msgstr "Mod list copied"
 
@@ -1354,7 +1354,7 @@ msgstr "Create a bundle to reuse a set of mods."
 msgid "Show files"
 msgstr "Show files"
 
-#: src/mods/typedConfig/ConfigTab.tsx:330
+#: src/mods/typedConfig/ConfigTab.tsx:344
 msgid "Mods with settings"
 msgstr "Mods with settings"
 
@@ -1366,7 +1366,7 @@ msgstr "{count, plural, one {{name} was updated since this run and logged # erro
 msgid "Settings from the mod's in-game menu"
 msgstr "Settings from the mod's in-game menu"
 
-#: src/launch/VanillaPlay.tsx:105
+#: src/launch/VanillaPlay.tsx:103
 msgid "More play options"
 msgstr "More play options"
 
@@ -1555,8 +1555,8 @@ msgstr "The mod files can be copied directly from this Mortar."
 msgid "Newest lines kept in the Console"
 msgstr "Newest lines kept in the Console"
 
-#: src/mods/typedConfig/ConfigPane.tsx:182
-#: src/mods/typedConfig/ConfigPane.tsx:261
+#: src/mods/typedConfig/ConfigPane.tsx:153
+#: src/mods/typedConfig/ConfigPane.tsx:301
 #: src/settings/sections/Shortcuts.tsx:107
 #: src/settings/sections/Shortcuts.tsx:113
 msgid "Reset all"
@@ -1798,7 +1798,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/launch/LaunchLayer.tsx:296
 #: src/mods/LoadOrderTab.tsx:391
 #: src/mods/ModsTab.tsx:109
-#: src/mods/typedConfig/ConfigPane.tsx:191
+#: src/mods/typedConfig/ConfigPane.tsx:282
 #: src/mods/updateReview/updateAll.ts:59
 #: src/profiles/GameModsDialog.tsx:135
 #: src/profiles/HealthDialog.tsx:232
@@ -1921,7 +1921,7 @@ msgstr "Nothing in the queue needs a decision."
 msgid "Saved {name} as a launch preset template"
 msgstr "Saved {name} as a launch preset template"
 
-#: src/share/ListFormat.tsx:50
+#: src/share/ListFormat.tsx:51
 msgid "Copy mod list"
 msgstr "Copy mod list"
 
@@ -1959,7 +1959,7 @@ msgstr "Running for {time}"
 msgid "Name"
 msgstr "Name"
 
-#: src/mods/typedConfig/ConfigTab.tsx:207
+#: src/mods/typedConfig/ConfigTab.tsx:208
 msgid "Loader and other"
 msgstr "Loader and other"
 
@@ -2271,7 +2271,7 @@ msgstr "Mortar is up to date"
 #: src/mods/Toolbar.tsx:343
 #: src/mods/Toolbar.tsx:369
 #: src/mods/Toolbar.tsx:387
-#: src/mods/typedConfig/ConfigTab.tsx:312
+#: src/mods/typedConfig/ConfigTab.tsx:406
 #: src/profiles/CompareDialog.tsx:284
 #: src/profiles/CompareTop.tsx:182
 msgid "Filter mods"
@@ -2404,7 +2404,7 @@ msgstr "Show the first-run tips again"
 #: src/browse/BrowseShow.tsx:45
 #: src/mods/Toolbar.tsx:141
 #: src/mods/Toolbar.tsx:160
-#: src/mods/typedConfig/ConfigTab.tsx:112
+#: src/mods/typedConfig/ConfigTab.tsx:113
 #: src/nxm/store.ts:53
 #: src/profiles/CompareDialog.tsx:185
 #: src/profiles/LaunchPresetDialog.tsx:85
@@ -2417,10 +2417,10 @@ msgstr "Show the first-run tips again"
 msgid "Show"
 msgstr "Show"
 
-#: src/mods/typedConfig/ConfigPane.tsx:151
-#: src/mods/typedConfig/ConfigPane.tsx:216
-#: src/mods/typedConfig/ConfigTab.tsx:52
-#: src/mods/typedConfig/ConfigTab.tsx:98
+#: src/mods/typedConfig/ConfigPane.tsx:132
+#: src/mods/typedConfig/ConfigPane.tsx:182
+#: src/mods/typedConfig/ConfigTab.tsx:53
+#: src/mods/typedConfig/ConfigTab.tsx:99
 msgid "In-game menu"
 msgstr "In-game menu"
 
@@ -2440,7 +2440,7 @@ msgid "{count, plural, one {Overlaps with {by}: both change {detail}} other {Ove
 msgstr "{count, plural, one {Overlaps with {by}: both change {detail}} other {Overlaps with {by}: all change {detail}}}"
 
 #. placeholder {0}: chip.n
-#: src/mods/typedConfig/ConfigTab.tsx:50
+#: src/mods/typedConfig/ConfigTab.tsx:51
 msgid "{0} waiting"
 msgstr "{0} waiting"
 
@@ -3000,7 +3000,7 @@ msgstr "Find a mod in all profiles…"
 msgid "Compare…"
 msgstr "Compare…"
 
-#: src/mods/typedConfig/ConfigTab.tsx:274
+#: src/mods/typedConfig/ConfigTab.tsx:296
 msgid "No mod settings yet"
 msgstr "No mod settings yet"
 
@@ -3846,7 +3846,7 @@ msgstr "Could not back up saves before Play"
 msgid "Computer paired"
 msgstr "Computer paired"
 
-#: src/launch/VanillaPlay.tsx:260
+#: src/launch/VanillaPlay.tsx:246
 msgid "Default launch preset"
 msgstr "Default launch preset"
 
@@ -3879,9 +3879,9 @@ msgid "Not checked yet."
 msgstr "Not checked yet."
 
 #: src/mods/problemText.ts:38
-#: src/mods/typedConfig/ConfigTab.tsx:52
-#: src/mods/typedConfig/ConfigTab.tsx:97
-#: src/mods/typedConfig/ConfigTab.tsx:217
+#: src/mods/typedConfig/ConfigTab.tsx:53
+#: src/mods/typedConfig/ConfigTab.tsx:98
+#: src/mods/typedConfig/ConfigTab.tsx:218
 msgid "Changed"
 msgstr "Changed"
 
@@ -4026,7 +4026,7 @@ msgstr "This profile skips this version, so Mortar does not offer it."
 msgid "Search archives"
 msgstr "Search archives"
 
-#: src/game/Home.tsx:81
+#: src/game/Home.tsx:82
 msgid "Created"
 msgstr "Created"
 
@@ -4198,7 +4198,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/launch/PrePlayDialog.tsx:152
 #: src/launch/SaveWarnDialog.tsx:70
 #: src/launch/UpdateWarnDialog.tsx:50
-#: src/launch/VanillaPlay.tsx:280
+#: src/launch/VanillaPlay.tsx:266
 #: src/mods/AddToGroupDialog.tsx:99
 #: src/mods/CategoryEditor.tsx:156
 #: src/mods/CategoryEditor.tsx:236
@@ -4431,7 +4431,7 @@ msgstr "Mortar: {label}"
 #: src/mods/ModCards.tsx:462
 #: src/mods/ModList.tsx:364
 #: src/mods/Toolbar.tsx:194
-#: src/mods/typedConfig/ConfigTab.tsx:166
+#: src/mods/typedConfig/ConfigTab.tsx:167
 msgid "A mod with several tags appears under its first tag."
 msgstr "A mod with several tags appears under its first tag."
 
@@ -4480,7 +4480,7 @@ msgstr "Show in queue"
 #: src/profiles/ProfilesPage.tsx:277
 #: src/saves/SaveGapLine.tsx:22
 #: src/share/ImportPreview.tsx:84
-#: src/share/ListFormat.tsx:21
+#: src/share/ListFormat.tsx:22
 msgid "Disabled"
 msgstr "Disabled"
 
@@ -5119,8 +5119,8 @@ msgid "Log copied"
 msgstr "Log copied"
 
 #: src/launch/SmapiWarnDialog.tsx:23
-#: src/launch/VanillaPlay.tsx:143
-#: src/launch/VanillaPlay.tsx:254
+#: src/launch/VanillaPlay.tsx:141
+#: src/launch/VanillaPlay.tsx:236
 msgid "Play without mods"
 msgstr "Play without mods"
 
@@ -6207,7 +6207,7 @@ msgstr "Downloaded versions stay in the store for re-use."
 msgid "Skip for now"
 msgstr "Skip for now"
 
-#: src/mods/typedConfig/ConfigPane.tsx:201
+#: src/mods/typedConfig/ConfigPane.tsx:171
 #: src/share/ImportPreview.tsx:352
 #: src/share/Included.tsx:94
 msgid "Config files"
@@ -6298,7 +6298,7 @@ msgstr "In Mortar"
 msgid "Edit profile…"
 msgstr "Edit profile…"
 
-#: src/game/Home.tsx:175
+#: src/game/Home.tsx:193
 #: src/settings/GameSettingsPage.tsx:162
 msgid "{name} settings"
 msgstr "{name} settings"
@@ -6710,7 +6710,7 @@ msgid "Could not check this profile"
 msgstr "Could not check this profile"
 
 #. placeholder {0}: part.n
-#: src/share/ListFormat.tsx:90
+#: src/share/ListFormat.tsx:93
 msgid "Part {0} copied"
 msgstr "Part {0} copied"
 
@@ -6863,7 +6863,7 @@ msgstr "A folder of unpacked mods to add from the Add menu"
 msgid "Show {0} in its profile"
 msgstr "Show {0} in its profile"
 
-#: src/share/ListFormat.tsx:53
+#: src/share/ListFormat.tsx:54
 msgid "Mod list format"
 msgstr "Mod list format"
 
@@ -7092,7 +7092,7 @@ msgstr "Could not switch {0}"
 msgid "Asset map"
 msgstr "Asset map"
 
-#: src/mods/typedConfig/ConfigPane.tsx:258
+#: src/mods/typedConfig/ConfigPane.tsx:298
 msgid "Every change waiting for the next start is discarded."
 msgstr "Every change waiting for the next start is discarded."
 
@@ -7307,7 +7307,7 @@ msgstr "Installed and up to date"
 msgid "Regenerate token"
 msgstr "Regenerate token"
 
-#: src/mods/typedConfig/ConfigPane.tsx:155
+#: src/mods/typedConfig/ConfigPane.tsx:264
 msgid "Config of {name}"
 msgstr "Config of {name}"
 
@@ -7435,7 +7435,7 @@ msgstr "Looking in the downloads folder…"
 msgid "{count, plural, one {# mod update available} other {# mod updates available}}"
 msgstr "{count, plural, one {# mod update available} other {# mod updates available}}"
 
-#: src/launch/VanillaPlay.tsx:141
+#: src/launch/VanillaPlay.tsx:139
 msgid "Play without Steam overlay"
 msgstr "Play without Steam overlay"
 
@@ -7813,7 +7813,7 @@ msgstr "More details"
 msgid "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 msgstr "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 
-#: src/game/Home.tsx:170
+#: src/game/Home.tsx:188
 msgid "Share…"
 msgstr "Share…"
 
@@ -7861,7 +7861,7 @@ msgstr "{gameName}'s Steam launch options run {loader} in place of the game. Ste
 msgid "Switch profile: {0} {mods}"
 msgstr "Switch profile: {0} {mods}"
 
-#: src/game/Home.tsx:94
+#: src/game/Home.tsx:96
 #: src/saves/SaveDetails.tsx:55
 #: src/saves/SaveListRow.tsx:88
 msgid "Summer"
@@ -7888,7 +7888,7 @@ msgstr "Dismiss {0}"
 msgid "Choose an option in {invalidGroup}."
 msgstr "Choose an option in {invalidGroup}."
 
-#: src/launch/VanillaPlay.tsx:142
+#: src/launch/VanillaPlay.tsx:140
 msgid "Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running."
 msgstr "Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running."
 
@@ -8151,7 +8151,7 @@ msgstr "{gameName} save backups: {0}"
 msgid "Update all ({wantedCount})"
 msgstr "Update all ({wantedCount})"
 
-#: src/mods/typedConfig/ConfigPane.tsx:249
+#: src/mods/typedConfig/ConfigPane.tsx:220
 msgid "No entries match."
 msgstr "No entries match."
 
@@ -8262,7 +8262,7 @@ msgstr "Source health"
 msgid "{0}: desktop notification"
 msgstr "{0}: desktop notification"
 
-#: src/game/Home.tsx:126
+#: src/game/Home.tsx:144
 msgid "All saves"
 msgstr "All saves"
 
@@ -8552,7 +8552,7 @@ msgstr "Switch to Load order"
 msgid "Nothing to clean up."
 msgstr "Nothing to clean up."
 
-#: src/mods/typedConfig/ConfigTab.tsx:96
+#: src/mods/typedConfig/ConfigTab.tsx:97
 msgid "All"
 msgstr "All"
 
@@ -8921,7 +8921,7 @@ msgstr "Unofficial update available: {0}"
 msgid "Last scheduled backup {when}"
 msgstr "Last scheduled backup {when}"
 
-#: src/game/Home.tsx:94
+#: src/game/Home.tsx:96
 #: src/saves/SaveDetails.tsx:55
 #: src/saves/SaveListRow.tsx:88
 msgid "Winter"
@@ -9049,7 +9049,7 @@ msgstr "Open the import dialog"
 msgid "{profileName} has {0} more than once. {loader} loads only one, so pick which to keep. The others are disabled, not removed."
 msgstr "{profileName} has {0} more than once. {loader} loads only one, so pick which to keep. The others are disabled, not removed."
 
-#: src/share/ListFormat.tsx:26
+#: src/share/ListFormat.tsx:27
 msgid "Discord"
 msgstr "Discord"
 
@@ -9083,7 +9083,7 @@ msgstr "Reset"
 msgid "Stop the game first."
 msgstr "Stop the game first."
 
-#: src/game/Home.tsx:94
+#: src/game/Home.tsx:96
 #: src/saves/SaveDetails.tsx:55
 #: src/saves/SaveListRow.tsx:88
 msgid "Spring"
@@ -9106,7 +9106,7 @@ msgstr "Profile settings"
 msgid "Make {0} match {1}"
 msgstr "Make {0} match {1}"
 
-#: src/launch/VanillaPlay.tsx:237
+#: src/launch/VanillaPlay.tsx:222
 msgid "Set default preset…"
 msgstr "Set default preset…"
 
@@ -9174,7 +9174,7 @@ msgstr "No Mortar computers found nearby."
 msgid "Upload"
 msgstr "Upload"
 
-#: src/game/Home.tsx:48
+#: src/game/Home.tsx:49
 msgid "At a glance"
 msgstr "At a glance"
 
@@ -9239,7 +9239,7 @@ msgstr "{count, plural, one {# thing to repair} other {# things to repair}}"
 msgid "Downloads: {downloading} {percent}%"
 msgstr "Downloads: {downloading} {percent}%"
 
-#: src/launch/VanillaPlay.tsx:219
+#: src/launch/VanillaPlay.tsx:208
 #: src/profiles/LaunchPresetsBlock.tsx:45
 #: src/settings/sections/Appearance.tsx:68
 msgid "Default"
@@ -9466,7 +9466,7 @@ msgstr "Could not reset the settings of {0}"
 msgid "Could not rename the group"
 msgstr "Could not rename the group"
 
-#: src/launch/VanillaPlay.tsx:201
+#: src/launch/VanillaPlay.tsx:199
 msgid "Play with"
 msgstr "Play with"
 
@@ -9542,7 +9542,7 @@ msgstr "Include config files"
 msgid "Stopped asking about {folder}"
 msgstr "Stopped asking about {folder}"
 
-#: src/share/ListFormat.tsx:25
+#: src/share/ListFormat.tsx:26
 msgid "Plain text"
 msgstr "Plain text"
 
@@ -9867,7 +9867,7 @@ msgstr "Sharing"
 
 #. placeholder {0}: part.n
 #. placeholder {1}: parts.length
-#: src/share/ListFormat.tsx:97
+#: src/share/ListFormat.tsx:91
 msgid "Copy part {0} of {1}"
 msgstr "Copy part {0} of {1}"
 
@@ -10275,7 +10275,7 @@ msgid "The antivirus flagged it, so Mortar did not install it."
 msgstr "The antivirus flagged it, so Mortar did not install it."
 
 #. placeholder {0}: parts.length
-#: src/share/ListFormat.tsx:46
+#: src/share/ListFormat.tsx:47
 msgid "{0, plural, one {Copy mod list (# part)} other {Copy mod list (# parts)}}"
 msgstr "{0, plural, one {Copy mod list (# part)} other {Copy mod list (# parts)}}"
 
@@ -10383,7 +10383,7 @@ msgstr "Removed from Nexus · {0}"
 msgid "Abstain"
 msgstr "Abstain"
 
-#: src/game/Home.tsx:79
+#: src/game/Home.tsx:80
 msgid "Not played yet"
 msgstr "Not played yet"
 
@@ -10484,7 +10484,7 @@ msgstr "Auto-enable requirements"
 #: src/profiles/CompareTable.tsx:76
 #: src/profiles/ProfilesPage.tsx:268
 #: src/profiles/ProfilesPage.tsx:277
-#: src/share/ListFormat.tsx:21
+#: src/share/ListFormat.tsx:22
 msgid "Enabled"
 msgstr "Enabled"
 
@@ -10957,7 +10957,7 @@ msgid "Flagged by {0}: {1}{2}"
 msgstr "Flagged by {0}: {1}{2}"
 
 #: src/mods/Toolbar.tsx:342
-#: src/mods/typedConfig/ConfigTab.tsx:313
+#: src/mods/typedConfig/ConfigTab.tsx:407
 msgid "{total, plural, one {Filter # mod} other {Filter # mods}}"
 msgstr "{total, plural, one {Filter # mod} other {Filter # mods}}"
 
@@ -10969,7 +10969,7 @@ msgstr "Get mods"
 msgid "It encountered an error."
 msgstr "It encountered an error."
 
-#: src/game/Home.tsx:76
+#: src/game/Home.tsx:77
 msgid "No problems"
 msgstr "No problems"
 
@@ -11001,7 +11001,7 @@ msgstr "Stop the game to test a launch."
 #: src/firstrunTour/TourPopover.tsx:42
 #: src/games/GameSelect.tsx:258
 #: src/launch/PlayControl.tsx:175
-#: src/mods/typedConfig/ConfigTab.tsx:277
+#: src/mods/typedConfig/ConfigTab.tsx:299
 #: src/settings/GameSettingsPage.tsx:72
 #: src/settings/GameSettingsPage.tsx:100
 msgid "Play"
@@ -11144,8 +11144,8 @@ msgstr "Don't check before Play"
 msgid "Keep Mortar in the tray"
 msgstr "Keep Mortar in the tray"
 
-#: src/launch/VanillaPlay.tsx:218
-#: src/launch/VanillaPlay.tsx:274
+#: src/launch/VanillaPlay.tsx:208
+#: src/launch/VanillaPlay.tsx:260
 #: src/profiles/LaunchPresetsBlock.tsx:143
 #: src/profiles/LaunchPresetsBlock.tsx:147
 #: src/profiles/LoaderLaunchSettings.tsx:21
@@ -11191,7 +11191,7 @@ msgstr "Copy details"
 msgid "FromArea {0}"
 msgstr "FromArea {0}"
 
-#: src/mods/typedConfig/ConfigTab.tsx:281
+#: src/mods/typedConfig/ConfigTab.tsx:303
 msgid "Mods write their settings the first time the game runs."
 msgstr "Mods write their settings the first time the game runs."
 
@@ -11396,7 +11396,7 @@ msgstr "{name} takes {own} of your {total} start; {0, plural, one {# content pac
 msgid "Installing {loaderName}…"
 msgstr "Installing {loaderName}…"
 
-#: src/mods/typedConfig/ConfigTab.tsx:99
+#: src/mods/typedConfig/ConfigTab.tsx:100
 msgid "Waiting for next launch"
 msgstr "Waiting for next launch"
 
@@ -11415,7 +11415,7 @@ msgstr "{0} needs {1}"
 msgid "{endorsements, plural, one {# endorsement} other {# endorsements}} · {dl}"
 msgstr "{endorsements, plural, one {# endorsement} other {# endorsements}} · {dl}"
 
-#: src/share/ListFormat.tsx:24
+#: src/share/ListFormat.tsx:25
 msgid "Markdown"
 msgstr "Markdown"
 
@@ -11789,7 +11789,7 @@ msgstr "Play {playName}"
 msgid "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
-#: src/game/Home.tsx:96
+#: src/game/Home.tsx:137
 #: src/game/Sidebar.tsx:194
 #: src/saves/SaveListRow.tsx:42
 msgid "Saves"
@@ -12348,7 +12348,7 @@ msgstr "Share selection"
 msgid "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
 msgstr "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
 
-#: src/game/Home.tsx:126
+#: src/game/Home.tsx:144
 msgid "All saves ({total})"
 msgstr "All saves ({total})"
 
@@ -12634,7 +12634,7 @@ msgstr "Replace {name}?"
 msgid "Mods you put there show up here to add."
 msgstr "Mods you put there show up here to add."
 
-#: src/mods/typedConfig/ConfigPane.tsx:255
+#: src/mods/typedConfig/ConfigPane.tsx:295
 msgid "Reset all entries?"
 msgstr "Reset all entries?"
 
@@ -12955,7 +12955,7 @@ msgstr "Save…"
 msgid "Walk through profiles, Play, mods, and the command palette"
 msgstr "Walk through profiles, Play, mods, and the command palette"
 
-#: src/game/Home.tsx:94
+#: src/game/Home.tsx:96
 #: src/saves/SaveDetails.tsx:55
 #: src/saves/SaveListRow.tsx:88
 msgid "Fall"
@@ -13065,6 +13065,7 @@ msgstr "Yesterday"
 msgid "Each plugin's main-thread time per frame: its Harmony prefixes, postfixes and finalizers and its own Update, LateUpdate and FixedUpdate, less any timed call inside them. Code a transpiler rewrote and work on other threads are not counted."
 msgstr "Each plugin's main-thread time per frame: its Harmony prefixes, postfixes and finalizers and its own Update, LateUpdate and FixedUpdate, less any timed call inside them. Code a transpiler rewrote and work on other threads are not counted."
 
+#: src/game/Home.tsx:102
 #: src/saves/SavesTab.tsx:62
 msgid "Reading your saves…"
 msgstr "Reading your saves…"
@@ -13094,7 +13095,7 @@ msgstr "Mortar downloads and installs a mod when you click Mod Manager Download 
 msgid "Settings sections"
 msgstr "Settings sections"
 
-#: src/mods/typedConfig/ConfigPane.tsx:170
+#: src/mods/typedConfig/ConfigPane.tsx:145
 msgid "Search entries"
 msgstr "Search entries"
 
@@ -13268,7 +13269,7 @@ msgstr "Stay open"
 msgid "UI scale ({value}%)"
 msgstr "UI scale ({value}%)"
 
-#: src/mods/typedConfig/ConfigTab.tsx:186
+#: src/mods/typedConfig/ConfigTab.tsx:187
 msgid "{count, plural, one {# mod has no config yet; mods create it the first time the game runs.} other {# mods have no config yet; mods create it the first time the game runs.}}"
 msgstr "{count, plural, one {# mod has no config yet; mods create it the first time the game runs.} other {# mods have no config yet; mods create it the first time the game runs.}}"
 
@@ -13424,7 +13425,7 @@ msgstr "{0} ({1})"
 
 #. placeholder {0}: calendar.year
 #. placeholder {1}: seasons[calendar.season] ?? ''
-#: src/game/Home.tsx:115
+#: src/game/Home.tsx:123
 #: src/saves/SaveListRow.tsx:93
 msgid "Year {0} {1}"
 msgstr "Year {0} {1}"
@@ -13601,7 +13602,7 @@ msgstr "Could not change {0}"
 msgid "Leave out"
 msgstr "Leave out"
 
-#: src/game/Home.tsx:98
+#: src/game/Home.tsx:104
 #: src/saves/SavesTab.tsx:65
 msgid "No saves yet"
 msgstr "No saves yet"
@@ -13857,7 +13858,7 @@ msgid "Template deleted"
 msgstr "Template deleted"
 
 #: src/mods/ModsTab.tsx:133
-#: src/mods/typedConfig/ConfigTab.tsx:344
+#: src/mods/typedConfig/ConfigTab.tsx:358
 msgid "No mods match"
 msgstr "No mods match"
 
@@ -13926,6 +13927,10 @@ msgstr "Preferred download server"
 #: src/profiles/HistoryEventRow.tsx:113
 msgid "Put the profile back as it was before this entry. Newer entries are undone too."
 msgstr "Put the profile back as it was before this entry. Newer entries are undone too."
+
+#: src/mods/typedConfig/ConfigTab.tsx:396
+msgid "Reading mod settings…"
+msgstr "Reading mod settings…"
 
 #: src/mods/updateReview/PropagateUpdate.tsx:53
 msgid "Update profiles"
