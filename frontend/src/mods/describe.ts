@@ -291,8 +291,12 @@ export function useDescribe(): Describe {
           : t`${name} is deprecated on Thunderstore.`
       }
       case 'pluginClash': {
-        const names = listNames((p.pluginClash.copies ?? []).map((c) => c.name))
-        return t`${names} all ship the plugin ${p.pluginClash.guid}, and BepInEx loads only one.`
+        const copies = p.pluginClash.copies ?? []
+        const names = listNames(copies.map((c) => c.name))
+        const { guid } = p.pluginClash
+        return copies.length === 2
+          ? t`${names} both ship the plugin ${guid}, and BepInEx loads only one.`
+          : t`${names} all ${copies.length} ship the plugin ${guid}, and BepInEx loads only one.`
       }
       case 'setting':
         return describeSetting(p.setting)

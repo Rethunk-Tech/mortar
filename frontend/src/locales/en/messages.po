@@ -126,7 +126,7 @@ msgstr "Sidebar badge counts"
 msgid "Could not switch the selected mods"
 msgstr "Could not switch the selected mods"
 
-#: src/commandPalette/paletteLabels.ts:21
+#: src/commandPalette/paletteLabels.ts:20
 #: src/console/BisectDialog.tsx:193
 msgid "Open profile"
 msgstr "Open profile"
@@ -885,7 +885,6 @@ msgstr "Add a desktop shortcut"
 msgid "Installed by Mortar"
 msgstr "Installed by Mortar"
 
-#: src/commandPalette/paletteLabels.ts:8
 #: src/settings/shortcutLabels.ts:11
 #: src/shell/AppMenu.tsx:155
 msgid "Check mods and Mortar for updates"
@@ -949,7 +948,7 @@ msgstr "Move into this profile…"
 msgid "This preset will be deleted."
 msgstr "This preset will be deleted."
 
-#: src/commandPalette/paletteLabels.ts:15
+#: src/commandPalette/paletteLabels.ts:14
 msgid "Configure {name}…"
 msgstr "Configure {name}…"
 
@@ -2436,7 +2435,7 @@ msgstr "{0} {1}, year {2}"
 msgid "Dependency cycle"
 msgstr "Dependency cycle"
 
-#: src/commandPalette/paletteLabels.ts:17
+#: src/commandPalette/paletteLabels.ts:16
 #: src/firstrun/ProfileStep.tsx:193
 #: src/game/NewProfileDialog.tsx:208
 #: src/nxm/ArrivalDialog.tsx:161
@@ -3773,7 +3772,7 @@ msgstr "Go back"
 msgid "Unfinished downloads and temporary files"
 msgstr "Unfinished downloads and temporary files"
 
-#: src/commandPalette/paletteLabels.ts:9
+#: src/commandPalette/paletteLabels.ts:8
 msgid "Open Downloads"
 msgstr "Open Downloads"
 
@@ -5405,7 +5404,7 @@ msgstr "Restarting…"
 msgid "Delete profile…"
 msgstr "Delete profile…"
 
-#: src/commandPalette/paletteLabels.ts:10
+#: src/commandPalette/paletteLabels.ts:9
 msgid "Add from the downloads folder…"
 msgstr "Add from the downloads folder…"
 
@@ -5667,7 +5666,7 @@ msgstr "Pinned at this version"
 msgid "Updated from {0}"
 msgstr "Updated from {0}"
 
-#: src/commandPalette/paletteLabels.ts:22
+#: src/commandPalette/paletteLabels.ts:21
 msgid "Open mod"
 msgstr "Open mod"
 
@@ -5890,7 +5889,7 @@ msgstr "Chosen in the game's Steam properties."
 msgid "Game and SMAPI"
 msgstr "Game and SMAPI"
 
-#: src/commandPalette/paletteLabels.ts:18
+#: src/commandPalette/paletteLabels.ts:17
 #: src/settings/sections/StreamOverlay.tsx:399
 #: src/settings/sections/StreamOverlay.tsx:401
 #: src/settings/sections/StreamOverlay.tsx:407
@@ -7370,7 +7369,7 @@ msgstr "Play without Steam overlay"
 msgid "{label} is set per profile"
 msgstr "{label} is set per profile"
 
-#: src/commandPalette/paletteLabels.ts:14
+#: src/commandPalette/paletteLabels.ts:13
 #: src/console/CrashDialog.tsx:123
 #: src/console/CrashDialog.tsx:201
 #: src/mods/ProblemsTab.tsx:315
@@ -7633,7 +7632,7 @@ msgstr "Hide archive contents"
 msgid "Four Corners farm"
 msgstr "Four Corners farm"
 
-#: src/commandPalette/paletteLabels.ts:11
+#: src/commandPalette/paletteLabels.ts:10
 #: src/profiles/GameModsDialog.tsx:172
 #: src/profiles/PackImportDialog.tsx:173
 #: src/profiles/ProfileMenu.tsx:190
@@ -9908,7 +9907,7 @@ msgstr "These profiles have the same mods."
 msgid "Export as Nexus collection draft…"
 msgstr "Export as Nexus collection draft…"
 
-#: src/commandPalette/paletteLabels.ts:13
+#: src/commandPalette/paletteLabels.ts:12
 msgid "Review collection update"
 msgstr "Review collection update"
 
@@ -9976,6 +9975,7 @@ msgid "The log holds folder paths from this computer, which can include your use
 msgstr "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 
 #: src/commandPalette/crashBisect.ts:20
+#: src/commandPalette/paletteLabels.ts:23
 #: src/install/DownloadsDialog.tsx:254
 msgid "Open a profile first."
 msgstr "Open a profile first."
@@ -10329,7 +10329,7 @@ msgstr "{peer} cancelled it"
 msgid "No save backups yet."
 msgstr "No save backups yet."
 
-#: src/commandPalette/paletteLabels.ts:19
+#: src/commandPalette/paletteLabels.ts:18
 msgid "Recent changes"
 msgstr "Recent changes"
 
@@ -10708,7 +10708,7 @@ msgstr "3 times"
 msgid "Could not repair {name}"
 msgstr "Could not repair {name}"
 
-#: src/commandPalette/paletteLabels.ts:12
+#: src/commandPalette/paletteLabels.ts:11
 msgid "Paste a link…"
 msgstr "Paste a link…"
 
@@ -11241,7 +11241,7 @@ msgstr "Include"
 msgid "{count, plural, one {Changed # mod} other {Changed # mods}}"
 msgstr "{count, plural, one {Changed # mod} other {Changed # mods}}"
 
-#: src/commandPalette/paletteLabels.ts:23
+#: src/commandPalette/paletteLabels.ts:22
 #: src/mods/ModDetail.tsx:168
 #: src/mods/problemText.ts:44
 #: src/settings/SettingsPage.tsx:68
@@ -11486,7 +11486,7 @@ msgstr "{0} needs a newer version than this."
 msgid "Tag"
 msgstr "Tag"
 
-#: src/commandPalette/paletteLabels.ts:20
+#: src/commandPalette/paletteLabels.ts:19
 #: src/settings/sections/AboutDiagnostics.tsx:143
 #: src/settings/sections/AboutDiagnostics.tsx:177
 msgid "Diagnostics"
@@ -12640,6 +12640,10 @@ msgstr "This is no longer the latest change."
 msgid "Nexus page"
 msgstr "Nexus page"
 
+#: src/settings/shortcutLabels.ts:37
+msgid "Collapse or expand the sidebar"
+msgstr "Collapse or expand the sidebar"
+
 #: src/console/PerformancePanelParts.tsx:64
 msgid "Compare with…"
 msgstr "Compare with…"
@@ -12895,10 +12899,6 @@ msgstr "{0, plural, one {# imported} other {# imported}}"
 #: src/share/PreviewDialog.tsx:78
 msgid "Get Mortar"
 msgstr "Get Mortar"
-
-#: src/settings/shortcutLabels.ts:37
-msgid "Collapse or expand the profile sidebar"
-msgstr "Collapse or expand the profile sidebar"
 
 #: src/console/LogActions.tsx:137
 msgid "Save log…"
@@ -13441,7 +13441,7 @@ msgstr "Open in the tray instead of showing the window"
 msgid "No mods to share."
 msgstr "No mods to share."
 
-#: src/commandPalette/paletteLabels.ts:16
+#: src/commandPalette/paletteLabels.ts:15
 #: src/profiles/ProfileRow.tsx:253
 msgid "Share"
 msgstr "Share"

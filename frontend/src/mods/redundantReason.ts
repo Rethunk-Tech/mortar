@@ -1,3 +1,4 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { listNames } from '../i18n/list.ts'
 import { useMods } from './store.ts'
@@ -100,15 +101,26 @@ export function useRedundantRows() {
       })
     }
     for (const item of items.filter((x) => x.kind !== 'sameJob' || x.covered)) {
-      const by = listNames((item.by ?? []).map((b) => b.name))
+      const byNames = (item.by ?? []).map((b) => b.name)
+      const by = listNames(byNames)
+      const count = byNames.length
       const detail = item.detail ?? ''
       let reason = t`Every edit it makes is overwritten by ${by}`
       if (item.kind === 'superseded') {
-        reason = t`Replaced by ${by}, which is also enabled`
+        reason = t`${plural(count, {
+          one: `Replaced by ${by}, which is also enabled`,
+          other: `Replaced by ${by}, which are also enabled`,
+        })}`
       } else if (item.kind === 'bundled') {
-        reason = t`${by} already includes everything it changes`
+        reason = t`${plural(count, {
+          one: `${by} already includes everything it changes`,
+          other: `${by} together include everything it changes`,
+        })}`
       } else if (item.covered) {
-        reason = t`Overlaps with ${by}: both change ${detail}`
+        reason = t`${plural(count, {
+          one: `Overlaps with ${by}: both change ${detail}`,
+          other: `Overlaps with ${by}: all change ${detail}`,
+        })}`
       }
       rows.push({ key: item.key, id: item.id, name: item.name, reason })
     }
