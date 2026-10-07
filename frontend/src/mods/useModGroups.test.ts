@@ -71,6 +71,7 @@ const conflict = (i: number): AssetConflict => ({
   names: [],
   keys: [],
   winnerId: '',
+  winnerKind: '',
   winnerName: '',
   overridden: [],
   cosmetic: false,

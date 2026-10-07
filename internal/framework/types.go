@@ -37,16 +37,29 @@ type Mod struct {
 	manifest.Manifest
 }
 
+// WinnerKind values of an AssetConflict.
+const (
+	WinnerTop       = "top"        // the pack the checker ranks highest
+	WinnerChosen    = "chosen"     // the user's win choices make one pack's edits stand
+	WinnerLoadOrder = "load-order" // a dependency makes one pack load last
+	WinnerNeither   = "neither"    // Content Patcher applies none of the exclusive loads
+	WinnerUnclear   = "unclear"
+	WinnerPerEntry  = "per-entry" // the user settled each clash with a different winner
+)
+
 // AssetConflict is two or more enabled Content Patcher packs that Load the same target (hard)
 // or EditImage/EditMap the same target, or EditData the same entry or field (soft).
 type AssetConflict struct {
-	Kind       string   `json:"kind"` // "load" (hard) or "edit" (soft)
-	Target     string   `json:"target"`
-	PackIDs    []mod.ID `json:"packIds"`
-	Names      []string `json:"names"`
-	Keys       []string `json:"keys"`
-	WinnerID   mod.ID   `json:"winnerId"`
-	WinnerName string   `json:"winnerName"`
+	Kind     string   `json:"kind"` // "load" (hard) or "edit" (soft)
+	Target   string   `json:"target"`
+	PackIDs  []mod.ID `json:"packIds"`
+	Names    []string `json:"names"`
+	Keys     []string `json:"keys"`
+	WinnerID mod.ID   `json:"winnerId"`
+	// WinnerName is the winning pack's own name; empty when WinnerKind names no single winner.
+	WinnerName string `json:"winnerName"`
+	// WinnerKind says how the winner was settled; the UI words each kind.
+	WinnerKind string   `json:"winnerKind"`
 	Overridden []string `json:"overridden"`
 	// Cosmetic marks an edit conflict whose every overlap is harmless (see harmless): shown, never counted.
 	Cosmetic bool `json:"cosmetic"`

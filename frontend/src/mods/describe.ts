@@ -108,29 +108,40 @@ function describeBroken(p: Extract<Problem, { kind: 'broken' }>): string {
     : i18n._(msg`${name} is marked broken for this game version.`)
 }
 
-// A winner the user picked arrives as "<mod> wins"; one the checker found arrives as the bare name.
-function winnerSentence(winnerName: string | null | undefined, overridden: string[]): string {
-  if (winnerName === 'unclear') {
-    return i18n._(msg` The winner is unclear.`)
-  }
-  if (winnerName === 'decided per entry') {
-    return i18n._(msg` You chose which mod wins each clash.`)
-  }
-  if (!winnerName) {
-    return ''
-  }
-  const name = winnerName.endsWith(' wins') ? winnerName.slice(0, -' wins'.length) : winnerName
+// How an asset conflict's winner reads, by the kind Go settled it as.
+function winnerSentence(
+  kind: string | null | undefined,
+  winnerName: string | null | undefined,
+  overridden: string[],
+): string {
+  const name = winnerName ?? ''
   const losers = listNames(overridden)
-  return losers === ''
-    ? i18n._(msg` ${name} wins.`)
-    : i18n._(msg` ${name} wins; ${losers} overridden.`)
+  switch (kind) {
+    case 'unclear':
+      return i18n._(msg` The winner is unclear.`)
+    case 'per-entry':
+      return i18n._(msg` You chose which mod wins each clash.`)
+    case 'neither':
+      return i18n._(msg` Content Patcher applies neither.`)
+    case 'load-order':
+      return losers === ''
+        ? i18n._(msg` ${name} wins by load order.`)
+        : i18n._(msg` ${name} wins by load order; ${losers} overridden.`)
+    case 'top':
+    case 'chosen':
+      return losers === ''
+        ? i18n._(msg` ${name} wins.`)
+        : i18n._(msg` ${name} wins; ${losers} overridden.`)
+    default:
+      return ''
+  }
 }
 
 function describeAsset(p: Extract<Problem, { kind: 'asset' }>): string {
-  const { names, kind, winnerName, overridden } = p.asset
+  const { names, kind, winnerKind, winnerName, overridden } = p.asset
   const target = listNames([p.asset.target, ...(p.siblings ?? []).map((s) => s.target)])
   const who = listNames(names ?? [])
-  const winner = winnerSentence(winnerName, overridden ?? [])
+  const winner = winnerSentence(winnerKind, winnerName, overridden ?? [])
   const pair = (names ?? []).length === 2
   let sentence: string
   if (kind === 'load') {

@@ -759,7 +759,7 @@ func TestSavesWithoutFarmsListTheAppsSaveName(t *testing.T) {
 
 func TestProblemsTextLabelsActiveRowsAndCountsConflictGroups(t *testing.T) {
 	conflict := func(target string) framework.AssetConflict {
-		return framework.AssetConflict{Kind: "edit", Target: target, PackIDs: []mod.ID{"smapi:A", "smapi:B"}, Names: []string{"A", "B"}, WinnerName: "A"}
+		return framework.AssetConflict{Kind: "edit", Target: target, PackIDs: []mod.ID{"smapi:A", "smapi:B"}, Names: []string{"A", "B"}, WinnerKind: framework.WinnerTop, WinnerName: "A"}
 	}
 	results := map[string]any{"problems": problems.Result{
 		AssetConflicts: []framework.AssetConflict{conflict("Data/One"), conflict("Data/Two")},

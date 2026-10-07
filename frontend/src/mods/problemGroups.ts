@@ -49,6 +49,7 @@ export function assetRows(conflicts: AssetConflict[]): Row[] {
     const key = JSON.stringify([
       asset.kind,
       [...(asset.packIds ?? [])].sort(),
+      asset.winnerKind,
       asset.winnerName,
       asset.fixes ?? [],
     ])

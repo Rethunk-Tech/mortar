@@ -2630,12 +2630,12 @@ func conflictOf(kind, target string, hits []packHit) framework.AssetConflict {
 		}
 	}
 	if kind == "load" && exclusive >= 2 {
-		c.WinnerName = "CP applies neither"
+		c.WinnerKind = framework.WinnerNeither
 		log.Printf("Content Patcher error: exclusive loads for %s leave the asset unchanged", target)
 		return c
 	}
 	if best >= 0 && len(tied) == 1 {
-		c.WinnerID, c.WinnerName = hits[best].id, hits[best].name
+		c.WinnerID, c.WinnerName, c.WinnerKind = hits[best].id, hits[best].name, framework.WinnerTop
 		for i, h := range hits {
 			if i != best {
 				c.Overridden = append(c.Overridden, h.name)
@@ -2645,8 +2645,7 @@ func conflictOf(kind, target string, hits []packHit) framework.AssetConflict {
 	}
 	if kind == "load" {
 		if winner, ok := dependencyLoadWinner(hits, tied); ok {
-			c.WinnerID = hits[winner].id
-			c.WinnerName = "by load order"
+			c.WinnerID, c.WinnerName, c.WinnerKind = hits[winner].id, hits[winner].name, framework.WinnerLoadOrder
 			for i, h := range hits {
 				if i != winner {
 					c.Overridden = append(c.Overridden, h.name)
@@ -2655,7 +2654,7 @@ func conflictOf(kind, target string, hits []packHit) framework.AssetConflict {
 			return c
 		}
 	}
-	c.WinnerName = "unclear"
+	c.WinnerKind = framework.WinnerUnclear
 	return c
 }
 
@@ -2792,7 +2791,7 @@ func harmlessLoads(hits []packHit, conflict framework.AssetConflict) (bool, *fra
 	if len(hits) < 2 {
 		return false, nil
 	}
-	if conflict.WinnerName == "CP applies neither" {
+	if conflict.WinnerKind == framework.WinnerNeither {
 		return false, nil
 	}
 	if allLoadFilesIdentical(hits, conflict.Target) {

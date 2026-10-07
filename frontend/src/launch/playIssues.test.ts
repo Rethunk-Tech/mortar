@@ -28,6 +28,7 @@ const conflict = (over: Partial<AssetConflict> = {}): AssetConflict => ({
   names: ['One', 'Two'],
   keys: [],
   winnerId: '',
+  winnerKind: '',
   winnerName: '',
   overridden: [],
   cosmetic: false,

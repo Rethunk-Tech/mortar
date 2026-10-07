@@ -211,21 +211,21 @@ func TestConflictWinnerUsesClashingPatchPriority(t *testing.T) {
 		loadClashes: map[int]bool{0: true}, dependencies: map[string]bool{"smapi:base": true},
 	}
 	loadOrder := conflictOf("load", "Maps/Test", []packHit{base, addon})
-	if loadOrder.WinnerID != "smapi:addon" || loadOrder.WinnerName != "by load order" {
+	if loadOrder.WinnerID != "smapi:addon" || loadOrder.WinnerKind != framework.WinnerLoadOrder || loadOrder.WinnerName != "Addon" {
 		t.Fatalf("dependency order should decide equal-priority loads: %#v", loadOrder)
 	}
 	unclear := conflictOf("load", "Maps/Test", []packHit{base, {
 		id: "smapi:other", name: "Other", loads: []cpPatch{{priority: "Medium"}},
 		loadClashes: map[int]bool{0: true}, dependencies: map[string]bool{},
 	}})
-	if unclear.WinnerName != "unclear" {
+	if unclear.WinnerKind != framework.WinnerUnclear {
 		t.Fatalf("unrelated equal-priority loads should be unclear: %#v", unclear)
 	}
 	exclusive := conflictOf("load", "Maps/Test", []packHit{
 		{id: "smapi:one", name: "One", loads: []cpPatch{{priority: "Exclusive"}}, loadClashes: map[int]bool{0: true}},
 		{id: "smapi:two", name: "Two", loads: []cpPatch{{priority: "Exclusive"}}, loadClashes: map[int]bool{0: true}},
 	})
-	if exclusive.WinnerName != "CP applies neither" {
+	if exclusive.WinnerKind != framework.WinnerNeither {
 		t.Fatalf("exclusive loads should leave the asset unchanged: %#v", exclusive)
 	}
 }
@@ -488,7 +488,7 @@ func TestLoadsWithoutPriorityAreExclusive(t *testing.T) {
 	}`, map[string]string{"FarmCave.tbin": "tBIN10 farm cave"})
 	mods := []framework.Mod{cave, farm}
 	conflicts := assetConflicts(mods)
-	if len(conflicts) != 1 || conflicts[0].WinnerName != "CP applies neither" {
+	if len(conflicts) != 1 || conflicts[0].WinnerKind != framework.WinnerNeither {
 		t.Fatalf("two loads without a priority are both Exclusive, got %#v", conflicts)
 	}
 	if target := findTarget(BuildAssetIndex(mods), "maps/farmcave", ""); target.Winner != "" {
@@ -761,7 +761,7 @@ func TestTokenizedLoadTargetResolvesFromConfig(t *testing.T) {
 		"overgrown.tmx": "overgrown",
 	})
 	conflicts := assetConflicts([]framework.Mod{tiny, overgrown})
-	if len(conflicts) != 1 || conflicts[0].Target != "maps/farm_foraging" || conflicts[0].WinnerName != "CP applies neither" {
+	if len(conflicts) != 1 || conflicts[0].Target != "maps/farm_foraging" || conflicts[0].WinnerKind != framework.WinnerNeither {
 		t.Fatalf("both load the Forest farm map, got %#v", conflicts)
 	}
 
@@ -941,7 +941,7 @@ func TestConfigGatedLowLoadUnderTwoExclusiveLoadsIsAFallback(t *testing.T) {
 		return syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/FarmCave","FromFile":"cave.json"}]}`, map[string]string{"cave.json": file})
 	}
 	conflicts, settings := assetConflictResults([]framework.Mod{dwarf, exclusive(`{"Tile":2}`), exclusive(`{"Tile":3}`)})
-	if len(conflicts) != 1 || slices.Contains(conflicts[0].Keys, dwarf.Key) || conflicts[0].WinnerName != "CP applies neither" {
+	if len(conflicts) != 1 || slices.Contains(conflicts[0].Keys, dwarf.Key) || conflicts[0].WinnerKind != framework.WinnerNeither {
 		t.Fatalf("the two Exclusive loads clash without the Low one, got %#v", conflicts)
 	}
 	if len(settings) != 1 || settings[0].Field != "FarmCaveChange" || settings[0].Suggested[0] != "false" {

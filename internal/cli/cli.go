@@ -1687,10 +1687,7 @@ func (c *cmd) conflicts(p control.Params) error {
 			if x.Cosmetic {
 				kind += " (cosmetic)"
 			}
-			winner := x.WinnerName
-			if winner == "" {
-				winner = "unclear"
-			}
+			winner := winnerText(x)
 			fixes := []string{}
 			for _, f := range x.Fixes {
 				fixes = append(fixes, fmt.Sprintf("%s %s=%s", f.Name, f.Field, f.Value))
@@ -2580,3 +2577,18 @@ takes --game <id>, which may be left out when exactly one game is installed.
   completion bash|zsh|fish                shell completion script
   version | help
 `
+
+func winnerText(x framework.AssetConflict) string {
+	switch x.WinnerKind {
+	case framework.WinnerTop, framework.WinnerChosen:
+		return x.WinnerName
+	case framework.WinnerLoadOrder:
+		return x.WinnerName + " (by load order)"
+	case framework.WinnerNeither:
+		return "Content Patcher applies neither"
+	case framework.WinnerPerEntry:
+		return "decided per entry"
+	default:
+		return "unclear"
+	}
+}

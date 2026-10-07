@@ -7,9 +7,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
-// decidedPerEntry is the WinnerName of an edit conflict the user settled with more than one winner.
-const decidedPerEntry = "decided per entry"
-
 // markLoadAfterWinner marks the conflict decided when every clashing pair has a settled order: one of the two loads
 // after the other, or a third pack that clashes with both loads after both and so overwrites them. SMAPI loads a mod
 // after everything it depends on, so a dependency settles a pair as surely as a chosen win.
@@ -33,10 +30,10 @@ func markLoadAfterWinner(c *framework.AssetConflict, hits []packHit) {
 		return
 	}
 	c.Cosmetic = true
-	c.WinnerID, c.WinnerName = "", decidedPerEntry
+	c.WinnerID, c.WinnerName, c.WinnerKind = "", "", framework.WinnerPerEntry
 	for _, w := range winners {
 		if allAfter(w, winners, byID) {
-			c.WinnerID, c.WinnerName = w.id, w.name+" wins"
+			c.WinnerID, c.WinnerName, c.WinnerKind = w.id, w.name, framework.WinnerChosen
 			return
 		}
 	}

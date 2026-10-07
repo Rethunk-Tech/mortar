@@ -23,7 +23,7 @@ func TestLoadAfterEditConflictIsShownNotCounted(t *testing.T) {
 		t.Fatalf("got %+v", got.AssetConflicts)
 	}
 	c := got.AssetConflicts[0]
-	if c.Kind != "edit" || !c.Cosmetic || c.WinnerName != "Edit A wins" {
+	if c.Kind != "edit" || !c.Cosmetic || c.WinnerKind != framework.WinnerChosen || c.WinnerName != "Edit A" {
 		t.Fatalf("got %+v", c)
 	}
 }
@@ -52,7 +52,7 @@ func TestEveryClashingPairOrderedDecidesTheConflict(t *testing.T) {
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
 	m := editPacks(t, "Data/CookingRecipes", "Magic Rock Candy", "Magic Rock Candy", "Stuffed Mushrooms", "Stuffed Mushrooms", "Matcha Latte", "Matcha Latte")
-	if c := editConflict(t, m); c.Cosmetic || c.WinnerName != "unclear" {
+	if c := editConflict(t, m); c.Cosmetic || c.WinnerKind != framework.WinnerUnclear {
 		t.Fatalf("unordered: %+v", c)
 	}
 	m[0].LoadAfter = []mod.ID{m[1].ModID()}
@@ -61,7 +61,7 @@ func TestEveryClashingPairOrderedDecidesTheConflict(t *testing.T) {
 		t.Fatalf("one pair unordered: %+v", c)
 	}
 	m[4].LoadAfter = []mod.ID{m[5].ModID()}
-	if c := editConflict(t, m); !c.Cosmetic || c.WinnerName != decidedPerEntry || c.WinnerID != "" {
+	if c := editConflict(t, m); !c.Cosmetic || c.WinnerKind != framework.WinnerPerEntry || c.WinnerID != "" {
 		t.Fatalf("every pair ordered: %+v", c)
 	}
 }
@@ -76,7 +76,7 @@ func TestOneWinnerOverPacksThatClashAmongThemselves(t *testing.T) {
 		t.Fatalf("one rival left over: %+v", c)
 	}
 	m[0].LoadAfter = append(m[0].LoadAfter, m[3].ModID())
-	if c := editConflict(t, m); !c.Cosmetic || !mod.Equal(c.WinnerID, m[0].ModID()) || c.WinnerName != m[0].Name+" wins" {
+	if c := editConflict(t, m); !c.Cosmetic || !mod.Equal(c.WinnerID, m[0].ModID()) || c.WinnerKind != framework.WinnerChosen || c.WinnerName != m[0].Name {
 		t.Fatalf("got %+v", c)
 	}
 }

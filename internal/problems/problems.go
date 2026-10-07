@@ -909,7 +909,7 @@ func ConflictRows(conflicts []framework.AssetConflict) int {
 		ids := mod.Strings(c.PackIDs)
 		slices.Sort(ids)
 		fixes, _ := json.Marshal(c.Fixes)
-		rows[c.Kind+"\x00"+strings.Join(ids, "\x00")+"\x00"+c.WinnerName+"\x00"+string(fixes)] = true
+		rows[c.Kind+"\x00"+strings.Join(ids, "\x00")+"\x00"+c.WinnerKind+"\x00"+c.WinnerName+"\x00"+string(fixes)] = true
 	}
 	return len(rows)
 }

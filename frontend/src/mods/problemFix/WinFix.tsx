@@ -30,9 +30,8 @@ function WinFix({
   const names = asset.names ?? []
   const keys = asset.keys ?? []
   const packIds = asset.packIds ?? []
-  const winnerLabel = asset.winnerName ?? ''
-  const perEntry = winnerLabel === 'decided per entry'
-  const resolved = Boolean(asset.cosmetic && (winnerLabel.endsWith(' wins') || perEntry))
+  const perEntry = asset.winnerKind === 'per-entry'
+  const resolved = Boolean(asset.cosmetic && (asset.winnerKind === 'chosen' || perEntry))
   const lockedTitle = t`Stop the game to change mods.`
   const sx = { height: buttonHeight, whiteSpace: 'nowrap', flexShrink: 0 } as const
   const undo = async () => {

@@ -283,11 +283,11 @@ func TestCheckPopulatesTimings(t *testing.T) {
 
 func TestCountShowsConflictsBetweenTheSameModsOnce(t *testing.T) {
 	seasonal := func(target string) framework.AssetConflict {
-		return framework.AssetConflict{Kind: "edit", Target: target, PackIDs: []mod.ID{"smapi:B", "smapi:A"}, WinnerName: "unclear"}
+		return framework.AssetConflict{Kind: "edit", Target: target, PackIDs: []mod.ID{"smapi:B", "smapi:A"}, WinnerKind: framework.WinnerUnclear}
 	}
 	r := Result{AssetConflicts: []framework.AssetConflict{
 		seasonal("loosesprites/map"), seasonal("loosesprites/map_fall"),
-		{Kind: "edit", Target: "maps/forest", PackIDs: []mod.ID{"smapi:A", "smapi:C"}, WinnerName: "unclear"},
+		{Kind: "edit", Target: "maps/forest", PackIDs: []mod.ID{"smapi:A", "smapi:C"}, WinnerKind: framework.WinnerUnclear},
 		{Kind: "edit", Target: "x", PackIDs: []mod.ID{"smapi:A", "smapi:B"}, Cosmetic: true},
 	}}
 	if got := r.Count(); got != 2 {
