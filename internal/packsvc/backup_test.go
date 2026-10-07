@@ -1,7 +1,11 @@
 package packsvc
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"os"
 	"path/filepath"
 	"strings"
@@ -52,11 +56,11 @@ func TestRestoreOnAnotherComputerQueuesTheModsFromTheirSources(t *testing.T) {
 		t.Fatal(err)
 	}
 	dest := filepath.Join(t.TempDir(), "farm.zip")
-	size, err := (&Service{Profiles: profiles}).BackupSize("stardew", p.ID)
+	size, err := (&Service{Profiles: profiles}).BackupSize("stardew", p.ID, false)
 	if err != nil || size < int64(len("save")) {
 		t.Fatalf("size %d, %v", size, err)
 	}
-	if err := (&Service{Profiles: profiles}).Backup("stardew", p.ID, dest); err != nil {
+	if err := (&Service{Profiles: profiles}).Backup("stardew", p.ID, dest, false); err != nil {
 		t.Fatal(err)
 	}
 
@@ -110,5 +114,76 @@ func TestRestoreRequestPinsCurseForgeFile(t *testing.T) {
 	r, ok := restoreRequest("stardew", "p", e)
 	if !ok || r.Source != "curseforge" || r.Package != "309243" || r.PackageFile != 555 {
 		t.Errorf("request %+v ok %v", r, ok)
+	}
+}
+
+func TestBackupWithModsRestoresOffline(t *testing.T) {
+	dataHome(t)
+	items, profiles := testenv.Stores(t)
+	p := testenv.Profile(t, profiles, "stardew", "Farm")
+	src := t.TempDir()
+	if err := os.WriteFile(filepath.Join(src, "manifest.json"), []byte(`{"Name":"X.A","Version":"1.0.0","UniqueID":"X.A"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := items.AddDir("stardew", "nexus-12-34", src); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := profiles.AddEntry("stardew", p.ID, "nexus-12-34", profile.Source{Kind: profile.KindNexus, Name: "a.zip", ModID: 12, FileID: 34}); err != nil {
+		t.Fatal(err)
+	}
+	svc := &Service{Profiles: profiles}
+	with, without := filepath.Join(t.TempDir(), "with.zip"), filepath.Join(t.TempDir(), "without.zip")
+	if err := svc.Backup("stardew", p.ID, with, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.Backup("stardew", p.ID, without, false); err != nil {
+		t.Fatal(err)
+	}
+	sizeWith, _ := svc.BackupSize("stardew", p.ID, true)
+	sizeWithout, _ := svc.BackupSize("stardew", p.ID, false)
+	if sizeWith <= sizeWithout {
+		t.Fatalf("size with mods %d, without %d", sizeWith, sizeWithout)
+	}
+
+	for path, queued := range map[string]int{with: 0, without: 1} {
+		dataHome(t)
+		freshItems, fresh := testenv.Stores(t)
+		q := &fakeQueue{}
+		res, err := (&Service{Profiles: fresh, Queue: q}).Restore(context.Background(), path, "")
+		if err != nil || res.Queued != queued || len(res.Unavailable) != 0 {
+			t.Fatalf("%s: %+v, %v", path, res, err)
+		}
+		if _, err := freshItems.Path("stardew", "nexus-12-34"); (err == nil) != (queued == 0) {
+			t.Fatalf("%s: store item present: %v", path, err == nil)
+		}
+	}
+}
+
+func TestRestoreReadsAProfileZip(t *testing.T) {
+	dataHome(t)
+	_, profiles := testenv.Stores(t)
+	profileJSON := []byte(`{"id":"old","name":"Old farm"}`)
+	sum := sha256.Sum256(profileJSON)
+	manifest := `{"mortarVersion":"0.0.1","files":{"profile.json":"` + hex.EncodeToString(sum[:]) + `"}}`
+	path := filepath.Join(t.TempDir(), "old.zip")
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	for name, data := range map[string][]byte{"profile.json": profileJSON, "mortar-export.json": []byte(manifest)} {
+		w, _ := zw.Create(name)
+		_, _ = w.Write(data)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s := &Service{Profiles: profiles}
+	if _, err := s.Restore(context.Background(), path, ""); err == nil {
+		t.Fatal("a profile zip names no game, so Restore must ask for one")
+	}
+	res, err := s.Restore(context.Background(), path, "stardew")
+	if err != nil || res.Name != "Old farm" || res.Game != "stardew" || res.Profile == "" {
+		t.Fatalf("%+v, %v", res, err)
 	}
 }

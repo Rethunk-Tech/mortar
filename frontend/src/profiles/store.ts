@@ -10,7 +10,6 @@ import {
   Create,
   Delete,
   Duplicate,
-  ExportProfile,
   List,
   ListDamaged,
   ListTrash,
@@ -21,7 +20,6 @@ import {
   Reorder,
   Repair,
   Restore,
-  RestoreFromZip,
   SetAppearance,
   SetLaunchOptions,
   SetLaunchSettings,
@@ -36,34 +34,6 @@ import { setLatestChange, useToasts } from '../toasts/store.ts'
 import { settledLastProfile } from './lastProfile.ts'
 
 const fail = reportError
-
-async function exportProfileZip(gameId: string, id: string) {
-  try {
-    const path = await ExportProfile(gameId, id)
-    if (path) {
-      useToasts.getState().push({ kind: 'success', title: i18n._(msg`Profile exported`) })
-    }
-  } catch (e) {
-    fail(i18n._(msg`Could not export the profile`))(e)
-  }
-}
-
-async function restoreProfileZip(gameId: string, apply: (p: Profile) => Promise<void>) {
-  try {
-    const p = await RestoreFromZip(gameId)
-    if (!p?.id) {
-      return
-    }
-    await apply(p)
-    useToasts.getState().push({
-      kind: 'success',
-      title: i18n._(msg`Created ${{ name: p.name }}`),
-      changes: [p.lastChange ?? ''],
-    })
-  } catch (e) {
-    fail(i18n._(msg`Could not restore the profile`))(e)
-  }
-}
 
 function splitListed(list: Profile[] | null | undefined) {
   const all = list ?? []
@@ -303,8 +273,6 @@ export const useProfiles = create<{
   refresh: () => Promise<void>
   loadTrash: () => Promise<void>
   duplicate: (id: string) => Promise<void>
-  exportProfile: (id: string) => Promise<void>
-  restoreZip: () => Promise<void>
   openFolder: (id: string) => Promise<void>
   repair: (id: string) => Promise<void>
   remove: (id: string) => Promise<void>
@@ -382,12 +350,6 @@ export const useProfiles = create<{
     }
   },
   duplicate: (id) => duplicateProfile(get, set, id),
-  exportProfile: async (id) => {
-    const { game } = get()
-    if (game) {
-      await exportProfileZip(game.id, id)
-    }
-  },
   openFolder: async (id) => {
     const { game } = get()
     if (!game) {
@@ -404,15 +366,6 @@ export const useProfiles = create<{
       await repairProfile(get, id)
     } catch (e) {
       fail(i18n._(msg`Could not repair the profile`))(e)
-    }
-  },
-  restoreZip: async () => {
-    const { game } = get()
-    if (game) {
-      await restoreProfileZip(game.id, async (p) => {
-        set(splitListed((await List(game.id)) ?? [p]))
-        get().open(p.id)
-      })
     }
   },
   remove: async (id) => {

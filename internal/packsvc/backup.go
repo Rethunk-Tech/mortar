@@ -12,6 +12,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -49,21 +50,25 @@ type RestoreResult struct {
 	Unavailable []string `json:"unavailable"`
 }
 
-// carried reports an entry whose files only the backup can bring back: no source downloads it again.
-func carried(game string) func(profile.Entry) bool {
+// carried is the entries whose store items a backup holds: all of them with mods, otherwise only those whose files
+// no source downloads again.
+func carried(game string, mods bool) func(profile.Entry) bool {
 	return func(e profile.Entry) bool {
+		if mods {
+			return true
+		}
 		_, ok := restoreRequest(game, "", e)
 		return !ok
 	}
 }
 
 // BackupSize is how many bytes a backup of the profile holds before compression, so the player sees it before saving.
-func (s *Service) BackupSize(gameID, profileID string) (int64, error) {
+func (s *Service) BackupSize(gameID, profileID string, mods bool) (int64, error) {
 	p, files, err := s.Profiles.Backup(gameID, profileID)
 	if err != nil {
 		return 0, err
 	}
-	dirs, err := s.Profiles.BackupDirs(gameID, p, carried(gameID))
+	dirs, err := s.Profiles.BackupDirs(gameID, p, carried(gameID, mods))
 	if err != nil {
 		return 0, err
 	}
@@ -85,14 +90,14 @@ func (s *Service) BackupSize(gameID, profileID string) (int64, error) {
 
 // Backup writes the profile to dest as one zip: backup.json (the format version, the game, every setting and entry
 // of the profile, and the hash of each store item it carries), its history, config files and cover under files/, the
-// store item of each mod no source can download again under store/<key>/, and the profile's own saves under saves/.
-// Mods a source has are left out; a restore downloads them again.
-func (s *Service) Backup(gameID, profileID, dest string) (err error) {
+// store item of each mod under store/<key>/ (with mods; otherwise only the mods no source can download again, and a
+// restore downloads the rest), and the profile's own saves under saves/.
+func (s *Service) Backup(gameID, profileID, dest string, mods bool) (err error) {
 	p, files, err := s.Profiles.Backup(gameID, profileID)
 	if err != nil {
 		return err
 	}
-	dirs, err := s.Profiles.BackupDirs(gameID, p, carried(gameID))
+	dirs, err := s.Profiles.BackupDirs(gameID, p, carried(gameID, mods))
 	if err != nil {
 		return err
 	}
@@ -205,7 +210,7 @@ func treeHash(root string) (string, error) {
 }
 
 // BackupDialog asks where to save, then backs up as Backup does; an empty path means the player cancelled.
-func (s *Service) BackupDialog(gameID, profileID string) (string, error) {
+func (s *Service) BackupDialog(gameID, profileID string, mods bool) (string, error) {
 	if s.App == nil {
 		return "", errors.New("no window to ask where to save")
 	}
@@ -219,13 +224,17 @@ func (s *Service) BackupDialog(gameID, profileID string) (string, error) {
 	if err != nil || dest == "" {
 		return "", err
 	}
-	return dest, s.Backup(gameID, profileID, dest)
+	return dest, s.Backup(gameID, profileID, dest, mods)
 }
 
-// Restore makes a new profile from the backup at path: the store items it carries go into the store once their hashes
+// Restore makes a new profile from the file at path, a backup of either kind (a profile zip, which holds its mods
+// whole, is read as well): the store items it carries go into the store once their hashes
 // match, its saves become the profile's, and the mods this computer still lacks are queued from their sources. gameID
 // may be empty; when given it must be the backup's game.
 func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResult, error) {
+	if !isBackup(path) {
+		return s.restoreProfileZip(path, gameID)
+	}
 	tmp, err := os.MkdirTemp("", "mortar-restore-")
 	if err != nil {
 		return RestoreResult{}, err
@@ -273,6 +282,29 @@ func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResu
 	return res, err
 }
 
+// isBackup reports whether the zip at path is a backup rather than a profile zip; an unreadable file is left to the
+// readers to describe.
+func isBackup(path string) bool {
+	zr, err := zip.OpenReader(path)
+	if err != nil {
+		return true
+	}
+	defer func() { _ = zr.Close() }()
+	return slices.ContainsFunc(zr.File, func(f *zip.File) bool { return f.Name == backupDoc })
+}
+
+// restoreProfileZip reads a profile zip, which names no game and holds every mod's files.
+func (s *Service) restoreProfileZip(path, gameID string) (RestoreResult, error) {
+	if gameID == "" {
+		return RestoreResult{}, usererr.New(usererr.Invalid, "name the game this profile zip is for")
+	}
+	p, err := s.Profiles.RestoreZip(gameID, path)
+	if err != nil {
+		return RestoreResult{}, err
+	}
+	return RestoreResult{Game: gameID, Profile: p.ID, Name: p.Name, Unavailable: []string{}}, nil
+}
+
 func exists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
@@ -283,7 +315,7 @@ func (s *Service) RestoreDialog(ctx context.Context, gameID string) (RestoreResu
 	if s.App == nil {
 		return RestoreResult{}, errors.New("no window to ask for the file")
 	}
-	d := s.App.Dialog.OpenFile().AddFilter("Mortar profile backup (zip)", "*.zip")
+	d := s.App.Dialog.OpenFile().AddFilter("Mortar profile backup or profile zip", "*.zip")
 	d.AttachToWindow(s.App.Window.Current())
 	path, err := d.PromptForSingleSelection()
 	if err != nil || path == "" {

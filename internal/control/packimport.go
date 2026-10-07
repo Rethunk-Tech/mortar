@@ -52,7 +52,8 @@ func (s *Services) packExportModpack(p Params) (any, error) {
 	return s.Packs.ExportModpack(p.Game, prof.ID, p.Path, p.All)
 }
 
-// profileBackup writes the profile to the backup file at Path.
+// profileBackup writes the profile to the backup file at Path; All carries the mod files, otherwise only the ones no
+// source can download again.
 func (s *Services) profileBackup(p Params) (any, error) {
 	if s.Packs == nil {
 		return nil, errors.New("profile backup is unavailable")
@@ -64,7 +65,7 @@ func (s *Services) profileBackup(p Params) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return map[string]string{"path": p.Path}, s.Packs.Backup(p.Game, prof.ID, p.Path)
+	return map[string]string{"path": p.Path}, s.Packs.Backup(p.Game, prof.ID, p.Path, p.All)
 }
 
 // profileRestore makes a new profile from the backup file at Path; Game, when given, must be the backup's game.

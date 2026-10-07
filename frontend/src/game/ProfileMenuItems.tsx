@@ -2,7 +2,6 @@ import { useLingui } from '@lingui/react/macro'
 import { Divider } from '@mui/material'
 import {
   Copy,
-  FileDown,
   Gamepad2,
   GitCompare,
   History,
@@ -33,7 +32,7 @@ import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { BackupMenuItems } from './BackupMenuItems.tsx'
+import { BackupMenuItem } from './BackupMenuItems.tsx'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
 import { FarmMenuItem } from './FarmMenuItem.tsx'
 import { TemplateMenuItems } from './TemplateMenuItems.tsx'
@@ -278,7 +277,7 @@ function ProfileDialogs({
 function ShareMenuItems({ profile, close }: { profile: Profile; close: () => void }) {
   return [
     <FarmMenuItem key="farm" profile={profile} close={close} />,
-    <BackupMenuItems key="backup" profile={profile} close={close} />,
+    <BackupMenuItem key="backup" profile={profile} close={close} />,
   ]
 }
 
@@ -316,15 +315,6 @@ function MoreMenuItems({
       onClick={() => {
         close()
         duplicate(profile.id).catch(reportUnexpected)
-      }}
-    />,
-    <ProfileMenuItem
-      key="export"
-      icon={<FileDown size={16} />}
-      label={t`Export profile…`}
-      onClick={() => {
-        close()
-        useProfiles.getState().exportProfile(profile.id).catch(reportUnexpected)
       }}
     />,
     <Divider key="sharing-divider" />,

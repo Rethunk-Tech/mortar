@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
-	"strings"
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -15,8 +14,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
-
-var zipFileUnsafe = strings.NewReplacer("/", "-", "\\", "-", ":", "-", "*", "-", "?", "-", "\"", "-", "<", "-", ">", "-", "|", "-")
 
 // Service exposes the store to the frontend.
 type Service struct {
@@ -458,45 +455,6 @@ func (s *Service) SetSkipSource(game, id, key, source string, skip bool) (Profil
 
 func (s *Service) SetSkipSourceMany(game, id string, keys []string, source string, skip bool) (Profile, error) {
 	return s.store.SetSkipSourceMany(game, id, keys, source, skip)
-}
-
-// ExportProfile asks where to save a zip of the whole profile and writes it. It returns "" when the dialog is cancelled.
-func (s *Service) ExportProfile(game, id string) (string, error) {
-	p, err := s.store.read(game, id)
-	if err != nil {
-		return "", err
-	}
-	if s.App == nil {
-		return "", fmt.Errorf("no window")
-	}
-	d := s.App.Dialog.SaveFile()
-	d.SetOptions(&application.SaveFileDialogOptions{
-		Title:    "Export profile",
-		Filename: zipFileUnsafe.Replace(p.Name) + ".zip",
-	})
-	d.AddFilter("Zip archive", "*.zip")
-	d.AttachToWindow(s.App.Window.Current())
-	dest, err := d.PromptForSingleSelection()
-	if err != nil || dest == "" {
-		return dest, err
-	}
-	return dest, s.store.ExportZip(game, id, dest, s.Version)
-}
-
-// RestoreFromZip asks for a profile zip and imports it as a new profile. It returns an empty profile when cancelled.
-func (s *Service) RestoreFromZip(game string) (Profile, error) {
-	if s.App == nil {
-		return Profile{}, fmt.Errorf("no window")
-	}
-	d := s.App.Dialog.OpenFile().
-		SetTitle("Restore from zip").
-		AddFilter("Zip archive", "*.zip")
-	d.AttachToWindow(s.App.Window.Current())
-	path, err := d.PromptForSingleSelection()
-	if err != nil || path == "" {
-		return Profile{}, err
-	}
-	return s.store.RestoreZip(game, path)
 }
 
 // SetEntryNoteTags records the note and tags on one profile entry.

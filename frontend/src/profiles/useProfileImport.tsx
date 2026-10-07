@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Download, FileUp, FolderInput, type LucideIcon } from 'lucide-react'
+import { ArchiveRestore, Download, FolderInput, type LucideIcon } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { useNav } from '../nav/store.ts'
 import { openImport } from '../share/store.ts'
@@ -8,6 +8,7 @@ import { GameModsDialog } from './GameModsDialog.tsx'
 import { ImportWizard } from './ImportWizard.tsx'
 import { PackImportDialog } from './PackImportDialog.tsx'
 import { hasThunderstore } from './packImport.ts'
+import { restoreBackup } from './restoreBackup.ts'
 import { useProfiles } from './store.ts'
 
 interface ImportEntry {
@@ -20,7 +21,6 @@ interface ImportEntry {
 // The ways to bring a profile in, with the dialogs they open; `dialogs` must be rendered beside the menu that runs them.
 export function useProfileImport(game: string): { entries: ImportEntry[]; dialogs: ReactNode } {
   const { t } = useLingui()
-  const restoreZip = useProfiles((s) => s.restoreZip)
   const openProfile = useProfiles((s) => s.open)
   const thunderstore = hasThunderstore(useProfiles((s) => s.game))
   const [gameMods, setGameMods] = useState(false)
@@ -37,9 +37,9 @@ export function useProfileImport(game: string): { entries: ImportEntry[]; dialog
     { key: 'link', label: t`From a link or file…`, icon: Download, run: () => openImport() },
     {
       key: 'backup',
-      label: t`From a backup…`,
-      icon: FileUp,
-      run: () => restoreZip().catch(reportUnexpected),
+      label: t`Restore from a file…`,
+      icon: ArchiveRestore,
+      run: () => restoreBackup().catch(reportUnexpected),
     },
     {
       key: 'other-manager',

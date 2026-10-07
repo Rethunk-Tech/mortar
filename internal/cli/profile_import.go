@@ -83,7 +83,7 @@ func (c *cmd) profileExport() error {
 	})
 }
 
-// profileBackup writes everything of the profile but its mod files to one file.
+// profileBackup writes the profile to one file, with its mod files unless --no-mods.
 func (c *cmd) profileBackup() error {
 	a, err := c.need(2, "a game", "a profile", "the backup file to write")
 	if err != nil {
@@ -93,7 +93,7 @@ func (c *cmd) profileBackup() error {
 	if err != nil {
 		return err
 	}
-	return show(c, "profile.backup", control.Params{Game: a[0], Profile: a[1], Path: dest}, func(r map[string]string) {
+	return show(c, "profile.backup", control.Params{Game: a[0], Profile: a[1], Path: dest, All: !c.noMods}, func(r map[string]string) {
 		fmt.Fprintf(c.out, "Backed up to %s.\n", r["path"])
 	})
 }
