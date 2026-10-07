@@ -128,8 +128,13 @@ A left sidebar and a detail pane:
   - When a launch Mortar started ends with errors or a SMAPI crash, a dialog, "Stardew Valley closed with errors", lists the mods that logged errors ("mod · N errors", each with its first message) and, when identified, shows **Caused by `<ModName>`** with its plain-language detail and **Disable** / **Open page** actions, alongside **Open Console**, **Share log** and **Dismiss**. When that list is empty, **Find the mod causing this** starts a crash bisect ([architecture.md](architecture.md#launch)).
 - **Compact layout** (below 960px wide; the minimum window is 768×432): the sidebar is always the icon rail with Play at its foot, the hero gives way to a one-line header (the name and "N mods · N updates · N problems", a part that is zero left out), the mods search folds into a filter icon that expands into the field, other actions fold into icon buttons, and the mod grid drops to two columns.
 
+## Tab header
+
+Every tab except Home opens with a 52px strip (`TabHeader`, rendered by `ProfileWorkspace`) tinted from the profile's colour (the accent when it has none), with a hairline under it. Left to right: the profile name (18px, bold); chips for **N mods**, **N updates** (accent; opens the update review on Mods), **N problems** (warning colour; opens Problems) and **Saves N of M** (opens Saves), a zero count left out; the first line of the profile's notes, ellipsised and hidden when compact; a spacer; and the page-actions slot. A tab fills the slot with `<PageActions>` (a portal), so each tab keeps its own buttons in one place.
+
 ## Mods tab
 
+- **Header actions:** **Check for updates (F5)** (an icon button) and the **Add archive…** split button, whose ▾ (**More ways to add mods**) lists **ADD FROM** The downloads folder… and The extra mods folder… (once one is set), then **ADD A SET** Apply a template… (when templates exist) and Add a bundle…. Beneath the header an accent banner reads "N updates ready" with "including <first update>" and **Review updates**; the controls row is the view toggle, **Group by ▾**, the filter field and **Show ▾**.
 - Two views, switched from the toolbar and remembered per user: **Grid** (default), and **List**, a table.
   - Both virtualize so only on-screen group headers, rows and cards mount.
   - The last loaded list for a profile stays on screen when leaving the tab and returning; it is refreshed in the background.
@@ -214,7 +219,7 @@ A left sidebar and a detail pane:
 
 ## Saves tab
 
-Every save in the Saves folder with its fit for this profile, as cards in a grid (340px minimum column), above a line explaining that the save is picked inside the game. A **Filter saves** field and last-played sort (newest first) sit in the controls row; **Save backups…** is in the shared header's actions slot. Each card has:
+Every save in the Saves folder with its fit for this profile, as a list (the default: columns SAVE, SEASON as "Year 3 Fall" or "—" for games without a calendar, and FITS <profile>, with the card's action buttons) or as cards in a grid (340px minimum column), chosen by the grid/list toggle that starts the controls row and remembered per game, above a line explaining that the save is picked inside the game. A **Filter saves** field and last-played sort (newest first) sit in the controls row; **Save backups…** is in the shared header's actions slot. Each card has:
 
 - a solid tile coloured and iconed by the save's season, the farm name, and `farmer · type farm` under it
 - **Back up now** and **Open save folder** on the card; Back up now zips that save only, labelled Manual and kept until deleted
@@ -288,7 +293,7 @@ Each row shows the full wrapped text, severity icon, the Nexus author note when 
 - None: "No problems found."
 - Some checks could not run offline: the connection warning from the summary
 
-On the Mods tab, problems take one 38px clickable banner (warning colour when any problem is a warning): the count, the first warning's text truncated, and **Open Problems**; clicking anywhere on it opens this tab. While problems are still loading, the same banner shows a spinner and "Checking the mods for problems…".
+The problem count is the **N problems** chip in the tab header, which opens this tab. The Mods tab carries no problems banner. While problems are still loading, the chip shows the profile's last known count.
 
 ## Load order tab
 
