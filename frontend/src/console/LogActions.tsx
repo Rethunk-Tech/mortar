@@ -19,6 +19,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { Log } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
+import { PageActions } from '../game/PageActions.tsx'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { copyText } from '../share/copyText.ts'
 import { IconAction } from '../shell/IconAction.tsx'
@@ -112,7 +113,7 @@ export function LogActions({ game }: { game: string }) {
     return null
   }
   return (
-    <Box sx={{ display: 'flex', gap: 0.75 }}>
+    <PageActions>
       <Box role="group" aria-label={t`Errors`} sx={{ display: 'flex', gap: '2px' }}>
         <IconAction
           label={t`Jump to first error`}
@@ -170,6 +171,6 @@ export function LogActions({ game }: { game: string }) {
         />
       </Menu>
       <SearchRunsDialog open={searching} onClose={() => setSearching(false)} />
-    </Box>
+    </PageActions>
   )
 }

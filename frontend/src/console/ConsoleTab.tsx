@@ -396,6 +396,7 @@ export function ConsoleTab({ game }: { game: string }) {
   }
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <LogActions game={game} />
       <ConsoleTip />
       <Box
         sx={{
@@ -432,9 +433,6 @@ export function ConsoleTab({ game }: { game: string }) {
             onClick={clearFilters}
           />
         ) : null}
-        <Box sx={{ ml: 'auto', display: 'flex', gap: 0.75 }}>
-          <LogActions game={game} />
-        </Box>
       </Box>
       {filters.mods.length > 0 ? (
         <Box
