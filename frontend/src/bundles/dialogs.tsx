@@ -20,15 +20,14 @@ import {
   AddMods,
   Apply,
   Create,
-  List as ListBundles,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/service.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
-import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { useBundles } from './useBundles.ts'
 
 interface BundleNameDialogProps {
   open: boolean
@@ -65,39 +64,6 @@ function BundleNameDialog({
       }}
     />
   )
-}
-
-function useListedBundles(open: boolean, game: string) {
-  const { t } = useLingui()
-  const [bundles, setBundles] = useState<Bundle[]>([])
-  const [loading, setLoading] = useState(false)
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-    let active = true
-    setLoading(true)
-    ListBundles(game)
-      .then((listed) => {
-        if (active) {
-          setBundles(listed ?? [])
-        }
-      })
-      .catch((error: unknown) => {
-        if (active) {
-          reportError(t`Could not read bundles`)(error)
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setLoading(false)
-        }
-      })
-    return () => {
-      active = false
-    }
-  }, [game, open, t])
-  return { bundles, loading }
 }
 
 function BundlePickList({
@@ -151,7 +117,7 @@ interface AddToBundleDialogProps {
 
 function AddToBundleDialog({ open, game, profileId, ids, onClose }: AddToBundleDialogProps) {
   const { t } = useLingui()
-  const { bundles, loading } = useListedBundles(open, game)
+  const { bundles, loading } = useBundles(game, open)
   const [newName, setNewName] = useState('')
   const [busy, run] = usePending()
   useEffect(() => {
@@ -254,7 +220,7 @@ function ApplyBundleDialog({
   onApplied,
 }: ApplyBundleDialogProps) {
   const { t } = useLingui()
-  const { bundles, loading } = useListedBundles(open, game)
+  const { bundles, loading } = useBundles(game, open)
   const [busy, run] = usePending()
   return (
     <Dialog open={open} onClose={busy ? undefined : onClose}>

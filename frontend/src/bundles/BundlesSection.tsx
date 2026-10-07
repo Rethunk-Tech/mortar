@@ -1,11 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import { PackagePlus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Bundle } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/models.ts'
 import {
   Delete,
-  List as ListBundles,
   Rename,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bundles/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -13,12 +12,12 @@ import { idKey } from '../mods/dependents.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
-import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { ApplyBundleToProfile } from './ApplyBundleToProfile.tsx'
 import { BundleRow } from './BundleRow.tsx'
 import { BundleNameDialog } from './dialogs.tsx'
+import { useBundles } from './useBundles.ts'
 
 function hasBundle(profile: Profile, bundle: Bundle) {
   const installed = new Set(
@@ -46,39 +45,9 @@ function NoBundles() {
   )
 }
 
-function useBundleList(game: string) {
-  const { t } = useLingui()
-  const [bundles, setBundles] = useState<Bundle[]>([])
-  const [loading, setLoading] = useState(true)
-  useEffect(() => {
-    let active = true
-    setLoading(true)
-    ListBundles(game)
-      .then((listed) => {
-        if (active) {
-          setBundles(listed ?? [])
-        }
-      })
-      .catch((error: unknown) => {
-        if (active) {
-          reportError(t`Could not read bundles`)(error)
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setLoading(false)
-        }
-      })
-    return () => {
-      active = false
-    }
-  }, [game, t])
-  return { bundles, setBundles, loading }
-}
-
 export function BundlesSection({ game, profiles }: { game: string; profiles: Profile[] }) {
   const { t } = useLingui()
-  const { bundles, setBundles, loading } = useBundleList(game)
+  const { bundles, setBundles, loading } = useBundles(game)
   const [renaming, setRenaming] = useState<Bundle | null>(null)
   const [deleting, setDeleting] = useState<Bundle | null>(null)
   const [applying, setApplying] = useState<Bundle | null>(null)
