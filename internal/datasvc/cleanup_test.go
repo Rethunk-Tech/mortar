@@ -146,3 +146,11 @@ func TestSelectDropsRetiredCacheAndExpiresNexusPages(t *testing.T) {
 		}
 	}
 }
+
+func TestCacheTTLClaimsNexusChangelogsAndCollections(t *testing.T) {
+	for _, rel := range []string{"nexus/changelogs-stardewvalley-541.json", "nexus-collection-stardewvalley-abc-3.json"} {
+		if ttl, ok := cacheTTL(rel); !ok || ttl <= 0 {
+			t.Errorf("cacheTTL(%q) = %v, %v; want an expiry", rel, ttl, ok)
+		}
+	}
+}

@@ -77,7 +77,7 @@ func (s *Service) changelogs(ctx context.Context, gameID string, modID int) ([]n
 	if err != nil {
 		return nil, err
 	}
-	return meta.Cached(s.meta, fmt.Sprintf("nexus/changelogs-%s-%d.json", t.Domain, modID), changelogTTL, func() ([]nexus.Changelog, error) {
+	return meta.Cached(s.meta, fmt.Sprintf("%s%s-%d.json", meta.NexusChangelogsPrefix, t.Domain, modID), changelogTTL, func() ([]nexus.Changelog, error) {
 		c, err := Authed(s.store, s.client)
 		if err != nil {
 			return nil, err

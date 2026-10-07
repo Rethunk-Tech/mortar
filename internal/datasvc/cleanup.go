@@ -20,6 +20,8 @@ const (
 	detailsTTL    = 24 * time.Hour
 	categoriesTTL = 30 * 24 * time.Hour
 	datasetTTL    = 30 * 24 * time.Hour
+	changelogsTTL = 4 * time.Hour
+	collectionTTL = 15 * time.Minute
 	releasesTTL   = time.Hour
 	updatesTTL    = time.Hour
 )
@@ -192,6 +194,10 @@ func cacheTTL(rel string) (time.Duration, bool) {
 		return detailsTTL, true
 	case strings.HasPrefix(rel, meta.NexusCategoriesPrefix):
 		return categoriesTTL, true
+	case strings.HasPrefix(rel, meta.NexusChangelogsPrefix):
+		return changelogsTTL, true
+	case strings.HasPrefix(rel, meta.CollectionPrefix):
+		return collectionTTL, true
 	case strings.HasPrefix(rel, meta.DatasetPrefix):
 		return datasetTTL, true
 	case rel == "smapi-updates.json":

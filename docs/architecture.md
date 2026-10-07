@@ -228,7 +228,7 @@ The registry (`internal/settings/registry.go`) lists each key with its scope, ty
 - **Clear** empties that folder after confirm; problem scans rebuild it on the next check (`mortar cache size` / `mortar cache clear`).
 - `mortar data usage --by-mod` lists each store item's size, the live profiles that name it, the size of those profile copies, and last use from the store index.
 - **Remove** deletes one unused store item and is refused while any keep-set key still names it.
-- **Clean up…** previews, then deletes exactly the listed items: store items no live or trash profile, `previousKey`, history snapshot key, saved bundle, saved template or staged queue item names (`datasvc.KeepSet`, the keep set the startup 30-day sweep also builds, here without its 30-day grace), cache files older than their fetch lifetime (mod page details, categories, the dataset, SMAPI's update answers, GitHub releases), and leftover temp folders.
+- **Clean up…** previews, then deletes exactly the listed items: store items no live or trash profile, `previousKey`, history snapshot key, saved bundle, saved template or staged queue item names (`datasvc.KeepSet`, the keep set the startup 30-day sweep also builds, here without its 30-day grace), cache files older than their fetch lifetime (mod page details, categories, changelogs, collections, the dataset, SMAPI's update answers, GitHub releases), and leftover temp folders.
 - A store key a profile names after the preview is re-checked and kept.
 - Mod pictures have no lifetime and are counted but never cleaned.
 - The Mods list **Size** column uses the same per-entry store sizes.

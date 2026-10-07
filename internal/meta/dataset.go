@@ -17,7 +17,6 @@ const (
 	defaultIndexURL = "https://raw.githubusercontent.com/Pathoschild/StardewModDataset/main/dataset/indexes/pages%20by%20mod%20ID.json"
 	defaultPageBase = "https://raw.githubusercontent.com/Pathoschild/StardewModDataset/main/dataset/data/Nexus"
 	datasetTTL      = 30 * 24 * time.Hour
-	indexFile       = "dataset-index.json"
 	maxIndex        = 32 << 20
 	maxPage         = 8 << 20
 )
@@ -53,7 +52,7 @@ func (c *Client) loadIndex(ctx context.Context) (map[string][]Ref, error) {
 	if c.index.byID != nil && c.now().Sub(c.index.fetched) < datasetTTL {
 		return c.index.byID, nil
 	}
-	byID, err := Cached(c, indexFile, datasetTTL, func() (map[string][]Ref, error) { return c.fetchIndex(ctx) })
+	byID, err := Cached(c, DatasetPrefix+"index.json", datasetTTL, func() (map[string][]Ref, error) { return c.fetchIndex(ctx) })
 	if err != nil {
 		return nil, err
 	}
