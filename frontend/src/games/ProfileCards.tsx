@@ -70,13 +70,12 @@ function ProfileCards({
       sx={{
         display: 'flex',
         flexDirection: 'row',
-        flexWrap: 'nowrap',
+        // Chips wrap onto further lines rather than being cut off; the card limit keeps that to two or three.
+        flexWrap: 'wrap',
         alignItems: 'center',
         gap: 1,
         mt: 1,
-        minHeight: 0,
-        maxHeight: 32,
-        overflow: 'hidden',
+        maxWidth: '100%',
       }}
     >
       {visible.map((profile) => (
@@ -137,6 +136,7 @@ function ProfileCard({
         height: 32,
         px: 1.25,
         minWidth: 0,
+        maxWidth: '100%',
         overflow: 'hidden',
         color: 'text.primary',
         textShadow: 'none',

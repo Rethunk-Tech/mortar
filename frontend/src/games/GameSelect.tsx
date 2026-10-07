@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Link, Typography } from '@mui/material'
-import { Play } from 'lucide-react'
+import { Play, Settings } from 'lucide-react'
 import type { MouseEvent } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -173,6 +173,7 @@ function usePlayLast(game: Game, lastPlayedId: string) {
 function Row({
   game,
   openable,
+  setupNeeded,
   note,
   loader,
   lastPlayedName,
@@ -183,6 +184,8 @@ function Row({
 }: {
   game: Game
   openable: boolean
+  // Available but never opened: the tile offers Set up where a set-up game offers Play.
+  setupNeeded: boolean
   note: string
   loader: string
   lastPlayedName: string
@@ -255,6 +258,28 @@ function Row({
             {t`Play`}
           </Button>
         ) : null}
+        {setupNeeded ? (
+          <Button
+            type="button"
+            variant="contained"
+            size="large"
+            aria-label={t`Set up ${game.name}`}
+            startIcon={<Settings size={22} />}
+            onClick={open}
+            sx={{
+              flexShrink: 0,
+              height: 96,
+              minWidth: 120,
+              px: 3,
+              borderRadius: 0,
+              fontSize: 17,
+              fontWeight: 700,
+              '& .MuiButton-startIcon': { mr: '10px' },
+            }}
+          >
+            {t`Set up`}
+          </Button>
+        ) : null}
         <SourceBadges sources={game.sources ?? []} />
       </Box>
     </>
@@ -285,20 +310,18 @@ function Row({
   )
 }
 
-// Hover focus on the grid: the hovered tile grows, the rest shrink and dim, and the art drifts opposite ways. Only
+// Hover focus on the grid: the hovered tile grows, the rest shrink (never dim: with the pointer resting on one tile
+// the others looked darkened for good), and the art drifts opposite ways. Only
 // transform and filter change, so the grid never reflows (animating flex-grow or width jumped in WebKitGTK).
 const hoverFocus = {
   '@media (hover: hover) and (prefers-reduced-motion: no-preference)': {
     '& [data-tile]': {
-      willChange: 'transform, filter',
-      transition: `transform ${HOVER_MS}ms ${HOVER_EASE}, filter ${HOVER_MS}ms ${HOVER_EASE}`,
+      willChange: 'transform',
+      transition: `transform ${HOVER_MS}ms ${HOVER_EASE}`,
     },
     '& [data-art]': { transition: `transform ${HOVER_MS}ms ${HOVER_EASE}` },
     '& [data-tile]:hover': { transform: 'scale(1.04)', zIndex: 1 },
-    '&:has([data-tile]:hover) [data-tile]:not(:hover)': {
-      transform: 'scale(0.96)',
-      filter: 'brightness(0.6)',
-    },
+    '&:has([data-tile]:hover) [data-tile]:not(:hover)': { transform: 'scale(0.96)' },
     '& [data-tile]:hover [data-art]': { transform: 'scale(1.12) translateX(-2%)' },
     '&:has([data-tile]:hover) [data-tile]:not(:hover) [data-art]': {
       transform: 'scale(1.12) translateX(2%)',

@@ -112,6 +112,7 @@ function useGameTiles() {
     return {
       game: g,
       openable: g.available,
+      setupNeeded: g.available && (!st || st.setupNeeded),
       note: noteFor(g),
       loader: loaderCaption(g.loader, g.id === loaderGame ? loaderStatus : null),
       lastPlayedName: st?.profiles.find((p) => p.id === lastId)?.name ?? '',
