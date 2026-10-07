@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Tooltip } from '@mui/material'
+import { Box, ButtonBase } from '@mui/material'
 import { Application } from '@wailsio/runtime'
 import {
   Bug,
@@ -29,6 +29,7 @@ import { useShortcutHint } from '../settings/useShortcutHint.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { showWhatsNew } from '../updates/whatsNew.ts'
 import { checkForUpdates } from './checkForUpdates.ts'
+import { OneTip } from './OneTip.tsx'
 import { useUpdatesOfflineReason } from './offlineText.ts'
 import { reportBug } from './reportBug.ts'
 import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from './TitleMenu.tsx'
@@ -42,9 +43,9 @@ function Reason({ reason, children }: { reason: string; children: ReactNode }) {
   return reason === '' ? (
     children
   ) : (
-    <Tooltip title={reason} placement="left" describeChild={true}>
+    <OneTip title={reason} placement="left" describeChild={true}>
       <span>{children}</span>
-    </Tooltip>
+    </OneTip>
   )
 }
 
@@ -148,7 +149,7 @@ export function AppMenu() {
         <Reason reason={updatesOffline}>
           <TitleMenuItem
             icon={<RefreshCw size={ICON_PX} />}
-            label={t`Check for updates`}
+            label={t`Check mods and Mortar for updates`}
             disabled={updatesOffline !== ''}
             onClick={() => {
               close()

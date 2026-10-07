@@ -41,7 +41,7 @@ function checkFailure(e: unknown): { phase: Phase; error: string } {
   return { phase: 'error', error: i18n._(msg`Could not check for updates.`) }
 }
 
-// Mortar's own update, held here so the app menu's Check for updates and Settings › Updates share one check.
+// Mortar's own update, held here so the app menu's update check and Settings › Updates share one check.
 export const useMortarUpdate = create<{
   info: Info | null
   phase: Phase

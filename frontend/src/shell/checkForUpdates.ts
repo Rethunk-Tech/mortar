@@ -35,7 +35,7 @@ function resultKind(
   return 'info'
 }
 
-// F5 and the app menu's Check for updates: the open profile's mods (bypassing cached answers) and Mortar itself,
+// F5 and the app menu's update check: the open profile's mods (bypassing cached answers) and Mortar itself,
 // reported in one toast.
 export async function checkForUpdates() {
   const toasts = useToasts.getState()

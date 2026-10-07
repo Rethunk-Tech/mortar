@@ -5,7 +5,7 @@ import type { PaletteLabels } from './items.ts'
 export function paletteActionLabels(i18n: I18n): PaletteLabels {
   return {
     play: i18n._(msg`Play the open profile`),
-    updates: i18n._(msg`Check for updates`),
+    updates: i18n._(msg`Check mods and Mortar for updates`),
     downloads: i18n._(msg`Open Downloads`),
     downloadsFolder: i18n._(msg`Add from the downloads folder…`),
     import: i18n._(msg`Import`),

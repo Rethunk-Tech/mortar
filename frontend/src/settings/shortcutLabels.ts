@@ -8,7 +8,7 @@ export function shortcutLabels(i18n: I18n): Record<ShortcutId, string> {
     'command-palette': i18n._(msg`Open the command palette`),
     'filter-mods': i18n._(msg`Focus the search`),
     play: i18n._(msg`Play the open profile`),
-    'check-updates': i18n._(msg`Check for updates`),
+    'check-updates': i18n._(msg`Check mods and Mortar for updates`),
     'open-settings': i18n._(msg`Open settings`),
     dismiss: i18n._(msg`Close dialog or clear selection`),
     'select-all-mods': i18n._(msg`Select all mods`),

@@ -12,7 +12,7 @@ export function ModsHeaderActions() {
   return (
     <PageActions>
       <IconAction
-        label={t`Check for updates (F5)`}
+        label={t`Check mods and Mortar for updates (F5)`}
         icon={<RefreshCw size={16} aria-hidden={true} />}
         onClick={() => {
           checkForUpdates().catch(reportUnexpected)
