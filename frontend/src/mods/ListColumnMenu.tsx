@@ -32,6 +32,7 @@ import { SetListSort } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { useSettings } from '../settings/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
+import { visuallyHidden } from '../shell/visuallyHidden.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { columnLabel } from './columnLabel.ts'
@@ -56,14 +57,6 @@ function headerCursor(id: ListColumnId, isDragging: boolean): string {
 }
 
 const ellipsis = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } as const
-const visuallyHidden = {
-  position: 'absolute',
-  width: 1,
-  height: 1,
-  overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
-  whiteSpace: 'nowrap',
-} as const
 const cellBase = { p: 0, border: 0, fontSize: 'inherit', color: 'inherit' } as const
 
 // The role comes last: dnd-kit's sortable attributes would otherwise make each header a button.

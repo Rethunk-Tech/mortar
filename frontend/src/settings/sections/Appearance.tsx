@@ -10,6 +10,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { columnLabel } from '../../mods/columnLabel.ts'
 import { LIST_COLUMN_IDS, sanitizeListSort } from '../../mods/listColumns.ts'
+import { visuallyHidden } from '../../shell/visuallyHidden.ts'
 import { type AccentName, accents } from '../../theme/accents.ts'
 import { space } from '../../theme/density.ts'
 import { PAD_FOCUS } from '../../theme/theme.ts'
@@ -51,15 +52,6 @@ function DefaultSort() {
 
 // The accent swatch's height: a picture of the colour, not a control, so it does not follow the density scale.
 const SWATCH_PX = 44
-
-const visuallyHidden = {
-  position: 'absolute',
-  opacity: 0,
-  width: 1,
-  height: 1,
-  p: 0,
-  overflow: 'hidden',
-} as const
 
 export function Appearance() {
   const { t } = useLingui()

@@ -1,5 +1,6 @@
 import { Box, type SxProps, type Theme } from '@mui/material'
 import type { ReactNode } from 'react'
+import { visuallyHidden } from '../shell/visuallyHidden.ts'
 import { space } from '../theme/density.ts'
 import { prefMatches, SEARCH_HIT } from './prefFilter.ts'
 import { useSettingsSearch } from './useSettingsSearch.ts'
@@ -14,15 +15,6 @@ function nodeText(node: ReactNode): string {
 const STACK_BELOW = 560
 const ROW_GAP = 3
 const BLOCK_GAP = 1.5
-
-const hiddenTitle = {
-  position: 'absolute',
-  width: 1,
-  height: 1,
-  overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
-  whiteSpace: 'nowrap',
-} as const
 
 export function SettingsSection({
   title,
@@ -152,7 +144,7 @@ export function SettingRow({
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box data-setting-label={true} sx={hideTitle ? hiddenTitle : { fontSize: 16 }}>
+        <Box data-setting-label={true} sx={hideTitle ? visuallyHidden : { fontSize: 16 }}>
           {label}
         </Box>
         {description ? (
