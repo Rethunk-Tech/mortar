@@ -296,6 +296,20 @@ func TestProfileCollectionSendsStatusRequest(t *testing.T) {
 	}
 }
 
+func TestProfilesCountsOnlyUserMods(t *testing.T) {
+	results := map[string]any{
+		"profiles": []profile.Profile{{ID: "1", Name: "Spring", Entries: []profile.Entry{
+			{Source: profile.Source{Kind: profile.SourceSMAPI}, Mods: []profile.Component{{ID: "smapi"}}},
+			{Source: profile.Source{Kind: profile.SourceMortar}, Mods: []profile.Component{{ID: "bridge"}}},
+			{Source: profile.Source{Kind: "nexus"}, Mods: []profile.Component{{ID: "a"}, {ID: "b"}}, Disabled: []mod.ID{"b"}},
+		}}},
+	}
+	r := invoke(t, results, "profiles", "stardew")
+	if r.code != 0 || !strings.Contains(r.out, "1/2") {
+		t.Fatalf("profiles: %q", r.out)
+	}
+}
+
 func TestProfilesMarksDamaged(t *testing.T) {
 	results := map[string]any{
 		"profiles": []profile.Profile{

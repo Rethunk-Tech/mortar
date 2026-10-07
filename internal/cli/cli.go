@@ -1030,6 +1030,9 @@ func (c *cmd) profiles(gameID string) error {
 			}
 			on, total := 0, 0
 			for _, e := range p.Entries {
+				if e.Source.Bundled() {
+					continue
+				}
 				total += len(e.Mods)
 				on += len(e.Mods) - len(e.Disabled)
 			}
