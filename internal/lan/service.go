@@ -72,6 +72,8 @@ type Expired struct {
 type Peer struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+	// Paired reports whether this computer holds a pairing key for the peer, so a send carries mod files.
+	Paired bool `json:"paired"`
 }
 
 // Deps connects LAN sharing to the rest of Mortar.
@@ -124,6 +126,7 @@ type Service struct {
 
 type peerRecord struct {
 	peer     Peer
+	instance string
 	lastSeen time.Time
 }
 
@@ -160,6 +163,10 @@ func NewService(deps Deps) *Service {
 	}
 	if deps.Dir != "" {
 		service.book.dir = filepath.Join(deps.Dir, "lan")
+	}
+	// The advertised instance is the stable paired-computer id, so a discovered peer can be matched to the peer book.
+	if id, err := service.book.self(); err == nil {
+		service.instanceID = id
 	}
 	return service
 }
@@ -384,7 +391,9 @@ func (s *Service) Peers(ctx context.Context) []Peer {
 	}
 	out := make([]Peer, 0, len(s.peers))
 	for _, record := range s.peers {
-		out = append(out, record.peer)
+		peer := record.peer
+		peer.Paired = s.book.key(record.instance) != nil
+		out = append(out, peer)
 	}
 	slicesSortPeers(out)
 	return out
@@ -930,7 +939,7 @@ func (s *Service) addPeer(entry *mdns.ServiceEntry) {
 	if !s.enabled {
 		return
 	}
-	s.peers[id] = peerRecord{peer: Peer{ID: id, Name: name}, lastSeen: time.Now()}
+	s.peers[id] = peerRecord{peer: Peer{ID: id, Name: name}, instance: entryInstanceID(entry), lastSeen: time.Now()}
 }
 
 func (s *Service) port() int {

@@ -14,6 +14,7 @@ import {
   ListItemText,
   TextField,
 } from '@mui/material'
+import { Events } from '@wailsio/runtime'
 import { Inbox, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import type { Peer } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
@@ -23,6 +24,8 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorKind } from '../toasts/errorKind.ts'
 import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { ShowCodeDialog } from './PairedComputers.tsx'
+import { peerSecondary } from './peerSecondary.ts'
 
 const refreshInterval = 3000
 
@@ -52,6 +55,47 @@ interface SendTarget {
   name: string
 }
 
+interface PeerRowProps {
+  peer: Peer
+  sharedName: boolean
+  disabled: boolean
+  sending: boolean
+  onSend: () => void
+  onPair: () => void
+}
+
+function PeerRow({ peer, sharedName, disabled, sending, onSend, onPair }: PeerRowProps) {
+  const { t } = useLingui()
+  return (
+    <ListItem disablePadding={true}>
+      <ListItemButton disabled={disabled} onClick={onSend}>
+        <ListItemText
+          primary={peer.name}
+          secondary={peerSecondary(
+            peer,
+            sharedName,
+            t`Paired · sends mod files`,
+            t`Not paired · they download each mod`,
+          )}
+        />
+        {peer.paired ? null : (
+          <Button
+            size="small"
+            variant="text"
+            onClick={(event) => {
+              event.stopPropagation()
+              onPair()
+            }}
+          >
+            {t`Pair`}
+          </Button>
+        )}
+        {sending ? <CircularProgress size={18} /> : null}
+      </ListItemButton>
+    </ListItem>
+  )
+}
+
 export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) {
   const { t } = useLingui()
   const [peers, setPeers] = useState<Peer[]>([])
@@ -60,6 +104,7 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
   const [sending, setSending] = useState<string | null>(null)
   const [manual, setManual] = useState('')
   const [addressPicker, setAddressPicker] = useState(false)
+  const [pairing, setPairing] = useState(false)
   const addresses = useSettings((state) => state.lanAddresses ?? [])
 
   const refresh = useCallback(() => {
@@ -87,6 +132,15 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
     const timer = globalThis.setInterval(refresh, refreshInterval)
     return () => globalThis.clearInterval(timer)
   }, [open, refresh])
+
+  useEffect(
+    () =>
+      Events.On('lan:paired', () => {
+        setPairing(false)
+        refresh()
+      }),
+    [refresh],
+  )
 
   const send = (target: SendTarget) => {
     setSending(target.id)
@@ -138,15 +192,15 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
               </ListItem>
             ) : null}
             {peers.map((peer) => (
-              <ListItem key={peer.id} disablePadding={true}>
-                <ListItemButton disabled={sending !== null} onClick={() => send(peer)}>
-                  <ListItemText
-                    primary={peer.name}
-                    secondary={sharedNames.has(peer.name) ? peer.id : undefined}
-                  />
-                  {sending === peer.id ? <CircularProgress size={18} /> : null}
-                </ListItemButton>
-              </ListItem>
+              <PeerRow
+                key={peer.id}
+                peer={peer}
+                sharedName={sharedNames.has(peer.name)}
+                disabled={sending !== null}
+                sending={sending === peer.id}
+                onSend={() => send(peer)}
+                onPair={() => setPairing(true)}
+              />
             ))}
             <ListItem disablePadding={true}>
               <ListItemButton
@@ -191,6 +245,7 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
       <DialogActions>
         <Button onClick={onClose}>{t`Cancel`}</Button>
       </DialogActions>
+      <ShowCodeDialog open={pairing} onClose={() => setPairing(false)} />
     </Dialog>
   )
 }

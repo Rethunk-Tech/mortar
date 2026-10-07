@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"net"
 	"net/http/httptest"
 	"os"
@@ -675,5 +676,29 @@ func TestExpiredShareIsAnnouncedAndDropped(t *testing.T) {
 	}
 	if got := s.Pending(); len(got) != 1 || got[0].ID != 2 {
 		t.Fatalf("pending = %+v, want only the share still transferring", got)
+	}
+}
+
+func TestPeersReportPairing(t *testing.T) {
+	t.Parallel()
+	service := NewService(Deps{})
+	service.enabled = true
+	if err := service.book.add(PairedPeer{ID: "paired-id", Name: "Pat"}, []byte("key")); err != nil {
+		t.Fatal(err)
+	}
+	for i, instance := range []string{"paired-id", "stranger-id"} {
+		service.addPeer(&mdns.ServiceEntry{
+			Name:       fmt.Sprintf(`Peer%d._mortar._tcp.local.`, i),
+			Port:       1234 + i,
+			AddrV4:     net.ParseIP("192.0.2.1"),
+			InfoFields: []string{"instance=" + instance},
+		})
+	}
+	got := map[string]bool{}
+	for _, peer := range service.Peers(context.Background()) {
+		got[peer.Name] = peer.Paired
+	}
+	if want := map[string]bool{"Peer0": true, "Peer1": false}; !maps.Equal(got, want) {
+		t.Fatalf("paired = %v, want %v", got, want)
 	}
 }

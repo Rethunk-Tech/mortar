@@ -30,39 +30,6 @@ import { SettingRow } from '../settings/SettingsSection.tsx'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
-function ShowCodeDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { t } = useLingui()
-  const [code, setCode] = useState('')
-  useEffect(() => {
-    if (!open) {
-      setCode('')
-      return
-    }
-    PairCode()
-      .then(setCode)
-      .catch((error: unknown) => {
-        toastError(t`Could not start pairing`, error)
-        onClose()
-      })
-  }, [open, onClose, t])
-  return (
-    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
-      <DialogTitle>{t`Pair a computer`}</DialogTitle>
-      <DialogContent>
-        <Typography color="text.secondary">
-          {t`On the other computer, choose Enter code and type this. It works once, for five minutes.`}
-        </Typography>
-        <Typography variant="h4" sx={{ fontFamily: 'monospace', textAlign: 'center', py: 2 }}>
-          {code || '…'}
-        </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Cancel`}</Button>
-      </DialogActions>
-    </Dialog>
-  )
-}
-
 function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useLingui()
   // null until the first scan answers, so the dialog never flashes "none found" before it has looked.
@@ -143,6 +110,39 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
         >
           {t`Pair`}
         </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+export function ShowCodeDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useLingui()
+  const [code, setCode] = useState('')
+  useEffect(() => {
+    if (!open) {
+      setCode('')
+      return
+    }
+    PairCode()
+      .then(setCode)
+      .catch((error: unknown) => {
+        toastError(t`Could not start pairing`, error)
+        onClose()
+      })
+  }, [open, onClose, t])
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
+      <DialogTitle>{t`Pair a computer`}</DialogTitle>
+      <DialogContent>
+        <Typography color="text.secondary">
+          {t`On the other computer, choose Enter code and type this. It works once, for five minutes.`}
+        </Typography>
+        <Typography variant="h4" sx={{ fontFamily: 'monospace', textAlign: 'center', py: 2 }}>
+          {code || '…'}
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>{t`Cancel`}</Button>
       </DialogActions>
     </Dialog>
   )
