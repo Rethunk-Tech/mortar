@@ -1,5 +1,5 @@
 {
-  "serial": 1791330062,
+  "serial": 1791399366,
   "components": [
     {
       "game": "stardew",
@@ -25,10 +25,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-smapi-bridge"
       },
-      "tag": "v0.2.2",
-      "asset": "MortarSmapiBridge-0.2.2.zip",
-      "version": "0.2.2",
-      "sha256": "b3f524e7efa6e41fb47ec6e9f0d6286762a7a3c8c9dcb5c94d6e7abd14364c49"
+      "tag": "v0.2.3",
+      "asset": "MortarSmapiBridge-0.2.3.zip",
+      "version": "0.2.3",
+      "sha256": "9b80ccf980d461869ea0b71313b1c5061553382b0f00ae4c66a12a609ca2f56d"
     },
     {
       "game": "lethal-company",
@@ -39,10 +39,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.2.0",
-      "asset": "MortarBepInExBridge-0.2.0.zip",
-      "version": "0.2.0",
-      "sha256": "3aa02f367d7dc6c904167370272ed46d0d166ca09f8b788eba729fd35301cada"
+      "tag": "v0.2.1",
+      "asset": "MortarBepInExBridge-0.2.1.zip",
+      "version": "0.2.1",
+      "sha256": "0584d6ac1dcb96cce1a23adefdcd1bc306b44755b4e1455e184b7dae388d0ea3"
     },
     {
       "game": "valheim",
@@ -53,10 +53,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.2.0",
-      "asset": "MortarBepInExBridge-0.2.0.zip",
-      "version": "0.2.0",
-      "sha256": "3aa02f367d7dc6c904167370272ed46d0d166ca09f8b788eba729fd35301cada"
+      "tag": "v0.2.1",
+      "asset": "MortarBepInExBridge-0.2.1.zip",
+      "version": "0.2.1",
+      "sha256": "0584d6ac1dcb96cce1a23adefdcd1bc306b44755b4e1455e184b7dae388d0ea3"
     }
   ],
   "games": [
@@ -69,7 +69,11 @@
         "mo2": "Stardew Valley"
       },
       "marker": "Stardew Valley.dll",
-      "metadata": ["smapi-updates", "smapi-compat", "stardew-dataset"],
+      "metadata": [
+        "smapi-updates",
+        "smapi-compat",
+        "stardew-dataset"
+      ],
       "paths": {
         "errorLogs": {
           "windows": "{appData}/StardewValley/ErrorLogs",
@@ -185,7 +189,10 @@
           "linux": "{xdgConfig}/unity3d/ZeekerssRBLX/Lethal Company/Player.log"
         }
       },
-      "saveFiles": ["LCSaveFile*", "LCChallengeFile"],
+      "saveFiles": [
+        "LCSaveFile*",
+        "LCChallengeFile"
+      ],
       "titleScene": "MainMenu",
       "deploy": "profile",
       "targets": [
@@ -245,8 +252,14 @@
           "linux": "{xdgConfig}/unity3d/IronGate/Valheim/Player.log"
         }
       },
-      "saveFiles": ["characters_local/*.fch", "worlds_local/*.fwl", "!*_backup_*"],
-      "saveCompanions": [".db"],
+      "saveFiles": [
+        "characters_local/*.fch",
+        "worlds_local/*.fwl",
+        "!*_backup_*"
+      ],
+      "saveCompanions": [
+        ".db"
+      ],
       "titleScene": "start",
       "deploy": "profile",
       "targets": [
