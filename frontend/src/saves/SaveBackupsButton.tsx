@@ -17,6 +17,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { causeLabel, useSaveBackups } from './backups.ts'
@@ -130,7 +131,7 @@ export function SaveBackupsButton({
             display: 'flex',
             flexDirection: 'column',
             gap: 0.5,
-            p: 1.5,
+            p: space.pad,
             width: 420,
             maxWidth: '90vw',
           }}

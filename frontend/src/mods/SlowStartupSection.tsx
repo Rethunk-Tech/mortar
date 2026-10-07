@@ -6,6 +6,7 @@ import { useTab } from '../game/tab.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNow } from '../i18n/useNow.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { sameId } from './lookup.ts'
 import { LinkedText } from './ModLinks.tsx'
@@ -27,8 +28,8 @@ function SlowRow({ row }: { row: SlowStartup }) {
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1,
-        pl: 1.5,
+        gap: space.gap,
+        pl: space.pad,
         pr: 0.75,
         py: 0.75,
         bgcolor: calloutFill('info'),
@@ -96,7 +97,7 @@ export function SlowStartupSection() {
   }
   return (
     <Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
         {rows.map((row) => (
           <SlowRow key={`${row.kind}/${row.id}`} row={row} />
         ))}

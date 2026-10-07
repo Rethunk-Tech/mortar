@@ -4,6 +4,7 @@ import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { space } from '../theme/density.ts'
 import { changelogNoteIsRisky } from './changelogRange.ts'
 import { MarkdownView } from './MarkdownView.tsx'
 import { useNexusEntry } from './nexusDetails.ts'
@@ -21,13 +22,13 @@ function Version({ entry, installed }: { entry: Changelog; installed: string }) 
         display: 'flex',
         flexDirection: 'column',
         gap: 0.25,
-        pl: 1.5,
+        pl: space.pad,
         py: 0.5,
         borderLeft: '3px solid',
         borderLeftColor: fresh ? 'primary.main' : 'transparent',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Box sx={{ fontWeight: 700, fontSize: 14 }}>
           {entry.date ? `${entry.version} · ${entry.date}` : entry.version}
         </Box>
@@ -45,7 +46,7 @@ function Version({ entry, installed }: { entry: Changelog; installed: string }) 
 /** The changelog's versions, newest first, each marked New or Installed against installed. */
 export function ChangelogEntries({ logs, installed }: { logs: Changelog[]; installed: string }) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       {logs.map((entry) => (
         <Version key={entry.version} entry={entry} installed={installed} />
       ))}

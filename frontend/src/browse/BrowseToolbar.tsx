@@ -21,7 +21,7 @@ interface SourceOption {
 const sourceButton = (active: boolean) => ({
   minWidth: 34,
   height: `calc(${space.control} - 6px)`,
-  px: 1,
+  px: space.gap,
   borderRadius: '6px',
   fontSize: 13,
   bgcolor: active ? 'var(--mortar-hairline-16)' : 'transparent',

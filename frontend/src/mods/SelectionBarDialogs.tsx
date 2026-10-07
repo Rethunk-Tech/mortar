@@ -15,6 +15,7 @@ import {
   ToggleButtonGroup,
 } from '@mui/material'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 export function TagSelectionDialog({
@@ -55,7 +56,7 @@ export function TagSelectionDialog({
         }}
       >
         <DialogTitle>{plural(mods.length, { one: 'Tag # mod', other: 'Tag # mods' })}</DialogTitle>
-        <DialogContent sx={{ minWidth: 320, pt: 2 }}>
+        <DialogContent sx={{ minWidth: 320, pt: space.pad }}>
           <Autocomplete
             freeSolo={true}
             options={tags}
@@ -116,7 +117,7 @@ export function CategorySelectionDialog({
       <DialogTitle>
         {plural(mods.length, { one: 'Set category for # mod', other: 'Set category for # mods' })}
       </DialogTitle>
-      <DialogContent sx={{ minWidth: 280, pt: 2 }}>
+      <DialogContent sx={{ minWidth: 280, pt: space.pad }}>
         <RadioGroup
           aria-label={t`Category`}
           value={category}

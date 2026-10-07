@@ -1,5 +1,6 @@
 import { Box, Button, Typography } from '@mui/material'
 import { modsLabel } from '../i18n/counts.ts'
+import { space } from '../theme/density.ts'
 
 // One profile found in another mod manager: its name, the manager, and how many mods it holds.
 export function FoundProfileRow({
@@ -19,7 +20,7 @@ export function FoundProfileRow({
     <Button
       disabled={disabled ?? false}
       onClick={onClick}
-      sx={{ justifyContent: 'space-between', textTransform: 'none', gap: 2 }}
+      sx={{ justifyContent: 'space-between', textTransform: 'none', gap: space.pad }}
     >
       <Box sx={{ textAlign: 'left', minWidth: 0 }}>
         <Typography title={name} noWrap={true} sx={{ fontWeight: 600 }}>

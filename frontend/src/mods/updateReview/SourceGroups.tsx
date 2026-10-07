@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Typography } from '@mui/material'
 import type { ComponentProps } from 'react'
+import { space } from '../../theme/density.ts'
 import { groupBySource } from './groups.ts'
 import { ReviewList } from './ReviewList.tsx'
 
@@ -11,7 +12,7 @@ export function SourceGroups(props: ComponentProps<typeof ReviewList>) {
     const name = g.name || t`Other`
     return (
       <div key={g.name}>
-        <Typography sx={{ px: 3, pt: 1.5, fontWeight: 600 }}>
+        <Typography sx={{ px: space.pad, pt: space.pad, fontWeight: 600 }}>
           {t`${name} (${g.list.length})`}
         </Typography>
         <ReviewList {...props} list={g.list} />

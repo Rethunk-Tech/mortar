@@ -15,6 +15,7 @@ import type {
 import { useLaunch } from '../launch/store.ts'
 import { currentGame } from '../nav/currentGame.ts'
 import { useNexus } from '../settings/nexus.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { idKey } from './dependents.ts'
 import { useLastRun } from './lastRun.ts'
@@ -114,13 +115,13 @@ export function EndorsePrompt({ profile }: { profile: Profile }) {
       open={signedIn && prompts.length > 0}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
     >
-      <Card sx={{ p: 1.5, maxWidth: 460, bgcolor: 'var(--mortar-toast)' }}>
+      <Card sx={{ p: space.pad, maxWidth: 460, bgcolor: 'var(--mortar-toast)' }}>
         <Typography sx={{ mb: 1, fontSize: 14, fontWeight: 700 }}>
           {t`Enjoying these mods? Endorse them on Nexus`}
         </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           {prompts.map((prompt) => (
-            <Box key={prompt.modId} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box key={prompt.modId} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
               <Typography sx={{ flex: 1, minWidth: 0, fontSize: 13, overflowWrap: 'anywhere' }}>
                 {t`Enjoying ${prompt.name}? Endorse it on Nexus`}
               </Typography>

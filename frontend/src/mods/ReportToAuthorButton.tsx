@@ -33,6 +33,7 @@ import { gameName } from '../games/info.ts'
 import { useLoader } from '../loader/store.ts'
 import { useProfileLoader } from '../profiles/store.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { entryOf, nexusIdOf } from './lookup.ts'
@@ -215,7 +216,7 @@ export function ReportToAuthorButton({
         slotProps={{ paper: { sx: { width: 520, maxWidth: 'calc(100% - 32px)' } } }}
       >
         <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Report to author`}</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
           {log === null ? (
             <Typography sx={{ fontSize: 14 }}>{t`Reading the log…`}</Typography>
           ) : (
@@ -239,7 +240,7 @@ export function ReportToAuthorButton({
             </>
           )}
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2.5, flexWrap: 'wrap', gap: 1 }}>
+        <DialogActions sx={{ px: space.pad, pb: space.pad, flexWrap: 'wrap', gap: space.gap }}>
           <Button disabled={uploading} onClick={close} sx={buttonSx}>
             {t`Cancel`}
           </Button>

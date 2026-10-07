@@ -25,6 +25,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { space } from '../theme/density.ts'
 import { errorDetails, errorKind } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import {
@@ -149,7 +150,7 @@ export function HistoryList({
   const ids = historyProfiles(list)
   return (
     <>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
         <FormControl size="small" sx={{ minWidth: 140 }}>
           <Select
             displayEmpty={true}
@@ -157,12 +158,12 @@ export function HistoryList({
             onChange={(e) => onFilters({ ...filters, outcome: e.target.value })}
             inputProps={{ 'aria-label': t`Filter by outcome` }}
           >
-            <MenuItem value="" sx={{ display: 'flex', gap: 1 }}>
+            <MenuItem value="" sx={{ display: 'flex', gap: space.gap }}>
               <Filter size={14} />
               {t`All outcomes`}
             </MenuItem>
             {['done', 'failed', 'skipped', 'cancelled'].map((o) => (
-              <MenuItem key={o} value={o} sx={{ display: 'flex', gap: 1 }}>
+              <MenuItem key={o} value={o} sx={{ display: 'flex', gap: space.gap }}>
                 {o === 'failed' ? <CircleX size={14} /> : <CircleCheck size={14} />}
                 <OutcomeText outcome={o} />
               </MenuItem>
@@ -176,12 +177,12 @@ export function HistoryList({
             onChange={(e) => onFilters({ ...filters, profileId: e.target.value })}
             inputProps={{ 'aria-label': t`Filter by profile` }}
           >
-            <MenuItem value="" sx={{ display: 'flex', gap: 1 }}>
+            <MenuItem value="" sx={{ display: 'flex', gap: space.gap }}>
               <User size={14} />
               {t`All profiles`}
             </MenuItem>
             {ids.map((id) => (
-              <MenuItem key={id} value={id} sx={{ display: 'flex', gap: 1 }}>
+              <MenuItem key={id} value={id} sx={{ display: 'flex', gap: space.gap }}>
                 <User size={14} />
                 {nameOf(id)}
               </MenuItem>
@@ -225,7 +226,7 @@ export function HistoryList({
           renderRow={(e) => (
             <Box
               key={`${e.started}-${e.finished}-${e.name}-${e.profileId}-${e.outcome}`}
-              sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.75 }}
+              sx={{ display: 'flex', alignItems: 'center', gap: space.gap, py: 0.75 }}
             >
               <Box
                 sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}

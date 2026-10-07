@@ -8,6 +8,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useDetail } from './detail.ts'
 import { LockedReason } from './LockedReason.tsx'
@@ -18,7 +19,13 @@ import { EditConfigButton } from './typedConfig/EditConfigButton.tsx'
 import { useLocked } from './useLocked.ts'
 
 const text = { fontSize: 13 } as const
-const row = { display: 'flex', alignItems: 'center', gap: 1, minHeight: 30, ...text } as const
+const row = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: space.gap,
+  minHeight: 30,
+  ...text,
+} as const
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (

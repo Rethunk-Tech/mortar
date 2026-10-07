@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, Pin } from 'lucide-react'
 import { useState } from 'react'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { sameId } from '../lookup.ts'
 import { ModNameLink } from '../ModNameLink.tsx'
@@ -24,19 +25,25 @@ export function KeptGroup({ kept, mods }: { kept: Update[]; mods: Mod[] }) {
         aria-expanded={open}
         startIcon={open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
         onClick={() => setOpen(!open)}
-        sx={{ px: 3, py: 1.25, width: '100%', justifyContent: 'flex-start' }}
+        sx={{ px: space.pad, py: space.gap, width: '100%', justifyContent: 'flex-start' }}
       >
         {t`Kept at this version (${kept.length})`}
       </Button>
       {open ? (
-        <Box role="list">
+        <List disablePadding={true}>
           {kept.map((u) => {
             const mod = mods.find((m) => m.key === u.key && sameId(m.id, u.id))
             return (
-              <Box
+              <ListItem
                 key={u.key}
-                role="listitem"
-                sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 3, py: 1 }}
+                disablePadding={true}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: space.gap,
+                  px: space.pad,
+                  py: space.gap,
+                }}
               >
                 <Pin size={14} aria-hidden={true} />
                 <Box sx={{ flex: 1, minWidth: 0, display: 'flex' }}>

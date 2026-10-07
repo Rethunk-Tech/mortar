@@ -10,6 +10,7 @@ import { ProfileMark } from '../profiles/ProfileMark.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
+import { space } from '../theme/density.ts'
 import { collectionHeader } from './collectionHeader.ts'
 import { compact, compactMeta } from './compact.ts'
 import { HeroCover } from './HeroCover.tsx'
@@ -109,7 +110,7 @@ function HeroName({
   }, [renameId, profile.id])
   return (
     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         {editing ? (
           <NameField
             initial={profile.name}
@@ -232,7 +233,7 @@ export function Hero({ profile, game }: { profile: Profile; game: string }) {
           bottom: HERO_BOTTOM_PX,
           display: 'flex',
           alignItems: 'flex-end',
-          gap: 2,
+          gap: space.pad,
           [compactAt]: {
             top: 0,
             bottom: 0,

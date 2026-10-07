@@ -20,6 +20,7 @@ import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { categoriesDiffer, useCustomCategories } from './customCategories.ts'
@@ -35,7 +36,7 @@ function CategoryRow({
 }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start', mb: 1.5 }}>
+    <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-start', mb: 1.5 }}>
       <TextField
         size="small"
         label={t`Name`}

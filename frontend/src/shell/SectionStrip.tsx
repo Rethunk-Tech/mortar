@@ -1,6 +1,7 @@
 import { Box, Chip, Tab, Tabs } from '@mui/material'
 import type { ReactNode } from 'react'
 import type { SectionTab } from '../mods/problemSection.ts'
+import { space } from '../theme/density.ts'
 
 // The Problems tab's header: a tab per section with its count, scrolling sideways when they do not fit, the chosen one
 // filled in the primary colour. The chosen section's bulk action sits in a row of its own below, right-aligned and
@@ -38,8 +39,8 @@ export function SectionStrip({
             flex: '0 0 auto',
             flexDirection: 'row',
             whiteSpace: 'nowrap',
-            gap: 1,
-            py: 1.25,
+            gap: space.gap,
+            py: space.gap,
             maxWidth: 'none',
             textTransform: 'none',
             fontSize: 14,
@@ -79,7 +80,7 @@ export function SectionStrip({
             alignItems: 'center',
             justifyContent: 'flex-end',
             height: 44,
-            px: 2,
+            px: space.pad,
           }}
         >
           {actions}

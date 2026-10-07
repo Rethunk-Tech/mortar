@@ -5,6 +5,7 @@ import { useState } from 'react'
 import type { AssetConflict } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/models.ts'
 import { useTab } from '../game/tab.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
+import { space } from '../theme/density.ts'
 import { AssetMapDialog } from './AssetMapDialog.tsx'
 import { ConflictWhy } from './ConflictWhy.tsx'
 import { LinkedText } from './ModLinks.tsx'
@@ -69,11 +70,11 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
       sx={{
         display: 'flex',
         alignItems: 'flex-start',
-        gap: 1.25,
+        gap: space.gap,
         flexShrink: 0,
-        pl: 1.5,
+        pl: space.pad,
         pr: 0.75,
-        py: 1,
+        py: space.gap,
         fontSize: 14,
         // Light mode keeps cards on opaque paper (a tint over the wallpaper reads as grey); the warning border and icon
         // still set conflicts apart.
@@ -158,7 +159,7 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
 function ProblemRows({ rows }: { rows: (Row | DismissedRow)[] }) {
   const keys = rowKeys(rows)
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       {rows.map((row, i) =>
         isDismissedRow(row) ? (
           <ProblemRow key={keys[i]} row={row.row} dismissed={row} />

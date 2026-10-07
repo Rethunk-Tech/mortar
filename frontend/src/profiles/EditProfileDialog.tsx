@@ -20,6 +20,7 @@ import { HeroCover } from '../game/HeroCover.tsx'
 import { useGameInfo } from '../games/info.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AppearancePickers } from './AppearancePickers.tsx'
 import { MAX_DESCRIPTION, MAX_NAME } from './appearance.ts'
@@ -106,7 +107,7 @@ function CoverField({
             : t`${pickedName} is used after Save.`}
         </Typography>
       )}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: space.gap, mb: 2 }}>
         <Button
           onClick={() => {
             PickImage(t`Choose image…`)
@@ -150,7 +151,7 @@ function FieldsTabs({
       aria-label={t`Profile settings`}
       sx={{
         minHeight: 44,
-        px: 1.5,
+        px: space.pad,
         borderBottom: '1px solid var(--mortar-hairline)',
         '& .MuiTabs-indicator': { height: 2 },
         '& .MuiTab-root': {
@@ -257,7 +258,7 @@ function ProfileFields({
   return (
     <>
       <FieldsTabs ids={ids} tab={tab} onTab={setTab} startupSettings={startupSettings} />
-      <DialogContent sx={{ pt: 2.5, display: 'grid', alignContent: 'start' }}>
+      <DialogContent sx={{ pt: space.pad, display: 'grid', alignContent: 'start' }}>
         {panel(
           'appearance',
           <>

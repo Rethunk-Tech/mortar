@@ -12,6 +12,7 @@ import {
 import { currentGame } from '../nav/currentGame.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
+import { space } from '../theme/density.ts'
 import { errorDetails, errorKind } from '../toasts/errorKind.ts'
 import { errorMessage, toastError } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -75,7 +76,7 @@ export function NexusAccountActions({
     statusLine = t`You chose not to endorse this mod.`
   }
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: space.gap }}>
       <Typography sx={{ flexBasis: '100%', fontSize: 13, color: 'text.secondary' }}>
         {statusLine}
       </Typography>

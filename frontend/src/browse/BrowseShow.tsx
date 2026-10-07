@@ -3,6 +3,7 @@ import { Box, Button, Menu, Tooltip, Typography } from '@mui/material'
 import { Filter } from 'lucide-react'
 import { useState } from 'react'
 import { PrefSegmented } from '../settings/PrefControls.tsx'
+import { space } from '../theme/density.ts'
 import { type BrowseModes, DEFAULT_MODES, type Mode, ROWS } from './browseModes.ts'
 
 // The Mods tab's "Show" button, for what Browse does with mods in the profile, obsolete ones and broken ones.
@@ -45,7 +46,15 @@ function BrowseShow({
         </Button>
       </Tooltip>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, px: 2, py: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: space.gap,
+            px: space.pad,
+            py: space.gap,
+          }}
+        >
           {ROWS.map((row) => (
             <Box key={row} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
               <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{labels[row]}</Typography>

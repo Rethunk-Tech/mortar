@@ -16,6 +16,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { space } from '../theme/density.ts'
 import { localId } from './dependents.ts'
 import { nexusIdOf } from './lookup.ts'
 import { openPage } from './menu.ts'
@@ -118,9 +119,9 @@ function AuthorDialogBody({
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
       <NexusAuthorBlock nexusName={nexusName} authorUrl={authorUrl} />
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
         <Typography
           sx={{ fontWeight: 700, fontSize: 14 }}
         >{t`Installed in your profiles`}</Typography>

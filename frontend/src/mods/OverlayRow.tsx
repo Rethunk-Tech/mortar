@@ -6,6 +6,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { removeOverlay, setOverlayEnabled } from './overlayActions.ts'
@@ -32,10 +33,10 @@ export function OverlayListRow({ overlay }: { overlay: OverlayRow }) {
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1,
+        gap: space.gap,
         height: LIST_ROW_PX,
         pl: 5,
-        pr: 2,
+        pr: space.pad,
         fontSize: 13,
         color: dim ? 'text.secondary' : 'text.primary',
       }}

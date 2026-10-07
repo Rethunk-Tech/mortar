@@ -5,6 +5,7 @@ import type {
   HistoryDiff,
   HistoryEvent,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { space } from '../theme/density.ts'
 import { undoTarget } from '../toasts/history.ts'
 import { HistoryEventRow } from './HistoryEventRow.tsx'
 import { type HistoryDay, historyDays } from './historyTimeline.ts'
@@ -48,7 +49,13 @@ export function HistoryTimeline({
         <Box key={day.day} component="section" sx={{ mb: 1.5 }}>
           <Typography
             component="h3"
-            sx={{ fontSize: 12, fontWeight: 700, color: 'var(--mortar-ink-sec)', px: 1, mb: 0.5 }}
+            sx={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: 'var(--mortar-ink-sec)',
+              px: space.gap,
+              mb: 0.5,
+            }}
           >
             {dayLabel(day)}
           </Typography>

@@ -2,6 +2,7 @@ import { Box, Switch, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { CoverButton } from '../shell/CoverButton.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { GroupMenu } from './GroupMenu.tsx'
 import { toggleCollapsed } from './group.ts'
@@ -39,7 +40,7 @@ function ModsGroupHeader({
         alignItems: 'center',
         gap: 0.75,
         width: '100%',
-        px: 2,
+        px: space.pad,
         py: 0.75,
         bgcolor: 'var(--mortar-hairline-ghost)',
         borderBottom: '1px solid var(--mortar-hairline-muted)',

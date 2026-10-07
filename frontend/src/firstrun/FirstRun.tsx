@@ -8,6 +8,7 @@ import { ConfirmLaunchers } from '../../bindings/github.com/Rethunk-Tech/mortar/
 import { LauncherList } from '../launchers/LauncherList.tsx'
 import { useNav } from '../nav/store.ts'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
+import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useRefreshOnFocus } from './useRefreshOnFocus.ts'
 
@@ -62,8 +63,8 @@ export function FirstRun() {
         alignItems: 'center',
         gap: '20px',
         pt: '34px',
-        pb: 3,
-        px: 2,
+        pb: space.pad,
+        px: space.pad,
         // Centred when it fits, scrolling from the top when it does not.
         '& > :first-of-type': { mt: 'auto' },
         '& > :last-child': { mb: 'auto' },
@@ -85,7 +86,7 @@ export function FirstRun() {
           width: 'min(1200px, 100%)',
           display: 'flex',
           alignItems: 'center',
-          gap: 2,
+          gap: space.pad,
           justifyContent: 'flex-end',
         }}
       >

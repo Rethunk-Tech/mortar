@@ -2,6 +2,7 @@ import { Box, Link } from '@mui/material'
 import type { ReactNode } from 'react'
 import Markdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { space } from '../theme/density.ts'
 import { openPage } from './menu.ts'
 
 const WEB = /^https?:\/\//i
@@ -52,7 +53,7 @@ export function MarkdownView({ source }: { source: string }) {
         '& h1, & h2, & h3, & h4, & h5, & h6': { fontSize: 14, fontWeight: 700, mt: 1.5, mb: 0.5 },
         '& h1, & h2': { fontSize: 15 },
         '& p': { my: 0.75 },
-        '& ul, & ol': { my: 0.5, pl: 2.5 },
+        '& ul, & ol': { my: 0.5, pl: space.pad },
         '& li': { my: 0.25 },
         '& img': { maxWidth: '100%', height: 'auto', verticalAlign: 'middle' },
         '& code': {
@@ -63,7 +64,7 @@ export function MarkdownView({ source }: { source: string }) {
           bgcolor: 'var(--mortar-overlay-30)',
         },
         '& pre': {
-          p: 1,
+          p: space.gap,
           borderRadius: '4px',
           overflowX: 'auto',
           bgcolor: 'var(--mortar-overlay-30)',
@@ -72,7 +73,7 @@ export function MarkdownView({ source }: { source: string }) {
         '& blockquote': {
           m: 0,
           my: 0.75,
-          pl: 1.5,
+          pl: space.pad,
           borderLeft: '3px solid var(--mortar-hairline)',
           color: 'text.secondary',
         },
@@ -80,7 +81,7 @@ export function MarkdownView({ source }: { source: string }) {
         '& table': { borderCollapse: 'collapse', my: 0.75, display: 'block', overflowX: 'auto' },
         '& th, & td': {
           border: '1px solid var(--mortar-hairline)',
-          px: 1,
+          px: space.gap,
           py: 0.5,
           textAlign: 'left',
         },

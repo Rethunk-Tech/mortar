@@ -14,6 +14,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { download, type Want } from '../queue/actions.ts'
 import { useQueue } from '../queue/store.ts'
 import { pendingFor } from '../queue/totals.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { LackChipActions } from './lackChipActions.tsx'
@@ -64,7 +65,7 @@ function LackChip({
         display: 'flex',
         alignItems: 'center',
         gap: 0.25,
-        pl: 1,
+        pl: space.gap,
         pr: 0.25,
         borderRadius: '4px',
         bgcolor: 'var(--mortar-overlay-30)',

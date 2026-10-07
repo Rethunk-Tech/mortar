@@ -1,6 +1,7 @@
 import { Box, Button, Collapse } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
+import { space } from '../theme/density.ts'
 
 export function Fold({ title, children }: { title: string; children: ReactNode }) {
   const [shown, setShown] = useState(false)
@@ -23,7 +24,9 @@ export function Fold({ title, children }: { title: string; children: ReactNode }
         {title}
       </Button>
       <Collapse in={shown} unmountOnExit={true}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, pl: 1 }}>{children}</Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, pl: space.gap }}>
+          {children}
+        </Box>
       </Collapse>
     </Box>
   )

@@ -44,7 +44,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   let body: ReactNode = null
   if (status === 'error') {
     body = (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Typography sx={{ fontSize: 13, color: 'error.main' }} title={errorDetails(detail)}>
           {errorMessage(detail)}
         </Typography>

@@ -15,6 +15,7 @@ import {
   RemoveLaunchPresetTemplate,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 /** Game-wide launch preset templates: Add copies one into the profile; the copy is independent. */
@@ -56,7 +57,10 @@ export function LaunchPresetTemplatesDialog({
           </Typography>
         ) : (
           templates?.map((tpl) => (
-            <Box key={tpl.name} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}>
+            <Box
+              key={tpl.name}
+              sx={{ display: 'flex', alignItems: 'center', gap: space.gap, py: 0.5 }}
+            >
               <Typography title={tpl.name} noWrap={true} sx={{ flex: 1, minWidth: 0 }}>
                 {tpl.name}
               </Typography>

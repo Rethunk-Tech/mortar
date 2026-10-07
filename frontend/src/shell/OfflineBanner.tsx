@@ -3,6 +3,7 @@ import { Box, Button } from '@mui/material'
 import { Events } from '@wailsio/runtime'
 import { CloudOff } from 'lucide-react'
 import { useEffect } from 'react'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import {
   RECHECK_MS,
@@ -55,8 +56,8 @@ export function OfflineBanner() {
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1,
-        px: 1.5,
+        gap: space.gap,
+        px: space.pad,
         minHeight: 32,
         flexShrink: 0,
         fontSize: 13,

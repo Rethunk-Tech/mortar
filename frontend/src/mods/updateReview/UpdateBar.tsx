@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { ArrowUp } from 'lucide-react'
 import { useProfiles } from '../../profiles/store.ts'
+import { space } from '../../theme/density.ts'
 import { useBadges } from '../badges.ts'
 import { visibleUpdates } from '../lookup.ts'
 import { accent } from '../paper.ts'
@@ -32,8 +33,8 @@ export function UpdateBar() {
         flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
-        gap: 1.25,
-        pl: 1.5,
+        gap: space.gap,
+        pl: space.pad,
         pr: 0.75,
         fontSize: 14,
         bgcolor: accent.fill,

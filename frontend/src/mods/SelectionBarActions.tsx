@@ -20,6 +20,7 @@ import { type ReactNode, useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
 import type { SourceGroups } from './skipSources.ts'
@@ -115,8 +116,8 @@ export function SelectionBarActions({
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1,
-        px: 2,
+        gap: space.gap,
+        px: space.pad,
         py: 0.75,
         minHeight: 44,
         borderBottom: '1px solid var(--mortar-hairline-muted)',
@@ -127,7 +128,7 @@ export function SelectionBarActions({
         {count}
       </Typography>
       <LockedReason locked={locked}>
-        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: space.gap }}>
           <Button
             size="small"
             variant="outlined"

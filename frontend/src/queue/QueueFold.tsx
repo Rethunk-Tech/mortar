@@ -2,6 +2,7 @@ import { Box } from '@mui/material'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { CoverButton } from '../shell/CoverButton.tsx'
+import { space } from '../theme/density.ts'
 
 export function Fold({
   line,
@@ -25,7 +26,7 @@ export function Fold({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 1,
+          gap: space.gap,
           minHeight: 40,
           px: '10px',
           borderRadius: '6px',

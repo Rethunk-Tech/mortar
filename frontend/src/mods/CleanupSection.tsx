@@ -1,10 +1,12 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Menu, MenuItem, Typography } from '@mui/material'
-import { ChevronDown } from 'lucide-react'
+import { Box, Button, Menu, Typography } from '@mui/material'
+import { ChevronDown, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LinkedText } from './ModLinks.tsx'
 import { useMods } from './store.ts'
@@ -39,18 +41,19 @@ function RemoveOne({ choices }: { choices: { key: string; name: string }[] }) {
         {choices.map((choice) => {
           const mod = mods.find((m) => m.key === choice.key)
           return (
-            <MenuItem
+            <MenuAction
               key={choice.key}
+              tone="error"
               disabled={mod === undefined}
+              icon={<Trash2 size={16} />}
+              label={t`Remove ${choice.name}`}
               onClick={() => {
                 setAnchor(null)
                 if (mod !== undefined) {
                   remove(mod).catch(reportUnexpected)
                 }
               }}
-            >
-              {t`Remove ${{ name: choice.name }}`}
-            </MenuItem>
+            />
           )
         })}
       </Menu>
@@ -70,11 +73,11 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
       sx={{
         display: 'flex',
         alignItems: 'flex-start',
-        gap: 1.25,
+        gap: space.gap,
         flexShrink: 0,
-        pl: 1.5,
+        pl: space.pad,
         pr: 0.75,
-        py: 1,
+        py: space.gap,
         fontSize: 14,
         bgcolor: 'var(--mortar-overlay-45)',
         borderRadius: '6px',
@@ -146,7 +149,7 @@ export function CleanupSection({
           {t`Remove all`}
         </Button>
       ) : null}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
         {cleanup.map((item) => (
           <CleanupRow key={item.key} cleanup={item} />
         ))}

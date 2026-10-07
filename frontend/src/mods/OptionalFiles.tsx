@@ -9,6 +9,7 @@ import type {
 import { OverlayFiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { entryOf } from './lookup.ts'
 import { useNexusEntry } from './nexusDetails.ts'
@@ -66,7 +67,7 @@ export function OptionalFiles({ mod, profile }: { mod: Mod; profile: Profile }) 
     />
   )
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       <Typography sx={heading}>{t`Optional files`}</Typography>
       {groups.map((group) => (
         <Box

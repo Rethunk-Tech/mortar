@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, DialogActions, FormControlLabel, Typography } from '@mui/material'
 import { ShieldCheck } from 'lucide-react'
+import { space } from '../../theme/density.ts'
 
 export function ReviewFooter({
   wantedCount,
@@ -29,16 +30,16 @@ export function ReviewFooter({
   return (
     <DialogActions
       sx={{
-        px: 3,
-        py: 2,
-        gap: 1.5,
+        px: space.pad,
+        py: space.pad,
+        gap: space.gap,
         flexDirection: 'column',
         alignItems: 'stretch',
         bgcolor: 'var(--mortar-overlay-20)',
         '& > :not(style) ~ :not(style)': { ml: 0 },
       }}
     >
-      <Box sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
+      <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-start' }}>
         <Box sx={{ color: 'text.secondary', display: 'flex', pt: '2px' }}>
           <ShieldCheck size={18} aria-hidden={true} />
         </Box>
@@ -47,7 +48,7 @@ export function ReviewFooter({
           {t`Mortar checks for updates at startup, on F5, and at most hourly while it runs.`}
         </Typography>
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
         {wantedCount > 0 ? (
           <FormControlLabel
             control={<Checkbox checked={propagateAll} onChange={(_, on) => onPropagate(on)} />}

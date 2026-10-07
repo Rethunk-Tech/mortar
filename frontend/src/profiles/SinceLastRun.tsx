@@ -16,6 +16,7 @@ import {
 import { HomePanel } from '../game/HomePanel.tsx'
 import { changesView } from '../game/homeView.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
+import { space } from '../theme/density.ts'
 import { HistoryDialog } from './HistoryDialog.tsx'
 import { diffLines } from './historyDiff.ts'
 import { useProfiles } from './store.ts'
@@ -102,7 +103,7 @@ export function SinceLastRun({ game, profileId }: { game: string; profileId: str
           </Typography>
         ))}
       </Box>
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: 'flex', gap: space.gap }}>
         {canExpand ? (
           <Button size="small" startIcon={<List size={14} />} onClick={() => setExpanded(true)}>
             {t`Show all`}

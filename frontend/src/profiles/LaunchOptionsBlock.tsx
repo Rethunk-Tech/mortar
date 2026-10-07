@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { TestLaunch } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useGameBusy } from '../launch/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { space } from '../theme/density.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { LaunchPreview } from './LaunchPreview.tsx'
 import { useProfiles } from './store.ts'
@@ -33,7 +34,9 @@ function TestLaunchRow({
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState('')
   return (
-    <Box sx={{ mt: 1, mb: 1, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+    <Box
+      sx={{ mt: 1, mb: 1, display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}
+    >
       <DisabledReason title={t`Stop the game to test a launch.`} disabled={playing}>
         <Button
           disabled={!(gameId && !playing && !busy)}

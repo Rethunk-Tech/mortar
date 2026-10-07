@@ -7,6 +7,7 @@ import { formatKb } from '../i18n/bytes.ts'
 import { download } from '../queue/actions.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { Fold } from '../shell/Fold.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { openPage } from './menu.ts'
@@ -116,7 +117,7 @@ export function InstalledOptional({
         </LockedReason>
       ) : null}
       <Box sx={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center', flexWrap: 'wrap' }}>
           <Typography sx={text}>{file?.name || row.label}</Typography>
           <Chip size="small" color="primary" variant="outlined" label={t`Installed`} sx={chipSx} />
           {row.enabled || radio ? null : <Chip size="small" label={t`Disabled`} sx={chipSx} />}

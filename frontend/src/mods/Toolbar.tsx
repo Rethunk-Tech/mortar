@@ -45,6 +45,7 @@ import { MenuAction } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
 import { ExtraFolderMenu } from './ExtraFolderMenu.tsx'
@@ -92,7 +93,16 @@ function TagChips({
   onTags: (tags: string[]) => void
 }) {
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, px: 2, py: 1, maxWidth: 320 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 0.5,
+        px: space.pad,
+        py: space.gap,
+        maxWidth: 320,
+      }}
+    >
       {tags.map((tag) => {
         const on = selected.includes(tag)
         return (
@@ -408,7 +418,7 @@ export function EmptyMods({ profileId }: { profileId: string }) {
       title={t`No mods yet`}
       action={
         <>
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', gap: space.gap }}>
             <BrowseMods />
             <AddArchive variant="outlined" size="large" />
           </Box>

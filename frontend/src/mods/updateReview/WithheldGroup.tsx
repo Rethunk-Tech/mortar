@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { sameId } from '../lookup.ts'
 import { ModNameLink } from '../ModNameLink.tsx'
@@ -18,20 +19,26 @@ export function WithheldGroup({ withheld, mods }: { withheld: Update[]; mods: Mo
   }
   return (
     <Box>
-      <Typography sx={{ px: 3, pt: 1.5, fontWeight: 600 }}>
+      <Typography sx={{ px: space.pad, pt: space.pad, fontWeight: 600 }}>
         {t`Not offered (${withheld.length})`}
       </Typography>
-      <Typography sx={{ px: 3, fontSize: 13, color: 'text.secondary' }}>
+      <Typography sx={{ px: space.pad, fontSize: 13, color: 'text.secondary' }}>
         {t`Nexus hides or has removed these pages, so there is no download to offer.`}
       </Typography>
-      <Box role="list">
+      <List disablePadding={true}>
         {withheld.map((u) => {
           const mod = mods.find((m) => m.key === u.key && sameId(m.id, u.id))
           return (
-            <Box
+            <ListItem
               key={`${u.key}/${u.id}`}
-              role="listitem"
-              sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 3, py: 1 }}
+              disablePadding={true}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: space.gap,
+                px: space.pad,
+                py: space.gap,
+              }}
             >
               <Box sx={{ flex: 1, minWidth: 0, display: 'flex' }}>
                 <ModNameLink id={u.id} modKey={u.key} name={u.name} />

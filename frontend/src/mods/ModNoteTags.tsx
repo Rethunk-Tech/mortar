@@ -5,6 +5,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { MAX_ENTRY_NOTE, MAX_ENTRY_TAG, profileTags, takeTags } from './group.ts'
 import { entryOf } from './lookup.ts'
@@ -53,7 +54,7 @@ export function ModNoteTags({ profile, mod }: { profile: Profile; mod: Mod }) {
     [savedNote, savedTagsKey, save],
   )
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       <Box>
         <Typography sx={heading}>{t`Note`}</Typography>
         <TextField

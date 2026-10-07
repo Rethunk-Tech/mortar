@@ -229,8 +229,8 @@ function OrderList({
                   transform: `translateY(${item.start}px)`,
                   display: 'flex',
                   alignItems: 'flex-start',
-                  gap: 1.5,
-                  py: 1,
+                  gap: space.gap,
+                  py: space.gap,
                   borderBottom: '1px solid var(--mortar-hairline-faint)',
                   ...(row.cycle
                     ? { outline: '1px solid', outlineColor: 'error.main', outlineOffset: -1 }
@@ -248,7 +248,7 @@ function OrderList({
                   {row.position}
                 </Typography>
                 <Box sx={{ minWidth: 0, flex: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minWidth: 0 }}>
                     <RowName row={row} />
                     {row.cycle ? (
                       <Tooltip title={t`These mods require each other.`}>
@@ -303,8 +303,8 @@ function OrderSkeleton({ label }: { label: string }) {
           key={key}
           sx={{
             display: 'flex',
-            gap: 1.5,
-            py: 1,
+            gap: space.gap,
+            py: space.gap,
             borderBottom: '1px solid var(--mortar-hairline-faint)',
           }}
         >

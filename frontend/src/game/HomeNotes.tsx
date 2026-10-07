@@ -7,6 +7,7 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { SetNotes } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage } from '../toasts/report.ts'
 import { HomePanel } from './HomePanel.tsx'
@@ -66,7 +67,7 @@ function NotesEditor({ profile, onDone }: { profile: Profile; onDone: () => void
   }, [save])
 
   return (
-    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: space.gap }}>
       <TextField
         multiline={true}
         fullWidth={true}
@@ -85,7 +86,7 @@ function NotesEditor({ profile, onDone }: { profile: Profile; onDone: () => void
           htmlInput: { 'aria-label': t`Notes for ${profile.name}`, maxLength: MAX_NOTES },
         }}
       />
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Button
           size="small"
           startIcon={<Check size={14} />}

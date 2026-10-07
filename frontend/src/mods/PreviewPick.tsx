@@ -3,6 +3,7 @@ import { Box, Checkbox, FormControlLabel, List, ListItem, ListItemText } from '@
 import type { ReactNode } from 'react'
 import type { GameModPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { formatPreviewRow } from '../profiles/gameModsFormat.ts'
+import { space } from '../theme/density.ts'
 
 // A checkbox per mod folder that can be acted on, then the folders that cannot, each with its reason.
 export function PreviewPick({
@@ -23,7 +24,7 @@ export function PreviewPick({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
       {pickable.map((m) => (
-        <Box key={m.folder} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box key={m.folder} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
           <FormControlLabel
             sx={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}
             control={
@@ -39,7 +40,7 @@ export function PreviewPick({
       ))}
       <List dense={true} disablePadding={true}>
         {blocked.map((m) => (
-          <ListItem key={`${m.name}-${m.folder}`} sx={{ py: 0.5, pl: 1 }}>
+          <ListItem key={`${m.name}-${m.folder}`} sx={{ py: 0.5, pl: space.gap }}>
             <ListItemText
               primary={formatPreviewRow(m, switchedOff)}
               slotProps={{

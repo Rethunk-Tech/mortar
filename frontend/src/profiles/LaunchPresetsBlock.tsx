@@ -12,6 +12,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { AddLaunchPresetTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { space } from '../theme/density.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { LaunchPresetDialog } from './LaunchPresetDialog.tsx'
@@ -36,7 +37,7 @@ function PresetRow({
 }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, py: 0.5 }}>
       <Typography title={name} noWrap={true} sx={{ flex: 1, minWidth: 0 }}>
         {name}
       </Typography>

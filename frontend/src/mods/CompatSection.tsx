@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Link, Typography } from '@mui/material'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
+import { space } from '../theme/density.ts'
 import { LinkedText } from './ModLinks.tsx'
 import { openPage } from './menu.ts'
 
@@ -31,9 +32,9 @@ function CompatInfoRow({ row }: { row: Compat }) {
         display: 'flex',
         flexDirection: 'column',
         gap: 0.5,
-        pl: 1.5,
+        pl: space.pad,
         pr: 0.75,
-        py: 1,
+        py: space.gap,
         fontSize: 14,
         bgcolor: calloutFill('info'),
         border: '1px solid',
@@ -59,7 +60,7 @@ export function CompatSection({ rows }: { rows: Compat[] }) {
   }
   return (
     <Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
         {rows.map((row) => (
           <CompatInfoRow key={`${row.key}/${row.id}`} row={row} />
         ))}

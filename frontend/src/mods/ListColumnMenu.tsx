@@ -32,6 +32,7 @@ import { SetListSort } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { useSettings } from '../settings/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { columnLabel } from './columnLabel.ts'
 import { useColumnAvailable } from './contributedColumns.ts'
@@ -124,7 +125,7 @@ function HeaderGhost({ label }: { label: string }) {
         display: 'inline-flex',
         alignItems: 'center',
         height: 30,
-        px: 1.5,
+        px: space.pad,
         borderRadius: '6px',
         border: `1px solid ${theme.palette.primary.main}`,
         bgcolor: 'var(--mortar-menu-95)',

@@ -14,6 +14,7 @@ import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { useBadges } from '../mods/badges.ts'
 import { openShare } from '../share/store.ts'
 import { MenuRule } from '../shell/TitleMenu.tsx'
+import { space } from '../theme/density.ts'
 import { userModCount } from './count.ts'
 import { EditProfileDialog } from './EditProfileDialog.tsx'
 import { HealthCheckBadge } from './HealthCheckBadge.tsx'
@@ -178,11 +179,11 @@ export function ProfileRow({
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1.5,
+        gap: space.gap,
         height: 'auto',
         minHeight: 64,
         py: 0.75,
-        px: 1,
+        px: space.gap,
         boxSizing: 'border-box',
         mb: '6px',
         ...panelSx,
@@ -222,7 +223,7 @@ export function ProfileRow({
             onCancel={() => setRenaming(false)}
           />
         ) : (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
             <ProfileMark profile={profile} />
             <Typography noWrap={true} title={profile.name} sx={{ fontSize: 17, fontWeight: 600 }}>
               {profile.name}

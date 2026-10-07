@@ -117,7 +117,7 @@ function ListShell({
           flex: 1,
           minHeight: 0,
           overflowY: 'auto',
-          pb: 1.5,
+          pb: space.pad,
           '&:focus-visible': { outlineOffset: -2 },
         }}
       >

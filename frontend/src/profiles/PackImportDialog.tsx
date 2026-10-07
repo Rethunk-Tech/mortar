@@ -23,6 +23,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import { PickPackFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { listNames } from '../i18n/list.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { FoundProfileRow } from './FoundProfileRow.tsx'
@@ -121,7 +122,7 @@ export function PackImportDialog({
             ) : null}
           </Box>
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
             {local.length > 0 ? (
               <>
                 <Typography color="text.secondary" sx={{ fontSize: 14 }}>

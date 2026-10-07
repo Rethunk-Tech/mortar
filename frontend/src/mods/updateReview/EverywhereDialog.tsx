@@ -12,6 +12,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { ErrorRetry } from '../../shell/ErrorRetry.tsx'
+import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { usePending } from '../../toasts/usePending.ts'
@@ -34,7 +35,7 @@ function PreviewLists({ preview }: { preview: EverywherePreview }) {
     return reason
   }
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       <Typography sx={{ fontSize: 13 }}>{t`Will update`}</Typography>
       {affected.length === 0 ? (
         <Typography color="text.secondary">{t`No eligible profiles.`}</Typography>

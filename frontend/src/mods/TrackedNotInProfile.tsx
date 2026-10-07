@@ -20,6 +20,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { openImport } from '../share/store.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { openPage } from './menu.ts'
@@ -54,7 +55,7 @@ function TrackedRow({
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1,
+        gap: space.gap,
         flexWrap: 'wrap',
         py: 0.5,
       }}

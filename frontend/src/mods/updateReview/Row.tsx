@@ -7,6 +7,7 @@ import { formatKb } from '../../i18n/bytes.ts'
 import { listNames } from '../../i18n/list.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { useQueue } from '../../queue/store.ts'
+import { space } from '../../theme/density.ts'
 import { changelogsBetween, changelogsHaveRiskyNotes } from '../changelogRange.ts'
 import { sameId, siblingsOf } from '../lookup.ts'
 import { openPage } from '../menu.ts'
@@ -63,7 +64,7 @@ function VersionLine({ update }: { update: Update }) {
   const { t } = useLingui()
   const { added, removed } = dependencyChanges(update)
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minWidth: 0 }}>
       <Version>{update.installed}</Version>
       <ArrowRight size={14} aria-hidden={true} />
       <Version isNew={true}>{update.version}</Version>
@@ -103,7 +104,7 @@ function ChangeSummary({
 }) {
   const { t } = useLingui()
   return sizeKb > 0 || changelog ? (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, fontSize: 12 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minWidth: 0, fontSize: 12 }}>
       {sizeKb > 0 ? (
         <Box component="span" sx={{ color: 'text.secondary', flexShrink: 0 }}>
           {formatKb(sizeKb)}
@@ -178,8 +179,8 @@ function Row({
           : `${ROW_TILE}px minmax(0, 1fr) auto auto`,
         gap: '14px',
         alignItems: 'center',
-        px: 3,
-        py: 1.75,
+        px: space.pad,
+        py: space.pad,
         borderBottom: '1px solid var(--mortar-hairline-muted)',
       }}
     >
@@ -199,7 +200,7 @@ function Row({
         <ChangeSummary update={update} sizeKb={sizeKb} changelog={changelog} />
         <OptionalUpdates update={update} profileId={profileId} />
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         {update.url ? (
           <Button
             variant="outlined"

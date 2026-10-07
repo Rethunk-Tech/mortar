@@ -71,7 +71,7 @@ function Header({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 1,
+          gap: space.gap,
           pt: space.pad,
           pr: space.gap,
           pb: space.gap,

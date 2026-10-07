@@ -26,6 +26,7 @@ import { openSettings } from '../nav/store.ts'
 import { download } from '../queue/actions.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { space } from '../theme/density.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { downloadWantsForEntries, type UndoEntry } from '../toasts/undo.ts'
 import { historyLabel } from './historyLabel.ts'
@@ -222,7 +223,10 @@ export function HealthDialog({
   let body: ReactNode
   if (failed) {
     body = (
-      <Box role="alert" sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1.5 }}>
+      <Box
+        role="alert"
+        sx={{ display: 'flex', alignItems: 'center', gap: space.gap, py: space.pad }}
+      >
         {t`Could not check this profile`}
         <Button variant="outlined" onClick={load}>
           {t`Retry`}

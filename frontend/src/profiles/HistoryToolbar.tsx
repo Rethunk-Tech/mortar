@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { GitCompare, RotateCcw, ShieldCheck } from 'lucide-react'
+import { space } from '../theme/density.ts'
 
 export function HistoryToolbar({
   busy,
@@ -24,7 +25,7 @@ export function HistoryToolbar({
 }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ display: 'flex', gap: 1, mb: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
+    <Box sx={{ display: 'flex', gap: space.gap, mb: 1.5, flexWrap: 'wrap', alignItems: 'center' }}>
       <Button
         size="small"
         variant="outlined"

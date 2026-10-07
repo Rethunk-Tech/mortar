@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { CommandPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { PreviewCommand } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { copyText } from '../share/copyText.ts'
+import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { errorMessage } from '../toasts/report.ts'
 
@@ -87,7 +88,7 @@ export function LaunchPreview({
           component="pre"
           sx={{
             m: 0,
-            p: 1,
+            p: space.gap,
             // Wrapped rather than scrolled sideways: a scroll region would need its own keyboard stop.
             whiteSpace: 'pre-wrap',
             overflowWrap: 'anywhere',

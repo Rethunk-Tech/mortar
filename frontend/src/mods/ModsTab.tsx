@@ -12,6 +12,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { boundShortcut, dialogOpen } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { space } from '../theme/density.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useCustomCategories } from './customCategories.ts'
@@ -106,7 +107,7 @@ function ModsBody({
   }
   if (!loaded) {
     return loadError ? (
-      <Box sx={{ px: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <Box sx={{ px: space.pad, display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Typography
           sx={{ color: 'error.main' }}
         >{t`Could not read the mods: ${loadError}`}</Typography>
@@ -118,7 +119,7 @@ function ModsBody({
       <Box
         role="status"
         aria-label={t`Loading mods`}
-        sx={{ px: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
+        sx={{ px: space.pad, display: 'flex', flexDirection: 'column', gap: space.gap }}
       >
         {LOADING_ROWS.map((n) => (
           <Skeleton

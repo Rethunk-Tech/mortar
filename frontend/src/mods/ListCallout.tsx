@@ -1,6 +1,7 @@
 import { Alert, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
+import { space } from '../theme/density.ts'
 
 // A box above the mod list that asks the user about the library: what happened, the choices, and optional detail.
 export function ListCallout({
@@ -28,7 +29,12 @@ export function ListCallout({
         border: '1px solid',
         borderColor: calloutLine('info'),
         '& .MuiAlert-message': { flex: 1, minWidth: 200 },
-        '& .MuiAlert-action': { gap: 1, flexWrap: 'wrap', alignItems: 'center', ml: 'auto' },
+        '& .MuiAlert-action': {
+          gap: space.gap,
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          ml: 'auto',
+        },
       }}
     >
       <Typography sx={{ fontSize: 14 }}>{text}</Typography>

@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, MenuItem, Select, Slider, Switch, TextField } from '@mui/material'
 import { Plus, X } from 'lucide-react'
 import { useState } from 'react'
+import { space } from '../../theme/density.ts'
 import { isHexColor, parseNumber, wantsSlider } from './entries.ts'
 import type { ConfigEntry, ConfigValue } from './types.ts'
 
@@ -56,7 +57,7 @@ function NumberWidget({ entry, label, onChange }: WidgetProps) {
     return field
   }
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.pad }}>
       <Slider
         size="small"
         aria-label={label}
@@ -77,7 +78,7 @@ function ColorWidget({ entry, label, onChange }: WidgetProps) {
   const hashed = value.startsWith('#') ? value : `#${value}`
   const normalized = isHexColor(value) ? hashed : FALLBACK_COLOR
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       <Box
         component="input"
         type="color"

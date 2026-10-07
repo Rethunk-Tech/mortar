@@ -12,6 +12,7 @@ import type {
 import { SaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { useLocked } from '../mods/useLocked.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { addRecordedMods } from './recordedActions.ts'
@@ -48,7 +49,7 @@ export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile
   ]
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Typography sx={{ flex: 1, fontSize: 12, color: 'warning.main' }}>
           {t`Needs ${plural(need, { one: '# mod this profile lacks', other: '# mods this profile lacks' })}`}
         </Typography>

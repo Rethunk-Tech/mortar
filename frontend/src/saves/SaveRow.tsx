@@ -85,7 +85,7 @@ export function FitStatus({ missing, unrecorded }: { missing: number; unrecorded
         display: 'flex',
         alignItems: 'center',
         gap: 0.5,
-        px: 1.25,
+        px: space.gap,
         py: '3px',
         borderRadius: '12px',
         fontSize: 12,
@@ -218,7 +218,7 @@ export function SaveRow({
         '&:hover': { borderColor: 'var(--mortar-hairline-16)' },
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Box
           aria-hidden={true}
           sx={{

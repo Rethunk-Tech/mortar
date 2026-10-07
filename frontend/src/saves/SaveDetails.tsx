@@ -9,6 +9,7 @@ import { useNow } from '../i18n/useNow.ts'
 import { When } from '../i18n/When.tsx'
 import { absoluteWhen } from '../i18n/when.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { space } from '../theme/density.ts'
 import { goldText, hoursPlayed } from './card.ts'
 import { AddAll, MissingChips } from './lackChips.tsx'
 
@@ -69,8 +70,8 @@ export function SaveDetails({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 1,
-          pt: 1,
+          gap: space.gap,
+          pt: space.gap,
           borderTop: '1px solid var(--mortar-hairline-muted)',
         }}
       >

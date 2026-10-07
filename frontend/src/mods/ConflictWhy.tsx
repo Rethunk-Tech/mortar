@@ -12,6 +12,7 @@ import {
 import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 
 function previewKey(e: ConflictEvidence) {
@@ -91,7 +92,7 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
   }, [evidence, gameId, openId])
   const images = evidence.filter((e) => previews[previewKey(e)])
   return (
-    <Box sx={{ mt: 0.75, display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <Box sx={{ mt: 0.75, display: 'flex', flexDirection: 'column', gap: space.gap }}>
       {evidence.map((e) => (
         <Box key={evidenceKey(e)}>
           <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{e.packName || e.packId}</Typography>
@@ -119,7 +120,7 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
         </Box>
       ))}
       {images.length === 0 ? null : (
-        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', gap: space.gap, flexWrap: 'wrap' }}>
           {images.map((e) => {
             const src = previews[previewKey(e)]
             return (

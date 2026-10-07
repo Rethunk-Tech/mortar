@@ -9,6 +9,7 @@ import { compact, compactQuery } from '../game/compact.ts'
 import { useProfileLoader } from '../profiles/store.ts'
 import { boundShortcut } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
+import { space } from '../theme/density.ts'
 import { PAD_FOCUS } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
@@ -113,7 +114,7 @@ function ModCardView({ mod: m, orderedIds, profile, columnsRef, onMove }: ModCar
       {...contextMenuProps(m)}
       sx={{
         height: cardHeightPx(cardSize),
-        pl: 1,
+        pl: space.gap,
         pr: 0.75,
         display: 'flex',
         alignItems: 'center',
@@ -292,7 +293,7 @@ function GridWindow({
         display: 'grid',
         gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
         gap: LANE_GAP_PX,
-        px: 2,
+        px: space.pad,
         alignContent: 'start',
       }}
     >

@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Chip, Link, Typography } from '@mui/material'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { space } from '../theme/density.ts'
 import { compatOf, showCompatChip } from './compatChip.ts'
 import { openPage } from './menu.ts'
 import { heading } from './paper.ts'
@@ -61,7 +62,7 @@ export function CompatDetail({ mod }: { mod: Mod }) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
       <Typography sx={heading}>{t`Compatibility`}</Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: 30, ...text }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minHeight: 30, ...text }}>
         <CompatChip mod={mod} />
         {summary}
       </Box>

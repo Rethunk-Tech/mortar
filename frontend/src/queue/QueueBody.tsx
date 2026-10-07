@@ -28,6 +28,7 @@ import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'
 import { LetterTile } from '../mods/parts.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { space } from '../theme/density.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -131,7 +132,7 @@ function Click({ item }: { item: Item }) {
       label={t`Needs your click`}
       text={t`Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page.`}
       actions={
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: space.gap }}>
           <SkipButton item={item} />
           <Button
             variant="contained"
@@ -273,7 +274,7 @@ function Active({ item }: { item: Item }) {
     <Box sx={{ ...ROW, bgcolor: 'var(--mortar-raised)' }}>
       <LetterTile mod={tile(item)} size={36} />
       <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: space.gap }}>
           <Title item={item} size={14} />
           <Typography sx={{ ...detail, flexShrink: 0 }}>{text}</Typography>
         </Box>
@@ -305,7 +306,7 @@ function Active({ item }: { item: Item }) {
 function NextActions({ item }: { item: Item }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       <Button
         size="small"
         title={t`Skip every waiting download`}

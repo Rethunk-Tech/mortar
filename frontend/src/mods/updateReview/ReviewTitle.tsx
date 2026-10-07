@@ -2,6 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { alpha, Box, DialogTitle, IconButton, Typography } from '@mui/material'
 import { ArrowUp, X } from 'lucide-react'
+import { space } from '../../theme/density.ts'
 import { ICON_FILL, ICON_TILE } from './constants.ts'
 
 export function ReviewTitle({
@@ -17,7 +18,10 @@ export function ReviewTitle({
 }) {
   const { t } = useLingui()
   return (
-    <DialogTitle component="div" sx={{ display: 'flex', alignItems: 'center', gap: 1.75, p: 3 }}>
+    <DialogTitle
+      component="div"
+      sx={{ display: 'flex', alignItems: 'center', gap: space.pad, p: space.pad }}
+    >
       <Box
         sx={{
           width: ICON_TILE,

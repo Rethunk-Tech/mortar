@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, CopyPlus, PackagePlus, Tag, Trash2, Users } 
 import { type ReactNode, useState } from 'react'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
+import { space } from '../theme/density.ts'
 import { ICON_SIZE } from './menu.ts'
 import type { ModAction } from './modActions.ts'
 
@@ -35,7 +36,7 @@ function OtherProfilesGroup({
         {open ? <ChevronDown size={ICON_SIZE} /> : <ChevronRight size={ICON_SIZE} />}
       </MenuItem>
       <Collapse in={open} unmountOnExit={true}>
-        <Box sx={{ pl: 2 }}>
+        <Box sx={{ pl: space.pad }}>
           <MenuAction
             disabled={locked}
             tooltip={tooltip}

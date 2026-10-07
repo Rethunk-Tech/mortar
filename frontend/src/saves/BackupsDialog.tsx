@@ -29,6 +29,7 @@ import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { causeLabel, useSaveBackups } from './backups.ts'
@@ -74,9 +75,9 @@ function BackupRow({
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1,
-        px: 1.5,
-        py: 1.25,
+        gap: space.gap,
+        px: space.pad,
+        py: space.gap,
         bgcolor: 'var(--mortar-paper-78)',
         borderRadius: '6px',
       }}
@@ -152,7 +153,7 @@ export function BackupsDialog({
         <DialogTitle>{t`Save backups`}</DialogTitle>
         <DialogContent>
           {status === 'error' ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
               <Typography sx={{ fontSize: 13, color: 'error.main' }}>
                 {t`Could not list backups: ${error}`}
               </Typography>
@@ -171,7 +172,7 @@ export function BackupsDialog({
               title={t`No save backups yet.`}
             >{t`Mortar backs up your saves before playing and before updates. Use Back up now on a save to make one yourself.`}</EmptyState>
           ) : null}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
             {items.map((b) => (
               <BackupRow
                 key={b.name}

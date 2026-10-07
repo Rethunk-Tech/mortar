@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
+import { space } from '../theme/density.ts'
 
 const COMPACT_GAP = 1
 const REGULAR_GAP = 2
@@ -33,7 +34,7 @@ export function EmptyState({
         alignItems: 'center',
         justifyContent: 'center',
         gap: compact ? COMPACT_GAP : REGULAR_GAP,
-        px: 3,
+        px: space.pad,
         py: compact ? COMPACT_PADDING : REGULAR_PADDING,
         textAlign: 'center',
         color: 'var(--mortar-ink-dim-60)',

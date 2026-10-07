@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Autocomplete, Box, TextField } from '@mui/material'
 import { PrefSelect } from '../settings/PrefControls.tsx'
+import { space } from '../theme/density.ts'
 import { BrowseShow } from './BrowseShow.tsx'
 import type { BrowseModes } from './browseModes.ts'
 import type { BrowseFilter } from './browseTypes.ts'
@@ -92,7 +93,16 @@ function BrowseFilters({
   const none = categories.length === 0
   const title = t`This source has no categories to filter by`
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', px: 2, pb: 0.75 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: space.gap,
+        flexWrap: 'wrap',
+        px: space.pad,
+        pb: 0.75,
+      }}
+    >
       <CategoryPicker
         label={t`Include categories`}
         options={categories}

@@ -18,6 +18,7 @@ import type {
   HistoryItem,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { When } from '../i18n/When.tsx'
+import { space } from '../theme/density.ts'
 import { itemModKey } from './historyDiff.ts'
 import { type HistoryKind, historyKind, historySummary, sentence } from './historyTimeline.ts'
 
@@ -67,13 +68,13 @@ export function HistoryEventRow({
       sx={{
         listStyle: 'none',
         borderRadius: '8px',
-        px: 1,
+        px: space.gap,
         py: 0.75,
         [REVEAL]: { bgcolor: 'var(--mortar-card-hover)' },
         [`${REVEAL} .history-undo`]: { opacity: 1 },
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minHeight: 32 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minHeight: 32 }}>
         {comparing ? (
           <Checkbox
             size="small"
@@ -86,7 +87,7 @@ export function HistoryEventRow({
         ) : null}
         <Box sx={{ display: 'flex', color: 'text.secondary' }}>{ICONS[historyKind(ev)]}</Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
             <Typography sx={{ fontSize: 14, fontWeight: 600 }}>{summary}</Typography>
             {ev.kind === 'good' ? (
               <Chip size="small" color="success" variant="outlined" label={t`Known good`} />
@@ -132,7 +133,13 @@ export function HistoryEventRow({
             <Box
               component="li"
               key={`${item.kind}:${item.mod}:${item.file ?? ''}`}
-              sx={{ listStyle: 'none', display: 'flex', alignItems: 'center', gap: 1, py: 0.25 }}
+              sx={{
+                listStyle: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: space.gap,
+                py: 0.25,
+              }}
             >
               <Typography sx={{ fontSize: 13, flex: 1, minWidth: 0 }}>
                 {sentence(item.detail)}
