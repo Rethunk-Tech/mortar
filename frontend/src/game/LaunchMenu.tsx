@@ -1,14 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
 import { Divider, ListItemText, Menu, MenuItem } from '@mui/material'
-import { ChevronDown, Ellipsis, Play, Settings2 } from 'lucide-react'
+import { ChevronDown, Play, Rocket, Settings2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuHeading } from '../shell/TitleMenu.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useTools } from '../tools/store.ts'
 import { ToolsManageDialog } from '../tools/ToolsManageDialog.tsx'
 import { HomeButton } from './HomeButton.tsx'
-import { MenuHeading } from './MenuHeading.tsx'
 
 import { ShortcutMenuItems } from './ProfileMenuItems.tsx'
 
@@ -28,7 +28,7 @@ export function LaunchMenu({ game, profile }: { game: string; profile: Profile }
   return (
     <>
       <HomeButton
-        icon={<Ellipsis size={16} />}
+        icon={<Rocket size={16} />}
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
@@ -41,10 +41,8 @@ export function LaunchMenu({ game, profile }: { game: string; profile: Profile }
         {tools.length === 0 ? (
           <MenuItem disabled={true} dense={true} sx={{ opacity: 1 }}>
             <ListItemText
-              primary={t`Launch other apps with this profile.`}
-              slotProps={{
-                primary: { sx: { fontSize: 12, color: 'text.secondary', fontWeight: 400 } },
-              }}
+              primary={t`No tools yet`}
+              slotProps={{ primary: { sx: { fontSize: 14, color: 'text.primary' } } }}
             />
           </MenuItem>
         ) : null}

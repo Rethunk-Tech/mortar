@@ -205,7 +205,7 @@ msgstr "Updated categories"
 msgid "Open storage settings"
 msgstr "Open storage settings"
 
-#: src/game/LaunchMenu.tsx:70
+#: src/game/LaunchMenu.tsx:68
 msgid "Manage tools…"
 msgstr "Manage tools…"
 
@@ -2212,6 +2212,7 @@ msgstr "The game never started"
 msgid "Could not set {0} for {1}"
 msgstr "Could not set {0} for {1}"
 
+#: src/game/LaunchMenu.tsx:44
 #: src/tools/ToolsManageDialog.tsx:46
 msgid "No tools yet"
 msgstr "No tools yet"
@@ -3858,7 +3859,7 @@ msgid "Optional for ({0})"
 msgstr "Optional for ({0})"
 
 #: src/commandPalette/CommandPalette.tsx:159
-#: src/game/LaunchMenu.tsx:77
+#: src/game/LaunchMenu.tsx:75
 #: src/settings/SettingsPage.tsx:49
 msgid "Shortcuts"
 msgstr "Shortcuts"
@@ -4659,10 +4660,6 @@ msgstr "Back up to a file…"
 #: src/game/FarmMenuItem.tsx:88
 msgid "Host {0}"
 msgstr "Host {0}"
-
-#: src/game/LaunchMenu.tsx:44
-msgid "Launch other apps with this profile."
-msgstr "Launch other apps with this profile."
 
 #: src/console/LogActions.tsx:118
 msgid "Jump to previous error"
@@ -13141,7 +13138,7 @@ msgid "Back up {label} now"
 msgstr "Back up {label} now"
 
 #. placeholder {0}: tool.name
-#: src/game/LaunchMenu.tsx:60
+#: src/game/LaunchMenu.tsx:58
 msgid "Could not start {0}"
 msgstr "Could not start {0}"
 
