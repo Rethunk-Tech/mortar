@@ -87,10 +87,11 @@ func detect(home, modsPath, gameID, vortexFolder string) ([]installation, error)
 
 	if ids.Vortex != "" {
 		found, ok, err := detectVortex(config, vortexFolder, programData(), ids.Vortex, runtime.GOOS == "windows")
-		if err != nil {
+		if errors.Is(err, ErrVortexRunning) {
+			out = append(out, installation{info: SourceInfo{Kind: KindVortex, Name: "Vortex", Profiles: []ProfileInfo{}, Error: err.Error()}})
+		} else if err != nil {
 			return nil, err
-		}
-		if ok {
+		} else if ok {
 			out = append(out, found)
 		}
 	}

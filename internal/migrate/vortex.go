@@ -145,6 +145,10 @@ func vortexPreviewState(modsPath, domain string, state map[string]json.RawMessag
 // written via JSON.stringify in ReduxPersistorIPC.ts).
 const vortexKeySeparator = "###"
 
+// ErrVortexRunning means Vortex holds its database files open. On Windows its write-ahead log and manifest are
+// opened without read sharing, so the live state cannot be read, and a copy without them would be stale.
+var ErrVortexRunning = errors.New("cannot read the data of a running Vortex: close Vortex and try again")
+
 // readVortexState reads a private copy of the database: Vortex normally holds
 // the LOCK, and a copy guarantees the live files are never written.
 func readVortexState(root string) (map[string]json.RawMessage, error) {
@@ -200,6 +204,9 @@ func copyLevelDB(src, dst string) error {
 		data, err := fsx.ReadFile(filepath.Join(src, name))
 		if errors.Is(err, os.ErrNotExist) {
 			continue
+		}
+		if fileLocked(err) {
+			return ErrVortexRunning
 		}
 		if err != nil {
 			return err

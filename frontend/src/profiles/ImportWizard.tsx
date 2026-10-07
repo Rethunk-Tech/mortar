@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import { Inbox } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { LocalProfiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
@@ -114,6 +114,13 @@ export function ImportWizard({
             />
           ))
         )}
+        {external
+          .filter((s) => s.error)
+          .map((s) => (
+            <Alert key={s.kind} severity="warning">
+              {`${s.name}: ${s.error}`}
+            </Alert>
+          ))}
         {offerVortexFolder(vortexSupported, external) ? (
           <VortexFolderPrompt game={game} onChosen={reload} />
         ) : null}
