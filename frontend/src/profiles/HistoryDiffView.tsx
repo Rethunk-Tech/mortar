@@ -21,7 +21,7 @@ export function HistoryDiffView({
   const { t } = useLingui()
   const lines = diffLines(diff)
   return (
-    <Box sx={{ mt: 2, p: 1.5, bgcolor: 'var(--mortar-paper-78)', borderRadius: '6px' }}>
+    <Box sx={{ mb: 2, p: 1.5, bgcolor: 'var(--mortar-paper-78)', borderRadius: '6px' }}>
       <Typography sx={{ fontWeight: 600, fontSize: 13 }}>{t`Snapshot diff`}</Typography>
       {lines.length === 0 ? (
         <Typography

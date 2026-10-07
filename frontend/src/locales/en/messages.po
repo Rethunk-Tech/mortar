@@ -100,7 +100,7 @@ msgstr "Author · {author}"
 msgid "These changes will be reverted too:"
 msgstr "These changes will be reverted too:"
 
-#: src/mods/describe.ts:189
+#: src/mods/describe.ts:200
 msgid "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 
@@ -222,7 +222,7 @@ msgstr "List mods inside a folder whose name starts with a dot, which SMAPI skip
 msgid "{names} can't be reached, so Mortar can't check for mod updates"
 msgstr "{names} can't be reached, so Mortar can't check for mod updates"
 
-#: src/mods/problemFix/WinFix.tsx:91
+#: src/mods/problemFix/WinFix.tsx:90
 msgid "Make {name} win"
 msgstr "Make {name} win"
 
@@ -241,7 +241,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/mods/OtherProfilesDialog.tsx:68
 #: src/mods/problemFix/AssetFix.tsx:29
 #: src/mods/problemFix/SettingFix.tsx:27
-#: src/mods/problemFix/WinFix.tsx:36
+#: src/mods/problemFix/WinFix.tsx:35
 #: src/mods/SplitCombineItems.tsx:36
 #: src/mods/Toolbar.tsx:273
 #: src/saves/lackChipActions.tsx:44
@@ -397,7 +397,7 @@ msgstr "The download could not finish. Retry or skip it from the queue."
 msgid "Log level"
 msgstr "Log level"
 
-#: src/mods/describe.ts:160
+#: src/mods/describe.ts:171
 msgid "Balance only: one mod's prices win."
 msgstr "Balance only: one mod's prices win."
 
@@ -466,7 +466,7 @@ msgid "Run checks…"
 msgstr "Run checks…"
 
 #. placeholder {0}: p.damaged.name
-#: src/mods/describe.ts:275
+#: src/mods/describe.ts:286
 msgid "{0} has damaged files."
 msgstr "{0} has damaged files."
 
@@ -490,7 +490,7 @@ msgstr "Untrack mods"
 msgid "Reinstall loader"
 msgstr "Reinstall loader"
 
-#: src/mods/LoadOrderTab.tsx:107
+#: src/mods/LoadOrderTab.tsx:108
 msgid "Required: {label}"
 msgstr "Required: {label}"
 
@@ -1009,7 +1009,7 @@ msgstr "Install by hand: {0}"
 msgid "Add to {targetName}"
 msgstr "Add to {targetName}"
 
-#: src/mods/LoadOrderTab.tsx:380
+#: src/mods/LoadOrderTab.tsx:395
 msgid "Enable mods in the Mods tab to see the order {loader} loads them."
 msgstr "Enable mods in the Mods tab to see the order {loader} loads them."
 
@@ -1029,7 +1029,7 @@ msgstr "Open on Modrinth"
 msgid "Don't ask again"
 msgstr "Don't ask again"
 
-#: src/mods/problemFix/WinFix.tsx:81
+#: src/mods/problemFix/WinFix.tsx:80
 msgid "Make a pack win"
 msgstr "Make a pack win"
 
@@ -1175,7 +1175,7 @@ msgstr "Keep this profile's saves separate?"
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:226
+#: src/mods/describe.ts:237
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks."
 
@@ -1221,7 +1221,7 @@ msgstr "{a} and {b} each wait for the other, so SMAPI loads neither."
 msgid "Could not dismiss that folder"
 msgstr "Could not dismiss that folder"
 
-#: src/profiles/HistoryEventRow.tsx:149
+#: src/profiles/HistoryEventRow.tsx:151
 msgid "Revert this mod"
 msgstr "Revert this mod"
 
@@ -1773,7 +1773,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/game/detailStates.tsx:26
 #: src/lan/SendPanel.tsx:193
 #: src/launch/LaunchLayer.tsx:308
-#: src/mods/LoadOrderTab.tsx:372
+#: src/mods/LoadOrderTab.tsx:387
 #: src/mods/ModsTab.tsx:115
 #: src/mods/typedConfig/ConfigPane.tsx:170
 #: src/mods/updateReview/updateAll.ts:61
@@ -1817,7 +1817,7 @@ msgstr "Trim…"
 msgid "Trim"
 msgstr "Trim"
 
-#: src/mods/LoadOrderTab.tsx:139
+#: src/mods/LoadOrderTab.tsx:140
 msgid "Show less"
 msgstr "Show less"
 
@@ -2180,7 +2180,7 @@ msgstr "This game has no compatibility list, so no mod is known to be broken."
 msgid "{0} (optional file)"
 msgstr "{0} (optional file)"
 
-#: src/mods/LoadOrderTab.tsx:209
+#: src/mods/LoadOrderTab.tsx:210
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr "The game loader chooses this order. Mortar does not change it."
 
@@ -2422,7 +2422,7 @@ msgstr "Not paired · only links"
 msgid "{0} {1}, year {2}"
 msgstr "{0} {1}, year {2}"
 
-#: src/mods/LoadOrderTab.tsx:252
+#: src/mods/LoadOrderTab.tsx:253
 msgid "Dependency cycle"
 msgstr "Dependency cycle"
 
@@ -2439,7 +2439,7 @@ msgstr "New profile"
 msgid "Repaired {name}"
 msgstr "Repaired {name}"
 
-#: src/mods/LoadOrderTab.tsx:201
+#: src/mods/LoadOrderTab.tsx:202
 msgid "Copy load order"
 msgstr "Copy load order"
 
@@ -2456,7 +2456,7 @@ msgid "{game} profile"
 msgstr "{game} profile"
 
 #: src/firstrun/FindStep.tsx:176
-#: src/firstrun/GameSetup.tsx:119
+#: src/firstrun/GameSetup.tsx:76
 #: src/settings/sections/GameSettings.tsx:194
 #: src/settings/sections/GameSettings.tsx:196
 #: src/settings/sections/GameSettings.tsx:247
@@ -2604,7 +2604,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/mods/OldFilesCallouts.tsx:64
 #: src/mods/overlayActions.ts:36
 #: src/mods/overlayActions.ts:100
-#: src/mods/problemFix/WinFix.tsx:67
+#: src/mods/problemFix/WinFix.tsx:66
 #: src/mods/problemFixButtons.tsx:116
 #: src/mods/SplitCombineItems.tsx:41
 #: src/mods/storeEntries.ts:60
@@ -2654,6 +2654,10 @@ msgstr "{name} · Year {0} {1}"
 #: src/profiles/ProfilesPage.tsx:257
 msgid "No mod matches"
 msgstr "No mod matches"
+
+#: src/mods/describe.ts:125
+msgid " Content Patcher applies neither."
+msgstr " Content Patcher applies neither."
 
 #: src/settings/sections/About.tsx:78
 #: src/settings/sections/About.tsx:94
@@ -2755,7 +2759,7 @@ msgstr "Fix all"
 msgid "Ran"
 msgstr "Ran"
 
-#: src/mods/describe.ts:265
+#: src/mods/describe.ts:276
 msgid "The last launch failed: {message}."
 msgstr "The last launch failed: {message}."
 
@@ -2847,7 +2851,7 @@ msgstr "Ignore updates from {0}"
 msgid "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 msgstr "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 
-#: src/mods/LoadOrderTab.tsx:379
+#: src/mods/LoadOrderTab.tsx:394
 msgid "No enabled mods"
 msgstr "No enabled mods"
 
@@ -3113,7 +3117,7 @@ msgstr "Desktop"
 msgid "Could not pair"
 msgstr "Could not pair"
 
-#: src/mods/describe.ts:142
+#: src/mods/describe.ts:153
 msgid "{who} both edit {target}.{winner}"
 msgstr "{who} both edit {target}.{winner}"
 
@@ -3200,7 +3204,7 @@ msgid "Clear comparison"
 msgstr "Clear comparison"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:239
+#: src/mods/describe.ts:250
 msgid "{0} has multiple Nexus files installed: {files}."
 msgstr "{0} has multiple Nexus files installed: {files}."
 
@@ -3231,7 +3235,7 @@ msgid "Update {localName} from {sender}"
 msgstr "Update {localName} from {sender}"
 
 #. placeholder {0}: required.length - INLINE_REQUIRED
-#: src/mods/LoadOrderTab.tsx:142
+#: src/mods/LoadOrderTab.tsx:143
 msgid " · {0} more required"
 msgstr " · {0} more required"
 
@@ -3537,7 +3541,7 @@ msgstr "Launch options copied"
 msgid "Preview what they see"
 msgstr "Preview what they see"
 
-#: src/mods/describe.ts:138
+#: src/mods/describe.ts:149
 msgid "{who} both load {target}.{winner}"
 msgstr "{who} both load {target}.{winner}"
 
@@ -3739,7 +3743,7 @@ msgstr "Size"
 msgid "GitHub page"
 msgstr "GitHub page"
 
-#: src/mods/describe.ts:196
+#: src/mods/describe.ts:207
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 
@@ -4067,7 +4071,7 @@ msgstr "Apply"
 msgid "config.json, as the mod ships it"
 msgstr "config.json, as the mod ships it"
 
-#: src/mods/LoadOrderTab.tsx:261
+#: src/mods/LoadOrderTab.tsx:262
 msgid "The last launch loaded this here, not where its dependencies put it."
 msgstr "The last launch loaded this here, not where its dependencies put it."
 
@@ -4214,7 +4218,7 @@ msgstr "Check these before you play."
 msgid "By game"
 msgstr "By game"
 
-#: src/mods/describe.ts:164
+#: src/mods/describe.ts:175
 msgid "Only on {value} saves; none of yours is one."
 msgstr "Only on {value} saves; none of yours is one."
 
@@ -4321,6 +4325,10 @@ msgstr "In progress ({0})"
 #: src/firstrun/FindStep.tsx:144
 msgid "Choose your {0} folder"
 msgstr "Choose your {0} folder"
+
+#: src/mods/describe.ts:128
+msgid " {name} wins by load order."
+msgstr " {name} wins by load order."
 
 #: src/saves/SaveBackupsButton.tsx:52
 msgid " · {cause} · {size}"
@@ -4527,7 +4535,7 @@ msgstr "Just this mod"
 msgid "Links for games Mortar does not manage open in the app that had them before."
 msgstr "Links for games Mortar does not manage open in the app that had them before."
 
-#: src/mods/describe.ts:319
+#: src/mods/describe.ts:330
 msgid "{name} was changed outside Mortar."
 msgstr "{name} was changed outside Mortar."
 
@@ -4858,7 +4866,7 @@ msgstr "and {count} more"
 msgid "The local port OBS reads the overlay from"
 msgstr "The local port OBS reads the overlay from"
 
-#: src/mods/describe.ts:203
+#: src/mods/describe.ts:214
 msgid "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
 
@@ -5106,7 +5114,7 @@ msgid "Rename…"
 msgstr "Rename…"
 
 #. placeholder {0}: p.pluginClash.guid
-#: src/mods/describe.ts:284
+#: src/mods/describe.ts:295
 msgid "{names} all ship the plugin {0}, and BepInEx loads only one."
 msgstr "{names} all ship the plugin {0}, and BepInEx loads only one."
 
@@ -5158,7 +5166,7 @@ msgstr "Untrack all…"
 msgid "Disable all"
 msgstr "Disable all"
 
-#: src/mods/describe.ts:272
+#: src/mods/describe.ts:283
 msgid "{plugin} failed to load."
 msgstr "{plugin} failed to load."
 
@@ -5175,11 +5183,6 @@ msgstr "Search {sourceName}"
 #: src/settings/sections/DataStoreCheck.tsx:86
 msgid "{0} of {1}"
 msgstr "{0} of {1}"
-
-#. placeholder {0}: game.loader
-#: src/firstrun/GameSetup.tsx:128
-msgid "Install {0}"
-msgstr "Install {0}"
 
 #: src/profiles/HealthDialog.tsx:58
 msgid "Files of {name} changed outside Mortar"
@@ -5327,7 +5330,7 @@ msgstr "{remaining} of {limit} left this hour; the count resets {when}."
 msgid "Select mods on the Mods tab, then Add to bundle."
 msgstr "Select mods on the Mods tab, then Add to bundle."
 
-#: src/mods/describe.ts:206
+#: src/mods/describe.ts:217
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
@@ -6035,7 +6038,7 @@ msgstr "No settings match"
 msgid "Open the command palette"
 msgstr "Open the command palette"
 
-#: src/mods/LoadOrderTab.tsx:370
+#: src/mods/LoadOrderTab.tsx:385
 msgid "Could not read load order"
 msgstr "Could not read load order"
 
@@ -6349,7 +6352,7 @@ msgstr "Token regenerated"
 msgid "{0} in progress"
 msgstr "{0} in progress"
 
-#: src/profiles/HistoryEventRow.tsx:119
+#: src/profiles/HistoryEventRow.tsx:120
 msgid "Undo these changes: {summary}"
 msgstr "Undo these changes: {summary}"
 
@@ -6551,7 +6554,7 @@ msgstr "What's new in {version}"
 msgid "Profiles already made from it are not changed."
 msgstr "Profiles already made from it are not changed."
 
-#: src/mods/LoadOrderTab.tsx:198
+#: src/mods/LoadOrderTab.tsx:199
 msgid "Load order copied"
 msgstr "Load order copied"
 
@@ -6619,7 +6622,7 @@ msgstr "Unknown author"
 msgid "In this profile"
 msgstr "In this profile"
 
-#: src/mods/describe.ts:190
+#: src/mods/describe.ts:201
 msgid "{dependentName}'s Nexus page says it needs {dep} from outside Nexus: {note}"
 msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus: {note}"
 
@@ -6842,7 +6845,7 @@ msgid "Reading {folder}…"
 msgstr "Reading {folder}…"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:241
+#: src/mods/describe.ts:252
 msgid "{0} is installed twice, and only one of them loads."
 msgstr "{0} is installed twice, and only one of them loads."
 
@@ -6874,7 +6877,7 @@ msgstr "Clear cache"
 msgid "{endorsements, plural, one {# like} other {# likes}} · {dl}"
 msgstr "{endorsements, plural, one {# like} other {# likes}} · {dl}"
 
-#: src/mods/describe.ts:139
+#: src/mods/describe.ts:150
 msgid "{who} all load {target}.{winner}"
 msgstr "{who} all load {target}.{winner}"
 
@@ -6956,7 +6959,7 @@ msgstr "Notes for {0}"
 msgid "The disk is full."
 msgstr "The disk is full."
 
-#: src/mods/describe.ts:117
+#: src/mods/describe.ts:123
 msgid " You chose which mod wins each clash."
 msgstr " You chose which mod wins each clash."
 
@@ -7075,7 +7078,7 @@ msgid "Console log cap"
 msgstr "Console log cap"
 
 #. placeholder {0}: sentence(item.detail)
-#: src/profiles/HistoryEventRow.tsx:147
+#: src/profiles/HistoryEventRow.tsx:149
 msgid "Revert this mod: {0}"
 msgstr "Revert this mod: {0}"
 
@@ -7177,7 +7180,7 @@ msgstr "Unhide {0}?"
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
-#: src/mods/describe.ts:143
+#: src/mods/describe.ts:154
 msgid "{who} all edit {target}.{winner}"
 msgstr "{who} all edit {target}.{winner}"
 
@@ -7331,7 +7334,7 @@ msgstr "Replaces"
 msgid "Export or share the open profile"
 msgstr "Export or share the open profile"
 
-#: src/mods/describe.ts:114
+#: src/mods/describe.ts:121
 msgid " The winner is unclear."
 msgstr " The winner is unclear."
 
@@ -7683,7 +7686,7 @@ msgstr "Where the time goes"
 msgid "Change folder"
 msgstr "Change folder"
 
-#: src/mods/describe.ts:199
+#: src/mods/describe.ts:210
 msgid "{dependentName} needs {dep}, which is disabled."
 msgstr "{dependentName} needs {dep}, which is disabled."
 
@@ -8133,7 +8136,7 @@ msgstr "{0, plural, one {Matched # version in {1}} other {Matched # versions in 
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.currentFor
-#: src/mods/describe.ts:221
+#: src/mods/describe.ts:232
 msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
 
@@ -8468,7 +8471,7 @@ msgstr "{0, plural, one {# optional file} other {# optional files}}"
 msgid "Close details"
 msgstr "Close details"
 
-#: src/firstrun/GameSetup.tsx:127
+#: src/firstrun/GameSetup.tsx:83
 #: src/queue/store.ts:290
 msgid "{name} installed"
 msgstr "{name} installed"
@@ -8668,7 +8671,7 @@ msgstr "Keep the newest backups of each save and delete the rest. Pinned backups
 msgid "{0}: in Mortar"
 msgstr "{0}: in Mortar"
 
-#: src/mods/LoadOrderTab.tsx:249
+#: src/mods/LoadOrderTab.tsx:250
 msgid "These mods require each other."
 msgstr "These mods require each other."
 
@@ -8713,7 +8716,7 @@ msgstr "{0, plural, one {Created {name}; downloading # mod} other {Created {name
 msgid "{who}: {reason}"
 msgstr "{who}: {reason}"
 
-#: src/mods/describe.ts:271
+#: src/mods/describe.ts:282
 msgid "{plugin} failed to load ({name})."
 msgstr "{plugin} failed to load ({name})."
 
@@ -8776,7 +8779,7 @@ msgstr "Money"
 msgid "Regenerate token?"
 msgstr "Regenerate token?"
 
-#: src/mods/describe.ts:268
+#: src/mods/describe.ts:279
 msgid "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 msgstr "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 
@@ -8804,7 +8807,7 @@ msgstr "already listed"
 msgid "Could not untrack mods"
 msgstr "Could not untrack mods"
 
-#: src/profiles/HistoryEventRow.tsx:140
+#: src/profiles/HistoryEventRow.tsx:142
 msgid "Undo only this mod's change from this entry. Everything else stays as it is."
 msgstr "Undo only this mod's change from this entry. Everything else stays as it is."
 
@@ -9055,7 +9058,7 @@ msgid "Steam was not found"
 msgstr "Steam was not found"
 
 #. placeholder {0}: p.asset.info
-#: src/mods/describe.ts:147
+#: src/mods/describe.ts:158
 msgid "These mods may add the same item: {0}."
 msgstr "These mods may add the same item: {0}."
 
@@ -9104,7 +9107,7 @@ msgstr "Reset…"
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
 #. placeholder {3}: s.description
-#: src/mods/describe.ts:212
+#: src/mods/describe.ts:223
 msgid "{0}'s {1} is {2}: {3}"
 msgstr "{0}'s {1} is {2}: {3}"
 
@@ -9503,7 +9506,7 @@ msgstr "the mod loader"
 msgid "Restore the last window bounds on startup"
 msgstr "Restore the last window bounds on startup"
 
-#: src/profiles/HistoryEventRow.tsx:122
+#: src/profiles/HistoryEventRow.tsx:123
 msgid "Undo these changes"
 msgstr "Undo these changes"
 
@@ -9561,7 +9564,7 @@ msgid "Reset every shortcut?"
 msgstr "Reset every shortcut?"
 
 #: src/firstrun/FirstRun.tsx:43
-#: src/firstrun/GameSetup.tsx:105
+#: src/firstrun/GameSetup.tsx:152
 #: src/firstrun/LoaderStep.tsx:219
 #: src/game/ProfileWorkspace.tsx:32
 #: src/games/GameSelect.tsx:339
@@ -9798,6 +9801,10 @@ msgstr "Reset game install"
 msgid "Pick two entries ({picked} of 2)"
 msgstr "Pick two entries ({picked} of 2)"
 
+#: src/mods/describe.ts:129
+msgid " {name} wins by load order; {losers} overridden."
+msgstr " {name} wins by load order; {losers} overridden."
+
 #: src/settings/prefCopy.ts:404
 msgid "Save backup folder"
 msgstr "Save backup folder"
@@ -9885,7 +9892,7 @@ msgid "Review collection update"
 msgstr "Review collection update"
 
 #. placeholder {0}: d.folder
-#: src/mods/describe.ts:313
+#: src/mods/describe.ts:324
 msgid "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 msgstr "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 
@@ -9901,7 +9908,7 @@ msgstr "Retry all failed"
 msgid "Add it"
 msgstr "Add it"
 
-#: src/mods/LoadOrderTab.tsx:205
+#: src/mods/LoadOrderTab.tsx:206
 msgid "Filter load order"
 msgstr "Filter load order"
 
@@ -10127,7 +10134,7 @@ msgstr "Whole file"
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
-#: src/mods/describe.ts:280
+#: src/mods/describe.ts:291
 msgid "{name} is deprecated on Thunderstore."
 msgstr "{name} is deprecated on Thunderstore."
 
@@ -10147,7 +10154,7 @@ msgstr "Save backups kept"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:216
+#: src/mods/describe.ts:227
 msgid "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 msgstr "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
 
@@ -10253,7 +10260,7 @@ msgstr "Error in a preloader patch"
 msgid "Copy from profile…"
 msgstr "Copy from profile…"
 
-#: src/mods/LoadOrderTab.tsx:108
+#: src/mods/LoadOrderTab.tsx:109
 msgid "Optional: {label}"
 msgstr "Optional: {label}"
 
@@ -10508,7 +10515,7 @@ msgid "itch.io"
 msgstr "itch.io"
 
 #. placeholder {0}: users.length
-#: src/mods/LoadOrderTab.tsx:140
+#: src/mods/LoadOrderTab.tsx:141
 msgid "{0, plural, one {Used by # mod} other {Used by # mods}}"
 msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
 
@@ -10619,7 +10626,7 @@ msgstr "{loader} | {store}"
 msgid "Install {name}?"
 msgstr "Install {name}?"
 
-#: src/mods/describe.ts:279
+#: src/mods/describe.ts:290
 msgid "{name} is deprecated on Thunderstore; its page points to {replacement}."
 msgstr "{name} is deprecated on Thunderstore; its page points to {replacement}."
 
@@ -11048,7 +11055,7 @@ msgstr "The backup from {when} is deleted for good, with every save in it."
 msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
-#: src/mods/describe.ts:195
+#: src/mods/describe.ts:206
 msgid "{dependentName}'s Nexus page lists {dep} as a requirement."
 msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
@@ -11197,7 +11204,7 @@ msgstr "Changes from your other machines"
 msgid "{0} is not installed"
 msgstr "{0} is not installed"
 
-#: src/mods/LoadOrderTab.tsx:365
+#: src/mods/LoadOrderTab.tsx:380
 msgid "Reading load order…"
 msgstr "Reading load order…"
 
@@ -11346,6 +11353,10 @@ msgstr "Dates"
 msgid "Send other games' links to {redirectName}"
 msgstr "Send other games' links to {redirectName}"
 
+#: src/firstrun/GameSetup.tsx:83
+msgid "Install {loader}"
+msgstr "Install {loader}"
+
 #: src/game/BackupMenuItems.tsx:69
 msgid "Include mod files (larger, works offline)"
 msgstr "Include mod files (larger, works offline)"
@@ -11354,7 +11365,7 @@ msgstr "Include mod files (larger, works offline)"
 msgid "When mods changed"
 msgstr "When mods changed"
 
-#: src/firstrun/GameSetup.tsx:133
+#: src/firstrun/GameSetup.tsx:87
 msgid "First profile"
 msgstr "First profile"
 
@@ -11733,7 +11744,7 @@ msgstr "{added, plural, one {Added # mod} other {Added # mods}}"
 msgid "Use {0}"
 msgstr "Use {0}"
 
-#: src/mods/LoadOrderTab.tsx:107
+#: src/mods/LoadOrderTab.tsx:108
 msgid "Needs {label} (missing)"
 msgstr "Needs {label} (missing)"
 
@@ -11768,7 +11779,7 @@ msgstr "Until the game's first scene has loaded"
 #: src/mods/CleanupSection.tsx:65
 #: src/mods/EnableRequirementsDialog.tsx:20
 #: src/mods/EnableRequirementsDialog.tsx:55
-#: src/mods/LoadOrderTab.tsx:63
+#: src/mods/LoadOrderTab.tsx:64
 #: src/mods/ProblemsTab.tsx:373
 msgid "Unknown mod"
 msgstr "Unknown mod"
@@ -11799,7 +11810,7 @@ msgstr "Could not use that image"
 #. placeholder {0}: s.name
 #. placeholder {1}: s.field
 #. placeholder {2}: s.current
-#: src/mods/describe.ts:229
+#: src/mods/describe.ts:240
 msgid "{0}'s {1} is {2}; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}; it can match {installed} instead."
 
@@ -11868,7 +11879,7 @@ msgstr "No problems found"
 msgid "Manage templates…"
 msgstr "Manage templates…"
 
-#: src/mods/describe.ts:317
+#: src/mods/describe.ts:328
 msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
@@ -11889,7 +11900,7 @@ msgid "Backups of {label}"
 msgstr "Backups of {label}"
 
 #. placeholder {0}: d.name
-#: src/mods/describe.ts:238
+#: src/mods/describe.ts:249
 msgid "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 msgstr "{0} has multiple Nexus files installed: {files}. One may be an add-on."
 
@@ -12039,7 +12050,7 @@ msgstr "Language"
 msgid "No game output yet"
 msgstr "No game output yet"
 
-#: src/mods/describe.ts:126
+#: src/mods/describe.ts:134
 msgid " {name} wins; {losers} overridden."
 msgstr " {name} wins; {losers} overridden."
 
@@ -12064,7 +12075,7 @@ msgstr "Logs"
 msgid "Looking for Mortar users…"
 msgstr "Looking for Mortar users…"
 
-#: src/mods/describe.ts:162
+#: src/mods/describe.ts:173
 msgid "Only on {value}."
 msgstr "Only on {value}."
 
@@ -12234,7 +12245,7 @@ msgstr "Updates, missing dependencies and links from mod sites land here."
 msgid "Game install"
 msgstr "Game install"
 
-#: src/mods/LoadOrderTab.tsx:109
+#: src/mods/LoadOrderTab.tsx:110
 msgid "Used by: {label}"
 msgstr "Used by: {label}"
 
@@ -12417,7 +12428,7 @@ msgstr "A plugin it needs failed"
 msgid "{0} was installed from another site. Updating installs {1} from {2} instead and keeps your settings."
 msgstr "{0} was installed from another site. Updating installs {1} from {2} instead and keeps your settings."
 
-#: src/firstrun/GameSetup.tsx:120
+#: src/firstrun/GameSetup.tsx:77
 #: src/mods/listRows.ts:118
 #: src/mods/Sidebar.tsx:551
 #: src/settings/sections/NexusMods.tsx:309
@@ -12809,7 +12820,7 @@ msgid "See which mods slow the game"
 msgstr "See which mods slow the game"
 
 #. placeholder {0}: game.name
-#: src/firstrun/GameSetup.tsx:152
+#: src/firstrun/GameSetup.tsx:175
 #: src/games/GameSelect.tsx:266
 msgid "Set up {0}"
 msgstr "Set up {0}"
@@ -12967,7 +12978,7 @@ msgstr "Went back to {when}"
 msgid "Download history"
 msgstr "Download history"
 
-#: src/mods/LoadOrderTab.tsx:265
+#: src/mods/LoadOrderTab.tsx:266
 msgid "Last launch"
 msgstr "Last launch"
 
@@ -12979,7 +12990,7 @@ msgstr "To the main menu"
 msgid "Include categories"
 msgstr "Include categories"
 
-#: src/mods/describe.ts:125
+#: src/mods/describe.ts:133
 msgid " {name} wins."
 msgstr " {name} wins."
 
@@ -13732,7 +13743,7 @@ msgstr "Sort: most stars"
 msgid "Preferred download server"
 msgstr "Preferred download server"
 
-#: src/profiles/HistoryEventRow.tsx:111
+#: src/profiles/HistoryEventRow.tsx:112
 msgid "Put the profile back as it was before this entry. Newer entries are undone too."
 msgstr "Put the profile back as it was before this entry. Newer entries are undone too."
 
