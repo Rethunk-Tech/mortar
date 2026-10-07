@@ -6,8 +6,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
-// GitHub's top repository has stars but no download count; interleaved by position it used to land beside each
-// other source's most downloaded mod.
+// GitHub's top repository has stars but no download count; ranked by position it would land beside each other
+// source's most downloaded mod, so a missing count never outranks a known one.
 func TestSortMergedDownloadsNeverRanksAMissingCountAboveAKnownOne(t *testing.T) {
 	items := []Item{
 		{Source: "nexus", ID: "1", Downloads: 5000},

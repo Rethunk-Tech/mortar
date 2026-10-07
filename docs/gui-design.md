@@ -147,7 +147,17 @@ A left sidebar and a detail pane:
 
 ## Tab header
 
-Every tab except Home opens with a 52px strip (`TabHeader`, rendered by `ProfileWorkspace`) tinted from the profile's colour (the accent when it has none), with a hairline under it. Left to right: the profile name (18px, bold); chips for **N mods**, **N updates** (accent; opens the update review on Mods), **N problems** (warning colour; opens Problems) and ****N of M saves fit** (opens Saves; tooltip: saves whose recorded mod list this profile covers, out of the saves that record one; a game whose saves record none shows **N saves**), a zero count left out; the first line of the profile's notes, ellipsised and hidden when compact; a spacer; and the page-actions slot. A tab fills the slot with `<PageActions>` (a portal), so each tab keeps its own buttons in one place. Every button, icon button and split-button half in the slot is 34px tall (icon buttons 34×34), set once on the slot (`pageActionsSx`), never per tab.
+Every tab except Home opens with a 52px strip (`TabHeader`, rendered by `ProfileWorkspace`) tinted from the profile's colour (the accent when it has none), with a hairline under it. Left to right:
+
+- the profile name (18px, bold);
+- chips, a zero count left out:
+  - **N mods**;
+  - **N updates** (accent; opens the update review on Mods);
+  - **N problems** (warning colour; opens Problems);
+  - **N of M saves fit** (opens Saves; tooltip: saves whose recorded mod list this profile covers, out of the saves that record one; a game whose saves record none shows **N saves**);
+- the first line of the profile's notes, ellipsised and hidden when compact;
+- a spacer;
+- the page-actions slot. A tab fills it with `<PageActions>` (a portal), so each tab keeps its own buttons in one place. Every button, icon button and split-button half in the slot is 34px tall (icon buttons 34×34), set once on the slot (`pageActionsSx`), never per tab.
 
 ## Mods tab
 
@@ -240,7 +250,17 @@ The **Config** tab (Library group, after Mods and Saves; the palette's **Switch 
 
 ## Saves tab
 
-Every save in the Saves folder with its fit for this profile, as a list (the default: a table built like the Mods list: a sticky header row (SAVE, SEASON as "Year 3 Fall", "—" for games without a calendar, or "Unknown" (tooltip: the save has no SaveGameInfo date) for a calendar game's save with none, FITS <profile> and an unlabelled actions column), 36px rows with the Mods list's hover, and the card's action buttons on the same row in the actions column: Backups (with its count badge), New profile from this save, Back up now and Open save folder, each with a tooltip and an aria-label; a save's "Needs N mods" line spans the row beneath it) or as cards in a grid (340px minimum column), chosen by the grid/list toggle that starts the controls row and remembered per game, above a line explaining that the save is picked inside the game. A **Filter saves** field, which fills the controls row beside the toggle, and last-played sort (newest first) sit in the controls row; **Save backups…** is in the shared header's actions slot. Each card has:
+Every save in the Saves folder with its fit for this profile, shown as a list (the default) or as cards in a grid, chosen by the grid/list toggle that starts the controls row and remembered per game. Above them, a line explains that the save is picked inside the game.
+
+- **List:** a table built like the Mods list.
+  - A sticky header row: SAVE; SEASON as "Year 3 Fall", "—" for games without a calendar, or "Unknown" (tooltip: the save has no SaveGameInfo date) for a calendar game's save with none; FITS <profile>; and an unlabelled actions column.
+  - 36px rows with the Mods list's hover.
+  - The card's action buttons on the same row in the actions column: Backups (with its count badge), New profile from this save, Back up now and Open save folder, each with a tooltip and an aria-label.
+  - A save's "Needs N mods" line spans the row beneath it.
+- **Cards:** a grid with a 340px minimum column.
+- **Controls row:** a **Filter saves** field beside the toggle, and last-played sort (newest first). **Save backups…** is in the shared header's actions slot.
+
+Each card has:
 
 - a solid tile coloured and iconed by the save's season, the farm name, and `farmer · type farm` under it
 - **Back up now** and **Open save folder** on the card; Back up now zips that save only, labelled Manual and kept until deleted
