@@ -111,11 +111,7 @@ func (s *Service) update(fn func(*settings.Settings)) (Account, error) {
 
 // ModName is the title of a game's mod page on Nexus, for showing what a download link is for.
 func (s *Service) ModName(ctx context.Context, gameID string, modID int) (string, error) {
-	t, err := game.NexusTitle(gameID)
-	if err != nil {
-		return "", err
-	}
-	c, err := Authed(s.store, s.client)
+	t, c, err := s.titled(gameID)
 	if err != nil {
 		return "", err
 	}
@@ -127,13 +123,19 @@ func (s *Service) keyed() (*nexus.Client, error) {
 	return Authed(s.store, s.client)
 }
 
-// Endorse records the signed-in user's endorsement of modID at version.
-func (s *Service) Endorse(ctx context.Context, gameID string, modID int, version string) (string, error) {
+// titled resolves the game's Nexus title and the signed-in client together.
+func (s *Service) titled(gameID string) (nexus.Title, *nexus.Client, error) {
 	t, err := game.NexusTitle(gameID)
 	if err != nil {
-		return "", err
+		return nexus.Title{}, nil, err
 	}
 	c, err := s.keyed()
+	return t, c, err
+}
+
+// Endorse records the signed-in user's endorsement of modID at version.
+func (s *Service) Endorse(ctx context.Context, gameID string, modID int, version string) (string, error) {
+	t, c, err := s.titled(gameID)
 	if err != nil {
 		return "", err
 	}
@@ -143,11 +145,7 @@ func (s *Service) Endorse(ctx context.Context, gameID string, modID int, version
 
 // Abstain withdraws the signed-in user's endorsement of modID at version.
 func (s *Service) Abstain(ctx context.Context, gameID string, modID int, version string) (string, error) {
-	t, err := game.NexusTitle(gameID)
-	if err != nil {
-		return "", err
-	}
-	c, err := s.keyed()
+	t, c, err := s.titled(gameID)
 	if err != nil {
 		return "", err
 	}
@@ -253,11 +251,7 @@ func (s *Service) profileModIDs(gameID string) (map[int]bool, error) {
 
 // Track starts tracking modID for the signed-in user.
 func (s *Service) Track(ctx context.Context, gameID string, modID int) error {
-	t, err := game.NexusTitle(gameID)
-	if err != nil {
-		return err
-	}
-	c, err := s.keyed()
+	t, c, err := s.titled(gameID)
 	if err != nil {
 		return err
 	}
@@ -266,11 +260,7 @@ func (s *Service) Track(ctx context.Context, gameID string, modID int) error {
 
 // Untrack stops tracking modID for the signed-in user.
 func (s *Service) Untrack(ctx context.Context, gameID string, modID int) error {
-	t, err := game.NexusTitle(gameID)
-	if err != nil {
-		return err
-	}
-	c, err := s.keyed()
+	t, c, err := s.titled(gameID)
 	if err != nil {
 		return err
 	}
