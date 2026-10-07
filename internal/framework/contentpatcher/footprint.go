@@ -261,7 +261,7 @@ func dataShapes(root string, ch cpChange, values map[string]string) []cpShape {
 				// Content Patcher appends "#-1" entries to the list: any number of packs can.
 				continue
 			}
-			out = append(out, cpShape{kind: 'p', key: "entry:" + base + packScopedKey(root, key), value: dataLiteral(entries[key], values)})
+			out = append(out, cpShape{kind: 'p', key: intern("entry:" + base + packScopedKey(root, key)), value: intern(dataLiteral(entries[key], values))})
 		}
 	}
 	var fields map[string]json.RawMessage
@@ -270,11 +270,11 @@ func dataShapes(root string, ch cpChange, values map[string]string) []cpShape {
 			var inner map[string]json.RawMessage
 			if json.Unmarshal(fields[key], &inner) == nil && len(inner) > 0 {
 				for _, field := range slices.Sorted(maps.Keys(inner)) {
-					out = append(out, cpShape{kind: 'p', key: "field:" + base + packScopedKey(root, key) + "." + field, value: dataLiteral(inner[field], values)})
+					out = append(out, cpShape{kind: 'p', key: intern("field:" + base + packScopedKey(root, key) + "." + field), value: intern(dataLiteral(inner[field], values))})
 				}
 				continue
 			}
-			out = append(out, cpShape{kind: 'p', key: "field:" + base + packScopedKey(root, key), value: dataLiteral(fields[key], values)})
+			out = append(out, cpShape{kind: 'p', key: intern("field:" + base + packScopedKey(root, key)), value: intern(dataLiteral(fields[key], values))})
 		}
 	}
 	return out
@@ -421,7 +421,7 @@ func editShapes(root string, ch cpChange, image bool) []cpShape {
 		if !ok || hasToken(tile.Layer) {
 			return whole
 		}
-		out = append(out, cpShape{kind: 't', x: pos.x, y: pos.y, layer: strings.ToLower(strings.TrimSpace(tile.Layer))})
+		out = append(out, cpShape{kind: 't', x: pos.x, y: pos.y, layer: intern(strings.ToLower(strings.TrimSpace(tile.Layer)))})
 	}
 	for key, raw := range ch.MapProperties {
 		if hasToken(key) {
@@ -431,7 +431,7 @@ func editShapes(root string, ch cpChange, image bool) []cpShape {
 		if hasToken(value) {
 			value = ""
 		}
-		out = append(out, cpShape{kind: 'p', key: strings.ToLower(key), value: compactLiteral(value)})
+		out = append(out, cpShape{kind: 'p', key: intern(strings.ToLower(key)), value: intern(compactLiteral(value))})
 	}
 	return out
 }
