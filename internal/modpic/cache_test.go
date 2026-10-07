@@ -184,3 +184,41 @@ func TestPruneToDropsOldestOverBudget(t *testing.T) {
 		t.Fatal("dropped the newer file")
 	}
 }
+
+func TestRecordWritePrunesPastBudget(t *testing.T) {
+	c := New(t.TempDir(), http.DefaultClient)
+	if err := os.MkdirAll(c.dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	const chunk = 16 << 20
+	base := time.Now().Add(-time.Hour)
+	for i := range 6 {
+		p := filepath.Join(c.dir, string(rune('a'+i)))
+		f, err := os.Create(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := f.Truncate(chunk); err != nil {
+			t.Fatal(err)
+		}
+		_ = f.Close()
+		at := base.Add(time.Duration(i) * time.Minute)
+		_ = os.Chtimes(p, at, at)
+		c.recordWrite(chunk)
+		var total int64
+		entries, _ := os.ReadDir(c.dir)
+		for _, e := range entries {
+			info, _ := e.Info()
+			total += info.Size()
+		}
+		if total > MaxCacheBytes {
+			t.Fatalf("after write %d the folder holds %d bytes, over %d", i, total, MaxCacheBytes)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(c.dir, "a")); err == nil {
+		t.Fatal("kept the oldest file")
+	}
+	if _, err := os.Stat(filepath.Join(c.dir, "f")); err != nil {
+		t.Fatal("dropped the newest file")
+	}
+}

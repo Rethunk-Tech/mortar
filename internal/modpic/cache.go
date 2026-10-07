@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -26,7 +27,7 @@ const Path = "/mod-picture/"
 // MaxSize caps a cached picture, in bytes.
 const MaxSize = 8 << 20
 
-// MaxCacheBytes is the on-disk budget for cache/modpic; New drops oldest files until the folder fits.
+// MaxCacheBytes is the on-disk budget for cache/modpic; New and every write that crosses it drop oldest files until the folder fits.
 const MaxCacheBytes = 64 << 20
 
 const workers = 4
@@ -45,6 +46,9 @@ type Cache struct {
 	dir   string
 	http  *http.Client
 	slots chan struct{}
+
+	mu   sync.Mutex
+	size int64 // bytes on disk as of the last prune plus writes since
 }
 
 // New keeps pictures in <dataDir>/cache/modpic.
@@ -57,14 +61,26 @@ func New(dataDir string, client *http.Client) *Cache {
 		http:  client,
 		slots: make(chan struct{}, workers),
 	}
-	c.pruneTo(MaxCacheBytes)
+	c.size = c.pruneTo(MaxCacheBytes)
 	return c
 }
 
-func (c *Cache) pruneTo(budget int64) {
+// recordWrite counts n new bytes and prunes once the budget is crossed, so the folder never stays over it.
+func (c *Cache) recordWrite(n int64) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.size += n
+	if c.size > MaxCacheBytes {
+		// Pruning to 3/4 leaves room for many more writes before the next directory scan.
+		c.size = c.pruneTo(MaxCacheBytes / 4 * 3)
+	}
+}
+
+// pruneTo removes oldest files until the folder fits budget and returns the bytes left.
+func (c *Cache) pruneTo(budget int64) int64 {
 	entries, err := os.ReadDir(c.dir)
 	if err != nil {
-		return
+		return 0
 	}
 	type item struct {
 		name string
@@ -85,7 +101,7 @@ func (c *Cache) pruneTo(budget int64) {
 		total += info.Size()
 	}
 	if total <= budget {
-		return
+		return total
 	}
 	slices.SortFunc(files, func(a, b item) int {
 		if a.mod.Before(b.mod) {
@@ -98,13 +114,14 @@ func (c *Cache) pruneTo(budget int64) {
 	})
 	for _, f := range files {
 		if total <= budget {
-			return
+			break
 		}
 		if err := os.Remove(filepath.Join(c.dir, f.name)); err != nil {
 			continue
 		}
 		total -= f.size
 	}
+	return total
 }
 
 // AssetURL is the app-local URL for a remote picture, or empty when the remote URL is not cacheable.
@@ -242,6 +259,7 @@ func (c *Cache) fetch(ctx context.Context, picture, path string) ([]byte, string
 	if err := datadir.WriteFile(path, b, 0o600); err != nil {
 		return nil, "", err
 	}
+	c.recordWrite(int64(len(b)))
 	return b, typ, nil
 }
 
