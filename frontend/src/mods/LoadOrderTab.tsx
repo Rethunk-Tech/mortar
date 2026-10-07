@@ -11,6 +11,7 @@ import { PageActions } from '../game/PageActions.tsx'
 import { useTab } from '../game/tab.ts'
 import { useGameLoader } from '../games/info.ts'
 import { copyText } from '../share/copyText.ts'
+import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
@@ -19,6 +20,7 @@ import { idKey, localId } from './dependents.ts'
 import { useDetail } from './detail.ts'
 import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
 import { sameId } from './lookup.ts'
+import { requirementNameIn } from './requirementName.ts'
 import { useMods } from './store.ts'
 
 const INLINE_REQUIRED = 4
@@ -58,8 +60,8 @@ function RowName({ row }: { row: Row }) {
   const mods = useMods((s) => s.mods)
   const listed = mods.find((m) => sameId(m.id, row.id))
   const known = row.name.trim() !== ''
-  const label = known ? row.name : t`Unknown mod`
-  const title = known ? row.name : localId(row.id)
+  const label = known ? row.name : localId(row.id) || t`Unknown mod`
+  const title = label
   if (!listed) {
     return (
       <Typography noWrap={true} title={title} sx={{ fontWeight: 600, minWidth: 0 }}>
@@ -94,12 +96,15 @@ function DepChips({
 }) {
   const { t } = useLingui()
   const [open, setOpen] = useState(false)
+  const mods = useMods((s) => s.mods)
+  const problems = useMods((s) => s.problems)
+  const state = { mods, problems }
   const chip = (prefix: 'req' | 'opt' | 'dep', id: string, missing = false) => {
     const name = (names.get(idKey(id)) ?? '').trim()
     const known = name !== ''
-    const label = known ? name : t`Unknown mod`
+    const label = known ? name : requirementNameIn(state, id)
     const text = {
-      req: missing ? t`Missing: ${label}` : t`Required: ${label}`,
+      req: missing ? t`Needs ${label} (missing)` : t`Required: ${label}`,
       opt: t`Optional: ${label}`,
       dep: t`Used by: ${label}`,
     }[prefix]
@@ -196,14 +201,9 @@ function OrderList({
           {t`Copy load order`}
         </Button>
       </PageActions>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 0.5 }}>
-        <SearchField
-          value={query}
-          onChange={setQuery}
-          label={t`Filter load order`}
-          sx={{ flex: 1, minWidth: 0 }}
-        />
-      </Box>
+      <ControlsRow>
+        <SearchField value={query} onChange={setQuery} label={t`Filter load order`} grow={true} />
+      </ControlsRow>
       <Box ref={parentRef} sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: 2, py: 1.5 }}>
         <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1.5 }}>
           {t`The game loader chooses this order. Mortar does not change it.`}
