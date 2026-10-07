@@ -32,7 +32,12 @@ const MaxCacheBytes = 64 << 20
 
 const workers = 4
 
-var allowedHosts = []string{"staticdelivery.nexusmods.com", "images.nexusmods.com", "ccdn.thunderstore.io", "gcdn.thunderstore.io"}
+// allowedHosts are the picture CDNs of the sources Browse lists, so every card's thumbnail is served from the disk
+// cache instead of being fetched from the CDN again each time Browse is opened.
+var allowedHosts = []string{
+	"staticdelivery.nexusmods.com", "images.nexusmods.com", "ccdn.thunderstore.io", "gcdn.thunderstore.io",
+	"cdn.modrinth.com", "media.forgecdn.net", "avatars.githubusercontent.com", "img.itch.zone",
+}
 
 var imageTypes = map[string]struct{}{
 	"image/png":  {},
@@ -148,7 +153,7 @@ func parsePicture(raw string) (*url.URL, error) {
 	// The request goes to the allowlist's own spelling of the host, never to text the caller supplied.
 	i := slices.Index(allowedHosts, strings.ToLower(u.Hostname()))
 	if i < 0 {
-		return nil, fmt.Errorf("the picture host is not a Nexus or Thunderstore CDN")
+		return nil, fmt.Errorf("the picture host is not a known mod site CDN")
 	}
 	u.Host = allowedHosts[i]
 	return u, nil

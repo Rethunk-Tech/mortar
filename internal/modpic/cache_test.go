@@ -145,6 +145,14 @@ func TestAssetURLEmptyWhenInvalid(t *testing.T) {
 	}
 }
 
+func TestAssetURLTakesEveryBrowseSourcesPictureHost(t *testing.T) {
+	for _, host := range []string{"cdn.modrinth.com", "media.forgecdn.net", "avatars.githubusercontent.com", "img.itch.zone"} {
+		if AssetURL(pictureURL(host, "/a.png")) == "" {
+			t.Errorf("%s is not cacheable", host)
+		}
+	}
+}
+
 func TestAssetURLTakesThunderstoreIcons(t *testing.T) {
 	if AssetURL("https://ccdn.thunderstore.io/live/repository/icons/Evaisa-HookGenPatcher-0.0.5.png") == "" {
 		t.Fatal("a Thunderstore package icon is not served")

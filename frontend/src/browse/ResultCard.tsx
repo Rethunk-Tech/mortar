@@ -7,6 +7,7 @@ import { GRAY_OPACITY, openPageLabel, PICTURE_PX, ROW_PICTURE_PX } from './brows
 
 import type { BrowseModes } from './browseModes.ts'
 import type { BrowseItem, ResultCardProps } from './browseTypes.ts'
+import { pictureSrc } from './pictureSrc.ts'
 import { SourceBadges } from './SourceBadges.tsx'
 import { hitKey, useBrowseSelection } from './selection.ts'
 import { useStats } from './stats.ts'
@@ -14,11 +15,19 @@ import { useCardAction } from './useCardAction.tsx'
 
 function CardPicture({ picture, size, dim }: { picture: string; size: number; dim: number }) {
   const sx = { width: size, height: size, flexShrink: 0, borderRadius: '4px', opacity: dim }
-  if (picture === '') {
+  const [failed, setFailed] = useState(false)
+  if (picture === '' || failed) {
     return <Box sx={{ ...sx, bgcolor: 'var(--mortar-raised)' }} />
   }
   return (
-    <Box component="img" src={picture} alt="" loading="lazy" sx={{ ...sx, objectFit: 'cover' }} />
+    <Box
+      component="img"
+      src={pictureSrc(picture)}
+      alt=""
+      loading="lazy"
+      onError={() => setFailed(true)}
+      sx={{ ...sx, objectFit: 'cover' }}
+    />
   )
 }
 
