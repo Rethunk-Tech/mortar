@@ -151,3 +151,41 @@ func TestKeysDropTheFullStopAfterAGitHubLink(t *testing.T) {
 		}
 	}
 }
+
+func TestLinksResolveOnlyOnTheirOwnHost(t *testing.T) {
+	t.Parallel()
+	repo := map[string]string{
+		"See https://github.com/Alice/Cool for source.":                  "Alice/Cool",
+		"[src](http://www.GitHub.com/a/b)":                               "a/b",
+		"ends a sentence https://github.com/a/b.":                        "a/b.",
+		"https://evil.example/?next=//github.com/a/b":                    "",
+		"https://evil.example/https://github.com/a/b":                    "",
+		"https://evilgithub.com/a/b":                                     "",
+		"https://github.com.evil.example/a/b":                            "",
+		"https://api.github.com/a/b":                                     "",
+		"https://user@evil.example/github.com/a/b":                       "",
+		"//github.com/a/b":                                               "",
+		"https://github.com/onlyowner":                                   "",
+		"ftp://github.com/a/b":                                           "",
+		"https://evil.example/?x=1 then https://github.com/real/repo ok": "real/repo",
+	}
+	for text, want := range repo {
+		if got := githubRepoIn(text); got != want {
+			t.Errorf("githubRepoIn(%q) = %q, want %q", text, got, want)
+		}
+	}
+	ts := map[string]string{
+		"https://thunderstore.io/c/lethal-company/p/Ns/Name/":    "Ns-Name",
+		"http://www.thunderstore.io/c/valheim/p/A_b/C9":          "A_b-C9",
+		"https://evil.example/?next=//thunderstore.io/c/x/p/A/B": "",
+		"https://evilthunderstore.io/c/x/p/A/B":                  "",
+		"https://thunderstore.io.evil.example/c/x/p/A/B":         "",
+		"https://thunderstore.io/c/x/q/A/B":                      "",
+		"https://thunderstore.io/c/x/p/A":                        "",
+	}
+	for text, want := range ts {
+		if got := thunderstoreRefIn(text); got != want {
+			t.Errorf("thunderstoreRefIn(%q) = %q, want %q", text, got, want)
+		}
+	}
+}

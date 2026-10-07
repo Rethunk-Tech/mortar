@@ -1,17 +1,66 @@
 package browse
 
 import (
+	"net/url"
 	"regexp"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
-// Both need the "//" of a link right before the host, so a host that only ends in the name (evilgithub.com) is not it.
+// linkToken finds the http(s) links in free text; what each one points at is decided on the parsed URL, never on the
+// text around it, so a link that only carries a host in its query (?next=//github.com/a/b) is not a link to it.
 var (
-	githubLink      = regexp.MustCompile(`(?i)//(?:www\.)?github\.com/([\w.-]+/[\w.-]+)`)
-	thunderstoreRef = regexp.MustCompile(`(?i)//(?:www\.)?thunderstore\.io/c/[\w-]+/p/([\w]+)/([\w]+)`)
+	linkToken = regexp.MustCompile(`(?i)https?://[^\s<>"'()\[\]]+`)
+	nameChars = regexp.MustCompile(`^[\w.-]+$`)
+	wordChars = regexp.MustCompile(`^\w+$`)
 )
+
+// pathOnHost is the non-empty path segments of the first link in text whose host is exactly host (ignoring case and a
+// leading www.) and whose path has at least `least` segments and passes ok.
+func pathOnHost(text, host string, least int, ok func([]string) bool) []string {
+	for _, tok := range linkToken.FindAllString(text, -1) {
+		u, err := url.Parse(tok)
+		if err != nil || (u.Scheme != "http" && u.Scheme != "https") {
+			continue
+		}
+		if strings.TrimPrefix(strings.ToLower(u.Hostname()), "www.") != host {
+			continue
+		}
+		var segs []string
+		for seg := range strings.SplitSeq(u.Path, "/") {
+			if seg != "" {
+				segs = append(segs, seg)
+			}
+		}
+		if len(segs) >= least && ok(segs) {
+			return segs
+		}
+	}
+	return nil
+}
+
+// githubRepoIn is the "owner/repo" of the first GitHub repository link in text, or "".
+func githubRepoIn(text string) string {
+	segs := pathOnHost(text, "github.com", 2, func(s []string) bool {
+		return nameChars.MatchString(s[0]) && nameChars.MatchString(s[1])
+	})
+	if segs == nil {
+		return ""
+	}
+	return segs[0] + "/" + segs[1]
+}
+
+// thunderstoreRefIn is "namespace-name" of the first Thunderstore package link (/c/<community>/p/<namespace>/<name>), or "".
+func thunderstoreRefIn(text string) string {
+	segs := pathOnHost(text, "thunderstore.io", 5, func(s []string) bool {
+		return s[0] == "c" && s[2] == "p" && wordChars.MatchString(s[3]) && wordChars.MatchString(s[4])
+	})
+	if segs == nil {
+		return ""
+	}
+	return segs[3] + "-" + segs[4]
+}
 
 // identityOf resolves a hit to its package identity (a SMAPI UniqueID or a loader plugin id), "" when none is known.
 type identityOf func(Item) string
@@ -33,12 +82,12 @@ func keys(it Item, ident identityOf) []string {
 	if it.Repo != "" {
 		out = append(out, "repo:"+strings.ToLower(it.Repo))
 	}
-	if m := githubLink.FindStringSubmatch(it.Summary); m != nil {
+	if repo := githubRepoIn(it.Summary); repo != "" {
 		// A link that ends a sentence captures its full stop, which no repository name ends in.
-		out = append(out, "repo:"+strings.ToLower(strings.TrimSuffix(strings.TrimRight(m[1], "."), ".git")))
+		out = append(out, "repo:"+strings.ToLower(strings.TrimSuffix(strings.TrimRight(repo, "."), ".git")))
 	}
-	if m := thunderstoreRef.FindStringSubmatch(it.Summary); m != nil {
-		out = append(out, "ts:"+strings.ToLower(m[1]+"-"+m[2]))
+	if ref := thunderstoreRefIn(it.Summary); ref != "" {
+		out = append(out, "ts:"+strings.ToLower(ref))
 	}
 	if it.Source == "thunderstore" && it.ID != "" {
 		out = append(out, "ts:"+strings.ToLower(it.ID))
