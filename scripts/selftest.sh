@@ -291,12 +291,17 @@ stop() {
   if [ -n "$pid" ] && [ "$(readlink "/proc/$pid/exe" | sed 's/ (deleted)$//')" = "$ROOT/mortar-server" ]; then
     kill "$pid"
     # A restart must not start the next server before this one has shut down cleanly, or the next one reads
-    # the unfinished shutdown as a crash.
-    for _ in $(seq 1 50); do
-      kill -0 "$pid" 2>/dev/null || break
+    # the unfinished shutdown as a crash, so wait for the process to exit and for the port to be free again.
+    for _ in $(seq 1 75); do
+      if ! kill -0 "$pid" 2>/dev/null && [ -z "$(listener || true)" ]; then
+        echo "stopped $pid"
+        stop_launches
+        return
+      fi
       sleep 0.2
     done
-    echo "stopped $pid"
+    echo "pid $pid did not exit and free port $PORT within 15s; not killing it (see $ROOT/server.log)" >&2
+    exit 1
   elif [ -n "$pid" ]; then
     echo "port $PORT is held by pid $pid, which is not the self-test server; leaving it" >&2
     exit 1
@@ -306,6 +311,12 @@ stop() {
 }
 
 start() {
+  local holder
+  holder=$(listener || true)
+  if [ -n "$holder" ]; then
+    echo "port $PORT is already held by pid $holder; stop it or set MORTAR_SELFTEST_PORT" >&2
+    exit 1
+  fi
   mark
   # The host's steam run with the sandbox HOME brings up a second, signed-out Steam; the sandbox gets a steam that
   # refuses, so a Steam launch fails here and only a direct launch can start the copied game.
@@ -1307,7 +1318,6 @@ case "${1:-}" in
   restart)
     build
     stop
-    sleep 1
     start
     ;;
   setup) setup ;;
