@@ -139,8 +139,9 @@ func (d Driver) Dependencies(ctx context.Context, key, mortarVersion string, ref
 			if !ok {
 				continue
 			}
-			names := make([]string, 0, len(v.Deps))
-			for _, dep := range v.Deps {
+			deps := p.depsOf(v)
+			names := make([]string, 0, len(deps))
+			for _, dep := range deps {
 				if i := strings.LastIndex(dep, "-"); i > 0 {
 					dep = dep[:i]
 				}
@@ -158,7 +159,7 @@ func (d Driver) resolved(p pkg, v version) Resolved {
 		base = BaseURL
 	}
 	return Resolved{
-		Namespace: p.Owner, Name: p.Name, Version: v.Number, Size: v.Size, Dependencies: v.Deps,
+		Namespace: p.Owner, Name: p.Name, Version: v.Number, Size: v.Size, Dependencies: p.depsOf(v),
 		URL:  base + "/package/download/" + p.Owner + "/" + p.Name + "/" + v.Number + "/",
 		Icon: p.Icon, Category: Category(p.Categories),
 	}

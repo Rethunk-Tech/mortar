@@ -159,7 +159,7 @@ func (w *walk) visit(ref Ref, chain []string) error {
 		if ver.Number != w.chosen[id] {
 			continue
 		}
-		for _, dep := range ver.Deps {
+		for _, dep := range p.depsOf(ver) {
 			r, err := parseDependency(dep)
 			if err != nil {
 				return fmt.Errorf("%w (in %s)", err, via)

@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -31,7 +32,8 @@ const refreshAfter = time.Hour
 type version struct {
 	Number string   `json:"v"`
 	Size   int64    `json:"size,omitempty"`
-	Deps   []string `json:"deps,omitempty"`
+	Deps   []string `json:"deps,omitempty"` // as stored on disk; a loaded listing keeps ids instead
+	ids    []uint32
 }
 
 // pkg is what Mortar keeps of one listing: the fields search shows and install needs, latest version first.
@@ -52,6 +54,7 @@ type pkg struct {
 	Versions []version `json:"versions"`
 	// Categories are the package's site categories.
 	Categories []string `json:"categories,omitempty"`
+	tab        *depTable
 }
 
 // wirePackage is a v1 package listing as the site serves it.
@@ -312,6 +315,56 @@ func loadPackages(key, path string) ([]pkg, error) {
 	if err := json.Unmarshal(b, &pk); err != nil {
 		return nil, err
 	}
+	compactDeps(pk)
 	memo[key] = memoEntry{path, pk}
 	return pk, nil
+}
+
+// depTable holds each distinct dependency string of a listing once; versions refer to them by index.
+type depTable struct{ names []string }
+
+// compactDeps moves every version's dependency strings into one shared table: most of a listing's bytes are the
+// same "Owner-Name-1.2.3" pins named again by every version, and a version whose list equals the previous one's
+// shares its index list.
+func compactDeps(pk []pkg) {
+	tab := &depTable{}
+	index := map[string]uint32{}
+	for i := range pk {
+		pk[i].tab = tab
+		vs := slices.Clone(pk[i].Versions)
+		pk[i].Versions = vs
+		var prev []uint32
+		for j := range vs {
+			if len(vs[j].Deps) == 0 {
+				prev = nil
+				continue
+			}
+			ids := make([]uint32, len(vs[j].Deps))
+			for k, d := range vs[j].Deps {
+				id, ok := index[d]
+				if !ok {
+					id = uint32(len(tab.names))
+					tab.names = append(tab.names, d)
+					index[d] = id
+				}
+				ids[k] = id
+			}
+			if slices.Equal(ids, prev) {
+				ids = prev
+			}
+			vs[j].ids, vs[j].Deps, prev = ids, nil, ids
+		}
+	}
+}
+
+// depsOf is the dependency strings of one of p's versions.
+func (p pkg) depsOf(v version) []string {
+	if v.ids == nil {
+		return v.Deps
+	}
+	out := make([]string, len(v.ids))
+	for i, id := range v.ids {
+		out[i] = p.tab.names[id]
+	}
+	return out
 }

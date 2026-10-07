@@ -30,7 +30,7 @@ func (d Driver) Details(ctx context.Context, key, id, mortarVersion string) (sou
 		for _, v := range p.Versions {
 			out.Versions = append(out.Versions, v.Number)
 		}
-		out.Dependencies = append(out.Dependencies, p.Versions[0].Deps...)
+		out.Dependencies = append(out.Dependencies, p.depsOf(p.Versions[0])...)
 		latest := p.Versions[0].Number
 		if out.Description, err = d.doc(ctx, p, latest, "readme", ua); err != nil && !errors.Is(err, errNotFound) {
 			return source.Details{}, err
