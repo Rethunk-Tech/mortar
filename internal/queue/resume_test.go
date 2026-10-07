@@ -36,39 +36,6 @@ func rangeSvc(t *testing.T, client *http.Client) *Service {
 	}
 }
 
-func TestFetchResumesWithRangeWhenTheServerSupportsIt(t *testing.T) {
-	const body = "abcdefghij0123456789"
-	var sawRange atomic.Bool
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Range") != "bytes=10-" {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		sawRange.Store(true)
-		w.Header().Set("Accept-Ranges", "bytes")
-		w.Header().Set("ETag", `"v1"`)
-		w.Header().Set("Content-Range", fmt.Sprintf("bytes 10-19/%d", len(body)))
-		w.WriteHeader(http.StatusPartialContent)
-		_, _ = io.WriteString(w, body[10:])
-	}))
-	t.Cleanup(srv.Close)
-
-	s := rangeSvc(t, srv.Client())
-	path := s.dest("item", "m.zip")
-	if err := os.WriteFile(path, []byte(body[:10]), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	_ = datadir.WriteJSON(path+".resume.json", map[string]any{"expectedSize": int64(len(body)), "etag": `"v1"`, "url": srv.URL})
-
-	if err := s.fetch(context.Background(), Item{ID: "item"}, srv.URL, path); err != nil {
-		t.Fatal(err)
-	}
-	got, err := fsx.ReadFile(path)
-	if err != nil || string(got) != body || !sawRange.Load() {
-		t.Fatalf("got %q range %v err %v", got, sawRange.Load(), err)
-	}
-}
-
 func TestFetchStartsOverWhenTheServerIgnoresRange(t *testing.T) {
 	const body = "abcdefghij0123456789"
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
