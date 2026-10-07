@@ -44,7 +44,10 @@ function useRowNotes(update: Update, profileId: string) {
         ]
       : []),
     ...(update.unofficial ? [t`Unofficial`] : []),
-    ...(update.switch
+    ...(update.notDistributable
+      ? [t`${update.source} does not allow downloads outside its own page: get it there.`]
+      : []),
+    ...(update.switch && !update.notDistributable
       ? [
           t`From ${update.source}, not the site you installed it from. Updating switches its source.`,
         ]
@@ -64,7 +67,15 @@ function VersionLine({ update }: { update: Update }) {
       <Version>{update.installed}</Version>
       <ArrowRight size={14} aria-hidden={true} />
       <Version isNew={true}>{update.version}</Version>
-      {update.source ? <Chip size="small" variant="outlined" label={update.source} /> : null}
+      {update.source ? (
+        <Chip
+          size="small"
+          variant="outlined"
+          label={
+            update.fromSource ? t`from ${update.source} (was ${update.fromSource})` : update.source
+          }
+        />
+      ) : null}
       {added.length + removed.length > 0 ? (
         <Tooltip
           title={

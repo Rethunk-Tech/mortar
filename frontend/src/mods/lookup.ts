@@ -253,7 +253,7 @@ export const updatesForReview = (
 /** An update Mortar can queue. A pickFile update has no file that supersedes the installed one on its Nexus page,
  * so the user picks it there. */
 export const installableUpdate = (u: Update): boolean =>
-  !u.pickFile &&
+  !(u.pickFile || u.notDistributable) &&
   (!u.unofficial || gamePrefs(useSettings.getState()).smapiBuilds === 'include') &&
   (u.githubRepo !== '' || u.nexusId > 0 || Boolean(u.package))
 

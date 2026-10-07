@@ -68,6 +68,11 @@ type Update struct {
 	// Switch marks an update from a source other than the one the mod was installed from. It is offered, never
 	// applied on its own.
 	Switch bool `json:"switch,omitempty"`
+	// FromSource names the site the entry was installed from, set on a Switch.
+	FromSource string `json:"fromSource,omitempty"`
+	// NotDistributable marks an update whose project forbids downloads outside its own site: it is not queued, the
+	// review points to the page.
+	NotDistributable bool `json:"notDistributable,omitempty"`
 	// AddedDeps and RemovedDeps are the packages the new version depends on and the installed one no longer does,
 	// when the source's listing carries both versions' dependencies.
 	AddedDeps   []string `json:"addedDeps,omitempty"`

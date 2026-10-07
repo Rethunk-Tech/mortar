@@ -2139,7 +2139,7 @@ msgstr "{0} (optional file)"
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr "The game loader chooses this order. Mortar does not change it."
 
-#: src/mods/updateReview/Row.tsx:77
+#: src/mods/updateReview/Row.tsx:88
 msgid "Changes dependencies"
 msgstr "Changes dependencies"
 
@@ -2266,6 +2266,10 @@ msgstr "{0, plural, one {# missing dependency} other {# missing dependencies}}"
 #: src/firstrunTour/TourPopover.tsx:174
 msgid "Skip tour"
 msgstr "Skip tour"
+
+#: src/profiles/VortexFolderPrompt.tsx:71
+msgid "Use folder"
+msgstr "Use folder"
 
 #: src/mods/modActions.ts:57
 msgid "Open on itch.io"
@@ -3114,7 +3118,7 @@ msgstr "Search all runs…"
 
 #: src/firstrun/FindStep.tsx:213
 #: src/install/NeedsRootCallout.tsx:24
-#: src/profiles/VortexFolderPrompt.tsx:58
+#: src/profiles/VortexFolderPrompt.tsx:59
 #: src/settings/sections/GameSettings.tsx:383
 #: src/tools/ToolEditorDialog.tsx:112
 msgid "Choose folder…"
@@ -3847,7 +3851,7 @@ msgstr "Already has {0}"
 
 #: src/browse/BrowseDetails.tsx:98
 #: src/mods/Sidebar.tsx:394
-#: src/mods/updateReview/Row.tsx:119
+#: src/mods/updateReview/Row.tsx:130
 msgid "Changelog"
 msgstr "Changelog"
 
@@ -5666,7 +5670,7 @@ msgid "Changed the profile"
 msgstr "Changed the profile"
 
 #. placeholder {0}: listNames(removed)
-#: src/mods/updateReview/Row.tsx:73
+#: src/mods/updateReview/Row.tsx:84
 msgid "No longer needs {0}"
 msgstr "No longer needs {0}"
 
@@ -6301,7 +6305,7 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 #: src/mods/problemFix/BrokenFix.tsx:58
 #: src/mods/problemFix/WhereButtons.tsx:28
 #: src/mods/Sidebar.tsx:214
-#: src/mods/updateReview/Row.tsx:198
+#: src/mods/updateReview/Row.tsx:209
 msgid "Open page"
 msgstr "Open page"
 
@@ -7388,7 +7392,7 @@ msgid "Show diff"
 msgstr "Show diff"
 
 #. placeholder {0}: update.githubFallback
-#: src/mods/updateReview/Row.tsx:53
+#: src/mods/updateReview/Row.tsx:56
 msgid "From GitHub ({0}) when its release matches, else Nexus"
 msgstr "From GitHub ({0}) when its release matches, else Nexus"
 
@@ -7735,6 +7739,11 @@ msgstr "Removed from Nexus"
 #: src/settings/sections/Notifications.tsx:72
 msgid "A download fails"
 msgstr "A download fails"
+
+#. placeholder {0}: update.source
+#: src/mods/updateReview/Row.tsx:48
+msgid "{0} does not allow downloads outside its own page: get it there."
+msgstr "{0} does not allow downloads outside its own page: get it there."
 
 #: src/launchers/LauncherList.tsx:184
 #: src/settings/sections/WatchFolders.tsx:52
@@ -9250,7 +9259,8 @@ msgstr "Mortar offers prereleases only when Settings allows them."
 msgid "Downloads and updates"
 msgstr "Downloads and updates"
 
-#: src/profiles/VortexFolderPrompt.tsx:37
+#: src/profiles/VortexFolderPrompt.tsx:51
+#: src/profiles/VortexFolderPrompt.tsx:68
 msgid "Vortex data folder"
 msgstr "Vortex data folder"
 
@@ -9888,7 +9898,7 @@ msgid "Handle Nexus download links?"
 msgstr "Handle Nexus download links?"
 
 #. placeholder {0}: update.source
-#: src/mods/updateReview/Row.tsx:49
+#: src/mods/updateReview/Row.tsx:52
 msgid "From {0}, not the site you installed it from. Updating switches its source."
 msgstr "From {0}, not the site you installed it from. Updating switches its source."
 
@@ -10601,6 +10611,12 @@ msgstr "Use it anyway; {conflictName} becomes unbound"
 #: src/mods/typedConfig/ConfigPane.tsx:63
 msgid "Change it in the game"
 msgstr "Change it in the game"
+
+#. placeholder {0}: update.source
+#. placeholder {1}: update.fromSource
+#: src/mods/updateReview/Row.tsx:75
+msgid "from {0} (was {1})"
+msgstr "from {0} (was {1})"
 
 #: src/mods/problemText.ts:42
 msgid "Deprecated"
@@ -11932,7 +11948,7 @@ msgid "Jump to first error"
 msgstr "Jump to first error"
 
 #. placeholder {0}: listNames(added)
-#: src/mods/updateReview/Row.tsx:72
+#: src/mods/updateReview/Row.tsx:83
 msgid "Now needs {0}"
 msgstr "Now needs {0}"
 

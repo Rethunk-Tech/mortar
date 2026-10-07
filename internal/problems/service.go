@@ -613,6 +613,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 		r = checkUpdates(ctx, s.metaFor(gameID), env, mods, set.CheckOnlyEnabledMods, fresh, s.NexusFiles)
 		s.fixStaleManifests(gameID, id, r.Held)
 	}
+	r.Updates = s.curseforgeSwitches(ctx, mods, r.Updates)
 	r.Updates = append(r.Updates, s.sourceUpdates(ctx, gameID, mods, r.Updates)...)
 	if !r.Unknown {
 		s.mu.Lock()

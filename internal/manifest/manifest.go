@@ -314,6 +314,18 @@ func NexusUpdateKey(key string) (int, bool) {
 	return n, err == nil
 }
 
+// CurseForgeUpdateKey returns the project id of a "CurseForge:<id>" update key.
+func CurseForgeUpdateKey(key string) (string, bool) {
+	site, rest, ok := strings.Cut(key, ":")
+	if !ok || !strings.EqualFold(strings.TrimSpace(site), "curseforge") {
+		return "", false
+	}
+	rest, _, _ = strings.Cut(rest, "@")
+	rest = strings.TrimSpace(rest)
+	n, err := strconv.Atoi(rest)
+	return rest, err == nil && n > 0
+}
+
 // GitHubUpdateKey returns the "owner/repo" of a "GitHub:owner/repo" update key.
 func GitHubUpdateKey(key string) (string, bool) {
 	site, rest, ok := strings.Cut(key, ":")
