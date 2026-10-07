@@ -196,11 +196,11 @@ Every tab except Home opens with a 52px strip (`TabHeader`, rendered by `Profile
   - For a Nexus-installed mod, once cached: **Removed from Nexus** or **Hidden on Nexus** (with the date) when the page is unpublished; a two-line summary; a two-column grid of Latest on Nexus (accent when newer), Category, Downloads (compact) and Updated, each truncated with a tooltip.
   - Update banner and problem line when present; **Pin this version** or Unpin; **Skip this update** or Show skipped update.
   - **Note** (500 characters) and **Tags** (up to 8, suggestions from tags already used in the profile).
-  - **Dependencies:** indented tree of what the mod needs and what in the profile needs it, followed transitively, cycles shown once; each node is enabled, disabled, missing or broken; a link selects that mod; a missing one offers Add and Open page.
+  - **Dependencies:** indented tree of what the mod needs and what in the profile needs it, followed transitively, cycles shown once; each node is enabled, disabled, missing or broken; a link selects that mod; each row is the full name (wrapping) on one line and, beneath it, Required or Optional, the state and, for a missing one, Open page and Add.
   - **Also in these profiles:** other profiles of this game whose `profile.json` names this UniqueID, each a link with version and enabled state. **Also add to…** copies this entry into the profiles the user ticks.
   - Mods from the same download.
   - **Config:** a row with **Edit config**, which opens the config editor ([Config editor](#config-editor)).
-  - Foot: **More…** (primary), which opens the details dialog.
+  - Foot: **More…** (outlined), which opens the details dialog, then **Show files** and **Remove** (outlined, error colour) side by side. **Pin this version** has a tooltip: Mortar offers no update for the mod until it is unpinned.
   - Selecting the selected mod again keeps its fetched data. The details panel, the list and the dialog share one read of a mod's Nexus details per session.
 - **More details** opens a modal titled with the mod's name and closed with **Close**:
   - Page link (GitHub or Nexus); **Needs**; **In the same download**; **Versions** (in use and rollback, with Roll back after confirm); **Settings** (`config.json`: **Edit config**, **Open** and **Reset**, which deletes the file after confirm so the mod writes a fresh one); **Needed by**.
@@ -282,6 +282,9 @@ While the tab is open, the tab header holds **Find the mod that crashes the game
 Each row shows the full wrapped text, severity icon, the Nexus author note when a listed requirement has one, and its fix actions.
 
 - A missing or optional-dependency row links to that UniqueID in the Load order tab (falling back to the dependent).
+- A load-order dependency chip names the dependency: an installed copy's name, else the page the Problems check found, else its bare id; a missing required one reads "Needs <name> (missing)". "Unknown mod" appears only when no id is known.
+- A source that cannot be searched (no API key) shows its reason as a capitalised sentence in the Browse source tooltip; change lines (Home's Changes since last run, history) also start with a capital ("Added <mod>").
+- The mod list shows the same problem triangle and tooltip as a card, beside the name so it stays visible when the Status column is narrow or hidden.
 - Conflict rows expand a **Why?** section listing each pack's clashing patch (source file and index, Action, Target, ToArea/FromArea, When, Priority) and, for image edits, a cropped preview of that pack's overlapping source region loaded when the section opens.
 - Fix buttons run in order of weight: the suggested fix first (a Content Patcher **Set … to …**, or **Make a pack win** when there is none) filled in the warning colour on real conflicts, then **Disable** outlined, then **Dismiss** as a quiet text button last; harmless rows use outlined buttons throughout.
 - No fix button is blue.
@@ -296,6 +299,8 @@ Each row shows the full wrapped text, severity icon, the Nexus author note when 
 The problem count is the **N problems** chip in the tab header, which opens this tab. The Mods tab carries no problems banner. While problems are still loading, the chip shows the profile's last known count.
 
 ## Load order tab
+
+While a lazily loaded tab's code arrives (Console, Load order, Saves, Performance), the area shows the shared skeleton rows (`SkeletonRows`), never an empty pane.
 
 A read-only list of the open profile's enabled mods in the order the game loader chooses (**The game loader chooses this order. Mortar does not change it.**, SMAPI in the line's `title`). Mortar does not change SMAPI's order.
 

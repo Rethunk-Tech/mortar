@@ -10684,7 +10684,7 @@ msgstr "Deprecated"
 
 #. placeholder {0}: item.name
 #. placeholder {0}: m.name
-#: src/browse/ResultCard.tsx:93
+#: src/browse/ResultCard.tsx:102
 #: src/mods/ModCards.tsx:167
 msgid "Details of {0}"
 msgstr "Details of {0}"

@@ -296,7 +296,7 @@ A sync folder shares each profile's mod list, sources, settings and mod config f
 
 ## Updates
 
-- **Mortar:** the Mortar menu's **Check for updates**, or **Settings › Updates**, which can also include beta releases. An update downloads and applies when you close Mortar, or choose **Restart now**.
+- **Mortar:** the Mortar menu's **Check mods and Mortar for updates**, or **Settings › Updates**, which can also include beta releases. An update downloads and applies when you close Mortar, or choose **Restart now**.
 - **Mods:** updates show on each profile's mod list, and **Settings › Updates** has **Review mod updates**.
 - **SMAPI:** Mortar tells you when a new SMAPI is out. The game's settings have its version and update.
 
