@@ -41,7 +41,7 @@ Check 'launchAtLogin set through the running app' $set
 $reported = $false
 if ($set) {
     foreach ($i in 1..30) {
-        if ((& $exe settings get launchAtLogin 2>&1 | Out-String).Trim() -eq 'true') { $reported = $true; break }
+        if ((& $exe settings get launchAtLogin 2>&1 | Out-String) -match '(?m)^launchAtLogin\s+true\s*$') { $reported = $true; break }
         Start-Sleep 2
     }
 }
