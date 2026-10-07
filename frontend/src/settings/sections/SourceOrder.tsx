@@ -9,7 +9,6 @@ import { useCurrentGame } from '../../nav/currentGame.ts'
 import { IconAction } from '../../shell/IconAction.tsx'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
-import { useToasts } from '../../toasts/store.ts'
 import { persist } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -23,7 +22,6 @@ function ordered(all: { id: string; name: string }[], saved: string) {
 function SourceOrder() {
   const { t } = useLingui()
   const game = useCurrentGame()
-  const push = useToasts((s) => s.push)
   const saved = useSettings((s) => s.games?.[game]?.sourceOrder ?? '')
   const [all, setAll] = useState<{ id: string; name: string }[]>([])
   useEffect(() => {
@@ -43,7 +41,6 @@ function SourceOrder() {
     }
     persist(
       () => SetByKey('sourceOrder', next.map((s) => s.id).join(','), game),
-      push,
       t`Could not save that setting`,
     )
   }

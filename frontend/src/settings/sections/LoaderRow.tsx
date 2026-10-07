@@ -13,7 +13,6 @@ import { useCurrentGame } from '../../nav/currentGame.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../../shell/DisabledReason.tsx'
 import { space } from '../../theme/density.ts'
-import { useToasts } from '../../toasts/store.ts'
 import { PrefSelect } from '../PrefControls.tsx'
 import { persist } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
@@ -49,7 +48,6 @@ function LoaderRow({
   onVersion: (v: string) => void
 }) {
   const { t, i18n } = useLingui()
-  const push = useToasts((s) => s.push)
   const fail = t`Could not save that setting`
   const game = useCurrentGame()
   const pin = useSettings((s) => s.loaderPrefs?.[`${game}/${loader.id}`]?.pin ?? '')
@@ -113,7 +111,7 @@ function LoaderRow({
     })
   }
   const savePin = (value: string) => {
-    persist(() => SetByKey(`${loader.id}Pin`, value === LATEST ? '' : value, game), push, fail)
+    persist(() => SetByKey(`${loader.id}Pin`, value === LATEST ? '' : value, game), fail)
   }
   return (
     <>

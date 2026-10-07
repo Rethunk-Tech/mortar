@@ -5,7 +5,6 @@ import type { PrefSpec } from '../../bindings/github.com/Rethunk-Tech/mortar/int
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { space } from '../theme/density.ts'
-import { useToasts } from '../toasts/store.ts'
 import {
   PrefCards,
   PrefNumber,
@@ -35,7 +34,6 @@ function PrefRow({
   disabledReason?: string
 }) {
   const { t, i18n } = useLingui()
-  const push = useToasts((s) => s.push)
   const fail = t`Could not save that setting`
   const settings = useSettings()
   const copy = prefCopy(i18n, spec.key)
@@ -44,7 +42,7 @@ function PrefRow({
   }
   const raw = prefRaw(settings, spec, game)
   const gameArg = specGameArg(spec, game)
-  const save = (value: string) => persist(() => SetByKey(spec.key, value, gameArg), push, fail)
+  const save = (value: string) => persist(() => SetByKey(spec.key, value, gameArg), fail)
   const kind = prefControl(spec.type)
   const options = copy.options ?? (spec.values ?? []).map((value) => ({ value, label: value }))
   let selectValue = prefAsString(raw, spec)

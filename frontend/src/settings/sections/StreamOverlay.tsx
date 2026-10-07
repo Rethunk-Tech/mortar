@@ -261,7 +261,7 @@ function OverlayConnection({
     }
     setPortError(false)
     if (n !== port) {
-      persist(() => SetOverlayPort(n), push, fail)
+      persist(() => SetOverlayPort(n), fail)
     }
   }
   return (
@@ -336,7 +336,6 @@ function OverlayConnection({
               RegenerateOverlayToken().then(() => {
                 push({ kind: 'success', title: t`Token regenerated` })
               }),
-            push,
             fail,
           )
         }}
@@ -404,7 +403,7 @@ export function StreamOverlay() {
       >
         <PrefSwitch
           checked={enabled}
-          onChange={(on) => persist(() => SetOverlayEnabled(on), push, fail)}
+          onChange={(on) => persist(() => SetOverlayEnabled(on), fail)}
           label={t`Stream overlay`}
         />
       </SettingRow>

@@ -9,7 +9,6 @@ import {
   EnableSource,
   LinkSources,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
-import { PickFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { List as ListProfiles } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import {
@@ -22,10 +21,9 @@ import { When } from '../../i18n/When.tsx'
 import { openPage } from '../../mods/menu.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected, toastError } from '../../toasts/report.ts'
-import { useToasts } from '../../toasts/store.ts'
 import { PrefSelect, PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
-import { persist } from '../persist.ts'
+import { persist, pickFolderSetting } from '../persist.ts'
 import { prefCopy } from '../prefCopy.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
@@ -35,7 +33,6 @@ import { WatchFolders } from './WatchFolders.tsx'
 // Nexus links carry no profile, so the target profile is per game: one row for each game Nexus serves.
 function NxmDefaultProfile({ game, gameName }: { game: string; gameName: string }) {
   const { t, i18n } = useLingui()
-  const push = useToasts((s) => s.push)
   const [profiles, setProfiles] = useState<Profile[]>([])
   const value = useSettings((s) => s.games?.[game]?.nxmDefaultProfile ?? '')
   useEffect(() => {
@@ -53,11 +50,7 @@ function NxmDefaultProfile({ game, gameName }: { game: string; gameName: string 
       <PrefSelect
         value={options.some((o) => o.value === value) ? value : ''}
         onChange={(v) =>
-          persist(
-            () => SetByKey('nxmDefaultProfile', v, game),
-            push,
-            t`Could not save that setting`,
-          )
+          persist(() => SetByKey('nxmDefaultProfile', v, game), t`Could not save that setting`)
         }
         options={options}
         label={copy.label}
@@ -206,7 +199,6 @@ function SourceLinks() {
 
 function NxmLinks() {
   const { t } = useLingui()
-  const push = useToasts((s) => s.push)
   const nxm = useNxmHandler()
   const nxmPrevious = useSettings((s) => s.nxmPreviousHandlers?.nxm ?? '')
   const nxmPreviousName = useSettings((s) => s.nxmPreviousName)
@@ -235,7 +227,7 @@ function NxmLinks() {
           <PrefSwitch
             checked={redirectOther}
             onChange={(on) =>
-              persist(() => SetNxmRedirectOtherGames(on), push, t`Could not save that setting`)
+              persist(() => SetNxmRedirectOtherGames(on), t`Could not save that setting`)
             }
             label={t`Send other games' links to ${redirectName}`}
           />
@@ -249,7 +241,6 @@ function NxmLinks() {
 
 function PreferredServer() {
   const { t } = useLingui()
-  const push = useToasts((s) => s.push)
   const preferred = useSettings((s) => s.nexusPreferredDownloadServer)
   const seen = useSettings((s) => s.nexusSeenDownloadServers)
   if (!seen || seen.length === 0) {
@@ -267,7 +258,7 @@ function PreferredServer() {
       <PrefSelect
         value={options.some((o) => o.value === preferred) ? preferred : ''}
         onChange={(v) =>
-          persist(() => SetNexusPreferredDownloadServer(v), push, t`Could not save that setting`)
+          persist(() => SetNexusPreferredDownloadServer(v), t`Could not save that setting`)
         }
         options={options}
         label={t`Preferred download server`}
@@ -278,18 +269,8 @@ function PreferredServer() {
 
 export function Downloads() {
   const { t } = useLingui()
-  const push = useToasts((s) => s.push)
   const chooseFolder = () =>
-    persist(
-      async () => {
-        const dir = await PickFolder(t`Download folder`)
-        if (dir) {
-          await SetByKey('downloadFolder', dir, '')
-        }
-      },
-      push,
-      t`Could not save that setting`,
-    )
+    pickFolderSetting(t`Download folder`, 'downloadFolder', '', t`Could not save that setting`)
   return (
     <>
       <SettingsSection title={t`Links`}>

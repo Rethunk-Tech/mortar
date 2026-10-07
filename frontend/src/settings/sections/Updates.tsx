@@ -10,7 +10,6 @@ import {
 import { isGameId, useNav } from '../../nav/store.ts'
 import { space } from '../../theme/density.ts'
 import { errorMessage, reportUnexpected } from '../../toasts/report.ts'
-import { useToasts } from '../../toasts/store.ts'
 import { showWhatsNew } from '../../updates/whatsNew.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
@@ -158,7 +157,6 @@ export function Updates() {
   const includeBetaReleases = useSettings((s) => s.includeBetaReleases)
   const includePrereleaseModVersions = useSettings((s) => s.includePrereleaseModVersions)
   const checkOnlyEnabledMods = useSettings((s) => s.checkOnlyEnabledMods)
-  const push = useToasts((s) => s.push)
   const fail = t`Could not save that setting`
   return (
     <>
@@ -167,7 +165,7 @@ export function Updates() {
         <SettingRow label={t`Include beta releases`}>
           <PrefSwitch
             checked={includeBetaReleases}
-            onChange={(on) => persist(() => SetIncludeBetaReleases(on), push, fail)}
+            onChange={(on) => persist(() => SetIncludeBetaReleases(on), fail)}
             label={t`Include beta releases`}
           />
         </SettingRow>
@@ -178,14 +176,14 @@ export function Updates() {
         <SettingRow label={t`Check only enabled mods`}>
           <PrefSwitch
             checked={checkOnlyEnabledMods}
-            onChange={(on) => persist(() => SetCheckOnlyEnabledMods(on), push, fail)}
+            onChange={(on) => persist(() => SetCheckOnlyEnabledMods(on), fail)}
             label={t`Check only enabled mods`}
           />
         </SettingRow>
         <SettingRow label={t`Include pre-release mod versions`}>
           <PrefSwitch
             checked={includePrereleaseModVersions}
-            onChange={(on) => persist(() => SetIncludePrereleaseModVersions(on), push, fail)}
+            onChange={(on) => persist(() => SetIncludePrereleaseModVersions(on), fail)}
             label={t`Include pre-release mod versions`}
           />
         </SettingRow>

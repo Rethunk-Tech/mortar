@@ -14,7 +14,6 @@ import { type AccentName, accents } from '../../theme/accents.ts'
 import { space } from '../../theme/density.ts'
 import { PAD_FOCUS } from '../../theme/theme.ts'
 import { reportError } from '../../toasts/report.ts'
-import { useToasts } from '../../toasts/store.ts'
 import { PrefSegmented, PrefSelect } from '../PrefControls.tsx'
 import { PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
@@ -24,7 +23,6 @@ import { isAccent } from '../theme.ts'
 
 function DefaultSort() {
   const { t } = useLingui()
-  const push = useToasts((s) => s.push)
   const stored = sanitizeListSort(
     useSettings((s) => s.listSortColumn),
     useSettings((s) => s.listSortDir),
@@ -42,7 +40,7 @@ function DefaultSort() {
         value={`${stored.column}:${stored.dir}`}
         onChange={(v) => {
           const [column = 'name', dir = 'asc'] = v.split(':')
-          persist(() => SetListSort(column, dir), push, t`Could not save that setting`)
+          persist(() => SetListSort(column, dir), t`Could not save that setting`)
         }}
         options={options}
         label={t`Default sort`}

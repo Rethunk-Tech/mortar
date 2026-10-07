@@ -1,19 +1,16 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { PickFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { space } from '../../theme/density.ts'
-import { useToasts } from '../../toasts/store.ts'
-import { persist } from '../persist.ts'
+import { persist, pickFolderSetting } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 
 export function SyncFolder() {
   const { t } = useLingui()
-  const push = useToasts((s) => s.push)
   const folder = useSettings((s) => s.syncFolder ?? '')
   const save = (dir: string) =>
-    persist(() => SetByKey('syncFolder', dir, ''), push, t`Could not save that setting`)
+    persist(() => SetByKey('syncFolder', dir, ''), t`Could not save that setting`)
   return (
     <SettingRow
       label={t`Sync folder`}
@@ -26,16 +23,7 @@ export function SyncFolder() {
         <Button
           variant="outlined"
           onClick={() =>
-            persist(
-              async () => {
-                const dir = await PickFolder(t`Sync folder`)
-                if (dir) {
-                  await SetByKey('syncFolder', dir, '')
-                }
-              },
-              push,
-              t`Could not save that setting`,
-            )
+            pickFolderSetting(t`Sync folder`, 'syncFolder', '', t`Could not save that setting`)
           }
         >
           {t`Choose…`}

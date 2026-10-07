@@ -2,7 +2,6 @@ import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
 import { SetByKey } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { space } from '../../theme/density.ts'
-import { useToasts } from '../../toasts/store.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefKeys } from '../PrefRow.tsx'
 import { persist } from '../persist.ts'
@@ -21,7 +20,6 @@ interface EventRow {
 
 function ChannelSwitch({ prefKey, label }: { prefKey: string; label: string }) {
   const { t } = useLingui()
-  const push = useToasts((s) => s.push)
   const settings = useSettings()
   const spec = specByKey(usePrefSpecs(), prefKey)
   if (!spec) {
@@ -33,7 +31,7 @@ function ChannelSwitch({ prefKey, label }: { prefKey: string; label: string }) {
         checked={prefAsBool(prefRaw(settings, spec), spec)}
         label={label}
         onChange={(on) =>
-          persist(() => SetByKey(prefKey, String(on), ''), push, t`Could not save that setting`)
+          persist(() => SetByKey(prefKey, String(on), ''), t`Could not save that setting`)
         }
       />
     </Box>

@@ -11,7 +11,6 @@ import {
   ResetInstall,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { OpenSteamValidate } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
-import { PickFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import {
   ChooseGameFolder,
   SetByKey,
@@ -30,7 +29,7 @@ import { type InlineError, inlineError, reportError, toastError } from '../../to
 import { useToasts } from '../../toasts/store.ts'
 import { PrefSwitch } from '../PrefControls.tsx'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
-import { persist } from '../persist.ts'
+import { persist, pickFolderSetting } from '../persist.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { BackupsUsageRow } from './DataBackups.tsx'
@@ -333,16 +332,13 @@ function LoaderPage({
   const { t } = useLingui()
   const game = useCurrentGame()
   const tellWhenSmapiOut = useSettings((s) => s.tellWhenSmapiOut) !== false
-  const push = useToasts((s) => s.push)
   return (
     <SettingsSection title={loader.name}>
       <LoaderRow loader={loader} onVersion={onVersion} />
       <SettingRow label={t`Tell me when a new mod loader version is out`}>
         <PrefSwitch
           checked={tellWhenSmapiOut}
-          onChange={(on) =>
-            persist(() => SetTellWhenSmapiOut(on), push, t`Could not save that setting`)
-          }
+          onChange={(on) => persist(() => SetTellWhenSmapiOut(on), t`Could not save that setting`)}
           label={t`Tell me when a new mod loader version is out`}
         />
       </SettingRow>
@@ -354,21 +350,11 @@ function LoaderPage({
 function ExtraModsFolder() {
   const { t } = useLingui()
   const game = useCurrentGame()
-  const push = useToasts((s) => s.push)
   const folder = useSettings((s) => s.games?.[game]?.extraModsFolder ?? '')
   const choose = () =>
-    persist(
-      async () => {
-        const dir = await PickFolder(t`Extra mods folder`)
-        if (dir) {
-          await SetByKey('extraModsFolder', dir, game)
-        }
-      },
-      push,
-      t`Could not save that setting`,
-    )
+    pickFolderSetting(t`Extra mods folder`, 'extraModsFolder', game, t`Could not save that setting`)
   const clear = () =>
-    persist(() => SetByKey('extraModsFolder', '', game), push, t`Could not save that setting`)
+    persist(() => SetByKey('extraModsFolder', '', game), t`Could not save that setting`)
   return (
     <PrefByKey
       prefKey="extraModsFolder"
@@ -393,18 +379,8 @@ function BackupsPage() {
   const { t } = useLingui()
   const game = useCurrentGame()
   const scheduleOff = useSettings((s) => (s.games?.[game]?.saveBackupHours ?? 0) === 0)
-  const push = useToasts((s) => s.push)
   const chooseBackupLocation = () =>
-    persist(
-      async () => {
-        const dir = await PickFolder(t`Backup location`)
-        if (dir) {
-          await SetByKey('backupLocation', dir, game)
-        }
-      },
-      push,
-      t`Could not save that setting`,
-    )
+    pickFolderSetting(t`Backup location`, 'backupLocation', game, t`Could not save that setting`)
   return (
     <SettingsSection title={t`Save backups`}>
       <PrefKeys keys={['backupBeforePlay', 'saveBackupsKept', 'saveBackupHours']} game={game} />

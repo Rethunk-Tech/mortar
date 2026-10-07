@@ -5,7 +5,6 @@ import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { persist } from '../settings/persist.ts'
 import { useOfflineEmpty } from '../shell/offlineText.ts'
 import { space } from '../theme/density.ts'
-import { useToasts } from '../toasts/store.ts'
 import { BrowseBody, ResultFooter } from './BrowseBody.tsx'
 import { BrowseDetails } from './BrowseDetails.tsx'
 import { BrowseFilters } from './BrowseFilters.tsx'
@@ -83,7 +82,6 @@ function BrowsePage({
   hasCompat,
 }: BrowsePageProps) {
   const { t } = useLingui()
-  const push = useToasts((s) => s.push)
   const view = useBrowseView((s) => s.view)
   const setFilter = useBrowseView((s) => s.setFilter)
   const query = useBrowseQuery({ game, profileID, search, sources: searchable })
@@ -143,7 +141,6 @@ function BrowsePage({
         onModes={(next) => {
           persist(
             () => SetByKey('browseFilters', formatModes(next), game),
-            push,
             t`Could not save that setting`,
           )
           setPage(FIRST_PAGE)
