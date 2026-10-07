@@ -28,30 +28,33 @@ Check 'Start Menu shortcut' ([bool]($startMenu | Where-Object { Test-Path $_ }))
 $v = & $exe version 2>&1 | Out-String
 Check "mortar version exits 0 ($($v.Trim()))" (($LASTEXITCODE -eq 0) -and ($v -match 'mortar \d'))
 
-# Autostart is a setting of the running app; the CLI talks to it over its control socket. A cold first start takes
-# a while to open that socket, and a set the app accepts while it is still starting can be lost, so poll the real
-# condition under one deadline and set again until the setting reads back true: an autostart entry (Run key value or
-# Startup shortcut) present and the app process running.
+# Autostart is a setting of the running app; the CLI talks to it over its control socket, which a cold first start
+# opens a few seconds in, so the set is issued until the app accepts it, once. Then poll under one deadline for the
+# setting reading back true, an autostart entry (Run key value or Startup shortcut) and the app process. The exit code is read from a captured call:
+# Windows PowerShell 5.1 reports 0 for the first failing native call whose output is discarded with *>$null.
+function Get-LaunchAtLogin { (& $exe settings get launchAtLogin 2>&1 | Out-String) -match '(?m)^launchAtLogin\s+true\s*$' }
 $startupLink = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Mortar.lnk"
 function Get-Autostart { if (Get-ItemProperty $runKey -Name Mortar -ErrorAction SilentlyContinue) { 'Run key' } elseif (Test-Path $startupLink) { 'Startup shortcut' } }
-function Get-LaunchAtLogin { (& $exe settings get launchAtLogin 2>&1 | Out-String) -match '(?m)^launchAtLogin\s+true\s*$' }
 Start-Process $exe
 $set = $false
 $autostart = $null
 $running = $false
+$value = $false
 $deadline = (Get-Date).AddSeconds(120)
 do {
-    if (-not (Get-LaunchAtLogin)) {
-        & $exe settings set launchAtLogin true *>$null
-        if ($LASTEXITCODE -eq 0) { $set = $true }
+    if (-not $set) {
+        $null = & $exe settings set launchAtLogin true 2>&1
+        $set = ($LASTEXITCODE -eq 0)
     }
+    if ($set) { $value = Get-LaunchAtLogin }
     $autostart = Get-Autostart
     $running = [bool](Get-Process -Name mortar -ErrorAction SilentlyContinue)
-    if ($set -and $autostart -and $running) { break }
+    if ($set -and $value -and $autostart -and $running) { break }
     Start-Sleep 1
 } while ((Get-Date) -lt $deadline)
 Check 'launchAtLogin set through the running app (within 120s)' $set
 $state = if ($autostart) { $autostart } else { 'setting reads: ' + ((& $exe settings get launchAtLogin 2>&1 | Out-String) -replace '\s+', ' ').Trim() }
+Check 'launchAtLogin reads back true' $value
 Check "autostart entry written ($state)" ($null -ne $autostart)
 Check 'Mortar still running with autostart enabled' $running
 Stop-Process -Name mortar -Force -ErrorAction SilentlyContinue
