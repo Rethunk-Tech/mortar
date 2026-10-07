@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import {
-  Alert,
   Box,
   Button,
   CircularProgress,
@@ -13,7 +12,9 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Stack,
   TextField,
+  Typography,
 } from '@mui/material'
 import { Events } from '@wailsio/runtime'
 import { Inbox, RefreshCw } from 'lucide-react'
@@ -99,29 +100,41 @@ function PeerRow({ peer, sharedName, disabled, sending, onSend, onPair }: PeerRo
   )
 }
 
-function LinksOnlyNotice({
+function LinksOnlyView({
   name,
+  busy,
+  onBack,
   onPair,
   onSend,
 }: {
   name: string
+  busy: boolean
+  onBack: () => void
   onPair: () => void
   onSend: () => void
 }) {
   const { t } = useLingui()
   return (
-    <Alert
-      severity="warning"
-      sx={{ mt: 1 }}
-      action={
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          <Button size="small" color="inherit" onClick={onPair}>{t`Pair`}</Button>
-          <Button size="small" color="inherit" onClick={onSend}>{t`Send links only`}</Button>
-        </Box>
-      }
-    >
-      {t`Only links: ${name} will download each mod from its site, one click per mod on a free Nexus account. Pair to send whole files.`}
-    </Alert>
+    <>
+      <DialogTitle>{t`Send only links to ${name}?`}</DialogTitle>
+      <DialogContent dividers={true}>
+        <Stack spacing={1.5}>
+          <Typography variant="body2">
+            {t`${name} is not paired with this computer, so Mortar sends the list of mods, not their files. ${name} will download each mod from its site, one click per mod on a free Nexus account.`}
+          </Typography>
+          <Typography variant="body2">
+            {t`Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on ${name}.`}
+          </Typography>
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onBack}>{t`Back`}</Button>
+        <Button variant="outlined" onClick={onPair}>{t`Pair`}</Button>
+        <Button variant="contained" disabled={busy} onClick={onSend}>
+          {t`Send links only`}
+        </Button>
+      </DialogActions>
+    </>
   )
 }
 
@@ -244,79 +257,86 @@ export function SendDialog({ open, game, profileId, onClose }: SendDialogProps) 
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="xs">
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {t`Send to…`}
-        <IconButton aria-label={t`Refresh`} onClick={refresh} disabled={refreshing}>
-          {refreshing ? <CircularProgress size={18} /> : <RefreshCw size={18} />}
-        </IconButton>
-      </DialogTitle>
-      <DialogContent dividers={true}>
-        {sendPeerView(looked, refreshing, peers.length) === 'empty' ? (
-          <EmptyState
-            compact={true}
-            icon={<Inbox size={28} />}
-            title={t`No Mortar users found nearby.`}
-          >{t`Ask another Mortar user to open sharing nearby.`}</EmptyState>
-        ) : (
-          <List disablePadding={true}>
-            {sendPeerView(looked, refreshing, peers.length) === 'looking' ? (
-              <ListItem>
-                <ListItemText primary={t`Looking for Mortar users…`} />
-              </ListItem>
+      {linksOnly ? (
+        <LinksOnlyView
+          name={linksOnly.name}
+          busy={sending !== null}
+          onBack={() => setLinksOnly(null)}
+          onPair={() => setPairing(true)}
+          onSend={() => {
+            const target = linksOnly
+            setLinksOnly(null)
+            send(target)
+          }}
+        />
+      ) : (
+        <>
+          <DialogTitle
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+          >
+            {t`Send to…`}
+            <IconButton aria-label={t`Refresh`} onClick={refresh} disabled={refreshing}>
+              {refreshing ? <CircularProgress size={18} /> : <RefreshCw size={18} />}
+            </IconButton>
+          </DialogTitle>
+          <DialogContent dividers={true}>
+            {sendPeerView(looked, refreshing, peers.length) === 'empty' ? (
+              <EmptyState
+                compact={true}
+                icon={<Inbox size={28} />}
+                title={t`No Mortar users found nearby.`}
+              >{t`Ask another Mortar user to open sharing nearby.`}</EmptyState>
+            ) : (
+              <List disablePadding={true}>
+                {sendPeerView(looked, refreshing, peers.length) === 'looking' ? (
+                  <ListItem>
+                    <ListItemText primary={t`Looking for Mortar users…`} />
+                  </ListItem>
+                ) : null}
+                {peers.map((peer) => (
+                  <PeerRow
+                    key={peer.id}
+                    peer={peer}
+                    sharedName={sharedNames.has(peer.name)}
+                    disabled={sending !== null}
+                    sending={sending === peer.id}
+                    onSend={() => (peer.paired ? send(peer) : setLinksOnly(peer))}
+                    onPair={() => setPairing(true)}
+                  />
+                ))}
+                <AddressRows
+                  addresses={addresses}
+                  disabled={sending !== null}
+                  onPick={() => setAddressPicker((current) => !current)}
+                  onSend={(address) => send({ id: address, name: address })}
+                />
+              </List>
+            )}
+            {addressPicker ? (
+              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                <TextField
+                  autoFocus={true}
+                  fullWidth={true}
+                  size="small"
+                  label={t`Host:port`}
+                  value={manual}
+                  onChange={(event) => setManual(event.target.value)}
+                />
+                <Button
+                  variant="contained"
+                  disabled={sending !== null || manual.trim() === ''}
+                  onClick={() => send({ id: manual.trim(), name: manual.trim() })}
+                >
+                  {t`Send`}
+                </Button>
+              </Box>
             ) : null}
-            {peers.map((peer) => (
-              <PeerRow
-                key={peer.id}
-                peer={peer}
-                sharedName={sharedNames.has(peer.name)}
-                disabled={sending !== null}
-                sending={sending === peer.id}
-                onSend={() => (peer.paired ? send(peer) : setLinksOnly(peer))}
-                onPair={() => setPairing(true)}
-              />
-            ))}
-            <AddressRows
-              addresses={addresses}
-              disabled={sending !== null}
-              onPick={() => setAddressPicker((current) => !current)}
-              onSend={(address) => send({ id: address, name: address })}
-            />
-          </List>
-        )}
-        {linksOnly ? (
-          <LinksOnlyNotice
-            name={linksOnly.name}
-            onPair={() => setPairing(true)}
-            onSend={() => {
-              const target = linksOnly
-              setLinksOnly(null)
-              send(target)
-            }}
-          />
-        ) : null}
-        {addressPicker ? (
-          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-            <TextField
-              autoFocus={true}
-              fullWidth={true}
-              size="small"
-              label={t`Host:port`}
-              value={manual}
-              onChange={(event) => setManual(event.target.value)}
-            />
-            <Button
-              variant="contained"
-              disabled={sending !== null || manual.trim() === ''}
-              onClick={() => send({ id: manual.trim(), name: manual.trim() })}
-            >
-              {t`Send`}
-            </Button>
-          </Box>
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t`Cancel`}</Button>
-      </DialogActions>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={onClose}>{t`Cancel`}</Button>
+          </DialogActions>
+        </>
+      )}
       <ShowCodeDialog open={pairing} onClose={() => setPairing(false)} />
     </Dialog>
   )

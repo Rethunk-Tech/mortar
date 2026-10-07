@@ -18,6 +18,7 @@ import {
 import { useEffect, useState } from 'react'
 import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { SetLanSharing } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import {
   AddToSteam,
   Create as CreateShortcut,
@@ -204,16 +205,39 @@ function SendProfileMenuItem({ profile, close }: { profile: Profile; close: () =
   const currentGame = useProfiles((s) => s.game)
   const lanSharing = useSettings((s) => s.lanSharing)
   const [open, setOpen] = useState(false)
+  const [askSharing, setAskSharing] = useState(false)
+  const [enabling, setEnabling] = useState(false)
   return (
     <>
       <ProfileMenuItem
         icon={<SendIcon size={16} />}
         label={t`Send to…`}
-        disabled={!(lanSharing && currentGame)}
-        {...(lanSharing ? {} : { tooltip: t`Enable sharing nearby in Settings › General.` })}
+        disabled={!currentGame}
         onClick={() => {
           close()
-          setOpen(true)
+          if (lanSharing) {
+            setOpen(true)
+          } else {
+            setAskSharing(true)
+          }
+        }}
+      />
+      <ConfirmDialog
+        open={askSharing}
+        title={t`Turn on sharing nearby?`}
+        body={t`Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General.`}
+        confirmLabel={t`Turn on and continue`}
+        busy={enabling}
+        onCancel={() => setAskSharing(false)}
+        onConfirm={() => {
+          setEnabling(true)
+          SetLanSharing(true)
+            .then(() => {
+              setAskSharing(false)
+              setOpen(true)
+            })
+            .catch(reportError(t`Could not turn on sharing nearby`))
+            .finally(() => setEnabling(false))
         }}
       />
       <SendDialog

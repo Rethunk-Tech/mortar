@@ -395,7 +395,7 @@ msgstr "Balance only: one mod's prices win."
 msgid "Kept at this version ({0})"
 msgstr "Kept at this version ({0})"
 
-#: src/game/ProfileMenuItems.tsx:358
+#: src/game/ProfileMenuItems.tsx:382
 #: src/profiles/HistoryPanel.tsx:51
 #: src/queue/QueueSheet.tsx:72
 #: src/queue/QueueSheet.tsx:79
@@ -585,7 +585,7 @@ msgstr "{0, plural, one {Applied the curator's choices for # mod and {1, plural,
 msgid "Startup and window"
 msgstr "Startup and window"
 
-#: src/game/ProfileMenuItems.tsx:175
+#: src/game/ProfileMenuItems.tsx:176
 msgid "Could not add it to Steam"
 msgstr "Could not add it to Steam"
 
@@ -754,7 +754,7 @@ msgstr "{0} was changed on {1} and here"
 msgid "More…"
 msgstr "More…"
 
-#: src/game/ProfileMenuItems.tsx:408
+#: src/game/ProfileMenuItems.tsx:432
 msgid "Add a bundle…"
 msgstr "Add a bundle…"
 
@@ -762,7 +762,7 @@ msgstr "Add a bundle…"
 msgid "How timestamps are shown"
 msgstr "How timestamps are shown"
 
-#: src/game/ProfileMenuItems.tsx:139
+#: src/game/ProfileMenuItems.tsx:140
 msgid "Remove the shortcut"
 msgstr "Remove the shortcut"
 
@@ -977,6 +977,10 @@ msgstr "Enable mods in the Mods tab to see the order {loader} loads them."
 msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
 msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it."
 
+#: src/lan/SendDialog.tsx:119
+msgid "Send only links to {name}?"
+msgstr "Send only links to {name}?"
+
 #: src/mods/modActions.ts:56
 msgid "Open on Modrinth"
 msgstr "Open on Modrinth"
@@ -1049,6 +1053,10 @@ msgstr "Mod updates are found"
 msgid "Find a mod in all profiles"
 msgstr "Find a mod in all profiles"
 
+#: src/game/ProfileMenuItems.tsx:227
+msgid "Turn on sharing nearby?"
+msgstr "Turn on sharing nearby?"
+
 #: src/nxm/store.ts:31
 msgid "Mortar does not manage mods for that game."
 msgstr "Mortar does not manage mods for that game."
@@ -1087,7 +1095,7 @@ msgstr "Something changed this profile's mods folder without Mortar, by adding, 
 msgid "Mod list copied"
 msgstr "Mod list copied"
 
-#: src/game/ProfileMenuItems.tsx:166
+#: src/game/ProfileMenuItems.tsx:167
 msgid "Already in Steam"
 msgstr "Already in Steam"
 
@@ -1380,7 +1388,7 @@ msgstr "No matches"
 msgid "Add a bundle to {profileName}"
 msgstr "Add a bundle to {profileName}"
 
-#: src/game/ProfileMenuItems.tsx:262
+#: src/game/ProfileMenuItems.tsx:286
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
 
@@ -1701,7 +1709,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/firstrun/LoaderStep.tsx:201
 #: src/firstrun/LoaderStep.tsx:269
 #: src/game/detailStates.tsx:26
-#: src/lan/SendDialog.tsx:181
+#: src/lan/SendDialog.tsx:194
 #: src/launch/LaunchLayer.tsx:312
 #: src/mods/LoadOrderTab.tsx:390
 #: src/mods/ModsTab.tsx:116
@@ -2022,13 +2030,17 @@ msgstr "Fullscreen resolution width"
 msgid "These come from a different site than you installed them from. Update all skips them."
 msgstr "These come from a different site than you installed them from. Update all skips them."
 
+#: src/game/ProfileMenuItems.tsx:228
+msgid "Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General."
+msgstr "Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General."
+
 #. placeholder {0}: hidden.search
 #: src/console/ConsoleTab.tsx:334
 msgid "the search is “{0}”"
 msgstr "the search is “{0}”"
 
 #: src/lan/PairedComputers.tsx:89
-#: src/lan/SendDialog.tsx:303
+#: src/lan/SendDialog.tsx:321
 msgid "Host:port"
 msgstr "Host:port"
 
@@ -2261,7 +2273,7 @@ msgid "Enjoying {0}? Endorse it on Nexus"
 msgstr "Enjoying {0}? Endorse it on Nexus"
 
 #. placeholder {0}: target.name
-#: src/lan/SendDialog.tsx:170
+#: src/lan/SendDialog.tsx:183
 msgid "Sent to {0}"
 msgstr "Sent to {0}"
 
@@ -2315,7 +2327,7 @@ msgstr "Skip {0}"
 msgid "Latest on Nexus"
 msgstr "Latest on Nexus"
 
-#: src/lan/SendDialog.tsx:81
+#: src/lan/SendDialog.tsx:82
 msgid "Not paired · only links"
 msgstr "Not paired · only links"
 
@@ -2701,7 +2713,7 @@ msgstr "Medium"
 msgid "Delete permanently"
 msgstr "Delete permanently"
 
-#: src/game/ProfileMenuItems.tsx:191
+#: src/game/ProfileMenuItems.tsx:192
 #: src/profiles/HealthDialog.tsx:252
 msgid "Check this profile"
 msgstr "Check this profile"
@@ -2777,9 +2789,13 @@ msgstr "No fix yet"
 msgid "Load a save to see values"
 msgstr "Load a save to see values"
 
-#: src/lan/SendDialog.tsx:209
+#: src/lan/SendDialog.tsx:222
 msgid "Could not find Mortar users"
 msgstr "Could not find Mortar users"
+
+#: src/lan/SendDialog.tsx:123
+msgid "{name} is not paired with this computer, so Mortar sends the list of mods, not their files. {name} will download each mod from its site, one click per mod on a free Nexus account."
+msgstr "{name} is not paired with this computer, so Mortar sends the list of mods, not their files. {name} will download each mod from its site, one click per mod on a free Nexus account."
 
 #: src/mods/Toolbar.tsx:372
 msgid "Filter mods, filter active"
@@ -2865,8 +2881,8 @@ msgid "Drag {path} into the GitHub issue to attach it."
 msgstr "Drag {path} into the GitHub issue to attach it."
 
 #: src/lan/PairedComputers.tsx:111
-#: src/lan/SendDialog.tsx:93
-#: src/lan/SendDialog.tsx:118
+#: src/lan/SendDialog.tsx:94
+#: src/lan/SendDialog.tsx:132
 msgid "Pair"
 msgstr "Pair"
 
@@ -3230,7 +3246,7 @@ msgstr "Search GitHub releases"
 msgid "Mortar doesn't know where to get {id}"
 msgstr "Mortar doesn't know where to get {id}"
 
-#: src/game/ProfileMenuItems.tsx:171
+#: src/game/ProfileMenuItems.tsx:172
 msgid "It shows in your Steam library the next time Steam starts."
 msgstr "It shows in your Steam library the next time Steam starts."
 
@@ -3362,7 +3378,7 @@ msgstr "Mortar found no other mod manager's profiles for this game on this compu
 msgid "{0, plural, one {# other mod} other {# other mods}}"
 msgstr "{0, plural, one {# other mod} other {# other mods}}"
 
-#: src/lan/SendDialog.tsx:180
+#: src/lan/SendDialog.tsx:193
 msgid "Try again in a few seconds."
 msgstr "Try again in a few seconds."
 
@@ -3626,8 +3642,8 @@ msgid "Custom categories"
 msgstr "Custom categories"
 
 #: src/bundles/BundlesSection.tsx:148
-#: src/game/ProfileMenuItems.tsx:84
-#: src/game/ProfileMenuItems.tsx:422
+#: src/game/ProfileMenuItems.tsx:85
+#: src/game/ProfileMenuItems.tsx:446
 #: src/mods/CategoryEditor.tsx:170
 #: src/mods/OldFilesCallouts.tsx:103
 #: src/mods/problemFixButtons.tsx:201
@@ -3961,7 +3977,7 @@ msgstr "Share as r2modman code?"
 #: src/lan/IncomingPrompt.tsx:115
 #: src/lan/PairedComputers.tsx:105
 #: src/lan/PairedComputers.tsx:145
-#: src/lan/SendDialog.tsx:318
+#: src/lan/SendDialog.tsx:336
 #: src/launch/PrePlayDialog.tsx:151
 #: src/launch/SaveWarnDialog.tsx:69
 #: src/launch/UpdateWarnDialog.tsx:50
@@ -4132,8 +4148,8 @@ msgstr "Downloads paused"
 msgid "Back to {name}"
 msgstr "Back to {name}"
 
-#: src/game/ProfileMenuItems.tsx:211
-#: src/lan/SendDialog.tsx:248
+#: src/game/ProfileMenuItems.tsx:214
+#: src/lan/SendDialog.tsx:277
 msgid "Send to…"
 msgstr "Send to…"
 
@@ -4657,7 +4673,7 @@ msgstr "{name} has no file Mortar can use in place of the one shared"
 msgid "They move to Dismissed. Restore them from that section."
 msgstr "They move to Dismissed. Restore them from that section."
 
-#: src/game/ProfileMenuItems.tsx:170
+#: src/game/ProfileMenuItems.tsx:171
 msgid "Added to Steam"
 msgstr "Added to Steam"
 
@@ -4673,7 +4689,7 @@ msgstr "Enter text to search stored runs."
 msgid "No backups to delete"
 msgstr "No backups to delete"
 
-#: src/game/ProfileMenuItems.tsx:368
+#: src/game/ProfileMenuItems.tsx:392
 #: src/profiles/LaunchPresetsBlock.tsx:52
 msgid "Duplicate"
 msgstr "Duplicate"
@@ -5005,6 +5021,10 @@ msgstr "No account needed"
 msgid "Filter by profile"
 msgstr "Filter by profile"
 
+#: src/game/ProfileMenuItems.tsx:229
+msgid "Turn on and continue"
+msgstr "Turn on and continue"
+
 #: src/toasts/report.ts:24
 msgid "That data could not be read."
 msgstr "That data could not be read."
@@ -5266,7 +5286,7 @@ msgstr "Stop the game before moving the data folder."
 msgid "Earthy green"
 msgstr "Earthy green"
 
-#: src/lan/SendDialog.tsx:258
+#: src/lan/SendDialog.tsx:287
 msgid "No Mortar users found nearby."
 msgstr "No Mortar users found nearby."
 
@@ -6255,6 +6275,7 @@ msgstr "{0, plural, one {Stopped asking about # folder} other {Stopped asking ab
 
 #: src/firstrunTour/TourPopover.tsx:182
 #: src/fomod/Dialog.tsx:256
+#: src/lan/SendDialog.tsx:131
 #: src/profiles/ProfilesPage.tsx:327
 #: src/settings/SettingsPage.tsx:69
 msgid "Back"
@@ -6684,7 +6705,7 @@ msgstr "Use theirs"
 msgid "Direct launch preview"
 msgstr "Direct launch preview"
 
-#: src/lan/SendDialog.tsx:312
+#: src/lan/SendDialog.tsx:330
 msgid "Send"
 msgstr "Send"
 
@@ -6799,7 +6820,7 @@ msgstr "Console log cap"
 msgid "No mods match \"{text}\""
 msgstr "No mods match \"{text}\""
 
-#: src/game/ProfileMenuItems.tsx:146
+#: src/game/ProfileMenuItems.tsx:147
 msgid "Shortcut removed"
 msgstr "Shortcut removed"
 
@@ -6812,7 +6833,7 @@ msgstr "Delete {0} permanently"
 msgid "Could not reach Nexus"
 msgstr "Could not reach Nexus"
 
-#: src/game/ProfileMenuItems.tsx:149
+#: src/game/ProfileMenuItems.tsx:150
 msgid "Could not remove the shortcut"
 msgstr "Could not remove the shortcut"
 
@@ -6881,7 +6902,7 @@ msgstr "New group"
 msgid "Unhide {0}?"
 msgstr "Unhide {0}?"
 
-#: src/game/ProfileMenuItems.tsx:83
+#: src/game/ProfileMenuItems.tsx:84
 msgid "The profile stays restorable for 30 days from Recently deleted."
 msgstr "The profile stays restorable for 30 days from Recently deleted."
 
@@ -6928,7 +6949,7 @@ msgstr "Regenerate token"
 msgid "New profile from file"
 msgstr "New profile from file"
 
-#: src/game/ProfileMenuItems.tsx:130
+#: src/game/ProfileMenuItems.tsx:131
 msgid "Shortcut added"
 msgstr "Shortcut added"
 
@@ -7394,11 +7415,11 @@ msgstr "older, profile has {0}"
 msgid "Share profile"
 msgstr "Share profile"
 
-#: src/lan/SendDialog.tsx:249
+#: src/lan/SendDialog.tsx:278
 msgid "Refresh"
 msgstr "Refresh"
 
-#: src/game/ProfileMenuItems.tsx:247
+#: src/game/ProfileMenuItems.tsx:271
 msgid "Choose cover image"
 msgstr "Choose cover image"
 
@@ -7508,7 +7529,7 @@ msgstr "No update checks, and it can't go in a share link."
 msgid "This pack has files that always install."
 msgstr "This pack has files that always install."
 
-#: src/game/ProfileMenuItems.tsx:387
+#: src/game/ProfileMenuItems.tsx:411
 msgid "Match a friend's profile…"
 msgstr "Match a friend's profile…"
 
@@ -7649,7 +7670,7 @@ msgstr "Plugins load"
 msgid "Nexus mod {id}"
 msgstr "Nexus mod {id}"
 
-#: src/game/ProfileMenuItems.tsx:121
+#: src/game/ProfileMenuItems.tsx:122
 msgid "Add a shortcut that plays this profile"
 msgstr "Add a shortcut that plays this profile"
 
@@ -7746,7 +7767,7 @@ msgstr "How to share"
 msgid "No entries match."
 msgstr "No entries match."
 
-#: src/game/ProfileMenuItems.tsx:256
+#: src/game/ProfileMenuItems.tsx:280
 msgid "Choose cover image…"
 msgstr "Choose cover image…"
 
@@ -8451,6 +8472,10 @@ msgstr "Regenerate token?"
 msgid "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 msgstr "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 
+#: src/game/ProfileMenuItems.tsx:239
+msgid "Could not turn on sharing nearby"
+msgstr "Could not turn on sharing nearby"
+
 #: src/mods/updateReview/KeptGroup.tsx:51
 msgid "Unpin"
 msgstr "Unpin"
@@ -8528,7 +8553,7 @@ msgid "{name} takes {own} of your {total} start."
 msgstr "{name} takes {own} of your {total} start."
 
 #. placeholder {0}: target.name
-#: src/lan/SendDialog.tsx:169
+#: src/lan/SendDialog.tsx:182
 msgid "Sent {profileName} to {0}; they'll copy the files from you"
 msgstr "Sent {profileName} to {0}; they'll copy the files from you"
 
@@ -8624,7 +8649,7 @@ msgstr "{profileName} has {0} more than once. {loader} loads only one, so pick w
 msgid "Discord"
 msgstr "Discord"
 
-#: src/lan/SendDialog.tsx:144
+#: src/lan/SendDialog.tsx:157
 msgid "Send to an address…"
 msgstr "Send to an address…"
 
@@ -9030,10 +9055,6 @@ msgstr "Mortar stays on screen beside the game."
 #: src/mods/detail.ts:151
 msgid "Could not reset the settings of {0}"
 msgstr "Could not reset the settings of {0}"
-
-#: src/lan/SendDialog.tsx:123
-msgid "Only links: {name} will download each mod from its site, one click per mod on a free Nexus account. Pair to send whole files."
-msgstr "Only links: {name} will download each mod from its site, one click per mod on a free Nexus account. Pair to send whole files."
 
 #: src/mods/storeEntries.ts:188
 msgid "Could not rename the group"
@@ -9585,7 +9606,7 @@ msgid "Pin"
 msgstr "Pin"
 
 #. placeholder {0}: target.name
-#: src/lan/SendDialog.tsx:185
+#: src/lan/SendDialog.tsx:198
 msgid "Could not send to {0}"
 msgstr "Could not send to {0}"
 
@@ -9752,7 +9773,7 @@ msgstr "{0} of {1} · {2}/s"
 msgid "Preview"
 msgstr "Preview"
 
-#: src/game/ProfileMenuItems.tsx:170
+#: src/game/ProfileMenuItems.tsx:171
 msgid "Updated in Steam"
 msgstr "Updated in Steam"
 
@@ -9768,7 +9789,7 @@ msgstr "More than one mod changes this; the winner's version is used."
 msgid "Borderless"
 msgstr "Borderless"
 
-#: src/lan/SendDialog.tsx:150
+#: src/lan/SendDialog.tsx:163
 msgid "Recent address"
 msgstr "Recent address"
 
@@ -10153,7 +10174,7 @@ msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
 msgid "Combined"
 msgstr "Combined"
 
-#: src/game/ProfileMenuItems.tsx:377
+#: src/game/ProfileMenuItems.tsx:401
 msgid "Export profile…"
 msgstr "Export profile…"
 
@@ -10292,7 +10313,7 @@ msgstr "Error"
 msgid "Empty trash"
 msgstr "Empty trash"
 
-#: src/lan/SendDialog.tsx:259
+#: src/lan/SendDialog.tsx:288
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
 
@@ -10578,7 +10599,7 @@ msgstr "Done ({0}): {1}"
 #. placeholder {0}: drift.folder
 #. placeholder {0}: pendingDelete ?? ''
 #: src/bundles/BundlesSection.tsx:146
-#: src/game/ProfileMenuItems.tsx:82
+#: src/game/ProfileMenuItems.tsx:83
 #: src/mods/CategoryEditor.tsx:168
 #: src/mods/ConfigPresets.tsx:155
 #: src/mods/problemFixButtons.tsx:204
@@ -11160,12 +11181,16 @@ msgstr "Launch preset templates"
 msgid "Downloads resume {0}."
 msgstr "Downloads resume {0}."
 
+#: src/lan/SendDialog.tsx:126
+msgid "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
+msgstr "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
+
 #: src/mods/CategoryEditor.tsx:169
 msgid "Mods in this category will move to Uncategorised."
 msgstr "Mods in this category will move to Uncategorised."
 
 #. placeholder {0}: target.name
-#: src/lan/SendDialog.tsx:179
+#: src/lan/SendDialog.tsx:192
 msgid "{0} is still taking your last share"
 msgstr "{0} is still taking your last share"
 
@@ -11358,7 +11383,7 @@ msgstr "{name} {0} is out"
 msgid "Move data folder"
 msgstr "Move data folder"
 
-#: src/game/ProfileMenuItems.tsx:249
+#: src/game/ProfileMenuItems.tsx:273
 #: src/profiles/EditProfileDialog.tsx:421
 msgid "Could not use that image"
 msgstr "Could not use that image"
@@ -11615,7 +11640,7 @@ msgstr "Could not create the profile"
 msgid "Into a deleted profile"
 msgstr "Into a deleted profile"
 
-#: src/lan/SendDialog.tsx:264
+#: src/lan/SendDialog.tsx:293
 msgid "Looking for Mortar users…"
 msgstr "Looking for Mortar users…"
 
@@ -12150,7 +12175,7 @@ msgid "Nexus page"
 msgstr "Nexus page"
 
 #: src/console/PerformancePanelParts.tsx:64
-#: src/game/ProfileMenuItems.tsx:396
+#: src/game/ProfileMenuItems.tsx:420
 msgid "Compare with…"
 msgstr "Compare with…"
 
@@ -12344,7 +12369,7 @@ msgstr "Fall"
 msgid "Try fewer words, or the mod's exact name."
 msgstr "Try fewer words, or the mod's exact name."
 
-#: src/game/ProfileMenuItems.tsx:157
+#: src/game/ProfileMenuItems.tsx:158
 msgid "Add this profile to Steam"
 msgstr "Add this profile to Steam"
 
@@ -12560,7 +12585,7 @@ msgstr "Report to author…"
 msgid "Opens a GitHub issue with these filled in. You review it before posting."
 msgstr "Opens a GitHub issue with these filled in. You review it before posting."
 
-#: src/lan/SendDialog.tsx:80
+#: src/lan/SendDialog.tsx:81
 msgid "Paired · whole files"
 msgstr "Paired · whole files"
 
@@ -12686,7 +12711,7 @@ msgstr "Take over"
 msgid "{0, plural, one {# day left} other {# days left}}"
 msgstr "{0, plural, one {# day left} other {# days left}}"
 
-#: src/game/ProfileMenuItems.tsx:132
+#: src/game/ProfileMenuItems.tsx:133
 msgid "Could not add the shortcut"
 msgstr "Could not add the shortcut"
 
@@ -12903,7 +12928,7 @@ msgstr "On"
 msgid "Sign in to Nexus Mods"
 msgstr "Sign in to Nexus Mods"
 
-#: src/lan/SendDialog.tsx:119
+#: src/lan/SendDialog.tsx:134
 msgid "Send links only"
 msgstr "Send links only"
 
@@ -13104,10 +13129,6 @@ msgstr "Using your gh login"
 #: src/settings/sections/General.tsx:134
 msgid "Share profiles on the local network"
 msgstr "Share profiles on the local network"
-
-#: src/game/ProfileMenuItems.tsx:213
-msgid "Enable sharing nearby in Settings › General."
-msgstr "Enable sharing nearby in Settings › General."
 
 #: src/firstrun/LoaderStep.tsx:106
 msgid "Could not set it in Steam"
