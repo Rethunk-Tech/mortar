@@ -19,6 +19,10 @@ export function SectionStrip({
   label: string
   actions: ReactNode
 }) {
+  // With no section there is nothing to switch, and the bordered band would stand empty.
+  if (tabs.length === 0) {
+    return null
+  }
   return (
     <Box
       sx={{
@@ -59,6 +63,7 @@ export function SectionStrip({
           <Tab
             key={tab.id}
             value={tab.id}
+            data-section={tab.id}
             label={
               <>
                 <Box component="span">{tab.label}</Box>
@@ -73,7 +78,7 @@ export function SectionStrip({
           />
         ))}
       </Tabs>
-      {tabs.length > 0 && actions ? (
+      {actions ? (
         <Box
           sx={{
             display: 'flex',
