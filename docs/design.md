@@ -15,13 +15,6 @@ Remaining ([architecture.md](architecture.md#release)):
 
 Decided 2026-10-07 (NOMAD), from the audit of how Mortar was described to CurseForge.
 
-- **Known-broken from every source.** The broken, obsolete and abandoned feed is SMAPI-only today (smapi.io list, `internal/problems/compat.go`; `problems.go:114` `Broken`). Thunderstore deprecations already show (`internal/problems/deprecated.go`). Add each source's own signal, shown as the same `Broken` rows with the source named:
-  - Nexus mod `status` other than `published` (`internal/nexus/batch.go:65` already computes `Available`).
-  - Modrinth project status `archived`.
-  - CurseForge mod `status` Abandoned (8), Inactive (7) or Deleted (9), and `isAvailable: false`.
-  - A GitHub repository with `archived: true`.
-
-  Where no source publishes a signal for a game, a Mortar-curated known-broken list in the signed catalog (per game, per mod id and version range, with a reason and replacement) covers Lethal Company and Valheim, fed from load failures the BepInEx analyzer sees and game-version breaks. Done when each source's flag yields a Problems row with a test per source, and a catalog entry yields one for a BepInEx game.
 - **Archives: tar and stream formats** beside zip, RAR and 7z in `internal/archive/archive.go` (magic-byte dispatch): tar, tar.gz, tar.xz, tar.zst, tar.bz2 and bare gz, xz, zst and lzma, under the same entry, size, path and bomb guards.
 - **Crash analysis from stack traces and dumps.** SMAPI log exception frames map to the owning mod, as BepInEx Unity frames already do (`internal/loader/bepinex5/analyze.go:57`), and feed `launchsvc.CrashHint`. Then Windows minidumps (WER and Unity crash folders) and Linux cores, where present, name the faulting mod assembly. Done when a fixture crash of each kind names its mod.
 - **Per-frame time per mod.** The Stardew and BepInEx bridges time each mod's update and tick handlers per frame (average, p95, peak ms, share of frame), with an idle baseline (no mods vs all), shown in Performance. Today in-game numbers are SMAPI's own `performance` event timings, and BepInEx has only `perf start` on a measured launch.
@@ -31,6 +24,12 @@ Decided 2026-10-07 (NOMAD), from the audit of how Mortar was described to CurseF
   - **Mod list:** every mod with a config source (SMAPI `config.json`, BepInEx `.cfg` mapped to its package by plugin GUID, a GMCM capture). Each row carries a Changed, In-game menu or N-waiting chip. A last group, Loader and other, holds unowned `.cfg` files such as `BepInEx.cfg`. A footer counts the mods with no config yet.
   - **Editor:** the existing `ConfigPane`, embedded beside the list. It replaces the in-place takeover in `frontend/src/mods/ModsTab.tsx:104-106`. Details panel **Edit config**, the mod context menu's **Edit config** (shown for mods with a config source) and the setting fixes open this tab with the mod selected.
   - **Backend:** one `configsvc.Mods(game, profile)` call builds the list (reusing `Files`, `internal/configsvc/service.go:69`).
+- **Antivirus scan of extracted mods.** Every mod is scanned after extraction and before it enters the store (`internal/store/store.go` `AddArchive` :304, `AddArchiveKey` :317, `AddHashedDir` :333; one hook every path goes through, LAN receives included).
+  - **Windows:** AMSI. `AmsiInitialize`, `AmsiOpenSession`, then `AmsiScanBuffer` per file, which reaches the antivirus registered as the AMSI provider (Defender or a third party).
+  - **Linux:** clamd over its socket when one is reachable, otherwise skipped. Settings › General shows which scanner is in use, or "No antivirus found".
+  - **On a detection:** the install is refused, the extracted files are deleted, and the user sees the scanner's detection name and the flagged file. **Install anyway** behind a confirm covers false positives (SMAPI and BepInEx DLLs often trip heuristics); the override is recorded in history.
+  - **Errors:** a scanner error or timeout is not a detection. The mod installs and a notice names the error.
+  - **Done when:** an EICAR test file in a zip is refused on Windows (Defender in the VM) and with clamd on Linux, and the override installs it.
 - **Profiles for any game, and shared-state games (The Sims 4 first).** To be designed before building: a generic catalog entry with no loader (a mod folder swapped per profile), plus isolation for games whose mods and saves live in a Documents folder shared by every launch. Today each game is a catalog entry plus a loader, and three are enabled.
 
 ## Later
