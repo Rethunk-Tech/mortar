@@ -510,6 +510,18 @@ func TestIsTakesVerbsAndBareWordsButNotLinksOrFiles(t *testing.T) {
 			t.Errorf("Is(%q) = %v, want %v", arg, got, want)
 		}
 	}
+	for args, want := range map[string]bool{
+		"--json install stardew farm mod.zip": true, "-v games": true, "--json --verbose games": true,
+		"--json": false, "--json nxm://stardewvalley/mods/1/files/2": false, "--json /home/me/farm.mortar": false,
+		"--hidden": false,
+	} {
+		if got := Is(strings.Fields(args)); got != want {
+			t.Errorf("Is(%q) = %v, want %v", args, got, want)
+		}
+	}
+	if r := invoke(t, map[string]any{"install": map[string]any{}}, "--json", "install", "stardew", "abc", "mod.zip"); r.code != 0 || len(r.calls) != 1 || r.calls[0].method != "install" {
+		t.Errorf("leading --json: %+v", r)
+	}
 	if r := invoke(t, nil, "--version"); !Is([]string{"--version"}) || r.code != 0 || r.out != "mortar 9.9.9\n" || len(r.calls) != 0 {
 		t.Errorf("--version: %+v", r)
 	}

@@ -47,6 +47,9 @@ const (
 	launchTimeout  = 4 * time.Minute
 )
 
+// leadingFlags are the global output flags a script puts before the verb.
+var leadingFlags = map[string]bool{"--json": true, "-v": true, "--verbose": true}
+
 // verbs are the first words that make an invocation a command-line call rather than a window launch.
 var verbs = map[string]bool{
 	"games": true, "game": true, "profiles": true, "profile": true, "history": true, "mods": true, "mod": true, "install": true,
@@ -61,6 +64,11 @@ var verbs = map[string]bool{
 // Is reports whether args (without the program name) are a command-line call: a known verb, or a bare word that
 // cannot be the link or file path a window launch takes, which then fails as an unknown command.
 func Is(args []string) bool {
+	// Output flags may lead (`mortar --json install ...`); the word after them decides. Launch arguments the window
+	// takes (--release-links, nxm links, files, shortcut arguments) are not among them.
+	for len(args) > 0 && leadingFlags[args[0]] {
+		args = args[1:]
+	}
 	if len(args) == 0 {
 		return false
 	}
