@@ -413,7 +413,7 @@ func New(d Deps) (*Service, error) {
 		}
 		s.items = append(s.items, &it)
 	}
-	// A Nexus file left over from the last session is not fetched, nor its page opened, until the user resumes the
+	// A Nexus file restored from the last session is not fetched, nor its page opened, until the user resumes the
 	// queue: nothing unattended starts a Nexus download.
 	if slices.ContainsFunc(s.items, func(it *Item) bool {
 		return it.State == StateQueued && it.Repo == "" && it.Package == ""
