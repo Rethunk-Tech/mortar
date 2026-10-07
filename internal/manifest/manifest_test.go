@@ -180,3 +180,42 @@ func TestGitHubRepoRefusesWhatMovesTheURL(t *testing.T) {
 		t.Error("a dotted repo name was refused")
 	}
 }
+
+// Vortex deploys by linking each mod file from its staging folder into the game's Mods folder.
+func TestScanFollowsDeployedManifestLinks(t *testing.T) {
+	staging, mods := t.TempDir(), t.TempDir()
+	for _, m := range []struct{ folder, id string }{{"Top", "A.Top"}, {"Pack/Nested", "A.Nested"}} {
+		src := filepath.Join(staging, m.folder)
+		if err := os.MkdirAll(src, 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(src, FileName), []byte(`{"UniqueID":"`+m.id+`"}`), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		dst := filepath.Join(mods, m.folder)
+		if err := os.MkdirAll(dst, 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Symlink(filepath.Join(src, FileName), filepath.Join(dst, FileName)); err != nil {
+			t.Skip("symlinks unavailable:", err)
+		}
+	}
+	if err := os.MkdirAll(filepath.Join(mods, "Dangling"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(staging, "gone.json"), filepath.Join(mods, "Dangling", FileName)); err != nil {
+		t.Fatal(err)
+	}
+	found, err := Scan(mods)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]string{}
+	for _, m := range found {
+		got[m.Folder] = m.UniqueID
+	}
+	want := map[string]string{"Top": "A.Top", "Pack/Nested": "A.Nested"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("Scan = %v, want %v", got, want)
+	}
+}

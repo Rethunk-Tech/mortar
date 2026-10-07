@@ -240,6 +240,17 @@ func version(v json.RawMessage) string {
 	return out
 }
 
+// ReadFile reads dir's manifest.json. Mod managers that deploy by symlink (Vortex, on Linux and on Windows when set
+// to) leave it as a link into their own staging folder, so the link is resolved first and the target read through its
+// own folder; a dangling link reads as not existing.
+func ReadFile(dir string) ([]byte, error) {
+	resolved, err := fsx.EvalSymlinks(filepath.Join(dir, FileName))
+	if err != nil {
+		return nil, err
+	}
+	return fsx.ReadFile(resolved)
+}
+
 // Mod is a manifest found by Scan.
 type Mod struct {
 	Manifest
@@ -258,7 +269,7 @@ func Scan(root string) ([]Mod, error) {
 	var mods []Mod
 	var walk func(dir, rel string) error
 	walk = func(dir, rel string) error {
-		b, err := fsx.ReadFile(filepath.Join(dir, FileName))
+		b, err := ReadFile(dir)
 		if err == nil {
 			if m, perr := Parse(b); perr == nil {
 				mods = append(mods, Mod{Manifest: m, Folder: rel})

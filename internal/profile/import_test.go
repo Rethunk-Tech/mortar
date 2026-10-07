@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -271,5 +272,76 @@ func TestPreviewGameModsSkipsASymlinkDirectory(t *testing.T) {
 	}
 	if len(preview.Mods) != 1 || preview.Mods[0].Name != "Loud" {
 		t.Fatalf("preview = %+v", preview.Mods)
+	}
+}
+
+// Vortex deploys a mod by linking each of its files from Vortex's staging folder into the game's Mods folder; the
+// import copies the files' contents, never the links.
+func TestImportGameModsCopiesVortexLinkedFiles(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	staging := t.TempDir()
+	writeFile(t, staging, "Kombucha-123/Kombucha/manifest.json",
+		`{"Name":"A Cavalcade of Kombucha","Version":"1.0.0","UniqueID":"Me.Kombucha","UpdateKeys":["Nexus:123"]}`)
+	writeFile(t, staging, "Kombucha-123/Kombucha/assets/data.json", `{"brew":1}`)
+	mods := filepath.Join(t.TempDir(), "Stardew Valley", "Mods")
+	for _, rel := range []string{"Kombucha/manifest.json", "Kombucha/assets/data.json"} {
+		dst := filepath.Join(mods, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Symlink(filepath.Join(staging, "Kombucha-123", filepath.FromSlash(rel)), dst); err != nil {
+			t.Skip("symlinks unavailable:", err)
+		}
+	}
+
+	writeFile(t, mods, "Kombucha/__folder_managed_by_vortex", "")
+	writeFile(t, mods, "vortex.deployment.json", `{"version":1}`)
+	if err := os.MkdirAll(filepath.Join(mods, "Gone"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, staging, "Gone-9/Gone/manifest.json", `{"Name":"Gone","Version":"1.0.0","UniqueID":"Me.Gone"}`)
+	if err := os.Symlink(filepath.Join(staging, "Gone-9/Gone/manifest.json"), filepath.Join(mods, "Gone", "manifest.json")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(staging, "Gone-9/Gone/purged.dll"), filepath.Join(mods, "Gone", "purged.dll")); err != nil {
+		t.Fatal(err)
+	}
+
+	preview, err := e.PreviewGameMods(mods)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(preview.Mods) != 2 {
+		t.Fatalf("preview = %+v", preview.Mods)
+	}
+	res, err := e.ImportGameMods(t.Context(), "stardew", mods)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Imported != 1 || res.Failed != 1 {
+		t.Fatalf("result = %+v", res)
+	}
+	for _, o := range res.Outcomes {
+		if o.Name == "Gone" && !strings.Contains(o.Reason, "staging folder was moved or purged") {
+			t.Fatalf("dangling link reason = %q", o.Reason)
+		}
+	}
+	list, err := e.UserMods("stardew", res.Profile.ID)
+	if err != nil || len(list) != 1 {
+		t.Fatalf("mods = %+v %v", list, err)
+	}
+	if err := os.RemoveAll(staging); err != nil {
+		t.Fatal(err)
+	}
+	dir, err := e.ModFolder("stardew", res.Profile.ID, list[0].Key, list[0].ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if body, err := fsx.ReadFile(filepath.Join(dir, "assets", "data.json")); err != nil || string(body) != `{"brew":1}` {
+		t.Fatalf("copied data = %q %v", body, err)
+	}
+	if _, err := os.Lstat(filepath.Join(dir, "__folder_managed_by_vortex")); !errors.Is(err, fs.ErrNotExist) {
+		t.Fatalf("Vortex's folder tag was imported: %v", err)
 	}
 }

@@ -128,7 +128,7 @@ func sourceLabel(s Source) string {
 }
 
 func readTopManifest(dir string) (manifest.Manifest, bool, error) {
-	b, err := fsx.ReadFile(filepath.Join(dir, manifest.FileName))
+	b, err := manifest.ReadFile(dir)
 	if errors.Is(err, fs.ErrNotExist) {
 		return manifest.Manifest{}, false, nil
 	}
@@ -160,7 +160,7 @@ func classifyFolder(dir, name string) (gameModSlot, bool) {
 			return gameModSlot{outcome: out, hasOutcome: true}, true
 		}
 		if len(found) == 0 {
-			if _, err := fsx.ReadFile(filepath.Join(dir, manifest.FileName)); err == nil {
+			if _, err := manifest.ReadFile(dir); err == nil {
 				out.Status, out.Reason = outcomeFailed, "The manifest is invalid"
 				return gameModSlot{outcome: out, hasOutcome: true}, true
 			}
@@ -343,9 +343,24 @@ func carryConfig(srcRoot, destDir, folder string) error {
 	return fsx.WriteFile(filepath.Join(destDir, configFileName), b, 0o600)
 }
 
+// addResolvingLinks stores dir with every file link replaced by the file it points to, so a mod another manager deployed
+// as links into its own staging folder imports as plain files; the store itself still refuses links that leave a folder.
+func (s *Store) addResolvingLinks(ctx context.Context, game, dir string) (string, error) {
+	scratch, err := os.MkdirTemp(filepath.Dir(s.root), "mortar-import-*")
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = os.RemoveAll(scratch) }()
+	copied := filepath.Join(scratch, "mod")
+	if err := datadir.CopyTreeResolvingLinks(dir, copied); err != nil {
+		return "", err
+	}
+	return s.items.AddHashedDir(ctx, game, copied)
+}
+
 // importFolder adds f to the profile and returns its store key and the history event the last of its changes recorded.
 func (s *Store) importFolder(ctx context.Context, game, id string, f gameModFolder) (key, change string, err error) {
-	key, err = s.items.AddHashedDir(ctx, game, f.dir)
+	key, err = s.addResolvingLinks(ctx, game, f.dir)
 	if err != nil {
 		return "", "", err
 	}

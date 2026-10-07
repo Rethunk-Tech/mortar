@@ -185,11 +185,15 @@ func vortexRoots(config, chosen, programData string, windows, multiUser bool) []
 func detectVortex(config, chosen, programData, vortexID string, windows bool) (installation, bool, error) {
 	multiUser := windows && vortexMultiUser(filepath.Join(config, "Vortex"))
 	for _, root := range vortexRoots(config, chosen, programData, windows, multiUser) {
+		// Only a missing state.v2 means no Vortex data here; a path missing inside the staging folder is an error to show.
+		if _, err := os.Stat(filepath.Join(root, "state.v2")); errors.Is(err, os.ErrNotExist) {
+			continue
+		}
 		profiles, modsPath, err := vortexProfiles(root, vortexID)
-		if err != nil && !errors.Is(err, os.ErrNotExist) {
+		if err != nil {
 			return installation{}, false, err
 		}
-		if err == nil && len(profiles) > 0 {
+		if len(profiles) > 0 {
 			return installation{
 				info:     SourceInfo{Kind: KindVortex, Name: "Vortex", Profiles: profileInfos(profiles)},
 				root:     root,

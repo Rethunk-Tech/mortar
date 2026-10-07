@@ -853,7 +853,7 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 				if !e.Enabled(m.ID) {
 					folder = dotted
 				}
-				if b, err := fsx.ReadFile(filepath.Join(folder, manifest.FileName)); err == nil {
+				if b, err := manifest.ReadFile(folder); err == nil {
 					if mf, err := manifest.Parse(b); err == nil {
 						caution = mf.UpdateCautionMessage
 					}

@@ -226,3 +226,63 @@ func CopyFile(src, dst string) (err error) {
 	}
 	return fsx.Rename(tmp, dst)
 }
+
+// CopyTreeResolvingLinks copies src to dst like CopyTree but writes the file a file link points to wherever it lives.
+// It is for a folder the user chose on their own disk, such as a game's Mods folder that a symlink-deploying mod
+// manager (Vortex) filled with links into its staging folder; linked folders are still skipped and anything that is
+// not a regular file is refused.
+func CopyTreeResolvingLinks(src, dst string) error {
+	root, err := fsx.EvalSymlinks(src)
+	if err != nil {
+		return err
+	}
+	return filepath.WalkDir(src, func(p string, _ fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		info, err := os.Lstat(p)
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(src, p)
+		if err != nil {
+			return err
+		}
+		target := filepath.Join(dst, rel)
+		if info.IsDir() {
+			if p != src && !RealDirUnder(root, p) {
+				return fs.SkipDir
+			}
+			return os.MkdirAll(target, 0o750)
+		}
+		if LinkedDir(p, info) || vortexTag(info.Name()) {
+			return nil
+		}
+		from := p
+		if info.Mode()&os.ModeSymlink != 0 {
+			if from, err = fsx.EvalSymlinks(p); errors.Is(err, fs.ErrNotExist) {
+				return fmt.Errorf("%s links to a file that no longer exists; if Vortex put it there, its staging folder was moved or purged", rel)
+			} else if err != nil {
+				return err
+			}
+			if info, err = os.Stat(from); err != nil {
+				return err
+			}
+		}
+		if !info.Mode().IsRegular() {
+			return fmt.Errorf("%s is not a regular file", p)
+		}
+		return CopyFile(from, target)
+	})
+}
+
+// vortexTag reports the marker files Vortex leaves in every folder it deploys into
+// (LinkingDeployment.ts: "__folder_managed_by_vortex", dot-prefixed off Windows, and the older "__delete_if_empty");
+// they are Vortex's bookkeeping, not mod content.
+func vortexTag(name string) bool {
+	switch name {
+	case "__folder_managed_by_vortex", ".__folder_managed_by_vortex", "__delete_if_empty":
+		return true
+	}
+	return false
+}

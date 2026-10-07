@@ -157,7 +157,7 @@ func authorDeclares(peer, folder string, id mod.ID) bool {
 	if peer == "" {
 		return false
 	}
-	raw, err := fsx.ReadFile(filepath.Join(peer, filepath.FromSlash(folder), manifest.FileName))
+	raw, err := manifest.ReadFile(filepath.Join(peer, filepath.FromSlash(folder)))
 	if err != nil {
 		return false
 	}
@@ -213,7 +213,7 @@ func manifestLists(modsDir, key, folder string, id mod.ID) bool {
 		return false
 	}
 	for _, dir := range []string{plain, dotted} {
-		raw, err := fsx.ReadFile(filepath.Join(dir, manifest.FileName))
+		raw, err := manifest.ReadFile(dir)
 		if err != nil {
 			continue
 		}

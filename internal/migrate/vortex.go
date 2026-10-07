@@ -53,7 +53,7 @@ func vortexProfiles(root, domain string) ([]ProfilePreview, string, error) {
 	for _, profile := range profiles {
 		preview, err := vortexPreviewState(modsPath, domain, state, profile.ID)
 		if err != nil {
-			return nil, "", err
+			return nil, "", fmt.Errorf("read Vortex profile %s in %s: %w", profile.Name, modsPath, err)
 		}
 		out = append(out, preview)
 	}
@@ -310,7 +310,13 @@ func vortexProfileList(state map[string]json.RawMessage, domain string) []vortex
 func vortexModList(state map[string]json.RawMessage, domain string) []vortexMod {
 	persistent := objectValue(state, "persistent")
 	games := objectValue(persistent, "mods")
-	raw := games[domain]
+	var raw json.RawMessage
+	for id, v := range games {
+		if strings.EqualFold(id, domain) {
+			raw = v
+			break
+		}
+	}
 	var values map[string]json.RawMessage
 	if json.Unmarshal(raw, &values) != nil {
 		return nil
