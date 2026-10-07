@@ -494,7 +494,7 @@ msgstr "Reinstall loader"
 msgid "Required: {label}"
 msgstr "Required: {label}"
 
-#: src/console/StartupPanel.tsx:124
+#: src/console/StartupPanel.tsx:126
 msgid "Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu."
 msgstr "Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu."
 
@@ -10574,7 +10574,7 @@ msgstr "{a} and {b} each wait for the other, so SMAPI skips at least one of them
 msgid "GOG via Heroic"
 msgstr "GOG via Heroic"
 
-#: src/console/StartupPanel.tsx:123
+#: src/console/StartupPanel.tsx:125
 msgid "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 msgstr "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 
@@ -11258,7 +11258,7 @@ msgstr "Switch {0} to {1}?"
 msgid "All games"
 msgstr "All games"
 
-#: src/console/StartupPanel.tsx:121
+#: src/console/StartupPanel.tsx:123
 msgid "No startup measured yet"
 msgstr "No startup measured yet"
 

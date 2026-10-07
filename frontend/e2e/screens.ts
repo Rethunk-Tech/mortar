@@ -83,7 +83,7 @@ async function start(page: Page) {
 async function configOf(page: Page, mod: RegExp) {
   await click(page, 'tab', 'Config')
   await page
-    .getByRole('list', { name: 'Mods with settings' })
+    .getByRole('group', { name: 'Mods with settings' })
     .getByRole('button', { name: mod })
     .click({ timeout: STEP_MS })
 }
@@ -293,6 +293,7 @@ async function main() {
   await shot(page, 'seed-farm-config-alpha', () => configOf(page, /Seed Alpha/))
   await shot(page, 'seed-farm-config-beta', () => configOf(page, /Seed Beta/))
   await shot(page, 'seed-farm-problems', () => click(page, 'tab', 'Problems'))
+  await shot(page, 'seed-farm-performance', () => click(page, 'tab', 'Performance'))
   await shot(page, 'seed-farm-saves', () => click(page, 'tab', 'Saves'))
   await shot(page, 'seed-farm-history', async () => {
     await click(page, 'button', /^Notifications/)

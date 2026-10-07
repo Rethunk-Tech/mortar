@@ -118,13 +118,18 @@ export function StartupPanel({
           </Section>
         </>
       ) : (
-        <EmptyState icon={<Timer size={40} />} title={t`No startup measured yet`}>
-          {smapi
-            ? t`Play this profile. The SMAPI Bridge records how long each mod adds before the title screen.`
-            : t`Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu.`}
-        </EmptyState>
+        <Box sx={{ flex: 1, display: 'grid', gridTemplateRows: '1fr auto 1fr', gap: space.pad }}>
+          <Box sx={{ gridRow: 2, display: 'flex' }}>
+            <EmptyState icon={<Timer size={40} />} title={t`No startup measured yet`}>
+              {smapi
+                ? t`Play this profile. The SMAPI Bridge records how long each mod adds before the title screen.`
+                : t`Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu.`}
+            </EmptyState>
+          </Box>
+          <Box sx={{ gridRow: 3, alignSelf: 'end' }}>{children}</Box>
+        </Box>
       )}
-      {children}
+      {report ? children : null}
     </Box>
   )
 }
