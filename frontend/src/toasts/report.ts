@@ -70,6 +70,11 @@ function nextStep(e: unknown, retry: (() => unknown) | undefined): ToastAction {
   return { label: i18n._(msg`Open log`), run: openLog }
 }
 
+/** The next step an error toast with no error object offers: the game's log, or the diagnostics with no game open. */
+export function logAction(): ToastAction {
+  return nextStep(null, undefined)
+}
+
 /** A failure shown in place: the plain sentence to read, the cause for its title tooltip. */
 export interface InlineError {
   message: string

@@ -11,7 +11,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
 import { download } from '../queue/actions.ts'
-import { errorMessage } from '../toasts/report.ts'
+import { errorMessage, logAction } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
   downloadWantsForEntries,
@@ -53,6 +53,7 @@ function pushMissingToast(outcome: RevertOutcome) {
       title: i18n._(
         msg`Could not undo: some mods are missing, and the change's record could not be read.`,
       ),
+      action: logAction(),
     })
     return
   }
@@ -71,7 +72,7 @@ function pushMissingToast(outcome: RevertOutcome) {
       : {}),
     ...(wants.length > 0
       ? { action: { label: i18n._(msg`Download missing`), run: () => download(wants) } }
-      : {}),
+      : { action: logAction() }),
   })
 }
 

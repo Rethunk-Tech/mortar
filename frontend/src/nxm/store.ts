@@ -20,7 +20,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { reportUnexpected, toastError } from '../toasts/report.ts'
+import { logAction, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { nxmShowCategory, nxmShowWithIcon } from './minimisedNotice.ts'
 import { directProfile } from './route.ts'
@@ -130,6 +130,7 @@ async function initNxm(): Promise<void> {
         kind: 'error',
         title: i18n._(msg`Nexus link not used`),
         body: rejectionText(r.reason),
+        action: logAction(),
       })
     }
   }
