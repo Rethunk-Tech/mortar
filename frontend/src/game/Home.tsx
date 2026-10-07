@@ -20,6 +20,7 @@ import { saveName } from '../saves/saveName.ts'
 import { useSaves } from '../saves/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openShare } from '../share/store.ts'
+import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { space } from '../theme/density.ts'
 import { compact } from './compact.ts'
 import { Hero } from './Hero.tsx'
@@ -86,38 +87,55 @@ function AtAGlance({ profile, game }: { profile: Profile; game: string }) {
   )
 }
 
+function SavesList() {
+  const { t } = useLingui()
+  const fits = useSaves((s) => s.fits)
+  const status = useSaves((s) => s.status)
+  const error = useSaves((s) => s.error)
+  const { shown } = savesView(filterAndSortSaves(fits, ''))
+  const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
+  if (status === 'error') {
+    return <Typography color="error">{error}</Typography>
+  }
+  if (shown.length === 0) {
+    return status === 'loading' ? (
+      <LoadingRow>{t`Reading your saves…`}</LoadingRow>
+    ) : (
+      <Typography color="text.secondary">{t`No saves yet`}</Typography>
+    )
+  }
+  return (
+    <List disablePadding={true} sx={{ width: '100%' }}>
+      {shown.map(({ save, calendar }) => (
+        <ListItem
+          key={save.folder}
+          disablePadding={true}
+          sx={{ minHeight: space.row, gap: space.gap, justifyContent: 'space-between' }}
+        >
+          <Typography noWrap={true} sx={{ minWidth: 0 }}>
+            {saveName(save)}
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
+          >
+            {calendar ? t`Year ${calendar.year} ${seasons[calendar.season] ?? ''}` : '—'}
+          </Typography>
+        </ListItem>
+      ))}
+    </List>
+  )
+}
+
 function SavesPanel() {
   const { t } = useLingui()
   const setTab = useTab((s) => s.setTab)
   const fits = useSaves((s) => s.fits)
-  const { shown, total } = savesView(filterAndSortSaves(fits, ''))
-  const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
+  const { total } = savesView(filterAndSortSaves(fits, ''))
   return (
     <HomePanel title={t`Saves`} card="saves">
-      {shown.length === 0 ? (
-        <Typography color="text.secondary">{t`No saves yet`}</Typography>
-      ) : (
-        <List disablePadding={true} sx={{ width: '100%' }}>
-          {shown.map(({ save, calendar }) => (
-            <ListItem
-              key={save.folder}
-              disablePadding={true}
-              sx={{ minHeight: space.row, gap: space.gap, justifyContent: 'space-between' }}
-            >
-              <Typography noWrap={true} sx={{ minWidth: 0 }}>
-                {saveName(save)}
-              </Typography>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
-              >
-                {calendar ? t`Year ${calendar.year} ${seasons[calendar.season] ?? ''}` : '—'}
-              </Typography>
-            </ListItem>
-          ))}
-        </List>
-      )}
+      <SavesList />
       <Button
         color="inherit"
         sx={{ p: 0, minWidth: 0, fontSize: 'inherit' }}
