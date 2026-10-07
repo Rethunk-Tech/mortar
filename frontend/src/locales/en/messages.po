@@ -1350,7 +1350,7 @@ msgstr "{count, plural, one {{name} was updated since this run and logged # erro
 msgid "Settings from the mod's in-game menu"
 msgstr "Settings from the mod's in-game menu"
 
-#: src/launch/VanillaPlay.tsx:105
+#: src/launch/VanillaPlay.tsx:106
 msgid "More play options"
 msgstr "More play options"
 
@@ -3729,7 +3729,7 @@ msgstr "Could not back up saves before Play"
 msgid "Computer paired"
 msgstr "Computer paired"
 
-#: src/launch/VanillaPlay.tsx:257
+#: src/launch/VanillaPlay.tsx:261
 msgid "Default launch preset"
 msgstr "Default launch preset"
 
@@ -4066,7 +4066,7 @@ msgstr "Share as r2modman code?"
 #: src/launch/PrePlayDialog.tsx:151
 #: src/launch/SaveWarnDialog.tsx:69
 #: src/launch/UpdateWarnDialog.tsx:50
-#: src/launch/VanillaPlay.tsx:277
+#: src/launch/VanillaPlay.tsx:281
 #: src/mods/AddToGroupDialog.tsx:99
 #: src/mods/CategoryEditor.tsx:155
 #: src/mods/CategoryEditor.tsx:235
@@ -4960,8 +4960,8 @@ msgid "Log copied"
 msgstr "Log copied"
 
 #: src/launch/SmapiWarnDialog.tsx:23
-#: src/launch/VanillaPlay.tsx:143
-#: src/launch/VanillaPlay.tsx:251
+#: src/launch/VanillaPlay.tsx:144
+#: src/launch/VanillaPlay.tsx:255
 msgid "Play without mods"
 msgstr "Play without mods"
 
@@ -5531,11 +5531,6 @@ msgstr "Lavender"
 #: src/mods/ProblemsTab.tsx:374
 msgid "Redundant"
 msgstr "Redundant"
-
-#. placeholder {0}: preset?.base ? t`Standard` : preset?.name
-#: src/launch/VanillaPlay.tsx:218
-msgid "Play with {0}"
-msgstr "Play with {0}"
 
 #: src/profiles/ProfileMenu.tsx:184
 #: src/profiles/ProfilesPage.tsx:363
@@ -7255,7 +7250,7 @@ msgstr "Looking in the downloads folder…"
 msgid "{count, plural, one {# mod update available} other {# mod updates available}}"
 msgstr "{count, plural, one {# mod update available} other {# mod updates available}}"
 
-#: src/launch/VanillaPlay.tsx:141
+#: src/launch/VanillaPlay.tsx:142
 msgid "Play without Steam overlay"
 msgstr "Play without Steam overlay"
 
@@ -7709,7 +7704,7 @@ msgstr "Dismiss {0}"
 msgid "Choose an option in {invalidGroup}."
 msgstr "Choose an option in {invalidGroup}."
 
-#: src/launch/VanillaPlay.tsx:142
+#: src/launch/VanillaPlay.tsx:143
 msgid "Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running."
 msgstr "Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running."
 
@@ -8927,7 +8922,7 @@ msgstr "Profile settings"
 msgid "Make {0} match {1}"
 msgstr "Make {0} match {1}"
 
-#: src/launch/VanillaPlay.tsx:235
+#: src/launch/VanillaPlay.tsx:238
 msgid "Set default preset…"
 msgstr "Set default preset…"
 
@@ -9066,7 +9061,7 @@ msgstr "{count, plural, one {# thing to repair} other {# things to repair}}"
 msgid "Downloads: {downloading} {percent}%"
 msgstr "Downloads: {downloading} {percent}%"
 
-#: src/launch/VanillaPlay.tsx:217
+#: src/launch/VanillaPlay.tsx:220
 #: src/profiles/LaunchPresetsBlock.tsx:44
 #: src/settings/sections/Appearance.tsx:69
 msgid "Default"
@@ -9295,6 +9290,10 @@ msgstr "Could not reset the settings of {0}"
 #: src/mods/storeEntries.ts:188
 msgid "Could not rename the group"
 msgstr "Could not rename the group"
+
+#: src/launch/VanillaPlay.tsx:202
+msgid "Play with"
+msgstr "Play with"
 
 #: src/settings/sections/WatchFolders.tsx:38
 msgid "New .zip, .7z and .rar files that land in them are offered for install. Subfolders are not watched."
@@ -10938,8 +10937,8 @@ msgstr "Don't check before Play"
 msgid "Keep Mortar in the tray"
 msgstr "Keep Mortar in the tray"
 
-#: src/launch/VanillaPlay.tsx:218
-#: src/launch/VanillaPlay.tsx:271
+#: src/launch/VanillaPlay.tsx:219
+#: src/launch/VanillaPlay.tsx:275
 #: src/profiles/LaunchPresetsBlock.tsx:142
 #: src/profiles/LaunchPresetsBlock.tsx:146
 #: src/profiles/LoaderLaunchSettings.tsx:21

@@ -19,6 +19,7 @@ import {
 } from '@mui/material'
 import { ChevronDown, Gamepad2, Play, Star } from 'lucide-react'
 import { type MouseEvent, useState } from 'react'
+import { MenuHeading } from '../game/MenuHeading.tsx'
 import { routeGame, useNav } from '../nav/store.ts'
 import type { PlayPreset } from '../profiles/profilePresets.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
@@ -198,6 +199,7 @@ export function VanillaPlay({
         onContext={onContext}
       />
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
+        {presets.length > 0 ? <MenuHeading>{t`Play with`}</MenuHeading> : null}
         {entries.map((entry) => {
           if (entry.kind === 'play') {
             const preset = presets.find((p) => p.key === entry.key)
@@ -213,9 +215,10 @@ export function VanillaPlay({
                 <ListItemIcon sx={{ color: 'inherit' }}>
                   <Play size={16} />
                 </ListItemIcon>
-                <ListItemText
-                  secondary={preset?.isDefault ? t`Default` : undefined}
-                >{t`Play with ${preset?.base ? t`Standard` : preset?.name}`}</ListItemText>
+                <ListItemText>
+                  {preset?.base ? t`Standard` : preset?.name}
+                  {preset?.isDefault ? ` (${t`Default`})` : ''}
+                </ListItemText>
               </MenuItem>
             )
           }
@@ -236,7 +239,8 @@ export function VanillaPlay({
               </MenuItem>,
             ]
           }
-          return (
+          return [
+            presets.length > 0 ? <Divider key="vanilla-divider" /> : null,
             <MenuItem
               key="vanilla"
               disabled={vanillaDisabled}
@@ -249,8 +253,8 @@ export function VanillaPlay({
                 <Gamepad2 size={16} />
               </ListItemIcon>
               <ListItemText>{t`Play without mods`}</ListItemText>
-            </MenuItem>
-          )
+            </MenuItem>,
+          ]
         })}
       </Menu>
       <Dialog open={choosing} onClose={() => setChoosing(false)}>
