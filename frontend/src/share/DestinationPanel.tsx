@@ -97,7 +97,11 @@ export function DestinationPanel({
   destination: Destination
 }) {
   const { t } = useLingui()
-  const { profileId, game, info } = built
+  const { profileId, game, info, include, setInclude } = built
+  const total = useProfiles((s) => {
+    const p = s.profiles.find((x) => x.id === profileId)
+    return p ? userModCount(p) : (info?.count ?? 0)
+  })
   if (!info) {
     return null
   }
@@ -116,7 +120,16 @@ export function DestinationPanel({
     case 'thunderstore':
       return <ThunderstorePane game={game} profileId={profileId} />
     case 'nearby':
-      return <NearbyPane game={game} profileId={profileId} />
+      return (
+        <NearbyPane
+          game={game}
+          profileId={profileId}
+          info={info}
+          total={total}
+          include={include}
+          onInclude={setInclude}
+        />
+      )
     default:
       return <ListPane info={info} />
   }

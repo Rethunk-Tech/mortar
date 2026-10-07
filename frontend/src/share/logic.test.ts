@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import {
+  carriedBy,
   meter,
   missingModName,
   SUGGEST_FILE_AT,
@@ -102,4 +103,13 @@ test('sharedMods adds the mod names of every group', () => {
     leftOut: null,
   })
   expect(sharedMods(info)).toBe(3)
+})
+
+test('a received share lists what it carries', () => {
+  expect(carriedBy({ notes: '', settings: 0, choices: 0 })).toEqual([])
+  expect(carriedBy({ notes: 'Use the farm map', settings: 3, choices: 2 })).toEqual([
+    'notes',
+    'configFiles',
+    'problemChoices',
+  ])
 })

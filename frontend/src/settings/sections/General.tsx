@@ -142,6 +142,7 @@ function Sharing() {
           'shareIncludeFomodChoices',
           'shareIncludeNotes',
           'shareIncludeConfigFiles',
+          'shareIncludeProblemChoices',
         ]}
       />
       {lanSharing ? <PairedComputers /> : null}

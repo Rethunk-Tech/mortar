@@ -133,6 +133,7 @@ var registry = []pref{
 	ptrPref("shareIncludeFomodChoices", ScopeApp, true, func(s Settings, _ string) *bool { return s.ShareIncludeFomodChoices }, func(s *Settings, _ string, on bool) { s.ShareIncludeFomodChoices = &on }),
 	ptrPref("shareIncludeNotes", ScopeApp, true, func(s Settings, _ string) *bool { return s.ShareIncludeNotes }, func(s *Settings, _ string, on bool) { s.ShareIncludeNotes = &on }),
 	ptrPref("shareIncludeConfigFiles", ScopeApp, true, func(s Settings, _ string) *bool { return s.ShareIncludeConfigFiles }, func(s *Settings, _ string, on bool) { s.ShareIncludeConfigFiles = &on }),
+	ptrPref("shareIncludeProblemChoices", ScopeApp, true, func(s Settings, _ string) *bool { return s.ShareIncludeProblemChoices }, func(s *Settings, _ string, on bool) { s.ShareIncludeProblemChoices = &on }),
 	sourcePref("nexus", boolPref("verifyNexusMD5", ScopeSource, func(s Settings, _ string) bool { return s.VerifyNexusMD5 }, func(s *Settings, _ string, on bool) { s.VerifyNexusMD5 = on })),
 	boolPref("launchAtLogin", ScopeApp, func(s Settings, _ string) bool { return s.LaunchAtLogin }, func(s *Settings, _ string, on bool) {
 		s.LaunchAtLogin = on

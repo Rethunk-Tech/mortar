@@ -98,6 +98,8 @@ type Preview struct {
 	Name     string `json:"name"`
 	Notes    string `json:"notes"`
 	Settings int    `json:"settings"`
+	// Choices counts the dismissed problems and conflict winners the share carries.
+	Choices int `json:"choices"`
 	// SkippedSettings lists the external import's config files left out as too large, as mod id/path.
 	SkippedSettings []string    `json:"skippedSettings,omitempty"`
 	Mods            []Mod       `json:"mods"`

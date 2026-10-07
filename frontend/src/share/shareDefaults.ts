@@ -3,6 +3,7 @@ export interface ShareInclude {
   fomodChoices: boolean
   notes: boolean
   configFiles: boolean
+  problemChoices: boolean
 }
 
 export function shareIncludeDefaults(s: {
@@ -10,12 +11,14 @@ export function shareIncludeDefaults(s: {
   shareIncludeFomodChoices?: boolean | null
   shareIncludeNotes?: boolean | null
   shareIncludeConfigFiles?: boolean | null
+  shareIncludeProblemChoices?: boolean | null
 }): ShareInclude {
   return {
     disabledMods: s.shareIncludeDisabledMods === true,
     fomodChoices: s.shareIncludeFomodChoices !== false,
     notes: s.shareIncludeNotes !== false,
     configFiles: s.shareIncludeConfigFiles !== false,
+    problemChoices: s.shareIncludeProblemChoices !== false,
   }
 }
 
@@ -25,6 +28,7 @@ export function toShareInclude(value: ShareInclude) {
     fomodChoices: value.fomodChoices,
     notes: value.notes,
     configFiles: value.configFiles,
+    problemChoices: value.problemChoices,
   }
 }
 

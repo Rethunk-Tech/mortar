@@ -16,7 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
-const protocolVersion = "4"
+const protocolVersion = "5"
 
 type nonceRecord struct {
 	peer    string

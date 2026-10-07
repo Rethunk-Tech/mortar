@@ -104,3 +104,20 @@ export function summarize(mods: readonly Mod[], excluded: ReadonlySet<string>): 
   }
   return s
 }
+
+export type Carried = 'notes' | 'configFiles' | 'problemChoices'
+
+// What a received share carries besides its mods, in the order the preview lists it.
+export function carriedBy(p: { notes: string; settings: number; choices: number }): Carried[] {
+  const out: Carried[] = []
+  if (p.notes.trim() !== '') {
+    out.push('notes')
+  }
+  if (p.settings > 0) {
+    out.push('configFiles')
+  }
+  if (p.choices > 0) {
+    out.push('problemChoices')
+  }
+  return out
+}

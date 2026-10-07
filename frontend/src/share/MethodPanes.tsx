@@ -145,7 +145,7 @@ export function LinkPane({
           </Button>
         </Box>
       ) : null}
-      <Included info={info} total={total} include={include} onInclude={onInclude} file={false} />
+      <Included info={info} total={total} include={include} onInclude={onInclude} target="link" />
     </Pane>
   )
 }
@@ -210,7 +210,7 @@ export function FilePane({
           </Box>
         </Box>
       ) : null}
-      <Included info={info} total={total} include={include} onInclude={onInclude} file={true} />
+      <Included info={info} total={total} include={include} onInclude={onInclude} target="file" />
     </Pane>
   )
 }
@@ -338,12 +338,39 @@ export function ThunderstorePane({ game, profileId }: { game: string; profileId:
   )
 }
 
-export function NearbyPane({ game, profileId }: { game: string; profileId: string }) {
+export function NearbyPane({
+  game,
+  profileId,
+  info,
+  total,
+  include,
+  onInclude,
+}: {
+  game: string
+  profileId: string
+  info: ShownInfo
+  total: number
+  include: ShareInclude
+  onInclude: (next: ShareInclude) => void
+}) {
   const { t } = useLingui()
   const lanSharing = useSettings((s) => s.lanSharing)
   const [enabling, setEnabling] = useState(false)
   if (lanSharing) {
-    return <SendPanel game={game} profileId={profileId} onSent={() => undefined} />
+    // A paired computer copies archives added from disk, so only the other mods the link cannot name are left out.
+    const shown = { ...info, leftOut: info.leftOut.filter((o) => o.reason !== 'local') }
+    return (
+      <Pane>
+        <Included
+          info={shown}
+          total={total}
+          include={include}
+          onInclude={onInclude}
+          target="paired"
+        />
+        <SendPanel game={game} profileId={profileId} include={include} onSent={() => undefined} />
+      </Pane>
+    )
   }
   return (
     <Pane>

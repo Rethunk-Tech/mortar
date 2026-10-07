@@ -59,7 +59,7 @@ func TestBatchPrefDefaultsAndSet(t *testing.T) {
 	if s.SidebarBadges != SidebarBadgesAll || !s.VerifyNexusMD5 || s.LaunchAtLogin || s.StartMinimised || s.RememberWindow {
 		t.Fatal("badge / verify / session defaults")
 	}
-	if ToggleOn(s.ShareIncludeDisabledMods) || !ToggleOn(s.ShareIncludeFomodChoices) || !ToggleOn(s.ShareIncludeNotes) || !ToggleOn(s.ShareIncludeConfigFiles) {
+	if ToggleOn(s.ShareIncludeDisabledMods) || !ToggleOn(s.ShareIncludeFomodChoices) || !ToggleOn(s.ShareIncludeNotes) || !ToggleOn(s.ShareIncludeConfigFiles) || !ToggleOn(s.ShareIncludeProblemChoices) {
 		t.Fatal("share content defaults")
 	}
 	if s.ExtensionConnection != ExtensionAllow || g.BackupLocation != "" || g.ConflictScanDepth != ConflictScanFull {

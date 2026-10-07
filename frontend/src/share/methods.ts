@@ -42,20 +42,39 @@ export function lastUsedDestination(
 
 export const destinationStorageKey = (game: string) => `mortar.share.method.${game}`
 
-// Which of the "Included" settings a method honours, in the order the line lists them.
+// Where an Included setting goes: a link, a .mortar file, or a nearby computer, which is paired (gets whole files) or
+// not (gets only what the list of mods and settings can carry).
+export type IncludeTarget = 'link' | 'file' | 'paired' | 'unpaired'
+
+// Why a setting cannot apply to a target.
+export type Unavailable = 'file-only' | 'paired-only'
+
+// What each Included setting cannot do for the target; null means it applies. A link has no room for config files or
+// problem choices, and config files can hold keys, so only a paired computer gets them.
+export function includeAvailability(
+  target: IncludeTarget,
+): Record<keyof ShareInclude, Unavailable | null> {
+  const linkOnly = target === 'link' ? 'file-only' : null
+  return {
+    disabledMods: null,
+    fomodChoices: null,
+    notes: null,
+    configFiles: target === 'unpaired' ? 'paired-only' : linkOnly,
+    problemChoices: linkOnly,
+  }
+}
+
+// Which of the "Included" settings a target honours, in the order the line lists them.
 export function includedKeys(
   include: ShareInclude,
-  opts: { file: boolean; fomod: boolean },
+  opts: { target: IncludeTarget; fomod: boolean },
 ): (keyof ShareInclude)[] {
+  const can = includeAvailability(opts.target)
   const keys: (keyof ShareInclude)[] = []
-  if (include.notes) {
-    keys.push('notes')
-  }
-  if (opts.fomod && include.fomodChoices) {
-    keys.push('fomodChoices')
-  }
-  if (opts.file && include.configFiles) {
-    keys.push('configFiles')
+  for (const key of ['notes', 'fomodChoices', 'configFiles', 'problemChoices'] as const) {
+    if (include[key] && can[key] === null && (key !== 'fomodChoices' || opts.fomod)) {
+      keys.push(key)
+    }
   }
   return keys
 }

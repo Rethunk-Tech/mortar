@@ -7,6 +7,7 @@ test('share include defaults match registry defaults', () => {
     fomodChoices: true,
     notes: true,
     configFiles: true,
+    problemChoices: true,
   })
   expect(
     shareIncludeDefaults({
@@ -14,12 +15,14 @@ test('share include defaults match registry defaults', () => {
       shareIncludeFomodChoices: false,
       shareIncludeNotes: false,
       shareIncludeConfigFiles: false,
+      shareIncludeProblemChoices: false,
     }),
   ).toEqual({
     disabledMods: true,
     fomodChoices: false,
     notes: false,
     configFiles: false,
+    problemChoices: false,
   })
 })
 

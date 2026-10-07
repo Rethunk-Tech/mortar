@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Checkbox, Typography } from '@mui/material'
 import { alpha, type Theme, useTheme } from '@mui/material/styles'
 import { formatKb } from '../i18n/bytes.ts'
+import { listNames } from '../i18n/list.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 
 const SUCCESS_CHIP = 0.2
@@ -18,7 +19,14 @@ import type {
 import { modsLabel } from '../i18n/counts.ts'
 import { openPage } from '../mods/menu.ts'
 import { LetterTile } from '../mods/parts.tsx'
-import { isModState, MOD_STATES, type ModState, type ShownPreview, type Summary } from './logic.ts'
+import {
+  carriedBy,
+  isModState,
+  MOD_STATES,
+  type ModState,
+  type ShownPreview,
+  type Summary,
+} from './logic.ts'
 
 const DIMMED = 0.5
 const LATER_CHIP = 0.18
@@ -324,7 +332,7 @@ export function StatusBar({
   summary: Summary
   needsSignIn: boolean
 }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const total = preview.mods.length
   const ready = summary.toImport > 0
   let status = ready ? t`Ready to import` : t`Nothing to download`
@@ -337,6 +345,12 @@ export function StatusBar({
     other: 'with # settings files, written once their mods are installed',
   })
   const skippedSettings = preview.skippedSettings ?? []
+  const carried = carriedBy(preview)
+  const carriedLabels = {
+    notes: t`Notes`.toLocaleLowerCase(i18n.locale),
+    configFiles: t`Config files`.toLocaleLowerCase(i18n.locale),
+    problemChoices: t`Problem choices`.toLocaleLowerCase(i18n.locale),
+  }
   const counts = MOD_STATES.filter((s) => summary.counts[s] > 0)
   const detail = [
     // A mod whose source reports no size adds 0, so a 0 total means unknown rather than nothing to fetch.
@@ -347,6 +361,7 @@ export function StatusBar({
         })
       : modsLabel(total),
     preview.settings > 0 ? settings : '',
+    carried.length > 0 ? t`Includes: ${listNames(carried.map((c) => carriedLabels[c]))}` : '',
   ]
     .filter(Boolean)
     .join(' · ')

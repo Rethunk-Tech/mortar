@@ -19,6 +19,8 @@ import type { Peer } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import { Peers, Send } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
+import { includeAvailability } from '../share/methods.ts'
+import { type ShareInclude, toShareInclude } from '../share/shareDefaults.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorKind } from '../toasts/errorKind.ts'
 import { toastError } from '../toasts/report.ts'
@@ -91,18 +93,21 @@ function PeerRow({ peer, sharedName, disabled, sending, onSend, onPair }: PeerRo
 
 function LinksOnlyView({
   name,
+  include,
   busy,
   onBack,
   onPair,
   onSend,
 }: {
   name: string
+  include: ShareInclude
   busy: boolean
   onBack: () => void
   onPair: () => void
   onSend: () => void
 }) {
   const { t } = useLingui()
+  const heldBack = includeAvailability('unpaired').configFiles !== null && include.configFiles
   return (
     <>
       <Typography sx={{ fontWeight: 600 }}>{t`Send only links to ${name}?`}</Typography>
@@ -111,6 +116,11 @@ function LinksOnlyView({
           <Typography variant="body2">
             {t`${name} is not paired with this computer, so Mortar sends the list of mods, not their files. ${name} will download each mod from its site, one click per mod on a free Nexus account.`}
           </Typography>
+          {heldBack ? (
+            <Typography variant="body2">
+              {t`Config files stay here: only a paired computer gets them. Everything else you ticked is sent.`}
+            </Typography>
+          ) : null}
           <Typography variant="body2">
             {t`Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on ${name}.`}
           </Typography>
@@ -157,13 +167,13 @@ function AddressRows({
   )
 }
 
-function useSend(game: string, profileId: string, onSent: () => void) {
+function useSend(game: string, profileId: string, include: ShareInclude, onSent: () => void) {
   const { t } = useLingui()
   const [sending, setSending] = useState<string | null>(null)
   const send = (target: SendTarget) => {
     const profileName = useProfiles.getState().profiles.find((p) => p.id === profileId)?.name ?? ''
     setSending(target.id)
-    Send(target.id, game, profileId)
+    Send(target.id, game, profileId, toShareInclude(include))
       .then(() => {
         useToasts.getState().push({
           kind: 'success',
@@ -195,17 +205,19 @@ function useSend(game: string, profileId: string, onSent: () => void) {
 export function SendPanel({
   game,
   profileId,
+  include,
   onSent,
 }: {
   game: string
   profileId: string
+  include: ShareInclude
   onSent: () => void
 }) {
   const { t } = useLingui()
   const [peers, setPeers] = useState<Peer[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [looked, setLooked] = useState(false)
-  const { sending, send } = useSend(game, profileId, onSent)
+  const { sending, send } = useSend(game, profileId, include, onSent)
   const [manual, setManual] = useState('')
   const [addressPicker, setAddressPicker] = useState(false)
   const [pairing, setPairing] = useState(false)
@@ -250,6 +262,7 @@ export function SendPanel({
       {linksOnly ? (
         <LinksOnlyView
           name={linksOnly.name}
+          include={include}
           busy={sending !== null}
           onBack={() => setLinksOnly(null)}
           onPair={() => setPairing(true)}

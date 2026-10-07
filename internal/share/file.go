@@ -28,7 +28,7 @@ const (
 	MaxConfigBytes  = 1 << 20
 	MaxConfigTotal  = 32 << 20
 	MaxConfigFiles  = 5000
-	maxProfileBytes = 256 << 10
+	maxProfileBytes = 512 << 10
 	maxIDLen        = 100
 	maxSegment      = 100
 	maxRelPath      = 240
@@ -64,6 +64,7 @@ type Preview struct {
 	Configs       []Config
 	LoaderConfigs []LoaderConfig
 	Groups        []FileGroup
+	Choices       ProblemChoices
 }
 
 type fileDoc struct {
@@ -76,6 +77,7 @@ type fileDoc struct {
 	Entries     json.RawMessage   `json:"entries"`
 	IDs         []mod.ID          `json:"ids"`
 	Groups      []FileGroup       `json:"groups,omitempty"`
+	Problems    *ProblemChoices   `json:"problems,omitempty"`
 }
 
 func validSegment(s string) bool {
@@ -134,6 +136,9 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 	}
 	if inc.Notes {
 		doc.Groups = collectFileGroups(p)
+	}
+	if inc.ProblemChoices {
+		doc.Problems = collectProblemChoices(p, inc.Dismissed, func(e profile.Entry) bool { return Enabled(e) || inc.DisabledMods })
 	}
 	if err := checkShared(s); err != nil {
 		return nil, err
@@ -452,6 +457,12 @@ func parseFileDoc(raw []byte) (Preview, error) {
 		if !validID(id) {
 			return Preview{}, fmt.Errorf("%w: bad mod id %q", ErrBadFile, id)
 		}
+	}
+	if d.Problems != nil {
+		if err := checkProblemChoices(*d.Problems); err != nil {
+			return Preview{}, err
+		}
+		pv.Choices = *d.Problems
 	}
 	return pv, nil
 }

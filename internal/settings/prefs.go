@@ -164,6 +164,7 @@ func defaultPrefs() Settings {
 		ShareIncludeFomodChoices:   on(),
 		ShareIncludeNotes:          on(),
 		ShareIncludeConfigFiles:    on(),
+		ShareIncludeProblemChoices: on(),
 		VerifyNexusMD5:             true,
 		ShowAdultContent:           false,
 		LaunchAtLogin:              false,
@@ -268,6 +269,9 @@ func normalizePrefs(s *Settings) {
 	}
 	if s.ShareIncludeConfigFiles == nil {
 		s.ShareIncludeConfigFiles = on()
+	}
+	if s.ShareIncludeProblemChoices == nil {
+		s.ShareIncludeProblemChoices = on()
 	}
 	if !slices.Contains(extensionConnectionValues, s.ExtensionConnection) {
 		s.ExtensionConnection = ExtensionAllow

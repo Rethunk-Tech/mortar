@@ -450,6 +450,10 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
       label: i18n._(msg`Share config files`),
       description: i18n._(msg`Default for Share and Export. You can change it per share.`),
     },
+    shareIncludeProblemChoices: {
+      label: i18n._(msg`Share problem choices`),
+      description: i18n._(msg`Default for Share and Export. You can change it per share.`),
+    },
     showAdultContent: {
       label: i18n._(msg`Show adult mods in browse`),
       description: i18n._(

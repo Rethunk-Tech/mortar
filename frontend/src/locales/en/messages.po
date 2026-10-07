@@ -15,7 +15,7 @@ msgstr "No saves match"
 msgid "What to do"
 msgstr "What to do"
 
-#: src/settings/prefCopy.ts:478
+#: src/settings/prefCopy.ts:482
 msgid "Allow shows Nexus pages what Mortar has. Off hides that; download links still arrive"
 msgstr "Allow shows Nexus pages what Mortar has. Off hides that; download links still arrive"
 
@@ -66,7 +66,7 @@ msgstr "{0, plural, one {# mod is downloading.} other {# mods are downloading.}}
 msgid "Keep the game's current value"
 msgstr "Keep the game's current value"
 
-#: src/settings/sections/General.tsx:224
+#: src/settings/sections/General.tsx:225
 msgid "Interface tour"
 msgstr "Interface tour"
 
@@ -79,7 +79,7 @@ msgstr "Other"
 msgid "Could not reach GitHub. Check your connection and try again."
 msgstr "Could not reach GitHub. Check your connection and try again."
 
-#: src/share/IncludeOptions.tsx:32
+#: src/share/IncludeOptions.tsx:55
 msgid "Include mod notes"
 msgstr "Include mod notes"
 
@@ -344,7 +344,7 @@ msgstr "Restored {detail} of {name}"
 msgid "Sign out of Nexus"
 msgstr "Sign out of Nexus"
 
-#: src/share/ImportPreview.tsx:156
+#: src/share/ImportPreview.tsx:164
 msgid "{name} is broken for {detail}"
 msgstr "{name} is broken for {detail}"
 
@@ -369,7 +369,7 @@ msgstr "Premium and GitHub downloads at once"
 msgid "{0, plural, one {# download failed} other {# downloads failed}}"
 msgstr "{0, plural, one {# download failed} other {# downloads failed}}"
 
-#: src/share/ImportPreview.tsx:157
+#: src/share/ImportPreview.tsx:165
 msgid "{name} needs {detail}, which Mortar cannot install"
 msgstr "{name} needs {detail}, which Mortar cannot install"
 
@@ -553,11 +553,16 @@ msgstr "Config"
 msgid "Startup: {0} {1} added {2}"
 msgstr "Startup: {0} {1} added {2}"
 
+#. placeholder {0}: listNames(carried.map((c) => carriedLabels[c]))
+#: src/share/ImportPreview.tsx:364
+msgid "Includes: {0}"
+msgstr "Includes: {0}"
+
 #: src/console/StartupTable.tsx:126
 msgid "Assets and packs"
 msgstr "Assets and packs"
 
-#: src/settings/sections/General.tsx:199
+#: src/settings/sections/General.tsx:200
 msgid "Allow through firewall"
 msgstr "Allow through firewall"
 
@@ -570,7 +575,8 @@ msgid "Search settings"
 msgstr "Search settings"
 
 #: src/game/HomeNotes.tsx:117
-#: src/share/Included.tsx:93
+#: src/share/ImportPreview.tsx:350
+#: src/share/Included.tsx:94
 msgid "Notes"
 msgstr "Notes"
 
@@ -986,7 +992,7 @@ msgstr "Enable mods in the Mods tab to see the order {loader} loads them."
 msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
 msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it."
 
-#: src/lan/SendPanel.tsx:108
+#: src/lan/SendPanel.tsx:113
 msgid "Send only links to {name}?"
 msgstr "Send only links to {name}?"
 
@@ -1062,7 +1068,7 @@ msgstr "Mod updates are found"
 msgid "Find a mod in all profiles"
 msgstr "Find a mod in all profiles"
 
-#: src/share/MethodPanes.tsx:350
+#: src/share/MethodPanes.tsx:377
 msgid "Turn on sharing nearby?"
 msgstr "Turn on sharing nearby?"
 
@@ -1343,7 +1349,7 @@ msgstr "All outcomes"
 
 #: src/queue/store.ts:315
 #: src/share/importCompletion.ts:24
-#: src/share/ImportPreview.tsx:251
+#: src/share/ImportPreview.tsx:259
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{count, plural, one {# mod installed} other {# mods installed}}"
 
@@ -1362,6 +1368,10 @@ msgstr "Grant access…"
 #: src/profiles/AppearancePickers.tsx:26
 msgid "Orange"
 msgstr "Orange"
+
+#: src/lan/SendPanel.tsx:121
+msgid "Config files stay here: only a paired computer gets them. Everything else you ticked is sent."
+msgstr "Config files stay here: only a paired computer gets them. Everything else you ticked is sent."
 
 #: src/settings/sections/StreamOverlay.tsx:90
 msgid "Fishing skill"
@@ -1425,7 +1435,7 @@ msgstr "Notify when updates are found"
 msgid "It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar."
 msgstr "It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar."
 
-#: src/settings/store.ts:135
+#: src/settings/store.ts:136
 msgid "Your settings could not be read"
 msgstr "Your settings could not be read"
 
@@ -1511,7 +1521,7 @@ msgstr "Newest lines kept in the Console"
 msgid "Reset all"
 msgstr "Reset all"
 
-#: src/share/ImportPreview.tsx:255
+#: src/share/ImportPreview.tsx:263
 msgid "{count} unavailable"
 msgstr "{count} unavailable"
 
@@ -1676,7 +1686,7 @@ msgstr "Roll back"
 msgid "{names} can't be reached; showing what Mortar saved at {time}"
 msgstr "{names} can't be reached; showing what Mortar saved at {time}"
 
-#: src/settings/sections/General.tsx:184
+#: src/settings/sections/General.tsx:185
 msgid "Windows Firewall blocks incoming sends to Mortar"
 msgstr "Windows Firewall blocks incoming sends to Mortar"
 
@@ -1723,7 +1733,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/firstrun/LoaderStep.tsx:201
 #: src/firstrun/LoaderStep.tsx:269
 #: src/game/detailStates.tsx:26
-#: src/lan/SendPanel.tsx:183
+#: src/lan/SendPanel.tsx:193
 #: src/launch/LaunchLayer.tsx:312
 #: src/mods/LoadOrderTab.tsx:390
 #: src/mods/ModsTab.tsx:115
@@ -1864,7 +1874,7 @@ msgstr "Copied"
 msgid "Show in log"
 msgstr "Show in log"
 
-#: src/share/ImportPreview.tsx:198
+#: src/share/ImportPreview.tsx:206
 msgid "Page"
 msgstr "Page"
 
@@ -2040,7 +2050,7 @@ msgstr "Fullscreen resolution width"
 msgid "These come from a different site than you installed them from. Update all skips them."
 msgstr "These come from a different site than you installed them from. Update all skips them."
 
-#: src/share/MethodPanes.tsx:352
+#: src/share/MethodPanes.tsx:379
 msgid "Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General."
 msgstr "Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General."
 
@@ -2050,7 +2060,7 @@ msgid "the search is “{0}”"
 msgstr "the search is “{0}”"
 
 #: src/lan/PairedComputers.tsx:89
-#: src/lan/SendPanel.tsx:309
+#: src/lan/SendPanel.tsx:322
 msgid "Host:port"
 msgstr "Host:port"
 
@@ -2129,7 +2139,7 @@ msgstr "The game loader chooses this order. Mortar does not change it."
 msgid "Changes dependencies"
 msgstr "Changes dependencies"
 
-#: src/settings/prefCopy.ts:464
+#: src/settings/prefCopy.ts:468
 msgid "Launch Mortar at login"
 msgstr "Launch Mortar at login"
 
@@ -2182,7 +2192,7 @@ msgstr "Filter mods"
 msgid "Apply {name}"
 msgstr "Apply {name}"
 
-#: src/settings/prefCopy.ts:472
+#: src/settings/prefCopy.ts:476
 msgid "Remember window size and position"
 msgstr "Remember window size and position"
 
@@ -2273,7 +2283,7 @@ msgstr "Prerelease"
 msgid "Follow new lines"
 msgstr "Follow new lines"
 
-#: src/share/ImportPreview.tsx:154
+#: src/share/ImportPreview.tsx:162
 msgid "{name} was removed from Nexus"
 msgstr "{name} was removed from Nexus"
 
@@ -2292,11 +2302,11 @@ msgid "Enjoying {0}? Endorse it on Nexus"
 msgstr "Enjoying {0}? Endorse it on Nexus"
 
 #. placeholder {0}: target.name
-#: src/lan/SendPanel.tsx:172
+#: src/lan/SendPanel.tsx:182
 msgid "Sent to {0}"
 msgstr "Sent to {0}"
 
-#: src/settings/sections/General.tsx:213
+#: src/settings/sections/General.tsx:214
 msgid "Show the first-run tips again"
 msgstr "Show the first-run tips again"
 
@@ -2343,7 +2353,7 @@ msgstr "Skip {0}"
 msgid "Latest on Nexus"
 msgstr "Latest on Nexus"
 
-#: src/lan/SendPanel.tsx:71
+#: src/lan/SendPanel.tsx:73
 msgid "Not paired · only links"
 msgstr "Not paired · only links"
 
@@ -2629,6 +2639,10 @@ msgstr "Scan the mods folder for changes Mortar did not make"
 msgid "Check Mortar"
 msgstr "Check Mortar"
 
+#: src/share/IncludeOptions.tsx:57
+msgid "Include problem choices"
+msgstr "Include problem choices"
+
 #: src/share/MethodPanes.tsx:51
 msgid "{length} of {limit} characters · fits one Discord message"
 msgstr "{length} of {limit} characters · fits one Discord message"
@@ -2743,7 +2757,7 @@ msgstr "Delete permanently"
 msgid "Check this profile"
 msgstr "Check this profile"
 
-#: src/settings/prefCopy.ts:465
+#: src/settings/prefCopy.ts:469
 msgid "Start Mortar when you sign in to this computer"
 msgstr "Start Mortar when you sign in to this computer"
 
@@ -2810,11 +2824,11 @@ msgstr "No fix yet"
 msgid "Load a save to see values"
 msgstr "Load a save to see values"
 
-#: src/lan/SendPanel.tsx:220
+#: src/lan/SendPanel.tsx:232
 msgid "Could not find Mortar users"
 msgstr "Could not find Mortar users"
 
-#: src/lan/SendPanel.tsx:112
+#: src/lan/SendPanel.tsx:117
 msgid "{name} is not paired with this computer, so Mortar sends the list of mods, not their files. {name} will download each mod from its site, one click per mod on a free Nexus account."
 msgstr "{name} is not paired with this computer, so Mortar sends the list of mods, not their files. {name} will download each mod from its site, one click per mod on a free Nexus account."
 
@@ -2845,7 +2859,7 @@ msgstr "Collection draft saved"
 msgid "Abandoned"
 msgstr "Abandoned"
 
-#: src/share/ImportPreview.tsx:254
+#: src/share/ImportPreview.tsx:262
 msgid "{count} checked later"
 msgstr "{count} checked later"
 
@@ -2907,8 +2921,8 @@ msgid "Drag {path} into the GitHub issue to attach it."
 msgstr "Drag {path} into the GitHub issue to attach it."
 
 #: src/lan/PairedComputers.tsx:111
-#: src/lan/SendPanel.tsx:83
-#: src/lan/SendPanel.tsx:121
+#: src/lan/SendPanel.tsx:85
+#: src/lan/SendPanel.tsx:131
 msgid "Pair"
 msgstr "Pair"
 
@@ -2933,7 +2947,7 @@ msgstr "Sound volume"
 #: src/settings/prefCopy.ts:344
 #: src/settings/prefCopy.ts:411
 #: src/settings/prefCopy.ts:426
-#: src/settings/prefCopy.ts:482
+#: src/settings/prefCopy.ts:486
 #: src/settings/sections/SyncFolder.tsx:23
 msgid "Off"
 msgstr "Off"
@@ -3200,7 +3214,7 @@ msgstr "Check again"
 msgid "{label} is no longer in the saves folder"
 msgstr "{label} is no longer in the saves folder"
 
-#: src/share/ImportPreview.tsx:73
+#: src/share/ImportPreview.tsx:81
 msgid "different file"
 msgstr "different file"
 
@@ -3413,7 +3427,7 @@ msgstr "{0, plural, one {# other mod} other {# other mods}}"
 msgid "Pick what to compare {0} with"
 msgstr "Pick what to compare {0} with"
 
-#: src/lan/SendPanel.tsx:182
+#: src/lan/SendPanel.tsx:192
 msgid "Try again in a few seconds."
 msgstr "Try again in a few seconds."
 
@@ -3422,7 +3436,7 @@ msgstr "Try again in a few seconds."
 msgid "{0, plural, one {# mod checked} other {# mods checked}}"
 msgstr "{0, plural, one {# mod checked} other {# mods checked}}"
 
-#: src/settings/sections/General.tsx:212
+#: src/settings/sections/General.tsx:213
 #: src/shell/AppMenu.tsx:186
 msgid "Help"
 msgstr "Help"
@@ -3432,7 +3446,7 @@ msgstr "Help"
 msgid "L{0}"
 msgstr "L{0}"
 
-#: src/share/Included.tsx:130
+#: src/share/Included.tsx:132
 msgid "Included"
 msgstr "Included"
 
@@ -3461,7 +3475,7 @@ msgstr "config.json, changed from the mod's own"
 #: src/game/FarmMenuItem.tsx:86
 #: src/launch/SaveWarnDialog.tsx:61
 #: src/mods/updateReview/Row.tsx:34
-#: src/share/Included.tsx:111
+#: src/share/Included.tsx:113
 msgid "Disabled in this profile"
 msgstr "Disabled in this profile"
 
@@ -3547,7 +3561,7 @@ msgstr "Compare against a friend's profile or a multiplayer host's list."
 msgid "Text for Discord or a forum"
 msgstr "Text for Discord or a forum"
 
-#: src/share/IncludeOptions.tsx:31
+#: src/share/IncludeOptions.tsx:54
 msgid "Include FOMOD choices"
 msgstr "Include FOMOD choices"
 
@@ -3609,7 +3623,7 @@ msgstr "Device name"
 msgid "{0} · {1} · {farms}"
 msgstr "{0} · {1} · {farms}"
 
-#: src/share/Included.tsx:94
+#: src/share/Included.tsx:95
 msgid "FOMOD choices"
 msgstr "FOMOD choices"
 
@@ -4077,7 +4091,7 @@ msgstr "{0, plural, one {The new version of {1} no longer includes # file. Keep 
 msgid "Could not unpin the selected mods"
 msgstr "Could not unpin the selected mods"
 
-#: src/share/ImportPreview.tsx:330
+#: src/share/ImportPreview.tsx:338
 #: src/share/useImportFlow.ts:143
 msgid "Nothing to download"
 msgstr "Nothing to download"
@@ -4150,7 +4164,7 @@ msgstr "Reported by {0}"
 msgid "Automatic"
 msgstr "Automatic"
 
-#: src/share/Included.tsx:93
+#: src/share/Included.tsx:94
 msgid "Mod notes"
 msgstr "Mod notes"
 
@@ -4193,7 +4207,7 @@ msgstr "Downloads paused"
 msgid "Back to {name}"
 msgstr "Back to {name}"
 
-#: src/lan/SendPanel.tsx:265
+#: src/lan/SendPanel.tsx:278
 msgid "Send to…"
 msgstr "Send to…"
 
@@ -4295,7 +4309,7 @@ msgstr "Show in queue"
 #: src/profiles/ProfilesPage.tsx:267
 #: src/profiles/ProfilesPage.tsx:276
 #: src/saves/SaveGapLine.tsx:21
-#: src/share/ImportPreview.tsx:75
+#: src/share/ImportPreview.tsx:83
 #: src/share/ListFormat.tsx:21
 msgid "Disabled"
 msgstr "Disabled"
@@ -4339,7 +4353,7 @@ msgstr "{names} seems to cause the crash"
 msgid "Dismiss all harmless overlaps?"
 msgstr "Dismiss all harmless overlaps?"
 
-#: src/share/IncludeOptions.tsx:30
+#: src/share/IncludeOptions.tsx:53
 msgid "Include disabled mods"
 msgstr "Include disabled mods"
 
@@ -4389,7 +4403,7 @@ msgid "This profile skips updates from this source for this mod."
 msgstr "This profile skips updates from this source for this mod."
 
 #. placeholder {0}: skippedSettings.length
-#: src/share/ImportPreview.tsx:392
+#: src/share/ImportPreview.tsx:407
 msgid "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 msgstr "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 
@@ -4646,7 +4660,7 @@ msgstr "Working directory"
 #: src/mods/columnLabel.ts:17
 #: src/mods/ModDetail.tsx:77
 #: src/mods/OptionalFileRows.tsx:121
-#: src/share/ImportPreview.tsx:58
+#: src/share/ImportPreview.tsx:66
 msgid "Installed"
 msgstr "Installed"
 
@@ -4708,7 +4722,7 @@ msgstr "Set category"
 msgid "File saved"
 msgstr "File saved"
 
-#: src/settings/prefCopy.ts:460
+#: src/settings/prefCopy.ts:464
 msgid "Verify downloads with Nexus MD5"
 msgstr "Verify downloads with Nexus MD5"
 
@@ -4717,7 +4731,7 @@ msgstr "Verify downloads with Nexus MD5"
 msgid "Take Nexus links from {0}?"
 msgstr "Take Nexus links from {0}?"
 
-#: src/share/ImportPreview.tsx:155
+#: src/share/ImportPreview.tsx:163
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
@@ -4777,7 +4791,7 @@ msgstr "Code"
 msgid "A portable copy keeps its data beside the program."
 msgstr "A portable copy keeps its data beside the program."
 
-#: src/settings/sections/General.tsx:241
+#: src/settings/sections/General.tsx:242
 msgid "Save these settings to a file, or load them on another computer."
 msgstr "Save these settings to a file, or load them on another computer."
 
@@ -4881,7 +4895,7 @@ msgstr "These apply only to this profile."
 msgid "Copy of {name}"
 msgstr "Copy of {name}"
 
-#: src/settings/sections/General.tsx:249
+#: src/settings/sections/General.tsx:250
 msgid "Export…"
 msgstr "Export…"
 
@@ -5096,7 +5110,7 @@ msgstr "Filter by profile"
 msgid "· revision {0}"
 msgstr "· revision {0}"
 
-#: src/share/MethodPanes.tsx:366
+#: src/share/MethodPanes.tsx:393
 msgid "Turn on and continue"
 msgstr "Turn on and continue"
 
@@ -5125,7 +5139,7 @@ msgstr "Broken for this version"
 msgid "Edit config"
 msgstr "Edit config"
 
-#: src/share/ImportPreview.tsx:253
+#: src/share/ImportPreview.tsx:261
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr "{count, plural, one {# dependency} other {# dependencies}}"
 
@@ -5153,7 +5167,7 @@ msgstr "No profile holds a mod by that name or id."
 msgid "Could not export the modpack"
 msgstr "Could not export the modpack"
 
-#: src/share/Included.tsx:109
+#: src/share/Included.tsx:111
 msgid "Added from an archive, so it only exists on this computer."
 msgstr "Added from an archive, so it only exists on this computer."
 
@@ -5350,8 +5364,8 @@ msgstr "Restored as {0}"
 msgid "Has problems"
 msgstr "Has problems"
 
-#: src/settings/sections/General.tsx:161
-#: src/settings/sections/General.tsx:169
+#: src/settings/sections/General.tsx:162
+#: src/settings/sections/General.tsx:170
 msgid "LAN port"
 msgstr "LAN port"
 
@@ -5382,7 +5396,7 @@ msgstr "Stop the game before moving the data folder."
 msgid "Earthy green"
 msgstr "Earthy green"
 
-#: src/lan/SendPanel.tsx:275
+#: src/lan/SendPanel.tsx:288
 msgid "No Mortar users found nearby."
 msgstr "No Mortar users found nearby."
 
@@ -5409,7 +5423,7 @@ msgstr "Choose one"
 msgid "Cache"
 msgstr "Cache"
 
-#: src/settings/prefCopy.ts:456
+#: src/settings/prefCopy.ts:460
 msgid "Browse hides mods their site marks as adult unless this is on. Installed mods are never hidden."
 msgstr "Browse hides mods their site marks as adult unless this is on. Installed mods are never hidden."
 
@@ -5523,7 +5537,7 @@ msgstr "Has used {missing, plural, one {# mod it lacks} other {# mods it lacks}}
 msgid "Profiles: {holderNames}"
 msgstr "Profiles: {holderNames}"
 
-#: src/settings/prefCopy.ts:468
+#: src/settings/prefCopy.ts:472
 msgid "Start minimised to tray"
 msgstr "Start minimised to tray"
 
@@ -5706,7 +5720,7 @@ msgstr "The folder of {name} was deleted outside Mortar"
 msgid "Replaced by {by}, which is also enabled"
 msgstr "Replaced by {by}, which is also enabled"
 
-#: src/share/ImportPreview.tsx:330
+#: src/share/ImportPreview.tsx:338
 msgid "Ready to import"
 msgstr "Ready to import"
 
@@ -5803,7 +5817,7 @@ msgstr "Allow cleanup before deleting."
 msgid "Starter templates"
 msgstr "Starter templates"
 
-#: src/share/Included.tsx:121
+#: src/share/Included.tsx:123
 msgid "{local, plural, one {# mod you added from an archive can't be linked} other {# mods you added from archives can't be linked}}"
 msgstr "{local, plural, one {# mod you added from an archive can't be linked} other {# mods you added from archives can't be linked}}"
 
@@ -5836,7 +5850,7 @@ msgstr "From launch until SMAPI has loaded every mod's code"
 msgid "Day"
 msgstr "Day"
 
-#: src/settings/prefCopy.ts:481
+#: src/settings/prefCopy.ts:485
 msgid "Allow"
 msgstr "Allow"
 
@@ -5852,7 +5866,7 @@ msgstr "Could not unlink the collection"
 msgid "Scheduled save backups"
 msgstr "Scheduled save backups"
 
-#: src/settings/sections/General.tsx:221
+#: src/settings/sections/General.tsx:222
 msgid "Show again"
 msgstr "Show again"
 
@@ -6009,7 +6023,8 @@ msgid "Skip for now"
 msgstr "Skip for now"
 
 #: src/mods/typedConfig/ConfigPane.tsx:179
-#: src/share/Included.tsx:95
+#: src/share/ImportPreview.tsx:351
+#: src/share/Included.tsx:96
 msgid "Config files"
 msgstr "Config files"
 
@@ -6073,7 +6088,7 @@ msgid "Could not save the profile order"
 msgstr "Could not save the profile order"
 
 #: src/mods/updateReview/RowInclude.tsx:26
-#: src/share/ImportPreview.tsx:100
+#: src/share/ImportPreview.tsx:108
 msgid "Include {name}"
 msgstr "Include {name}"
 
@@ -6156,6 +6171,11 @@ msgstr "Could not save the open profile"
 #: src/settings/prefCopy.ts:14
 msgid "When you press Play"
 msgstr "When you press Play"
+
+#: src/share/ImportPreview.tsx:352
+#: src/share/Included.tsx:98
+msgid "Problem choices"
+msgstr "Problem choices"
 
 #: src/firstrunTour/TourPopover.tsx:196
 #: src/fomod/Dialog.tsx:272
@@ -6282,7 +6302,7 @@ msgid "Open page"
 msgstr "Open page"
 
 #: src/game/FarmMenuItem.tsx:72
-#: src/share/ImportPreview.tsx:252
+#: src/share/ImportPreview.tsx:260
 msgid "{count} to download"
 msgstr "{count} to download"
 
@@ -6376,7 +6396,7 @@ msgstr "There is not enough free space at the destination."
 msgid "A multiplayer host's list…"
 msgstr "A multiplayer host's list…"
 
-#: src/settings/store.ts:137
+#: src/settings/store.ts:138
 msgid "Mortar started with default settings. The damaged file was kept at {path}."
 msgstr "Mortar started with default settings. The damaged file was kept at {path}."
 
@@ -6396,7 +6416,7 @@ msgstr "{0, plural, one {Stopped asking about # folder} other {Stopped asking ab
 
 #: src/firstrunTour/TourPopover.tsx:182
 #: src/fomod/Dialog.tsx:256
-#: src/lan/SendPanel.tsx:120
+#: src/lan/SendPanel.tsx:130
 #: src/profiles/ProfilesPage.tsx:312
 #: src/settings/SettingsPage.tsx:69
 #: src/share/ShareDialog.tsx:73
@@ -6581,7 +6601,7 @@ msgstr "The log does not name a mod."
 msgid "Create a profile first."
 msgstr "Create a profile first."
 
-#: src/share/Included.tsx:159
+#: src/share/Included.tsx:161
 msgid "Which?"
 msgstr "Which?"
 
@@ -6843,7 +6863,7 @@ msgstr "Use theirs"
 msgid "Direct launch preview"
 msgstr "Direct launch preview"
 
-#: src/lan/SendPanel.tsx:318
+#: src/lan/SendPanel.tsx:331
 msgid "Send"
 msgstr "Send"
 
@@ -6925,7 +6945,7 @@ msgstr "Slowest mods"
 msgid "Could not load what can be cleaned up"
 msgstr "Could not load what can be cleaned up"
 
-#: src/share/ImportPreview.tsx:62
+#: src/share/ImportPreview.tsx:70
 msgid "Unavailable"
 msgstr "Unavailable"
 
@@ -7266,7 +7286,7 @@ msgstr "Backups to keep per save"
 msgid "Update ready: applies when you close Mortar."
 msgstr "Update ready: applies when you close Mortar."
 
-#: src/share/ImportPreview.tsx:332
+#: src/share/ImportPreview.tsx:340
 msgid "Sign in to import"
 msgstr "Sign in to import"
 
@@ -7551,7 +7571,7 @@ msgstr "{dependentName} needs {dep}, which is disabled."
 msgid "older, profile has {0}"
 msgstr "older, profile has {0}"
 
-#: src/lan/SendPanel.tsx:266
+#: src/lan/SendPanel.tsx:279
 msgid "Refresh"
 msgstr "Refresh"
 
@@ -7807,7 +7827,7 @@ msgstr "Updated {mods} in {profileName}"
 msgid "Search every run"
 msgstr "Search every run"
 
-#: src/share/ImportPreview.tsx:344
+#: src/share/ImportPreview.tsx:358
 msgid "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
 msgstr "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
 
@@ -7832,7 +7852,7 @@ msgid "Crashed"
 msgstr "Crashed"
 
 #: src/i18n/counts.ts:3
-#: src/share/Included.tsx:103
+#: src/share/Included.tsx:105
 msgid "{count, plural, one {# mod} other {# mods}}"
 msgstr "{count, plural, one {# mod} other {# mods}}"
 
@@ -8263,7 +8283,7 @@ msgid "Store"
 msgstr "Store"
 
 #: src/browse/CardAction.tsx:48
-#: src/share/ImportPreview.tsx:59
+#: src/share/ImportPreview.tsx:67
 msgid "Download"
 msgstr "Download"
 
@@ -8472,7 +8492,7 @@ msgstr "Executable"
 msgid "Play anyway"
 msgstr "Play anyway"
 
-#: src/settings/sections/General.tsx:151
+#: src/settings/sections/General.tsx:152
 msgid "Let the operating system choose a free port"
 msgstr "Let the operating system choose a free port"
 
@@ -8639,7 +8659,7 @@ msgstr "Regenerate token?"
 msgid "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 msgstr "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 
-#: src/share/MethodPanes.tsx:361
+#: src/share/MethodPanes.tsx:388
 msgid "Could not turn on sharing nearby"
 msgstr "Could not turn on sharing nearby"
 
@@ -8651,7 +8671,7 @@ msgstr "Unpin"
 msgid "The download queue is empty."
 msgstr "The download queue is empty."
 
-#: src/share/ImportPreview.tsx:74
+#: src/share/ImportPreview.tsx:82
 msgid "unverified until downloaded"
 msgstr "unverified until downloaded"
 
@@ -8709,7 +8729,7 @@ msgstr "What Mortar shows when it opens."
 
 #: src/console/PerformanceComparison.tsx:57
 #: src/console/StartupTable.tsx:278
-#: src/share/Included.tsx:139
+#: src/share/Included.tsx:141
 msgid "Change"
 msgstr "Change"
 
@@ -8722,7 +8742,7 @@ msgid "{name} takes {own} of your {total} start."
 msgstr "{name} takes {own} of your {total} start."
 
 #. placeholder {0}: target.name
-#: src/lan/SendPanel.tsx:171
+#: src/lan/SendPanel.tsx:181
 msgid "Sent {profileName} to {0}; they'll copy the files from you"
 msgstr "Sent {profileName} to {0}; they'll copy the files from you"
 
@@ -8791,7 +8811,7 @@ msgstr "Mod or event"
 msgid "Untrack every {gameName} mod on Nexus"
 msgstr "Untrack every {gameName} mod on Nexus"
 
-#: src/share/Included.tsx:125
+#: src/share/Included.tsx:127
 msgid "{other, plural, one {# more mod is left out} other {# more mods are left out}}"
 msgstr "{other, plural, one {# more mod is left out} other {# more mods are left out}}"
 
@@ -8822,7 +8842,7 @@ msgstr "{profileName} has {0} more than once. {loader} loads only one, so pick w
 msgid "Discord"
 msgstr "Discord"
 
-#: src/lan/SendPanel.tsx:146
+#: src/lan/SendPanel.tsx:156
 msgid "Send to an address…"
 msgstr "Send to an address…"
 
@@ -8974,7 +8994,7 @@ msgstr "Choose an archive to see what is inside"
 msgid "Remove SMAPI from Steam's launch options"
 msgstr "Remove SMAPI from Steam's launch options"
 
-#: src/share/ImportPreview.tsx:61
+#: src/share/ImportPreview.tsx:69
 msgid "Check later"
 msgstr "Check later"
 
@@ -9041,7 +9061,7 @@ msgid "Source skipped"
 msgstr "Source skipped"
 
 #. placeholder {0}: preview.settings
-#: src/share/ImportPreview.tsx:335
+#: src/share/ImportPreview.tsx:343
 msgid "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 msgstr "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 
@@ -9121,7 +9141,7 @@ msgstr "pinned in {0}"
 msgid "Waiting for Nexus…"
 msgstr "Waiting for Nexus…"
 
-#: src/settings/sections/General.tsx:218
+#: src/settings/sections/General.tsx:219
 msgid "Tips will show again"
 msgstr "Tips will show again"
 
@@ -9268,7 +9288,7 @@ msgstr "Could not keep the old files"
 msgid "{0, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
 msgstr "{0, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
 
-#: src/settings/sections/General.tsx:161
+#: src/settings/sections/General.tsx:162
 msgid "The port Mortar uses for local sharing"
 msgstr "The port Mortar uses for local sharing"
 
@@ -9280,6 +9300,7 @@ msgstr "From the game's Mods folder…"
 #: src/settings/prefCopy.ts:443
 #: src/settings/prefCopy.ts:447
 #: src/settings/prefCopy.ts:451
+#: src/settings/prefCopy.ts:455
 msgid "Default for Share and Export. You can change it per share."
 msgstr "Default for Share and Export. You can change it per share."
 
@@ -9321,7 +9342,7 @@ msgstr "Switch to Performance"
 msgid "{0} {1} is available"
 msgstr "{0} {1} is available"
 
-#: src/share/IncludeOptions.tsx:33
+#: src/share/IncludeOptions.tsx:56
 msgid "Include config files"
 msgstr "Include config files"
 
@@ -9369,7 +9390,7 @@ msgstr "Damaged"
 msgid "the mod loader"
 msgstr "the mod loader"
 
-#: src/settings/prefCopy.ts:473
+#: src/settings/prefCopy.ts:477
 msgid "Restore the last window bounds on startup"
 msgstr "Restore the last window bounds on startup"
 
@@ -9453,7 +9474,7 @@ msgstr "Create a profile to manage a set of mods."
 msgid "About {0}"
 msgstr "About {0}"
 
-#: src/settings/sections/General.tsx:185
+#: src/settings/sections/General.tsx:186
 msgid "Allow Mortar through the firewall so nearby users can send profiles."
 msgstr "Allow Mortar through the firewall so nearby users can send profiles."
 
@@ -9476,8 +9497,8 @@ msgid "{0}: {1} missing, {2} changed, {3} extra"
 msgstr "{0}: {1} missing, {2} changed, {3} extra"
 
 #: src/settings/sections/AboutDiagnostics.tsx:91
-#: src/settings/sections/General.tsx:238
-#: src/settings/sections/General.tsx:240
+#: src/settings/sections/General.tsx:239
+#: src/settings/sections/General.tsx:241
 msgid "Settings file"
 msgstr "Settings file"
 
@@ -9700,7 +9721,7 @@ msgstr "When {0}"
 msgid "{0} was not found in your launchers"
 msgstr "{0} was not found in your launchers"
 
-#: src/share/ImportPreview.tsx:158
+#: src/share/ImportPreview.tsx:166
 msgid "Free account: one click on Nexus per download"
 msgstr "Free account: one click on Nexus per download"
 
@@ -9779,7 +9800,7 @@ msgid "Pin"
 msgstr "Pin"
 
 #. placeholder {0}: target.name
-#: src/lan/SendPanel.tsx:187
+#: src/lan/SendPanel.tsx:197
 msgid "Could not send to {0}"
 msgstr "Could not send to {0}"
 
@@ -9842,7 +9863,7 @@ msgstr "Move up"
 msgid "Open download page"
 msgstr "Open download page"
 
-#: src/share/Included.tsx:147
+#: src/share/Included.tsx:149
 msgid "Show mods"
 msgstr "Show mods"
 
@@ -9966,7 +9987,7 @@ msgstr "More than one mod changes this; the winner's version is used."
 msgid "Borderless"
 msgstr "Borderless"
 
-#: src/lan/SendPanel.tsx:152
+#: src/lan/SendPanel.tsx:162
 msgid "Recent address"
 msgstr "Recent address"
 
@@ -10072,7 +10093,7 @@ msgstr "Actions for {0}"
 msgid "Add from game presets…"
 msgstr "Add from game presets…"
 
-#: src/share/IncludeOptions.tsx:32
+#: src/share/IncludeOptions.tsx:55
 msgid "Include notes"
 msgstr "Include notes"
 
@@ -10314,6 +10335,10 @@ msgstr "Handle \"Mod Manager Download\" links"
 msgid "Loading game settings…"
 msgstr "Loading game settings…"
 
+#: src/share/IncludeOptions.tsx:22
+msgid "A link has no room for it. Use a file or a nearby computer."
+msgstr "A link has no room for it. Use a file or a nearby computer."
+
 #: src/settings/sections/Storage.tsx:35
 msgid "Could not inspect the destination folder"
 msgstr "Could not inspect the destination folder"
@@ -10367,7 +10392,7 @@ msgstr "Combined"
 msgid "Export profile…"
 msgstr "Export profile…"
 
-#: src/share/ImportPreview.tsx:162
+#: src/share/ImportPreview.tsx:170
 msgid "Some files could not be checked against Nexus, so a few may differ from what was shared."
 msgstr "Some files could not be checked against Nexus, so a few may differ from what was shared."
 
@@ -10459,7 +10484,7 @@ msgstr "{0} adds {time} to startup (through {1})"
 msgid "Overrides"
 msgstr "Overrides"
 
-#: src/settings/sections/General.tsx:268
+#: src/settings/sections/General.tsx:269
 msgid "Import…"
 msgstr "Import…"
 
@@ -10502,7 +10527,7 @@ msgstr "Error"
 msgid "Empty trash"
 msgstr "Empty trash"
 
-#: src/lan/SendPanel.tsx:276
+#: src/lan/SendPanel.tsx:289
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
 
@@ -10622,7 +10647,7 @@ msgstr "Bottles"
 msgid "Hourly count resets {0} · daily count resets {1}"
 msgstr "Hourly count resets {0} · daily count resets {1}"
 
-#: src/settings/store.ts:140
+#: src/settings/store.ts:141
 #: src/share/MethodPanes.tsx:249
 #: src/shell/saveDiagnostics.ts:27
 msgid "Show file"
@@ -10652,6 +10677,10 @@ msgstr "Kept forever"
 #: src/profiles/CompareDialog.tsx:39
 msgid "{0} is in use by the running game. Close the game to change its mods."
 msgstr "{0} is in use by the running game. Close the game to change its mods."
+
+#: src/share/IncludeOptions.tsx:23
+msgid "Only a paired computer gets it."
+msgstr "Only a paired computer gets it."
 
 #: src/settings/prefCopy.ts:254
 msgid "Set them aside and ask whether to keep or delete them."
@@ -10790,7 +10819,7 @@ msgstr "Your profiles have {0}. Update replaces each profile's copy."
 msgid "Done ({0}): {1}"
 msgstr "Done ({0}): {1}"
 
-#: src/share/Included.tsx:117
+#: src/share/Included.tsx:119
 msgid "{local, plural, one {# mod you added from an archive can't go in the file} other {# mods you added from archives can't go in the file}}"
 msgstr "{local, plural, one {# mod you added from an archive can't go in the file} other {# mods you added from archives can't go in the file}}"
 
@@ -11007,7 +11036,7 @@ msgstr "Mining skill"
 msgid "First scene"
 msgstr "First scene"
 
-#: src/share/ImportPreview.tsx:60
+#: src/share/ImportPreview.tsx:68
 msgid "Dependency"
 msgstr "Dependency"
 
@@ -11100,7 +11129,7 @@ msgstr "Tracking"
 msgid "Preferred source"
 msgstr "Preferred source"
 
-#: src/settings/prefCopy.ts:461
+#: src/settings/prefCopy.ts:465
 msgid "Check the file hash when Nexus provides one"
 msgstr "Check the file hash when Nexus provides one"
 
@@ -11207,7 +11236,7 @@ msgstr "Checked in {0}: {parts}"
 msgid "Saved to {0}"
 msgstr "Saved to {0}"
 
-#: src/share/Included.tsx:102
+#: src/share/Included.tsx:104
 msgid "{shared} of {total} mods"
 msgstr "{shared} of {total} mods"
 
@@ -11307,8 +11336,8 @@ msgstr "Copies"
 msgid "Mortar installs the loader for you."
 msgstr "Mortar installs the loader for you."
 
-#: src/settings/sections/General.tsx:150
-#: src/settings/sections/General.tsx:156
+#: src/settings/sections/General.tsx:151
+#: src/settings/sections/General.tsx:157
 msgid "Automatic port"
 msgstr "Automatic port"
 
@@ -11409,7 +11438,7 @@ msgstr "Launch preset templates"
 msgid "Downloads resume {0}."
 msgstr "Downloads resume {0}."
 
-#: src/lan/SendPanel.tsx:115
+#: src/lan/SendPanel.tsx:125
 msgid "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
 msgstr "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
 
@@ -11418,7 +11447,7 @@ msgid "Mods in this category will move to Uncategorised."
 msgstr "Mods in this category will move to Uncategorised."
 
 #. placeholder {0}: target.name
-#: src/lan/SendPanel.tsx:181
+#: src/lan/SendPanel.tsx:191
 msgid "{0} is still taking your last share"
 msgstr "{0} is still taking your last share"
 
@@ -11531,7 +11560,7 @@ msgstr "{0, plural, one {Last run: {list}} other {Last # runs: {list}}}"
 msgid "You can roll back the completed updates from the profile history."
 msgstr "You can roll back the completed updates from the profile history."
 
-#: src/share/Included.tsx:113
+#: src/share/Included.tsx:115
 msgid "Its source is not known."
 msgstr "Its source is not known."
 
@@ -11860,7 +11889,7 @@ msgid "No game output yet"
 msgstr "No game output yet"
 
 #. placeholder {0}: summary.leftOut
-#: src/share/ImportPreview.tsx:413
+#: src/share/ImportPreview.tsx:428
 msgid "{0} left out"
 msgstr "{0} left out"
 
@@ -11876,7 +11905,7 @@ msgstr "Into a deleted profile"
 msgid "Logs"
 msgstr "Logs"
 
-#: src/lan/SendPanel.tsx:281
+#: src/lan/SendPanel.tsx:294
 msgid "Looking for Mortar users…"
 msgstr "Looking for Mortar users…"
 
@@ -12139,6 +12168,10 @@ msgstr "{loader} | {store} · {lastLine}"
 msgid "One VAR=value per line, for direct launches only; Steam launches ignore them."
 msgstr "One VAR=value per line, for direct launches only; Steam launches ignore them."
 
+#: src/settings/prefCopy.ts:454
+msgid "Share problem choices"
+msgstr "Share problem choices"
+
 #: src/install/ArchivePreview.tsx:104
 msgid "FOMOD installer"
 msgstr "FOMOD installer"
@@ -12306,7 +12339,7 @@ msgstr "Downloading and verifying Mortar {0}…"
 msgid "Delete preset"
 msgstr "Delete preset"
 
-#: src/settings/sections/General.tsx:213
+#: src/settings/sections/General.tsx:214
 msgid "Tips"
 msgstr "Tips"
 
@@ -12520,7 +12553,7 @@ msgstr "Mortar tidied up {0, plural, one {# thing} other {# things}}"
 msgid "Profile exported"
 msgstr "Profile exported"
 
-#: src/settings/prefCopy.ts:454
+#: src/settings/prefCopy.ts:458
 msgid "Show adult mods in browse"
 msgstr "Show adult mods in browse"
 
@@ -12603,7 +12636,7 @@ msgstr "Check this download"
 msgid "Save…"
 msgstr "Save…"
 
-#: src/settings/sections/General.tsx:225
+#: src/settings/sections/General.tsx:226
 msgid "Walk through profiles, Play, mods, and the command palette"
 msgstr "Walk through profiles, Play, mods, and the command palette"
 
@@ -12843,7 +12876,7 @@ msgstr "Report to author…"
 msgid "Opens a GitHub issue with these filled in. You review it before posting."
 msgstr "Opens a GitHub issue with these filled in. You review it before posting."
 
-#: src/lan/SendPanel.tsx:70
+#: src/lan/SendPanel.tsx:72
 msgid "Paired · whole files"
 msgstr "Paired · whole files"
 
@@ -13074,7 +13107,7 @@ msgstr "Fish"
 msgid "Version {0}"
 msgstr "Version {0}"
 
-#: src/settings/prefCopy.ts:476
+#: src/settings/prefCopy.ts:480
 msgid "Browser extension connection"
 msgstr "Browser extension connection"
 
@@ -13178,16 +13211,16 @@ msgstr "On"
 msgid "Sign in to Nexus Mods"
 msgstr "Sign in to Nexus Mods"
 
-#: src/lan/SendPanel.tsx:123
+#: src/lan/SendPanel.tsx:133
 msgid "Send links only"
 msgstr "Send links only"
 
-#: src/settings/prefCopy.ts:469
+#: src/settings/prefCopy.ts:473
 msgid "Open in the tray instead of showing the window"
 msgstr "Open in the tray instead of showing the window"
 
 #: src/share/DestinationGrid.tsx:95
-#: src/share/DestinationPanel.tsx:107
+#: src/share/DestinationPanel.tsx:111
 msgid "No mods to share."
 msgstr "No mods to share."
 
@@ -13210,7 +13243,7 @@ msgstr "Start measuring first."
 msgid "Could not change {0}"
 msgstr "Could not change {0}"
 
-#: src/share/ImportPreview.tsx:208
+#: src/share/ImportPreview.tsx:216
 msgid "Leave out"
 msgstr "Leave out"
 

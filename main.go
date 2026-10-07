@@ -662,8 +662,9 @@ func run() error {
 			_, err := items.Path(gameID, key)
 			return err == nil
 		},
-		Dir:  dataDir,
-		Emit: emit,
+		Dismissals: problemsSvc,
+		Dir:        dataDir,
+		Emit:       emit,
 	})
 	syncSvc, err := syncsvc.New(syncsvc.Deps{
 		Source: syncsvc.NewSource(profiles, shareSvc),

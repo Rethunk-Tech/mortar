@@ -116,6 +116,7 @@ const defaults: Settings = {
   shareIncludeFomodChoices: true,
   shareIncludeNotes: true,
   shareIncludeConfigFiles: true,
+  shareIncludeProblemChoices: true,
   verifyNexusMD5: true,
   showAdultContent: false,
   launchAtLogin: false,

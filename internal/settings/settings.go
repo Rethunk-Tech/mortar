@@ -198,6 +198,7 @@ type Settings struct {
 	ShareIncludeFomodChoices   *bool  `json:"shareIncludeFomodChoices"`
 	ShareIncludeNotes          *bool  `json:"shareIncludeNotes"`
 	ShareIncludeConfigFiles    *bool  `json:"shareIncludeConfigFiles"`
+	ShareIncludeProblemChoices *bool  `json:"shareIncludeProblemChoices"`
 	VerifyNexusMD5             bool   `json:"verifyNexusMD5"`
 	// ShowAdultContent lets browse list mods their sites flag as adult.
 	ShowAdultContent    bool   `json:"showAdultContent"`

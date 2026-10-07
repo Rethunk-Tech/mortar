@@ -407,7 +407,7 @@ func (s *Service) Peers(ctx context.Context) []Peer {
 }
 
 // Send sends a profile's .mortar payload to a discovered peer.
-func (s *Service) Send(ctx context.Context, peerID, game, profileID string) error {
+func (s *Service) Send(ctx context.Context, peerID, game, profileID string, include share.Include) error {
 	s.mu.RLock()
 	enabled := s.enabled
 	s.mu.RUnlock()
@@ -418,9 +418,11 @@ func (s *Service) Send(ctx context.Context, peerID, game, profileID string) erro
 		return errors.New("LAN sharing is unavailable")
 	}
 	return s.sendPayload(ctx, peerID, game, profileID, func(paired bool) ([]byte, error) {
-		inc := share.OwnInclude()
+		inc := include
 		// Archives installed from disk exist nowhere else, so they go only to a paired computer, which copies them.
 		inc.LocalFiles = paired
+		// Config files can hold keys and tokens, so only a computer the player paired gets them.
+		inc.ConfigFiles = inc.ConfigFiles && paired
 		payload, _, err := s.deps.Shares.ExportBytes(game, profileID, inc)
 		return payload, err
 	})

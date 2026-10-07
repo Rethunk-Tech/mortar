@@ -104,6 +104,11 @@ type Include struct {
 	FomodChoices bool `json:"fomodChoices"`
 	Notes        bool `json:"notes"`
 	ConfigFiles  bool `json:"configFiles"`
+	// ProblemChoices carries the dismissed problems and conflict winners; only a .mortar file has room for them.
+	ProblemChoices bool `json:"problemChoices"`
+	// Dismissed are the profile's dismissed-problem tokens, which live in the player's settings; the caller reads
+	// them when ProblemChoices is set.
+	Dismissed []string `json:"-"`
 	// LocalFiles carries archives installed from disk, for a paired computer that copies their store items; the
 	// window never asks for it.
 	LocalFiles bool `json:"-"`
@@ -111,13 +116,13 @@ type Include struct {
 
 // DefaultInclude is the registry default: disabled mods off, the rest on.
 func DefaultInclude() Include {
-	return Include{FomodChoices: true, Notes: true, ConfigFiles: true}
+	return Include{FomodChoices: true, Notes: true, ConfigFiles: true, ProblemChoices: true}
 }
 
 // OwnInclude is what goes between the player's own computers (sync, a paired LAN send): everything, switched-off mods
 // too, since a payload without them would remove them on the other side.
 func OwnInclude() Include {
-	return Include{DisabledMods: true, FomodChoices: true, Notes: true, ConfigFiles: true}
+	return Include{DisabledMods: true, FomodChoices: true, Notes: true, ConfigFiles: true, ProblemChoices: true}
 }
 
 // Result is an encoded profile: the payload, both link forms, and the entries left out.

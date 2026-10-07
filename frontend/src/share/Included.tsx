@@ -7,7 +7,7 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { IncludeOptions } from './IncludeOptions.tsx'
 import { type ShownInfo, sharedMods } from './logic.ts'
-import { includedKeys, leftOutCounts } from './methods.ts'
+import { type IncludeTarget, includedKeys, leftOutCounts } from './methods.ts'
 import { offersFomod, type ShareInclude } from './shareDefaults.ts'
 import { useShareDialog } from './store.ts'
 
@@ -73,17 +73,18 @@ export function Included({
   info,
   include,
   onInclude,
-  file,
+  target,
   total,
 }: {
   info: ShownInfo
   include: ShareInclude
   onInclude: (next: ShareInclude) => void
-  file: boolean
+  target: IncludeTarget
   // The profile's mod count, as the title bar shows it.
   total: number
 }) {
   const { t, i18n } = useLingui()
+  const file = target !== 'link'
   const [changing, setChanging] = useState(false)
   const [which, setWhich] = useState(false)
   const [showMods, setShowMods] = useState(false)
@@ -94,6 +95,7 @@ export function Included({
     fomodChoices: t`FOMOD choices`,
     configFiles: t`Config files`.toLocaleLowerCase(i18n.locale),
     disabledMods: '',
+    problemChoices: t`Problem choices`.toLocaleLowerCase(i18n.locale),
   }
   const shared = sharedMods(info)
   const count = total
@@ -101,7 +103,7 @@ export function Included({
     shared < total
       ? t`${shared} of ${total} mods`
       : plural(count, { one: '# mod', other: '# mods' })
-  const line = [mods, ...includedKeys(include, { file, fomod }).map((k) => labels[k])].join(' · ')
+  const line = [mods, ...includedKeys(include, { target, fomod }).map((k) => labels[k])].join(' · ')
   const { local, other } = leftOutCounts(info.leftOut)
   const reason = (id: string) => {
     switch (id) {
@@ -148,7 +150,7 @@ export function Included({
         </Button>
       </Box>
       {showMods ? <ModNames info={info} /> : null}
-      {changing ? <IncludeOptions value={include} onChange={onInclude} file={file} /> : null}
+      {changing ? <IncludeOptions value={include} onChange={onInclude} target={target} /> : null}
       {info.leftOut.length > 0 ? (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ display: 'flex', color: 'warning.main' }}>

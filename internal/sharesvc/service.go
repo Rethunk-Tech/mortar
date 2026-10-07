@@ -96,6 +96,8 @@ type Deps struct {
 	Queue      Queue
 	// Stored reports whether a source key is already available in Mortar's store.
 	Stored func(game, key string) bool
+	// Dismissals keeps the dismissed problems of each profile; nil means a share neither carries nor adopts them.
+	Dismissals Dismissals
 	// Dir is the data folder holding pending-configs.json; empty keeps pending imports in memory only.
 	Dir string
 	// Emit is nil in tests that do not watch events.
@@ -156,6 +158,7 @@ type session struct {
 	stored   map[string]bool
 	external []migrate.ModPreview
 	groups   []share.FileGroup
+	choices  share.ProblemChoices
 }
 
 func (s *Service) emit(name string, data any) {
@@ -343,7 +346,7 @@ func (s *Service) SaveFile(game, profileID string, keys []string, include share.
 		dest += ".mortar"
 	}
 	var buf bytes.Buffer
-	skipped, err := share.Write(&buf, game, p, modsDir, include)
+	skipped, err := share.Write(&buf, game, p, modsDir, s.withDismissed(game, profileID, include))
 	if err != nil {
 		return Saved{}, err
 	}
@@ -366,7 +369,7 @@ func (s *Service) ExportBytes(game, profileID string, include share.Include) ([]
 		return nil, nil, err
 	}
 	var buf bytes.Buffer
-	skipped, err := share.Write(&buf, game, p, modsDir, include)
+	skipped, err := share.Write(&buf, game, p, modsDir, s.withDismissed(game, profileID, include))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -470,10 +473,12 @@ func (s *Service) previewShared(ctx context.Context, game string, pv share.Previ
 		return Preview{}, err
 	}
 	out.Settings += len(pv.LoaderConfigs)
+	out.Choices = pv.Choices.Count()
 	s.mu.Lock()
 	if s.current != nil && s.current.id == out.Session {
 		s.current.description = pv.Description
 		s.current.groups = pv.Groups
+		s.current.choices = pv.Choices
 		s.current.loaderConfigs = pv.LoaderConfigs
 		s.current.preview.Settings = out.Settings
 	}
@@ -1045,6 +1050,12 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		}
 		return Result{}, err
 	}
+	if err := s.applySharedChoices(game, profileID, cur.choices); err != nil {
+		if created {
+			err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
+		}
+		return Result{}, err
+	}
 	var placed []string
 	if replace {
 		if err := s.d.Profiles.FollowOrder(game, profileID, refRank(cur.refs)); err != nil {
@@ -1060,7 +1071,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		s.mu.Lock()
 		s.pending = append(s.pending, &pending{
 			Game: game, Profile: profileID, BatchID: batchID, Wanted: wanted, Configs: configs,
-			Refs: slices.Clone(cur.refs), Groups: slices.Clone(cur.groups), Follow: replace || created, Placed: placed,
+			Refs: slices.Clone(cur.refs), Groups: slices.Clone(cur.groups), Choices: cur.choices, Follow: replace || created, Placed: placed,
 		})
 		s.mu.Unlock()
 		s.savePending()
@@ -1151,6 +1162,8 @@ type pending struct {
 	Configs []share.Config    `json:"configs"`
 	Refs    []share.Ref       `json:"refs,omitempty"`
 	Groups  []share.FileGroup `json:"groups,omitempty"`
+	// Choices wait for the downloads that hold the packs a win names.
+	Choices share.ProblemChoices `json:"choices,omitzero"`
 	// Follow puts each mod that lands at its place in Refs instead of the end.
 	Follow bool `json:"follow,omitempty"`
 	// Placed are the keys of entries already in their shared place; the player may have moved them since.
@@ -1254,8 +1267,14 @@ func (s *Service) queueChanged(st queue.State) {
 				changed = true
 			}
 		}
+		if !p.Choices.Empty() && (seen == "on-profile" || settled >= len(p.Wanted)) {
+			if err := s.applySharedChoices(p.Game, p.Profile, p.Choices); err == nil {
+				p.Choices = share.ProblemChoices{}
+				changed = true
+			}
+		}
 		// Configs stay until they land; queue eviction must not drop them.
-		if len(p.Configs) == 0 && len(p.Refs) == 0 && len(p.Groups) == 0 {
+		if len(p.Configs) == 0 && len(p.Refs) == 0 && len(p.Groups) == 0 && p.Choices.Empty() {
 			s.mu.Lock()
 			s.pending = slices.DeleteFunc(s.pending, func(x *pending) bool { return x == p })
 			s.mu.Unlock()
