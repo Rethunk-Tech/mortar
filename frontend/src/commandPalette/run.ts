@@ -2,6 +2,7 @@ import { type TabId, useTab } from '../game/tab.ts'
 import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { useMods } from '../mods/store.ts'
+import { openConfigPage } from '../mods/typedConfig/configList.ts'
 import { type GameId, isGameId, type SettingsSection, useNav } from '../nav/store.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -59,15 +60,7 @@ function runAction(id: string): void {
   }
   if (id.startsWith('configure-mod:')) {
     const rest = id.slice('configure-mod:'.length)
-    const cut = rest.indexOf('/')
-    const mod = useMods
-      .getState()
-      .mods.find(
-        (candidate) => candidate.key === rest.slice(0, cut) && candidate.id === rest.slice(cut + 1),
-      )
-    if (mod) {
-      useMods.getState().openConfig(mod).catch(reportUnexpected)
-    }
+    openConfigPage(rest.slice(rest.indexOf('/') + 1))
     return
   }
   if (id.startsWith('toggle-mod:')) {

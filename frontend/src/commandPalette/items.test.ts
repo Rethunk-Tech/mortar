@@ -40,6 +40,27 @@ test('the Stream overlay action shows only for a loader that feeds the overlay',
   expect(ids(false)).not.toContain('action:stream-overlay')
 })
 
+test('Configure rows are offered only for mods with a config source', () => {
+  const find = (configurable?: ReadonlySet<string>) =>
+    buildPaletteItems({
+      profiles: [],
+      mods: [
+        { key: 'a', id: 'A.Mod', name: 'A' },
+        { key: 'b', id: 'B.Mod', name: 'B' },
+      ],
+      ...(configurable ? { configurable } : {}),
+      sections: [],
+      shortcuts: [],
+      shortcutLabels: {},
+      labels,
+      profileOpen: true,
+    })
+      .filter((i) => i.id.startsWith('configure-mod:'))
+      .map((i) => i.id)
+  expect(find(new Set(['B.Mod']))).toEqual(['configure-mod:b/B.Mod'])
+  expect(find()).toEqual([])
+})
+
 test('the crash check action carries the reason it cannot run', () => {
   const find = (crashCheckBlocked: string | null) =>
     buildPaletteItems({

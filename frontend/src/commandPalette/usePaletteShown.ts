@@ -2,6 +2,7 @@ import type { I18n } from '@lingui/core'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { collectionHeader } from '../game/collectionHeader.ts'
 import { useCollectionStatus } from '../game/useCollectionStatus.ts'
+import { useConfigList } from '../mods/typedConfig/configList.ts'
 import type { SettingsSection } from '../nav/store.ts'
 import { userModEntries } from '../profiles/count.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
@@ -36,10 +37,13 @@ export function usePaletteShown(input: {
       name: mod.name,
     })),
   )
+  const configList = useConfigList((s) => s.byProfile[openId ?? '']?.list)
+  const configurable = new Set((configList?.mods ?? []).map((m) => m.id))
   return arrangePalette(
     buildPaletteItems({
       profiles: profiles.map((p) => ({ id: p.id, name: p.name })),
       mods,
+      configurable,
       sections,
       shortcuts: SHORTCUTS.map((row) => ({ ...row, keys: bindings[row.id] })),
       shortcutLabels,

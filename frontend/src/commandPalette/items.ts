@@ -79,6 +79,8 @@ export interface PaletteLabels {
 export function buildPaletteItems(input: {
   profiles: { id: string; name: string }[]
   mods: { key: string; id: string; name: string }[]
+  // Ids of the mods with a config source; only they get a Configure row. Left out, none does.
+  configurable?: ReadonlySet<string>
   sections: { id: SettingsSection; label: string }[]
   shortcuts: readonly Shortcut[]
   shortcutLabels: Partial<Record<ShortcutId, string>>
@@ -91,6 +93,7 @@ export function buildPaletteItems(input: {
   const {
     profiles,
     mods,
+    configurable,
     sections,
     shortcuts,
     shortcutLabels,
@@ -128,13 +131,15 @@ export function buildPaletteItems(input: {
       hint: labels.modHint,
       match: localId(mod.id),
     })
-    items.push({
-      id: `configure-mod:${mod.key}/${mod.id}`,
-      kind: 'action',
-      label: labels.configureMod(mod.name),
-      hint: labels.modHint,
-      match: localId(mod.id),
-    })
+    if (configurable?.has(mod.id)) {
+      items.push({
+        id: `configure-mod:${mod.key}/${mod.id}`,
+        kind: 'action',
+        label: labels.configureMod(mod.name),
+        hint: labels.modHint,
+        match: localId(mod.id),
+      })
+    }
   }
   for (const section of sections) {
     items.push({
