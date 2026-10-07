@@ -11,7 +11,6 @@ import { formatDuration } from '../console/startupView.ts'
 import { compactQuery } from '../game/compact.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { When } from '../i18n/When.tsx'
-import { useProfileLoader } from '../profiles/store.ts'
 import { boundShortcut, type ShortcutId } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { useWidth } from '../shell/useWidth.ts'
@@ -22,7 +21,6 @@ import { CompatChip } from './CompatChip.tsx'
 import { useColumnAvailable, useSavedColumns } from './contributedColumns.ts'
 import { useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
-import { listHeadingFor } from './group.ts'
 import {
   columnMenuFromEvent,
   fitListColumns,
@@ -53,6 +51,7 @@ import {
 } from './parts.tsx'
 import { useSelection } from './selection.ts'
 import { useMods } from './store.ts'
+import { useListHeading } from './useListHeading.ts'
 import { useModGroups } from './useModGroups.ts'
 import { flattenModGroups } from './virtualRows.ts'
 
@@ -378,19 +377,7 @@ export function ModList({ profile, mods }: { profile: Profile; mods: Mod[] }) {
   )
   const onMenu = (e: MouseEvent) => setMenu(columnMenuFromEvent(e))
   const grid = listGridColumns(cols)
-  const loaderName = useProfileLoader()?.name ?? ''
-  const headingFor = listHeadingFor(groupBy, {
-    category: t`Uncategorised`,
-    source: t`Unknown source`,
-    tag: t`Untagged`,
-    author: t`Unknown author`,
-    group: t`Ungrouped`,
-    problems: t`Mods with problems`,
-    update: t`Update available`,
-    enabled: t`Enabled`,
-    disabled: t`Disabled`,
-    smapi: t`${loaderName} mods`,
-  })
+  const headingFor = useListHeading(groupBy)
   const onCommit = () => {
     if (preview) {
       persistColumns([...preview, ...visible.filter((id) => !preview.includes(id))])

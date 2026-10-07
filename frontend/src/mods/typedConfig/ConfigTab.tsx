@@ -22,8 +22,12 @@ import { EmptyState } from '../../shell/EmptyState.tsx'
 import { SearchField } from '../../shell/SearchField.tsx'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
+import { GroupHeaderRow } from '../ModsGroupHeader.tsx'
 import { LetterTile } from '../parts.tsx'
 import { useMods } from '../store.ts'
+import { useListHeading } from '../useListHeading.ts'
+import { useModGroups } from '../useModGroups.ts'
+import { flattenModGroups } from '../virtualRows.ts'
 import { ConfigPane } from './ConfigPane.tsx'
 import {
   type ConfigChip,
@@ -138,6 +142,8 @@ export function ConfigTab({ profile, game }: { profile: Profile; game: string })
   const load = useConfigList((s) => s.load)
   const choose = useConfigList((s) => s.select)
   const mods = useMods((s) => s.mods)
+  const view = useModGroups(mods, profile)
+  const heading = useListHeading(view.groupBy)
   const [query, setQuery] = useState('')
   const [show, setShow] = useState<ConfigShow>('all')
   const stamp = String(profile.updated)
@@ -148,6 +154,28 @@ export function ConfigTab({ profile, game }: { profile: Profile; game: string })
   const total = all.length
   const other = list?.other ?? []
   const shown = useMemo(() => filterConfigMods(all, query, show), [all, query, show])
+  // The list follows the Mods page's grouping and sort: its groups, filtered to the mods with a config source.
+  const listed = useMemo(() => {
+    const byMod = new Map(shown.map((c) => [`${c.key}/${c.id}`, c]))
+    const rows = view.groups
+      .map((g) => ({
+        key: g.key,
+        items: g.items.flatMap((r) => {
+          const config = byMod.get(`${r.mod.key}/${r.mod.id}`)
+          return config ? [config] : []
+        }),
+      }))
+      .filter((g) => g.items.length > 0)
+    return flattenModGroups(rows, {
+      grouped: view.groupBy !== 'none',
+      collapsed: view.collapsed,
+      idOf: (c) => c.id,
+    })
+  }, [shown, view.groups, view.groupBy, view.collapsed])
+  const headerGroups = useMemo(
+    () => view.groups.map((g) => ({ key: g.key, items: g.items })),
+    [view.groups],
+  )
   const selection = selectionOf(list, stored, profile.id)
   if (!list) {
     return null
@@ -213,14 +241,29 @@ export function ConfigTab({ profile, game }: { profile: Profile; game: string })
           }}
         >
           <List aria-label={t`Mods with settings`} sx={{ flex: 1, overflowY: 'auto', py: 0 }}>
-            {shown.map((m) => (
-              <ModRow
-                key={m.id}
-                config={m}
-                selected={modSelection(m.id) === selection}
-                onSelect={() => choose(profile.id, modSelection(m.id))}
-              />
-            ))}
+            {listed.map((item) =>
+              item.kind === 'header' ? (
+                <GroupHeaderRow
+                  key={item.key}
+                  groupKey={item.groupKey}
+                  count={item.count}
+                  label={heading(item.groupKey)}
+                  collapsed={view.collapsed}
+                  gameId={view.gameId}
+                  setCollapsed={view.setCollapsed}
+                  groupBy={view.groupBy}
+                  tagHint={t`A mod with several tags appears under its first tag.`}
+                  groups={headerGroups}
+                />
+              ) : item.kind === 'row' ? (
+                <ModRow
+                  key={item.key}
+                  config={item.item}
+                  selected={modSelection(item.item.id) === selection}
+                  onSelect={() => choose(profile.id, modSelection(item.item.id))}
+                />
+              ) : null,
+            )}
             {shown.length === 0 && all.length > 0 ? (
               <Typography sx={{ px: space.pad, py: space.gap, color: 'text.secondary' }}>
                 {t`No mods match`}

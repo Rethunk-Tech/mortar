@@ -6,7 +6,6 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { compact, compactQuery } from '../game/compact.ts'
-import { useProfileLoader } from '../profiles/store.ts'
 import { boundShortcut } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { space } from '../theme/density.ts'
@@ -17,7 +16,7 @@ import { actingMods, toggleActing } from './actingMods.ts'
 import { CompatChip } from './CompatChip.tsx'
 import { showModId, useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
-import { firstTag, listHeadingFor } from './group.ts'
+import { firstTag } from './group.ts'
 import type { ListRow } from './listColumns.ts'
 import { entryOf, modId, nexusIdOf } from './lookup.ts'
 import { ModMenu } from './ModMenu.tsx'
@@ -38,6 +37,7 @@ import {
 } from './parts.tsx'
 import { useSelection } from './selection.ts'
 import { useMods } from './store.ts'
+import { useListHeading } from './useListHeading.ts'
 import { useModGroups } from './useModGroups.ts'
 import {
   flattenModGroups,
@@ -460,19 +460,7 @@ export function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
     profile,
   )
   const tagHint = t`A mod with several tags appears under its first tag.`
-  const loaderName = useProfileLoader()?.name ?? ''
-  const heading = listHeadingFor(groupBy, {
-    category: t`Uncategorised`,
-    source: t`Unknown source`,
-    tag: t`Untagged`,
-    author: t`Unknown author`,
-    group: t`Ungrouped`,
-    problems: t`Mods with problems`,
-    update: t`Update available`,
-    enabled: t`Enabled`,
-    disabled: t`Disabled`,
-    smapi: t`${loaderName} mods`,
-  })
+  const heading = useListHeading(groupBy)
   return (
     <CardsPane
       groups={groups}

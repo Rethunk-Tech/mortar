@@ -1028,8 +1028,7 @@ msgstr "Don't ask again"
 msgid "Make a pack win"
 msgstr "Make a pack win"
 
-#: src/mods/ModCards.tsx:474
-#: src/mods/ModList.tsx:392
+#: src/mods/useListHeading.ts:19
 msgid "{loaderName} mods"
 msgstr "{loaderName} mods"
 
@@ -1355,7 +1354,7 @@ msgstr "Create a bundle to reuse a set of mods."
 msgid "Show files"
 msgstr "Show files"
 
-#: src/mods/typedConfig/ConfigTab.tsx:215
+#: src/mods/typedConfig/ConfigTab.tsx:243
 msgid "Mods with settings"
 msgstr "Mods with settings"
 
@@ -1960,7 +1959,7 @@ msgstr "Running for {time}"
 msgid "Name"
 msgstr "Name"
 
-#: src/mods/typedConfig/ConfigTab.tsx:232
+#: src/mods/typedConfig/ConfigTab.tsx:275
 msgid "Loader and other"
 msgstr "Loader and other"
 
@@ -2272,7 +2271,7 @@ msgstr "Mortar is up to date"
 #: src/mods/Toolbar.tsx:343
 #: src/mods/Toolbar.tsx:369
 #: src/mods/Toolbar.tsx:387
-#: src/mods/typedConfig/ConfigTab.tsx:197
+#: src/mods/typedConfig/ConfigTab.tsx:225
 #: src/profiles/CompareDialog.tsx:284
 #: src/profiles/CompareTop.tsx:182
 msgid "Filter mods"
@@ -2405,7 +2404,7 @@ msgstr "Show the first-run tips again"
 #: src/browse/BrowseShow.tsx:45
 #: src/mods/Toolbar.tsx:141
 #: src/mods/Toolbar.tsx:160
-#: src/mods/typedConfig/ConfigTab.tsx:108
+#: src/mods/typedConfig/ConfigTab.tsx:112
 #: src/nxm/store.ts:53
 #: src/profiles/CompareDialog.tsx:185
 #: src/profiles/LaunchPresetDialog.tsx:85
@@ -2420,8 +2419,8 @@ msgstr "Show"
 
 #: src/mods/typedConfig/ConfigPane.tsx:163
 #: src/mods/typedConfig/ConfigPane.tsx:212
-#: src/mods/typedConfig/ConfigTab.tsx:48
-#: src/mods/typedConfig/ConfigTab.tsx:94
+#: src/mods/typedConfig/ConfigTab.tsx:52
+#: src/mods/typedConfig/ConfigTab.tsx:98
 msgid "In-game menu"
 msgstr "In-game menu"
 
@@ -2441,7 +2440,7 @@ msgid "{count, plural, one {Overlaps with {by}: both change {detail}} other {Ove
 msgstr "{count, plural, one {Overlaps with {by}: both change {detail}} other {Overlaps with {by}: all change {detail}}}"
 
 #. placeholder {0}: chip.n
-#: src/mods/typedConfig/ConfigTab.tsx:46
+#: src/mods/typedConfig/ConfigTab.tsx:50
 msgid "{0} waiting"
 msgstr "{0} waiting"
 
@@ -3001,7 +3000,7 @@ msgstr "Find a mod in all profiles…"
 msgid "Compare…"
 msgstr "Compare…"
 
-#: src/mods/typedConfig/ConfigTab.tsx:159
+#: src/mods/typedConfig/ConfigTab.tsx:187
 msgid "No mod settings yet"
 msgstr "No mod settings yet"
 
@@ -3798,9 +3797,8 @@ msgid "Collapsed"
 msgstr "Collapsed"
 
 #: src/launch/SweepDialog.tsx:30
-#: src/mods/ModCards.tsx:471
-#: src/mods/ModList.tsx:389
 #: src/mods/Toolbar.tsx:63
+#: src/mods/useListHeading.ts:16
 msgid "Update available"
 msgstr "Update available"
 
@@ -3881,9 +3879,9 @@ msgid "Not checked yet."
 msgstr "Not checked yet."
 
 #: src/mods/problemText.ts:38
-#: src/mods/typedConfig/ConfigTab.tsx:48
-#: src/mods/typedConfig/ConfigTab.tsx:93
-#: src/mods/typedConfig/ConfigTab.tsx:242
+#: src/mods/typedConfig/ConfigTab.tsx:52
+#: src/mods/typedConfig/ConfigTab.tsx:97
+#: src/mods/typedConfig/ConfigTab.tsx:285
 msgid "Changed"
 msgstr "Changed"
 
@@ -4431,8 +4429,9 @@ msgid "Mortar: {label}"
 msgstr "Mortar: {label}"
 
 #: src/mods/ModCards.tsx:462
-#: src/mods/ModList.tsx:365
+#: src/mods/ModList.tsx:364
 #: src/mods/Toolbar.tsx:194
+#: src/mods/typedConfig/ConfigTab.tsx:255
 msgid "A mod with several tags appears under its first tag."
 msgstr "A mod with several tags appears under its first tag."
 
@@ -4467,14 +4466,13 @@ msgstr "Show in queue"
 
 #: src/mods/AuthorDialog.tsx:135
 #: src/mods/listRows.ts:134
-#: src/mods/ModCards.tsx:473
 #: src/mods/ModDependencyTree.tsx:104
-#: src/mods/ModList.tsx:391
 #: src/mods/OptionalFileRows.tsx:123
 #: src/mods/PreviewPick.tsx:23
 #: src/mods/Sidebar.tsx:321
 #: src/mods/Sidebar.tsx:334
 #: src/mods/Toolbar.tsx:62
+#: src/mods/useListHeading.ts:18
 #: src/profiles/CompareTable.tsx:76
 #: src/profiles/GameModsDialog.tsx:37
 #: src/profiles/PackImportDialog.tsx:112
@@ -4769,7 +4767,7 @@ msgid "Back up to a file…"
 msgstr "Back up to a file…"
 
 #. placeholder {0}: list.without
-#: src/mods/typedConfig/ConfigTab.tsx:252
+#: src/mods/typedConfig/ConfigTab.tsx:295
 msgid "{0, plural, one {# mod has no config yet; mods create it the first time the game runs.} other {# mods have no config yet; mods create it the first time the game runs.}}"
 msgstr "{0, plural, one {# mod has no config yet; mods create it the first time the game runs.} other {# mods have no config yet; mods create it the first time the game runs.}}"
 
@@ -4975,8 +4973,7 @@ msgstr "A portable copy keeps its data beside the program."
 msgid "Save these settings to a file, or load them on another computer."
 msgstr "Save these settings to a file, or load them on another computer."
 
-#: src/mods/ModCards.tsx:469
-#: src/mods/ModList.tsx:387
+#: src/mods/useListHeading.ts:14
 msgid "Ungrouped"
 msgstr "Ungrouped"
 
@@ -5640,8 +5637,7 @@ msgstr "Profile settings, mod lists and configs are written here and offered to 
 msgid "Duplicate plugins"
 msgstr "Duplicate plugins"
 
-#: src/mods/ModCards.tsx:466
-#: src/mods/ModList.tsx:384
+#: src/mods/useListHeading.ts:11
 msgid "Unknown source"
 msgstr "Unknown source"
 
@@ -6693,8 +6689,7 @@ msgstr "Discard the change to {name}"
 msgid "Another preset already has this name."
 msgstr "Another preset already has this name."
 
-#: src/mods/ModCards.tsx:468
-#: src/mods/ModList.tsx:386
+#: src/mods/useListHeading.ts:13
 msgid "Unknown author"
 msgstr "Unknown author"
 
@@ -8558,7 +8553,7 @@ msgstr "Switch to Load order"
 msgid "Nothing to clean up."
 msgstr "Nothing to clean up."
 
-#: src/mods/typedConfig/ConfigTab.tsx:92
+#: src/mods/typedConfig/ConfigTab.tsx:96
 msgid "All"
 msgstr "All"
 
@@ -8784,8 +8779,7 @@ msgstr "{0}: in Mortar"
 msgid "These mods require each other."
 msgstr "These mods require each other."
 
-#: src/mods/ModCards.tsx:467
-#: src/mods/ModList.tsx:385
+#: src/mods/useListHeading.ts:12
 msgid "Untagged"
 msgstr "Untagged"
 
@@ -9117,8 +9111,7 @@ msgstr "Make {0} match {1}"
 msgid "Set default preset…"
 msgstr "Set default preset…"
 
-#: src/mods/ModCards.tsx:470
-#: src/mods/ModList.tsx:388
+#: src/mods/useListHeading.ts:15
 msgid "Mods with problems"
 msgstr "Mods with problems"
 
@@ -9152,9 +9145,8 @@ msgid "Could not read the window state"
 msgstr "Could not read the window state"
 
 #: src/mods/CategoryEditor.tsx:213
-#: src/mods/ModCards.tsx:465
-#: src/mods/ModList.tsx:383
 #: src/mods/SelectionBarDialogs.tsx:126
+#: src/mods/useListHeading.ts:10
 msgid "Uncategorised"
 msgstr "Uncategorised"
 
@@ -9747,7 +9739,7 @@ msgstr "You endorsed this mod."
 msgid "Open on Nexus"
 msgstr "Open on Nexus"
 
-#: src/mods/ModList.tsx:114
+#: src/mods/ModList.tsx:113
 msgid "overrides {count, plural, one {# file} other {# files}}"
 msgstr "overrides {count, plural, one {# file} other {# files}}"
 
@@ -10486,11 +10478,10 @@ msgstr "Auto-enable requirements"
 
 #: src/mods/AuthorDialog.tsx:134
 #: src/mods/listRows.ts:134
-#: src/mods/ModCards.tsx:472
 #: src/mods/ModDependencyTree.tsx:102
-#: src/mods/ModList.tsx:390
 #: src/mods/Sidebar.tsx:321
 #: src/mods/Sidebar.tsx:334
+#: src/mods/useListHeading.ts:17
 #: src/profiles/CompareTable.tsx:76
 #: src/profiles/ProfilesPage.tsx:268
 #: src/profiles/ProfilesPage.tsx:277
@@ -10967,7 +10958,7 @@ msgid "Flagged by {0}: {1}{2}"
 msgstr "Flagged by {0}: {1}{2}"
 
 #: src/mods/Toolbar.tsx:342
-#: src/mods/typedConfig/ConfigTab.tsx:198
+#: src/mods/typedConfig/ConfigTab.tsx:226
 msgid "{total, plural, one {Filter # mod} other {Filter # mods}}"
 msgstr "{total, plural, one {Filter # mod} other {Filter # mods}}"
 
@@ -11011,7 +11002,7 @@ msgstr "Stop the game to test a launch."
 #: src/firstrunTour/TourPopover.tsx:42
 #: src/games/GameSelect.tsx:258
 #: src/launch/PlayControl.tsx:175
-#: src/mods/typedConfig/ConfigTab.tsx:162
+#: src/mods/typedConfig/ConfigTab.tsx:190
 #: src/settings/GameSettingsPage.tsx:72
 #: src/settings/GameSettingsPage.tsx:100
 msgid "Play"
@@ -11201,7 +11192,7 @@ msgstr "Copy details"
 msgid "FromArea {0}"
 msgstr "FromArea {0}"
 
-#: src/mods/typedConfig/ConfigTab.tsx:166
+#: src/mods/typedConfig/ConfigTab.tsx:194
 msgid "Mods write their settings the first time the game runs."
 msgstr "Mods write their settings the first time the game runs."
 
@@ -11406,7 +11397,7 @@ msgstr "{name} takes {own} of your {total} start; {0, plural, one {# content pac
 msgid "Installing {loaderName}…"
 msgstr "Installing {loaderName}…"
 
-#: src/mods/typedConfig/ConfigTab.tsx:95
+#: src/mods/typedConfig/ConfigTab.tsx:99
 msgid "Waiting for next launch"
 msgstr "Waiting for next launch"
 
@@ -13859,7 +13850,7 @@ msgid "Template deleted"
 msgstr "Template deleted"
 
 #: src/mods/ModsTab.tsx:133
-#: src/mods/typedConfig/ConfigTab.tsx:226
+#: src/mods/typedConfig/ConfigTab.tsx:269
 msgid "No mods match"
 msgstr "No mods match"
 
