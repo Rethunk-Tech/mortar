@@ -5,7 +5,10 @@
 # --allow-unscanned. The test strings are assembled from parts, so this file never holds it whole and Defender leaves the
 # script alone; Defender may still quarantine the zip, so it is rewritten right before each install.
 # Exits with the number of failed checks.
-param([string]$Exe = "$env:LOCALAPPDATA\Programs\Mortar\mortar.exe", [string]$Out = "$env:LOCALAPPDATA\Temp\mortar-av-smoke.txt")
+# -ZipDir is where the test zip is written. Give it a Defender exclusion first (an admin runs
+# Add-MpPreference -ExclusionPath C:\avsmoke), so the zip survives until Mortar reads it; Mortar's own staging folder is
+# not excluded, so the scan of the extracted files, or real-time protection on them, must still refuse the install.
+param([string]$Exe = "$env:LOCALAPPDATA\Programs\Mortar\mortar.exe", [string]$Out = "$env:LOCALAPPDATA\Temp\mortar-av-smoke.txt", [string]$ZipDir = 'C:\avsmoke')
 $ErrorActionPreference = 'Continue'
 $fails = 0
 Remove-Item $Out -ErrorAction SilentlyContinue
@@ -18,7 +21,8 @@ function Finish { "failures: $fails" | Tee-Object -FilePath $Out -Append; exit $
 
 $game = 'stardew'
 $profile = 'av-smoke-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
-$zip = Join-Path $env:TEMP 'eicar-test.zip'
+New-Item -ItemType Directory -Path $ZipDir -Force | Out-Null
+$zip = Join-Path $ZipDir 'eicar-test.zip'
 
 # The detection input depends on the scanner: Defender's AMSI provider reliably reports Microsoft's documented AMSI test
 # sample, clamd reports EICAR. Both are assembled from parts, so this file never holds either whole.
@@ -73,13 +77,20 @@ $refused = (& $Exe --json install $game $profile $zip 2>&1 | Out-String)
 $refusedCode = $LASTEXITCODE
 Note "install output: $($refused.Trim())"
 Check "install refused (exit $refusedCode)" ($refusedCode -ne 0)
-Check 'refusal has kind malware' ($refused -match '"kind":\s*"malware"')
+Check 'install refused with kind malware' ($refused -match '"kind":\s*"malware"')
+# Either the AMSI scan of the extracted files or Windows real-time protection on a file Mortar wrote refuses the install.
+$caught = if ($refused -match 'Windows removed') { 'Windows real-time protection' } elseif ($refused -match 'antivirus \(([^)]+)\)') { $Matches[1] } else { 'unknown' }
+Note "refused by: $caught"
 
-Write-Zip $scanner
-$anyway = (& $Exe install $game $profile $zip --allow-unscanned 2>&1 | Out-String)
-Check "install --allow-unscanned succeeds ($($anyway.Trim()))" (($LASTEXITCODE -eq 0) -and ($anyway -match 'Installed'))
-$history = (& $Exe profile history $game $profile 2>&1 | Out-String)
-Check 'history records the override' ($history -match 'although the antivirus flagged')
+if ($caught -eq 'Windows real-time protection') {
+    Note '--allow-unscanned skipped: Windows removed the file itself, so there is nothing to install anyway'
+} else {
+    Write-Zip $scanner
+    $anyway = (& $Exe install $game $profile $zip --allow-unscanned 2>&1 | Out-String)
+    Check "install --allow-unscanned succeeds ($($anyway.Trim()))" (($LASTEXITCODE -eq 0) -and ($anyway -match 'Installed'))
+    $history = (& $Exe profile history $game $profile 2>&1 | Out-String)
+    Check 'history records the override' ($history -match 'although the antivirus flagged')
+}
 
 $null = (& $Exe profile delete $game $profile 2>&1 | Out-String)
 Remove-Item $zip -ErrorAction SilentlyContinue

@@ -35,10 +35,11 @@ func RealTimeBlock(game string, err error, staging ...string) error {
 	if err == nil || usererr.KindOf(err) == usererr.Malware {
 		return err
 	}
-	if !(runtime.GOOS == "windows" && isVirusErrno(err)) && !vanishedFrom(err, staging) {
+	if (runtime.GOOS != "windows" || !isVirusErrno(err)) && !vanishedFrom(err, staging) {
 		return err
 	}
-	return usererr.Wrap(usererr.Malware, &DetectedError{Game: game, Removed: true, Detection: avscan.Detection{Scanner: RealTimeScanner}})
+	hit := avscan.Detection{Scanner: RealTimeScanner}
+	return usererr.Wrap(usererr.Malware, &DetectedError{Game: game, Removed: true, Detection: hit})
 }
 
 func vanishedFrom(err error, staging []string) bool {
