@@ -6,16 +6,20 @@ import { compact } from './compact.ts'
 export function HomePanel({
   title,
   span = 1,
+  card,
   children,
 }: {
   title: string
   span?: 1 | 2
+  // Names the card so the grid can restyle it by what sits beside it.
+  card?: string
   children: ReactNode
 }) {
   return (
     <Box
       component="section"
       aria-label={title}
+      data-card={card}
       sx={{
         gridColumn: `span ${span}`,
         [compact]: { gridColumn: 'auto' },

@@ -44,7 +44,7 @@ function AtAGlance({ profile, game }: { profile: Profile; game: string }) {
   const problems = useMods((s) => (s.problems === null ? null : problemCount(s.problems)))
   const view = glance(userModCount(profile), badges?.updates ?? 0, problems)
   return (
-    <HomePanel title={t`At a glance`}>
+    <HomePanel title={t`At a glance`} card="glance">
       <Typography>
         {modsLabel(view.mods)}
         {view.updates > 0 ? (
@@ -92,7 +92,7 @@ function SavesPanel() {
   const { shown, more } = savesView(filterAndSortSaves(fits, ''))
   const seasons = [t`Spring`, t`Summer`, t`Fall`, t`Winter`]
   return (
-    <HomePanel title={t`Saves`}>
+    <HomePanel title={t`Saves`} card="saves">
       {shown.length === 0 ? (
         <Typography color="text.secondary">{t`No saves yet`}</Typography>
       ) : (
@@ -169,7 +169,13 @@ export function Home({
           gap: 2,
           px: 4,
           py: 2.5,
-          [compact]: { gridTemplateColumns: 'minmax(0, 1fr)', px: 2 },
+          // Saves right after At a glance means no Changes card shares its row, so it takes the whole row.
+          '& [data-card="glance"] + [data-card="saves"]': { gridColumn: 'span 3' },
+          [compact]: {
+            gridTemplateColumns: 'minmax(0, 1fr)',
+            px: 2,
+            '& [data-card="glance"] + [data-card="saves"]': { gridColumn: 'auto' },
+          },
         }}
       >
         <CrashHintCard game={game} profileId={profile.id} crashedAt={crashedAt} />
