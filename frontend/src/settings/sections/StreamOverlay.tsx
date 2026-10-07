@@ -115,7 +115,7 @@ function OverlayValues({
   const { t } = useLingui()
   const [copiedKey, setCopiedKey] = useState('')
   const copy = (text: string, key: string) => {
-    copyText(text, copied).then((ok) => {
+    void copyText(text, copied).then((ok) => {
       if (!ok) {
         return
       }
@@ -197,7 +197,7 @@ function OverlayHowTo({ copied }: { copied: string }) {
         size="small"
         startIcon={<Copy size={14} />}
         onClick={() => {
-          copyText(OVERLAY_EXAMPLE_CSS, copied).then((ok) => {
+          void copyText(OVERLAY_EXAMPLE_CSS, copied).then((ok) => {
             if (!ok) {
               return
             }
@@ -249,7 +249,6 @@ function OverlayConnection({
 }) {
   const { t } = useLingui()
   const copied = t`Copied`
-  const failCopy = t`Could not copy`
   const [draft, setDraft] = useState(String(port))
   const [portError, setPortError] = useState(false)
   const [shown, setShown] = useState(false)
