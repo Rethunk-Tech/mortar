@@ -1,6 +1,11 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
-import { openGameSelect, openSettings as openMortarSettings, openSeedFarm } from './app.ts'
+import {
+  openGameSelect,
+  openGameSettings,
+  openSettings as openMortarSettings,
+  openSeedFarm,
+} from './app.ts'
 
 const WCAG_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 const THEMES = ['Dark', 'Light'] as const
@@ -9,30 +14,30 @@ const GAMES = [
   { name: 'Lethal Company', profile: 'Seed Lobby' },
 ]
 
+// Only colour depends on the theme, so the Light pass runs the contrast rule alone and the Dark pass every rule.
+let onlyRules: string[] | null = null
+
 /** Axe's WCAG 2.1 A and AA rules on the page as it stands, as "screen: rule: targets" lines. */
 async function scan(page: Page, screen: string): Promise<string[]> {
   await page.evaluate(
     () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
   )
-  const { violations } = await new AxeBuilder({ page })
+  const axe = new AxeBuilder({ page })
     // Mortar draws no frames, and the default mode opens a blank page per scan to merge frame results.
     .setLegacyMode()
-    .withTags(WCAG_AA)
     // Experimental, so off unless named.
     .options({
       rules: { 'label-content-name-mismatch': { enabled: true } },
       // Passes and incomplete results are never read, and serialising them doubles a scan.
       resultTypes: ['violations'],
     })
-    .analyze()
+  const { violations } = await (onlyRules
+    ? axe.withRules(onlyRules)
+    : axe.withTags(WCAG_AA)
+  ).analyze()
   return violations.map(
     (v) => `${screen}: ${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
   )
-}
-
-async function openSettings(page: Page, button: string) {
-  await page.getByRole('button', { name: button, exact: true }).click()
-  await expect(page.getByRole('navigation', { name: 'Settings sections' })).toBeVisible()
 }
 
 async function setTheme(page: Page, theme: (typeof THEMES)[number]) {
@@ -87,10 +92,8 @@ async function scanGame(
   found.push(...(await scan(page, `${game.name} › Mods details`)))
   await page.keyboard.press('Escape')
 
-  await page
-    .getByRole('button', { name: new RegExp(`^${game.profile}`) })
-    .first()
-    .click({ button: 'right' })
+  await page.getByRole('tab', { name: 'Home' }).click()
+  await page.getByRole('button', { name: 'Profile', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Edit profile' }).click()
   const editor = page.getByRole('dialog', { name: 'Edit profile' })
   await expect(editor).toBeVisible()
@@ -104,7 +107,8 @@ async function scanGame(
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog', { name: 'Edit profile' })).toBeHidden()
 
-  await openSettings(page, `${game.name} settings`)
+  await openGameSettings(page, game.name)
+  await expect(page.getByRole('navigation', { name: 'Settings sections' })).toBeVisible()
   // The game's settings pages are built from the same rows as Mortar's, which are scanned in both themes.
   found.push(...(await scanSettings(page, `${game.name} settings`, theme === 'Dark')))
   return found
@@ -119,6 +123,7 @@ test('every main screen of Stardew Valley and Lethal Company passes axe in dark 
   await openSeedFarm(page)
   const found: string[] = []
   for (const theme of THEMES) {
+    onlyRules = theme === 'Light' ? ['color-contrast'] : null
     await setTheme(page, theme)
     await openGameSelect(page)
     await expect(page.locator('[data-tile]').first()).toBeVisible()
@@ -143,6 +148,7 @@ test('every main screen of Stardew Valley and Lethal Company passes axe in dark 
     await openMortarSettings(page)
     found.push(...(await scanSettings(page, `${theme} › Mortar settings`)))
   }
+  onlyRules = null
   await setTheme(page, 'Dark')
   expect(found, 'axe violations').toEqual([])
 })

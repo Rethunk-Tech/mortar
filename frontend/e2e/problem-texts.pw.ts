@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, type Page, test } from '@playwright/test'
-import { openSeedFarm } from './app.ts'
+import { openSeedFarm, switchProfile } from './app.ts'
 import { serverEnv } from './sandbox.ts'
 
 // One profile of small generated content packs, each pair shaped to give one of the Problems tab's explained rows,
@@ -194,10 +194,7 @@ async function expectClean(page: Page) {
 
 test('each explained Problems row reads as a whole sentence in its section', async ({ page }) => {
   await openSeedFarm(page)
-  await page
-    .getByRole('button', { name: new RegExp(`^(Open )?${PROFILE}`) })
-    .first()
-    .click()
+  await switchProfile(page, PROFILE)
   await page.getByRole('tab', { name: /^Problems/ }).click()
 
   const rows: [string, string][] = [

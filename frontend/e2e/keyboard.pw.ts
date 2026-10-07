@@ -33,7 +33,7 @@ test('the main flows work with the keyboard alone and focus stays visible and re
   page,
 }) => {
   await openSeedFarm(page)
-  await expectTabOrderMatchesLayout(page, 'header', 'x')
+  await expectTabOrderMatchesLayout(page, 'header:not(main header)', 'x')
   await expectTabOrderMatchesLayout(page, 'main nav', 'y')
   // Start from the page body so no earlier click leaves focus on a control.
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur())
@@ -45,7 +45,9 @@ test('the main flows work with the keyboard alone and focus stays visible and re
   await palette.fill('Seed From Template')
   await page.keyboard.press('Enter')
   await expect(page.getByRole('dialog')).toBeHidden()
-  await expect(page.getByRole('button', { name: /^Seed From Template/ }).first()).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: /^Switch profile: Seed From Template/ }).first(),
+  ).toBeVisible()
 
   // Tab reaches the mod cards and Enter opens the details panel.
   const first = page.getByRole('button', { name: /^Details of Seed Alpha/ })

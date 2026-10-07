@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { openSeedFarm, openSettings } from './app.ts'
+import { openGameSettings, openSeedFarm, openSettings } from './app.ts'
 
 /** Every row label on every page of the open settings screen, read with the search empty. */
 async function rowLabels(page: Page): Promise<string[]> {
@@ -9,7 +9,7 @@ async function rowLabels(page: Page): Promise<string[]> {
   // The page buttons; Back is the only one named by aria-label.
   for (const button of await nav.locator('button:not([aria-label])').all()) {
     await button.click()
-    await page.waitForTimeout(150)
+    await page.waitForTimeout(50)
     for (const text of await page.locator('[data-setting-label]').allInnerTexts()) {
       labels.add(text.trim())
     }
@@ -24,7 +24,14 @@ async function expectSearchFinds(page: Page, queries: [string, string][]) {
   for (const [query, label] of queries) {
     await search.fill(query)
     const row = page.locator('[data-setting-label]').getByText(label, { exact: true })
-    if (!(await row.first().isVisible())) {
+    // The page filters after a short debounce, so a row that is not there yet gets a moment.
+    const found = await expect(row.first())
+      .toBeVisible({ timeout: 1500 })
+      .then(
+        () => true,
+        () => false,
+      )
+    if (!found) {
       missed.push(`${query} -> ${label}`)
     }
   }
@@ -48,7 +55,7 @@ test('settings search finds every row by its label, on Mortar and game settings'
   await expectSearchFinds(page, [...app.map((l): [string, string] => [l, l]), ...SYNONYMS])
   await page.getByRole('button', { name: 'Back' }).click()
 
-  await page.getByRole('button', { name: 'Stardew Valley settings' }).click()
+  await openGameSettings(page)
   const game = await rowLabels(page)
   expect(game.length).toBeGreaterThan(10)
   await expectSearchFinds(

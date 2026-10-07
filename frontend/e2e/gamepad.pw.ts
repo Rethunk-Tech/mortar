@@ -28,12 +28,13 @@ test('a gamepad walks the tabs, Mods, Browse and a dialog with focus always show
   await expect(mods).toHaveAttribute('aria-selected', 'true')
 
   await press(page, RB)
-  const problems = page.getByRole('tab', { name: /^Problems/ })
-  await expect(problems).toHaveAttribute('aria-selected', 'true')
-  await expect(problems).toBeFocused()
+  // The sidebar's order is Home, Mods, Saves, Config, Browse, Problems, so RB from Mods lands on Saves.
+  const saves = page.getByRole('tab', { name: 'Saves' })
+  await expect(saves).toHaveAttribute('aria-selected', 'true')
+  await expect(saves).toBeFocused()
   await expectRing(page)
-  await press(page, LB)
-  await press(page, LB)
+  await press(page, RB)
+  await press(page, RB)
   const browse = page.getByRole('tab', { name: 'Browse' })
   await expect(browse).toHaveAttribute('aria-selected', 'true')
 
@@ -45,7 +46,9 @@ test('a gamepad walks the tabs, Mods, Browse and a dialog with focus always show
   ).toBe(true)
   await expectRing(page)
 
-  await press(page, RB)
+  await press(page, LB)
+  await press(page, LB)
+  await press(page, LB)
   await expect(mods).toHaveAttribute('aria-selected', 'true')
   await press(page, DOWN)
   const walked = new Set<string>()

@@ -10,23 +10,23 @@ const dir = process.env.MORTAR_E2E_DIR ?? ''
 /** Seed Alpha's config.json in the Seed Farm profile, parsed from disk, so a bool can be told from a string. */
 const alphaConfig = (): Record<string, unknown> => {
   const home = serverEnv(dir).HOME ?? ''
-  const found = execFileSync(
+  const [found] = execFileSync(
     'find',
     [`${home}/.local/share/mortar`, '-path', '*/profiles/stardew/*/Seed.Alpha/config.json'],
     { encoding: 'utf8' },
   )
     .trim()
-    .split('\n')[0]
+    .split('\n')
   return JSON.parse(readFileSync(found ?? '', 'utf8'))
 }
 
 async function openConfig(page: Page) {
   await page.getByRole('tab', { name: 'Config' }).click()
-  await expect(page.getByRole('list', { name: 'Mods with settings' })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Mods with settings' })).toBeVisible()
 }
 
 const modRow = (page: Page, name: string) =>
-  page.getByRole('list', { name: 'Mods with settings' }).getByRole('button', { name })
+  page.getByRole('group', { name: 'Mods with settings' }).getByRole('button', { name })
 
 test('the Config tab lists the seeded mods with their chips', async ({ page }) => {
   await openSeedFarm(page)
@@ -60,7 +60,7 @@ test('Seed Beta renders its in-game menu capture and the page stays responsive',
   await expect(pane.getByRole('switch', { name: 'Enabled' })).toBeVisible()
   await expect(pane.getByText('Count', { exact: true })).toBeVisible()
   // A render loop would starve the compositor while script still ran; both round trips must finish.
-  await page.waitForTimeout(3000)
+  await page.waitForTimeout(2000)
   expect(await page.evaluate(() => 1 + 1)).toBe(2)
   const shot = await page.screenshot({ timeout: 5000 })
   expect(shot.length).toBeGreaterThan(0)

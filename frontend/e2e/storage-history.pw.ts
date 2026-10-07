@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
-import { openSeedFarm } from './app.ts'
+import { openGameSettings, openSeedFarm } from './app.ts'
 
 test('Game settings › Mods trims a profile history to the changes kept', async ({ page }) => {
   await openSeedFarm(page)
-  await page.getByRole('button', { name: 'Stardew Valley settings' }).click()
+  await openGameSettings(page)
   await page.getByRole('navigation').getByRole('button', { name: 'Mods', exact: true }).click()
   await page.getByRole('button', { name: 'Trim…' }).first().click()
   const dialog = page.getByRole('dialog', { name: /^Trim history of / })

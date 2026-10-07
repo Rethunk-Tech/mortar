@@ -31,6 +31,18 @@ export async function openSeedFarm(page: Page) {
   }
 }
 
+/** Switches the open game's profile from the title bar's profile menu. */
+export async function switchProfile(page: Page, name: string) {
+  await page.getByRole('button', { name: /^Switch profile/ }).click()
+  await page.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }).click()
+}
+
+/** Opens the open game's settings from the Home tab. */
+export async function openGameSettings(page: Page, game = 'Stardew Valley') {
+  await page.getByRole('tab', { name: 'Home' }).click()
+  await page.getByRole('button', { name: `${game} settings` }).click()
+}
+
 /** Opens Game select from the title bar's game menu. */
 export async function openGameSelect(page: Page) {
   await page.getByRole('button', { name: /^(Switch game|Choose a game)/ }).click()

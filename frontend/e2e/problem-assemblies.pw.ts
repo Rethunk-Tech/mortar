@@ -4,7 +4,7 @@ import { dirname } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { expect, type Page, test } from '@playwright/test'
-import { openGameSelect, openSeedFarm } from './app.ts'
+import { openGameSelect, openSeedFarm, switchProfile } from './app.ts'
 import { serverEnv } from './sandbox.ts'
 
 // The Problems sentences that need compiled assemblies (internal/dotnet/testdata/src/E2E, rebuilt by build.sh): a
@@ -107,21 +107,12 @@ test('an overlapping C# mod and a BepInEx incompatibility read as whole sentence
   page,
 }) => {
   await openSeedFarm(page)
-  await page
-    .getByRole('button', { name: new RegExp(`^(Open )?${FARM}`) })
-    .first()
-    .click()
+  await switchProfile(page, FARM)
   await page.getByRole('tab', { name: /^Problems/ }).click()
   await expectSentence(page, 'redundant', /Overlaps with Asm Large: both change \S.*\S/)
 
   await openGameSelect(page)
-  await page
-    .getByRole('button', { name: 'Open Lethal Company' })
-    .click({ position: { x: 8, y: 8 } })
-  await page
-    .getByRole('button', { name: new RegExp(`^(Open )?${LOBBY}`) })
-    .first()
-    .click()
+  await page.getByRole('button', { name: new RegExp(`^${LOBBY}`) }).click()
   await page.getByRole('tab', { name: /^Problems/ }).click()
   await expectSentence(
     page,

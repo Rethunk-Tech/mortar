@@ -19,7 +19,7 @@ const FAKE_GAME = `#!/bin/bash
 log="$HOME/.config/StardewValley/ErrorLogs/SMAPI-latest.txt"
 mkdir -p "$(dirname "$log")"
 printf '[00:00:00 INFO  SMAPI] SMAPI 4.1.10 with Stardew Valley 1.6.15 on Unix\\n[00:00:01 INFO  SMAPI] Loaded 0 mods:\\n' >"$log"
-exec -a StardewModdingAPI bash -c 'sleep "$0"; :' 3 "$@"
+exec -a StardewModdingAPI bash -c 'sleep "$0"; :' 1 "$@"
 `
 
 const cli = (...args: string[]) =>
