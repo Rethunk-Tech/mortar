@@ -14,6 +14,16 @@ export function offerInstallAnyway(o: {
   install: () => Promise<unknown>
 }) {
   const { title, name, flagged, game, profile, install } = o
+  if (flagged.removed) {
+    useToasts.getState().push({
+      kind: 'error',
+      title,
+      body: i18n._(
+        msg`Windows removed the file as malware without saying which. If you trust it, restore it from Windows Security's protection history and add it again.`,
+      ),
+    })
+    return
+  }
   useToasts.getState().push({
     kind: 'error',
     title,

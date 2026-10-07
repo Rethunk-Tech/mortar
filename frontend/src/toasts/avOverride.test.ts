@@ -7,6 +7,7 @@ const detail = {
   scanner: 'clamd',
   name: 'Test.Threat',
   file: 'Mod/a.dll',
+  removed: false,
 }
 
 test('detectionOf reads the typed detail a malware error carries', () => {

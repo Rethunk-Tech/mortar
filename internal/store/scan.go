@@ -18,6 +18,8 @@ const scanTimeout = 2 * time.Minute
 type DetectedError struct {
 	Game string `json:"game"`
 	Key  string `json:"key"`
+	// Removed is set when the antivirus deleted the file itself: there is nothing left to install anyway.
+	Removed bool `json:"removed"`
 	avscan.Detection
 }
 
@@ -25,6 +27,9 @@ type DetectedError struct {
 func (e *DetectedError) Detail() any { return e }
 
 func (e *DetectedError) Error() string {
+	if e.Removed {
+		return "Windows removed the file as malware without saying which; restore it from Windows Security's protection history if you trust it"
+	}
 	if e.File == "" {
 		return fmt.Sprintf("the antivirus (%s) reports %s", e.Scanner, e.Name)
 	}

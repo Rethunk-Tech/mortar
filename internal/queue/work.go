@@ -345,6 +345,7 @@ func (s *Service) settle(id string, err error) {
 		s.mu.Unlock()
 		return
 	}
+	err = store.RealTimeBlock(it.Game, err, s.downloadRoot())
 	var limit *nexus.RateLimitError
 	var ghLimit *github.RateLimitError
 	var busy *source.BusyError
@@ -376,8 +377,8 @@ func (s *Service) settle(id string, err error) {
 	case errors.As(err, &full):
 		it.State, it.Error = StateFailed, fmt.Sprintf("Not enough disk space: about %d MB is needed", full.NeedMB)
 	case errors.As(err, &detected):
-		it.State, it.Error = StateFailed, "The antivirus flagged this download, so it was not installed: "+detected.Error()
-		it.Detection = &Detection{Name: detected.Name, File: detected.File, Scanner: detected.Scanner, Key: detected.Key}
+		it.State, it.Error = StateFailed, detectedText(detected)
+		it.Detection = &Detection{Name: detected.Name, File: detected.File, Scanner: detected.Scanner, Key: detected.Key, Removed: detected.Removed}
 	default:
 		it.State, it.Error = StateFailed, err.Error()
 	}
@@ -830,4 +831,11 @@ func (s *Service) installStored(ctx context.Context, c *nexus.Client, it Item, i
 	res, err := s.d.InstallStaged(it.Game, it.Profile, key, nexusSource(it, im))
 	s.installMu.Unlock()
 	return true, s.afterInstall(it.ID, res, err, false)
+}
+
+func detectedText(d *store.DetectedError) string {
+	if d.Removed {
+		return d.Error()
+	}
+	return "The antivirus flagged this download, so it was not installed: " + d.Error()
 }

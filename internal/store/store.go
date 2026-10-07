@@ -433,6 +433,9 @@ func (s *Store) install(ctx context.Context, game, key, final string, fill func(
 		err = syncPath(parent)
 	}
 	if err != nil {
+		err = RealTimeBlock(game, err, tmp)
+	}
+	if err != nil {
 		if usererr.IsDiskFull(err) {
 			err = usererr.Wrap(usererr.DiskFull, &DiskFullError{NeedMB: need()>>20 + 1, Err: err})
 		}

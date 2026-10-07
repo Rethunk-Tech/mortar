@@ -245,14 +245,12 @@ function Failed({ items }: { items: Item[] }) {
           }}
           sub={
             <Typography title={errorDetails(i.error)} sx={{ ...detail, color: error.light }}>
-              {i.detection
-                ? t`Flagged by ${i.detection.scanner}: ${i.detection.name}${i.detection.file ? ` in ${i.detection.file}` : ''}`
-                : errorMessage(i.error)}
+              <FailureText item={i} />
             </Typography>
           }
           actions={
             <>
-              {i.detection ? <InstallAnywayButton item={i} /> : null}
+              {i.detection && !i.detection.removed ? <InstallAnywayButton item={i} /> : null}
               <Button
                 size="small"
                 startIcon={<RotateCcw size={14} />}
@@ -267,6 +265,19 @@ function Failed({ items }: { items: Item[] }) {
       ))}
     </>
   )
+}
+
+// Why a download failed: what the antivirus flagged, or that Windows removed the file itself, else the error.
+function FailureText({ item }: { item: Item }) {
+  const { t } = useLingui()
+  const det = item.detection
+  if (!det) {
+    return errorMessage(item.error)
+  }
+  if (det.removed) {
+    return t`Windows removed the file as malware without saying which. If you trust it, restore it from Windows Security's protection history.`
+  }
+  return t`Flagged by ${det.scanner}: ${det.name}${det.file ? ` in ${det.file}` : ''}`
 }
 
 // The antivirus flagged this download; installing it anyway is the player's call, behind a confirm.

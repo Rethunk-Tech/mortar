@@ -3,7 +3,10 @@ package store
 import (
 	"context"
 	"errors"
+	"io/fs"
+	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
@@ -119,5 +122,38 @@ func TestCancellingTheInstallStopsTheScanAndAddsNothing(t *testing.T) {
 	}
 	if _, perr := s.Path("stardew", key); perr == nil {
 		t.Fatal("a cancelled install left the item in the store")
+	}
+}
+
+func TestRealTimeBlockReportsAVirusErrnoAndAVanishedStagingFileAsMalware(t *testing.T) {
+	staging := t.TempDir()
+	gone := &fs.PathError{Op: "open", Path: filepath.Join(staging, "a.zip"), Err: fs.ErrNotExist}
+	elsewhere := &fs.PathError{Op: "open", Path: filepath.Join(t.TempDir(), "a.zip"), Err: fs.ErrNotExist}
+	for name, c := range map[string]struct {
+		err  error
+		want bool
+	}{
+		"vanished in staging":     {gone, true},
+		"missing outside staging": {elsewhere, false},
+		"other error":             {errors.New("disk on fire"), false},
+	} {
+		got := RealTimeBlock("stardew", c.err, staging)
+		var det *DetectedError
+		isMalware := usererr.KindOf(got) == usererr.Malware && errors.As(got, &det) && det.Removed && det.Scanner == RealTimeScanner && det.Name == ""
+		if isMalware != c.want {
+			t.Errorf("%s: malware=%v, want %v (%v)", name, isMalware, c.want, got)
+		}
+	}
+	for _, errno := range []syscall.Errno{225, 226} {
+		if !isVirusErrno(&fs.PathError{Op: "write", Path: "x", Err: errno}) {
+			t.Errorf("errno %d is not recognised as a virus error", errno)
+		}
+	}
+	if isVirusErrno(syscall.ENOENT) {
+		t.Error("ENOENT is not a virus error")
+	}
+	already := usererr.Wrap(usererr.Malware, &DetectedError{Key: "k"})
+	if !errors.Is(RealTimeBlock("stardew", already, staging), already) {
+		t.Error("a detection already reported was rewrapped")
 	}
 }

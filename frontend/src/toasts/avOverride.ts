@@ -5,7 +5,8 @@ const isDetected = (d: unknown): d is DetectedFile =>
   d !== null &&
   ['game', 'key', 'scanner', 'name', 'file'].every(
     (k) => typeof (d as Record<string, unknown>)[k] === 'string',
-  )
+  ) &&
+  typeof (d as Record<string, unknown>).removed === 'boolean'
 
 /** What the antivirus flagged, as the malware error's `detail` (store.DetectedError) carries it. */
 export interface DetectedFile {
@@ -14,6 +15,8 @@ export interface DetectedFile {
   scanner: string
   name: string
   file: string
+  /** Windows' real-time protection deleted the file; it names no threat and there is nothing to install anyway. */
+  removed: boolean
 }
 
 /** The detection a refused install raised, or null for any other error. */

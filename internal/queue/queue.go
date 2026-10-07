@@ -777,6 +777,8 @@ type Detection struct {
 	File    string `json:"file"`
 	Scanner string `json:"scanner"`
 	Key     string `json:"key"`
+	// Removed means Windows' real-time protection deleted the file: it names nothing and cannot be installed anyway.
+	Removed bool `json:"removed"`
 }
 
 // InstallAnyway answers a detection: the player's confirmed choice to install the item although the antivirus flagged
@@ -785,7 +787,7 @@ func (s *Service) InstallAnyway(id string) error {
 	s.mu.Lock()
 	var it *Item
 	for _, cur := range s.items {
-		if cur.ID == id && cur.State == StateFailed && cur.Detection != nil {
+		if cur.ID == id && cur.State == StateFailed && cur.Detection != nil && !cur.Detection.Removed {
 			it = cur
 		}
 	}

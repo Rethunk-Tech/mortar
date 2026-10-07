@@ -1,6 +1,8 @@
 package queue
 
 import (
+	"io/fs"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -45,5 +47,21 @@ func TestInstallAnywayRefusesAnItemWithNoDetection(t *testing.T) {
 	f := newFixture(t)
 	if err := f.s.InstallAnyway("nope"); err == nil {
 		t.Fatal("no error")
+	}
+}
+
+func TestAFileTheAntivirusRemovedFromStagingFailsAsMalwareWithNoInstallAnyway(t *testing.T) {
+	f := newFixture(t)
+	f.installErr = func() error {
+		return &fs.PathError{Op: "open", Path: filepath.Join(f.s.downloadRoot(), "m.zip"), Err: fs.ErrNotExist}
+	}
+	f.start()
+	f.add(req(10))
+	it := f.wait("removed", f.item(StateFailed)).Items[0]
+	if it.ErrorKind != FailMalware || it.Detection == nil || !it.Detection.Removed || it.Detection.Scanner != store.RealTimeScanner || it.Detection.Name != "" {
+		t.Fatalf("item = %+v", it)
+	}
+	if err := f.s.InstallAnyway(it.ID); err == nil {
+		t.Fatal("install anyway was offered for a file that is gone")
 	}
 }
