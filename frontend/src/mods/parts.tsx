@@ -426,7 +426,13 @@ export function RemoveButton({ mod }: { mod: Mod }) {
   const locked = useLocked()
   return (
     <LockedReason locked={locked}>
-      <Button variant="outlined" color="error" disabled={locked} onClick={() => askRemove(mod)}>
+      <Button
+        variant="outlined"
+        color="error"
+        disabled={locked}
+        onClick={() => askRemove(mod)}
+        sx={{ borderColor: 'error.main' }}
+      >
         {t`Remove`}
       </Button>
     </LockedReason>

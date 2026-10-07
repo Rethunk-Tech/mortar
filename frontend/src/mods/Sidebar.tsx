@@ -588,7 +588,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
         </Box>
       ) : null}
       <Box sx={{ flexGrow: 1 }} />
-      <Button variant="contained" onClick={() => setOpen(true)}>
+      <Button variant="outlined" onClick={() => setOpen(true)}>
         {t`More…`}
       </Button>
       <Box

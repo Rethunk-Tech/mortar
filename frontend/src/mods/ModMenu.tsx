@@ -161,7 +161,7 @@ function ModMenuItems({
       },
     },
     pin: {
-      label: state.pinned ? t`Unpin version` : t`Keep this version`,
+      label: state.pinned ? t`Unpin version` : t`Pin this version`,
       icon: state.pinned ? <PinOff size={ICON_SIZE} /> : <Pin size={ICON_SIZE} />,
       run: () => setPinned(mod, !state.pinned).catch(reportUnexpected),
     },

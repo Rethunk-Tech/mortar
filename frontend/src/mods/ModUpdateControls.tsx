@@ -1,7 +1,7 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, MenuItem, Select, Typography } from '@mui/material'
+import { Box, Button, MenuItem, Select, Tooltip, Typography } from '@mui/material'
 import type {
   Entry,
   Mod,
@@ -26,12 +26,20 @@ function ModUpdateControls({ mod, entry }: { mod: Mod; entry: Entry | undefined 
   const channel = entry?.updateChannel || 'main'
   return (
     <>
-      <Button
-        variant="outlined"
-        onClick={() => setPinned(mod, !entry?.pinned).catch(reportUnexpected)}
+      <Tooltip
+        title={
+          entry?.pinned
+            ? t`Pinned: Mortar offers no update for this mod until you unpin it.`
+            : t`Mortar stops offering updates for this mod and keeps the version you have.`
+        }
       >
-        {entry?.pinned ? t`Unpin version` : t`Keep this version`}
-      </Button>
+        <Button
+          variant="outlined"
+          onClick={() => setPinned(mod, !entry?.pinned).catch(reportUnexpected)}
+        >
+          {entry?.pinned ? t`Unpin version` : t`Pin this version`}
+        </Button>
+      </Tooltip>
       {/* The channels are Nexus file categories, which no other source has. */}
       {entry?.source.kind === 'nexus' ? (
         <Box>

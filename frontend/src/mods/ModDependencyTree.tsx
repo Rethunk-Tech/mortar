@@ -108,15 +108,7 @@ function NodeRow({ node, mods, depth }: { node: DepViewNode; mods: Mod[]; depth:
   const tone = stateTone(node.state)
   return (
     <Box>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: rowGap,
-          pl: depth * indentStep,
-          minHeight: rowMinHeight,
-        }}
-      >
+      <Box sx={{ pl: depth * indentStep, minHeight: rowMinHeight }}>
         {listed ? (
           <Link
             component="button"
@@ -126,30 +118,32 @@ function NodeRow({ node, mods, depth }: { node: DepViewNode; mods: Mod[]; depth:
               color: 'text.secondary',
               textDecoration: 'underline dotted',
               textAlign: 'left',
-              minWidth: 0,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              overflowWrap: 'anywhere',
             }}
           >
             {label}
           </Link>
         ) : (
           <Typography
-            noWrap={true}
             title={localId(node.id)}
-            sx={{ fontSize: nameSize, minWidth: 0 }}
+            sx={{ fontSize: nameSize, overflowWrap: 'anywhere' }}
           >
             {label}
           </Typography>
         )}
-        <Typography noWrap={true} title={edgeNote} sx={{ ...caption, color: 'text.secondary' }}>
-          {edgeNote}
-        </Typography>
-        <Typography noWrap={true} title={status} sx={{ ...caption, color: tone }}>
-          {status}
-        </Typography>
-        {node.state === 'missing' ? <MissingAdd id={node.id} /> : null}
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            columnGap: rowGap,
+            rowGap: 0.5,
+          }}
+        >
+          <Typography sx={{ ...caption, color: 'text.secondary' }}>{edgeNote}</Typography>
+          <Typography sx={{ ...caption, color: tone }}>{status}</Typography>
+          {node.state === 'missing' ? <MissingAdd id={node.id} /> : null}
+        </Box>
       </Box>
       {node.children.map((c) => (
         <NodeRow key={`${c.id}:${c.required}:${c.cycle}`} node={c} mods={mods} depth={depth + 1} />
