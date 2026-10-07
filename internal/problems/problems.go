@@ -441,7 +441,7 @@ func listedRequirements(ctx context.Context, m Meta, reqs RequirementsOf, domain
 					seenOutside[name] = true
 					out = append(out, Missing{
 						DependentID: d.ModID(), DependentName: d.Name, ID: mod.NewID(OutsideFormat, name), Reason: "absent",
-						Listed: true, External: true, Note: req.Notes, Optional: optionalRequirement(req.Notes),
+						Listed: true, External: true, Note: req.Notes, Optional: optionalRequirement(req.Notes) || manifestOmits(all, d.Key, name),
 					})
 				}
 				continue
@@ -595,6 +595,26 @@ func manifestHasRequirement(all []framework.Mod, entryKey string, page meta.Page
 		}
 	}
 	return false
+}
+
+// manifestOmits reports a page-wide outside requirement that the installed file's own manifest leaves out: the
+// manifest declares dependencies, none of them is named like the requirement, so the page lists it for a sibling
+// file of the mod rather than this one.
+func manifestOmits(all []framework.Mod, entryKey, name string) bool {
+	want := looseName(name)
+	declared := false
+	for _, d := range all {
+		if !d.Enabled || !strings.EqualFold(d.Key, entryKey) {
+			continue
+		}
+		for _, dep := range d.Dependencies {
+			declared = true
+			if got := looseName(dep.UniqueID); got == want || len(want) >= minNamePrefix && strings.Contains(got, want) {
+				return false
+			}
+		}
+	}
+	return declared
 }
 
 func mainID(page meta.Page) mod.ID {

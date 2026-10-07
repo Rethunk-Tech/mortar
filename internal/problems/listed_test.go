@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -227,6 +228,26 @@ func TestListedOutsideRequirementIsANote(t *testing.T) {
 	m := got.Missing[0]
 	if !m.External || m.Where != nil || m.ID != mod.NewID(OutsideFormat, "Some Tool") || m.Note != "run it first" || got.Count() != 0 {
 		t.Fatalf("note = %#v, count %d", m, got.Count())
+	}
+}
+
+func TestPageWideOutsideRequirementTheManifestOmitsIsOptional(t *testing.T) {
+	fake := listedFakeMeta{requirements: map[int][]nexus.Requirement{520: {{Name: "Immersive Farm 2 Remastered", URL: "https://example.org", External: true}}}}
+	optionalOutside := func(depID string) bool {
+		dependent := listedDependent()
+		dependent.Dependencies = []manifest.Dependency{{UniqueID: depID}}
+		got := listedCheck(fake, []framework.Mod{dependent})
+		i := slices.IndexFunc(got.Missing, func(m Missing) bool { return m.External })
+		if i < 0 {
+			t.Fatalf("Missing = %#v, want the outside note", got.Missing)
+		}
+		return got.Missing[i].Optional
+	}
+	if !optionalOutside("Pathoschild.ContentPatcher") {
+		t.Fatal("a manifest that declares dependencies without the requirement leaves it optional")
+	}
+	if optionalOutside("FlashShifter.ImmersiveFarm2Remastered") {
+		t.Fatal("a manifest that names the requirement keeps it listed")
 	}
 }
 
