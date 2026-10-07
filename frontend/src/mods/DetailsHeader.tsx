@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material'
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { IconAction } from '../shell/IconAction.tsx'
+import { space } from '../theme/density.ts'
 
 // The details panel's header: picture, name, a line under it, any controls, and Close.
 export function DetailsHeader({
@@ -20,7 +21,7 @@ export function DetailsHeader({
 }) {
   const { t } = useLingui()
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       {picture}
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography sx={{ fontSize: 16, fontWeight: 700, overflowWrap: 'anywhere' }}>

@@ -9,6 +9,7 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { Fold } from '../shell/Fold.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { space } from '../theme/density.ts'
 import { type Block, parseBBCode, safeUrl } from './bbcode.ts'
 import { DependencyChips } from './DependencyChips.tsx'
 import { nexusDependencies } from './dependencies.ts'
@@ -92,7 +93,11 @@ function Facts({ details, mod, columns }: { details: Details; mod: Mod; columns:
   const newer = isNewer(page.version, mod.version)
   return (
     <Box
-      sx={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gap: 1.5 }}
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+        gap: space.gap,
+      }}
     >
       <Fact label={t`Latest on Nexus`}>
         <Box component="span" sx={{ color: newer ? 'primary.main' : undefined }}>
@@ -140,7 +145,7 @@ function Files({
       {installed ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
           <Typography sx={heading}>{t`Installed file`}</Typography>
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'baseline', flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'baseline', flexWrap: 'wrap' }}>
             <Typography sx={{ ...text, overflowWrap: 'anywhere' }}>
               {installed.name || installed.fileName}
             </Typography>
@@ -157,7 +162,7 @@ function Files({
       {others.length > 0 ? (
         <Fold title={t`Current files on Nexus (${others.length})`}>
           {others.slice(0, FILES_SHOWN).map((f) => (
-            <Box key={f.fileId} sx={{ display: 'flex', gap: 1, alignItems: 'baseline' }}>
+            <Box key={f.fileId} sx={{ display: 'flex', gap: space.gap, alignItems: 'baseline' }}>
               <Typography
                 noWrap={true}
                 title={f.name || f.fileName}
@@ -199,10 +204,10 @@ function Loaded({
   const description = page.description ? parseBBCode(page.description) : []
   const looked = useLookedSnapshot(modId, details)
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       {page.adult ||
       nexusPageMark(page.status, page.available, page.updated, page.created).kind !== '' ? (
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: space.gap, flexWrap: 'wrap' }}>
           {page.adult ? (
             <Chip size="small" color="warning" variant="outlined" label={t`Adult content`} />
           ) : null}
@@ -245,11 +250,13 @@ function Loaded({
         <Fold title={t`Changelog on Nexus`}>
           {recentChangelogs(logs).map((c) => (
             <Box key={c.version} sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'baseline' }}>
+              <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'baseline' }}>
                 <Typography sx={{ ...text, fontWeight: BOLD }}>{c.version}</Typography>
                 <NewSinceLooked show={changelogIsNewSinceLooked(c.version, looked)} />
               </Box>
-              <Typography sx={{ ...text, pl: 2, whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}>
+              <Typography
+                sx={{ ...text, pl: space.pad, whiteSpace: 'pre-line', overflowWrap: 'anywhere' }}
+              >
                 {(c.notes ?? []).map((n) => `• ${n}`).join('\n')}
               </Typography>
             </Box>

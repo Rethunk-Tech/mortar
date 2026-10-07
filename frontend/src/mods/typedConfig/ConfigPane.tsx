@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react'
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { SearchField } from '../../shell/SearchField.tsx'
+import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { PresetsButton } from '../ConfigPresets.tsx'
 import { filterFile, isModified, modifiedCount } from './entries.ts'
@@ -37,7 +38,7 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
         alignItems: 'center',
         columnGap: 1.5,
         minHeight: 48,
-        px: 1.5,
+        px: space.pad,
         py: 0.5,
         borderRadius: '6px',
         bgcolor: 'var(--mortar-overlay-30)',
@@ -138,7 +139,9 @@ export function ConfigPane() {
       role="region"
       sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1 }}>
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', gap: space.gap, px: space.pad, py: space.gap }}
+      >
         <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600, flex: 1 }}>
           {t`Config of ${mod.name}`}
         </Typography>
@@ -202,10 +205,10 @@ export function ConfigPane() {
             flex: 1,
             minWidth: 0,
             overflowY: 'auto',
-            p: 2,
+            p: space.pad,
             display: 'flex',
             flexDirection: 'column',
-            gap: 1,
+            gap: space.gap,
           }}
         >
           {shown?.sections.map((section) => (

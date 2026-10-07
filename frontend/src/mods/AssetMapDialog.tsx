@@ -23,6 +23,7 @@ import type {
 import { AssetMap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { SearchField } from '../shell/SearchField.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { sameId } from './lookup.ts'
@@ -138,7 +139,7 @@ function TargetRow({
   const many = count > 1
   const label = target.key ? `${target.target} ${target.key}` : target.target
   return (
-    <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, px: 1.25, py: 1 }}>
+    <Box sx={{ bgcolor: 'background.paper', borderRadius: 1, px: space.gap, py: space.gap }}>
       <ButtonBase
         aria-expanded={expanded}
         onClick={onToggle}
@@ -146,7 +147,7 @@ function TargetRow({
           display: 'flex',
           alignItems: 'baseline',
           justifyContent: 'flex-start',
-          gap: 1,
+          gap: space.gap,
           width: '100%',
           textAlign: 'left',
         }}
@@ -226,7 +227,10 @@ export function AssetMapDialog({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth={true} scroll="paper">
       <DialogTitle>{t`Asset map`}</DialogTitle>
-      <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <DialogContent
+        dividers={true}
+        sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
+      >
         <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
           {t`Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order.`}
         </Typography>
@@ -236,7 +240,7 @@ export function AssetMapDialog({
           value={filter}
           onChange={setFilter}
         />
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.pad, flexWrap: 'wrap' }}>
           <FormControlLabel
             control={<Switch size="small" checked={shared} onChange={(_, on) => setShared(on)} />}
             label={t`Only assets more than one mod changes`}

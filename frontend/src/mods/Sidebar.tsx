@@ -19,6 +19,7 @@ import { Fold } from '../shell/Fold.tsx'
 import { OfflineGate } from '../shell/OfflineGate.tsx'
 import { updateSources, useOfflineReason } from '../shell/offlineText.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { ChangelogDialog } from './ChangelogDialog.tsx'
@@ -145,7 +146,9 @@ function NexusFields({
         <Typography sx={{ fontSize: 13, color: 'warning.main' }}>{goneLabel}</Typography>
       ) : null}
       {page.summary ? <Clipped label={t`Summary`} value={page.summary} lines={2} /> : null}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 1.25 }}>
+      <Box
+        sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: space.gap }}
+      >
         <Clipped
           label={t`Latest on Nexus`}
           value={page.version || '—'}
@@ -187,11 +190,11 @@ function UpdateBanner({ mod }: { mod: Mod }) {
   return (
     <Box
       sx={{
-        px: 1.5,
+        px: space.pad,
         py: 0.75,
         display: 'flex',
         alignItems: 'center',
-        gap: 1,
+        gap: space.gap,
         borderRadius: '6px',
         bgcolor: accent.fill,
         border: '1px solid',
@@ -262,7 +265,7 @@ function ProblemLine({ mod }: { mod: Mod }) {
     return null
   }
   return (
-    <Box sx={{ display: 'flex', gap: 1, color: 'warning.main' }}>
+    <Box sx={{ display: 'flex', gap: space.gap, color: 'warning.main' }}>
       <TriangleAlert size={16} style={{ flexShrink: 0, marginTop: 2 }} aria-hidden={true} />
       <Typography sx={{ fontSize: 13 }}>{mine.map(describe).join(' ')}</Typography>
     </Box>
@@ -427,7 +430,7 @@ function DependentRows({ label, dependents }: { label: string; dependents: reado
         {label}
       </Link>
       <Collapse in={open} unmountOnExit={true}>
-        <Box sx={{ pl: 1.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+        <Box sx={{ pl: space.pad, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
           {dependents.map((d) => (
             <Link
               key={`${d.key}/${d.id}`}
@@ -560,7 +563,15 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
     thunderstore: t`Thunderstore`,
   })
   return (
-    <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1.25, minHeight: '100%' }}>
+    <Box
+      sx={{
+        p: space.pad,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: space.gap,
+        minHeight: '100%',
+      }}
+    >
       <DetailsHeader
         picture={<LetterTile mod={mod} size={52} fresh={fresh} />}
         title={mod.name}
@@ -599,7 +610,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
         sx={{
           display: 'grid',
           gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          gap: 1,
+          gap: space.gap,
         }}
       >
         <ShowFilesButton mod={mod} />

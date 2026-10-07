@@ -19,6 +19,7 @@ import type {
 import { useGameInfo } from '../games/info.ts'
 import { listNames } from '../i18n/list.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { nexusKeepKey, preselect } from './lookup.ts'
 import { LetterTile } from './parts.tsx'
@@ -48,8 +49,8 @@ function CopyOption({ copy, dup, differ }: { copy: Copy; dup: Duplicate; differ:
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 1.25,
-        p: 2,
+        gap: space.gap,
+        p: space.pad,
         cursor: 'pointer',
         bgcolor: 'var(--mortar-raised)',
         border: '2px solid transparent',
@@ -57,7 +58,7 @@ function CopyOption({ copy, dup, differ }: { copy: Copy; dup: Duplicate; differ:
         '&:has(input:checked)': { borderColor: 'primary.main' },
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Radio
           value={copy.key}
           sx={{ p: 0 }}
@@ -92,7 +93,7 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
       <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>
         {plural(copies.length, { one: `# copy of ${dup.name}`, other: `# copies of ${dup.name}` })}
       </DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
         <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
           {t`${profileName} has ${dup.name} more than once. ${loader} loads only one, so pick which to keep. The others are disabled, not removed.`}
         </Typography>
@@ -103,7 +104,7 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
           sx={{
             display: 'grid',
             gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-            gap: 1.5,
+            gap: space.gap,
           }}
         >
           {copies.map((c) => (
@@ -111,7 +112,7 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
           ))}
         </RadioGroup>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2.5 }}>
+      <DialogActions sx={{ px: space.pad, pb: space.pad }}>
         <Button onClick={() => resolve(null)}>{t`Decide later`}</Button>
         {nexusKey === null || keep !== nexusKey ? (
           <DisabledReason title={lockedTitle} disabled={locked}>
