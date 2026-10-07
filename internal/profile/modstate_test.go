@@ -201,7 +201,7 @@ func TestConfigHistoryNamesTheModNotItsID(t *testing.T) {
 	if err := svc.WriteConfig("stardew", p.ID, "a-1", "smapi:me.a", `{"z":2}`); err != nil {
 		t.Fatal(err)
 	}
-	cur, err := e.Store.read("stardew", p.ID)
+	cur, err := e.read("stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
