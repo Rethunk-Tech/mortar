@@ -66,15 +66,14 @@ tasks:
     cmds:
       - cp "{{.APP_BINARY}}" "{{.APP_NAME}}"
       - mkdir -p "{{.ROOT_DIR}}/build/linux/appimage/build"
-      - cp ./linuxdeploy-wrapper.sh "{{.ROOT_DIR}}/build/linux/appimage/build/linuxdeploy-{{.ARCH_NAME}}.AppImage"
       - cp ../../appicon.png "tech.rethunk.Mortar.png"
-      - wails3 generate appimage -binary "{{.APP_NAME}}" -icon {{.ICON}} -desktopfile {{.DESKTOP_FILE}} -outputdir {{.OUTPUT_DIR}} -builddir {{.ROOT_DIR}}/build/linux/appimage/build
+      - wails3 generate appimage -binary "{{.APP_NAME}}" -icon {{.ICON}} -desktopfile {{.DESKTOP_FILE}} -outputdir {{.OUTPUT_DIR}} -builddir {{.ROOT_DIR}}/build/linux/appimage/build -apprun {{.TOOLS_CACHE}}/apprun-{{.ARCH_NAME}} -linuxdeploy {{.TOOLS_CACHE}}/linuxdeploy-{{.ARCH_NAME}} -nopack
       - |
         set -euo pipefail
         arch="${APPIMAGE_ARCH:-$(uname -m)}"
         build="{{.ROOT_DIR}}/build/linux/appimage/build"
         appdir="$build/{{.APP_NAME}}-${arch}.AppDir"
-        # AppRun checks the host glibc before starting Mortar, then the AppDir is packed with the pinned linuxdeploy and
+        # AppRun checks the host glibc before starting Mortar, then the AppDir (prepared by -nopack) is packed with the pinned linuxdeploy and
         # type2 runtime (fetch-tools.sh), the only pack of this build.
         cp "{{.ROOT_DIR}}/build/linux/appimage/glibc-check.sh" "$appdir/glibc-check.sh"
         grep -q 'glibc-check.sh' "$appdir/AppRun" || sed -i '/^APPDIR=/a . "$APPDIR/glibc-check.sh"' "$appdir/AppRun"
@@ -83,7 +82,6 @@ tasks:
         cp "{{.ROOT_DIR}}/LICENSE" "{{.ROOT_DIR}}/THIRD_PARTY_NOTICES" "$appdir/usr/share/doc/mortar/"
         (cd "$build" && OUTPUT="{{.APP_NAME}}-linux-${arch}.AppImage" "$LINUXDEPLOY_REAL" --appimage-extract-and-run --appdir "$appdir" --output appimage)
         mv "$build/{{.APP_NAME}}-linux-${arch}.AppImage" "{{.OUTPUT_DIR}}/{{.APP_NAME}}-linux-${arch}.AppImage"
-        rm "{{.OUTPUT_DIR}}/{{.APP_NAME}}-${arch}.AppImage"
         # The bare program beside the AppImage is the same unpackaged build: a portable binary that updates itself.
         case "$arch" in x86_64) goarch=amd64 ;; aarch64) goarch=arm64 ;; *) echo "unsupported arch $arch" >&2; exit 1 ;; esac
         cp -a "{{.APP_BINARY}}" "{{.OUTPUT_DIR}}/{{.APP_NAME}}-linux-${goarch}"
