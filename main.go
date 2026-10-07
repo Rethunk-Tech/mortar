@@ -148,6 +148,7 @@ func registerEvents() {
 }
 
 func main() {
+	applyMemoryLimit(os.Getenv)
 	if err := run(); err != nil {
 		log.Fatal(err)
 	}

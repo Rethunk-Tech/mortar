@@ -1,9 +1,6 @@
 package main
 
-import (
-	"os"
-	"runtime/debug"
-)
+import "runtime/debug"
 
 // goMemoryLimit is the Go runtime's soft heap target. The runtime collects harder as the heap nears it and never
 // refuses an allocation, so a large install or check may pass it; it keeps the Go side near half the 1 GB budget that
@@ -18,5 +15,3 @@ func applyMemoryLimit(getenv func(string) string) bool {
 	debug.SetMemoryLimit(goMemoryLimit)
 	return true
 }
-
-func init() { applyMemoryLimit(os.Getenv) }
