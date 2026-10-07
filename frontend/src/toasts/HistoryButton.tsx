@@ -3,7 +3,6 @@ import { useLingui } from '@lingui/react/macro'
 import { Badge, Box, Button, IconButton, Popover, Tooltip, Typography } from '@mui/material'
 import { Bell } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
-import { compact } from '../game/compact.ts'
 import { When } from '../i18n/When.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
 import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
@@ -126,7 +125,10 @@ function HistoryPopover({
           sx: {
             width: 360,
             maxWidth: 'calc(100vw - 32px)',
-            maxHeight: 440,
+            maxHeight: '70vh',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
             bgcolor: 'var(--mortar-panel-solid)',
             border: '1px solid var(--mortar-hairline-12)',
             borderRadius: '8px',
@@ -148,7 +150,7 @@ function HistoryPopover({
           {t`Clear`}
         </Button>
       </Box>
-      <Box sx={{ overflowY: 'auto', maxHeight: 380, [compact]: { maxHeight: 280 } }}>
+      <Box sx={{ overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
         {history.length === 0 && panel.events.length === 0 ? (
           <EmptyState compact={true} icon={<Bell size={28} />} title={t`No notifications yet`}>
             {t`Results of installs, updates and launches appear here.`}
