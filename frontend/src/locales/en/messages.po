@@ -333,6 +333,7 @@ msgid "How Play starts the game. Direct skips Steam's overlay and playtime."
 msgstr "How Play starts the game. Direct skips Steam's overlay and playtime."
 
 #: src/lan/IncomingPrompt.tsx:169
+#: src/lan/OutgoingProgress.tsx:43
 msgid "Copying mod files"
 msgstr "Copying mod files"
 
@@ -1523,6 +1524,10 @@ msgstr "Launch options set in Steam"
 msgid "Choose an existing bundle or create one."
 msgstr "Choose an existing bundle or create one."
 
+#: src/lan/OutgoingProgress.tsx:30
+msgid "Sending to {peer}: {current} of {total} files"
+msgstr "Sending to {peer}: {current} of {total} files"
+
 #: src/settings/sections/DataBackups.tsx:128
 msgid "Could not trim save backups"
 msgstr "Could not trim save backups"
@@ -1697,7 +1702,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/firstrun/LoaderStep.tsx:201
 #: src/firstrun/LoaderStep.tsx:269
 #: src/game/detailStates.tsx:26
-#: src/lan/SendDialog.tsx:173
+#: src/lan/SendDialog.tsx:181
 #: src/launch/LaunchLayer.tsx:312
 #: src/mods/LoadOrderTab.tsx:390
 #: src/mods/ModsTab.tsx:116
@@ -2024,7 +2029,7 @@ msgid "the search is “{0}”"
 msgstr "the search is “{0}”"
 
 #: src/lan/PairedComputers.tsx:89
-#: src/lan/SendDialog.tsx:295
+#: src/lan/SendDialog.tsx:303
 msgid "Host:port"
 msgstr "Host:port"
 
@@ -2257,7 +2262,7 @@ msgid "Enjoying {0}? Endorse it on Nexus"
 msgstr "Enjoying {0}? Endorse it on Nexus"
 
 #. placeholder {0}: target.name
-#: src/lan/SendDialog.tsx:163
+#: src/lan/SendDialog.tsx:170
 msgid "Sent to {0}"
 msgstr "Sent to {0}"
 
@@ -2311,7 +2316,7 @@ msgstr "Skip {0}"
 msgid "Latest on Nexus"
 msgstr "Latest on Nexus"
 
-#: src/lan/SendDialog.tsx:79
+#: src/lan/SendDialog.tsx:81
 msgid "Not paired · only links"
 msgstr "Not paired · only links"
 
@@ -2773,7 +2778,7 @@ msgstr "No fix yet"
 msgid "Load a save to see values"
 msgstr "Load a save to see values"
 
-#: src/lan/SendDialog.tsx:201
+#: src/lan/SendDialog.tsx:209
 msgid "Could not find Mortar users"
 msgstr "Could not find Mortar users"
 
@@ -2861,8 +2866,8 @@ msgid "Drag {path} into the GitHub issue to attach it."
 msgstr "Drag {path} into the GitHub issue to attach it."
 
 #: src/lan/PairedComputers.tsx:111
-#: src/lan/SendDialog.tsx:91
-#: src/lan/SendDialog.tsx:116
+#: src/lan/SendDialog.tsx:93
+#: src/lan/SendDialog.tsx:118
 msgid "Pair"
 msgstr "Pair"
 
@@ -3046,7 +3051,7 @@ msgstr "Search all runs…"
 
 #: src/firstrun/FindStep.tsx:213
 #: src/install/NeedsRootCallout.tsx:24
-#: src/profiles/ImportWizard.tsx:141
+#: src/profiles/ImportWizard.tsx:147
 #: src/settings/sections/GameSettings.tsx:383
 #: src/tools/ToolEditorDialog.tsx:112
 msgid "Choose folder…"
@@ -3345,7 +3350,7 @@ msgstr "Downloaded mods no profile uses"
 msgid "Needs a newer loader"
 msgstr "Needs a newer loader"
 
-#: src/profiles/ImportWizard.tsx:124
+#: src/profiles/ImportWizard.tsx:130
 msgid "Mortar found no other mod manager's profiles for this game on this computer."
 msgstr "Mortar found no other mod manager's profiles for this game on this computer."
 
@@ -3354,7 +3359,7 @@ msgstr "Mortar found no other mod manager's profiles for this game on this compu
 msgid "{0, plural, one {# other mod} other {# other mods}}"
 msgstr "{0, plural, one {# other mod} other {# other mods}}"
 
-#: src/lan/SendDialog.tsx:172
+#: src/lan/SendDialog.tsx:180
 msgid "Try again in a few seconds."
 msgstr "Try again in a few seconds."
 
@@ -3953,7 +3958,7 @@ msgstr "Share as r2modman code?"
 #: src/lan/IncomingPrompt.tsx:209
 #: src/lan/PairedComputers.tsx:105
 #: src/lan/PairedComputers.tsx:145
-#: src/lan/SendDialog.tsx:310
+#: src/lan/SendDialog.tsx:318
 #: src/launch/PrePlayDialog.tsx:151
 #: src/launch/SaveWarnDialog.tsx:69
 #: src/launch/UpdateWarnDialog.tsx:50
@@ -3968,7 +3973,7 @@ msgstr "Share as r2modman code?"
 #: src/profiles/CompareDialog.tsx:62
 #: src/profiles/EditProfileDialog.tsx:461
 #: src/profiles/GameModsDialog.tsx:164
-#: src/profiles/ImportWizard.tsx:162
+#: src/profiles/ImportWizard.tsx:174
 #: src/profiles/LaunchPresetDialog.tsx:91
 #: src/profiles/PackImportDialog.tsx:170
 #: src/settings/sections/NexusSSO.tsx:67
@@ -4125,7 +4130,7 @@ msgid "Back to {name}"
 msgstr "Back to {name}"
 
 #: src/game/ProfileMenuItems.tsx:211
-#: src/lan/SendDialog.tsx:240
+#: src/lan/SendDialog.tsx:248
 msgid "Send to…"
 msgstr "Send to…"
 
@@ -5258,7 +5263,7 @@ msgstr "Stop the game before moving the data folder."
 msgid "Earthy green"
 msgstr "Earthy green"
 
-#: src/lan/SendDialog.tsx:250
+#: src/lan/SendDialog.tsx:258
 msgid "No Mortar users found nearby."
 msgstr "No Mortar users found nearby."
 
@@ -5985,7 +5990,7 @@ msgstr "{0, plural, one {Removed # mod} other {Removed # mods}}"
 msgid "{found, plural, one {# mod update} other {# mod updates}}"
 msgstr "{found, plural, one {# mod update} other {# mod updates}}"
 
-#: src/profiles/ImportWizard.tsx:123
+#: src/profiles/ImportWizard.tsx:129
 msgid "No profiles found."
 msgstr "No profiles found."
 
@@ -6312,7 +6317,7 @@ msgstr "Download missing"
 msgid "Could not back up the profile"
 msgstr "Could not back up the profile"
 
-#: src/profiles/ImportWizard.tsx:139
+#: src/profiles/ImportWizard.tsx:145
 msgid "Use Vortex from another folder?"
 msgstr "Use Vortex from another folder?"
 
@@ -6676,7 +6681,7 @@ msgstr "Use theirs"
 msgid "Direct launch preview"
 msgstr "Direct launch preview"
 
-#: src/lan/SendDialog.tsx:304
+#: src/lan/SendDialog.tsx:312
 msgid "Send"
 msgstr "Send"
 
@@ -7123,7 +7128,7 @@ msgstr "Pinned"
 msgid "Could not dismiss the overlap"
 msgstr "Could not dismiss the overlap"
 
-#: src/profiles/ImportWizard.tsx:159
+#: src/profiles/ImportWizard.tsx:171
 msgid "Use a code or file…"
 msgstr "Use a code or file…"
 
@@ -7386,7 +7391,7 @@ msgstr "older, profile has {0}"
 msgid "Share profile"
 msgstr "Share profile"
 
-#: src/lan/SendDialog.tsx:241
+#: src/lan/SendDialog.tsx:249
 msgid "Refresh"
 msgstr "Refresh"
 
@@ -7758,7 +7763,7 @@ msgstr "Crash finding was stopped."
 msgid "Approve Mortar in your browser…"
 msgstr "Approve Mortar in your browser…"
 
-#: src/profiles/ImportWizard.tsx:145
+#: src/profiles/ImportWizard.tsx:157
 msgid "That folder has no Vortex data (state.v2)."
 msgstr "That folder has no Vortex data (state.v2)."
 
@@ -8519,6 +8524,11 @@ msgstr "Could not switch the group"
 msgid "{name} takes {own} of your {total} start."
 msgstr "{name} takes {own} of your {total} start."
 
+#. placeholder {0}: target.name
+#: src/lan/SendDialog.tsx:169
+msgid "Sent {profileName} to {0}; they'll copy the files from you"
+msgstr "Sent {profileName} to {0}; they'll copy the files from you"
+
 #. placeholder {0}: offer.name
 #. placeholder {1}: offer.machine
 #: src/sync/SyncOffers.tsx:52
@@ -8589,7 +8599,7 @@ msgid "Clicking these links on Nexus starts the download in Mortar."
 msgstr "Clicking these links on Nexus starts the download in Mortar."
 
 #. placeholder {0}: expired.sender
-#: src/lan/incoming.ts:35
+#: src/lan/incoming.ts:42
 msgid "A share from {0} expired. Ask them to send it again."
 msgstr "A share from {0} expired. Ask them to send it again."
 
@@ -8611,7 +8621,7 @@ msgstr "{profileName} has {0} more than once. {loader} loads only one, so pick w
 msgid "Discord"
 msgstr "Discord"
 
-#: src/lan/SendDialog.tsx:142
+#: src/lan/SendDialog.tsx:144
 msgid "Send to an address…"
 msgstr "Send to an address…"
 
@@ -8998,7 +9008,7 @@ msgstr "Mortar offers prereleases only when Settings allows them."
 msgid "Downloads and updates"
 msgstr "Downloads and updates"
 
-#: src/profiles/ImportWizard.tsx:54
+#: src/profiles/ImportWizard.tsx:60
 msgid "Vortex data folder"
 msgstr "Vortex data folder"
 
@@ -9018,7 +9028,7 @@ msgstr "Mortar stays on screen beside the game."
 msgid "Could not reset the settings of {0}"
 msgstr "Could not reset the settings of {0}"
 
-#: src/lan/SendDialog.tsx:121
+#: src/lan/SendDialog.tsx:123
 msgid "Only links: {name} will download each mod from its site, one click per mod on a free Nexus account. Pair to send whole files."
 msgstr "Only links: {name} will download each mod from its site, one click per mod on a free Nexus account. Pair to send whole files."
 
@@ -9572,7 +9582,7 @@ msgid "Pin"
 msgstr "Pin"
 
 #. placeholder {0}: target.name
-#: src/lan/SendDialog.tsx:177
+#: src/lan/SendDialog.tsx:185
 msgid "Could not send to {0}"
 msgstr "Could not send to {0}"
 
@@ -9754,7 +9764,7 @@ msgstr "More than one mod changes this; the winner's version is used."
 msgid "Borderless"
 msgstr "Borderless"
 
-#: src/lan/SendDialog.tsx:148
+#: src/lan/SendDialog.tsx:150
 msgid "Recent address"
 msgstr "Recent address"
 
@@ -9935,6 +9945,10 @@ msgstr "Not used by any profile"
 #: src/mods/typedConfig/Widgets.tsx:147
 msgid "Add an item"
 msgstr "Add an item"
+
+#: src/lan/OutgoingProgress.tsx:34
+msgid "{peer} cancelled it"
+msgstr "{peer} cancelled it"
 
 #: src/saves/BackupsDialog.tsx:171
 msgid "No save backups yet."
@@ -10274,7 +10288,7 @@ msgstr "Error"
 msgid "Empty trash"
 msgstr "Empty trash"
 
-#: src/lan/SendDialog.tsx:251
+#: src/lan/SendDialog.tsx:259
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
 
@@ -11147,7 +11161,7 @@ msgid "Mods in this category will move to Uncategorised."
 msgstr "Mods in this category will move to Uncategorised."
 
 #. placeholder {0}: target.name
-#: src/lan/SendDialog.tsx:171
+#: src/lan/SendDialog.tsx:179
 msgid "{0} is still taking your last share"
 msgstr "{0} is still taking your last share"
 
@@ -11326,7 +11340,7 @@ msgstr "Unknown mod"
 msgid "No changelog for this update"
 msgstr "No changelog for this update"
 
-#: src/profiles/ImportWizard.tsx:120
+#: src/profiles/ImportWizard.tsx:126
 #: src/share/ImportDialog.tsx:259
 msgid "Import a profile"
 msgstr "Import a profile"
@@ -11597,7 +11611,7 @@ msgstr "Could not create the profile"
 msgid "Into a deleted profile"
 msgstr "Into a deleted profile"
 
-#: src/lan/SendDialog.tsx:256
+#: src/lan/SendDialog.tsx:264
 msgid "Looking for Mortar users…"
 msgstr "Looking for Mortar users…"
 
@@ -11811,6 +11825,10 @@ msgstr "Launcher replaced"
 msgid "System default"
 msgstr "System default"
 
+#: src/lan/OutgoingProgress.tsx:32
+msgid "{peer} has all the files for {profile}"
+msgstr "{peer} has all the files for {profile}"
+
 #: src/mods/problemFix/DamagedFix.tsx:33
 msgid "Downloading {name} again"
 msgstr "Downloading {name} again"
@@ -11967,6 +11985,10 @@ msgstr "Applied when the game next starts"
 #: src/browse/browseConstants.ts:30
 msgid "Search Nexus Mods. Download installs the mod into this profile."
 msgstr "Search Nexus Mods. Download installs the mod into this profile."
+
+#: src/lan/OutgoingProgress.tsx:35
+msgid "Sending to {peer} stopped: {why}"
+msgstr "Sending to {peer} stopped: {why}"
 
 #: src/settings/sections/Updates.tsx:177
 #: src/settings/sections/Updates.tsx:181
@@ -12534,7 +12556,7 @@ msgstr "Report to author…"
 msgid "Opens a GitHub issue with these filled in. You review it before posting."
 msgstr "Opens a GitHub issue with these filled in. You review it before posting."
 
-#: src/lan/SendDialog.tsx:78
+#: src/lan/SendDialog.tsx:80
 msgid "Paired · whole files"
 msgstr "Paired · whole files"
 
@@ -12783,6 +12805,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/console/HelpDialog.tsx:262
 #: src/console/SearchRunsDialog.tsx:171
 #: src/game/FarmMenuItem.tsx:131
+#: src/lan/OutgoingProgress.tsx:51
 #: src/launch/LaunchLayer.tsx:288
 #: src/launch/SweepDialog.tsx:136
 #: src/mods/AssetMapDialog.tsx:279
@@ -12877,7 +12900,7 @@ msgstr "On"
 msgid "Sign in to Nexus Mods"
 msgstr "Sign in to Nexus Mods"
 
-#: src/lan/SendDialog.tsx:117
+#: src/lan/SendDialog.tsx:119
 msgid "Send links only"
 msgstr "Send links only"
 

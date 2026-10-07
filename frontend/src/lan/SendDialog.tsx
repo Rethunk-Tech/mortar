@@ -20,6 +20,7 @@ import { Inbox, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import type { Peer } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
 import { Peers, Send } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { errorKind } from '../toasts/errorKind.ts'
@@ -54,6 +55,7 @@ interface SendDialogProps {
 interface SendTarget {
   id: string
   name: string
+  paired?: boolean
 }
 
 interface PeerRowProps {
@@ -157,10 +159,16 @@ function useSend(game: string, profileId: string, onSent: () => void) {
   const { t } = useLingui()
   const [sending, setSending] = useState<string | null>(null)
   const send = (target: SendTarget) => {
+    const profileName = useProfiles.getState().profiles.find((p) => p.id === profileId)?.name ?? ''
     setSending(target.id)
     Send(target.id, game, profileId)
       .then(() => {
-        useToasts.getState().push({ kind: 'success', title: t`Sent to ${target.name}` })
+        useToasts.getState().push({
+          kind: 'success',
+          title: target.paired
+            ? t`Sent ${profileName} to ${target.name}; they'll copy the files from you`
+            : t`Sent to ${target.name}`,
+        })
         onSent()
       })
       .catch((error: unknown) => {

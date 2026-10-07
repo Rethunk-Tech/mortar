@@ -11,6 +11,7 @@ import { activateLanguage, i18n } from './i18n/index.ts'
 import { initInstallAsks } from './install/store.ts'
 import { IncomingPrompt } from './lan/IncomingPrompt.tsx'
 import { initIncoming } from './lan/incoming.ts'
+import { OutgoingProgress } from './lan/OutgoingProgress.tsx'
 import { initLaunch } from './launch/events.ts'
 import { initPlayMode } from './launch/playMode.ts'
 import { initPlayRequests } from './launch/playRequests.ts'
@@ -82,6 +83,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
         <CssBaseline />
         <App />
         <IncomingPrompt />
+        <OutgoingProgress />
       </Themed>
     </I18nProvider>
   </React.StrictMode>,
