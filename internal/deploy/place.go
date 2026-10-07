@@ -71,11 +71,7 @@ func persist(m Manifest) error {
 	if err := os.MkdirAll(m.View.JournalDir, 0o700); err != nil {
 		return err
 	}
-	tmp := journalPath(m.View.JournalDir) + ".tmp"
-	if err := fsx.WriteFile(tmp, b, 0o600); err != nil {
-		return err
-	}
-	return fsx.Rename(tmp, journalPath(m.View.JournalDir))
+	return datadir.WriteFile(journalPath(m.View.JournalDir), b, 0o600)
 }
 
 // ErrUnrecovered is Apply's refusal to deploy over the journal of a deploy that was never taken back: a second

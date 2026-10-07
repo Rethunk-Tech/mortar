@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -46,7 +47,7 @@ func writeMarker(profileDir string, m marker) error {
 	if err != nil {
 		return err
 	}
-	return fsx.WriteFile(filepath.Join(profileDir, markerFile), b, 0o600)
+	return datadir.WriteFile(filepath.Join(profileDir, markerFile), b, 0o600)
 }
 
 func readMarker(profileDir string) marker {

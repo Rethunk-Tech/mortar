@@ -173,7 +173,7 @@ func writePlaced(dir string, rels []string) error {
 	if err != nil {
 		return err
 	}
-	return fsx.WriteFile(filepath.Join(dir, placedFile), b, 0o600)
+	return datadir.WriteFile(filepath.Join(dir, placedFile), b, 0o600)
 }
 
 // placedCurrent reports a placed file that still matches its source: same size and not older.

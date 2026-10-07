@@ -72,7 +72,7 @@ func (s *Store) SetRoot(game, key, rel string) error {
 	if _, ok := resolveRoot(dir, rel); !ok {
 		return &Error{Game: game, Key: key, Err: fmt.Errorf("root %q is not in this item", rel)}
 	}
-	if err := fsx.WriteFile(side, []byte(rel+"\n"), 0o600); err != nil {
+	if err := datadir.WriteFile(side, []byte(rel+"\n"), 0o600); err != nil {
 		return &Error{Game: game, Key: key, Err: err}
 	}
 	return nil

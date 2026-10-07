@@ -56,11 +56,7 @@ func persist(m Manifest) error {
 	if err := os.MkdirAll(m.Journal, 0o700); err != nil {
 		return err
 	}
-	tmp := journalPath(m.Journal) + ".tmp"
-	if err := fsx.WriteFile(tmp, b, 0o600); err != nil {
-		return err
-	}
-	return fsx.Rename(tmp, journalPath(m.Journal))
+	return datadir.WriteFile(journalPath(m.Journal), b, 0o600)
 }
 
 func isLink(p string) bool {

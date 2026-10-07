@@ -19,6 +19,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -216,11 +217,7 @@ func EnsureWinHTTPOverride(userReg string) error {
 			return err
 		}
 	}
-	tmp := userReg + ".mortar-tmp"
-	if err := fsx.WriteFile(tmp, []byte(strings.Join(updated, eol)), 0o600); err != nil {
-		return err
-	}
-	return fsx.Rename(tmp, userReg)
+	return datadir.WriteFile(userReg, []byte(strings.Join(updated, eol)), 0o600)
 }
 
 // withWinHTTP returns lines with the winhttp override in the DllOverrides section, adding the section when it is missing.
