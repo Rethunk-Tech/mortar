@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { Fold } from '../shell/Fold.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { Problems, StatusBar } from './ImportPreview.tsx'
@@ -148,26 +149,26 @@ export function ImportFooter({
         }}
       >
         {(preview.replace?.remove ?? []).length > 0 ? (
-          <Box component="details">
-            <Typography component="summary" sx={{ fontSize: 13, cursor: 'pointer' }}>
-              {t`These will be removed (${(preview.replace?.remove ?? []).length})`}
-            </Typography>
-            <Typography sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}>
+          <Fold title={t`These will be removed (${(preview.replace?.remove ?? []).length})`}>
+            <Typography
+              tabIndex={0}
+              sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
+            >
               {(preview.replace?.remove ?? []).join(', ')}
             </Typography>
-          </Box>
+          </Fold>
         ) : (
           <Typography sx={{ fontSize: 13 }}>{t`Nothing will be removed.`}</Typography>
         )}
         {(preview.replace?.keepLocal ?? []).length > 0 ? (
-          <Box component="details">
-            <Typography component="summary" sx={{ fontSize: 13, cursor: 'pointer' }}>
-              {t`Local-only mods kept (${(preview.replace?.keepLocal ?? []).length})`}
-            </Typography>
-            <Typography sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}>
+          <Fold title={t`Local-only mods kept (${(preview.replace?.keepLocal ?? []).length})`}>
+            <Typography
+              tabIndex={0}
+              sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
+            >
               {(preview.replace?.keepLocal ?? []).join(', ')}
             </Typography>
-          </Box>
+          </Fold>
         ) : null}
       </ConfirmDialog>
     </Box>

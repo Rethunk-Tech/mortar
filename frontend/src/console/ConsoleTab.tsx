@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Checkbox, Chip, Menu, MenuItem } from '@mui/material'
+import { Alert, Box, Button, Checkbox, Chip, InputBase, Menu, MenuItem } from '@mui/material'
 import {
   ArrowDownToLine,
   ChevronDown,
@@ -120,11 +120,9 @@ function CauseBanner({ game, profile, run }: { game: string; profile: string; ru
     RunCause(game, profile, run).then(setCause, () => setCause(null))
   }, [game, profile, run])
   return cause?.modName ? (
-    <Box
-      sx={{ mx: 2, mb: 1, px: 1.5, py: 1, bgcolor: 'rgba(180,80,70,0.25)', borderRadius: '6px' }}
-    >
+    <Alert severity="error" sx={{ mx: 2, mb: 1 }}>
       <strong>{t`Caused by ${cause.modName}`}</strong> {t`·`} {cause.detail}
-    </Box>
+    </Alert>
   ) : null
 }
 
@@ -180,12 +178,36 @@ function CommandLine({ game }: { game: string }) {
     return null
   }
   return (
-    <Box
-      component="label"
+    <InputBase
+      startAdornment={
+        <Box component="span" aria-hidden={true} sx={{ mr: 1 }}>
+          {'>'}
+        </Box>
+      }
+      inputProps={{
+        'aria-label': t`Console command`,
+        spellCheck: false,
+        autoComplete: 'off',
+      }}
+      placeholder={t`Type a command, for example help`}
+      value={text}
+      onChange={(e) => {
+        setText(e.target.value)
+        setCursor(null)
+      }}
+      onKeyDown={(e) => {
+        if (e.nativeEvent.isComposing) {
+          return
+        }
+        if (e.key === 'Enter') {
+          submit()
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          e.preventDefault()
+          browse(e.key === 'ArrowUp' ? -1 : 1)
+        }
+      }}
       sx={{
         display: 'flex',
-        alignItems: 'center',
-        gap: 1,
         height: 38,
         mx: 2,
         mt: -0.5,
@@ -206,43 +228,9 @@ function CommandLine({ game }: { game: string }) {
         },
         fontFamily: MONO,
         fontSize: 13,
-        color: running ? 'var(--mortar-ink)' : 'var(--mortar-ink-dim-60)',
+        color: 'var(--mortar-ink)',
       }}
-    >
-      <span aria-hidden={true}>{'>'}</span>
-      <Box
-        component="input"
-        aria-label={t`Console command`}
-        placeholder={t`Type a command, for example help`}
-        value={text}
-        spellCheck={false}
-        autoComplete="off"
-        onChange={(e) => {
-          setText(e.target.value)
-          setCursor(null)
-        }}
-        onKeyDown={(e) => {
-          if (e.nativeEvent.isComposing) {
-            return
-          }
-          if (e.key === 'Enter') {
-            submit()
-          } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-            e.preventDefault()
-            browse(e.key === 'ArrowUp' ? -1 : 1)
-          }
-        }}
-        sx={{
-          flexGrow: 1,
-          minWidth: 0,
-          bgcolor: 'transparent',
-          border: 0,
-          color: 'inherit',
-          font: 'inherit',
-          outline: 'none',
-        }}
-      />
-    </Box>
+    />
   )
 }
 

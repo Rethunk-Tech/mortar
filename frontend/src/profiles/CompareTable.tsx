@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Checkbox, Typography } from '@mui/material'
+import { Box, ButtonBase, Checkbox, Typography } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -73,9 +73,7 @@ export function CompareGroupView({
   }
   return (
     <Box>
-      <Box
-        component="button"
-        type="button"
+      <ButtonBase
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         sx={{
@@ -84,13 +82,9 @@ export function CompareGroupView({
           gap: 1,
           height: 36,
           width: 1,
-          p: 0,
-          border: 0,
-          bgcolor: 'transparent',
-          color: 'inherit',
+          justifyContent: 'flex-start',
           font: 'inherit',
           fontWeight: 600,
-          cursor: 'pointer',
         }}
       >
         <Chevron size={14} aria-hidden={true} />
@@ -98,7 +92,7 @@ export function CompareGroupView({
         <Typography component="span" color="text.secondary" sx={{ fontWeight: 400 }}>
           {group.rows.length}
         </Typography>
-      </Box>
+      </ButtonBase>
       {open
         ? group.rows.map((row) => {
             const opener = openRow(row, profileA, profileB)

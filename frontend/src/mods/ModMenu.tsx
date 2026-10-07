@@ -32,8 +32,8 @@ import {
 import { AddToBundleDialog } from '../bundles/dialogs.tsx'
 import { useFomod } from '../fomod/store.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
-import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { AddToGroupDialog } from './AddToGroupDialog.tsx'
@@ -415,15 +415,15 @@ export function ModMenu({ mod }: { mod: Mod }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   return (
     <>
-      <TipIconButton
+      <IconAction
         label={t`More actions for ${mod.name}`}
+        icon={<Ellipsis size={18} />}
+        menu={true}
         onClick={(e) => {
           e.stopPropagation()
           setAnchor(e.currentTarget)
         }}
-      >
-        <Ellipsis size={18} />
-      </TipIconButton>
+      />
       {anchor ? (
         <ModActionMenu mod={mod} anchor={{ el: anchor }} onClose={() => setAnchor(null)} />
       ) : null}

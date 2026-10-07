@@ -28,6 +28,7 @@ export function ExtraFilesChip({ mod, profile }: { mod: Mod; profile: Profile })
       <Chip
         size="small"
         label={label}
+        aria-haspopup="menu"
         onClick={(e) => {
           e.stopPropagation()
           openMenu(mod, { el: e.currentTarget })

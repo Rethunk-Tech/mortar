@@ -5,6 +5,7 @@ import type {
   Mod,
   Preview,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
+import { Fold } from '../shell/Fold.tsx'
 
 // CompareSummary is how a shared profile lines up with the profile it would join, so friends can match mods before
 // playing together: what already matches, what this import would download, what differs in version, and what only
@@ -17,10 +18,10 @@ export function CompareSummary({ preview, targetName }: { preview: Preview; targ
   const different = mods.filter((m) => m.different)
   const matching = mods.filter((m) => m.state === 'installed' && !m.different)
   const onlyYours = preview.replace?.remove ?? []
-  const rows: { label: string; items: string[]; tone: string }[] = [
-    { label: t`Missing in ${targetName}`, items: names(missing), tone: 'warning.main' },
-    { label: t`Different version`, items: names(different), tone: 'warning.main' },
-    { label: t`Only in ${{ name: targetName }}`, items: onlyYours, tone: 'text.secondary' },
+  const rows: { label: string; items: string[] }[] = [
+    { label: t`Missing in ${targetName}`, items: names(missing) },
+    { label: t`Different version`, items: names(different) },
+    { label: t`Only in ${{ name: targetName }}`, items: onlyYours },
   ]
   return (
     <Box sx={{ px: 1, pt: 0.5, pb: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
@@ -30,16 +31,14 @@ export function CompareSummary({ preview, targetName }: { preview: Preview; targ
       {rows
         .filter((r) => r.items.length > 0)
         .map((r) => (
-          <Box component="details" key={r.label}>
-            <Typography component="summary" sx={{ fontSize: 13, cursor: 'pointer' }}>
-              <Box component="span" sx={{ color: r.tone, fontWeight: 600 }}>
-                {`${r.label} (${r.items.length})`}
-              </Box>
-            </Typography>
-            <Typography sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}>
+          <Fold key={r.label} title={`${r.label} (${r.items.length})`}>
+            <Typography
+              tabIndex={0}
+              sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
+            >
               {r.items.join(', ')}
             </Typography>
-          </Box>
+          </Fold>
         ))}
     </Box>
   )

@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Tooltip } from '@mui/material'
+import { Chip, Tooltip } from '@mui/material'
 import { useState } from 'react'
 import { Runs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { HealthHistory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
@@ -9,7 +9,6 @@ import { useSettings } from '../settings/store.ts'
 import { healthView } from './badgeDisplay.ts'
 import type { Counts } from './badges.ts'
 import { HealthTooltipContent } from './HealthTooltipContent.tsx'
-import { pill } from './pills.ts'
 
 export function ProfileHealth({
   counts,
@@ -59,19 +58,15 @@ export function ProfileHealth({
 
   return (
     <Tooltip title={tooltipTitle} disableInteractive={true} onOpen={loadDetail}>
-      <Box
-        component="span"
+      <Chip
+        size="small"
         role="img"
+        tabIndex={0}
         aria-label={view.tooltip}
-        sx={{
-          ...pill,
-          bgcolor: view.tone === 'red' ? 'error.main' : 'warning.main',
-          // Dark ink falls short of 4.5:1 on the error red.
-          ...(view.tone === 'red' ? { color: 'error.contrastText' } : {}),
-        }}
-      >
-        {view.value}
-      </Box>
+        color={view.tone === 'red' ? 'error' : 'warning'}
+        label={view.value}
+        sx={{ flexShrink: 0, ml: 0.5, fontWeight: 700 }}
+      />
     </Tooltip>
   )
 }

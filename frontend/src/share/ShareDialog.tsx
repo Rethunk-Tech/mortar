@@ -51,9 +51,9 @@ export function ShareDialog() {
         close()
       }}
       maxWidth={false}
-      aria-label={info ? t`Share ${info.name}` : undefined}
       slotProps={{
         paper: {
+          'aria-label': info ? t`Share ${info.name}` : undefined,
           sx: {
             bgcolor: 'var(--mortar-panel-solid)',
             border: '1px solid var(--mortar-hairline-12)',

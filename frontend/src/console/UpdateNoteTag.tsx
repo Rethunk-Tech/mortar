@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Tooltip } from '@mui/material'
+import { Chip, Tooltip } from '@mui/material'
 import type { UpdateNote } from './smapiUpdateNotes.ts'
 
 /** Mortar's answer to one line of SMAPI's "You can update" list, shown at the end of that line. */
@@ -31,23 +31,13 @@ export function UpdateNoteTag({ note }: { note: UpdateNote }) {
   }[note.kind]
   return (
     <Tooltip title={why}>
-      <Box
-        component="span"
-        sx={{
-          ml: 1,
-          px: 0.75,
-          borderRadius: '4px',
-          fontSize: 11,
-          lineHeight: '17px',
-          flexShrink: 0,
-          color: 'text.secondary',
-          border: 1,
-          borderColor: 'divider',
-          fontFamily: 'inherit',
-        }}
-      >
-        {t`Mortar: ${label}`}
-      </Box>
+      <Chip
+        size="small"
+        variant="outlined"
+        tabIndex={0}
+        label={t`Mortar: ${label}`}
+        sx={{ ml: 1, flexShrink: 0, fontSize: 11, color: 'text.secondary' }}
+      />
     </Tooltip>
   )
 }

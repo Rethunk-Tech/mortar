@@ -200,6 +200,7 @@ function Row({
   const playId = lastPlayedId || first?.id || ''
   const playName = lastPlayedName || first?.name || ''
   const playLast = usePlayLast(game, playId)
+  const hasArt = gameArt(game) !== ''
   const content = (
     <>
       {gameArt(game) ? <Art src={gameArt(game)} openable={openable} /> : null}
@@ -209,9 +210,9 @@ function Row({
           ...aboveOpen,
           minWidth: 0,
           overflow: 'hidden',
-          textShadow: shadow,
+          textShadow: hasArt ? shadow : 'none',
           textAlign: 'left',
-          color: '#fff',
+          color: hasArt ? 'common.white' : 'text.primary',
         }}
       >
         <Typography sx={{ fontSize: 34, fontWeight: 600, lineHeight: 1.2 }}>{game.name}</Typography>
@@ -270,10 +271,11 @@ function Row({
     px: '48px',
     py: '24px',
     overflow: 'hidden',
-    bgcolor: gameArt(game) ? 'transparent' : 'background.paper',
+    // Art tiles keep a solid dark base so white text stays readable while or after the image fails to load.
+    bgcolor: hasArt ? 'var(--mortar-overlay-90)' : 'background.paper',
     borderLeft: '4px solid',
     borderColor: openable ? 'primary.main' : 'transparent',
-    borderTop: '1px solid rgba(0,0,0,0.8)',
+    borderTop: '1px solid var(--mortar-overlay-80)',
     fontFamily: 'inherit',
   } as const
   return (

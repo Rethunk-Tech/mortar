@@ -190,12 +190,14 @@ function CompareFrame({
   onClose: (() => void) | undefined
   children: ReactNode
 }) {
+  const { t } = useLingui()
   return (
     <Dialog
       open={open}
       onClose={onClose}
       slotProps={{
         paper: {
+          'aria-label': t`Compare`,
           sx: {
             width: 880,
             maxWidth: 'calc(100vw - 64px)',

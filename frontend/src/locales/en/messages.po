@@ -250,7 +250,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/share/usePasteLink.ts:29
 #: src/share/usePasteLink.ts:64
 #: src/toasts/HistoryButton.tsx:32
-#: src/toasts/ToastHost.tsx:128
+#: src/toasts/ToastHost.tsx:123
 msgid "Stop the game to change mods."
 msgstr "Stop the game to change mods."
 
@@ -457,7 +457,7 @@ msgstr "Clean up…"
 msgid "Switch to Console"
 msgstr "Switch to Console"
 
-#: src/settings/sections/AboutDiagnostics.tsx:157
+#: src/settings/sections/AboutDiagnostics.tsx:155
 msgid "Run checks…"
 msgstr "Run checks…"
 
@@ -505,7 +505,7 @@ msgstr "Rename {0}"
 msgid "Density"
 msgstr "Density"
 
-#: src/settings/sections/AboutDiagnostics.tsx:102
+#: src/settings/sections/AboutDiagnostics.tsx:101
 msgid "Mod store"
 msgstr "Mod store"
 
@@ -517,7 +517,7 @@ msgstr "Older copies of the same mod"
 msgid "How many times to retry a failed download"
 msgstr "How many times to retry a failed download"
 
-#: src/console/SearchRunsDialog.tsx:101
+#: src/console/SearchRunsDialog.tsx:102
 msgid "Search all runs"
 msgstr "Search all runs"
 
@@ -538,7 +538,7 @@ msgstr "{count, plural, one {Moved # mod from the game's Mods folder} other {Mov
 msgid "Back up saves every time the game starts."
 msgstr "Back up saves every time the game starts."
 
-#: src/settings/sections/StreamOverlay.tsx:310
+#: src/settings/sections/StreamOverlay.tsx:309
 msgid "Show token"
 msgstr "Show token"
 
@@ -580,7 +580,7 @@ msgstr "Search settings"
 
 #: src/game/HomeNotes.tsx:117
 #: src/share/ImportPreview.tsx:350
-#: src/share/Included.tsx:94
+#: src/share/Included.tsx:87
 msgid "Notes"
 msgstr "Notes"
 
@@ -657,7 +657,7 @@ msgstr "Show a report first."
 #: src/mods/problemFix/DamagedFix.tsx:40
 #: src/profiles/HealthDialog.tsx:110
 #: src/profiles/ProfilesPage.tsx:164
-#: src/settings/sections/AboutDiagnostics.tsx:213
+#: src/settings/sections/AboutDiagnostics.tsx:211
 msgid "Repair"
 msgstr "Repair"
 
@@ -705,7 +705,7 @@ msgstr "Updated on Nexus"
 #: src/mods/problemFix/SettingFix.tsx:100
 #: src/profiles/CrashHintCard.tsx:133
 #: src/tips/TipBanner.tsx:37
-#: src/toasts/ToastHost.tsx:235
+#: src/toasts/ToastHost.tsx:216
 msgid "Dismiss"
 msgstr "Dismiss"
 
@@ -902,7 +902,7 @@ msgstr "Make your first profile"
 msgid "Resize details"
 msgstr "Resize details"
 
-#: src/mods/GroupMenu.tsx:59
+#: src/mods/GroupMenu.tsx:62
 msgid "Delete group (mods stay)"
 msgstr "Delete group (mods stay)"
 
@@ -952,7 +952,7 @@ msgstr "gone"
 #. placeholder {1}: e.index
 #. placeholder {1}: formatBytes(backup.size)
 #. placeholder {1}: formatKb(file.sizeKb)
-#: src/console/SearchRunsDialog.tsx:131
+#: src/console/SearchRunsDialog.tsx:132
 #: src/mods/ConflictWhy.tsx:104
 #: src/nxm/ArrivalDialog.tsx:111
 #: src/saves/BackupsDialog.tsx:71
@@ -967,12 +967,13 @@ msgstr "{list} do the same job: all change {detail}"
 msgid "Star"
 msgstr "Star"
 
-#: src/share/PreviewDialog.tsx:31
+#: src/share/PreviewDialog.tsx:33
+#: src/share/PreviewDialog.tsx:103
 msgid "What they see"
 msgstr "What they see"
 
 #: src/game/ProfileContextMenu.tsx:38
-#: src/mods/GroupMenu.tsx:68
+#: src/mods/GroupMenu.tsx:71
 #: src/profiles/ProfileRow.tsx:76
 #: src/templates/TemplateDialogs.tsx:111
 #: src/templates/TemplateDialogs.tsx:189
@@ -1122,7 +1123,7 @@ msgstr "Mod list copied"
 msgid "Already in Steam"
 msgstr "Already in Steam"
 
-#: src/settings/sections/AboutDiagnostics.tsx:87
+#: src/settings/sections/AboutDiagnostics.tsx:86
 msgid "Nexus download links"
 msgstr "Nexus download links"
 
@@ -1402,7 +1403,7 @@ msgstr "Enable scheduled save backups first."
 msgid "Mortar settings…"
 msgstr "Mortar settings…"
 
-#: src/settings/sections/AboutDiagnostics.tsx:228
+#: src/settings/sections/AboutDiagnostics.tsx:226
 #: src/toasts/report.ts:68
 msgid "Save diagnostics…"
 msgstr "Save diagnostics…"
@@ -1415,7 +1416,7 @@ msgstr "Small"
 msgid "From a shared link"
 msgstr "From a shared link"
 
-#: src/console/SearchRunsDialog.tsx:115
+#: src/console/SearchRunsDialog.tsx:116
 msgid "No matches"
 msgstr "No matches"
 
@@ -1626,7 +1627,7 @@ msgstr "Add preset"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
-#: src/games/GameSelect.tsx:340
+#: src/games/GameSelect.tsx:342
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -1873,8 +1874,8 @@ msgid "Copy mod list"
 msgstr "Copy mod list"
 
 #: src/settings/sections/StreamOverlay.tsx:251
-#: src/settings/sections/StreamOverlay.tsx:401
-#: src/toasts/ToastHost.tsx:62
+#: src/settings/sections/StreamOverlay.tsx:400
+#: src/toasts/ToastHost.tsx:69
 msgid "Copied"
 msgstr "Copied"
 
@@ -2191,7 +2192,7 @@ msgstr "Mortar is up to date"
 #: src/mods/Toolbar.tsx:328
 #: src/mods/Toolbar.tsx:354
 #: src/mods/Toolbar.tsx:372
-#: src/profiles/CompareDialog.tsx:273
+#: src/profiles/CompareDialog.tsx:274
 #: src/profiles/CompareTop.tsx:170
 msgid "Filter mods"
 msgstr "Filter mods"
@@ -2456,7 +2457,7 @@ msgstr "Conflicts ({0})"
 msgid "Choose executable"
 msgstr "Choose executable"
 
-#: src/settings/sections/AboutDiagnostics.tsx:162
+#: src/settings/sections/AboutDiagnostics.tsx:160
 msgid "Writes a zip with logs and settings, personal paths removed, to attach to a bug report."
 msgstr "Writes a zip with logs and settings, personal paths removed, to attach to a bug report."
 
@@ -2647,7 +2648,7 @@ msgstr "Could not start the Nexus download"
 msgid "Scan the mods folder for changes Mortar did not make"
 msgstr "Scan the mods folder for changes Mortar did not make"
 
-#: src/settings/sections/AboutDiagnostics.tsx:147
+#: src/settings/sections/AboutDiagnostics.tsx:145
 msgid "Check Mortar"
 msgstr "Check Mortar"
 
@@ -2832,7 +2833,7 @@ msgstr "Live log starts at this level and above"
 msgid "No fix yet"
 msgstr "No fix yet"
 
-#: src/settings/sections/StreamOverlay.tsx:399
+#: src/settings/sections/StreamOverlay.tsx:398
 msgid "Load a save to see values"
 msgstr "Load a save to see values"
 
@@ -2998,7 +2999,7 @@ msgstr "Queue"
 msgid "Not found in the Mods folder"
 msgstr "Not found in the Mods folder"
 
-#: src/settings/sections/AboutDiagnostics.tsx:83
+#: src/settings/sections/AboutDiagnostics.tsx:82
 msgid "Data folder"
 msgstr "Data folder"
 
@@ -3077,7 +3078,7 @@ msgstr "Show report"
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
-#: src/settings/sections/StreamOverlay.tsx:317
+#: src/settings/sections/StreamOverlay.tsx:316
 msgid "Copy token"
 msgstr "Copy token"
 
@@ -3258,7 +3259,7 @@ msgstr "Search GitHub for mods published as releases. Add puts the latest releas
 msgid "And {0} more on the Nexus page"
 msgstr "And {0} more on the Nexus page"
 
-#: src/profiles/CompareDialog.tsx:304
+#: src/profiles/CompareDialog.tsx:305
 msgid "Neither profile has a mod that matches the filter."
 msgstr "Neither profile has a mod that matches the filter."
 
@@ -3435,7 +3436,7 @@ msgid "{0, plural, one {# other mod} other {# other mods}}"
 msgstr "{0, plural, one {# other mod} other {# other mods}}"
 
 #. placeholder {0}: profileA.name
-#: src/profiles/CompareDialog.tsx:363
+#: src/profiles/CompareDialog.tsx:364
 msgid "Pick what to compare {0} with"
 msgstr "Pick what to compare {0} with"
 
@@ -3454,11 +3455,11 @@ msgid "Help"
 msgstr "Help"
 
 #. placeholder {0}: hit.lineNumber
-#: src/console/SearchRunsDialog.tsx:145
+#: src/console/SearchRunsDialog.tsx:146
 msgid "L{0}"
 msgstr "L{0}"
 
-#: src/share/Included.tsx:132
+#: src/share/Included.tsx:125
 msgid "Included"
 msgstr "Included"
 
@@ -3487,7 +3488,7 @@ msgstr "config.json, changed from the mod's own"
 #: src/game/FarmMenuItem.tsx:86
 #: src/launch/SaveWarnDialog.tsx:61
 #: src/mods/updateReview/Row.tsx:34
-#: src/share/Included.tsx:113
+#: src/share/Included.tsx:106
 msgid "Disabled in this profile"
 msgstr "Disabled in this profile"
 
@@ -3533,7 +3534,7 @@ msgstr "Enable and disable mods, and update them for the open profile."
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
 
-#: src/mods/ProfileHealth.tsx:27
+#: src/mods/ProfileHealth.tsx:26
 msgid "{n, plural, one {# missing requirement} other {# missing requirements}}"
 msgstr "{n, plural, one {# missing requirement} other {# missing requirements}}"
 
@@ -3565,7 +3566,7 @@ msgstr "Skip sharing"
 msgid "The game is using this profile. Stop the game to change mods."
 msgstr "The game is using this profile. Stop the game to change mods."
 
-#: src/profiles/CompareDialog.tsx:387
+#: src/profiles/CompareDialog.tsx:388
 msgid "Compare against a friend's profile or a multiplayer host's list."
 msgstr "Compare against a friend's profile or a multiplayer host's list."
 
@@ -3635,7 +3636,7 @@ msgstr "Device name"
 msgid "{0} · {1} · {farms}"
 msgstr "{0} · {1} · {farms}"
 
-#: src/share/Included.tsx:95
+#: src/share/Included.tsx:88
 msgid "FOMOD choices"
 msgstr "FOMOD choices"
 
@@ -3780,8 +3781,7 @@ msgstr "Added {mods} to {profile}"
 msgid "Timed out waiting for mod updates"
 msgstr "Timed out waiting for mod updates"
 
-#: src/settings/sections/StreamOverlay.tsx:252
-#: src/settings/sections/StreamOverlay.tsx:402
+#: src/settings/sections/StreamOverlay.tsx:401
 msgid "Could not copy"
 msgstr "Could not copy"
 
@@ -3927,7 +3927,7 @@ msgstr "{0, plural, one {# mod in the game's Mods folder isn't in Mortar.} other
 msgid "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order."
 msgstr "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order."
 
-#: src/settings/sections/StreamOverlay.tsx:297
+#: src/settings/sections/StreamOverlay.tsx:296
 msgid "Part of the OBS address; regenerate it if it leaks"
 msgstr "Part of the OBS address; regenerate it if it leaks"
 
@@ -4011,7 +4011,7 @@ msgstr "config.json, as the mod ships it"
 msgid "The last launch loaded this here, not where its dependencies put it."
 msgstr "The last launch loaded this here, not where its dependencies put it."
 
-#: src/games/GameSelect.tsx:343
+#: src/games/GameSelect.tsx:345
 msgid "Check launchers…"
 msgstr "Check launchers…"
 
@@ -4168,7 +4168,7 @@ msgid "Use update source"
 msgstr "Use update source"
 
 #. placeholder {0}: update.source
-#: src/mods/updateReview/RowCopy.tsx:63
+#: src/mods/updateReview/RowCopy.tsx:57
 msgid "Reported by {0}"
 msgstr "Reported by {0}"
 
@@ -4176,7 +4176,7 @@ msgstr "Reported by {0}"
 msgid "Automatic"
 msgstr "Automatic"
 
-#: src/share/Included.tsx:94
+#: src/share/Included.tsx:87
 msgid "Mod notes"
 msgstr "Mod notes"
 
@@ -4228,7 +4228,7 @@ msgstr "Send to…"
 msgid "Could not undo the install"
 msgstr "Could not undo the install"
 
-#: src/mods/GroupMenu.tsx:53
+#: src/mods/GroupMenu.tsx:56
 msgid "Enable all"
 msgstr "Enable all"
 
@@ -4264,7 +4264,7 @@ msgstr "{0, plural, one {Remove all # mod from this profile?} other {Remove all 
 msgid "{rest, plural, one {# more} other {# more}}"
 msgstr "{rest, plural, one {# more} other {# more}}"
 
-#: src/console/UpdateNoteTag.tsx:49
+#: src/console/UpdateNoteTag.tsx:38
 msgid "Mortar: {label}"
 msgstr "Mortar: {label}"
 
@@ -4369,7 +4369,7 @@ msgstr "Include disabled mods"
 msgid "slow Entry {ms}"
 msgstr "slow Entry {ms}"
 
-#: src/settings/sections/StreamOverlay.tsx:409
+#: src/settings/sections/StreamOverlay.tsx:408
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
 msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 
@@ -4492,7 +4492,7 @@ msgstr "Link copied"
 msgid "Version"
 msgstr "Version"
 
-#: src/settings/sections/AboutDiagnostics.tsx:89
+#: src/settings/sections/AboutDiagnostics.tsx:88
 #: src/settings/sections/Downloads.tsx:290
 msgid "Browser extension"
 msgstr "Browser extension"
@@ -4569,7 +4569,7 @@ msgstr "Missing required dependencies ({0})"
 msgid "Could not read recently deleted profiles"
 msgstr "Could not read recently deleted profiles"
 
-#: src/mods/GroupMenu.tsx:78
+#: src/mods/GroupMenu.tsx:81
 msgid "Delete group {name}?"
 msgstr "Delete group {name}?"
 
@@ -4702,7 +4702,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/sections/ModsProfiles.tsx:21
 #: src/settings/sections/Notifications.tsx:35
 #: src/settings/sections/SourceOrder.tsx:46
-#: src/settings/sections/StreamOverlay.tsx:398
+#: src/settings/sections/StreamOverlay.tsx:397
 #: src/settings/sections/SyncFolder.tsx:15
 #: src/settings/sections/SyncFolder.tsx:36
 #: src/settings/sections/Updates.tsx:161
@@ -4759,7 +4759,7 @@ msgstr "Added to Steam"
 msgid "That is for another game. Open that game and import it there."
 msgstr "That is for another game. Open that game and import it there."
 
-#: src/console/SearchRunsDialog.tsx:120
+#: src/console/SearchRunsDialog.tsx:121
 msgid "Enter text to search stored runs."
 msgstr "Enter text to search stored runs."
 
@@ -4775,11 +4775,11 @@ msgstr "Duplicate"
 
 #: src/browse/BrowseDetails.tsx:58
 #: src/launch/PrePlayDialog.tsx:91
-#: src/share/Included.tsx:63
+#: src/share/Included.tsx:56
 msgid "and {count} more"
 msgstr "and {count} more"
 
-#: src/settings/sections/StreamOverlay.tsx:275
+#: src/settings/sections/StreamOverlay.tsx:274
 msgid "The local port OBS reads the overlay from"
 msgstr "The local port OBS reads the overlay from"
 
@@ -4875,7 +4875,7 @@ msgstr "Install these again by hand: {0}"
 msgid "Per profile"
 msgstr "Per profile"
 
-#: src/settings/sections/AboutDiagnostics.tsx:191
+#: src/settings/sections/AboutDiagnostics.tsx:189
 msgid "All checks passed"
 msgstr "All checks passed"
 
@@ -5021,7 +5021,7 @@ msgstr "Sign out"
 msgid "Could not check the store files"
 msgstr "Could not check the store files"
 
-#: src/mods/GroupMenu.tsx:50
+#: src/mods/GroupMenu.tsx:53
 msgid "Rename…"
 msgstr "Rename…"
 
@@ -5061,7 +5061,7 @@ msgstr "Theme"
 msgid "When Mortar makes a save backup before launching"
 msgstr "When Mortar makes a save backup before launching"
 
-#: src/settings/sections/AboutDiagnostics.tsx:93
+#: src/settings/sections/AboutDiagnostics.tsx:92
 msgid "Settings backups"
 msgstr "Settings backups"
 
@@ -5074,7 +5074,7 @@ msgstr "Choose a game"
 msgid "Untrack all…"
 msgstr "Untrack all…"
 
-#: src/mods/GroupMenu.tsx:56
+#: src/mods/GroupMenu.tsx:59
 msgid "Disable all"
 msgstr "Disable all"
 
@@ -5175,7 +5175,7 @@ msgstr "No profile holds a mod by that name or id."
 msgid "Could not export the modpack"
 msgstr "Could not export the modpack"
 
-#: src/share/Included.tsx:111
+#: src/share/Included.tsx:104
 msgid "Added from an archive, so it only exists on this computer."
 msgstr "Added from an archive, so it only exists on this computer."
 
@@ -5272,7 +5272,7 @@ msgstr "Copy the command"
 msgid "Background preview"
 msgstr "Background preview"
 
-#: src/profiles/CompareDialog.tsx:372
+#: src/profiles/CompareDialog.tsx:373
 #: src/profiles/CompareTop.tsx:91
 msgid "A friend's link or file…"
 msgstr "A friend's link or file…"
@@ -5795,9 +5795,9 @@ msgid "Game and SMAPI"
 msgstr "Game and SMAPI"
 
 #: src/commandPalette/paletteLabels.ts:18
-#: src/settings/sections/StreamOverlay.tsx:406
-#: src/settings/sections/StreamOverlay.tsx:408
-#: src/settings/sections/StreamOverlay.tsx:414
+#: src/settings/sections/StreamOverlay.tsx:405
+#: src/settings/sections/StreamOverlay.tsx:407
+#: src/settings/sections/StreamOverlay.tsx:413
 msgid "Stream overlay"
 msgstr "Stream overlay"
 
@@ -5825,7 +5825,7 @@ msgstr "Allow cleanup before deleting."
 msgid "Starter templates"
 msgstr "Starter templates"
 
-#: src/share/Included.tsx:123
+#: src/share/Included.tsx:116
 msgid "{local, plural, one {# mod you added from an archive can't be linked} other {# mods you added from archives can't be linked}}"
 msgstr "{local, plural, one {# mod you added from an archive can't be linked} other {# mods you added from archives can't be linked}}"
 
@@ -6032,7 +6032,7 @@ msgstr "Skip for now"
 
 #: src/mods/typedConfig/ConfigPane.tsx:179
 #: src/share/ImportPreview.tsx:351
-#: src/share/Included.tsx:96
+#: src/share/Included.tsx:89
 msgid "Config files"
 msgstr "Config files"
 
@@ -6145,7 +6145,7 @@ msgid "No profiles found."
 msgstr "No profiles found."
 
 #. placeholder {0}: game.name
-#: src/games/GameSelect.tsx:206
+#: src/games/GameSelect.tsx:207
 msgid "Open {0}"
 msgstr "Open {0}"
 
@@ -6181,7 +6181,7 @@ msgid "When you press Play"
 msgstr "When you press Play"
 
 #: src/share/ImportPreview.tsx:352
-#: src/share/Included.tsx:98
+#: src/share/Included.tsx:91
 msgid "Problem choices"
 msgstr "Problem choices"
 
@@ -6207,8 +6207,8 @@ msgstr "Console level"
 msgid "All values"
 msgstr "All values"
 
-#: src/settings/sections/StreamOverlay.tsx:275
-#: src/settings/sections/StreamOverlay.tsx:290
+#: src/settings/sections/StreamOverlay.tsx:274
+#: src/settings/sections/StreamOverlay.tsx:289
 msgid "Port"
 msgstr "Port"
 
@@ -6250,7 +6250,7 @@ msgstr "Skip image overlap analysis"
 msgid "config.json, made by the mod"
 msgstr "config.json, made by the mod"
 
-#: src/settings/sections/StreamOverlay.tsx:343
+#: src/settings/sections/StreamOverlay.tsx:342
 msgid "Token regenerated"
 msgstr "Token regenerated"
 
@@ -6263,7 +6263,7 @@ msgstr "{0} in progress"
 msgid "Read from the game's install."
 msgstr "Read from the game's install."
 
-#: src/settings/sections/StreamOverlay.tsx:400
+#: src/settings/sections/StreamOverlay.tsx:399
 msgid "Start the game to see values"
 msgstr "Start the game to see values"
 
@@ -6344,7 +6344,7 @@ msgstr "Saved"
 #: src/settings/SettingsPage.tsx:46
 #: src/toasts/HistoryButton.tsx:146
 #: src/toasts/HistoryButton.tsx:238
-#: src/toasts/ToastHost.tsx:251
+#: src/toasts/ToastHost.tsx:232
 msgid "Notifications"
 msgstr "Notifications"
 
@@ -6399,7 +6399,7 @@ msgstr "Unity starts"
 msgid "There is not enough free space at the destination."
 msgstr "There is not enough free space at the destination."
 
-#: src/profiles/CompareDialog.tsx:381
+#: src/profiles/CompareDialog.tsx:382
 #: src/profiles/CompareTop.tsx:98
 msgid "A multiplayer host's list…"
 msgstr "A multiplayer host's list…"
@@ -6609,7 +6609,7 @@ msgstr "The log does not name a mod."
 msgid "Create a profile first."
 msgstr "Create a profile first."
 
-#: src/share/Included.tsx:161
+#: src/share/Included.tsx:154
 msgid "Which?"
 msgstr "Which?"
 
@@ -7058,7 +7058,7 @@ msgstr "Stop game"
 msgid "Saving…"
 msgstr "Saving…"
 
-#: src/mods/GroupMenu.tsx:80
+#: src/mods/GroupMenu.tsx:83
 msgid "Delete group"
 msgstr "Delete group"
 
@@ -7176,7 +7176,7 @@ msgstr "Hide mods of {0}"
 msgid "Could not sign in with Nexus Mods"
 msgstr "Could not sign in with Nexus Mods"
 
-#: src/console/SearchRunsDialog.tsx:164
+#: src/console/SearchRunsDialog.tsx:165
 msgid "Showing the first 500 matches."
 msgstr "Showing the first 500 matches."
 
@@ -7471,8 +7471,8 @@ msgstr "Days to keep downloaded mods that no profile uses. 0 keeps them forever.
 msgid "Request counts appear after Mortar talks to GitHub."
 msgstr "Request counts appear after Mortar talks to GitHub."
 
-#: src/settings/sections/AboutDiagnostics.tsx:186
-#: src/settings/sections/AboutDiagnostics.tsx:232
+#: src/settings/sections/AboutDiagnostics.tsx:184
+#: src/settings/sections/AboutDiagnostics.tsx:230
 msgid "Run again"
 msgstr "Run again"
 
@@ -7600,7 +7600,7 @@ msgstr "Mountain"
 msgid "Installing {loader}"
 msgstr "Installing {loader}"
 
-#: src/share/Included.tsx:39
+#: src/share/Included.tsx:31
 msgid "{count} {source}"
 msgstr "{count} {source}"
 
@@ -7750,7 +7750,7 @@ msgstr "{0} does not allow downloads outside its own page: get it there."
 msgid "Add folder…"
 msgstr "Add folder…"
 
-#: src/share/PreviewDialog.tsx:70
+#: src/share/PreviewDialog.tsx:76
 msgid "Open in Mortar"
 msgstr "Open in Mortar"
 
@@ -7836,7 +7836,7 @@ msgstr "Created {name}"
 msgid "Updated {mods} in {profileName}"
 msgstr "Updated {mods} in {profileName}"
 
-#: src/console/SearchRunsDialog.tsx:115
+#: src/console/SearchRunsDialog.tsx:116
 msgid "Search every run"
 msgstr "Search every run"
 
@@ -7865,7 +7865,7 @@ msgid "Crashed"
 msgstr "Crashed"
 
 #: src/i18n/counts.ts:3
-#: src/share/Included.tsx:105
+#: src/share/Included.tsx:98
 msgid "{count, plural, one {# mod} other {# mods}}"
 msgstr "{count, plural, one {# mod} other {# mods}}"
 
@@ -7889,7 +7889,7 @@ msgstr "Show all"
 msgid "{playtime} played"
 msgstr "{playtime} played"
 
-#: src/settings/sections/AboutDiagnostics.tsx:184
+#: src/settings/sections/AboutDiagnostics.tsx:182
 msgid "Could not run diagnostics"
 msgstr "Could not run diagnostics"
 
@@ -8186,7 +8186,7 @@ msgstr "Signed out of Nexus"
 msgid "Also add {0} to…"
 msgstr "Also add {0} to…"
 
-#: src/share/PreviewDialog.tsx:75
+#: src/share/PreviewDialog.tsx:81
 msgid "The page reads the profile from the link itself. Nothing is uploaded or stored on a server."
 msgstr "The page reads the profile from the link itself. Nothing is uploaded or stored on a server."
 
@@ -8343,7 +8343,7 @@ msgstr "Close config editor"
 msgid "Nothing to clean up."
 msgstr "Nothing to clean up."
 
-#: src/mods/GroupMenu.tsx:79
+#: src/mods/GroupMenu.tsx:82
 msgid "The mods in it stay in the profile; only the group is deleted."
 msgstr "The mods in it stay in the profile; only the group is deleted."
 
@@ -8452,7 +8452,7 @@ msgstr "Cached Nexus mod details"
 msgid "Mortar offers this update in the profile's update list."
 msgstr "Mortar offers this update in the profile's update list."
 
-#: src/settings/sections/StreamOverlay.tsx:310
+#: src/settings/sections/StreamOverlay.tsx:309
 msgid "Hide token"
 msgstr "Hide token"
 
@@ -8738,7 +8738,7 @@ msgstr "What Mortar shows when it opens."
 
 #: src/console/PerformanceComparison.tsx:57
 #: src/console/StartupTable.tsx:278
-#: src/share/Included.tsx:141
+#: src/share/Included.tsx:134
 msgid "Change"
 msgstr "Change"
 
@@ -8820,7 +8820,7 @@ msgstr "Mod or event"
 msgid "Untrack every {gameName} mod on Nexus"
 msgstr "Untrack every {gameName} mod on Nexus"
 
-#: src/share/Included.tsx:127
+#: src/share/Included.tsx:120
 msgid "{other, plural, one {# more mod is left out} other {# more mods are left out}}"
 msgstr "{other, plural, one {# more mod is left out} other {# more mods are left out}}"
 
@@ -9043,7 +9043,7 @@ msgstr "Debug"
 msgid "Broken or obsolete ({0})"
 msgstr "Broken or obsolete ({0})"
 
-#: src/profiles/HealthCheckBadge.tsx:15
+#: src/profiles/HealthCheckBadge.tsx:14
 msgid "{count, plural, one {# thing to repair} other {# things to repair}}"
 msgstr "{count, plural, one {# thing to repair} other {# things to repair}}"
 
@@ -9106,7 +9106,7 @@ msgstr "Moss"
 msgid "Tags"
 msgstr "Tags"
 
-#: src/mods/GroupMenu.tsx:45
+#: src/mods/GroupMenu.tsx:46
 msgid "Group actions"
 msgstr "Group actions"
 
@@ -9196,7 +9196,7 @@ msgid "Sort: most endorsed"
 msgstr "Sort: most endorsed"
 
 #: src/shell/ErrorBoundary.tsx:12
-#: src/toasts/ToastHost.tsx:50
+#: src/toasts/ToastHost.tsx:59
 msgid "Details copied"
 msgstr "Details copied"
 
@@ -9333,7 +9333,7 @@ msgstr "Nothing"
 msgid "Open a profile to install mods"
 msgstr "Open a profile to install mods"
 
-#: src/share/PreviewDialog.tsx:27
+#: src/share/PreviewDialog.tsx:28
 msgid "What the person opening the link sees"
 msgstr "What the person opening the link sees"
 
@@ -9381,7 +9381,7 @@ msgstr "{0, plural, one {Untracked # mod} other {Untracked # mods}}"
 #: src/console/PerformancePanel.tsx:150
 #: src/mods/ProblemsTab.tsx:369
 #: src/mods/ReportToAuthorButton.tsx:175
-#: src/settings/sections/AboutDiagnostics.tsx:141
+#: src/settings/sections/AboutDiagnostics.tsx:139
 msgid "Report copied"
 msgstr "Report copied"
 
@@ -9461,7 +9461,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/FirstRun.tsx:43
 #: src/firstrun/GameSetup.tsx:134
 #: src/firstrun/LoaderStep.tsx:219
-#: src/games/GameSelect.tsx:314
+#: src/games/GameSelect.tsx:316
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
 msgstr "Loading…"
@@ -9507,7 +9507,7 @@ msgstr "Keep"
 msgid "{0}: {1} missing, {2} changed, {3} extra"
 msgstr "{0}: {1} missing, {2} changed, {3} extra"
 
-#: src/settings/sections/AboutDiagnostics.tsx:91
+#: src/settings/sections/AboutDiagnostics.tsx:90
 #: src/settings/sections/General.tsx:239
 #: src/settings/sections/General.tsx:241
 msgid "Settings file"
@@ -9523,7 +9523,7 @@ msgid "{0} will be overwritten. A backup of the current Saves folder is made fir
 msgstr "{0} will be overwritten. A backup of the current Saves folder is made first."
 
 #. placeholder {0}: g.name
-#: src/mods/GroupMenu.tsx:120
+#: src/mods/GroupMenu.tsx:123
 msgid "Remove from {0}"
 msgstr "Remove from {0}"
 
@@ -9568,7 +9568,7 @@ msgstr "Signed in"
 msgid "{0, plural, one {# difference} other {# differences}}"
 msgstr "{0, plural, one {# difference} other {# differences}}"
 
-#: src/console/SearchRunsDialog.tsx:104
+#: src/console/SearchRunsDialog.tsx:105
 msgid "Search run logs"
 msgstr "Search run logs"
 
@@ -9583,7 +9583,7 @@ msgstr "{names} can't be reached; nothing saved to show yet"
 
 #: src/console/PerformancePanelParts.tsx:213
 #: src/mods/ProblemsTab.tsx:307
-#: src/settings/sections/AboutDiagnostics.tsx:222
+#: src/settings/sections/AboutDiagnostics.tsx:220
 msgid "Copy report"
 msgstr "Copy report"
 
@@ -9769,7 +9769,7 @@ msgstr "Focus the search"
 msgid "No app opens these links now."
 msgstr "No app opens these links now."
 
-#: src/profiles/CompareDialog.tsx:302
+#: src/profiles/CompareDialog.tsx:303
 msgid "These profiles have the same mods."
 msgstr "These profiles have the same mods."
 
@@ -9874,7 +9874,7 @@ msgstr "Move up"
 msgid "Open download page"
 msgstr "Open download page"
 
-#: src/share/Included.tsx:149
+#: src/share/Included.tsx:142
 msgid "Show mods"
 msgstr "Show mods"
 
@@ -10152,7 +10152,7 @@ msgstr "Optional: {label}"
 msgid "Combine with…"
 msgstr "Combine with…"
 
-#: src/profiles/CompareDialog.tsx:302
+#: src/profiles/CompareDialog.tsx:303
 msgid "No matching mods"
 msgstr "No matching mods"
 
@@ -10203,7 +10203,7 @@ msgstr "Delete the template {0}?"
 
 #: src/settings/PrefControls.tsx:230
 #: src/settings/sections/General.tsx:111
-#: src/settings/sections/StreamOverlay.tsx:261
+#: src/settings/sections/StreamOverlay.tsx:260
 msgid "Enter a number from {min} to {max}"
 msgstr "Enter a number from {min} to {max}"
 
@@ -10371,7 +10371,7 @@ msgid "the mod"
 msgstr "the mod"
 
 #: src/browse/BrowseBody.tsx:73
-#: src/console/SearchRunsDialog.tsx:111
+#: src/console/SearchRunsDialog.tsx:112
 msgid "Searching…"
 msgstr "Searching…"
 
@@ -10448,8 +10448,8 @@ msgstr "Press Play. The BepInEx Bridge times each plugin's load and the start up
 msgid "Mortar checks Steam's settings for it: not found yet."
 msgstr "Mortar checks Steam's settings for it: not found yet."
 
+#: src/settings/sections/StreamOverlay.tsx:417
 #: src/settings/sections/StreamOverlay.tsx:418
-#: src/settings/sections/StreamOverlay.tsx:419
 msgid "Show labels"
 msgstr "Show labels"
 
@@ -10776,7 +10776,7 @@ msgid "Stop the game to test a launch."
 msgstr "Stop the game to test a launch."
 
 #: src/firstrunTour/TourPopover.tsx:41
-#: src/games/GameSelect.tsx:254
+#: src/games/GameSelect.tsx:255
 #: src/launch/PlayControl.tsx:168
 #: src/settings/GameSettingsPage.tsx:72
 #: src/settings/GameSettingsPage.tsx:100
@@ -10836,7 +10836,7 @@ msgstr "Your profiles have {0}. Update replaces each profile's copy."
 msgid "Done ({0}): {1}"
 msgstr "Done ({0}): {1}"
 
-#: src/share/Included.tsx:119
+#: src/share/Included.tsx:112
 msgid "{local, plural, one {# mod you added from an archive can't go in the file} other {# mods you added from archives can't go in the file}}"
 msgstr "{local, plural, one {# mod you added from an archive can't go in the file} other {# mods you added from archives can't go in the file}}"
 
@@ -10898,7 +10898,7 @@ msgstr "the connection was refused"
 msgid "Removed the tag {detail} from {name}"
 msgstr "Removed the tag {detail} from {name}"
 
-#: src/settings/sections/StreamOverlay.tsx:331
+#: src/settings/sections/StreamOverlay.tsx:330
 msgid "Regenerate…"
 msgstr "Regenerate…"
 
@@ -10957,7 +10957,7 @@ msgid "History that cannot be read"
 msgstr "History that cannot be read"
 
 #: src/shell/ErrorBoundary.tsx:24
-#: src/toasts/ToastHost.tsx:62
+#: src/toasts/ToastHost.tsx:69
 msgid "Copy details"
 msgstr "Copy details"
 
@@ -10982,8 +10982,8 @@ msgstr "Mods are up to date"
 msgid "Redo update"
 msgstr "Redo update"
 
-#: src/settings/sections/StreamOverlay.tsx:296
-#: src/settings/sections/StreamOverlay.tsx:305
+#: src/settings/sections/StreamOverlay.tsx:295
+#: src/settings/sections/StreamOverlay.tsx:304
 msgid "Token"
 msgstr "Token"
 
@@ -11253,7 +11253,7 @@ msgstr "Checked in {0}: {parts}"
 msgid "Saved to {0}"
 msgstr "Saved to {0}"
 
-#: src/share/Included.tsx:104
+#: src/share/Included.tsx:97
 msgid "{shared} of {total} mods"
 msgstr "{shared} of {total} mods"
 
@@ -11328,8 +11328,8 @@ msgid "Tag"
 msgstr "Tag"
 
 #: src/commandPalette/paletteLabels.ts:20
-#: src/settings/sections/AboutDiagnostics.tsx:145
-#: src/settings/sections/AboutDiagnostics.tsx:179
+#: src/settings/sections/AboutDiagnostics.tsx:143
+#: src/settings/sections/AboutDiagnostics.tsx:177
 msgid "Diagnostics"
 msgstr "Diagnostics"
 
@@ -11371,7 +11371,7 @@ msgstr "Could not rename the bundle"
 msgid "In game"
 msgstr "In game"
 
-#: src/toasts/ToastHost.tsx:89
+#: src/toasts/ToastHost.tsx:84
 msgid "Details"
 msgstr "Details"
 
@@ -11517,7 +11517,7 @@ msgstr "it took too long to answer"
 msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
 
-#: src/games/GameSelect.tsx:240
+#: src/games/GameSelect.tsx:241
 msgid "Play {playName}"
 msgstr "Play {playName}"
 
@@ -11577,7 +11577,7 @@ msgstr "{0, plural, one {Last run: {list}} other {Last # runs: {list}}}"
 msgid "You can roll back the completed updates from the profile history."
 msgstr "You can roll back the completed updates from the profile history."
 
-#: src/share/Included.tsx:115
+#: src/share/Included.tsx:108
 msgid "Its source is not known."
 msgstr "Its source is not known."
 
@@ -11738,7 +11738,7 @@ msgstr "Manage templates…"
 msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
-#: src/settings/sections/AboutDiagnostics.tsx:81
+#: src/settings/sections/AboutDiagnostics.tsx:80
 msgid "Mortar version"
 msgstr "Mortar version"
 
@@ -11797,7 +11797,7 @@ msgid "Hide"
 msgstr "Hide"
 
 #: src/console/StartupTable.tsx:178
-#: src/toasts/ToastHost.tsx:89
+#: src/toasts/ToastHost.tsx:84
 msgid "Hide details"
 msgstr "Hide details"
 
@@ -11841,7 +11841,7 @@ msgstr "Player"
 #: src/firstrunTour/TourPopover.tsx:29
 #: src/profiles/ProfileMenu.tsx:159
 #: src/profiles/ProfilesPage.tsx:324
-#: src/settings/sections/AboutDiagnostics.tsx:96
+#: src/settings/sections/AboutDiagnostics.tsx:95
 #: src/settings/sections/DataUsage.tsx:206
 #: src/settings/sections/Shortcuts.tsx:178
 msgid "Profiles"
@@ -11864,7 +11864,7 @@ msgstr "Delete category"
 msgid "Sampled"
 msgstr "Sampled"
 
-#: src/mods/GroupMenu.tsx:64
+#: src/mods/GroupMenu.tsx:67
 msgid "Rename group"
 msgstr "Rename group"
 
@@ -11890,7 +11890,7 @@ msgstr "Cancelled"
 
 #: src/games/GameMenu.tsx:87
 #: src/games/GameMenu.tsx:88
-#: src/settings/sections/AboutDiagnostics.tsx:85
+#: src/settings/sections/AboutDiagnostics.tsx:84
 #: src/settings/sections/DataImport.tsx:27
 msgid "Games"
 msgstr "Games"
@@ -12000,7 +12000,7 @@ msgstr "Could not restore the backup"
 msgid "The game exited before it started. The console has its output."
 msgstr "The game exited before it started. The console has its output."
 
-#: src/mods/GroupMenu.tsx:65
+#: src/mods/GroupMenu.tsx:68
 msgid "Group name"
 msgstr "Group name"
 
@@ -12489,7 +12489,7 @@ msgid "Dependencies"
 msgstr "Dependencies"
 
 #: src/launch/LaunchLayer.tsx:135
-#: src/share/PreviewDialog.tsx:64
+#: src/share/PreviewDialog.tsx:70
 #: src/share/ShareDialog.tsx:84
 msgid "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 msgstr "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
@@ -12506,7 +12506,7 @@ msgstr "Skip this update"
 msgid "Last played with {profile} · {when}"
 msgstr "Last played with {profile} · {when}"
 
-#: src/settings/sections/AboutDiagnostics.tsx:98
+#: src/settings/sections/AboutDiagnostics.tsx:97
 msgid "Command-line control"
 msgstr "Command-line control"
 
@@ -12648,7 +12648,7 @@ msgstr "No eligible profiles."
 msgid "Check this download"
 msgstr "Check this download"
 
-#: src/settings/sections/AboutDiagnostics.tsx:169
+#: src/settings/sections/AboutDiagnostics.tsx:167
 #: src/share/MethodPanes.tsx:190
 msgid "Save…"
 msgstr "Save…"
@@ -12716,7 +12716,7 @@ msgstr "Could not check for mod updates"
 msgid "{0, plural, one {# imported} other {# imported}}"
 msgstr "{0, plural, one {# imported} other {# imported}}"
 
-#: src/share/PreviewDialog.tsx:72
+#: src/share/PreviewDialog.tsx:78
 msgid "Get Mortar"
 msgstr "Get Mortar"
 
@@ -12731,7 +12731,7 @@ msgstr "Save log…"
 #. placeholder {0}: info.name
 #. placeholder {0}: profile.name
 #: src/profiles/ProfileRow.tsx:248
-#: src/share/ShareDialog.tsx:54
+#: src/share/ShareDialog.tsx:56
 #: src/share/ShareDialog.tsx:79
 msgid "Share {0}"
 msgstr "Share {0}"
@@ -12749,7 +12749,7 @@ msgstr "{0} {1}"
 msgid "No mods yet"
 msgstr "No mods yet"
 
-#: src/console/SearchRunsDialog.tsx:119
+#: src/console/SearchRunsDialog.tsx:120
 msgid "No stored run contains that text."
 msgstr "No stored run contains that text."
 
@@ -13139,7 +13139,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/console/BisectDialog.tsx:174
 #: src/console/BisectDialog.tsx:185
 #: src/console/HelpDialog.tsx:259
-#: src/console/SearchRunsDialog.tsx:171
+#: src/console/SearchRunsDialog.tsx:172
 #: src/game/FarmMenuItem.tsx:131
 #: src/launch/LaunchLayer.tsx:284
 #: src/launch/SweepDialog.tsx:136
@@ -13155,11 +13155,12 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:70
 #: src/saves/BackupsDialog.tsx:191
 #: src/settings/sections/About.tsx:99
-#: src/settings/sections/AboutDiagnostics.tsx:220
+#: src/settings/sections/AboutDiagnostics.tsx:218
 #: src/settings/sections/DataStoreReport.tsx:407
 #: src/share/ImportDialog.tsx:186
 #: src/share/ImportDialog.tsx:189
 #: src/share/ImportFooter.tsx:89
+#: src/share/PreviewDialog.tsx:35
 #: src/share/ShareDialog.tsx:91
 #: src/shell/TitleBar.tsx:114
 #: src/templates/TemplateDialogs.tsx:179
@@ -13396,7 +13397,7 @@ msgstr "Command palette"
 msgid "No config.json yet"
 msgstr "No config.json yet"
 
-#: src/settings/sections/AboutDiagnostics.tsx:161
+#: src/settings/sections/AboutDiagnostics.tsx:159
 msgid "Save diagnostics"
 msgstr "Save diagnostics"
 
@@ -13463,7 +13464,7 @@ msgstr "A link or .mortar file"
 msgid "Could not set it in Steam"
 msgstr "Could not set it in Steam"
 
-#: src/settings/sections/AboutDiagnostics.tsx:100
+#: src/settings/sections/AboutDiagnostics.tsx:99
 #: src/settings/sections/DataUsage.tsx:230
 msgid "Disk space"
 msgstr "Disk space"
@@ -13564,7 +13565,7 @@ msgstr "Could not recheck {0}"
 msgid "Sidebar profile order"
 msgstr "Sidebar profile order"
 
-#: src/settings/sections/AboutDiagnostics.tsx:148
+#: src/settings/sections/AboutDiagnostics.tsx:146
 msgid "Checks the data folder, games, Nexus download links and the browser extension."
 msgstr "Checks the data folder, games, Nexus download links and the browser extension."
 

@@ -133,6 +133,7 @@ function Phases({ report }: { report: StartupReport }) {
       {segments.map((s) => (
         <Tooltip key={s.id} title={help[s.id]}>
           <Box
+            tabIndex={0}
             sx={{
               display: 'grid',
               gridTemplateColumns: 'minmax(120px, 200px) 80px 1fr',

@@ -122,7 +122,7 @@ export function DestinationGrid({
                     {tile.hint}
                   </Typography>
                   {entry.id === lastUsed ? (
-                    <Typography sx={{ fontSize: 11, color: 'primary.main', mt: 0.5 }}>
+                    <Typography sx={{ fontSize: 11, color: 'var(--mortar-accent-ink)', mt: 0.5 }}>
                       {t`Last used`}
                     </Typography>
                   ) : null}

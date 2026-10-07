@@ -47,13 +47,13 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
         <Typography sx={{ overflowWrap: 'anywhere' }}>{entry.label || entry.key}</Typography>
         {entry.description ? (
           <Tooltip title={entry.description}>
-            <Box
-              component="span"
+            <IconButton
+              size="small"
               aria-label={t`About ${entry.key}`}
-              sx={{ display: 'flex', color: 'text.secondary' }}
+              sx={{ color: 'text.secondary' }}
             >
               <CircleHelp size={14} />
-            </Box>
+            </IconButton>
           </Tooltip>
         ) : null}
       </Box>

@@ -1,6 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Dialog, Typography } from '@mui/material'
+import { Box, Dialog, IconButton, Typography } from '@mui/material'
+import { X } from 'lucide-react'
 import { Logo } from '../brand/Logo.tsx'
 import { heading } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -8,7 +9,7 @@ import type { ShownInfo } from './logic.ts'
 
 const PAGE_HOST = 'mortar.rethunk.tech'
 
-function PagePreview({ info }: { info: ShownInfo }) {
+function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }) {
   const { t } = useLingui()
   const art = useProfiles((s) => s.game?.artUrl)
   const gameName = useProfiles((s) => s.game?.name ?? '')
@@ -27,9 +28,14 @@ function PagePreview({ info }: { info: ShownInfo }) {
       aria-label={t`What the person opening the link sees`}
       sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 2.5 }}
     >
-      <Typography sx={{ ...heading, display: 'flex', alignItems: 'center' }}>
-        {t`What they see`}
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography sx={{ ...heading, display: 'flex', alignItems: 'center' }}>
+          {t`What they see`}
+        </Typography>
+        <IconButton size="small" aria-label={t`Close`} onClick={onClose}>
+          <X size={18} />
+        </IconButton>
+      </Box>
       <Box
         sx={{
           display: 'flex',
@@ -87,12 +93,14 @@ export function PreviewDialog({
   open: boolean
   onClose: () => void
 }) {
+  const { t } = useLingui()
   return (
     <Dialog
       open={open}
       onClose={onClose}
       slotProps={{
         paper: {
+          'aria-label': t`What they see`,
           sx: {
             bgcolor: 'var(--mortar-panel-solid)',
             border: '1px solid var(--mortar-hairline-12)',
@@ -101,7 +109,7 @@ export function PreviewDialog({
         },
       }}
     >
-      <PagePreview info={info} />
+      <PagePreview info={info} onClose={onClose} />
     </Dialog>
   )
 }

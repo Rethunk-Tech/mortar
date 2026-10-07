@@ -4,9 +4,9 @@ import { FolderMinus, MoreHorizontal, Pencil, Power, PowerOff, Trash2 } from 'lu
 import { type ReactNode, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { IconAction } from '../shell/IconAction.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
-import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AddToGroupMenuItem } from './AddToGroupDialog.tsx'
 import { LockedReason } from './LockedReason.tsx'
@@ -42,9 +42,12 @@ export function GroupMenu({ name }: { name: string }) {
   )
   return (
     <>
-      <TipIconButton label={t`Group actions`} onClick={(e) => setAnchor(e.currentTarget)}>
-        <MoreHorizontal size={ICON_SIZE} />
-      </TipIconButton>
+      <IconAction
+        label={t`Group actions`}
+        icon={<MoreHorizontal size={ICON_SIZE} />}
+        menu={true}
+        onClick={(e) => setAnchor(e.currentTarget)}
+      />
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close}>
         <LockedReason locked={locked}>
           {item(t`Rename…`, <Pencil size={ICON_SIZE} />, () => setRenaming(true))}
