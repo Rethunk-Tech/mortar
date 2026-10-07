@@ -127,15 +127,11 @@ test('merges repeated titles and keeps detail and picture in history', () => {
 })
 
 test('history is saved without actions for the next session', () => {
-  const saved = new Map<string, string>()
-  globalThis.localStorage = {
-    getItem: (k: string) => saved.get(k) ?? null,
-    setItem: (k: string, v: string) => saved.set(k, v),
-  } as unknown as Storage
+  localStorage.clear()
   useToasts
     .getState()
     .push({ kind: 'info', title: 'Saved me', action: { label: 'Undo', run: () => 0 } })
-  const [first] = JSON.parse(saved.get('mortar.toastHistory') ?? '[]')
+  const [first] = JSON.parse(localStorage.getItem('mortar.toastHistory') ?? '[]')
   expect(first.title).toBe('Saved me')
   expect(first.action).toBeUndefined()
 })

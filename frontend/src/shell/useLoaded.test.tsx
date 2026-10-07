@@ -1,25 +1,13 @@
 import { afterAll, expect, test } from 'bun:test'
-import { GlobalRegistrator } from '@happy-dom/global-registrator'
 
-// The DOM is registered at module load, before the testing library is imported: the library registers its own
-// beforeAll hooks when it loads, which bun refuses from inside another hook.
-const owned = !GlobalRegistrator.isRegistered
-if (owned) {
-  GlobalRegistrator.register({ url: 'http://localhost/' })
-}
-Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 const testing = await import('@testing-library/react')
 const { useLoaded } = await import('./useLoaded.ts')
 
-afterAll(async () => {
+afterAll(() => {
   testing.cleanup()
-  if (owned) {
-    await GlobalRegistrator.unregister()
-  }
 })
 
-// Flushes pending promises inside act: React's scheduler may belong to another file's closed DOM, so a state update
-// made outside act never renders.
+// Flushes pending promises inside act, so the state update they make renders before the test reads it.
 const settle = () => testing.act(async () => new Promise<void>((resolve) => setTimeout(resolve, 0)))
 
 function deferred<T>() {

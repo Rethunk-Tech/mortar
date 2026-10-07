@@ -1,8 +1,5 @@
 import { afterAll, expect, test } from 'bun:test'
-import { GlobalRegistrator } from '@happy-dom/global-registrator'
 
-// A real DOM for the real MUI menus; registered before anything that touches `document` is imported.
-GlobalRegistrator.register({ url: 'http://localhost/' })
 const games = [
   { id: 'stardew', name: 'Stardew Valley', available: true, installed: true },
   { id: 'lethal-company', name: 'Lethal Company', available: true, installed: true },
@@ -18,9 +15,8 @@ const { i18n } = await import('../i18n/index.ts')
 const { useNav } = await import('../nav/store.ts')
 const { AppMenu } = await import('./AppMenu.tsx')
 
-afterAll(async () => {
+afterAll(() => {
   cleanup()
-  await GlobalRegistrator.unregister()
 })
 
 function bar() {

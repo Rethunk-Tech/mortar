@@ -1,2 +1,2 @@
 [test]
-preload = ["./frontend/test/linguiMacro.ts"]
+preload = ["./frontend/test/dom.ts", "./frontend/test/linguiMacro.ts"]
