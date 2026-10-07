@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Stardew Valley overlay</title>
+    <title>Stream overlay</title>
     <style>
       :root {
         color-scheme: dark;
@@ -66,6 +66,7 @@
         <span id="skill-luck" class="skill luck"></span>
       </div>
     </div>
+    <div id="game" hidden></div>
     <div id="field" class="field" hidden></div>
     <script>
       const params = new URLSearchParams(location.search);
@@ -77,6 +78,7 @@
       const status = document.querySelector("#status");
       const state = document.querySelector("#state");
       const fieldEl = document.querySelector("#field");
+      const gameEl = document.querySelector("#game");
       let lastLogKey = "";
 
       const labels = {
@@ -109,6 +111,8 @@
         status.hidden = true;
         status.textContent = "";
         state.hidden = true;
+        gameEl.hidden = true;
+        gameEl.textContent = "";
         fieldEl.hidden = true;
         fieldEl.textContent = "";
       }
@@ -158,6 +162,86 @@
             }
             return "";
         }
+      }
+
+      // One layout per game, chosen by the `game` the bridge reports; a snapshot without one is Stardew Valley's.
+      // Each layout lists [field, label, text] in display order; a missing value is an empty text.
+      const has = (v) => v !== undefined && v !== null;
+      const text = (v, fn) => (has(v) ? fn(v) : "");
+      const layouts = {
+        "lethal-company": (d) => [
+          ["player", "Player", text(d.playerName, String)],
+          ["moon", "Moon", text(d.moon, String)],
+          [
+            "crew",
+            "Crew",
+            has(d.crewAlive) && has(d.crewTotal)
+              ? `${d.crewAlive}/${d.crewTotal} alive`
+              : "",
+          ],
+          ["day", "Day", text(d.day, String)],
+          [
+            "quota",
+            "Quota",
+            has(d.quotaProgress) && has(d.quota)
+              ? `${d.quotaProgress}/${d.quota}`
+              : "",
+          ],
+          ["daysLeft", "Days left", text(d.daysLeft, String)],
+          ["credits", "Credits", text(d.credits, (v) => `\u25A0${v}`)],
+        ],
+        valheim: (d) => [
+          ["player", "Player", text(d.playerName, String)],
+          ["biome", "Biome", text(d.biome, String)],
+          ["day", "Day", text(d.day, String)],
+          [
+            "bosses",
+            "Bosses",
+            has(d.bossCount) ? `${d.bossCount}/7 defeated` : "",
+          ],
+          [
+            "bossList",
+            "Defeated",
+            Array.isArray(d.bossesDefeated) ? d.bossesDefeated.join(", ") : "",
+          ],
+        ],
+      };
+
+      function renderGame(rows) {
+        status.hidden = true;
+        status.textContent = "";
+        state.hidden = true;
+        if (field) {
+          const row = rows.find((r) => r[0] === field);
+          if (!row || row[2] === "") {
+            hide();
+            logOnce("empty", `overlay field ${field} is empty`);
+            return;
+          }
+          fieldEl.id = field;
+          fieldEl.className = `field ${field}`;
+          fieldEl.textContent = labeled ? `${row[1]} ${row[2]}` : row[2];
+          gameEl.hidden = true;
+          fieldEl.hidden = false;
+        } else {
+          gameEl.textContent = "";
+          for (const [name, label, value] of rows) {
+            if (value === "") continue;
+            const row = document.createElement("div");
+            row.className = "row";
+            const l = document.createElement("span");
+            l.textContent = label;
+            const v = document.createElement("strong");
+            v.id = name;
+            v.className = name;
+            v.textContent = value;
+            row.append(l, v);
+            gameEl.append(row);
+          }
+          fieldEl.hidden = true;
+          gameEl.hidden = false;
+        }
+        logOnce("ok", "overlay ready");
       }
 
       function renderField(data) {
@@ -224,7 +308,9 @@
             logOnce("idle", "overlay: not in game");
             return;
           }
-          if (field) renderField(data);
+          const layout = layouts[data.game];
+          if (layout) renderGame(layout(data));
+          else if (field) renderField(data);
           else renderAll(data);
         } catch (error) {
           hide();

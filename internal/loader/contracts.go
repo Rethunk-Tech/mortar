@@ -176,6 +176,14 @@ type StartupTimings interface{ ReportsStartup() }
 // StreamOverlay is a loader whose companion feeds Mortar's OBS stream overlay.
 type StreamOverlay interface{ FeedsOverlay() }
 
+// OverlayArmer is a StreamOverlay whose companion reads the overlay's settings from the profile folder, as the
+// BepInEx bridge does, where SMAPI's companion reads its mod folder's config.json.
+type OverlayArmer interface {
+	StreamOverlay
+	// ArmOverlay sets the overlay for the next launch of the profile in dir; off removes the config.
+	ArmOverlay(dir string, on bool, port int, token string) error
+}
+
 // LogShare is a loader whose log smapi.io's parser reads, so Mortar may upload it there as a public link.
 type LogShare interface{ SharesLog() }
 

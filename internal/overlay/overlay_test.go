@@ -109,3 +109,11 @@ func TestWritePageLaysOutIndex(t *testing.T) {
 		t.Fatalf("page missing query params: %s", raw[:min(200, len(raw))])
 	}
 }
+
+func TestPageHasALayoutForEachBridgeGame(t *testing.T) {
+	for _, game := range []string{`"lethal-company"`, `valheim:`, `layouts[data.game]`} {
+		if !strings.Contains(string(page), game) {
+			t.Fatalf("page has no %s layout", game)
+		}
+	}
+}

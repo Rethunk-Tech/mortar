@@ -1,8 +1,10 @@
-// Package overlay writes the bundled OBS page and the SMAPI Bridge overlay config.
+// Package overlay writes the bundled OBS page and the bridges' overlay config.
 package overlay
 
 import (
 	_ "embed"
+	"errors"
+	"io/fs"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -59,6 +61,26 @@ func WriteBridgeConfig(modDir string, cfg BridgeConfig) error {
 		return err
 	}
 	return datadir.WriteJSON(filepath.Join(modDir, "config.json"), cfg)
+}
+
+// ProfileConfigFile is where a loader whose companion reads its settings from the profile folder (the BepInEx bridge)
+// finds the overlay config, relative to the profile folder that holds BepInEx's.
+const ProfileConfigFile = "startup/overlay.json"
+
+// WriteProfileConfig writes the overlay config for the profile in dir at 0600, or removes it when the overlay is off,
+// so the token never sits in a profile that does not use it.
+func WriteProfileConfig(dir string, cfg BridgeConfig) error {
+	path := filepath.Join(dir, filepath.FromSlash(ProfileConfigFile))
+	if !cfg.OverlayEnabled {
+		if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+		return nil
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return err
+	}
+	return datadir.WriteJSON(path, cfg)
 }
 
 // ApplyToMods writes config.json into every MortarSmapiBridge folder under modsDir.

@@ -856,6 +856,15 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		if err := overlay.ApplyToMods(modsDir, cfg); err != nil {
 			return err
 		}
+		if armer, ok := l.(loader.OverlayArmer); ok {
+			dir, dirErr := s.profiles.ProfileDir(g.ID(), profileID)
+			if dirErr != nil {
+				return dirErr
+			}
+			if armErr := armer.ArmOverlay(dir, st.OverlayEnabled, st.OverlayPort, st.OverlayToken); armErr != nil {
+				return armErr
+			}
+		}
 	}
 	if plan, err = s.launchPlan(ctx, g, inst, profileID, mode, spec.Options, spec.Prefix, spec.Env); err != nil {
 		return err
