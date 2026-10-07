@@ -1,63 +1,58 @@
 import { useLingui } from '@lingui/react/macro'
-import { Divider } from '@mui/material'
-import { CopyPlus, FileJson, FolderTree, PackagePlus, Trash2 } from 'lucide-react'
-import type { ReactNode } from 'react'
-import type {
-  Mod,
-  Profile,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import {
-  ModsDir,
-  OpenConsolePath,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { Box, Collapse, ListItemIcon, ListItemText, MenuItem } from '@mui/material'
+import { ChevronDown, ChevronRight, CopyPlus, PackagePlus, Tag, Trash2, Users } from 'lucide-react'
+import { type ReactNode, useState } from 'react'
 import { MenuAction } from '../shell/MenuAction.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
-import { entryOf } from './lookup.ts'
+import { MenuRule } from '../shell/TitleMenu.tsx'
 import { ICON_SIZE } from './menu.ts'
 import type { ModAction } from './modActions.ts'
 
-const TRAILING_SEP = /[/\\]+$/
-
-function openManifestOf(mod: Mod, profile: Profile | undefined) {
-  const { game: currentGame, openId } = useProfiles.getState()
-  const gameId = currentGame?.id
-  if (!(gameId && openId)) {
-    return
-  }
-  const folder = (entryOf(profile, mod.key)?.mods ?? []).find((m) => m.id === mod.id)?.folder ?? '.'
-  const nested = folder !== '' && folder !== '.'
-  const rel = nested ? `${folder}/manifest.json` : 'manifest.json'
-  ModsDir(gameId, openId)
-    .then((dir) =>
-      OpenConsolePath(gameId, openId, `${dir.replace(TRAILING_SEP, '')}/${mod.key}/${rel}`),
-    )
-    .catch(reportUnexpected)
-}
-
-function RemoveOtherMenuItem({
+// One row that unfolds the two actions on this mod's copies in the game's other profiles; the menu stays open.
+function OtherProfilesGroup({
   locked,
   tooltip,
-  close,
-  onClick,
+  closeThen,
+  onAlsoAdd,
+  onRemoveOther,
+  labels,
 }: {
   locked: boolean
   tooltip: string
-  close: () => void
-  onClick: () => void
+  closeThen: (fn: () => void) => () => void
+  onAlsoAdd: () => void
+  onRemoveOther: () => void
+  labels: { alsoAdd: string }
 }) {
   const { t } = useLingui()
+  const [open, setOpen] = useState(false)
   return (
-    <MenuAction
-      disabled={locked}
-      tooltip={tooltip}
-      icon={<Trash2 size={ICON_SIZE} />}
-      label={t`Remove from other profiles…`}
-      onClick={() => {
-        close()
-        onClick()
-      }}
-    />
+    <>
+      <MenuItem aria-expanded={open} onClick={() => setOpen(!open)}>
+        <ListItemIcon sx={{ color: 'inherit' }}>
+          <Users size={ICON_SIZE} />
+        </ListItemIcon>
+        <ListItemText>{t`Other profiles`}</ListItemText>
+        {open ? <ChevronDown size={ICON_SIZE} /> : <ChevronRight size={ICON_SIZE} />}
+      </MenuItem>
+      <Collapse in={open} unmountOnExit={true}>
+        <Box sx={{ pl: 2 }}>
+          <MenuAction
+            disabled={locked}
+            tooltip={tooltip}
+            icon={<CopyPlus size={ICON_SIZE} />}
+            label={labels.alsoAdd}
+            onClick={closeThen(onAlsoAdd)}
+          />
+          <MenuAction
+            disabled={locked}
+            tooltip={tooltip}
+            icon={<Trash2 size={ICON_SIZE} />}
+            label={t`Remove from other profiles…`}
+            onClick={closeThen(onRemoveOther)}
+          />
+        </Box>
+      </Collapse>
+    </>
   )
 }
 
@@ -93,8 +88,6 @@ function ModActionItems({
   close,
   locked,
   hasFomod,
-  mod,
-  profile,
   onSetCategory,
   onAlsoAdd,
   onAddBundle,
@@ -108,13 +101,11 @@ function ModActionItems({
   close: () => void
   locked: boolean
   hasFomod: boolean
-  mod: Mod
-  profile: Profile | undefined
   onSetCategory: () => void
   onAlsoAdd: () => void
   onAddBundle: () => void
   onRemoveOther: () => void
-  labels: { manifest: string; category: string; alsoAdd: string; addBundle: string }
+  labels: { category: string; alsoAdd: string; addBundle: string }
   splitCombine: ReactNode
   trailing: ReactNode[]
 }) {
@@ -142,7 +133,7 @@ function ModActionItems({
   if (has('details')) {
     result.push(renderAction('details'))
   }
-  result.push(<Divider key="source-divider" />)
+  result.push(<MenuRule key="source-divider" />)
   if (has('page')) {
     result.push(renderAction('page'))
   }
@@ -151,19 +142,11 @@ function ModActionItems({
     if (hasFomod) {
       result.push(renderAction('reinstall', locked))
     }
-    result.push(
-      <MenuAction
-        key="manifest"
-        icon={<FileJson size={ICON_SIZE} />}
-        label={labels.manifest}
-        onClick={closeThen(() => openManifestOf(mod, profile))}
-      />,
-    )
-    result.push(<Divider key="organisation-divider" />)
+    result.push(<MenuRule key="organisation-divider" />)
     result.push(
       <MenuAction
         key="category"
-        icon={<FolderTree size={ICON_SIZE} />}
+        icon={<Tag size={ICON_SIZE} />}
         label={labels.category}
         onClick={closeThen(onSetCategory)}
       />,
@@ -184,25 +167,17 @@ function ModActionItems({
     if (has('skip')) {
       result.push(renderAction('skip'))
     }
-    result.push(<Divider key="other-profiles-divider" />)
-    result.push(
-      <MenuAction
-        key="also-add"
-        disabled={locked}
-        tooltip={lockedTip}
-        icon={<CopyPlus size={ICON_SIZE} />}
-        label={labels.alsoAdd}
-        onClick={closeThen(onAlsoAdd)}
-      />,
-    )
   }
+  result.push(<MenuRule key="other-profiles-divider" />)
   result.push(
-    <RemoveOtherMenuItem
-      key="remove-other"
+    <OtherProfilesGroup
+      key="other-profiles"
       locked={locked}
       tooltip={lockedTip}
-      close={close}
-      onClick={onRemoveOther}
+      closeThen={closeThen}
+      onAlsoAdd={onAlsoAdd}
+      onRemoveOther={onRemoveOther}
+      labels={labels}
     />,
   )
   if (splitCombine) {
@@ -210,7 +185,7 @@ function ModActionItems({
   }
   result.push(...trailing)
   if (has('remove')) {
-    result.push(<Divider key="remove-divider" />)
+    result.push(<MenuRule key="remove-divider" />)
     result.push(
       <RemoveMenuItem
         key="remove"

@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Divider, Menu } from '@mui/material'
+import { Menu } from '@mui/material'
 import { ChevronDown, Copy, GitCompare, History, Palette, Trash2, UserCog } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -8,11 +8,11 @@ import { EditProfileDialog } from '../profiles/EditProfileDialog.tsx'
 import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuRule } from '../shell/TitleMenu.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { BackupMenuItem } from './BackupMenuItems.tsx'
 import { HomeButton } from './HomeButton.tsx'
 import { MenuHeading } from './MenuHeading.tsx'
-
 import { DeleteProfileDialog } from './ProfileMenuItems.tsx'
 import { SaveTemplateMenuItem } from './TemplateMenuItems.tsx'
 
@@ -48,7 +48,7 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
             setEditing(true)
           }}
         />
-        <Divider />
+        <MenuRule />
         <MenuHeading>{t`Copies`}</MenuHeading>
         <MenuAction
           icon={<Copy size={16} />}
@@ -60,7 +60,7 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
         />
         <SaveTemplateMenuItem profile={profile} close={close} />
         <BackupMenuItem profile={profile} close={close} />
-        <Divider />
+        <MenuRule />
         <MenuHeading>{t`Review`}</MenuHeading>
         <MenuAction
           icon={<History size={16} />}
@@ -78,7 +78,7 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
             setCompare({ a: profile, b: profiles.find((p) => p.id !== profile.id) ?? null })
           }}
         />
-        <Divider />
+        <MenuRule />
         <MenuAction
           icon={<Trash2 size={16} />}
           label={t`Delete profile…`}

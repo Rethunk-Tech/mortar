@@ -6,7 +6,6 @@ import {
   Button,
   Chip,
   CircularProgress,
-  Divider,
   ListItemIcon,
   ListItemText,
   Menu,
@@ -44,6 +43,7 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
+import { MenuRule } from '../shell/TitleMenu.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
@@ -168,7 +168,7 @@ function ShowFilterControl({
             <ListItemText>{item.label}</ListItemText>
           </MenuItem>
         ))}
-        {tags.length > 0 ? <Divider /> : null}
+        {tags.length > 0 ? <MenuRule /> : null}
         {tags.length > 0 ? <TagChips tags={tags} selected={selectedTags} onTags={onTags} /> : null}
       </Menu>
     </>
@@ -224,7 +224,7 @@ function GroupByControl() {
             </MenuItem>
           </Tooltip>
         ))}
-        <Divider />
+        <MenuRule />
         <MenuAction
           icon={<Settings2 size={16} aria-hidden={true} />}
           label={t`Edit categories…`}

@@ -1,5 +1,4 @@
 import { useLingui } from '@lingui/react/macro'
-import { Divider } from '@mui/material'
 import {
   Copy,
   Gamepad2,
@@ -30,6 +29,7 @@ import { HealthDialog } from '../profiles/HealthDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuRule } from '../shell/TitleMenu.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BackupMenuItem } from './BackupMenuItems.tsx'
@@ -317,7 +317,7 @@ function MoreMenuItems({
         duplicate(profile.id).catch(reportUnexpected)
       }}
     />,
-    <Divider key="sharing-divider" />,
+    <MenuRule key="sharing-divider" />,
     <ProfileMenuItem
       key="compare"
       icon={<GitCompare size={16} />}
@@ -328,7 +328,7 @@ function MoreMenuItems({
       }}
     />,
     <ShareMenuItems key="share" profile={profile} close={close} />,
-    <Divider key="bundle-divider" />,
+    <MenuRule key="bundle-divider" />,
     <ProfileMenuItem
       key="bundle"
       icon={<PackagePlus size={16} />}
@@ -340,9 +340,9 @@ function MoreMenuItems({
       }}
     />,
     <TemplateMenuItems key="templates" profile={profile} close={close} />,
-    <Divider key="shortcut-divider" />,
+    <MenuRule key="shortcut-divider" />,
     <ShortcutMenuItems key="shortcuts" profile={profile} close={close} />,
-    <Divider key="delete-divider" />,
+    <MenuRule key="delete-divider" />,
     <ProfileMenuItem
       key="delete"
       icon={<Trash2 size={16} />}

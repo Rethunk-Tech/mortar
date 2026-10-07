@@ -1,15 +1,14 @@
 import { useLingui } from '@lingui/react/macro'
-import { Divider, ListItemText, Menu, MenuItem } from '@mui/material'
+import { ListItemText, Menu, MenuItem } from '@mui/material'
 import { ChevronDown, Play, Rocket, Settings2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
-import { MenuHeading } from '../shell/TitleMenu.tsx'
+import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useTools } from '../tools/store.ts'
 import { ToolsManageDialog } from '../tools/ToolsManageDialog.tsx'
 import { HomeButton } from './HomeButton.tsx'
-
 import { ShortcutMenuItems } from './ProfileMenuItems.tsx'
 
 export function LaunchMenu({ game, profile }: { game: string; profile: Profile }) {
@@ -62,7 +61,7 @@ export function LaunchMenu({ game, profile }: { game: string; profile: Profile }
             }}
           />
         ))}
-        <Divider />
+        <MenuRule />
         <MenuAction
           icon={<Settings2 size={16} />}
           label={t`Manage tools…`}
@@ -71,7 +70,7 @@ export function LaunchMenu({ game, profile }: { game: string; profile: Profile }
             setManageOpen(true)
           }}
         />
-        <Divider />
+        <MenuRule />
         <MenuHeading>{t`Shortcuts`}</MenuHeading>
         <ShortcutMenuItems profile={profile} close={close} />
       </Menu>

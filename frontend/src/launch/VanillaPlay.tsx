@@ -6,7 +6,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   FormControlLabel,
   IconButton,
   ListItemIcon,
@@ -23,6 +22,7 @@ import { MenuHeading } from '../game/MenuHeading.tsx'
 import { routeGame, useNav } from '../nav/store.ts'
 import type { PlayPreset } from '../profiles/profilePresets.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { MenuRule } from '../shell/TitleMenu.tsx'
 import { PLAY_HEIGHT_PX } from './playHeight.ts'
 import { playMenuEntries } from './playMenu.ts'
 import { playVanillaOpen, rememberLinuxVanillaDirect, useVanillaPrompt } from './playOpen.ts'
@@ -224,7 +224,7 @@ export function VanillaPlay({
           }
           if (entry.kind === 'setDefault') {
             return [
-              <Divider key="divider" />,
+              <MenuRule key="divider" />,
               <MenuItem
                 key="setDefault"
                 onClick={() => {
@@ -240,7 +240,7 @@ export function VanillaPlay({
             ]
           }
           return [
-            presets.length > 0 ? <Divider key="vanilla-divider" /> : null,
+            presets.length > 0 ? <MenuRule key="vanilla-divider" /> : null,
             <MenuItem
               key="vanilla"
               disabled={vanillaDisabled}

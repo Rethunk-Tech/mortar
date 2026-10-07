@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, Divider, Menu, MenuItem } from '@mui/material'
+import { Button, Menu, MenuItem } from '@mui/material'
 import { useState } from 'react'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
@@ -11,6 +11,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
+import { MenuRule } from '../shell/TitleMenu.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { openTarget } from './storeView.ts'
@@ -110,7 +111,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
         >
           {t`Save current as…`}
         </MenuItem>
-        {names.length > 0 ? <Divider /> : null}
+        {names.length > 0 ? <MenuRule /> : null}
         <PresetItems
           names={names}
           locked={locked}

@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button, ButtonGroup, type ButtonGroupProps, Divider, Menu } from '@mui/material'
+import { Button, ButtonGroup, type ButtonGroupProps, Menu } from '@mui/material'
 import { ChevronDown, Download, FolderOpen, PackagePlus } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { bundleApplied } from '../bundles/applied.ts'
@@ -10,6 +10,7 @@ import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuRule } from '../shell/TitleMenu.tsx'
 import { ExtraFolderDialog } from './ExtraFolderDialog.tsx'
 
 // The chevron of the Add split button: archives from the downloads folder or the game's extra mods folder (when
@@ -71,7 +72,7 @@ export function ExtraFolderMenu({
             }}
           />
         )}
-        {profile ? <Divider /> : null}
+        {profile ? <MenuRule /> : null}
         {profile ? <MenuHeading>{t`Add a set`}</MenuHeading> : null}
         {profile ? <ApplyTemplateMenuItem profile={profile} close={close} /> : null}
         {profile ? (

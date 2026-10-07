@@ -18,7 +18,6 @@ import {
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
-  Divider,
   ListItemIcon,
   ListItemText,
   Menu,
@@ -32,6 +31,7 @@ import { type MouseEvent, type ReactNode, useRef, useState } from 'react'
 import { SetListSort } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useSettings } from '../settings/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { MenuRule } from '../shell/TitleMenu.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { columnLabel } from './columnLabel.ts'
 import { useColumnAvailable } from './contributedColumns.ts'
@@ -271,7 +271,7 @@ function ListColumnMenu({
       anchorPosition={anchor ?? undefined}
     >
       {LIST_COLUMN_GROUPS.flatMap((group, index) => [
-        index > 0 ? <Divider key={`divider-${group[0]}`} /> : null,
+        index > 0 ? <MenuRule key={`divider-${group[0]}`} /> : null,
         ...group.filter(available).map((id) => {
           const locked = LOCKED_LIST_COLUMNS.includes(id)
           const shown = visible.includes(id)
@@ -293,7 +293,7 @@ function ListColumnMenu({
           )
         }),
       ])}
-      <Divider />
+      <MenuRule />
       <MenuAction
         icon={<RotateCcw size={16} aria-hidden={true} />}
         label={t`Reset to default columns`}

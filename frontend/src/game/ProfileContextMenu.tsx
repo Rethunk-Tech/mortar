@@ -1,11 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
-import { Divider, Menu } from '@mui/material'
+import { Menu } from '@mui/material'
 import { Palette, Pencil } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { EditProfileDialog } from '../profiles/EditProfileDialog.tsx'
 import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
+import { MenuRule } from '../shell/TitleMenu.tsx'
 import { CoverMenuItems, MoreMenuItems, ProfileMenuItem } from './ProfileMenuItems.tsx'
 import { useRenameRequest } from './renameRequest.ts'
 
@@ -51,7 +52,7 @@ export function ProfileContextMenu({
           }}
         />
         <CoverMenuItems game={game} profile={profile} close={onClose} />
-        <Divider />
+        <MenuRule />
         <MoreMenuItems profile={profile} close={onClose} onHistory={() => setHistoryOpen(true)} />
       </Menu>
       <EditProfileDialog profile={profile} open={editing} onClose={() => setEditing(false)} />

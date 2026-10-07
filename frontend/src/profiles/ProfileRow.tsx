@@ -1,7 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useLingui } from '@lingui/react/macro'
-import { alpha, Box, Button, Divider, IconButton, Menu, Tooltip, Typography } from '@mui/material'
+import { alpha, Box, Button, IconButton, Menu, Tooltip, Typography } from '@mui/material'
 import { GripVertical, MoreHorizontal, Palette, Pencil, Share2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import type { ProfileBudget } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/models.ts'
@@ -13,6 +13,7 @@ import { formatBytes } from '../i18n/bytes.ts'
 import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { useBadges } from '../mods/badges.ts'
 import { openShare } from '../share/store.ts'
+import { MenuRule } from '../shell/TitleMenu.tsx'
 import { userModCount } from './count.ts'
 import { EditProfileDialog } from './EditProfileDialog.tsx'
 import { HealthCheckBadge } from './HealthCheckBadge.tsx'
@@ -82,7 +83,7 @@ function RowMenu({
           onClick={choose(onEdit, false)}
         />
         <CoverMenuItems game={game} profile={profile} close={choose(() => undefined)} />
-        <Divider sx={{ my: 0.5 }} />
+        <MenuRule />
         <MoreMenuItems
           profile={profile}
           close={choose(() => undefined)}

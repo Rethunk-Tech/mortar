@@ -8,7 +8,7 @@ import {
   MenuItem,
   TextField,
 } from '@mui/material'
-import { FolderPlus, FolderTree } from 'lucide-react'
+import { FolderPlus } from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -26,7 +26,7 @@ function AddToGroupMenuItem({ locked, onClick }: { locked: boolean; onClick: () 
     <LockedReason locked={locked}>
       <MenuAction
         disabled={locked}
-        icon={<FolderTree size={ICON_SIZE} />}
+        icon={<FolderPlus size={ICON_SIZE} />}
         label={t`Add to group…`}
         onClick={onClick}
       />
