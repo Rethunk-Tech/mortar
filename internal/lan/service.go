@@ -243,12 +243,13 @@ func (s *Service) ensureStarted(ctx context.Context) error {
 		if err := fixFirewall(ctx); err != nil {
 			log.Printf("LAN sharing firewall: %v", err)
 		}
+		// Listening without the rule is what makes Windows raise its own prompt.
+		if firewallBlocked(ctx) {
+			return usererr.New(usererr.Permission, "Mortar could not add its firewall rule, so nearby computers can't reach it")
+		}
 	}
 	if err := s.start(ctx); err != nil {
 		return err
-	}
-	if firewallBlocked(ctx) {
-		return nil
 	}
 	_, err := s.deps.Settings.Update(func(v *settings.Settings) { v.LanStarted = true })
 	return err
