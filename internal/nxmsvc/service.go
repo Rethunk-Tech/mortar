@@ -438,9 +438,22 @@ func setHandleLinks(v *settings.Settings, id string, on bool) {
 	}
 }
 
-// Disable gives nxm links back to the recorded owner.
+// Disable gives nxm links back to the recorded owner. Another source's claimed scheme (ror2mm) stays registered.
 func (s *Service) Disable() error {
-	return release(s)
+	nexus := source.SchemesOf("nexus")
+	if len(source.Schemes()) == len(nexus) {
+		return release(s)
+	}
+	previous := maps.Clone(s.store.Get().NxmPreviousHandlers)
+	if err := s.handler.Release(nexus, previous); err != nil {
+		return err
+	}
+	for _, scheme := range nexus {
+		delete(previous, scheme)
+	}
+	return s.record(func(v *settings.Settings) {
+		v.NxmHandled, v.NxmPreviousHandlers, v.NxmPreviousName = false, previous, ""
+	})
 }
 
 // ReleaseLinks restores the nxm handler recorded in settings, the same path Settings uses when the toggle is turned off.

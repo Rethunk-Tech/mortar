@@ -9,6 +9,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -42,7 +43,29 @@ func (w *System) Owner(scheme string) (Owner, error) {
 	if cmd == "" {
 		return Owner{}, nil
 	}
-	return Owner{ID: previousID(cmd, readIcon(scheme), readName(scheme)), Name: exeOf(cmd), Mine: cmd == w.command()}, nil
+	return Owner{ID: previousID(cmd, readIcon(scheme), readName(scheme)), Name: exeOf(cmd), Mine: sameExe(exeOf(cmd), w.exe)}, nil
+}
+
+// sameExe compares program paths the way Windows does: case-insensitively, with 8.3 short names expanded.
+func sameExe(a, b string) bool {
+	return strings.EqualFold(longPath(a), longPath(b))
+}
+
+func longPath(p string) string {
+	in, err := windows.UTF16PtrFromString(p)
+	if err != nil {
+		return p
+	}
+	n, err := windows.GetLongPathName(in, nil, 0)
+	if err != nil || n == 0 {
+		return p
+	}
+	buf := make([]uint16, n)
+	n, err = windows.GetLongPathName(in, &buf[0], n)
+	if err != nil || n == 0 || int(n) > len(buf) {
+		return p
+	}
+	return windows.UTF16ToString(buf[:n])
 }
 
 // exeOf is the program of an open command, for showing to the user.
@@ -130,30 +153,30 @@ func setIcon(scheme, icon string) error {
 	return k.SetStringValue("", icon)
 }
 
-// Restore hands each scheme back to its previous owner; a scheme with none has its keys deleted.
+// Restore hands each claimed scheme back to its previous owner; a scheme with none has its keys deleted. A scheme another
+// app owns is left alone. Every scheme is tried and the errors are joined.
 func (w *System) Restore(previous map[string]string) error {
-	if err := w.removeNativeHosts(); err != nil {
-		return err
-	}
+	errs := []error{w.removeNativeHosts()}
 	for _, scheme := range source.Schemes() {
-		if err := restoreScheme(scheme, previous[scheme]); err != nil {
-			return err
-		}
+		errs = append(errs, w.restoreScheme(scheme, previous[scheme]))
 	}
-	return nil
+	return errors.Join(errs...)
 }
 
 // Release hands the given schemes back to their previous owners.
 func (w *System) Release(schemes []string, previous map[string]string) error {
+	var errs []error
 	for _, scheme := range schemes {
-		if err := restoreScheme(scheme, previous[scheme]); err != nil {
-			return err
-		}
+		errs = append(errs, w.restoreScheme(scheme, previous[scheme]))
 	}
-	return nil
+	return errors.Join(errs...)
 }
 
-func restoreScheme(scheme, previous string) error {
+// restoreScheme acts only on a scheme Mortar holds: another app's registration is not Mortar's to delete or replace.
+func (w *System) restoreScheme(scheme, previous string) error {
+	if o, err := w.Owner(scheme); err != nil || !o.Mine {
+		return err
+	}
 	if previous == "" {
 		class := classKey(scheme)
 		for _, key := range []string{class + `\DefaultIcon`, commandKey(scheme), class + `\shell\open`, class + `\shell`, class} {

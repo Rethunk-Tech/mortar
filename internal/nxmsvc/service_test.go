@@ -355,3 +355,19 @@ func TestClaimLinksTakesOnlyTheSourcesSchemes(t *testing.T) {
 		t.Fatal("ClaimLinks took links for a source without a scheme")
 	}
 }
+
+func TestDisableKeepsAnotherClaimedSchemeRegistered(t *testing.T) {
+	h := &fakeHandler{owner: nxm.Owner{ID: "vortex.desktop", Name: "Vortex"}}
+	s := newService(t, h)
+	source.SetHandleLink("thunderstore", true)
+	t.Cleanup(func() { source.SetHandleLink("thunderstore", false) })
+	if err := s.Enable(); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Disable(); err != nil {
+		t.Fatal(err)
+	}
+	if got := h.registry[len(h.registry)-1]; got != "release:nxm" {
+		t.Fatalf("registry calls %q", h.registry)
+	}
+}

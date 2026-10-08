@@ -719,7 +719,7 @@ func run() error {
 		Shares: shareSvc, Settings: store, Store: items, Version: version,
 		Dir: dataDir, Emit: emit,
 	})
-	if err := lanSvc.SetEnabled(store.Get().LanSharing); err != nil {
+	if err := lanSvc.Apply(); err != nil {
 		log.Printf("LAN sharing: %v", err)
 	}
 	// Queue changes reach shareSvc, so links are routed only once both exist.
@@ -1261,7 +1261,7 @@ func run() error {
 	app.Event.On(settings.ChangedEvent, func(*application.CustomEvent) {
 		gate.run(syncTray)
 		applyLinkChoices(store.Get())
-		if err := lanSvc.SetEnabled(store.Get().LanSharing); err != nil {
+		if err := lanSvc.Apply(); err != nil {
 			log.Printf("LAN sharing: %v", err)
 		}
 	})
@@ -1289,6 +1289,7 @@ func releaseLinks() error {
 	if err != nil {
 		return err
 	}
+	applyLinkChoices(store.Get())
 	return nxmsvc.ReleaseLinks(store, h)
 }
 
@@ -1306,6 +1307,7 @@ func claimLinks(id string) error {
 	if err != nil {
 		return err
 	}
+	applyLinkChoices(store.Get())
 	return nxmsvc.ClaimLinks(store, h, id)
 }
 
