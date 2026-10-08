@@ -114,10 +114,23 @@ func onHost(cmd launch.Command) launch.Command {
 	return cmd
 }
 
+// steamSkipsLoader reports a Windows Steam start that would run the game without its loader: Steam starts the loader
+// only when the game's launch options name it, which nothing but Mortar's own setup sets (Vortex and SMAPI's
+// installer run the loader directly). Starting the loader directly then loads the mods and gives Mortar the process
+// to follow, at the cost of the Steam overlay.
+func steamSkipsLoader(goos string, inst Install, plan *launchplan.Plan, env StartEnv) bool {
+	if goos != "windows" || env.Steam == nil || plan.Mode != launchplan.ModeProfile || plan.Entry == "" {
+		return false
+	}
+	info, _ := catalogGame(inst.Game)
+	opts, err := env.Steam.LaunchOptions(info.SteamAppID())
+	return err != nil || !launchHas(opts, plan.Entry)
+}
+
 // command builds the process to start. steamPath and flatpakPath are LookPath results, "" when missing.
 func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env StartEnv, steamPath, flatpakPath string) (launch.Command, error) {
 	// A loader that replaces the executable cannot be reproduced by a store's relay.
-	if env.Direct || plan.Exe != "" {
+	if env.Direct || plan.Exe != "" || steamSkipsLoader(goos, inst, plan, env) {
 		exe := cmp.Or(plan.Exe, plan.Entry)
 		// A loader that injects into the game (BepInEx) names no executable of its own: the game's is the start.
 		if info, ok := catalogGame(inst.Game); ok && exe == "" && strings.HasSuffix(strings.ToLower(info.Marker), ".exe") {
@@ -152,13 +165,7 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 	case env.Steam == nil:
 		return launch.Command{}, launch.ErrNoSteam
 	case goos == "windows":
-		hint := launch.HintSteam
-		if plan.Mode == launchplan.ModeProfile && plan.Entry != "" {
-			if opts, err := env.Steam.LaunchOptions(info.SteamAppID()); err == nil && !launchHas(opts, plan.Entry) {
-				hint = launch.HintLaunchOptions
-			}
-		}
-		return launch.Command{Name: filepath.Join(env.Steam.Root, "steam.exe"), Args: args, Failure: hint, Relay: true}, nil
+		return launch.Command{Name: filepath.Join(env.Steam.Root, "steam.exe"), Args: args, Failure: launch.HintSteam, Relay: true}, nil
 	case env.Steam.Kind == steam.KindFlatpak:
 		if flatpakPath == "" {
 			return launch.Command{}, launch.ErrNoSteam

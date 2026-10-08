@@ -81,9 +81,9 @@ func TestRunIgnoresStaleLog(t *testing.T) {
 
 func TestRunStartError(t *testing.T) {
 	boom := errors.New("boom")
-	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) { return nil, boom }, Command{Failure: HintLaunchOptions}, fast, nil)
+	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) { return nil, boom }, Command{Failure: HintFlatpakFS}, fast, nil)
 	var f *Failure
-	if !errors.As(err, &f) || !errors.Is(err, boom) || f.Hint != HintLaunchOptions {
+	if !errors.As(err, &f) || !errors.Is(err, boom) || f.Hint != HintFlatpakFS {
 		t.Fatalf("err = %v", err)
 	}
 }

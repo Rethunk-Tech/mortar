@@ -24,8 +24,6 @@ const (
 	HintNone Hint = ""
 	// HintSteam: the game never wrote its log, so Steam may not be running or signed in.
 	HintSteam Hint = "steam"
-	// HintLaunchOptions: Steam's launch options for the game lack the loader's line.
-	HintLaunchOptions Hint = "launch-options"
 	// HintFlatpakFS: Flatpak Steam cannot read Mortar's data folder until a filesystem override is granted.
 	HintFlatpakFS Hint = "flatpak-fs"
 	// HintSteamClient: Proton could not load Steam's client library, so the game needs Steam installed and signed in.

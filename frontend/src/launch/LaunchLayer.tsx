@@ -13,14 +13,13 @@ import {
   Typography,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { CircleAlert, Copy } from 'lucide-react'
+import { CircleAlert } from 'lucide-react'
 import { useEffect } from 'react'
 import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { CrashDialog, SwitchOffButton } from '../console/CrashDialog.tsx'
 import { format } from '../console/filter.ts'
 import { useConsole } from '../console/store.ts'
-import { useLaunchLine } from '../firstrun/useLaunchLine.ts'
 import { useTab } from '../game/tab.ts'
 import { useGameInfo, useGameName } from '../games/info.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
@@ -30,7 +29,6 @@ import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
 import { userModCount } from '../profiles/count.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
-import { copyText } from '../share/copyText.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { controlsCutout } from '../shell/controlsCutout.ts'
 import { FlatpakGrant } from '../shell/FlatpakGrant.tsx'
@@ -181,43 +179,6 @@ function Overlay({ game }: { game: string }) {
   )
 }
 
-function LaunchLine({ line }: { line: string }) {
-  const { t } = useLingui()
-  return (
-    <Box sx={{ display: 'flex', gap: space.gap }}>
-      <Box
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          display: 'flex',
-          alignItems: 'center',
-          px: space.pad,
-          py: 0.75,
-          bgcolor: 'var(--mortar-overlay-45)',
-          border: '1px solid var(--mortar-hairline-15)',
-          borderRadius: '6px',
-          fontFamily: MONO,
-          fontSize: 13,
-          wordBreak: 'break-all',
-          userSelect: 'text',
-        }}
-      >
-        {line}
-      </Box>
-      <Button
-        variant="outlined"
-        startIcon={<Copy size={16} />}
-        onClick={() => {
-          copyText(line, t`Launch options copied`)
-        }}
-        sx={{ flexShrink: 0 }}
-      >
-        {t`Copy`}
-      </Button>
-    </Box>
-  )
-}
-
 function Failure({ game }: { game: string }) {
   const { t } = useLingui()
   const theme = useTheme()
@@ -229,18 +190,12 @@ function Failure({ game }: { game: string }) {
   const cause = failure?.cause
   const mod = useMods((s) => s.mods.find((m) => m.key === cause?.modKey))
   const profile = useProfiles(openProfileOf)
-  // Only a launch-options failure shows the line, so no other failure asks for it.
-  const line = useLaunchLine(
-    game,
-    failure?.hint === Hint.HintLaunchOptions ? (info?.installDir ?? '') : '',
-  )
   // The dialog unmounts with `failure`, so nothing fades out with stale text.
   if (!failure) {
     return null
   }
   const name = info?.name ?? ''
   const nexusID = profile && mod ? nexusIdOf(profile, mod) : 0
-  const showLine = failure.hint === Hint.HintLaunchOptions && info?.installDir
   const showFlatpak = failure.hint === Hint.HintFlatpakFS
   return (
     <Dialog
@@ -265,7 +220,6 @@ function Failure({ game }: { game: string }) {
             {cause.detail}
           </DialogContentText>
         ) : null}
-        {showLine ? <LaunchLine line={line} /> : null}
         {showFlatpak ? <FlatpakGrant /> : null}
       </DialogContent>
       <DialogActions>

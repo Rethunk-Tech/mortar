@@ -1515,7 +1515,7 @@ msgstr "No scanning. The mod sites' own scans still apply."
 #. placeholder {0}: crash.cause.modName
 #: src/console/ConsoleTab.tsx:129
 #: src/console/CrashDialog.tsx:260
-#: src/launch/LaunchLayer.tsx:263
+#: src/launch/LaunchLayer.tsx:218
 msgid "Caused by {0}"
 msgstr "Caused by {0}"
 
@@ -1723,7 +1723,7 @@ msgstr "No mods to share"
 msgid "Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly."
 msgstr "Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly."
 
-#: src/launch/store.ts:134
+#: src/launch/store.ts:128
 #: src/mods/ModSections.tsx:72
 #: src/mods/ModSections.tsx:163
 msgid "Roll back"
@@ -1798,7 +1798,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/firstrun/LoaderStep.tsx:272
 #: src/game/detailStates.tsx:26
 #: src/lan/SendPanel.tsx:194
-#: src/launch/LaunchLayer.tsx:296
+#: src/launch/LaunchLayer.tsx:250
 #: src/mods/LoadOrderTab.tsx:391
 #: src/mods/ModsTab.tsx:109
 #: src/mods/typedConfig/ConfigPane.tsx:284
@@ -2532,7 +2532,7 @@ msgstr "Why?"
 msgid "Upload log"
 msgstr "Upload log"
 
-#: src/launch/LaunchLayer.tsx:318
+#: src/launch/LaunchLayer.tsx:272
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
@@ -3603,7 +3603,6 @@ msgid "{0, plural, one {# download added} other {# downloads added}}"
 msgstr "{0, plural, one {# download added} other {# downloads added}}"
 
 #: src/firstrun/LoaderStep.tsx:95
-#: src/launch/LaunchLayer.tsx:211
 msgid "Launch options copied"
 msgstr "Launch options copied"
 
@@ -4007,10 +4006,6 @@ msgstr "Changelog"
 #: src/install/DownloadsDialog.tsx:93
 msgid "Reading {0}"
 msgstr "Reading {0}"
-
-#: src/launch/store.ts:83
-msgid "Steam's launch options for {name} lack the {loader} line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options."
-msgstr "Steam's launch options for {name} lack the {loader} line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options."
 
 #: src/settings/prefCopy.ts:80
 msgid "Grid"
@@ -5614,7 +5609,7 @@ msgid "Show hidden mods"
 msgstr "Show hidden mods"
 
 #. placeholder {0}: profileName(rollback)
-#: src/launch/store.ts:131
+#: src/launch/store.ts:125
 msgid "New errors after updating {0}"
 msgstr "New errors after updating {0}"
 
@@ -5911,8 +5906,8 @@ msgstr "Mortar cannot download {0} again."
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
-#: src/launch/LaunchLayer.tsx:315
-#: src/launch/LaunchLayer.tsx:316
+#: src/launch/LaunchLayer.tsx:269
+#: src/launch/LaunchLayer.tsx:270
 msgid "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 msgstr "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 
@@ -6131,7 +6126,6 @@ msgstr "Show slowest mods"
 
 #: src/console/HelpDialog.tsx:55
 #: src/firstrun/LoaderStep.tsx:142
-#: src/launch/LaunchLayer.tsx:215
 #: src/saves/lackChipActions.tsx:74
 #: src/shell/FlatpakGrant.tsx:76
 msgid "Copy"
@@ -6903,7 +6897,7 @@ msgstr "Search {gameName} settings"
 msgid "Open author page on Nexus"
 msgstr "Open author page on Nexus"
 
-#: src/launch/store.ts:283
+#: src/launch/store.ts:277
 msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
 
@@ -7518,7 +7512,7 @@ msgstr "Each mod's Entry method, run one after another"
 msgid "All games…"
 msgstr "All games…"
 
-#: src/launch/store.ts:98
+#: src/launch/store.ts:92
 msgid "Could not roll back updates"
 msgstr "Could not roll back updates"
 
@@ -7709,7 +7703,7 @@ msgstr "Run again"
 msgid "Reset to default"
 msgstr "Reset to default"
 
-#: src/launch/store.ts:354
+#: src/launch/store.ts:348
 msgid "Could not stop the game"
 msgstr "Could not stop the game"
 
@@ -9184,7 +9178,7 @@ msgstr "Could not read the window state"
 msgid "Uncategorised"
 msgstr "Uncategorised"
 
-#: src/launch/LaunchLayer.tsx:312
+#: src/launch/LaunchLayer.tsx:266
 msgid "Steam was not found"
 msgstr "Steam was not found"
 
@@ -9767,7 +9761,7 @@ msgid "You endorsed this mod."
 msgstr "You endorsed this mod."
 
 #: src/console/CrashDialog.tsx:134
-#: src/launch/LaunchLayer.tsx:286
+#: src/launch/LaunchLayer.tsx:240
 #: src/mods/modActions.ts:53
 #: src/mods/TrackedNotInProfile.tsx:72
 #: src/mods/updateReview/WithheldGroup.tsx:48
@@ -10184,8 +10178,8 @@ msgstr "Adds"
 
 #: src/console/CrashDialog.tsx:156
 #: src/console/CrashDialog.tsx:208
-#: src/launch/LaunchLayer.tsx:173
-#: src/launch/LaunchLayer.tsx:279
+#: src/launch/LaunchLayer.tsx:171
+#: src/launch/LaunchLayer.tsx:233
 msgid "Open Console"
 msgstr "Open Console"
 
@@ -10684,7 +10678,7 @@ msgstr "Could not set the default launch preset"
 msgid "Files"
 msgstr "Files"
 
-#: src/launch/LaunchLayer.tsx:255
+#: src/launch/LaunchLayer.tsx:210
 msgid "{name} did not start"
 msgstr "{name} did not start"
 
@@ -11393,8 +11387,8 @@ msgstr "Settings"
 msgid "Could not read the details of {0}"
 msgstr "Could not read the details of {0}"
 
-#: src/launch/LaunchLayer.tsx:107
-#: src/launch/LaunchLayer.tsx:120
+#: src/launch/LaunchLayer.tsx:105
+#: src/launch/LaunchLayer.tsx:118
 msgid "Launching {name}"
 msgstr "Launching {name}"
 
@@ -12109,7 +12103,7 @@ msgid "Did not load"
 msgstr "Did not load"
 
 #: src/browse/BrowseShow.tsx:31
-#: src/launch/LaunchLayer.tsx:176
+#: src/launch/LaunchLayer.tsx:174
 #: src/profiles/CompareDialog.tsx:185
 #: src/profiles/LaunchPresetDialog.tsx:86
 #: src/saves/SaveGapLine.tsx:57
@@ -12319,7 +12313,7 @@ msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style 
 msgid "Could not restore the backup"
 msgstr "Could not restore the backup"
 
-#: src/launch/LaunchLayer.tsx:259
+#: src/launch/LaunchLayer.tsx:214
 msgid "The game exited before it started. The console has its output."
 msgstr "The game exited before it started. The console has its output."
 
@@ -12815,7 +12809,7 @@ msgstr "Continue"
 msgid "Dependencies"
 msgstr "Dependencies"
 
-#: src/launch/LaunchLayer.tsx:122
+#: src/launch/LaunchLayer.tsx:120
 #: src/share/PreviewDialog.tsx:79
 #: src/share/ShareDialog.tsx:89
 msgid "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
@@ -13514,7 +13508,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/console/HelpDialog.tsx:257
 #: src/console/SearchRunsDialog.tsx:177
 #: src/game/FarmMenuItem.tsx:132
-#: src/launch/LaunchLayer.tsx:272
+#: src/launch/LaunchLayer.tsx:226
 #: src/launch/SweepDialog.tsx:137
 #: src/mods/AssetMapDialog.tsx:283
 #: src/mods/AuthorDialog.tsx:166

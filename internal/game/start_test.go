@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -47,6 +48,26 @@ func injectedPlan(args ...string) *launchplan.Plan {
 	return p
 }
 
+// steamWithSMAPILine is a Steam whose MostRecent account's Stardew launch options run SMAPI from gameDir.
+func steamWithSMAPILine(t *testing.T, gameDir string) *steam.Steam {
+	t.Helper()
+	root := t.TempDir()
+	for rel, body := range map[string]string{
+		"config/loginusers.vdf": `"users" { "76561198000000002" { "AccountName" "b" "MostRecent" "1" } }`,
+		"userdata/39734274/config/localconfig.vdf": `"UserLocalConfigStore" { "Software" { "Valve" { "Steam" { "apps" { "413150" { "LaunchOptions" "\"` +
+			strings.ReplaceAll(filepath.Join(gameDir, "StardewModdingAPI.exe"), `\`, `\\`) + `\" %command%" } } } } } }`,
+	} {
+		path := filepath.Join(root, rel)
+		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return &steam.Steam{Root: root}
+}
+
 func TestCommand(t *testing.T) {
 	st := Starter{DataDir: t.TempDir(), FlatpakShow: func() (string, error) { return "", nil }}
 	mods := filepath.FromSlash("/data/profiles/stardew/abc/mods")
@@ -54,6 +75,7 @@ func TestCommand(t *testing.T) {
 	fp := &steam.Steam{Root: filepath.FromSlash("/flatpak-steam"), Kind: steam.KindFlatpak}
 	dir := filepath.FromSlash("/games/Stardew Valley")
 	inst := Install{Game: "stardew", Dir: dir}
+	withLine := steamWithSMAPILine(t, dir)
 	for _, tc := range []struct {
 		name    string
 		goos    string
@@ -88,9 +110,9 @@ func TestCommand(t *testing.T) {
 		},
 		{
 			"windows steam", "windows", smapiPlan("windows", dir, mods),
-			StartEnv{Steam: sm},
+			StartEnv{Steam: withLine},
 			"", "",
-			[]string{filepath.Join(sm.Root, "steam.exe"), "-applaunch", "413150", "--mods-path", mods},
+			[]string{filepath.Join(withLine.Root, "steam.exe"), "-applaunch", "413150", "--mods-path", mods},
 			nil, launch.HintSteam,
 		},
 		{
@@ -193,7 +215,9 @@ func TestDirectCommandStartsTheGameExecutableWhenTheLoaderNamesNone(t *testing.T
 	}
 }
 
-func TestWindowsHint(t *testing.T) {
+// Vortex and SMAPI's installer never set Steam's launch options, so a Windows Steam start would run the game without
+// SMAPI; Mortar starts SMAPI itself until the options name it.
+func TestWindowsStartsSMAPIDirectlyUntilSteamNamesIt(t *testing.T) {
 	root := t.TempDir()
 	write := func(rel, body string) {
 		p := filepath.Join(root, rel)
@@ -208,14 +232,14 @@ func TestWindowsHint(t *testing.T) {
 	write("userdata/39734274/config/localconfig.vdf", `"UserLocalConfigStore" { "Software" { "Valve" { "Steam" { "apps" { "413150" { "LaunchOptions" "-novid" } } } } } }`)
 	plan := smapiPlan("windows", `C:\Stardew Valley`, filepath.Join(root, "mods"))
 	env := StartEnv{Steam: &steam.Steam{Root: root}}
-	inst := Install{Game: "stardew"}
+	inst := Install{Game: "stardew", Dir: `C:\Stardew Valley`}
 	c, err := Starter{}.command("windows", inst, plan, env, "", "")
-	if err != nil || c.Failure != launch.HintLaunchOptions {
-		t.Fatalf("missing line: hint = %q, err = %v", c.Failure, err)
+	if err != nil || c.Relay || !strings.EqualFold(filepath.Base(c.Name), "StardewModdingAPI.exe") {
+		t.Fatalf("missing line: name = %q, relay = %v, err = %v", c.Name, c.Relay, err)
 	}
 	write("userdata/39734274/config/localconfig.vdf", `"UserLocalConfigStore" { "Software" { "Valve" { "Steam" { "apps" { "413150" { "LaunchOptions" "\"C:\\Stardew Valley\\StardewModdingAPI.exe\" %command%" } } } } } }`)
-	if c, _ = (Starter{}).command("windows", inst, plan, env, "", ""); c.Failure != launch.HintSteam {
-		t.Fatalf("line present: hint = %q", c.Failure)
+	if c, _ = (Starter{}).command("windows", inst, plan, env, "", ""); !c.Relay || c.Failure != launch.HintSteam {
+		t.Fatalf("line present: relay = %v, hint = %q", c.Relay, c.Failure)
 	}
 }
 
@@ -330,7 +354,7 @@ func TestWindowsCommandKeepsArgumentsWholeAndInOrder(t *testing.T) {
 	if got := append([]string{direct.Name}, direct.Args...); !slices.Equal(got, want) || direct.Dir != dir {
 		t.Fatalf("direct = %q in %q, want %q", got, direct.Dir, want)
 	}
-	sm := &steam.Steam{Root: `C:\Program Files (x86)\Steam`}
+	sm := steamWithSMAPILine(t, dir)
 	relay, err := Starter{}.command("windows", inst, plan, StartEnv{Steam: sm}, "", "")
 	if err != nil {
 		t.Fatal(err)

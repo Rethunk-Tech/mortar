@@ -14,7 +14,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
-import { gameInfo, gameName } from '../games/info.ts'
+import { gameName } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
 import { isGameId, useNav } from '../nav/store.ts'
@@ -75,12 +75,6 @@ function failureBody(status: Status): string {
   if (status.hint === Hint.HintFlatpakFS) {
     return i18n._(
       msg`Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › ${name}) or the game will not see this profile.`,
-    )
-  }
-  if (status.hint === Hint.HintLaunchOptions) {
-    const loader = gameInfo(status.game)?.loader ?? ''
-    return i18n._(
-      msg`Steam's launch options for ${name} lack the ${loader} line. In Steam, right-click the game, choose Properties, and paste this line into Launch Options.`,
     )
   }
   return status.error
