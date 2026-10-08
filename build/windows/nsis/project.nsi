@@ -44,7 +44,8 @@ VIAddVersionKey "ProductName"     "${INFO_PRODUCTNAME}"
 # Enable HiDPI support. https://nsis.sourceforge.io/Reference/ManifestDPIAware
 ManifestDPIAware true
 
-!include "MUI.nsh"
+!include "MUI2.nsh"
+!include "nsDialogs.nsh"
 
 !define MUI_ICON "..\icon.ico"
 !define MUI_UNICON "..\icon.ico"
@@ -56,8 +57,10 @@ ManifestDPIAware true
 !insertmacro MUI_PAGE_WELCOME # Welcome to the installer page.
 # !insertmacro MUI_PAGE_LICENSE "resources\eula.txt" # Adds a EULA page to the installer
 !insertmacro MUI_PAGE_DIRECTORY # In which folder install page.
-!insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_INSTFILES # Installing page.
+# The link checkboxes sit under "Run Mortar"; the leave function runs before MUI starts Mortar.
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW mortar.finishShow
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE mortar.finishLeave
 !insertmacro MUI_PAGE_FINISH # Finished installation page.
 
 !insertmacro MUI_UNPAGE_INSTFILES # Uninstalling page
@@ -136,14 +139,43 @@ Section
     WriteRegDWORD SHCTX "${UNINST_KEY}" "NoRepair" 1
 SectionEnd
 
-# Checked by default; Mortar records each choice, and Settings turns it off again.
-Section "Open Nexus Mods download links with Mortar"
-    ExecWait '"$INSTDIR\${PRODUCT_EXECUTABLE}" --handle-links nexus'
-SectionEnd
+Var mortar.nexusLinks
+Var mortar.thunderstoreLinks
 
-Section "Open Thunderstore mod links with Mortar"
-    ExecWait '"$INSTDIR\${PRODUCT_EXECUTABLE}" --handle-links thunderstore'
-SectionEnd
+!macro mortar.linkBox VAR TOP TEXT
+    ${NSD_CreateCheckbox} 120u ${TOP}u 195u 10u "${TEXT}"
+    Pop ${VAR}
+    SetCtlColors ${VAR} "${MUI_TEXTCOLOR}" "${MUI_BGCOLOR}"
+    ${NSD_Check} ${VAR}
+!macroend
+
+Function mortar.finishShow
+    !insertmacro mortar.linkBox $mortar.nexusLinks 102 "Open Nexus Mods download links with Mortar"
+    !insertmacro mortar.linkBox $mortar.thunderstoreLinks 115 "Open Thunderstore mod links with Mortar"
+FunctionEnd
+
+!macro mortar.claimLinks SOURCE
+    ExecWait '"$INSTDIR\${PRODUCT_EXECUTABLE}" --handle-links ${SOURCE}'
+!macroend
+
+Function mortar.finishLeave
+    ${NSD_GetState} $mortar.nexusLinks $0
+    ${If} $0 == ${BST_CHECKED}
+        !insertmacro mortar.claimLinks nexus
+    ${EndIf}
+    ${NSD_GetState} $mortar.thunderstoreLinks $0
+    ${If} $0 == ${BST_CHECKED}
+        !insertmacro mortar.claimLinks thunderstore
+    ${EndIf}
+FunctionEnd
+
+# A silent install (winget) never shows the Finish page, so it takes the checkboxes' defaults.
+Function .onInstSuccess
+    ${If} ${Silent}
+        !insertmacro mortar.claimLinks nexus
+        !insertmacro mortar.claimLinks thunderstore
+    ${EndIf}
+FunctionEnd
 
 Section "uninstall" 
     !insertmacro wails.setShellContext
