@@ -1482,7 +1482,7 @@ msgstr "At most once a day"
 
 #. placeholder {0}: res.failed
 #. placeholder {0}: result.failed
-#: src/mods/GameModsReviewDialog.tsx:187
+#: src/mods/GameModsReviewDialog.tsx:195
 #: src/profiles/GameModsDialog.tsx:107
 msgid "{0, plural, one {# failed} other {# failed}}"
 msgstr "{0, plural, one {# failed} other {# failed}}"
@@ -2151,7 +2151,7 @@ msgid "More actions for {0}"
 msgstr "More actions for {0}"
 
 #. placeholder {0}: profile.name
-#: src/mods/GameModsReviewDialog.tsx:178
+#: src/mods/GameModsReviewDialog.tsx:186
 msgid "Game Mods folder vs {0}"
 msgstr "Game Mods folder vs {0}"
 
@@ -2329,7 +2329,7 @@ msgstr "{name} · {mods}"
 #. placeholder {0}: res.imported
 #. placeholder {1}: move ? 'Moved # mod' : 'Copied # mod'
 #. placeholder {2}: move ? 'Moved # mods' : 'Copied # mods'
-#: src/mods/GameModsReviewDialog.tsx:161
+#: src/mods/GameModsReviewDialog.tsx:169
 msgid "{0, plural, one {{1}} other {{2}}}"
 msgstr "{0, plural, one {{1}} other {{2}}}"
 
@@ -3133,7 +3133,7 @@ msgid "Not found in the Mods folder"
 msgstr "Not found in the Mods folder"
 
 #. placeholder {0}: diff.same
-#: src/mods/GameModsReviewDialog.tsx:102
+#: src/mods/GameModsReviewDialog.tsx:105
 msgid "{0, plural, one {# mod matches.} other {# mods match.}}"
 msgstr "{0, plural, one {# mod matches.} other {# mods match.}}"
 
@@ -4214,7 +4214,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/mods/AddToGroupDialog.tsx:99
 #: src/mods/CategoryEditor.tsx:156
 #: src/mods/CategoryEditor.tsx:236
-#: src/mods/GameModsReviewDialog.tsx:205
+#: src/mods/GameModsReviewDialog.tsx:213
 #: src/mods/parts.tsx:114
 #: src/mods/ReportToAuthorButton.tsx:245
 #: src/mods/SelectionBarDialogs.tsx:87
@@ -4356,7 +4356,7 @@ msgstr "Could not preview the template"
 
 #: src/firstrunTour/TourPopover.tsx:197
 #: src/game/HomeNotes.tsx:98
-#: src/mods/GameModsReviewDialog.tsx:182
+#: src/mods/GameModsReviewDialog.tsx:190
 #: src/queue/QueueHistory.tsx:66
 msgid "Done"
 msgstr "Done"
@@ -4472,7 +4472,7 @@ msgstr "Code copied"
 msgid "Mods from the same download are removed together: {0}. You can undo this."
 msgstr "Mods from the same download are removed together: {0}. You can undo this."
 
-#: src/mods/GameModsReviewDialog.tsx:222
+#: src/mods/GameModsReviewDialog.tsx:230
 msgid "Copy into profile"
 msgstr "Copy into profile"
 
@@ -5789,7 +5789,7 @@ msgstr "Open mod"
 msgid "Open on GitHub"
 msgstr "Open on GitHub"
 
-#: src/mods/GameModsReviewDialog.tsx:213
+#: src/mods/GameModsReviewDialog.tsx:221
 msgid "Move into profile"
 msgstr "Move into profile"
 
@@ -6540,7 +6540,7 @@ msgstr "Archives"
 
 #. placeholder {0}: res.skipped
 #. placeholder {0}: result.skipped
-#: src/mods/GameModsReviewDialog.tsx:186
+#: src/mods/GameModsReviewDialog.tsx:194
 #: src/profiles/GameModsDialog.tsx:106
 msgid "{0, plural, one {# skipped} other {# skipped}}"
 msgstr "{0, plural, one {# skipped} other {# skipped}}"
@@ -7446,7 +7446,7 @@ msgstr "Nothing selected would change {0}."
 msgid "Something went wrong."
 msgstr "Something went wrong."
 
-#: src/mods/GameModsReviewDialog.tsx:168
+#: src/mods/GameModsReviewDialog.tsx:176
 msgid "Could not change the mods"
 msgstr "Could not change the mods"
 
@@ -11111,7 +11111,7 @@ msgid "Pending updates ({0})"
 msgstr "Pending updates ({0})"
 
 #. placeholder {0}: diff.profileOnly
-#: src/mods/GameModsReviewDialog.tsx:102
+#: src/mods/GameModsReviewDialog.tsx:108
 msgid "{0, plural, one {# profile mod has no copy in the game folder.} other {# profile mods have no copy in the game folder.}}"
 msgstr "{0, plural, one {# profile mod has no copy in the game folder.} other {# profile mods have no copy in the game folder.}}"
 
@@ -13085,7 +13085,7 @@ msgstr "Could not check for mod updates"
 
 #. placeholder {0}: res.imported
 #. placeholder {0}: result.imported
-#: src/mods/GameModsReviewDialog.tsx:185
+#: src/mods/GameModsReviewDialog.tsx:193
 #: src/profiles/GameModsDialog.tsx:105
 msgid "{0, plural, one {# imported} other {# imported}}"
 msgstr "{0, plural, one {# imported} other {# imported}}"
@@ -13555,7 +13555,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/mods/AssetMapDialog.tsx:283
 #: src/mods/AuthorDialog.tsx:166
 #: src/mods/ChangelogDialog.tsx:104
-#: src/mods/GameModsReviewDialog.tsx:228
+#: src/mods/GameModsReviewDialog.tsx:236
 #: src/mods/updateReview/ReviewFooter.tsx:62
 #: src/mods/updateReview/ReviewTitle.tsx:47
 #: src/profiles/CompareTop.tsx:148

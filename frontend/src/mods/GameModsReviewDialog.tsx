@@ -98,15 +98,23 @@ function ReviewLists({
           ))}
         </Section>
       )}
-      <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-        {`${plural(diff.same, { one: '# mod matches.', other: '# mods match.' })} ${plural(
-          diff.profileOnly,
-          {
-            one: '# profile mod has no copy in the game folder.',
-            other: '# profile mods have no copy in the game folder.',
-          },
-        )}`}
-      </Typography>
+      {diff.same > 0 || diff.profileOnly > 0 ? (
+        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          {[
+            diff.same > 0
+              ? plural(diff.same, { one: '# mod matches.', other: '# mods match.' })
+              : '',
+            diff.profileOnly > 0
+              ? plural(diff.profileOnly, {
+                  one: '# profile mod has no copy in the game folder.',
+                  other: '# profile mods have no copy in the game folder.',
+                })
+              : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        </Typography>
+      ) : null}
     </>
   )
 }
