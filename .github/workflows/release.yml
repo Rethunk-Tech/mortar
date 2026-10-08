@@ -22,8 +22,26 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { runner: ubuntu-latest, goarch: amd64, appimage_arch: x86_64, deb_arch: amd64, rpm_arch: x86_64, pkg_arch: x86_64, windows: true, flatpak: true }
-          - { runner: ubuntu-24.04-arm, goarch: arm64, appimage_arch: aarch64, deb_arch: arm64, rpm_arch: aarch64, pkg_arch: aarch64, windows: false, flatpak: true }
+          - {
+              runner: ubuntu-latest,
+              goarch: amd64,
+              appimage_arch: x86_64,
+              deb_arch: amd64,
+              rpm_arch: x86_64,
+              pkg_arch: x86_64,
+              windows: true,
+              flatpak: true,
+            }
+          - {
+              runner: ubuntu-24.04-arm,
+              goarch: arm64,
+              appimage_arch: aarch64,
+              deb_arch: arm64,
+              rpm_arch: aarch64,
+              pkg_arch: aarch64,
+              windows: false,
+              flatpak: true,
+            }
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 40
     permissions:
@@ -37,6 +55,23 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      # Mortar refuses an extension outside its protocol range, so a release must not ship ahead of the published
+      # browser extension.
+      - name: Extension protocol matches
+        if: matrix.windows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release download -R Rethunk-Tech/mortar-browser-extension -p mortar-browser-extension.zip -O "$RUNNER_TEMP/ext.zip"
+          ext=$(unzip -p "$RUNNER_TEMP/ext.zip" plural.js | sed -n 's/^globalThis\.mortarProtocol = \([0-9]*\)$/\1/p')
+          min=$(sed -n 's/^\tMinProtocol = \([0-9]*\)$/\1/p' internal/nativehost/nativehost.go)
+          max=$(sed -n 's/^\tMaxProtocol = \([0-9]*\)$/\1/p' internal/nativehost/nativehost.go)
+          if [ -z "$ext" ] || [ -z "$min" ] || [ -z "$max" ] || [ "$ext" -lt "$min" ] || [ "$ext" -gt "$max" ]; then
+            echo "::error::published browser extension speaks protocol '${ext}', Mortar accepts ${min}..${max}: release the extension first"
+            exit 1
+          fi
 
       # A tag normally points at a commit CI already gated on main; re-running the gate then buys nothing.
       # Dispatch runs always gate.
