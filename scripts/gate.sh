@@ -57,7 +57,7 @@ step go-test env TMPDIR="$gotmp" GOTMPDIR="$gotmp" go test -race ./...
 step vuln scripts/vulncheck.sh
 
 wait "$bindings_pid" || { cat "$logs/bindings"; exit 1; }
-step biome scripts/biome-strict.sh
+step biome bun run --silent lint
 step knip bunx knip
 step tsc bun run --cwd frontend tsc --noEmit
 step bun-test bun test

@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "lint:biome": "biome check --error-on-warnings .",
-    "lint": "scripts/biome-strict.sh",
+    "lint": "biome check --error-on-warnings .",
     "bindings": "wails3 generate bindings -clean=true -ts -i",
     "typecheck": "bun run bindings && bun run --cwd frontend tsc --noEmit",
     "test": "GORACE=atexit_sleep_ms=0 go test -race ./... && bun test",
