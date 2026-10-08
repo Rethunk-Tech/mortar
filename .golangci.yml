@@ -63,8 +63,8 @@ linters:
       - path: ^(datadir_recover_other|internal/(avscan/command|launch/launch|launch/term_unix|loader/smapi/install|datadir/open|datadir/copy_windows_test|backdrop/desktop|nxm/handler_linux|nxm/handler_windows|steam/steam|sandbox/sandbox|nativehost/spawn_other|nativehost/spawn_windows|datasvc/restart|updatesvc/e2e_test|problems/perf_test))\.go$
         linters: [gosec]
         text: G204
-      # AMSI is a COM-style DLL whose calls take pointers to Go values, and Windows has no safer way to pass them.
-      - path: ^internal/avscan/amsi_windows\.go$
+      # AMSI is a COM-style DLL, and ShellExecuteEx takes a struct, whose calls take pointers to Go values, and Windows has no safer way to pass them.
+      - path: ^internal/(avscan/amsi|lan/firewall)_windows\.go$
         linters: [gosec]
         text: G103
       # A crafted 7z panics the reader, and an unrecovered panic exits Mortar; outside the archive package every open

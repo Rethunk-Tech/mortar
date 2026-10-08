@@ -3,80 +3,254 @@
 package lan
 
 import (
-	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
-	"os/exec"
+	"runtime"
+	"strconv"
 	"strings"
+	"unsafe"
 
-	"github.com/Rethunk-Tech/mortar/internal/nowindow"
+	"github.com/go-ole/go-ole"
+	"github.com/go-ole/go-ole/oleutil"
+	"golang.org/x/sys/windows"
 )
 
-// readyScript prints "ready" when an enabled inbound allow rule for the program covers the Private profile and no
-// enabled inbound block rule for it applies to a network category currently connected. Rules are matched by program
-// path and read as enums, so the result does not depend on the Windows display language.
-const readyBody = `
-$ErrorActionPreference = 'Stop'
-$mask = 0
-foreach ($c in Get-NetConnectionProfile) { $mask = $mask -bor @{ 2 = 1; 0 = 4; 1 = 2 }[[int]$c.NetworkCategory] }
-if ($mask -eq 0) { $mask = 7 }
-$rules = @(Get-NetFirewallApplicationFilter | Where-Object { $_.Program -ieq $exe } | Get-NetFirewallRule |
-  Where-Object { $_.Enabled -eq 'True' -and $_.Direction -eq 'Inbound' })
-$allow = @($rules | Where-Object { $_.Action -eq 'Allow' -and ([int]$_.Profile -eq 0 -or ([int]$_.Profile -band 2)) })
-$block = @($rules | Where-Object { $_.Action -eq 'Block' -and ([int]$_.Profile -eq 0 -or ([int]$_.Profile -band $mask)) })
-if ($allow.Count -gt 0 -and $block.Count -eq 0) { 'ready' }
-`
+const (
+	fwDirectionIn  = 1
+	fwActionBlock  = 0
+	fwActionAllow  = 1
+	elevatedWaitMS = 5 * 60 * 1000
+	ruleName       = "Mortar"
+)
 
-// fixScript removes every inbound block rule for the program (Windows names the ones it auto-creates after the file
-// description, not "Mortar") and adds one allow rule scoped to the Private profile.
-const fixBody = `
-$ErrorActionPreference = 'Stop'
-Get-NetFirewallApplicationFilter | Where-Object { $_.Program -ieq $exe } | Get-NetFirewallRule |
-  Where-Object { $_.Direction -eq 'Inbound' -and $_.Action -eq 'Block' } | Remove-NetFirewallRule
-Remove-NetFirewallRule -DisplayName 'Mortar' -ErrorAction SilentlyContinue
-New-NetFirewallRule -DisplayName 'Mortar' -Direction Inbound -Action Allow -Program $exe -Profile Private -Enabled True | Out-Null
-`
-
-// firewallBlocked reports whether Windows Firewall would stop nearby computers reaching Mortar: no Private allow
-// rule for it, or a block rule that applies.
-func firewallBlocked(ctx context.Context) bool {
-	executable, err := os.Executable()
+// policy runs f against the firewall policy object on a locked OS thread, as COM requires.
+func policy(f func(policy, rules *ole.IDispatch) error) error {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	if err := ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
+		var oleErr *ole.OleError
+		// S_FALSE: this thread already initialised COM.
+		if !errors.As(err, &oleErr) || oleErr.Code() != 1 {
+			return fmt.Errorf("initialise COM: %w", err)
+		}
+	}
+	defer ole.CoUninitialize()
+	unknown, err := oleutil.CreateObject("HNetCfg.FwPolicy2")
 	if err != nil {
-		return false
+		return fmt.Errorf("open Windows Firewall policy: %w", err)
 	}
-	cmd := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-NonInteractive", "-Command", "-")
-	cmd.Stdin = strings.NewReader(runEncoded(scriptWithExe(readyBody, executable)))
-	nowindow.Set(cmd)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	if err := cmd.Run(); err != nil {
-		return false
+	defer unknown.Release()
+	pol, err := unknown.QueryInterface(ole.IID_IDispatch)
+	if err != nil {
+		return err
 	}
-	return strings.TrimSpace(out.String()) != "ready"
+	defer pol.Release()
+	rulesVar, err := oleutil.GetProperty(pol, "Rules")
+	if err != nil {
+		return fmt.Errorf("read firewall rules: %w", err)
+	}
+	defer func() { _ = rulesVar.Clear() }()
+	return f(pol, rulesVar.ToIDispatch())
 }
 
-// fixFirewall asks for elevation once and installs the Private-only allow rule, replacing any block rules.
-func fixFirewall(ctx context.Context) error {
-	executable, err := os.Executable()
+func intProp(d *ole.IDispatch, name string) (int32, error) {
+	v, err := oleutil.GetProperty(d, name)
+	if err != nil {
+		return 0, err
+	}
+	defer func() { _ = v.Clear() }()
+	n, ok := v.Value().(int32)
+	if !ok {
+		return 0, fmt.Errorf("firewall property %s is not a number", name)
+	}
+	return n, nil
+}
+
+func strProp(d *ole.IDispatch, name string) (string, error) {
+	v, err := oleutil.GetProperty(d, name)
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = v.Clear() }()
+	return v.ToString(), nil
+}
+
+func readRule(d *ole.IDispatch) (fwRule, error) {
+	app, err := strProp(d, "ApplicationName")
+	if err != nil {
+		return fwRule{}, err
+	}
+	dir, err := intProp(d, "Direction")
+	if err != nil {
+		return fwRule{}, err
+	}
+	action, err := intProp(d, "Action")
+	if err != nil {
+		return fwRule{}, err
+	}
+	enabled, err := oleutil.GetProperty(d, "Enabled")
+	if err != nil {
+		return fwRule{}, err
+	}
+	on := enabled.Value() == true
+	_ = enabled.Clear()
+	profiles, err := intProp(d, "Profiles")
+	if err != nil {
+		return fwRule{}, err
+	}
+	return fwRule{App: app, Inbound: dir == fwDirectionIn, Allow: action == fwActionAllow, Enabled: on, Profiles: profiles}, nil
+}
+
+// firewallBlocked reports whether Windows Firewall would stop nearby computers reaching Mortar. An unreadable
+// firewall is an error, never "not blocked": listening without the rule is what makes Windows raise its own prompt.
+func firewallBlocked(context.Context) (bool, error) {
+	exe, err := os.Executable()
+	if err != nil {
+		return true, fmt.Errorf("find Mortar executable: %w", err)
+	}
+	var rules []fwRule
+	var current int32
+	err = policy(func(pol, set *ole.IDispatch) error {
+		if current, err = intProp(pol, "CurrentProfileTypes"); err != nil {
+			return err
+		}
+		return oleutil.ForEach(set, func(v *ole.VARIANT) error {
+			r, err := readRule(v.ToIDispatch())
+			if err != nil {
+				return err
+			}
+			rules = append(rules, r)
+			return nil
+		})
+	})
+	if err != nil {
+		return true, fmt.Errorf("read Windows Firewall rules: %w", err)
+	}
+	return rulesBlock(rules, exe, current), nil
+}
+
+// AllowFirewall is the elevated step: it removes every inbound block rule for this executable (Windows names the ones
+// it creates itself after the file description, not "Mortar") and installs one Private-only allow rule.
+func AllowFirewall() error {
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	return policy(func(_, set *ole.IDispatch) error {
+		// Rules are removed by name, and a name can be shared with another program's rule, so each match is first
+		// renamed to a token of its own.
+		var tokens []string
+		err := oleutil.ForEach(set, func(v *ole.VARIANT) error {
+			d := v.ToIDispatch()
+			r, err := readRule(d)
+			if err != nil {
+				return err
+			}
+			name, err := strProp(d, "Name")
+			if err != nil {
+				return err
+			}
+			inboundBlock := r.Inbound && !r.Allow
+			if !strings.EqualFold(r.App, exe) || (!inboundBlock && name != ruleName) {
+				return nil
+			}
+			token := "mortar-remove-" + strconv.Itoa(len(tokens))
+			if _, err := oleutil.PutProperty(d, "Name", token); err != nil {
+				return err
+			}
+			tokens = append(tokens, token)
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		for _, token := range tokens {
+			if _, err := oleutil.CallMethod(set, "Remove", token); err != nil {
+				return fmt.Errorf("remove firewall rule: %w", err)
+			}
+		}
+		unknown, err := oleutil.CreateObject("HNetCfg.FWRule")
+		if err != nil {
+			return err
+		}
+		defer unknown.Release()
+		rule, err := unknown.QueryInterface(ole.IID_IDispatch)
+		if err != nil {
+			return err
+		}
+		defer rule.Release()
+		for name, value := range map[string]any{
+			"Name": ruleName, "ApplicationName": exe, "Direction": int32(fwDirectionIn), "Action": int32(fwActionAllow),
+			"Profiles": profilePrivate, "Enabled": true,
+		} {
+			if _, err := oleutil.PutProperty(rule, name, value); err != nil {
+				return fmt.Errorf("set firewall rule %s: %w", name, err)
+			}
+		}
+		_, err = oleutil.CallMethod(set, "Add", rule)
+		return err
+	})
+}
+
+// shellExecuteInfo is SHELLEXECUTEINFOW.
+type shellExecuteInfo struct {
+	Size       uint32
+	Mask       uint32
+	Hwnd       windows.Handle
+	Verb       *uint16
+	File       *uint16
+	Parameters *uint16
+	Directory  *uint16
+	Show       int32
+	Instance   windows.Handle
+	IDList     uintptr
+	Class      *uint16
+	KeyClass   windows.Handle
+	HotKey     uint32
+	Icon       windows.Handle
+	Process    windows.Handle
+}
+
+const seeMaskNoCloseProcess = 0x40
+
+var shellExecuteEx = windows.NewLazySystemDLL("shell32.dll").NewProc("ShellExecuteExW")
+
+// fixFirewall runs Mortar itself elevated, so the UAC prompt names Mortar and its publisher, and waits for its exit
+// code. Declining the prompt is an error.
+func fixFirewall(context.Context) error {
+	exe, err := os.Executable()
 	if err != nil {
 		return fmt.Errorf("find Mortar executable: %w", err)
 	}
-	outer := "$ErrorActionPreference = 'Stop'; " +
-		"$p = Start-Process -FilePath 'powershell.exe' -Verb RunAs -WindowStyle Hidden -Wait -PassThru " +
-		"-ArgumentList '-NoProfile','-NonInteractive','-EncodedCommand','" + encodeCommand(scriptWithExe(fixBody, executable)) + "'; " +
-		"exit $p.ExitCode"
-	command := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-NonInteractive", "-Command", "-")
-	command.Stdin = strings.NewReader(outer)
-	nowindow.Set(command)
-	if err := command.Run(); err != nil {
-		return fmt.Errorf("update Windows Firewall rule: %w", err)
+	verb, err := windows.UTF16PtrFromString("runas")
+	if err != nil {
+		return err
+	}
+	file, err := windows.UTF16PtrFromString(exe)
+	if err != nil {
+		return err
+	}
+	args, err := windows.UTF16PtrFromString(AllowFirewallFlag)
+	if err != nil {
+		return err
+	}
+	info := shellExecuteInfo{Mask: seeMaskNoCloseProcess, Verb: verb, File: file, Parameters: args}
+	info.Size = uint32(unsafe.Sizeof(info))
+	if r, _, callErr := shellExecuteEx.Call(uintptr(unsafe.Pointer(&info))); r == 0 {
+		return fmt.Errorf("start the elevated firewall step: %w", callErr)
+	}
+	defer func() { _ = windows.CloseHandle(info.Process) }()
+	if ev, err := windows.WaitForSingleObject(info.Process, elevatedWaitMS); err != nil || ev != windows.WAIT_OBJECT_0 {
+		return errors.New("the elevated firewall step did not finish")
+	}
+	var code uint32
+	if err := windows.GetExitCodeProcess(info.Process, &code); err != nil {
+		return err
+	}
+	if code != 0 {
+		return fmt.Errorf("update Windows Firewall rule: exit status %d", code)
 	}
 	return nil
-}
-
-// runEncoded is an ASCII one-liner that runs script, so a path with non-ASCII characters survives PowerShell 5.1's
-// stdin decoding.
-func runEncoded(script string) string {
-	return "& ([ScriptBlock]::Create([Text.Encoding]::Unicode.GetString([Convert]::FromBase64String('" + encodeCommand(script) + "'))))"
 }

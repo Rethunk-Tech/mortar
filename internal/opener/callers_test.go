@@ -22,10 +22,11 @@ func rel0(root, path string) string {
 func TestOnlyTheGuardedCallersStartTheSystemHandler(t *testing.T) {
 	root := filepath.Join("..", "..")
 	allowed := map[string]bool{
-		"main.go":                         true, // the opener service's Open
-		"internal/nexussvc/sso.go":        true, // opener.Web before Browser.OpenURL
-		"internal/datadir/open.go":        true, // checkOpenable before xdg-open or explorer
-		"internal/opener/callers_test.go": true,
+		"main.go":                          true, // the opener service's Open
+		"internal/nexussvc/sso.go":         true, // opener.Web before Browser.OpenURL
+		"internal/datadir/open.go":         true, // checkOpenable before xdg-open or explorer
+		"internal/lan/firewall_windows.go": true, // elevates Mortar's own executable with a fixed argument
+		"internal/opener/callers_test.go":  true,
 	}
 	var offenders []string
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
