@@ -16,6 +16,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -520,7 +521,14 @@ func (c *cmd) dispatch() error {
 		fmt.Fprint(c.out, usage)
 		return nil
 	case "version":
-		return c.emit(map[string]string{"version": c.version}, func() { fmt.Fprintln(c.out, "mortar", c.version) })
+		commit := appversion.Commit()
+		return c.emit(map[string]string{"version": c.version, "commit": commit}, func() {
+			if commit == "" {
+				fmt.Fprintln(c.out, "mortar", c.version)
+				return
+			}
+			fmt.Fprintf(c.out, "mortar %s (build %s)\n", c.version, commit)
+		})
 	case "completion":
 		a, err := c.need(1, "a shell (bash, zsh or fish)")
 		if err != nil {

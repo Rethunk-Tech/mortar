@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/runtime"
@@ -50,7 +51,7 @@ func FromLive(in Live) Report {
 	checks := []Check{{
 		ID:     "mortar",
 		Status: Pass,
-		Detail: fmt.Sprintf("Mortar %s (this command %s)", in.Version, in.CommandVersion),
+		Detail: fmt.Sprintf("Mortar %s (this command %s)", withCommit(in.Version), in.CommandVersion),
 	}, {
 		ID:     "dataDir",
 		Status: Pass,
@@ -148,4 +149,12 @@ func runtimeOf(g game.GameInfo, host string) string {
 		}
 	}
 	return host
+}
+
+// withCommit adds the build's commit to version, so builds that share a version number can be told apart.
+func withCommit(version string) string {
+	if c := appversion.Commit(); c != "" {
+		return version + ", build " + c
+	}
+	return version
 }

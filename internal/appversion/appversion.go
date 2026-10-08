@@ -47,3 +47,26 @@ var Build = sync.OnceValue(func() string {
 	}
 	return rev
 })
+
+// Commit is the short commit this binary was built from, with "-modified" when the tree had uncommitted changes, so
+// two builds of one version can be told apart; empty when the build carries no VCS stamp.
+var Commit = sync.OnceValue(func() string {
+	rev, modified := "", false
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, s := range info.Settings {
+			switch s.Key {
+			case "vcs.revision":
+				rev = s.Value
+			case "vcs.modified":
+				modified = s.Value == "true"
+			}
+		}
+	}
+	if len(rev) > 8 {
+		rev = rev[:8]
+	}
+	if rev != "" && modified {
+		rev += "-modified"
+	}
+	return rev
+})
