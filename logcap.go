@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/support"
 )
 
 // maxLogBytes caps mortar.log so a long session cannot fill the disk; the previous run's log is kept separately.
@@ -47,8 +48,16 @@ func (c *cappedWriter) Write(p []byte) (int, error) {
 	return c.w.Write(p)
 }
 
-func capCrashLog(dataDir string) bool {
-	return capCrashLogAt(dataDir, maxCrashBytes)
+// checkCrashLog empties a large crash.log only when an earlier start already reported all of it, then records whether
+// the last run crashed. In the other order a new trace would be marked seen and emptied before anyone could read it.
+func checkCrashLog(dataDir string) bool {
+	emptied, _ := checkCrashLogAt(dataDir, maxCrashBytes)
+	return emptied
+}
+
+func checkCrashLogAt(dataDir string, limit int64) (emptied, crashed bool) {
+	emptied = capCrashLogAt(dataDir, limit)
+	return emptied, support.DetectLastRunCrashed(dataDir)
 }
 
 // capCrashLogAt empties crash.log when it is over limit and already seen, and reports whether it did.

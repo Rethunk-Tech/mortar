@@ -79,3 +79,28 @@ func TestCappedLogReadsAsCleanShutdown(t *testing.T) {
 		t.Errorf("clean shutdown after %d MB of log was reported as a crash", maxLogBytes>>20)
 	}
 }
+
+// A crash that pushes crash.log over the cap is reported with its trace still there; the next start empties it.
+func TestCheckCrashLogKeepsANewTraceUntilItWasReported(t *testing.T) {
+	dir := t.TempDir()
+	crash := filepath.Join(dir, "crash.log")
+	if err := os.WriteFile(crash, make([]byte, 64), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	emptied, crashed := checkCrashLogAt(dir, 32)
+	if emptied || !crashed {
+		t.Fatalf("first start: emptied %v, crashed %v; want the new trace kept and reported", emptied, crashed)
+	}
+	if info, _ := os.Stat(crash); info.Size() != 64 {
+		t.Fatalf("crash.log is %d bytes at the report, want the whole trace", info.Size())
+	}
+	if emptied, _ := checkCrashLogAt(dir, 32); !emptied {
+		t.Fatal("the next start kept a reported crash.log over the cap")
+	}
+	if info, _ := os.Stat(crash); info.Size() != 0 {
+		t.Fatalf("crash.log is %d bytes after the cap", info.Size())
+	}
+	if _, crashed := checkCrashLogAt(dir, 32); crashed {
+		t.Fatal("an emptied crash.log was reported as a new crash")
+	}
+}

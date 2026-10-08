@@ -171,20 +171,3 @@ func TestDetectLastRunCrashedTruncatedResetsSeen(t *testing.T) {
 		t.Fatalf("seen after truncate = %q", got)
 	}
 }
-
-func TestALargeCrashLogStartsOverOnceReported(t *testing.T) {
-	dir := t.TempDir()
-	crash := filepath.Join(dir, crashLogName)
-	if err := os.WriteFile(crash, make([]byte, maxCrashLogBytes+1), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if !DetectLastRunCrashed(dir) {
-		t.Fatal("new growth must be reported before the file starts over")
-	}
-	if info, err := os.Stat(crash); err != nil || info.Size() != 0 {
-		t.Fatalf("crash.log after the report: %v, %v", info, err)
-	}
-	if DetectLastRunCrashed(dir) {
-		t.Fatal("an emptied crash.log is not a new crash")
-	}
-}

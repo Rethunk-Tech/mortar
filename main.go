@@ -327,9 +327,8 @@ func run() error {
 		log.SetOutput(out)
 		slog.SetDefault(slog.New(slog.NewTextHandler(out, nil)))
 	}
-	support.DetectLastRunCrashed(dataDir)
 	tidied := &tidy.Collector{}
-	if capCrashLog(dataDir) {
+	if checkCrashLog(dataDir) {
 		tidied.Add("Emptied the crash log after it was reported", "data folder", 1, "crash.log")
 	}
 
