@@ -67,3 +67,51 @@ func TestApplyDoesNotListenAtLaunchWithoutRules(t *testing.T) {
 		}
 	}
 }
+
+func TestListenBlockedByPublic(t *testing.T) {
+	t.Parallel()
+	for name, tc := range map[string]struct {
+		current int32
+		anyAddr bool
+		want    bool
+	}{
+		"public only":        {profilePublic, false, true},
+		"public only, any":   {profilePublic, true, false},
+		"private":            {profilePrivate, false, false},
+		"domain":             {profileDomain, false, false},
+		"public and private": {profilePublic | profilePrivate, false, false},
+		"public and domain":  {profilePublic | profileDomain, false, false},
+		"no network":         {0, false, false},
+	} {
+		if got := listenBlockedByPublic(tc.current, tc.anyAddr); got != tc.want {
+			t.Errorf("%s: listenBlockedByPublic = %v, want %v", name, got, tc.want)
+		}
+	}
+}
+
+func TestPublicNetworkWithholdsListening(t *testing.T) {
+	t.Parallel()
+	store, err := settings.OpenIn(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.Update(func(v *settings.Settings) { v.LanSharing, v.LanStarted = true, true }); err != nil {
+		t.Fatal(err)
+	}
+	svc := NewService(Deps{Settings: store})
+	svc.checkFirewall = func(context.Context, bool) (bool, error) { return false, nil }
+	svc.networkPublic = func() bool { return true }
+	t.Cleanup(svc.Shutdown)
+	if err := svc.Apply(); err == nil {
+		t.Fatal("Apply on a Public network = nil, want the Public-network error")
+	}
+	if err := svc.ensureStarted(context.Background()); err == nil {
+		t.Fatal("ensureStarted on a Public network = nil, want the Public-network error")
+	}
+	if svc.listening() {
+		t.Fatal("listening on a Public network")
+	}
+	if !store.Get().LanStarted {
+		t.Fatal("lanStarted was cleared; the rules still exist")
+	}
+}

@@ -103,6 +103,8 @@ type Service struct {
 	useMu sync.Mutex
 	// checkFirewall reads the firewall state; tests replace it.
 	checkFirewall func(ctx context.Context, anyAddr bool) (bool, error)
+	// networkPublic reports that every connected network is Public; tests replace it.
+	networkPublic func() bool
 	// rulesAny is the allow-any-address setting the firewall rules were last written for.
 	rulesAny bool
 	lifeMu   sync.Mutex
@@ -169,6 +171,7 @@ func NewService(deps Deps) *Service {
 	service := &Service{
 		deps:          deps,
 		checkFirewall: firewallBlocked,
+		networkPublic: networkIsPublic,
 		name:          localName(),
 		instanceID:    instanceID,
 		peers:         map[string]peerRecord{},
@@ -238,6 +241,9 @@ func (s *Service) Apply() error {
 	}
 	if cfg.LanStarted || s.listening() {
 		if !s.listening() {
+			if s.publicBlocksListening(cfg.LanAllowAnyAddress) {
+				return errPublicNetwork()
+			}
 			s.mu.Lock()
 			s.rulesAny = cfg.LanAllowAnyAddress
 			s.mu.Unlock()
@@ -278,6 +284,9 @@ func (s *Service) ensureStarted(ctx context.Context) error {
 		return errors.New("LAN sharing is disabled")
 	}
 	anyAddr := s.allowAnyAddress()
+	if s.publicBlocksListening(anyAddr) {
+		return errPublicNetwork()
+	}
 	blocked, err := firewallBlocked(ctx, anyAddr)
 	if err != nil || blocked {
 		if err := fixFirewall(ctx, anyAddr); err != nil {

@@ -3,6 +3,8 @@ package lan
 import (
 	"context"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // FirewallBlocked reports whether the operating system firewall is not yet set up so that Mortar can listen without a
@@ -20,7 +22,30 @@ func (s *Service) FixFirewall() error {
 // NetworkIsPublic reports that Windows has the connected network on its Public profile, where a LAN-only Mortar is
 // blocked by design: nearby computers cannot reach it until the network is set to Private.
 func (s *Service) NetworkIsPublic() bool {
-	return networkIsPublic()
+	return s.networkPublic()
+}
+
+// onlyPublic reports that the connected networks' profile bits (CurrentProfileTypes) name Public and neither Domain
+// nor Private.
+func onlyPublic(current int32) bool {
+	return current&profilePublic != 0 && current&profilesLocal == 0
+}
+
+// listenBlockedByPublic decides that Mortar must not listen: every connected network is Public, where a LAN-only
+// Mortar is blocked by design and listening would only raise Windows' own prompt. The allow-any-address setting has
+// rules on every profile, so it never blocks.
+func listenBlockedByPublic(current int32, anyAddr bool) bool {
+	return !anyAddr && onlyPublic(current)
+}
+
+// errPublicNetwork is what LAN use and launch return instead of listening on a Public network.
+func errPublicNetwork() error {
+	return usererr.New(usererr.Permission, "This network is set to Public in Windows, so Mortar doesn't share on it. Set it to Private in Windows network settings to use LAN sharing.")
+}
+
+// publicBlocksListening reports whether listening is withheld because the network is Public.
+func (s *Service) publicBlocksListening(anyAddr bool) bool {
+	return !anyAddr && s.networkPublic()
 }
 
 // AllowFirewallFlag is the internal argument of the elevated Mortar that writes the firewall rules; AllowFirewallAny

@@ -136,7 +136,7 @@ func networkIsPublic() bool {
 		current, err = intProp(pol, "CurrentProfileTypes")
 		return err
 	})
-	return err == nil && current&profilePublic != 0 && current&profilesLocal == 0
+	return err == nil && onlyPublic(current)
 }
 
 // AllowFirewall is the elevated step. It removes every inbound block rule for this executable (Windows names the ones
