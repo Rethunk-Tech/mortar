@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"golang.org/x/sys/windows/registry"
 )
@@ -218,9 +219,12 @@ func (w *System) ForwardOther(link, previous string) error {
 	if err != nil {
 		return err
 	}
-	out, err := exec.CommandContext(context.Background(), name, args...).CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%w: %s", err, strings.TrimSpace(string(out)))
+	cmd := exec.CommandContext(context.Background(), name, args...)
+	nowindow.Set(cmd)
+	// The previous handler may run until the user closes it; waiting would stall every later handoff.
+	if err := cmd.Start(); err != nil {
+		return err
 	}
+	go func() { _ = cmd.Wait() }()
 	return nil
 }
