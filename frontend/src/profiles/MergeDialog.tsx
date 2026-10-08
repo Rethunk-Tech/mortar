@@ -85,19 +85,30 @@ function Summary({
   const updates = preview.both.filter((b) => b.sourceNewer).length
   const targetName = target.name
   const labelId = useId()
+  // Nothing to add and no newer version in the source: say so instead of counting zeros, so the disabled Merge
+  // button has its reason in view.
+  if (preview.adds.length === 0 && updates === 0) {
+    return (
+      <Typography color="text.secondary">{t`Nothing to merge: ${targetName} already has every mod at the same or a newer version.`}</Typography>
+    )
+  }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
-      <AddsLine adds={preview.adds} />
-      <Typography>
-        {plural(both, { one: '# mod is in both', other: '# mods are in both' })}
-      </Typography>
-      <Typography>
-        {plural(preview.targetOnly, {
-          one: `Keeps # mod only ${targetName} has`,
-          other: `Keeps # mods only ${targetName} has`,
-        })}
-      </Typography>
+      {preview.adds.length > 0 ? <AddsLine adds={preview.adds} /> : null}
       {both > 0 ? (
+        <Typography>
+          {plural(both, { one: '# mod is in both', other: '# mods are in both' })}
+        </Typography>
+      ) : null}
+      {preview.targetOnly > 0 ? (
+        <Typography>
+          {plural(preview.targetOnly, {
+            one: `Keeps # mod only ${targetName} has`,
+            other: `Keeps # mods only ${targetName} has`,
+          })}
+        </Typography>
+      ) : null}
+      {updates > 0 ? (
         <FormControl>
           <FormLabel id={labelId}>{t`For mods in both`}</FormLabel>
           <RadioGroup
@@ -113,14 +124,12 @@ function Summary({
             <FormControlLabel
               value="newer"
               control={<Radio size="small" />}
-              label={t`Use the newer version`}
+              label={plural(updates, {
+                one: 'Use the newer version (# mod updates)',
+                other: 'Use the newer version (# mods update)',
+              })}
             />
           </RadioGroup>
-          {newerWins ? (
-            <Typography color="text.secondary" sx={{ fontSize: 13, pl: 4 }}>
-              {plural(updates, { one: '# would update', other: '# would update' })}
-            </Typography>
-          ) : null}
         </FormControl>
       ) : null}
     </Box>

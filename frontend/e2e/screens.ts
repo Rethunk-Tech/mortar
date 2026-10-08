@@ -297,7 +297,7 @@ async function main() {
     const dialog = page.getByRole('dialog', { name: /^Merge / })
     await dialog.getByRole('combobox', { name: 'Target profile' }).click({ timeout: STEP_MS })
     await click(page, 'option', 'Seed From Template')
-    await dialog.getByText(/^Adds \d+ mods?/).waitFor({ timeout: STEP_MS })
+    await dialog.getByText(/^(Adds \d+ mods?|Nothing to merge)/).waitFor({ timeout: STEP_MS })
   })
   await shot(page, 'seed-farm-config-alpha', () => configOf(page, /Seed Alpha/))
   await shot(page, 'seed-farm-config-beta', () => configOf(page, /Seed Beta/))
