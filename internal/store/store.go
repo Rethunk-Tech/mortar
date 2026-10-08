@@ -134,7 +134,7 @@ func PackageKey(name, version string) string {
 func (s *Store) Meta(game, key string) (source, pkg, version string, ok bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	idx, err := s.loadIndex()
+	idx, err := s.viewIndex()
 	if err != nil {
 		return "", "", "", false
 	}
@@ -146,7 +146,7 @@ func (s *Store) Meta(game, key string) (source, pkg, version string, ok bool) {
 func (s *Store) Asset(game, key string) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	idx, err := s.loadIndex()
+	idx, err := s.viewIndex()
 	if err != nil {
 		return ""
 	}
@@ -157,7 +157,7 @@ func (s *Store) Asset(game, key string) string {
 func (s *Store) Keys(game string) ([]string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	idx, err := s.loadIndex()
+	idx, err := s.viewIndex()
 	if err != nil {
 		return nil, err
 	}

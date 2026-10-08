@@ -292,7 +292,7 @@ func (s *Service) installInProfiles(ctx context.Context, id, loaderID, dir strin
 	}
 	progress := func(step loader.Step) { s.emit(ProgressEvent, Progress{Game: id, Step: step}) }
 	for _, p := range all {
-		if p.Error != "" || s.profiles.LoaderID(id, p.ID) != l.ID() {
+		if p.Error != "" || p.LoaderFor(id) != l.ID() {
 			continue
 		}
 		pdir, err := s.profiles.ProfileDir(id, p.ID)

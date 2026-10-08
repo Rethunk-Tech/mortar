@@ -279,7 +279,7 @@ func (s *Service) profileStatus(id string, l loader.Loader, dir, recorded string
 	}
 	st := loader.Status{Installed: recorded != "", Version: recorded, PerProfile: true}
 	for _, p := range all {
-		if p.Error != "" || s.profiles.LoaderID(id, p.ID) != l.ID() {
+		if p.Error != "" || p.LoaderFor(id) != l.ID() {
 			continue
 		}
 		pdir, err := s.profiles.ProfileDir(id, p.ID)

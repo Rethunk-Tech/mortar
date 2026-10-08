@@ -10,7 +10,13 @@ import (
 // LoaderID is the id of the loader the profile runs: its own choice, else the game's primary loader, "" when the game
 // has none.
 func (s *Store) LoaderID(gameID, id string) string {
-	if p, err := s.read(gameID, id); err == nil && p.Loader != "" {
+	p, _ := s.read(gameID, id)
+	return p.LoaderFor(gameID)
+}
+
+// LoaderFor is LoaderID for a profile already in hand.
+func (p Profile) LoaderFor(gameID string) string {
+	if p.Loader != "" {
 		return p.Loader
 	}
 	if l, ok := gamereg.PrimaryLoader(gameID); ok {
