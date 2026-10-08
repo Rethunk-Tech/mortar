@@ -236,17 +236,7 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 !macroend
 
 !macro wails.associateFiles
-    ; Create file associations. Releases before the space-free ProgID registered "Mortar profile": carry its backup
-    ; over and drop the class.
-    ReadRegStr $R2 SHELL_CONTEXT "Software\Classes\.mortar" "Mortar profile_backup"
-    ${If} $R2 != ""
-        ReadRegStr $R3 SHELL_CONTEXT "Software\Classes\.mortar" "Mortar.Profile_backup"
-        ${If} $R3 == ""
-            WriteRegStr SHELL_CONTEXT "Software\Classes\.mortar" "Mortar.Profile_backup" "$R2"
-        ${EndIf}
-        DeleteRegValue SHELL_CONTEXT "Software\Classes\.mortar" "Mortar profile_backup"
-        DeleteRegKey SHELL_CONTEXT "Software\Classes\Mortar profile"
-    ${EndIf}
+    ; Create file associations
     !insertmacro APP_ASSOCIATE "mortar" "Mortar.Profile" "Mortar profile" "$INSTDIR\${PRODUCT_EXECUTABLE},0" "Open with ${INFO_PRODUCTNAME}" `"$INSTDIR\${PRODUCT_EXECUTABLE}" "%1"`
     ; Tell Explorer, or the new association shows only after a sign-out.
     System::Call 'shell32::SHChangeNotify(i 0x08000000, i 0, i 0, i 0)'
