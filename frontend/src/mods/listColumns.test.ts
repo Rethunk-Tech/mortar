@@ -24,7 +24,6 @@ const mod = (over: Partial<Mod> & Pick<Mod, 'name'>): Mod => ({
   author: over.author ?? '',
   version: over.version ?? '',
   enabled: over.enabled ?? true,
-  siblings: over.siblings ?? [],
   picture: over.picture ?? '',
   endorsements: over.endorsements ?? 0,
   needs: over.needs ?? [],

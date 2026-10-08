@@ -10,7 +10,6 @@ function mod(id: string): Mod {
     author: '',
     version: '',
     enabled: true,
-    siblings: [],
     picture: '',
     endorsements: 0,
   }

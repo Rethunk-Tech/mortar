@@ -420,7 +420,7 @@ func TestRebuildAfterModsDeleted(t *testing.T) {
 	if !slices.Equal(names(t, filepath.Join(e.mods(p.ID), "local-n", "W")), []string{".A", "B"}) {
 		t.Fatal("disabled nested mod not dotted after rebuild")
 	}
-	if len(mods) != 3 || mods[0].Enabled || !mods[1].Enabled || !slices.Equal(mods[0].Siblings, []mod.ID{"smapi:X.B"}) || len(mods[2].Siblings) != 0 {
+	if len(mods) != 3 || mods[0].Enabled || !mods[1].Enabled {
 		t.Fatalf("mods = %+v", mods)
 	}
 

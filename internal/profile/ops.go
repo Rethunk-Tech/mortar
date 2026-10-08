@@ -28,13 +28,12 @@ const tempPrefix = ".tmp_"
 
 // Mod is one mod as the UI lists it, flattened across entries.
 type Mod struct {
-	Key      string   `json:"key"`
-	ID       mod.ID   `json:"id"`
-	Name     string   `json:"name"`
-	Author   string   `json:"author"`
-	Version  string   `json:"version"`
-	Enabled  bool     `json:"enabled"`
-	Siblings []mod.ID `json:"siblings"`
+	Key     string `json:"key"`
+	ID      mod.ID `json:"id"`
+	Name    string `json:"name"`
+	Author  string `json:"author"`
+	Version string `json:"version"`
+	Enabled bool   `json:"enabled"`
 	// Picture is the Nexus page's picture or the Thunderstore package's icon; Endorsements come from the Nexus page.
 	Picture        string   `json:"picture"`
 	Endorsements   int      `json:"endorsements"`
@@ -841,12 +840,6 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 			continue
 		}
 		for _, m := range e.Mods {
-			sib := []mod.ID{}
-			for _, o := range e.Mods {
-				if o.ID != m.ID {
-					sib = append(sib, o.ID)
-				}
-			}
 			caution := ""
 			if plain, dotted, err := ModPaths(modsDir, e.Key, m.Folder); err == nil {
 				folder := plain
@@ -861,7 +854,7 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 			}
 			out = append(out, Mod{
 				Key: e.Key, ID: m.ID, Name: m.Name, Author: m.Author, Version: m.Version,
-				Enabled: e.Enabled(m.ID), Siblings: sib,
+				Enabled: e.Enabled(m.ID),
 				Picture: e.Source.Picture, Endorsements: e.Source.EndorsementCount,
 				Needs: m.Needs, Optional: m.Optional, ContentPackFor: m.ContentPackFor,
 				UpdateCautionMessage: caution,

@@ -46,7 +46,6 @@ for (let e = 0; e < 671; e++) {
       author: `Author ${e % 60}`,
       version: '1.0.0',
       enabled: e % 37 !== 0,
-      siblings: [],
       picture: '',
       endorsements: e * 13,
       needs: e > 0 ? [mods[(e * 7) % mods.length]?.id ?? ''] : [],
