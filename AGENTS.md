@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Mortar is a desktop mod manager for several games, with Stardew Valley, Lethal Company and Valheim enabled: game discovery, mod loader install, per-profile mod sets, launch, and profiles shared as links. [docs/architecture.md](docs/architecture.md) holds how it works (storage, profile semantics, Stardew and Nexus facts); [docs/design.md](docs/design.md) holds decided work not yet built, pruned as it lands; screen layout and styling rules: @docs/gui-design.md; Lethal Company research: [docs/lethal-company.md](docs/lethal-company.md); Valheim research: [docs/valheim.md](docs/valheim.md); threat model and the guard and test for each untrusted input: [docs/security.md](docs/security.md).
+Mortar is a desktop mod manager for several games, with Stardew Valley, Lethal Company and Valheim enabled: game discovery, mod loader install, per-profile mod sets, launch, and profiles shared as links. [docs/architecture.md](docs/architecture.md) holds how it works (storage, profile semantics, Stardew and Nexus facts); [docs/design.md](docs/design.md) holds decided work not yet built, pruned as it lands; screen layout and styling rules: [docs/gui-design.md](docs/gui-design.md) (read it before any UI change); Lethal Company research: [docs/lethal-company.md](docs/lethal-company.md); Valheim research: [docs/valheim.md](docs/valheim.md); threat model and the guard and test for each untrusted input: [docs/security.md](docs/security.md).
 
 ## Testing
 
@@ -11,7 +11,7 @@ Mortar is a desktop mod manager for several games, with Stardew Valley, Lethal C
 
 `wails3 task selftest ARGS=seed` fills the running sandbox once, through the sandbox's own CLI, with two profiles (one from a template), mods from generated zips, history events, a manual and a scheduled backup, a stray game-Mods folder, a dot-hidden mod, an extra-mods folder, a failed download and the Config page's sources (a Stardew `config.json` changed from its shipped default, a GMCM capture with a pending edit and a result, a Lethal Company plugin's `.cfg` changed from its default, and an unowned `BepInEx.cfg`). The maintainer gets only the tests that need a human: a store login, owned games, hardware or a real desktop session.
 
-Windows bugs: the Windows 11 KVM VM in `/var/tmp/win11-vm/` (`README.txt`, `/var/tmp/win11-vm/start.sh`, `vm.py`, a `clean-install` snapshot) is for quick repros and one-fix smokes only; long soaks are a human's.
+Windows bugs: the Windows 11 KVM VM in `/var/tmp/win11-vm/` (`README.txt`, `/var/tmp/win11-vm/start.sh`, `vm.py`, a `clean-install` snapshot) is for quick repros and one-fix smokes only; long soaks are a human's. Only the parent session drives it, never a subagent (a waiting subagent goes cold).
 
 ## Decided
 
