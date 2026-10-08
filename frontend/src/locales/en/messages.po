@@ -1332,7 +1332,7 @@ msgstr "Mod Manager Download on Nexus Mods only works in Mortar when you are sig
 msgid "Take them back for Mortar?"
 msgstr "Take them back for Mortar?"
 
-#: src/launch/autoUpdate.ts:228
+#: src/launch/autoUpdate.ts:223
 msgid "Could not add the update downloads"
 msgstr "Could not add the update downloads"
 
@@ -3955,7 +3955,7 @@ msgstr "Disable"
 msgid "Added {mods} to {profile}"
 msgstr "Added {mods} to {profile}"
 
-#: src/launch/autoUpdate.ts:142
+#: src/launch/autoUpdate.ts:141
 msgid "Timed out waiting for mod updates"
 msgstr "Timed out waiting for mod updates"
 
@@ -6963,7 +6963,7 @@ msgid "Track"
 msgstr "Track"
 
 #. placeholder {0}: item.name || i18n._(msg`the mod`)
-#: src/launch/autoUpdate.ts:114
+#: src/launch/autoUpdate.ts:113
 msgid "The update for {0} did not finish"
 msgstr "The update for {0} did not finish"
 
@@ -10696,7 +10696,7 @@ msgstr "GOG via Heroic"
 msgid "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 msgstr "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 
-#: src/launch/autoUpdate.ts:114
+#: src/launch/autoUpdate.ts:113
 msgid "the mod"
 msgstr "the mod"
 
