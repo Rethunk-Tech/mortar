@@ -353,7 +353,7 @@ msgstr "Restored {detail} of {name}"
 msgid "Sign out of Nexus"
 msgstr "Sign out of Nexus"
 
-#: src/share/ImportPreview.tsx:165
+#: src/share/ImportPreview.tsx:166
 msgid "{name} is broken for {detail}"
 msgstr "{name} is broken for {detail}"
 
@@ -382,7 +382,7 @@ msgstr "Premium and GitHub downloads at once"
 msgid "{0, plural, one {# download failed} other {# downloads failed}}"
 msgstr "{0, plural, one {# download failed} other {# downloads failed}}"
 
-#: src/share/ImportPreview.tsx:166
+#: src/share/ImportPreview.tsx:167
 msgid "{name} needs {detail}, which Mortar cannot install"
 msgstr "{name} needs {detail}, which Mortar cannot install"
 
@@ -578,7 +578,7 @@ msgid "Startup: {0} {1} added {2}"
 msgstr "Startup: {0} {1} added {2}"
 
 #. placeholder {0}: listNames(carried.map((c) => carriedLabels[c]))
-#: src/share/ImportPreview.tsx:365
+#: src/share/ImportPreview.tsx:366
 msgid "Includes: {0}"
 msgstr "Includes: {0}"
 
@@ -599,7 +599,7 @@ msgid "Search settings"
 msgstr "Search settings"
 
 #: src/game/HomeNotes.tsx:118
-#: src/share/ImportPreview.tsx:351
+#: src/share/ImportPreview.tsx:352
 #: src/share/Included.tsx:92
 msgid "Notes"
 msgstr "Notes"
@@ -1388,7 +1388,7 @@ msgstr "All outcomes"
 
 #: src/queue/store.ts:315
 #: src/share/importCompletion.ts:24
-#: src/share/ImportPreview.tsx:260
+#: src/share/ImportPreview.tsx:261
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{count, plural, one {# mod installed} other {# mods installed}}"
 
@@ -1577,7 +1577,7 @@ msgstr "Newest lines kept in the Console"
 msgid "Reset all"
 msgstr "Reset all"
 
-#: src/share/ImportPreview.tsx:264
+#: src/share/ImportPreview.tsx:265
 msgid "{count} unavailable"
 msgstr "{count} unavailable"
 
@@ -1958,7 +1958,7 @@ msgstr "Copied"
 msgid "Show in log"
 msgstr "Show in log"
 
-#: src/share/ImportPreview.tsx:207
+#: src/share/ImportPreview.tsx:208
 msgid "Page"
 msgstr "Page"
 
@@ -2135,7 +2135,7 @@ msgstr "A short summary"
 msgid "Mortar renames the folder {0} without its leading dots, so SMAPI loads the mod."
 msgstr "Mortar renames the folder {0} without its leading dots, so SMAPI loads the mod."
 
-#: src/share/CollectionNotes.tsx:38
+#: src/share/CollectionNotes.tsx:39
 msgid "Curator's instructions"
 msgstr "Curator's instructions"
 
@@ -2406,7 +2406,7 @@ msgstr "Follow new lines"
 msgid "{0} identical"
 msgstr "{0} identical"
 
-#: src/share/ImportPreview.tsx:163
+#: src/share/ImportPreview.tsx:164
 msgid "{name} was removed from Nexus"
 msgstr "{name} was removed from Nexus"
 
@@ -2555,7 +2555,7 @@ msgid "Hill-top farm"
 msgstr "Hill-top farm"
 
 #: src/console/StartupTable.tsx:296
-#: src/mods/ProblemRows.tsx:141
+#: src/mods/ProblemRows.tsx:174
 msgid "Why?"
 msgstr "Why?"
 
@@ -3041,7 +3041,7 @@ msgstr "Collection draft saved"
 msgid "Abandoned"
 msgstr "Abandoned"
 
-#: src/share/ImportPreview.tsx:263
+#: src/share/ImportPreview.tsx:264
 msgid "{count} checked later"
 msgstr "{count} checked later"
 
@@ -3413,7 +3413,7 @@ msgstr "More from the Nexus page"
 msgid "{label} is no longer in the saves folder"
 msgstr "{label} is no longer in the saves folder"
 
-#: src/share/ImportPreview.tsx:82
+#: src/share/ImportPreview.tsx:83
 msgid "different file"
 msgstr "different file"
 
@@ -4048,7 +4048,7 @@ msgstr "Open a .mortar file someone sent you. You see what it holds before anyth
 msgid "Already has {0}"
 msgstr "Already has {0}"
 
-#: src/browse/BrowseDetails.tsx:100
+#: src/browse/BrowseDetails.tsx:101
 #: src/mods/Sidebar.tsx:386
 #: src/mods/updateReview/Row.tsx:131
 msgid "Changelog"
@@ -4303,7 +4303,7 @@ msgstr "Custom command"
 msgid "Could not unpin the selected mods"
 msgstr "Could not unpin the selected mods"
 
-#: src/share/ImportPreview.tsx:339
+#: src/share/ImportPreview.tsx:340
 #: src/share/useImportFlow.ts:143
 msgid "Nothing to download"
 msgstr "Nothing to download"
@@ -4484,8 +4484,8 @@ msgstr "{rest, plural, one {# more} other {# more}}"
 msgid "Mortar: {label}"
 msgstr "Mortar: {label}"
 
-#: src/mods/ModCards.tsx:462
-#: src/mods/ModList.tsx:364
+#: src/mods/ModCards.tsx:463
+#: src/mods/ModList.tsx:365
 #: src/mods/Toolbar.tsx:194
 #: src/mods/typedConfig/ConfigTab.tsx:167
 msgid "A mod with several tags appears under its first tag."
@@ -4539,7 +4539,7 @@ msgstr "Show in queue"
 #: src/profiles/ProfilesPage.tsx:268
 #: src/profiles/ProfilesPage.tsx:277
 #: src/saves/SaveGapLine.tsx:22
-#: src/share/ImportPreview.tsx:84
+#: src/share/ImportPreview.tsx:85
 #: src/share/ListFormat.tsx:22
 msgid "Disabled"
 msgstr "Disabled"
@@ -4629,7 +4629,7 @@ msgid "This profile skips updates from this source for this mod."
 msgstr "This profile skips updates from this source for this mod."
 
 #. placeholder {0}: skippedSettings.length
-#: src/share/ImportPreview.tsx:408
+#: src/share/ImportPreview.tsx:409
 msgid "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 msgstr "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 
@@ -4897,7 +4897,7 @@ msgstr "Working directory"
 #: src/mods/ChangelogDialog.tsx:35
 #: src/mods/columnLabel.ts:17
 #: src/mods/OptionalFileRows.tsx:122
-#: src/share/ImportPreview.tsx:67
+#: src/share/ImportPreview.tsx:68
 msgid "Installed"
 msgstr "Installed"
 
@@ -4967,7 +4967,7 @@ msgstr "Verify downloads with Nexus MD5"
 msgid "Take Nexus links from {0}?"
 msgstr "Take Nexus links from {0}?"
 
-#: src/share/ImportPreview.tsx:164
+#: src/share/ImportPreview.tsx:165
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
@@ -4997,7 +4997,7 @@ msgstr "No backups to delete"
 msgid "Duplicate"
 msgstr "Duplicate"
 
-#: src/browse/BrowseDetails.tsx:60
+#: src/browse/BrowseDetails.tsx:61
 #: src/launch/PrePlayDialog.tsx:92
 #: src/share/Included.tsx:61
 msgid "and {count} more"
@@ -5378,7 +5378,7 @@ msgstr "Broken for this version"
 msgid "Edit config"
 msgstr "Edit config"
 
-#: src/share/ImportPreview.tsx:262
+#: src/share/ImportPreview.tsx:263
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr "{count, plural, one {# dependency} other {# dependencies}}"
 
@@ -5625,7 +5625,7 @@ msgstr "Has problems"
 msgid "LAN port"
 msgstr "LAN port"
 
-#: src/browse/BrowseDetails.tsx:56
+#: src/browse/BrowseDetails.tsx:57
 msgid "{latest} (latest)"
 msgstr "{latest} (latest)"
 
@@ -5997,7 +5997,7 @@ msgstr "Background"
 msgid "The folder of {name} was deleted outside Mortar"
 msgstr "The folder of {name} was deleted outside Mortar"
 
-#: src/share/ImportPreview.tsx:339
+#: src/share/ImportPreview.tsx:340
 msgid "Ready to import"
 msgstr "Ready to import"
 
@@ -6032,7 +6032,7 @@ msgstr "{0} saved by sharing files"
 msgid "{0} lists itself as a dependency, so BepInEx stops before loading any plugin."
 msgstr "{0} lists itself as a dependency, so BepInEx stops before loading any plugin."
 
-#: src/share/CollectionNotes.tsx:58
+#: src/share/CollectionNotes.tsx:59
 msgid "Install yourself"
 msgstr "Install yourself"
 
@@ -6302,7 +6302,7 @@ msgid "Skip for now"
 msgstr "Skip for now"
 
 #: src/mods/typedConfig/ConfigPane.tsx:171
-#: src/share/ImportPreview.tsx:352
+#: src/share/ImportPreview.tsx:353
 #: src/share/Included.tsx:94
 msgid "Config files"
 msgstr "Config files"
@@ -6362,7 +6362,7 @@ msgid "Could not save the profile order"
 msgstr "Could not save the profile order"
 
 #: src/mods/updateReview/RowInclude.tsx:26
-#: src/share/ImportPreview.tsx:109
+#: src/share/ImportPreview.tsx:110
 msgid "Include {name}"
 msgstr "Include {name}"
 
@@ -6392,7 +6392,7 @@ msgstr "In Mortar"
 msgid "Edit profile…"
 msgstr "Edit profile…"
 
-#: src/game/Home.tsx:193
+#: src/game/Home.tsx:189
 #: src/settings/GameSettingsPage.tsx:162
 msgid "{name} settings"
 msgstr "{name} settings"
@@ -6446,7 +6446,7 @@ msgstr "Could not save the open profile"
 msgid "When you press Play"
 msgstr "When you press Play"
 
-#: src/share/ImportPreview.tsx:353
+#: src/share/ImportPreview.tsx:354
 #: src/share/Included.tsx:96
 msgid "Problem choices"
 msgstr "Problem choices"
@@ -6583,7 +6583,7 @@ msgid "Open page"
 msgstr "Open page"
 
 #: src/game/FarmMenuItem.tsx:73
-#: src/share/ImportPreview.tsx:261
+#: src/share/ImportPreview.tsx:262
 msgid "{count} to download"
 msgstr "{count} to download"
 
@@ -6714,7 +6714,7 @@ msgstr "Save as template…"
 msgid "Modified outside Mortar"
 msgstr "Modified outside Mortar"
 
-#: src/browse/BrowseDetails.tsx:259
+#: src/browse/BrowseDetails.tsx:260
 #: src/mods/Sidebar.tsx:631
 msgid "Selected mod"
 msgstr "Selected mod"
@@ -6929,7 +6929,7 @@ msgstr "This log is {size}. Sharing copies it and opens {host}; paste it there t
 msgid "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
 msgstr "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
 
-#: src/browse/BrowseDetails.tsx:55
+#: src/browse/BrowseDetails.tsx:56
 #: src/mods/ModSections.tsx:61
 msgid "Versions"
 msgstr "Versions"
@@ -7234,7 +7234,7 @@ msgstr "Slowest mods"
 msgid "Could not load what can be cleaned up"
 msgstr "Could not load what can be cleaned up"
 
-#: src/share/ImportPreview.tsx:71
+#: src/share/ImportPreview.tsx:72
 msgid "Unavailable"
 msgstr "Unavailable"
 
@@ -7616,7 +7616,7 @@ msgstr "Backups to keep per save"
 msgid "Update ready: applies when you close Mortar."
 msgstr "Update ready: applies when you close Mortar."
 
-#: src/share/ImportPreview.tsx:341
+#: src/share/ImportPreview.tsx:342
 msgid "Sign in to import"
 msgstr "Sign in to import"
 
@@ -7932,7 +7932,7 @@ msgstr "More details"
 msgid "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 msgstr "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 
-#: src/game/Home.tsx:188
+#: src/game/Home.tsx:184
 msgid "Share…"
 msgstr "Share…"
 
@@ -8010,7 +8010,7 @@ msgstr "Mortar starts the unmodded game directly, outside Steam. The Steam overl
 msgid "Keep {targetName}'s versions"
 msgstr "Keep {targetName}'s versions"
 
-#: src/share/CollectionNotes.tsx:80
+#: src/share/CollectionNotes.tsx:81
 msgid "Your Premium account also applies the curator's installer choices and config files."
 msgstr "Your Premium account also applies the curator's installer choices and config files."
 
@@ -8156,7 +8156,7 @@ msgstr "Updated {mods} in {profileName}"
 msgid "Search every run"
 msgstr "Search every run"
 
-#: src/share/ImportPreview.tsx:359
+#: src/share/ImportPreview.tsx:360
 msgid "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
 msgstr "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
 
@@ -8380,7 +8380,7 @@ msgstr "Source health"
 msgid "{0}: desktop notification"
 msgstr "{0}: desktop notification"
 
-#: src/game/Home.tsx:144
+#: src/game/Home.tsx:140
 msgid "All saves"
 msgstr "All saves"
 
@@ -8478,7 +8478,7 @@ msgstr "No launchers found. Continue and choose each game's folder when you open
 msgid "Wine stopped on an error before {name} started: {0}"
 msgstr "Wine stopped on an error before {name} started: {0}"
 
-#: src/browse/BrowseDetails.tsx:108
+#: src/browse/BrowseDetails.tsx:109
 msgid "Reading the mod's page…"
 msgstr "Reading the mod's page…"
 
@@ -8628,11 +8628,11 @@ msgid "Store"
 msgstr "Store"
 
 #: src/browse/CardAction.tsx:48
-#: src/share/ImportPreview.tsx:68
+#: src/share/ImportPreview.tsx:69
 msgid "Download"
 msgstr "Download"
 
-#: src/share/CollectionNotes.tsx:61
+#: src/share/CollectionNotes.tsx:62
 msgid "These come from outside Nexus, so Mortar does not download them."
 msgstr "These come from outside Nexus, so Mortar does not download them."
 
@@ -8974,7 +8974,7 @@ msgstr "Could not pin {0}"
 msgid "That request was not valid."
 msgstr "That request was not valid."
 
-#: src/browse/BrowseDetails.tsx:93
+#: src/browse/BrowseDetails.tsx:94
 #: src/mods/NexusDetails.tsx:267
 #: src/profiles/EditProfileDialog.tsx:298
 msgid "Description"
@@ -8992,7 +8992,7 @@ msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the ne
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
-#: src/browse/BrowseDetails.tsx:92
+#: src/browse/BrowseDetails.tsx:93
 msgid "Categories"
 msgstr "Categories"
 
@@ -9024,7 +9024,7 @@ msgstr "Unpin"
 msgid "The download queue is empty."
 msgstr "The download queue is empty."
 
-#: src/share/ImportPreview.tsx:83
+#: src/share/ImportPreview.tsx:84
 msgid "unverified until downloaded"
 msgstr "unverified until downloaded"
 
@@ -9318,7 +9318,7 @@ msgstr "Choose an archive to see what is inside"
 msgid "Remove SMAPI from Steam's launch options"
 msgstr "Remove SMAPI from Steam's launch options"
 
-#: src/share/ImportPreview.tsx:70
+#: src/share/ImportPreview.tsx:71
 msgid "Check later"
 msgstr "Check later"
 
@@ -9385,7 +9385,7 @@ msgid "Source skipped"
 msgstr "Source skipped"
 
 #. placeholder {0}: preview.settings
-#: src/share/ImportPreview.tsx:344
+#: src/share/ImportPreview.tsx:345
 msgid "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 msgstr "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 
@@ -9866,7 +9866,7 @@ msgstr "You endorsed this mod."
 msgid "Open on Nexus"
 msgstr "Open on Nexus"
 
-#: src/mods/ModList.tsx:113
+#: src/mods/ModList.tsx:114
 msgid "overrides {count, plural, one {# file} other {# files}}"
 msgstr "overrides {count, plural, one {# file} other {# files}}"
 
@@ -10068,7 +10068,7 @@ msgstr "When {0}"
 msgid "{0} was not found in your launchers"
 msgstr "{0} was not found in your launchers"
 
-#: src/share/ImportPreview.tsx:167
+#: src/share/ImportPreview.tsx:168
 msgid "Free account: one click on Nexus per download"
 msgstr "Free account: one click on Nexus per download"
 
@@ -10775,7 +10775,7 @@ msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
 msgid "Combined"
 msgstr "Combined"
 
-#: src/share/ImportPreview.tsx:171
+#: src/share/ImportPreview.tsx:172
 msgid "Some files could not be checked against Nexus, so a few may differ from what was shared."
 msgstr "Some files could not be checked against Nexus, so a few may differ from what was shared."
 
@@ -10992,8 +10992,8 @@ msgstr "Deprecated"
 
 #. placeholder {0}: item.name
 #. placeholder {0}: m.name
-#: src/browse/ResultCard.tsx:102
-#: src/mods/ModCards.tsx:168
+#: src/browse/ResultCard.tsx:103
+#: src/mods/ModCards.tsx:169
 msgid "Details of {0}"
 msgstr "Details of {0}"
 
@@ -11457,7 +11457,7 @@ msgstr "Mining skill"
 msgid "First scene"
 msgstr "First scene"
 
-#: src/share/ImportPreview.tsx:69
+#: src/share/ImportPreview.tsx:70
 msgid "Dependency"
 msgstr "Dependency"
 
@@ -12353,7 +12353,7 @@ msgid " {name} wins; {losers} overridden."
 msgstr " {name} wins; {losers} overridden."
 
 #. placeholder {0}: summary.leftOut
-#: src/share/ImportPreview.tsx:429
+#: src/share/ImportPreview.tsx:430
 msgid "{0} left out"
 msgstr "{0} left out"
 
@@ -12506,7 +12506,7 @@ msgstr "Share selection"
 msgid "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
 msgstr "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
 
-#: src/game/Home.tsx:144
+#: src/game/Home.tsx:140
 msgid "All saves ({total})"
 msgstr "All saves ({total})"
 
@@ -12933,7 +12933,7 @@ msgstr "Could not update tags for the selected mods"
 msgid "Continue"
 msgstr "Continue"
 
-#: src/browse/BrowseDetails.tsx:96
+#: src/browse/BrowseDetails.tsx:97
 #: src/mods/ModDependencyTree.tsx:197
 #: src/mods/NexusDetails.tsx:244
 msgid "Dependencies"
@@ -13429,7 +13429,7 @@ msgstr "UI scale ({value}%)"
 msgid "{count, plural, one {# mod has no config yet; mods create it the first time the game runs.} other {# mods have no config yet; mods create it the first time the game runs.}}"
 msgstr "{count, plural, one {# mod has no config yet; mods create it the first time the game runs.} other {# mods have no config yet; mods create it the first time the game runs.}}"
 
-#: src/share/CollectionNotes.tsx:81
+#: src/share/CollectionNotes.tsx:82
 msgid "Installers ask as usual; Premium accounts also get the curator's choices and configs."
 msgstr "Installers ask as usual; Premium accounts also get the curator's choices and configs."
 
@@ -13756,7 +13756,7 @@ msgstr "Start measuring first."
 msgid "Could not change {0}"
 msgstr "Could not change {0}"
 
-#: src/share/ImportPreview.tsx:217
+#: src/share/ImportPreview.tsx:218
 msgid "Leave out"
 msgstr "Leave out"
 
