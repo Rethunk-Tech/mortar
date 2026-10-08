@@ -1,6 +1,7 @@
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
 import { ConfirmQuit, PendingQuit } from '../bindings/github.com/Rethunk-Tech/mortar/quitservice.ts'
+import { Replay } from '../bindings/github.com/Rethunk-Tech/mortar/uiintentservice.ts'
 import { useQueue } from './queue/store.ts'
 
 interface QuitState {
@@ -30,6 +31,8 @@ function initQuit() {
     .then((summary) => (summary ? handleQuit({ data: summary }) : undefined))
     .catch(() => undefined)
   Events.On('queue:open', () => useQueue.getState().setOpen(true))
+  // Every other page handler is registered by now, so events raised while the window was closed can land.
+  Replay().catch(() => undefined)
 }
 
 export { askQuit, initQuit, useQuitPrompt }

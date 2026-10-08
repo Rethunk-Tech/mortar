@@ -213,6 +213,8 @@ func run() error {
 		window   *application.WebviewWindow
 		// showWindow brings Mortar's window up, building a new one when closing to the tray removed it.
 		showWindow func()
+		// toPage shows the window and delivers an event its page must act on.
+		toPage func(name string, data any)
 		// windowClosed reports whether closing to the tray removed the window.
 		windowClosed func() bool
 		profiles     *profile.Store
@@ -234,9 +236,9 @@ func run() error {
 			}
 			// An nxm link leaves an open window where it is, minimised or behind the browser, so a burst of clicks
 			// keeps the browser in front; the window sends a desktop notification when a link needs a profile chosen.
-			// Only a window closed to the tray is brought back, since nothing else could show the link.
+			// Only a window closed or hidden to the tray is brought back, since nothing else could show the link.
 			nxmLink := nxmSvc.Receive(d.Args)
-			if shareSvc.Receive(sharesvc.InDir(d.Args, d.WorkingDir)) || plays.Receive(d.Args) || !nxmLink || windowClosed() {
+			if shareSvc.Receive(sharesvc.InDir(d.Args, d.WorkingDir)) || plays.Receive(d.Args) || !nxmLink || windowClosed() || !window.IsVisible() {
 				showWindow()
 			}
 		}
@@ -731,6 +733,7 @@ func run() error {
 		return err
 	}
 
+	intents := &UIIntentService{emit: func(name string, data any) { app.Event.Emit(name, data) }}
 	quitSvc := &QuitService{
 		app: app, queue: queueSvc, lan: lanSvc, launch: launches, exit: os.Exit, grace: quitGrace, busy: queueSvc.Installing,
 		show: func() { showWindow() }, closed: func() bool { return windowClosed() },
@@ -870,6 +873,7 @@ func run() error {
 		application.NewService(checkSvc),
 		application.NewService(&tidy.Service{Report: tidied}),
 		application.NewService(quitSvc),
+		application.NewService(intents),
 		application.NewService(browseSvc),
 		application.NewService(&netstate.Service{}),
 		application.NewService(packs),
@@ -920,7 +924,14 @@ func run() error {
 	ctl := &control.Services{
 		Version: version, Settings: store, SettingsSvc: svc, Games: gamesSvc, Store: profiles, Profiles: profileSvc,
 		Problems: problemsSvc, Launches: launches, Saves: savesSvc, Queue: queueSvc, Tools: toolsSvc, Bundles: bundlesSvc,
-		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Plays: plays, Loaders: loaders, Templates: templatesSvc, Archives: archivesSvc, Bisect: bisectSvc, StoreCheck: checkSvc, Lan: lanSvc, Updates: updates, Nxm: nxmSvc, Support: supportSvc, Packs: packs, Emit: emit,
+		Nexus: nexusSvc, Shares: shareSvc, Data: dataSvc, Plays: plays, Loaders: loaders, Templates: templatesSvc, Archives: archivesSvc, Bisect: bisectSvc, StoreCheck: checkSvc, Lan: lanSvc, Updates: updates, Nxm: nxmSvc, Support: supportSvc, Packs: packs,
+		Emit: func(name string, data any) {
+			if name == control.InstallAskEvent {
+				toPage(name, data)
+				return
+			}
+			emit(name, data)
+		},
 		Quit: quitSvc.ConfirmQuit, QuitBlocker: quitSvc.BusySummary,
 		Handoff: func(args []string) { handoffs <- application.SecondInstanceData{Args: args} },
 	}
@@ -953,16 +964,25 @@ func run() error {
 	packs.App = app
 	supportSvc.App = app
 	notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
-		showWindow()
 		gameID, profileID, tab := launchsvc.NoticeProfileFromResponse(result.Response.ID, result.Response.UserInfo)
 		if profileID != "" && gameID != "" {
-			app.Event.Emit(launchsvc.NoticeClickEvent, launchsvc.NoticeClick{Game: gameID, Profile: profileID, Tab: tab})
+			toPage(launchsvc.NoticeClickEvent, launchsvc.NoticeClick{Game: gameID, Profile: profileID, Tab: tab})
+			return
 		}
+		showWindow()
+	})
+	app.Event.On(lan.ArrivedEvent, func(e *application.CustomEvent) {
+		a, ok := e.Data.(lan.Arrival)
+		if !ok || (!windowClosed() && window.IsVisible()) {
+			return
+		}
+		desktopnotify.Send(a.Sender+" wants to share a profile", a.ProfileName, nil)
 	})
 
 	var windowMu sync.Mutex
 	windowGone := false
-	newWindow := func() *application.WebviewWindow {
+	// Only the first window honours start-minimised and play mode; a rebuilt one is always asked for.
+	newWindow := func(hidden bool) *application.WebviewWindow {
 		opts := application.WebviewWindowOptions{
 			Title:            "Mortar",
 			Width:            defaultWindowWidth,
@@ -974,7 +994,7 @@ func run() error {
 			BackgroundColour: application.NewRGBA(25, 25, 30, 255),
 			EnableFileDrop:   true,
 			URL:              "/",
-			Hidden:           store.Get().StartMinimised || plays.PlayMode(),
+			Hidden:           hidden,
 		}
 		if store.Get().RememberWindow {
 			if g, ok := loadWindowGeom(dataDir, screensOf(app)); ok {
@@ -992,7 +1012,8 @@ func run() error {
 				x, y := w.Position()
 				saveWindowGeom(dataDir, windowGeom{X: x, Y: y, W: w.Width(), H: w.Height()})
 			}
-			if !store.Get().KeepInTray {
+			// A play-mode window closed to the tray would leave the process, and the game Steam counts, running forever.
+			if !store.Get().KeepInTray || plays.PlayMode() {
 				if quitSvc.AllowWindowClose() {
 					return
 				}
@@ -1008,7 +1029,7 @@ func run() error {
 		})
 		return w
 	}
-	window = newWindow()
+	window = newWindow(store.Get().StartMinimised || plays.PlayMode())
 	plays.Window = func(m shortcut.WindowMode) {
 		switch m {
 		case shortcut.WindowPrompt:
@@ -1127,15 +1148,28 @@ func run() error {
 		return windowGone
 	}
 	showWindow = func() {
+		// Window calls can hop to the main thread, where the closing hook waits on windowMu: only the flag is held.
 		windowMu.Lock()
-		defer windowMu.Unlock()
-		if windowGone {
-			window = newWindow()
-			windowGone = false
+		rebuild := windowGone
+		windowGone = false
+		windowMu.Unlock()
+		if rebuild {
+			window = newWindow(false)
+		} else {
+			window.Restore()
+		}
+		window.Show().Focus()
+	}
+	// toPage hands an event to the page, showing the window first; one closed to the tray has no page to hear it, so
+	// the event waits for the rebuilt page to replay it.
+	toPage = func(name string, data any) {
+		if windowClosed() {
+			intents.Queue(name, data)
+			showWindow()
 			return
 		}
-		window.Restore()
-		window.Show().Focus()
+		showWindow()
+		app.Event.Emit(name, data)
 	}
 	startModUpdateBackground(updateCtx, svc, gamesSvc, profiles, problemsSvc, app)
 
@@ -1169,8 +1203,7 @@ func run() error {
 		}
 		if left > 0 {
 			trayMenu.Add(fmt.Sprintf("%d downloads…", left)).OnClick(func(*application.Context) {
-				showWindow()
-				app.Event.Emit("queue:open", nil)
+				toPage("queue:open", nil)
 			})
 		}
 		for _, id := range implemented {
@@ -1182,7 +1215,8 @@ func run() error {
 				} else {
 					profileID := row.ProfileID
 					item.OnClick(func(*application.Context) {
-						app.Event.Emit(shortcut.RequestedEvent, shortcut.Request{Game: id, Profile: profileID})
+						plays.Receive([]string{shortcut.Arg(id, profileID)})
+						showWindow()
 					})
 				}
 			}
