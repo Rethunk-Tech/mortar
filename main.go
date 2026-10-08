@@ -507,40 +507,29 @@ func run() error {
 			}
 			return res, err
 		},
-		Stored: func(game, key string) (profile.Source, bool) {
-			if _, err := items.Path(game, key); err != nil {
-				return profile.Source{}, false
-			}
-			return profiles.SourceOf(game, key), true
+		Stored: func(game, key string) bool {
+			_, err := items.Path(game, key)
+			return err == nil
 		},
+		SourcesOf:      profiles.SourcesOf,
 		StoredOverlay:  profiles.StoredOverlay,
 		AllowUnscanned: profiles.AllowUnscanned,
 		Stage:          profiles.StageGitHub,
 		InstallStaged:  profiles.InstallStaged,
 		InstallRemap:   profiles.InstallRemap,
 		Newest: func(game, profileID string, modID, current int) int {
-			all, err := profiles.List(game)
+			p, err := profiles.Get(game, profileID)
 			if err != nil {
 				return 0
 			}
-			for _, p := range all {
-				if p.Error == "" && p.ID == profileID {
-					return profile.NewestFromPage(p, modID, current)
-				}
-			}
-			return 0
+			return profile.NewestFromPage(p, modID, current)
 		},
 		SamePage: func(game, profileID string, in profile.IncomingFile) (profile.MergeAsk, int, bool) {
-			all, err := profiles.List(game)
+			p, err := profiles.Get(game, profileID)
 			if err != nil {
 				return profile.MergeAsk{}, 0, false
 			}
-			for _, p := range all {
-				if p.Error == "" && p.ID == profileID {
-					return profile.SamePageAsk(p, in)
-				}
-			}
-			return profile.MergeAsk{}, 0, false
+			return profile.SamePageAsk(p, in)
 		},
 		InstallExtra: func(ctx context.Context, game, profileID, entryKey, path string, src profile.Source) (profile.InstallResult, error) {
 			res, err := profiles.InstallNexusExtra(ctx, game, profileID, entryKey, path, src)
@@ -561,15 +550,13 @@ func run() error {
 			return thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}.Closure(ctx, key, roots, version)
 		},
 		Held: func(game, profileID, pkg string) string {
-			all, _ := profiles.List(game)
-			for _, p := range all {
-				if p.ID != profileID {
-					continue
-				}
-				for _, e := range p.Entries {
-					if e.Package && e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, pkg) {
-						return e.Source.Version
-					}
+			p, err := profiles.Get(game, profileID)
+			if err != nil {
+				return ""
+			}
+			for _, e := range p.Entries {
+				if e.Package && e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, pkg) {
+					return e.Source.Version
 				}
 			}
 			return ""

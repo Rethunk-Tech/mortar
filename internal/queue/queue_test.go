@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"fmt"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -150,11 +151,16 @@ func newFixture(t *testing.T) *fixture {
 			}
 			return f.installExtra(game, profileID, entryKey, path, src)
 		},
-		Stored: func(_, key string) (profile.Source, bool) {
+		Stored: func(_, key string) bool {
 			f.mu.Lock()
 			defer f.mu.Unlock()
-			src, ok := f.stored[key]
-			return src, ok
+			_, ok := f.stored[key]
+			return ok
+		},
+		SourcesOf: func(string) map[string]profile.Source {
+			f.mu.Lock()
+			defer f.mu.Unlock()
+			return maps.Clone(f.stored)
 		},
 		InstallStaged: func(_, _, key string, src profile.Source) (profile.InstallResult, error) {
 			f.mu.Lock()

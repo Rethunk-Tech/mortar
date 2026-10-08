@@ -121,9 +121,9 @@ func TestStoredOptionalFileInstallsOverItsMainFile(t *testing.T) {
 	s, err := New(Deps{
 		Client:  func() (*nexus.Client, error) { return client, nil },
 		Premium: func() bool { return true },
-		Stored: func(game, key string) (profile.Source, bool) {
+		Stored: func(game, key string) bool {
 			_, err := items.Path(game, key)
-			return profile.Source{}, err == nil
+			return err == nil
 		},
 		StoredOverlay: profiles.StoredOverlay,
 		InstallStaged: profiles.InstallStaged,

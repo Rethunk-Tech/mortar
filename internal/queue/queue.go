@@ -276,9 +276,11 @@ type Deps struct {
 	Premium func() bool
 	Install func(ctx context.Context, game, profileID, path string, source profile.Source) (profile.InstallResult, error)
 	// Stored reports whether the game's store already holds key, as a Nexus file installed into another profile
-	// does, with the source a profile recorded for it (zero when none does). Such a file installs from the store
-	// without downloading or a click, and the recorded source spares the Nexus lookups.
-	Stored func(game, key string) (profile.Source, bool)
+	// does. Such a file installs from the store without downloading or a click.
+	Stored func(game, key string) bool
+	// SourcesOf maps the store keys the game's profiles hold to the source recorded for each; it spares the Nexus
+	// lookups of a file the store already holds.
+	SourcesOf func(game string) map[string]profile.Source
 	// Stage unpacks a downloaded GitHub asset into the store and returns the mod ids of its mods; InstallStaged
 	// then adds it to the profile. Between the two, Verify checks the source.
 	Stage         func(ctx context.Context, game string, source profile.Source, path string) (key string, uniqueIDs []mod.ID, err error)
@@ -507,10 +509,8 @@ func (s *Service) describe(ctx context.Context, id, gameID string, modID int) {
 
 // stored reports whether the item's Nexus file is already in the store.
 func (s *Service) stored(it *Item) bool {
-	return it.Repo == "" && it.FileID != 0 && !it.fromStoreRefused && s.d.Stored != nil && storedOK(s.d.Stored(it.Game, store.NexusKey(it.ModID, it.FileID)))
+	return it.Repo == "" && it.FileID != 0 && !it.fromStoreRefused && s.d.Stored != nil && s.d.Stored(it.Game, store.NexusKey(it.ModID, it.FileID))
 }
-
-func storedOK(_ profile.Source, ok bool) bool { return ok }
 
 func (s *Service) poke() {
 	select {
@@ -663,11 +663,20 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 	// A file already in the store takes its name, version and picture from the profile that installed it, so it
 	// needs no Nexus lookup; a Latest request still resolves, since it looks for a newer file.
 	known := make([]profile.Source, len(reqs))
-	if s.d.Stored != nil {
+	if s.d.Stored != nil && s.d.SourcesOf != nil {
+		sources := map[string]map[string]profile.Source{}
 		for i, r := range reqs {
-			if r.Repo == "" && r.FileID != 0 && !r.Latest {
-				known[i], _ = s.d.Stored(r.Game, store.NexusKey(r.ModID, r.FileID))
+			if r.Repo != "" || r.FileID == 0 || r.Latest {
+				continue
 			}
+			key := store.NexusKey(r.ModID, r.FileID)
+			if !s.d.Stored(r.Game, key) {
+				continue
+			}
+			if _, ok := sources[r.Game]; !ok {
+				sources[r.Game] = s.d.SourcesOf(r.Game)
+			}
+			known[i] = sources[r.Game][key]
 		}
 	}
 	out := make([]Item, 0, len(reqs))

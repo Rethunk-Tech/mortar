@@ -488,6 +488,9 @@ func (s *Store) ListDamaged(game string) ([]Profile, error) {
 	return out, nil
 }
 
+// Get returns one profile, read without listing the game's others.
+func (s *Store) Get(game, id string) (Profile, error) { return s.read(game, id) }
+
 func (s *Store) read(game, id string) (Profile, error) {
 	p, _, err := s.readDir(game, id)
 	return p, err
