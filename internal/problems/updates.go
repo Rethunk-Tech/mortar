@@ -348,12 +348,13 @@ func Relate(scheme string, mods []framework.Mod, gameID, key string, uniqueID mo
 	}
 	self := mods[i]
 	r = Relations{PageURL: modPage(gameID, self), Needs: []Need{}, NeededBy: []Dependent{}, OptionalFor: []Dependent{}}
+	byID := indexByID(mods)
 	for _, dep := range self.Dependencies {
 		n := Need{ID: dep.ModID(), Name: dep.ModID().Local(), MinimumVersion: dep.MinimumVersion, Required: dep.Required, State: "ok"}
 		if j := slices.IndexFunc(mods, func(x framework.Mod) bool { return mod.Equal(x.ModID(), dep.ModID()) }); j >= 0 {
 			n.Name = mods[j].Name
 		}
-		if reason, have := depState(scheme, mods, dep); reason != "" {
+		if reason, have := depState(scheme, byID, dep); reason != "" {
 			n.State, n.InstalledVersion = reason, have
 		}
 		r.Needs = append(r.Needs, n)

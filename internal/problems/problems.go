@@ -236,7 +236,7 @@ func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod, r
 		Timings:        timings,
 	}
 	reqStart := time.Now()
-	missing := missingDeps(env.VersionScheme, enabled, mods)
+	missing := missingDeps(env.VersionScheme, enabled, indexByID(mods))
 	listed, listedUnknown := listedRequirements(ctx, m, reqs, env.Nexus.Domain, enabled, mods)
 	missing = append(missing, listed...)
 	r.Timings = append(r.Timings, CheckTiming{Name: "requirements", Ms: time.Since(reqStart).Milliseconds(), Count: len(missing)})
@@ -347,7 +347,17 @@ func newerNexusFile(a, b NexusFile) bool {
 	return aID > bID
 }
 
-func missingDeps(scheme string, enabled, all []framework.Mod) []Missing {
+// indexByID groups mods by folded ID, keeping list order within a group.
+func indexByID(mods []framework.Mod) map[string][]framework.Mod {
+	idx := make(map[string][]framework.Mod, len(mods))
+	for _, x := range mods {
+		k := x.ModID().Fold()
+		idx[k] = append(idx[k], x)
+	}
+	return idx
+}
+
+func missingDeps(scheme string, enabled []framework.Mod, byID map[string][]framework.Mod) []Missing {
 	out := []Missing{}
 	for _, d := range enabled {
 		for _, dep := range d.Dependencies {
@@ -355,7 +365,7 @@ func missingDeps(scheme string, enabled, all []framework.Mod) []Missing {
 				continue
 			}
 			miss := Missing{DependentID: d.ModID(), DependentName: d.Name, ID: dep.ModID(), MinimumVersion: dep.MinimumVersion}
-			reason, installedVersion := depState(scheme, all, dep)
+			reason, installedVersion := depState(scheme, byID, dep)
 			if reason == "" {
 				continue
 			}
@@ -642,13 +652,8 @@ func isWordByte(b byte) bool {
 
 // depState says why the mods in all do not satisfy dep: "absent", "disabled" or "outdated", with the highest
 // installed version for the last. An empty reason means the dependency is met.
-func depState(scheme string, all []framework.Mod, dep manifest.Dependency) (reason, installedVersion string) {
-	var installed []framework.Mod
-	for _, x := range all {
-		if mod.Equal(x.ModID(), dep.ModID()) {
-			installed = append(installed, x)
-		}
-	}
+func depState(scheme string, byID map[string][]framework.Mod, dep manifest.Dependency) (reason, installedVersion string) {
+	installed := byID[dep.ModID().Fold()]
 	switch {
 	case len(installed) == 0:
 		return "absent", ""
@@ -674,19 +679,14 @@ func highest(mods []framework.Mod) string {
 
 func duplicates(scheme string, enabled []framework.Mod) []Duplicate {
 	out := []Duplicate{}
-	seen := map[string]bool{}
+	byID := indexByID(enabled)
 	for _, first := range enabled {
 		id := first.ModID().Fold()
-		if seen[id] {
+		group, ok := byID[id]
+		if !ok {
 			continue
 		}
-		seen[id] = true
-		var group []framework.Mod
-		for _, x := range enabled {
-			if mod.Equal(x.ModID(), first.ModID()) {
-				group = append(group, x)
-			}
-		}
+		delete(byID, id)
 		if len(group) < 2 {
 			continue
 		}
