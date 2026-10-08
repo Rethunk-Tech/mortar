@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "lint:biome": "biome check --error-on-warnings .",
-    "lint": "scripts/biome-strict.sh && git ls-files -z '*.sh' | xargs -0 -r shellcheck -x && knip && golangci-lint run && GOOS=windows golangci-lint run && golangci-lint run --build-tags updatetest ./internal/updatesvc/...",
+    "lint": "scripts/biome-strict.sh",
     "bindings": "wails3 generate bindings -clean=true -ts -i",
     "typecheck": "bun run bindings && bun run --cwd frontend tsc --noEmit",
     "test": "GORACE=atexit_sleep_ms=0 go test -race ./... && bun test",

@@ -60,7 +60,7 @@ linters:
   # named by a variable is the product (the updater e2e test runs go and wails3 the same way, and the performance budget restarts its own test binary); gosec has no per-call option for that.
   exclusions:
     rules:
-      - path: ^(datadir_recover_other|internal/(avscan/command|launch/launch|launch/term_unix|loader/smapi/install|datadir/open|datadir/copy_windows_test|backdrop/desktop|nxm/handler_linux|nxm/handler_windows|steam/steam|sandbox/sandbox|nativehost/spawn|datasvc/restart|updatesvc/e2e_test|problems/perf_test))\.go$
+      - path: ^(datadir_recover_other|internal/(avscan/command|launch/launch|launch/term_unix|loader/smapi/install|datadir/open|datadir/copy_windows_test|backdrop/desktop|nxm/handler_linux|nxm/handler_windows|steam/steam|sandbox/sandbox|nativehost/spawn_other|nativehost/spawn_windows|datasvc/restart|updatesvc/e2e_test|problems/perf_test))\.go$
         linters: [gosec]
         text: G204
       # AMSI is a COM-style DLL whose calls take pointers to Go values, and Windows has no safer way to pass them.

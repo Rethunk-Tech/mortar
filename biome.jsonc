@@ -16,9 +16,7 @@
       "!**/generated",
       "!**/vendor",
       "!.claude",
-      "!**/bindings",
-      "!**/locales/*/messages.ts",
-      "!**/internal/overlay/overlay.html"
+      "!**/locales/*/messages.ts"
     ]
   },
   "formatter": {
@@ -89,7 +87,9 @@
             ]
           }
         },
-        "noTernary": "off"
+        "noTernary": "off",
+        "noContinue": "off",
+        "useExportsLast": "off"
       },
       "complexity": {
         "noExcessiveLinesPerFunction": {

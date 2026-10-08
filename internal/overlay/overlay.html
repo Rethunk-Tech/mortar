@@ -14,7 +14,7 @@
       body {
         margin: 0;
         padding: 1rem;
-        background: #17202b;
+        background: rgb(23 32 43);
       }
       body.field {
         padding: 0;
@@ -69,6 +69,7 @@
     <div id="game" hidden></div>
     <div id="field" class="field" hidden></div>
     <script>
+      "use strict";
       const params = new URLSearchParams(location.search);
       const token = params.get("token") || "";
       const port = params.get("port") || "8123";
@@ -79,7 +80,6 @@
       const state = document.querySelector("#state");
       const fieldEl = document.querySelector("#field");
       const gameEl = document.querySelector("#game");
-      let lastLogKey = "";
 
       const labels = {
         location: "Location",
@@ -101,12 +101,6 @@
         "skill.luck": "Luck",
       };
 
-      function logOnce(key, message) {
-        if (key === lastLogKey) return;
-        lastLogKey = key;
-        console.log(message);
-      }
-
       function hide() {
         status.hidden = true;
         status.textContent = "";
@@ -117,12 +111,19 @@
         fieldEl.textContent = "";
       }
 
+      // The game's clock is an integer HHMM (1830 is 6:30 PM).
+      const CLOCK_HOUR = 100;
+      const NOON = 12;
+      const POLL_MS = 1000;
+
       function formatTime(timeOfDay) {
-        let hours = Math.floor(timeOfDay / 100);
-        const minutes = String(timeOfDay % 100).padStart(2, "0");
-        const period = hours >= 12 ? "PM" : "AM";
-        hours = hours % 12;
-        if (hours === 0) hours = 12;
+        let hours = Math.floor(timeOfDay / CLOCK_HOUR);
+        const minutes = String(timeOfDay % CLOCK_HOUR).padStart(2, "0");
+        const period = hours >= NOON ? "PM" : "AM";
+        hours %= NOON;
+        if (hours === 0) {
+          hours = NOON;
+        }
         return `${hours}:${minutes} ${period}`;
       }
 
@@ -158,7 +159,7 @@
             if (name.startsWith("skill.")) {
               const skill = name.slice("skill.".length);
               const level = data.skills?.[skill];
-              return level == null ? "" : String(level);
+              return has(level) ? String(level) : "";
             }
             return "";
         }
@@ -215,7 +216,6 @@
           const row = rows.find((r) => r[0] === field);
           if (!row || row[2] === "") {
             hide();
-            logOnce("empty", `overlay field ${field} is empty`);
             return;
           }
           fieldEl.id = field;
@@ -226,7 +226,9 @@
         } else {
           gameEl.textContent = "";
           for (const [name, label, value] of rows) {
-            if (value === "") continue;
+            if (value === "") {
+              continue;
+            }
             const row = document.createElement("div");
             row.className = "row";
             const l = document.createElement("span");
@@ -241,14 +243,12 @@
           fieldEl.hidden = true;
           gameEl.hidden = false;
         }
-        logOnce("ok", "overlay ready");
       }
 
       function renderField(data) {
         const raw = valueFor(field, data);
         if (raw === "") {
           hide();
-          logOnce("empty", `overlay field ${field} is empty`);
           return;
         }
         const hook = field.replaceAll(".", "-");
@@ -260,7 +260,6 @@
         status.textContent = "";
         state.hidden = true;
         fieldEl.hidden = false;
-        logOnce("ok", "overlay ready");
       }
 
       function renderAll(data) {
@@ -295,32 +294,37 @@
         status.textContent = "";
         fieldEl.hidden = true;
         state.hidden = false;
-        logOnce("ok", "overlay ready");
       }
 
       async function poll() {
         try {
           const response = await fetch(endpoint, { cache: "no-store" });
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
           const data = await response.json();
           if (!data.inGame) {
             hide();
-            logOnce("idle", "overlay: not in game");
             return;
           }
           const layout = layouts[data.game];
-          if (layout) renderGame(layout(data));
-          else if (field) renderField(data);
-          else renderAll(data);
-        } catch (error) {
+          if (layout) {
+            renderGame(layout(data));
+          } else if (field) {
+            renderField(data);
+          } else {
+            renderAll(data);
+          }
+        } catch {
           hide();
-          logOnce("error", `overlay unavailable: ${error.message}`);
         }
       }
 
-      if (field) document.body.classList.add("field");
+      if (field) {
+        document.body.classList.add("field");
+      }
       poll();
-      setInterval(poll, 1000);
+      setInterval(poll, POLL_MS);
     </script>
   </body>
 </html>
