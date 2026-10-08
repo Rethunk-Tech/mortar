@@ -43,7 +43,10 @@ tasks:
       - '{{if eq .OBFUSCATED "true"}}garble {{.GARBLE_ARGS}} build{{else}}go build{{if .PACKAGED}} -buildmode=pie{{end}}{{end}} {{.BUILD_FLAGS}} -o {{.OUTPUT}}'
       - scripts/check-embedded-key.sh {{.OUTPUT}}
     vars:
-      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s{{if .CURSEFORGE_API_KEY}} -X github.com/Rethunk-Tech/mortar/internal/source/curseforge.apiKey=$CURSEFORGE_API_KEY{{end}}{{if .PACKAGED}} -X main.packaged={{.PACKAGED}} -X github.com/Rethunk-Tech/mortar/internal/nxm.packaged={{.PACKAGED}} -extldflags ''-Wl,-z,relro,-z,now''{{end}}"{{end}}'
+      # -buildvcs=false leaves the binary without its commit, so the build stamps it in for mortar version and About.
+      COMMIT:
+        sh: git rev-parse --short=8 HEAD 2>/dev/null || true
+      BUILD_FLAGS: '{{if eq .DEV "true"}}{{if or .EXTRA_TAGS (eq .OBFUSCATED "true")}}-tags {{if eq .OBFUSCATED "true"}}wails_obfuscated{{if .EXTRA_TAGS}},{{end}}{{end}}{{.EXTRA_TAGS}} {{end}}-buildvcs=false -gcflags=all="-l"{{else}}-tags production{{if eq .OBFUSCATED "true"}},wails_obfuscated{{end}}{{if .EXTRA_TAGS}},{{.EXTRA_TAGS}}{{end}} -trimpath -buildvcs=false -ldflags="-w -s{{if .COMMIT}} -X github.com/Rethunk-Tech/mortar/internal/appversion.stamped={{.COMMIT}}{{end}}{{if .CURSEFORGE_API_KEY}} -X github.com/Rethunk-Tech/mortar/internal/source/curseforge.apiKey=$CURSEFORGE_API_KEY{{end}}{{if .PACKAGED}} -X main.packaged={{.PACKAGED}} -X github.com/Rethunk-Tech/mortar/internal/nxm.packaged={{.PACKAGED}} -extldflags ''-Wl,-z,relro,-z,now''{{end}}"{{end}}'
       DEFAULT_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}'
       OUTPUT: '{{ .OUTPUT | default .DEFAULT_OUTPUT }}'
       PACKAGED: '{{.PACKAGED}}'

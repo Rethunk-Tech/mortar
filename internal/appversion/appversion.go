@@ -48,9 +48,15 @@ var Build = sync.OnceValue(func() string {
 	return rev
 })
 
+// stamped is set with -ldflags -X by the release build, which turns off Go's own VCS stamp (-buildvcs=false).
+var stamped string
+
 // Commit is the short commit this binary was built from, with "-modified" when the tree had uncommitted changes, so
 // two builds of one version can be told apart; empty when the build carries no VCS stamp.
 var Commit = sync.OnceValue(func() string {
+	if stamped != "" {
+		return stamped
+	}
 	rev, modified := "", false
 	if info, ok := debug.ReadBuildInfo(); ok {
 		for _, s := range info.Settings {
