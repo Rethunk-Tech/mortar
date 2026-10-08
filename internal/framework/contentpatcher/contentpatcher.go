@@ -56,6 +56,7 @@ type packHit struct {
 	loads        []cpPatch
 	edits        []cpPatch // the pack's active edits of this target
 	eligible     []cpPatch // edits whose HasMod conditions hold, including config-off variants
+	configOff    []int     // positions in eligible whose config conditions fail; only used while the scan collects
 	loadClashes  map[int]bool
 	dependencies map[string]bool
 	loadAfter    map[string]bool
@@ -2130,7 +2131,11 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 		if len(pack.patches) > 0 {
 			sig, stable = packSig(im, pack, seen)
 		}
-		own := authoredPack{key: im.Key, id: im.ModID().Fold(), name: im.Name, author: normalAuthor(im.Author), root: im.Folder, knows: knows}
+		id := im.ModID().Fold()
+		own := authoredPack{key: im.Key, id: id, name: im.Name, author: normalAuthor(im.Author), root: im.Folder, knows: knows}
+		if own.author != "" {
+			own.patches = make([]cpPatch, 0, len(pack.patches))
+		}
 		if stable {
 			own.sig = sig
 		}
@@ -2140,7 +2145,7 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 			}
 			p = withTokenFarmTypes(p, pack.tokens, seen, pack.schema, config)
 			hits := at[p.kind][p.target]
-			k := hitAt{p.kind, p.target, im.ModID().Fold()}
+			k := hitAt{p.kind, p.target, id}
 			i, found := index[k]
 			if !found {
 				hits = append(hits, packHit{
@@ -2163,17 +2168,37 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 				hits[i].eligible = append(hits[i].eligible, p)
 			}
 			if !configHolds(p.when.config, pack.schema, config) {
+				if p.kind == "edit" {
+					hits[i].configOff = append(hits[i].configOff, len(hits[i].eligible)-1)
+				}
 				continue
 			}
-			if p.kind == "edit" {
-				hits[i].edits = append(hits[i].edits, p)
-			} else {
+			if p.kind != "edit" {
 				hits[i].loads = append(hits[i].loads, p)
 			}
-			own.patches = append(own.patches, p)
+			if own.author != "" {
+				own.patches = append(own.patches, p)
+			}
 		}
 		if own.author != "" {
 			authored = append(authored, own)
+		}
+	}
+	// The active edits are the eligible ones minus the config-off positions; most hits have none, and then share the slice.
+	for _, hits := range at["edit"] {
+		for i := range hits {
+			h := &hits[i]
+			if len(h.configOff) == 0 {
+				h.edits = h.eligible
+				continue
+			}
+			h.edits = make([]cpPatch, 0, len(h.eligible)-len(h.configOff))
+			for j, e := range h.eligible {
+				if !slices.Contains(h.configOff, j) {
+					h.edits = append(h.edits, e)
+				}
+			}
+			h.configOff = nil
 		}
 	}
 	shadowed := shadowedPacks(mods, at)
