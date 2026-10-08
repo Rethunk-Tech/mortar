@@ -47,8 +47,10 @@ func Terminate(pid int, grace time.Duration) error {
 		return err
 	}
 	defer func() { _ = windows.CloseHandle(h) }()
-	if err := windows.TerminateProcess(h, 1); err != nil {
-		return err
+	if !terminateTracked(pid) {
+		if err := windows.TerminateProcess(h, 1); err != nil {
+			return err
+		}
 	}
 	ev, err := windows.WaitForSingleObject(h, waitMillis(grace))
 	if err != nil {

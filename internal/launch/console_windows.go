@@ -43,7 +43,7 @@ func startOwnConsole(env []string, dir, name string, args []string) (<-chan erro
 			return nil, err
 		}
 	}
-	flags := uint32(windows.CREATE_NEW_CONSOLE)
+	flags := uint32(windows.CREATE_NEW_CONSOLE | windows.CREATE_SUSPENDED)
 	var block *uint16
 	if len(env) > 0 {
 		flags |= windows.CREATE_UNICODE_ENVIRONMENT
@@ -55,10 +55,20 @@ func startOwnConsole(env []string, dir, name string, args []string) (<-chan erro
 	if err := windows.CreateProcess(app, cmdLine, nil, nil, false, flags, block, cwd, &si, &pi); err != nil {
 		return nil, &os.PathError{Op: "start", Path: name, Err: err}
 	}
+	pid := int(pi.ProcessId)
+	trackHandle(pid, pi.Process)
+	_, resumeErr := windows.ResumeThread(pi.Thread)
 	_ = windows.CloseHandle(pi.Thread)
+	if resumeErr != nil {
+		killTree(pid)
+		untrackTree(pid)
+		_ = windows.CloseHandle(pi.Process)
+		return nil, &os.PathError{Op: "start", Path: name, Err: resumeErr}
+	}
 	done := make(chan error, 1)
 	go func() {
 		defer func() { _ = windows.CloseHandle(pi.Process) }()
+		defer untrackTree(pid)
 		if _, err := windows.WaitForSingleObject(pi.Process, windows.INFINITE); err != nil {
 			done <- err
 			return

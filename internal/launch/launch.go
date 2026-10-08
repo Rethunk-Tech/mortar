@@ -135,6 +135,7 @@ func startCmd(ctx context.Context, env []string, dir, name string, args []string
 		cmd.Stdin = stdin
 		out = newCapture(cmd)
 	}
+	holdStart(cmd)
 	err := cmd.Start()
 	if stdin != nil {
 		_ = stdin.Close()
@@ -148,6 +149,16 @@ func startCmd(ctx context.Context, env []string, dir, name string, args []string
 	}
 	pid := cmd.Process.Pid
 	trackTree(pid)
+	if err := releaseStart(pid); err != nil {
+		killTree(pid)
+		_ = cmd.Wait()
+		untrackTree(pid)
+		if hold != nil {
+			_ = hold.Close()
+		}
+		out.release()
+		return nil, err
+	}
 	done := make(chan error, 1)
 	go func() {
 		err := cmd.Wait()
