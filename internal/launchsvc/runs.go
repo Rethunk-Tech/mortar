@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -210,11 +211,59 @@ type RunIssues struct {
 //
 //wails:ignore
 func (s *Service) LastRunID(gameID, profileID string) (string, error) {
-	runs, err := s.Runs(gameID, profileID)
-	if err != nil || len(runs) == 0 {
+	if _, err := game.Require(gameID); err != nil {
 		return "", err
 	}
-	return runs[0].ID, nil
+	modsDir, err := s.profiles.ModsDir(gameID, profileID)
+	if err != nil {
+		return "", err
+	}
+	path := filepath.Join(runsDir(modsDir), "index.json")
+	var stamp lastRunStamp
+	fi, statErr := os.Stat(path)
+	if statErr == nil {
+		stamp = lastRunStamp{size: fi.Size(), mtime: fi.ModTime().UnixNano()}
+		lastRuns.mu.Lock()
+		hit, ok := lastRuns.byPath[path]
+		lastRuns.mu.Unlock()
+		if ok && hit.lastRunStamp == stamp {
+			return hit.id, nil
+		}
+	}
+	idx, err := readIndex(runsDir(modsDir))
+	if err != nil {
+		return "", err
+	}
+	id := ""
+	if len(idx.Runs) > 0 {
+		id = idx.Runs[0].ID
+	}
+	if statErr == nil {
+		lastRuns.mu.Lock()
+		if lastRuns.byPath == nil {
+			lastRuns.byPath = map[string]lastRunEntry{}
+		}
+		lastRuns.byPath[path] = lastRunEntry{stamp, id}
+		lastRuns.mu.Unlock()
+	}
+	return id, nil
+}
+
+// lastRunStamp is the run index's size and mtime; Mortar rewrites the file atomically, so a new write changes both.
+type lastRunStamp struct {
+	size  int64
+	mtime int64
+}
+
+// lastRuns holds the newest run id per run index path: one entry per profile.
+var lastRuns struct {
+	mu     sync.Mutex
+	byPath map[string]lastRunEntry
+}
+
+type lastRunEntry struct {
+	lastRunStamp
+	id string
 }
 
 // LastRunSummary returns the newest recorded run's id and what its SMAPI log reports.

@@ -376,3 +376,30 @@ func TestRunEndNoticeOnlyForACrash(t *testing.T) {
 		t.Fatalf("a crash the exit status shows must notify: %#v", notices)
 	}
 }
+
+func TestLastRunIDFollowsTheIndex(t *testing.T) {
+	svc, p, _, _ := runEnv(t)
+	mods, err := svc.profiles.ModsDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if id, err := svc.LastRunID("stardew", p.ID); err != nil || id != "" {
+		t.Fatalf("no index = %q, %v", id, err)
+	}
+	dir := runsDir(mods)
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	for _, ids := range [][]string{{"a"}, {"bb", "a"}, {"a"}} {
+		index := runIndex{Runs: []Run{}}
+		for _, id := range ids {
+			index.Runs = append(index.Runs, Run{ID: id})
+		}
+		if err := os.WriteFile(filepath.Join(dir, "index.json"), mustJSON(t, index), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if id, err := svc.LastRunID("stardew", p.ID); err != nil || id != ids[0] {
+			t.Fatalf("index %v = %q, %v", ids, id, err)
+		}
+	}
+}
