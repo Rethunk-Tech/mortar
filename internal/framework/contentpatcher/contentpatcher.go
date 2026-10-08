@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
 	"maps"
 	"os"
 	"path/filepath"
@@ -2645,7 +2644,6 @@ func conflictOf(kind, target string, hits []packHit) framework.AssetConflict {
 	}
 	if kind == "load" && exclusive >= 2 {
 		c.WinnerKind = framework.WinnerNeither
-		log.Printf("Content Patcher error: exclusive loads for %s leave the asset unchanged", target)
 		return c
 	}
 	if best >= 0 && len(tied) == 1 {
