@@ -73,6 +73,12 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
         msg`Accept profiles sent from computers you paired, and copy their mod files`,
       ),
     },
+    lanAllowAnyAddress: {
+      label: i18n._(msg`Accept connections from any network address`),
+      description: i18n._(
+        msg`Off, only computers on your local network can connect. Turn on to allow others, such as over a VPN.`,
+      ),
+    },
     defaultModsView: {
       label: i18n._(msg`Default mods view`),
       description: i18n._(msg`Grid or list for new sessions`),

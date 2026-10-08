@@ -148,7 +148,7 @@ func (s *Services) lanMethod(ctx context.Context, method string, p Params) (any,
 	case "lan.inbox":
 		return s.Lan.Pending(), nil
 	case "lan.paircode":
-		return s.Lan.PairCode()
+		return s.Lan.PairCode(ctx)
 	case "lan.pair":
 		return nil, s.Lan.Pair(ctx, p.Name, p.Value)
 	case "lan.paired":

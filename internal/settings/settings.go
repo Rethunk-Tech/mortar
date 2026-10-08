@@ -192,7 +192,11 @@ type Settings struct {
 	AutoTrackNexus           bool   `json:"autoTrackNexus"`
 	LanName                  string `json:"lanName"`
 	LanAutoAcceptPaired      bool   `json:"lanAutoAcceptPaired"`
-	DownloadFolder           string `json:"downloadFolder"`
+	// LanAllowAnyAddress lets peers outside the local network connect; off accepts private, link-local and loopback only.
+	LanAllowAnyAddress bool `json:"lanAllowAnyAddress"`
+	// LanStarted is whether LAN sharing has run on this machine, so later launches listen at once; a fresh install never listens before first use.
+	LanStarted     bool   `json:"lanStarted"`
+	DownloadFolder string `json:"downloadFolder"`
 	// WatchFolders are extra folders, joined by the OS path-list separator, that new archives are offered from.
 	WatchFolders string `json:"watchFolders,omitempty"`
 	// SyncFolder is the folder profile state is shared through between this machine and others; empty is off.

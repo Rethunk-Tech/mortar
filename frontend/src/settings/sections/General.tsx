@@ -166,6 +166,7 @@ function Sharing() {
         keys={[
           'lanName',
           'lanAutoAcceptPaired',
+          'lanAllowAnyAddress',
           'shareIncludeDisabledMods',
           'shareIncludeFomodChoices',
           'shareIncludeNotes',

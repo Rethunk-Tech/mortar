@@ -43,7 +43,7 @@ func TestExportOmitsSecretsAndMachineFields(t *testing.T) {
 	for _, k := range []string{
 		"nexusName", "nexusUserId", "nexusPremium", "gameFolders", "gameStores",
 		"lastProfile", "lastPlayed", "backgroundImage", "dismissed",
-		"nxmHandled", "nxmPreviousHandlers", "nxmAsked",
+		"nxmHandled", "nxmPreviousHandlers", "nxmAsked", "lanStarted",
 		"overlayToken", "overlayEnabled", "overlayPort",
 	} {
 		if strings.Contains(string(b), `"`+k+`"`) {

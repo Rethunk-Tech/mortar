@@ -99,7 +99,7 @@ func pairedService(t *testing.T, items *store.Store, emit func(string, any)) (*S
 // pair has joiner enter the code that host shows.
 func pair(t *testing.T, host, joiner *Service, hostAddr string) {
 	t.Helper()
-	code, err := host.PairCode()
+	code, err := host.PairCode(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,7 +113,7 @@ func TestPairingLocksOutAfterWrongCodes(t *testing.T) {
 	host, hostAddr := pairedService(t, nil, nil)
 	joiner, _ := pairedService(t, nil, nil)
 
-	code, err := host.PairCode()
+	code, err := host.PairCode(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,7 +141,7 @@ func TestPairing(t *testing.T) {
 	host, hostAddr := pairedService(t, nil, nil)
 	joiner, _ := pairedService(t, nil, nil)
 
-	code, err := host.PairCode()
+	code, err := host.PairCode(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}

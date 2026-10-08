@@ -179,6 +179,7 @@ func defaultPrefs() Settings {
 		IncludeBetaReleases:        true,
 		LanSharing:                 true,
 		LanPort:                    0,
+		LanAllowAnyAddress:         false,
 		AskEndorseMods:             off(),
 		DesktopDownloadFinished:    off(),
 		DesktopDownloadFailed:      on(),

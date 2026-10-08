@@ -100,6 +100,7 @@ type Service struct {
 	name       string
 	instanceID string
 
+	useMu   sync.Mutex
 	lifeMu  sync.Mutex
 	mu      sync.RWMutex
 	closed  bool
@@ -209,7 +210,48 @@ func (s *Service) SetEnabled(enabled bool) error {
 			return err
 		}
 	}
-	return s.start()
+	return s.start(context.Background())
+}
+
+// Apply reconciles the listener with the settings. Nothing listens until LAN sharing is first used (ensureStarted),
+// so a fresh install never raises a firewall prompt; once it has run, later launches start it at once.
+//
+//wails:ignore
+func (s *Service) Apply() error {
+	cfg := s.deps.Settings.Get()
+	if !cfg.LanSharing {
+		return s.stop()
+	}
+	if cfg.LanStarted || s.listening() {
+		return s.SetEnabled(true)
+	}
+	return nil
+}
+
+// ensureStarted starts the listener on first use, adding the firewall rule first on Windows so the system prompt
+// never appears. It keeps the listener up for the session and remembers that LAN sharing is in use.
+func (s *Service) ensureStarted(ctx context.Context) error {
+	s.useMu.Lock()
+	defer s.useMu.Unlock()
+	if s.listening() {
+		return nil
+	}
+	if s.deps.Settings == nil || !s.deps.Settings.Get().LanSharing {
+		return errors.New("LAN sharing is disabled")
+	}
+	if firewallBlocked(ctx) {
+		if err := fixFirewall(ctx); err != nil {
+			log.Printf("LAN sharing firewall: %v", err)
+		}
+	}
+	if err := s.start(ctx); err != nil {
+		return err
+	}
+	if firewallBlocked(ctx) {
+		return nil
+	}
+	_, err := s.deps.Settings.Update(func(v *settings.Settings) { v.LanStarted = true })
+	return err
 }
 
 // Shutdown stops LAN sharing permanently as Mortar exits.
@@ -235,7 +277,7 @@ func (s *Service) Shutdown() {
 	s.wg.Wait()
 }
 
-func (s *Service) start() error {
+func (s *Service) start(ctx context.Context) error {
 	s.lifeMu.Lock()
 	defer s.lifeMu.Unlock()
 
@@ -255,7 +297,7 @@ func (s *Service) start() error {
 	if configuredPort := s.lanPort(); configuredPort > 0 {
 		address = net.JoinHostPort("", strconv.Itoa(configuredPort))
 	}
-	listener, err := config.Listen(context.Background(), "tcp", address)
+	listener, err := config.Listen(ctx, "tcp", address)
 	if err != nil {
 		return fmt.Errorf("listen for LAN sharing: %w", err)
 	}
@@ -286,13 +328,15 @@ func (s *Service) start() error {
 		_ = listener.Close()
 		return fmt.Errorf("advertise LAN sharing: %w", err)
 	}
-	ctx, cancel := context.WithCancel(context.Background())
+	browseCtx, cancel := context.WithCancel(context.WithoutCancel(ctx))
 	server := newHTTPServer(s.handler())
 
 	s.mu.Lock()
 	if s.closed {
 		s.mu.Unlock()
-		stopResources(server, listener, advertiser, cancel)
+		cancel()
+		_ = listener.Close()
+		_ = advertiser.Shutdown()
 		return errors.New("LAN sharing service is shut down")
 	}
 	s.enabled = true
@@ -306,13 +350,13 @@ func (s *Service) start() error {
 	s.wg.Add(2)
 	go func() {
 		defer s.wg.Done()
-		if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := server.Serve(&lanListener{Listener: listener, allowAny: s.allowAnyAddress}); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Printf("LAN sharing server: %v", err)
 		}
 	}()
 	go func() {
 		defer s.wg.Done()
-		s.browse(ctx)
+		s.browse(browseCtx)
 	}()
 	return nil
 }
@@ -372,6 +416,9 @@ func stopResources(server *http.Server, listener net.Listener, advertiser *mdns.
 // Peers returns the Mortar installations found during the latest discovery rounds. Discovery runs only while
 // someone asks: a call after a quiet spell looks for peers before answering, and keeps discovery going for a while.
 func (s *Service) Peers(ctx context.Context) []Peer {
+	if err := s.ensureStarted(ctx); err != nil {
+		log.Printf("LAN sharing: %v", err)
+	}
 	s.mu.Lock()
 	cold := !time.Now().Before(s.wantUntil)
 	s.wantUntil = time.Now().Add(browseInterest)
@@ -408,11 +455,8 @@ func (s *Service) Peers(ctx context.Context) []Peer {
 
 // Send sends a profile's .mortar payload to a discovered peer.
 func (s *Service) Send(ctx context.Context, peerID, game, profileID string, include share.Include) error {
-	s.mu.RLock()
-	enabled := s.enabled
-	s.mu.RUnlock()
-	if !enabled {
-		return errors.New("LAN sharing is disabled")
+	if err := s.ensureStarted(ctx); err != nil {
+		return err
 	}
 	if s.deps.Shares == nil {
 		return errors.New("LAN sharing is unavailable")
@@ -1002,6 +1046,10 @@ func (s *Service) port() int {
 		return 0
 	}
 	return address.Port
+}
+
+func (s *Service) allowAnyAddress() bool {
+	return s.deps.Settings != nil && s.deps.Settings.Get().LanAllowAnyAddress
 }
 
 func (s *Service) lanPort() int {

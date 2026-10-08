@@ -277,9 +277,9 @@ func pairProof(authKey []byte, role string, transcript, shared []byte) []byte {
 
 // PairCode opens pairing: it returns a fresh single-use code, shown as two groups of four, that the other computer
 // must enter within five minutes. A new call replaces the previous code.
-func (s *Service) PairCode() (string, error) {
-	if !s.listening() {
-		return "", errors.New("turn on sharing nearby to pair a computer")
+func (s *Service) PairCode(ctx context.Context) (string, error) {
+	if err := s.ensureStarted(ctx); err != nil {
+		return "", fmt.Errorf("turn on sharing nearby to pair a computer: %w", err)
 	}
 	code, err := randomCode()
 	if err != nil {
@@ -448,6 +448,9 @@ func (s *Service) pairFailed(remote string, now time.Time) {
 
 // Pair enters the code shown by the computer at peerID (host:port) and stores the key both sides derive.
 func (s *Service) Pair(ctx context.Context, peerID, code string) error {
+	if err := s.ensureStarted(ctx); err != nil {
+		return err
+	}
 	selfID, err := s.book.self()
 	if err != nil {
 		return err

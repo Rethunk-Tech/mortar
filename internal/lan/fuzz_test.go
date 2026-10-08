@@ -3,6 +3,7 @@ package lan
 import (
 	"archive/tar"
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"io/fs"
@@ -42,7 +43,7 @@ func FuzzHandshake(f *testing.F) {
 	service.mu.Lock()
 	service.enabled = true
 	service.mu.Unlock()
-	if _, err := service.PairCode(); err != nil {
+	if _, err := service.PairCode(context.Background()); err != nil {
 		f.Fatal(err)
 	}
 	handler := service.handler()

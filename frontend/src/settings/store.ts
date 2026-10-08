@@ -47,6 +47,8 @@ const defaults: Settings = {
   keepInTray: true,
   lanSharing: true,
   lanPort: 0,
+  lanAllowAnyAddress: false,
+  lanStarted: false,
   lanAddresses: [],
   includeBetaReleases: true,
   includePrereleaseModVersions: false,

@@ -132,6 +132,7 @@ var registry = withDefaults([]pref{
 	sourcePref("nexus", boolPref("autoTrackNexus", ScopeSource, func(s Settings, _ string) bool { return s.AutoTrackNexus }, func(s *Settings, _ string, on bool) { s.AutoTrackNexus = on })),
 	intPref("lanPort", ScopeApp, 0, 65535, func(s Settings, _ string) int { return s.LanPort }, func(s *Settings, _ string, n int) { s.LanPort = n }),
 	boolPref("lanSharing", ScopeApp, func(s Settings, _ string) bool { return s.LanSharing }, func(s *Settings, _ string, on bool) { s.LanSharing = on }),
+	boolPref("lanAllowAnyAddress", ScopeApp, func(s Settings, _ string) bool { return s.LanAllowAnyAddress }, func(s *Settings, _ string, on bool) { s.LanAllowAnyAddress = on }),
 	strPref("lanName", ScopeApp, func(s Settings, _ string) string { return s.LanName }, func(s *Settings, _, v string) { s.LanName = v }),
 	boolPref("lanAutoAcceptPaired", ScopeApp, func(s Settings, _ string) bool { return s.LanAutoAcceptPaired }, func(s *Settings, _ string, on bool) { s.LanAutoAcceptPaired = on }),
 	strPref("downloadFolder", ScopeApp, func(s Settings, _ string) string { return s.DownloadFolder }, func(s *Settings, _, v string) { s.DownloadFolder = v }),
