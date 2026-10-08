@@ -32,6 +32,7 @@ Windows bugs: the Windows 11 KVM VM in `/var/tmp/win11-vm/` (`README.txt`, `/var
 - Anything tied to a game's loader, launcher, saves or content format (SMAPI options, launch method, backup/update-before-Play, run logs, Content Patcher display, default nxm profile, pre-Play check) is a per-game setting with per-profile override; Mortar-wide settings are app chrome only (theme, density, dates, notifications, data folder, LAN, Mortar's own updates).
 - Stardrop and Vortex are never suggested, compared against, or contributed to (reading their source for file formats is fine).
 - AUR packages are prepared and checked locally (PKGBUILD, `.SRCINFO`, makepkg/namcap in an Arch container); pushing to aur.archlinux.org needs the AUR account holder's permission for each publish, relayed by the maintainer.
+- Flatpak: Mortar hosts its own Flatpak repo until Flathub approves it.
 - The CLI exists for agents and automation; end users are GUI-only, so GUI work ranks above CLI parity.
 - Share links name their game. Form: [docs/architecture.md](docs/architecture.md#sharing).
 - Mortar never re-hosts mod files; downloads come from each mod's own source. One exception: a profile sent between the user's own computers over the local network carries its mod files, from every source, when the two Mortars are paired with a code (copying between one's own machines is not distribution; pairing is Mortar's own and needs no store account); any other receiver gets the profile and downloads each mod from its source.
