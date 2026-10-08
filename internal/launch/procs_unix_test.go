@@ -147,3 +147,28 @@ func TestStopAsksAWineGameToCloseFirst(t *testing.T) {
 		t.Fatal("a game's own executable is not a Wine loader")
 	}
 }
+
+// Vortex deploys SMAPI into the game folder as a link into its staging folder; the running process names the target.
+func TestLinkedFromMatchesALoaderDeployedAsALink(t *testing.T) {
+	game, staging := t.TempDir(), t.TempDir()
+	target := filepath.Join(staging, "SMAPI 4.3.2", "StardewModdingAPI")
+	if err := os.MkdirAll(filepath.Dir(target), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(target, []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(target, filepath.Join(game, "StardewModdingAPI")); err != nil {
+		t.Fatal(err)
+	}
+	p := Process{PID: 1, Exe: target}
+	if p.RunsFrom(game) {
+		t.Fatal("the target is outside the game folder; RunsFrom should not claim it")
+	}
+	if !p.LinkedFrom(game) {
+		t.Fatal("the game folder's StardewModdingAPI links to the running executable")
+	}
+	if (Process{PID: 2, Exe: filepath.Join(t.TempDir(), "StardewModdingAPI")}).LinkedFrom(game) {
+		t.Fatal("an unrelated executable of the same name matched")
+	}
+}

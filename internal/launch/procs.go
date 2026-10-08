@@ -32,6 +32,20 @@ func (p Process) RunsFrom(dir string) bool {
 	return false
 }
 
+// LinkedFrom reports whether p's executable is the target of the file of the same name in dir. A mod manager that
+// deploys by symlink (Vortex) puts the loader in the game folder as a link into its staging folder, and Windows names
+// a process by the link's target, so the process path alone would not place it in the install.
+func (p Process) LinkedFrom(dir string) bool {
+	if p.Exe == "" || dir == "" {
+		return false
+	}
+	target, err := fsx.EvalSymlinks(filepath.Join(dir, filepath.Base(p.Exe)))
+	if err != nil {
+		return false
+	}
+	return fsx.SamePath(target, p.Exe)
+}
+
 // ExeIs reports whether p's executable is one of the programs names, so its path is where the game itself runs
 // from; it is false for an unreadable executable and for a host (Wine, Proton, dotnet) that runs the game.
 func (p Process) ExeIs(names ...string) bool {

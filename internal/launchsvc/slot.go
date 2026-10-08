@@ -89,11 +89,11 @@ func (s *Service) activeSlot(g game.Game) (slot, bool) {
 func (s *Service) owner(g game.Game, p launch.Process) (id string, ok bool) {
 	all, selected := s.installs(g)
 	for _, in := range all {
-		if p.RunsFrom(in.Dir) {
+		if p.RunsFrom(in.Dir) || p.LinkedFrom(in.Dir) {
 			return in.ID, true
 		}
 	}
-	if selected.Dir != "" && p.RunsFrom(selected.Dir) {
+	if selected.Dir != "" && (p.RunsFrom(selected.Dir) || p.LinkedFrom(selected.Dir)) {
 		return selected.ID, true
 	}
 	if p.ExeIs(game.ProcessNames(g)...) {
