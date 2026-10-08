@@ -19,3 +19,8 @@ func hideWindow(cmd *exec.Cmd, hide bool) {
 	}
 	cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: windows.CREATE_NO_WINDOW}
 }
+
+// ownsConsole reports a start whose console window is shown: the program then reads and writes that console itself,
+// as it does when Vortex or Steam starts it. Redirecting a program that has a console breaks the console calls it makes
+// (colours, cursor, window size), and SMAPI died mid-startup that way; Mortar follows SMAPI's log file instead.
+func ownsConsole(hide bool) bool { return !hide }
