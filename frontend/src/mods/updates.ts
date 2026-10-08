@@ -138,16 +138,25 @@ const useUpdates = create<{
   setReviewing: (reviewing) => set({ reviewing }),
 }))
 
+// The profile and interval the running timer was set for; the stores change on every mod toggle and install, and
+// restarting the timer each time would put the recheck off for as long as someone keeps changing mods.
+let hourlyKey = ''
+
 function syncHourlyRecheck() {
   const { game, openId } = useProfiles.getState()
+  const minutes = useSettings.getState().updateCheckIntervalMinutes || 60
+  const key = game && openId ? `${game.id}|${openId}|${minutes}` : ''
+  if (key === hourlyKey) {
+    return
+  }
+  hourlyKey = key
   if (hourlyTimer !== undefined) {
     clearInterval(hourlyTimer)
     hourlyTimer = undefined
   }
-  if (!(game && openId)) {
+  if (!key) {
     return
   }
-  const minutes = useSettings.getState().updateCheckIntervalMinutes || 60
   hourlyTimer = setInterval(
     () => {
       useUpdates.getState().load().catch(ignoreRecheckError)
