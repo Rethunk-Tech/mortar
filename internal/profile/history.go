@@ -62,6 +62,8 @@ const (
 	ChangeImported HistoryChange = "imported" // Count
 	// ChangeMoved is mods moved in from the game's own Mods folder: Count.
 	ChangeMoved HistoryChange = "moved"
+	// ChangeMerged is mods merged in from another profile: Name is that profile, Count the mods added or updated.
+	ChangeMerged HistoryChange = "merged"
 	// ChangeRestored is mods restored from a profile backup: Count.
 	ChangeRestored HistoryChange = "restored"
 	// ChangeRestoredFromStore is changed or deleted mods put back from Mortar's store: Name for one, else Count.

@@ -847,6 +847,8 @@ func historySummary(ev profile.HistoryEvent) string {
 		return "Imported " + mods(ev.Count)
 	case profile.ChangeMoved:
 		return "Moved " + mods(ev.Count) + " from the game's Mods folder"
+	case profile.ChangeMerged:
+		return "Merged " + mods(ev.Count) + " from " + ev.Name
 	case profile.ChangeRestored:
 		return "Restored " + mods(ev.Count)
 	case profile.ChangeRestoredFromStore:

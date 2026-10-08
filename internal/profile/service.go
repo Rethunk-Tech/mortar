@@ -326,6 +326,16 @@ func (s *Service) CopyModsWithNeeds(game, fromID, toID string, ids []mod.ID) (Pr
 	return s.store.CopyModsWithNeeds(game, fromID, toID, ids)
 }
 
+// MergePreview is what MergeInto(game, fromID, toID, ...) would add, update and keep.
+func (s *Service) MergePreview(game, fromID, toID string) (MergePreview, error) {
+	return s.store.MergePreview(game, fromID, toID)
+}
+
+// MergeInto merges fromID into toID as one undoable history event; see Store.MergeInto.
+func (s *Service) MergeInto(game, fromID, toID string, newerWins bool) (Profile, error) {
+	return s.store.MergeInto(game, fromID, toID, newerWins)
+}
+
 // Delete moves the profile to the trash, where it stays restorable for 30 days.
 func (s *Service) Delete(game, id string) error {
 	if err := s.store.Delete(game, id); err != nil {
