@@ -9,12 +9,13 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-// hideWindow starts a console program without a console. SW_HIDE alone is ignored when Windows 11 hands the new
-// console to Windows Terminal, the default terminal, so the window would still show; CREATE_NO_WINDOW never makes one.
-// SMAPI's output still reaches Mortar through the captured pipes and its own log file.
+// hideWindow starts a console program without a console. It must not also set HideWindow (STARTF_USESHOWWINDOW with
+// SW_HIDE): Windows applies that to the first window the process shows, and SMAPI runs the game in its own process, so
+// the game window would open hidden. CREATE_NO_WINDOW only withholds the console, which Windows Terminal would
+// otherwise show however it was asked. SMAPI's output still reaches Mortar through the captured file and its log.
 func hideWindow(cmd *exec.Cmd, hide bool) {
 	if !hide {
 		return
 	}
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: windows.CREATE_NO_WINDOW}
+	cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: windows.CREATE_NO_WINDOW}
 }
