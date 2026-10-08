@@ -7,6 +7,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -254,7 +255,7 @@ func (s *Store) snapshotFindings(game, id string) ([]HealthFinding, error) {
 	var out []HealthFinding
 	for _, ev := range data.Events {
 		cause := ""
-		if _, ok := snapshotEntries(&data, ev.SnapshotID); !ok {
+		if !s.snapshotReadable(&data, ev.SnapshotID) {
 			cause = "unreadable"
 		} else if missingConfigCapture(data.dir, ev.SnapshotID) {
 			cause = "configs"
@@ -267,6 +268,35 @@ func (s *Store) snapshotFindings(game, id string) ([]HealthFinding, error) {
 		}
 	}
 	return out, nil
+}
+
+type readableSnapshot struct {
+	path    string
+	size    int64
+	modTime int64
+}
+
+// snapshotReadable decodes a snapshot unless its file was already decoded unchanged. Callers hold s.mu.
+func (s *Store) snapshotReadable(data *historyFileData, id string) bool {
+	var key readableSnapshot
+	if path, ok := snapshotFilePath(data.dir, id); ok {
+		if fi, err := fsx.Stat(path); err == nil {
+			key = readableSnapshot{path, fi.Size(), fi.ModTime().UnixNano()}
+			if _, seen := s.readableSnapshots[key]; seen {
+				return true
+			}
+		}
+	}
+	if _, ok := snapshotEntries(data, id); !ok {
+		return false
+	}
+	if key.path != "" {
+		if s.readableSnapshots == nil {
+			s.readableSnapshots = map[readableSnapshot]struct{}{}
+		}
+		s.readableSnapshots[key] = struct{}{}
+	}
+	return true
 }
 
 // missingConfigCapture reports a config index that cannot be read or names a file body that is gone. An event with

@@ -243,6 +243,9 @@ type Store struct {
 	home            string
 	settings        *settings.Store
 	mu              sync.Mutex
+	// readableSnapshots are the history snapshot files a health check already decoded; a snapshot never changes
+	// under its hash, so a file with the same size and time need not be decoded again. Guarded by mu.
+	readableSnapshots map[readableSnapshot]struct{}
 	// Bundled returns the store items every profile of a game holds: the loader's own mods and the console
 	// bridge, whichever are installed.
 	Bundled func(game string) []Bundle

@@ -347,20 +347,27 @@ func historyStoreKeys(dir string) ([]string, error) {
 		cached = map[string][]string{}
 	}
 	next := make(map[string][]string, len(data.Events))
+	seen := map[string]struct{}{}
 	var keys []string
 	for _, ev := range data.Events {
-		k, ok := next[ev.SnapshotID]
-		if !ok {
-			if k, ok = cached[ev.SnapshotID]; !ok {
-				entries, found := snapshotEntries(&data, ev.SnapshotID)
-				if !found {
-					return nil, fmt.Errorf("history snapshot %s not found", ev.SnapshotID)
-				}
-				k = entriesStoreKeys(entries)
-			}
-			next[ev.SnapshotID] = k
+		if _, done := next[ev.SnapshotID]; done {
+			continue
 		}
-		keys = append(keys, k...)
+		k, ok := cached[ev.SnapshotID]
+		if !ok {
+			entries, found := snapshotEntries(&data, ev.SnapshotID)
+			if !found {
+				return nil, fmt.Errorf("history snapshot %s not found", ev.SnapshotID)
+			}
+			k = entriesStoreKeys(entries)
+		}
+		next[ev.SnapshotID] = k
+		for _, key := range k {
+			if _, dup := seen[key]; !dup {
+				seen[key] = struct{}{}
+				keys = append(keys, key)
+			}
+		}
 	}
 	if !maps.EqualFunc(cached, next, slices.Equal) {
 		if err := datadir.WriteJSON(filepath.Join(dir, snapshotKeysFile), next); err != nil {
