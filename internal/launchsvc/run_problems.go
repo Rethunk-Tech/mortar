@@ -122,6 +122,12 @@ func (s *Service) pluginOwners(gameID, profileID string) map[string]profile.Inst
 	if s.profiles == nil || profileID == "" {
 		return nil
 	}
+	// A loader with no analyzers (SMAPI) logs mods by manifest name, never by plugin, so there is nothing to map and the
+	// DLL walk is skipped.
+	l, ok := s.loaderOf(gameID, profileID)
+	if logs, isLogs := l.(loader.WithLogs); !ok || !isLogs || len(logs.Analyzers()) == 0 {
+		return nil
+	}
 	installed, err := s.profiles.Installed(gameID, profileID)
 	if err != nil {
 		return nil
