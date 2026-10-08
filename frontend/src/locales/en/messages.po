@@ -285,6 +285,10 @@ msgstr "{0, plural, one {Copied # mod to {1}} other {Copied # mods to {2}}}"
 msgid "That profile is gone."
 msgstr "That profile is gone."
 
+#: src/mods/OldFilesCallouts.tsx:227
+msgid "Keep all"
+msgstr "Keep all"
+
 #: src/settings/sections/DataImport.tsx:81
 msgid "Settings imported"
 msgstr "Settings imported"
@@ -698,6 +702,7 @@ msgid "Showing the first 2,000 files"
 msgstr "Showing the first 2,000 files"
 
 #: src/mods/NewFoldersCallout.tsx:76
+#: src/mods/OldFilesCallouts.tsx:244
 msgid "Review…"
 msgstr "Review…"
 
@@ -1350,7 +1355,7 @@ msgid "Create a bundle to reuse a set of mods."
 msgstr "Create a bundle to reuse a set of mods."
 
 #: src/mods/ModMenu.tsx:147
-#: src/mods/OldFilesCallouts.tsx:83
+#: src/mods/OldFilesCallouts.tsx:92
 #: src/mods/parts.tsx:426
 msgid "Show files"
 msgstr "Show files"
@@ -1507,7 +1512,7 @@ msgid "{checked}; {bad}. Repair them from each profile's Problems tab."
 msgstr "{checked}; {bad}. Repair them from each profile's Problems tab."
 
 #. placeholder {0}: set.label
-#: src/mods/OldFilesCallouts.tsx:88
+#: src/mods/OldFilesCallouts.tsx:97
 msgid "Keep {0}'s old files"
 msgstr "Keep {0}'s old files"
 
@@ -2686,7 +2691,8 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/install/store.ts:169
 #: src/install/store.ts:232
 #: src/mods/NewFoldersCallout.tsx:48
-#: src/mods/OldFilesCallouts.tsx:64
+#: src/mods/OldFilesCallouts.tsx:73
+#: src/mods/OldFilesCallouts.tsx:211
 #: src/mods/overlayActions.ts:36
 #: src/mods/overlayActions.ts:100
 #: src/mods/problemFix/WinFix.tsx:66
@@ -2791,6 +2797,10 @@ msgstr "Check Mortar"
 #: src/share/IncludeOptions.tsx:57
 msgid "Include problem choices"
 msgstr "Include problem choices"
+
+#: src/mods/OldFilesCallouts.tsx:35
+msgid "{n, plural, one {Moved # old file to trash} other {Moved # old files to trash}}"
+msgstr "{n, plural, one {Moved # old file to trash} other {Moved # old files to trash}}"
 
 #: src/console/PerformancePanelParts.tsx:96
 msgid "% of frame"
@@ -3901,7 +3911,7 @@ msgstr "Custom categories"
 #: src/bundles/BundlesSection.tsx:118
 #: src/game/ProfileMenuItems.tsx:76
 #: src/mods/CategoryEditor.tsx:171
-#: src/mods/OldFilesCallouts.tsx:103
+#: src/mods/OldFilesCallouts.tsx:112
 #: src/mods/problemFixButtons.tsx:201
 #: src/mods/problemFixButtons.tsx:206
 #: src/profiles/HealthDialog.tsx:274
@@ -4274,7 +4284,7 @@ msgstr "Delete template"
 #. placeholder {0}: files.length
 #. placeholder {1}: set.label
 #. placeholder {2}: set.label
-#: src/mods/OldFilesCallouts.tsx:73
+#: src/mods/OldFilesCallouts.tsx:82
 msgid "{0, plural, one {The new version of {1} no longer includes # file. Keep it or delete it?} other {The new version of {2} no longer includes # files. Keep them or delete them?}}"
 msgstr "{0, plural, one {The new version of {1} no longer includes # file. Keep it or delete it?} other {The new version of {2} no longer includes # files. Keep them or delete them?}}"
 
@@ -4835,11 +4845,6 @@ msgstr "This optional file has no manifest and replaces files of {0}. Mortar cou
 #: src/mods/GameModsReviewDialog.tsx:90
 msgid "Could not read ({0})"
 msgstr "Could not read ({0})"
-
-#. placeholder {0}: files.length
-#: src/mods/OldFilesCallouts.tsx:59
-msgid "{0, plural, one {Moved # old file to trash} other {Moved # old files to trash}}"
-msgstr "{0, plural, one {Moved # old file to trash} other {Moved # old files to trash}}"
 
 #: src/console/PerformancePanelParts.tsx:66
 msgid "Before"
@@ -5557,7 +5562,7 @@ msgstr "Switch to Home"
 msgid "Needs"
 msgstr "Needs"
 
-#: src/mods/OldFilesCallouts.tsx:113
+#: src/mods/OldFilesCallouts.tsx:122
 msgid "Files set aside"
 msgstr "Files set aside"
 
@@ -6404,7 +6409,8 @@ msgstr "Tag…"
 msgid "{0, plural, one {Added # mod to {1}} other {Added # mods to {2}}}"
 msgstr "{0, plural, one {Added # mod to {1}} other {Added # mods to {2}}}"
 
-#: src/mods/OldFilesCallouts.tsx:71
+#: src/mods/OldFilesCallouts.tsx:80
+#: src/mods/OldFilesCallouts.tsx:220
 msgid "Could not move the old files to trash"
 msgstr "Could not move the old files to trash"
 
@@ -7321,6 +7327,10 @@ msgstr "Saving…"
 #: src/mods/GroupMenu.tsx:83
 msgid "Delete group"
 msgstr "Delete group"
+
+#: src/mods/OldFilesCallouts.tsx:257
+msgid "Files left by updates"
+msgstr "Files left by updates"
 
 #: src/mods/AddToGroupDialog.tsx:85
 msgid "New group"
@@ -8605,6 +8615,10 @@ msgstr "Download"
 msgid "These come from outside Nexus, so Mortar does not download them."
 msgstr "These come from outside Nexus, so Mortar does not download them."
 
+#: src/mods/OldFilesCallouts.tsx:232
+msgid "Delete all"
+msgstr "Delete all"
+
 #: src/console/RunProblems.tsx:251
 msgid "Problems in this run"
 msgstr "Problems in this run"
@@ -8899,7 +8913,7 @@ msgid "Could not skip updates for the selected mods"
 msgstr "Could not skip updates for the selected mods"
 
 #. placeholder {0}: set.label
-#: src/mods/OldFilesCallouts.tsx:99
+#: src/mods/OldFilesCallouts.tsx:108
 msgid "Delete {0}'s old files"
 msgstr "Delete {0}'s old files"
 
@@ -9565,7 +9579,8 @@ msgstr "Play with"
 msgid "Install {0}…"
 msgstr "Install {0}…"
 
-#: src/mods/OldFilesCallouts.tsx:50
+#: src/mods/OldFilesCallouts.tsx:62
+#: src/mods/OldFilesCallouts.tsx:196
 msgid "Could not keep the old files"
 msgstr "Could not keep the old files"
 
@@ -9771,7 +9786,7 @@ msgstr "Allow Mortar through the firewall so nearby users can send profiles."
 msgid "Waiting for {0}'s profile file to finish syncing"
 msgstr "Waiting for {0}'s profile file to finish syncing"
 
-#: src/mods/OldFilesCallouts.tsx:92
+#: src/mods/OldFilesCallouts.tsx:101
 #: src/settings/prefCopy.ts:258
 msgid "Keep"
 msgstr "Keep"
@@ -10205,6 +10220,11 @@ msgstr "From {0}, not the site you installed it from. Updating switches its sour
 #: src/mods/SlowStartupSection.tsx:74
 msgid "Content Patcher packs"
 msgstr "Content Patcher packs"
+
+#. placeholder {0}: sets.length
+#: src/mods/OldFilesCallouts.tsx:222
+msgid "{0, plural, one {# updated mod} other {# updated mods}} no longer include {files, plural, one {# file} other {# files}} from their old versions. Keep them or delete them?"
+msgstr "{0, plural, one {# updated mod} other {# updated mods}} no longer include {files, plural, one {# file} other {# files}} from their old versions. Keep them or delete them?"
 
 #: src/launch/PrePlayDialog.tsx:211
 #: src/saves/SaveGapLine.tsx:67
@@ -13604,6 +13624,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/mods/AuthorDialog.tsx:166
 #: src/mods/ChangelogDialog.tsx:104
 #: src/mods/GameModsReviewDialog.tsx:236
+#: src/mods/OldFilesCallouts.tsx:262
 #: src/mods/updateReview/ReviewFooter.tsx:62
 #: src/mods/updateReview/ReviewTitle.tsx:47
 #: src/profiles/CompareTop.tsx:148
