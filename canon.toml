@@ -10,10 +10,11 @@ reconciled = "canon v0.1.0-poc"
 "go-golangci-lint-00011" = "go.mod replaces wails/v3 with the Rethunk-AI fork until upstream PR wailsapp/wails#6197 lands"
 # ireturn allows five registry interfaces that implementations return by design: internal/game.Game, internal/host.Host,
 # internal/loader.Loader, internal/installer.Installer and internal/deploy.Deployer.
-# gosec G204 is excluded in 17 files whose subprocess is a fixed command, Mortar's own executable or a path built from
-# validated install and profile dirs, never a user string: datadir_recover_other, avscan/command, launch/launch,
-# launch/term_unix, loader/smapi/install, datadir/open, datadir/copy_windows_test, backdrop/desktop, nxm/handler_linux,
-# nxm/handler_windows, steam/steam, sandbox/sandbox, nativehost/spawn_other, nativehost/spawn_windows, datasvc/restart,
-# updatesvc/e2e_test and problems/perf_test. gosec G103 is excluded in avscan/amsi_windows.go, whose AMSI calls take
-# pointers to Go values. forbidigo is excluded under internal/archive/, the one package allowed to open a 7z directly.
-"go-golangci-lint-00013" = "ireturn allows five registry interfaces (game.Game, host.Host, loader.Loader, installer.Installer, deploy.Deployer); path exclusions: G204 in 17 files, G103 in amsi_windows.go, forbidigo in internal/archive"
+"go-golangci-lint-00013" = "ireturn allows five registry interfaces (game.Game, host.Host, loader.Loader, installer.Installer, deploy.Deployer)"
+# Three exclusion rules. gosec G204 is excluded in 17 files whose subprocess is a fixed command, Mortar's own executable or
+# a path built from validated install and profile dirs, never a user string: datadir_recover_other, avscan/command,
+# launch/launch, launch/term_unix, loader/smapi/install, datadir/open, datadir/copy_windows_test, backdrop/desktop,
+# nxm/handler_linux, nxm/handler_windows, steam/steam, sandbox/sandbox, nativehost/spawn_other, nativehost/spawn_windows,
+# datasvc/restart, updatesvc/e2e_test and problems/perf_test. gosec G103 is excluded in avscan/amsi_windows.go, whose AMSI
+# calls take pointers to Go values. forbidigo is excluded under internal/archive/, the one package allowed to open a 7z directly.
+"go-golangci-lint-00014" = "exclusions: gosec G204 in 17 files, gosec G103 in avscan/amsi_windows.go, forbidigo in internal/archive"
