@@ -89,7 +89,7 @@ type Settings struct {
 	NexusPreferredDownloadServer string `json:"nexusPreferredDownloadServer"`
 	// NexusSeenDownloadServers lists short_name values Mortar has seen from Nexus.
 	NexusSeenDownloadServers []string `json:"nexusSeenDownloadServers"`
-	// AskEndorseMods is whether Mortar may suggest endorsing mods after clean runs. Nil or omitted means on.
+	// AskEndorseMods is whether Mortar may suggest endorsing mods after clean runs. Nil or omitted means off.
 	AskEndorseMods *bool `json:"askEndorseMods"`
 	// ListColumns is the Mods list-view columns that are shown. Unknown ids are dropped; an empty list is the default.
 	ListColumns []string `json:"listColumns"`
@@ -99,16 +99,16 @@ type Settings struct {
 	// ListGroupBy is how the Mods tab groups the list and grid: none, status, category, source, tag, framework, or author.
 	ListGroupBy string `json:"listGroupBy"`
 	// CheckModUpdatesOnStart is whether Mortar checks the last-opened profile of each game at startup.
-	// Nil or omitted means on.
+	// Nil or omitted means off.
 	CheckModUpdatesOnStart *bool `json:"checkModUpdatesOnStart"`
 	// SmapiBuilds is whether SMAPI prerelease builds are never offered, shown, or included in updates.
 	SmapiBuilds string `json:"smapiBuilds"`
 	// LoaderPrefs holds each game's loader settings by LoaderKey(game, loader); on disk they sit in the loaders block
 	// under that key.
 	LoaderPrefs map[string]LoaderPrefs `json:"loaderPrefs"`
-	// ShowSmapiConsole is whether launches show SMAPI's console. Nil or omitted means on.
+	// ShowSmapiConsole is whether launches show SMAPI's console. Nil or omitted means off.
 	ShowSmapiConsole *bool `json:"showSmapiConsole"`
-	// TellWhenSmapiOut is whether Mortar toasts when a newer SMAPI exists. Nil or omitted means on.
+	// TellWhenSmapiOut is whether Mortar toasts when a newer SMAPI exists. Nil or omitted means off.
 	TellWhenSmapiOut *bool `json:"tellWhenSmapiOut"`
 	// KeepInTray keeps Mortar in the system tray when the window is closed.
 	KeepInTray bool `json:"keepInTray"`
@@ -124,7 +124,7 @@ type Settings struct {
 	IncludePrereleaseModVersions bool `json:"includePrereleaseModVersions"`
 	// CheckOnlyEnabledMods limits SMAPI update checks to enabled mods when on. Default off.
 	CheckOnlyEnabledMods bool `json:"checkOnlyEnabledMods"`
-	// EnableModsWhenInstalled is whether new profile entries start with their mods enabled. Nil or omitted means on.
+	// EnableModsWhenInstalled is whether new profile entries start with their mods enabled. Nil or omitted means off.
 	EnableModsWhenInstalled *bool `json:"enableModsWhenInstalled"`
 	// TipsSeen is the empty-state tips the user has dismissed (mods, saves, console, share).
 	TipsSeen []string `json:"tipsSeen"`
@@ -141,7 +141,7 @@ type Settings struct {
 	OnPlay                     string `json:"onPlay"`
 	ParallelDownloads          int    `json:"parallelDownloads"`
 	UpdateCheckIntervalMinutes int    `json:"updateCheckIntervalMinutes"`
-	// NotifyModUpdates toasts when a background check finds updates. Nil means off.
+	// NotifyModUpdates toasts when a background check finds updates. Nil means on.
 	NotifyModUpdates *bool `json:"notifyModUpdates"`
 	// UpdateDigest controls in-app digests after background mod-update checks: off, each, or daily.
 	UpdateDigest string `json:"updateDigest"`
@@ -219,7 +219,6 @@ type Settings struct {
 }
 
 const (
-	DefaultLanPort  = 47630
 	MaxLanAddresses = 5
 )
 
@@ -240,19 +239,15 @@ func Defaults() Settings {
 	s.LoaderPrefs = map[string]LoaderPrefs{}
 	s.Dismissed = map[string][]string{}
 	s.NexusSeenDownloadServers = []string{}
-	s.LanPort = DefaultLanPort
 	s.LanAddresses = []string{}
 	s.ListColumns = slices.Clone(defaultListColumns)
 	s.ListSortColumn = defaultListSortColumn
 	s.ListSortDir = defaultListSortDir
 	s.ListGroupBy = defaultListGroupBy
-	s.CheckModUpdatesOnStart = on()
 	s.TellWhenSmapiOut = on()
 	s.SmapiBuilds = SmapiBuildsShow
 	s.ShowSmapiConsole = on()
 	s.EnableModsWhenInstalled = on()
-	s.AskEndorseMods = on()
-	s.LanSharing = false
 	s.OverlayPort = DefaultOverlayPort
 	s.Shortcuts = DefaultShortcuts()
 	s.Games = map[string]*GameSettings{}
@@ -485,13 +480,13 @@ func normalizeToggles(s *Settings) {
 		s.EnableModsWhenInstalled = on()
 	}
 	if s.AskEndorseMods == nil {
-		s.AskEndorseMods = on()
+		s.AskEndorseMods = off()
 	}
 }
 
 func normalizeLAN(s *Settings) {
 	if s.LanPort < 0 || s.LanPort > 65535 {
-		s.LanPort = DefaultLanPort
+		s.LanPort = 0
 	}
 	if s.LanAddresses == nil {
 		s.LanAddresses = []string{}

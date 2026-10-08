@@ -16,7 +16,7 @@ var (
 		"on", "name", "version", "latest", "id", "author", "source", "category",
 		"endorsements", "downloads", "updated", "installed", "needs", "status", "notes", "lastRun", "size", "startup", "order",
 	}
-	defaultListColumns = []string{"on", "name", "version", "author", "source", "category", "status", "size", "startup"}
+	defaultListColumns = []string{"on", "name", "version", "category", "installed"}
 	lockedListColumns  = []string{"on", "name"}
 	listSortDirs       = []string{"asc", "desc"}
 	listGroupBys       = []string{"none", "status", "category", "source", "tag", "framework", "author", "group"}

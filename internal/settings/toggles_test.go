@@ -16,10 +16,10 @@ func TestToggleDefaultsOn(t *testing.T) {
 	if d.EnableModsWhenInstalled == nil || !*d.EnableModsWhenInstalled {
 		t.Fatal("enableModsWhenInstalled default is on")
 	}
-	if d.LanSharing {
-		t.Fatal("lanSharing default is off")
+	if !d.LanSharing {
+		t.Fatal("lanSharing default is on")
 	}
-	if d.LanPort != DefaultLanPort || len(d.LanAddresses) != 0 {
+	if d.LanPort != 0 || len(d.LanAddresses) != 0 {
 		t.Fatalf("LAN defaults = port %d, addresses %v", d.LanPort, d.LanAddresses)
 	}
 }

@@ -10,6 +10,7 @@ import { i18n } from '../i18n/index.ts'
 import { follow } from '../shell/follow.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { loadPrefSpecs } from './prefSpecs.ts'
 
 const defaults: Settings = {
   language: '',
@@ -42,26 +43,16 @@ const defaults: Settings = {
   smapiBuilds: 'show',
   loaderPrefs: {},
   showSmapiConsole: true,
-  askEndorseMods: true,
-  keepInTray: false,
-  lanSharing: false,
-  lanPort: 47_630,
+  askEndorseMods: false,
+  keepInTray: true,
+  lanSharing: true,
+  lanPort: 0,
   lanAddresses: [],
-  includeBetaReleases: false,
+  includeBetaReleases: true,
   includePrereleaseModVersions: false,
   checkOnlyEnabledMods: false,
   enableModsWhenInstalled: true,
-  listColumns: [
-    'on',
-    'name',
-    'version',
-    'author',
-    'source',
-    'category',
-    'status',
-    'size',
-    'startup',
-  ],
+  listColumns: ['on', 'name', 'version', 'category', 'installed'],
   listSortColumn: 'name',
   listSortDir: 'asc',
   listGroupBy: 'status',
@@ -74,8 +65,8 @@ const defaults: Settings = {
   onPlay: 'stay',
   games: {},
   parallelDownloads: 3,
-  updateCheckIntervalMinutes: 60,
-  notifyModUpdates: false,
+  updateCheckIntervalMinutes: 180,
+  notifyModUpdates: true,
   updateDigest: 'daily',
   lastModUpdateDigest: [],
   lastModUpdateDigestAt: '',
@@ -89,7 +80,7 @@ const defaults: Settings = {
   dates: 'relative',
   trashRetentionDays: 30,
   historyEventsKept: 200,
-  notifyDownloadFinished: true,
+  notifyDownloadFinished: false,
   notifyDownloadFailed: true,
   notifyRunCrashed: true,
   desktopDownloadFinished: false,
@@ -113,7 +104,7 @@ const defaults: Settings = {
   autoRetryDownloads: 'off',
   pauseDownloadsWhilePlaying: false,
   sidebarBadges: 'problemsAndUpdates',
-  shareIncludeDisabledMods: false,
+  shareIncludeDisabledMods: true,
   shareIncludeFomodChoices: true,
   shareIncludeNotes: true,
   shareIncludeConfigFiles: true,
@@ -122,13 +113,14 @@ const defaults: Settings = {
   showAdultContent: false,
   launchAtLogin: false,
   startMinimised: false,
-  rememberWindow: false,
+  rememberWindow: true,
   extensionConnection: 'allow',
 } as Settings
 
 export const useSettings = create<Settings>(() => defaults)
 
 export const initSettings = async () => {
+  await loadPrefSpecs()
   await follow('settings:changed', Get, (next) => useSettings.setState(next))
   const path = await CorruptSettingsPath()
   if (path) {

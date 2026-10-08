@@ -3,6 +3,7 @@ import type {
   Settings,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { currentGame } from '../nav/currentGame.ts'
+import { specDefault } from './prefSpecs.ts'
 
 export function prefRaw(settings: Settings, spec: PrefSpec, game = currentGame()): unknown {
   if (spec.scope === 'game') {
@@ -12,27 +13,28 @@ export function prefRaw(settings: Settings, spec: PrefSpec, game = currentGame()
   return (settings as unknown as Record<string, unknown>)[spec.key]
 }
 
-export function prefAsString(raw: unknown, spec: PrefSpec): string {
+export function prefAsString(raw: unknown, spec: PrefSpec, game = currentGame()): string {
+  const fallback = specDefault(spec, game)
   if (raw === undefined || raw === null) {
-    return spec.default
+    return fallback
   }
   if (typeof raw === 'boolean') {
     return raw ? 'true' : 'false'
   }
   const s = String(raw)
   if (s === '' && spec.type !== 'string') {
-    return spec.default
+    return fallback
   }
   return s
 }
 
-export function prefAsBool(raw: unknown, spec: PrefSpec): boolean {
-  return prefAsString(raw, spec) === 'true'
+export function prefAsBool(raw: unknown, spec: PrefSpec, game = currentGame()): boolean {
+  return prefAsString(raw, spec, game) === 'true'
 }
 
-export function prefAsNumber(raw: unknown, spec: PrefSpec): number {
-  const n = Number(prefAsString(raw, spec))
-  return Number.isFinite(n) ? n : Number(spec.default)
+export function prefAsNumber(raw: unknown, spec: PrefSpec, game = currentGame()): number {
+  const n = Number(prefAsString(raw, spec, game))
+  return Number.isFinite(n) ? n : Number(specDefault(spec, game))
 }
 
 export function specGameArg(spec: PrefSpec, game = currentGame()): string {

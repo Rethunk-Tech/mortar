@@ -27,12 +27,8 @@ const DEFAULT_VISIBLE_LIST_COLUMNS: readonly ListColumnId[] = [
   'on',
   'name',
   'version',
-  'author',
-  'source',
   'category',
-  'status',
-  'size',
-  'startup',
+  'installed',
 ]
 
 const NARROW_HIDE_LIST_COLUMNS: readonly ListColumnId[] = [

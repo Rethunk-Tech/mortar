@@ -1,5 +1,6 @@
 import type { Settings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { currentGame } from '../nav/currentGame.ts'
+import { cachedSpecDefault } from './prefSpecs.ts'
 
 function on(v: boolean | null | undefined, fallback: boolean): boolean {
   if (v === null || v === undefined) {
@@ -55,8 +56,10 @@ export function gamePrefs(s: Settings, game = currentGame()): GamePrefBlock {
     smapiBuilds: s.smapiBuilds || defaultGamePrefs.smapiBuilds,
     showSmapiConsole: on(s.showSmapiConsole, true),
   }
+  const launch =
+    cachedSpecDefault('defaultLaunchMethod', game) ?? defaultGamePrefs.defaultLaunchMethod
   if (!got) {
-    return { ...defaultGamePrefs, ...loader }
+    return { ...defaultGamePrefs, defaultLaunchMethod: launch, ...loader }
   }
   return {
     backupBeforePlay: got.backupBeforePlay || defaultGamePrefs.backupBeforePlay,
@@ -70,7 +73,7 @@ export function gamePrefs(s: Settings, game = currentGame()): GamePrefBlock {
     cosmeticConflicts: got.cosmeticConflicts || defaultGamePrefs.cosmeticConflicts,
     enableRequirements: got.enableRequirements || defaultGamePrefs.enableRequirements,
     missingRequirements: got.missingRequirements || defaultGamePrefs.missingRequirements,
-    defaultLaunchMethod: got.defaultLaunchMethod || defaultGamePrefs.defaultLaunchMethod,
+    defaultLaunchMethod: got.defaultLaunchMethod || launch,
     consoleLevel: got.consoleLevel || defaultGamePrefs.consoleLevel,
     consoleTimestamps: on(got.consoleTimestamps, false),
     consoleFollow: on(got.consoleFollow, true),

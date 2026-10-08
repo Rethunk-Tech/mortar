@@ -98,7 +98,7 @@ const (
 	DefaultRunsKept                   = 20
 	DefaultConsoleLogCap              = 20000
 	DefaultParallelDownloads          = 3
-	DefaultUpdateCheckIntervalMinutes = 60
+	DefaultUpdateCheckIntervalMinutes = 180
 	DefaultStoreRetentionDays         = 30
 	DefaultTrashRetentionDays         = 30
 	DefaultHistoryEventsKept          = 200
@@ -133,7 +133,7 @@ func defaultPrefs() Settings {
 		OnPlay:                     OnPlayStay,
 		ParallelDownloads:          DefaultParallelDownloads,
 		UpdateCheckIntervalMinutes: DefaultUpdateCheckIntervalMinutes,
-		NotifyModUpdates:           off(),
+		NotifyModUpdates:           on(),
 		UpdateDigest:               UpdateDigestDaily,
 		KeepDownloadArchives:       false,
 		StoreRetentionDays:         DefaultStoreRetentionDays,
@@ -145,7 +145,7 @@ func defaultPrefs() Settings {
 		TrashRetentionDays:         DefaultTrashRetentionDays,
 		HistoryEventsKept:          DefaultHistoryEventsKept,
 		Antivirus:                  AntivirusAutomatic,
-		NotifyDownloadFinished:     on(),
+		NotifyDownloadFinished:     off(),
 		NotifyDownloadFailed:       on(),
 		NotifyRunCrashed:           on(),
 		Density:                    DensityComfortable,
@@ -165,7 +165,7 @@ func defaultPrefs() Settings {
 		AutoRetryDownloads:         AutoRetryOff,
 		PauseDownloadsWhilePlaying: false,
 		SidebarBadges:              SidebarBadgesAll,
-		ShareIncludeDisabledMods:   off(),
+		ShareIncludeDisabledMods:   on(),
 		ShareIncludeFomodChoices:   on(),
 		ShareIncludeNotes:          on(),
 		ShareIncludeConfigFiles:    on(),
@@ -174,7 +174,17 @@ func defaultPrefs() Settings {
 		ShowAdultContent:           false,
 		LaunchAtLogin:              false,
 		StartMinimised:             false,
-		RememberWindow:             false,
+		RememberWindow:             true,
+		KeepInTray:                 true,
+		IncludeBetaReleases:        true,
+		LanSharing:                 true,
+		LanPort:                    0,
+		AskEndorseMods:             off(),
+		DesktopDownloadFinished:    off(),
+		DesktopDownloadFailed:      on(),
+		DesktopRunCrashed:          on(),
+		DesktopModUpdates:          off(),
+		CheckModUpdatesOnStart:     on(),
 		ExtensionConnection:        ExtensionAllow,
 		Games:                      map[string]*GameSettings{},
 	}
@@ -191,7 +201,7 @@ func normalizePrefs(s *Settings) {
 		s.UpdateCheckIntervalMinutes = DefaultUpdateCheckIntervalMinutes
 	}
 	if s.NotifyModUpdates == nil {
-		s.NotifyModUpdates = off()
+		s.NotifyModUpdates = on()
 	}
 	normalizeUpdateDigest(s)
 	if s.StoreRetentionDays < MinStoreRetentionDays || s.StoreRetentionDays > MaxStoreRetentionDays {
@@ -222,7 +232,7 @@ func normalizePrefs(s *Settings) {
 		s.HistoryEventsKept = DefaultHistoryEventsKept
 	}
 	if s.NotifyDownloadFinished == nil {
-		s.NotifyDownloadFinished = on()
+		s.NotifyDownloadFinished = off()
 	}
 	if s.NotifyDownloadFailed == nil {
 		s.NotifyDownloadFailed = on()
@@ -267,7 +277,7 @@ func normalizePrefs(s *Settings) {
 		s.SidebarBadges = SidebarBadgesAll
 	}
 	if s.ShareIncludeDisabledMods == nil {
-		s.ShareIncludeDisabledMods = off()
+		s.ShareIncludeDisabledMods = on()
 	}
 	if s.ShareIncludeFomodChoices == nil {
 		s.ShareIncludeFomodChoices = on()
@@ -295,11 +305,11 @@ func normalizePrefs(s *Settings) {
 	}
 	for id, g := range s.Games {
 		if g == nil {
-			d := defaultGameSettings()
+			d := defaultGameSettingsFor(id)
 			s.Games[id] = &d
 			continue
 		}
-		normalizeGame(g)
+		normalizeGame(id, g)
 	}
 }
 

@@ -7,6 +7,7 @@ import {
   DEFAULT_LIST_COLUMN_SORT,
   DEFAULT_VISIBLE_LIST_COLUMNS,
   fitListColumns,
+  type ListColumnId,
   type ListRow,
   moveListColumn,
   nextListSort,
@@ -80,12 +81,6 @@ const details = (over: {
       available: true,
     },
   }) as Details
-
-test('includes Size after Status in the default column set', () => {
-  const status = DEFAULT_VISIBLE_LIST_COLUMNS.indexOf('status')
-  expect(status).toBeGreaterThanOrEqual(0)
-  expect(DEFAULT_VISIBLE_LIST_COLUMNS[status + 1]).toBe('size')
-})
 
 test('resets settings list columns from getInitialState', () => {
   useSettings.setState({
@@ -201,7 +196,17 @@ test('a column a loader or source contributes is left out where the profile lack
 })
 
 test('columns that would squeeze the name out are dropped, the least useful first', () => {
-  const all = [...DEFAULT_VISIBLE_LIST_COLUMNS]
+  const all: ListColumnId[] = [
+    'on',
+    'name',
+    'version',
+    'author',
+    'source',
+    'category',
+    'status',
+    'size',
+    'startup',
+  ]
   expect(fitListColumns(all, 0)).toEqual(all)
   expect(fitListColumns(all, 2000)).toEqual(all)
   // 1280 wide with the profile sidebar and the details panel open leaves the list about 700px.

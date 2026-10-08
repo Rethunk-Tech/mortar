@@ -25,7 +25,7 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 	if d.ParallelDownloads != DefaultParallelDownloads {
 		t.Fatalf("parallel = %d", d.ParallelDownloads)
 	}
-	if d.UpdateCheckIntervalMinutes != DefaultUpdateCheckIntervalMinutes || ToggleOn(d.NotifyModUpdates) {
+	if d.UpdateCheckIntervalMinutes != DefaultUpdateCheckIntervalMinutes || !ToggleOn(d.NotifyModUpdates) {
 		t.Fatal("update-check defaults")
 	}
 	if d.KeepDownloadArchives || d.StoreRetentionDays != DefaultStoreRetentionDays {
@@ -43,7 +43,7 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 	if d.TrashRetentionDays != DefaultTrashRetentionDays || d.HistoryEventsKept != DefaultHistoryEventsKept {
 		t.Fatal("trash / history defaults")
 	}
-	if !ToggleOn(d.NotifyDownloadFinished) || !ToggleOn(d.NotifyDownloadFailed) || !ToggleOn(d.NotifyRunCrashed) {
+	if ToggleOn(d.NotifyDownloadFinished) || !ToggleOn(d.NotifyDownloadFailed) || !ToggleOn(d.NotifyRunCrashed) {
 		t.Fatal("notify defaults")
 	}
 	if d.Density != DensityComfortable || d.Theme != ThemeDark || d.GridCardSize != GridCardMedium || !ToggleOn(d.ShowAuthorOnCards) {
@@ -58,7 +58,7 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 	if !ToggleOn(d.ReuseFomodChoices) || !d.DriftChecksOn() || d.SmapiBuilds != SmapiBuildsShow {
 		t.Fatal("fomod / drift / smapi-build defaults")
 	}
-	if !d.AutoInstallMortar() || d.AutoTrackNexus || d.GamePrefs("stardew").DefaultLaunchMethod != LaunchSteam || !ToggleOn(d.ShowSmapiConsole) {
+	if !d.AutoInstallMortar() || d.AutoTrackNexus || d.GamePrefs("stardew").DefaultLaunchMethod != LaunchDirect || d.GamePrefs("valheim").DefaultLaunchMethod != LaunchSteam || !ToggleOn(d.ShowSmapiConsole) {
 		t.Fatal("update / launch defaults")
 	}
 	if d.GamePrefs("stardew").ConsoleLevel != ConsoleLevelWarn || ToggleOn(d.GamePrefs("stardew").ConsoleTimestamps) || !ToggleOn(d.GamePrefs("stardew").ConsoleFollow) {
@@ -122,6 +122,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"startMinimised": "true", "rememberWindow": "true", "extensionConnection": "off",
 		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep",
 		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "watchFolders": "/var/tmp/mortar-watch", "syncFolder": "/var/tmp/mortar-sync", "browseFilters": "installed=hide", "showAdultContent": "true",
+		"keepInTray": "false", "includeBetaReleases": "false", "includePrereleaseModVersions": "true", "askEndorseMods": "true", "listColumns": "on,name,version",
 	}
 	vortex := filepath.Join(t.TempDir(), "Vortex")
 	if err := os.MkdirAll(filepath.Join(vortex, "state.v2"), 0o750); err != nil {

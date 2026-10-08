@@ -1628,7 +1628,7 @@ func resetSettings(svc *settings.Service, key, game string) error {
 			}
 			continue
 		}
-		if err := svc.SetByKey(spec.Key, spec.Default, game); err != nil {
+		if err := svc.SetByKey(spec.Key, spec.DefaultFor(game), game); err != nil {
 			return err
 		}
 	}

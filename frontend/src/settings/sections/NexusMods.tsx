@@ -292,10 +292,10 @@ export function NexusSignIn() {
 
 export function NexusMods() {
   const { signedIn, name, premium } = useNexus()
-  const [askEndorse, setAskEndorse] = useState(true)
+  const [askEndorse, setAskEndorse] = useState(false)
   useEffect(() => {
     GetSettings()
-      .then((settings) => setAskEndorse(settings.askEndorseMods ?? true))
+      .then((settings) => setAskEndorse(settings.askEndorseMods ?? false))
       .catch(reportUnexpected)
   }, [])
   const onAskEndorse = (on: boolean) => {

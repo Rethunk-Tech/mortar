@@ -5,15 +5,15 @@ import "testing"
 func TestResolveOrder(t *testing.T) {
 	t.Parallel()
 	var empty Settings
-	if got := ResolveAt(empty, "defaultLaunchMethod", Scope{Game: "stardew"}, nil); got != LaunchSteam {
+	if got := ResolveAt(empty, "defaultLaunchMethod", Scope{Game: "stardew"}, nil); got != LaunchDirect {
 		t.Fatalf("default = %q", got)
 	}
 	game := Settings{}
-	putGame(&game, "stardew", GameSettings{DefaultLaunchMethod: LaunchDirect})
-	if got := ResolveAt(game, "defaultLaunchMethod", Scope{Game: "stardew"}, nil); got != LaunchDirect {
+	putGame(&game, "stardew", GameSettings{DefaultLaunchMethod: LaunchSteam})
+	if got := ResolveAt(game, "defaultLaunchMethod", Scope{Game: "stardew"}, nil); got != LaunchSteam {
 		t.Fatalf("game = %q", got)
 	}
-	if got := ResolveAt(game, "defaultLaunchMethod", Scope{Game: "stardew"}, map[string]string{"defaultLaunchMethod": LaunchSteam}); got != LaunchSteam {
+	if got := ResolveAt(game, "defaultLaunchMethod", Scope{Game: "stardew"}, map[string]string{"defaultLaunchMethod": LaunchDirect}); got != LaunchDirect {
 		t.Fatalf("profile = %q", got)
 	}
 }

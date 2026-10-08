@@ -2,15 +2,15 @@ package settings
 
 import "testing"
 
-func TestAskEndorseModsDefaultsOnAndCanBeDisabled(t *testing.T) {
+func TestAskEndorseModsDefaultsOffAndCanBeEnabled(t *testing.T) {
 	store, _ := open(t)
-	if store.Get().AskEndorseMods == nil || !*store.Get().AskEndorseMods {
-		t.Fatal("ask endorse mods default is off")
+	if store.Get().AskEndorseMods == nil || *store.Get().AskEndorseMods {
+		t.Fatal("ask endorse mods default is on")
 	}
-	if err := NewService(store).SetAskEndorseMods(false); err != nil {
+	if err := NewService(store).SetAskEndorseMods(true); err != nil {
 		t.Fatal(err)
 	}
-	if got := store.Get().AskEndorseMods; got == nil || *got {
+	if got := store.Get().AskEndorseMods; got == nil || !*got {
 		t.Fatalf("ask endorse mods = %v", got)
 	}
 }

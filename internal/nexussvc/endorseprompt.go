@@ -158,7 +158,7 @@ func (s *Service) RecordCleanRun(runID string, mods []CleanMod) ([]EndorsePrompt
 		return nil, errors.New("nexus: run id is required")
 	}
 	current := s.store.Get()
-	ask := current.AskEndorseMods == nil || *current.AskEndorseMods
+	ask := current.AskEndorseMods != nil && *current.AskEndorseMods
 	return s.prompts.record(runID, mods, ask && s.Account().SignedIn)
 }
 
