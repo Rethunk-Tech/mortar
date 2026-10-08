@@ -106,3 +106,15 @@ func TestJSONSchemaKeepsOrderAndTakesDefaultsAndGMCM(t *testing.T) {
 		t.Fatalf("list/unknown %+v %+v", s.Sections[1], e[3])
 	}
 }
+
+func TestSetKeepsBOMAndCRLF(t *testing.T) {
+	text := "\ufeff" + strings.ReplaceAll(fixture(t), "\r\n", "\n")
+	text = strings.ReplaceAll(text, "\n", "\r\n")
+	got, err := parseCfg(text).set("General", "LeaveDelay", "150")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := strings.Replace(text, "LeaveDelay = 120", "LeaveDelay = 150", 1); got != want {
+		t.Fatalf("BOM and CRLF must survive a write:\n%q", got)
+	}
+}

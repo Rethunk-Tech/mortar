@@ -13,7 +13,7 @@ func FuzzCfgSetKeepsOtherLines(f *testing.F) {
 	f.Add("[x]\n# Setting type: Int32\n# Acceptable value range: From 1 to 5\nN = 3\n=\n[\n")
 	f.Fuzz(func(t *testing.T, text string) {
 		d := parseCfg(text)
-		norm := strings.ReplaceAll(text, "\r\n", "\n")
+		norm := strings.ReplaceAll(strings.TrimPrefix(text, "\ufeff"), "\r\n", "\n")
 		for _, listed := range d.entries {
 			// A repeated key edits its first line, which is the entry set targets.
 			e, _ := d.find(listed.section, listed.Key)
@@ -21,6 +21,7 @@ func FuzzCfgSetKeepsOtherLines(f *testing.F) {
 			if err != nil {
 				continue
 			}
+			out = strings.ReplaceAll(strings.TrimPrefix(out, "\ufeff"), "\r\n", "\n")
 			got, want := strings.Split(out, "\n"), strings.Split(norm, "\n")
 			if len(got) != len(want) {
 				t.Fatalf("line count %d, want %d", len(got), len(want))
