@@ -109,6 +109,9 @@ func startCmd(ctx context.Context, env []string, dir, name string, args []string
 	if len(env) > 0 {
 		cmd.Env = append(os.Environ(), env...)
 	}
+	if ownsConsole(hide) {
+		return startOwnConsole(env, dir, name, args)
+	}
 	hideWindow(cmd, hide)
 	var stdin, hold *os.File
 	var out *capture

@@ -4,7 +4,6 @@ package launch
 
 import (
 	"errors"
-	"os/exec"
 
 	"golang.org/x/sys/windows"
 )
@@ -14,7 +13,10 @@ func WaitError(err error) Exit {
 	if err == nil {
 		return Exit{Code: 0}
 	}
-	if ee, ok := errors.AsType[*exec.ExitError](err); ok {
+	if ee, ok := errors.AsType[interface {
+		error
+		ExitCode() int
+	}](err); ok {
 		return Exit{Code: ee.ExitCode()}
 	}
 	return Exit{Code: 1}
