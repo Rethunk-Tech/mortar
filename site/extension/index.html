@@ -49,7 +49,11 @@
               href="https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest/download/mortar-browser-extension.xpi"
               >Get it for Firefox</a
             >
-            <a class="btn-ghost" href="https://chromewebstore.google.com/detail/hboeppdoecbglcmfojappgehkbecdfbi">Get it for Chrome and Edge</a>
+            <a
+              class="btn-ghost"
+              href="https://chromewebstore.google.com/detail/hboeppdoecbglcmfojappgehkbecdfbi"
+              >Get it for Chrome and Edge</a
+            >
           </div>
           <p class="cta-note">
             Free and open source. Needs Mortar on the same computer.
@@ -157,23 +161,26 @@
               to mark mods and to pass Mod Manager Download links to the Mortar
               desktop app installed on your own computer, using the browser's
               native messaging. The only data exchanged is Nexus mod ids, file
-              ids and nxm:// links going to Mortar, and installed-mod and update
-              information coming back. It runs only on
-              https://www.nexusmods.com. The extension makes no network requests
-              of its own, has no server, analytics or telemetry, and sends
-              nothing to the developers or any third party. Your display choice
-              and filter settings are stored in your browser's extension storage
-              and never leave it. Uninstalling the extension removes them.
+              ids and nxm:// links, and Thunderstore package names, going to
+              Mortar, and installed-mod and update information coming back. It
+              runs only on https://www.nexusmods.com and on Thunderstore package
+              pages (https://thunderstore.io/c/*/p/*). The extension makes no
+              network requests of its own, has no server, analytics or
+              telemetry, and sends nothing to the developers or any third party.
+              Your display choice and filter settings are stored in your
+              browser's extension storage and never leave it. Uninstalling the
+              extension removes them.
             </p>
           </details>
           <details>
             <summary>Permissions it asks for</summary>
             <p>
               <code>nativeMessaging</code> to reach Mortar on your computer;
-              access to <code>www.nexusmods.com</code> only, to read and mark
-              its pages; <code>scripting</code> to add its marks to Nexus tabs
-              that were already open when it was installed;
-              <code>storage</code> for your display settings;
+              access to <code>www.nexusmods.com</code>, to read and mark its
+              pages, and to Thunderstore package pages, to mark a package and
+              add its Install in Mortar button; <code>scripting</code> to add
+              its marks to Nexus tabs that were already open when it was
+              installed; <code>storage</code> for your display settings;
               <code>alarms</code> to refresh the update check.
             </p>
           </details>
