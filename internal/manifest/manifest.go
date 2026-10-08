@@ -307,7 +307,9 @@ func (i Invalid) Error() string {
 
 // Scan finds mods under root like SMAPI: it stops descending at a folder holding a manifest.json and skips
 // subfolders whose names start with a dot. A manifest that does not parse is skipped, as SMAPI reports it
-// as invalid rather than loading it.
+// as invalid rather than loading it. Unlike SMAPI it also descends into a folder that holds other files (a stray
+// config.json or readme.pdf beside a mod folder): every caller installs each mod found as its own folder, so the
+// mod loads once Mortar deploys it, where SMAPI would have reported the outer folder as one broken mod.
 func Scan(root string) ([]Mod, error) {
 	mods, _, err := ScanInvalid(root)
 	return mods, err
