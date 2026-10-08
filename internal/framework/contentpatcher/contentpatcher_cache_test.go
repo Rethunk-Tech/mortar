@@ -1,6 +1,7 @@
 package contentpatcher
 
 import (
+	"bytes"
 	"image"
 	"image/color"
 	"os"
@@ -87,11 +88,11 @@ func TestContentPackDiskCache(t *testing.T) {
 	entry.Pack = nil
 	cache.Packs[filepath.Clean(im.Folder)] = entry
 	cache.Version = contentPackParserVersion - 1
-	raw, err := encodePackCache(cache)
-	if err != nil {
+	var raw bytes.Buffer
+	if err := writePackCache(&raw, cache); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(cachePath, raw, 0o600); err != nil {
+	if err := os.WriteFile(cachePath, raw.Bytes(), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	resetContentPackCaches()
@@ -170,7 +171,7 @@ func readDiskPackCache(t *testing.T, path string) diskPackCache {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cache, ok := decodePackCache(raw)
+	cache, ok := readPackCache(bytes.NewReader(raw))
 	if !ok {
 		t.Fatal("decode pack cache")
 	}
@@ -196,7 +197,7 @@ func TestPackDiskCacheSizeAndLoad(t *testing.T) {
 	if len(packed) >= 2<<20 {
 		t.Fatalf("cache %d bytes for %d packs, want under 2MB", len(packed), len(cache.Packs))
 	}
-	got, ok := decodePackCache(packed)
+	got, ok := readPackCache(bytes.NewReader(packed))
 	if !ok || !reflect.DeepEqual(got, cache) {
 		t.Fatal("cache does not round-trip")
 	}
@@ -207,7 +208,7 @@ func BenchmarkPackDiskCacheLoad(b *testing.B) {
 	_, packed := generatedPackCache(b)
 	b.SetBytes(int64(len(packed)))
 	for b.Loop() {
-		cache, ok := decodePackCache(packed)
+		cache, ok := readPackCache(bytes.NewReader(packed))
 		if !ok {
 			b.Fatal("decode")
 		}
@@ -330,11 +331,11 @@ func generatedPackCache(t testing.TB) (diskPackCache, []byte) {
 			Pack:        pack,
 		}
 	}
-	packed, err := encodePackCache(cache)
-	if err != nil {
+	var packed bytes.Buffer
+	if err := writePackCache(&packed, cache); err != nil {
 		t.Fatal(err)
 	}
-	return cache, packed
+	return cache, packed.Bytes()
 }
 
 func TestScanBenchConflictRSS(t *testing.T) {

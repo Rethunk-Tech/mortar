@@ -1,6 +1,7 @@
 package contentpatcher
 
 import (
+	"bufio"
 	"bytes"
 	"cmp"
 	"compress/gzip"
@@ -874,31 +875,59 @@ func loadPackDiskCache() string {
 	packDiskState.path = path
 	packDiskState.entries = map[string]diskPackEntry{}
 	packDiskState.dirty = false
-	raw, err := fsx.ReadFile(path)
+	f, err := fsx.Open(path)
 	if err != nil {
 		return path
 	}
-	if cache, ok := decodePackCache(raw); ok {
+	defer func() { _ = f.Close() }()
+	if cache, ok := readPackCache(bufio.NewReader(f)); ok {
 		packDiskState.entries = cache.Packs
 	}
 	return path
 }
 
-// The pack cache is gob, not JSON: it holds every pack's cell sets, tens of MB that a start decodes in full, and gob
-// reads them several times faster. It is left uncompressed for the same reason.
-func encodePackCache(cache diskPackCache) ([]byte, error) {
-	var buf bytes.Buffer
-	err := gob.NewEncoder(&buf).Encode(cache)
-	return buf.Bytes(), err
+type packCacheHeader struct {
+	Version int
+	Count   int
 }
 
-// decodePackCache reads a cache this parser version wrote; anything else reads as no cache.
-func decodePackCache(raw []byte) (diskPackCache, bool) {
-	var cache diskPackCache
-	if gob.NewDecoder(bytes.NewReader(raw)).Decode(&cache) != nil || cache.Version != contentPackParserVersion || cache.Packs == nil {
+type packCacheRecord struct {
+	Root  string
+	Entry diskPackEntry
+}
+
+// The pack cache is a gob stream, not JSON: it holds every pack's cell sets, tens of MB that a start decodes in full,
+// and gob reads them several times faster. One value per pack lets a save and a load hold a single pack at a time. It
+// is left uncompressed for the same reason.
+func writePackCache(w io.Writer, cache diskPackCache) error {
+	enc := gob.NewEncoder(w)
+	if err := enc.Encode(packCacheHeader{Version: cache.Version, Count: len(cache.Packs)}); err != nil {
+		return err
+	}
+	for root, entry := range cache.Packs {
+		if err := enc.Encode(packCacheRecord{Root: root, Entry: entry}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// readPackCache reads a cache this parser version wrote; anything else reads as no cache.
+func readPackCache(r io.Reader) (diskPackCache, bool) {
+	dec := gob.NewDecoder(r)
+	var head packCacheHeader
+	if dec.Decode(&head) != nil || head.Version != contentPackParserVersion || head.Count < 0 {
 		return diskPackCache{}, false
 	}
-	return cache, true
+	packs := make(map[string]diskPackEntry, min(head.Count, 4096))
+	for range head.Count {
+		var rec packCacheRecord
+		if dec.Decode(&rec) != nil {
+			return diskPackCache{}, false
+		}
+		packs[rec.Root] = rec.Entry
+	}
+	return diskPackCache{Version: head.Version, Packs: packs}, true
 }
 
 func encodeDiskPack(pack diskCachedPack) ([]byte, error) {
@@ -952,14 +981,7 @@ func flushPackDiskCache(mods []framework.Mod) {
 		packDiskState.Unlock()
 		return
 	}
-	packed, err := encodePackCache(diskPackCache{
-		Version: contentPackParserVersion,
-		Packs:   packDiskState.entries,
-	})
-	if err != nil {
-		packDiskState.Unlock()
-		return
-	}
+	entries := maps.Clone(packDiskState.entries)
 	packDiskState.dirty = false
 	packDiskState.Unlock()
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
@@ -968,7 +990,14 @@ func flushPackDiskCache(mods []framework.Mod) {
 		packDiskState.Unlock()
 		return
 	}
-	if err := datadir.WriteFile(path, packed, 0o600); err != nil {
+	err := datadir.WriteStream(path, 0o600, func(w io.Writer) error {
+		bw := bufio.NewWriter(w)
+		if err := writePackCache(bw, diskPackCache{Version: contentPackParserVersion, Packs: entries}); err != nil {
+			return err
+		}
+		return bw.Flush()
+	})
+	if err != nil {
 		packDiskState.Lock()
 		packDiskState.dirty = true
 		packDiskState.Unlock()
