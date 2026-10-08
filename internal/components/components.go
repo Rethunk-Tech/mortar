@@ -24,6 +24,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -631,9 +632,26 @@ func parseSignature(data []byte) ([]byte, error) {
 	return nil, errors.New("component signature is not an Ed25519 signature")
 }
 
+// bundled is the decoded manifest compiled into Mortar, remembered with the sandbox switch it was decoded under. It is
+// shared like the active client's manifest: callers read it and never write into it.
+var bundled struct {
+	mu     sync.Mutex
+	env    string
+	loaded bool
+	m      Manifest
+	err    error
+}
+
 // BundledManifest returns the manifest compiled into Mortar.
 func BundledManifest() (Manifest, error) {
-	return Decode(bundledJSON)
+	env := os.Getenv(enableGamesEnv)
+	bundled.mu.Lock()
+	defer bundled.mu.Unlock()
+	if !bundled.loaded || bundled.env != env {
+		bundled.m, bundled.err = Decode(bundledJSON)
+		bundled.env, bundled.loaded = env, true
+	}
+	return bundled.m, bundled.err
 }
 
 // BundledAccepted is the game versions the bundled loader component of game accepts (">=1.6.14"), empty when it
