@@ -1,6 +1,11 @@
 package lan
 
-import "testing"
+import (
+	"context"
+	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+)
 
 func TestRulesBlock(t *testing.T) {
 	t.Parallel()
@@ -31,6 +36,34 @@ func TestRulesBlock(t *testing.T) {
 	} {
 		if got := rulesBlock(tc.rules, exe, tc.anyAddr); got != tc.want {
 			t.Errorf("%s: rulesBlock = %v, want %v", name, got, tc.want)
+		}
+	}
+}
+
+func TestApplyDoesNotListenAtLaunchWithoutRules(t *testing.T) {
+	t.Parallel()
+	for name, tc := range map[string]struct {
+		blocked    bool
+		wantListen bool
+	}{"rules missing": {true, false}, "rules present": {false, true}} {
+		store, err := settings.OpenIn(t.TempDir())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := store.Update(func(v *settings.Settings) { v.LanSharing, v.LanStarted = true, true }); err != nil {
+			t.Fatal(err)
+		}
+		svc := NewService(Deps{Settings: store})
+		svc.checkFirewall = func(context.Context, bool) (bool, error) { return tc.blocked, nil }
+		t.Cleanup(svc.Shutdown)
+		if err := svc.Apply(); err != nil {
+			t.Fatalf("%s: %v", name, err)
+		}
+		if got := svc.listening(); got != tc.wantListen {
+			t.Errorf("%s: listening = %v, want %v", name, got, tc.wantListen)
+		}
+		if got := store.Get().LanStarted; got != tc.wantListen {
+			t.Errorf("%s: lanStarted = %v, want %v", name, got, tc.wantListen)
 		}
 	}
 }

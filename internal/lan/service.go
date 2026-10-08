@@ -101,6 +101,8 @@ type Service struct {
 	instanceID string
 
 	useMu sync.Mutex
+	// checkFirewall reads the firewall state; tests replace it.
+	checkFirewall func(ctx context.Context, anyAddr bool) (bool, error)
 	// rulesAny is the allow-any-address setting the firewall rules were last written for.
 	rulesAny bool
 	lifeMu   sync.Mutex
@@ -165,17 +167,18 @@ func NewService(deps Deps) *Service {
 		instanceID = fmt.Sprintf("%d", time.Now().UnixNano())
 	}
 	service := &Service{
-		deps:        deps,
-		name:        localName(),
-		instanceID:  instanceID,
-		peers:       map[string]peerRecord{},
-		wake:        make(chan struct{}, 1),
-		lastReceive: map[string]time.Time{},
-		nonces:      map[string]nonceRecord{},
-		grants:      map[string]transferGrant{},
-		outgoing:    map[string]*outgoingState{},
-		incoming:    map[int]incomingTransfer{},
-		active:      map[int]context.CancelFunc{},
+		deps:          deps,
+		checkFirewall: firewallBlocked,
+		name:          localName(),
+		instanceID:    instanceID,
+		peers:         map[string]peerRecord{},
+		wake:          make(chan struct{}, 1),
+		lastReceive:   map[string]time.Time{},
+		nonces:        map[string]nonceRecord{},
+		grants:        map[string]transferGrant{},
+		outgoing:      map[string]*outgoingState{},
+		incoming:      map[int]incomingTransfer{},
+		active:        map[int]context.CancelFunc{},
 	}
 	if deps.Dir != "" {
 		service.book.dir = filepath.Join(deps.Dir, "lan")
@@ -223,6 +226,15 @@ func (s *Service) Apply() error {
 	cfg := s.deps.Settings.Get()
 	if !cfg.LanSharing {
 		return s.stop()
+	}
+	if cfg.LanStarted && !s.listening() {
+		// Listening with the rules gone makes Windows prompt and write its own block rules, and a prompt at launch
+		// has no context for the user: forget the flag instead, so the next LAN use runs the elevated step.
+		if blocked, err := s.checkFirewall(context.Background(), cfg.LanAllowAnyAddress); err != nil || blocked {
+			log.Printf("LAN sharing: firewall rules are missing, so it stays off until it is used (%v)", err)
+			_, uerr := s.deps.Settings.Update(func(v *settings.Settings) { v.LanStarted = false })
+			return uerr
+		}
 	}
 	if cfg.LanStarted || s.listening() {
 		if !s.listening() {
