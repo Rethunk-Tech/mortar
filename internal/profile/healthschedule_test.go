@@ -35,7 +35,7 @@ func TestHealthPassRunsWeeklyFlaggedAndNotWhileRunning(t *testing.T) {
 	t.Parallel()
 	e, svc, p := healthEnv(t)
 	seen := &counted{}
-	svc.HealthEmit = seen.emit
+	svc.Emit = seen.emit
 	now := time.Now()
 	svc.healthPass(context.Background(), now)
 	if seen.len() != 1 {
@@ -103,7 +103,7 @@ func TestRunHealthChecksWaitsForStartupToSettle(t *testing.T) {
 	t.Parallel()
 	_, svc, _ := healthEnv(t)
 	seen := &counted{}
-	svc.HealthEmit = seen.emit
+	svc.Emit = seen.emit
 	ctx, cancel := context.WithCancel(context.Background())
 	settled := make(chan struct{})
 	done := make(chan struct{})
@@ -168,7 +168,7 @@ func TestAnotherBuildsHealthCheckIsNotShownAndRunsAgain(t *testing.T) {
 	t.Parallel()
 	e, svc, p := healthEnv(t)
 	seen := &counted{}
-	svc.HealthEmit = seen.emit
+	svc.Emit = seen.emit
 	dir, err := e.ProfileDir("stardew", p.ID)
 	if err != nil {
 		t.Fatal(err)

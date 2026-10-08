@@ -265,6 +265,8 @@ type Store struct {
 	Running func(game, id string) bool
 	// GameRunning reports whether the game process is up at all, however it was started; nil means never.
 	GameRunning func(game string) bool
+	// GameModsProgress is told before each folder an import or move copies; nil means nobody listens.
+	GameModsProgress func(GameModsProgress)
 	// NewModsEnabled reports whether newly installed entries start enabled; nil means enabled.
 	NewModsEnabled func() bool
 	// OldFilesMode returns the game's oldFilesOnUpdate setting; nil means ask.

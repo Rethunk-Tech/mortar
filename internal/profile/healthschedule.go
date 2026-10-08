@@ -81,12 +81,12 @@ func (s *Service) recordHealth(game, id string, findings []HealthFinding, now ti
 			log.Printf("health check: %v", err)
 		}
 	}
-	if s.HealthEmit != nil {
+	if s.Emit != nil {
 		shown := own
 		if s.badgeCarrier(game) == id {
 			shown += wide
 		}
-		s.HealthEmit(HealthEvent, HealthNotice{Game: game, Profile: id, Findings: shown})
+		s.Emit(HealthEvent, HealthNotice{Game: game, Profile: id, Findings: shown})
 	}
 }
 

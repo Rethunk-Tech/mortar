@@ -32,10 +32,10 @@ type Service struct {
 	// HealthJournals lists the game's launch journals a crash left behind, and HealthRecover finishes them.
 	HealthJournals func(game string) []string
 	HealthRecover  func(game string) error
-	// HealthEmit sends HealthEvent after each check.
-	HealthEmit func(name string, data any)
-	healthMu   sync.Mutex
-	healthDue  map[string]bool
+	// Emit sends HealthEvent after each check and GameModsProgressEvent while mods are copied in.
+	Emit      func(name string, data any)
+	healthMu  sync.Mutex
+	healthDue map[string]bool
 }
 
 // ShareFacts is Store.ShareFacts.
@@ -47,7 +47,13 @@ func NewService(store *Store, home string, settings *settings.Store) *Service {
 		store.OldFilesMode = func(game string) string { return settings.Get().GamePrefs(game).OldFilesOnUpdate }
 	}
 	store.home, store.settings = home, settings
-	return &Service{store: store, home: home, settings: settings}
+	svc := &Service{store: store, home: home, settings: settings}
+	store.GameModsProgress = func(p GameModsProgress) {
+		if svc.Emit != nil {
+			svc.Emit(GameModsProgressEvent, p)
+		}
+	}
+	return svc
 }
 
 func (s *Service) gameModsDir(id string) (string, error) {

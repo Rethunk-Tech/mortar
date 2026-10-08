@@ -3,6 +3,8 @@ package profile
 import (
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 func TestMoveGameModsMovesNewFoldersAndSkipsHeldOnes(t *testing.T) {
@@ -44,4 +46,73 @@ func TestMoveGameModsMovesNewFoldersAndSkipsHeldOnes(t *testing.T) {
 	if err != nil || len(hist) == 0 || hist[0].Kind != historyImported {
 		t.Fatalf("history = %+v, %v", hist, err)
 	}
+}
+
+func modAt(id, version string) string {
+	return `{"Name":"` + id + `","Author":"me","Version":"` + version + `","UniqueID":"` + id + `"}`
+}
+
+func TestGameModsDiffTracksWhatTheProfileLacks(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	game := t.TempDir()
+	writeFile(t, game, "A/manifest.json", modAt("me.a", "1.0.0"))
+	writeFile(t, game, "B/manifest.json", modAt("me.b", "1.0.0"))
+	writeFile(t, game, "Bad/manifest.json", "{not json")
+	writeFile(t, game, "Quiet/manifest.json", modAt("me.quiet", "1.0.0"))
+	p := mustCreate(t, e, "P")
+	folders := []string{"A", "B", "Quiet"}
+	if _, err := e.SyncGameMods(t.Context(), "stardew", p.ID, game, folders, false, false); err != nil {
+		t.Fatal(err)
+	}
+	diff := func() GameModsDiff {
+		t.Helper()
+		d, err := e.GameModsDiff("stardew", p.ID, game, []string{"Quiet"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return d
+	}
+	d := diff()
+	if len(d.Missing) != 0 || len(d.Different) != 0 || d.Same != 2 {
+		t.Fatalf("fully imported folder differs: %+v", d)
+	}
+	if len(d.Unreadable) != 1 || d.Unreadable[0].Reason == "" {
+		t.Fatalf("unreadable = %+v", d.Unreadable)
+	}
+
+	if _, err := e.RemoveEntry("stardew", p.ID, mustKey(t, e, p.ID, "smapi:me.b")); err != nil {
+		t.Fatal(err)
+	}
+	if d = diff(); len(d.Missing) != 1 || d.Missing[0].Name != "me.b" || filepath.Base(d.Missing[0].Folder) != "B" {
+		t.Fatalf("removed mod not missing: %+v", d)
+	}
+
+	writeFile(t, game, "A/manifest.json", modAt("me.a", "1.2.0"))
+	d = diff()
+	if len(d.Different) != 1 || d.Different[0].Newer != "folder" || d.Different[0].ProfileVersion != "1.0.0" {
+		t.Fatalf("newer folder copy: %+v", d)
+	}
+	res, err := e.SyncGameMods(t.Context(), "stardew", p.ID, game, []string{"A", "B"}, false, true)
+	if err != nil || res.Imported != 2 {
+		t.Fatalf("sync = %+v, %v", res, err)
+	}
+	if d = diff(); len(d.Missing) != 0 || len(d.Different) != 0 {
+		t.Fatalf("after sync: %+v", d)
+	}
+}
+
+func mustKey(t *testing.T, e env, id string, modID mod.ID) string {
+	t.Helper()
+	p, err := e.load("stardew", id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, en := range p.Entries {
+		if en.Mods[0].ID == modID {
+			return en.Key
+		}
+	}
+	t.Fatalf("no entry holds %s", modID)
+	return ""
 }

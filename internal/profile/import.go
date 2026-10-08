@@ -144,11 +144,16 @@ func classifyFolder(dir, name string) (gameModSlot, bool) {
 	if bundledFolder(name) != "" {
 		return gameModSlot{}, false
 	}
-	out := GameModOutcome{Name: label}
+	failed := func(reason string) (gameModSlot, bool) {
+		return gameModSlot{
+			folder:     gameModFolder{dir: dir},
+			outcome:    GameModOutcome{Name: label, Status: outcomeFailed, Reason: reason},
+			hasOutcome: true,
+		}, true
+	}
 	m, hasManifest, err := readTopManifest(dir)
 	if err != nil && hasManifest {
-		out.Status, out.Reason = outcomeFailed, "The manifest is invalid"
-		return gameModSlot{outcome: out, hasOutcome: true}, true
+		return failed("The manifest is invalid")
 	}
 	var mods []manifest.Mod
 	if hasManifest {
@@ -156,16 +161,13 @@ func classifyFolder(dir, name string) (gameModSlot, bool) {
 	} else {
 		found, scanErr := manifest.Scan(dir)
 		if scanErr != nil {
-			out.Status, out.Reason = outcomeFailed, scanErr.Error()
-			return gameModSlot{outcome: out, hasOutcome: true}, true
+			return failed(scanErr.Error())
 		}
 		if len(found) == 0 {
 			if _, err := manifest.ReadFile(dir); err == nil {
-				out.Status, out.Reason = outcomeFailed, "The manifest is invalid"
-				return gameModSlot{outcome: out, hasOutcome: true}, true
+				return failed("The manifest is invalid")
 			}
-			out.Status, out.Reason = outcomeFailed, "No SMAPI mod was found"
-			return gameModSlot{outcome: out, hasOutcome: true}, true
+			return failed("No SMAPI mod was found")
 		}
 		mods = found
 	}
@@ -424,10 +426,19 @@ func (s *Store) ImportGameMods(ctx context.Context, game, modsDir string) (GameM
 			res.Failed++
 		}
 	}
+	total := 0
+	for _, slot := range slots {
+		if slot.ready {
+			total++
+		}
+	}
+	done := 0
 	for _, slot := range slots {
 		if !slot.ready {
 			continue
 		}
+		s.reportGameModsProgress(game, created.ID, done, total, slot.folder.label)
+		done++
 		outcome := GameModOutcome{Name: slot.folder.label, Status: outcomeImported}
 		if _, _, err := s.importFolder(ctx, game, created.ID, slot.folder); err != nil {
 			outcome.Status, outcome.Reason = outcomeFailed, err.Error()
