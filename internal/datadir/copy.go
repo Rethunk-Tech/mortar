@@ -208,8 +208,9 @@ func CopyFile(src, dst string) (err error) {
 	}
 	tmp := dst + ".mortar-tmp"
 	_ = os.Remove(tmp)
-	// The copy keeps the source's exec and read bits but never grants write to group or others.
-	out, err := fsx.CreateExcl(tmp, info.Mode().Perm()&0o755)
+	// The copy keeps the source's exec and read bits but never grants write to group or others. The owner always
+	// keeps write: a read-only copy is a read-only attribute on Windows, and renaming over it later fails.
+	out, err := fsx.CreateExcl(tmp, info.Mode().Perm()&0o755|0o200)
 	if err != nil {
 		return err
 	}

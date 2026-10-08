@@ -33,11 +33,13 @@ func (fomodInstaller) Layout(a Archive, g Game, choices Choices) (Layout, error)
 	at := map[string]int{}
 	put := func(f File) {
 		// Later operations have the higher priority and overwrite earlier ones.
-		if i, seen := at[f.Rel]; seen {
+		// Keyed folded: destinations differing only in case are one file on Windows.
+		key := strings.ToLower(f.Rel)
+		if i, seen := at[key]; seen {
 			l.Files[i] = f
 			return
 		}
-		at[f.Rel] = len(l.Files)
+		at[key] = len(l.Files)
 		l.Files = append(l.Files, f)
 	}
 	for _, op := range fomod.Resolve(cfg, choices, a.Eval) {

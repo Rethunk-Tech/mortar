@@ -36,7 +36,8 @@ func (place) Plan(view View, dir string, files []launchplan.PlanFile) (Plan, err
 			return Plan{}, fmt.Errorf("%s leaves the install", f.Dst)
 		}
 		dst := filepath.Join(dir, f.Dst)
-		byDst[dst] = Op{Src: f.Src, Dst: dst}
+		// Folded so a later file wins over an earlier one that differs only in case, as the file system would.
+		byDst[fsx.FoldCase(dst)] = Op{Src: f.Src, Dst: dst}
 	}
 	plan := Plan{Dir: dir, View: view}
 	for _, dst := range slices.Sorted(mapsKeys(byDst)) {
@@ -81,6 +82,9 @@ var ErrUnrecovered = errors.New("an earlier deploy has not been taken back")
 func (place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 	if _, err := os.Lstat(journalPath(p.View.JournalDir)); err == nil {
 		return Manifest{}, fmt.Errorf("%w: recover %s first", ErrUnrecovered, p.View.JournalDir)
+	}
+	if err := fsx.CheckWritable(p.Dir); err != nil {
+		return Manifest{}, err
 	}
 	m := Manifest{Dir: p.Dir, View: p.View}
 	for i, op := range p.Ops {
@@ -171,7 +175,7 @@ func (place) Purge(ctx context.Context, m Manifest) error {
 		switch {
 		case o.Displaced != "" && backupErr == nil:
 			// With the player's file set aside, whatever is at Dst is ours, even if the game wrote to it.
-			if err := os.Remove(o.Dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			if err := fsx.Remove(o.Dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 				return err
 			}
 			if err := move(o.Displaced, o.Dst); err != nil {
@@ -180,7 +184,7 @@ func (place) Purge(ctx context.Context, m Manifest) error {
 		case o.Displaced == "":
 			// Nothing was displaced, so Dst is ours only while it still holds our content.
 			if h, err := fsx.SHA256(o.Dst); err == nil && h == o.Hash {
-				if err := os.Remove(o.Dst); err != nil {
+				if err := fsx.Remove(o.Dst); err != nil {
 					return err
 				}
 			}

@@ -143,7 +143,7 @@ func sharedSMAPI(dir string) (bool, string) {
 	return false, ""
 }
 
-// unshareTree replaces a folder that is itself a symlink with a real copy of what it links to.
+// unshareTree replaces a folder that is itself a symlink or junction with a real copy of what it links to.
 func unshareTree(tree string) error {
 	fi, err := os.Lstat(tree)
 	if errors.Is(err, fs.ErrNotExist) {
@@ -152,7 +152,7 @@ func unshareTree(tree string) error {
 	if err != nil {
 		return err
 	}
-	if fi.Mode()&os.ModeSymlink == 0 {
+	if !datadir.LinkedDir(tree, fi) {
 		return nil
 	}
 	target, err := fsx.EvalSymlinks(tree)
@@ -280,6 +280,9 @@ func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, 
 	folder := filepath.Join(unpacked, instDir)
 	if err := fsx.Chmod(filepath.Join(folder, exe), 0o700); err != nil {
 		return "", fmt.Errorf("SMAPI %s installer is missing %s: %w", version, exe, err)
+	}
+	if err := fsx.CheckWritable(dir); err != nil {
+		return "", err
 	}
 	if err := unshareSMAPI(dir); err != nil {
 		return "", fmt.Errorf("separate SMAPI from another mod manager's files: %w", err)

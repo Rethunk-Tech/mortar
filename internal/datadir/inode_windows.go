@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"os"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"golang.org/x/sys/windows"
 )
 
@@ -16,7 +17,7 @@ const fileIDInfoSize = 24
 // linkedKey returns the file-id key of a file with more than one hard link. os.FileInfo does not carry the
 // link count on Windows, so the file is opened for attributes only.
 func linkedKey(path string, _ os.FileInfo) (fileKey, bool) {
-	p, err := windows.UTF16PtrFromString(path)
+	p, err := windows.UTF16PtrFromString(fsx.ExtendedPath(path))
 	if err != nil {
 		return fileKey{}, false
 	}

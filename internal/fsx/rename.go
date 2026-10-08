@@ -30,3 +30,8 @@ func retry(op func() error, transient func(error) bool, window time.Duration) er
 func RemoveAll(path string) error {
 	return retry(func() error { return os.RemoveAll(path) }, transientRename, renameRetryWindow)
 }
+
+// Remove is os.Remove with the same antivirus/indexer retry as Rename.
+func Remove(path string) error {
+	return retry(func() error { return os.Remove(path) }, transientRename, renameRetryWindow)
+}

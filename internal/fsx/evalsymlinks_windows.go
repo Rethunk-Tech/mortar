@@ -11,7 +11,7 @@ func EvalSymlinks(p string) (string, error) {
 	if err != nil {
 		return filepath.EvalSymlinks(p)
 	}
-	extended := extendedPath(abs)
+	extended := ExtendedPath(abs)
 	resolved, err := filepath.EvalSymlinks(extended)
 	if extended == abs {
 		return resolved, err

@@ -33,6 +33,7 @@ func (s *Store) packageFiles(gameID, id string) (files map[string]packageFile, w
 		return nil, nil, err
 	}
 	files, wins = map[string]packageFile{}, map[string]int{}
+	byFold := map[string]string{}
 	for _, e := range p.Entries {
 		if e.IsOverlay() || !e.hasPackageEnabled() {
 			continue
@@ -46,9 +47,13 @@ func (s *Store) packageFiles(gameID, id string) (files map[string]packageFile, w
 			if !filepath.IsLocal(filepath.FromSlash(rel)) {
 				return nil, nil, fmt.Errorf("%s: %s leaves the profile", entryLabel(e), f.Rel)
 			}
-			if _, taken := files[rel]; taken {
+			// A later entry's file replaces an earlier one that differs only in case: both are one file on Windows.
+			fold := fsx.FoldCase(rel)
+			if prev, taken := byFold[fold]; taken {
+				delete(files, prev)
 				wins[e.Key]++
 			}
+			byFold[fold] = rel
 			files[rel] = packageFile{src: filepath.Join(arch.Dir, filepath.FromSlash(f.Src)), key: e.Key}
 		}
 	}
@@ -119,7 +124,7 @@ func (s *Store) SyncPackages(gameID, id string) error {
 		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
 			return err
 		}
-		if err := os.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := fsx.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		if err := datadir.CopyFile(files[rel].src, dst); err != nil {
@@ -188,7 +193,7 @@ func placedCurrent(src, dst string) bool {
 
 // removeUp removes a file, then the folders it leaves empty below root.
 func removeUp(root, file string) {
-	if os.Remove(file) != nil {
+	if fsx.Remove(file) != nil {
 		return
 	}
 	for d := filepath.Dir(file); d != root && datadir.UnderRoot(root, d) && os.Remove(d) == nil; d = filepath.Dir(d) {

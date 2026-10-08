@@ -4,7 +4,7 @@ import "golang.org/x/sys/windows"
 
 // LinkCount is the number of hard links to path itself (a symlink is not followed).
 func LinkCount(path string) (uint64, error) {
-	p, err := windows.UTF16PtrFromString(extendedPath(path))
+	p, err := windows.UTF16PtrFromString(ExtendedPath(path))
 	if err != nil {
 		return 0, err
 	}

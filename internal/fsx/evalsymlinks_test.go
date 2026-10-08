@@ -14,8 +14,8 @@ func TestExtendedPathOnlyPrefixesLongDrivePaths(t *testing.T) {
 		{`\\?\C:\` + strings.Repeat("x", 300), `\\?\C:\` + strings.Repeat("x", 300)},
 		{long, `\\?\` + long},
 	} {
-		if got := extendedPath(tc.in); got != tc.want {
-			t.Errorf("extendedPath(%.40q) = %.40q, want %.40q", tc.in, got, tc.want)
+		if got := ExtendedPath(tc.in); got != tc.want {
+			t.Errorf("ExtendedPath(%.40q) = %.40q, want %.40q", tc.in, got, tc.want)
 		}
 	}
 }

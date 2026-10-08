@@ -46,7 +46,7 @@ func Unshare(path string) error {
 		_ = tmp.Close()
 		return err
 	}
-	if err := tmp.Chmod(fi.Mode().Perm()); err != nil {
+	if err := tmp.Chmod(fi.Mode().Perm() | 0o200); err != nil {
 		_ = tmp.Close()
 		return err
 	}

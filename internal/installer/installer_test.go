@@ -71,6 +71,16 @@ func TestLayoutGoldens(t *testing.T) {
 			"fomod", "mods:nexus-5-6/manifest.json<-beta/manifest.json",
 		},
 		{
+			"FOMOD destinations differing only in case", smapi, "nexus-7-8",
+			map[string]string{
+				"fomod/ModuleConfig.xml": `<config><moduleName>Case</moduleName><requiredInstallFiles>` +
+					`<file source="one.txt" destination="Data.txt"/><file source="two.txt" destination="data.txt"/>` +
+					`</requiredInstallFiles></config>`,
+				"one.txt": "1", "two.txt": "2",
+			},
+			nil, "fomod", "mods:nexus-7-8/data.txt<-two.txt",
+		},
+		{
 			"Thunderstore plugin", bep, "Ns-Mod",
 			map[string]string{
 				"manifest.json": `{"name":"Mod","version_number":"1.0.0"}`, "icon.png": "i", "README.md": "r", "plugins/Mod.dll": "d", "Assets/x.bundle": "b",
