@@ -6,3 +6,6 @@ import "syscall"
 
 // killTree ends the process group the launch started in; startCmd made the process its leader.
 func killTree(pid int) { _ = syscall.Kill(-pid, syscall.SIGTERM) }
+
+func trackTree(int)   {}
+func untrackTree(int) {}

@@ -146,12 +146,16 @@ func startCmd(ctx context.Context, env []string, dir, name string, args []string
 		out.release()
 		return nil, err
 	}
+	pid := cmd.Process.Pid
+	trackTree(pid)
 	done := make(chan error, 1)
 	go func() {
 		err := cmd.Wait()
+		untrackTree(pid)
 		if hold != nil {
 			_ = hold.Close()
 		}
+		out.removeIfReleased()
 		done <- err
 	}()
 	exited := (<-chan error)(done)
