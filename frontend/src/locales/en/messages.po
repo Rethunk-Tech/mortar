@@ -1462,7 +1462,7 @@ msgstr "Notify when updates are found"
 msgid "It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar."
 msgstr "It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar."
 
-#: src/settings/store.ts:137
+#: src/settings/store.ts:129
 msgid "Your settings could not be read"
 msgstr "Your settings could not be read"
 
@@ -6626,7 +6626,7 @@ msgstr "There is not enough free space at the destination."
 msgid "A multiplayer host's list…"
 msgstr "A multiplayer host's list…"
 
-#: src/settings/store.ts:139
+#: src/settings/store.ts:131
 msgid "Mortar started with default settings. The damaged file was kept at {path}."
 msgstr "Mortar started with default settings. The damaged file was kept at {path}."
 
@@ -10946,7 +10946,7 @@ msgstr "Bottles"
 msgid "Hourly count resets {0} · daily count resets {1}"
 msgstr "Hourly count resets {0} · daily count resets {1}"
 
-#: src/settings/store.ts:142
+#: src/settings/store.ts:134
 #: src/share/MethodPanes.tsx:250
 #: src/shell/saveDiagnostics.ts:27
 msgid "Show file"
