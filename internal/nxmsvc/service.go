@@ -368,12 +368,7 @@ func (s *Service) EnableSource(id string) error {
 	if !hasOptInSetting(id) {
 		return fmt.Errorf("source %q has no link scheme to handle", id)
 	}
-	source.SetHandleLink(id, true)
-	if err := s.Enable(); err != nil {
-		source.SetHandleLink(id, false)
-		return err
-	}
-	return s.record(func(v *settings.Settings) { setHandleLinks(v, id, true) })
+	return ClaimLinks(s.store, s.handler, id)
 }
 
 // DisableSource gives one source's links back to their recorded owners and leaves the other sources registered.

@@ -289,6 +289,9 @@ func TestOptInSourceLinksAreEnabledAndReleasedPerSource(t *testing.T) {
 	if got.ThunderstoreHandleLinks == nil || !*got.ThunderstoreHandleLinks || got.NxmPreviousHandlers["ror2mm"] != "other.desktop" {
 		t.Fatalf("after EnableSource: %+v", got)
 	}
+	if got.NxmHandled || got.NxmPreviousHandlers["nxm"] != "" {
+		t.Fatalf("enabling Thunderstore links also took Nexus links: %+v", got)
+	}
 	if !slices.Contains(source.Schemes(), "ror2mm") {
 		t.Fatal("ror2mm is not claimed after enabling it")
 	}
@@ -296,7 +299,7 @@ func TestOptInSourceLinksAreEnabledAndReleasedPerSource(t *testing.T) {
 		t.Fatal(err)
 	}
 	got = s.store.Get()
-	if *got.ThunderstoreHandleLinks || got.NxmPreviousHandlers["ror2mm"] != "" || got.NxmPreviousHandlers["nxm"] != "other.desktop" {
+	if *got.ThunderstoreHandleLinks || got.NxmPreviousHandlers["ror2mm"] != "" {
 		t.Fatalf("after DisableSource: %+v", got)
 	}
 	if last := h.registry[len(h.registry)-1]; last != "release:ror2mm" || slices.Contains(source.Schemes(), "ror2mm") {
