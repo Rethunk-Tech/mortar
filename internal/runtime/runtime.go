@@ -144,7 +144,7 @@ func (n native) Resolve(inst Install, t components.PathTemplate) (string, error)
 
 func nativeTokens(inst Install) (map[string]string, error) {
 	home := inst.Home
-	tokens := map[string]string{"home": home, "install": inst.Dir, "documents": filepath.Join(home, "Documents")}
+	tokens := map[string]string{"home": home, "install": inst.Dir, "documents": documentsDir(home)}
 	switch inst.host() {
 	case "windows":
 		tokens["appData"] = envOr("APPDATA", filepath.Join(home, "AppData", "Roaming"))

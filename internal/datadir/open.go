@@ -42,6 +42,7 @@ func Open(dir string) error {
 		name = "explorer"
 	}
 	cmd := exec.CommandContext(context.Background(), name, dir)
+	setArgs(cmd, dir)
 	if err := cmd.Start(); err != nil {
 		return err
 	}

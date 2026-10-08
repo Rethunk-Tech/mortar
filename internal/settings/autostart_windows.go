@@ -26,7 +26,7 @@ func applyAutostart(enable bool) error {
 	if err != nil {
 		return err
 	}
-	return key.SetStringValue("Mortar", exe)
+	return key.SetStringValue("Mortar", `"`+exe+`"`)
 }
 
 // RemoveAutostart deletes the Run value that starts Mortar at sign-in.
