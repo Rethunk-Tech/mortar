@@ -132,10 +132,21 @@ function Sharing() {
   const lanPort = useSettings((s) => s.lanPort)
   const [portText, setPortText] = useState(String(lanPort))
   const [portError, setPortError] = useState(false)
-  useEffect(() => {
+  const loadStatus = useCallback(() => {
     FirewallBlocked().then(setFirewallBlocked).catch(reportFailure)
     NetworkIsPublic().then(setNetworkPublic).catch(reportFailure)
   }, [reportFailure])
+  // The firewall rules depend on both settings, so a change to either rereads the status; with sharing off there is
+  // nothing to show.
+  const statusKey = `${lanSharing}:${allowAny}`
+  useEffect(() => {
+    if (!statusKey.startsWith('true')) {
+      setFirewallBlocked(false)
+      setNetworkPublic(false)
+      return
+    }
+    loadStatus()
+  }, [statusKey, loadStatus])
   useEffect(() => {
     setPortText(String(lanPort))
     setPortError(false)
@@ -232,8 +243,7 @@ function Sharing() {
             onClick={() => {
               setFixingFirewall(true)
               FixFirewall()
-                .then(() => FirewallBlocked())
-                .then(setFirewallBlocked)
+                .then(loadStatus)
                 .catch(reportFailure)
                 .finally(() => setFixingFirewall(false))
             }}
