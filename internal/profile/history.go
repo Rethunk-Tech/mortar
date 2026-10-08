@@ -995,13 +995,7 @@ func entriesSnapshotID(entries []Entry) (string, error) {
 func cloneEntries(in []Entry) []Entry {
 	out := make([]Entry, len(in))
 	for i, e := range in {
-		e.Mods = slices.Clone(e.Mods)
-		e.Disabled = slices.Clone(e.Disabled)
-		e.Tags = slices.Clone(e.Tags)
-		e.Fomod = cloneFomod(e.Fomod)
-		e.ExtraStoreKeys = slices.Clone(e.ExtraStoreKeys)
-		e.PreviousExtraStoreKeys = slices.Clone(e.PreviousExtraStoreKeys)
-		out[i] = e
+		out[i] = e.Clone()
 	}
 	return out
 }
