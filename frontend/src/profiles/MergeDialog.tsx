@@ -38,13 +38,18 @@ import { useProfiles } from './store.ts'
 // The binding types a Go slice as nullable.
 type Preview = { [K in keyof Merged]-?: NonNullable<Merged[K]> }
 
-function AddsLine({ adds }: { adds: Preview['adds'] }) {
+function AddsLine({ adds, targetName }: { adds: Preview['adds']; targetName: string }) {
   const { t } = useLingui()
   const [open, setOpen] = useState(false)
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-        <Typography>{plural(adds.length, { one: 'Adds # mod', other: 'Adds # mods' })}</Typography>
+        <Typography>
+          {plural(adds.length, {
+            one: `${targetName} gets # new mod`,
+            other: `${targetName} gets # new mods`,
+          })}
+        </Typography>
         {adds.length > 0 ? (
           <Button
             size="small"
@@ -85,16 +90,16 @@ function Summary({
   const updates = preview.both.filter((b) => b.sourceNewer).length
   const targetName = target.name
   const labelId = useId()
-  // Nothing to add and no newer version in the source: say so instead of counting zeros, so the disabled Merge
+  // Nothing to add and no newer version in the source: say so instead of counting zeros, so the disabled Add mods
   // button has its reason in view.
   if (preview.adds.length === 0 && updates === 0) {
     return (
-      <Typography color="text.secondary">{t`Nothing to merge: ${targetName} already has every mod at the same or a newer version.`}</Typography>
+      <Typography color="text.secondary">{t`Nothing to add: ${targetName} already has every mod at the same or a newer version.`}</Typography>
     )
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
-      {preview.adds.length > 0 ? <AddsLine adds={preview.adds} /> : null}
+      {preview.adds.length > 0 ? <AddsLine adds={preview.adds} targetName={targetName} /> : null}
       {both > 0 ? (
         <Typography>
           {plural(both, { one: '# mod is in both', other: '# mods are in both' })}
@@ -187,22 +192,22 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
         useToasts.getState().push({
           kind: 'success',
           title: plural(changes, {
-            one: `Merged # mod into ${targetName}`,
-            other: `Merged # mods into ${targetName}`,
+            one: `Added # mod from ${source.name} to ${targetName}`,
+            other: `Added # mods from ${source.name} to ${targetName}`,
           }),
         })
       },
-      { errorTitle: t`Could not merge into ${targetName}` },
+      { errorTitle: t`Could not add the mods to ${targetName}` },
     )
   }
   return (
     <>
-      <DialogTitle>{t`Merge ${source.name} into…`}</DialogTitle>
+      <DialogTitle>{t`Add ${source.name}'s mods to…`}</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
         <TextField
           select={true}
           size="small"
-          label={t`Target profile`}
+          label={t`Profile to add them to`}
           value={targetId}
           onChange={(e) => setTargetId(e.target.value)}
           disabled={pending}
@@ -214,6 +219,11 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
             </MenuItem>
           ))}
         </TextField>
+        {target ? (
+          <Typography color="text.secondary" variant="body2">
+            {t`${source.name} stays as it is.`}
+          </Typography>
+        ) : null}
         {preview && target ? (
           <Summary
             preview={preview}
@@ -233,7 +243,7 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
             disabled={pending || !preview || changes === 0 || locked}
             onClick={merge}
           >
-            {t`Merge`}
+            {t`Add mods`}
           </Button>
         </DisabledReason>
       </DialogActions>

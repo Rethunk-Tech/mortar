@@ -293,11 +293,13 @@ async function main() {
   await shot(page, 'merge-dialog', async () => {
     await click(page, 'tab', 'Home')
     await click(page, 'button', /^Profile\b/)
-    await click(page, 'menuitem', /^Merge into/)
-    const dialog = page.getByRole('dialog', { name: /^Merge / })
-    await dialog.getByRole('combobox', { name: 'Target profile' }).click({ timeout: STEP_MS })
+    await click(page, 'menuitem', /^Add these mods to another profile/)
+    const dialog = page.getByRole('dialog', { name: /^Add .+'s mods to/ })
+    await dialog
+      .getByRole('combobox', { name: 'Profile to add them to' })
+      .click({ timeout: STEP_MS })
     await click(page, 'option', 'Seed From Template')
-    await dialog.getByText(/^(Adds \d+ mods?|Nothing to merge)/).waitFor({ timeout: STEP_MS })
+    await dialog.getByText(/^(\S+ gets \d+ new mods?|Nothing to add)/).waitFor({ timeout: STEP_MS })
   })
   await shot(page, 'game-mods-review', async () => {
     await openGameSelect(page)

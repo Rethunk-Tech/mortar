@@ -244,7 +244,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/mods/problemFix/WinFix.tsx:35
 #: src/mods/SplitCombineItems.tsx:36
 #: src/mods/Toolbar.tsx:283
-#: src/profiles/MergeDialog.tsx:175
+#: src/profiles/MergeDialog.tsx:180
 #: src/saves/lackChipActions.tsx:44
 #: src/saves/lackChips.tsx:60
 #: src/saves/SaveRow.tsx:137
@@ -1077,9 +1077,7 @@ msgstr "Not offered for moving into a profile."
 msgid "What's new"
 msgstr "What's new"
 
-#. placeholder {0}: adds.length
 #. placeholder {0}: preview.add?.length ?? 0
-#: src/profiles/MergeDialog.tsx:47
 #: src/templates/ApplyTemplateDialog.tsx:35
 msgid "{0, plural, one {Adds # mod} other {Adds # mods}}"
 msgstr "{0, plural, one {Adds # mod} other {Adds # mods}}"
@@ -1485,6 +1483,11 @@ msgstr "It marks Nexus Mods pages with what your profile already has and sends M
 #: src/settings/store.ts:131
 msgid "Your settings could not be read"
 msgstr "Your settings could not be read"
+
+#. placeholder {0}: adds.length
+#: src/profiles/MergeDialog.tsx:48
+msgid "{0, plural, one {{targetName} gets # new mod} other {{targetName} gets # new mods}}"
+msgstr "{0, plural, one {{targetName} gets # new mod} other {{targetName} gets # new mods}}"
 
 #: src/mods/ModUpdateControls.tsx:49
 #: src/mods/ModUpdateControls.tsx:54
@@ -2673,7 +2676,7 @@ msgstr "Compact"
 msgid "Check"
 msgstr "Check"
 
-#: src/profiles/MergeDialog.tsx:113
+#: src/profiles/MergeDialog.tsx:118
 msgid "For mods in both"
 msgstr "For mods in both"
 
@@ -3021,6 +3024,10 @@ msgstr "Mortar checks for updates at startup, on F5, and at most hourly while it
 #: src/mods/updateDigestToast.ts:15
 msgid "{0, plural, one {# update for {1, plural, one {# profile} other {# profiles}}} other {# updates for {2, plural, one {# profile} other {# profiles}}}}"
 msgstr "{0, plural, one {# update for {1, plural, one {# profile} other {# profiles}}} other {# updates for {2, plural, one {# profile} other {# profiles}}}}"
+
+#: src/profiles/MergeDialog.tsx:200
+msgid "Could not add the mods to {targetName}"
+msgstr "Could not add the mods to {targetName}"
 
 #: src/settings/sections/Sources.tsx:101
 msgid "Not signed in. Add your API key in Accounts."
@@ -3800,7 +3807,7 @@ msgstr "Stopped at the API limit; {0} left"
 msgid "Console"
 msgstr "Console"
 
-#: src/profiles/MergeDialog.tsx:100
+#: src/profiles/MergeDialog.tsx:105
 msgid "{both, plural, one {# mod is in both} other {# mods are in both}}"
 msgstr "{both, plural, one {# mod is in both} other {# mods are in both}}"
 
@@ -4256,7 +4263,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/profiles/GameModsDialog.tsx:168
 #: src/profiles/ImportWizard.tsx:139
 #: src/profiles/LaunchPresetDialog.tsx:91
-#: src/profiles/MergeDialog.tsx:228
+#: src/profiles/MergeDialog.tsx:238
 #: src/profiles/PackImportDialog.tsx:171
 #: src/settings/sections/NexusSSO.tsx:68
 #: src/settings/sections/nxmHandler.tsx:65
@@ -4340,10 +4347,6 @@ msgstr "By game"
 msgid "Only on {value} saves; none of yours is one."
 msgstr "Only on {value} saves; none of yours is one."
 
-#: src/profiles/MergeDialog.tsx:189
-msgid "{changes, plural, one {Merged # mod into {targetName}} other {Merged # mods into {targetName}}}"
-msgstr "{changes, plural, one {Merged # mod into {targetName}} other {Merged # mods into {targetName}}}"
-
 #. placeholder {0}: launcher.name
 #: src/launchers/LauncherList.tsx:99
 msgid "Choose a {0} folder"
@@ -4418,10 +4421,6 @@ msgstr "Downloads paused"
 msgid "Biome"
 msgstr "Biome"
 
-#: src/profiles/MergeDialog.tsx:205
-msgid "Target profile"
-msgstr "Target profile"
-
 #: src/firstrun/GameSetup.tsx:52
 #: src/settings/GameSettingsPage.tsx:163
 msgid "Back to {name}"
@@ -4441,7 +4440,7 @@ msgid "Enable all"
 msgstr "Enable all"
 
 #. placeholder {0}: preview.targetOnly
-#: src/profiles/MergeDialog.tsx:105
+#: src/profiles/MergeDialog.tsx:110
 msgid "{0, plural, one {Keeps # mod only {targetName} has} other {Keeps # mods only {targetName} has}}"
 msgstr "{0, plural, one {Keeps # mod only {targetName} has} other {Keeps # mods only {targetName} has}}"
 
@@ -5207,6 +5206,10 @@ msgstr "Entry, event handlers and asset work the SMAPI Bridge timed before the t
 msgid "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
 msgstr "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
 
+#: src/profiles/MergeDialog.tsx:246
+msgid "Add mods"
+msgstr "Add mods"
+
 #: src/settings/prefCopy.ts:201
 msgid "The banner at the top of a profile"
 msgstr "The banner at the top of a profile"
@@ -5291,6 +5294,11 @@ msgstr "When Mortar makes a save backup before launching"
 #: src/settings/sections/AboutDiagnostics.tsx:93
 msgid "Settings backups"
 msgstr "Settings backups"
+
+#. placeholder {0}: source.name
+#: src/profiles/MergeDialog.tsx:224
+msgid "{0} stays as it is."
+msgstr "{0} stays as it is."
 
 #: src/games/GameMenu.tsx:57
 #: src/games/GameMenu.tsx:87
@@ -5644,7 +5652,7 @@ msgstr "Stop the game before moving the data folder."
 msgid "Earthy green"
 msgstr "Earthy green"
 
-#: src/profiles/MergeDialog.tsx:127
+#: src/profiles/MergeDialog.tsx:132
 msgid "{updates, plural, one {Use the newer version (# mod updates)} other {Use the newer version (# mods update)}}"
 msgstr "{updates, plural, one {Use the newer version (# mod updates)} other {Use the newer version (# mods update)}}"
 
@@ -6145,6 +6153,10 @@ msgstr "{0, plural, one {+# file} other {+# files}}"
 #: src/settings/sections/StreamOverlay.tsx:84
 msgid "Farming skill"
 msgstr "Farming skill"
+
+#: src/profiles/MergeDialog.tsx:97
+msgid "Nothing to add: {targetName} already has every mod at the same or a newer version."
+msgstr "Nothing to add: {targetName} already has every mod at the same or a newer version."
 
 #. placeholder {0}: loader.name
 #: src/settings/sections/LoaderRow.tsx:79
@@ -7259,6 +7271,10 @@ msgstr "Off, only computers on your local network can connect. Turn on to allow 
 msgid "No mods match \"{text}\""
 msgstr "No mods match \"{text}\""
 
+#: src/game/ProfileMenu.tsx:73
+msgid "Add these mods to another profile…"
+msgstr "Add these mods to another profile…"
+
 #: src/game/ProfileMenuItems.tsx:138
 msgid "Shortcut removed"
 msgstr "Shortcut removed"
@@ -7707,6 +7723,12 @@ msgstr "GOG"
 msgid "Could not read the Nexus page: {0}"
 msgstr "Could not read the Nexus page: {0}"
 
+#. placeholder {0}: source.name
+#. placeholder {1}: source.name
+#: src/profiles/MergeDialog.tsx:194
+msgid "{changes, plural, one {Added # mod from {0} to {targetName}} other {Added # mods from {1} to {targetName}}}"
+msgstr "{changes, plural, one {Added # mod from {0} to {targetName}} other {Added # mods from {1} to {targetName}}}"
+
 #: src/share/useImportFlow.ts:179
 msgid "Imported, but could not show the profile"
 msgstr "Imported, but could not show the profile"
@@ -7984,7 +8006,7 @@ msgstr "Choose an option in {invalidGroup}."
 msgid "Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running."
 msgstr "Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running."
 
-#: src/profiles/MergeDialog.tsx:122
+#: src/profiles/MergeDialog.tsx:127
 msgid "Keep {targetName}'s versions"
 msgstr "Keep {targetName}'s versions"
 
@@ -8134,11 +8156,6 @@ msgstr "Updated {mods} in {profileName}"
 msgid "Search every run"
 msgstr "Search every run"
 
-#. placeholder {0}: source.name
-#: src/profiles/MergeDialog.tsx:200
-msgid "Merge {0} into…"
-msgstr "Merge {0} into…"
-
 #: src/share/ImportPreview.tsx:359
 msgid "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
 msgstr "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
@@ -8194,10 +8211,6 @@ msgstr "{playtime} played"
 #: src/settings/sections/AboutDiagnostics.tsx:189
 msgid "Could not run diagnostics"
 msgstr "Could not run diagnostics"
-
-#: src/game/ProfileMenu.tsx:73
-msgid "Merge into…"
-msgstr "Merge into…"
 
 #: src/console/ConsoleTab.tsx:129
 msgid "·"
@@ -9635,6 +9648,11 @@ msgstr "What the person opening the link sees"
 msgid "Skipped updates for selected mods"
 msgstr "Skipped updates for selected mods"
 
+#. placeholder {0}: source.name
+#: src/profiles/MergeDialog.tsx:205
+msgid "Add {0}'s mods to…"
+msgstr "Add {0}'s mods to…"
+
 #: src/commandPalette/paletteLabels.ts:33
 #: src/settings/shortcutLabels.ts:27
 msgid "Switch to Performance"
@@ -9909,9 +9927,9 @@ msgstr "Music volume ({value}%)"
 msgid "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
 msgstr "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
 
-#: src/game/ProfileMenu.tsx:75
-msgid "No other profile to merge into."
-msgstr "No other profile to merge into."
+#: src/profiles/MergeDialog.tsx:210
+msgid "Profile to add them to"
+msgstr "Profile to add them to"
 
 #: src/profiles/HealthDialog.tsx:68
 msgid "A launch ended without Mortar putting the game folder back as it was"
@@ -10199,7 +10217,7 @@ msgid "Open download page"
 msgstr "Open download page"
 
 #: src/profiles/HistoryEventRow.tsx:107
-#: src/profiles/MergeDialog.tsx:55
+#: src/profiles/MergeDialog.tsx:60
 #: src/share/Included.tsx:144
 msgid "Show mods"
 msgstr "Show mods"
@@ -10468,6 +10486,10 @@ msgstr "{0} of {1} requests left today · {2} of {3} this hour"
 msgid "Pause all"
 msgstr "Pause all"
 
+#: src/game/ProfileMenu.tsx:75
+msgid "No other profile to add them to."
+msgstr "No other profile to add them to."
+
 #: src/console/StartupTable.tsx:133
 msgid "Slowest event"
 msgstr "Slowest event"
@@ -10682,10 +10704,6 @@ msgstr "Checked for updates"
 #: src/settings/sections/GameSettings.tsx:222
 msgid "Game version"
 msgstr "Game version"
-
-#: src/profiles/MergeDialog.tsx:195
-msgid "Could not merge into {targetName}"
-msgstr "Could not merge into {targetName}"
 
 #: src/shell/TitleBar.tsx:111
 msgid "Maximise"
@@ -11729,13 +11747,9 @@ msgid "Diagnostics"
 msgstr "Diagnostics"
 
 #: src/profiles/HistoryEventRow.tsx:107
-#: src/profiles/MergeDialog.tsx:55
+#: src/profiles/MergeDialog.tsx:60
 msgid "Hide mods"
 msgstr "Hide mods"
-
-#: src/profiles/MergeDialog.tsx:236
-msgid "Merge"
-msgstr "Merge"
 
 #: src/mods/CategoryEditor.tsx:151
 msgid "Add category"
@@ -13504,10 +13518,6 @@ msgstr "Save current as…"
 #: src/shell/AppMenu.tsx:228
 msgid "Quit Mortar"
 msgstr "Quit Mortar"
-
-#: src/profiles/MergeDialog.tsx:92
-msgid "Nothing to merge: {targetName} already has every mod at the same or a newer version."
-msgstr "Nothing to merge: {targetName} already has every mod at the same or a newer version."
 
 #: src/profiles/useProfileImport.tsx:37
 msgid "From a link or file…"

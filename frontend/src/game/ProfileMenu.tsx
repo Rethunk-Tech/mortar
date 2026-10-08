@@ -70,9 +70,9 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
         />
         <MenuAction
           icon={<GitMerge size={16} />}
-          label={t`Merge into…`}
+          label={t`Add these mods to another profile…`}
           disabled={profiles.length < 2}
-          tooltip={profiles.length < 2 ? t`No other profile to merge into.` : undefined}
+          tooltip={profiles.length < 2 ? t`No other profile to add them to.` : undefined}
           onClick={() => {
             close()
             setMerging(true)
