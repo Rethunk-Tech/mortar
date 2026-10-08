@@ -304,3 +304,32 @@ func signedService(t *testing.T, u Updater) *Service {
 	}
 	return s
 }
+
+// A click on Install while the background download runs waits for it instead of starting a second one.
+func TestASecondInstallWaitsForTheFirst(t *testing.T) {
+	hold := make(chan struct{})
+	started := make(chan struct{})
+	f := &stall{dlHold: hold, dlStart: started}
+	f.rel = &updater.Release{Version: "1.1.0", Verification: &updater.Verification{Signature: []byte{2}}}
+	s := signedService(t, f)
+	if _, err := s.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	first := make(chan error, 1)
+	go func() { first <- s.Install(context.Background()) }()
+	<-started
+	second := make(chan error, 1)
+	go func() { second <- s.Install(context.Background()) }()
+	select {
+	case err := <-second:
+		t.Fatalf("the second Install returned %v before the first download finished", err)
+	case <-time.After(100 * time.Millisecond):
+	}
+	close(hold)
+	if err := <-first; err != nil {
+		t.Fatal(err)
+	}
+	if err := <-second; err != nil {
+		t.Fatalf("second Install: %v", err)
+	}
+}

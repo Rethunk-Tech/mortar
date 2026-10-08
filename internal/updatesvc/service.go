@@ -191,12 +191,17 @@ func (s *Service) Check(ctx context.Context) (*Release, error) {
 // Install downloads, verifies and stages the release Check found; Restart applies it.
 func (s *Service) Install(ctx context.Context) error {
 	s.lock()
-	for s.inCheck {
+	// A second Install (a click while the background download runs) waits for the first and shares its result.
+	for s.inCheck || s.inInstall {
 		s.cond.Wait()
 	}
 	if s.found == nil {
 		s.mu.Unlock()
 		return errNone
+	}
+	if s.found.Staged {
+		s.mu.Unlock()
+		return nil
 	}
 	s.inInstall = true
 	s.mu.Unlock()
