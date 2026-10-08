@@ -33,7 +33,7 @@ test('Game Select lists Stardew Valley before Lethal Company', async ({ page }) 
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
 })
 
-test('hovering a Game Select tile grows it and leaves the others undimmed without changing layout', async ({
+test('hovering a Game Select row drifts its art and leaves the others undimmed without changing layout', async ({
   page,
 }) => {
   await openSeedFarm(page)
@@ -44,7 +44,10 @@ test('hovering a Game Select tile grows it and leaves the others undimmed withou
   const before = await layout()
   await tiles.first().hover()
   await expect(tiles.last()).toHaveCSS('filter', 'none')
-  await expect(tiles.first()).toHaveCSS('transform', 'matrix(1.04, 0, 0, 1.04, 0, 0)')
+  await expect(tiles.first().locator('[data-art]')).toHaveCSS(
+    'transform',
+    /^matrix\(1\.1, 0, 0, 1\.1, -/,
+  )
   expect(await layout()).toEqual(before)
   const grid = tiles.first().locator('..')
   expect(await grid.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true)
