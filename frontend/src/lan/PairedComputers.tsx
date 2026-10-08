@@ -144,7 +144,7 @@ export function ShowCodeDialog({ open, onClose }: { open: boolean; onClose: () =
         </Typography>
         <Typography
           variant="h4"
-          sx={{ fontFamily: 'monospace', textAlign: 'center', py: space.pad }}
+          sx={{ fontFamily: 'monospace', textAlign: 'center', pt: space.pad }}
         >
           {code || '…'}
         </Typography>

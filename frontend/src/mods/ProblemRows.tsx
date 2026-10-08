@@ -106,22 +106,55 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
         )}
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        {row.kind === 'missing' ? (
-          <Link
-            component="button"
-            color="inherit"
-            onClick={() =>
-              useTab.getState().revealLoadOrder(row.missing.id, row.missing.dependentId)
-            }
-            sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word', textAlign: 'left' }}
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'flex-start',
+            columnGap: space.gap,
+            rowGap: 0.5,
+          }}
+        >
+          <Box sx={{ flex: '1 1 14rem', minWidth: 0 }}>
+            {row.kind === 'missing' ? (
+              <Link
+                component="button"
+                color="inherit"
+                onClick={() =>
+                  useTab.getState().revealLoadOrder(row.missing.id, row.missing.dependentId)
+                }
+                sx={{
+                  fontSize: 14,
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                  textAlign: 'left',
+                }}
+              >
+                {text}
+              </Link>
+            ) : (
+              <Typography sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                <LinkedText text={text} links={modLinksOf(row)} />
+              </Typography>
+            )}
+          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              flexShrink: 0,
+              flexWrap: 'wrap',
+              gap: 0.5,
+              justifyContent: 'flex-end',
+              ml: 'auto',
+            }}
           >
-            {text}
-          </Link>
-        ) : (
-          <Typography sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}>
-            <LinkedText text={text} links={modLinksOf(row)} />
-          </Typography>
-        )}
+            {row.kind === 'drift' ? (
+              <DriftButtons drift={row.drift} />
+            ) : (
+              <FixButton problem={row} dismissedToken={dismissed?.token} />
+            )}
+          </Box>
+        </Box>
         {authorNote === '' ? null : (
           <Typography sx={{ mt: 0.5, fontSize: 13, color: 'text.secondary', whiteSpace: 'normal' }}>
             {authorNote}
@@ -143,13 +176,6 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
           </ButtonBase>
           {why ? <WhyBody row={row} /> : null}
         </Box>
-      </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'flex-end' }}>
-        {row.kind === 'drift' ? (
-          <DriftButtons drift={row.drift} />
-        ) : (
-          <FixButton problem={row} dismissedToken={dismissed?.token} />
-        )}
       </Box>
     </Box>
   )

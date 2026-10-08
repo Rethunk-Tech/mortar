@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, List, ListItem, Typography } from '@mui/material'
-import { Settings2, Share2, TriangleAlert } from 'lucide-react'
+import { List as ListIcon, Settings2, Share2, TriangleAlert } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
@@ -136,11 +136,7 @@ function SavesPanel() {
   return (
     <HomePanel title={t`Saves`} card="saves">
       <SavesList />
-      <Button
-        color="inherit"
-        sx={{ p: 0, minWidth: 0, fontSize: 'inherit' }}
-        onClick={() => setTab('saves')}
-      >
+      <Button size="small" startIcon={<ListIcon size={14} />} onClick={() => setTab('saves')}>
         {total > 0 ? t`All saves (${total})` : t`All saves`}
       </Button>
     </HomePanel>
@@ -198,6 +194,7 @@ export function Home({
           display: 'grid',
           gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
           gap: space.pad,
+          alignItems: 'start',
           px: space.gutter,
           py: space.gutter,
           // Saves right after At a glance means no Changes card shares its row, so it takes the whole row.
