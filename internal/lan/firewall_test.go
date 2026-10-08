@@ -5,27 +5,31 @@ import "testing"
 func TestRulesBlock(t *testing.T) {
 	t.Parallel()
 	const exe = `C:\Users\Zoë\AppData\Local\Programs\Mortar\mortar.exe`
-	allow := fwRule{App: exe, Inbound: true, Allow: true, Enabled: true, Profiles: profilePrivate}
-	block := func(p int32) fwRule {
-		return fwRule{App: `c:\users\zoë\appdata\local\programs\mortar\MORTAR.exe`, Inbound: true, Enabled: true, Profiles: p}
+	rule := func(allow bool, profiles int32) fwRule {
+		return fwRule{App: `c:\users\zoë\appdata\local\programs\mortar\MORTAR.exe`, Inbound: true, Allow: allow, Enabled: true, Profiles: profiles}
 	}
+	local, publicBlock := rule(true, profilesLocal), rule(false, profilePublic)
 	for name, tc := range map[string]struct {
 		rules   []fwRule
-		current int32
+		anyAddr bool
 		want    bool
 	}{
-		"no rules":                     {nil, profilePrivate, true},
-		"private allow":                {[]fwRule{allow}, profilePrivate, false},
-		"allow on public only":         {[]fwRule{{App: exe, Inbound: true, Allow: true, Enabled: true, Profiles: 4}}, profilePrivate, true},
-		"all-profile allow":            {[]fwRule{{App: exe, Inbound: true, Allow: true, Enabled: true, Profiles: profilesAll}}, profilePrivate, false},
-		"block on current profile":     {[]fwRule{allow, block(profilePrivate)}, profilePrivate, true},
-		"block on other profile":       {[]fwRule{allow, block(4)}, profilePrivate, false},
-		"block on all profiles":        {[]fwRule{allow, block(profilesAll)}, profilePrivate, true},
-		"disabled block ignored":       {[]fwRule{allow, {App: exe, Inbound: true, Profiles: profilesAll}}, profilePrivate, false},
-		"other program's rule ignored": {[]fwRule{{App: `C:\x.exe`, Inbound: true, Allow: true, Enabled: true, Profiles: profilePrivate}}, profilePrivate, true},
-		"outbound allow ignored":       {[]fwRule{{App: exe, Allow: true, Enabled: true, Profiles: profilePrivate}}, profilePrivate, true},
+		"no rules":                     {nil, false, true},
+		"allow only":                   {[]fwRule{local}, false, true},
+		"allow and public block":       {[]fwRule{local, publicBlock}, false, false},
+		"allow covers private only":    {[]fwRule{rule(true, profilePrivate), publicBlock}, false, true},
+		"windows public block counts":  {[]fwRule{local, rule(false, profilePublic)}, false, false},
+		"block on private":             {[]fwRule{local, publicBlock, rule(false, profilePrivate)}, false, true},
+		"block on all profiles":        {[]fwRule{local, publicBlock, rule(false, profilesAll)}, false, true},
+		"disabled block ignored":       {[]fwRule{local, publicBlock, {App: exe, Inbound: true, Profiles: profilesAll}}, false, false},
+		"other program ignored":        {[]fwRule{{App: `C:\x.exe`, Inbound: true, Allow: true, Enabled: true, Profiles: profilesAll}}, false, true},
+		"outbound allow ignored":       {[]fwRule{{App: exe, Allow: true, Enabled: true, Profiles: profilesAll}}, false, true},
+		"any: all-profile allow":       {[]fwRule{rule(true, profilesAll)}, true, false},
+		"any: local allow is short":    {[]fwRule{local}, true, true},
+		"any: public block disallowed": {[]fwRule{rule(true, profilesAll), publicBlock}, true, true},
+		"lan: all-profile allow only":  {[]fwRule{rule(true, profilesAll)}, false, true},
 	} {
-		if got := rulesBlock(tc.rules, exe, tc.current); got != tc.want {
+		if got := rulesBlock(tc.rules, exe, tc.anyAddr); got != tc.want {
 			t.Errorf("%s: rulesBlock = %v, want %v", name, got, tc.want)
 		}
 	}

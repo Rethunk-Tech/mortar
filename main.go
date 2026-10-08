@@ -184,8 +184,8 @@ func run() error {
 	if len(os.Args) > 1 && os.Args[1] == "--release-links" {
 		return releaseLinks()
 	}
-	if len(os.Args) > 1 && os.Args[1] == lan.AllowFirewallFlag {
-		return lan.AllowFirewall()
+	if len(os.Args) > 1 && (os.Args[1] == lan.AllowFirewallFlag || os.Args[1] == lan.AllowFirewallAny) {
+		return lan.AllowFirewall(os.Args[1] == lan.AllowFirewallAny)
 	}
 	if len(os.Args) > 2 && os.Args[1] == "--handle-links" {
 		return claimLinks(os.Args[2])

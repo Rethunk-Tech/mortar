@@ -100,12 +100,14 @@ type Service struct {
 	name       string
 	instanceID string
 
-	useMu   sync.Mutex
-	lifeMu  sync.Mutex
-	mu      sync.RWMutex
-	closed  bool
-	enabled bool
-	peers   map[string]peerRecord
+	useMu sync.Mutex
+	// rulesAny is the allow-any-address setting the firewall rules were last written for.
+	rulesAny bool
+	lifeMu   sync.Mutex
+	mu       sync.RWMutex
+	closed   bool
+	enabled  bool
+	peers    map[string]peerRecord
 	// wantUntil is when discovery stops unless Peers is asked again; wake starts it.
 	wantUntil time.Time
 	wake      chan struct{}
@@ -223,9 +225,33 @@ func (s *Service) Apply() error {
 		return s.stop()
 	}
 	if cfg.LanStarted || s.listening() {
+		if !s.listening() {
+			s.mu.Lock()
+			s.rulesAny = cfg.LanAllowAnyAddress
+			s.mu.Unlock()
+		}
+		s.refreshRules(cfg.LanAllowAnyAddress)
 		return s.SetEnabled(true)
 	}
 	return nil
+}
+
+// refreshRules rewrites the firewall rules when the allow-any-address setting flips under a running listener, once per
+// flip: the change is the user's own, so the prompt that follows is expected.
+func (s *Service) refreshRules(anyAddr bool) {
+	s.useMu.Lock()
+	defer s.useMu.Unlock()
+	s.mu.Lock()
+	changed := s.enabled && s.rulesAny != anyAddr
+	if changed {
+		s.rulesAny = anyAddr
+	}
+	s.mu.Unlock()
+	if changed {
+		if err := fixFirewall(context.Background(), anyAddr); err != nil {
+			log.Printf("LAN sharing firewall: %v", err)
+		}
+	}
 }
 
 // ensureStarted starts the listener on first use, adding the firewall rule first on Windows so the system prompt
@@ -239,14 +265,15 @@ func (s *Service) ensureStarted(ctx context.Context) error {
 	if s.deps.Settings == nil || !s.deps.Settings.Get().LanSharing {
 		return errors.New("LAN sharing is disabled")
 	}
-	blocked, err := firewallBlocked(ctx)
+	anyAddr := s.allowAnyAddress()
+	blocked, err := firewallBlocked(ctx, anyAddr)
 	if err != nil || blocked {
-		if err := fixFirewall(ctx); err != nil {
+		if err := fixFirewall(ctx, anyAddr); err != nil {
 			log.Printf("LAN sharing firewall: %v", err)
 		}
 		// Listening without the rule is what makes Windows raise its own prompt, so an unreadable firewall counts
 		// as blocked too.
-		if blocked, err = firewallBlocked(ctx); err != nil || blocked {
+		if blocked, err = firewallBlocked(ctx, anyAddr); err != nil || blocked {
 			if err != nil {
 				log.Printf("LAN sharing firewall: %v", err)
 			}
@@ -256,6 +283,9 @@ func (s *Service) ensureStarted(ctx context.Context) error {
 	if err := s.start(ctx); err != nil {
 		return err
 	}
+	s.mu.Lock()
+	s.rulesAny = anyAddr
+	s.mu.Unlock()
 	_, err = s.deps.Settings.Update(func(v *settings.Settings) { v.LanStarted = true })
 	return err
 }

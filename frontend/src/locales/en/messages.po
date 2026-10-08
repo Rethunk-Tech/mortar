@@ -66,7 +66,7 @@ msgstr "{0, plural, one {# mod is downloading.} other {# mods are downloading.}}
 msgid "Keep the game's current value"
 msgstr "Keep the game's current value"
 
-#: src/settings/sections/General.tsx:254
+#: src/settings/sections/General.tsx:266
 msgid "Interface tour"
 msgstr "Interface tour"
 
@@ -586,7 +586,7 @@ msgstr "Includes: {0}"
 msgid "Assets and packs"
 msgstr "Assets and packs"
 
-#: src/settings/sections/General.tsx:229
+#: src/settings/sections/General.tsx:241
 msgid "Allow through firewall"
 msgstr "Allow through firewall"
 
@@ -616,7 +616,7 @@ msgstr "Last played {when}"
 msgid "{0, plural, one {Applied the curator's choices for # mod and {1, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {2, plural, one {# config file} other {# config files}}}}"
 msgstr "{0, plural, one {Applied the curator's choices for # mod and {1, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {2, plural, one {# config file} other {# config files}}}}"
 
-#: src/settings/sections/General.tsx:46
+#: src/settings/sections/General.tsx:47
 msgid "Startup and window"
 msgstr "Startup and window"
 
@@ -828,7 +828,7 @@ msgstr "Reorder {0}"
 msgid "Find mods to add"
 msgstr "Find mods to add"
 
-#: src/settings/sections/General.tsx:98
+#: src/settings/sections/General.tsx:99
 msgid "More languages are coming."
 msgstr "More languages are coming."
 
@@ -1767,7 +1767,7 @@ msgstr "{names} can't be reached; showing what Mortar saved at {time}"
 msgid "{0} fps over {1} s. Frame ms: average {2}, 95th {3}, 99th {4}, worst {5}. Managed heap {6} of {7} MiB, {8} garbage collections."
 msgstr "{0} fps over {1} s. Frame ms: average {2}, 95th {3}, 99th {4}, worst {5}. Managed heap {6} of {7} MiB, {8} garbage collections."
 
-#: src/settings/sections/General.tsx:214
+#: src/settings/sections/General.tsx:226
 msgid "Windows Firewall blocks incoming sends to Mortar"
 msgstr "Windows Firewall blocks incoming sends to Mortar"
 
@@ -2429,7 +2429,7 @@ msgstr "Enjoying {0}? Endorse it on Nexus"
 msgid "Sent to {0}"
 msgstr "Sent to {0}"
 
-#: src/settings/sections/General.tsx:243
+#: src/settings/sections/General.tsx:255
 msgid "Show the first-run tips again"
 msgstr "Show the first-run tips again"
 
@@ -3635,7 +3635,7 @@ msgstr "Try again in a few seconds."
 msgid "{0, plural, one {# mod checked} other {# mods checked}}"
 msgstr "{0, plural, one {# mod checked} other {# mods checked}}"
 
-#: src/settings/sections/General.tsx:242
+#: src/settings/sections/General.tsx:254
 #: src/shell/AppMenu.tsx:197
 msgid "Help"
 msgstr "Help"
@@ -4921,7 +4921,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/sections/GameSettings.tsx:355
 #: src/settings/sections/GameSettings.tsx:357
 #: src/settings/sections/GameSettings.tsx:383
-#: src/settings/sections/General.tsx:39
+#: src/settings/sections/General.tsx:40
 #: src/settings/sections/LoaderRow.tsx:51
 #: src/settings/sections/ModsProfiles.tsx:19
 #: src/settings/sections/Notifications.tsx:34
@@ -5028,7 +5028,7 @@ msgstr "A portable copy keeps its data beside the program."
 msgid "Not in this profile ({0})"
 msgstr "Not in this profile ({0})"
 
-#: src/settings/sections/General.tsx:272
+#: src/settings/sections/General.tsx:284
 msgid "Save these settings to a file, or load them on another computer."
 msgstr "Save these settings to a file, or load them on another computer."
 
@@ -5140,7 +5140,7 @@ msgstr "These apply only to this profile."
 msgid "Copy of {name}"
 msgstr "Copy of {name}"
 
-#: src/settings/sections/General.tsx:280
+#: src/settings/sections/General.tsx:292
 msgid "Export…"
 msgstr "Export…"
 
@@ -5620,8 +5620,8 @@ msgstr "Restored as {0}"
 msgid "Has problems"
 msgstr "Has problems"
 
-#: src/settings/sections/General.tsx:191
-#: src/settings/sections/General.tsx:199
+#: src/settings/sections/General.tsx:195
+#: src/settings/sections/General.tsx:203
 msgid "LAN port"
 msgstr "LAN port"
 
@@ -6137,7 +6137,7 @@ msgstr "Could not unlink the collection"
 msgid "Scheduled save backups"
 msgstr "Scheduled save backups"
 
-#: src/settings/sections/General.tsx:251
+#: src/settings/sections/General.tsx:263
 msgid "Show again"
 msgstr "Show again"
 
@@ -8049,6 +8049,10 @@ msgstr "{count, plural, one {# update ready} other {# updates ready}}"
 msgid "Optional"
 msgstr "Optional"
 
+#: src/settings/sections/General.tsx:218
+msgid "This network is set to Public in Windows"
+msgstr "This network is set to Public in Windows"
+
 #: src/commandPalette/CommandPalette.tsx:98
 msgid "Go to"
 msgstr "Go to"
@@ -8841,7 +8845,7 @@ msgstr "Executable"
 msgid "Play anyway"
 msgstr "Play anyway"
 
-#: src/settings/sections/General.tsx:181
+#: src/settings/sections/General.tsx:185
 msgid "Let the operating system choose a free port"
 msgstr "Let the operating system choose a free port"
 
@@ -9459,7 +9463,7 @@ msgstr "pinned in {0}"
 msgid "Waiting for Nexus…"
 msgstr "Waiting for Nexus…"
 
-#: src/settings/sections/General.tsx:248
+#: src/settings/sections/General.tsx:260
 msgid "Tips will show again"
 msgstr "Tips will show again"
 
@@ -9610,7 +9614,7 @@ msgstr "Could not keep the old files"
 msgid "{0, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
 msgstr "{0, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
 
-#: src/settings/sections/General.tsx:191
+#: src/settings/sections/General.tsx:195
 msgid "The port Mortar uses for local sharing"
 msgstr "The port Mortar uses for local sharing"
 
@@ -9803,7 +9807,7 @@ msgstr "Create a profile to manage a set of mods."
 msgid "About {0}"
 msgstr "About {0}"
 
-#: src/settings/sections/General.tsx:215
+#: src/settings/sections/General.tsx:227
 msgid "Allow Mortar through the firewall so nearby users can send profiles."
 msgstr "Allow Mortar through the firewall so nearby users can send profiles."
 
@@ -9826,8 +9830,8 @@ msgid "{0}: {1} missing, {2} changed, {3} extra"
 msgstr "{0}: {1} missing, {2} changed, {3} extra"
 
 #: src/settings/sections/AboutDiagnostics.tsx:91
-#: src/settings/sections/General.tsx:268
-#: src/settings/sections/General.tsx:270
+#: src/settings/sections/General.tsx:280
+#: src/settings/sections/General.tsx:282
 msgid "Settings file"
 msgstr "Settings file"
 
@@ -9993,7 +9997,7 @@ msgid "Add a set"
 msgstr "Add a set"
 
 #: src/settings/sections/DataImport.tsx:25
-#: src/settings/sections/General.tsx:154
+#: src/settings/sections/General.tsx:158
 msgid "Sharing"
 msgstr "Sharing"
 
@@ -10243,6 +10247,10 @@ msgstr "Handle Nexus download links?"
 msgid "From {0}, not the site you installed it from. Updating switches its source."
 msgstr "From {0}, not the site you installed it from. Updating switches its source."
 
+#: src/settings/sections/General.tsx:219
+msgid "Nearby computers can't reach Mortar. Set the network to Private in Windows network settings."
+msgstr "Nearby computers can't reach Mortar. Set the network to Private in Windows network settings."
+
 #: src/mods/SlowStartupSection.tsx:74
 msgid "Content Patcher packs"
 msgstr "Content Patcher packs"
@@ -10444,7 +10452,7 @@ msgstr "Nexus expects a 7z. Repack collection.zip as a 7z with 7-Zip before uplo
 msgid "Optional file"
 msgstr "Optional file"
 
-#: src/settings/sections/General.tsx:80
+#: src/settings/sections/General.tsx:81
 msgid "Checking…"
 msgstr "Checking…"
 
@@ -10568,7 +10576,7 @@ msgid "Delete the template {0}?"
 msgstr "Delete the template {0}?"
 
 #: src/settings/PrefControls.tsx:231
-#: src/settings/sections/General.tsx:139
+#: src/settings/sections/General.tsx:143
 #: src/settings/sections/StreamOverlay.tsx:284
 msgid "Enter a number from {min} to {max}"
 msgstr "Enter a number from {min} to {max}"
@@ -10870,7 +10878,7 @@ msgstr "{0} adds {time} to startup (through {1})"
 msgid "Overrides"
 msgstr "Overrides"
 
-#: src/settings/sections/General.tsx:299
+#: src/settings/sections/General.tsx:311
 msgid "Import…"
 msgstr "Import…"
 
@@ -11021,7 +11029,7 @@ msgstr "The extra mods folder…"
 msgid "Set {detail} of {name} for the next start"
 msgstr "Set {detail} of {name} for the next start"
 
-#: src/settings/sections/General.tsx:157
+#: src/settings/sections/General.tsx:161
 msgid "Lets nearby Mortar users find this installation and exchange profile links."
 msgstr "Lets nearby Mortar users find this installation and exchange profile links."
 
@@ -11300,8 +11308,8 @@ msgstr "{importable, plural, one {# mod will be copied into a new profile. The g
 msgid "Don't check before Play"
 msgstr "Don't check before Play"
 
-#: src/settings/sections/General.tsx:51
-#: src/settings/sections/General.tsx:57
+#: src/settings/sections/General.tsx:52
+#: src/settings/sections/General.tsx:58
 msgid "Keep Mortar in the tray"
 msgstr "Keep Mortar in the tray"
 
@@ -11767,8 +11775,8 @@ msgstr "Copies"
 msgid "Mortar installs the loader for you."
 msgstr "Mortar installs the loader for you."
 
-#: src/settings/sections/General.tsx:180
-#: src/settings/sections/General.tsx:186
+#: src/settings/sections/General.tsx:184
+#: src/settings/sections/General.tsx:190
 msgid "Automatic port"
 msgstr "Automatic port"
 
@@ -12338,9 +12346,9 @@ msgstr "Check mods and Mortar for updates (F5)"
 msgid "Games"
 msgstr "Games"
 
-#: src/settings/sections/General.tsx:94
-#: src/settings/sections/General.tsx:96
-#: src/settings/sections/General.tsx:105
+#: src/settings/sections/General.tsx:95
+#: src/settings/sections/General.tsx:97
+#: src/settings/sections/General.tsx:106
 msgid "Language"
 msgstr "Language"
 
@@ -12518,7 +12526,7 @@ msgstr "Download progress"
 msgid "Show mod"
 msgstr "Show mod"
 
-#: src/settings/sections/General.tsx:52
+#: src/settings/sections/General.tsx:53
 msgid "Closing the window hides Mortar instead of quitting."
 msgstr "Closing the window hides Mortar instead of quitting."
 
@@ -12570,7 +12578,7 @@ msgstr "BepInEx's preloader patches the game, then Unity starts it"
 msgid "Launcher replaced"
 msgstr "Launcher replaced"
 
-#: src/settings/sections/General.tsx:111
+#: src/settings/sections/General.tsx:112
 msgid "System default"
 msgstr "System default"
 
@@ -12806,7 +12814,7 @@ msgstr "Downloading and verifying Mortar {0}…"
 msgid "Delete preset"
 msgstr "Delete preset"
 
-#: src/settings/sections/General.tsx:243
+#: src/settings/sections/General.tsx:255
 msgid "Tips"
 msgstr "Tips"
 
@@ -13051,7 +13059,7 @@ msgstr "Import profile from…"
 msgid "What to do when an installed mod still needs other mods"
 msgstr "What to do when an installed mod still needs other mods"
 
-#: src/settings/sections/General.tsx:79
+#: src/settings/sections/General.tsx:80
 msgid "Scanner in use"
 msgstr "Scanner in use"
 
@@ -13105,7 +13113,7 @@ msgstr "Check this download"
 msgid "Save…"
 msgstr "Save…"
 
-#: src/settings/sections/General.tsx:255
+#: src/settings/sections/General.tsx:267
 msgid "Walk through profiles, Play, mods, and the command palette"
 msgstr "Walk through profiles, Play, mods, and the command palette"
 
@@ -13302,7 +13310,7 @@ msgid "Last launch"
 msgstr "Last launch"
 
 #: src/settings/prefCopyAntivirus.ts:14
-#: src/settings/sections/General.tsx:77
+#: src/settings/sections/General.tsx:78
 msgid "Antivirus"
 msgstr "Antivirus"
 
@@ -13958,8 +13966,8 @@ msgstr "Choose an archive first."
 msgid "Using your gh login"
 msgstr "Using your gh login"
 
-#: src/settings/sections/General.tsx:156
-#: src/settings/sections/General.tsx:162
+#: src/settings/sections/General.tsx:160
+#: src/settings/sections/General.tsx:166
 msgid "Share profiles on the local network"
 msgstr "Share profiles on the local network"
 

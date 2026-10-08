@@ -23,6 +23,7 @@ const (
 	fwActionAllow  = 1
 	elevatedWaitMS = 5 * 60 * 1000
 	ruleName       = "Mortar"
+	publicRuleName = "Mortar (public networks)"
 )
 
 // policy runs f against the firewall policy object on a locked OS thread, as COM requires.
@@ -105,17 +106,13 @@ func readRule(d *ole.IDispatch) (fwRule, error) {
 
 // firewallBlocked reports whether Windows Firewall would stop nearby computers reaching Mortar. An unreadable
 // firewall is an error, never "not blocked": listening without the rule is what makes Windows raise its own prompt.
-func firewallBlocked(context.Context) (bool, error) {
+func firewallBlocked(_ context.Context, anyAddr bool) (bool, error) {
 	exe, err := os.Executable()
 	if err != nil {
 		return true, fmt.Errorf("find Mortar executable: %w", err)
 	}
 	var rules []fwRule
-	var current int32
-	err = policy(func(pol, set *ole.IDispatch) error {
-		if current, err = intProp(pol, "CurrentProfileTypes"); err != nil {
-			return err
-		}
+	err = policy(func(_, set *ole.IDispatch) error {
 		return oleutil.ForEach(set, func(v *ole.VARIANT) error {
 			r, err := readRule(v.ToIDispatch())
 			if err != nil {
@@ -128,12 +125,24 @@ func firewallBlocked(context.Context) (bool, error) {
 	if err != nil {
 		return true, fmt.Errorf("read Windows Firewall rules: %w", err)
 	}
-	return rulesBlock(rules, exe, current), nil
+	return rulesBlock(rules, exe, anyAddr), nil
 }
 
-// AllowFirewall is the elevated step: it removes every inbound block rule for this executable (Windows names the ones
-// it creates itself after the file description, not "Mortar") and installs one Private-only allow rule.
-func AllowFirewall() error {
+// networkIsPublic reports whether Windows has the connected network on its Public profile only.
+func networkIsPublic() bool {
+	var current int32
+	err := policy(func(pol, _ *ole.IDispatch) error {
+		var err error
+		current, err = intProp(pol, "CurrentProfileTypes")
+		return err
+	})
+	return err == nil && current&profilePublic != 0 && current&profilesLocal == 0
+}
+
+// AllowFirewall is the elevated step. It removes every inbound block rule for this executable (Windows names the ones
+// it creates itself after the file description, not "Mortar") and writes a rule for every network profile, so Windows
+// never prompts: allow on Domain and Private with an explicit block on Public, or allow everywhere when anyAddr.
+func AllowFirewall(anyAddr bool) error {
 	exe, err := os.Executable()
 	if err != nil {
 		return err
@@ -153,7 +162,7 @@ func AllowFirewall() error {
 				return err
 			}
 			inboundBlock := r.Inbound && !r.Allow
-			if !strings.EqualFold(r.App, exe) || (!inboundBlock && name != ruleName) {
+			if !strings.EqualFold(r.App, exe) || (!inboundBlock && name != ruleName && name != publicRuleName) {
 				return nil
 			}
 			token := "mortar-remove-" + strconv.Itoa(len(tokens))
@@ -171,27 +180,37 @@ func AllowFirewall() error {
 				return fmt.Errorf("remove firewall rule: %w", err)
 			}
 		}
-		unknown, err := oleutil.CreateObject("HNetCfg.FWRule")
-		if err != nil {
+		if anyAddr {
+			return addRule(set, ruleName, exe, fwActionAllow, profilesAll)
+		}
+		if err := addRule(set, ruleName, exe, fwActionAllow, profilesLocal); err != nil {
 			return err
 		}
-		defer unknown.Release()
-		rule, err := unknown.QueryInterface(ole.IID_IDispatch)
-		if err != nil {
-			return err
-		}
-		defer rule.Release()
-		for name, value := range map[string]any{
-			"Name": ruleName, "ApplicationName": exe, "Direction": int32(fwDirectionIn), "Action": int32(fwActionAllow),
-			"Profiles": profilePrivate, "Enabled": true,
-		} {
-			if _, err := oleutil.PutProperty(rule, name, value); err != nil {
-				return fmt.Errorf("set firewall rule %s: %w", name, err)
-			}
-		}
-		_, err = oleutil.CallMethod(set, "Add", rule)
-		return err
+		return addRule(set, publicRuleName, exe, fwActionBlock, profilePublic)
 	})
+}
+
+func addRule(set *ole.IDispatch, name, exe string, action, profiles int32) error {
+	unknown, err := oleutil.CreateObject("HNetCfg.FWRule")
+	if err != nil {
+		return err
+	}
+	defer unknown.Release()
+	rule, err := unknown.QueryInterface(ole.IID_IDispatch)
+	if err != nil {
+		return err
+	}
+	defer rule.Release()
+	for prop, value := range map[string]any{
+		"Name": name, "ApplicationName": exe, "Direction": int32(fwDirectionIn), "Action": action,
+		"Profiles": profiles, "Enabled": true,
+	} {
+		if _, err := oleutil.PutProperty(rule, prop, value); err != nil {
+			return fmt.Errorf("set firewall rule %s: %w", prop, err)
+		}
+	}
+	_, err = oleutil.CallMethod(set, "Add", rule)
+	return err
 }
 
 // shellExecuteInfo is SHELLEXECUTEINFOW.
@@ -219,7 +238,7 @@ var shellExecuteEx = windows.NewLazySystemDLL("shell32.dll").NewProc("ShellExecu
 
 // fixFirewall runs Mortar itself elevated, so the UAC prompt names Mortar and its publisher, and waits for its exit
 // code. Declining the prompt is an error.
-func fixFirewall(context.Context) error {
+func fixFirewall(_ context.Context, anyAddr bool) error {
 	exe, err := os.Executable()
 	if err != nil {
 		return fmt.Errorf("find Mortar executable: %w", err)
@@ -232,7 +251,11 @@ func fixFirewall(context.Context) error {
 	if err != nil {
 		return err
 	}
-	args, err := windows.UTF16PtrFromString(AllowFirewallFlag)
+	flag := AllowFirewallFlag
+	if anyAddr {
+		flag = AllowFirewallAny
+	}
+	args, err := windows.UTF16PtrFromString(flag)
 	if err != nil {
 		return err
 	}

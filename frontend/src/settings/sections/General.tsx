@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   FirewallBlocked,
   FixFirewall,
+  NetworkIsPublic,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import type { ImportPreview } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import {
@@ -125,12 +126,15 @@ function Sharing() {
   const reportFailure = useReportFailure()
   const [firewallBlocked, setFirewallBlocked] = useState(false)
   const [fixingFirewall, setFixingFirewall] = useState(false)
+  const [networkPublic, setNetworkPublic] = useState(false)
+  const allowAny = useSettings((s) => s.lanAllowAnyAddress)
   const lanSharing = useSettings((s) => s.lanSharing)
   const lanPort = useSettings((s) => s.lanPort)
   const [portText, setPortText] = useState(String(lanPort))
   const [portError, setPortError] = useState(false)
   useEffect(() => {
     FirewallBlocked().then(setFirewallBlocked).catch(reportFailure)
+    NetworkIsPublic().then(setNetworkPublic).catch(reportFailure)
   }, [reportFailure])
   useEffect(() => {
     setPortText(String(lanPort))
@@ -207,6 +211,14 @@ function Sharing() {
             }}
             sx={{ width: 140 }}
           />
+        </SettingRow>
+      ) : null}
+      {lanSharing && networkPublic && !allowAny ? (
+        <SettingRow
+          label={t`This network is set to Public in Windows`}
+          description={t`Nearby computers can't reach Mortar. Set the network to Private in Windows network settings.`}
+        >
+          <span />
         </SettingRow>
       ) : null}
       {firewallBlocked ? (
