@@ -435,15 +435,36 @@ func (s *Service) poll(g game.Game) bool {
 		s.set(Status{Game: g.ID(), Install: installOf(g), State: Running, Since: sinceOr(procs[0].Start)})
 	case cur.State == Running && !alive:
 		// With no game process left the run is over, whatever the exit waiter is still waiting on.
+		log.Printf("launch: %s %s: poll found no game process of install %q (%s)", g.ID(), cur.Profile, installOf(g), s.describeProcs(g))
 		s.awaitReap(g)
 		s.closed(g, cur, false)
 	case cur.State == Running && cur.Profile != "" && profileID == "":
 		if s.reapArmed(g) {
 			break
 		}
+		log.Printf("launch: %s %s: poll found the game running but not this profile (%s)", g.ID(), cur.Profile, s.describeProcs(g))
 		s.closed(g, cur, false)
 	}
 	return s.current(g).State != Idle
+}
+
+// describeProcs lists the processes named like the game's and the install each belongs to, for the log line that says
+// why a run was closed: on Windows the command line is unreadable, so the install is the only thing tying a process
+// to the run.
+func (s *Service) describeProcs(g game.Game) string {
+	ps, err := launch.Processes(s.procDir, game.ProcessNames(g)...)
+	if err != nil {
+		return "listing processes: " + err.Error()
+	}
+	if len(ps) == 0 {
+		return "no process named " + strings.Join(game.ProcessNames(g), ", ")
+	}
+	parts := make([]string, 0, len(ps))
+	for _, p := range ps {
+		id, ok := s.owner(g, p)
+		parts = append(parts, fmt.Sprintf("pid %d exe %q install %q owned %v", p.PID, p.Exe, id, ok))
+	}
+	return strings.Join(parts, "; ")
 }
 
 // watch polls every 2 s until the game is idle.
