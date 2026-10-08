@@ -144,6 +144,7 @@ func registerEvents() {
 	application.RegisterEvent[launchsvc.SettingsRestoreWarning](launchsvc.SettingsRestoreWarningEvent)
 	application.RegisterEvent[updatesvc.Release](updatesvc.StagedEvent)
 	application.RegisterEvent[updatesvc.ModUpdateDigestNotice](updatesvc.ModUpdateDigestEvent)
+	application.RegisterEvent[profile.GameModsProgress](profile.GameModsProgressEvent)
 	application.RegisterEvent[string](quitRequestedEvent)
 }
 
@@ -902,7 +903,7 @@ func run() error {
 	go savesSvc.RunScheduledBackups(updateCtx)
 	settled := make(chan struct{})
 	problemsSvc.AfterFirstCheck = func() { close(settled) }
-	profileSvc.HealthEmit = emit
+	profileSvc.Emit = emit
 	go profileSvc.RunHealthChecks(updateCtx, settled)
 	queueCtx, stopQueue := context.WithCancel(context.Background())
 	launchsvc.SetLife(launches, queueCtx)
@@ -994,7 +995,7 @@ func run() error {
 		})
 		// Wayland gives an app no say over where a re-shown window goes, so closing to the tray
 		// destroys the window and showing builds a fresh one that the compositor places as new.
-		w.RegisterHook(events.Common.WindowClosing, func(*application.WindowEvent) {
+		w.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
 			if store.Get().RememberWindow && !plays.PlayMode() {
 				x, y := w.Position()
 				saveWindowGeom(dataDir, windowGeom{X: x, Y: y, W: w.Width(), H: w.Height()})
@@ -1003,6 +1004,9 @@ func run() error {
 				if quitSvc.AllowWindowClose() {
 					return
 				}
+				// The window stays until the quit is confirmed: closed now, it would take with it the page that answers
+				// the request, and with DisableQuitOnLastWindowClosed nothing would ever end the process.
+				e.Cancel()
 				quitSvc.RequestQuit()
 				return
 			}
@@ -1195,7 +1199,7 @@ func run() error {
 		trayMenu.Add("Quit").OnClick(func(*application.Context) {
 			quitSvc.RequestQuit()
 		})
-		trayMenu.Update()
+		applyTrayMenu(tray, trayMenu)
 	}
 	syncTray := func() {
 		if !store.Get().KeepInTray && !store.Get().StartMinimised {
