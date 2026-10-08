@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -217,5 +218,51 @@ func TestScanFollowsDeployedManifestLinks(t *testing.T) {
 	want := map[string]string{"Top": "A.Top", "Pack/Nested": "A.Nested"}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("Scan = %v, want %v", got, want)
+	}
+}
+
+func TestParseNewtonsoftForms(t *testing.T) {
+	utf16le := []byte{0xff, 0xfe}
+	for _, c := range []byte(`{'UniqueID': 'A.U16'}`) {
+		utf16le = append(utf16le, c, 0)
+	}
+	for name, tc := range map[string]struct {
+		in   []byte
+		want string
+	}{
+		"single quotes":         {[]byte(`{'Name':'N','UniqueID':'A.Single'}`), "A.Single"},
+		"unquoted names":        {[]byte(`{Name:"N", UniqueID: "A.Bare",}`), "A.Bare"},
+		"utf16":                 {utf16le, "A.U16"},
+		"raw newline in string": {[]byte("{\"Description\":\"two\nlines\",\"UniqueID\":\"A.NL\"}"), "A.NL"},
+		"curly quotes":          {[]byte("{“UniqueID”: “A.Curly”}"), "A.Curly"},
+	} {
+		m, err := Parse(tc.in)
+		if err != nil || m.UniqueID != tc.want {
+			t.Errorf("%s: %+v, %v", name, m, err)
+		}
+	}
+}
+
+func TestParseErrorsSayWhy(t *testing.T) {
+	for in, want := range map[string]string{
+		"{\n\"UniqueID\": \"A\",\n\"Name\" \"x\"\n}": "invalid JSON at line 3",
+		`{"Name":"x"}`: "manifest has no UniqueID",
+		`[1]`:          "not a JSON object",
+		`null`:         "not a JSON object",
+	} {
+		if _, err := Parse([]byte(in)); err == nil || !strings.Contains(err.Error(), want) {
+			t.Errorf("%q: %v, want %q", in, err, want)
+		}
+	}
+}
+
+func TestScanInvalidReportsANestedFailure(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, "Good/manifest.json", `{"UniqueID":"A.Good"}`)
+	write(t, root, "Wrapper/Inner/manifest.json", `{"UniqueID": }`)
+	mods, invalid, err := ScanInvalid(root)
+	if err != nil || len(mods) != 1 || invalid == nil || invalid.Folder != "Wrapper/Inner" ||
+		!strings.HasPrefix(invalid.Error(), "Wrapper/Inner/manifest.json: invalid JSON at line 1") {
+		t.Fatalf("mods %v, invalid %+v, err %v", mods, invalid, err)
 	}
 }

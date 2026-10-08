@@ -14,6 +14,9 @@ func FuzzParse(f *testing.F) {
 		`{"UniqueID":"x","UpdateKeys":["GitHub:../..","GitHub:o/r?x","Nexus: 99999999999999999999"]}`,
 		`/* unterminated`,
 		`[]`,
+		"{'UniqueID': 'A', Name: \"x\\\n\"}",
+		"\xff\xfe{\x00\"\x00U\x00",
+		"{\u201cUniqueID\u201d: \u201cA\u201d}",
 	} {
 		f.Add([]byte(s))
 	}

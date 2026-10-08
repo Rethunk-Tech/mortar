@@ -2,6 +2,7 @@
 package manifest
 
 import (
+	"bytes"
 	"cmp"
 	"encoding/json"
 	"errors"
@@ -96,9 +97,9 @@ func (m Manifest) clone() Manifest {
 }
 
 func parse(b []byte) (Manifest, error) {
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(jsonc.Clean(b), &raw); err != nil {
-		return Manifest{}, fmt.Errorf("invalid manifest: %w", err)
+	raw, err := readObject(b)
+	if err != nil {
+		return Manifest{}, err
 	}
 	m := Manifest{
 		Name:                 text(raw, "name"),
@@ -120,6 +121,36 @@ func parse(b []byte) (Manifest, error) {
 		return Manifest{}, errors.New("manifest has no UniqueID")
 	}
 	return m, nil
+}
+
+// curlyQuotes turns typographic quotes into straight ones, the second try SMAPI makes on a manifest that fails to parse.
+var curlyQuotes = strings.NewReplacer("\u201c", `"`, "\u201d", `"`)
+
+// readObject reads b as the JSON object Newtonsoft would, or says where it stops being one.
+func readObject(b []byte) (map[string]json.RawMessage, error) {
+	clean := jsonc.Clean(b)
+	var raw map[string]json.RawMessage
+	err := json.Unmarshal(clean, &raw)
+	if err != nil && bytes.ContainsAny(b, "\u201c\u201d") {
+		retry := jsonc.Clean([]byte(curlyQuotes.Replace(string(b))))
+		if json.Unmarshal(retry, &raw) == nil {
+			return raw, nil
+		}
+	}
+	var syntax *json.SyntaxError
+	var typed *json.UnmarshalTypeError
+	switch {
+	case err == nil:
+		if raw == nil {
+			return nil, errors.New("manifest is not a JSON object")
+		}
+		return raw, nil
+	case errors.As(err, &syntax):
+		return nil, fmt.Errorf("invalid JSON at line %d: %s", 1+bytes.Count(clean[:min(int(syntax.Offset), len(clean))], []byte("\n")), syntax.Error())
+	case errors.As(err, &typed):
+		return nil, errors.New("manifest is not a JSON object")
+	}
+	return nil, err
 }
 
 func texts(v json.RawMessage) []string {
@@ -258,21 +289,46 @@ type Mod struct {
 	Folder string
 }
 
+// Invalid is a manifest.json that exists but cannot be read as a SMAPI manifest.
+type Invalid struct {
+	// Folder is the manifest's folder relative to the scanned root, slash-separated; "." for the root itself.
+	Folder string
+	Err    error
+}
+
+// Error names the manifest by its path under the scanned root and says why it was refused.
+func (i Invalid) Error() string {
+	name := FileName
+	if i.Folder != "." {
+		name = i.Folder + "/" + FileName
+	}
+	return name + ": " + i.Err.Error()
+}
+
 // Scan finds mods under root like SMAPI: it stops descending at a folder holding a manifest.json and skips
 // subfolders whose names start with a dot. A manifest that does not parse is skipped, as SMAPI reports it
 // as invalid rather than loading it.
 func Scan(root string) ([]Mod, error) {
+	mods, _, err := ScanInvalid(root)
+	return mods, err
+}
+
+// ScanInvalid is Scan that also returns the first manifest it skipped for not parsing, nil when there was none.
+func ScanInvalid(root string) ([]Mod, *Invalid, error) {
 	base, err := fsx.EvalSymlinks(root)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	var mods []Mod
+	var invalid *Invalid
 	var walk func(dir, rel string) error
 	walk = func(dir, rel string) error {
 		b, err := ReadFile(dir)
 		if err == nil {
 			if m, perr := Parse(b); perr == nil {
 				mods = append(mods, Mod{Manifest: m, Folder: rel})
+			} else if invalid == nil {
+				invalid = &Invalid{Folder: rel, Err: perr}
 			}
 			return nil
 		}
@@ -301,7 +357,8 @@ func Scan(root string) ([]Mod, error) {
 		}
 		return nil
 	}
-	return mods, walk(root, ".")
+	err = walk(root, ".")
+	return mods, invalid, err
 }
 
 // LoaderManaged reports whether a mod is installed and kept current by a loader or Mortar itself, so a profile never

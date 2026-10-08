@@ -139,9 +139,24 @@ func readTopManifest(dir string) (manifest.Manifest, bool, error) {
 	return m, true, err
 }
 
+var vortexTags = []string{"__folder_managed_by_vortex", ".__folder_managed_by_vortex", "__delete_if_empty"}
+
+// vortexLeftover reports a folder holding no files but Vortex's tag files (what an undeployed mod leaves) or nothing at all.
+func vortexLeftover(dir string) bool {
+	leftover := true
+	_ = filepath.WalkDir(dir, func(_ string, d fs.DirEntry, err error) error {
+		if err != nil || (!d.IsDir() && !slices.ContainsFunc(vortexTags, func(t string) bool { return strings.EqualFold(t, d.Name()) })) {
+			leftover = false
+			return fs.SkipAll
+		}
+		return nil
+	})
+	return leftover
+}
+
 func classifyFolder(dir, name string) (gameModSlot, bool) {
 	label := strings.TrimLeft(name, ".")
-	if bundledFolder(name) != "" {
+	if bundledFolder(name) != "" || strings.EqualFold(label, "smapi-internal") {
 		return gameModSlot{}, false
 	}
 	failed := func(reason string) (gameModSlot, bool) {
@@ -153,19 +168,22 @@ func classifyFolder(dir, name string) (gameModSlot, bool) {
 	}
 	m, hasManifest, err := readTopManifest(dir)
 	if err != nil && hasManifest {
-		return failed("The manifest is invalid")
+		return failed(manifest.Invalid{Folder: ".", Err: err}.Error())
 	}
 	var mods []manifest.Mod
 	if hasManifest {
 		mods = []manifest.Mod{{Manifest: m, Folder: "."}}
 	} else {
-		found, scanErr := manifest.Scan(dir)
+		found, invalid, scanErr := manifest.ScanInvalid(dir)
 		if scanErr != nil {
 			return failed(scanErr.Error())
 		}
 		if len(found) == 0 {
-			if _, err := manifest.ReadFile(dir); err == nil {
-				return failed("The manifest is invalid")
+			if invalid != nil {
+				return failed(invalid.Error())
+			}
+			if vortexLeftover(dir) {
+				return gameModSlot{}, false
 			}
 			return failed("No SMAPI mod was found")
 		}

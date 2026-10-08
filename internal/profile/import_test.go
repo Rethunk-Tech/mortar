@@ -345,3 +345,44 @@ func TestImportGameModsCopiesVortexLinkedFiles(t *testing.T) {
 		t.Fatalf("Vortex's folder tag was imported: %v", err)
 	}
 }
+
+func TestPreviewGameModsExplainsUnreadableFolders(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	mods := filepath.Join(t.TempDir(), "Mods")
+	writeFile(t, mods, "Good/manifest.json", `{'Name':'Good',UniqueID:'Me.Good'}`)
+	writeFile(t, mods, "Broken/manifest.json", "{\n\"UniqueID\": \"A\"\n\"Name\": 1}")
+	writeFile(t, mods, "NoId/manifest.json", `{"Name":"x"}`)
+	writeFile(t, mods, "Wrapped/Inner/manifest.json", `{"UniqueID": }`)
+	writeFile(t, mods, "Stuff/readme.docx", "x")
+	writeFile(t, mods, "smapi-internal/config.json", "{}")
+	writeFile(t, mods, "Undeployed/__folder_managed_by_vortex", "")
+	writeFile(t, mods, "Undeployed2/.__folder_managed_by_vortex", "")
+	writeFile(t, mods, "Undeployed2/Sub/__delete_if_empty", "")
+	if err := os.MkdirAll(filepath.Join(mods, "Empty", "Nested"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	preview, err := e.PreviewGameMods(mods)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]string{}
+	for _, m := range preview.Mods {
+		got[m.Name] = m.Reason
+	}
+	want := map[string]string{
+		"Good":    "",
+		"Broken":  "manifest.json: invalid JSON at line 3: invalid character '\"' after object key:value pair",
+		"NoId":    "manifest.json: manifest has no UniqueID",
+		"Wrapped": "Inner/manifest.json: invalid JSON at line 1: invalid character '}' looking for beginning of value",
+		"Stuff":   "No SMAPI mod was found",
+	}
+	if len(got) != len(want) {
+		t.Fatalf("listed %v, want %v", got, want)
+	}
+	for k, v := range want {
+		if got[k] != v {
+			t.Errorf("%s: %q, want %q", k, got[k], v)
+		}
+	}
+}
