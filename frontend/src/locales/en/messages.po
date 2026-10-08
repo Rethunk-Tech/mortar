@@ -1408,7 +1408,7 @@ msgstr "Config files stay here: only a paired computer gets them. Everything els
 msgid "Fishing skill"
 msgstr "Fishing skill"
 
-#: src/games/ProfileCards.tsx:106
+#: src/games/ProfileCards.tsx:105
 msgid "+{more} more"
 msgstr "+{more} more"
 
@@ -3449,7 +3449,7 @@ msgstr "Accounts"
 msgid "Priority {0}"
 msgstr "Priority {0}"
 
-#: src/profiles/store.ts:361
+#: src/profiles/store.ts:369
 msgid "Could not open the profile folder"
 msgstr "Could not open the profile folder"
 
@@ -3686,8 +3686,8 @@ msgid "Enable and disable mods, and update them for the open profile."
 msgstr "Enable and disable mods, and update them for the open profile."
 
 #: src/game/detailStates.tsx:17
-#: src/games/ProfileCards.tsx:55
-#: src/profiles/store.ts:304
+#: src/games/ProfileCards.tsx:54
+#: src/profiles/store.ts:310
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
 
@@ -4772,7 +4772,7 @@ msgstr "Nothing will be removed."
 msgid "Missing required dependencies ({0})"
 msgstr "Missing required dependencies ({0})"
 
-#: src/profiles/store.ts:348
+#: src/profiles/store.ts:356
 msgid "Could not read recently deleted profiles"
 msgstr "Could not read recently deleted profiles"
 
@@ -5212,7 +5212,7 @@ msgstr "Needs your choice ({0})"
 msgid "Unlinked the collection {name}"
 msgstr "Unlinked the collection {name}"
 
-#: src/profiles/store.ts:390
+#: src/profiles/store.ts:398
 msgid "Could not permanently delete the profile"
 msgstr "Could not permanently delete the profile"
 
@@ -6405,7 +6405,7 @@ msgstr "No profiles yet"
 #: src/games/GameSelect.tsx:150
 #: src/games/ProfileCards.tsx:48
 #: src/profiles/store.ts:250
-#: src/profiles/store.ts:311
+#: src/profiles/store.ts:319
 msgid "Could not save the open profile"
 msgstr "Could not save the open profile"
 
@@ -9883,7 +9883,7 @@ msgstr "No other profile to merge into."
 msgid "A launch ended without Mortar putting the game folder back as it was"
 msgstr "A launch ended without Mortar putting the game folder back as it was"
 
-#: src/games/ProfileCards.tsx:92
+#: src/games/ProfileCards.tsx:91
 msgid "Open {gameName} ({more, plural, one {# more profile} other {# more profiles}})"
 msgstr "Open {gameName} ({more, plural, one {# more profile} other {# more profiles}})"
 
@@ -10624,7 +10624,7 @@ msgstr "Mortar could not load the profiles for this game."
 msgid "Install options"
 msgstr "Install options"
 
-#: src/profiles/store.ts:397
+#: src/profiles/store.ts:405
 msgid "Could not empty the trash"
 msgstr "Could not empty the trash"
 
@@ -10852,7 +10852,7 @@ msgstr "Empty trash"
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
 
-#: src/profiles/store.ts:383
+#: src/profiles/store.ts:391
 msgid "Could not restore the profile"
 msgstr "Could not restore the profile"
 
@@ -11543,7 +11543,7 @@ msgstr "Could not minimise the window"
 msgid "Dismissed for this save"
 msgstr "Dismissed for this save"
 
-#: src/profiles/store.ts:375
+#: src/profiles/store.ts:383
 msgid "Could not delete the profile"
 msgstr "Could not delete the profile"
 
@@ -12356,7 +12356,7 @@ msgstr "How profiles are ordered in the sidebar"
 msgid "{count, plural, one {Changed by # mod} other {Changed by # mods}}"
 msgstr "{count, plural, one {Changed by # mod} other {Changed by # mods}}"
 
-#: src/profiles/store.ts:368
+#: src/profiles/store.ts:376
 msgid "Could not repair the profile"
 msgstr "Could not repair the profile"
 
@@ -12910,7 +12910,7 @@ msgstr "Could not repair this profile"
 
 #: src/games/GameSelect.tsx:148
 #: src/games/ProfileCards.tsx:46
-#: src/games/ProfileCards.tsx:60
+#: src/games/ProfileCards.tsx:59
 #: src/games/useOpenGame.ts:42
 msgid "Could not save the last game"
 msgstr "Could not save the last game"

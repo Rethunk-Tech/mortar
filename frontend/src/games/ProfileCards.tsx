@@ -50,8 +50,7 @@ function ProfileCards({
     useNav.getState().openGame(gameId)
     useProfiles
       .getState()
-      .load(gameId)
-      .then(() => useProfiles.getState().open(profileId))
+      .load(gameId, profileId)
       .catch((err: unknown) => fail(t`Could not read your profiles`, err))
   }
 

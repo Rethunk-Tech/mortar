@@ -261,7 +261,8 @@ export const useProfiles = create<{
   loaded: boolean
   // The game whose last load failed, for Retry; empty when nothing failed.
   failed: string
-  load: (gameId: string) => Promise<void>
+  // prefer opens that profile once read, unless another is opened meanwhile.
+  load: (gameId: string, prefer?: string) => Promise<void>
   open: (id: string) => void
   create: (name: string) => Promise<void>
   // Rejects with the reason when the name is refused, for the field to show.
@@ -289,14 +290,19 @@ export const useProfiles = create<{
   openId: '',
   loaded: false,
   failed: '',
-  load: async (gameId) => {
+  load: async (gameId, prefer) => {
     // Coming back to the same game refreshes behind the screen instead of blanking it.
     const same = get().loaded && get().game?.id === gameId
     if (!same) {
       set({ loaded: false, failed: '' })
     }
+    const before = get().openId
     try {
-      set({ ...(await read(gameId, same ? get().openId : '')), loaded: true, failed: '' })
+      const next = await read(gameId, prefer ?? (same ? before : ''))
+      // A profile opened while the read was in flight wins over what the read resolved.
+      const now = get().openId
+      const openId = now !== before && listedId(next.profiles, now) ? now : next.openId
+      set({ ...next, openId, loaded: true, failed: '' })
     } catch (e) {
       if (!same) {
         set({ failed: gameId })
@@ -308,6 +314,8 @@ export const useProfiles = create<{
     const { game } = get()
     set({ openId: id })
     if (game) {
+      // A reload that falls back to the remembered profile reads this copy, so it must not wait for the backend.
+      useSettings.setState((s) => ({ lastProfile: { ...s.lastProfile, [game.id]: id } }))
       SetLastProfile(game.id, id).catch(fail(i18n._(msg`Could not save the open profile`)))
     }
   },
