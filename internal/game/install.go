@@ -136,7 +136,7 @@ func pick(all []Install, override, preferred string, g Game) (dir, store string)
 	}
 	if override != "" && g.ValidInstall(override) == nil {
 		for _, in := range all {
-			if in.Dir == override {
+			if fsx.SamePath(in.Dir, override) {
 				return override, in.Store
 			}
 		}
@@ -188,7 +188,7 @@ func ResolveInstall(home string, s settings.Settings, id, pin string) (Install, 
 		return Install{}, usererr.Wrap(usererr.NotFound, fmt.Errorf("install %q of %s is no longer found", pin, id))
 	}
 	for _, in := range all {
-		if in.Dir == dir {
+		if fsx.SamePath(in.Dir, dir) {
 			return in, nil
 		}
 	}

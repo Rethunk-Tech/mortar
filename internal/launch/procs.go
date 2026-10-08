@@ -2,9 +2,10 @@ package launch
 
 import (
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Process is a running process. Args is nil where the platform cannot give a command line (Windows); Exe is empty
@@ -58,10 +59,7 @@ func within(path, dir string) bool {
 	if path == "" || dir == "" {
 		return false
 	}
-	path, dir = filepath.Clean(path), filepath.Clean(dir)
-	if runtime.GOOS == "windows" {
-		path, dir = strings.ToLower(path), strings.ToLower(dir)
-	}
+	path, dir = fsx.FoldCase(filepath.Clean(path)), fsx.FoldCase(filepath.Clean(dir))
 	return path == dir || strings.HasPrefix(path, dir+string(filepath.Separator))
 }
 
@@ -70,10 +68,10 @@ func within(path, dir string) bool {
 func (p Process) UsesModsPath(modsDir string) bool {
 	want := filepath.Clean(modsDir)
 	for i, a := range p.Args {
-		if v, ok := strings.CutPrefix(a, "--mods-path="); ok && filepath.Clean(v) == want {
+		if v, ok := strings.CutPrefix(a, "--mods-path="); ok && fsx.SamePath(v, want) {
 			return true
 		}
-		if a == "--mods-path" && i+1 < len(p.Args) && filepath.Clean(p.Args[i+1]) == want {
+		if a == "--mods-path" && i+1 < len(p.Args) && fsx.SamePath(p.Args[i+1], want) {
 			return true
 		}
 	}

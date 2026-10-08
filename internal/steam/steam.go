@@ -109,7 +109,7 @@ func HasFilesystem(show, dataDir string) bool {
 			case "home", "host":
 				return true
 			}
-			if filepath.Clean(path) == dataDir {
+			if fsx.SamePath(path, dataDir) {
 				return true
 			}
 		}
