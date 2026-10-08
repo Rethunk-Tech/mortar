@@ -9,6 +9,8 @@ const installed = (version: string): Status => ({
   gameVersion: '1.6.15',
   latest: version,
   updateAvailable: false,
+  shared: false,
+  linkedFrom: '',
   perProfile: false,
 })
 

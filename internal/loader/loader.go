@@ -23,6 +23,11 @@ type Status struct {
 	UpdateAvailable bool   `json:"updateAvailable"`
 	// PerProfile means the loader lives in each profile's own folder (BepInEx) rather than in the game folder.
 	PerProfile bool `json:"perProfile"`
+	// Shared means the loader's files in the game folder are links another mod manager (Vortex) deployed, so
+	// removing or purging that manager removes the loader. LinkedFrom is the folder they link into, empty for
+	// hard links, which do not name one.
+	Shared     bool   `json:"shared"`
+	LinkedFrom string `json:"linkedFrom"`
 }
 
 // Bundled receives the loader's own mods, extracted into modsDir, while the installer's files still exist.

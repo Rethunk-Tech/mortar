@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -115,6 +116,7 @@ func loaderState(dir, goos string) (installed, broken bool) {
 func (l Loader) Status(t loader.Target) (loader.Status, error) {
 	installed, broken := loaderState(t.InstallDir, buildOS(t.InstallDir))
 	st := loader.Status{Installed: installed, Broken: broken}
+	st.Shared, st.LinkedFrom = sharedSMAPI(t.InstallDir)
 	if !installed && !broken {
 		return st, nil
 	}
@@ -122,6 +124,93 @@ func (l Loader) Status(t loader.Target) (loader.Status, error) {
 	st.GameVersion = logGame
 	st.Version = cmp.Or(logSMAPI, bundledVersion(t.InstallDir))
 	return st, nil
+}
+
+// sharedSMAPI reports whether SMAPI's main file in dir (the .exe or the .dll) is a link another mod manager deployed,
+// and the folder a symlink points into.
+func sharedSMAPI(dir string) (bool, string) {
+	for _, name := range []string{smapiMarker + ".exe", smapiMarker + ".dll"} {
+		path := filepath.Join(dir, name)
+		if !fsx.Shared(path) {
+			continue
+		}
+		target, err := fsx.EvalSymlinks(path)
+		if err != nil || fsx.SamePath(filepath.Dir(target), dir) {
+			return true, ""
+		}
+		return true, filepath.Dir(target)
+	}
+	return false, ""
+}
+
+// unshareTree replaces a folder that is itself a symlink with a real copy of what it links to.
+func unshareTree(tree string) error {
+	fi, err := os.Lstat(tree)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if fi.Mode()&os.ModeSymlink == 0 {
+		return nil
+	}
+	target, err := fsx.EvalSymlinks(tree)
+	if err != nil {
+		return err
+	}
+	tmp := tree + ".mortar-unshare"
+	if err := datadir.CopyTreeResolvingLinks(target, tmp); err != nil {
+		_ = fsx.RemoveAll(tmp)
+		return err
+	}
+	if err := os.Remove(tree); err != nil {
+		_ = fsx.RemoveAll(tmp)
+		return err
+	}
+	return fsx.Rename(tmp, tree)
+}
+
+// unshareSMAPI gives every file the installer rewrites (the game folder's own files, smapi-internal and SMAPI's
+// bundled mods) its own copy first. The installer writes in place, so through a symlink or hard link it would
+// change the other mod manager's copy too.
+func unshareSMAPI(dir string) error {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	for _, e := range entries {
+		if !e.IsDir() {
+			if err := fsx.Unshare(filepath.Join(dir, e.Name())); err != nil {
+				return err
+			}
+		}
+	}
+	trees := []string{filepath.Join(dir, "smapi-internal")}
+	for _, m := range bundledMods {
+		trees = append(trees, filepath.Join(dir, "Mods", m))
+	}
+	for _, tree := range trees {
+		if err := unshareTree(tree); err != nil {
+			return err
+		}
+		err := filepath.WalkDir(tree, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				if errors.Is(err, fs.ErrNotExist) {
+					return nil
+				}
+				return err
+			}
+			if d.IsDir() {
+				return nil
+			}
+			return fsx.Unshare(path)
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // bundledMods are the mods the SMAPI installer places in Mods.
@@ -191,6 +280,9 @@ func (Loader) Install(ctx context.Context, t loader.Target, pkg loader.Package, 
 	folder := filepath.Join(unpacked, instDir)
 	if err := fsx.Chmod(filepath.Join(folder, exe), 0o700); err != nil {
 		return "", fmt.Errorf("SMAPI %s installer is missing %s: %w", version, exe, err)
+	}
+	if err := unshareSMAPI(dir); err != nil {
+		return "", fmt.Errorf("separate SMAPI from another mod manager's files: %w", err)
 	}
 	args := []string{"--install", "--no-prompt", "--game-path", dir}
 	if goos != runtime.GOOS {

@@ -101,12 +101,17 @@ func (s *Service) installVersion(ctx context.Context, g game.Game, dir, id, load
 	if perProfile {
 		return s.installInProfiles(ctx, id, loaderID, dir, l, version, fromStart)
 	}
-	if _, err := s.items.Path(id, store.LoaderKey(l.ID(), version)); err == nil {
+	// A copy another mod manager linked into the game folder is replaced, so the installer runs even when the store
+	// already holds this version.
+	cur, _ := l.Status(loader.Target{InstallDir: dir})
+	_, err = s.items.Path(id, store.LoaderKey(l.ID(), version))
+	switch {
+	case err == nil && !cur.Shared:
 		if err := s.recordLoader(id, l, version, fromStart); err != nil {
 			return loader.Status{}, err
 		}
 		return s.Status(ctx, id, loaderID)
-	} else if !errors.Is(err, store.ErrNotFound) {
+	case err != nil && !errors.Is(err, store.ErrNotFound):
 		return loader.Status{}, err
 	}
 	if err := s.ensureKnown(ctx, id, loaderID, version); err != nil {

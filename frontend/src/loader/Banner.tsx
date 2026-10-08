@@ -23,12 +23,20 @@ export function LoaderBanner({ game }: { game: string }) {
   useEffect(() => {
     check(game)
   }, [game, check])
-  if (!status || (!installing && status.installed && !status.updateAvailable)) {
+  if (!status || (!installing && status.installed && !status.updateAvailable && !status.shared)) {
     return null
   }
   let message = t`${loader.name} is not installed`
   let action = t`Install`
-  if (status.broken) {
+  // Reinstall the version in use, so only where it lives changes.
+  let version: string | undefined
+  if (status.shared) {
+    message = status.linkedFrom
+      ? t`${loader.name} here is another mod manager's copy, linked from ${status.linkedFrom}. Removing that manager removes ${loader.name}.`
+      : t`${loader.name} here is another mod manager's copy. Removing that manager removes ${loader.name}.`
+    action = t`Install Mortar's copy`
+    version = status.version || undefined
+  } else if (status.broken) {
     message = t`A game update replaced ${loader.name}'s launcher`
     action = t`Reinstall`
   } else if (status.installed) {
@@ -47,7 +55,8 @@ export function LoaderBanner({ game }: { game: string }) {
         flexShrink: 0,
         bgcolor: 'var(--mortar-panel)',
         borderLeft: '4px solid',
-        borderLeftColor: status.installed && !status.broken ? 'info.main' : 'warning.main',
+        borderLeftColor:
+          status.installed && !status.broken && !status.shared ? 'info.main' : 'warning.main',
       }}
     >
       <Typography noWrap={true} title={message} sx={{ flex: 1, minWidth: 0, fontSize: 14 }}>
@@ -65,7 +74,7 @@ export function LoaderBanner({ game }: { game: string }) {
             size="small"
             startIcon={<Download size={16} />}
             disabled={pending || playing}
-            onClick={() => install(game)}
+            onClick={() => install(game, version)}
             sx={{ flexShrink: 0 }}
           >
             {action}

@@ -539,6 +539,13 @@ msgstr "Could not add the chosen folder"
 msgid "Could not change mods"
 msgstr "Could not change mods"
 
+#. placeholder {0}: loader.name
+#. placeholder {1}: status.linkedFrom
+#. placeholder {2}: loader.name
+#: src/loader/Banner.tsx:35
+msgid "{0} here is another mod manager's copy, linked from {1}. Removing that manager removes {2}."
+msgstr "{0} here is another mod manager's copy, linked from {1}. Removing that manager removes {2}."
+
 #: src/profiles/historyLabel.ts:49
 msgid "{count, plural, one {Moved # mod from the game's Mods folder} other {Moved # mods from the game's Mods folder}}"
 msgstr "{count, plural, one {Moved # mod from the game's Mods folder} other {Moved # mods from the game's Mods folder}}"
@@ -1367,6 +1374,10 @@ msgstr "More play options"
 #: src/mods/describe.ts:108
 msgid "{name} is marked obsolete and may not work with this game version."
 msgstr "{name} is marked obsolete and may not work with this game version."
+
+#: src/loader/Banner.tsx:37
+msgid "Install Mortar's copy"
+msgstr "Install Mortar's copy"
 
 #: src/queue/QueueHistory.tsx:163
 msgid "All outcomes"
@@ -4782,7 +4793,7 @@ msgstr "Delete group {name}?"
 
 #: src/console/RunProblems.tsx:140
 #: src/game/FarmMenuItem.tsx:91
-#: src/loader/Banner.tsx:36
+#: src/loader/Banner.tsx:44
 #: src/mods/problemFix/LoadFailureFix.tsx:37
 #: src/mods/runErrorFixButtons.tsx:51
 #: src/mods/Sidebar.tsx:239
@@ -8414,7 +8425,7 @@ msgid "Mods list"
 msgstr "Mods list"
 
 #. placeholder {0}: loader.name
-#: src/loader/Banner.tsx:32
+#: src/loader/Banner.tsx:40
 #: src/settings/sections/LoaderRow.tsx:99
 msgid "A game update replaced {0}'s launcher"
 msgstr "A game update replaced {0}'s launcher"
@@ -9608,7 +9619,7 @@ msgstr "Switch to Performance"
 
 #. placeholder {0}: loader.name
 #. placeholder {1}: status.latest
-#: src/loader/Banner.tsx:35
+#: src/loader/Banner.tsx:43
 #: src/settings/sections/LoaderRow.tsx:103
 msgid "{0} {1} is available"
 msgstr "{0} {1} is available"
@@ -10862,7 +10873,7 @@ msgid "No changes yet"
 msgstr "No changes yet"
 
 #. placeholder {0}: loader.name
-#: src/loader/Banner.tsx:60
+#: src/loader/Banner.tsx:69
 msgid "Stop the game to change {0}."
 msgstr "Stop the game to change {0}."
 
@@ -13339,7 +13350,7 @@ msgid "Scheduled backups kept per save"
 msgstr "Scheduled backups kept per save"
 
 #: src/console/ConsoleTab.tsx:270
-#: src/loader/Banner.tsx:33
+#: src/loader/Banner.tsx:41
 #: src/settings/sections/LoaderRow.tsx:94
 msgid "Reinstall"
 msgstr "Reinstall"
@@ -13804,6 +13815,12 @@ msgstr "Could not delete the group"
 #: src/mods/updates.ts:119
 msgid "Retry now"
 msgstr "Retry now"
+
+#. placeholder {0}: loader.name
+#. placeholder {1}: loader.name
+#: src/loader/Banner.tsx:36
+msgid "{0} here is another mod manager's copy. Removing that manager removes {1}."
+msgstr "{0} here is another mod manager's copy. Removing that manager removes {1}."
 
 #: src/settings/prefCopy.ts:63
 msgid "Show SMAPI's own window on a direct launch"

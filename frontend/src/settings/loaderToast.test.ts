@@ -14,6 +14,8 @@ const status = (s: Partial<Status>): Status => ({
   gameVersion: '',
   latest: '',
   updateAvailable: true,
+  shared: false,
+  linkedFrom: '',
   perProfile: false,
   ...s,
 })

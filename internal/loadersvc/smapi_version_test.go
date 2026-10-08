@@ -3,6 +3,7 @@ package loadersvc
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -82,5 +83,28 @@ func TestInstallVersionUnknown(t *testing.T) {
 	_, err := svc.InstallVersion(context.Background(), "stardew", "", "9.9.9")
 	if !errors.Is(err, errUnknownVersion) {
 		t.Fatalf("err = %v, want unknown SMAPI", err)
+	}
+}
+
+// A SMAPI another mod manager linked into the game folder is replaced even when the store holds that version.
+func TestInstallVersionReplacesASharedSMAPI(t *testing.T) {
+	svc, fake := testServiceWithReleases(t, []string{"4.0.0"})
+	dir := t.TempDir()
+	testfs.WriteFile(t, dir, "ok", "x")
+	if err := svc.items.AddDir(t.Context(), "stardew", store.LoaderKey("smapi", "4.0.0"), dir); err != nil {
+		t.Fatal(err)
+	}
+	folder := svc.settings.Get().GameFolders["stardew"]
+	staging := t.TempDir()
+	put(t, filepath.Join(staging, "StardewModdingAPI.dll"), "x")
+	put(t, filepath.Join(folder, "StardewValley-original"), "x")
+	if err := os.Symlink(filepath.Join(staging, "StardewModdingAPI.dll"), filepath.Join(folder, "StardewModdingAPI.dll")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.InstallVersion(context.Background(), "stardew", "", "4.0.0"); err != nil {
+		t.Fatal(err)
+	}
+	if fake.downloads != 1 {
+		t.Fatalf("downloads %d, want the installer to run over the shared copy", fake.downloads)
 	}
 }

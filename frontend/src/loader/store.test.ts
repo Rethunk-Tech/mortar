@@ -41,6 +41,8 @@ test("a recheck keeps the same game's status and drops another game's", () => {
     gameVersion: '1.6.15',
     latest: '4.5.2',
     updateAvailable: false,
+    shared: false,
+    linkedFrom: '',
     perProfile: true,
   }
   useLoader.setState({ status, game: 'stardew' })
