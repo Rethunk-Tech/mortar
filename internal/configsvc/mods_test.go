@@ -35,6 +35,15 @@ func TestModsListsOwnedConfigsOtherCfgsAndModsWithoutConfig(t *testing.T) {
 	if smapi.ID != "Author.Mod" || len(smapi.Files) != 1 || smapi.Files[0].Format != FormatSMAPI || !smapi.Files[0].Changed {
 		t.Fatalf("SMAPI mod = %+v (Speed 2 differs from the shipped 1)", smapi)
 	}
+	f.config = `{"Speed": 1}`
+	if err := os.WriteFile(filepath.Join(f.folder, "config.json"), []byte(f.config+"\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s.Profiles = f
+	again, err := s.Mods("g", "p")
+	if err != nil || again.Mods[0].Files[0].Changed {
+		t.Fatalf("after the file was reset to the shipped value: %+v, %v", again.Mods[0], err)
+	}
 	pkg := got.Mods[1]
 	if pkg.Enabled || len(pkg.Files) != 1 || pkg.Files[0].Name != "com.example.betterstuff.cfg" || pkg.Files[0].Format != FormatBepInEx {
 		t.Fatalf("package = %+v", pkg)

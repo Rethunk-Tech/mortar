@@ -62,7 +62,7 @@ func (s *Service) Mods(game, profileID string) (ModList, error) {
 		row := ModConfig{ID: m.ID, Key: m.Key, Name: m.Name, Enabled: m.Enabled, Files: []ModFile{}}
 		if folder, err := view.ModFolder("", m.ID); err == nil {
 			if _, err := os.Stat(filepath.Join(folder, jsonName)); err == nil {
-				row.Files = append(row.Files, ModFile{Name: jsonName, Format: FormatSMAPI, Changed: jsonChanged(view, m.ID)})
+				row.Files = append(row.Files, ModFile{Name: jsonName, Format: FormatSMAPI, Changed: s.jsonChanged(view, m.Key, m.ID, folder)})
 			}
 		}
 		if dir != "" {
@@ -93,6 +93,41 @@ func (s *Service) Mods(game, profileID string) (ModList, error) {
 		}
 	}
 	return out, nil
+}
+
+// changedKey identifies one result of jsonChanged: the shipped config of an entry never changes under its key, so the
+// current file's stat is all that can invalidate it.
+type changedKey struct {
+	path, key string
+	size      int64
+	mtime     int64
+}
+
+const changedCacheMax = 4096
+
+// jsonChanged reports whether folder's config.json differs from the shipped one, remembering the answer until the file
+// changes.
+func (s *Service) jsonChanged(view profile.ConfigView, key string, id mod.ID, folder string) bool {
+	path := filepath.Join(folder, jsonName)
+	fi, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	k := changedKey{path: path, key: key, size: fi.Size(), mtime: fi.ModTime().UnixNano()}
+	s.changedMu.Lock()
+	v, ok := s.changed[k]
+	s.changedMu.Unlock()
+	if ok {
+		return v
+	}
+	v = jsonChanged(view, id)
+	s.changedMu.Lock()
+	if s.changed == nil || len(s.changed) >= changedCacheMax {
+		s.changed = map[changedKey]bool{}
+	}
+	s.changed[k] = v
+	s.changedMu.Unlock()
+	return v
 }
 
 func jsonChanged(view profile.ConfigView, id mod.ID) bool {

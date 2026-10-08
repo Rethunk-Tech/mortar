@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -48,6 +49,9 @@ type Service struct {
 	SetGmcm func(game, profile string, uniqueID mod.ID, page string, index int, value string) error
 	// Running reports whether the profile's game is running; writes to its files are refused then.
 	Running func(game, profile string) bool
+
+	changedMu sync.Mutex
+	changed   map[changedKey]bool
 }
 
 func (s *Service) cfgDir(game, id string) (string, error) {
