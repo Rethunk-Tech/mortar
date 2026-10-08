@@ -26,7 +26,7 @@
     "@mui/material": "9.4.0",
     "@tanstack/react-virtual": "3.14.13",
     "@wailsio/runtime": "3.0.0-beta.28",
-    "lucide-react": "1.52.0",
+    "lucide-react": "1.53.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-markdown": "10.1.0",
@@ -41,7 +41,7 @@
     "@lingui/babel-plugin-lingui-macro": "^6.9.0",
     "@lingui/cli": "6.9.0",
     "@lingui/conf": "6.9.0",
-    "@lingui/native-tools": "^0.1.5",
+    "@lingui/native-tools": "^0.1.6",
     "@lingui/vite-plugin": "6.9.0",
     "@playwright/test": "1.64.0",
     "@testing-library/dom": "^10.4.2",
@@ -53,6 +53,6 @@
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "typescript": "7.0.2",
-    "vite": "^8.3.3"
+    "vite": "^8.3.4"
   }
 }
