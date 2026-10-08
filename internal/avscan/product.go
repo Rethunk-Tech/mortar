@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 )
 
 const productTimeout = 5 * time.Second
@@ -48,8 +50,10 @@ func clamdProduct(ctx context.Context, c clamd) string {
 // antivirus is registered, so that is what it says.
 func windowsProduct(ctx context.Context) string {
 	const fallback = "Windows antivirus (AMSI)"
-	out, err := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
-		"(Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntiVirusProduct).displayName -join ', '").Output()
+	cmd := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
+		"(Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntiVirusProduct).displayName -join ', '")
+	nowindow.Set(cmd)
+	out, err := cmd.Output()
 	if err != nil {
 		return fallback
 	}

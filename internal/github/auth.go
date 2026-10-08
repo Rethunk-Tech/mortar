@@ -7,6 +7,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 )
 
 const (
@@ -29,7 +31,9 @@ type Auth struct {
 var DefaultAuth = &Auth{}
 
 func ghAuthToken(ctx context.Context) ([]byte, error) {
-	return exec.CommandContext(ctx, "gh", "auth", "token").Output() // #nosec G204 -- fixed arguments
+	cmd := exec.CommandContext(ctx, "gh", "auth", "token") // #nosec G204 -- fixed arguments
+	nowindow.Set(cmd)
+	return cmd.Output()
 }
 
 func (a *Auth) get(ctx context.Context) string {

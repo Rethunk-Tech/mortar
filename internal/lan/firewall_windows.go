@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 )
 
 func (s *Service) FirewallBlocked() bool {
@@ -15,7 +17,9 @@ func (s *Service) FirewallBlocked() bool {
 	if err != nil {
 		return false
 	}
-	output, err := exec.CommandContext(context.Background(), "netsh.exe", "advfirewall", "firewall", "show", "rule", "name=all", "verbose").Output()
+	cmd := exec.CommandContext(context.Background(), "netsh.exe", "advfirewall", "firewall", "show", "rule", "name=all", "verbose")
+	nowindow.Set(cmd)
+	output, err := cmd.Output()
 	if err != nil {
 		return false
 	}
@@ -29,15 +33,16 @@ func (s *Service) FixFirewall() error {
 	}
 	script := fmt.Sprintf(
 		"$delete = @('advfirewall','firewall','delete','rule','name=Mortar'); "+
-			"Start-Process -FilePath 'netsh.exe' -Verb RunAs -Wait -ArgumentList $delete; "+
+			"Start-Process -FilePath 'netsh.exe' -Verb RunAs -WindowStyle Hidden -Wait -ArgumentList $delete; "+
 			"$add = @('advfirewall','firewall','add','rule','name=Mortar','dir=in','action=allow',"+
 			"'program=\"%s\"','enable=yes','profile=private,domain'); "+
-			"$process = Start-Process -FilePath 'netsh.exe' -Verb RunAs -Wait -PassThru -ArgumentList $add; "+
+			"$process = Start-Process -FilePath 'netsh.exe' -Verb RunAs -WindowStyle Hidden -Wait -PassThru -ArgumentList $add; "+
 			"if ($process.ExitCode -ne 0) { exit $process.ExitCode }",
 		powerShellQuote(executable),
 	)
 	command := exec.CommandContext(context.Background(), "powershell.exe", "-NoProfile", "-NonInteractive", "-Command", "-")
 	command.Stdin = strings.NewReader(script)
+	nowindow.Set(command)
 	if err := command.Run(); err != nil {
 		return fmt.Errorf("update Windows Firewall rule: %w", err)
 	}

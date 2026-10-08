@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 )
 
 // command runs the player's own scanner with {path} replaced by the folder: exit 0 is clean, any other code a
@@ -48,6 +50,7 @@ func (c command) Scan(ctx context.Context, dir string) (Detection, bool, error) 
 		parts[i] = strings.ReplaceAll(p, "{path}", dir)
 	}
 	cmd := exec.CommandContext(ctx, parts[0], parts[1:]...)
+	nowindow.Set(cmd)
 	out, err := cmd.Output()
 	if err == nil {
 		return Detection{}, false, nil
