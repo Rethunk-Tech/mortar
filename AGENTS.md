@@ -19,6 +19,8 @@ Mortar is a desktop mod manager for several games, with Stardew Valley, Lethal C
 
 Windows bugs: the Windows 11 KVM VM in `/var/tmp/win11-vm/` (`README.txt`, `/var/tmp/win11-vm/start.sh`, `vm.py`, a `clean-install` snapshot) is for quick repros and one-fix smokes only; long soaks are a human's. Only the parent session drives it, never a subagent (a waiting subagent goes cold).
 
+Screenshots for the site and the AppStream metainfo are taken at the default window size (`window.go` `defaultWindowWidth`×`defaultWindowHeight`, scale 1), never larger.
+
 ## Decided
 
 - Wails v3, pinned in `go.mod` (the Rethunk-AI fork) and upgraded on purpose. Pin: [docs/architecture.md](docs/architecture.md#stack). React, TypeScript and MUI on Vite; never Next.js.
