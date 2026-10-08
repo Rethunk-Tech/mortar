@@ -146,7 +146,7 @@ func (Loader) BundleSource() (kind, name string) { return "smapi", "SMAPI" }
 // CopyBundled copies SMAPI's Console Commands and Save Backup from dir/Mods into dst, for SMAPI installed outside Mortar.
 func (Loader) CopyBundled(dir, dst string) error {
 	for _, name := range bundledMods {
-		if err := datadir.CopyTree(filepath.Join(dir, "Mods", name), filepath.Join(dst, name)); err != nil {
+		if err := datadir.CopyTreeResolvingLinks(filepath.Join(dir, "Mods", name), filepath.Join(dst, name)); err != nil {
 			return fmt.Errorf("copy %s: %w", name, err)
 		}
 	}
