@@ -26,15 +26,20 @@ type QuitService struct {
 	// finish runs the shutdown work once, whichever path reaches it first.
 	finish func()
 	// busy reports work a forced exit must not cut off (an install writing into the store).
-	busy    func() bool
-	exit    func(int)
-	grace   time.Duration
-	watch   sync.Once
-	queue   *queue.Service
-	lan     *lan.Service
-	launch  *launchsvc.Service
+	busy   func() bool
+	exit   func(int)
+	grace  time.Duration
+	watch  sync.Once
+	queue  *queue.Service
+	lan    *lan.Service
+	launch *launchsvc.Service
+	// show brings the window up, building a new one when closing to the tray removed it; closed reports that it did.
+	show    func()
+	closed  func() bool
 	mu      sync.Mutex
 	allowed bool
+	// pending is a quit question waiting for a window that was rebuilt to answer it, whose page missed the event.
+	pending string
 }
 
 func (s *QuitService) BusySummary() string {
@@ -53,9 +58,35 @@ func (s *QuitService) BusySummary() string {
 	return ""
 }
 
+// RequestQuit quits at once when nothing would be interrupted; otherwise the window asks first, so it is brought up
+// (a tray Quit can come while it is hidden or closed to the tray, with no page to hear the event).
+//
 //wails:ignore
 func (s *QuitService) RequestQuit() {
-	s.app.Event.Emit(quitRequestedEvent, s.BusySummary())
+	summary := s.BusySummary()
+	if summary == "" {
+		// Not inline: the window-close hook calls this on the main thread, and Quit closes that window.
+		go s.ConfirmQuit()
+		return
+	}
+	if s.closed() {
+		s.mu.Lock()
+		s.pending = summary
+		s.mu.Unlock()
+		s.show()
+		return
+	}
+	s.show()
+	s.app.Event.Emit(quitRequestedEvent, summary)
+}
+
+// PendingQuit hands a newly loaded page the quit question asked while the window was closed, once.
+func (s *QuitService) PendingQuit() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	summary := s.pending
+	s.pending = ""
+	return summary
 }
 
 func (s *QuitService) ConfirmQuit() {

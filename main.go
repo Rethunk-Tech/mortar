@@ -731,7 +731,10 @@ func run() error {
 		return err
 	}
 
-	quitSvc := &QuitService{app: app, queue: queueSvc, lan: lanSvc, launch: launches, exit: os.Exit, grace: quitGrace, busy: queueSvc.Installing}
+	quitSvc := &QuitService{
+		app: app, queue: queueSvc, lan: lanSvc, launch: launches, exit: os.Exit, grace: quitGrace, busy: queueSvc.Installing,
+		show: func() { showWindow() }, closed: func() bool { return windowClosed() },
+	}
 	quitSvc.WatchSignals()
 
 	archivesSvc := archivesvc.NewService(archivesvc.Deps{

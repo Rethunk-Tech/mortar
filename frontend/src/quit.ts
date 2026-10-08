@@ -1,6 +1,6 @@
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
-import { ConfirmQuit } from '../bindings/github.com/Rethunk-Tech/mortar/quitservice.ts'
+import { ConfirmQuit, PendingQuit } from '../bindings/github.com/Rethunk-Tech/mortar/quitservice.ts'
 import { useQueue } from './queue/store.ts'
 
 interface QuitState {
@@ -25,6 +25,10 @@ function initQuit() {
   Events.On('quit:requested', (event) => {
     handleQuit(event).catch(() => undefined)
   })
+  // A quit asked while the window was closed to the tray reaches the page built to answer it here.
+  PendingQuit()
+    .then((summary) => (summary ? handleQuit({ data: summary }) : undefined))
+    .catch(() => undefined)
   Events.On('queue:open', () => useQueue.getState().setOpen(true))
 }
 
