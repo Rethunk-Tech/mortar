@@ -34,7 +34,24 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
     const sync = () => setDragging(target.classList.contains(ACTIVE_CLASS))
     const observer = new MutationObserver(sync)
     observer.observe(target, { attributes: true, attributeFilter: ['class'] })
-    return () => observer.disconnect()
+    // Wails can miss the end of a drag (it ignores a dragleave out of the window, and a drag cancelled outside
+    // never reaches it), leaving the class set. The OS holds the pointer and keyboard during a drag, so any of
+    // these in the window means the drag is over.
+    const end = () => {
+      if (target.classList.contains(ACTIVE_CLASS)) {
+        target.classList.remove(ACTIVE_CLASS)
+      }
+    }
+    const events = ['pointermove', 'pointerdown', 'keydown'] as const
+    for (const e of events) {
+      globalThis.addEventListener(e, end)
+    }
+    return () => {
+      observer.disconnect()
+      for (const e of events) {
+        globalThis.removeEventListener(e, end)
+      }
+    }
   }, [target])
 
   useEffect(
