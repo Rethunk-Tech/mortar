@@ -10607,6 +10607,10 @@ msgstr "Could not unpin {0}"
 msgid "In the same download"
 msgstr "In the same download"
 
+#: src/settings/sections/About.tsx:98
+msgid "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. For a bug report, Save diagnostics below puts them in one zip with personal paths removed."
+msgstr "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. For a bug report, Save diagnostics below puts them in one zip with personal paths removed."
+
 #. placeholder {0}: hidden.levels.length
 #: src/console/ConsoleTab.tsx:319
 msgid "{0, plural, one {the {levels} level is off} other {the {levels} levels are off}}"
@@ -11267,10 +11271,6 @@ msgstr "Standard"
 #: src/mods/storeProblems.ts:138
 msgid "Could not disable the other copy of {0}"
 msgstr "Could not disable the other copy of {0}"
-
-#: src/settings/sections/About.tsx:98
-msgid "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. Copy them after a problem, before restarting Mortar."
-msgstr "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. Copy them after a problem, before restarting Mortar."
 
 #: src/saves/SaveBackupsButton.tsx:167
 msgid "The backup from {when} is deleted for good, with every save in it."

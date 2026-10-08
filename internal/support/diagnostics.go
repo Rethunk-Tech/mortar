@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -124,7 +125,7 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 		return nil, err
 	}
 	included := []string{
-		"build.json: Mortar version, component catalog serial, OS, architecture, Go, and Wails/WebKit when known",
+		"build.json: Mortar version and build commit, component catalog serial, OS, architecture, Go, and Wails/WebKit when known",
 		"settings.json: settings with account names, ids and e-mail removed, API keys removed, and home-directory paths written as ~",
 		"profiles.json: profile ids, names, entry counts, mod names, versions and sources",
 		"doctor.txt: the checks `mortar doctor` runs, with home-directory paths written as ~",
@@ -211,6 +212,9 @@ func buildInfo(version string) map[string]string {
 		"os":       runtime.GOOS,
 		"arch":     runtime.GOARCH,
 		"portable": strconv.FormatBool(datadir.Portable()),
+	}
+	if c := appversion.Commit(); c != "" {
+		info["commit"] = c
 	}
 	if v := wailsVersion(); v != "" {
 		info["wails"] = v
