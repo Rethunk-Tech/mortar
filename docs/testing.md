@@ -13,6 +13,7 @@ Where the tests are, what each opt-in run proves and how to start it. The gate t
 - The lint passes add about 350 CPU seconds on 32 threads, which is what stretches the race run to 51 s.
 - Measured and not worth doing: seeding the race cache from a parallel step (the same compile in a second process), `nice` on the lint steps (1 s, within noise), `CGO_CFLAGS` changes (the gcc time is header parsing) and limiting the windows lint to packages with windows files (it would stop typechecking every other package for windows).
 - Warm is 6-7 s.
+- Browser e2e runs its 44 tests in about 111 s on a quiet machine (2026-10-08), under its 2-minute budget; a busy machine pushes it to 2.0 min. About 13 s is the sandbox start with a cached server build, the rest the tests. The longest, `a11y.pw.ts`, spends 9.1 s of its 21 s in 88 axe scans at about 100 ms each and the rest moving between screens; it already scans the shared views once (first game, dark theme) and the light theme for contrast only. Measured, not worth cutting further: what is left drops screens or the light-theme contrast check.
 - `scripts/vulncheck.sh` skips govulncheck locally while `go.mod` and `go.sum` are unchanged since the last passing run; CI and `MORTAR_GATE_VULNCHECK=1` run it always.
 
 ## Where tests live
