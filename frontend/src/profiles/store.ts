@@ -69,6 +69,9 @@ async function duplicateProfile(
   try {
     const p = await Duplicate(game.id, id)
     const listed = splitListed((await List(game.id)) ?? [p])
+    if (get().game?.id !== game.id) {
+      return
+    }
     set({ ...listed })
     get().open(p.id)
   } catch (e) {
@@ -82,7 +85,11 @@ async function refreshList(
 ) {
   const { game } = get()
   if (game) {
-    set(splitListed((await List(game.id)) ?? []))
+    const listed = splitListed((await List(game.id)) ?? [])
+    // A reply for the game left meanwhile must not land in the next game's list.
+    if (get().game?.id === game.id) {
+      set(listed)
+    }
   }
 }
 
@@ -229,7 +236,11 @@ async function restoreProfile(
     return
   }
   await Restore(game.id, id)
-  set(splitListed((await List(game.id)) ?? []))
+  const listed = splitListed((await List(game.id)) ?? [])
+  if (get().game?.id !== game.id) {
+    return
+  }
+  set(listed)
   get().ensureOpen()
   await get().loadTrash()
 }
@@ -251,6 +262,9 @@ async function read(gameId: string, current: string) {
   }
   return { game: games.find((g) => g.id === gameId) ?? null, profiles, damaged, openId }
 }
+
+// loads counts load calls, so a reply from an earlier one is dropped.
+let loads = 0
 
 export const useProfiles = create<{
   game: GameInfo | null
@@ -297,13 +311,22 @@ export const useProfiles = create<{
       set({ loaded: false, failed: '' })
     }
     const before = get().openId
+    loads += 1
+    const seq = loads
     try {
       const next = await read(gameId, prefer ?? (same ? before : ''))
+      // Switching games quickly starts a newer load; its reply wins whichever arrives first.
+      if (seq !== loads) {
+        return
+      }
       // A profile opened while the read was in flight wins over what the read resolved.
       const now = get().openId
       const openId = now !== before && listedId(next.profiles, now) ? now : next.openId
       set({ ...next, openId, loaded: true, failed: '' })
     } catch (e) {
+      if (seq !== loads) {
+        return
+      }
       if (!same) {
         set({ failed: gameId })
       }
@@ -351,7 +374,10 @@ export const useProfiles = create<{
     const { game } = get()
     if (game) {
       try {
-        set({ trash: (await ListTrash(game.id)) ?? [] })
+        const trash = (await ListTrash(game.id)) ?? []
+        if (get().game?.id === game.id) {
+          set({ trash })
+        }
       } catch (e) {
         fail(i18n._(msg`Could not read recently deleted profiles`))(e)
       }

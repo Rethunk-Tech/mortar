@@ -471,7 +471,7 @@ msgstr "Run checks…"
 msgid "{0} has damaged files."
 msgstr "{0} has damaged files."
 
-#: src/profiles/store.ts:162
+#: src/profiles/store.ts:169
 msgid "Deleted a profile"
 msgstr "Deleted a profile"
 
@@ -2505,7 +2505,7 @@ msgid "New profile"
 msgstr "New profile"
 
 #: src/mods/problemFix/DamagedFix.tsx:34
-#: src/profiles/store.ts:205
+#: src/profiles/store.ts:212
 msgid "Repaired {name}"
 msgstr "Repaired {name}"
 
@@ -2697,8 +2697,8 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/profiles/collectionUnlink.ts:36
 #: src/profiles/CompareDialog.tsx:45
 #: src/profiles/historyRevert.ts:111
-#: src/profiles/store.ts:164
-#: src/profiles/store.ts:207
+#: src/profiles/store.ts:171
+#: src/profiles/store.ts:214
 #: src/queue/store.ts:297
 #: src/saves/store.ts:66
 #: src/templates/ApplyTemplateDialog.tsx:96
@@ -3460,7 +3460,7 @@ msgstr "Accounts"
 msgid "Priority {0}"
 msgstr "Priority {0}"
 
-#: src/profiles/store.ts:369
+#: src/profiles/store.ts:395
 msgid "Could not open the profile folder"
 msgstr "Could not open the profile folder"
 
@@ -3698,7 +3698,7 @@ msgstr "Enable and disable mods, and update them for the open profile."
 
 #: src/game/detailStates.tsx:17
 #: src/games/ProfileCards.tsx:54
-#: src/profiles/store.ts:310
+#: src/profiles/store.ts:333
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
 
@@ -4046,7 +4046,7 @@ msgstr "Reading {0}"
 msgid "Grid"
 msgstr "Grid"
 
-#: src/profiles/store.ts:75
+#: src/profiles/store.ts:78
 msgid "Could not duplicate the profile"
 msgstr "Could not duplicate the profile"
 
@@ -4783,7 +4783,7 @@ msgstr "Nothing will be removed."
 msgid "Missing required dependencies ({0})"
 msgstr "Missing required dependencies ({0})"
 
-#: src/profiles/store.ts:356
+#: src/profiles/store.ts:382
 msgid "Could not read recently deleted profiles"
 msgstr "Could not read recently deleted profiles"
 
@@ -5223,7 +5223,7 @@ msgstr "Needs your choice ({0})"
 msgid "Unlinked the collection {name}"
 msgstr "Unlinked the collection {name}"
 
-#: src/profiles/store.ts:398
+#: src/profiles/store.ts:424
 msgid "Could not permanently delete the profile"
 msgstr "Could not permanently delete the profile"
 
@@ -6124,7 +6124,7 @@ msgstr "Scheduled save backups"
 msgid "Show again"
 msgstr "Show again"
 
-#: src/profiles/store.ts:162
+#: src/profiles/store.ts:169
 msgid "Deleted {name}"
 msgstr "Deleted {name}"
 
@@ -6336,7 +6336,7 @@ msgstr "Relative"
 msgid "a deleted profile"
 msgstr "a deleted profile"
 
-#: src/profiles/store.ts:185
+#: src/profiles/store.ts:192
 msgid "Could not save the profile order"
 msgstr "Could not save the profile order"
 
@@ -6415,8 +6415,8 @@ msgstr "No profiles yet"
 
 #: src/games/GameSelect.tsx:150
 #: src/games/ProfileCards.tsx:48
-#: src/profiles/store.ts:250
-#: src/profiles/store.ts:319
+#: src/profiles/store.ts:261
+#: src/profiles/store.ts:342
 msgid "Could not save the open profile"
 msgstr "Could not save the open profile"
 
@@ -10639,7 +10639,7 @@ msgstr "Mortar could not load the profiles for this game."
 msgid "Install options"
 msgstr "Install options"
 
-#: src/profiles/store.ts:405
+#: src/profiles/store.ts:431
 msgid "Could not empty the trash"
 msgstr "Could not empty the trash"
 
@@ -10867,7 +10867,7 @@ msgstr "Empty trash"
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
 
-#: src/profiles/store.ts:391
+#: src/profiles/store.ts:417
 msgid "Could not restore the profile"
 msgstr "Could not restore the profile"
 
@@ -11554,7 +11554,7 @@ msgstr "Could not minimise the window"
 msgid "Dismissed for this save"
 msgstr "Dismissed for this save"
 
-#: src/profiles/store.ts:383
+#: src/profiles/store.ts:409
 msgid "Could not delete the profile"
 msgstr "Could not delete the profile"
 
@@ -12367,7 +12367,7 @@ msgstr "How profiles are ordered in the sidebar"
 msgid "{count, plural, one {Changed by # mod} other {Changed by # mods}}"
 msgstr "{count, plural, one {Changed by # mod} other {Changed by # mods}}"
 
-#: src/profiles/store.ts:376
+#: src/profiles/store.ts:402
 msgid "Could not repair the profile"
 msgstr "Could not repair the profile"
 
