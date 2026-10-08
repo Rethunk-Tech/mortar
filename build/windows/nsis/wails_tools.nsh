@@ -205,9 +205,12 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 
 # Copy of APP_ASSOCIATE and APP_UNASSOCIATE macros from here https://gist.github.com/nikku/281d0ef126dbc215dd58bfd5b3a5cd5b
 !macro APP_ASSOCIATE EXT FILECLASS DESCRIPTION ICON COMMANDTEXT COMMAND
-  ; Backup the previously associated file class
+  ; Back up the previously associated file class, but never our own: an upgrade finds ours already there and must
+  ; keep the backup the first install took.
   ReadRegStr $R0 SHELL_CONTEXT "Software\Classes\.${EXT}" ""
-  WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "${FILECLASS}_backup" "$R0"
+  ${If} $R0 != "${FILECLASS}"
+    WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "${FILECLASS}_backup" "$R0"
+  ${EndIf}
 
   WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "" "${FILECLASS}"
 
@@ -233,16 +236,27 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 !macroend
 
 !macro wails.associateFiles
-    ; Create file associations
-    
-      !insertmacro APP_ASSOCIATE "mortar" "Mortar profile" "Mortar profile" "$INSTDIR\${PRODUCT_EXECUTABLE},0" "Open with ${INFO_PRODUCTNAME}" `"$INSTDIR\${PRODUCT_EXECUTABLE}" "%1"`
-    
+    ; Create file associations. Releases before the space-free ProgID registered "Mortar profile": carry its backup
+    ; over and drop the class.
+    ReadRegStr $R2 SHELL_CONTEXT "Software\Classes\.mortar" "Mortar profile_backup"
+    ${If} $R2 != ""
+        ReadRegStr $R3 SHELL_CONTEXT "Software\Classes\.mortar" "Mortar.Profile_backup"
+        ${If} $R3 == ""
+            WriteRegStr SHELL_CONTEXT "Software\Classes\.mortar" "Mortar.Profile_backup" "$R2"
+        ${EndIf}
+        DeleteRegValue SHELL_CONTEXT "Software\Classes\.mortar" "Mortar profile_backup"
+        DeleteRegKey SHELL_CONTEXT "Software\Classes\Mortar profile"
+    ${EndIf}
+    !insertmacro APP_ASSOCIATE "mortar" "Mortar.Profile" "Mortar profile" "$INSTDIR\${PRODUCT_EXECUTABLE},0" "Open with ${INFO_PRODUCTNAME}" `"$INSTDIR\${PRODUCT_EXECUTABLE}" "%1"`
+    ; Tell Explorer, or the new association shows only after a sign-out.
+    System::Call 'shell32::SHChangeNotify(i 0x08000000, i 0, i 0, i 0)'
 !macroend
 
 !macro wails.unassociateFiles
     ; Delete app associations
     
-      !insertmacro APP_UNASSOCIATE "mortar" "Mortar profile"
+      !insertmacro APP_UNASSOCIATE "mortar" "Mortar.Profile"
+      System::Call 'shell32::SHChangeNotify(i 0x08000000, i 0, i 0, i 0)'
     
 !macroend
 

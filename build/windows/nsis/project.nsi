@@ -112,8 +112,16 @@ FunctionEnd
     ${EndIf}
 !macroend
 
+# 1 when this run replaces an existing install: the user's link and shortcut choices from the first install stand.
+Var mortar.upgrade
+
 Section
     !insertmacro wails.setShellContext
+
+    StrCpy $mortar.upgrade 0
+    ${If} ${FileExists} "$INSTDIR\${PRODUCT_EXECUTABLE}"
+        StrCpy $mortar.upgrade 1
+    ${EndIf}
 
     !insertmacro wails.webview2runtime
 
@@ -125,7 +133,9 @@ Section
     File "/oname=THIRD_PARTY_NOTICES" "..\..\..\THIRD_PARTY_NOTICES"
 
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
-    CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+    ${If} $mortar.upgrade == 0
+        CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+    ${EndIf}
 
     !insertmacro wails.associateFiles
     !insertmacro wails.associateCustomProtocols
@@ -172,6 +182,7 @@ FunctionEnd
 # A silent install (winget) never shows the Finish page, so it takes the checkboxes' defaults.
 Function .onInstSuccess
     ${If} ${Silent}
+    ${AndIf} $mortar.upgrade == 0
         !insertmacro mortar.claimLinks nexus
         !insertmacro mortar.claimLinks thunderstore
     ${EndIf}
@@ -191,7 +202,11 @@ Section "uninstall"
 
     RMDir /r "$AppData\${PRODUCT_EXECUTABLE}" # Remove the WebView2 DataPath
 
-    RMDir /r $INSTDIR
+    # The folder may be one the user typed (D:\Games), so only what the installer and updater put there goes.
+    Delete "$INSTDIR\${PRODUCT_EXECUTABLE}"
+    Delete "$INSTDIR\${PRODUCT_EXECUTABLE}.old.*"
+    Delete "$INSTDIR\LICENSE"
+    Delete "$INSTDIR\THIRD_PARTY_NOTICES"
 
     Delete "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk"
     Delete "$DESKTOP\${INFO_PRODUCTNAME}.lnk"
@@ -200,4 +215,5 @@ Section "uninstall"
     !insertmacro wails.unassociateCustomProtocols
 
     !insertmacro wails.deleteUninstaller
+    RMDir $INSTDIR
 SectionEnd
