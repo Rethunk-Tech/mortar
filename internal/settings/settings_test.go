@@ -1,12 +1,15 @@
 package settings
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
@@ -239,5 +242,44 @@ func TestConfirmedLaunchersSurviveARestart(t *testing.T) {
 	}
 	if !reopened.Get().LaunchersConfirmed {
 		t.Fatal("the welcome screen would come back: LaunchersConfirmed was not saved")
+	}
+}
+
+// A launch records last-played while the window reads settings; the snapshot it read must not change under it, and
+// an update that is then rejected must leave nothing behind.
+func TestUpdateNeverWritesIntoSnapshots(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	s, err := Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	before := s.Get()
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		for range 50 {
+			_, _ = json.Marshal(before)
+		}
+	}()
+	for i := range 50 {
+		if _, err := s.RecordLastPlayed("stardew", fmt.Sprint("p", i), time.Now(), ""); err != nil {
+			t.Fatal(err)
+		}
+	}
+	<-done
+	if _, ok := before.LastPlayed["stardew"]; ok {
+		t.Fatal("a snapshot taken before the launch shows it")
+	}
+	_, err = s.Update(func(v *Settings) {
+		v.LastPlayed["stardew"] = Played{Profile: "never-saved"}
+		v.Accent = "no-such-accent"
+	})
+	if err == nil {
+		t.Fatal("an unknown accent was accepted")
+	}
+	if got := s.Get().LastPlayed["stardew"].Profile; got == "never-saved" {
+		t.Fatal("a rejected update stayed in memory")
 	}
 }

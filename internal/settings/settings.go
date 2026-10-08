@@ -4,6 +4,7 @@ package settings
 import (
 	"bytes"
 	"cmp"
+	"encoding/json"
 	"fmt"
 	"maps"
 	"path/filepath"
@@ -372,12 +373,27 @@ func (s *Store) AppendDismissed(bucket, token string) error {
 	return err
 }
 
+func deepCopy(v Settings) (Settings, error) {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return Settings{}, err
+	}
+	var out Settings
+	err = json.Unmarshal(b, &out)
+	return out, err
+}
+
 // Update applies fn to a copy of the settings, validates, persists atomically and returns the result.
 func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.adoptOutsideWrite()
-	next := s.cur
+	// A deep copy: the maps and *GameSettings in s.cur are shared with every snapshot Get has returned, so fn writing
+	// into them would race the readers and keep a change Update then rejects.
+	next, err := deepCopy(s.cur)
+	if err != nil {
+		return s.cur, err
+	}
 	fn(&next)
 	if !slices.Contains(accents, next.Accent) {
 		return s.cur, fmt.Errorf("unknown accent %q", next.Accent)
