@@ -86,6 +86,8 @@ type Update struct {
 	// "latest file", so the user picks it on Nexus.
 	FileID   int  `json:"fileId,omitempty"`
 	PickFile bool `json:"pickFile,omitempty"`
+	// CautionMessage is the installed manifest's UpdateCautionMessage (a Stardrop update hint).
+	CautionMessage string `json:"cautionMessage,omitempty"`
 }
 
 // UpdatesResult lists a profile's updates. Unknown is set when SMAPI's API could not be reached for some mod,
@@ -252,6 +254,16 @@ func HideHeld(r UpdatesResult, mods []framework.Mod, includePrerelease bool, sma
 		}
 	}
 	r.Updates, r.Held = kept, held
+	return r
+}
+
+// withCautions sets each update's CautionMessage from its installed manifest. r.Updates must be a slice of its own.
+func withCautions(r UpdatesResult, mods []framework.Mod) UpdatesResult {
+	for i, u := range r.Updates {
+		if j := slices.IndexFunc(mods, func(x framework.Mod) bool { return x.Key == u.Key && mod.Equal(x.ModID(), u.ID) }); j >= 0 {
+			r.Updates[i].CautionMessage = mods[j].UpdateCautionMessage
+		}
+	}
 	return r
 }
 

@@ -83,7 +83,7 @@ function UpdateReview({ profile }: { profile: Profile }) {
     (u) =>
       include[modId(u)] !== false &&
       !pendingUpdate(items, profile.id, u) &&
-      (installedCaution(mods, u) === '' || acked[modId(u)] === true),
+      (installedCaution(u) === '' || acked[modId(u)] === true),
   )
   const wanted = chosen.flatMap((u) =>
     withOptional(u, profile, byId[u.nexusId]?.details?.files ?? [], skipped[u.key] === true),
@@ -110,7 +110,6 @@ function UpdateReview({ profile }: { profile: Profile }) {
         <SourceGroups
           list={list.filter((u) => !u.switch)}
           profile={profile}
-          mods={mods}
           acked={acked}
           include={include}
           onAck={onAck}
@@ -119,7 +118,6 @@ function UpdateReview({ profile }: { profile: Profile }) {
         <NeedsChoice
           list={needChoice}
           profile={profile}
-          mods={mods}
           acked={acked}
           include={include}
           onAck={onAck}

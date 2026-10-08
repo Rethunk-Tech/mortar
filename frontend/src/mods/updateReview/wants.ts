@@ -1,13 +1,9 @@
 import type { File } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
-import type {
-  Mod,
-  Profile,
-} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Item } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import type { Want } from '../../queue/actions.ts'
 import { pendingFor } from '../../queue/totals.ts'
-import { sameId } from '../lookup.ts'
 import { isFull, loadDetails, useNexusDetails } from '../nexusDetails.ts'
 import { optionalUpdateWants, useOptionalSkips } from '../optionalFiles.ts'
 
@@ -66,10 +62,7 @@ export async function withOptionalLoaded(
   return withOptional(u, profile, files, false)
 }
 
-export const installedCaution = (mods: Mod[], u: Update): string => {
-  const mod = mods.find((m) => m.key === u.key && sameId(m.id, u.id))
-  return mod?.updateCautionMessage?.trim() ?? ''
-}
+export const installedCaution = (u: Update): string => u.cautionMessage?.trim() ?? ''
 
 export const pendingUpdate = (items: Item[], profileId: string, u: Update) =>
   u.githubRepo

@@ -6,7 +6,6 @@ import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import {
   History,
   List,
-  Mods,
   Revert,
   RollBack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
@@ -19,7 +18,7 @@ import {
   State as QueueState,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
-import { installableUpdate, sameId, visibleUpdates } from '../mods/lookup.ts'
+import { installableUpdate, visibleUpdates } from '../mods/lookup.ts'
 import { updateWant, withOptionalLoaded } from '../mods/updateReview/wants.ts'
 import { foldedOverrides, resolveOverride } from '../profiles/overrideValue.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -205,14 +204,10 @@ async function updateBeforePlay(
     const history = await History(game, profileId)
     point.historyId = history?.[0]?.id ?? ''
     const result = await Updates(game, profileId)
-    const mods = (await Mods(game, profileId)) ?? []
     const plan = planAutoUpdates(visibleUpdates(result, profile), pinnedKeys(profile))
-    const updates = plan.updates.filter((update) => {
-      const mod = mods.find(
-        (candidate) => candidate.key === update.key && sameId(candidate.id, update.id),
-      )
-      return !mod?.updateCautionMessage?.trim() || cautionAcknowledged(profileId, update)
-    })
+    const updates = plan.updates.filter(
+      (update) => !update.cautionMessage?.trim() || cautionAcknowledged(profileId, update),
+    )
     if (updates.length === 0) {
       return { restorePoint: null, previousRunId: before.id, previousErrors: before.errors }
     }

@@ -603,7 +603,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 	s.mu.Unlock()
 	cachedSMAPI := ok && !fresh && c.fingerprint == fp && time.Since(c.at) < updatesTTL
 	if cachedSMAPI && !c.smapiOnly {
-		return hideUpdates(c.result, mods, s.settings.Get()), nil
+		return withCautions(hideUpdates(c.result, mods, s.settings.Get()), mods), nil
 	}
 	set := s.settings.Get()
 	var r UpdatesResult
@@ -621,7 +621,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 		s.updates[key] = cachedUpdates{fingerprint: fp, at: time.Now(), result: r}
 		s.mu.Unlock()
 	}
-	return hideUpdates(r, mods, set), nil
+	return withCautions(hideUpdates(r, mods, set), mods), nil
 }
 
 // fixStaleManifests sets each manifest whose download is already the suggested version to that version, so SMAPI

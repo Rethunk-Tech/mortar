@@ -275,3 +275,14 @@ func TestPageOfADirectSourceEntryBeatsItsNexusKey(t *testing.T) {
 		t.Fatalf("got %v", got)
 	}
 }
+
+func TestWithCautions(t *testing.T) {
+	a, b := inst("a-1", "A.One", "1.0.0", true), inst("a-1", "A.Two", "1.0.0", true)
+	b.UpdateCautionMessage = "Back up first"
+	r := withCautions(UpdatesResult{Updates: []Update{
+		{Key: "a-1", ID: a.ModID()}, {Key: "a-1", ID: b.ModID()}, {Key: "gone", ID: a.ModID()},
+	}}, []framework.Mod{a, b})
+	if got := []string{r.Updates[0].CautionMessage, r.Updates[1].CautionMessage, r.Updates[2].CautionMessage}; !reflect.DeepEqual(got, []string{"", "Back up first", ""}) {
+		t.Fatalf("cautions = %q", got)
+	}
+}

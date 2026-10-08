@@ -40,8 +40,6 @@ type Mod struct {
 	Needs          []mod.ID `json:"needs,omitempty"`
 	Optional       []mod.ID `json:"optional,omitempty"`
 	ContentPackFor mod.ID   `json:"contentPackFor,omitempty"`
-	// UpdateCautionMessage comes from the installed manifest.json (Stardrop update hint).
-	UpdateCautionMessage string `json:"updateCautionMessage,omitempty"`
 }
 
 // EnableRef names one mod to switch, matching SetModEnabled's key and mod id.
@@ -834,30 +832,16 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 		return nil, err
 	}
 	out := []Mod{}
-	modsDir := filepath.Join(dir, "mods")
 	for _, e := range p.Entries {
 		if !bundled && e.Source.Bundled() {
 			continue
 		}
 		for _, m := range e.Mods {
-			caution := ""
-			if plain, dotted, err := ModPaths(modsDir, e.Key, m.Folder); err == nil {
-				folder := plain
-				if !e.Enabled(m.ID) {
-					folder = dotted
-				}
-				if b, err := manifest.ReadFile(folder); err == nil {
-					if mf, err := manifest.Parse(b); err == nil {
-						caution = mf.UpdateCautionMessage
-					}
-				}
-			}
 			out = append(out, Mod{
 				Key: e.Key, ID: m.ID, Name: m.Name, Author: m.Author, Version: m.Version,
 				Enabled: e.Enabled(m.ID),
 				Picture: e.Source.Picture, Endorsements: e.Source.EndorsementCount,
 				Needs: m.Needs, Optional: m.Optional, ContentPackFor: m.ContentPackFor,
-				UpdateCautionMessage: caution,
 			})
 		}
 	}

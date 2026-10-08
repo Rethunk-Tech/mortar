@@ -1,9 +1,6 @@
 import { List } from '@mui/material'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
-import type {
-  Mod,
-  Profile,
-} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { acknowledgeUpdateCaution } from '../../launch/autoUpdate.ts'
 import { entryOf, modId } from '../lookup.ts'
 import { Row } from './Row.tsx'
@@ -12,7 +9,6 @@ import { installedCaution } from './wants.ts'
 export function ReviewList({
   list,
   profile,
-  mods,
   acked,
   include,
   onAck,
@@ -20,7 +16,6 @@ export function ReviewList({
 }: {
   list: Update[]
   profile: Profile
-  mods: Mod[]
   acked: Record<string, boolean>
   include: Record<string, boolean>
   onAck: (id: string, on: boolean) => void
@@ -29,7 +24,7 @@ export function ReviewList({
   return (
     <List disablePadding={true}>
       {list.map((u) => {
-        const caution = installedCaution(mods, u)
+        const caution = installedCaution(u)
         const id = modId(u)
         const picture = entryOf(profile, u.key)?.source.picture
         return (
