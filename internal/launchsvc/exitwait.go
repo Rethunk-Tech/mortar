@@ -73,7 +73,9 @@ func (s *Service) awaitPID(g game.Game) {
 		if procs, err := s.gameProcs(g); err == nil && len(procs) > 0 {
 			x, waitErr := s.waitPID(procs[0].PID)
 			if waitErr != nil {
-				x = launch.Exit{}
+				// A process that cannot be opened (elevated, protected) is still running; the poll closes the run
+				// once it is gone.
+				return
 			}
 			s.mu.Lock()
 			same := s.logs[keyOf(g)].buf == launched

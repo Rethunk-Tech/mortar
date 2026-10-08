@@ -3,6 +3,7 @@
 package launchsvc
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -23,7 +24,7 @@ const protonGame = `Z:\home\nomad\.local\share\Steam\steamapps\common\Lethal Com
 // steamRun leaves the service where a Steam-relayed Lethal Company launch that Steam reported started leaves it: the
 // game runs under Proton, Mortar is Running the profile and waits on a PID it did not start. With exits the wait
 // ends when the game does; without, it never ends, as on a PID reused by another process.
-func steamRun(t *testing.T, timedOutFirst, exits bool) (*Service, game.Game) {
+func steamRun(t *testing.T, timedOutFirst, exits bool, waitFails ...bool) (*Service, game.Game) {
 	t.Helper()
 	data := t.TempDir()
 	profiles := profile.OpenIn(filepath.Join(data, "profiles"), store.OpenAt(filepath.Join(data, "store")))
@@ -31,6 +32,9 @@ func steamRun(t *testing.T, timedOutFirst, exits bool) (*Service, game.Game) {
 	svc := NewService(t.TempDir(), nil, profiles)
 	svc.procDir = t.TempDir()
 	svc.WaitPID = func(pid int) (launch.Exit, error) {
+		if len(waitFails) > 0 && waitFails[0] {
+			return launch.Exit{}, errors.New("access denied")
+		}
 		if !exits {
 			select {}
 		}
@@ -74,17 +78,18 @@ func idleWithin(svc *Service, g game.Game, limit time.Duration) bool {
 func TestASteamRunClosesOnceTheGameIsGone(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
-		name                 string
-		timedOutFirst, exits bool
+		name                            string
+		timedOutFirst, exits, waitFails bool
 	}{
-		{"waited PID never exits", false, false},
-		{"after a launch that timed out", true, false},
-		{"waited PID exits", true, true},
+		{"waited PID never exits", false, false, false},
+		{"after a launch that timed out", true, false, false},
+		{"waited PID exits", true, true, false},
+		{"waiting on the PID fails", false, false, true},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
-			svc, g := steamRun(t, c.timedOutFirst, c.exits)
+			svc, g := steamRun(t, c.timedOutFirst, c.exits, c.waitFails)
 			time.Sleep(3 * pollEvery)
 			if st := svc.current(g); st.State != Running {
 				t.Fatalf("the game still runs, state = %+v", st)
