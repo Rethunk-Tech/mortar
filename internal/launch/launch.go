@@ -93,6 +93,16 @@ func Start(dir, name string, args ...string) (<-chan error, error) {
 	return StartWithEnv(context.Background(), nil, dir, name, args...)
 }
 
+// ReleaseOnExit waits for a command whose output nobody reads (a user's tool) and then frees its captured output,
+// which Run does for a game.
+func ReleaseOnExit(exited <-chan error) {
+	<-exited
+	if out := captureOf(exited); out != nil {
+		captured.Delete(exited)
+		out.release()
+	}
+}
+
 // StartWithEnv starts a process with additional environment variables; ctx ending kills it, so a game the caller
 // does not want tied to its request passes a context without cancellation.
 func StartWithEnv(ctx context.Context, env []string, dir, name string, args ...string) (<-chan error, error) {

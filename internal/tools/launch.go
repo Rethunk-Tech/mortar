@@ -14,8 +14,12 @@ func launchTool(t Tool, ctx Context) error {
 	args := expandArgs(t.Arguments, ctx)
 	exe := expand(t.Executable, ctx)
 	log.Printf("tools: starting %q (%s)", t.Name, exe)
-	_, err := launch.Start(dir, exe, args...)
-	return err
+	exited, err := launch.Start(dir, exe, args...)
+	if err != nil {
+		return err
+	}
+	go launch.ReleaseOnExit(exited)
+	return nil
 }
 
 func absDir(p string) string {
