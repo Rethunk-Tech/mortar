@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { DropOverlay } from '../install/DropOverlay.tsx'
 import { SweepDialog } from '../launch/SweepDialog.tsx'
 import { QueueSheet } from '../queue/QueueSheet.tsx'
+import { NxmReclaim } from '../settings/sections/NxmReclaim.tsx'
 import { useSettings } from '../settings/store.ts'
 import { OfflineBanner } from './OfflineBanner.tsx'
 import { TitleBar } from './TitleBar.tsx'
@@ -85,6 +86,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
       </Box>
       <QueueSheet />
       <DropOverlay target={frame} />
+      <NxmReclaim />
       <SweepDialog />
     </Box>
   )

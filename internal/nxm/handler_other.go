@@ -14,6 +14,7 @@ var errUnsupported = errors.New("handling nxm links is not supported on this sys
 
 func (System) Owner(string) (Owner, error)               { return Owner{}, errUnsupported }
 func (System) Register() error                           { return errUnsupported }
+func (System) RegisterSchemes([]string) error            { return errUnsupported }
 func (System) Restore(map[string]string) error           { return errUnsupported }
 func (System) Release([]string, map[string]string) error { return errUnsupported }
 func (System) ForwardOther(string, string) error         { return errUnsupported }

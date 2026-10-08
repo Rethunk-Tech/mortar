@@ -66,7 +66,7 @@ var verbs = map[string]bool{
 // cannot be the link or file path a window launch takes, which then fails as an unknown command.
 func Is(args []string) bool {
 	// Output flags may lead (`mortar --json install ...`); the word after them decides. Launch arguments the window
-	// takes (--release-links, nxm links, files, shortcut arguments) are not among them.
+	// takes (--release-links, --handle-links, nxm links, files, shortcut arguments) are not among them.
 	for len(args) > 0 && leadingFlags[args[0]] {
 		args = args[1:]
 	}

@@ -400,6 +400,40 @@ func (s *Service) DisableSource(id string) error {
 	})
 }
 
+// ClaimLinks makes Mortar handle one source's links (the installer's checkboxes) and leaves the other sources'
+// schemes as they are.
+func ClaimLinks(store *settings.Store, handler nxm.Handler, id string) error {
+	if id == "nexus" {
+		return NewService(store, handler).Enable()
+	}
+	if !hasOptInSetting(id) {
+		return fmt.Errorf("source %q has no link scheme to handle", id)
+	}
+	s := NewService(store, handler)
+	previous := maps.Clone(store.Get().NxmPreviousHandlers)
+	if previous == nil {
+		previous = map[string]string{}
+	}
+	schemes := source.SchemesOf(id)
+	for _, scheme := range schemes {
+		o, err := handler.Owner(scheme)
+		if err != nil {
+			return err
+		}
+		if !o.Mine && o.ID != "" {
+			previous[scheme] = o.ID
+		}
+	}
+	source.SetHandleLink(id, true)
+	if err := handler.RegisterSchemes(schemes); err != nil {
+		return err
+	}
+	return s.record(func(v *settings.Settings) {
+		v.NxmPreviousHandlers = previous
+		setHandleLinks(v, id, true)
+	})
+}
+
 // hasOptInSetting says whether the source's choice is stored; only Thunderstore's is.
 func hasOptInSetting(id string) bool { return id == "thunderstore" }
 
@@ -437,6 +471,90 @@ func (s *Service) NotificationIcon() string {
 		return h.NotificationIcon()
 	}
 	return ""
+}
+
+// Takeover is an app that took a source's links over while Mortar is set to handle them.
+type Takeover struct {
+	Source string `json:"source"`
+	Name   string `json:"name"`
+}
+
+// claimed maps each source whose links Mortar is set to handle to its schemes.
+func claimed(v settings.Settings) map[string][]string {
+	out := map[string][]string{}
+	if v.NxmHandled {
+		out["nexus"] = []string{nxmScheme}
+	}
+	if on := v.ThunderstoreHandleLinks; on != nil && *on {
+		out["thunderstore"] = source.SchemesOf("thunderstore")
+	}
+	return out
+}
+
+// Taken lists the sources whose links another app took over while Mortar is set to handle them (Vortex and
+// r2modman re-register themselves whenever they start).
+func (s *Service) Taken() ([]Takeover, error) {
+	byID := claimed(s.store.Get())
+	out := []Takeover{}
+	for _, id := range []string{"nexus", "thunderstore"} {
+		for _, scheme := range byID[id] {
+			o, err := s.handler.Owner(scheme)
+			if err != nil {
+				return nil, err
+			}
+			if !o.Mine && o.ID != "" {
+				out = append(out, Takeover{Source: id, Name: o.Name})
+				break
+			}
+		}
+	}
+	return out, nil
+}
+
+// TakeBack registers Mortar again for every scheme it is set to handle, keeping what each replaces for give-back.
+func (s *Service) TakeBack() error {
+	byID := claimed(s.store.Get())
+	previous := maps.Clone(s.store.Get().NxmPreviousHandlers)
+	if previous == nil {
+		previous = map[string]string{}
+	}
+	var schemes []string
+	for _, sc := range byID {
+		for _, scheme := range sc {
+			o, err := s.handler.Owner(scheme)
+			if err != nil {
+				return err
+			}
+			if !o.Mine && o.ID != "" {
+				previous[scheme] = o.ID
+			}
+			schemes = append(schemes, scheme)
+		}
+	}
+	if err := s.handler.RegisterSchemes(schemes); err != nil {
+		return err
+	}
+	return s.record(func(v *settings.Settings) { v.NxmPreviousHandlers = previous })
+}
+
+// Yield leaves the given sources' links with the apps that took them: Mortar stops claiming them and changes
+// nothing in the system.
+func (s *Service) Yield(sources []string) error {
+	byID := claimed(s.store.Get())
+	return s.record(func(v *settings.Settings) {
+		for _, id := range sources {
+			for _, scheme := range byID[id] {
+				delete(v.NxmPreviousHandlers, scheme)
+			}
+			switch id {
+			case "nexus":
+				v.NxmHandled, v.NxmPreviousName = false, ""
+			case "thunderstore":
+				source.SetHandleLink(id, false)
+				setHandleLinks(v, id, false)
+			}
+		}
+	})
 }
 
 // DeclineOffer records that the user was asked and said not now.

@@ -22,6 +22,8 @@ type Handler interface {
 	Owner(scheme string) (Owner, error)
 	// Register makes Mortar the owner.
 	Register() error
+	// RegisterSchemes makes Mortar the owner of the given schemes only.
+	RegisterSchemes(schemes []string) error
 	// Restore hands each scheme back to its previous owner's ID in previous, or leaves it unowned when it has none.
 	Restore(previous map[string]string) error
 	// Release hands back only the given schemes to their previous owners in previous, and leaves the rest registered.

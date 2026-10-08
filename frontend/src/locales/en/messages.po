@@ -233,7 +233,7 @@ msgid "Imported {0}: {1} to install"
 msgstr "Imported {0}: {1} to install"
 
 #: src/console/RunProblems.tsx:134
-#: src/install/DropOverlay.tsx:103
+#: src/install/DropOverlay.tsx:120
 #: src/install/store.ts:277
 #: src/mods/DuplicateDialog.tsx:86
 #: src/mods/LockedReason.tsx:9
@@ -526,7 +526,7 @@ msgstr "How many times to retry a failed download"
 msgid "Search all runs"
 msgstr "Search all runs"
 
-#: src/install/DropOverlay.tsx:98
+#: src/install/DropOverlay.tsx:115
 msgid "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows you what was added."
 msgstr "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows you what was added."
 
@@ -1321,6 +1321,10 @@ msgstr "Scheduled"
 msgid "Mod Manager Download on Nexus Mods only works in Mortar when you are signed in."
 msgstr "Mod Manager Download on Nexus Mods only works in Mortar when you are signed in."
 
+#: src/settings/sections/NxmReclaim.tsx:44
+msgid "Take them back for Mortar?"
+msgstr "Take them back for Mortar?"
+
 #: src/launch/autoUpdate.ts:228
 msgid "Could not add the update downloads"
 msgstr "Could not add the update downloads"
@@ -2044,6 +2048,10 @@ msgstr "Launch presets"
 #: src/profiles/EditProfileDialog.tsx:107
 msgid "{pickedName} is used after Save."
 msgstr "{pickedName} is used after Save."
+
+#: src/settings/sections/NxmReclaim.tsx:36
+msgid "{name} now opens Nexus \"Mod Manager Download\" links."
+msgstr "{name} now opens Nexus \"Mod Manager Download\" links."
 
 #: src/commandPalette/CommandPalette.tsx:99
 #: src/saves/SaveListRow.tsx:68
@@ -2928,6 +2936,10 @@ msgstr "No enabled mods"
 #: src/mods/ProblemsTab.tsx:332
 msgid "Cleanup"
 msgstr "Cleanup"
+
+#: src/settings/sections/NxmReclaim.tsx:37
+msgid "{name} now opens Thunderstore \"Install with Mod Manager\" links."
+msgstr "{name} now opens Thunderstore \"Install with Mod Manager\" links."
 
 #: src/mods/Toolbar.tsx:199
 #: src/mods/Toolbar.tsx:207
@@ -5826,6 +5838,10 @@ msgstr "Could not start measuring"
 msgid "Rose"
 msgstr "Rose"
 
+#: src/settings/sections/NxmReclaim.tsx:43
+msgid "{names} took over mod links"
+msgstr "{names} took over mod links"
+
 #: src/browse/BrowseFilters.tsx:89
 msgid "Sort: recently updated"
 msgstr "Sort: recently updated"
@@ -8659,6 +8675,10 @@ msgstr "Could not show the skipped update for {0}"
 msgid "Share switched-off mods"
 msgstr "Share switched-off mods"
 
+#: src/settings/sections/NxmReclaim.tsx:46
+msgid "Take back"
+msgstr "Take back"
+
 #: src/settings/sections/ScheduledStatus.tsx:24
 msgid "Last scheduled backup {when} · next in {next} h"
 msgstr "Last scheduled backup {when} · next in {next} h"
@@ -9569,7 +9589,7 @@ msgstr "The Vortex folder {folder} has no profiles."
 msgid "Could not read your games"
 msgstr "Could not read your games"
 
-#: src/install/DropOverlay.tsx:103
+#: src/install/DropOverlay.tsx:120
 msgid "Open a profile to install mods"
 msgstr "Open a profile to install mods"
 
@@ -10061,6 +10081,10 @@ msgstr "Retry all failed"
 #: src/share/arrivals.ts:60
 msgid "Add it"
 msgstr "Add it"
+
+#: src/settings/sections/NxmReclaim.tsx:33
+msgid "Could not change how mod links open"
+msgstr "Could not change how mod links open"
 
 #: src/mods/LoadOrderTab.tsx:207
 msgid "Filter load order"
@@ -11758,7 +11782,7 @@ msgid "Older changes are dropped and can no longer be undone."
 msgstr "Older changes are dropped and can no longer be undone."
 
 #. placeholder {0}: profile.name
-#: src/install/DropOverlay.tsx:95
+#: src/install/DropOverlay.tsx:112
 msgid "Drop to install into {0}"
 msgstr "Drop to install into {0}"
 
@@ -12666,6 +12690,10 @@ msgstr "{0} was installed from another site. Updating installs {1} from {2} inst
 #: src/share/ShareDialog.tsx:42
 msgid "Nexus Mods"
 msgstr "Nexus Mods"
+
+#: src/settings/sections/NxmReclaim.tsx:45
+msgid "Leave them"
+msgstr "Leave them"
 
 #: src/mods/typedConfig/ConfigPane.tsx:94
 msgid "Applied when the game next starts"

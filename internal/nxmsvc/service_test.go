@@ -22,6 +22,8 @@ type fakeHandler struct {
 
 func (f *fakeHandler) Owner(string) (nxm.Owner, error) { return f.owner, nil }
 
+func (f *fakeHandler) RegisterSchemes([]string) error { return f.Register() }
+
 func (f *fakeHandler) Register() error {
 	if f.failNext {
 		return errors.New("boom")
@@ -299,5 +301,54 @@ func TestOptInSourceLinksAreEnabledAndReleasedPerSource(t *testing.T) {
 	}
 	if last := h.registry[len(h.registry)-1]; last != "release:ror2mm" || slices.Contains(source.Schemes(), "ror2mm") {
 		t.Fatalf("registry %q, schemes %v", h.registry, source.Schemes())
+	}
+}
+
+func TestTakenListsTheAppThatReclaimedLinksAndYieldLeavesThem(t *testing.T) {
+	h := &fakeHandler{owner: nxm.Owner{ID: "vortex.desktop", Name: "Vortex"}}
+	s := newService(t, h)
+	if got, err := s.Taken(); err != nil || len(got) != 0 {
+		t.Fatalf("Taken before Mortar handled links: %v, %v", got, err)
+	}
+	if err := s.Enable(); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := s.Taken(); len(got) != 0 {
+		t.Fatalf("Taken while Mortar owns the links: %v", got)
+	}
+	h.owner = nxm.Owner{ID: "vortex.desktop", Name: "Vortex"}
+	if got, err := s.Taken(); err != nil || len(got) != 1 || got[0] != (Takeover{Source: "nexus", Name: "Vortex"}) {
+		t.Fatalf("Taken after Vortex re-registered: %v, %v", got, err)
+	}
+	if err := s.TakeBack(); err != nil || !h.owner.Mine || s.store.Get().NxmPreviousHandlers["nxm"] != "vortex.desktop" {
+		t.Fatalf("TakeBack: owner %+v, settings %+v, %v", h.owner, s.store.Get(), err)
+	}
+	h.owner = nxm.Owner{ID: "vortex.desktop", Name: "Vortex"}
+	if err := s.Yield([]string{"nexus"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := s.store.Get(); got.NxmHandled || h.owner.ID != "vortex.desktop" {
+		t.Fatalf("after Yield: %+v, owner %+v", got, h.owner)
+	}
+	if got, _ := s.Taken(); len(got) != 0 {
+		t.Fatalf("Taken still asks after Yield: %v", got)
+	}
+}
+
+func TestClaimLinksTakesOnlyTheSourcesSchemes(t *testing.T) {
+	h := &fakeHandler{owner: nxm.Owner{ID: "r2modman", Name: "r2modman"}}
+	s := newService(t, h)
+	if err := ClaimLinks(s.store, h, "thunderstore"); err != nil {
+		t.Fatal(err)
+	}
+	got := s.store.Get()
+	if got.ThunderstoreHandleLinks == nil || !*got.ThunderstoreHandleLinks || got.NxmHandled || got.NxmPreviousHandlers["ror2mm"] != "r2modman" {
+		t.Fatalf("after ClaimLinks: %+v", got)
+	}
+	if err := ClaimLinks(s.store, h, "nexus"); err != nil || !s.store.Get().NxmHandled {
+		t.Fatalf("ClaimLinks nexus: %+v, %v", s.store.Get(), err)
+	}
+	if err := ClaimLinks(s.store, h, "unknown"); err == nil {
+		t.Fatal("ClaimLinks took links for a source without a scheme")
 	}
 }

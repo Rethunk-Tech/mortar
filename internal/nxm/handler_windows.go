@@ -66,6 +66,15 @@ func (w *System) Register() error {
 	return nil
 }
 
+func (w *System) RegisterSchemes(schemes []string) error {
+	for _, scheme := range schemes {
+		if err := w.registerScheme(scheme); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (w *System) registerScheme(scheme string) error {
 	k, _, err := registry.CreateKey(registry.CURRENT_USER, classKey(scheme), registry.SET_VALUE)
 	if err != nil {

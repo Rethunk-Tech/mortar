@@ -357,6 +357,20 @@ func (l *System) Register() error {
 	return l.setDefaults()
 }
 
+func (l *System) RegisterSchemes(schemes []string) error {
+	if !skipUserDesktop() {
+		if err := l.writeDesktop(true); err != nil {
+			return err
+		}
+	}
+	for _, scheme := range schemes {
+		if err := l.setDefault(schemeMime(scheme)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (l *System) Restore(previous map[string]string) error {
 	if err := l.removeNativeHosts(); err != nil {
 		return err

@@ -184,6 +184,9 @@ func run() error {
 	if len(os.Args) > 1 && os.Args[1] == "--release-links" {
 		return releaseLinks()
 	}
+	if len(os.Args) > 2 && os.Args[1] == "--handle-links" {
+		return claimLinks(os.Args[2])
+	}
 	registerDoctorLoaders()
 	if cli.Is(os.Args[1:]) {
 		os.Exit(cli.Run(version, os.Args[1:], os.Stdout, os.Stderr))
@@ -1264,6 +1267,23 @@ func releaseLinks() error {
 		return err
 	}
 	return nxmsvc.ReleaseLinks(store, h)
+}
+
+// claimLinks is the installer's link checkbox: Mortar takes one source's links.
+func claimLinks(id string) error {
+	store, err := settings.Open()
+	if err != nil {
+		return err
+	}
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	h, err := nxm.New(exe)
+	if err != nil {
+		return err
+	}
+	return nxmsvc.ClaimLinks(store, h, id)
 }
 
 // serveNativeHost runs Mortar as the browser extension's native messaging host: each nxm link or Nexus collection

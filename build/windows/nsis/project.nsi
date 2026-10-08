@@ -56,6 +56,7 @@ ManifestDPIAware true
 !insertmacro MUI_PAGE_WELCOME # Welcome to the installer page.
 # !insertmacro MUI_PAGE_LICENSE "resources\eula.txt" # Adds a EULA page to the installer
 !insertmacro MUI_PAGE_DIRECTORY # In which folder install page.
+!insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_INSTFILES # Installing page.
 !insertmacro MUI_PAGE_FINISH # Finished installation page.
 
@@ -133,6 +134,15 @@ Section
     WriteRegStr SHCTX "${UNINST_KEY}" "URLUpdateInfo" "https://github.com/Rethunk-Tech/mortar/releases"
     WriteRegDWORD SHCTX "${UNINST_KEY}" "NoModify" 1
     WriteRegDWORD SHCTX "${UNINST_KEY}" "NoRepair" 1
+SectionEnd
+
+# Checked by default; Mortar records each choice, and Settings turns it off again.
+Section "Open Nexus Mods download links with Mortar"
+    ExecWait '"$INSTDIR\${PRODUCT_EXECUTABLE}" --handle-links nexus'
+SectionEnd
+
+Section "Open Thunderstore mod links with Mortar"
+    ExecWait '"$INSTDIR\${PRODUCT_EXECUTABLE}" --handle-links thunderstore'
 SectionEnd
 
 Section "uninstall" 
