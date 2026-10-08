@@ -15,6 +15,10 @@ func (s *Store) ShippedConfig(game, id, key string, uniqueID mod.ID) (string, bo
 	if err != nil {
 		return "", false
 	}
+	return s.shippedConfigOf(game, p, key, uniqueID)
+}
+
+func (s *Store) shippedConfigOf(game string, p Profile, key string, uniqueID mod.ID) (string, bool) {
 	e, m, found := p.FindMod(key, uniqueID)
 	if !found {
 		return "", false
@@ -41,6 +45,10 @@ func (s *Store) PluginGUIDs(game, id string, uniqueID mod.ID) []string {
 	if err != nil {
 		return nil
 	}
+	return s.pluginGUIDsOf(game, p, uniqueID)
+}
+
+func (s *Store) pluginGUIDsOf(game string, p Profile, uniqueID mod.ID) []string {
 	e, _, ok := p.FindMod("", uniqueID)
 	if !ok || !e.Package || s.items == nil {
 		return nil

@@ -992,6 +992,10 @@ func (s *Store) modFolderLocked(game, id, key string, uniqueID mod.ID) (string, 
 	if err != nil {
 		return "", err
 	}
+	return modFolderIn(p, dir, key, uniqueID)
+}
+
+func modFolderIn(p Profile, dir, key string, uniqueID mod.ID) (string, error) {
 	for _, e := range p.Entries {
 		if key != "" && e.Key != key {
 			continue

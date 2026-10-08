@@ -39,6 +39,15 @@ func (fakeProfiles) ContentSchema(string, string, string, mod.ID) (modconfig.Sch
 
 func (f fakeProfiles) UserMods(string, string) ([]profile.Mod, error) { return f.mods, nil }
 
+func (f fakeProfiles) ConfigView(string, string) (profile.ConfigView, error) {
+	return profile.ConfigView{
+		ModFolder:     func(key string, id mod.ID) (string, error) { return f.ModFolder("", "", key, id) },
+		ReadConfig:    func(key string, id mod.ID) (string, error) { return f.ReadConfig("", "", key, id) },
+		ShippedConfig: func(key string, id mod.ID) (string, bool) { return f.ShippedConfig("", "", key, id) },
+		PluginGUIDs:   func(id mod.ID) []string { return f.PluginGUIDs("", "", id) },
+	}, nil
+}
+
 func (fakeProfiles) SeedConfigs(string, string) error { return nil }
 
 func (fakeProfiles) PluginGUIDs(_, _ string, id mod.ID) []string {

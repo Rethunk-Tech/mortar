@@ -6,6 +6,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/gmcm"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // ModFile is one config file of a mod in the Config page's list.
@@ -50,14 +51,18 @@ func (s *Service) Mods(game, profileID string) (ModList, error) {
 	if err != nil {
 		return out, err
 	}
+	view, err := s.Profiles.ConfigView(game, profileID)
+	if err != nil {
+		return out, err
+	}
 	dir, _ := s.Profiles.ProfileDir(game, profileID)
 	owned := map[string]bool{}
 	for _, m := range mods {
 		id := string(m.ID)
 		row := ModConfig{ID: m.ID, Key: m.Key, Name: m.Name, Enabled: m.Enabled, Files: []ModFile{}}
-		if folder, err := s.Profiles.ModFolder(game, profileID, "", m.ID); err == nil {
+		if folder, err := view.ModFolder("", m.ID); err == nil {
 			if _, err := os.Stat(filepath.Join(folder, jsonName)); err == nil {
-				row.Files = append(row.Files, ModFile{Name: jsonName, Format: FormatSMAPI, Changed: s.jsonChanged(game, profileID, m.ID)})
+				row.Files = append(row.Files, ModFile{Name: jsonName, Format: FormatSMAPI, Changed: jsonChanged(view, m.ID)})
 			}
 		}
 		if dir != "" {
@@ -69,7 +74,7 @@ func (s *Service) Mods(game, profileID string) (ModList, error) {
 				row.Files = append(row.Files, ModFile{Name: gmcmFileName, Format: FormatGMCM})
 			}
 		}
-		names := append([]string{id}, s.Profiles.PluginGUIDs(game, profileID, m.ID)...)
+		names := append([]string{id}, view.PluginGUIDs(m.ID)...)
 		for _, d := range docs {
 			if d.ownedBy(names) {
 				owned[d.name] = true
@@ -90,12 +95,12 @@ func (s *Service) Mods(game, profileID string) (ModList, error) {
 	return out, nil
 }
 
-func (s *Service) jsonChanged(game, profileID string, id mod.ID) bool {
-	cur, err := s.Profiles.ReadConfig(game, profileID, "", id)
+func jsonChanged(view profile.ConfigView, id mod.ID) bool {
+	cur, err := view.ReadConfig("", id)
 	if err != nil {
 		return false
 	}
-	shipped, _ := s.Profiles.ShippedConfig(game, profileID, "", id)
+	shipped, _ := view.ShippedConfig("", id)
 	sc, err := jsonSchema(ConfigFile{Name: jsonName, Format: FormatSMAPI, Label: jsonName}, cur, shipped, nil, nil)
 	return err == nil && schemaChanged(sc)
 }

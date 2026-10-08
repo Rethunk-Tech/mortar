@@ -27,6 +27,10 @@ func (s *Store) ConfigPath(game, id, key string, uniqueID mod.ID) (string, error
 	if err != nil {
 		return "", err
 	}
+	return configPathIn(dir)
+}
+
+func configPathIn(dir string) (string, error) {
 	cfg, err := configInMod(dir, configFile)
 	if err != nil {
 		return "", err
@@ -180,6 +184,10 @@ func (s *Store) ReadConfig(game, id, key string, uniqueID mod.ID) (string, error
 	if err != nil {
 		return "", err
 	}
+	return readConfigAt(path)
+}
+
+func readConfigAt(path string) (string, error) {
 	b, err := fsx.ReadFile(path)
 	if err != nil {
 		return "", err
