@@ -482,6 +482,12 @@ func (s *Service) watch(g game.Game) {
 		for range tick.C {
 			if !s.poll(g) {
 				s.mu.Lock()
+				// A launch that began after this poll found the game already marked as watched; keep watching it.
+				st, ok := s.status[keyOf(g)]
+				if ok && st.State.Active() {
+					s.mu.Unlock()
+					continue
+				}
 				s.watching[keyOf(g)] = false
 				s.mu.Unlock()
 				return
