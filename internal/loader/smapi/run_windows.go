@@ -10,9 +10,9 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"syscall"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 	"golang.org/x/sys/windows"
 )
 
@@ -48,7 +48,7 @@ func runInstaller(ctx context.Context, cmd *exec.Cmd) ([]byte, error) {
 	defer func() { _ = windows.CloseHandle(job) }()
 	ps := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-NonInteractive", "-Command", start)
 	ps.Env = env
-	ps.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	nowindow.Set(ps)
 	ps.Cancel = func() error { return windows.TerminateJobObject(job, 1) }
 	if err := ps.Start(); err != nil {
 		return nil, err
