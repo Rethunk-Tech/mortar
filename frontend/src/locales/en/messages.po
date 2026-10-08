@@ -2719,8 +2719,8 @@ msgstr "No mod matches"
 msgid " Content Patcher applies neither."
 msgstr " Content Patcher applies neither."
 
-#: src/settings/sections/About.tsx:87
-#: src/settings/sections/About.tsx:103
+#: src/settings/sections/About.tsx:89
+#: src/settings/sections/About.tsx:113
 msgid "Open-source licences"
 msgstr "Open-source licences"
 
@@ -3473,7 +3473,7 @@ msgstr "Local-only mods kept ({0})"
 msgid "Storage"
 msgstr "Storage"
 
-#: src/settings/sections/About.tsx:83
+#: src/settings/sections/About.tsx:85
 msgid "Licence"
 msgstr "Licence"
 
@@ -4560,8 +4560,8 @@ msgid "Show live game info in OBS. Changes apply the next time you press Play."
 msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 
 #: src/console/StartupTable.tsx:215
-#: src/settings/sections/About.tsx:63
-#: src/settings/sections/About.tsx:76
+#: src/settings/sections/About.tsx:65
+#: src/settings/sections/About.tsx:78
 #: src/settings/sections/Updates.tsx:163
 #: src/share/DestinationGrid.tsx:52
 #: src/share/ShareDialog.tsx:41
@@ -5354,6 +5354,10 @@ msgstr "Later"
 msgid "You started this download on {site}. Choose the profile it goes into."
 msgstr "You started this download on {site}. Choose the profile it goes into."
 
+#: src/settings/sections/About.tsx:101
+msgid "Open log folder"
+msgstr "Open log folder"
+
 #: src/settings/updates.ts:41
 msgid "Could not check for updates."
 msgstr "Could not check for updates."
@@ -5865,7 +5869,7 @@ msgstr "Remove {0} from {1}"
 msgid "Could not remove {0}"
 msgstr "Could not remove {0}"
 
-#: src/settings/sections/About.tsx:88
+#: src/settings/sections/About.tsx:90
 msgid "Libraries, icons and artwork built into Mortar, with their licences."
 msgstr "Libraries, icons and artwork built into Mortar, with their licences."
 
@@ -9650,7 +9654,7 @@ msgstr "Undo these changes"
 msgid "Trim save backups"
 msgstr "Trim save backups"
 
-#: src/settings/sections/About.tsx:79
+#: src/settings/sections/About.tsx:81
 msgid "AGPL-3.0 · Rethunk-Tech/mortar"
 msgstr "AGPL-3.0 · Rethunk-Tech/mortar"
 
@@ -11229,6 +11233,10 @@ msgstr "Standard"
 msgid "Could not disable the other copy of {0}"
 msgstr "Could not disable the other copy of {0}"
 
+#: src/settings/sections/About.tsx:98
+msgid "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. Copy them after a problem, before restarting Mortar."
+msgstr "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. Copy them after a problem, before restarting Mortar."
+
 #: src/saves/SaveBackupsButton.tsx:167
 msgid "The backup from {when} is deleted for good, with every save in it."
 msgstr "The backup from {when} is deleted for good, with every save in it."
@@ -11436,7 +11444,7 @@ msgstr "Launching {name}"
 msgid "Disabled while the mod above is disabled"
 msgstr "Disabled while the mod above is disabled"
 
-#: src/settings/sections/About.tsx:91
+#: src/settings/sections/About.tsx:93
 msgid "View licences…"
 msgstr "View licences…"
 
@@ -12281,6 +12289,7 @@ msgid "Into a deleted profile"
 msgstr "Into a deleted profile"
 
 #: src/game/Sidebar.tsx:204
+#: src/settings/sections/About.tsx:97
 msgid "Logs"
 msgstr "Logs"
 
@@ -13563,7 +13572,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/profiles/HistoryPanel.tsx:135
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:74
 #: src/saves/BackupsDialog.tsx:192
-#: src/settings/sections/About.tsx:108
+#: src/settings/sections/About.tsx:118
 #: src/settings/sections/AboutDiagnostics.tsx:225
 #: src/settings/sections/DataStoreReport.tsx:415
 #: src/share/ImportDialog.tsx:187

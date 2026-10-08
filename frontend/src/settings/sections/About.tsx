@@ -1,9 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Link } from '@mui/material'
 import { useState } from 'react'
+import { OpenDataFolder } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { Logo } from '../../brand/Logo.tsx'
 import { openPage } from '../../mods/menu.ts'
 import { space } from '../../theme/density.ts'
+import { reportUnexpected } from '../../toasts/report.ts'
 import credits from '../generated/credits.json' with { type: 'json' }
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { Diagnostics } from './AboutDiagnostics.tsx'
@@ -89,6 +91,14 @@ export function About() {
         >
           <Button variant="outlined" onClick={() => setCreditsOpen(true)}>
             {t`View licences…`}
+          </Button>
+        </SettingRow>
+        <SettingRow
+          label={t`Logs`}
+          description={t`mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. Copy them after a problem, before restarting Mortar.`}
+        >
+          <Button variant="outlined" onClick={() => OpenDataFolder().catch(reportUnexpected)}>
+            {t`Open log folder`}
           </Button>
         </SettingRow>
       </SettingsSection>
