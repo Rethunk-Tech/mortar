@@ -43,7 +43,7 @@ Everything lives in the user data folder, `%LOCALAPPDATA%\Mortar` or `$XDG_DATA_
 
 Files in the data folder:
 
-- `settings.json`: Mortar's preferences and small pieces of state, field by field under [Settings file](#settings-file).
+- `settings.json`: Mortar's preferences and small pieces of state ([Settings file](#settings-file)).
 - `store/<game>/<key>/`: each downloaded archive, extracted once.
   - A `.complete` file marks a finished extract (items extract into a temp folder and are renamed into place); an item without it is incomplete, and an install reports it instead of copying a half-extracted folder.
   - A `mortar-root` file in that folder, when present, names the relative subfolder that is the mod (reused for the same Nexus file id; Mortar asks again if that path is gone).
@@ -143,79 +143,9 @@ The frontend moves on when one fails to load and shows a solid tone after the la
 
 `settings.json` is one JSON file with a `formatVersion` and three blocks: `global`, `sources` (per mod source id) and `games` (per game id). A key is read at the most specific scope that sets it (source, game, install, loader, profile), then the broader ones, then its default (`internal/settings/scope.go`). Source-scoped keys sit in their source's block (Nexus's account and `nxm` keys, `autoTrackNexus`, `verifyNexusMD5`; Thunderstore's `handleLinks`); a file split this way is read and written as the flat field list below.
 
-The registry (`internal/settings/registry.go`) lists each key with its scope, type and default for the CLI and Settings. A missing or unparseable file gives the defaults. A value that breaks its rule is replaced by the default when the file loads and refused with an error when written. Defaults in brackets.
+A missing or unparseable file gives the defaults. A value that breaks its rule is replaced by the default when the file loads and refused with an error when written.
 
-- `language` (empty): interface locale. Empty follows the OS language when Mortar has a catalog for it, else English. The only catalog is `en`; any other non-empty value is dropped on load and refused on write.
-- `accent` (`sand`): `sand`, `moss`, `copper` or `sky`.
-- `background` (`image`): `image`, `desktop` or `solid`.
-- `backgroundImage` (empty, the default wallpaper): the absolute path of the user's image; set only when it is a readable PNG, JPEG or WebP file, and empty clears it.
-- `lastGame` (empty): the game last opened; any id.
-- `lastProfile` (`{}`): game id to the id of the profile last open in it.
-- `lastPlayed` (`{}`): game id to `{profile, at, gameVersion}`. `at` is RFC3339 and recorded when a launch reaches Running; `gameVersion` is the game's version from that launch's SMAPI log header or, for BepInEx, from the running game's bridge `status` once it reports the game's own version (`gameVersionSource` `game`; Unity's `Application.version` and an older bridge's answer are ignored), and the previous value stays when neither gave one. An entry with an empty game, profile or time, or a time that does not parse, is dropped.
-- `gameFolders` (`{}`): game id to an install folder the user chose, which wins over store discovery; checked as a game install when set, and emptied to go back to discovery.
-- `gameStores` (`{}`): game id to the store to use when several installs are found (`steam`, `flatpak-steam`, `gog`, `gog-heroic`, `lutris`, `bottles`); an unknown value is dropped on load.
-- `launcherRoots` (`{}`): launcher id to folders the user added for it, searched before the usual places.
-- `launchersConfirmed` (false): whether first run's launcher screen was finished; until then the app opens on it.
-- `loaders` (`{}`): game id to the loader version Mortar installed.
-- `dismissed` (`{}`): profile dismissal bucket to tokens for hidden warnings. Problems keeps dismissed conflicts, abandoned mods, listed requirements and settings available in its Dismissed section; restoring removes the token.
-- `nexusUserId` (0), `nexusName` (empty), `nexusPremium` (false): the signed-in account, for display; a zero id means signed out.
-- `nxmHandled` (false), `nxmPreviousHandlers` (`{}`), `nxmAsked` (false): whether Mortar handles the source link schemes, the handler each scheme had before (absent when none), and whether the user was asked.
-- `thunderstoreHandleLinks` (unset, which means off): whether Mortar claims `ror2mm://` links from the system. Stored as `sources.thunderstore.handleLinks`; `source.SetHandleLinks` carries it to the source registry, and a source without the choice keeps its driver's default (Nexus on, Thunderstore off).
-- `showAdultContent` (false): when off, browse drops hits a source flags as adult; installed mods are never hidden.
-- `nxmPreviousName` (empty): display name of that previous handler.
-- `nxmRedirectOtherGames` (on when `nxmPreviousHandlers` is set, else off): send non-Stardew `nxm://` links to the previous handler.
-- `nexusPreferredDownloadServer` (empty): a seen `download_link.json` `short_name`, or empty for Automatic.
-- `askEndorseMods` (true): when on, Mortar may prompt to endorse Nexus mods after five clean runs. Missing or null means true.
-- `nexusSeenDownloadServers` (`[]`): `short_name` values Mortar has seen.
-- `listColumns` (`on`, `name`, `version`, `author`, `source`, `category`, `status`, `size`, `startup`): the Mods list columns shown, from `on`, `name`, `version`, `latest`, `id`, `author`, `source`, `category`, `endorsements`, `downloads`, `updated`, `installed`, `needs`, `status`, `notes`, `lastRun`, `size`, `startup`, `order`. An unknown id is refused on write and dropped on load, as are duplicates; `on` and `name` are always present and first; none left gives the default. A game's own choice is `games.<id>.listColumns`; without one the global list applies.
-- `listSortColumn` (`name`), `listSortDir` (`asc`): any column id but `on` (which becomes `name`), and `asc` or `desc`; an unknown value is refused on write and becomes the default on load.
-- `listGroupBy` (`status`): `none`, `status`, `category`, `source`, `tag`, `framework`, `author` or `group`.
-- `checkModUpdatesOnStart` (true): check for mod updates at startup and in the background while Mortar runs ([Profile operations](#profile-operations)). Missing or null means true.
-- `tellWhenSmapiOut` (true): toast when a newer SMAPI exists, at most once a day. Missing or null means true.
-- `keepInTray` (false): when on, closing the window closes it while Mortar keeps running behind a system-tray icon, and showing Mortar builds a new window (Wayland lets no app restore a hidden window's position, so a fresh window is placed by the compositor as new); when off, close quits. Quitting on the last window is turned off in the Wails options for Linux and Windows so this choice stays Mortar's.
-- `lanSharing` (false): when on, Mortar advertises itself on the local network and accepts profile sends ([Sharing](#sharing)).
-- `lanPort` (47630): TCP port for that HTTP service; 0 lets the OS choose. Out of 0 to 65535 is refused on write and becomes 47630 on load.
-- `lanAddresses` (`[]`): the last five successful LAN send targets (`host:port`), newest first.
-- `includeBetaReleases` (false): when on, Mortar's self-update check also offers signed manifests from GitHub prereleases; when off, only the latest stable release manifest is used.
-- `includePrereleaseModVersions` (false): when off, an offered mod update whose version has a semver prerelease tag is hidden unless the installed version is itself a prerelease.
-- `checkOnlyEnabledMods` (false): when on, disabled mods are omitted from the request sent to SMAPI's update API.
-- `enableModsWhenInstalled` (true): when off, newly installed profile entries start with every mod in that entry disabled. Missing or null means true.
-- `smapiToastAt` (empty): RFC3339 time of the last SMAPI-update toast; a later toast is suppressed for 24 hours after it. Written only when the toast shows.
-- `tipsSeen` (empty): the empty-state tips dismissed, from `mods`, `saves`, `console` and `share`; an unknown id is refused on write and dropped on load, as are duplicates.
-- `overlayEnabled` (false), `overlayPort` (8123), `overlayToken` (empty): the stream overlay of the Mortar SMAPI Bridge and the Mortar BepInEx Bridge. Port is 1024 to 65535; an out-of-range value is refused on write and becomes 8123 on load. The token is 32 random bytes as hex, created on first enable and on Regenerate. It is a secret: it is never logged, never exported, and stripped from diagnostics.
-- `onPlay` (`stay`): `stay`, `minimise`, or `hide` when a game launches; the window is restored when the game exits.
-- `games` (`{}`): per-game prefs keyed by game id (`stardew`). Each block holds backup-before-Play and `saveBackupsKept` (5, 1 to 50, per kind of save backup), `saveBackupHours` (0 off, 1 to 168; 24 is daily) and `saveBackupKeep` (5, 1 to 50, per save) for scheduled save backups, a `backupLocation` folder (empty is `<datadir>/backups`), update-before-Play default, run logs kept and console cap, nxm default profile, cosmetic conflicts, enable/missing requirements, SMAPI builds, launch method, SMAPI console window, skip pre-Play check, console level/timestamps/follow, and `extraModsFolder` (empty: none), one more folder whose mod folders are offered for install, `showDotHiddenMods` (off), listing dot-hidden mods, and `oldFilesOnUpdate` (`ask`): `ask`, `delete` or `keep`, for files an update's new version no longer ships. Launch method, SMAPI console, backup-before-Play (and `saveBackupsKept`), update-before-Play, and skip pre-Play check are profile-overridable.
-- `parallelDownloads` (3): Premium/GitHub fetch pool (1 to 8). Free Nexus stays one at a time.
-- `updateCheckIntervalMinutes` (60): how often the open profile's updates are rechecked while Mortar runs (15 to 1440); the background pass over every profile keeps its fixed schedule ([Profile operations](#profile-operations)). `checkModUpdatesOnStart` still gates the startup check. `notifyModUpdates` (false): toast when a check finds updates.
-- `keepDownloadArchives` (false): keep the zip after install. `storeRetentionDays` (30): unused store items; 0 keeps them forever.
-- `defaultModsView` (`grid`): `grid` or `list`.
-- `confirmRemovals` (true): ask before removing mods.
-- `backgroundBadgeChecks` (true): fill sidebar badges for other profiles.
-- `startScreen` (`last`): `last` opens the last profile; `gameselect` opens Game Select.
-- `dates` (`relative`): `relative` or `absolute`.
-- `trashRetentionDays` (30): days a deleted profile stays restorable (1 to 365). `historyEventsKept` (200): history events per profile (20 to 2000).
-- `notifyDownloadFinished` (true), `notifyDownloadFailed` (true), `notifyRunCrashed` (true): per-kind notices.
-- `desktopDownloadFinished` (false), `desktopDownloadFailed` (true), `desktopRunCrashed` (true), `desktopModUpdates` (false): desktop notifications when a download finishes, a download fails, a run Mortar started crashes, and a background check finds updates.
-- `updateDigest` (`daily`): `off`, `each` or `daily`; whether a background mod-update check that finds a new set of updates shows the in-app digest, every time or at most once a day. `lastModUpdateDigest` and `lastModUpdateDigestAt` (empty): the update set last digested and the RFC3339 time of the last digest toast; a held-back daily digest keeps the previous set, so the next day's check still announces it.
-- `theme` (`dark`): `dark`, `light` or `system`.
-- `density` (`comfortable`): `comfortable` or `compact`. `gridCardSize` (`medium`): `small`, `medium`, or `large`. `showAuthorOnCards` (true): author line on grid cards.
-- `reduceMotion` (`system`): `system`, `always`, or `never`. `profileHero` (`full`): `full`, `compact`, or `hidden`.
-- `reuseFomodChoices` (true): skip the FOMOD wizard when saved choices still match. `driftChecks` (true): scan for mods changed outside Mortar.
-- `autoInstallMortarUpdates` (true): stage a found Mortar update without asking. Mortar's own channel stays `includeBetaReleases`.
-- `autoTrackNexus` (false): track a Nexus mod after install.
-- `lanSharing` (false): find nearby Mortars and send or receive profiles over the local network. `lanPort` (47630): the port Mortar listens on for them; 0 lets the system choose. `lanName` (empty): advertised LAN device name; empty uses the host name. `lanAutoAcceptPaired` (false): auto-accept LAN shares from paired computers.
-- `downloadFolder` (empty): archive landing folder; empty is `<datadir>/downloads`.
-- `profileOrder` (`manual`): `manual`, `name`, or `lastPlayed` for the profile switcher and the Profiles page. `lastPlayed` puts this game's last launched profile first (`lastPlayed` in settings).
-- `autoRetryDownloads` (`off`): `off`, `1`, or `3` extra fetch attempts with backoff after a failed download.
-- `pauseDownloadsWhilePlaying` (false): pause new fetches while a game is launching or running; installs already wait for that profile.
-- `sidebarBadges` (`problemsAndUpdates`): `problemsAndUpdates`, `problems`, or `off`. `off` also skips background badge checks.
-- `shareIncludeDisabledMods` (false), `shareIncludeFomodChoices` (true), `shareIncludeNotes` (true), `shareIncludeConfigFiles` (true), `shareIncludeProblemChoices` (true): defaults for Share and Export include options; each share can still change them.
-- `verifyNexusMD5` (true): after a Nexus download, compare the file to the md5 in the mod's file list. The md5 comes from the list the queue already read to choose the file; a download whose file was named up front (a link, a share) costs one file-list request, logged and held to the API quota. A mismatch deletes the download and fails it as damaged, for Retry to fetch again; a file Nexus lists without an md5, or a lookup that fails, installs unchecked.
-- `launchAtLogin` (false): start Mortar when the user logs in; changing it writes or removes the OS autostart entry.
-- `startMinimised` (false): create the window hidden; the tray Show brings it up.
-- `rememberWindow` (false): persist size and position on close (`window.json`) and restore on start, clamped to a visible screen.
-- `extensionConnection` (`allow`): `allow` or `off`; `off` makes the native host answer every data request empty with state `off`, and the extension then draws nothing; link relaying still works.
-- `shortcuts` (the Settings › Shortcuts table): action id to a chord (`Ctrl+K`, `Ctrl+Shift+F`, …). Missing ids take the defaults; an unknown id is refused on write and dropped on load; a chord used by two actions is refused on write.
+Each key's meaning, scope, type, default and allowed values are defined once, in code: the field comments on `Settings` (`internal/settings/settings.go`) and the registry (`internal/settings/registry.go`), whose defaults are read from `Defaults()` and checked against it by a test. `mortar settings get` lists every key with its current value; Settings shows the same keys.
 
 **Export and import:** Settings › General › Settings file writes every field in `portableFields` (`internal/settings/portable.go`) as `{"version": 1, ...}` through the native save dialog.
 

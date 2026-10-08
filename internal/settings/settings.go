@@ -207,12 +207,16 @@ type Settings struct {
 	ShareIncludeNotes          *bool  `json:"shareIncludeNotes"`
 	ShareIncludeConfigFiles    *bool  `json:"shareIncludeConfigFiles"`
 	ShareIncludeProblemChoices *bool  `json:"shareIncludeProblemChoices"`
-	VerifyNexusMD5             bool   `json:"verifyNexusMD5"`
+	// VerifyNexusMD5 compares a Nexus download with the md5 in the mod's file list, which the queue usually read already
+	// to choose the file; a file named up front (a link, a share) costs one file-list request.
+	VerifyNexusMD5 bool `json:"verifyNexusMD5"`
 	// ShowAdultContent lets browse list mods their sites flag as adult.
-	ShowAdultContent    bool   `json:"showAdultContent"`
-	LaunchAtLogin       bool   `json:"launchAtLogin"`
-	StartMinimised      bool   `json:"startMinimised"`
-	RememberWindow      bool   `json:"rememberWindow"`
+	ShowAdultContent bool `json:"showAdultContent"`
+	LaunchAtLogin    bool `json:"launchAtLogin"`
+	StartMinimised   bool `json:"startMinimised"`
+	RememberWindow   bool `json:"rememberWindow"`
+	// ExtensionConnection is "allow" or "off"; off makes the native host answer every data request empty with state off,
+	// so the browser extension draws nothing, while link relaying still works.
 	ExtensionConnection string `json:"extensionConnection"`
 	// Games holds per-game prefs.
 	Games map[string]*GameSettings `json:"games"`
