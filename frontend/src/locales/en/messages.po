@@ -28,7 +28,7 @@ msgstr "Performance"
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
-#: src/profiles/historyLabel.ts:82
+#: src/profiles/historyLabel.ts:87
 msgid "Switched {name} to the {detail} update channel"
 msgstr "Switched {name} to the {detail} update channel"
 
@@ -244,6 +244,7 @@ msgstr "Imported {0}: {1} to install"
 #: src/mods/problemFix/WinFix.tsx:35
 #: src/mods/SplitCombineItems.tsx:36
 #: src/mods/Toolbar.tsx:283
+#: src/profiles/MergeDialog.tsx:166
 #: src/saves/lackChipActions.tsx:44
 #: src/saves/lackChips.tsx:60
 #: src/saves/SaveRow.tsx:137
@@ -340,7 +341,7 @@ msgstr "Copying mod files"
 msgid "The downloads folder…"
 msgstr "The downloads folder…"
 
-#: src/profiles/historyLabel.ts:70
+#: src/profiles/historyLabel.ts:75
 msgid "Restored {detail} of {name}"
 msgstr "Restored {detail} of {name}"
 
@@ -443,7 +444,7 @@ msgstr "Always"
 msgid "Nearby computer"
 msgstr "Nearby computer"
 
-#: src/profiles/historyLabel.ts:85
+#: src/profiles/historyLabel.ts:90
 msgid "Unlinked the collection"
 msgstr "Unlinked the collection"
 
@@ -869,7 +870,7 @@ msgstr "Mods' Entry is timed only on a measured launch."
 msgid "Mark a known good point first."
 msgstr "Mark a known good point first."
 
-#: src/game/ProfileMenu.tsx:41
+#: src/game/ProfileMenu.tsx:52
 msgid "This profile"
 msgstr "This profile"
 
@@ -1073,7 +1074,9 @@ msgstr "Not offered for moving into a profile."
 msgid "What's new"
 msgstr "What's new"
 
+#. placeholder {0}: adds.length
 #. placeholder {0}: preview.add?.length ?? 0
+#: src/profiles/MergeDialog.tsx:47
 #: src/templates/ApplyTemplateDialog.tsx:35
 msgid "{0, plural, one {Adds # mod} other {Adds # mods}}"
 msgstr "{0, plural, one {Adds # mod} other {Adds # mods}}"
@@ -1157,7 +1160,7 @@ msgstr "Exclude categories"
 msgid "Filter by outcome"
 msgstr "Filter by outcome"
 
-#: src/profiles/historyLabel.ts:61
+#: src/profiles/historyLabel.ts:66
 msgid "Restored {name} from the store"
 msgstr "Restored {name} from the store"
 
@@ -1582,7 +1585,7 @@ msgstr "Share log…"
 
 #: src/downloads/newDownloads.ts:46
 #: src/game/Hero.tsx:78
-#: src/game/ProfileMenu.tsx:63
+#: src/game/ProfileMenu.tsx:84
 #: src/launch/events.ts:48
 #: src/mods/updateDigestToast.ts:61
 #: src/mods/updates.ts:108
@@ -2000,7 +2003,7 @@ msgstr "New launch preset"
 msgid "Paired computers"
 msgstr "Paired computers"
 
-#: src/profiles/historyLabel.ts:101
+#: src/profiles/historyLabel.ts:106
 msgid "Changed game install"
 msgstr "Changed game install"
 
@@ -2638,6 +2641,10 @@ msgstr "Compact"
 msgid "Check"
 msgstr "Check"
 
+#: src/profiles/MergeDialog.tsx:102
+msgid "For mods in both"
+msgstr "For mods in both"
+
 #: src/mods/SelectionBarActions.tsx:93
 msgid "Ignore update source"
 msgstr "Ignore update source"
@@ -2679,7 +2686,7 @@ msgstr "Undo"
 msgid "Mods a site can download again are left out; restoring downloads them."
 msgstr "Mods a site can download again are left out; restoring downloads them."
 
-#: src/profiles/historyLabel.ts:99
+#: src/profiles/historyLabel.ts:104
 msgid "Changed loader"
 msgstr "Changed loader"
 
@@ -2691,6 +2698,10 @@ msgstr "Data to copy: {0}"
 #: src/bundles/BundlesSection.tsx:117
 msgid "This bundle will be deleted."
 msgstr "This bundle will be deleted."
+
+#: src/profiles/MergeDialog.tsx:121
+msgid "{updates, plural, one {# would update} other {# would update}}"
+msgstr "{updates, plural, one {# would update} other {# would update}}"
 
 #. placeholder {0}: neededBy.length.toLocaleString(i18n.locale)
 #: src/mods/Sidebar.tsx:405
@@ -2995,7 +3006,7 @@ msgstr "{count} checked later"
 msgid "Find a mod in all profiles…"
 msgstr "Find a mod in all profiles…"
 
-#: src/game/ProfileMenu.tsx:74
+#: src/game/ProfileMenu.tsx:95
 #: src/game/ProfileMenuItems.tsx:324
 msgid "Compare…"
 msgstr "Compare…"
@@ -3126,7 +3137,7 @@ msgstr "Data folder"
 msgid "No recorded runs yet"
 msgstr "No recorded runs yet"
 
-#: src/profiles/historyLabel.ts:63
+#: src/profiles/historyLabel.ts:68
 msgid "Before this change"
 msgstr "Before this change"
 
@@ -3332,6 +3343,10 @@ msgstr "Reading the log…"
 #: src/firstrunTour/TourAgainButton.tsx:20
 msgid "Show the tour again"
 msgstr "Show the tour again"
+
+#: src/profiles/MergeDialog.tsx:116
+msgid "Use the newer version"
+msgstr "Use the newer version"
 
 #: src/console/useBridgePerf.ts:69
 msgid "Could not read the measurement"
@@ -3748,6 +3763,10 @@ msgstr "Stopped at the API limit; {0} left"
 #: src/settings/GameSettingsPage.tsx:142
 msgid "Console"
 msgstr "Console"
+
+#: src/profiles/MergeDialog.tsx:92
+msgid "{both, plural, one {# mod is in both} other {# mods are in both}}"
+msgstr "{both, plural, one {# mod is in both} other {# mods are in both}}"
 
 #: src/mods/ModsTab.tsx:136
 msgid "Try a different search or filter."
@@ -4209,6 +4228,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/profiles/GameModsDialog.tsx:164
 #: src/profiles/ImportWizard.tsx:139
 #: src/profiles/LaunchPresetDialog.tsx:91
+#: src/profiles/MergeDialog.tsx:219
 #: src/profiles/PackImportDialog.tsx:171
 #: src/settings/sections/NexusSSO.tsx:68
 #: src/settings/sections/nxmHandler.tsx:65
@@ -4270,7 +4290,7 @@ msgid "Parallel downloads"
 msgstr "Parallel downloads"
 
 #: src/mods/updateReview/updateAll.ts:35
-#: src/profiles/historyTimeline.ts:65
+#: src/profiles/historyTimeline.ts:66
 msgid "{updated, plural, one {Updated # mod} other {Updated # mods}}"
 msgstr "{updated, plural, one {Updated # mod} other {Updated # mods}}"
 
@@ -4295,6 +4315,10 @@ msgstr "By game"
 #: src/mods/describe.ts:179
 msgid "Only on {value} saves; none of yours is one."
 msgstr "Only on {value} saves; none of yours is one."
+
+#: src/profiles/MergeDialog.tsx:180
+msgid "{changes, plural, one {Merged # mod into {targetName}} other {Merged # mods into {targetName}}}"
+msgstr "{changes, plural, one {Merged # mod into {targetName}} other {Merged # mods into {targetName}}}"
 
 #. placeholder {0}: launcher.name
 #: src/launchers/LauncherList.tsx:99
@@ -4369,6 +4393,10 @@ msgstr "Downloads paused"
 msgid "Biome"
 msgstr "Biome"
 
+#: src/profiles/MergeDialog.tsx:196
+msgid "Target profile"
+msgstr "Target profile"
+
 #: src/firstrun/GameSetup.tsx:52
 #: src/settings/GameSettingsPage.tsx:163
 msgid "Back to {name}"
@@ -4386,6 +4414,11 @@ msgstr "Could not undo the install"
 #: src/mods/GroupMenu.tsx:56
 msgid "Enable all"
 msgstr "Enable all"
+
+#. placeholder {0}: preview.targetOnly
+#: src/profiles/MergeDialog.tsx:95
+msgid "{0, plural, one {Keeps # mod only {targetName} has} other {Keeps # mods only {targetName} has}}"
+msgstr "{0, plural, one {Keeps # mod only {targetName} has} other {Keeps # mods only {targetName} has}}"
 
 #: src/share/useImportFlow.ts:150
 msgid "Importing into {name}"
@@ -4675,7 +4708,7 @@ msgstr "Unknown"
 msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
 
-#: src/game/ProfileMenu.tsx:66
+#: src/game/ProfileMenu.tsx:87
 #: src/game/ProfileMenuItems.tsx:304
 #: src/profiles/SinceLastRun.tsx:112
 msgid "History…"
@@ -4931,7 +4964,7 @@ msgstr "Enter text to search stored runs."
 msgid "No backups to delete"
 msgstr "No backups to delete"
 
-#: src/game/ProfileMenu.tsx:54
+#: src/game/ProfileMenu.tsx:65
 #: src/game/ProfileMenuItems.tsx:314
 #: src/profiles/LaunchPresetsBlock.tsx:53
 msgid "Duplicate"
@@ -5104,7 +5137,7 @@ msgstr "Restore known good"
 msgid "Also updates {0} (same download)"
 msgstr "Also updates {0} (same download)"
 
-#: src/profiles/historyLabel.ts:76
+#: src/profiles/historyLabel.ts:81
 msgid "Applied the preset {detail} to {name}"
 msgstr "Applied the preset {detail} to {name}"
 
@@ -5155,7 +5188,7 @@ msgstr "This deletes the game folder at {folder}, with every file in it, includi
 msgid "Clear selection"
 msgstr "Clear selection"
 
-#: src/profiles/historyLabel.ts:57
+#: src/profiles/historyLabel.ts:62
 msgid "{count, plural, one {Restored # mod from the store} other {Restored # mods from the store}}"
 msgstr "{count, plural, one {Restored # mod from the store} other {Restored # mods from the store}}"
 
@@ -5164,7 +5197,7 @@ msgstr "{count, plural, one {Restored # mod from the store} other {Restored # mo
 msgid "Needs your choice ({0})"
 msgstr "Needs your choice ({0})"
 
-#: src/profiles/historyLabel.ts:86
+#: src/profiles/historyLabel.ts:91
 msgid "Unlinked the collection {name}"
 msgstr "Unlinked the collection {name}"
 
@@ -5475,7 +5508,7 @@ msgstr "Problem sections"
 msgid "Restarting…"
 msgstr "Restarting…"
 
-#: src/game/ProfileMenu.tsx:83
+#: src/game/ProfileMenu.tsx:104
 #: src/game/ProfileMenuItems.tsx:349
 msgid "Delete profile…"
 msgstr "Delete profile…"
@@ -5667,7 +5700,7 @@ msgstr "Template saved"
 msgid "Uploading…"
 msgstr "Uploading…"
 
-#: src/profiles/historyLabel.ts:107
+#: src/profiles/historyLabel.ts:112
 msgid "Changed profile settings"
 msgstr "Changed profile settings"
 
@@ -5842,7 +5875,7 @@ msgstr "Portable copy: data is kept in {portableDir}"
 msgid "{0, plural, one {Tag # mod} other {Tag # mods}}"
 msgstr "{0, plural, one {Tag # mod} other {Tag # mods}}"
 
-#: src/profiles/historyLabel.ts:109
+#: src/profiles/historyLabel.ts:114
 msgid "Changed the profile"
 msgstr "Changed the profile"
 
@@ -6180,6 +6213,10 @@ msgstr "Remove {name}"
 msgid "Hidden inside this mod"
 msgstr "Hidden inside this mod"
 
+#: src/profiles/historyLabel.ts:54
+msgid "{count, plural, one {Merged # mod from {name}} other {Merged # mods from {name}}}"
+msgstr "{count, plural, one {Merged # mod from {name}} other {Merged # mods from {name}}}"
+
 #: src/profiles/CrashHintCard.tsx:128
 msgid "Disable it and play"
 msgstr "Disable it and play"
@@ -6288,7 +6325,7 @@ msgid "In Mortar"
 msgstr "In Mortar"
 
 #: src/game/ProfileContextMenu.tsx:48
-#: src/game/ProfileMenu.tsx:44
+#: src/game/ProfileMenu.tsx:55
 #: src/profiles/ProfileRow.tsx:83
 msgid "Edit profile…"
 msgstr "Edit profile…"
@@ -6671,7 +6708,7 @@ msgstr "slow {0} {ms}"
 msgid "Move…"
 msgstr "Move…"
 
-#: src/profiles/historyLabel.ts:80
+#: src/profiles/historyLabel.ts:85
 msgid "Deleted a custom category"
 msgstr "Deleted a custom category"
 
@@ -6845,7 +6882,7 @@ msgstr "Roll back {0}?"
 msgid "Click the game's name in the title bar to open the game menu and jump to another game."
 msgstr "Click the game's name in the title bar to open the game menu and jump to another game."
 
-#: src/profiles/historyLabel.ts:72
+#: src/profiles/historyLabel.ts:77
 msgid "Edited the settings of {name}"
 msgstr "Edited the settings of {name}"
 
@@ -7263,7 +7300,7 @@ msgstr "The profile stays restorable for 30 days from Recently deleted."
 msgid "{who} all edit {target}.{winner}"
 msgstr "{who} all edit {target}.{winner}"
 
-#: src/profiles/historyLabel.ts:105
+#: src/profiles/historyLabel.ts:110
 msgid "Changed launch settings"
 msgstr "Changed launch settings"
 
@@ -7882,6 +7919,10 @@ msgstr "Choose an option in {invalidGroup}."
 msgid "Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running."
 msgstr "Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running."
 
+#: src/profiles/MergeDialog.tsx:111
+msgid "Keep {targetName}'s versions"
+msgstr "Keep {targetName}'s versions"
+
 #: src/share/CollectionNotes.tsx:80
 msgid "Your Premium account also applies the curator's installer choices and config files."
 msgstr "Your Premium account also applies the curator's installer choices and config files."
@@ -8028,6 +8069,11 @@ msgstr "Updated {mods} in {profileName}"
 msgid "Search every run"
 msgstr "Search every run"
 
+#. placeholder {0}: source.name
+#: src/profiles/MergeDialog.tsx:191
+msgid "Merge {0} into…"
+msgstr "Merge {0} into…"
+
 #: src/share/ImportPreview.tsx:359
 msgid "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
 msgstr "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
@@ -8083,6 +8129,10 @@ msgstr "{playtime} played"
 #: src/settings/sections/AboutDiagnostics.tsx:189
 msgid "Could not run diagnostics"
 msgstr "Could not run diagnostics"
+
+#: src/game/ProfileMenu.tsx:73
+msgid "Merge into…"
+msgstr "Merge into…"
 
 #: src/console/ConsoleTab.tsx:129
 msgid "·"
@@ -8703,7 +8753,7 @@ msgstr "Play anyway"
 msgid "Let the operating system choose a free port"
 msgstr "Let the operating system choose a free port"
 
-#: src/profiles/historyLabel.ts:74
+#: src/profiles/historyLabel.ts:79
 msgid "Reset the settings of {name}"
 msgstr "Reset the settings of {name}"
 
@@ -9789,6 +9839,10 @@ msgstr "Music volume ({value}%)"
 msgid "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
 msgstr "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
 
+#: src/game/ProfileMenu.tsx:75
+msgid "No other profile to merge into."
+msgstr "No other profile to merge into."
+
 #: src/profiles/HealthDialog.tsx:68
 msgid "A launch ended without Mortar putting the game folder back as it was"
 msgstr "A launch ended without Mortar putting the game folder back as it was"
@@ -9951,7 +10005,7 @@ msgstr "Update downloads the new file from the mod's site when Mortar can; other
 msgid "Never"
 msgstr "Never"
 
-#: src/profiles/historyLabel.ts:97
+#: src/profiles/historyLabel.ts:102
 msgid "Changed groups"
 msgstr "Changed groups"
 
@@ -10071,6 +10125,7 @@ msgid "Open download page"
 msgstr "Open download page"
 
 #: src/profiles/HistoryEventRow.tsx:107
+#: src/profiles/MergeDialog.tsx:55
 #: src/share/Included.tsx:144
 msgid "Show mods"
 msgstr "Show mods"
@@ -10207,7 +10262,7 @@ msgstr "Recent address"
 msgid "You skipped this version"
 msgstr "You skipped this version"
 
-#: src/profiles/historyLabel.ts:88
+#: src/profiles/historyLabel.ts:93
 msgid "{count, plural, one {Trimmed history, dropped # older change} other {Trimmed history, dropped # older changes}}"
 msgstr "{count, plural, one {Trimmed history, dropped # older change} other {Trimmed history, dropped # older changes}}"
 
@@ -10541,6 +10596,10 @@ msgstr "Checked for updates"
 msgid "Game version"
 msgstr "Game version"
 
+#: src/profiles/MergeDialog.tsx:186
+msgid "Could not merge into {targetName}"
+msgstr "Could not merge into {targetName}"
+
 #: src/shell/TitleBar.tsx:111
 msgid "Maximise"
 msgstr "Maximise"
@@ -10682,7 +10741,7 @@ msgstr "Restore {label}"
 msgid "No updates to review"
 msgstr "No updates to review"
 
-#: src/profiles/historyLabel.ts:103
+#: src/profiles/historyLabel.ts:108
 msgid "Changed separate saves"
 msgstr "Changed separate saves"
 
@@ -10844,7 +10903,7 @@ msgstr "This start was {by} slower than the one before."
 msgid "The extra mods folder…"
 msgstr "The extra mods folder…"
 
-#: src/profiles/historyLabel.ts:78
+#: src/profiles/historyLabel.ts:83
 msgid "Set {detail} of {name} for the next start"
 msgstr "Set {detail} of {name} for the next start"
 
@@ -11187,7 +11246,7 @@ msgstr "Required"
 msgid "{list} do the same job: all {0} change {detail}"
 msgstr "{list} do the same job: all {0} change {detail}"
 
-#: src/profiles/historyLabel.ts:54
+#: src/profiles/historyLabel.ts:59
 msgid "{count, plural, one {Restored # mod} other {Restored # mods}}"
 msgstr "{count, plural, one {Restored # mod} other {Restored # mods}}"
 
@@ -11569,8 +11628,13 @@ msgid "Diagnostics"
 msgstr "Diagnostics"
 
 #: src/profiles/HistoryEventRow.tsx:107
+#: src/profiles/MergeDialog.tsx:55
 msgid "Hide mods"
 msgstr "Hide mods"
+
+#: src/profiles/MergeDialog.tsx:227
+msgid "Merge"
+msgstr "Merge"
 
 #: src/mods/CategoryEditor.tsx:151
 msgid "Add category"
@@ -11580,7 +11644,7 @@ msgstr "Add category"
 msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
 msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
 
-#: src/game/ProfileMenu.tsx:51
+#: src/game/ProfileMenu.tsx:62
 msgid "Copies"
 msgstr "Copies"
 
@@ -11854,7 +11918,7 @@ msgstr "Start the game, then start measuring here to time each mod's event handl
 msgid "{name} is obsolete: {summary}"
 msgstr "{name} is obsolete: {summary}"
 
-#: src/profiles/historyTimeline.ts:59
+#: src/profiles/historyTimeline.ts:60
 msgid "{added, plural, one {Added # mod} other {Added # mods}}"
 msgstr "{added, plural, one {Added # mod} other {Added # mods}}"
 
@@ -11950,7 +12014,7 @@ msgid "Quota"
 msgstr "Quota"
 
 #: src/bundles/ApplyBundleToProfile.tsx:61
-#: src/game/ProfileMenu.tsx:37
+#: src/game/ProfileMenu.tsx:48
 msgid "Profile"
 msgstr "Profile"
 
@@ -12898,7 +12962,7 @@ msgid "After each check"
 msgstr "After each check"
 
 #: src/mods/storeEntries.ts:96
-#: src/profiles/historyTimeline.ts:62
+#: src/profiles/historyTimeline.ts:63
 msgid "{removed, plural, one {Removed # mod} other {Removed # mods}}"
 msgstr "{removed, plural, one {Removed # mod} other {Removed # mods}}"
 
@@ -13103,7 +13167,7 @@ msgstr "Delete {name}"
 msgid "{0, plural, one {# new archive} other {# new archives}} in your downloads folder"
 msgstr "{0, plural, one {# new archive} other {# new archives}} in your downloads folder"
 
-#: src/profiles/historyLabel.ts:67
+#: src/profiles/historyLabel.ts:72
 msgid "Went back to {when}"
 msgstr "Went back to {when}"
 
@@ -13409,7 +13473,7 @@ msgid "{deployed} deployed"
 msgstr "{deployed} deployed"
 
 #: src/profiles/HistoryEventRow.tsx:93
-#: src/profiles/historyLabel.ts:95
+#: src/profiles/historyLabel.ts:100
 msgid "Known good"
 msgstr "Known good"
 
@@ -13865,7 +13929,7 @@ msgstr "Loaded in the running game"
 msgid "This tool will be removed from Mortar."
 msgstr "This tool will be removed from Mortar."
 
-#: src/profiles/historyLabel.ts:93
+#: src/profiles/historyLabel.ts:98
 msgid "Installed {name} although the antivirus flagged it: {detail}"
 msgstr "Installed {name} although the antivirus flagged it: {detail}"
 

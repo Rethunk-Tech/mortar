@@ -1,11 +1,21 @@
 import { useLingui } from '@lingui/react/macro'
 import { Menu } from '@mui/material'
-import { ChevronDown, Copy, GitCompare, History, Palette, Trash2, UserCog } from 'lucide-react'
+import {
+  ChevronDown,
+  Copy,
+  GitCompare,
+  GitMerge,
+  History,
+  Palette,
+  Trash2,
+  UserCog,
+} from 'lucide-react'
 import { useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { CompareDialog } from '../profiles/CompareDialog.tsx'
 import { EditProfileDialog } from '../profiles/EditProfileDialog.tsx'
 import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
+import { MergeDialog } from '../profiles/MergeDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
@@ -24,6 +34,7 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
   const [editing, setEditing] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [merging, setMerging] = useState(false)
   const [compare, setCompare] = useState<{ a: Profile; b: Profile | null } | null>(null)
   const close = () => setAnchor(null)
   return (
@@ -55,6 +66,16 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
           onClick={() => {
             close()
             duplicate(profile.id).catch(reportUnexpected)
+          }}
+        />
+        <MenuAction
+          icon={<GitMerge size={16} />}
+          label={t`Merge into…`}
+          disabled={profiles.length < 2}
+          tooltip={profiles.length < 2 ? t`No other profile to merge into.` : undefined}
+          onClick={() => {
+            close()
+            setMerging(true)
           }}
         />
         <SaveTemplateMenuItem profile={profile} close={close} />
@@ -99,6 +120,7 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
         b={compare?.b ?? null}
         onClose={() => setCompare(null)}
       />
+      <MergeDialog source={merging ? profile : null} onClose={() => setMerging(false)} />
       <DeleteProfileDialog profile={profile} open={deleting} onClose={() => setDeleting(false)} />
     </>
   )

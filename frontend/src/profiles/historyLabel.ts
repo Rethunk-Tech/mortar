@@ -50,6 +50,11 @@ export function historyLabel(ev: Worded): string {
         one: "Moved # mod from the game's Mods folder",
         other: "Moved # mods from the game's Mods folder",
       })
+    case HistoryChange.ChangeMerged:
+      return plural(count, {
+        one: `Merged # mod from ${name}`,
+        other: `Merged # mods from ${name}`,
+      })
     case HistoryChange.ChangeRestored:
       return plural(count, { one: 'Restored # mod', other: 'Restored # mods' })
     case HistoryChange.ChangeRestoredFromStore:
