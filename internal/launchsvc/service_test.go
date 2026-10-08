@@ -207,7 +207,7 @@ func TestStartInstallsAMissingLoaderBeforeLaunching(t *testing.T) {
 	deadline := time.Now().Add(5 * time.Second)
 	for {
 		svc.mu.Lock()
-		_, busy := svc.preparing["stardew/"]
+		busy := len(svc.preparing) > 0
 		svc.mu.Unlock()
 		if !busy {
 			break
@@ -311,8 +311,28 @@ func TestConcurrentStartsLaunchOnce(t *testing.T) {
 	close(gate)
 	wg.Wait()
 	close(release)
+	waitNotPreparing(t, svc)
 	if refused.Load() != 1 {
 		t.Fatalf("%d of two concurrent Starts refused, want 1", refused.Load())
+	}
+}
+
+// waitNotPreparing waits for the background preparation of a Start to end, so it no longer writes into the test's
+// folders when they are removed.
+func waitNotPreparing(t *testing.T, svc *Service) {
+	t.Helper()
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		svc.mu.Lock()
+		busy := len(svc.preparing) > 0
+		svc.mu.Unlock()
+		if !busy {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("still preparing")
+		}
+		time.Sleep(10 * time.Millisecond)
 	}
 }
 
@@ -339,19 +359,7 @@ func TestStartWithAnInstalledLoaderWaitsForEnsureLoader(t *testing.T) {
 		t.Fatalf("launched while the loader was being updated: %v", st.State)
 	}
 	close(release)
-	deadline := time.Now().Add(5 * time.Second)
-	for {
-		svc.mu.Lock()
-		_, busy := svc.preparing["stardew/"]
-		svc.mu.Unlock()
-		if !busy {
-			break
-		}
-		if time.Now().After(deadline) {
-			t.Fatal("still preparing")
-		}
-		time.Sleep(10 * time.Millisecond)
-	}
+	waitNotPreparing(t, svc)
 	if st := svc.current(game.Find("stardew")); st.State != Idle {
 		t.Fatalf("state after a failed update = %v", st.State)
 	}
