@@ -17,6 +17,7 @@ import { useWidth } from '../shell/useWidth.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { actingMods, toggleActing } from './actingMods.ts'
+import { formatAuthors } from './authorNormalize.ts'
 import { CompatChip } from './CompatChip.tsx'
 import { useColumnAvailable, useSavedColumns } from './contributedColumns.ts'
 import { useDetail } from './detail.ts'
@@ -176,7 +177,7 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
       }
       const text = {
         id: dash(m.id),
-        author: dash(m.author),
+        author: dash(formatAuthors(m.author)),
         source: dash(row.source),
         category: dash(row.categoryLabel),
         notes: dash(notes),

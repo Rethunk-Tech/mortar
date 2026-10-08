@@ -4,6 +4,7 @@ import { Box, Button, Checkbox, Typography } from '@mui/material'
 import { alpha, type Theme, useTheme } from '@mui/material/styles'
 import { formatKb } from '../i18n/bytes.ts'
 import { listNames } from '../i18n/list.ts'
+import { formatAuthors } from '../mods/authorNormalize.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 
 const SUCCESS_CHIP = 0.2
@@ -83,7 +84,7 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
     mod.unverified ? t`unverified until downloaded` : '',
     mod.site === 'local' && !mod.enabled ? t`Disabled`.toLowerCase() : '',
   ].filter(Boolean)
-  const byline = [mod.author, ...notes].filter(Boolean).join(' · ')
+  const byline = [formatAuthors(mod.author), ...notes].filter(Boolean).join(' · ')
   return (
     <Box
       sx={{

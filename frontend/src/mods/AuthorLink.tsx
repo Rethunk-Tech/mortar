@@ -6,7 +6,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { AuthorDialog } from './AuthorDialog.tsx'
-import { splitManifestAuthors } from './authorNormalize.ts'
+import { authorListParts, splitManifestAuthors } from './authorNormalize.ts'
 
 const linkSx = { fontSize: 'inherit', verticalAlign: 'baseline', textAlign: 'left' } as const
 const emptyAuthor = '—'
@@ -23,6 +23,14 @@ export function AuthorLink({
   const [open, setOpen] = useState(false)
   const [picked, setPicked] = useState('')
   const parts = splitManifestAuthors(authorField)
+  // A joiner sits after the name before it, so that name keys it.
+  let lastName = ''
+  const listParts = authorListParts(authorField).map((part) => {
+    if (part.type === 'element') {
+      lastName = part.value
+    }
+    return { ...part, key: part.type === 'element' ? part.value : `after-${lastName}` }
+  })
   const openAuthor = (name: string, e: MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -37,14 +45,20 @@ export function AuthorLink({
   }
   return (
     <>
-      {parts.map((name, index) => (
-        <span key={name}>
-          {index > 0 ? ' & ' : null}
-          <Link component="button" onClick={(e) => openAuthor(name, e)} sx={linkSx}>
-            {name}
+      {listParts.map((part) =>
+        part.type === 'literal' ? (
+          <span key={part.key}>{part.value}</span>
+        ) : (
+          <Link
+            key={part.key}
+            component="button"
+            onClick={(e) => openAuthor(part.value, e)}
+            sx={linkSx}
+          >
+            {part.value}
           </Link>
-        </span>
-      ))}
+        ),
+      )}
       <AuthorDialog
         open={open}
         author={picked}

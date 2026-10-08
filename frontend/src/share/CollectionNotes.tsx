@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Link, Typography } from '@mui/material'
 import type { CollectionInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
+import { formatAuthors } from '../mods/authorNormalize.ts'
 import { openPage } from '../mods/menu.ts'
 import { space } from '../theme/density.ts'
 import { type InstructionPart, parseInstructions } from './instructions.ts'
@@ -65,7 +66,7 @@ function Externals({ items }: { items: NonNullable<CollectionInfo['external']> }
           <li key={`${r.name}:${r.url}`}>
             {r.url ? <PageLink part={{ at: 0, text: r.name, url: r.url }} /> : r.name}
             <Typography component="span" sx={{ fontSize: 12, color: 'text.secondary' }}>
-              {[r.version, r.author].filter(Boolean).map((s) => ` · ${s}`)}
+              {[r.version, formatAuthors(r.author)].filter(Boolean).map((s) => ` · ${s}`)}
             </Typography>
           </li>
         ))}

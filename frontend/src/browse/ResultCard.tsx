@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Card, Typography } from '@mui/material'
 import { ExternalLink } from 'lucide-react'
 import { type MouseEvent, useState } from 'react'
+import { formatAuthors } from '../mods/authorNormalize.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { GRAY_OPACITY, openPageLabel, PICTURE_PX, ROW_PICTURE_PX } from './browseConstants.ts'
 
@@ -108,7 +109,7 @@ function ResultCard(props: ResultCardProps) {
           </Typography>
         </ButtonBase>
         <Typography noWrap={true} sx={{ fontSize: 12, color: 'text.secondary' }}>
-          {author === '' ? stats : `${author} · ${stats}`}
+          {author === '' ? stats : `${formatAuthors(author)} · ${stats}`}
         </Typography>
         <Typography
           title={summary}

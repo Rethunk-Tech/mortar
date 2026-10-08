@@ -13,6 +13,7 @@ import { PAD_FOCUS } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { actingMods, toggleActing } from './actingMods.ts'
+import { formatAuthors } from './authorNormalize.ts'
 import { CompatChip } from './CompatChip.tsx'
 import { showModId, useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
@@ -215,7 +216,7 @@ function ModCardView({ mod: m, orderedIds, profile, columnsRef, onMove }: ModCar
           </ButtonBase>
           <Typography
             noWrap={true}
-            title={showAuthor ? `${m.author} · ${m.version}` : m.version}
+            title={showAuthor ? `${formatAuthors(m.author)} · ${m.version}` : m.version}
             sx={{ fontSize: META_FONT_PX, color: 'text.secondary' }}
           >
             {showAuthor ? (

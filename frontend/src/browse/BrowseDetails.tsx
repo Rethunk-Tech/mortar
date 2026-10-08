@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { Details as ReadDetails } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
+import { formatAuthors } from '../mods/authorNormalize.ts'
 import { parseBBCode } from '../mods/bbcode.ts'
 import { ChangelogEntries } from '../mods/ChangelogDialog.tsx'
 import { DependencyChips } from '../mods/DependencyChips.tsx'
@@ -226,7 +227,7 @@ function Panel({
       <DetailsHeader
         picture={<CardPicture picture={item.picture} size={PICTURE} dim={1} />}
         title={item.name}
-        subtitle={item.author}
+        subtitle={formatAuthors(item.author)}
         onClose={() => useBrowseSelection.getState().select(null)}
       />
       <SourceBadges sources={sources} picked={source} names={sourceNames} onPick={setPicked} />
