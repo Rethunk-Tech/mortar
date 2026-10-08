@@ -19,8 +19,10 @@ import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { GameModsProgressLine } from './GameModsProgress.tsx'
 import { formatOutcomeDetail, formatPreviewRow, willImport } from './gameModsFormat.ts'
 import { useProfiles } from './store.ts'
+import { useGameModsProgress } from './useGameModsProgress.ts'
 
 export function GameModsDialog({
   open,
@@ -40,6 +42,7 @@ export function GameModsDialog({
   const [error, setError] = useState<InlineError | null>(null)
   const [busy, setBusy] = useState(false)
   const [previewing, setPreviewing] = useState(false)
+  const progress = useGameModsProgress(game, busy)
   const gen = useRef(0)
   const live = useRef(false)
   const loadPreview = useCallback(() => {
@@ -139,6 +142,7 @@ export function GameModsDialog({
         {error === null && previewing ? (
           <LoadingRow>{t`Reading the Mods folder…`}</LoadingRow>
         ) : null}
+        {busy ? <GameModsProgressLine progress={progress} moving={false} /> : null}
         {error === null && !previewing ? (
           <>
             <Typography sx={{ mb: 1.5, color: 'text.secondary' }}>

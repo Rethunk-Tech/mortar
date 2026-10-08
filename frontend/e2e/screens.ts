@@ -299,6 +299,13 @@ async function main() {
     await click(page, 'option', 'Seed From Template')
     await dialog.getByText(/^(Adds \d+ mods?|Nothing to merge)/).waitFor({ timeout: STEP_MS })
   })
+  await shot(page, 'game-mods-review', async () => {
+    await openGameSelect(page)
+    await openProfile(page, /^(Open )?Seed Farm/)
+    await click(page, 'tab', 'Mods')
+    await click(page, 'button', 'Review…')
+    await page.getByRole('dialog', { name: /^Game Mods folder vs / }).waitFor({ timeout: STEP_MS })
+  })
   await shot(page, 'seed-farm-config-alpha', () => configOf(page, /Seed Alpha/))
   await shot(page, 'seed-farm-config-beta', () => configOf(page, /Seed Beta/))
   await shot(page, 'seed-farm-problems', () => click(page, 'tab', 'Problems'))
@@ -324,6 +331,20 @@ async function main() {
     await click(page, 'tab', 'Config')
   })
 
+  // Last, because the held call stays held for the rest of the page's life.
+  // The backend finishes a few folders too fast to catch, so the call is held and the dialog is shot as it starts.
+  await shot(page, 'game-mods-import-progress', async () => {
+    await page.goto(url)
+    await openGameSelect(page)
+    await openProfile(page, /^(Open )?Seed Farm/)
+    await click(page, 'button', /^Switch profile/)
+    await click(page, 'menuitem', /^From the game's Mods folder/)
+    const dialog = page.getByRole('dialog', { name: /^Import from the game's Mods folder/ })
+    await dialog.getByRole('button', { name: 'Import', exact: true }).waitFor({ timeout: STEP_MS })
+    await page.route('**/wails/runtime', () => new Promise<void>(() => undefined))
+    await dialog.getByRole('button', { name: 'Import', exact: true }).click()
+    await dialog.getByRole('progressbar').waitFor({ timeout: STEP_MS })
+  })
   await browser.close()
   console.log(`wrote ${written.length}:\n${written.join('\n')}`)
   if (skipped.length > 0) {
