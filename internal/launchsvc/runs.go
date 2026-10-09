@@ -418,6 +418,9 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	if started.IsZero() {
 		started = ended
 	}
+	if !failed && !stopped {
+		s.noteGraphicsExit(g, profileID, ended.Sub(started))
+	}
 	outcome := launch.OutcomeOf(failed, stats.Crashed)
 	id := fmt.Sprintf("%s-%d", started.UTC().Format("20060102T150405"), started.UnixNano())
 	dir := runsDir(modsDir)

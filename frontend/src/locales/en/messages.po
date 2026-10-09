@@ -1882,7 +1882,7 @@ msgstr "Reset {0} to its default"
 msgid "Unpinned {name}"
 msgstr "Unpinned {name}"
 
-#: src/launch/playStart.ts:97
+#: src/launch/playStart.ts:99
 msgid "Could not update mods before Play"
 msgstr "Could not update mods before Play"
 
@@ -2654,6 +2654,10 @@ msgstr "Edit profile"
 #: src/game/FarmMenuItem.tsx:106
 msgid "The host's list"
 msgstr "The host's list"
+
+#: src/launch/GraphicsDialog.tsx:33
+msgid "The game closed right after starting last time."
+msgstr "The game closed right after starting last time."
 
 #: src/profiles/compareTitle.ts:12
 msgid "Identical"
@@ -4135,7 +4139,7 @@ msgstr "Find the cause…"
 msgid "Game log"
 msgstr "Game log"
 
-#: src/launch/playStart.ts:130
+#: src/launch/playStart.ts:132
 #: src/launch/vanillaStart.ts:6
 msgid "Could not launch the game"
 msgstr "Could not launch the game"
@@ -4252,7 +4256,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/lan/IncomingPrompt.tsx:116
 #: src/lan/PairedComputers.tsx:109
 #: src/lan/PairedComputers.tsx:156
-#: src/launch/GraphicsDialog.tsx:40
+#: src/launch/GraphicsDialog.tsx:45
 #: src/launch/PrePlayDialog.tsx:152
 #: src/launch/SaveWarnDialog.tsx:70
 #: src/launch/UpdateWarnDialog.tsx:50
@@ -8016,7 +8020,7 @@ msgstr "Restore this backup?"
 msgid "Time"
 msgstr "Time"
 
-#: src/launch/playStart.ts:255
+#: src/launch/playStart.ts:263
 msgid "Could not check the game version"
 msgstr "Could not check the game version"
 
@@ -8320,7 +8324,7 @@ msgstr "Results of installs, updates and launches appear here."
 msgid "Crash finding was stopped."
 msgstr "Crash finding was stopped."
 
-#: src/launch/GraphicsDialog.tsx:36
+#: src/launch/GraphicsDialog.tsx:41
 msgid "You can change this later in {name}'s settings, under Play."
 msgstr "You can change this later in {name}'s settings, under Play."
 
@@ -8867,7 +8871,7 @@ msgstr "Unlinked collection"
 
 #. placeholder {0}: c.label
 #. placeholder {0}: o.label
-#: src/launch/GraphicsDialog.tsx:50
+#: src/launch/GraphicsDialog.tsx:55
 #: src/settings/GraphicsApiRow.tsx:22
 msgid "{0} (Recommended)"
 msgstr "{0} (Recommended)"
@@ -8876,7 +8880,7 @@ msgstr "{0} (Recommended)"
 msgid "Executable"
 msgstr "Executable"
 
-#: src/launch/playStart.ts:101
+#: src/launch/playStart.ts:103
 #: src/launch/PrePlayDialog.tsx:218
 #: src/launch/SaveWarnDialog.tsx:93
 #: src/launch/UpdateWarnDialog.tsx:53
@@ -9974,7 +9978,7 @@ msgstr "Music volume ({value}%)"
 msgid "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
 msgstr "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
 
-#: src/launch/playStart.ts:153
+#: src/launch/playStart.ts:161
 msgid "Could not check the graphics setting"
 msgstr "Could not check the graphics setting"
 
@@ -11197,7 +11201,7 @@ msgstr "Switch to Config"
 msgid "Preview Mods folder import…"
 msgstr "Preview Mods folder import…"
 
-#: src/launch/playStart.ts:302
+#: src/launch/playStart.ts:311
 msgid "Could not save the graphics choice"
 msgstr "Could not save the graphics choice"
 
@@ -11516,7 +11520,7 @@ msgstr "First scene"
 msgid "Dependency"
 msgstr "Dependency"
 
-#: src/launch/playStart.ts:204
+#: src/launch/playStart.ts:212
 msgid "Could not check the profile"
 msgstr "Could not check the profile"
 
@@ -12064,7 +12068,7 @@ msgstr "This is a development build of Mortar {0}, so it does not check for upda
 msgid "{0, plural, one {Last run: {list}} other {Last # runs: {list}}}"
 msgstr "{0, plural, one {Last run: {list}} other {Last # runs: {list}}}"
 
-#: src/launch/playStart.ts:99
+#: src/launch/playStart.ts:101
 msgid "You can roll back the completed updates from the profile history."
 msgstr "You can roll back the completed updates from the profile history."
 

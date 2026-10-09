@@ -30,17 +30,27 @@ func (s *Service) graphicsArgs(g game.Game, profileID string) []string {
 	return c.Args
 }
 
-// GraphicsAsk says whether Play must ask which graphics API to use before it launches.
+// GraphicsAsk says whether Play must ask which graphics API to use before it launches, and whether the game closed
+// right after starting last time.
 type GraphicsAsk struct {
-	Ask bool `json:"ask"`
+	Ask            bool `json:"ask"`
+	AfterEarlyExit bool `json:"afterEarlyExit"`
 }
 
-// GraphicsAsk asks Play's question when the game offers graphics choices and none is set for the profile.
+// GraphicsAsk asks Play's question when the game offers graphics choices and none is set for the profile, or when the
+// last run exited at startup under a choice other than the recommended one.
 func (s *Service) GraphicsAsk(gameID, profileID string) (GraphicsAsk, error) {
 	offer := graphicsOffer(gameID)
 	if offer == nil || s.settings == nil {
 		return GraphicsAsk{}, nil
 	}
-	_, set := chosenGraphics(offer, s.settings.Get(), settings.Scope{Game: gameID, Profile: profileID}, launchOverrides(s.profiles, gameID, profileID))
-	return GraphicsAsk{Ask: !set}, nil
+	chosen, set := chosenGraphics(offer, s.settings.Get(), settings.Scope{Game: gameID, Profile: profileID}, launchOverrides(s.profiles, gameID, profileID))
+	var m graphicsMarker
+	if s.profiles != nil && chosen.ID != offer.Recommended {
+		var err error
+		if m, err = s.readGraphicsMarker(gameID, profileID); err != nil {
+			return GraphicsAsk{}, err
+		}
+	}
+	return GraphicsAsk{Ask: !set || m.Pending, AfterEarlyExit: m.Pending}, nil
 }

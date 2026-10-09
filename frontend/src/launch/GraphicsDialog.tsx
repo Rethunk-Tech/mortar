@@ -28,6 +28,11 @@ export function GraphicsDialog() {
     <Dialog open={ask !== null} onClose={quit} slotProps={{ paper: { sx: { maxWidth: 480 } } }}>
       <DialogTitle>{t`Choose a graphics API for ${name}`}</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
+        {ask?.afterEarlyExit ? (
+          <DialogContentText sx={{ fontWeight: 600 }}>
+            {t`The game closed right after starting last time.`}
+          </DialogContentText>
+        ) : null}
         <DialogContentText>{graphics?.explanation}</DialogContentText>
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
           {graphics?.reason} {graphics?.source}

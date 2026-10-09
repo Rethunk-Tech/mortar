@@ -1,5 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import {
+  GraphicsAnswered,
   GraphicsAsk,
   StartPreset,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
@@ -67,6 +68,7 @@ interface GraphicsPrompt {
   game: string
   profile: string
   direct: boolean
+  afterEarlyExit: boolean
 }
 
 type LaunchSet = (p: {
@@ -140,13 +142,19 @@ async function graphicsPending(opts: {
 }): Promise<boolean> {
   opts.set({ starting: true, startingProfile: opts.profile })
   try {
-    if (!(await GraphicsAsk(opts.game, opts.profile)).ask) {
+    const ask = await GraphicsAsk(opts.game, opts.profile)
+    if (!ask.ask) {
       return false
     }
     opts.set({
       starting: false,
       startingProfile: '',
-      graphicsAsk: { game: opts.game, profile: opts.profile, direct: opts.direct },
+      graphicsAsk: {
+        game: opts.game,
+        profile: opts.profile,
+        direct: opts.direct,
+        afterEarlyExit: ask.afterEarlyExit,
+      },
     })
   } catch (e) {
     opts.set({ starting: false, startingProfile: '' })
@@ -291,6 +299,7 @@ async function answerGraphics(get: LaunchGet, set: LaunchSet, choice: string) {
   }
   try {
     await SetByKey('graphicsApi', choice, ask.game)
+    await GraphicsAnswered(ask.game, ask.profile, choice)
     const listed = useProfiles.getState().profiles.find((p) => p.id === ask.profile)
     const overrides = listed ? foldedOverrides(listed) : undefined
     if (answerTargets(overrides).profileOverride) {

@@ -3,6 +3,7 @@ import { beforeEach, expect, mock, test } from 'bun:test'
 let warnCalls = 0
 let startCalls = 0
 let askGraphics = false
+let graphicsAfterCrash = false
 let warnWait: Promise<void> = Promise.resolve()
 let finishWarn: (() => void) | undefined
 
@@ -38,7 +39,7 @@ mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/se
     hint: 0,
     error: '',
   }),
-  GraphicsAsk: async () => ({ ask: askGraphics }),
+  GraphicsAsk: async () => ({ ask: askGraphics, afterEarlyExit: graphicsAfterCrash }),
   Start: async () => {
     startCalls += 1
   },
@@ -52,6 +53,7 @@ beforeEach(() => {
   warnCalls = 0
   startCalls = 0
   askGraphics = false
+  graphicsAfterCrash = false
   finishWarn = undefined
   warnWait = new Promise<void>((resolve) => {
     finishWarn = resolve
@@ -75,10 +77,22 @@ test('an unanswered graphics choice stops Play at the dialog before any other ch
   askGraphics = true
   await useLaunch.getState().start('peak', 'p1', false)
   const state = useLaunch.getState()
-  expect(state.graphicsAsk).toEqual({ game: 'peak', profile: 'p1', direct: false })
+  expect(state.graphicsAsk).toEqual({
+    game: 'peak',
+    profile: 'p1',
+    direct: false,
+    afterEarlyExit: false,
+  })
   expect(state.starting).toBe(false)
   expect(warnCalls).toBe(0)
   expect(startCalls).toBe(0)
   state.dismissGraphicsAsk()
   expect(useLaunch.getState().graphicsAsk).toBeNull()
+})
+
+test('the dialog after an early exit says so', async () => {
+  askGraphics = true
+  graphicsAfterCrash = true
+  await useLaunch.getState().start('peak', 'p1', false)
+  expect(useLaunch.getState().graphicsAsk?.afterEarlyExit).toBe(true)
 })

@@ -3,9 +3,13 @@ package launchsvc
 import (
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
 var testOffer = &components.Graphics{
@@ -33,5 +37,80 @@ func TestChosenGraphicsResolvesGameThenProfile(t *testing.T) {
 	}
 	if _, ok := chosenGraphics(nil, st, sc, nil); ok {
 		t.Error("a game with no offer chose something")
+	}
+}
+
+func TestGraphicsMarkerAsksAgainOncePerFailureThenStops(t *testing.T) {
+	early, lasted := earlyExitWindow-time.Second, earlyExitWindow
+	m := (graphicsMarker{}).afterRun(early)
+	if !m.Pending {
+		t.Fatal("an early exit did not ask on the next Play")
+	}
+	if m = m.afterAnswer(false); m.Pending || m.Asked != 1 {
+		t.Fatalf("keeping Vulkan = %+v, want the question spent", m)
+	}
+	if m = m.afterRun(early); !m.Pending {
+		t.Fatalf("a second early exit = %+v, want one more question", m)
+	}
+	if m = m.afterAnswer(false).afterRun(early); m.Pending {
+		t.Fatalf("a third early exit = %+v, want no more questions", m)
+	}
+	if m = m.afterRun(lasted); m != (graphicsMarker{}) {
+		t.Errorf("a run that lasted left %+v", m)
+	}
+	if m = (graphicsMarker{Pending: true, Asked: 1}).afterAnswer(true); m != (graphicsMarker{}) {
+		t.Errorf("choosing the recommendation left %+v", m)
+	}
+}
+
+func TestAnEarlyExitUnderVulkanBringsBackPlaysQuestion(t *testing.T) {
+	datadirtest.Use(t, t.TempDir())
+	set, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, profiles := testenv.Stores(t)
+	p := testenv.Profile(t, profiles, "peak", "A")
+	svc := NewService(t.TempDir(), set, profiles)
+	g := game.Find("peak")
+	choose := func(id string) {
+		t.Helper()
+		if _, err := set.Update(func(v *settings.Settings) {
+			if err := settings.ApplyKeyGame(v, "graphicsApi", id, "peak"); err != nil {
+				t.Fatal(err)
+			}
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	ask := func() GraphicsAsk {
+		t.Helper()
+		a, err := svc.GraphicsAsk("peak", p.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return a
+	}
+	if a := ask(); !a.Ask || a.AfterEarlyExit {
+		t.Fatalf("unset = %+v, want the plain question", a)
+	}
+	choose("vulkan")
+	if a := ask(); a.Ask {
+		t.Fatalf("answered = %+v", a)
+	}
+	svc.noteGraphicsExit(g, p.ID, 5*time.Second)
+	if a := ask(); !a.Ask || !a.AfterEarlyExit {
+		t.Fatalf("after an early exit = %+v", a)
+	}
+	if err := svc.GraphicsAnswered("peak", p.ID, "vulkan"); err != nil {
+		t.Fatal(err)
+	}
+	if a := ask(); a.Ask {
+		t.Fatalf("after keeping Vulkan = %+v, want the question spent", a)
+	}
+	choose("dx12")
+	svc.noteGraphicsExit(g, p.ID, 5*time.Second)
+	if a := ask(); a.Ask {
+		t.Fatalf("an early exit under the recommendation = %+v, want no question", a)
 	}
 }
