@@ -23,15 +23,6 @@ Decided 2026-10-07 (NOMAD), from the audit of how Mortar was described to CurseF
 
 Decided 2026-10-09 (NOMAD). Facts about Mortar are anchored to the code as it is today; facts about EA, Patreon and The Sims 4 are marked **Verify** where they come from memory of the vendors' behaviour and need one throwaway check (run outside this repo, result recorded here) before the item is built.
 
-### EA App game store: frontend remainder
-
-The store driver is built (`internal/gamestore/drivers.go` `eaStore`, `stores.ea.folder` in the catalog, Bottles' `drive_c/Program Files/EA Games`, direct start, [architecture.md](architecture.md#games-and-the-catalog) store table). Left for the window:
-
-- `frontend/src/games/storeName.ts`: a name for store id `ea` ("EA App").
-- `frontend/src/brand/launchers/LauncherLogo.tsx`: a tile for launcher id `ea` (**Verify** simple-icons has an EA mark, else a plain tile as Bottles has). Lingui catalogs re-extracted.
-- `scripts/selftest.sh`: a fixture folder under a fake `EA Games` root with `launcherRoots` set in the sandbox settings, then a hidden-display launch of the stub executable.
-- **Verify** before enabling The Sims 4: the default folders and the catalog marker against a real install (`internal/gog` `GameDir` checks the folder root and a lowercase `game` folder one down, so a marker deeper than that, such as `Game/Bin/TS4_x64.exe`, needs the catalog to name the folder that holds it).
-
 ### Generic-folder games and shared-state
 
 **Why.** Today a game is a catalog entry plus a loader (SMAPI, BepInEx), and `GameInfo.Validate` rejects an entry with none (`internal/components/components.go:358`). Most games have no loader: their mods are files dropped into a folder. And a game such as The Sims 4 keeps its mods and its saves in one shared Documents tree (`{documents}/Electronic Arts/The Sims 4`), so two profiles cannot be told apart by which install they use: the files that decide what the game loads are outside the install and shared by every launch.
@@ -50,7 +41,7 @@ The store driver is built (`internal/gamestore/drivers.go` `eaStore`, `stores.ea
 - `internal/launchplan/launchplan.go:31` `PlanFile.Root`; `internal/deploy/place.go:32` resolve the root through a `View` callback (`deploy.View` already carries what the deployer needs; add `PathFor(role)`), `internal/launchsvc/pipeline.go:192` `startDeploy` passes it from `game.PathFor`.
 - `internal/loader/folder` (new), `internal/loader/all/all.go`, the `knownLoaders` list (`internal/source/all/catalog_test.go:16`).
 - `internal/game/capabilities.go`: a `PathMods = "mods"` beside `PathSaves`.
-- The Sims 4 entry itself is catalog data: `stores.steam.appId` (**Verify** the id, it is the game's Steam app id), `stores.ea.folder` once the EA store lands, `marker`, `paths.mods`, `paths.saves`, `targets`, `sources` (CurseForge and GitHub shape; `Gated` CurseForge needs its key), `deploy: "profile"`, `loaders: [{"id": "folder"}]`, `enabled: false` until checked.
+- The Sims 4 entry itself is catalog data: `stores.steam.appId` (**Verify** the id, it is the game's Steam app id), `stores.ea.folder` (the EA App store driver is built), `marker` (**Verify** against real Steam and EA installs: `internal/gog` `GameDir` finds the marker only at the folder root or in a lowercase `game` folder one down, so a marker such as `Game/Bin/TS4_x64.exe` needs the catalog to name the folder that holds it; the match is case-sensitive on Linux, and the default EA library folders need the same check), `paths.mods`, `paths.saves`, `targets`, `sources` (CurseForge and GitHub shape; `Gated` CurseForge needs its key), `deploy: "profile"`, `loaders: [{"id": "folder"}]`, `enabled: false` until checked.
 - `scripts/selftest.sh`: a fake Documents tree (`HOME` is already sandboxed) and a stub game; the Sims 4 is not copied into the sandbox, a stub executable is.
 
 **Traps.**
@@ -82,6 +73,7 @@ The store driver is built (`internal/gamestore/drivers.go` `eaStore`, `stores.ea
 **Open question for NOMAD.**
 
 5. Which game after The Sims 4 should prove the generic path (any Steam game whose mods are plain files in a folder under its install)?
+
 ### Patreon mod source (decided: link and handoff, post URLs only)
 
 **Why.** Some modders ship only to patrons. Mortar has no source for them, so those mods enter a profile only as files added by hand.

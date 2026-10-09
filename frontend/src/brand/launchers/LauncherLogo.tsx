@@ -1,5 +1,12 @@
 import { Box } from '@mui/material'
-import { siFlatpak, siGogdotcom, siHeroicgameslauncher, siLutris, siSteam } from 'simple-icons'
+import {
+  siEa,
+  siFlatpak,
+  siGogdotcom,
+  siHeroicgameslauncher,
+  siLutris,
+  siSteam,
+} from 'simple-icons'
 import minigalaxy from '../vendor/minigalaxy.png'
 
 // simple-icons has no Bottles mark, so the tile carries a plain bottle.
@@ -13,6 +20,7 @@ const TILES: Record<string, { path: string; bg: string }> = {
   heroic: { path: siHeroicgameslauncher.path, bg: `#${siHeroicgameslauncher.hex}` },
   lutris: { path: siLutris.path, bg: `#${siLutris.hex}` },
   bottles: { path: BOTTLE_PATH, bg: '#C0392B' },
+  ea: { path: siEa.path, bg: `#${siEa.hex}` },
   gog: { path: siGogdotcom.path, bg: `#${siGogdotcom.hex}` },
 }
 

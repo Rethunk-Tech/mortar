@@ -1282,7 +1282,7 @@ msgstr "Sort: most downloaded"
 msgid "Scan command"
 msgstr "Scan command"
 
-#: src/mods/ModsTab.tsx:134
+#: src/mods/ModsTab.tsx:132
 msgid "Show all mods"
 msgstr "Show all mods"
 
@@ -1816,7 +1816,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/lan/SendPanel.tsx:194
 #: src/launch/LaunchLayer.tsx:250
 #: src/mods/LoadOrderTab.tsx:391
-#: src/mods/ModsTab.tsx:109
+#: src/mods/ModsTab.tsx:107
 #: src/mods/typedConfig/ConfigPane.tsx:284
 #: src/mods/updateReview/updateAll.ts:59
 #: src/profiles/GameModsDialog.tsx:138
@@ -2014,7 +2014,7 @@ msgstr "Got it"
 msgid "New launch preset"
 msgstr "New launch preset"
 
-#: src/lan/PairedComputers.tsx:184
+#: src/lan/PairedComputers.tsx:187
 msgid "Paired computers"
 msgstr "Paired computers"
 
@@ -2160,7 +2160,7 @@ msgstr "Other Mortar users on your local network will be able to find this compu
 msgid "the search is “{0}”"
 msgstr "the search is “{0}”"
 
-#: src/lan/PairedComputers.tsx:90
+#: src/lan/PairedComputers.tsx:93
 #: src/lan/SendPanel.tsx:323
 msgid "Host:port"
 msgstr "Host:port"
@@ -3002,6 +3002,7 @@ msgstr "No fix yet"
 msgid "Load a save to see values"
 msgstr "Load a save to see values"
 
+#: src/lan/PairedComputers.tsx:54
 #: src/lan/SendPanel.tsx:233
 msgid "Could not find Mortar users"
 msgstr "Could not find Mortar users"
@@ -3105,7 +3106,7 @@ msgstr "game running"
 msgid "Drag {path} into the GitHub issue to attach it."
 msgstr "Drag {path} into the GitHub issue to attach it."
 
-#: src/lan/PairedComputers.tsx:112
+#: src/lan/PairedComputers.tsx:115
 #: src/lan/SendPanel.tsx:86
 #: src/lan/SendPanel.tsx:132
 msgid "Pair"
@@ -3231,7 +3232,7 @@ msgstr "Open the next profile"
 msgid "Desktop"
 msgstr "Desktop"
 
-#: src/lan/PairedComputers.tsx:62
+#: src/lan/PairedComputers.tsx:65
 msgid "Could not pair"
 msgstr "Could not pair"
 
@@ -3525,7 +3526,7 @@ msgstr "Unreachable"
 msgid "Updated tags"
 msgstr "Updated tags"
 
-#: src/lan/PairedComputers.tsx:134
+#: src/lan/PairedComputers.tsx:137
 msgid "Could not start pairing"
 msgstr "Could not start pairing"
 
@@ -3811,7 +3812,7 @@ msgstr "Console"
 msgid "{both, plural, one {# mod is in both} other {# mods are in both}}"
 msgstr "{both, plural, one {# mod is in both} other {# mods are in both}}"
 
-#: src/mods/ModsTab.tsx:136
+#: src/mods/ModsTab.tsx:134
 msgid "Try a different search or filter."
 msgstr "Try a different search or filter."
 
@@ -3903,7 +3904,7 @@ msgstr "Quit Mortar?"
 msgid "Could not back up saves before Play"
 msgstr "Could not back up saves before Play"
 
-#: src/lan/PairedComputers.tsx:59
+#: src/lan/PairedComputers.tsx:62
 msgid "Computer paired"
 msgstr "Computer paired"
 
@@ -4245,8 +4246,8 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/install/RemapDialog.tsx:212
 #: src/lan/IncomingPrompt.tsx:83
 #: src/lan/IncomingPrompt.tsx:116
-#: src/lan/PairedComputers.tsx:106
-#: src/lan/PairedComputers.tsx:153
+#: src/lan/PairedComputers.tsx:109
+#: src/lan/PairedComputers.tsx:156
 #: src/launch/PrePlayDialog.tsx:152
 #: src/launch/SaveWarnDialog.tsx:70
 #: src/launch/UpdateWarnDialog.tsx:50
@@ -5015,7 +5016,7 @@ msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile 
 msgid "Main mod's folder"
 msgstr "Main mod's folder"
 
-#: src/lan/PairedComputers.tsx:99
+#: src/lan/PairedComputers.tsx:102
 msgid "Code"
 msgstr "Code"
 
@@ -5075,6 +5076,10 @@ msgstr "Connection"
 #: src/mods/ProblemsTab.tsx:354
 msgid "Harmless"
 msgstr "Harmless"
+
+#: src/games/storeName.ts:12
+msgid "EA App"
+msgstr "EA App"
 
 #: src/mods/redundantReason.ts:52
 msgid "{list} do the same job: both change {detail}"
@@ -5459,7 +5464,7 @@ msgstr "{0, plural, one {Add # mod} other {Add # mods}}"
 msgid "Resolution"
 msgstr "Resolution"
 
-#: src/lan/PairedComputers.tsx:199
+#: src/lan/PairedComputers.tsx:202
 msgid "Could not unpair"
 msgstr "Could not unpair"
 
@@ -7107,8 +7112,8 @@ msgstr "Add from"
 msgid "Add to group…"
 msgstr "Add to group…"
 
-#: src/lan/PairedComputers.tsx:140
-#: src/lan/PairedComputers.tsx:188
+#: src/lan/PairedComputers.tsx:143
+#: src/lan/PairedComputers.tsx:191
 msgid "Pair a computer"
 msgstr "Pair a computer"
 
@@ -7478,7 +7483,7 @@ msgstr "Could not sign in with Nexus Mods"
 msgid "Showing the first 500 matches."
 msgstr "Showing the first 500 matches."
 
-#: src/lan/PairedComputers.tsx:185
+#: src/lan/PairedComputers.tsx:188
 msgid "Profiles you send between paired computers carry their mod files, whatever the source."
 msgstr "Profiles you send between paired computers carry their mod files, whatever the source."
 
@@ -8094,8 +8099,8 @@ msgstr "Not offered ({0})"
 msgid "Check interval"
 msgstr "Check interval"
 
-#: src/lan/PairedComputers.tsx:67
-#: src/lan/PairedComputers.tsx:189
+#: src/lan/PairedComputers.tsx:70
+#: src/lan/PairedComputers.tsx:192
 msgid "Enter code"
 msgstr "Enter code"
 
@@ -8818,7 +8823,7 @@ msgstr "Launchers"
 msgid "Could not save the template"
 msgstr "Could not save the template"
 
-#: src/mods/ModsTab.tsx:107
+#: src/mods/ModsTab.tsx:105
 msgid "Could not read the mods: {loadError}"
 msgstr "Could not read the mods: {loadError}"
 
@@ -9297,7 +9302,7 @@ msgstr "Sign in to Nexus Mods in Settings before downloading from a link."
 msgid "Nexus is throttling requests until the window resets."
 msgstr "Nexus is throttling requests until the window resets."
 
-#: src/lan/PairedComputers.tsx:75
+#: src/lan/PairedComputers.tsx:78
 msgid "No Mortar computers found nearby."
 msgstr "No Mortar computers found nearby."
 
@@ -9782,7 +9787,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/FirstRun.tsx:44
 #: src/firstrun/GameSetup.tsx:153
 #: src/firstrun/LoaderStep.tsx:222
-#: src/game/ProfileWorkspace.tsx:37
+#: src/game/ProfileWorkspace.tsx:39
 #: src/games/GameSelect.tsx:305
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
@@ -11912,7 +11917,7 @@ msgstr "Navigation"
 msgid "Set {0} to {1}"
 msgstr "Set {0} to {1}"
 
-#: src/lan/PairedComputers.tsx:70
+#: src/lan/PairedComputers.tsx:73
 msgid "Pick the computer showing the code, then type it."
 msgstr "Pick the computer showing the code, then type it."
 
@@ -12120,7 +12125,7 @@ msgstr "Could not use that image"
 msgid "{0}'s {1} is {2}; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}; it can match {installed} instead."
 
-#: src/mods/ModsTab.tsx:115
+#: src/mods/ModsTab.tsx:113
 msgid "Loading mods"
 msgstr "Loading mods"
 
@@ -12272,7 +12277,7 @@ msgstr "This launch preset will be deleted."
 msgid "Update in all profiles ({n})"
 msgstr "Update in all profiles ({n})"
 
-#: src/lan/PairedComputers.tsx:202
+#: src/lan/PairedComputers.tsx:205
 msgid "Unpair"
 msgstr "Unpair"
 
@@ -12705,7 +12710,7 @@ msgstr "Could not add to the group"
 msgid "Switch to {switchName}"
 msgstr "Switch to {switchName}"
 
-#: src/lan/PairedComputers.tsx:143
+#: src/lan/PairedComputers.tsx:146
 msgid "On the other computer, choose Enter code and type this. It works once, for five minutes."
 msgstr "On the other computer, choose Enter code and type this. It works once, for five minutes."
 
@@ -13352,7 +13357,7 @@ msgstr "imported from a .mortar file"
 msgid "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
 msgstr "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
 
-#: src/mods/ModsTab.tsx:281
+#: src/mods/ModsTab.tsx:279
 msgid "Drop archives anywhere on the window, or use Browse to find mods."
 msgstr "Drop archives anywhere on the window, or use Browse to find mods."
 
@@ -14030,7 +14035,7 @@ msgstr "Personal API key"
 msgid "Template deleted"
 msgstr "Template deleted"
 
-#: src/mods/ModsTab.tsx:133
+#: src/mods/ModsTab.tsx:131
 #: src/mods/typedConfig/ConfigTab.tsx:363
 msgid "No mods match"
 msgstr "No mods match"

@@ -10,6 +10,7 @@
 #   scripts/selftest.sh destroy               stop the server and everything running from the sandbox, then delete it
 #   scripts/selftest.sh reap [--hours N] [--yes]  list (and with --yes delete) idle sandboxes under the base dir
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
+#   scripts/selftest.sh ea-fixture FOLDER MARKER  add a fake Bottles bottle holding an EA App install of FOLDER (discovery only)
 #   scripts/selftest.sh regress [--game lethal-company]  one-shot regression run (Stardew, or Lethal Company through Proton) in its own throwaway sandbox (see below)
 #   scripts/selftest.sh curseforge            CurseForge end to end in its own throwaway sandbox; needs MORTAR_CURSEFORGE_KEY, else skips
 #   scripts/selftest.sh harness-check         prove the launch harness with a dummy window instead of a game
@@ -121,6 +122,19 @@ write_library() {
     fi
   done
   printf '"libraryfolders"\n{\n\t"0"\n\t{\n\t\t"path"\t\t"%s"\n\t\t"apps"\n\t\t{\n%s\t\t}\n\t}\n}\n' "$SANDBOX_STEAM" "$apps" >"$SANDBOX_STEAM/steamapps/libraryfolders.vdf"
+}
+
+# ea_fixture FOLDER MARKER adds a fake Bottles bottle to the sandbox home holding an EA App install of FOLDER (a stub
+# MARKER file under drive_c/Program Files/EA Games), which is how an EA game reaches Mortar on Linux. Discovery
+# only: Bottles itself is not run, so a launch of it needs bottles-cli.
+ea_fixture() {
+  local folder=${1:?usage: selftest.sh ea-fixture FOLDER MARKER} marker=${2:?usage: selftest.sh ea-fixture FOLDER MARKER}
+  local bottle="$SANDBOX_HOME/.local/share/bottles/bottles/EAFixture"
+  mkdir -p "$bottle/drive_c/Program Files/EA Games/$folder"
+  : >"$bottle/bottle.yml"
+  printf '#!/bin/sh\nexit 0\n' >"$bottle/drive_c/Program Files/EA Games/$folder/$marker"
+  chmod +x "$bottle/drive_c/Program Files/EA Games/$folder/$marker"
+  echo "EA fixture at $bottle"
 }
 
 # owned PID succeeds when PID still runs and its executable or working directory is inside $ROOT.
@@ -1361,6 +1375,7 @@ case "${1:-}" in
     start
     ;;
   setup) setup ;;
+  ea-fixture) ea_fixture "${2:-}" "${3:-}" ;;
   seed) seed ;;
   stop) stop ;;
   destroy) destroy ;;
