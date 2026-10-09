@@ -8,8 +8,10 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 var testOffer = &components.Graphics{
@@ -112,5 +114,87 @@ func TestAnEarlyExitUnderVulkanBringsBackPlaysQuestion(t *testing.T) {
 	svc.noteGraphicsExit(g, p.ID, 5*time.Second)
 	if a := ask(); a.Ask {
 		t.Fatalf("an early exit under the recommendation = %+v, want no question", a)
+	}
+}
+
+func peakService(t *testing.T) (*Service, *settings.Store, string) {
+	t.Helper()
+	datadirtest.Use(t, t.TempDir())
+	set, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, profiles := testenv.Stores(t)
+	p := testenv.Profile(t, profiles, "peak", "A")
+	return NewService(t.TempDir(), set, profiles), set, p.ID
+}
+
+func TestRecordedRunsMarkOrClearTheGraphicsRecord(t *testing.T) {
+	svc, set, id := peakService(t)
+	if _, err := set.Update(func(v *settings.Settings) {
+		if err := settings.ApplyKeyGame(v, "graphicsApi", "vulkan", "peak"); err != nil {
+			t.Fatal(err)
+		}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	g := game.Find("peak")
+	pending := func() bool {
+		t.Helper()
+		a, err := svc.GraphicsAsk("peak", id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return a.AfterEarlyExit
+	}
+	svc.record(g, id, time.Now().Add(-5*time.Second), false)
+	if !pending() {
+		t.Fatal("a run that ended 5s after Play under Vulkan did not mark the profile")
+	}
+	svc.record(g, id, time.Now().Add(-earlyExitWindow-time.Second), false)
+	if pending() {
+		t.Fatal("a run that lasted past the window left the mark")
+	}
+}
+
+func TestLaunchPlanCarriesTheChosenGraphicsArguments(t *testing.T) {
+	svc, set, id := peakService(t)
+	dir, err := svc.profiles.ProfileDir("peak", id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range []string{"winhttp.dll", "doorstop_config.ini"} {
+		testfs.WriteFile(t, dir, f, "x")
+	}
+	install := t.TempDir()
+	testfs.WriteFile(t, install, "PEAK.exe", "exe")
+	g := game.Find("peak")
+	inst := game.Install{ID: "peak1", Dir: install}
+	args := func() []string {
+		t.Helper()
+		plan, err := svc.launchPlan(t.Context(), g, inst, id, launchplan.ModeProfile, "", "", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return plan.Args
+	}
+	if slices.Contains(args(), "-dx12") {
+		t.Fatal("an unset choice passed -dx12")
+	}
+	if _, err := set.Update(func(v *settings.Settings) {
+		if err := settings.ApplyKeyGame(v, "graphicsApi", "dx12", "peak"); err != nil {
+			t.Fatal(err)
+		}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Contains(args(), "-dx12") {
+		t.Fatalf("args = %v, want -dx12 for DirectX 12", args())
+	}
+	if _, err := svc.profiles.SetOverrides("peak", id, map[string]string{"graphicsApi": "vulkan"}); err != nil {
+		t.Fatal(err)
+	}
+	if slices.Contains(args(), "-dx12") {
+		t.Fatalf("args = %v, want no -dx12 under the profile's Vulkan override", args())
 	}
 }

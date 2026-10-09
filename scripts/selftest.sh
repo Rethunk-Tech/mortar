@@ -1105,6 +1105,21 @@ import json, sys
 g = next((g for g in json.load(open(sys.argv[1])) if g["id"] == sys.argv[2]), None)
 sys.exit(0 if g and g.get("installed") else 1)
 PY
+  # A game whose catalog offers graphics APIs gets its recommended one chosen, so the launch must carry its arguments.
+  local graphics_args choice=""
+  graphics_args=$(python3 - "$REPO/internal/components/components.json" "$id" <<'PY'
+import json, sys
+g = next(g for g in json.load(open(sys.argv[1]))["games"] if g["id"] == sys.argv[2])
+gr = g.get("graphics")
+if gr:
+    c = next(c for c in gr["choices"] if c["id"] == gr["recommended"])
+    print(c["id"], *(c.get("args") or []))
+PY
+  )
+  if [ -n "$graphics_args" ]; then
+    choice=${graphics_args%% *}
+    cli settings set --game "$id" graphicsApi "$choice" >/dev/null || failures+=("setting graphicsApi=$choice failed")
+  fi
   for _ in $(seq 1 30); do
     cli loader install "$id" "$bepinex" >"$ROOT/loader.txt" 2>&1 && break
     grep -q 'already running' "$ROOT/loader.txt" || break
@@ -1127,6 +1142,10 @@ PY
       failures+=("the Doorstop pair was not beside the executable at launch (saw: $(tr '\n' ' ' <"$ROOT/seen.txt" 2>/dev/null))")
     fi
     grep -q -- '--doorstop' "$ROOT/args.txt" 2>/dev/null || failures+=("the launch carried no --doorstop arguments")
+    local arg
+    for arg in ${graphics_args#"$choice"}; do
+      grep -qxF -- "$arg" "$ROOT/args.txt" 2>/dev/null || failures+=("the launch did not carry the graphics argument $arg")
+    done
     cli stop "$id" >"$ROOT/stop.txt" 2>&1 || failures+=("mortar stop failed: $(head -c 300 "$ROOT/stop.txt")")
     local state=""
     for _ in $(seq 1 60); do
@@ -1146,6 +1165,7 @@ PY
   echo "profile        $profile"
   echo "BepInEx        $bepinex"
   echo "Doorstop pair  $placed beside $marker at launch"
+  [ -z "$graphics_args" ] || echo "graphics API   $choice, launch args:${graphics_args#"$choice"}"
   echo "game entries   $(wc -l <"$ROOT/game-before.txt") hashed, $diff_lines differing after purge"
   local f
   for f in "${failures[@]}"; do echo "FAIL: $f"; done
