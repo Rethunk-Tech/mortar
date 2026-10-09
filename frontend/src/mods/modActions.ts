@@ -8,6 +8,7 @@ export type PageHost =
   | 'curseforge'
   | 'modrinth'
   | 'itch'
+  | 'patreon'
   | 'web'
   | ''
 export type ModAction = 'toggle' | 'details' | 'page' | 'files' | 'pin' | 'skip' | 'remove'
@@ -42,6 +43,9 @@ export const hostOf = (url: string | undefined): PageHost => {
   if (on('modrinth.com')) {
     return 'modrinth'
   }
+  if (on('patreon.com')) {
+    return 'patreon'
+  }
   return on('itch.io') ? 'itch' : 'web'
 }
 
@@ -55,6 +59,7 @@ export const openPageLabel = (i18n: I18n, host: PageHost): string =>
       curseforge: msg`Open on CurseForge`,
       modrinth: msg`Open on Modrinth`,
       itch: msg`Open on itch.io`,
+      patreon: msg`Open on Patreon`,
       web: msg`Open page`,
       '': msg`Open page`,
     }[host],

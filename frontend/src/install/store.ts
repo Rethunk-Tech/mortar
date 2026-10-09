@@ -39,6 +39,7 @@ import { useToasts } from '../toasts/store.ts'
 import { type Landed, pushBatchSummary } from './batchSummary.ts'
 import { type MissingOffer, offersFor, wantsOf } from './missingDeps.ts'
 import { offerInstallAnyway } from './offerInstallAnyway.ts'
+import { downloadInstaller } from './patreon.ts'
 
 function dropInstallGate(hasRoute: boolean, hasTarget: boolean, locked: boolean) {
   if (!(hasRoute && hasTarget)) {
@@ -365,7 +366,7 @@ export const useInstall = create<{
   install: (paths) =>
     runInstalls(paths, set, (g, p, file) => () => InstallArchive(g, p, file), true),
   installDownloads: (paths) =>
-    runInstalls(paths, set, (g, p, file) => () => InstallDownload(g, p, file), true),
+    runInstalls(paths, set, (g, p, file) => downloadInstaller(g, p, file, InstallDownload), true),
   installFromExtraFolder: (folders) =>
     runInstalls(
       folders,

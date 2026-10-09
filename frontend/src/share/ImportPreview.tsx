@@ -26,6 +26,7 @@ import {
   isModState,
   MOD_STATES,
   type ModState,
+  needsPatreonFile,
   type ShownPreview,
   type Summary,
 } from './logic.ts'
@@ -83,6 +84,7 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
     mod.different ? t`different file` : '',
     mod.unverified ? t`unverified until downloaded` : '',
     mod.site === 'local' && !mod.enabled ? t`Disabled`.toLowerCase() : '',
+    needsPatreonFile(mod) ? t`Needs a file from its Patreon post` : '',
   ].filter(Boolean)
   const byline = [formatAuthors(mod.author), ...notes].filter(Boolean).join(' · ')
   return (
@@ -146,6 +148,11 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
       >
         {label(state)}
       </Box>
+      {mod.site === 'patreon' && mod.pageUrl ? (
+        <Button size="small" color="inherit" onClick={() => openPage(mod.pageUrl)}>
+          {t`Open post`}
+        </Button>
+      ) : null}
     </Box>
   )
 }

@@ -113,3 +113,10 @@ test('a received share lists what it carries', () => {
     'problemChoices',
   ])
 })
+
+test('a mod that travelled as a Patreon post needs a file from the post', async () => {
+  const { needsPatreonFile } = await import('./logic.ts')
+  expect(needsPatreonFile({ site: 'patreon', reason: 'patreon' })).toBe(true)
+  expect(needsPatreonFile({ site: 'patreon' })).toBe(false)
+  expect(needsPatreonFile({ site: 'nexus', reason: 'no-file' })).toBe(false)
+})

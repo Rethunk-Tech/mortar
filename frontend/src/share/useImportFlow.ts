@@ -20,6 +20,7 @@ import {
   Replace,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { startPatreonPost } from '../install/patreon.ts'
 import { rememberLanProfile } from '../lan/resume.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -188,7 +189,12 @@ function usePreviewSources(
   setPath: (path: string) => void,
 ) {
   const previewLink = useCallback(
-    (value: string) => show(PreviewLink(game, value, profileId)),
+    async (value: string) => {
+      if (await startPatreonPost(value)) {
+        return
+      }
+      await show(PreviewLink(game, value, profileId))
+    },
     [game, profileId, show],
   )
   const previewFile = useCallback(

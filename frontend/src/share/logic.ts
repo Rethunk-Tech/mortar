@@ -121,3 +121,8 @@ export function carriedBy(p: { notes: string; settings: number; choices: number 
   }
   return out
 }
+
+// A mod that travelled as a Patreon post alone: the receiver opens the post and saves the file there.
+export function needsPatreonFile(mod: { site: string; reason?: string }): boolean {
+  return mod.site === 'patreon' && mod.reason === 'patreon'
+}
