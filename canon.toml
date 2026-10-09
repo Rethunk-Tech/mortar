@@ -18,3 +18,5 @@ reconciled = "canon v0.1.0-poc"
 # datasvc/restart, updatesvc/e2e_test and problems/perf_test. gosec G103 is excluded in avscan/amsi_windows.go, whose AMSI
 # calls take pointers to Go values. forbidigo is excluded under internal/archive/, the one package allowed to open a 7z directly.
 "go-golangci-lint-00014" = "exclusions: gosec G204 in 17 files, gosec G103 in avscan/amsi_windows.go, forbidigo in internal/archive"
+# site/index.html is a single static marketing page (673 lines); its length tracks copy and markup, not logic, and Biome's line ceiling is relaxed to 3000 for **/*.html only.
+"ts-biome-00007 style/noExcessiveLinesPerFile" = "static HTML pages are mostly markup; length tracks content, not complexity"
