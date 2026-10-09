@@ -6,9 +6,11 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Link,
   Typography,
 } from '@mui/material'
 import { useGameInfo } from '../games/info.ts'
+import { openPage } from '../mods/menu.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { graphicsOptions } from './graphicsAsk.ts'
@@ -34,9 +36,16 @@ export function GraphicsDialog() {
           </DialogContentText>
         ) : null}
         <DialogContentText>{graphics?.explanation}</DialogContentText>
-        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-          {graphics?.reason} {graphics?.source}
-        </Typography>
+        {graphics ? (
+          <Link
+            component="button"
+            variant="body2"
+            sx={{ textAlign: 'left' }}
+            onClick={() => openPage(graphics.source)}
+          >
+            {graphics.reason}
+          </Link>
+        ) : null}
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
           {t`You can change this later in ${name}'s settings, under Play.`}
         </Typography>

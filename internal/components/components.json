@@ -404,7 +404,7 @@
         }
       ],
       "graphics": {
-        "explanation": "PEAK starts with Vulkan, the game's default. Some modded setups crash at startup or when you alt-tab with Vulkan; DirectX 12 avoids that and is what the BepInEx pack for PEAK recommends.",
+        "explanation": "PEAK starts with Vulkan, the game's default. Some modded setups crash at startup or when you alt-tab with Vulkan; DirectX 12 is the usual fix.",
         "choices": [
           {
             "id": "dx12",
@@ -417,7 +417,7 @@
           }
         ],
         "recommended": "dx12",
-        "reason": "The BepInEx pack for PEAK says to add -dx12 if PEAK crashes on startup.",
+        "reason": "The BepInEx pack for PEAK recommends DirectX 12 if PEAK crashes on startup.",
         "source": "https://thunderstore.io/c/peak/p/BepInEx/BepInExPack_PEAK/"
       }
     }

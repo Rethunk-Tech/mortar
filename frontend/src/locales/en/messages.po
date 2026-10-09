@@ -2655,7 +2655,7 @@ msgstr "Edit profile"
 msgid "The host's list"
 msgstr "The host's list"
 
-#: src/launch/GraphicsDialog.tsx:33
+#: src/launch/GraphicsDialog.tsx:35
 msgid "The game closed right after starting last time."
 msgstr "The game closed right after starting last time."
 
@@ -4256,7 +4256,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/lan/IncomingPrompt.tsx:116
 #: src/lan/PairedComputers.tsx:109
 #: src/lan/PairedComputers.tsx:156
-#: src/launch/GraphicsDialog.tsx:45
+#: src/launch/GraphicsDialog.tsx:54
 #: src/launch/PrePlayDialog.tsx:152
 #: src/launch/SaveWarnDialog.tsx:70
 #: src/launch/UpdateWarnDialog.tsx:50
@@ -4921,7 +4921,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 
 #: src/browse/BrowsePage.tsx:144
 #: src/firstrunTour/TourAgainButton.tsx:16
-#: src/firstrunTour/useFirstRunTour.ts:43
+#: src/firstrunTour/useFirstRunTour.ts:53
 #: src/settings/GraphicsApiRow.tsx:32
 #: src/settings/PrefControls.tsx:190
 #: src/settings/PrefControls.tsx:241
@@ -7064,7 +7064,7 @@ msgstr "Nothing to import"
 msgid "More actions"
 msgstr "More actions"
 
-#: src/launch/GraphicsDialog.tsx:29
+#: src/launch/GraphicsDialog.tsx:31
 msgid "Choose a graphics API for {name}"
 msgstr "Choose a graphics API for {name}"
 
@@ -8324,7 +8324,7 @@ msgstr "Results of installs, updates and launches appear here."
 msgid "Crash finding was stopped."
 msgstr "Crash finding was stopped."
 
-#: src/launch/GraphicsDialog.tsx:41
+#: src/launch/GraphicsDialog.tsx:50
 msgid "You can change this later in {name}'s settings, under Play."
 msgstr "You can change this later in {name}'s settings, under Play."
 
@@ -8871,7 +8871,7 @@ msgstr "Unlinked collection"
 
 #. placeholder {0}: c.label
 #. placeholder {0}: o.label
-#: src/launch/GraphicsDialog.tsx:55
+#: src/launch/GraphicsDialog.tsx:64
 #: src/settings/GraphicsApiRow.tsx:22
 msgid "{0} (Recommended)"
 msgstr "{0} (Recommended)"
