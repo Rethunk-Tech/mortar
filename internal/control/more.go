@@ -142,7 +142,7 @@ func (s *Services) lanMethod(ctx context.Context, method string, p Params) (any,
 	}
 	switch method {
 	case "lan.peers":
-		return s.Lan.Peers(ctx), nil
+		return s.Lan.Peers(ctx)
 	case "lan.send":
 		return s.profileCall(p, func(id string) (any, error) { return nil, s.Lan.Send(ctx, p.Name, p.Game, id, share.OwnInclude()) })
 	case "lan.inbox":

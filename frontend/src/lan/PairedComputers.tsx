@@ -49,8 +49,11 @@ function EnterCodeDialog({ open, onClose }: { open: boolean; onClose: () => void
     }
     Peers()
       .then((next) => setPeers(next ?? []))
-      .catch(reportUnexpected)
-  }, [open])
+      .catch((error: unknown) => {
+        setPeers([])
+        toastError(t`Could not find Mortar users`, error)
+      })
+  }, [open, t])
   const address = manual.trim() === '' ? target : manual.trim()
   const submit = () => {
     setPairing(true)

@@ -108,6 +108,9 @@ func TestPublicNetworkWithholdsListening(t *testing.T) {
 	if err := svc.ensureStarted(context.Background()); err == nil {
 		t.Fatal("ensureStarted on a Public network = nil, want the Public-network error")
 	}
+	if _, err := svc.Peers(context.Background()); err == nil {
+		t.Fatal("Peers on a Public network = nil error, want the Public-network error so `lan peers` can show it")
+	}
 	if svc.listening() {
 		t.Fatal("listening on a Public network")
 	}

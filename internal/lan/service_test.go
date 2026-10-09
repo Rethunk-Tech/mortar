@@ -544,7 +544,11 @@ func TestAddPeerDropsOurInstance(t *testing.T) {
 		AddrV4:     net.ParseIP("192.0.2.1"),
 		InfoFields: []string{"instance=" + service.instanceID},
 	})
-	if peers := service.Peers(context.Background()); len(peers) != 0 {
+	peers, err := service.Peers(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(peers) != 0 {
 		t.Fatalf("Peers() = %#v, want no peers", peers)
 	}
 }
@@ -696,7 +700,11 @@ func TestPeersReportPairing(t *testing.T) {
 		})
 	}
 	got := map[string]bool{}
-	for _, peer := range service.Peers(context.Background()) {
+	peers, err := service.Peers(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, peer := range peers {
 		got[peer.Name] = peer.Paired
 	}
 	if want := map[string]bool{"Peer0": true, "Peer1": false}; !maps.Equal(got, want) {

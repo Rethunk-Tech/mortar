@@ -472,9 +472,9 @@ func stopResources(server *http.Server, listener net.Listener, advertiser *mdns.
 
 // Peers returns the Mortar installations found during the latest discovery rounds. Discovery runs only while
 // someone asks: a call after a quiet spell looks for peers before answering, and keeps discovery going for a while.
-func (s *Service) Peers(ctx context.Context) []Peer {
+func (s *Service) Peers(ctx context.Context) ([]Peer, error) {
 	if err := s.ensureStarted(ctx); err != nil {
-		log.Printf("LAN sharing: %v", err)
+		return nil, err
 	}
 	s.mu.Lock()
 	cold := !time.Now().Before(s.wantUntil)
@@ -507,7 +507,7 @@ func (s *Service) Peers(ctx context.Context) []Peer {
 		out = append(out, peer)
 	}
 	slicesSortPeers(out)
-	return out
+	return out, nil
 }
 
 // Send sends a profile's .mortar payload to a discovered peer.
