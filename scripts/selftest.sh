@@ -357,9 +357,13 @@ if os.fork() == 0:
     os.execv(sys.argv[1], sys.argv[1:])
 while True:
     try:
-        os.wait()
+        pid, status = os.wait()
     except ChildProcessError:
-        break'
+        break
+    # One line per reaped process, "<pid> <exit code>", negative for a signal: the evidence a sandbox that lost its
+    # server leaves (frontend/e2e/evidence.ts).
+    with open("server.exit", "a") as f:
+        f.write(f"{pid} {os.waitstatus_to_exitcode(status)}\n")'
   if unshare --user --map-current-user --pid --fork --mount --mount-proc true 2>/dev/null; then
     isolate=(unshare --user --map-current-user --pid --fork --mount --mount-proc python3 -c "$reaper")
   fi

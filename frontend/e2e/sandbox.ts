@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, readdirSync, readFileSync, readlinkSync, rmSync } from 'node:fs'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
+import { keepEvidence, type ServerState, shouldKeepEvidence } from './evidence.ts'
 
 const SCRIPT = fileURLToPath(new URL('../../scripts/selftest.sh', import.meta.url))
 // The sandbox holds copies of the games (GBs), so it lives on disk: /tmp is a tmpfs.
@@ -97,6 +98,43 @@ function reapStale() {
   }
 }
 
+/** Where Playwright keeps a failed test's artefacts; the server's logs go beside them. */
+const EVIDENCE_DIR = fileURLToPath(new URL('../test-results/sandbox-server', import.meta.url))
+
+/** The sandbox server's state, read before destroy removes it. */
+function serverState(dir: string): ServerState {
+  const server = Number.parseInt(readFileSyncOr(`${dir}/server.pid`), 10)
+  const listening =
+    execFileSync('ss', ['-ltn', `sport = :${sandboxPort()}`], { encoding: 'utf8' })
+      .trim()
+      .split('\n').length > 1
+  return {
+    failed: process.env.MORTAR_E2E_FAILED === '1',
+    alive: server > 0 && exeOf(server) === `${dir}/mortar-server`,
+    listening,
+  }
+}
+
+const readFileSyncOr = (path: string): string => {
+  try {
+    return readFileSync(path, 'utf8')
+  } catch {
+    return ''
+  }
+}
+
+/** Keeps the server's log, crash log and exit record in test-results when a test failed or the server stopped. */
+function keepServerEvidence(dir: string) {
+  try {
+    const state = serverState(dir)
+    if (shouldKeepEvidence(state)) {
+      keepEvidence(dir, EVIDENCE_DIR, state)
+    }
+  } catch {
+    // Evidence is best effort; teardown must still remove the sandbox.
+  }
+}
+
 /** Seeds this run's own sandbox, since specs mutate it, and returns the teardown that removes exactly that one. */
 function freshSandbox(): () => void {
   reapStale()
@@ -113,6 +151,7 @@ function freshSandbox(): () => void {
       return
     }
     tornDown = true
+    keepServerEvidence(dir)
     try {
       selftest(dir, 'destroy')
     } catch {

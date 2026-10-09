@@ -12,7 +12,7 @@ export default defineConfig({
   expect: { timeout: 5000 },
   workers: 1,
   globalSetup: './e2e/global-setup.ts',
-  reporter: 'list',
+  reporter: [['list'], ['./e2e/failure-reporter.ts']],
   use: {
     ...devices['Desktop Chrome'],
     baseURL: `http://127.0.0.1:${port}`,
