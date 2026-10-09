@@ -273,6 +273,45 @@
           "key": "repo"
         }
       ]
+    },
+    {
+      "id": "riskofrain2",
+      "name": "Risk of Rain 2",
+      "enabled": true,
+      "marker": "Risk of Rain 2.exe",
+      "r2modmanFolder": "RiskOfRain2",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Hopoo Games, LLC/Risk of Rain 2/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "632360"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "bbepis-BepInExPack"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "riskofrain2"
+        }
+      ]
     }
   ]
 }

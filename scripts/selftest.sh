@@ -1026,11 +1026,12 @@ PY
   [ "$verdict" = PASS ]
 }
 
-# fake_game ID prints "APP_ID FOLDER MARKER BEPINEX" for a catalog game that has no install on this machine, so a
+# fake_game ID prints "APP_ID|FOLDER|MARKER|BEPINEX" for a catalog game that has no install on this machine, so a
 # regress can run against a stand-in folder (see regress_fake).
 fake_game() {
   case "$1" in
-    repo) echo "3241660 REPO REPO.exe 5.4.2305" ;;
+    repo) echo "3241660|REPO|REPO.exe|5.4.2305" ;;
+    riskofrain2) echo "632360|Risk of Rain 2|Risk of Rain 2.exe|5.4.2122" ;;
     *) return 1 ;;
   esac
 }
@@ -1046,7 +1047,7 @@ regress_fake() {
     echo "no fake install defined for $id" >&2
     exit 2
   }
-  read -r app folder marker bepinex <<<"$spec"
+  IFS="|" read -r app folder marker bepinex <<<"$spec"
   command -v zenity >/dev/null || {
     echo "regress --fake needs zenity as its dummy window" >&2
     exit 1
