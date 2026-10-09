@@ -48,3 +48,22 @@ func TestProfileOverridableKeys(t *testing.T) {
 		t.Fatal("runsKept must not be profile-overridable")
 	}
 }
+
+func TestGraphicsApiIsUnsetByDefaultAndAProfileMayOverrideIt(t *testing.T) {
+	var s Settings
+	if got := ResolveAt(s, "graphicsApi", Scope{Game: "peak"}, nil); got != "" {
+		t.Fatalf("default = %q, want unset", got)
+	}
+	if err := ApplyKeyGame(&s, "graphicsApi", "dx12", "peak"); err != nil {
+		t.Fatal(err)
+	}
+	if got := ResolveAt(s, "graphicsApi", Scope{Game: "peak"}, nil); got != "dx12" {
+		t.Errorf("game = %q", got)
+	}
+	if got := ResolveAt(s, "graphicsApi", Scope{Game: "valheim"}, nil); got != "" {
+		t.Errorf("another game = %q, want unset", got)
+	}
+	if got := ResolveAt(s, "graphicsApi", Scope{Game: "peak"}, map[string]string{"graphicsApi": "vulkan"}); got != "vulkan" {
+		t.Errorf("profile override = %q", got)
+	}
+}

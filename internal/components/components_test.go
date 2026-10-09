@@ -517,3 +517,37 @@ func TestAnOlderClientIgnoresTheKnownBrokenField(t *testing.T) {
 		t.Fatalf("%+v %v", o, err)
 	}
 }
+
+func TestGraphicsIsValidatedAndPeakOffersIt(t *testing.T) {
+	good := Graphics{
+		Explanation: "e", Reason: "r", Source: "s", Recommended: "a",
+		Choices: []GraphicsChoice{{ID: "a", Label: "A", Args: []string{"-a"}}, {ID: "b", Label: "B"}},
+	}
+	if err := good.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	for name, mutate := range map[string]func(*Graphics){
+		"recommends a stranger": func(g *Graphics) { g.Recommended = "z" },
+		"one choice":            func(g *Graphics) { g.Choices = g.Choices[:1] },
+		"repeated id":           func(g *Graphics) { g.Choices[1].ID = "a" },
+		"no source":             func(g *Graphics) { g.Source = "" },
+	} {
+		bad := good
+		bad.Choices = append([]GraphicsChoice(nil), good.Choices...)
+		mutate(&bad)
+		if bad.Validate() == nil {
+			t.Errorf("%s passed", name)
+		}
+	}
+	peak, ok := Game("peak")
+	if !ok || peak.Graphics == nil {
+		t.Fatal("PEAK offers no graphics choices")
+	}
+	dx12, ok := peak.Graphics.Choice("dx12")
+	if peak.Graphics.Recommended != "dx12" || !ok || len(dx12.Args) != 1 || dx12.Args[0] != "-dx12" {
+		t.Errorf("PEAK graphics = %+v", peak.Graphics)
+	}
+	if vk, ok := peak.Graphics.Choice("vulkan"); !ok || len(vk.Args) != 0 {
+		t.Errorf("Vulkan = %+v, want the game's default with no arguments", vk)
+	}
+}

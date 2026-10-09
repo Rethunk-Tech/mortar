@@ -37,12 +37,15 @@ type GameSettings struct {
 	DefaultLaunchMethod         string `json:"defaultLaunchMethod"`
 	SkipPlayCheck               bool   `json:"skipPlayCheck"`
 	SkipIntro                   bool   `json:"skipIntro"`
-	ConsoleLevel                string `json:"consoleLevel"`
-	ConsoleTimestamps           *bool  `json:"consoleTimestamps"`
-	ConsoleFollow               *bool  `json:"consoleFollow"`
-	BackupLocation              string `json:"backupLocation"`
-	ConflictScanDepth           string `json:"conflictScanDepth"`
-	OfferNewDownloads           *bool  `json:"offerNewDownloads"`
+	// GraphicsApi is the id of the graphics API choice the game's catalog entry offers; empty until the player has
+	// answered, which is when Play asks.
+	GraphicsApi       string `json:"graphicsApi,omitempty"`
+	ConsoleLevel      string `json:"consoleLevel"`
+	ConsoleTimestamps *bool  `json:"consoleTimestamps"`
+	ConsoleFollow     *bool  `json:"consoleFollow"`
+	BackupLocation    string `json:"backupLocation"`
+	ConflictScanDepth string `json:"conflictScanDepth"`
+	OfferNewDownloads *bool  `json:"offerNewDownloads"`
 	// LastDownloadsSeen is the newest archive mtime (ms) in the download folder already offered or skipped.
 	LastDownloadsSeen     int64                  `json:"lastDownloadsSeen,omitempty"`
 	LastSweepGameVersion  string                 `json:"lastSweepGameVersion,omitempty"`
@@ -192,6 +195,7 @@ var registry = withDefaults([]pref{
 		gp.SkipIntro = on
 		putGame(s, g, gp)
 	})),
+	overridable(strPref("graphicsApi", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).GraphicsApi }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.GraphicsApi = v; putGame(s, g, gp) })),
 	enumPref("consoleLevel", ScopeGame, consoleLevelValues, func(s Settings, g string) string { return s.GamePrefs(g).ConsoleLevel }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.ConsoleLevel = v; putGame(s, g, gp) }),
 	ptrPref("consoleTimestamps", ScopeGame, func(s Settings, g string) *bool { return s.GamePrefs(g).ConsoleTimestamps }, func(s *Settings, g string, on bool) {
 		gp := s.GamePrefs(g)
@@ -315,6 +319,7 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	dst.UpdateModsBeforePlayDefault = src.UpdateModsBeforePlayDefault
 	dst.SkipPlayCheck = src.SkipPlayCheck
 	dst.SkipIntro = src.SkipIntro
+	dst.GraphicsApi = src.GraphicsApi
 	if src.RunsKept != 0 {
 		dst.RunsKept = src.RunsKept
 	}

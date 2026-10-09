@@ -33,12 +33,14 @@ type GameInfo struct {
 	Sources []string    `json:"sources"`
 	// SourceKeys maps a source id to the catalog's key for the game on it (Nexus domain, Thunderstore community); sources without a key are left out.
 	SourceKeys map[string]string `json:"sourceKeys"`
-	Available  bool              `json:"available"`
-	Installed  bool              `json:"installed"`
-	InstallDir string            `json:"installDir"`
-	ArtURL     string            `json:"artUrl"`
-	Store      string            `json:"store"`
-	Installs   []Install         `json:"installs"`
+	// Graphics is the game's graphics API choices, nil when the catalog offers none.
+	Graphics   *components.Graphics `json:"graphics,omitempty"`
+	Available  bool                 `json:"available"`
+	Installed  bool                 `json:"installed"`
+	InstallDir string               `json:"installDir"`
+	ArtURL     string               `json:"artUrl"`
+	Store      string               `json:"store"`
+	Installs   []Install            `json:"installs"`
 }
 
 // LoaderRef names one of a game's loaders.
@@ -160,7 +162,7 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 	catalog := Catalog()
 	out := make([]GameInfo, 0, len(catalog))
 	for _, c := range catalog {
-		info := GameInfo{ID: c.ID, Name: c.Name, Deploy: c.Deploy, AppID: c.SteamAppID(), HasSaves: HasSaves(c.ID), StartupSettings: HasStartupSettings(c.ID), Installs: []Install{}, Sources: make([]string, len(c.Sources)), SourceKeys: map[string]string{}}
+		info := GameInfo{ID: c.ID, Name: c.Name, Deploy: c.Deploy, AppID: c.SteamAppID(), HasSaves: HasSaves(c.ID), StartupSettings: HasStartupSettings(c.ID), Installs: []Install{}, Sources: make([]string, len(c.Sources)), SourceKeys: map[string]string{}, Graphics: c.Graphics}
 		info.Loader, info.LoaderID = c.Loaders[0].Name, c.Loaders[0].ID
 		for _, l := range c.Loaders {
 			info.Loaders = append(info.Loaders, loaderRef(c.ID, l))

@@ -146,6 +146,9 @@ type GameInfo struct {
 	// TitleScene is the Unity scene of the game's main menu, where a BepInEx startup measurement ends; without it the
 	// first scene ends it.
 	TitleScene string `json:"titleScene,omitempty"`
+	// Graphics offers the player a choice of graphics API for the game, each passed as launch arguments; an older
+	// Mortar ignores the field.
+	Graphics *Graphics `json:"graphics,omitempty"`
 	// Deploy is how the profile reaches the game: redirect (the loader points the game at the profile's mods folder,
 	// nothing is placed) or profile (the profile holds the loader and its mods, and the loader's install-side files are
 	// placed into the install for the launch and taken back after).
@@ -158,6 +161,53 @@ type GameInfo struct {
 	// Templates are starter profiles offered when creating one: a named list of packages, each queued through the
 	// normal download path.
 	Templates []StarterTemplate `json:"templates,omitempty"`
+}
+
+// Graphics is a game's graphics API choices.
+type Graphics struct {
+	// Explanation is one paragraph, in plain words, on what the choice changes.
+	Explanation string           `json:"explanation"`
+	Choices     []GraphicsChoice `json:"choices"`
+	// Recommended is the id of the choice to steer the player to, Reason why, and Source where that is said.
+	Recommended string `json:"recommended"`
+	Reason      string `json:"reason"`
+	Source      string `json:"source"`
+}
+
+// GraphicsChoice is one graphics API: its launch arguments are empty for the game's own default.
+type GraphicsChoice struct {
+	ID    string   `json:"id"`
+	Label string   `json:"label"`
+	Args  []string `json:"args,omitempty"`
+}
+
+// Choice is the choice with id.
+func (g Graphics) Choice(id string) (GraphicsChoice, bool) {
+	for _, c := range g.Choices {
+		if c.ID == id {
+			return c, true
+		}
+	}
+	return GraphicsChoice{}, false
+}
+
+// Validate rejects a block that cannot be offered: two or more uniquely named choices, one of them recommended with a
+// reason and a source.
+func (g Graphics) Validate() error {
+	if g.Explanation == "" || g.Reason == "" || g.Source == "" || len(g.Choices) < 2 {
+		return errors.New("graphics needs an explanation, two choices, and a recommendation with a reason and a source")
+	}
+	seen := map[string]bool{}
+	for _, c := range g.Choices {
+		if c.ID == "" || c.Label == "" || seen[c.ID] {
+			return fmt.Errorf("graphics choice %q needs a unique id and a label", c.ID)
+		}
+		seen[c.ID] = true
+	}
+	if !seen[g.Recommended] {
+		return fmt.Errorf("graphics recommends %q, which is not a choice", g.Recommended)
+	}
+	return nil
 }
 
 // RequiredSetting names one `key = value` line of the file at the game's path role Path that mods need: a file that
@@ -413,6 +463,11 @@ func (g GameInfo) Validate() error {
 	}
 	for _, k := range g.KnownBroken {
 		if err := k.Validate(); err != nil {
+			return fmt.Errorf("game %q: %w", g.ID, err)
+		}
+	}
+	if g.Graphics != nil {
+		if err := g.Graphics.Validate(); err != nil {
 			return fmt.Errorf("game %q: %w", g.ID, err)
 		}
 	}
