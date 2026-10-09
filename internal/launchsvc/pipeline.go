@@ -171,7 +171,30 @@ func (s *Service) deployProfile(ctx context.Context, gameID string, inst game.In
 			return nil, err
 		}
 	}
-	return startDeploy(ctx, inst, plan)
+	roots, err := s.planRoots(gameID, inst, plan)
+	if err != nil {
+		return nil, err
+	}
+	return startDeploy(ctx, inst, plan, roots)
+}
+
+// planRoots resolves the catalog path roles the plan's files are placed under (a mods folder outside the install).
+func (s *Service) planRoots(gameID string, inst game.Install, plan *launchplan.Plan) (map[string]string, error) {
+	var roots map[string]string
+	for _, f := range plan.Files {
+		if f.Root == "" || roots[f.Root] != "" {
+			continue
+		}
+		dir, err := game.PathFor(s.home, s.settings.Get(), gameID, inst.ID, f.Root)
+		if err != nil {
+			return nil, err
+		}
+		if roots == nil {
+			roots = map[string]string{}
+		}
+		roots[f.Root] = dir
+	}
+	return roots, nil
 }
 
 func (s *Service) prelaunch(gameID, profileID, installDir string) error {
@@ -189,7 +212,7 @@ func (s *Service) prelaunch(gameID, profileID, installDir string) error {
 
 // startDeploy places plan's install-side files into inst, journaled before the first file moves. A launch with none
 // returns a deployment that has nothing to take back.
-func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan) (*deployment, error) {
+func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan, roots map[string]string) (*deployment, error) {
 	if plan.Mode == launchplan.ModeVanilla || len(plan.Files) == 0 {
 		return &deployment{}, nil
 	}
@@ -205,7 +228,7 @@ func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan) 
 	if err := d.Recover(ctx, dir, nil); err != nil {
 		return nil, err
 	}
-	p, err := d.Plan(deploy.View{JournalDir: dir}, inst.Dir, plan.Files)
+	p, err := d.Plan(deploy.View{JournalDir: dir, Roots: roots}, inst.Dir, plan.Files)
 	if err != nil {
 		return nil, err
 	}

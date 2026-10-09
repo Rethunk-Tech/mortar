@@ -27,8 +27,12 @@ type RuntimeReq struct {
 	Kind, Key, Value string
 }
 
-// PlanFile is an install-side file: Src is an absolute path in the profile, Dst a path relative to the game folder.
-type PlanFile struct{ Src, Dst string }
+// PlanFile is a file the deployer places for a launch: Src is an absolute path in the profile, Dst a path relative to
+// the game folder, or, when Root names a catalog path role (a game's mods folder outside the install), to that folder.
+type PlanFile struct {
+	Src, Dst string
+	Root     string
+}
 
 // VersionManifest describes a launcher profile a loader injects (Minecraft's versions/<id>/ file).
 type VersionManifest struct {

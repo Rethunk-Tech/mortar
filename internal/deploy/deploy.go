@@ -18,6 +18,8 @@ import (
 type View struct {
 	// JournalDir holds the manifest and the displaced-file backups.
 	JournalDir string `json:"journalDir"`
+	// Roots maps a catalog path role to the absolute folder a plan file naming it is placed under.
+	Roots map[string]string `json:"roots,omitempty"`
 }
 
 // Op is one file to place.

@@ -402,3 +402,80 @@ func TestAFailedPurgeRecordsWhatItAlreadyUndid(t *testing.T) {
 		t.Fatalf("the journal must name the one op already undone: %+v", saved.Ops)
 	}
 }
+
+// outside is a mods folder beside the install, holding a file of the player's that a placed file displaces.
+func (r *rig) outside() (dir string, files []launchplan.PlanFile) {
+	dir = filepath.Join(r.root, "documents", "Mods")
+	write(r.t, filepath.Join(dir, "Resource.cfg"), "the player's own")
+	write(r.t, filepath.Join(dir, "a", "x.package"), "the player's copy")
+	write(r.t, filepath.Join(r.store, "x.package"), "mod")
+	r.view.Roots = map[string]string{"mods": dir}
+	return dir, []launchplan.PlanFile{
+		{Src: filepath.Join(r.store, "x.package"), Dst: filepath.Join("a", "x.package"), Root: "mods"},
+		{Src: filepath.Join(r.store, "x.package"), Dst: filepath.Join("b", "deep", "x.package"), Root: "mods"},
+	}
+}
+
+func TestAFileForARootIsPlacedOutsideTheInstallAndTakenBack(t *testing.T) {
+	r := newRig(t)
+	dir, files := r.outside()
+	r.files = files
+	before, installBefore := snapshot(t, dir), snapshot(t, r.install)
+	m := r.apply()
+	if read(filepath.Join(dir, "a", "x.package")) != "mod" || read(filepath.Join(dir, "b", "deep", "x.package")) != "mod" {
+		t.Fatal("the files are in the root")
+	}
+	if read(filepath.Join(dir, "Resource.cfg")) != "the player's own" {
+		t.Fatal("a file the plan does not name is left alone")
+	}
+	d, _ := Get(copyID)
+	if err := d.Purge(t.Context(), m); err != nil {
+		t.Fatal(err)
+	}
+	after := snapshot(t, dir)
+	if len(after) != len(before) {
+		t.Fatalf("root differs\nbefore %v\n after %v", before, after)
+	}
+	for k, v := range before {
+		if after[k] != v {
+			t.Fatalf("%s: %q, want %q", k, after[k], v)
+		}
+	}
+	if got := snapshot(t, r.install); len(got) != len(installBefore) {
+		t.Fatal("the install was touched")
+	}
+}
+
+func TestACrashWithFilesOutsideTheInstallIsRecovered(t *testing.T) {
+	r := newRig(t)
+	dir, files := r.outside()
+	r.files = files
+	before := snapshot(t, dir)
+	r.apply()
+	d, _ := Get(copyID)
+	if err := d.Recover(t.Context(), r.view.JournalDir, func() bool { return false }); err != nil {
+		t.Fatal(err)
+	}
+	after := snapshot(t, dir)
+	if len(after) != len(before) || after[filepath.Join("a", "x.package")] != "the player's copy" {
+		t.Fatalf("recover did not restore the root: %v", after)
+	}
+}
+
+func TestAPlanRefusesAnUnknownRootAndAPathThatLeavesTheRoot(t *testing.T) {
+	r := newRig(t)
+	d, _ := Get(copyID)
+	for _, f := range []launchplan.PlanFile{
+		{Src: "s", Dst: "x", Root: "mods"},
+		{Src: "s", Dst: filepath.Join("..", "x"), Root: "mods"},
+	} {
+		view := r.view
+		view.Roots = map[string]string{"other": filepath.Join(r.root, "o")}
+		if f.Dst != "x" {
+			view.Roots = map[string]string{"mods": filepath.Join(r.root, "o")}
+		}
+		if _, err := d.Plan(view, r.install, []launchplan.PlanFile{f}); err == nil {
+			t.Fatalf("%+v must be refused", f)
+		}
+	}
+}

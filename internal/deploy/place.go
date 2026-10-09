@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -32,10 +33,16 @@ func (place) ID() string { return copyID }
 func (place) Plan(view View, dir string, files []launchplan.PlanFile) (Plan, error) {
 	byDst := map[string]Op{}
 	for _, f := range files {
-		if !filepath.IsLocal(f.Dst) {
-			return Plan{}, fmt.Errorf("%s leaves the install", f.Dst)
+		base := dir
+		if f.Root != "" {
+			if base = view.Roots[f.Root]; base == "" || !filepath.IsAbs(base) {
+				return Plan{}, fmt.Errorf("no %s folder to place %s in", f.Root, f.Dst)
+			}
 		}
-		dst := filepath.Join(dir, f.Dst)
+		if !filepath.IsLocal(f.Dst) {
+			return Plan{}, fmt.Errorf("%s leaves the %s folder", f.Dst, cmp.Or(f.Root, "install"))
+		}
+		dst := filepath.Join(base, f.Dst)
 		// Folded so a later file wins over an earlier one that differs only in case, as the file system would.
 		byDst[fsx.FoldCase(dst)] = Op{Src: f.Src, Dst: dst}
 	}
@@ -83,8 +90,11 @@ func (place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 	if _, err := os.Lstat(journalPath(p.View.JournalDir)); err == nil {
 		return Manifest{}, fmt.Errorf("%w: recover %s first", ErrUnrecovered, p.View.JournalDir)
 	}
-	if err := fsx.CheckWritable(p.Dir); err != nil {
-		return Manifest{}, err
+	// A plan that places only into a folder outside the install (a mods folder in Documents) needs no write access to it.
+	if slices.ContainsFunc(p.Ops, func(o Op) bool { return inside(p.Dir, o.Dst) }) {
+		if err := fsx.CheckWritable(p.Dir); err != nil {
+			return Manifest{}, err
+		}
 	}
 	m := Manifest{Dir: p.Dir, View: p.View}
 	for i, op := range p.Ops {
@@ -114,6 +124,11 @@ func (place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 		}
 	}
 	return m, nil
+}
+
+func inside(dir, path string) bool {
+	rel, err := filepath.Rel(dir, path)
+	return err == nil && filepath.IsLocal(rel)
 }
 
 func put(m *Manifest, pl *Placed) error {

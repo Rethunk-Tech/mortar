@@ -200,14 +200,14 @@ func TestAFailedDeployTakesBackWhatItPlaced(t *testing.T) {
 	// Canceled once the journal is written: the deploy fails with its record on disk and nothing placed yet.
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	if _, err := startDeploy(ctx, inst, plan); err == nil {
+	if _, err := startDeploy(ctx, inst, plan, nil); err == nil {
 		t.Fatal("a canceled deploy succeeded")
 	}
 	if dir, _ := journalDir(inst.ID); deploy.HasJournal(dir) {
 		t.Fatal("the canceled deploy left its journal")
 	}
 	missingPlan := &launchplan.Plan{Files: []launchplan.PlanFile{{Src: missing, Dst: "b.dll"}}}
-	if _, err := startDeploy(context.Background(), inst, missingPlan); err == nil {
+	if _, err := startDeploy(context.Background(), inst, missingPlan, nil); err == nil {
 		t.Fatal("a deploy with a missing source succeeded")
 	}
 	if b, _ := fsx.ReadFile(filepath.Join(inst.Dir, "a.dll")); string(b) != "the player's own" {
