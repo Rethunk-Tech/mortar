@@ -21,6 +21,7 @@ func FuzzContentPack(f *testing.F) {
 		},
 		{`{"Changes":[{"Action":"Include","FromFile":"../decoy/content.json"},{"Action":"Include","FromFile":"/etc/passwd"},{"Action":"Load","Target":"A, B","FromFile":"{{Target}}.json"}]}`, `{}`},
 		{`{"Changes":[{"Action":"EditMap","Target":"Maps/T","FromFile":"data.tbin"}]}`, "tBIN10\x00\x00\x00\x00"},
+		{`{"Changes":[{"Action":"EditImage","Target":"TileSheets/x","FromFile":"data.png","PatchMode":"Overlay"}]}`, "\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x75\x30\x00\x00\x75\x30\x08\x02\x00\x00\x00\x00\x00\x00\x00"},
 		{`{"Changes":[{"Action":"Load","Target":"Maps/T","FromFile":"data.tmx"}]}`, `<map><tileset><image source="../Maps/spring_town.png"/></tileset></map>`},
 		{`// comment` + "\n" + `{"Changes":[{"Action":"Include","FromFile":"data.json, content.json"},],}`, `{"Changes":[{"Action":"Include","FromFile":"content.json"}]}`},
 	} {

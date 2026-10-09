@@ -2,6 +2,7 @@ package contentpatcher
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"image"
 	"image/color"
@@ -315,5 +316,27 @@ func TestHarmlessOverlaps(t *testing.T) {
 				t.Fatalf("clash=%v minor=%v", clash, minor)
 			}
 		})
+	}
+}
+
+func TestHugeIHDRPNGIsRefusedBeforeAllocation(t *testing.T) {
+	t.Parallel()
+	for _, dim := range []uint32{30000, 0x7fffffff} {
+		var raw bytes.Buffer
+		raw.WriteString("\x89PNG\r\n\x1a\n")
+		ihdr := make([]byte, 13)
+		binary.BigEndian.PutUint32(ihdr[0:], dim)
+		binary.BigEndian.PutUint32(ihdr[4:], dim)
+		ihdr[8], ihdr[9] = 8, 2
+		raw.Write([]byte{0, 0, 0, 13})
+		raw.WriteString("IHDR")
+		raw.Write(ihdr)
+		raw.Write([]byte{0, 0, 0, 0})
+		if _, ok := decodePNGAlpha(bytes.NewReader(raw.Bytes())); ok {
+			t.Errorf("%d x %d header decoded", dim, dim)
+		}
+		if _, err := cropImageDataURL(raw.Bytes(), 0, 0, 1, 1); err == nil {
+			t.Errorf("%d x %d header cropped", dim, dim)
+		}
 	}
 }

@@ -714,6 +714,9 @@ func decodePNGAlpha(r io.Reader) (pngAlpha, bool) {
 			i = len(raw)
 		}
 	}
+	if gotIHDR && !pngPixelsWithinCap(w, h) {
+		return pngAlpha{}, false
+	}
 	if !gotIHDR || w <= 0 || h <= 0 || interlace != 0 || bitDepth != 8 {
 		return decodePNGAlphaStd(bytes.NewReader(raw))
 	}
@@ -879,8 +882,26 @@ func absInt(n int) int {
 	return n
 }
 
+// maxOverlayPixels bounds an overlay or crop source before its pixels are allocated: a few-byte IHDR
+// can claim any size, and the decode would otherwise allocate it (or panic on makeslice).
+const maxOverlayPixels = 100_000_000
+
+func pngPixelsWithinCap(w, h int) bool {
+	return w >= 0 && h >= 0 && int64(w)*int64(h) <= maxOverlayPixels
+}
+
+// pngDecodable reports whether raw's declared size is within the cap, reading only the header.
+func pngDecodable(raw []byte) bool {
+	cfg, err := png.DecodeConfig(bytes.NewReader(raw))
+	return err == nil && pngPixelsWithinCap(cfg.Width, cfg.Height)
+}
+
 func decodePNGAlphaStd(r io.Reader) (pngAlpha, bool) {
-	decoded, err := png.Decode(r)
+	raw, err := io.ReadAll(r)
+	if err != nil || !pngDecodable(raw) {
+		return pngAlpha{}, false
+	}
+	decoded, err := png.Decode(bytes.NewReader(raw))
 	if err != nil {
 		return pngAlpha{}, false
 	}

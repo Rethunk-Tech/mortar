@@ -245,6 +245,9 @@ func CropPackImage(root, fromFile string, x, y, w, h int) (string, error) {
 }
 
 func cropImageDataURL(raw []byte, x, y, w, h int) (string, error) {
+	if !pngDecodable(raw) {
+		return "", errors.New("image is missing, malformed or too large")
+	}
 	img, err := png.Decode(bytes.NewReader(raw))
 	if err != nil {
 		return "", err
