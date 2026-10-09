@@ -3,8 +3,10 @@ import { Box } from '@mui/material'
 import { lazy, Suspense } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { BrowseHost } from '../browse/BrowseHost.tsx'
+import { DuplicateDialog } from '../mods/DuplicateDialog.tsx'
 import { ModsTab } from '../mods/ModsTab.tsx'
 import { ProblemsTab } from '../mods/ProblemsTab.tsx'
+import { RemoveDialog } from '../mods/parts.tsx'
 import { useConfigListLoaded } from '../mods/typedConfig/configList.ts'
 import { usePasteLink } from '../share/usePasteLink.ts'
 import { ErrorBoundary } from '../shell/ErrorBoundary.tsx'
@@ -90,6 +92,9 @@ export function ProfileWorkspace({
             <ProblemsTab />
           </Box>
         ) : null}
+        {/* Mods and Problems both open these, so they live above either tab. */}
+        <RemoveDialog />
+        <DuplicateDialog profileName={profile.name} />
       </ErrorBoundary>
     </Box>
   )

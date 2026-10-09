@@ -16,7 +16,6 @@ import { space } from '../theme/density.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useCustomCategories } from './customCategories.ts'
-import { DuplicateDialog } from './DuplicateDialog.tsx'
 import { useDetail } from './detail.ts'
 import { EndorsePrompt } from './EndorsePrompt.tsx'
 import { customCategoryById, profileTags } from './group.ts'
@@ -32,7 +31,6 @@ import { hasAllTags, matchesQuery, searchFields } from './modSearch.ts'
 import { NewFoldersCallout } from './NewFoldersCallout.tsx'
 import { useNexusDetails } from './nexusDetails.ts'
 import { OldFilesCallouts } from './OldFilesCallouts.tsx'
-import { RemoveDialog } from './parts.tsx'
 import { addedWithin, WEEK_MS } from './recent.ts'
 import { SelectionBar } from './SelectionBar.tsx'
 import { ModSidebar } from './Sidebar.tsx'
@@ -311,8 +309,6 @@ export function ModsTab({ profile }: { profile: Profile }) {
       />
       <UpdateReview profile={profile} />
       <ModContextMenu />
-      <RemoveDialog />
-      <DuplicateDialog profileName={profile.name} />
       <EndorsePrompt profile={profile} />
     </Box>
   )
