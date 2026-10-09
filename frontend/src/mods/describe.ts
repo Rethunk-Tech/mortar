@@ -256,6 +256,26 @@ function describeDuplicate(d: Extract<Problem, { kind: 'duplicate' }>['duplicate
   return i18n._(msg`${d.name} is installed twice, and only one of them loads.`)
 }
 
+type LoadFailureRow = Extract<Problem, { kind: 'loadFailure' }>['loadFailure']
+
+// A game-setting row's message is the catalog's own wording for the setting that is off.
+function describeLoadFailure({ plugin, name, kind, dependency, message }: LoadFailureRow): string {
+  if (kind === 'game-setting') {
+    return message
+  }
+  if (kind === 'run-failed') {
+    return i18n._(msg`The last launch failed: ${message}.`)
+  }
+  if (kind === 'incompatible-plugin' && dependency) {
+    return i18n._(
+      msg`${plugin} declares itself incompatible with ${dependency}, which is also enabled.`,
+    )
+  }
+  return name !== '' && name !== plugin
+    ? i18n._(msg`${plugin} failed to load (${name}).`)
+    : i18n._(msg`${plugin} failed to load.`)
+}
+
 // The one-line sentence for a problem, shared by the summary rows and the card badges.
 export function useDescribe(): Describe {
   const { t } = useLingui()
@@ -274,18 +294,8 @@ export function useDescribe(): Describe {
         return describeMissing(p, nameOf)
       case 'runError':
         return describeRunError(p.runError)
-      case 'loadFailure': {
-        const { plugin, name, kind, dependency, message } = p.loadFailure
-        if (kind === 'run-failed') {
-          return t`The last launch failed: ${message}.`
-        }
-        if (kind === 'incompatible-plugin' && dependency) {
-          return t`${plugin} declares itself incompatible with ${dependency}, which is also enabled.`
-        }
-        return name !== '' && name !== plugin
-          ? t`${plugin} failed to load (${name}).`
-          : t`${plugin} failed to load.`
-      }
+      case 'loadFailure':
+        return describeLoadFailure(p.loadFailure)
       case 'damaged':
         return t`${p.damaged.name} has damaged files.`
       case 'deprecated': {
@@ -339,4 +349,4 @@ export function useDescribeDrift(): (d: Drift) => string {
   }
 }
 
-export { missingDepName, winnerSentence }
+export { describeLoadFailure, missingDepName, winnerSentence }

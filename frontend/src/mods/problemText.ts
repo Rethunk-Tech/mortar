@@ -99,6 +99,8 @@ function loadKindText(kind: string): string {
       return i18n._(msg`Needs a newer loader`)
     case 'chainloader':
       return i18n._(msg`Loader failed to start`)
+    case 'game-setting':
+      return i18n._(msg`Game setting off`)
     case 'run-failed':
       return i18n._(msg`The game never started`)
     case 'plugin-error':
@@ -108,4 +110,4 @@ function loadKindText(kind: string): string {
   }
 }
 
-export { ERROR_SECTIONS, isDismissedRow, useRowText, useSectionTitle }
+export { ERROR_SECTIONS, isDismissedRow, loadKindText, useRowText, useSectionTitle }
