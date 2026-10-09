@@ -40,7 +40,14 @@ func TestPackageInstallsWithItsDependencies(t *testing.T) {
 	if st.Items[0].Package != "Me-Mod" || st.Items[1].Package != "Me-Other" || st.Items[0].Kind != KindInstall {
 		t.Errorf("a held dependency, the loader pack or a root was mishandled: %+v", st.Items)
 	}
-	if len(f.installs) != 2 || f.installs[0].Kind != profile.KindThunderstore || f.installs[0].Picture != "https://ccdn.thunderstore.io/live/repository/icons/Me-Mod-1.0.0.png" || f.installs[0].Category != "Tools" {
+	// Both roots install on concurrent workers, so their order is not fixed.
+	var mod *profile.Source
+	for i := range f.installs {
+		if f.installs[i].Name == "Me-Mod" {
+			mod = &f.installs[i]
+		}
+	}
+	if len(f.installs) != 2 || mod == nil || mod.Kind != profile.KindThunderstore || mod.Picture != "https://ccdn.thunderstore.io/live/repository/icons/Me-Mod-1.0.0.png" || mod.Category != "Tools" {
 		t.Errorf("installed %+v", f.installs)
 	}
 	if _, err := f.s.Add(t.Context(), []Request{{Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "not a package"}}); err == nil {
