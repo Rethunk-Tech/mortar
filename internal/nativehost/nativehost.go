@@ -53,6 +53,13 @@ const (
 	ExtensionTooNew = "extensionTooNew"
 )
 
+// mortarRunning reports whether a Mortar that holds this control file's token is answering. A port that merely accepts
+// connections may belong to another program that reused a dead app's port, and the token must never be sent there.
+func mortarRunning(dir string) bool {
+	_, ok := controlwire.Live(dir)
+	return ok
+}
+
 // protocolMismatch is ExtensionTooOld or ExtensionTooNew when Mortar does not speak the extension's protocol, else "".
 func protocolMismatch(sent *int) string {
 	protocol := 0
@@ -420,7 +427,7 @@ func nexusModProblems(domain string, modID int) []modProblem {
 		return []modProblem{}
 	}
 	dataDir, err := datadir.Dir()
-	if err != nil || !controlwire.Running(dataDir) {
+	if err != nil || !mortarRunning(dataDir) {
 		return []modProblem{}
 	}
 	store, err := settings.Open()
@@ -472,7 +479,7 @@ func activeNexusModIDs(domain string) []int {
 		return ids
 	}
 	dataDir, err := datadir.Dir()
-	if err != nil || !controlwire.Running(dataDir) {
+	if err != nil || !mortarRunning(dataDir) {
 		return ids
 	}
 	store, err := settings.Open()
@@ -549,7 +556,7 @@ func activeNexusUpdates(domain string) (string, []modUpdate) {
 		return "", rows
 	}
 	dataDir, err := datadir.Dir()
-	if err != nil || !controlwire.Running(dataDir) {
+	if err != nil || !mortarRunning(dataDir) {
 		return "", rows
 	}
 	store, err := settings.Open()
@@ -657,7 +664,7 @@ func stateOf(info components.GameInfo) (string, string) {
 	if conn, err := cur.Lookup("extensionConnection"); err == nil && conn == settings.ExtensionOff {
 		return stateOff, ""
 	}
-	if !controlwire.Running(dataDir) {
+	if !mortarRunning(dataDir) {
 		return stateNotRunning, ""
 	}
 	profileID := cur.LastProfile[info.ID]
@@ -695,7 +702,7 @@ func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
 		return openProfile, nil
 	}
 	dataDir, err := datadir.Dir()
-	if err != nil || !controlwire.Running(dataDir) {
+	if err != nil || !mortarRunning(dataDir) {
 		return openProfile, nil
 	}
 	store, err := settings.Open()

@@ -1,6 +1,7 @@
 package nativehost
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/binary"
@@ -15,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/controlwire"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -73,6 +75,9 @@ func listenControl(t *testing.T, settingsJSON string) string {
 			if err != nil {
 				return
 			}
+			// Answers the hello that controlwire.Live sends with an empty result.
+			_, _ = bufio.NewReader(c).ReadBytes('\n')
+			_, _ = c.Write([]byte("{}\n"))
 			_ = c.Close()
 		}
 	}()
@@ -670,5 +675,38 @@ func TestServeAnswersThunderstorePackages(t *testing.T) {
 	}
 	if !install.OK || !slices.Equal(queued, []string{"riskofrain2/Me-Other"}) {
 		t.Errorf("installPackage reply = %+v, queued %v", install, queued)
+	}
+}
+
+func TestMortarRunningIgnoresAStalePortAnotherProgramReused(t *testing.T) {
+	t.Parallel()
+	listener, err := (&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = listener.Close() })
+	go func() {
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				return
+			}
+			_ = conn.Close()
+		}
+	}()
+	port, ok := listener.Addr().(*net.TCPAddr)
+	if !ok {
+		t.Fatal("not a TCP listener")
+	}
+	dir := t.TempDir()
+	b, err := json.Marshal(controlwire.Discovery{Port: port.Port, Token: "stale"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, controlwire.FileName), b, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if mortarRunning(dir) {
+		t.Fatal("a port that only accepts connections counted as a running Mortar")
 	}
 }

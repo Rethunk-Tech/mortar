@@ -62,16 +62,6 @@ type RemoteError struct {
 
 func (e *RemoteError) Error() string { return e.Msg }
 
-// Running reports whether a Mortar app with data folder dir is answering on its control channel.
-func Running(dir string) bool {
-	_, conn, err := dial(dir)
-	if err != nil {
-		return false
-	}
-	_ = conn.Close()
-	return true
-}
-
 // Live returns the pid of the Mortar app that answers hello with the token in dir's control file. A port that merely
 // accepts connections may belong to another program that reused a dead app's port, so only a token match counts.
 func Live(dir string) (int, bool) {
