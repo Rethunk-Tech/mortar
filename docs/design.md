@@ -2,6 +2,8 @@
 
 This file holds only work that is decided but not built. Each item is written to be implemented cold: the shape, the evidence it rests on, the traps, and when it is done. When an item lands, delete it here and move any fact that stays true to [architecture.md](architecture.md); the code is the record of what exists. Screens and styling: [gui-design.md](gui-design.md). Lethal Company research for the second game: [lethal-company.md](lethal-company.md). Standing rules: [AGENTS.md](../AGENTS.md).
 
+Specs under [Specs awaiting approval](#specs-awaiting-approval) are written for the operator to approve; each ends in its open questions, and nothing in them is built until they are answered.
+
 Items marked **Measure** need a throwaway test first; those tests run outside this repo and only their results land here.
 
 ## Release
@@ -15,14 +17,149 @@ Remaining ([architecture.md](architecture.md#release)):
 
 Decided 2026-10-07 (NOMAD), from the audit of how Mortar was described to CurseForge.
 
-- **Profiles for any game, and shared-state games (The Sims 4 first).** To be designed before building: a generic catalog entry with no loader (a mod folder swapped per profile), plus isolation for games whose mods and saves live in a Documents folder shared by every launch. Today each game is a catalog entry plus a loader, and three are enabled.
+- **Profiles for any game, and shared-state games (The Sims 4 first).** Spec: [Generic-folder games](#generic-folder-games-and-shared-state). Waiting on the operator's answers.
+
+## Specs awaiting approval
+
+Written 2026-10-09 for the operator to approve. Facts about Mortar are anchored to the code as it is today; facts about EA, Patreon and The Sims 4 are marked **Verify** where they come from memory of the vendors' behaviour and need one throwaway check (run outside this repo, result recorded here) before the item is built. Each spec ends with its open questions; a product choice is never made by the implementer.
+
+### EA App game store
+
+**Why.** Several wanted games (The Sims 4 first) are sold on EA's store, and the EA App is a store Mortar cannot see: `gamestore.All()` knows Steam, GOG, Lutris and Bottles only (`internal/gamestore/gamestore.go:61`). Steam sells The Sims 4 too, but a player who bought it from EA has no Steam install to find, and Mortar's "game not found" screen is the only outcome today.
+
+**Decided shape.** One more `Store` driver, key `ea`, found the way GOG's offline installs are: by folders and a marker, never by reading the EA App's private state.
+
+- **Discovery is folder based.** The driver searches library roots for `<root>/<stores.ea.folder>` holding the game's `marker` (`internal/components/components.go` `GameInfo.Marker`, matched by the same check the other stores use). Roots, in order: the user's added folders (`settings.LauncherRoots["ea"]`, `internal/settings/settings.go:63`), then the EA App's usual library folders for the platform (Windows: `%ProgramFiles%\EA Games`, `%ProgramFiles(x86)%\EA Games`, and `Electronic Arts` beside them; Linux: none of its own). No registry read and no parsing of the EA App's data in `%ProgramData%\EA Desktop` (undocumented and rewritten by EA's updates). **Verify** the default folders and that The Sims 4's install holds `Game/Bin/TS4_x64.exe` (the catalog marker is a file at the root or one `game` folder down, so the marker value must be checked against a real install, case included).
+- **Linux has no native EA App.** An EA App install on Linux lives inside a Wine prefix, so it reaches Mortar through the two stores that already read prefixes: Bottles (`bottleGameDirs`, `internal/gamestore/bottles.go:27`, gains `Program Files/EA Games/<folder>` and `Program Files (x86)/EA Games/<folder>` under the bottle's `drive_c`, so `stores.bottles.folder` serves EA installs as it serves Steam and GOG ones) and Lutris (its `stores.lutris` slug and keyword already find a game by its Lutris entry). This means no new runtime: an EA game in a bottle is the existing `wine-prefix` runtime (`internal/runtime/wineprefix.go:18`), which resolves `{documents}`, `{appData}` and the rest inside the bottle.
+- **Launch is a direct start.** `Starter.command` runs the game's executable for every store except Steam (`internal/game/start.go:131`, the `env.Direct || plan.Exe != ""` branch). An EA game started this way must ask the running EA App to authenticate; the executable does that itself, so no EA-specific branch is added. A relay through `origin2://` or `link2ea://` is not built (see open questions).
+
+**Catalog change.**
+
+- `GameStores` gains `EA *EAStore` with `folder` (`internal/components/components.go:217`), mirroring `BottlesStore` (`:225`). `GameInfo.Validate` adds `stores.ea.folder` to the unsafe-name loop (`:374`).
+- `internal/gamestore`: `eaKey`, `StoreEA`/`LauncherEA` constants (`gamestore.go:13`, `:24`), `eaStore{}` in `drivers.go`, an entry in `All()` (`:61`), a case in `Has` (`:64`), `storeOrder` (`:97`; rank after GOG so a Steam install of the same game wins as default) and `launcherOrder` (`:103`). `LauncherOf` (`:118`) needs no case.
+- `Launchers(goos)` returns one spec, id `ea`, name "EA App", `Usable` true for any existing folder; on Linux it returns none, so the setup screen shows no empty EA row there (Bottles and Lutris installs report under their own launchers).
+- Frontend: `frontend/src/games/storeName.ts:4` (a name for the new store id) and `frontend/src/brand/launchers/LauncherLogo.tsx:8` (a tile; simple-icons has an EA mark: **Verify**, else a plain tile as Bottles has). Lingui catalogs re-extracted.
+- `runtime.Install.Store` needs nothing: the `native` runtime claims a Windows build on Windows, and `wine-prefix` claims Bottles installs only (`internal/runtime/wineprefix.go:23`).
+- `HUMANS.md` § Drivers step 1 and `docs/architecture.md` § Games and the catalog (Stores bullet, the store table at the "How it is found" section) list the new store.
+
+**Traps.**
+
+- `Discover` results are de-duplicated by folder (`gamestore.go:81`), but one game on Steam and EA at once gives two installs with different ids; `game.pick` (`internal/game/install.go:132`) chooses by `Rank`, so `storeOrder` decides the default. Do not make EA first.
+- The marker check must tolerate EA's `Game` subfolder; a catalog marker that works for the Steam copy may not for the EA copy if EA's layout differs. Check both layouts of The Sims 4 before enabling.
+- `steamSkipsLoader` and the Steam `-applaunch` branch are gated on `inst.Store`; an EA install must never reach them (`internal/game/start.go:121`, `:166`).
+- `scripts/selftest.sh` builds a minimal Steam library only; an EA game needs a fixture folder under a fake `EA Games` root and `launcherRoots` set in the sandbox settings.
+- The Flatpak build of Mortar sandboxes folder reads; a user-added EA folder needs the same grant text as other added folders (`game.ValidateLauncherRoot`, `internal/game/launchers.go:75`).
+
+**Acceptance.**
+
+- `go test ./internal/gamestore ./internal/game ./internal/components ./internal/source/all` pass; `TestEveryCatalogReferenceResolves` (`internal/source/all/catalog_test.go`) accepts `stores.ea`.
+- A test in `internal/gamestore` finds a fixture install under `EA Games/<folder>` and under a Bottles bottle, and ranks it after Steam.
+- A catalog-only test game (the pattern of `TestACatalogOnlyGameNeedsNoCode`, `internal/game`) with only `stores.ea` is selectable, found, and started through the direct branch with no Steam.
+- Sandbox: Settings lists EA App with the added folder, the game's install appears, and a hidden-display launch against the copy starts the stub executable (never the maintainer's screen).
+
+**Open questions for NOMAD.**
+
+1. Windows default folders only plus added folders (decided above), or also read the EA App's install list for exact paths (more installs found, breaks whenever EA changes it)? Recommended: folders only.
+2. Start the game's executable directly (recommended; works with any store account the EA App is signed into) or relay through the EA App's launch link (shows the EA overlay, needs the offer id per game in the catalog)?
+3. Is Windows-only plus Bottles and Lutris on Linux acceptable for the first release, with no Heroic-style launcher for EA?
+
+### Patreon mod source
+
+**Why.** Some modders ship only to patrons. Mortar has no source for them, so those mods enter a profile only as files added by hand.
+
+**Evidence, and what that forces.** Everything downloadable from a Patreon post sits behind the patron's session; Patreon's public API (v2, OAuth) serves a *creator's* own campaign data to the creator's token, and for a patron it offers identity and memberships, not post attachments. **Verify** with one throwaway probe (outside this repo): an OAuth patron token cannot list a creator's posts or fetch an attachment. If the probe finds a patron-side post and attachment API, the shape below gains a Searcher; if not, it stands as written. Scraping Patreon's internal `/api/posts` or driving the user's browser session is out: it breaks without notice and acts as the user's login, which the standing rules refuse.
+
+**Decided shape.** Patreon is a **link and handoff source**, with no search and no Mortar-side download.
+
+- Driver `internal/source/patreon` (`ID` `patreon`, `Name` "Patreon", `Modes` `[]source.Acquire{source.Handoff}` as `internal/source/curseforge/curseforge.go:72` lists both), registered with `source.Register` (`internal/source/source.go:308`) and imported in `internal/source/all/all.go`. It implements `Hoster` (`Hosts` `patreon.com`; `source.go:239`) so a pasted post URL traces back to the source, and `PageLinker` (`ModPageURL(gameKey, id)` returns `https://www.patreon.com/posts/<id>`; `source.go:234`). It is not a `Searcher`, so `source.Searchable` (`source.go:350`) leaves it out of Browse and an `all` search; it is not `Gated`.
+- **Entry shape.** A mod from Patreon is a profile entry of kind `patreon` whose name is the numeric post id (the number ending a `patreon.com/posts/<slug>-<id>` URL). Adding one is: paste a post URL in Add mod (the existing URL path finds the source through `source.NameOfHost`, `source.go:378`), Mortar opens the post in the browser, and the file the user saves from it is picked up by the existing Downloads watcher (`internal/dlwatch`, `internal/folderwatch`, [architecture.md](architecture.md#nexus-mods) "Manual downloads") and offered for install; installing it records the post id on the entry, so the profile menu's mod page link and a share link both carry the id. There is no update check (no API to ask); a mod page link is the only update path.
+- **Gated posts and the no-re-hosting rule.** Mortar never fetches a patron-only file. It never holds a Patreon session cookie or password, never forwards the user's login, and never writes a Patreon file into a share, a bundle or the LAN transfer except as the user's own computers pair (the one exception in [AGENTS.md](../AGENTS.md) § Decided: a profile sent between the user's own paired computers carries its mod files). A share link to a profile holding a Patreon entry carries the post id and name only, so the receiver gets a link to the post and downloads it if they are a patron.
+- No OAuth, no keyring entry, no account in settings in this version.
+
+**Touches.**
+
+- `internal/source/patreon/` (new): `patreon.go`, `link.go` (post URL parser, accepts `patreon.com` and `www.patreon.com` posts of the two forms `/posts/<slug>-<id>` and `/posts/<id>`, numeric id only), `fuzz_test.go`.
+- `internal/source/all/all.go:4`: one blank import.
+- `internal/profile`: a `KindPatreon` beside `KindNexus` and its source struct, and the exhaustive switches over entry kinds (`rg "KindNexus" internal` lists them; each needs a patreon case or the build's exhaustive lint fails). `profile.Source` carries kind and name already.
+- `internal/browse/installed.go`: the in-profile matcher (`Hold`) needs no Patreon id because Browse never lists the source; a pasted URL for a post already in the profile is detected by entry name.
+- `internal/archivesvc` `InstallDownload` records `profile.KindPatreon` with the post id when the add came from a Patreon link.
+- Catalog: a game lists `{"id": "patreon"}` in `sources`; `TestEveryCatalogReferenceResolves` then requires the driver. `GameInfo.Validate` already requires a unique id (`components.go:420`).
+- `docs/security.md`: a row under Network and links for the post-URL parser (threat: a crafted link spoofs another site or injects a path; guard: the exact host and shape check; test: `FuzzParsePostURL`), and the "Links handed to the system handler" row's allow-list (the post URL opens in the browser).
+- Frontend: a source chip is not needed (Browse never lists it); Add mod's URL box recognises the host through the existing source lookup. A Patreon icon for the mod page link and the entry row.
+
+**Traps.**
+
+- The pasted URL is untrusted input and goes to the system URL handler: accept `https` only, host exactly `patreon.com` or `www.patreon.com`, no userinfo, and rebuild the opened URL from the parsed id rather than opening the pasted text.
+- `source.Searchable` and `ForGame` both read the catalog; a source with no `Searcher` must not appear as a greyed chip with an empty reason (check `browse.Service.SearchableSources`).
+- A file saved from a post has no stable name; do not infer identity from it. The post id comes from the link the user pasted, so installing a download without that link records no Patreon id (it stays a plain archive entry).
+- Patreon's terms bar automated access to patron content; this design makes none, and that is the reason it has no search. Do not add a "check for updates" that fetches a post page.
+
+**Acceptance.**
+
+- `go test ./internal/source/... ./internal/profile ./internal/archivesvc ./internal/components` pass, including fuzz seeds for the URL parser and `TestEveryCatalogReferenceResolves`.
+- Add mod with a Patreon post URL opens the post in the default browser (a recorded fake opener in the test), then a file placed in a fake Downloads folder is offered and installs as an entry that names the post id; the profile's share link holds the id and no file.
+- Patreon never appears among Browse's source chips or in an `all` search.
+
+**Open questions for NOMAD.**
+
+1. Is link and handoff enough, with no search and no update checks? Anything more needs either a patron-side API (the **Verify** probe) or a creator-side agreement with each modder.
+2. Should Add mod accept only post URLs, or also a creator page (`patreon.com/<creator>`) saved as a bookmark that opens the creator's feed in the browser?
+3. Which games get `patreon` in their catalog `sources` first? Only games whose modders are known to ship there.
+
+### Generic-folder games and shared-state
+
+**Why.** Today a game is a catalog entry plus a loader (SMAPI, BepInEx), and `GameInfo.Validate` rejects an entry with none (`internal/components/components.go:358`). Most games have no loader: their mods are files dropped into a folder. And a game such as The Sims 4 keeps its mods and its saves in one shared Documents tree (`{documents}/Electronic Arts/The Sims 4`), so two profiles cannot be told apart by which install they use: the files that decide what the game loads are outside the install and shared by every launch.
+
+**Decided shape.** Three small additions, each using what exists.
+
+1. **A loaderless game.** A loader driver `folder` (`internal/loader/folder/`, registered in `internal/loader/all/all.go`; `loader.Register`, `internal/loader/registry.go:16`) that implements `Loader` with nothing to install: `Status` reports installed, not broken, not per-profile, no latest; `Install` returns an error "nothing to install"; `Contribute` adds the profile's content as plan files (below). The catalog names it like any loader (`loaders: [{"id": "folder", "name": "Mod folder"}]`), so `Validate` keeps its "needs a loader" rule untouched (`components.go:358`), `loader.For` (`registry.go:46`) and `game.PrimaryLoader` need no special case, and `TestEveryCatalogReferenceResolves` accepts it once `knownLoaders` lists `folder`. No new `deploy` method name: the game uses `profile` (`components.go:402`).
+2. **The mod folder as a path role.** The catalog's `paths` map gains the role `mods`: where the game reads mods, outside or inside the install (`{documents}/Electronic Arts/The Sims 4/Mods`, or `{install}/Mods`). `game.PathFor` already resolves any role for an install (`internal/game/capabilities.go:37`); `GameInfo.Validate`'s token-start rule applies as is (`components.go:397`). `launchplan.PlanFile` (`internal/launchplan/launchplan.go:31`) gains a `Root` field naming a path role (empty means the install, as today); the `copy-into-install` deployer (`internal/deploy/place.go:32`) resolves `Dst` under that root instead of the install folder and keeps its refusal of a path that leaves it (`filepath.IsLocal`). Journal, displaced-file restore and crash recovery then work unchanged for files outside the install, because they key on absolute paths.
+3. **Profile-isolated shared state.** A launch swaps the profile's content into the shared folder and takes it back, using the machinery that exists: the loader's plan files place the profile's enabled mods into the game's `mods` role folder for the length of the launch (journaled under `<data>/journal/<install id>`, `docs/architecture.md` Pipeline bullet), and the saves for a profile with `separateSaves` use `internal/savesiso` against the `saves` role. The two roles can sit in the same parent folder (The Sims 4's `Mods` and `saves` are siblings); each is swapped on its own, and nothing else in that tree (Options.ini, Tray, screenshots) is touched.
+
+**Mod content and installs.** Targets already carry per-extension depth (`TargetDef.MaxDepth`, `components.go`; The Sims 4: **Verify** `.package` allowed several folders deep and `.ts4script` at most one folder deep); the `plain` installer maps any archive into targets (`internal/installer/plain.go:17`). The profile target is `{"id": "mods", "root": "{profileMods}", "maxDepth": {...}}`. `profile.Store.SyncPackages` (`internal/profile/deploy.go:86`) lays out only packages whose loader holds them; a folder-loader game's entries are archives installed into the profile's mods folder, so the folder loader's `Contribute` walks `{profileMods}` (the files of enabled entries) and emits one plan file per file. Enabled/disabled stays the profile's state, not a file move.
+
+**Catalog and code changes.**
+
+- `components.go`: no new `GameInfo` field. Docs list `mods` among the path roles (HUMANS.md § The catalog entry, `paths`).
+- `internal/launchplan/launchplan.go:31` `PlanFile.Root`; `internal/deploy/place.go:32` resolve the root through a `View` callback (`deploy.View` already carries what the deployer needs; add `PathFor(role)`), `internal/launchsvc/pipeline.go:192` `startDeploy` passes it from `game.PathFor`.
+- `internal/loader/folder` (new), `internal/loader/all/all.go`, the `knownLoaders` list (`internal/source/all/catalog_test.go:16`).
+- `internal/game/capabilities.go`: a `PathMods = "mods"` beside `PathSaves`.
+- The Sims 4 entry itself is catalog data: `stores.steam.appId` (**Verify** the id, it is the game's Steam app id), `stores.ea.folder` once the EA store lands, `marker`, `paths.mods`, `paths.saves`, `targets`, `sources` (CurseForge and GitHub shape; `Gated` CurseForge needs its key), `deploy: "profile"`, `loaders: [{"id": "folder"}]`, `enabled: false` until checked.
+- `scripts/selftest.sh`: a fake Documents tree (`HOME` is already sandboxed) and a stub game; the Sims 4 is not copied into the sandbox, a stub executable is.
+
+**Traps.**
+
+- **The game's own switches.** The Sims 4 loads mods only when `Options.ini` has custom content and script mods enabled, and a patch can switch them off again; a folder swap cannot make the game read mods. Mortar must show a finding in Problems (the check pattern in `internal/problems`) rather than edit `Options.ini`; editing it is a product choice below. **Verify** the file name and keys.
+- **`Resource.cfg`.** The Sims 4's Mods folder needs a `Resource.cfg` that EA ships there; a swap that removes the folder's contents must keep it, or the game ignores subfolders. The folder loader treats files in the target root that no profile entry owns as the player's own and never displaces or removes them (the deployer's existing rule: only files Mortar placed are removed, `docs/architecture.md` Purge bullet); the shipped `Resource.cfg` is such a file and is left alone.
+- **Windows file locking and cloud sync.** Documents may be under OneDrive; a swap that creates and removes thousands of files per launch is slow and syncs noise. Measure a 3,000-file Mods folder before enabling (**Measure**, throwaway test outside this repo: place and purge time, and the sync client's effect).
+- **A running game.** The deployer already refuses to start while a journal exists (`ErrUnrecovered`) and recovery skips an install whose game still runs (`launchsvc.RecoverDeploys`, `internal/launchsvc/pipeline.go:248`); the `GameProcesses` of a catalog-only game come from `catalogOnly` (`internal/game/catalog_only.go:36`), so the entry needs the process names there or in the catalog.
+- **No mod identity.** SMAPI mods have a UniqueID and BepInEx ones a Thunderstore package; a folder-loader game's mod has neither, so its identity is the source id recorded at install (a CurseForge project, a GitHub repository) or none, and update checks exist only for entries with a source. Problems checks that read manifests (`internal/manifest`) do nothing for these games; do not add generic "broken mod" guesses.
+- **Shared state beyond mods and saves.** Anything else the game writes to the shared tree (the Sims 4 `Tray` folder of household and lot exports, screenshots, `Options.ini`) stays shared by every profile; only `mods` and `saves` are isolated.
+- A game on Steam Cloud syncs its saves folder; `separateSaves` already documents that cost (`docs/architecture.md` Saves).
+- The full unit and e2e budget (10 s warm, `AGENTS.md` Verify) applies: the folder loader's tests use a temporary tree, not a copy of a real game.
+
+**Acceptance.**
+
+- A test catalog entry with only `loaders: [{"id": "folder"}]`, `paths.mods`, a `profile` target and a Steam or EA store is selectable and found (the pattern of `TestACatalogOnlyGameNeedsNoCode`), a profile with two mods plus a third disabled places exactly the two enabled mods' files under the `mods` role folder, and Purge returns the folder to its previous bytes (hash before and after), including a file the player already had at one of the same paths (displaced and restored).
+- A crash between place and purge (the existing `crashsafe` test pattern, `internal/deploy`) recovers at the next start with the folder restored, for a root outside the install.
+- Two profiles of one game with different mods and `separateSaves` each launch with their own mods and saves, and a launch of one leaves nothing of the other in the shared tree.
+- Problems shows the "custom content is off" finding when the fixture `Options.ini` has it off (if the operator keeps that check).
+- `go test ./internal/loader/... ./internal/deploy ./internal/launchplan ./internal/launchsvc ./internal/components ./internal/source/all ./internal/game` pass; sandbox regress with a stub game shows the swap on a hidden display.
+
+**Open questions for NOMAD.**
+
+1. Isolation scope for The Sims 4: only `Mods` and `saves` (decided above), or also `Tray` and `Options.ini` per profile? More isolation means more files swapped per launch and more ways to lose a household export.
+2. Should Mortar edit `Options.ini` to enable mods and script mods (a visible one-click fix in Problems, backed up first), or only report it?
+3. A generic mod with no source and no manifest has no update path; is "add from a file, never updated by Mortar" acceptable for these games?
+4. Should "profiles for any game" also let the user define a game in the app (name, marker, mods folder) with no catalog release, or stay catalog-only (a signed catalog entry per game, as every game is today)? Recommended: catalog-only, since `AGENTS.md` § Decided makes the catalog the registry and a user-defined game has no signed `knownBroken`, `sources` or path validation.
+5. Which game after The Sims 4 should prove the generic path (any Steam game whose mods are plain files in a folder under its install)?
 
 ## Later
 
 - **UI translations** beyond English, as Stardrop (17+), MO2 and r2modman ship: every string already goes through Lingui and the catalogs are extracted; needs chosen languages and translators. Parked 2026-10-02 (not v1).
 - **macOS build**: Stardew runs on macOS, and Stardrop ships for x64 and arm64, but Mortar has no macOS CI or test machine; it needs an Apple developer account for signing and notarization, Mac Steam paths and nxm registration, and a Mac to test on. Parked 2026-10-02 (not v1).
-- **EA App** as a game store, beside the drivers in `internal/gamestore/drivers.go` (Steam, Steam (Flatpak), GOG, Heroic, Lutris, Minigalaxy, Bottles): to be designed. Queued 2026-10-07.
-- **Patreon** as a mod source, beside the drivers in `internal/source/`: to be designed, including how it treats creator-gated posts under the no-re-hosting rule. Queued 2026-10-07.
+- **EA App** as a game store, beside the drivers in `internal/gamestore/drivers.go` (Steam, Steam (Flatpak), GOG, Heroic, Lutris, Minigalaxy, Bottles): spec: [EA App](#ea-app-game-store). Queued 2026-10-07.
+- **Patreon** as a mod source, beside the drivers in `internal/source/`: spec: [Patreon](#patreon-mod-source). Queued 2026-10-07.
 
 Not in the first release; re-weigh only when asked:
 
