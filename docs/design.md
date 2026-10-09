@@ -31,7 +31,7 @@ The generic path is built ([architecture.md](architecture.md#games-and-the-catal
 - **Measure** a 3,000-file Mods folder place and purge time on Windows, with and without OneDrive, before enabling.
 - `scripts/selftest.sh`: a fake Documents tree and a stub game for a hidden-display launch once the entry exists.
 - The window's Problems rows of kind `game-setting` (exact text in the commit that built them).
-- **Open question for NOMAD:** which game after The Sims 4 should prove the generic path (any Steam game whose mods are plain files in a folder under its install)?
+- **Open question for NOMAD:** which game after The Sims 4 should prove the generic path. Pick from games with the highest demand (players asking for support other managers lack or handle badly, or very high mod activity) that are also cheap for Mortar: a plain mods folder or a loader Mortar already has (BepInEx, SMAPI).
 
 ### Patreon source: research and open choice
 
