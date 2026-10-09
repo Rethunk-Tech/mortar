@@ -3274,7 +3274,7 @@ msgstr "Comfortable"
 msgid "Start measuring"
 msgstr "Start measuring"
 
-#: src/install/store.ts:384
+#: src/install/store.ts:395
 msgid "Could not open the file dialog"
 msgstr "Could not open the file dialog"
 
