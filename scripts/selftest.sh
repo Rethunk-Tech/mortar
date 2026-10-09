@@ -11,6 +11,7 @@
 #   scripts/selftest.sh reap [--hours N] [--yes]  list (and with --yes delete) idle sandboxes under the base dir
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
 #   scripts/selftest.sh ea-fixture FOLDER MARKER  add a fake Bottles bottle holding an EA App install of FOLDER (discovery only)
+#   scripts/selftest.sh regress --fake GAME_ID  launch regress for a game not installed here: a fake install and a dummy window (see regress_fake)
 #   scripts/selftest.sh regress [--game lethal-company]  one-shot regression run (Stardew, or Lethal Company through Proton) in its own throwaway sandbox (see below)
 #   scripts/selftest.sh curseforge            CurseForge end to end in its own throwaway sandbox; needs MORTAR_CURSEFORGE_KEY, else skips
 #   scripts/selftest.sh harness-check         prove the launch harness with a dummy window instead of a game
@@ -115,11 +116,12 @@ copy_game() {
 
 # Lists every copied game as installed, so Steam discovery finds exactly what the sandbox holds.
 write_library() {
-  local apps="" app
-  for app in "$APP_ID" "$LC_APP_ID" "$VH_APP_ID"; do
-    if [ -f "$SANDBOX_STEAM/steamapps/appmanifest_$app.acf" ]; then
-      apps+=$'\t\t\t"'$app$'"\t\t"1"\n'
-    fi
+  local apps="" manifest app
+  for manifest in "$SANDBOX_STEAM"/steamapps/appmanifest_*.acf; do
+    [ -f "$manifest" ] || continue
+    app=${manifest##*appmanifest_}
+    app=${app%.acf}
+    apps+=$'\t\t\t"'$app$'"\t\t"1"\n'
   done
   printf '"libraryfolders"\n{\n\t"0"\n\t{\n\t\t"path"\t\t"%s"\n\t\t"apps"\n\t\t{\n%s\t\t}\n\t}\n}\n' "$SANDBOX_STEAM" "$apps" >"$SANDBOX_STEAM/steamapps/libraryfolders.vdf"
 }
@@ -1024,6 +1026,126 @@ PY
   [ "$verdict" = PASS ]
 }
 
+# fake_game ID prints "APP_ID FOLDER MARKER BEPINEX" for a catalog game that has no install on this machine, so a
+# regress can run against a stand-in folder (see regress_fake).
+fake_game() {
+  case "$1" in
+    repo) echo "3241660 REPO REPO.exe 5.4.2305" ;;
+    *) return 1 ;;
+  esac
+}
+
+# regress_fake ID is regress for a game with no install here: the sandbox holds a fake install (the marker file and a
+# Steam manifest, nothing a game would load) and the launch is a dummy window started through the guard, so what it
+# proves is Mortar's side: discovery, the BepInEx pack install, the profile, the Doorstop pair placed beside the
+# executable for the launch, the hidden display, and a game folder that hashes as before once the launch is purged.
+# That BepInEx loads inside the real game is not covered; the game stays disabled in the catalog until a real run.
+regress_fake() {
+  local id=${1:?usage: selftest.sh regress --fake GAME_ID} spec app folder marker bepinex
+  spec=$(fake_game "$id") || {
+    echo "no fake install defined for $id" >&2
+    exit 2
+  }
+  read -r app folder marker bepinex <<<"$spec"
+  command -v zenity >/dev/null || {
+    echo "regress --fake needs zenity as its dummy window" >&2
+    exit 1
+  }
+  ROOT=$(mktemp -d /var/tmp/mortar-regress-fake-XXXXXX)
+  case "$ROOT" in /var/tmp/mortar-regress-fake-??????) ;; *)
+    echo "unexpected sandbox dir $ROOT" >&2
+    exit 1
+    ;;
+  esac
+  mark
+  PORT=$((9600 + RANDOM % 300))
+  while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
+  SANDBOX_HOME=$ROOT/home
+  SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
+  export MORTAR_ENABLE_GAMES=$id
+  verdict=FAIL
+  local game="$SANDBOX_STEAM/steamapps/common/$folder" compat="$SANDBOX_STEAM/steamapps/compatdata/$app"
+  local data=$SANDBOX_HOME/.local/share/mortar failures=() profile="" t0=$SECONDS diff_lines=0 placed=no
+  finish() { release_sandbox; }
+  regress_traps
+  need_launches 1
+
+  mkdir -p "$SANDBOX_STEAM/config" "$SANDBOX_STEAM/steamapps/common" "$game" "$compat/pfx/drive_c/users/steamuser/AppData/LocalLow"
+  printf 'MZ fake executable for a Mortar regress; it is never run\n' >"$game/$marker"
+  mkdir -p "$game/${marker%.exe}_Data"
+  printf '"AppState"\n{\n\t"appid"\t\t"%s"\n\t"installdir"\t\t"%s"\n\t"StateFlags"\t\t"4"\n}\n' "$app" "$folder" >"$SANDBOX_STEAM/steamapps/appmanifest_$app.acf"
+  [ -f "$STEAM/config/loginusers.vdf" ] && cp "$STEAM/config/loginusers.vdf" "$SANDBOX_STEAM/config/"
+  printf 'WINE REGISTRY Version 2\n;; All keys relative to \\\\User\\\\S-1-5-21-0-0-0-1000\n\n#arch=win64\n' >"$compat/pfx/user.reg"
+  write_library
+
+  # The launch prefix stands in for Proton: it records whether the Doorstop pair sits beside the executable, then
+  # keeps a dummy window up until Mortar stops it.
+  cat >"$ROOT/run-fake.sh" <<EOF
+#!/bin/bash
+dir=\$(dirname "\$1")
+{ for f in winhttp.dll doorstop_config.ini; do [ -f "\$dir/\$f" ] && echo "\$f"; done; } >'$ROOT/seen.txt'
+printf '%s\n' "\$@" >'$ROOT/args.txt'
+exec -a "\$1" zenity --info --text 'fake $id game'
+EOF
+  chmod +x "$ROOT/run-fake.sh"
+
+  build
+  start
+  cli settings set --game "$id" defaultLaunchMethod direct >/dev/null
+  profile=$(cli profile create "$id" "Regress fake" | cut -f1)
+  cli games --json >"$ROOT/games.json"
+  python3 - "$ROOT/games.json" "$id" <<'PY' || failures+=("discovery: $id is not listed as installed with the fake folder")
+import json, sys
+g = next((g for g in json.load(open(sys.argv[1])) if g["id"] == sys.argv[2]), None)
+sys.exit(0 if g and g.get("installed") else 1)
+PY
+  for _ in $(seq 1 30); do
+    cli loader install "$id" "$bepinex" >"$ROOT/loader.txt" 2>&1 && break
+    grep -q 'already running' "$ROOT/loader.txt" || break
+    sleep 2
+  done
+  grep -q "^Installed loader $bepinex" "$ROOT/loader.txt" || failures+=("BepInEx $bepinex did not install: $(head -c 300 "$ROOT/loader.txt")")
+  cli loader pin "$id" "$bepinex" >/dev/null 2>&1 || failures+=("pinning BepInEx $bepinex failed")
+  cli profile set "$id" "$profile" launchPrefix "$ROOT/run-fake.sh" >/dev/null
+  tree_hash "$game" >"$ROOT/game-before.txt"
+
+  if [ ${#failures[@]} -eq 0 ]; then
+    cli launch "$id" "$profile" >"$ROOT/launch.txt" 2>&1 || failures+=("launch failed: $(head -c 300 "$ROOT/launch.txt")")
+    for _ in $(seq 1 60); do
+      [ -s "$ROOT/seen.txt" ] && break
+      sleep 1
+    done
+    if [ "$(sort "$ROOT/seen.txt" 2>/dev/null | tr '\n' ' ')" = "doorstop_config.ini winhttp.dll " ]; then
+      placed=yes
+    else
+      failures+=("the Doorstop pair was not beside the executable at launch (saw: $(tr '\n' ' ' <"$ROOT/seen.txt" 2>/dev/null))")
+    fi
+    grep -q -- '--doorstop' "$ROOT/args.txt" 2>/dev/null || failures+=("the launch carried no --doorstop arguments")
+    cli stop "$id" >"$ROOT/stop.txt" 2>&1 || failures+=("mortar stop failed: $(head -c 300 "$ROOT/stop.txt")")
+    local state=""
+    for _ in $(seq 1 60); do
+      state=$(cli status "$id" --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')
+      [ "$state" = idle ] && break
+      sleep 1
+    done
+    [ "$state" = idle ] || failures+=("Mortar never went idle after the launch was stopped")
+    sleep 3
+    tree_hash "$game" >"$ROOT/game-after.txt"
+    diff_lines=$(diff "$ROOT/game-before.txt" "$ROOT/game-after.txt" | grep -c '^[<>]' || true)
+    [ "$diff_lines" -eq 0 ] || failures+=("game folder differs after purge ($diff_lines lines)")
+  fi
+
+  [ ${#failures[@]} -eq 0 ] && verdict=PASS
+  echo "---- regress --fake $id: $verdict ($((SECONDS - t0))s)"
+  echo "profile        $profile"
+  echo "BepInEx        $bepinex"
+  echo "Doorstop pair  $placed beside $marker at launch"
+  echo "game entries   $(wc -l <"$ROOT/game-before.txt") hashed, $diff_lines differing after purge"
+  local f
+  for f in "${failures[@]}"; do echo "FAIL: $f"; done
+  [ "$verdict" = PASS ]
+}
+
 # display_peers PID prints the path of every server PID's network namespace holds a connection to. A launch has a
 # namespace of its own, and the server side of a unix connection lives in the client's namespace, so each connected
 # socket there with a path is a display, bus or other service the game reached.
@@ -1352,8 +1474,9 @@ case "${1:-}" in
       "") regress ;;
       --gamelethal-company) regress_lc ;;
       --gamestardew) regress ;;
+      --fake*) regress_fake "${3:-}" ;;
       *)
-        echo "regress takes --game stardew or --game lethal-company" >&2
+        echo "regress takes --game stardew, --game lethal-company or --fake GAME_ID" >&2
         exit 2
         ;;
     esac

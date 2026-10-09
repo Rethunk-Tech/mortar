@@ -45,15 +45,18 @@ func TestResetInstallRemovesGameFolder(t *testing.T) {
 
 func TestListComesFromTheCatalog(t *testing.T) {
 	list, err := NewService(t.TempDir(), testStore(t)).List()
-	if err != nil || len(list) != 3 {
+	if err != nil || len(list) != 4 {
 		t.Fatalf("List = %+v, %v", list, err)
 	}
-	sdv, lc, vh := list[0], list[1], list[2]
+	sdv, lc, vh, repo := list[0], list[1], list[2], list[3]
 	if sdv.ID != "stardew" || !sdv.Available || sdv.LoaderID != "smapi" || strings.Join(sdv.Sources, ",") != "nexus,curseforge,github" || sdv.AppID != "413150" {
 		t.Fatalf("stardew row = %+v", sdv)
 	}
 	if lc.ID != "lethal-company" || !lc.Available || lc.LoaderID != "bepinex5" || lc.AppID != "1966720" {
 		t.Fatalf("lethal-company row = %+v", lc)
+	}
+	if repo.ID != "repo" || !repo.Available || repo.LoaderID != "bepinex5" || repo.AppID != "3241660" {
+		t.Fatalf("repo row = %+v", repo)
 	}
 	if vh.ID != "valheim" || !vh.Available || vh.LoaderID != "bepinex5" || vh.AppID != "892970" {
 		t.Fatalf("valheim row = %+v", vh)

@@ -1,0 +1,9 @@
+# R.E.P.O.: research for the fourth catalog game
+
+R.E.P.O. is a Unity co-op game on the BepInEx 5 path, the nearest relative of Lethal Company. The ranking that chose it is in [design.md](design.md). Every id below was read on 2026-10-09 from the named source.
+
+- **Discovery:** Steam app `3241660` (Steam's store search API, `storesearch?term=R.E.P.O.`; r2modman's ecosystem schema `distributions` agrees). The executable is `REPO.exe` and the Steam folder `REPO` (the schema's `exeNames` and `steamFolderName`); the game is Windows-only, so on Linux it runs through Proton like Lethal Company. Hero art is Steam's `library_hero.jpg` for the app id, which answers 200.
+- **Loader:** Thunderstore community `repo` lists `BepInEx-BepInExPack` 5.4.2305 (the generic pack, so the catalog needs no `package` key). It holds `BepInExPack/winhttp.dll`, `doorstop_config.ini` and `.doorstop_version` 4.5.0, the shape the loader already installs.
+- **Mods:** Thunderstore community `repo` (r2modman folder `REPO`, data folder `REPO_Data`). No Nexus or GitHub source is listed: Nexus answers 403 to automated reads, so its game id was not verified.
+- **Saves and log:** PCGamingWiki lists saves in `%USERPROFILE%\AppData\LocalLow\semiwork\Repo\saves\` and settings under `semiwork\Repo`, so `Player.log` is at `{localLow}/semiwork/Repo/Player.log`. The layout inside `saves\` was not read from an install; with no `saveFiles` pattern a save is a folder holding a file of its own name.
+- **Regress:** `scripts/selftest.sh regress --fake repo` runs Mortar against a stand-in install and a dummy window: discovery, the pack install, the Doorstop pair beside `REPO.exe` at launch, the hidden display, and a game folder that hashes as before after the purge. It does not show BepInEx loading inside the real game, which this machine cannot run (the game is not installed).

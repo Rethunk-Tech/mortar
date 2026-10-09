@@ -1,5 +1,5 @@
 {
-  "serial": 1791399366,
+  "serial": 1791536793,
   "components": [
     {
       "game": "stardew",
@@ -282,6 +282,47 @@
         {
           "id": "github",
           "key": "valheim-mod"
+        }
+      ]
+    },
+    {
+      "id": "repo",
+      "name": "R.E.P.O.",
+      "enabled": true,
+      "marker": "REPO.exe",
+      "r2modmanFolder": "REPO",
+      "metadata": [],
+      "paths": {
+        "saves": {
+          "windows": "{localLow}/semiwork/Repo/saves"
+        },
+        "unityLog": {
+          "windows": "{localLow}/semiwork/Repo/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "3241660"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "repo"
         }
       ]
     }
