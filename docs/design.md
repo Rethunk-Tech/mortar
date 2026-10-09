@@ -2,7 +2,7 @@
 
 This file holds only work that is decided but not built. Each item is written to be implemented cold: the shape, the evidence it rests on, the traps, and when it is done. When an item lands, delete it here and move any fact that stays true to [architecture.md](architecture.md); the code is the record of what exists. Screens and styling: [gui-design.md](gui-design.md). Lethal Company research for the second game: [lethal-company.md](lethal-company.md). Standing rules: [AGENTS.md](../AGENTS.md).
 
-Specs under [Decided, ready to build](#decided-ready-to-build) have the operator's answers recorded in them; a spec under [Specs awaiting approval](#specs-awaiting-approval) ends in open questions, and nothing in it is built until they are answered.
+Specs under [Decided, ready to build](#decided-ready-to-build) have the operator's answers recorded in them.
 
 Items marked **Measure** need a throwaway test first; those tests run outside this repo and only their results land here.
 
@@ -17,7 +17,7 @@ Remaining ([architecture.md](architecture.md#release)):
 
 Decided 2026-10-07 (NOMAD), from the audit of how Mortar was described to CurseForge.
 
-- **Profiles for any game, and shared-state games (The Sims 4 first).** Spec: [Generic-folder games](#generic-folder-games-and-shared-state), decided 2026-10-09 apart from which game proves the generic path next.
+- **Profiles for any game, and shared-state games (The Sims 4 first).** Spec: [Generic-folder games](#generic-folder-games-the-sims-4-entry-and-sandbox), decided 2026-10-09 apart from which game proves the generic path next.
 
 ## Decided, ready to build
 
@@ -43,8 +43,6 @@ The source and its window are built ([architecture.md](architecture.md#games-and
 
 - **UI translations** beyond English, as Stardrop (17+), MO2 and r2modman ship: every string already goes through Lingui and the catalogs are extracted; needs chosen languages and translators. Parked 2026-10-02 (not v1).
 - **macOS build**: Stardew runs on macOS, and Stardrop ships for x64 and arm64, but Mortar has no macOS CI or test machine; it needs an Apple developer account for signing and notarization, Mac Steam paths and nxm registration, and a Mac to test on. Parked 2026-10-02 (not v1).
-- **EA App** as a game store, beside the drivers in `internal/gamestore/drivers.go` (Steam, Steam (Flatpak), GOG, Heroic, Lutris, Minigalaxy, Bottles): spec: [EA App](#ea-app-game-store), decided 2026-10-09. Queued 2026-10-07.
-- **Patreon** as a mod source, beside the drivers in `internal/source/`: spec: [Patreon](#patreon-mod-source). Queued 2026-10-07.
 
 Not in the first release; re-weigh only when asked:
 
