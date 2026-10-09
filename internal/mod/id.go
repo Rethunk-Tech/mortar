@@ -8,6 +8,8 @@ const (
 	FormatSMAPI        = "smapi"
 	FormatBepInEx      = "bepinex"
 	FormatThunderstore = "thunderstore"
+	// FormatFolder names a mod of a game with no loader, by the store item that holds its files.
+	FormatFolder = "folder"
 )
 
 // ID is "<format>:<local>", for example "smapi:Pathoschild.ContentPatcher". The zero ID is empty.

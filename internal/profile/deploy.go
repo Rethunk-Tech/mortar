@@ -43,7 +43,7 @@ func (s *Store) packageFiles(gameID, id string) (files map[string]packageFile, w
 			return nil, nil, fmt.Errorf("%s: %w", entryLabel(e), err)
 		}
 		for _, f := range l.Files {
-			rel := path.Clean(f.Rel)
+			rel := path.Join(targetPrefix(info, f.Target), path.Clean(f.Rel))
 			if !filepath.IsLocal(filepath.FromSlash(rel)) {
 				return nil, nil, fmt.Errorf("%s: %s leaves the profile", entryLabel(e), f.Rel)
 			}
@@ -61,6 +61,11 @@ func (s *Store) packageFiles(gameID, id string) (files map[string]packageFile, w
 }
 
 type packageFile struct{ src, key string }
+
+func targetPrefix(info components.GameInfo, id string) string {
+	t, _ := info.Target(id)
+	return t.ProfileFolder()
+}
 
 // PackageFileOwners maps each file the enabled packages lay out below the profile's root, by slash path, to the key
 // of the entry whose copy is there. A game that is redirected has none.

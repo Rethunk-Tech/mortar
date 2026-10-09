@@ -264,6 +264,10 @@ func TestGameFallsBackToBundledAndRejectsUnsafeNames(t *testing.T) {
 	if err := unsafeEA.Validate(); err == nil {
 		t.Fatal("an EA folder that leaves the library must be refused")
 	}
+	badSetting := Manifest{Serial: 1, Games: []GameInfo{{ID: "x", Name: "X", Marker: "m", Loaders: []GameLoader{{ID: "l"}}, RequiredSettings: []RequiredSetting{{Path: "options", Key: "k", Value: "1", Message: "m"}}}}}
+	if err := badSetting.Validate(); err == nil {
+		t.Fatal("a required setting must name one of the game's paths")
+	}
 	dup := Manifest{Serial: 1, Games: []GameInfo{{ID: "x", Name: "X", Marker: "m", Loaders: []GameLoader{{ID: "l"}}}, {ID: "x", Name: "X", Marker: "m", Loaders: []GameLoader{{ID: "l"}}}}}
 	if err := dup.Validate(); err == nil {
 		t.Fatal("a game listed twice must be refused")

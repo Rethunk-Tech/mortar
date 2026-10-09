@@ -137,6 +137,9 @@ type GameInfo struct {
 	// SaveCompanions are extensions of files beside a save file, sharing its stem, that belong to that save (a Valheim
 	// world's .db beside its .fwl).
 	SaveCompanions []string `json:"saveCompanions,omitempty"`
+	// RequiredSettings are settings in a game's own files that mods need switched on; Problems reports one that is
+	// switched off and never edits the file. An older Mortar ignores the field.
+	RequiredSettings []RequiredSetting `json:"requiredSettings,omitempty"`
 	// KnownBroken is Mortar's curated list of mods and packages of this game that are known not to work; an older
 	// Mortar ignores the field.
 	KnownBroken []KnownBroken `json:"knownBroken,omitempty"`
@@ -155,6 +158,15 @@ type GameInfo struct {
 	// Templates are starter profiles offered when creating one: a named list of packages, each queued through the
 	// normal download path.
 	Templates []StarterTemplate `json:"templates,omitempty"`
+}
+
+// RequiredSetting names one `key = value` line of the file at the game's path role Path that mods need: a file that
+// holds the key with another value is reported with Message; a file or key that is absent is not.
+type RequiredSetting struct {
+	Path    string `json:"path"`
+	Key     string `json:"key"`
+	Value   string `json:"value"`
+	Message string `json:"message"`
 }
 
 // StarterTemplate is a built-in starting set of mods for a game.
@@ -201,6 +213,15 @@ type TargetDef struct {
 	ID       string         `json:"id"`
 	Root     string         `json:"root"`
 	MaxDepth map[string]int `json:"maxDepth,omitempty"`
+}
+
+// ProfileFolder is the folder below the profile's root that the target's files are laid out in: "" for {profile},
+// the subfolder for {profile}/<sub>, and "mods" for {profileMods}.
+func (t TargetDef) ProfileFolder() string {
+	if t.Root == "{profileMods}" {
+		return "mods"
+	}
+	return strings.TrimPrefix(strings.TrimPrefix(t.Root, "{profile}"), "/")
 }
 
 // Target returns the game's content target with the given id.
@@ -383,6 +404,11 @@ func (g GameInfo) Validate() error {
 	for _, name := range names {
 		if strings.ContainsAny(name, "/\\") || name == "." || name == ".." {
 			return fmt.Errorf("game %q has an unsafe file or folder name %q", g.ID, name)
+		}
+	}
+	for _, r := range g.RequiredSettings {
+		if _, ok := g.Paths[r.Path]; !ok || r.Key == "" || r.Value == "" || r.Message == "" {
+			return fmt.Errorf("game %q has a required setting without a path role of the game, a key, a value or a message", g.ID)
 		}
 	}
 	for _, k := range g.KnownBroken {

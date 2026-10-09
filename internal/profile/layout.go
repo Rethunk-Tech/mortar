@@ -163,7 +163,10 @@ func cutSuffixFold(s, suffix string) (string, bool) {
 
 // packageMods is the one component of a Thunderstore package item; ok is false for any other item.
 func (s *Store) packageMods(game, key string) (mods []Component, ok bool, err error) {
-	arch, _, inst, err := s.pick(game, key)
+	arch, g, inst, err := s.pick(game, key)
+	if err == nil && inst.ID() == "plain" && slices.Contains(g.Loaders, folderLoader) {
+		return []Component{{ID: mod.NewID(mod.FormatFolder, key), Name: key, Folder: "."}}, true, nil
+	}
 	if err != nil || inst.ID() != driverThunderstore {
 		return nil, false, err
 	}
@@ -195,6 +198,9 @@ func (s *Store) packageMods(game, key string) (mods []Component, ok bool, err er
 	}
 	return []Component{{ID: mod.NewID(mod.FormatThunderstore, id), Version: m.Version, Name: m.Name, Author: author, Folder: ".", Needs: needs}}, true, nil
 }
+
+// folderLoader is the id of the loader of a game whose mods are files in a folder the game reads (internal/loader/folder).
+const folderLoader = "folder"
 
 // pluginComponent is the component of a BepInEx mod that has no Thunderstore manifest. It is named for its first
 // DLL, which is the plugin's assembly in nearly every such archive, so another file or version of the same mod
