@@ -5,9 +5,9 @@ reconciled = "canon v0.1.0-poc"
 # (launch.Hint, launchsvc.State, loader.Step, steam.Status), and erasableSyntaxOnly rejects enums.
 # The fork's models.ts.tmpl has no const-object option, and generated files are overwritten on every build.
 "ts-typescript-00006" = "wails-generated bindings contain TS enums; fix belongs in the Rethunk-AI/wails generator template"
-# go.mod replaces github.com/wailsapp/wails/v3 with the Rethunk-AI fork (GTK4 transparency fix, upstream PR
-# wailsapp/wails#6197); gomoddirectives.replace-allow-list names it.
-"go-golangci-lint-00011" = "go.mod replaces wails/v3 with the Rethunk-AI fork until upstream PR wailsapp/wails#6197 lands"
+# go.mod replaces github.com/wailsapp/wails/v3 with the Rethunk-AI fork (fixes offered upstream as wailsapp/wails#6200,
+# #6201, #6202 and #6239; docs/design.md); gomoddirectives.replace-allow-list names it.
+"go-golangci-lint-00011" = "go.mod replaces wails/v3 with the Rethunk-AI fork until upstream PRs wailsapp/wails#6200, #6201, #6202 and #6239 ship in a tagged v3 beta"
 # ireturn allows five registry interfaces that implementations return by design: internal/game.Game, internal/host.Host,
 # internal/loader.Loader, internal/installer.Installer and internal/deploy.Deployer.
 "go-golangci-lint-00013" = "ireturn allows five registry interfaces (game.Game, host.Host, loader.Loader, installer.Installer, deploy.Deployer)"
