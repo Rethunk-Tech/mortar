@@ -9,8 +9,12 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
+// maxManifestBytes bounds one manifest.json read: this peek runs before the capped extractor,
+// so a crafted archive in Downloads must not be able to make it inflate gigabytes.
+const maxManifestBytes = 1 << 20
+
 func readManifestName(r io.Reader) string {
-	b, err := io.ReadAll(r)
+	b, err := io.ReadAll(io.LimitReader(r, maxManifestBytes))
 	if err != nil {
 		return ""
 	}
@@ -36,6 +40,9 @@ func PeekName(path string) string {
 		}
 		depth := strings.Count(filepath.ToSlash(f.Name), "/")
 		if depth >= bestDepth {
+			continue
+		}
+		if f.UncompressedSize64 > maxManifestBytes {
 			continue
 		}
 		rc, err := f.Open()
