@@ -6,7 +6,7 @@ licence and NOTICE text from each.
 
 ================================================================================
 
-@babel/runtime@7.29.7
+@babel/runtime@7.29.10
 licence: MIT
 https://babel.dev/docs/en/next/babel-runtime
 
@@ -3316,7 +3316,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-golang.org/x/net@v0.59.0
+golang.org/x/net@v0.60.0
 licence: BSD-3-Clause
 https://pkg.go.dev/golang.org/x/net
 
