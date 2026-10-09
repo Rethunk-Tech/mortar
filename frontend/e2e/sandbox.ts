@@ -35,6 +35,7 @@ function selftest(dir: string, ...args: string[]) {
       MORTAR_SELFTEST_PORT: sandboxPort(),
       // play.pw.ts launches a stand-in for the game, which must not spend the session's real game launches.
       MORTAR_LAUNCH_SESSION: launchSession(dir),
+      MORTAR_SELFTEST_LAUNCH_CAP: '12',
     },
     stdio: 'inherit',
   })
@@ -170,6 +171,8 @@ function freshSandbox(): () => void {
     })
   }
   try {
+    // A stand-in PEAK, so graphics.pw.ts needs no download and no copy of a real game.
+    selftest(dir, 'fake-install', 'peak')
     selftest(dir, 'start')
     selftest(dir, 'seed')
   } catch (e) {

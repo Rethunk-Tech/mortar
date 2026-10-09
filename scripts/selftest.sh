@@ -5,6 +5,7 @@
 #
 #   scripts/selftest.sh start [--copy-data]   build, set up the sandbox if missing, start the server
 #   scripts/selftest.sh start --fake GAME_ID  start a sandbox of its own holding only a fake install of a catalog game this machine lacks, with a profile (see start_fake)
+#   scripts/selftest.sh fake-install GAME_ID  add only the fake install of a catalog game to the sandbox (no server, no network; before start)
 #   scripts/selftest.sh setup                 only create or top up the sandbox's Steam library; no build, no server
 #   scripts/selftest.sh restart               rebuild from the working tree and restart
 #   scripts/selftest.sh stop                  stop the server
@@ -60,7 +61,8 @@ export MORTAR_ENABLE_GAMES=${MORTAR_SELFTEST_ENABLE:-lethal-company}
 # Every game a sandbox starts goes through scripts/launch-guard.sh onto a display of the sandbox's own, and a session
 # gets at most LAUNCH_CAP launches across all its sandboxes. The session is MORTAR_LAUNCH_SESSION, else the agent
 # session, else the login session; its counter lives beside the sandboxes, since a regress sandbox lasts one run.
-LAUNCH_CAP=3
+# The e2e run launches only stand-ins for games (frontend/e2e/sandbox.ts), and raises the cap for its own sandbox.
+LAUNCH_CAP=${MORTAR_SELFTEST_LAUNCH_CAP:-3}
 SESSION_KEY=$(printf '%s' "${MORTAR_LAUNCH_SESSION:-${CLAUDE_CODE_SESSION_ID:-${XDG_SESSION_ID:-default}}}" | tr -c 'A-Za-z0-9_-' _)
 LAUNCH_COUNT=$BASE/mortar-launch-cap/$SESSION_KEY
 
@@ -1042,6 +1044,13 @@ fake_game() {
   esac
 }
 
+need_zenity() {
+  command -v zenity >/dev/null || {
+    echo "a fake install's dummy window needs zenity" >&2
+    exit 1
+  }
+}
+
 # fake_install ID gives the sandbox a stand-in install of a catalog game this machine lacks: the marker file and a Steam
 # manifest, and $ROOT/run-fake.sh, a launch prefix that records what the launch carried and keeps a dummy window up.
 fake_install() {
@@ -1051,10 +1060,6 @@ fake_install() {
     exit 2
   }
   IFS="|" read -r app folder marker bepinex <<<"$spec"
-  command -v zenity >/dev/null || {
-    echo "a fake install needs zenity as its dummy window" >&2
-    exit 1
-  }
   local game="$SANDBOX_STEAM/steamapps/common/$folder" compat="$SANDBOX_STEAM/steamapps/compatdata/$app"
   mkdir -p "$SANDBOX_STEAM/config" "$SANDBOX_STEAM/steamapps/common" "$game" "$compat/pfx/drive_c/users/steamuser/AppData/LocalLow"
   printf 'MZ fake executable for a Mortar regress; it is never run\n' >"$game/$marker"
@@ -1086,6 +1091,7 @@ start_fake() {
     exit 2
   }
   IFS="|" read -r app folder marker bepinex <<<"$spec"
+  need_zenity
   mark
   fake_install "$id"
   build
@@ -1119,10 +1125,7 @@ regress_fake() {
     exit 2
   }
   IFS="|" read -r app folder marker bepinex <<<"$spec"
-  command -v zenity >/dev/null || {
-    echo "regress --fake needs zenity as its dummy window" >&2
-    exit 1
-  }
+  need_zenity
   ROOT=$(mktemp -d /var/tmp/mortar-regress-fake-XXXXXX)
   case "$ROOT" in /var/tmp/mortar-regress-fake-??????) ;; *)
     echo "unexpected sandbox dir $ROOT" >&2
@@ -1595,6 +1598,10 @@ case "${1:-}" in
     start
     ;;
   setup) setup ;;
+  fake-install)
+    mark
+    fake_install "${2:?usage: selftest.sh fake-install GAME_ID}"
+    ;;
   ea-fixture) ea_fixture "${2:-}" "${3:-}" ;;
   seed) seed ;;
   stop) stop ;;
