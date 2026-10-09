@@ -18,4 +18,9 @@ function tourShownSteps(): number[] {
   )
 }
 
-export { resolveTourAnchor, tourShownSteps }
+/** Whether a dialog, menu or drawer is open. The tour's own popover is a Popper, not a Modal, so it never counts. */
+function anyModalOpen(): boolean {
+  return document.querySelector('.MuiModal-root:not(.MuiModal-hidden)') !== null
+}
+
+export { anyModalOpen, resolveTourAnchor, tourShownSteps }

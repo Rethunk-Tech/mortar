@@ -31,10 +31,29 @@ test('anchor rect keeps identity until it moves', () => {
 })
 
 test('Skip keeps the tour closed even before the seen flag is saved; Show again reopens it', () => {
-  const base = { onGameWithProfile: true, unseen: true, dismissed: false, replay: false }
+  const base = {
+    onGameWithProfile: true,
+    unseen: true,
+    dismissed: false,
+    replay: false,
+    modalOpen: false,
+  }
   expect(tourEligible(base)).toBe(true)
   expect(tourEligible({ ...base, dismissed: true })).toBe(false)
   expect(tourEligible({ ...base, unseen: false })).toBe(false)
   expect(tourEligible({ ...base, unseen: false, dismissed: true, replay: true })).toBe(true)
   expect(tourEligible({ ...base, onGameWithProfile: false, replay: true })).toBe(false)
+})
+
+test('the tour waits while a modal dialog is open and returns when it closes', () => {
+  const base = {
+    onGameWithProfile: true,
+    unseen: true,
+    dismissed: false,
+    replay: false,
+    modalOpen: false,
+  }
+  expect(tourEligible({ ...base, modalOpen: true })).toBe(false)
+  expect(tourEligible({ ...base, unseen: false, replay: true, modalOpen: true })).toBe(false)
+  expect(tourEligible(base)).toBe(true)
 })

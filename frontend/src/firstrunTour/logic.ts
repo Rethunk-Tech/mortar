@@ -35,15 +35,17 @@ function sameRectOr(prev: TourRect | null, next: TourRect | null): TourRect | nu
   return { top: next.top, left: next.left, width: next.width, height: next.height }
 }
 
-/** Whether the tour should open: on a game with an open profile, unseen and not closed this session, or replayed.
- * A close counts at once, so a failed save of the seen flag cannot reopen it. */
+/** Whether the tour should show: on a game with an open profile, unseen and not closed this session, or replayed.
+ * A close counts at once, so a failed save of the seen flag cannot reopen it. While a modal dialog is open it
+ * waits (an open tour hides and comes back at the same step), so it never sits on top of the dialog. */
 function tourEligible(o: {
   onGameWithProfile: boolean
   unseen: boolean
   dismissed: boolean
   replay: boolean
+  modalOpen: boolean
 }): boolean {
-  return o.onGameWithProfile && ((o.unseen && !o.dismissed) || o.replay)
+  return !o.modalOpen && o.onGameWithProfile && ((o.unseen && !o.dismissed) || o.replay)
 }
 
 export { sameRectOr, type TourRect, tourEligible, tourOnLastStep, tourStepBack, tourStepNext }

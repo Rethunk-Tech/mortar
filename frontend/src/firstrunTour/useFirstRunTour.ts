@@ -5,7 +5,7 @@ import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { reportError } from '../toasts/report.ts'
-import { resolveTourAnchor } from './anchors.ts'
+import { anyModalOpen, resolveTourAnchor } from './anchors.ts'
 import { sameRectOr, type TourRect, tourEligible } from './logic.ts'
 import { useTourReplay } from './replay.ts'
 import { tourMarkSeen, tourShouldRun } from './seen.ts'
@@ -27,6 +27,15 @@ function useFirstRunTour() {
   const [anchorRect, setAnchorRect] = useState<TourRect | null>(null)
   // Closing must not wait for the saved setting to round-trip, or a failed save reopens the tour.
   const [dismissed, setDismissed] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+
+  // MUI keeps no open-dialog store, so watch the DOM; the tour waits while one is open.
+  useEffect(() => {
+    const sync = () => setModalOpen(anyModalOpen())
+    sync()
+    const id = globalThis.setInterval(sync, ANCHOR_POLL_MS)
+    return () => globalThis.clearInterval(id)
+  }, [])
 
   const onGameWithProfile = route.name === 'game' && loaded && openId !== '' && hasProfile
   const eligible = tourEligible({
@@ -34,6 +43,7 @@ function useFirstRunTour() {
     unseen: tourShouldRun(seen),
     dismissed,
     replay,
+    modalOpen,
   })
 
   const finish = useCallback(() => {
