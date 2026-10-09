@@ -26,6 +26,10 @@ export const usePatreonPost = create<{
   set: (post: PatreonPostRef | null) => void
 }>((set) => ({ post: null, set: (post) => set({ post }) }))
 
+/** The remembered post while it is still within its time-to-live, else null. */
+export const livePatreonPost = (post: PatreonPostRef | null, now = Date.now()) =>
+  post && now - post.openedAt <= PATREON_POST_TTL_MS ? post : null
+
 const forgetPatreonPost = () => usePatreonPost.getState().set(null)
 
 // Opens the post a pasted Patreon address names and remembers it; false when the text is not a Patreon post address,
@@ -50,15 +54,15 @@ export function downloadInstaller(
 ): () => Promise<InstallResult> {
   const { game, profileId, file, mtime } = target
   const { post } = usePatreonPost.getState()
-  const expired = post !== null && now - post.openedAt > PATREON_POST_TTL_MS
-  if (expired) {
+  const live = livePatreonPost(post, now)
+  if (post && !live) {
     forgetPatreonPost()
   }
-  if (!post || expired || mtime < post.openedAt) {
+  if (!live || mtime < live.openedAt) {
     return () => install(game, profileId, file)
   }
   return async () => {
-    const res = await InstallPatreonDownload(game, profileId, file, post.id)
+    const res = await InstallPatreonDownload(game, profileId, file, live.id)
     forgetPatreonPost()
     return res
   }

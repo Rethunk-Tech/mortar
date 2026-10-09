@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { ClipboardPaste, FolderOpen } from 'lucide-react'
-import { usePatreonPost } from '../install/patreon.ts'
+import { livePatreonPost, usePatreonPost } from '../install/patreon.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -11,7 +11,7 @@ import type { ImportFlow } from './useImportFlow.ts'
 export function ImportInput({ flow }: { flow: ImportFlow }) {
   const { t } = useLingui()
   const game = useCurrentGame()
-  const patreonPost = usePatreonPost((s) => s.post)
+  const patreonPost = livePatreonPost(usePatreonPost((s) => s.post))
   const canPreview = !flow.busy && flow.text.trim() !== ''
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, p: '20px 18px' }}>

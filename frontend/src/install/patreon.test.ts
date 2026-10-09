@@ -21,9 +21,13 @@ mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/servi
   },
 }))
 
-const { downloadInstaller, PATREON_POST_TTL_MS, startPatreonPost, usePatreonPost } = await import(
-  './patreon.ts'
-)
+const {
+  downloadInstaller,
+  livePatreonPost,
+  PATREON_POST_TTL_MS,
+  startPatreonPost,
+  usePatreonPost,
+} = await import('./patreon.ts')
 
 beforeEach(() => {
   calls.opened.length = 0
@@ -104,4 +108,10 @@ test('a pasted non-Patreon link forgets an earlier remembered post', async () =>
   usePatreonPost.getState().set(ref)
   expect(await startPatreonPost('https://mortar.rethunk.tech/stardew/p#abc')).toBe(false)
   expect(usePatreonPost.getState().post).toBeNull()
+})
+
+test('a post stops being live once it has expired', () => {
+  expect(livePatreonPost(ref, ref.openedAt + PATREON_POST_TTL_MS)).toEqual(ref)
+  expect(livePatreonPost(ref, ref.openedAt + PATREON_POST_TTL_MS + 1)).toBeNull()
+  expect(livePatreonPost(null)).toBeNull()
 })
