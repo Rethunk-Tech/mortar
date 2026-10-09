@@ -147,8 +147,7 @@
         "**/*.test.ts",
         "**/*.test.tsx",
         "**/__tests__/**",
-        "**/test/**",
-        "**/e2e/**"
+        "**/test/**"
       ],
       "linter": {
         "rules": {
@@ -197,6 +196,33 @@
             "noMisplacedAssertion": "off",
             "noSkippedTests": "off",
             "useAwait": "off"
+          }
+        }
+      }
+    },
+    // canon ts-biome-00016 — end-to-end specs and their config
+    {
+      "includes": ["**/e2e/**", "**/playwright.*.config.ts", "**/playwright.config.ts"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noNodejsModules": "off",
+            "noProcessGlobal": "off",
+            "noUnresolvedImports": "off"
+          },
+          "performance": {
+            "useTopLevelRegex": "off"
+          },
+          "security": {
+            "noSecrets": "off"
+          },
+          "style": {
+            "noDefaultExport": "off",
+            "noMagicNumbers": "off",
+            "noProcessEnv": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
           }
         }
       }

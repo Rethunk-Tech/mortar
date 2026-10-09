@@ -55,8 +55,8 @@ test('hovering a Game Select row drifts its art and leaves the others undimmed w
 
 test('Browse defaults to All sources and a search shows results from more than one source', async ({
   page,
-}) => {
-  test.skip(!(await online()), 'Nexus and GitHub are not reachable from here')
+}, testInfo) => {
+  testInfo.skip(!(await online()), 'Nexus and GitHub are not reachable from here')
   await openSeedFarm(page)
   await page.getByRole('tab', { name: 'Browse' }).click()
   await expect(page.getByRole('button', { name: 'All sources' })).toHaveAttribute(

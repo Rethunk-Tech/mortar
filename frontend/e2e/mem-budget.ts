@@ -1,7 +1,8 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdirSync, readdirSync, readFileSync, readlinkSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { chromium, type Page } from '@playwright/test'
+import { browserRoot, cpuSeconds, MIB, pssKiB, sample, serverPid, tree } from './mem-proc.ts'
 import { sandboxPort, selftest, serverEnv } from './sandbox.ts'
 
 // Measures the memory Mortar holds while it does its heaviest work: peak PSS of the Go server's process tree and of the
@@ -15,8 +16,6 @@ import { sandboxPort, selftest, serverEnv } from './sandbox.ts'
 // Exits 1 when a scenario's total is over the budget.
 
 const BASE = '/var/tmp'
-const MIB = 1024
-const SAMPLE_MS = 100
 const BUDGET_MIB = Number(process.env.MORTAR_MEM_BUDGET_MIB ?? '1152')
 const ZIP_MIB = Number(process.env.MORTAR_MEM_ZIP_MIB ?? '500')
 // archive.DefaultMaxEntries: the largest archive in a real 811-mod store holds 2,438 files.
@@ -31,149 +30,11 @@ const LAUNCH_TIMEOUT_MS = 240_000
 
 const dir = `${BASE}/mortar-mem-${process.pid}`
 
-interface Peak {
-  go: number
-  browser: number
-  game: number
-  total: number
-  /** The five biggest processes at the total's peak. */
-  top: { pid: number; comm: string; mib: number }[]
-}
-
-/** pid -> parent pid of every process, from /proc. */
-function parents(): Map<number, number> {
-  const map = new Map<number, number>()
-  for (const name of readdirSync('/proc')) {
-    try {
-      const stat = readFileSync(`/proc/${name}/stat`, 'utf8')
-      // The command name may hold spaces and parentheses, so the fields start after the last one.
-      const rest = stat.slice(stat.lastIndexOf(')') + 2).split(' ')
-      map.set(Number(name), Number(rest[1]))
-    } catch {
-      // Not a process, or it ended while the walk ran.
-    }
-  }
-  return map
-}
-
 function verdict(failure: string | undefined, over: boolean): string {
   if (failure) {
     return `FAILED: ${failure}`
   }
   return over ? 'OVER BUDGET' : 'ok'
-}
-
-function tree(root: number): number[] {
-  const kids = parents()
-  const out = [root]
-  for (const parent of out) {
-    for (const [pid, ppid] of kids) {
-      if (ppid === parent) {
-        out.push(pid)
-      }
-    }
-  }
-  return out
-}
-
-/** KiB of PSS (RSS where the kernel gives no PSS) of one process, 0 once it is gone. */
-function pssKiB(pid: number): number {
-  try {
-    const text = readFileSync(`/proc/${pid}/smaps_rollup`, 'utf8')
-    const pss = /^Pss:\s+(\d+) kB/m.exec(text)
-    return pss ? Number(pss[1]) : 0
-  } catch {
-    return 0
-  }
-}
-
-/** The browser's main process: the one of our descendants that is Chromium and has no --type (its helpers do). Playwright
- * no longer hands out the pid. */
-function browserRoot(): number {
-  for (const pid of tree(process.pid)) {
-    try {
-      const args = readFileSync(`/proc/${pid}/cmdline`, 'utf8').split('\0')
-      if (
-        /chrom|headless_shell/i.test(args[0] ?? '') &&
-        !args.some((a) => a.startsWith('--type='))
-      ) {
-        return pid
-      }
-    } catch {
-      // Gone already.
-    }
-  }
-  throw new Error('no Chromium process under this one')
-}
-
-function serverPid(): number {
-  const out = execFileSync('ss', ['-ltnp', `sport = :${sandboxPort()}`], { encoding: 'utf8' })
-  const m = /pid=(\d+)/.exec(out)
-  if (!m) {
-    throw new Error('the sandbox server is not listening')
-  }
-  return Number(m[1])
-}
-
-const exeOf = (pid: number) => {
-  try {
-    return readlinkSync(`/proc/${pid}/exe`).replace(/ \(deleted\)$/, '')
-  } catch {
-    return ''
-  }
-}
-
-const commOf = (pid: number) => {
-  try {
-    const comm = readFileSync(`/proc/${pid}/comm`, 'utf8').trim()
-    // A Chromium child names its role (renderer, gpu-process, utility) only on its command line.
-    const role = /--type=([\w-]+)/.exec(readFileSync(`/proc/${pid}/cmdline`, 'utf8'))
-    return role?.[1] ? `${comm}:${role[1]}` : comm
-  } catch {
-    return '?'
-  }
-}
-
-interface Proc {
-  pid: number
-  comm: string
-  mib: number
-}
-
-/** Samples until the returned function is called, which answers the peaks. Go is the sandbox's mortar-server process
- * alone: the tree around it holds the sandbox's display, D-Bus and reaper, which are not Mortar. A game it launches is
- * reported apart and left out of the total. */
-function sample(listener: () => number, browser: () => number): () => Peak {
-  const peak: Peak = { go: 0, browser: 0, game: 0, total: 0, top: [] }
-  const server = `${dir}/mortar-server`
-  const timer = setInterval(() => {
-    const all = tree(listener())
-    const goPids = all.filter((pid) => exeOf(pid) === server)
-    const gamePids = new Set(
-      goPids.flatMap((root) => tree(root)).filter((pid) => !goPids.includes(pid)),
-    )
-    const mem = (pids: Iterable<number>): Proc[] =>
-      [...pids].map((pid) => ({ pid, comm: commOf(pid), mib: pssKiB(pid) / MIB }))
-    const goProcs = mem(goPids)
-    const browserProcs = mem(tree(browser()))
-    const gameProcs = mem(gamePids)
-    const sum = (procs: Proc[]) => procs.reduce((t, p) => t + p.mib, 0)
-    const go = sum(goProcs)
-    const web = sum(browserProcs)
-    peak.go = Math.max(peak.go, go)
-    peak.browser = Math.max(peak.browser, web)
-    peak.game = Math.max(peak.game, sum(gameProcs))
-    if (go + web > peak.total) {
-      peak.total = go + web
-      peak.top = [...goProcs, ...browserProcs, ...gameProcs]
-        .sort((x, y) => y.mib - x.mib)
-        .slice(0, 5)
-    }
-  }, SAMPLE_MS)
-  return () => {
-    clearInterval(timer)
-    return peak
-  }
 }
 
 const outDir = process.env.MORTAR_MEM_OUT ?? `${BASE}/mem-budget-${Date.now()}`
@@ -268,20 +129,6 @@ function pollPeakHeap(addr: string, scenario: string): () => Promise<string> {
   }
 }
 
-const CLOCK_TICKS_PER_S = 100
-
-/** Seconds of CPU (user plus system) the process has used, 0 once it is gone. */
-function cpuSeconds(pid: number): number {
-  try {
-    const stat = readFileSync(`/proc/${pid}/stat`, 'utf8')
-    // The command name may hold spaces, so the numeric fields start after its closing parenthesis.
-    const fields = stat.slice(stat.lastIndexOf(')') + 2).split(' ')
-    return (Number(fields[11]) + Number(fields[12])) / CLOCK_TICKS_PER_S
-  } catch {
-    return 0
-  }
-}
-
 /** The server's completed GC cycles and its share of CPU spent collecting since start, from its pprof heap summary. */
 async function gcStats(addr: string): Promise<{ cycles: number; fraction: number }> {
   const text = await (await fetch(`http://${addr}/debug/pprof/heap?debug=1`)).text()
@@ -298,7 +145,7 @@ const cli = (...args: string[]) =>
   spawnSync(`${dir}/mortar-server`, args, {
     env,
     encoding: 'utf8',
-    maxBuffer: 1 << 28,
+    maxBuffer: 2 ** 28,
     timeout: LAUNCH_TIMEOUT_MS,
   })
 
@@ -446,6 +293,58 @@ const scenarios: Scenario[] = [
   },
 ]
 
+/** Runs one scenario while sampling memory, and answers its report rows and whether it failed or went over budget. */
+async function measureScenario(
+  page: Page,
+  profile: Profile,
+  scenario: Scenario,
+  browserPid: number,
+): Promise<{ rows: string[]; failed: boolean }> {
+  const rows: string[] = []
+  let failed = false
+  const before = await domStats(page)
+  const wallStart = Date.now()
+  const cpuStart = cpuSeconds(serverPid())
+  const gcStart = process.env.MORTAR_PPROF ? await gcStats(process.env.MORTAR_PPROF) : null
+  const stop = sample(serverPid, () => browserPid, `${dir}/mortar-server`)
+  const stopPeak = process.env.MORTAR_PPROF
+    ? pollPeakHeap(process.env.MORTAR_PPROF, scenario.name)
+    : null
+  let failure = ''
+  try {
+    await scenario.run(page, profile)
+  } catch (e) {
+    failure = e instanceof Error ? e.message : String(e)
+  }
+  const p = stop()
+  const wall = (Date.now() - wallStart) / 1000
+  const cpu = cpuSeconds(serverPid()) - cpuStart
+  let gcNote = ''
+  if (gcStart && process.env.MORTAR_PPROF) {
+    const end = await gcStats(process.env.MORTAR_PPROF)
+    gcNote = `, ${end.cycles - gcStart.cycles} GCs, GC share of CPU since start ${(end.fraction * 100).toFixed(1)}%`
+  }
+  const peakNote = stopPeak ? await stopPeak() : ''
+  const over = p.total > BUDGET_MIB
+  failed = over || failure !== ''
+  rows.push(
+    `${scenario.name.padEnd(9)} ${p.go.toFixed(0).padStart(8)} ${p.browser.toFixed(0).padStart(8)} ${p.total.toFixed(0).padStart(8)} ${p.game.toFixed(0).padStart(8)}  ${verdict(failure, over)}`,
+  )
+  rows.push(
+    `          top at peak: ${p.top.map((t) => `${t.comm}[${t.pid}] ${t.mib.toFixed(0)}`).join(', ')}`,
+  )
+  rows.push(`          Wall ${wall.toFixed(1)} s, Go CPU ${cpu.toFixed(1)} s${gcNote}`)
+  rows.push(`          Before: ${before}`)
+  rows.push(`          ${await browserHeap(page, scenario.name, browserPid)}`)
+  if (peakNote) {
+    rows.push(`          ${peakNote}`)
+  }
+  if (process.env.MORTAR_PPROF) {
+    rows.push(`          ${await saveProfiles(process.env.MORTAR_PPROF, scenario.name)}`)
+  }
+  return { rows, failed }
+}
+
 async function main(): Promise<number> {
   const only = (process.env.MORTAR_MEM_ONLY ?? '').split(',').filter(Boolean)
   const chosen = scenarios.filter((s) => only.length === 0 || only.includes(s.name))
@@ -486,47 +385,10 @@ async function main(): Promise<number> {
       `Profile ${profile.name} (${profile.id}). Browser: headless Chromium via Playwright, a stand-in for the desktop WebView. PSS in MiB, budget ${BUDGET_MIB} MiB.`,
     )
     for (const scenario of chosen) {
-      const before = await domStats(page)
-      const wallStart = Date.now()
-      const cpuStart = cpuSeconds(serverPid())
-      const gcStart = process.env.MORTAR_PPROF ? await gcStats(process.env.MORTAR_PPROF) : null
-      const stop = sample(serverPid, () => browserPid)
-      const stopPeak = process.env.MORTAR_PPROF
-        ? pollPeakHeap(process.env.MORTAR_PPROF, scenario.name)
-        : null
-      let failure = ''
-      try {
-        await scenario.run(page, profile)
-      } catch (e) {
-        failure = e instanceof Error ? e.message : String(e)
-      }
-      const p = stop()
-      const wall = (Date.now() - wallStart) / 1000
-      const cpu = cpuSeconds(serverPid()) - cpuStart
-      let gcNote = ''
-      if (gcStart && process.env.MORTAR_PPROF) {
-        const end = await gcStats(process.env.MORTAR_PPROF)
-        gcNote = `, ${end.cycles - gcStart.cycles} GCs, GC share of CPU since start ${(end.fraction * 100).toFixed(1)}%`
-      }
-      const peakNote = stopPeak ? await stopPeak() : ''
-      const over = p.total > BUDGET_MIB
-      if (over || failure) {
+      const result = await measureScenario(page, profile, scenario, browserPid)
+      rows.push(...result.rows)
+      if (result.failed) {
         code = 1
-      }
-      rows.push(
-        `${scenario.name.padEnd(9)} ${p.go.toFixed(0).padStart(8)} ${p.browser.toFixed(0).padStart(8)} ${p.total.toFixed(0).padStart(8)} ${p.game.toFixed(0).padStart(8)}  ${verdict(failure, over)}`,
-      )
-      rows.push(
-        `          top at peak: ${p.top.map((t) => `${t.comm}[${t.pid}] ${t.mib.toFixed(0)}`).join(', ')}`,
-      )
-      rows.push(`          Wall ${wall.toFixed(1)} s, Go CPU ${cpu.toFixed(1)} s${gcNote}`)
-      rows.push(`          Before: ${before}`)
-      rows.push(`          ${await browserHeap(page, scenario.name, browserPid)}`)
-      if (peakNote) {
-        rows.push(`          ${peakNote}`)
-      }
-      if (process.env.MORTAR_PPROF) {
-        rows.push(`          ${await saveProfiles(process.env.MORTAR_PPROF, scenario.name)}`)
       }
     }
     await browser.close()
