@@ -16,16 +16,17 @@ import (
 	"time"
 )
 
+// maxUnixSocketPath is sun_path's 108 bytes less its terminating NUL.
+const maxUnixSocketPath = 107
+
 func TestSessionUsesDiagnosticsSocket(t *testing.T) {
-	// A unix socket path holds 107 bytes, so the socket lives under /tmp rather than a test TMPDIR that may be long.
-	temp, err := os.MkdirTemp("/tmp", "ds-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = os.RemoveAll(temp) })
+	temp := t.TempDir()
 	t.Setenv("TMPDIR", temp)
 	pid := os.Getpid()
 	socket := filepath.Join(temp, "dotnet-diagnostic-"+strconv.Itoa(pid)+"-test-socket")
+	if len(socket) > maxUnixSocketPath {
+		t.Skipf("socket path is %d bytes, over the %d a unix socket holds; run with a shorter TMPDIR", len(socket), maxUnixSocketPath)
+	}
 	var listenConfig net.ListenConfig
 	listener, err := listenConfig.Listen(context.Background(), "unix", socket)
 	if err != nil {
