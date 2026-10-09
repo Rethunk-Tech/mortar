@@ -37,7 +37,7 @@ func TestPlanRootsResolvesEachRoleOnceAndRefusesAnUnknownOne(t *testing.T) {
 	steamRoot := filepath.Join(home, ".local", "share", "Steam")
 	dir := filepath.Join(steamRoot, "steamapps", "common", "Roots Game")
 	for path, body := range map[string]string{
-		filepath.Join(dir, "R.x86_64"):                                   "",
+		filepath.Join(dir, "R.x86_64"):                                "",
 		filepath.Join(steamRoot, "steamapps", "libraryfolders.vdf"):   "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \"" + steamRoot + "\"\n}\n}\n",
 		filepath.Join(steamRoot, "steamapps", "appmanifest_4242.acf"): "\"AppState\"\n{\n\"installdir\" \"Roots Game\"\n}\n",
 	} {
