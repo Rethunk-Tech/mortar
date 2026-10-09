@@ -1200,6 +1200,7 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, r laun
 			}
 		}
 		s.noteFailure(g, plainLaunchError(err, r.inst.Dir))
+		s.noteStartedProcessExit(g, profileID, buf)
 		s.finishFailed(g, profileID, buf)
 		s.set(Status{Game: g.ID(), Install: installOf(g), State: Failed, Profile: profileID, Error: plainLaunchError(err, r.inst.Dir), Cause: causeFromBuffer(s, g, profileID, buf)})
 	case errors.As(err, &f):

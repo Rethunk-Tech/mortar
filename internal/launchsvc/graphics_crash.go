@@ -7,6 +7,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -123,4 +124,16 @@ func (s *Service) GraphicsAnswered(gameID, profileID, choice string) error {
 		return err
 	}
 	return s.writeGraphicsMarker(gameID, profileID, m.afterAnswer(choice == offer.Recommended))
+}
+
+// noteStartedProcessExit is noteGraphicsExit for a launch whose started process exited before the game counted as
+// running, which is how a direct start that dies at once ends: the run is recorded as failed, but the game did start.
+func (s *Service) noteStartedProcessExit(g game.Game, profileID string, buf *launch.Buffer) {
+	s.mu.Lock()
+	sess := s.logs[keyOf(g)]
+	s.mu.Unlock()
+	if sess.buf != buf || sess.vanilla || profileID == "" {
+		return
+	}
+	s.noteGraphicsExit(g, profileID, time.Since(sess.started))
 }
