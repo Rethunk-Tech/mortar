@@ -26,7 +26,7 @@ jobs:
         with:
           persist-credentials: false
 
-      # Nothing the gate runs reads Markdown, so a docs-only change skips setup and gate. The filter is a step rather than
+      # Nothing the gate runs reads Markdown except docs/user-guide.md (problemWhy.test.ts checks its headings), so a docs-only change skips setup and gate unless it touches that file. The filter is a step rather than
       # paths-ignore so the check still reports green for a required status check.
       - name: Code changed
         id: changes
@@ -45,6 +45,7 @@ jobs:
             fi
             # The compare API lists at most 300 files; a longer list runs the gate.
             if [ -n "$files" ] && [ "$(printf '%s\n' "$files" | wc -l)" -lt 300 ] \
+              && ! printf '%s\n' "$files" | grep -qx 'docs/user-guide.md' \
               && ! printf '%s\n' "$files" | grep -qvE '(\.md$|^docs/|^\.github/ISSUE_TEMPLATE/)'; then
               code=false
               echo "Only documentation changed; skipping the gate"
