@@ -39,22 +39,39 @@ bun run bindings >"$logs/bindings" 2>&1 &
 bindings_pid=$!
 
 step shellcheck bash -c "set -o pipefail; git ls-files -co --exclude-standard -z '*.sh' | xargs -0 -r shellcheck -x"
+# The race build, then the linux lint, govulncheck and the race tests, which all read it: GOFLAGS=-race makes lint and
+# govulncheck load packages from the instrumented compile the tests link, so the Wails cgo step and sqlite compile
+# once, not once per tool. The windows lint cannot share it (another GOOS), so it starts at once beside this chain.
 # golangci-lint spends a quarter of its CPU in GC at the default GOGC, and a cold gate is CPU-bound, so lint trades
 # memory for it. The updatetest pass runs after the linux one so it reuses that pass's cache for every dependency.
 {
-  export GOGC=400
-  golangci-lint run --allow-parallel-runners
-  a=$?
-  golangci-lint run --allow-parallel-runners --build-tags updatetest ./internal/updatesvc/... && exit "$a"
-} >"$logs/golangci-linux" 2>&1 &
-pids[golangci-linux]=$!
+  go build -race ./... || exit 1
+  rc=0
+  (
+    export GOFLAGS=-race GOGC=400
+    golangci-lint run --allow-parallel-runners
+    a=$?
+    golangci-lint run --allow-parallel-runners --build-tags updatetest ./internal/updatesvc/... && exit "$a"
+  ) >"$logs/golangci-linux" 2>&1 &
+  lint_pid=$!
+  GOFLAGS=-race scripts/vulncheck.sh >"$logs/vuln" 2>&1 &
+  vuln_pid=$!
+  env TMPDIR="$gotmp" GOTMPDIR="$gotmp" go test -race ./... >"$logs/go-test" 2>&1 &
+  test_pid=$!
+  for child in "$lint_pid" "$vuln_pid" "$test_pid"; do
+    wait "$child" || rc=1
+  done
+  if [ "$rc" = 1 ]; then
+    cat "$logs/golangci-linux" "$logs/vuln" "$logs/go-test"
+  fi
+  exit "$rc"
+} >"$logs/racechain" 2>&1 &
+pids[racechain]=$!
 step golangci-windows env GOGC=400 GOOS=windows golangci-lint run --allow-parallel-runners
 step version go run ./cmd/version -check
 step site-games bun scripts/site-games.ts --check
 step i18n-dupes bun scripts/i18n-dupes.ts
 step metainfo appstreamcli validate --strict --no-net build/linux/tech.rethunk.Mortar.metainfo.xml
-step go-test env TMPDIR="$gotmp" GOTMPDIR="$gotmp" go test -race ./...
-step vuln scripts/vulncheck.sh
 
 wait "$bindings_pid" || { cat "$logs/bindings"; exit 1; }
 step biome bun run --silent lint
