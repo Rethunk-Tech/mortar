@@ -407,7 +407,7 @@ func sourcePage(gameID string, m framework.Mod) string {
 			continue
 		}
 		for _, src := range g.Sources {
-			if src.ID == m.SourceKind && src.Key != "" {
+			if src.ID == m.SourceKind && (src.Key != "" || m.SourceKind == profile.KindPatreon) {
 				return linker.ModPageURL(src.Key, m.SourceName)
 			}
 		}

@@ -2,6 +2,7 @@ package archivesvc
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -139,5 +140,29 @@ func TestDownloadsArchivesJoinsFoldersOncePerPath(t *testing.T) {
 	got, err := s.DownloadsArchives("stardew")
 	if err != nil || len(got) != 2 {
 		t.Fatalf("got %+v %v", got, err)
+	}
+}
+
+func TestPatreonPostIsRebuiltFromTheIDAndAFileIsRecordedUnderIt(t *testing.T) {
+	var got profile.Source
+	s := NewService(Deps{Install: func(_ context.Context, _, _, _ string, src profile.Source) (profile.InstallResult, error) {
+		got = src
+		return profile.InstallResult{}, nil
+	}})
+	post, err := s.PatreonPost(" https://www.patreon.com/posts/cool-mod-12345?utm=x ")
+	if err != nil || post.ID != "12345" || post.URL != "https://www.patreon.com/posts/12345" {
+		t.Fatalf("post = %+v, %v", post, err)
+	}
+	if _, err := s.PatreonPost("https://evil.test/posts/x-1"); err == nil {
+		t.Fatal("another site's address must be refused")
+	}
+	if _, err := s.InstallPatreonDownload(t.Context(), "stardew", "p", "a.zip", post.ID); err != nil {
+		t.Fatal(err)
+	}
+	if got.Kind != profile.KindPatreon || got.Name != "12345" {
+		t.Fatalf("source = %+v", got)
+	}
+	if _, err := s.InstallPatreonDownload(t.Context(), "stardew", "p", "a.zip", "../x"); err == nil {
+		t.Fatal("a post id that is not digits must be refused")
 	}
 }

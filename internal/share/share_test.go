@@ -753,3 +753,33 @@ func TestLocalArchivesTravelOnlyWhenAsked(t *testing.T) {
 		}
 	}
 }
+
+func TestAPatreonEntryTravelsAsItsPostIDAlone(t *testing.T) {
+	t.Parallel()
+	p := profile.Profile{Name: "Desk", Entries: []profile.Entry{
+		{Key: "local-" + strings.Repeat("cd", 32), Source: profile.Source{Kind: profile.KindPatreon, Name: "12345678"}},
+	}}
+	res, err := Encode("stardew", p, profile.ShareFacts{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.LeftOut) != 0 || len(res.Shared.Entries) != 1 {
+		t.Fatalf("result = %+v", res)
+	}
+	got, err := Parse(res.Payload)
+	if err != nil || len(got.Entries) != 1 || got.Entries[0].Patreon != "12345678" || got.Entries[0].Local != "" {
+		t.Fatalf("parsed = %+v, %v", got.Entries, err)
+	}
+	if !got.Entries[0].MatchesEntry(p.Entries[0]) || got.Entries[0].Identity() != "p:12345678" {
+		t.Fatal("the ref names its entry")
+	}
+	raw, _ := json.Marshal(got.Entries[0])
+	if strings.Contains(string(raw), "local") || strings.Contains(string(raw), "key") {
+		t.Fatalf("no file travels: %s", raw)
+	}
+	for _, bad := range []Ref{{Patreon: "abc"}, {Patreon: "1", ModID: 1}, {Patreon: "1", Version: "1.0.0"}, {Patreon: "1234567890123"}} {
+		if bad.valid() {
+			t.Fatalf("%+v passed", bad)
+		}
+	}
+}

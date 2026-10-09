@@ -33,56 +33,14 @@ The generic path is built ([architecture.md](architecture.md#games-and-the-catal
 - The window's Problems rows of kind `game-setting` (exact text in the commit that built them).
 - **Open question for NOMAD:** which game after The Sims 4 should prove the generic path (any Steam game whose mods are plain files in a folder under its install)?
 
-### Patreon mod source (decided: link and handoff, post URLs only)
+### Patreon source: window remainder
 
-**Why.** Some modders ship only to patrons. Mortar has no source for them, so those mods enter a profile only as files added by hand.
+The source is built ([architecture.md](architecture.md#games-and-the-catalog) Patreon). Left for the window, with the Patreon research kept here so it is not repeated: Patreon's public API v2 gives a patron identity and memberships only (scopes `identity`, `identity.memberships`; `campaigns.posts` serves a creator's own campaign), the documented post resource has no attachment field, rate limits are 100 requests per 2 seconds per client and a 30 minute block after 2,000 4xx answers in 10 minutes, and the terms limit patrons to private, authorised use and bar sharing a creation with anyone who has not purchased it. The operator skipped the live probe, so the shape stands on that documentation.
 
-**Evidence, and what that forces.** Everything downloadable from a Patreon post sits behind the patron's session; Patreon's public API (v2, OAuth) serves a *creator's* own campaign data to the creator's token, and for a patron it offers identity and memberships, not post attachments. **Verify, researched 2026-10-09 from Patreon's documentation (no live probe run yet).**
-
-- The public API v2 scopes are `identity`, `identity[email]`, `identity.memberships`, `campaigns`, `campaigns.members`, `campaigns.members[email]`, `campaigns.members.address`, `campaigns.posts`, `campaigns.lives` and two write scopes ([OAuth, Scopes](https://docs.patreon.com/#scopes)). `campaigns.posts` is described as "read access to the posts on a campaign", and `GET /api/oauth2/v2/campaigns/{campaign_id}/posts` requires it ([Resource endpoints](https://docs.patreon.com/#api-endpoints)). The docs say a client creator's token gets all v2 scopes automatically and never state that a patron can be granted a scope that reads another creator's campaign. The docs' own summary of the access model is "You may only fetch your own list of pledges or public pledges", and an app that manages many creators' campaigns must contact Patreon.
-- The documented post resource has `embed_url` and `embed_data` but no attachment or file field, and no endpoint lists a post's attachments. The Media resource (`download_url`, valid 24 hours) is documented only as linked to tiers.
-- Rate limits ([Rate limits](https://docs.patreon.com/#rate-limits)): 100 requests per 2 seconds per client, 100 per minute per access token, 429 on excess, and a 30 minute API block after more than 2,000 4xx responses in 10 minutes. A `User-Agent` header is required or calls may get a 403.
-- Terms ([Patreon Terms of Use](https://www.patreon.com/policy/legal)): no clause names scraping or bots, but the terms bar abusing Patreon "in a technical way" or "in an unintended manner". Patrons get a licence to view creations for "private, personal, non-promotional, non-commercial use", may not use creations "in any way not authorized by the creator", and may not share them "with others who have not purchased" them. Automated downloading of patron files by an app is therefore not an authorised use the terms describe.
-- Conclusion for the shape below: nothing found supports a patron-side post or attachment API, so no Searcher and no Mortar-side download. The operator skipped the live probe (a patron OAuth token against `campaigns/{id}/posts`); the shape stands on the documentation alone, and a patron-side API turning up later reopens search only by a new decision.
-
-Scraping Patreon's internal `/api/posts` or driving the user's browser session is out: it breaks without notice and acts as the user's login, which the standing rules refuse.
-
-**Decided shape.** Patreon is a **link and handoff source**, with no search and no Mortar-side download.
-
-- Driver `internal/source/patreon` (`ID` `patreon`, `Name` "Patreon", `Modes` `[]source.Acquire{source.Handoff}` as `internal/source/curseforge/curseforge.go:72` lists both), registered with `source.Register` (`internal/source/source.go:308`) and imported in `internal/source/all/all.go`. It implements `Hoster` (`Hosts` `patreon.com`; `source.go:239`) so a pasted post URL traces back to the source, and `PageLinker` (`ModPageURL(gameKey, id)` returns `https://www.patreon.com/posts/<id>`; `source.go:234`). It is not a `Searcher`, so `source.Searchable` (`source.go:350`) leaves it out of Browse and an `all` search; it is not `Gated`.
-- **Entry shape.** A mod from Patreon is a profile entry of kind `patreon` whose name is the numeric post id (the number ending a `patreon.com/posts/<slug>-<id>` URL). Adding one is: paste a post URL in Add mod (the existing URL path finds the source through `source.NameOfHost`, `source.go:378`), Mortar opens the post in the browser, and the file the user saves from it is picked up by the existing Downloads watcher (`internal/dlwatch`, `internal/folderwatch`, [architecture.md](architecture.md#nexus-mods) "Manual downloads") and offered for install; installing it records the post id on the entry, so the profile menu's mod page link and a share link both carry the id. There is no update check (no API to ask); a mod page link is the only update path.
-- **Gated posts and the no-re-hosting rule.** Mortar never fetches a patron-only file. It never holds a Patreon session cookie or password, never forwards the user's login, and never writes a Patreon file into a share, a bundle or the LAN transfer except as the user's own computers pair (the one exception in [AGENTS.md](../AGENTS.md) § Decided: a profile sent between the user's own paired computers carries its mod files). A share link to a profile holding a Patreon entry carries the post id and name only, so the receiver gets a link to the post and downloads it if they are a patron.
-- No OAuth, no keyring entry, no account in settings in this version.
-
-**Touches.**
-
-- `internal/source/patreon/` (new): `patreon.go`, `link.go` (post URL parser, accepts `patreon.com` and `www.patreon.com` posts of the two forms `/posts/<slug>-<id>` and `/posts/<id>`, numeric id only), `fuzz_test.go`.
-- `internal/source/all/all.go:4`: one blank import.
-- `internal/profile`: a `KindPatreon` beside `KindNexus` and its source struct, and the exhaustive switches over entry kinds (`rg "KindNexus" internal` lists them; each needs a patreon case or the build's exhaustive lint fails). `profile.Source` carries kind and name already.
-- `internal/browse/installed.go`: the in-profile matcher (`Hold`) needs no Patreon id because Browse never lists the source; a pasted URL for a post already in the profile is detected by entry name.
-- `internal/archivesvc` `InstallDownload` records `profile.KindPatreon` with the post id when the add came from a Patreon link.
-- Catalog: a game lists `{"id": "patreon"}` in `sources`; `TestEveryCatalogReferenceResolves` then requires the driver. `GameInfo.Validate` already requires a unique id (`components.go:420`).
-- `docs/security.md`: a row under Network and links for the post-URL parser (threat: a crafted link spoofs another site or injects a path; guard: the exact host and shape check; test: `FuzzParsePostURL`), and the "Links handed to the system handler" row's allow-list (the post URL opens in the browser).
-- Frontend: a source chip is not needed (Browse never lists it); Add mod's URL box recognises the host through the existing source lookup. A Patreon icon for the mod page link and the entry row.
-
-**Traps.**
-
-- The pasted URL is untrusted input and goes to the system URL handler: accept `https` only, host exactly `patreon.com` or `www.patreon.com`, no userinfo, and rebuild the opened URL from the parsed id rather than opening the pasted text.
-- `source.Searchable` and `ForGame` both read the catalog; a source with no `Searcher` must not appear as a greyed chip with an empty reason (check `browse.Service.SearchableSources`).
-- A file saved from a post has no stable name; do not infer identity from it. The post id comes from the link the user pasted, so installing a download without that link records no Patreon id (it stays a plain archive entry).
-- Patreon's terms bar automated access to patron content; this design makes none, and that is the reason it has no search. Do not add a "check for updates" that fetches a post page.
-
-**Acceptance.**
-
-- `go test ./internal/source/... ./internal/profile ./internal/archivesvc ./internal/components` pass, including fuzz seeds for the URL parser and `TestEveryCatalogReferenceResolves`.
-- Add mod with a Patreon post URL opens the post in the default browser (a recorded fake opener in the test), then a file placed in a fake Downloads folder is offered and installs as an entry that names the post id; the profile's share link holds the id and no file.
-- Patreon never appears among Browse's source chips or in an `all` search.
-
-**Decisions (NOMAD, 2026-10-09).**
-
-1. Link and handoff only: no search, no update checks, no Patreon OAuth.
-2. Add mod accepts post URLs only; creator pages are not accepted.
-3. Which games list `patreon` in their catalog `sources` is decided per game when a modder is known to ship there; it does not block the driver.
+- **Add mod** accepts a Patreon post address: on paste call `ArchivesService.PatreonPost(text)`; on success open `post.url` with `OpenerService.OpenWeb` and show, in the Add mod dialog, "Opened the Patreon post. Save the file from it; Mortar offers it from your Downloads folder." with the post id kept in dialog state. The Downloads offer (`library:downloads`) for that dialog installs with `ArchivesService.InstallPatreonDownload(game, profileID, path, post.id)` instead of `InstallDownload`. A refused address shows the service error.
+- A Patreon icon for the entry row and page link: `frontend/src/mods/modActions.ts` `hostOf` gains `patreon` for host `patreon.com` and `openPageLabel` "Open on Patreon".
+- The share preview shows a mod with `site: "patreon"` and `reason: "patreon"` as "Needs a file from its Patreon post" with the post link (`pageUrl`).
+- Which games list `patreon` in their catalog `sources` is decided per game, when a modder is known to ship there.
 
 ## Later
 

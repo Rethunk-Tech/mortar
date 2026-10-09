@@ -47,6 +47,8 @@ const (
 	KindModrinth   = "modrinth"
 	KindCurseForge = "curseforge"
 	KindItch       = "itch"
+	// KindPatreon is a file the player saved from a Patreon post: Name is the post id. Nothing fetches or updates it.
+	KindPatreon = "patreon"
 )
 
 // Source says where an entry came from. Kind is KindLocal for an archive the user picked, Name its file name;

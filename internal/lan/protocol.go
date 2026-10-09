@@ -101,6 +101,9 @@ func transferItems(shared share.Shared) []transferItem {
 		switch {
 		case ref.Local != "":
 			item = transferItem{Key: ref.Local, Source: profile.KindLocal, Package: ref.LocalName}
+		case ref.Patreon != "":
+			// A link carries the post and no file; the receiver saves the file from the post.
+			continue
 		case ref.GitHub != "":
 			repo, tag, asset := ref.GitHubParts()
 			owner, name, _ := strings.Cut(repo, "/")

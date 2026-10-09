@@ -19,6 +19,8 @@ func (r Ref) Identity() string {
 		return "l:" + r.Local
 	case r.Package != "":
 		return "t:" + strings.ToLower(r.Package) + "@" + r.Version
+	case r.Patreon != "":
+		return "p:" + r.Patreon
 	case r.GitHub != "":
 		return "g:" + strings.ToLower(r.GitHub)
 	default:

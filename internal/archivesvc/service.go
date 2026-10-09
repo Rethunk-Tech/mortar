@@ -17,7 +17,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/source/patreon"
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // maxHashed bounds the archives hashed per listing, newest first; older ones are matched by name only.
@@ -223,6 +225,35 @@ func (s *Service) InstallDownload(ctx context.Context, game, profileID, path str
 		src = profile.Source{Kind: profile.KindNexus, Name: inf.Name, ModID: inf.ModID}
 	}
 	return s.d.Install(ctx, game, profileID, path, src)
+}
+
+// PatreonPost is a Patreon post a pasted address names: its id, which a file saved from it is recorded under, and the
+// address to open, rebuilt from the id alone.
+type PatreonPost struct {
+	ID  string `json:"id"`
+	URL string `json:"url"`
+}
+
+// PatreonPost reads a pasted Patreon post address. The window opens URL in the browser, the player saves the file from
+// the post, and InstallPatreonDownload adds it. Mortar fetches nothing from Patreon.
+func (s *Service) PatreonPost(text string) (PatreonPost, error) {
+	id, ok := patreon.ParsePostURL(text)
+	if !ok {
+		return PatreonPost{}, usererr.New(usererr.Invalid, "this is not the address of a Patreon post")
+	}
+	return PatreonPost{ID: id, URL: patreon.PostURL(id)}, nil
+}
+
+// InstallPatreonDownload is InstallDownload for a file the player saved from Patreon post `post`: the entry records the
+// post, so its page link and a share carry the post and no file.
+func (s *Service) InstallPatreonDownload(ctx context.Context, game, profileID, path, post string) (profile.InstallResult, error) {
+	if s.d.Install == nil {
+		return profile.InstallResult{}, errors.New("install is not available")
+	}
+	if !patreon.ValidID(post) {
+		return profile.InstallResult{}, usererr.New(usererr.Invalid, "not a Patreon post id")
+	}
+	return s.d.Install(ctx, game, profileID, path, profile.Source{Kind: profile.KindPatreon, Name: post})
 }
 
 func (s *Service) storeKeys(game string) (map[string]bool, error) {

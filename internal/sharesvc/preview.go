@@ -20,6 +20,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/source/patreon"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -39,6 +40,8 @@ const (
 const (
 	ReasonRemoved = "removed"
 	ReasonNoFile  = "no-file"
+	// ReasonPatreon is a mod from a Patreon post: open the post and save the file there.
+	ReasonPatreon = "patreon"
 )
 
 // Kinds of Problem.
@@ -147,6 +150,8 @@ const (
 	// SiteThunderstore is a Thunderstore package.
 	SiteThunderstore = "thunderstore"
 	SiteLocal        = "local"
+	// SitePatreon is a Patreon post.
+	SitePatreon = "patreon"
 )
 
 const (
@@ -379,6 +384,22 @@ func (r *resolver) thunderstore(ref share.Ref) Mod {
 	return m
 }
 
+// patreon resolves a file the sender saved from a Patreon post. Only the post travels, so it is installed when the
+// profile already holds an entry from that post and otherwise unavailable until the receiver saves the file there.
+func (r *resolver) patreon(ref share.Ref) Mod {
+	m := Mod{
+		Key: "patreon:" + ref.Patreon, Site: SitePatreon, Name: "Patreon post " + ref.Patreon, State: StateInstalled,
+		PageURL: patreon.PostURL(ref.Patreon), IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
+	}
+	has := slices.ContainsFunc(r.target, func(e profile.Entry) bool {
+		return e.Source.Kind == profile.KindPatreon && e.Source.Name == ref.Patreon
+	})
+	if !has {
+		m.State, m.Reason = StateUnavailable, ReasonPatreon
+	}
+	return m
+}
+
 // local resolves an archive the sender installed from disk. Only a paired computer's copy of its store item can
 // install it; Name is the archive's file name, which the entry keeps as its source.
 func (r *resolver) local(ref share.Ref) Mod {
@@ -404,7 +425,7 @@ func (r *resolver) storedKey(key string) bool {
 func nexusIDs(refs []share.Ref) []int {
 	var ids []int
 	for _, ref := range refs {
-		if ref.GitHub == "" && ref.Package == "" && ref.Local == "" && !slices.Contains(ids, ref.ModID) {
+		if ref.GitHub == "" && ref.Package == "" && ref.Local == "" && ref.Patreon == "" && !slices.Contains(ids, ref.ModID) {
 			ids = append(ids, ref.ModID)
 		}
 	}
@@ -418,6 +439,10 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 	for _, ref := range refs {
 		if ref.Local != "" {
 			mods = append(mods, r.local(ref))
+			continue
+		}
+		if ref.Patreon != "" {
+			mods = append(mods, r.patreon(ref))
 			continue
 		}
 		if ref.Package != "" {

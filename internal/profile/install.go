@@ -57,6 +57,22 @@ func (s *Store) InstallArchive(ctx context.Context, game, id, path string) (Inst
 	return s.installKey(game, id, key, Source{Kind: KindLocal, Name: filepath.Base(path)})
 }
 
+// InstallPatreon unpacks an archive the player saved from Patreon post `post` and adds it as a local file would be,
+// with the post (its numeric id) as its source, so the entry's page link and a share carry the post and no file.
+func (s *Store) InstallPatreon(ctx context.Context, game, id, path, post string) (InstallResult, error) {
+	if err := s.unlocked(game, id); err != nil {
+		return InstallResult{}, err
+	}
+	key, err := s.items.AddArchive(ctx, game, path)
+	if err != nil {
+		return InstallResult{}, installError(err)
+	}
+	if err := s.namePackage(game, key, filepath.Base(path), ""); err != nil {
+		return InstallResult{}, installError(err)
+	}
+	return s.installKey(game, id, key, Source{Kind: KindPatreon, Name: post})
+}
+
 // InstallFolder copies the folder at path into the store under a content key and adds it to the profile as a local entry.
 func (s *Store) InstallFolder(ctx context.Context, game, id, path string) (InstallResult, error) {
 	if err := s.unlocked(game, id); err != nil {

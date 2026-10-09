@@ -20,6 +20,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/source/patreon"
 )
 
 const (
@@ -52,6 +53,9 @@ type Ref struct {
 	ModID  int    `json:"modId,omitempty"`
 	FileID int    `json:"fileId,omitempty"`
 	GitHub string `json:"github,omitempty"`
+	// Patreon is the id of a Patreon post the sender's file came from. A link carries the id alone: the receiver opens
+	// the post and saves the file there if they are a patron.
+	Patreon string `json:"patreon,omitempty"`
 	// Package is a Thunderstore "Namespace-Name" at Version (the newest when Version is empty).
 	Package  string                         `json:"package,omitempty"`
 	Version  string                         `json:"version,omitempty"`
@@ -157,8 +161,11 @@ var (
 
 func (r Ref) valid() bool {
 	if r.Local != "" {
-		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && r.Package == "" && localRef.MatchString(r.Local) &&
+		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && r.Package == "" && r.Patreon == "" && localRef.MatchString(r.Local) &&
 			validName(r.LocalName) && !strings.ContainsAny(r.LocalName, `/\`)
+	}
+	if r.Patreon != "" {
+		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && r.Package == "" && r.Version == "" && patreon.ValidID(r.Patreon)
 	}
 	if r.Package != "" {
 		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && packageRef.MatchString(r.Package) &&
@@ -206,6 +213,8 @@ func (r Ref) MarshalJSON() ([]byte, error) {
 	case r.Package != "":
 		w.Source, w.Version = "thunderstore", r.Version
 		w.NS, w.Name, _ = strings.Cut(r.Package, "-")
+	case r.Patreon != "":
+		w.Source, w.Name = "patreon", r.Patreon
 	case r.GitHub != "":
 		w.Source = "github"
 		w.Repo, w.Tag, w.Asset = r.GitHubParts()
@@ -233,6 +242,8 @@ func parseRef(raw json.RawMessage) (Ref, error) {
 		r.Local, r.LocalName = w.Key, w.Name
 	case w.Source == "thunderstore" && w.Mod == 0 && w.Key == "" && w.File == 0 && w.Repo == "" && w.NS != "" && w.Name != "":
 		r.Package, r.Version = w.NS+"-"+w.Name, w.Version
+	case w.Source == "patreon" && w.Mod == 0 && w.File == 0 && w.Key == "" && w.Repo == "" && w.NS == "" && w.Version == "" && w.Name != "":
+		r.Patreon = w.Name
 	case w.Source == "nexus" && w.Repo == "" && w.Tag == "" && w.Asset == "":
 		r.ModID, r.FileID = w.Mod, w.File
 	case w.Source == "github" && w.Mod == 0 && w.File == 0 && w.Repo != "" && w.Tag != "" && w.Asset != "":
@@ -274,7 +285,7 @@ func checkShared(s Shared) error {
 		return fmt.Errorf("%w: more than %d entries", ErrMalformed, MaxEntries)
 	}
 	for _, r := range s.Entries {
-		if !r.valid() || !validDetails(r) || (r.GitHub == "" && r.Package == "" && s.SourceKeys["nexus"] == "") ||
+		if !r.valid() || !validDetails(r) || (r.GitHub == "" && r.Package == "" && r.Patreon == "" && s.SourceKeys["nexus"] == "") ||
 			(r.Package != "" && s.SourceKeys["thunderstore"] == "") {
 			return fmt.Errorf("%w: bad entry", ErrMalformed)
 		}
@@ -289,7 +300,7 @@ func validDetails(r Ref) bool {
 	if !validEntryNote(r.Note) || !validEntryTags(r.Tags) || r.SizeKB < 0 || r.SizeKB > maxID || !gameVersion.MatchString(r.MinGame) {
 		return false
 	}
-	if r.Overlay != nil && (r.GitHub != "" || r.Package != "" || !validOverlayPath(r.Overlay.From) || !validOverlayPath(r.Overlay.To)) {
+	if r.Overlay != nil && (r.GitHub != "" || r.Package != "" || r.Patreon != "" || !validOverlayPath(r.Overlay.From) || !validOverlayPath(r.Overlay.To)) {
 		return false
 	}
 	for _, disabled := range r.Disabled {
@@ -406,6 +417,9 @@ func importEntryNoteTags(note string, tags []string) (string, []string) {
 func (r Ref) MatchesEntry(e profile.Entry) bool {
 	if r.Local != "" {
 		return e.Source.Kind == profile.KindLocal && e.Key == r.Local
+	}
+	if r.Patreon != "" {
+		return e.Source.Kind == profile.KindPatreon && e.Source.Name == r.Patreon
 	}
 	if r.Package != "" {
 		return e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, r.Package) &&
@@ -537,7 +551,7 @@ func roundKB(kb int64) int64 {
 func withoutDetails(s Shared) Shared {
 	out := Shared{Game: s.Game, SourceKeys: s.SourceKeys, Name: s.Name, Entries: make([]Ref, len(s.Entries)), GameVersion: s.GameVersion}
 	for i, r := range s.Entries {
-		out.Entries[i] = Ref{ModID: r.ModID, FileID: r.FileID, GitHub: r.GitHub, Package: r.Package, Version: r.Version, Local: r.Local, LocalName: r.LocalName}
+		out.Entries[i] = Ref{ModID: r.ModID, FileID: r.FileID, GitHub: r.GitHub, Patreon: r.Patreon, Package: r.Package, Version: r.Version, Local: r.Local, LocalName: r.LocalName}
 	}
 	return out
 }
@@ -553,6 +567,9 @@ func refOf(e profile.Entry, inc Include) (Ref, string) {
 	case profile.KindGitHub:
 		r = Ref{GitHub: e.Source.Repo + "@" + e.Source.Tag + "/" + e.Source.Asset}
 		missing = "no GitHub release asset recorded"
+	case profile.KindPatreon:
+		r = Ref{Patreon: e.Source.Name}
+		missing = "no Patreon post recorded"
 	case profile.KindThunderstore:
 		r = Ref{Package: e.Source.Name, Version: e.Source.Version}
 		missing = "no Thunderstore package recorded"
