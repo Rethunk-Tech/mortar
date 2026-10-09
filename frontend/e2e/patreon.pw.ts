@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, utimesSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, test } from '@playwright/test'
 import { openSeedFarm } from './app.ts'
@@ -12,16 +12,29 @@ const POST = 'https://www.patreon.com/posts/cool-mod-4242'
 const POST_URL = 'https://www.patreon.com/posts/4242'
 const ARCHIVE = 'Seed.Patreon.zip'
 
-function writeArchive(into: string) {
+/** Writes `<id>.zip` holding a content pack named like the id, and returns its path. */
+function writeArchive(into: string, id = 'Seed.Patreon') {
   const src = mkdtempSync(`${dir}/tmp/patreon-`)
-  mkdirSync(`${src}/Seed.Patreon`)
+  mkdirSync(`${src}/${id}`)
   writeFileSync(
-    `${src}/Seed.Patreon/manifest.json`,
-    '{"Name":"Seed Patreon","Author":"Self-test","Version":"1.0.0","Description":"Fixture mod","UniqueID":"Seed.Patreon","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}\n',
+    `${src}/${id}/manifest.json`,
+    `{"Name":"${id.replace('.', ' ')}","Author":"Self-test","Version":"1.0.0","Description":"Fixture mod","UniqueID":"${id}","ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher"}}\n`,
   )
   mkdirSync(into, { recursive: true })
-  execFileSync('python3', ['-m', 'zipfile', '-c', `${into}/${ARCHIVE}`, `${src}/Seed.Patreon`])
+  execFileSync('python3', ['-m', 'zipfile', '-c', `${into}/${id}.zip`, `${src}/${id}`])
+  return `${into}/${id}.zip`
 }
+
+/** The id of the NewDownloads binding, so the test can wait for the page's own call to it. */
+const NEW_DOWNLOADS_ID = /NewDownloads\(game: string\)[\s\S]*?\$Call\.ByID\((\d+)/.exec(
+  readFileSync(
+    new URL(
+      '../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
+)?.[1]
 
 test('a pasted Patreon post opens, then the saved file installs under that post', async ({
   page,
@@ -55,4 +68,54 @@ test('a pasted Patreon post opens, then the saved file installs under that post'
   await page.getByRole('tab', { name: 'Mods' }).click()
   await expect(page.getByText('Seed Patreon', { exact: true })).toBeVisible()
   expect(calls.some((c) => c.includes(ARCHIVE) && c.includes('"4242"'))).toBe(true)
+})
+
+// The folder watcher's event reaches the page once per batch: the first NewDownloads call only sets the mark, the
+// next offers what arrived since, and the toast's Add installs it under the Patreon post that was opened.
+test('a file saved from a Patreon post is offered in a toast and installs under that post', async ({
+  page,
+}) => {
+  const post = 'https://www.patreon.com/posts/toast-mod-7777'
+  const postUrl = 'https://www.patreon.com/posts/7777'
+  const downloads = `${dir}/home/.local/share/mortar/downloads`
+  const calls: string[] = []
+  await page.route('**/wails/runtime', async (route) => {
+    const body = route.request().postData() ?? ''
+    calls.push(body)
+    if (body.includes(postUrl)) {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: 'null' })
+      return
+    }
+    await route.continue()
+  })
+  await openSeedFarm(page)
+  await page.getByRole('button', { name: /^Switch profile/ }).click()
+  await page.getByRole('menuitem', { name: 'From a link or file…' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Import a profile' })
+  await dialog.getByLabel('Share link').fill(post)
+  await dialog.getByRole('button', { name: 'Preview' }).click()
+  await expect(dialog.getByRole('status')).toContainText('Opened the Patreon post')
+  await dialog.getByLabel('Close').click()
+
+  // An archive from long ago: its event makes the first call, which sets the mark and offers nothing.
+  const HourS = 3600
+  const marked = page.waitForResponse(
+    (r) =>
+      r.url().endsWith('/wails/runtime') &&
+      (r.request().postData() ?? '').includes(String(NEW_DOWNLOADS_ID)),
+  )
+  const old = writeArchive(downloads, 'Seed.Marker')
+  const long = Date.now() / 1000 - HourS
+  utimesSync(old, long, long)
+  await marked
+
+  const saved = writeArchive(downloads, 'Seed.Toast')
+  const soon = Date.now() / 1000 + HourS
+  utimesSync(saved, soon, soon)
+  const offer = page.getByRole('region', { name: 'Notifications' })
+  await expect(offer.getByText('Add Seed.Toast.zip to Seed Farm?')).toBeVisible({ timeout: 15_000 })
+  await offer.getByRole('button', { name: 'Add', exact: true }).last().click()
+  await page.getByRole('tab', { name: 'Mods' }).click()
+  await expect(page.getByText('Seed Toast', { exact: true })).toBeVisible()
+  expect(calls.some((c) => c.includes('Seed.Toast.zip') && c.includes('"7777"'))).toBe(true)
 })
