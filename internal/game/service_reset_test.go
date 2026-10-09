@@ -45,10 +45,10 @@ func TestResetInstallRemovesGameFolder(t *testing.T) {
 
 func TestListComesFromTheCatalog(t *testing.T) {
 	list, err := NewService(t.TempDir(), testStore(t)).List()
-	if err != nil || len(list) != 5 {
+	if err != nil || len(list) != 6 {
 		t.Fatalf("List = %+v, %v", list, err)
 	}
-	sdv, lc, vh, repo, ror2 := list[0], list[1], list[2], list[3], list[4]
+	sdv, lc, vh, repo, ror2, peak := list[0], list[1], list[2], list[3], list[4], list[5]
 	if sdv.ID != "stardew" || !sdv.Available || sdv.LoaderID != "smapi" || strings.Join(sdv.Sources, ",") != "nexus,curseforge,github" || sdv.AppID != "413150" {
 		t.Fatalf("stardew row = %+v", sdv)
 	}
@@ -60,6 +60,9 @@ func TestListComesFromTheCatalog(t *testing.T) {
 	}
 	if ror2.ID != "riskofrain2" || !ror2.Available || ror2.LoaderID != "bepinex5" || ror2.AppID != "632360" {
 		t.Fatalf("riskofrain2 row = %+v", ror2)
+	}
+	if peak.ID != "peak" || !peak.Available || peak.LoaderID != "bepinex5" || peak.AppID != "3527290" {
+		t.Fatalf("peak row = %+v", peak)
 	}
 	if vh.ID != "valheim" || !vh.Available || vh.LoaderID != "bepinex5" || vh.AppID != "892970" {
 		t.Fatalf("valheim row = %+v", vh)

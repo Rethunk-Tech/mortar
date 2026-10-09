@@ -1,5 +1,5 @@
 {
-  "serial": 1791536980,
+  "serial": 1791537136,
   "components": [
     {
       "game": "stardew",
@@ -362,6 +362,45 @@
         {
           "id": "thunderstore",
           "key": "riskofrain2"
+        }
+      ]
+    },
+    {
+      "id": "peak",
+      "name": "PEAK",
+      "enabled": true,
+      "marker": "PEAK.exe",
+      "r2modmanFolder": "PEAK",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/LandCrab/PEAK/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "3527290"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_PEAK"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "peak"
         }
       ]
     }

@@ -440,7 +440,10 @@ func TestACommunityBepInExPackIsTheLoaderPackage(t *testing.T) {
 	if ror2, _ := Game("riskofrain2"); ror2.LoaderPackage() != "bbepis-BepInExPack" {
 		t.Fatalf("riskofrain2 pack = %q", ror2.LoaderPackage())
 	}
-	for id, want := range map[string]bool{"denikson-BepInExPack_Valheim": true, "bbepis-BepInExPack": true, "bepinex-bepinexpack": true, "denikson-Other": false} {
+	if peak, _ := Game("peak"); peak.LoaderPackage() != "BepInEx-BepInExPack_PEAK" {
+		t.Fatalf("peak pack = %q", peak.LoaderPackage())
+	}
+	for id, want := range map[string]bool{"denikson-BepInExPack_Valheim": true, "bbepis-BepInExPack": true, "bepinex-bepinexpack_peak": true, "bepinex-bepinexpack": true, "denikson-Other": false} {
 		if IsLoaderPackage(id) != want {
 			t.Errorf("IsLoaderPackage(%q) = %v", id, !want)
 		}
