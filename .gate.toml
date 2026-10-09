@@ -1,3 +1,7 @@
+# bun run gate is one gate that runs the whole suite: cold it took 52 to 64 s at load, past the 1 minute default.
+[gates.gate]
+timeout = "3m"
+
 [gates.e2e]
 run = "bun run --cwd frontend e2e"
 timeout = "3m"
