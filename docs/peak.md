@@ -7,5 +7,5 @@ PEAK is a new, fast-growing co-op climbing game on the BepInEx 5 path (ranking: 
 - **Mods:** Thunderstore community `peak` (r2modman folder `PEAK`, data folder `PEAK_Data`). No Nexus or GitHub source is listed: Nexus answers 403 to automated reads, so its game id was not verified.
 - **Saves:** PCGamingWiki lists no save location, so the entry has no `saves` role and the Saves tab stays empty.
 - **Player.log:** `{localLow}/LandCrab/PEAK/Player.log`, built from the registry key PCGamingWiki gives (`HKCU\Software\LandCrab\PEAK`), which Unity names after the company and product; the file itself was not read from an install.
-- **Not done:** r2modman's most-reacted game-specific issue is "PEAK - r2modman is forcing vulkan" (the design research); a launch option for it is separate work.
+- **Graphics API:** r2modman's most-reacted game-specific issue is "PEAK - r2modman is forcing vulkan" ([#1842](https://github.com/ebkr/r2modmanPlus/issues/1842)): Steam's first launch option carries `-force-vulkan`, and the BepInExPack_PEAK readme says to add `-dx12` if PEAK crashes on startup. The catalog entry's `graphics` block offers DirectX 12 (`-dx12`, recommended) and Vulkan (the game's default); Play asks once, and again after an early exit under Vulkan.
 - **Regress:** `scripts/selftest.sh regress --fake peak` (see [repo.md](repo.md) for what it does and does not show).
