@@ -2,7 +2,12 @@ import { beforeEach, expect, mock, test } from 'bun:test'
 
 const calls = { opened: [] as string[], installed: [] as unknown[][] }
 
+// mock.module outlives this file in the one bun test process, so the mock keeps the module's other exports for the files that import them.
+const archivesvc = await import(
+  '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts'
+)
 mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts', () => ({
+  ...archivesvc,
   PatreonPost: async (text: string) => {
     const m = /^https:\/\/www\.patreon\.com\/posts\/[\w-]*?-?(\d+)$/.exec(text)
     if (!m) {
