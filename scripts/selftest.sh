@@ -4,6 +4,7 @@
 # reaches the real game folder, the real data folder or the real Steam config.
 #
 #   scripts/selftest.sh start [--copy-data]   build, set up the sandbox if missing, start the server
+#   scripts/selftest.sh start --fake GAME_ID  start a sandbox of its own holding only a fake install of a catalog game this machine lacks, with a profile (see start_fake)
 #   scripts/selftest.sh setup                 only create or top up the sandbox's Steam library; no build, no server
 #   scripts/selftest.sh restart               rebuild from the working tree and restart
 #   scripts/selftest.sh stop                  stop the server
@@ -1041,6 +1042,71 @@ fake_game() {
   esac
 }
 
+# fake_install ID gives the sandbox a stand-in install of a catalog game this machine lacks: the marker file and a Steam
+# manifest, and $ROOT/run-fake.sh, a launch prefix that records what the launch carried and keeps a dummy window up.
+fake_install() {
+  local id=$1 spec app folder marker bepinex
+  spec=$(fake_game "$id") || {
+    echo "no fake install defined for $id" >&2
+    exit 2
+  }
+  IFS="|" read -r app folder marker bepinex <<<"$spec"
+  command -v zenity >/dev/null || {
+    echo "a fake install needs zenity as its dummy window" >&2
+    exit 1
+  }
+  local game="$SANDBOX_STEAM/steamapps/common/$folder" compat="$SANDBOX_STEAM/steamapps/compatdata/$app"
+  mkdir -p "$SANDBOX_STEAM/config" "$SANDBOX_STEAM/steamapps/common" "$game" "$compat/pfx/drive_c/users/steamuser/AppData/LocalLow"
+  printf 'MZ fake executable for a Mortar regress; it is never run\n' >"$game/$marker"
+  mkdir -p "$game/${marker%.exe}_Data"
+  printf '"AppState"\n{\n\t"appid"\t\t"%s"\n\t"installdir"\t\t"%s"\n\t"StateFlags"\t\t"4"\n}\n' "$app" "$folder" >"$SANDBOX_STEAM/steamapps/appmanifest_$app.acf"
+  [ -f "$STEAM/config/loginusers.vdf" ] && cp "$STEAM/config/loginusers.vdf" "$SANDBOX_STEAM/config/"
+  printf 'WINE REGISTRY Version 2\n;; All keys relative to \\\\User\\\\S-1-5-21-0-0-0-1000\n\n#arch=win64\n' >"$compat/pfx/user.reg"
+  write_library
+
+  # The launch prefix stands in for Proton: it records whether the Doorstop pair sits beside the executable, then
+  # keeps a dummy window up until Mortar stops it.
+  cat >"$ROOT/run-fake.sh" <<EOF
+#!/bin/bash
+dir=\$(dirname "\$1")
+{ for f in winhttp.dll doorstop_config.ini; do [ -f "\$dir/\$f" ] && echo "\$f"; done; } >'$ROOT/seen.txt'
+printf '%s\n' "\$@" >'$ROOT/args.txt'
+exec -a "\$1" zenity --info --text 'fake $id game'
+EOF
+  chmod +x "$ROOT/run-fake.sh"
+}
+
+# start_fake ID is start for a game this machine lacks: the sandbox holds only its fake install (see fake_install), its
+# BepInEx pack and a profile that launches the dummy window, with the game's settings untouched, so a browser walk sees
+# the game as a new player would on pressing Play.
+start_fake() {
+  local id=$1 spec app folder marker bepinex profile
+  spec=$(fake_game "$id") || {
+    echo "no fake install defined for $id" >&2
+    exit 2
+  }
+  IFS="|" read -r app folder marker bepinex <<<"$spec"
+  mark
+  fake_install "$id"
+  build
+  stop
+  start
+  cli settings set --game "$id" defaultLaunchMethod direct >/dev/null
+  for _ in $(seq 1 30); do
+    cli loader install "$id" "$bepinex" >"$ROOT/loader.txt" 2>&1 && break
+    grep -q 'already running' "$ROOT/loader.txt" || break
+    sleep 2
+  done
+  grep -q "^Installed loader $bepinex" "$ROOT/loader.txt" || {
+    echo "BepInEx $bepinex did not install: $(head -c 300 "$ROOT/loader.txt")" >&2
+    exit 1
+  }
+  cli loader pin "$id" "$bepinex" >/dev/null
+  profile=$(cli profile create "$id" "Fake $id" | cut -f1)
+  cli profile set "$id" "$profile" launchPrefix "$ROOT/run-fake.sh" >/dev/null
+  echo "fake $id install and profile $profile ready; destroy with: MORTAR_SELFTEST_DIR=$ROOT $0 destroy"
+}
+
 # regress_fake ID is regress for a game with no install here: the sandbox holds a fake install (the marker file and a
 # Steam manifest, nothing a game would load) and the launch is a dummy window started through the guard, so what it
 # proves is Mortar's side: discovery, the BepInEx pack install, the profile, the Doorstop pair placed beside the
@@ -1076,24 +1142,7 @@ regress_fake() {
   regress_traps
   need_launches 1
 
-  mkdir -p "$SANDBOX_STEAM/config" "$SANDBOX_STEAM/steamapps/common" "$game" "$compat/pfx/drive_c/users/steamuser/AppData/LocalLow"
-  printf 'MZ fake executable for a Mortar regress; it is never run\n' >"$game/$marker"
-  mkdir -p "$game/${marker%.exe}_Data"
-  printf '"AppState"\n{\n\t"appid"\t\t"%s"\n\t"installdir"\t\t"%s"\n\t"StateFlags"\t\t"4"\n}\n' "$app" "$folder" >"$SANDBOX_STEAM/steamapps/appmanifest_$app.acf"
-  [ -f "$STEAM/config/loginusers.vdf" ] && cp "$STEAM/config/loginusers.vdf" "$SANDBOX_STEAM/config/"
-  printf 'WINE REGISTRY Version 2\n;; All keys relative to \\\\User\\\\S-1-5-21-0-0-0-1000\n\n#arch=win64\n' >"$compat/pfx/user.reg"
-  write_library
-
-  # The launch prefix stands in for Proton: it records whether the Doorstop pair sits beside the executable, then
-  # keeps a dummy window up until Mortar stops it.
-  cat >"$ROOT/run-fake.sh" <<EOF
-#!/bin/bash
-dir=\$(dirname "\$1")
-{ for f in winhttp.dll doorstop_config.ini; do [ -f "\$dir/\$f" ] && echo "\$f"; done; } >'$ROOT/seen.txt'
-printf '%s\n' "\$@" >'$ROOT/args.txt'
-exec -a "\$1" zenity --info --text 'fake $id game'
-EOF
-  chmod +x "$ROOT/run-fake.sh"
+  fake_install "$id"
 
   build
   start
@@ -1493,6 +1542,24 @@ reap() {
   fi
 }
 
+# "start --fake ID" runs in a sandbox of its own, on a free port, unless the caller named one.
+if [ "${1:-}" = start ] && [ "${2:-}" = --fake ]; then
+  [ -n "${3:-}" ] || {
+    echo "usage: selftest.sh start --fake GAME_ID" >&2
+    exit 2
+  }
+  if [ -z "${MORTAR_SELFTEST_DIR:-}" ]; then
+    ROOT=$BASE/mortar-selftest-fake-$3
+    SANDBOX_HOME=$ROOT/home
+    SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
+  fi
+  if [ -z "${MORTAR_SELFTEST_PORT:-}" ]; then
+    PORT=$((9600 + RANDOM % 300))
+    while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
+  fi
+  export MORTAR_ENABLE_GAMES=$3
+fi
+
 case "${1:-}" in
   destroy | reap | harness-check) ;;
   regress)
@@ -1512,6 +1579,10 @@ case "${1:-}" in
 esac
 case "${1:-}" in
   start)
+    if [ "${2:-}" = --fake ]; then
+      start_fake "$3"
+      exit 0
+    fi
     setup
     if [ "${2:-}" = "--copy-data" ]; then copy_data; fi
     build
