@@ -17,6 +17,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/services/notifications"
+
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
@@ -78,9 +82,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/tools"
 	"github.com/Rethunk-Tech/mortar/internal/updatesvc"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
-	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/events"
-	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 )
 
 //go:embed build/config.yml
@@ -604,7 +605,7 @@ func run() error {
 	launches.Unlocked = func() { queue.NotifyUnlocked(queueSvc) }
 	nxmSvc.Route = queueSvc.Route
 	notifier := notifications.New()
-	desktopnotify.Setup(notifier, nxmSvc.NotificationIcon, func(key string) bool {
+	desktopnotify.Setup(wailsNotifier{notifier}, nxmSvc.NotificationIcon, func(key string) bool {
 		v, err := store.Get().Lookup(key)
 		return err == nil && v == "true"
 	})
@@ -892,7 +893,7 @@ func run() error {
 			packaged = updatesvc.PackagedBy(exe)
 		}
 	}
-	if err := updatesvc.Configure(updates, app.Updater, version, updateKey, packaged, func() bool {
+	if err := updatesvc.Configure(updates, app.Updater, version, updateKey, application.System.IsServer(), packaged, func() bool {
 		return store.Get().IncludeBetaReleases
 	}, dataDir); err != nil {
 		return err
@@ -946,10 +947,10 @@ func run() error {
 			log.Printf("control: %v", err)
 		}
 	}()
-	svc.App = app
-	loaders.App = app
-	profileSvc.App = app
-	launches.App = app
+	h := wailsHost{app}
+	svc.App = h
+	loaders.App = h
+	launches.App = h
 	if err := launches.RecoverGameSettings(); err != nil {
 		log.Printf("game settings restore: %v", err)
 		app.Event.Emit(launchsvc.SettingsRestoreWarningEvent, launchsvc.SettingsRestoreWarning{Error: err.Error()})
@@ -963,12 +964,12 @@ func run() error {
 		loadersvc.EnsureExisting(loaders, id)
 		launchsvc.SweepOnStart(launches, id)
 	}
-	pick.App = app
-	nexusSvc.App = app
-	nxmSvc.App = app
-	shareSvc.App = app
-	packs.App = app
-	supportSvc.App = app
+	pick.App = h
+	nexusSvc.App = h
+	nxmSvc.App = h
+	shareSvc.App = h
+	packs.App = h
+	supportSvc.App = h
 	notifier.OnNotificationResponse(func(result notifications.NotificationResult) {
 		gameID, profileID, tab := launchsvc.NoticeProfileFromResponse(result.Response.ID, result.Response.UserInfo)
 		if profileID != "" && gameID != "" {

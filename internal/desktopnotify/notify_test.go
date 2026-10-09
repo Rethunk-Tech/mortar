@@ -2,8 +2,6 @@ package desktopnotify
 
 import (
 	"testing"
-
-	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 )
 
 type fakeNotifier struct {
@@ -11,7 +9,7 @@ type fakeNotifier struct {
 	title string
 }
 
-func (f *fakeNotifier) SendNotification(opts notifications.NotificationOptions) error {
+func (f *fakeNotifier) Notify(opts Notice) error {
 	f.n++
 	f.title = opts.Title
 	return nil

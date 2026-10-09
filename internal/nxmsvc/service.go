@@ -20,7 +20,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
-	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
 
 // Events the window listens to.
@@ -74,7 +74,7 @@ type Service struct {
 	handler nxm.Handler
 	now     func() time.Time
 	// App is set after application.New so arrivals can reach the window.
-	App *application.App
+	App winhost.Host
 	// Assigned carries links the user matched to a profile.
 	Assigned chan Assignment
 	// Route is offered every accepted link first and reports whether the download queue was waiting for it; nil
@@ -98,7 +98,7 @@ func NewService(store *settings.Store, handler nxm.Handler) *Service {
 
 func (s *Service) emit(name string, data any) {
 	if s.App != nil {
-		s.App.Event.Emit(name, data)
+		s.App.Emit(name, data)
 	}
 }
 

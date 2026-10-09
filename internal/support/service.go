@@ -22,7 +22,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
-	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
 
 const (
@@ -50,7 +50,7 @@ type Service struct {
 	// RecentLog is in-memory log lines when Mortar has no log file. Nil means none.
 	RecentLog func(gameID, profileID string) string
 	// App is set after application.New so SaveDiagnostics can show the save dialog.
-	App *application.App
+	App winhost.Host
 }
 
 // ExtensionContact is the last time a browser extension talked to Mortar's native host; empty before any did.

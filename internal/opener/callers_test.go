@@ -24,6 +24,7 @@ func TestOnlyTheGuardedCallersStartTheSystemHandler(t *testing.T) {
 	allowed := map[string]bool{
 		"main.go":                          true, // the opener service's Open
 		"internal/nexussvc/sso.go":         true, // opener.Web before Browser.OpenURL
+		"wailshost.go":                     true, // the host adapter; its only caller, nexussvc, runs opener.Web first
 		"internal/datadir/open.go":         true, // checkOpenable before xdg-open or explorer
 		"internal/lan/firewall_windows.go": true, // elevates Mortar's own executable with a fixed argument
 		"internal/opener/callers_test.go":  true,

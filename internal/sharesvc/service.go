@@ -24,6 +24,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/winhost"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
@@ -35,7 +36,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // ArrivedEvent carries an Arrival to the window.
@@ -109,7 +109,7 @@ type Deps struct {
 type Service struct {
 	d Deps
 	// App is set after application.New, for dialogs and the clipboard.
-	App *application.App
+	App winhost.Host
 	// QueueChanged writes a pending import's config files as its mods finish installing, and forgets the import
 	// once its downloads are settled. It is a field so the window cannot call it; wire it to queue.Deps.Changed.
 	QueueChanged func(queue.State)
@@ -335,11 +335,7 @@ func (s *Service) SaveFile(game, profileID string, keys []string, include share.
 	if err != nil {
 		return Saved{}, err
 	}
-	d := s.App.Dialog.SaveFile().
-		SetFilename(fileNameUnsafe.Replace(p.Name)+".mortar").
-		AddFilter("Mortar profile (.mortar)", "*.mortar")
-	d.AttachToWindow(s.App.Window.Current())
-	dest, err := d.PromptForSingleSelection()
+	dest, err := s.App.SaveFile(winhost.Dialog{Filename: fileNameUnsafe.Replace(p.Name) + ".mortar", Filters: []winhost.Filter{{Name: "Mortar profile (.mortar)", Pattern: "*.mortar"}}})
 	if err != nil || dest == "" {
 		return Saved{Skipped: []string{}}, err
 	}
@@ -381,16 +377,12 @@ func (s *Service) ExportBytes(game, profileID string, include share.Include) ([]
 
 // PickFile asks for a .mortar file and returns its path, or "" when the dialog is cancelled.
 func (s *Service) PickFile() (string, error) {
-	d := s.App.Dialog.OpenFile().
-		SetTitle("Open a .mortar file").
-		AddFilter("Mortar profile (.mortar)", "*.mortar")
-	d.AttachToWindow(s.App.Window.Current())
-	return d.PromptForSingleSelection()
+	return s.App.OpenFile(winhost.Dialog{Title: "Open a .mortar file", Filters: []winhost.Filter{{Name: "Mortar profile (.mortar)", Pattern: "*.mortar"}}})
 }
 
 // ReadClipboard returns the clipboard's text. It is called only when the user presses Paste in the import dialog.
 func (s *Service) ReadClipboard() string {
-	text, _ := s.App.Clipboard.Text()
+	text, _ := s.App.ClipboardText()
 	return text
 }
 

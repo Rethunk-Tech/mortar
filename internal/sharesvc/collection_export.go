@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
 
 // The collection.json shape is Vortex's ICollection (Nexus-Mods/Vortex,
@@ -233,9 +234,7 @@ func (s *Service) ExportCollection(ctx context.Context, game, profileID string) 
 		return ExportedCollection{}, fmt.Errorf("%s has no Nexus page to make a collection for", game)
 	}
 	t := nexus.Title{Domain: info.NexusDomain(), ID: info.NexusID()}
-	d := s.App.Dialog.SaveFile().SetFilename("collection.zip").AddFilter("Nexus collection draft (zip)", "*.zip")
-	d.AttachToWindow(s.App.Window.Current())
-	dest, err := d.PromptForSingleSelection()
+	dest, err := s.App.SaveFile(winhost.Dialog{Filename: "collection.zip", Filters: []winhost.Filter{{Name: "Nexus collection draft (zip)", Pattern: "*.zip"}}})
 	if err != nil || dest == "" {
 		return ExportedCollection{Skipped: []string{}}, err
 	}

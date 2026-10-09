@@ -101,12 +101,12 @@ func (s *Service) openBrowser(url string) error {
 	if s.App == nil {
 		return errors.New("no browser to open")
 	}
-	return s.App.Browser.OpenURL(web)
+	return s.App.OpenURL(web)
 }
 
 func (s *Service) emitSSO(st SSOState) {
 	if s.App != nil {
-		s.App.Event.Emit(SSOEvent, st)
+		s.App.Emit(SSOEvent, st)
 	}
 }
 

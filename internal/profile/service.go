@@ -13,7 +13,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // Service exposes the store to the frontend.
@@ -21,8 +20,6 @@ type Service struct {
 	store    *Store
 	home     string
 	settings *settings.Store
-	// App is set after application.New so export and restore can use native file dialogs.
-	App *application.App
 	// Version is Mortar's version written into exported zips.
 	Version              string
 	QueueProfileDeleted  func(game, id string)

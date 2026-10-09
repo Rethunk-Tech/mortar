@@ -20,6 +20,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
 
 const (
@@ -218,9 +219,7 @@ func (s *Service) BackupDialog(gameID, profileID string, mods bool) (string, err
 	if err != nil {
 		return "", err
 	}
-	d := s.App.Dialog.SaveFile().SetFilename(packageName(p.Name)+".mortar-backup.zip").AddFilter("Mortar profile backup (zip)", "*.zip")
-	d.AttachToWindow(s.App.Window.Current())
-	dest, err := d.PromptForSingleSelection()
+	dest, err := s.App.SaveFile(winhost.Dialog{Filename: packageName(p.Name) + ".mortar-backup.zip", Filters: []winhost.Filter{{Name: "Mortar profile backup (zip)", Pattern: "*.zip"}}})
 	if err != nil || dest == "" {
 		return "", err
 	}
@@ -315,9 +314,7 @@ func (s *Service) RestoreDialog(ctx context.Context, gameID string) (RestoreResu
 	if s.App == nil {
 		return RestoreResult{}, errors.New("no window to ask for the file")
 	}
-	d := s.App.Dialog.OpenFile().AddFilter("Mortar profile backup or profile zip", "*.zip")
-	d.AttachToWindow(s.App.Window.Current())
-	path, err := d.PromptForSingleSelection()
+	path, err := s.App.OpenFile(winhost.Dialog{Filters: []winhost.Filter{{Name: "Mortar profile backup or profile zip", Pattern: "*.zip"}}})
 	if err != nil || path == "" {
 		return RestoreResult{Unavailable: []string{}}, err
 	}

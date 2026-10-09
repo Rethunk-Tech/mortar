@@ -9,13 +9,13 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/winhost"
 
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussso"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // ChangedEvent is emitted with the new Account after a sign-in or sign-out.
@@ -44,7 +44,7 @@ type Service struct {
 	seen    *nexus.SeenStore
 	prompts *promptStore
 	// App is set after application.New so sign-in and sign-out can emit events.
-	App *application.App
+	App winhost.Host
 	// Profiles is the app's profile store, read when untracking only the mods no profile uses.
 	Profiles *profile.Store
 	// GitHub serves release notes for updates that come from GitHub.
@@ -62,7 +62,7 @@ func NewService(store *settings.Store, client *nexus.Client, m *meta.Client) *Se
 		if s.App != nil {
 			a := s.Account()
 			a.Limits = lim
-			s.App.Event.Emit(ChangedEvent, a)
+			s.App.Emit(ChangedEvent, a)
 		}
 	})
 	return s
@@ -104,7 +104,7 @@ func (s *Service) update(fn func(*settings.Settings)) (Account, error) {
 	}
 	acct := s.Account()
 	if s.App != nil {
-		s.App.Event.Emit(ChangedEvent, acct)
+		s.App.Emit(ChangedEvent, acct)
 	}
 	return acct, nil
 }

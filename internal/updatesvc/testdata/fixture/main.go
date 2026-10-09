@@ -10,8 +10,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/updatesvc"
 	"github.com/wailsapp/wails/v3/pkg/application"
+
+	"github.com/Rethunk-Tech/mortar/internal/updatesvc"
 )
 
 var version = "0.0.0"
@@ -26,7 +27,7 @@ func main() {
 	if err != nil {
 		fatal(err)
 	}
-	if err := updatesvc.Configure(svc, app.Updater, version, key, "", nil, ""); err != nil {
+	if err := updatesvc.Configure(svc, app.Updater, version, key, application.System.IsServer(), "", nil, ""); err != nil {
 		fatal(err)
 	}
 	record("start version=%s", version)

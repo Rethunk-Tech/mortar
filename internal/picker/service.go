@@ -4,7 +4,7 @@ package picker
 import (
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
 
 // DroppedEvent is emitted with the paths of the files dropped on the window.
@@ -13,37 +13,29 @@ const DroppedEvent = "files:dropped"
 // Service exposes the file dialog to the frontend.
 type Service struct {
 	// App is set after application.New.
-	App *application.App
+	App winhost.Host
 }
 
 // PickArchives asks for archives and returns the chosen paths, none when the dialog is cancelled.
 func (s *Service) PickArchives() ([]string, error) {
-	d := s.App.Dialog.OpenFile().
-		SetTitle("Add archive").
-		AddFilter("Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lzma)", archive.PickerPattern()).
-		AddFilter("All files", "*")
-	d.AttachToWindow(s.App.Window.Current())
-	return d.PromptForMultipleSelection()
+	return s.App.OpenFiles(winhost.Dialog{Title: "Add archive", Filters: []winhost.Filter{
+		{Name: "Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lzma)", Pattern: archive.PickerPattern()},
+		{Name: "All files", Pattern: "*"},
+	}})
 }
 
 // PickImage asks for one image and returns its path, or "" when the dialog is cancelled.
 func (s *Service) PickImage(title string) (string, error) {
-	d := s.App.Dialog.OpenFile().
-		SetTitle(title).
-		AddFilter("Images (PNG, JPEG, WebP)", "*.png;*.jpg;*.jpeg;*.webp")
-	d.AttachToWindow(s.App.Window.Current())
-	return d.PromptForSingleSelection()
+	return s.App.OpenFile(winhost.Dialog{Title: title, Filters: []winhost.Filter{{Name: "Images (PNG, JPEG, WebP)", Pattern: "*.png;*.jpg;*.jpeg;*.webp"}}})
 }
 
 // PickPackFile asks for an r2modman profile export (.r2z) or a Thunderstore modpack zip and returns its path, or "" when
 // the dialog is cancelled.
 func (s *Service) PickPackFile() (string, error) {
-	d := s.App.Dialog.OpenFile().
-		SetTitle("Open a profile export").
-		AddFilter("r2modman or Gale export (.r2z, .zip)", "*.r2z;*.zip").
-		AddFilter("All files", "*")
-	d.AttachToWindow(s.App.Window.Current())
-	return d.PromptForSingleSelection()
+	return s.App.OpenFile(winhost.Dialog{Title: "Open a profile export", Filters: []winhost.Filter{
+		{Name: "r2modman or Gale export (.r2z, .zip)", Pattern: "*.r2z;*.zip"},
+		{Name: "All files", Pattern: "*"},
+	}})
 }
 
 // SaveFile asks where to write contents and writes them. It returns "" when the dialog is cancelled.
@@ -53,13 +45,8 @@ func (s *Service) SaveFile(title, filename, contents string) (string, error) {
 
 // SaveFile asks where to write data through the native save dialog, offering one filter plus all files,
 // and writes it owner-only. It returns "" when the dialog is cancelled.
-func SaveFile(app *application.App, title, filename, filterName, pattern string, data []byte) (string, error) {
-	d := app.Dialog.SaveFile()
-	d.SetOptions(&application.SaveFileDialogOptions{Title: title, Filename: filename})
-	d.AddFilter(filterName, pattern)
-	d.AddFilter("All files", "*")
-	d.AttachToWindow(app.Window.Current())
-	path, err := d.PromptForSingleSelection()
+func SaveFile(app winhost.Host, title, filename, filterName, pattern string, data []byte) (string, error) {
+	path, err := app.SaveFile(winhost.Dialog{Title: title, Filename: filename, Filters: []winhost.Filter{{Name: filterName, Pattern: pattern}, {Name: "All files", Pattern: "*"}}})
 	if err != nil || path == "" {
 		return path, err
 	}

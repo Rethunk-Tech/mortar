@@ -10,10 +10,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Rethunk-Tech/mortar/internal/github"
-	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/updater"
 	"github.com/wailsapp/wails/v3/pkg/updater/providers/endpoint"
+
+	"github.com/Rethunk-Tech/mortar/internal/github"
 )
 
 // ManifestURL is the signed update manifest attached to the latest GitHub release.
@@ -88,9 +88,9 @@ func (s *Service) lock() {
 // Configure points s at u, which reads ManifestURL and trusts only publicKey. It is a function rather than a method
 // so the binding generator does not hand it to the window. Outside a production build, for a dev version, or when
 // packaged is set (nfpm, Flatpak, AUR), u is left unconfigured and every call reports updates as off.
-func Configure(s *Service, u Updater, version string, publicKey []byte, packaged string, includeBeta func() bool, dataDir string) error {
+func Configure(s *Service, u Updater, version string, publicKey []byte, isServer bool, packaged string, includeBeta func() bool, dataDir string) error {
 	s.dir = dataDir
-	if err := configure(s, u, version, publicKey, production && (serverUpdates || !application.System.IsServer()), packaged, includeBeta); err != nil {
+	if err := configure(s, u, version, publicKey, production && (serverUpdates || !isServer), packaged, includeBeta); err != nil {
 		return err
 	}
 	if s.info.Off == "" {

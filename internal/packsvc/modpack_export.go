@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
 
 // ModpackResult is what ExportModpack wrote. LeftOut names the mods from a source other than Thunderstore, which a
@@ -43,9 +44,7 @@ func (s *Service) ExportModpackDialog(ctx context.Context, gameID, profileID str
 	if err != nil {
 		return ModpackResult{}, err
 	}
-	d := s.App.Dialog.SaveFile().SetFilename(packageName(p.Name)+".zip").AddFilter("Thunderstore modpack (zip)", "*.zip")
-	d.AttachToWindow(s.App.Window.Current())
-	dest, err := d.PromptForSingleSelection()
+	dest, err := s.App.SaveFile(winhost.Dialog{Filename: packageName(p.Name) + ".zip", Filters: []winhost.Filter{{Name: "Thunderstore modpack (zip)", Pattern: "*.zip"}}})
 	if err != nil || dest == "" {
 		return ModpackResult{Dependencies: []string{}, LeftOut: []string{}, Disabled: []string{}}, err
 	}

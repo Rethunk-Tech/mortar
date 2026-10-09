@@ -31,7 +31,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
-	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
 
 // pollEvery is how often a running game is checked; tests set it small.
@@ -158,7 +158,7 @@ type Service struct {
 	lastFailure map[string]string
 	seq         atomic.Int64
 	// App is set after application.New so events can be emitted.
-	App *application.App
+	App winhost.Host
 	// EnsureLoader installs the game's loader when it is missing or broken. Start calls it before launching.
 	// fromStart is true when Play requested the install, so a preparing claim for this Start must not skip it.
 	EnsureLoader func(ctx context.Context, gameID, loaderID string, fromStart bool) error
@@ -204,7 +204,7 @@ func SetLife(s *Service, ctx context.Context) {
 
 func (s *Service) emit(name string, data any) {
 	if s.App != nil {
-		s.App.Event.Emit(name, data)
+		s.App.Emit(name, data)
 	}
 }
 

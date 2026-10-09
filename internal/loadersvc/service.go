@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/winhost"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -25,7 +26,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // ProgressEvent is emitted with a Progress after each install step.
@@ -60,7 +60,7 @@ type Service struct {
 	// run installs or updates the loader with busy held; tests replace it.
 	run func(ctx context.Context, id, loaderID string, fromStart bool) (loader.Status, error)
 	// App is set after application.New so events can be emitted.
-	App *application.App
+	App winhost.Host
 	// OnReady runs after a successful loader install (SMAPI version may have changed).
 	OnReady func(id string)
 	// procDir is where running processes are listed on Linux; tests point it at a fake.
@@ -379,7 +379,7 @@ func (s *Service) gameRunning(g game.Game) (bool, error) {
 
 func (s *Service) emit(name string, data any) {
 	if s.App != nil {
-		s.App.Event.Emit(name, data)
+		s.App.Emit(name, data)
 	}
 }
 

@@ -11,7 +11,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/picker"
-	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
 
 // ChangedEvent is emitted with the new Settings after every successful setter.
@@ -21,7 +21,7 @@ const ChangedEvent = "settings:changed"
 type Service struct {
 	store *Store
 	// App is set after application.New so setters can emit events.
-	App *application.App
+	App winhost.Host
 	// ValidateGameFolder vets a folder before it is stored; set before the app runs.
 	ValidateGameFolder func(game, dir string) error
 	// ValidateLauncherRoot vets a launcher folder before it is stored; set before the app runs.
@@ -144,12 +144,10 @@ func (s *Service) SetBackgroundImage(path string) error {
 
 // ChooseBackgroundImage asks for an image and stores it as the wallpaper; cancelling changes nothing.
 func (s *Service) ChooseBackgroundImage() error {
-	d := s.App.Dialog.OpenFile().
-		SetTitle("Choose background image").
-		AddFilter("Images (PNG, JPEG, WebP)", "*.png;*.jpg;*.jpeg;*.webp").
-		AddFilter("All files", "*")
-	d.AttachToWindow(s.App.Window.Current())
-	path, err := d.PromptForSingleSelection()
+	path, err := s.App.OpenFile(winhost.Dialog{Title: "Choose background image", Filters: []winhost.Filter{
+		{Name: "Images (PNG, JPEG, WebP)", Pattern: "*.png;*.jpg;*.jpeg;*.webp"},
+		{Name: "All files", Pattern: "*"},
+	}})
 	if err != nil || path == "" {
 		return err
 	}
@@ -252,12 +250,7 @@ func (s *Service) SetGameStore(game, store string) error {
 
 // ChooseGameFolder asks for a folder and stores it as the game's install folder; cancelling changes nothing.
 func (s *Service) ChooseGameFolder(game string) error {
-	d := s.App.Dialog.OpenFile().
-		SetTitle("Choose game folder").
-		CanChooseDirectories(true).
-		CanChooseFiles(false)
-	d.AttachToWindow(s.App.Window.Current())
-	dir, err := d.PromptForSingleSelection()
+	dir, err := s.App.OpenFile(winhost.Dialog{Title: "Choose game folder", Folder: true})
 	if err != nil || dir == "" {
 		return err
 	}
@@ -284,12 +277,7 @@ func (s *Service) ExportSettings() (string, error) {
 
 // PickImportFile asks for a settings file to import. It returns "" when cancelled.
 func (s *Service) PickImportFile() (string, error) {
-	d := s.App.Dialog.OpenFile().
-		SetTitle("Import settings").
-		AddFilter("JSON", "*.json").
-		AddFilter("All files", "*")
-	d.AttachToWindow(s.App.Window.Current())
-	return d.PromptForSingleSelection()
+	return s.App.OpenFile(winhost.Dialog{Title: "Import settings", Filters: []winhost.Filter{{Name: "JSON", Pattern: "*.json"}, {Name: "All files", Pattern: "*"}}})
 }
 
 // PreviewImport validates the export at path and lists, per section, what importing it would change.
@@ -365,7 +353,7 @@ func (s *Service) setReapplying(force bool, fn func(*Settings)) error {
 		}
 	}
 	if s.App != nil {
-		s.App.Event.Emit(ChangedEvent, next)
+		s.App.Emit(ChangedEvent, next)
 	}
 	return autostartErr
 }

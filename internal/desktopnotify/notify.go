@@ -6,13 +6,18 @@ import (
 	"log"
 	"strings"
 	"time"
-
-	"github.com/wailsapp/wails/v3/pkg/services/notifications"
 )
 
-// Notifier is the Wails notifications service.
+// Notice is one notification; Icon is the path of the app logo to show beside it, or "".
+type Notice struct {
+	ID, Title, Body, Icon string
+	Data                  map[string]any
+}
+
+// Notifier delivers a Notice to the OS. The Wails notifications service sits behind it, because importing that
+// service links GTK through cgo into every test binary that reaches this package.
 type Notifier interface {
-	SendNotification(notifications.NotificationOptions) error
+	Notify(Notice) error
 }
 
 var (
@@ -49,20 +54,11 @@ func Send(title, body string, data map[string]any) {
 	if notifier == nil {
 		return
 	}
-	opts := notifications.NotificationOptions{
-		ID:    noticeID(title, data),
-		Title: title,
-		Body:  body,
-		Data:  data,
-	}
+	opts := Notice{ID: noticeID(title, data), Title: title, Body: body, Data: data}
 	if iconPath != nil {
-		if icon := iconPath(); icon != "" {
-			opts.Attachments = []notifications.NotificationAttachment{
-				{ID: "icon", Path: icon, Type: "appLogoOverride"},
-			}
-		}
+		opts.Icon = iconPath()
 	}
-	if err := notifier.SendNotification(opts); err != nil {
+	if err := notifier.Notify(opts); err != nil {
 		log.Printf("desktop notification: %v", err)
 	}
 }

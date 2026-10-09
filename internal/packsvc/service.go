@@ -18,8 +18,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/winhost"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
-	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // profiles is the part of profile.Store the service uses.
@@ -46,7 +46,7 @@ type Service struct {
 	// Code reads r2modman codes; the zero value talks to the real Thunderstore.
 	Code pack.Code
 	// App asks where to save an exported modpack; nil outside the window.
-	App *application.App
+	App winhost.Host
 }
 
 // Source is what the player handed over: a file or folder path, or pasted text (a code or a bare key).
