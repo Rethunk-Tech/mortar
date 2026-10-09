@@ -17,7 +17,12 @@ import (
 )
 
 func TestSessionUsesDiagnosticsSocket(t *testing.T) {
-	temp := t.TempDir()
+	// A unix socket path holds 107 bytes, so the socket lives under /tmp rather than a test TMPDIR that may be long.
+	temp, err := os.MkdirTemp("/tmp", "ds-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.RemoveAll(temp) })
 	t.Setenv("TMPDIR", temp)
 	pid := os.Getpid()
 	socket := filepath.Join(temp, "dotnet-diagnostic-"+strconv.Itoa(pid)+"-test-socket")
