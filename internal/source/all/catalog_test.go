@@ -60,6 +60,9 @@ func TestEveryCatalogReferenceResolves(t *testing.T) {
 		if s := g.Stores.Lutris; s != nil && (s.Slug == "" || s.Keyword == "") {
 			t.Errorf("%s: lutris store lacks a slug or keyword", g.ID)
 		}
+		if s := g.Stores.EA; s != nil && s.Folder == "" {
+			t.Errorf("%s: ea store lacks a folder", g.ID)
+		}
 		for role, tpl := range g.Paths {
 			if !slices.Contains(knownRoles, role) {
 				t.Errorf("%s: path role %q is unknown", g.ID, role)

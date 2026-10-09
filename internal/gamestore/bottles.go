@@ -26,6 +26,8 @@ func bottleGameDirs(bottle, folder string) []string {
 	return []string{
 		filepath.Join(c, "Program Files (x86)", "Steam", "steamapps", "common", folder),
 		filepath.Join(c, "Program Files", "Steam", "steamapps", "common", folder),
+		filepath.Join(c, "Program Files", "EA Games", folder),
+		filepath.Join(c, "Program Files (x86)", "EA Games", folder),
 		filepath.Join(c, "GOG Games", folder),
 		filepath.Join(c, "Program Files (x86)", "GOG Galaxy", "Games", folder),
 	}

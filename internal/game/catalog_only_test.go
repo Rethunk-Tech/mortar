@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/launchplan"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 // A game the catalog alone describes (Unity, BepInEx 5, Thunderstore, Steam) is selectable, found on Steam and given
@@ -73,5 +75,47 @@ func TestACatalogOnlyGameNeedsNoCode(t *testing.T) {
 	i := slices.IndexFunc(list, func(r GameInfo) bool { return r.ID == "content-warning" })
 	if i < 0 || !list[i].Installed || list[i].InstallDir != dir || list[i].LoaderID != "bepinex5" {
 		t.Fatalf("list = %+v", list)
+	}
+}
+
+func TestACatalogOnlyEAGameIsFoundInAnAddedFolderAndStartsWithoutSteam(t *testing.T) {
+	m, err := components.BundledManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	m.Games = append(slices.Clone(m.Games), components.GameInfo{
+		ID: "ea-only", Name: "EA Only", Enabled: true, Marker: "EAOnly.exe", Deploy: "profile",
+		Targets: []components.TargetDef{{ID: "profile", Root: "{profile}"}},
+		Stores:  components.GameStores{EA: &components.EAStore{Folder: "EA Only"}},
+		Loaders: []components.GameLoader{{ID: "bepinex5", Name: "BepInEx 5"}},
+		Sources: []components.GameSource{{ID: "thunderstore", Key: "ea-only"}},
+	})
+	if err := m.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	c := components.NewClient(nil)
+	c.SetManifest(m)
+	ConfigureComponents(c)
+	t.Cleanup(func() { ConfigureComponents(nil) })
+
+	lib := t.TempDir()
+	dir := filepath.Join(lib, "EA Only")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "EAOnly.exe"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s := settings.Settings{LauncherRoots: map[string][]string{LauncherEA: {lib}}}
+	got, store, all, err := Resolve(t.TempDir(), s, "ea-only")
+	if err != nil || got != dir || store != StoreEA || len(all) != 1 {
+		t.Fatalf("Resolve = %q %q %v %v", got, store, all, err)
+	}
+	cmd, err := Starter{}.Command("windows", all[0], launchplan.New(launchplan.ModeProfile))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cmd.Name != filepath.Join(dir, "EAOnly.exe") || cmd.Relay {
+		t.Fatalf("an EA game starts its own executable, not a Steam relay: %+v", cmd)
 	}
 }

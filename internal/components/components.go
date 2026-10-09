@@ -219,6 +219,12 @@ type GameStores struct {
 	GOG     *GOGStore     `json:"gog,omitempty"`
 	Lutris  *LutrisStore  `json:"lutris,omitempty"`
 	Bottles *BottlesStore `json:"bottles,omitempty"`
+	EA      *EAStore      `json:"ea,omitempty"`
+}
+
+// EAStore names a game to the EA App: the folder under an EA library folder (`EA Games`) its installer gives it.
+type EAStore struct {
+	Folder string `json:"folder"`
 }
 
 // BottlesStore names a game to Bottles: the folder its Steam and GOG installs have inside a bottle.
@@ -370,6 +376,9 @@ func (g GameInfo) Validate() error {
 	}
 	if g.Stores.GOG != nil {
 		names = append(names, g.Stores.GOG.Folder)
+	}
+	if g.Stores.EA != nil {
+		names = append(names, g.Stores.EA.Folder)
 	}
 	for _, name := range names {
 		if strings.ContainsAny(name, "/\\") || name == "." || name == ".." {

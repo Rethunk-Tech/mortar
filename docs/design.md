@@ -23,45 +23,15 @@ Decided 2026-10-07 (NOMAD), from the audit of how Mortar was described to CurseF
 
 Decided 2026-10-09 (NOMAD). Facts about Mortar are anchored to the code as it is today; facts about EA, Patreon and The Sims 4 are marked **Verify** where they come from memory of the vendors' behaviour and need one throwaway check (run outside this repo, result recorded here) before the item is built.
 
-### EA App game store
+### EA App game store: frontend remainder
 
-**Why.** Several wanted games (The Sims 4 first) are sold on EA's store, and the EA App is a store Mortar cannot see: `gamestore.All()` knows Steam, GOG, Lutris and Bottles only (`internal/gamestore/gamestore.go:61`). Steam sells The Sims 4 too, but a player who bought it from EA has no Steam install to find, and Mortar's "game not found" screen is the only outcome today.
+The store driver is built (`internal/gamestore/drivers.go` `eaStore`, `stores.ea.folder` in the catalog, Bottles' `drive_c/Program Files/EA Games`, direct start, [architecture.md](architecture.md#games-and-the-catalog) store table). Left for the window:
 
-**Decided shape.** One more `Store` driver, key `ea`, found the way GOG's offline installs are: by folders and a marker, never by reading the EA App's private state.
+- `frontend/src/games/storeName.ts`: a name for store id `ea` ("EA App").
+- `frontend/src/brand/launchers/LauncherLogo.tsx`: a tile for launcher id `ea` (**Verify** simple-icons has an EA mark, else a plain tile as Bottles has). Lingui catalogs re-extracted.
+- `scripts/selftest.sh`: a fixture folder under a fake `EA Games` root with `launcherRoots` set in the sandbox settings, then a hidden-display launch of the stub executable.
+- **Verify** before enabling The Sims 4: the default folders and the catalog marker against a real install (`internal/gog` `GameDir` checks the folder root and a lowercase `game` folder one down, so a marker deeper than that, such as `Game/Bin/TS4_x64.exe`, needs the catalog to name the folder that holds it).
 
-- **Discovery is folder based.** The driver searches library roots for `<root>/<stores.ea.folder>` holding the game's `marker` (`internal/components/components.go` `GameInfo.Marker`, matched by the same check the other stores use). Roots, in order: the user's added folders (`settings.LauncherRoots["ea"]`, `internal/settings/settings.go:63`), then the EA App's usual library folders for the platform (Windows: `%ProgramFiles%\EA Games`, `%ProgramFiles(x86)%\EA Games`, and `Electronic Arts` beside them; Linux: none of its own). No registry read and no parsing of the EA App's data in `%ProgramData%\EA Desktop` (undocumented and rewritten by EA's updates). **Verify** the default folders and that The Sims 4's install holds `Game/Bin/TS4_x64.exe` (the catalog marker is a file at the root or one `game` folder down, so the marker value must be checked against a real install, case included).
-- **Linux has no native EA App.** An EA App install on Linux lives inside a Wine prefix, so it reaches Mortar through the two stores that already read prefixes: Bottles (`bottleGameDirs`, `internal/gamestore/bottles.go:27`, gains `Program Files/EA Games/<folder>` and `Program Files (x86)/EA Games/<folder>` under the bottle's `drive_c`, so `stores.bottles.folder` serves EA installs as it serves Steam and GOG ones) and Lutris (its `stores.lutris` slug and keyword already find a game by its Lutris entry). This means no new runtime: an EA game in a bottle is the existing `wine-prefix` runtime (`internal/runtime/wineprefix.go:18`), which resolves `{documents}`, `{appData}` and the rest inside the bottle.
-- **Launch is a direct start.** `Starter.command` runs the game's executable for every store except Steam (`internal/game/start.go:131`, the `env.Direct || plan.Exe != ""` branch). An EA game started this way must ask the running EA App to authenticate; the executable does that itself, so no EA-specific branch is added. A relay through `origin2://` or `link2ea://` is not built (see open questions).
-
-**Catalog change.**
-
-- `GameStores` gains `EA *EAStore` with `folder` (`internal/components/components.go:217`), mirroring `BottlesStore` (`:225`). `GameInfo.Validate` adds `stores.ea.folder` to the unsafe-name loop (`:374`).
-- `internal/gamestore`: `eaKey`, `StoreEA`/`LauncherEA` constants (`gamestore.go:13`, `:24`), `eaStore{}` in `drivers.go`, an entry in `All()` (`:61`), a case in `Has` (`:64`), `storeOrder` (`:97`; rank after GOG so a Steam install of the same game wins as default) and `launcherOrder` (`:103`). `LauncherOf` (`:118`) needs no case.
-- `Launchers(goos)` returns one spec, id `ea`, name "EA App", `Usable` true for any existing folder; on Linux it returns none, so the setup screen shows no empty EA row there (Bottles and Lutris installs report under their own launchers).
-- Frontend: `frontend/src/games/storeName.ts:4` (a name for the new store id) and `frontend/src/brand/launchers/LauncherLogo.tsx:8` (a tile; simple-icons has an EA mark: **Verify**, else a plain tile as Bottles has). Lingui catalogs re-extracted.
-- `runtime.Install.Store` needs nothing: the `native` runtime claims a Windows build on Windows, and `wine-prefix` claims Bottles installs only (`internal/runtime/wineprefix.go:23`).
-- `HUMANS.md` § Drivers step 1 and `docs/architecture.md` § Games and the catalog (Stores bullet, the store table at the "How it is found" section) list the new store.
-
-**Traps.**
-
-- `Discover` results are de-duplicated by folder (`gamestore.go:81`), but one game on Steam and EA at once gives two installs with different ids; `game.pick` (`internal/game/install.go:132`) chooses by `Rank`, so `storeOrder` decides the default. Do not make EA first.
-- The marker check must tolerate EA's `Game` subfolder; a catalog marker that works for the Steam copy may not for the EA copy if EA's layout differs. Check both layouts of The Sims 4 before enabling.
-- `steamSkipsLoader` and the Steam `-applaunch` branch are gated on `inst.Store`; an EA install must never reach them (`internal/game/start.go:121`, `:166`).
-- `scripts/selftest.sh` builds a minimal Steam library only; an EA game needs a fixture folder under a fake `EA Games` root and `launcherRoots` set in the sandbox settings.
-- The Flatpak build of Mortar sandboxes folder reads; a user-added EA folder needs the same grant text as other added folders (`game.ValidateLauncherRoot`, `internal/game/launchers.go:75`).
-
-**Acceptance.**
-
-- `go test ./internal/gamestore ./internal/game ./internal/components ./internal/source/all` pass; `TestEveryCatalogReferenceResolves` (`internal/source/all/catalog_test.go`) accepts `stores.ea`.
-- A test in `internal/gamestore` finds a fixture install under `EA Games/<folder>` and under a Bottles bottle, and ranks it after Steam.
-- A catalog-only test game (the pattern of `TestACatalogOnlyGameNeedsNoCode`, `internal/game`) with only `stores.ea` is selectable, found, and started through the direct branch with no Steam.
-- Sandbox: Settings lists EA App with the added folder, the game's install appears, and a hidden-display launch against the copy starts the stub executable (never the maintainer's screen).
-
-**Decisions (NOMAD, 2026-10-09).**
-
-1. Folders only: the EA App's default library folders plus the user's added folders; the EA App's install list is never read.
-2. The game's executable starts directly; no `origin2://` or `link2ea://` relay and no per-game offer id in the catalog.
-3. Windows first. On Linux an EA game reaches Mortar through Bottles and Lutris, with no Heroic-style launcher for EA in the first release.
 ### Generic-folder games and shared-state
 
 **Why.** Today a game is a catalog entry plus a loader (SMAPI, BepInEx), and `GameInfo.Validate` rejects an entry with none (`internal/components/components.go:358`). Most games have no loader: their mods are files dropped into a folder. And a game such as The Sims 4 keeps its mods and its saves in one shared Documents tree (`{documents}/Electronic Arts/The Sims 4`), so two profiles cannot be told apart by which install they use: the files that decide what the game loads are outside the install and shared by every launch.

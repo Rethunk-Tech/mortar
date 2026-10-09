@@ -1,7 +1,9 @@
 package gamestore
 
 import (
+	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -123,6 +125,49 @@ func (lutrisStore) Discover(home string, roots map[string][]string, g components
 	game := lutris.Game{Slug: g.Stores.Lutris.Slug, Keyword: g.Stores.Lutris.Keyword, Marker: g.Marker}
 	for _, in := range lutris.Locate(home, game, roots[LauncherLutris]...) {
 		out = append(out, Install{Store: StoreLutris, Dir: in.Dir})
+	}
+	return out
+}
+
+const eaKey = "ea"
+
+// eaDirs are the folders the EA App installs games into, the user's own first. Only Windows has the EA App; on Linux
+// an EA game is found through the Bottles or Lutris driver that holds its Wine prefix.
+func eaDirs(goos string, env func(string) string, custom ...string) []string {
+	out := slices.Clone(custom)
+	if goos != "windows" {
+		return out
+	}
+	for _, v := range []string{"ProgramFiles", "ProgramFiles(x86)"} {
+		if pf := env(v); pf != "" {
+			out = append(out, filepath.Join(pf, "EA Games"), filepath.Join(pf, "Electronic Arts"))
+		}
+	}
+	return out
+}
+
+type eaStore struct{}
+
+func (eaStore) Key() string { return eaKey }
+
+func (eaStore) Launchers(goos string) []LauncherSpec {
+	if goos != "windows" {
+		return nil
+	}
+	return []LauncherSpec{{
+		ID: LauncherEA, Name: "EA App", Usable: fsx.IsDir,
+		Looked: func(_ string, added map[string][]string) []string {
+			return eaDirs(goos, os.Getenv, added[LauncherEA]...)
+		},
+	}}
+}
+
+func (eaStore) Discover(_ string, roots map[string][]string, g components.GameInfo) []Install {
+	var out []Install
+	for _, dir := range eaDirs(runtime.GOOS, os.Getenv, roots[LauncherEA]...) {
+		if found := gog.GameDir(filepath.Join(dir, g.Stores.EA.Folder), g.Marker); found != "" {
+			out = append(out, Install{Store: StoreEA, Dir: found})
+		}
 	}
 	return out
 }

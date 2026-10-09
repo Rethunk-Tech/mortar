@@ -27,6 +27,7 @@ const (
 	StoreMinigalaxy   = gamestore.StoreMinigalaxy
 	StoreLutris       = gamestore.StoreLutris
 	StoreBottles      = gamestore.StoreBottles
+	StoreEA           = gamestore.StoreEA
 )
 
 // Install origins.
@@ -112,6 +113,7 @@ const (
 	LauncherGOG          = gamestore.LauncherGOG
 	LauncherMinigalaxy   = gamestore.LauncherMinigalaxy
 	LauncherBottles      = gamestore.LauncherBottles
+	LauncherEA           = gamestore.LauncherEA
 )
 
 // roots are the folders the user added for a launcher.
