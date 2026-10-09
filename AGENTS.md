@@ -43,6 +43,6 @@ Screenshots for the site and the AppStream metainfo are taken at the default win
 
 ## Verify
 
-All tests together (Go and frontend) stay under 10s warm: no duplicate coverage across layers; e2e only for flows no unit test can cover, and it has its own 2-minute budget ([docs/testing.md](docs/testing.md)). A cold run takes about 55s and is not held to a budget (measured cost: [docs/testing.md](docs/testing.md)).
+All tests together (Go and frontend) stay under 10s warm: no duplicate coverage across layers; e2e only for flows no unit test can cover, and it has its own 2-minute budget ([docs/testing.md](docs/testing.md)). A cold run takes about 55s and is not held to a budget (measured cost: [docs/testing.md](docs/testing.md)). The memory budget (`bun run mem`, on the real 811-mod data) is in no gate: it runs for many minutes.
 
 Bindings: `bun run bindings`; Lingui catalogs: `bun run --cwd frontend i18n:extract && bun run --cwd frontend i18n:compile`. Taskfile tasks run as `wails3 task <name>`; there is no standalone `task` binary. `bun run gate` is the offline gate (steps: [HUMANS.md](HUMANS.md) § Gate). CI (`.github/workflows/ci.yml`) runs the offline gate on pull requests and pushes to `main`, skipping Dependabot PRs and changes that touch only Markdown, `docs/` (not `docs/user-guide.md`, which a frontend test reads) or issue templates, so gate locally first and batch pushes; packaging runs only on `v*` tags or manual dispatch (`release.yml`).
