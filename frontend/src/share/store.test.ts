@@ -1,7 +1,13 @@
-import { beforeEach, expect, test } from 'bun:test'
-import { useNav } from '../nav/store.ts'
-import { useNexus } from '../settings/nexus.ts'
-import { importAfterSignIn, useImportDialog } from './store.ts'
+import { beforeEach, expect, mock, test } from 'bun:test'
+
+const SHARE_SERVICE = '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
+const realShare = await import(SHARE_SERVICE)
+mock.module(SHARE_SERVICE, () => ({ ...realShare, Discard: () => Promise.resolve() }))
+
+const { usePatreonPost } = await import('../install/patreon.ts')
+const { useNav } = await import('../nav/store.ts')
+const { useNexus } = await import('../settings/nexus.ts')
+const { importAfterSignIn, useImportDialog } = await import('./store.ts')
 
 beforeEach(() => {
   useNav.setState(useNav.getInitialState(), true)
@@ -33,4 +39,10 @@ test('leaving settings without signing in cancels the return to import', () => {
   useNav.getState().closeSettings()
   signIn()
   expect(useImportDialog.getState().request).toBeNull()
+})
+
+test('closing the dialog forgets a remembered Patreon post', () => {
+  usePatreonPost.getState().set({ id: '4242', url: 'https://www.patreon.com/posts/4242' })
+  useImportDialog.getState().close()
+  expect(usePatreonPost.getState().post).toBeNull()
 })

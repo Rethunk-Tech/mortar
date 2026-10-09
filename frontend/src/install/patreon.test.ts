@@ -37,7 +37,6 @@ test('a pasted Patreon post opens in the browser and is remembered; anything els
     url: 'https://www.patreon.com/posts/4242',
   })
 
-  usePatreonPost.getState().set(null)
   calls.opened.length = 0
   expect(await startPatreonPost('https://mortar.rethunk.tech/stardew/p#abc')).toBe(false)
   expect(calls.opened).toEqual([])

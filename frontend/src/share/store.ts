@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { ProfilePreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/migrate/models.ts'
 import { Discard } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
+import { forgetPatreonPost } from '../install/patreon.ts'
 import type { LanOrigin } from '../lan/resume.ts'
 import { openSettings, useNav } from '../nav/store.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -103,6 +104,7 @@ export const useImportDialog = create<{
   },
   close: () => {
     set({ request: null, busy: false })
+    forgetPatreonPost()
     Discard().catch(reportUnexpected)
   },
 }))
