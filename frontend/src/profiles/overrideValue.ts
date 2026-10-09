@@ -10,6 +10,7 @@ export const OVERRIDE_KEYS = [
   'updateModsBeforePlayDefault',
   'skipPlayCheck',
   'skipIntro',
+  'graphicsApi',
 ] as const
 
 export type OverrideKey = (typeof OVERRIDE_KEYS)[number]
@@ -22,6 +23,8 @@ export const OVERRIDE_VALUES: Record<OverrideKey, string[]> = {
   updateModsBeforePlayDefault: ['true', 'false'],
   skipPlayCheck: ['true', 'false'],
   skipIntro: ['true', 'false'],
+  // The game's catalog entry supplies the choices.
+  graphicsApi: [],
 }
 
 export type OverrideChoice = { useGame: true } | { useGame: false; value: string }

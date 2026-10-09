@@ -29,3 +29,18 @@ func (s *Service) graphicsArgs(g game.Game, profileID string) []string {
 	c, _ := chosenGraphics(graphicsOffer(g.ID()), s.settings.Get(), settings.Scope{Game: g.ID(), Install: installOf(g), Profile: profileID}, launchOverrides(s.profiles, g.ID(), profileID))
 	return c.Args
 }
+
+// GraphicsAsk says whether Play must ask which graphics API to use before it launches.
+type GraphicsAsk struct {
+	Ask bool `json:"ask"`
+}
+
+// GraphicsAsk asks Play's question when the game offers graphics choices and none is set for the profile.
+func (s *Service) GraphicsAsk(gameID, profileID string) (GraphicsAsk, error) {
+	offer := graphicsOffer(gameID)
+	if offer == nil || s.settings == nil {
+		return GraphicsAsk{}, nil
+	}
+	_, set := chosenGraphics(offer, s.settings.Get(), settings.Scope{Game: gameID, Profile: profileID}, launchOverrides(s.profiles, gameID, profileID))
+	return GraphicsAsk{Ask: !set}, nil
+}

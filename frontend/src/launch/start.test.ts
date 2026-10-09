@@ -2,6 +2,7 @@ import { beforeEach, expect, mock, test } from 'bun:test'
 
 let warnCalls = 0
 let startCalls = 0
+let askGraphics = false
 let warnWait: Promise<void> = Promise.resolve()
 let finishWarn: (() => void) | undefined
 
@@ -37,6 +38,7 @@ mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/se
     hint: 0,
     error: '',
   }),
+  GraphicsAsk: async () => ({ ask: askGraphics }),
   Start: async () => {
     startCalls += 1
   },
@@ -49,6 +51,7 @@ const { useLaunch } = await import('./store.ts')
 beforeEach(() => {
   warnCalls = 0
   startCalls = 0
+  askGraphics = false
   finishWarn = undefined
   warnWait = new Promise<void>((resolve) => {
     finishWarn = resolve
@@ -66,4 +69,16 @@ test('a second Start waits until the first UpdateWarning finishes', async () => 
   expect(startCalls).toBe(0)
   expect(useLaunch.getState().starting).toBe(false)
   expect(useLaunch.getState().updateWarn?.profile).toBe('p1')
+})
+
+test('an unanswered graphics choice stops Play at the dialog before any other check', async () => {
+  askGraphics = true
+  await useLaunch.getState().start('peak', 'p1', false)
+  const state = useLaunch.getState()
+  expect(state.graphicsAsk).toEqual({ game: 'peak', profile: 'p1', direct: false })
+  expect(state.starting).toBe(false)
+  expect(warnCalls).toBe(0)
+  expect(startCalls).toBe(0)
+  state.dismissGraphicsAsk()
+  expect(useLaunch.getState().graphicsAsk).toBeNull()
 })

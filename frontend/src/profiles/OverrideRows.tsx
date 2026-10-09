@@ -29,6 +29,8 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
       return i18n._(msg`Skip pre-Play check`)
     case 'skipIntro':
       return i18n._(msg`Skip the intro`)
+    case 'graphicsApi':
+      return i18n._(msg`Graphics API`)
     default:
       return key
   }
@@ -46,6 +48,7 @@ export function OverridesSection({
   const info = useGameInfo()
   const smapi = info?.loaderId === 'smapi'
   const introSkip = info?.loaders?.[0]?.introSkip === true
+  const graphics = info?.graphics ?? undefined
   const nexus = (info?.sources ?? []).includes('nexus')
   return (
     <Box sx={{ mt: 2, mb: 2 }}>
@@ -54,7 +57,10 @@ export function OverridesSection({
         {t`These apply only to this profile.`}
       </Typography>
       {OVERRIDE_KEYS.filter(
-        (key) => (smapi || key !== 'showSmapiConsole') && (introSkip || key !== 'skipIntro'),
+        (key) =>
+          (smapi || key !== 'showSmapiConsole') &&
+          (introSkip || key !== 'skipIntro') &&
+          (graphics || key !== 'graphicsApi'),
       ).map((key) => {
         const stored = overrides[key]
         const choice = choiceFromOverride(stored)
@@ -82,9 +88,15 @@ export function OverridesSection({
               }}
             >
               <MenuItem value="">{t`Use default`}</MenuItem>
-              {OVERRIDE_VALUES[key].map((value) => (
-                <MenuItem key={value} value={value}>
-                  {overrideChoiceLabel(key, value, i18n)}
+              {(key === 'graphicsApi'
+                ? (graphics?.choices ?? []).map((c) => ({ value: c.id, label: c.label }))
+                : OVERRIDE_VALUES[key].map((value) => ({
+                    value,
+                    label: overrideChoiceLabel(key, value, i18n),
+                  }))
+              ).map((o) => (
+                <MenuItem key={o.value} value={o.value}>
+                  {o.label}
                 </MenuItem>
               ))}
             </Select>

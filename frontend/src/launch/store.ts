@@ -25,6 +25,8 @@ import { type AutoUpdateRestorePoint, rollbackAutoUpdate } from './autoUpdate.ts
 import { gameBusy } from './busy.ts'
 import { applyOnPlayWindow } from './onPlay.ts'
 import {
+  answerGraphics,
+  type GraphicsPrompt,
   openProblems,
   type PlayCheck,
   playAnyway,
@@ -231,6 +233,7 @@ export const useLaunch = create<{
   updateWarn: UpdateWarn | null
   saveWarn: SaveWarn | null
   playCheck: PlayCheck | null
+  graphicsAsk: GraphicsPrompt | null
   updateRollback: UpdateRollback | null
   updating: number
   stopping: boolean
@@ -249,6 +252,8 @@ export const useLaunch = create<{
   dismissUpdateWarn: () => void
   dismissSaveWarn: () => void
   dismissPlayCheck: () => void
+  dismissGraphicsAsk: () => void
+  answerGraphics: (choice: string) => Promise<void>
   openSaves: () => void
   answerDirect: (agreed: boolean) => Promise<void>
   playAnyway: () => Promise<void>
@@ -263,6 +268,7 @@ export const useLaunch = create<{
   updateWarn: null,
   saveWarn: null,
   playCheck: null,
+  graphicsAsk: null,
   updateRollback: null,
   updating: 0,
   stopping: false,
@@ -296,6 +302,11 @@ export const useLaunch = create<{
     setPendingPreset('')
     set({ saveWarn: null })
   },
+  dismissGraphicsAsk: () => {
+    setPendingPreset('')
+    set({ graphicsAsk: null })
+  },
+  answerGraphics: (choice) => answerGraphics(get, set, choice),
   dismissPlayCheck: () => {
     setPendingPreset('')
     set({ playCheck: null })

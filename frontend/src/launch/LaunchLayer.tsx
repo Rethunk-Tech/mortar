@@ -36,6 +36,7 @@ import { SyncOffers } from '../sync/SyncOffers.tsx'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { GraphicsDialog } from './GraphicsDialog.tsx'
 import { KnownGoodOffer } from './KnownGoodOffer.tsx'
 import { PrePlayDialog } from './PrePlayDialog.tsx'
 import { cancelling } from './playModeState.ts'
@@ -295,6 +296,7 @@ export function LaunchLayer({ game }: { game: string }) {
       <CrashDialog />
       <UpdateWarnDialog />
       <SaveWarnDialog />
+      <GraphicsDialog />
       <PrePlayDialog />
       <KnownGoodOffer />
       <SyncOffers />

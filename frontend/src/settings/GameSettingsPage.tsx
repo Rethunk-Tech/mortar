@@ -15,6 +15,7 @@ import { useCurrentGame } from '../nav/currentGame.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { GraphicsApiRow } from './GraphicsApiRow.tsx'
 import { PrefKeys } from './PrefRow.tsx'
 import { SettingsSection } from './SettingsSection.tsx'
 import { SettingsShell, type ShellPage } from './SettingsShell.tsx'
@@ -107,6 +108,7 @@ function GamePages({
               ]}
               game={game}
             />
+            <GraphicsApiRow game={game} />
           </SettingsSection>
         )
       case 'mods':

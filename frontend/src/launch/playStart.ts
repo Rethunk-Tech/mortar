@@ -1,9 +1,14 @@
 import { msg } from '@lingui/core/macro'
-import { StartPreset } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import {
+  GraphicsAsk,
+  StartPreset,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type { Broken } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { UpdateWarning } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
+import { SetOverrides } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
 import { LastSaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
+import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { isGameId, useNav } from '../nav/store.ts'
@@ -17,6 +22,7 @@ import {
   isAutoUpdateError,
   updateBeforePlay,
 } from './autoUpdate.ts'
+import { answerTargets } from './graphicsAsk.ts'
 import { gatherPlayIssues, type PlayIssueGroup } from './playIssues.ts'
 
 interface UpdateContext {
@@ -57,7 +63,14 @@ interface PlayCheck {
   skipPlayCheck: boolean
 }
 
+interface GraphicsPrompt {
+  game: string
+  profile: string
+  direct: boolean
+}
+
 type LaunchSet = (p: {
+  graphicsAsk?: GraphicsPrompt | null
   starting?: boolean
   startingProfile?: string
   updating?: number
@@ -72,6 +85,7 @@ type LaunchGet = () => {
   playCheck: PlayCheck | null
   updateWarn: UpdateWarn | null
   saveWarn: SaveWarn | null
+  graphicsAsk: GraphicsPrompt | null
 }
 
 function updateContext(result: AutoUpdateResult): UpdateContext | undefined {
@@ -117,6 +131,30 @@ async function startProfile(opts: {
   }
 }
 
+// True when Play must stop: the dialog is up, or the check failed and said so.
+async function graphicsPending(opts: {
+  set: LaunchSet
+  game: string
+  profile: string
+  direct: boolean
+}): Promise<boolean> {
+  opts.set({ starting: true, startingProfile: opts.profile })
+  try {
+    if (!(await GraphicsAsk(opts.game, opts.profile)).ask) {
+      return false
+    }
+    opts.set({
+      starting: false,
+      startingProfile: '',
+      graphicsAsk: { game: opts.game, profile: opts.profile, direct: opts.direct },
+    })
+  } catch (e) {
+    opts.set({ starting: false, startingProfile: '' })
+    reportError(i18n._(msg`Could not check the graphics setting`))(e)
+  }
+  return true
+}
+
 async function startWithWarning(opts: {
   get: LaunchGet
   set: LaunchSet
@@ -127,6 +165,9 @@ async function startWithWarning(opts: {
   forceUpdate?: boolean
 }) {
   if (opts.get().starting) {
+    return
+  }
+  if (await graphicsPending(opts)) {
     return
   }
   if (!opts.skipPrePlay) {
@@ -242,6 +283,28 @@ async function startWithWarning(opts: {
   })
 }
 
+async function answerGraphics(get: LaunchGet, set: LaunchSet, choice: string) {
+  const ask = get().graphicsAsk
+  set({ graphicsAsk: null })
+  if (!ask) {
+    return
+  }
+  try {
+    await SetByKey('graphicsApi', choice, ask.game)
+    const listed = useProfiles.getState().profiles.find((p) => p.id === ask.profile)
+    const overrides = listed ? foldedOverrides(listed) : undefined
+    if (answerTargets(overrides).profileOverride) {
+      useProfiles
+        .getState()
+        .replace(await SetOverrides(ask.game, ask.profile, { ...overrides, graphicsApi: choice }))
+    }
+  } catch (e) {
+    reportError(i18n._(msg`Could not save the graphics choice`))(e)
+    return
+  }
+  await startWithWarning({ get, set, game: ask.game, profile: ask.profile, direct: ask.direct })
+}
+
 async function playAnyway(get: LaunchGet, set: LaunchSet) {
   const check = get().playCheck
   if (check) {
@@ -311,5 +374,13 @@ function openProblems(get: LaunchGet, set: LaunchSet) {
   useTab.getState().setTab('problems')
 }
 
-export type { PlayCheck, SaveWarn, UpdateContext, UpdateRollback, UpdateWarn }
-export { openProblems, playAnyway, setPendingPreset, startProfile, startWithWarning, updateAndPlay }
+export type { GraphicsPrompt, PlayCheck, SaveWarn, UpdateContext, UpdateRollback, UpdateWarn }
+export {
+  answerGraphics,
+  openProblems,
+  playAnyway,
+  setPendingPreset,
+  startProfile,
+  startWithWarning,
+  updateAndPlay,
+}

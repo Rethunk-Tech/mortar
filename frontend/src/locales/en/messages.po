@@ -151,7 +151,7 @@ msgstr "Priority Default"
 msgid "Show failed"
 msgstr "Show failed"
 
-#: src/settings/GameSettingsPage.tsx:79
+#: src/settings/GameSettingsPage.tsx:80
 msgid "Streaming"
 msgstr "Streaming"
 
@@ -1527,7 +1527,7 @@ msgstr "No scanning. The mod sites' own scans still apply."
 #. placeholder {0}: crash.cause.modName
 #: src/console/ConsoleTab.tsx:129
 #: src/console/CrashDialog.tsx:260
-#: src/launch/LaunchLayer.tsx:218
+#: src/launch/LaunchLayer.tsx:219
 msgid "Caused by {0}"
 msgstr "Caused by {0}"
 
@@ -1744,7 +1744,7 @@ msgstr "No mods to share"
 msgid "Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly."
 msgstr "Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly."
 
-#: src/launch/store.ts:128
+#: src/launch/store.ts:130
 #: src/mods/ModSections.tsx:72
 #: src/mods/ModSections.tsx:163
 msgid "Roll back"
@@ -1814,7 +1814,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/firstrun/LoaderStep.tsx:272
 #: src/game/detailStates.tsx:26
 #: src/lan/SendPanel.tsx:194
-#: src/launch/LaunchLayer.tsx:250
+#: src/launch/LaunchLayer.tsx:251
 #: src/mods/LoadOrderTab.tsx:391
 #: src/mods/ModsTab.tsx:107
 #: src/mods/typedConfig/ConfigPane.tsx:284
@@ -1882,7 +1882,7 @@ msgstr "Reset {0} to its default"
 msgid "Unpinned {name}"
 msgstr "Unpinned {name}"
 
-#: src/launch/playStart.ts:83
+#: src/launch/playStart.ts:97
 msgid "Could not update mods before Play"
 msgstr "Could not update mods before Play"
 
@@ -2563,7 +2563,7 @@ msgstr "Why?"
 msgid "Upload log"
 msgstr "Upload log"
 
-#: src/launch/LaunchLayer.tsx:272
+#: src/launch/LaunchLayer.tsx:273
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
 
@@ -2596,7 +2596,7 @@ msgstr "Error while loading"
 msgid "Downloading"
 msgstr "Downloading"
 
-#: src/profiles/OverrideRows.tsx:93
+#: src/profiles/OverrideRows.tsx:105
 msgid "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 msgstr "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 
@@ -2843,7 +2843,7 @@ msgid "{downloads, plural, one {# download} other {# downloads}}"
 msgstr "{downloads, plural, one {# download} other {# downloads}}"
 
 #. placeholder {0}: status.error
-#: src/launch/store.ts:72
+#: src/launch/store.ts:74
 msgid "The program to start {name} was not found. Check that the game is still installed and the launch prefix names a real command. {0}"
 msgstr "The program to start {name} was not found. Check that the game is still installed and the launch prefix names a real command. {0}"
 
@@ -3129,7 +3129,7 @@ msgid "Sound volume"
 msgstr "Sound volume"
 
 #: src/browse/BrowseShow.tsx:29
-#: src/profiles/overrideValue.ts:88
+#: src/profiles/overrideValue.ts:91
 #: src/settings/prefCopy.ts:345
 #: src/settings/prefCopy.ts:412
 #: src/settings/prefCopy.ts:427
@@ -3803,8 +3803,8 @@ msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
 #: src/game/Sidebar.tsx:200
-#: src/settings/GameSettingsPage.tsx:76
-#: src/settings/GameSettingsPage.tsx:142
+#: src/settings/GameSettingsPage.tsx:77
+#: src/settings/GameSettingsPage.tsx:144
 msgid "Console"
 msgstr "Console"
 
@@ -4135,7 +4135,7 @@ msgstr "Find the cause…"
 msgid "Game log"
 msgstr "Game log"
 
-#: src/launch/playStart.ts:116
+#: src/launch/playStart.ts:130
 #: src/launch/vanillaStart.ts:6
 msgid "Could not launch the game"
 msgstr "Could not launch the game"
@@ -4252,6 +4252,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/lan/IncomingPrompt.tsx:116
 #: src/lan/PairedComputers.tsx:109
 #: src/lan/PairedComputers.tsx:156
+#: src/launch/GraphicsDialog.tsx:40
 #: src/launch/PrePlayDialog.tsx:152
 #: src/launch/SaveWarnDialog.tsx:70
 #: src/launch/UpdateWarnDialog.tsx:50
@@ -4427,7 +4428,7 @@ msgid "Biome"
 msgstr "Biome"
 
 #: src/firstrun/GameSetup.tsx:52
-#: src/settings/GameSettingsPage.tsx:163
+#: src/settings/GameSettingsPage.tsx:165
 msgid "Back to {name}"
 msgstr "Back to {name}"
 
@@ -4917,6 +4918,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/browse/BrowsePage.tsx:144
 #: src/firstrunTour/TourAgainButton.tsx:16
 #: src/firstrunTour/useFirstRunTour.ts:43
+#: src/settings/GraphicsApiRow.tsx:32
 #: src/settings/PrefControls.tsx:190
 #: src/settings/PrefControls.tsx:241
 #: src/settings/PrefRow.tsx:39
@@ -5068,7 +5070,7 @@ msgid "Changed outside Mortar"
 msgstr "Changed outside Mortar"
 
 #. placeholder {0}: g.version
-#: src/settings/GameSettingsPage.tsx:91
+#: src/settings/GameSettingsPage.tsx:92
 msgid " · {name} {0}"
 msgstr " · {name} {0}"
 
@@ -5145,7 +5147,7 @@ msgstr "API key not set. Itch.io search is off until you add one."
 msgid "You chose not to endorse this mod."
 msgstr "You chose not to endorse this mod."
 
-#: src/profiles/OverrideRows.tsx:54
+#: src/profiles/OverrideRows.tsx:57
 msgid "These apply only to this profile."
 msgstr "These apply only to this profile."
 
@@ -5591,7 +5593,7 @@ msgstr "Needs"
 msgid "Files set aside"
 msgstr "Files set aside"
 
-#: src/settings/GameSettingsPage.tsx:133
+#: src/settings/GameSettingsPage.tsx:135
 msgid "{name} profile history"
 msgstr "{name} profile history"
 
@@ -5678,7 +5680,7 @@ msgid "Show hidden mods"
 msgstr "Show hidden mods"
 
 #. placeholder {0}: profileName(rollback)
-#: src/launch/store.ts:125
+#: src/launch/store.ts:127
 msgid "New errors after updating {0}"
 msgstr "New errors after updating {0}"
 
@@ -5987,8 +5989,8 @@ msgstr "Mortar cannot download {0} again."
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
-#: src/launch/LaunchLayer.tsx:269
 #: src/launch/LaunchLayer.tsx:270
+#: src/launch/LaunchLayer.tsx:271
 msgid "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 msgstr "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 
@@ -6414,7 +6416,7 @@ msgid "Edit profile…"
 msgstr "Edit profile…"
 
 #: src/game/Home.tsx:189
-#: src/settings/GameSettingsPage.tsx:162
+#: src/settings/GameSettingsPage.tsx:164
 msgid "{name} settings"
 msgstr "{name} settings"
 
@@ -6993,7 +6995,7 @@ msgstr "Search {gameName} settings"
 msgid "Open author page on Nexus"
 msgstr "Open author page on Nexus"
 
-#: src/launch/store.ts:277
+#: src/launch/store.ts:283
 msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
 
@@ -7057,6 +7059,10 @@ msgstr "Nothing to import"
 #: src/mods/SelectionBarActions.tsx:157
 msgid "More actions"
 msgstr "More actions"
+
+#: src/launch/GraphicsDialog.tsx:29
+msgid "Choose a graphics API for {name}"
+msgstr "Choose a graphics API for {name}"
 
 #: src/mods/modActions.ts:59
 msgid "Open on CurseForge"
@@ -7181,8 +7187,8 @@ msgstr "Send"
 #: src/firstrunTour/TourPopover.tsx:46
 #: src/game/Sidebar.tsx:193
 #: src/mods/ModListVirtual.tsx:284
-#: src/settings/GameSettingsPage.tsx:73
-#: src/settings/GameSettingsPage.tsx:115
+#: src/settings/GameSettingsPage.tsx:74
+#: src/settings/GameSettingsPage.tsx:117
 #: src/settings/sections/Updates.tsx:174
 msgid "Mods"
 msgstr "Mods"
@@ -7624,7 +7630,7 @@ msgstr "Each mod's Entry method, run one after another"
 msgid "All games…"
 msgstr "All games…"
 
-#: src/launch/store.ts:92
+#: src/launch/store.ts:94
 msgid "Could not roll back updates"
 msgstr "Could not roll back updates"
 
@@ -7710,7 +7716,7 @@ msgstr "Not found"
 
 #: src/profiles/EditProfileDialog.tsx:123
 #: src/profiles/GameSettings.tsx:182
-#: src/profiles/OverrideRows.tsx:84
+#: src/profiles/OverrideRows.tsx:90
 #: src/settings/sections/Appearance.tsx:178
 #: src/settings/sections/GameSettings.tsx:215
 msgid "Use default"
@@ -7821,7 +7827,7 @@ msgstr "Run again"
 msgid "Reset to default"
 msgstr "Reset to default"
 
-#: src/launch/store.ts:348
+#: src/launch/store.ts:359
 msgid "Could not stop the game"
 msgstr "Could not stop the game"
 
@@ -8010,7 +8016,7 @@ msgstr "Restore this backup?"
 msgid "Time"
 msgstr "Time"
 
-#: src/launch/playStart.ts:214
+#: src/launch/playStart.ts:255
 msgid "Could not check the game version"
 msgstr "Could not check the game version"
 
@@ -8314,6 +8320,10 @@ msgstr "Results of installs, updates and launches appear here."
 msgid "Crash finding was stopped."
 msgstr "Crash finding was stopped."
 
+#: src/launch/GraphicsDialog.tsx:36
+msgid "You can change this later in {name}'s settings, under Play."
+msgstr "You can change this later in {name}'s settings, under Play."
+
 #: src/settings/sections/NexusSSO.tsx:62
 msgid "Approve Mortar in your browser…"
 msgstr "Approve Mortar in your browser…"
@@ -8499,7 +8509,7 @@ msgid "No launchers found. Continue and choose each game's folder when you open 
 msgstr "No launchers found. Continue and choose each game's folder when you open it."
 
 #. placeholder {0}: status.error
-#: src/launch/store.ts:68
+#: src/launch/store.ts:70
 msgid "Wine stopped on an error before {name} started: {0}"
 msgstr "Wine stopped on an error before {name} started: {0}"
 
@@ -8855,11 +8865,18 @@ msgstr "a copy of {name}"
 msgid "Unlinked collection"
 msgstr "Unlinked collection"
 
+#. placeholder {0}: c.label
+#. placeholder {0}: o.label
+#: src/launch/GraphicsDialog.tsx:50
+#: src/settings/GraphicsApiRow.tsx:22
+msgid "{0} (Recommended)"
+msgstr "{0} (Recommended)"
+
 #: src/tools/ToolEditorDialog.tsx:104
 msgid "Executable"
 msgstr "Executable"
 
-#: src/launch/playStart.ts:87
+#: src/launch/playStart.ts:101
 #: src/launch/PrePlayDialog.tsx:218
 #: src/launch/SaveWarnDialog.tsx:93
 #: src/launch/UpdateWarnDialog.tsx:53
@@ -9301,7 +9318,7 @@ msgstr "Could not read the window state"
 msgid "Uncategorised"
 msgstr "Uncategorised"
 
-#: src/launch/LaunchLayer.tsx:266
+#: src/launch/LaunchLayer.tsx:267
 msgid "Steam was not found"
 msgstr "Steam was not found"
 
@@ -9563,6 +9580,11 @@ msgstr "From this file"
 #: src/settings/sections/nxmHandler.tsx:65
 msgid "Not now"
 msgstr "Not now"
+
+#: src/profiles/OverrideRows.tsx:33
+#: src/settings/GraphicsApiRow.tsx:17
+msgid "Graphics API"
+msgstr "Graphics API"
 
 #: src/mods/SelectionBar.tsx:140
 msgid "Also add selected mods to…"
@@ -9884,7 +9906,7 @@ msgid "You endorsed this mod."
 msgstr "You endorsed this mod."
 
 #: src/console/CrashDialog.tsx:134
-#: src/launch/LaunchLayer.tsx:240
+#: src/launch/LaunchLayer.tsx:241
 #: src/mods/modActions.ts:57
 #: src/mods/TrackedNotInProfile.tsx:72
 #: src/mods/updateReview/WithheldGroup.tsx:48
@@ -9951,6 +9973,10 @@ msgstr "Music volume ({value}%)"
 #: src/console/StartupPanel.tsx:37
 msgid "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
 msgstr "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
+
+#: src/launch/playStart.ts:153
+msgid "Could not check the graphics setting"
+msgstr "Could not check the graphics setting"
 
 #: src/profiles/MergeDialog.tsx:210
 msgid "Profile to add them to"
@@ -10310,8 +10336,8 @@ msgstr "Adds"
 
 #: src/console/CrashDialog.tsx:156
 #: src/console/CrashDialog.tsx:208
-#: src/launch/LaunchLayer.tsx:171
-#: src/launch/LaunchLayer.tsx:233
+#: src/launch/LaunchLayer.tsx:172
+#: src/launch/LaunchLayer.tsx:234
 msgid "Open Console"
 msgstr "Open Console"
 
@@ -10818,7 +10844,7 @@ msgstr "Could not set the default launch preset"
 msgid "Files"
 msgstr "Files"
 
-#: src/launch/LaunchLayer.tsx:210
+#: src/launch/LaunchLayer.tsx:211
 msgid "{name} did not start"
 msgstr "{name} did not start"
 
@@ -10891,7 +10917,7 @@ msgid "{0} adds {time} to startup (through {1})"
 msgstr "{0} adds {time} to startup (through {1})"
 
 #: src/profiles/EditProfileDialog.tsx:170
-#: src/profiles/OverrideRows.tsx:52
+#: src/profiles/OverrideRows.tsx:55
 msgid "Overrides"
 msgstr "Overrides"
 
@@ -11067,7 +11093,7 @@ msgid "Show file"
 msgstr "Show file"
 
 #: src/saves/BackupsDialog.tsx:153
-#: src/settings/GameSettingsPage.tsx:74
+#: src/settings/GameSettingsPage.tsx:75
 #: src/settings/sections/DataUsage.tsx:210
 #: src/settings/sections/GameSettings.tsx:385
 msgid "Save backups"
@@ -11171,7 +11197,11 @@ msgstr "Switch to Config"
 msgid "Preview Mods folder import…"
 msgstr "Preview Mods folder import…"
 
-#: src/launch/store.ts:77
+#: src/launch/playStart.ts:302
+msgid "Could not save the graphics choice"
+msgstr "Could not save the graphics choice"
+
+#: src/launch/store.ts:79
 msgid "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
 msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
 
@@ -11183,8 +11213,8 @@ msgstr "Stop the game to test a launch."
 #: src/games/GameSelect.tsx:248
 #: src/launch/PlayControl.tsx:175
 #: src/mods/typedConfig/ConfigTab.tsx:299
-#: src/settings/GameSettingsPage.tsx:72
-#: src/settings/GameSettingsPage.tsx:100
+#: src/settings/GameSettingsPage.tsx:73
+#: src/settings/GameSettingsPage.tsx:101
 msgid "Play"
 msgstr "Play"
 
@@ -11357,7 +11387,7 @@ msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
 #: src/fomod/Dialog.tsx:266
 #: src/loader/Banner.tsx:30
-#: src/settings/GameSettingsPage.tsx:68
+#: src/settings/GameSettingsPage.tsx:69
 #: src/settings/sections/LoaderRow.tsx:92
 #: src/settings/sections/LoaderRow.tsx:147
 msgid "Install"
@@ -11486,7 +11516,7 @@ msgstr "First scene"
 msgid "Dependency"
 msgstr "Dependency"
 
-#: src/launch/playStart.ts:163
+#: src/launch/playStart.ts:204
 msgid "Could not check the profile"
 msgstr "Could not check the profile"
 
@@ -11508,6 +11538,10 @@ msgstr "Steam"
 #: src/sync/SyncOffers.tsx:109
 msgid "Changes from your other machines"
 msgstr "Changes from your other machines"
+
+#: src/settings/GraphicsApiRow.tsx:19
+msgid "Ask when I press Play"
+msgstr "Ask when I press Play"
 
 #. placeholder {0}: loader.name
 #: src/loader/Banner.tsx:29
@@ -11541,8 +11575,8 @@ msgstr "Settings"
 msgid "Could not read the details of {0}"
 msgstr "Could not read the details of {0}"
 
-#: src/launch/LaunchLayer.tsx:105
-#: src/launch/LaunchLayer.tsx:118
+#: src/launch/LaunchLayer.tsx:106
+#: src/launch/LaunchLayer.tsx:119
 msgid "Launching {name}"
 msgstr "Launching {name}"
 
@@ -12016,7 +12050,7 @@ msgstr "Resume"
 msgid "Preset name"
 msgstr "Preset name"
 
-#: src/launch/store.ts:60
+#: src/launch/store.ts:62
 msgid "Steam may not be running or signed in. Start Steam, sign in and try again."
 msgstr "Steam may not be running or signed in. Start Steam, sign in and try again."
 
@@ -12030,7 +12064,7 @@ msgstr "This is a development build of Mortar {0}, so it does not check for upda
 msgid "{0, plural, one {Last run: {list}} other {Last # runs: {list}}}"
 msgstr "{0, plural, one {Last run: {list}} other {Last # runs: {list}}}"
 
-#: src/launch/playStart.ts:85
+#: src/launch/playStart.ts:99
 msgid "You can roll back the completed updates from the profile history."
 msgstr "You can roll back the completed updates from the profile history."
 
@@ -12253,7 +12287,7 @@ msgid "Did not load"
 msgstr "Did not load"
 
 #: src/browse/BrowseShow.tsx:31
-#: src/launch/LaunchLayer.tsx:174
+#: src/launch/LaunchLayer.tsx:175
 #: src/profiles/CompareDialog.tsx:185
 #: src/profiles/LaunchPresetDialog.tsx:86
 #: src/saves/SaveGapLine.tsx:57
@@ -12468,7 +12502,7 @@ msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style 
 msgid "Could not restore the backup"
 msgstr "Could not restore the backup"
 
-#: src/launch/LaunchLayer.tsx:214
+#: src/launch/LaunchLayer.tsx:215
 msgid "The game exited before it started. The console has its output."
 msgstr "The game exited before it started. The console has its output."
 
@@ -12968,7 +13002,7 @@ msgstr "Continue"
 msgid "Dependencies"
 msgstr "Dependencies"
 
-#: src/launch/LaunchLayer.tsx:120
+#: src/launch/LaunchLayer.tsx:121
 #: src/share/PreviewDialog.tsx:79
 #: src/share/ShareDialog.tsx:89
 msgid "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
@@ -13560,7 +13594,7 @@ msgstr "From a link or file…"
 msgid "Archives land here instead of Mortar's downloads folder. Empty uses the default."
 msgstr "Archives land here instead of Mortar's downloads folder. Empty uses the default."
 
-#: src/launch/store.ts:64
+#: src/launch/store.ts:66
 msgid "Steam must be installed and signed in for this game. Install Steam, sign in once and try again."
 msgstr "Steam must be installed and signed in for this game. Install Steam, sign in once and try again."
 
@@ -13669,7 +13703,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/console/HelpDialog.tsx:257
 #: src/console/SearchRunsDialog.tsx:177
 #: src/game/FarmMenuItem.tsx:132
-#: src/launch/LaunchLayer.tsx:226
+#: src/launch/LaunchLayer.tsx:227
 #: src/launch/SweepDialog.tsx:137
 #: src/mods/AssetMapDialog.tsx:283
 #: src/mods/AuthorDialog.tsx:166
@@ -13753,7 +13787,7 @@ msgid "Remove {0} from this profile?"
 msgstr "Remove {0} from this profile?"
 
 #: src/mods/columnLabel.ts:6
-#: src/profiles/overrideValue.ts:85
+#: src/profiles/overrideValue.ts:88
 msgid "On"
 msgstr "On"
 
