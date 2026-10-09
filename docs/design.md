@@ -21,7 +21,7 @@ Decided 2026-10-07 (NOMAD), from the audit of how Mortar was described to CurseF
 
 ## Decided, ready to build
 
-Decided 2026-10-09 (NOMAD). Facts about Mortar are anchored to the code as it is today; facts about EA and The Sims 4 are marked **Verify** where they come from memory of the vendors' behaviour and need one throwaway check (run outside this repo, result recorded here) before the item is built.
+Decided 2026-10-09 (NOMAD). Facts about Mortar are anchored to the code as it is today; facts about EA, Patreon and The Sims 4 are marked **Verify** where they come from memory of the vendors' behaviour and need one throwaway check (run outside this repo, result recorded here) before the item is built.
 
 ### EA App game store
 
@@ -112,11 +112,7 @@ Decided 2026-10-09 (NOMAD). Facts about Mortar are anchored to the code as it is
 **Open question for NOMAD.**
 
 5. Which game after The Sims 4 should prove the generic path (any Steam game whose mods are plain files in a folder under its install)?
-## Specs awaiting approval
-
-Written 2026-10-09 for the operator to approve. Facts about Patreon are marked **Verify** where they rest on the vendor's documentation rather than a live check. The spec ends with its open questions; a product choice is never made by the implementer.
-
-### Patreon mod source
+### Patreon mod source (decided: link and handoff, post URLs only)
 
 **Why.** Some modders ship only to patrons. Mortar has no source for them, so those mods enter a profile only as files added by hand.
 
@@ -126,7 +122,7 @@ Written 2026-10-09 for the operator to approve. Facts about Patreon are marked *
 - The documented post resource has `embed_url` and `embed_data` but no attachment or file field, and no endpoint lists a post's attachments. The Media resource (`download_url`, valid 24 hours) is documented only as linked to tiers.
 - Rate limits ([Rate limits](https://docs.patreon.com/#rate-limits)): 100 requests per 2 seconds per client, 100 per minute per access token, 429 on excess, and a 30 minute API block after more than 2,000 4xx responses in 10 minutes. A `User-Agent` header is required or calls may get a 403.
 - Terms ([Patreon Terms of Use](https://www.patreon.com/policy/legal)): no clause names scraping or bots, but the terms bar abusing Patreon "in a technical way" or "in an unintended manner". Patrons get a licence to view creations for "private, personal, non-promotional, non-commercial use", may not use creations "in any way not authorized by the creator", and may not share them "with others who have not purchased" them. Automated downloading of patron files by an app is therefore not an authorised use the terms describe.
-- Conclusion for the shape below: nothing found supports a patron-side post or attachment API, so no Searcher and no Mortar-side download. The one remaining check is a throwaway live probe (outside this repo) with a patron OAuth token against `campaigns/{id}/posts` for a campaign the patron supports; the operator decides whether it is worth running, since the shape stands either way unless it returns attachments.
+- Conclusion for the shape below: nothing found supports a patron-side post or attachment API, so no Searcher and no Mortar-side download. The operator skipped the live probe (a patron OAuth token against `campaigns/{id}/posts`); the shape stands on the documentation alone, and a patron-side API turning up later reopens search only by a new decision.
 
 Scraping Patreon's internal `/api/posts` or driving the user's browser session is out: it breaks without notice and acts as the user's login, which the standing rules refuse.
 
@@ -161,11 +157,11 @@ Scraping Patreon's internal `/api/posts` or driving the user's browser session i
 - Add mod with a Patreon post URL opens the post in the default browser (a recorded fake opener in the test), then a file placed in a fake Downloads folder is offered and installs as an entry that names the post id; the profile's share link holds the id and no file.
 - Patreon never appears among Browse's source chips or in an `all` search.
 
-**Open questions for NOMAD.**
+**Decisions (NOMAD, 2026-10-09).**
 
-1. Is link and handoff enough, with no search and no update checks? Anything more needs either a patron-side API (the live probe in **Verify**) or a creator-side agreement with each modder.
-2. Should Add mod accept only post URLs, or also a creator page (`patreon.com/<creator>`) saved as a bookmark that opens the creator's feed in the browser?
-3. Which games get `patreon` in their catalog `sources` first? Only games whose modders are known to ship there.
+1. Link and handoff only: no search, no update checks, no Patreon OAuth.
+2. Add mod accepts post URLs only; creator pages are not accepted.
+3. Which games list `patreon` in their catalog `sources` is decided per game when a modder is known to ship there; it does not block the driver.
 
 ## Later
 
