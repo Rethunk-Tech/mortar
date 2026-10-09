@@ -273,7 +273,7 @@ export function DownloadsDialog() {
               close()
               useInstall
                 .getState()
-                .installDownloads([selected])
+                .installDownloads((archives ?? []).filter((a) => a.path === selected))
                 .catch(reportError(t`Could not add the archive`))
             }}
           >

@@ -26,7 +26,7 @@ async function offer(game: string) {
     const add = (): Promise<void> =>
       useInstall
         .getState()
-        .installDownloads([first.path])
+        .installDownloads([first])
         .catch(reportError(i18n._(msg`Could not add the archive`), add))
     push({
       kind: 'info',

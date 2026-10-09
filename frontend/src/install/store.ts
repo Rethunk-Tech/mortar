@@ -329,7 +329,7 @@ export const useInstall = create<{
   closeRemap: () => void
   chooseRoot: (root: string) => void
   install: (paths: string[]) => Promise<void>
-  installDownloads: (paths: string[]) => Promise<void>
+  installDownloads: (files: { path: string; mtime: number }[]) => Promise<void>
   installFromExtraFolder: (folders: string[]) => Promise<void>
   pick: () => Promise<void>
 }>((set, get) => ({
@@ -365,8 +365,19 @@ export const useInstall = create<{
   },
   install: (paths) =>
     runInstalls(paths, set, (g, p, file) => () => InstallArchive(g, p, file), true),
-  installDownloads: (paths) =>
-    runInstalls(paths, set, (g, p, file) => downloadInstaller(g, p, file, InstallDownload), true),
+  installDownloads: (files) => {
+    const mtimes = new Map(files.map((f) => [f.path, f.mtime]))
+    return runInstalls(
+      files.map((f) => f.path),
+      set,
+      (g, p, file) =>
+        downloadInstaller(
+          { game: g, profileId: p, file, mtime: mtimes.get(file) ?? 0 },
+          InstallDownload,
+        ),
+      true,
+    )
+  },
   installFromExtraFolder: (folders) =>
     runInstalls(
       folders,
