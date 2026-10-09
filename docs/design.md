@@ -33,13 +33,10 @@ The generic path is built ([architecture.md](architecture.md#games-and-the-catal
 - The window's Problems rows of kind `game-setting` (exact text in the commit that built them).
 - **Open question for NOMAD:** which game after The Sims 4 should prove the generic path (any Steam game whose mods are plain files in a folder under its install)?
 
-### Patreon source: window remainder
+### Patreon source: research and open choice
 
-The source is built ([architecture.md](architecture.md#games-and-the-catalog) Patreon). Left for the window, with the Patreon research kept here so it is not repeated: Patreon's public API v2 gives a patron identity and memberships only (scopes `identity`, `identity.memberships`; `campaigns.posts` serves a creator's own campaign), the documented post resource has no attachment field, rate limits are 100 requests per 2 seconds per client and a 30 minute block after 2,000 4xx answers in 10 minutes, and the terms limit patrons to private, authorised use and bar sharing a creation with anyone who has not purchased it. The operator skipped the live probe, so the shape stands on that documentation.
+The source and its window are built ([architecture.md](architecture.md#games-and-the-catalog) Patreon). The research stays here so it is not repeated: Patreon's public API v2 gives a patron identity and memberships only (scopes `identity`, `identity.memberships`; `campaigns.posts` serves a creator's own campaign), the documented post resource has no attachment field, rate limits are 100 requests per 2 seconds per client and a 30 minute block after 2,000 4xx answers in 10 minutes, and the terms limit patrons to private, authorised use and bar sharing a creation with anyone who has not purchased it. The operator skipped the live probe, so the shape stands on that documentation.
 
-- **Add mod** accepts a Patreon post address: on paste call `ArchivesService.PatreonPost(text)`; on success open `post.url` with `OpenerService.OpenWeb` and show, in the Add mod dialog, "Opened the Patreon post. Save the file from it; Mortar offers it from your Downloads folder." with the post id kept in dialog state. The Downloads offer (`library:downloads`) for that dialog installs with `ArchivesService.InstallPatreonDownload(game, profileID, path, post.id)` instead of `InstallDownload`. A refused address shows the service error.
-- A Patreon icon for the entry row and page link: `frontend/src/mods/modActions.ts` `hostOf` gains `patreon` for host `patreon.com` and `openPageLabel` "Open on Patreon".
-- The share preview shows a mod with `site: "patreon"` and `reason: "patreon"` as "Needs a file from its Patreon post" with the post link (`pageUrl`).
 - Which games list `patreon` in their catalog `sources` is decided per game, when a modder is known to ship there.
 
 ## Later
