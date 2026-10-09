@@ -298,6 +298,10 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		depth = settings.ResolveAt(s.settings.Get(), "conflictScanDepth", settings.Scope{Game: gameID}, nil)
 	}
 	fp += "|scan:" + depth
+	settingRows := s.gameSettingFailures(gameID)
+	for _, f := range settingRows {
+		fp = strings.Join([]string{fp, "setting", f.Plugin}, "|")
+	}
 	pkgs, _ := s.profiles.EnabledPackages(gameID, id)
 	pkgKeys := make([]string, len(pkgs))
 	for i, p := range pkgs {
@@ -336,6 +340,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 				r.LoadFailures = append(r.LoadFailures, f)
 			}
 		}
+		r.LoadFailures = append(r.LoadFailures, settingRows...)
 		if src, ok := thunderstoreSource(); ok {
 			r.Deprecated = deprecatedPackages(ctx, src, thunderstoreKey(gameID), "", pkgs)
 		}

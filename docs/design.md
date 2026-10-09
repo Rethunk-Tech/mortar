@@ -23,56 +23,15 @@ Decided 2026-10-07 (NOMAD), from the audit of how Mortar was described to CurseF
 
 Decided 2026-10-09 (NOMAD). Facts about Mortar are anchored to the code as it is today; facts about EA, Patreon and The Sims 4 are marked **Verify** where they come from memory of the vendors' behaviour and need one throwaway check (run outside this repo, result recorded here) before the item is built.
 
-### Generic-folder games and shared-state
+### Generic-folder games: The Sims 4 entry and sandbox
 
-**Why.** Today a game is a catalog entry plus a loader (SMAPI, BepInEx), and `GameInfo.Validate` rejects an entry with none (`internal/components/components.go:358`). Most games have no loader: their mods are files dropped into a folder. And a game such as The Sims 4 keeps its mods and its saves in one shared Documents tree (`{documents}/Electronic Arts/The Sims 4`), so two profiles cannot be told apart by which install they use: the files that decide what the game loads are outside the install and shared by every launch.
+The generic path is built ([architecture.md](architecture.md#games-and-the-catalog) Folder games): the `folder` loader, the `mods` path role, `launchplan.PlanFile.Root` with `deploy.View.Roots`, a folder per mod below the `mods` target, `separateSaves` against the `saves` role, and `requiredSettings` Problems rows. Left:
 
-**Decided shape.** Three small additions, each using what exists.
-
-1. **A loaderless game.** A loader driver `folder` (`internal/loader/folder/`, registered in `internal/loader/all/all.go`; `loader.Register`, `internal/loader/registry.go:16`) that implements `Loader` with nothing to install: `Status` reports installed, not broken, not per-profile, no latest; `Install` returns an error "nothing to install"; `Contribute` adds the profile's content as plan files (below). The catalog names it like any loader (`loaders: [{"id": "folder", "name": "Mod folder"}]`), so `Validate` keeps its "needs a loader" rule untouched (`components.go:358`), `loader.For` (`registry.go:46`) and `game.PrimaryLoader` need no special case, and `TestEveryCatalogReferenceResolves` accepts it once `knownLoaders` lists `folder`. No new `deploy` method name: the game uses `profile` (`components.go:402`).
-2. **The mod folder as a path role.** The catalog's `paths` map gains the role `mods`: where the game reads mods, outside or inside the install (`{documents}/Electronic Arts/The Sims 4/Mods`, or `{install}/Mods`). `game.PathFor` already resolves any role for an install (`internal/game/capabilities.go:37`); `GameInfo.Validate`'s token-start rule applies as is (`components.go:397`). `launchplan.PlanFile` (`internal/launchplan/launchplan.go:31`) gains a `Root` field naming a path role (empty means the install, as today); the `copy-into-install` deployer (`internal/deploy/place.go:32`) resolves `Dst` under that root instead of the install folder and keeps its refusal of a path that leaves it (`filepath.IsLocal`). Journal, displaced-file restore and crash recovery then work unchanged for files outside the install, because they key on absolute paths.
-3. **Profile-isolated shared state.** A launch swaps the profile's content into the shared folder and takes it back, using the machinery that exists: the loader's plan files place the profile's enabled mods into the game's `mods` role folder for the length of the launch (journaled under `<data>/journal/<install id>`, `docs/architecture.md` Pipeline bullet), and the saves for a profile with `separateSaves` use `internal/savesiso` against the `saves` role. The two roles can sit in the same parent folder (The Sims 4's `Mods` and `saves` are siblings); each is swapped on its own, and nothing else in that tree (Options.ini, Tray, screenshots) is touched.
-
-**Mod content and installs.** Targets already carry per-extension depth (`TargetDef.MaxDepth`, `components.go`; The Sims 4: **Verify** `.package` allowed several folders deep and `.ts4script` at most one folder deep); the `plain` installer maps any archive into targets (`internal/installer/plain.go:17`). The profile target is `{"id": "mods", "root": "{profileMods}", "maxDepth": {...}}`. `profile.Store.SyncPackages` (`internal/profile/deploy.go:86`) lays out only packages whose loader holds them; a folder-loader game's entries are archives installed into the profile's mods folder, so the folder loader's `Contribute` walks `{profileMods}` (the files of enabled entries) and emits one plan file per file. Enabled/disabled stays the profile's state, not a file move.
-
-**Catalog and code changes.**
-
-- `components.go`: no new `GameInfo` field. Docs list `mods` among the path roles (HUMANS.md § The catalog entry, `paths`).
-- `internal/launchplan/launchplan.go:31` `PlanFile.Root`; `internal/deploy/place.go:32` resolve the root through a `View` callback (`deploy.View` already carries what the deployer needs; add `PathFor(role)`), `internal/launchsvc/pipeline.go:192` `startDeploy` passes it from `game.PathFor`.
-- `internal/loader/folder` (new), `internal/loader/all/all.go`, the `knownLoaders` list (`internal/source/all/catalog_test.go:16`).
-- `internal/game/capabilities.go`: a `PathMods = "mods"` beside `PathSaves`.
-- The Sims 4 entry itself is catalog data: `stores.steam.appId` (**Verify** the id, it is the game's Steam app id), `stores.ea.folder` (the EA App store driver is built), `marker` (**Verify** against real Steam and EA installs: `internal/gog` `GameDir` finds the marker only at the folder root or in a lowercase `game` folder one down, so a marker such as `Game/Bin/TS4_x64.exe` needs the catalog to name the folder that holds it; the match is case-sensitive on Linux, and the default EA library folders need the same check), `paths.mods`, `paths.saves`, `targets`, `sources` (CurseForge and GitHub shape; `Gated` CurseForge needs its key), `deploy: "profile"`, `loaders: [{"id": "folder"}]`, `enabled: false` until checked.
-- `scripts/selftest.sh`: a fake Documents tree (`HOME` is already sandboxed) and a stub game; the Sims 4 is not copied into the sandbox, a stub executable is.
-
-**Traps.**
-
-- **The game's own switches.** The Sims 4 loads mods only when `Options.ini` has custom content and script mods enabled, and a patch can switch them off again; a folder swap cannot make the game read mods. Mortar shows a finding in Problems (the check pattern in `internal/problems`) and never edits `Options.ini` (decided below). **Verify** the file name and keys.
-- **`Resource.cfg`.** The Sims 4's Mods folder needs a `Resource.cfg` that EA ships there; a swap that removes the folder's contents must keep it, or the game ignores subfolders. The folder loader treats files in the target root that no profile entry owns as the player's own and never displaces or removes them (the deployer's existing rule: only files Mortar placed are removed, `docs/architecture.md` Purge bullet); the shipped `Resource.cfg` is such a file and is left alone.
-- **Windows file locking and cloud sync.** Documents may be under OneDrive; a swap that creates and removes thousands of files per launch is slow and syncs noise. Measure a 3,000-file Mods folder before enabling (**Measure**, throwaway test outside this repo: place and purge time, and the sync client's effect).
-- **A running game.** The deployer already refuses to start while a journal exists (`ErrUnrecovered`) and recovery skips an install whose game still runs (`launchsvc.RecoverDeploys`, `internal/launchsvc/pipeline.go:248`); the `GameProcesses` of a catalog-only game come from `catalogOnly` (`internal/game/catalog_only.go:36`), so the entry needs the process names there or in the catalog.
-- **No mod identity.** SMAPI mods have a UniqueID and BepInEx ones a Thunderstore package; a folder-loader game's mod has neither, so its identity is the source id recorded at install (a CurseForge project, a GitHub repository) or none, and update checks exist only for entries with a source. Problems checks that read manifests (`internal/manifest`) do nothing for these games; do not add generic "broken mod" guesses.
-- **Shared state beyond mods and saves.** Anything else the game writes to the shared tree (the Sims 4 `Tray` folder of household and lot exports, screenshots, `Options.ini`) stays shared by every profile; only `mods` and `saves` are isolated.
-- A game on Steam Cloud syncs its saves folder; `separateSaves` already documents that cost (`docs/architecture.md` Saves).
-- The full unit and e2e budget (10 s warm, `AGENTS.md` Verify) applies: the folder loader's tests use a temporary tree, not a copy of a real game.
-
-**Acceptance.**
-
-- A test catalog entry with only `loaders: [{"id": "folder"}]`, `paths.mods`, a `profile` target and a Steam or EA store is selectable and found (the pattern of `TestACatalogOnlyGameNeedsNoCode`), a profile with two mods plus a third disabled places exactly the two enabled mods' files under the `mods` role folder, and Purge returns the folder to its previous bytes (hash before and after), including a file the player already had at one of the same paths (displaced and restored).
-- A crash between place and purge (the existing `crashsafe` test pattern, `internal/deploy`) recovers at the next start with the folder restored, for a root outside the install.
-- Two profiles of one game with different mods and `separateSaves` each launch with their own mods and saves, and a launch of one leaves nothing of the other in the shared tree.
-- Problems shows the "custom content is off" finding when the fixture `Options.ini` has it off, and a test asserts the file's bytes are unchanged after the check.
-- `go test ./internal/loader/... ./internal/deploy ./internal/launchplan ./internal/launchsvc ./internal/components ./internal/source/all ./internal/game` pass; sandbox regress with a stub game shows the swap on a hidden display.
-
-**Decisions (NOMAD, 2026-10-09).**
-
-1. Isolation covers `Mods` and saves only. `Tray`, `Options.ini` and the rest of the shared tree stay shared by every profile.
-2. Problems reports the `Options.ini` mod settings (custom content and script mods off) and never edits the file.
-3. A mod with no source and no manifest is added from a file and is never updated by Mortar.
-4. Catalog-only: no user-defined games; every game is a catalog entry, as today.
-
-**Open question for NOMAD.**
-
-5. Which game after The Sims 4 should prove the generic path (any Steam game whose mods are plain files in a folder under its install)?
+- The Sims 4 catalog entry (`enabled: false` until checked): `stores.steam.appId` (**Verify** it is the game's Steam app id), `stores.ea.folder`, `marker` (**Verify** against real Steam and EA installs: `internal/gog` `GameDir` finds the marker only at the folder root or in a lowercase `game` folder one down, so a marker such as `Game/Bin/TS4_x64.exe` needs the catalog to name the folder that holds it; the match is case-sensitive on Linux), `paths.mods` and `paths.saves` under `{documents}/Electronic Arts/The Sims 4` (**Verify**), a `mods` target `{profile}/Mods` with `maxDepth` for `package` and `ts4script` (**Verify**: `.package` several folders deep, `.ts4script` one; the key folder Mortar adds counts as one level), `deploy: "profile"`, `loaders: [{"id": "folder"}]`, `sources` (CurseForge and GitHub shape; `Gated` CurseForge needs its key), `gameProcesses`, and `requiredSettings` for the `Options.ini` switches (**Verify** the file name and keys).
+- **Measure** a 3,000-file Mods folder place and purge time on Windows, with and without OneDrive, before enabling.
+- `scripts/selftest.sh`: a fake Documents tree and a stub game for a hidden-display launch once the entry exists.
+- The window's Problems rows of kind `game-setting` (exact text in the commit that built them).
+- **Open question for NOMAD:** which game after The Sims 4 should prove the generic path (any Steam game whose mods are plain files in a folder under its install)?
 
 ### Patreon mod source (decided: link and handoff, post URLs only)
 
