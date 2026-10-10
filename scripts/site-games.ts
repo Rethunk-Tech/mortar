@@ -6,6 +6,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 
 const CATALOG = 'internal/components/components.json'
 const REPO = 'https://github.com/Rethunk-Tech/mortar'
+const DISCORD = 'https://discord.gg/TfecaTm8J2'
 const SHARE_PAGE = 'scripts/share-page.html'
 const block = (name: string) =>
   new RegExp(`(<!-- ${name}:start -->)[\\s\\S]*?(<!-- ${name}:end -->)`, 'g')
@@ -54,6 +55,7 @@ function nav(p: Page): string {
           ${link('/extension/', 'Extension', true, 'extension')}
           ${p.faq ? `${link(`${home}#faq`, 'FAQ', true)}\n          ` : ''}${link('/download/', 'Download', false, 'download')}
           <a href="${REPO}">GitHub</a>
+          <a class="optional" href="${DISCORD}">Discord</a>
         </div>
       </div>
     </nav>`
@@ -65,6 +67,7 @@ function footer(p: Page): string {
     '<a href="/privacy/">Privacy</a>',
     '<a href="/code-signing/">Code signing</a>',
     `<a href="${source}">Source</a>`,
+    `<a href="${DISCORD}">Discord</a>`,
     ...(downloads ? ['<a href="/download/">Downloads</a>'] : []),
     ...(agpl ? ['<a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a>'] : []),
   ]

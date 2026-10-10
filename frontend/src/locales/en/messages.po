@@ -349,7 +349,7 @@ msgstr "The downloads folder…"
 msgid "Restored {detail} of {name}"
 msgstr "Restored {detail} of {name}"
 
-#: src/shell/AppMenu.tsx:75
+#: src/shell/AppMenu.tsx:77
 msgid "Sign out of Nexus"
 msgstr "Sign out of Nexus"
 
@@ -666,7 +666,7 @@ msgstr "{0} sent you {1} ({gameName})"
 msgid "This log is {size}. Sharing uploads it to smapi.io as a public link."
 msgstr "This log is {size}. Sharing uploads it to smapi.io as a public link."
 
-#: src/firstrun/FirstRun.tsx:78
+#: src/firstrun/FirstRun.tsx:81
 msgid "Mortar finds games through their launchers. Set each one up when you first open it."
 msgstr "Mortar finds games through their launchers. Set each one up when you first open it."
 
@@ -903,7 +903,7 @@ msgid "Installed by Mortar"
 msgstr "Installed by Mortar"
 
 #: src/settings/shortcutLabels.ts:11
-#: src/shell/AppMenu.tsx:153
+#: src/shell/AppMenu.tsx:178
 msgid "Check mods and Mortar for updates"
 msgstr "Check mods and Mortar for updates"
 
@@ -1032,6 +1032,11 @@ msgstr "Send only links to {name}?"
 #: src/mods/modActions.ts:60
 msgid "Open on Modrinth"
 msgstr "Open on Modrinth"
+
+#: src/firstrun/FirstRun.tsx:125
+#: src/shell/AppMenu.tsx:113
+msgid "Join our Discord"
+msgstr "Join our Discord"
 
 #: src/mods/problemFix/WinFix.tsx:80
 msgid "Make a pack win"
@@ -1440,7 +1445,7 @@ msgstr "{0, plural, one {# setting is still waiting for its mod to install.} oth
 msgid "Enable scheduled save backups first."
 msgstr "Enable scheduled save backups first."
 
-#: src/shell/AppMenu.tsx:142
+#: src/shell/AppMenu.tsx:167
 msgid "Mortar settings…"
 msgstr "Mortar settings…"
 
@@ -2107,7 +2112,7 @@ msgstr "Pre-releases and unofficial SMAPI updates. Show lists them; Include lets
 msgid "{0, plural, one {# copy of {1}} other {# copies of {2}}}"
 msgstr "{0, plural, one {# copy of {1}} other {# copies of {2}}}"
 
-#: src/shell/AppMenu.tsx:110
+#: src/shell/AppMenu.tsx:135
 msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
 
@@ -2639,7 +2644,7 @@ msgstr "{0, plural, one {# tracked mod on Nexus is not in this profile} other {#
 msgid "One step in Steam"
 msgstr "One step in Steam"
 
-#: src/shell/AppMenu.tsx:84
+#: src/shell/AppMenu.tsx:86
 msgid "Sign in to Nexus…"
 msgstr "Sign in to Nexus…"
 
@@ -3108,7 +3113,7 @@ msgid "Not loaded in the running game"
 msgstr "Not loaded in the running game"
 
 #: src/settings/shortcutLabels.ts:40
-#: src/shell/AppMenu.tsx:200
+#: src/shell/AppMenu.tsx:225
 msgid "Get help"
 msgstr "Get help"
 
@@ -3660,7 +3665,7 @@ msgid "{0, plural, one {# mod checked} other {# mods checked}}"
 msgstr "{0, plural, one {# mod checked} other {# mods checked}}"
 
 #: src/settings/sections/General.tsx:264
-#: src/shell/AppMenu.tsx:197
+#: src/shell/AppMenu.tsx:222
 msgid "Help"
 msgstr "Help"
 
@@ -4638,8 +4643,8 @@ msgstr "Show live game info in OBS. Changes apply the next time you press Play."
 #: src/settings/sections/Updates.tsx:163
 #: src/share/DestinationGrid.tsx:52
 #: src/share/ShareDialog.tsx:41
-#: src/shell/AppMenu.tsx:136
-#: src/shell/AppMenu.tsx:139
+#: src/shell/AppMenu.tsx:161
+#: src/shell/AppMenu.tsx:164
 msgid "Mortar"
 msgstr "Mortar"
 
@@ -5477,7 +5482,7 @@ msgstr "Added from an archive, so it only exists on this computer."
 #: src/queue/QueueSheet.tsx:83
 #: src/queue/QueueSheet.tsx:197
 #: src/settings/SettingsPage.tsx:42
-#: src/shell/AppMenu.tsx:173
+#: src/shell/AppMenu.tsx:198
 msgid "Downloads"
 msgstr "Downloads"
 
@@ -5581,7 +5586,7 @@ msgstr "A friend's link or file…"
 msgid "Created · updated"
 msgstr "Created · updated"
 
-#: src/shell/AppMenu.tsx:211
+#: src/shell/AppMenu.tsx:236
 msgid "Report a bug…"
 msgstr "Report a bug…"
 
@@ -5815,7 +5820,7 @@ msgstr "Another file from a mod you have"
 msgid "Could not run the command"
 msgstr "Could not run the command"
 
-#: src/shell/AppMenu.tsx:190
+#: src/shell/AppMenu.tsx:215
 msgid "About Mortar"
 msgstr "About Mortar"
 
@@ -6693,6 +6698,10 @@ msgstr "Reached the title screen"
 msgid "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
 msgstr "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
 
+#: src/firstrun/FirstRun.tsx:115
+msgid "Want help, news or a say in what comes next? Mortar has a Discord server."
+msgstr "Want help, news or a say in what comes next? Mortar has a Discord server."
+
 #. placeholder {0}: item.repo
 #: src/queue/QueueBody.tsx:197
 msgid "This download's mod is not known to come from {0}."
@@ -6781,7 +6790,7 @@ msgid "Nothing would change."
 msgstr "Nothing would change."
 
 #: src/settings/sections/Updates.tsx:130
-#: src/shell/AppMenu.tsx:164
+#: src/shell/AppMenu.tsx:189
 msgid "What's new in {version}"
 msgstr "What's new in {version}"
 
@@ -6943,7 +6952,7 @@ msgstr "Create a profile first."
 msgid "Which?"
 msgstr "Which?"
 
-#: src/shell/AppMenu.tsx:182
+#: src/shell/AppMenu.tsx:207
 msgid "Open data folder"
 msgstr "Open data folder"
 
@@ -7275,7 +7284,7 @@ msgstr "Could not change how Nexus links open"
 msgid "requirements"
 msgstr "requirements"
 
-#: src/shell/AppMenu.tsx:219
+#: src/shell/AppMenu.tsx:108
 msgid "Source code"
 msgstr "Source code"
 
@@ -8575,11 +8584,11 @@ msgstr "A game update replaced {0}'s launcher"
 msgid "Could not undo. Missing from the store: {list}"
 msgstr "Could not undo. Missing from the store: {list}"
 
-#: src/shell/AppMenu.tsx:61
+#: src/shell/AppMenu.tsx:63
 msgid "Nexus Mods · Not signed in"
 msgstr "Nexus Mods · Not signed in"
 
-#: src/firstrun/FirstRun.tsx:96
+#: src/firstrun/FirstRun.tsx:99
 msgid "No launchers found. Continue and choose each game's folder when you open it."
 msgstr "No launchers found. Continue and choose each game's folder when you open it."
 
@@ -9916,7 +9925,7 @@ msgstr "Requests"
 msgid "Reset every shortcut?"
 msgstr "Reset every shortcut?"
 
-#: src/firstrun/FirstRun.tsx:44
+#: src/firstrun/FirstRun.tsx:47
 #: src/firstrun/GameSetup.tsx:153
 #: src/firstrun/LoaderStep.tsx:222
 #: src/game/ProfileWorkspace.tsx:39
@@ -10797,7 +10806,7 @@ msgid "Enabled"
 msgstr "Enabled"
 
 #: src/settings/sections/NexusMods.tsx:156
-#: src/shell/AppMenu.tsx:67
+#: src/shell/AppMenu.tsx:69
 msgid "Premium"
 msgstr "Premium"
 
@@ -11209,7 +11218,7 @@ msgstr "Save backups"
 msgid "The game's first frames; mods doing setup work in update events show up here"
 msgstr "The game's first frames; mods doing setup work in update events show up here"
 
-#: src/shell/AppMenu.tsx:116
+#: src/shell/AppMenu.tsx:141
 msgid "Mortar menu"
 msgstr "Mortar menu"
 
@@ -13006,7 +13015,7 @@ msgstr "No differences."
 msgid "{0, plural, one {# more pack} other {# more packs}}"
 msgstr "{0, plural, one {# more pack} other {# more packs}}"
 
-#: src/shell/AppMenu.tsx:61
+#: src/shell/AppMenu.tsx:63
 msgid "Nexus Mods · Signed in as {name}"
 msgstr "Nexus Mods · Signed in as {name}"
 
@@ -13108,7 +13117,7 @@ msgid "Could not update tags for the selected mods"
 msgstr "Could not update tags for the selected mods"
 
 #: src/firstrun/FindStep.tsx:244
-#: src/firstrun/FirstRun.tsx:99
+#: src/firstrun/FirstRun.tsx:102
 #: src/firstrun/LoaderStep.tsx:187
 #: src/firstrun/LoaderStep.tsx:387
 #: src/firstrun/NexusStep.tsx:34
@@ -13181,7 +13190,7 @@ msgstr "Start the game without the Before you play dialog"
 msgid "Display"
 msgstr "Display"
 
-#: src/firstrun/FirstRun.tsx:75
+#: src/firstrun/FirstRun.tsx:78
 msgid "Welcome to Mortar"
 msgstr "Welcome to Mortar"
 
@@ -13706,7 +13715,7 @@ msgstr "{0, plural, one {# download needs your decision} other {# downloads need
 msgid "Save current as…"
 msgstr "Save current as…"
 
-#: src/shell/AppMenu.tsx:228
+#: src/shell/AppMenu.tsx:246
 msgid "Quit Mortar"
 msgstr "Quit Mortar"
 
@@ -14293,6 +14302,6 @@ msgid "Update profiles"
 msgstr "Update profiles"
 
 #. placeholder {0}: launchers.length
-#: src/firstrun/FirstRun.tsx:95
+#: src/firstrun/FirstRun.tsx:98
 msgid "{found} of {0, plural, one {# launcher} other {# launchers}} found."
 msgstr "{found} of {0, plural, one {# launcher} other {# launchers}} found."

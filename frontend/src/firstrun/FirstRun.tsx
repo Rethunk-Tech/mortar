@@ -5,7 +5,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { StoreApp } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { Launchers } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { ConfirmLaunchers } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { DiscordLogo } from '../brand/Discord.tsx'
+import { DISCORD_INVITE } from '../brand/discordInvite.ts'
 import { LauncherList } from '../launchers/LauncherList.tsx'
+import { openPage } from '../mods/menu.ts'
 import { useNav } from '../nav/store.ts'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { space } from '../theme/density.ts'
@@ -97,6 +100,29 @@ export function FirstRun() {
         </Typography>
         <Button variant="contained" disabled={busy} onClick={finish} size="large" sx={{ px: 4 }}>
           {t`Continue`}
+        </Button>
+      </Box>
+      <Box
+        sx={{
+          width: 'min(1200px, 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: space.gap,
+        }}
+      >
+        <DiscordLogo size={20} />
+        <Typography sx={{ fontSize: 14, color: 'text.secondary', flex: 1 }}>
+          {t`Want help, news or a say in what comes next? Mortar has a Discord server.`}
+        </Typography>
+        <Button
+          variant="outlined"
+          color="inherit"
+          size="small"
+          onClick={() => {
+            openPage(DISCORD_INVITE).catch(reportUnexpected)
+          }}
+        >
+          {t`Join our Discord`}
         </Button>
       </Box>
     </Box>

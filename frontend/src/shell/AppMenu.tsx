@@ -18,6 +18,8 @@ import {
 import { type ReactNode, useEffect } from 'react'
 import { SignOut } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { OpenDataFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { DiscordLogo } from '../brand/Discord.tsx'
+import { DISCORD_INVITE } from '../brand/discordInvite.ts'
 import { Logo } from '../brand/Logo.tsx'
 import { useConsole } from '../console/store.ts'
 import { compact } from '../game/compact.ts'
@@ -88,6 +90,29 @@ function NexusLines({ close }: { close: () => void }) {
           }}
         />
       )}
+    </>
+  )
+}
+
+// The project's own pages, opened in the browser.
+function ProjectLinks({ close }: { close: () => void }) {
+  const { t } = useLingui()
+  const open = (url: string) => () => {
+    close()
+    openPage(url).catch(reportUnexpected)
+  }
+  return (
+    <>
+      <TitleMenuItem
+        icon={<Code2 size={ICON_PX} />}
+        label={t`Source code`}
+        onClick={open(SOURCE)}
+      />
+      <TitleMenuItem
+        icon={<DiscordLogo size={ICON_PX} />}
+        label={t`Join our Discord`}
+        onClick={open(DISCORD_INVITE)}
+      />
     </>
   )
 }
@@ -214,14 +239,7 @@ export function AppMenu() {
             reportBug(game)
           }}
         />
-        <TitleMenuItem
-          icon={<Code2 size={ICON_PX} />}
-          label={t`Source code`}
-          onClick={() => {
-            close()
-            openPage(SOURCE).catch(reportUnexpected)
-          }}
-        />
+        <ProjectLinks close={close} />
         <MenuRule />
         <NexusLines close={close} />
         <MenuRule />
