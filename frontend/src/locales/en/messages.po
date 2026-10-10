@@ -1974,7 +1974,7 @@ msgstr "Running for {time}"
 #: src/firstrun/ProfileStep.tsx:178
 #: src/mods/CategoryEditor.tsx:42
 #: src/mods/columnLabel.ts:7
-#: src/profiles/EditProfileDialog.tsx:269
+#: src/profiles/EditProfileDialog.tsx:272
 #: src/profiles/LaunchPresetDialog.tsx:60
 #: src/settings/prefCopy.ts:381
 #: src/tools/ToolEditorDialog.tsx:98
@@ -2659,7 +2659,7 @@ msgstr "Track a Nexus mod when Mortar installs it"
 msgid "Skipped"
 msgstr "Skipped"
 
-#: src/profiles/EditProfileDialog.tsx:453
+#: src/profiles/EditProfileDialog.tsx:456
 msgid "Edit profile"
 msgstr "Edit profile"
 
@@ -4290,7 +4290,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/mods/ReportToAuthorButton.tsx:245
 #: src/mods/SelectionBarDialogs.tsx:87
 #: src/mods/SelectionBarDialogs.tsx:137
-#: src/profiles/EditProfileDialog.tsx:484
+#: src/profiles/EditProfileDialog.tsx:487
 #: src/profiles/GameModsDialog.tsx:168
 #: src/profiles/ImportWizard.tsx:139
 #: src/profiles/LaunchPresetDialog.tsx:91
@@ -9088,7 +9088,7 @@ msgstr "That request was not valid."
 
 #: src/browse/BrowseDetails.tsx:94
 #: src/mods/NexusDetails.tsx:267
-#: src/profiles/EditProfileDialog.tsx:298
+#: src/profiles/EditProfileDialog.tsx:301
 msgid "Description"
 msgstr "Description"
 
@@ -10859,7 +10859,7 @@ msgstr "Maximise"
 msgid "Handle \"Mod Manager Download\" links"
 msgstr "Handle \"Mod Manager Download\" links"
 
-#: src/profiles/EditProfileDialog.tsx:485
+#: src/profiles/EditProfileDialog.tsx:488
 msgid "Loading game settings…"
 msgstr "Loading game settings…"
 
@@ -11395,7 +11395,7 @@ msgstr "Beach farm"
 #: src/mods/CategoryEditor.tsx:163
 #: src/mods/ConfigPresets.tsx:135
 #: src/mods/SelectionBar.tsx:38
-#: src/profiles/EditProfileDialog.tsx:487
+#: src/profiles/EditProfileDialog.tsx:490
 #: src/profiles/LaunchPresetDialog.tsx:96
 #: src/saves/SaveListRow.tsx:58
 #: src/templates/TemplateDialogs.tsx:71
@@ -12262,7 +12262,7 @@ msgid "Move data folder"
 msgstr "Move data folder"
 
 #: src/game/ProfileMenuItems.tsx:214
-#: src/profiles/EditProfileDialog.tsx:440
+#: src/profiles/EditProfileDialog.tsx:443
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
