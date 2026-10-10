@@ -66,7 +66,7 @@ func (bottlesStore) Discover(home string, roots map[string][]string, g component
 				continue
 			}
 			for _, cand := range bottleGameDirs(bottle, g.Stores.Bottles.Folder) {
-				if found := gog.GameDir(cand, g.Marker); found != "" {
+				if found := gog.GameDir(cand, g.MarkerPath()); found != "" {
 					out = append(out, Install{Store: StoreBottles, Dir: found, Prefix: bottle})
 					break
 				}

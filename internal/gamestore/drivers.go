@@ -96,7 +96,7 @@ func (gogStore) Launchers(goos string) []LauncherSpec {
 
 func (gogStore) Discover(home string, roots map[string][]string, g components.GameInfo) []Install {
 	var out []Install
-	game := gog.Game{ProductID: g.Stores.GOG.ProductID, Folder: g.Stores.GOG.Folder, Marker: g.Marker}
+	game := gog.Game{ProductID: g.Stores.GOG.ProductID, Folder: g.Stores.GOG.Folder, Marker: g.MarkerPath()}
 	r := gog.Roots{Heroic: roots[LauncherHeroic], Games: roots[LauncherGOG], Minigalaxy: roots[LauncherMinigalaxy]}
 	for _, in := range gog.Locate(home, game, r) {
 		out = append(out, Install{Store: in.Store, Dir: in.Dir})
@@ -122,7 +122,7 @@ func (lutrisStore) Launchers(goos string) []LauncherSpec {
 
 func (lutrisStore) Discover(home string, roots map[string][]string, g components.GameInfo) []Install {
 	var out []Install
-	game := lutris.Game{Slug: g.Stores.Lutris.Slug, Keyword: g.Stores.Lutris.Keyword, Marker: g.Marker}
+	game := lutris.Game{Slug: g.Stores.Lutris.Slug, Keyword: g.Stores.Lutris.Keyword, Marker: g.MarkerPath()}
 	for _, in := range lutris.Locate(home, game, roots[LauncherLutris]...) {
 		out = append(out, Install{Store: StoreLutris, Dir: in.Dir})
 	}
@@ -165,7 +165,7 @@ func (eaStore) Launchers(goos string) []LauncherSpec {
 func (eaStore) Discover(_ string, roots map[string][]string, g components.GameInfo) []Install {
 	var out []Install
 	for _, dir := range eaDirs(runtime.GOOS, os.Getenv, roots[LauncherEA]...) {
-		if found := gog.GameDir(filepath.Join(dir, g.Stores.EA.Folder), g.Marker); found != "" {
+		if found := gog.GameDir(filepath.Join(dir, g.Stores.EA.Folder), g.MarkerPath()); found != "" {
 			out = append(out, Install{Store: StoreEA, Dir: found})
 		}
 	}

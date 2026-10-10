@@ -134,7 +134,7 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 		exe := cmp.Or(plan.Exe, plan.Entry)
 		// A loader that injects into the game (BepInEx) names no executable of its own: the game's is the start.
 		if info, ok := catalogGame(inst.Game); ok && exe == "" && strings.HasSuffix(strings.ToLower(info.Marker), ".exe") {
-			exe = filepath.Join(inst.Dir, info.Marker)
+			exe = filepath.Join(inst.Dir, info.MarkerPath())
 		}
 		if exe == "" {
 			return launch.Command{}, errors.New("the game has no executable to start")

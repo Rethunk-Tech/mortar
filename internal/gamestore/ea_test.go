@@ -98,3 +98,15 @@ func TestEAInstallsInsideABottleAreFoundByTheBottlesDriver(t *testing.T) {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}
 }
+
+func TestEAFindsAnInstallWhoseMarkerSitsInAFolderBelowTheRoot(t *testing.T) {
+	lib := t.TempDir()
+	touchFile(t, filepath.Join(lib, "The X", "Game", "Bin", "X.exe"))
+	g := eaGame()
+	g.MarkerDir = "Game/Bin"
+	got := Discover(t.TempDir(), map[string][]string{LauncherEA: {lib}}, g)
+	want := []Install{{Store: StoreEA, Dir: filepath.Join(lib, "The X")}}
+	if !slices.Equal(got, want) {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+}
