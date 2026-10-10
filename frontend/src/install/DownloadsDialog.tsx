@@ -24,6 +24,7 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { listNames } from '../i18n/list.ts'
 import { openSettings } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { arrowFocus } from '../shell/arrowFocus.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
@@ -116,18 +117,22 @@ function ArchiveRows({
   onSelect: (path: string) => void
 }) {
   const { t } = useLingui()
+  const chosen = archives.some((a) => a.path === selected)
   return (
     <List
       dense={true}
       role="listbox"
       aria-label={t`Archives`}
+      onKeyDown={(e) => arrowFocus(e, '[role="option"]')}
       sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}
     >
-      {archives.map((a) => (
+      {archives.map((a, i) => (
         <ListItemButton
           key={a.path}
           role="option"
           aria-selected={a.path === selected}
+          // One tab stop for the list: the chosen archive, or the first while none is chosen. Arrows move between them.
+          tabIndex={a.path === selected || (i === 0 && !chosen) ? 0 : -1}
           selected={a.path === selected}
           onClick={() => onSelect(a.path)}
         >

@@ -113,6 +113,8 @@ function Item({
       id={tabDomId(tab)}
       aria-controls={PANEL_ID}
       aria-selected={active}
+      // One tab stop for the whole list: Tab reaches the open section, and the arrow keys move between sections.
+      tabIndex={active ? 0 : -1}
       aria-label={rail ? railLabel(label, badge) : undefined}
       data-tour={tours[tab]}
       onClick={() => setTab(tab)}
