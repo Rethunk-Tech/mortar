@@ -15,6 +15,8 @@ import {
   Send,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { openOverride } from '../profiles/openOverrides.ts'
+import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { toastError } from '../toasts/report.ts'
@@ -24,12 +26,16 @@ import { pushCommand } from './history.ts'
 // Matches the backend's launch.MaxLines, so a long session keeps the same window the log file does.
 const MAX_CONSOLE_LINES = 20_000
 
+/** The console's level floor for the open profile: its own override, else the game's. */
+const consoleFloor = () =>
+  openOverride('consoleLevel', gamePrefs(useSettings.getState()).consoleLevel)
+
 function consoleDefaults() {
   const p = gamePrefs(useSettings.getState())
   return {
-    filters: { ...DEFAULT_FILTERS, levels: levelsFromFloor(p.consoleLevel) },
-    timestamps: p.consoleTimestamps,
-    follow: p.consoleFollow,
+    filters: { ...DEFAULT_FILTERS, levels: levelsFromFloor(consoleFloor()) },
+    timestamps: openOverride('consoleTimestamps', String(p.consoleTimestamps)) === 'true',
+    follow: openOverride('consoleFollow', String(p.consoleFollow)) === 'true',
   }
 }
 
@@ -196,10 +202,10 @@ const useConsole = create<{
 })
 
 // Settings load after this module, so the level floor read at creation is the built-in default. Follow the saved floor
-// whenever it changes, unless the player has picked levels by hand since.
-let appliedFloor = gamePrefs(useSettings.getState()).consoleLevel
-useSettings.subscribe((state) => {
-  const floor = gamePrefs(state).consoleLevel
+// whenever it changes (the game's, or the open profile's own), unless the player has picked levels by hand since.
+let appliedFloor = consoleFloor()
+function followFloor() {
+  const floor = consoleFloor()
   if (floor === appliedFloor) {
     return
   }
@@ -209,6 +215,8 @@ useSettings.subscribe((state) => {
   if (levels.length === before.length && before.every((l) => levels.includes(l))) {
     useConsole.setState((s) => ({ filters: { ...s.filters, levels: levelsFromFloor(floor) } }))
   }
-})
+}
+useSettings.subscribe(followFloor)
+useProfiles.subscribe(followFloor)
 
 export { canSendTo, useConsole }

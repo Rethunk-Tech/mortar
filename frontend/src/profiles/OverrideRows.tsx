@@ -4,6 +4,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material'
 import { useGameInfo } from '../games/info.ts'
 import { useNexus } from '../settings/nexus.ts'
+import { prefCopy } from '../settings/prefCopy.ts'
 import {
   applyRow,
   choiceFromOverride,
@@ -12,6 +13,23 @@ import {
   type OverrideKey,
   overrideChoiceLabel,
 } from './overrideValue.ts'
+
+const CONSOLE_KEYS = ['consoleLogCap', 'consoleLevel', 'consoleTimestamps', 'consoleFollow']
+const REQUIREMENT_KEYS = ['enableRequirements', 'missingRequirements']
+
+/** Whether a setting that depends on what the loader offers applies to this game's loader. */
+function applies(
+  key: OverrideKey,
+  loader: { builtin: boolean; assets: boolean; console: boolean } | undefined,
+): boolean {
+  if (CONSOLE_KEYS.includes(key)) {
+    return loader?.console === true
+  }
+  if (REQUIREMENT_KEYS.includes(key)) {
+    return loader?.builtin !== true
+  }
+  return key !== 'conflictScanDepth' || loader?.assets === true
+}
 
 function overrideLabel(key: OverrideKey, i18n: I18n): string {
   switch (key) {
@@ -34,7 +52,7 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
     case 'gameSettingsMode':
       return i18n._(msg`Game settings file`)
     default:
-      return key
+      return prefCopy(i18n, key).label ?? key
   }
 }
 
@@ -64,7 +82,8 @@ export function OverridesSection({
           (introSkip || key !== 'skipIntro') &&
           (graphics || key !== 'graphicsApi') &&
           (info?.hasOptions || key !== 'gameSettingsMode') &&
-          (info?.hasCaches || key !== 'cacheClearing'),
+          (info?.hasCaches || key !== 'cacheClearing') &&
+          applies(key, info?.loaders?.[0]),
       ).map((key) => {
         const stored = overrides[key]
         const choice = choiceFromOverride(stored)

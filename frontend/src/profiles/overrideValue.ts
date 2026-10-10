@@ -13,6 +13,17 @@ export const OVERRIDE_KEYS = [
   'graphicsApi',
   'gameSettingsMode',
   'cacheClearing',
+  'saveBackupHours',
+  'saveBackupKeep',
+  'runsKept',
+  'consoleLogCap',
+  'consoleLevel',
+  'consoleTimestamps',
+  'consoleFollow',
+  'cosmeticConflicts',
+  'conflictScanDepth',
+  'enableRequirements',
+  'missingRequirements',
 ] as const
 
 export type OverrideKey = (typeof OVERRIDE_KEYS)[number]
@@ -29,6 +40,17 @@ export const OVERRIDE_VALUES: Record<OverrideKey, string[]> = {
   graphicsApi: [],
   gameSettingsMode: ['edit', 'warn'],
   cacheClearing: ['auto', 'off'],
+  saveBackupHours: ['0', '1', '2', '3', '4', '6', '8', '12', '24', '48', '72', '168'],
+  saveBackupKeep: Array.from({ length: 50 }, (_, i) => String(i + 1)),
+  runsKept: ['5', '10', '20', '50', '100'],
+  consoleLogCap: ['1000', '5000', '10000', '20000', '50000', '100000'],
+  consoleLevel: ['trace', 'debug', 'info', 'warn', 'error'],
+  consoleTimestamps: ['true', 'false'],
+  consoleFollow: ['true', 'false'],
+  cosmeticConflicts: ['collapsed', 'expanded', 'hidden'],
+  conflictScanDepth: ['full', 'skipImages'],
+  enableRequirements: ['always', 'ask', 'never'],
+  missingRequirements: ['ask', 'autodownload', 'never'],
 }
 
 export type OverrideChoice = { useGame: true } | { useGame: false; value: string }

@@ -6,6 +6,7 @@ import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { findCrashCause, useBisectBlockText } from '../commandPalette/crashBisect.ts'
 import { PageActions } from '../game/PageActions.tsx'
+import { useOpenOverride } from '../profiles/openOverrides.ts'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { refWant } from '../queue/refWant.ts'
@@ -131,7 +132,10 @@ function useProblemTabs({
 function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof useOpenProblems>> }) {
   const { t } = useLingui()
   const [addingAll, runAddAll] = usePending()
-  const cosmeticConflicts = useSettings((s) => gamePrefs(s).cosmeticConflicts)
+  const cosmeticConflicts = useOpenOverride(
+    'cosmeticConflicts',
+    useSettings((s) => gamePrefs(s).cosmeticConflicts),
+  )
   const redundantRows = useRedundantRows()
 
   const sections = problemSections(result)

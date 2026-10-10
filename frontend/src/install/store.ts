@@ -29,6 +29,7 @@ import { considerEnableRequirements } from '../mods/enableRequirementsApply.ts'
 import { useMods } from '../mods/store.ts'
 import { profileLocked } from '../mods/useLocked.ts'
 import { routeGame, useNav } from '../nav/store.ts'
+import { openOverride } from '../profiles/openOverrides.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
@@ -423,7 +424,10 @@ export function initInstallAsks() {
 }
 
 export function considerMissing(dependentIds: readonly string[]) {
-  const mode = gamePrefs(useSettings.getState()).missingRequirements || 'ask'
+  const mode = openOverride(
+    'missingRequirements',
+    gamePrefs(useSettings.getState()).missingRequirements || 'ask',
+  )
   if (mode === 'never') {
     return
   }

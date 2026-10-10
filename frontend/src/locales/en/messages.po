@@ -32,7 +32,7 @@ msgstr "Mod: {mod}"
 msgid "Switched {name} to the {detail} update channel"
 msgstr "Switched {name} to the {detail} update channel"
 
-#: src/profiles/OverrideRows.tsx:19
+#: src/profiles/OverrideRows.tsx:37
 msgid "Launch method"
 msgstr "Launch method"
 
@@ -234,7 +234,7 @@ msgstr "Imported {0}: {1} to install"
 
 #: src/console/RunProblems.tsx:134
 #: src/install/DropOverlay.tsx:120
-#: src/install/store.ts:279
+#: src/install/store.ts:280
 #: src/mods/DuplicateDialog.tsx:86
 #: src/mods/LockedReason.tsx:9
 #: src/mods/ModActionItems.tsx:126
@@ -534,8 +534,8 @@ msgstr "Search all runs"
 msgid "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows you what was added."
 msgstr "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows you what was added."
 
-#: src/install/store.ts:357
-#: src/install/store.ts:364
+#: src/install/store.ts:358
+#: src/install/store.ts:365
 msgid "Could not add the chosen folder"
 msgstr "Could not add the chosen folder"
 
@@ -620,7 +620,7 @@ msgstr "{0, plural, one {Applied the curator's choices for # mod and {1, plural,
 msgid "Startup and window"
 msgstr "Startup and window"
 
-#: src/mods/ProblemsTab.tsx:266
+#: src/mods/ProblemsTab.tsx:270
 msgid "Turns mods off in halves and relaunches until the crash stops"
 msgstr "Turns mods off in halves and relaunches until the crash stops"
 
@@ -2186,7 +2186,7 @@ msgstr "More actions for {0}"
 msgid "Game Mods folder vs {0}"
 msgstr "Game Mods folder vs {0}"
 
-#: src/profiles/OverrideRows.tsx:27
+#: src/profiles/OverrideRows.tsx:45
 msgid "Update mods before Play"
 msgstr "Update mods before Play"
 
@@ -2265,7 +2265,7 @@ msgstr "What Mortar does about game settings that mods need switched on in the g
 msgid "Launch Mortar at login"
 msgstr "Launch Mortar at login"
 
-#: src/install/store.ts:96
+#: src/install/store.ts:97
 msgid "Replaced {mods} in {profileName}"
 msgstr "Replaced {mods} in {profileName}"
 
@@ -2608,7 +2608,7 @@ msgstr "Error while loading"
 msgid "Downloading"
 msgstr "Downloading"
 
-#: src/profiles/OverrideRows.tsx:109
+#: src/profiles/OverrideRows.tsx:128
 msgid "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 msgstr "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 
@@ -2707,8 +2707,8 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/console/BisectDialog.tsx:138
 #: src/console/CrashDialog.tsx:60
 #: src/console/RunProblems.tsx:95
-#: src/install/store.ts:171
-#: src/install/store.ts:234
+#: src/install/store.ts:172
+#: src/install/store.ts:235
 #: src/mods/NewFoldersCallout.tsx:48
 #: src/mods/OldFilesCallouts.tsx:73
 #: src/mods/OldFilesCallouts.tsx:211
@@ -2777,7 +2777,7 @@ msgstr "{gameName} save backups"
 msgid "Unofficial update"
 msgstr "Unofficial update"
 
-#: src/mods/ProblemsTab.tsx:295
+#: src/mods/ProblemsTab.tsx:299
 msgid "No problems to copy."
 msgstr "No problems to copy."
 
@@ -2972,8 +2972,8 @@ msgstr "{label} is replaced by the copy in this backup. The current {label} is b
 msgid "No enabled mods"
 msgstr "No enabled mods"
 
-#: src/mods/ProblemsTab.tsx:123
-#: src/mods/ProblemsTab.tsx:332
+#: src/mods/ProblemsTab.tsx:124
+#: src/mods/ProblemsTab.tsx:336
 msgid "Cleanup"
 msgstr "Cleanup"
 
@@ -3145,7 +3145,7 @@ msgid "Sound volume"
 msgstr "Sound volume"
 
 #: src/browse/BrowseShow.tsx:29
-#: src/profiles/overrideValue.ts:95
+#: src/profiles/overrideValue.ts:117
 #: src/settings/prefCopy.ts:326
 #: src/settings/prefCopy.ts:393
 #: src/settings/prefCopy.ts:408
@@ -3295,7 +3295,7 @@ msgstr "Comfortable"
 msgid "Start measuring"
 msgstr "Start measuring"
 
-#: src/install/store.ts:395
+#: src/install/store.ts:396
 msgid "Could not open the file dialog"
 msgstr "Could not open the file dialog"
 
@@ -3973,7 +3973,7 @@ msgid "Changed"
 msgstr "Changed"
 
 #: src/console/HelpDialog.tsx:176
-#: src/console/store.ts:144
+#: src/console/store.ts:150
 #: src/mods/ReportToAuthorButton.tsx:150
 msgid "Could not read the game log"
 msgstr "Could not read the game log"
@@ -3994,7 +3994,7 @@ msgid "Disable"
 msgstr "Disable"
 
 #: src/install/overlayPlace.ts:35
-#: src/install/store.ts:92
+#: src/install/store.ts:93
 msgid "Added {mods} to {profile}"
 msgstr "Added {mods} to {profile}"
 
@@ -4462,7 +4462,7 @@ msgid "Send to…"
 msgstr "Send to…"
 
 #: src/install/batchSummary.ts:30
-#: src/install/store.ts:78
+#: src/install/store.ts:79
 msgid "Could not undo the install"
 msgstr "Could not undo the install"
 
@@ -4480,7 +4480,7 @@ msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
 #: src/mods/CleanupSection.tsx:69
-#: src/mods/ProblemsTab.tsx:336
+#: src/mods/ProblemsTab.tsx:340
 msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
@@ -4907,7 +4907,7 @@ msgid "This archive holds several variants of the same mod. Pick the one to inst
 msgstr "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 
 #. placeholder {0}: fileName(item)
-#: src/install/store.ts:301
+#: src/install/store.ts:302
 msgid "Could not add {0}"
 msgstr "Could not add {0}"
 
@@ -5117,7 +5117,7 @@ msgstr "Library"
 msgid "Connection"
 msgstr "Connection"
 
-#: src/mods/ProblemsTab.tsx:354
+#: src/mods/ProblemsTab.tsx:358
 msgid "Harmless"
 msgstr "Harmless"
 
@@ -5181,7 +5181,7 @@ msgstr "API key not set. Itch.io search is off until you add one."
 msgid "You chose not to endorse this mod."
 msgstr "You chose not to endorse this mod."
 
-#: src/profiles/OverrideRows.tsx:59
+#: src/profiles/OverrideRows.tsx:77
 msgid "These apply only to this profile."
 msgstr "These apply only to this profile."
 
@@ -5591,8 +5591,8 @@ msgstr "Read the release notes on GitHub"
 msgid "Backups ({count})"
 msgstr "Backups ({count})"
 
-#: src/mods/ProblemsTab.tsx:195
-#: src/mods/ProblemsTab.tsx:375
+#: src/mods/ProblemsTab.tsx:199
+#: src/mods/ProblemsTab.tsx:379
 msgid "Problem sections"
 msgstr "Problem sections"
 
@@ -5809,7 +5809,7 @@ msgstr "Ignore"
 msgid "Another file from a mod you have"
 msgstr "Another file from a mod you have"
 
-#: src/console/store.ts:167
+#: src/console/store.ts:173
 msgid "Could not run the command"
 msgstr "Could not run the command"
 
@@ -5825,8 +5825,8 @@ msgstr "Lavender"
 msgid "Windows' antivirus through AMSI; clamd on Linux when it is running."
 msgstr "Windows' antivirus through AMSI; clamd on Linux when it is running."
 
-#: src/mods/ProblemsTab.tsx:111
-#: src/mods/ProblemsTab.tsx:345
+#: src/mods/ProblemsTab.tsx:112
+#: src/mods/ProblemsTab.tsx:349
 msgid "Redundant"
 msgstr "Redundant"
 
@@ -6612,7 +6612,7 @@ msgstr "Share as r2modman code…"
 msgid "Load order"
 msgstr "Load order"
 
-#: src/mods/ProblemsTab.tsx:104
+#: src/mods/ProblemsTab.tsx:105
 msgid "Slow startup"
 msgstr "Slow startup"
 
@@ -7252,7 +7252,7 @@ msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
 #: src/mods/AssetMapDialog.tsx:229
-#: src/mods/ProblemsTab.tsx:284
+#: src/mods/ProblemsTab.tsx:288
 msgid "Asset map"
 msgstr "Asset map"
 
@@ -7630,7 +7630,7 @@ msgstr "{label} is set per profile"
 #: src/commandPalette/paletteLabels.ts:13
 #: src/console/CrashDialog.tsx:124
 #: src/console/CrashDialog.tsx:202
-#: src/mods/ProblemsTab.tsx:277
+#: src/mods/ProblemsTab.tsx:281
 msgid "Find the mod that crashes the game…"
 msgstr "Find the mod that crashes the game…"
 
@@ -7760,7 +7760,7 @@ msgstr "Not found"
 
 #: src/profiles/EditProfileDialog.tsx:123
 #: src/profiles/GameSettings.tsx:182
-#: src/profiles/OverrideRows.tsx:94
+#: src/profiles/OverrideRows.tsx:113
 #: src/settings/sections/Appearance.tsx:178
 #: src/settings/sections/GameSettings.tsx:215
 msgid "Use default"
@@ -8021,7 +8021,7 @@ msgstr "This mod wrote errors to the game's log the last time you played. It may
 msgid "Share…"
 msgstr "Share…"
 
-#: src/profiles/OverrideRows.tsx:31
+#: src/profiles/OverrideRows.tsx:49
 #: src/settings/prefCopy.ts:57
 msgid "Skip the intro"
 msgstr "Skip the intro"
@@ -8237,7 +8237,7 @@ msgstr "Could not upload the log"
 msgid "Created {name}"
 msgstr "Created {name}"
 
-#: src/install/store.ts:95
+#: src/install/store.ts:96
 msgid "Updated {mods} in {profileName}"
 msgstr "Updated {mods} in {profileName}"
 
@@ -8374,7 +8374,7 @@ msgstr "Search in Browse"
 msgid "Results of installs, updates and launches appear here."
 msgstr "Results of installs, updates and launches appear here."
 
-#: src/profiles/OverrideRows.tsx:35
+#: src/profiles/OverrideRows.tsx:53
 #: src/settings/prefCopyGame.ts:8
 msgid "Game settings file"
 msgstr "Game settings file"
@@ -8834,8 +8834,8 @@ msgid "Main only"
 msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:64
-#: src/mods/ProblemsTab.tsx:97
-#: src/mods/ProblemsTab.tsx:352
+#: src/mods/ProblemsTab.tsx:98
+#: src/mods/ProblemsTab.tsx:356
 msgid "Compatibility"
 msgstr "Compatibility"
 
@@ -9100,7 +9100,7 @@ msgstr "No mods have logged yet"
 msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
-#: src/mods/ProblemsTab.tsx:51
+#: src/mods/ProblemsTab.tsx:52
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
@@ -9659,7 +9659,7 @@ msgstr "Paste a share link, a collection link, a Patreon post link, an itch.io p
 msgid "Not now"
 msgstr "Not now"
 
-#: src/profiles/OverrideRows.tsx:33
+#: src/profiles/OverrideRows.tsx:51
 #: src/settings/GraphicsApiRow.tsx:17
 msgid "Graphics API"
 msgstr "Graphics API"
@@ -9820,7 +9820,7 @@ msgid "Fits {name}"
 msgstr "Fits {name}"
 
 #: src/console/PerformancePanel.tsx:156
-#: src/mods/ProblemsTab.tsx:357
+#: src/mods/ProblemsTab.tsx:361
 #: src/mods/ReportToAuthorButton.tsx:176
 #: src/settings/sections/AboutDiagnostics.tsx:140
 msgid "Report copied"
@@ -10039,7 +10039,7 @@ msgid "{0, plural, one {# save} other {# saves}}"
 msgstr "{0, plural, one {# save} other {# saves}}"
 
 #: src/console/PerformancePanelParts.tsx:230
-#: src/mods/ProblemsTab.tsx:292
+#: src/mods/ProblemsTab.tsx:296
 #: src/settings/sections/AboutDiagnostics.tsx:227
 msgid "Copy report"
 msgstr "Copy report"
@@ -10073,7 +10073,7 @@ msgid "Open {gameName} ({more, plural, one {# more profile} other {# more profil
 msgstr "Open {gameName} ({more, plural, one {# more profile} other {# more profiles}})"
 
 #: src/profiles/LaunchPresetDialog.tsx:78
-#: src/profiles/OverrideRows.tsx:21
+#: src/profiles/OverrideRows.tsx:39
 #: src/settings/prefCopy.ts:63
 msgid "SMAPI console window"
 msgstr "SMAPI console window"
@@ -10525,7 +10525,7 @@ msgstr "Show conflicts"
 msgid "Not set up"
 msgstr "Not set up"
 
-#: src/profiles/OverrideRows.tsx:25
+#: src/profiles/OverrideRows.tsx:43
 #: src/settings/prefCopy.ts:235
 msgid "Save backups kept"
 msgstr "Save backups kept"
@@ -10635,7 +10635,7 @@ msgstr "No other profile to add them to."
 msgid "Slowest event"
 msgstr "Slowest event"
 
-#: src/profiles/OverrideRows.tsx:29
+#: src/profiles/OverrideRows.tsx:47
 msgid "Skip pre-Play check"
 msgstr "Skip pre-Play check"
 
@@ -11011,7 +11011,7 @@ msgid "{0} adds {time} to startup (through {1})"
 msgstr "{0} adds {time} to startup (through {1})"
 
 #: src/profiles/EditProfileDialog.tsx:170
-#: src/profiles/OverrideRows.tsx:57
+#: src/profiles/OverrideRows.tsx:75
 msgid "Overrides"
 msgstr "Overrides"
 
@@ -11535,7 +11535,7 @@ msgstr "Redo update"
 msgid "Token"
 msgstr "Token"
 
-#: src/mods/ProblemsTab.tsx:382
+#: src/mods/ProblemsTab.tsx:386
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -12239,7 +12239,7 @@ msgstr "Until the game's first scene has loaded"
 #: src/mods/EnableRequirementsDialog.tsx:20
 #: src/mods/EnableRequirementsDialog.tsx:55
 #: src/mods/LoadOrderTab.tsx:65
-#: src/mods/ProblemsTab.tsx:335
+#: src/mods/ProblemsTab.tsx:339
 msgid "Unknown mod"
 msgstr "Unknown mod"
 
@@ -12315,7 +12315,7 @@ msgstr "A preset with this name already exists."
 
 #. placeholder {0}: installable.length
 #. placeholder {0}: wants.length
-#: src/mods/ProblemsTab.tsx:160
+#: src/mods/ProblemsTab.tsx:164
 #: src/saves/lackChips.tsx:113
 msgid "Add all {0}"
 msgstr "Add all {0}"
@@ -12328,7 +12328,7 @@ msgstr "{gameName} crashed"
 msgid "{names} can't be reached; showing what Mortar saved ({asOf})"
 msgstr "{names} can't be reached; showing what Mortar saved ({asOf})"
 
-#: src/mods/ProblemsTab.tsx:230
+#: src/mods/ProblemsTab.tsx:234
 msgid "No problems found"
 msgstr "No problems found"
 
@@ -12835,7 +12835,7 @@ msgstr "More setting values"
 msgid "Installing"
 msgstr "Installing"
 
-#: src/profiles/OverrideRows.tsx:23
+#: src/profiles/OverrideRows.tsx:41
 #: src/settings/prefCopy.ts:214
 msgid "Back up saves before Play"
 msgstr "Back up saves before Play"
@@ -13893,7 +13893,7 @@ msgid "Remove {0} from this profile?"
 msgstr "Remove {0} from this profile?"
 
 #: src/mods/columnLabel.ts:6
-#: src/profiles/overrideValue.ts:92
+#: src/profiles/overrideValue.ts:114
 msgid "On"
 msgstr "On"
 
@@ -13986,7 +13986,7 @@ msgstr "{downloading, plural, one {# downloading} other {# downloading}} · {wai
 msgid "1 time"
 msgstr "1 time"
 
-#: src/mods/ProblemsTab.tsx:232
+#: src/mods/ProblemsTab.tsx:236
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 
