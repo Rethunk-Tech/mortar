@@ -12,6 +12,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 	"github.com/Rethunk-Tech/mortar/internal/selfexe"
@@ -154,8 +156,7 @@ func firstLocalFile(paths []string) string {
 		if path == "" || strings.Contains(path, "://") {
 			continue
 		}
-		info, err := os.Stat(path)
-		if err == nil && info.Mode().IsRegular() {
+		if fsx.IsFile(path) {
 			return path
 		}
 	}

@@ -13,6 +13,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
 
@@ -69,7 +71,7 @@ func wineLoader(exe string) string {
 	}
 	for _, name := range []string{"wine", "wine64"} {
 		path := filepath.Join(filepath.Dir(exe), name)
-		if st, err := os.Stat(path); err == nil && st.Mode().IsRegular() {
+		if fsx.IsFile(path) {
 			return path
 		}
 	}

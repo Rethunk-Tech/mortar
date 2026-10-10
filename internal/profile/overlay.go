@@ -358,7 +358,7 @@ func restoreBaseFile(entryDir, baseSrc, rel string) error {
 		return err
 	}
 	src := filepath.Join(baseSrc, filepath.FromSlash(rel))
-	if regularFile(src) {
+	if fsx.IsFile(src) {
 		if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 			return err
 		}
@@ -376,11 +376,6 @@ func pruneEmptyDirs(entryDir, d string) {
 			return
 		}
 	}
-}
-
-func regularFile(p string) bool {
-	info, err := os.Stat(p)
-	return err == nil && info.Mode().IsRegular()
 }
 
 // relayBase lays base's overlays in p over its folder again, after was were the ones laid before.

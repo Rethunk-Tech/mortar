@@ -191,14 +191,12 @@ func (l Layout) IsSave(name string) bool {
 		if name != path.Base(name) {
 			return false
 		}
-		fi, err := os.Stat(filepath.Join(l.Dir, name, name))
-		return err == nil && fi.Mode().IsRegular()
+		return fsx.IsFile(filepath.Join(l.Dir, name, name))
 	}
 	if !l.Matches(name) {
 		return false
 	}
-	fi, err := os.Stat(filepath.Join(l.Dir, filepath.FromSlash(name)))
-	return err == nil && fi.Mode().IsRegular()
+	return fsx.IsFile(filepath.Join(l.Dir, filepath.FromSlash(name)))
 }
 
 // Matches reports whether name, a slash path under Dir, is named by Files, whether or not it exists.
@@ -225,7 +223,7 @@ func (l Layout) Paths(name string) []string {
 	stem := strings.TrimSuffix(name, path.Ext(name))
 	for _, ext := range l.Companions {
 		if c := stem + ext; c != name {
-			if fi, err := os.Stat(filepath.Join(l.Dir, filepath.FromSlash(c))); err == nil && fi.Mode().IsRegular() {
+			if fsx.IsFile(filepath.Join(l.Dir, filepath.FromSlash(c))) {
 				out = append(out, c)
 			}
 		}

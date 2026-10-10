@@ -2,9 +2,10 @@ package game
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // catalogOnly is a game its catalog entry describes in full: names, store ids, sources and the marker file.
@@ -51,7 +52,7 @@ func (g catalogOnly) GameProcesses() []string {
 func (g catalogOnly) ValidInstall(dir string) error {
 	info, _ := catalogGame(string(g))
 	for _, m := range []string{info.MarkerPath(), info.LinuxMarker} {
-		if st, err := os.Stat(filepath.Join(dir, m)); m != "" && err == nil && st.Mode().IsRegular() {
+		if m != "" && fsx.IsFile(filepath.Join(dir, m)) {
 			return nil
 		}
 	}

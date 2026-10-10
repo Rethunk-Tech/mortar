@@ -144,7 +144,7 @@ func GameDir(dir, marker string) string {
 	}
 	dir = filepath.Clean(dir)
 	for _, d := range []string{dir, filepath.Join(dir, "game")} {
-		if st, err := os.Stat(filepath.Join(d, marker)); err == nil && st.Mode().IsRegular() {
+		if fsx.IsFile(filepath.Join(d, marker)) {
 			return d
 		}
 	}

@@ -231,7 +231,7 @@ func (s Steam) HeroArt(appID string) string {
 		filepath.Join(cache, appID, "library_hero.jpg"),
 		filepath.Join(cache, appID+"_library_hero.jpg"),
 	}, nested...) {
-		if st, err := os.Stat(p); err == nil && st.Mode().IsRegular() {
+		if fsx.IsFile(p) {
 			return p
 		}
 	}
