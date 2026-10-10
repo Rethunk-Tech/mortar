@@ -139,3 +139,45 @@ func TestRenamedInFileIsAnnouncedAtOnce(t *testing.T) {
 		t.Fatalf("events = %v", g.evs)
 	}
 }
+
+// The open game changes on a retarget tick; a download that landed just before it must still be announced, under
+// the new game, whether the folder was still quiet-waiting or already waiting for a stable size.
+func TestRetargetKeepsPendingEvent(t *testing.T) {
+	t.Parallel()
+	for name, c := range map[string]struct{ quiet, flipAfter time.Duration }{
+		"quiet wait":  {400 * time.Millisecond, 0},
+		"stable wait": {50 * time.Millisecond, 200 * time.Millisecond},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			dir := t.TempDir()
+			var mu sync.Mutex
+			game := "sims4"
+			g := &got{}
+			ctx, cancel := context.WithCancel(context.Background())
+			done := make(chan struct{})
+			go func() {
+				_ = Run(ctx, Deps{Targets: func() []Target {
+					mu.Lock()
+					defer mu.Unlock()
+					return []Target{{DownloadsEvent, game, dir}}
+				}, Emit: g.emit, Quiet: c.quiet, Stable: 500 * time.Millisecond, Retarget: 50 * time.Millisecond})
+				close(done)
+			}()
+			t.Cleanup(func() { cancel(); <-done })
+			time.Sleep(200 * time.Millisecond)
+			if err := os.WriteFile(filepath.Join(dir, "a.zip"), []byte("x"), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			time.Sleep(c.flipAfter)
+			mu.Lock()
+			game = "stardew"
+			mu.Unlock()
+			evs := g.wait(t, 1)
+			time.Sleep(700 * time.Millisecond)
+			if evs = g.wait(t, 1); len(evs) != 1 || evs[0] != DownloadsEvent+":stardew" {
+				t.Fatalf("events = %v", evs)
+			}
+		})
+	}
+}

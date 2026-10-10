@@ -84,6 +84,13 @@ func Run(ctx context.Context, d Deps) error {
 		}
 		mu.Lock()
 		defer mu.Unlock()
+		if cur := active[a.t.Dir]; cur != a {
+			// The folder's target changed during the wait, so its replacement announces under the new game.
+			if cur != nil {
+				cur.timer.Reset(quiet)
+			}
+			return
+		}
 		if a.gen != gen || !maps.Equal(before, sizesOf(names)) {
 			a.timer.Reset(quiet)
 			return
@@ -100,9 +107,14 @@ func Run(ctx context.Context, d Deps) error {
 				want[t.Dir] = t
 			}
 		}
+		// Folders whose event was still waiting when their target changed: the replacement inherits the wait, or a
+		// download that lands just as the open game changes is never announced.
+		pending := map[string]map[string]struct{}{}
 		for dir, a := range active {
 			if t, ok := want[dir]; !ok || t != a.t {
-				a.timer.Stop()
+				if a.timer.Stop() && ok {
+					pending[dir] = a.writing
+				}
 				_ = w.Remove(dir)
 				delete(active, dir)
 			}
@@ -119,7 +131,11 @@ func Run(ctx context.Context, d Deps) error {
 				log.Printf("folderwatch: %s: %v", dir, err)
 				continue
 			}
-			a := &watch{t: t, writing: map[string]struct{}{}}
+			writing, waiting := pending[dir]
+			if !waiting {
+				writing = map[string]struct{}{}
+			}
+			a := &watch{t: t, writing: writing}
 			a.timer = time.AfterFunc(quiet, func() {
 				mu.Lock()
 				waits := t.Event == DownloadsEvent && len(a.writing) > 0
@@ -130,7 +146,7 @@ func Run(ctx context.Context, d Deps) error {
 				}
 				d.Emit(t.Event, t.Game)
 			})
-			if !missing[dir] {
+			if !missing[dir] && !waiting {
 				a.timer.Stop()
 			}
 			delete(missing, dir)
