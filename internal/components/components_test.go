@@ -599,3 +599,25 @@ func TestSourceClassesValidation(t *testing.T) {
 		t.Fatal("a non-numeric class validated")
 	}
 }
+
+func TestValidateChecksCachePaths(t *testing.T) {
+	m, err := BundledManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	i := slices.IndexFunc(m.Games, func(g GameInfo) bool { return g.ID == "sims4" })
+	if i < 0 || len(m.Games[i].Caches) != 2 {
+		t.Fatalf("sims4 caches missing")
+	}
+	g := m.Games[i]
+	if len(g.Caches) != 2 {
+		t.Fatalf("sims4 caches = %+v", g.Caches)
+	}
+	for _, bad := range []CachePath{{"nope", "a.package"}, {"userData", "../a"}, {"userData", "/a"}, {"userData", ""}, {"userData", `a\b`}} {
+		c := g
+		c.Caches = []CachePath{bad}
+		if c.Validate() == nil {
+			t.Fatalf("cache %+v accepted", bad)
+		}
+	}
+}

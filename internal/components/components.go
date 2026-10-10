@@ -147,6 +147,9 @@ type GameInfo struct {
 	// RequiredSettings are settings in a game's own files that mods need switched on; Problems reports one that is
 	// switched off and never edits the file. An older Mortar ignores the field.
 	RequiredSettings []RequiredSetting `json:"requiredSettings,omitempty"`
+	// Caches are rebuildable cache files or folders the game rebuilds on launch, which Mortar deletes once after a
+	// profile's mod set changes.
+	Caches []CachePath `json:"caches,omitempty"`
 	// KnownBroken is Mortar's curated list of mods and packages of this game that are known not to work; an older
 	// Mortar ignores the field.
 	KnownBroken []KnownBroken `json:"knownBroken,omitempty"`
@@ -220,10 +223,18 @@ func (g Graphics) Validate() error {
 // RequiredSetting names one `key = value` line of the file at the game's path role Path that mods need: a file that
 // holds the key with another value is reported with Message; a file or key that is absent is not.
 type RequiredSetting struct {
-	Path    string `json:"path"`
+	Path string `json:"path"`
+	// Section is the ini section the key sits in; empty means the key is looked up anywhere in the file.
+	Section string `json:"section,omitempty"`
 	Key     string `json:"key"`
 	Value   string `json:"value"`
 	Message string `json:"message"`
+}
+
+// CachePath names a rebuildable cache file or folder below a path role of the game, as a slash path with no "..".
+type CachePath struct {
+	Role string `json:"role"`
+	Path string `json:"path"`
 }
 
 // StarterTemplate is a built-in starting set of mods for a game.
@@ -505,6 +516,14 @@ func (g GameInfo) Validate() error {
 	for _, ext := range g.SaveCompanions {
 		if len(ext) < 2 || ext[0] != '.' || strings.ContainsAny(ext, "/\\*?[") {
 			return fmt.Errorf("game %q has an unusable save companion %q", g.ID, ext)
+		}
+	}
+	for _, cp := range g.Caches {
+		if _, ok := g.Paths[cp.Role]; !ok {
+			return fmt.Errorf("game %q cache %q names path role %q with no such path", g.ID, cp.Path, cp.Role)
+		}
+		if cp.Path == "" || strings.Contains(cp.Path, "\\") || !fs.ValidPath(cp.Path) || cp.Path == "." {
+			return fmt.Errorf("game %q cache %q on role %q is not a local slash path", g.ID, cp.Path, cp.Role)
 		}
 	}
 	for role, t := range g.Paths {

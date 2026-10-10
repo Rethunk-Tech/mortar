@@ -441,12 +441,20 @@
           "windows": "{documents}/Electronic Arts/The Sims 4/Options.ini",
           "linux": "{documents}/Electronic Arts/The Sims 4/Options.ini"
         },
+        "userData": {
+          "windows": "{documents}/Electronic Arts/The Sims 4",
+          "linux": "{documents}/Electronic Arts/The Sims 4"
+        },
         "tray": {
           "windows": "{documents}/Electronic Arts/The Sims 4/Tray",
           "linux": "{documents}/Electronic Arts/The Sims 4/Tray"
         }
       },
       "newProfileSeparateSaves": true,
+      "caches": [
+        { "role": "userData", "path": "localthumbcache.package" },
+        { "role": "userData", "path": "avatarcache.package" }
+      ],
       "requiredSettings": [
         {
           "path": "options",
