@@ -3,6 +3,7 @@ package thunderstore
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -133,8 +134,23 @@ type walk struct {
 	raised bool
 }
 
+// managers are other mod managers that communities list as packages. They are programs, not mods: nothing a profile
+// holds could run them, so search leaves them out, a mod that lists one as a dependency installs without it, and
+// asking for one by name is refused.
+var managers = []string{"ebkr-r2modman", "kesomannen-galemodmanager"}
+
+func isManager(owner, name string) bool {
+	return slices.Contains(managers, packageID(owner, name))
+}
+
 func (w *walk) visit(ref Ref, chain []string) error {
 	id := packageID(ref.Namespace, ref.Name)
+	if isManager(ref.Namespace, ref.Name) {
+		if chain == nil {
+			return fmt.Errorf("%s is a mod manager, not a mod", id)
+		}
+		return nil
+	}
 	via := strings.Join(append(append([]string{}, chain...), id), " -> ")
 	p, ok := w.byID[id]
 	if !ok {

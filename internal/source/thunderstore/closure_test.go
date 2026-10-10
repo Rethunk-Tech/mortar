@@ -3,6 +3,8 @@ package thunderstore
 import (
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 func custom(owner, name string, vs ...ver) map[string]any {
@@ -26,6 +28,8 @@ func TestClosure(t *testing.T) {
 		custom("Ns", "Lost", v("1.0.0", "Ghost-Pkg-1.0.0")),
 		custom("Ns", "X", v("1.0.0", "Ns-Y-1.0.0")),
 		custom("Ns", "Y", v("1.0.0", "Ns-X-1.0.0")),
+		custom("ebkr", "r2modman", v("3.0.0")),
+		custom("Ns", "Managed", v("1.0.0", "ebkr-r2modman-3.0.0", "Ns-D-1.0.0")),
 	)
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
 	cases := []struct {
@@ -46,6 +50,8 @@ func TestClosure(t *testing.T) {
 		{"another loader major is refused", []Ref{{"Ns", "Old", ""}}, "", "ns-old 1.0.0 -> bepinex-bepinexpack"},
 		{"a missing package names the chain", []Ref{{"Ns", "Lost", ""}}, "", "ghost-pkg is not in the index (requested by ns-lost 1.0.0 -> ghost-pkg)"},
 		{"a cycle is an error", []Ref{{"Ns", "X", ""}}, "", "dependency cycle: ns-x 1.0.0 -> ns-y 1.0.0 -> ns-x"},
+		{"a mod manager listed as a dependency is left out", []Ref{{"Ns", "Managed", ""}}, "D 1.0.0, Managed 1.0.0", ""},
+		{"a mod manager asked for by name is refused", []Ref{{"ebkr", "r2modman", ""}}, "", "ebkr-r2modman is a mod manager, not a mod"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -80,6 +86,21 @@ func TestPublisherNeedsOneMatch(t *testing.T) {
 		got, ok, err := d.Publisher(t.Context(), "lethal-company", c.pkg, c.ver, "1.2.3")
 		if err != nil || got != c.want || ok != (c.want != "") {
 			t.Errorf("%s: %q %v %v", name, got, ok, err)
+		}
+	}
+}
+
+func TestSearchLeavesOutModManagers(t *testing.T) {
+	f := newFake(t)
+	f.chunk0 = append(f.chunk0, listing("Kesomannen", "GaleModManager", "a mod manager", 5, false, false))
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	page, err := d.Search(t.Context(), source.Query{Game: "lethal-company", Key: "lethal-company", Page: 1, Version: "1.2.3"})
+	if err != nil || len(page.Items) == 0 {
+		t.Fatalf("search: %d items, %v", len(page.Items), err)
+	}
+	for _, it := range page.Items {
+		if it.Name == "GaleModManager" {
+			t.Fatalf("search offered a mod manager: %+v", it)
 		}
 	}
 }

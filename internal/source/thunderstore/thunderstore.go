@@ -93,7 +93,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	}
 	var hits []hit
 	for _, p := range pk {
-		if !source.CategoryMatch(p.Categories, q.Categories, q.ExcludeCategories) {
+		if isManager(p.Owner, p.Name) || !source.CategoryMatch(p.Categories, q.Categories, q.ExcludeCategories) {
 			continue
 		}
 		if s := score(p, tokens); s > 0 || len(tokens) == 0 {
