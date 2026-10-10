@@ -66,6 +66,13 @@ function Art({ src, openable }: { src: string; openable: boolean }) {
         data-art=""
         src={src}
         alt=""
+        // Art below the fold waits until its row scrolls near, and art the store does not have leaves the row's
+        // dark base showing in place of a broken-image mark.
+        loading="lazy"
+        decoding="async"
+        onError={(e) => {
+          e.currentTarget.style.display = 'none'
+        }}
         sx={{
           position: 'absolute',
           inset: 0,
