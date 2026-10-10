@@ -524,12 +524,10 @@ func (s *Service) DismissListedRequirement(_ context.Context, gameID, id string,
 
 // DismissSetting hides one compatibility setting for this profile until its patch group is gone.
 func (s *Service) DismissSetting(_ context.Context, gameID, id string, uniqueID mod.ID, field string) error {
-	field = strings.TrimSpace(field)
-	if uniqueID == "" || field == "" {
+	if uniqueID == "" || strings.TrimSpace(field) == "" {
 		return errors.New("missing setting")
 	}
-	token := dismissToken("setting", uniqueID.Fold()+"\t"+strings.ToLower(field))
-	return s.appendDismissed(dismissBucket(gameID, id), token)
+	return s.appendDismissed(dismissBucket(gameID, id), settingToken(uniqueID, field))
 }
 
 // RememberSettingChoice keeps a setting hint hidden while its chosen value remains current.

@@ -71,113 +71,74 @@ func redundantToken(kind, key string, by []string) string {
 	return dismissToken("redundant", kind+"\t"+key+"\t"+strings.Join(by, ","))
 }
 
-func hideDismissedRedundant(rows []framework.Redundant, tokens []string) ([]framework.Redundant, []DismissedProblem) {
-	if len(tokens) == 0 {
+// settingToken names one compatibility setting of a mod.
+func settingToken(uniqueID mod.ID, field string) string {
+	return dismissToken("setting", uniqueID.Fold()+"\t"+strings.ToLower(strings.TrimSpace(field)))
+}
+
+// hideRows splits rows into those still shown and those a dismissal hides. tokensOf lists the tokens that would hide
+// a row, none for a row that cannot be dismissed; wrap puts a hidden row into its DismissedProblem field.
+func hideRows[T any](rows []T, dismissed []string, tokensOf func(T) []string, wrap func(*T) DismissedProblem) ([]T, []DismissedProblem) {
+	if len(dismissed) == 0 {
 		return rows, nil
 	}
-	var out []framework.Redundant
-	dismissed := []DismissedProblem{}
+	skip := make(map[string]bool, len(dismissed))
+	for _, t := range dismissed {
+		skip[t] = true
+	}
+	shown := []T{}
+	hidden := []DismissedProblem{}
+rows:
 	for _, r := range rows {
+		for _, token := range tokensOf(r) {
+			if skip[token] {
+				p := wrap(&r)
+				p.Token = token
+				hidden = append(hidden, p)
+				continue rows
+			}
+		}
+		shown = append(shown, r)
+	}
+	return shown, hidden
+}
+
+func hideDismissedRedundant(rows []framework.Redundant, tokens []string) ([]framework.Redundant, []DismissedProblem) {
+	return hideRows(rows, tokens, func(r framework.Redundant) []string {
 		by := make([]string, len(r.By))
 		for i, b := range r.By {
 			by[i] = b.Key
 		}
-		token := redundantToken(r.Kind, r.Key, by)
-		if slices.Contains(tokens, token) {
-			dismissed = append(dismissed, DismissedProblem{Token: token, Redundant: &r})
-			continue
-		}
-		out = append(out, r)
-	}
-	return out, dismissed
+		return []string{redundantToken(r.Kind, r.Key, by)}
+	}, func(r *framework.Redundant) DismissedProblem { return DismissedProblem{Redundant: r} })
 }
 
 func hideDismissedBroken(broken []Broken, tokens []string) ([]Broken, []DismissedProblem) {
-	if len(tokens) == 0 {
-		return broken, nil
-	}
-	skip := map[string]bool{}
-	for _, t := range tokens {
-		skip[t] = true
-	}
-	out := []Broken{}
-	dismissed := []DismissedProblem{}
-	for _, b := range broken {
-		token := dismissToken("broken", b.ID.Fold())
-		if dismissibleBroken(b) && skip[token] {
-			dismissed = append(dismissed, DismissedProblem{Token: token, Broken: &b})
-			continue
+	return hideRows(broken, tokens, func(b Broken) []string {
+		if !dismissibleBroken(b) {
+			return nil
 		}
-		out = append(out, b)
-	}
-	return out, dismissed
+		return []string{dismissToken("broken", b.ID.Fold())}
+	}, func(b *Broken) DismissedProblem { return DismissedProblem{Broken: b} })
 }
 
 func hideDismissedListed(missing []Missing, tokens []string) ([]Missing, []DismissedProblem) {
-	if len(tokens) == 0 {
-		return missing, nil
-	}
-	skip := map[string]bool{}
-	for _, t := range tokens {
-		skip[t] = true
-	}
-	out := []Missing{}
-	dismissed := []DismissedProblem{}
-	for _, m := range missing {
-		token := dismissToken("listed", m.ID.Fold())
-		if m.Listed && skip[token] {
-			dismissed = append(dismissed, DismissedProblem{Token: token, Missing: &m})
-			continue
+	return hideRows(missing, tokens, func(m Missing) []string {
+		if !m.Listed {
+			return nil
 		}
-		out = append(out, m)
-	}
-	return out, dismissed
+		return []string{dismissToken("listed", m.ID.Fold())}
+	}, func(m *Missing) DismissedProblem { return DismissedProblem{Missing: m} })
 }
 
 func hideDismissedSettings(settings []framework.SettingHint, tokens []string) ([]framework.SettingHint, []DismissedProblem) {
-	if len(tokens) == 0 {
-		return settings, nil
-	}
-	skip := map[string]bool{}
-	for _, t := range tokens {
-		skip[t] = true
-	}
-	out := []framework.SettingHint{}
-	dismissed := []DismissedProblem{}
-	for _, setting := range settings {
-		target := setting.ID.Fold() + "\t" + strings.ToLower(setting.Field)
-		token := dismissToken("setting", target)
-		if skip[token] {
-			dismissed = append(dismissed, DismissedProblem{Token: token, Setting: &setting})
-			continue
-		}
-		token = settingChoiceToken(setting.ID, setting.Field, setting.Current)
-		if skip[token] {
-			dismissed = append(dismissed, DismissedProblem{Token: token, Setting: &setting})
-			continue
-		}
-		out = append(out, setting)
-	}
-	return out, dismissed
+	return hideRows(settings, tokens, func(h framework.SettingHint) []string {
+		return []string{settingToken(h.ID, h.Field), settingChoiceToken(h.ID, h.Field, h.Current)}
+	}, func(h *framework.SettingHint) DismissedProblem { return DismissedProblem{Setting: h} })
 }
 
 func hideDismissed(conflicts []framework.AssetConflict, tokens []string) ([]framework.AssetConflict, []DismissedProblem) {
-	if len(tokens) == 0 {
-		return conflicts, nil
-	}
-	skip := map[string]bool{}
-	for _, t := range tokens {
-		skip[t] = true
-	}
-	out := []framework.AssetConflict{}
-	dismissed := []DismissedProblem{}
-	for _, c := range conflicts {
-		token := dismissToken(c.Kind, c.Target)
-		if skip[token] {
-			dismissed = append(dismissed, DismissedProblem{Token: token, AssetConflict: &c})
-			continue
-		}
-		out = append(out, c)
-	}
-	return out, dismissed
+	return hideRows(conflicts, tokens, func(c framework.AssetConflict) []string {
+		return []string{dismissToken(c.Kind, c.Target)}
+	}, func(c *framework.AssetConflict) DismissedProblem { return DismissedProblem{AssetConflict: c} })
 }
