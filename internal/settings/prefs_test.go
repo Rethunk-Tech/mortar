@@ -120,7 +120,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"shareIncludeDisabledMods": "true", "shareIncludeFomodChoices": "false", "shareIncludeNotes": "false",
 		"shareIncludeConfigFiles": "false", "shareIncludeProblemChoices": "false", "verifyNexusMD5": "true", "launchAtLogin": "true",
 		"startMinimised": "true", "rememberWindow": "true", "extensionConnection": "off",
-		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep",
+		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep", "gameSettingsMode": "warn",
 		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "watchFolders": "/var/tmp/mortar-watch", "syncFolder": "/var/tmp/mortar-sync", "browseFilters": "installed=hide", "showAdultContent": "true",
 		"keepInTray": "false", "includeBetaReleases": "false", "includePrereleaseModVersions": "true", "askEndorseMods": "true", "listColumns": "on,name,version",
 	}
@@ -287,5 +287,18 @@ func TestVortexFolderMustHoldState(t *testing.T) {
 	}
 	if err := p.set(&s, "", ""); err != nil || s.VortexFolder != "" {
 		t.Fatalf("clear: %v, %q", err, s.VortexFolder)
+	}
+}
+
+func TestGameSettingsModeDefaultsToEditAndRejectsOtherValues(t *testing.T) {
+	if got := Defaults().GamePrefs("any").GameSettingsMode; got != GameSettingsEdit {
+		t.Fatalf("default = %q", got)
+	}
+	var s Settings
+	if err := ApplyKeyGame(&s, "gameSettingsMode", "sometimes", "any"); err == nil {
+		t.Fatal("an unknown mode was accepted")
+	}
+	if !ProfileOverridable("gameSettingsMode") {
+		t.Fatal("a profile must be able to override the mode")
 	}
 }

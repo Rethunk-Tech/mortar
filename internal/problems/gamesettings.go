@@ -7,6 +7,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 // KindGameSetting is the LoadFailure kind of a setting in the game's own files that its mods need switched on.
@@ -44,7 +45,13 @@ func (s *Service) gameSettingFailures(gameID string) []LoadFailure {
 		return nil
 	}
 	var out []LoadFailure
+	set := s.settings.Get()
 	for role, rs := range groupByPath(info.RequiredSettings) {
+		// In edit mode Mortar writes the options file's values into the profile's copy at launch, so the player's own
+		// file is not a finding.
+		if role == "options" && settings.ResolveAt(set, "gameSettingsMode", settings.Scope{Game: gameID}, nil) == settings.GameSettingsEdit {
+			continue
+		}
 		path, err := game.PathFor(s.home, s.settings.Get(), gameID, "", role)
 		if err != nil {
 			continue

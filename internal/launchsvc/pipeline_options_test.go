@@ -158,3 +158,46 @@ func TestSwapOptionsSkipsAGameWithoutTheRole(t *testing.T) {
 		t.Fatalf("a game without an options role was swapped: %v %+v", err, dep)
 	}
 }
+
+func TestSwapOptionsEditModeChangesOnlyTheProfilesCopy(t *testing.T) {
+	player := "[options]\r\nModsDisabled = 1\r\nOther = 5\r\n"
+	svc, pid, target := optionsEnv(t, "")
+	g := game.Find(optionsGame)
+	_, selected := svc.installs(g)
+	writeFile(t, target, player)
+	dep := &deployment{}
+	if err := svc.swapOptions(context.Background(), optionsGame, selected, pid, "", dep); err != nil {
+		t.Fatal(err)
+	}
+	want := "[options]\r\nModsDisabled = 0\r\nOther = 5\r\nScriptMods = 1\r\n"
+	if got := readFile(t, target); got != want {
+		t.Fatalf("the game sees %q, want %q", got, want)
+	}
+	dep.unwind(context.Background())
+	if got := readFile(t, target); got != player {
+		t.Fatalf("the player's file changed: %q", got)
+	}
+	own := dep.options.Profile
+	if got := readFile(t, own); got != want {
+		t.Fatalf("the profile copy = %q", got)
+	}
+}
+
+func TestSwapOptionsWarnModeLeavesTheBytesAlone(t *testing.T) {
+	player := "[options]\nModsDisabled = 1\n"
+	svc, pid, target := optionsEnv(t, settings.GameSettingsWarn)
+	g := game.Find(optionsGame)
+	_, selected := svc.installs(g)
+	writeFile(t, target, player)
+	dep := &deployment{}
+	if err := svc.swapOptions(context.Background(), optionsGame, selected, pid, "", dep); err != nil {
+		t.Fatal(err)
+	}
+	if got := readFile(t, target); got != player {
+		t.Fatalf("warn mode edited the file: %q", got)
+	}
+	dep.unwind(context.Background())
+	if got := readFile(t, dep.options.Profile); got != player {
+		t.Fatalf("profile copy = %q", got)
+	}
+}

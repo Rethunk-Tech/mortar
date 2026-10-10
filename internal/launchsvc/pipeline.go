@@ -10,15 +10,19 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/deploy"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/iniedit"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	gameruntime "github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/savesiso"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 // loaderID is the id of the game's first loader, "" when it has none.
@@ -151,6 +155,11 @@ func (s *Service) swapOptions(ctx context.Context, gameID string, inst game.Inst
 	if err := savesiso.SeedFile(target, own); err != nil {
 		return err
 	}
+	if s.gameSettingsMode(gameID, profileID, inst.ID) == settings.GameSettingsEdit {
+		if err := s.applyRequiredSettings(gameID, own); err != nil {
+			return err
+		}
+	}
 	m, err := savesiso.ApplyFile(dir, target, own)
 	if err != nil {
 		return err
@@ -161,6 +170,34 @@ func (s *Service) swapOptions(ctx context.Context, gameID string, inst game.Inst
 		dep.finish = func() { dep.unwind(detached) }
 	}
 	return nil
+}
+
+// gameSettingsMode is the profile's gameSettingsMode: edit makes the options file hold the catalog's required settings.
+func (s *Service) gameSettingsMode(gameID, profileID, installID string) string {
+	return settings.ResolveAt(s.settings.Get(), "gameSettingsMode", settings.Scope{Game: gameID, Install: s.pinOf(gameID, profileID, installID), Profile: profileID}, launchOverrides(s.profiles, gameID, profileID))
+}
+
+// applyRequiredSettings writes the catalog's required settings for the options role into the profile's copy. A profile
+// without a copy (the player had no file yet) is left for the game to create.
+func (s *Service) applyRequiredSettings(gameID, own string) error {
+	info, ok := components.Game(gameID)
+	if !ok || !fsx.IsFile(own) {
+		return nil
+	}
+	b, err := fsx.ReadFile(own)
+	if err != nil {
+		return err
+	}
+	text := string(b)
+	for _, r := range info.RequiredSettings {
+		if r.Path == pathOptions {
+			text = iniedit.Set(text, r.Key, r.Value)
+		}
+	}
+	if text == string(b) {
+		return nil
+	}
+	return datadir.WriteFile(own, []byte(text), 0o600)
 }
 
 // swapSaves points the game's save folder at the profile's own for this launch when the profile keeps its saves
