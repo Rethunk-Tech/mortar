@@ -1225,11 +1225,12 @@ PY
   [ "$verdict" = PASS ]
 }
 
-# sims4_install gives the sandbox a stand-in The Sims 4: a Steam install whose Game/Bin/TS4_x64.exe is a shell script, a
-# Steam manifest and prefix, and the player's Documents/Electronic Arts/The Sims 4 tree (Mods with a Resource.cfg, a
-# saves file, an Options.ini with both mod switches off). $ROOT/run-sims4.sh is the launch prefix that starts the stub in
-# place of Proton: it runs the stub, which records what the game sees into $ROOT/sims-seen.txt, then stays up under the
-# executable's name (how Mortar recognises the game process) until Mortar stops it.
+# sims4_install gives the sandbox a stand-in The Sims 4: a Steam install whose Game/Bin/TS4_x64.exe is a placeholder file,
+# a Steam manifest and prefix, and
+# the player's Documents/Electronic Arts/The Sims 4 tree (Mods with a Resource.cfg, a saves file, an Options.ini with
+# both mod switches off). $ROOT/run-sims4.sh is the launch prefix that stands in for Proton: it records what the game
+# would see into $ROOT/sims-seen.txt, becomes a dummy window named like the
+# executable (Mortar counts a game as started once it has a window), which stays up until Mortar stops it.
 sims4_install() {
   local game="$SANDBOX_STEAM/steamapps/common/The Sims 4" compat="$SANDBOX_STEAM/steamapps/compatdata/1222670"
   local docs="$compat/pfx/drive_c/users/steamuser/Documents/Electronic Arts/The Sims 4"
@@ -1241,7 +1242,8 @@ sims4_install() {
   printf 'player save\n' >"$docs/saves/Slot_00000001.save"
   printf '[options]\r\nmodsdisabled = 1\r\nscriptmodsenabled = 0\r\nresolution = 1920 1080\r\n' >"$docs/Options.ini"
   write_library
-  cat >"$game/Game/Bin/TS4_x64.exe" <<EOF
+  printf 'MZ stand-in for The Sims 4; the launch prefix runs a dummy window under its name\n' >"$game/Game/Bin/TS4_x64.exe"
+  cat >"$ROOT/run-sims4.sh" <<EOF
 #!/bin/sh
 docs='$docs'
 {
@@ -1253,16 +1255,42 @@ docs='$docs'
   tr -d '\\r' <"\$docs/Options.ini"
 } >'$ROOT/sims-seen.tmp'
 mv '$ROOT/sims-seen.tmp' '$ROOT/sims-seen.txt'
+exec -a "\$1" zenity --info --text 'stand-in The Sims 4'
 EOF
-  chmod +x "$game/Game/Bin/TS4_x64.exe"
-  printf '#!/bin/sh\n"$1"\nexec -a "$1" sleep 600\n' >"$ROOT/run-sims4.sh"
   chmod +x "$ROOT/run-sims4.sh"
 }
 
-# regress_sims4 launches the stand-in The Sims 4 (see sims4_install) directly on the hidden display and proves the
-# per-profile folders: the profile's mod is in the player's Mods folder, the game sees the profile's own saves and an
-# Options.ini with both switches on, and afterwards the player's Mods, saves and Options.ini hash exactly as before, as
-# does the game folder. The sandbox enables the game for itself through MORTAR_ENABLE_GAMES.
+# sims4_seen_ok FILE OWN OTHER checks one run's record of what the stand-in game saw: only its own profile's mod, both
+# Options.ini switches on, and none of the player's saves.
+sims4_seen_ok() {
+  local seen=$1 own=$2 other=$3 label=$4
+  [ -s "$seen" ] || {
+    failures+=("$label: the stand-in game never ran")
+    return
+  }
+  grep -q "$own" "$seen" || failures+=("$label: its own mod was not in the Mods folder during the run")
+  ! grep -q "$other" "$seen" || failures+=("$label: it saw the other profile's mod")
+  grep -qix 'modsdisabled = 0' "$seen" || failures+=("$label: Options.ini kept modsdisabled on during the run")
+  grep -qix 'scriptmodsenabled = 1' "$seen" || failures+=("$label: Options.ini kept scriptmodsenabled off during the run")
+  ! grep -q 'Slot_00000001.save' "$seen" || failures+=("$label: the player's save was visible to the profile during the run")
+}
+
+# sims4_wait_idle waits for Mortar to report the game stopped.
+sims4_wait_idle() {
+  local state=""
+  for _ in $(seq 1 90); do
+    state=$(cli status sims4 --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')
+    [ "$state" = idle ] && return 0
+    sleep 1
+  done
+  return 1
+}
+
+# regress_sims4 launches the stand-in The Sims 4 (see sims4_install) directly on the hidden display, once for each of two
+# profiles with different mods. Each run must see only its own mod, an Options.ini with both switches on and the profile's
+# own saves. The first ends with a stop from Mortar; the second is cut off: Mortar and the stand-in are killed while
+# the swap is live, and the next Mortar start must recover. Afterwards the player's Mods, saves and Options.ini hash
+# exactly as before, as does the game folder. The sandbox enables the game for itself through MORTAR_ENABLE_GAMES.
 regress_sims4() {
   ROOT=$(mktemp -d /var/tmp/mortar-regress-sims4-XXXXXX)
   case "$ROOT" in /var/tmp/mortar-regress-sims4-??????) ;; *)
@@ -1279,65 +1307,93 @@ regress_sims4() {
   verdict=FAIL
   local game="$SANDBOX_STEAM/steamapps/common/The Sims 4"
   local docs="$SANDBOX_STEAM/steamapps/compatdata/1222670/pfx/drive_c/users/steamuser/Documents/Electronic Arts/The Sims 4"
-  local data=$SANDBOX_HOME/.local/share/mortar failures=() profile="" t0=$SECONDS diff_lines=0 docs_diff=0
+  local data=$SANDBOX_HOME/.local/share/mortar failures=() t0=$SECONDS diff_lines=0 docs_diff=0
+  local pa="" pb="" fx=$ROOT/fixture
+  need_zenity
   finish() { release_sandbox; }
   regress_traps
-  need_launches 1
+  need_launches 2
 
   sims4_install
   build
   start
   cli settings set --game sims4 defaultLaunchMethod direct >/dev/null
-  profile=$(cli profile create sims4 "Regress sims4" | cut -f1)
-  local fx=$ROOT/fixture
-  mkdir -p "$fx/Regress"
-  printf 'profile mod\n' >"$fx/Regress/profilemod.package"
-  (cd "$fx" && python3 -m zipfile -c "$fx/profilemod.zip" ./Regress)
-  cli install sims4 "$profile" "$fx/profilemod.zip" >"$ROOT/install.txt" 2>&1 || failures+=("installing the profile mod failed: $(tail -c 200 "$ROOT/install.txt")")
-  cli profile set sims4 "$profile" launchPrefix "$ROOT/run-sims4.sh" >/dev/null
+  local n profile
+  for n in a b; do
+    profile=$(cli profile create sims4 "Regress $n" | cut -f1)
+    mkdir -p "$fx/$n/Pack$n"
+    printf 'profile mod %s\n' "$n" >"$fx/$n/Pack$n/mod-$n.package"
+    (cd "$fx/$n" && python3 -m zipfile -c "$fx/mod-$n.zip" "./Pack$n")
+    cli install sims4 "$profile" "$fx/mod-$n.zip" >"$ROOT/install-$n.txt" 2>&1 || failures+=("installing mod $n failed: $(tail -c 200 "$ROOT/install-$n.txt")")
+    cli profile set sims4 "$profile" launchPrefix "$ROOT/run-sims4.sh" >/dev/null
+    printf -v "p$n" '%s' "$profile"
+  done
   tree_hash "$game" >"$ROOT/game-before.txt"
   tree_hash "$docs" >"$ROOT/docs-before.txt"
 
   if [ ${#failures[@]} -eq 0 ]; then
-    cli launch sims4 "$profile" >"$ROOT/launch.txt" 2>&1 || failures+=("launch failed: $(head -c 300 "$ROOT/launch.txt")")
+    # Run A, ended by Mortar.
+    cli launch sims4 "$pa" >"$ROOT/launch-a.txt" 2>&1 || failures+=("launch A failed: $(head -c 300 "$ROOT/launch-a.txt")")
     for _ in $(seq 1 60); do
       [ -s "$ROOT/sims-seen.txt" ] && break
       sleep 1
     done
-    [ -s "$ROOT/sims-seen.txt" ] || failures+=("the stand-in game never ran")
-    grep -q 'profilemod.package' "$ROOT/sims-seen.txt" 2>/dev/null || failures+=("the profile's mod was not in the Mods folder during the run")
-    grep -qix 'modsdisabled = 0' "$ROOT/sims-seen.txt" 2>/dev/null || failures+=("Options.ini kept modsdisabled on during the run")
-    grep -qix 'scriptmodsenabled = 1' "$ROOT/sims-seen.txt" 2>/dev/null || failures+=("Options.ini kept scriptmodsenabled off during the run")
-    ! grep -q 'Slot_00000001.save' "$ROOT/sims-seen.txt" 2>/dev/null || failures+=("the player's save was visible to the profile during the run")
+    sims4_seen_ok "$ROOT/sims-seen.txt" mod-a.package mod-b.package "run A"
+    cp "$ROOT/sims-seen.txt" "$ROOT/sims-seen-a.txt" 2>/dev/null || true
+    rm -f "$ROOT/sims-seen.txt"
     cli stop sims4 >"$ROOT/stop.txt" 2>&1 || failures+=("mortar stop failed: $(head -c 300 "$ROOT/stop.txt")")
-    local state=""
-    for _ in $(seq 1 90); do
-      state=$(cli status sims4 --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')
-      [ "$state" = idle ] && break
+    sims4_wait_idle || failures+=("Mortar never went idle after run A was stopped")
+    tree_hash "$docs" >"$ROOT/docs-after-a.txt"
+    diff -q "$ROOT/docs-before.txt" "$ROOT/docs-after-a.txt" >/dev/null || failures+=("the player's files differ after run A")
+
+    # Run B, cut off while the swap is live.
+    cli launch sims4 "$pb" >"$ROOT/launch-b.txt" 2>&1 || failures+=("launch B failed: $(head -c 300 "$ROOT/launch-b.txt")")
+    for _ in $(seq 1 60); do
+      [ -s "$ROOT/sims-seen.txt" ] && break
       sleep 1
     done
-    [ "$state" = idle ] || failures+=("Mortar never went idle after the game was stopped")
+    sims4_seen_ok "$ROOT/sims-seen.txt" mod-b.package mod-a.package "run B"
+    local spid p
+    spid=$(listener || true)
+    if [ -n "$spid" ] && [ "$(readlink "/proc/$spid/exe" | sed 's/ (deleted)$//')" = "$ROOT/mortar-server" ]; then
+      kill -KILL "$spid" 2>/dev/null || true
+    else
+      failures+=("the self-test server was not found to cut off")
+    fi
+    # The stand-in's own pid is a namespace pid, so it is found by its command line: the executable's path, then --info.
+    for p in /proc/[0-9]*; do
+      [ -r "$p/cmdline" ] && [ "$(tr '\0' ' ' <"$p/cmdline" 2>/dev/null | cut -d' ' -f1-2)" = "$game/Game/Bin/TS4_x64.exe --info" ] && kill -KILL "${p#/proc/}" 2>/dev/null
+    done || true
+    sleep 2
+    cp "$ROOT/server.log" "$ROOT/server-before-cut.log"
+    # The swap is still in place until Mortar's next start recovers it.
+    tree_hash "$docs" >"$ROOT/docs-cut.txt"
+    if diff -q "$ROOT/docs-before.txt" "$ROOT/docs-cut.txt" >/dev/null; then
+      failures+=("the cut-off left the player's files untouched, so the test did not cut the swap")
+    fi
+    start
+    sims4_wait_idle || failures+=("Mortar never went idle after recovery")
     sleep 3
     tree_hash "$game" >"$ROOT/game-after.txt"
     tree_hash "$docs" >"$ROOT/docs-after.txt"
     diff_lines=$(diff "$ROOT/game-before.txt" "$ROOT/game-after.txt" | grep -c '^[<>]' || true)
     docs_diff=$(diff "$ROOT/docs-before.txt" "$ROOT/docs-after.txt" | grep -c '^[<>]' || true)
-    [ "$diff_lines" -eq 0 ] || failures+=("game folder differs after the run ($diff_lines lines)")
-    [ "$docs_diff" -eq 0 ] || failures+=("the player's Mods, saves or Options.ini differ after the run ($docs_diff lines)")
+    [ "$diff_lines" -eq 0 ] || failures+=("game folder differs after the runs ($diff_lines lines)")
+    [ "$docs_diff" -eq 0 ] || failures+=("the player's Mods, saves or Options.ini differ after recovery ($docs_diff lines)")
     local own
-    own=$(find "$data" -name Options.ini -not -path '*/journal/*' 2>/dev/null | head -1)
+    own=$(find "$data/profiles/sims4/$pa" -name Options.ini 2>/dev/null | head -1)
     if [ -z "$own" ]; then
-      failures+=("the profile holds no Options.ini copy")
+      failures+=("profile A holds no Options.ini copy")
     else
-      { tr -d '\r' <"$own" | grep -qix 'modsdisabled = 0' && tr -d '\r' <"$own" | grep -qix 'scriptmodsenabled = 1'; } || failures+=("the profile's Options.ini copy does not hold the switches on")
+      { tr -d '\r' <"$own" | grep -qix 'modsdisabled = 0' && tr -d '\r' <"$own" | grep -qix 'scriptmodsenabled = 1'; } || failures+=("profile A's Options.ini copy does not hold the switches on")
     fi
   fi
 
   [ ${#failures[@]} -eq 0 ] && verdict=PASS
   echo "---- regress --game sims4: $verdict ($((SECONDS - t0))s)"
-  echo "profile        $profile"
-  echo "game entries   $(wc -l <"$ROOT/game-before.txt") hashed, $diff_lines differing after the run"
-  echo "player files   $(wc -l <"$ROOT/docs-before.txt") hashed, $docs_diff differing after the run"
+  echo "profiles       $pa $pb"
+  echo "game entries   $(wc -l <"$ROOT/game-before.txt") hashed, $diff_lines differing after the runs"
+  echo "player files   $(wc -l <"$ROOT/docs-before.txt") hashed, $docs_diff differing after recovery"
   local f
   for f in "${failures[@]}"; do echo "FAIL: $f"; done
   [ "$verdict" = PASS ]
