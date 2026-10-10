@@ -1,8 +1,10 @@
 package profile
 
 import (
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/installer"
@@ -69,5 +71,31 @@ func TestARootFileNamedTrayAndTrayFilesAreTwoDistinctEntries(t *testing.T) {
 	owners, _ := e.PackageFileOwners(folderGame, p.ID)
 	if owners["Mods/tray"] == "" || len(trayTree(t, tray)) != 1 {
 		t.Fatalf("owners %v, tray %v", owners, trayTree(t, tray))
+	}
+}
+
+// On a case-insensitive file system House.trayitem and house.trayitem are one file. The fold is injected so this runs
+// on any system: with it, the second profile shares the first's file instead of placing another, and removing the first
+// profile leaves the file for the second.
+func TestTrayOwnersAreKeyedByFoldedCase(t *testing.T) {
+	trayFold = strings.ToLower
+	t.Cleanup(func() { trayFold = fsx.FoldCase })
+	e, tray := trayEnv(t)
+	p1, _ := e.Create(folderGame, "A")
+	p2, _ := e.Create(folderGame, "B")
+	if _, err := e.InstallSource(t.Context(), folderGame, p1.ID, zipOf(t, "a.zip", map[string]string{"House.trayitem": "t"}), cfSource(10)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.InstallSource(t.Context(), folderGame, p2.ID, zipOf(t, "b.zip", map[string]string{"house.trayitem": "t"}), Source{Kind: KindCurseForge, Name: "Other", ModID: 8, FileID: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if got := trayTree(t, tray); len(got) != 1 {
+		t.Fatalf("one file under two cases: %v", got)
+	}
+	if err := e.Delete(folderGame, p1.ID); err != nil {
+		t.Fatal(err)
+	}
+	if got := trayTree(t, tray); len(got) != 1 {
+		t.Fatalf("removing one profile deleted the other's file: %v", got)
 	}
 }

@@ -38,6 +38,10 @@ func (e *TrayRestoreError) Error() string {
 	return fmt.Sprintf("the profile is restored, but these Tray files could not be placed again because the Tray folder has different files of the same name: %s", strings.Join(e.Files, ", "))
 }
 
+// trayFold folds a Tray file's relative path as the file system does, so on Windows `House.trayitem` and
+// `house.trayitem` are one file with one set of owners. Tests replace it to fold on any system.
+var trayFold = fsx.FoldCase
+
 // trayOwners maps each Tray file an entry of the game's profiles holds to the hash it recorded. p is the profile
 // being changed, taken as it stands in memory.
 func (s *Store) trayOwners(game string, p *Profile) map[string]string {
@@ -45,7 +49,7 @@ func (s *Store) trayOwners(game string, p *Profile) map[string]string {
 	add := func(es []Entry) {
 		for _, e := range es {
 			for _, f := range e.TrayFiles {
-				owners[f.Rel] = f.Hash
+				owners[trayFold(f.Rel)] = f.Hash
 			}
 		}
 	}
@@ -89,6 +93,11 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 		return noTray(), err
 	}
 	owners := s.trayOwners(game, p)
+	folded := make(map[string]string, len(replace))
+	for rel, h := range replace {
+		folded[trayFold(rel)] = h
+	}
+	replace = folded
 	var placed []string
 	type aside struct{ dst, held string }
 	var asides []aside
@@ -121,7 +130,7 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 		if err != nil {
 			return fail(err)
 		}
-		if oh, ours := owners[f.Rel]; ours {
+		if oh, ours := owners[trayFold(f.Rel)]; ours {
 			if oh != h {
 				return fail(refuseTray(f.Rel, "another mod in your profiles placed a different file there"))
 			}
@@ -130,7 +139,7 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 		}
 		if _, err := os.Lstat(dst); err == nil {
 			dh, herr := fsx.SHA256(dst)
-			rec, mine := replace[f.Rel]
+			rec, mine := replace[trayFold(f.Rel)]
 			switch {
 			case herr == nil && mine && dh == rec && dh == h:
 				pl.held = append(pl.held, TrayFile{Rel: f.Rel, Hash: h})
@@ -178,7 +187,7 @@ func (s *Store) releaseTray(game string, p *Profile, files []TrayFile) {
 	}
 	owners := s.trayOwners(game, p)
 	for _, f := range files {
-		if _, held := owners[f.Rel]; held {
+		if _, held := owners[trayFold(f.Rel)]; held {
 			continue
 		}
 		dst := filepath.Join(dir, filepath.FromSlash(f.Rel))
