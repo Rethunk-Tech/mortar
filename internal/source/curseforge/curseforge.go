@@ -429,41 +429,76 @@ const mergedCap = 1000
 // rowsTTL is how long a class's fetched rows serve later pages of the same search.
 const rowsTTL = 10 * time.Minute
 
+// classRows are the leading rows of one class's search. at is when the first of them was fetched, which is their age
+// however often they are read; last is when rows were last added, which orders eviction.
 type classRows struct {
 	mods  []modResp
 	total int
 	at    time.Time
+	last  time.Time
 }
+
+// rowsCap is the most class searches the cache holds. One merged search holds one entry per class (five at most in the
+// catalog), so 64 keeps the open search and several earlier ones a player steps back to; typing or changing the
+// filters adds entries, and the least recently fetched go first.
+const rowsCap = 64
 
 var (
 	rowsMu    sync.Mutex
 	rowsCache = map[string]classRows{}
 )
 
+// storeRows keeps held under key, dropping entries past their age and then the least recently fetched past the cap.
+func storeRows(key string, held classRows) {
+	rowsMu.Lock()
+	defer rowsMu.Unlock()
+	rowsCache[key] = held
+	for k, v := range rowsCache {
+		if time.Since(v.at) > rowsTTL {
+			delete(rowsCache, k)
+		}
+	}
+	for len(rowsCache) > rowsCap {
+		oldest := ""
+		for k, v := range rowsCache {
+			if oldest == "" || v.last.Before(rowsCache[oldest].last) {
+				oldest = k
+			}
+		}
+		delete(rowsCache, oldest)
+	}
+}
+
 // classRowsTo returns the first `end` rows of one class for the query, reading from the API only the rows the cache
-// does not hold yet, in API-sized requests. The total is the class's own.
+// does not hold yet, in API-sized requests. Rows past their age are read again from the start of the class. The total
+// is the class's own.
 func (d Driver) classRowsTo(ctx context.Context, gameID int, class string, q source.Query, end int) ([]modResp, int, error) {
 	key := strings.Join([]string{cmp.Or(d.URL, BaseURL), strconv.Itoa(gameID), class, q.Text, q.Sort, strings.Join(q.Categories, ",")}, "|")
 	rowsMu.Lock()
-	held := rowsCache[key]
-	if time.Since(held.at) > rowsTTL {
+	held, ok := rowsCache[key]
+	if ok && time.Since(held.at) > rowsTTL {
+		delete(rowsCache, key)
 		held = classRows{}
 	}
 	rowsMu.Unlock()
+	fetched := false
 	for len(held.mods) < end && (len(held.mods) == 0 || len(held.mods) < held.total) {
 		rows, n, err := d.searchClass(ctx, gameID, class, q, len(held.mods), min(apiPageSize, end-len(held.mods)))
 		if err != nil {
 			return nil, 0, err
 		}
-		held.mods, held.total = append(held.mods, rows...), n
+		if len(held.mods) == 0 {
+			held.at = time.Now()
+		}
+		held.mods, held.total, fetched = slices.Concat(held.mods, rows), n, true
 		if len(rows) == 0 {
 			break
 		}
 	}
-	held.at = time.Now()
-	rowsMu.Lock()
-	rowsCache[key] = held
-	rowsMu.Unlock()
+	if fetched {
+		held.last = time.Now()
+		storeRows(key, held)
+	}
 	return held.mods[:min(end, len(held.mods))], held.total, nil
 }
 
