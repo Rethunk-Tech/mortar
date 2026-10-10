@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -172,8 +173,7 @@ func (s *Store) SyncPackages(gameID, id string) error {
 	if err := holdAdopted(dir, gone, files); err != nil {
 		return err
 	}
-	// The record goes first and names every file this sync may place (pending, with no hash yet), so one that stops part
-	// way is still taken away by the next.
+	s.expireHeldCopies(dir)
 	// Every file this sync may place is named first, with the hash it will have, so one that stops part way is still
 	// taken away by the next. A profile copy with no record (a restored backup's, or one the player dropped in) that
 	// differs from the store is never named: it is kept as it is.
@@ -324,7 +324,10 @@ func holdChanged(dir, rel string) error {
 	if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
 		return err
 	}
-	return fsx.Rename(from, to)
+	if err := fsx.Rename(from, to); err != nil {
+		return err
+	}
+	return markHeld(dir, rel, time.Now(), true)
 }
 
 // restoreChanged puts a held copy back in the profile and reports whether there was one.
@@ -339,7 +342,7 @@ func restoreChanged(dir, rel string) (bool, error) {
 		return false, err
 	}
 	removeUp(filepath.Join(dir, changedDir), from)
-	return true, nil
+	return true, markHeld(dir, rel, time.Time{}, false)
 }
 
 // SeedConfigs copies the config files the enabled packages ship into the profile where it has none yet, so a
