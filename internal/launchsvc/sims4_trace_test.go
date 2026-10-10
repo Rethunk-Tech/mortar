@@ -116,11 +116,13 @@ func TestAModsSettingsFileAcrossLaunches(t *testing.T) {
 	if got := readFile(t, filepath.Join(rdir, "Mods", "mc", "mc_settings.cfg")); got != "player=3" {
 		t.Fatalf("a restored backup holds %q", got)
 	}
-	if err := w.profiles.SyncPackages(sims4, restored.ID); err != nil {
-		t.Fatal(err)
-	}
-	if got := readFile(t, filepath.Join(rdir, "Mods", "mc", "mc_settings.cfg")); got != "player=3" {
-		t.Fatalf("a sync overwrote the restored copy with %q", got)
+	for i := range 2 {
+		if err := w.profiles.SyncPackages(sims4, restored.ID); err != nil {
+			t.Fatal(err)
+		}
+		if got := readFile(t, filepath.Join(rdir, "Mods", "mc", "mc_settings.cfg")); got != "player=3" {
+			t.Fatalf("sync %d after the restore overwrote the copy with %q", i+1, got)
+		}
 	}
 
 	// An uninstall holds the changed copy under changed/ instead of deleting it.

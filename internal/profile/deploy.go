@@ -114,10 +114,6 @@ func readPlaced(dir string) map[string]placedRec {
 
 // changedSince reports a placed file whose content is no longer what was recorded.
 func changedSince(rec placedRec, dst string) bool {
-	// A pending record names a file a sync is about to place: whatever is there is the sync's own.
-	if rec.Hash == "" {
-		return false
-	}
 	st, err := os.Stat(dst)
 	if err != nil {
 		return false
@@ -129,11 +125,12 @@ func changedSince(rec placedRec, dst string) bool {
 	return err != nil || h != rec.Hash
 }
 
-func recordOf(src, dst string) (placedRec, error) {
-	h, err := fsx.SHA256(src)
-	if err != nil {
-		return placedRec{}, err
-	}
+// pending is the record written before a file is placed: the hash it will have, and no size, so a crash between the
+// copy and the full record still lets a later sync tell the file's own bytes from anyone else's.
+func pending(hash string) placedRec { return placedRec{Hash: hash, Size: -1} }
+
+func recordOf(hash, dst string) (placedRec, error) {
+	h := hash
 	st, err := os.Stat(dst)
 	if err != nil {
 		return placedRec{}, err
@@ -177,10 +174,33 @@ func (s *Store) SyncPackages(gameID, id string) error {
 	}
 	// The record goes first and names every file this sync may place (pending, with no hash yet), so one that stops part
 	// way is still taken away by the next.
-	for rel := range files {
-		if _, known := next[rel]; !known && !isConfig(rel) {
-			next[rel] = placedRec{}
+	// Every file this sync may place is named first, with the hash it will have, so one that stops part way is still
+	// taken away by the next. A profile copy with no record (a restored backup's, or one the player dropped in) that
+	// differs from the store is never named: it is kept as it is.
+	srcHash := map[string]string{}
+	hashOf := func(rel string) (string, error) {
+		if h, ok := srcHash[rel]; ok {
+			return h, nil
 		}
+		h, err := fsx.SHA256(files[rel].src)
+		srcHash[rel] = h
+		return h, err
+	}
+	for rel := range files {
+		if isConfig(rel) {
+			continue
+		}
+		if _, known := next[rel]; known {
+			continue
+		}
+		if info, err := os.Lstat(filepath.Join(dir, filepath.FromSlash(rel))); err == nil && !info.IsDir() {
+			continue
+		}
+		h, err := hashOf(rel)
+		if err != nil {
+			return err
+		}
+		next[rel] = pending(h)
 	}
 	if err := writePlaced(dir, next); err != nil {
 		return err
@@ -197,13 +217,23 @@ func (s *Store) SyncPackages(gameID, id string) error {
 		}
 		switch {
 		case statErr == nil && !recorded:
+			// Not ours unless it is the store's own bytes, which a lost record may have left.
+			h, err := hashOf(rel)
+			if err != nil {
+				return err
+			}
+			if mine, err := fsx.SHA256(dst); err == nil && mine == h {
+				if next[rel], err = recordOf(h, dst); err != nil {
+					return err
+				}
+			}
 			continue
 		case statErr == nil && changedSince(rec, dst):
 			// Still the package's file, with changes that stay; the record keeps it ownable when the package goes.
 			continue
 		case statErr == nil && placedCurrent(files[rel].src, dst):
-			if rec.Hash == "" {
-				if next[rel], err = recordOf(files[rel].src, dst); err != nil {
+			if rec.Size < 0 {
+				if next[rel], err = recordOf(rec.Hash, dst); err != nil {
 					return err
 				}
 			}
@@ -226,7 +256,11 @@ func (s *Store) SyncPackages(gameID, id string) error {
 		if err := datadir.CopyFile(files[rel].src, dst); err != nil {
 			return err
 		}
-		if next[rel], err = recordOf(files[rel].src, dst); err != nil {
+		h, err := hashOf(rel)
+		if err != nil {
+			return err
+		}
+		if next[rel], err = recordOf(h, dst); err != nil {
 			return err
 		}
 	}

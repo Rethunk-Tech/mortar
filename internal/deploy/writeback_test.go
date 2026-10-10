@@ -257,3 +257,34 @@ func TestFilesLeftSharedAreNotedUntilTheyAreGone(t *testing.T) {
 		t.Fatal("the note did not clear with its file")
 	}
 }
+
+// The path-role twins of the install-root purge tests: a changed file is written back into the profile's copy and then
+// removed from the shared folder, with and without a displaced player's file.
+func TestPurgeWritesBackAChangedPathRoleFileThenRemovesIt(t *testing.T) {
+	rr := newRootRig(t)
+	m := rr.apply()
+	cfg := filepath.Join(rr.shared, "mc", "mc_settings.cfg")
+	write(t, cfg, "the mod's saved settings")
+	rr.purge(m)
+	if got := read(filepath.Join(rr.profile, "mc", "mc_settings.cfg")); got != "the mod's saved settings" {
+		t.Fatalf("the profile's copy = %q", got)
+	}
+	if _, err := os.Lstat(cfg); err == nil {
+		t.Fatal("the written-back file is still in the shared folder")
+	}
+}
+
+func TestPurgeWritesBackARewrittenPathRoleFileAndReturnsTheDisplacedOne(t *testing.T) {
+	rr := newRootRig(t)
+	top := filepath.Join(rr.shared, "top.package")
+	write(t, top, "the player's own")
+	m := rr.apply()
+	write(t, top, "rewritten by the game")
+	rr.purge(m)
+	if got := read(top); got != "the player's own" {
+		t.Fatalf("the shared file = %q, want the player's back", got)
+	}
+	if got := read(filepath.Join(rr.profile, "top.package")); got != "rewritten by the game" {
+		t.Fatalf("the profile's copy = %q", got)
+	}
+}

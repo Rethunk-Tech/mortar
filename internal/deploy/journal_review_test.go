@@ -12,7 +12,7 @@ import (
 
 // A file Mortar placed over one of the player's is Mortar's whatever the game wrote to it since: it is removed and the
 // player's displaced file returns.
-func TestPurgeRemovesARewrittenPlacedFileAndReturnsTheDisplacedOne(t *testing.T) {
+func TestPurgeRemovesARewrittenInstallRootFileAndReturnsTheDisplacedOne(t *testing.T) {
 	r := newRig(t)
 	m := r.apply()
 	dll := filepath.Join(r.install, "winhttp.dll")

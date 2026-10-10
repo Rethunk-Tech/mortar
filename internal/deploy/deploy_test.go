@@ -262,7 +262,8 @@ func TestPurgeRunAgainKeepsWhatItRestored(t *testing.T) {
 	}
 }
 
-func TestPurgeLeavesAFileThatIsNoLongerOurs(t *testing.T) {
+// An install-root file (Doorstop's pair) that changed since it was placed and displaced nothing is left, not written back.
+func TestPurgeLeavesAnInstallRootFileThatIsNoLongerOurs(t *testing.T) {
 	r := newRig(t)
 	m := r.apply()
 	ini := filepath.Join(r.install, "doorstop_config.ini")
