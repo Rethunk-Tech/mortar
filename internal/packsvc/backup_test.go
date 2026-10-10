@@ -224,7 +224,7 @@ func TestBackupOfAFolderGameProfileCarriesTheSplitArchiveOnceAndReplacesTray(t *
 	if err != nil || len(owners) != 2 {
 		t.Fatalf("owners = %v, %v", owners, err)
 	}
-	if b, err := os.ReadFile(filepath.Join(freshTray, "Smith.trayitem")); err != nil || string(b) != "t" {
+	if b, err := fsx.ReadFile(filepath.Join(freshTray, "Smith.trayitem")); err != nil || string(b) != "t" {
 		t.Fatalf("tray file: %q, %v", b, err)
 	}
 }

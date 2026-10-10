@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // A profile copy with no placed record (one a restored backup brought, or the player dropped in) is kept by the first
@@ -31,7 +33,7 @@ func TestASecondSyncKeepsAnUnrecordedProfileCopy(t *testing.T) {
 		if err := e.SyncPackages(folderGame, p.ID); err != nil {
 			t.Fatal(err)
 		}
-		if got, _ := os.ReadFile(copyPath); string(got) != "player=2 and more" {
+		if got, _ := fsx.ReadFile(copyPath); string(got) != "player=2 and more" {
 			t.Fatalf("sync %d overwrote the profile's copy: %q", i+1, got)
 		}
 	}

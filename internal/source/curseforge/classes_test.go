@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -27,7 +28,7 @@ func classFake(t *testing.T, downloads map[string][]int) Driver {
 		size, _ := strconv.Atoi(q.Get("pageSize"))
 		var rows []string
 		for i := index; i < min(index+size, len(counts)); i++ {
-			rows = append(rows, fmt.Sprintf(`{"id":%s%d,"name":"m","downloadCount":%d}`, q.Get("classId"), i, counts[i]))
+			rows = append(rows, fmt.Sprintf(`{"id":%s%d,"name":"m","downloadCount":%d}`, classNumber(q), i, counts[i]))
 		}
 		_, _ = fmt.Fprintf(w, `{"data":[%s],"pagination":{"totalCount":%d}}`, strings.Join(rows, ","), len(counts))
 	}))
@@ -118,4 +119,15 @@ func TestLiveSims4MergesClasses(t *testing.T) {
 			t.Fatalf("%s: page one holds only classes %v", sort, classes)
 		}
 	}
+}
+
+// classNumber is the request's class id when it is one of the fake classes, so what a fake server writes back is a
+// constant of the test and never the request's text.
+func classNumber(q url.Values) string {
+	for _, id := range []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"} {
+		if q.Get("classId") == id {
+			return id
+		}
+	}
+	return "0"
 }

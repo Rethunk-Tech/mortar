@@ -1,7 +1,6 @@
 package curseforge
 
 import (
-	"github.com/Rethunk-Tech/mortar/internal/components"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -9,6 +8,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/components"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )

@@ -13,8 +13,10 @@ func folderProfile() profile.Profile {
 		k := item + "#" + name
 		return profile.Entry{Key: k, Item: item, File: name, Package: true, Mods: []profile.Component{{ID: mod.NewID(mod.FormatFolder, k), Name: name}}}
 	}
-	tray := profile.Entry{Key: "pkg-1#/tray", Item: "pkg-1", Package: true, Tray: true, TrayFiles: []profile.TrayFile{{Rel: "H.trayitem"}},
-		Mods: []profile.Component{{ID: mod.NewID(mod.FormatFolder, "pkg-1#tray"), Name: "Tray files"}}}
+	tray := profile.Entry{
+		Key: "pkg-1#/tray", Item: "pkg-1", Package: true, Tray: true, TrayFiles: []profile.TrayFile{{Rel: "H.trayitem"}},
+		Mods: []profile.Component{{ID: mod.NewID(mod.FormatFolder, "pkg-1#tray"), Name: "Tray files"}},
+	}
 	return profile.Profile{Name: "S", Entries: []profile.Entry{file("pkg-1", "a.package"), file("pkg-1", "b.package"), tray, file("pkg-2", "c.package")}}
 }
 

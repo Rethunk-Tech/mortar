@@ -87,17 +87,17 @@ func clearCache(root, rel string) (int, error) {
 		return 0, err
 	}
 	target := filepath.Join(realRoot, filepath.FromSlash(rel))
-	real, err := filepath.EvalSymlinks(filepath.Dir(target))
+	resolved, err := filepath.EvalSymlinks(filepath.Dir(target))
 	if errors.Is(err, fs.ErrNotExist) {
 		return 0, nil
 	}
 	if err != nil {
 		return 0, err
 	}
-	if !sameDir(real, filepath.Dir(target)) {
+	if !sameDir(resolved, filepath.Dir(target)) {
 		return 0, fmt.Errorf("%q leaves %s through a link", rel, root)
 	}
-	target = filepath.Join(real, filepath.Base(target))
+	target = filepath.Join(resolved, filepath.Base(target))
 	info, err := os.Lstat(target)
 	if errors.Is(err, fs.ErrNotExist) {
 		return 0, nil

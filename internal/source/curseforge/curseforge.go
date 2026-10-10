@@ -289,7 +289,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	}
 	var mods []modResp
 	var failed []string
-	total := 0
+	var total int
 	if len(classes) > 1 && index+source.PageSize > mergedCap {
 		return source.Page{Total: mergedCap}, nil
 	}

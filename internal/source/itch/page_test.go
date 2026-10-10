@@ -1,20 +1,21 @@
 package itch
 
 import (
-	"github.com/Rethunk-Tech/mortar/internal/source"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 func TestParsePageURL(t *testing.T) {
 	t.Parallel()
-	for text, want := range map[string]string{
-		"https://someone.itch.io/cool-mod":              "someone/cool-mod",
-		"  https://Someone.itch.io/Cool_Mod/?x=1#frag ": "someone/Cool_Mod",
-		"https://a-b.itch.io/m":                         "a-b/m",
+	for _, c := range []struct{ text, want string }{
+		{"https://someone.itch.io/cool-mod", "someone/cool-mod"},
+		{"  https://Someone.itch.io/Cool_Mod/?x=1#frag ", "someone/Cool_Mod"},
+		{"https://a-b.itch.io/m", "a-b/m"},
 	} {
-		if got, ok := ParsePageURL(text); !ok || got != want {
-			t.Errorf("%q = %q, %v; want %q", text, got, ok, want)
+		if got, ok := ParsePageURL(c.text); !ok || got != c.want {
+			t.Errorf("%q = %q, %v; want %q", c.text, got, ok, c.want)
 		}
 	}
 	for _, text := range []string{

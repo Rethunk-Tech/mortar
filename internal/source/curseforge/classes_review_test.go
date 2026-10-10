@@ -26,7 +26,7 @@ func TestMergedSearchRequestsDoNotGrowWithThePageNumber(t *testing.T) {
 			if i > index {
 				out += ","
 			}
-			out += `{"id":` + q.Get("classId") + strconv.Itoa(i) + `,"name":"m","downloadCount":` + strconv.Itoa(100000-i) + `}`
+			out += `{"id":` + classNumber(q) + strconv.Itoa(i) + `,"name":"m","downloadCount":` + strconv.Itoa(100000-i) + `}`
 		}
 		_, _ = w.Write([]byte(out + `],"pagination":{"totalCount":9000}}`))
 	}))

@@ -23,7 +23,7 @@ func countingDriver(t *testing.T, classes []string, rows int, requests *atomic.I
 			if i > index {
 				out += ","
 			}
-			out += `{"id":` + q.Get("classId") + strconv.Itoa(i) + `,"name":"m","downloadCount":` + strconv.Itoa(100000-i) + `}`
+			out += `{"id":` + classNumber(q) + strconv.Itoa(i) + `,"name":"m","downloadCount":` + strconv.Itoa(100000-i) + `}`
 		}
 		_, _ = w.Write([]byte(out + `],"pagination":{"totalCount":` + strconv.Itoa(rows) + `}}`))
 	}))
@@ -116,7 +116,7 @@ func TestMergedSearchAnswersWithTheClassesThatAnswered(t *testing.T) {
 			http.Error(w, "boom", http.StatusInternalServerError)
 			return
 		}
-		_, _ = w.Write([]byte(`{"data":[{"id":` + q.Get("classId") + `1,"name":"m","downloadCount":5}],"pagination":{"totalCount":1}}`))
+		_, _ = w.Write([]byte(`{"data":[{"id":` + classNumber(q) + `1,"name":"m","downloadCount":5}],"pagination":{"totalCount":1}}`))
 	}))
 	t.Cleanup(srv.Close)
 	gs := components.GameSource{ID: "curseforge", Key: "1", GameID: 7, Classes: []string{"1", "2", "3"}}

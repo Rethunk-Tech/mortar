@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"log"
@@ -67,7 +68,13 @@ func adopt(m *Manifest, l *opLog) error {
 				return nil
 			}
 			info, err := d.Info()
-			if err != nil || !info.Mode().IsRegular() || placed[fsx.FoldCase(path)] || existing[fsx.FoldCase(path)] {
+			if errors.Is(err, fs.ErrNotExist) {
+				return nil
+			}
+			if err != nil {
+				return err
+			}
+			if !info.Mode().IsRegular() || placed[fsx.FoldCase(path)] || existing[fsx.FoldCase(path)] {
 				return nil
 			}
 			if info.Size() > maxAdoptFile || total+info.Size() > maxAdoptTotal {

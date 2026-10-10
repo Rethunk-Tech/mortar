@@ -28,8 +28,8 @@ func Set(content, section, key, value string) (string, error) {
 		return content, err
 	}
 	bom := ""
-	if strings.HasPrefix(content, utf8BOM) {
-		bom, content = utf8BOM, strings.TrimPrefix(content, utf8BOM)
+	if rest, ok := strings.CutPrefix(content, utf8BOM); ok {
+		bom, content = utf8BOM, rest
 	}
 	eol := "\n"
 	if strings.Contains(content, "\r\n") {
@@ -39,7 +39,7 @@ func Set(content, section, key, value string) (string, error) {
 	if lines[len(lines)-1] == "" {
 		lines = lines[:len(lines)-1]
 	}
-	cur, inWanted := "", section == ""
+	inWanted := section == ""
 	// last is the index after the final non-blank line of the wanted section, where a missing key goes.
 	last, sectionSeen := -1, section == ""
 	for i, raw := range lines {
@@ -48,7 +48,7 @@ func Set(content, section, key, value string) (string, error) {
 		case line == "" || line[0] == ';' || line[0] == '#':
 			continue
 		case line[0] == '[':
-			cur = strings.TrimSpace(strings.Trim(line, "[]"))
+			cur := strings.TrimSpace(strings.Trim(line, "[]"))
 			inWanted = section == "" || strings.EqualFold(cur, section)
 			sectionSeen = sectionSeen || inWanted
 			if inWanted {

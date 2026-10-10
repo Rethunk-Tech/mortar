@@ -554,8 +554,10 @@ func TestGraphicsIsValidatedAndPeakOffersIt(t *testing.T) {
 
 func TestKeepWholeValidation(t *testing.T) {
 	g := func(ext string) GameInfo {
-		return GameInfo{ID: "x", Name: "x", Marker: "x", Loaders: []GameLoader{{ID: "l"}}, Deploy: DeployProfile,
-			Targets: []TargetDef{{ID: "mods", Root: "{profile}/Mods", KeepWhole: []string{ext}}}}
+		return GameInfo{
+			ID: "x", Name: "x", Marker: "x", Loaders: []GameLoader{{ID: "l"}}, Deploy: DeployProfile,
+			Targets: []TargetDef{{ID: "mods", Root: "{profile}/Mods", KeepWhole: []string{ext}}},
+		}
 	}
 	if err := g("ts4script").Validate(); err != nil {
 		t.Fatalf("valid keepWhole rejected: %v", err)
@@ -586,8 +588,10 @@ func TestMarkerDirValidation(t *testing.T) {
 
 func TestSourceClassesValidation(t *testing.T) {
 	g := func(classes ...string) GameInfo {
-		return GameInfo{ID: "x", Name: "x", Marker: "x", Loaders: []GameLoader{{ID: "l"}}, Deploy: DeployProfile,
-			Sources: []GameSource{{ID: "curseforge", Key: "1", GameID: 2, Classes: classes}}}
+		return GameInfo{
+			ID: "x", Name: "x", Marker: "x", Loaders: []GameLoader{{ID: "l"}}, Deploy: DeployProfile,
+			Sources: []GameSource{{ID: "curseforge", Key: "1", GameID: 2, Classes: classes}},
+		}
 	}
 	if err := g("1", "2").Validate(); err != nil {
 		t.Fatalf("valid classes rejected: %v", err)

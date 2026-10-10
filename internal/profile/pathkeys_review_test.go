@@ -1,11 +1,12 @@
 package profile
 
 import (
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 )

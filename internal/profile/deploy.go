@@ -330,8 +330,10 @@ func holdChanged(dir, rel string) error {
 // restoreChanged puts a held copy back in the profile and reports whether there was one.
 func restoreChanged(dir, rel string) (bool, error) {
 	from := filepath.Join(dir, changedDir, filepath.FromSlash(rel))
-	if _, err := os.Lstat(from); err != nil {
+	if _, err := os.Lstat(from); errors.Is(err, fs.ErrNotExist) {
 		return false, nil
+	} else if err != nil {
+		return false, err
 	}
 	if err := fsx.Rename(from, filepath.Join(dir, filepath.FromSlash(rel))); err != nil {
 		return false, err

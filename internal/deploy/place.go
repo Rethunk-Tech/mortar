@@ -309,8 +309,12 @@ func writeBackOrRescue(m *Manifest, o Placed, i int, l *opLog) error {
 	if !o.WriteBack {
 		return nil
 	}
-	if h, err := fsx.SHA256(o.Dst); err != nil || h == o.Hash {
+	h, err := fsx.SHA256(o.Dst)
+	if errors.Is(err, fs.ErrNotExist) || (err == nil && h == o.Hash) {
 		return nil
+	}
+	if err != nil {
+		return err
 	}
 	wrote, err := writeBackFile(o, i, l)
 	if err != nil || wrote {
@@ -336,8 +340,10 @@ func RescueName(dst string) string { return dst + ".mortar-rescued" }
 // writeBackFile copies Dst over Src through a temp file and a rename, so the bytes are in both places until Dst is
 // removed. It reports false, leaving Dst alone, when the profile's folder is gone.
 func writeBackFile(o Placed, i int, log *opLog) (bool, error) {
-	if _, err := os.Stat(filepath.Dir(o.Src)); err != nil {
+	if _, err := os.Stat(filepath.Dir(o.Src)); errors.Is(err, fs.ErrNotExist) {
 		return false, nil
+	} else if err != nil {
+		return false, err
 	}
 	if err := datadir.CopyFile(o.Dst, o.Src); err != nil {
 		return false, err

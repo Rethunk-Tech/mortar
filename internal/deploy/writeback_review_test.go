@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // A file of the player's own inside a folder an entry owns is the player's even when the game rewrites it: only a file
@@ -93,7 +95,7 @@ func TestChangedBytesSurviveWhenTheProfileIsGoneAndTheyDisplacedAPlayersFile(t *
 	found := false
 	_ = filepath.WalkDir(rr.root, func(p string, d fs.DirEntry, _ error) error {
 		if d != nil && d.Type().IsRegular() {
-			if b, err := os.ReadFile(p); err == nil && string(b) == "rewritten top" {
+			if b, err := fsx.ReadFile(p); err == nil && string(b) == "rewritten top" {
 				found = true
 			}
 		}

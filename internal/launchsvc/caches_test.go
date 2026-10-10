@@ -4,13 +4,14 @@ package launchsvc
 
 import (
 	"bytes"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"log"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
@@ -175,10 +176,14 @@ func TestACacheThatCannotBeDeletedIsLoggedAndTheSetIsNotRecorded(t *testing.T) {
 	install(t, profiles, a.ID, "one")
 	seedCaches(t, dir)
 	locked := filepath.Join(dir, "cachestr")
-	if err := os.Chmod(locked, 0o500); err != nil {
+	st, err := os.Stat(locked)
+	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = os.Chmod(locked, 0o700) })
+	if err := os.Chmod(locked, st.Mode().Perm()&^0o222); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(locked, st.Mode().Perm()) })
 	logs := captureLog(t)
 	svc.clearCaches(cacheGame, a.ID, "")
 	if !strings.Contains(logs.String(), "cachestr") || profiles.CacheSet(cacheGame, a.ID) != "" {
