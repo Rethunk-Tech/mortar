@@ -521,7 +521,8 @@ func deleteOldVersion(found []manifest.Mod, uniqueID mod.ID) bool {
 	return false
 }
 
-// saveBackup zips the game's saves into <datadir>/backups before an update. Games without a save folder need none.
+// saveBackup zips the saves the profile plays into <datadir>/backups before an update, unless backupBeforePlay is
+// never for the profile. Games without a save folder need none.
 func (s *Store) saveBackup(game, profileID string) error {
 	if !gamepkg.HasSaves(game) {
 		return nil
@@ -539,6 +540,11 @@ func (s *Store) saveBackup(game, profileID string) error {
 	var overrides map[string]string
 	if p, err := s.read(game, profileID); err == nil {
 		overrides = p.PrefOverrides()
+	}
+	// An update is a change, so every mode but never backs up before one.
+	scope := settings.Scope{Game: game, Install: s.InstallOf(game, profileID), Profile: profileID}
+	if settings.ResolveAt(set, "backupBeforePlay", scope, overrides) == settings.BackupBeforePlayNever {
+		return nil
 	}
 	target, err := backup.TargetFor(s.dataDir, set, game, overrides)
 	if err != nil {
