@@ -3,11 +3,14 @@ package problems
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
-
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
 var modSettings = []components.RequiredSetting{
@@ -42,5 +45,78 @@ func TestCheckingTheSettingsFileNeverChangesIt(t *testing.T) {
 	stat, _ := os.Stat(path)
 	if string(after) != body || !stat.ModTime().Equal(before.ModTime()) {
 		t.Fatal("the file must be untouched")
+	}
+}
+
+func TestSettingRowsFollowTheProfilesGameSettingsMode(t *testing.T) {
+	m, err := components.BundledManifest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	const id = "options-game"
+	m.Games = append(slices.Clone(m.Games), components.GameInfo{
+		ID: id, Name: "Options Game", Enabled: true, Marker: "G.dll", Deploy: "profile",
+		Targets: []components.TargetDef{{ID: "mods", Root: "{profile}/Mods", MaxDepth: map[string]int{"pkg": 1}}},
+		Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "1"}},
+		Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
+		Paths: map[string]components.PathTemplate{
+			"mods":    {Windows: "{documents}/G/Mods", Linux: "{documents}/G/Mods", Darwin: "{documents}/G/Mods"},
+			"options": {Windows: "{documents}/G/Options.ini", Linux: "{documents}/G/Options.ini", Darwin: "{documents}/G/Options.ini"},
+		},
+		RequiredSettings: []components.RequiredSetting{{Path: "options", Key: "ModsDisabled", Value: "0", Message: "mods off"}},
+	})
+	if err := m.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	c := components.NewClient(nil)
+	c.SetManifest(m)
+	components.Use(c)
+	t.Cleanup(func() { components.Use(nil) })
+
+	datadirtest.Use(t, t.TempDir())
+	folder := t.TempDir()
+	if err := os.WriteFile(filepath.Join(folder, "G.dll"), []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	set, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := set.Update(func(v *settings.Settings) { v.GameFolders[id] = folder }); err != nil {
+		t.Fatal(err)
+	}
+	_, profiles := testenv.Stores(t)
+	p := testenv.Profile(t, profiles, id, "A")
+	home := t.TempDir()
+	opts := filepath.Join(home, "Documents", "G", "Options.ini")
+	if err := os.MkdirAll(filepath.Dir(opts), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(opts, []byte("[o]\nModsDisabled = 1\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s := NewService(home, set, profiles, nil)
+
+	if got := s.gameSettingFailures(id, p.ID); len(got) != 0 {
+		t.Fatalf("edit mode fixes it at launch, so no row: %+v", got)
+	}
+	if _, err := profiles.SetOverride(id, p.ID, "gameSettingsMode", settings.GameSettingsWarn); err != nil {
+		t.Fatal(err)
+	}
+	if got := s.gameSettingFailures(id, p.ID); len(got) != 1 {
+		t.Fatalf("a profile set to warn must get the row: %+v", got)
+	}
+	if _, err := set.Update(func(v *settings.Settings) {
+		gp := v.GamePrefs(id)
+		gp.GameSettingsMode = settings.GameSettingsWarn
+		v.Games = map[string]*settings.GameSettings{id: &gp}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := profiles.SetOverride(id, p.ID, "gameSettingsMode", settings.GameSettingsEdit); err != nil {
+		t.Fatal(err)
+	}
+	if got := s.gameSettingFailures(id, p.ID); len(got) != 0 {
+		t.Fatalf("a profile set to edit on a warn game needs no row: %+v", got)
 	}
 }

@@ -38,18 +38,20 @@ func settingFailures(content string, required []components.RequiredSetting) []Lo
 }
 
 // gameSettingFailures checks the game's required settings in the files its catalog entry points at. A file that cannot
-// be read is not a finding, and nothing is ever written.
-func (s *Service) gameSettingFailures(gameID string) []LoadFailure {
+// be read is not a finding, and nothing is ever written. The profile's own gameSettingsMode decides whether Mortar
+// fixes the options file at launch.
+func (s *Service) gameSettingFailures(gameID, profileID string) []LoadFailure {
 	info, ok := components.Game(gameID)
 	if !ok || len(info.RequiredSettings) == 0 || s.settings == nil {
 		return nil
 	}
 	var out []LoadFailure
 	set := s.settings.Get()
+	mode := settings.ResolveAt(set, "gameSettingsMode", settings.Scope{Game: gameID, Profile: profileID}, s.profileOverrides(gameID, profileID))
 	for role, rs := range groupByPath(info.RequiredSettings) {
 		// In edit mode Mortar writes the options file's values into the profile's copy at launch, so the player's own
 		// file is not a finding.
-		if role == "options" && settings.ResolveAt(set, "gameSettingsMode", settings.Scope{Game: gameID}, nil) == settings.GameSettingsEdit {
+		if role == "options" && mode == settings.GameSettingsEdit {
 			continue
 		}
 		path, err := game.PathFor(s.home, s.settings.Get(), gameID, "", role)
@@ -71,4 +73,20 @@ func groupByPath(in []components.RequiredSetting) map[string][]components.Requir
 		out[r.Path] = append(out[r.Path], r)
 	}
 	return out
+}
+
+func (s *Service) profileOverrides(gameID, profileID string) map[string]string {
+	if s.profiles == nil || profileID == "" {
+		return nil
+	}
+	all, err := s.profiles.List(gameID)
+	if err != nil {
+		return nil
+	}
+	for _, p := range all {
+		if p.ID == profileID {
+			return p.PrefOverrides()
+		}
+	}
+	return nil
 }

@@ -298,7 +298,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		depth = settings.ResolveAt(s.settings.Get(), "conflictScanDepth", settings.Scope{Game: gameID}, nil)
 	}
 	fp += "|scan:" + depth
-	settingRows := s.gameSettingFailures(gameID)
+	settingRows := s.gameSettingFailures(gameID, id)
 	for _, f := range settingRows {
 		fp = strings.Join([]string{fp, "setting", f.Plugin}, "|")
 	}
