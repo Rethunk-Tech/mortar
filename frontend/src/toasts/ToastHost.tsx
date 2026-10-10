@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, Tooltip } from '@mui/material'
+import { Box, Button, IconButton } from '@mui/material'
 import {
   Check,
   ChevronDown,
@@ -15,6 +15,7 @@ import { type FocusEvent, type MouseEvent, useState } from 'react'
 import { LetterTile } from '../mods/parts.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
 import { copyText } from '../share/copyText.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { space } from '../theme/density.ts'
 import { HistoryFallback } from './HistoryButton.tsx'
 import { reportUnexpected } from './report.ts'
@@ -202,13 +203,11 @@ function ToastCard({ toast }: { toast: Toast }) {
               <DetailsButton open={open} onToggle={() => setOpen((v) => !v)} />
             ) : null}
             {action ? (
-              <Tooltip title={locked ? lockHint : ''} describeChild={true}>
-                <span>
-                  <Button size="small" disabled={locked} onClick={run} sx={toastButtonSx}>
-                    {action.label}
-                  </Button>
-                </span>
-              </Tooltip>
+              <DisabledReason title={lockHint} disabled={locked}>
+                <Button size="small" disabled={locked} onClick={run} sx={toastButtonSx}>
+                  {action.label}
+                </Button>
+              </DisabledReason>
             ) : null}
           </Box>
         ) : null}

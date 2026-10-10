@@ -4,6 +4,7 @@ import { Layers } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { hasSourceLogo } from '../brand/sources/sourceIcons.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { OfflineGate } from '../shell/OfflineGate.tsx'
 import { useOfflineReason } from '../shell/offlineText.ts'
 import { SearchField } from '../shell/SearchField.tsx'
@@ -31,6 +32,43 @@ const sourceButton = (active: boolean) => ({
 })
 
 // The source picker shows each site's logo, named in its tooltip; a source with no logo shows its name.
+// One source in the picker. A source that cannot be used says why to keyboard users too; one that can only names
+// itself.
+function SourceButton({
+  option,
+  active,
+  onChange,
+}: {
+  option: SourceOption
+  active: boolean
+  onChange: (next: string) => void
+}) {
+  let mark: ReactNode = option.label
+  if (option.value === ALL) {
+    mark = <Layers size={15} />
+  } else if (hasSourceLogo(option.value)) {
+    mark = <SourceLogo id={option.value} size={16} />
+  }
+  const button = (
+    <ButtonBase
+      aria-label={option.label}
+      aria-pressed={active}
+      disabled={Boolean(option.unavailable)}
+      onClick={() => onChange(option.value)}
+      sx={sourceButton(active)}
+    >
+      {mark}
+    </ButtonBase>
+  )
+  return option.unavailable ? (
+    <DisabledReason title={option.unavailable} disabled={true}>
+      {button}
+    </DisabledReason>
+  ) : (
+    <Tooltip title={option.label}>{button}</Tooltip>
+  )
+}
+
 function SourceToggle({
   sources,
   value,
@@ -54,29 +92,9 @@ function SourceToggle({
         flexShrink: 0,
       }}
     >
-      {sources.map((o) => {
-        let mark: ReactNode = o.label
-        if (o.value === ALL) {
-          mark = <Layers size={15} />
-        } else if (hasSourceLogo(o.value)) {
-          mark = <SourceLogo id={o.value} size={16} />
-        }
-        return (
-          <Tooltip key={o.value} title={o.unavailable ?? o.label} describeChild={true}>
-            <span>
-              <ButtonBase
-                aria-label={o.label}
-                aria-pressed={o.value === value}
-                disabled={Boolean(o.unavailable)}
-                onClick={() => onChange(o.value)}
-                sx={sourceButton(o.value === value)}
-              >
-                {mark}
-              </ButtonBase>
-            </span>
-          </Tooltip>
-        )
-      })}
+      {sources.map((o) => (
+        <SourceButton key={o.value} option={o} active={o.value === value} onChange={onChange} />
+      ))}
     </Box>
   )
 }

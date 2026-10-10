@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Badge, Box, Button, IconButton, Popover, Tooltip, Typography } from '@mui/material'
+import { Badge, Box, Button, IconButton, Popover, Typography } from '@mui/material'
 import { Bell } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { When } from '../i18n/When.tsx'
@@ -9,6 +9,7 @@ import { HistoryDialog } from '../profiles/HistoryDialog.tsx'
 import { useProfiles } from '../profiles/store.ts'
 import { useHistoryPanel } from '../profiles/useHistoryPanel.ts'
 import { useQueue } from '../queue/store.ts'
+import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { closeTitleMenu } from '../shell/titleMenus.ts'
 import { space } from '../theme/density.ts'
@@ -64,13 +65,14 @@ function HistoryRow({ item }: { item: ToastHistoryItem }) {
         </Typography>
       </Box>
       {action ? (
-        <Tooltip title={state.disabled ? (state.reason ?? '') : ''} describeChild={true}>
-          <span>
-            <Button size="small" disabled={state.disabled} onClick={run} sx={{ flexShrink: 0 }}>
-              {action.label}
-            </Button>
-          </span>
-        </Tooltip>
+        <DisabledReason
+          title={state.reason ?? ''}
+          disabled={state.disabled && Boolean(state.reason)}
+        >
+          <Button size="small" disabled={state.disabled} onClick={run} sx={{ flexShrink: 0 }}>
+            {action.label}
+          </Button>
+        </DisabledReason>
       ) : null}
     </Box>
   )
