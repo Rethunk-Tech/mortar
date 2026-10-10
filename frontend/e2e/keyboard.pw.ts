@@ -102,3 +102,22 @@ test('the main flows work with the keyboard alone and focus stays visible and re
   expect(box).not.toBeNull()
   await page.mouse.click(box?.x ?? 0, (box?.y ?? 0) + (box?.height ?? 0) / 2)
 })
+
+// Space switches the focused mod on or off, so a space inside a name being typed must belong to the typing.
+test('typing a mod name with a space jumps to it and does not switch a mod off', async ({
+  page,
+}) => {
+  await openSeedFarm(page)
+  // The list shows each mod's switch; the grid is put back for the tests that share this sandbox.
+  await page.getByRole('button', { name: 'List view' }).click()
+  try {
+    const row = (name: string) => page.locator('[data-mod-row]').filter({ hasText: name })
+    await row('Seed Alpha').focus()
+    await page.keyboard.type('seed g')
+    await expect(row('Seed Gamma')).toBeFocused()
+    await expect(page.getByLabel('Disable Seed Alpha')).toBeVisible()
+    await expect(page.getByLabel('Disable Seed Gamma')).toBeVisible()
+  } finally {
+    await page.getByRole('button', { name: 'Grid view' }).click()
+  }
+})

@@ -298,6 +298,10 @@ function ModRowView({ row, striped, cols, locale, orderedIds, profile, onArrow }
       tabIndex={tabStop ? 0 : -1}
       {...menu}
       onKeyDown={(e) => {
+        // Type-ahead has already taken a key it swallowed, such as a space inside a name being typed.
+        if (e.defaultPrevented) {
+          return
+        }
         const run: Partial<Record<ShortcutId, () => void>> = {
           'mod-up': () => onArrow(rowId, -1),
           'mod-down': () => onArrow(rowId, 1),

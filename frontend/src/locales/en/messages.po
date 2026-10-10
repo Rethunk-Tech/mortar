@@ -1697,7 +1697,7 @@ msgstr "Add preset"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
-#: src/games/GameSelect.tsx:512
+#: src/games/GameSelect.tsx:511
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -4239,11 +4239,11 @@ msgstr "config.json, as the mod ships it"
 msgid "The last launch loaded this here, not where its dependencies put it."
 msgstr "The last launch loaded this here, not where its dependencies put it."
 
-#: src/games/GameSelect.tsx:515
+#: src/games/GameSelect.tsx:514
 msgid "Check launchers…"
 msgstr "Check launchers…"
 
-#: src/games/GameSelect.tsx:267
+#: src/games/GameSelect.tsx:268
 msgid "Set up"
 msgstr "Set up"
 
@@ -4527,8 +4527,8 @@ msgstr "{rest, plural, one {# more} other {# more}}"
 msgid "Mortar: {label}"
 msgstr "Mortar: {label}"
 
-#: src/mods/ModCards.tsx:463
-#: src/mods/ModList.tsx:365
+#: src/mods/ModCards.tsx:467
+#: src/mods/ModList.tsx:369
 #: src/mods/Toolbar.tsx:196
 #: src/mods/typedConfig/ConfigTab.tsx:167
 msgid "A mod with several tags appears under its first tag."
@@ -6477,7 +6477,7 @@ msgid "No profiles found."
 msgstr "No profiles found."
 
 #. placeholder {0}: game.name
-#: src/games/GameSelect.tsx:203
+#: src/games/GameSelect.tsx:204
 msgid "Open {0}"
 msgstr "Open {0}"
 
@@ -6502,7 +6502,7 @@ msgstr "Could not move the old files to trash"
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
-#: src/games/GameSelect.tsx:159
+#: src/games/GameSelect.tsx:160
 #: src/games/ProfileCards.tsx:48
 #: src/profiles/store.ts:261
 #: src/profiles/store.ts:342
@@ -7274,7 +7274,7 @@ msgstr "Could not switch {0}"
 msgid "Asset map"
 msgstr "Asset map"
 
-#: src/games/GameSelect.tsx:419
+#: src/games/GameSelect.tsx:418
 msgid "Games starting with {letter}"
 msgstr "Games starting with {letter}"
 
@@ -8249,7 +8249,7 @@ msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
 #: src/games/GameMenu.tsx:107
-#: src/games/GameSelect.tsx:496
+#: src/games/GameSelect.tsx:495
 msgid "Recently played"
 msgstr "Recently played"
 
@@ -8316,7 +8316,7 @@ msgstr "Minutes between background update checks"
 msgid "Show all"
 msgstr "Show all"
 
-#: src/games/GameSelect.tsx:144
+#: src/games/GameSelect.tsx:145
 msgid "{playtime} played"
 msgstr "{playtime} played"
 
@@ -9931,7 +9931,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/GameSetup.tsx:153
 #: src/firstrun/LoaderStep.tsx:222
 #: src/game/ProfileWorkspace.tsx:39
-#: src/games/GameSelect.tsx:452
+#: src/games/GameSelect.tsx:451
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
 msgstr "Loading…"
@@ -11328,7 +11328,7 @@ msgid "Stop the game to test a launch."
 msgstr "Stop the game to test a launch."
 
 #: src/firstrunTour/TourPopover.tsx:42
-#: src/games/GameSelect.tsx:254
+#: src/games/GameSelect.tsx:255
 #: src/launch/PlayControl.tsx:175
 #: src/mods/typedConfig/ConfigTab.tsx:299
 #: src/settings/GameSettingsPage.tsx:95
@@ -11610,7 +11610,7 @@ msgid "Switch {0} to {1}?"
 msgstr "Switch {0} to {1}?"
 
 #: src/firstrun/GameSetup.tsx:52
-#: src/games/GameSelect.tsx:501
+#: src/games/GameSelect.tsx:500
 msgid "All games"
 msgstr "All games"
 
@@ -12111,7 +12111,7 @@ msgstr "Updated fixable mods"
 msgid "Order"
 msgstr "Order"
 
-#: src/games/GameSelect.tsx:400
+#: src/games/GameSelect.tsx:399
 msgid "Jump to a letter"
 msgstr "Jump to a letter"
 
@@ -12128,7 +12128,7 @@ msgstr "Sort: newest"
 msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
 
-#: src/games/GameSelect.tsx:249
+#: src/games/GameSelect.tsx:250
 msgid "Play {playName}"
 msgstr "Play {playName}"
 
@@ -13155,7 +13155,7 @@ msgstr "Command-line control"
 msgid "Could not repair this profile"
 msgstr "Could not repair this profile"
 
-#: src/games/GameSelect.tsx:157
+#: src/games/GameSelect.tsx:158
 #: src/games/ProfileCards.tsx:46
 #: src/games/ProfileCards.tsx:59
 #: src/games/useOpenGame.ts:42
@@ -13335,7 +13335,7 @@ msgstr "See which mods slow the game"
 
 #. placeholder {0}: game.name
 #: src/firstrun/GameSetup.tsx:176
-#: src/games/GameSelect.tsx:262
+#: src/games/GameSelect.tsx:263
 msgid "Set up {0}"
 msgstr "Set up {0}"
 

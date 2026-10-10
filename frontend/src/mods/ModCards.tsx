@@ -180,7 +180,8 @@ function ModCardView({ mod: m, orderedIds, profile, columnsRef, onMove }: ModCar
               }
               const action =
                 run[boundShortcut(e, useSettings.getState().shortcuts) ?? ARROWS[e.key] ?? '']
-              if (action && e.target === e.currentTarget) {
+              // Type-ahead has already taken a key it swallowed, such as a space inside a name being typed.
+              if (action && e.target === e.currentTarget && !e.defaultPrevented) {
                 e.preventDefault()
                 action()
               }
