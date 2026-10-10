@@ -11,6 +11,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 // modMachine holds real .mortar payloads: a profile is a list of Nexus mod ids, and a mod in fail never downloads.
@@ -25,7 +26,7 @@ type modMachine struct {
 func (m *modMachine) Export(_, id string) ([]byte, error) {
 	p := profile.Profile{Name: "Main"}
 	for _, n := range m.mods[id] {
-		p.Entries = append(p.Entries, profile.Entry{Key: "n", Source: profile.Source{Kind: profile.KindNexus, ModID: n, FileID: n}, Note: m.note})
+		p.Entries = append(p.Entries, profile.Entry{Key: store.NexusKey(n, n), Source: profile.Source{Kind: profile.KindNexus, ModID: n, FileID: n}, Note: m.note})
 	}
 	var buf bytes.Buffer
 	_, err := share.Write(&buf, "stardew", p, "")
