@@ -87,6 +87,9 @@ func TestALethalCompanyLaunchKeepsBepInExInTheProfile(t *testing.T) {
 		for _, f := range []string{"winhttp.dll", "doorstop_config.ini"} {
 			plan.AddFile(launchplan.PlanFile{Src: filepath.Join(profileDir, f), Dst: f})
 		}
+		if err := ps.SyncPackages(lc, p.ID); err != nil {
+			t.Fatal(err)
+		}
 		dep, err := svc.deployProfile(t.Context(), lc, inst, p.ID, plan)
 		if err != nil {
 			t.Fatal(err)

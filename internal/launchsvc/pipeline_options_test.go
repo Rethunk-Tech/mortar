@@ -13,9 +13,11 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/savesiso"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 const optionsGame = "options-game"
@@ -199,5 +201,22 @@ func TestSwapOptionsWarnModeLeavesTheBytesAlone(t *testing.T) {
 	dep.unwind(context.Background())
 	if got := readFile(t, dep.options.Profile); got != player {
 		t.Fatalf("profile copy = %q", got)
+	}
+}
+
+func TestPlanProfileListsPackagesThatOnlyTheLayoutPutsInTheProfile(t *testing.T) {
+	svc, pid, _ := optionsEnv(t, "")
+	g := game.Find(optionsGame)
+	_, selected := svc.installs(g)
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "m.zip"), map[string]string{"R/x.pkg": "x"})
+	if _, err := svc.profiles.InstallArchive(context.Background(), optionsGame, pid, zip); err != nil {
+		t.Fatal(err)
+	}
+	plan, err := svc.planProfile(context.Background(), g, selected, pid, launchplan.ModeProfile, "", "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(plan.Files) != 1 || plan.Files[0].Root != "mods" {
+		t.Fatalf("the plan must carry the installed mod for the mods folder: %+v", plan.Files)
 	}
 }

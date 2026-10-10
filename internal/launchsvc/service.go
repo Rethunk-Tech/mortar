@@ -893,7 +893,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 			}
 		}
 	}
-	if plan, err = s.launchPlan(ctx, g, inst, profileID, mode, spec.Options, spec.Prefix, spec.Env); err != nil {
+	if plan, err = s.planProfile(ctx, g, inst, profileID, mode, spec.Options, spec.Prefix, spec.Env); err != nil {
 		return err
 	}
 	env.LogFile, _, _ = s.logPath(g.ID(), profileID)

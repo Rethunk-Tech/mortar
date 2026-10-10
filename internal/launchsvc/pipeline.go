@@ -104,6 +104,17 @@ func (s *Service) launchPlan(ctx context.Context, g game.Game, inst game.Install
 	return plan, nil
 }
 
+// planProfile is launchPlan after the profile's enabled packages are laid out in it: a loader that contributes the
+// profile's files (the folder loader) lists what is on disk, so the layout comes first.
+func (s *Service) planProfile(ctx context.Context, g game.Game, inst game.Install, profileID string, mode launchplan.Mode, options, prefix, env string) (*launchplan.Plan, error) {
+	if mode != launchplan.ModeVanilla && profileID != "" && s.profiles != nil {
+		if err := s.profiles.SyncPackages(g.ID(), profileID); err != nil {
+			return nil, err
+		}
+	}
+	return s.launchPlan(ctx, g, inst, profileID, mode, options, prefix, env)
+}
+
 // deployerID is the deployer that places a plan's install-side files into the game folder. A loader that redirects
 // the game to the profile's folder (SMAPI's --mods-path) declares no such files, so its launches skip the deploy.
 const deployerID = "copy-into-install"
@@ -245,13 +256,10 @@ func journalDir(installID string) (string, error) {
 	return filepath.Join(base, "journal", installID), nil
 }
 
-// deployProfile is startDeploy for a launch of profileID: a game whose profile holds the loader first lays the
-// profile's packages out in the profile, then places the loader's install-side files.
+// deployProfile is startDeploy for a launch of profileID: it runs the loader's prelaunch step, then places the plan's
+// files.
 func (s *Service) deployProfile(ctx context.Context, gameID string, inst game.Install, profileID string, plan *launchplan.Plan) (*deployment, error) {
 	if plan.Mode != launchplan.ModeVanilla && profileID != "" && s.profiles != nil {
-		if err := s.profiles.SyncPackages(gameID, profileID); err != nil {
-			return nil, err
-		}
 		if err := s.prelaunch(gameID, profileID, inst.Dir); err != nil {
 			return nil, err
 		}
