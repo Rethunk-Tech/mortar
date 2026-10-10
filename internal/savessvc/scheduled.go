@@ -49,54 +49,70 @@ func (s *Service) scheduledTick(now time.Time) {
 
 func (s *Service) scheduledTickFor(gameID string, now time.Time) {
 	set := s.settings.Get()
-	hours, err := strconv.Atoi(settings.ResolveAt(set, "saveBackupHours", settings.Scope{Game: gameID}, nil))
-	if err != nil || hours <= 0 {
-		return
-	}
 	l, backupsDir, err := s.backupDirs(gameID)
 	if err != nil {
 		log.Printf("scheduled save backup: %v", err)
 		return
 	}
-	last, err := s.lastScheduledAt(gameID, backupsDir, now)
-	if err != nil {
-		log.Printf("scheduled save backup: %v", err)
+	// The game's shared saves follow the game's schedule; a profile that keeps its own saves follows its own, which
+	// is the game's unless the profile overrides it.
+	units := append([]profileSaves{{layout: l}}, s.ownSaves(gameID)...)
+	var due []profileSaves
+	for _, u := range units {
+		hours, err := strconv.Atoi(settings.ResolveAt(set, "saveBackupHours", settings.Scope{Game: gameID, Profile: u.profile}, u.overrides))
+		if err != nil || hours <= 0 {
+			continue
+		}
+		u.interval = time.Duration(hours) * time.Hour
+		last, err := s.lastScheduledAt(scheduleKey(gameID, u.profile), backupsDir, now)
+		if err != nil {
+			log.Printf("scheduled save backup: %v", err)
+			return
+		}
+		if now.Sub(last) >= u.interval {
+			due = append(due, u)
+		}
+	}
+	if len(due) == 0 || s.gameBusy(gameID) {
 		return
 	}
-	if now.Sub(last) < time.Duration(hours)*time.Hour {
-		return
-	}
-	if s.gameBusy(gameID) {
-		return
-	}
-	keep, err := strconv.Atoi(settings.ResolveAt(set, "saveBackupKeep", settings.Scope{Game: gameID}, nil))
-	if err != nil || keep < 1 {
-		keep = backup.DefaultKeep
-	}
-	run, err := backup.Scheduled(l, backupsDir, "", keep, now)
-	for _, own := range s.ownSaves(gameID) {
-		r, ownErr := backup.Scheduled(own.layout, backupsDir, own.profile, keep, now)
+	var run backup.Run
+	var failed error
+	for _, u := range due {
+		keep, err := strconv.Atoi(settings.ResolveAt(set, "saveBackupKeep", settings.Scope{Game: gameID, Profile: u.profile}, u.overrides))
+		if err != nil || keep < 1 {
+			keep = backup.DefaultKeep
+		}
+		r, unitErr := backup.Scheduled(u.layout, backupsDir, u.profile, keep, now)
 		run.Saved, run.Unchanged, run.Failed = run.Saved+r.Saved, run.Unchanged+r.Unchanged, run.Failed+r.Failed
-		err = errors.Join(err, ownErr)
+		next := now
+		if unitErr != nil || r.Failed > 0 {
+			next = now.Add(min(u.interval, scheduleRetry) - u.interval)
+		}
+		s.schedMu.Lock()
+		s.lastScheduled[scheduleKey(gameID, u.profile)] = next
+		s.schedMu.Unlock()
+		failed = errors.Join(failed, unitErr)
 	}
-	interval := time.Duration(hours) * time.Hour
-	s.schedMu.Lock()
-	s.lastScheduled[gameID] = now
-	if err != nil || run.Failed > 0 {
-		s.lastScheduled[gameID] = now.Add(min(interval, scheduleRetry) - interval)
-	}
-	s.schedMu.Unlock()
 	log.Printf("scheduled save backup: %d saved, %d unchanged, %d failed", run.Saved, run.Unchanged, run.Failed)
-	if err != nil {
-		log.Printf("scheduled save backup: %v", err)
+	if failed != nil {
+		log.Printf("scheduled save backup: %v", failed)
 	}
 	if s.Emit != nil {
 		ev := ScheduledRun{At: now.UnixMilli(), Saved: run.Saved, Unchanged: run.Unchanged, Failed: run.Failed}
-		if err != nil {
-			ev.Error = err.Error()
+		if failed != nil {
+			ev.Error = failed.Error()
 		}
 		s.Emit(ScheduledEvent, ev)
 	}
+}
+
+// scheduleKey names one schedule: the game's shared saves, or one profile's own.
+func scheduleKey(gameID, profileID string) string {
+	if profileID == "" {
+		return gameID
+	}
+	return gameID + "\x00" + profileID
 }
 
 // ScheduledEvent is emitted after every scheduled backup pass with a ScheduledRun.
@@ -152,8 +168,10 @@ func (s *Service) lastScheduledAt(gameID, backupsDir string, now time.Time) (tim
 }
 
 type profileSaves struct {
-	profile string
-	layout  saves.Layout
+	profile   string
+	layout    saves.Layout
+	overrides map[string]string
+	interval  time.Duration
 }
 
 // ownSaves are the saves folders of the game's profiles that keep their saves separate; the others share the folder
@@ -177,7 +195,7 @@ func (s *Service) ownSaves(gameID string) []profileSaves {
 			log.Printf("scheduled save backup: %s: %v", p.ID, err)
 			continue
 		}
-		out = append(out, profileSaves{p.ID, sc.Layout()})
+		out = append(out, profileSaves{profile: p.ID, layout: sc.Layout(), overrides: p.PrefOverrides()})
 	}
 	return out
 }

@@ -295,7 +295,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 	fp := fingerprint(env, mods, runID)
 	depth := settings.ConflictScanFull
 	if s.settings != nil {
-		depth = settings.ResolveAt(s.settings.Get(), "conflictScanDepth", settings.Scope{Game: gameID}, nil)
+		depth = settings.ResolveAt(s.settings.Get(), "conflictScanDepth", settings.Scope{Game: gameID, Profile: id}, s.profileOverrides(gameID, id))
 	}
 	fp += "|scan:" + depth
 	settingRows := s.gameSettingFailures(gameID, id)

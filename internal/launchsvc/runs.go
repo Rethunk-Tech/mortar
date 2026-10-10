@@ -9,11 +9,13 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -463,7 +465,8 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	idx.Runs = append([]Run{run}, idx.Runs...)
 	keep := maxRuns
 	if s.settings != nil {
-		if n := s.settings.Get().GamePrefs(g.ID()).RunsKept; n > 0 {
+		scope := settings.Scope{Game: g.ID(), Profile: profileID}
+		if n, err := strconv.Atoi(settings.ResolveAt(s.settings.Get(), "runsKept", scope, launchOverrides(s.profiles, g.ID(), profileID))); err == nil && n > 0 {
 			keep = n
 		}
 	}

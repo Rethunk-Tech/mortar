@@ -58,7 +58,7 @@ func TestSetOverrideRejectsUnknownKey(t *testing.T) {
 	t.Parallel()
 	s := overrideStore(t)
 	p := mustCreate(t, s, "Farm")
-	if _, err := s.SetOverride("stardew", p.ID, "runsKept", "3"); err == nil {
+	if _, err := s.SetOverride("stardew", p.ID, "oldFilesOnUpdate", "delete"); err == nil {
 		t.Fatal("expected error")
 	}
 }

@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -951,7 +952,8 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		return err
 	}
 	runCtx, cancel := context.WithCancel(ctx)
-	buf := &launch.Buffer{Cap: s.settings.Get().GamePrefs(g.ID()).ConsoleLogCap}
+	logCap, _ := strconv.Atoi(settings.ResolveAt(s.settings.Get(), "consoleLogCap", settings.Scope{Game: gameID, Profile: profileID}, launchOverrides(s.profiles, gameID, profileID)))
+	buf := &launch.Buffer{Cap: logCap}
 	started := time.Now()
 	mods := s.profileModRefs(gameID, profileID)
 	s.mu.Lock()

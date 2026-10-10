@@ -641,7 +641,7 @@ func (s *Store) enableMod(game, id, key string, uniqueID mod.ID, enabled bool) (
 		if err := applyEnabled(p, dir, key, uniqueID, enabled); err != nil {
 			return err
 		}
-		if enabled && s.autoEnableRequirements(game) {
+		if enabled && s.autoEnableRequirements(game, p.PrefOverrides()) {
 			also = enableRequired(p, dir, uniqueID)
 		}
 		return nil
@@ -673,7 +673,7 @@ func (s *Store) enableMods(game, id string, mods []EnableRef, enabled bool) (Pro
 			if err := applyEnabled(p, dir, m.Key, m.ID, enabled); err != nil {
 				return err
 			}
-			if enabled && s.autoEnableRequirements(game) {
+			if enabled && s.autoEnableRequirements(game, p.PrefOverrides()) {
 				also = append(also, enableRequired(p, dir, m.ID)...)
 			}
 		}

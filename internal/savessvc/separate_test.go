@@ -168,3 +168,43 @@ func TestScheduledBackupsCoverEachSeparateSavesFolderOnce(t *testing.T) {
 		t.Fatalf("unchanged saves backed up again: %v", got)
 	}
 }
+
+func TestAProfilesOwnSavesFollowItsOwnBackupSchedule(t *testing.T) {
+	s, _, ownDir, own, _ := separateEnv(t)
+	writeFarm(t, ownDir, "Farm_1", "Own", "own-v1")
+	if _, err := s.settings.Update(func(v *settings.Settings) {
+		if err := settings.ApplyKeyGame(v, "saveBackupHours", "6", "stardew"); err != nil {
+			t.Error(err)
+		}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.profiles.SetOverride("stardew", own.ID, "saveBackupHours", "0"); err != nil {
+		t.Fatal(err)
+	}
+	ownBackups := func() int {
+		listed, err := s.ListBackups("stardew", "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		n := 0
+		for _, b := range listed {
+			if b.Kind == backup.KindScheduled && b.Profile == own.ID {
+				n++
+			}
+		}
+		return n
+	}
+	now := time.Now()
+	s.scheduledTickFor("stardew", now)
+	if n := ownBackups(); n != 0 {
+		t.Fatalf("a profile whose schedule is off was backed up %d times", n)
+	}
+	if _, err := s.profiles.SetOverride("stardew", own.ID, "saveBackupHours", "1"); err != nil {
+		t.Fatal(err)
+	}
+	s.scheduledTickFor("stardew", now.Add(2*time.Hour))
+	if n := ownBackups(); n == 0 {
+		t.Fatal("a profile on an hourly schedule was not backed up two hours on, though the game's six hours had not passed")
+	}
+}

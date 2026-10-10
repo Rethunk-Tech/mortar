@@ -78,7 +78,10 @@ func TestResolveAtWalksTheScopeTuple(t *testing.T) {
 	if got := ResolveAt(s, "saveBackupsKept", Scope{Game: "stardew", Profile: "p"}, map[string]string{"saveBackupsKept": "3"}); got != "3" {
 		t.Fatalf("profile override = %q", got)
 	}
-	if got := ResolveAt(s, "runsKept", Scope{Game: "stardew", Profile: "p"}, map[string]string{"runsKept": "1"}); got != "9" {
+	if got := ResolveAt(s, "runsKept", Scope{Game: "stardew", Profile: "p"}, map[string]string{"runsKept": "1"}); got != "1" {
+		t.Fatalf("profile override of the runs kept = %q", got)
+	}
+	if got := ResolveAt(s, "oldFilesOnUpdate", Scope{Game: "stardew", Profile: "p"}, map[string]string{"oldFilesOnUpdate": OldFilesDelete}); got != OldFilesAsk {
 		t.Fatalf("a key that is not overridable took an override: %q", got)
 	}
 }

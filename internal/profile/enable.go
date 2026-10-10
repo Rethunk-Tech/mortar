@@ -4,6 +4,7 @@ import (
 	"cmp"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 func requiredNeeds(m Component) []mod.ID {
@@ -44,11 +45,14 @@ func disabledUID(p *Profile, uniqueID mod.ID) bool {
 	return false
 }
 
-func (s *Store) autoEnableRequirements(game string) bool {
+// autoEnableRequirements is whether enabling a mod also turns on its required dependencies already in the profile,
+// by the game's setting or the profile's own.
+func (s *Store) autoEnableRequirements(game string, overrides map[string]string) bool {
 	if s.settings == nil {
 		return true
 	}
-	return s.settings.Get().GamePrefs(game).AutoEnableRequirements()
+	mode := settings.ResolveAt(s.settings.Get(), "enableRequirements", settings.Scope{Game: game}, overrides)
+	return mode != settings.EnableReqNever && mode != settings.EnableReqAsk
 }
 
 // enableRequired turns on required dependencies of uniqueID that are already in the profile but switched off.
