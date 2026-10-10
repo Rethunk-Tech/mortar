@@ -30,7 +30,16 @@ The generic folder path and the `sims4` catalog entry are built ([architecture.m
 
 - **Verify** against a real install, outside this repo, then record the result in [sims4.md](sims4.md): the `Options.ini` section header and whether the game matches key names case-insensitively, a localized Documents folder name ("Die Sims 4"), a DX9 or legacy executable, the stock `Resource.cfg` text, an EA statement of the `.ts4script` depth limit, and `gameProcesses`.
 - **Real-install checks only NOMAD can do** (Steam under Proton and the EA App on Windows): a modded profile launches with its script mods running, the game does not reset `scriptmodsenabled` in the profile's `Options.ini` copy after a restart, Tray files appear in the game's library, and the player's own Mods, saves and `Options.ini` are identical after quitting.
-- **Measure** a 3,000-file Mods folder place and purge time on Windows, with and without OneDrive, before enabling.
+- **Decide** whether Windows placement is fast enough to enable. Measured 2026-10-10 in the Windows 11 VM (4 vCPU, SATA qcow2, Defender real-time scanning on, no OneDrive sync) with `MORTAR_SCALE=1 go test ./internal/loader/folder -run ThreeThousand -v`, 3,001 files, two runs each:
+
+  | Step | Windows, 1-byte files | Windows, 512 KB files (1.35 GB) | Linux, 1-byte | Linux, 512 KB |
+  | --- | --- | --- | --- | --- |
+  | first sync into the profile | 10.5 s, 10.6 s | 38.1 s, 21.8 s | 1.6 s | 2.7 s |
+  | place into Mods | 8.9 s, 11.4 s | 33.5 s, 23.5 s | 1.6 s | 2.8 s |
+  | purge | 1.0 s, 1.1 s | 2.2 s, 2.2 s | 0.1 s | 1.1 s |
+
+  Every Play places every file again (`internal/deploy/place.go`, one copy, flush and rename per file through `datadir.CopyFile`), so a Windows player with 3,000 small files waits about 10 s before the game starts, and one with a multi-gigabyte Mods folder waits in proportion to its size. Process CPU was about a third of the wall time, so the rest is the disk flush and the scanner. Choices: accept it and show progress; leave files that are unchanged since the last Play in place between runs (purge only what the next profile does not want); or link files where the volume allows, which needs an answer for a mod that rewrites its own file in place.
+- **Measure** the same test with the Mods folder inside a signed-in OneDrive folder (`MORTAR_SCALE_MODS=<folder>`, `MORTAR_SCALE_KB=<size>`). It needs a Microsoft account, so it is a person's to run; the VM has OneDrive installed and signed out.
 
 ### Patreon source: research and open choice
 

@@ -1,12 +1,11 @@
-//go:build !windows
-
 package folder_test
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"syscall"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -18,15 +17,10 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
-func cpu() time.Duration {
-	var r syscall.Rusage
-	_ = syscall.Getrusage(syscall.RUSAGE_SELF, &r)
-	return time.Duration(r.Utime.Nano() + r.Stime.Nano())
-}
-
 // TestPlaceAndPurgeAThreeThousandFileProfile times the real launch path (lay the packages out in the profile, plan,
 // place into the mods role folder, purge) for a profile of 300 per-file entries and one kept-whole script archive of
-// 2,700 files. It is opt-in: MORTAR_SCALE=1.
+// 2,700 files. It is opt-in: MORTAR_SCALE=1. MORTAR_SCALE_MODS names the folder to place into, so a synced Documents
+// folder can be timed, and MORTAR_SCALE_KB the size of each package (one byte without it).
 func TestPlaceAndPurgeAThreeThousandFileProfile(t *testing.T) {
 	if os.Getenv("MORTAR_SCALE") != "1" {
 		t.Skip("set MORTAR_SCALE=1 to time a 3,000-file profile")
@@ -44,9 +38,13 @@ func TestPlaceAndPurgeAThreeThousandFileProfile(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	body := "x"
+	if kb, _ := strconv.Atoi(os.Getenv("MORTAR_SCALE_KB")); kb > 0 {
+		body = strings.Repeat("x", kb<<10)
+	}
 	big := map[string]string{"scripts/m.ts4script": "s"}
 	for i := range 2700 {
-		big[fmt.Sprintf("w/%02d/b%04d.package", i/100, i)] = "x"
+		big[fmt.Sprintf("w/%02d/b%04d.package", i/100, i)] = body
 	}
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "big.zip"), big)
 	res, err := ps.InstallSource(t.Context(), gameID, p.ID, zip, profile.Source{Kind: profile.KindCurseForge, Name: "Whole", ModID: 999, FileID: 1})
@@ -62,6 +60,9 @@ func TestPlaceAndPurgeAThreeThousandFileProfile(t *testing.T) {
 	}
 	profDir, _ := ps.ProfileDir(gameID, p.ID)
 	mods := filepath.Join(t.TempDir(), "Mods")
+	if at := os.Getenv("MORTAR_SCALE_MODS"); at != "" {
+		mods = at
+	}
 	d, _ := deploy.Get("copy-into-install")
 	l, _ := loader.Get("folder")
 	plan := launchplan.New(launchplan.ModeProfile)
