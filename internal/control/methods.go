@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"slices"
@@ -159,6 +160,9 @@ type InstallOutcome struct {
 	VersionChanged bool     `json:"versionChanged"`
 	// Needs names the choice the app must finish: "fomod" or "folder".
 	Needs string `json:"needs,omitempty"`
+	// Requirements names the missing required mods the install queued for download, under the game's
+	// missingRequirements setting.
+	Requirements []string `json:"requirements,omitempty"`
 }
 
 // Removed lists the mods a remove took out, entry by entry.
@@ -981,39 +985,10 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "updates":
 		return s.Problems.Updates(ctx, p.Game, id)
 	case "updates.queue":
-		r, err := s.Problems.Updates(ctx, p.Game, id)
+		out, _, err := s.queueUpdates(ctx, p.Game, id, p.IDs, p.All, false)
 		if err != nil {
 			return nil, err
 		}
-		var reqs []queue.Request
-		for _, u := range r.Updates {
-			named := len(p.IDs) > 0 && slices.ContainsFunc(typedIDs(p.IDs), func(want mod.ID) bool { return mod.Equal(want, u.ID) })
-			if !queueableUpdate(u, named) || (!p.All && len(p.IDs) > 0 && !named) {
-				continue
-			}
-			reqs = append(reqs, updateRequest(p.Game, id, u))
-		}
-		if len(reqs) == 0 {
-			if p.All || len(p.IDs) == 0 {
-				return nil, usererr.New(usererr.NotFound, "no updates available")
-			}
-			return nil, usererr.New(usererr.NotFound, "no update available for "+strings.Join(p.IDs, ", "))
-		}
-		var out QueuedUpdates
-		if p.All {
-			batch, err := s.Profiles.BeginUpdateBatch(p.Game, id)
-			if err != nil {
-				return nil, err
-			}
-			out.Before = batch.Before
-			for i := range reqs {
-				reqs[i].BatchID = batch.Batch
-			}
-		}
-		if _, err := s.Queue.Add(ctx, reqs); err != nil {
-			return nil, err
-		}
-		out.Queued, out.Queue = len(reqs), s.Queue.State()
 		return out, nil
 	case "share":
 		res, err := share.Encode(p.Game, prof, s.Profiles.ShareFacts(p.Game, prof), share.IncludeOf(s.Settings.Get()))
@@ -1309,7 +1284,63 @@ func (s *Services) install(ctx context.Context, gameID, id, path string, unscann
 	if out.Added == nil {
 		out.Added = []string{}
 	}
+	if out.Needs == "" && len(out.Added) > 0 && s.Queue != nil {
+		out.Requirements = s.queueMissing(ctx, gameID, res.Profile, out.Added)
+	}
 	return out, nil
+}
+
+// missingRequests is the downloads for the required mods that the mods named added still lack, one per page. It
+// leaves out what Mortar cannot fetch: a requirement outside the mod sites, and one no source is known for.
+func missingRequests(gameID, id string, added []string, missing []problems.Missing) []queue.Request {
+	var out []queue.Request
+	for _, m := range missing {
+		if m.Reason != "absent" || m.External || (m.Listed && m.Optional) || m.Where == nil || m.Where.URL == "" || !slices.Contains(added, m.DependentName) {
+			continue
+		}
+		req := queue.Request{Kind: queue.KindDependency, Game: gameID, Profile: id}
+		switch {
+		case m.Where.Site == "GitHub" && m.Where.GitHub != "":
+			req.Repo, req.Name = m.Where.GitHub, m.Where.GitHub
+		case m.Where.Site == "Nexus" && m.Where.PageID > 0:
+			req.ModID, req.FileID, req.Latest = m.Where.PageID, int(m.Where.FileID), true
+			req.Name, req.FileName, req.Version = m.Where.PageName, m.Where.FileName, m.Where.Version
+		default:
+			continue
+		}
+		if !slices.ContainsFunc(out, func(o queue.Request) bool { return o.Repo == req.Repo && o.ModID == req.ModID }) {
+			out = append(out, req)
+		}
+	}
+	return out
+}
+
+// queueMissing downloads what the just-installed mods still need when the game's missingRequirements setting says
+// to, and names what it queued. With nobody to ask, "ask" queues nothing; a failed lookup is logged and the install
+// stands.
+func (s *Services) queueMissing(ctx context.Context, gameID string, p profile.Profile, added []string) []string {
+	mode := settings.ResolveAt(s.Settings.Get(), "missingRequirements", settings.Scope{Game: gameID, Profile: p.ID}, p.PrefOverrides())
+	if mode != settings.MissingReqAutodownload {
+		return nil
+	}
+	result, err := s.Problems.Problems(ctx, gameID, p.ID)
+	if err != nil {
+		log.Printf("install: missing requirements of %s not checked: %v", p.ID, err)
+		return nil
+	}
+	reqs := missingRequests(gameID, p.ID, added, result.Missing)
+	if len(reqs) == 0 {
+		return nil
+	}
+	if _, err := s.Queue.Add(ctx, reqs); err != nil {
+		log.Printf("install: missing requirements of %s not queued: %v", p.ID, err)
+		return nil
+	}
+	names := make([]string, len(reqs))
+	for i, r := range reqs {
+		names[i] = r.Name
+	}
+	return names
 }
 
 // dependentsOf is the mods of p that list uid as a dependency, split into those that require it and those that
@@ -1676,6 +1707,11 @@ func adviceOnly(save savessvc.Fit, gap bool, err error) (savessvc.Fit, bool) {
 }
 
 func (s *Services) launch(ctx context.Context, gameID, id, installID, preset string, force bool) (launchsvc.Status, error) {
+	if id != "" && s.Launches.UpdatesBeforePlay(gameID, id) {
+		if err := s.updateBeforePlay(ctx, gameID, id); err != nil {
+			return launchsvc.Status{}, fmt.Errorf("updating mods before Play: %w", err)
+		}
+	}
 	if !force && !s.Launches.SkipsPlayCheck(gameID, id) {
 		update, err := s.Problems.UpdateWarning(ctx, gameID, id)
 		if err != nil {
@@ -1761,6 +1797,98 @@ func typedIDs(ids []string) []mod.ID {
 // queueableUpdate reports whether updates.queue may queue u. An unofficial update or one that needs a file picked is left
 // to the review, and so is one whose project forbids outside downloads (the review links its page). A switch to another
 // site is offered, never applied on its own: only a mod the caller named is switched.
+// queueUpdates queues the profile's updates: the named ones, or every one that needs no choice. beforePlay is the
+// unattended update before a launch, which leaves out an update whose author asks the player to read a caution
+// first and is content with nothing to do.
+func (s *Services) queueUpdates(ctx context.Context, gameID, id string, ids []string, all, beforePlay bool) (QueuedUpdates, []queue.Item, error) {
+	r, err := s.Problems.Updates(ctx, gameID, id)
+	if err != nil {
+		return QueuedUpdates{}, nil, err
+	}
+	var reqs []queue.Request
+	for _, u := range r.Updates {
+		named := len(ids) > 0 && slices.ContainsFunc(typedIDs(ids), func(want mod.ID) bool { return mod.Equal(want, u.ID) })
+		if !queueableUpdate(u, named) || (!all && len(ids) > 0 && !named) || (beforePlay && strings.TrimSpace(u.CautionMessage) != "") {
+			continue
+		}
+		reqs = append(reqs, updateRequest(gameID, id, u))
+	}
+	if len(reqs) == 0 {
+		switch {
+		case beforePlay:
+			return QueuedUpdates{}, nil, nil
+		case all || len(ids) == 0:
+			return QueuedUpdates{}, nil, usererr.New(usererr.NotFound, "no updates available")
+		}
+		return QueuedUpdates{}, nil, usererr.New(usererr.NotFound, "no update available for "+strings.Join(ids, ", "))
+	}
+	var out QueuedUpdates
+	if all {
+		batch, err := s.Profiles.BeginUpdateBatch(gameID, id)
+		if err != nil {
+			return QueuedUpdates{}, nil, err
+		}
+		out.Before = batch.Before
+		for i := range reqs {
+			reqs[i].BatchID = batch.Batch
+		}
+	}
+	items, err := s.Queue.Add(ctx, reqs)
+	if err != nil {
+		return QueuedUpdates{}, nil, err
+	}
+	out.Queued, out.Queue = len(reqs), s.Queue.State()
+	return out, items, nil
+}
+
+// updatesWait is how long a launch waits for the updates it queued.
+const updatesWait = 5 * time.Minute
+
+// updatesSettled reports whether every queued update has ended, and the failure of the first that did not finish. A
+// download a free Nexus account must click through is handed to the player and does not hold the game back.
+func updatesSettled(items []queue.Item, ids []string) (bool, error) {
+	for _, id := range ids {
+		i := slices.IndexFunc(items, func(it queue.Item) bool { return it.ID == id })
+		if i < 0 {
+			continue
+		}
+		switch it := items[i]; it.State {
+		case queue.StateDone, queue.StateWaitingClick:
+		case queue.StateQueued, queue.StateDownloading, queue.StateInstalling:
+			return false, nil
+		default:
+			return true, errors.New(cmp.Or(it.Error, "the update for "+cmp.Or(it.Name, "a mod")+" did not finish ("+it.State+")"))
+		}
+	}
+	return true, nil
+}
+
+// updateBeforePlay updates the profile's mods as the window does before Play, and waits for them.
+func (s *Services) updateBeforePlay(ctx context.Context, gameID, id string) error {
+	_, items, err := s.queueUpdates(ctx, gameID, id, nil, true, true)
+	if err != nil || len(items) == 0 {
+		return err
+	}
+	ids := make([]string, len(items))
+	for i, it := range items {
+		ids[i] = it.ID
+	}
+	deadline := time.Now().Add(updatesWait)
+	for {
+		if done, err := updatesSettled(s.Queue.State().Items, ids); done {
+			return err
+		}
+		if time.Now().After(deadline) {
+			return errors.New("timed out waiting for mod updates")
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(250 * time.Millisecond):
+		}
+	}
+}
+
 func queueableUpdate(u problems.Update, named bool) bool {
 	return !u.Unofficial && !u.PickFile && !u.NotDistributable && (!u.Switch || named)
 }

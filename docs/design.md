@@ -17,12 +17,6 @@ Remaining ([architecture.md](architecture.md#release)):
 
 Decided 2026-10-09 (NOMAD). Facts about Mortar are anchored to the code as it is today; facts about EA, Patreon and The Sims 4 are marked **Verify** where they come from memory of the vendors' behaviour and need one throwaway check (run outside this repo, result recorded here) before the item is built.
 
-### Settings every game honours
-
-Decided 2026-10-10 05:43Z (NOMAD), from the settings audit. A driver, source or game honours every existing setting that applies ([AGENTS.md](../AGENTS.md) Decided); these are the gaps the audit found that are not built yet.
-
-- **Command-line parity for Play and install settings.** `mortar launch` honours the launch method and the pre-Play check setting but not `updateModsBeforePlayDefault` (the window updates first, `frontend/src/launch/autoUpdate.ts:184`; the command refuses with a warning, `internal/control/methods.go` `launch`), and a command-line install does not read `missingRequirements` (`frontend/src/install/store.ts:424` is its only reader). The window ranks above command-line parity.
-
 ### The Sims 4: what is left to check
 
 The generic folder path and the `sims4` catalog entry are built ([architecture.md](architecture.md#games-and-the-catalog) Folder games, [HUMANS.md](../HUMANS.md#adding-a-game) for the fields, [sims4.md](sims4.md) for each fact and its source). The entry stays `enabled: false` until the items below are checked.

@@ -260,6 +260,14 @@ func (s *Service) SkipsPlayCheck(gameID, profileID string) bool {
 	return settings.ResolveAt(s.settings.Get(), "skipPlayCheck", scope, launchOverrides(s.profiles, gameID, profileID)) == "true"
 }
 
+// UpdatesBeforePlay reports whether the profile's mods are updated before the game starts.
+//
+//wails:ignore
+func (s *Service) UpdatesBeforePlay(gameID, profileID string) bool {
+	scope := settings.Scope{Game: gameID, Install: s.profiles.InstallOf(gameID, profileID), Profile: profileID}
+	return settings.ResolveAt(s.settings.Get(), "updateModsBeforePlayDefault", scope, launchOverrides(s.profiles, gameID, profileID)) == "true"
+}
+
 func (s *Service) stopBisectRun(ctx context.Context, sl slot) error {
 	if status := s.statusOf(sl); status.State == Running {
 		return s.stopSlot(ctx, sl)

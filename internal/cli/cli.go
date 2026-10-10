@@ -1727,6 +1727,9 @@ func (c *cmd) installMethod(method string, p control.Params) error {
 			verb = "Updated"
 		}
 		fmt.Fprintf(c.out, "%s %s.\n", verb, strings.Join(res.Added, ", "))
+		if len(res.Requirements) > 0 {
+			fmt.Fprintf(c.out, "Downloading what it needs: %s.\n", strings.Join(res.Requirements, ", "))
+		}
 	})
 }
 
