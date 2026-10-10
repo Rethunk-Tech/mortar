@@ -3,27 +3,31 @@ package profile
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 // fileKeySep joins a store item's key and a file's path into the key of a per-file entry; no store key holds it.
 const fileKeySep = "#"
 
-// sameArchiveLine reports whether b is another file of the page, repository or local file a was installed from, so
-// an install of b replaces a. A file's own id or tag is what tells the versions apart; nothing is fingerprinted.
-func sameArchiveLine(a, b Source) bool {
-	if a.Kind != b.Kind {
+// supersedes reports whether the install of next is the update of the archive installed from old: a page's file
+// whose update names old's file id (Source.WithReplacing), or a repository's release asset of the same shape. A fresh
+// install, another file of the same page and a local archive replace nothing.
+func supersedes(next, old Source) bool {
+	if next.Kind != old.Kind {
 		return false
 	}
-	switch {
-	case a.ModID != 0 || b.ModID != 0:
-		return a.ModID == b.ModID
-	case a.Repo != "" || b.Repo != "":
-		return a.Repo == b.Repo
+	switch next.Kind {
+	case KindGitHub:
+		return next.Repo != "" && strings.EqualFold(next.Repo, old.Repo) && next.Tag != old.Tag &&
+			github.Shape(next.Asset) == github.Shape(old.Asset)
+	case KindLocal:
+		return false
 	}
-	return a.Name != "" && a.Name == b.Name
+	return next.replacing > 0 && next.ModID == old.ModID && old.FileID == next.replacing
 }
 
 // folderEntries are the entries a folder-loader game's store item key becomes: one per laid-out file, or the one
@@ -49,7 +53,7 @@ func (s *Store) folderEntries(game, id, key string, source Source, whole []Compo
 }
 
 // placeFolderLocked adds a folder-loader game's store item to the profile as folderEntries says. The entries of
-// an earlier file of the same page or repository are all replaced together, each file keeping its on or off state.
+// the archive this install updates are all replaced together, each file keeping its on or off state.
 func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []Component) (Profile, bool, bool, error) {
 	fresh, err := s.folderEntries(game, id, key, source, whole)
 	if err != nil {
@@ -64,7 +68,7 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 		}
 		off := map[string]bool{}
 		p.Entries = slices.DeleteFunc(p.Entries, func(e Entry) bool {
-			if e.IsOverlay() || !e.Package || !sameArchiveLine(e.Source, source) || e.StoreKey() == key {
+			if e.IsOverlay() || !e.Package || !supersedes(source, e.Source) || e.StoreKey() == key {
 				return false
 			}
 			off[e.File] = !e.hasPackageEnabled()

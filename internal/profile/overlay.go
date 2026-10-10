@@ -106,7 +106,8 @@ func hasManifestFile(root string) (bool, error) {
 // isOverlayItem reports a Nexus store item with no manifest anywhere and no installer: an optional file that
 // replaces files of its mod's main file.
 func (s *Store) isOverlayItem(game, key string, source Source) (bool, error) {
-	if source.Kind != KindNexus || source.ModID <= 0 {
+	// A folder game's files are loose, so a file without a manifest is a mod of its own, never an overlay.
+	if source.Kind != KindNexus || source.ModID <= 0 || slices.Contains(installerGame(game).Loaders, folderLoader) {
 		return false, nil
 	}
 	dir, err := s.items.Path(game, key)

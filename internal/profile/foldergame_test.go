@@ -96,7 +96,7 @@ func TestFolderGameUpdateReplacesTheArchiveAndRemovalTakesOneFile(t *testing.T) 
 		}
 	}
 	v2 := zipOf(t, "b.zip", map[string]string{"one.package": "1b", "three.package": "3"})
-	res, err := e.InstallSource(t.Context(), folderGame, p.ID, v2, cfSource(12))
+	res, err := e.InstallSource(t.Context(), folderGame, p.ID, v2, cfSource(12).WithReplacing(10))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -121,5 +121,34 @@ func TestFolderGameUpdateReplacesTheArchiveAndRemovalTakesOneFile(t *testing.T) 
 	owners, _ := e.PackageFileOwners(folderGame, p.ID)
 	if len(after.Entries) != 2 || len(owners) != 2 || owners["Mods/three.package"] != "" {
 		t.Fatalf("entries = %v, owners = %v", keysOf(after), owners)
+	}
+}
+
+func TestFolderGameAnotherFileOfThePageIsAddedAndOnlyItsUpdateReplacesIt(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	nx := func(file int) Source { return Source{Kind: KindNexus, Name: "f.zip", ModID: 5, FileID: file} }
+	main := zipOf(t, "m.zip", map[string]string{"main.package": "m"})
+	opt := zipOf(t, "o.zip", map[string]string{"opt.package": "o"})
+	if _, err := e.InstallSource(t.Context(), folderGame, p.ID, main, nx(1)); err != nil {
+		t.Fatal(err)
+	}
+	res, err := e.InstallSource(t.Context(), folderGame, p.ID, opt, nx(2))
+	if err != nil || res.Updated || len(res.Profile.Entries) != 2 {
+		t.Fatalf("optional beside main: %v, %v", keysOf(res.Profile), err)
+	}
+	if _, err := e.InstallSource(t.Context(), folderGame, p.ID, opt, nx(2)); err == nil {
+		t.Fatal("the same file twice must be refused")
+	}
+	opt2 := zipOf(t, "o2.zip", map[string]string{"opt.package": "o2", "extra.package": "x"})
+	res, err = e.InstallSource(t.Context(), folderGame, p.ID, opt2, nx(3).WithReplacing(2))
+	if err != nil || !res.Updated || len(res.Profile.Entries) != 3 {
+		t.Fatalf("optional update: %v, %v", keysOf(res.Profile), err)
+	}
+	for _, en := range res.Profile.Entries {
+		if en.File == "main.package" && en.Source.FileID != 1 {
+			t.Fatalf("main replaced: %+v", en)
+		}
 	}
 }
