@@ -60,8 +60,9 @@ export function ProfileHealth({
     <Tooltip title={tooltipTitle} disableInteractive={true} onOpen={loadDetail}>
       <Chip
         size="small"
+        // No tab stop of its own: it sits inside a profile card, which is a button, and its label joins that
+        // button's name.
         role="img"
-        tabIndex={0}
         aria-label={view.tooltip}
         color={view.tone === 'red' ? 'error' : 'warning'}
         label={view.value}
