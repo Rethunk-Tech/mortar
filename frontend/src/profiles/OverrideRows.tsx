@@ -31,6 +31,8 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
       return i18n._(msg`Skip the intro`)
     case 'graphicsApi':
       return i18n._(msg`Graphics API`)
+    case 'gameSettingsMode':
+      return i18n._(msg`Game settings file`)
     default:
       return key
   }
@@ -60,7 +62,8 @@ export function OverridesSection({
         (key) =>
           (smapi || key !== 'showSmapiConsole') &&
           (introSkip || key !== 'skipIntro') &&
-          (graphics || key !== 'graphicsApi'),
+          (graphics || key !== 'graphicsApi') &&
+          (info?.hasOptions || key !== 'gameSettingsMode'),
       ).map((key) => {
         const stored = overrides[key]
         const choice = choiceFromOverride(stored)

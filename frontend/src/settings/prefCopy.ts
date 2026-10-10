@@ -1,6 +1,7 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { antivirusPrefs, type PrefCopy } from './prefCopyAntivirus.ts'
+import { gamePrefs } from './prefCopyGame.ts'
 
 function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
   return {
@@ -245,27 +246,6 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
         msg`List mods inside a folder whose name starts with a dot, which SMAPI skips`,
       ),
     },
-    oldFilesOnUpdate: {
-      label: i18n._(msg`Files an update no longer includes`),
-      description: i18n._(msg`What happens to files the new version of a mod leaves out`),
-      options: [
-        {
-          value: 'ask',
-          label: i18n._(msg`Ask`),
-          hint: i18n._(msg`Set them aside and ask whether to keep or delete them.`),
-        },
-        {
-          value: 'delete',
-          label: i18n._(msg`Delete`),
-          hint: i18n._(msg`Delete them; rolling back still restores the old version.`),
-        },
-        {
-          value: 'keep',
-          label: i18n._(msg`Keep`),
-          hint: i18n._(msg`Carry them into the new version's folder.`),
-        },
-      ],
-    },
     saveBackupHours: {
       label: i18n._(msg`Scheduled save backups`),
       description: i18n._(
@@ -495,6 +475,7 @@ export function prefCopy(i18n: I18n, key: string): PrefCopy {
     windowAndMods(i18n)[key] ??
     displayAndData(i18n)[key] ??
     logsAndNexus(i18n)[key] ??
-    batchPrefs(i18n)[key] ?? { label: key }
+    batchPrefs(i18n)[key] ??
+    gamePrefs(i18n)[key] ?? { label: key }
   )
 }

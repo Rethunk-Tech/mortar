@@ -25,9 +25,11 @@ type GameInfo struct {
 	// HasSaves is true when the catalog gives the game a save folder.
 	HasSaves bool `json:"hasSaves"`
 	// StartupSettings is true when the game has a startup preferences file a profile's game settings are written to.
-	StartupSettings bool   `json:"startupSettings"`
-	Loader          string `json:"loader"`
-	LoaderID        string `json:"loaderId"`
+	StartupSettings bool `json:"startupSettings"`
+	// HasOptions is true when the game has an options file a profile keeps its own copy of.
+	HasOptions bool   `json:"hasOptions"`
+	Loader     string `json:"loader"`
+	LoaderID   string `json:"loaderId"`
 	// Loaders are all the loaders the catalog lists for the game, the first being the primary.
 	Loaders []LoaderRef `json:"loaders"`
 	Sources []string    `json:"sources"`
@@ -162,7 +164,7 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 	catalog := Catalog()
 	out := make([]GameInfo, 0, len(catalog))
 	for _, c := range catalog {
-		info := GameInfo{ID: c.ID, Name: c.Name, Deploy: c.Deploy, AppID: c.SteamAppID(), HasSaves: HasSaves(c.ID), StartupSettings: HasStartupSettings(c.ID), Installs: []Install{}, Sources: make([]string, len(c.Sources)), SourceKeys: map[string]string{}, Graphics: c.Graphics}
+		info := GameInfo{ID: c.ID, Name: c.Name, Deploy: c.Deploy, AppID: c.SteamAppID(), HasSaves: HasSaves(c.ID), StartupSettings: HasStartupSettings(c.ID), HasOptions: HasPath(c.ID, "options"), Installs: []Install{}, Sources: make([]string, len(c.Sources)), SourceKeys: map[string]string{}, Graphics: c.Graphics}
 		info.Loader, info.LoaderID = c.Loaders[0].Name, c.Loaders[0].ID
 		for _, l := range c.Loaders {
 			info.Loaders = append(info.Loaders, loaderRef(c.ID, l))

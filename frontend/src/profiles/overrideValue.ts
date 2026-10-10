@@ -11,6 +11,7 @@ export const OVERRIDE_KEYS = [
   'skipPlayCheck',
   'skipIntro',
   'graphicsApi',
+  'gameSettingsMode',
 ] as const
 
 export type OverrideKey = (typeof OVERRIDE_KEYS)[number]
@@ -25,6 +26,7 @@ export const OVERRIDE_VALUES: Record<OverrideKey, string[]> = {
   skipIntro: ['true', 'false'],
   // The game's catalog entry supplies the choices.
   graphicsApi: [],
+  gameSettingsMode: ['edit', 'warn'],
 }
 
 export type OverrideChoice = { useGame: true } | { useGame: false; value: string }

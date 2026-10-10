@@ -11,6 +11,7 @@ import {
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import type { Install } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
+import { useGameInfo } from '../games/info.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -63,6 +64,7 @@ function GamePages({
   const close = useNav((s) => s.closeGameSettings)
   const game = useCurrentGame()
   const g = useGameInstall(game)
+  const info = useGameInfo(game)
   const loader = useProfiles((s) => s.game?.loaders?.[0])
   const { related, dialog } = usePerProfileRelated(game)
   const pages: ShellPage<GamePage>[] = [
@@ -123,6 +125,7 @@ function GamePages({
                   'conflictScanDepth',
                   'offerNewDownloads',
                   'oldFilesOnUpdate',
+                  ...(info?.hasOptions ? ['gameSettingsMode'] : []),
                   // Only SMAPI skips dot-named folders; other loaders load what is inside them.
                   ...(loader?.id === 'smapi' ? ['showDotHiddenMods'] : []),
                 ]}
