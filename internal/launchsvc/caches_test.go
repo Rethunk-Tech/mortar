@@ -4,6 +4,7 @@ package launchsvc
 
 import (
 	"bytes"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"log"
 	"os"
 	"path/filepath"
@@ -182,5 +183,16 @@ func TestACacheThatCannotBeDeletedIsLoggedAndTheSetIsNotRecorded(t *testing.T) {
 	svc.clearCaches(cacheGame, a.ID, "")
 	if !strings.Contains(logs.String(), "cachestr") || profiles.CacheSet(cacheGame, a.ID) != "" {
 		t.Fatalf("log %q, recorded %q", logs.String(), profiles.CacheSet(cacheGame, a.ID))
+	}
+}
+
+func TestAResolvedFolderThatDiffersOnlyByCaseIsTheSameFolder(t *testing.T) {
+	cacheFold = strings.ToLower
+	t.Cleanup(func() { cacheFold = fsx.FoldCase })
+	if !sameDir("/g/Docs/Sub", "/g/docs/sub") {
+		t.Fatal("a folder whose case differs from disk is refused")
+	}
+	if sameDir("/elsewhere/sub", "/g/docs/sub") {
+		t.Fatal("a folder reached through a link was accepted")
 	}
 }

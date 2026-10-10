@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -63,6 +64,14 @@ func (s *Service) clearCaches(gameID, profileID, installID string) {
 	}
 }
 
+// cacheFold folds a path as the file system does; tests replace it to fold on any system.
+var cacheFold = fsx.FoldCase
+
+// sameDir reports whether a resolved folder is the folder the catalog path names: on a case-insensitive file system a
+// catalog path whose folder case differs from disk resolves to the disk's case, which is the same folder. A folder
+// reached through a link resolves elsewhere and differs by more than case.
+func sameDir(resolved, built string) bool { return cacheFold(resolved) == cacheFold(built) }
+
 // clearCache deletes the file rel names below root, or the contents of the folder it names, and returns how many
 // files went. A path that leaves root, by `..` or through a symlink, is refused; a missing path is nothing to do; the
 // root and a named folder themselves stay.
@@ -85,9 +94,10 @@ func clearCache(root, rel string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	if real != filepath.Dir(target) {
+	if !sameDir(real, filepath.Dir(target)) {
 		return 0, fmt.Errorf("%q leaves %s through a link", rel, root)
 	}
+	target = filepath.Join(real, filepath.Base(target))
 	info, err := os.Lstat(target)
 	if errors.Is(err, fs.ErrNotExist) {
 		return 0, nil
