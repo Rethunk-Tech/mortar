@@ -17,7 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
-// placedFile lists, in the profile's root, the files SyncPackages put there, so it can take them away again.
+// placedFile records, in the profile's root, the files SyncPackages put there, so it can take them away again.
 const placedFile = ".mortar-packages.json"
 
 // packageFiles are the files the profile's enabled packages lay out below the profile's root, by slash path, each the
@@ -89,9 +89,63 @@ func (s *Store) PackageOverrides(gameID, id string) (map[string]int, error) {
 	return wins, err
 }
 
+// changedDir holds, by slash path, the changed copies of files whose package is no longer laid out (switched off,
+// replaced by an update that dropped the file, or removed), so the settings a mod saved come back with the mod.
+const changedDir = "changed"
+
+// placedRec is what SyncPackages recorded of a file it placed: the hash of the bytes, and the size and modification
+// time the profile's copy had right after, so a later sync tells a copy a mod or the player changed (written back
+// from the shared folder, adopted, or edited) from one it laid out.
+type placedRec struct {
+	Hash  string `json:"h"`
+	Size  int64  `json:"s"`
+	MTime int64  `json:"t"`
+}
+
+func readPlaced(dir string) map[string]placedRec {
+	prev := map[string]placedRec{}
+	if b, err := fsx.ReadFile(filepath.Join(dir, placedFile)); err == nil {
+		if json.Unmarshal(b, &prev) != nil {
+			prev = map[string]placedRec{}
+		}
+	}
+	return prev
+}
+
+// changedSince reports a placed file whose content is no longer what was recorded.
+func changedSince(rec placedRec, dst string) bool {
+	// A pending record names a file a sync is about to place: whatever is there is the sync's own.
+	if rec.Hash == "" {
+		return false
+	}
+	st, err := os.Stat(dst)
+	if err != nil {
+		return false
+	}
+	if st.Size() == rec.Size && st.ModTime().UnixNano() == rec.MTime {
+		return false
+	}
+	h, err := fsx.SHA256(dst)
+	return err != nil || h != rec.Hash
+}
+
+func recordOf(src, dst string) (placedRec, error) {
+	h, err := fsx.SHA256(src)
+	if err != nil {
+		return placedRec{}, err
+	}
+	st, err := os.Stat(dst)
+	if err != nil {
+		return placedRec{}, err
+	}
+	return placedRec{Hash: h, Size: st.Size(), MTime: st.ModTime().UnixNano()}, nil
+}
+
 // SyncPackages lays the enabled packages' files out in the profile, where the loader reads them, and takes away the
 // files of packages no longer enabled. A package's config file only seeds the profile: once it is there the player's
-// edits stay. A game that is redirected has nothing to sync.
+// edits stay. So does any other file a mod or the player changed since it was laid out (a script mod's saved
+// settings): it is never overwritten from the store, and when its package goes away it is held under `changed/` and
+// comes back with the package. A game that is redirected has nothing to sync.
 func (s *Store) SyncPackages(gameID, id string) error {
 	files, _, err := s.packageFiles(gameID, id)
 	if err != nil || files == nil {
@@ -101,25 +155,34 @@ func (s *Store) SyncPackages(gameID, id string) error {
 	if err != nil {
 		return err
 	}
-	var prev []string
-	if b, err := fsx.ReadFile(filepath.Join(dir, placedFile)); err == nil {
-		_ = json.Unmarshal(b, &prev)
-	}
-	for _, rel := range prev {
-		if _, keep := files[rel]; !keep {
-			removeUp(dir, filepath.Join(dir, filepath.FromSlash(rel)))
+	prev := readPlaced(dir)
+	next := maps.Clone(prev)
+	var gone []string
+	for rel, rec := range prev {
+		if _, keep := files[rel]; keep {
+			continue
 		}
+		dst := filepath.Join(dir, filepath.FromSlash(rel))
+		if changedSince(rec, dst) {
+			if err := holdChanged(dir, rel); err != nil {
+				return err
+			}
+		}
+		removeUp(dir, dst)
+		delete(next, rel)
+		gone = append(gone, rel)
 	}
-	var placed []string
+	if err := holdAdopted(dir, gone, files); err != nil {
+		return err
+	}
+	// The record goes first and names every file this sync may place (pending, with no hash yet), so one that stops part
+	// way is still taken away by the next.
 	for rel := range files {
-		if !isConfig(rel) {
-			placed = append(placed, rel)
+		if _, known := next[rel]; !known && !isConfig(rel) {
+			next[rel] = placedRec{}
 		}
 	}
-	slices.Sort(placed)
-	// The record goes first and names the old files too: a sync that stops part way still names every file it or an
-	// earlier sync may have put there, so the next one can take them away.
-	if err := writePlaced(dir, append(slices.Clone(prev), placed...)); err != nil {
+	if err := writePlaced(dir, next); err != nil {
 		return err
 	}
 	for _, rel := range slices.Sorted(maps.Keys(files)) {
@@ -127,11 +190,35 @@ func (s *Store) SyncPackages(gameID, id string) error {
 			continue
 		}
 		dst := filepath.Join(dir, filepath.FromSlash(rel))
-		if placedCurrent(files[rel].src, dst) {
+		rec, recorded := prev[rel]
+		info, statErr := os.Lstat(dst)
+		if statErr == nil && info.IsDir() {
+			statErr = errors.New("a folder is in the way")
+		}
+		switch {
+		case statErr == nil && !recorded:
+			continue
+		case statErr == nil && changedSince(rec, dst):
+			// Still the package's file, with changes that stay; the record keeps it ownable when the package goes.
+			continue
+		case statErr == nil && placedCurrent(files[rel].src, dst):
+			if rec.Hash == "" {
+				if next[rel], err = recordOf(files[rel].src, dst); err != nil {
+					return err
+				}
+			}
 			continue
 		}
 		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
 			return err
+		}
+		if statErr != nil && info == nil {
+			if restored, err := restoreChanged(dir, rel); err != nil {
+				return err
+			} else if restored {
+				delete(next, rel)
+				continue
+			}
 		}
 		if err := fsx.Remove(dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
@@ -139,11 +226,84 @@ func (s *Store) SyncPackages(gameID, id string) error {
 		if err := datadir.CopyFile(files[rel].src, dst); err != nil {
 			return err
 		}
+		if next[rel], err = recordOf(files[rel].src, dst); err != nil {
+			return err
+		}
 	}
 	if err := seedConfigs(dir, files); err != nil {
 		return err
 	}
-	return writePlaced(dir, placed)
+	return writePlaced(dir, next)
+}
+
+// ownedFolder is the entry's own folder below the content root of a file path (Mods/mc for Mods/mc/x.cfg), "" for a
+// file at the root.
+func ownedFolder(rel string) string {
+	parts := strings.Split(rel, "/")
+	if len(parts) < 3 {
+		return ""
+	}
+	return strings.Join(parts[:2], "/")
+}
+
+// holdAdopted holds the files in a folder no package lays out any more that no record names (adopted from play), so
+// they leave the profile with the package that owned the folder.
+func holdAdopted(dir string, gone []string, files map[string]packageFile) error {
+	wanted := map[string]bool{}
+	for rel := range files {
+		wanted[ownedFolder(rel)] = true
+	}
+	done := map[string]bool{}
+	for _, rel := range gone {
+		folder := ownedFolder(rel)
+		if folder == "" || wanted[folder] || done[folder] {
+			continue
+		}
+		done[folder] = true
+		root := filepath.Join(dir, filepath.FromSlash(folder))
+		var held []string
+		err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+			if err != nil || !d.Type().IsRegular() {
+				return err
+			}
+			r, err := filepath.Rel(dir, path)
+			held = append(held, filepath.ToSlash(r))
+			return err
+		})
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+		for _, r := range held {
+			if err := holdChanged(dir, r); err != nil {
+				return err
+			}
+		}
+		removeUp(dir, root)
+	}
+	return nil
+}
+
+// holdChanged moves a changed copy aside under changed/, replacing an older one.
+func holdChanged(dir, rel string) error {
+	from := filepath.Join(dir, filepath.FromSlash(rel))
+	to := filepath.Join(dir, changedDir, filepath.FromSlash(rel))
+	if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+		return err
+	}
+	return fsx.Rename(from, to)
+}
+
+// restoreChanged puts a held copy back in the profile and reports whether there was one.
+func restoreChanged(dir, rel string) (bool, error) {
+	from := filepath.Join(dir, changedDir, filepath.FromSlash(rel))
+	if _, err := os.Lstat(from); err != nil {
+		return false, nil
+	}
+	if err := fsx.Rename(from, filepath.Join(dir, filepath.FromSlash(rel))); err != nil {
+		return false, err
+	}
+	removeUp(filepath.Join(dir, changedDir), from)
+	return true, nil
 }
 
 // SeedConfigs copies the config files the enabled packages ship into the profile where it has none yet, so a
@@ -181,9 +341,8 @@ func seedConfigs(dir string, files map[string]packageFile) error {
 	return nil
 }
 
-func writePlaced(dir string, rels []string) error {
-	slices.Sort(rels)
-	b, err := json.Marshal(slices.Compact(rels))
+func writePlaced(dir string, rec map[string]placedRec) error {
+	b, err := json.Marshal(rec)
 	if err != nil {
 		return err
 	}

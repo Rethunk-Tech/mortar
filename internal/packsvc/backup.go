@@ -78,7 +78,7 @@ func (s *Service) BackupSize(gameID, profileID string, mods bool) (int64, error)
 		n += int64(len(data))
 	}
 	for prefix, dir := range dirs {
-		err := walkFiles(dir, prefix != savesPrefix, func(_, path string, size int64) error {
+		err := walkFiles(dir, strings.HasPrefix(prefix, "store/"), func(_, path string, size int64) error {
 			n += size
 			return nil
 		})
@@ -116,7 +116,7 @@ func (s *Service) Backup(gameID, profileID, dest string, mods bool) (err error) 
 	doc := backupJSON{Version: backupVersion, Game: gameID, Profile: p, Store: map[string]string{}}
 	for prefix, dir := range dirs {
 		h := sha256.New()
-		err := walkFiles(dir, prefix != savesPrefix, func(rel, path string, _ int64) error {
+		err := walkFiles(dir, strings.HasPrefix(prefix, "store/"), func(rel, path string, _ int64) error {
 			w, err := zw.Create(prefix + rel)
 			if err != nil {
 				return err
@@ -249,6 +249,9 @@ func (s *Service) Restore(ctx context.Context, path, gameID string) (RestoreResu
 	dirs := map[string]string{}
 	if dir := filepath.Join(tmp, "saves"); exists(dir) {
 		dirs[savesPrefix] = dir
+	}
+	if dir := filepath.Join(tmp, "changed"); exists(dir) {
+		dirs[profile.ChangedPrefix] = dir
 	}
 	for key, want := range doc.Store {
 		dir := filepath.Join(tmp, "store", key)
@@ -407,7 +410,7 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 func unpack(f *zip.File, tmp string, total *int64) error {
 	name := f.Name
 	_, inStore := storeKeyOf(name)
-	if (!inStore && !strings.HasPrefix(name, savesPrefix)) || strings.Contains(name, "\\") || !filepath.IsLocal(filepath.FromSlash(name)) {
+	if (!inStore && !strings.HasPrefix(name, savesPrefix) && !strings.HasPrefix(name, profile.ChangedPrefix)) || strings.Contains(name, "\\") || !filepath.IsLocal(filepath.FromSlash(name)) {
 		return usererr.Wrap(usererr.Invalid, fmt.Errorf("the backup holds %q, which Mortar does not write", name))
 	}
 	rc, err := f.Open()

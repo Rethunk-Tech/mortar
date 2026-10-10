@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -130,10 +131,124 @@ func (s *Store) BackupDirs(game string, p Profile, keep func(Entry) bool) (map[s
 			out[savesPrefix] = dir
 		}
 	}
+	staged, err := s.stageChanged(game, p.ID)
+	if err != nil {
+		return nil, err
+	}
+	if staged != "" {
+		out[ChangedPrefix] = staged
+	}
 	return out, nil
 }
 
 const savesPrefix = "saves/"
+
+// ChangedPrefix is where a backup carries the changed and adopted copies of a profile's files, by their path below the
+// profile's root: they are the player's data and exist nowhere else.
+const ChangedPrefix = "changed/"
+
+// stagedChangedDir is the profile's scratch folder a backup stages its changed copies in.
+const stagedChangedDir = ".backup-changed"
+
+// stageChanged copies the profile's changed and adopted files (see ChangedFiles) into a scratch folder and returns it,
+// "" when there are none.
+func (s *Store) stageChanged(game, id string) (string, error) {
+	rels, err := s.ChangedFiles(game, id)
+	if err != nil || len(rels) == 0 {
+		return "", err
+	}
+	_, dir, err := s.readDir(game, id)
+	if err != nil {
+		return "", err
+	}
+	stage := filepath.Join(dir, stagedChangedDir)
+	if err := fsx.RemoveAll(stage); err != nil {
+		return "", err
+	}
+	for _, rel := range rels {
+		to := filepath.Join(stage, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+			return "", err
+		}
+		if err := datadir.CopyFile(filepath.Join(dir, filepath.FromSlash(rel)), to); err != nil {
+			return "", err
+		}
+	}
+	return stage, nil
+}
+
+// ChangedFiles lists, by slash path below the profile's root, the files in the profile's content folder that SyncPackages
+// did not lay out as they are now (a mod rewrote one, or one was adopted from the shared folder) and the copies held
+// under changed/ for packages that are switched off.
+func (s *Store) ChangedFiles(game, id string) ([]string, error) {
+	info, ok := components.Game(game)
+	if !ok || info.Deploy != components.DeployProfile {
+		return nil, nil
+	}
+	t, ok := info.Target("mods")
+	if !ok {
+		return nil, nil
+	}
+	_, dir, err := s.readDir(game, id)
+	if err != nil {
+		return nil, err
+	}
+	rec := readPlaced(dir)
+	var out []string
+	for _, root := range []string{t.ProfileFolder(), changedDir} {
+		err := filepath.WalkDir(filepath.Join(dir, filepath.FromSlash(root)), func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				if errors.Is(err, fs.ErrNotExist) {
+					return nil
+				}
+				return err
+			}
+			if !d.Type().IsRegular() {
+				return nil
+			}
+			rel, err := filepath.Rel(dir, path)
+			if err != nil {
+				return err
+			}
+			rel = filepath.ToSlash(rel)
+			if r, placed := rec[rel]; placed && !changedSince(r, path) {
+				return nil
+			}
+			out = append(out, rel)
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+	slices.Sort(out)
+	return out, nil
+}
+
+// restoreChangedFiles puts a backup's changed copies into a restored profile, where SyncPackages keeps them.
+func (s *Store) restoreChangedFiles(game, id, from string) error {
+	if from == "" {
+		return nil
+	}
+	_, dir, err := s.readDir(game, id)
+	if err != nil {
+		return err
+	}
+	return filepath.WalkDir(from, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || !d.Type().IsRegular() {
+			return err
+		}
+		rel, err := filepath.Rel(from, path)
+		if err != nil || !filepath.IsLocal(rel) {
+			return fmt.Errorf("the backup holds a changed file outside the profile")
+		}
+		to := filepath.Join(dir, rel)
+		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+			return err
+		}
+		return datadir.CopyFile(path, to)
+	})
+}
 
 // RestoreBackup makes a new profile from a backup, under a name no profile of the game has, and returns it with the entries
 // whose store items are missing here, which the caller downloads again. Every setting and entry of p comes back except
@@ -148,7 +263,7 @@ func (s *Store) RestoreBackup(ctx context.Context, game string, p Profile, files
 		}
 	}
 	for prefix, dir := range dirs {
-		if prefix == savesPrefix {
+		if prefix == savesPrefix || prefix == ChangedPrefix {
 			continue
 		}
 		key, ok := strings.CutPrefix(strings.TrimSuffix(prefix, "/"), "store/")
@@ -172,6 +287,9 @@ func (s *Store) RestoreBackup(ctx context.Context, game string, p Profile, files
 		return Profile{}, nil, err
 	}
 	out, missing, err := s.restoreInto(game, created, p, files, dirs[savesPrefix])
+	if err == nil {
+		err = s.restoreChangedFiles(game, created.ID, dirs[ChangedPrefix])
+	}
 	if err != nil {
 		return Profile{}, nil, errors.Join(err, s.Delete(game, created.ID))
 	}

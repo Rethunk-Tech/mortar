@@ -8,6 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
@@ -29,15 +30,22 @@ func (w *sims4World) launch(t *testing.T, profileID string, play func(mods strin
 	dep.unwind(t.Context())
 }
 
-// TestAModsSettingsFileAcrossLaunches records what the game sees and what survives when a script mod rewrites a file
-// its archive shipped. It asserts the behaviour as it is: a placed file whose content changed is left at purge, and the
-// next launch of the same profile treats that leftover as the player's own file.
+// TestAModsSettingsFileAcrossLaunches is the acceptance test of per-profile write-back: a script mod rewrites a file its
+// archive shipped and creates another in its own folder. The profile keeps both, the shared folder keeps neither, the
+// next launch of the profile sees what was saved, and another profile sees none of it. A file at the Mods root stays the
+// player's own. An update keeps the saved copy, an uninstall holds it under changed/ and a backup round trips it.
 func TestAModsSettingsFileAcrossLaunches(t *testing.T) {
 	w := newSims4World(t)
 	w.install(t, 1, map[string]string{"mc/mc.ts4script": "script", "mc/mc_settings.cfg": "default=1"})
 	other := testenv.Profile(t, w.profiles, sims4, "B")
 	cfg := filepath.Join(w.docs, "Mods", "mc", "mc_settings.cfg")
 	state := filepath.Join(w.docs, "Mods", "mc", "mc_state.dat")
+	rootFile := filepath.Join(w.docs, "Mods", "root_created.dat")
+	pdir, err := w.profiles.ProfileDir(sims4, w.profileID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ownCfg := filepath.Join(pdir, "Mods", "mc", "mc_settings.cfg")
 
 	w.launch(t, w.profileID, func(string) {
 		if got := readFile(t, cfg); got != "default=1" {
@@ -45,39 +53,95 @@ func TestAModsSettingsFileAcrossLaunches(t *testing.T) {
 		}
 		writeFile(t, cfg, "player=2")
 		writeFile(t, state, "created during play")
+		writeFile(t, rootFile, "root file")
 	})
-	if got := readFile(t, cfg); got != "player=2" {
-		t.Fatalf("after launch 1 the rewritten file is %q: it is left, not removed or reverted", got)
+	if fileExists(cfg) || fileExists(state) || fileExists(filepath.Join(w.docs, "Mods", "mc", "mc.ts4script")) {
+		t.Fatal("a file of the mod is left in the shared folder after launch 1")
 	}
-	if fileExists(filepath.Join(w.docs, "Mods", "mc", "mc.ts4script")) {
-		t.Fatal("after launch 1 the unchanged script was not taken back")
+	if got := readFile(t, ownCfg); got != "player=2" {
+		t.Fatalf("the profile's copy after launch 1 = %q", got)
 	}
-	if got := readFile(t, state); got != "created during play" {
-		t.Fatalf("a file the mod created is %q: no manifest names it, so it stays", got)
+	if got := readFile(t, filepath.Join(pdir, "Mods", "mc", "mc_state.dat")); got != "created during play" {
+		t.Fatalf("the created file was not adopted: %q", got)
+	}
+	if got := readFile(t, rootFile); got != "root file" {
+		t.Fatalf("a file at the Mods root = %q: it stays the player's own", got)
 	}
 
 	w.launch(t, w.profileID, func(string) {
-		if got := readFile(t, cfg); got != "default=1" {
-			t.Fatalf("launch 2: the game sees %q, the archive's bytes, not the settings it saved", got)
+		if got := readFile(t, cfg); got != "player=2" {
+			t.Fatalf("launch 2: the game sees %q, not the settings it saved", got)
 		}
 		if got := readFile(t, state); got != "created during play" {
-			t.Fatalf("launch 2: the created file is %q", got)
+			t.Fatalf("launch 2: the adopted file is %q", got)
 		}
 		writeFile(t, cfg, "player=3")
 	})
-	if got := readFile(t, cfg); got != "player=2" {
-		t.Fatalf("after launch 2 the file is %q: the displaced launch-1 bytes came back over the session's own changes", got)
+	if got := readFile(t, ownCfg); got != "player=3" {
+		t.Fatalf("after launch 2 the profile's copy = %q", got)
 	}
 
 	w.launch(t, other.ID, func(string) {
-		if got := readFile(t, cfg); got != "player=2" {
-			t.Fatalf("a profile without the mod sees the leftover settings file as %q", got)
-		}
-		if fileExists(filepath.Join(w.docs, "Mods", "mc", "mc.ts4script")) {
-			t.Fatal("a profile without the mod sees its script")
+		if fileExists(cfg) || fileExists(state) || fileExists(filepath.Join(w.docs, "Mods", "mc", "mc.ts4script")) {
+			t.Fatal("a profile without the mod sees its files")
 		}
 	})
-	if got := readFile(t, cfg); got != "player=2" {
-		t.Fatalf("after the other profile's launch the file is %q", got)
+
+	// An update of the archive keeps the saved copy of a file it still ships.
+	w.install(t, 2, map[string]string{"mc/mc.ts4script": "script v2", "mc/mc_settings.cfg": "default=9"})
+	if err := w.profiles.SyncPackages(sims4, w.profileID); err != nil {
+		t.Fatal(err)
+	}
+	if got := readFile(t, ownCfg); got != "player=3" {
+		t.Fatalf("after an update the profile's copy = %q", got)
+	}
+	if got := readFile(t, filepath.Join(pdir, "Mods", "mc", "mc.ts4script")); got != "script v2" {
+		t.Fatalf("an unchanged file did not take the update: %q", got)
+	}
+
+	// A backup carries the changed copies and a restore puts them back.
+	prof, files, err := w.profiles.Backup(sims4, w.profileID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dirs, err := w.profiles.BackupDirs(sims4, prof, func(profile.Entry) bool { return true })
+	if err != nil {
+		t.Fatal(err)
+	}
+	restored, _, err := w.profiles.RestoreBackup(t.Context(), sims4, prof, files, dirs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rdir, _ := w.profiles.ProfileDir(sims4, restored.ID)
+	if got := readFile(t, filepath.Join(rdir, "Mods", "mc", "mc_settings.cfg")); got != "player=3" {
+		t.Fatalf("a restored backup holds %q", got)
+	}
+	if err := w.profiles.SyncPackages(sims4, restored.ID); err != nil {
+		t.Fatal(err)
+	}
+	if got := readFile(t, filepath.Join(rdir, "Mods", "mc", "mc_settings.cfg")); got != "player=3" {
+		t.Fatalf("a sync overwrote the restored copy with %q", got)
+	}
+
+	// An uninstall holds the changed copy under changed/ instead of deleting it.
+	cur, err := w.profiles.Installed(sims4, w.profileID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var keys []string
+	for _, m := range cur {
+		keys = append(keys, m.Key)
+	}
+	if _, err := w.profiles.RemoveEntries(sims4, w.profileID, keys); err != nil {
+		t.Fatal(err)
+	}
+	if err := w.profiles.SyncPackages(sims4, w.profileID); err != nil {
+		t.Fatal(err)
+	}
+	if fileExists(ownCfg) {
+		t.Fatal("the removed mod's settings file is still laid out")
+	}
+	if got := readFile(t, filepath.Join(pdir, "changed", "Mods", "mc", "mc_settings.cfg")); got != "player=3" {
+		t.Fatalf("the held copy = %q", got)
 	}
 }
