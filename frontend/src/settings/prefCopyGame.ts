@@ -65,5 +65,9 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
         },
       ],
     },
+    skipPlayCheck: {
+      label: i18n._(msg`Skip the pre-Play check`),
+      description: i18n._(msg`Start the game without the Before you play dialog`),
+    },
   }
 }

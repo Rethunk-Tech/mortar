@@ -32,13 +32,15 @@ type GamePage = 'install' | 'loader' | 'play' | 'mods' | 'backups' | 'console' |
 
 function modsPrefKeys(
   info: { hasOptions: boolean; hasCaches: boolean } | undefined,
-  loaderId: string | undefined,
+  loader: { id: string; builtin: boolean; assets: boolean } | undefined,
 ): string[] {
+  const loaderId = loader?.id
   return [
-    'enableRequirements',
-    'missingRequirements',
+    // Requirements come from mod manifests, which a game with no loader of its own has none of.
+    ...(loader?.builtin ? [] : ['enableRequirements', 'missingRequirements']),
     'cosmeticConflicts',
-    'conflictScanDepth',
+    // The scan depth only changes how content packs' asset edits are compared.
+    ...(loader?.assets ? ['conflictScanDepth'] : []),
     'offerNewDownloads',
     'oldFilesOnUpdate',
     ...(info?.hasOptions ? ['gameSettingsMode'] : []),
@@ -125,6 +127,7 @@ function GamePages({
                 ...(loader?.id === 'smapi' ? ['showSmapiConsole'] : []),
                 ...(loader?.introSkip ? ['skipIntro'] : []),
                 'updateModsBeforePlayDefault',
+                'skipPlayCheck',
               ]}
               game={game}
             />
@@ -135,7 +138,7 @@ function GamePages({
         return (
           <>
             <SettingsSection title={t`Mods`}>
-              <PrefKeys keys={modsPrefKeys(info, loader?.id)} game={game} />
+              <PrefKeys keys={modsPrefKeys(info, loader)} game={game} />
               <ExtraModsFolder />
               <SourceOrder />
             </SettingsSection>

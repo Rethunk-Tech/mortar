@@ -151,7 +151,7 @@ msgstr "Priority Default"
 msgid "Show failed"
 msgstr "Show failed"
 
-#: src/settings/GameSettingsPage.tsx:100
+#: src/settings/GameSettingsPage.tsx:102
 msgid "Streaming"
 msgstr "Streaming"
 
@@ -3818,14 +3818,18 @@ msgstr "This option cannot be used."
 msgid "Grid card size"
 msgstr "Grid card size"
 
+#: src/settings/prefCopyGame.ts:69
+msgid "Skip the pre-Play check"
+msgstr "Skip the pre-Play check"
+
 #. placeholder {0}: result.remaining
 #: src/settings/sections/NexusMods.tsx:67
 msgid "Stopped at the API limit; {0} left"
 msgstr "Stopped at the API limit; {0} left"
 
 #: src/game/Sidebar.tsx:200
-#: src/settings/GameSettingsPage.tsx:97
-#: src/settings/GameSettingsPage.tsx:152
+#: src/settings/GameSettingsPage.tsx:99
+#: src/settings/GameSettingsPage.tsx:155
 msgid "Console"
 msgstr "Console"
 
@@ -4449,7 +4453,7 @@ msgid "Biome"
 msgstr "Biome"
 
 #: src/firstrun/GameSetup.tsx:52
-#: src/settings/GameSettingsPage.tsx:173
+#: src/settings/GameSettingsPage.tsx:176
 msgid "Back to {name}"
 msgstr "Back to {name}"
 
@@ -5100,7 +5104,7 @@ msgid "Changed outside Mortar"
 msgstr "Changed outside Mortar"
 
 #. placeholder {0}: g.version
-#: src/settings/GameSettingsPage.tsx:112
+#: src/settings/GameSettingsPage.tsx:114
 msgid " · {name} {0}"
 msgstr " · {name} {0}"
 
@@ -5624,7 +5628,7 @@ msgstr "Needs"
 msgid "Files set aside"
 msgstr "Files set aside"
 
-#: src/settings/GameSettingsPage.tsx:143
+#: src/settings/GameSettingsPage.tsx:146
 msgid "{name} profile history"
 msgstr "{name} profile history"
 
@@ -6443,7 +6447,7 @@ msgid "Edit profile…"
 msgstr "Edit profile…"
 
 #: src/game/Home.tsx:189
-#: src/settings/GameSettingsPage.tsx:172
+#: src/settings/GameSettingsPage.tsx:175
 msgid "{name} settings"
 msgstr "{name} settings"
 
@@ -7223,8 +7227,8 @@ msgstr "Send"
 #: src/firstrunTour/TourPopover.tsx:46
 #: src/game/Sidebar.tsx:193
 #: src/mods/ModListVirtual.tsx:284
-#: src/settings/GameSettingsPage.tsx:94
-#: src/settings/GameSettingsPage.tsx:137
+#: src/settings/GameSettingsPage.tsx:96
+#: src/settings/GameSettingsPage.tsx:140
 #: src/settings/sections/Updates.tsx:174
 msgid "Mods"
 msgstr "Mods"
@@ -11183,7 +11187,7 @@ msgid "Show file"
 msgstr "Show file"
 
 #: src/saves/BackupsDialog.tsx:153
-#: src/settings/GameSettingsPage.tsx:95
+#: src/settings/GameSettingsPage.tsx:97
 #: src/settings/sections/DataUsage.tsx:210
 #: src/settings/sections/GameSettings.tsx:385
 msgid "Save backups"
@@ -11303,8 +11307,8 @@ msgstr "Stop the game to test a launch."
 #: src/games/GameSelect.tsx:248
 #: src/launch/PlayControl.tsx:175
 #: src/mods/typedConfig/ConfigTab.tsx:299
-#: src/settings/GameSettingsPage.tsx:93
-#: src/settings/GameSettingsPage.tsx:121
+#: src/settings/GameSettingsPage.tsx:95
+#: src/settings/GameSettingsPage.tsx:123
 msgid "Play"
 msgstr "Play"
 
@@ -11481,7 +11485,7 @@ msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
 
 #: src/fomod/Dialog.tsx:266
 #: src/loader/Banner.tsx:30
-#: src/settings/GameSettingsPage.tsx:89
+#: src/settings/GameSettingsPage.tsx:91
 #: src/settings/sections/LoaderRow.tsx:92
 #: src/settings/sections/LoaderRow.tsx:147
 msgid "Install"
@@ -13151,6 +13155,10 @@ msgstr "Left out: {0}"
 #: src/profiles/historyRevert.ts:54
 msgid "Could not undo: some mods are missing, and the change's record could not be read."
 msgstr "Could not undo: some mods are missing, and the change's record could not be read."
+
+#: src/settings/prefCopyGame.ts:70
+msgid "Start the game without the Before you play dialog"
+msgstr "Start the game without the Before you play dialog"
 
 #: src/settings/sections/Appearance.tsx:184
 msgid "Display"
