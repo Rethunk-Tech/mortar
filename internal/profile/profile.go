@@ -236,6 +236,8 @@ type Profile struct {
 	Install string `json:"install,omitempty"`
 	// SeparateSaves gives the profile its own saves folder, which replaces the game's shared one while it runs.
 	SeparateSaves bool `json:"separateSaves,omitempty"`
+	// CacheSet is ModSetHash as it was when the game's caches were last cleared for this profile.
+	CacheSet string `json:"cacheSet,omitempty"`
 	// Loader is the id of the game loader this profile runs; empty means the game's primary loader.
 	Loader string `json:"loader,omitempty"`
 	// Overrides are profile values for settings.ProfileOverridable keys.
