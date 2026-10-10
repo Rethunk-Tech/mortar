@@ -1,8 +1,9 @@
 package sampler
 
 import (
+	"cmp"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 )
 
@@ -24,9 +25,7 @@ func Charge(samples []Sample, threadID uint32, assemblyToMod map[string]string) 
 			selected = append(selected, sample)
 		}
 	}
-	sort.SliceStable(selected, func(i, j int) bool {
-		return selected[i].Timestamp < selected[j].Timestamp
-	})
+	slices.SortStableFunc(selected, func(a, b Sample) int { return cmp.Compare(a.Timestamp, b.Timestamp) })
 	result := ChargeResult{Mods: make(map[string]int64), ThreadSamples: len(selected)}
 	if len(selected) < 2 {
 		return result

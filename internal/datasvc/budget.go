@@ -3,7 +3,8 @@ package datasvc
 import (
 	"cmp"
 	"path/filepath"
-	"sort"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -67,7 +68,7 @@ func MeasureBudgets(root string, itemSizes map[string]int64, savesOf func(game, 
 		}
 		out = append(out, b)
 	}
-	sort.Slice(out, func(a, b int) bool { return out[a].Game+"/"+out[a].ID < out[b].Game+"/"+out[b].ID })
+	slices.SortFunc(out, func(a, b ProfileBudget) int { return strings.Compare(a.Game+"/"+a.ID, b.Game+"/"+b.ID) })
 	return out, nil
 }
 

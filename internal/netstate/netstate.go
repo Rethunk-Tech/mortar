@@ -7,7 +7,8 @@ import (
 	"errors"
 	"net"
 	"net/http"
-	"sort"
+	"slices"
+	"strings"
 	"sync"
 	"time"
 )
@@ -115,7 +116,7 @@ func (*Service) States() []State {
 	for _, st := range states {
 		out = append(out, st)
 	}
-	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
+	slices.SortFunc(out, func(a, b State) int { return strings.Compare(a.ID, b.ID) })
 	return out
 }
 

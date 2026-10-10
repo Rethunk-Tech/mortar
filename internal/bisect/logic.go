@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"slices"
-	"sort"
 )
 
 // Mod is the dependency graph used by the crash bisector.
@@ -169,6 +168,6 @@ func DisableClosure(mods []Mod, seeds []string) []string {
 			result = append(result, mod.ID)
 		}
 	}
-	sort.Strings(result)
+	slices.Sort(result)
 	return result
 }

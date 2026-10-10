@@ -10,7 +10,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -198,7 +198,7 @@ func copyLevelDB(src, dst string) error {
 		}
 		return 1
 	}
-	sort.SliceStable(names, func(i, j int) bool { return rank(names[i]) < rank(names[j]) })
+	slices.SortStableFunc(names, func(a, b string) int { return cmp.Compare(rank(a), rank(b)) })
 	for _, name := range names {
 		data, err := fsx.ReadFile(filepath.Join(src, name))
 		if errors.Is(err, os.ErrNotExist) {

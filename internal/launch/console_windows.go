@@ -3,7 +3,7 @@ package launch
 import (
 	"fmt"
 	"os"
-	"sort"
+	"slices"
 	"strings"
 	"syscall"
 	"unicode/utf16"
@@ -99,7 +99,7 @@ func envBlock(env []string) *uint16 {
 	for k := range last {
 		keys = append(keys, k)
 	}
-	sort.Strings(keys)
+	slices.Sort(keys)
 	var out []uint16
 	for _, k := range keys {
 		out = append(out, utf16.Encode([]rune(last[k]))...)

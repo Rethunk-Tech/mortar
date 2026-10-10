@@ -114,9 +114,7 @@ func Parse(r io.Reader) (*Trace, error) {
 		return nil, errors.New("sampler: nettrace has no event or stack blocks")
 	}
 
-	sort.SliceStable(events, func(i, j int) bool {
-		return events[i].timestamp < events[j].timestamp
-	})
+	slices.SortStableFunc(events, func(a, b rawEvent) int { return cmp.Compare(a.timestamp, b.timestamp) })
 	stackMap := make(map[uint64][]uint64, len(stacks))
 	for _, stack := range stacks {
 		stackMap[stack.id] = append([]uint64(nil), stack.frames...)

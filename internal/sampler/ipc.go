@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"sort"
+	"slices"
 	"strings"
 	"sync"
 	"unicode/utf16"
@@ -260,7 +260,7 @@ func diagnosticSocketCandidates(pid int) ([]string, error) {
 		}
 		matches = append(matches, found...)
 	}
-	sort.Strings(matches)
+	slices.Sort(matches)
 	if len(matches) == 0 {
 		return nil, os.ErrNotExist
 	}

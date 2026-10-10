@@ -6,7 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"sort"
+	"slices"
+	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
@@ -254,7 +255,7 @@ func VortexContents(home, chosen string) (VortexInventory, error) {
 		for id, n := range counts {
 			games = append(games, VortexGame{ID: id, Profiles: n})
 		}
-		sort.Slice(games, func(i, j int) bool { return games[i].ID < games[j].ID })
+		slices.SortFunc(games, func(a, b VortexGame) int { return strings.Compare(a.ID, b.ID) })
 		return VortexInventory{Folder: root, Games: games}, nil
 	}
 	return VortexInventory{Games: []VortexGame{}}, nil

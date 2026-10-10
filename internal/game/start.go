@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
-	"sort"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -210,6 +209,6 @@ func environ(env map[string]string) []string {
 	for k, v := range env {
 		out = append(out, fmt.Sprintf("%s=%s", k, v))
 	}
-	sort.Strings(out)
+	slices.Sort(out)
 	return out
 }

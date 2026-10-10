@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"sort"
 	"strings"
 	"sync"
 
@@ -227,7 +226,7 @@ func startupReportPaths(dir string) ([]string, error) {
 		return nil, err
 	}
 	names = slices.DeleteFunc(names, func(name string) bool { return strings.HasSuffix(name, ".samples.json") })
-	sort.Sort(sort.Reverse(sort.StringSlice(names)))
+	slices.SortFunc(names, func(a, b string) int { return strings.Compare(b, a) })
 	return names, nil
 }
 
