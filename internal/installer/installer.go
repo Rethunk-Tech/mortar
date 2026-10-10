@@ -40,6 +40,15 @@ type Target struct {
 	MaxDepth map[string]int
 	// KeepWhole lists the lower-case extensions that make a folder-loader archive one unit (components.TargetDef.KeepWhole).
 	KeepWhole []string
+	// Extensions are the lower-case extensions of the files a folder-loader archive lays out here, not in mods.
+	Extensions []string
+	// Shared marks a target whose files are placed at install in a folder every profile uses (components.TargetDef.Role).
+	Shared bool
+}
+
+// IsShared reports whether target id is placed at install in a folder every profile shares.
+func (g Game) IsShared(id string) bool {
+	return slices.ContainsFunc(g.Targets, func(t Target) bool { return t.ID == id && t.Shared })
 }
 
 // Game is what a driver needs to know of the game: the loaders it runs and the targets it has.

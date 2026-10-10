@@ -3,6 +3,7 @@ package installer
 import (
 	"path"
 	"slices"
+	"strings"
 )
 
 var _ = Register(plain{})
@@ -25,11 +26,15 @@ func (plain) Layout(a Archive, g Game, _ Choices) (Layout, error) {
 	var l Layout
 	for _, f := range all {
 		if !skip(f) {
-			rel := path.Join(a.Key, f)
+			rel, target := path.Join(a.Key, f), TargetMods
 			if folder {
 				rel = f
+				ext := strings.ToLower(strings.TrimPrefix(path.Ext(f), "."))
+				if i := slices.IndexFunc(g.Targets, func(t Target) bool { return slices.Contains(t.Extensions, ext) }); i >= 0 {
+					target = g.Targets[i].ID
+				}
 			}
-			l.Files = append(l.Files, File{Src: f, Target: TargetMods, Rel: rel})
+			l.Files = append(l.Files, File{Src: f, Target: target, Rel: rel})
 		}
 	}
 	return l, validate(l, g)

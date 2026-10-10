@@ -4,6 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"io/fs"
+	"maps"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -284,5 +287,85 @@ func TestFolderGameLoadOrderListsAnArchiveOnce(t *testing.T) {
 	dirs, err := e.enabledFolders(folderGame, "", res.Profile)
 	if err != nil || len(dirs) != 1 {
 		t.Fatalf("dirs = %v, %v", dirs, err)
+	}
+}
+
+func trayTree(t *testing.T, dir string) map[string]string {
+	t.Helper()
+	out := map[string]string{}
+	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, _ error) error {
+		if d != nil && d.Type().IsRegular() {
+			b, _ := os.ReadFile(p)
+			rel, _ := filepath.Rel(dir, p)
+			out[rel] = string(b)
+		}
+		return nil
+	})
+	return out
+}
+
+func TestFolderGameTrayFilesInstallAndUninstallBesideThePlayersOwn(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	tray := filepath.Join(t.TempDir(), "Tray")
+	e.TrayFolder = func(string) (string, error) { return tray, nil }
+	if err := os.MkdirAll(tray, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(tray, "mine.trayitem"), []byte("my household"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	before := trayTree(t, tray)
+	p, _ := e.Create(folderGame, "S")
+	zip := zipOf(t, "h.zip", map[string]string{"Smith.trayitem": "t", "Smith.bpi": "b", "outfit.package": "p"})
+	res, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := trayTree(t, tray); len(got) != 3 || got["Smith.trayitem"] != "t" || got["mine.trayitem"] != "my household" {
+		t.Fatalf("tray after install = %v", got)
+	}
+	owners, _ := e.PackageFileOwners(folderGame, p.ID)
+	if len(owners) != 1 || owners["Mods/outfit.package"] == "" {
+		t.Fatalf("tray files must not be laid out per profile: %v", owners)
+	}
+	var trayKey string
+	for _, en := range res.Profile.Entries {
+		if len(en.TrayFiles) > 0 {
+			trayKey = en.Key
+		}
+	}
+	if trayKey == "" {
+		t.Fatalf("no entry holds the tray files: %v", keysOf(res.Profile))
+	}
+	if _, err := e.RemoveEntries(folderGame, p.ID, []string{trayKey}); err != nil {
+		t.Fatal(err)
+	}
+	if got := trayTree(t, tray); !maps.Equal(got, before) {
+		t.Fatalf("tray after uninstall = %v, want %v", got, before)
+	}
+}
+
+func TestFolderGameTrayNeverReplacesAFileOfThePlayers(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	tray := filepath.Join(t.TempDir(), "Tray")
+	e.TrayFolder = func(string) (string, error) { return tray, nil }
+	if err := os.MkdirAll(tray, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(tray, "Smith.trayitem"), []byte("mine"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	p, _ := e.Create(folderGame, "S")
+	zip := zipOf(t, "h.zip", map[string]string{"Smith.trayitem": "theirs", "Smith.bpi": "b"})
+	_, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10))
+	if err == nil || !strings.Contains(err.Error(), "Smith.trayitem") {
+		t.Fatalf("err = %v", err)
+	}
+	got := trayTree(t, tray)
+	cur, _ := e.Get(folderGame, p.ID)
+	if len(got) != 1 || got["Smith.trayitem"] != "mine" || len(cur.Entries) != 0 {
+		t.Fatalf("tray = %v, entries = %v", got, keysOf(cur))
 	}
 }

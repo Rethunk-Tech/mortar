@@ -56,6 +56,7 @@ func (p Profile) Clone() Profile {
 func (e Entry) Clone() Entry {
 	e.PreviousSource = clonePtr(e.PreviousSource)
 	e.Mods = cloneSlice(e.Mods, Component.clone)
+	e.TrayFiles = slices.Clone(e.TrayFiles)
 	e.Disabled = slices.Clone(e.Disabled)
 	e.SkipSources = slices.Clone(e.SkipSources)
 	e.Tags = slices.Clone(e.Tags)

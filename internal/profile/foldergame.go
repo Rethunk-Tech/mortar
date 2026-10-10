@@ -3,11 +3,14 @@ package profile
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -33,37 +36,52 @@ func supersedes(next, old Source) bool {
 
 // folderEntries are the entries a folder-loader game's store item key becomes: one per laid-out file, or the one
 // entry holding them all when a file in it only works beside its siblings. Each keeps the archive's source.
-func (s *Store) folderEntries(game, id, key string, source Source, whole []Component) ([]Entry, error) {
-	_, l, _, err := s.layoutOf(game, id, key, nil)
+func (s *Store) folderEntries(game, id, key string, source Source, whole []Component) (entries []Entry, tray []installer.File, arch installer.Archive, err error) {
+	arch, l, _, err := s.layoutOf(game, id, key, nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, arch, err
+	}
+	g := installerGame(game)
+	var mods installer.Layout
+	for _, f := range l.Files {
+		if g.IsShared(f.Target) {
+			tray = append(tray, f)
+		} else {
+			mods.Files = append(mods.Files, f)
+		}
 	}
 	now := time.Now().UTC()
-	if !installerGame(game).Splits(l) {
-		return []Entry{{Key: key, Source: source, Mods: whole, Disabled: []mod.ID{}, Added: now, Package: true}}, nil
+	if len(mods.Files) == 0 {
+		return nil, tray, arch, nil
 	}
-	out := make([]Entry, 0, len(l.Files))
-	for _, f := range l.Files {
+	if !g.Splits(mods) {
+		return []Entry{{Key: key, Source: source, Mods: whole, Disabled: []mod.ID{}, Added: now, Package: true}}, tray, arch, nil
+	}
+	out := make([]Entry, 0, len(mods.Files))
+	for _, f := range mods.Files {
 		k := key + fileKeySep + f.Rel
 		out = append(out, Entry{
 			Key: k, Item: key, File: f.Rel, Source: source, Disabled: []mod.ID{}, Added: now, Package: true,
 			Mods: []Component{{ID: mod.NewID(mod.FormatFolder, k), Name: f.Rel, Folder: "."}},
 		})
 	}
-	return out, nil
+	return out, tray, arch, nil
 }
 
 // placeFolderLocked adds a folder-loader game's store item to the profile as folderEntries says. The entries of
-// the archive this install updates are all replaced together, each file keeping its on or off state.
+// the archive this install updates are all replaced together, each file keeping its on or off state. Files bound for
+// the shared Tray folder are placed now and held by an entry of their own.
 func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []Component) (Profile, bool, bool, error) {
-	fresh, err := s.folderEntries(game, id, key, source, whole)
+	fresh, trayFiles, arch, err := s.folderEntries(game, id, key, source, whole)
 	if err != nil {
 		return Profile{}, false, false, err
 	}
 	var updated bool
+	var placed []string
+	var trayDir string
 	p, err := s.updateLocked(game, id, func(p *Profile, _ string) error {
 		for _, e := range p.Entries {
-			if slices.ContainsFunc(fresh, func(n Entry) bool { return n.Key == e.Key }) {
+			if e.StoreKey() == key && e.Package && !e.IsOverlay() {
 				return &DuplicateError{Key: e.Key, Label: entryLabel(e)}
 			}
 		}
@@ -77,10 +95,25 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 			off[e.File] = !e.hasPackageEnabled()
 			return true
 		})
-		if updated = len(off) > 0; updated {
+		if updated = len(old) > 0; updated {
 			if err := s.saveBackup(game, id); err != nil {
 				return fmt.Errorf("back up saves: %w", err)
 			}
+		}
+		for _, e := range old {
+			s.releaseTray(game, p, e.TrayFiles)
+		}
+		held, now, err := s.placeTray(game, p, arch, trayFiles)
+		placed = now
+		if err != nil {
+			return err
+		}
+		if len(held) > 0 {
+			k := trayEntryKey(key)
+			fresh = append(fresh, Entry{
+				Key: k, Item: key, Source: source, Disabled: []mod.ID{}, Added: time.Now().UTC(), Package: true, TrayFiles: held,
+				Mods: []Component{{ID: mod.NewID(mod.FormatFolder, k), Name: "Tray files", Folder: "."}},
+			})
 		}
 		for i := range fresh {
 			if off[fresh[i].File] {
@@ -89,13 +122,21 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 				}
 			}
 		}
-		if len(old) > 0 {
-			fresh[0].Replaced = packReplaced(old)
+		if rec := withoutTray(old); len(rec) > 0 && len(fresh) > 0 {
+			fresh[0].Replaced = packReplaced(rec)
 		}
 		p.Entries = append(p.Entries, fresh...)
 		return nil
 	})
 	if err != nil {
+		if len(placed) > 0 {
+			if dir, derr := s.trayFolder(game); derr == nil {
+				trayDir = dir
+			}
+			for _, r := range placed {
+				_ = fsx.Remove(filepath.Join(trayDir, filepath.FromSlash(r)))
+			}
+		}
 		return Profile{}, false, false, err
 	}
 	return p, updated, updated, s.items.Touch(game, key)
@@ -138,7 +179,9 @@ func (s *Store) rollBackFolderLocked(game, id, key string) (p Profile, ok bool, 
 			return nil
 		}
 		item := p.Entries[i].StoreKey()
-		inGroup := func(e Entry) bool { return e.StoreKey() == item && e.Package && !e.IsOverlay() }
+		inGroup := func(e Entry) bool {
+			return e.StoreKey() == item && e.Package && !e.IsOverlay() && len(e.TrayFiles) == 0
+		}
 		at := slices.IndexFunc(p.Entries, inGroup)
 		var group []Entry
 		for _, e := range p.Entries {

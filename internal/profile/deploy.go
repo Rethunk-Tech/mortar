@@ -32,10 +32,11 @@ func (s *Store) packageFiles(gameID, id string) (files map[string]packageFile, w
 	if err != nil {
 		return nil, nil, err
 	}
+	ginfo := installerGame(gameID)
 	files, wins = map[string]packageFile{}, map[string]int{}
 	byFold := map[string]string{}
 	for _, e := range p.Entries {
-		if e.IsOverlay() || !e.hasPackageEnabled() {
+		if e.IsOverlay() || !e.hasPackageEnabled() || len(e.TrayFiles) > 0 {
 			continue
 		}
 		arch, l, _, err := s.layoutOf(gameID, id, e.StoreKey(), e.Fomod)
@@ -43,7 +44,7 @@ func (s *Store) packageFiles(gameID, id string) (files map[string]packageFile, w
 			return nil, nil, fmt.Errorf("%s: %w", entryLabel(e), err)
 		}
 		for _, f := range l.Files {
-			if e.File != "" && f.Rel != e.File {
+			if (e.File != "" && f.Rel != e.File) || ginfo.IsShared(f.Target) {
 				continue
 			}
 			rel := path.Join(targetPrefix(info, f.Target), path.Clean(f.Rel))

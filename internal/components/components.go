@@ -274,6 +274,12 @@ type TargetDef struct {
 	// out a file with one installs as a single entry holding every file it laid out, since such files only work
 	// beside their siblings. An archive with none splits into one entry per file.
 	KeepWhole []string `json:"keepWhole,omitempty"`
+	// Role names a path role instead of a profile folder: the target's files are placed at install in that folder of
+	// the game, shared by every profile, and Mortar records which it placed. Root is empty then.
+	Role string `json:"role,omitempty"`
+	// Extensions are the lower-case extensions (no dot) of files a folder-loader archive lays out in this target
+	// rather than in mods.
+	Extensions []string `json:"extensions,omitempty"`
 }
 
 // ProfileFolder is the folder below the profile's root that the target's files are laid out in: "" for {profile},
@@ -513,8 +519,17 @@ func (g GameInfo) Validate() error {
 	}
 	targets := make(map[string]struct{}, len(g.Targets))
 	for _, t := range g.Targets {
-		if t.ID == "" || !underToken(t.Root, "{profileMods}", "{profile}") {
+		if t.Role != "" {
+			if _, ok := g.Paths[t.Role]; !ok || t.Root != "" {
+				return fmt.Errorf("game %q target %q names path role %q with no such path, or also a root", g.ID, t.ID, t.Role)
+			}
+		} else if t.ID == "" || !underToken(t.Root, "{profileMods}", "{profile}") {
 			return fmt.Errorf("game %q has a target without an id or with an unknown root %q", g.ID, t.Root)
+		}
+		for _, ext := range t.Extensions {
+			if ext == "" || ext != strings.ToLower(ext) || strings.ContainsAny(ext, ".\\/") {
+				return fmt.Errorf("game %q target %q has an unusable extension %q", g.ID, t.ID, ext)
+			}
 		}
 		if _, ok := targets[t.ID]; ok {
 			return fmt.Errorf("game %q lists target %q more than once", g.ID, t.ID)

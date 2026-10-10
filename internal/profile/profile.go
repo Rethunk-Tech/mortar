@@ -135,6 +135,9 @@ type Entry struct {
 	// entry that holds its whole store item.
 	Item string `json:"item,omitempty"`
 	File string `json:"file,omitempty"`
+	// TrayFiles are the files this entry placed in, or shares in, the game's shared Tray folder, by slash path with the
+	// SHA-256 of the content placed. Removing the entry removes only these, and only while no other entry holds them.
+	TrayFiles []TrayFile `json:"trayFiles,omitempty"`
 	// Replaced holds, on the first entry of an archive an update installed, the entries of the archive it
 	// superseded as they were (switches included), so RollBack restores them all.
 	// It is the JSON of an []Entry, since an Entry cannot hold itself.
@@ -263,6 +266,8 @@ type Store struct {
 	Bundled func(game string) []Bundle
 	// Created is called after Create has added a profile; nil means nothing.
 	Created func(game string)
+	// TrayFolder is the game's shared folder for tray content (the catalog's tray path role); nil means the game has none.
+	TrayFolder func(game string) (string, error)
 	// Tidied is told about each repair rebuild makes to a profile's mods folder (what was done, the profile's name, the
 	// folder); nil means nothing.
 	Tidied func(what, profileName, folder string)

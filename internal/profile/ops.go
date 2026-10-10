@@ -451,7 +451,9 @@ func (s *Store) removeFrom(game string, p *Profile, dir, key string) error {
 	if err := removeEntryFolders(modsDir, key); err != nil {
 		return err
 	}
+	tray := p.Entries[i].TrayFiles
 	p.Entries = slices.Delete(p.Entries, i, i+1)
+	s.releaseTray(game, p, tray)
 	dropKeyFromGroups(p, key)
 	for _, o := range overlaysOf(p.Entries, key) {
 		p.Entries = slices.DeleteFunc(p.Entries, func(e Entry) bool { return e.Key == o.Key })

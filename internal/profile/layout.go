@@ -32,7 +32,7 @@ func installerGame(gameID string) installer.Game {
 		g.Loaders = append(g.Loaders, l.ID)
 	}
 	for _, t := range info.Targets {
-		g.Targets = append(g.Targets, installer.Target{ID: t.ID, Root: t.Root, MaxDepth: t.MaxDepth, KeepWhole: t.KeepWhole})
+		g.Targets = append(g.Targets, installer.Target{ID: t.ID, Root: t.Root, MaxDepth: t.MaxDepth, KeepWhole: t.KeepWhole, Extensions: t.Extensions, Shared: t.Role != ""})
 	}
 	return g
 }

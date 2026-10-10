@@ -44,6 +44,9 @@ func NewService(store *Store, home string, settings *settings.Store) *Service {
 		store.OldFilesMode = func(game string) string { return settings.Get().GamePrefs(game).OldFilesOnUpdate }
 	}
 	store.home, store.settings = home, settings
+	if settings != nil {
+		store.TrayFolder = func(id string) (string, error) { return game.PathFor(home, settings.Get(), id, "", "tray") }
+	}
 	svc := &Service{store: store, home: home, settings: settings}
 	store.GameModsProgress = func(p GameModsProgress) {
 		if svc.Emit != nil {
