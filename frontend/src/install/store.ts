@@ -38,10 +38,9 @@ import { changeStillLatest } from '../toasts/history.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { type Landed, pushBatchSummary } from './batchSummary.ts'
-import { itchDownloadInstaller } from './itch.ts'
+import { downloadInstaller } from './handoff.ts'
 import { type MissingOffer, offersFor, wantsOf } from './missingDeps.ts'
 import { offerInstallAnyway } from './offerInstallAnyway.ts'
-import { downloadInstaller } from './patreon.ts'
 
 function dropInstallGate(hasRoute: boolean, hasTarget: boolean, locked: boolean) {
   if (!(hasRoute && hasTarget)) {
@@ -374,7 +373,7 @@ export const useInstall = create<{
       set,
       (g, p, file) => {
         const target = { game: g, profileId: p, file, mtime: mtimes.get(file) ?? 0 }
-        return downloadInstaller(target, () => itchDownloadInstaller(target, InstallDownload)())
+        return downloadInstaller(target, InstallDownload)
       },
       true,
     )

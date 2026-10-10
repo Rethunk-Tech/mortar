@@ -21,7 +21,7 @@ func TestAFileSavedFromAnItchPageIsAnEntryThatNamesThePage(t *testing.T) {
 		"ItchMod/manifest.json": `{"Name":"Itch Mod","Author":"a","Version":"1.0.0","UniqueID":"a.ItchMod","EntryDll":"ItchMod.dll"}`,
 		"ItchMod/ItchMod.dll":   "x",
 	})
-	res, err := ps.InstallItch(t.Context(), "stardew", p.ID, zip, "someone/cool-mod")
+	res, err := ps.InstallSaved(t.Context(), "stardew", p.ID, zip, profile.Source{Kind: profile.KindItch, Name: "someone/cool-mod"})
 	if err != nil {
 		t.Fatal(err)
 	}

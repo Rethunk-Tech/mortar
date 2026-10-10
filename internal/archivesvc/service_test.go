@@ -143,26 +143,37 @@ func TestDownloadsArchivesJoinsFoldersOncePerPath(t *testing.T) {
 	}
 }
 
-func TestPatreonPostIsRebuiltFromTheIDAndAFileIsRecordedUnderIt(t *testing.T) {
+func TestAHandoffPageIsRebuiltFromItsIDAndAFileIsRecordedUnderIt(t *testing.T) {
 	var got profile.Source
 	s := NewService(Deps{Install: func(_ context.Context, _, _, _ string, src profile.Source) (profile.InstallResult, error) {
 		got = src
 		return profile.InstallResult{}, nil
 	}})
-	post, err := s.PatreonPost(" https://www.patreon.com/posts/cool-mod-12345?utm=x ")
-	if err != nil || post.ID != "12345" || post.URL != "https://www.patreon.com/posts/12345" {
-		t.Fatalf("post = %+v, %v", post, err)
+	for _, tc := range []struct{ pasted, kind, id, url, otherSite string }{
+		{" https://www.patreon.com/posts/cool-mod-12345?utm=x ", profile.KindPatreon, "12345", "https://www.patreon.com/posts/12345", "https://evil.test/posts/x-1"},
+		{" https://Someone.itch.io/cool-mod?utm=x ", profile.KindItch, "someone/cool-mod", "https://someone.itch.io/cool-mod", "https://evil.test/someone.itch.io/x"},
+	} {
+		page, err := s.HandoffPage(tc.pasted)
+		if err != nil || page != (HandoffPage{Kind: tc.kind, ID: tc.id, URL: tc.url}) {
+			t.Fatalf("page = %+v, %v", page, err)
+		}
+		if _, err := s.HandoffPage(tc.otherSite); err == nil {
+			t.Fatal("another site's address must be refused")
+		}
+		if _, err := s.InstallHandoffDownload(t.Context(), "stardew", "p", "a.zip", page.Kind, page.ID); err != nil {
+			t.Fatal(err)
+		}
+		if got.Kind != tc.kind || got.Name != tc.id {
+			t.Fatalf("source = %+v", got)
+		}
+		if _, err := s.InstallHandoffDownload(t.Context(), "stardew", "p", "a.zip", tc.kind, "../x"); err == nil {
+			t.Fatalf("a %s id that is not one must be refused", tc.kind)
+		}
 	}
-	if _, err := s.PatreonPost("https://evil.test/posts/x-1"); err == nil {
-		t.Fatal("another site's address must be refused")
+	if _, err := s.InstallHandoffDownload(t.Context(), "stardew", "p", "a.zip", profile.KindNexus, "12345"); err == nil {
+		t.Fatal("a kind with no page handoff must be refused")
 	}
-	if _, err := s.InstallPatreonDownload(t.Context(), "stardew", "p", "a.zip", post.ID); err != nil {
-		t.Fatal(err)
-	}
-	if got.Kind != profile.KindPatreon || got.Name != "12345" {
-		t.Fatalf("source = %+v", got)
-	}
-	if _, err := s.InstallPatreonDownload(t.Context(), "stardew", "p", "a.zip", "../x"); err == nil {
-		t.Fatal("a post id that is not digits must be refused")
+	if _, err := s.InstallHandoffDownload(t.Context(), "stardew", "p", "a.zip", profile.KindPatreon, "someone/cool-mod"); err == nil {
+		t.Fatal("one site's id must not pass as another's")
 	}
 }

@@ -228,62 +228,48 @@ func (s *Service) InstallDownload(ctx context.Context, game, profileID, path str
 	return s.d.Install(ctx, game, profileID, path, src)
 }
 
-// PatreonPost is a Patreon post a pasted address names: its id, which a file saved from it is recorded under, and the
-// address to open, rebuilt from the id alone.
-type PatreonPost struct {
-	ID  string `json:"id"`
-	URL string `json:"url"`
+// HandoffPage is a page a pasted address names, on a site Mortar sends the player to and fetches nothing from: the
+// source kind, the id a file saved from it is recorded under (a Patreon post id, an itch.io "user/game" page name), and
+// the address to open, rebuilt from the id alone.
+type HandoffPage struct {
+	Kind string `json:"kind"`
+	ID   string `json:"id"`
+	URL  string `json:"url"`
 }
 
-// PatreonPost reads a pasted Patreon post address. The window opens URL in the browser, the player saves the file from
-// the post, and InstallPatreonDownload adds it. Mortar fetches nothing from Patreon.
-func (s *Service) PatreonPost(text string) (PatreonPost, error) {
-	id, ok := patreon.ParsePostURL(text)
-	if !ok {
-		return PatreonPost{}, usererr.New(usererr.Invalid, "this is not the address of a Patreon post")
+var handoffSites = []struct {
+	kind  string
+	parse func(text string) (string, bool)
+	url   func(id string) string
+	valid func(id string) bool
+}{
+	{profile.KindPatreon, patreon.ParsePostURL, patreon.PostURL, patreon.ValidID},
+	{profile.KindItch, itch.ParsePageURL, itch.PageURL, itch.ValidPage},
+}
+
+// HandoffPage reads a pasted Patreon post or itch.io game page address. The window opens URL in the browser, the player
+// saves the file from the page, and InstallHandoffDownload adds it.
+func (s *Service) HandoffPage(text string) (HandoffPage, error) {
+	for _, site := range handoffSites {
+		if id, ok := site.parse(text); ok {
+			return HandoffPage{Kind: site.kind, ID: id, URL: site.url(id)}, nil
+		}
 	}
-	return PatreonPost{ID: id, URL: patreon.PostURL(id)}, nil
+	return HandoffPage{}, usererr.New(usererr.Invalid, "this is not the address of a Patreon post or an itch.io game page")
 }
 
-// InstallPatreonDownload is InstallDownload for a file the player saved from Patreon post `post`: the entry records the
-// post, so its page link and a share carry the post and no file.
-func (s *Service) InstallPatreonDownload(ctx context.Context, game, profileID, path, post string) (profile.InstallResult, error) {
+// InstallHandoffDownload is InstallDownload for a file the player saved from page id of a HandoffPage kind: the entry
+// records the page, so its page link and a share carry the page and no file.
+func (s *Service) InstallHandoffDownload(ctx context.Context, game, profileID, path, kind, id string) (profile.InstallResult, error) {
 	if s.d.Install == nil {
 		return profile.InstallResult{}, errors.New("install is not available")
 	}
-	if !patreon.ValidID(post) {
-		return profile.InstallResult{}, usererr.New(usererr.Invalid, "not a Patreon post id")
+	for _, site := range handoffSites {
+		if site.kind == kind && site.valid(id) {
+			return s.d.Install(ctx, game, profileID, path, profile.Source{Kind: kind, Name: id})
+		}
 	}
-	return s.d.Install(ctx, game, profileID, path, profile.Source{Kind: profile.KindPatreon, Name: post})
-}
-
-// ItchPage is an itch.io game page a pasted address names: its page name ("user/game"), which a file saved from it is
-// recorded under, and the address to open, rebuilt from the name alone.
-type ItchPage struct {
-	ID  string `json:"id"`
-	URL string `json:"url"`
-}
-
-// ItchPage reads a pasted itch.io game page address. The window opens URL in the browser, the player saves the file from
-// the page, and InstallItchDownload adds it. Mortar fetches nothing from itch.io this way.
-func (s *Service) ItchPage(text string) (ItchPage, error) {
-	id, ok := itch.ParsePageURL(text)
-	if !ok {
-		return ItchPage{}, usererr.New(usererr.Invalid, "this is not the address of an itch.io game page")
-	}
-	return ItchPage{ID: id, URL: itch.PageURL(id)}, nil
-}
-
-// InstallItchDownload is InstallDownload for a file the player saved from itch.io page `page`: the entry records the
-// page, so its page link and a share carry the page and no file.
-func (s *Service) InstallItchDownload(ctx context.Context, game, profileID, path, page string) (profile.InstallResult, error) {
-	if s.d.Install == nil {
-		return profile.InstallResult{}, errors.New("install is not available")
-	}
-	if !itch.ValidPage(page) {
-		return profile.InstallResult{}, usererr.New(usererr.Invalid, "not an itch.io page name")
-	}
-	return s.d.Install(ctx, game, profileID, path, profile.Source{Kind: profile.KindItch, Name: page})
+	return profile.InstallResult{}, usererr.New(usererr.Invalid, "not a page a saved file can be recorded under")
 }
 
 func (s *Service) storeKeys(game string) (map[string]bool, error) {

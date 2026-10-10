@@ -44,22 +44,13 @@ func (e *InstallError) Unwrap() error { return e.Err }
 
 // InstallArchive unpacks the archive at path into the store and adds it to the profile as a local entry.
 func (s *Store) InstallArchive(ctx context.Context, game, id, path string) (InstallResult, error) {
-	if err := s.unlocked(game, id); err != nil {
-		return InstallResult{}, err
-	}
-	key, err := s.items.AddArchive(ctx, game, path)
-	if err != nil {
-		return InstallResult{}, installError(err)
-	}
-	if err := s.namePackage(game, key, filepath.Base(path), ""); err != nil {
-		return InstallResult{}, installError(err)
-	}
-	return s.installKey(game, id, key, Source{Kind: KindLocal, Name: filepath.Base(path)})
+	return s.InstallSaved(ctx, game, id, path, Source{Kind: KindLocal, Name: filepath.Base(path)})
 }
 
-// InstallPatreon unpacks an archive the player saved from Patreon post `post` and adds it as a local file would be,
-// with the post (its numeric id) as its source, so the entry's page link and a share carry the post and no file.
-func (s *Store) InstallPatreon(ctx context.Context, game, id, path, post string) (InstallResult, error) {
+// InstallSaved unpacks an archive the player saved themselves and adds it as a local file would be, recorded under
+// source: a page they were sent to (a Patreon post id, an itch.io "user/game" page), so the entry's page link and a
+// share carry the page and no file.
+func (s *Store) InstallSaved(ctx context.Context, game, id, path string, source Source) (InstallResult, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return InstallResult{}, err
 	}
@@ -70,7 +61,7 @@ func (s *Store) InstallPatreon(ctx context.Context, game, id, path, post string)
 	if err := s.namePackage(game, key, filepath.Base(path), ""); err != nil {
 		return InstallResult{}, installError(err)
 	}
-	return s.installKey(game, id, key, Source{Kind: KindPatreon, Name: post})
+	return s.installKey(game, id, key, source)
 }
 
 // InstallFolder copies the folder at path into the store under a content key and adds it to the profile as a local entry.

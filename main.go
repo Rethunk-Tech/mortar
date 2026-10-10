@@ -747,11 +747,8 @@ func run() error {
 	archivesSvc := archivesvc.NewService(archivesvc.Deps{
 		Dirs: func() []string { return downloadDirs(store, dataDir) },
 		Install: func(ctx context.Context, game, profileID, path string, src profile.Source) (profile.InstallResult, error) {
-			if src.Kind == profile.KindPatreon {
-				return profiles.InstallPatreon(ctx, game, profileID, path, src.Name)
-			}
-			if src.Kind == profile.KindItch {
-				return profiles.InstallItch(ctx, game, profileID, path, src.Name)
+			if src.Kind == profile.KindPatreon || src.Kind == profile.KindItch {
+				return profiles.InstallSaved(ctx, game, profileID, path, src)
 			}
 			if src.ModID > 0 {
 				return profiles.InstallSource(ctx, game, profileID, path, src)

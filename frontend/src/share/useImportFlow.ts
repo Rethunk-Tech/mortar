@@ -20,8 +20,7 @@ import {
   Replace,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
 import { i18n } from '../i18n/index.ts'
-import { forgetItchPage, startItchPage } from '../install/itch.ts'
-import { startPatreonPost } from '../install/patreon.ts'
+import { startHandoff } from '../install/handoff.ts'
 import { rememberLanProfile } from '../lan/resume.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -191,11 +190,7 @@ function usePreviewSources(
 ) {
   const previewLink = useCallback(
     async (value: string) => {
-      if (await startPatreonPost(value)) {
-        forgetItchPage()
-        return
-      }
-      if (await startItchPage(value)) {
+      if (await startHandoff(value)) {
         return
       }
       await show(PreviewLink(game, value, profileId))

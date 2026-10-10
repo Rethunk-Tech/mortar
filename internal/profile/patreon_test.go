@@ -21,7 +21,7 @@ func TestAFileSavedFromAPatreonPostIsAnEntryThatNamesThePost(t *testing.T) {
 		"PatronMod/manifest.json": `{"Name":"Patron Mod","Author":"a","Version":"1.0.0","UniqueID":"a.PatronMod","EntryDll":"PatronMod.dll"}`,
 		"PatronMod/PatronMod.dll": "x",
 	})
-	res, err := ps.InstallPatreon(t.Context(), "stardew", p.ID, zip, "12345678")
+	res, err := ps.InstallSaved(t.Context(), "stardew", p.ID, zip, profile.Source{Kind: profile.KindPatreon, Name: "12345678"})
 	if err != nil {
 		t.Fatal(err)
 	}

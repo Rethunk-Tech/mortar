@@ -234,7 +234,7 @@ msgstr "Imported {0}: {1} to install"
 
 #: src/console/RunProblems.tsx:134
 #: src/install/DropOverlay.tsx:120
-#: src/install/store.ts:280
+#: src/install/store.ts:279
 #: src/mods/DuplicateDialog.tsx:86
 #: src/mods/LockedReason.tsx:9
 #: src/mods/ModActionItems.tsx:126
@@ -534,8 +534,8 @@ msgstr "Search all runs"
 msgid "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows you what was added."
 msgstr "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows you what was added."
 
-#: src/install/store.ts:358
-#: src/install/store.ts:365
+#: src/install/store.ts:357
+#: src/install/store.ts:364
 msgid "Could not add the chosen folder"
 msgstr "Could not add the chosen folder"
 
@@ -612,7 +612,7 @@ msgstr "Last played {when}"
 #. placeholder {0}: applied.fomodMods
 #. placeholder {1}: applied.configs
 #. placeholder {2}: applied.configs
-#: src/share/useImportFlow.ts:117
+#: src/share/useImportFlow.ts:116
 msgid "{0, plural, one {Applied the curator's choices for # mod and {1, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {2, plural, one {# config file} other {# config files}}}}"
 msgstr "{0, plural, one {Applied the curator's choices for # mod and {1, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {2, plural, one {# config file} other {# config files}}}}"
 
@@ -2277,7 +2277,7 @@ msgstr "What Mortar does about game settings that mods need switched on in the g
 msgid "Launch Mortar at login"
 msgstr "Launch Mortar at login"
 
-#: src/install/store.ts:97
+#: src/install/store.ts:96
 msgid "Replaced {mods} in {profileName}"
 msgstr "Replaced {mods} in {profileName}"
 
@@ -2719,8 +2719,8 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/console/BisectDialog.tsx:138
 #: src/console/CrashDialog.tsx:60
 #: src/console/RunProblems.tsx:95
-#: src/install/store.ts:172
-#: src/install/store.ts:235
+#: src/install/store.ts:171
+#: src/install/store.ts:234
 #: src/mods/NewFoldersCallout.tsx:48
 #: src/mods/OldFilesCallouts.tsx:73
 #: src/mods/OldFilesCallouts.tsx:211
@@ -2909,7 +2909,7 @@ msgstr "Lutris"
 msgid "Mods and profiles"
 msgstr "Mods and profiles"
 
-#: src/share/useImportFlow.ts:152
+#: src/share/useImportFlow.ts:151
 msgid "Imported {name}"
 msgstr "Imported {name}"
 
@@ -3307,7 +3307,7 @@ msgstr "Comfortable"
 msgid "Start measuring"
 msgstr "Start measuring"
 
-#: src/install/store.ts:396
+#: src/install/store.ts:395
 msgid "Could not open the file dialog"
 msgstr "Could not open the file dialog"
 
@@ -3464,7 +3464,7 @@ msgid "Modpack saved"
 msgstr "Modpack saved"
 
 #: src/profiles/LaunchPresetsBlock.tsx:49
-#: src/share/useImportFlow.ts:159
+#: src/share/useImportFlow.ts:158
 #: src/templates/TemplateDialogs.tsx:67
 #: src/templates/TemplateDialogs.tsx:86
 msgid "Save as template"
@@ -4006,7 +4006,7 @@ msgid "Disable"
 msgstr "Disable"
 
 #: src/install/overlayPlace.ts:35
-#: src/install/store.ts:93
+#: src/install/store.ts:92
 msgid "Added {mods} to {profile}"
 msgstr "Added {mods} to {profile}"
 
@@ -4081,7 +4081,7 @@ msgstr "Signed in to Nexus Mods"
 msgid "In Mortar's updates"
 msgstr "In Mortar's updates"
 
-#: src/share/ImportInput.tsx:23
+#: src/share/ImportInput.tsx:21
 msgid "Open a .mortar file someone sent you. You see what it holds before anything downloads."
 msgstr "Open a .mortar file someone sent you. You see what it holds before anything downloads."
 
@@ -4347,7 +4347,7 @@ msgid "Could not unpin the selected mods"
 msgstr "Could not unpin the selected mods"
 
 #: src/share/ImportPreview.tsx:356
-#: src/share/useImportFlow.ts:145
+#: src/share/useImportFlow.ts:144
 msgid "Nothing to download"
 msgstr "Nothing to download"
 
@@ -4474,7 +4474,7 @@ msgid "Send to…"
 msgstr "Send to…"
 
 #: src/install/batchSummary.ts:30
-#: src/install/store.ts:79
+#: src/install/store.ts:78
 msgid "Could not undo the install"
 msgstr "Could not undo the install"
 
@@ -4487,7 +4487,7 @@ msgstr "Enable all"
 msgid "{0, plural, one {Keeps # mod only {targetName} has} other {Keeps # mods only {targetName} has}}"
 msgstr "{0, plural, one {Keeps # mod only {targetName} has} other {Keeps # mods only {targetName} has}}"
 
-#: src/share/useImportFlow.ts:152
+#: src/share/useImportFlow.ts:151
 msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
@@ -4919,7 +4919,7 @@ msgid "This archive holds several variants of the same mod. Pick the one to inst
 msgstr "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 
 #. placeholder {0}: fileName(item)
-#: src/install/store.ts:302
+#: src/install/store.ts:301
 msgid "Could not add {0}"
 msgstr "Could not add {0}"
 
@@ -5554,7 +5554,7 @@ msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
 #: src/profiles/PackImportDialog.tsx:165
-#: src/share/ImportInput.tsx:34
+#: src/share/ImportInput.tsx:32
 msgid "Choose a file…"
 msgstr "Choose a file…"
 
@@ -6250,7 +6250,7 @@ msgstr "Conflict scan depth"
 msgid "No release is published yet."
 msgstr "No release is published yet."
 
-#: src/share/ImportInput.tsx:75
+#: src/share/ImportInput.tsx:73
 msgid "Paste from clipboard"
 msgstr "Paste from clipboard"
 
@@ -7823,7 +7823,7 @@ msgstr "Could not read the Nexus page: {0}"
 msgid "{changes, plural, one {Added # mod from {0} to {targetName}} other {Added # mods from {1} to {targetName}}}"
 msgstr "{changes, plural, one {Added # mod from {0} to {targetName}} other {Added # mods from {1} to {targetName}}}"
 
-#: src/share/useImportFlow.ts:181
+#: src/share/useImportFlow.ts:180
 msgid "Imported, but could not show the profile"
 msgstr "Imported, but could not show the profile"
 
@@ -7835,7 +7835,7 @@ msgstr "No templates"
 msgid "Check for mod updates when Mortar starts"
 msgstr "Check for mod updates when Mortar starts"
 
-#: src/share/useImportFlow.ts:144
+#: src/share/useImportFlow.ts:143
 msgid "{queued, plural, one {# download queued} other {# downloads queued}}"
 msgstr "{queued, plural, one {# download queued} other {# downloads queued}}"
 
@@ -8260,7 +8260,7 @@ msgstr "Recently played"
 msgid "Created {name}"
 msgstr "Created {name}"
 
-#: src/install/store.ts:96
+#: src/install/store.ts:95
 msgid "Updated {mods} in {profileName}"
 msgstr "Updated {mods} in {profileName}"
 
@@ -8882,8 +8882,8 @@ msgstr "How often background checks report new mod updates. The In Mortar and de
 msgid "Retention"
 msgstr "Retention"
 
-#. placeholder {0}: live.id
-#: src/install/patreon.ts:68
+#. placeholder {0}: page.id
+#: src/install/handoff.ts:54
 msgid "Patreon post {0}"
 msgstr "Patreon post {0}"
 
@@ -9457,7 +9457,7 @@ msgstr "Remove SMAPI from Steam's launch options"
 msgid "Check later"
 msgstr "Check later"
 
-#: src/share/ImportInput.tsx:90
+#: src/share/ImportInput.tsx:85
 msgid "Opened the itch.io page. Save the file from it; Mortar offers it from your Downloads folder."
 msgstr "Opened the itch.io page. Save the file from it; Mortar offers it from your Downloads folder."
 
@@ -9473,7 +9473,7 @@ msgstr "Reset…"
 msgid "{0}'s {1} is {2}: {3}"
 msgstr "{0}'s {1} is {2}: {3}"
 
-#: src/share/useImportFlow.ts:146
+#: src/share/useImportFlow.ts:145
 msgid "A profile with that name already exists, so this one is \"{name}\""
 msgstr "A profile with that name already exists, so this one is \"{name}\""
 
@@ -9672,7 +9672,7 @@ msgstr "Browse for mods, add an archive, or paste a share or collection link wit
 msgid "From this file"
 msgstr "From this file"
 
-#: src/share/ImportInput.tsx:41
+#: src/share/ImportInput.tsx:39
 msgid "Paste a share link, a collection link, a Patreon post link, an itch.io page link, or (Premium) a Nexus mod link with Ctrl+V."
 msgstr "Paste a share link, a collection link, a Patreon post link, an itch.io page link, or (Premium) a Nexus mod link with Ctrl+V."
 
@@ -10495,7 +10495,7 @@ msgid "{0} of {1} · {2}/s"
 msgstr "{0} of {1} · {2}/s"
 
 #: src/profiles/PackImportDialog.tsx:182
-#: src/share/ImportInput.tsx:78
+#: src/share/ImportInput.tsx:76
 msgid "Preview"
 msgstr "Preview"
 
@@ -11875,7 +11875,7 @@ msgid "Diagnostics saved"
 msgstr "Diagnostics saved"
 
 #: src/firstrun/ProfileStep.tsx:215
-#: src/share/ImportInput.tsx:61
+#: src/share/ImportInput.tsx:59
 msgid "Share link"
 msgstr "Share link"
 
@@ -12568,7 +12568,7 @@ msgstr "Looking for Mortar users…"
 msgid "Only on {value}."
 msgstr "Only on {value}."
 
-#: src/share/ImportInput.tsx:85
+#: src/share/ImportInput.tsx:84
 msgid "Opened the Patreon post. Save the file from it; Mortar offers it from your Downloads folder."
 msgstr "Opened the Patreon post. Save the file from it; Mortar offers it from your Downloads folder."
 
