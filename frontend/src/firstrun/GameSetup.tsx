@@ -21,7 +21,7 @@ import { space } from '../theme/density.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { FindStep } from './FindStep.tsx'
 import { LoaderStep } from './LoaderStep.tsx'
-import { loaderChip } from './logic.ts'
+import { loaderChip, needsLoaderStep } from './logic.ts'
 import { NexusStep } from './NexusStep.tsx'
 import { ProfileStep } from './ProfileStep.tsx'
 
@@ -131,7 +131,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
   }, [id])
   useEffect(refresh, [refresh])
   const goToProfile = useCallback(() => setStep(PROFILE), [])
-  const hasLoader = Boolean(game?.loaderId)
+  const hasLoader = needsLoaderStep(game?.loaderId, game?.loaders)
   const signedIn = useNexus((s) => s.signedIn)
   const loaderInstalled = useLoader(
     (s) => s.game === id && s.status?.installed === true && !s.status.broken,

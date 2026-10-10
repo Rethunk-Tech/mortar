@@ -87,7 +87,7 @@ function GamePages({
   const { related, dialog } = usePerProfileRelated(game)
   const pages: ShellPage<GamePage>[] = [
     { id: 'install', label: t`Install`, icon: FolderOpen },
-    ...(loader
+    ...(loader && !loader.builtin
       ? [{ id: 'loader' as const, label: loader.name, icon: Puzzle, groupEnd: true }]
       : []),
     { id: 'play', label: t`Play`, icon: Play },
@@ -113,7 +113,7 @@ function GamePages({
           />
         )
       case 'loader':
-        return loader ? (
+        return loader && !loader.builtin ? (
           <LoaderPage key={g.folder} loader={loader} onVersion={g.setVersion} />
         ) : null
       case 'play':

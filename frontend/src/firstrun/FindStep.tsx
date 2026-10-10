@@ -147,12 +147,16 @@ export function FindStep({
       .catch(() => setTyping(true))
   }
 
-  const details = [
-    smapi?.gameVersion ? `${game.name} ${smapi.gameVersion}` : '',
-    smapi?.installed
+  // A game whose loader is part of the game has no loader name and nothing to report as installed.
+  const loaderLine = () => {
+    if (!game.loader) {
+      return ''
+    }
+    return smapi?.installed
       ? t`${{ loader: game.loader }} ${{ version: smapi.version }} installed`
-      : t`${game.loader} not installed yet`,
-  ]
+      : t`${game.loader} not installed yet`
+  }
+  const details = [smapi?.gameVersion ? `${game.name} ${smapi.gameVersion}` : '', loaderLine()]
     .filter(Boolean)
     .join(' · ')
 

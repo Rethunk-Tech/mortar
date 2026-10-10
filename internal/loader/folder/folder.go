@@ -32,6 +32,8 @@ func (Loader) ID() string { return ID }
 
 func (Loader) Formats() []string { return nil }
 
+func (Loader) Builtin() {}
+
 func (Loader) Status(loader.Target) (loader.Status, error) {
 	return loader.Status{Installed: true}, nil
 }

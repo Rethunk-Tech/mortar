@@ -188,7 +188,7 @@ msgstr "Where it came in one download with other mods, it is disabled instead."
 msgid "Allow cleanup"
 msgstr "Allow cleanup"
 
-#: src/profiles/HealthDialog.tsx:140
+#: src/profiles/HealthDialog.tsx:148
 msgid "Revert {name} to the installed copy?"
 msgstr "Revert {name} to the installed copy?"
 
@@ -679,7 +679,7 @@ msgid "Show a report first."
 msgstr "Show a report first."
 
 #: src/mods/problemFix/DamagedFix.tsx:40
-#: src/profiles/HealthDialog.tsx:116
+#: src/profiles/HealthDialog.tsx:120
 #: src/profiles/ProfilesPage.tsx:165
 #: src/settings/sections/AboutDiagnostics.tsx:218
 msgid "Repair"
@@ -767,7 +767,7 @@ msgstr "A network request failed."
 msgid "No"
 msgstr "No"
 
-#: src/profiles/HealthDialog.tsx:245
+#: src/profiles/HealthDialog.tsx:253
 msgid "Everything looks fine"
 msgstr "Everything looks fine"
 
@@ -1721,7 +1721,7 @@ msgstr "Default sort"
 msgid "What you expected"
 msgstr "What you expected"
 
-#: src/profiles/HealthDialog.tsx:76
+#: src/profiles/HealthDialog.tsx:80
 msgid "{count, plural, one {# stored mod is not used by any profile} other {# stored mods are not used by any profile}}"
 msgstr "{count, plural, one {# stored mod is not used by any profile} other {# stored mods are not used by any profile}}"
 
@@ -1784,7 +1784,7 @@ msgstr "The antivirus flagged this download, so Mortar did not install it."
 msgid "Could not dismiss the warning"
 msgstr "Could not dismiss the warning"
 
-#: src/profiles/HealthDialog.tsx:271
+#: src/profiles/HealthDialog.tsx:279
 msgid "Repair all"
 msgstr "Repair all"
 
@@ -1824,7 +1824,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/mods/typedConfig/ConfigPane.tsx:284
 #: src/mods/updateReview/updateAll.ts:59
 #: src/profiles/GameModsDialog.tsx:138
-#: src/profiles/HealthDialog.tsx:237
+#: src/profiles/HealthDialog.tsx:245
 #: src/profiles/LaunchPreview.tsx:82
 #: src/queue/QueueBody.tsx:259
 #: src/queue/store.ts:164
@@ -2472,7 +2472,7 @@ msgstr "In-game menu"
 #: src/mods/problemFix/WhereButtons.tsx:47
 #: src/mods/updateReview/UpdateActions.tsx:90
 #: src/mods/updateReview/UpdateActions.tsx:90
-#: src/profiles/HealthDialog.tsx:116
+#: src/profiles/HealthDialog.tsx:120
 #: src/saves/lackChips.tsx:57
 msgid "Queued"
 msgstr "Queued"
@@ -2545,7 +2545,7 @@ msgstr "Not signed in"
 msgid "{game} profile"
 msgstr "{game} profile"
 
-#: src/firstrun/FindStep.tsx:177
+#: src/firstrun/FindStep.tsx:181
 #: src/firstrun/GameSetup.tsx:77
 #: src/settings/sections/GameSettings.tsx:194
 #: src/settings/sections/GameSettings.tsx:196
@@ -2939,7 +2939,7 @@ msgid "Delete permanently"
 msgstr "Delete permanently"
 
 #: src/game/ProfileMenuItems.tsx:183
-#: src/profiles/HealthDialog.tsx:261
+#: src/profiles/HealthDialog.tsx:269
 msgid "Check this profile"
 msgstr "Check this profile"
 
@@ -3232,7 +3232,7 @@ msgid "What happened"
 msgstr "What happened"
 
 #. placeholder {0}: reverts.length
-#: src/profiles/HealthDialog.tsx:141
+#: src/profiles/HealthDialog.tsx:149
 msgid "{0, plural, one {Revert # mod?} other {Revert # mods?}}"
 msgstr "{0, plural, one {Revert # mod?} other {Revert # mods?}}"
 
@@ -3321,7 +3321,7 @@ msgstr "Connected from {0}, last seen "
 msgid "Search all runs…"
 msgstr "Search all runs…"
 
-#: src/firstrun/FindStep.tsx:219
+#: src/firstrun/FindStep.tsx:223
 #: src/install/NeedsRootCallout.tsx:24
 #: src/profiles/VortexFolderPrompt.tsx:60
 #: src/settings/sections/GameSettings.tsx:370
@@ -3751,7 +3751,7 @@ msgid "Add to profile"
 msgstr "Add to profile"
 
 #: src/mods/problemFixButtons.tsx:255
-#: src/profiles/HealthDialog.tsx:145
+#: src/profiles/HealthDialog.tsx:153
 msgid "Your edits to its files are replaced with the installed copy."
 msgstr "Your edits to its files are replaced with the installed copy."
 
@@ -3943,7 +3943,7 @@ msgstr "Custom categories"
 #: src/mods/OldFilesCallouts.tsx:112
 #: src/mods/problemFixButtons.tsx:201
 #: src/mods/problemFixButtons.tsx:206
-#: src/profiles/HealthDialog.tsx:279
+#: src/profiles/HealthDialog.tsx:287
 #: src/profiles/LaunchPresetsBlock.tsx:54
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:68
 #: src/profiles/ProfilesPage.tsx:172
@@ -5083,7 +5083,7 @@ msgid "Include beta releases"
 msgstr "Include beta releases"
 
 #. placeholder {0}: game.name
-#: src/firstrun/FindStep.tsx:232
+#: src/firstrun/FindStep.tsx:236
 msgid "{0} folder"
 msgstr "{0} folder"
 
@@ -5836,7 +5836,7 @@ msgstr "New profile…"
 msgid "The files will download from each mod's source."
 msgstr "The files will download from each mod's source."
 
-#: src/profiles/HealthDialog.tsx:246
+#: src/profiles/HealthDialog.tsx:254
 msgid "Mortar found nothing to repair in this profile."
 msgstr "Mortar found nothing to repair in this profile."
 
@@ -6338,7 +6338,7 @@ msgstr "Disable it and play"
 msgid "Keep forever"
 msgstr "Keep forever"
 
-#: src/profiles/HealthDialog.tsx:136
+#: src/profiles/HealthDialog.tsx:144
 msgid "Delete the unreadable changes from history?"
 msgstr "Delete the unreadable changes from history?"
 
@@ -6738,7 +6738,7 @@ msgstr "Mortar started with default settings. The damaged file was kept at {path
 msgid "Mod config"
 msgstr "Mod config"
 
-#: src/firstrun/FindStep.tsx:227
+#: src/firstrun/FindStep.tsx:231
 #: src/launchers/LauncherList.tsx:182
 msgid "Rescan"
 msgstr "Rescan"
@@ -6853,7 +6853,7 @@ msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus: {no
 msgid "{0} needs this version or newer."
 msgstr "{0} needs this version or newer."
 
-#: src/profiles/HealthDialog.tsx:235
+#: src/profiles/HealthDialog.tsx:243
 msgid "Could not check this profile"
 msgstr "Could not check this profile"
 
@@ -7181,7 +7181,7 @@ msgstr "Unity exception"
 
 #: src/mods/problemFixButtons.tsx:251
 #: src/mods/problemFixButtons.tsx:256
-#: src/profiles/HealthDialog.tsx:279
+#: src/profiles/HealthDialog.tsx:287
 msgid "Revert"
 msgstr "Revert"
 
@@ -8212,7 +8212,7 @@ msgstr "Could not import"
 msgid "{0, plural, one {Added # mod from {name}; {left, plural, one {# mod} other {# mods}} still to download} other {Added # mods from {name}; {left, plural, one {# mod} other {# mods}} still to download}}"
 msgstr "{0, plural, one {Added # mod from {name}; {left, plural, one {# mod} other {# mods}} still to download} other {Added # mods from {name}; {left, plural, one {# mod} other {# mods}} still to download}}"
 
-#: src/profiles/HealthDialog.tsx:146
+#: src/profiles/HealthDialog.tsx:154
 msgid "The profile itself stays as it is."
 msgstr "The profile itself stays as it is."
 
@@ -9237,7 +9237,7 @@ msgstr "Message copied"
 msgid "{0, plural, one {Added # mod from {name}; downloading {left, plural, one {# mod} other {# mods}}} other {Added # mods from {name}; downloading {left, plural, one {# mod} other {# mods}}}}"
 msgstr "{0, plural, one {Added # mod from {name}; downloading {left, plural, one {# mod} other {# mods}}} other {Added # mods from {name}; downloading {left, plural, one {# mod} other {# mods}}}}"
 
-#: src/profiles/HealthDialog.tsx:150
+#: src/profiles/HealthDialog.tsx:158
 msgid "The unreadable changes are also deleted from history."
 msgstr "The unreadable changes are also deleted from history."
 
@@ -10021,7 +10021,7 @@ msgid "Search run logs"
 msgstr "Search run logs"
 
 #. placeholder {0}: game.loader
-#: src/firstrun/FindStep.tsx:154
+#: src/firstrun/FindStep.tsx:157
 msgid "{0} not installed yet"
 msgstr "{0} not installed yet"
 
@@ -10189,7 +10189,7 @@ msgid "When {0}"
 msgstr "When {0}"
 
 #. placeholder {0}: game.name
-#: src/firstrun/FindStep.tsx:208
+#: src/firstrun/FindStep.tsx:212
 msgid "{0} was not found in your launchers"
 msgstr "{0} was not found in your launchers"
 
@@ -10655,7 +10655,7 @@ msgstr "Combine with…"
 msgid "No matching mods"
 msgstr "No matching mods"
 
-#: src/profiles/HealthDialog.tsx:73
+#: src/profiles/HealthDialog.tsx:76
 msgid "A file a mod wrote is too large to copy into the profile and stays in the shared folder"
 msgstr "A file a mod wrote is too large to copy into the profile and stays in the shared folder"
 
@@ -11429,7 +11429,7 @@ msgstr "the connection was refused"
 msgid "Removed the tag {detail} from {name}"
 msgstr "Removed the tag {detail} from {name}"
 
-#: src/profiles/HealthDialog.tsx:72
+#: src/profiles/HealthDialog.tsx:73
 msgid "Changed bytes of a mod file are kept beside it, since no profile could take them"
 msgstr "Changed bytes of a mod file are kept beside it, since no profile could take them"
 
@@ -12290,7 +12290,7 @@ msgstr "Quota"
 msgid "Profile"
 msgstr "Profile"
 
-#: src/firstrun/FindStep.tsx:198
+#: src/firstrun/FindStep.tsx:202
 #: src/settings/sections/Downloads.tsx:300
 #: src/settings/sections/GameSettings.tsx:206
 #: src/settings/sections/GameSettings.tsx:398
@@ -12578,7 +12578,7 @@ msgstr "Could not repair the profile"
 msgid "Empty profile"
 msgstr "Empty profile"
 
-#: src/firstrun/FindStep.tsx:153
+#: src/firstrun/FindStep.tsx:156
 #: src/firstrun/LoaderStep.tsx:372
 msgid "{loader} {version} installed"
 msgstr "{loader} {version} installed"
@@ -13086,7 +13086,7 @@ msgstr "Compare with…"
 msgid "Could not update tags for the selected mods"
 msgstr "Could not update tags for the selected mods"
 
-#: src/firstrun/FindStep.tsx:240
+#: src/firstrun/FindStep.tsx:244
 #: src/firstrun/FirstRun.tsx:99
 #: src/firstrun/LoaderStep.tsx:187
 #: src/firstrun/LoaderStep.tsx:387
@@ -13118,7 +13118,7 @@ msgstr "Skip this update"
 msgid "Command-line control"
 msgstr "Command-line control"
 
-#: src/profiles/HealthDialog.tsx:213
+#: src/profiles/HealthDialog.tsx:221
 msgid "Could not repair this profile"
 msgstr "Could not repair this profile"
 
@@ -13811,7 +13811,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/mods/updateReview/ReviewFooter.tsx:62
 #: src/mods/updateReview/ReviewTitle.tsx:47
 #: src/profiles/CompareTop.tsx:148
-#: src/profiles/HealthDialog.tsx:264
+#: src/profiles/HealthDialog.tsx:272
 #: src/profiles/HistoryPanel.tsx:135
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:74
 #: src/saves/BackupsDialog.tsx:192

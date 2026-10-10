@@ -44,24 +44,39 @@ const NEW_DOWNLOADS_ID = /NewDownloads\(game: string\)[\s\S]*?\$Call\.ByID\((\d+
   ),
 )?.[1]
 
+/** The id of the OpenWeb binding: the test answers that call so the sandbox opens no browser. */
+const OPEN_WEB_ID = /OpenWeb\(raw: string\)[\s\S]*?\$Call\.ByID\((\d+)/.exec(
+  readFileSync(
+    new URL(
+      '../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
+)?.[1]
+
 /** Opens The Sims 4 from Game select, making its first profile when it has none. */
 async function openSims(page: Page) {
   await openSeedFarm(page)
   await openGameSelect(page)
   await page.getByRole('button', { name: `Open ${GAME}` }).click()
-  if (
-    !(await page
-      .getByRole('button', { name: new RegExp(`^Switch profile.*${PROFILE}`) })
-      .isVisible({ timeout: 1500 })
-      .catch(() => false))
-  ) {
-    await page.getByRole('button', { name: /^Switch profile/ }).click()
-    await page.getByRole('menuitem', { name: 'New profile…' }).click()
-    const dialog = page.getByRole('dialog', { name: 'New profile' })
-    await dialog.getByLabel('Profile name').fill(PROFILE)
-    await dialog.getByRole('button', { name: 'Create' }).click()
-    await expect(page.getByText(new RegExp(`^Created ${PROFILE}`))).toBeVisible()
+  const switcher = page.getByRole('button', { name: new RegExp(`^Switch profile.*${PROFILE}`) })
+  const setup = page.getByRole('heading', { name: `Set up ${GAME}` })
+  await expect(switcher.or(setup)).toBeVisible()
+  if (await setup.isVisible()) {
+    await page.getByRole('button', { name: 'Continue' }).click()
+    await page.getByLabel('Name', { exact: true }).fill(PROFILE)
+    await page.getByRole('button', { name: 'New profile', exact: true }).click()
+    await expect(switcher).toBeVisible()
   }
+}
+
+/** Opens the Mods section of the open game's settings. */
+async function openModsSection(page: Page) {
+  await page
+    .getByRole('navigation', { name: 'Settings sections' })
+    .getByRole('button', { name: 'Mods', exact: true })
+    .click()
 }
 
 /** Adds a saved archive through the downloads folder dialog. */
@@ -121,6 +136,7 @@ test('game settings offer the settings file mode and cache clearing for The Sims
 }) => {
   await openSims(page)
   await openGameSettings(page, GAME)
+  await openModsSection(page)
   await expect(page.getByText('Game settings file', { exact: true }).first()).toBeVisible()
   await expect(page.getByText('Clear game caches', { exact: true }).first()).toBeVisible()
   await openGameSelect(page)
@@ -128,7 +144,7 @@ test('game settings offer the settings file mode and cache clearing for The Sims
     .getByRole('button', { name: 'Open Stardew Valley' })
     .click({ position: { x: 8, y: 8 } })
   await openGameSettings(page)
-  await expect(page.getByRole('navigation', { name: 'Settings sections' })).toBeVisible()
+  await openModsSection(page)
   await expect(page.getByText('Game settings file', { exact: true })).toHaveCount(0)
   await expect(page.getByText('Clear game caches', { exact: true })).toHaveCount(0)
 })
@@ -139,7 +155,8 @@ test('a pasted itch.io link opens the page, and the file saved from it asks befo
   page,
 }) => {
   await page.route('**/wails/runtime', async (route) => {
-    if ((route.request().postData() ?? '').includes(PAGE)) {
+    const body = route.request().postData() ?? ''
+    if (body.includes(PAGE) && body.includes(String(OPEN_WEB_ID))) {
       await route.fulfill({ status: 200, contentType: 'application/json', body: 'null' })
       return
     }

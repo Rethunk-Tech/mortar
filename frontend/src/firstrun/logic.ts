@@ -16,3 +16,9 @@ export const loaderChip = (step: number, loaderStep: number, installed: boolean)
   }
   return step > loaderStep && installed ? 'done' : 'todo'
 }
+
+// Setup installs a loader only when the game has one that is not part of the game itself.
+export const needsLoaderStep = (
+  loaderId: string | undefined,
+  loaders: readonly { id: string; builtin: boolean }[] | null | undefined,
+): boolean => Boolean(loaderId) && !(loaders ?? []).find((l) => l.id === loaderId)?.builtin

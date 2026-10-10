@@ -13,6 +13,12 @@ const (
 	IntroToMenu IntroSkip = "menu"
 )
 
+// Builtin is a loader that is part of the game itself: nothing is installed for it, so setup has no loader step and
+// the window never offers to install, repair or update it.
+type Builtin interface {
+	Builtin()
+}
+
 // IntroSkipper is a loader whose companion can skip the game's intro, reading the request from the profile at launch.
 type IntroSkipper interface {
 	// ArmIntroSkip sets the request for the next launch of the profile in dir; IntroPlay clears it.

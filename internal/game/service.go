@@ -73,6 +73,8 @@ type LoaderRef struct {
 	Frameworks bool `json:"frameworks"`
 	// IntroSkip is whether the loader's companion can skip the game's intro, which the skipIntro setting needs.
 	IntroSkip bool `json:"introSkip"`
+	// Builtin is whether the loader is part of the game itself, with nothing for Mortar to install.
+	Builtin bool `json:"builtin"`
 }
 
 func loaderRef(gameID string, l components.GameLoader) LoaderRef {
@@ -87,6 +89,7 @@ func loaderRef(gameID string, l components.GameLoader) LoaderRef {
 		_, ref.Perf = d.(loader.InGamePerf)
 		_, ref.Overlay = d.(loader.StreamOverlay)
 		_, ref.IntroSkip = d.(loader.IntroSkipper)
+		_, ref.Builtin = d.(loader.Builtin)
 		ref.Share = loader.SharesLog(d)
 		if p, ok := d.(loader.LogPaste); ok {
 			ref.Paste = p.PasteSite()
