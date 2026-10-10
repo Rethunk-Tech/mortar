@@ -262,14 +262,9 @@ func TestPurgeRunAgainKeepsWhatItRestored(t *testing.T) {
 	}
 }
 
-// A destination no record says Mortar placed (a crash between the copy and its log line) is deleted only while it
-// still holds the recorded content.
-func TestPurgeLeavesAnUnrecordedFileThatIsNoLongerOurs(t *testing.T) {
+func TestPurgeLeavesAFileThatIsNoLongerOurs(t *testing.T) {
 	r := newRig(t)
 	m := r.apply()
-	for i := range m.Ops {
-		m.Ops[i].Done = false
-	}
 	ini := filepath.Join(r.install, "doorstop_config.ini")
 	write(t, ini, "the player's edit")
 	d, _ := Get(copyID)

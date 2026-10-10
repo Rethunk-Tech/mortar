@@ -246,9 +246,9 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 				return err
 			}
 		case o.Displaced == "":
-			// A file recorded as placed is ours whatever the game did to it; one not recorded (a crash between the
-			// copy and its line) is ours only while it still holds our content.
-			if h, err := fsx.SHA256(o.Dst); err == nil && (o.Done || h == o.Hash) {
+			// Nothing was displaced, so Dst is ours only while it still holds our content: a file changed since may hold
+			// the player's or a mod's own data (a script mod's settings), and it stays.
+			if h, err := fsx.SHA256(o.Dst); err == nil && h == o.Hash {
 				if err := fsx.Remove(o.Dst); err != nil {
 					return err
 				}

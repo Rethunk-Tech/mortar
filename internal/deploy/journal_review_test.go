@@ -10,19 +10,19 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 )
 
-// The architecture contract says Purge removes a destination Mortar placed (Done) even when the content changed; a
-// game that rewrites a placed file must not leave it behind in the player's folder.
-func TestPurgeRemovesAPlacedFileTheGameRewrote(t *testing.T) {
+// A file Mortar placed over one of the player's is Mortar's whatever the game wrote to it since: it is removed and the
+// player's displaced file returns.
+func TestPurgeRemovesARewrittenPlacedFileAndReturnsTheDisplacedOne(t *testing.T) {
 	r := newRig(t)
 	m := r.apply()
-	ini := filepath.Join(r.install, "doorstop_config.ini")
-	write(t, ini, "rewritten by the game")
+	dll := filepath.Join(r.install, "winhttp.dll")
+	write(t, dll, "rewritten by the game")
 	d, _ := Get(copyID)
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.Lstat(ini); err == nil {
-		t.Fatal("a file Mortar placed was left behind because the game changed it")
+	if got := read(dll); got != "the player's own" {
+		t.Fatalf("winhttp.dll after purge = %q, want the player's displaced file back", got)
 	}
 }
 

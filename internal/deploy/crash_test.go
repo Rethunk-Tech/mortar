@@ -112,12 +112,31 @@ func TestACrashAfterAnyPurgeStepIsRecoveredToTheStartingTree(t *testing.T) {
 	}
 }
 
-func TestAPlacedFileTheGameRewroteIsRemovedByRecoveryToo(t *testing.T) {
+// A placed file the game rewrote is Mortar's only where it displaced the player's file; with nothing displaced it holds
+// data that is no longer ours and stays.
+func TestRecoveryOfARewrittenPlacedFileFollowsWhetherSomethingWasDisplaced(t *testing.T) {
 	r := crashRig(t)
 	start := snapshot(t, r.install)
 	r.apply()
-	write(t, filepath.Join(r.install, "doorstop_config.ini"), "rewritten by the game")
-	r.leftover(t, start, "no crash, game rewrote a placed file")
+	write(t, filepath.Join(r.install, "winhttp.dll"), "rewritten by the game")
+	ini := filepath.Join(r.install, "doorstop_config.ini")
+	write(t, ini, "settings the mod wrote")
+	d, _ := Get(copyID)
+	if err := d.Recover(t.Context(), r.view.JournalDir, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(filepath.Join(r.install, "winhttp.dll")); got != "the player's own" {
+		t.Fatalf("a rewritten file that displaced the player's: %q", got)
+	}
+	if got := read(ini); got != "settings the mod wrote" {
+		t.Fatalf("a rewritten file with nothing displaced was removed or changed: %q", got)
+	}
+	delete(start, "doorstop_config.ini")
+	want := snapshot(t, r.install)
+	delete(want, "doorstop_config.ini")
+	if !maps.Equal(want, start) {
+		t.Fatalf("tree differs apart from the kept file:\n got %v\nwant %v", want, start)
+	}
 }
 
 func TestRecoveryNeverDeletesAFileOfThePlayersThatWasNotPlaced(t *testing.T) {
