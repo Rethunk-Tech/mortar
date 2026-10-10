@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"io/fs"
 	"maps"
 	"os"
@@ -516,6 +517,42 @@ func TestFolderGameReadersResolveAPerFileEntryToItsStoreItem(t *testing.T) {
 	for _, in := range listed {
 		if in.Folder != item {
 			t.Fatalf("installed folder = %q, want %q", in.Folder, item)
+		}
+	}
+}
+
+func TestFolderGameInstallAppliesTheSendersSwitches(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	for name, files := range map[string]map[string]string{
+		"split": {"one.package": "1", "two.package": "2"},
+		"whole": {"m.ts4script": "s", "a.package": "1"},
+	} {
+		p, _ := e.Create(folderGame, name)
+		src := cfSource(10)
+		first, err := e.InstallSource(t.Context(), folderGame, p.ID, zipOf(t, name+".zip", files), src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var ids []mod.ID
+		for _, en := range first.Profile.Entries {
+			for _, m := range en.Mods {
+				if len(ids) == 0 {
+					ids = append(ids, m.ID)
+				}
+			}
+		}
+		other, _ := e.Create(folderGame, name+"2")
+		res, err := e.InstallSource(t.Context(), folderGame, other.ID, zipOf(t, name+".zip", files), src.WithDisabled(ids))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, en := range res.Profile.Entries {
+			for _, m := range en.Mods {
+				if en.Enabled(m.ID) == slices.Contains(ids, m.ID) {
+					t.Fatalf("%s: %s enabled = %v, disabled in the shared list = %v", name, m.ID, en.Enabled(m.ID), slices.Contains(ids, m.ID))
+				}
+			}
 		}
 	}
 }

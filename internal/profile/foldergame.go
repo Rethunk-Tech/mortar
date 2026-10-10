@@ -117,8 +117,8 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 			})
 		}
 		for i := range fresh {
-			if off[fresh[i].File] {
-				for _, m := range fresh[i].Mods {
+			for _, m := range fresh[i].Mods {
+				if off[fresh[i].File] || (source.disabled != nil && hasID(source.disabled.ids, m.ID)) {
 					fresh[i].Disabled = append(fresh[i].Disabled, m.ID)
 				}
 			}
