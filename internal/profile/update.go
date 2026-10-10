@@ -548,7 +548,13 @@ func (s *Store) saveBackup(game, profileID string) error {
 	return err
 }
 
+// savesDir is the folder holding the saves the profile plays: its own when it keeps its saves separate, since those
+// are the ones an update can break, else the game's.
 func (s *Store) savesDir(set settings.Settings, game, profileID string) (string, bool) {
+	if s.SeparateSaves(game, profileID) {
+		dir, err := s.SavesFolder(game, profileID)
+		return dir, err == nil
+	}
 	dir, err := gamepkg.SavesDir(s.home, set, game, s.InstallOf(game, profileID))
 	return dir, err == nil
 }

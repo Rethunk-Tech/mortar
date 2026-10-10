@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/backup"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -299,5 +301,42 @@ func TestSims4WarnModeLeavesTheOptionsSwitchesAlone(t *testing.T) {
 	dep.unwind(t.Context())
 	if got := w.snapshot(t); got["Options.ini"] != before["Options.ini"] {
 		t.Fatalf("the player's Options.ini after the launch = %q", got["Options.ini"])
+	}
+}
+
+func TestSims4BackupBeforePlayTakesTheProfilesOwnSaves(t *testing.T) {
+	w := newSims4World(t)
+	var applyErr error
+	if _, err := w.set.Update(func(s *settings.Settings) {
+		applyErr = settings.ApplyKeyGame(s, "backupBeforePlay", settings.BackupBeforePlayAlways, sims4)
+	}); err != nil || applyErr != nil {
+		t.Fatal(err, applyErr)
+	}
+	own, err := w.profiles.SavesFolder(sims4, w.profileID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	w.write(t, filepath.Join(own, "Slot_00000002.save"), "the profile's save")
+	if err := w.svc.backupChangedSaves(sims4, w.profileID, "", w.game); err != nil {
+		t.Fatal(err)
+	}
+	dataDir, err := w.svc.dataDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	target, err := backup.TargetFor(dataDir, w.set.Get(), sims4, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zips, err := backup.List(target.Dir, game.SaveLayout(sims4, own))
+	if err != nil || len(zips) != 1 {
+		t.Fatalf("backups = %+v, %v; want one", zips, err)
+	}
+	var names []string
+	for _, snap := range zips[0].Saves {
+		names = append(names, snap.Folder)
+	}
+	if !slices.Contains(names, "Slot_00000002.save") || slices.Contains(names, "Slot_00000001.save") {
+		t.Fatalf("the backup holds %v, want the profile's own save and not the shared one", names)
 	}
 }

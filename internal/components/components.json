@@ -450,6 +450,7 @@
           "linux": "{documents}/Electronic Arts/The Sims 4/Tray"
         }
       },
+      "saveFiles": ["Slot_*.save"],
       "newProfileSeparateSaves": true,
       "caches": [
         { "role": "userData", "path": "localthumbcache.package" },

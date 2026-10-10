@@ -1005,6 +1005,15 @@ func (s *Service) waitSampled(g game.Game, limit time.Duration) {
 	}
 }
 
+// playedSavesDir is the folder holding the saves this launch plays: the profile's own when it keeps its saves
+// separate, which the launch swaps in after the backup, else the game's.
+func (s *Service) playedSavesDir(set settings.Settings, gameID, profileID, installID string) (string, error) {
+	if s.profiles.SeparateSaves(gameID, profileID) {
+		return s.profiles.SavesFolder(gameID, profileID)
+	}
+	return game.SavesDir(s.home, set, gameID, s.pinOf(gameID, profileID, installID))
+}
+
 func (s *Service) backupChangedSaves(gameID, profileID, installID, installDir string) error {
 	events, err := s.profiles.History(gameID, profileID)
 	if err != nil {
@@ -1030,7 +1039,7 @@ func (s *Service) backupChangedSaves(gameID, profileID, installID, installDir st
 	if !backupNeeded(mode, events, lastRun, recorded, installed) {
 		return nil
 	}
-	savesDir, err := game.SavesDir(s.home, set, gameID, s.pinOf(gameID, profileID, installID))
+	savesDir, err := s.playedSavesDir(set, gameID, profileID, installID)
 	if err != nil {
 		return err
 	}
