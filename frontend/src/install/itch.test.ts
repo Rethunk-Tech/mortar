@@ -26,13 +26,23 @@ mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/servi
   },
 }))
 
+const { useHandoffAsk } = await import('./handoffConfirm.ts')
 const { itchDownloadInstaller, liveItchPage, ITCH_PAGE_TTL_MS, startItchPage, useItchPage } =
   await import('./itch.ts')
+
+// The player's answer to the "Install <file> as from <page>?" question the claiming install is waiting on.
+const answer = (yes: boolean) => {
+  const { queue, shift } = useHandoffAsk.getState()
+  const [ask] = queue
+  shift()
+  ask?.answer(yes)
+}
 
 beforeEach(() => {
   calls.opened.length = 0
   calls.installed.length = 0
   useItchPage.getState().set(null)
+  useHandoffAsk.setState({ queue: [] })
 })
 
 test('a pasted itch.io page opens in the browser and is remembered; anything else is left to the share preview', async () => {
@@ -67,11 +77,13 @@ test('the next Downloads install is recorded under the remembered page, once', a
   expect(calls.installed).toEqual([])
 
   useItchPage.getState().set(ref)
-  await itchDownloadInstaller(
+  const run = itchDownloadInstaller(
     { game: 'stardew', profileId: 'p1', file: 'b.zip', mtime: 1_500_000 },
     install,
     1_500_000,
   )()
+  answer(true)
+  await run
   expect(calls.installed).toEqual([['stardew', 'p1', 'b.zip', 'someone/cool-mod']])
   expect(plain).toEqual(['a.zip'])
   expect(useItchPage.getState().page).toBeNull()
@@ -114,4 +126,42 @@ test('a page stops being live once it has expired', () => {
   expect(liveItchPage(ref, ref.openedAt + ITCH_PAGE_TTL_MS)).toEqual(ref)
   expect(liveItchPage(ref, ref.openedAt + ITCH_PAGE_TTL_MS + 1)).toBeNull()
   expect(liveItchPage(null)).toBeNull()
+})
+
+test('the question names the file and the page and No installs the file as it is, keeping the page for the next file', async () => {
+  useItchPage.getState().set(ref)
+  plain.length = 0
+  const run = itchDownloadInstaller(
+    { game: 'stardew', profileId: 'p1', file: '/home/me/Downloads/m.zip', mtime: 1_500_000 },
+    install,
+    1_500_000,
+  )()
+  const [ask] = useHandoffAsk.getState().queue
+  expect(ask?.file).toBe('m.zip')
+  expect(ask?.page).toContain('someone/cool-mod')
+  answer(false)
+  await run
+  expect(plain).toEqual(['/home/me/Downloads/m.zip'])
+  expect(calls.installed).toEqual([])
+  expect(useItchPage.getState().page).toEqual(ref)
+})
+
+test('after Yes the page is no longer waiting for a file, so a second file is not asked', async () => {
+  useItchPage.getState().set(ref)
+  plain.length = 0
+  const first = itchDownloadInstaller(
+    { game: 'stardew', profileId: 'p1', file: 'one.zip', mtime: 1_500_000 },
+    install,
+    1_500_000,
+  )()
+  answer(true)
+  await first
+  await itchDownloadInstaller(
+    { game: 'stardew', profileId: 'p1', file: 'two.zip', mtime: 1_500_000 },
+    install,
+    1_500_000,
+  )()
+  expect(useHandoffAsk.getState().queue).toEqual([])
+  expect(calls.installed.map((c) => c[2])).toEqual(['one.zip'])
+  expect(plain).toEqual(['two.zip'])
 })

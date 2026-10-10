@@ -763,6 +763,10 @@ msgstr "You started this download on {site}. Create a profile to put it in first
 msgid "A network request failed."
 msgstr "A network request failed."
 
+#: src/install/HandoffDialog.tsx:21
+msgid "No"
+msgstr "No"
+
 #: src/profiles/HealthDialog.tsx:240
 msgid "Everything looks fine"
 msgstr "Everything looks fine"
@@ -7092,6 +7096,10 @@ msgstr "Open on CurseForge"
 msgid "Clears cached Nexus and SMAPI details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower."
 msgstr "Clears cached Nexus and SMAPI details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower."
 
+#: src/install/HandoffDialog.tsx:19
+msgid "Mortar records the file against that page, so the mod's page link and shares point there. Choose No to add it as a plain local file."
+msgstr "Mortar records the file against that page, so the mod's page link and shares point there. Choose No to add it as a plain local file."
+
 #: src/settings/sections/DataMods.tsx:47
 msgid "Clear cache"
 msgstr "Clear cache"
@@ -7889,6 +7897,10 @@ msgstr "Completed downloads will appear here."
 msgid "Create another profile to use this mod there."
 msgstr "Create another profile to use this mod there."
 
+#: src/install/HandoffDialog.tsx:20
+msgid "Yes"
+msgstr "Yes"
+
 #: src/profiles/historyLabel.ts:31
 msgid "Pinned {name} at its version"
 msgstr "Pinned {name} at its version"
@@ -7900,6 +7912,12 @@ msgstr "Unfinished launch"
 #: src/mods/ListColumnMenu.tsx:293
 msgid "Reset to default columns"
 msgstr "Reset to default columns"
+
+#. placeholder {0}: asking?.file ?? ''
+#. placeholder {1}: asking?.page ?? ''
+#: src/install/HandoffDialog.tsx:18
+msgid "Install {0} as from {1}?"
+msgstr "Install {0} as from {1}?"
 
 #: src/tools/ToolEditorDialog.tsx:93
 msgid "Edit tool"
@@ -8827,6 +8845,11 @@ msgstr "How often background checks report new mod updates. The In Mortar and de
 msgid "Retention"
 msgstr "Retention"
 
+#. placeholder {0}: live.id
+#: src/install/patreon.ts:68
+msgid "Patreon post {0}"
+msgstr "Patreon post {0}"
+
 #: src/mods/storeEntries.ts:182
 msgid "Could not remove from the group"
 msgstr "Could not remove from the group"
@@ -9722,7 +9745,7 @@ msgstr "Default for Share and Export. You can change it per share."
 msgid "The Vortex folder {folder} has no profiles."
 msgstr "The Vortex folder {folder} has no profiles."
 
-#: src/App.tsx:79
+#: src/App.tsx:80
 #: src/games/useGameTiles.ts:88
 #: src/games/useOpenGame.ts:42
 msgid "Could not read your games"

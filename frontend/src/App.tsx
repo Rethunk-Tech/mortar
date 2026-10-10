@@ -9,6 +9,7 @@ import { MainScreen } from './game/MainScreen.tsx'
 import { GameSelect } from './games/GameSelect.tsx'
 import { loadGameStatus } from './games/status.ts'
 import { DownloadsDialog } from './install/DownloadsDialog.tsx'
+import { HandoffDialog } from './install/HandoffDialog.tsx'
 import { LaunchLayer } from './launch/LaunchLayer.tsx'
 import { usePlayMode } from './launch/playModeState.ts'
 import { overlayGame, useLaunch } from './launch/store.ts'
@@ -104,6 +105,7 @@ export function App() {
       <FomodDialog />
       <CommandPalette />
       <AvOverrideDialog />
+      <HandoffDialog />
       <FirstRunTour />
       <PinReasonDialog />
       <ShareDialog />

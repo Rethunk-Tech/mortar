@@ -1,3 +1,4 @@
+import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
 import {
   InstallPatreonDownload,
@@ -5,6 +6,8 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts'
 import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import type { InstallResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { i18n } from '../i18n/index.ts'
+import { askHandoff } from './handoffConfirm.ts'
 
 export interface PatreonPostRef {
   id: string
@@ -62,6 +65,9 @@ export function downloadInstaller(
     return () => install(game, profileId, file)
   }
   return async () => {
+    if (!(await askHandoff(file, i18n._(msg`Patreon post ${live.id}`)))) {
+      return install(game, profileId, file)
+    }
     const res = await InstallPatreonDownload(game, profileId, file, live.id)
     forgetPatreonPost()
     return res

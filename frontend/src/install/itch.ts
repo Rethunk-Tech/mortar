@@ -5,6 +5,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts'
 import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import type { InstallResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { askHandoff } from './handoffConfirm.ts'
 
 export interface ItchPageRef {
   id: string
@@ -62,6 +63,9 @@ export function itchDownloadInstaller(
     return () => install(game, profileId, file)
   }
   return async () => {
+    if (!(await askHandoff(file, live.id))) {
+      return install(game, profileId, file)
+    }
     const res = await InstallItchDownload(game, profileId, file, live.id)
     forgetItchPage()
     return res
