@@ -191,6 +191,8 @@ type resolver struct {
 	installed []profile.Installed
 	// curseforgeUnavailable says why CurseForge cannot be used now (no key), or "" when it can; nil means it can.
 	curseforgeUnavailable func() string
+	// curseforgeName is a CurseForge project's name, or "" when it cannot be read; nil asks nothing.
+	curseforgeName func(ctx context.Context, project string) string
 
 	infos map[int]*modInfo
 }
@@ -394,7 +396,7 @@ func (r *resolver) itch(ref share.Ref) Mod {
 
 // curseforge resolves a shared CurseForge file: installed when the profile or the store holds it, downloaded when the
 // receiver has a CurseForge key, and otherwise listed as a file to fetch by hand from its page.
-func (r *resolver) curseforge(ref share.Ref) Mod {
+func (r *resolver) curseforge(ctx context.Context, ref share.Ref) Mod {
 	project := strconv.Itoa(ref.CurseForge)
 	m := Mod{
 		Key: "curseforge:" + project + ":" + strconv.Itoa(ref.FileID), Site: SiteCurseForge, Name: "CurseForge project " + project,
@@ -408,6 +410,11 @@ func (r *resolver) curseforge(ref share.Ref) Mod {
 		m.State, r.storedKeys[m.Key] = StateInstalled, true
 	case r.curseforgeUnavailable != nil && r.curseforgeUnavailable() != "":
 		m.State, m.Reason = StateUnavailable, ReasonCurseForgeKey
+	}
+	if m.Reason == "" && r.curseforgeName != nil {
+		if name := r.curseforgeName(ctx, project); name != "" {
+			m.Name = name
+		}
 	}
 	return m
 }
@@ -499,7 +506,7 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 			continue
 		}
 		if ref.CurseForge != 0 {
-			mods = append(mods, r.curseforge(ref))
+			mods = append(mods, r.curseforge(ctx, ref))
 			continue
 		}
 		if ref.Package != "" {

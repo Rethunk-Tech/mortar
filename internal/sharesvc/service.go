@@ -626,7 +626,7 @@ func (s *Service) resolverFor(game, profileID string) (*resolver, error) {
 	r := &resolver{
 		meta: s.d.Meta, files: s.d.Files, signedIn: s.d.SignedIn(), premium: s.d.Premium(), env: s.d.Env(game),
 		game: game, stored: s.d.Stored, storedKeys: map[string]bool{}, requirements: s.d.NexusPages.Requirements(game),
-		curseforgeUnavailable: curseforgeUnavailable,
+		curseforgeUnavailable: curseforgeUnavailable, curseforgeName: curseforgeProjectName,
 	}
 	if profileID == "" {
 		return r, nil

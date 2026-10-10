@@ -1,6 +1,7 @@
 package sharesvc
 
 import (
+	"context"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -24,29 +25,29 @@ func TestAnItchModIsUnavailableUntilTheReceiverHoldsAFileFromThePage(t *testing.
 func TestACurseForgeModIsFetchedByHandWithoutAKey(t *testing.T) {
 	ref := share.Ref{CurseForge: 309243, FileID: 555, Disabled: nil}
 	keyless := &resolver{curseforgeUnavailable: func() string { return "Needs a CurseForge key" }}
-	m := keyless.curseforge(ref)
+	m := keyless.curseforge(t.Context(), ref)
 	if m.Site != SiteCurseForge || m.State != StateUnavailable || m.Reason != ReasonCurseForgeKey || m.PageURL != "https://www.curseforge.com/projects/309243" {
 		t.Fatalf("mod = %+v", m)
 	}
 	keyed := &resolver{curseforgeUnavailable: func() string { return "" }}
-	if got := keyed.curseforge(ref); got.State != StateDownload || got.Package != "309243" || got.FileID != 555 {
+	if got := keyed.curseforge(t.Context(), ref); got.State != StateDownload || got.Package != "309243" || got.FileID != 555 {
 		t.Fatalf("with a key the file downloads: %+v", got)
 	}
 	held := &resolver{target: []profile.Entry{{Source: profile.Source{Kind: profile.KindCurseForge, Name: "309243", FileID: 555}}}, curseforgeUnavailable: keyless.curseforgeUnavailable}
-	if got := held.curseforge(ref); got.State != StateInstalled {
+	if got := held.curseforge(t.Context(), ref); got.State != StateInstalled {
 		t.Fatalf("a profile that holds the file has it installed: %+v", got)
 	}
 	stored := &resolver{
 		game: "stardew", storedKeys: map[string]bool{}, curseforgeUnavailable: keyless.curseforgeUnavailable,
 		stored: func(_, key string) bool { return key == store.PackageKey("curseforge:309243", "555") },
 	}
-	if got := stored.curseforge(ref); got.State != StateInstalled {
+	if got := stored.curseforge(t.Context(), ref); got.State != StateInstalled {
 		t.Fatalf("a file already in the store is placed, not fetched: %+v", got)
 	}
 }
 
 func TestACurseForgeModInstallsThroughTheCurseForgeRequestPath(t *testing.T) {
-	m := (&resolver{curseforgeUnavailable: func() string { return "" }}).curseforge(share.Ref{CurseForge: 7, FileID: 9})
+	m := (&resolver{curseforgeUnavailable: func() string { return "" }}).curseforge(t.Context(), share.Ref{CurseForge: 7, FileID: 9})
 	r := requestFor("stardew", "p", m)
 	if r.Kind != queue.KindInstall || r.Source != profile.KindCurseForge || r.Package != "7" || r.PackageFile != 9 {
 		t.Fatalf("request = %+v", r)
@@ -62,5 +63,19 @@ func TestReplaceKnowsCurseForgeFiles(t *testing.T) {
 	e := profile.Entry{Key: "k", Source: profile.Source{Kind: profile.KindCurseForge, Name: "7", FileID: 9}}
 	if modToken(m) == "" || modToken(m) != entryToken(e) {
 		t.Fatalf("tokens %q %q", modToken(m), entryToken(e))
+	}
+}
+
+func TestACurseForgeModIsNamedOnlyWhenTheReceiverHasAKey(t *testing.T) {
+	ref := share.Ref{CurseForge: 309243, FileID: 555}
+	asked := 0
+	name := func(_ context.Context, project string) string { asked++; return "Project " + project }
+	keyed := &resolver{curseforgeUnavailable: func() string { return "" }, curseforgeName: name}
+	if m := keyed.curseforge(t.Context(), ref); m.Name != "Project 309243" {
+		t.Fatalf("name = %q", m.Name)
+	}
+	keyless := &resolver{curseforgeUnavailable: func() string { return "no key" }, curseforgeName: name}
+	if m := keyless.curseforge(t.Context(), ref); m.Name != "CurseForge project 309243" || asked != 1 {
+		t.Fatalf("keyless name = %q, asked %d", m.Name, asked)
 	}
 }

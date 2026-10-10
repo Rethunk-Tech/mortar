@@ -568,6 +568,35 @@ func (d Driver) files(ctx context.Context, id string) ([]fileResp, error) {
 	return out.Data, err
 }
 
+type projectName struct {
+	name string
+	at   time.Time
+}
+
+var (
+	namesMu sync.Mutex
+	names   = map[string]projectName{}
+)
+
+// ProjectName is the name of project id, kept for ten minutes so a preview of many shared files asks once per project.
+func (d Driver) ProjectName(ctx context.Context, id string) (string, error) {
+	key := cmp.Or(d.URL, BaseURL) + "|" + id
+	namesMu.Lock()
+	held, ok := names[key]
+	namesMu.Unlock()
+	if ok && time.Since(held.at) <= rowsTTL {
+		return held.name, nil
+	}
+	m, err := d.mod(ctx, id)
+	if err != nil {
+		return "", err
+	}
+	namesMu.Lock()
+	names[key] = projectName{name: m.Name, at: time.Now()}
+	namesMu.Unlock()
+	return m.Name, nil
+}
+
 // Details reads the mod's summary, its file names and the required mods of its newest file. The site's long
 // description is HTML, which Details does not carry, so the summary stands in for it.
 func (d Driver) Details(ctx context.Context, _, id, _ string) (source.Details, error) {

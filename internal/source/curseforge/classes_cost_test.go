@@ -76,3 +76,27 @@ func TestMergedSearchStopsAtTheDepthCap(t *testing.T) {
 		t.Fatalf("past the cap: %+v, %d requests, %v", past, requests.Load()-before, err)
 	}
 }
+
+func TestProjectNameIsReadOnceAndKept(t *testing.T) {
+	t.Parallel()
+	var requests atomic.Int64
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		if r.URL.Path != "/mods/309243" || r.Header.Get("X-Api-Key") != "k" {
+			http.NotFound(w, r)
+			return
+		}
+		_, _ = w.Write([]byte(`{"data":{"id":309243,"name":"Content Patcher"}}`))
+	}))
+	t.Cleanup(srv.Close)
+	d := Driver{URL: srv.URL, Key: func() string { return "k" }}
+	for range 2 {
+		name, err := d.ProjectName(t.Context(), "309243")
+		if err != nil || name != "Content Patcher" {
+			t.Fatalf("%q %v", name, err)
+		}
+	}
+	if requests.Load() != 1 {
+		t.Fatalf("%d requests for one project", requests.Load())
+	}
+}
