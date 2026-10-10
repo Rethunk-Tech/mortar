@@ -79,6 +79,7 @@ function VersionLine({ update }: { update: Update }) {
       ) : null}
       {added.length + removed.length > 0 ? (
         <Tooltip
+          describeChild={true}
           title={
             <>
               {added.length > 0 ? <div>{t`Now needs ${listNames(added)}`}</div> : null}
@@ -86,7 +87,7 @@ function VersionLine({ update }: { update: Update }) {
             </>
           }
         >
-          <Chip size="small" variant="outlined" label={t`Changes dependencies`} />
+          <Chip size="small" variant="outlined" tabIndex={0} label={t`Changes dependencies`} />
         </Tooltip>
       ) : null}
     </Box>

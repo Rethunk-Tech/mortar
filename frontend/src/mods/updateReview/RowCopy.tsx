@@ -33,6 +33,9 @@ export function RowCopy({
           <Tooltip title={t`This update's notes mention breaking changes or new requirements`}>
             <Box
               component="span"
+              role="img"
+              tabIndex={0}
+              aria-label={t`This update's notes mention breaking changes or new requirements`}
               sx={{ display: 'inline-flex', flexShrink: 0, color: 'warning.main' }}
             >
               <TriangleAlert size={16} aria-hidden={true} />
