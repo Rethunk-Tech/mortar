@@ -396,6 +396,22 @@ func readZip(zr *zip.Reader) (Preview, error) {
 	}
 	seen := map[string]bool{profileFile: true}
 	var total int64
+	// read returns one entry's bytes, refusing a second entry under the same key and a file whose entries together
+	// pass the size cap.
+	read := func(f *zip.File, key string) ([]byte, error) {
+		if seen[key] {
+			return nil, fmt.Errorf("%w: duplicate %q", ErrBadFile, f.Name)
+		}
+		seen[key] = true
+		data, err := readBounded(f, MaxConfigBytes)
+		if err != nil {
+			return nil, err
+		}
+		if total += int64(len(data)); total > MaxConfigTotal {
+			return nil, fmt.Errorf("%w: configs exceed the size cap", ErrBadFile)
+		}
+		return data, nil
+	}
 	for _, f := range zr.File {
 		if f.Name == profileFile || strings.HasSuffix(f.Name, "/") && f.UncompressedSize64 == 0 {
 			continue
@@ -404,17 +420,9 @@ func readZip(zr *zip.Reader) (Preview, error) {
 			if !validLoaderConfigPath(rel) {
 				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
 			}
-			key := strings.ToLower(f.Name)
-			if seen[key] {
-				return Preview{}, fmt.Errorf("%w: duplicate %q", ErrBadFile, f.Name)
-			}
-			seen[key] = true
-			data, err := readBounded(f, MaxConfigBytes)
+			data, err := read(f, strings.ToLower(f.Name))
 			if err != nil {
 				return Preview{}, err
-			}
-			if total += int64(len(data)); total > MaxConfigTotal {
-				return Preview{}, fmt.Errorf("%w: configs exceed the size cap", ErrBadFile)
 			}
 			pv.LoaderConfigs = append(pv.LoaderConfigs, LoaderConfig{Path: rel, Data: data})
 			continue
@@ -423,17 +431,9 @@ func readZip(zr *zip.Reader) (Preview, error) {
 			if !validChangedPath(pv.Game, rel) {
 				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
 			}
-			key := strings.ToLower(f.Name)
-			if seen[key] {
-				return Preview{}, fmt.Errorf("%w: duplicate %q", ErrBadFile, f.Name)
-			}
-			seen[key] = true
-			data, err := readBounded(f, MaxConfigBytes)
+			data, err := read(f, strings.ToLower(f.Name))
 			if err != nil {
 				return Preview{}, err
-			}
-			if total += int64(len(data)); total > MaxConfigTotal {
-				return Preview{}, fmt.Errorf("%w: configs exceed the size cap", ErrBadFile)
 			}
 			pv.ChangedFiles = append(pv.ChangedFiles, ChangedFile{Path: rel, Data: data})
 			continue
@@ -451,17 +451,9 @@ func readZip(zr *zip.Reader) (Preview, error) {
 		if path.Clean(rel) != rel || !validConfigPath(rel) {
 			return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
 		}
-		key := strings.ToLower(string(canon) + "/" + rel)
-		if seen[key] {
-			return Preview{}, fmt.Errorf("%w: duplicate %q", ErrBadFile, f.Name)
-		}
-		seen[key] = true
-		data, err := readBounded(f, MaxConfigBytes)
+		data, err := read(f, strings.ToLower(string(canon)+"/"+rel))
 		if err != nil {
 			return Preview{}, err
-		}
-		if total += int64(len(data)); total > MaxConfigTotal {
-			return Preview{}, fmt.Errorf("%w: configs exceed the size cap", ErrBadFile)
 		}
 		pv.Configs = append(pv.Configs, Config{ID: canon, Path: rel, Data: data})
 	}
