@@ -3,7 +3,10 @@ package profile
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 // syncRig is a sims4 profile whose profile folder is dir, with install and sync helpers.
@@ -132,16 +135,97 @@ func TestARecordIsReadFromDiskOnEverySync(t *testing.T) {
 	r.want("Mods/mc.package", "player=2")
 }
 
-func TestAnUpdateThatNoLongerShipsAChangedFileHoldsItUnderChanged(t *testing.T) {
-	t.Parallel()
+// droppedByAnUpdate installs a script mod, changes one of its files, and updates to a version without that file.
+func droppedByAnUpdate(t *testing.T, mode string) *syncRig {
+	t.Helper()
 	r := newSyncRig(t)
-	r.install(cfSource(10), map[string]string{"mc/mc.ts4script": "s", "mc/old.cfg": "default"})
+	if mode != "" {
+		r.e.OldFilesMode = func(string) string { return mode }
+	}
+	r.install(cfSource(10), map[string]string{"mc/mc.ts4script": "s", "mc/old.cfg": "default", "mc/same.cfg": "untouched"})
 	r.sync()
 	r.write("Mods/mc/old.cfg", "player=2")
 	r.install(cfSource(11).WithReplacing(10), map[string]string{"mc/mc.ts4script": "s2"})
 	r.sync()
+	// A dropped file nobody changed leaves in every mode.
+	r.absent("Mods/mc/same.cfg")
+	r.absent("changed/Mods/mc/same.cfg")
+	return r
+}
+
+func (r *syncRig) pendingOldFiles() []string {
+	r.t.Helper()
+	sets, err := r.e.PendingOldFiles(folderGame, r.p.ID)
+	if err != nil {
+		r.t.Fatal(err)
+	}
+	var out []string
+	for _, set := range sets {
+		for _, f := range set.Files {
+			out = append(out, f.Path)
+		}
+	}
+	return out
+}
+
+func TestAChangedFileAnUpdateDroppedIsAskedAboutByDefault(t *testing.T) {
+	t.Parallel()
+	r := droppedByAnUpdate(t, "")
 	r.absent("Mods/mc/old.cfg")
-	r.want("changed/Mods/mc/old.cfg", "player=2")
+	r.absent("changed/Mods/mc/old.cfg")
+	if got := r.pendingOldFiles(); !slices.Equal(got, []string{"Mods/mc/old.cfg"}) {
+		t.Fatalf("files waiting for Keep or Delete = %v", got)
+	}
+	sets, err := r.e.PendingOldFiles(folderGame, r.p.ID)
+	if err != nil || len(sets) != 1 {
+		t.Fatalf("sets = %+v, %v", sets, err)
+	}
+	if err := r.e.ResolveOldFiles(folderGame, r.p.ID, sets[0].Key, true); err != nil {
+		t.Fatal(err)
+	}
+	r.want("Mods/mc/old.cfg", "player=2")
+	r.sync()
+	r.sync()
+	r.want("Mods/mc/old.cfg", "player=2")
+}
+
+func TestAChangedFileAnUpdateDroppedStaysWithKeep(t *testing.T) {
+	t.Parallel()
+	r := droppedByAnUpdate(t, settings.OldFilesKeep)
+	r.want("Mods/mc/old.cfg", "player=2")
+	r.sync()
+	r.want("Mods/mc/old.cfg", "player=2")
+	if got := r.pendingOldFiles(); len(got) != 0 {
+		t.Fatalf("keep asked about %v", got)
+	}
+}
+
+func TestAChangedFileAnUpdateDroppedGoesWithDelete(t *testing.T) {
+	t.Parallel()
+	r := droppedByAnUpdate(t, settings.OldFilesDelete)
+	r.absent("Mods/mc/old.cfg")
+	r.absent("changed/Mods/mc/old.cfg")
+	if got := r.pendingOldFiles(); len(got) != 0 {
+		t.Fatalf("delete asked about %v", got)
+	}
+}
+
+func TestSwitchingAModOffHoldsItsChangedFileWhateverTheOldFilesSetting(t *testing.T) {
+	t.Parallel()
+	r := newSyncRig(t)
+	r.e.OldFilesMode = func(string) string { return settings.OldFilesDelete }
+	cur := r.install(cfSource(10), map[string]string{"mc/mc.ts4script": "s", "mc/mc.cfg": "default"})
+	r.sync()
+	r.write("Mods/mc/mc.cfg", "player=2")
+	e := cur.Entries[0]
+	for _, m := range e.Mods {
+		if _, _, err := r.e.enableMod(folderGame, r.p.ID, e.Key, m.ID, false); err != nil {
+			t.Fatal(err)
+		}
+	}
+	r.sync()
+	r.absent("Mods/mc/mc.cfg")
+	r.want("changed/Mods/mc/mc.cfg", "player=2")
 }
 
 func TestRollBackKeepsTheChangedCopyAndHoldsOrRestoresTheRest(t *testing.T) {
@@ -152,18 +236,17 @@ func TestRollBackKeepsTheChangedCopyAndHoldsOrRestoresTheRest(t *testing.T) {
 	r.write("Mods/mc/old.cfg", "player=2")
 	cur := r.install(cfSource(11).WithReplacing(10), map[string]string{"mc/mc.ts4script": "s2", "mc/new.cfg": "default new"})
 	r.sync()
-	// old.cfg left with v1; new.cfg is v2's.
-	r.want("changed/Mods/mc/old.cfg", "player=2")
+	// old.cfg left with v1 and waits for the Keep or Delete question; new.cfg is v2's.
+	r.absent("Mods/mc/old.cfg")
 	r.write("Mods/mc/new.cfg", "player=3")
 	back, err := r.e.RollBack(folderGame, r.p.ID, cur.Entries[0].Key)
 	if err != nil {
 		t.Fatal(err)
 	}
 	r.sync()
-	// v1 ships old.cfg again: the changed copy is the one placed, and v2's new.cfg is held, not deleted.
+	// v1 ships old.cfg again: the changed copy is the one placed, and v2's new.cfg is set aside, not deleted.
 	r.want("Mods/mc/old.cfg", "player=2")
 	r.absent("Mods/mc/new.cfg")
-	r.want("changed/Mods/mc/new.cfg", "player=3")
 	r.want("Mods/mc/mc.ts4script", "s")
 	if _, err := r.e.RollBack(folderGame, r.p.ID, back.Entries[0].Key); err != nil {
 		t.Fatal(err)

@@ -298,6 +298,22 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 	}
 	mode := s.oldFilesMode(game)
 	var held []heldFile
+	// goneFor is what happens to a file of mod id's folder that the new version leaves out, by oldFilesOnUpdate: keep
+	// carries it into target, ask sets it aside for the question, delete (nil) lets it go with the old folder.
+	goneFor := func(id mod.ID, target string) func(rel, p string) error {
+		switch mode {
+		case settings.OldFilesKeep:
+			return func(rel, p string) error { return copyOver(p, filepath.Join(target, rel)) }
+		case settings.OldFilesAsk:
+			if _, err := safeFolder(id.Local()); err == nil && filepath.Base(id.Local()) == id.Local() {
+				return func(rel, p string) error {
+					held = append(held, heldFile{uniqueID: id.Local(), rel: rel, abs: p})
+					return nil
+				}
+			}
+		}
+		return nil
+	}
 	for _, nm := range ne.Mods {
 		i := slices.IndexFunc(e.Mods, func(m Component) bool { return mod.Equal(m.ID, nm.ID) })
 		if i < 0 {
@@ -316,25 +332,13 @@ func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry
 		}
 		configOnly := deleteOldVersion(newManifests, nm.ID)
 		target := filepath.Join(tmp, filepath.FromSlash(nm.Folder))
-		var gone func(rel, p string) error
-		switch mode {
-		case settings.OldFilesKeep:
-			gone = func(rel, p string) error { return copyOver(p, filepath.Join(target, rel)) }
-		case settings.OldFilesAsk:
-			if _, err := safeFolder(nm.ID.Local()); err == nil && filepath.Base(nm.ID.Local()) == nm.ID.Local() {
-				gone = func(rel, p string) error {
-					held = append(held, heldFile{uniqueID: nm.ID.Local(), rel: rel, abs: p})
-					return nil
-				}
-			}
-		}
-		err = carryOverWalk(cur, filepath.Join(oldSrc, filepath.FromSlash(e.Mods[i].Folder)), target, configOnly, gone)
+		err = carryOverWalk(cur, filepath.Join(oldSrc, filepath.FromSlash(e.Mods[i].Folder)), target, configOnly, goneFor(nm.ID, target))
 		if err != nil {
 			return swapped{}, err
 		}
 	}
 	if len(ne.ExtraStoreKeys) > 0 {
-		if err := s.fillExtrasUpdate(game, id, modsDir, e.Key, tmp, e, *ne); err != nil {
+		if err := s.fillExtrasUpdate(game, id, modsDir, e.Key, tmp, e, *ne, goneFor); err != nil {
 			return swapped{}, err
 		}
 		if err := s.refreshEntryMods(ne, tmp); err != nil {

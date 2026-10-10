@@ -24,6 +24,10 @@ import (
 // ships them and oldFilesOnUpdate is ask.
 const oldFilesDir = "old-files"
 
+// droppedFilesDir is the folder, beside the per-mod folders of an old-files set, for files named by their path in
+// the profile: the changed files a package or folder game's update dropped. No mod id can be this name.
+const droppedFilesDir = "_files"
+
 // heldFile is one file set aside by an update: rel is its path in the mod folder, abs where it is now.
 type heldFile struct{ uniqueID, rel, abs string }
 
@@ -68,6 +72,9 @@ func (s *Store) PendingOldFiles(game, id string) ([]OldFiles, error) {
 	for _, k := range keys {
 		i := slices.IndexFunc(p.Entries, func(e Entry) bool { return e.Key == k.Name() })
 		if i < 0 {
+			if err := holdDropped(dir, k.Name()); err != nil {
+				return nil, err
+			}
 			if err := fsx.RemoveAll(filepath.Join(root, k.Name())); err != nil {
 				return nil, err
 			}
@@ -83,8 +90,12 @@ func (s *Store) PendingOldFiles(game, id string) ([]OldFiles, error) {
 			if err != nil {
 				return nil, err
 			}
+			id := mod.SMAPI(m.Name())
+			if m.Name() == droppedFilesDir {
+				id = ""
+			}
 			for rel := range files {
-				set.Files = append(set.Files, OldFile{ID: mod.SMAPI(m.Name()), Path: filepath.ToSlash(rel)})
+				set.Files = append(set.Files, OldFile{ID: id, Path: filepath.ToSlash(rel)})
 			}
 		}
 		slices.SortFunc(set.Files, func(a, b OldFile) int {
@@ -122,9 +133,11 @@ func (s *Store) ResolveOldFiles(game, id, key string, keep bool) error {
 			return err
 		}
 		for _, m := range mods {
-			dest, err := s.modFolderLocked(game, id, key, mod.SMAPI(m.Name()))
-			if err != nil {
-				return err
+			dest := dir
+			if m.Name() != droppedFilesDir {
+				if dest, err = s.modFolderLocked(game, id, key, mod.SMAPI(m.Name())); err != nil {
+					return err
+				}
 			}
 			src := filepath.Join(set, m.Name())
 			files, err := relFiles(src)

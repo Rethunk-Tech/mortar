@@ -297,14 +297,14 @@ func (s *Store) UpdateMultiFile(game, id, oldKey, newKey string, source *Source)
 	return s.moveTo(game, id, oldKey, newKey, source)
 }
 
-func (s *Store) fillExtrasUpdate(game, id, modsDir, oldEntryKey, tmp string, e, ne Entry) error {
+func (s *Store) fillExtrasUpdate(game, id, modsDir, oldEntryKey, tmp string, e, ne Entry, goneFor func(id mod.ID, target string) func(rel, p string) error) error {
 	oldDir := liveEntryDir(modsDir, oldEntryKey)
 	for i, newKey := range ne.ExtraStoreKeys {
 		oldProfKey := newKey
 		if i < len(e.ExtraStoreKeys) {
 			oldProfKey = e.ExtraStoreKeys[i]
 		}
-		if err := s.fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey, e); err != nil {
+		if err := s.fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey, e, goneFor); err != nil {
 			return err
 		}
 	}
@@ -317,7 +317,7 @@ func (s *Store) fillExtrasUpdate(game, id, modsDir, oldEntryKey, tmp string, e, 
 	return nil
 }
 
-func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey string, e Entry) error {
+func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey string, e Entry, goneFor func(id mod.ID, target string) func(rel, p string) error) error {
 	extraSrc, found, done, err := s.scanItem(game, id, newKey, nil)
 	defer done()
 	if err != nil {
@@ -347,7 +347,8 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 			continue
 		}
 		configOnly := deleteOldVersion(found, om.ID)
-		err = carryOverWalk(cur, filepath.Join(extraSrc, filepath.FromSlash(rel)), filepath.Join(scratch, filepath.FromSlash(rel)), configOnly, nil)
+		target := filepath.Join(scratch, filepath.FromSlash(rel))
+		err = carryOverWalk(cur, filepath.Join(extraSrc, filepath.FromSlash(rel)), target, configOnly, goneFor(om.ID, target))
 		if err != nil {
 			return err
 		}

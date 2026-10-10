@@ -16,6 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 // placedFile records, in the profile's root, the files SyncPackages put there, so it can take them away again.
@@ -101,6 +102,9 @@ type placedRec struct {
 	Hash  string `json:"h"`
 	Size  int64  `json:"s"`
 	MTime int64  `json:"t"`
+	// Key is the entry that laid the file out, so a later sync can tell a file an update of that entry dropped from
+	// one whose entry was switched off or removed.
+	Key string `json:"k,omitempty"`
 }
 
 func readPlaced(dir string) map[string]placedRec {
@@ -149,12 +153,17 @@ func (s *Store) SyncPackages(gameID, id string) error {
 	if err != nil || files == nil {
 		return err
 	}
-	_, dir, err := s.readDir(gameID, id)
+	p, dir, err := s.readDir(gameID, id)
 	if err != nil {
 		return err
 	}
 	prev := readPlaced(dir)
 	next := maps.Clone(prev)
+	lays := map[string]bool{}
+	for _, f := range files {
+		lays[f.key] = true
+	}
+	succ, mode := successors(p), s.oldFilesMode(gameID)
 	var gone []string
 	for rel, rec := range prev {
 		if _, keep := files[rel]; keep {
@@ -162,8 +171,23 @@ func (s *Store) SyncPackages(gameID, id string) error {
 		}
 		dst := filepath.Join(dir, filepath.FromSlash(rel))
 		if changedSince(rec, dst) {
-			if err := holdChanged(dir, rel); err != nil {
-				return err
+			// A changed file whose entry was updated to a version that no longer ships it follows oldFilesOnUpdate;
+			// one whose entry was switched off or removed is held, to come back with it.
+			owner := succ[rec.Key]
+			dropped := rec.Key != "" && owner != "" && lays[owner]
+			switch {
+			case dropped && mode == settings.OldFilesKeep:
+				delete(next, rel)
+				continue
+			case dropped && mode == settings.OldFilesDelete:
+			case dropped && asideKey(owner) != "":
+				if err := setAsideDropped(dir, asideKey(owner), rel); err != nil {
+					return err
+				}
+			default:
+				if err := holdChanged(dir, rel); err != nil {
+					return err
+				}
 			}
 		}
 		removeUp(dir, dst)
@@ -202,6 +226,7 @@ func (s *Store) SyncPackages(gameID, id string) error {
 		}
 		next[rel] = pending(h)
 	}
+	stampOwners(next, files)
 	if err := writePlaced(dir, next); err != nil {
 		return err
 	}
@@ -267,6 +292,7 @@ func (s *Store) SyncPackages(gameID, id string) error {
 	if err := seedConfigs(dir, files); err != nil {
 		return err
 	}
+	stampOwners(next, files)
 	return writePlaced(dir, next)
 }
 
@@ -317,6 +343,106 @@ func holdAdopted(dir string, gone []string, files map[string]packageFile) error 
 	return nil
 }
 
+// stampOwners names, on each record of a file the enabled packages lay out, the entry that lays it out.
+func stampOwners(rec map[string]placedRec, files map[string]packageFile) {
+	for rel, f := range files {
+		if r, ok := rec[rel]; ok && r.Key != f.key {
+			r.Key = f.key
+			rec[rel] = r
+		}
+	}
+}
+
+// successors maps the key of each entry an update replaced to the entry that replaced it.
+func successors(p Profile) map[string]string {
+	out := map[string]string{}
+	for _, e := range p.Entries {
+		if e.PreviousKey != "" {
+			out[e.PreviousKey] = e.Key
+		}
+		if e.Replaced == "" {
+			continue
+		}
+		var old []Entry
+		if json.Unmarshal([]byte(e.Replaced), &old) != nil {
+			continue
+		}
+		for _, o := range old {
+			out[o.Key] = e.Key
+		}
+	}
+	return out
+}
+
+// asideKey is key when the old-files folder can be named after it, else "".
+func asideKey(key string) string {
+	if name, err := safeFolder(key); err != nil || name != key {
+		return ""
+	}
+	return key
+}
+
+// setAsideDropped moves a changed file an update dropped to the entry's old-files set, where the Keep or Delete
+// question finds it by its path in the profile.
+func setAsideDropped(dir, key, rel string) error {
+	to := filepath.Join(dir, oldFilesDir, key, droppedFilesDir, filepath.FromSlash(rel))
+	if err := os.MkdirAll(filepath.Dir(to), 0o700); err != nil {
+		return err
+	}
+	return fsx.Rename(filepath.Join(dir, filepath.FromSlash(rel)), to)
+}
+
+// restoreDropped puts back a file an update set aside for the Keep or Delete question, when a roll back lays its
+// path out again before the question was answered.
+func restoreDropped(dir, rel string) (bool, error) {
+	sets, err := os.ReadDir(filepath.Join(dir, oldFilesDir))
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return false, nil
+		}
+		return false, err
+	}
+	for _, set := range sets {
+		root := filepath.Join(dir, oldFilesDir, set.Name(), droppedFilesDir)
+		from := filepath.Join(root, filepath.FromSlash(rel))
+		if _, err := os.Lstat(from); err != nil {
+			continue
+		}
+		if err := fsx.Rename(from, filepath.Join(dir, filepath.FromSlash(rel))); err != nil {
+			return false, err
+		}
+		removeUp(filepath.Join(dir, oldFilesDir), from)
+		return true, nil
+	}
+	return false, nil
+}
+
+// holdDropped moves the files of an old-files set that are named by their path in the profile under changed/, so a
+// set whose entry is gone still gives its files back when their mod returns.
+func holdDropped(dir, key string) error {
+	root := filepath.Join(dir, oldFilesDir, key, droppedFilesDir)
+	files, err := relFiles(root)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	for rel := range files {
+		to := filepath.Join(dir, changedDir, rel)
+		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+			return err
+		}
+		if err := fsx.Rename(filepath.Join(root, rel), to); err != nil {
+			return err
+		}
+		if err := markHeld(dir, filepath.ToSlash(rel), time.Now(), true); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // holdChanged moves a changed copy aside under changed/, replacing an older one.
 func holdChanged(dir, rel string) error {
 	from := filepath.Join(dir, filepath.FromSlash(rel))
@@ -334,7 +460,7 @@ func holdChanged(dir, rel string) error {
 func restoreChanged(dir, rel string) (bool, error) {
 	from := filepath.Join(dir, changedDir, filepath.FromSlash(rel))
 	if _, err := os.Lstat(from); errors.Is(err, fs.ErrNotExist) {
-		return false, nil
+		return restoreDropped(dir, rel)
 	} else if err != nil {
 		return false, err
 	}
