@@ -333,7 +333,7 @@ func TestFolderGameTrayFilesInstallAndUninstallBesideThePlayersOwn(t *testing.T)
 	}
 	var trayKey string
 	for _, en := range res.Profile.Entries {
-		if len(en.TrayFiles) > 0 {
+		if en.Tray {
 			trayKey = en.Key
 		}
 	}

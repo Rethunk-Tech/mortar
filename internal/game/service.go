@@ -27,11 +27,11 @@ type GameInfo struct {
 	// StartupSettings is true when the game has a startup preferences file a profile's game settings are written to.
 	StartupSettings bool `json:"startupSettings"`
 	// HasOptions is true when the game has an options file a profile keeps its own copy of.
-	HasOptions bool   `json:"hasOptions"`
+	HasOptions bool `json:"hasOptions"`
 	// HasCaches is true when the catalog lists rebuildable cache files Mortar clears after a profile's mod set changes.
-	HasCaches bool `json:"hasCaches"`
-	Loader     string `json:"loader"`
-	LoaderID   string `json:"loaderId"`
+	HasCaches bool   `json:"hasCaches"`
+	Loader    string `json:"loader"`
+	LoaderID  string `json:"loaderId"`
 	// Loaders are all the loaders the catalog lists for the game, the first being the primary.
 	Loaders []LoaderRef `json:"loaders"`
 	Sources []string    `json:"sources"`

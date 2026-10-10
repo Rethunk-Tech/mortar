@@ -112,7 +112,7 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 		if held := placement.held; len(held) > 0 {
 			k := trayEntryKey(key)
 			fresh = append(fresh, Entry{
-				Key: k, Item: key, Source: source, Disabled: []mod.ID{}, Added: time.Now().UTC(), Package: true, TrayFiles: held,
+				Key: k, Item: key, Source: source, Disabled: []mod.ID{}, Added: time.Now().UTC(), Package: true, Tray: true, TrayFiles: held,
 				Mods: []Component{{ID: mod.NewID(mod.FormatFolder, k), Name: "Tray files", Folder: "."}},
 			})
 		}
@@ -256,7 +256,7 @@ func (s *Store) placeRestoredTray(game, id string, p *Profile, restored, current
 	}
 	*out = pl
 	for i := range restored {
-		if len(restored[i].TrayFiles) > 0 {
+		if restored[i].Tray {
 			restored[i].TrayFiles = pl.held
 			break
 		}

@@ -1187,7 +1187,7 @@ func modRows(p profile.Profile) []ModRow {
 				Enabled: e.Enabled(m.ID),
 				Pinned:  e.Pinned, PinReason: e.PinReason, Source: source(e.Source),
 				Note: e.Note, Tags: e.Tags,
-				Item: e.Item, File: e.File, Tray: len(e.TrayFiles) > 0,
+				Item: e.Item, File: e.File, Tray: e.Tray,
 			})
 		}
 	}

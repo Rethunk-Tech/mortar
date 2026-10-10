@@ -23,11 +23,12 @@ type TrayFile struct {
 	Hash string `json:"hash"`
 }
 
-// trayEntryKey is the key of the entry that holds an archive's Tray files beside its mods entries.
-func trayEntryKey(item string) string { return item + fileKeySep + "tray" }
+// trayEntryKey is the key of the entry that holds an archive's Tray files beside its mods entries. A laid-out file's
+// path is relative and never starts with a slash, so no file's key can equal it.
+func trayEntryKey(item string) string { return item + fileKeySep + "/tray" }
 
 // isTrayEntry reports the entry that holds an archive's Tray files; it lays nothing out in the profile.
-func (e Entry) isTrayEntry() bool { return e.Item != "" && e.Key == trayEntryKey(e.Item) }
+func (e Entry) isTrayEntry() bool { return e.Tray }
 
 // TrayRestoreError reports Tray files a restored profile's entries could not place again, because the Tray folder holds
 // a different file of that name. The profile itself is restored.

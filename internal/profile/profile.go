@@ -135,6 +135,9 @@ type Entry struct {
 	// entry that holds its whole store item.
 	Item string `json:"item,omitempty"`
 	File string `json:"file,omitempty"`
+	// Tray marks the entry that holds an archive's files in the game's shared Tray folder; it lays nothing out in the
+	// profile.
+	Tray bool `json:"tray,omitempty"`
 	// TrayFiles are the files this entry placed in, or shares in, the game's shared Tray folder, by slash path with the
 	// SHA-256 of the content placed. Removing the entry removes only these, and only while no other entry holds them.
 	TrayFiles []TrayFile `json:"trayFiles,omitempty"`

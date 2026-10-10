@@ -42,7 +42,7 @@ test('per-file entries of one archive form one group with the archive source and
 })
 
 test('the Tray entry joins its archive group, wherever it sits in the profile', () => {
-  const tray = entry({ key: 'pkg#tray', item: 'pkg' })
+  const tray = entry({ key: 'pkg#/tray', item: 'pkg', tray: true })
   const rows = folderRows([tray, perFile('pkg', 'a.package')])
   expect(rows).toHaveLength(1)
   expect(rows[0]).toMatchObject({ kind: 'archive', files: 1, tray })
@@ -50,7 +50,7 @@ test('the Tray entry joins its archive group, wherever it sits in the profile', 
 
 test('a kept-whole archive and a non-folder entry stay single rows, the whole archive keeping its Tray entry', () => {
   const whole = entry({ key: 'whole' })
-  const tray = entry({ key: 'whole#tray', item: 'whole' })
+  const tray = entry({ key: 'whole#/tray', item: 'whole', tray: true })
   const plain = entry({ key: 'other' })
   const rows = folderRows([whole, plain, tray])
   expect(rows).toEqual([
@@ -60,7 +60,7 @@ test('a kept-whole archive and a non-folder entry stay single rows, the whole ar
 })
 
 test('an archive with only Tray files is a single row, and groups keep the profile order', () => {
-  const trayOnly = entry({ key: 'h#tray', item: 'h' })
+  const trayOnly = entry({ key: 'h#/tray', item: 'h', tray: true })
   const rows = folderRows([
     perFile('a', 'x.package'),
     trayOnly,
@@ -71,5 +71,5 @@ test('an archive with only Tray files is a single row, and groups keep the profi
     rows.map((r) =>
       r.kind === 'archive' ? `archive:${r.item}:${r.files}` : `single:${r.entry.key}`,
     ),
-  ).toEqual(['archive:a:2', 'single:h#tray', 'archive:b:1'])
+  ).toEqual(['archive:a:2', 'single:h#/tray', 'archive:b:1'])
 })

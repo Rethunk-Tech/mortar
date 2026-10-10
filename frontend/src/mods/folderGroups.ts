@@ -27,10 +27,8 @@ export interface SingleRow {
 
 export type FolderRow = ArchiveGroup | SingleRow
 
-const traySuffix = '#tray'
-
 function isTrayEntry(e: Entry): boolean {
-  return Boolean(e.item) && e.key === `${e.item}${traySuffix}`
+  return e.tray === true
 }
 
 function isOff(e: Entry): boolean {
