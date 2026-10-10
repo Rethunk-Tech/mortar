@@ -20,7 +20,8 @@ function Thumb({ game }: { game: GameInfo | undefined }) {
   return (
     <Box
       component={art ? 'img' : 'span'}
-      {...(art ? { src: art, alt: '', draggable: false } : {})}
+      // Lazy, so opening the menu fetches art only for the rows in view, not for every game in the catalog.
+      {...(art ? { src: art, alt: '', draggable: false, loading: 'lazy' as const } : {})}
       aria-hidden={true}
       sx={{
         width: THUMB_PX,
