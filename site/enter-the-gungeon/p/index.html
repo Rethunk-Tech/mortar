@@ -1,0 +1,71 @@
+<!doctype html>
+<!-- Written by scripts/site-games.ts from scripts/share-page.html for each playable game. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="dark" />
+    <title>Mortar: shared Enter the Gungeon profile</title>
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="stylesheet" href="../../share/share.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 64 64"
+          aria-hidden="true"
+          fill="currentColor"
+        >
+          <rect x="6" y="12" width="24" height="11" rx="2" />
+          <rect x="34" y="12" width="24" height="11" rx="2" />
+          <rect x="6" y="27" width="10" height="11" rx="2" />
+          <rect x="20" y="27" width="24" height="11" rx="2" />
+          <rect x="48" y="27" width="10" height="11" rx="2" />
+          <rect x="6" y="42" width="24" height="11" rx="2" />
+          <rect x="34" y="42" width="24" height="11" rx="2" />
+        </svg>
+        <span>Mortar</span>
+      </header>
+      <p id="error" class="card" hidden></p>
+      <noscript
+        ><p class="card">
+          This page needs JavaScript to read the shared profile.
+        </p></noscript
+      >
+      <section id="profile" class="card" hidden>
+        <p class="muted">Enter the Gungeon profile shared with you</p>
+        <p id="name" class="title"></p>
+        <p class="muted">
+          <span id="count"></span>. Mortar resolves mod names when you import.
+        </p>
+        <label id="versionRow" hidden
+          >Your game version
+          <input id="version" inputmode="decimal" autocomplete="off" />
+          <span id="flagged" class="muted"></span>
+        </label>
+        <ul id="list"></ul>
+      </section>
+      <div class="actions">
+        <a id="open" class="btn" href="mortar://" hidden
+          >Open in Mortar</a
+        >
+        <a id="download" class="btn alt" href="/download/" hidden>Get Mortar</a>
+        >
+      </div>
+      <p id="copied" class="muted" hidden>
+        Link copied. After installing Mortar, paste it into Import.
+      </p>
+      <p class="muted">
+        Everything on this page happens in your browser; the profile is never
+        sent anywhere. Pictures of GitHub and Thunderstore mods load from those
+        sites.
+      </p>
+    </main>
+    <script type="module" src="../../share/app.js"></script>
+  </body>
+</html>

@@ -617,6 +617,1391 @@
       ]
     },
     {
+      "id": "across-the-obelisk",
+      "name": "Across the Obelisk",
+      "enabled": true,
+      "marker": "AcrossTheObelisk.exe",
+      "r2modmanFolder": "AcrossTheObelisk",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1385380"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_AcrossTheObelisk"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "across-the-obelisk"
+        }
+      ]
+    },
+    {
+      "id": "against-the-storm",
+      "name": "Against the Storm",
+      "enabled": true,
+      "marker": "Against the Storm.exe",
+      "r2modmanFolder": "AgainstTheStorm",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Eremite Games/Against the Storm/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1336490"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "against-the-storm"
+        }
+      ]
+    },
+    {
+      "id": "atlyss",
+      "name": "ATLYSS",
+      "enabled": true,
+      "marker": "ATLYSS.exe",
+      "r2modmanFolder": "ATLYSS",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "2768430"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "atlyss"
+        }
+      ]
+    },
+    {
+      "id": "bomb-rush-cyberfunk",
+      "name": "Bomb Rush Cyberfunk",
+      "enabled": true,
+      "marker": "Bomb Rush Cyberfunk.exe",
+      "r2modmanFolder": "BombRushCyberfunk",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Team Reptile/Bomb Rush Cyberfunk/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1353230"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "bomb-rush-cyberfunk"
+        }
+      ]
+    },
+    {
+      "id": "bopl-battle",
+      "name": "Bopl Battle",
+      "enabled": true,
+      "marker": "BoplBattle.exe",
+      "r2modmanFolder": "BoplBattle",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Johan Gronvall/BoplBattle/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1686940"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "bopl-battle"
+        }
+      ]
+    },
+    {
+      "id": "burglin-gnomes",
+      "name": "Burglin' Gnomes",
+      "enabled": true,
+      "marker": "Gnomium.exe",
+      "r2modmanFolder": "BurglinGnomes",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "3844970"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "burglin-gnomes"
+        }
+      ]
+    },
+    {
+      "id": "chrono-ark",
+      "name": "Chrono Ark",
+      "enabled": true,
+      "marker": "ChronoArk.exe",
+      "r2modmanFolder": "ChronoArk",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/AlFine/ChronoArk/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1188930"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_Chrono_Ark"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "chrono-ark"
+        }
+      ]
+    },
+    {
+      "id": "distance",
+      "name": "Distance",
+      "enabled": true,
+      "marker": "Distance.exe",
+      "r2modmanFolder": "Distance",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "233610"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "distance"
+        }
+      ]
+    },
+    {
+      "id": "enter-the-gungeon",
+      "name": "Enter the Gungeon",
+      "enabled": true,
+      "marker": "EtG.exe",
+      "r2modmanFolder": "ETG",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Dodge Roll/Enter the Gungeon/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "311690"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_EtG"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "enter-the-gungeon"
+        }
+      ]
+    },
+    {
+      "id": "erenshor",
+      "name": "Erenshor",
+      "enabled": true,
+      "marker": "Erenshor.exe",
+      "r2modmanFolder": "Erenshor",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "2382520"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "erenshor"
+        }
+      ]
+    },
+    {
+      "id": "gamble-with-your-friends",
+      "name": "Gamble With Your Friends",
+      "enabled": true,
+      "marker": "Gamble With Your Friends.exe",
+      "r2modmanFolder": "GambleWithYourFriends",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "3892270"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "gamble-with-your-friends"
+        }
+      ]
+    },
+    {
+      "id": "how-to-fish",
+      "name": "How to Fish",
+      "enabled": true,
+      "marker": "How to Fish.exe",
+      "r2modmanFolder": "HowToFish",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Dazed Games/How to Fish/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "4001890"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "how-to-fish"
+        }
+      ]
+    },
+    {
+      "id": "lethal-league-blaze",
+      "name": "Lethal League Blaze",
+      "enabled": true,
+      "marker": "LLBlaze.exe",
+      "linuxMarker": "LLBlaze.x86_64",
+      "r2modmanFolder": "LethalLeagueBlaze",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Team Reptile/LLBlaze/Player.log",
+          "linux": "{xdgConfig}/unity3d/Team Reptile/LLBlaze/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "553310"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_LLBlaze"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "lethal-league-blaze"
+        }
+      ]
+    },
+    {
+      "id": "mage-arena",
+      "name": "Mage Arena",
+      "enabled": true,
+      "marker": "MageArena.exe",
+      "r2modmanFolder": "MageArena",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "3716600"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "mage-arena"
+        }
+      ]
+    },
+    {
+      "id": "monster-train-2",
+      "name": "Monster Train 2",
+      "enabled": true,
+      "marker": "MonsterTrain2.exe",
+      "r2modmanFolder": "MonsterTrain2",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "2742830"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "monster-train-2"
+        }
+      ]
+    },
+    {
+      "id": "muck",
+      "name": "Muck",
+      "enabled": true,
+      "marker": "Muck.exe",
+      "linuxMarker": "Muck.x86_64",
+      "r2modmanFolder": "Muck",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1625450"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_Muck"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "muck"
+        }
+      ]
+    },
+    {
+      "id": "mycopunk",
+      "name": "Mycopunk",
+      "enabled": true,
+      "marker": "Mycopunk.exe",
+      "r2modmanFolder": "Mycopunk",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Pigeons at Play/Mycopunk/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "3247750"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_Mycopunk"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "mycopunk"
+        }
+      ]
+    },
+    {
+      "id": "nine-sols",
+      "name": "Nine Sols",
+      "enabled": true,
+      "marker": "NineSols.exe",
+      "r2modmanFolder": "NineSols",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/RedCandleGames/NineSols/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1809540"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "nine-sols"
+        }
+      ]
+    },
+    {
+      "id": "old-market-simulator",
+      "name": "Old Market Simulator",
+      "enabled": true,
+      "marker": "Old Market Simulator.exe",
+      "r2modmanFolder": "OldMarketSimulator",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "2878420"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "old-market-simulator"
+        }
+      ]
+    },
+    {
+      "id": "outward",
+      "name": "Outward",
+      "enabled": true,
+      "marker": "Outward.exe",
+      "r2modmanFolder": "Outward",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "794260"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_Outward"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "outward"
+        }
+      ]
+    },
+    {
+      "id": "receiver-2",
+      "name": "Receiver 2",
+      "enabled": true,
+      "marker": "Receiver2.exe",
+      "r2modmanFolder": "Receiver2",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Wolfire Games/Receiver2/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1129310"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "receiver-2"
+        }
+      ]
+    },
+    {
+      "id": "rounds",
+      "name": "ROUNDS",
+      "enabled": true,
+      "marker": "Rounds.exe",
+      "r2modmanFolder": "ROUNDS",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1557740"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_ROUNDS"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "rounds"
+        }
+      ]
+    },
+    {
+      "id": "sailwind",
+      "name": "Sailwind",
+      "enabled": true,
+      "marker": "Sailwind.exe",
+      "r2modmanFolder": "Sailwind",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Raw Lion Workshop/Sailwind/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1764530"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "sailwind"
+        }
+      ]
+    },
+    {
+      "id": "skul-the-hero-slayer",
+      "name": "Skul: The Hero Slayer",
+      "enabled": true,
+      "marker": "Skul.exe",
+      "r2modmanFolder": "SkulTheHeroSlayer",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Southpaw Games/Skul/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1147560"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_Skul"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "skul-the-hero-slayer"
+        }
+      ]
+    },
+    {
+      "id": "stacklands",
+      "name": "Stacklands",
+      "enabled": true,
+      "marker": "Stacklands.exe",
+      "r2modmanFolder": "Stacklands",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/sokpop/Stacklands/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1948280"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_Stacklands"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "stacklands"
+        }
+      ]
+    },
+    {
+      "id": "straftat",
+      "name": "STRAFTAT",
+      "enabled": true,
+      "marker": "STRAFTAT.exe",
+      "r2modmanFolder": "STRAFTAT",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/LemaitreBros/STRAFTAT/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "2386720"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "straftat"
+        }
+      ]
+    },
+    {
+      "id": "super-battle-golf",
+      "name": "Super Battle Golf",
+      "enabled": true,
+      "marker": "Super Battle Golf.exe",
+      "r2modmanFolder": "SuperBattleGolf",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Brimstone/Super Battle Golf/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "4069520"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "super-battle-golf"
+        }
+      ]
+    },
+    {
+      "id": "supermarket-together",
+      "name": "Supermarket Together",
+      "enabled": true,
+      "marker": "Supermarket Together.exe",
+      "r2modmanFolder": "SupermarketTogether",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/DDTNL/Supermarket Together/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "2709570"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "supermarket-together"
+        }
+      ]
+    },
+    {
+      "id": "talespire",
+      "name": "TaleSpire",
+      "enabled": true,
+      "marker": "TaleSpire.exe",
+      "r2modmanFolder": "TaleSpire",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/BouncyRock Entertainment/TaleSpire/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "720620"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "bbepisTaleSpire-BepInExPack"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "talespire"
+        }
+      ]
+    },
+    {
+      "id": "techtonica",
+      "name": "Techtonica",
+      "enabled": true,
+      "marker": "Techtonica.exe",
+      "r2modmanFolder": "Techtonica",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Fire Hose Games/Techtonica/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1457320"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "techtonica"
+        }
+      ]
+    },
+    {
+      "id": "totally-accurate-battle-simulator",
+      "name": "Totally Accurate Battle Simulator",
+      "enabled": true,
+      "marker": "TotallyAccurateBattleSimulator.exe",
+      "r2modmanFolder": "TABS",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Landfall Games/Totally Accurate Battle Simulator/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "508440"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_TABS"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "totally-accurate-battle-simulator"
+        }
+      ]
+    },
+    {
+      "id": "touhou-lost-branch-of-legend",
+      "name": "Touhou: Lost Branch of Legend",
+      "enabled": true,
+      "marker": "LBoL.exe",
+      "r2modmanFolder": "TouhouLostBranchOfLegend",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/AliothStudio/LBoL/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1140150"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "touhou-lost-branch-of-legend"
+        }
+      ]
+    },
+    {
+      "id": "trombone-champ",
+      "name": "Trombone Champ",
+      "enabled": true,
+      "marker": "TromboneChamp.exe",
+      "r2modmanFolder": "TromboneChamp",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Holy Wow/TromboneChamp/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1059990"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_TromboneChamp"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "trombone-champ"
+        }
+      ]
+    },
+    {
+      "id": "ultimate-chicken-horse",
+      "name": "Ultimate Chicken Horse",
+      "enabled": true,
+      "marker": "UltimateChickenHorse.exe",
+      "r2modmanFolder": "UltimateChickenHorse",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Clever Endeavour Games/Ultimate Chicken Horse/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "386940"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "ultimate-chicken-horse"
+        }
+      ]
+    },
+    {
+      "id": "void-crew",
+      "name": "Void Crew",
+      "enabled": true,
+      "marker": "Void Crew.exe",
+      "r2modmanFolder": "VoidCrew",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1063420"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "void-crew"
+        }
+      ]
+    },
+    {
+      "id": "white-knuckle",
+      "name": "White Knuckle",
+      "enabled": true,
+      "marker": "White Knuckle.exe",
+      "r2modmanFolder": "WhiteKnuckle",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Dark Machine/White Knuckle/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "3195790"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "white-knuckle"
+        }
+      ]
+    },
+    {
+      "id": "wrestling-empire",
+      "name": "Wrestling Empire",
+      "enabled": true,
+      "marker": "Wrestling Empire.exe",
+      "r2modmanFolder": "WrestlingEmpire",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1620340"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "wrestling-empire"
+        }
+      ]
+    },
+    {
+      "id": "yapyap",
+      "name": "YAPYAP",
+      "enabled": true,
+      "marker": "yapyap.exe",
+      "r2modmanFolder": "Yapyap",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "3834090"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "yapyap"
+        }
+      ]
+    },
+    {
       "id": "sims4",
       "name": "The Sims 4",
       "enabled": true,

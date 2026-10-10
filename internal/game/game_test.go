@@ -49,7 +49,7 @@ func TestListAndArt(t *testing.T) {
 	h0 := home(t)
 	svc := NewService(h0, testStore(t))
 	list, err := svc.List()
-	if err != nil || len(list) != 12 {
+	if err != nil || len(list) != 50 {
 		t.Fatalf("list = %v, %v", list, err)
 	}
 	if g := list[0]; g.ID != "stardew" || !g.Installed || g.ArtURL != "/steam-art/413150" || !g.Available || g.Store != StoreSteam {
