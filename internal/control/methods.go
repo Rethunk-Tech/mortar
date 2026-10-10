@@ -1676,7 +1676,7 @@ func adviceOnly(save savessvc.Fit, gap bool, err error) (savessvc.Fit, bool) {
 }
 
 func (s *Services) launch(ctx context.Context, gameID, id, installID, preset string, force bool) (launchsvc.Status, error) {
-	if !force {
+	if !force && !s.Launches.SkipsPlayCheck(gameID, id) {
 		update, err := s.Problems.UpdateWarning(ctx, gameID, id)
 		if err != nil {
 			return launchsvc.Status{}, err

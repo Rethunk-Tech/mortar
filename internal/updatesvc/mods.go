@@ -10,10 +10,17 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
-const (
-	modUpdateInitialDelay = 5 * time.Minute
-	modUpdateInterval     = 4 * time.Hour
-)
+const modUpdateInitialDelay = 5 * time.Minute
+
+// modUpdateEvery is the wait between background checks: the player's update check interval, read before each wait
+// so a change takes effect at the next check.
+func modUpdateEvery(set settings.Settings) time.Duration {
+	minutes := set.UpdateCheckIntervalMinutes
+	if minutes < settings.MinUpdateCheckIntervalMinutes || minutes > settings.MaxUpdateCheckIntervalMinutes {
+		minutes = settings.DefaultUpdateCheckIntervalMinutes
+	}
+	return time.Duration(minutes) * time.Minute
+}
 
 func StartModBackground(ctx context.Context, svc *settings.Service, source func(context.Context) ([]ProfileModUpdates, error), notify func(ModUpdateDigestNotice)) {
 	go func() {
@@ -62,15 +69,13 @@ func StartModBackground(ctx context.Context, svc *settings.Service, source func(
 				)
 			}
 		}
-		run()
-		ticker := time.NewTicker(modUpdateInterval)
-		defer ticker.Stop()
 		for {
+			run()
+			timer.Reset(modUpdateEvery(svc.Get()))
 			select {
 			case <-ctx.Done():
 				return
-			case <-ticker.C:
-				run()
+			case <-timer.C:
 			}
 		}
 	}()

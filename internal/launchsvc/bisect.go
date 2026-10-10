@@ -252,6 +252,14 @@ func (s *Service) LaunchesDirect(gameID, profileID string) bool {
 	return method == settings.LaunchDirect
 }
 
+// SkipsPlayCheck reports whether the profile (or the game, for profileID "") starts without the pre-Play check.
+//
+//wails:ignore
+func (s *Service) SkipsPlayCheck(gameID, profileID string) bool {
+	scope := settings.Scope{Game: gameID, Install: s.profiles.InstallOf(gameID, profileID), Profile: profileID}
+	return settings.ResolveAt(s.settings.Get(), "skipPlayCheck", scope, launchOverrides(s.profiles, gameID, profileID)) == "true"
+}
+
 func (s *Service) stopBisectRun(ctx context.Context, sl slot) error {
 	if status := s.statusOf(sl); status.State == Running {
 		return s.stopSlot(ctx, sl)

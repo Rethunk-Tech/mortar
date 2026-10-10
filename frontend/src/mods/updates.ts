@@ -144,7 +144,9 @@ let hourlyKey = ''
 
 function syncHourlyRecheck() {
   const { game, openId } = useProfiles.getState()
-  const minutes = useSettings.getState().updateCheckIntervalMinutes || 60
+  const minutes =
+    useSettings.getState().updateCheckIntervalMinutes ||
+    useSettings.getInitialState().updateCheckIntervalMinutes
   const key = game && openId ? `${game.id}|${openId}|${minutes}` : ''
   if (key === hourlyKey) {
     return

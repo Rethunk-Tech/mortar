@@ -619,3 +619,16 @@ func TestAnExitSeenTwiceClosesTheRunOnce(t *testing.T) {
 		t.Fatalf("closed lines = %d, want 1: %+v", n, buf.Lines())
 	}
 }
+
+func TestSkipsPlayCheckFollowsTheGameAndProfileSetting(t *testing.T) {
+	svc, p := startEnv(t)
+	if svc.SkipsPlayCheck("stardew", p.ID) {
+		t.Fatal("the pre-Play check runs unless the setting skips it")
+	}
+	if _, err := svc.profiles.SetOverride("stardew", p.ID, "skipPlayCheck", "true"); err != nil {
+		t.Fatal(err)
+	}
+	if !svc.SkipsPlayCheck("stardew", p.ID) || svc.SkipsPlayCheck("stardew", "") {
+		t.Fatal("the profile's own setting skips the check for that profile only")
+	}
+}
