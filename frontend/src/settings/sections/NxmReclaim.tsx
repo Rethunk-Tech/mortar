@@ -6,6 +6,7 @@ import {
   Taken,
   Yield,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
+import { listNames } from '../../i18n/list.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { toastError } from '../../toasts/report.ts'
 import { useSettings } from '../store.ts'
@@ -36,7 +37,7 @@ export function NxmReclaim() {
       ? t`${name} now opens Nexus "Mod Manager Download" links.`
       : t`${name} now opens Thunderstore "Install with Mod Manager" links.`,
   )
-  const names = [...new Set(taken.map((x) => x.name))].join(', ')
+  const names = listNames([...new Set(taken.map((x) => x.name))])
   return (
     <ConfirmDialog
       open={taken.length > 0}
