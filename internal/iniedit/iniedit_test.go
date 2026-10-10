@@ -14,3 +14,10 @@ func TestSet(t *testing.T) {
 		}
 	}
 }
+
+func TestSetMatchesAKeyOnAByteOrderMarkedFirstLine(t *testing.T) {
+	got := Set("\xef\xbb\xbfmodsdisabled = 1\n", "modsdisabled", "0")
+	if got != "\xef\xbb\xbfmodsdisabled = 0\n" {
+		t.Fatalf("got %q: the old value stays first and wins in most parsers", got)
+	}
+}
