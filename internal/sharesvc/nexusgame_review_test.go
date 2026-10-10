@@ -15,9 +15,9 @@ func TestANexusFileForAGameWithNoNexusSourceIsUnavailable(t *testing.T) {
 	ref := []share.Ref{{ModID: 100, FileID: 1}}
 
 	none := testResolver(files, nil)
-	none.game = "repo"
+	none.game = "riskofrain2"
 	if mods, _ := none.resolve(t.Context(), ref); mods[0].State != StateUnavailable || mods[0].Reason != ReasonNoSource {
-		t.Fatalf("repo lists no Nexus source: %+v", mods[0])
+		t.Fatalf("riskofrain2 lists no Nexus source: %+v", mods[0])
 	}
 	has := testResolver(files, nil)
 	has.game = "stardew"

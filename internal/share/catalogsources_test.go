@@ -11,7 +11,7 @@ func TestCheckSharedTakesSourcesFromTheCatalogNotTheLink(t *testing.T) {
 	t.Parallel()
 	claim := map[string]string{"curseforge": "1", "nexus": "n", "thunderstore": "t"}
 	for _, ref := range []Ref{{CurseForge: 7, FileID: 9}, {ModID: 5, FileID: 9}} {
-		if err := checkShared(Shared{Game: "repo", Name: "x", SourceKeys: claim, Entries: []Ref{ref}}); !errors.Is(err, ErrMalformed) {
+		if err := checkShared(Shared{Game: "riskofrain2", Name: "x", SourceKeys: claim, Entries: []Ref{ref}}); !errors.Is(err, ErrMalformed) {
 			t.Errorf("%+v for a game without that source: %v", ref, err)
 		}
 	}

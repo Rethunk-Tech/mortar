@@ -314,6 +314,11 @@
         {
           "id": "thunderstore",
           "key": "repo"
+        },
+        {
+          "id": "nexus",
+          "key": "repo",
+          "gameId": 7398
         }
       ]
     },
@@ -409,6 +414,11 @@
         {
           "id": "thunderstore",
           "key": "peak"
+        },
+        {
+          "id": "nexus",
+          "key": "peak",
+          "gameId": 7867
         }
       ]
     },
@@ -527,6 +537,11 @@
         {
           "id": "thunderstore",
           "key": "cult-of-the-lamb"
+        },
+        {
+          "id": "nexus",
+          "key": "cultofthelamb",
+          "gameId": 4736
         }
       ]
     },
@@ -565,6 +580,11 @@
         {
           "id": "thunderstore",
           "key": "sun-haven"
+        },
+        {
+          "id": "nexus",
+          "key": "sunhaven",
+          "gameId": 3892
         }
       ]
     },
@@ -604,6 +624,11 @@
         {
           "id": "thunderstore",
           "key": "potion-craft"
+        },
+        {
+          "id": "nexus",
+          "key": "potioncraftalchemistsimulator",
+          "gameId": 4060
         }
       ]
     },
@@ -709,6 +734,11 @@
         {
           "id": "thunderstore",
           "key": "atlyss"
+        },
+        {
+          "id": "nexus",
+          "key": "atlyss",
+          "gameId": 7077
         }
       ]
     },
@@ -747,6 +777,11 @@
         {
           "id": "thunderstore",
           "key": "bomb-rush-cyberfunk"
+        },
+        {
+          "id": "nexus",
+          "key": "bombrushcyberfunk",
+          "gameId": 5670
         }
       ]
     },
@@ -818,6 +853,11 @@
         {
           "id": "thunderstore",
           "key": "burglin-gnomes"
+        },
+        {
+          "id": "nexus",
+          "key": "burglingnomes",
+          "gameId": 8756
         }
       ]
     },
@@ -995,6 +1035,11 @@
         {
           "id": "thunderstore",
           "key": "gamble-with-your-friends"
+        },
+        {
+          "id": "nexus",
+          "key": "gamblewithyourfriends",
+          "gameId": 9195
         }
       ]
     },
@@ -1033,6 +1078,11 @@
         {
           "id": "thunderstore",
           "key": "how-to-fish"
+        },
+        {
+          "id": "nexus",
+          "key": "howtofish",
+          "gameId": 9944
         }
       ]
     },
@@ -1285,6 +1335,11 @@
         {
           "id": "thunderstore",
           "key": "old-market-simulator"
+        },
+        {
+          "id": "nexus",
+          "key": "oldmarketsimulator",
+          "gameId": 7040
         }
       ]
     },
@@ -1319,6 +1374,11 @@
         {
           "id": "thunderstore",
           "key": "outward"
+        },
+        {
+          "id": "nexus",
+          "key": "outward",
+          "gameId": 2775
         }
       ]
     },
@@ -1621,6 +1681,11 @@
         {
           "id": "thunderstore",
           "key": "supermarket-together"
+        },
+        {
+          "id": "nexus",
+          "key": "supermarkettogether",
+          "gameId": 6766
         }
       ]
     },
@@ -1737,6 +1802,11 @@
         {
           "id": "thunderstore",
           "key": "totally-accurate-battle-simulator"
+        },
+        {
+          "id": "nexus",
+          "key": "totallyaccuratebattlesimulator",
+          "gameId": 3210
         }
       ]
     },
