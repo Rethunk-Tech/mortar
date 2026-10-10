@@ -129,6 +129,17 @@ test('a three-package archive lists three rows and a script archive one', async 
   writeZip(DOWNLOADS, 'Script.Mod', { 'Mod/m.ts4script': 's', 'Mod/m.package': 'p' })
   await addFromDownloads(page, 'Script.Mod')
   await expect(rows).toHaveCount(before + 4)
+
+  // Group by Download gathers the files of one archive under its name; the choice is put back for the other specs.
+  const groupBy = async (choice: string) => {
+    await page.getByRole('button', { name: 'Group by' }).click()
+    await page.getByRole('menuitemradio', { name: choice, exact: true }).click()
+  }
+  await groupBy('Download')
+  await expect(page.getByRole('button', { name: /^Three\.Packages/, expanded: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^Script\.Mod/, expanded: true })).toBeVisible()
+  await expect(rows).toHaveCount(before + 4)
+  await groupBy('Status')
 })
 
 test('game settings offer the settings file mode and cache clearing for The Sims 4 and not for Stardew Valley', async ({
