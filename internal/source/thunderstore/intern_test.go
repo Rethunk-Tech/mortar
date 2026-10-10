@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"slices"
 	"testing"
+	"time"
 )
 
 func TestDepCompactorSharesIdenticalListsAndKeepsTheDependencies(t *testing.T) {
@@ -38,5 +39,35 @@ func TestAListingWhoseVersionNamesADependencyItDoesNotHoldIsRefused(t *testing.T
 	}
 	if _, err := loadPackages("refused-listing", path); err == nil {
 		t.Fatal("an index past the names must fail the load, not panic at the first lookup")
+	}
+}
+
+func TestALoadedListingIsReleasedOnceIdleAndReadAgainOnTheNextUse(t *testing.T) {
+	was := listingIdle
+	listingIdle = 20 * time.Millisecond
+	t.Cleanup(func() { listingIdle = was })
+	const key = "idle-listing"
+	path := filepath.Join(t.TempDir(), "listing.json")
+	body := `[{"owner":"A","name":"M","versions":[{"v":"1.0.0","d":[0]}]}]` + "\n" + `["Only-One-1.0.0"]`
+	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	held := func() bool {
+		memoMu.Lock()
+		defer memoMu.Unlock()
+		_, ok := memo[key]
+		return ok
+	}
+	if _, err := loadPackages(key, path); err != nil || !held() {
+		t.Fatalf("load: %v, held = %v", err, held())
+	}
+	for deadline := time.Now().Add(5 * time.Second); held(); time.Sleep(5 * time.Millisecond) {
+		if time.Now().After(deadline) {
+			t.Fatal("the idle listing is still held")
+		}
+	}
+	pk, err := loadPackages(key, path)
+	if err != nil || len(pk) != 1 || !slices.Equal(pk[0].depsOf(pk[0].Versions[0]), []string{"Only-One-1.0.0"}) {
+		t.Fatalf("reload = %+v, %v", pk, err)
 	}
 }

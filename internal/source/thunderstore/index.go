@@ -93,6 +93,8 @@ type cacheMeta struct {
 type memoEntry struct {
 	path string
 	pk   []pkg
+	// idle drops the entry once nothing has asked for the listing for listingIdle.
+	idle *time.Timer
 }
 
 var (
@@ -111,8 +113,11 @@ func buildLock(key string) *sync.Mutex {
 
 var (
 	memoMu sync.Mutex
-	// memo holds one listing per community key, the one built from the blob at path.
+	// memo holds one listing per community key, the one built from the blob at path, while it is in use.
 	memo = map[string]memoEntry{}
+	// listingIdle is how long a loaded listing stays in memory after its last use; the next use reads it from disk
+	// again. A large community's listing holds tens of megabytes.
+	listingIdle = 10 * time.Minute
 )
 
 // noDowngrade refuses a redirect from https to another scheme.
@@ -444,6 +449,7 @@ func loadPackages(key, path string) ([]pkg, error) {
 	memoMu.Lock()
 	defer memoMu.Unlock()
 	if m, ok := memo[key]; ok && m.path == path {
+		m.idle.Reset(listingIdle)
 		return m.pk, nil
 	}
 	f, err := fsx.Open(path)
@@ -474,8 +480,21 @@ func loadPackages(key, path string) ([]pkg, error) {
 	if !c.known() {
 		return nil, errors.New("the listing names a dependency it does not hold")
 	}
-	memo[key] = memoEntry{path, pk}
+	if old, ok := memo[key]; ok {
+		old.idle.Stop()
+	}
+	memo[key] = memoEntry{path, pk, time.AfterFunc(listingIdle, func() { releaseListing(key, path) })}
 	return pk, nil
+}
+
+// releaseListing drops the loaded listing of key when it is still the one read from path.
+func releaseListing(key, path string) {
+	memoMu.Lock()
+	defer memoMu.Unlock()
+	if m, ok := memo[key]; ok && m.path == path {
+		m.idle.Stop()
+		delete(memo, key)
+	}
 }
 
 // depTable holds each distinct dependency string of a listing once; versions refer to them by index.

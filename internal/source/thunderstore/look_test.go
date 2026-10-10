@@ -41,9 +41,7 @@ func TestLooksComeFromTheIndexAndTheCacheAlone(t *testing.T) {
 	if len(listings) != 1 || os.WriteFile(listings[0], []byte("not json"), 0o600) != nil {
 		t.Fatal(listings)
 	}
-	memoMu.Lock()
-	delete(memo, "lethal-company")
-	memoMu.Unlock()
+	releaseListing("lethal-company", listings[0])
 	if looks, err := d.CachedLooks("lethal-company", []string{"ns-missing"}); err != nil || len(looks) != 0 {
 		t.Fatalf("a name already looked up read the listing again: %+v %v", looks, err)
 	}
