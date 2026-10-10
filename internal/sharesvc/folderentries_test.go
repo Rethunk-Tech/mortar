@@ -20,3 +20,14 @@ func TestDescribeCountsASplitArchiveOnceAndListsEveryFile(t *testing.T) {
 		t.Fatalf("%+v %v", info, err)
 	}
 }
+
+func TestDescribeCountsAKeptWholeArchiveWithTrayFilesOnce(t *testing.T) {
+	t.Parallel()
+	src := profile.Source{Kind: profile.KindNexus, ModID: 5, FileID: 9}
+	whole := profile.Entry{Key: "pkg-1", Source: src, Package: true, Mods: []profile.Component{{ID: mod.NewID(mod.FormatFolder, "pkg-1"), Name: "Mod", Folder: "."}}}
+	tray := profile.Entry{Key: "pkg-1#tray", Item: "pkg-1", Source: src, Package: true, Mods: []profile.Component{{ID: mod.NewID(mod.FormatFolder, "pkg-1#tray"), Name: "Tray", Folder: "."}}}
+	info, err := describe("sims4", profile.Profile{Name: "P", Entries: []profile.Entry{whole, tray}}, profile.ShareFacts{})
+	if err != nil || info.Count != 1 {
+		t.Fatalf("%+v %v", info, err)
+	}
+}

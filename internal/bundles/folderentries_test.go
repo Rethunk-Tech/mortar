@@ -35,3 +35,17 @@ func TestSnapshotKeepsTheSourceOfCurseForgeAndItchEntries(t *testing.T) {
 		}
 	}
 }
+
+func TestSnapshotGroupsAKeptWholeArchiveAndItsTrayEntryUnderOneStoreItem(t *testing.T) {
+	t.Parallel()
+	src := profile.Source{Kind: profile.KindNexus, ModID: 5, FileID: 9}
+	a, b := mod.NewID(mod.FormatFolder, "pkg-1"), mod.NewID(mod.FormatFolder, "pkg-1#tray")
+	p := profile.Profile{Entries: []profile.Entry{
+		{Key: "pkg-1", Source: src, Package: true, Mods: []profile.Component{{ID: a, Name: "a", Folder: "."}}},
+		{Key: "pkg-1#tray", Item: "pkg-1", Source: src, Package: true, Mods: []profile.Component{{ID: b, Name: "t", Folder: "."}}},
+	}}
+	mods, err := snapshot(p, []mod.ID{a, b})
+	if err != nil || len(mods) != 2 || mods[0].EntryKey != "pkg-1" || mods[1].EntryKey != "pkg-1" {
+		t.Fatalf("%+v %v", mods, err)
+	}
+}

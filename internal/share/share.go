@@ -653,9 +653,9 @@ func Enabled(e profile.Entry) bool {
 }
 
 // Collect splits a profile into what a link can carry and the enabled entries it cannot; off holds the keys of
-// the switched-off entries. Bundled entries are in none of them. The entries of one archive a folder game split into
-// files are one ref, keyed by their store item, that carries the switched-off files; the archive is in off only when
-// every file is off.
+// the switched-off entries. Bundled entries are in none of them. Every entry cut from one store item (the files of a
+// split archive, an archive's Tray files beside its whole entry) is one ref, keyed by the item, that carries the
+// switched-off files; the archive is in off only when every entry is off.
 func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, off []string) {
 	inc := DefaultInclude()
 	if len(include) > 0 {
@@ -667,20 +667,17 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 		if e.Source.Bundled() {
 			continue
 		}
-		group := []profile.Entry{e}
-		if e.Item != "" {
-			if done[e.Item] {
-				continue
-			}
-			done[e.Item] = true
-			group = group[:0]
-			for _, o := range p.Entries {
-				if o.Item == e.Item {
-					group = append(group, o)
-				}
+		key := e.StoreKey()
+		if done[key] {
+			continue
+		}
+		done[key] = true
+		var group []profile.Entry
+		for _, o := range p.Entries {
+			if !o.Source.Bundled() && o.StoreKey() == key {
+				group = append(group, o)
 			}
 		}
-		key := e.StoreKey()
 		if !slices.ContainsFunc(group, Enabled) && !inc.DisabledMods {
 			off = append(off, key)
 			continue
@@ -690,11 +687,9 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 			left = append(left, LeftOut{Key: key, Reason: why})
 			continue
 		}
-		if len(group) > 1 || e.Item != "" {
-			r.Disabled = nil
-			for _, o := range group {
-				r.Disabled = append(r.Disabled, o.Disabled...)
-			}
+		r.Disabled = nil
+		for _, o := range group {
+			r.Disabled = append(r.Disabled, o.Disabled...)
 		}
 		r.key = key
 		s.Entries = append(s.Entries, r)
