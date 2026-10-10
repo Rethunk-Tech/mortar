@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -287,6 +288,9 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	}
 	var mods []modResp
 	total := 0
+	if len(classes) > 1 && index+source.PageSize > mergedCap {
+		return source.Page{Total: mergedCap}, nil
+	}
 	if len(classes) == 1 {
 		var err error
 		if mods, total, err = d.searchClass(ctx, gs.GameID, classes[0], q, index, source.PageSize); err != nil {
@@ -319,7 +323,11 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		}
 		items = append(items, it)
 	}
-	return source.Page{Total: min(total, maxWindow), Items: items}, nil
+	limit := maxWindow
+	if len(classes) > 1 {
+		limit = mergedCap
+	}
+	return source.Page{Total: min(total, limit), Items: items}, nil
 }
 
 // searchClass asks one class for size mods from index, and returns them with the class's total.
@@ -373,9 +381,54 @@ func (d Driver) searchClass(ctx context.Context, gameID int, class string, q sou
 	return parsed.Data, parsed.Pagination.TotalCount, nil
 }
 
-// searchClasses merges the classes' results by the query's sort and returns the page at index. Each class is read
-// from its start to the end of the window in API-sized requests, because a merged page needs every class's leading
-// rows; ties keep each class's own order, interleaved by rank then class.
+// mergedCap is how deep a merged multi-class search goes: past it a page is empty and the total stops here. A merged
+// page needs every class's leading rows, so depth is what costs requests.
+const mergedCap = 1000
+
+// rowsTTL is how long a class's fetched rows serve later pages of the same search.
+const rowsTTL = 10 * time.Minute
+
+type classRows struct {
+	mods  []modResp
+	total int
+	at    time.Time
+}
+
+var (
+	rowsMu    sync.Mutex
+	rowsCache = map[string]classRows{}
+)
+
+// classRowsTo returns the first `end` rows of one class for the query, reading from the API only the rows the cache
+// does not hold yet, in API-sized requests. The total is the class's own.
+func (d Driver) classRowsTo(ctx context.Context, gameID int, class string, q source.Query, end int) ([]modResp, int, error) {
+	key := strings.Join([]string{cmp.Or(d.URL, BaseURL), strconv.Itoa(gameID), class, q.Text, q.Sort, strings.Join(q.Categories, ",")}, "|")
+	rowsMu.Lock()
+	held := rowsCache[key]
+	if time.Since(held.at) > rowsTTL {
+		held = classRows{}
+	}
+	rowsMu.Unlock()
+	for len(held.mods) < end && (len(held.mods) == 0 || len(held.mods) < held.total) {
+		rows, n, err := d.searchClass(ctx, gameID, class, q, len(held.mods), min(apiPageSize, end-len(held.mods)))
+		if err != nil {
+			return nil, 0, err
+		}
+		held.mods, held.total = append(held.mods, rows...), n
+		if len(rows) == 0 {
+			break
+		}
+	}
+	held.at = time.Now()
+	rowsMu.Lock()
+	rowsCache[key] = held
+	rowsMu.Unlock()
+	return held.mods[:min(end, len(held.mods))], held.total, nil
+}
+
+// searchClasses merges the classes' results by the query's sort and returns the page at index, never deeper than
+// mergedCap. Each class is read from its start to the end of the page (rows already read are reused), because a merged
+// page needs every class's leading rows; ties keep each class's own order, interleaved by rank then class.
 func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string, q source.Query, index int) ([]modResp, int, error) {
 	end := index + source.PageSize
 	type ranked struct {
@@ -385,20 +438,11 @@ func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string,
 	var all []ranked
 	total := 0
 	for ci, class := range classes {
-		var got []modResp
-		for len(got) < end {
-			rows, n, err := d.searchClass(ctx, gameID, class, q, len(got), min(apiPageSize, end-len(got)))
-			if err != nil {
-				return nil, 0, err
-			}
-			if len(got) == 0 {
-				total += n
-			}
-			got = append(got, rows...)
-			if len(rows) == 0 || len(got) >= n {
-				break
-			}
+		got, n, err := d.classRowsTo(ctx, gameID, class, q, end)
+		if err != nil {
+			return nil, 0, err
 		}
+		total += n
 		for r, m := range got {
 			all = append(all, ranked{m, r, ci})
 		}

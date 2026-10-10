@@ -80,13 +80,13 @@ func TestSearchPagesAcrossClasses(t *testing.T) {
 	}
 }
 
-func TestMergedTotalIsCappedAtTheSearchWindow(t *testing.T) {
+func TestMergedTotalIsCappedAtTheMergedDepth(t *testing.T) {
 	t.Parallel()
 	big := make([]int, 6000)
 	d := classFake(t, map[string][]int{"1": big, "2": big})
 	page, err := d.Search(t.Context(), source.Query{Game: "g", Key: "1", Sort: source.SortDownloads})
-	if err != nil || page.Total != maxWindow {
-		t.Fatalf("total %d, want the %d window cap: %v", page.Total, maxWindow, err)
+	if err != nil || page.Total != mergedCap {
+		t.Fatalf("total %d, want the %d merged cap: %v", page.Total, mergedCap, err)
 	}
 }
 
