@@ -101,3 +101,28 @@ func TestTrashedOldFilesComeBack(t *testing.T) {
 		t.Fatalf("pending = %+v", pending)
 	}
 }
+
+// An update re-lays an entry's extra files from the same archives, so nothing in them is left out by a new version:
+// a file the player added to an extra's mod folder is carried whatever the setting, and nothing is asked.
+func TestUpdateKeepsAFileAddedToAnExtraWhateverTheSetting(t *testing.T) {
+	t.Parallel()
+	m := manifestJSON("me.a")
+	for _, mode := range []string{settings.OldFilesKeep, settings.OldFilesDelete, settings.OldFilesAsk} {
+		e, p := updEnv(t, map[string]string{"A/manifest.json": m}, map[string]string{"A/manifest.json": m, "A/new.json": "n"})
+		e.OldFilesMode = func(string) string { return mode }
+		e.item(t, "extra", map[string]string{"C/manifest.json": manifestJSON("me.c")})
+		if _, err := e.AddExtra("stardew", p.ID, "a-1", "extra", Source{}); err != nil {
+			t.Fatal(err)
+		}
+		writeFile(t, e.mods(p.ID), "a-1/extra/C/mine.dat", "kept")
+		if _, err := e.UpdateMultiFile("stardew", p.ID, "a-1", "a-2", nil); err != nil {
+			t.Fatal(err)
+		}
+		if read(t, filepath.Join(e.mods(p.ID), "a-2", "extra", "C", "mine.dat")) != "kept" {
+			t.Errorf("%s: the player's file in the extra is gone", mode)
+		}
+		if pending, err := e.PendingOldFiles("stardew", p.ID); err != nil || len(pending) != 0 {
+			t.Errorf("%s: pending = %+v, %v", mode, pending, err)
+		}
+	}
+}
