@@ -20,3 +20,18 @@ func TestSnapshotNamesTheStoreItemOfAPerFileEntry(t *testing.T) {
 		t.Fatalf("%+v %v", mods, err)
 	}
 }
+
+func TestSnapshotKeepsTheSourceOfCurseForgeAndItchEntries(t *testing.T) {
+	t.Parallel()
+	for _, src := range []profile.Source{
+		{Kind: profile.KindCurseForge, Name: "7", FileID: 9},
+		{Kind: profile.KindItch, Name: "someone/cool-mod"},
+	} {
+		id := mod.NewID(mod.FormatFolder, "pkg-1")
+		p := profile.Profile{Entries: []profile.Entry{{Key: "pkg-1", Source: src, Package: true, Mods: []profile.Component{{ID: id, Name: "m", Folder: "."}}}}}
+		mods, err := snapshot(p, []mod.ID{id})
+		if err != nil || len(mods) != 1 || mods[0].Source.Kind != src.Kind || mods[0].Source.Name != src.Name || mods[0].Source.FileID != src.FileID {
+			t.Fatalf("%+v %v", mods, err)
+		}
+	}
+}

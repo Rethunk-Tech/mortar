@@ -2,6 +2,7 @@ package share
 
 import (
 	"slices"
+	"strconv"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -51,6 +52,17 @@ func identityOf(e profile.Entry) (Ref, bool) {
 			return Ref{}, false
 		}
 		return Ref{Patreon: e.Source.Name}, true
+	case profile.KindItch:
+		if e.Source.Name == "" {
+			return Ref{}, false
+		}
+		return Ref{Itch: e.Source.Name}, true
+	case profile.KindCurseForge:
+		project, err := strconv.Atoi(e.Source.Name)
+		if err != nil || project <= 0 || e.Source.FileID <= 0 {
+			return Ref{}, false
+		}
+		return Ref{CurseForge: project, FileID: e.Source.FileID}, true
 	case profile.KindThunderstore:
 		if e.Source.Name == "" {
 			return Ref{}, false

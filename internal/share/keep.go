@@ -21,6 +21,10 @@ func (r Ref) Identity() string {
 		return "t:" + strings.ToLower(r.Package) + "@" + r.Version
 	case r.Patreon != "":
 		return "p:" + r.Patreon
+	case r.Itch != "":
+		return "i:" + r.Itch
+	case r.CurseForge != 0:
+		return fmt.Sprintf("c:%d:%d", r.CurseForge, r.FileID)
 	case r.GitHub != "":
 		return "g:" + strings.ToLower(r.GitHub)
 	default:

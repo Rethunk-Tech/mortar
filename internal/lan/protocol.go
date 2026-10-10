@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -101,9 +102,12 @@ func transferItems(shared share.Shared) []transferItem {
 		switch {
 		case ref.Local != "":
 			item = transferItem{Key: ref.Local, Source: profile.KindLocal, Package: ref.LocalName}
-		case ref.Patreon != "":
-			// A link carries the post and no file; the receiver saves the file from the post.
+		case ref.Patreon != "", ref.Itch != "":
+			// A link carries the page and no file; the receiver saves the file from the page.
 			continue
+		case ref.CurseForge != 0:
+			project := strconv.Itoa(ref.CurseForge)
+			item = transferItem{Key: store.PackageKey(profile.KindCurseForge+":"+project, strconv.Itoa(ref.FileID)), Source: profile.KindCurseForge, Package: project}
 		case ref.GitHub != "":
 			repo, tag, asset := ref.GitHubParts()
 			owner, name, _ := strings.Cut(repo, "/")

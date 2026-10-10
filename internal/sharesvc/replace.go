@@ -15,6 +15,9 @@ type ReplacePlan struct {
 }
 
 func sourceToken(kind string, modID, fileID int, repo, tag, asset, pkg string) string {
+	if kind == profile.KindCurseForge && pkg != "" {
+		return fmt.Sprintf("c:%s:%d", pkg, fileID)
+	}
 	if pkg != "" {
 		return "t:" + strings.ToLower(pkg)
 	}
@@ -35,7 +38,7 @@ func entryToken(e profile.Entry) string {
 }
 
 func thunderstoreName(e profile.Entry) string {
-	if e.Source.Kind == profile.KindThunderstore {
+	if e.Source.Kind == profile.KindThunderstore || e.Source.Kind == profile.KindCurseForge {
 		return e.Source.Name
 	}
 	return ""

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"path"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -20,6 +21,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
+	"github.com/Rethunk-Tech/mortar/internal/source/itch"
 	"github.com/Rethunk-Tech/mortar/internal/source/patreon"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -42,6 +45,11 @@ const (
 	ReasonNoFile  = "no-file"
 	// ReasonPatreon is a mod from a Patreon post: open the post and save the file there.
 	ReasonPatreon = "patreon"
+	// ReasonItch is a mod from an itch.io page: open the page and save the file there.
+	ReasonItch = "itch"
+	// ReasonCurseForgeKey is a CurseForge file Mortar cannot fetch until the receiver has a CurseForge key; the page link
+	// is the way to fetch it by hand.
+	ReasonCurseForgeKey = "curseforge-key"
 )
 
 // Kinds of Problem.
@@ -152,6 +160,10 @@ const (
 	SiteLocal        = "local"
 	// SitePatreon is a Patreon post.
 	SitePatreon = "patreon"
+	// SiteItch is an itch.io game page.
+	SiteItch = "itch"
+	// SiteCurseForge is a CurseForge file.
+	SiteCurseForge = "curseforge"
 )
 
 const (
@@ -177,6 +189,8 @@ type resolver struct {
 	// target is the profile the mods would join: what it has installed, and its entries by source.
 	target    []profile.Entry
 	installed []profile.Installed
+	// curseforgeUnavailable says why CurseForge cannot be used now (no key), or "" when it can; nil means it can.
+	curseforgeUnavailable func() string
 
 	infos map[int]*modInfo
 }
@@ -363,6 +377,41 @@ func (r *resolver) github(ref share.Ref) Mod {
 	return m
 }
 
+// itch resolves a file the sender saved from an itch.io page, as patreon does for a post.
+func (r *resolver) itch(ref share.Ref) Mod {
+	m := Mod{
+		Key: "itch:" + ref.Itch, Site: SiteItch, Name: "itch.io page " + ref.Itch, State: StateInstalled,
+		PageURL: itch.PageURL(ref.Itch), IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
+	}
+	has := slices.ContainsFunc(r.target, func(e profile.Entry) bool {
+		return e.Source.Kind == profile.KindItch && e.Source.Name == ref.Itch
+	})
+	if !has {
+		m.State, m.Reason = StateUnavailable, ReasonItch
+	}
+	return m
+}
+
+// curseforge resolves a shared CurseForge file: installed when the profile or the store holds it, downloaded when the
+// receiver has a CurseForge key, and otherwise listed as a file to fetch by hand from its page.
+func (r *resolver) curseforge(ref share.Ref) Mod {
+	project := strconv.Itoa(ref.CurseForge)
+	m := Mod{
+		Key: "curseforge:" + project + ":" + strconv.Itoa(ref.FileID), Site: SiteCurseForge, Name: "CurseForge project " + project,
+		Package: project, FileID: ref.FileID, PageURL: curseforge.Driver{}.ModPageURL("", project),
+		State: StateDownload, IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
+	}
+	switch {
+	case slices.ContainsFunc(r.target, ref.MatchesEntry):
+		m.State = StateInstalled
+	case r.storedKey(store.PackageKey(profile.KindCurseForge+":"+project, strconv.Itoa(ref.FileID))):
+		m.State, r.storedKeys[m.Key] = StateInstalled, true
+	case r.curseforgeUnavailable != nil && r.curseforgeUnavailable() != "":
+		m.State, m.Reason = StateUnavailable, ReasonCurseForgeKey
+	}
+	return m
+}
+
 func (r *resolver) hasPackage(pkg, version string) bool {
 	return slices.ContainsFunc(r.target, func(e profile.Entry) bool {
 		return e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, pkg) && (version == "" || e.Source.Version == version)
@@ -425,7 +474,7 @@ func (r *resolver) storedKey(key string) bool {
 func nexusIDs(refs []share.Ref) []int {
 	var ids []int
 	for _, ref := range refs {
-		if ref.GitHub == "" && ref.Package == "" && ref.Local == "" && ref.Patreon == "" && !slices.Contains(ids, ref.ModID) {
+		if ref.GitHub == "" && ref.Package == "" && ref.Local == "" && ref.Patreon == "" && ref.Itch == "" && ref.CurseForge == 0 && !slices.Contains(ids, ref.ModID) {
 			ids = append(ids, ref.ModID)
 		}
 	}
@@ -443,6 +492,14 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 		}
 		if ref.Patreon != "" {
 			mods = append(mods, r.patreon(ref))
+			continue
+		}
+		if ref.Itch != "" {
+			mods = append(mods, r.itch(ref))
+			continue
+		}
+		if ref.CurseForge != 0 {
+			mods = append(mods, r.curseforge(ref))
 			continue
 		}
 		if ref.Package != "" {

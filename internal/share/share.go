@@ -11,6 +11,7 @@ import (
 	"io"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -20,6 +21,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/source/itch"
 	"github.com/Rethunk-Tech/mortar/internal/source/patreon"
 )
 
@@ -56,6 +58,11 @@ type Ref struct {
 	// Patreon is the id of a Patreon post the sender's file came from. A link carries the id alone: the receiver opens
 	// the post and saves the file there if they are a patron.
 	Patreon string `json:"patreon,omitempty"`
+	// Itch is the "user/game" name of the itch.io page the sender's file came from. A link carries the name alone, as
+	// with Patreon: the receiver opens the page and saves the file there.
+	Itch string `json:"itch,omitempty"`
+	// CurseForge is the project id of a CurseForge file, which FileID names; the receiver downloads it with their key.
+	CurseForge int `json:"curseforge,omitempty"`
 	// Package is a Thunderstore "Namespace-Name" at Version (the newest when Version is empty).
 	Package  string                         `json:"package,omitempty"`
 	Version  string                         `json:"version,omitempty"`
@@ -161,11 +168,17 @@ var (
 
 func (r Ref) valid() bool {
 	if r.Local != "" {
-		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && r.Package == "" && r.Patreon == "" && localRef.MatchString(r.Local) &&
+		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && r.Package == "" && r.Patreon == "" && r.Itch == "" && r.CurseForge == 0 && localRef.MatchString(r.Local) &&
 			validName(r.LocalName) && !strings.ContainsAny(r.LocalName, `/\`)
 	}
 	if r.Patreon != "" {
-		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && r.Package == "" && r.Version == "" && patreon.ValidID(r.Patreon)
+		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && r.Package == "" && r.Version == "" && r.Itch == "" && r.CurseForge == 0 && patreon.ValidID(r.Patreon)
+	}
+	if r.Itch != "" {
+		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && r.Package == "" && r.Version == "" && r.CurseForge == 0 && itch.ValidPage(r.Itch)
+	}
+	if r.CurseForge != 0 {
+		return r.ModID == 0 && r.GitHub == "" && r.Package == "" && r.Version == "" && r.CurseForge > 0 && r.CurseForge <= maxID && r.FileID > 0 && r.FileID <= maxID
 	}
 	if r.Package != "" {
 		return r.ModID == 0 && r.FileID == 0 && r.GitHub == "" && packageRef.MatchString(r.Package) &&
@@ -215,6 +228,10 @@ func (r Ref) MarshalJSON() ([]byte, error) {
 		w.NS, w.Name, _ = strings.Cut(r.Package, "-")
 	case r.Patreon != "":
 		w.Source, w.Name = "patreon", r.Patreon
+	case r.Itch != "":
+		w.Source, w.Name = "itch", r.Itch
+	case r.CurseForge != 0:
+		w.Source, w.Mod, w.File = "curseforge", r.CurseForge, r.FileID
 	case r.GitHub != "":
 		w.Source = "github"
 		w.Repo, w.Tag, w.Asset = r.GitHubParts()
@@ -244,6 +261,10 @@ func parseRef(raw json.RawMessage) (Ref, error) {
 		r.Package, r.Version = w.NS+"-"+w.Name, w.Version
 	case w.Source == "patreon" && w.Mod == 0 && w.File == 0 && w.Key == "" && w.Repo == "" && w.NS == "" && w.Version == "" && w.Name != "":
 		r.Patreon = w.Name
+	case w.Source == "itch" && w.Mod == 0 && w.File == 0 && w.Key == "" && w.Repo == "" && w.NS == "" && w.Version == "" && w.Name != "":
+		r.Itch = w.Name
+	case w.Source == "curseforge" && w.Key == "" && w.Repo == "" && w.Tag == "" && w.Asset == "" && w.NS == "" && w.Name == "" && w.Version == "":
+		r.CurseForge, r.FileID = w.Mod, w.File
 	case w.Source == "nexus" && w.Repo == "" && w.Tag == "" && w.Asset == "":
 		r.ModID, r.FileID = w.Mod, w.File
 	case w.Source == "github" && w.Mod == 0 && w.File == 0 && w.Repo != "" && w.Tag != "" && w.Asset != "":
@@ -285,8 +306,8 @@ func checkShared(s Shared) error {
 		return fmt.Errorf("%w: more than %d entries", ErrMalformed, MaxEntries)
 	}
 	for _, r := range s.Entries {
-		if !r.valid() || !validDetails(r) || (r.GitHub == "" && r.Package == "" && r.Patreon == "" && s.SourceKeys["nexus"] == "") ||
-			(r.Package != "" && s.SourceKeys["thunderstore"] == "") {
+		if !r.valid() || !validDetails(r) || (r.GitHub == "" && r.Package == "" && r.Patreon == "" && r.Itch == "" && r.CurseForge == 0 && s.SourceKeys["nexus"] == "") ||
+			(r.Package != "" && s.SourceKeys["thunderstore"] == "") || (r.CurseForge != 0 && s.SourceKeys["curseforge"] == "") {
 			return fmt.Errorf("%w: bad entry", ErrMalformed)
 		}
 	}
@@ -300,7 +321,7 @@ func validDetails(r Ref) bool {
 	if !validEntryNote(r.Note) || !validEntryTags(r.Tags) || r.SizeKB < 0 || r.SizeKB > maxID || !gameVersion.MatchString(r.MinGame) {
 		return false
 	}
-	if r.Overlay != nil && (r.GitHub != "" || r.Package != "" || r.Patreon != "" || !validOverlayPath(r.Overlay.From) || !validOverlayPath(r.Overlay.To)) {
+	if r.Overlay != nil && (r.GitHub != "" || r.Package != "" || r.Patreon != "" || r.Itch != "" || r.CurseForge != 0 || !validOverlayPath(r.Overlay.From) || !validOverlayPath(r.Overlay.To)) {
 		return false
 	}
 	for _, disabled := range r.Disabled {
@@ -420,6 +441,12 @@ func (r Ref) MatchesEntry(e profile.Entry) bool {
 	}
 	if r.Patreon != "" {
 		return e.Source.Kind == profile.KindPatreon && e.Source.Name == r.Patreon
+	}
+	if r.Itch != "" {
+		return e.Source.Kind == profile.KindItch && e.Source.Name == r.Itch
+	}
+	if r.CurseForge != 0 {
+		return e.Source.Kind == profile.KindCurseForge && e.Source.Name == strconv.Itoa(r.CurseForge) && e.Source.FileID == r.FileID
 	}
 	if r.Package != "" {
 		return e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, r.Package) &&
@@ -551,7 +578,7 @@ func roundKB(kb int64) int64 {
 func withoutDetails(s Shared) Shared {
 	out := Shared{Game: s.Game, SourceKeys: s.SourceKeys, Name: s.Name, Entries: make([]Ref, len(s.Entries)), GameVersion: s.GameVersion}
 	for i, r := range s.Entries {
-		out.Entries[i] = Ref{ModID: r.ModID, FileID: r.FileID, GitHub: r.GitHub, Patreon: r.Patreon, Package: r.Package, Version: r.Version, Local: r.Local, LocalName: r.LocalName}
+		out.Entries[i] = Ref{ModID: r.ModID, FileID: r.FileID, GitHub: r.GitHub, Patreon: r.Patreon, Itch: r.Itch, CurseForge: r.CurseForge, Package: r.Package, Version: r.Version, Local: r.Local, LocalName: r.LocalName}
 	}
 	return out
 }
@@ -570,6 +597,13 @@ func refOf(e profile.Entry, inc Include) (Ref, string) {
 	case profile.KindPatreon:
 		r = Ref{Patreon: e.Source.Name}
 		missing = "no Patreon post recorded"
+	case profile.KindItch:
+		r = Ref{Itch: e.Source.Name}
+		missing = "no itch.io page recorded"
+	case profile.KindCurseForge:
+		project, _ := strconv.Atoi(e.Source.Name)
+		r = Ref{CurseForge: project, FileID: e.Source.FileID}
+		missing = "no CurseForge file recorded"
 	case profile.KindThunderstore:
 		r = Ref{Package: e.Source.Name, Version: e.Source.Version}
 		missing = "no Thunderstore package recorded"
