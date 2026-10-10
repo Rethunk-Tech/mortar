@@ -8,11 +8,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"path"
 	"regexp"
 	"slices"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // Input is what a user handed Mortar: a file or folder path, a link, or pasted text. A format reads the field it
@@ -108,13 +109,10 @@ func readZip(data []byte) (map[string][]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		b, err := io.ReadAll(io.LimitReader(rc, maxFile+1))
+		b, err := fsx.ReadCapped(rc, maxFile)
 		_ = rc.Close()
 		if err != nil {
-			return nil, err
-		}
-		if len(b) > maxFile {
-			return nil, fmt.Errorf("archive file %q is too large", f.Name)
+			return nil, fmt.Errorf("archive file %q: %w", f.Name, err)
 		}
 		if total += len(b); total > maxTotal {
 			return nil, errors.New("archive unpacks to too much data")

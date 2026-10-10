@@ -8,6 +8,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -51,7 +52,7 @@ func readChangedFiles(profileDir, gameID string) (found []ChangedFile, skipped [
 			continue
 		}
 		data, err := readCapped(filepath.Join(profileDir, filepath.FromSlash(rel)))
-		if errors.Is(err, errOverCap) {
+		if errors.Is(err, fsx.ErrTooLarge) {
 			skipped = append(skipped, rel)
 			continue
 		}

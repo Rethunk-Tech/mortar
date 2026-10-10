@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -223,14 +224,11 @@ func readFile(path string) ([]byte, string, error) {
 
 // ReadCapped reads r whole, failing when it holds more than limit bytes.
 func ReadCapped(r io.Reader, limit int) ([]byte, error) {
-	b, err := io.ReadAll(io.LimitReader(r, int64(limit)+1))
-	if err != nil {
-		return nil, err
-	}
-	if len(b) > limit {
+	b, err := fsx.ReadCapped(r, int64(limit))
+	if errors.Is(err, fsx.ErrTooLarge) {
 		return nil, fmt.Errorf("the image is larger than %d MB", limit>>20)
 	}
-	return b, nil
+	return b, err
 }
 
 func readImage(r io.Reader) ([]byte, string, error) {

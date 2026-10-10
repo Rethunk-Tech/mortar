@@ -9,6 +9,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 )
@@ -94,7 +95,7 @@ func readLoaderConfigs(profileDir, gameID, loaderID string) (found []LoaderConfi
 				return nil
 			}
 			data, err := readCapped(p)
-			if errors.Is(err, errOverCap) || (err == nil && (!utf8.Valid(data) || !validLoaderConfigPath(rel))) {
+			if errors.Is(err, fsx.ErrTooLarge) || (err == nil && (!utf8.Valid(data) || !validLoaderConfigPath(rel))) {
 				skipped = append(skipped, rel)
 				return nil
 			}

@@ -5,10 +5,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -54,12 +54,9 @@ func (c *Client) CollectionArchive(ctx context.Context, downloadLink string) ([]
 	if resp.StatusCode != http.StatusOK {
 		return nil, &StatusError{Code: resp.StatusCode, Status: resp.Status}
 	}
-	b, err := io.ReadAll(io.LimitReader(resp.Body, MaxCollectionArchive+1))
+	b, err := fsx.ReadCapped(resp.Body, MaxCollectionArchive)
 	if err != nil {
-		return nil, err
-	}
-	if len(b) > MaxCollectionArchive {
-		return nil, errors.New("the collection archive is too large")
+		return nil, fmt.Errorf("the collection archive: %w", err)
 	}
 	return b, nil
 }

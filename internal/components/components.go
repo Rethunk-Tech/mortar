@@ -1043,12 +1043,9 @@ func (c *Client) get(ctx context.Context, address string, limit int64) ([]byte, 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("component manifest request returned %s", resp.Status)
 	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, limit+1))
+	body, err := fsx.ReadCapped(resp.Body, limit)
 	if err != nil {
-		return nil, err
-	}
-	if int64(len(body)) > limit {
-		return nil, errors.New("component manifest response is too large")
+		return nil, fmt.Errorf("component manifest response: %w", err)
 	}
 	return body, nil
 }

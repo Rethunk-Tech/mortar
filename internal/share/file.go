@@ -285,7 +285,7 @@ func readConfigs(modsDir, key string, m profile.Component) (found []Config, skip
 			return nil
 		}
 		data, err := readCapped(p)
-		if errors.Is(err, errOverCap) || !validConfigPath(rel) {
+		if errors.Is(err, fsx.ErrTooLarge) || !validConfigPath(rel) {
 			skipped = append(skipped, m.ID.Local()+"/"+rel)
 			return nil
 		}
@@ -298,22 +298,13 @@ func readConfigs(modsDir, key string, m profile.Component) (found []Config, skip
 	return found, skipped, err
 }
 
-var errOverCap = errors.New("over cap")
-
 func readCapped(p string) ([]byte, error) {
 	f, err := fsx.Open(p)
 	if err != nil {
 		return nil, err
 	}
 	defer func() { _ = f.Close() }()
-	b, err := io.ReadAll(io.LimitReader(f, MaxConfigBytes+1))
-	if err != nil {
-		return nil, err
-	}
-	if len(b) > MaxConfigBytes {
-		return nil, errOverCap
-	}
-	return b, nil
+	return fsx.ReadCapped(f, MaxConfigBytes)
 }
 
 // Read opens a .mortar file and returns its preview. Any entry outside the layout, any unsafe path, and any
@@ -359,12 +350,9 @@ func readBounded(f *zip.File, limit int64) ([]byte, error) {
 		return nil, fmt.Errorf("%w: %s: %w", ErrBadFile, f.Name, err)
 	}
 	defer func() { _ = rc.Close() }()
-	b, err := io.ReadAll(io.LimitReader(rc, limit+1))
+	b, err := fsx.ReadCapped(rc, limit)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s: %w", ErrBadFile, f.Name, err)
-	}
-	if int64(len(b)) > limit {
-		return nil, fmt.Errorf("%w: %s is over its size cap", ErrBadFile, f.Name)
 	}
 	return b, nil
 }

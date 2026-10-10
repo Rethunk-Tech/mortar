@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"regexp"
 	"slices"
 	"strconv"
@@ -16,6 +15,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 
 	"github.com/andybalholm/brotli"
@@ -844,12 +844,12 @@ func decode(payload string) (Shared, error) {
 	if err != nil {
 		return Shared{}, ErrNotLink
 	}
-	raw, err := io.ReadAll(io.LimitReader(brotli.NewReader(bytes.NewReader(packed)), MaxDecoded+1))
+	raw, err := fsx.ReadCapped(brotli.NewReader(bytes.NewReader(packed)), MaxDecoded)
+	if errors.Is(err, fsx.ErrTooLarge) {
+		return Shared{}, ErrTooLarge
+	}
 	if err != nil {
 		return Shared{}, fmt.Errorf("%w: not compressed data", ErrMalformed)
-	}
-	if len(raw) > MaxDecoded {
-		return Shared{}, ErrTooLarge
 	}
 	doc, err := versioned(raw, 5)
 	if err != nil {

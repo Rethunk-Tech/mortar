@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io"
 	"path"
 	"strings"
 
 	"github.com/bodgit/sevenzip"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/share"
@@ -130,14 +130,7 @@ func readCapped(f *sevenzip.File, limit int64) ([]byte, error) {
 		return nil, err
 	}
 	defer func() { _ = rc.Close() }()
-	b, err := io.ReadAll(io.LimitReader(rc, limit+1))
-	if err != nil {
-		return nil, err
-	}
-	if int64(len(b)) > limit {
-		return nil, errors.New("file too large")
-	}
-	return b, nil
+	return fsx.ReadCapped(rc, limit)
 }
 
 // parseChoices keeps Vortex's FOMOD choices (step, group and plugin names; the index is redundant) for Nexus mods.

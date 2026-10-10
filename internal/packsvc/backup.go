@@ -362,14 +362,15 @@ func readBackup(path, tmp string) (backupJSON, map[string][]byte, error) {
 		if err != nil {
 			return backupJSON{}, nil, err
 		}
-		data, err := io.ReadAll(io.LimitReader(rc, maxBackupBytes-inMemory+1))
+		data, err := fsx.ReadCapped(rc, maxBackupBytes-inMemory)
 		_ = rc.Close()
+		if errors.Is(err, fsx.ErrTooLarge) {
+			return backupJSON{}, nil, usererr.New(usererr.Damaged, "the backup unpacks to too much")
+		}
 		if err != nil {
 			return backupJSON{}, nil, err
 		}
-		if inMemory += int64(len(data)); inMemory > maxBackupBytes {
-			return backupJSON{}, nil, usererr.New(usererr.Damaged, "the backup unpacks to too much")
-		}
+		inMemory += int64(len(data))
 		if inFiles {
 			files[rel] = data
 		} else {
