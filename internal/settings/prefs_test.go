@@ -123,6 +123,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep", "gameSettingsMode": "warn", "cacheClearing": "off",
 		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "watchFolders": "/var/tmp/mortar-watch", "syncFolder": "/var/tmp/mortar-sync", "browseFilters": "installed=hide", "showAdultContent": "true",
 		"keepInTray": "false", "includeBetaReleases": "false", "includePrereleaseModVersions": "true", "askEndorseMods": "true", "listColumns": "on,name,version",
+		"checkOnlyEnabledMods": "true", "enableModsWhenInstalled": "false", "tellWhenSmapiOut": "false",
 	}
 	vortex := filepath.Join(t.TempDir(), "Vortex")
 	if err := os.MkdirAll(filepath.Join(vortex, "state.v2"), 0o750); err != nil {

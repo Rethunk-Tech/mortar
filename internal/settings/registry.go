@@ -157,6 +157,9 @@ var registry = withDefaults([]pref{
 	boolPref("keepInTray", ScopeApp, func(s Settings, _ string) bool { return s.KeepInTray }, func(s *Settings, _ string, on bool) { s.KeepInTray = on }),
 	boolPref("includeBetaReleases", ScopeApp, func(s Settings, _ string) bool { return s.IncludeBetaReleases }, func(s *Settings, _ string, on bool) { s.IncludeBetaReleases = on }),
 	boolPref("includePrereleaseModVersions", ScopeApp, func(s Settings, _ string) bool { return s.IncludePrereleaseModVersions }, func(s *Settings, _ string, on bool) { s.IncludePrereleaseModVersions = on }),
+	boolPref("checkOnlyEnabledMods", ScopeApp, func(s Settings, _ string) bool { return s.CheckOnlyEnabledMods }, func(s *Settings, _ string, on bool) { s.CheckOnlyEnabledMods = on }),
+	ptrPref("enableModsWhenInstalled", ScopeApp, func(s Settings, _ string) *bool { return s.EnableModsWhenInstalled }, func(s *Settings, _ string, on bool) { s.EnableModsWhenInstalled = &on }),
+	loaderPref("smapi", ptrPref("tellWhenSmapiOut", ScopeLoader, func(s Settings, _ string) *bool { return s.TellWhenSmapiOut }, func(s *Settings, _ string, on bool) { s.TellWhenSmapiOut = &on })),
 	ptrPref("askEndorseMods", ScopeApp, func(s Settings, _ string) *bool { return s.AskEndorseMods }, func(s *Settings, _ string, on bool) { s.AskEndorseMods = &on }),
 	listColumnsPref(),
 	boolPref("launchAtLogin", ScopeApp, func(s Settings, _ string) bool { return s.LaunchAtLogin }, func(s *Settings, _ string, on bool) {
