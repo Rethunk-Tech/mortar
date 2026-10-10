@@ -4527,7 +4527,7 @@ msgstr "{rest, plural, one {# more} other {# more}}"
 msgid "Mortar: {label}"
 msgstr "Mortar: {label}"
 
-#: src/mods/ModCards.tsx:467
+#: src/mods/ModCards.tsx:464
 #: src/mods/ModList.tsx:369
 #: src/mods/Toolbar.tsx:196
 #: src/mods/typedConfig/ConfigTab.tsx:167
