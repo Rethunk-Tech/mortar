@@ -820,7 +820,7 @@ regress_lc() {
   # Profiles get a local build of the bridge checkout beside this repo (MORTAR_REGRESS_BRIDGE_REPO names another), handed
   # to the server through MORTAR_LOCAL_BRIDGES, so a run tests the bridge as it is before its release; without a
   # checkout they get the catalog's published bridge, which an offline run cannot download.
-  local bridge=expected bridge_repo=${MORTAR_REGRESS_BRIDGE_REPO:-$REPO/../mortar-bepinex-bridge}
+  local splash='' bridge=expected bridge_repo=${MORTAR_REGRESS_BRIDGE_REPO:-$REPO/../mortar-bepinex-bridge}
   [ -n "${MORTAR_REGRESS_OFFLINE:-}" ] && bridge=skipped
   if [ -x "$bridge_repo/scripts/package.sh" ]; then
     local bridge_dir=$ROOT/bridge built
@@ -917,6 +917,7 @@ EOF
     diff_lines=$((diff_lines + n))
     [ "$n" -eq 0 ] || failures+=("$1: game folder differs after purge ($n lines); see $ROOT/game-before.txt vs game-after-$1.txt")
     cp "$log" "$ROOT/LogOutput-$1.log" 2>/dev/null || true
+    [ -n "$splash" ] || splash=$(grep -o -m1 'asked the engine to stop its splash screen [0-9]* times before scene [A-Za-z0-9_]* ([a-zA-Z: ]*)' "$log" 2>/dev/null || true)
   }
 
   # The matrix fills the base profile first, so the base launch is also its launch (a).
@@ -1026,6 +1027,7 @@ PY
   echo "BepInEx        $bepinex"
   echo "plugins loaded $loaded of ${#plugins[@]} (${plugins[*]})"
   echo "bridge         $bridge"
+  echo "intro skip     ${splash:-the bridge logged no splash line}"
   echo "game entries   $(wc -l <"$ROOT/game-before.txt") hashed, $diff_lines differing after purge"
   echo "r2 code        ${code:-none}: $r2 into ${r2_profile:-none}, $r2_listed listed, $r2_mods mods installed, BepInEx counted ${r2_plugins:-?} plugins and logged $r2_loading Loading lines, $r2_errors error lines"
   echo "stopped pids   ${killed:-none}"
