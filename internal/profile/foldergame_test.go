@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"io/fs"
 	"maps"
 	"os"
@@ -553,6 +554,46 @@ func TestFolderGameInstallAppliesTheSendersSwitches(t *testing.T) {
 					t.Fatalf("%s: %s enabled = %v, disabled in the shared list = %v", name, m.ID, en.Enabled(m.ID), slices.Contains(ids, m.ID))
 				}
 			}
+		}
+	}
+}
+
+func TestFolderGameRestoreWithAMissingStoreItemKeepsEntriesReportsThemAndLeavesTrayAlone(t *testing.T) {
+	t.Parallel()
+	e, tray := trayEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	zip := zipOf(t, "h.zip", map[string]string{"Smith.trayitem": "t", "x.package": "p"})
+	res, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10))
+	if err != nil {
+		t.Fatal(err)
+	}
+	item := res.Profile.Entries[0].Item
+	if err := e.Delete(folderGame, p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.items.Remove([]store.Ref{{Game: folderGame, Key: item}}); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(tray, "Smith.trayitem"), []byte("the player's"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	back, err := e.Restore(folderGame, p.ID)
+	if err != nil {
+		t.Fatalf("a missing store item is reported, not an error: %v", err)
+	}
+	if len(back.Entries) != len(res.Profile.Entries) {
+		t.Fatalf("entries = %v", keysOf(back))
+	}
+	missing, err := e.missingStoreKeys(folderGame, back.Entries)
+	if err != nil || !slices.Equal(missing, []string{item}) {
+		t.Fatalf("missing = %v, %v", missing, err)
+	}
+	if got := trayTree(t, tray); len(got) != 1 || got["Smith.trayitem"] != "the player's" {
+		t.Fatalf("tray = %v", got)
+	}
+	for _, en := range back.Entries {
+		if en.isTrayEntry() && len(en.TrayFiles) != 1 {
+			t.Fatalf("the Tray record must stay: %+v", en.TrayFiles)
 		}
 	}
 }
