@@ -12,6 +12,7 @@
 #   scripts/selftest.sh destroy               stop the server and everything running from the sandbox, then delete it
 #   scripts/selftest.sh reap [--hours N] [--yes]  list (and with --yes delete) idle sandboxes under the base dir
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
+#   scripts/selftest.sh sims4-install         add only the stand-in The Sims 4 (see sims4_install) to the sandbox (before start)
 #   scripts/selftest.sh ea-fixture FOLDER MARKER  add a fake Bottles bottle holding an EA App install of FOLDER (discovery only)
 #   scripts/selftest.sh regress --fake GAME_ID  launch regress for a game not installed here: a fake install and a dummy window (see regress_fake)
 #   scripts/selftest.sh regress --game sims4  stand-in The Sims 4 (see regress_sims4): per-profile Mods, saves and Options.ini; the player's files identical after
@@ -1777,6 +1778,10 @@ case "${1:-}" in
   fake-install)
     mark
     fake_install "${2:?usage: selftest.sh fake-install GAME_ID}"
+    ;;
+  sims4-install)
+    mark
+    sims4_install
     ;;
   ea-fixture) ea_fixture "${2:-}" "${3:-}" ;;
   seed) seed ;;

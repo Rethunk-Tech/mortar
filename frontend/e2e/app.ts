@@ -1,12 +1,19 @@
 import { readFileSync } from 'node:fs'
 import { expect, type Page } from '@playwright/test'
+import { SANDBOX_GAMES } from './sandbox.ts'
 
 const CATALOG = new URL('../../internal/components/components.json', import.meta.url)
 
-/** Game select shows a tile for each game the embedded catalog enables. */
-export const ENABLED_GAMES = (
-  JSON.parse(readFileSync(CATALOG, 'utf8')) as { games: { enabled: boolean }[] }
-).games.filter((g) => g.enabled).length
+/** Catalog games the sandbox enables for itself (scripts/selftest.sh MORTAR_SELFTEST_ENABLE, see sandbox.ts). */
+const SANDBOX_ENABLED = SANDBOX_GAMES.split(',')
+
+/** Game select shows a tile for each game the embedded catalog enables, and for each the sandbox enables beside them. */
+export const ENABLED_GAMES = (() => {
+  const games = (
+    JSON.parse(readFileSync(CATALOG, 'utf8')) as { games: { id: string; enabled: boolean }[] }
+  ).games
+  return games.filter((g) => g.enabled || SANDBOX_ENABLED.includes(g.id)).length
+})()
 
 /** Opens the seeded Stardew Valley on the Seed Farm profile with the first-run tour dismissed. */
 export async function openSeedFarm(page: Page) {

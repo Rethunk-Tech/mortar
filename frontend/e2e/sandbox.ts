@@ -7,6 +7,8 @@ import { keepEvidence, type ServerState, shouldKeepEvidence } from './evidence.t
 const SCRIPT = fileURLToPath(new URL('../../scripts/selftest.sh', import.meta.url))
 // The sandbox holds copies of the games (GBs), so it lives on disk: /tmp is a tmpfs.
 const BASE = '/var/tmp'
+/** Catalog ids the sandbox enables for itself (comma separated), as scripts/selftest.sh reads them. */
+export const SANDBOX_GAMES = 'lethal-company,sims4'
 const PREFIX = 'mortar-e2e-'
 const FREE_PORT = `const s = require('node:net').createServer().listen(0, '127.0.0.1', () => { console.log(s.address().port); s.close() })`
 const STOP_WAIT_MS = 10_000
@@ -36,6 +38,8 @@ function selftest(dir: string, ...args: string[]) {
       // play.pw.ts launches a stand-in for the game, which must not spend the session's real game launches.
       MORTAR_LAUNCH_SESSION: launchSession(dir),
       MORTAR_SELFTEST_LAUNCH_CAP: '12',
+      // The Sims 4 is disabled in the shipped catalog; the sandbox enables it for itself beside the stand-in install.
+      MORTAR_SELFTEST_ENABLE: SANDBOX_GAMES,
     },
     stdio: 'inherit',
   })
@@ -173,6 +177,8 @@ function freshSandbox(): () => void {
   try {
     // A stand-in PEAK, so graphics.pw.ts needs no download and no copy of a real game.
     selftest(dir, 'fake-install', 'peak')
+    // A stand-in The Sims 4 (a placeholder TS4_x64.exe and the player's Documents tree), for sims4.pw.ts.
+    selftest(dir, 'sims4-install')
     selftest(dir, 'start')
     selftest(dir, 'seed')
   } catch (e) {
