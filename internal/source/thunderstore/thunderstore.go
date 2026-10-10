@@ -122,14 +122,36 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	end := min(start+source.PageSize, len(hits))
 	items := make([]source.Item, 0, max(end-start, 0))
 	for i := start; i < end; i++ {
-		p := hits[i].p
-		items = append(items, source.Item{
-			Source: d.ID(), ID: p.Owner + "-" + p.Name, Name: p.Name, Summary: p.Summary, Author: p.Owner,
-			Version: p.Versions[0].Number, Picture: p.Icon, Endorsements: p.Rating, Downloads: p.Downloads,
-			Updated: p.Updated, URL: p.URL, Adult: p.Adult, Repo: p.Repo, Obsolete: p.Hidden,
-		})
+		items = append(items, d.item(hits[i].p))
 	}
 	return source.Page{Total: len(hits), Items: items}, nil
+}
+
+func (d Driver) item(p pkg) source.Item {
+	return source.Item{
+		Source: d.ID(), ID: p.Owner + "-" + p.Name, Name: p.Name, Summary: p.Summary, Author: p.Owner,
+		Version: p.Versions[0].Number, Picture: p.Icon, Endorsements: p.Rating, Downloads: p.Downloads,
+		Updated: p.Updated, URL: p.URL, Adult: p.Adult, Repo: p.Repo, Obsolete: p.Hidden,
+	}
+}
+
+// Items returns the community's packages named by ids ("Namespace-Name", in any case) from the cached listing.
+func (d Driver) Items(ctx context.Context, key, mortarVersion string, ids []string) (map[string]source.Item, error) {
+	pk, err := d.packages(ctx, key, source.UserAgent(mortarVersion)+" (+https://mortar.rethunk.tech)")
+	if err != nil {
+		return nil, err
+	}
+	want := make(map[string]bool, len(ids))
+	for _, id := range ids {
+		want[strings.ToLower(id)] = true
+	}
+	out := make(map[string]source.Item, len(ids))
+	for _, p := range pk {
+		if id := packageID(p.Owner, p.Name); want[id] {
+			out[id] = d.item(p)
+		}
+	}
+	return out, nil
 }
 
 // Categories lists the community's package categories, sorted.

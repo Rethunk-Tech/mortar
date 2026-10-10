@@ -168,6 +168,12 @@ type Searcher interface {
 	Search(ctx context.Context, q Query) (Page, error)
 }
 
+// ItemLister is a source that holds its whole listing and can answer for packages named by id in one pass. The
+// result is keyed by lower-cased id; an id the listing lacks is absent.
+type ItemLister interface {
+	Items(ctx context.Context, key, mortarVersion string, ids []string) (map[string]Item, error)
+}
+
 // VersionRef names one version of a package or project.
 type VersionRef struct{ ID, Version string }
 

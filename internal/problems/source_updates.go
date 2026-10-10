@@ -146,6 +146,32 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 	if src.Key == "" || !ok || !canSearch || src.ID == profile.KindGitHub || src.ID == profile.KindNexus {
 		return nil, nil
 	}
+	// A source that holds its whole listing answers for every package known by id in one pass. A search per mod would
+	// read that listing once each, and its first page misses a package whose name many others share.
+	listedID := func(x framework.Mod) string {
+		if x.SourceKind == src.ID {
+			return x.SourceName
+		}
+		if src.ID == profile.KindThunderstore {
+			return twins[x.Key]
+		}
+		return ""
+	}
+	var listed map[string]source.Item
+	if lister, lists := entry.Source.(source.ItemLister); lists {
+		var ids []string
+		for _, x := range mods {
+			if id := listedID(x); id != "" {
+				ids = append(ids, id)
+			}
+		}
+		if len(ids) > 0 {
+			var err error
+			if listed, err = s.throttledItems(ctx, lister, src, ids); err != nil {
+				return nil, err
+			}
+		}
+	}
 	var out []Update
 	var installedRefs []source.VersionRef
 	for _, x := range mods {
@@ -169,11 +195,19 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 		if text == "" {
 			continue
 		}
-		page, err := s.throttledSearch(ctx, searcher, gameID, src, text)
-		if err != nil {
-			return out, err
+		var items []source.Item
+		if id := listedID(x); listed != nil && id != "" {
+			if it, ok := listed[strings.ToLower(id)]; ok {
+				items = []source.Item{it}
+			}
+		} else {
+			page, err := s.throttledSearch(ctx, searcher, gameID, src, text)
+			if err != nil {
+				return out, err
+			}
+			items = page.Items
 		}
-		for _, it := range page.Items {
+		for _, it := range items {
 			if !sameMod(x, it) && (twin == "" || !strings.EqualFold(it.ID, twin)) {
 				continue
 			}
@@ -294,6 +328,18 @@ func depDiff(before, after []string) (added, removed []string) {
 	slices.Sort(added)
 	slices.Sort(removed)
 	return added, removed
+}
+
+// throttledItems waits for the source's slot before reading its listing.
+func (s *Service) throttledItems(ctx context.Context, lister source.ItemLister, src components.GameSource, ids []string) (map[string]source.Item, error) {
+	if s.Throttle != nil {
+		release, err := s.Throttle(ctx, src.ID)
+		if err != nil {
+			return nil, err
+		}
+		defer release()
+	}
+	return lister.Items(ctx, src.Key, "", ids)
 }
 
 // throttledSearch waits for the source's slot before asking it.
