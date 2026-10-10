@@ -110,3 +110,67 @@ func TestRecoverAfterACrashBeforeThePlayersFileIsSetAside(t *testing.T) {
 		t.Fatalf("player's file = %q (want player), profile copy = %q (want profile)", read(t, target), read(t, prof))
 	}
 }
+
+// Every pair of adjacent steps of ApplyFile and PurgeFile, killed between: the on-disk state each leaves is rebuilt
+// by hand, and recovery must return the player's file byte for byte.
+func TestFileRecoverFromEveryKillPoint(t *testing.T) {
+	held := func(target string) string { return target + heldSuffix }
+	for _, c := range []struct {
+		name  string
+		setup func(t *testing.T, target, prof string)
+		// profile is the profile copy recovery must leave.
+		profile string
+	}{
+		{"apply: record written, nothing moved", func(t *testing.T, target, prof string) {
+			write(t, target, "player")
+		}, "profile"},
+		{"apply: player's file set aside, nothing placed", func(t *testing.T, target, prof string) {
+			write(t, held(target), "player")
+		}, "profile"},
+		{"apply: profile copy placed", func(t *testing.T, target, prof string) {
+			write(t, held(target), "player")
+			write(t, target, "profile")
+		}, "profile"},
+		{"apply: game wrote while running", func(t *testing.T, target, prof string) {
+			write(t, held(target), "player")
+			write(t, target, "played")
+		}, "played"},
+		{"purge: written back, game's file still there", func(t *testing.T, target, prof string) {
+			write(t, held(target), "player")
+			write(t, target, "played")
+			write(t, prof, "played")
+		}, "played"},
+		{"purge: game's file removed, player's still aside", func(t *testing.T, target, prof string) {
+			write(t, held(target), "player")
+			write(t, prof, "played")
+		}, "played"},
+		{"purge: player's file returned, record still there", func(t *testing.T, target, prof string) {
+			write(t, target, "player")
+			write(t, prof, "played")
+		}, "played"},
+	} {
+		target, prof, journal := fileEnv(t)
+		write(t, prof, "profile")
+		c.setup(t, target, prof)
+		if err := persistFile(FileManifest{Journal: journal, Target: target, Profile: prof, Held: held(target)}); err != nil {
+			t.Fatal(err)
+		}
+		for range 2 {
+			if err := RecoverFile(journal, nil); err != nil {
+				t.Fatalf("%s: %v", c.name, err)
+			}
+		}
+		if read(t, target) != "player" || read(t, prof) != c.profile || HasFileJournal(journal) || exists(held(target)) {
+			t.Errorf("%s: player's file %q, profile copy %q", c.name, read(t, target), read(t, prof))
+		}
+	}
+}
+
+func TestSeedFileTakesTheHeldFileWhileAnotherInstallSwapsItIn(t *testing.T) {
+	target, prof, _ := fileEnv(t)
+	write(t, target, "other install's profile copy")
+	write(t, target+heldSuffix, "player")
+	if err := SeedFile(target, prof); err != nil || read(t, prof) != "player" {
+		t.Fatalf("seed = %q (%v), want the player's file", read(t, prof), err)
+	}
+}

@@ -45,15 +45,23 @@ func persistFile(m FileManifest) error {
 }
 
 // SeedFile copies the player's file to profile when the profile has none yet, so a profile starts from the player's
-// current settings. A missing player's file seeds nothing.
+// current settings. While another install's swap holds the player's file aside, the file at target is that install's
+// profile copy, so the seed comes from the held one. A missing player's file seeds nothing.
 func SeedFile(target, profile string) error {
-	if exists(profile) || !exists(target) {
+	if exists(profile) {
+		return nil
+	}
+	src := target
+	if held := target + heldSuffix; exists(held) {
+		src = held
+	}
+	if !exists(src) {
 		return nil
 	}
 	if err := os.MkdirAll(filepath.Dir(profile), 0o700); err != nil {
 		return err
 	}
-	return datadir.CopyFile(target, profile)
+	return datadir.CopyFile(src, profile)
 }
 
 // ApplyFile sets the player's file aside and puts the profile's copy at its path. The record is persisted first.
@@ -94,7 +102,9 @@ func PurgeFile(m FileManifest) error {
 	if !HasFileJournal(m.Journal) {
 		return nil
 	}
-	if exists(m.Target) {
+	// The path holds the game's file only while the player's is set aside (or there never was one): a record whose
+	// player's file was never moved, or already returned, finds that file at the path and must leave it alone.
+	if (m.Held == "" || exists(m.Held)) && exists(m.Target) {
 		if err := os.MkdirAll(filepath.Dir(m.Profile), 0o700); err != nil {
 			return err
 		}
