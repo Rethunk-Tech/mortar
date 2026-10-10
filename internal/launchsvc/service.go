@@ -938,6 +938,7 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 			}
 			return err
 		}
+		s.clearCaches(g.ID(), profileID, t.install)
 	}
 	if err := s.ensureRuntime(inst, plan.RuntimeReqs, env.Direct || plan.Exe != ""); err != nil {
 		if errors.Is(err, errNoPrefix) {
