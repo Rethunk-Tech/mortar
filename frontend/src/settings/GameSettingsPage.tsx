@@ -30,6 +30,24 @@ import { usePerProfileRelated } from './usePerProfileRelated.tsx'
 
 type GamePage = 'install' | 'loader' | 'play' | 'mods' | 'backups' | 'console' | 'streaming'
 
+function modsPrefKeys(
+  info: { hasOptions: boolean; hasCaches: boolean } | undefined,
+  loaderId: string | undefined,
+): string[] {
+  return [
+    'enableRequirements',
+    'missingRequirements',
+    'cosmeticConflicts',
+    'conflictScanDepth',
+    'offerNewDownloads',
+    'oldFilesOnUpdate',
+    ...(info?.hasOptions ? ['gameSettingsMode'] : []),
+    ...(info?.hasCaches ? ['cacheClearing'] : []),
+    // Only SMAPI skips dot-named folders; other loaders load what is inside them.
+    ...(loaderId === 'smapi' ? ['showDotHiddenMods'] : []),
+  ]
+}
+
 function useGameInstall(game: string) {
   const [folder, setFolder] = useState('')
   const [store, setStore] = useState('')
@@ -117,20 +135,7 @@ function GamePages({
         return (
           <>
             <SettingsSection title={t`Mods`}>
-              <PrefKeys
-                keys={[
-                  'enableRequirements',
-                  'missingRequirements',
-                  'cosmeticConflicts',
-                  'conflictScanDepth',
-                  'offerNewDownloads',
-                  'oldFilesOnUpdate',
-                  ...(info?.hasOptions ? ['gameSettingsMode'] : []),
-                  // Only SMAPI skips dot-named folders; other loaders load what is inside them.
-                  ...(loader?.id === 'smapi' ? ['showDotHiddenMods'] : []),
-                ]}
-                game={game}
-              />
+              <PrefKeys keys={modsPrefKeys(info, loader?.id)} game={game} />
               <ExtraModsFolder />
               <SourceOrder />
             </SettingsSection>

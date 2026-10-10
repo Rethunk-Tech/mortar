@@ -63,7 +63,8 @@ export function OverridesSection({
           (smapi || key !== 'showSmapiConsole') &&
           (introSkip || key !== 'skipIntro') &&
           (graphics || key !== 'graphicsApi') &&
-          (info?.hasOptions || key !== 'gameSettingsMode'),
+          (info?.hasOptions || key !== 'gameSettingsMode') &&
+          (info?.hasCaches || key !== 'cacheClearing'),
       ).map((key) => {
         const stored = overrides[key]
         const choice = choiceFromOverride(stored)

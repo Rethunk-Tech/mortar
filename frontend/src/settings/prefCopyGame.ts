@@ -24,6 +24,26 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
         },
       ],
     },
+    cacheClearing: {
+      label: i18n._(msg`Clear game caches`),
+      description: i18n._(
+        msg`Whether Mortar deletes the game's rebuildable cache files on the first launch after this profile's mods change`,
+      ),
+      options: [
+        {
+          value: 'auto',
+          label: i18n._(msg`Auto`),
+          hint: i18n._(
+            msg`Delete the caches once after the mod set changes; the game rebuilds them.`,
+          ),
+        },
+        {
+          value: 'off',
+          label: i18n._(msg`Off`),
+          hint: i18n._(msg`Leave the caches alone.`),
+        },
+      ],
+    },
     oldFilesOnUpdate: {
       label: i18n._(msg`Files an update no longer includes`),
       description: i18n._(msg`What happens to files the new version of a mod leaves out`),

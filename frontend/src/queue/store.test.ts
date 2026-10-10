@@ -89,6 +89,7 @@ beforeEach(() => {
         appId: '',
         hasSaves: false,
         hasOptions: false,
+        hasCaches: false,
         startupSettings: false,
         loader: '',
         deploy: '',
