@@ -20,6 +20,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
