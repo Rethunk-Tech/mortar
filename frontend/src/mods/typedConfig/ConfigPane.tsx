@@ -51,7 +51,7 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
           {entry.label || humanizeKey(entry.key)}
         </Typography>
         {entry.description ? (
-          <Tooltip title={entry.description}>
+          <Tooltip title={entry.description} describeChild={true}>
             <IconButton
               size="small"
               aria-label={t`About ${entry.key}`}
