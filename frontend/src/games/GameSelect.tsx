@@ -13,7 +13,6 @@ import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNow } from '../i18n/useNow.ts'
-import { absoluteWhen } from '../i18n/when.ts'
 import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
 import { type GameId, openSettings, useNav } from '../nav/store.ts'
@@ -95,7 +94,10 @@ function SourceBadges({ sources }: { sources: string[] }) {
           <Box
             role="img"
             aria-label={sourceLabel(id)}
+            // Focusable and open to the pointer, or the tooltip that names the logo could never show.
+            tabIndex={0}
             sx={{
+              pointerEvents: 'auto',
               width: 36,
               height: 36,
               display: 'grid',
@@ -176,7 +178,7 @@ function Row({
   playtimeMs: number
   cards: { gameId: GameId; profiles: Profile[]; lastPlayed: Played | undefined } | undefined
 }) {
-  const { t, i18n } = useLingui()
+  const { t } = useLingui()
   const loaderLine = useLoaderLine({ game, loader, lastPlayedName, lastPlayedAt, playtimeMs })
   const openGameTile = useOpenGame()
   const open = () => openGameTile(game)
@@ -207,10 +209,7 @@ function Row({
         <Typography sx={{ fontSize: 30, fontWeight: 600, lineHeight: 1.15 }}>
           {game.name}
         </Typography>
-        <Typography
-          title={lastPlayedAt ? absoluteWhen(lastPlayedAt, i18n.locale) || undefined : undefined}
-          sx={{ fontSize: 15, opacity: 0.9 }}
-        >
+        <Typography sx={{ fontSize: 15, opacity: 0.9 }}>
           {[loaderLine, note].filter(Boolean).join(' · ')}
         </Typography>
         {cards ? (
