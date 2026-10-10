@@ -278,6 +278,32 @@ func (d Driver) indexURL(key string) string {
 
 // packages returns the community's listing, from the cache while it is under an hour old or the index blob is
 // unchanged, else rebuilt from the chunks.
+// listingTag names the shape of a stored listing. It changes when the shape does, so a listing built under another
+// shape is never read.
+const listingTag = "c2"
+
+func listingPath(dir, key, hash string) string {
+	return filepath.Join(dir, key+"-"+listingTag+"-"+hash+".json")
+}
+
+// dropOtherListings removes every stored listing of the community but keep: an earlier index hash's, and one built
+// under an earlier tag, which nothing would read again. A community whose key merely starts with this one is left.
+func dropOtherListings(dir, key, keep string) {
+	ents, err := os.ReadDir(dir)
+	if err != nil {
+		return
+	}
+	for _, e := range ents {
+		rest, ok := strings.CutPrefix(e.Name(), key+"-c")
+		tag, _, tagged := strings.Cut(rest, "-")
+		path := filepath.Join(dir, e.Name())
+		if !ok || !tagged || tag == "" || strings.Trim(tag, "0123456789") != "" || !strings.HasSuffix(rest, ".json") || path == keep {
+			continue
+		}
+		_ = os.Remove(path)
+	}
+}
+
 func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 	if !communityKey.MatchString(key) {
 		return nil, fmt.Errorf("%q is not a Thunderstore community key", key)
@@ -292,8 +318,7 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 	if b, err := fsx.ReadFile(metaPath); err == nil {
 		_ = json.Unmarshal(b, &meta)
 	}
-	// The schema tag keeps a listing built before creation dates were kept from being reused.
-	pkgPath := func(hash string) string { return filepath.Join(dir, key+"-c2-"+hash+".json") }
+	pkgPath := func(hash string) string { return listingPath(dir, key, hash) }
 	if meta.Hash != "" && d.now().Sub(meta.Fetched) < refreshAfter {
 		if pk, err := loadPackages(key, pkgPath(meta.Hash)); err == nil {
 			return pk, nil
@@ -325,9 +350,7 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 			return nil, err
 		}
 	}
-	if meta.Hash != "" && hash != meta.Hash {
-		_ = os.Remove(pkgPath(meta.Hash))
-	}
+	dropOtherListings(dir, key, pkgPath(hash))
 	nm, err := json.Marshal(cacheMeta{Hash: hash, Fetched: d.now()})
 	if err != nil {
 		return nil, err

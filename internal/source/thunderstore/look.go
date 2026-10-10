@@ -74,7 +74,7 @@ func (d Driver) CachedLooks(key string, names []string) (map[string]Look, error)
 	if len(want) == 0 {
 		return map[string]Look{}, nil
 	}
-	list, err := loadPackages(key, filepath.Join(dir, key+"-c2-"+meta.Hash+".json"))
+	list, err := loadPackages(key, listingPath(dir, key, meta.Hash))
 	if err != nil {
 		return nil, err
 	}
