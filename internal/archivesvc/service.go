@@ -17,6 +17,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/source/itch"
 	"github.com/Rethunk-Tech/mortar/internal/source/patreon"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -254,6 +255,35 @@ func (s *Service) InstallPatreonDownload(ctx context.Context, game, profileID, p
 		return profile.InstallResult{}, usererr.New(usererr.Invalid, "not a Patreon post id")
 	}
 	return s.d.Install(ctx, game, profileID, path, profile.Source{Kind: profile.KindPatreon, Name: post})
+}
+
+// ItchPage is an itch.io game page a pasted address names: its page name ("user/game"), which a file saved from it is
+// recorded under, and the address to open, rebuilt from the name alone.
+type ItchPage struct {
+	ID  string `json:"id"`
+	URL string `json:"url"`
+}
+
+// ItchPage reads a pasted itch.io game page address. The window opens URL in the browser, the player saves the file from
+// the page, and InstallItchDownload adds it. Mortar fetches nothing from itch.io this way.
+func (s *Service) ItchPage(text string) (ItchPage, error) {
+	id, ok := itch.ParsePageURL(text)
+	if !ok {
+		return ItchPage{}, usererr.New(usererr.Invalid, "this is not the address of an itch.io game page")
+	}
+	return ItchPage{ID: id, URL: itch.PageURL(id)}, nil
+}
+
+// InstallItchDownload is InstallDownload for a file the player saved from itch.io page `page`: the entry records the
+// page, so its page link and a share carry the page and no file.
+func (s *Service) InstallItchDownload(ctx context.Context, game, profileID, path, page string) (profile.InstallResult, error) {
+	if s.d.Install == nil {
+		return profile.InstallResult{}, errors.New("install is not available")
+	}
+	if !itch.ValidPage(page) {
+		return profile.InstallResult{}, usererr.New(usererr.Invalid, "not an itch.io page name")
+	}
+	return s.d.Install(ctx, game, profileID, path, profile.Source{Kind: profile.KindItch, Name: page})
 }
 
 func (s *Service) storeKeys(game string) (map[string]bool, error) {

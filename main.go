@@ -750,6 +750,9 @@ func run() error {
 			if src.Kind == profile.KindPatreon {
 				return profiles.InstallPatreon(ctx, game, profileID, path, src.Name)
 			}
+			if src.Kind == profile.KindItch {
+				return profiles.InstallItch(ctx, game, profileID, path, src.Name)
+			}
 			if src.ModID > 0 {
 				return profiles.InstallSource(ctx, game, profileID, path, src)
 			}
