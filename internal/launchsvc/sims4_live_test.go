@@ -269,3 +269,31 @@ func TestSims4DepthLimitsFollowTheCatalog(t *testing.T) {
 		t.Error("a script two folders deep was accepted")
 	}
 }
+
+func TestSims4WarnModeLeavesTheOptionsSwitchesAlone(t *testing.T) {
+	w := newSims4World(t)
+	if _, err := w.set.Update(func(v *settings.Settings) {
+		gp := v.GamePrefs(sims4)
+		gp.GameSettingsMode = settings.GameSettingsWarn
+		v.Games = map[string]*settings.GameSettings{sims4: &gp}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	before := w.snapshot(t)
+	g := game.Find(sims4)
+	_, inst := w.svc.installs(g)
+	dep := &deployment{}
+	if err := w.svc.swapOptions(t.Context(), sims4, inst, w.profileID, "", dep); err != nil {
+		t.Fatal(err)
+	}
+	if got := readFile(t, filepath.Join(w.docs, "Options.ini")); got != playerOption {
+		t.Fatalf("the game's Options.ini in warn mode = %q, want the player's bytes", got)
+	}
+	if got := readFile(t, dep.options.Profile); got != playerOption {
+		t.Fatalf("the profile copy in warn mode = %q", got)
+	}
+	dep.unwind(t.Context())
+	if got := w.snapshot(t); got["Options.ini"] != before["Options.ini"] {
+		t.Fatalf("the player's Options.ini after the launch = %q", got["Options.ini"])
+	}
+}

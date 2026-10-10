@@ -200,10 +200,16 @@ func (s *Service) applyRequiredSettings(gameID, own string) error {
 		return err
 	}
 	text := string(b)
+	// A file Mortar cannot edit is left as the player has it; Problems lists its settings as in warn mode.
+	if err := iniedit.Check(text); err != nil {
+		log.Printf("launch: %s left unedited: %v", own, err)
+		return nil
+	}
 	for _, r := range info.RequiredSettings {
 		if r.Path == pathOptions {
 			if text, err = iniedit.Set(text, r.Section, r.Key, r.Value); err != nil {
-				return fmt.Errorf("%s: %w", own, err)
+				log.Printf("launch: %s left unedited: %v", own, err)
+				return nil
 			}
 		}
 	}

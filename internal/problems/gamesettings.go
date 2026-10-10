@@ -7,6 +7,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/iniedit"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -60,17 +61,23 @@ func (s *Service) gameSettingFailures(gameID, profileID string) []LoadFailure {
 	set := s.settings.Get()
 	mode := settings.ResolveAt(set, "gameSettingsMode", settings.Scope{Game: gameID, Profile: profileID}, s.profileOverrides(gameID, profileID))
 	for role, rs := range groupByPath(info.RequiredSettings) {
-		// In edit mode Mortar writes the options file's values into the profile's copy at launch, so the player's own
-		// file is not a finding.
-		if role == "options" && mode == settings.GameSettingsEdit {
-			continue
-		}
 		path, err := game.PathFor(s.home, s.settings.Get(), gameID, "", role)
 		if err != nil {
 			continue
 		}
 		b, err := fsx.ReadFile(path)
 		if err != nil {
+			continue
+		}
+		if refused := iniedit.Check(string(b)); refused != nil {
+			// Mortar leaves a file it cannot edit alone at launch, so the settings are the player's to switch on.
+			for _, r := range rs {
+				out = append(out, LoadFailure{Plugin: r.Key, Kind: KindGameSetting, Message: r.Message + " Mortar cannot edit this file: " + refused.Error() + "."})
+			}
+			continue
+		}
+		// In edit mode Mortar writes the values into the profile's copy at launch, so the player's own file is not a finding.
+		if role == "options" && mode == settings.GameSettingsEdit {
 			continue
 		}
 		out = append(out, settingFailures(string(b), rs)...)

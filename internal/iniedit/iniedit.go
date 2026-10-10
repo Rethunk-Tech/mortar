@@ -11,13 +11,21 @@ const utf8BOM = "\xef\xbb\xbf"
 // ErrUTF16 refuses a UTF-16 file: its bytes are not lines of text, and an edit would mangle it.
 var ErrUTF16 = errors.New("the file is UTF-16, which Mortar does not edit")
 
+// Check reports why content cannot be edited: ErrUTF16 for a UTF-16 file, nil otherwise.
+func Check(content string) error {
+	if strings.HasPrefix(content, "\xff\xfe") || strings.HasPrefix(content, "\xfe\xff") || strings.ContainsRune(content, 0) {
+		return ErrUTF16
+	}
+	return nil
+}
+
 // Set gives key the value inside section ("" for any section, taking the first match). The first line holding key in
 // the section (names compared without case, comments ignored) is rewritten; a missing key is added at the end of its
 // section, and a missing section is created at the end of the file. A leading UTF-8 byte order mark and every
 // line ending are kept.
 func Set(content, section, key, value string) (string, error) {
-	if strings.HasPrefix(content, "\xff\xfe") || strings.HasPrefix(content, "\xfe\xff") || strings.ContainsRune(content, 0) {
-		return content, ErrUTF16
+	if err := Check(content); err != nil {
+		return content, err
 	}
 	bom := ""
 	if strings.HasPrefix(content, utf8BOM) {

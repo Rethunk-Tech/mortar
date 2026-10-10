@@ -220,3 +220,22 @@ func TestPlanProfileListsPackagesThatOnlyTheLayoutPutsInTheProfile(t *testing.T)
 		t.Fatalf("the plan must carry the installed mod for the mods folder: %+v", plan.Files)
 	}
 }
+
+func TestSwapOptionsLeavesAFileMortarCannotEditAndStillLaunches(t *testing.T) {
+	utf16 := "\xff\xfe[\x00o\x00]\x00\nM\x00o\x00d\x00s\x00D\x00i\x00s\x00a\x00b\x00l\x00e\x00d\x00=\x001\x00"
+	svc, pid, target := optionsEnv(t, "")
+	g := game.Find(optionsGame)
+	_, selected := svc.installs(g)
+	writeFile(t, target, utf16)
+	dep := &deployment{}
+	if err := svc.swapOptions(context.Background(), optionsGame, selected, pid, "", dep); err != nil {
+		t.Fatalf("a file Mortar cannot edit stopped the launch: %v", err)
+	}
+	if got := readFile(t, target); got != utf16 {
+		t.Fatalf("the game's file was changed: %q", got)
+	}
+	dep.unwind(context.Background())
+	if got := readFile(t, target); got != utf16 || readFile(t, dep.options.Profile) != utf16 {
+		t.Fatal("the player's file or the profile copy changed")
+	}
+}
