@@ -22,6 +22,7 @@ import { useLive } from '../launch/live.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { destructiveSx } from '../shell/destructive.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { dependentsOf, idKey, localId } from './dependents.ts'
 import { useDescribe } from './describe.ts'
@@ -146,7 +147,7 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
 }
 
 // The panel footer's two buttons share one height.
-const footerButtonSx = { height: 36 } as const
+const footerButtonSx = { height: space.control } as const
 
 export function LetterTile({
   mod,
