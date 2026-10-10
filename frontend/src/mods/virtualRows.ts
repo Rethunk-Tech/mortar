@@ -1,5 +1,6 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { type RefObject, useEffect, useLayoutEffect, useRef } from 'react'
+import { isTypingTarget, type TypingTarget } from '../settings/shortcuts.ts'
 import { toggleCollapsed } from './group.ts'
 import type { ListRow } from './listColumns.ts'
 import { modId } from './lookup.ts'
@@ -193,8 +194,7 @@ export function typeaheadChar(e: {
   if (!TYPEAHEAD_LETTER.test(e.key)) {
     return undefined
   }
-  const el = e.target as { tagName?: string; isContentEditable?: boolean } | null
-  if (el?.tagName === 'INPUT' || el?.tagName === 'TEXTAREA' || el?.isContentEditable) {
+  if (isTypingTarget(e.target as TypingTarget | null)) {
     return undefined
   }
   return e.key

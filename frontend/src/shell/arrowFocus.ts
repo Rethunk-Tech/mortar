@@ -1,4 +1,5 @@
 import type { KeyboardEvent } from 'react'
+import { isTypingTarget } from '../settings/shortcuts.ts'
 
 interface Rect {
   top: number
@@ -47,13 +48,6 @@ function nextIndex(rects: readonly Rect[], at: number, key: string): number {
 const FOCUSABLE =
   'button:not(:disabled), a[href], [tabindex]:not([tabindex="-1"]), input, select, textarea'
 
-function editing(el: EventTarget | null): boolean {
-  return (
-    el instanceof HTMLElement &&
-    (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))
-  )
-}
-
 // arrowFocus walks a grid or row of items with the arrow keys, which a controller sends under Steam Input. items
 // selects the items inside the handler's element; pick chooses what to focus in the item reached (by default the
 // item itself when focusable, else its first control). Text fields and handlers that already took the key keep it.
@@ -63,7 +57,7 @@ function arrowFocus(
   pick: (item: HTMLElement) => HTMLElement | null = (item) =>
     item.matches(FOCUSABLE) ? item : item.querySelector<HTMLElement>(FOCUSABLE),
 ): void {
-  if (e.defaultPrevented || editing(e.target)) {
+  if (e.defaultPrevented || isTypingTarget(e.target instanceof HTMLElement ? e.target : null)) {
     return
   }
   const list = [...e.currentTarget.querySelectorAll<HTMLElement>(items)]

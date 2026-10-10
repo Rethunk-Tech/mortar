@@ -16,6 +16,7 @@ import { useNow } from '../i18n/useNow.ts'
 import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
 import { type GameId, openSettings, useNav } from '../nav/store.ts'
+import { isTypingTarget } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
 import { arrowFocus } from '../shell/arrowFocus.ts'
 import { CoverButton } from '../shell/CoverButton.tsx'
@@ -349,8 +350,7 @@ function useTypeToScroll(scroller: { current: HTMLElement | null }, games: Game[
         e.metaKey ||
         e.altKey ||
         e.key.length !== 1 ||
-        (target instanceof HTMLElement &&
-          (target.isContentEditable || target.matches('input, textarea, select'))) ||
+        isTypingTarget(target instanceof HTMLElement ? target : null) ||
         document.querySelector('[role="dialog"], [role="menu"]')
       ) {
         return
