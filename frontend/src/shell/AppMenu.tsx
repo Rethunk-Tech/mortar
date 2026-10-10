@@ -99,7 +99,7 @@ function ProjectLinks({ close }: { close: () => void }) {
   const { t } = useLingui()
   const open = (url: string) => () => {
     close()
-    openPage(url).catch(reportUnexpected)
+    openPage(url)
   }
   return (
     <>

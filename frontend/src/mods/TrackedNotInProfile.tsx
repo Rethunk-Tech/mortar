@@ -66,7 +66,7 @@ function TrackedRow({
         variant="outlined"
         startIcon={<ExternalLink size={14} aria-hidden={true} />}
         onClick={() => {
-          openPage(url).catch(reportUnexpected)
+          openPage(url)
         }}
       >
         {t`Open on Nexus`}

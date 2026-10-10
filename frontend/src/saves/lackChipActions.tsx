@@ -79,7 +79,7 @@ export function LackChipActions(p: {
         <TipIconButton
           label={nexusPage ? t`Open ${name} on Nexus` : t`Open the page of ${name}`}
           onClick={() => {
-            openPage(url).catch(reportUnexpected)
+            openPage(url)
           }}
         >
           <ExternalLink size={14} />

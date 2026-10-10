@@ -59,7 +59,7 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
       search={search}
       categories={categoryNames}
       openUrl={(url) => {
-        openPage(url).catch(reportUnexpected)
+        openPage(url)
       }}
       downloadNexus={(modID) => {
         download([{ kind: KIND_INSTALL, modId: Number(modID), latest: true }]).catch(

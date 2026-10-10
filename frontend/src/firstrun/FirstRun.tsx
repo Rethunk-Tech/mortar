@@ -119,7 +119,7 @@ export function FirstRun() {
           color="inherit"
           size="small"
           onClick={() => {
-            openPage(DISCORD_INVITE).catch(reportUnexpected)
+            openPage(DISCORD_INVITE)
           }}
         >
           {t`Join our Discord`}

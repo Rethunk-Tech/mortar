@@ -139,7 +139,7 @@ function ModMenuItems({
       icon: <ExternalLink size={ICON_SIZE} />,
       run: () => {
         if (page) {
-          openPage(page).catch(reportUnexpected)
+          openPage(page)
         }
       },
     },
