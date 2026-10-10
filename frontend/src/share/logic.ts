@@ -122,6 +122,16 @@ export function carriedBy(p: { notes: string; settings: number; choices: number 
   return out
 }
 
+// A mod that travelled as an itch.io page alone: the receiver opens the page and saves the file there.
+export function needsItchFile(mod: { site: string; reason?: string }): boolean {
+  return mod.site === 'itch' && mod.reason === 'itch'
+}
+
+// A CurseForge file the receiver cannot download until they have a CurseForge key: its page is the way to fetch it.
+export function needsCurseForgeKey(mod: { site: string; reason?: string }): boolean {
+  return mod.site === 'curseforge' && mod.reason === 'curseforge-key'
+}
+
 // A mod that travelled as a Patreon post alone: the receiver opens the post and saves the file there.
 export function needsPatreonFile(mod: { site: string; reason?: string }): boolean {
   return mod.site === 'patreon' && mod.reason === 'patreon'

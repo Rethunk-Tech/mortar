@@ -26,6 +26,8 @@ import {
   isModState,
   MOD_STATES,
   type ModState,
+  needsCurseForgeKey,
+  needsItchFile,
   needsPatreonFile,
   type ShownPreview,
   type Summary,
@@ -85,6 +87,8 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
     mod.unverified ? t`unverified until downloaded` : '',
     mod.site === 'local' && !mod.enabled ? t`Disabled`.toLowerCase() : '',
     needsPatreonFile(mod) ? t`Needs a file from its Patreon post` : '',
+    needsItchFile(mod) ? t`Needs a file from its itch.io page` : '',
+    needsCurseForgeKey(mod) ? t`Needs a CurseForge key, or the file from its page` : '',
   ].filter(Boolean)
   const byline = [formatAuthors(mod.author), ...notes].filter(Boolean).join(' · ')
   return (
@@ -151,6 +155,11 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
       {mod.site === 'patreon' && mod.pageUrl ? (
         <Button size="small" color="inherit" onClick={() => openPage(mod.pageUrl)}>
           {t`Open post`}
+        </Button>
+      ) : null}
+      {(needsItchFile(mod) || needsCurseForgeKey(mod)) && mod.pageUrl ? (
+        <Button size="small" color="inherit" onClick={() => openPage(mod.pageUrl)}>
+          {t`Open page`}
         </Button>
       ) : null}
     </Box>

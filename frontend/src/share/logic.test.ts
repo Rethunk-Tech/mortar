@@ -120,3 +120,11 @@ test('a mod that travelled as a Patreon post needs a file from the post', async 
   expect(needsPatreonFile({ site: 'patreon' })).toBe(false)
   expect(needsPatreonFile({ site: 'nexus', reason: 'no-file' })).toBe(false)
 })
+
+test('a mod that travelled as an itch.io page or needs a CurseForge key says what the receiver does', async () => {
+  const { needsCurseForgeKey, needsItchFile } = await import('./logic.ts')
+  expect(needsItchFile({ site: 'itch', reason: 'itch' })).toBe(true)
+  expect(needsItchFile({ site: 'patreon', reason: 'patreon' })).toBe(false)
+  expect(needsCurseForgeKey({ site: 'curseforge', reason: 'curseforge-key' })).toBe(true)
+  expect(needsCurseForgeKey({ site: 'curseforge' })).toBe(false)
+})

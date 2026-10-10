@@ -234,7 +234,7 @@ msgstr "Imported {0}: {1} to install"
 
 #: src/console/RunProblems.tsx:134
 #: src/install/DropOverlay.tsx:120
-#: src/install/store.ts:278
+#: src/install/store.ts:279
 #: src/mods/DuplicateDialog.tsx:86
 #: src/mods/LockedReason.tsx:9
 #: src/mods/ModActionItems.tsx:126
@@ -353,7 +353,7 @@ msgstr "Restored {detail} of {name}"
 msgid "Sign out of Nexus"
 msgstr "Sign out of Nexus"
 
-#: src/share/ImportPreview.tsx:173
+#: src/share/ImportPreview.tsx:182
 msgid "{name} is broken for {detail}"
 msgstr "{name} is broken for {detail}"
 
@@ -382,7 +382,7 @@ msgstr "Premium and GitHub downloads at once"
 msgid "{0, plural, one {# download failed} other {# downloads failed}}"
 msgstr "{0, plural, one {# download failed} other {# downloads failed}}"
 
-#: src/share/ImportPreview.tsx:174
+#: src/share/ImportPreview.tsx:183
 msgid "{name} needs {detail}, which Mortar cannot install"
 msgstr "{name} needs {detail}, which Mortar cannot install"
 
@@ -534,8 +534,8 @@ msgstr "Search all runs"
 msgid "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows you what was added."
 msgstr "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows you what was added."
 
-#: src/install/store.ts:356
-#: src/install/store.ts:363
+#: src/install/store.ts:357
+#: src/install/store.ts:364
 msgid "Could not add the chosen folder"
 msgstr "Could not add the chosen folder"
 
@@ -578,7 +578,7 @@ msgid "Startup: {0} {1} added {2}"
 msgstr "Startup: {0} {1} added {2}"
 
 #. placeholder {0}: listNames(carried.map((c) => carriedLabels[c]))
-#: src/share/ImportPreview.tsx:373
+#: src/share/ImportPreview.tsx:382
 msgid "Includes: {0}"
 msgstr "Includes: {0}"
 
@@ -599,7 +599,7 @@ msgid "Search settings"
 msgstr "Search settings"
 
 #: src/game/HomeNotes.tsx:118
-#: src/share/ImportPreview.tsx:359
+#: src/share/ImportPreview.tsx:368
 #: src/share/Included.tsx:92
 msgid "Notes"
 msgstr "Notes"
@@ -612,7 +612,7 @@ msgstr "Last played {when}"
 #. placeholder {0}: applied.fomodMods
 #. placeholder {1}: applied.configs
 #. placeholder {2}: applied.configs
-#: src/share/useImportFlow.ts:116
+#: src/share/useImportFlow.ts:117
 msgid "{0, plural, one {Applied the curator's choices for # mod and {1, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {2, plural, one {# config file} other {# config files}}}}"
 msgstr "{0, plural, one {Applied the curator's choices for # mod and {1, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {2, plural, one {# config file} other {# config files}}}}"
 
@@ -1388,7 +1388,7 @@ msgstr "All outcomes"
 
 #: src/queue/store.ts:315
 #: src/share/importCompletion.ts:24
-#: src/share/ImportPreview.tsx:268
+#: src/share/ImportPreview.tsx:277
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{count, plural, one {# mod installed} other {# mods installed}}"
 
@@ -1577,7 +1577,7 @@ msgstr "Newest lines kept in the Console"
 msgid "Reset all"
 msgstr "Reset all"
 
-#: src/share/ImportPreview.tsx:272
+#: src/share/ImportPreview.tsx:281
 msgid "{count} unavailable"
 msgstr "{count} unavailable"
 
@@ -1958,7 +1958,7 @@ msgstr "Copied"
 msgid "Show in log"
 msgstr "Show in log"
 
-#: src/share/ImportPreview.tsx:215
+#: src/share/ImportPreview.tsx:224
 msgid "Page"
 msgstr "Page"
 
@@ -2261,7 +2261,7 @@ msgstr "What Mortar does about game settings that mods need switched on in the g
 msgid "Launch Mortar at login"
 msgstr "Launch Mortar at login"
 
-#: src/install/store.ts:95
+#: src/install/store.ts:96
 msgid "Replaced {mods} in {profileName}"
 msgstr "Replaced {mods} in {profileName}"
 
@@ -2410,7 +2410,7 @@ msgstr "Follow new lines"
 msgid "{0} identical"
 msgstr "{0} identical"
 
-#: src/share/ImportPreview.tsx:171
+#: src/share/ImportPreview.tsx:180
 msgid "{name} was removed from Nexus"
 msgstr "{name} was removed from Nexus"
 
@@ -2699,8 +2699,8 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/console/BisectDialog.tsx:138
 #: src/console/CrashDialog.tsx:60
 #: src/console/RunProblems.tsx:95
-#: src/install/store.ts:170
-#: src/install/store.ts:233
+#: src/install/store.ts:171
+#: src/install/store.ts:234
 #: src/mods/NewFoldersCallout.tsx:48
 #: src/mods/OldFilesCallouts.tsx:73
 #: src/mods/OldFilesCallouts.tsx:211
@@ -2889,7 +2889,7 @@ msgstr "Lutris"
 msgid "Mods and profiles"
 msgstr "Mods and profiles"
 
-#: src/share/useImportFlow.ts:151
+#: src/share/useImportFlow.ts:152
 msgid "Imported {name}"
 msgstr "Imported {name}"
 
@@ -3050,7 +3050,7 @@ msgstr "Collection draft saved"
 msgid "Abandoned"
 msgstr "Abandoned"
 
-#: src/share/ImportPreview.tsx:271
+#: src/share/ImportPreview.tsx:280
 msgid "{count} checked later"
 msgstr "{count} checked later"
 
@@ -3422,7 +3422,7 @@ msgstr "More from the Nexus page"
 msgid "{label} is no longer in the saves folder"
 msgstr "{label} is no longer in the saves folder"
 
-#: src/share/ImportPreview.tsx:84
+#: src/share/ImportPreview.tsx:86
 msgid "different file"
 msgstr "different file"
 
@@ -3439,7 +3439,7 @@ msgid "Modpack saved"
 msgstr "Modpack saved"
 
 #: src/profiles/LaunchPresetsBlock.tsx:49
-#: src/share/useImportFlow.ts:158
+#: src/share/useImportFlow.ts:159
 #: src/templates/TemplateDialogs.tsx:67
 #: src/templates/TemplateDialogs.tsx:86
 msgid "Save as template"
@@ -3977,7 +3977,7 @@ msgid "Disable"
 msgstr "Disable"
 
 #: src/install/overlayPlace.ts:35
-#: src/install/store.ts:91
+#: src/install/store.ts:92
 msgid "Added {mods} to {profile}"
 msgstr "Added {mods} to {profile}"
 
@@ -3993,7 +3993,7 @@ msgstr "Could not copy"
 msgid "No performance data was returned."
 msgstr "No performance data was returned."
 
-#: src/share/ImportPreview.tsx:87
+#: src/share/ImportPreview.tsx:89
 msgid "Needs a file from its Patreon post"
 msgstr "Needs a file from its Patreon post"
 
@@ -4052,7 +4052,7 @@ msgstr "Signed in to Nexus Mods"
 msgid "In Mortar's updates"
 msgstr "In Mortar's updates"
 
-#: src/share/ImportInput.tsx:21
+#: src/share/ImportInput.tsx:23
 msgid "Open a .mortar file someone sent you. You see what it holds before anything downloads."
 msgstr "Open a .mortar file someone sent you. You see what it holds before anything downloads."
 
@@ -4317,8 +4317,8 @@ msgstr "Custom command"
 msgid "Could not unpin the selected mods"
 msgstr "Could not unpin the selected mods"
 
-#: src/share/ImportPreview.tsx:347
-#: src/share/useImportFlow.ts:144
+#: src/share/ImportPreview.tsx:356
+#: src/share/useImportFlow.ts:145
 msgid "Nothing to download"
 msgstr "Nothing to download"
 
@@ -4445,7 +4445,7 @@ msgid "Send to…"
 msgstr "Send to…"
 
 #: src/install/batchSummary.ts:30
-#: src/install/store.ts:77
+#: src/install/store.ts:78
 msgid "Could not undo the install"
 msgstr "Could not undo the install"
 
@@ -4458,7 +4458,7 @@ msgstr "Enable all"
 msgid "{0, plural, one {Keeps # mod only {targetName} has} other {Keeps # mods only {targetName} has}}"
 msgstr "{0, plural, one {Keeps # mod only {targetName} has} other {Keeps # mods only {targetName} has}}"
 
-#: src/share/useImportFlow.ts:151
+#: src/share/useImportFlow.ts:152
 msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
@@ -4542,6 +4542,10 @@ msgstr "Review updates"
 msgid "Show in queue"
 msgstr "Show in queue"
 
+#: src/share/ImportPreview.tsx:91
+msgid "Needs a CurseForge key, or the file from its page"
+msgstr "Needs a CurseForge key, or the file from its page"
+
 #: src/mods/AuthorDialog.tsx:135
 #: src/mods/listRows.ts:134
 #: src/mods/ModDependencyTree.tsx:104
@@ -4557,7 +4561,7 @@ msgstr "Show in queue"
 #: src/profiles/ProfilesPage.tsx:268
 #: src/profiles/ProfilesPage.tsx:277
 #: src/saves/SaveGapLine.tsx:22
-#: src/share/ImportPreview.tsx:86
+#: src/share/ImportPreview.tsx:88
 #: src/share/ListFormat.tsx:22
 msgid "Disabled"
 msgstr "Disabled"
@@ -4647,7 +4651,7 @@ msgid "This profile skips updates from this source for this mod."
 msgstr "This profile skips updates from this source for this mod."
 
 #. placeholder {0}: skippedSettings.length
-#: src/share/ImportPreview.tsx:416
+#: src/share/ImportPreview.tsx:425
 msgid "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 msgstr "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 
@@ -4886,7 +4890,7 @@ msgid "This archive holds several variants of the same mod. Pick the one to inst
 msgstr "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 
 #. placeholder {0}: fileName(item)
-#: src/install/store.ts:300
+#: src/install/store.ts:301
 msgid "Could not add {0}"
 msgstr "Could not add {0}"
 
@@ -4916,7 +4920,7 @@ msgstr "Working directory"
 #: src/mods/ChangelogDialog.tsx:35
 #: src/mods/columnLabel.ts:17
 #: src/mods/OptionalFileRows.tsx:122
-#: src/share/ImportPreview.tsx:69
+#: src/share/ImportPreview.tsx:71
 msgid "Installed"
 msgstr "Installed"
 
@@ -4987,7 +4991,7 @@ msgstr "Verify downloads with Nexus MD5"
 msgid "Take Nexus links from {0}?"
 msgstr "Take Nexus links from {0}?"
 
-#: src/share/ImportPreview.tsx:172
+#: src/share/ImportPreview.tsx:181
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
@@ -5402,7 +5406,7 @@ msgstr "Broken for this version"
 msgid "Edit config"
 msgstr "Edit config"
 
-#: src/share/ImportPreview.tsx:270
+#: src/share/ImportPreview.tsx:279
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr "{count, plural, one {# dependency} other {# dependencies}}"
 
@@ -5517,7 +5521,7 @@ msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
 #: src/profiles/PackImportDialog.tsx:165
-#: src/share/ImportInput.tsx:32
+#: src/share/ImportInput.tsx:34
 msgid "Choose a file…"
 msgstr "Choose a file…"
 
@@ -6022,7 +6026,7 @@ msgstr "Background"
 msgid "The folder of {name} was deleted outside Mortar"
 msgstr "The folder of {name} was deleted outside Mortar"
 
-#: src/share/ImportPreview.tsx:347
+#: src/share/ImportPreview.tsx:356
 msgid "Ready to import"
 msgstr "Ready to import"
 
@@ -6213,7 +6217,7 @@ msgstr "Conflict scan depth"
 msgid "No release is published yet."
 msgstr "No release is published yet."
 
-#: src/share/ImportInput.tsx:73
+#: src/share/ImportInput.tsx:75
 msgid "Paste from clipboard"
 msgstr "Paste from clipboard"
 
@@ -6269,10 +6273,6 @@ msgstr "Ask a ClamAV daemon at the socket path below."
 #: src/settings/prefCopy.ts:171
 msgid "Absolute"
 msgstr "Absolute"
-
-#: src/share/ImportInput.tsx:39
-msgid "Paste a share link, a collection link, a Patreon post link, or (Premium) a Nexus mod link with Ctrl+V."
-msgstr "Paste a share link, a collection link, a Patreon post link, or (Premium) a Nexus mod link with Ctrl+V."
 
 #: src/install/NeedsRootCallout.tsx:24
 msgid "Choose variant…"
@@ -6335,7 +6335,7 @@ msgid "Skip for now"
 msgstr "Skip for now"
 
 #: src/mods/typedConfig/ConfigPane.tsx:171
-#: src/share/ImportPreview.tsx:360
+#: src/share/ImportPreview.tsx:369
 #: src/share/Included.tsx:94
 msgid "Config files"
 msgstr "Config files"
@@ -6395,7 +6395,7 @@ msgid "Could not save the profile order"
 msgstr "Could not save the profile order"
 
 #: src/mods/updateReview/RowInclude.tsx:26
-#: src/share/ImportPreview.tsx:112
+#: src/share/ImportPreview.tsx:116
 msgid "Include {name}"
 msgstr "Include {name}"
 
@@ -6479,7 +6479,7 @@ msgstr "Could not save the open profile"
 msgid "When you press Play"
 msgstr "When you press Play"
 
-#: src/share/ImportPreview.tsx:361
+#: src/share/ImportPreview.tsx:370
 #: src/share/Included.tsx:96
 msgid "Problem choices"
 msgstr "Problem choices"
@@ -6612,11 +6612,12 @@ msgstr "Premium downloads come from this Nexus server when it offers the file."
 #: src/mods/problemFix/WhereButtons.tsx:28
 #: src/mods/Sidebar.tsx:221
 #: src/mods/updateReview/Row.tsx:210
+#: src/share/ImportPreview.tsx:162
 msgid "Open page"
 msgstr "Open page"
 
 #: src/game/FarmMenuItem.tsx:73
-#: src/share/ImportPreview.tsx:269
+#: src/share/ImportPreview.tsx:278
 msgid "{count} to download"
 msgstr "{count} to download"
 
@@ -7271,7 +7272,7 @@ msgstr "Slowest mods"
 msgid "Could not load what can be cleaned up"
 msgstr "Could not load what can be cleaned up"
 
-#: src/share/ImportPreview.tsx:73
+#: src/share/ImportPreview.tsx:75
 msgid "Unavailable"
 msgstr "Unavailable"
 
@@ -7653,7 +7654,7 @@ msgstr "Backups to keep per save"
 msgid "Update ready: applies when you close Mortar."
 msgstr "Update ready: applies when you close Mortar."
 
-#: src/share/ImportPreview.tsx:349
+#: src/share/ImportPreview.tsx:358
 msgid "Sign in to import"
 msgstr "Sign in to import"
 
@@ -7766,7 +7767,7 @@ msgstr "Could not read the Nexus page: {0}"
 msgid "{changes, plural, one {Added # mod from {0} to {targetName}} other {Added # mods from {1} to {targetName}}}"
 msgstr "{changes, plural, one {Added # mod from {0} to {targetName}} other {Added # mods from {1} to {targetName}}}"
 
-#: src/share/useImportFlow.ts:180
+#: src/share/useImportFlow.ts:181
 msgid "Imported, but could not show the profile"
 msgstr "Imported, but could not show the profile"
 
@@ -7778,7 +7779,7 @@ msgstr "No templates"
 msgid "Check for mod updates when Mortar starts"
 msgstr "Check for mod updates when Mortar starts"
 
-#: src/share/useImportFlow.ts:143
+#: src/share/useImportFlow.ts:144
 msgid "{queued, plural, one {# download queued} other {# downloads queued}}"
 msgstr "{queued, plural, one {# download queued} other {# downloads queued}}"
 
@@ -8193,7 +8194,7 @@ msgstr "Could not upload the log"
 msgid "Created {name}"
 msgstr "Created {name}"
 
-#: src/install/store.ts:94
+#: src/install/store.ts:95
 msgid "Updated {mods} in {profileName}"
 msgstr "Updated {mods} in {profileName}"
 
@@ -8201,7 +8202,7 @@ msgstr "Updated {mods} in {profileName}"
 msgid "Search every run"
 msgstr "Search every run"
 
-#: src/share/ImportPreview.tsx:367
+#: src/share/ImportPreview.tsx:376
 msgid "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
 msgstr "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
 
@@ -8682,7 +8683,7 @@ msgid "Store"
 msgstr "Store"
 
 #: src/browse/CardAction.tsx:48
-#: src/share/ImportPreview.tsx:70
+#: src/share/ImportPreview.tsx:72
 msgid "Download"
 msgstr "Download"
 
@@ -9085,7 +9086,7 @@ msgstr "Unpin"
 msgid "The download queue is empty."
 msgstr "The download queue is empty."
 
-#: src/share/ImportPreview.tsx:85
+#: src/share/ImportPreview.tsx:87
 msgid "unverified until downloaded"
 msgstr "unverified until downloaded"
 
@@ -9379,9 +9380,13 @@ msgstr "Choose an archive to see what is inside"
 msgid "Remove SMAPI from Steam's launch options"
 msgstr "Remove SMAPI from Steam's launch options"
 
-#: src/share/ImportPreview.tsx:72
+#: src/share/ImportPreview.tsx:74
 msgid "Check later"
 msgstr "Check later"
+
+#: src/share/ImportInput.tsx:90
+msgid "Opened the itch.io page. Save the file from it; Mortar offers it from your Downloads folder."
+msgstr "Opened the itch.io page. Save the file from it; Mortar offers it from your Downloads folder."
 
 #: src/settings/sections/GameSettings.tsx:277
 msgid "Reset…"
@@ -9395,7 +9400,7 @@ msgstr "Reset…"
 msgid "{0}'s {1} is {2}: {3}"
 msgstr "{0}'s {1} is {2}: {3}"
 
-#: src/share/useImportFlow.ts:145
+#: src/share/useImportFlow.ts:146
 msgid "A profile with that name already exists, so this one is \"{name}\""
 msgstr "A profile with that name already exists, so this one is \"{name}\""
 
@@ -9446,7 +9451,7 @@ msgid "Source skipped"
 msgstr "Source skipped"
 
 #. placeholder {0}: preview.settings
-#: src/share/ImportPreview.tsx:352
+#: src/share/ImportPreview.tsx:361
 msgid "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 msgstr "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 
@@ -9593,6 +9598,10 @@ msgstr "Browse for mods, add an archive, or paste a share or collection link wit
 #: src/install/OverlayPlaceDialog.tsx:109
 msgid "From this file"
 msgstr "From this file"
+
+#: src/share/ImportInput.tsx:41
+msgid "Paste a share link, a collection link, a Patreon post link, an itch.io page link, or (Premium) a Nexus mod link with Ctrl+V."
+msgstr "Paste a share link, a collection link, a Patreon post link, an itch.io page link, or (Premium) a Nexus mod link with Ctrl+V."
 
 #: src/install/MissingDepsDialog.tsx:48
 #: src/mods/EndorsePrompt.tsx:146
@@ -10134,7 +10143,7 @@ msgstr "When {0}"
 msgid "{0} was not found in your launchers"
 msgstr "{0} was not found in your launchers"
 
-#: src/share/ImportPreview.tsx:175
+#: src/share/ImportPreview.tsx:184
 msgid "Free account: one click on Nexus per download"
 msgstr "Free account: one click on Nexus per download"
 
@@ -10182,6 +10191,10 @@ msgstr "Export as Nexus collection draft…"
 #: src/commandPalette/paletteLabels.ts:12
 msgid "Review collection update"
 msgstr "Review collection update"
+
+#: src/share/ImportPreview.tsx:90
+msgid "Needs a file from its itch.io page"
+msgstr "Needs a file from its itch.io page"
 
 #. placeholder {0}: d.folder
 #: src/mods/describe.ts:342
@@ -10401,7 +10414,7 @@ msgid "{0} of {1} · {2}/s"
 msgstr "{0} of {1} · {2}/s"
 
 #: src/profiles/PackImportDialog.tsx:182
-#: src/share/ImportInput.tsx:76
+#: src/share/ImportInput.tsx:78
 msgid "Preview"
 msgstr "Preview"
 
@@ -10845,7 +10858,7 @@ msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
 msgid "Combined"
 msgstr "Combined"
 
-#: src/share/ImportPreview.tsx:179
+#: src/share/ImportPreview.tsx:188
 msgid "Some files could not be checked against Nexus, so a few may differ from what was shared."
 msgstr "Some files could not be checked against Nexus, so a few may differ from what was shared."
 
@@ -11531,7 +11544,7 @@ msgstr "Mining skill"
 msgid "First scene"
 msgstr "First scene"
 
-#: src/share/ImportPreview.tsx:71
+#: src/share/ImportPreview.tsx:73
 msgid "Dependency"
 msgstr "Dependency"
 
@@ -11771,7 +11784,7 @@ msgid "Diagnostics saved"
 msgstr "Diagnostics saved"
 
 #: src/firstrun/ProfileStep.tsx:215
-#: src/share/ImportInput.tsx:59
+#: src/share/ImportInput.tsx:61
 msgid "Share link"
 msgstr "Share link"
 
@@ -12435,7 +12448,7 @@ msgid " {name} wins; {losers} overridden."
 msgstr " {name} wins; {losers} overridden."
 
 #. placeholder {0}: summary.leftOut
-#: src/share/ImportPreview.tsx:437
+#: src/share/ImportPreview.tsx:446
 msgid "{0} left out"
 msgstr "{0} left out"
 
@@ -12460,7 +12473,7 @@ msgstr "Looking for Mortar users…"
 msgid "Only on {value}."
 msgstr "Only on {value}."
 
-#: src/share/ImportInput.tsx:83
+#: src/share/ImportInput.tsx:85
 msgid "Opened the Patreon post. Save the file from it; Mortar offers it from your Downloads folder."
 msgstr "Opened the Patreon post. Save the file from it; Mortar offers it from your Downloads folder."
 
@@ -13231,7 +13244,7 @@ msgstr "Set up {0}"
 msgid "GOG via Minigalaxy"
 msgstr "GOG via Minigalaxy"
 
-#: src/share/ImportPreview.tsx:153
+#: src/share/ImportPreview.tsx:157
 msgid "Open post"
 msgstr "Open post"
 
@@ -13846,7 +13859,7 @@ msgstr "Start measuring first."
 msgid "Could not change {0}"
 msgstr "Could not change {0}"
 
-#: src/share/ImportPreview.tsx:225
+#: src/share/ImportPreview.tsx:234
 msgid "Leave out"
 msgstr "Leave out"
 

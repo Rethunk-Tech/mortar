@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { ClipboardPaste, FolderOpen } from 'lucide-react'
+import { liveItchPage, useItchPage } from '../install/itch.ts'
 import { livePatreonPost, usePatreonPost } from '../install/patreon.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { space } from '../theme/density.ts'
@@ -12,6 +13,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
   const { t } = useLingui()
   const game = useCurrentGame()
   const patreonPost = livePatreonPost(usePatreonPost((s) => s.post))
+  const itchPage = liveItchPage(useItchPage((s) => s.page))
   const canPreview = !flow.busy && flow.text.trim() !== ''
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, p: '20px 18px' }}>
@@ -36,7 +38,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
       ) : (
         <>
           <Typography sx={{ fontSize: 14 }}>
-            {t`Paste a share link, a collection link, a Patreon post link, or (Premium) a Nexus mod link with Ctrl+V.`}
+            {t`Paste a share link, a collection link, a Patreon post link, an itch.io page link, or (Premium) a Nexus mod link with Ctrl+V.`}
           </Typography>
           <Box
             component="form"
@@ -81,6 +83,11 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
       {patreonPost ? (
         <Typography role="status" sx={{ fontSize: 14, color: 'text.secondary' }}>
           {t`Opened the Patreon post. Save the file from it; Mortar offers it from your Downloads folder.`}
+        </Typography>
+      ) : null}
+      {itchPage ? (
+        <Typography role="status" sx={{ fontSize: 14, color: 'text.secondary' }}>
+          {t`Opened the itch.io page. Save the file from it; Mortar offers it from your Downloads folder.`}
         </Typography>
       ) : null}
       {flow.error ? (
