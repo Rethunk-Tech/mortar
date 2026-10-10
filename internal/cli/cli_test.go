@@ -836,3 +836,18 @@ func TestJSONErrorsCarryTheTypedDetail(t *testing.T) {
 		t.Fatalf("stderr = %q, %v", e.String(), err)
 	}
 }
+
+func TestModsTableNamesTheArchiveOfAFolderGamesEntries(t *testing.T) {
+	results := map[string]any{"mods": []control.ModRow{
+		{ID: "folder:pkg-1#a.package", Name: "a.package", Enabled: true, Source: "curseforge", Item: "pkg-1", File: "a.package"},
+		{ID: "folder:pkg-1#tray", Name: "Tray files", Enabled: true, Source: "curseforge", Item: "pkg-1", Tray: true},
+	}}
+	r := invoke(t, results, "mods", "sims4", "abc")
+	if r.code != 0 || !strings.Contains(r.out, "ARCHIVE") || !strings.Contains(r.out, "Tray files (Tray)") || strings.Count(r.out, "pkg-1") != 2 {
+		t.Fatalf("mods table: %q", r.out)
+	}
+	r = invoke(t, map[string]any{"mods.remove": control.Removed{Mods: []string{"a.package"}}}, "mods", "remove", "sims4", "abc", "pkg-1")
+	if r.code != 0 || r.calls[0].params.IDs[0] != "pkg-1" {
+		t.Fatalf("remove by archive: %+v", r)
+	}
+}

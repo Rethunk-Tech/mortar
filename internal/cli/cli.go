@@ -1574,22 +1574,32 @@ func (c *cmd) mods(p control.Params) error {
 
 func (c *cmd) modTable(rows []control.ModRow) {
 	t := [][]string{}
+	archives := slices.ContainsFunc(rows, func(m control.ModRow) bool { return m.Item != "" })
 	for _, m := range rows {
 		state := enabledLabel(m.Enabled)
 		if m.Pinned {
 			state += ", pinned"
 		}
-		if c.verbose {
-			t = append(t, []string{m.ID.Local(), m.Name, m.Version, state, m.Source})
-			continue
+		cols := []string{m.Name, m.Version, state, m.Source}
+		if m.Tray {
+			cols[0] += " (Tray)"
 		}
-		t = append(t, []string{m.Name, m.Version, state, m.Source})
+		if c.verbose {
+			cols = append([]string{m.ID.Local()}, cols...)
+		}
+		if archives {
+			cols = append(cols, m.Item)
+		}
+		t = append(t, cols)
 	}
+	head := "NAME\tVERSION\tSTATE\tSOURCE"
 	if c.verbose {
-		c.table("MOD ID\tNAME\tVERSION\tSTATE\tSOURCE", t)
-		return
+		head = "MOD ID\t" + head
 	}
-	c.table("NAME\tVERSION\tSTATE\tSOURCE", t)
+	if archives {
+		head += "\tARCHIVE"
+	}
+	c.table(head, t)
 }
 
 func (c *cmd) modsChange(sub string) error {
@@ -2512,7 +2522,8 @@ takes --game <id>, which may be left out when exactly one game is installed.
   game steam-launch-option <game> [--set|--clear]  read or change Steam's loader launch options
   game launch-preset-templates <game> [add|remove <name> [options [prefix [env]]]|use <name> <profile>]  game-wide launch preset templates (use copies one into a profile)
   mods <game> <profile>                   mods with version, state and source
-  mods enable|disable|pin|unpin|remove <game> <profile> <mod id>...  (pin accepts --reason)
+  mods enable|disable|pin|unpin|remove <game> <profile> <mod id>...  (pin accepts --reason; a folder game's archive is named by
+                                          its ARCHIVE value to act on all its files and Tray files, one file by its id, e.g. folder:<archive>#a.package)
   mods tag|untag|category|note|skip-version <game> <profile> <mod> [value]
   mods channel <game> <profile> <mod> main|optional|beta
   mods group <game> <profile> list|create|delete|add|remove|on|off …

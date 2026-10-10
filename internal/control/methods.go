@@ -123,6 +123,11 @@ type ModRow struct {
 	PinReason string `json:"pinReason,omitempty"`
 	Key       string `json:"key"`
 	Source    string `json:"source"`
+	// Item and File name the archive a folder game's per-file entry is cut from and its file in it; Tray marks the entry
+	// that holds the archive's files in the game's shared Tray folder.
+	Item string `json:"item,omitempty"`
+	File string `json:"file,omitempty"`
+	Tray bool   `json:"tray,omitempty"`
 	// Note and Tags belong to the row's entry, so every mod of one download shows the same ones.
 	Note string   `json:"note,omitempty"`
 	Tags []string `json:"tags,omitempty"`
@@ -1182,6 +1187,7 @@ func modRows(p profile.Profile) []ModRow {
 				Enabled: e.Enabled(m.ID),
 				Pinned:  e.Pinned, PinReason: e.PinReason, Source: source(e.Source),
 				Note: e.Note, Tags: e.Tags,
+				Item: e.Item, File: e.File, Tray: len(e.TrayFiles) > 0,
 			})
 		}
 	}
@@ -1208,17 +1214,35 @@ func extraKeyOf(e profile.Entry, id string) (string, error) {
 	return "", fmt.Errorf("%q is not an extra file of this entry", id)
 }
 
+// refsFor names the mods the ids stand for. An id is a mod id (typed, or the part after the colon), or the store item of
+// a folder game's archive, which stands for every mod of every entry cut from it, its Tray entry included.
 func refsFor(p profile.Profile, ids []string) ([]profile.EnableRef, error) {
 	if len(ids) == 0 {
 		return nil, errors.New("name at least one mod by id")
 	}
 	refs := make([]profile.EnableRef, 0, len(ids))
 	for _, id := range ids {
-		e, _, ok := p.FindMod("", typedID(id))
-		if !ok {
+		if e, _, ok := p.FindMod("", typedID(id)); ok {
+			refs = append(refs, profile.EnableRef{Key: e.Key, ID: typedID(id)})
+			continue
+		}
+		before := len(refs)
+		add := func(e profile.Entry, m profile.Component) {
+			ref := profile.EnableRef{Key: e.Key, ID: m.ID}
+			if !slices.Contains(refs, ref) {
+				refs = append(refs, ref)
+			}
+		}
+		for _, e := range p.Entries {
+			for _, m := range e.Mods {
+				if strings.EqualFold(m.ID.Local(), strings.TrimSpace(id)) || e.StoreKey() == id {
+					add(e, m)
+				}
+			}
+		}
+		if len(refs) == before {
 			return nil, fmt.Errorf("profile %s has no mod %q", p.Name, id)
 		}
-		refs = append(refs, profile.EnableRef{Key: e.Key, ID: typedID(id)})
 	}
 	return refs, nil
 }
