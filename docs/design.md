@@ -17,6 +17,15 @@ Remaining ([architecture.md](architecture.md#release)):
 
 Decided 2026-10-09 (NOMAD). Facts about Mortar are anchored to the code as it is today; facts about EA, Patreon and The Sims 4 are marked **Verify** where they come from memory of the vendors' behaviour and need one throwaway check (run outside this repo, result recorded here) before the item is built.
 
+### Settings every game honours
+
+Decided 2026-10-10 05:43Z (NOMAD), from the settings audit. A driver, source or game honours every existing setting that applies ([AGENTS.md](../AGENTS.md) Decided); these are the gaps the audit found that are not built yet.
+
+- **Old files on update, for every game.** `oldFilesOnUpdate` (ask, keep, delete) governs a file the player or a mod changed that an update's new version no longer ships, for package and folder games as it does for SMAPI mods: ask lists it in the existing Keep or Delete prompt, keep leaves it in place for the game, delete removes it. A dropped file nobody changed is removed in every mode. Today the prompt and its storage are keyed by SMAPI mod id (`internal/profile/oldfiles.go:25` `oldFilesDir`, `:52` `PendingOldFiles`, `:113` `ResolveOldFiles`) and the package path holds every changed copy under `changed/` without asking (`internal/profile/deploy.go` `SyncPackages`, `holdChanged`; `internal/profile/foldergame.go:84` `placeFolderLocked`). Extra files of a mod follow the same setting (`internal/profile/multifile.go:350` passes no callback today). Done when: a Lethal Company package update and a Sims 4 archive update each drop a changed file and all three modes behave as stated, with the prompt listing the file by its path.
+- **The save backup before a mod update follows `backupBeforePlay`.** Never means none; changed and always both back up, since an update is a change (`internal/profile/update.go:525` `saveBackup`, `internal/profile/foldergame.go:91`). The per-profile override applies.
+- **Per-profile overrides** for the scheduled save backups (`saveBackupHours`, `saveBackupKeep`; `internal/savessvc/scheduled.go:52,72` resolve with no profile), the run log and console (`runsKept`, `consoleLogCap`, `consoleLevel`, `consoleTimestamps`, `consoleFollow`), and conflicts and requirements (`cosmeticConflicts`, `conflictScanDepth`, `enableRequirements`, `missingRequirements`): each joins the overridable set (`internal/settings/registry.go` `overridable`, `frontend/src/profiles/overrideValue.ts` `OVERRIDE_KEYS`, `OverrideRows.tsx`), and every reader resolves with the profile.
+- **Held copies expire with the trash.** A copy held under a profile's `changed/` whose mod has been out of the profile longer than `trashRetentionDays` is deleted with the trash (`internal/profile/trash.go`); a `.mortar-rescued` file is never deleted automatically.
+
 ### The Sims 4: what is left to check
 
 The generic folder path and the `sims4` catalog entry are built ([architecture.md](architecture.md#games-and-the-catalog) Folder games, [HUMANS.md](../HUMANS.md#adding-a-game) for the fields, [sims4.md](sims4.md) for each fact and its source). The entry stays `enabled: false` until the items below are checked.
