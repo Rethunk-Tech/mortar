@@ -245,3 +245,36 @@ func TestHiddenHitsDoNotShortenAPage(t *testing.T) {
 		}
 	}
 }
+
+type partialSource struct{ id string }
+
+func (p partialSource) ID() string            { return p.id }
+func (p partialSource) Name() string          { return p.id }
+func (partialSource) Modes() []source.Acquire { return nil }
+func (p partialSource) Search(context.Context, source.Query) (source.Page, error) {
+	return source.Page{Total: 1, Items: []source.Item{{Source: p.id, ID: "x"}}, Failed: []string{"Partial site (Create a Sim)"}}, nil
+}
+
+var _ = source.Register(partialSource{id: "partial"})
+
+func TestAPartlyFailedSourceNamesItsFailedPartsInEverySearchShape(t *testing.T) {
+	one := components.GameInfo{ID: "m", Sources: []components.GameSource{{ID: "partial"}}}
+	for name, f := range map[string]Filter{"plain": {}, "filtered": {Installed: ModeHide}} {
+		page, err := (&Client{}).search(context.Background(), one, "partial", "x", 1, f)
+		if err != nil || fmt.Sprint(page.Failed) != "[Partial site (Create a Sim)]" {
+			t.Fatalf("%s: %+v %v", name, page, err)
+		}
+	}
+	all := components.GameInfo{ID: "m", Sources: []components.GameSource{{ID: "partial"}, {ID: "broken"}}}
+	page, err := (&Client{}).searchAll(context.Background(), all, "x", 1, Filter{})
+	if err != nil || fmt.Sprint(page.Failed) != "[Partial site (Create a Sim) broken]" {
+		t.Fatalf("all: %+v %v", page, err)
+	}
+	topPage, err := searchCached(context.Background(), "partial", partialSource{id: "partial"}, source.Query{Game: "m", Key: "k", Page: 1})
+	if err != nil || len(topPage.Failed) != 1 {
+		t.Fatalf("%+v %v", topPage, err)
+	}
+	if _, cached := topCache[fmt.Sprintf("%T|%s|%s|%d|%s|%q|%q", partialSource{}, "m", "k", 1, "", []string(nil), []string(nil))]; cached {
+		t.Fatal("a partial answer was cached")
+	}
+}

@@ -105,6 +105,13 @@ func TestMergedSearchAnswersWithTheClassesThatAnswered(t *testing.T) {
 	t.Parallel()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
+		if r.URL.Path == "/categories" {
+			if q.Get("classesOnly") != "true" {
+				t.Errorf("categories params %v", q)
+			}
+			_, _ = w.Write([]byte(`{"data":[{"id":1,"name":"Mods"},{"id":2,"name":"Create a Sim"}]}`))
+			return
+		}
 		if q.Get("classId") == "2" {
 			http.Error(w, "boom", http.StatusInternalServerError)
 			return
@@ -115,7 +122,7 @@ func TestMergedSearchAnswersWithTheClassesThatAnswered(t *testing.T) {
 	gs := components.GameSource{ID: "curseforge", Key: "1", GameID: 7, Classes: []string{"1", "2", "3"}}
 	d := Driver{URL: srv.URL, Key: func() string { return "k" }, GameSource: func(string) (components.GameSource, bool) { return gs, true }}
 	page, err := d.Search(t.Context(), source.Query{Game: "g", Key: "1", Sort: source.SortDownloads})
-	if err != nil || len(page.Items) != 2 || page.Total != 2 || len(page.Failed) != 1 || page.Failed[0] != "curseforge:2" {
+	if err != nil || len(page.Items) != 2 || page.Total != 2 || len(page.Failed) != 1 || page.Failed[0] != "CurseForge (Create a Sim)" {
 		t.Fatalf("%+v %v", page, err)
 	}
 	gs.Classes = []string{"2", "2"}

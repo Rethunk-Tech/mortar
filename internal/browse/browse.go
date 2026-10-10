@@ -113,7 +113,7 @@ func (c *Client) Search(ctx context.Context, game, sourceID, text string, page i
 }
 
 // searchAll asks every searchable source for the same page at once and interleaves the answers, so each source keeps
-// its own ranking and none crowds out the rest. Sources that fail are named in Failed; only when all fail is it an
+// its own ranking and none crowds out the rest. Sources that fail, and parts of a source that did not answer, are named in Failed; only when all fail is it an
 // error.
 func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text string, page int, f Filter) (Page, error) {
 	sources := slices.DeleteFunc(source.Searchable(info), func(s source.Source) bool { return source.Unavailable(s) != "" })
@@ -142,6 +142,11 @@ func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text s
 			continue
 		}
 		answered = append(answered, pages[i])
+		for _, name := range pages[i].Failed {
+			if !slices.Contains(merged.Failed, name) {
+				merged.Failed = append(merged.Failed, name)
+			}
+		}
 		merged.Total += pages[i].Total
 		merged.Hidden += pages[i].Hidden
 		merged.Pages = max(merged.Pages, (pages[i].Total+source.PageSize-1)/source.PageSize)
@@ -230,6 +235,11 @@ func searchCached(ctx context.Context, id string, s source.Searcher, q source.Qu
 		if err != nil {
 			return Page{}, err
 		}
+		if len(page.Failed) > 0 {
+			// A partial answer is not kept: the next look asks the failed part again.
+			page.Items = slices.Clone(page.Items)
+			return page, nil
+		}
 		e = topEntry{page: page, until: time.Now().Add(topTTL)}
 		topMu.Lock()
 		topCache[key] = e
@@ -286,6 +296,11 @@ func (c *Client) searchFilled(ctx context.Context, info components.GameInfo, id 
 		}
 		c.applyModes(&raw, f)
 		out.Total, out.Hidden = raw.Total, out.Hidden+raw.Hidden
+		for _, name := range raw.Failed {
+			if !slices.Contains(out.Failed, name) {
+				out.Failed = append(out.Failed, name)
+			}
+		}
 		visible = append(visible, raw.Items...)
 		if len(visible) >= want || raw.Total <= p*source.PageSize {
 			break

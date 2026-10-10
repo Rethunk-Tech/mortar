@@ -325,11 +325,50 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		}
 		items = append(items, it)
 	}
+	failed = d.classLabels(ctx, gs.GameID, failed)
 	limit := maxWindow
 	if len(classes) > 1 {
 		limit = mergedCap
 	}
 	return source.Page{Total: min(total, limit), Items: items, Failed: failed}, nil
+}
+
+// classNames caches each game's class names (Mods, Create a Sim) for the process, keyed by API address and game.
+var classNames sync.Map
+
+// classLabels names the classes of a merged search that did not answer for the person reading the page: the site, and
+// the class's own name where the API gives it. A name that cannot be read leaves the site alone.
+func (d Driver) classLabels(ctx context.Context, gameID int, classes []string) []string {
+	if len(classes) == 0 {
+		return nil
+	}
+	key := cmp.Or(d.URL, BaseURL) + "|" + strconv.Itoa(gameID)
+	var names map[string]string
+	if v, ok := classNames.Load(key); ok {
+		names, _ = v.(map[string]string)
+	} else {
+		var out struct {
+			Data []category `json:"data"`
+		}
+		if err := d.get(ctx, "/categories", url.Values{"gameId": {strconv.Itoa(gameID)}, "classesOnly": {"true"}}, &out); err == nil {
+			names = map[string]string{}
+			for _, c := range out.Data {
+				names[strconv.Itoa(c.ID)] = c.Name
+			}
+			classNames.Store(key, names)
+		}
+	}
+	var labels []string
+	for _, class := range classes {
+		label := "CurseForge"
+		if n := names[class]; n != "" {
+			label += " (" + n + ")"
+		}
+		if !slices.Contains(labels, label) {
+			labels = append(labels, label)
+		}
+	}
+	return labels
 }
 
 // searchClass asks one class for size mods from index, and returns them with the class's total.
@@ -443,7 +482,7 @@ func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string,
 		got, n, err := d.classRowsTo(ctx, gameID, class, q, end)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("class %s: %w", class, err))
-			failed = append(failed, "curseforge:"+class)
+			failed = append(failed, class)
 			continue
 		}
 		total += n
