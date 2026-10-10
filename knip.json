@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreBinaries": ["appstreamcli", "bwrap", "go", "golangci-lint", "govulncheck", "ss", "wails3"],
+  "ignoreBinaries": ["appstreamcli", "bwrap", "go", "govulncheck", "ss", "wails3"],
   "ignore": ["site/vendor/**"],
   "workspaces": {
     ".": {

@@ -317,8 +317,8 @@ func TestConcurrentStartsLaunchOnce(t *testing.T) {
 	}
 }
 
-// waitNotPreparing waits for the background preparation of a Start to end, so it no longer writes into the test's
-// folders when they are removed.
+// waitNotPreparing waits for the background preparation of a Start to end, so nothing writes into the test's
+// folders while they are removed.
 func waitNotPreparing(t *testing.T, svc *Service) {
 	t.Helper()
 	deadline := time.Now().Add(5 * time.Second)

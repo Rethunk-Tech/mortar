@@ -229,7 +229,15 @@ Add the game to `games` in `components.source.json`, then publish as described u
 - `caches`: rebuildable files or folders the game recreates, each `{role, path}` with `path` a slash path below that role's folder; Mortar deletes them once on the first launch after a profile's mod set changes.
 - `r2modmanFolder`: r2modman's name for the game (the Thunderstore ecosystem schema's `internalFolderName`), which maps an imported r2modman profile to the game.
 
-The Sims 4 (`sims4` in `components.source.json`) is the worked example of a `folder` game. `loaders` is `[{"id": "folder"}]` and `deploy` is `profile`. `marker` is `TS4_x64.exe` with `markerDir` `Game/Bin`. `paths` gives `mods`, `saves`, `options`, `tray` and `userData` under `{documents}/Electronic Arts/The Sims 4`. The `mods` target has `root` `{profile}/Mods`, a `maxDepth` for `package` and `ts4script`, and `keepWhole` `["ts4script"]`, so a script mod stays whole and a package-only archive splits per file; the `tray` target has `role` `tray` and the Tray file extensions. `requiredSettings` names the two `Options.ini` switches on the `options` role, `caches` names the thumbnail and avatar caches under `userData`, and `newProfileSeparateSaves` is set. `sources` lists CurseForge with `classes`, Nexus, GitHub, and `itch` and `patreon` as link and handoff sources with no key.
+The Sims 4 (`sims4` in `components.source.json`) is the worked example of a `folder` game:
+
+- `loaders` is `[{"id": "folder"}]` and `deploy` is `profile`.
+- `marker` is `TS4_x64.exe` with `markerDir` `Game/Bin`.
+- `paths` gives `mods`, `saves`, `options`, `tray` and `userData` under `{documents}/Electronic Arts/The Sims 4`.
+- The `mods` target has `root` `{profile}/Mods`, a `maxDepth` for `package` and `ts4script`, and `keepWhole` `["ts4script"]`, so a script mod stays whole and a package-only archive splits per file.
+- The `tray` target has `role` `tray` and the Tray file extensions.
+- `requiredSettings` names the two `Options.ini` switches on the `options` role, `caches` names the thumbnail and avatar caches under `userData`, and `newProfileSeparateSaves` is set.
+- `sources` lists CurseForge with `classes`, Nexus, GitHub, and `itch` and `patreon` as link and handoff sources with no key.
 
 ### A catalog-only game, end to end
 
