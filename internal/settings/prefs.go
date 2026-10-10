@@ -94,6 +94,9 @@ const (
 	GameSettingsEdit = "edit"
 	GameSettingsWarn = "warn"
 
+	CacheClearingAuto = "auto"
+	CacheClearingOff  = "off"
+
 	OldFilesAsk    = "ask"
 	OldFilesDelete = "delete"
 	OldFilesKeep   = "keep"
@@ -414,6 +417,7 @@ var (
 	extensionConnectionValues = []string{ExtensionAllow, ExtensionOff}
 	oldFilesValues            = []string{OldFilesAsk, OldFilesDelete, OldFilesKeep}
 	gameSettingsModeValues    = []string{GameSettingsEdit, GameSettingsWarn}
+	cacheClearingValues       = []string{CacheClearingAuto, CacheClearingOff}
 )
 
 func parseBool(raw string) (bool, error) {

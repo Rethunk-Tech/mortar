@@ -120,7 +120,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"shareIncludeDisabledMods": "true", "shareIncludeFomodChoices": "false", "shareIncludeNotes": "false",
 		"shareIncludeConfigFiles": "false", "shareIncludeProblemChoices": "false", "verifyNexusMD5": "true", "launchAtLogin": "true",
 		"startMinimised": "true", "rememberWindow": "true", "extensionConnection": "off",
-		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep", "gameSettingsMode": "warn",
+		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep", "gameSettingsMode": "warn", "cacheClearing": "off",
 		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "watchFolders": "/var/tmp/mortar-watch", "syncFolder": "/var/tmp/mortar-sync", "browseFilters": "installed=hide", "showAdultContent": "true",
 		"keepInTray": "false", "includeBetaReleases": "false", "includePrereleaseModVersions": "true", "askEndorseMods": "true", "listColumns": "on,name,version",
 	}
@@ -300,5 +300,18 @@ func TestGameSettingsModeDefaultsToEditAndRejectsOtherValues(t *testing.T) {
 	}
 	if !ProfileOverridable("gameSettingsMode") {
 		t.Fatal("a profile must be able to override the mode")
+	}
+}
+
+func TestCacheClearingIsPerGameWithProfileOverrideAndRejectsOtherValues(t *testing.T) {
+	var s Settings
+	if err := ApplyKeyGame(&s, "cacheClearing", "sometimes", "any"); err == nil {
+		t.Fatal("an unknown value was accepted")
+	}
+	if !ProfileOverridable("cacheClearing") {
+		t.Fatal("a profile must be able to override it")
+	}
+	if got := Defaults().GamePrefs("any").CacheClearing; got != CacheClearingAuto {
+		t.Fatalf("code default = %q", got)
 	}
 }
