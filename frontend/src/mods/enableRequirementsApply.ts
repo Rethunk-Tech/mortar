@@ -3,6 +3,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { SetModsEnabled } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
+import { openOverride } from '../profiles/openOverrides.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
@@ -10,6 +11,15 @@ import { reportError } from '../toasts/report.ts'
 import { useEnableAsk } from './enableAsk.ts'
 import { enableRequirementsDecision, pendingRequired } from './enableRequirements.ts'
 import { announceAlso, openTarget } from './storeView.ts'
+
+// What to do with a mod's switched-off requirements, as the open profile sees it: its own override, else the game's
+// setting. Go enables by the same resolved value, so the list must not decide by the game's value alone.
+export function enableRequirementsMode(): string {
+  return openOverride(
+    'enableRequirements',
+    gamePrefs(useSettings.getState()).enableRequirements || 'always',
+  )
+}
 
 export function considerEnableRequirements(
   allMods: Mod[],
@@ -20,10 +30,7 @@ export function considerEnableRequirements(
     return Promise.resolve()
   }
   const pending = pendingRequired(allMods, enabling)
-  const decision = enableRequirementsDecision(
-    gamePrefs(useSettings.getState()).enableRequirements || 'always',
-    pending.length,
-  )
+  const decision = enableRequirementsDecision(enableRequirementsMode(), pending.length)
   if (decision === 'skip' || (decision === 'enable' && source === 'toggle')) {
     return Promise.resolve()
   }

@@ -30,8 +30,6 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { gamePrefs } from '../settings/gamePrefs.ts'
-import { useSettings } from '../settings/store.ts'
 import { changeStillLatest } from '../toasts/history.ts'
 import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -42,7 +40,7 @@ import {
   type UndoEntry,
 } from '../toasts/undo.ts'
 import { enableRequirementsDecision, pendingRequired } from './enableRequirements.ts'
-import { considerEnableRequirements } from './enableRequirementsApply.ts'
+import { considerEnableRequirements, enableRequirementsMode } from './enableRequirementsApply.ts'
 import { modId } from './lookup.ts'
 import { useSelection } from './selection.ts'
 import { announceAlso, openTarget } from './storeView.ts'
@@ -151,10 +149,7 @@ async function afterEnable(
   pending: Mod[],
   enabling: Mod[],
 ) {
-  const decision = enableRequirementsDecision(
-    gamePrefs(useSettings.getState()).enableRequirements || 'always',
-    pending.length,
-  )
+  const decision = enableRequirementsDecision(enableRequirementsMode(), pending.length)
   if (decision === 'enable') {
     const extra = new Set(pending.map((m) => modId(m)))
     set((s) => ({ mods: s.mods.map((m) => (extra.has(modId(m)) ? { ...m, enabled: true } : m)) }))
