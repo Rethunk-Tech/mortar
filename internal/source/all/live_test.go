@@ -6,6 +6,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/source/itch"
 	"github.com/Rethunk-Tech/mortar/internal/source/patreon"
 )
 
@@ -25,6 +26,13 @@ func TestLiveSims4Sources(t *testing.T) {
 				id, ok := patreon.ParsePostURL("https://www.patreon.com/posts/some-sims-4-cc-12345678")
 				if !ok || id != "12345678" {
 					t.Fatalf("post url resolved to %q, %v", id, ok)
+				}
+				return
+			}
+			if gs.ID == "itch" {
+				id, ok := itch.ParsePageURL("https://someone.itch.io/some-sims-4-mod")
+				if !ok || itch.PageURL(id) != "https://someone.itch.io/some-sims-4-mod" {
+					t.Fatalf("page url resolved to %q, %v", id, ok)
 				}
 				return
 			}

@@ -86,7 +86,7 @@ func TestOtherStatusIsReportedNotParsed(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	d := Driver{URL: srv.URL, Key: func() (string, error) { return "k1", nil }}
-	_, err := d.Search(context.Background(), source.Query{Text: "x"})
+	_, err := d.Search(context.Background(), source.Query{Key: "k", Text: "x"})
 	if se, ok := errors.AsType[*source.StatusError](err); !ok || se.Code != http.StatusBadGateway {
 		t.Fatalf("err = %v, want the 502 as a status error", err)
 	}

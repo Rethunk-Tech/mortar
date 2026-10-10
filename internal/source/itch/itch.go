@@ -53,15 +53,19 @@ func (Driver) ID() string { return "itch" }
 // Name is the site's name.
 func (Driver) Name() string { return "itch.io" }
 
-// Modes says Mortar downloads uploads itself.
-func (Driver) Modes() []source.Acquire { return []source.Acquire{source.Download} }
+// Modes lists both ways: with the player's API key Mortar downloads uploads itself, and without one the player opens
+// a pasted game page, saves the file there and adds it.
+func (Driver) Modes() []source.Acquire { return []source.Acquire{source.Download, source.Handoff} }
 
 // Hosts is the site's web host.
 func (Driver) Hosts() []string { return []string{"itch.io"} }
 
-// ModPageURL is the game page; id is the numeric game id, which the site redirects to the page, so no slug is
-// needed. gameKey does not enter the address.
+// ModPageURL is the game page; id is a page name as ParsePageURL returns it, or the numeric game id of a search
+// result, which the site redirects to the page, so no slug is needed. gameKey does not enter the address.
 func (Driver) ModPageURL(_, id string) string {
+	if strings.Contains(id, "/") {
+		return PageURL(id)
+	}
 	if id == "" {
 		return ""
 	}
@@ -166,6 +170,10 @@ type game struct {
 // Search lists games matching the key and text. The API has no sort or total, so Sort is ignored and Total counts
 // only what is known: this page, plus a full page's worth more so browse offers a next page.
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
+	// A game that lists itch.io with no key is there for pasted page links only, so there is nothing to search.
+	if q.Key == "" {
+		return source.Page{}, nil
+	}
 	key, err := d.key()
 	if err != nil {
 		return source.Page{}, err

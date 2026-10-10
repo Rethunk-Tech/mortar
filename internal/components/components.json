@@ -440,6 +440,10 @@
         "options": {
           "windows": "{documents}/Electronic Arts/The Sims 4/Options.ini",
           "linux": "{documents}/Electronic Arts/The Sims 4/Options.ini"
+        },
+        "tray": {
+          "windows": "{documents}/Electronic Arts/The Sims 4/Tray",
+          "linux": "{documents}/Electronic Arts/The Sims 4/Tray"
         }
       },
       "newProfileSeparateSaves": true,
@@ -467,6 +471,11 @@
             "ts4script": 1
           },
           "keepWhole": ["ts4script"]
+        },
+        {
+          "id": "tray",
+          "role": "tray",
+          "extensions": ["trayitem", "blueprint", "bpi", "hhi", "sgi", "householdbinary", "room", "roomtemplate"]
         }
       ],
       "stores": {
@@ -486,7 +495,7 @@
         {
           "id": "curseforge",
           "key": "5089",
-          "classes": ["5089", "5339", "5437"],
+          "classes": ["5089", "5339", "5437", "5344", "5681"],
           "gameId": 78062
         },
         {
@@ -496,6 +505,9 @@
         {
           "id": "github",
           "key": "sims4"
+        },
+        {
+          "id": "itch"
         },
         {
           "id": "patreon"
