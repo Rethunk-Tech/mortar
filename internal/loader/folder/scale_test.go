@@ -1,3 +1,5 @@
+//go:build !windows
+
 package folder_test
 
 import (
