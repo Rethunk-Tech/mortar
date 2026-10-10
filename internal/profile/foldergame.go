@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"encoding/json"
 	"fmt"
 	"slices"
 	"strings"
@@ -67,10 +68,12 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 			}
 		}
 		off := map[string]bool{}
+		var old []Entry
 		p.Entries = slices.DeleteFunc(p.Entries, func(e Entry) bool {
 			if e.IsOverlay() || !e.Package || !supersedes(source, e.Source) || e.StoreKey() == key {
 				return false
 			}
+			old = append(old, e)
 			off[e.File] = !e.hasPackageEnabled()
 			return true
 		})
@@ -86,6 +89,9 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 				}
 			}
 		}
+		if len(old) > 0 {
+			fresh[0].Replaced = packReplaced(old)
+		}
 		p.Entries = append(p.Entries, fresh...)
 		return nil
 	})
@@ -93,4 +99,71 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 		return Profile{}, false, false, err
 	}
 	return p, updated, updated, s.items.Touch(game, key)
+}
+
+// forgetReplaced is entries with their own rollback record dropped, so records never nest.
+func forgetReplaced(entries []Entry) []Entry {
+	out := make([]Entry, len(entries))
+	for i, e := range entries {
+		out[i] = e.Clone()
+		out[i].Replaced = ""
+	}
+	return out
+}
+
+func packReplaced(entries []Entry) string {
+	b, err := json.Marshal(forgetReplaced(entries))
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+// replacedEntries are the entries Replaced records; a record that does not read is none.
+func (e Entry) replacedEntries() []Entry {
+	var out []Entry
+	if e.Replaced != "" {
+		_ = json.Unmarshal([]byte(e.Replaced), &out)
+	}
+	return out
+}
+
+// rollBackFolderLocked restores the entries the archive of entry key superseded, and records the archive it removes
+// so that a second roll back goes forward again. ok is false when the entry's archive has nothing to restore.
+func (s *Store) rollBackFolderLocked(game, id, key string) (p Profile, ok bool, err error) {
+	var restored []Entry
+	p, err = s.updateLocked(game, id, func(p *Profile, _ string) error {
+		i := entryIndex(p.Entries, key)
+		if i < 0 {
+			return nil
+		}
+		item := p.Entries[i].StoreKey()
+		inGroup := func(e Entry) bool { return e.StoreKey() == item && e.Package && !e.IsOverlay() }
+		at := slices.IndexFunc(p.Entries, inGroup)
+		var group []Entry
+		for _, e := range p.Entries {
+			if inGroup(e) {
+				group = append(group, e)
+			}
+		}
+		g := slices.IndexFunc(group, func(e Entry) bool { return e.Replaced != "" })
+		if g < 0 {
+			return nil
+		}
+		if err := s.saveBackup(game, id); err != nil {
+			return fmt.Errorf("back up saves: %w", err)
+		}
+		restored = group[g].replacedEntries()
+		if len(restored) == 0 {
+			return nil
+		}
+		restored[0].Replaced = packReplaced(group)
+		p.Entries = slices.DeleteFunc(p.Entries, inGroup)
+		p.Entries = slices.Insert(p.Entries, min(at, len(p.Entries)), restored...)
+		return nil
+	})
+	if err != nil || restored == nil {
+		return p, false, err
+	}
+	return p, true, s.items.Touch(game, restored[0].StoreKey())
 }

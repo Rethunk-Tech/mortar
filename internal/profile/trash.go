@@ -329,6 +329,7 @@ func entriesStoreKeys(entries []Entry) []string {
 		}
 		keys = append(keys, e.ExtraStoreKeys...)
 		keys = append(keys, e.PreviousExtraStoreKeys...)
+		keys = append(keys, entriesStoreKeys(e.replacedEntries())...)
 	}
 	return keys
 }

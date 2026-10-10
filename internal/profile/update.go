@@ -113,7 +113,15 @@ func (s *Store) UpdateEntries(game, id string, moves []EntryMove) (Profile, erro
 
 // RollBack swaps the entry key back to its previous version, carrying over what the user and the mod wrote.
 func (s *Store) RollBack(game, id, key string) (Profile, error) {
-	return s.moveTo(game, id, key, "", nil)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := s.unlocked(game, id); err != nil {
+		return Profile{}, err
+	}
+	if p, ok, err := s.rollBackFolderLocked(game, id, key); err != nil || ok {
+		return p, err
+	}
+	return s.moveToLocked(game, id, key, "", nil)
 }
 
 // moveTo switches an entry to another store item. An empty newKey means the entry's previous key. A source

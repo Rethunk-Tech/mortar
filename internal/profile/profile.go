@@ -133,8 +133,12 @@ type Entry struct {
 	// Item is the store item an entry of one file of an archive is cut from, and File that file's slash path in the
 	// profile's mods target; Key is then Item + "#" + File so each file is its own entry. Both are empty for an
 	// entry that holds its whole store item.
-	Item        string `json:"item,omitempty"`
-	File        string `json:"file,omitempty"`
+	Item string `json:"item,omitempty"`
+	File string `json:"file,omitempty"`
+	// Replaced holds, on the first entry of an archive an update installed, the entries of the archive it
+	// superseded as they were (switches included), so RollBack restores them all.
+	// It is the JSON of an []Entry, since an Entry cannot hold itself.
+	Replaced    string `json:"replaced,omitempty"`
 	PreviousKey string `json:"previousKey"`
 	Source      Source `json:"source"`
 	// Package marks an entry that has no folder in the profile's mods folder: its files are laid out and deployed

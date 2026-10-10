@@ -523,6 +523,11 @@ func (s *Store) missingStoreKeys(game string, entries []Entry) ([]string, error)
 				return nil, err
 			}
 		}
+		for _, r := range e.replacedEntries() {
+			if err := add(r.StoreKey()); err != nil {
+				return nil, err
+			}
+		}
 	}
 	return missing, nil
 }

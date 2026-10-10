@@ -169,3 +169,43 @@ func TestANewProfileFollowsTheGamesSeparateSavesDefault(t *testing.T) {
 		}
 	}
 }
+
+func TestFolderGameRollBackRestoresTheSupersededArchiveAndItsSwitches(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	v1 := zipOf(t, "a.zip", map[string]string{"one.package": "1", "two.package": "2"})
+	first, err := e.InstallSource(t.Context(), folderGame, p.ID, v1, cfSource(10))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, en := range first.Profile.Entries {
+		if en.File == "two.package" {
+			if _, err := e.SetModEnabled(folderGame, p.ID, en.Key, en.Mods[0].ID, false); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	oldKeys := keysOf(first.Profile)
+	v2 := zipOf(t, "b.zip", map[string]string{"three.package": "3"})
+	res, err := e.InstallSource(t.Context(), folderGame, p.ID, v2, cfSource(12).WithReplacing(10))
+	if err != nil || len(res.Profile.Entries) != 1 {
+		t.Fatalf("update: %v, %v", keysOf(res.Profile), err)
+	}
+	back, err := e.RollBack(folderGame, p.ID, res.Profile.Entries[0].Key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(keysOf(back), oldKeys) {
+		t.Fatalf("rolled back to %v, want %v", keysOf(back), oldKeys)
+	}
+	for _, en := range back.Entries {
+		if off := !en.hasPackageEnabled(); off != (en.File == "two.package") || en.Source.FileID != 10 {
+			t.Fatalf("entry %+v", en)
+		}
+	}
+	fwd, err := e.RollBack(folderGame, p.ID, back.Entries[0].Key)
+	if err != nil || len(fwd.Entries) != 1 || fwd.Entries[0].File != "three.package" {
+		t.Fatalf("roll forward: %v, %v", keysOf(fwd), err)
+	}
+}
