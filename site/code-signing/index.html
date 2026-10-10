@@ -64,10 +64,9 @@
 
       <h2>Windows code signing</h2>
       <p>
-        Mortar has applied to the <a href="https://signpath.org/">SignPath Foundation</a>'s free code signing program
-        for open-source projects. Once approved, Windows installers and executables are signed through SignPath.io
-        with a certificate issued to SignPath Foundation, and each release is approved for signing by the approver
-        below.
+        The Windows installer and executables carry no Authenticode signature, so SmartScreen warns the first time
+        one runs. Check a Windows download the same way as any other release file: against the signed
+        <code>SHA256SUMS</code> or its build provenance attestation.
       </p>
 
       <h2>Who builds and approves releases</h2>
