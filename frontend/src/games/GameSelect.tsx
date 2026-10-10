@@ -20,6 +20,7 @@ import { useSettings } from '../settings/store.ts'
 import { arrowFocus } from '../shell/arrowFocus.ts'
 import { CoverButton } from '../shell/CoverButton.tsx'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
+import { useRoomy } from '../theme/roomy.ts'
 import { reportError } from '../toasts/report.ts'
 import { gameArt } from './art.ts'
 import { gameOrder, initialOf, typedKey, typedMatch } from './order.ts'
@@ -319,6 +320,7 @@ function GroupHeading({ children }: { children: string }) {
 // A shorter list fits without a rail to jump through it.
 const RAIL_MIN_GAMES = 8
 const RAIL_WIDTH_PX = 28
+const RAIL_ROOMY_WIDTH_PX = 44
 // A pause this long starts a new search instead of adding to the last one.
 const TYPE_RESET_MS = 1000
 
@@ -341,7 +343,7 @@ function useTypeToScroll(scroller: { current: HTMLElement | null }, games: Game[
     let typed = ''
     let at = 0
     const onKey = (e: KeyboardEvent) => {
-      const target = e.target
+      const { target } = e
       if (
         e.ctrlKey ||
         e.metaKey ||
@@ -383,18 +385,25 @@ function LetterRail({
   onJump: (letter: string) => void
 }) {
   const { t } = useLingui()
+  // Touch targets are 44px in roomy mode, the theme's rule for every button, so the rail widens to hold them.
+  const roomy = useRoomy((s) => s.roomy)
   return (
     <Box
       component="nav"
       aria-label={t`Jump to a letter`}
       sx={{
-        width: RAIL_WIDTH_PX,
+        width: roomy ? RAIL_ROOMY_WIDTH_PX : RAIL_WIDTH_PX,
         flexShrink: 0,
         py: '8px',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
         bgcolor: 'background.paper',
+        // Centred when the letters fit, scrolling from the first letter when they do not.
+        overflowY: 'auto',
+        scrollbarWidth: 'none',
+        '&::-webkit-scrollbar': { display: 'none' },
+        '& > :first-of-type': { mt: 'auto' },
+        '& > :last-child': { mb: 'auto' },
       }}
     >
       {letters.map((letter) => (
@@ -404,7 +413,7 @@ function LetterRail({
           aria-current={letter === current ? 'true' : undefined}
           onClick={() => onJump(letter)}
           sx={{
-            flex: '0 1 22px',
+            flex: roomy ? '0 0 auto' : '0 1 22px',
             minHeight: 12,
             fontFamily: 'inherit',
             fontSize: 11,
