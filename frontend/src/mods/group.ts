@@ -17,6 +17,7 @@ const GROUP_BY_IDS = [
   'source',
   'tag',
   'framework',
+  'download',
   'author',
   'group',
 ] as const
@@ -30,7 +31,14 @@ type StatusGroup = (typeof STATUS_GROUP_ORDER)[number]
 
 function emptyGroupLabel(
   by: GroupBy,
-  labels: { category: string; source: string; tag: string; author: string; group: string },
+  labels: {
+    category: string
+    source: string
+    tag: string
+    author: string
+    group: string
+    download: string
+  },
 ): string {
   if (by === 'category') {
     return labels.category
@@ -43,6 +51,9 @@ function emptyGroupLabel(
   }
   if (by === 'group') {
     return labels.group
+  }
+  if (by === 'download') {
+    return labels.download
   }
   return labels.tag
 }
@@ -234,6 +245,8 @@ interface GroupRow {
   // A Thunderstore package's own category, which Nexus rows take from their details instead.
   siteCategory?: string | undefined
   groupName?: string
+  // The archive a folder game's entry was cut from, by the name its source gives it.
+  download?: string
   mod: {
     id: string
     author: string
@@ -278,6 +291,9 @@ function rowGroupKey(
   }
   if (by === 'group') {
     return row.groupName ?? ''
+  }
+  if (by === 'download') {
+    return row.download ?? ''
   }
   return ''
 }
@@ -333,6 +349,7 @@ interface HeadingCopy {
   tag: string
   author: string
   group: string
+  download: string
   problems: string
   update: string
   enabled: string

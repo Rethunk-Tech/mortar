@@ -237,3 +237,31 @@ test('category grouping uses a Thunderstore package category', () => {
     }),
   ).toBe('Tools')
 })
+
+test('download grouping puts the files of one archive under its name', () => {
+  const ctx = { hasProblem: false, hasUpdate: false, names: new Map(), customById: new Map() }
+  const file = (id: string, download: string) => ({
+    source: 'CurseForge',
+    tags: [],
+    download,
+    mod: { id, author: '', enabled: true },
+  })
+  const rows = [
+    file('folder:pkg-1#a.package', 'Hair Pack'),
+    file('folder:pkg-2#x.package', 'Chairs'),
+    file('folder:pkg-1#b.package', 'Hair Pack'),
+    file('folder:pkg-3#loose.package', ''),
+  ]
+  const groups = groupSorted(
+    rows,
+    'download',
+    (r) => rowGroupKey('download', r, ctx),
+    (a, b) => a.mod.id.localeCompare(b.mod.id),
+  )
+  expect(groups.map((g) => [g.key, g.items.length])).toEqual([
+    ['Chairs', 1],
+    ['Hair Pack', 2],
+    ['', 1],
+  ])
+  expect(sanitizeListGroupBy('download')).toBe('download')
+})

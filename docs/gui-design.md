@@ -180,7 +180,7 @@ Every tab except Home opens with a 52px strip (`TabHeader`, rendered by `Profile
   - Both views share one details sidebar for the selected mod.
   - A kept (pinned) mod carries a pin icon in the Version column and on its card.
   - Last-run error and warning badges appear in the list, the grid and the details sidebar.
-- **Group by:** a menu beside the view toggle (None, Status, Category, Source, Tag, Framework, Author, Group), kept as `listGroupBy`.
+- **Group by:** a menu beside the view toggle (None, Status, Category, Source, Tag, Framework, Download, Author, Group), kept as `listGroupBy`.
   - **Edit categories…** at the foot opens a dialog to add, rename, recolour (profile palette swatches) or delete custom categories stored per game under `<datadir>/categories/<game>.json`; deleting one moves its mods to Uncategorized.
   - Collapsible headers with counts appear in the list and the grid; collapsed groups are remembered per game.
   - **Mod groups** (Group by › Group): a group header carries a switch for every mod in it and a ⋯ menu with **Rename…**, **Switch all on**, **Switch all off** and **Delete group (mods stay)** (confirms; the mods remain in the profile). A mod's menu has **Add to group…** and, for each group holding it, **Remove from <group>**. Groups are stored in `profile.json` (`groups`).

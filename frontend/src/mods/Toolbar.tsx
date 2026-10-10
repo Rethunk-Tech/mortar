@@ -53,7 +53,7 @@ import { onFilterFocus } from './filterFocus.ts'
 import type { GroupBy } from './group.ts'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
-import { useListGroupBy } from './useModGroups.ts'
+import { FOLDER_LOADER, useListGroupBy } from './useModGroups.ts'
 
 const FILTERS: readonly {
   id: Exclude<ModFilter, 'all'>
@@ -188,7 +188,9 @@ function ShowFilterControl({
 function GroupByControl() {
   const { t } = useLingui()
   const by = useListGroupBy()
-  const frameworks = useProfileLoader()?.frameworks ?? false
+  const loader = useProfileLoader()
+  const frameworks = loader?.frameworks ?? false
+  const downloads = loader?.id === FOLDER_LOADER
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const [editorOpen, setEditorOpen] = useState(false)
   const tagHint = t`A mod with several tags appears under its first tag.`
@@ -214,6 +216,7 @@ function GroupByControl() {
           { id: 'source' as const, label: t`Source`, Icon: Library },
           { id: 'tag' as const, label: t`Tag`, Icon: Tag, hint: tagHint },
           ...(frameworks ? [{ id: 'framework' as const, label: t`Framework`, Icon: Layers }] : []),
+          ...(downloads ? [{ id: 'download' as const, label: t`Download`, Icon: Download }] : []),
           { id: 'author' as const, label: t`Author`, Icon: User },
           { id: 'group' as const, label: t`Group`, Icon: FolderTree },
         ].map((item) => (

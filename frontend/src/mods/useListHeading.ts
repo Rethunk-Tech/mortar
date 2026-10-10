@@ -12,6 +12,7 @@ export function useListHeading(groupBy: GroupBy) {
     tag: t`Untagged`,
     author: t`Unknown author`,
     group: t`Ungrouped`,
+    download: t`Unknown download`,
     problems: t`Mods with problems`,
     update: t`Update available`,
     enabled: t`Enabled`,

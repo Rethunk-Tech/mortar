@@ -138,6 +138,7 @@ function toListRow(
     categoryLabel,
     siteCategory: entry?.source.kind === 'thunderstore' ? entry.source.category : undefined,
     groupName,
+    download: entry?.source.modName || entry?.source.repo || entry?.source.name || '',
     order,
   }
   const won = wins[m.key]

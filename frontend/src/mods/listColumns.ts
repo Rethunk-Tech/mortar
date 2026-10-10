@@ -104,6 +104,7 @@ interface ListRow {
   categoryLabel: string
   siteCategory?: string | undefined
   groupName?: string
+  download?: string
   pinned?: boolean
   details?: Details
 }

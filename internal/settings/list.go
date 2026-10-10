@@ -19,7 +19,7 @@ var (
 	defaultListColumns = []string{"on", "name", "version", "category", "installed"}
 	lockedListColumns  = []string{"on", "name"}
 	listSortDirs       = []string{"asc", "desc"}
-	listGroupBys       = []string{"none", "status", "category", "source", "tag", "framework", "author", "group"}
+	listGroupBys       = []string{"none", "status", "category", "source", "tag", "framework", "download", "author", "group"}
 )
 
 func knownListColumn(id string) bool {

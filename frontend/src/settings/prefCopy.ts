@@ -133,6 +133,7 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
         { value: 'source', label: i18n._(msg`Source`) },
         { value: 'tag', label: i18n._(msg`Tag`) },
         { value: 'framework', label: i18n._(msg`Framework`) },
+        { value: 'download', label: i18n._(msg`Download`) },
         { value: 'author', label: i18n._(msg`Author`) },
         { value: 'group', label: i18n._(msg`Group`) },
       ],

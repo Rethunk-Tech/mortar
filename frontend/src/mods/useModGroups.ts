@@ -103,9 +103,16 @@ export function useModGroups(mods: Mod[], profile: Profile) {
   return { groupBy, sort, gameId, collapsed, setCollapsed, groups, orderedIds }
 }
 
-// The saved grouping, or Status when it is Framework and the profile's loader has no framework mods to group by.
+/** The loader of a game whose mods are loose files, where one download is cut into an entry per file. */
+export const FOLDER_LOADER = 'folder'
+
+// The saved grouping, or Status when the profile's loader has nothing to group by that way: Framework without
+// framework mods, Download for a loader whose downloads are not cut into files.
 export function useListGroupBy() {
   const saved = sanitizeListGroupBy(useSettings((s) => s.listGroupBy))
-  const frameworks = useProfileLoader()?.frameworks ?? false
-  return saved === 'framework' && !frameworks ? 'status' : saved
+  const loader = useProfileLoader()
+  if (saved === 'framework' && !(loader?.frameworks ?? false)) {
+    return 'status'
+  }
+  return saved === 'download' && loader?.id !== FOLDER_LOADER ? 'status' : saved
 }
