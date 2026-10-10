@@ -83,3 +83,47 @@ func TestFileGroupNamesASplitArchiveOnce(t *testing.T) {
 		t.Fatalf("%+v", groups)
 	}
 }
+
+// Each file of a split archive keeps its own note and tags through a link, and the Notes switch drops them all.
+func TestSplitArchiveNotesTravelPerFile(t *testing.T) {
+	t.Parallel()
+	src := profile.Source{Kind: profile.KindNexus, ModID: 5, FileID: 9}
+	a, b, c := splitEntry("pkg-1", "a.package", src, false), splitEntry("pkg-1", "sub/b.package", src, false), splitEntry("pkg-1", "c.package", src, false)
+	a.Note, b.Note, b.Tags = "first", "second", []string{"hair"}
+	p := profile.Profile{Name: "P", Entries: []profile.Entry{a, b, c}}
+	res, err := Encode("stardew", p, profile.ShareFacts{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := Parse(res.Payload)
+	if err != nil || len(got.Entries) != 1 {
+		t.Fatalf("decode: %v, %+v", err, got.Entries)
+	}
+	ref := got.Entries[0]
+	if note, _ := ref.EntryNote(a); note != "first" {
+		t.Fatalf("a note %q", note)
+	}
+	if note, tags := ref.EntryNote(b); note != "second" || len(tags) != 1 || tags[0] != "hair" {
+		t.Fatalf("b note %q tags %v", note, tags)
+	}
+	if note, tags := ref.EntryNote(c); note != "" || len(tags) != 0 || ref.Note != "" {
+		t.Fatalf("c note %q tags %v, ref note %q", note, tags, ref.Note)
+	}
+	a.Note, b.Note, b.Tags = "", "", nil
+	whole := profile.Entry{Key: "w", Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 1}}
+	notes := EntryNotes([]profile.Entry{a, b, c, whole, whole}, []Ref{ref, {ModID: 7, FileID: 1, Note: "kept whole"}})
+	if len(notes) != 3 || notes[a.Key].Note != "first" || notes[b.Key].Note != "second" || notes["w"].Note != "kept whole" {
+		t.Fatalf("notes on receive: %+v", notes)
+	}
+	a.Note, b.Note, b.Tags = "first", "second", []string{"hair"}
+	p.Entries = []profile.Entry{a, b, c}
+	inc := DefaultInclude()
+	inc.Notes = false
+	if s, _, _ := Collect(p, inc); len(s.Entries[0].Files) != 0 {
+		t.Fatalf("notes left in with the switch off: %+v", s.Entries[0].Files)
+	}
+	bad := Ref{ModID: 5, FileID: 9, Files: map[string]FileNote{"../x.package": {Note: "n"}}}
+	if validDetails(bad) {
+		t.Fatal("a file path that leaves the archive passed")
+	}
+}

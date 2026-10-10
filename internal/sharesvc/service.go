@@ -798,24 +798,13 @@ func (s *Service) applySharedEntryNotes(game, profileID string, refs []share.Ref
 	if err != nil {
 		return err
 	}
-	for _, ref := range refs {
-		if ref.Note == "" && len(ref.Tags) == 0 {
+	notes := share.EntryNotes(p.Entries, refs)
+	for _, e := range p.Entries {
+		n, ok := notes[e.Key]
+		if !ok {
 			continue
 		}
-		var key string
-		for _, e := range p.Entries {
-			if ref.MatchesEntry(e) {
-				key = e.Key
-				break
-			}
-		}
-		if key == "" {
-			continue
-		}
-		var patch profile.Entry
-		share.ImportEntryNotes(&patch, ref)
-		p, err = s.d.Profiles.SetEntryNoteTags(game, profileID, key, patch.Note, patch.Tags)
-		if err != nil {
+		if _, err := s.d.Profiles.SetEntryNoteTags(game, profileID, e.Key, n.Note, n.Tags); err != nil {
 			return err
 		}
 	}

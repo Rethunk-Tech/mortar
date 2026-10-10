@@ -72,7 +72,10 @@ type Ref struct {
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
 	Note     string                         `json:"note,omitempty"`
 	Tags     []string                       `json:"tags,omitempty"`
-	Overlay  *Overlay                       `json:"overlay,omitempty"`
+	// Files holds the note and tags of each file of a split archive, by the file's path in the archive's layout;
+	// Note and Tags are those of the entry that holds the archive whole.
+	Files   map[string]FileNote `json:"files,omitempty"`
+	Overlay *Overlay            `json:"overlay,omitempty"`
 	// Local is the store key of an archive the sender installed from disk, LocalName that archive's file name. Only a
 	// paired computer, which copies the store item, can install it.
 	Local     string `json:"local,omitempty"`
@@ -82,6 +85,12 @@ type Ref struct {
 	SizeKB  int64  `json:"sizeKb,omitempty"`
 	MinGame string `json:"minGame,omitempty"`
 	key     string
+}
+
+// FileNote is the note and tags of one file of a split archive.
+type FileNote struct {
+	Note string   `json:"note,omitempty"`
+	Tags []string `json:"tags,omitempty"`
 }
 
 // Overlay places an optional file inside the main file of the same mod: the folder of its archive that is laid
@@ -224,6 +233,7 @@ type wireRef struct {
 	Fomod    map[string]map[string][]string `json:"fomod,omitempty"`
 	Note     string                         `json:"note,omitempty"`
 	Tags     []string                       `json:"tags,omitempty"`
+	Files    map[string]FileNote            `json:"files,omitempty"`
 	Overlay  *Overlay                       `json:"overlay,omitempty"`
 	Key      string                         `json:"key,omitempty"`
 	KB       int64                          `json:"kb,omitempty"`
@@ -232,7 +242,7 @@ type wireRef struct {
 
 // MarshalJSON writes the ref as its wire object.
 func (r Ref) MarshalJSON() ([]byte, error) {
-	w := wireRef{Disabled: r.Disabled, Fomod: r.Fomod, Note: r.Note, Tags: r.Tags, Overlay: r.Overlay, KB: r.SizeKB, Min: r.MinGame}
+	w := wireRef{Disabled: r.Disabled, Fomod: r.Fomod, Note: r.Note, Tags: r.Tags, Files: r.Files, Overlay: r.Overlay, KB: r.SizeKB, Min: r.MinGame}
 	switch {
 	case r.Local != "":
 		w.Source, w.Key, w.Name = "local", r.Local, r.LocalName
@@ -266,7 +276,7 @@ func parseRef(raw json.RawMessage) (Ref, error) {
 	if err := json.Unmarshal(raw, &w); err != nil {
 		return Ref{}, fmt.Errorf("%w: bad entry", ErrMalformed)
 	}
-	r := Ref{Disabled: w.Disabled, Fomod: w.Fomod, Note: w.Note, Tags: w.Tags, Overlay: w.Overlay, SizeKB: w.KB, MinGame: w.Min}
+	r := Ref{Disabled: w.Disabled, Fomod: w.Fomod, Note: w.Note, Tags: w.Tags, Files: w.Files, Overlay: w.Overlay, SizeKB: w.KB, MinGame: w.Min}
 	switch {
 	case w.Source == "local" && w.Key != "" && w.Mod == 0 && w.File == 0 && w.Repo == "" && w.NS == "":
 		r.Local, r.LocalName = w.Key, w.Name
@@ -335,6 +345,14 @@ func validDetails(r Ref) bool {
 	}
 	if !validEntryNote(r.Note) || !validEntryTags(r.Tags) || r.SizeKB < 0 || r.SizeKB > maxID || !gameVersion.MatchString(r.MinGame) {
 		return false
+	}
+	if len(r.Files) > MaxEntries {
+		return false
+	}
+	for file, n := range r.Files {
+		if file == "" || !validOverlayPath(file) || !validEntryNote(n.Note) || !validEntryTags(n.Tags) {
+			return false
+		}
 	}
 	if r.Overlay != nil && (r.GitHub != "" || r.Package != "" || r.Patreon != "" || r.Itch != "" || r.CurseForge != 0 || !validOverlayPath(r.Overlay.From) || !validOverlayPath(r.Overlay.To)) {
 		return false
@@ -410,9 +428,36 @@ func validEntryTags(tags []string) bool {
 	return true
 }
 
-// ImportEntryNotes copies note and tags from a shared ref onto an entry, truncating the note and dropping invalid tags.
-func ImportEntryNotes(e *profile.Entry, r Ref) {
-	e.Note, e.Tags = importEntryNoteTags(r.Note, r.Tags)
+// EntryNote is the note and tags the ref carries for a profile entry: those of its file when the entry is one file
+// of a split archive, the ref's own otherwise. The note is truncated and invalid tags are dropped.
+func (r Ref) EntryNote(e profile.Entry) (string, []string) {
+	if e.File != "" {
+		n := r.Files[e.File]
+		return importEntryNoteTags(n.Note, n.Tags)
+	}
+	return importEntryNoteTags(r.Note, r.Tags)
+}
+
+// EntryNotes is the note and tags the refs carry for the profile's entries, by entry key. A ref's own note goes on
+// one entry, the first it names that holds an archive whole.
+func EntryNotes(entries []profile.Entry, refs []Ref) map[string]FileNote {
+	out := map[string]FileNote{}
+	for _, ref := range refs {
+		if ref.Note == "" && len(ref.Tags) == 0 && len(ref.Files) == 0 {
+			continue
+		}
+		whole := false
+		for _, e := range entries {
+			if !ref.MatchesEntry(e) || (e.File == "" && whole) {
+				continue
+			}
+			whole = whole || e.File == ""
+			if note, tags := ref.EntryNote(e); note != "" || len(tags) > 0 {
+				out[e.Key] = FileNote{Note: note, Tags: tags}
+			}
+		}
+	}
+	return out
 }
 
 func importEntryNoteTags(note string, tags []string) (string, []string) {
@@ -641,10 +686,6 @@ func refOf(e profile.Entry, inc Include) (Ref, string) {
 	if inc.FomodChoices {
 		r.Fomod = cloneFomod(e.Fomod)
 	}
-	if inc.Notes {
-		r.Note = e.Note
-		r.Tags = slices.Clone(e.Tags)
-	}
 	if !r.valid() {
 		return Ref{}, missing
 	}
@@ -705,6 +746,19 @@ func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, o
 		r.Disabled = nil
 		for _, o := range group {
 			r.Disabled = append(r.Disabled, o.Disabled...)
+			if !inc.Notes || (o.Note == "" && len(o.Tags) == 0) {
+				continue
+			}
+			if o.File == "" {
+				if r.Note == "" && r.Tags == nil {
+					r.Note, r.Tags = o.Note, slices.Clone(o.Tags)
+				}
+				continue
+			}
+			if r.Files == nil {
+				r.Files = map[string]FileNote{}
+			}
+			r.Files[o.File] = FileNote{Note: o.Note, Tags: slices.Clone(o.Tags)}
 		}
 		r.key = key
 		s.Entries = append(s.Entries, r)

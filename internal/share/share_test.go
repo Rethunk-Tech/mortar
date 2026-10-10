@@ -485,7 +485,7 @@ func TestImportEntryNotesTruncates(t *testing.T) {
 		"a", "b", "c", "d", "e", "f", "g", "h", "i",
 	}}
 	var e profile.Entry
-	ImportEntryNotes(&e, ref)
+	e.Note, e.Tags = ref.EntryNote(e)
 	if utf8.RuneCountInString(e.Note) != profile.MaxEntryNote {
 		t.Fatalf("note len = %d", utf8.RuneCountInString(e.Note))
 	}
