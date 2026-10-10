@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -33,10 +34,10 @@ const refreshAfter = time.Hour
 
 // version is what Mortar keeps of one package version.
 type version struct {
-	Number string   `json:"v"`
-	Size   int64    `json:"size,omitempty"`
-	Deps   []string `json:"deps,omitempty"` // as stored on disk; a loaded listing keeps ids instead
-	ids    []uint32
+	Number string `json:"v"`
+	Size   int64  `json:"size,omitempty"`
+	// Deps are indexes into the listing's dependency names.
+	Deps []uint32 `json:"d,omitempty"`
 }
 
 // pkg is what Mortar keeps of one listing: the fields search shows and install needs, latest version first.
@@ -280,7 +281,7 @@ func (d Driver) indexURL(key string) string {
 // unchanged, else rebuilt from the chunks.
 // listingTag names the shape of a stored listing. It changes when the shape does, so a listing built under another
 // shape is never read.
-const listingTag = "c2"
+const listingTag = "c3"
 
 func listingPath(dir, key, hash string) string {
 	return filepath.Join(dir, key+"-"+listingTag+"-"+hash+".json")
@@ -362,7 +363,9 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 }
 
 // build downloads every chunk and writes the slimmed listing to path as it goes, so neither a chunk nor the whole
-// listing is held in memory.
+// listing is held in memory. The file is two JSON values: the packages, then the dependency names their versions
+// index, each name once (the same "Owner-Name-1.2.3" pin is named by most versions of most packages).
+// ponytail: a changed index rebuilds the listing from every chunk; reuse unchanged chunks if the download matters.
 func (d Driver) build(ctx context.Context, chunks []string, path, ua string) error {
 	return datadir.WriteStream(path, 0o644, func(w io.Writer) error {
 		bw := bufio.NewWriter(w)
@@ -371,6 +374,7 @@ func (d Driver) build(ctx context.Context, chunks []string, path, ua string) err
 			return err
 		}
 		first := true
+		names := depNames{index: map[string]uint32{}}
 		for _, u := range chunks {
 			err := d.streamPackages(ctx, u, ua, func(w *wirePackage) error {
 				if len(w.Versions) == 0 {
@@ -382,7 +386,7 @@ func (d Driver) build(ctx context.Context, chunks []string, path, ua string) err
 					}
 				}
 				first = false
-				return enc.Encode(slim(w))
+				return enc.Encode(slim(w, &names))
 			})
 			if err != nil {
 				return err
@@ -391,12 +395,38 @@ func (d Driver) build(ctx context.Context, chunks []string, path, ua string) err
 		if err := bw.WriteByte(']'); err != nil {
 			return err
 		}
+		if err := enc.Encode(names.names); err != nil {
+			return err
+		}
 		return bw.Flush()
 	})
 }
 
+// depNames numbers each distinct dependency string as a listing is built.
+type depNames struct {
+	names []string
+	index map[string]uint32
+}
+
+func (n *depNames) ids(deps []string) []uint32 {
+	if len(deps) == 0 {
+		return nil
+	}
+	out := make([]uint32, len(deps))
+	for i, d := range deps {
+		id, ok := n.index[d]
+		if !ok {
+			id = uint32(len(n.names) & math.MaxUint32)
+			n.names = append(n.names, d)
+			n.index[d] = id
+		}
+		out[i] = id
+	}
+	return out
+}
+
 // slim keeps the fields of a wire package that search and install use.
-func slim(w *wirePackage) pkg {
+func slim(w *wirePackage, names *depNames) pkg {
 	p := pkg{
 		Owner: w.Owner, Name: w.Name, URL: w.PackageURL, Updated: w.DateUpdated, Created: w.DateCreated, Rating: w.RatingScore,
 		Hidden: w.IsDeprecated, Categories: w.Categories, Adult: w.HasNSFWContent, Summary: w.Versions[0].Description, Icon: w.Versions[0].Icon,
@@ -405,7 +435,7 @@ func slim(w *wirePackage) pkg {
 	p.Versions = make([]version, len(w.Versions))
 	for i, v := range w.Versions {
 		p.Downloads += v.Downloads
-		p.Versions[i] = version{Number: v.VersionNumber, Size: v.FileSize, Deps: v.Dependencies}
+		p.Versions[i] = version{Number: v.VersionNumber, Size: v.FileSize, Deps: names.ids(v.Dependencies)}
 	}
 	return p
 }
@@ -438,6 +468,12 @@ func loadPackages(key, path string) ([]pkg, error) {
 	if _, err := dec.Token(); err != nil {
 		return nil, err
 	}
+	if err := dec.Decode(&c.tab.names); err != nil {
+		return nil, err
+	}
+	if !c.known() {
+		return nil, errors.New("the listing names a dependency it does not hold")
+	}
 	memo[key] = memoEntry{path, pk}
 	return pk, nil
 }
@@ -445,19 +481,17 @@ func loadPackages(key, path string) ([]pkg, error) {
 // depTable holds each distinct dependency string of a listing once; versions refer to them by index.
 type depTable struct{ names []string }
 
-// depCompactor moves every version's dependency strings into one shared table: most of a listing's bytes are the
-// same "Owner-Name-1.2.3" pins named again by every version. Identical dependency lists, version numbers and the other
-// strings that repeat across packages (owners, categories, repositories) are held once.
+// depCompactor holds once what repeats across a loaded listing's packages: identical dependency lists, version
+// numbers, owners, categories and repositories.
 type depCompactor struct {
 	tab   *depTable
-	index map[string]uint32
 	lists map[string][]uint32
 	words map[string]string
 	key   []byte
 }
 
 func newDepCompactor() *depCompactor {
-	return &depCompactor{tab: &depTable{}, index: map[string]uint32{}, lists: map[string][]uint32{}, words: map[string]string{}}
+	return &depCompactor{tab: &depTable{}, lists: map[string][]uint32{}, words: map[string]string{}}
 }
 
 // word returns the one copy of s held for the listing.
@@ -485,34 +519,37 @@ func (c *depCompactor) add(p *pkg) {
 			continue
 		}
 		c.key = c.key[:0]
-		for _, d := range v.Deps {
-			id, ok := c.index[d]
-			if !ok {
-				id = uint32(len(c.tab.names) & math.MaxUint32)
-				c.tab.names = append(c.tab.names, d)
-				c.index[d] = id
-			}
+		for _, id := range v.Deps {
 			c.key = binary.LittleEndian.AppendUint32(c.key, id)
 		}
 		ids, ok := c.lists[string(c.key)]
 		if !ok {
-			ids = make([]uint32, len(v.Deps))
-			for k := range ids {
-				ids[k] = binary.LittleEndian.Uint32(c.key[k*4:])
-			}
+			ids = slices.Clone(v.Deps)
 			c.lists[string(c.key)] = ids
 		}
-		v.ids, v.Deps = ids, nil
+		v.Deps = ids
 	}
+}
+
+// known reports whether every dependency index a version holds has a name.
+func (c *depCompactor) known() bool {
+	for _, ids := range c.lists {
+		for _, id := range ids {
+			if int(id) >= len(c.tab.names) {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // depsOf is the dependency strings of one of p's versions.
 func (p pkg) depsOf(v version) []string {
-	if v.ids == nil {
-		return v.Deps
+	if len(v.Deps) == 0 {
+		return nil
 	}
-	out := make([]string, len(v.ids))
-	for i, id := range v.ids {
+	out := make([]string, len(v.Deps))
+	for i, id := range v.Deps {
 		out[i] = p.tab.names[id]
 	}
 	return out
