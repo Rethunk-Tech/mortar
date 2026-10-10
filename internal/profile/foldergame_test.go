@@ -1,8 +1,12 @@
 package profile
 
 import (
+	"errors"
+	"fmt"
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -207,5 +211,78 @@ func TestFolderGameRollBackRestoresTheSupersededArchiveAndItsSwitches(t *testing
 	fwd, err := e.RollBack(folderGame, p.ID, back.Entries[0].Key)
 	if err != nil || len(fwd.Entries) != 1 || fwd.Entries[0].File != "three.package" {
 		t.Fatalf("roll forward: %v, %v", keysOf(fwd), err)
+	}
+}
+
+func TestFolderGameBackupRoundTripKeepsPerFileEntriesWithTheirItem(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	zip := zipOf(t, "a.zip", map[string]string{"one.package": "1", "two.package": "2"})
+	res, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10))
+	if err != nil {
+		t.Fatal(err)
+	}
+	dirs, err := e.BackupDirs(folderGame, res.Profile, func(Entry) bool { return true })
+	if err != nil || len(dirs) != 1 {
+		t.Fatalf("one store item once: %v, %v", dirs, err)
+	}
+	other := newEnv(t)
+	back, missing, err := other.RestoreBackup(t.Context(), folderGame, res.Profile, nil, dirs)
+	if err != nil || len(missing) != 0 || len(back.Entries) != 2 {
+		t.Fatalf("restore: entries %v, missing %v, %v", keysOf(back), missing, err)
+	}
+	owners, err := other.PackageFileOwners(folderGame, back.ID)
+	if err != nil || len(owners) != 2 {
+		t.Fatalf("owners = %v, %v", owners, err)
+	}
+}
+
+func TestFolderGameRefusesTwoFilesThatDifferOnlyByCase(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	zip := zipOf(t, "a.zip", map[string]string{"A.package": "1", "a.package": "2"})
+	_, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10))
+	if !errors.Is(err, archive.ErrCaseCollision) || !strings.Contains(err.Error(), "package") {
+		t.Fatalf("err = %v", err)
+	}
+}
+
+func TestFolderGameAnotherArchiveLayingOutTheSamePathIsCountedAsAnOverride(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	for i, src := range []Source{cfSource(1), {Kind: KindCurseForge, Name: "Other", ModID: 8, FileID: 1}} {
+		zip := zipOf(t, "a.zip", map[string]string{"same.package": fmt.Sprint(i)})
+		if _, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, src); err != nil {
+			t.Fatal(err)
+		}
+	}
+	wins, err := e.PackageOverrides(folderGame, p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	total := 0
+	for _, n := range wins {
+		total += n
+	}
+	if total != 1 {
+		t.Fatalf("overrides = %v", wins)
+	}
+}
+
+func TestFolderGameLoadOrderListsAnArchiveOnce(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	zip := zipOf(t, "a.zip", map[string]string{"one.package": "1", "two.package": "2"})
+	res, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10))
+	if err != nil {
+		t.Fatal(err)
+	}
+	dirs, err := e.enabledFolders(folderGame, "", res.Profile)
+	if err != nil || len(dirs) != 1 {
+		t.Fatalf("dirs = %v, %v", dirs, err)
 	}
 }

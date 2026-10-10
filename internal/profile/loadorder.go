@@ -42,7 +42,7 @@ func (s *Store) enabledFolders(game, dir string, p Profile) ([]string, error) {
 				continue
 			}
 			// A package whose files are no longer in the store has nothing to read.
-			if itemDir, err := s.items.Path(game, e.Key); err == nil {
+			if itemDir, err := s.items.Path(game, e.StoreKey()); err == nil && !slices.Contains(out, itemDir) {
 				out = append(out, itemDir)
 			}
 			continue

@@ -23,7 +23,7 @@ func (s *Store) shippedConfigOf(game string, p Profile, key string, uniqueID mod
 	if !found {
 		return "", false
 	}
-	src, err := s.items.Path(game, e.Key)
+	src, err := s.items.Path(game, e.StoreKey())
 	if err != nil {
 		return "", false
 	}
@@ -53,7 +53,7 @@ func (s *Store) pluginGUIDsOf(game string, p Profile, uniqueID mod.ID) []string 
 	if !ok || !e.Package || s.items == nil {
 		return nil
 	}
-	dir, err := s.items.Path(game, e.Key)
+	dir, err := s.items.Path(game, e.StoreKey())
 	if err != nil {
 		return nil
 	}

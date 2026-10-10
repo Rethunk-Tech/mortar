@@ -72,7 +72,7 @@ func (s *Store) Installed(game, id string) ([]Installed, error) {
 func (s *Store) packageInstalled(game string, e Entry) []Installed {
 	var dir string
 	if s.items != nil {
-		dir, _ = s.items.Path(game, e.Key)
+		dir, _ = s.items.Path(game, e.StoreKey())
 	}
 	var needs []manifest.Dependency
 	if dir != "" {

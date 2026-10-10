@@ -55,6 +55,9 @@ func (s *Store) refreshDependencies(game, id string) error {
 // storeMods is the entry's components as its store item describes them now; nil when the item cannot be read.
 func (s *Store) storeMods(game string, e Entry) []Component {
 	if e.Package && s.items != nil {
+		if e.File != "" {
+			return nil
+		}
 		mods, _, _ := s.packageMods(game, e.Key)
 		return mods
 	}

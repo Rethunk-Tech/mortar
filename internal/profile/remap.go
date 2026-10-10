@@ -179,7 +179,7 @@ func (s *Store) priorVariant(game, id string, found []manifest.Mod, vars []Remap
 		}) {
 			continue
 		}
-		rel, err := s.items.Root(game, e.Key)
+		rel, err := s.items.Root(game, e.StoreKey())
 		if err == nil && rel != "" && slices.ContainsFunc(vars, func(v RemapVariant) bool { return v.Path == rel }) {
 			return rel
 		}

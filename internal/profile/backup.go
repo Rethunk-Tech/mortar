@@ -112,14 +112,14 @@ func (s *Store) BackupDirs(game string, p Profile, keep func(Entry) bool) (map[s
 		if e.Source.Bundled() || !keep(e) {
 			continue
 		}
-		dir, err := s.items.Dir(game, e.Key)
+		dir, err := s.items.Dir(game, e.StoreKey())
 		if errors.Is(err, store.ErrNotFound) {
 			continue
 		}
 		if err != nil {
 			return nil, err
 		}
-		out["store/"+e.Key+"/"] = dir
+		out["store/"+e.StoreKey()+"/"] = dir
 	}
 	if p.SeparateSaves {
 		dir, err := s.SavesFolder(game, p.ID)
@@ -152,7 +152,7 @@ func (s *Store) RestoreBackup(ctx context.Context, game string, p Profile, files
 			continue
 		}
 		key, ok := strings.CutPrefix(strings.TrimSuffix(prefix, "/"), "store/")
-		if !ok || !slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.Key == key && !e.Source.Bundled() }) {
+		if !ok || !slices.ContainsFunc(p.Entries, func(e Entry) bool { return e.StoreKey() == key && !e.Source.Bundled() }) {
 			return Profile{}, nil, fmt.Errorf("the backup holds %q, which is no entry's store item", prefix)
 		}
 		if err := s.items.AddDir(ctx, game, key, dir); err != nil {
@@ -199,7 +199,7 @@ func (s *Store) restoreInto(game string, created, p Profile, files map[string][]
 			continue
 		}
 		out.Entries = append(out.Entries, e)
-		if _, err := s.items.Path(game, e.Key); err != nil {
+		if _, err := s.items.Path(game, e.StoreKey()); err != nil {
 			missing = append(missing, e)
 		}
 	}

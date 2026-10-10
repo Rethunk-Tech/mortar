@@ -156,7 +156,7 @@ const pendingPrefix = tempPrefix + "pending_"
 // placeStaged is place with the final rename aimed at stage(final) in mods/. It returns final, the folder name e belongs
 // under, or "" when e has no folder of its own.
 func (s *Store) placeStaged(game, modsDir string, e Entry, stage func(final string) string) (string, error) {
-	arch, l, driver, err := s.layoutOf(game, filepath.Base(filepath.Dir(modsDir)), e.Key, e.Fomod)
+	arch, l, driver, err := s.layoutOf(game, filepath.Base(filepath.Dir(modsDir)), e.StoreKey(), e.Fomod)
 	if err != nil || driver == driverThunderstore {
 		return "", err
 	}
@@ -958,7 +958,7 @@ func (s *Store) packageDir(game, id, key string, uniqueID mod.ID) (string, error
 	if !ok {
 		return "", fmt.Errorf("no mod %q in this profile", uniqueID)
 	}
-	return s.items.Path(game, e.Key)
+	return s.items.Path(game, e.StoreKey())
 }
 
 // ModFolder returns the mod's folder inside the profile, under whichever name (plain or dot-prefixed) it has now.

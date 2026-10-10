@@ -102,7 +102,7 @@ func (s *Store) ModState(game, id, key string, uniqueID mod.ID) (ModState, error
 	if err != nil {
 		return ModState{}, err
 	}
-	src, err := s.items.Path(game, e.Key)
+	src, err := s.items.Path(game, e.StoreKey())
 	if errors.Is(err, store.ErrNotFound) {
 		st.Config = ConfigGenerated
 		return st, nil

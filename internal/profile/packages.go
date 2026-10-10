@@ -41,7 +41,7 @@ func (s *Store) Packages(game, id string) ([]PackageRef, error) {
 			continue
 		}
 		enabled := len(e.Mods) == 0 || slices.ContainsFunc(e.Mods, func(m Component) bool { return e.Enabled(m.ID) })
-		dir, err := s.items.Path(game, e.Key)
+		dir, err := s.items.Path(game, e.StoreKey())
 		if err != nil {
 			continue
 		}
