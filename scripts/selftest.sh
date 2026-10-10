@@ -14,6 +14,7 @@
 #   scripts/selftest.sh seed                  fill the running sandbox with fixture data (once; skipped when present)
 #   scripts/selftest.sh ea-fixture FOLDER MARKER  add a fake Bottles bottle holding an EA App install of FOLDER (discovery only)
 #   scripts/selftest.sh regress --fake GAME_ID  launch regress for a game not installed here: a fake install and a dummy window (see regress_fake)
+#   scripts/selftest.sh regress --game sims4  stand-in The Sims 4 (see regress_sims4): per-profile Mods, saves and Options.ini; the player's files identical after
 #   scripts/selftest.sh regress [--game lethal-company]  one-shot regression run (Stardew, or Lethal Company through Proton) in its own throwaway sandbox (see below)
 #   scripts/selftest.sh curseforge            CurseForge end to end in its own throwaway sandbox; needs MORTAR_CURSEFORGE_KEY, else skips
 #   scripts/selftest.sh harness-check         prove the launch harness with a dummy window instead of a game
@@ -1224,6 +1225,124 @@ PY
   [ "$verdict" = PASS ]
 }
 
+# sims4_install gives the sandbox a stand-in The Sims 4: a Steam install whose Game/Bin/TS4_x64.exe is a shell script, a
+# Steam manifest and prefix, and the player's Documents/Electronic Arts/The Sims 4 tree (Mods with a Resource.cfg, a
+# saves file, an Options.ini with both mod switches off). $ROOT/run-sims4.sh is the launch prefix that starts the stub in
+# place of Proton: it runs the stub, which records what the game sees into $ROOT/sims-seen.txt, then stays up under the
+# executable's name (how Mortar recognises the game process) until Mortar stops it.
+sims4_install() {
+  local game="$SANDBOX_STEAM/steamapps/common/The Sims 4" compat="$SANDBOX_STEAM/steamapps/compatdata/1222670"
+  local docs="$compat/pfx/drive_c/users/steamuser/Documents/Electronic Arts/The Sims 4"
+  mkdir -p "$SANDBOX_STEAM/config" "$game/Game/Bin" "$docs/Mods" "$docs/saves"
+  [ -f "$STEAM/config/loginusers.vdf" ] && cp "$STEAM/config/loginusers.vdf" "$SANDBOX_STEAM/config/"
+  printf '"AppState"\n{\n\t"appid"\t\t"1222670"\n\t"installdir"\t\t"The Sims 4"\n\t"StateFlags"\t\t"4"\n}\n' >"$SANDBOX_STEAM/steamapps/appmanifest_1222670.acf"
+  printf 'WINE REGISTRY Version 2\n;; All keys relative to \\\\User\\\\S-1-5-21-0-0-0-1000\n\n#arch=win64\n' >"$compat/pfx/user.reg"
+  printf 'Mod Folders\r\nMods\r\n' >"$docs/Mods/Resource.cfg"
+  printf 'player save\n' >"$docs/saves/Slot_00000001.save"
+  printf '[options]\r\nmodsdisabled = 1\r\nscriptmodsenabled = 0\r\nresolution = 1920 1080\r\n' >"$docs/Options.ini"
+  write_library
+  cat >"$game/Game/Bin/TS4_x64.exe" <<EOF
+#!/bin/sh
+docs='$docs'
+{
+  echo '[mods]'
+  (cd "\$docs/Mods" && find . \( -type f -o -type l \) | sort)
+  echo '[saves]'
+  (cd "\$docs/saves" && find . \( -type f -o -type l \) | sort)
+  echo '[options]'
+  tr -d '\\r' <"\$docs/Options.ini"
+} >'$ROOT/sims-seen.tmp'
+mv '$ROOT/sims-seen.tmp' '$ROOT/sims-seen.txt'
+EOF
+  chmod +x "$game/Game/Bin/TS4_x64.exe"
+  printf '#!/bin/sh\n"$1"\nexec -a "$1" sleep 600\n' >"$ROOT/run-sims4.sh"
+  chmod +x "$ROOT/run-sims4.sh"
+}
+
+# regress_sims4 launches the stand-in The Sims 4 (see sims4_install) directly on the hidden display and proves the
+# per-profile folders: the profile's mod is in the player's Mods folder, the game sees the profile's own saves and an
+# Options.ini with both switches on, and afterwards the player's Mods, saves and Options.ini hash exactly as before, as
+# does the game folder. The sandbox enables the game for itself through MORTAR_ENABLE_GAMES.
+regress_sims4() {
+  ROOT=$(mktemp -d /var/tmp/mortar-regress-sims4-XXXXXX)
+  case "$ROOT" in /var/tmp/mortar-regress-sims4-??????) ;; *)
+    echo "unexpected sandbox dir $ROOT" >&2
+    exit 1
+    ;;
+  esac
+  mark
+  PORT=$((9600 + RANDOM % 300))
+  while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
+  SANDBOX_HOME=$ROOT/home
+  SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
+  export MORTAR_ENABLE_GAMES=sims4
+  verdict=FAIL
+  local game="$SANDBOX_STEAM/steamapps/common/The Sims 4"
+  local docs="$SANDBOX_STEAM/steamapps/compatdata/1222670/pfx/drive_c/users/steamuser/Documents/Electronic Arts/The Sims 4"
+  local data=$SANDBOX_HOME/.local/share/mortar failures=() profile="" t0=$SECONDS diff_lines=0 docs_diff=0
+  finish() { release_sandbox; }
+  regress_traps
+  need_launches 1
+
+  sims4_install
+  build
+  start
+  cli settings set --game sims4 defaultLaunchMethod direct >/dev/null
+  profile=$(cli profile create sims4 "Regress sims4" | cut -f1)
+  local fx=$ROOT/fixture
+  mkdir -p "$fx/Regress"
+  printf 'profile mod\n' >"$fx/Regress/profilemod.package"
+  (cd "$fx" && python3 -m zipfile -c "$fx/profilemod.zip" ./Regress)
+  cli install sims4 "$profile" "$fx/profilemod.zip" >"$ROOT/install.txt" 2>&1 || failures+=("installing the profile mod failed: $(tail -c 200 "$ROOT/install.txt")")
+  cli profile set sims4 "$profile" launchPrefix "$ROOT/run-sims4.sh" >/dev/null
+  tree_hash "$game" >"$ROOT/game-before.txt"
+  tree_hash "$docs" >"$ROOT/docs-before.txt"
+
+  if [ ${#failures[@]} -eq 0 ]; then
+    cli launch sims4 "$profile" >"$ROOT/launch.txt" 2>&1 || failures+=("launch failed: $(head -c 300 "$ROOT/launch.txt")")
+    for _ in $(seq 1 60); do
+      [ -s "$ROOT/sims-seen.txt" ] && break
+      sleep 1
+    done
+    [ -s "$ROOT/sims-seen.txt" ] || failures+=("the stand-in game never ran")
+    grep -q 'profilemod.package' "$ROOT/sims-seen.txt" 2>/dev/null || failures+=("the profile's mod was not in the Mods folder during the run")
+    grep -qix 'modsdisabled = 0' "$ROOT/sims-seen.txt" 2>/dev/null || failures+=("Options.ini kept modsdisabled on during the run")
+    grep -qix 'scriptmodsenabled = 1' "$ROOT/sims-seen.txt" 2>/dev/null || failures+=("Options.ini kept scriptmodsenabled off during the run")
+    ! grep -q 'Slot_00000001.save' "$ROOT/sims-seen.txt" 2>/dev/null || failures+=("the player's save was visible to the profile during the run")
+    cli stop sims4 >"$ROOT/stop.txt" 2>&1 || failures+=("mortar stop failed: $(head -c 300 "$ROOT/stop.txt")")
+    local state=""
+    for _ in $(seq 1 90); do
+      state=$(cli status sims4 --json | python3 -c 'import json,sys; print(json.load(sys.stdin)["state"])')
+      [ "$state" = idle ] && break
+      sleep 1
+    done
+    [ "$state" = idle ] || failures+=("Mortar never went idle after the game was stopped")
+    sleep 3
+    tree_hash "$game" >"$ROOT/game-after.txt"
+    tree_hash "$docs" >"$ROOT/docs-after.txt"
+    diff_lines=$(diff "$ROOT/game-before.txt" "$ROOT/game-after.txt" | grep -c '^[<>]' || true)
+    docs_diff=$(diff "$ROOT/docs-before.txt" "$ROOT/docs-after.txt" | grep -c '^[<>]' || true)
+    [ "$diff_lines" -eq 0 ] || failures+=("game folder differs after the run ($diff_lines lines)")
+    [ "$docs_diff" -eq 0 ] || failures+=("the player's Mods, saves or Options.ini differ after the run ($docs_diff lines)")
+    local own
+    own=$(find "$data" -name Options.ini -not -path '*/journal/*' 2>/dev/null | head -1)
+    if [ -z "$own" ]; then
+      failures+=("the profile holds no Options.ini copy")
+    else
+      { tr -d '\r' <"$own" | grep -qix 'modsdisabled = 0' && tr -d '\r' <"$own" | grep -qix 'scriptmodsenabled = 1'; } || failures+=("the profile's Options.ini copy does not hold the switches on")
+    fi
+  fi
+
+  [ ${#failures[@]} -eq 0 ] && verdict=PASS
+  echo "---- regress --game sims4: $verdict ($((SECONDS - t0))s)"
+  echo "profile        $profile"
+  echo "game entries   $(wc -l <"$ROOT/game-before.txt") hashed, $diff_lines differing after the run"
+  echo "player files   $(wc -l <"$ROOT/docs-before.txt") hashed, $docs_diff differing after the run"
+  local f
+  for f in "${failures[@]}"; do echo "FAIL: $f"; done
+  [ "$verdict" = PASS ]
+}
+
 # display_peers PID prints the path of every server PID's network namespace holds a connection to. A launch has a
 # namespace of its own, and the server side of a unix connection lives in the client's namespace, so each connected
 # socket there with a path is a display, bus or other service the game reached.
@@ -1570,9 +1689,10 @@ case "${1:-}" in
       "") regress ;;
       --gamelethal-company) regress_lc ;;
       --gamestardew) regress ;;
+      --gamesims4) regress_sims4 ;;
       --fake*) regress_fake "${3:-}" ;;
       *)
-        echo "regress takes --game stardew, --game lethal-company or --fake GAME_ID" >&2
+        echo "regress takes --game stardew, --game lethal-company, --game sims4 or --fake GAME_ID" >&2
         exit 2
         ;;
     esac
