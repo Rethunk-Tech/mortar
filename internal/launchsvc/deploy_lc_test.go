@@ -13,7 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -41,19 +41,9 @@ func tsPackage(t *testing.T, name string, files map[string]string) string {
 
 func TestALethalCompanyLaunchKeepsBepInExInTheProfile(t *testing.T) {
 	datadirtest.Use(t, t.TempDir())
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ps, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, ps := testenv.Stores(t)
 	const lc = "lethal-company"
-	p, err := ps.Create(lc, "Friends")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := testenv.Profile(t, ps, lc, "Friends")
 	var keyA string
 	for _, pkg := range []struct{ id, file string }{{"Ns-A", "A.dll"}, {"Ns-B", "B.dll"}} {
 		zip := tsPackage(t, pkg.id[3:], map[string]string{"plugins/" + pkg.file: pkg.id, "config/" + pkg.id + ".cfg": "default " + pkg.id})

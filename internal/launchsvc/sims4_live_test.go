@@ -13,7 +13,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/backup"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/gamestore"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -44,27 +43,13 @@ type sims4World struct {
 
 func newSims4World(t *testing.T) *sims4World {
 	t.Helper()
-	m, err := components.BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
-	m.Games = slices.Clone(m.Games)
-	i := slices.IndexFunc(m.Games, func(g components.GameInfo) bool { return g.ID == sims4 })
-	if i < 0 {
-		t.Fatal("the catalog has no sims4")
-	}
-	m.Games[i].Enabled = true
-	if err := m.Validate(); err != nil {
-		t.Fatal(err)
-	}
-	c := components.NewClient(nil)
-	c.SetManifest(m)
-	components.Use(c)
-	t.Cleanup(func() { components.Use(nil) })
-
-	data := t.TempDir()
-	datadirtest.Use(t, data)
-	t.Setenv("LOCALAPPDATA", data)
+	useCatalog(t, func(m *components.Manifest) {
+		i := slices.IndexFunc(m.Games, func(g components.GameInfo) bool { return g.ID == sims4 })
+		if i < 0 {
+			t.Fatal("the catalog has no sims4")
+		}
+		m.Games[i].Enabled = true
+	})
 	home := t.TempDir()
 	root := filepath.Join(home, ".local", "share", "Steam")
 	gameDir := filepath.Join(root, "steamapps", "common", "The Sims 4")

@@ -12,7 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
-	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
 // Two packages ship the same plugin (GUID com.fixture.plugin, version 1.2.3), as the matrix's DupA and DupB do, and a
@@ -23,19 +23,9 @@ func TestOnlyTheCopyBepInExLoadedReadsLoaded(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	items, err := store.Open()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ps, err := profile.Open(items)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, ps := testenv.Stores(t)
 	const lc = "lethal-company"
-	p, err := ps.Create(lc, "A")
-	if err != nil {
-		t.Fatal(err)
-	}
+	p := testenv.Profile(t, ps, lc, "A")
 	dll, err := os.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
 		t.Fatal(err)

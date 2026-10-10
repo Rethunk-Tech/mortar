@@ -6,11 +6,9 @@ import (
 	"context"
 	"os"
 	"path/filepath"
-	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -25,39 +23,23 @@ const optionsGame = "options-game"
 // optionsEnv is a service for a catalog game whose options file lives under a fake Documents tree in the service's home.
 func optionsEnv(t *testing.T, mode string) (svc *Service, profileID, target string) {
 	t.Helper()
-	m, err := components.BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
-	m.Games = append(slices.Clone(m.Games), components.GameInfo{
-		ID: optionsGame, Name: "Options Game", Enabled: true, Marker: "G.dll", Deploy: "profile",
-		Targets: []components.TargetDef{{ID: "mods", Root: "{profile}/Mods", MaxDepth: map[string]int{"pkg": 1}}},
-		Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "1"}},
-		Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
-		Paths: map[string]components.PathTemplate{
-			"mods":    {Windows: "{documents}/G/Mods", Linux: "{documents}/G/Mods", Darwin: "{documents}/G/Mods"},
-			"options": {Windows: "{documents}/G/Options.ini", Linux: "{documents}/G/Options.ini", Darwin: "{documents}/G/Options.ini"},
-		},
-		RequiredSettings: []components.RequiredSetting{
-			{Path: "options", Key: "ModsDisabled", Value: "0", Message: "mods off"},
-			{Path: "options", Key: "ScriptMods", Value: "1", Message: "scripts off"},
-		},
+	useCatalog(t, func(m *components.Manifest) {
+		m.Games = append(m.Games, components.GameInfo{
+			ID: optionsGame, Name: "Options Game", Enabled: true, Marker: "G.dll", Deploy: "profile",
+			Targets: []components.TargetDef{{ID: "mods", Root: "{profile}/Mods", MaxDepth: map[string]int{"pkg": 1}}},
+			Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "1"}},
+			Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
+			Paths: map[string]components.PathTemplate{
+				"mods":    {Windows: "{documents}/G/Mods", Linux: "{documents}/G/Mods", Darwin: "{documents}/G/Mods"},
+				"options": {Windows: "{documents}/G/Options.ini", Linux: "{documents}/G/Options.ini", Darwin: "{documents}/G/Options.ini"},
+			},
+			RequiredSettings: []components.RequiredSetting{
+				{Path: "options", Key: "ModsDisabled", Value: "0", Message: "mods off"},
+				{Path: "options", Key: "ScriptMods", Value: "1", Message: "scripts off"},
+			},
+		})
 	})
-	if err := m.Validate(); err != nil {
-		t.Fatal(err)
-	}
-	c := components.NewClient(nil)
-	c.SetManifest(m)
-	components.Use(c)
-	t.Cleanup(func() { components.Use(nil) })
-
-	data := t.TempDir()
-	datadirtest.Use(t, data)
-	t.Setenv("LOCALAPPDATA", data)
-	folder := t.TempDir()
-	if err := os.WriteFile(filepath.Join(folder, "G.dll"), []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	folder := markedGameFolder(t)
 	set, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)

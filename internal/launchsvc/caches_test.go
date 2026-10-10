@@ -7,14 +7,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
@@ -25,36 +23,20 @@ const cacheGame = "cache-game"
 
 func cachesEnv(t *testing.T) (svc *Service, profiles *profile.Store, dir string) {
 	t.Helper()
-	m, err := components.BundledManifest()
-	if err != nil {
-		t.Fatal(err)
-	}
-	m.Games = append(slices.Clone(m.Games), components.GameInfo{
-		ID: cacheGame, Name: "Cache Game", Enabled: true, Marker: "G.dll", Deploy: "profile",
-		Targets: []components.TargetDef{{ID: "mods", Root: "{profile}/Mods"}},
-		Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "1"}},
-		Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
-		Paths: map[string]components.PathTemplate{
-			"mods":     {Windows: "{documents}/G/Mods", Linux: "{documents}/G/Mods", Darwin: "{documents}/G/Mods"},
-			"userData": {Windows: "{documents}/G", Linux: "{documents}/G", Darwin: "{documents}/G"},
-		},
-		Caches: []components.CachePath{{Role: "userData", Path: "thumb.package"}, {Role: "userData", Path: "cachestr"}},
+	useCatalog(t, func(m *components.Manifest) {
+		m.Games = append(m.Games, components.GameInfo{
+			ID: cacheGame, Name: "Cache Game", Enabled: true, Marker: "G.dll", Deploy: "profile",
+			Targets: []components.TargetDef{{ID: "mods", Root: "{profile}/Mods"}},
+			Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "1"}},
+			Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
+			Paths: map[string]components.PathTemplate{
+				"mods":     {Windows: "{documents}/G/Mods", Linux: "{documents}/G/Mods", Darwin: "{documents}/G/Mods"},
+				"userData": {Windows: "{documents}/G", Linux: "{documents}/G", Darwin: "{documents}/G"},
+			},
+			Caches: []components.CachePath{{Role: "userData", Path: "thumb.package"}, {Role: "userData", Path: "cachestr"}},
+		})
 	})
-	if err := m.Validate(); err != nil {
-		t.Fatal(err)
-	}
-	c := components.NewClient(nil)
-	c.SetManifest(m)
-	components.Use(c)
-	t.Cleanup(func() { components.Use(nil) })
-
-	data := t.TempDir()
-	datadirtest.Use(t, data)
-	t.Setenv("LOCALAPPDATA", data)
-	folder := t.TempDir()
-	if err := os.WriteFile(filepath.Join(folder, "G.dll"), []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	folder := markedGameFolder(t)
 	set, err := settings.Open()
 	if err != nil {
 		t.Fatal(err)
