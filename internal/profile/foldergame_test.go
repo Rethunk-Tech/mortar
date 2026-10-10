@@ -484,3 +484,38 @@ func TestFolderGameFailedUpdateLeavesTheOldTrayFilesAndEntries(t *testing.T) {
 		t.Fatalf("entries = %v, want %v", keysOf(cur), keysOf(first.Profile))
 	}
 }
+
+func TestFolderGameReadersResolveAPerFileEntryToItsStoreItem(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	zip := zipOf(t, "a.zip", map[string]string{"config.json": `{"a": 1}`, "x.package": "1"})
+	res, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10))
+	if err != nil || len(res.Profile.Entries) != 2 {
+		t.Fatalf("%v %v", keysOf(res.Profile), err)
+	}
+	item, err := e.items.Path(folderGame, res.Profile.Entries[0].Item)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, en := range res.Profile.Entries {
+		id := en.Mods[0].ID
+		if dir, err := e.packageDir(folderGame, p.ID, en.Key, id); err != nil || dir != item {
+			t.Fatalf("packageDir(%s) = %q, %v; want %q", en.Key, dir, err, item)
+		}
+		if en.File == "config.json" {
+			if cfg, ok := e.shippedConfigOf(folderGame, res.Profile, en.Key, id); !ok || !strings.Contains(cfg, `"a"`) {
+				t.Fatalf("shipped config = %q, %v", cfg, ok)
+			}
+		}
+	}
+	listed, err := e.Installed(folderGame, p.ID)
+	if err != nil || len(listed) != 2 {
+		t.Fatalf("installed = %+v, %v", listed, err)
+	}
+	for _, in := range listed {
+		if in.Folder != item {
+			t.Fatalf("installed folder = %q, want %q", in.Folder, item)
+		}
+	}
+}
