@@ -50,7 +50,7 @@ func (g catalogOnly) GameProcesses() []string {
 // Linux build's executable.
 func (g catalogOnly) ValidInstall(dir string) error {
 	info, _ := catalogGame(string(g))
-	for _, m := range []string{info.Marker, info.LinuxMarker} {
+	for _, m := range []string{info.MarkerPath(), info.LinuxMarker} {
 		if st, err := os.Stat(filepath.Join(dir, m)); m != "" && err == nil && st.Mode().IsRegular() {
 			return nil
 		}

@@ -119,3 +119,21 @@ func TestACatalogOnlyEAGameIsFoundInAnAddedFolderAndStartsWithoutSteam(t *testin
 		t.Fatalf("an EA game starts its own executable, not a Steam relay: %+v", cmd)
 	}
 }
+
+func TestValidInstallFindsMarkerBelowRoot(t *testing.T) {
+	dir := t.TempDir()
+	g := catalogOnly("sims4")
+	if g.ValidInstall(dir) == nil {
+		t.Fatal("an empty folder validated")
+	}
+	bin := filepath.Join(dir, "Game", "Bin")
+	if err := os.MkdirAll(bin, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(bin, "TS4_x64.exe"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.ValidInstall(dir); err != nil {
+		t.Fatal(err)
+	}
+}

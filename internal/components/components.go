@@ -16,6 +16,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"path"
@@ -120,6 +121,9 @@ type GameInfo struct {
 	ImportIDs ImportIDs `json:"importIds,omitzero"`
 	// Marker is a file every install of the game holds, at its root or one "game" folder down.
 	Marker string `json:"marker"`
+	// MarkerDir is the slash-separated folder below the install root that holds Marker, for a game whose executable
+	// sits below the root (Game/Bin); empty when the marker is at the root or one "game" folder down.
+	MarkerDir string `json:"markerDir,omitempty"`
 	// LinuxMarker is the executable of the game's native Linux build where the store ships one beside the build Marker
 	// names: an install holding it and not Marker is that build, started natively rather than under Proton.
 	LinuxMarker string `json:"linuxMarker,omitempty"`
@@ -280,6 +284,9 @@ func (t TargetDef) ProfileFolder() string {
 	}
 	return strings.TrimPrefix(strings.TrimPrefix(t.Root, "{profile}"), "/")
 }
+
+// MarkerPath is Marker as a path below the install root.
+func (g GameInfo) MarkerPath() string { return path.Join(g.MarkerDir, g.Marker) }
 
 // Target returns the game's content target with the given id.
 func (g GameInfo) Target(id string) (TargetDef, bool) {
@@ -462,6 +469,9 @@ func (g GameInfo) Validate() error {
 		if strings.ContainsAny(name, "/\\") || name == "." || name == ".." {
 			return fmt.Errorf("game %q has an unsafe file or folder name %q", g.ID, name)
 		}
+	}
+	if g.MarkerDir != "" && (strings.Contains(g.MarkerDir, "\\") || !fs.ValidPath(g.MarkerDir) || g.MarkerDir == ".") {
+		return fmt.Errorf("game %q has an unsafe marker folder %q", g.ID, g.MarkerDir)
 	}
 	for _, r := range g.RequiredSettings {
 		if _, ok := g.Paths[r.Path]; !ok || r.Key == "" || r.Value == "" || r.Message == "" {

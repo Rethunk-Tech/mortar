@@ -426,6 +426,7 @@
       "name": "The Sims 4",
       "enabled": false,
       "marker": "TS4_x64.exe",
+      "markerDir": "Game/Bin",
       "metadata": [],
       "paths": {
         "mods": {
@@ -484,7 +485,7 @@
       "sources": [
         {
           "id": "curseforge",
-          "key": "6945",
+          "key": "5089",
           "gameId": 78062
         },
         {

@@ -117,3 +117,20 @@ func TestMinigalaxyFolderIsNotAlsoGOGs(t *testing.T) {
 		t.Fatalf("Minigalaxy's default folder must leave GOG's list: %v", dirs)
 	}
 }
+
+func TestGameDirFindsNestedMarker(t *testing.T) {
+	root := t.TempDir()
+	bin := filepath.Join(root, "Game", "Bin")
+	if err := os.MkdirAll(bin, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(bin, "TS4_x64.exe"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := GameDir(root, "Game/Bin/TS4_x64.exe"); got != root {
+		t.Fatalf("GameDir = %q, want %q", got, root)
+	}
+	if got := GameDir(root, "TS4_x64.exe"); got != "" {
+		t.Fatalf("bare marker found %q", got)
+	}
+}

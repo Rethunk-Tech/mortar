@@ -566,3 +566,20 @@ func TestKeepWholeValidation(t *testing.T) {
 		}
 	}
 }
+
+func TestMarkerDirValidation(t *testing.T) {
+	g := func(dir string) GameInfo {
+		return GameInfo{ID: "x", Name: "x", Marker: "x.exe", MarkerDir: dir, Loaders: []GameLoader{{ID: "l"}}, Deploy: DeployProfile}
+	}
+	if err := g("Game/Bin").Validate(); err != nil {
+		t.Fatalf("valid markerDir rejected: %v", err)
+	}
+	if got := g("Game/Bin").MarkerPath(); got != "Game/Bin/x.exe" {
+		t.Fatalf("MarkerPath = %q", got)
+	}
+	for _, bad := range []string{"..", "a/../b", "/abs", "a\\b", "a//b", "a/", "."} {
+		if g(bad).Validate() == nil {
+			t.Fatalf("markerDir %q validated", bad)
+		}
+	}
+}

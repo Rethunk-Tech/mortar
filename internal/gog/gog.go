@@ -137,7 +137,7 @@ func HeroicDirs(home string, custom ...string) []string {
 	)
 }
 
-// GameDir is dir when it holds marker, else its "game" subfolder when that does (GOG's offline layout), else "".
+// GameDir is dir when it holds marker (a slash path below dir, so "Game/Bin/x.exe" works), else its "game" subfolder when that does (GOG's offline layout), else "".
 func GameDir(dir, marker string) string {
 	if dir == "" {
 		return ""
