@@ -19,7 +19,7 @@ Decided 2026-10-09 (NOMAD). Facts about Mortar are anchored to the code as it is
 
 ### The Sims 4: what is left to check
 
-The generic folder path and the `sims4` catalog entry are built ([architecture.md](architecture.md#games-and-the-catalog) Folder games, [HUMANS.md](../HUMANS.md#adding-a-game) for the fields, [sims4.md](sims4.md) for each fact and its source). The entry stays `enabled: false` until the items below are checked.
+The generic folder path and the `sims4` catalog entry are built ([architecture.md](architecture.md#games-and-the-catalog) Folder games, [HUMANS.md](../HUMANS.md#adding-a-game) for the fields, [sims4.md](sims4.md) for each fact and its source). The entry is `enabled: true` in the bundled catalog so the real-install checks below can be run from an ordinary build; they are still open, and a release or a published catalog that carries The Sims 4 waits on them.
 
 - **Verify** against a real install, outside this repo, then record the result in [sims4.md](sims4.md): the `Options.ini` section header and whether the game matches key names case-insensitively, a localized Documents folder name ("Die Sims 4"), a DX9 or legacy executable, the stock `Resource.cfg` text, an EA statement of the `.ts4script` depth limit, and `gameProcesses`.
 - **Real-install checks only NOMAD can do** (Steam under Proton and the EA App on Windows): a modded profile launches with its script mods running, the game does not reset `scriptmodsenabled` in the profile's `Options.ini` copy after a restart, Tray files appear in the game's library, and the player's own Mods, saves and `Options.ini` are identical after quitting.

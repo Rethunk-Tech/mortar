@@ -424,7 +424,7 @@
     {
       "id": "sims4",
       "name": "The Sims 4",
-      "enabled": false,
+      "enabled": true,
       "marker": "TS4_x64.exe",
       "markerDir": "Game/Bin",
       "metadata": [],
@@ -453,8 +453,14 @@
       "saveFiles": ["Slot_*.save"],
       "newProfileSeparateSaves": true,
       "caches": [
-        { "role": "userData", "path": "localthumbcache.package" },
-        { "role": "userData", "path": "avatarcache.package" }
+        {
+          "role": "userData",
+          "path": "localthumbcache.package"
+        },
+        {
+          "role": "userData",
+          "path": "avatarcache.package"
+        }
       ],
       "requiredSettings": [
         {
