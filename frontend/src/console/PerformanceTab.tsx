@@ -49,16 +49,17 @@ function InGame({ game }: { game: string }) {
   const open = choice ?? saved.length > 0
   return (
     <Box component="section">
-      <ButtonBase
-        aria-expanded={open}
-        onClick={() => setChoice(!open)}
-        sx={{ gap: 0.75, borderRadius: '4px', justifyContent: 'flex-start' }}
-      >
-        {open ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-        <Typography component="h2" sx={{ fontSize: 18, fontWeight: 600 }}>
+      {/* The button sits inside the heading, so the section is still found by heading navigation. */}
+      <Typography component="h2" sx={{ m: 0, fontSize: 18, fontWeight: 600 }}>
+        <ButtonBase
+          aria-expanded={open}
+          onClick={() => setChoice(!open)}
+          sx={{ gap: 0.75, borderRadius: '4px', justifyContent: 'flex-start', font: 'inherit' }}
+        >
+          {open ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
           {t`In game`}
-        </Typography>
-      </ButtonBase>
+        </ButtonBase>
+      </Typography>
       <Collapse in={open} unmountOnExit={true}>
         <PerformancePanel game={game} />
       </Collapse>
