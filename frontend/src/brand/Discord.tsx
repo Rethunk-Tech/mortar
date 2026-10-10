@@ -1,17 +1,8 @@
 import { siDiscord } from 'simple-icons'
+import { BrandMark } from './BrandMark.tsx'
 
 function DiscordLogo({ size }: { size: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      fill={`#${siDiscord.hex}`}
-    >
-      <path d={siDiscord.path} />
-    </svg>
-  )
+  return <BrandMark path={siDiscord.path} size={size} fill={`#${siDiscord.hex}`} />
 }
 
 export { DiscordLogo }

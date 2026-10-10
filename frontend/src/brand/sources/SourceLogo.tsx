@@ -1,3 +1,4 @@
+import { BrandMark } from '../BrandMark.tsx'
 import nexusmods from '../vendor/nexusmods.svg'
 import { ICONS } from './sourceIcons.ts'
 
@@ -21,11 +22,7 @@ function SourceLogo({ id, size }: { id: string; size: number }) {
   if (!icon) {
     return null
   }
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" fill={icon.fill}>
-      <path d={icon.path} />
-    </svg>
-  )
+  return <BrandMark path={icon.path} size={size} fill={icon.fill} />
 }
 
 export { SourceLogo }

@@ -7,6 +7,7 @@ import {
   siLutris,
   siSteam,
 } from 'simple-icons'
+import { BrandMark } from '../BrandMark.tsx'
 import minigalaxy from '../vendor/minigalaxy.png'
 
 // simple-icons has no Bottles mark, so the tile carries a plain bottle.
@@ -53,14 +54,6 @@ function Tile({ size, bg, children }: { size: number; bg: string; children: Reac
   )
 }
 
-function Mark({ path, size, fill }: { path: string; size: number; fill: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" fill={fill}>
-      <path d={path} />
-    </svg>
-  )
-}
-
 export function LauncherLogo({ id, size }: { id: string; size: number }) {
   if (id === 'minigalaxy') {
     return (
@@ -81,7 +74,7 @@ export function LauncherLogo({ id, size }: { id: string; size: number }) {
   }
   const logo = (
     <Tile size={size} bg={tile.bg}>
-      <Mark path={tile.path} size={Math.round(size * MARK_SCALE)} fill="#FFFFFF" />
+      <BrandMark path={tile.path} size={Math.round(size * MARK_SCALE)} fill="#FFFFFF" />
     </Tile>
   )
   if (!FLATPAK.has(id)) {
@@ -104,7 +97,7 @@ export function LauncherLogo({ id, size }: { id: string; size: number }) {
           bgcolor: '#1E1E26',
         }}
       >
-        <Mark path={siFlatpak.path} size={badge} fill={`#${siFlatpak.hex}`} />
+        <BrandMark path={siFlatpak.path} size={badge} fill={`#${siFlatpak.hex}`} />
       </Box>
     </Box>
   )
