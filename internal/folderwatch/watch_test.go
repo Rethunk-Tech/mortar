@@ -173,9 +173,9 @@ func TestRetargetKeepsPendingEvent(t *testing.T) {
 			mu.Lock()
 			game = "stardew"
 			mu.Unlock()
-			evs := g.wait(t, 1)
+			g.wait(t, 1)
 			time.Sleep(700 * time.Millisecond)
-			if evs = g.wait(t, 1); len(evs) != 1 || evs[0] != DownloadsEvent+":stardew" {
+			if evs := g.wait(t, 1); len(evs) != 1 || evs[0] != DownloadsEvent+":stardew" {
 				t.Fatalf("events = %v", evs)
 			}
 		})
