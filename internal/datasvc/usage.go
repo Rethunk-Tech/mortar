@@ -317,6 +317,7 @@ type profileEntries struct {
 	Name    string `json:"name"`
 	Entries []struct {
 		Key            string   `json:"key"`
+		Item           string   `json:"item"`
 		ExtraStoreKeys []string `json:"extraStoreKeys"`
 		Source         struct {
 			Name    string `json:"name"`
@@ -392,7 +393,7 @@ func profileUse(root string) (names map[string]string, uses map[string]int, copi
 		mods := filepath.Join(d.Dir, "mods")
 		seen := map[string]bool{}
 		for _, e := range p.Entries {
-			keys := append([]string{e.Key}, e.ExtraStoreKeys...)
+			keys := append([]string{cmp.Or(e.Item, e.Key)}, e.ExtraStoreKeys...)
 			for _, key := range keys {
 				if key == "" {
 					continue
@@ -409,7 +410,7 @@ func profileUse(root string) (names map[string]string, uses map[string]int, copi
 					uses[id]++
 					seen[id] = true
 				}
-				if key == e.Key {
+				if key == e.Key && e.Item == "" {
 					copies[id] += dirSize(filepath.Join(mods, key)) + dirSize(filepath.Join(mods, "."+key))
 				} else {
 					copies[id] += dirSize(filepath.Join(mods, e.Key, key))

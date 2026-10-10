@@ -1,6 +1,7 @@
 package datasvc
 
 import (
+	"cmp"
 	"path/filepath"
 	"sort"
 	"time"
@@ -36,7 +37,7 @@ func MeasureBudgets(root string, itemSizes map[string]int64, savesOf func(game, 
 	for i, d := range dirs {
 		seen := map[string]bool{}
 		for _, e := range readProfileEntries(filepath.Join(d.Dir, "profile.json")).Entries {
-			for _, key := range append([]string{e.Key}, e.ExtraStoreKeys...) {
+			for _, key := range append([]string{cmp.Or(e.Item, e.Key)}, e.ExtraStoreKeys...) {
 				id := d.Game + "/" + key
 				if key == "" || seen[id] {
 					continue

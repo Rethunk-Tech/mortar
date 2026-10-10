@@ -232,3 +232,19 @@ func TestMeasureReportsProgress(t *testing.T) {
 		t.Fatalf("progress = %+v", last)
 	}
 }
+
+func TestPerFileEntriesCountTheirStoreItemOnce(t *testing.T) {
+	root := t.TempDir()
+	dir := filepath.Join(root, "profiles", "sims4", "0123456789abcdef")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	pj := `{"entries":[{"key":"k#a.package","item":"k","source":{"name":"Pack"}},{"key":"k#b.package","item":"k"}]}`
+	if err := os.WriteFile(filepath.Join(dir, "profile.json"), []byte(pj), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	names, uses, _ := profileUse(root)
+	if uses["sims4/k"] != 1 || names["sims4/k"] != "Pack" || len(uses) != 1 {
+		t.Fatalf("uses = %v, names = %v", uses, names)
+	}
+}
