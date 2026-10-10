@@ -71,7 +71,8 @@ func (st Starter) Start(ctx context.Context, inst Install, plan *launchplan.Plan
 		cmd = onHost(cmd)
 	}
 	cmd.OnExit = env.OnExit
-	if plan.Mode == launchplan.ModeVanilla {
+	// A game whose loader writes no log (a folder game) is up when its process is.
+	if plan.Mode == launchplan.ModeVanilla || env.LogFile == "" {
 		cmd.Ready = env.Ready
 	} else {
 		cmd.LogFile = env.LogFile

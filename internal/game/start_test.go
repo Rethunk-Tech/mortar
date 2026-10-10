@@ -294,6 +294,20 @@ func TestVanillaStartSucceedsWhenAProcessAppears(t *testing.T) {
 	}
 }
 
+func TestAModdedStartWithNoLogIsUpWhenTheProcessAppears(t *testing.T) {
+	n := 0
+	st := Starter{
+		LookPath: func(string) (string, error) { return "/usr/bin/steam", nil },
+		Timing:   launch.Timing{Timeout: 300 * time.Millisecond, Poll: 5 * time.Millisecond},
+		Runner:   func(string, string, ...string) (<-chan error, error) { return make(chan error), nil },
+	}
+	dir := t.TempDir()
+	env := StartEnv{Steam: &steam.Steam{Root: t.TempDir()}, Ready: func() bool { n++; return n > 2 }}
+	if err := st.Start(t.Context(), Install{Game: "stardew", Dir: dir}, smapiPlan("linux", dir, dir), env, nil); err != nil {
+		t.Fatalf("a launch whose loader has no log waited for one: %v", err)
+	}
+}
+
 func TestStartInFlatpakGoesThroughFlatpakSpawn(t *testing.T) {
 	old := sandbox.Getenv
 	sandbox.Getenv = func(k string) string {
