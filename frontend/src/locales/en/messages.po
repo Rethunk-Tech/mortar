@@ -670,7 +670,7 @@ msgstr "This log is {size}. Sharing uploads it to smapi.io as a public link."
 msgid "Mortar finds games through their launchers. Set each one up when you first open it."
 msgstr "Mortar finds games through their launchers. Set each one up when you first open it."
 
-#: src/games/GameMenu.tsx:73
+#: src/games/GameMenu.tsx:72
 msgid "Switch game: {gameLabel}"
 msgstr "Switch game: {gameLabel}"
 
@@ -5361,8 +5361,8 @@ msgstr "Settings backups"
 msgid "{0} stays as it is."
 msgstr "{0} stays as it is."
 
-#: src/games/GameMenu.tsx:73
-#: src/games/GameMenu.tsx:103
+#: src/games/GameMenu.tsx:72
+#: src/games/GameMenu.tsx:102
 msgid "Choose a game"
 msgstr "Choose a game"
 
@@ -7693,7 +7693,7 @@ msgstr "Back up {0}?"
 msgid "Each mod's Entry method, run one after another"
 msgstr "Each mod's Entry method, run one after another"
 
-#: src/games/GameMenu.tsx:114
+#: src/games/GameMenu.tsx:113
 msgid "All games…"
 msgstr "All games…"
 
@@ -8248,7 +8248,7 @@ msgstr "{0} goes back to {previous}, keeping its settings. Your saves are backed
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
-#: src/games/GameMenu.tsx:108
+#: src/games/GameMenu.tsx:107
 #: src/games/GameSelect.tsx:496
 msgid "Recently played"
 msgstr "Recently played"
@@ -12521,8 +12521,8 @@ msgstr "Cancelled"
 msgid "Check mods and Mortar for updates (F5)"
 msgstr "Check mods and Mortar for updates (F5)"
 
-#: src/games/GameMenu.tsx:107
-#: src/games/GameMenu.tsx:110
+#: src/games/GameMenu.tsx:106
+#: src/games/GameMenu.tsx:109
 #: src/settings/sections/AboutDiagnostics.tsx:85
 #: src/settings/sections/DataImport.tsx:27
 msgid "Games"
