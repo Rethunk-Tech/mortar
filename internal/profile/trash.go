@@ -59,6 +59,12 @@ func (s *Store) Delete(gameID, id string) error {
 	if err != nil {
 		return err
 	}
+	var tray []TrayFile
+	if p, err := s.read(gameID, id); err == nil {
+		for _, e := range p.Entries {
+			tray = append(tray, e.TrayFiles...)
+		}
+	}
 	dst, _ := s.trashDir(gameID, id)
 	forgetProfile(filepath.Join(src, fileName))
 	if _, err := os.Stat(src); err != nil {
@@ -74,6 +80,7 @@ func (s *Store) Delete(gameID, id string) error {
 	if err := os.Chtimes(dst, now, now); err != nil {
 		return err
 	}
+	s.releaseTray(gameID, &Profile{ID: id}, tray)
 	// The profile is already in the trash; a shortcut left behind is logged, not a failed delete.
 	if s.ShortcutRemoved != nil {
 		if err := s.ShortcutRemoved(gameID, id); err != nil {
@@ -150,7 +157,36 @@ func (s *Store) Restore(gameID, id string) (Profile, error) {
 	if err := fsx.Rename(src, dst); err != nil {
 		return Profile{}, err
 	}
-	return s.read(gameID, id)
+	p, err := s.read(gameID, id)
+	if err != nil || !slices.ContainsFunc(p.Entries, Entry.isTrayEntry) {
+		return p, err
+	}
+	var failed []string
+	p, err = s.updateLocked(gameID, id, func(p *Profile, _ string) error {
+		for i := range p.Entries {
+			if !p.Entries[i].isTrayEntry() {
+				continue
+			}
+			// The entry's own record would make placeTray take the files for placed already.
+			held := p.Entries[i]
+			p.Entries[i].TrayFiles = nil
+			res := []Entry{held}
+			var pl trayPlacement
+			if err := s.placeRestoredTray(gameID, id, p, res, nil, &pl); err != nil {
+				for _, f := range held.TrayFiles {
+					failed = append(failed, f.Rel)
+				}
+				continue
+			}
+			pl.commit()
+			p.Entries[i].TrayFiles = res[0].TrayFiles
+		}
+		return nil
+	})
+	if err == nil && len(failed) > 0 {
+		err = &TrayRestoreError{Files: failed}
+	}
+	return p, err
 }
 
 // Purge permanently removes one trashed profile.

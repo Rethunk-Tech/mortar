@@ -3,12 +3,10 @@ package profile
 import (
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 	"slices"
 	"strings"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -77,8 +75,8 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 		return Profile{}, false, false, err
 	}
 	var updated bool
-	var placed []string
-	var trayDir string
+	placement := noTray()
+	var released []TrayFile
 	p, err := s.updateLocked(game, id, func(p *Profile, _ string) error {
 		for _, e := range p.Entries {
 			if e.StoreKey() == key && e.Package && !e.IsOverlay() {
@@ -100,15 +98,18 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 				return fmt.Errorf("back up saves: %w", err)
 			}
 		}
+		replace := map[string]string{}
 		for _, e := range old {
-			s.releaseTray(game, p, e.TrayFiles)
+			released = append(released, e.TrayFiles...)
+			for _, f := range e.TrayFiles {
+				replace[f.Rel] = f.Hash
+			}
 		}
-		held, now, err := s.placeTray(game, p, arch, trayFiles)
-		placed = now
+		placement, err = s.placeTray(game, p, arch, trayFiles, replace)
 		if err != nil {
 			return err
 		}
-		if len(held) > 0 {
+		if held := placement.held; len(held) > 0 {
 			k := trayEntryKey(key)
 			fresh = append(fresh, Entry{
 				Key: k, Item: key, Source: source, Disabled: []mod.ID{}, Added: time.Now().UTC(), Package: true, TrayFiles: held,
@@ -122,23 +123,18 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 				}
 			}
 		}
-		if rec := withoutTray(old); len(rec) > 0 && len(fresh) > 0 {
-			fresh[0].Replaced = packReplaced(rec)
+		if len(old) > 0 && len(fresh) > 0 {
+			fresh[0].Replaced = packReplaced(old)
 		}
 		p.Entries = append(p.Entries, fresh...)
 		return nil
 	})
 	if err != nil {
-		if len(placed) > 0 {
-			if dir, derr := s.trayFolder(game); derr == nil {
-				trayDir = dir
-			}
-			for _, r := range placed {
-				_ = fsx.Remove(filepath.Join(trayDir, filepath.FromSlash(r)))
-			}
-		}
+		placement.undo()
 		return Profile{}, false, false, err
 	}
+	placement.commit()
+	s.releaseTray(game, &p, released)
 	return p, updated, updated, s.items.Touch(game, key)
 }
 
@@ -172,18 +168,16 @@ func (e Entry) replacedEntries() []Entry {
 // rollBackFolderLocked restores the entries the archive of entry key superseded, and records the archive it removes
 // so that a second roll back goes forward again. ok is false when the entry's archive has nothing to restore.
 func (s *Store) rollBackFolderLocked(game, id, key string) (p Profile, ok bool, err error) {
-	var restored []Entry
+	var restored, group []Entry
+	placement := noTray()
 	p, err = s.updateLocked(game, id, func(p *Profile, _ string) error {
 		i := entryIndex(p.Entries, key)
 		if i < 0 {
 			return nil
 		}
 		item := p.Entries[i].StoreKey()
-		inGroup := func(e Entry) bool {
-			return e.StoreKey() == item && e.Package && !e.IsOverlay() && len(e.TrayFiles) == 0
-		}
+		inGroup := func(e Entry) bool { return e.StoreKey() == item && e.Package && !e.IsOverlay() }
 		at := slices.IndexFunc(p.Entries, inGroup)
-		var group []Entry
 		for _, e := range p.Entries {
 			if inGroup(e) {
 				group = append(group, e)
@@ -193,20 +187,79 @@ func (s *Store) rollBackFolderLocked(game, id, key string) (p Profile, ok bool, 
 		if g < 0 {
 			return nil
 		}
+		prev := group[g].replacedEntries()
+		if len(prev) == 0 {
+			return nil
+		}
 		if err := s.saveBackup(game, id); err != nil {
 			return fmt.Errorf("back up saves: %w", err)
 		}
-		restored = group[g].replacedEntries()
-		if len(restored) == 0 {
-			return nil
-		}
-		restored[0].Replaced = packReplaced(group)
 		p.Entries = slices.DeleteFunc(p.Entries, inGroup)
+		if err := s.placeRestoredTray(game, id, p, prev, group, &placement); err != nil {
+			return err
+		}
+		prev[0].Replaced = packReplaced(group)
+		restored = prev
 		p.Entries = slices.Insert(p.Entries, min(at, len(p.Entries)), restored...)
 		return nil
 	})
-	if err != nil || restored == nil {
+	if err != nil {
+		placement.undo()
 		return p, false, err
 	}
+	if restored == nil {
+		return p, false, nil
+	}
+	placement.commit()
+	var gone []TrayFile
+	for _, e := range group {
+		gone = append(gone, e.TrayFiles...)
+	}
+	s.releaseTray(game, &p, gone)
 	return p, true, s.items.Touch(game, restored[0].StoreKey())
+}
+
+// placeRestoredTray puts back, from the store, the Tray files the restored entries held, replacing those of the
+// entries leaving (current), and points each restored entry at what is now placed.
+func (s *Store) placeRestoredTray(game, id string, p *Profile, restored, current []Entry, out *trayPlacement) error {
+	want := map[string]bool{}
+	item := ""
+	for _, e := range restored {
+		for _, f := range e.TrayFiles {
+			want[f.Rel] = true
+			item = e.StoreKey()
+		}
+	}
+	if len(want) == 0 {
+		return nil
+	}
+	arch, l, _, err := s.layoutOf(game, id, item, nil)
+	if err != nil {
+		return err
+	}
+	g := installerGame(game)
+	var files []installer.File
+	for _, f := range l.Files {
+		if g.IsShared(f.Target) && want[f.Rel] {
+			files = append(files, f)
+		}
+	}
+	replace := map[string]string{}
+	for _, e := range current {
+		for _, f := range e.TrayFiles {
+			replace[f.Rel] = f.Hash
+		}
+	}
+	pl, err := s.placeTray(game, p, arch, files, replace)
+	if err != nil {
+		return err
+	}
+	*out = pl
+	for i := range restored {
+		if len(restored[i].TrayFiles) > 0 {
+			restored[i].TrayFiles = pl.held
+			break
+		}
+	}
+	return nil
 }

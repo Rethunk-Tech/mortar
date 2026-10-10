@@ -369,3 +369,118 @@ func TestFolderGameTrayNeverReplacesAFileOfThePlayers(t *testing.T) {
 		t.Fatalf("tray = %v, entries = %v", got, keysOf(cur))
 	}
 }
+
+func trayEnv(t *testing.T) (env, string) {
+	t.Helper()
+	e := newEnv(t)
+	tray := filepath.Join(t.TempDir(), "Tray")
+	e.TrayFolder = func(string) (string, error) { return tray, nil }
+	if err := os.MkdirAll(tray, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	return e, tray
+}
+
+func TestFolderGameDeletingAProfileReleasesItsTrayFilesAndRestoreReplacesThem(t *testing.T) {
+	t.Parallel()
+	e, tray := trayEnv(t)
+	if err := os.WriteFile(filepath.Join(tray, "mine.trayitem"), []byte("mine"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	p1, _ := e.Create(folderGame, "A")
+	p2, _ := e.Create(folderGame, "B")
+	zip := zipOf(t, "h.zip", map[string]string{"Smith.trayitem": "t", "x.package": "p"})
+	for _, p := range []Profile{p1, p2} {
+		if _, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := e.Delete(folderGame, p1.ID); err != nil {
+		t.Fatal(err)
+	}
+	if got := trayTree(t, tray); got["Smith.trayitem"] != "t" {
+		t.Fatalf("another profile still holds the file: %v", got)
+	}
+	if err := e.Delete(folderGame, p2.ID); err != nil {
+		t.Fatal(err)
+	}
+	if got := trayTree(t, tray); len(got) != 1 || got["mine.trayitem"] != "mine" {
+		t.Fatalf("tray after both deletes = %v", got)
+	}
+	if _, err := e.Restore(folderGame, p2.ID); err != nil {
+		t.Fatal(err)
+	}
+	if got := trayTree(t, tray); got["Smith.trayitem"] != "t" || got["mine.trayitem"] != "mine" {
+		t.Fatalf("tray after restore = %v", got)
+	}
+	if err := e.Delete(folderGame, p2.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(tray, "Smith.trayitem"), []byte("someone else's"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	_, err := e.Restore(folderGame, p2.ID)
+	var tre *TrayRestoreError
+	if !errors.As(err, &tre) || !slices.Equal(tre.Files, []string{"Smith.trayitem"}) {
+		t.Fatalf("restore err = %v", err)
+	}
+	if got := trayTree(t, tray); got["Smith.trayitem"] != "someone else's" {
+		t.Fatalf("a file of the player's own was replaced: %v", got)
+	}
+}
+
+func TestFolderGameTrayFollowsAnUpdateAndItsRollback(t *testing.T) {
+	t.Parallel()
+	e, tray := trayEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	v1 := zipOf(t, "a.zip", map[string]string{"A.trayitem": "1", "m.package": "m"})
+	if _, err := e.InstallSource(t.Context(), folderGame, p.ID, v1, cfSource(10)); err != nil {
+		t.Fatal(err)
+	}
+	v2 := zipOf(t, "b.zip", map[string]string{"A.trayitem": "2", "B.bpi": "b", "m.package": "m2"})
+	res, err := e.InstallSource(t.Context(), folderGame, p.ID, v2, cfSource(11).WithReplacing(10))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := trayTree(t, tray); len(got) != 2 || got["A.trayitem"] != "2" || got["B.bpi"] != "b" {
+		t.Fatalf("after update: %v", got)
+	}
+	back, err := e.RollBack(folderGame, p.ID, res.Profile.Entries[0].Key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := trayTree(t, tray); len(got) != 1 || got["A.trayitem"] != "1" {
+		t.Fatalf("after rollback: %v", got)
+	}
+	if _, err := e.RollBack(folderGame, p.ID, back.Entries[0].Key); err != nil {
+		t.Fatal(err)
+	}
+	if got := trayTree(t, tray); len(got) != 2 || got["A.trayitem"] != "2" || got["B.bpi"] != "b" {
+		t.Fatalf("after rolling forward: %v", got)
+	}
+}
+
+func TestFolderGameFailedUpdateLeavesTheOldTrayFilesAndEntries(t *testing.T) {
+	t.Parallel()
+	e, tray := trayEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	v1 := zipOf(t, "a.zip", map[string]string{"A.trayitem": "1", "m.package": "m"})
+	first, err := e.InstallSource(t.Context(), folderGame, p.ID, v1, cfSource(10))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(tray, "C.trayitem"), []byte("mine"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	v2 := zipOf(t, "b.zip", map[string]string{"A.trayitem": "2", "C.trayitem": "theirs"})
+	if _, err := e.InstallSource(t.Context(), folderGame, p.ID, v2, cfSource(11).WithReplacing(10)); err == nil {
+		t.Fatal("a collision with the player's file must refuse the update")
+	}
+	cur, _ := e.Get(folderGame, p.ID)
+	if got := trayTree(t, tray); len(got) != 2 || got["A.trayitem"] != "1" || got["C.trayitem"] != "mine" {
+		t.Fatalf("tray = %v", got)
+	}
+	if !slices.Equal(keysOf(cur), keysOf(first.Profile)) {
+		t.Fatalf("entries = %v, want %v", keysOf(cur), keysOf(first.Profile))
+	}
+}

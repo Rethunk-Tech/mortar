@@ -36,7 +36,7 @@ func (s *Store) packageFiles(gameID, id string) (files map[string]packageFile, w
 	files, wins = map[string]packageFile{}, map[string]int{}
 	byFold := map[string]string{}
 	for _, e := range p.Entries {
-		if e.IsOverlay() || !e.hasPackageEnabled() || len(e.TrayFiles) > 0 {
+		if e.IsOverlay() || !e.hasPackageEnabled() || e.isTrayEntry() {
 			continue
 		}
 		arch, l, _, err := s.layoutOf(gameID, id, e.StoreKey(), e.Fomod)

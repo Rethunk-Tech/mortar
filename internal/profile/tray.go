@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"slices"
+	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -23,6 +23,17 @@ type TrayFile struct {
 
 // trayEntryKey is the key of the entry that holds an archive's Tray files beside its mods entries.
 func trayEntryKey(item string) string { return item + fileKeySep + "tray" }
+
+// isTrayEntry reports the entry that holds an archive's Tray files; it lays nothing out in the profile.
+func (e Entry) isTrayEntry() bool { return e.Item != "" && e.Key == trayEntryKey(e.Item) }
+
+// TrayRestoreError reports Tray files a restored profile's entries could not place again, because the Tray folder holds
+// a different file of that name. The profile itself is restored.
+type TrayRestoreError struct{ Files []string }
+
+func (e *TrayRestoreError) Error() string {
+	return fmt.Sprintf("the profile is restored, but these Tray files could not be placed again because the Tray folder has different files of the same name: %s", strings.Join(e.Files, ", "))
+}
 
 // trayOwners maps each Tray file an entry of the game's profiles holds to the hash it recorded. p is the profile
 // being changed, taken as it stands in memory.
@@ -53,59 +64,98 @@ func (s *Store) trayFolder(game string) (string, error) {
 	return s.TrayFolder(game)
 }
 
-// placeTray puts an archive's Tray files in the game's Tray folder and returns what the entry holds. A file already
-// there that no entry placed is the player's own and is never replaced: it is left (when identical) or the install is
-// refused. The names of files this call placed come back too, for the caller to take away again if the install fails.
-func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files []installer.File) (held []TrayFile, placed []string, err error) {
+// trayPlacement is the outcome of placeTray: what the entry holds, and how to finish or undo the placement.
+type trayPlacement struct {
+	held []TrayFile
+	// undo takes away what placeTray placed and puts back what it set aside; commit drops what it set aside.
+	undo, commit func()
+}
+
+func noTray() trayPlacement { return trayPlacement{undo: func() {}, commit: func() {}} }
+
+// placeTray puts an archive's Tray files in the game's Tray folder. A file already there that no entry placed is the
+// player's own and is never replaced: it is left (when identical) or the install is refused. replace names files an
+// archive being updated placed (by recorded hash): one still unchanged is set aside and replaced, and comes back on
+// undo. Nothing is released here, so a failure leaves every earlier file as it was.
+func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files []installer.File, replace map[string]string) (trayPlacement, error) {
 	if len(files) == 0 {
-		return nil, nil, nil
+		return noTray(), nil
 	}
 	dir, err := s.trayFolder(game)
 	if err != nil {
-		return nil, nil, err
+		return noTray(), err
 	}
 	owners := s.trayOwners(game, p)
-	undo := func(err error) ([]TrayFile, []string, error) {
-		for _, r := range placed {
-			_ = fsx.Remove(filepath.Join(dir, filepath.FromSlash(r)))
-		}
-		return nil, nil, err
+	var placed []string
+	type aside struct{ dst, held string }
+	var asides []aside
+	pl := trayPlacement{
+		undo: func() {
+			for _, r := range placed {
+				_ = fsx.Remove(filepath.Join(dir, filepath.FromSlash(r)))
+			}
+			for _, a := range asides {
+				_ = fsx.Rename(a.held, a.dst)
+			}
+		},
+		commit: func() {
+			for _, a := range asides {
+				_ = fsx.Remove(a.held)
+			}
+		},
+	}
+	fail := func(err error) (trayPlacement, error) {
+		pl.undo()
+		return noTray(), err
 	}
 	for _, f := range files {
 		dst := filepath.Join(dir, filepath.FromSlash(f.Rel))
 		if !filepath.IsLocal(filepath.FromSlash(f.Rel)) {
-			return undo(fmt.Errorf("%s leaves the Tray folder", f.Rel))
+			return fail(fmt.Errorf("%s leaves the Tray folder", f.Rel))
 		}
 		src := filepath.Join(arch.Dir, filepath.FromSlash(f.Src))
 		h, err := fsx.SHA256(src)
 		if err != nil {
-			return undo(err)
+			return fail(err)
 		}
 		if oh, ours := owners[f.Rel]; ours {
 			if oh != h {
-				return undo(refuseTray(f.Rel, "another mod in your profiles placed a different file there"))
+				return fail(refuseTray(f.Rel, "another mod in your profiles placed a different file there"))
 			}
-			held = append(held, TrayFile{Rel: f.Rel, Hash: h})
+			pl.held = append(pl.held, TrayFile{Rel: f.Rel, Hash: h})
 			continue
 		}
 		if _, err := os.Lstat(dst); err == nil {
-			if dh, err := fsx.SHA256(dst); err == nil && dh == h {
+			dh, herr := fsx.SHA256(dst)
+			rec, mine := replace[f.Rel]
+			switch {
+			case herr == nil && mine && dh == rec && dh == h:
+				pl.held = append(pl.held, TrayFile{Rel: f.Rel, Hash: h})
 				continue
+			case herr == nil && mine && dh == rec:
+				held := dst + ".mortar-replaced"
+				if err := fsx.Rename(dst, held); err != nil {
+					return fail(err)
+				}
+				asides = append(asides, aside{dst, held})
+			case herr == nil && dh == h:
+				continue
+			default:
+				return fail(refuseTray(f.Rel, "it is a file of your own"))
 			}
-			return undo(refuseTray(f.Rel, "it is a file of your own"))
 		} else if !errors.Is(err, fs.ErrNotExist) {
-			return undo(err)
+			return fail(err)
 		}
 		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
-			return undo(err)
+			return fail(err)
 		}
 		if err := datadir.CopyFile(src, dst); err != nil {
-			return undo(err)
+			return fail(err)
 		}
 		placed = append(placed, f.Rel)
-		held = append(held, TrayFile{Rel: f.Rel, Hash: h})
+		pl.held = append(pl.held, TrayFile{Rel: f.Rel, Hash: h})
 	}
-	return held, placed, nil
+	return pl, nil
 }
 
 func refuseTray(rel, why string) error {
@@ -133,9 +183,4 @@ func (s *Store) releaseTray(game string, p *Profile, files []TrayFile) {
 			removeUp(dir, dst)
 		}
 	}
-}
-
-// withoutTray is entries minus those that hold Tray files.
-func withoutTray(entries []Entry) []Entry {
-	return slices.DeleteFunc(slices.Clone(entries), func(e Entry) bool { return len(e.TrayFiles) > 0 })
 }
