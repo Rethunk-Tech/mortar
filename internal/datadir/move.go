@@ -286,7 +286,7 @@ func emptyDir(path string) error {
 }
 
 func removeOld(src, def string) error {
-	if filepath.Clean(src) == filepath.Clean(def) {
+	if fsx.SamePath(src, def) {
 		ents, err := os.ReadDir(src)
 		if err != nil {
 			return err

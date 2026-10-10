@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"sort"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 )
 
@@ -135,7 +137,7 @@ func userHome(home string) (string, error) {
 func configDir(home string) string {
 	if runtime.GOOS == "windows" {
 		actual, _ := os.UserHomeDir()
-		if filepath.Clean(home) == filepath.Clean(actual) {
+		if fsx.SamePath(home, actual) {
 			if appData := os.Getenv("APPDATA"); appData != "" {
 				return appData
 			}
@@ -146,7 +148,7 @@ func configDir(home string) string {
 		return filepath.Join(home, "AppData", "Roaming")
 	}
 	actual, _ := os.UserHomeDir()
-	if filepath.Clean(home) == filepath.Clean(actual) {
+	if fsx.SamePath(home, actual) {
 		if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" && filepath.IsAbs(xdg) {
 			return xdg
 		}

@@ -104,7 +104,7 @@ func (g Gale) find(ctx context.Context, path string) (GaleProfile, bool) {
 		return GaleProfile{}, false
 	}
 	for _, p := range all {
-		if filepath.Clean(p.Path) == filepath.Clean(path) {
+		if fsx.SamePath(p.Path, path) {
 			return p, true
 		}
 	}

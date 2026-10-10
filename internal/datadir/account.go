@@ -5,6 +5,8 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 // accountHome is the home folder the OS account records, which HOME (USERPROFILE on Windows) can override.
@@ -23,7 +25,7 @@ func SharesAccountData() bool {
 	if err != nil {
 		return true
 	}
-	if home, err := os.UserHomeDir(); err != nil || filepath.Clean(home) == filepath.Clean(acct) {
+	if home, err := os.UserHomeDir(); err != nil || fsx.SamePath(home, acct) {
 		return true
 	}
 	def, err := defaultDir()

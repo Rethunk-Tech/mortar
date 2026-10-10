@@ -68,7 +68,7 @@ func mo2Installations(home, modsPath, gameName string) ([]installation, error) {
 func mo2LocalAppData(home string) string {
 	if runtime.GOOS == "windows" {
 		actual, _ := os.UserHomeDir()
-		if filepath.Clean(home) == filepath.Clean(actual) {
+		if fsx.SamePath(home, actual) {
 			if dir := os.Getenv("LOCALAPPDATA"); dir != "" {
 				return dir
 			}
