@@ -53,6 +53,7 @@ type GameSettings struct {
 	ExtraModsFolder       string                 `json:"extraModsFolder,omitempty"`
 	ShowDotHiddenMods     bool                   `json:"showDotHiddenMods,omitempty"`
 	OldFilesOnUpdate      string                 `json:"oldFilesOnUpdate,omitempty"`
+	GameSettingsMode      string                 `json:"gameSettingsMode,omitempty"`
 	// SourceOrder is the comma-separated source ids the player prefers, first first; sources it omits follow in
 	// catalog order.
 	SourceOrder string `json:"sourceOrder,omitempty"`
@@ -218,6 +219,7 @@ var registry = withDefaults([]pref{
 	}),
 	strPref("browseFilters", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).BrowseFilters }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BrowseFilters = v; putGame(s, g, gp) }),
 	strPref("sourceOrder", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).SourceOrder }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SourceOrder = v; putGame(s, g, gp) }),
+	overridable(enumPref("gameSettingsMode", ScopeGame, gameSettingsModeValues, func(s Settings, g string) string { return s.GamePrefs(g).GameSettingsMode }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.GameSettingsMode = v; putGame(s, g, gp) })),
 	enumPref("oldFilesOnUpdate", ScopeGame, oldFilesValues, func(s Settings, g string) string { return s.GamePrefs(g).OldFilesOnUpdate }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.OldFilesOnUpdate = v; putGame(s, g, gp) }),
 })
 
@@ -274,6 +276,7 @@ func defaultGameSettings() GameSettings {
 		ConflictScanDepth:           ConflictScanFull,
 		OfferNewDownloads:           on(),
 		OldFilesOnUpdate:            OldFilesAsk,
+		GameSettingsMode:            GameSettingsEdit,
 	}
 }
 
@@ -368,6 +371,9 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.OldFilesOnUpdate != "" {
 		dst.OldFilesOnUpdate = src.OldFilesOnUpdate
 	}
+	if src.GameSettingsMode != "" {
+		dst.GameSettingsMode = src.GameSettingsMode
+	}
 }
 
 func normalizeGame(id string, g *GameSettings) {
@@ -423,6 +429,9 @@ func normalizeGame(id string, g *GameSettings) {
 	if !slices.Contains(oldFilesValues, g.OldFilesOnUpdate) {
 		g.OldFilesOnUpdate = d.OldFilesOnUpdate
 	}
+	if !slices.Contains(gameSettingsModeValues, g.GameSettingsMode) {
+		g.GameSettingsMode = d.GameSettingsMode
+	}
 }
 
 func validateGame(g GameSettings) error {
@@ -464,6 +473,9 @@ func validateGame(g GameSettings) error {
 	}
 	if !slices.Contains(oldFilesValues, g.OldFilesOnUpdate) {
 		return fmt.Errorf("old files on update must be ask, delete or keep, got %q", g.OldFilesOnUpdate)
+	}
+	if !slices.Contains(gameSettingsModeValues, g.GameSettingsMode) {
+		return fmt.Errorf("game settings mode must be edit or warn, got %q", g.GameSettingsMode)
 	}
 	return nil
 }

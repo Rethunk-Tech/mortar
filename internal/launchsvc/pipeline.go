@@ -113,10 +113,55 @@ type deployment struct {
 	once   sync.Once
 	// saves is the swap that gives the profile its own saves folder, undone with the placed files.
 	saves *savesiso.Manifest
+	// options is the swap that gives the profile its own copy of the game's options file.
+	options *savesiso.FileManifest
 }
 
 // savesJournal is the swap's journal folder, a sibling of the deploy journal so neither takes the other's record.
 func savesJournal(installID string) (string, error) { return journalDir(installID + "-saves") }
+
+// pathOptions is the catalog path role of a game's options file, a single file the game rewrites in place.
+const pathOptions = "options"
+
+// optionsJournal is the options swap's journal folder, beside the saves journal so neither takes the other's record.
+func optionsJournal(installID string) (string, error) { return journalDir(installID + "-options") }
+
+// swapOptions puts the profile's own copy of the game's options file in place for this launch and sets the player's
+// file aside; the swap is undone with dep. The profile's copy starts as the player's file.
+func (s *Service) swapOptions(ctx context.Context, gameID string, inst game.Install, profileID, installID string, dep *deployment) error {
+	if !game.HasPath(gameID, pathOptions) {
+		return nil
+	}
+	target, err := game.PathFor(s.home, s.settings.Get(), gameID, s.pinOf(gameID, profileID, installID), pathOptions)
+	if err != nil {
+		return err
+	}
+	profileDir, err := s.profiles.ProfileDir(gameID, profileID)
+	if err != nil {
+		return err
+	}
+	own := filepath.Join(profileDir, filepath.Base(target))
+	dir, err := optionsJournal(inst.ID)
+	if err != nil {
+		return err
+	}
+	if err := savesiso.RecoverFile(dir, nil); err != nil {
+		return err
+	}
+	if err := savesiso.SeedFile(target, own); err != nil {
+		return err
+	}
+	m, err := savesiso.ApplyFile(dir, target, own)
+	if err != nil {
+		return err
+	}
+	dep.options = &m
+	if dep.finish == nil {
+		detached := context.WithoutCancel(ctx)
+		dep.finish = func() { dep.unwind(detached) }
+	}
+	return nil
+}
 
 // swapSaves points the game's save folder at the profile's own for this launch when the profile keeps its saves
 // separate; the swap is undone with dep.
@@ -262,6 +307,11 @@ func (dep *deployment) unwind(ctx context.Context) {
 				log.Printf("launch: restore saves: %v", err)
 			}
 		}
+		if dep.options != nil {
+			if err := savesiso.PurgeFile(*dep.options); err != nil {
+				log.Printf("launch: restore options file: %v", err)
+			}
+		}
 	})
 }
 
@@ -305,6 +355,9 @@ func (s *Service) RecoverGameDeploys(ctx context.Context, id string) (found bool
 		if sj, err := savesJournal(sl.inst); deploy.HasJournal(dir) || (err == nil && savesiso.HasJournal(sj)) {
 			found = true
 		}
+		if oj, err := optionsJournal(sl.inst); err == nil && savesiso.HasFileJournal(oj) {
+			found = true
+		}
 		if err := d.Recover(ctx, dir, alive); err != nil {
 			errs = append(errs, fmt.Errorf("%s: %w", id, err))
 		}
@@ -312,6 +365,11 @@ func (s *Service) RecoverGameDeploys(ctx context.Context, id string) (found bool
 			errs = append(errs, err)
 		} else if err := savesiso.Recover(sj, alive); err != nil {
 			errs = append(errs, fmt.Errorf("%s saves: %w", id, err))
+		}
+		if oj, err := optionsJournal(sl.inst); err != nil {
+			errs = append(errs, err)
+		} else if err := savesiso.RecoverFile(oj, alive); err != nil {
+			errs = append(errs, fmt.Errorf("%s options file: %w", id, err))
 		}
 	}
 	return found, errors.Join(errs...)
@@ -350,6 +408,9 @@ func (s *Service) LeftoverJournals(gameID string) []string {
 			out = append(out, dir)
 		}
 		if dir, err := savesJournal(sl.inst); err == nil && savesiso.HasJournal(dir) {
+			out = append(out, dir)
+		}
+		if dir, err := optionsJournal(sl.inst); err == nil && savesiso.HasFileJournal(dir) {
 			out = append(out, dir)
 		}
 	}

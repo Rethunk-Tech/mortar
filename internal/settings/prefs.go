@@ -91,6 +91,9 @@ const (
 	ExtensionAllow = "allow"
 	ExtensionOff   = "off"
 
+	GameSettingsEdit = "edit"
+	GameSettingsWarn = "warn"
+
 	OldFilesAsk    = "ask"
 	OldFilesDelete = "delete"
 	OldFilesKeep   = "keep"
@@ -410,6 +413,7 @@ var (
 	conflictScanValues        = []string{ConflictScanFull, ConflictScanSkipImages}
 	extensionConnectionValues = []string{ExtensionAllow, ExtensionOff}
 	oldFilesValues            = []string{OldFilesAsk, OldFilesDelete, OldFilesKeep}
+	gameSettingsModeValues    = []string{GameSettingsEdit, GameSettingsWarn}
 )
 
 func parseBool(raw string) (bool, error) {

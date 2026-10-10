@@ -927,7 +927,11 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 			return err
 		}
 		backupErr = s.backupChangedSaves(g.ID(), profileID, t.install, dir)
-		if err := s.swapSaves(ctx, g.ID(), inst, profileID, t.install, dep); err != nil {
+		err = s.swapSaves(ctx, g.ID(), inst, profileID, t.install, dep)
+		if err == nil {
+			err = s.swapOptions(ctx, g.ID(), inst, profileID, t.install, dep)
+		}
+		if err != nil {
 			dep.unwind(ctx)
 			if restoreErr := s.restoreGameSettings(restore); restoreErr != nil {
 				s.reportSettingsRestore(g, profileID, restoreErr)
