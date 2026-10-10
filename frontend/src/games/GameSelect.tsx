@@ -17,26 +17,26 @@ import { absoluteWhen } from '../i18n/when.ts'
 import { playDirect } from '../launch/directPref.ts'
 import { useLaunch } from '../launch/store.ts'
 import { type GameId, openSettings, useNav } from '../nav/store.ts'
+import { useSettings } from '../settings/store.ts'
 import { arrowFocus } from '../shell/arrowFocus.ts'
 import { CoverButton } from '../shell/CoverButton.tsx'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportError } from '../toasts/report.ts'
 import { gameArt } from './art.ts'
+import { gameOrder } from './order.ts'
 import { ProfileCards } from './ProfileCards.tsx'
 import { formatPlaytime } from './playtime.ts'
 import { storeName } from './storeName.ts'
-import { ordered, useGameTiles } from './useGameTiles.ts'
+import { useGameTiles } from './useGameTiles.ts'
 import { useOpenGame } from './useOpenGame.ts'
 
 type Game = GameInfo
 
-// A short catalog reads as a list of full-width rows; past this many games the rows wrap into columns.
-const LIST_MAX_GAMES = 4
-const ROW_MIN_PX = 168
-const ROW_MAX_PX = 260
-const TILE_MIN_WIDTH_PX = 560
-const HOVER_MS = 200
-const HOVER_EASE = 'cubic-bezier(0.2, 0.8, 0.2, 1)'
+const ROW_PX = 168
+// How much taller the row under the pointer, or holding focus, stands.
+const ROW_GROW_PX = 72
+const HOVER_MS = 450
+const HOVER_EASE = 'ease-in-out'
 const shadow = '0 1px 2px var(--mortar-overlay-90), 0 0 18px var(--mortar-overlay-85)'
 const actionSx = {
   minWidth: 132,
@@ -66,8 +66,6 @@ function Art({ src, openable }: { src: string; openable: boolean }) {
         src={src}
         alt=""
         sx={{
-          // Slightly oversized so the parallax shift on hover never shows an edge.
-          transform: 'scale(1.06)',
           position: 'absolute',
           inset: 0,
           width: '100%',
@@ -272,12 +270,11 @@ function Row({
     gap: '24px',
     px: '40px',
     py: '20px',
+    minHeight: ROW_PX,
+    flexShrink: 0,
     overflow: 'hidden',
     // Art tiles keep a solid dark base so white text stays readable while or after the image fails to load.
     bgcolor: hasArt ? 'var(--mortar-overlay-90)' : 'background.paper',
-    borderLeft: '4px solid',
-    borderColor: openable ? 'primary.main' : 'transparent',
-    borderRadius: '8px',
     fontFamily: 'inherit',
   } as const
   return (
@@ -287,23 +284,51 @@ function Row({
   )
 }
 
-// Hovering a row drifts its art; the rows themselves never move, so the list stays aligned under the pointer.
+// The row under the pointer, or holding focus, grows taller and shows more of its art.
 const hoverFocus = {
-  '@media (hover: hover) and (prefers-reduced-motion: no-preference)': {
-    '& [data-art]': { transition: `transform ${HOVER_MS}ms ${HOVER_EASE}` },
-    '& [data-tile]:hover [data-art]': { transform: 'scale(1.1) translateX(-2%)' },
+  // Keyboard focus only: a clicked Play button keeps focus, which would leave its row grown under a pointer elsewhere.
+  '& [data-tile]:has(:focus-visible)': { minHeight: ROW_PX + ROW_GROW_PX },
+  '@media (hover: hover)': {
+    '& [data-tile]:hover': { minHeight: ROW_PX + ROW_GROW_PX },
+  },
+  '@media (prefers-reduced-motion: no-preference)': {
+    '& [data-tile]': { transition: `min-height ${HOVER_MS}ms ${HOVER_EASE}` },
   },
 } as const
+
+function GroupHeading({ children }: { children: string }) {
+  return (
+    <Typography
+      component="h2"
+      sx={{
+        m: 0,
+        px: '40px',
+        pt: '14px',
+        pb: '8px',
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        color: 'var(--mortar-ink-sec)',
+      }}
+    >
+      {children}
+    </Typography>
+  )
+}
 
 function GameSelect() {
   const { t } = useLingui()
   const { status, loadError, refresh, tileProps } = useGameTiles()
+  const lastGame = useSettings((s) => s.lastGame)
+  const played = useSettings((s) => s.lastPlayed)
   if (loadError) {
     return <LoadErrorRow error={loadError} onRetry={refresh} />
   }
   if (!status) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>
   }
+  const { recent, rest } = gameOrder(status.games, lastGame, played)
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box
@@ -312,21 +337,18 @@ function GameSelect() {
           minHeight: 0,
           overflowY: 'auto',
           overflowX: 'hidden',
-          // Room for the hovered tile's growth, so it is not cut at the grid's edge.
-          p: '8px 16px',
-          display: 'grid',
-          gridTemplateColumns:
-            status.games.length <= LIST_MAX_GAMES
-              ? '1fr'
-              : `repeat(auto-fit, minmax(min(100%, ${TILE_MIN_WIDTH_PX}px), 1fr))`,
-          gridAutoRows: `minmax(${ROW_MIN_PX}px, ${ROW_MAX_PX}px)`,
-          alignContent: 'start',
-          gap: '10px',
+          display: 'flex',
+          flexDirection: 'column',
           ...hoverFocus,
         }}
         onKeyDown={(e) => arrowFocus(e, '[data-tile]')}
       >
-        {ordered(status.games).map((g) => (
+        {recent.length > 0 ? <GroupHeading>{t`Recently played`}</GroupHeading> : null}
+        {recent.map((g) => (
+          <Row key={g.id} {...tileProps(g)} />
+        ))}
+        {recent.length > 0 && rest.length > 0 ? <GroupHeading>{t`All games`}</GroupHeading> : null}
+        {rest.map((g) => (
           <Row key={g.id} {...tileProps(g)} />
         ))}
       </Box>

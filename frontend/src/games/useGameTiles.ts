@@ -15,20 +15,6 @@ import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
 
 type Game = GameInfo
 
-// Installed games first, then supported ones not found, then those coming later; catalog order within each.
-function ordered(games: Game[]): Game[] {
-  const rank = (g: Game) => {
-    if (g.available && g.installed) {
-      return 0
-    }
-    return g.available ? 1 : 2
-  }
-  return games
-    .map((g, i) => ({ g, i }))
-    .sort((a, b) => rank(a.g) - rank(b.g) || a.i - b.i)
-    .map(({ g }) => g)
-}
-
 interface GameState {
   profiles: Profile[]
   lastPlayedId: string
@@ -125,4 +111,4 @@ function useGameTiles() {
   return { status, loadError, refresh, tileProps }
 }
 
-export { ordered, useGameTiles }
+export { useGameTiles }

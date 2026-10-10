@@ -670,7 +670,7 @@ msgstr "This log is {size}. Sharing uploads it to smapi.io as a public link."
 msgid "Mortar finds games through their launchers. Set each one up when you first open it."
 msgstr "Mortar finds games through their launchers. Set each one up when you first open it."
 
-#: src/games/GameMenu.tsx:57
+#: src/games/GameMenu.tsx:72
 msgid "Switch game: {gameLabel}"
 msgstr "Switch game: {gameLabel}"
 
@@ -1686,7 +1686,7 @@ msgstr "Add preset"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
-#: src/games/GameSelect.tsx:336
+#: src/games/GameSelect.tsx:358
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -4057,7 +4057,7 @@ msgstr "Should Mortar open Nexus \"Mod Manager Download\" links, so a click on N
 msgid "Also enabled {0}"
 msgstr "Also enabled {0}"
 
-#: src/games/useGameTiles.ts:97
+#: src/games/useGameTiles.ts:83
 msgid "Coming in a later Mortar version"
 msgstr "Coming in a later Mortar version"
 
@@ -4227,11 +4227,11 @@ msgstr "config.json, as the mod ships it"
 msgid "The last launch loaded this here, not where its dependencies put it."
 msgstr "The last launch loaded this here, not where its dependencies put it."
 
-#: src/games/GameSelect.tsx:339
+#: src/games/GameSelect.tsx:361
 msgid "Check launchers…"
 msgstr "Check launchers…"
 
-#: src/games/GameSelect.tsx:261
+#: src/games/GameSelect.tsx:259
 msgid "Set up"
 msgstr "Set up"
 
@@ -5349,8 +5349,8 @@ msgstr "Settings backups"
 msgid "{0} stays as it is."
 msgstr "{0} stays as it is."
 
-#: src/games/GameMenu.tsx:57
-#: src/games/GameMenu.tsx:87
+#: src/games/GameMenu.tsx:72
+#: src/games/GameMenu.tsx:102
 msgid "Choose a game"
 msgstr "Choose a game"
 
@@ -6464,7 +6464,7 @@ msgid "No profiles found."
 msgstr "No profiles found."
 
 #. placeholder {0}: game.name
-#: src/games/GameSelect.tsx:194
+#: src/games/GameSelect.tsx:192
 msgid "Open {0}"
 msgstr "Open {0}"
 
@@ -6489,7 +6489,7 @@ msgstr "Could not move the old files to trash"
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
-#: src/games/GameSelect.tsx:150
+#: src/games/GameSelect.tsx:148
 #: src/games/ProfileCards.tsx:48
 #: src/profiles/store.ts:261
 #: src/profiles/store.ts:342
@@ -7670,7 +7670,7 @@ msgstr "Back up {0}?"
 msgid "Each mod's Entry method, run one after another"
 msgstr "Each mod's Entry method, run one after another"
 
-#: src/games/GameMenu.tsx:107
+#: src/games/GameMenu.tsx:113
 msgid "All games…"
 msgstr "All games…"
 
@@ -8230,6 +8230,11 @@ msgstr "{0} goes back to {previous}, keeping its settings. Your saves are backed
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
+#: src/games/GameMenu.tsx:107
+#: src/games/GameSelect.tsx:346
+msgid "Recently played"
+msgstr "Recently played"
+
 #: src/bundles/dialogs.tsx:142
 #: src/game/NewProfileDialog.tsx:154
 #: src/mods/SelectionBar.tsx:46
@@ -8293,7 +8298,7 @@ msgstr "Minutes between background update checks"
 msgid "Show all"
 msgstr "Show all"
 
-#: src/games/GameSelect.tsx:135
+#: src/games/GameSelect.tsx:133
 msgid "{playtime} played"
 msgstr "{playtime} played"
 
@@ -9760,7 +9765,7 @@ msgid "The Vortex folder {folder} has no profiles."
 msgstr "The Vortex folder {folder} has no profiles."
 
 #: src/App.tsx:80
-#: src/games/useGameTiles.ts:88
+#: src/games/useGameTiles.ts:74
 #: src/games/useOpenGame.ts:42
 msgid "Could not read your games"
 msgstr "Could not read your games"
@@ -9908,7 +9913,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/GameSetup.tsx:153
 #: src/firstrun/LoaderStep.tsx:222
 #: src/game/ProfileWorkspace.tsx:39
-#: src/games/GameSelect.tsx:305
+#: src/games/GameSelect.tsx:329
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
 msgstr "Loading…"
@@ -10520,7 +10525,7 @@ msgstr "{name} is deprecated on Thunderstore."
 msgid "Show conflicts"
 msgstr "Show conflicts"
 
-#: src/games/useGameTiles.ts:100
+#: src/games/useGameTiles.ts:86
 #: src/settings/sections/Sources.tsx:131
 msgid "Not set up"
 msgstr "Not set up"
@@ -11304,7 +11309,7 @@ msgid "Stop the game to test a launch."
 msgstr "Stop the game to test a launch."
 
 #: src/firstrunTour/TourPopover.tsx:42
-#: src/games/GameSelect.tsx:248
+#: src/games/GameSelect.tsx:246
 #: src/launch/PlayControl.tsx:175
 #: src/mods/typedConfig/ConfigTab.tsx:299
 #: src/settings/GameSettingsPage.tsx:95
@@ -11586,6 +11591,7 @@ msgid "Switch {0} to {1}?"
 msgstr "Switch {0} to {1}?"
 
 #: src/firstrun/GameSetup.tsx:52
+#: src/games/GameSelect.tsx:350
 msgid "All games"
 msgstr "All games"
 
@@ -12099,7 +12105,7 @@ msgstr "Sort: newest"
 msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
 
-#: src/games/GameSelect.tsx:243
+#: src/games/GameSelect.tsx:241
 msgid "Play {playName}"
 msgstr "Play {playName}"
 
@@ -12492,8 +12498,8 @@ msgstr "Cancelled"
 msgid "Check mods and Mortar for updates (F5)"
 msgstr "Check mods and Mortar for updates (F5)"
 
-#: src/games/GameMenu.tsx:91
-#: src/games/GameMenu.tsx:92
+#: src/games/GameMenu.tsx:106
+#: src/games/GameMenu.tsx:109
 #: src/settings/sections/AboutDiagnostics.tsx:85
 #: src/settings/sections/DataImport.tsx:27
 msgid "Games"
@@ -13126,7 +13132,7 @@ msgstr "Command-line control"
 msgid "Could not repair this profile"
 msgstr "Could not repair this profile"
 
-#: src/games/GameSelect.tsx:148
+#: src/games/GameSelect.tsx:146
 #: src/games/ProfileCards.tsx:46
 #: src/games/ProfileCards.tsx:59
 #: src/games/useOpenGame.ts:42
@@ -13306,7 +13312,7 @@ msgstr "See which mods slow the game"
 
 #. placeholder {0}: game.name
 #: src/firstrun/GameSetup.tsx:176
-#: src/games/GameSelect.tsx:256
+#: src/games/GameSelect.tsx:254
 msgid "Set up {0}"
 msgstr "Set up {0}"
 

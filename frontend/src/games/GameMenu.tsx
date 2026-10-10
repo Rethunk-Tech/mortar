@@ -10,10 +10,10 @@ import { useTitleMenu } from '../shell/titleMenus.ts'
 import { space } from '../theme/density.ts'
 import { gameArt } from './art.ts'
 import { useGameInfo, useGames } from './info.ts'
+import { gameOrder } from './order.ts'
 import { useOpenGame } from './useOpenGame.ts'
 
 const THUMB_PX = 22
-const NEWEST = '￿'
 
 function Thumb({ game }: { game: GameInfo | undefined }) {
   const art = gameArt(game)
@@ -47,8 +47,23 @@ export function GameMenu() {
   const lastGame = useSettings((s) => s.lastGame)
   const played = useSettings((s) => s.lastPlayed)
   const { anchor, close, trigger } = useTitleMenu('game')
-  const at = (id: string) => (id === lastGame ? NEWEST : (played?.[id]?.at ?? ''))
-  const playable = games.filter((g) => g.available).sort((a, b) => at(b.id).localeCompare(at(a.id)))
+  const { recent, rest } = gameOrder(
+    games.filter((g) => g.available),
+    lastGame,
+    played,
+  )
+  const item = (g: GameInfo) => (
+    <TitleMenuItem
+      key={g.id}
+      icon={<Thumb game={g} />}
+      label={g.name}
+      checked={g.id === game}
+      onClick={() => {
+        close()
+        openGame(g)
+      }}
+    />
+  )
   const gameLabel = info?.name ?? ''
   const openGame = useOpenGame()
   return (
@@ -89,19 +104,10 @@ export function GameMenu() {
         <ChevronDown size={14} aria-hidden={true} style={{ flexShrink: 0 }} />
       </ButtonBase>
       <TitleMenu anchorEl={anchor} onClose={close} label={t`Games`} width={300}>
-        <MenuHeading>{t`Games`}</MenuHeading>
-        {playable.map((g) => (
-          <TitleMenuItem
-            key={g.id}
-            icon={<Thumb game={g} />}
-            label={g.name}
-            checked={g.id === game}
-            onClick={() => {
-              close()
-              openGame(g)
-            }}
-          />
-        ))}
+        {recent.length > 0 ? <MenuHeading>{t`Recently played`}</MenuHeading> : null}
+        {recent.map(item)}
+        {rest.length > 0 ? <MenuHeading>{t`Games`}</MenuHeading> : null}
+        {rest.map(item)}
         <MenuRule />
         <TitleMenuItem
           label={t`All games…`}
