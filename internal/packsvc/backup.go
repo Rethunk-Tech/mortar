@@ -15,6 +15,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -102,68 +103,57 @@ func (s *Service) Backup(gameID, profileID, dest string, mods bool) (err error) 
 	if err != nil {
 		return err
 	}
-	f, err := os.CreateTemp(filepath.Dir(dest), ".mortar-backup-*")
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err != nil {
-			_ = f.Close()
-			_ = os.Remove(f.Name())
-		}
-	}()
-	zw := zip.NewWriter(f)
-	doc := backupJSON{Version: backupVersion, Game: gameID, Profile: p, Store: map[string]string{}}
-	for prefix, dir := range dirs {
-		h := sha256.New()
-		err := walkFiles(dir, strings.HasPrefix(prefix, "store/"), func(rel, path string, _ int64) error {
-			w, err := zw.Create(prefix + rel)
+	return datadir.WriteStream(dest, 0o600, func(out io.Writer) error {
+		zw := zip.NewWriter(out)
+		doc := backupJSON{Version: backupVersion, Game: gameID, Profile: p, Store: map[string]string{}}
+		for prefix, dir := range dirs {
+			h := sha256.New()
+			err := walkFiles(dir, strings.HasPrefix(prefix, "store/"), func(rel, path string, _ int64) error {
+				w, err := zw.Create(prefix + rel)
+				if err != nil {
+					return err
+				}
+				src, err := fsx.Open(path)
+				if err != nil {
+					return err
+				}
+				defer func() { _ = src.Close() }()
+				sum := sha256.New()
+				if _, err := io.Copy(io.MultiWriter(w, sum), src); err != nil {
+					return err
+				}
+				fmt.Fprintf(h, "%s\x00%x\n", rel, sum.Sum(nil))
+				return nil
+			})
 			if err != nil {
 				return err
 			}
-			src, err := fsx.Open(path)
+			if key, ok := storeKey(prefix); ok {
+				doc.Store[key] = hex.EncodeToString(h.Sum(nil))
+			}
+		}
+		for rel, data := range files {
+			w, err := zw.Create(backupPrefix + rel)
 			if err != nil {
 				return err
 			}
-			defer func() { _ = src.Close() }()
-			sum := sha256.New()
-			if _, err := io.Copy(io.MultiWriter(w, sum), src); err != nil {
+			if _, err := w.Write(data); err != nil {
 				return err
 			}
-			fmt.Fprintf(h, "%s\x00%x\n", rel, sum.Sum(nil))
-			return nil
-		})
+		}
+		raw, err := json.MarshalIndent(doc, "", "  ")
 		if err != nil {
 			return err
 		}
-		if key, ok := storeKey(prefix); ok {
-			doc.Store[key] = hex.EncodeToString(h.Sum(nil))
-		}
-	}
-	for rel, data := range files {
-		w, err := zw.Create(backupPrefix + rel)
+		w, err := zw.Create(backupDoc)
 		if err != nil {
 			return err
 		}
-		if _, err := w.Write(data); err != nil {
+		if _, err := w.Write(raw); err != nil {
 			return err
 		}
-	}
-	raw, err := json.MarshalIndent(doc, "", "  ")
-	if err != nil {
-		return err
-	}
-	w, err := zw.Create(backupDoc)
-	if err != nil {
-		return err
-	}
-	if _, err := w.Write(raw); err != nil {
-		return err
-	}
-	if err := errors.Join(zw.Close(), f.Close()); err != nil {
-		return err
-	}
-	return fsx.Rename(f.Name(), dest)
+		return zw.Close()
+	})
 }
 
 const savesPrefix = "saves/"

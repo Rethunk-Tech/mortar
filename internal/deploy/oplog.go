@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
 const logFile = "deploy.log"
@@ -112,7 +114,7 @@ func replay(m *Manifest) error {
 }
 
 // tmpName is the file datadir.CopyFile writes before renaming into place; a crashed copy leaves it.
-func tmpName(dst string) string { return dst + ".mortar-tmp" }
+func tmpName(dst string) string { return datadir.CopyTempName(dst) }
 
 // crashHook is set by tests to stop a deploy or purge after a named step, as a crash would.
 var crashHook func(name string)

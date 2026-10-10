@@ -340,50 +340,36 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 
 // build downloads every chunk and writes the slimmed listing to path as it goes, so neither a chunk nor the whole
 // listing is held in memory.
-func (d Driver) build(ctx context.Context, chunks []string, path, ua string) (err error) {
-	tmp, err := fsx.Create(path + ".tmp")
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err != nil {
-			_ = tmp.Close()
-			_ = os.Remove(path + ".tmp")
-		}
-	}()
-	bw := bufio.NewWriter(tmp)
-	enc := json.NewEncoder(bw)
-	if err = bw.WriteByte('['); err != nil {
-		return err
-	}
-	first := true
-	for _, u := range chunks {
-		err = d.streamPackages(ctx, u, ua, func(w *wirePackage) error {
-			if len(w.Versions) == 0 {
-				return nil
-			}
-			if !first {
-				if err := bw.WriteByte(','); err != nil {
-					return err
-				}
-			}
-			first = false
-			return enc.Encode(slim(w))
-		})
-		if err != nil {
+func (d Driver) build(ctx context.Context, chunks []string, path, ua string) error {
+	return datadir.WriteStream(path, 0o644, func(w io.Writer) error {
+		bw := bufio.NewWriter(w)
+		enc := json.NewEncoder(bw)
+		if err := bw.WriteByte('['); err != nil {
 			return err
 		}
-	}
-	if err = bw.WriteByte(']'); err != nil {
-		return err
-	}
-	if err = bw.Flush(); err != nil {
-		return err
-	}
-	if err = tmp.Close(); err != nil {
-		return err
-	}
-	return fsx.Rename(path+".tmp", path)
+		first := true
+		for _, u := range chunks {
+			err := d.streamPackages(ctx, u, ua, func(w *wirePackage) error {
+				if len(w.Versions) == 0 {
+					return nil
+				}
+				if !first {
+					if err := bw.WriteByte(','); err != nil {
+						return err
+					}
+				}
+				first = false
+				return enc.Encode(slim(w))
+			})
+			if err != nil {
+				return err
+			}
+		}
+		if err := bw.WriteByte(']'); err != nil {
+			return err
+		}
+		return bw.Flush()
+	})
 }
 
 // slim keeps the fields of a wire package that search and install use.

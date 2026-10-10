@@ -194,6 +194,9 @@ func RealDirUnder(root, p string) bool {
 	return UnderRoot(root, resolved)
 }
 
+// CopyTempName is the file CopyFile writes before renaming it to dst; a crash mid-copy leaves it behind.
+func CopyTempName(dst string) string { return dst + ".mortar-tmp" }
+
 // CopyFile copies the regular file src to dst, replacing what is there. The bytes go to a temporary file beside dst,
 // are flushed to disk, and only then renamed into place, so a crash leaves dst whole or absent, never truncated.
 func CopyFile(src, dst string) (err error) {
@@ -206,7 +209,7 @@ func CopyFile(src, dst string) (err error) {
 	if err != nil {
 		return err
 	}
-	tmp := dst + ".mortar-tmp"
+	tmp := CopyTempName(dst)
 	_ = os.Remove(tmp)
 	// The copy keeps the source's exec and read bits but never grants write to group or others. The owner always
 	// keeps write: a read-only copy is a read-only attribute on Windows, and renaming over it later fails.
