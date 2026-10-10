@@ -271,6 +271,16 @@ type Store struct {
 	corruptPath string
 	// seen is the file's bytes as last read or written here; a different file on disk was written by someone else.
 	seen []byte
+	// changed runs after every saved update.
+	changed func()
+}
+
+// OnChange sets fn to run after every saved update. It runs with the store locked, so it must not block or call the
+// store.
+func (s *Store) OnChange(fn func()) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.changed = fn
 }
 
 // Open loads settings from the data folder; a corrupt file is preserved beside it and yields defaults.
@@ -457,6 +467,9 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	}
 	s.cur = next
 	s.seen, _ = fsx.ReadFile(s.path)
+	if s.changed != nil {
+		s.changed()
+	}
 	return next, nil
 }
 

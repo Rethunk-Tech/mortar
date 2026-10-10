@@ -39,6 +39,9 @@ type Deps struct {
 	Stable time.Duration
 	// Retarget is how often Targets is re-read, which also retries folders that did not exist.
 	Retarget time.Duration
+	// Changed re-reads Targets at once, so a folder is watched from the moment it becomes a target and a file that
+	// lands right after is not missed.
+	Changed <-chan struct{}
 }
 
 type watch struct {
@@ -84,11 +87,7 @@ func Run(ctx context.Context, d Deps) error {
 		}
 		mu.Lock()
 		defer mu.Unlock()
-		if cur := active[a.t.Dir]; cur != a {
-			// The folder's target changed during the wait, so its replacement announces under the new game.
-			if cur != nil {
-				cur.timer.Reset(quiet)
-			}
+		if active[a.t.Dir] != a {
 			return
 		}
 		if a.gen != gen || !maps.Equal(before, sizesOf(names)) {
@@ -107,23 +106,26 @@ func Run(ctx context.Context, d Deps) error {
 				want[t.Dir] = t
 			}
 		}
-		// Folders whose event was still waiting when their target changed: the replacement inherits the wait, or a
-		// download that lands just as the open game changes is never announced.
-		pending := map[string]map[string]struct{}{}
 		for dir, a := range active {
-			if t, ok := want[dir]; !ok || t != a.t {
-				if a.timer.Stop() && ok {
-					pending[dir] = a.writing
-				}
-				_ = w.Remove(dir)
-				delete(active, dir)
+			if t, ok := want[dir]; ok {
+				// The same folder under another game or event keeps its watch, so a change that is still waiting
+				// to be announced is not lost.
+				a.t = t
+				continue
 			}
+			a.timer.Stop()
+			_ = w.Remove(dir)
+			delete(active, dir)
+			log.Printf("folderwatch: stopped watching %s", dir)
 		}
 		for dir, t := range want {
 			if active[dir] != nil {
 				continue
 			}
 			if st, err := os.Stat(dir); err != nil || !st.IsDir() {
+				if !missing[dir] {
+					log.Printf("folderwatch: waiting for %s to appear", dir)
+				}
 				missing[dir] = true
 				continue
 			}
@@ -131,26 +133,24 @@ func Run(ctx context.Context, d Deps) error {
 				log.Printf("folderwatch: %s: %v", dir, err)
 				continue
 			}
-			writing, waiting := pending[dir]
-			if !waiting {
-				writing = map[string]struct{}{}
-			}
-			a := &watch{t: t, writing: writing}
+			a := &watch{t: t, writing: map[string]struct{}{}}
 			a.timer = time.AfterFunc(quiet, func() {
 				mu.Lock()
-				waits := t.Event == DownloadsEvent && len(a.writing) > 0
+				now := a.t
+				waits := now.Event == DownloadsEvent && len(a.writing) > 0
 				mu.Unlock()
 				if waits {
 					settle(a)
 					return
 				}
-				d.Emit(t.Event, t.Game)
+				d.Emit(now.Event, now.Game)
 			})
-			if !missing[dir] && !waiting {
+			if !missing[dir] {
 				a.timer.Stop()
 			}
 			delete(missing, dir)
 			active[dir] = a
+			log.Printf("folderwatch: watching %s (%s for %s)", dir, t.Event, t.Game)
 		}
 	}
 	tick := time.NewTicker(every)
@@ -166,6 +166,8 @@ func Run(ctx context.Context, d Deps) error {
 			mu.Unlock()
 			return nil
 		case <-tick.C:
+			retarget()
+		case <-d.Changed:
 			retarget()
 		case ev, ok := <-w.Events:
 			if !ok {

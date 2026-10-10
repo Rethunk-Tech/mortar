@@ -181,3 +181,32 @@ func TestRetargetKeepsPendingEvent(t *testing.T) {
 		})
 	}
 }
+
+// A changed signal re-reads the targets at once: the new folder is watched long before the next tick.
+func TestChangedSignalRetargetsAtOnce(t *testing.T) {
+	t.Parallel()
+	a, b := t.TempDir(), t.TempDir()
+	var mu sync.Mutex
+	cur := a
+	g := &got{}
+	changed := make(chan struct{}, 1)
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go func() {
+		_ = Run(ctx, Deps{Targets: func() []Target {
+			mu.Lock()
+			defer mu.Unlock()
+			return []Target{{ExtraFolderEvent, "stardew", cur}}
+		}, Emit: g.emit, Quiet: 50 * time.Millisecond, Retarget: time.Hour, Changed: changed})
+		close(done)
+	}()
+	t.Cleanup(func() { cancel(); <-done })
+	time.Sleep(100 * time.Millisecond)
+	mu.Lock()
+	cur = b
+	mu.Unlock()
+	changed <- struct{}{}
+	time.Sleep(100 * time.Millisecond)
+	_ = os.WriteFile(filepath.Join(b, "x"), nil, 0o600)
+	g.wait(t, 1)
+}
