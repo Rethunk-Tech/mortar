@@ -233,7 +233,7 @@ export function ProfileRow({
         )}
         {profile.description ? (
           <Tooltip title={profile.description}>
-            <Typography noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
+            <Typography noWrap={true} tabIndex={0} sx={{ fontSize: 13, color: 'text.secondary' }}>
               {profile.description}
             </Typography>
           </Tooltip>

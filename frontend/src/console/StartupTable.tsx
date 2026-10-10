@@ -210,8 +210,15 @@ function ModRow({
             {mod.name}
           </Link>
           {mod.id === BRIDGE_ID ? (
-            <Tooltip title={t`Mortar's own SMAPI mod; it records these timings`}>
-              <Box component="span" sx={{ color: 'text.secondary', fontSize: 12, ml: 0.5 }}>
+            <Tooltip
+              title={t`Mortar's own SMAPI mod; it records these timings`}
+              describeChild={true}
+            >
+              <Box
+                component="span"
+                tabIndex={0}
+                sx={{ color: 'text.secondary', fontSize: 12, ml: 0.5 }}
+              >
                 {t`Mortar`}
               </Box>
             </Tooltip>

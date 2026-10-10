@@ -69,13 +69,14 @@ export function OverlayListRow({ overlay }: { overlay: OverlayRow }) {
         {overlay.label}
       </Box>
       <Tooltip
+        describeChild={true}
         title={
           overlay.baseEnabled
             ? t`Replaces some files of the mod above`
             : t`Disabled while the mod above is disabled`
         }
       >
-        <Chip size="small" label={t`Optional file`} sx={chipSx} />
+        <Chip size="small" tabIndex={0} label={t`Optional file`} sx={chipSx} />
       </Tooltip>
       <Box role="cell" sx={{ ml: 'auto', display: 'flex' }}>
         <LockedReason locked={locked}>
@@ -107,9 +108,10 @@ export function OverlayCountChip({ mod, profile }: { mod: Mod; profile: Profile 
     return null
   }
   return (
-    <Tooltip title={overlays.map((o) => o.label).join('\n')}>
+    <Tooltip title={overlays.map((o) => o.label).join('\n')} describeChild={true}>
       <Chip
         size="small"
+        tabIndex={0}
         label={i18n._(
           plural(overlays.length, { one: '# optional file', other: '# optional files' }),
         )}

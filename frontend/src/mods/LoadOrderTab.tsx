@@ -251,9 +251,10 @@ function OrderList({
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minWidth: 0 }}>
                     <RowName row={row} />
                     {row.cycle ? (
-                      <Tooltip title={t`These mods require each other.`}>
+                      <Tooltip title={t`These mods require each other.`} describeChild={true}>
                         <Chip
                           size="small"
+                          tabIndex={0}
                           label={t`Dependency cycle`}
                           color="error"
                           variant="outlined"
@@ -263,10 +264,12 @@ function OrderList({
                     ) : null}
                     {row.lastRun ? (
                       <Tooltip
+                        describeChild={true}
                         title={t`The last launch loaded this here, not where its dependencies put it.`}
                       >
                         <Chip
                           size="small"
+                          tabIndex={0}
                           label={t`Last launch`}
                           variant="outlined"
                           sx={{ height: 22 }}

@@ -116,6 +116,7 @@ function ChangeSummary({
           <Tooltip title={changelog}>
             <Box
               component="span"
+              tabIndex={0}
               sx={{
                 color: 'text.secondary',
                 minWidth: 0,

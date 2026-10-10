@@ -82,8 +82,11 @@ export function CheckTimings({ timings, at }: { timings: CheckTiming[]; at: numb
     .map((x) => `${labels[x.name] ?? x.name} ${formatDuration(x.ms, i18n.locale)}`)
     .join(', ')
   return (
-    <Tooltip title={t`Checked in ${formatDuration(total, i18n.locale)}: ${parts}`}>
-      <Typography sx={{ fontSize: 12, color: 'text.secondary', width: 'fit-content' }}>
+    <Tooltip
+      title={t`Checked in ${formatDuration(total, i18n.locale)}: ${parts}`}
+      describeChild={true}
+    >
+      <Typography tabIndex={0} sx={{ fontSize: 12, color: 'text.secondary', width: 'fit-content' }}>
         {t`Checked ${formatWhen(at)}`}
       </Typography>
     </Tooltip>

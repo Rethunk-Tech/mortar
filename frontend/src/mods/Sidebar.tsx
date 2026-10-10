@@ -70,13 +70,13 @@ const noWrap = { whiteSpace: 'nowrap' } as const
 
 function Field({ label, value, hint }: { label: string; value: string; hint?: string }) {
   const caption = (
-    <Typography component={hint ? 'span' : 'p'} sx={heading}>
+    <Typography component={hint ? 'span' : 'p'} tabIndex={hint ? 0 : undefined} sx={heading}>
       {label}
     </Typography>
   )
   return (
     <Box>
-      <Tooltip title={hint ?? ''} disableHoverListener={!hint}>
+      <Tooltip title={hint ?? ''} disableHoverListener={!hint} describeChild={true}>
         {caption}
       </Tooltip>
       <Typography sx={{ fontSize: 13, overflowWrap: 'anywhere' }}>{value}</Typography>
@@ -91,6 +91,7 @@ function Clipped({ label, value, lines = 1, accented = false }: ClippedProps) {
       <Typography sx={heading}>{label}</Typography>
       <Tooltip title={value} placement="left">
         <Typography
+          tabIndex={0}
           sx={{
             fontSize: 13,
             color: accented ? 'primary.main' : undefined,
