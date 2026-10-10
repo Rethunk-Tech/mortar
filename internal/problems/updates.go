@@ -18,7 +18,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
-	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 // updatesTTL bounds how long a profile's updates are served without asking again; meta.Client caches for the
@@ -522,7 +521,7 @@ func nexusFileIsCurrent(ctx context.Context, m Meta, x framework.Mod, url, sugge
 	if modID == 0 {
 		return false
 	}
-	keyModID, fileID, ok := store.NexusFile(x.Key)
+	keyModID, fileID, ok := nexusFile(x.Key)
 	if !ok || keyModID != modID {
 		return false
 	}
@@ -586,7 +585,7 @@ func liveNexusFiles(ctx context.Context, filesOf NexusFilesOf, t nexus.Title, as
 // its own download, so the page's newer version belongs to another download; pick is set if it is history only. All
 // are zero when the installed file is not listed, which leaves the choice to the queue.
 func supersedingFile(files []nexus.BatchFile, x framework.Mod, modID int, version string) (file nexus.File, pick, newest bool) {
-	keyModID, have, ok := store.NexusFile(x.Key)
+	keyModID, have, ok := nexusFile(x.Key)
 	if !ok || keyModID != modID {
 		return nexus.File{}, false, false
 	}
@@ -607,7 +606,7 @@ func supersedingFile(files []nexus.BatchFile, x framework.Mod, modID int, versio
 // liveFileIsCurrent says whether the installed Nexus file is still the newest in its group (same display name) and
 // already at the suggested version. known is false when the installed file is not in the list.
 func liveFileIsCurrent(files []nexus.BatchFile, x framework.Mod, suggested string) (current, known bool) {
-	_, fileID, ok := store.NexusFile(x.Key)
+	_, fileID, ok := nexusFile(x.Key)
 	if !ok {
 		return false, false
 	}

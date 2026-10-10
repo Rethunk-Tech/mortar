@@ -8,8 +8,10 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
+	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 )
 
@@ -118,5 +120,29 @@ func TestSettingRowsFollowTheProfilesGameSettingsMode(t *testing.T) {
 	}
 	if got := s.gameSettingFailures(id, p.ID); len(got) != 0 {
 		t.Fatalf("a profile set to edit on a warn game needs no row: %+v", got)
+	}
+}
+
+func TestPerFileEntriesOfOneItemAreOneStoreItemToProblems(t *testing.T) {
+	const item = "nexus-123-456-1700000000"
+	keys := []string{item + "#A/a.package", item + "#A/b.package", item + "#B/c.ts4script"}
+	if _, page, ok := nexusFile(keys[2]); !ok || page != 456 {
+		t.Fatalf("a per-file key must resolve to its item's Nexus file: %d %v", page, ok)
+	}
+	var mods []framework.Mod
+	var updates []Update
+	for _, k := range keys {
+		mods = append(mods, framework.Mod{Key: k, Name: k})
+		updates = append(updates, Update{Key: k, Version: "2.0"})
+	}
+	rows := damagedRows(mods, map[string]store.Damage{item: {Missing: []string{"x"}}})
+	if len(rows) != 1 {
+		t.Fatalf("a damaged item must be one row, got %+v (no false missing-from-store rows)", rows)
+	}
+	if got := oncePerItem(updates); len(got) != 1 {
+		t.Fatalf("one download updates all three files once, got %d", len(got))
+	}
+	if !coveredBy(updates[:1], keys[1], "2.0") {
+		t.Fatal("a sibling file's update covers the same item")
 	}
 }

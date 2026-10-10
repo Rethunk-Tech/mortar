@@ -10,7 +10,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
-	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 var authorStatusWord = regexp.MustCompile(`(?i)\b(obsolete|deprecated|depreciated)\b`)
@@ -18,7 +17,7 @@ var authorStatusWord = regexp.MustCompile(`(?i)\b(obsolete|deprecated|depreciate
 func authorMarkedMods(home, domain string, enabled []framework.Mod) []Broken {
 	var out []Broken
 	for _, im := range enabled {
-		if pageID, fileID, ok := store.NexusFile(im.Key); ok {
+		if pageID, fileID, ok := nexusFile(im.Key); ok {
 			details, ok := readCachedNexusDetails(home, domain, pageID)
 			if !ok {
 				continue

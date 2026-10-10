@@ -14,7 +14,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
-	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 const nexusSiteName = "Nexus Mods"
@@ -40,7 +39,7 @@ func (s *Service) sourceFlagged(ctx context.Context, domain string, enabled []fr
 func nexusFlagged(cl *meta.Client, domain string, enabled []framework.Mod) []Broken {
 	var out []Broken
 	for _, im := range enabled {
-		pageID, _, ok := store.NexusFile(im.Key)
+		pageID, _, ok := nexusFile(im.Key)
 		if !ok {
 			continue
 		}

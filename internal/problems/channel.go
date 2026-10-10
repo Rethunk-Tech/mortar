@@ -7,7 +7,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 func applyChannelFileOffers(ctx context.Context, m Meta, domain string, asked []framework.Mod, r *UpdatesResult) {
@@ -18,7 +17,7 @@ func applyChannelFileOffers(ctx context.Context, m Meta, domain string, asked []
 		}
 		modID := nexusID(x.UpdateKeys)
 		if modID == 0 {
-			if pageID, _, ok := store.NexusFile(x.Key); ok {
+			if pageID, _, ok := nexusFile(x.Key); ok {
 				modID = pageID
 			}
 		}

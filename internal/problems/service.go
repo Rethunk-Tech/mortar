@@ -620,7 +620,7 @@ func (s *Service) updatesFor(ctx context.Context, gameID, id string, fresh bool)
 		s.fixStaleManifests(gameID, id, r.Held)
 	}
 	r.Updates = s.curseforgeSwitches(ctx, mods, r.Updates)
-	r.Updates = append(r.Updates, s.sourceUpdates(ctx, gameID, mods, r.Updates)...)
+	r.Updates = oncePerItem(append(r.Updates, s.sourceUpdates(ctx, gameID, mods, r.Updates)...))
 	if !r.Unknown {
 		s.mu.Lock()
 		s.updates[key] = cachedUpdates{fingerprint: fp, at: time.Now(), result: r}
@@ -769,8 +769,8 @@ func (s *Service) damagedMods(gameID, id string) []Damaged {
 func damagedRows(mods []framework.Mod, damaged map[string]store.Damage) []Damaged {
 	var out []Damaged
 	for _, m := range mods {
-		d, ok := damaged[m.Key]
-		if !ok || slices.ContainsFunc(out, func(x Damaged) bool { return x.Key == m.Key }) {
+		d, ok := damaged[itemOf(m.Key)]
+		if !ok || slices.ContainsFunc(out, func(x Damaged) bool { return itemOf(x.Key) == itemOf(m.Key) }) {
 			continue
 		}
 		files := slices.Concat(d.Missing, d.Changed, d.Extra)

@@ -17,7 +17,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
-	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
 func fold(s string) string {
@@ -320,7 +319,7 @@ func sameMod(x framework.Mod, it source.Item) bool {
 	case x.SourceKind == profile.KindThunderstore:
 		return strings.EqualFold(it.ID, x.SourceName)
 	case x.SourceKind == profile.KindNexus:
-		page, _, ok := store.NexusFile(x.Key)
+		page, _, ok := nexusFile(x.Key)
 		return ok && it.ID == strconv.Itoa(page)
 	case x.SourceRepo != "" && it.Repo != "":
 		return strings.EqualFold(it.Repo, x.SourceRepo)
@@ -330,7 +329,7 @@ func sameMod(x framework.Mod, it source.Item) bool {
 
 func coveredBy(have []Update, key, version string) bool {
 	for _, u := range have {
-		if u.Key != key {
+		if itemOf(u.Key) != itemOf(key) {
 			continue
 		}
 		if c, ok := meta.CompareVersions(u.Version, version); ok && c >= 0 {
