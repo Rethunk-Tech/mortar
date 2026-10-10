@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"maps"
-	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -125,20 +124,11 @@ func (c *Client) modsChunk(ctx context.Context, domain string, ids []int, out ma
 	for i, id := range ids {
 		refs[i] = ref{domain, id}
 	}
-	code, status, body, err := c.roundTrip(ctx, http.MethodPost, "/v2/graphql", map[string]any{
+	body, err := c.graphql(ctx, map[string]any{
 		"query": modsQuery, "variables": map[string]any{"ids": refs, "count": len(ids)},
 	})
 	if err != nil {
 		return err
-	}
-	switch code {
-	case http.StatusOK:
-	case http.StatusUnauthorized:
-		return ErrUnauthorized
-	case http.StatusTooManyRequests:
-		return c.rateLimited()
-	default:
-		return &StatusError{Code: code, Status: status}
 	}
 	var raw struct {
 		Data struct {

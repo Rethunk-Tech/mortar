@@ -303,6 +303,24 @@ type File struct {
 	ReplacedBy int `json:"replacedBy"`
 }
 
+// graphql posts a v2 query and returns the answer's body. A refused key and a spent quota come back as the errors the
+// REST calls give, so every caller tells them apart the same way.
+func (c *Client) graphql(ctx context.Context, query any) ([]byte, error) {
+	code, status, body, err := c.roundTrip(ctx, http.MethodPost, "/v2/graphql", query)
+	if err != nil {
+		return nil, err
+	}
+	switch code {
+	case http.StatusOK:
+		return body, nil
+	case http.StatusUnauthorized:
+		return nil, ErrUnauthorized
+	case http.StatusTooManyRequests:
+		return nil, c.rateLimited()
+	}
+	return nil, &StatusError{Code: code, Status: status}
+}
+
 // ScanStatuses returns Nexus's v2 virus-scan status for each file. Results are cached for this client.
 func (c *Client) ScanStatuses(ctx context.Context, t Title, modID int) (map[int]string, error) {
 	c.scanMu.Lock()
@@ -312,14 +330,11 @@ func (c *Client) ScanStatuses(ctx context.Context, t Title, modID int) (map[int]
 	}
 	c.scanMu.Unlock()
 
-	code, status, body, err := c.roundTrip(ctx, http.MethodPost, "/v2/graphql", map[string]string{
+	body, err := c.graphql(ctx, map[string]string{
 		"query": fmt.Sprintf("{ modFiles(modId: %d, gameId: %d) { fileId scannedV2 } }", modID, t.ID),
 	})
 	if err != nil {
 		return nil, err
-	}
-	if code != http.StatusOK {
-		return nil, &StatusError{Code: code, Status: status}
 	}
 	var raw struct {
 		Data struct {

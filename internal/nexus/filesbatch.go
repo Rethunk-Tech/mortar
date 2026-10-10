@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 )
 
@@ -42,18 +41,9 @@ func (c *Client) filesOf(ctx context.Context, t Title, modIDs []int, out map[int
 		fmt.Fprintf(&q, " m%d: modFiles(modId: %d, gameId: %d) { fileId name version category }", id, id, t.ID)
 	}
 	q.WriteString(" }")
-	code, status, body, err := c.roundTrip(ctx, http.MethodPost, "/v2/graphql", map[string]string{"query": q.String()})
+	body, err := c.graphql(ctx, map[string]string{"query": q.String()})
 	if err != nil {
 		return err
-	}
-	switch code {
-	case http.StatusOK:
-	case http.StatusUnauthorized:
-		return ErrUnauthorized
-	case http.StatusTooManyRequests:
-		return c.rateLimited()
-	default:
-		return &StatusError{Code: code, Status: status}
 	}
 	var raw struct {
 		Data map[string][]BatchFile `json:"data"`

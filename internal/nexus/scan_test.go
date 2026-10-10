@@ -2,6 +2,7 @@ package nexus
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -35,3 +36,19 @@ func TestScanStatusesCachesGraphQLResponse(t *testing.T) {
 }
 
 var stardew = Title{Domain: "stardewvalley", ID: 1303}
+
+func TestScanStatusesTellARefusedKeyFromASpentQuota(t *testing.T) {
+	code := http.StatusUnauthorized
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(code) }))
+	defer server.Close()
+	client := New("test")
+	client.BaseURL = server.URL
+	if _, err := client.ScanStatuses(context.Background(), stardew, 1); !errors.Is(err, ErrUnauthorized) {
+		t.Fatalf("a refused key: %v", err)
+	}
+	code = http.StatusTooManyRequests
+	var limited *RateLimitError
+	if _, err := client.ScanStatuses(context.Background(), stardew, 2); !errors.As(err, &limited) {
+		t.Fatalf("a spent quota: %v", err)
+	}
+}
