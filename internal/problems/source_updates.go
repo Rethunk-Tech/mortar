@@ -6,7 +6,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"unicode"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
@@ -18,15 +17,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
-
-func fold(s string) string {
-	return strings.Map(func(r rune) rune {
-		if unicode.IsLetter(r) || unicode.IsDigit(r) {
-			return unicode.ToLower(r)
-		}
-		return -1
-	}, s)
-}
 
 // sourceUpdates offers the newer version each of the game's sources lists for the mods, one source after another, each
 // search taking its turn under the source's rate limit. Thunderstore also matches a mod installed elsewhere that it
@@ -370,7 +360,7 @@ func sameMod(x framework.Mod, it source.Item) bool {
 	case x.SourceRepo != "" && it.Repo != "":
 		return strings.EqualFold(it.Repo, x.SourceRepo)
 	}
-	return fold(it.Name) != "" && fold(it.Name) == fold(x.Name) && fold(it.Author) != "" && fold(it.Author) == fold(x.Author)
+	return looseName(it.Name) != "" && looseName(it.Name) == looseName(x.Name) && looseName(it.Author) != "" && looseName(it.Author) == looseName(x.Author)
 }
 
 func coveredBy(have []Update, key, version string) bool {
