@@ -605,6 +605,9 @@ func (s *Store) create(game, name string) (Profile, error) {
 	}
 	now := time.Now().UTC().Truncate(time.Second)
 	p := Profile{ID: id, Name: name, Order: len(existing), Created: now, Updated: now, Entries: []Entry{}}
+	if info, ok := components.Game(game); ok {
+		p.SeparateSaves = info.NewProfileSeparateSaves
+	}
 	if len(existing) > 0 {
 		p.Order = existing[len(existing)-1].Order + 1
 	}

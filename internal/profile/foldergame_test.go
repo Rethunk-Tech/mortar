@@ -152,3 +152,20 @@ func TestFolderGameAnotherFileOfThePageIsAddedAndOnlyItsUpdateReplacesIt(t *test
 		}
 	}
 }
+
+func TestANewProfileFollowsTheGamesSeparateSavesDefault(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	for game, want := range map[string]bool{folderGame: true, "stardew": false} {
+		p, err := e.Create(game, "P")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if p.SeparateSaves != want {
+			t.Fatalf("%s: SeparateSaves = %v, want %v", game, p.SeparateSaves, want)
+		}
+		if got, _ := e.Get(game, p.ID); got.SeparateSaves != want {
+			t.Fatalf("%s: stored SeparateSaves = %v", game, got.SeparateSaves)
+		}
+	}
+}
