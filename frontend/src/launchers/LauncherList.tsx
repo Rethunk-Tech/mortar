@@ -120,7 +120,12 @@ function LauncherRow({
       <AccordionSummary
         expandIcon={<ChevronDown size={18} />}
         sx={{
-          '& .MuiAccordionSummary-content': { alignItems: 'center', gap: space.pad, my: 1.25 },
+          '& .MuiAccordionSummary-content': {
+            alignItems: 'center',
+            gap: space.pad,
+            my: 1.25,
+            minWidth: 0,
+          },
         }}
       >
         <Box sx={{ display: 'flex', flexShrink: 0 }}>
@@ -226,7 +231,8 @@ export function LauncherList({
       <Box
         sx={{
           display: 'none',
-          gridTemplateColumns: '1fr 1fr',
+          // Each column may shrink below its longest line, so a long game list is cut short instead of widening the page.
+          gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
           alignItems: 'start',
           gap: space.gap,
           [`@container (min-width: ${2 * COLUMN_MIN}px)`]: { display: 'grid' },
