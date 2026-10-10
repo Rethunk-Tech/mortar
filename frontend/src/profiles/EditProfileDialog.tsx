@@ -258,7 +258,10 @@ function ProfileFields({
   return (
     <>
       <FieldsTabs ids={ids} tab={tab} onTab={setTab} startupSettings={startupSettings} />
-      <DialogContent sx={{ pt: space.pad, display: 'grid', alignContent: 'start' }}>
+      {/* A slider's thumb at its far end reaches into the padding, which must not make the dialog scroll sideways. */}
+      <DialogContent
+        sx={{ pt: space.pad, display: 'grid', alignContent: 'start', overflowX: 'hidden' }}
+      >
         {panel(
           'appearance',
           <>
