@@ -188,7 +188,7 @@ msgstr "Where it came in one download with other mods, it is disabled instead."
 msgid "Allow cleanup"
 msgstr "Allow cleanup"
 
-#: src/profiles/HealthDialog.tsx:135
+#: src/profiles/HealthDialog.tsx:140
 msgid "Revert {name} to the installed copy?"
 msgstr "Revert {name} to the installed copy?"
 
@@ -305,7 +305,7 @@ msgstr "Edit notes"
 msgid "Snapshot diff"
 msgstr "Snapshot diff"
 
-#: src/profiles/HealthDialog.tsx:55
+#: src/profiles/HealthDialog.tsx:56
 msgid "{name} is missing from the store"
 msgstr "{name} is missing from the store"
 
@@ -679,7 +679,7 @@ msgid "Show a report first."
 msgstr "Show a report first."
 
 #: src/mods/problemFix/DamagedFix.tsx:40
-#: src/profiles/HealthDialog.tsx:111
+#: src/profiles/HealthDialog.tsx:116
 #: src/profiles/ProfilesPage.tsx:165
 #: src/settings/sections/AboutDiagnostics.tsx:218
 msgid "Repair"
@@ -767,7 +767,7 @@ msgstr "A network request failed."
 msgid "No"
 msgstr "No"
 
-#: src/profiles/HealthDialog.tsx:240
+#: src/profiles/HealthDialog.tsx:245
 msgid "Everything looks fine"
 msgstr "Everything looks fine"
 
@@ -1721,7 +1721,7 @@ msgstr "Default sort"
 msgid "What you expected"
 msgstr "What you expected"
 
-#: src/profiles/HealthDialog.tsx:71
+#: src/profiles/HealthDialog.tsx:76
 msgid "{count, plural, one {# stored mod is not used by any profile} other {# stored mods are not used by any profile}}"
 msgstr "{count, plural, one {# stored mod is not used by any profile} other {# stored mods are not used by any profile}}"
 
@@ -1784,7 +1784,7 @@ msgstr "The antivirus flagged this download, so Mortar did not install it."
 msgid "Could not dismiss the warning"
 msgstr "Could not dismiss the warning"
 
-#: src/profiles/HealthDialog.tsx:266
+#: src/profiles/HealthDialog.tsx:271
 msgid "Repair all"
 msgstr "Repair all"
 
@@ -1824,7 +1824,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/mods/typedConfig/ConfigPane.tsx:284
 #: src/mods/updateReview/updateAll.ts:59
 #: src/profiles/GameModsDialog.tsx:138
-#: src/profiles/HealthDialog.tsx:232
+#: src/profiles/HealthDialog.tsx:237
 #: src/profiles/LaunchPreview.tsx:82
 #: src/queue/QueueBody.tsx:259
 #: src/queue/store.ts:164
@@ -1910,7 +1910,7 @@ msgstr "Startup"
 msgid "{count, plural, one {# mod in the game's Mods folder differs from this profile} other {# mods in the game's Mods folder differ from this profile}}"
 msgstr "{count, plural, one {# mod in the game's Mods folder differs from this profile} other {# mods in the game's Mods folder differ from this profile}}"
 
-#: src/profiles/HealthDialog.tsx:54
+#: src/profiles/HealthDialog.tsx:55
 msgid "{name} is missing from the store, and Mortar cannot download it again"
 msgstr "{name} is missing from the store, and Mortar cannot download it again"
 
@@ -2472,7 +2472,7 @@ msgstr "In-game menu"
 #: src/mods/problemFix/WhereButtons.tsx:47
 #: src/mods/updateReview/UpdateActions.tsx:90
 #: src/mods/updateReview/UpdateActions.tsx:90
-#: src/profiles/HealthDialog.tsx:111
+#: src/profiles/HealthDialog.tsx:116
 #: src/saves/lackChips.tsx:57
 msgid "Queued"
 msgstr "Queued"
@@ -2939,7 +2939,7 @@ msgid "Delete permanently"
 msgstr "Delete permanently"
 
 #: src/game/ProfileMenuItems.tsx:183
-#: src/profiles/HealthDialog.tsx:256
+#: src/profiles/HealthDialog.tsx:261
 msgid "Check this profile"
 msgstr "Check this profile"
 
@@ -3232,13 +3232,17 @@ msgid "What happened"
 msgstr "What happened"
 
 #. placeholder {0}: reverts.length
-#: src/profiles/HealthDialog.tsx:136
+#: src/profiles/HealthDialog.tsx:141
 msgid "{0, plural, one {Revert # mod?} other {Revert # mods?}}"
 msgstr "{0, plural, one {Revert # mod?} other {Revert # mods?}}"
 
 #: src/mods/CategoryEditor.tsx:130
 msgid "No custom categories yet"
 msgstr "No custom categories yet"
+
+#: src/profiles/HealthDialog.tsx:44
+msgid "Left in the shared folder"
+msgstr "Left in the shared folder"
 
 #: src/settings/shortcutLabels.ts:37
 msgid "Open the next profile"
@@ -3747,7 +3751,7 @@ msgid "Add to profile"
 msgstr "Add to profile"
 
 #: src/mods/problemFixButtons.tsx:255
-#: src/profiles/HealthDialog.tsx:140
+#: src/profiles/HealthDialog.tsx:145
 msgid "Your edits to its files are replaced with the installed copy."
 msgstr "Your edits to its files are replaced with the installed copy."
 
@@ -3939,7 +3943,7 @@ msgstr "Custom categories"
 #: src/mods/OldFilesCallouts.tsx:112
 #: src/mods/problemFixButtons.tsx:201
 #: src/mods/problemFixButtons.tsx:206
-#: src/profiles/HealthDialog.tsx:274
+#: src/profiles/HealthDialog.tsx:279
 #: src/profiles/LaunchPresetsBlock.tsx:54
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:68
 #: src/profiles/ProfilesPage.tsx:172
@@ -4303,7 +4307,7 @@ msgstr "Cancel"
 msgid "A profile with only {loader}. Add mods from {site} or from archives."
 msgstr "A profile with only {loader}. Add mods from {site} or from archives."
 
-#: src/profiles/HealthDialog.tsx:64
+#: src/profiles/HealthDialog.tsx:65
 msgid "The saved change {change} from {when} is missing its config files"
 msgstr "The saved change {change} from {when} is missing its config files"
 
@@ -5372,7 +5376,7 @@ msgstr "Search {sourceName}"
 msgid "{0} of {1}"
 msgstr "{0} of {1}"
 
-#: src/profiles/HealthDialog.tsx:59
+#: src/profiles/HealthDialog.tsx:60
 msgid "Files of {name} changed outside Mortar"
 msgstr "Files of {name} changed outside Mortar"
 
@@ -5832,7 +5836,7 @@ msgstr "New profile…"
 msgid "The files will download from each mod's source."
 msgstr "The files will download from each mod's source."
 
-#: src/profiles/HealthDialog.tsx:241
+#: src/profiles/HealthDialog.tsx:246
 msgid "Mortar found nothing to repair in this profile."
 msgstr "Mortar found nothing to repair in this profile."
 
@@ -6035,7 +6039,7 @@ msgstr "Where to share"
 msgid "Background"
 msgstr "Background"
 
-#: src/profiles/HealthDialog.tsx:58
+#: src/profiles/HealthDialog.tsx:59
 msgid "The folder of {name} was deleted outside Mortar"
 msgstr "The folder of {name} was deleted outside Mortar"
 
@@ -6334,7 +6338,7 @@ msgstr "Disable it and play"
 msgid "Keep forever"
 msgstr "Keep forever"
 
-#: src/profiles/HealthDialog.tsx:131
+#: src/profiles/HealthDialog.tsx:136
 msgid "Delete the unreadable changes from history?"
 msgstr "Delete the unreadable changes from history?"
 
@@ -6849,7 +6853,7 @@ msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus: {no
 msgid "{0} needs this version or newer."
 msgstr "{0} needs this version or newer."
 
-#: src/profiles/HealthDialog.tsx:230
+#: src/profiles/HealthDialog.tsx:235
 msgid "Could not check this profile"
 msgstr "Could not check this profile"
 
@@ -7177,7 +7181,7 @@ msgstr "Unity exception"
 
 #: src/mods/problemFixButtons.tsx:251
 #: src/mods/problemFixButtons.tsx:256
-#: src/profiles/HealthDialog.tsx:274
+#: src/profiles/HealthDialog.tsx:279
 msgid "Revert"
 msgstr "Revert"
 
@@ -7842,7 +7846,7 @@ msgstr "Open backups folder"
 msgid "Preparing transfer…"
 msgstr "Preparing transfer…"
 
-#: src/profiles/HealthDialog.tsx:65
+#: src/profiles/HealthDialog.tsx:66
 msgid "Could not read the saved change {change} from {when}"
 msgstr "Could not read the saved change {change} from {when}"
 
@@ -8208,7 +8212,7 @@ msgstr "Could not import"
 msgid "{0, plural, one {Added # mod from {name}; {left, plural, one {# mod} other {# mods}} still to download} other {Added # mods from {name}; {left, plural, one {# mod} other {# mods}} still to download}}"
 msgstr "{0, plural, one {Added # mod from {name}; {left, plural, one {# mod} other {# mods}} still to download} other {Added # mods from {name}; {left, plural, one {# mod} other {# mods}} still to download}}"
 
-#: src/profiles/HealthDialog.tsx:141
+#: src/profiles/HealthDialog.tsx:146
 msgid "The profile itself stays as it is."
 msgstr "The profile itself stays as it is."
 
@@ -9233,7 +9237,7 @@ msgstr "Message copied"
 msgid "{0, plural, one {Added # mod from {name}; downloading {left, plural, one {# mod} other {# mods}}} other {Added # mods from {name}; downloading {left, plural, one {# mod} other {# mods}}}}"
 msgstr "{0, plural, one {Added # mod from {name}; downloading {left, plural, one {# mod} other {# mods}}} other {Added # mods from {name}; downloading {left, plural, one {# mod} other {# mods}}}}"
 
-#: src/profiles/HealthDialog.tsx:145
+#: src/profiles/HealthDialog.tsx:150
 msgid "The unreadable changes are also deleted from history."
 msgstr "The unreadable changes are also deleted from history."
 
@@ -10056,7 +10060,7 @@ msgstr "Could not check the graphics setting"
 msgid "Profile to add them to"
 msgstr "Profile to add them to"
 
-#: src/profiles/HealthDialog.tsx:68
+#: src/profiles/HealthDialog.tsx:69
 msgid "A launch ended without Mortar putting the game folder back as it was"
 msgstr "A launch ended without Mortar putting the game folder back as it was"
 
@@ -10651,6 +10655,10 @@ msgstr "Combine with…"
 msgid "No matching mods"
 msgstr "No matching mods"
 
+#: src/profiles/HealthDialog.tsx:73
+msgid "A file a mod wrote is too large to copy into the profile and stays in the shared folder"
+msgstr "A file a mod wrote is too large to copy into the profile and stays in the shared folder"
+
 #. placeholder {0}: gone.date
 #. placeholder {0}: mark.date
 #: src/mods/NexusDetails.tsx:220
@@ -10675,7 +10683,7 @@ msgstr "Importing"
 msgid "Mortar bridge"
 msgstr "Mortar bridge"
 
-#: src/profiles/HealthDialog.tsx:44
+#: src/profiles/HealthDialog.tsx:45
 msgid "Not used by any profile"
 msgstr "Not used by any profile"
 
@@ -11420,6 +11428,10 @@ msgstr "the connection was refused"
 #: src/profiles/historyLabel.ts:37
 msgid "Removed the tag {detail} from {name}"
 msgstr "Removed the tag {detail} from {name}"
+
+#: src/profiles/HealthDialog.tsx:72
+msgid "Changed bytes of a mod file are kept beside it, since no profile could take them"
+msgstr "Changed bytes of a mod file are kept beside it, since no profile could take them"
 
 #: src/settings/sections/StreamOverlay.tsx:354
 msgid "Regenerate…"
@@ -13106,7 +13118,7 @@ msgstr "Skip this update"
 msgid "Command-line control"
 msgstr "Command-line control"
 
-#: src/profiles/HealthDialog.tsx:208
+#: src/profiles/HealthDialog.tsx:213
 msgid "Could not repair this profile"
 msgstr "Could not repair this profile"
 
@@ -13799,7 +13811,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/mods/updateReview/ReviewFooter.tsx:62
 #: src/mods/updateReview/ReviewTitle.tsx:47
 #: src/profiles/CompareTop.tsx:148
-#: src/profiles/HealthDialog.tsx:259
+#: src/profiles/HealthDialog.tsx:264
 #: src/profiles/HistoryPanel.tsx:135
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:74
 #: src/saves/BackupsDialog.tsx:192
