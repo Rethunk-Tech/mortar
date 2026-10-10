@@ -5,6 +5,10 @@ import { ENABLED_GAMES, openGameSelect, openSeedFarm, openSettings } from './app
 // fixture, so that spec skips itself when they cannot be reached.
 const SEARCH_WAIT_MS = 20_000
 const REACH_MS = 3000
+// A Game Select row's height at rest, and how much taller the row under the pointer stands (GameSelect ROW_PX,
+// ROW_GROW_PX).
+const ROW_PX = 168
+const ROW_GROW_PX = 72
 
 /** Whether the sites Browse searches answer from this machine. */
 async function online(): Promise<boolean> {
@@ -33,24 +37,25 @@ test('Game Select lists Stardew Valley before Lethal Company', async ({ page }) 
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
 })
 
-test('hovering a Game Select row drifts its art and leaves the others undimmed without changing layout', async ({
+test('hovering a Game Select row grows it taller and leaves its art and the other rows alone', async ({
   page,
 }) => {
   await openSeedFarm(page)
   await openGameSelect(page)
   const tiles = page.locator('[data-tile]')
   await expect(tiles).toHaveCount(ENABLED_GAMES)
-  const layout = () => tiles.evaluateAll((els) => els.map((e) => [e.clientWidth, e.clientHeight]))
-  const before = await layout()
+  const heights = () => tiles.evaluateAll((els) => els.map((e) => e.clientHeight))
+  // A row the pointer crossed on the way here is still easing back; wait until every row is at rest.
+  await page.mouse.move(0, 0)
+  await expect.poll(async () => Math.max(...(await heights()))).toBe(ROW_PX)
+  const before = await heights()
   await tiles.first().hover()
+  await expect.poll(async () => (await heights())[0]).toBe(ROW_PX + ROW_GROW_PX)
+  expect((await heights()).slice(1)).toEqual(before.slice(1))
   await expect(tiles.last()).toHaveCSS('filter', 'none')
-  await expect(tiles.first().locator('[data-art]')).toHaveCSS(
-    'transform',
-    /^matrix\(1\.1, 0, 0, 1\.1, -/,
-  )
-  expect(await layout()).toEqual(before)
-  const grid = tiles.first().locator('..')
-  expect(await grid.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true)
+  await expect(tiles.first().locator('[data-art]')).toHaveCSS('transform', 'none')
+  const list = tiles.first().locator('..')
+  expect(await list.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true)
 })
 
 test('Browse defaults to All sources and a search shows results from more than one source', async ({
