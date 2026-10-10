@@ -9,10 +9,7 @@ import {
   DialogContentText,
   DialogTitle,
   IconButton,
-  ListItemIcon,
-  ListItemText,
   Menu,
-  MenuItem,
   Switch,
   Tooltip,
 } from '@mui/material'
@@ -24,6 +21,7 @@ import { listNames } from '../i18n/list.ts'
 import { useLive } from '../launch/live.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { destructiveSx } from '../shell/destructive.ts'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { dependentsOf, idKey, localId } from './dependents.ts'
 import { useDescribe } from './describe.ts'
@@ -371,17 +369,14 @@ export function UpdateBadge({ mod }: { mod: Mod }) {
         onClose={() => setAnchor(null)}
         onClick={(e) => e.stopPropagation()}
       >
-        <MenuItem
+        <MenuAction
+          icon={<Ban size={16} />}
+          label={t`Skip this update`}
           onClick={() => {
             setAnchor(null)
             setSkipVersion(mod, update.version).catch(reportUnexpected)
           }}
-        >
-          <ListItemIcon sx={{ color: 'inherit' }}>
-            <Ban size={16} />
-          </ListItemIcon>
-          <ListItemText>{t`Skip this update`}</ListItemText>
-        </MenuItem>
+        />
       </Menu>
     </>
   )

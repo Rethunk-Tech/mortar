@@ -8,9 +8,7 @@ import {
   DialogContentText,
   DialogTitle,
   FormControlLabel,
-  ListItemIcon,
   Menu,
-  MenuItem,
 } from '@mui/material'
 import { UserRound } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
@@ -25,6 +23,7 @@ import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { MenuAction } from '../shell/MenuAction.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 import { arrivalGame, arrivalName, fallbackName, useNxm } from './store.ts'
@@ -164,18 +163,15 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
       </DialogActions>
       <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
         {others.map((p) => (
-          <MenuItem
+          <MenuAction
             key={p.id}
+            icon={<UserRound size={16} aria-hidden={true} />}
+            label={p.name}
             onClick={() => {
               setAnchor(null)
               pick(p.id)
             }}
-          >
-            <ListItemIcon sx={{ color: 'inherit' }}>
-              <UserRound size={16} aria-hidden={true} />
-            </ListItemIcon>
-            {p.name}
-          </MenuItem>
+          />
         ))}
       </Menu>
       <NewProfileDialog
