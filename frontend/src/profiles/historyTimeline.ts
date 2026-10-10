@@ -68,8 +68,6 @@ export function historySummary(
   return parts.join(' · ')
 }
 
-export const sentence = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1)
-
 export interface HistoryDay<T> {
   // The local calendar day, as YYYY-MM-DD.
   day: string

@@ -1,3 +1,5 @@
+import { sentence } from '../../i18n/sentence.ts'
+
 const STARDEW_FIELDS = [
   'location',
   'player',
@@ -54,7 +56,7 @@ type OverlayPreview =
 
 function seasonLabel(season: unknown): string {
   const s = String(season ?? '')
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''
+  return sentence(s)
 }
 
 function formatTime(timeOfDay: unknown): string {

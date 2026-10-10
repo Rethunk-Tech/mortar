@@ -11,7 +11,8 @@ mock.module('@lingui/core/macro', () => ({
     (n === 1 ? forms.one : forms.other).replace('#', String(n)),
 }))
 
-const { historyDays, historyKind, historySummary, sentence } = await import('./historyTimeline.ts')
+const { historyDays, historyKind, historySummary } = await import('./historyTimeline.ts')
+const { sentence } = await import('../i18n/sentence.ts')
 
 const NOW = new Date(2026, 9, 7, 15, 0)
 const at = (day: number, hour: number) => new Date(2026, 9, day, hour).toISOString()

@@ -1,7 +1,6 @@
 import { msg, plural } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
 import { create } from 'zustand'
-import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import type {
   Entry,
   Profile,
@@ -20,8 +19,10 @@ import {
   Retry,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { sentence } from '../i18n/sentence.ts'
 import { considerMissing } from '../install/store.ts'
 import { idKey } from '../mods/dependents.ts'
+import { openPage } from '../mods/menu.ts'
 import { useNexusDetails } from '../mods/nexusDetails.ts'
 import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
@@ -116,7 +117,7 @@ function downloadFailCopy(error: string): { body: string; detail?: string } {
   const kind = errorKind(error)
   if (kind !== 'unknown' && kind !== 'network') {
     const text = errorDetails(error).trim().replace(trailingStop, '')
-    const cause = text.charAt(0).toUpperCase() + text.slice(1)
+    const cause = sentence(text)
     return { body: i18n._(msg`${cause}. Retry or skip it from the queue.`) }
   }
   const detail = queueErrorDetail(error)
@@ -139,7 +140,7 @@ function failureToast(item: Item) {
       body: item.error,
       action: {
         label: i18n._(msg`Open files page`),
-        run: () => OpenWeb(nexusModUrl(item.modId, nexusDomain(), 'files')),
+        run: () => openPage(nexusModUrl(item.modId, nexusDomain(), 'files')),
       },
     }
   }
