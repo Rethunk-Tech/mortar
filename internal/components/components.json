@@ -483,7 +483,16 @@
         {
           "id": "tray",
           "role": "tray",
-          "extensions": ["trayitem", "blueprint", "bpi", "hhi", "sgi", "householdbinary", "room", "roomtemplate"]
+          "extensions": [
+            "trayitem",
+            "blueprint",
+            "bpi",
+            "hhi",
+            "sgi",
+            "householdbinary",
+            "room",
+            "roomtemplate"
+          ]
         }
       ],
       "stores": {

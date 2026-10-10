@@ -18,7 +18,9 @@ export const useHandoffAsk = create<{
   shift: () => set((s) => ({ queue: s.queue.slice(1) })),
 }))
 
-const baseName = (path: string) => path.split(/[\\/]/).pop() ?? path
+const PATH_SEPARATOR = /[\\/]/
+
+const baseName = (path: string) => path.split(PATH_SEPARATOR).pop() ?? path
 
 /** Whether to record the saved file against the page it was saved from; false installs it as a plain local file. */
 export const askHandoff = (file: string, page: string) =>

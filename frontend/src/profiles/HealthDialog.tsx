@@ -69,8 +69,12 @@ function findingText(f: HealthFinding): string {
       return i18n._(msg`A launch ended without Mortar putting the game folder back as it was`)
     case 'shared':
       return f.cause === 'rescued'
-        ? i18n._(msg`Changed bytes of a mod file are kept beside it, since no profile could take them`)
-        : i18n._(msg`A file a mod wrote is too large to copy into the profile and stays in the shared folder`)
+        ? i18n._(
+            msg`Changed bytes of a mod file are kept beside it, since no profile could take them`,
+          )
+        : i18n._(
+            msg`A file a mod wrote is too large to copy into the profile and stays in the shared folder`,
+          )
     default: {
       const count = f.items?.length ?? 0
       return plural(count, {
@@ -120,7 +124,11 @@ function FindingGroups({
           >
             <ListItemText
               primary={findingText(f)}
-              secondary={kind === 'unused' || kind === 'journal' || kind === 'shared' ? f.items?.join(', ') : null}
+              secondary={
+                kind === 'unused' || kind === 'journal' || kind === 'shared'
+                  ? f.items?.join(', ')
+                  : null
+              }
               slotProps={{ secondary: { noWrap: true, title: f.items?.join(', ') } }}
             />
           </ListItem>

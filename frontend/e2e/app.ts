@@ -9,9 +9,9 @@ const SANDBOX_ENABLED = SANDBOX_GAMES.split(',')
 
 /** Game select shows a tile for each game the embedded catalog enables, and for each the sandbox enables beside them. */
 export const ENABLED_GAMES = (() => {
-  const games = (
-    JSON.parse(readFileSync(CATALOG, 'utf8')) as { games: { id: string; enabled: boolean }[] }
-  ).games
+  const { games } = JSON.parse(readFileSync(CATALOG, 'utf8')) as {
+    games: { id: string; enabled: boolean }[]
+  }
   return games.filter((g) => g.enabled || SANDBOX_ENABLED.includes(g.id)).length
 })()
 
