@@ -3,6 +3,7 @@ package nexus
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -117,5 +118,22 @@ func TestCategoryFiltersAndSortBuildTheQuery(t *testing.T) {
 		if !strings.Contains(gotBody, want) {
 			t.Fatalf("%q missing: %s", want, gotBody)
 		}
+	}
+}
+
+func TestSearchTellsABusySiteFromARefusedRequest(t *testing.T) {
+	code := http.StatusTooManyRequests
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(code) }))
+	defer srv.Close()
+	d := Driver{URL: srv.URL}
+	q := source.Query{Game: "stardew", Key: "stardewvalley", Page: source.FirstPage}
+	var busy *source.BusyError
+	if _, err := d.Search(t.Context(), q); !errors.As(err, &busy) {
+		t.Fatalf("a busy site: %v", err)
+	}
+	code = http.StatusForbidden
+	var status *source.StatusError
+	if _, err := d.Search(t.Context(), q); !errors.As(err, &status) || !status.Auth() {
+		t.Fatalf("a refused request: %v", err)
 	}
 }

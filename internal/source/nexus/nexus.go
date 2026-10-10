@@ -2,12 +2,10 @@
 package nexus
 
 import (
-	"bytes"
 	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -134,35 +132,16 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		`{ mods(filter:{%s}, sort:[{%s}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt adultContent } } }`,
 		filter, sortClause(q.Sort), source.PageSize, offset,
 	)
-	raw, err := json.Marshal(searchBody{Query: query})
-	if err != nil {
-		return source.Page{}, err
-	}
-	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
-	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(base, "/")+graphQL, bytes.NewReader(raw))
-	if err != nil {
-		return source.Page{}, err
-	}
-	req.Header.Set("Application-Name", "Mortar")
-	req.Header.Set("Application-Version", q.Version)
-	req.Header.Set("User-Agent", source.UserAgent(q.Version))
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := client.Do(req)
-	if err != nil {
-		return source.Page{}, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return source.Page{}, fmt.Errorf("nexus answered %s", resp.Status)
-	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, source.MaxBody))
-	if err != nil {
-		return source.Page{}, err
-	}
 	var parsed searchResp
-	if err := json.Unmarshal(body, &parsed); err != nil {
+	err = source.DoJSON(ctx, source.Request{
+		Service: d.Name(), Client: client, Method: http.MethodPost, URL: strings.TrimRight(base, "/") + graphQL,
+		Body: searchBody{Query: query}, UserAgent: source.UserAgent(q.Version),
+		Header: func(h http.Header) {
+			h.Set("Application-Name", "Mortar")
+			h.Set("Application-Version", q.Version)
+		},
+	}, &parsed)
+	if err != nil {
 		return source.Page{}, err
 	}
 	nodes := parsed.Data.Mods.Nodes
