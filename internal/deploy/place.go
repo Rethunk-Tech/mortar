@@ -7,11 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -112,7 +112,7 @@ func (place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 			return Manifest{}, err
 		}
 	}
-	m := Manifest{Dir: p.Dir, View: p.View, Owned: p.Owned, Started: time.Now().UnixNano()}
+	m := Manifest{Dir: p.Dir, View: p.View, Owned: p.Owned, Existing: listOwned(p.Owned)}
 	for i, op := range p.Ops {
 		hash, err := fsx.SHA256(op.Src)
 		if err != nil {
@@ -259,7 +259,7 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 		switch {
 		case o.Displaced != "" && backupErr == nil:
 			// With the player's file set aside, whatever is at Dst is ours, even if the game wrote to it.
-			if err := writeBack(o, i, log); err != nil {
+			if err := writeBackOrRescue(o, i, log); err != nil {
 				return err
 			}
 			if err := fsx.Remove(o.Dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -302,17 +302,35 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 	return nil
 }
 
-// writeBack copies a changed Dst of a profile-copy file over its Src before Dst is removed or the displaced file returns.
-func writeBack(o Placed, i int, log *opLog) error {
+// writeBackOrRescue copies a changed Dst of a profile-copy file over its Src before Dst is removed and the displaced file
+// returns. When the profile's folder is gone it keeps the bytes beside Dst under a rescue name, on the log first, so a
+// changed file is never removed without a copy.
+func writeBackOrRescue(o Placed, i int, l *opLog) error {
 	if !o.WriteBack {
 		return nil
 	}
 	if h, err := fsx.SHA256(o.Dst); err != nil || h == o.Hash {
 		return nil
 	}
-	_, err := writeBackFile(o, i, log)
-	return err
+	wrote, err := writeBackFile(o, i, l)
+	if err != nil || wrote {
+		return err
+	}
+	rescue := RescueName(o.Dst)
+	if err := l.add(step{R: rescue}, true); err != nil {
+		return err
+	}
+	at(fmt.Sprintf("rescue-logged:%d", i))
+	log.Printf("deploy: %s could not go back into its profile; its bytes are kept as %s", o.Dst, rescue)
+	if err := fsx.Rename(o.Dst, rescue); err != nil {
+		return err
+	}
+	at(fmt.Sprintf("rescued:%d", i))
+	return nil
 }
+
+// RescueName is where the bytes of a changed file are kept when its profile is gone.
+func RescueName(dst string) string { return dst + ".mortar-rescued" }
 
 // writeBackFile copies Dst over Src through a temp file and a rename, so the bytes are in both places until Dst is
 // removed. It reports false, leaving Dst alone, when the profile's folder is gone.

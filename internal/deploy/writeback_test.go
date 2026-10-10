@@ -175,3 +175,39 @@ func TestACrashAtAnyWriteBackStepRecoversWithTheBytesInTheProfile(t *testing.T) 
 		}
 	}
 }
+
+// With the profile's folder gone and a changed file over a displaced one, a crash at any purge step still ends with the
+// player's file back and the changed bytes in the rescue file.
+func TestACrashAtAnyRescueStepKeepsTheChangedBytes(t *testing.T) {
+	setup := func() (*rootRig, Manifest) {
+		rr := newRootRig(t)
+		write(t, filepath.Join(rr.shared, "top.package"), "the player's own")
+		m := rr.apply()
+		write(t, filepath.Join(rr.shared, "top.package"), "rewritten top")
+		if err := os.RemoveAll(filepath.Dir(rr.profile)); err != nil {
+			t.Fatal(err)
+		}
+		return rr, m
+	}
+	rr, m := setup()
+	d, _ := Get(copyID)
+	steps, _ := crashAt(-1, func() { _ = d.Purge(t.Context(), m) })
+	if !slices.Contains(steps, "rescued:2") {
+		t.Fatalf("no rescue step: %v", steps)
+	}
+	_ = rr
+	for i := range steps {
+		rr, m := setup()
+		got, fired := crashAt(i, func() { _ = d.Purge(t.Context(), m) })
+		if !fired {
+			t.Fatalf("the crash at step %d did not fire", i)
+		}
+		if err := d.Recover(t.Context(), rr.view.JournalDir, nil); err != nil {
+			t.Fatalf("crash at %s: %v", got[i], err)
+		}
+		top := filepath.Join(rr.shared, "top.package")
+		if read(top) != "the player's own" || read(RescueName(top)) != "rewritten top" {
+			t.Fatalf("crash at %s: player %q, rescue %q", got[i], read(top), read(RescueName(top)))
+		}
+	}
+}

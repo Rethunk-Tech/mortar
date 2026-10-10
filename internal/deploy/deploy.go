@@ -64,10 +64,10 @@ type Manifest struct {
 	Dir  string   `json:"dir"`
 	View View     `json:"view"`
 	Ops  []Placed `json:"ops"`
-	// Owned are the folders whose new files Purge adopts into the profile; Started is when Apply began, so a file the
-	// player already had there is not mistaken for one created during play.
-	Owned   []Owned `json:"owned,omitempty"`
-	Started int64   `json:"started,omitempty"`
+	// Owned are the folders whose new files Purge adopts into the profile; Existing lists the files the player already had
+	// in them when Apply began, which are the player's own whatever the game does to them.
+	Owned    []Owned  `json:"owned,omitempty"`
+	Existing []string `json:"existing,omitempty"`
 	// Created are the folders Apply made, removed again by Purge when empty.
 	Created []string `json:"created,omitempty"`
 }
