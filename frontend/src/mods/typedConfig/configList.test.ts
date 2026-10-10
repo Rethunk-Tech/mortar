@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { ModConfig } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/configsvc/models.ts'
-import { chipOf, filterConfigMods, hasConfig, selectionOf } from './configList.ts'
+import { chipOf, filterConfigMods, hasConfig, selectionOf, showsOneFile } from './configList.ts'
 
 const mod = (id: string, name: string, over: Partial<ModConfig> = {}): ModConfig => ({
   id,
@@ -59,4 +59,10 @@ test('a mod has a config source when the list holds it', () => {
   expect(hasConfig({ mods, other: [], without: 0 }, 'Esca.FarmTypeManager')).toBe(true)
   expect(hasConfig({ mods, other: [], without: 0 }, 'No.Config')).toBe(false)
   expect(hasConfig(undefined, 'Esca.FarmTypeManager')).toBe(false)
+})
+
+test('a file no mod owns opens alone, however many such files the profile has', () => {
+  expect(showsOneFile(3, 'HookGenPatcher.cfg')).toBe(true)
+  expect(showsOneFile(3, undefined)).toBe(false)
+  expect(showsOneFile(1, undefined)).toBe(true)
 })

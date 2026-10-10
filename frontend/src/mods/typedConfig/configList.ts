@@ -126,6 +126,12 @@ function openConfigPage(id: string) {
 const hasConfig = (list: ModList | undefined, id: string): boolean =>
   (list?.mods ?? []).some((m) => m.id === id)
 
+// Whether the editor shows one file with no file list beside it. A file no mod owns is its own row in the page's
+// list, so the editor never lists its siblings again.
+function showsOneFile(fileCount: number, openedFile: string | undefined): boolean {
+  return openedFile !== undefined || fileCount <= 1
+}
+
 export type { ConfigChip, ConfigShow }
 export {
   chipOf,
@@ -135,6 +141,7 @@ export {
   modSelection,
   openConfigPage,
   selectionOf,
+  showsOneFile,
   useConfigList,
   useConfigListLoaded,
 }

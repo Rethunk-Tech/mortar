@@ -19,6 +19,7 @@ import { SearchField } from '../../shell/SearchField.tsx'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { PresetsButton } from '../ConfigPresets.tsx'
+import { showsOneFile } from './configList.ts'
 import { filterFile, humanizeKey, isModified, modifiedCount } from './entries.ts'
 import { type Target, useTypedConfig } from './store.ts'
 import type { ConfigEntry } from './types.ts'
@@ -260,7 +261,7 @@ export function ConfigPane({
     }
   }, [updated, current, select])
   const file = files.find((f) => f.name === current)
-  const single = files.length <= 1
+  const single = showsOneFile(files.length, initialFile)
   return (
     <Box
       aria-label={t`Config of ${name}`}
