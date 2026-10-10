@@ -93,6 +93,8 @@ The source and its window are built ([architecture.md](architecture.md#games-and
 
 ## Later
 
+- **EA App libraries on another drive:** found only after the player adds the folder; there is no registry or `InstallData` lookup (`internal/gamestore/drivers.go` `eaDirs`).
+- **Long mod paths:** a mod path longer than the game can read (260 characters on Windows) is copied without a warning.
 - **Next folder game:** measured 2026-10-10 and not a priority. No loose-file game is both bigger than The Sims 4 (Nexus 5,449) and servable by the folder loader as it is. By Nexus count: Baldur's Gate 3 19,791 (needs a `modsettings.lsx` writer), Mount & Blade II: Bannerlord 9,346 (needs an install-side target and load order), inZOI 1,124 (CurseForge 5,949; two targets and re-enabling after updates), Hogwarts Legacy 1,511 (install-side `Paks/~mods`), Kerbal Space Program (CurseForge 1,968; plain `GameData`, small demand). Palworld needs UE4SS. Demand evidence is thin: Linux and Proton path complaints only. Re-weigh when asked.
 - **Decided against 2026-10-10:** leaving files a mod writes during play shared, and never setting a leftover aside (place nothing over a changed file), was considered and not taken; see "Folder games: files a mod writes during play".
 - **UI translations** beyond English, as Stardrop (17+), MO2 and r2modman ship: every string already goes through Lingui and the catalogs are extracted; needs chosen languages and translators. Parked 2026-10-02 (not v1).
