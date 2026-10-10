@@ -7,11 +7,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -183,4 +185,43 @@ func (s *Store) releaseTray(game string, p *Profile, files []TrayFile) {
 			removeUp(dir, dst)
 		}
 	}
+}
+
+// replaceTrayLocked places again, from the store, the Tray files of the profile's Tray entries, for a profile that came
+// back from the trash or a backup. A file the Tray folder holds under another content is left alone, its entry
+// forgets it, and the profile comes back with a TrayRestoreError naming it.
+func (s *Store) replaceTrayLocked(game, id string) (Profile, error) {
+	p, err := s.read(game, id)
+	if err != nil || !slices.ContainsFunc(p.Entries, Entry.isTrayEntry) {
+		return p, err
+	}
+	var failed []string
+	p, err = s.updateLocked(game, id, func(p *Profile, _ string) error {
+		for i := range p.Entries {
+			if !p.Entries[i].isTrayEntry() {
+				continue
+			}
+			if _, err := s.items.Path(game, p.Entries[i].Item); errors.Is(err, store.ErrNotFound) {
+				continue
+			}
+			// The entry's own record would make placeTray take the files for placed already.
+			held := p.Entries[i]
+			p.Entries[i].TrayFiles = nil
+			res := []Entry{held}
+			var pl trayPlacement
+			if err := s.placeRestoredTray(game, id, p, res, nil, &pl); err != nil {
+				for _, f := range held.TrayFiles {
+					failed = append(failed, f.Rel)
+				}
+				continue
+			}
+			pl.commit()
+			p.Entries[i].TrayFiles = res[0].TrayFiles
+		}
+		return nil
+	})
+	if err == nil && len(failed) > 0 {
+		err = &TrayRestoreError{Files: failed}
+	}
+	return p, err
 }

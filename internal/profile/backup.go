@@ -175,7 +175,13 @@ func (s *Store) RestoreBackup(ctx context.Context, game string, p Profile, files
 	if err != nil {
 		return Profile{}, nil, errors.Join(err, s.Delete(game, created.ID))
 	}
-	return out, missing, nil
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	placed, err := s.replaceTrayLocked(game, out.ID)
+	if err != nil {
+		return placed, missing, err
+	}
+	return placed, missing, nil
 }
 
 func (s *Store) restoreInto(game string, created, p Profile, files map[string][]byte, saves string) (Profile, []Entry, error) {

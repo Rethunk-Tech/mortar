@@ -157,36 +157,7 @@ func (s *Store) Restore(gameID, id string) (Profile, error) {
 	if err := fsx.Rename(src, dst); err != nil {
 		return Profile{}, err
 	}
-	p, err := s.read(gameID, id)
-	if err != nil || !slices.ContainsFunc(p.Entries, Entry.isTrayEntry) {
-		return p, err
-	}
-	var failed []string
-	p, err = s.updateLocked(gameID, id, func(p *Profile, _ string) error {
-		for i := range p.Entries {
-			if !p.Entries[i].isTrayEntry() {
-				continue
-			}
-			// The entry's own record would make placeTray take the files for placed already.
-			held := p.Entries[i]
-			p.Entries[i].TrayFiles = nil
-			res := []Entry{held}
-			var pl trayPlacement
-			if err := s.placeRestoredTray(gameID, id, p, res, nil, &pl); err != nil {
-				for _, f := range held.TrayFiles {
-					failed = append(failed, f.Rel)
-				}
-				continue
-			}
-			pl.commit()
-			p.Entries[i].TrayFiles = res[0].TrayFiles
-		}
-		return nil
-	})
-	if err == nil && len(failed) > 0 {
-		err = &TrayRestoreError{Files: failed}
-	}
-	return p, err
+	return s.replaceTrayLocked(gameID, id)
 }
 
 // Purge permanently removes one trashed profile.

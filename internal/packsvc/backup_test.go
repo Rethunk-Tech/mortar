@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func dataHome(t *testing.T) {
@@ -185,5 +186,45 @@ func TestRestoreReadsAProfileZip(t *testing.T) {
 	res, err := s.Restore(context.Background(), path, "stardew")
 	if err != nil || res.Name != "Old farm" || res.Game != "stardew" || res.Profile == "" {
 		t.Fatalf("%+v, %v", res, err)
+	}
+}
+
+func TestBackupOfAFolderGameProfileCarriesTheSplitArchiveOnceAndReplacesTray(t *testing.T) {
+	dataHome(t)
+	_, profiles := testenv.Stores(t)
+	tray := filepath.Join(t.TempDir(), "Tray")
+	profiles.TrayFolder = func(string) (string, error) { return tray, nil }
+	p := testenv.Profile(t, profiles, "sims4", "Sims")
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "h.zip"), map[string]string{"a.package": "1", "b.package": "2", "Smith.trayitem": "t"})
+	src := profile.Source{Kind: profile.KindCurseForge, Name: "Pack", ModID: 7, FileID: 10}
+	if _, err := profiles.InstallSource(t.Context(), "sims4", p.ID, zip, src); err != nil {
+		t.Fatal(err)
+	}
+	dest := filepath.Join(t.TempDir(), "s.zip")
+	if err := (&Service{Profiles: profiles}).Backup("sims4", p.ID, dest, true); err != nil {
+		t.Fatal(err)
+	}
+
+	dataHome(t)
+	_, fresh := testenv.Stores(t)
+	freshTray := filepath.Join(t.TempDir(), "Tray")
+	fresh.TrayFolder = func(string) (string, error) { return freshTray, nil }
+	res, err := (&Service{Profiles: fresh, Queue: &fakeQueue{}}).Restore(context.Background(), dest, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Unavailable) != 0 {
+		t.Fatalf("unavailable %v", res.Unavailable)
+	}
+	all, err := fresh.List("sims4")
+	if err != nil || len(all) != 1 || len(all[0].Entries) != 3 {
+		t.Fatalf("restored profiles %+v, %v", all, err)
+	}
+	owners, err := fresh.PackageFileOwners("sims4", res.Profile)
+	if err != nil || len(owners) != 2 {
+		t.Fatalf("owners = %v, %v", owners, err)
+	}
+	if b, err := os.ReadFile(filepath.Join(freshTray, "Smith.trayitem")); err != nil || string(b) != "t" {
+		t.Fatalf("tray file: %q, %v", b, err)
 	}
 }
