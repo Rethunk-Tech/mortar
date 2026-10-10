@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -47,6 +48,8 @@ const (
 	ReasonPatreon = "patreon"
 	// ReasonItch is a mod from an itch.io page: open the page and save the file there.
 	ReasonItch = "itch"
+	// ReasonNoSource is a file from a site the game's own catalog does not list, whatever the link says.
+	ReasonNoSource = "no-source"
 	// ReasonCurseForgeKey is a CurseForge file Mortar cannot fetch until the receiver has a CurseForge key; the page link
 	// is the way to fetch it by hand.
 	ReasonCurseForgeKey = "curseforge-key"
@@ -404,6 +407,8 @@ func (r *resolver) curseforge(ctx context.Context, ref share.Ref) Mod {
 		State: StateDownload, IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
 	}
 	switch {
+	case r.game != "" && !r.catalogHas("curseforge"):
+		m.State, m.Reason = StateUnavailable, ReasonNoSource
 	case slices.ContainsFunc(r.target, ref.MatchesEntry):
 		m.State = StateInstalled
 	case r.storedKey(store.PackageKey(profile.KindCurseForge+":"+project, strconv.Itoa(ref.FileID))):
@@ -492,34 +497,32 @@ func nexusIDs(refs []share.Ref) []int {
 func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Problem) {
 	r.load(ctx, nexusIDs(refs))
 	mods := make([]Mod, 0, len(refs))
-	for _, ref := range refs {
-		if ref.Local != "" {
-			mods = append(mods, r.local(ref))
-			continue
+	// A source is the game's only by the receiver's own catalog; the link's sourceKeys never decide it.
+	add := func(source string, m Mod) {
+		if source != "" && r.game != "" && !r.catalogHas(source) {
+			m.State, m.Reason = StateUnavailable, ReasonNoSource
 		}
-		if ref.Patreon != "" {
-			mods = append(mods, r.patreon(ref))
-			continue
-		}
-		if ref.Itch != "" {
-			mods = append(mods, r.itch(ref))
-			continue
-		}
-		if ref.CurseForge != 0 {
-			mods = append(mods, r.curseforge(ctx, ref))
-			continue
-		}
-		if ref.Package != "" {
-			mods = append(mods, r.thunderstore(ref))
-			continue
-		}
-		if ref.GitHub != "" {
-			mods = append(mods, r.github(ref))
-			continue
-		}
-		m := r.nexus(ref.ModID, ref.FileID, StateDownload)
-		m.Disabled, m.Fomod, m.Overlay = append([]mod.ID{}, ref.Disabled...), ref.Fomod, ref.Overlay
 		mods = append(mods, m)
+	}
+	for _, ref := range refs {
+		switch {
+		case ref.Local != "":
+			add("", r.local(ref))
+		case ref.Patreon != "":
+			add("patreon", r.patreon(ref))
+		case ref.Itch != "":
+			add("itch", r.itch(ref))
+		case ref.CurseForge != 0:
+			add("curseforge", r.curseforge(ctx, ref))
+		case ref.Package != "":
+			add("thunderstore", r.thunderstore(ref))
+		case ref.GitHub != "":
+			add("github", r.github(ref))
+		default:
+			m := r.nexus(ref.ModID, ref.FileID, StateDownload)
+			m.Disabled, m.Fomod, m.Overlay = append([]mod.ID{}, ref.Disabled...), ref.Fomod, ref.Overlay
+			add("nexus", m)
+		}
 	}
 	deps, probs := r.dependencies(ctx, mods)
 	mods = append(mods, deps...)
@@ -632,4 +635,14 @@ func (r *resolver) findings(mods []Mod, probs []Problem) []Problem {
 		out = append(out, Problem{Kind: ProblemUnconfirmed})
 	}
 	return out
+}
+
+// catalogHas reports whether the receiver's catalog lists source id for the resolver's game.
+func (r *resolver) catalogHas(id string) bool {
+	g, ok := components.Game(r.game)
+	if !ok {
+		return false
+	}
+	_, ok = g.Source(id)
+	return ok
 }

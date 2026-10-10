@@ -305,9 +305,11 @@ func checkShared(s Shared) error {
 	if len(s.Entries) > MaxEntries {
 		return fmt.Errorf("%w: more than %d entries", ErrMalformed, MaxEntries)
 	}
+	// What a game has is the receiver's catalog's word; the link must also name the source, but its sourceKeys never grant one.
+	have := SourceKeys(s.Game)
 	for _, r := range s.Entries {
-		if !r.valid() || !validDetails(r) || (r.GitHub == "" && r.Package == "" && r.Patreon == "" && r.Itch == "" && r.CurseForge == 0 && s.SourceKeys["nexus"] == "") ||
-			(r.Package != "" && s.SourceKeys["thunderstore"] == "") || (r.CurseForge != 0 && s.SourceKeys["curseforge"] == "") {
+		if !r.valid() || !validDetails(r) || (r.GitHub == "" && r.Package == "" && r.Patreon == "" && r.Itch == "" && r.CurseForge == 0 && have["nexus"] == "" || s.SourceKeys["nexus"] == "") ||
+			(r.Package != "" && (have["thunderstore"] == "" || s.SourceKeys["thunderstore"] == "")) || (r.CurseForge != 0 && (have["curseforge"] == "" || s.SourceKeys["curseforge"] == "")) {
 			return fmt.Errorf("%w: bad entry", ErrMalformed)
 		}
 	}
