@@ -420,6 +420,89 @@
         "reason": "The BepInEx pack for PEAK recommends DirectX 12 if PEAK crashes on startup.",
         "source": "https://thunderstore.io/c/peak/p/BepInEx/BepInExPack_PEAK/"
       }
+    },
+    {
+      "id": "sims4",
+      "name": "The Sims 4",
+      "enabled": false,
+      "marker": "TS4_x64.exe",
+      "metadata": [],
+      "paths": {
+        "mods": {
+          "windows": "{documents}/Electronic Arts/The Sims 4/Mods",
+          "linux": "{documents}/Electronic Arts/The Sims 4/Mods"
+        },
+        "saves": {
+          "windows": "{documents}/Electronic Arts/The Sims 4/saves",
+          "linux": "{documents}/Electronic Arts/The Sims 4/saves"
+        },
+        "options": {
+          "windows": "{documents}/Electronic Arts/The Sims 4/Options.ini",
+          "linux": "{documents}/Electronic Arts/The Sims 4/Options.ini"
+        }
+      },
+      "newProfileSeparateSaves": true,
+      "requiredSettings": [
+        {
+          "path": "options",
+          "key": "modsdisabled",
+          "value": "0",
+          "message": "The Sims 4 ignores the Mods folder while Options.ini has Mods Disabled on."
+        },
+        {
+          "path": "options",
+          "key": "scriptmodsenabled",
+          "value": "1",
+          "message": "Script mods (.ts4script) stay off until Options.ini has Script Mods Enabled on."
+        }
+      ],
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "mods",
+          "root": "{profile}/Mods",
+          "maxDepth": {
+            "package": 5,
+            "ts4script": 1
+          },
+          "keepWhole": ["ts4script"]
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1222670"
+        },
+        "ea": {
+          "folder": "The Sims 4"
+        }
+      },
+      "loaders": [
+        {
+          "id": "folder"
+        }
+      ],
+      "sources": [
+        {
+          "id": "curseforge",
+          "key": "6945",
+          "gameId": 78062
+        },
+        {
+          "id": "nexus",
+          "key": "thesims4"
+        },
+        {
+          "id": "github",
+          "key": "sims4"
+        },
+        {
+          "id": "itch",
+          "key": "sims 4"
+        },
+        {
+          "id": "patreon"
+        }
+      ]
     }
   ]
 }
