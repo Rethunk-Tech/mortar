@@ -9,6 +9,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 )
 
 type recordingMeta struct {
@@ -284,5 +286,14 @@ func TestWithCautions(t *testing.T) {
 	}}, []framework.Mod{a, b})
 	if got := []string{r.Updates[0].CautionMessage, r.Updates[1].CautionMessage, r.Updates[2].CautionMessage}; !reflect.DeepEqual(got, []string{"", "Back up first", ""}) {
 		t.Fatalf("cautions = %q", got)
+	}
+}
+
+func TestSourcePageForALinkOnlySourceNeedsNoCatalogKey(t *testing.T) {
+	for _, kind := range []string{profile.KindPatreon, profile.KindItch} {
+		got := sourcePage("sims4", framework.Mod{SourceKind: kind, SourceName: "77"})
+		if got == "" {
+			t.Errorf("%s: no page link for an entry installed from it", kind)
+		}
 	}
 }
