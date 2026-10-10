@@ -136,6 +136,9 @@ func (m matcher) resolveDir(text string) string {
 	}
 	for _, e := range reExe.FindAllStringSubmatch(text, -1) {
 		exe := strings.Trim(e[1], `"'`)
+		if dir := gog.GameDir(rootOfMarker(exe, m.g.Marker), m.g.Marker); dir != "" {
+			return dir
+		}
 		if dir := gog.GameDir(filepath.Dir(exe), m.g.Marker); dir != "" {
 			return dir
 		}
@@ -144,4 +147,15 @@ func (m matcher) resolveDir(text string) string {
 		}
 	}
 	return ""
+}
+
+// rootOfMarker is the install root implied by exe when exe is the marker file itself: the marker is a slash path below
+// the root ("Game/Bin/TS4_x64.exe"), so exe ends with it, compared without case (a Windows executable path in a Wine prefix may differ in case). It returns "" when exe does not end with the marker.
+func rootOfMarker(exe, marker string) string {
+	slash := filepath.ToSlash(exe)
+	cut := len(slash) - len(marker)
+	if cut <= 0 || slash[cut-1] != '/' || !strings.EqualFold(slash[cut:], marker) {
+		return ""
+	}
+	return filepath.FromSlash(slash[:cut-1])
 }
