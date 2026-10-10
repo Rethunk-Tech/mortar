@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -287,6 +288,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		classes = []string{q.Key}
 	}
 	var mods []modResp
+	var failed []string
 	total := 0
 	if len(classes) > 1 && index+source.PageSize > mergedCap {
 		return source.Page{Total: mergedCap}, nil
@@ -298,7 +300,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		}
 	} else {
 		var err error
-		if mods, total, err = d.searchClasses(ctx, gs.GameID, classes, q, index); err != nil {
+		if mods, total, failed, err = d.searchClasses(ctx, gs.GameID, classes, q, index); err != nil {
 			return source.Page{}, err
 		}
 	}
@@ -327,7 +329,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	if len(classes) > 1 {
 		limit = mergedCap
 	}
-	return source.Page{Total: min(total, limit), Items: items}, nil
+	return source.Page{Total: min(total, limit), Items: items, Failed: failed}, nil
 }
 
 // searchClass asks one class for size mods from index, and returns them with the class's total.
@@ -429,18 +431,20 @@ func (d Driver) classRowsTo(ctx context.Context, gameID int, class string, q sou
 // searchClasses merges the classes' results by the query's sort and returns the page at index, never deeper than
 // mergedCap. Each class is read from its start to the end of the page (rows already read are reused), because a merged
 // page needs every class's leading rows; ties keep each class's own order, interleaved by rank then class.
-func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string, q source.Query, index int) ([]modResp, int, error) {
+func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string, q source.Query, index int) (mods []modResp, total int, failed []string, err error) {
 	end := index + source.PageSize
 	type ranked struct {
 		mod         modResp
 		rank, class int
 	}
 	var all []ranked
-	total := 0
+	var errs []error
 	for ci, class := range classes {
 		got, n, err := d.classRowsTo(ctx, gameID, class, q, end)
 		if err != nil {
-			return nil, 0, err
+			errs = append(errs, fmt.Errorf("class %s: %w", class, err))
+			failed = append(failed, "curseforge:"+class)
+			continue
 		}
 		total += n
 		for r, m := range got {
@@ -453,14 +457,21 @@ func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string,
 		}
 		return cmp.Or(cmp.Compare(a.rank, b.rank), cmp.Compare(a.class, b.class))
 	})
+	if len(failed) == len(classes) {
+		return nil, 0, nil, errors.Join(errs...)
+	}
+	if len(failed) > 0 {
+		log.Printf("curseforge: search of %d classes: %d answered with %d mods, %d failed (%s): %v",
+			len(classes), len(classes)-len(failed), len(all), len(failed), strings.Join(failed, ","), errors.Join(errs...))
+	}
 	if index >= len(all) {
-		return nil, total, nil
+		return nil, total, failed, nil
 	}
 	out := make([]modResp, 0, min(end, len(all))-index)
 	for _, r := range all[index:min(end, len(all))] {
 		out = append(out, r.mod)
 	}
-	return out, total, nil
+	return out, total, failed, nil
 }
 
 // compareBySort orders two mods as the API's sortField does: negative when a comes first.

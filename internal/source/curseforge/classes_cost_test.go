@@ -100,3 +100,26 @@ func TestProjectNameIsReadOnceAndKept(t *testing.T) {
 		t.Fatalf("%d requests for one project", requests.Load())
 	}
 }
+
+func TestMergedSearchAnswersWithTheClassesThatAnswered(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		if q.Get("classId") == "2" {
+			http.Error(w, "boom", http.StatusInternalServerError)
+			return
+		}
+		_, _ = w.Write([]byte(`{"data":[{"id":` + q.Get("classId") + `1,"name":"m","downloadCount":5}],"pagination":{"totalCount":1}}`))
+	}))
+	t.Cleanup(srv.Close)
+	gs := components.GameSource{ID: "curseforge", Key: "1", GameID: 7, Classes: []string{"1", "2", "3"}}
+	d := Driver{URL: srv.URL, Key: func() string { return "k" }, GameSource: func(string) (components.GameSource, bool) { return gs, true }}
+	page, err := d.Search(t.Context(), source.Query{Game: "g", Key: "1", Sort: source.SortDownloads})
+	if err != nil || len(page.Items) != 2 || page.Total != 2 || len(page.Failed) != 1 || page.Failed[0] != "curseforge:2" {
+		t.Fatalf("%+v %v", page, err)
+	}
+	gs.Classes = []string{"2", "2"}
+	if _, err := d.Search(t.Context(), source.Query{Game: "g", Key: "1"}); err == nil {
+		t.Fatal("every class failing must fail the search")
+	}
+}

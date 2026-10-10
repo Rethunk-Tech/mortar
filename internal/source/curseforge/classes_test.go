@@ -105,7 +105,7 @@ func TestLiveSims4MergesClasses(t *testing.T) {
 		t.Fatalf("sims4 curseforge source: %+v", gs)
 	}
 	for _, sort := range []string{source.SortDownloads, source.SortUpdated} {
-		mods, total, err := Driver{}.searchClasses(t.Context(), gs.GameID, gs.Classes, source.Query{Game: "sims4", Key: gs.Key, Sort: sort}, 0)
+		mods, total, _, err := Driver{}.searchClasses(t.Context(), gs.GameID, gs.Classes, source.Query{Game: "sims4", Key: gs.Key, Sort: sort}, 0)
 		if err != nil || len(mods) == 0 {
 			t.Fatalf("%s: %d mods, %v", sort, len(mods), err)
 		}
