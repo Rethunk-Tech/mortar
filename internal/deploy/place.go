@@ -185,6 +185,20 @@ func move(src, dst string) error {
 }
 
 func (place) Purge(ctx context.Context, m Manifest) error {
+	if err := undoOps(ctx, &m); err != nil {
+		if m.View.JournalDir != "" {
+			err = errors.Join(err, persist(m))
+		}
+		return err
+	}
+	// Deepest first: a folder made for one file may hold a sibling's folder made later.
+	for _, d := range slices.SortedFunc(slices.Values(m.Created), func(a, b string) int { return len(b) - len(a) }) {
+		_ = os.Remove(d)
+	}
+	return fsx.RemoveAll(m.View.JournalDir)
+}
+
+func undoOps(ctx context.Context, m *Manifest) error {
 	for i := len(m.Ops) - 1; i >= 0; i-- {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -214,16 +228,12 @@ func (place) Purge(ctx context.Context, m Manifest) error {
 		// A displaced file with no backup left was never moved or is already back: Dst is the player's own.
 		m.Ops[i].Undone = true
 		if m.View.JournalDir != "" && (len(m.Ops)-i)%checkpointEvery == 0 {
-			if err := persist(m); err != nil {
+			if err := persist(*m); err != nil {
 				return err
 			}
 		}
 	}
-	// Deepest first: a folder made for one file may hold a sibling's folder made later.
-	for _, d := range slices.SortedFunc(slices.Values(m.Created), func(a, b string) int { return len(b) - len(a) }) {
-		_ = os.Remove(d)
-	}
-	return fsx.RemoveAll(m.View.JournalDir)
+	return nil
 }
 
 func (p place) Recover(ctx context.Context, journalDir string, alive func() bool) error {
