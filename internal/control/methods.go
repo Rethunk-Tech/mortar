@@ -1016,7 +1016,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		out.Queued, out.Queue = len(reqs), s.Queue.State()
 		return out, nil
 	case "share":
-		res, err := share.Encode(p.Game, prof, s.Profiles.ShareFacts(p.Game, prof))
+		res, err := share.Encode(p.Game, prof, s.Profiles.ShareFacts(p.Game, prof), share.IncludeOf(s.Settings.Get()))
 		if errors.Is(err, share.ErrTooLarge) {
 			return ShareLink{TooLarge: true}, nil
 		}
@@ -1396,7 +1396,11 @@ func (s *Services) export(gameID string, p profile.Profile, path string) (Export
 	if err != nil {
 		return Exported{}, err
 	}
-	skipped, err := share.Write(f, gameID, p, modsDir)
+	include := share.IncludeOf(s.Settings.Get())
+	if s.Shares != nil {
+		include = s.Shares.WithDismissed(gameID, p.ID, include)
+	}
+	skipped, err := share.Write(f, gameID, p, modsDir, include)
 	if cerr := f.Close(); err == nil {
 		err = cerr
 	}

@@ -68,8 +68,8 @@ func winTarget(p profile.Profile, w share.Win) (string, bool) {
 	return key, key != "" && hasLoser && !reversed
 }
 
-// withDismissed fills in the profile's dismissed problems when the share carries problem choices.
-func (s *Service) withDismissed(game, profileID string, inc share.Include) share.Include {
+// WithDismissed fills in the profile's dismissed problems when the share carries problem choices.
+func (s *Service) WithDismissed(game, profileID string, inc share.Include) share.Include {
 	if inc.ProblemChoices && s.d.Dismissals != nil {
 		inc.Dismissed = s.d.Dismissals.DismissedTokens(game, profileID)
 	}

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"io"
 	"regexp"
 	"slices"
@@ -125,10 +126,21 @@ type Include struct {
 	LocalFiles bool `json:"-"`
 }
 
-// DefaultInclude is the registry default: disabled mods off, the rest on.
-func DefaultInclude() Include {
-	return Include{FomodChoices: true, Notes: true, ConfigFiles: true, ProblemChoices: true}
+// IncludeOf is what the player's share settings say a share or export carries: switched-off mods only when asked
+// for, the rest unless switched off.
+func IncludeOf(set settings.Settings) Include {
+	on := func(v *bool) bool { return v == nil || *v }
+	return Include{
+		DisabledMods:   set.ShareIncludeDisabledMods != nil && *set.ShareIncludeDisabledMods,
+		FomodChoices:   on(set.ShareIncludeFomodChoices),
+		Notes:          on(set.ShareIncludeNotes),
+		ConfigFiles:    on(set.ShareIncludeConfigFiles),
+		ProblemChoices: on(set.ShareIncludeProblemChoices),
+	}
 }
+
+// DefaultInclude is IncludeOf with no setting chosen.
+func DefaultInclude() Include { return IncludeOf(settings.Settings{}) }
 
 // OwnInclude is what goes between the player's own computers (sync, a paired LAN send): everything, switched-off mods
 // too, since a payload without them would remove them on the other side.
