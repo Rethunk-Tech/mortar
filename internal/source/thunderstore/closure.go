@@ -84,7 +84,7 @@ func parseDependency(s string) (Ref, error) {
 // in a deterministic order. A missing package, a loader other than BepInEx 5.4.x or a dependency cycle is an error
 // naming the chain of requests that led to it.
 func (d Driver) Closure(ctx context.Context, key string, roots []Ref, mortarVersion string) ([]Resolved, error) {
-	list, err := d.packages(ctx, key, source.UserAgent(mortarVersion)+" (+https://mortar.rethunk.tech)")
+	list, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
 	if err != nil {
 		return nil, err
 	}

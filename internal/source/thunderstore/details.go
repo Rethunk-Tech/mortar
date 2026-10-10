@@ -17,7 +17,7 @@ var errNotFound = errors.New("thunderstore answered 404 Not Found")
 // Details reads a package's versions, dependencies and categories from the community index, and its newest version's
 // README and CHANGELOG from the site.
 func (d Driver) Details(ctx context.Context, key, id, mortarVersion string) (source.Details, error) {
-	ua := source.UserAgent(mortarVersion) + " (+https://mortar.rethunk.tech)"
+	ua := source.UserAgentWithSite(mortarVersion)
 	pk, err := d.packages(ctx, key, ua)
 	if err != nil {
 		return source.Details{}, err

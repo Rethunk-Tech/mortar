@@ -21,6 +21,12 @@ func UserAgent(version string) string {
 	return "Mortar/" + version
 }
 
+// UserAgentWithSite is UserAgent followed by Mortar's address, for a site that asks clients to say where they come
+// from.
+func UserAgentWithSite(version string) string {
+	return UserAgent(version) + " (+https://mortar.rethunk.tech)"
+}
+
 // FirstPage is the page number a search starts at.
 const FirstPage = 1
 

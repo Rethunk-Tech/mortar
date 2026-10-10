@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"gopkg.in/yaml.v3"
 )
@@ -131,7 +132,7 @@ func (c Code) fetch(ctx context.Context, key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	req.Header.Set("User-Agent", "Mortar (+https://mortar.rethunk.tech)")
+	req.Header.Set("User-Agent", source.UserAgentWithSite(""))
 	client := cmp.Or(c.HTTP, http.DefaultClient)
 	resp, err := client.Do(req)
 	if err != nil {

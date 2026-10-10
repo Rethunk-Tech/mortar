@@ -20,6 +20,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 // scanKey is one mod of one game, as mod ids repeat across games.
@@ -217,7 +218,7 @@ func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (
 	}
 	req.Header.Set("Application-Name", "Mortar")
 	req.Header.Set("Application-Version", c.version)
-	req.Header.Set("User-Agent", "Mortar/"+c.version)
+	req.Header.Set("User-Agent", source.UserAgent(c.version))
 	req.Header.Set("Accept", "application/json")
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")

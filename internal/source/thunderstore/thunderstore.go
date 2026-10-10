@@ -82,7 +82,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	if q.Key == "" {
 		return source.Page{}, fmt.Errorf("game %q has no Thunderstore community", q.Game)
 	}
-	pk, err := d.packages(ctx, q.Key, source.UserAgent(q.Version)+" (+https://mortar.rethunk.tech)")
+	pk, err := d.packages(ctx, q.Key, source.UserAgentWithSite(q.Version))
 	if err != nil {
 		return source.Page{}, err
 	}
@@ -137,7 +137,7 @@ func (d Driver) item(p pkg) source.Item {
 
 // Items returns the community's packages named by ids ("Namespace-Name", in any case) from the cached listing.
 func (d Driver) Items(ctx context.Context, key, mortarVersion string, ids []string) (map[string]source.Item, error) {
-	pk, err := d.packages(ctx, key, source.UserAgent(mortarVersion)+" (+https://mortar.rethunk.tech)")
+	pk, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func (d Driver) Items(ctx context.Context, key, mortarVersion string, ids []stri
 
 // Categories lists the community's package categories, sorted.
 func (d Driver) Categories(ctx context.Context, key string) ([]string, error) {
-	pk, err := d.packages(ctx, key, source.UserAgent("")+" (+https://mortar.rethunk.tech)")
+	pk, err := d.packages(ctx, key, source.UserAgentWithSite(""))
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +182,7 @@ var (
 
 // Deprecated lists the community's deprecated packages by lower-cased "Namespace-Name", from the cached index.
 func (d Driver) Deprecated(ctx context.Context, key, version string) (map[string]Deprecation, error) {
-	pk, err := d.packages(ctx, key, source.UserAgent(version)+" (+https://mortar.rethunk.tech)")
+	pk, err := d.packages(ctx, key, source.UserAgentWithSite(version))
 	if err != nil {
 		return nil, err
 	}

@@ -8,6 +8,8 @@ import (
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 // MaxCollectionArchive caps the curator's collection archive Mortar reads into memory.
@@ -42,7 +44,7 @@ func (c *Client) CollectionArchive(ctx context.Context, downloadLink string) ([]
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "Mortar/"+c.version)
+	req.Header.Set("User-Agent", source.UserAgent(c.version))
 	hc := cmp.Or(c.HTTP, http.DefaultClient)
 	resp, err := hc.Do(req)
 	if err != nil {

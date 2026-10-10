@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/source"
 	"gopkg.in/yaml.v3"
 )
 
@@ -89,7 +90,7 @@ func (c Code) ExportCode(ctx context.Context, d Draft) (string, error) {
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/octet-stream")
-	req.Header.Set("User-Agent", "Mortar (+https://mortar.rethunk.tech)")
+	req.Header.Set("User-Agent", source.UserAgentWithSite(""))
 	client := cmp.Or(c.HTTP, http.DefaultClient)
 	resp, err := client.Do(req)
 	if err != nil {

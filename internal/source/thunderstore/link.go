@@ -58,7 +58,7 @@ type Resolved struct {
 
 // Resolve finds the package in the community's index; an empty version means the latest.
 func (d Driver) Resolve(ctx context.Context, key, namespace, name, ver, mortarVersion string) (Resolved, error) {
-	pk, err := d.packages(ctx, key, source.UserAgent(mortarVersion)+" (+https://mortar.rethunk.tech)")
+	pk, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
 	if err != nil {
 		return Resolved{}, err
 	}
@@ -78,7 +78,7 @@ func (d Driver) Resolve(ctx context.Context, key, namespace, name, ver, mortarVe
 // Publisher is the namespace of the one package in the community's index with this name and version; ok is false when
 // none or several match.
 func (d Driver) Publisher(ctx context.Context, key, name, ver, mortarVersion string) (namespace string, ok bool, err error) {
-	pk, err := d.packages(ctx, key, source.UserAgent(mortarVersion)+" (+https://mortar.rethunk.tech)")
+	pk, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
 	if err != nil {
 		return "", false, err
 	}
@@ -96,7 +96,7 @@ func (d Driver) Publisher(ctx context.Context, key, name, ver, mortarVersion str
 
 // Versions lists the package's versions in the community's index, newest first.
 func (d Driver) Versions(ctx context.Context, key, namespace, name, mortarVersion string) ([]string, error) {
-	pk, err := d.packages(ctx, key, source.UserAgent(mortarVersion)+" (+https://mortar.rethunk.tech)")
+	pk, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (d Driver) Versions(ctx context.Context, key, namespace, name, mortarVersio
 // Dependencies reads the dependencies of the listed package versions from the community's index, one package per
 // "Namespace-Name" id, with no request beyond the index's own refresh.
 func (d Driver) Dependencies(ctx context.Context, key, mortarVersion string, refs []source.VersionRef) (map[source.VersionRef][]string, error) {
-	pk, err := d.packages(ctx, key, source.UserAgent(mortarVersion)+" (+https://mortar.rethunk.tech)")
+	pk, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
 	if err != nil {
 		return nil, err
 	}
