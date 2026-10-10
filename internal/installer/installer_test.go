@@ -181,3 +181,16 @@ func TestLayoutRefusals(t *testing.T) {
 		t.Error("escape or unknown target accepted")
 	}
 }
+
+func TestFolderGameSplitsUnlessAKeepWholeFileIsLaidOut(t *testing.T) {
+	t.Parallel()
+	g := Game{Loaders: []string{"folder"}, Targets: []Target{{ID: TargetMods, KeepWhole: []string{"ts4script"}}}}
+	pkg := Layout{Files: []File{{Target: TargetMods, Rel: "a.package"}, {Target: TargetMods, Rel: "b.PACKAGE"}}}
+	script := Layout{Files: append(slices.Clone(pkg.Files), File{Target: TargetMods, Rel: "m.Ts4Script"})}
+	if !g.Splits(pkg) || g.Splits(script) {
+		t.Fatalf("splits: packages %v, with a script %v", g.Splits(pkg), g.Splits(script))
+	}
+	if (Game{Loaders: []string{"smapi"}, Targets: g.Targets}).Splits(pkg) {
+		t.Fatal("a game with another loader never splits")
+	}
+}

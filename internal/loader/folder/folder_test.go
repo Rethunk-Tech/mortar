@@ -29,7 +29,7 @@ func useFolderGame(t *testing.T) {
 	}
 	m.Games = append(slices.Clone(m.Games), components.GameInfo{
 		ID: gameID, Name: "Folder Game", Enabled: true, Marker: "G.exe", Deploy: "profile",
-		Targets: []components.TargetDef{{ID: "mods", Root: "{profile}/Mods", MaxDepth: map[string]int{"ts4script": 1}}},
+		Targets: []components.TargetDef{{ID: "mods", Root: "{profile}/Mods", MaxDepth: map[string]int{"ts4script": 1}, KeepWhole: []string{"ts4script"}}},
 		Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "1"}},
 		Loaders: []components.GameLoader{{ID: "folder", Name: "Mod folder"}},
 		Paths:   map[string]components.PathTemplate{"mods": {Windows: "{documents}/Mods", Linux: "{documents}/Mods", Darwin: "{documents}/Mods"}},
@@ -70,8 +70,8 @@ func TestEnabledModsAreSwappedIntoTheModsFolderAndTakenBack(t *testing.T) {
 	var keys []string
 	for _, name := range []string{"one", "two", "three"} {
 		zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), name+".zip"), map[string]string{
-			"x.package":   name,
-			"y.ts4script": name,
+			name + "/x.package":   name,
+			name + "/y.ts4script": name,
 		})
 		res, err := ps.InstallArchive(t.Context(), gameID, p.ID, zip)
 		if err != nil {
@@ -103,12 +103,12 @@ func TestEnabledModsAreSwappedIntoTheModsFolderAndTakenBack(t *testing.T) {
 	}
 
 	mods := filepath.Join(t.TempDir(), "Documents", "Mods")
-	if err := os.MkdirAll(filepath.Join(mods, keys[0]), 0o750); err != nil {
+	if err := os.MkdirAll(filepath.Join(mods, "one"), 0o750); err != nil {
 		t.Fatal(err)
 	}
 	for path, body := range map[string]string{
-		filepath.Join(mods, "Resource.cfg"):       "players own",
-		filepath.Join(mods, keys[0], "x.package"): "players copy",
+		filepath.Join(mods, "Resource.cfg"):     "players own",
+		filepath.Join(mods, "one", "x.package"): "players copy",
 	} {
 		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
 			t.Fatal(err)
@@ -129,10 +129,10 @@ func TestEnabledModsAreSwappedIntoTheModsFolderAndTakenBack(t *testing.T) {
 	if during["Resource.cfg"] != "players own" {
 		t.Fatal("a file the profile does not own must be left alone")
 	}
-	if during[filepath.Join(keys[0], "x.package")] != "one" || during[filepath.Join(keys[1], "y.ts4script")] != "two" {
+	if during[filepath.Join("one", "x.package")] != "one" || during[filepath.Join("two", "y.ts4script")] != "two" {
 		t.Fatalf("enabled mods are in the folder: %v", during)
 	}
-	if _, has := during[filepath.Join(keys[2], "x.package")]; has {
+	if _, has := during[filepath.Join("three", "x.package")]; has {
 		t.Fatal("a disabled mod must not be placed")
 	}
 	if err := d.Purge(t.Context(), m); err != nil {

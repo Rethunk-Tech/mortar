@@ -323,7 +323,7 @@ func (s *Store) StoreKeys(history bool) (map[string][]string, error) {
 func entriesStoreKeys(entries []Entry) []string {
 	var keys []string
 	for _, e := range entries {
-		keys = append(keys, e.Key)
+		keys = append(keys, e.StoreKey())
 		if e.PreviousKey != "" {
 			keys = append(keys, e.PreviousKey)
 		}

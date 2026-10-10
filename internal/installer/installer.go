@@ -38,12 +38,30 @@ type Target struct {
 	ID       string
 	Root     string
 	MaxDepth map[string]int
+	// KeepWhole lists the lower-case extensions that make a folder-loader archive one unit (components.TargetDef.KeepWhole).
+	KeepWhole []string
 }
 
 // Game is what a driver needs to know of the game: the loaders it runs and the targets it has.
 type Game struct {
 	Loaders []string
 	Targets []Target
+}
+
+// Splits reports whether a folder-loader game takes the layout as one entry per file: the game reads the mods target
+// as loose files, and none of the layout's files in it is of a kind that only works beside its siblings.
+func (g Game) Splits(l Layout) bool {
+	if !slices.Contains(g.Loaders, "folder") {
+		return false
+	}
+	ti := slices.IndexFunc(g.Targets, func(t Target) bool { return t.ID == TargetMods })
+	if ti < 0 {
+		return false
+	}
+	keep := g.Targets[ti].KeepWhole
+	return !slices.ContainsFunc(l.Files, func(f File) bool {
+		return f.Target == TargetMods && slices.Contains(keep, strings.ToLower(strings.TrimPrefix(path.Ext(f.Rel), ".")))
+	})
 }
 
 // Target ids the drivers write to.

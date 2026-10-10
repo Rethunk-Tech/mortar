@@ -179,7 +179,7 @@ func (s *Store) installQuestion(game, id, key string, source Source, err error) 
 func addedNames(p Profile, key string) []string {
 	names := []string{}
 	for _, e := range p.Entries {
-		if e.Key == key {
+		if e.StoreKey() == key {
 			for _, m := range e.Mods {
 				names = append(names, m.Name)
 			}

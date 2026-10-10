@@ -38,11 +38,14 @@ func (s *Store) packageFiles(gameID, id string) (files map[string]packageFile, w
 		if e.IsOverlay() || !e.hasPackageEnabled() {
 			continue
 		}
-		arch, l, _, err := s.layoutOf(gameID, id, e.Key, e.Fomod)
+		arch, l, _, err := s.layoutOf(gameID, id, e.StoreKey(), e.Fomod)
 		if err != nil {
 			return nil, nil, fmt.Errorf("%s: %w", entryLabel(e), err)
 		}
 		for _, f := range l.Files {
+			if e.File != "" && f.Rel != e.File {
+				continue
+			}
 			rel := path.Join(targetPrefix(info, f.Target), path.Clean(f.Rel))
 			if !filepath.IsLocal(filepath.FromSlash(rel)) {
 				return nil, nil, fmt.Errorf("%s: %s leaves the profile", entryLabel(e), f.Rel)

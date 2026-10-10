@@ -507,7 +507,7 @@ func (s *Store) missingStoreKeys(game string, entries []Entry) ([]string, error)
 		return nil
 	}
 	for _, e := range entries {
-		if err := add(e.Key); err != nil {
+		if err := add(e.StoreKey()); err != nil {
 			return nil, err
 		}
 		if err := add(e.PreviousKey); err != nil {

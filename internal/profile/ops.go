@@ -330,6 +330,12 @@ func (s *Store) addEntryLocked(game, id, key string, source Source) (Profile, er
 	} else if over {
 		return s.placeOverlayLocked(game, id, key, source)
 	}
+	if mods, isPackage, err := s.packageMods(game, key); err != nil {
+		return Profile{}, err
+	} else if isPackage && slices.Contains(installerGame(game).Loaders, folderLoader) {
+		p, _, _, err := s.placeFolderLocked(game, id, key, source, mods)
+		return p, err
+	}
 	var placed, final string
 	p, err := s.updateLockedCommit(game, id, func(p *Profile, dir string) (err error) {
 		placed, final, err = s.addToStaged(game, p, dir, key, source, nil, true)

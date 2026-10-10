@@ -625,3 +625,6 @@ func (s *Store) swapOverlaid(game string, p *Profile, dir string, ei int, newKey
 	}
 	return ne, w, s.layOverlays(game, p.ID, ne, liveEntryDir(modsDir, newKey), nil, overlaysOn(p.Entries, newKey))
 }
+
+// StoreKey is the store item the entry's files come from.
+func (e Entry) StoreKey() string { return cmp.Or(e.Item, e.Key) }

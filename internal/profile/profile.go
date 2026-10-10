@@ -129,8 +129,13 @@ type Component struct {
 type Entry struct {
 	IgnoreUpdates bool   `json:"ignoreUpdates,omitempty"`
 	Key           string `json:"key"`
-	PreviousKey   string `json:"previousKey"`
-	Source        Source `json:"source"`
+	// Item is the store item an entry of one file of an archive is cut from, and File that file's slash path in the
+	// profile's mods target; Key is then Item + "#" + File so each file is its own entry. Both are empty for an
+	// entry that holds its whole store item.
+	Item        string `json:"item,omitempty"`
+	File        string `json:"file,omitempty"`
+	PreviousKey string `json:"previousKey"`
+	Source      Source `json:"source"`
 	// Package marks an entry that has no folder in the profile's mods folder: its files are laid out and deployed
 	// into the game when it launches (a Thunderstore package).
 	Package bool `json:"package,omitempty"`
@@ -721,8 +726,8 @@ func (s *Store) SourcesOf(game string) map[string]Source {
 	}
 	for _, p := range all {
 		for _, e := range p.Entries {
-			if _, ok := out[e.Key]; !ok {
-				out[e.Key] = e.Source
+			if _, ok := out[e.StoreKey()]; !ok {
+				out[e.StoreKey()] = e.Source
 			}
 			if e.PreviousKey != "" && e.PreviousSource != nil {
 				if _, ok := out[e.PreviousKey]; !ok {

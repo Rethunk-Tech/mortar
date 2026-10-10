@@ -179,7 +179,7 @@ func firstItem(f HealthFinding) string {
 func (s *Store) missingFindings(game string, p Profile) ([]HealthFinding, error) {
 	var out []HealthFinding
 	for _, e := range p.Entries {
-		missing, err := s.missingStoreKeys(game, []Entry{{Key: e.Key, ExtraStoreKeys: e.ExtraStoreKeys}})
+		missing, err := s.missingStoreKeys(game, []Entry{{Key: e.StoreKey(), ExtraStoreKeys: e.ExtraStoreKeys}})
 		if err != nil {
 			return nil, err
 		}

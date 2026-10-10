@@ -32,7 +32,7 @@ func installerGame(gameID string) installer.Game {
 		g.Loaders = append(g.Loaders, l.ID)
 	}
 	for _, t := range info.Targets {
-		g.Targets = append(g.Targets, installer.Target{ID: t.ID, Root: t.Root, MaxDepth: t.MaxDepth})
+		g.Targets = append(g.Targets, installer.Target{ID: t.ID, Root: t.Root, MaxDepth: t.MaxDepth, KeepWhole: t.KeepWhole})
 	}
 	return g
 }
@@ -225,6 +225,9 @@ func pluginComponent(key, dir string) Component {
 // placePackageLocked adds a Thunderstore package to the profile, or swaps it in for another version of the same
 // package. Nothing is copied: the entry records the package, and the launch deploys its files.
 func (s *Store) placePackageLocked(game, id, key string, source Source, mods []Component) (Profile, bool, bool, error) {
+	if slices.Contains(installerGame(game).Loaders, folderLoader) {
+		return s.placeFolderLocked(game, id, key, source, mods)
+	}
 	var updated, changed bool
 	mods[0].Version = cmp.Or(mods[0].Version, source.Version)
 	p, err := s.updateLocked(game, id, func(p *Profile, dir string) error {
