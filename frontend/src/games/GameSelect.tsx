@@ -418,7 +418,7 @@ function LetterRail({
             fontFamily: 'inherit',
             fontSize: 11,
             fontWeight: 700,
-            color: letter === current ? 'primary.main' : 'var(--mortar-ink-sec)',
+            color: letter === current ? 'var(--mortar-accent-ink)' : 'var(--mortar-ink-sec)',
             '&:hover, &:focus-visible': { color: 'text.primary' },
           }}
         >
