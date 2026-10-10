@@ -124,3 +124,34 @@ test('decodes a link the app made', async () => {
     ],
   })
 })
+
+test('decodes CurseForge, itch.io and Patreon entries', async () => {
+  const withCurseForge = { ...keys, curseforge: '4643' }
+  const p = encode([
+    3,
+    'Sims',
+    'stardew',
+    withCurseForge,
+    [
+      { s: 'curseforge', mod: 309_243, file: 555, kb: 40 },
+      { s: 'itch', name: 'someone/cool-mod' },
+      { s: 'patreon', name: '12345678' },
+    ],
+  ])
+  expect((await decodeShare(`#${p}`, wasm)).entries).toEqual([
+    { kind: 'curseforge', project: 309_243, kb: 40 },
+    { kind: 'itch', page: 'someone/cool-mod' },
+    { kind: 'patreon', post: '12345678' },
+  ])
+})
+
+test('rejects malformed CurseForge, itch.io and Patreon entries', async () => {
+  const kind = (e: unknown, k: unknown = { ...keys, curseforge: '1' }) =>
+    decodeShare(`#${encode([3, 'x', 'stardew', k, [e]])}`, wasm).catch((x: ShareError) => x.kind)
+  expect(await kind({ s: 'curseforge', mod: 1 })).toBe('bad')
+  expect(await kind({ s: 'curseforge', mod: 1, file: 2 }, keys)).toBe('bad')
+  expect(await kind({ s: 'itch', name: '../x' })).toBe('bad')
+  expect(await kind({ s: 'itch', name: 'nogame' })).toBe('bad')
+  expect(await kind({ s: 'itch', name: 'a/b"onload="x' })).toBe('bad')
+  expect(await kind({ s: 'patreon', name: 'abc' })).toBe('bad')
+})

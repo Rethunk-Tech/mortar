@@ -32,6 +32,27 @@ const SOURCES = {
       text: `${e.repo} ${e.tag}`,
     }),
   },
+  curseforge: {
+    label: 'CurseForge',
+    link: (e) => ({
+      href: `https://www.curseforge.com/projects/${e.project}`,
+      text: `CurseForge project ${e.project}`,
+    }),
+  },
+  itch: {
+    label: 'itch.io',
+    link: (e) => {
+      const [user, game] = e.page.split('/')
+      return { href: `https://${user}.itch.io/${game}`, text: `${user}/${game}` }
+    },
+  },
+  patreon: {
+    label: 'Patreon',
+    link: (e) => ({
+      href: `https://www.patreon.com/posts/${e.post}`,
+      text: `Patreon post ${e.post}`,
+    }),
+  },
   thunderstore: {
     label: 'Thunderstore',
     link: (e, keys) => ({

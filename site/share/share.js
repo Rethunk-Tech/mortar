@@ -9,6 +9,8 @@ const PART = /^\w+$/
 const REPO = /^[\w.-]+\/[\w.-]+$/
 const GAME_VERSION = /^\d{1,9}(\.\d{1,9}){0,3}$/
 const PACKAGE_VERSION = /^\d+\.\d+\.\d+$/
+const ITCH_PAGE = /^[a-z0-9][\w-]{0,38}\/[A-Za-z0-9][\w-]{0,99}$/
+const POST_ID = /^\d{1,12}$/
 const HASH = /^#/
 const B64URL = /^[\w-]+$/
 const DASH = /-/g
@@ -43,7 +45,8 @@ function facts(e) {
 }
 
 // An entry is an object naming its source: {s: 'nexus', mod, file}, {s: 'github', repo, tag, asset} or
-// {s: 'thunderstore', ns, name, version}, with optional page facts.
+// {s: 'thunderstore', ns, name, version}, {s: 'curseforge', mod: project, file}, {s: 'itch', name: 'user/game'} or
+// {s: 'patreon', name: post id}, with optional page facts.
 function entry(e) {
   return { ...source(e), ...facts(e) }
 }
@@ -59,6 +62,21 @@ function source(e) {
       REPO.test(e.repo)
     ) {
       return { kind: 'github', repo: e.repo, tag: e.tag, asset: e.asset }
+    }
+    if (
+      e.s === 'curseforge' &&
+      Number.isInteger(e.mod) &&
+      e.mod > 0 &&
+      Number.isInteger(e.file) &&
+      e.file > 0
+    ) {
+      return { kind: 'curseforge', project: e.mod }
+    }
+    if (e.s === 'itch' && typeof e.name === 'string' && ITCH_PAGE.test(e.name)) {
+      return { kind: 'itch', page: e.name }
+    }
+    if (e.s === 'patreon' && typeof e.name === 'string' && POST_ID.test(e.name)) {
+      return { kind: 'patreon', post: e.name }
     }
     if (e.s === 'thunderstore' && PART.test(e.ns) && PART.test(e.name)) {
       const out = { kind: 'thunderstore', ns: e.ns, name: e.name }
@@ -112,7 +130,7 @@ export async function decodeShare(hash, wasm) {
     throw new ShareError('bad')
   }
   const out = entries.map(entry)
-  for (const kind of ['nexus', 'thunderstore']) {
+  for (const kind of ['nexus', 'thunderstore', 'curseforge']) {
     if (out.some((e) => e.kind === kind) && typeof sourceKeys[kind] !== 'string') {
       throw new ShareError('bad')
     }
