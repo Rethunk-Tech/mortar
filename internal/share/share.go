@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"io"
 	"regexp"
 	"slices"
@@ -16,6 +15,8 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/Rethunk-Tech/mortar/internal/settings"
 
 	"github.com/andybalholm/brotli"
 

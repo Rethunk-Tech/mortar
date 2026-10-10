@@ -144,7 +144,9 @@ func (s *Services) lanMethod(ctx context.Context, method string, p Params) (any,
 	case "lan.peers":
 		return s.Lan.Peers(ctx)
 	case "lan.send":
-		return s.profileCall(p, func(id string) (any, error) { return nil, s.Lan.Send(ctx, p.Name, p.Game, id, share.IncludeOf(s.Settings.Get())) })
+		return s.profileCall(p, func(id string) (any, error) {
+			return nil, s.Lan.Send(ctx, p.Name, p.Game, id, share.IncludeOf(s.Settings.Get()))
+		})
 	case "lan.inbox":
 		return s.Lan.Pending(), nil
 	case "lan.paircode":
