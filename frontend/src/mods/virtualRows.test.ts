@@ -1,12 +1,11 @@
 import { expect, test } from 'bun:test'
+import { TYPE_RESET_MS } from '../shell/typeahead.ts'
 import {
-  firstNamePrefix,
   flattenModGroups,
   gridColumnCount,
   groupKeyHolding,
   orderedModIds,
   stepId,
-  TYPEAHEAD_MS,
   typeaheadChar,
   typeaheadQuery,
   virtualIndexOf,
@@ -50,13 +49,19 @@ test('flattens grouped list rows, skips collapsed items, lanes for the grid', ()
   expect(orderedModIds(listed, idOf)).toEqual(['a', 'b', 'c'])
 })
 
-test('firstNamePrefix matches the first name that starts with the typed text', () => {
-  const mods = [{ name: 'Automate' }, { name: 'Bigger Backpack' }, { name: 'Auto-Gravestones' }]
-  expect(firstNamePrefix(mods, 'au', (m) => m.name)?.name).toBe('Automate')
-  expect(firstNamePrefix(mods, 'bi', (m) => m.name)?.name).toBe('Bigger Backpack')
-  expect(firstNamePrefix(mods, 'zz', (m) => m.name)).toBeUndefined()
-  expect(typeaheadQuery('A', 0, 'u', TYPEAHEAD_MS + 1)).toBe('u')
-  expect(typeaheadQuery('A', 0, 'u', TYPEAHEAD_MS - 1)).toBe('Au')
+test('typed letters and digits add to the search until a pause, and typing in a field is left alone', () => {
+  expect(typeaheadQuery('A', 0, 'u', TYPE_RESET_MS + 1)).toBe('u')
+  expect(typeaheadQuery('A', 0, 'u', TYPE_RESET_MS - 1)).toBe('Au')
+  const key = (k: string) => ({
+    key: k,
+    ctrlKey: false,
+    altKey: false,
+    metaKey: false,
+    target: null,
+  })
+  expect(typeaheadChar(key('4'))).toBe('4')
+  expect(typeaheadChar(key('.'))).toBeUndefined()
+  expect(typeaheadChar(key(' '))).toBeUndefined()
   expect(
     typeaheadChar({
       key: 'a',

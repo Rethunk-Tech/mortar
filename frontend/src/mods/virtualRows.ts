@@ -1,11 +1,11 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { type RefObject, useEffect, useLayoutEffect, useRef } from 'react'
 import { isTypingTarget, type TypingTarget } from '../settings/shortcuts.ts'
+import { TYPE_RESET_MS, typedKey, typedMatch } from '../shell/typeahead.ts'
 import { toggleCollapsed } from './group.ts'
 import type { ListRow } from './listColumns.ts'
 import { modId } from './lookup.ts'
 
-const TYPEAHEAD_LETTER = /^\p{L}$/u
 const GRID_MIN_CARD_PX = 300
 
 const GRID_GAP_PX = 6
@@ -29,8 +29,6 @@ function estimateVirtualSize<T>(row: VirtualRow<T>, lanePx: number): number {
 interface Scroller {
   scrollToIndex: (index: number, opts?: { align: 'auto' }) => void
 }
-
-export const TYPEAHEAD_MS = 500
 
 export const GROUP_HEADER_PX = 36
 
@@ -191,7 +189,7 @@ export function typeaheadChar(e: {
   if (e.ctrlKey || e.altKey || e.metaKey || e.key.length !== 1) {
     return undefined
   }
-  if (!TYPEAHEAD_LETTER.test(e.key)) {
+  if (!typedKey(e.key)) {
     return undefined
   }
   if (isTypingTarget(e.target as TypingTarget | null)) {
@@ -201,22 +199,10 @@ export function typeaheadChar(e: {
 }
 
 export function typeaheadQuery(prev: string, at: number, key: string, now: number): string {
-  if (now - at > TYPEAHEAD_MS) {
+  if (now - at > TYPE_RESET_MS) {
     return key
   }
   return prev + key
-}
-
-export function firstNamePrefix<T>(
-  items: readonly T[],
-  query: string,
-  nameOf: (item: T) => string,
-): T | undefined {
-  const q = query.toLocaleLowerCase()
-  if (!q) {
-    return undefined
-  }
-  return items.find((item) => nameOf(item).toLocaleLowerCase().startsWith(q))
 }
 
 export const listRowId = (row: ListRow) => modId(row.mod)
@@ -274,6 +260,18 @@ export function useModReveal<T>(opts: {
   }, [collapsed, detailId, gameId, groups, idOf, items, setCollapsed, virtualizer])
 }
 
+function modsIn<T>(items: readonly VirtualRow<T>[]): T[] {
+  const mods: T[] = []
+  for (const row of items) {
+    if (row.kind === 'row') {
+      mods.push(row.item)
+    } else if (row.kind === 'lane') {
+      mods.push(...row.items)
+    }
+  }
+  return mods
+}
+
 export function useModTypeahead<T>(opts: {
   items: readonly VirtualRow<T>[]
   nameOf: (item: T) => string
@@ -289,8 +287,14 @@ export function useModTypeahead<T>(opts: {
       return
     }
     const onKey = (e: KeyboardEvent) => {
+      const now = Date.now()
       const ch = typeaheadChar(e)
       if (ch === undefined) {
+        // A space inside a name being typed would otherwise act on the row that typing just focused.
+        const typing = isTypingTarget(e.target as TypingTarget | null)
+        if (e.key === ' ' && !typing && buf.current.text && now - buf.current.at <= TYPE_RESET_MS) {
+          e.preventDefault()
+        }
         return
       }
       const active = document.activeElement
@@ -298,18 +302,9 @@ export function useModTypeahead<T>(opts: {
         return
       }
       e.preventDefault()
-      const now = Date.now()
       const text = typeaheadQuery(buf.current.text, buf.current.at, ch, now)
       buf.current = { text, at: now }
-      const mods: T[] = []
-      for (const row of items) {
-        if (row.kind === 'row') {
-          mods.push(row.item)
-        } else if (row.kind === 'lane') {
-          mods.push(...row.items)
-        }
-      }
-      const hit = firstNamePrefix(mods, text, nameOf)
+      const hit = typedMatch(modsIn(items), text, nameOf)
       if (!hit) {
         return
       }

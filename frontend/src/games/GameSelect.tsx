@@ -21,10 +21,11 @@ import { useSettings } from '../settings/store.ts'
 import { arrowFocus } from '../shell/arrowFocus.ts'
 import { CoverButton } from '../shell/CoverButton.tsx'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
+import { TYPE_RESET_MS, typedKey, typedMatch } from '../shell/typeahead.ts'
 import { useRoomy } from '../theme/roomy.ts'
 import { reportError } from '../toasts/report.ts'
 import { gameArt } from './art.ts'
-import { gameOrder, initialOf, typedKey, typedMatch } from './order.ts'
+import { gameOrder, initialOf } from './order.ts'
 import { ProfileCards } from './ProfileCards.tsx'
 import { formatPlaytime } from './playtime.ts'
 import { storeName } from './storeName.ts'
@@ -329,8 +330,6 @@ function GroupHeading({ children }: { children: string }) {
 const RAIL_MIN_GAMES = 8
 const RAIL_WIDTH_PX = 28
 const RAIL_ROOMY_WIDTH_PX = 44
-// A pause this long starts a new search instead of adding to the last one.
-const TYPE_RESET_MS = 1000
 
 // Brings a game's row to the top of the list and focuses it, so Enter opens it.
 function reveal(scroller: HTMLElement | null, id: string) {
@@ -372,7 +371,7 @@ function useTypeToScroll(scroller: { current: HTMLElement | null }, games: Game[
       }
       typed = fresh ? e.key : typed + e.key
       at = e.timeStamp
-      const hit = typedMatch(list.current, typed)
+      const hit = typedMatch(list.current, typed, (g) => g.name)
       if (hit) {
         reveal(scroller.current, hit.id)
       }
