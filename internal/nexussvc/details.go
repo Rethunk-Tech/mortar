@@ -97,7 +97,7 @@ func (s *Service) CachedDetails(gameID string, modIDs []int) map[int]Details {
 		return out
 	}
 	for _, id := range modIDs {
-		if d, ok := meta.Peek[Details](s.meta, DetailsName(t.Domain, id)); ok {
+		if d, ok := PeekDetails(s.meta, t.Domain, id); ok {
 			out[id] = d
 		}
 	}
