@@ -93,3 +93,20 @@ func TestFileRecoverAfterKillMidPurge(t *testing.T) {
 		t.Fatal("the held file must return and the profile copy stay")
 	}
 }
+
+// A crash after the record is written and before the player's file is renamed leaves the player's own file at its
+// path; recovery must not mistake it for the profile's copy, overwrite the profile's file with it and delete it.
+func TestRecoverAfterACrashBeforeThePlayersFileIsSetAside(t *testing.T) {
+	target, prof, journal := fileEnv(t)
+	write(t, target, "player")
+	write(t, prof, "profile")
+	if err := persistFile(FileManifest{Journal: journal, Target: target, Profile: prof, Held: target + heldSuffix}); err != nil {
+		t.Fatal(err)
+	}
+	if err := RecoverFile(journal, nil); err != nil {
+		t.Fatal(err)
+	}
+	if read(t, target) != "player" || read(t, prof) != "profile" {
+		t.Fatalf("player's file = %q (want player), profile copy = %q (want profile)", read(t, target), read(t, prof))
+	}
+}
