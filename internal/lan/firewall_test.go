@@ -68,23 +68,21 @@ func TestApplyDoesNotListenAtLaunchWithoutRules(t *testing.T) {
 	}
 }
 
-func TestListenBlockedByPublic(t *testing.T) {
+func TestOnlyANetworkSetToPublicAloneCountsAsPublic(t *testing.T) {
 	t.Parallel()
 	for name, tc := range map[string]struct {
 		current int32
-		anyAddr bool
 		want    bool
 	}{
-		"public only":        {profilePublic, false, true},
-		"public only, any":   {profilePublic, true, false},
-		"private":            {profilePrivate, false, false},
-		"domain":             {profileDomain, false, false},
-		"public and private": {profilePublic | profilePrivate, false, false},
-		"public and domain":  {profilePublic | profileDomain, false, false},
-		"no network":         {0, false, false},
+		"public only":        {profilePublic, true},
+		"private":            {profilePrivate, false},
+		"domain":             {profileDomain, false},
+		"public and private": {profilePublic | profilePrivate, false},
+		"public and domain":  {profilePublic | profileDomain, false},
+		"no network":         {0, false},
 	} {
-		if got := listenBlockedByPublic(tc.current, tc.anyAddr); got != tc.want {
-			t.Errorf("%s: listenBlockedByPublic = %v, want %v", name, got, tc.want)
+		if got := onlyPublic(tc.current); got != tc.want {
+			t.Errorf("%s: onlyPublic = %v, want %v", name, got, tc.want)
 		}
 	}
 }

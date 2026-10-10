@@ -130,10 +130,8 @@ func (c *Cache) pruneTo(budget int64) int64 {
 	return total
 }
 
-// AssetURL is the app-local URL of a remote picture's thumbnail, or empty when the remote URL is not cacheable.
-func AssetURL(picture string) string { return SizedURL(picture, Thumb) }
-
-// SizedURL is AssetURL for a picture shown larger than a thumbnail (px is Thumb or Hero).
+// SizedURL is the app-local URL of a remote picture at px (Thumb or Hero), or empty when the remote URL is not
+// cacheable.
 func SizedURL(picture string, px int) string {
 	if _, err := parsePicture(picture); err != nil {
 		return ""

@@ -126,7 +126,7 @@ func TestMiddlewareServesCached(t *testing.T) {
 	h := Middleware(func() *Cache { return c })(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t.Fatal("fell through")
 	}))
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://mortar"+AssetURL(u), nil)
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://mortar"+SizedURL(u, Thumb), nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusOK || rec.Header().Get("Content-Type") != "image/png" {
@@ -137,25 +137,25 @@ func TestMiddlewareServesCached(t *testing.T) {
 	}
 }
 
-func TestAssetURLEmptyWhenInvalid(t *testing.T) {
-	if AssetURL("http://staticdelivery.nexusmods.com/x.png") != "" {
+func TestSizedURLEmptyWhenInvalid(t *testing.T) {
+	if SizedURL("http://staticdelivery.nexusmods.com/x.png", Thumb) != "" {
 		t.Fatal("http")
 	}
-	if AssetURL("https://evil.example/x.png") != "" {
+	if SizedURL("https://evil.example/x.png", Thumb) != "" {
 		t.Fatal("host")
 	}
 }
 
-func TestAssetURLTakesEveryBrowseSourcesPictureHost(t *testing.T) {
+func TestSizedURLTakesEveryBrowseSourcesPictureHost(t *testing.T) {
 	for _, host := range []string{"cdn.modrinth.com", "media.forgecdn.net", "avatars.githubusercontent.com", "img.itch.zone"} {
-		if AssetURL(pictureURL(host, "/a.png")) == "" {
+		if SizedURL(pictureURL(host, "/a.png"), Thumb) == "" {
 			t.Errorf("%s is not cacheable", host)
 		}
 	}
 }
 
-func TestAssetURLTakesThunderstoreIcons(t *testing.T) {
-	if AssetURL("https://ccdn.thunderstore.io/live/repository/icons/Evaisa-HookGenPatcher-0.0.5.png") == "" {
+func TestSizedURLTakesThunderstoreIcons(t *testing.T) {
+	if SizedURL("https://ccdn.thunderstore.io/live/repository/icons/Evaisa-HookGenPatcher-0.0.5.png", Thumb) == "" {
 		t.Fatal("a Thunderstore package icon is not served")
 	}
 }

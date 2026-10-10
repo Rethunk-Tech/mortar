@@ -31,13 +31,6 @@ func onlyPublic(current int32) bool {
 	return current&profilePublic != 0 && current&profilesLocal == 0
 }
 
-// listenBlockedByPublic decides that Mortar must not listen: every connected network is Public, where a LAN-only
-// Mortar is blocked by design and listening would only raise Windows' own prompt. The allow-any-address setting has
-// rules on every profile, so it never blocks.
-func listenBlockedByPublic(current int32, anyAddr bool) bool {
-	return !anyAddr && onlyPublic(current)
-}
-
 // errPublicNetwork is what LAN use and launch return instead of listening on a Public network.
 func errPublicNetwork() error {
 	return usererr.New(usererr.Permission, "This network is set to Public in Windows, so Mortar doesn't share on it. Set it to Private in Windows network settings to use LAN sharing.")
