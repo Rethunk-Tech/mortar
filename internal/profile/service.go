@@ -29,6 +29,8 @@ type Service struct {
 	// HealthJournals lists the game's launch journals a crash left behind, and HealthRecover finishes them.
 	HealthJournals func(game string) []string
 	HealthRecover  func(game string) error
+	// HealthShared lists the files a launch left in the game's shared folder that the player should hear about.
+	HealthShared func(game string) []SharedFile
 	// Emit sends HealthEvent after each check and GameModsProgressEvent while mods are copied in.
 	Emit      func(name string, data any)
 	healthMu  sync.Mutex

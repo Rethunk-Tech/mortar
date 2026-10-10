@@ -68,6 +68,8 @@ type Manifest struct {
 	// in them when Apply began, which are the player's own whatever the game does to them.
 	Owned    []Owned  `json:"owned,omitempty"`
 	Existing []string `json:"existing,omitempty"`
+	// notes are what this purge left behind for the player to hear about; they are saved beside the journal.
+	notes []Note
 	// Created are the folders Apply made, removed again by Purge when empty.
 	Created []string `json:"created,omitempty"`
 }

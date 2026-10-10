@@ -239,7 +239,7 @@ func (place) Purge(ctx context.Context, m Manifest) error {
 	}
 	err := log.close()
 	at("journal")
-	return errors.Join(err, fsx.RemoveAll(m.View.JournalDir))
+	return errors.Join(err, saveNotes(m.View.JournalDir, m.notes), fsx.RemoveAll(m.View.JournalDir))
 }
 
 func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
@@ -259,7 +259,7 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 		switch {
 		case o.Displaced != "" && backupErr == nil:
 			// With the player's file set aside, whatever is at Dst is ours, even if the game wrote to it.
-			if err := writeBackOrRescue(o, i, log); err != nil {
+			if err := writeBackOrRescue(m, o, i, log); err != nil {
 				return err
 			}
 			if err := fsx.Remove(o.Dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -305,7 +305,7 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 // writeBackOrRescue copies a changed Dst of a profile-copy file over its Src before Dst is removed and the displaced file
 // returns. When the profile's folder is gone it keeps the bytes beside Dst under a rescue name, on the log first, so a
 // changed file is never removed without a copy.
-func writeBackOrRescue(o Placed, i int, l *opLog) error {
+func writeBackOrRescue(m *Manifest, o Placed, i int, l *opLog) error {
 	if !o.WriteBack {
 		return nil
 	}
@@ -326,6 +326,7 @@ func writeBackOrRescue(o Placed, i int, l *opLog) error {
 		return err
 	}
 	at(fmt.Sprintf("rescued:%d", i))
+	m.notes = append(m.notes, Note{Path: rescue, Kind: NoteRescued})
 	return nil
 }
 

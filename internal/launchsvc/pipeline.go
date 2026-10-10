@@ -470,6 +470,32 @@ func (s *Service) LeftoverJournals(gameID string) []string {
 	return out
 }
 
+// SharedFiles lists the files earlier launches of the game's installs left in the shared folder that the player should
+// hear about: a file too large to adopt into its profile, and a rescue file holding bytes no profile could take. A
+// file that is gone is not listed.
+//
+//wails:ignore
+func (s *Service) SharedFiles(gameID string) []profile.SharedFile {
+	g := game.Find(gameID)
+	if g == nil {
+		return nil
+	}
+	var out []profile.SharedFile
+	for _, sl := range s.slots(g) {
+		if sl.inst == "" {
+			continue
+		}
+		dir, err := journalDir(sl.inst)
+		if err != nil {
+			continue
+		}
+		for _, n := range deploy.Notes(dir) {
+			out = append(out, profile.SharedFile{Path: n.Path, Size: n.Size, Rescued: n.Kind == deploy.NoteRescued})
+		}
+	}
+	return out
+}
+
 // errNoPrefix is a Steam-relayed Proton launch whose prefix does not exist yet: Steam would create it without the
 // loader's DLL override, and nothing Mortar passes reaches the game.
 var errNoPrefix = errors.New("the Proton prefix does not exist yet")

@@ -211,3 +211,49 @@ func TestACrashAtAnyRescueStepKeepsTheChangedBytes(t *testing.T) {
 		}
 	}
 }
+
+func TestFilesLeftSharedAreNotedUntilTheyAreGone(t *testing.T) {
+	rr := newRootRig(t)
+	write(t, filepath.Join(rr.shared, "top.package"), "the player's own")
+	m := rr.apply()
+	big := filepath.Join(rr.shared, "mc", "world.dat")
+	write(t, big, "")
+	if err := os.Truncate(big, maxAdoptFile+1); err != nil {
+		t.Fatal(err)
+	}
+	write(t, filepath.Join(rr.shared, "top.package"), "rewritten top")
+	if err := os.RemoveAll(filepath.Dir(rr.profile)); err != nil {
+		t.Fatal(err)
+	}
+	// With the profile gone nothing is adopted either, so only the rescue is noted; bring the folder back for the cap.
+	rr.purge(m)
+	notes := Notes(rr.view.JournalDir)
+	if len(notes) != 1 || notes[0].Kind != NoteRescued || notes[0].Path != RescueName(filepath.Join(rr.shared, "top.package")) {
+		t.Fatalf("notes = %+v", notes)
+	}
+	if err := os.Remove(notes[0].Path); err != nil {
+		t.Fatal(err)
+	}
+	if got := Notes(rr.view.JournalDir); len(got) != 0 {
+		t.Fatalf("a note outlived its file: %+v", got)
+	}
+
+	rr2 := newRootRig(t)
+	m2 := rr2.apply()
+	big2 := filepath.Join(rr2.shared, "mc", "world.dat")
+	write(t, big2, "")
+	if err := os.Truncate(big2, maxAdoptFile+1); err != nil {
+		t.Fatal(err)
+	}
+	rr2.purge(m2)
+	n := Notes(rr2.view.JournalDir)
+	if len(n) != 1 || n[0].Kind != NoteTooLarge || n[0].Size != maxAdoptFile+1 {
+		t.Fatalf("notes = %+v", n)
+	}
+	if err := os.Remove(big2); err != nil {
+		t.Fatal(err)
+	}
+	if len(Notes(rr2.view.JournalDir)) != 0 {
+		t.Fatal("the note did not clear with its file")
+	}
+}

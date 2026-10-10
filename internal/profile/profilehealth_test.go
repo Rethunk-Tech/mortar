@@ -230,3 +230,13 @@ func TestRestoreLabelNamesWhatWasRestored(t *testing.T) {
 		t.Fatalf("history = %#v", hist)
 	}
 }
+
+func TestHealthListsFilesLeftInTheSharedFolder(t *testing.T) {
+	got := sharedFindings("sims4", []SharedFile{{Path: "/m/world.dat", Size: 70 << 20}, {Path: "/m/a.mortar-rescued", Rescued: true}})
+	if len(got) != 2 || got[0].Cause != "toolarge" || got[0].Items[0] != "/m/world.dat (70 MiB)" || got[1].Cause != "rescued" || got[1].Items[0] != "/m/a.mortar-rescued" {
+		t.Fatalf("findings = %+v", got)
+	}
+	if len(sharedFindings("sims4", nil)) != 0 {
+		t.Fatal("a finding with nothing to report")
+	}
+}

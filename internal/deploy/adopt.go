@@ -72,6 +72,7 @@ func adopt(m *Manifest, l *opLog) error {
 			}
 			if info.Size() > maxAdoptFile || total+info.Size() > maxAdoptTotal {
 				log.Printf("deploy: %s stays shared: too large to adopt into the profile (%d bytes)", path, info.Size())
+				m.notes = append(m.notes, Note{Path: path, Size: info.Size(), Kind: NoteTooLarge})
 				return nil
 			}
 			rel, err := filepath.Rel(ow.Dst, path)

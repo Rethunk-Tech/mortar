@@ -2,6 +2,7 @@ package profile
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -19,7 +20,16 @@ const (
 	HealthUnused   = "unused"
 	HealthSnapshot = "snapshot"
 	HealthJournal  = "journal"
+	HealthShared   = "shared"
 )
+
+// SharedFile is a file a launch left in the game's shared folder: too large to copy into its profile, or (Rescued) holding
+// changed bytes no profile could take.
+type SharedFile struct {
+	Path    string
+	Size    int64
+	Rescued bool
+}
 
 // Repair action ids. Download and cleanup run in the app, which owns the download queue and the storage cleanup
 // dialog; RepairProfile applies the others.
@@ -90,6 +100,9 @@ func (s *Service) ProfileHealth(game, id string) ([]HealthFinding, error) {
 				ID: HealthJournal + ":" + game, Kind: HealthJournal, Items: dirs, Repair: RepairRecover,
 			})
 		}
+	}
+	if s.HealthShared != nil {
+		out = append(out, sharedFindings(game, s.HealthShared(game))...)
 	}
 	if out == nil {
 		out = []HealthFinding{}
@@ -338,4 +351,34 @@ func (s *Store) dropHistoryEvent(game, id, eventID string) error {
 		}
 	}
 	return writeHistory(data.dir, data, s.historyKeep())
+}
+
+// sharedFindings turns the left files into one finding per cause; no repair applies, and each clears when its file is gone.
+func sharedFindings(game string, files []SharedFile) []HealthFinding {
+	var large, rescued []string
+	for _, f := range files {
+		if f.Rescued {
+			rescued = append(rescued, f.Path)
+		} else {
+			large = append(large, fmt.Sprintf("%s (%s)", f.Path, humanSize(f.Size)))
+		}
+	}
+	var out []HealthFinding
+	if len(large) > 0 {
+		out = append(out, HealthFinding{ID: HealthShared + ":toolarge:" + game, Kind: HealthShared, Cause: "toolarge", Items: large})
+	}
+	if len(rescued) > 0 {
+		out = append(out, HealthFinding{ID: HealthShared + ":rescued:" + game, Kind: HealthShared, Cause: "rescued", Items: rescued})
+	}
+	return out
+}
+
+func humanSize(n int64) string {
+	switch {
+	case n >= 1<<30:
+		return fmt.Sprintf("%.1f GiB", float64(n)/(1<<30))
+	case n >= 1<<20:
+		return fmt.Sprintf("%.0f MiB", float64(n)/(1<<20))
+	}
+	return fmt.Sprintf("%d KiB", (n+1023)/1024)
 }

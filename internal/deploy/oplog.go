@@ -102,6 +102,8 @@ func replay(m *Manifest) error {
 			m.Ops[*s.P].Done = true
 		case s.U != nil && *s.U >= 0 && *s.U < len(m.Ops):
 			m.Ops[*s.U].Undone = true
+		case s.R != "":
+			m.notes = append(m.notes, Note{Path: s.R, Kind: NoteRescued})
 		case s.M != "" && !slices.Contains(m.Created, s.M):
 			m.Created = append(m.Created, s.M)
 		}
