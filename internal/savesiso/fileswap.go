@@ -95,6 +95,9 @@ func PurgeFile(m FileManifest) error {
 		return nil
 	}
 	if exists(m.Target) {
+		if err := os.MkdirAll(filepath.Dir(m.Profile), 0o700); err != nil {
+			return err
+		}
 		if err := datadir.CopyFile(m.Target, m.Profile); err != nil {
 			return err
 		}
