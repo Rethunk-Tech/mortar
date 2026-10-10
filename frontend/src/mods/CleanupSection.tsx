@@ -1,7 +1,7 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Menu, Typography } from '@mui/material'
-import { ChevronDown, Trash2 } from 'lucide-react'
+import { ChevronDown, Info, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
@@ -70,12 +70,14 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
   const mod = useMods((s) => s.mods.find((candidate) => candidate.key === cleanup.key))
   const who = cleanup.name.trim() === '' ? t`Unknown mod` : cleanup.name
   const reason = cleanup.reason || t`Not needed by any enabled mod`
+  const sentence = cleanup.text ?? t`${who}: ${reason}`
   const removal = cleanup.choices ? (
     <RemoveOne choices={cleanup.choices} />
   ) : (
     <DisabledReason title={t`This mod is no longer in the profile.`} disabled={mod === undefined}>
       <Button
         size="small"
+        aria-label={t`Remove ${{ name: who }}`}
         disabled={mod === undefined}
         onClick={() => {
           if (mod !== undefined) {
@@ -89,7 +91,6 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
   )
   return (
     <Box
-      role="alert"
       sx={{
         display: 'flex',
         alignItems: 'flex-start',
@@ -104,24 +105,36 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
         ...(cleanup.onRestore ? { opacity: 0.75 } : {}),
       }}
     >
+      <Box sx={{ display: 'flex', color: 'text.secondary', mt: '2px' }}>
+        <Info size={16} aria-hidden={true} />
+      </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography
           title={cleanup.name.trim() === '' ? cleanup.id : undefined}
           sx={{ fontSize: 14, whiteSpace: 'normal', wordBreak: 'break-word' }}
         >
           <LinkedText
-            text={cleanup.text ?? t`${who}: ${reason}`}
+            text={sentence}
             links={[{ name: cleanup.name, key: cleanup.key, id: cleanup.id }]}
           />
         </Typography>
       </Box>
       {cleanup.onDismiss ? (
-        <Button size="small" color="inherit" onClick={cleanup.onDismiss}>
+        <Button
+          size="small"
+          color="inherit"
+          aria-label={t`Dismiss ${{ name: sentence }}`}
+          onClick={cleanup.onDismiss}
+        >
           {t`Dismiss`}
         </Button>
       ) : null}
       {cleanup.onRestore ? (
-        <Button size="small" onClick={cleanup.onRestore}>
+        <Button
+          size="small"
+          aria-label={t`Restore ${{ label: sentence }}`}
+          onClick={cleanup.onRestore}
+        >
           {t`Restore`}
         </Button>
       ) : null}

@@ -117,7 +117,7 @@ function DismissButton({ item }: { item: Item }) {
   const { t } = useLingui()
   return (
     <TipIconButton
-      label={t`Dismiss ${item.name}`}
+      label={t`Dismiss ${{ name: item.name }}`}
       onClick={() => Dismiss(item.id).catch(reportUnexpected)}
     >
       <X size={14} />
