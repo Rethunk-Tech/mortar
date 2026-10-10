@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -32,6 +33,7 @@ func (place) ID() string { return copyID }
 
 func (place) Plan(view View, dir string, files []launchplan.PlanFile) (Plan, error) {
 	byDst := map[string]Op{}
+	var owned []Owned
 	for _, f := range files {
 		base := dir
 		if f.Root != "" {
@@ -44,13 +46,27 @@ func (place) Plan(view View, dir string, files []launchplan.PlanFile) (Plan, err
 		}
 		dst := filepath.Join(base, f.Dst)
 		// Folded so a later file wins over an earlier one that differs only in case, as the file system would.
-		byDst[fsx.FoldCase(dst)] = Op{Src: f.Src, Dst: dst}
+		byDst[fsx.FoldCase(dst)] = Op{Src: f.Src, Dst: dst, WriteBack: f.Root != ""}
+		if o, ok := ownedOf(base, f); ok && !slices.Contains(owned, o) {
+			owned = append(owned, o)
+		}
 	}
-	plan := Plan{Dir: dir, View: view}
+	plan := Plan{Dir: dir, View: view, Owned: owned}
 	for _, dst := range slices.Sorted(mapsKeys(byDst)) {
 		plan.Ops = append(plan.Ops, byDst[dst])
 	}
 	return plan, nil
+}
+
+// ownedOf is the top folder of a path role's file, which its entry owns, paired with the profile's folder of that name
+// (the plan file's Src ends with its Dst). A file at the role's root has none.
+func ownedOf(base string, f launchplan.PlanFile) (Owned, bool) {
+	top, _, nested := strings.Cut(filepath.ToSlash(f.Dst), "/")
+	if f.Root == "" || !nested || !strings.HasSuffix(f.Src, f.Dst) {
+		return Owned{}, false
+	}
+	profileRoot := strings.TrimSuffix(f.Src, f.Dst)
+	return Owned{Dst: filepath.Join(base, top), Src: filepath.Join(profileRoot, top)}, true
 }
 
 func mapsKeys[V any](m map[string]V) func(yield func(string) bool) {
@@ -96,13 +112,13 @@ func (place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 			return Manifest{}, err
 		}
 	}
-	m := Manifest{Dir: p.Dir, View: p.View}
+	m := Manifest{Dir: p.Dir, View: p.View, Owned: p.Owned, Started: time.Now().UnixNano()}
 	for i, op := range p.Ops {
 		hash, err := fsx.SHA256(op.Src)
 		if err != nil {
 			return Manifest{}, err
 		}
-		pl := Placed{Dst: op.Dst, Src: op.Src, Hash: hash}
+		pl := Placed{Dst: op.Dst, Src: op.Src, Hash: hash, WriteBack: op.WriteBack}
 		if _, err := os.Lstat(op.Dst); err == nil {
 			pl.Displaced = filepath.Join(p.View.JournalDir, "displaced", fmt.Sprint(i))
 		}
@@ -212,6 +228,10 @@ func (place) Purge(ctx context.Context, m Manifest) error {
 		return errors.Join(err, log.close())
 	}
 	at("ops-undone")
+	if err := adopt(&m, log); err != nil {
+		return errors.Join(err, log.close())
+	}
+	at("adopted")
 	// Deepest first: a folder made for one file may hold a sibling's folder made later.
 	for _, d := range slices.SortedFunc(slices.Values(m.Created), func(a, b string) int { return len(b) - len(a) }) {
 		_ = os.Remove(d)
@@ -239,6 +259,9 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 		switch {
 		case o.Displaced != "" && backupErr == nil:
 			// With the player's file set aside, whatever is at Dst is ours, even if the game wrote to it.
+			if err := writeBack(o, i, log); err != nil {
+				return err
+			}
 			if err := fsx.Remove(o.Dst); err != nil && !errors.Is(err, fs.ErrNotExist) {
 				return err
 			}
@@ -246,11 +269,25 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 				return err
 			}
 		case o.Displaced == "":
-			// Nothing was displaced, so Dst is ours only while it still holds our content: a file changed since may hold
-			// the player's or a mod's own data (a script mod's settings), and it stays.
-			if h, err := fsx.SHA256(o.Dst); err == nil && h == o.Hash {
-				if err := fsx.Remove(o.Dst); err != nil {
-					return err
+			// Nothing was displaced, so Dst is ours only while it still holds our content. A file changed since holds
+			// the player's or a mod's own data (a script mod's settings): one placed from the profile's copy goes back
+			// into that copy, and any other stays.
+			if h, err := fsx.SHA256(o.Dst); err == nil {
+				switch {
+				case h == o.Hash:
+					if err := fsx.Remove(o.Dst); err != nil {
+						return err
+					}
+				case o.WriteBack:
+					wrote, err := writeBackFile(o, i, log)
+					if err != nil {
+						return err
+					}
+					if wrote {
+						if err := fsx.Remove(o.Dst); err != nil {
+							return err
+						}
+					}
 				}
 			}
 		}
@@ -263,6 +300,31 @@ func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 		at(fmt.Sprintf("undone-logged:%d", i))
 	}
 	return nil
+}
+
+// writeBack copies a changed Dst of a profile-copy file over its Src before Dst is removed or the displaced file returns.
+func writeBack(o Placed, i int, log *opLog) error {
+	if !o.WriteBack {
+		return nil
+	}
+	if h, err := fsx.SHA256(o.Dst); err != nil || h == o.Hash {
+		return nil
+	}
+	_, err := writeBackFile(o, i, log)
+	return err
+}
+
+// writeBackFile copies Dst over Src through a temp file and a rename, so the bytes are in both places until Dst is
+// removed. It reports false, leaving Dst alone, when the profile's folder is gone.
+func writeBackFile(o Placed, i int, log *opLog) (bool, error) {
+	if _, err := os.Stat(filepath.Dir(o.Src)); err != nil {
+		return false, nil
+	}
+	if err := datadir.CopyFile(o.Dst, o.Src); err != nil {
+		return false, err
+	}
+	at(fmt.Sprintf("written-back:%d", i))
+	return true, log.add(step{W: &i}, false)
 }
 
 func (p place) Recover(ctx context.Context, journalDir string, alive func() bool) error {

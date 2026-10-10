@@ -22,14 +22,26 @@ type View struct {
 	Roots map[string]string `json:"roots,omitempty"`
 }
 
-// Op is one file to place.
-type Op struct{ Src, Dst string }
+// Op is one file to place. WriteBack marks a file placed in a path role's folder from the profile's own copy, which
+// Purge writes back to Src when the game or a mod rewrote it.
+type Op struct {
+	Src, Dst  string
+	WriteBack bool
+}
+
+// Owned is a folder a profile entry owns in a path role's folder: Dst is the shared folder and Src the profile's folder
+// of the same name, which adopts what a mod creates in Dst during play.
+type Owned struct {
+	Dst string `json:"dst"`
+	Src string `json:"src"`
+}
 
 // Plan is what Apply will do: copy each Op's Src to Dst, a path in Dir.
 type Plan struct {
-	Ops  []Op
-	Dir  string
-	View View
+	Ops   []Op
+	Owned []Owned
+	Dir   string
+	View  View
 }
 
 // Placed is one placed file as the manifest records it.
@@ -39,6 +51,8 @@ type Placed struct {
 	Hash string `json:"hash"`
 	// Displaced is where the file that was at Dst before is kept, "" when there was none.
 	Displaced string `json:"displaced,omitempty"`
+	// WriteBack is set for a file placed from a profile's copy: a changed Dst is copied back over Src at purge.
+	WriteBack bool `json:"writeBack,omitempty"`
 	// Done is set once the file is in place.
 	Done bool `json:"done,omitempty"`
 	// Undone is set once Purge has taken the file back, so a Purge run again after a failure leaves it alone.
@@ -50,6 +64,10 @@ type Manifest struct {
 	Dir  string   `json:"dir"`
 	View View     `json:"view"`
 	Ops  []Placed `json:"ops"`
+	// Owned are the folders whose new files Purge adopts into the profile; Started is when Apply began, so a file the
+	// player already had there is not mistaken for one created during play.
+	Owned   []Owned `json:"owned,omitempty"`
+	Started int64   `json:"started,omitempty"`
 	// Created are the folders Apply made, removed again by Purge when empty.
 	Created []string `json:"created,omitempty"`
 }

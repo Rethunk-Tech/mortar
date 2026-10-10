@@ -23,6 +23,9 @@ type step struct {
 	P *int   `json:"p,omitempty"`
 	U *int   `json:"u,omitempty"`
 	M string `json:"m,omitempty"`
+	// W is the index of a file whose changed bytes were copied back into the profile; A a created file adopted into it.
+	W *int   `json:"w,omitempty"`
+	A string `json:"a,omitempty"`
 }
 
 // opLog is the append-only record of what a deploy and its purge did, beside the first full record (deploy.json) that
