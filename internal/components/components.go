@@ -128,7 +128,10 @@ type GameInfo struct {
 	R2modmanFolder string `json:"r2modmanFolder,omitempty"`
 	// Metadata names the SMAPI-derived features that apply to the game: smapi-updates, smapi-compat, stardew-dataset.
 	Metadata []string `json:"metadata"`
-	// Paths names folders and files outside the install by role (saves, startupPreferences).
+	// NewProfileSeparateSaves starts a new profile of this game with its own saves rather than the shared ones.
+	NewProfileSeparateSaves bool `json:"newProfileSeparateSaves,omitempty"`
+	// Paths names folders and files outside the install by role (saves, startupPreferences, options). The options
+	// role is a file; the others are folders.
 	Paths map[string]PathTemplate `json:"paths,omitempty"`
 	// SaveFiles are patterns naming each save file in the saves folder or one folder below it, for a game that keeps a
 	// save as a file; a pattern starting with "!" excludes the files it matches. Without them a save is a folder holding
@@ -263,6 +266,10 @@ type TargetDef struct {
 	ID       string         `json:"id"`
 	Root     string         `json:"root"`
 	MaxDepth map[string]int `json:"maxDepth,omitempty"`
+	// KeepWhole lists lower-case extensions (no dot) that mark an archive as one unit: a folder-loader archive laying
+	// out a file with one installs as a single entry holding every file it laid out, since such files only work
+	// beside their siblings. An archive with none splits into one entry per file.
+	KeepWhole []string `json:"keepWhole,omitempty"`
 }
 
 // ProfileFolder is the folder below the profile's root that the target's files are laid out in: "" for {profile},
@@ -498,6 +505,11 @@ func (g GameInfo) Validate() error {
 		}
 		if _, ok := targets[t.ID]; ok {
 			return fmt.Errorf("game %q lists target %q more than once", g.ID, t.ID)
+		}
+		for _, ext := range t.KeepWhole {
+			if ext == "" || ext != strings.ToLower(ext) || strings.ContainsAny(ext, ".\\/") {
+				return fmt.Errorf("game %q target %q has an unusable keepWhole extension %q", g.ID, t.ID, ext)
+			}
 		}
 		targets[t.ID] = struct{}{}
 	}

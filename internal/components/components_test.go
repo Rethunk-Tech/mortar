@@ -551,3 +551,18 @@ func TestGraphicsIsValidatedAndPeakOffersIt(t *testing.T) {
 		t.Errorf("Vulkan = %+v, want the game's default with no arguments", vk)
 	}
 }
+
+func TestKeepWholeValidation(t *testing.T) {
+	g := func(ext string) GameInfo {
+		return GameInfo{ID: "x", Name: "x", Marker: "x", Loaders: []GameLoader{{ID: "l"}}, Deploy: DeployProfile,
+			Targets: []TargetDef{{ID: "mods", Root: "{profile}/Mods", KeepWhole: []string{ext}}}}
+	}
+	if err := g("ts4script").Validate(); err != nil {
+		t.Fatalf("valid keepWhole rejected: %v", err)
+	}
+	for _, bad := range []string{"", ".ts4script", "TS4Script", "a/b"} {
+		if g(bad).Validate() == nil {
+			t.Fatalf("keepWhole %q validated", bad)
+		}
+	}
+}
