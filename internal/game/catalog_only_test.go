@@ -19,12 +19,12 @@ func TestACatalogOnlyGameNeedsNoCode(t *testing.T) {
 		t.Fatal(err)
 	}
 	m.Games = append(slices.Clone(m.Games), components.GameInfo{
-		ID: "content-warning", Name: "Content Warning", Enabled: true, Marker: "Content Warning.exe",
-		R2modmanFolder: "ContentWarning", Deploy: "profile",
+		ID: "catalog-only", Name: "Catalog Only", Enabled: true, Marker: "Catalog Only.exe",
+		R2modmanFolder: "CatalogOnly", Deploy: "profile",
 		Targets: []components.TargetDef{{ID: "profile", Root: "{profile}"}},
-		Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "2881650"}},
+		Stores:  components.GameStores{Steam: &components.SteamStore{AppID: "999999"}},
 		Loaders: []components.GameLoader{{ID: "bepinex5", Name: "BepInEx 5"}},
-		Sources: []components.GameSource{{ID: "thunderstore", Key: "content-warning"}},
+		Sources: []components.GameSource{{ID: "thunderstore", Key: "catalog-only"}},
 	})
 	if err := m.Validate(); err != nil {
 		t.Fatal(err)
@@ -34,29 +34,29 @@ func TestACatalogOnlyGameNeedsNoCode(t *testing.T) {
 	ConfigureComponents(c)
 	t.Cleanup(func() { ConfigureComponents(nil) })
 
-	if !slices.Contains(Implemented(), "content-warning") {
+	if !slices.Contains(Implemented(), "catalog-only") {
 		t.Fatalf("Implemented = %v", Implemented())
 	}
-	g := Find("content-warning")
-	if g == nil || g.Name() != "Content Warning" || g.SteamAppID() != "2881650" ||
+	g := Find("catalog-only")
+	if g == nil || g.Name() != "Catalog Only" || g.SteamAppID() != "999999" ||
 		!slices.Equal(g.ModSources(), []string{"thunderstore"}) ||
-		!slices.Equal(g.GameProcesses(), []string{"Content Warning.exe", "Content Warning"}) {
+		!slices.Equal(g.GameProcesses(), []string{"Catalog Only.exe", "Catalog Only"}) {
 		t.Fatalf("game = %#v", g)
 	}
-	if l, ok := PrimaryLoader("content-warning"); !ok || l.ID() != "bepinex5" {
+	if l, ok := PrimaryLoader("catalog-only"); !ok || l.ID() != "bepinex5" {
 		t.Fatalf("loader = %v, %v", l, ok)
 	}
-	if id, ok := ByR2modmanFolder("ContentWarning"); !ok || id != "content-warning" {
+	if id, ok := ByR2modmanFolder("CatalogOnly"); !ok || id != "catalog-only" {
 		t.Fatalf("r2modman folder = %q, %v", id, ok)
 	}
 
 	h := t.TempDir()
 	root := filepath.Join(h, ".local", "share", "Steam")
-	dir := filepath.Join(root, "steamapps", "common", "Content Warning")
+	dir := filepath.Join(root, "steamapps", "common", "Catalog Only")
 	for path, body := range map[string]string{
-		filepath.Join(dir, "Content Warning.exe"):                   "",
-		filepath.Join(root, "steamapps", "libraryfolders.vdf"):      "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \"" + root + "\"\n}\n}\n",
-		filepath.Join(root, "steamapps", "appmanifest_2881650.acf"): "\"AppState\"\n{\n\"installdir\" \"Content Warning\"\n}\n",
+		filepath.Join(dir, "Catalog Only.exe"):                     "",
+		filepath.Join(root, "steamapps", "libraryfolders.vdf"):     "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \"" + root + "\"\n}\n}\n",
+		filepath.Join(root, "steamapps", "appmanifest_999999.acf"): "\"AppState\"\n{\n\"installdir\" \"Catalog Only\"\n}\n",
 	} {
 		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 			t.Fatal(err)
@@ -72,7 +72,7 @@ func TestACatalogOnlyGameNeedsNoCode(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	i := slices.IndexFunc(list, func(r GameInfo) bool { return r.ID == "content-warning" })
+	i := slices.IndexFunc(list, func(r GameInfo) bool { return r.ID == "catalog-only" })
 	if i < 0 || !list[i].Installed || list[i].InstallDir != dir || list[i].LoaderID != "bepinex5" {
 		t.Fatalf("list = %+v", list)
 	}

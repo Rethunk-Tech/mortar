@@ -413,6 +413,201 @@
       ]
     },
     {
+      "id": "content-warning",
+      "name": "Content Warning",
+      "enabled": true,
+      "marker": "Content Warning.exe",
+      "r2modmanFolder": "ContentWarning",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Landfall Games/Content Warning/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "2881650"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "content-warning"
+        }
+      ]
+    },
+    {
+      "id": "inscryption",
+      "name": "Inscryption",
+      "enabled": true,
+      "marker": "Inscryption.exe",
+      "linuxMarker": "Inscryption.x86_64",
+      "r2modmanFolder": "Inscryption",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Daniel Mullins Games/Inscryption/Player.log",
+          "linux": "{xdgConfig}/unity3d/Daniel Mullins Games/Inscryption/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1092790"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_Inscryption"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "inscryption"
+        }
+      ]
+    },
+    {
+      "id": "cult-of-the-lamb",
+      "name": "Cult of the Lamb",
+      "enabled": true,
+      "marker": "Cult Of The Lamb.exe",
+      "r2modmanFolder": "COTL",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Massive Monster/Cult Of The Lamb/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1313140"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_CultOfTheLamb"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "cult-of-the-lamb"
+        }
+      ]
+    },
+    {
+      "id": "sun-haven",
+      "name": "Sun Haven",
+      "enabled": true,
+      "marker": "Sun Haven.exe",
+      "r2modmanFolder": "SunHaven",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/Pixel Sprout Studios/Sun Haven/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1432860"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "sun-haven"
+        }
+      ]
+    },
+    {
+      "id": "potion-craft",
+      "name": "Potion Craft",
+      "enabled": true,
+      "marker": "Potion Craft.exe",
+      "r2modmanFolder": "PotionCraft",
+      "metadata": [],
+      "paths": {
+        "unityLog": {
+          "windows": "{localLow}/niceplay games/Potion Craft/Player.log"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1210320"
+        }
+      },
+      "loaders": [
+        {
+          "id": "bepinex5",
+          "name": "BepInEx 5",
+          "companion": "bridge",
+          "package": "BepInEx-BepInExPack_PotionCraft"
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "potion-craft"
+        }
+      ]
+    },
+    {
       "id": "sims4",
       "name": "The Sims 4",
       "enabled": true,
