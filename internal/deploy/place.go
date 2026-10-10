@@ -109,36 +109,34 @@ func (place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 		m.Ops = append(m.Ops, pl)
 	}
 	// The record comes first: from here a crash is recoverable.
+	_ = fsx.Remove(logPath(p.View.JournalDir))
 	if err := persist(m); err != nil {
+		return Manifest{}, err
+	}
+	at("record")
+	log, err := openLog(p.View.JournalDir)
+	if err != nil {
 		return Manifest{}, err
 	}
 	for i := range m.Ops {
 		if err := ctx.Err(); err != nil {
-			return m, errors.Join(err, persist(m))
+			return m, errors.Join(err, log.close())
 		}
-		if err := put(&m, &m.Ops[i]); err != nil {
-			return m, errors.Join(err, persist(m))
-		}
-		if (i+1)%checkpointEvery == 0 {
-			if err := persist(m); err != nil {
-				return m, err
-			}
+		if err := put(&m, i, log); err != nil {
+			return m, errors.Join(err, log.close())
 		}
 	}
-	return m, persist(m)
+	return m, errors.Join(log.close(), persist(m))
 }
-
-// checkpointEvery is how many files a deploy or purge places between journal writes. Rewriting the journal after every
-// file is quadratic in the file count; a crash between checkpoints is safe because the first record already names every
-// destination and Purge decides each one from the disk (a displaced file's backup, or a placed file's hash), not from Done.
-const checkpointEvery = 128
 
 func inside(dir, path string) bool {
 	rel, err := filepath.Rel(dir, path)
 	return err == nil && filepath.IsLocal(rel)
 }
 
-func put(m *Manifest, pl *Placed) error {
+func put(m *Manifest, i int, log *opLog) error {
+	pl := &m.Ops[i]
+	n := fmt.Sprint(i)
 	if pl.Displaced != "" {
 		if err := os.MkdirAll(filepath.Dir(pl.Displaced), 0o700); err != nil {
 			return err
@@ -146,19 +144,27 @@ func put(m *Manifest, pl *Placed) error {
 		if err := move(pl.Dst, pl.Displaced); err != nil {
 			return err
 		}
+		at("displaced:" + n)
 	}
-	if err := mkdirTracked(m, filepath.Dir(pl.Dst)); err != nil {
+	if err := mkdirTracked(m, filepath.Dir(pl.Dst), log, n); err != nil {
 		return err
 	}
+	at("before-copy:" + n)
 	if err := datadir.CopyFile(pl.Src, pl.Dst); err != nil {
 		return err
 	}
+	at("copied:" + n)
 	pl.Done = true
+	if err := log.add(step{P: &i}, false); err != nil {
+		return err
+	}
+	at("logged:" + n)
 	return nil
 }
 
-// mkdirTracked creates dir and records the folders it had to make.
-func mkdirTracked(m *Manifest, dir string) error {
+// mkdirTracked creates dir and records the folders it had to make. Each is on the log, flushed, before it exists, so a
+// crash cannot strand a folder Mortar made.
+func mkdirTracked(m *Manifest, dir string, log *opLog, n string) error {
 	var missing []string
 	for d := dir; ; d = filepath.Dir(d) {
 		if _, err := os.Stat(d); err == nil || filepath.Dir(d) == d {
@@ -166,10 +172,20 @@ func mkdirTracked(m *Manifest, dir string) error {
 		}
 		missing = append(missing, d)
 	}
+	if len(missing) == 0 {
+		return nil
+	}
+	for _, d := range missing {
+		if err := log.add(step{M: d}, true); err != nil {
+			return err
+		}
+	}
+	at("mkdir-logged:" + n)
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return err
 	}
 	m.Created = append(m.Created, missing...)
+	at("mkdir:" + n)
 	return nil
 }
 
@@ -185,20 +201,28 @@ func move(src, dst string) error {
 }
 
 func (place) Purge(ctx context.Context, m Manifest) error {
-	if err := undoOps(ctx, &m); err != nil {
-		if m.View.JournalDir != "" {
-			err = errors.Join(err, persist(m))
+	var log *opLog
+	if m.View.JournalDir != "" {
+		var err error
+		if log, err = openLog(m.View.JournalDir); err != nil {
+			return err
 		}
-		return err
 	}
+	if err := undoOps(ctx, &m, log); err != nil {
+		return errors.Join(err, log.close())
+	}
+	at("ops-undone")
 	// Deepest first: a folder made for one file may hold a sibling's folder made later.
 	for _, d := range slices.SortedFunc(slices.Values(m.Created), func(a, b string) int { return len(b) - len(a) }) {
 		_ = os.Remove(d)
+		at("folder:" + d)
 	}
-	return fsx.RemoveAll(m.View.JournalDir)
+	err := log.close()
+	at("journal")
+	return errors.Join(err, fsx.RemoveAll(m.View.JournalDir))
 }
 
-func undoOps(ctx context.Context, m *Manifest) error {
+func undoOps(ctx context.Context, m *Manifest, log *opLog) error {
 	for i := len(m.Ops) - 1; i >= 0; i-- {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -206,6 +230,10 @@ func undoOps(ctx context.Context, m *Manifest) error {
 		o := m.Ops[i]
 		if o.Undone {
 			continue
+		}
+		// A crashed copy leaves its temp file; the name is Mortar's, so it goes whatever else is known of the operation.
+		if err := fsx.Remove(tmpName(o.Dst)); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
 		}
 		_, backupErr := os.Lstat(o.Displaced)
 		switch {
@@ -218,20 +246,21 @@ func undoOps(ctx context.Context, m *Manifest) error {
 				return err
 			}
 		case o.Displaced == "":
-			// Nothing was displaced, so Dst is ours only while it still holds our content.
-			if h, err := fsx.SHA256(o.Dst); err == nil && h == o.Hash {
+			// A file recorded as placed is ours whatever the game did to it; one not recorded (a crash between the
+			// copy and its line) is ours only while it still holds our content.
+			if h, err := fsx.SHA256(o.Dst); err == nil && (o.Done || h == o.Hash) {
 				if err := fsx.Remove(o.Dst); err != nil {
 					return err
 				}
 			}
 		}
 		// A displaced file with no backup left was never moved or is already back: Dst is the player's own.
+		at(fmt.Sprintf("undone-file:%d", i))
 		m.Ops[i].Undone = true
-		if m.View.JournalDir != "" && (len(m.Ops)-i)%checkpointEvery == 0 {
-			if err := persist(*m); err != nil {
-				return err
-			}
+		if err := log.add(step{U: &i}, false); err != nil {
+			return err
 		}
+		at(fmt.Sprintf("undone-logged:%d", i))
 	}
 	return nil
 }
@@ -253,6 +282,9 @@ func (p place) Recover(ctx context.Context, journalDir string, alive func() bool
 	}
 	if strings.TrimSpace(m.View.JournalDir) == "" {
 		m.View.JournalDir = journalDir
+	}
+	if err := replay(&m); err != nil {
+		return fmt.Errorf("read the deploy log: %w", err)
 	}
 	return p.Purge(ctx, m)
 }
