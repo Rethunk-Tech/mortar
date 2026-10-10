@@ -78,3 +78,43 @@ func TestSearchPagesAcrossClasses(t *testing.T) {
 		t.Fatalf("page 2 starts at %d downloads, want %d", first, want)
 	}
 }
+
+func TestMergedTotalIsCappedAtTheSearchWindow(t *testing.T) {
+	t.Parallel()
+	big := make([]int, 6000)
+	d := classFake(t, map[string][]int{"1": big, "2": big})
+	page, err := d.Search(t.Context(), source.Query{Game: "g", Key: "1", Sort: source.SortDownloads})
+	if err != nil || page.Total != maxWindow {
+		t.Fatalf("total %d, want the %d window cap: %v", page.Total, maxWindow, err)
+	}
+}
+
+// TestLiveSims4MergesClasses is the check that the catalog's classes reach the search and that page one holds mods
+// of more than one class.
+func TestLiveSims4MergesClasses(t *testing.T) {
+	if os.Getenv("MORTAR_LIVE_SOURCES") == "" || os.Getenv(envKey) == "" {
+		t.Skip("set MORTAR_LIVE_SOURCES=1 and " + envKey + " to query CurseForge")
+	}
+	g, ok := components.Game("sims4")
+	if !ok {
+		t.Fatal("catalog has no sims4")
+	}
+	gs, ok := g.Source("curseforge")
+	if !ok || len(gs.Classes) < 2 {
+		t.Fatalf("sims4 curseforge source: %+v", gs)
+	}
+	for _, sort := range []string{source.SortDownloads, source.SortUpdated} {
+		mods, total, err := Driver{}.searchClasses(t.Context(), gs.GameID, gs.Classes, source.Query{Game: "sims4", Key: gs.Key, Sort: sort}, 0)
+		if err != nil || len(mods) == 0 {
+			t.Fatalf("%s: %d mods, %v", sort, len(mods), err)
+		}
+		classes := map[int]bool{}
+		for _, m := range mods {
+			classes[m.ClassID] = true
+		}
+		t.Logf("%s: summed total %d, page one classes %v", sort, total, classes)
+		if len(classes) < 2 {
+			t.Fatalf("%s: page one holds only classes %v", sort, classes)
+		}
+	}
+}
