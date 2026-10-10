@@ -2,6 +2,7 @@ package launch
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"slices"
 	"strings"
@@ -95,11 +96,7 @@ func envBlock(env []string) *uint16 {
 		k, _, _ := strings.Cut(kv, "=")
 		last[strings.ToUpper(k)] = kv
 	}
-	keys := make([]string, 0, len(last))
-	for k := range last {
-		keys = append(keys, k)
-	}
-	slices.Sort(keys)
+	keys := slices.Sorted(maps.Keys(last))
 	var out []uint16
 	for _, k := range keys {
 		out = append(out, utf16.Encode([]rune(last[k]))...)

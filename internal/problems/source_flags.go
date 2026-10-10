@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"maps"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -93,11 +94,7 @@ func (s *Service) siteFlagged(ctx context.Context, cl *meta.Client, kind, site s
 	if len(byID) == 0 {
 		return nil
 	}
-	ids := make([]string, 0, len(byID))
-	for id := range byID {
-		ids = append(ids, id)
-	}
-	slices.Sort(ids)
+	ids := slices.Sorted(maps.Keys(byID))
 	sum := sha256.Sum256([]byte(strings.Join(ids, "\n")))
 	flags, err := meta.Cached(cl, meta.StandingPrefix+kind+"-"+hex.EncodeToString(sum[:8])+".json", standingTTL, func() (map[string]source.Standing, error) {
 		if s.Throttle != nil {
