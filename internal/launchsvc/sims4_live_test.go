@@ -146,7 +146,9 @@ func TestSims4RealEntryIsFoundFromSteamAndTheEAAppAndResolvesInsideTheProtonPref
 	lib := t.TempDir()
 	w.write(t, filepath.Join(lib, "The Sims 4", "Game", "Bin", "TS4_x64.exe"), "exe")
 	found := gamestore.Discover(t.TempDir(), map[string][]string{gamestore.LauncherEA: {lib}}, info)
-	if !slices.ContainsFunc(found, func(in gamestore.Install) bool { return in.Store == gamestore.StoreEA && in.Dir == filepath.Join(lib, "The Sims 4") }) {
+	if !slices.ContainsFunc(found, func(in gamestore.Install) bool {
+		return in.Store == gamestore.StoreEA && in.Dir == filepath.Join(lib, "The Sims 4")
+	}) {
 		t.Fatalf("EA App layout not found: %+v", found)
 	}
 }
@@ -255,7 +257,9 @@ func TestSims4DepthLimitsFollowTheCatalog(t *testing.T) {
 	zip := func(name string, files map[string]string) string {
 		return testfs.WriteZip(t, filepath.Join(t.TempDir(), name), files)
 	}
-	src := func(id int) profile.Source { return profile.Source{Kind: profile.KindCurseForge, Name: "9", FileID: id} }
+	src := func(id int) profile.Source {
+		return profile.Source{Kind: profile.KindCurseForge, Name: "9", FileID: id}
+	}
 	if _, err := w.profiles.InstallSource(t.Context(), sims4, w.profileID, zip("ok.zip", map[string]string{"a/b/c/d/e/deep.package": "1"}), src(1)); err != nil {
 		t.Fatalf("a package five folders deep was refused: %v", err)
 	}

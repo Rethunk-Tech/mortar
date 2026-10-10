@@ -23,7 +23,7 @@ func TestWebOpensOnlyHTTPAndHTTPSWithAHost(t *testing.T) {
 		"https://example.com/a b":                                     false,
 		"https://example.com/\n":                                      false,
 		"example.com/page":                                            false,
-		"https://example.com/" + strings.Repeat("a", maxURL):          false,
+		"https://example.com/" + strings.Repeat("a", maxURL): false,
 	} {
 		got, err := Web(raw)
 		if (err == nil) != ok || (ok && got != raw) {

@@ -19,7 +19,7 @@ func TestAFileSavedFromAnItchPageIsAnEntryThatNamesThePage(t *testing.T) {
 	}
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "ItchMod.zip"), map[string]string{
 		"ItchMod/manifest.json": `{"Name":"Itch Mod","Author":"a","Version":"1.0.0","UniqueID":"a.ItchMod","EntryDll":"ItchMod.dll"}`,
-		"ItchMod/ItchMod.dll": "x",
+		"ItchMod/ItchMod.dll":   "x",
 	})
 	res, err := ps.InstallItch(t.Context(), "stardew", p.ID, zip, "someone/cool-mod")
 	if err != nil {
