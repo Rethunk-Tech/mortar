@@ -416,7 +416,7 @@ func importEntryNoteTags(note string, tags []string) (string, []string) {
 // MatchesEntry reports whether the ref names the same mod file as the profile entry.
 func (r Ref) MatchesEntry(e profile.Entry) bool {
 	if r.Local != "" {
-		return e.Source.Kind == profile.KindLocal && e.Key == r.Local
+		return e.Source.Kind == profile.KindLocal && e.StoreKey() == r.Local
 	}
 	if r.Patreon != "" {
 		return e.Source.Kind == profile.KindPatreon && e.Source.Name == r.Patreon
@@ -577,7 +577,7 @@ func refOf(e profile.Entry, inc Include) (Ref, string) {
 		if !inc.LocalFiles {
 			return Ref{}, "local archive"
 		}
-		r = Ref{Local: e.Key, LocalName: e.Source.Name}
+		r = Ref{Local: e.StoreKey(), LocalName: e.Source.Name}
 		missing = "no local archive recorded"
 	default:
 		return Ref{}, "unknown source"
@@ -619,27 +619,50 @@ func Enabled(e profile.Entry) bool {
 }
 
 // Collect splits a profile into what a link can carry and the enabled entries it cannot; off holds the keys of
-// the switched-off entries. Bundled entries are in none of them.
+// the switched-off entries. Bundled entries are in none of them. The entries of one archive a folder game split into
+// files are one ref, keyed by their store item, that carries the switched-off files; the archive is in off only when
+// every file is off.
 func Collect(p profile.Profile, include ...Include) (s Shared, left []LeftOut, off []string) {
 	inc := DefaultInclude()
 	if len(include) > 0 {
 		inc = include[0]
 	}
 	s = Shared{Name: p.Name, Entries: []Ref{}}
+	done := map[string]bool{}
 	for _, e := range p.Entries {
 		if e.Source.Bundled() {
 			continue
 		}
-		if !Enabled(e) && !inc.DisabledMods {
-			off = append(off, e.Key)
+		group := []profile.Entry{e}
+		if e.Item != "" {
+			if done[e.Item] {
+				continue
+			}
+			done[e.Item] = true
+			group = group[:0]
+			for _, o := range p.Entries {
+				if o.Item == e.Item {
+					group = append(group, o)
+				}
+			}
+		}
+		key := e.StoreKey()
+		if !slices.ContainsFunc(group, Enabled) && !inc.DisabledMods {
+			off = append(off, key)
 			continue
 		}
 		r, why := refOf(e, inc)
 		if why != "" {
-			left = append(left, LeftOut{Key: e.Key, Reason: why})
+			left = append(left, LeftOut{Key: key, Reason: why})
 			continue
 		}
-		r.key = e.Key
+		if len(group) > 1 || e.Item != "" {
+			r.Disabled = nil
+			for _, o := range group {
+				r.Disabled = append(r.Disabled, o.Disabled...)
+			}
+		}
+		r.key = key
 		s.Entries = append(s.Entries, r)
 	}
 	return s, left, off

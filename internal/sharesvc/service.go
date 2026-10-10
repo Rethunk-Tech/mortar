@@ -282,7 +282,9 @@ func describe(game string, p profile.Profile, facts profile.ShareFacts, include 
 	}
 	byKey := map[string]profile.Entry{}
 	for _, e := range p.Entries {
-		byKey[e.Key] = e
+		if _, ok := byKey[e.StoreKey()]; !ok {
+			byKey[e.StoreKey()] = e
+		}
 	}
 	leftKeys := map[string]bool{}
 	for _, l := range left {
@@ -294,8 +296,9 @@ func describe(game string, p profile.Profile, facts profile.ShareFacts, include 
 		info.LeftOut = append(info.LeftOut, Omitted{Name: strings.Join(entryNames(byKey[key], true), ", "), Reason: "off"})
 	}
 	groups := map[string]*Group{}
+	counted := map[string]bool{}
 	for _, e := range p.Entries {
-		if e.Source.Bundled() || leftKeys[e.Key] || slices.Contains(off, e.Key) {
+		if e.Source.Bundled() || leftKeys[e.StoreKey()] || slices.Contains(off, e.StoreKey()) {
 			continue
 		}
 		g := groups[e.Source.Kind]
@@ -304,8 +307,11 @@ func describe(game string, p profile.Profile, facts profile.ShareFacts, include 
 			g = &info.Groups[len(info.Groups)-1]
 			groups[e.Source.Kind] = g
 		}
-		g.Count++
-		info.Count++
+		if !counted[e.StoreKey()] {
+			counted[e.StoreKey()] = true
+			g.Count++
+			info.Count++
+		}
 		for _, name := range entryNames(e, false) {
 			if !slices.Contains(g.Mods, name) {
 				g.Mods = append(g.Mods, name)

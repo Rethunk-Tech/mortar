@@ -165,7 +165,7 @@ func snapshot(p profile.Profile, uniqueIDs []mod.ID) ([]Mod, error) {
 			}
 			name := m.Name
 			name = cmp.Or(name, m.ID.Local())
-			byID[id] = Mod{ID: m.ID, Name: name, EntryKey: e.Key, Source: e.Source}
+			byID[id] = Mod{ID: m.ID, Name: name, EntryKey: e.StoreKey(), Source: e.Source}
 		}
 	}
 	out := make([]Mod, 0, len(uniqueIDs))

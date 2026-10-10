@@ -25,7 +25,9 @@ func collectFileGroups(p profile.Profile) []FileGroup {
 			if !ok {
 				continue
 			}
-			fg.Refs = append(fg.Refs, id)
+			if !slices.ContainsFunc(fg.Refs, func(r Ref) bool { return r.MatchesEntry(p.Entries[i]) }) {
+				fg.Refs = append(fg.Refs, id)
+			}
 		}
 		out = append(out, fg)
 	}
@@ -55,7 +57,7 @@ func identityOf(e profile.Entry) (Ref, bool) {
 		}
 		return Ref{Package: e.Source.Name, Version: e.Source.Version}, true
 	case profile.KindLocal:
-		return Ref{Local: e.Key, LocalName: e.Source.Name}, true
+		return Ref{Local: e.StoreKey(), LocalName: e.Source.Name}, true
 	default:
 		return Ref{}, false
 	}

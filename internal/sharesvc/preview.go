@@ -407,7 +407,7 @@ func (r *resolver) local(ref share.Ref) Mod {
 		Key: ref.Local, Site: SiteLocal, Name: ref.LocalName, State: StateInstalled, IDs: []mod.ID{},
 		Disabled: append([]mod.ID{}, ref.Disabled...),
 	}
-	has := slices.ContainsFunc(r.target, func(e profile.Entry) bool { return e.Key == ref.Local })
+	has := slices.ContainsFunc(r.target, func(e profile.Entry) bool { return e.StoreKey() == ref.Local })
 	if !has && !r.storedKey(ref.Local) {
 		m.State, m.Reason = StateUnavailable, ReasonNoFile
 	}
