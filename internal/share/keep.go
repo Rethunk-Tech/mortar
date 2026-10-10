@@ -152,7 +152,7 @@ func SameExceptArrival(base, have Preview, missing map[string]bool) bool {
 			return false
 		}
 	}
-	return len(held) == 0 && maps.Equal(loaderFiles(base), loaderFiles(have))
+	return len(held) == 0 && maps.Equal(loaderFiles(base), loaderFiles(have)) && maps.Equal(changedFiles(base), changedFiles(have))
 }
 
 func loaderFiles(p Preview) map[string]string {

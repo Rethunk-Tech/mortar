@@ -3,8 +3,6 @@ package share
 import (
 	"bytes"
 	"errors"
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -48,37 +46,5 @@ func TestProblemChoicesWithAnUnsafeTokenAreRefused(t *testing.T) {
 	err := checkProblemChoices(ProblemChoices{Dismissed: []string{"a\tb\x00"}})
 	if !errors.Is(err, ErrBadFile) {
 		t.Fatalf("err = %v", err)
-	}
-}
-
-// A profile's changed and adopted copies (<profile>/changed and its content folder) are the player's own data: no
-// payload carries them, for a friend's share or for the player's own computers.
-func TestAPayloadNeverCarriesAProfilesChangedCopies(t *testing.T) {
-	profileDir := t.TempDir()
-	for rel, body := range map[string]string{"changed/Mods/mc/mc.cfg": "player=3", "Mods/mc/mc_state.dat": "adopted"} {
-		writeShareFile(t, profileDir, rel, body)
-	}
-	p := profile.Profile{Name: "P", Entries: []profile.Entry{{Key: "k", Source: profile.Source{Kind: profile.KindNexus, ModID: 7, FileID: 70}}}}
-	for name, inc := range map[string]Include{"share": DefaultInclude(), "own computers": OwnInclude()} {
-		var buf bytes.Buffer
-		if _, err := Write(&buf, "sims4", p, filepath.Join(profileDir, "mods"), inc); err != nil {
-			t.Fatal(err)
-		}
-		for _, secret := range []string{"player=3", "adopted", "mc_state.dat", "mc.cfg"} {
-			if bytes.Contains(buf.Bytes(), []byte(secret)) {
-				t.Errorf("%s payload carries %q", name, secret)
-			}
-		}
-	}
-}
-
-func writeShareFile(t *testing.T, root, rel, body string) {
-	t.Helper()
-	to := filepath.Join(root, filepath.FromSlash(rel))
-	if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(to, []byte(body), 0o600); err != nil {
-		t.Fatal(err)
 	}
 }

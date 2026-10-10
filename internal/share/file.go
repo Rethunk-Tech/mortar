@@ -63,6 +63,7 @@ type Preview struct {
 	IDs           []mod.ID
 	Configs       []Config
 	LoaderConfigs []LoaderConfig
+	ChangedFiles  []ChangedFile
 	Groups        []FileGroup
 	Choices       ProblemChoices
 }
@@ -179,6 +180,15 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 		loaderConfigs = found
 		skipped = append(skipped, skip...)
 	}
+	var changed []ChangedFile
+	if inc.ConfigFiles && modsDir != "" {
+		found, skip, err := readChangedFiles(filepath.Dir(modsDir), gameID)
+		if err != nil {
+			return nil, err
+		}
+		changed = found
+		skipped = append(skipped, skip...)
+	}
 	var total int64
 	kept := configs[:0]
 	for _, c := range configs {
@@ -198,6 +208,15 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 		}
 		keptLoader = append(keptLoader, c)
 	}
+	keptChanged := changed[:0]
+	for _, c := range changed {
+		total += int64(len(c.Data))
+		if total > MaxConfigTotal || len(kept)+len(keptLoader)+len(keptChanged) >= MaxConfigFiles {
+			skipped = append(skipped, c.Path)
+			continue
+		}
+		keptChanged = append(keptChanged, c)
+	}
 	head, err := json.Marshal(doc)
 	if err != nil {
 		return nil, err
@@ -212,6 +231,11 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 	}
 	for _, c := range keptLoader {
 		if err := putFile(zw, loaderPrefix+c.Path, c.Data); err != nil {
+			return nil, err
+		}
+	}
+	for _, c := range keptChanged {
+		if err := putFile(zw, changedPrefix+c.Path, c.Data); err != nil {
 			return nil, err
 		}
 	}
@@ -393,6 +417,25 @@ func readZip(zr *zip.Reader) (Preview, error) {
 				return Preview{}, fmt.Errorf("%w: configs exceed the size cap", ErrBadFile)
 			}
 			pv.LoaderConfigs = append(pv.LoaderConfigs, LoaderConfig{Path: rel, Data: data})
+			continue
+		}
+		if rel, ok := strings.CutPrefix(f.Name, changedPrefix); ok {
+			if !validChangedPath(pv.Game, rel) {
+				return Preview{}, fmt.Errorf("%w: unsafe path %q", ErrBadFile, f.Name)
+			}
+			key := strings.ToLower(f.Name)
+			if seen[key] {
+				return Preview{}, fmt.Errorf("%w: duplicate %q", ErrBadFile, f.Name)
+			}
+			seen[key] = true
+			data, err := readBounded(f, MaxConfigBytes)
+			if err != nil {
+				return Preview{}, err
+			}
+			if total += int64(len(data)); total > MaxConfigTotal {
+				return Preview{}, fmt.Errorf("%w: configs exceed the size cap", ErrBadFile)
+			}
+			pv.ChangedFiles = append(pv.ChangedFiles, ChangedFile{Path: rel, Data: data})
 			continue
 		}
 		rest, ok := strings.CutPrefix(f.Name, "configs/")

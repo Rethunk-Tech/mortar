@@ -181,6 +181,15 @@ func (s *Store) stageChanged(game, id string) (string, error) {
 // did not lay out as they are now (a mod rewrote one, or one was adopted from the shared folder) and the copies held
 // under changed/ for packages that are switched off.
 func (s *Store) ChangedFiles(game, id string) ([]string, error) {
+	_, dir, err := s.readDir(game, id)
+	if err != nil {
+		return nil, err
+	}
+	return ChangedFilesIn(game, dir)
+}
+
+// ChangedFilesIn is ChangedFiles for the profile folder dir.
+func ChangedFilesIn(game, dir string) ([]string, error) {
 	info, ok := components.Game(game)
 	if !ok || info.Deploy != components.DeployProfile {
 		return nil, nil
@@ -188,10 +197,6 @@ func (s *Store) ChangedFiles(game, id string) ([]string, error) {
 	t, ok := info.Target("mods")
 	if !ok {
 		return nil, nil
-	}
-	_, dir, err := s.readDir(game, id)
-	if err != nil {
-		return nil, err
 	}
 	rec := readPlaced(dir)
 	var out []string

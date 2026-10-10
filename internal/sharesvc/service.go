@@ -149,8 +149,10 @@ type session struct {
 	configs     []share.Config
 	// loaderConfigs are the loader's own config files, written into the profile as soon as it exists.
 	loaderConfigs []share.LoaderConfig
-	origin        string
-	collection    *profile.CollectionRef
+	// changedFiles are the sender's changed copies of mod files, written into the profile like the loader's configs.
+	changedFiles []share.ChangedFile
+	origin       string
+	collection   *profile.CollectionRef
 	// archiveLink is the collection's archive path; archiveTried marks that Import already fetched it.
 	archiveLink  string
 	archiveTried bool
@@ -472,7 +474,7 @@ func (s *Service) previewShared(ctx context.Context, game string, pv share.Previ
 	if err != nil {
 		return Preview{}, err
 	}
-	out.Settings += len(pv.LoaderConfigs)
+	out.Settings += len(pv.LoaderConfigs) + len(pv.ChangedFiles)
 	out.Choices = pv.Choices.Count()
 	s.mu.Lock()
 	if s.current != nil && s.current.id == out.Session {
@@ -480,6 +482,7 @@ func (s *Service) previewShared(ctx context.Context, game string, pv share.Previ
 		s.current.groups = pv.Groups
 		s.current.choices = pv.Choices
 		s.current.loaderConfigs = pv.LoaderConfigs
+		s.current.changedFiles = pv.ChangedFiles
 		s.current.preview.Settings = out.Settings
 	}
 	s.mu.Unlock()
@@ -667,6 +670,19 @@ func (s *Service) writeLoaderConfigs(game, profileID string, configs []share.Loa
 		return nil
 	}
 	return s.d.Profiles.WriteFiles(game, profileID, files)
+}
+
+// writeChangedFiles writes the sender's changed copies into the profile. Unless overwrite, a file the profile already has
+// is kept, as a mod's config is for a mod it already holds.
+func (s *Service) writeChangedFiles(game, profileID string, files []share.ChangedFile, overwrite bool) error {
+	if len(files) == 0 {
+		return nil
+	}
+	out := make(map[string][]byte, len(files))
+	for _, c := range files {
+		out[c.Path] = c.Data
+	}
+	return s.d.Profiles.WriteChangedFiles(game, profileID, out, overwrite)
 }
 
 // Discard forgets the preview; closing the import dialog leaves nothing behind.
@@ -955,7 +971,10 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			return held
 		})
 	}
-	if err := s.writeLoaderConfigs(game, profileID, cur.loaderConfigs, created || replace); err != nil {
+	if err := errors.Join(
+		s.writeLoaderConfigs(game, profileID, cur.loaderConfigs, created || replace),
+		s.writeChangedFiles(game, profileID, cur.changedFiles, created || replace),
+	); err != nil {
 		if created {
 			err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
 		}
