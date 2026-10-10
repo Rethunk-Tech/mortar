@@ -202,7 +202,7 @@ func (s *Service) applyRequiredSettings(gameID, own string) error {
 	text := string(b)
 	for _, r := range info.RequiredSettings {
 		if r.Path == pathOptions {
-			if text, err = iniedit.Set(text, "", r.Key, r.Value); err != nil {
+			if text, err = iniedit.Set(text, r.Section, r.Key, r.Value); err != nil {
 				return fmt.Errorf("%s: %w", own, err)
 			}
 		}

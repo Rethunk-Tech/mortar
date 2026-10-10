@@ -146,3 +146,13 @@ func TestPerFileEntriesOfOneItemAreOneStoreItemToProblems(t *testing.T) {
 		t.Fatal("a sibling file's update covers the same item")
 	}
 }
+
+func TestSettingFailuresReadTheNamedSection(t *testing.T) {
+	req := []components.RequiredSetting{{Path: "options", Section: "Options", Key: "ModsEnabled", Value: "1", Message: "off"}}
+	if got := settingFailures("\xef\xbb\xbf[Other]\nmodsenabled = 0\n[options]\nmodsenabled = 1\n", req); len(got) != 0 {
+		t.Fatalf("another section's value is not the setting: %+v", got)
+	}
+	if got := settingFailures("[Other]\nmodsenabled = 1\n[OPTIONS]\nModsEnabled = 0\n", req); len(got) != 1 {
+		t.Fatalf("got %+v", got)
+	}
+}

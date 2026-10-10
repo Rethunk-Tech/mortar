@@ -18,19 +18,30 @@ const KindGameSetting = "game-setting"
 // is not reported.
 func settingFailures(content string, required []components.RequiredSetting) []LoadFailure {
 	have := map[string]string{}
-	sc := bufio.NewScanner(strings.NewReader(content))
+	section := ""
+	sc := bufio.NewScanner(strings.NewReader(strings.TrimPrefix(content, "\ufeff")))
 	for sc.Scan() {
 		line := strings.TrimSpace(sc.Text())
-		if line == "" || line[0] == ';' || line[0] == '#' || line[0] == '[' {
+		if line == "" || line[0] == ';' || line[0] == '#' {
+			continue
+		}
+		if line[0] == '[' {
+			section = strings.ToLower(strings.TrimSpace(strings.Trim(line, "[]")))
 			continue
 		}
 		if k, v, ok := strings.Cut(line, "="); ok {
-			have[strings.ToLower(strings.TrimSpace(k))] = strings.TrimSpace(v)
+			k = strings.ToLower(strings.TrimSpace(k))
+			v = strings.TrimSpace(v)
+			have[section+"\x00"+k] = v
+			if _, seen := have["\x00"+k]; !seen {
+				have["\x00"+k] = v
+			}
 		}
 	}
 	var out []LoadFailure
 	for _, r := range required {
-		if v, ok := have[strings.ToLower(r.Key)]; ok && !strings.EqualFold(v, r.Value) {
+		// A requirement without a section matches the key in the first section that holds it.
+		if v, ok := have[strings.ToLower(r.Section)+"\x00"+strings.ToLower(r.Key)]; ok && !strings.EqualFold(v, r.Value) {
 			out = append(out, LoadFailure{Plugin: r.Key, Kind: KindGameSetting, Message: r.Message})
 		}
 	}
