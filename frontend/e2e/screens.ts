@@ -18,6 +18,8 @@ const url = arg('url', 'http://127.0.0.1:9455')
 const out = arg('out', '/var/tmp/screens')
 const STEP_MS = 5000
 const SETTLE_MS = 400
+// The copied data's update check answers a few seconds after the page opens.
+const TOAST_MS = 4000
 
 const written: string[] = []
 const skipped: string[] = []
@@ -40,6 +42,18 @@ async function settle(page: Page) {
 async function shot(page: Page, name: string, steps: () => Promise<void>) {
   try {
     await steps()
+    // A list that is still loading, or a toast about the copied data, would be in the picture.
+    await page
+      .getByText('Loading…')
+      .first()
+      .waitFor({ state: 'hidden', timeout: 15_000 })
+      .catch(() => undefined)
+    await page.waitForTimeout(TOAST_MS)
+    const toasts = page.getByRole('region', { name: 'Notifications' })
+    for (const dismiss of await toasts.getByRole('button', { name: 'Dismiss' }).all()) {
+      // Clicked in the page: an open dialog's backdrop would take a pointer click.
+      await dismiss.evaluate((el) => (el as HTMLElement).click()).catch(() => undefined)
+    }
     await settle(page)
     const path = `${out}/${name}.png`
     await page.screenshot({ path })
