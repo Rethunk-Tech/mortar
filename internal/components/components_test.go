@@ -583,3 +583,19 @@ func TestMarkerDirValidation(t *testing.T) {
 		}
 	}
 }
+
+func TestSourceClassesValidation(t *testing.T) {
+	g := func(classes ...string) GameInfo {
+		return GameInfo{ID: "x", Name: "x", Marker: "x", Loaders: []GameLoader{{ID: "l"}}, Deploy: DeployProfile,
+			Sources: []GameSource{{ID: "curseforge", Key: "1", GameID: 2, Classes: classes}}}
+	}
+	if err := g("1", "2").Validate(); err != nil {
+		t.Fatalf("valid classes rejected: %v", err)
+	}
+	if g("2", "3").Validate() == nil {
+		t.Fatal("classes without the key validated")
+	}
+	if g("1", "x").Validate() == nil {
+		t.Fatal("a non-numeric class validated")
+	}
+}

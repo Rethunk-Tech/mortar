@@ -170,6 +170,8 @@ type modResp struct {
 	DownloadCount        int    `json:"downloadCount"`
 	ThumbsUpCount        int    `json:"thumbsUpCount"`
 	DateModified         string `json:"dateModified"`
+	DateReleased         string `json:"dateReleased"`
+	ClassID              int    `json:"classId"`
 	MainFileID           int    `json:"mainFileId"`
 	AllowModDistribution *bool  `json:"allowModDistribution"`
 	IsAvailable          bool   `json:"isAvailable"`
@@ -264,8 +266,12 @@ func newest(files []fileResp, gameVersions []string) (fileResp, bool) {
 	return best, found
 }
 
-// Search lists mods in the game's Mods class. Included categories go to the API as ids; it has no exclude
-// parameter and ANDs several ids, so excluded ones are dropped from the page afterwards (the total still counts them).
+// apiPageSize is the most mods one /mods/search request returns.
+const apiPageSize = 50
+
+// Search lists mods in the game's Mods class, or in every class the catalog lists for it, merged by the query's sort.
+// Included categories go to the API as ids; it has no exclude parameter and ANDs several ids, so excluded ones are
+// dropped from the page afterwards (the total still counts them).
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	gs, ok := d.gameSource(q.Game)
 	if !ok || gs.GameID == 0 || q.Key == "" {
@@ -275,56 +281,32 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	if index+source.PageSize > maxWindow {
 		return source.Page{Total: maxWindow}, nil
 	}
-	order := "desc"
-	if q.Sort == source.SortName {
-		order = "asc"
+	classes := gs.Classes
+	if len(classes) == 0 {
+		classes = []string{q.Key}
 	}
-	params := url.Values{}
-	params.Set("gameId", strconv.Itoa(gs.GameID))
-	params.Set("classId", q.Key)
-	params.Set("searchFilter", q.Text)
-	params.Set("sortField", strconv.Itoa(sortField(q.Sort)))
-	params.Set("sortOrder", order)
-	params.Set("index", strconv.Itoa(index))
-	params.Set("pageSize", strconv.Itoa(source.PageSize))
-	if len(q.Categories) > 0 {
-		cats, err := d.classCategories(ctx, gs.GameID, q.Key)
-		if err != nil {
+	var mods []modResp
+	total := 0
+	if len(classes) == 1 {
+		var err error
+		if mods, total, err = d.searchClass(ctx, gs.GameID, classes[0], q, index, source.PageSize); err != nil {
 			return source.Page{}, err
 		}
-		var ids []int
-		for _, c := range cats {
-			if slices.ContainsFunc(q.Categories, func(n string) bool { return strings.EqualFold(n, c.Name) }) {
-				ids = append(ids, c.ID)
-			}
-		}
-		if len(ids) == 0 {
-			return source.Page{}, nil
-		}
-		raw, err := json.Marshal(ids)
-		if err != nil {
+	} else {
+		var err error
+		if mods, total, err = d.searchClasses(ctx, gs.GameID, classes, q, index); err != nil {
 			return source.Page{}, err
 		}
-		params.Set("categoryIds", string(raw))
 	}
-	var parsed struct {
-		Data       []modResp `json:"data"`
-		Pagination struct {
-			TotalCount int `json:"totalCount"`
-		} `json:"pagination"`
-	}
-	if err := d.get(ctx, "/mods/search", params, &parsed); err != nil {
-		return source.Page{}, err
-	}
-	items := make([]source.Item, 0, len(parsed.Data))
-	for _, m := range parsed.Data {
+	items := make([]source.Item, 0, len(mods))
+	for _, m := range mods {
 		if !source.CategoryMatch(categoryNames(m), nil, q.ExcludeCategories) {
 			continue
 		}
 		it := source.Item{
 			Source: d.ID(), ID: strconv.Itoa(m.ID), Name: m.Name, Summary: m.Summary, Picture: m.Logo.ThumbnailURL,
 			Endorsements: m.ThumbsUpCount, Downloads: m.DownloadCount, Updated: m.DateModified,
-			URL: cmp.Or(m.Links.WebsiteURL, d.ModPageURL(q.Key, strconv.Itoa(m.ID))), Repo: source.GitHubRepo(m.Links.SourceURL),
+			URL: cmp.Or(m.Links.WebsiteURL, d.ModPageURL(strconv.Itoa(m.ClassID), strconv.Itoa(m.ID))), Repo: source.GitHubRepo(m.Links.SourceURL),
 			External: m.AllowModDistribution != nil && !*m.AllowModDistribution,
 		}
 		if len(m.Authors) > 0 {
@@ -337,7 +319,121 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		}
 		items = append(items, it)
 	}
-	return source.Page{Total: min(parsed.Pagination.TotalCount, maxWindow), Items: items}, nil
+	return source.Page{Total: min(total, maxWindow), Items: items}, nil
+}
+
+// searchClass asks one class for size mods from index, and returns them with the class's total.
+func (d Driver) searchClass(ctx context.Context, gameID int, class string, q source.Query, index, size int) ([]modResp, int, error) {
+	order := "desc"
+	if q.Sort == source.SortName {
+		order = "asc"
+	}
+	params := url.Values{}
+	params.Set("gameId", strconv.Itoa(gameID))
+	params.Set("classId", class)
+	params.Set("searchFilter", q.Text)
+	params.Set("sortField", strconv.Itoa(sortField(q.Sort)))
+	params.Set("sortOrder", order)
+	params.Set("index", strconv.Itoa(index))
+	params.Set("pageSize", strconv.Itoa(size))
+	if len(q.Categories) > 0 {
+		cats, err := d.classCategories(ctx, gameID, class)
+		if err != nil {
+			return nil, 0, err
+		}
+		var ids []int
+		for _, c := range cats {
+			if slices.ContainsFunc(q.Categories, func(n string) bool { return strings.EqualFold(n, c.Name) }) {
+				ids = append(ids, c.ID)
+			}
+		}
+		if len(ids) == 0 {
+			return nil, 0, nil
+		}
+		raw, err := json.Marshal(ids)
+		if err != nil {
+			return nil, 0, err
+		}
+		params.Set("categoryIds", string(raw))
+	}
+	var parsed struct {
+		Data       []modResp `json:"data"`
+		Pagination struct {
+			TotalCount int `json:"totalCount"`
+		} `json:"pagination"`
+	}
+	if err := d.get(ctx, "/mods/search", params, &parsed); err != nil {
+		return nil, 0, err
+	}
+	for i := range parsed.Data {
+		if parsed.Data[i].ClassID == 0 {
+			parsed.Data[i].ClassID, _ = strconv.Atoi(class)
+		}
+	}
+	return parsed.Data, parsed.Pagination.TotalCount, nil
+}
+
+// searchClasses merges the classes' results by the query's sort and returns the page at index. Each class is read
+// from its start to the end of the window in API-sized requests, because a merged page needs every class's leading
+// rows; ties keep each class's own order, interleaved by rank then class.
+func (d Driver) searchClasses(ctx context.Context, gameID int, classes []string, q source.Query, index int) ([]modResp, int, error) {
+	end := index + source.PageSize
+	type ranked struct {
+		mod         modResp
+		rank, class int
+	}
+	var all []ranked
+	total := 0
+	for ci, class := range classes {
+		var got []modResp
+		for len(got) < end {
+			rows, n, err := d.searchClass(ctx, gameID, class, q, len(got), min(apiPageSize, end-len(got)))
+			if err != nil {
+				return nil, 0, err
+			}
+			if len(got) == 0 {
+				total += n
+			}
+			got = append(got, rows...)
+			if len(rows) == 0 || len(got) >= n {
+				break
+			}
+		}
+		for r, m := range got {
+			all = append(all, ranked{m, r, ci})
+		}
+	}
+	slices.SortStableFunc(all, func(a, b ranked) int {
+		if c := compareBySort(q.Sort, a.mod, b.mod); c != 0 {
+			return c
+		}
+		return cmp.Or(cmp.Compare(a.rank, b.rank), cmp.Compare(a.class, b.class))
+	})
+	if index >= len(all) {
+		return nil, total, nil
+	}
+	out := make([]modResp, 0, min(end, len(all))-index)
+	for _, r := range all[index:min(end, len(all))] {
+		out = append(out, r.mod)
+	}
+	return out, total, nil
+}
+
+// compareBySort orders two mods as the API's sortField does: negative when a comes first.
+func compareBySort(sort string, a, b modResp) int {
+	switch sort {
+	case source.SortDownloads:
+		return cmp.Compare(b.DownloadCount, a.DownloadCount)
+	case source.SortEndorsements:
+		return cmp.Compare(b.ThumbsUpCount, a.ThumbsUpCount)
+	case source.SortUpdated:
+		return cmp.Compare(b.DateModified, a.DateModified)
+	case source.SortNewest:
+		return cmp.Compare(b.DateReleased, a.DateReleased)
+	case source.SortName:
+		return cmp.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name))
+	}
+	return 0
 }
 
 func categoryNames(m modResp) []string {
@@ -394,12 +490,18 @@ func (d Driver) Categories(ctx context.Context, key string) ([]string, error) {
 		if gs.Key != key || gs.GameID == 0 {
 			continue
 		}
-		cats, err := d.classCategories(ctx, gs.GameID, key)
-		if err != nil {
-			return nil, err
+		classes := gs.Classes
+		if len(classes) == 0 {
+			classes = []string{key}
 		}
-		for _, c := range cats {
-			names = append(names, c.Name)
+		for _, class := range classes {
+			cats, err := d.classCategories(ctx, gs.GameID, class)
+			if err != nil {
+				return nil, err
+			}
+			for _, c := range cats {
+				names = append(names, c.Name)
+			}
 		}
 	}
 	return source.UniqueNames(names), nil

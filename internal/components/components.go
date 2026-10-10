@@ -397,6 +397,9 @@ type GameSource struct {
 	ID     string `json:"id"`
 	Key    string `json:"key,omitempty"`
 	GameID int    `json:"gameId,omitempty"`
+	// Classes are the numeric class ids a search covers, for a game whose mods sit in several (CurseForge's Create a
+	// Sim and Build / Buy beside Mods); it lists Key, the class the source is addressed by.
+	Classes []string `json:"classes,omitempty"`
 	// Loaders and GameVersions narrow an update check to the files for the game's mod loaders and game versions, on a
 	// site whose files carry them (Modrinth).
 	Loaders      []string `json:"loaders,omitempty"`
@@ -532,6 +535,14 @@ func (g GameInfo) Validate() error {
 			return fmt.Errorf("game %q lists source %q more than once", g.ID, s.ID)
 		}
 		sources[s.ID] = struct{}{}
+		if len(s.Classes) > 0 && !slices.Contains(s.Classes, s.Key) {
+			return fmt.Errorf("game %q source %q lists classes without its key %q", g.ID, s.ID, s.Key)
+		}
+		for _, c := range s.Classes {
+			if _, err := strconv.ParseUint(c, 10, 31); err != nil {
+				return fmt.Errorf("game %q source %q has a non-numeric class %q", g.ID, s.ID, c)
+			}
+		}
 	}
 	return g.validateTemplates(sources)
 }
