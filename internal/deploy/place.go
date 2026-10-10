@@ -114,17 +114,24 @@ func (place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 	}
 	for i := range m.Ops {
 		if err := ctx.Err(); err != nil {
-			return m, err
+			return m, errors.Join(err, persist(m))
 		}
 		if err := put(&m, &m.Ops[i]); err != nil {
-			return m, err
+			return m, errors.Join(err, persist(m))
 		}
-		if err := persist(m); err != nil {
-			return m, err
+		if (i+1)%checkpointEvery == 0 {
+			if err := persist(m); err != nil {
+				return m, err
+			}
 		}
 	}
-	return m, nil
+	return m, persist(m)
 }
+
+// checkpointEvery is how many files a deploy or purge places between journal writes. Rewriting the journal after every
+// file is quadratic in the file count; a crash between checkpoints is safe because the first record already names every
+// destination and Purge decides each one from the disk (a displaced file's backup, or a placed file's hash), not from Done.
+const checkpointEvery = 128
 
 func inside(dir, path string) bool {
 	rel, err := filepath.Rel(dir, path)
@@ -206,7 +213,7 @@ func (place) Purge(ctx context.Context, m Manifest) error {
 		}
 		// A displaced file with no backup left was never moved or is already back: Dst is the player's own.
 		m.Ops[i].Undone = true
-		if m.View.JournalDir != "" {
+		if m.View.JournalDir != "" && (len(m.Ops)-i)%checkpointEvery == 0 {
 			if err := persist(m); err != nil {
 				return err
 			}
