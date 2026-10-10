@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { gameOrder } from './order.ts'
+import { gameOrder, initialOf, typedMatch } from './order.ts'
 
 const games = ['Stardew Valley', 'Lethal Company', 'Valheim', 'R.E.P.O.', 'PEAK', 'The Sims 4'].map(
   (name) => ({ id: name.toLowerCase(), name }),
@@ -28,4 +28,18 @@ test('with nothing used yet every game is listed by name', () => {
     'The Sims 4',
     'Valheim',
   ])
+})
+
+test('typing finds a game whatever punctuation its name has', () => {
+  expect(typedMatch(games, 'let')?.name).toBe('Lethal Company')
+  expect(typedMatch(games, 'rep')?.name).toBe('R.E.P.O.')
+  expect(typedMatch(games, 'sims 4')?.name).toBe('The Sims 4')
+  expect(typedMatch(games, 'zzz')).toBeUndefined()
+  expect(typedMatch(games, '.')).toBeUndefined()
+})
+
+test('a game is filed under its first letter, and under # when it starts with a digit', () => {
+  expect(initialOf('R.E.P.O.')).toBe('R')
+  expect(initialOf('20 Minutes Till Dawn')).toBe('#')
+  expect(initialOf('Éclat')).toBe('E')
 })

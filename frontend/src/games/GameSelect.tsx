@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Link, Tooltip, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Link, Tooltip, Typography } from '@mui/material'
 import { Play, Settings } from 'lucide-react'
-import type { MouseEvent } from 'react'
+import { type MouseEvent, useEffect, useRef, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
@@ -23,7 +23,7 @@ import { CoverButton } from '../shell/CoverButton.tsx'
 import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { reportError } from '../toasts/report.ts'
 import { gameArt } from './art.ts'
-import { gameOrder } from './order.ts'
+import { gameOrder, initialOf, typedKey, typedMatch } from './order.ts'
 import { ProfileCards } from './ProfileCards.tsx'
 import { formatPlaytime } from './playtime.ts'
 import { storeName } from './storeName.ts'
@@ -278,7 +278,7 @@ function Row({
     fontFamily: 'inherit',
   } as const
   return (
-    <Box data-tile="" sx={sx}>
+    <Box data-tile="" data-game={game.id} sx={sx}>
       {content}
     </Box>
   )
@@ -317,40 +317,179 @@ function GroupHeading({ children }: { children: string }) {
   )
 }
 
+// A shorter list fits without a rail to jump through it.
+const RAIL_MIN_GAMES = 8
+const RAIL_WIDTH_PX = 28
+// A pause this long starts a new search instead of adding to the last one.
+const TYPE_RESET_MS = 1000
+
+// Brings a game's row to the top of the list and focuses it, so Enter opens it.
+function reveal(scroller: HTMLElement | null, id: string) {
+  const tile = scroller?.querySelector<HTMLElement>(`[data-tile][data-game="${CSS.escape(id)}"]`)
+  if (!tile) {
+    return
+  }
+  tile.scrollIntoView({ block: 'start' })
+  tile.querySelector<HTMLElement>('button')?.focus({ preventScroll: true })
+}
+
+// Typing a game's name anywhere on the page jumps to it. The listener reads the list through a ref so the letters
+// typed so far survive the page's re-renders.
+function useTypeToScroll(scroller: { current: HTMLElement | null }, games: Game[]) {
+  const list = useRef(games)
+  list.current = games
+  useEffect(() => {
+    let typed = ''
+    let at = 0
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target
+      if (
+        e.ctrlKey ||
+        e.metaKey ||
+        e.altKey ||
+        e.key.length !== 1 ||
+        (target instanceof HTMLElement &&
+          (target.isContentEditable || target.matches('input, textarea, select'))) ||
+        document.querySelector('[role="dialog"], [role="menu"]')
+      ) {
+        return
+      }
+      const fresh = e.timeStamp - at > TYPE_RESET_MS
+      if (!typedKey(e.key)) {
+        // A space inside a name being typed would otherwise press the row that typing just focused.
+        if (e.key === ' ' && !fresh) {
+          e.preventDefault()
+        }
+        return
+      }
+      typed = fresh ? e.key : typed + e.key
+      at = e.timeStamp
+      const hit = typedMatch(list.current, typed)
+      if (hit) {
+        reveal(scroller.current, hit.id)
+      }
+    }
+    globalThis.addEventListener('keydown', onKey)
+    return () => globalThis.removeEventListener('keydown', onKey)
+  }, [scroller])
+}
+
+function LetterRail({
+  letters,
+  current,
+  onJump,
+}: {
+  letters: string[]
+  current: string
+  onJump: (letter: string) => void
+}) {
+  const { t } = useLingui()
+  return (
+    <Box
+      component="nav"
+      aria-label={t`Jump to a letter`}
+      sx={{
+        width: RAIL_WIDTH_PX,
+        flexShrink: 0,
+        py: '8px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        bgcolor: 'background.paper',
+      }}
+    >
+      {letters.map((letter) => (
+        <ButtonBase
+          key={letter}
+          aria-label={t`Games starting with ${letter}`}
+          aria-current={letter === current ? 'true' : undefined}
+          onClick={() => onJump(letter)}
+          sx={{
+            flex: '0 1 22px',
+            minHeight: 12,
+            fontFamily: 'inherit',
+            fontSize: 11,
+            fontWeight: 700,
+            color: letter === current ? 'primary.main' : 'var(--mortar-ink-sec)',
+            '&:hover, &:focus-visible': { color: 'text.primary' },
+          }}
+        >
+          {letter}
+        </ButtonBase>
+      ))}
+    </Box>
+  )
+}
+
 function GameSelect() {
   const { t } = useLingui()
   const { status, loadError, refresh, tileProps } = useGameTiles()
   const lastGame = useSettings((s) => s.lastGame)
   const played = useSettings((s) => s.lastPlayed)
+  const scroller = useRef<HTMLElement | null>(null)
+  const [current, setCurrent] = useState('')
+  const { recent, rest } = gameOrder(status?.games ?? [], lastGame, played)
+  useTypeToScroll(scroller, [...recent, ...rest])
   if (loadError) {
     return <LoadErrorRow error={loadError} onRetry={refresh} />
   }
   if (!status) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>
   }
-  const { recent, rest } = gameOrder(status.games, lastGame, played)
+  const rail = rest.length >= RAIL_MIN_GAMES
+  const letters = [...new Set(rest.map((g) => initialOf(g.name)))]
+  // The rail marks the letter of the first alphabetical row still in view.
+  const markLetter = () => {
+    const box = scroller.current
+    if (!box) {
+      return
+    }
+    const { top } = box.getBoundingClientRect()
+    const first = rest.find((g) => {
+      const tile = box.querySelector(`[data-tile][data-game="${CSS.escape(g.id)}"]`)
+      return tile ? tile.getBoundingClientRect().bottom > top + 1 : false
+    })
+    setCurrent(first && box.scrollTop > 0 ? initialOf(first.name) : '')
+  }
+  const jump = (letter: string) => {
+    const first = rest.find((g) => initialOf(g.name) === letter)
+    if (first) {
+      reveal(scroller.current, first.id)
+    }
+  }
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          ...hoverFocus,
-        }}
-        onKeyDown={(e) => arrowFocus(e, '[data-tile]')}
-      >
-        {recent.length > 0 ? <GroupHeading>{t`Recently played`}</GroupHeading> : null}
-        {recent.map((g) => (
-          <Row key={g.id} {...tileProps(g)} />
-        ))}
-        {recent.length > 0 && rest.length > 0 ? <GroupHeading>{t`All games`}</GroupHeading> : null}
-        {rest.map((g) => (
-          <Row key={g.id} {...tileProps(g)} />
-        ))}
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
+        <Box
+          ref={scroller}
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            // The rail stands in for the scrollbar.
+            ...(rail
+              ? { scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }
+              : {}),
+            ...hoverFocus,
+          }}
+          onScroll={rail ? markLetter : undefined}
+          onKeyDown={(e) => arrowFocus(e, '[data-tile]')}
+        >
+          {recent.length > 0 ? <GroupHeading>{t`Recently played`}</GroupHeading> : null}
+          {recent.map((g) => (
+            <Row key={g.id} {...tileProps(g)} />
+          ))}
+          {recent.length > 0 && rest.length > 0 ? (
+            <GroupHeading>{t`All games`}</GroupHeading>
+          ) : null}
+          {rest.map((g) => (
+            <Row key={g.id} {...tileProps(g)} />
+          ))}
+        </Box>
+        {rail ? <LetterRail letters={letters} current={current} onJump={jump} /> : null}
       </Box>
       {!status.games.some((g) => g.available && g.installed) && (
         <Box sx={{ px: 2, py: 0.75, display: 'flex', alignItems: 'center', gap: 1 }}>

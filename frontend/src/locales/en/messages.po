@@ -1686,7 +1686,7 @@ msgstr "Add preset"
 msgid "See load errors, missing dependencies, and other issues before you play."
 msgstr "See load errors, missing dependencies, and other issues before you play."
 
-#: src/games/GameSelect.tsx:358
+#: src/games/GameSelect.tsx:497
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
@@ -4227,7 +4227,7 @@ msgstr "config.json, as the mod ships it"
 msgid "The last launch loaded this here, not where its dependencies put it."
 msgstr "The last launch loaded this here, not where its dependencies put it."
 
-#: src/games/GameSelect.tsx:361
+#: src/games/GameSelect.tsx:500
 msgid "Check launchers…"
 msgstr "Check launchers…"
 
@@ -4391,7 +4391,7 @@ msgstr "time in its patches {ms}"
 msgid "List copied"
 msgstr "List copied"
 
-#: src/launchers/LauncherList.tsx:166
+#: src/launchers/LauncherList.tsx:171
 msgid "Added by you"
 msgstr "Added by you"
 
@@ -6086,8 +6086,8 @@ msgstr "{0} lists itself as a dependency, so BepInEx stops before loading any pl
 msgid "Install yourself"
 msgstr "Install yourself"
 
-#: src/launchers/LauncherList.tsx:137
-#: src/launchers/LauncherList.tsx:155
+#: src/launchers/LauncherList.tsx:142
+#: src/launchers/LauncherList.tsx:160
 msgid "Found"
 msgstr "Found"
 
@@ -6743,7 +6743,7 @@ msgid "Mod config"
 msgstr "Mod config"
 
 #: src/firstrun/FindStep.tsx:231
-#: src/launchers/LauncherList.tsx:182
+#: src/launchers/LauncherList.tsx:187
 msgid "Rescan"
 msgstr "Rescan"
 
@@ -7256,6 +7256,10 @@ msgstr "Could not switch {0}"
 msgid "Asset map"
 msgstr "Asset map"
 
+#: src/games/GameSelect.tsx:404
+msgid "Games starting with {letter}"
+msgstr "Games starting with {letter}"
+
 #: src/mods/typedConfig/ConfigPane.tsx:300
 msgid "Every change waiting for the next start is discarded."
 msgstr "Every change waiting for the next start is discarded."
@@ -7752,8 +7756,8 @@ msgstr "{0} · {1} unique"
 
 #: src/firstrun/FindStep.tsx:78
 #: src/launchers/LauncherList.tsx:107
-#: src/launchers/LauncherList.tsx:139
-#: src/launchers/LauncherList.tsx:159
+#: src/launchers/LauncherList.tsx:144
+#: src/launchers/LauncherList.tsx:164
 #: src/settings/sections/GameSettings.tsx:197
 msgid "Not found"
 msgstr "Not found"
@@ -8157,7 +8161,7 @@ msgstr "A download fails"
 msgid "{0} does not allow downloads outside its own page: get it there."
 msgstr "{0} does not allow downloads outside its own page: get it there."
 
-#: src/launchers/LauncherList.tsx:191
+#: src/launchers/LauncherList.tsx:196
 #: src/settings/sections/WatchFolders.tsx:46
 msgid "Add folder…"
 msgstr "Add folder…"
@@ -8231,7 +8235,7 @@ msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
 #: src/games/GameMenu.tsx:107
-#: src/games/GameSelect.tsx:346
+#: src/games/GameSelect.tsx:481
 msgid "Recently played"
 msgstr "Recently played"
 
@@ -9913,7 +9917,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/GameSetup.tsx:153
 #: src/firstrun/LoaderStep.tsx:222
 #: src/game/ProfileWorkspace.tsx:39
-#: src/games/GameSelect.tsx:329
+#: src/games/GameSelect.tsx:437
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
 msgstr "Loading…"
@@ -11591,7 +11595,7 @@ msgid "Switch {0} to {1}?"
 msgstr "Switch {0} to {1}?"
 
 #: src/firstrun/GameSetup.tsx:52
-#: src/games/GameSelect.tsx:350
+#: src/games/GameSelect.tsx:486
 msgid "All games"
 msgstr "All games"
 
@@ -12091,6 +12095,10 @@ msgstr "Updated fixable mods"
 #: src/mods/columnLabel.ts:24
 msgid "Order"
 msgstr "Order"
+
+#: src/games/GameSelect.tsx:390
+msgid "Jump to a letter"
+msgstr "Jump to a letter"
 
 #: src/settings/sections/Sources.tsx:38
 msgid "it took too long to answer"
