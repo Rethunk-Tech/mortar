@@ -8,6 +8,7 @@ import {
   DismissAbandonedMod,
   DismissAssetConflict,
   DismissListedRequirement,
+  DismissRedundant,
   DismissSetting,
   RestoreDismissed,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
@@ -103,6 +104,34 @@ async function dismissAssetConflict(
   await get().loadProblems()
 }
 
+// Dismisses every row of a Redundant finding: a group of mods doing the same job is one finding with a row per mod.
+async function dismissRedundant(
+  get: () => { loadProblems: () => Promise<void> },
+  items: { kind: string; key: string; by: { key: string }[] | null }[],
+) {
+  const target = openTarget()
+  if (!target) {
+    return
+  }
+  try {
+    await Promise.all(
+      items.map((item) =>
+        DismissRedundant(
+          target.game,
+          target.id,
+          item.kind,
+          item.key,
+          (item.by ?? []).map((b) => b.key),
+        ),
+      ),
+    )
+  } catch (e) {
+    reportError(i18n._(msg`Could not dismiss the warning`))(e)
+    return
+  }
+  await get().loadProblems()
+}
+
 async function restoreDismissed(get: () => { loadProblems: () => Promise<void> }, token: string) {
   const target = openTarget()
   if (!target) {
@@ -141,6 +170,8 @@ export function problemActions(
       await get().load()
     },
     dismissAsset: (conflict: AssetConflict) => dismissAssetConflict(get, conflict),
+    dismissRedundant: (items: Parameters<typeof dismissRedundant>[1]) =>
+      dismissRedundant(get, items),
     restoreDismissed: (token: string) => restoreDismissed(get, token),
     dismissAbandoned: (id: string) => dismissAbandonedMod(get, id),
     dismissListed: (id: string) => dismissListedRequirement(get, id),

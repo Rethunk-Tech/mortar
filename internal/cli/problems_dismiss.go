@@ -25,6 +25,13 @@ func dismissedKindText(d problems.DismissedProblem) (kind, text string) {
 	if d.Setting != nil {
 		return "setting", settingText(*d.Setting)
 	}
+	if d.Redundant != nil {
+		by := make([]string, len(d.Redundant.By))
+		for i, b := range d.Redundant.By {
+			by[i] = b.Name
+		}
+		return "redundant", fmt.Sprintf("%s (%s): %s", d.Redundant.Name, d.Redundant.Kind, strings.Join(by, ", "))
+	}
 	return "unknown", d.Token
 }
 

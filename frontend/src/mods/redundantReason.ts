@@ -12,6 +12,8 @@ export interface RedundantRow {
   // A group of mods doing the same job is one row; Remove then asks which of them goes.
   choices?: { key: string; name: string }[]
   text?: string
+  // The findings this row stands for, which Dismiss hides together.
+  items: RedundantItem[]
 }
 
 // Each Redundant row's text, naming the enabled mods that make it redundant; mods doing the same job share one row.
@@ -46,6 +48,7 @@ export function useRedundantRows() {
         id: '',
         name: '',
         reason: '',
+        items: sameJob.filter((item) => group.keys.includes(item.key)),
         choices,
         text:
           choices.length === 2
@@ -75,7 +78,7 @@ export function useRedundantRows() {
           other: `Overlaps with ${by}: all change ${detail}`,
         })}`
       }
-      rows.push({ key: item.key, id: item.id, name: item.name, reason })
+      rows.push({ key: item.key, id: item.id, name: item.name, reason, items: [item] })
     }
     return rows
   }

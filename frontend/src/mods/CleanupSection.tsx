@@ -18,6 +18,9 @@ interface CleanupItem {
   reason?: string
   text?: string
   choices?: { key: string; name: string }[]
+  // A finding the user may judge wrong offers Dismiss; one already dismissed offers only Restore.
+  onDismiss?: () => void
+  onRestore?: () => void
 }
 
 // RemoveOne asks which mod of a group goes, since any one of them may be the one to keep.
@@ -67,6 +70,23 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
   const mod = useMods((s) => s.mods.find((candidate) => candidate.key === cleanup.key))
   const who = cleanup.name.trim() === '' ? t`Unknown mod` : cleanup.name
   const reason = cleanup.reason || t`Not needed by any enabled mod`
+  const removal = cleanup.choices ? (
+    <RemoveOne choices={cleanup.choices} />
+  ) : (
+    <DisabledReason title={t`This mod is no longer in the profile.`} disabled={mod === undefined}>
+      <Button
+        size="small"
+        disabled={mod === undefined}
+        onClick={() => {
+          if (mod !== undefined) {
+            remove(mod).catch(reportUnexpected)
+          }
+        }}
+      >
+        {t`Remove`}
+      </Button>
+    </DisabledReason>
+  )
   return (
     <Box
       role="alert"
@@ -81,6 +101,7 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
         fontSize: 14,
         bgcolor: 'var(--mortar-overlay-45)',
         borderRadius: '6px',
+        ...(cleanup.onRestore ? { opacity: 0.75 } : {}),
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -94,26 +115,17 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
           />
         </Typography>
       </Box>
-      {cleanup.choices ? (
-        <RemoveOne choices={cleanup.choices} />
-      ) : (
-        <DisabledReason
-          title={t`This mod is no longer in the profile.`}
-          disabled={mod === undefined}
-        >
-          <Button
-            size="small"
-            disabled={mod === undefined}
-            onClick={() => {
-              if (mod !== undefined) {
-                remove(mod).catch(reportUnexpected)
-              }
-            }}
-          >
-            {t`Remove`}
-          </Button>
-        </DisabledReason>
-      )}
+      {cleanup.onDismiss ? (
+        <Button size="small" color="inherit" onClick={cleanup.onDismiss}>
+          {t`Dismiss`}
+        </Button>
+      ) : null}
+      {cleanup.onRestore ? (
+        <Button size="small" onClick={cleanup.onRestore}>
+          {t`Restore`}
+        </Button>
+      ) : null}
+      {cleanup.onRestore === undefined ? removal : null}
     </Box>
   )
 }

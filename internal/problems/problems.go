@@ -149,6 +149,7 @@ type DismissedProblem struct {
 	Broken        *Broken                  `json:"broken,omitempty"`
 	Missing       *Missing                 `json:"missing,omitempty"`
 	Setting       *framework.SettingHint   `json:"setting,omitempty"`
+	Redundant     *framework.Redundant     `json:"redundant,omitempty"`
 }
 
 // Result is everything found for one profile. Unknown is set when a lookup failed, so the lists may be short.

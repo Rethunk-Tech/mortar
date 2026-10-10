@@ -1,6 +1,7 @@
 package problems
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
@@ -60,6 +61,35 @@ func settingChoiceToken(uniqueID mod.ID, field, value string) string {
 		strings.ToLower(strings.TrimSpace(field)) + "\t" +
 		strings.ToLower(strings.TrimSpace(value))
 	return dismissToken("setting-choice", target)
+}
+
+// redundantToken names one Redundant row by its kind, its mod and the mods that make it redundant, so the row comes
+// back when that set changes.
+func redundantToken(kind, key string, by []string) string {
+	by = slices.Clone(by)
+	slices.Sort(by)
+	return dismissToken("redundant", kind+"\t"+key+"\t"+strings.Join(by, ","))
+}
+
+func hideDismissedRedundant(rows []framework.Redundant, tokens []string) ([]framework.Redundant, []DismissedProblem) {
+	if len(tokens) == 0 {
+		return rows, nil
+	}
+	var out []framework.Redundant
+	dismissed := []DismissedProblem{}
+	for _, r := range rows {
+		by := make([]string, len(r.By))
+		for i, b := range r.By {
+			by[i] = b.Key
+		}
+		token := redundantToken(r.Kind, r.Key, by)
+		if slices.Contains(tokens, token) {
+			dismissed = append(dismissed, DismissedProblem{Token: token, Redundant: &r})
+			continue
+		}
+		out = append(out, r)
+	}
+	return out, dismissed
 }
 
 func hideDismissedBroken(broken []Broken, tokens []string) ([]Broken, []DismissedProblem) {

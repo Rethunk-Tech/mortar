@@ -490,7 +490,18 @@ func (s *Service) withDismissed(gameID, id string, r Result) Result {
 	r.Dismissed = append(r.Dismissed, dismissed...)
 	r.Settings, dismissed = hideDismissedSettings(r.Settings, tokens)
 	r.Dismissed = append(r.Dismissed, dismissed...)
+	r.Redundant, dismissed = hideDismissedRedundant(r.Redundant, tokens)
+	r.Dismissed = append(r.Dismissed, dismissed...)
 	return r
+}
+
+// DismissRedundant hides one Redundant row for this profile: the mod key, with the keys of the mods that make it
+// redundant, of the given kind. The row returns when a different set of mods makes it redundant.
+func (s *Service) DismissRedundant(_ context.Context, gameID, id, kind, key string, by []string) error {
+	if kind == "" || key == "" {
+		return errors.New("missing redundant mod")
+	}
+	return s.appendDismissed(dismissBucket(gameID, id), redundantToken(kind, key, by))
 }
 
 // DismissAbandonedMod hides an author-marked broken row for this profile until the mod is gone.

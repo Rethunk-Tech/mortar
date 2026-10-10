@@ -61,20 +61,79 @@ interface SectionAction {
   disabled?: boolean
 }
 
-type ProblemTab = SectionTab & { body: ReactNode; action?: SectionAction }
+type ProblemTab = SectionTab & { body: ReactNode; action?: SectionAction; keep?: boolean }
+
+type RedundantRows = ReturnType<ReturnType<typeof useRedundantRows>>
+
+// The Redundant tab: each finding can be removed or dismissed, and the dismissed ones stay listed below so a
+// dismissal can be taken back.
+function RedundantSection({
+  rows,
+  dismissed,
+  tokens,
+}: {
+  rows: RedundantRows
+  dismissed: RedundantRows
+  tokens: Map<string, string>
+}) {
+  const { t } = useLingui()
+  const dismissRedundant = useMods((s) => s.dismissRedundant)
+  const restoreDismissed = useMods((s) => s.restoreDismissed)
+  const restore = async (row: RedundantRows[number]) => {
+    for (const item of row.items) {
+      const token = tokens.get(`${item.kind}|${item.key}`)
+      if (token !== undefined) {
+        await restoreDismissed(token)
+      }
+    }
+  }
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <CleanupSection
+        cleanup={rows.map((row) => ({
+          ...row,
+          onDismiss: () => {
+            dismissRedundant(row.items).catch(reportUnexpected)
+          },
+        }))}
+        removeAll={rows.every((item) => item.choices === undefined)}
+      />
+      {dismissed.length > 0 ? (
+        <Box>
+          <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 0.75 }}>
+            {t`Dismissed`}
+          </Typography>
+          <CleanupSection
+            cleanup={dismissed.map((row) => ({
+              ...row,
+              onRestore: () => {
+                restore(row).catch(reportUnexpected)
+              },
+            }))}
+            removeAll={false}
+          />
+        </Box>
+      ) : null}
+    </Box>
+  )
+}
 
 // The tabs of the section switcher: a segment for each section that has anything in it.
 function useProblemTabs({
   sections,
   compat,
   redundant,
+  redundantDismissed,
+  redundantTokens,
   cleanup,
   cosmeticConflicts,
   sectionExtras,
 }: {
   sections: ReturnType<typeof problemSections>
   compat: Compat[]
-  redundant: ReturnType<ReturnType<typeof useRedundantRows>>
+  redundant: RedundantRows
+  redundantDismissed: RedundantRows
+  redundantTokens: Map<string, string>
   cleanup: Parameters<typeof CleanupSection>[0]['cleanup']
   cosmeticConflicts: string
   sectionExtras: (section: ReturnType<typeof problemSections>[number]) => { action?: SectionAction }
@@ -112,10 +171,12 @@ function useProblemTabs({
       label: t`Redundant`,
       count: redundant.length,
       errors: false,
+      keep: redundantDismissed.length > 0,
       body: (
-        <CleanupSection
-          cleanup={redundant}
-          removeAll={redundant.every((item) => item.choices === undefined)}
+        <RedundantSection
+          rows={redundant}
+          dismissed={redundantDismissed}
+          tokens={redundantTokens}
         />
       ),
     },
@@ -126,7 +187,7 @@ function useProblemTabs({
       errors: false,
       body: <CleanupSection cleanup={cleanup} />,
     },
-  ].filter((tab) => tab.count > 0)
+  ].filter((tab: ProblemTab) => tab.count > 0 || tab.keep === true)
 }
 
 function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof useOpenProblems>> }) {
@@ -142,6 +203,13 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
   const cleanup = result.cleanup ?? []
   const compat = result.compat ?? []
   const redundant = redundantRows(result.redundant ?? [])
+  const dismissedRedundant = (result.dismissed ?? []).flatMap((d) =>
+    d.redundant ? [{ token: d.token, item: d.redundant }] : [],
+  )
+  const redundantDismissed = redundantRows(dismissedRedundant.map((d) => d.item))
+  const redundantTokens = new Map(
+    dismissedRedundant.map((d) => [`${d.item.kind}|${d.item.key}`, d.token]),
+  )
   const installable =
     sections
       .find((section) => section.id === 'missing')
@@ -185,6 +253,8 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
     sections,
     compat,
     redundant,
+    redundantDismissed,
+    redundantTokens,
     cleanup,
     cosmeticConflicts,
     sectionExtras,

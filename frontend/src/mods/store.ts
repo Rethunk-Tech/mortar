@@ -82,6 +82,9 @@ export const useMods = create<{
   resolve: (dup: Duplicate | null) => void
   keepCopy: (dup: Duplicate, keepKey: string) => Promise<void>
   dismissAsset: (conflict: AssetConflict) => Promise<void>
+  dismissRedundant: (
+    items: { kind: string; key: string; by: { key: string }[] | null }[],
+  ) => Promise<void>
   restoreDismissed: (token: string) => Promise<void>
   dismissAbandoned: (id: string) => Promise<void>
   dismissListed: (id: string) => Promise<void>
