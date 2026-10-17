@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="dark" />
+    <title>Mortar: a mod manager for PC games</title>
+    <meta
+      name="description"
+      content="Mortar is a free, open source desktop mod manager for PC games, with Stardew Valley, Lethal Company, Valheim, Vintage Story, The Sims 4 and many Thunderstore games supported today. It installs each game's mod loader, keeps each set of mods in its own profile, explains conflicts, shares profiles as a link and plays from Steam Deck Game Mode."
+    />
+    <meta
+      property="og:title"
+      content="Mortar: a mod manager for PC games"
+    />
+    <meta
+      property="og:description"
+      content="Profiles, mod loader setup, downloads from Nexus Mods, Thunderstore, CurseForge, GitHub and the Vintage Story Mod DB, conflict explanations, profiles shared as a link and Steam Deck play. Free and open source for Linux and Windows."
+    />
+    <!-- seo:start -->
+    <link rel="canonical" href="https://mortar.rethunk.tech/" />
+    <meta name="theme-color" content="#19191e" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mortar" />
+    <meta property="og:url" content="https://mortar.rethunk.tech/" />
+    <meta property="og:image" content="https://mortar.rethunk.tech/img/og-dbcbd71467.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Mortar&#39;s game select: the supported games as a grid of cover art" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Mortar","applicationCategory":"GameApplication","operatingSystem":"Windows, Linux","softwareVersion":"0.3.4","url":"https://mortar.rethunk.tech/","downloadUrl":"https://mortar.rethunk.tech/download/","license":"https://www.gnu.org/licenses/agpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+    <!-- seo:end -->
+    <link rel="icon" href="favicon.png" />
+    <link rel="apple-touch-icon" href="img/icon-192.png" />
+    <link rel="stylesheet" href="base.css" />
+    <link rel="stylesheet" href="landing.css" />
+  </head>
+  <body>
+    <!-- nav:start -->
+    <nav class="nav" aria-label="Main">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <svg width="28" height="28" aria-hidden="true"><use href="img/icons.svg#brand" /></svg>
+          Mortar
+        </a>
+        <div class="nav-links">
+          <a class="optional" href="#features">Features</a>
+          <a class="optional" href="/guide/">Guide</a>
+          <a class="optional" href="/extension/">Extension</a>
+          <a class="optional" href="#faq">FAQ</a>
+          <a href="/download/">Download</a>
+          <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a>
+          <a class="optional" href="https://discord.gg/TfecaTm8J2">Discord</a>
+        </div>
+      </div>
+    </nav>
+    <!-- nav:end -->
+
+    <div class="hero">
+      <div class="wrap">
+        <a
+          class="eyebrow"
+          id="release"
+          href="https://github.com/Rethunk-Tech/mortar/releases/latest"
+          >Free and open source · Linux and Windows</a
+        >
+        <h1>Mod your games <em>without the mess</em></h1>
+        <p class="lede">
+          Mortar installs your game's mod loader, keeps every playthrough's mods
+          in its own profile, tells you why something broke before you launch,
+          and shares a whole profile as a link. It supports
+          <!-- game-count:start -->188<!-- game-count:end --> games, Stardew
+          Valley, Lethal Company, Valheim and The Sims 4 among them:
+          <a href="#which-games">see them all</a>.
+        </p>
+        <div class="cta">
+          <a class="btn" id="primary-download" href="#download">
+            <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i1" /></svg>
+            <span>Download Mortar</span>
+          </a>
+          <a class="btn-ghost" href="https://github.com/Rethunk-Tech/mortar">
+            <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i2" /></svg>
+            View source
+          </a>
+        </div>
+        <p class="cta-note" id="cta-note">
+          Windows installer, AppImage, Flatpak, .deb, .rpm and Arch packages
+        </p>
+        <img
+          class="shot"
+          src="img/games.webp"
+          width="1400"
+          height="840"
+          alt="Mortar's game select with Stardew Valley, Lethal Company and Valheim"
+        />
+      </div>
+      <ul class="facts wrap">
+        <li><strong>Finds your game</strong><span>Steam, GOG, Epic, the EA app, Heroic, Lutris and more</span></li>
+        <li><strong>Installs the mod loader</strong><span>SMAPI or BepInEx, kept up to date</span></li>
+        <li><strong>Every mod site</strong><span>Nexus Mods, Thunderstore, CurseForge and more, each from its own page</span></li>
+        <li><strong>AGPL-3.0</strong><span>free, no account needed</span></li>
+      </ul>
+    </div>
+
+    <main class="wrap">
+      <section class="block" id="features">
+        <div class="center">
+          <p class="kicker">Features</p>
+          <h2>Built for big mod lists</h2>
+          <p class="lede">
+            Hundreds of mods, several playthroughs, friends on the same pack. Mortar is
+            made for that setup, not just the first five mods.
+          </p>
+        </div>
+
+        <div class="feature">
+          <div class="copy">
+            <h2>A profile for every playthrough</h2>
+            <p>
+              Keep a vanilla-plus farm, a Stardew Valley Expanded run and the
+              pack your Lethal Company crew plays side by side. Each profile has
+              its own mods, settings and launch options, and switching is one
+              click.
+            </p>
+            <ul class="ticks">
+              <li>Install, update and roll back mods per profile</li>
+              <li>Updates show the changelog before you take them</li>
+              <li>Start new profiles from templates</li>
+              <li>Save backups on a schedule, with a timeline per save</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/profile.webp"
+            width="1280"
+            height="800"
+            loading="lazy"
+            alt="A mod's detail panel in Mortar with its version, update channel and Keep this version"
+          />
+        </div>
+
+        <div class="feature flip">
+          <div class="copy">
+            <h2>Stardew Valley on SMAPI</h2>
+            <p>
+              Mortar installs SMAPI and keeps it up to date, and handles a
+              profile of hundreds of mods with cover art, groups and filters.
+              Each game keeps its own loader, mod sites and settings, so
+              switching games is one click on Game select.
+            </p>
+            <ul class="ticks">
+              <li>Click Mod Manager Download on Nexus Mods and the mod lands in the right profile</li>
+              <li>Import Nexus collections with their FOMOD choices</li>
+              <li>SMAPI options set for the game or for one profile</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/mods.webp"
+            width="1280"
+            height="800"
+            loading="lazy"
+            alt="Mortar showing a Stardew Valley profile of 805 mods with cover art"
+          />
+        </div>
+
+        <div class="feature">
+          <div class="copy">
+            <h2>Lethal Company, Valheim and more on BepInEx</h2>
+            <p>
+              Mortar installs the BepInEx pack each game needs and keeps every
+              Thunderstore package in the profile, not the game folder. At
+              launch it places BepInEx beside the game and takes it back when
+              the game exits. On Linux, Valheim's native build runs modded
+              without Proton.
+            </p>
+            <ul class="ticks">
+              <li>Plugin settings stay with the profile and travel when you share it</li>
+              <li>Plugins that failed to load or ship twice show up in Problems</li>
+              <li>Import your r2modman or Gale profiles, or export a Thunderstore modpack</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/lethal-company.webp"
+            width="1400"
+            height="840"
+            loading="lazy"
+            alt="A Lethal Company profile in Mortar with its Thunderstore mods"
+          />
+        </div>
+
+        <div class="feature flip">
+          <div class="copy">
+            <h2>Every mod site in one search</h2>
+            <p>
+              Browse searches Nexus Mods, Thunderstore, CurseForge, Modrinth,
+              GitHub and the Vintage Story Mod DB at once, whichever the game
+              uses. Add a Thunderstore package and the packages it depends on
+              come with it.
+            </p>
+            <ul class="ticks">
+              <li>Filter by category, sort by downloads or by last update</li>
+              <li>Mods the profile already has are marked</li>
+              <li>Every download comes from the mod's own page</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/thunderstore.webp"
+            width="1400"
+            height="840"
+            loading="lazy"
+            alt="The Browse tab listing Lethal Company packages from Thunderstore"
+          />
+        </div>
+
+        <div class="feature">
+          <div class="copy">
+            <h2>Know what broke before you launch</h2>
+            <p>
+              Mortar reads every mod's manifest, Content Patcher packs and the
+              loader's log, then explains problems in plain words: missing
+              dependencies, outdated versions and which mod wins each content
+              conflict.
+            </p>
+            <ul class="ticks">
+              <li>Missing dependencies found and queued for you</li>
+              <li>Content conflicts explained file by file</li>
+              <li>One-click fixes: switch a mod off or make a pack win</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/problems.webp"
+            width="1280"
+            height="800"
+            loading="lazy"
+            alt="The Problems tab explaining which mod wins each content conflict"
+          />
+        </div>
+
+        <div class="feature flip">
+          <div class="copy">
+            <h2>See what slows your startup</h2>
+            <p>
+              In Stardew Valley, the bundled SMAPI bridge lets Mortar measure
+              how long the game takes to reach the title screen and what each
+              mod costs along the way, so a slow load has a name.
+            </p>
+            <ul class="ticks">
+              <li>Time to title screen, compared with the last launch</li>
+              <li>Per-mod startup and in-game cost</li>
+              <li>Game console and logs inside Mortar</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/performance.webp"
+            width="1280"
+            height="800"
+            loading="lazy"
+            alt="The Performance tab with time to title screen and each mod's startup cost"
+          />
+        </div>
+
+        <div class="feature">
+          <div class="copy">
+            <h2>Play from Steam Deck Game Mode</h2>
+            <p>
+              Add a profile to Steam and start it from Game Mode like any other
+              game. Mortar stays out of sight while the game starts, shows a
+              dialog only when something needs an answer, and closes with the
+              game so Steam counts your playtime.
+            </p>
+            <ul class="ticks">
+              <li>A gamepad moves focus, confirms, goes back, switches tabs and plays</li>
+              <li>Larger touch and gamepad targets, laid out for the Deck's 1280×800 screen</li>
+              <li>Diagnostics say how launching works in Desktop Mode and in Game Mode</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/deck.webp"
+            width="1280"
+            height="800"
+            loading="lazy"
+            alt="Game select at the Steam Deck's resolution with the Lethal Company row focused by a gamepad"
+          />
+        </div>
+
+        <div class="feature flip">
+          <div class="copy">
+            <h2>Your profiles on all your PCs</h2>
+            <p>
+              Pair two of your own computers with a short code. A profile you
+              send from one to the other arrives with its mod files, from every
+              source, so nothing downloads twice. No account is involved.
+            </p>
+            <ul class="ticks">
+              <li>Nearby computers are found on your local network</li>
+              <li>The code works once, for five minutes</li>
+              <li>An unpaired computer still gets the profile and downloads each mod</li>
+            </ul>
+          </div>
+          <img
+            class="shot"
+            src="img/pairing.webp"
+            width="1400"
+            height="840"
+            loading="lazy"
+            alt="The Pair a computer dialog showing a one-time pairing code"
+          />
+        </div>
+
+        <div class="feature">
+          <div class="copy">
+            <h2>Scanned before it installs</h2>
+            <p>
+              Every mod is checked by your antivirus after it is unpacked and
+              before it reaches your game: Windows' own scanner, ClamAV, or a
+              command of your choice.
+            </p>
+          </div>
+          <img
+            class="shot"
+            src="img/settings.webp"
+            width="1280"
+            height="800"
+            loading="lazy"
+            alt="General settings with the antivirus choices: Automatic, clamd socket, custom command or off"
+          />
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="more-heading">
+        <div class="center">
+          <p class="kicker">And more</p>
+          <h2 id="more-heading">Everything a modded game needs</h2>
+          <p class="lede">
+            The small things that save an evening of troubleshooting.
+          </p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i3" /></svg>
+            </div>
+            <h3>Share a profile as a link</h3>
+            <p>
+              Send a link or a .mortar file. Whoever opens it gets the same
+              mods, downloaded from each mod's own page.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i4" /></svg>
+            </div>
+            <h3>Mod Manager Download</h3>
+            <p>
+              Click the button on Nexus Mods and the file lands in the right
+              profile. Works with free Nexus accounts.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i5" /></svg>
+            </div>
+            <h3>Nexus collections</h3>
+            <p>
+              Import a collection with its FOMOD choices, bundled configs and
+              instructions intact.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i6" /></svg>
+            </div>
+            <h3>Save backups</h3>
+            <p>
+              Scheduled and manual backups of every save, with restore, pinning
+              and a size you control.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i7" /></svg>
+            </div>
+            <h3>Pin a version</h3>
+            <p>
+              Keep a mod on the version that works for your save while
+              everything else updates.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i8" /></svg>
+            </div>
+            <h3>Store integrity check</h3>
+            <p>
+              Mortar checks stored mod files against what it saved and repairs
+              anything that changed.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i9" /></svg>
+            </div>
+            <h3>Send to another PC</h3>
+            <p>
+              Send a profile to another computer on your network, mod files
+              included when it's your own.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i5" /></svg>
+            </div>
+            <h3>Browse every source</h3>
+            <p>
+              Search Nexus Mods, GitHub, Thunderstore and more in one list, as
+              each game uses them. Mods you already have are marked, and every
+              download still comes from the mod's own page.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i9" /></svg>
+            </div>
+            <h3>Pair your PCs with a code</h3>
+            <p>
+              Show a code on one computer, type it on the other, and they trust
+              each other from then on. Profiles you send between them can
+              skip the downloads, with no account involved.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i3" /></svg>
+            </div>
+            <h3>A sync folder</h3>
+            <p>
+              Point Mortar at a folder that Syncthing, Dropbox or a NAS already
+              carries around. Your profiles follow you to other machines, and a
+              change from another PC is offered to you, never merged on its own.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i10" /></svg>
+            </div>
+            <h3>A command line too</h3>
+            <p>
+              List games, mods and conflicts from a terminal, with JSON output
+              for scripts.
+            </p>
+          </article>
+          <article class="card">
+            <div class="icon">
+              <svg width="20" height="20" aria-hidden="true"><use href="img/icons.svg#i11" /></svg>
+            </div>
+            <h3>Updates itself</h3>
+            <p>
+              Mortar updates in place, or through apt, dnf and pacman from its
+              own signed package repository.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="block" aria-labelledby="companions-heading">
+        <div class="center">
+          <p class="kicker">Companions</p>
+          <h2 id="companions-heading">Works with your browser and your game</h2>
+          <p class="lede">
+            Two optional add-ons, both open source, both installed from inside
+            Mortar.
+          </p>
+        </div>
+        <div class="duo">
+          <article class="card">
+            <h3>Browser extension</h3>
+            <p>
+              Marks Nexus Mods and Thunderstore package pages with what your
+              profile already has and hands downloads and installs to Mortar. For Firefox, Chrome,
+              Edge and other Chromium browsers.
+            </p>
+            <img
+              src="img/extension.webp"
+              width="380"
+              height="264"
+              loading="lazy"
+              alt="The Mortar browser extension popup connected to Mortar"
+            />
+            <div class="links">
+              <a href="/extension/">About the extension</a> ·
+              <a href="https://github.com/Rethunk-Tech/mortar-browser-extension">mortar-browser-extension</a>
+            </div>
+          </article>
+          <article class="card">
+            <h3>Game bridge</h3>
+            <p>
+              A small mod Mortar adds to each profile. In Stardew Valley it runs
+              console commands sent from Mortar, exposes Generic Mod Config Menu
+              settings, records startup timings and drives an overlay for
+              streaming. In Lethal Company and Valheim it tells Mortar which
+              plugins the running game loaded.
+            </p>
+            <div class="links">
+              <a href="https://github.com/Rethunk-Tech/mortar-smapi-bridge"
+                >mortar-smapi-bridge</a
+              >
+              <a href="https://github.com/Rethunk-Tech/mortar-bepinex-bridge"
+                >mortar-bepinex-bridge</a
+              >
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="block center" id="download">
+        <p class="kicker">Download</p>
+        <h2>Get Mortar</h2>
+        <p class="lede">
+          Free, no account needed. Your current version is always on the
+          releases page.
+        </p>
+        <div class="platforms">
+          <article class="card platform windows">
+            <h3>
+              <svg width="22" height="22" aria-hidden="true"><use href="img/icons.svg#i12" /></svg>
+              Windows
+            </h3>
+            <p class="muted">
+              Windows 10 and 11. Installs for your user, no administrator rights
+              needed.
+            </p>
+            <a
+              class="btn"
+              href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-amd64-installer.exe"
+              >Download installer (x64)</a
+            >
+            <div class="more">
+              <a
+                href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-arm64-installer.exe"
+                >ARM64 installer</a
+              >
+              <a
+                href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-windows-amd64.exe"
+                >Portable .exe</a
+              >
+              <a href="/download/#windows">Scoop</a>
+            </div>
+          </article>
+          <article class="card platform linux">
+            <h3>
+              <svg width="22" height="22" aria-hidden="true"><use href="img/icons.svg#i13" /></svg>
+              Linux
+            </h3>
+            <p class="muted">
+              x86_64 and ARM64. Ubuntu 24.04, Debian 13, Fedora 39 or newer; the
+              Flatpak runs anywhere. Mark the AppImage executable
+              (<code>chmod +x</code>) and run it.
+            </p>
+            <a
+              class="btn"
+              href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-x86_64.AppImage"
+              >Download AppImage</a
+            >
+            <div class="more">
+              <a
+                href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-x86_64.flatpak"
+                >Flatpak</a
+              >
+              <a href="https://github.com/Rethunk-Tech/mortar/releases/latest"
+                >.deb, .rpm and Arch</a
+              >
+              <a href="/download/#deb">apt, dnf and pacman repository</a>
+              <a href="/download/#brew">Homebrew</a>
+            </div>
+          </article>
+        </div>
+        <p class="muted" style="margin-top: 1.5rem">
+          Distribution-specific steps, ARM builds and the browser extension:
+          <a href="/download/">all downloads</a>.
+        </p>
+      </section>
+
+      <section class="block" id="faq">
+        <div class="center">
+          <p class="kicker">FAQ</p>
+          <h2>Questions</h2>
+        </div>
+        <div class="faq">
+          <details>
+            <summary>Is Mortar free?</summary>
+            <p>
+              Yes. Mortar is free and open source under the AGPL-3.0 licence,
+              with no account, ads or tracking in the app.
+            </p>
+          </details>
+          <details>
+            <summary>Do I need Nexus Mods Premium?</summary>
+            <p>
+              No. With a free Nexus account you click Mod Manager Download on a
+              mod's page and Mortar takes it from there. Premium members can
+              also download from inside Mortar.
+            </p>
+          </details>
+          <details>
+            <summary>Does Mortar host mod files?</summary>
+            <p>
+              No. Every mod downloads from its own page on Nexus Mods, GitHub or Thunderstore,
+              so authors keep their downloads and endorsements. The one
+              exception is sending a profile to another of your own computers on
+              your network.
+            </p>
+          </details>
+          <details id="which-games">
+            <summary>Which games does it support?</summary>
+            <p>
+              <!-- games:start --><a href="/stardew/">Stardew Valley</a>, <a href="/lethal-company/">Lethal Company</a>, <a href="/valheim/">Valheim</a>, <a href="/repo/">R.E.P.O.</a>, <a href="/riskofrain2/">Risk of Rain 2</a>, <a href="/peak/">PEAK</a>, <a href="/content-warning/">Content Warning</a>, <a href="/inscryption/">Inscryption</a>, <a href="/cult-of-the-lamb/">Cult of the Lamb</a>, <a href="/sun-haven/">Sun Haven</a>, <a href="/potion-craft/">Potion Craft</a>, <a href="/across-the-obelisk/">Across the Obelisk</a>, <a href="/against-the-storm/">Against the Storm</a>, <a href="/atlyss/">ATLYSS</a>, <a href="/bomb-rush-cyberfunk/">Bomb Rush Cyberfunk</a>, <a href="/bopl-battle/">Bopl Battle</a>, <a href="/burglin-gnomes/">Burglin&#39; Gnomes</a>, <a href="/chrono-ark/">Chrono Ark</a>, <a href="/distance/">Distance</a>, <a href="/enter-the-gungeon/">Enter the Gungeon</a>, <a href="/erenshor/">Erenshor</a>, <a href="/gamble-with-your-friends/">Gamble With Your Friends</a>, <a href="/how-to-fish/">How to Fish</a>, <a href="/lethal-league-blaze/">Lethal League Blaze</a>, <a href="/mage-arena/">Mage Arena</a>, <a href="/monster-train-2/">Monster Train 2</a>, <a href="/muck/">Muck</a>, <a href="/mycopunk/">Mycopunk</a>, <a href="/nine-sols/">Nine Sols</a>, <a href="/old-market-simulator/">Old Market Simulator</a>, <a href="/outward/">Outward</a>, <a href="/receiver-2/">Receiver 2</a>, <a href="/rounds/">ROUNDS</a>, <a href="/sailwind/">Sailwind</a>, <a href="/skul-the-hero-slayer/">Skul: The Hero Slayer</a>, <a href="/stacklands/">Stacklands</a>, <a href="/straftat/">STRAFTAT</a>, <a href="/super-battle-golf/">Super Battle Golf</a>, <a href="/supermarket-together/">Supermarket Together</a>, <a href="/talespire/">TaleSpire</a>, <a href="/techtonica/">Techtonica</a>, <a href="/totally-accurate-battle-simulator/">Totally Accurate Battle Simulator</a>, <a href="/touhou-lost-branch-of-legend/">Touhou: Lost Branch of Legend</a>, <a href="/trombone-champ/">Trombone Champ</a>, <a href="/ultimate-chicken-horse/">Ultimate Chicken Horse</a>, <a href="/vintage-story/">Vintage Story</a>, <a href="/void-crew/">Void Crew</a>, <a href="/white-knuckle/">White Knuckle</a>, <a href="/wrestling-empire/">Wrestling Empire</a>, <a href="/yapyap/">YAPYAP</a>, <a href="/cat-mail-co/">Cat Mail Co.</a>, <a href="/9-kings/">9 Kings</a>, <a href="/a-little-to-the-left/">A Little to the Left</a>, <a href="/ai-limit/">AI LIMIT</a>, <a href="/among-us-3d/">Among Us 3D</a>, <a href="/aneurism-iv/">ANEURISM IV</a>, <a href="/aska/">ASKA</a>, <a href="/big-walk/">Big Walk</a>, <a href="/blue-prince/">Blue Prince</a>, <a href="/cave-crawlers/">Cave Crawlers</a>, <a href="/deep-rock-galactic-survivor/">Deep Rock Galactic: Survivor</a>, <a href="/everything-is-crab/">Everything is Crab</a>, <a href="/gatekeeper/">Gatekeeper</a>, <a href="/granny-chapter-two/">Granny: Chapter Two</a>, <a href="/gunman-contracts-stand-alone/">Gunman Contracts - Stand Alone</a>, <a href="/in-falsus/">In Falsus</a>, <a href="/inferno-protocol/">Inferno Protocol</a>, <a href="/island-market-simulator/">Island Market Simulator</a>, <a href="/magicraft/">Magicraft</a>, <a href="/megabonk/">Megabonk</a>, <a href="/miside/">MiSide</a>, <a href="/nivalis-nights/">Nivalis Nights</a>, <a href="/pac-man-world-re-pac/">PAC-MAN WORLD Re-PAC</a>, <a href="/project-gorgon/">Project Gorgon</a>, <a href="/roadside-research/">Roadside Research</a>, <a href="/shadows-of-doubt/">Shadows of Doubt</a>, <a href="/shift-at-midnight/">Shift At Midnight</a>, <a href="/sons-of-the-forest/">Sons Of The Forest</a>, <a href="/space-cat-digger/">Space Cat Digger</a>, <a href="/the-spell-brigade/">The Spell Brigade</a>, <a href="/vampire-crawlers/">Vampire Crawlers</a>, <a href="/voodoo-fishin/">Voodoo Fishin&#39;</a>, <a href="/waterpark-simulator/">Waterpark Simulator</a>, <a href="/project-arrhythmia/">Afterbeat</a>, <a href="/ale-and-tale-tavern/">Ale &#38; Tale Tavern</a>, <a href="/aloft/">Aloft</a>, <a href="/another-crabs-treasure/">Another Crab&#39;s Treasure</a>, <a href="/atomicrops/">Atomicrops</a>, <a href="/atrio-the-dark-wild/">Atrio: The Dark Wild</a>, <a href="/bad-north/">Bad North</a>, <a href="/below-the-stone/">Below the Stone</a>, <a href="/bendy-and-the-ink-machine/">Bendy and the Ink Machine</a>, <a href="/berry-bury-berry/">Berry Bury Berry</a>, <a href="/book-of-travels/">Book of Travels</a>, <a href="/carrier-deck/">Carrier Deck</a>, <a href="/cities-skylines-ii/">Cities: Skylines II</a>, <a href="/clover-pit/">CloverPit</a>, <a href="/crashout-crew/">Crashout Crew</a>, <a href="/crawl/">Crawl</a>, <a href="/crawlspace-2/">Crawlspace 2</a>, <a href="/crime-simulator/">Crime Simulator</a>, <a href="/cuphead/">Cuphead</a>, <a href="/darkwater/">Darkwater</a>, <a href="/depo/">DEPO : Death Epileptic Pixel Origins</a>, <a href="/dredge/">Dredge</a>, <a href="/dyson-sphere-program/">Dyson Sphere Program</a>, <a href="/easy-delivery-co/">Easy Delivery Co</a>, <a href="/electoral-carnage/">Electoral Carnage</a>, <a href="/ena-dream-bbq/">ENA: Dream BBQ</a>, <a href="/five-nights-at-freddys-into-the-pit/">Five Nights at Freddy&#39;s: Into the Pit</a>, <a href="/for-the-king/">For The King</a>, <a href="/garfield-kart-furious-racing/">Garfield Kart - Furious Racing</a>, <a href="/getting-over-it/">Getting Over It with Bennett Foddy</a>, <a href="/gladio-mori/">Gladio Mori</a>, <a href="/gloomwood/">Gloomwood</a>, <a href="/goblin-buster/">Goblin Buster: Incremental Tower Defense</a>, <a href="/goblin-cleanup/">Goblin Cleanup</a>, <a href="/goodbye-volcano-high/">Goodbye Volcano High</a>, <a href="/graveyard-keeper-2/">Graveyard Keeper 2</a>, <a href="/green-hell-vr/">Green Hell VR</a>, <a href="/grey-hack/">Grey Hack</a>, <a href="/guilty-as-sock/">Guilty as Sock!</a>, <a href="/hard-time-3/">Hard Time III</a>, <a href="/holdfast-nations-at-war/">Holdfast: Nations At War</a>, <a href="/hollow-knight-silksong/">Hollow Knight: Silksong</a>, <a href="/hot-lava/">Hot Lava</a>, <a href="/house-of-legacy/">House of Legacy</a>, <a href="/hotds/">House of the Dying Sun</a>, <a href="/human-fall-flat/">Human Fall Flat</a>, <a href="/i-am-your-beast/">I Am Your Beast</a>, <a href="/last-pirates-die-together/">Last Pirates: Die Together</a>, <a href="/last-train-outta-wormtown/">Last Train Outta&#39; Wormtown</a>, <a href="/lazy-witchs-factory/">Lazy Witch&#39;s Factory</a>, <a href="/lens-island/">Len&#39;s Island</a>, <a href="/logic-world/">Logic World</a>, <a href="/lootun/">Lootun</a>, <a href="/lost-skies-ic/">Lost Skies Island Creator</a>, <a href="/lucky-shot/">Lucky Shot</a>, <a href="/lycans/">Lycans</a>, <a href="/mechanica/">Mechanica</a>, <a href="/moonlighter/">Moonlighter</a>, <a href="/my-dream-setup/">My Dream Setup</a>, <a href="/necropolis/">Necropolis</a>, <a href="/nuclear-option/">Nuclear Option</a>, <a href="/on-together/">On-Together: Virtual Co-Working</a>, <a href="/ostranauts/">Ostranauts</a>, <a href="/paquerette-down-the-bunburrows/">Paquerette Down the Bunburrows</a>, <a href="/paralives/">Paralives</a>, <a href="/peaks-of-yore/">Peaks of Yore</a>, <a href="/peglin/">Peglin</a>, <a href="/pigface/">PIGFACE</a>, <a href="/pikuniku/">Pikuniku</a>, <a href="/plasma/">Plasma</a>, <a href="/pulsar-lost-colony/">Pulsar: Lost Colony</a>, <a href="/raft/">Raft</a>, <a href="/ravenfield/">Ravenfield</a>, <a href="/re-legend/">Re:Legend</a>, <a href="/return-of-the-obra-dinn/">Return of the Obra Dinn</a>, <a href="/rhythm-doctor/">Rhythm Doctor</a>, <a href="/screw-drivers/">Screw Drivers</a>, <a href="/shapez-2/">Shapez 2</a>, <a href="/slipstream-rogue-space/">Slipstream: Rogue Space</a>, <a href="/jump-scare-mansion/">Spooky&#39;s Jump Scare Mansion: HD Renovation</a>, <a href="/starsand/">Starsand</a>, <a href="/stolen-realm/">Stolen Realm</a>, <a href="/stonewards/">Stonewards</a>, <a href="/subterranauts/">Subterranauts</a>, <a href="/subterror/">Subterror</a>, <a href="/sulfur/">SULFUR</a>, <a href="/sunkenland/">Sunkenland</a>, <a href="/super-fantasy-kingdom/">Super Fantasy Kingdom</a>, <a href="/super-psycho-baseball/">Super Psycho Baseball</a>, <a href="/tcg-card-shop-simulator/">TCG Card Shop Simulator</a>, <a href="/the-farmer-was-replaced/">The Farmer Was Replaced</a>, <a href="/the-lab/">The Lab</a>, <a href="/the-message-from-deep-space/">The Message from Deep Space</a>, <a href="/the-planet-crafter/">The Planet Crafter</a>, <a href="/thronefall/">Thronefall</a>, <a href="/unfair-flips/">Unfair Flips</a>, <a href="/vertigo-2/">Vertigo 2</a>, <a href="/west-of-loathing/">West of Loathing</a>, <a href="/whisper-of-the-house/">Whisper of the House</a>, <a href="/wizard-of-legend/">Wizard of Legend</a>, <a href="/wizard-with-a-gun/">Wizard with a Gun</a>, <a href="/wobbly-life/">Wobbly Life</a>, <a href="/word-play/">Word Play</a>, <a href="/zort/">Zort</a> and <a href="/sims4/">The Sims 4</a><!-- games:end -->, from Steam
+              (including Flatpak Steam), GOG, Heroic and Lutris. Mortar is built for many games, and more are on the
+              way.
+            </p>
+          </details>
+          <details>
+            <summary>Does Mortar work on the Steam Deck?</summary>
+            <p>
+              Yes. In Desktop Mode, download the AppImage and run it. Open a
+              profile's menu, choose Add to Steam, and the profile shows up in
+              Game Mode. The Flatpak cannot add itself to Steam, so the
+              <a href="/download/#appimage">AppImage</a> is the one to use on
+              the Deck.
+            </p>
+          </details>
+          <details>
+            <summary>Windows says it protected my PC. Is that normal?</summary>
+            <p>
+              Yes. The Windows builds are not code-signed, so SmartScreen
+              warns the first time. Choose More info, then Run anyway. The
+              source and the release builds are public on GitHub.
+            </p>
+          </details>
+          <details>
+            <summary>How do I know a download is genuine?</summary>
+            <p>
+              Every release is built from the public source by GitHub Actions. The package repositories, Flatpak
+              repository and each release's checksums are signed with the Mortar packages key, and Mortar checks a
+              signature on every update before installing it. The <a href="/code-signing/">code signing policy</a>
+              shows how to check a file yourself.
+            </p>
+          </details>
+          <details>
+            <summary>What happened to Concrete?</summary>
+            <p>
+              <a href="https://github.com/LethalModding/Concrete">Concrete</a>,
+              our Lethal Company mod manager, is archived. Mortar is its
+              successor, rebuilt from scratch for several games.
+            </p>
+          </details>
+          <details>
+            <summary>Where do I report a bug?</summary>
+            <p>
+              Use Report a Mortar bug in the app's help menu, which attaches
+              diagnostics, or open an issue on
+              <a href="https://github.com/Rethunk-Tech/mortar/issues">GitHub</a
+              >.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <!-- foot:start -->
+    <footer class="foot">
+      <div class="wrap">
+        <span>Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not affiliated with any game developer or mod site.</span>
+        <span><a href="/guide/">Guide</a> · <a href="/changelog/">Changelog</a> · <a href="/privacy/">Privacy</a> · <a href="/code-signing/">Code signing</a> · <a href="https://github.com/Rethunk-Tech/mortar">Source</a> · <a href="https://discord.gg/TfecaTm8J2">Discord</a> · <a href="/download/">Downloads</a> · <a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a></span>
+      </div>
+    </footer>
+    <!-- foot:end -->
+    <script defer src="landing.js"></script>
+  </body>
+</html>

@@ -1,0 +1,239 @@
+main.dl {
+  padding-top: 4rem;
+}
+.dl-head h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: -0.02em;
+}
+.dl-head .lede {
+  margin: 0 0 2rem;
+}
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  border-bottom: 1px solid var(--line);
+}
+.tabs button {
+  padding: 0.7rem 1.1rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.tabs button[aria-selected="true"] {
+  border-bottom-color: var(--sand);
+  color: var(--text);
+}
+.tabs button:hover {
+  color: var(--text);
+}
+.tabs.sub {
+  margin: 1.25rem 0 0;
+}
+.tabs.sub button {
+  padding: 0.55rem 0.9rem;
+  font-size: 0.95rem;
+}
+.panel {
+  padding: 1.75rem 0 0;
+}
+.panel h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.6rem;
+}
+.panel h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.2rem;
+}
+.panel > p,
+.panel .muted {
+  max-width: 48rem;
+}
+html.js .panel[hidden] {
+  display: none;
+}
+.files {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+.file {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--text);
+  text-decoration: none;
+}
+.file:hover {
+  border-color: rgba(214, 177, 122, 0.6);
+}
+.file span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.file.primary {
+  border-color: rgba(214, 177, 122, 0.6);
+}
+.file .size {
+  font-variant-numeric: tabular-nums;
+}
+.steps {
+  max-width: 48rem;
+  padding-left: 1.25rem;
+  color: var(--muted);
+}
+.steps li {
+  margin: 0.5rem 0;
+}
+.code {
+  position: relative;
+  margin: 1rem 0;
+}
+.code pre {
+  margin: 0;
+  padding: 1rem 5.5rem 1rem 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgb(18, 18, 22);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.copy-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: var(--raised);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.copy-btn:hover {
+  border-color: var(--sand);
+}
+.fingerprint {
+  margin-top: 2rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.dl .all {
+  margin-top: 3rem;
+}
+code {
+  font-family: ui-monospace, "SFMono-Regular", monospace;
+  font-size: 0.9em;
+}
+.ext-title {
+  margin: 0 0 1rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.ext-cta {
+  justify-content: flex-start;
+  align-items: center;
+}
+/* Google's own badge, unaltered but for its size: as tall as the button beside it. */
+.store-badge img {
+  display: block;
+  height: 50px;
+  width: auto;
+}
+.ext-shot {
+  max-width: 380px;
+  justify-self: center;
+}
+.ext-lede {
+  margin: 0 0 1.5rem;
+}
+.prose h2 {
+  margin: 2.5rem 0 0.75rem;
+  font-size: 1.5rem;
+}
+.prose p {
+  max-width: 48rem;
+  color: var(--muted);
+}
+.table-wrap {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+.table-wrap th,
+.table-wrap td {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.table-wrap th {
+  color: var(--text);
+  font-weight: 700;
+}
+.table-wrap td {
+  color: var(--muted);
+}
+.table-wrap td:first-child {
+  color: var(--text);
+  font-weight: 500;
+}
+.prose .lede {
+  margin: 0 0 1.5rem;
+}
+.prose h3 {
+  margin: 1.75rem 0 0.5rem;
+  font-size: 1.15rem;
+}
+.prose h4 {
+  margin: 1.25rem 0 0.4rem;
+  color: var(--sand);
+  font-size: 0.95rem;
+}
+.prose ul,
+.prose ol {
+  max-width: 48rem;
+  padding-left: 1.25rem;
+  color: var(--muted);
+}
+.prose li {
+  margin: 0.35rem 0;
+}
+.prose h2 time {
+  margin-left: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+.prose section + section {
+  margin-top: 3.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line);
+}
+.toc ol {
+  columns: 2 16rem;
+  margin: 0 0 2rem;
+  padding: 1rem 1.25rem 1rem 2.5rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}

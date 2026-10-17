@@ -1,0 +1,380 @@
+<!doctype html>
+<!-- Written by scripts/site.ts; edit the generator, not this file. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="dark" />
+    <title>Mortar user guide</title>
+    <meta name="description" content="How to install Mortar, add and update mods, keep profiles, share them, play and read Problems, for every game Mortar supports." />
+    <link rel="canonical" href="https://mortar.rethunk.tech/guide/" />
+    <meta name="theme-color" content="#19191e" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mortar" />
+    <meta property="og:url" content="https://mortar.rethunk.tech/guide/" />
+    <meta property="og:title" content="Mortar user guide" />
+    <meta property="og:description" content="How to install Mortar, add and update mods, keep profiles, share them, play and read Problems, for every game Mortar supports." />
+    <meta property="og:image" content="https://mortar.rethunk.tech/img/og-dbcbd71467.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Mortar&#39;s game select: the supported games as a grid of cover art" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/img/icon-192.png" />
+    <link rel="stylesheet" href="/base.css" />
+    <link rel="stylesheet" href="/landing.css" />
+    <link rel="stylesheet" href="/download.css" />
+  </head>
+  <body>
+    <nav class="nav" aria-label="Main">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <svg width="28" height="28" aria-hidden="true"><use href="/img/icons.svg#brand" /></svg>
+          Mortar
+        </a>
+        <div class="nav-links">
+          <a class="optional" href="/#features">Features</a>
+          <a class="optional" href="/guide/" aria-current="page">Guide</a>
+          <a class="optional" href="/extension/">Extension</a>
+          <a href="/download/">Download</a>
+          <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a>
+          <a class="optional" href="https://discord.gg/TfecaTm8J2">Discord</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="wrap dl prose">
+      <h1 class="ext-title">User guide</h1>
+      <p class="lede">Everything Mortar does, section by section.</p>
+      <div class="guide">
+<p>Mortar manages mods for the PC games its catalog enables, starting with Stardew Valley. It finds the game, installs its mod loader (SMAPI for Stardew Valley), keeps each set of mods in its own profile and starts the game with the profile you pick. This guide is for players. For how Mortar works inside, see <a href="https://github.com/Rethunk-Tech/mortar/blob/main/docs/architecture.md">architecture.md</a>.</p>
+<nav class="toc" aria-label="Contents">
+        <ol>
+          <li><a href="#install">Install</a></li>
+          <li><a href="#first-run">First run</a></li>
+          <li><a href="#sign-in-to-nexus-mods">Sign in to Nexus Mods</a></li>
+          <li><a href="#browser-extension">Browser extension</a></li>
+          <li><a href="#find-and-add-mods">Find and add mods</a></li>
+          <li><a href="#modrinth-and-itchio">Modrinth and itch.io</a></li>
+          <li><a href="#edit-a-mods-settings">Edit a mod's settings</a></li>
+          <li><a href="#lethal-company-and-thunderstore">Lethal Company and Thunderstore</a></li>
+          <li><a href="#pair-your-computers">Pair your computers</a></li>
+          <li><a href="#switch-games">Switch games</a></li>
+          <li><a href="#game-installs">Game installs</a></li>
+          <li><a href="#profiles">Profiles</a></li>
+          <li><a href="#play">Play</a></li>
+          <li><a href="#problems">Problems</a></li>
+          <li><a href="#notifications-and-change-history">Notifications and change history</a></li>
+          <li><a href="#sync-your-profiles-between-computers">Sync your profiles between computers</a></li>
+          <li><a href="#updates">Updates</a></li>
+          <li><a href="#appearance">Appearance</a></li>
+          <li><a href="#save-backups-and-restore">Save backups and restore</a></li>
+          <li><a href="#screenshots">Screenshots</a></li>
+          <li><a href="#where-your-data-lives">Where your data lives</a></li>
+          <li><a href="#uninstall">Uninstall</a></li>
+          <li><a href="#stream-overlay">Stream overlay</a></li>
+          <li><a href="#antivirus-scan">Antivirus scan</a></li>
+          <li><a href="#troubleshooting">Troubleshooting</a></li>
+        </ol>
+      </nav>
+<h2 id="install">Install</h2>
+<p>Download from <a href="https://github.com/Rethunk-Tech/mortar/releases/latest">Releases</a>.</p>
+<h3 id="windows">Windows</h3>
+<p>Use <code>mortar-amd64-installer.exe</code> on most PCs, or <code>mortar-arm64-installer.exe</code> on an ARM PC. The installer puts Mortar in <code>%LOCALAPPDATA%\Programs\Mortar</code> and adds Start Menu and Desktop shortcuts. It installs for your account only, so it never asks for administrator rights. <code>mortar-windows-amd64.exe</code> and <code>mortar-windows-arm64.exe</code> are the bare program: run them from any folder, with nothing installed.</p>
+<p>Mortar's window needs Microsoft's WebView2 Runtime, which Windows 10 and 11 usually have. The installer checks for it and installs it when it is missing, and says so if that fails; the bare program asks before it starts without it and offers Microsoft's download page.</p>
+<p>The Windows builds are not code-signed, so SmartScreen shows &quot;Windows protected your PC&quot; the first time. Choose <strong>More info</strong>, then <strong>Run anyway</strong>.</p>
+<p>With <a href="https://scoop.sh">Scoop</a>: <code>scoop bucket add mortar https://github.com/Rethunk-Tech/scoop-bucket</code>, then <code>scoop install mortar/mortar</code>. Scoop then handles updates and Mortar's own updater stays off.</p>
+<h3 id="linux">Linux</h3>
+<ul>
+<li><strong>AppImage</strong> (<code>mortar-linux-x86_64.AppImage</code> or <code>mortar-linux-aarch64.AppImage</code>): make it executable (<code>chmod +x</code>, or the file's Properties in your file manager) and run it. It needs Ubuntu 24.04, Debian 13, Fedora 39 or a newer Linux (glibc 2.38 or newer) and nothing else installed. On an older system it says so and does not start; use the Flatpak there, which brings its own libraries.</li>
+<li><strong>Portable program</strong> (<code>mortar-linux-amd64</code> or <code>mortar-linux-arm64</code>): the bare program, to run from any folder. It uses the system's GTK 4 and WebKitGTK 6.0 (<code>libwebkitgtk-6.0-4</code> on Debian and Ubuntu, <code>webkitgtk6.0</code> on Fedora, <code>webkitgtk-6.0</code> on Arch), so it needs the same Linux versions as the AppImage. Make it executable and run it. Like the AppImage, it updates itself in place, and on first run it adds Mortar to your applications menu and takes nxm:// links.</li>
+<li><strong>Flatpak</strong>: <code>flatpak install --user https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref</code> adds Mortar's signed Flatpak repository, so <code>flatpak update</code> keeps it current; each release also carries <code>mortar-linux-x86_64.flatpak</code> and <code>mortar-linux-aarch64.flatpak</code> to install once, without updates. The Flatpak runs in a sandbox, which has these limits:
+<ul>
+<li>Mortar cannot see folders outside the ones the Flatpak is allowed to read (Steam, Heroic and Lutris folders and the usual game folders are allowed). A game installed somewhere else stays invisible until you run <code>flatpak override --user --filesystem=&lt;folder&gt; tech.rethunk.Mortar</code>.</li>
+<li><strong>Add this profile to Steam</strong> is refused, because Steam outside the sandbox cannot start Mortar inside it. The error shows the <code>flatpak run tech.rethunk.Mortar --play=&lt;game&gt;/&lt;profile&gt; --steam-session</code> command to use instead.</li>
+<li>With Flatpak Steam, Steam's own sandbox cannot read Mortar's profiles until Mortar grants it access. Mortar shows a <strong>Grant access</strong> button for this, in the game's settings.</li>
+<li>Updates come through Flatpak, not from Mortar.</li>
+</ul>
+</li>
+<li><strong>Homebrew on Linux</strong>: <code>brew install rethunk-tech/tap/mortar</code> installs the AppImage, and <code>brew upgrade</code> updates it.</li>
+<li><strong><code>.deb</code>, <code>.rpm</code> and Arch package files</strong>: install with your package manager (for example <code>sudo apt install ./mortar_*_amd64.deb</code>, <code>sudo dnf install ./mortar-*.rpm</code>, <code>sudo pacman -U mortar-*.pkg.tar.zst</code>). A package installed this way does not update itself; add the package repository below to get updates.</li>
+</ul>
+<h3 id="linux-package-repository">Linux package repository</h3>
+<p>On Debian, Ubuntu, Fedora and Arch, install Mortar from its package repository and it updates with the rest of your system; Settings › Updates says &quot;Updated by your package manager&quot;. The repository is signed by the key &quot;Mortar packages <a href="mailto:opensource@rethunk.tech">opensource@rethunk.tech</a>&quot;, fingerprint <code>D8B1 C4C2 05C5 FB36 33CB 8B99 00B7 5959 B637 DCB5</code>.</p>
+<p>Debian and Ubuntu (amd64, arm64):</p>
+<pre><code class="language-sh">sudo apt update &amp;&amp; sudo apt install curl
+sudo curl -fsSLo /usr/share/keyrings/mortar-archive-keyring.gpg https://mortar.rethunk.tech/packages/mortar-archive-keyring.gpg
+sudo curl -fsSLo /etc/apt/sources.list.d/mortar.list https://mortar.rethunk.tech/packages/mortar.list
+sudo apt update &amp;&amp; sudo apt install mortar
+</code></pre>
+<p>Fedora (x86_64, aarch64); dnf asks once to import the key, so check its fingerprint against the one above:</p>
+<pre><code class="language-sh">sudo curl -fsSLo /etc/yum.repos.d/mortar.repo https://mortar.rethunk.tech/packages/mortar.repo
+sudo dnf install mortar
+</code></pre>
+<p>Arch (x86_64, aarch64):</p>
+<pre><code class="language-sh">curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | sudo pacman-key --add -
+sudo pacman-key --lsign-key D8B1C4C205C5FB3633CB8B9900B75959B637DCB5
+curl -fsSL https://mortar.rethunk.tech/packages/pacman.conf | sudo tee -a /etc/pacman.conf
+sudo pacman -Sy mortar
+</code></pre>
+<h2 id="first-run">First run</h2>
+<p>Mortar opens with a welcome screen and lists the launchers it found (Steam, GOG, Heroic, Lutris, Bottles). Continue, then open Stardew Valley. Setup has three steps.</p>
+<ol>
+<li><strong>Game folder.</strong> Mortar shows where it found the game. If it did not find it but a copy sits in your Desktop, Downloads or Games folder (on Windows, also a drive's root or Games folder), it offers that copy under <strong>Found a copy outside your launchers</strong>; otherwise choose <strong>Choose folder…</strong> and pick the folder that holds the game; a copy installed without any launcher works the same way, and Mortar starts it directly. On Linux, a Windows build outside Steam or a Bottles bottle runs through a Proton version your Steam already has (any version under Library, Tools), in a Wine prefix Mortar keeps for that game. <strong>Change folder…</strong> and <strong>Rescan</strong> are there if the wrong copy was picked.</li>
+<li><strong>Install SMAPI.</strong> Mortar downloads SMAPI and puts it in the game folder. <strong>Skip for now</strong> leaves it for later. On Windows with Steam, Steam starts the game without SMAPI unless SMAPI is in the game's Steam launch options. Mortar shows the line to paste (right-click Stardew Valley in Steam, <strong>Properties</strong>, <strong>Launch Options</strong>), or choose <strong>Set it in Steam for me</strong> with Steam closed.</li>
+<li><strong>First profile.</strong> Choose <strong>Start empty</strong> (a profile with only SMAPI), <strong>Import from the game's Mods folder</strong> (copies the mods you already have; nothing in the game folder is moved or changed), or <strong>From a shared link</strong>.</li>
+</ol>
+<h2 id="sign-in-to-nexus-mods">Sign in to Nexus Mods</h2>
+<p>Mortar downloads from Nexus with your account, so it needs a personal API key.</p>
+<ol>
+<li>Sign in on nexusmods.com and open your account <strong>Settings</strong>, then <strong>API Keys</strong>. Copy the personal API key.</li>
+<li>In Mortar open <strong>Settings › Accounts</strong>, find the Nexus Mods section, paste the key into <strong>Personal API key</strong> and choose <strong>Sign in</strong>. The key is kept in your system keyring.</li>
+</ol>
+<p>Mortar then shows your name and whether the account is Premium or Free. Free accounts click <strong>Mod Manager Download</strong> on the Nexus page once for each file; Mortar opens each page in turn. Premium accounts download directly from inside Mortar. Mortar only downloads what Nexus allows and never re-hosts mod files.</p>
+<p>To make that button work, enable <strong>Handle &quot;Mod Manager Download&quot; links</strong> in <strong>Settings › Downloads</strong>.</p>
+<h2 id="browser-extension">Browser extension</h2>
+<p>The extension marks Nexus Mods pages with what your profile already has and sends Mod Manager Download clicks to Mortar. It is optional. It has its own releases at <a href="https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest">https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest</a>; <strong>Settings › Downloads</strong> has a <strong>Download the extension</strong> button for <code>mortar-browser-extension.zip</code> there. Unzip it for Chrome and Edge. When Mortar and the extension are too far apart in version to talk, the extension says which one to update, and Settings › Downloads says <strong>The browser extension is too old for this Mortar</strong> (or too new).</p>
+<ul>
+<li><strong>Chrome, Edge or another Chromium browser:</strong> open <code>chrome://extensions</code>, turn on Developer mode, choose <strong>Load unpacked</strong> and pick the unzipped folder.</li>
+<li><strong>Firefox:</strong> download <code>mortar-browser-extension.xpi</code> from the extension's <a href="https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest">latest release</a> (<strong>Settings › Downloads</strong> links it too) and open it in Firefox, or drop it on <code>about:addons</code>. It is signed by Mozilla, so it stays installed. A release without the <code>.xpi</code> needs the zip instead: open <code>about:debugging</code>, choose <strong>This Firefox</strong>, then <strong>Load Temporary Add-on</strong> and pick <code>manifest.json</code> in the unzipped folder; Firefox removes a temporary add-on when it restarts.</li>
+</ul>
+<h2 id="find-and-add-mods">Find and add mods</h2>
+<p>The <strong>Browse</strong> tab searches every site the game's mods come from at once: for Stardew Valley, Nexus Mods and GitHub. <strong>All sources</strong> searches them together, so where an author published a mod does not matter; results from each site are interleaved, each site keeping its own ranking. A mod that several sites list shows as one card, and a badge on the card picks the site to install from. The game's settings (the <strong>Mods</strong> page) have a <strong>Preferred source</strong> row that sets which site a card installs from first. The chips next to <strong>All sources</strong> narrow the search to one site. If a site does not answer, the result count says which one and the rest still show.</p>
+<ol>
+<li>Open the <strong>Browse</strong> tab. With nothing typed, each site lists its top mods, so the page is never empty.</li>
+<li>Type a name to search. Results update as you type.</li>
+<li>Choose <strong>Add</strong> (or <strong>Download</strong> on Nexus for a Premium account) on a card. The card shows the install's progress, then <strong>Added</strong>. On Nexus with a free account the button is <strong>Get</strong>, which opens the mod's files page.</li>
+</ol>
+<ul>
+<li><strong>Nexus Mods:</strong> Premium accounts download straight into the profile. Free accounts open the mod's files page and use <strong>Mod Manager Download</strong>, which the browser extension or the nxm link hands to Mortar.</li>
+<li><strong>GitHub:</strong> <strong>Add</strong> puts the latest release in the profile. Mortar uses your GitHub CLI login (<code>gh auth login</code>) when it is present, which raises GitHub's rate limits; without it, it works anonymously.</li>
+<li><strong>Grid or list:</strong> the toggle at the left of the search row switches between cards and rows.</li>
+<li><strong>Card details:</strong> <strong>Show › Card details</strong> picks what each card lists under its summary: popularity (endorsements, likes, followers or stars, as the site counts them), downloads, file size, version and when it was last updated. The Mods tab's cards use the same choice. A site that does not report one leaves it out (GitHub gives no file size).</li>
+</ul>
+<h3 id="narrow-and-sort-the-results">Narrow and sort the results</h3>
+<p>Under the search row:</p>
+<ul>
+<li><strong>Include categories</strong> keeps only mods in any of the categories you pick. <strong>Exclude categories</strong> drops mods in any of them. A site with no categories (GitHub, or Nexus while you are signed out) turns both off, and a search that includes categories leaves such a site out.</li>
+<li><strong>Sort</strong> orders each site's results: best match, most downloaded, most endorsed, recently updated or name. A site that cannot sort a given way keeps its own order.</li>
+<li><strong>Show</strong> has one row for each kind of mod you may not want in the way: <strong>Mods in this profile</strong>, <strong>Obsolete</strong> and <strong>Broken</strong>. Each is <strong>Off</strong> (shown as usual), <strong>Gray out</strong> (dimmed, still there) or <strong>Hide</strong> (left out, and counted as &quot;N hidden&quot; beside the result count). <strong>Broken</strong> needs the game to have a compatibility list, which Stardew Valley has.</li>
+</ul>
+<p>Mods Mortar already holds in the profile show <strong>Added</strong>, whichever site they came from, including a mod you installed from an archive when its manifest names the same Nexus or GitHub page. A loader's helper mod that Mortar installs for you shows <strong>Built in</strong>.</p>
+<h2 id="modrinth-and-itchio">Modrinth and itch.io</h2>
+<p>Modrinth and itch.io are mod sites Mortar can search and install from for a game that lists them. They show as chips beside <strong>All sources</strong> on that game's Browse tab and take part in the merged search like any other site. A game whose catalog entry names one gets its chip; Stardew Valley's does not.</p>
+<ul>
+<li>
+<p><strong>Modrinth</strong> needs no account. <strong>Add</strong> installs the project's newest version together with the projects it requires, and Mortar checks each downloaded file against the SHA-512 Modrinth publishes.</p>
+</li>
+<li>
+<p><strong>itch.io</strong> needs your own API key, which keeps itch.io's search working for you:</p>
+<ol>
+<li>On itch.io open your account <strong>Settings</strong>, then <strong>API keys</strong>, and create a key.</li>
+<li>In Mortar open <strong>Settings › Accounts</strong>, find the itch.io section, paste the key into <strong>API key</strong> and choose <strong>Test</strong>.</li>
+<li>Mortar shows your itch.io name once the key works. The key is kept in your system keyring. <strong>Remove key</strong> forgets it.</li>
+</ol>
+<p>Until a key is stored, the itch.io chip is greyed out and its tooltip says it needs an API key. itch.io's search has no sort order and no categories, so <strong>Sort</strong> and the category pickers leave it alone. <strong>Add</strong> downloads the game's first upload that is not a demo or a soundtrack.</p>
+</li>
+</ul>
+<h2 id="edit-a-mods-settings">Edit a mod's settings</h2>
+<p>Mortar edits a mod's config file as a form. Other files a BepInEx mod keeps beside its settings (YAML, TOML, XML, INI, JSON or plain text) open as text you can change and <strong>Save</strong>, while the game is not running. The <strong>Config</strong> tab (Ctrl+6) lists every mod that has settings, with a <strong>Changed</strong> chip on the ones that differ from the mod's own defaults, and edits the one you pick beside the list. Mods that have not run yet have no config; they write it the first time the game runs.</p>
+<ol>
+<li>In the <strong>Mods</strong> tab, select a mod. The details panel opens beside the list; drag its left edge to resize it. (Right-click a mod, or open its <strong>⋯</strong> menu, and choose <strong>Edit config</strong> to jump straight there.)</li>
+<li>Under <strong>Config</strong>, choose <strong>Edit config</strong>. (The <strong>More details</strong> dialog has the same button under <strong>Settings</strong>.)</li>
+<li>The editor opens on the Config tab with the mod selected. The mod's config files are listed on the left (<code>config.json</code> for a SMAPI mod, each BepInEx <code>.cfg</code> for a Lethal Company plugin). Pick one.</li>
+<li>Change a value. On and off settings are switches, numbers are fields (sliders when the mod gives a small range), choices are drop-downs, colours open a colour picker and lists are chips you add to and remove from. A setting's info button shows the mod's own description of it.</li>
+<li>Each change saves as you make it. A setting that is not the mod's default shows a <strong>Reset to default</strong> button; <strong>Reset all</strong> puts the whole file back after you confirm. <strong>Search entries</strong> filters the long ones.</li>
+<li><strong>Presets</strong> saves the file's values under a name (<strong>Save current as…</strong>) and applies a saved set to any profile's copy.</li>
+</ol>
+<p>Mortar does not save a change while the game runs the profile.</p>
+<p>A mod that has a Generic Mod Config Menu also lists <strong>In-game menu</strong>, with the settings that menu shows. A change there says <strong>Applied when the game next starts</strong>: Mortar keeps it and the game applies it when it next starts. Undo in the change history takes such a change back, like any other settings edit.</p>
+<h2 id="lethal-company-and-thunderstore">Lethal Company and Thunderstore</h2>
+<p>Lethal Company's mods are Thunderstore packages that run on BepInEx. Mortar installs BepInEx, searches Thunderstore, and keeps each package in the profile, the way it does for Stardew Valley's mods.</p>
+<ul>
+<li><strong>Browse:</strong> the Browse tab searches Thunderstore's Lethal Company community along with Nexus Mods and GitHub. <strong>Add</strong> puts the package in the profile together with the packages it depends on; a dependency the profile still lacks is flagged on the Load order tab and in the <strong>Before you play</strong> list.</li>
+<li><strong>Thunderstore links:</strong> the <strong>Install with Mod Manager</strong> button on thunderstore.io opens a <code>ror2mm://</code> link. Mortar does not take these links over from another manager until you ask: run <code>mortar links enable --source thunderstore</code> (and <code>mortar links disable --source thunderstore</code> to hand them back). A package link names no game, so it installs into the open game when that game has a Thunderstore community.</li>
+<li><strong>CurseForge links:</strong> the <strong>Install</strong> button on curseforge.com opens a <code>curseforge://</code> link, which the CurseForge app normally takes. Turn on <strong>Handle CurseForge links</strong> in Settings › Downloads, tick <strong>Open CurseForge Install links with Mortar</strong> on the Windows installer's last page (or run <code>mortar links enable --source curseforge</code>) and Mortar takes them: a mod for a game Mortar manages asks which profile it goes into, and a link for any other game is passed back to the app that had them.</li>
+<li><strong>Vintage Story Mod DB links:</strong> the <strong>1-click install</strong> button on mods.vintagestory.at opens a <code>vintagestorymodinstall://</code> link, which Vintage Story itself normally takes. Turn on <strong>Handle Vintage Story Mod DB links</strong> in Settings › Downloads to install those mods into a Mortar profile instead.</li>
+<li><strong>Play:</strong> BepInEx reads only the game's own folder, so for each launch Mortar places the profile's BepInEx files beside the game and takes them back when the game exits. Nothing of the profile stays in the game folder, and a crash is finished off at the next start.</li>
+<li><strong>Settings the game writes:</strong> BepInEx reads and writes its plugins and settings (<code>BepInEx/config</code>) in the profile, so the next launch and a shared profile keep them. The game folder gets only <code>winhttp.dll</code> and <code>doorstop_config.ini</code> for the launch, and they are removed when the game exits.</li>
+<li><strong>Log:</strong> the profile's BepInEx log is <code>BepInEx/LogOutput.log</code> in the profile folder; diagnostics include its last lines.</li>
+<li><strong>BepInEx launch options:</strong> open the profile's menu, choose <strong>Edit profile</strong>, and find the <strong>BepInEx</strong> group under the launch options. BepInEx's log always streams into Mortar's <strong>Console</strong> tab; <strong>Show the console window</strong> also opens BepInEx's own console window, and <strong>Log level</strong> picks what BepInEx writes to its console and log: <strong>Warnings and errors</strong>, <strong>Standard</strong>, <strong>Debug</strong> or <strong>Everything</strong>. Each change saves at once into the profile's <code>BepInEx/config/BepInEx.cfg</code> and applies the next time the game starts.</li>
+</ul>
+<h2 id="pair-your-computers">Pair your computers</h2>
+<p>Pairing makes two of your own computers trust each other, so a profile sent between them carries its mod files from every source (Nexus, GitHub and Thunderstore) instead of being downloaded again. It needs no account. A computer you have not paired still receives the profile and downloads each mod from its source.</p>
+<ol>
+<li>On both computers enable <strong>Share profiles on the local network</strong> in <strong>Settings › General › Sharing</strong>.</li>
+<li>On the first computer choose <strong>Pair a computer</strong>. It shows a code like <code>ABCD-EFGH</code>; the code works once and for five minutes.</li>
+<li>On the second choose <strong>Enter code</strong>, pick the first computer from the nearby list (or type its <code>host:port</code> when none is listed) and type the code. Five wrong codes lock the entry from that computer for ten minutes.</li>
+<li>Both computers now list each other under <strong>Paired computers</strong>; <strong>Unpair</strong> forgets one. From the command line, <code>mortar lan pair</code> shows a code and <code>mortar lan pair --code &lt;code&gt;</code> enters one.</li>
+</ol>
+<p>On Windows, sharing is off while every network you are connected to is set to <strong>Public</strong>: Mortar does not listen there, and Windows would block it anyway. Set the network to <strong>Private</strong> in Windows network settings to use sharing. If Windows' firewall blocks Mortar on a Private network, use <strong>Fix</strong> in Settings › General to let Mortar through (it asks for administrator approval once).</p>
+<p>To send, use <strong>Share…</strong>, choose <strong>Nearby</strong> and pick the computer. The receiver is asked to accept; <strong>Auto-accept from paired computers</strong> in the same settings skips the question.</p>
+<h2 id="switch-games">Switch games</h2>
+<p>Click the game's name in the title bar. A menu lists the games you played recently and the ones found on this computer, with a tick on the current one. Choose a game and Mortar opens it on the profile you used last. <strong>All games…</strong> opens Game select: recently played games first, then the ones on this computer, then every other game Mortar supports, each heading with how many games it holds, and a letter rail to jump through them.</p>
+<h2 id="game-installs">Game installs</h2>
+<p>When a game is installed more than once (Steam and GOG, a Steam beta branch, a copy in another folder), each is a separate install. A profile uses the selected install unless you pin it to one in the game's settings, and two profiles pinned to different installs can run at the same time. The install row shows its store and, on Linux, whether it runs natively or through Proton.</p>
+<h3 id="bottles">Bottles</h3>
+<p>On Linux, Mortar finds a Windows build of the game inside a <a href="https://usebottles.com">Bottles</a> bottle, from the native or the Flatpak Bottles, when the game sits in the bottle's Steam or GOG folders. The install's store reads <strong>Bottles</strong>.</p>
+<ol>
+<li>Open the game from <strong>Game select</strong>. Setup lists Bottles among the launchers it read, and a game found in a bottle needs no folder to be chosen. If the bottle keeps the game somewhere unusual, choose its folder with <strong>Choose folder…</strong>; Mortar still runs it in that bottle.</li>
+<li>For the loader step, Mortar runs SMAPI's own Windows installer inside the bottle, so the bottle holds the Windows SMAPI and not the Linux one.</li>
+<li>Press <strong>Play</strong>. Mortar starts the game through the bottle with the profile you picked.</li>
+</ol>
+<p>The Mortar Flatpak is allowed to read and write the Bottles data folders, native and Flatpak, so installing SMAPI into a bottle works from it.</p>
+<h2 id="profiles">Profiles</h2>
+<p>A profile is one set of mods. Switching profiles never touches the game folder's own <code>Mods</code> folder.</p>
+<ul>
+<li><strong>Create:</strong> <strong>New profile…</strong> on the Profiles page, or <strong>New profile…</strong> in the profile switcher in the title bar. Type a name, then pick <strong>Start from</strong>:
+<ul>
+<li><strong>Empty profile</strong> holds only the loader.</li>
+<li><strong>Copy of &lt;the open profile&gt;</strong> duplicates the profile that is open now, with its mods, their settings and what the mods wrote, and opens the copy.</li>
+<li>A template (one you saved with <strong>Save as template…</strong>) starts with the template's mods and its launch settings. Mods Mortar does not hold download in the background, and a toast says how many. <strong>Manage templates…</strong> renames or deletes templates.</li>
+</ul>
+</li>
+<li><strong>Why each mod is there:</strong> a mod you add is <strong>Explicit</strong>; one Mortar adds because another mod needs it is <strong>Implicit</strong>, and its details say &quot;Installed as a dependency&quot;. Group the Mods list by <strong>Install reason</strong>, or add the <strong>Install reason</strong> column, to see which is which. Right-click a mod, or use the selection's <strong>More actions</strong>, and choose <strong>Mark explicit</strong> or <strong>Mark implicit</strong> to change it. Updating, repairing or restoring a mod never changes it, and shares carry it. A profile made before Mortar kept install reasons offers once to mark its libraries and tilesheet packs implicit.</li>
+<li><strong>Switch:</strong> <strong>Switch profile</strong>, or pick one from the Profiles page. Play always starts the open profile.</li>
+<li><strong>Rename, duplicate, delete:</strong> from the profile's menu. Deleted profiles wait in <strong>Recently deleted</strong>, with <strong>Restore</strong> and <strong>Delete permanently</strong>.</li>
+<li><strong>Share as a link:</strong> <strong>Share profile</strong>, then <strong>Copy link</strong>. A link names the mods and their Nexus or GitHub files, not the files, with each mod's pin, groups and install reason. A profile too large for a link says so.</li>
+<li><strong>Share as a file:</strong> the same dialog saves a <code>.mortar</code> file. It also carries the mods' settings and your notes, and suits large profiles.</li>
+<li><strong>Import:</strong> <strong>Import</strong> on the Profiles page, then <strong>From a link or file…</strong>, <strong>From the game's Mods folder…</strong>, <strong>Restore from a file…</strong> (a backup made with <strong>Back up to a file…</strong> in a profile's ⋯ menu, or an older profile zip) or <strong>Import…</strong>. Mortar shows what the profile holds first, then installs or queues what is missing.</li>
+<li><strong>Import from the game's Mods folder:</strong> <strong>From the game's Mods folder…</strong> copies the mods already in the folder the game reads into a new profile and leaves that folder as it is. For The Sims 4 that folder is <code>Mods</code> in the game's Documents folder: each file and each folder at its top level becomes a mod, laid out in the profile where it sat. A file switched off by renaming (<code>hair.packageoff</code>) comes in under its real name, switched off in the profile. Tick <strong>Move them out of the game's Mods folder</strong> to take the originals out as they come in: left there, the game goes on loading them even when a profile switches them off. Mortar then puts the profile's mods in that folder each time you play.</li>
+<li><strong>Import from another manager:</strong> choose <strong>Import…</strong> to see every profile Mortar found on this computer for the game, from r2modman, Gale, Vortex, Mod Organizer 2 and Stardrop, each with its manager and mod count. Pick one and Mortar previews it before anything downloads, then makes a new profile. For a Thunderstore game, <strong>Use a code or file…</strong> reads an r2modman or Gale profile code or <code>.r2z</code> file instead. Mods copied in this way can arrive with no page to update from: group the Mods list by <strong>Source</strong> and choose <strong>Find on Nexus</strong> on the <strong>Unknown source</strong>, <strong>Archive</strong> or <strong>Nexus Mods, file unknown</strong> group, and Mortar gives each mod it can identify its Nexus page and the file it was installed from. A mod whose file is unknown still updates, but a share leaves it out. For a mod it leaves, or places on the wrong page, right-click the mod, choose <strong>Set Nexus page…</strong> and paste the page's address (or a file's Manual Download address, to name the file too). Both are in the profile's history, so either can be reverted.</li>
+<li><strong>Export as a Thunderstore modpack:</strong> for a Thunderstore game, the profile menu's <strong>Export as Thunderstore modpack…</strong> saves a modpack zip of the profile's switched-on Thunderstore mods and its config folder. Mods from other sites, and switched-off ones, are left out and named in the zip's README.</li>
+<li><strong>Multiplayer mod list:</strong> for Stardew Valley, the profile menu's <strong>Multiplayer mod list…</strong> copies the host's switched-on mods, with their versions and download sources, so friends can match them. A friend pastes the list under <strong>The host's list</strong> and chooses <strong>Check</strong>: mods they lack show <strong>Install</strong>, mods on another version show <strong>Update</strong> (the host's exact file), and <strong>Fix all</strong> queues every one. A mod with no download source, such as one added from a local archive, is named to install by hand. <strong>Check</strong> also reads the text <strong>Share › Mod list</strong> makes (copied, or written to a file with <strong>Save…</strong>), in its Markdown, plain text and Discord forms, and <strong>Load the host's list from a file…</strong> fills the field from such a file: that text names no ids or files, so mods are matched by name, switched-off mods are left out, and a mod is fetched from its Nexus Mods or GitHub page (the current file, which may be newer than the host's). SMAPI does not require a match itself, but many mods refuse a player on another version, so match before joining. The same from a terminal: <code>mortar profile farm export|check|fix</code>.</li>
+<li><strong>Keep a profile's saves separate:</strong> a profile can play on its own Saves folder instead of the game's one. Open the profile's menu, choose <strong>Edit profile</strong>, enable <strong>Keep this profile's saves separate</strong> and confirm <strong>Enable</strong>. Leave <strong>Start with a copy of my current saves</strong> ticked to start from your saves, or untick it to start empty. From then on, each time you press Play Mortar sets your shared Saves folder aside, shows the game the profile's own folder (<code>saves</code> inside the profile) and puts the shared folder back when the game closes. Nothing is deleted or moved for good, and if Mortar quits while the game runs, the next start puts the shared folder back. Switching the option off leaves the profile's folder where it is. Only games with a save folder have the switch.</li>
+</ul>
+<h2 id="play">Play</h2>
+<p>Press <strong>Play</strong> in Mortar. It applies the profile's mod list, then starts the game through SMAPI.</p>
+<p>When a run crashes, a card appears on the profile's Home. Mortar names the likely cause from the loader's log (and, for a Lethal Company run, Unity's player log, where a crash prints <code>Crash!!!</code> or <code>Fatal error</code>). For a SMAPI run it also reads the .NET stack in the log and blames the first mod frame nearest the error. When the logs name no mod, it reads the crash dump the game left (Unity's crash folder, a Windows error report or, on Linux, <code>coredumpctl</code>) and blames a mod whose DLL held the fault.</p>
+<ul>
+<li><strong>Most likely cause: &lt;mod&gt;</strong> with the log's line, and under it the <strong>Stack frame</strong> or dump line that points at the mod. <strong>Disable it and play</strong> switches that mod off and starts the game again.</li>
+<li>When nothing names a mod you have, the card shows the log's line, or says the log does not name a mod.</li>
+<li><strong>Find the cause…</strong> halves the mods and relaunches until one mod is left. <strong>Dismiss</strong> hides the card for that run.</li>
+</ul>
+<p>On Windows, Steam's own <strong>Play</strong> button is different: it starts SMAPI with the game's own <code>Mods</code> folder, not a profile. To play a profile, press Play in Mortar, or use a profile shortcut. A profile's menu has <strong>Add a shortcut that plays this profile</strong> (a Start Menu shortcut on Windows, a launcher entry on Linux) and <strong>Add this profile to Steam</strong>, which adds the profile to your Steam library as a non-Steam game. Close Steam before adding.</p>
+<h2 id="problems">Problems</h2>
+<p>The <strong>Problems</strong> tab checks the open profile for missing requirements, conflicts, broken or outdated mods, damaged files, duplicates and more. It warns and never blocks Play.</p>
+<ul>
+<li>A strip across the top of the tab has one segment for each kind of problem the profile has, each with its count. Choose a segment to see its rows; the others are hidden, so only one list is on screen at a time. Left and Right arrow keys move between segments.</li>
+<li>Mortar opens on the first segment that holds something broken, and remembers your choice for each profile while Mortar runs. A kind with nothing in it has no segment.</li>
+<li>The chosen segment's own action sits in a row under the strip, at its right end: <strong>Add all</strong> installs every missing requirement Mortar can find, and <strong>Dismiss all</strong> hides harmless overlaps.</li>
+<li>Segments include <strong>Failed to load</strong> (a plugin the loader's log shows failed), <strong>Plugins shipped twice</strong> (two enabled packages carrying the same plugin, with <strong>Keep newer</strong>) and <strong>Deprecated packages</strong> (Thunderstore marks them, with <strong>Replace with</strong> where it names a replacement).</li>
+<li>A mod's name in a row filters the <strong>Mods</strong> tab to that mod.</li>
+</ul>
+<h3 id="what-each-problem-means">What each problem means</h3>
+<p>Each row has a <strong>Why?</strong> that explains it, with a link to its section here.</p>
+<h4 id="missing-requirement">Missing requirement</h4>
+<p>A mod you enabled needs another mod that is not in the profile, or is disabled. The first mod may fail to load or leave out features. <strong>Add</strong> installs the one it needs when Mortar can find it.</p>
+<h4 id="broken-mod">Broken mod</h4>
+<p>Something marks the mod as broken, obsolete, abandoned or gone: SMAPI's list for your game version, Mortar's own list of known-broken mods, or the mod's site (Nexus when the page is hidden, removed or under moderation; Modrinth, CurseForge and GitHub when the project is archived, inactive, abandoned or deleted). The row names who said so. It may crash, do nothing, or stop working after the next game update. Update it, or replace it with the mod the row names.</p>
+<h4 id="duplicate-mod">Duplicate mod</h4>
+<p>Two enabled copies of the same mod are in the profile. The game loads only one, and which one is not something you control. Remove the copy you do not want.</p>
+<h4 id="conflicting-files">Conflicting files</h4>
+<p>Two mods change the same file or asset. Only one change wins, so the other mod may look or behave wrongly. The row says which mod wins; disable the one you prefer to lose, or dismiss the row when the overlap is harmless. Open <strong>Why?</strong> and choose <strong>Show conflicts</strong> to see every mod that changes the asset, in load order, with the kind of change each makes and which one wins.</p>
+<h4 id="errors-in-the-last-run">Errors in the last run</h4>
+<p>A mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs. Open the log to read what it said.</p>
+<p>The Console's <strong>Problems in this run</strong> strip reads SMAPI's log for the cause and offers one fix per mod:</p>
+<ul>
+<li><strong>Install</strong> a requirement that is not installed.</li>
+<li><strong>Update</strong> a mod SMAPI calls no longer compatible, one whose requirement is too old or was skipped itself, or one whose Harmony patches failed.</li>
+<li><strong>Update SMAPI</strong> for a mod that needs a newer SMAPI.</li>
+<li><strong>Disable</strong> a mod that crashed on entry, has a broken manifest or DLL, is obsolete, needs a newer game, or a content pack whose patches failed.</li>
+<li><strong>Remove duplicate</strong> for a mod installed twice, and <strong>Remove</strong> for a mod SMAPI flags as malicious.</li>
+</ul>
+<p>Each recorded run in the Console's run list also says how many of its log's warnings and errors Mortar could not classify.</p>
+<h4 id="failed-to-load">Failed to load</h4>
+<p>The loader's log shows that a plugin did not start. Its features will be missing in the game. The row quotes the log line; the usual causes are a wrong game version or a missing requirement. The button follows the cause:</p>
+<ul>
+<li><strong>Find</strong> searches for a plugin it needs that is not installed.</li>
+<li><strong>Update</strong> opens mod updates for a plugin built for other versions, one that failed to load, or one whose Harmony patches failed.</li>
+<li><strong>Reinstall loader</strong> for a plugin that needs a newer BepInEx, or when the loader itself failed to start.</li>
+<li><strong>Disable</strong> for an older copy skipped in favour of a newer one, a plugin incompatible with another installed one, one whose requirement failed, or one that keeps reporting errors.</li>
+</ul>
+<h4 id="setting-suggestion">Setting suggestion</h4>
+<p>A mod works better, or only works, with a setting changed. Nothing is wrong yet. The row says which setting, and the button changes it.</p>
+<h4 id="damaged-files">Damaged files</h4>
+<p>Files of a stored mod went missing, changed or appeared since Mortar stored it, often from an antivirus, a disk fault or a manual edit. The mod may misbehave. Reinstall it to restore the stored files.</p>
+<h4 id="plugins-shipped-twice">Plugins shipped twice</h4>
+<p>Two enabled packages carry the same plugin. The loader starts only one of them, so you may be running the older one. <strong>Keep newer</strong> leaves the newest enabled.</p>
+<h4 id="deprecated-packages">Deprecated packages</h4>
+<p>The author marked the package as deprecated on Thunderstore. It will not get fixes and may break with the next game update. Replace it with the package the row names, when it names one.</p>
+<h4 id="changed-outside-mortar">Changed outside Mortar</h4>
+<p>Something changed a profile's mods folder without Mortar: a file added, removed or edited by hand or by another tool. Mortar flags it so the profile matches what you expect. Keep the change or put the file back.</p>
+<h2 id="notifications-and-change-history">Notifications and change history</h2>
+<p>The bell in the title bar opens <strong>Notifications</strong> (Ctrl+Shift+N does the same). It holds two lists:</p>
+<ul>
+<li><strong>New</strong> has this session's toasts you have not read, with their buttons (such as <strong>Undo</strong>) while they still apply.</li>
+<li><strong>Earlier</strong> has the open profile's own change history, newest first: mods added, removed, updated, rolled back and switched, each with when it happened. <strong>Show diff</strong> lists what changed and <strong>Undo</strong> puts the profile back to how it was before that change.</li>
+</ul>
+<p><strong>All changes…</strong> opens the full history, and <strong>Clear</strong> empties the toasts. History lives with the profile, so it is still there after a restart.</p>
+<h2 id="sync-your-profiles-between-computers">Sync your profiles between computers</h2>
+<p>A sync folder shares each profile's mod list, sources, settings and mod config files between your computers through a folder that something else carries, such as Syncthing, Dropbox or a NAS. Mod files are never copied; each computer downloads them from their sources.</p>
+<ol>
+<li>On each computer open <strong>Settings › Mods and profiles</strong>, find <strong>Sync folder</strong> and choose <strong>Choose…</strong>. Pick the folder your sync tool keeps in step.</li>
+<li>Work as usual. A few seconds after a profile stops changing, Mortar writes it into the folder.</li>
+<li>On another computer, a toast says <strong>&lt;profile&gt; was changed on &lt;computer&gt;</strong>. Choose <strong>Review</strong> to open <strong>Changes from your other machines</strong>. <strong>Show diff</strong> lists the mods the change adds and removes, <strong>Apply</strong> makes your profile match, <strong>Keep mine</strong> keeps yours and writes it over the other revision, and <strong>Later</strong> closes the list.</li>
+<li>A profile that exists only on the other computer arrives as a new profile when you choose <strong>Apply</strong>.</li>
+<li>When both computers changed the same profile, the toast and the list say so and Mortar never merges them: pick <strong>Use theirs</strong> or <strong>Keep mine</strong>.</li>
+</ol>
+<p><strong>Disable</strong> beside the folder stops syncing and leaves the folder's files alone.</p>
+<h2 id="updates">Updates</h2>
+<ul>
+<li><strong>Mortar:</strong> the Mortar menu's <strong>Check mods and Mortar for updates</strong>, or <strong>Settings › Updates</strong>, which can also include beta releases. An update downloads and applies when you close Mortar, or choose <strong>Restart now</strong>.</li>
+<li><strong>Mods:</strong> updates show on each profile's mod list, and <strong>Settings › Updates</strong> has <strong>Review mod updates</strong>.</li>
+<li><strong>SMAPI:</strong> Mortar tells you when a new SMAPI is out. The game's settings have its version and update.</li>
+<li><strong>What's new:</strong> after an update, Mortar shows what changed, grouped by area with a New or Fixed label on each line. An update that skipped versions shows every release you missed. The Mortar menu's <strong>What's new</strong> shows it again.</li>
+</ul>
+<h2 id="appearance">Appearance</h2>
+<p><strong>Settings › Appearance</strong> sets the theme, the accent colour and the background: an image (yours or the default), the desktop wallpaper, or a solid colour. An animated GIF, WebP or PNG plays behind Mortar; it holds still while a game runs and when <strong>Reduce motion</strong> is on. Mortar says when an image is large enough to cost memory and GPU, and an animation saved as WebP is often a tenth of the size of a GIF.</p>
+<h2 id="save-backups-and-restore">Save backups and restore</h2>
+<p>Mortar zips your saves before it changes them. <strong>Back up saves before Play</strong> (Settings, then the game's <strong>Save backups</strong>) backs up every time the game starts, and <strong>Scheduled save backups</strong> does it on a timer. Backups also happen before a profile update.</p>
+<p>To restore, open the <strong>Saves</strong> tab, choose <strong>Save backups…</strong>, pick a backup and choose <strong>Restore</strong>. Mortar names the saves it will overwrite and backs up the current Saves folder first. Stop the game before restoring. <strong>Open backups folder</strong> shows the zips; <strong>Backup location</strong> in the game's settings moves where new ones go.</p>
+<p>Each save's backups button lists the backups that hold it. For Valheim, The Sims 4 and Vintage Story it also lists the copies the game keeps itself (Valheim's automatic world backups, The Sims 4's rollback copies of a slot), marked <strong>Kept by the game</strong>; restoring one puts it back over the save, and Mortar backs up the current saves first.</p>
+<h2 id="screenshots">Screenshots</h2>
+<p>The <strong>Screenshots</strong> tab shows the game's screenshots, newest first: the ones the game saves itself (Vintage Story, Stardew Valley, The Sims 4) and, for a Steam game, the ones Steam takes. Choose one to see it full size, and use the arrow keys to step through; <strong>Use as profile cover</strong> under it makes it the open profile's cover. <strong>Open folder</strong> shows where they are.</p>
+<h2 id="where-your-data-lives">Where your data lives</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr><th></th><th>Windows</th><th>Linux</th></tr>
+</thead>
+<tbody>
+<tr><td>Mortar's data (profiles, mods, downloads, backups, settings, logs)</td><td><code>%LOCALAPPDATA%\Mortar</code></td><td><code>$XDG_DATA_HOME/mortar</code>, usually <code>~/.local/share/mortar</code></td></tr>
+<tr><td>Your saves</td><td><code>%APPDATA%\StardewValley\Saves</code></td><td><code>~/.config/StardewValley/Saves</code></td></tr>
+</tbody>
+</table></div>
+<p>The Mortar menu's <strong>Open data folder</strong> opens the first row.</p>
+<p>To move the data, stop the game and open <strong>Settings › Storage</strong>, then <strong>Move…</strong>. Mortar copies everything to a folder you pick, checks the copy, removes the old one and restarts. The new folder must be empty and have enough free space. A file named <code>portable</code> beside the Mortar program keeps all data in a <code>data</code> folder next to it (not in a Flatpak, and not where the folder is read-only).</p>
+<h2 id="uninstall">Uninstall</h2>
+<ul>
+<li><strong>Windows:</strong> use Settings › Apps (or the uninstaller in the install folder). It removes the program, shortcuts, the start-at-login entry, the Start Menu <strong>Mortar</strong> folder with your profile shortcuts, and the profiles you added to Steam. Your data folder stays, with all profiles, mods and settings. Delete <code>%LOCALAPPDATA%\Mortar</code> by hand to remove them. SMAPI and the game folder are not touched.</li>
+<li><strong>Linux:</strong> first run <code>mortar --release-links &amp;&amp; mortar uninstall-cleanup</code> (for the AppImage, <code>./Mortar.AppImage --release-links &amp;&amp; ./Mortar.AppImage uninstall-cleanup</code>; for the Flatpak, <code>flatpak run tech.rethunk.Mortar</code> with the same two arguments). That gives nxm:// links back to the app that had them, removes the browser extension's connection, the start-at-login entry, your profile shortcuts, the profiles you added to Steam, and the menu entry, icon and file types an AppImage or the portable binary added. Then remove the package, the AppImage or the Flatpak. Removing the <code>.deb</code>, <code>.rpm</code> or Arch package with <code>sudo</code> runs those two steps for you, for your own account only; other accounts on the machine, or a removal from a software centre, need the commands. Delete the data folder by hand to remove profiles and mods.</li>
+</ul>
+<p>Close Steam before uninstalling so the Steam cleanup sticks: Steam rewrites its shortcut list when it exits.</p>
+<h2 id="stream-overlay">Stream overlay</h2>
+<p>For OBS: Mortar's bridge in the game serves live values (the player, the day, money and skills in Stardew Valley; the moon, crew and quota in Lethal Company; the biome, day and defeated bosses in Valheim) to a browser source. In the game's <strong>Settings</strong>, open <strong>Stream overlay</strong>, turn it on and press Play (the bridge reads the setting when the game starts). Each value has a live preview and a copy button for its OBS URL. The page also gives the OBS steps and the <strong>Port</strong> and <strong>Token</strong> the overlay uses. It listens on this computer only. Pick <strong>Stream overlay</strong> in the command palette (Ctrl+K) to jump there.</p>
+<h2 id="antivirus-scan">Antivirus scan</h2>
+<p>Before a mod enters Mortar's store, Mortar scans its files with your antivirus: Windows Security on Windows, or ClamAV's clamd on Linux when it runs. If the scan flags a file, the install is refused and the extracted files are deleted. A flagged download shows <strong>Flagged by &lt;scanner&gt;: &lt;name&gt; in &lt;file&gt;</strong> with <strong>Install anyway</strong>, and a flagged local install shows an error with the same button. <strong>Install anyway</strong> asks you to confirm, installs that mod once without a scan and records it in the profile's history. When Windows' real-time protection removes a file itself, there is nothing left to install anyway; restore it from Windows Security's protection history. A scan that cannot finish installs the mod and warns you.</p>
+<p>In <strong>Settings › General › Antivirus</strong>, choose <strong>Automatic</strong>, <strong>clamd socket</strong> (with its socket path), <strong>Custom command</strong> (a program that gets the folder as <code>{path}</code>: exit 0 is clean, any other code is a detection named by the first line it prints) or <strong>Off</strong>. <strong>Scanner in use</strong> names what Mortar found, or &quot;No antivirus found&quot;. The setting belongs to this computer and is not part of an exported settings file.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><strong>Mortar does not start:</strong> it shows why in a message, with a button that opens the folder holding <code>mortar.log</code> (on Windows, <strong>Yes</strong> opens it, and Ctrl+C copies the message). On Linux without zenity or kdialog the message arrives as a desktop notification. If Mortar is already open but has stopped answering, starting it again offers to end the stuck copy and open a fresh one.</li>
+<li><strong>Run checks:</strong> <strong>Settings › About › Diagnostics › Run checks…</strong> inspects the data folder, games, Nexus links and the extension, and <strong>Repair</strong> fixes what it can.</li>
+<li><strong>Logs:</strong> Mortar's own log is <code>mortar.log</code> in the data folder; <code>crash.log</code> is there too after a crash. Each profile's SMAPI log is shown on its log view, and every run is kept.</li>
+<li><strong>Report a bug:</strong> the Mortar menu's <strong>Report a bug</strong> opens a prefilled GitHub issue. Leave <strong>Attach diagnostics</strong> ticked to save a zip (checks, logs, settings and recent runs, with secrets and your home folder removed) and add Mortar's checks to the issue; drag the zip into the issue before posting. <strong>Save diagnostics…</strong> in the Mortar menu and in Settings › About › Diagnostics writes the same zip.</li>
+<li><strong>Share a SMAPI log:</strong> on the profile's log view choose <strong>Share log…</strong>. It uploads the log to smapi.io/log and gives you a link to send to whoever is helping.</li>
+<li><strong>A mod will not load:</strong> the mod's page on Nexus lists what it needs. Mortar's problem checks warn about missing requirements and duplicates and never block Play.</li>
+</ul>
+
+      </div>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap">
+        <span>Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not affiliated with any game developer or mod site.</span>
+        <span><a href="/guide/">Guide</a> · <a href="/changelog/">Changelog</a> · <a href="/privacy/">Privacy</a> · <a href="/code-signing/">Code signing</a> · <a href="https://github.com/Rethunk-Tech/mortar">Source</a> · <a href="https://discord.gg/TfecaTm8J2">Discord</a> · <a href="/download/">Downloads</a></span>
+      </div>
+    </footer>
+  </body>
+</html>
