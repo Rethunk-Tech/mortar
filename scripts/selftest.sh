@@ -869,12 +869,27 @@ regress_lc() {
   elif [ -x "$bridge_repo/scripts/package.sh" ]; then
     local bridge_dir=$ROOT/bridge built
     mkdir -p "$bridge_dir"
-    if built=$(DIST="$ROOT/bridge-dist" "$bridge_repo/scripts/package.sh" 2>"$ROOT/bridge-build.log" | tail -1) && [ -f "$built" ]; then
+    # package.sh prints a zip per build (core, each game, each with a -nexus twin): take the one the catalog's bridge
+    # asset template names for this game.
+    local asset prefix suffix zip name version
+    asset=$(jq -r --arg g "$rg_id" '[.components[] | select(.kind == "bridge" and .game == $g) | .asset][0] // empty' "$REPO/components.source.json")
+    prefix=${asset%%\{version\}*} suffix=${asset#*\{version\}}
+    built=''
+    if [ -n "$asset" ]; then
+      while IFS= read -r zip; do
+        name=${zip##*/}
+        [[ $name == "$prefix"* && $name == *"$suffix" ]] || continue
+        version=${name#"$prefix"}
+        version=${version%"$suffix"}
+        [[ -n $version && $version != *nexus* ]] && built=$zip
+      done < <(DIST="$ROOT/bridge-dist" "$bridge_repo/scripts/package.sh" 2>"$ROOT/bridge-build.log")
+    fi
+    if [ -f "$built" ]; then
       cp "$built" "$bridge_dir/$rg_id.zip"
       export MORTAR_LOCAL_BRIDGES=$bridge_dir
       bridge=expected bridge_from=local
     else
-      failures+=("the bridge did not build; see $ROOT/bridge-build.log")
+      failures+=("no bridge zip named ${asset:-by the catalog for $rg_id} came out of package.sh; see $ROOT/bridge-build.log")
     fi
   else
     failures+=("no bridge checkout at $bridge_repo")
