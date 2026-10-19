@@ -11,7 +11,15 @@ import type { CardState } from './cardState.ts'
 const BAR_PX = 96
 
 // The label and bar fill the Add button's footprint; under a picture the card sizes it to the picture's width.
-function Block({ label, children }: { label: string; children: ReactNode }) {
+function Block({
+  label,
+  title = label,
+  children,
+}: {
+  label: string
+  title?: string
+  children: ReactNode
+}) {
   return (
     <Box
       className="card-progress"
@@ -24,7 +32,7 @@ function Block({ label, children }: { label: string; children: ReactNode }) {
         minWidth: 0,
       }}
     >
-      <Typography noWrap={true} title={label} sx={{ fontSize: 12, lineHeight: 1.2 }}>
+      <Typography noWrap={true} title={title} sx={{ fontSize: 12, lineHeight: 1.2 }}>
         {label}
       </Typography>
       {children}
@@ -58,13 +66,13 @@ function CardProgress({ state }: { state: Exclude<CardState, { kind: 'idle' }> }
       )
     case 'downloading':
       return (
-        <Block label={t`Downloading ${state.percent}%`}>
+        <Block label={`${state.percent}%`} title={t`Downloading ${state.percent}%`}>
           <LinearProgress variant="determinate" value={state.percent} />
         </Block>
       )
     case 'paused':
       return (
-        <Block label={t`Paused at ${state.percent}%`}>
+        <Block label={t`Paused ${state.percent}%`} title={t`Paused at ${state.percent}%`}>
           <LinearProgress variant="determinate" color="inherit" value={state.percent} />
         </Block>
       )

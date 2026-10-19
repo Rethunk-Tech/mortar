@@ -40,7 +40,7 @@ msgstr "Switched {name} to the {detail} update channel"
 msgid "Required before the server can start."
 msgstr "Required before the server can start."
 
-#: src/profiles/OverrideRows.tsx:41
+#: src/profiles/OverrideRows.tsx:50
 msgid "Launch method"
 msgstr "Launch method"
 
@@ -1947,7 +1947,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/mods/updateReview/updateAll.ts:65
 #: src/profiles/GameModsDialog.tsx:195
 #: src/profiles/HealthDialog.tsx:245
-#: src/profiles/LaunchPreview.tsx:82
+#: src/profiles/LaunchPreview.tsx:80
 #: src/queue/QueueBody.tsx:238
 #: src/queue/store.ts:167
 #: src/saves/BackupsDialog.tsx:167
@@ -2334,7 +2334,7 @@ msgstr "More actions for {0}"
 msgid "Game Mods folder vs {0}"
 msgstr "Game Mods folder vs {0}"
 
-#: src/profiles/OverrideRows.tsx:49
+#: src/profiles/OverrideRows.tsx:58
 msgid "Update mods before Play"
 msgstr "Update mods before Play"
 
@@ -2632,7 +2632,7 @@ msgstr "In-game menu"
 msgid "Include libraries and supporting mods"
 msgstr "Include libraries and supporting mods"
 
-#: src/browse/CardProgress.tsx:74
+#: src/browse/CardProgress.tsx:82
 #: src/mods/ModDependencyTree.tsx:86
 #: src/mods/ModDependencyTree.tsx:86
 #: src/mods/problemFix/WhereButtons.tsx:47
@@ -2799,7 +2799,7 @@ msgstr "Error while loading"
 msgid "Downloading"
 msgstr "Downloading"
 
-#: src/profiles/OverrideRows.tsx:147
+#: src/profiles/OverrideRows.tsx:157
 msgid "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 msgstr "Free Nexus accounts click each download on Nexus; those updates do not block Play."
 
@@ -3480,6 +3480,11 @@ msgstr "{0, plural, one {# mod added} other {# mods added}}"
 #: src/shell/BugReportDialog.tsx:143
 msgid "Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you drag it into the issue)"
 msgstr "Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you drag it into the issue)"
+
+#. placeholder {0}: state.percent
+#: src/browse/CardProgress.tsx:75
+msgid "Paused {0}%"
+msgstr "Paused {0}%"
 
 #: src/console/PerformancePanelParts.tsx:218
 msgid "Show report"
@@ -4340,7 +4345,7 @@ msgid "Ask me to endorse mods I keep using"
 msgstr "Ask me to endorse mods I keep using"
 
 #. placeholder {0}: state.percent
-#: src/browse/CardProgress.tsx:61
+#: src/browse/CardProgress.tsx:69
 msgid "Downloading {0}%"
 msgstr "Downloading {0}%"
 
@@ -5356,7 +5361,7 @@ msgstr "Unknown download"
 msgid "Working directory"
 msgstr "Working directory"
 
-#: src/browse/CardProgress.tsx:52
+#: src/browse/CardProgress.tsx:60
 #: src/mods/ChangelogDialog.tsx:35
 #: src/mods/ChangeVersionDialog.tsx:92
 #: src/mods/columnLabel.ts:17
@@ -5620,7 +5625,7 @@ msgstr "API key not set. Itch.io search is off until you add one."
 msgid "You chose not to endorse this mod."
 msgstr "You chose not to endorse this mod."
 
-#: src/profiles/OverrideRows.tsx:99
+#: src/profiles/OverrideRows.tsx:108
 msgid "These apply only to this profile."
 msgstr "These apply only to this profile."
 
@@ -6054,7 +6059,7 @@ msgstr "Replace"
 msgid "Could not read other profiles"
 msgstr "Could not read other profiles"
 
-#: src/profiles/LaunchPreview.tsx:69
+#: src/profiles/LaunchPreview.tsx:67
 msgid "Copy the command"
 msgstr "Copy the command"
 
@@ -7880,7 +7885,8 @@ msgstr " You chose which mod wins each clash."
 msgid "Use theirs"
 msgstr "Use theirs"
 
-#: src/profiles/LaunchPreview.tsx:64
+#: src/profiles/LaunchPreview.tsx:62
+#: src/profiles/LaunchPreview.tsx:89
 msgid "Direct launch preview"
 msgstr "Direct launch preview"
 
@@ -8140,7 +8146,7 @@ msgstr "Notes and tags"
 msgid "Current files on Nexus ({0})"
 msgstr "Current files on Nexus ({0})"
 
-#: src/browse/CardProgress.tsx:56
+#: src/browse/CardProgress.tsx:64
 msgid "Needs input"
 msgstr "Needs input"
 
@@ -8442,7 +8448,7 @@ msgstr "Pinned"
 msgid "Could not dismiss the overlap"
 msgstr "Could not dismiss the overlap"
 
-#: src/profiles/OverrideRows.tsx:57
+#: src/profiles/OverrideRows.tsx:66
 #: src/settings/ProtonRow.tsx:17
 msgid "Proton version"
 msgstr "Proton version"
@@ -8485,7 +8491,7 @@ msgstr "Not found"
 
 #: src/profiles/EditProfileDialog.tsx:124
 #: src/profiles/GameSettings.tsx:182
-#: src/profiles/OverrideRows.tsx:138
+#: src/profiles/OverrideRows.tsx:148
 #: src/settings/sections/Appearance.tsx:267
 #: src/settings/sections/GameSettings.tsx:213
 msgid "Use default"
@@ -8767,7 +8773,7 @@ msgstr "This mod wrote errors to the game's log the last time you played. It may
 msgid "Share…"
 msgstr "Share…"
 
-#: src/profiles/OverrideRows.tsx:53
+#: src/profiles/OverrideRows.tsx:62
 #: src/settings/prefCopy.ts:58
 msgid "Skip the intro"
 msgstr "Skip the intro"
@@ -9163,7 +9169,7 @@ msgstr "Search in Browse"
 msgid "Results of installs, updates and launches appear here."
 msgstr "Results of installs, updates and launches appear here."
 
-#: src/profiles/OverrideRows.tsx:59
+#: src/profiles/OverrideRows.tsx:68
 #: src/settings/prefCopyGame.ts:8
 msgid "Game settings file"
 msgstr "Game settings file"
@@ -9345,7 +9351,7 @@ msgstr "Cosmetic"
 msgid "Copy OBS URL"
 msgstr "Copy OBS URL"
 
-#: src/profiles/LaunchPreview.tsx:57
+#: src/profiles/LaunchPreview.tsx:55
 #: src/shell/FlatpakGrant.tsx:72
 msgid "Command copied"
 msgstr "Command copied"
@@ -10454,7 +10460,7 @@ msgstr "{count, plural, one {Imported # mod} other {Imported # mods}}"
 msgid "pinned in {0}"
 msgstr "pinned in {0}"
 
-#: src/browse/CardProgress.tsx:73
+#: src/browse/CardProgress.tsx:81
 msgid "Waiting for Nexus…"
 msgstr "Waiting for Nexus…"
 
@@ -10554,7 +10560,7 @@ msgstr "Not now"
 msgid "Waiting for a free slot · {done} of {total}"
 msgstr "Waiting for a free slot · {done} of {total}"
 
-#: src/profiles/OverrideRows.tsx:55
+#: src/profiles/OverrideRows.tsx:64
 #: src/settings/GraphicsApiRow.tsx:17
 msgid "Graphics API"
 msgstr "Graphics API"
@@ -11016,7 +11022,7 @@ msgid "Open {gameName} ({more, plural, one {# more profile} other {# more profil
 msgstr "Open {gameName} ({more, plural, one {# more profile} other {# more profiles}})"
 
 #: src/profiles/LaunchPresetDialog.tsx:78
-#: src/profiles/OverrideRows.tsx:43
+#: src/profiles/OverrideRows.tsx:52
 #: src/settings/prefCopy.ts:64
 msgid "SMAPI console window"
 msgstr "SMAPI console window"
@@ -11490,7 +11496,7 @@ msgstr "Show conflicts"
 msgid "Not set up"
 msgstr "Not set up"
 
-#: src/profiles/OverrideRows.tsx:47
+#: src/profiles/OverrideRows.tsx:56
 #: src/settings/prefCopy.ts:212
 msgid "Save backups kept"
 msgstr "Save backups kept"
@@ -11606,7 +11612,7 @@ msgstr "No other profile to add them to."
 msgid "Slowest event"
 msgstr "Slowest event"
 
-#: src/profiles/OverrideRows.tsx:51
+#: src/profiles/OverrideRows.tsx:60
 msgid "Skip pre-Play check"
 msgstr "Skip pre-Play check"
 
@@ -12016,7 +12022,7 @@ msgid "{0} adds {time} to startup (through {1})"
 msgstr "{0} adds {time} to startup (through {1})"
 
 #: src/profiles/EditProfileDialog.tsx:171
-#: src/profiles/OverrideRows.tsx:97
+#: src/profiles/OverrideRows.tsx:106
 msgid "Overrides"
 msgstr "Overrides"
 
@@ -14017,13 +14023,13 @@ msgstr "Game content"
 msgid "More setting values"
 msgstr "More setting values"
 
-#: src/browse/CardProgress.tsx:75
+#: src/browse/CardProgress.tsx:83
 #: src/queue/QueueBody.tsx:293
 #: src/settings/sections/ModsProfiles.tsx:14
 msgid "Installing"
 msgstr "Installing"
 
-#: src/profiles/OverrideRows.tsx:45
+#: src/profiles/OverrideRows.tsx:54
 #: src/settings/prefCopy.ts:191
 msgid "Back up saves before Play"
 msgstr "Back up saves before Play"
@@ -14184,7 +14190,7 @@ msgstr "Delete preset"
 msgid "Tips"
 msgstr "Tips"
 
-#: src/browse/CardProgress.tsx:48
+#: src/browse/CardProgress.tsx:56
 msgid "Failed, retry"
 msgstr "Failed, retry"
 
@@ -14658,7 +14664,7 @@ msgid "Settings sections"
 msgstr "Settings sections"
 
 #. placeholder {0}: state.percent
-#: src/browse/CardProgress.tsx:67
+#: src/browse/CardProgress.tsx:75
 msgid "Paused at {0}%"
 msgstr "Paused at {0}%"
 
