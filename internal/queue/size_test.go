@@ -9,7 +9,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
-func bigPackage(t *testing.T, size int64, free int64) *fixture {
+func bigPackage(t *testing.T, size, free int64) *fixture {
 	t.Helper()
 	f := newFixture(t)
 	c, _ := f.s.d.Client()

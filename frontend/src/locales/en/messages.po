@@ -52,7 +52,7 @@ msgstr "Launch method"
 msgid "Hidden on Nexus · {0}"
 msgstr "Hidden on Nexus · {0}"
 
-#: src/settings/sections/Appearance.tsx:138
+#: src/settings/sections/Appearance.tsx:142
 msgid "Gentle violet"
 msgstr "Gentle violet"
 
@@ -117,7 +117,7 @@ msgid "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 
 #. placeholder {0}: items.length
-#: src/queue/QueueBody.tsx:236
+#: src/queue/QueueBody.tsx:275
 msgid "Failed ({0})"
 msgstr "Failed ({0})"
 
@@ -218,7 +218,7 @@ msgstr "Allow cleanup"
 msgid "Revert {name} to the installed copy?"
 msgstr "Revert {name} to the installed copy?"
 
-#: src/queue/QueueBody.tsx:364
+#: src/queue/QueueBody.tsx:403
 msgid "Skip this profile"
 msgstr "Skip this profile"
 
@@ -226,7 +226,7 @@ msgstr "Skip this profile"
 msgid "Updated categories"
 msgstr "Updated categories"
 
-#: src/queue/store.ts:151
+#: src/queue/store.ts:152
 #: src/toasts/report.ts:63
 msgid "Open storage settings"
 msgstr "Open storage settings"
@@ -358,7 +358,7 @@ msgstr "Could not ask for a measured launch"
 
 #. placeholder {0}: extras.length
 #. placeholder {1}: listNames(extras.map((e) => e.name))
-#: src/profiles/PackTarget.tsx:68
+#: src/profiles/PackTarget.tsx:77
 msgid "{0, plural, one {Also remove # mod that is not in this code} other {Also remove # mods that are not in this code}}: {1}"
 msgstr "{0, plural, one {Also remove # mod that is not in this code} other {Also remove # mods that are not in this code}}: {1}"
 
@@ -415,7 +415,7 @@ msgstr "More levels"
 msgid "Switch game"
 msgstr "Switch game"
 
-#: src/settings/sections/Appearance.tsx:133
+#: src/settings/sections/Appearance.tsx:137
 msgid "Sand"
 msgstr "Sand"
 
@@ -428,7 +428,7 @@ msgid "Premium and GitHub downloads at once"
 msgstr "Premium and GitHub downloads at once"
 
 #. placeholder {0}: failed.length
-#: src/queue/store.ts:244
+#: src/queue/store.ts:245
 msgid "{0, plural, one {# download failed} other {# downloads failed}}"
 msgstr "{0, plural, one {# download failed} other {# downloads failed}}"
 
@@ -449,7 +449,7 @@ msgstr "Duplicate the open profile"
 msgid "Missing from the store"
 msgstr "Missing from the store"
 
-#: src/queue/store.ts:126
+#: src/queue/store.ts:127
 msgid "The download could not finish. Retry or skip it from the queue."
 msgstr "The download could not finish. Retry or skip it from the queue."
 
@@ -902,6 +902,10 @@ msgstr "{count, plural, one {{name} logged # error in the last run. First: {firs
 msgid "Could not choose the program"
 msgstr "Could not choose the program"
 
+#: src/queue/LargeDownloadDialog.tsx:29
+msgid "This download is {size}, which is unusually large for a mod. It will take a long time and a lot of disk space."
+msgstr "This download is {size}, which is unusually large for a mod. It will take a long time and a lot of disk space."
+
 #: src/settings/prefCopyModsView.ts:13
 msgid "List"
 msgstr "List"
@@ -911,6 +915,10 @@ msgstr "List"
 #: src/profiles/ProfileRow.tsx:186
 msgid "Reorder {0}"
 msgstr "Reorder {0}"
+
+#: src/profiles/PackTarget.tsx:67
+msgid "Replace my config files with the pack's"
+msgstr "Replace my config files with the pack's"
 
 #: src/browse/BrowseBody.tsx:130
 msgid "Find mods to add"
@@ -932,7 +940,7 @@ msgstr "Copy this profile's list"
 msgid "Sign in to Nexus Mods in Settings to see more from this mod's page."
 msgstr "Sign in to Nexus Mods in Settings to see more from this mod's page."
 
-#: src/settings/sections/ItchAccount.tsx:54
+#: src/settings/sections/ItchAccount.tsx:51
 msgid "Your API key is kept in your system keyring."
 msgstr "Your API key is kept in your system keyring."
 
@@ -1100,7 +1108,7 @@ msgstr "Add to {targetName}"
 msgid "Enable mods in the Mods tab to see the order {loader} loads them."
 msgstr "Enable mods in the Mods tab to see the order {loader} loads them."
 
-#: src/settings/sections/Sources.tsx:121
+#: src/settings/sections/Sources.tsx:122
 msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
 msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it."
 
@@ -1192,7 +1200,7 @@ msgid "Turn on sharing nearby?"
 msgstr "Turn on sharing nearby?"
 
 #: src/mods/CleanupSection.tsx:126
-#: src/queue/QueueBody.tsx:120
+#: src/queue/QueueBody.tsx:121
 msgid "Dismiss {name}"
 msgstr "Dismiss {name}"
 
@@ -1306,7 +1314,7 @@ msgstr "{path} wait for each other in a loop, so SMAPI skips at least one of the
 msgid "Replaces some files of the mod above"
 msgstr "Replaces some files of the mod above"
 
-#: src/settings/sections/Appearance.tsx:141
+#: src/settings/sections/Appearance.tsx:145
 msgid "Follows your desktop"
 msgstr "Follows your desktop"
 
@@ -1327,7 +1335,7 @@ msgstr "Revert this mod"
 msgid "Could not export the collection draft"
 msgstr "Could not export the collection draft"
 
-#: src/settings/sections/Sources.tsx:76
+#: src/settings/sections/Sources.tsx:77
 msgid "Recheck"
 msgstr "Recheck"
 
@@ -1439,7 +1447,7 @@ msgstr "Mod Manager Download on Nexus Mods only works in Mortar when you are sig
 msgid "Take them back for Mortar?"
 msgstr "Take them back for Mortar?"
 
-#: src/launch/autoUpdate.ts:224
+#: src/launch/autoUpdate.ts:225
 msgid "Could not add the update downloads"
 msgstr "Could not add the update downloads"
 
@@ -1485,7 +1493,7 @@ msgstr "Install Mortar's copy"
 msgid "All outcomes"
 msgstr "All outcomes"
 
-#: src/queue/store.ts:317
+#: src/queue/store.ts:318
 #: src/share/importCompletion.ts:25
 #: src/share/ImportPreview.tsx:277
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
@@ -1660,16 +1668,16 @@ msgstr "Mark implicit"
 msgid "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
 msgstr "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
 
-#: src/settings/sections/Sources.tsx:49
+#: src/settings/sections/Sources.tsx:50
 msgid "the connection failed"
 msgstr "the connection failed"
 
-#: src/settings/sections/Appearance.tsx:233
+#: src/settings/sections/Appearance.tsx:237
 msgid "Solid"
 msgstr "Solid"
 
-#: src/settings/sections/Appearance.tsx:109
-#: src/settings/sections/Appearance.tsx:219
+#: src/settings/sections/Appearance.tsx:112
+#: src/settings/sections/Appearance.tsx:223
 msgid "Font"
 msgstr "Font"
 
@@ -1808,7 +1816,7 @@ msgstr "Moving copies the whole profile, then removes the old copy, so it needs 
 msgid "No supported game was found in your launchers."
 msgstr "No supported game was found in your launchers."
 
-#: src/settings/SettingsShell.tsx:229
+#: src/settings/SettingsShell.tsx:231
 msgid "Search results"
 msgstr "Search results"
 
@@ -1908,7 +1916,7 @@ msgid "Repair all"
 msgstr "Repair all"
 
 #. placeholder {0}: sourceLabel(id)
-#: src/settings/sections/Sources.tsx:41
+#: src/settings/sections/Sources.tsx:42
 msgid "Mortar has not asked {0} this session."
 msgstr "Mortar has not asked {0} this session."
 
@@ -1945,8 +1953,8 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/profiles/GameModsDialog.tsx:195
 #: src/profiles/HealthDialog.tsx:245
 #: src/profiles/LaunchPreview.tsx:82
-#: src/queue/QueueBody.tsx:259
-#: src/queue/store.ts:166
+#: src/queue/QueueBody.tsx:298
+#: src/queue/store.ts:167
 #: src/saves/BackupsDialog.tsx:167
 #: src/saves/SavesTab.tsx:60
 #: src/screenshots/ScreenshotsTab.tsx:134
@@ -1961,7 +1969,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 msgid "Retry"
 msgstr "Retry"
 
-#: src/settings/sections/Appearance.tsx:135
+#: src/settings/sections/Appearance.tsx:139
 msgid "Copper"
 msgstr "Copper"
 
@@ -2064,11 +2072,11 @@ msgstr "Save file {slot}"
 
 #: src/install/MergeCallout.tsx:51
 #: src/install/NeedsRootCallout.tsx:44
-#: src/queue/QueueBody.tsx:160
+#: src/queue/QueueBody.tsx:161
 msgid "Skip"
 msgstr "Skip"
 
-#: src/queue/store.ts:72
+#: src/queue/store.ts:73
 msgid "Nothing in the queue needs a decision."
 msgstr "Nothing in the queue needs a decision."
 
@@ -2126,7 +2134,7 @@ msgid "Total"
 msgstr "Total"
 
 #. placeholder {0}: item.name
-#: src/queue/store.ts:140
+#: src/queue/store.ts:141
 msgid "{0} needs its main file first"
 msgstr "{0} needs its main file first"
 
@@ -2224,6 +2232,11 @@ msgstr "{name} now opens Nexus \"Mod Manager Download\" links."
 #: src/saves/SaveListRow.tsx:80
 msgid "Actions"
 msgstr "Actions"
+
+#: src/queue/LargeDownloadDialog.tsx:31
+#: src/queue/QueueBody.tsx:235
+msgid "Continue anyway"
+msgstr "Continue anyway"
 
 #. placeholder {0}: view.onlyA
 #: src/profiles/CompareDialog.tsx:167
@@ -2471,6 +2484,10 @@ msgstr "Remember window size and position"
 msgid "Found mods on Nexus"
 msgstr "Found mods on Nexus"
 
+#: src/queue/LargeDownloadDialog.tsx:28
+msgid "This download is {size}, which is unusually large for a mod. It will take a long time and a lot of disk space. {more} more large downloads are waiting after this one."
+msgstr "This download is {size}, which is unusually large for a mod. It will take a long time and a lot of disk space. {more} more large downloads are waiting after this one."
+
 #: src/templates/TemplateDialogs.tsx:185
 msgid "Rename template"
 msgstr "Rename template"
@@ -2610,8 +2627,8 @@ msgstr "Show the first-run tips again"
 #: src/profiles/CompareDialog.tsx:186
 #: src/profiles/LaunchPresetDialog.tsx:85
 #: src/queue/actions.ts:99
-#: src/queue/store.ts:247
-#: src/queue/store.ts:366
+#: src/queue/store.ts:248
+#: src/queue/store.ts:367
 #: src/saves/SaveGapLine.tsx:57
 #: src/settings/prefCopy.ts:320
 #: src/settings/sections/Updates.tsx:139
@@ -2658,7 +2675,7 @@ msgid "Leave the caches alone."
 msgstr "Leave the caches alone."
 
 #. placeholder {0}: i.name
-#: src/queue/QueueBody.tsx:454
+#: src/queue/QueueBody.tsx:491
 msgid "Skip {0}"
 msgstr "Skip {0}"
 
@@ -2830,7 +2847,7 @@ msgid "Track a Nexus mod when Mortar installs it"
 msgstr "Track a Nexus mod when Mortar installs it"
 
 #: src/mods/updateReview/EverywhereDialog.tsx:51
-#: src/queue/QueueBody.tsx:389
+#: src/queue/QueueBody.tsx:428
 #: src/queue/QueueHistory.tsx:70
 msgid "Skipped"
 msgstr "Skipped"
@@ -2900,7 +2917,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/profiles/historyRevert.ts:111
 #: src/profiles/store.ts:190
 #: src/profiles/store.ts:233
-#: src/queue/store.ts:299
+#: src/queue/store.ts:300
 #: src/saves/store.ts:68
 #: src/templates/ApplyTemplateDialog.tsx:96
 #: src/templates/TemplateDialogs.tsx:226
@@ -3074,8 +3091,8 @@ msgstr "Imported {name}"
 msgid "Local archives can't go here"
 msgstr "Local archives can't go here"
 
-#: src/settings/sections/ItchAccount.tsx:53
-#: src/settings/sections/Sources.tsx:147
+#: src/settings/sections/ItchAccount.tsx:51
+#: src/settings/sections/Sources.tsx:148
 msgid "Account"
 msgstr "Account"
 
@@ -3228,7 +3245,7 @@ msgstr "{0, plural, one {# update for {1, plural, one {# profile} other {# profi
 msgid "Could not add the mods to {targetName}"
 msgstr "Could not add the mods to {targetName}"
 
-#: src/settings/sections/Sources.tsx:114
+#: src/settings/sections/Sources.tsx:115
 msgid "Not signed in. Add your API key in Accounts."
 msgstr "Not signed in. Add your API key in Accounts."
 
@@ -3448,7 +3465,7 @@ msgstr "Open the next profile"
 msgid "Flag"
 msgstr "Flag"
 
-#: src/settings/sections/Appearance.tsx:232
+#: src/settings/sections/Appearance.tsx:236
 #: src/settings/sections/Notifications.tsx:57
 msgid "Desktop"
 msgstr "Desktop"
@@ -3566,7 +3583,7 @@ msgid "Gray out"
 msgstr "Gray out"
 
 #: src/profiles/AppearancePickers.tsx:36
-#: src/settings/sections/Appearance.tsx:136
+#: src/settings/sections/Appearance.tsx:140
 msgid "Sky"
 msgstr "Sky"
 
@@ -3762,7 +3779,7 @@ msgstr "Storage"
 msgid "Licence"
 msgstr "Licence"
 
-#: src/settings/sections/Sources.tsx:43
+#: src/settings/sections/Sources.tsx:44
 msgid "Unreachable"
 msgstr "Unreachable"
 
@@ -3782,7 +3799,7 @@ msgstr "Update mods before Play on new profiles"
 msgid "Not downloadable here"
 msgstr "Not downloadable here"
 
-#: src/settings/sections/Sources.tsx:127
+#: src/settings/sections/Sources.tsx:128
 msgid "API key set for {itch}"
 msgstr "API key set for {itch}"
 
@@ -3821,7 +3838,7 @@ msgstr "Other mods require it"
 #: src/browse/BrowseMenu.tsx:65
 #: src/browse/CardAction.tsx:58
 #: src/mods/OptionalFileRows.tsx:177
-#: src/queue/store.ts:143
+#: src/queue/store.ts:144
 msgid "Open files page"
 msgstr "Open files page"
 
@@ -4307,7 +4324,7 @@ msgstr "Card details in Browse"
 msgid "Supplies tilesheets for other mods"
 msgstr "Supplies tilesheets for other mods"
 
-#: src/launch/autoUpdate.ts:142
+#: src/launch/autoUpdate.ts:143
 msgid "Timed out waiting for mod updates"
 msgstr "Timed out waiting for mod updates"
 
@@ -4422,7 +4439,7 @@ msgstr "Search archives"
 msgid "Created"
 msgstr "Created"
 
-#: src/settings/sections/Appearance.tsx:141
+#: src/settings/sections/Appearance.tsx:145
 msgid "System"
 msgstr "System"
 
@@ -4617,12 +4634,13 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/profiles/LaunchPresetDialog.tsx:91
 #: src/profiles/MergeDialog.tsx:238
 #: src/profiles/PackImportDialog.tsx:177
+#: src/queue/QueueBody.tsx:227
 #: src/settings/sections/NexusSSO.tsx:68
 #: src/settings/sections/nxmHandler.tsx:65
 #: src/share/ModpackDialog.tsx:259
 #: src/share/ShareFooter.tsx:42
 #: src/shell/BugReportDialog.tsx:153
-#: src/shell/ConfirmDialog.tsx:57
+#: src/shell/ConfirmDialog.tsx:64
 #: src/shell/PromptDialog.tsx:67
 #: src/shell/SuggestDialog.tsx:40
 #: src/templates/ApplyTemplateDialog.tsx:159
@@ -4689,7 +4707,7 @@ msgstr "The stats each Browse card shows under its summary; choose them from Bro
 
 #: src/profiles/EditProfileDialog.tsx:114
 #: src/profiles/EditProfileDialog.tsx:122
-#: src/settings/sections/Appearance.tsx:253
+#: src/settings/sections/Appearance.tsx:257
 msgid "Choose image…"
 msgstr "Choose image…"
 
@@ -4788,7 +4806,7 @@ msgstr "Saved group added"
 msgid "More ways to add mods"
 msgstr "More ways to add mods"
 
-#: src/queue/store.ts:256
+#: src/queue/store.ts:257
 msgid "Downloads paused"
 msgstr "Downloads paused"
 
@@ -4850,7 +4868,7 @@ msgid "Save to library"
 msgstr "Save to library"
 
 #. placeholder {0}: active.length
-#: src/queue/QueueBody.tsx:434
+#: src/queue/QueueBody.tsx:471
 msgid "In progress ({0})"
 msgstr "In progress ({0})"
 
@@ -4899,6 +4917,10 @@ msgstr "Game setting off"
 msgid "Summary"
 msgstr "Summary"
 
+#: src/queue/QueueBody.tsx:222
+msgid "Very large download"
+msgstr "Very large download"
+
 #: src/share/MethodPanes.tsx:274
 msgid "Code copied"
 msgstr "Code copied"
@@ -4920,7 +4942,7 @@ msgstr "{count, plural, one {# problem} other {# problems}}"
 msgid "Review updates"
 msgstr "Review updates"
 
-#: src/queue/store.ts:154
+#: src/queue/store.ts:155
 msgid "Show in queue"
 msgstr "Show in queue"
 
@@ -4975,7 +4997,7 @@ msgstr "Mortar installs this itself."
 msgid "{0, plural, one {# mod already matches} other {# mods already match}} {targetName}."
 msgstr "{0, plural, one {# mod already matches} other {# mods already match}} {targetName}."
 
-#: src/queue/QueueBody.tsx:354
+#: src/queue/QueueBody.tsx:393
 msgid "Skip every waiting download"
 msgstr "Skip every waiting download"
 
@@ -5016,7 +5038,7 @@ msgstr "Mortar uses your gh login for GitHub requests, which raises the rate lim
 
 #. placeholder {0}: item.repo
 #. placeholder {1}: item.tag
-#: src/queue/QueueBody.tsx:172
+#: src/queue/QueueBody.tsx:173
 msgid "{0} {1} has several archives. Which one should Mortar install?"
 msgstr "{0} {1} has several archives. Which one should Mortar install?"
 
@@ -5088,7 +5110,7 @@ msgstr "{0, plural, one {# config file comes with it.} other {# config files com
 msgid "Today"
 msgstr "Today"
 
-#: src/queue/QueueBody.tsx:134
+#: src/queue/QueueBody.tsx:135
 msgid "Needs your click"
 msgstr "Needs your click"
 
@@ -5147,6 +5169,10 @@ msgstr "Violet"
 #: src/share/ListFormat.tsx:79
 msgid "Message {n} of {total} copied"
 msgstr "Message {n} of {total} copied"
+
+#: src/queue/QueueBody.tsx:223
+msgid "This download is {size}, which is unusually large for a mod."
+msgstr "This download is {size}, which is unusually large for a mod."
 
 #: src/saves/backups.ts:99
 #: src/saves/SaveListRow.tsx:115
@@ -5356,9 +5382,9 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/PrefRow.tsx:39
 #: src/settings/ProtonRow.tsx:31
 #: src/settings/sections/Appearance.tsx:87
-#: src/settings/sections/Appearance.tsx:117
-#: src/settings/sections/Appearance.tsx:130
-#: src/settings/sections/Appearance.tsx:209
+#: src/settings/sections/Appearance.tsx:121
+#: src/settings/sections/Appearance.tsx:134
+#: src/settings/sections/Appearance.tsx:213
 #: src/settings/sections/Downloads.tsx:67
 #: src/settings/sections/Downloads.tsx:242
 #: src/settings/sections/Downloads.tsx:273
@@ -5388,7 +5414,7 @@ msgid "There are no mods to share."
 msgstr "There are no mods to share."
 
 #: src/mods/Toolbar.tsx:308
-#: src/queue/QueueBody.tsx:411
+#: src/queue/QueueBody.tsx:450
 msgid "Browse mods"
 msgstr "Browse mods"
 
@@ -5528,7 +5554,7 @@ msgid "Library"
 msgstr "Library"
 
 #: src/settings/sections/Downloads.tsx:115
-#: src/settings/sections/Sources.tsx:63
+#: src/settings/sections/Sources.tsx:64
 msgid "Connection"
 msgstr "Connection"
 
@@ -5588,7 +5614,7 @@ msgstr "None of this profile's mods are marked broken for the new version."
 msgid "One argument per line. Placeholders: {placeholders}."
 msgstr "One argument per line. Placeholders: {placeholders}."
 
-#: src/settings/sections/Sources.tsx:129
+#: src/settings/sections/Sources.tsx:130
 msgid "API key not set. Itch.io search is off until you add one."
 msgstr "API key not set. Itch.io search is off until you add one."
 
@@ -5609,7 +5635,7 @@ msgstr "Copy of {name}"
 msgid "Export…"
 msgstr "Export…"
 
-#: src/queue/QueueBody.tsx:171
+#: src/queue/QueueBody.tsx:172
 msgid "Choose a file"
 msgstr "Choose a file"
 
@@ -5780,8 +5806,8 @@ msgid "A plain icon (Thunderstore needs a 256x256 PNG)"
 msgstr "A plain icon (Thunderstore needs a 256x256 PNG)"
 
 #: src/settings/prefCopy.ts:157
-#: src/settings/sections/Appearance.tsx:144
-#: src/settings/sections/Appearance.tsx:213
+#: src/settings/sections/Appearance.tsx:148
+#: src/settings/sections/Appearance.tsx:217
 msgid "Theme"
 msgstr "Theme"
 
@@ -5837,7 +5863,7 @@ msgstr "{0} of {1}"
 msgid "Files of {name} changed outside Mortar"
 msgstr "Files of {name} changed outside Mortar"
 
-#: src/settings/sections/Sources.tsx:133
+#: src/settings/sections/Sources.tsx:134
 msgid "No account needed"
 msgstr "No account needed"
 
@@ -5867,7 +5893,7 @@ msgstr "Pause downloads while the game runs"
 msgid "{0} of saves"
 msgstr "{0} of saves"
 
-#: src/settings/SettingsShell.tsx:91
+#: src/settings/SettingsShell.tsx:93
 msgid "Try another word, or clear the search."
 msgstr "Try another word, or clear the search."
 
@@ -6034,7 +6060,7 @@ msgstr "Could not read other profiles"
 msgid "Copy the command"
 msgstr "Copy the command"
 
-#: src/settings/sections/Appearance.tsx:242
+#: src/settings/sections/Appearance.tsx:246
 msgid "Background preview"
 msgstr "Background preview"
 
@@ -6201,7 +6227,7 @@ msgstr "Stop the game before moving the data folder."
 msgid "Screenshots you take while playing show here, newest first."
 msgstr "Screenshots you take while playing show here, newest first."
 
-#: src/settings/sections/Appearance.tsx:134
+#: src/settings/sections/Appearance.tsx:138
 msgid "Earthy green"
 msgstr "Earthy green"
 
@@ -6325,7 +6351,7 @@ msgstr "Could not run the command"
 msgid "About Mortar"
 msgstr "About Mortar"
 
-#: src/settings/sections/Appearance.tsx:138
+#: src/settings/sections/Appearance.tsx:142
 msgid "Lavender"
 msgstr "Lavender"
 
@@ -6427,7 +6453,7 @@ msgid "Could not start measuring"
 msgstr "Could not start measuring"
 
 #: src/profiles/AppearancePickers.tsx:26
-#: src/settings/sections/Appearance.tsx:137
+#: src/settings/sections/Appearance.tsx:141
 msgid "Rose"
 msgstr "Rose"
 
@@ -6522,7 +6548,7 @@ msgid "Launch options"
 msgstr "Launch options"
 
 #. placeholder {0}: names(next)
-#: src/queue/QueueBody.tsx:441
+#: src/queue/QueueBody.tsx:478
 msgid "Up next: {0}"
 msgstr "Up next: {0}"
 
@@ -6568,9 +6594,9 @@ msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgid "Where to share"
 msgstr "Where to share"
 
-#: src/settings/sections/Appearance.tsx:222
-#: src/settings/sections/Appearance.tsx:223
 #: src/settings/sections/Appearance.tsx:226
+#: src/settings/sections/Appearance.tsx:227
+#: src/settings/sections/Appearance.tsx:230
 msgid "Background"
 msgstr "Background"
 
@@ -6658,7 +6684,7 @@ msgstr "Adding the missing mods"
 msgid "Add to this profile"
 msgstr "Add to this profile"
 
-#: src/queue/QueueBody.tsx:227
+#: src/queue/QueueBody.tsx:266
 msgid "Retry failed"
 msgstr "Retry failed"
 
@@ -6690,7 +6716,7 @@ msgstr "Remove the focused mod"
 msgid "Logs of past runs stored per profile"
 msgstr "Logs of past runs stored per profile"
 
-#: src/queue/store.ts:158
+#: src/queue/store.ts:159
 msgid "Allow it in your antivirus, then Retry."
 msgstr "Allow it in your antivirus, then Retry."
 
@@ -6699,7 +6725,7 @@ msgid "Backup location"
 msgstr "Backup location"
 
 #. placeholder {0}: profile.name
-#: src/queue/store.ts:291
+#: src/queue/store.ts:292
 msgid "{first} installed into {0}"
 msgstr "{first} installed into {0}"
 
@@ -6801,7 +6827,7 @@ msgstr "Copy"
 msgid "What happens to files the new version of a mod leaves out"
 msgstr "What happens to files the new version of a mod leaves out"
 
-#: src/settings/SettingsShell.tsx:90
+#: src/settings/SettingsShell.tsx:92
 msgid "No settings match"
 msgstr "No settings match"
 
@@ -6813,8 +6839,8 @@ msgstr "Open the command palette"
 msgid "Could not read load order"
 msgstr "Could not read load order"
 
-#: src/settings/sections/Appearance.tsx:231
-#: src/settings/sections/Appearance.tsx:238
+#: src/settings/sections/Appearance.tsx:235
+#: src/settings/sections/Appearance.tsx:242
 msgid "Image"
 msgstr "Image"
 
@@ -6954,7 +6980,7 @@ msgid "{0, plural, one {Mark # implicit} other {Mark # implicit}}"
 msgstr "{0, plural, one {Mark # implicit} other {Mark # implicit}}"
 
 #. placeholder {0}: item.name
-#: src/queue/QueueBody.tsx:327
+#: src/queue/QueueBody.tsx:366
 msgid "Download progress for {0}"
 msgstr "Download progress for {0}"
 
@@ -7187,7 +7213,7 @@ msgstr "{summary} · {0}"
 msgid "Console command"
 msgstr "Console command"
 
-#: src/queue/QueueBody.tsx:278
+#: src/queue/QueueBody.tsx:317
 msgid "Windows removed the file as malware without saying which. If you trust it, restore it from Windows Security's protection history."
 msgstr "Windows removed the file as malware without saying which. If you trust it, restore it from Windows Security's protection history."
 
@@ -7287,7 +7313,7 @@ msgid "Want help, news or a say in what comes next? Mortar has a Discord server.
 msgstr "Want help, news or a say in what comes next? Mortar has a Discord server."
 
 #. placeholder {0}: item.repo
-#: src/queue/QueueBody.tsx:197
+#: src/queue/QueueBody.tsx:198
 msgid "This download's mod is not known to come from {0}."
 msgstr "This download's mod is not known to come from {0}."
 
@@ -7397,7 +7423,7 @@ msgstr "Load order copied"
 msgid "{0} Adds {1}."
 msgstr "{0} Adds {1}."
 
-#: src/queue/store.ts:78
+#: src/queue/store.ts:79
 msgid "That download is no longer waiting to retry."
 msgstr "That download is no longer waiting to retry."
 
@@ -7488,8 +7514,8 @@ msgstr "Open recently deleted"
 msgid "Moon"
 msgstr "Moon"
 
-#: src/settings/sections/ItchAccount.tsx:63
-#: src/settings/sections/ItchAccount.tsx:74
+#: src/settings/sections/ItchAccount.tsx:59
+#: src/settings/sections/ItchAccount.tsx:70
 msgid "API key"
 msgstr "API key"
 
@@ -7674,7 +7700,7 @@ msgid "Track"
 msgstr "Track"
 
 #. placeholder {0}: item.name || i18n._(msg`the mod`)
-#: src/launch/autoUpdate.ts:114
+#: src/launch/autoUpdate.ts:115
 msgid "The update for {0} did not finish"
 msgstr "The update for {0} did not finish"
 
@@ -7743,7 +7769,7 @@ msgstr "Clears cached Nexus and SMAPI details and problem scans, for a revoked A
 msgid "Mortar records the file against that page, so the mod's page link and shares point there. Choose No to add it as a plain local file."
 msgstr "Mortar records the file against that page, so the mod's page link and shares point there. Choose No to add it as a plain local file."
 
-#: src/settings/sections/Appearance.tsx:110
+#: src/settings/sections/Appearance.tsx:113
 msgid "App font"
 msgstr "App font"
 
@@ -7916,7 +7942,7 @@ msgstr "requirements"
 msgid "Source code"
 msgstr "Source code"
 
-#: src/settings/sections/Appearance.tsx:144
+#: src/settings/sections/Appearance.tsx:148
 msgid "color"
 msgstr "color"
 
@@ -8008,7 +8034,7 @@ msgstr "No game program chosen"
 msgid "Delete {0} permanently"
 msgstr "Delete {0} permanently"
 
-#: src/queue/store.ts:164
+#: src/queue/store.ts:165
 msgid "Could not reach Nexus"
 msgstr "Could not reach Nexus"
 
@@ -8171,7 +8197,7 @@ msgstr "Clear game caches"
 msgid "Copy log and open {pasteHost}"
 msgstr "Copy log and open {pasteHost}"
 
-#: src/settings/sections/Appearance.tsx:135
+#: src/settings/sections/Appearance.tsx:139
 msgid "Warm and bold"
 msgstr "Warm and bold"
 
@@ -8220,7 +8246,7 @@ msgstr "Only settings and options differ."
 msgid "From another mod manager"
 msgstr "From another mod manager"
 
-#: src/queue/QueueBody.tsx:357
+#: src/queue/QueueBody.tsx:396
 msgid "Skip all"
 msgstr "Skip all"
 
@@ -8240,6 +8266,10 @@ msgstr "Nothing selected would change {0}."
 #: src/toasts/report.ts:40
 msgid "Something went wrong."
 msgstr "Something went wrong."
+
+#: src/queue/LargeDownloadDialog.tsx:25
+msgid "{name} is a very large download"
+msgstr "{name} is a very large download"
 
 #: src/mods/GameModsReviewDialog.tsx:176
 msgid "Could not change the mods"
@@ -8330,7 +8360,7 @@ msgstr "Note"
 msgid "Add a tag"
 msgstr "Add a tag"
 
-#: src/queue/store.ts:134
+#: src/queue/store.ts:135
 #: src/settings/sections/NexusMods.tsx:226
 msgid "Nexus rejected your API key"
 msgstr "Nexus rejected your API key"
@@ -8377,12 +8407,12 @@ msgstr "From r2modman or Gale on this computer"
 msgid "Default mods view"
 msgstr "Default mods view"
 
-#: src/settings/sections/Sources.tsx:59
+#: src/settings/sections/Sources.tsx:60
 msgid "Reachable"
 msgstr "Reachable"
 
 #: src/profiles/AppearancePickers.tsx:77
-#: src/settings/sections/Appearance.tsx:144
+#: src/settings/sections/Appearance.tsx:148
 msgid "Colour"
 msgstr "Colour"
 
@@ -8423,7 +8453,7 @@ msgstr "{0}: {1}"
 msgid "Sync folder"
 msgstr "Sync folder"
 
-#: src/settings/sections/Sources.tsx:140
+#: src/settings/sections/Sources.tsx:141
 msgid "No account"
 msgstr "No account"
 
@@ -8444,7 +8474,7 @@ msgstr "Not found"
 #: src/profiles/EditProfileDialog.tsx:124
 #: src/profiles/GameSettings.tsx:182
 #: src/profiles/OverrideRows.tsx:138
-#: src/settings/sections/Appearance.tsx:263
+#: src/settings/sections/Appearance.tsx:267
 #: src/settings/sections/GameSettings.tsx:213
 msgid "Use default"
 msgstr "Use default"
@@ -8548,7 +8578,7 @@ msgstr "Could not read the saved change {change} from {when}"
 msgid "Days to keep downloaded mods that no profile uses. 0 keeps them forever."
 msgstr "Days to keep downloaded mods that no profile uses. 0 keeps them forever."
 
-#: src/settings/sections/Sources.tsx:161
+#: src/settings/sections/Sources.tsx:162
 msgid "Request counts appear after Mortar talks to GitHub."
 msgstr "Request counts appear after Mortar talks to GitHub."
 
@@ -8903,8 +8933,8 @@ msgstr "Enter code"
 msgid "Default launch"
 msgstr "Default launch"
 
-#: src/profiles/PackImportDialog.tsx:68
-#: src/profiles/PackImportDialog.tsx:83
+#: src/profiles/PackImportDialog.tsx:67
+#: src/profiles/PackImportDialog.tsx:82
 msgid "Could not read that code or file"
 msgstr "Could not read that code or file"
 
@@ -8997,7 +9027,7 @@ msgstr "Crashed"
 msgid "{count, plural, one {# mod} other {# mods}}"
 msgstr "{count, plural, one {# mod} other {# mods}}"
 
-#: src/queue/store.ts:122
+#: src/queue/store.ts:123
 msgid "{cause}. Retry or skip it from the queue."
 msgstr "{cause}. Retry or skip it from the queue."
 
@@ -9155,7 +9185,7 @@ msgstr "Add a program to run alongside the game, such as a save editor or map vi
 msgid "This profile is frozen, so {name} is held at {installed}. Install {0} anyway? The mod stays held at the new version."
 msgstr "This profile is frozen, so {name} is held at {installed}. Install {0} anyway? The mod stays held at the new version."
 
-#: src/queue/store.ts:257
+#: src/queue/store.ts:258
 msgid "Retrying in {n} s."
 msgstr "Retrying in {n} s."
 
@@ -9175,6 +9205,11 @@ msgstr "Which version of a Thunderstore mod's dependency to install when the mod
 #: src/install/NeedsRootCallout.tsx:31
 msgid "This optional file replaces files of {0}. Pick where its files go."
 msgstr "This optional file replaces files of {0}. Pick where its files go."
+
+#. placeholder {0}: listNames(kept)
+#: src/profiles/packImport.ts:21
+msgid "Kept your own copies of: {0}"
+msgstr "Kept your own copies of: {0}"
 
 #: src/profiles/restoreBackup.ts:22
 msgid "Every mod is in place."
@@ -9278,7 +9313,7 @@ msgid "See startup"
 msgstr "See startup"
 
 #. placeholder {0}: formatWhen(state.lastFail)
-#: src/settings/sections/Sources.tsx:54
+#: src/settings/sections/Sources.tsx:55
 msgid "No answer {0}: {reason}"
 msgstr "No answer {0}: {reason}"
 
@@ -9564,7 +9599,7 @@ msgid "Close details"
 msgstr "Close details"
 
 #: src/firstrun/GameSetup.tsx:84
-#: src/queue/store.ts:292
+#: src/queue/store.ts:293
 msgid "{name} installed"
 msgstr "{name} installed"
 
@@ -9794,7 +9829,7 @@ msgstr "Copy code"
 msgid "Click a mod to show it in Mods"
 msgstr "Click a mod to show it in Mods"
 
-#: src/settings/sections/ItchAccount.tsx:88
+#: src/settings/sections/ItchAccount.tsx:84
 msgid "Test"
 msgstr "Test"
 
@@ -9901,7 +9936,7 @@ msgstr "Description"
 msgid "No mods have logged yet"
 msgstr "No mods have logged yet"
 
-#: src/queue/QueueBody.tsx:135
+#: src/queue/QueueBody.tsx:136
 msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
@@ -10178,7 +10213,7 @@ msgstr "Set default preset…"
 msgid "Mods with problems"
 msgstr "Mods with problems"
 
-#: src/settings/sections/Sources.tsx:45
+#: src/settings/sections/Sources.tsx:46
 msgid "its address could not be looked up"
 msgstr "its address could not be looked up"
 
@@ -10330,7 +10365,7 @@ msgstr "Downloads: {downloading} {percent}%"
 
 #: src/launch/VanillaPlay.tsx:208
 #: src/profiles/LaunchPresetsBlock.tsx:45
-#: src/settings/sections/Appearance.tsx:133
+#: src/settings/sections/Appearance.tsx:137
 msgid "Default"
 msgstr "Default"
 
@@ -10368,7 +10403,7 @@ msgstr "Problems"
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
-#: src/settings/sections/Appearance.tsx:134
+#: src/settings/sections/Appearance.tsx:138
 msgid "Moss"
 msgstr "Moss"
 
@@ -10627,7 +10662,7 @@ msgstr "Default for Share and Export. You can change it per share."
 msgid "The Vortex folder {folder} has no profiles."
 msgstr "The Vortex folder {folder} has no profiles."
 
-#: src/App.tsx:91
+#: src/App.tsx:92
 #: src/games/useGameTiles.ts:78
 #: src/games/useOpenGame.ts:42
 msgid "Could not read your games"
@@ -10765,8 +10800,8 @@ msgstr "Dark"
 msgid "Open folder"
 msgstr "Open folder"
 
-#: src/settings/sections/Sources.tsx:163
-#: src/settings/sections/Sources.tsx:180
+#: src/settings/sections/Sources.tsx:164
+#: src/settings/sections/Sources.tsx:181
 msgid "Requests"
 msgstr "Requests"
 
@@ -10884,7 +10919,7 @@ msgstr "Their folders are removed from this profile. You can undo this."
 msgid "Clear filter"
 msgstr "Clear filter"
 
-#: src/settings/sections/Sources.tsx:142
+#: src/settings/sections/Sources.tsx:143
 msgid "Signed in"
 msgstr "Signed in"
 
@@ -10990,7 +11025,7 @@ msgstr "Updates ignored"
 msgid "Could not enable {0}"
 msgstr "Could not enable {0}"
 
-#: src/settings/sections/Appearance.tsx:140
+#: src/settings/sections/Appearance.tsx:144
 msgid "Slate"
 msgstr "Slate"
 
@@ -11004,7 +11039,7 @@ msgstr "Updates"
 msgid "The text that is copied"
 msgstr "The text that is copied"
 
-#: src/queue/QueueBody.tsx:408
+#: src/queue/QueueBody.tsx:447
 msgid "Nothing downloading"
 msgstr "Nothing downloading"
 
@@ -11240,7 +11275,7 @@ msgstr "This update changed its install options. Your earlier picks are kept whe
 msgid "Move up"
 msgstr "Move up"
 
-#: src/queue/QueueBody.tsx:144
+#: src/queue/QueueBody.tsx:145
 msgid "Open download page"
 msgstr "Open download page"
 
@@ -11375,7 +11410,7 @@ msgstr "Setup"
 #. placeholder {0}: formatKb(downloadedKb(item))
 #. placeholder {1}: formatKb(item.sizeKb)
 #. placeholder {2}: formatBytes(item.speed)
-#: src/queue/QueueBody.tsx:313
+#: src/queue/QueueBody.tsx:352
 msgid "{0} of {1} · {2}/s"
 msgstr "{0} of {1} · {2}/s"
 
@@ -11429,7 +11464,7 @@ msgid "Show conflicts"
 msgstr "Show conflicts"
 
 #: src/games/useGameTiles.ts:90
-#: src/settings/sections/Sources.tsx:144
+#: src/settings/sections/Sources.tsx:145
 msgid "Not set up"
 msgstr "Not set up"
 
@@ -11481,7 +11516,7 @@ msgstr "Report it so it can be fixed."
 
 #: src/mods/listRows.ts:142
 #: src/mods/Sidebar.tsx:502
-#: src/settings/sections/Accounts.tsx:17
+#: src/settings/sections/Accounts.tsx:40
 #: src/shell/BugReportDialog.tsx:105
 #: src/shell/SuggestDialog.tsx:42
 msgid "GitHub"
@@ -11661,7 +11696,7 @@ msgstr "A collection draft"
 msgid "Open focused mod details"
 msgstr "Open focused mod details"
 
-#: src/settings/sections/Appearance.tsx:109
+#: src/settings/sections/Appearance.tsx:112
 msgid "Typeface"
 msgstr "Typeface"
 
@@ -11818,7 +11853,7 @@ msgstr "GOG via Heroic"
 msgid "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 msgstr "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 
-#: src/launch/autoUpdate.ts:114
+#: src/launch/autoUpdate.ts:115
 msgid "the mod"
 msgstr "the mod"
 
@@ -11838,7 +11873,7 @@ msgstr "Multiplayer mod list"
 msgid "Disabled {names}"
 msgstr "Disabled {names}"
 
-#: src/settings/sections/ItchAccount.tsx:50
+#: src/settings/sections/ItchAccount.tsx:100
 msgid "itch.io"
 msgstr "itch.io"
 
@@ -11988,7 +12023,7 @@ msgid "Delete the selected items?"
 msgstr "Delete the selected items?"
 
 #. placeholder {0}: item.name
-#: src/queue/store.ts:172
+#: src/queue/store.ts:173
 msgid "Could not download {0}"
 msgstr "Could not download {0}"
 
@@ -12209,7 +12244,7 @@ msgstr "Running {who}"
 #. placeholder {0}: det.scanner
 #. placeholder {1}: det.name
 #. placeholder {2}: det.file ? ` in ${det.file}` : ''
-#: src/queue/QueueBody.tsx:280
+#: src/queue/QueueBody.tsx:319
 msgid "Flagged by {0}: {1}{2}"
 msgstr "Flagged by {0}: {1}{2}"
 
@@ -12285,7 +12320,7 @@ msgstr "{clean} clean"
 msgid "Libraries ({0})"
 msgstr "Libraries ({0})"
 
-#: src/settings/sections/ItchAccount.tsx:64
+#: src/settings/sections/ItchAccount.tsx:60
 msgid "Kept in your system keyring. Create one on itch.io under Settings, API keys."
 msgstr "Kept in your system keyring. Create one on itch.io under Settings, API keys."
 
@@ -12345,7 +12380,7 @@ msgstr "Your profiles have {0}. Update replaces each profile's copy."
 
 #. placeholder {0}: done.length
 #. placeholder {1}: names(done)
-#: src/queue/QueueBody.tsx:468
+#: src/queue/QueueBody.tsx:505
 msgid "Done ({0}): {1}"
 msgstr "Done ({0}): {1}"
 
@@ -12407,7 +12442,7 @@ msgstr "Reading startup reports…"
 msgid "Place here"
 msgstr "Place here"
 
-#: src/settings/sections/Sources.tsx:47
+#: src/settings/sections/Sources.tsx:48
 msgid "the connection was refused"
 msgstr "the connection was refused"
 
@@ -12458,7 +12493,7 @@ msgstr "The backup from {when} is deleted for good, with every save in it."
 msgid "{popularity} · {dl}"
 msgstr "{popularity} · {dl}"
 
-#: src/queue/QueueBody.tsx:478
+#: src/queue/QueueBody.tsx:515
 msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
@@ -12624,7 +12659,7 @@ msgstr "Dependency"
 msgid "Could not check the profile"
 msgstr "Could not check the profile"
 
-#: src/settings/sections/Sources.tsx:40
+#: src/settings/sections/Sources.tsx:41
 msgid "Not contacted yet"
 msgstr "Not contacted yet"
 
@@ -12796,7 +12831,7 @@ msgstr "Include pre-release mod versions"
 msgid "Status"
 msgstr "Status"
 
-#: src/settings/sections/ItchAccount.tsx:38
+#: src/settings/sections/ItchAccount.tsx:39
 msgid "itch.io rejected your API key"
 msgstr "itch.io rejected your API key"
 
@@ -13086,11 +13121,11 @@ msgstr "{0} is still taking your last share"
 msgid "Game install deleted"
 msgstr "Game install deleted"
 
-#: src/settings/sections/Appearance.tsx:286
+#: src/settings/sections/Appearance.tsx:290
 msgid "Sidebar"
 msgstr "Sidebar"
 
-#: src/settings/sections/Appearance.tsx:136
+#: src/settings/sections/Appearance.tsx:140
 msgid "Cool and calm"
 msgstr "Cool and calm"
 
@@ -13133,7 +13168,7 @@ msgstr "Order"
 msgid "Jump to a letter"
 msgstr "Jump to a letter"
 
-#: src/settings/sections/Sources.tsx:46
+#: src/settings/sections/Sources.tsx:47
 msgid "it took too long to answer"
 msgstr "it took too long to answer"
 
@@ -13169,7 +13204,7 @@ msgstr "Saves"
 msgid "World"
 msgstr "World"
 
-#: src/settings/sections/Appearance.tsx:139
+#: src/settings/sections/Appearance.tsx:143
 msgid "Fresh and clear"
 msgstr "Fresh and clear"
 
@@ -13442,7 +13477,7 @@ msgstr "Remove all"
 msgid "While this profile runs, Mortar sets your shared saves aside and shows the game the profile's own folder. When the game closes, your shared saves come back as they were. Nothing is deleted."
 msgstr "While this profile runs, Mortar sets your shared saves aside and shows the game the profile's own folder. When the game closes, your shared saves come back as they were. Nothing is deleted."
 
-#: src/queue/store.ts:150
+#: src/queue/store.ts:151
 msgid "Not enough disk space"
 msgstr "Not enough disk space"
 
@@ -13450,7 +13485,7 @@ msgstr "Not enough disk space"
 msgid "Clean up storage"
 msgstr "Clean up storage"
 
-#: src/settings/sections/Appearance.tsx:274
+#: src/settings/sections/Appearance.tsx:278
 msgid "Mods view"
 msgstr "Mods view"
 
@@ -13479,9 +13514,9 @@ msgstr "Nothing new"
 msgid "Preparing a temporary copy of this profile…"
 msgstr "Preparing a temporary copy of this profile…"
 
-#: src/settings/sections/Appearance.tsx:144
-#: src/settings/sections/Appearance.tsx:147
-#: src/settings/sections/Appearance.tsx:216
+#: src/settings/sections/Appearance.tsx:148
+#: src/settings/sections/Appearance.tsx:151
+#: src/settings/sections/Appearance.tsx:220
 msgid "Accent colour"
 msgstr "Accent colour"
 
@@ -13553,7 +13588,7 @@ msgstr "Update digest notification"
 msgid "Downloaded"
 msgstr "Downloaded"
 
-#: src/queue/QueueBody.tsx:385
+#: src/queue/QueueBody.tsx:424
 #: src/queue/QueueHistory.tsx:72
 msgid "Cancelled"
 msgstr "Cancelled"
@@ -13736,12 +13771,12 @@ msgstr "General"
 msgid "Report to author"
 msgstr "Report to author"
 
-#: src/queue/QueueBody.tsx:361
+#: src/queue/QueueBody.tsx:400
 msgid "Skip the waiting downloads of this profile"
 msgstr "Skip the waiting downloads of this profile"
 
 #: src/profiles/AppearancePickers.tsx:34
-#: src/settings/sections/Appearance.tsx:139
+#: src/settings/sections/Appearance.tsx:143
 msgid "Teal"
 msgstr "Teal"
 
@@ -13781,7 +13816,7 @@ msgstr "Show mod"
 msgid "Closing the window hides Mortar instead of quitting."
 msgstr "Closing the window hides Mortar instead of quitting."
 
-#: src/settings/sections/Sources.tsx:184
+#: src/settings/sections/Sources.tsx:185
 msgid "Free accounts click Download on Nexus for each file; Mortar opens each page in turn."
 msgstr "Free accounts click Download on Nexus for each file; Mortar opens each page in turn."
 
@@ -13798,7 +13833,7 @@ msgstr "This is not a Mod Manager Download link from Nexus."
 msgid "Location"
 msgstr "Location"
 
-#: src/queue/QueueBody.tsx:415
+#: src/queue/QueueBody.tsx:454
 msgid "Updates, missing dependencies and links from mod sites land here."
 msgstr "Updates, missing dependencies and links from mod sites land here."
 
@@ -13820,7 +13855,7 @@ msgstr "Mark current as known good"
 
 #: src/firstrun/NexusStep.tsx:27
 #: src/settings/sections/NexusMods.tsx:152
-#: src/settings/sections/Sources.tsx:111
+#: src/settings/sections/Sources.tsx:112
 msgid "Signed in as {name}"
 msgstr "Signed in as {name}"
 
@@ -13941,7 +13976,7 @@ msgid "More setting values"
 msgstr "More setting values"
 
 #: src/browse/CardProgress.tsx:46
-#: src/queue/QueueBody.tsx:314
+#: src/queue/QueueBody.tsx:353
 #: src/settings/sections/ModsProfiles.tsx:14
 msgid "Installing"
 msgstr "Installing"
@@ -14125,7 +14160,7 @@ msgstr "Nexus Mods · Signed in as {name}"
 msgid "Add {label} item"
 msgstr "Add {label} item"
 
-#: src/settings/sections/Appearance.tsx:140
+#: src/settings/sections/Appearance.tsx:144
 msgid "Quiet grey-blue"
 msgstr "Quiet grey-blue"
 
@@ -14142,7 +14177,7 @@ msgid "Flatpak Steam cannot read your mods"
 msgstr "Flatpak Steam cannot read your mods"
 
 #. placeholder {0}: item.name
-#: src/queue/QueueBody.tsx:338
+#: src/queue/QueueBody.tsx:377
 msgid "Cancel {0}"
 msgstr "Cancel {0}"
 
@@ -14194,7 +14229,7 @@ msgstr "Season"
 msgid "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
 msgstr "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
 
-#: src/settings/sections/Appearance.tsx:137
+#: src/settings/sections/Appearance.tsx:141
 msgid "Soft and warm"
 msgstr "Soft and warm"
 
@@ -14288,7 +14323,7 @@ msgstr "Could not undo: some mods are missing, and the change's record could not
 msgid "Start the game without the Before you play dialog"
 msgstr "Start the game without the Before you play dialog"
 
-#: src/settings/sections/Appearance.tsx:271
+#: src/settings/sections/Appearance.tsx:275
 msgid "Display"
 msgstr "Display"
 
@@ -14296,7 +14331,7 @@ msgstr "Display"
 msgid "Welcome to Mortar"
 msgstr "Welcome to Mortar"
 
-#: src/queue/store.ts:293
+#: src/queue/store.ts:294
 msgid "{unblocked} can load now."
 msgstr "{unblocked} can load now."
 
@@ -14370,7 +14405,7 @@ msgid "Import from the game's Mods folder"
 msgstr "Import from the game's Mods folder"
 
 #. placeholder {0}: item.name
-#: src/queue/store.ts:157
+#: src/queue/store.ts:158
 msgid "{0} was blocked by your antivirus"
 msgstr "{0} was blocked by your antivirus"
 
@@ -14397,7 +14432,7 @@ msgstr "{0, plural, one {Set category for # mod} other {Set category for # mods}
 msgid "No eligible profiles."
 msgstr "No eligible profiles."
 
-#: src/queue/QueueBody.tsx:196
+#: src/queue/QueueBody.tsx:197
 msgid "Check this download"
 msgstr "Check this download"
 
@@ -14696,7 +14731,7 @@ msgstr "{name}, descending"
 msgid "Handle {0} links"
 msgstr "Handle {0} links"
 
-#: src/queue/store.ts:135
+#: src/queue/store.ts:136
 #: src/share/ImportFooter.tsx:64
 msgid "Open Nexus settings"
 msgstr "Open Nexus settings"
@@ -14851,7 +14886,7 @@ msgid "Deleted profiles stay here, mods and settings included."
 msgstr "Deleted profiles stay here, mods and settings included."
 
 #. placeholder {0}: waiting.length
-#: src/queue/store.ts:364
+#: src/queue/store.ts:365
 msgid "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 msgstr "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 
@@ -14926,7 +14961,7 @@ msgid "Different source"
 msgstr "Different source"
 
 #. placeholder {0}: listNames(unsupported)
-#: src/profiles/PackImportDialog.tsx:96
+#: src/profiles/packImport.ts:20
 msgid "Not from Thunderstore: {0}"
 msgstr "Not from Thunderstore: {0}"
 
@@ -15043,7 +15078,7 @@ msgstr "{name} now comes from that Nexus page"
 msgid "Stop ignoring {ignoredSource} updates"
 msgstr "Stop ignoring {ignoredSource} updates"
 
-#: src/settings/sections/Appearance.tsx:119
+#: src/settings/sections/Appearance.tsx:123
 msgid "Bundled font"
 msgstr "Bundled font"
 
@@ -15063,7 +15098,7 @@ msgstr "Update and play"
 msgid "{0}: {1} → {2}"
 msgstr "{0}: {1} → {2}"
 
-#: src/queue/QueueBody.tsx:388
+#: src/queue/QueueBody.tsx:427
 msgid "Already the newest file"
 msgstr "Already the newest file"
 
@@ -15261,7 +15296,7 @@ msgstr "{0} · kept for rollback"
 msgid "· revision {review} is out"
 msgstr "· revision {review} is out"
 
-#: src/settings/sections/ItchAccount.tsx:58
+#: src/settings/sections/ItchAccount.tsx:54
 msgid "Remove key"
 msgstr "Remove key"
 
@@ -15274,7 +15309,7 @@ msgid "Start with a copy of my current saves"
 msgstr "Start with a copy of my current saves"
 
 #. placeholder {0}: formatWhen(state.lastOK)
-#: src/settings/sections/Sources.tsx:60
+#: src/settings/sections/Sources.tsx:61
 msgid "Last answered {0}"
 msgstr "Last answered {0}"
 
@@ -15333,7 +15368,7 @@ msgstr "Forest farm"
 msgid "Measure while you play, then report the mods that take the most time per frame."
 msgstr "Measure while you play, then report the mods that take the most time per frame."
 
-#: src/settings/sections/Sources.tsx:55
+#: src/settings/sections/Sources.tsx:56
 msgid "Could not be reached: {reason}"
 msgstr "Could not be reached: {reason}"
 
@@ -15346,7 +15381,7 @@ msgstr "Set category…"
 msgid "Choose an archive first."
 msgstr "Choose an archive first."
 
-#: src/settings/sections/Sources.tsx:120
+#: src/settings/sections/Sources.tsx:121
 msgid "Using your gh login"
 msgstr "Using your gh login"
 
@@ -15382,13 +15417,13 @@ msgstr "Default folder"
 
 #. placeholder {0}: dropped.length
 #. placeholder {1}: names(dropped)
-#: src/queue/QueueBody.tsx:488
+#: src/queue/QueueBody.tsx:525
 msgid "Skipped ({0}): {1}"
 msgstr "Skipped ({0}): {1}"
 
 #: src/mods/ChangeVersionDialog.tsx:123
-#: src/queue/QueueBody.tsx:206
-#: src/queue/QueueBody.tsx:304
+#: src/queue/QueueBody.tsx:207
+#: src/queue/QueueBody.tsx:343
 #: src/toasts/AvOverrideDialog.tsx:18
 msgid "Install anyway"
 msgstr "Install anyway"
@@ -15446,7 +15481,7 @@ msgstr "Nothing to trim yet."
 #. placeholder {0}: rate.remaining
 #. placeholder {1}: rate.limit
 #. placeholder {2}: formatWhen(rate.reset)
-#: src/settings/sections/Sources.tsx:160
+#: src/settings/sections/Sources.tsx:161
 msgid "{0} of {1} requests left · resets {2}"
 msgstr "{0} of {1} requests left · resets {2}"
 
@@ -15483,7 +15518,7 @@ msgid "{enabled, plural, one {Enabled # mod} other {Enabled # mods}}"
 msgstr "{enabled, plural, one {Enabled # mod} other {Enabled # mods}}"
 
 #. placeholder {0}: sourceLabel(id)
-#: src/settings/sections/Sources.tsx:72
+#: src/settings/sections/Sources.tsx:73
 msgid "Could not recheck {0}"
 msgstr "Could not recheck {0}"
 

@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
 import { openGameSelect, openProfile } from './app.ts'
+import { largeDownloadCases } from './largeDownloadCase.ts'
 import type { Case } from './render-budget.ts'
 
 /** What the render budget's own cases already define, which the cases of the newer screens reuse. */
@@ -43,6 +44,7 @@ export function newCases(h: Helpers): Case[] {
   }
 
   return [
+    ...largeDownloadCases(),
     {
       name: 'change-version',
       setup: (p) => selectMod(p, 6),

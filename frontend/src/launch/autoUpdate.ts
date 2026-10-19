@@ -79,6 +79,7 @@ const FINISHED = new Set([
   'waiting-click',
   'needs-choice',
   'needs-confirm',
+  'confirm-large',
   'needs-fomod',
   'needs-root',
   'needs-merge',

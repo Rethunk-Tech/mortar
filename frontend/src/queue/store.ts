@@ -63,6 +63,7 @@ function showLive(): HistoryActionState {
       (i) =>
         i.state === 'needs-choice' ||
         i.state === 'needs-confirm' ||
+        i.state === 'confirm-large' ||
         i.state === 'needs-merge' ||
         i.state === 'failed',
     )

@@ -14,6 +14,7 @@ import {
   Cancel,
   Choose,
   Confirm,
+  ConfirmLarge,
   Dismiss,
   InstallAnyway,
   OpenPage,
@@ -211,6 +212,44 @@ function Confirmation({ item }: { item: Item }) {
   )
 }
 
+function LargeWait({ item }: { item: Item }) {
+  const { t } = useLingui()
+  const [pending, run] = usePending()
+  const size = formatKb(item.sizeKb)
+  return (
+    <Callout
+      item={item}
+      label={t`Very large download`}
+      text={t`This download is ${size}, which is unusually large for a mod.`}
+      actions={
+        <>
+          <Button disabled={pending} autoFocus={true} onClick={() => run(() => Cancel(item.id))}>
+            {t`Cancel`}
+          </Button>
+          <Button
+            variant="contained"
+            color="warning"
+            disabled={pending}
+            onClick={() => run(() => ConfirmLarge(item.id))}
+          >
+            {t`Continue anyway`}
+          </Button>
+        </>
+      }
+    />
+  )
+}
+
+function Confirmations({ items }: { items: Item[] }) {
+  return items.map((i) =>
+    i.state === 'confirm-large' ? (
+      <LargeWait key={i.id} item={i} />
+    ) : (
+      <Confirmation key={i.id} item={i} />
+    ),
+  )
+}
+
 function Failed({ items }: { items: Item[] }) {
   const { t } = useLingui()
   const { error } = useTheme().palette
@@ -373,7 +412,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
   const doneBg = alpha(theme.palette.success.main, DONE_FILL)
   const click = items.filter((i) => i.state === 'waiting-click')
   const choose = items.filter((i) => i.state === 'needs-choice')
-  const confirm = items.filter((i) => i.state === 'needs-confirm')
+  const confirm = items.filter((i) => i.state === 'needs-confirm' || i.state === 'confirm-large')
   const needsRoot = items.some((i) => i.state === 'needs-root')
   const needsMerge = items.some((i) => i.state === 'needs-merge')
   const failed = items.filter((i) => i.state === 'failed')
@@ -425,9 +464,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
       {choose.map((i) => (
         <Choice key={i.id} item={i} />
       ))}
-      {confirm.map((i) => (
-        <Confirmation key={i.id} item={i} />
-      ))}
+      <Confirmations items={confirm} />
       <QueueNeedsRoot items={items} />
       <QueueNeedsMerge items={items} />
       <Failed items={failed} />

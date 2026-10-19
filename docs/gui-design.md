@@ -359,7 +359,7 @@ With a sync folder set (Settings › Mods and profiles), a change another comput
 A side sheet (`queue/`, `downloads/`; Ctrl+J, the title bar pill or the palette). Rows are 54px tall; Skip, Cancel and dismiss are icon buttons (Retry on a failed row stays a labelled button), every action on the row's right edge. Closing the sheet keeps the queue running; history length is `internal/queue/history.go`.
 
 - **Needs your click** (free accounts): the head item with Open download page and Skip; the next page opens when it finishes. An update or latest-file item is skipped on its own once the profile already holds that file or a newer one from the same page ([architecture.md](architecture.md#nexus-mods)). Premium accounts download without clicks.
-- **Choose a file** (a GitHub release with several archives) and **Check this download** (a GitHub download whose mod SMAPI's update API does not tie to its repo: Install anyway or Skip) ask before installing.
+- **Choose a file** (a GitHub release with several archives) and **Check this download** (a GitHub download whose mod SMAPI's update API does not tie to its repo: Install anyway or Skip) ask before installing. A download over 2 GB opens a warning-coloured confirm (`queue/LargeDownloadDialog.tsx`) before it starts: the mod's name, its size in GB, a sentence that this is unusually large, **Cancel** (focused, and what Esc does) and **Continue anyway**; several held downloads ask one after another, and the queue sheet shows the same choice as a card.
 - **Pause all** stops new starts; the in-flight download finishes. Failed rows say why and Retry resumes a partial file; Cancel is offered only while downloading, not installing.
 
 ### Update review

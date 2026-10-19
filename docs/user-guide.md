@@ -69,6 +69,8 @@ Continue past the welcome screen (it lists the launchers found: Steam, GOG, Hero
 
 Premium accounts download inside Mortar. Free accounts click **Mod Manager Download** on the Nexus page once per file (Mortar opens each page in turn); enable **Handle "Mod Manager Download" links** in **Settings › Downloads** so the button reaches Mortar.
 
+A download over 2 GB asks first: Mortar shows its size and a warning, and nothing downloads until you choose **Continue anyway** (**Cancel** is the default). Before any download starts, Mortar also checks that the file, its unpacked copy and a little spare room fit on the drive; when they do not, the download fails at once and says how much is needed and how much is free. Free some space, then **Retry**.
+
 ## Browser extension
 
 Optional: it marks Nexus pages with what your profile already has and sends Mod Manager Download clicks to Mortar. **Settings › Downloads** has a **Download the extension** button for `mortar-browser-extension.zip` from its [releases](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest), and says **The browser extension is too old for this Mortar** (or too new) when versions drift.
