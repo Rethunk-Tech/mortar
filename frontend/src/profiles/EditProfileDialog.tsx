@@ -204,6 +204,16 @@ interface ProfileFieldsProps {
   initialTab: FieldsTab
 }
 
+// Every panel stays mounted and shares one grid cell, so a field keeps what was typed in it and the dialog keeps the
+// height of its tallest tab while another is open. The cell is capped at the dialog's height and each panel scrolls
+// only its own content, so a short tab never scrolls through the tallest one's height.
+const contentSx = {
+  pt: space.pad,
+  display: 'grid',
+  gridTemplateRows: 'minmax(0, 1fr)',
+  overflow: 'hidden',
+}
+
 const panelSx = {
   gridArea: '1 / 1',
   minHeight: 0,
@@ -254,9 +264,6 @@ function ProfileFields({
       setTab('launch')
     }
   }, [launchError])
-  // Every panel stays mounted and shares one grid cell, so a field keeps what was typed in it and the dialog keeps
-  // the height of its tallest tab while another is open. The cell is capped at the dialog's height and each panel
-  // scrolls only its own content, so a short tab never scrolls through the tallest one's height.
   const panel = (id: FieldsTab, children: ReactNode) => (
     <Box
       role="tabpanel"
@@ -270,14 +277,7 @@ function ProfileFields({
   return (
     <>
       <FieldsTabs ids={ids} tab={tab} onTab={setTab} startupSettings={startupSettings} />
-      <DialogContent
-        sx={{
-          pt: space.pad,
-          display: 'grid',
-          gridTemplateRows: 'minmax(0, 1fr)',
-          overflow: 'hidden',
-        }}
-      >
+      <DialogContent sx={contentSx}>
         {panel(
           'appearance',
           <>
