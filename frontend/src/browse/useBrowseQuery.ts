@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSettings } from '../settings/store.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { ALL, FIRST_PAGE } from './browseConstants.ts'
 import { parseModes } from './browseModes.ts'
@@ -38,8 +39,9 @@ function useBrowseQuery({
   profileID,
   search,
   sources,
-}: Pick<BrowsePageProps, 'game' | 'profileID' | 'search' | 'sources'>) {
-  const stored = useBrowseView((s) => s.filters[game]) ?? NO_FILTER
+  defaultExcludes,
+}: Pick<BrowsePageProps, 'game' | 'profileID' | 'search' | 'sources' | 'defaultExcludes'>) {
+  const chosenFilter = useBrowseView((s) => s.filters[game])
   const saved = useSettings((s) => s.games?.[game]?.browseFilters ?? '')
   const modes = useMemo(() => parseModes(saved), [saved])
   const [chosen, setSource] = useState(ALL)
@@ -47,6 +49,17 @@ function useBrowseQuery({
   const known = sources.some((s) => s.id === chosen) || (chosen === ALL && merged)
   const fallback = merged ? ALL : (sources[0]?.id ?? '')
   const source = known ? chosen : fallback
+  const defaults = useLoaded<string[]>(
+    chosenFilter || source === '' ? null : () => defaultExcludes(game, source),
+    [defaultExcludes, game, source, chosenFilter !== undefined],
+    [],
+  )
+  // Until the player edits the filter, it starts with the default excludes; the first search waits for them.
+  const stored = useMemo(
+    () => chosenFilter ?? { ...NO_FILTER, exclude: defaults.data },
+    [chosenFilter, defaults.data],
+  )
+  const waiting = chosenFilter === undefined && defaults.loading
   const sorts = sortsFor(source, sources)
   const filter = useMemo(
     () => ({ ...stored, ...modes, sort: effectiveSort(stored.sort, sorts) }),
@@ -71,7 +84,7 @@ function useBrowseQuery({
   useEffect(() => () => useBrowseView.getState().setDraft(''), [])
 
   useEffect(() => {
-    if (source === '' || retry + hides < 0) {
+    if (source === '' || waiting || retry + hides < 0) {
       setResult(EMPTY_RESULT)
       setStatus('idle')
       return
@@ -95,7 +108,7 @@ function useBrowseQuery({
     return () => {
       cancelled = true
     }
-  }, [game, source, text, page, profileID, search, retry, hides, filter])
+  }, [game, source, text, page, profileID, search, retry, hides, filter, waiting])
 
   return {
     filter,

@@ -93,7 +93,7 @@ Optional: it marks Nexus pages with what your profile already has and sends Mod 
 - **GitHub:** **Add** installs the latest release. Your `gh auth login`, when present, raises GitHub's rate limits.
 - **Card details:** **Show › Card details** picks what cards list (popularity, downloads, file size, version, last update); the Mods tab uses the same choice.
 - **Hide from Browse:** a card's menu has **Hide from Browse** and **Hide everything by \<author\>**. The game's settings list **Hidden mods** with **Unhide**. Links and imports still install a hidden mod.
-- **Modpacks, translations and cheats:** results leave them out; **Show modpacks, translations and cheats** in the filters brings them back.
+- **Modpacks, translations and cheats:** the **Exclude categories** picker starts with them; remove a chip to see them.
 - **Open a mod's page:** Ctrl+click a card in Browse, or middle-click a mod in the Mods tab.
 - **Details:** a card's details page lists a **Support the author** link when the mod's page gives a donation address. **Choose a version…** installs a version other than the latest; an installed mod offers the same choice, and **Change version…** once one is held.
 

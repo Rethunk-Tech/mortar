@@ -1,16 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import { Autocomplete, Box, Checkbox, Chip, FormControlLabel, TextField } from '@mui/material'
+import { Autocomplete, Box, Chip, TextField } from '@mui/material'
 import { memo } from 'react'
-import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { useCurrentGame } from '../nav/currentGame.ts'
 import { PrefSelect } from '../settings/PrefControls.tsx'
-import { persist } from '../settings/persist.ts'
-import { useSettings } from '../settings/store.ts'
 import { space } from '../theme/density.ts'
 import { BrowseShow } from './BrowseShow.tsx'
 import type { BrowseModes } from './browseModes.ts'
 import type { BrowseFilter } from './browseTypes.ts'
-import { useBrowseView } from './view.ts'
 
 const MIN_PICKER_PX = 180
 
@@ -66,33 +61,6 @@ function CategoryPicker({
           }}
         />
       )}
-    />
-  )
-}
-
-// Modpacks, translations and cheats are left out of Browse until this is ticked, per game.
-function ShowNoise() {
-  const { t } = useLingui()
-  const game = useCurrentGame()
-  const shown = useSettings((s) => s.games?.[game]?.browseNoise === 'show')
-  return (
-    <FormControlLabel
-      label={t`Show modpacks, translations and cheats`}
-      control={
-        <Checkbox
-          size="small"
-          checked={shown}
-          onChange={(_, on) =>
-            persist(
-              () =>
-                SetByKey('browseNoise', on ? 'show' : 'hide', game).then(() =>
-                  useBrowseView.getState().noteHide(),
-                ),
-              t`Could not save that setting`,
-            )
-          }
-        />
-      }
     />
   )
 }
@@ -165,7 +133,6 @@ const BrowseFilters = memo(function BrowseFiltersView({
         disabled={none}
         title={title}
       />
-      {none ? null : <ShowNoise />}
       <BrowseShow modes={modes} onModes={onModes} hasCompat={hasCompat} />
       <PrefSelect
         label={t`Sort`}

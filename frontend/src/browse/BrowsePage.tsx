@@ -121,6 +121,7 @@ function BrowsePage({
   sources: searchable,
   search,
   categories,
+  defaultExcludes,
   openUrl,
   downloadNexus,
   addGitHub,
@@ -130,7 +131,13 @@ function BrowsePage({
 }: BrowsePageProps) {
   const { t } = useLingui()
   const view = useBrowseView((s) => s.view)
-  const query = useBrowseQuery({ game, profileID, search, sources: searchable })
+  const query = useBrowseQuery({
+    game,
+    profileID,
+    search,
+    sources: searchable,
+    defaultExcludes,
+  })
   const { filter, sorts, modes, source, page, setPage, result } = query
   const offline = useOfflineEmpty(source === ALL ? searchable.map((s) => s.id) : [source])
   const categoryNames = useCategoryNames({ categories, game, source, skip: source === GITHUB })

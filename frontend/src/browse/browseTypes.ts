@@ -50,6 +50,8 @@ interface BrowsePageProps {
   sources: BrowseSource[]
   search: BrowseSearch
   categories: (game: string, source: string) => Promise<string[]>
+  // The categories the exclude picker starts with: modpacks, translations and cheats.
+  defaultExcludes: (game: string, source: string) => Promise<string[]>
   openUrl: (url: string) => void
   downloadNexus: (modID: string) => void
   addGitHub: (repo: string) => void

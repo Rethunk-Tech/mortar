@@ -901,7 +901,6 @@ func run() error {
 		}
 		return nil
 	}
-	browseSvc.NoiseHidden = func(game string) bool { return store.Get().GamePrefs(game).BrowseNoise != settings.BrowseNoiseShow }
 	browseSvc.HiddenMod = func(game string, it browse.Item) bool {
 		gp := store.Get().GamePrefs(game)
 		return gp.HidesMod(it.Source, it.ID) || gp.HidesAuthor(it.Author)

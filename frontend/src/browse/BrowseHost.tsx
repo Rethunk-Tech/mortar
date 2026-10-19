@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   Categories,
+  DefaultExcludes,
   HasCompat,
   Search,
   SearchableSources,
@@ -16,6 +17,10 @@ const KIND_INSTALL = 'install'
 
 async function categoryNames(game: string, source: string): Promise<string[]> {
   return (await Categories(game, source)) ?? []
+}
+
+async function defaultExcludes(game: string, source: string): Promise<string[]> {
+  return (await DefaultExcludes(game, source)) ?? []
 }
 
 // Defined once: BrowsePage re-runs its query when this identity changes, and each run costs a request to every source.
@@ -72,6 +77,7 @@ function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
       sources={sources}
       search={search}
       categories={categoryNames}
+      defaultExcludes={defaultExcludes}
       openUrl={openPage}
       downloadNexus={downloadNexus}
       addGitHub={addGitHub}

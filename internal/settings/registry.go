@@ -68,8 +68,6 @@ type GameSettings struct {
 	GameSettingsMode      string                 `json:"gameSettingsMode,omitempty"`
 	CacheClearing         string                 `json:"cacheClearing,omitempty"`
 	DependencyVersions    string                 `json:"dependencyVersions,omitempty"`
-	// BrowseNoise is hide or show: whether Browse leaves out modpacks, translations and cheats.
-	BrowseNoise string `json:"browseNoise,omitempty"`
 	// SourceOrder is the comma-separated source ids the player prefers, first first; sources it omits follow in
 	// catalog order.
 	SourceOrder string `json:"sourceOrder,omitempty"`
@@ -274,7 +272,6 @@ var registry = withDefaults([]pref{
 	overridable(enumPref("gameSettingsMode", ScopeGame, gameSettingsModeValues, func(s Settings, g string) string { return s.GamePrefs(g).GameSettingsMode }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.GameSettingsMode = v; putGame(s, g, gp) })),
 	overridable(enumPref("cacheClearing", ScopeGame, cacheClearingValues, func(s Settings, g string) string { return s.GamePrefs(g).CacheClearing }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.CacheClearing = v; putGame(s, g, gp) })),
 	overridable(enumPref("dependencyVersions", ScopeGame, dependencyVersionValues, func(s Settings, g string) string { return s.GamePrefs(g).DependencyVersions }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.DependencyVersions = v; putGame(s, g, gp) })),
-	enumPref("browseNoise", ScopeGame, browseNoiseValues, func(s Settings, g string) string { return s.GamePrefs(g).BrowseNoise }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BrowseNoise = v; putGame(s, g, gp) }),
 	enumPref("oldFilesOnUpdate", ScopeGame, oldFilesValues, func(s Settings, g string) string { return s.GamePrefs(g).OldFilesOnUpdate }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.OldFilesOnUpdate = v; putGame(s, g, gp) }),
 })
 
@@ -337,7 +334,6 @@ func defaultGameSettings() GameSettings {
 		GameSettingsMode:            GameSettingsEdit,
 		CacheClearing:               CacheClearingAuto,
 		DependencyVersions:          DependencyNewest,
-		BrowseNoise:                 BrowseNoiseHide,
 	}
 }
 
@@ -457,9 +453,6 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.DependencyVersions != "" {
 		dst.DependencyVersions = src.DependencyVersions
 	}
-	if src.BrowseNoise != "" {
-		dst.BrowseNoise = src.BrowseNoise
-	}
 }
 
 func normalizeGame(id string, g *GameSettings) {
@@ -530,9 +523,6 @@ func normalizeGame(id string, g *GameSettings) {
 	if !slices.Contains(dependencyVersionValues, g.DependencyVersions) {
 		g.DependencyVersions = d.DependencyVersions
 	}
-	if !slices.Contains(browseNoiseValues, g.BrowseNoise) {
-		g.BrowseNoise = d.BrowseNoise
-	}
 	if !slices.Contains(gameSettingsModeValues, g.GameSettingsMode) {
 		g.GameSettingsMode = d.GameSettingsMode
 	}
@@ -586,9 +576,6 @@ func validateGame(g GameSettings) error {
 	}
 	if !slices.Contains(cacheClearingValues, g.CacheClearing) {
 		return fmt.Errorf("cache clearing must be auto or off, got %q", g.CacheClearing)
-	}
-	if !slices.Contains(browseNoiseValues, g.BrowseNoise) {
-		return fmt.Errorf("browse noise must be hide or show, got %q", g.BrowseNoise)
 	}
 	if !slices.Contains(dependencyVersionValues, g.DependencyVersions) {
 		return fmt.Errorf("dependency versions must be newest or exact, got %q", g.DependencyVersions)

@@ -16,8 +16,6 @@ type Service struct {
 	Profiles *profile.Service
 	// ShowAdult reports the player's "show adult mods" setting.
 	ShowAdult func() bool
-	// NoiseHidden reports whether the game leaves modpacks, translations and cheats out of Browse.
-	NoiseHidden func(game string) bool
 	// HiddenMod reports whether the game hides the hit, by mod or by author, from Browse.
 	HiddenMod func(game string, it Item) bool
 	// SourceOrder is the game's preferred source ids, first first; nil means catalog order.
@@ -44,7 +42,6 @@ func (s *Service) Search(ctx context.Context, game, sourceID, text string, page 
 	if s.SourceOrder != nil {
 		c.Prefer = s.SourceOrder(game)
 	}
-	c.HideNoise = s.NoiseHidden != nil && s.NoiseHidden(game)
 	if s.HiddenMod != nil {
 		c.Hidden = func(it Item) bool { return s.HiddenMod(game, it) }
 	}
@@ -60,6 +57,13 @@ func (s *Service) Search(ctx context.Context, game, sourceID, text string, page 
 // Categories lists the category names of sourceID (or of every source) for the filter pickers.
 func (s *Service) Categories(ctx context.Context, game, sourceID string) ([]string, error) {
 	return (&Client{}).Categories(ctx, game, sourceID)
+}
+
+// DefaultExcludes is the modpack, translation and cheat categories of sourceID (or of every source), which the
+// exclude picker starts with.
+func (s *Service) DefaultExcludes(ctx context.Context, game, sourceID string) ([]string, error) {
+	names, err := (&Client{}).Categories(ctx, game, sourceID)
+	return noisyNames(names), err
 }
 
 // SourceInfo names a source for the window's source chips.

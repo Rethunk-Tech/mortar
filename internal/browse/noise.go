@@ -9,7 +9,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
-// noiseWords start the words of category names that Browse leaves out by default: modpacks, translations, and cheats
+// noiseWords start the words of category names that Browse excludes by default: modpacks, translations, and cheats
 // or hacks. Matching is by word prefix and case-insensitive, so it covers each source's own spelling ("Modpacks",
 // "Translation", "Language", "Cheats and God items", "Hacks").
 var noiseWords = []string{"modpack", "translation", "language", "cheat", "hack"}
@@ -25,16 +25,8 @@ func noisy(name string) bool {
 	return false
 }
 
-// withoutNoise adds the source's noisy categories to the exclude list, except any the player included on purpose.
-func withoutNoise(names, include, exclude []string) []string {
-	out := slices.Clone(exclude)
-	for _, n := range names {
-		if noisy(n) && !slices.ContainsFunc(include, func(i string) bool { return strings.EqualFold(i, n) }) &&
-			!slices.ContainsFunc(out, func(e string) bool { return strings.EqualFold(e, n) }) {
-			out = append(out, n)
-		}
-	}
-	return out
+func noisyNames(names []string) []string {
+	return slices.DeleteFunc(slices.Clone(names), func(n string) bool { return !noisy(n) })
 }
 
 // categoriesCached is the source's category names for the game, reused for categoryTTL; a source without categories
