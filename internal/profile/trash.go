@@ -60,7 +60,7 @@ func (s *Store) Delete(gameID, id string) error {
 		return err
 	}
 	// A profile in another folder comes home first, so the trash holds it whole and a restore needs no drive.
-	if err := s.bringHome(src); err != nil {
+	if err := s.bringHome(gameID, id, src); err != nil {
 		return err
 	}
 	var tray []TrayFile

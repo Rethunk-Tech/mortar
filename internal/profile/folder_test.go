@@ -79,3 +79,35 @@ func TestProfileMovesToAFolderAndHome(t *testing.T) {
 		t.Errorf("deleting left the folder behind: %v", err)
 	}
 }
+
+func TestMovesRefuseALinkToAFolderMortarDidNotMake(t *testing.T) {
+	s := newStore(t)
+	p := mustCreate(t, s, "Farm")
+	home := filepath.Join(s.root, "stardew", p.ID)
+	install := filepath.Join(t.TempDir(), "RealInstall")
+	if err := os.MkdirAll(install, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	keep := filepath.Join(install, "game.exe")
+	if err := os.WriteFile(keep, []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(install, "profile.json"), []byte(`{"id":"`+p.ID+`"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.RemoveAll(home); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(install, home); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.bringHome("stardew", p.ID, home); err == nil {
+		t.Error("bringHome followed a link to a folder with the wrong name")
+	}
+	if err := s.relocate("stardew", p.ID, home, filepath.Join(t.TempDir(), "stardew-"+p.ID)); err == nil {
+		t.Error("relocate followed a link to a folder with the wrong name")
+	}
+	if _, err := os.Stat(keep); err != nil {
+		t.Fatalf("the player's folder was touched: %v", err)
+	}
+}
