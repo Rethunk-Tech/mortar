@@ -1,13 +1,22 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material'
+import {
+  Box,
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material'
 import { useGameInfo } from '../games/info.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { prefCopy } from '../settings/prefCopy.ts'
 import { useProtonBuilds } from '../settings/protonBuilds.ts'
 import { useSettings } from '../settings/store.ts'
+import { space } from '../theme/density.ts'
 import {
   applyRow,
   choiceFromOverride,
@@ -98,59 +107,61 @@ export function OverridesSection({
       <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1 }}>
         {t`These apply only to this profile.`}
       </Typography>
-      {OVERRIDE_KEYS.filter(
-        (key) =>
-          (smapi || key !== 'showSmapiConsole') &&
-          (introSkip || key !== 'skipIntro') &&
-          (graphics || key !== 'graphicsApi') &&
-          (proton.length > 0 || key !== 'protonVersion') &&
-          (info?.hasOptions || key !== 'gameSettingsMode') &&
-          (info?.hasCaches || key !== 'cacheClearing') &&
-          (info?.sources?.includes('thunderstore') || key !== 'dependencyVersions') &&
-          (directPlay || (key !== 'instances' && key !== 'delaySeconds')) &&
-          applies(key, info?.loaders?.[0]),
-      ).map((key) => {
-        const stored = overrides[key]
-        const choice = choiceFromOverride(stored)
-        const label = overrideLabel(key, i18n)
-        const field = (
-          <FormControl key={key} fullWidth={true} margin="dense" size="small">
-            <InputLabel shrink={true} id={`override-${key}`}>
-              {label}
-            </InputLabel>
-            <Select
-              labelId={`override-${key}`}
-              displayEmpty={true}
-              notched={true}
-              label={label}
-              value={choice.useGame ? '' : choice.value}
-              onChange={(event) => {
-                const next = event.target.value
-                onChange(
-                  applyRow(
-                    overrides,
-                    key,
-                    next === '' ? { useGame: true } : { useGame: false, value: next },
-                  ),
-                )
-              }}
-            >
-              <MenuItem value="">{t`Use default`}</MenuItem>
-              {choicesFor(key).map((o) => (
-                <MenuItem key={o.value} value={o.value}>
-                  {o.label}
-                </MenuItem>
-              ))}
-            </Select>
-            {key === 'updateModsBeforePlayDefault' && nexus && !premium ? (
-              <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>
-                {t`Free Nexus accounts click each download on Nexus; those updates do not block Play.`}
-              </Typography>
-            ) : null}
-          </FormControl>
-        )
-        return field
-      })}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad, pt: 1 }}>
+        {OVERRIDE_KEYS.filter(
+          (key) =>
+            (smapi || key !== 'showSmapiConsole') &&
+            (introSkip || key !== 'skipIntro') &&
+            (graphics || key !== 'graphicsApi') &&
+            (proton.length > 0 || key !== 'protonVersion') &&
+            (info?.hasOptions || key !== 'gameSettingsMode') &&
+            (info?.hasCaches || key !== 'cacheClearing') &&
+            (info?.sources?.includes('thunderstore') || key !== 'dependencyVersions') &&
+            (directPlay || (key !== 'instances' && key !== 'delaySeconds')) &&
+            applies(key, info?.loaders?.[0]),
+        ).map((key) => {
+          const stored = overrides[key]
+          const choice = choiceFromOverride(stored)
+          const label = overrideLabel(key, i18n)
+          const field = (
+            <FormControl key={key} fullWidth={true} size="small">
+              <InputLabel shrink={true} id={`override-${key}`}>
+                {label}
+              </InputLabel>
+              <Select
+                labelId={`override-${key}`}
+                displayEmpty={true}
+                notched={true}
+                label={label}
+                value={choice.useGame ? '' : choice.value}
+                onChange={(event) => {
+                  const next = event.target.value
+                  onChange(
+                    applyRow(
+                      overrides,
+                      key,
+                      next === '' ? { useGame: true } : { useGame: false, value: next },
+                    ),
+                  )
+                }}
+              >
+                <MenuItem value="">{t`Use default`}</MenuItem>
+                {choicesFor(key).map((o) => (
+                  <MenuItem key={o.value} value={o.value}>
+                    {o.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              {key === 'updateModsBeforePlayDefault' && nexus && !premium ? (
+                <FormHelperText>
+                  {t`Free Nexus accounts click each download on Nexus; those updates do not block Play.`}
+                </FormHelperText>
+              ) : null}
+            </FormControl>
+          )
+          return field
+        })}
+      </Box>
     </Box>
   )
 }
