@@ -236,6 +236,15 @@ func parseFarmFor(gameID, text string) (FarmList, error) {
 	if l.Game != gameID {
 		return FarmList{}, usererr.New(usererr.OtherGame, "this list is for another game")
 	}
+	// A list names its own download sources; one the game's catalog does not offer is dropped, leaving the mod to
+	// install by hand.
+	if i := slices.IndexFunc(game.Catalog(), func(g components.GameInfo) bool { return g.ID == gameID }); i >= 0 {
+		for j := range l.Mods {
+			if _, ok := game.Catalog()[i].Source(l.Mods[j].Source.Kind); !ok {
+				l.Mods[j].Source = profile.Source{}
+			}
+		}
+	}
 	return l, nil
 }
 

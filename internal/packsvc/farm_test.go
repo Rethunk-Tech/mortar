@@ -187,3 +187,17 @@ func TestFarmListMatchesThunderstoreAndVintageStoryMods(t *testing.T) {
 		t.Errorf("vintage story rows = %+v, %v", check.Rows, err)
 	}
 }
+
+func TestFarmListDropsSourcesTheGameDoesNotOffer(t *testing.T) {
+	text := `{"game":"riskofrain2","name":"x","mods":[` +
+		`{"id":"thunderstore:Ns-A","name":"A","version":"1.0.0","source":{"kind":"thunderstore","name":"Ns-A","version":"1.0.0"}},` +
+		`{"id":"thunderstore:Ns-B","name":"B","version":"1.0.0","source":{"kind":"github","repo":"evil/repo"}},` +
+		`{"id":"thunderstore:Ns-C","name":"C","version":"1.0.0","source":{"kind":"nexus","modId":5}}]}`
+	l, err := parseFarmFor("riskofrain2", text)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if l.Mods[0].Source.Kind != profile.KindThunderstore || l.Mods[1].Source.Kind != "" || l.Mods[2].Source.Kind != "" {
+		t.Fatalf("sources = %+v", l.Mods)
+	}
+}
