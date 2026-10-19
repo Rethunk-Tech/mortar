@@ -343,7 +343,7 @@ func TestDecoderMemoryHeadersRejected(t *testing.T) {
 			if err == nil || !strings.Contains(err.Error(), tc.want) {
 				t.Fatalf("got %v, want an archive error containing %q", err, tc.want)
 			}
-			if delta := after.TotalAlloc - before.TotalAlloc; delta >= uint64(DefaultMaxEntryBytes) {
+			if delta := after.TotalAlloc - before.TotalAlloc; delta >= uint64(MaxDecoderBytes) {
 				t.Fatalf("decoder allocated %d bytes before refusing the header", delta)
 			}
 		})
@@ -623,5 +623,43 @@ func TestSavedNameKeepsABareFilesOriginalNameForExtraction(t *testing.T) {
 	}
 	if got := SavedName("id", "a/b:c.xz"); got != "id~~b_c.xz" {
 		t.Fatalf("unsafe characters: %q", got)
+	}
+}
+
+func TestDefaultCapsAreFarAboveRealPackagesAndDecoderMemoryStaysSmall(t *testing.T) {
+	if DefaultMaxTotalBytes != 64<<30 || DefaultMaxEntryBytes != 32<<30 || DefaultMaxEntries != 20000 {
+		t.Fatalf("caps are %d/%d/%d", DefaultMaxEntryBytes, DefaultMaxTotalBytes, DefaultMaxEntries)
+	}
+	if MaxDecoderBytes != 256<<20 || MaxDecoderBytes >= DefaultMaxEntryBytes {
+		t.Fatalf("decoder cap %d must not grow with the entry cap", MaxDecoderBytes)
+	}
+	o := options{}.withDefaults()
+	if got := o.ratioCap(1 << 10); got != DefaultRatioFloor {
+		t.Fatalf("a tiny archive may unpack to %d, want the floor %d", got, DefaultRatioFloor)
+	}
+	if got := o.ratioCap(1 << 20); got != DefaultRatioFloor {
+		t.Fatalf("1 MiB archive: %d", got)
+	}
+	if got := o.ratioCap(1 << 30); got != DefaultMaxTotalBytes {
+		t.Fatalf("1 GiB archive is limited by the total cap, got %d", got)
+	}
+}
+
+func TestRatioGuardStopsATinyArchiveClaimingALot(t *testing.T) {
+	var buf bytes.Buffer
+	zw := gzip.NewWriter(&buf)
+	if _, err := zw.Write(make([]byte, 8<<20)); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	src := writeTemp(t, "ratio.gz", buf.Bytes())
+	_, err := extract(t, src, options{MaxRatio: 10, RatioFloor: 1 << 10})
+	if !errors.Is(err, ErrRatio) {
+		t.Fatalf("got %v, want ErrRatio", err)
+	}
+	if _, err := extract(t, src, options{MaxRatio: 10, RatioFloor: 16 << 20}); err != nil {
+		t.Fatalf("under the floor: %v", err)
 	}
 }

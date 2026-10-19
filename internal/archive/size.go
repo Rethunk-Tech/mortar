@@ -67,7 +67,7 @@ func DeclaredSize(archivePath string) (_ int64, err error) {
 		if _, err := f.Seek(0, io.SeekStart); err != nil {
 			return 0, err
 		}
-		return streamSize(f, detect(magic[:n]))
+		return streamSize(f, detect(magic[:n]), info.Size())
 	default:
 		return 0, &Error{Reason: ErrUnsupportedFormat}
 	}

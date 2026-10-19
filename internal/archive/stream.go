@@ -21,8 +21,8 @@ import (
 // headLen is how much of a file's start detect reads: enough for the "ustar" marker at offset 257 of a tar header.
 const headLen = 262
 
-// dictLimit caps a decompressor's window, so a header cannot make it allocate more than an entry may extract to.
-const dictLimit = DefaultMaxEntryBytes
+// dictLimit caps a decompressor's window, so a header cannot make it allocate more than MaxDecoderBytes.
+const dictLimit = MaxDecoderBytes
 
 // tarOverhead is what a tar adds around each entry's bytes (header, padding), counted into the stream's budget so
 // skipped or unread data cannot decompress without bound.
@@ -205,8 +205,8 @@ func (x *extractor) stream(r io.Reader, kind int, archivePath string) error {
 	}
 }
 
-func (v *previewer) stream(r io.Reader, kind int, archivePath string) error {
-	p, err := openPayload(r, kind, options{MaxTotalBytes: DefaultMaxTotalBytes, MaxEntries: DefaultMaxEntries})
+func (v *previewer) stream(r io.Reader, kind int, archivePath string, srcSize int64) error {
+	p, err := openPayload(r, kind, streamOptions(srcSize))
 	if err != nil {
 		return err
 	}
@@ -236,17 +236,24 @@ func (v *previewer) stream(r io.Reader, kind int, archivePath string) error {
 	return nil
 }
 
+// streamOptions are the caps for reading a stream of srcSize bytes without extracting it.
+func streamOptions(srcSize int64) options {
+	o := options{MaxEntries: DefaultMaxEntries}.withDefaults()
+	o.MaxTotalBytes = o.ratioCap(srcSize)
+	return o
+}
+
 // streamSize is the bytes a stream format unpacks to, counted by reading it within the caps; a stream over them
 // reports the cap.
-func streamSize(r io.Reader, kind int) (int64, error) {
-	p, err := openPayload(r, kind, options{MaxTotalBytes: DefaultMaxTotalBytes, MaxEntries: DefaultMaxEntries})
+func streamSize(r io.Reader, kind int, srcSize int64) (int64, error) {
+	p, err := openPayload(r, kind, streamOptions(srcSize))
 	if err != nil {
 		return 0, err
 	}
 	defer p.close()
 	n, err := io.Copy(io.Discard, p.r)
 	if _, typed := errors.AsType[*Error](err); typed {
-		return DefaultMaxTotalBytes, nil
+		return streamOptions(srcSize).MaxTotalBytes, nil
 	}
 	return n, err
 }

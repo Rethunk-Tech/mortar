@@ -129,7 +129,7 @@ func PreviewArchive(archivePath string) (_ Preview, err error) {
 		}
 	case fmtTar, fmtGzip, fmtXz, fmtLzma, fmtZstd, fmtBzip2:
 		if _, err = f.Seek(0, io.SeekStart); err == nil {
-			err = v.stream(f, detect(magic[:n]), archivePath)
+			err = v.stream(f, detect(magic[:n]), archivePath, info.Size())
 		}
 	default:
 		err = &Error{Reason: ErrUnsupportedFormat}
@@ -172,7 +172,7 @@ func (v *previewer) sevenZip(r io.ReaderAt, size int64) error {
 }
 
 func (v *previewer) rar(r io.Reader) error {
-	rr, err := rardecode.NewReader(r, rardecode.MaxDictionarySize(DefaultMaxEntryBytes))
+	rr, err := rardecode.NewReader(r, rardecode.MaxDictionarySize(MaxDecoderBytes))
 	if err != nil {
 		return wrap("", err)
 	}

@@ -27,11 +27,21 @@ import (
 	"github.com/nwaples/rardecode/v2"
 )
 
-// Default caps, applied to every zero field of options.
+// Default caps, applied to every zero field of options. Thunderstore allows gigantic packages, so the byte caps sit far
+// above any real one and the ratio guard, not these, stops a small archive claiming them.
 const (
-	DefaultMaxEntryBytes int64 = 256 << 20
-	DefaultMaxTotalBytes int64 = 2 << 30
+	DefaultMaxEntryBytes int64 = 32 << 30
+	DefaultMaxTotalBytes int64 = 64 << 30
 	DefaultMaxEntries          = 20000
+
+	// MaxDecoderBytes caps the window or dictionary a decompressor may allocate. It is separate from the entry cap
+	// because a bigger file must not mean a bigger in-memory dictionary.
+	MaxDecoderBytes int64 = 256 << 20
+
+	// Below DefaultRatioFloor an archive may unpack to any size within the caps; above it, to at most
+	// DefaultMaxRatio times its own size. Deflate tops out near 1030:1, so real packages stay well inside.
+	DefaultMaxRatio   int64 = 1024
+	DefaultRatioFloor int64 = 2 << 30
 )
 
 // options lowers or raises the extraction caps; a zero field means its default.
@@ -39,6 +49,35 @@ type options struct {
 	MaxEntryBytes int64
 	MaxTotalBytes int64
 	MaxEntries    int
+	MaxRatio      int64
+	RatioFloor    int64
+}
+
+// ratioCap is the most an archive of srcSize bytes may unpack to, or MaxTotalBytes when its size is unknown.
+func (o options) ratioCap(srcSize int64) int64 {
+	if srcSize <= 0 {
+		return o.MaxTotalBytes
+	}
+	return min(o.MaxTotalBytes, max(o.RatioFloor, srcSize*o.MaxRatio))
+}
+
+func (o options) withDefaults() options {
+	if o.MaxEntryBytes == 0 {
+		o.MaxEntryBytes = DefaultMaxEntryBytes
+	}
+	if o.MaxTotalBytes == 0 {
+		o.MaxTotalBytes = DefaultMaxTotalBytes
+	}
+	if o.MaxEntries == 0 {
+		o.MaxEntries = DefaultMaxEntries
+	}
+	if o.MaxRatio == 0 {
+		o.MaxRatio = DefaultMaxRatio
+	}
+	if o.RatioFloor == 0 {
+		o.RatioFloor = DefaultRatioFloor
+	}
+	return o
 }
 
 // Reasons carried by Error. A disk-full write is reported as the underlying
@@ -54,6 +93,7 @@ var (
 	ErrEntryTooLarge     = errors.New("entry exceeds the size cap")
 	ErrArchiveTooLarge   = errors.New("archive exceeds the extracted size cap")
 	ErrTooManyEntries    = errors.New("archive exceeds the entry cap")
+	ErrRatio             = errors.New("archive unpacks to far more than its size allows")
 	ErrChecksum          = errors.New("checksum mismatch")
 	ErrMalformed         = errors.New("archive is malformed")
 )
@@ -114,16 +154,8 @@ func extractWith(archivePath, dest string, opts options) (err error) {
 	n, _ := io.ReadFull(f, magic[:])
 	head := magic[:n]
 
-	x := &extractor{dest: dest, opts: opts, seen: map[string]string{}, files: map[string]bool{}}
-	if x.opts.MaxEntryBytes == 0 {
-		x.opts.MaxEntryBytes = DefaultMaxEntryBytes
-	}
-	if x.opts.MaxTotalBytes == 0 {
-		x.opts.MaxTotalBytes = DefaultMaxTotalBytes
-	}
-	if x.opts.MaxEntries == 0 {
-		x.opts.MaxEntries = DefaultMaxEntries
-	}
+	x := &extractor{dest: dest, opts: opts.withDefaults(), seen: map[string]string{}, files: map[string]bool{}}
+	x.ratioMax = x.opts.ratioCap(info.Size())
 
 	switch detect(head) {
 	case fmtZip:
@@ -173,9 +205,11 @@ type extractor struct {
 	dest    string
 	opts    options
 	entries int
-	total   int64
-	seen    map[string]string // lower-cased path -> spelling first used
-	files   map[string]bool
+	// ratioMax is the most the archive may unpack to for its size.
+	ratioMax int64
+	total    int64
+	seen     map[string]string // lower-cased path -> spelling first used
+	files    map[string]bool
 }
 
 func (x *extractor) zip(r io.ReaderAt, size int64) error {
@@ -280,7 +314,7 @@ func (x *extractor) sevenZip(r io.ReaderAt, size int64) error {
 
 func (x *extractor) rar(r io.Reader) error {
 	// A larger RAR window cannot produce an entry larger than the extraction cap.
-	rr, err := rardecode.NewReader(r, rardecode.MaxDictionarySize(DefaultMaxEntryBytes))
+	rr, err := rardecode.NewReader(r, rardecode.MaxDictionarySize(MaxDecoderBytes))
 	if err != nil {
 		return wrap("", err)
 	}
@@ -364,7 +398,7 @@ func (x *extractor) write(name, target string, src io.Reader, wantCRC *uint32) e
 	if err != nil {
 		return wrap(name, err)
 	}
-	limit := min(x.opts.MaxEntryBytes, x.opts.MaxTotalBytes-x.total)
+	limit := min(x.opts.MaxEntryBytes, x.opts.MaxTotalBytes-x.total, x.ratioMax-x.total)
 	h := crc32.NewIEEE()
 	// One byte past the limit proves the entry is over it without trusting declared sizes.
 	n, err := io.Copy(io.MultiWriter(out, h), io.LimitReader(src, limit+1))
@@ -376,10 +410,13 @@ func (x *extractor) write(name, target string, src io.Reader, wantCRC *uint32) e
 		return wrap(name, err)
 	}
 	if n > limit {
-		if n > x.opts.MaxEntryBytes {
+		switch {
+		case n > x.opts.MaxEntryBytes:
 			return &Error{Entry: name, Reason: ErrEntryTooLarge}
+		case x.total > x.opts.MaxTotalBytes:
+			return &Error{Entry: name, Reason: ErrArchiveTooLarge}
 		}
-		return &Error{Entry: name, Reason: ErrArchiveTooLarge}
+		return &Error{Entry: name, Reason: ErrRatio}
 	}
 	if wantCRC != nil && h.Sum32() != *wantCRC {
 		return &Error{Entry: name, Reason: ErrChecksum}

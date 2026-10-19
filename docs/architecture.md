@@ -131,7 +131,7 @@ Mortar is GUI-first: the CLI exposes only what the window can already do, and a 
 
 Everything from outside is untrusted: links, `.mortar` files, archives, API responses. Share links and `.mortar` files have their own caps in [Sharing](#sharing). Threat model and the test for each input: [security.md](security.md).
 
-- Extraction keeps every entry inside its destination; caps each entry at 256 MiB, decoder dictionaries and PPMd memory at 256 MiB, the archive at 2 GiB extracted and 20,000 entries; rejects symlink entries, Windows reserved names (`CON`, `NUL`, ...), `:` in names and names differing only by case.
+- Extraction keeps every entry inside its destination; caps each entry at 32 GiB, decoder dictionaries and PPMd memory at 256 MiB (a separate constant), the archive at 64 GiB extracted (above 2 GiB, also 1024 times its own size) and 20,000 entries; rejects symlink entries, Windows reserved names (`CON`, `NUL`, ...), `:` in names and names differing only by case.
 - An `nxm://` link is taken only as `nxm://stardewvalley/mods/<mod id>/files/<file id>?key=<key>&expires=<unix>&user_id=<id>`, unexpired, for the signed-in account's `user_id`; anything else is refused with the reason. A link Mortar was not waiting for asks which profile it is for before anything downloads.
 
 ## Failure behaviour
