@@ -98,8 +98,8 @@ function NexusLines({ close }: { close: () => void }) {
   )
 }
 
-// The project's own pages, opened in the browser.
-function ProjectLinks({ close }: { close: () => void }) {
+// Ways to reach the project: its Discord, bug reports and suggestions, and its source.
+function ProjectLinks({ close, game }: { close: () => void; game: string }) {
   const { t } = useLingui()
   const open = (url: string) => () => {
     close()
@@ -108,14 +108,17 @@ function ProjectLinks({ close }: { close: () => void }) {
   return (
     <>
       <TitleMenuItem
-        icon={<Code2 size={ICON_PX} />}
-        label={t`Source code`}
-        onClick={open(SOURCE)}
-      />
-      <TitleMenuItem
         icon={<DiscordLogo size={ICON_PX} />}
         label={t`Ask on Discord`}
         onClick={open(`${GO}help/`)}
+      />
+      <TitleMenuItem
+        icon={<Bug size={ICON_PX} />}
+        label={t`Report a bug…`}
+        onClick={() => {
+          close()
+          reportBug(game)
+        }}
       />
       <TitleMenuItem
         icon={<Lightbulb size={ICON_PX} />}
@@ -124,6 +127,11 @@ function ProjectLinks({ close }: { close: () => void }) {
           close()
           suggestFeature()
         }}
+      />
+      <TitleMenuItem
+        icon={<Code2 size={ICON_PX} />}
+        label={t`Source code`}
+        onClick={open(SOURCE)}
       />
     </>
   )
@@ -176,12 +184,29 @@ export const AppMenu = memo(function AppMenuView() {
       </ButtonBase>
       <TitleMenu anchorEl={anchor} onClose={close} label={t`Mortar`} width={280}>
         <TitleMenuItem
+          icon={<Download size={ICON_PX} />}
+          label={t`Downloads`}
+          hint={downloadsKeys}
+          onClick={() => {
+            close()
+            useQueue.getState().setOpen(true)
+          }}
+        />
+        <TitleMenuItem
           icon={<Settings size={ICON_PX} />}
           label={t`Mortar settings…`}
           hint={settingsKeys}
           onClick={() => {
             close()
             openSettings()
+          }}
+        />
+        <TitleMenuItem
+          icon={<FolderOpen size={ICON_PX} />}
+          label={t`Open data folder`}
+          onClick={() => {
+            close()
+            OpenDataFolder().catch(reportUnexpected)
           }}
         />
         <MenuRule />
@@ -207,23 +232,6 @@ export const AppMenu = memo(function AppMenuView() {
           />
         ) : null}
         <TitleMenuItem
-          icon={<Download size={ICON_PX} />}
-          label={t`Downloads`}
-          hint={downloadsKeys}
-          onClick={() => {
-            close()
-            useQueue.getState().setOpen(true)
-          }}
-        />
-        <TitleMenuItem
-          icon={<FolderOpen size={ICON_PX} />}
-          label={t`Open data folder`}
-          onClick={() => {
-            close()
-            OpenDataFolder().catch(reportUnexpected)
-          }}
-        />
-        <TitleMenuItem
           icon={<Info size={ICON_PX} />}
           label={t`About Mortar`}
           onClick={() => {
@@ -244,15 +252,7 @@ export const AppMenu = memo(function AppMenuView() {
             useConsole.getState().setHelping(true)
           }}
         />
-        <TitleMenuItem
-          icon={<Bug size={ICON_PX} />}
-          label={t`Report a bug…`}
-          onClick={() => {
-            close()
-            reportBug(game)
-          }}
-        />
-        <ProjectLinks close={close} />
+        <ProjectLinks close={close} game={game} />
         <MenuRule />
         <NexusLines close={close} />
         <MenuRule />
