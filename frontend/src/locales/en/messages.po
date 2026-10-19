@@ -4127,7 +4127,7 @@ msgid "Data folder moved"
 msgstr "Data folder moved"
 
 #: src/games/GameMenu.tsx:119
-#: src/games/GameSelect.tsx:433
+#: src/games/GameSelect.tsx:417
 msgid "On this computer"
 msgstr "On this computer"
 
@@ -4538,7 +4538,7 @@ msgstr "The last launch loaded this here, not where its dependencies put it."
 msgid "Check launchers…"
 msgstr "Check launchers…"
 
-#: src/games/GameSelect.tsx:300
+#: src/games/GameSelect.tsx:296
 msgid "Set up"
 msgstr "Set up"
 
@@ -5341,7 +5341,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/browse/BrowseShow.tsx:46
 #: src/firstrunTour/TourAgainButton.tsx:16
 #: src/firstrunTour/useFirstRunTour.ts:53
-#: src/games/GameSelect.tsx:271
+#: src/games/GameSelect.tsx:267
 #: src/settings/GraphicsApiRow.tsx:32
 #: src/settings/PrefControls.tsx:190
 #: src/settings/PrefControls.tsx:241
@@ -7030,7 +7030,7 @@ msgid "No profiles found."
 msgstr "No profiles found."
 
 #. placeholder {0}: game.name
-#: src/games/GameSelect.tsx:223
+#: src/games/GameSelect.tsx:219
 msgid "Open {0}"
 msgstr "Open {0}"
 
@@ -7059,7 +7059,7 @@ msgstr "Could not move the old files to trash"
 msgid "No profiles yet"
 msgstr "No profiles yet"
 
-#: src/games/GameSelect.tsx:174
+#: src/games/GameSelect.tsx:170
 #: src/games/ProfileCards.tsx:48
 #: src/profiles/store.ts:280
 #: src/profiles/store.ts:361
@@ -8942,7 +8942,7 @@ msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
 #: src/games/GameMenu.tsx:117
-#: src/games/GameSelect.tsx:432
+#: src/games/GameSelect.tsx:416
 msgid "Recently played"
 msgstr "Recently played"
 
@@ -9008,7 +9008,7 @@ msgstr "Minutes between background update checks"
 msgid "Show all"
 msgstr "Show all"
 
-#: src/games/GameSelect.tsx:159
+#: src/games/GameSelect.tsx:155
 msgid "{playtime} played"
 msgstr "{playtime} played"
 
@@ -9956,7 +9956,7 @@ msgstr "Undo only this mod's change from this entry. Everything else stays as it
 msgid "Unofficial update available: {0}"
 msgstr "Unofficial update available: {0}"
 
-#: src/games/GameSelect.tsx:275
+#: src/games/GameSelect.tsx:271
 msgid "Hide this game"
 msgstr "Hide this game"
 
@@ -10559,7 +10559,7 @@ msgstr "A saved group keeps at least one mod; delete the saved group instead"
 msgid "Could not reset the settings of {0}"
 msgstr "Could not reset the settings of {0}"
 
-#: src/games/GameSelect.tsx:434
+#: src/games/GameSelect.tsx:418
 msgid "Other games"
 msgstr "Other games"
 
@@ -10764,7 +10764,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/FirstRun.tsx:47
 #: src/firstrun/GameSetup.tsx:153
 #: src/firstrun/LoaderStep.tsx:222
-#: src/games/GameSelect.tsx:470
+#: src/games/GameSelect.tsx:454
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
 msgstr "Loading…"
@@ -11048,7 +11048,7 @@ msgstr "Save backup folder"
 msgid ".mortar file"
 msgstr ".mortar file"
 
-#: src/games/GameSelect.tsx:275
+#: src/games/GameSelect.tsx:271
 #: src/mods/HiddenInside.tsx:80
 #: src/mods/HiddenInside.tsx:93
 #: src/settings/sections/HiddenMods.tsx:39
@@ -12246,7 +12246,7 @@ msgid "Stop the game to test a launch."
 msgstr "Stop the game to test a launch."
 
 #: src/firstrunTour/TourPopover.tsx:42
-#: src/games/GameSelect.tsx:287
+#: src/games/GameSelect.tsx:283
 #: src/launch/PlayControl.tsx:184
 #: src/mods/typedConfig/ConfigTab.tsx:391
 #: src/settings/GameSettingsPage.tsx:100
@@ -12565,7 +12565,7 @@ msgid "Switch {0} to {1}?"
 msgstr "Switch {0} to {1}?"
 
 #: src/firstrun/GameSetup.tsx:52
-#: src/games/GameSelect.tsx:434
+#: src/games/GameSelect.tsx:418
 msgid "All games"
 msgstr "All games"
 
@@ -13132,7 +13132,7 @@ msgstr "Could not unfreeze the profile"
 msgid "Could not roll back {0}"
 msgstr "Could not roll back {0}"
 
-#: src/games/GameSelect.tsx:282
+#: src/games/GameSelect.tsx:278
 msgid "Play {playName}"
 msgstr "Play {playName}"
 
@@ -14236,7 +14236,7 @@ msgstr "Command-line control"
 msgid "Could not repair this profile"
 msgstr "Could not repair this profile"
 
-#: src/games/GameSelect.tsx:172
+#: src/games/GameSelect.tsx:168
 #: src/games/ProfileCards.tsx:46
 #: src/games/ProfileCards.tsx:59
 #: src/games/useOpenGame.ts:42
@@ -14428,7 +14428,7 @@ msgstr "See which mods slow the game"
 
 #. placeholder {0}: game.name
 #: src/firstrun/GameSetup.tsx:176
-#: src/games/GameSelect.tsx:295
+#: src/games/GameSelect.tsx:291
 msgid "Set up {0}"
 msgstr "Set up {0}"
 

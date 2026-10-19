@@ -8,7 +8,7 @@ const RAIL_ROOMY_FONT_PX = 11
 const RAIL_ROOMY_WIDTH_PX = 44
 const RAIL_WIDTH_PX = 28
 
-// Memoised on its letters and the current one: the list renders again for every row it measures, and the rail's
+// Memoised on its letters and the current one: the list renders again as it scrolls, and the rail's
 // twenty-odd buttons need not.
 export const LetterRail = memo(
   function LetterRailView({
