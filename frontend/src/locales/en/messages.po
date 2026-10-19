@@ -791,10 +791,6 @@ msgstr "{0, plural, one {# log line Mortar could not classify} other {# log line
 msgid "Mod loader"
 msgstr "Mod loader"
 
-#: src/browse/CardProgress.tsx:32
-msgid "Needs your input"
-msgstr "Needs your input"
-
 #: src/mods/columnLabel.ts:16
 msgid "Updated on Nexus"
 msgstr "Updated on Nexus"
@@ -901,10 +897,6 @@ msgstr "{count, plural, one {{name} logged # error in the last run. First: {firs
 #: src/games/AddGameDialog.tsx:81
 msgid "Could not choose the program"
 msgstr "Could not choose the program"
-
-#: src/queue/LargeDownloadDialog.tsx:29
-msgid "This download is {size}, which is unusually large for a mod. It will take a long time and a lot of disk space."
-msgstr "This download is {size}, which is unusually large for a mod. It will take a long time and a lot of disk space."
 
 #: src/settings/prefCopyModsView.ts:13
 msgid "List"
@@ -2233,7 +2225,7 @@ msgstr "{name} now opens Nexus \"Mod Manager Download\" links."
 msgid "Actions"
 msgstr "Actions"
 
-#: src/queue/LargeDownloadDialog.tsx:31
+#: src/queue/LargeDownloadDialog.tsx:69
 #: src/queue/QueueBody.tsx:235
 msgid "Continue anyway"
 msgstr "Continue anyway"
@@ -2483,10 +2475,6 @@ msgstr "Remember window size and position"
 #: src/profiles/historyLabel.ts:49
 msgid "Found mods on Nexus"
 msgstr "Found mods on Nexus"
-
-#: src/queue/LargeDownloadDialog.tsx:28
-msgid "This download is {size}, which is unusually large for a mod. It will take a long time and a lot of disk space. {more} more large downloads are waiting after this one."
-msgstr "This download is {size}, which is unusually large for a mod. It will take a long time and a lot of disk space. {more} more large downloads are waiting after this one."
 
 #: src/templates/TemplateDialogs.tsx:185
 msgid "Rename template"
@@ -4634,13 +4622,14 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/profiles/LaunchPresetDialog.tsx:91
 #: src/profiles/MergeDialog.tsx:238
 #: src/profiles/PackImportDialog.tsx:177
+#: src/queue/LargeDownloadDialog.tsx:72
 #: src/queue/QueueBody.tsx:227
 #: src/settings/sections/NexusSSO.tsx:68
 #: src/settings/sections/nxmHandler.tsx:65
 #: src/share/ModpackDialog.tsx:259
 #: src/share/ShareFooter.tsx:42
 #: src/shell/BugReportDialog.tsx:153
-#: src/shell/ConfirmDialog.tsx:64
+#: src/shell/ConfirmDialog.tsx:57
 #: src/shell/PromptDialog.tsx:67
 #: src/shell/SuggestDialog.tsx:40
 #: src/templates/ApplyTemplateDialog.tsx:159
@@ -8132,6 +8121,10 @@ msgstr "Notes and tags"
 msgid "Current files on Nexus ({0})"
 msgstr "Current files on Nexus ({0})"
 
+#: src/browse/CardProgress.tsx:32
+msgid "Needs input"
+msgstr "Needs input"
+
 #: src/mods/updateReview/RowCopy.tsx:34
 #: src/mods/updateReview/RowCopy.tsx:39
 msgid "This update's notes mention breaking changes or new requirements"
@@ -8267,7 +8260,7 @@ msgstr "Nothing selected would change {0}."
 msgid "Something went wrong."
 msgstr "Something went wrong."
 
-#: src/queue/LargeDownloadDialog.tsx:25
+#: src/queue/LargeDownloadDialog.tsx:47
 msgid "{name} is a very large download"
 msgstr "{name} is a very large download"
 
@@ -10558,6 +10551,10 @@ msgstr "Whether Mortar deletes the game's rebuildable cache files on the first l
 #: src/mods/SelectionBar.tsx:118
 msgid "Also add selected mods to…"
 msgstr "Also add selected mods to…"
+
+#: src/queue/LargeDownloadDialog.tsx:55
+msgid "{more} more large downloads are waiting after this one."
+msgstr "{more} more large downloads are waiting after this one."
 
 #. placeholder {0}: st.name
 #: src/sync/store.ts:53
@@ -13541,7 +13538,7 @@ msgid "Player"
 msgstr "Player"
 
 #: src/firstrunTour/TourPopover.tsx:30
-#: src/profiles/ProfileMenu.tsx:286
+#: src/profiles/ProfileMenu.tsx:303
 #: src/profiles/ProfilesPage.tsx:326
 #: src/settings/sections/AboutDiagnostics.tsx:96
 #: src/settings/sections/DataUsage.tsx:212
@@ -14011,6 +14008,10 @@ msgstr "Could not add to the group"
 #: src/launch/PrePlayDialog.tsx:163
 msgid "Switch to {switchName}"
 msgstr "Switch to {switchName}"
+
+#: src/queue/LargeDownloadDialog.tsx:51
+msgid "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive. Make sure you meant to get it."
+msgstr "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive. Make sure you meant to get it."
 
 #: src/lan/PairedComputers.tsx:147
 msgid "On the other computer, choose Enter code and type this. It works once, for five minutes."

@@ -29,7 +29,7 @@ function CardProgress({ state }: { state: Exclude<CardState, { kind: 'idle' }> }
     case 'attention':
       return (
         <Button size="small" variant="outlined" onClick={() => useQueue.getState().setOpen(true)}>
-          {t`Needs your input`}
+          {t`Needs input`}
         </Button>
       )
     case 'downloading':
