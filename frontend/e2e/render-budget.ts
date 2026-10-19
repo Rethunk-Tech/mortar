@@ -10,6 +10,7 @@ import {
 } from './app.ts'
 import { newCases } from './renderCases.ts'
 import { HOOK } from './renderHook.ts'
+import { Meter, type Sample, TOP } from './renderMeter.ts'
 import { sandboxPort, selftest } from './sandbox.ts'
 
 // Render budget: walks every screen and the common interactions of a copied (or seeded) profile in headless Chromium and
@@ -33,11 +34,6 @@ const BASE = '/var/tmp'
 const SETTLE_MS = Number(process.env.MORTAR_RENDER_SETTLE_MS ?? '3000')
 const IDLE_MS = Number(process.env.MORTAR_RENDER_IDLE_MS ?? '10000')
 const IDLE_SCALE_MS = 10_000
-const TOP = Number(process.env.MORTAR_RENDER_TOP ?? '8')
-// Library building blocks every MUI component renders through; the report names the app's own components instead.
-const LIBRARY =
-  /^(Insertion|Styled\(|Mui|Box$|Typography$|ButtonBase$|anonymous$|TouchRipple|Ripple$|Popper|Portal$|Grow$|Fade$|Collapse$|Transition|SvgIcon$|Tooltip$|Modal$|Dialog$|Paper$|Button$|IconButton$|InputBase$|FormControl$|Chip$|Menu$|List|TableCell$|TableRow$)/
-const MIB = 1024 * 1024
 const TYPE_DELAY_MS = 120
 const STEP_TIMEOUT_MS = 15_000
 
@@ -58,106 +54,6 @@ export interface Case {
   /** The measured action. */
   run: (page: Page) => Promise<void>
   budget?: Partial<Budget>
-}
-
-interface Sample {
-  commits: number
-  mounts: number
-  updates: number
-  top: [string, number][]
-  /** The components cascades of re-renders started at, with how many re-renders each started, most first. */
-  startedBy: [string, number][]
-  /** What changed at each root (changed props, or the position and a preview of each changed state hook), by the re-renders it caused. */
-  why: [string, number][]
-  mutations: number
-  longTasks: number
-  longMs: number
-  calls: number
-  layouts: number
-  styles: number
-  scriptMs: number
-  heapMiB: number
-  nodes: number
-  listeners: number
-}
-
-interface PageCounts {
-  commits: number
-  mounts: number
-  updates: number
-  names: Record<string, number>
-  roots: Record<string, number>
-  why: Record<string, number>
-  mutations: number
-  longTasks: number
-  longMs: number
-}
-
-type Metrics = Record<string, number>
-
-class Meter {
-  calls = 0
-  private before: Metrics = {}
-  private readonly page: Page
-  private readonly cdp: CDPSession
-
-  constructor(page: Page, cdp: CDPSession) {
-    this.page = page
-    this.cdp = cdp
-    page.on('request', (r) => {
-      if (new URL(r.url()).pathname.startsWith('/wails/')) {
-        this.calls += 1
-      }
-    })
-  }
-
-  private async metrics(): Promise<Metrics> {
-    const { metrics } = await this.cdp.send('Performance.getMetrics')
-    return Object.fromEntries(metrics.map((m) => [m.name, m.value]))
-  }
-
-  async reset() {
-    await this.page.evaluate(() => (globalThis as unknown as RenderWindow).mortarRenders.reset())
-    this.calls = 0
-    this.before = await this.metrics()
-  }
-
-  async read(): Promise<Sample> {
-    const c = await this.page.evaluate(() =>
-      (globalThis as unknown as RenderWindow).mortarRenders.read(),
-    )
-    const m = await this.metrics()
-    const delta = (k: string) => (m[k] ?? 0) - (this.before[k] ?? 0)
-    return {
-      commits: c.commits,
-      mounts: c.mounts,
-      updates: c.updates,
-      top: Object.entries(c.names)
-        .filter(([n]) => !LIBRARY.test(n))
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, TOP),
-      startedBy: Object.entries(c.roots)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, TOP),
-      why: Object.entries(c.why)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, TOP),
-      mutations: c.mutations,
-      longTasks: c.longTasks,
-      longMs: Math.round(c.longMs),
-      calls: this.calls,
-      layouts: delta('LayoutCount'),
-      styles: delta('RecalcStyleCount'),
-      scriptMs: Math.round(delta('ScriptDuration') * 1000),
-      heapMiB: Math.round(((m.JSHeapUsedSize ?? 0) / MIB) * 10) / 10,
-      nodes: m.Nodes ?? 0,
-      listeners: m.JSEventListeners ?? 0,
-    }
-  }
-}
-
-interface RenderWindow {
-  mortarRenders: { reset: () => void; read: () => PageCounts }
 }
 
 const tabs = (page: Page) => page.getByRole('tablist', { name: 'Profile sections' })
@@ -412,9 +308,13 @@ function report(results: Result[]): string {
     if (r.over.length > 0 && started.length > 0) {
       lines.push(`${' '.repeat(18)}started by: ${started.map(([n, v]) => `${n} ${v}`).join(', ')}`)
     }
-    if (r.over.length > 0 && a.why.length > 0) {
-      lines.push(`${' '.repeat(18)}because: ${a.why.map(([n, v]) => `${n} ×${v}`).join(' | ')}`)
-    }
+    const extra = (label: string, rows: [string, number][]) =>
+      r.over.length > 0 && rows.length > 0
+        ? lines.push(`${' '.repeat(18)}${label}: ${rows.map(([n, v]) => `${n} ×${v}`).join(' | ')}`)
+        : 0
+    const idle = (label: string, rows: [string, number][]) =>
+      rows.map(([n, v]): [string, number] => [`idle ${label}${n}`, v])
+    extra('because', [...a.why, ...idle('', i.why), ...idle('call ', i.callsBy)])
   }
   return lines.join('\n')
 }
