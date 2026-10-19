@@ -79,7 +79,7 @@ function GameStrip({
         px: '12px',
         borderRadius: '6px',
         borderLeft: '3px solid',
-        borderColor: current ? 'var(--mortar-accent)' : 'transparent',
+        borderColor: current ? 'primary.main' : 'transparent',
         color: '#fff',
         bgcolor: 'var(--mortar-raised)',
         backgroundImage: art ? `url("${art}")` : 'none',
