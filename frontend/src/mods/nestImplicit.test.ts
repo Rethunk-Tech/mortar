@@ -38,3 +38,15 @@ test('the card view folds nested implicit mods into the card above them', () => 
   expect(group?.items[0]?.libraries?.map((r) => r.mod.id)).toEqual(['Lib.Core', 'Lib.Deep'])
   expect(group?.items[1]?.libraries).toBeUndefined()
 })
+
+test('an implicit library that sorts before its requirer still nests beneath it', () => {
+  const items = [
+    row('thunderstore:FlipMods-ReservedItemSlotCore', [], true),
+    row('thunderstore:Piggy-ReservedWalkieSlotKR', ['thunderstore:FlipMods-ReservedItemSlotCore']),
+  ]
+  const [group] = nestImplicit([{ key: 'enabled', items }])
+  expect(group?.items.map((r) => `${r.mod.id}:${r.depth ?? 0}`)).toEqual([
+    'thunderstore:Piggy-ReservedWalkieSlotKR:0',
+    'thunderstore:FlipMods-ReservedItemSlotCore:1',
+  ])
+})
