@@ -730,6 +730,16 @@ func TestServerSpecsAreChecked(t *testing.T) {
 	if g.Validate() == nil {
 		t.Fatal("a server with no clients game was accepted")
 	}
+	for _, bad := range []string{"../x.cfg", "/etc/x.cfg", "a/../../x", "a\\b.cfg", "."} {
+		g.Server = &ServerSpec{Clients: "valheim", ConfigFile: bad}
+		if g.Validate() == nil {
+			t.Fatalf("config file %q was accepted", bad)
+		}
+	}
+	g.Server = &ServerSpec{Clients: "valheim", ConfigFile: "cfg/server.cfg"}
+	if err := g.Validate(); err != nil {
+		t.Fatalf("a local config file was refused: %v", err)
+	}
 }
 
 // A build past its release reads entries for the next patch (appversion.ForCatalog); a released one reads its own.

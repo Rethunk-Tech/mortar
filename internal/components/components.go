@@ -665,6 +665,9 @@ func (sp ServerSpec) validate() error {
 	if sp.Clients == "" {
 		return errors.New("a server names the game whose mods it runs")
 	}
+	if sp.ConfigFile != "" && (strings.Contains(sp.ConfigFile, "\\") || !fs.ValidPath(sp.ConfigFile) || sp.ConfigFile == ".") {
+		return fmt.Errorf("server config file %q is not a local slash path", sp.ConfigFile)
+	}
 	seen := map[string]bool{}
 	for _, a := range sp.Args {
 		if a.ID == "" || (a.Flag == "") == (a.Cvar == "") || seen[a.ID] || (a.Cvar != "" && sp.ConfigFile == "") {
