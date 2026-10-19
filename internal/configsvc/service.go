@@ -43,6 +43,7 @@ type Profiles interface {
 	ShippedConfig(game, id, key string, uniqueID mod.ID) (string, bool)
 	ContentSchema(game, id, key string, uniqueID mod.ID) (modconfig.Schema, error)
 	PluginGUIDs(game, id string, uniqueID mod.ID) []string
+	InstalledPluginGUIDs(game, id string) []string
 	ConfigView(game, id string) (profile.ConfigView, error)
 	SeedConfigs(game, id string) error
 	UserMods(game, id string) ([]profile.Mod, error)

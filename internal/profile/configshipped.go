@@ -67,3 +67,33 @@ func (s *Store) pluginGUIDsOf(game string, p Profile, uniqueID mod.ID) []string 
 	}
 	return out
 }
+
+// InstalledPluginGUIDs is the [BepInPlugin] GUID of every plugin the profile holds: each package's, bundled ones
+// included, and any DLL placed loose in its plugins folder. A config file named for one of them belongs to a live mod
+// whether or not the game has run.
+func (s *Store) InstalledPluginGUIDs(game, id string) []string {
+	s.mu.Lock()
+	p, dir, err := s.readDir(game, id)
+	s.mu.Unlock()
+	if err != nil {
+		return nil
+	}
+	var out []string
+	add := func(root string) {
+		for _, pl := range dotnet.PluginsIn(root) {
+			out = append(out, pl.GUID)
+		}
+	}
+	if s.items != nil {
+		for _, e := range p.Entries {
+			if !e.Package {
+				continue
+			}
+			if root, err := s.items.Path(game, e.StoreKey()); err == nil {
+				add(root)
+			}
+		}
+	}
+	add(filepath.Join(dir, "BepInEx", "plugins"))
+	return out
+}

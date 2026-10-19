@@ -17,6 +17,7 @@ import (
 type fakeProfiles struct {
 	dir, folder, config, shipped string
 	mods                         []profile.Mod
+	installed                    []string
 }
 
 func (f fakeProfiles) ProfileDir(string, string) (string, error) { return f.dir, nil }
@@ -51,6 +52,8 @@ func (f fakeProfiles) ConfigView(string, string) (profile.ConfigView, error) {
 }
 
 func (fakeProfiles) SeedConfigs(string, string) error { return nil }
+
+func (f fakeProfiles) InstalledPluginGUIDs(string, string) []string { return f.installed }
 
 func (fakeProfiles) PluginGUIDs(_, _ string, id mod.ID) []string {
 	switch id {
