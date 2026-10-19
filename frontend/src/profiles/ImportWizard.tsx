@@ -1,6 +1,14 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import {
+  Alert,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material'
 import { Inbox } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { LocalProfiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
@@ -106,7 +114,7 @@ export function ImportWizard({
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
       <DialogTitle>{t`Import a profile`}</DialogTitle>
-      <DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         {packs !== null && all.length === 0 ? (
           <EmptyState compact={true} icon={<Inbox size={28} />} title={t`No profiles found.`}>
             {t`Mortar found no other mod manager's profiles for this game on this computer.`}
@@ -141,12 +149,14 @@ export function ImportWizard({
               {`${s.name}: ${s.error}`}
             </Alert>
           ))}
-        {onOwnCode ? <PackFolderPrompt onChosen={loadPacks} /> : null}
-        {offerVortexFolder(vortexSupported, external) ? (
-          <VortexFolderPrompt game={game} onChosen={reload} />
-        ) : null}
       </DialogContent>
       <DialogActions>
+        <Box sx={{ mr: 'auto', display: 'flex', flexDirection: 'column' }}>
+          {onOwnCode ? <PackFolderPrompt onChosen={loadPacks} /> : null}
+          {offerVortexFolder(vortexSupported, external) ? (
+            <VortexFolderPrompt game={game} onChosen={reload} />
+          ) : null}
+        </Box>
         {onOwnCode ? (
           <Button
             onClick={() => {

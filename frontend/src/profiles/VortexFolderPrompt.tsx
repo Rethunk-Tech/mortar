@@ -7,7 +7,6 @@ import { ExternalVortexContents } from '../../bindings/github.com/Rethunk-Tech/m
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useGameName } from '../games/info.ts'
 import { TypedFolder } from '../shell/TypedFolder.tsx'
-import { space } from '../theme/density.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
 
 function useVortexNote(game: string, contents: VortexInventory | null): string {
@@ -54,7 +53,7 @@ export function VortexFolderPrompt({ game, onChosen }: { game: string; onChosen:
       .catch(() => setTyping(true))
   }
   return (
-    <Typography variant="body2" color="text.secondary" sx={{ pt: space.gap }}>
+    <Typography variant="body2" color="text.secondary">
       {note}{' '}
       <Button size="small" onClick={choose}>
         {t`Choose folder…`}
