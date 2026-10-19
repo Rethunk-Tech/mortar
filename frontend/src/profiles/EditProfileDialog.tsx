@@ -204,6 +204,16 @@ interface ProfileFieldsProps {
   initialTab: FieldsTab
 }
 
+const panelSx = {
+  gridArea: '1 / 1',
+  minHeight: 0,
+  overflowY: 'auto',
+  // Room inside the scroll box for a slider's thumb at its far end.
+  overflowX: 'hidden',
+  px: 1,
+  mx: -1,
+} as const
+
 function ProfileFields({
   profile,
   gameId,
@@ -252,16 +262,7 @@ function ProfileFields({
       role="tabpanel"
       id={`${ids}-panel-${id}`}
       aria-labelledby={`${ids}-tab-${id}`}
-      sx={{
-        gridArea: '1 / 1',
-        minHeight: 0,
-        overflowY: 'auto',
-        // Room inside the scroll box for a slider's thumb at its far end.
-        overflowX: 'hidden',
-        px: 1,
-        mx: -1,
-        visibility: tab === id ? 'visible' : 'hidden',
-      }}
+      sx={{ ...panelSx, visibility: tab === id ? 'visible' : 'hidden' }}
     >
       {children}
     </Box>
