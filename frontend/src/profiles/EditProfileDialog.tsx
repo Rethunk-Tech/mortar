@@ -245,13 +245,23 @@ function ProfileFields({
     }
   }, [launchError])
   // Every panel stays mounted and shares one grid cell, so a field keeps what was typed in it and the dialog keeps
-  // the height of its tallest tab while another is open.
+  // the height of its tallest tab while another is open. The cell is capped at the dialog's height and each panel
+  // scrolls only its own content, so a short tab never scrolls through the tallest one's height.
   const panel = (id: FieldsTab, children: ReactNode) => (
     <Box
       role="tabpanel"
       id={`${ids}-panel-${id}`}
       aria-labelledby={`${ids}-tab-${id}`}
-      sx={{ gridArea: '1 / 1', visibility: tab === id ? 'visible' : 'hidden' }}
+      sx={{
+        gridArea: '1 / 1',
+        minHeight: 0,
+        overflowY: 'auto',
+        // Room inside the scroll box for a slider's thumb at its far end.
+        overflowX: 'hidden',
+        px: 1,
+        mx: -1,
+        visibility: tab === id ? 'visible' : 'hidden',
+      }}
     >
       {children}
     </Box>
@@ -259,9 +269,13 @@ function ProfileFields({
   return (
     <>
       <FieldsTabs ids={ids} tab={tab} onTab={setTab} startupSettings={startupSettings} />
-      {/* A slider's thumb at its far end reaches into the padding, which must not make the dialog scroll sideways. */}
       <DialogContent
-        sx={{ pt: space.pad, display: 'grid', alignContent: 'start', overflowX: 'hidden' }}
+        sx={{
+          pt: space.pad,
+          display: 'grid',
+          gridTemplateRows: 'minmax(0, 1fr)',
+          overflow: 'hidden',
+        }}
       >
         {panel(
           'appearance',
