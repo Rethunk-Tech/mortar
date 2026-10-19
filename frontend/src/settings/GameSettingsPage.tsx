@@ -134,6 +134,7 @@ function GamePages({
                 ...(loader?.introSkip ? ['skipIntro'] : []),
                 'updateModsBeforePlayDefault',
                 'skipPlayCheck',
+                'pauseDownloadsWhilePlaying',
               ]}
               game={game}
             />

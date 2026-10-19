@@ -139,6 +139,8 @@ const (
 	MaxConsoleLogCap              = 100000
 	MinParallelDownloads          = 1
 	MaxParallelDownloads          = 8
+	MinDownloadSpeedLimit         = 0
+	MaxDownloadSpeedLimit         = 10000
 	MinUpdateCheckIntervalMinutes = 15
 	MaxUpdateCheckIntervalMinutes = 24 * 60
 	MinStoreRetentionDays         = 0
@@ -195,7 +197,6 @@ func defaultPrefs() Settings {
 		ProfileOrder:               ProfileOrderManual,
 		AutoRetryDownloads:         AutoRetryOff,
 		ThunderstoreHost:           ThunderstoreHostAuto,
-		PauseDownloadsWhilePlaying: false,
 		SidebarBadges:              SidebarBadgesAll,
 		ShareIncludeDisabledMods:   on(),
 		ShareIncludeFomodChoices:   on(),
@@ -230,6 +231,9 @@ func normalizePrefs(s *Settings) {
 	}
 	if s.ParallelDownloads < MinParallelDownloads || s.ParallelDownloads > MaxParallelDownloads {
 		s.ParallelDownloads = DefaultParallelDownloads
+	}
+	if s.DownloadSpeedLimit < MinDownloadSpeedLimit || s.DownloadSpeedLimit > MaxDownloadSpeedLimit {
+		s.DownloadSpeedLimit = 0
 	}
 	if s.UpdateCheckIntervalMinutes < MinUpdateCheckIntervalMinutes || s.UpdateCheckIntervalMinutes > MaxUpdateCheckIntervalMinutes {
 		s.UpdateCheckIntervalMinutes = DefaultUpdateCheckIntervalMinutes
@@ -366,6 +370,9 @@ func validatePrefs(s Settings) error {
 	}
 	if s.ParallelDownloads < MinParallelDownloads || s.ParallelDownloads > MaxParallelDownloads {
 		return fmt.Errorf("parallel downloads must be %d to %d, got %d", MinParallelDownloads, MaxParallelDownloads, s.ParallelDownloads)
+	}
+	if s.DownloadSpeedLimit < MinDownloadSpeedLimit || s.DownloadSpeedLimit > MaxDownloadSpeedLimit {
+		return fmt.Errorf("download speed limit must be %d to %d MB/s, got %d", MinDownloadSpeedLimit, MaxDownloadSpeedLimit, s.DownloadSpeedLimit)
 	}
 	if s.UpdateCheckIntervalMinutes < MinUpdateCheckIntervalMinutes || s.UpdateCheckIntervalMinutes > MaxUpdateCheckIntervalMinutes {
 		return fmt.Errorf("update check interval must be %d to %d minutes, got %d", MinUpdateCheckIntervalMinutes, MaxUpdateCheckIntervalMinutes, s.UpdateCheckIntervalMinutes)

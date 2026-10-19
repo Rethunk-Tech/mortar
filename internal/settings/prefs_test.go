@@ -100,7 +100,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 	overrides := map[string]string{
 		"onPlay": "hide", "backupBeforePlay": "always", "saveBackupsKept": "9",
 		"updateModsBeforePlayDefault": "true", "runsKept": "10", "consoleLogCap": "5000",
-		"parallelDownloads": "4", "updateCheckIntervalMinutes": "30", "checkModUpdatesOnStart": "false",
+		"parallelDownloads": "4", "downloadSpeedLimit": "5", "pauseDownloadsWhilePlaying": "true", "updateCheckIntervalMinutes": "30", "checkModUpdatesOnStart": "false",
 		"notifyModUpdates": "true", "keepDownloadArchives": "true", "storeRetentionDays": "7",
 		"nxmDefaultProfile": "abc", "defaultModsView": "list", "implicitModsView": "nested", "listGroupBy": "author",
 		"listSortColumn": "version", "listSortDir": "desc", "confirmRemovals": "false",
@@ -116,7 +116,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"defaultLaunchMethod": "direct", "instances": "2", "delaySeconds": "8", "showSmapiConsole": "false", "skipPlayCheck": "true", "skipIntro": "true", "graphicsApi": "dx12", "protonVersion": "Proton 9.0", "consoleLevel": "debug",
 		"consoleTimestamps": "false", "consoleFollow": "false", "lanSharing": "true", "lanPort": "47641", "lanAllowAnyAddress": "true", "lanName": "Workshop",
 		"lanAutoAcceptPaired": "true", "downloadFolder": "/var/tmp/mortar-dl",
-		"profileOrder": "name", "autoRetryDownloads": "3", "pauseDownloadsWhilePlaying": "true",
+		"profileOrder": "name", "autoRetryDownloads": "3",
 		"sidebarBadges": "problems", "backupLocation": "/var/tmp/mortar-bak", "conflictScanDepth": "skipImages",
 		"shareIncludeDisabledMods": "true", "shareIncludeFomodChoices": "false", "shareIncludeNotes": "false",
 		"shareIncludeConfigFiles": "false", "shareIncludeProblemChoices": "false", "shareIncludeLibraries": "false", "verifyNexusMD5": "true", "launchAtLogin": "true",

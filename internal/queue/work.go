@@ -53,7 +53,7 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 		switch {
 		case it.State == StateWaitingClick:
 			waiting = true
-		case !(it.State == StateQueued || it.State == StatePaused && it.AutoResume && slotFree):
+		case it.State != StateQueued && (it.State != StatePaused || !it.AutoResume || !slotFree):
 		case it.overlay && s.waitsForSameMod(it):
 		case running[it.Game+"\n"+it.Profile]:
 			held = true
@@ -164,13 +164,7 @@ func (s *Service) checkNexusMD5(path, want string) error {
 	return nil
 }
 
-func (s *Service) pauseFetch() bool {
-	if s.d.PauseWhilePlaying == nil || !s.d.PauseWhilePlaying() {
-		return false
-	}
-	return s.d.GameBusy != nil && s.d.GameBusy()
-}
-
+func (s *Service) pauseFetch() bool { return s.playHold }
 func (s *Service) runningOf(items []*Item) map[string]bool {
 	out := map[string]bool{}
 	if s.d.Running == nil {

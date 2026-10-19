@@ -15,6 +15,7 @@ const defaultGamePrefs: GamePrefBlock = {
   saveBackupHours: 0,
   saveBackupKeep: 5,
   updateModsBeforePlayDefault: false,
+  pauseDownloadsWhilePlaying: false,
   runsKept: 20,
   consoleLogCap: 20_000,
   nxmDefaultProfile: '',
@@ -35,6 +36,7 @@ export interface GamePrefBlock {
   saveBackupHours: number
   saveBackupKeep: number
   updateModsBeforePlayDefault: boolean
+  pauseDownloadsWhilePlaying: boolean
   runsKept: number
   consoleLogCap: number
   nxmDefaultProfile: string
@@ -67,6 +69,7 @@ export function gamePrefs(s: Settings, game = currentGame()): GamePrefBlock {
     saveBackupHours: got.saveBackupHours ?? defaultGamePrefs.saveBackupHours,
     saveBackupKeep: got.saveBackupKeep || defaultGamePrefs.saveBackupKeep,
     updateModsBeforePlayDefault: Boolean(got.updateModsBeforePlayDefault),
+    pauseDownloadsWhilePlaying: Boolean(got.pauseDownloadsWhilePlaying),
     runsKept: got.runsKept || defaultGamePrefs.runsKept,
     consoleLogCap: got.consoleLogCap || defaultGamePrefs.consoleLogCap,
     nxmDefaultProfile: got.nxmDefaultProfile ?? '',

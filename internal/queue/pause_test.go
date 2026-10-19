@@ -9,6 +9,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
@@ -26,7 +27,7 @@ func cutThen(hits *atomic.Int32, rest func(r *http.Request, w http.ResponseWrite
 		w.Header().Set("ETag", `"v1"`)
 		w.Header().Set("Content-Length", fmt.Sprint(len(payload)))
 		fmt.Fprint(w, payload[:cutAt])
-		w.(http.Flusher).Flush()
+		_ = http.NewResponseController(w).Flush()
 		rest(r, w)
 	}
 }
@@ -196,4 +197,32 @@ func TestPausedItemsSurviveAReload(t *testing.T) {
 	if want := "Me-A:paused:false Me-B:paused:true"; strings.Join(got, " ") != want {
 		t.Fatalf("got %v want %s", got, want)
 	}
+}
+
+func TestHoldForPlayPausesRunningDownloadsAndSparesTheUsersOwnPauses(t *testing.T) {
+	cdn := &blockingCDN{release: make(chan struct{})}
+	srv := httptest.NewServer(cdn)
+	defer srv.Close()
+	f := packageFixture(t, srv.URL)
+	f.start()
+	addPackages(t, f, "A", "B")
+	f.wait("both downloading", func(State) bool { return cdn.has("A") && cdn.has("B") })
+	f.s.PauseItem(f.stateOf("Me-B").ID)
+
+	f.s.HoldForPlay(true)
+	f.wait("A held", func(State) bool { return f.stateOf("Me-A").State == StatePaused })
+	if a, b := f.stateOf("Me-A"), f.stateOf("Me-B"); !a.AutoResume || b.AutoResume {
+		t.Fatalf("A auto %v, B auto %v", a.AutoResume, b.AutoResume)
+	}
+	addPackages(t, f, "C")
+	time.Sleep(30 * time.Millisecond)
+	if cdn.has("C") {
+		t.Fatal("a download started while the game ran")
+	}
+
+	close(cdn.release)
+	f.s.HoldForPlay(false)
+	f.wait("A and C done, B still paused", func(State) bool {
+		return f.stateOf("Me-A").State == StateDone && f.stateOf("Me-C").State == StateDone && f.stateOf("Me-B").State == StatePaused
+	})
 }

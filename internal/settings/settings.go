@@ -146,9 +146,11 @@ type Settings struct {
 	// Shortcuts maps action id to a chord such as Ctrl+K. Missing ids use DefaultShortcuts.
 	Shortcuts map[string]string `json:"shortcuts"`
 	// OnPlay is stay, minimise, or hide (to the tray) when a game launches.
-	OnPlay                     string `json:"onPlay"`
-	ParallelDownloads          int    `json:"parallelDownloads"`
-	UpdateCheckIntervalMinutes int    `json:"updateCheckIntervalMinutes"`
+	OnPlay            string `json:"onPlay"`
+	ParallelDownloads int    `json:"parallelDownloads"`
+	// DownloadSpeedLimit is the most MB/s all downloads together may use; 0 is unlimited.
+	DownloadSpeedLimit         int `json:"downloadSpeedLimit"`
+	UpdateCheckIntervalMinutes int `json:"updateCheckIntervalMinutes"`
 	// NotifyModUpdates toasts when a background check finds updates. Nil means on.
 	NotifyModUpdates *bool `json:"notifyModUpdates"`
 	// UpdateDigest controls in-app digests after background mod-update checks: off, each, or daily.
@@ -222,7 +224,6 @@ type Settings struct {
 	AutoRetryDownloads string `json:"autoRetryDownloads"`
 	// ThunderstoreHost is auto or the one Thunderstore download host to use.
 	ThunderstoreHost           string `json:"thunderstoreHost"`
-	PauseDownloadsWhilePlaying bool   `json:"pauseDownloadsWhilePlaying"`
 	SidebarBadges              string `json:"sidebarBadges"`
 	ShareIncludeDisabledMods   *bool  `json:"shareIncludeDisabledMods"`
 	ShareIncludeFomodChoices   *bool  `json:"shareIncludeFomodChoices"`

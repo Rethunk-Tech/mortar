@@ -800,23 +800,6 @@ func TestAutoRetryFetchesBeforeFailing(t *testing.T) {
 	}
 }
 
-func TestPauseDownloadsWhileGameRuns(t *testing.T) {
-	f := newFixture(t)
-	var busy atomic.Bool
-	busy.Store(true)
-	f.s.d.PauseWhilePlaying = func() bool { return true }
-	f.s.d.GameBusy = busy.Load
-	f.start()
-	f.add(req(10))
-	time.Sleep(15 * time.Millisecond)
-	if st := f.s.State(); len(st.Items) != 1 || st.Items[0].State != StateQueued {
-		t.Fatalf("while busy %+v", f.s.State())
-	}
-	busy.Store(false)
-	NotifyUnlocked(f.s)
-	f.wait("resumed", f.item(StateDone))
-}
-
 func TestNexusMD5MismatchFailsDownload(t *testing.T) {
 	f := newFixture(t)
 	f.s.d.VerifyNexusMD5 = func() bool { return true }

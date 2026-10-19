@@ -372,10 +372,6 @@ type Deps struct {
 	Track func(ctx context.Context, gameID string, modID int)
 	// RetryFetches is extra fetch attempts after a failed download; nil or 0 is off.
 	RetryFetches func() int
-	// PauseWhilePlaying pauses new fetches while GameBusy; installs still wait per profile.
-	PauseWhilePlaying func() bool
-	// GameBusy reports whether any game is launching or running; nil means never.
-	GameBusy func() bool
 	// VerifyNexusMD5 compares a finished Nexus download with the file's API md5 when set.
 	VerifyNexusMD5 func() bool
 	// FreeBytes is the free space on a path's volume; nil means datadir.FreeBytes.
@@ -398,6 +394,8 @@ type Service struct {
 	items      []*Item
 	// paused stops new downloads from starting; one under way finishes.
 	paused bool
+	// playHold holds every fetch while a game that asks for it runs (HoldForPlay).
+	playHold bool
 	// until is when each limiting source (sourceKey) may be asked again.
 	until        map[string]time.Time
 	cancels      map[string]context.CancelFunc

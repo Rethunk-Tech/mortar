@@ -176,7 +176,7 @@ func TestPackageStalledCDNHandsItsPartialToTheNext(t *testing.T) {
 	stalled := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Length", fmt.Sprint(len(payload)))
 		fmt.Fprint(w, payload[:cut])
-		w.(http.Flusher).Flush()
+		_ = http.NewResponseController(w).Flush()
 		<-r.Context().Done()
 	}))
 	defer stalled.Close()

@@ -164,6 +164,8 @@ type Service struct {
 	EnsureLoader func(ctx context.Context, gameID, loaderID string, fromStart bool) error
 	// Unlocked is called when a game is no longer launching or running, so the queue can retry work it held.
 	Unlocked func()
+	// OnState is called, off the emitting goroutine, after every launch state change; nil means nothing.
+	OnState func()
 	// NotifyRunEnd sends a desktop notification when a run Mortar started crashed; main sets this from the tray wiring.
 	NotifyRunEnd func(RunEndNotice)
 	// OnSavePlayed is called, when a run is recorded, with each save the run played: the one SMAPI loaded, or the
@@ -247,6 +249,9 @@ func (s *Service) set(st Status) {
 	}
 	s.mu.Unlock()
 	s.emit(StateEvent, st)
+	if s.OnState != nil {
+		go s.OnState()
+	}
 	if st.State == Running && st.Profile != "" && !profile.IsScratch(st.Profile) && s.settings != nil {
 		_, _ = s.settings.RecordLastPlayed(st.Game, st.Profile, time.Now(), launchGameVersion(s, key))
 		_, _ = s.settings.RecordBuild(st.Game, s.installBuild(st.Game, st.Install))
@@ -1101,6 +1106,23 @@ func (s *Service) backupChangedSaves(ctx context.Context, gameID, profileID, ins
 		backup.Cause{Profile: profileID, Kind: backup.KindLaunch},
 	)
 	return err
+}
+
+// PausesDownloads reports whether a game that is launching or running has pauseDownloadsWhilePlaying on, for its
+// profile's override or else its game's setting.
+func (s *Service) PausesDownloads() bool {
+	set := s.settings.Get()
+	for _, id := range s.BusyAmong(game.Implemented()) {
+		st, err := s.Status(id)
+		if err != nil || !st.State.Active() {
+			continue
+		}
+		sc := settings.Scope{Game: id, Profile: st.Profile}
+		if settings.ResolveAt(set, "pauseDownloadsWhilePlaying", sc, launchOverrides(s.profiles, id, st.Profile)) == "true" {
+			return true
+		}
+	}
+	return false
 }
 
 func launchOverrides(profiles *profile.Store, gameID, profileID string) map[string]string {

@@ -655,9 +655,7 @@ func run() error {
 				return 0
 			}
 		},
-		PauseWhilePlaying: func() bool { return store.Get().PauseDownloadsWhilePlaying },
-		GameBusy:          launches.AnyBusy,
-		VerifyNexusMD5:    func() bool { return store.Get().VerifyNexusMD5 },
+		VerifyNexusMD5: func() bool { return store.Get().VerifyNexusMD5 },
 		Track: func(ctx context.Context, gameID string, modID int) {
 			if !store.Get().AutoTrackNexus || modID <= 0 {
 				return
@@ -669,6 +667,8 @@ func run() error {
 		return err
 	}
 	launches.Unlocked = func() { queue.NotifyUnlocked(queueSvc) }
+	launches.OnState = func() { queueSvc.HoldForPlay(launches.PausesDownloads()) }
+	github.SpeedLimit = func() int64 { return int64(store.Get().DownloadSpeedLimit) << 20 }
 	nxmSvc.Route = queueSvc.Route
 	notifier := notifications.New()
 	desktopnotify.Setup(wailsNotifier{notifier}, nxmSvc.NotificationIcon, func(key string) bool {

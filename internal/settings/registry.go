@@ -41,7 +41,9 @@ type GameSettings struct {
 	// DelaySeconds is the pause between those processes.
 	DelaySeconds  int  `json:"delaySeconds"`
 	SkipPlayCheck bool `json:"skipPlayCheck"`
-	SkipIntro     bool `json:"skipIntro"`
+	// PauseDownloadsWhilePlaying holds the download queue while a game Mortar launched runs.
+	PauseDownloadsWhilePlaying bool `json:"pauseDownloadsWhilePlaying"`
+	SkipIntro                  bool `json:"skipIntro"`
 	// GraphicsAPI is the id of the graphics API choice the game's catalog entry offers; empty until the player has
 	// answered, which is when Play asks.
 	GraphicsAPI string `json:"graphicsApi,omitempty"`
@@ -118,6 +120,7 @@ type pref struct {
 var registry = withDefaults([]pref{
 	enumPref("onPlay", ScopeApp, onPlayValues, func(s Settings, _ string) string { return s.OnPlay }, func(s *Settings, _, v string) { s.OnPlay = v }),
 	intPref("parallelDownloads", ScopeApp, MinParallelDownloads, MaxParallelDownloads, func(s Settings, _ string) int { return s.ParallelDownloads }, func(s *Settings, _ string, n int) { s.ParallelDownloads = n }),
+	intPref("downloadSpeedLimit", ScopeApp, MinDownloadSpeedLimit, MaxDownloadSpeedLimit, func(s Settings, _ string) int { return s.DownloadSpeedLimit }, func(s *Settings, _ string, n int) { s.DownloadSpeedLimit = n }),
 	intPref("updateCheckIntervalMinutes", ScopeApp, MinUpdateCheckIntervalMinutes, MaxUpdateCheckIntervalMinutes, func(s Settings, _ string) int { return s.UpdateCheckIntervalMinutes }, func(s *Settings, _ string, n int) { s.UpdateCheckIntervalMinutes = n }),
 	ptrPref("checkModUpdatesOnStart", ScopeApp, func(s Settings, _ string) *bool { return s.CheckModUpdatesOnStart }, func(s *Settings, _ string, on bool) { s.CheckModUpdatesOnStart = &on }),
 	ptrPref("notifyModUpdates", ScopeApp, func(s Settings, _ string) *bool { return s.NotifyModUpdates }, func(s *Settings, _ string, on bool) { s.NotifyModUpdates = &on }),
@@ -171,7 +174,6 @@ var registry = withDefaults([]pref{
 	enumPref("profileOrder", ScopeApp, profileOrderValues, func(s Settings, _ string) string { return s.ProfileOrder }, func(s *Settings, _, v string) { s.ProfileOrder = v }),
 	enumPref("thunderstoreHost", ScopeApp, thunderstoreHostValues, func(s Settings, _ string) string { return s.ThunderstoreHost }, func(s *Settings, _, v string) { s.ThunderstoreHost = v }),
 	enumPref("autoRetryDownloads", ScopeApp, autoRetryValues, func(s Settings, _ string) string { return s.AutoRetryDownloads }, func(s *Settings, _, v string) { s.AutoRetryDownloads = v }),
-	boolPref("pauseDownloadsWhilePlaying", ScopeApp, func(s Settings, _ string) bool { return s.PauseDownloadsWhilePlaying }, func(s *Settings, _ string, on bool) { s.PauseDownloadsWhilePlaying = on }),
 	enumPref("sidebarBadges", ScopeApp, sidebarBadgesValues, func(s Settings, _ string) string { return s.SidebarBadges }, func(s *Settings, _, v string) { s.SidebarBadges = v }),
 	ptrPref("shareIncludeDisabledMods", ScopeApp, func(s Settings, _ string) *bool { return s.ShareIncludeDisabledMods }, func(s *Settings, _ string, on bool) { s.ShareIncludeDisabledMods = &on }),
 	ptrPref("shareIncludeFomodChoices", ScopeApp, func(s Settings, _ string) *bool { return s.ShareIncludeFomodChoices }, func(s *Settings, _ string, on bool) { s.ShareIncludeFomodChoices = &on }),
@@ -233,6 +235,11 @@ var registry = withDefaults([]pref{
 	overridable(boolPref("skipPlayCheck", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).SkipPlayCheck }, func(s *Settings, g string, on bool) {
 		gp := s.GamePrefs(g)
 		gp.SkipPlayCheck = on
+		putGame(s, g, gp)
+	})),
+	overridable(boolPref("pauseDownloadsWhilePlaying", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).PauseDownloadsWhilePlaying }, func(s *Settings, g string, on bool) {
+		gp := s.GamePrefs(g)
+		gp.PauseDownloadsWhilePlaying = on
 		putGame(s, g, gp)
 	})),
 	overridable(boolPref("skipIntro", ScopeGame, func(s Settings, g string) bool { return s.GamePrefs(g).SkipIntro }, func(s *Settings, g string, on bool) {
@@ -378,6 +385,7 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	}
 	dst.UpdateModsBeforePlayDefault = src.UpdateModsBeforePlayDefault
 	dst.SkipPlayCheck = src.SkipPlayCheck
+	dst.PauseDownloadsWhilePlaying = src.PauseDownloadsWhilePlaying
 	dst.SkipIntro = src.SkipIntro
 	dst.GraphicsAPI = src.GraphicsAPI
 	if src.RunsKept != 0 {

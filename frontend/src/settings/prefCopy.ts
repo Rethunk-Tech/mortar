@@ -329,6 +329,12 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
       label: i18n._(msg`Auto-track installed mods`),
       description: i18n._(msg`Track a Nexus mod when Mortar installs it`),
     },
+    downloadSpeedLimit: {
+      label: i18n._(msg`Download speed limit (MB/s)`),
+      description: i18n._(
+        msg`Shared by all downloads, and applied to running ones. 0 is unlimited.`,
+      ),
+    },
     parallelDownloads: {
       label: i18n._(msg`Parallel downloads`),
       description: i18n._(msg`Premium and GitHub downloads at once`),
@@ -389,7 +395,9 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
     },
     pauseDownloadsWhilePlaying: {
       label: i18n._(msg`Pause downloads while the game runs`),
-      description: i18n._(msg`Hold the download queue until the game exits`),
+      description: i18n._(
+        msg`Hold the download queue until the game exits; a download under way continues afterwards. Pauses you made yourself stay paused.`,
+      ),
     },
     sidebarBadges: {
       label: i18n._(msg`Sidebar badge counts`),

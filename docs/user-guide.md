@@ -73,6 +73,8 @@ A download over 2 GB asks first: Mortar shows its size and a warning, and nothin
 
 In the downloads panel, **Pause** stops one download and keeps what it has fetched; **Resume** continues from there, also after you restart Mortar. A download that failed on a network error shows **Resume** instead of Retry and picks up where it stopped, unless the file changed on the server. **Download now** moves a waiting or paused download to the front; if every slot is busy, the last running download steps aside and starts again by itself when a slot frees. The arrows reorder waiting downloads.
 
+**Settings › Downloads › Download speed limit** caps all downloads together in MB/s (0 is no limit) and applies to downloads already running. Each game's **Play** settings (and a profile's overrides) have **Pause downloads while the game runs**: while a game you launched from Mortar is open, downloads under way stop and carry on from where they were when it exits; downloads you paused yourself stay paused.
+
 ## Browser extension
 
 Optional: it marks Nexus pages with what your profile already has and sends Mod Manager Download clicks to Mortar. **Settings › Downloads** has a **Download the extension** button for `mortar-browser-extension.zip` from its [releases](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest), and says **The browser extension is too old for this Mortar** (or too new) when versions drift.

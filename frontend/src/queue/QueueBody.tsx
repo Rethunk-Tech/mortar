@@ -27,6 +27,7 @@ import { formatBytes, formatKb } from '../i18n/bytes.ts'
 import { QueueNeedsMerge } from '../install/QueueNeedsMerge.tsx'
 import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'
 import { LetterTile } from '../mods/parts.tsx'
+import { openSettings } from '../nav/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
@@ -224,6 +225,11 @@ function Failed({ items }: { items: Item[] }) {
           actions={
             <>
               {i.detection && !i.detection.removed ? <InstallAnywayButton item={i} /> : null}
+              {i.errorKind === 'disk' ? (
+                <Button size="small" onClick={() => openSettings('storage')}>
+                  {t`Open storage settings`}
+                </Button>
+              ) : null}
               <Button
                 size="small"
                 startIcon={<RotateCcw size={14} />}

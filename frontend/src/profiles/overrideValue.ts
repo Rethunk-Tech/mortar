@@ -11,6 +11,7 @@ export const OVERRIDE_KEYS = [
   'saveBackupsKept',
   'updateModsBeforePlayDefault',
   'skipPlayCheck',
+  'pauseDownloadsWhilePlaying',
   'skipIntro',
   'graphicsApi',
   'protonVersion',
@@ -41,6 +42,7 @@ export const OVERRIDE_VALUES: Record<OverrideKey, string[]> = {
   saveBackupsKept: Array.from({ length: 50 }, (_, i) => String(i + 1)),
   updateModsBeforePlayDefault: ['true', 'false'],
   skipPlayCheck: ['true', 'false'],
+  pauseDownloadsWhilePlaying: ['true', 'false'],
   skipIntro: ['true', 'false'],
   // The game's catalog entry supplies the choices.
   graphicsApi: [],

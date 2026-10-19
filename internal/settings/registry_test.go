@@ -55,8 +55,8 @@ func TestBatchPrefDefaultsAndSet(t *testing.T) {
 	datadirtest.Use(t, t.TempDir())
 	s := Defaults()
 	g := s.GamePrefs("stardew")
-	if s.ProfileOrder != ProfileOrderManual || s.AutoRetryDownloads != AutoRetryOff || s.PauseDownloadsWhilePlaying {
-		t.Fatalf("order/retry/pause defaults: %q %q %v", s.ProfileOrder, s.AutoRetryDownloads, s.PauseDownloadsWhilePlaying)
+	if s.ProfileOrder != ProfileOrderManual || s.AutoRetryDownloads != AutoRetryOff || g.PauseDownloadsWhilePlaying {
+		t.Fatalf("order/retry/pause defaults: %q %q %v", s.ProfileOrder, s.AutoRetryDownloads, g.PauseDownloadsWhilePlaying)
 	}
 	if s.SidebarBadges != SidebarBadgesAll || !s.VerifyNexusMD5 || s.LaunchAtLogin || s.StartMinimised || !s.RememberWindow {
 		t.Fatal("badge / verify / session defaults")
@@ -70,7 +70,7 @@ func TestBatchPrefDefaultsAndSet(t *testing.T) {
 	if err := ApplyKeyGame(&s, "autoRetryDownloads", AutoRetry3, ""); err != nil {
 		t.Fatal(err)
 	}
-	if err := ApplyKeyGame(&s, "pauseDownloadsWhilePlaying", "true", ""); err != nil {
+	if err := ApplyKeyGame(&s, "pauseDownloadsWhilePlaying", "true", "stardew"); err != nil {
 		t.Fatal(err)
 	}
 	if err := ApplyKeyGame(&s, "shareIncludeDisabledMods", "true", ""); err != nil {
@@ -83,7 +83,7 @@ func TestBatchPrefDefaultsAndSet(t *testing.T) {
 	if err != nil || retry != AutoRetry3 {
 		t.Fatalf("auto-retry %q %v", retry, err)
 	}
-	pause, err := s.Lookup("pauseDownloadsWhilePlaying")
+	pause, err := s.LookupGame("pauseDownloadsWhilePlaying", "stardew")
 	if err != nil || pause != "true" {
 		t.Fatalf("pause %q %v", pause, err)
 	}
@@ -212,5 +212,25 @@ func TestMergeGameKeepsEverySetField(t *testing.T) {
 		if !reflect.DeepEqual(d.FieldByIndex(sf.Index).Interface(), f.Interface()) {
 			t.Errorf("%s was not merged", sf.Name)
 		}
+	}
+}
+
+func TestPauseDownloadsWhilePlayingIsPerGameWithProfileOverride(t *testing.T) {
+	s := Defaults()
+	sc := Scope{Game: "stardew", Profile: "p"}
+	if got := ResolveAt(s, "pauseDownloadsWhilePlaying", sc, nil); got != "false" {
+		t.Fatalf("default %q", got)
+	}
+	if err := ApplyKeyGame(&s, "pauseDownloadsWhilePlaying", "true", "stardew"); err != nil {
+		t.Fatal(err)
+	}
+	if got := ResolveAt(s, "pauseDownloadsWhilePlaying", sc, nil); got != "true" {
+		t.Fatalf("game on: %q", got)
+	}
+	if got := ResolveAt(s, "pauseDownloadsWhilePlaying", Scope{Game: "valheim"}, nil); got != "false" {
+		t.Fatalf("another game: %q", got)
+	}
+	if got := ResolveAt(s, "pauseDownloadsWhilePlaying", sc, map[string]string{"pauseDownloadsWhilePlaying": "false"}); got != "false" {
+		t.Fatalf("profile override: %q", got)
 	}
 }

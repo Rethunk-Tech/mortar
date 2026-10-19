@@ -297,9 +297,9 @@ export function Downloads() {
         <PrefKeys
           keys={[
             'parallelDownloads',
+            'downloadSpeedLimit',
             'autoRetryDownloads',
             'thunderstoreHost',
-            'pauseDownloadsWhilePlaying',
             'verifyNexusMD5',
           ]}
         />
