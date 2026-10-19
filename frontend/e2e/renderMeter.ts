@@ -1,7 +1,7 @@
 import type { CDPSession, Page, Request } from '@playwright/test'
 
 const QUIET_POLL_MS = 100
-export const TOP = Number(process.env.MORTAR_RENDER_TOP ?? '8')
+const TOP = Number(process.env.MORTAR_RENDER_TOP ?? '8')
 // Library building blocks every MUI component renders through; the report names the app's own components instead.
 const LIBRARY =
   /^(Insertion|Styled\(|Mui|Box$|Typography$|ButtonBase$|anonymous$|TouchRipple|Ripple$|Popper|Portal$|Grow$|Fade$|Collapse$|Transition|SvgIcon$|Tooltip$|Modal$|Dialog$|Paper$|Button$|IconButton$|InputBase$|FormControl$|Chip$|Menu$|List|TableCell$|TableRow$)/
