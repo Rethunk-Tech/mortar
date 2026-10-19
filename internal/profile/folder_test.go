@@ -98,7 +98,7 @@ func TestMovesRefuseALinkToAFolderMortarDidNotMake(t *testing.T) {
 	if err := os.RemoveAll(home); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.Symlink(install, home); err != nil {
+	if err := linkDir(home, install); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.bringHome("stardew", p.ID, home); err == nil {
