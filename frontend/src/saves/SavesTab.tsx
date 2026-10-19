@@ -37,7 +37,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
   const recordsMods = useGameInfo(game)?.loaderId === 'smapi'
   const [backupsOpen, setBackupsOpen] = useState(false)
   const [query, setQuery] = useState('')
-  const [view, setView] = useStoredState<ViewMode>(`mortar.savesView.${game}`, 'list', isViewMode)
+  const [view, setView] = useStoredState<ViewMode>(`mortar.savesView.${game}`, 'grid', isViewMode)
   const list = view === 'list'
   const { all, reload: reloadBackups } = useAllBackups(
     game,
