@@ -10,6 +10,7 @@ import {
   SaveConfigPreset,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { destructiveSx } from '../shell/destructive.ts'
 import { PromptDialog } from '../shell/PromptDialog.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -41,7 +42,7 @@ function PresetItems({
         </LockedReason>
       ))}
       {names.map((name) => (
-        <MenuItem key={`d-${name}`} sx={{ color: 'error.main' }} onClick={() => onAskDelete(name)}>
+        <MenuItem key={`d-${name}`} sx={destructiveSx} onClick={() => onAskDelete(name)}>
           {t`Delete ${name}`}
         </MenuItem>
       ))}

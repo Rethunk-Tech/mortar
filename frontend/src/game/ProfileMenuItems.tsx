@@ -46,16 +46,25 @@ function ProfileMenuItem({
   label,
   disabled,
   tooltip,
+  tone,
   onClick,
 }: {
   icon: React.ReactNode
   label: React.ReactNode
   disabled?: boolean
   tooltip?: string
+  tone?: 'error'
   onClick: () => void
 }) {
   return (
-    <MenuAction icon={icon} label={label} disabled={disabled} reason={tooltip} onClick={onClick} />
+    <MenuAction
+      icon={icon}
+      label={label}
+      disabled={disabled}
+      reason={tooltip}
+      tone={tone}
+      onClick={onClick}
+    />
   )
 }
 
@@ -302,6 +311,7 @@ function MoreMenuItems({ profile, close }: { profile: Profile; close: () => void
       key="delete"
       icon={<Trash2 size={16} />}
       label={t`Delete profile…`}
+      tone="error"
       onClick={() => {
         close()
         openProfileDialog('delete', profile.id)
