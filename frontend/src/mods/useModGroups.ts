@@ -18,7 +18,7 @@ import {
 import { compareListRows, sanitizeListSort } from './listColumns.ts'
 import { toListRows, useEntrySizes, usePackageOverrides, useStartupCosts } from './listRows.ts'
 import { modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
-import { nestImplicit } from './nestImplicit.ts'
+import { foldLibraries, nestImplicit } from './nestImplicit.ts'
 import { primeDetails, useNexusDetails } from './nexusDetails.ts'
 import { useMods } from './store.ts'
 import { useUpdates } from './updates.ts'
@@ -51,7 +51,8 @@ export function buildModGroups(
 }
 
 // buildModGroups by the user's settings, rebuilt only when an input changes.
-export function useModGroups(mods: Mod[], profile: Profile) {
+// With fold, a nested implicit mod rides on the card of the mod that needs it instead of having a row of its own.
+export function useModGroups(mods: Mod[], profile: Profile, fold = false) {
   const groupBy = useListGroupBy()
   const listSortColumn = useSettings((s) => s.listSortColumn)
   const listSortDir = useSettings((s) => s.listSortDir)
@@ -88,7 +89,10 @@ export function useModGroups(mods: Mod[], profile: Profile) {
       { byId, customById, sizes, costs, wins },
       { groupBy, sort, problems, updates },
     )
-    return nested ? nestImplicit(built) : built
+    if (!nested) {
+      return built
+    }
+    return fold ? foldLibraries(nestImplicit(built)) : nestImplicit(built)
   }, [
     mods,
     profile,
@@ -102,6 +106,7 @@ export function useModGroups(mods: Mod[], profile: Profile) {
     costs,
     wins,
     nested,
+    fold,
   ])
   // Rows are memoised on this list's identity, so an unchanged order keeps the previous array.
   const lastIds = useRef<string[]>([])

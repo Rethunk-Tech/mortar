@@ -117,6 +117,8 @@ interface ListRow {
   implicit?: boolean
   /** How far an implicit mod sits beneath the mod that requires it, when the list nests them. */
   depth?: number
+  /** The implicit mods a card view folds into this mod's card, in list order. */
+  libraries?: readonly ListRow[]
   /** Explicit or Implicit, in the reader's language. */
   reason: string
   details?: Details

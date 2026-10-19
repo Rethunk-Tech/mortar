@@ -45,3 +45,27 @@ export function nestImplicit<G extends { items: readonly ListRow[] }>(groups: re
     return { ...group, items }
   })
 }
+
+/**
+ * The nested groups for the card view: each nested implicit mod loses its place and rides on the nearest earlier mod
+ * above it, in that mod's `libraries`.
+ */
+export function foldLibraries<G extends { items: readonly ListRow[] }>(groups: readonly G[]): G[] {
+  return groups.map((group) => {
+    const items: ListRow[] = []
+    const libraries = new Map<ListRow, ListRow[]>()
+    let owner: ListRow | undefined
+    for (const r of group.items) {
+      if (r.depth && owner) {
+        libraries.set(owner, [...(libraries.get(owner) ?? []), r])
+      } else {
+        owner = r
+        items.push(r)
+      }
+    }
+    return {
+      ...group,
+      items: items.map((r) => (libraries.has(r) ? { ...r, libraries: libraries.get(r) } : r)),
+    }
+  })
+}

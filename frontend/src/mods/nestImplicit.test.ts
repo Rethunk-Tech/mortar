@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { ListRow } from './listColumns.ts'
-import { nestImplicit } from './nestImplicit.ts'
+import { foldLibraries, nestImplicit } from './nestImplicit.ts'
 
 const row = (id: string, needs: string[], implicit = false) =>
   ({ mod: { key: id, id, name: id, needs } as unknown as Mod, implicit }) as ListRow
@@ -24,4 +24,17 @@ test('implicit mods sit beneath the first mod that requires them, and an orphan 
     'Lib.Own:1',
     'Me.B:0',
   ])
+})
+
+test('the card view folds nested implicit mods into the card above them', () => {
+  const items = [
+    row('Lib.Core', ['Lib.Deep'], true),
+    row('Me.A', ['Lib.Core']),
+    row('Lib.Deep', [], true),
+    row('Me.B', []),
+  ]
+  const [group] = foldLibraries(nestImplicit([{ key: '', items }]))
+  expect(group?.items.map((r) => r.mod.id)).toEqual(['Me.A', 'Me.B'])
+  expect(group?.items[0]?.libraries?.map((r) => r.mod.id)).toEqual(['Lib.Core', 'Lib.Deep'])
+  expect(group?.items[1]?.libraries).toBeUndefined()
 })

@@ -18,6 +18,7 @@ import { CompatChip } from './CompatChip.tsx'
 import { showModId, useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
 import { firstTag } from './group.ts'
+import { LibrariesChip } from './LibrariesChip.tsx'
 import type { ListRow } from './listColumns.ts'
 import { entryOf, modId } from './lookup.ts'
 import { ModMenu } from './ModMenu.tsx'
@@ -100,10 +101,14 @@ interface ModCardProps {
   onMove: (id: string, delta: number) => void
 }
 
+const sameLibraries = (a: ListRow['libraries'], b: ListRow['libraries']) =>
+  a === b || (a?.length === b?.length && (a ?? []).every((r, i) => r.mod === b?.[i]?.mod))
+
 const sameCard = (a: ModCardProps, b: ModCardProps) =>
   a.mod === b.mod &&
   a.row.size === b.row.size &&
   a.row.details === b.row.details &&
+  sameLibraries(a.row.libraries, b.row.libraries) &&
   a.first === b.first &&
   a.orderedRef === b.orderedRef &&
   a.onMove === b.onMove &&
@@ -243,6 +248,7 @@ function ModCardView({
           <CardMeta mod={m} row={row} profile={profile} statsLine={statsLine} />
         </Box>
       </Box>
+      <LibrariesChip libraries={row.libraries} />
       <ExtraFilesChip mod={m} profile={profile} />
       <OverlayCountChip mod={m} profile={profile} />
       <PinBadge mod={m} />
@@ -492,9 +498,14 @@ function CardsPane({
 
 export function Cards({ shown, profile }: { shown: Mod[]; profile: Profile }) {
   const { t } = useLingui()
+  // A search or Show > Implicit asks for the implicit mods themselves, so they keep their own cards.
+  const wanted = useMods(
+    (s) => (s.queries[profile.id] ?? '') !== '' || s.filters[profile.id] === 'implicit',
+  )
   const { groupBy, gameId, collapsed, setCollapsed, groups, orderedIds } = useModGroups(
     shown,
     profile,
+    !wanted,
   )
   const tagHint = t`A mod with several tags appears under its first tag.`
   const heading = useListHeading(groupBy)
