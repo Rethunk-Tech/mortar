@@ -4127,7 +4127,7 @@ msgid "Data folder moved"
 msgstr "Data folder moved"
 
 #: src/games/GameMenu.tsx:119
-#: src/games/GameSelect.tsx:419
+#: src/games/GameSelect.tsx:433
 msgid "On this computer"
 msgstr "On this computer"
 
@@ -7887,7 +7887,7 @@ msgstr "Could not switch {0}"
 msgid "Asset map"
 msgstr "Asset map"
 
-#: src/games/LetterRail.tsx:46
+#: src/games/LetterRail.tsx:50
 msgid "Games starting with {letter}"
 msgstr "Games starting with {letter}"
 
@@ -8942,7 +8942,7 @@ msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
 #: src/games/GameMenu.tsx:117
-#: src/games/GameSelect.tsx:418
+#: src/games/GameSelect.tsx:432
 msgid "Recently played"
 msgstr "Recently played"
 
@@ -10559,7 +10559,7 @@ msgstr "A saved group keeps at least one mod; delete the saved group instead"
 msgid "Could not reset the settings of {0}"
 msgstr "Could not reset the settings of {0}"
 
-#: src/games/GameSelect.tsx:420
+#: src/games/GameSelect.tsx:434
 msgid "Other games"
 msgstr "Other games"
 
@@ -10764,7 +10764,7 @@ msgstr "Reset every shortcut?"
 #: src/firstrun/FirstRun.tsx:47
 #: src/firstrun/GameSetup.tsx:153
 #: src/firstrun/LoaderStep.tsx:222
-#: src/games/GameSelect.tsx:456
+#: src/games/GameSelect.tsx:470
 #: src/profiles/GameSettings.tsx:99
 msgid "Loading…"
 msgstr "Loading…"
@@ -12565,7 +12565,7 @@ msgid "Switch {0} to {1}?"
 msgstr "Switch {0} to {1}?"
 
 #: src/firstrun/GameSetup.tsx:52
-#: src/games/GameSelect.tsx:420
+#: src/games/GameSelect.tsx:434
 msgid "All games"
 msgstr "All games"
 
@@ -13111,7 +13111,7 @@ msgstr "Updated fixable mods"
 msgid "Order"
 msgstr "Order"
 
-#: src/games/LetterRail.tsx:25
+#: src/games/LetterRail.tsx:29
 msgid "Jump to a letter"
 msgstr "Jump to a letter"
 
