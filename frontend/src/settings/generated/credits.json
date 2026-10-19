@@ -200,6 +200,11 @@
     "url": "https://pkg.go.dev/golang.org/x/mod"
   },
   {
+    "name": "golang.org/x/net",
+    "licence": "BSD-3-Clause",
+    "url": "https://pkg.go.dev/golang.org/x/net"
+  },
+  {
     "name": "golang.org/x/sys",
     "licence": "BSD-3-Clause",
     "url": "https://pkg.go.dev/golang.org/x/sys"
