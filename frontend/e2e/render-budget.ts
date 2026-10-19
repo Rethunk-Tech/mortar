@@ -80,6 +80,11 @@ async function tab(page: Page, name: string) {
 
 async function view(page: Page, which: 'List view' | 'Grid view') {
   await tab(page, 'Mods')
+  // A filter typed by an earlier case persists per profile and would leave a grid with fewer cards than a case clicks.
+  const filter = page.getByRole('textbox', { name: /^Filter/ }).first()
+  if ((await filter.isVisible()) && (await filter.inputValue()) !== '') {
+    await filter.fill('')
+  }
   const button = page.getByRole('button', { name: which })
   if ((await button.getAttribute('aria-pressed')) !== 'true') {
     await button.click()
@@ -115,6 +120,9 @@ const openMods = (which: 'List view' | 'Grid view'): Case => ({
   run: (p) => tab(p, 'Mods'),
 })
 
+// The mod mods-list-toggle-off switched off, which mods-list-toggle-on puts back.
+let switched: string | null = null // its name
+
 const cases: Case[] = [
   open('Home'),
   openMods('List view'),
@@ -131,12 +139,26 @@ const cases: Case[] = [
   {
     name: 'mods-list-toggle-off',
     setup: (p) => view(p, 'List view'),
-    run: (p) => row(p, 8).locator('input[type=checkbox]').first().click(),
+    run: async (p) => {
+      const target = row(p, 8)
+      switched = await target.locator('[title]').first().getAttribute('title')
+      await target.locator('input[type=checkbox]').first().click()
+    },
   },
   {
     name: 'mods-list-toggle-on',
-    setup: (p) => view(p, 'List view'),
-    run: (p) => row(p, 8).locator('input[type=checkbox]').first().click(),
+    // The switched-off mod moves to the Disabled group, below the rendered window, so it is found by its name.
+    setup: async (p) => {
+      await view(p, 'List view')
+      if (switched !== null) {
+        await typeInto(p, /^Filter/, switched)
+      }
+    },
+    run: (p) =>
+      row(p, switched === null ? 8 : 0)
+        .locator('input[type=checkbox]')
+        .first()
+        .click(),
   },
   {
     name: 'mods-list-filter',
