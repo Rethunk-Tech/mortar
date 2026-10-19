@@ -192,14 +192,15 @@ func (s *Service) CustomLoaders() []CustomLoader {
 		{customgame.BepInEx5, "BepInEx 5"},
 		{customgame.BepInEx6, "BepInEx 6 (IL2CPP)"},
 		{customgame.MelonLoader, "MelonLoader"},
+		{customgame.Shimloader, "Shimloader (Unreal Engine, UE4SS)"},
 		{customgame.Folder, "None: drop mods in a Mods folder"},
 	}
 }
 
 // AddCustomGame adds a game missing from the catalog, started by the executable at exe, and returns it with the
 // folder to set as its install.
-func (s *Service) AddCustomGame(name, exe, loader string) (CustomGame, error) {
-	e, dir, err := customgame.Add(name, exe, loader)
+func (s *Service) AddCustomGame(name, exe, loader, community string) (CustomGame, error) {
+	e, dir, err := customgame.Add(name, exe, loader, community)
 	return CustomGame{ID: e.ID, Name: e.Name, Folder: dir}, err
 }
 

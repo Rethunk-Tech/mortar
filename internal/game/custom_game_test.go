@@ -8,6 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/customgame"
+	"github.com/Rethunk-Tech/mortar/internal/loader/thunderpack"
 )
 
 func TestACustomGameJoinsTheCatalogForEveryLoaderAndStaysLocal(t *testing.T) {
@@ -18,8 +19,8 @@ func TestACustomGameJoinsTheCatalogForEveryLoaderAndStaysLocal(t *testing.T) {
 	if err := os.WriteFile(exe, []byte("MZ"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	for _, loader := range []string{customgame.BepInEx5, customgame.BepInEx6, customgame.MelonLoader, customgame.Folder} {
-		e, dir, err := customgame.Add("My Game", exe, loader)
+	for _, loader := range []string{customgame.BepInEx5, customgame.BepInEx6, customgame.MelonLoader, customgame.Shimloader, customgame.Folder} {
+		e, dir, err := customgame.Add("My Game", exe, loader, "my-game")
 		if err != nil || dir != install || e.Exe != "My Game.exe" {
 			t.Fatalf("%s: %+v, %q, %v", loader, e, dir, err)
 		}
@@ -32,7 +33,7 @@ func TestACustomGameJoinsTheCatalogForEveryLoaderAndStaysLocal(t *testing.T) {
 		}
 	}
 	games, err := customgame.List()
-	if err != nil || len(games) != 4 || games[1].ID != "custom-my-game-2" {
+	if err != nil || len(games) != 5 || games[1].ID != "custom-my-game-2" {
 		t.Fatalf("saved %+v, %v", games, err)
 	}
 	// A later start reads them back from the file.
@@ -40,11 +41,28 @@ func TestACustomGameJoinsTheCatalogForEveryLoaderAndStaysLocal(t *testing.T) {
 	if err := customgame.Load(); err != nil || Find("custom-my-game") == nil {
 		t.Fatalf("load: %v", err)
 	}
-	if _, _, err := customgame.Add("Stardew Valley", exe, "nonsense"); err == nil {
+	if _, _, err := customgame.Add("Stardew Valley", exe, "nonsense", ""); err == nil {
 		t.Error("an unknown loader was accepted")
 	}
 	if err := customgame.Remove("custom-my-game"); err != nil || Find("custom-my-game") != nil {
 		t.Errorf("remove: %v", err)
+	}
+	if _, _, err := customgame.Add("No Community", exe, customgame.Shimloader, ""); err == nil {
+		t.Error("a Shimloader game without a Thunderstore community was accepted")
+	}
+	// A custom Shimloader game lays a mod out as a catalog one does and places its files beside the chosen executable.
+	if err := customgame.Load(); err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range []string{"custom-my-game-4", "palworld"} {
+		info, _ := components.Game(id)
+		got := thunderpack.Layout("shimloader", []string{"mod/a.lua", "pak/b.pak", "cfg/c.cfg"}, "Ns-Mod", info.Loaders[0].Routes)
+		if got["mod/a.lua"] != "shimloader/mod/Ns-Mod/a.lua" || got["pak/b.pak"] != "shimloader/pak/Ns-Mod/b.pak" || got["cfg/c.cfg"] != "shimloader/cfg/c.cfg" {
+			t.Errorf("%s: layout %v", id, got)
+		}
+	}
+	if info, _ := components.Game("custom-my-game-4"); info.LoaderPlaceDir("shimloader") != "" {
+		t.Error("a custom game's files must sit beside the executable it chose")
 	}
 	// The catalog's own games are untouched by all of it.
 	if g := Find("lethal-company"); g == nil {

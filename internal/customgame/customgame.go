@@ -24,6 +24,8 @@ const (
 	BepInEx5    = "bepinex5"
 	BepInEx6    = "bepinex6"
 	MelonLoader = "melonloader"
+	// Shimloader is an Unreal Engine game modded through UE4SS; its Thunderstore community supplies the loader.
+	Shimloader = "shimloader"
 	// Folder is a game with no loader whose mods are files dropped in a Mods folder beside the executable.
 	Folder = "folder"
 )
@@ -43,6 +45,8 @@ type Entry struct {
 	Name   string `json:"name"`
 	Exe    string `json:"exe"`
 	Loader string `json:"loader"`
+	// Community is the game's Thunderstore community, which a Shimloader game takes its loader and mods from.
+	Community string `json:"community,omitempty"`
 }
 
 type file struct {
@@ -50,7 +54,18 @@ type file struct {
 	Games         []Entry `json:"games"`
 }
 
-var notSlug = regexp.MustCompile(`[^a-z0-9]+`)
+var (
+	notSlug   = regexp.MustCompile(`[^a-z0-9]+`)
+	community = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,63}$`)
+)
+
+// shimloaderRoutes are the UE4SS mod folders of r2modman's Shimloader install rules, which every catalog game lists.
+var shimloaderRoutes = []components.LoaderRoute{
+	{Dir: "shimloader/mod", Track: components.TrackSubdir, Default: true},
+	{Dir: "shimloader/pak", Extensions: []string{".pak"}, Track: components.TrackSubdir},
+	{Dir: "shimloader/cfg"},
+	{Dir: "shimloader/overlay", Track: components.TrackSubdir},
+}
 
 // Info is the catalog entry for the game, shaped like a shipped game of the same loader.
 func (e Entry) Info() (components.GameInfo, error) {
@@ -65,6 +80,12 @@ func (e Entry) Info() (components.GameInfo, error) {
 		g.Loaders = []components.GameLoader{{ID: "bepinex5", Name: "BepInEx 6 (IL2CPP)", Major: 6, Package: "BepInEx-BepInExPack_IL2CPP"}}
 	case MelonLoader:
 		g.Loaders = []components.GameLoader{{ID: "melonloader", Name: "MelonLoader", Package: "LavaGang-MelonLoader"}}
+	case Shimloader:
+		if !community.MatchString(e.Community) {
+			return components.GameInfo{}, usererr.New(usererr.Invalid, "give the game's Thunderstore community, such as voices-of-the-void")
+		}
+		g.Loaders = []components.GameLoader{{ID: "shimloader", Name: "Shimloader", Package: "Thunderstore-unreal_shimloader", Routes: shimloaderRoutes}}
+		g.Sources = []components.GameSource{{ID: "thunderstore", Key: e.Community}}
 	case Folder:
 		g.Loaders = []components.GameLoader{{ID: "folder"}}
 		g.Targets = []components.TargetDef{{ID: "mods", Root: "{profile}/Mods"}}
@@ -145,7 +166,7 @@ func Load() error {
 
 // Add saves a game named name, started by the executable at exe, and registers it. The install folder is the
 // executable's folder, so the caller sets it as the game's folder.
-func Add(name, exe, loader string) (Entry, string, error) {
+func Add(name, exe, loader, community string) (Entry, string, error) {
 	name = strings.TrimSpace(name)
 	if name == "" || len([]rune(name)) > maxName {
 		return Entry{}, "", usererr.New(usererr.Invalid, "give the game a name of up to 60 characters")
@@ -171,7 +192,7 @@ func Add(name, exe, loader string) (Entry, string, error) {
 	for n := 2; taken(games, id); n++ {
 		id = fmt.Sprintf("%s%s-%d", IDPrefix, slug, n)
 	}
-	e := Entry{ID: id, Name: name, Exe: filepath.Base(exe), Loader: loader}
+	e := Entry{ID: id, Name: name, Exe: filepath.Base(exe), Loader: loader, Community: community}
 	if _, err := e.Info(); err != nil {
 		return Entry{}, "", err
 	}

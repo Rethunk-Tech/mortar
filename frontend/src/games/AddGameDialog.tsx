@@ -33,12 +33,13 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
   const [name, setName] = useState('')
   const [exe, setExe] = useState('')
   const [loader, setLoader] = useState('bepinex5')
+  const [community, setCommunity] = useState('')
   const [busy, setBusy] = useState(false)
   const { data: loaders } = useLoaded(() => CustomLoaders(), [], [])
   const mine = useGames().filter((g) => g.id.startsWith(CUSTOM_PREFIX))
   const add = () => {
     setBusy(true)
-    AddCustomGame(name, exe, loader)
+    AddCustomGame(name, exe, loader, loader === 'shimloader' ? community.trim() : '')
       .then((game) => SetGameFolder(game.id, game.folder))
       .then(() => {
         reloadGames()
@@ -92,6 +93,16 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
               />
             ))}
           </RadioGroup>
+          {loader === 'shimloader' ? (
+            <TextField
+              size="small"
+              label={t`Thunderstore community`}
+              placeholder="voices-of-the-void"
+              helperText={t`The game's name in its Thunderstore address (thunderstore.io/c/…). Mortar gets Shimloader and the game's mods from it. Choose the game's shipping program, in Binaries/Win64.`}
+              value={community}
+              onChange={(e) => setCommunity(e.target.value)}
+            />
+          ) : null}
           {mine.length > 0 ? (
             <Box>
               <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{t`Games you added`}</Typography>
@@ -113,7 +124,12 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
         </Button>
         <Button
           variant="contained"
-          disabled={busy || name.trim() === '' || exe === ''}
+          disabled={
+            busy ||
+            name.trim() === '' ||
+            exe === '' ||
+            (loader === 'shimloader' && community.trim() === '')
+          }
           onClick={add}
         >
           {t`Add`}
