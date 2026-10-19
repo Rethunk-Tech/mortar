@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
 import { ChevronDown, LayoutTemplate, ListOrdered, Plus, Search } from 'lucide-react'
-import { memo, useCallback, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
@@ -275,6 +275,23 @@ export const ProfileMenu = memo(function ProfileMenuView({ game }: { game: strin
   )
   const onCreate = useCallback(() => setCreating(true), [])
   const onManage = useCallback(() => setManaging(true), [])
+  // Elements held between renders: a closed dialog is skipped when the profile list or open profile changes.
+  const newProfile = useMemo(
+    () => <NewProfileDialog open={creating} onClose={() => setCreating(false)} />,
+    [creating],
+  )
+  const manageTemplates = useMemo(
+    () => (
+      <ManageTemplatesDialog
+        open={managing}
+        game={game}
+        templates={templates}
+        onChanged={reload}
+        onClose={() => setManaging(false)}
+      />
+    ),
+    [managing, game, templates, reload],
+  )
   return (
     <>
       <ProfileButton
@@ -304,14 +321,8 @@ export const ProfileMenu = memo(function ProfileMenuView({ game }: { game: strin
           onClose={() => setContext((c) => (c ? { ...c, position: null } : c))}
         />
       ) : null}
-      <NewProfileDialog open={creating} onClose={() => setCreating(false)} />
-      <ManageTemplatesDialog
-        open={managing}
-        game={game}
-        templates={templates}
-        onChanged={reload}
-        onClose={() => setManaging(false)}
-      />
+      {newProfile}
+      {manageTemplates}
       {dialogs}
     </>
   )

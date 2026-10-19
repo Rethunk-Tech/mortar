@@ -467,7 +467,7 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
   )
 }
 
-// A switch changes only the mod's enabled flag, its entry's disabled list, the save time and the last-change line. Nothing below the header
+// A switch changes only the mod's enabled flag, its entry's disabled list and switch-off times, the save time and the last-change line. Nothing below the header
 // shows those, and what does (the dependency tree, problems) reads the store itself, so a switch skips these sections.
 const withoutSwitch = (mod: Mod, profile: Profile) =>
   JSON.stringify([
@@ -476,7 +476,7 @@ const withoutSwitch = (mod: Mod, profile: Profile) =>
       ...profile,
       updated: null,
       lastChange: null,
-      entries: profile.entries?.map((e) => ({ ...e, disabled: null })),
+      entries: profile.entries?.map((e) => ({ ...e, disabled: null, switchedOff: null })),
     },
   ])
 const LowerSections = memo(

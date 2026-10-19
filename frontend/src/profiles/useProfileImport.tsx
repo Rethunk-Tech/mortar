@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { ArchiveRestore, Download, FolderInput, type LucideIcon } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useMemo, useState } from 'react'
 import { useNav } from '../nav/store.ts'
 import { openImport } from '../share/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -48,41 +48,45 @@ export function useProfileImport(game: string): { entries: ImportEntry[]; dialog
       run: () => setWizard(true),
     },
   ]
-  const dialogs = (
-    <>
-      <ImportWizard
-        open={wizard}
-        game={game}
-        onClose={() => setWizard(false)}
-        onPickPack={(path) => {
-          setPackPath(path)
-          setPackImport(true)
-        }}
-        onOwnCode={
-          thunderstore
-            ? () => {
-                setPackPath('')
-                setPackImport(true)
-              }
-            : null
-        }
-      />
-      <PackImportDialog
-        open={packImport}
-        game={game}
-        initialPath={packPath}
-        onClose={() => setPackImport(false)}
-      />
-      <GameModsDialog
-        open={gameMods}
-        game={game}
-        onClose={() => setGameMods(false)}
-        onImported={(id) => {
-          openProfile(id)
-          useNav.getState().closeProfiles()
-        }}
-      />
-    </>
+  // One element until a dialog's state changes, so the closed ones are skipped when the menu around them renders.
+  const dialogs = useMemo(
+    () => (
+      <>
+        <ImportWizard
+          open={wizard}
+          game={game}
+          onClose={() => setWizard(false)}
+          onPickPack={(path) => {
+            setPackPath(path)
+            setPackImport(true)
+          }}
+          onOwnCode={
+            thunderstore
+              ? () => {
+                  setPackPath('')
+                  setPackImport(true)
+                }
+              : null
+          }
+        />
+        <PackImportDialog
+          open={packImport}
+          game={game}
+          initialPath={packPath}
+          onClose={() => setPackImport(false)}
+        />
+        <GameModsDialog
+          open={gameMods}
+          game={game}
+          onClose={() => setGameMods(false)}
+          onImported={(id) => {
+            openProfile(id)
+            useNav.getState().closeProfiles()
+          }}
+        />
+      </>
+    ),
+    [game, gameMods, wizard, packImport, packPath, thunderstore, openProfile],
   )
   return { entries, dialogs }
 }
