@@ -367,7 +367,11 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 	if err := datadir.WriteFile(metaPath, nm, 0o644); err != nil {
 		return nil, err
 	}
-	return loadPackages(key, pkgPath(hash))
+	pk, err := loadPackages(key, pkgPath(hash))
+	if err == nil {
+		refreshSide(dir, key, hash, pk)
+	}
+	return pk, err
 }
 
 // build downloads every chunk and writes the slimmed listing to path as it goes, so neither a chunk nor the whole

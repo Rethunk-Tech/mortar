@@ -96,29 +96,39 @@ func (d Driver) Publisher(ctx context.Context, key, name, ver, mortarVersion str
 
 // Versions lists the package's versions in the community's index, newest first.
 func (d Driver) Versions(ctx context.Context, key, namespace, name, mortarVersion string) ([]string, error) {
+	if out, ok := d.sideVersions(key, namespace, name); ok {
+		return out, nil
+	}
 	pk, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
 	if err != nil {
 		return nil, err
 	}
 	for _, p := range pk {
 		if strings.EqualFold(p.Owner, namespace) && strings.EqualFold(p.Name, name) {
-			out := make([]string, len(p.Versions))
-			for i, v := range p.Versions {
-				out[i] = v.Number
-			}
-			slices.SortStableFunc(out, func(a, b string) int {
-				switch {
-				case newer(a, b):
-					return -1
-				case newer(b, a):
-					return 1
-				}
-				return 0
-			})
+			out := versionsOf(p)
+			d.rememberVersions(key, namespace, name, out)
 			return out, nil
 		}
 	}
 	return nil, fmt.Errorf("%s-%s is not in the %s index", namespace, name, key)
+}
+
+// versionsOf is the package's version numbers, newest first.
+func versionsOf(p pkg) []string {
+	out := make([]string, len(p.Versions))
+	for i, v := range p.Versions {
+		out[i] = v.Number
+	}
+	slices.SortStableFunc(out, func(a, b string) int {
+		switch {
+		case newer(a, b):
+			return -1
+		case newer(b, a):
+			return 1
+		}
+		return 0
+	})
+	return out
 }
 
 // Dependencies reads the dependencies of the listed package versions from the community's index, one package per
