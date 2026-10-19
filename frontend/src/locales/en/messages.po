@@ -1242,10 +1242,6 @@ msgstr "Already in Steam"
 msgid "Nexus download links"
 msgstr "Nexus download links"
 
-#: src/queue/QueueSheet.tsx:64
-msgid "{parallel} · {counts}"
-msgstr "{parallel} · {counts}"
-
 #: src/console/StartupSections.tsx:67
 msgid "SMAPI loads mods for {ms}."
 msgstr "SMAPI loads mods for {ms}."
@@ -1312,7 +1308,7 @@ msgid "Follows your desktop"
 msgstr "Follows your desktop"
 
 #. placeholder {0}: sum.done
-#: src/queue/QueueSheet.tsx:53
+#: src/queue/QueueSheet.tsx:61
 msgid "{0} done"
 msgstr "{0} done"
 
@@ -1551,6 +1547,11 @@ msgstr "Small"
 #: src/firstrun/ProfileStep.tsx:208
 msgid "From a shared link"
 msgstr "From a shared link"
+
+#. placeholder {0}: n.paused
+#: src/queue/QueueSheet.tsx:59
+msgid "{0} paused"
+msgstr "{0} paused"
 
 #: src/console/SearchRunsDialog.tsx:121
 msgid "No matches"
@@ -1996,11 +1997,6 @@ msgstr "Trim"
 #: src/mods/LoadOrderTab.tsx:142
 msgid "Show less"
 msgstr "Show less"
-
-#. placeholder {0}: sum.left
-#: src/queue/QueueSheet.tsx:56
-msgid "{0} left"
-msgstr "{0} left"
 
 #. placeholder {0}: entry.key
 #: src/mods/typedConfig/ConfigPane.tsx:77
@@ -2656,7 +2652,9 @@ msgid "Message {0} of {total}"
 msgstr "Message {0} of {total}"
 
 #. placeholder {0}: chip.n
+#. placeholder {0}: n.waiting
 #: src/mods/typedConfig/ConfigTab.tsx:56
+#: src/queue/QueueSheet.tsx:58
 msgid "{0} waiting"
 msgstr "{0} waiting"
 
@@ -7192,11 +7190,6 @@ msgstr "config.json, made by the mod"
 msgid "Token regenerated"
 msgstr "Token regenerated"
 
-#. placeholder {0}: sum.active
-#: src/queue/QueueSheet.tsx:54
-msgid "{0} in progress"
-msgstr "{0} in progress"
-
 #: src/profiles/HistoryEventRow.tsx:134
 msgid "Undo these changes: {summary}"
 msgstr "Undo these changes: {summary}"
@@ -7213,6 +7206,11 @@ msgstr "Start the game to see values"
 #: src/queue/QueueSheet.tsx:65
 msgid "{summary} · {0}"
 msgstr "{summary} · {0}"
+
+#. placeholder {0}: n.installing
+#: src/queue/QueueSheet.tsx:57
+msgid "{0} installing"
+msgstr "{0} installing"
 
 #: src/console/ConsoleTab.tsx:193
 msgid "Console command"
@@ -10403,7 +10401,7 @@ msgstr "{0, plural, one {with # settings file, written once its mod is installed
 #. placeholder {0}: counts.failed
 #. placeholder {0}: sum.failed
 #: src/mods/updateReview/updateAll.ts:42
-#: src/queue/QueueSheet.tsx:55
+#: src/queue/QueueSheet.tsx:60
 #: src/share/importCompletion.ts:26
 msgid "{0} failed"
 msgstr "{0} failed"
@@ -13288,6 +13286,11 @@ msgstr "This value is not allowed."
 msgid "This is a development build of Mortar {0}, so it does not check for updates."
 msgstr "This is a development build of Mortar {0}, so it does not check for updates."
 
+#. placeholder {0}: n.downloading
+#: src/queue/QueueSheet.tsx:56
+msgid "{0} downloading"
+msgstr "{0} downloading"
+
 #. placeholder {0}: runs.length
 #: src/mods/HealthTooltipContent.tsx:28
 msgid "{0, plural, one {Last run: {list}} other {Last # runs: {list}}}"
@@ -15269,10 +15272,6 @@ msgstr "Could not update Steam's launch options"
 #: src/console/logHooks.ts:33
 msgid "Alert"
 msgstr "Alert"
-
-#: src/queue/QueueSheet.tsx:62
-msgid "{downloading, plural, one {# downloading} other {# downloading}} · {waiting, plural, one {# waiting} other {# waiting}}"
-msgstr "{downloading, plural, one {# downloading} other {# downloading}} · {waiting, plural, one {# waiting} other {# waiting}}"
 
 #: src/settings/prefCopy.ts:380
 msgid "1 time"

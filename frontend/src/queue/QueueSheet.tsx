@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Drawer, Typography } from '@mui/material'
 import {
@@ -49,19 +48,20 @@ function Header({
   const { items, paused, limitedUntil } = useQueue((s) => s.state)
   const sum = totals(items)
   const { downloading, waiting } = parallelDownloads(items)
-  const counts = [
-    sum.done > 0 && t`${sum.done} done`,
-    sum.active > 0 && t`${sum.active} in progress`,
+  const installing = items.filter((i) => i.state === 'installing').length
+  const pausedItems = items.filter((i) => i.state === 'paused').length
+  const n = { downloading, installing, waiting, paused: pausedItems }
+  // Each state once, none that is empty: the sheet is too narrow for more.
+  const summary = [
+    downloading > 0 && t`${n.downloading} downloading`,
+    installing > 0 && t`${n.installing} installing`,
+    waiting > 0 && t`${n.waiting} waiting`,
+    pausedItems > 0 && t`${n.paused} paused`,
     sum.failed > 0 && t`${sum.failed} failed`,
-    sum.left > 0 && t`${sum.left} left`,
+    sum.done > 0 && t`${sum.done} done`,
   ]
     .filter(Boolean)
     .join(' · ')
-  const parallel =
-    downloading > 0 || waiting > 0
-      ? t`${plural(downloading, { one: '# downloading', other: '# downloading' })} · ${plural(waiting, { one: '# waiting', other: '# waiting' })}`
-      : null
-  const summary = parallel ? t`${parallel} · ${counts}` : counts
   const line = sum.sizeKb > 0 ? t`${summary} · ${formatKb(sum.sizeKb)}` : summary
   const idle = !paused && sum.active === 0 && sum.left === 0
   const finished = items.filter((i) => isClearableFinished(i.state))
