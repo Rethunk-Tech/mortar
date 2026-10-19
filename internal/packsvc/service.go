@@ -68,7 +68,7 @@ type Source struct {
 	Path string `json:"path"`
 	Text string `json:"text"`
 	// Replace lets an import into an existing profile overwrite the config files the player already has there.
-	Replace bool `json:"replace"`
+	Replace bool `json:"replace,omitempty"`
 }
 
 // Package is one package of a pack.
