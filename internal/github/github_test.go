@@ -313,3 +313,40 @@ func TestReleasesBetween(t *testing.T) {
 		t.Fatalf("got %+v, %v", got, err)
 	}
 }
+
+func TestBucketSharesTheRateAcrossCallers(t *testing.T) {
+	var b bucket
+	now := time.Unix(1_000, 0)
+	const rate = 100 << 10
+	if w := b.reserve(rate/4, rate, now); w != 0 {
+		t.Fatalf("the burst waited %v", w)
+	}
+	// A second download draws on the same, now empty, bucket.
+	if w := b.reserve(rate/4, rate, now); w != 250*time.Millisecond {
+		t.Fatalf("second caller waits %v, want 250ms", w)
+	}
+	// Raising the limit at once shortens the wait for the same bytes.
+	if w := b.reserve(rate/4, 2*rate, now); w >= 250*time.Millisecond*2 {
+		t.Fatalf("a raised limit still waits %v", w)
+	}
+}
+
+func TestDownloadHonoursTheSpeedLimit(t *testing.T) {
+	body := strings.Repeat("x", 120<<10)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = io.WriteString(w, body) }))
+	t.Cleanup(srv.Close)
+	SpeedLimit = func() int64 { return 200 << 10 }
+	t.Cleanup(func() { SpeedLimit, shared = nil, bucket{} })
+	dest := filepath.Join(t.TempDir(), "m.zip")
+	start := time.Now()
+	if err := Download(context.Background(), srv.Client(), srv.URL, dest, 1<<20, nil); err != nil {
+		t.Fatal(err)
+	}
+	// 120 KiB at 200 KiB/s with a 50 KiB burst leaves 70 KiB, 0.35 s.
+	if took := time.Since(start); took < 250*time.Millisecond {
+		t.Fatalf("120 KiB arrived in %v under a 200 KiB/s limit", took)
+	}
+	if got, _ := fsx.ReadFile(dest); string(got) != body {
+		t.Fatal("limited download is corrupt")
+	}
+}

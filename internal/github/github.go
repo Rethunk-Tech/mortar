@@ -352,7 +352,7 @@ func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit 
 		total := meta.ExpectedSize
 		w = &progressWriter{w: f, done: offset, total: total, fn: progress}
 	}
-	n, err := copyIdle(ctx, w, io.LimitReader(resp.Body, limit+1-offset), downloadIdle)
+	n, err := copyIdle(ctx, w, &throttled{done: ctx.Done(), err: ctx.Err, r: io.LimitReader(resp.Body, limit+1-offset)}, downloadIdle)
 	if err != nil {
 		if ctx.Err() != nil {
 			return ctx.Err(), false
