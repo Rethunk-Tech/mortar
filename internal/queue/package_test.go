@@ -170,3 +170,38 @@ func TestPinnedCDNIsTheOnlyOneTried(t *testing.T) {
 		t.Fatalf("the unpinned CDN was asked %d times", other.Load())
 	}
 }
+
+func TestPackageStalledCDNHandsItsPartialToTheNext(t *testing.T) {
+	const cut = 5
+	stalled := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", fmt.Sprint(len(payload)))
+		fmt.Fprint(w, payload[:cut])
+		w.(http.Flusher).Flush()
+		<-r.Context().Done()
+	}))
+	defer stalled.Close()
+	var rng atomic.Value
+	good := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rng.Store(r.Header.Get("Range"))
+		w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", cut, len(payload)-1, len(payload)))
+		w.WriteHeader(http.StatusPartialContent)
+		fmt.Fprint(w, payload[cut:])
+	}))
+	defer good.Close()
+
+	f := newFixture(t)
+	f.s.d.CDNs = []string{stalled.URL, good.URL}
+	f.s.cdnStall = 150 * time.Millisecond
+	f.s.d.Closure = func(_ context.Context, _ string, _ []thunderstore.Ref, _ bool) ([]thunderstore.Resolved, error) {
+		return []thunderstore.Resolved{{Namespace: "Me", Name: "Mod", Version: "1.0.0", URL: stalled.URL + "/p/Me-Mod.zip"}}, nil
+	}
+	f.s.d.InstallPackage = f.s.d.Install
+	f.start()
+	if _, err := f.s.Add(t.Context(), []Request{{Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "Me-Mod"}}); err != nil {
+		t.Fatal(err)
+	}
+	f.wait("done", func(st State) bool { return len(st.Items) == 1 && st.Items[0].State == StateDone })
+	if got, _ := rng.Load().(string); got != fmt.Sprintf("bytes=%d-", cut) {
+		t.Fatalf("the next CDN was asked for %q", got)
+	}
+}

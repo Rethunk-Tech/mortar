@@ -186,10 +186,7 @@ func (s *Service) fetchPackage(ctx context.Context, it Item, path string) error 
 		return s.fetch(ctx, it, it.URL, path)
 	}
 	var err error
-	for i, host := range order {
-		if i > 0 {
-			dropDownload(path)
-		}
+	for _, host := range order {
 		u, _ := thunderstore.OnHost(it.URL, host)
 		if err = s.fetchStalling(ctx, it, u, path); err == nil {
 			s.mu.Lock()

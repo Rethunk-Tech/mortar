@@ -165,6 +165,7 @@ var ErrLinkExpired = errors.New("the download link has expired")
 type resumeMeta struct {
 	ExpectedSize int64  `json:"expectedSize"`
 	ETag         string `json:"etag"`
+	LastModified string `json:"lastModified,omitempty"`
 	URL          string `json:"url"`
 	Hash         string `json:"hash"`
 	MD5          string `json:"md5,omitempty"`
@@ -186,6 +187,26 @@ func loadResume(path string) resumeMeta {
 
 func saveResume(path string, m resumeMeta) {
 	_ = datadir.WriteJSON(ResumeSidecar(path), m)
+}
+
+// Partial is the size of a download under way that Download can continue: its file with a sidecar.
+func Partial(path string) int64 {
+	if loadResume(path).URL == "" {
+		return 0
+	}
+	st, err := os.Stat(path)
+	if err != nil {
+		return 0
+	}
+	return st.Size()
+}
+
+// ifRange is the validator a resume sends, or empty when none can (a weak ETag is no validator for If-Range).
+func (m resumeMeta) ifRange() string {
+	if m.ETag != "" && !strings.HasPrefix(m.ETag, "W/") {
+		return m.ETag
+	}
+	return m.LastModified
 }
 
 func dropDownload(path string) {
@@ -212,12 +233,20 @@ func Download(ctx context.Context, hc *http.Client, url, dest string, limit int6
 
 func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit int64, progress Progress) (err error, retry bool) {
 	meta := loadResume(dest)
+	// A new address (another CDN, a fresh Nexus link) serves the same file under its own validators, so only the
+	// size and the final checks vouch for it then.
+	sameURL := meta.URL == "" || meta.URL == url
 	if meta.URL == "" {
 		meta.URL = url
 	}
 	offset := int64(0)
 	if st, err := os.Stat(dest); err == nil {
 		offset = st.Size()
+	}
+	if offset > 0 && meta.ExpectedSize == 0 && (!sameURL || meta.ifRange() == "") {
+		dropDownload(dest)
+		offset = 0
+		meta = resumeMeta{URL: url}
 	}
 	if meta.ExpectedSize > 0 && offset > meta.ExpectedSize {
 		dropDownload(dest)
@@ -234,6 +263,9 @@ func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit 
 	}
 	if offset > 0 {
 		req.Header.Set("Range", fmt.Sprintf("bytes=%d-", offset))
+		if v := meta.ifRange(); v != "" && sameURL {
+			req.Header.Set("If-Range", v)
+		}
 	}
 	DefaultAuth.Apply(req)
 	resp, err := hc.Do(req)
@@ -257,6 +289,9 @@ func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit 
 		if !ok || start != offset {
 			return nil, true
 		}
+		if meta.ExpectedSize > 0 && total > 0 && total != meta.ExpectedSize {
+			return nil, true
+		}
 		if total > 0 {
 			meta.ExpectedSize = total
 		}
@@ -270,10 +305,16 @@ func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit 
 
 	tooLarge := fmt.Errorf("larger than %d MiB", limit>>20)
 	if etag := resp.Header.Get("ETag"); etag != "" {
-		if meta.ETag != "" && meta.ETag != etag && offset > 0 && resp.StatusCode == http.StatusPartialContent {
+		if sameURL && meta.ETag != "" && meta.ETag != etag && offset > 0 && resp.StatusCode == http.StatusPartialContent {
 			return nil, true
 		}
 		meta.ETag = etag
+	}
+	if lm := resp.Header.Get("Last-Modified"); lm != "" {
+		if sameURL && meta.ETag == "" && meta.LastModified != "" && meta.LastModified != lm && offset > 0 && resp.StatusCode == http.StatusPartialContent {
+			return nil, true
+		}
+		meta.LastModified = lm
 	}
 	if h := hashFrom(resp.Header); h != "" {
 		meta.Hash = h
