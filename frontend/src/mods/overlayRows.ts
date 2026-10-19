@@ -68,3 +68,10 @@ export { overlayLabel }
  * replaces the profile object, so memoised rows compare this instead. */
 export const ownSlice = (profile: Profile, key: string) =>
   JSON.stringify([entryOf(profile, key), overlaysByBase(profile).get(key)])
+
+/** ownSlice without the pin: a card shows the pin through PinBadge, which reads the store itself, so freezing the profile
+ * does not render every card again. */
+export const cardSlice = (profile: Profile, key: string) => {
+  const { pinned: _pinned, pinReason: _pinReason, ...entry } = entryOf(profile, key) ?? {}
+  return JSON.stringify([entry, overlaysByBase(profile).get(key)])
+}

@@ -17,12 +17,12 @@ export interface Helpers {
  * list, hidden mods, favourites, freezing and config search. */
 export function newCases(h: Helpers): Case[] {
   const { toWorkspace, tab, view, row, typeInto, tabs } = h
-  /** Right-clicks the open profile in the title bar and picks an item of its menu. */
-  async function profileMenu(page: Page, item: RegExp) {
+  /** Right-clicks the open profile in the title bar, which opens its menu; the case then measures picking an item. */
+  async function openProfileMenu(page: Page) {
     await toWorkspace(page)
     await page.getByRole('button', { name: /^Switch profile/ }).click({ button: 'right' })
-    await page.getByRole('menuitem', { name: item }).click()
   }
+  const pick = (page: Page, item: RegExp) => page.getByRole('menuitem', { name: item }).click()
 
   async function inGame(page: Page, profile: string) {
     await toWorkspace(page)
@@ -67,26 +67,28 @@ export function newCases(h: Helpers): Case[] {
     },
     {
       name: 'freeze',
-      // Freezing pins every entry, so every row, panel and tab that reads the profile renders again.
-      budget: { updates: 6000 },
-      setup: toWorkspace,
-      run: async (p) => {
-        await profileMenu(p, /^Freeze this profile/)
+      // Picking from the menu closes it, which re-renders the menu's items (profile-folder shows the same ~650).
+      budget: { updates: 1200 },
+      setup: async (p) => {
         await tab(p, 'Mods')
+        await openProfileMenu(p)
+      },
+      run: async (p) => {
+        await pick(p, /^Freeze this profile/)
         await p.getByText(/This profile is frozen/).waitFor()
       },
     },
     {
       name: 'unfreeze',
-      // Lifting the holds rewrites every entry, and the toast that says so leaves once, inside the idle watch.
-      budget: { updates: 5000, idleUpdates: 10, idleCommits: 1 },
+      // The toast that says so leaves once, inside the idle watch.
+      budget: { idleUpdates: 10, idleCommits: 1 },
       setup: (p) => tab(p, 'Mods'),
       run: (p) => p.getByRole('button', { name: /^Unfreeze/ }).click(),
     },
     {
       name: 'profile-folder',
-      setup: toWorkspace,
-      run: (p) => profileMenu(p, /^Profile folder…/),
+      setup: openProfileMenu,
+      run: (p) => pick(p, /^Profile folder…/),
     },
     {
       name: 'add-game',
@@ -117,8 +119,11 @@ export function newCases(h: Helpers): Case[] {
     },
     {
       name: 'coop-list',
-      setup: (p) => inGame(p, 'Guided Test'),
-      run: (p) => profileMenu(p, /^Multiplayer mod list…/),
+      setup: async (p) => {
+        await inGame(p, 'Guided Test')
+        await openProfileMenu(p)
+      },
+      run: (p) => pick(p, /^Multiplayer mod list…/),
     },
     {
       name: 'modpack-form',

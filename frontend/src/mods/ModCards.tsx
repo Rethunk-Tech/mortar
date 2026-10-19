@@ -26,7 +26,7 @@ import { useMarked, useRowFocus, useTabStop } from './marked.ts'
 import { contextMenuProps, openModPage } from './menu.ts'
 import { useModFresh } from './modFresh.ts'
 import { OverlayCountChip } from './OverlayRow.tsx'
-import { ownSlice } from './overlayRows.ts'
+import { cardSlice } from './overlayRows.ts'
 import { MIDDLE, opensPage } from './pageClick.ts'
 import {
   LastRunBadge,
@@ -107,7 +107,7 @@ const sameCard = (a: ModCardProps, b: ModCardProps) =>
   a.first === b.first &&
   a.orderedRef === b.orderedRef &&
   a.onMove === b.onMove &&
-  (a.profile === b.profile || ownSlice(a.profile, a.mod.key) === ownSlice(b.profile, b.mod.key))
+  (a.profile === b.profile || cardSlice(a.profile, a.mod.key) === cardSlice(b.profile, b.mod.key))
 
 function ModCardView({
   mod: m,
