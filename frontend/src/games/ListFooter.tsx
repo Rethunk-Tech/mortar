@@ -1,12 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Link, Typography } from '@mui/material'
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { openSettings } from '../nav/store.ts'
 import { AddGameDialog } from './AddGameDialog.tsx'
 
-export // Under the list: adding a game of your own, the hidden games, and where to look when none was found.
-function ListFooter({
+// Under the list: adding a game of your own, the hidden games, and where to look when none was found.
+export const ListFooter = memo(function ListFooterView({
   games,
   hiddenCount,
   showHidden,
@@ -54,4 +54,4 @@ function ListFooter({
       )}
     </>
   )
-}
+})

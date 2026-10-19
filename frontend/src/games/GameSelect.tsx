@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Eye, EyeOff, Play, Settings } from 'lucide-react'
-import { type MouseEvent, memo, useRef, useState } from 'react'
+import { type MouseEvent, memo, useCallback, useRef, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
@@ -363,7 +363,13 @@ const Row = memo(
     sameCards(a.cards, b.cards),
 )
 
-function GroupHeading({ children, count }: { children: string; count: number }) {
+const GroupHeading = memo(function GroupHeadingView({
+  children,
+  count,
+}: {
+  children: string
+  count: number
+}) {
   return (
     <Typography
       component="h2"
@@ -388,12 +394,19 @@ function GroupHeading({ children, count }: { children: string; count: number }) 
       </Box>
     </Typography>
   )
-}
+})
 
 // A shorter list fits without a rail to jump through it.
 const RAIL_MIN_GAMES = 8
 
 const HEADING_PX = 40
+
+// The rail is memoised, so it gets one function that always calls the latest jump.
+function useLatestJump() {
+  const jumpRef = useRef<(letter: string) => void>(() => undefined)
+  const onJump = useCallback((letter: string) => jumpRef.current(letter), [])
+  return { jumpRef, onJump }
+}
 
 function GameSelect() {
   const { t } = useLingui()
@@ -405,6 +418,7 @@ function GameSelect() {
   const [current, setCurrent] = useState('')
   const hiddenIds = useSettings((s) => s.hiddenGames)
   const [showHidden, setShowHidden] = useState(false)
+  const { jumpRef, onJump } = useLatestJump()
   const ordered = gameOrder(
     listedGames(status?.games ?? [], hiddenIds, showHidden),
     lastGame,
@@ -479,6 +493,7 @@ function GameSelect() {
       reveal(first.id)
     }
   }
+  jumpRef.current = jump
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ flex: 1, minHeight: 0, display: 'flex' }}>
@@ -518,7 +533,7 @@ function GameSelect() {
             })}
           </Box>
         </Box>
-        {rail ? <LetterRail letters={letters} current={current} onJump={jump} /> : null}
+        {rail ? <LetterRail letters={letters} current={current} onJump={onJump} /> : null}
       </Box>
       <ListFooter
         games={status.games}
