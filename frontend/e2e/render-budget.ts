@@ -1,6 +1,6 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
-import { type CDPSession, chromium, type Page } from '@playwright/test'
+import { chromium, type Page } from '@playwright/test'
 import {
   openGameSelect,
   openProfile,
@@ -10,7 +10,7 @@ import {
 } from './app.ts'
 import { newCases } from './renderCases.ts'
 import { HOOK } from './renderHook.ts'
-import { Meter, type Sample, TOP } from './renderMeter.ts'
+import { Meter, type Sample } from './renderMeter.ts'
 import { sandboxPort, selftest } from './sandbox.ts'
 
 // Render budget: walks every screen and the common interactions of a copied (or seeded) profile in headless Chromium and
