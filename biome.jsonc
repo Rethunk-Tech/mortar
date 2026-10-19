@@ -18,6 +18,7 @@
       "!**/locales/*/messages.ts",
       "!**/vendor",
       "!.claude",
+      "!site/changelog",
       "!site/games"
     ]
   },
