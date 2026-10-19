@@ -272,7 +272,8 @@ function useListed(view: GroupsView, shown: ModConfig[]) {
   return { listed, headerGroups }
 }
 
-function Editor({
+// Memoised: typing in the filter re-renders the tab on every key, and the open editor does not depend on the text.
+const Editor = memo(function EditorView({
   profile,
   game,
   selection,
@@ -314,7 +315,7 @@ function Editor({
       file={chosenFile.name}
     />
   )
-}
+})
 
 // Settings across the profile's config files that the Filter mods text matches, found by the app a moment after typing.
 function useSettingHits(game: string, profile: string, query: string): Hit[] {
@@ -322,14 +323,15 @@ function useSettingHits(game: string, profile: string, query: string): Hit[] {
   useEffect(() => {
     const q = query.trim()
     if (q.length < MIN_SETTING_QUERY) {
-      setHits([])
+      // The same empty list keeps the tab from rendering again for every key typed below the minimum.
+      setHits((prev) => (prev.length === 0 ? prev : []))
       return
     }
     let live = true
     const timer = setTimeout(() => {
       Search(game, profile, q)
         .then((found) => live && setHits(found ?? []))
-        .catch(() => live && setHits([]))
+        .catch(() => live && setHits((prev) => (prev.length === 0 ? prev : [])))
     }, SETTING_SEARCH_DELAY_MS)
     return () => {
       live = false
@@ -338,6 +340,9 @@ function useSettingHits(game: string, profile: string, query: string): Hit[] {
   }, [game, profile, query])
   return hits
 }
+
+// A search can match hundreds of settings; the list shows the first ones and says how many it left out.
+const MAX_SHOWN_HITS = 40
 
 function SettingHits({ profileId, hits }: { profileId: string; hits: Hit[] }) {
   const { t } = useLingui()
@@ -350,7 +355,7 @@ function SettingHits({ profileId, hits }: { profileId: string; hits: Hit[] }) {
       <Typography sx={{ px: space.pad, py: 0.5, fontSize: 12, color: 'text.secondary' }}>
         {t`Matching settings`}
       </Typography>
-      {hits.map((h) => (
+      {hits.slice(0, MAX_SHOWN_HITS).map((h) => (
         <ListItemButton
           key={`${h.modId}/${h.file}/${h.section}/${h.key}`}
           onClick={() => jumpTo(profileId, h.modId, h.file, h.key)}
@@ -363,6 +368,14 @@ function SettingHits({ profileId, hits }: { profileId: string; hits: Hit[] }) {
           />
         </ListItemButton>
       ))}
+      {hits.length > MAX_SHOWN_HITS ? (
+        <Typography sx={{ px: space.pad, py: 0.5, fontSize: 12, color: 'text.secondary' }}>
+          {plural(hits.length - MAX_SHOWN_HITS, {
+            one: '# more setting; type more to narrow the search.',
+            other: '# more settings; type more to narrow the search.',
+          })}
+        </Typography>
+      ) : null}
     </Box>
   )
 }

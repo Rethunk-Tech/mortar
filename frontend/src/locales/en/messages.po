@@ -1453,7 +1453,7 @@ msgstr "In use"
 msgid "Show files"
 msgstr "Show files"
 
-#: src/mods/typedConfig/ConfigTab.tsx:433
+#: src/mods/typedConfig/ConfigTab.tsx:446
 msgid "Mods with settings"
 msgstr "Mods with settings"
 
@@ -2449,7 +2449,7 @@ msgstr "Mortar is up to date"
 #: src/mods/Toolbar.tsx:390
 #: src/mods/Toolbar.tsx:416
 #: src/mods/Toolbar.tsx:434
-#: src/mods/typedConfig/ConfigTab.tsx:512
+#: src/mods/typedConfig/ConfigTab.tsx:525
 #: src/profiles/CompareDialog.tsx:285
 #: src/profiles/CompareTop.tsx:182
 msgid "Filter mods"
@@ -3249,7 +3249,7 @@ msgstr "Find a mod in all profiles…"
 msgid "Compare…"
 msgstr "Compare…"
 
-#: src/mods/typedConfig/ConfigTab.tsx:375
+#: src/mods/typedConfig/ConfigTab.tsx:388
 msgid "No mod settings yet"
 msgstr "No mod settings yet"
 
@@ -10208,6 +10208,11 @@ msgstr "Uncategorised"
 msgid "Steam was not found"
 msgstr "Steam was not found"
 
+#. placeholder {0}: hits.length - MAX_SHOWN_HITS
+#: src/mods/typedConfig/ConfigTab.tsx:373
+msgid "{0, plural, one {# more setting; type more to narrow the search.} other {# more settings; type more to narrow the search.}}"
+msgstr "{0, plural, one {# more setting; type more to narrow the search.} other {# more settings; type more to narrow the search.}}"
+
 #. placeholder {0}: p.asset.info
 #: src/mods/describe.ts:166
 msgid "These mods may add the same item: {0}."
@@ -12195,7 +12200,7 @@ msgid "Flagged by {0}: {1}{2}"
 msgstr "Flagged by {0}: {1}{2}"
 
 #: src/mods/Toolbar.tsx:389
-#: src/mods/typedConfig/ConfigTab.tsx:513
+#: src/mods/typedConfig/ConfigTab.tsx:526
 msgid "{total, plural, one {Filter # mod} other {Filter # mods}}"
 msgstr "{total, plural, one {Filter # mod} other {Filter # mods}}"
 
@@ -12243,7 +12248,7 @@ msgstr "Stop the game to test a launch."
 #: src/firstrunTour/TourPopover.tsx:42
 #: src/games/GameSelect.tsx:287
 #: src/launch/PlayControl.tsx:184
-#: src/mods/typedConfig/ConfigTab.tsx:378
+#: src/mods/typedConfig/ConfigTab.tsx:391
 #: src/settings/GameSettingsPage.tsx:100
 #: src/settings/GameSettingsPage.tsx:128
 msgid "Play"
@@ -12470,7 +12475,7 @@ msgstr "Copy details"
 msgid "FromArea {0}"
 msgstr "FromArea {0}"
 
-#: src/mods/typedConfig/ConfigTab.tsx:382
+#: src/mods/typedConfig/ConfigTab.tsx:395
 msgid "Mods write their settings the first time the game runs."
 msgstr "Mods write their settings the first time the game runs."
 
@@ -14814,8 +14819,8 @@ msgstr "{0, plural, one {# day left} other {# days left}}"
 msgid "Could not add the shortcut"
 msgstr "Could not add the shortcut"
 
-#: src/mods/typedConfig/ConfigTab.tsx:349
-#: src/mods/typedConfig/ConfigTab.tsx:351
+#: src/mods/typedConfig/ConfigTab.tsx:354
+#: src/mods/typedConfig/ConfigTab.tsx:356
 msgid "Matching settings"
 msgstr "Matching settings"
 
@@ -15403,7 +15408,7 @@ msgid "Template deleted"
 msgstr "Template deleted"
 
 #: src/mods/ModsTab.tsx:138
-#: src/mods/typedConfig/ConfigTab.tsx:462
+#: src/mods/typedConfig/ConfigTab.tsx:475
 msgid "No mods match"
 msgstr "No mods match"
 
@@ -15486,7 +15491,7 @@ msgstr "Preferred download server"
 msgid "Put the profile back as it was before this entry. Newer entries are undone too."
 msgstr "Put the profile back as it was before this entry. Newer entries are undone too."
 
-#: src/mods/typedConfig/ConfigTab.tsx:502
+#: src/mods/typedConfig/ConfigTab.tsx:515
 msgid "Reading mod settings…"
 msgstr "Reading mod settings…"
 

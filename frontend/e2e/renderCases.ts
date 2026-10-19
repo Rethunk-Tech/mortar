@@ -62,8 +62,6 @@ export function newCases(h: Helpers): Case[] {
     },
     {
       name: 'config-search',
-      // Each keystroke re-renders the list of every mod with settings once.
-      budget: { updates: 3000 },
       setup: (p) => tab(p, 'Config'),
       run: (p) => typeInto(p, /^Filter mods/, 'speed'),
     },
