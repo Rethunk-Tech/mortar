@@ -46,6 +46,8 @@ export function pausedDownloadCases(): Case[] {
   return [
     {
       name: 'paused-download-sheet',
+      // The failed row's toast leaves once, inside the idle watch.
+      budget: { idleUpdates: 10, idleCommits: 1 },
       run: async (p) => {
         await p.evaluate((state) => {
           const w = globalThis as unknown as {
