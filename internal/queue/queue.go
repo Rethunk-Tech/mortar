@@ -63,6 +63,8 @@ const (
 // does not tie to its repository), NeedsFomod for AnswerFomod (a store item with a FOMOD installer), and
 // NeedsRoot for AnswerRoot (an extracted archive with no SMAPI manifest until the user picks a folder), and
 // ConfirmLarge for ConfirmLarge or Cancel (a download over LargeDownloadBytes, held before any bytes are fetched).
+// Paused keeps the partial file for ResumeItem; with AutoResume it was paused to free a slot for an item moved to
+// the top, and starts again by itself when a slot is free.
 const (
 	StateNeedsChoice  = "needs-choice"
 	StateNeedsConfirm = "needs-confirm"
@@ -72,6 +74,7 @@ const (
 	StateConfirmLarge = "confirm-large"
 	StateWaitingClick = "waiting-click"
 	StateQueued       = "queued"
+	StatePaused       = "paused"
 	StateDownloading  = "downloading"
 	StateInstalling   = "installing"
 	StateDone         = "done"
@@ -146,6 +149,12 @@ type Item struct {
 	ErrorKind string `json:"errorKind,omitempty"`
 	// Detection is what the antivirus flagged when the item failed on it; InstallAnyway answers it.
 	Detection *Detection `json:"detection,omitempty"`
+	// AutoResume marks a paused item that goes on by itself when a download slot frees (see Top).
+	AutoResume bool `json:"autoResume,omitempty"`
+	// Partial is the bytes already on disk of a paused or failed download that Download can continue.
+	Partial int64 `json:"partial,omitempty"`
+	// Needs lists the lowercase package ids this package requires; moving it to the top moves the pending ones too.
+	Needs []string `json:"needs,omitempty"`
 	// LargeOK is the player's go-ahead for a download over LargeDownloadBytes.
 	LargeOK bool `json:"largeOk,omitempty"`
 	// ScanOverride is the detection the player chose to install despite, kept for the download history.
@@ -271,6 +280,7 @@ type Request struct {
 
 	key     string
 	expires int64
+	needs   []string
 	// fromLink is a download the player started from a Nexus link.
 	fromLink bool
 	// url and sizeKB are a resolved package's download, and picture and category its icon and site category, set by
@@ -459,7 +469,7 @@ func New(d Deps) (*Service, error) {
 	// A Nexus file restored from the last session is not fetched, nor its page opened, until the user resumes the
 	// queue: nothing unattended starts a Nexus download.
 	if slices.ContainsFunc(s.items, func(it *Item) bool {
-		return it.State == StateQueued && it.Repo == "" && it.Package == ""
+		return (it.State == StateQueued || it.State == StatePaused && it.AutoResume) && it.Repo == "" && it.Package == ""
 	}) {
 		s.paused = true
 	}
@@ -558,6 +568,9 @@ func (s *Service) snapshot() State {
 	st := State{Items: make([]Item, len(s.items)), Paused: s.paused}
 	for i, it := range s.items {
 		st.Items[i] = *it
+		if it.State == StatePaused || it.State == StateFailed {
+			st.Items[i].Partial = github.Partial(s.dest(it.ID, it.FileName))
+		}
 	}
 	for _, u := range s.until {
 		if u.After(s.d.Now()) {
@@ -760,7 +773,7 @@ func (s *Service) add(ctx context.Context, reqs []Request) ([]Item, error) {
 		it := &Item{
 			ID: ids.New(), Kind: r.Kind, BatchID: r.BatchID, Game: r.Game, Profile: r.Profile, ModID: r.ModID, FileID: r.FileID,
 			Name: r.Name, FileName: r.FileName, Version: r.Version, State: StateQueued, key: r.key, expires: r.expires,
-			Package: r.Package, Source: r.Source, PackageFile: r.PackageFile, Digest: r.digest, URL: r.url, SizeKB: r.sizeKB, Picture: cmp.Or(r.picture, r.Picture), Category: r.category, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Exact: r.Exact, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
+			Package: r.Package, Source: r.Source, PackageFile: r.PackageFile, Digest: r.digest, URL: r.url, SizeKB: r.sizeKB, Picture: cmp.Or(r.picture, r.Picture), Category: r.category, Needs: r.needs, Repo: r.Repo, Tag: r.Tag, Asset: r.Asset, FallbackRepo: r.FallbackRepo, FallbackID: r.FallbackID, Latest: r.Latest, Exact: r.Exact, Disabled: slices.Clone(r.Disabled), Fomod: r.Fomod, fomod: r.Fomod, Overlay: r.Overlay,
 			Implicit: r.implicit(), FromLink: r.fromLink,
 		}
 		if it.Repo != "" {
@@ -913,7 +926,7 @@ func (s *Service) drop(match func(*Item) bool) {
 
 // Skip drops an item that has not started, that failed, or that waits for the user.
 func (s *Service) Skip(id string) {
-	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateDownloading, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge)
+	s.end(id, StateSkipped, StateFailed, StateQueued, StatePaused, StateWaitingClick, StateDownloading, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge)
 }
 
 // SkipAll skips every item that has not started.
@@ -921,7 +934,7 @@ func (s *Service) SkipAll() {
 	s.mu.Lock()
 	var ids []string
 	for _, it := range s.items {
-		if slices.Contains([]string{StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge}, it.State) {
+		if slices.Contains([]string{StateQueued, StatePaused, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge}, it.State) {
 			ids = append(ids, it.ID)
 		}
 	}
@@ -936,7 +949,7 @@ func (s *Service) SkipProfile(game, profileID string) {
 	s.mu.Lock()
 	for _, it := range s.items {
 		if it.Game == game && it.Profile == profileID &&
-			slices.Contains([]string{StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge}, it.State) {
+			slices.Contains([]string{StateQueued, StatePaused, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge}, it.State) {
 			it.State, it.Progress, it.Speed, it.key, it.staged, it.Error = StateSkipped, 0, 0, "", "", "profile deleted"
 		}
 	}
@@ -1060,7 +1073,7 @@ func notifyDesktopDownload(name, game, profile string, ok bool) {
 
 // Cancel stops an item, including a download under way. An install cannot be interrupted.
 func (s *Service) Cancel(id string) {
-	s.end(id, StateCancelled, StateQueued, StateWaitingClick, StateDownloading, StateConfirmLarge)
+	s.end(id, StateCancelled, StateQueued, StatePaused, StateWaitingClick, StateDownloading, StateConfirmLarge)
 }
 
 func (s *Service) end(id, to string, from ...string) { s.endWith(id, to, "", from...) }

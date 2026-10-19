@@ -77,6 +77,10 @@ func (s *Service) expandDirect(ctx context.Context, r Request) ([]Request, error
 		}
 		q.FileName = f.FileName
 		q.PackageFile = f.FileID
+		q.needs = nil
+		for _, d := range f.Dependencies {
+			q.needs = append(q.needs, strings.ToLower(d.ID))
+		}
 		out = append(out, q)
 		return nil
 	}

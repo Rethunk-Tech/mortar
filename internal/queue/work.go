@@ -46,13 +46,14 @@ func (s *Service) next(running map[string]bool) (it *Item, act action, held bool
 	}
 	pauseFetch := s.pauseFetch()
 	premium := s.d.Premium()
+	slotFree := s.downloading() < s.slots()
 	var head *Item
 	waiting := false
 	for _, it := range s.items {
 		switch {
 		case it.State == StateWaitingClick:
 			waiting = true
-		case it.State != StateQueued:
+		case !(it.State == StateQueued || it.State == StatePaused && it.AutoResume && slotFree):
 		case it.overlay && s.waitsForSameMod(it):
 		case running[it.Game+"\n"+it.Profile]:
 			held = true
@@ -267,7 +268,7 @@ func (s *Service) step(ctx context.Context) bool {
 	s.mu.Lock()
 	var queued []*Item
 	for _, it := range s.items {
-		if it.State == StateQueued || it.State == StateWaitingClick {
+		if it.State == StateQueued || it.State == StateWaitingClick || it.State == StatePaused {
 			queued = append(queued, it)
 		}
 	}
@@ -281,13 +282,18 @@ func (s *Service) step(ctx context.Context) bool {
 		s.mu.Unlock()
 		return false
 	}
+	if it.State == StatePaused {
+		it.State = StateQueued
+	}
+	it.AutoResume = false
 	snap := *it
 	if act == click {
 		it.State = StateWaitingClick
 		it.key, it.expires = "", 0
 	}
 	if act == fetch {
-		it.State, it.Progress, it.Speed = StateDownloading, 0, 0
+		// Progress stays: a continued partial picks up from where it was.
+		it.State, it.Speed = StateDownloading, 0
 		if it.started.IsZero() {
 			it.started = s.d.Now()
 		}

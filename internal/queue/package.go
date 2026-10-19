@@ -88,10 +88,22 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 			dep.Package, dep.Name, dep.Version, dep.url, dep.sizeKB = id, p.Name, p.Version, p.URL, p.Size>>10
 			dep.picture, dep.category = p.Icon, p.Category
 			dep.FileName = id + "-" + p.Version + ".zip"
+			dep.needs = packageNeeds(p.Dependencies)
 			out = append(out, dep)
 		}
 	}
 	return out, nil
+}
+
+// packageNeeds is the lowercase package ids of a package's "Namespace-Name-Version" dependencies.
+func packageNeeds(deps []string) []string {
+	var out []string
+	for _, d := range deps {
+		if i := strings.LastIndex(d, "-"); i > 0 {
+			out = append(out, strings.ToLower(d[:i]))
+		}
+	}
+	return out
 }
 
 // inferPackageReasons is which listed roots another listed root depends on, through the closure, by lowercase id.
