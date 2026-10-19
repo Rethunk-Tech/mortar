@@ -1176,6 +1176,12 @@ func run() error {
 			if err := items.Collect(keys, now); err != nil {
 				log.Printf("store collect: %v", err)
 			}
+			// Rollback snapshots count here whatever the retention setting, unlike for the age-based pass.
+			if withHistory, err := datasvc.KeepSet(profiles, true, keepSources); err != nil {
+				log.Printf("store drop superseded skipped: %v", err)
+			} else if err := items.DropSuperseded(withHistory); err != nil {
+				log.Printf("store drop superseded: %v", err)
+			}
 			for g := range keys {
 				if err := profiles.RefreshDependencies(g); err != nil {
 					log.Printf("refresh dependencies: %s: %v", g, err)

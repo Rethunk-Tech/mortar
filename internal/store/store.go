@@ -30,6 +30,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -867,6 +868,47 @@ func (s *Store) Collect(referenced map[string][]string, now time.Time) error {
 	errs = append(errs, s.collectBlobs(next, dropped, now))
 	errs = append(errs, s.saveIndex(next))
 	return errors.Join(errs...)
+}
+
+// DropSuperseded deletes Mortar's own bundles and the loader copies it fetched that no referenced key names while a
+// newer version of the same package is held: Mortar re-adds one it needs, and nothing else ever asks for the old
+// ones. Pass the keep set with history, so a rollback's keys survive.
+func (s *Store) DropSuperseded(referenced map[string][]string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	idx, err := s.loadIndex()
+	if err != nil {
+		return err
+	}
+	dropped := map[string]bool{}
+	var errs []error
+	for game, keys := range idx {
+		keep := keepSet(referenced[game])
+		for key, r := range keys {
+			if keep[key] || (r.Source != "mortar" && r.Source != "loader") || !hasNewer(keys, r) {
+				continue
+			}
+			if err := s.drop(game, key, r); err != nil {
+				errs = append(errs, err)
+				continue
+			}
+			dropped[r.Blob] = true
+			delete(keys, key)
+		}
+	}
+	if len(dropped) == 0 && len(errs) == 0 {
+		return nil
+	}
+	errs = append(errs, s.collectBlobs(idx, dropped, time.Now()))
+	errs = append(errs, s.saveIndex(idx))
+	return errors.Join(errs...)
+}
+
+// hasNewer reports whether keys holds a later version of r's package from the same source.
+func hasNewer(keys map[string]record, r record) bool {
+	return slices.ContainsFunc(slices.Collect(maps.Values(keys)), func(o record) bool {
+		return o.Source == r.Source && o.Package == r.Package && meta.Newer(o.Version, r.Version)
+	})
 }
 
 // drop deletes the folder a loader key names; a blob is left for collectBlobs, which knows who else names it.

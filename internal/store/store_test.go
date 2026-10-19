@@ -6,6 +6,7 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"syscall"
@@ -681,5 +682,38 @@ func TestKeysAndRootsCannotLeaveTheStore(t *testing.T) {
 		if sub, ok := resolveRoot(dir, root); ok {
 			t.Errorf("resolveRoot(%q) = %q", root, sub)
 		}
+	}
+}
+
+func TestDropSupersededKeepsWhatIsReferencedOrNewest(t *testing.T) {
+	s := newStore(t)
+	add := func(key, content string) {
+		dir := t.TempDir()
+		if err := os.WriteFile(filepath.Join(dir, "f"), []byte(content), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := s.AddDir(t.Context(), "lethal-company", key, dir); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for i, k := range []string{BridgeKey("0.1.0"), BridgeKey("0.2.0"), BridgeKey("0.2.7"), LoaderKey("bepinex5", "5.4.2304"), LoaderKey("bepinex5", "5.4.2305"), "local-a"} {
+		add(k, strconv.Itoa(i))
+	}
+	// 0.2.0 is a rollback's; 0.1.0 and 5.4.2304 are superseded and unreferenced; local mods are never Mortar's.
+	keep := map[string][]string{"lethal-company": {BridgeKey("0.2.0")}}
+	if err := s.DropSuperseded(keep); err != nil {
+		t.Fatal(err)
+	}
+	idx, err := s.loadIndex()
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := slices.Sorted(maps.Keys(idx["lethal-company"]))
+	want := []string{"bepinex5-5.4.2305", "bridge-0.2.0", "bridge-0.2.7", "local-a"}
+	if !slices.Equal(got, want) {
+		t.Fatalf("kept %v, want %v", got, want)
+	}
+	if got := names(t, filepath.Join(s.root, blobsDir)); len(got) != 3 {
+		t.Fatalf("blobs = %v", got)
 	}
 }
