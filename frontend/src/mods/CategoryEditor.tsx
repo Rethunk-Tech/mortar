@@ -143,15 +143,16 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
               onDelete={() => setPendingDelete(row)}
             />
           ))}
+        </DialogContent>
+        <DialogActions>
           <Button
             startIcon={<Plus size={14} />}
             onClick={() => setDraft([...draft, { id: '', name: '', color: '' }])}
             disabled={pending}
+            sx={{ mr: 'auto' }}
           >
             {t`Add category`}
           </Button>
-        </DialogContent>
-        <DialogActions>
           <Button onClick={requestClose} disabled={pending}>
             {t`Cancel`}
           </Button>
