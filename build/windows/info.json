@@ -1,11 +1,11 @@
 {
   "fixed": {
-    "file_version": "0.3.7"
+    "file_version": "0.3.8"
   },
   "info": {
     "0000": {
-      "ProductVersion": "0.3.7",
-      "FileVersion": "0.3.7",
+      "ProductVersion": "0.3.8",
+      "FileVersion": "0.3.8",
       "CompanyName": "Rethunk.Tech",
       "FileDescription": "Desktop mod manager for PC games",
       "LegalCopyright": "(c) 2026, Rethunk.Tech",
