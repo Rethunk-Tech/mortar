@@ -220,8 +220,9 @@ async function getText(url: string): Promise<string> {
   return res.text()
 }
 
-// A source that cannot be read or parsed keeps its committed figure, so one site being down never blocks a release's
-// publish; the warning names it for the next refresh.
+// A source that cannot be fetched keeps its committed figure, so one site being down never blocks a release's
+// publish; the warning names it for the next refresh. A source that answers but no longer parses (a reworded page)
+// fails the refresh, because keeping the old figure would present it as freshly checked.
 export async function refreshRivalFacts(): Promise<void> {
   const prev = rivalFacts()
   const out: Record<string, number | string> = {}
@@ -235,10 +236,17 @@ export async function refreshRivalFacts(): Promise<void> {
     process.stderr.write(`site: kept ${keys.join(', ')}: ${url}: ${String(err)}\n`)
   }
   for (const [id, src] of Object.entries(RIVAL_COUNTS)) {
+    let body: string
     try {
-      out[`${id}_count`] = src.count(await getText(src.url))
+      body = await getText(src.url)
     } catch (err) {
       keep([`${id}_count`], src.url, err)
+      continue
+    }
+    try {
+      out[`${id}_count`] = src.count(body)
+    } catch (err) {
+      throw new Error(`site: ${id}_count no longer parses from ${src.url}: ${String(err)}`)
     }
   }
   for (const [id, repo] of Object.entries(RIVAL_RELEASES)) {
