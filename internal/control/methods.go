@@ -476,6 +476,15 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "queue.resume":
 		s.Queue.Resume()
 		return s.Queue.State(), nil
+	case "queue.pause-item":
+		s.Queue.PauseItem(p.Name)
+		return s.Queue.State(), nil
+	case "queue.resume-item":
+		s.Queue.ResumeItem(p.Name)
+		return s.Queue.State(), nil
+	case "queue.top":
+		s.Queue.Top(p.Name)
+		return s.Queue.State(), nil
 	case "queue.clear":
 		s.Queue.ClearFinished()
 		return s.Queue.State(), nil

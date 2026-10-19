@@ -27,6 +27,9 @@ func TestWaveCommandsSendTheirArguments(t *testing.T) {
 		"library.strays.move":       profile.GameModsResult{Imported: 1},
 		"library.strays.dismiss":    nil,
 		"queue.retry-failed":        queue.RetryAllResult{Requeued: 2},
+		"queue.pause-item":          queue.State{},
+		"queue.resume-item":         queue.State{},
+		"queue.top":                 queue.State{},
 		"data.location":             datasvc.DataLocation{Dir: "/d", Portable: true},
 		"archive.preview":           archive.Preview{Manifests: []archive.PreviewManifest{{ID: "smapi:A.B", Name: "Ab"}}},
 	}
@@ -52,6 +55,9 @@ func TestWaveCommandsSendTheirArguments(t *testing.T) {
 		{[]string{"library", "strays", "stardew", "Farm", "--move=A", "--move=B"}, "library.strays.move", func(p control.Params) bool { return len(p.IDs) == 2 && p.Profile == "Farm" }, "Moved 1"},
 		{[]string{"library", "strays", "stardew", "--dismiss=Stray"}, "library.strays.dismiss", func(p control.Params) bool { return p.Name == "Stray" }, "Dismissed"},
 		{[]string{"queue", "retry-failed"}, "queue.retry-failed", func(p control.Params) bool { return true }, "Requeued 2"},
+		{[]string{"queue", "pause-item", "q1"}, "queue.pause-item", func(p control.Params) bool { return p.Name == "q1" }, "pause-item"},
+		{[]string{"queue", "resume-item", "q1"}, "queue.resume-item", func(p control.Params) bool { return p.Name == "q1" }, "resume-item"},
+		{[]string{"queue", "top", "q1"}, "queue.top", func(p control.Params) bool { return p.Name == "q1" }, "top"},
 		{[]string{"data", "location"}, "data.location", func(p control.Params) bool { return true }, "Portable"},
 		{[]string{"archive", "preview", "/tmp/a.zip"}, "archive.preview", func(p control.Params) bool { return p.Path == "/tmp/a.zip" }, "A.B"},
 	}

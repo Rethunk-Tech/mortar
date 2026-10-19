@@ -13,6 +13,8 @@ func queueHumanState(state string) string {
 		return "downloading"
 	case queue.StateWaitingClick, queue.StateNeedsChoice, queue.StateNeedsConfirm, queue.StateNeedsFomod, queue.StateNeedsRoot, queue.StateNeedsMerge, queue.StateConfirmLarge:
 		return "needs a click"
+	case queue.StatePaused:
+		return "paused"
 	case queue.StateFailed:
 		return "failed"
 	default:

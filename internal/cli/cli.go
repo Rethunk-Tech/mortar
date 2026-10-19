@@ -2244,6 +2244,15 @@ func (c *cmd) queue() error {
 			return c.queueAdd()
 		case "retry-failed":
 			return c.queueRetryFailed()
+		case "pause-item", "resume-item", "top":
+			if len(c.args) < 3 {
+				return usageError{"queue " + sub + " needs an item id"}
+			}
+			var st queue.State
+			if err := c.call(method, control.Params{Name: c.args[2]}, &st, readTimeout); err != nil {
+				return err
+			}
+			return c.emit(st, func() { fmt.Fprintf(c.out, "Queue item %s: %s.\n", c.args[2], sub) })
 		case "pause", "resume", "clear":
 			var st queue.State
 			if err := c.call(method, control.Params{}, &st, readTimeout); err != nil {
@@ -2611,6 +2620,7 @@ takes --game <id>, which may be left out when exactly one game is installed. Out
                                           queue one mod (GitHub id is owner/repo, Thunderstore Namespace-Name, else the site's project id)
   queue retry-failed                      requeue every retryable failed download in the history
   queue pause|resume|clear                control the download queue
+  queue pause-item|resume-item|top ID     pause or resume one download, or download it now
   browse <game> <text> [--source <id>|all] [--page N]  search a source, or all of them (default)
   update <game> <profile> <mod id>...|--all
                                           queue available mod updates

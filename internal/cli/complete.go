@@ -56,7 +56,7 @@ var subverbs = map[string][]string{
 	"launchers":  {"add", "remove"},
 	"tools":      {"run", "add", "update", "remove"},
 	"saves":      {"check"},
-	"queue":      {"add", "retry", "retry-failed", "skip", "pause", "resume", "clear"},
+	"queue":      {"add", "retry", "retry-failed", "skip", "pause", "resume", "pause-item", "resume-item", "top", "clear"},
 	"backups":    {"list", "create", "keep", "unkeep", "restore", "usage", "trim"},
 	"cache":      {"size", "clear"},
 	"data":       {"usage", "location", "move", "cleanup"},
