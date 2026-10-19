@@ -8,6 +8,7 @@ import {
   openSettings,
   waitForQuietNotices,
 } from './app.ts'
+import { newCases } from './renderCases.ts'
 import { HOOK } from './renderHook.ts'
 import { sandboxPort, selftest } from './sandbox.ts'
 
@@ -50,7 +51,7 @@ interface Budget {
 
 const DEFAULT_BUDGET: Budget = { updates: 1000, idleUpdates: 0, idleCommits: 0, idleCalls: 2 }
 
-interface Case {
+export interface Case {
   name: string
   /** Puts the app where the case starts; not measured. */
   setup?: (page: Page) => Promise<void>
@@ -289,6 +290,7 @@ const cases: Case[] = [
     },
   },
   { name: 'game-select', setup: toWorkspace, run: openGameSelect },
+  ...newCases({ toWorkspace, tab, view, row, typeInto, tabs, settleMs: SETTLE_MS }),
 ]
 
 /** Opens the profile the run measures. */
