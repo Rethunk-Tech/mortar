@@ -52,6 +52,8 @@ type Service struct {
 	// AfterFirstCheck runs once, when the first problem check has finished: startup has settled by then.
 	AfterFirstCheck func()
 	firstCheck      sync.Once
+	// Installing reports whether the download queue still has work for the profile; nil means never.
+	Installing func(gameID, profileID string) bool
 
 	mu      sync.Mutex
 	drift   map[string]driftScan
@@ -59,6 +61,8 @@ type Service struct {
 	updates map[string]cachedUpdates
 	checks  map[string]*problemCall
 	assets  map[string]cachedIndex
+	// orphans are the keys of the unneeded implicit mods the last check outside an install reported, per profile.
+	orphans map[string]map[string]bool
 }
 
 type problemCall struct {
@@ -122,7 +126,7 @@ func (c cached) fresh(fp string, now time.Time) bool {
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store, m *meta.Client) *Service {
-	return &Service{home: home, settings: s, profiles: profiles, meta: m, drift: map[string]driftScan{}, cache: map[string]cached{}, updates: map[string]cachedUpdates{}, checks: map[string]*problemCall{}, assets: map[string]cachedIndex{}}
+	return &Service{home: home, settings: s, profiles: profiles, meta: m, drift: map[string]driftScan{}, cache: map[string]cached{}, updates: map[string]cachedUpdates{}, checks: map[string]*problemCall{}, assets: map[string]cachedIndex{}, orphans: map[string]map[string]bool{}}
 }
 
 func platform() string {
@@ -324,6 +328,10 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		depth = settings.ResolveAt(s.settings.Get(), "conflictScanDepth", settings.Scope{Game: gameID, Profile: id}, s.profileOverrides(gameID, id))
 	}
 	fp += "|scan:" + depth
+	installing := s.Installing != nil && s.Installing(gameID, id)
+	if installing {
+		fp += "|installing"
+	}
 	settingRows := s.gameSettingFailures(gameID, id)
 	for _, f := range settingRows {
 		fp = strings.Join([]string{fp, "setting", f.Plugin}, "|")
@@ -434,6 +442,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 			}
 		}
 		logCheckTimings(id, r.Timings)
+		r.Cleanup = s.settleOrphans(key, r.Cleanup, installing)
 		s.recordHealth(gameID, id, env, mods, r)
 		return r
 	})
@@ -448,6 +457,28 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 	s.cache[key] = entry
 	s.mu.Unlock()
 	return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, s.withSaveFarms(ctx, gameID, id, r), gameID, mods, entry.sameJob)))
+}
+
+// settleOrphans keeps the count steady while the queue installs: a dependency lands before the mod that needs it, so
+// every implicit mod it brings in reads as unneeded until that mod does. During an install only the unneeded mods an
+// earlier check already reported stay listed; once the queue is idle the full list returns.
+func (s *Service) settleOrphans(profileKey string, rows []framework.Cleanup, installing bool) []framework.Cleanup {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	known, seen := s.orphans[profileKey]
+	if installing && seen {
+		return slices.DeleteFunc(slices.Clone(rows), func(c framework.Cleanup) bool { return c.Reason == orphanReason && !known[c.Key] })
+	}
+	if !installing {
+		now := map[string]bool{}
+		for _, c := range rows {
+			if c.Reason == orphanReason {
+				now[c.Key] = true
+			}
+		}
+		s.orphans[profileKey] = now
+	}
+	return rows
 }
 
 func (s *Service) withSaveFarms(ctx context.Context, gameID, id string, r Result) Result {

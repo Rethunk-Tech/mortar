@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/deps"
@@ -14,6 +15,11 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/source"
+	nexussource "github.com/Rethunk-Tech/mortar/internal/source/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
@@ -131,5 +137,55 @@ func TestRemoveSkippedPluginDeletesOnlyAPluginDLLInTheProfile(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(dir, "BepInEx/plugins/old/Fixture.dll")); !errors.Is(err, fs.ErrNotExist) {
 		t.Fatalf("the DLL is still there: %v", err)
+	}
+}
+
+// A dependency lands before the mod that needs it, so during a queue install each implicit mod it brings reads as
+// unneeded; the count must not jump up and fall back when the mod arrives.
+func TestOrphanRowsOfNewDependenciesWaitForTheQueueToDrain(t *testing.T) {
+	testfs.DataHome(t)
+	_, profiles := testenv.Stores(t)
+	p := testenv.Profile(t, profiles, "lethal-company", "LC")
+	source.Register(fakeThunderstore{id: "nexus"})
+	source.Register(fakeThunderstore{id: "thunderstore"})
+	t.Cleanup(func() {
+		source.Register(thunderstore.Driver{})
+		source.Register(nexussource.Driver{})
+	})
+	install := func(name string, implicit bool) {
+		short := name[strings.Index(name, "-")+1:]
+		zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), map[string]string{
+			"manifest.json": `{"name":"` + short + `","version_number":"1.0.0","dependencies":[]}`, "F.txt": name,
+		})
+		src := profile.Source{Kind: profile.KindThunderstore, Name: name, Version: "1.0.0"}.WithImplicit(implicit)
+		if _, err := profiles.InstallSource(t.Context(), "lethal-company", p.ID, zip, src); err != nil {
+			t.Fatal(err)
+		}
+	}
+	installing := false
+	set, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := NewService(t.TempDir(), set, profiles, nil)
+	s.Installing = func(string, string) bool { return installing }
+	count := func() int {
+		r, err := s.Problems(t.Context(), "lethal-company", p.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return len(r.Cleanup)
+	}
+	install("Ns-Root", false)
+	install("Ns-Old", true)
+	before := count()
+	installing = true
+	install("Ns-Dep", true)
+	if got := count(); got != before {
+		t.Fatalf("a dependency landing mid-install changed the count from %d to %d", before, got)
+	}
+	installing = false
+	if got := count(); got != before+1 {
+		t.Fatalf("after the queue drained: %d, want %d", got, before+1)
 	}
 }

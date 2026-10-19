@@ -577,6 +577,17 @@ func (s *Service) Busy() bool {
 	return slices.ContainsFunc(s.items, func(it *Item) bool { return !finished(it.State) })
 }
 
+// InstallingInto reports whether the queue still has work, or waits on a decision, for the profile.
+//
+//wails:ignore
+func (s *Service) InstallingInto(game, profileID string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return slices.ContainsFunc(s.items, func(it *Item) bool {
+		return it.Game == game && it.Profile == profileID && !finished(it.State)
+	})
+}
+
 func finished(state string) bool {
 	return state == StateDone || state == StateSkipped || state == StateCancelled
 }
