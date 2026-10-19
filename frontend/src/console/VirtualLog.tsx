@@ -116,7 +116,9 @@ function Row({
     >
       <Box sx={{ alignSelf: 'stretch', bgcolor: look.bar }} />
       {timestamps ? (
-        <Box sx={{ ...cell, color: 'text.secondary' }}>{entry.cont ? '' : entry.time}</Box>
+        <Box sx={{ ...cell, color: 'text.secondary' }} title={entry.cont ? undefined : entry.time}>
+          {entry.cont ? '' : entry.time.replace(FRACTION, '$1')}
+        </Box>
       ) : null}
       <Box sx={{ ...cell, color: look.color, fontWeight: 500 }}>
         {entry.cont ? '' : entry.level}
@@ -142,6 +144,9 @@ function Row({
 }
 
 // A fixed-height window over the rows: only the ones in view (plus a margin) are in the DOM.
+// A BepInEx logger mod's clock carries a fraction the 72px column has no room for; the title keeps it.
+const FRACTION = /^(\d\d:\d\d:\d\d)\.\d+$/
+
 export function VirtualLog({
   rows,
   timestamps,

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -32,7 +33,8 @@ func asLastRun(order []dotnet.Loaded, log string) map[string]bool {
 	at := map[string]int{}
 	n := 0
 	for line := range strings.Lines(log) {
-		m := loading.FindStringSubmatch(strings.TrimRight(line, "\r\n"))
+		_, line = launch.SplitBepInExStamp(strings.TrimRight(line, "\r\n"))
+		m := loading.FindStringSubmatch(line)
 		if m == nil {
 			continue
 		}

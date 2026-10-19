@@ -43,6 +43,9 @@ func TestAnalyze(t *testing.T) {
 			dep(fnd(KindMissingDependency, "Youtube Boombox 1.5.0", "missing dependencies: LC_API", 4, "LogOutput.log"), "LC_API"),
 			fnd(KindPatchException, "LateCompany", "System.NullReferenceException: Object reference not set to an instance of an object", 5, "LogOutput.log"),
 		}},
+		{"AsyncLoggers stamp", "[14:35:39.1094737] [Error  :   BepInEx] Could not load [A 1.0.0] because it has missing dependencies: B\n[Message:   BepInEx] BepInEx 5.4.23.5\n", "", []Finding{
+			dep(fnd(KindMissingDependency, "A 1.0.0", "missing dependencies: B", 1, "LogOutput.log"), "B"),
+		}},
 		{"newer message wording", "[Error  :   BepInEx] Could not load [A 1.0.0] because it has missing dependencies: B (>=2.0.0). Install the listed plugin(s) and restart the game.\n", "", []Finding{
 			dep(fnd(KindMissingDependency, "A 1.0.0", "missing dependencies: B (>=2.0.0)", 1, "LogOutput.log"), "B"),
 		}},

@@ -43,6 +43,21 @@ func TestFormatLogWritesBepInExLinesBackInItsFormat(t *testing.T) {
 	}
 }
 
+// mattymatty-AsyncLoggers prefixes a line with its time; the entry keeps it as Time and the run log writes it back.
+func TestParserSplitsALoggerModsStampFromBepInExLines(t *testing.T) {
+	log := "[Info   :   BepInEx] BepInEx 5.4.23.5\n[14:35:39.1344735] [Info   :SlendermanMod] Registered spawn rate for level type All to 2"
+	got := ParseLog(log)
+	if e := got[1]; e.Time != "14:35:39.1344735" || e.Level != Info || e.Mod != "SlendermanMod" || e.Message != "Registered spawn rate for level type All to 2" {
+		t.Fatalf("stamped entry = %+v", e)
+	}
+	if e := got[0]; e.Time != "" || e.Mod != "BepInEx" {
+		t.Fatalf("plain entry = %+v", e)
+	}
+	if out := FormatLog(got); out != log {
+		t.Fatalf("FormatLog = %q", out)
+	}
+}
+
 // fakeBepInEx writes LogOutput.log the way BepInEx does on a launch: it truncates the last run's log, then flushes its
 // buffer every so often, which can end mid-line.
 func fakeBepInEx(t *testing.T, path string, chunks []string) {

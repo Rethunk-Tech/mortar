@@ -160,7 +160,7 @@ func FormatLog(entries []Entry) string {
 			b.WriteString(e.Message)
 			continue
 		}
-		if e.Time == "" {
+		if e.Time == "" || !smapiTime.MatchString(e.Time) {
 			b.WriteString(formatBepInEx(e))
 			continue
 		}
