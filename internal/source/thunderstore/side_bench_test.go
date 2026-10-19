@@ -13,6 +13,7 @@ import (
 // benchLoaderVersions times the first Versions of the loader package against a real cached listing, named by
 // MORTAR_BENCH_THUNDERSTORE (a cache folder's thunderstore directory); side keeps the side file between runs.
 func benchLoaderVersions(b *testing.B, side bool) {
+	b.Helper()
 	src := os.Getenv("MORTAR_BENCH_THUNDERSTORE")
 	if src == "" {
 		b.Skip("MORTAR_BENCH_THUNDERSTORE names no cached listing")
@@ -27,9 +28,19 @@ func benchLoaderVersions(b *testing.B, side bool) {
 	if err != nil || json.Unmarshal(raw, &meta) != nil {
 		b.Fatal("no lethal-company.meta.json in the cache")
 	}
-	d := Driver{CacheDir: cache, Now: func() time.Time { return meta.Fetched.Add(time.Minute) }}
+	// A cold start is more than a refresh window after the last fetch; the side variant runs there, the listing one
+	// inside the window so it does not ask the site.
+	age := time.Minute
+	d := Driver{CacheDir: cache, Now: func() time.Time { return meta.Fetched.Add(age) }}
 	if _, err := d.Versions(b.Context(), "lethal-company", "BepInEx", "BepInExPack", ""); err != nil {
 		b.Fatal(err)
+	}
+	if side {
+		age = 2 * refreshAfter
+		// The background refresh is measured by the test; here it must not ask the site or parse the listing.
+		refreshMu.Lock()
+		refreshTried[cache+"|lethal-company"] = d.now()
+		refreshMu.Unlock()
 	}
 	for b.Loop() {
 		memoMu.Lock()

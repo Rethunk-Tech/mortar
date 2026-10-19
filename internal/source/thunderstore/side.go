@@ -1,14 +1,17 @@
 package thunderstore
 
 import (
+	"context"
 	"encoding/json"
 	"path/filepath"
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 // A community's listing is tens of megabytes, and the loader's own package (BepInExPack and its like) is asked for at
@@ -40,8 +43,10 @@ func writeSide(dir, key string, s sideFile) {
 	}
 }
 
-// sideVersions answers from the side file when the index it was read from is the cached one and still fresh.
-func (d Driver) sideVersions(key, namespace, name string) ([]string, bool) {
+// sideVersions answers from the side file when the index it was read from is the cached one, however old that is: a
+// loader's newest version being one refresh behind is fine, and the refresh a stale index needs runs in the
+// background, not on the caller's path.
+func (d Driver) sideVersions(ctx context.Context, key, namespace, name, mortarVersion string) ([]string, bool) {
 	if !communityKey.MatchString(key) {
 		return nil, false
 	}
@@ -50,15 +55,46 @@ func (d Driver) sideVersions(key, namespace, name string) ([]string, bool) {
 	if b, err := fsx.ReadFile(filepath.Join(dir, key+".meta.json")); err != nil || json.Unmarshal(b, &meta) != nil {
 		return nil, false
 	}
-	if meta.Hash == "" || d.now().Sub(meta.Fetched) >= refreshAfter {
+	if meta.Hash == "" {
 		return nil, false
 	}
 	sideMu.Lock()
-	defer sideMu.Unlock()
 	s := readSide(dir, key)
+	sideMu.Unlock()
 	v, ok := s.Versions[sideID(namespace, name)]
-	return slices.Clone(v), ok && s.Hash == meta.Hash && len(v) > 0
+	if !ok || s.Hash != meta.Hash || len(v) == 0 {
+		return nil, false
+	}
+	if d.now().Sub(meta.Fetched) >= refreshAfter {
+		d.refreshInBackground(ctx, key, mortarVersion)
+	}
+	return slices.Clone(v), true
 }
+
+var (
+	refreshMu    sync.Mutex
+	refreshTried = map[string]time.Time{}
+)
+
+// refreshInBackground refreshes the community's index once per refreshAfter, which rewrites the side file when the
+// listing changes. A refresh that fails (offline) is not retried until the next window.
+func (d Driver) refreshInBackground(ctx context.Context, key, mortarVersion string) {
+	tried := d.cacheRoot() + "|" + key
+	refreshMu.Lock()
+	defer refreshMu.Unlock()
+	if last, ok := refreshTried[tried]; ok && d.now().Sub(last) < refreshAfter {
+		return
+	}
+	refreshTried[tried] = d.now()
+	bg, cancel := context.WithTimeout(context.WithoutCancel(ctx), refreshTimeout)
+	go func() {
+		defer cancel()
+		_, _ = d.packages(bg, key, source.UserAgentWithSite(mortarVersion))
+	}()
+}
+
+// refreshTimeout bounds a background index refresh, which downloads every chunk of a large community.
+const refreshTimeout = 5 * time.Minute
 
 // rememberVersions adds one package's list, read from the listing the cache holds, to the side file.
 func (d Driver) rememberVersions(key, namespace, name string, versions []string) {

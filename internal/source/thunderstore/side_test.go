@@ -42,16 +42,27 @@ func TestVersionsAnswerFromTheSideFileWithoutTheListing(t *testing.T) {
 		t.Fatalf("the listing was rebuilt: %v", err)
 	}
 
-	// Older than the index's freshness: the listing is rebuilt and the side file follows it.
+	// A cold start, more than an hour on: the side file still answers, and the refresh runs behind it. The site's
+	// index changes meanwhile, so the new list shows once the refresh has rebuilt the listing.
+	f.chunk0[0]["versions"] = []ver{{Description: "d", VersionNumber: "3.0.0"}, {Description: "d", VersionNumber: "2.0.0"}, {Description: "d", VersionNumber: "1.0.0"}}
+	f.third.Store(true)
 	clock = clock.Add(2 * refreshAfter)
 	stale, err := d.Versions(t.Context(), "lethal-company", "Alice", "MoreCompany", "1.2.3")
 	if err != nil || !slices.Equal(stale, first) {
-		t.Fatalf("after expiry = %v, %v", stale, err)
+		t.Fatalf("a stale side file = %v, %v; want %v", stale, err, first)
+	}
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		got, err := d.Versions(t.Context(), "lethal-company", "Alice", "MoreCompany", "1.2.3")
+		if err == nil && len(got) == 3 {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("the refresh never reached the side file: %v, %v", got, err)
+		}
+		time.Sleep(10 * time.Millisecond)
 	}
 	if f.indexHits.Load() == hits {
-		t.Fatal("a stale side file answered without the index")
-	}
-	if _, err := os.Stat(listings[0]); err != nil {
-		t.Fatalf("the fallback did not rebuild the listing: %v", err)
+		t.Fatal("nothing refreshed the index")
 	}
 }

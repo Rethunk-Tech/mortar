@@ -96,7 +96,7 @@ func (d Driver) Publisher(ctx context.Context, key, name, ver, mortarVersion str
 
 // Versions lists the package's versions in the community's index, newest first.
 func (d Driver) Versions(ctx context.Context, key, namespace, name, mortarVersion string) ([]string, error) {
-	if out, ok := d.sideVersions(key, namespace, name); ok {
+	if out, ok := d.sideVersions(ctx, key, namespace, name, mortarVersion); ok {
 		return out, nil
 	}
 	pk, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
