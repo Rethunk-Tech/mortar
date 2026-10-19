@@ -5,6 +5,7 @@ type CardState =
   | { kind: 'idle' }
   | { kind: 'waiting-nexus' }
   | { kind: 'queued' }
+  | { kind: 'paused'; percent: number }
   | { kind: 'downloading'; percent: number }
   | { kind: 'installing' }
   | { kind: 'attention' }
@@ -32,6 +33,8 @@ function stateOf(item: Item): CardState {
       return { kind: 'waiting-nexus' }
     case 'queued':
       return { kind: 'queued' }
+    case 'paused':
+      return { kind: 'paused', percent: Math.round(item.progress) }
     case 'downloading':
       return { kind: 'downloading', percent: Math.round(item.progress) }
     case 'installing':
@@ -61,6 +64,7 @@ function cardState(items: Item[], source: string, id: string, profileID: string)
 const ACTIVE = new Set<CardState['kind']>([
   'waiting-nexus',
   'queued',
+  'paused',
   'downloading',
   'installing',
   'attention',

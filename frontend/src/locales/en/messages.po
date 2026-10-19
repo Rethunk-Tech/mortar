@@ -117,7 +117,7 @@ msgid "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 
 #. placeholder {0}: items.length
-#: src/queue/QueueBody.tsx:275
+#: src/queue/QueueBody.tsx:323
 msgid "Failed ({0})"
 msgstr "Failed ({0})"
 
@@ -218,7 +218,7 @@ msgstr "Allow cleanup"
 msgid "Revert {name} to the installed copy?"
 msgstr "Revert {name} to the installed copy?"
 
-#: src/queue/QueueBody.tsx:403
+#: src/queue/QueueBody.tsx:502
 msgid "Skip this profile"
 msgstr "Skip this profile"
 
@@ -1192,7 +1192,7 @@ msgid "Turn on sharing nearby?"
 msgstr "Turn on sharing nearby?"
 
 #: src/mods/CleanupSection.tsx:126
-#: src/queue/QueueBody.tsx:121
+#: src/queue/QueueBody.tsx:125
 msgid "Dismiss {name}"
 msgstr "Dismiss {name}"
 
@@ -1945,7 +1945,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/profiles/GameModsDialog.tsx:195
 #: src/profiles/HealthDialog.tsx:245
 #: src/profiles/LaunchPreview.tsx:82
-#: src/queue/QueueBody.tsx:298
+#: src/queue/QueueBody.tsx:346
 #: src/queue/store.ts:167
 #: src/saves/BackupsDialog.tsx:167
 #: src/saves/SavesTab.tsx:60
@@ -2064,7 +2064,7 @@ msgstr "Save file {slot}"
 
 #: src/install/MergeCallout.tsx:51
 #: src/install/NeedsRootCallout.tsx:44
-#: src/queue/QueueBody.tsx:161
+#: src/queue/QueueBody.tsx:209
 msgid "Skip"
 msgstr "Skip"
 
@@ -2226,7 +2226,7 @@ msgid "Actions"
 msgstr "Actions"
 
 #: src/queue/LargeDownloadDialog.tsx:69
-#: src/queue/QueueBody.tsx:235
+#: src/queue/QueueBody.tsx:283
 msgid "Continue anyway"
 msgstr "Continue anyway"
 
@@ -2262,6 +2262,11 @@ msgstr "Trim history of {0}"
 #: src/console/BisectDialog.tsx:57
 msgid "A mod's files are missing from this profile's folder, so Mortar cannot switch it off for the test."
 msgstr "A mod's files are missing from this profile's folder, so Mortar cannot switch it off for the test."
+
+#. placeholder {0}: i.name
+#: src/queue/QueueBody.tsx:465
+msgid "Resume {0}"
+msgstr "Resume {0}"
 
 #: src/console/RunsPicker.tsx:47
 msgid "Runs: {button}"
@@ -2633,7 +2638,7 @@ msgstr "In-game menu"
 msgid "Include libraries and supporting mods"
 msgstr "Include libraries and supporting mods"
 
-#: src/browse/CardProgress.tsx:45
+#: src/browse/CardProgress.tsx:52
 #: src/mods/ModDependencyTree.tsx:86
 #: src/mods/ModDependencyTree.tsx:86
 #: src/mods/problemFix/WhereButtons.tsx:47
@@ -2663,7 +2668,8 @@ msgid "Leave the caches alone."
 msgstr "Leave the caches alone."
 
 #. placeholder {0}: i.name
-#: src/queue/QueueBody.tsx:491
+#: src/queue/QueueBody.tsx:472
+#: src/queue/QueueBody.tsx:597
 msgid "Skip {0}"
 msgstr "Skip {0}"
 
@@ -2835,7 +2841,7 @@ msgid "Track a Nexus mod when Mortar installs it"
 msgstr "Track a Nexus mod when Mortar installs it"
 
 #: src/mods/updateReview/EverywhereDialog.tsx:51
-#: src/queue/QueueBody.tsx:428
+#: src/queue/QueueBody.tsx:528
 #: src/queue/QueueHistory.tsx:70
 msgid "Skipped"
 msgstr "Skipped"
@@ -4623,7 +4629,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/profiles/MergeDialog.tsx:238
 #: src/profiles/PackImportDialog.tsx:177
 #: src/queue/LargeDownloadDialog.tsx:72
-#: src/queue/QueueBody.tsx:227
+#: src/queue/QueueBody.tsx:275
 #: src/settings/sections/NexusSSO.tsx:68
 #: src/settings/sections/nxmHandler.tsx:65
 #: src/share/ModpackDialog.tsx:259
@@ -4857,7 +4863,7 @@ msgid "Save to library"
 msgstr "Save to library"
 
 #. placeholder {0}: active.length
-#: src/queue/QueueBody.tsx:471
+#: src/queue/QueueBody.tsx:572
 msgid "In progress ({0})"
 msgstr "In progress ({0})"
 
@@ -4906,7 +4912,7 @@ msgstr "Game setting off"
 msgid "Summary"
 msgstr "Summary"
 
-#: src/queue/QueueBody.tsx:222
+#: src/queue/QueueBody.tsx:270
 msgid "Very large download"
 msgstr "Very large download"
 
@@ -4986,7 +4992,7 @@ msgstr "Mortar installs this itself."
 msgid "{0, plural, one {# mod already matches} other {# mods already match}} {targetName}."
 msgstr "{0, plural, one {# mod already matches} other {# mods already match}} {targetName}."
 
-#: src/queue/QueueBody.tsx:393
+#: src/queue/QueueBody.tsx:492
 msgid "Skip every waiting download"
 msgstr "Skip every waiting download"
 
@@ -5027,7 +5033,7 @@ msgstr "Mortar uses your gh login for GitHub requests, which raises the rate lim
 
 #. placeholder {0}: item.repo
 #. placeholder {1}: item.tag
-#: src/queue/QueueBody.tsx:173
+#: src/queue/QueueBody.tsx:221
 msgid "{0} {1} has several archives. Which one should Mortar install?"
 msgstr "{0} {1} has several archives. Which one should Mortar install?"
 
@@ -5099,7 +5105,7 @@ msgstr "{0, plural, one {# config file comes with it.} other {# config files com
 msgid "Today"
 msgstr "Today"
 
-#: src/queue/QueueBody.tsx:135
+#: src/queue/QueueBody.tsx:183
 msgid "Needs your click"
 msgstr "Needs your click"
 
@@ -5159,7 +5165,7 @@ msgstr "Violet"
 msgid "Message {n} of {total} copied"
 msgstr "Message {n} of {total} copied"
 
-#: src/queue/QueueBody.tsx:223
+#: src/queue/QueueBody.tsx:271
 msgid "This download is {size}, which is unusually large for a mod."
 msgstr "This download is {size}, which is unusually large for a mod."
 
@@ -5403,7 +5409,7 @@ msgid "There are no mods to share."
 msgstr "There are no mods to share."
 
 #: src/mods/Toolbar.tsx:308
-#: src/queue/QueueBody.tsx:450
+#: src/queue/QueueBody.tsx:551
 msgid "Browse mods"
 msgstr "Browse mods"
 
@@ -5624,7 +5630,7 @@ msgstr "Copy of {name}"
 msgid "Export…"
 msgstr "Export…"
 
-#: src/queue/QueueBody.tsx:172
+#: src/queue/QueueBody.tsx:220
 msgid "Choose a file"
 msgstr "Choose a file"
 
@@ -6537,7 +6543,7 @@ msgid "Launch options"
 msgstr "Launch options"
 
 #. placeholder {0}: names(next)
-#: src/queue/QueueBody.tsx:478
+#: src/queue/QueueBody.tsx:580
 msgid "Up next: {0}"
 msgstr "Up next: {0}"
 
@@ -6588,6 +6594,11 @@ msgstr "Where to share"
 #: src/settings/sections/Appearance.tsx:230
 msgid "Background"
 msgstr "Background"
+
+#. placeholder {0}: item.name
+#: src/queue/QueueBody.tsx:162
+msgid "Move {0} up"
+msgstr "Move {0} up"
 
 #: src/profiles/HealthDialog.tsx:59
 msgid "The folder of {name} was deleted outside Mortar"
@@ -6673,7 +6684,7 @@ msgstr "Adding the missing mods"
 msgid "Add to this profile"
 msgstr "Add to this profile"
 
-#: src/queue/QueueBody.tsx:266
+#: src/queue/QueueBody.tsx:314
 msgid "Retry failed"
 msgstr "Retry failed"
 
@@ -6969,7 +6980,7 @@ msgid "{0, plural, one {Mark # implicit} other {Mark # implicit}}"
 msgstr "{0, plural, one {Mark # implicit} other {Mark # implicit}}"
 
 #. placeholder {0}: item.name
-#: src/queue/QueueBody.tsx:366
+#: src/queue/QueueBody.tsx:414
 msgid "Download progress for {0}"
 msgstr "Download progress for {0}"
 
@@ -7202,7 +7213,7 @@ msgstr "{summary} · {0}"
 msgid "Console command"
 msgstr "Console command"
 
-#: src/queue/QueueBody.tsx:317
+#: src/queue/QueueBody.tsx:365
 msgid "Windows removed the file as malware without saying which. If you trust it, restore it from Windows Security's protection history."
 msgstr "Windows removed the file as malware without saying which. If you trust it, restore it from Windows Security's protection history."
 
@@ -7302,7 +7313,7 @@ msgid "Want help, news or a say in what comes next? Mortar has a Discord server.
 msgstr "Want help, news or a say in what comes next? Mortar has a Discord server."
 
 #. placeholder {0}: item.repo
-#: src/queue/QueueBody.tsx:198
+#: src/queue/QueueBody.tsx:246
 msgid "This download's mod is not known to come from {0}."
 msgstr "This download's mod is not known to come from {0}."
 
@@ -7697,6 +7708,11 @@ msgstr "The update for {0} did not finish"
 #: src/mods/problemText.ts:48
 msgid "Dismissed"
 msgstr "Dismissed"
+
+#. placeholder {0}: items.length
+#: src/queue/QueueBody.tsx:446
+msgid "Paused ({0})"
+msgstr "Paused ({0})"
 
 #: src/profiles/PackImportDialog.tsx:155
 msgid "Profile code"
@@ -8239,7 +8255,7 @@ msgstr "Only settings and options differ."
 msgid "From another mod manager"
 msgstr "From another mod manager"
 
-#: src/queue/QueueBody.tsx:396
+#: src/queue/QueueBody.tsx:495
 msgid "Skip all"
 msgstr "Skip all"
 
@@ -9929,7 +9945,7 @@ msgstr "Description"
 msgid "No mods have logged yet"
 msgstr "No mods have logged yet"
 
-#: src/queue/QueueBody.tsx:136
+#: src/queue/QueueBody.tsx:184
 msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
@@ -10443,7 +10459,7 @@ msgstr "{count, plural, one {Imported # mod} other {Imported # mods}}"
 msgid "pinned in {0}"
 msgstr "pinned in {0}"
 
-#: src/browse/CardProgress.tsx:44
+#: src/browse/CardProgress.tsx:51
 msgid "Waiting for Nexus…"
 msgstr "Waiting for Nexus…"
 
@@ -10538,6 +10554,10 @@ msgstr "Paste a share link, a collection link, a Patreon post link, an itch.io p
 #: src/settings/sections/nxmHandler.tsx:65
 msgid "Not now"
 msgstr "Not now"
+
+#: src/queue/QueueBody.tsx:458
+msgid "Waiting for a free slot · {done} of {total}"
+msgstr "Waiting for a free slot · {done} of {total}"
 
 #: src/profiles/OverrideRows.tsx:55
 #: src/settings/GraphicsApiRow.tsx:17
@@ -11009,6 +11029,11 @@ msgstr "{name} (disabled)"
 msgid "Existing OBS sources stop working until their URLs are copied again."
 msgstr "Existing OBS sources stop working until their URLs are copied again."
 
+#. placeholder {0}: item.name
+#: src/queue/QueueBody.tsx:137
+msgid "Pause {0}"
+msgstr "Pause {0}"
+
 #: src/mods/problemWhy.ts:73
 msgid "Two enabled mods carry the same plugin. The loader starts only one of them, so you may be running the older copy."
 msgstr "Two enabled mods carry the same plugin. The loader starts only one of them, so you may be running the older copy."
@@ -11036,7 +11061,7 @@ msgstr "Updates"
 msgid "The text that is copied"
 msgstr "The text that is copied"
 
-#: src/queue/QueueBody.tsx:447
+#: src/queue/QueueBody.tsx:548
 msgid "Nothing downloading"
 msgstr "Nothing downloading"
 
@@ -11272,7 +11297,7 @@ msgstr "This update changed its install options. Your earlier picks are kept whe
 msgid "Move up"
 msgstr "Move up"
 
-#: src/queue/QueueBody.tsx:145
+#: src/queue/QueueBody.tsx:193
 msgid "Open download page"
 msgstr "Open download page"
 
@@ -11407,7 +11432,7 @@ msgstr "Setup"
 #. placeholder {0}: formatKb(downloadedKb(item))
 #. placeholder {1}: formatKb(item.sizeKb)
 #. placeholder {2}: formatBytes(item.speed)
-#: src/queue/QueueBody.tsx:352
+#: src/queue/QueueBody.tsx:400
 msgid "{0} of {1} · {2}/s"
 msgstr "{0} of {1} · {2}/s"
 
@@ -12241,7 +12266,7 @@ msgstr "Running {who}"
 #. placeholder {0}: det.scanner
 #. placeholder {1}: det.name
 #. placeholder {2}: det.file ? ` in ${det.file}` : ''
-#: src/queue/QueueBody.tsx:319
+#: src/queue/QueueBody.tsx:367
 msgid "Flagged by {0}: {1}{2}"
 msgstr "Flagged by {0}: {1}{2}"
 
@@ -12377,7 +12402,7 @@ msgstr "Your profiles have {0}. Update replaces each profile's copy."
 
 #. placeholder {0}: done.length
 #. placeholder {1}: names(done)
-#: src/queue/QueueBody.tsx:505
+#: src/queue/QueueBody.tsx:612
 msgid "Done ({0}): {1}"
 msgstr "Done ({0}): {1}"
 
@@ -12490,7 +12515,7 @@ msgstr "The backup from {when} is deleted for good, with every save in it."
 msgid "{popularity} · {dl}"
 msgstr "{popularity} · {dl}"
 
-#: src/queue/QueueBody.tsx:515
+#: src/queue/QueueBody.tsx:622
 msgid "Could not verify its source"
 msgstr "Could not verify its source"
 
@@ -12618,6 +12643,11 @@ msgstr "Switch {0} to {1}?"
 #: src/games/GameSelect.tsx:418
 msgid "All games"
 msgstr "All games"
+
+#. placeholder {0}: item.name
+#: src/queue/QueueBody.tsx:168
+msgid "Move {0} down"
+msgstr "Move {0} down"
 
 #: src/console/StartupPanel.tsx:123
 msgid "No startup measured yet"
@@ -13227,6 +13257,7 @@ msgstr "Mortar stops offering updates for this mod and keeps the version you hav
 msgid "Mod details"
 msgstr "Mod details"
 
+#: src/queue/QueueBody.tsx:346
 #: src/queue/QueueSheet.tsx:107
 msgid "Resume"
 msgstr "Resume"
@@ -13374,6 +13405,11 @@ msgstr "{0}'s {1} is {2}; it can match {installed} instead."
 #: src/mods/ModsTab.tsx:120
 msgid "Loading mods"
 msgstr "Loading mods"
+
+#. placeholder {0}: item.name
+#: src/queue/QueueBody.tsx:149
+msgid "Download {0} now"
+msgstr "Download {0} now"
 
 #: src/mods/ModMenu.tsx:244
 msgid "Move up (loses files)"
@@ -13585,7 +13621,7 @@ msgstr "Update digest notification"
 msgid "Downloaded"
 msgstr "Downloaded"
 
-#: src/queue/QueueBody.tsx:424
+#: src/queue/QueueBody.tsx:524
 #: src/queue/QueueHistory.tsx:72
 msgid "Cancelled"
 msgstr "Cancelled"
@@ -13768,7 +13804,7 @@ msgstr "General"
 msgid "Report to author"
 msgstr "Report to author"
 
-#: src/queue/QueueBody.tsx:400
+#: src/queue/QueueBody.tsx:499
 msgid "Skip the waiting downloads of this profile"
 msgstr "Skip the waiting downloads of this profile"
 
@@ -13830,7 +13866,7 @@ msgstr "This is not a Mod Manager Download link from Nexus."
 msgid "Location"
 msgstr "Location"
 
-#: src/queue/QueueBody.tsx:454
+#: src/queue/QueueBody.tsx:555
 msgid "Updates, missing dependencies and links from mod sites land here."
 msgstr "Updates, missing dependencies and links from mod sites land here."
 
@@ -13972,8 +14008,8 @@ msgstr "Game content"
 msgid "More setting values"
 msgstr "More setting values"
 
-#: src/browse/CardProgress.tsx:46
-#: src/queue/QueueBody.tsx:353
+#: src/browse/CardProgress.tsx:53
+#: src/queue/QueueBody.tsx:401
 #: src/settings/sections/ModsProfiles.tsx:14
 msgid "Installing"
 msgstr "Installing"
@@ -14178,7 +14214,7 @@ msgid "Flatpak Steam cannot read your mods"
 msgstr "Flatpak Steam cannot read your mods"
 
 #. placeholder {0}: item.name
-#: src/queue/QueueBody.tsx:377
+#: src/queue/QueueBody.tsx:427
 msgid "Cancel {0}"
 msgstr "Cancel {0}"
 
@@ -14433,7 +14469,7 @@ msgstr "{0, plural, one {Set category for # mod} other {Set category for # mods}
 msgid "No eligible profiles."
 msgstr "No eligible profiles."
 
-#: src/queue/QueueBody.tsx:197
+#: src/queue/QueueBody.tsx:245
 msgid "Check this download"
 msgstr "Check this download"
 
@@ -14611,6 +14647,11 @@ msgstr "The game under the pointer or focus grows taller and shows more art"
 #: src/settings/SettingsNav.tsx:52
 msgid "Settings sections"
 msgstr "Settings sections"
+
+#. placeholder {0}: state.percent
+#: src/browse/CardProgress.tsx:45
+msgid "Paused at {0}%"
+msgstr "Paused at {0}%"
 
 #: src/mods/typedConfig/ConfigPane.tsx:176
 msgid "Search entries"
@@ -15099,7 +15140,7 @@ msgstr "Update and play"
 msgid "{0}: {1} → {2}"
 msgstr "{0}: {1} → {2}"
 
-#: src/queue/QueueBody.tsx:427
+#: src/queue/QueueBody.tsx:527
 msgid "Already the newest file"
 msgstr "Already the newest file"
 
@@ -15297,6 +15338,10 @@ msgstr "{0} · kept for rollback"
 msgid "· revision {review} is out"
 msgstr "· revision {review} is out"
 
+#: src/queue/QueueBody.tsx:459
+msgid "Paused at {done} of {total}"
+msgstr "Paused at {done} of {total}"
+
 #: src/settings/sections/ItchAccount.tsx:54
 msgid "Remove key"
 msgstr "Remove key"
@@ -15418,13 +15463,13 @@ msgstr "Default folder"
 
 #. placeholder {0}: dropped.length
 #. placeholder {1}: names(dropped)
-#: src/queue/QueueBody.tsx:525
+#: src/queue/QueueBody.tsx:632
 msgid "Skipped ({0}): {1}"
 msgstr "Skipped ({0}): {1}"
 
 #: src/mods/ChangeVersionDialog.tsx:123
-#: src/queue/QueueBody.tsx:207
-#: src/queue/QueueBody.tsx:343
+#: src/queue/QueueBody.tsx:255
+#: src/queue/QueueBody.tsx:391
 #: src/toasts/AvOverrideDialog.tsx:18
 msgid "Install anyway"
 msgstr "Install anyway"

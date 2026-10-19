@@ -39,6 +39,13 @@ function CardProgress({ state }: { state: Exclude<CardState, { kind: 'idle' }> }
           <LinearProgress variant="determinate" value={state.percent} />
         </Box>
       )
+    case 'paused':
+      return (
+        <Box sx={{ width: BAR_PX }}>
+          <Typography sx={{ fontSize: 12 }}>{t`Paused at ${state.percent}%`}</Typography>
+          <LinearProgress variant="determinate" color="inherit" value={state.percent} />
+        </Box>
+      )
     default: {
       const label = {
         'waiting-nexus': t`Waiting for Nexus…`,

@@ -8,7 +8,6 @@ const FAIL_FILL = 0.1
 const FAIL_LINE = 0.35
 
 import { Download, RotateCcw, X } from 'lucide-react'
-import type { ReactNode } from 'react'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import {
   Cancel,
@@ -37,17 +36,10 @@ import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { Callout, Title } from './Callout.tsx'
 import { Fold } from './QueueFold.tsx'
+import { MoveButtons, NowButton, PauseButton, Paused, Row, SectionTitle } from './QueueRows.tsx'
+import { detail, ROW } from './rowStyle.ts'
 import { displayName, downloadedKb, isActive, tile } from './totals.ts'
 
-const ROW = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '10px',
-  height: 54,
-  pl: '10px',
-  pr: '6px',
-  borderRadius: '6px',
-} as const
 const NAME_MAX = 3
 
 const names = (items: Item[]) =>
@@ -55,64 +47,6 @@ const names = (items: Item[]) =>
     items.map((i) => displayName(i)),
     NAME_MAX,
   )
-
-function SectionTitle({
-  color,
-  children,
-  action,
-}: {
-  color?: string
-  children: ReactNode
-  action?: ReactNode
-}) {
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        fontSize: 12,
-        fontWeight: 700,
-        letterSpacing: '0.06em',
-        textTransform: 'uppercase',
-        color: color ?? 'var(--mortar-ink-sec)',
-      }}
-    >
-      {children}
-      {action}
-    </Box>
-  )
-}
-
-function Row({
-  item,
-  sub,
-  actions,
-  sx,
-}: {
-  item: Item
-  sub: ReactNode
-  actions: ReactNode
-  sx?: object
-}) {
-  return (
-    <Box sx={{ ...ROW, ...sx }}>
-      <LetterTile mod={tile(item)} size={36} />
-      <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <Title item={item} size={14} />
-        {sub}
-      </Box>
-      {actions}
-    </Box>
-  )
-}
-
-const detail = {
-  fontSize: 12,
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-} as const
 
 function DismissButton({ item }: { item: Item }) {
   const { t } = useLingui()
@@ -295,7 +229,7 @@ function Failed({ items }: { items: Item[] }) {
                 startIcon={<RotateCcw size={14} />}
                 onClick={() => Retry(i.id).catch(reportUnexpected)}
               >
-                {t`Retry`}
+                {i.partial ? t`Resume` : t`Retry`}
               </Button>
               <DismissButton item={i} />
             </>
@@ -373,12 +307,15 @@ function Active({ item }: { item: Item }) {
         />
       </Box>
       {downloading ? (
-        <TipIconButton
-          label={t`Cancel ${item.name}`}
-          onClick={() => Cancel(item.id).catch(reportUnexpected)}
-        >
-          <X size={14} />
-        </TipIconButton>
+        <>
+          <PauseButton item={item} />
+          <TipIconButton
+            label={t`Cancel ${item.name}`}
+            onClick={() => Cancel(item.id).catch(reportUnexpected)}
+          >
+            <X size={14} />
+          </TipIconButton>
+        </>
       ) : null}
     </Box>
   )
@@ -418,6 +355,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
   const failed = items.filter((i) => i.state === 'failed')
   const active = items.filter(isActive)
   const next = items.filter((i) => i.state === 'queued')
+  const paused = items.filter((i) => i.state === 'paused')
   const done = items.filter((i) => i.state === 'done')
   const droppedReason = (i: Item) => {
     if (i.state === 'cancelled') {
@@ -436,6 +374,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
       (needsMerge ? 1 : 0) +
       failed.length +
       active.length +
+      paused.length +
       next.length +
       done.length +
       dropped.length ===
@@ -472,6 +411,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
       {active.map((i) => (
         <Active key={i.id} item={i} />
       ))}
+      <Paused items={paused} />
       {next.length > 0 ? (
         <Fold
           bg="var(--mortar-raised-60)"
@@ -487,12 +427,17 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
                 <Typography sx={{ ...detail, color: 'text.secondary' }}>{i.fileName}</Typography>
               }
               actions={
-                <TipIconButton
-                  label={t`Skip ${i.name}`}
-                  onClick={() => Skip(i.id).catch(reportUnexpected)}
-                >
-                  <X size={14} />
-                </TipIconButton>
+                <>
+                  <MoveButtons item={i} />
+                  <NowButton item={i} />
+                  <PauseButton item={i} />
+                  <TipIconButton
+                    label={t`Skip ${i.name}`}
+                    onClick={() => Skip(i.id).catch(reportUnexpected)}
+                  >
+                    <X size={14} />
+                  </TipIconButton>
+                </>
               }
             />
           ))}

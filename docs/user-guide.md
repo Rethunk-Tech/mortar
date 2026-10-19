@@ -71,6 +71,8 @@ Premium accounts download inside Mortar. Free accounts click **Mod Manager Downl
 
 A download over 2 GB asks first: Mortar shows its size and a warning, and nothing downloads until you choose **Continue anyway** (**Cancel** is the default). Before any download starts, Mortar also checks that the file, its unpacked copy and a little spare room fit on the drive; when they do not, the download fails at once and says how much is needed and how much is free. Free some space, then **Retry**.
 
+In the downloads panel, **Pause** stops one download and keeps what it has fetched; **Resume** continues from there, also after you restart Mortar. A download that failed on a network error shows **Resume** instead of Retry and picks up where it stopped, unless the file changed on the server. **Download now** moves a waiting or paused download to the front; if every slot is busy, the last running download steps aside and starts again by itself when a slot frees. The arrows reorder waiting downloads.
+
 ## Browser extension
 
 Optional: it marks Nexus pages with what your profile already has and sends Mod Manager Download clicks to Mortar. **Settings › Downloads** has a **Download the extension** button for `mortar-browser-extension.zip` from its [releases](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest), and says **The browser extension is too old for this Mortar** (or too new) when versions drift.

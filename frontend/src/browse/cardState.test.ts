@@ -34,6 +34,7 @@ test('final and failed states', () => {
     cardState([item({ id: 'x', repo: 'a/b', state })], 'github', 'a/b', 'p')
   expect(at('done')).toEqual({ kind: 'done' })
   expect(at('failed')).toEqual({ kind: 'failed', itemId: 'x' })
+  expect(at('paused')).toEqual({ kind: 'paused', percent: 0 })
   expect(at('skipped')).toEqual({ kind: 'idle' })
   expect(at('needs-choice')).toEqual({ kind: 'attention' })
 })
