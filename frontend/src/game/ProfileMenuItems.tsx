@@ -33,7 +33,7 @@ import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
-import { BackupMenuItem } from './BackupMenuItems.tsx'
+import { BackupMenuItem, RestoreMenuItem } from './BackupMenuItems.tsx'
 import { applyStagedCover, hasPickedCover } from './cover.ts'
 import { FarmMenuItem } from './FarmMenuItem.tsx'
 import { openProfileDialog } from './profileDialog.ts'
@@ -219,6 +219,7 @@ function ShareMenuItems({ profile, close }: { profile: Profile; close: () => voi
   return [
     <FarmMenuItem key="farm" profile={profile} close={close} />,
     <BackupMenuItem key="backup" profile={profile} close={close} />,
+    <RestoreMenuItem key="restore" close={close} />,
   ]
 }
 

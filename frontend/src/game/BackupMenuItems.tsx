@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Checkbox, DialogContentText, FormControlLabel } from '@mui/material'
-import { HardDriveDownload } from 'lucide-react'
+import { ArchiveRestore, HardDriveDownload } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
   BackupDialog,
@@ -8,10 +8,11 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { formatBytes } from '../i18n/bytes.ts'
+import { restoreBackup } from '../profiles/restoreBackup.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
-import { reportError } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { openProfileDialog } from './profileDialog.ts'
 
@@ -28,6 +29,25 @@ export function BackupMenuItem({ profile, close }: { profile: Profile; close: ()
       onClick={() => {
         close()
         openProfileDialog('backup', profile.id)
+      }}
+    />
+  )
+}
+
+// Restoring makes a new profile from the file, so it sits beside Back up rather than acting on this profile.
+export function RestoreMenuItem({ close }: { close: () => void }) {
+  const { t } = useLingui()
+  const hasGame = useProfiles((s) => s.game !== null)
+  if (!hasGame) {
+    return null
+  }
+  return (
+    <MenuAction
+      icon={<ArchiveRestore size={16} />}
+      label={t`Restore from a file…`}
+      onClick={() => {
+        close()
+        restoreBackup().catch(reportUnexpected)
       }}
     />
   )

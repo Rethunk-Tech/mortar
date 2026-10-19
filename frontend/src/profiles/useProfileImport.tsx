@@ -1,14 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
-import { ArchiveRestore, Download, FolderInput, type LucideIcon } from 'lucide-react'
+import { Download, FolderInput, type LucideIcon } from 'lucide-react'
 import { type ReactNode, useMemo, useState } from 'react'
 import { useNav } from '../nav/store.ts'
 import { openImport } from '../share/store.ts'
-import { reportUnexpected } from '../toasts/report.ts'
 import { GameModsDialog } from './GameModsDialog.tsx'
 import { ImportWizard } from './ImportWizard.tsx'
 import { PackImportDialog } from './PackImportDialog.tsx'
 import { hasThunderstore } from './packImport.ts'
-import { restoreBackup } from './restoreBackup.ts'
 import { useProfiles } from './store.ts'
 
 export interface ImportEntry {
@@ -35,12 +33,6 @@ export function useProfileImport(game: string): { entries: ImportEntry[]; dialog
       run: () => setGameMods(true),
     },
     { key: 'link', label: t`From a link or file…`, icon: Download, run: () => openImport() },
-    {
-      key: 'backup',
-      label: t`Restore from a file…`,
-      icon: ArchiveRestore,
-      run: () => restoreBackup().catch(reportUnexpected),
-    },
     {
       key: 'other-manager',
       label: t`From another mod manager…`,

@@ -16,7 +16,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
-import { BackupMenuItem } from './BackupMenuItems.tsx'
+import { BackupMenuItem, RestoreMenuItem } from './BackupMenuItems.tsx'
 import { HomeButton } from './HomeButton.tsx'
 import { openProfileDialog } from './profileDialog.ts'
 import { SaveTemplateMenuItem } from './TemplateMenuItems.tsx'
@@ -71,6 +71,7 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
         />
         <SaveTemplateMenuItem profile={profile} close={close} />
         <BackupMenuItem profile={profile} close={close} />
+        <RestoreMenuItem close={close} />
         <MenuRule />
         <MenuHeading>{t`Review`}</MenuHeading>
         <MenuAction
