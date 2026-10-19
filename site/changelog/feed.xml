@@ -7,6 +7,94 @@
   <updated>2026-10-19T00:00:00Z</updated>
   <author><name>Rethunk.Tech</name></author>
   <entry>
+    <title>Mortar 0.3.8</title>
+    <id>https://mortar.rethunk.tech/changelog/#v0.3.8</id>
+    <link href="https://mortar.rethunk.tech/changelog/#v0.3.8" />
+    <updated>2026-10-19T00:00:00Z</updated>
+    <content type="html">        &#60;h3&#62;New&#60;/h3&#62;
+        &#60;h4&#62;Games&#60;/h4&#62;
+        &#60;ul&#62;
+        &#60;li&#62;Valheim and Risk of Rain 2 dedicated server profiles, with their own launch settings&#60;/li&#62;
+        &#60;li&#62;A game missing from the catalog, added by hand and kept on this computer&#60;/li&#62;
+        &#60;li&#62;Save folders for 21 more games, including PEAK&#38;#39;s campfire saves&#60;/li&#62;
+        &#60;li&#62;Starter templates for Lethal Company, Valheim and Vintage Story&#60;/li&#62;
+        &#60;li&#62;Lutris copies of Vintage Story, and EA games installed on another drive&#60;/li&#62;
+        &#60;li&#62;A game hidden from the game list&#60;/li&#62;
+        &#60;li&#62;Palworld, Astroneer and seven more Unreal Engine games through Shimloader, which Add a game also offers&#60;/li&#62;
+        &#60;li&#62;CurseForge as a source for Lethal Company and Valheim&#60;/li&#62;
+        &#60;/ul&#62;
+        &#60;h4&#62;Mods and browsing&#60;/h4&#62;
+        &#60;ul&#62;
+        &#60;li&#62;A choice of version when installing from a mod&#38;#39;s details or from an installed mod&#60;/li&#62;
+        &#60;li&#62;Mods hidden from Browse, or everything by one author, with modpacks, translations and cheats left out unless you ask&#60;/li&#62;
+        &#60;li&#62;Sources found for BepInEx plugins on Thunderstore and for Vintage Story mods on the Mod DB&#60;/li&#62;
+        &#60;li&#62;A Support the author link on mods whose page has one&#60;/li&#62;
+        &#60;li&#62;Middle-click a mod to open its page, and Ctrl+click in Browse&#60;/li&#62;
+        &#60;li&#62;Groups inside groups in the Mods list&#60;/li&#62;
+        &#60;li&#62;A Switched off column&#60;/li&#62;
+        &#60;li&#62;An offer to switch off the mods that need a mod you just switched off&#60;/li&#62;
+        &#60;li&#62;A mod&#38;#39;s name, author and version edited for one profile&#60;/li&#62;
+        &#60;li&#62;Installed Thunderstore packages that the community no longer lists flagged as problems&#60;/li&#62;
+        &#60;li&#62;Details pages for Vintage Story Mod DB, Modrinth and CurseForge mods&#60;/li&#62;
+        &#60;li&#62;Mods new since you last looked marked in Browse&#60;/li&#62;
+        &#60;li&#62;What&#38;#39;s new shown for Thunderstore, CurseForge and Vintage Story updates&#60;/li&#62;
+        &#60;li&#62;An update channel per mod for GitHub, CurseForge and Modrinth mods&#60;/li&#62;
+        &#60;li&#62;A search across every config file in a profile, and a way to delete one no mod owns&#60;/li&#62;
+        &#60;li&#62;Report a mod to its author from Mortar for Thunderstore, CurseForge and Vintage Story mods&#60;/li&#62;
+        &#60;li&#62;Downloads over 2 GB ask before they start, and a download that would not fit on the drive stops before it begins&#60;/li&#62;
+        &#60;li&#62;Pause, resume and reorder downloads, or start one now ahead of the rest&#60;/li&#62;
+        &#60;li&#62;A download speed limit, and a per-game choice to pause downloads while you play&#60;/li&#62;
+        &#60;/ul&#62;
+        &#60;h4&#62;Profiles and sharing&#60;/h4&#62;
+        &#60;ul&#62;
+        &#60;li&#62;A profile kept in a folder of its own, such as one on another drive&#60;/li&#62;
+        &#60;li&#62;A profile frozen so its mods stay on their versions&#60;/li&#62;
+        &#60;li&#62;Mods and profiles starred as favourites&#60;/li&#62;
+        &#60;li&#62;Several r2modman or Gale profiles imported at once from a folder you choose, or a pack imported under a name of your own&#60;/li&#62;
+        &#60;li&#62;A mod&#38;#39;s state or a config file kept different on this computer on a synced profile&#60;/li&#62;
+        &#60;li&#62;The mod list shared as Thunderstore dependency strings&#60;/li&#62;
+        &#60;li&#62;A co-op mod list for Thunderstore games and Vintage Story, to match a friend&#38;#39;s mods&#60;/li&#62;
+        &#60;li&#62;A Thunderstore modpack export form that remembers its fields and suggests the next version&#60;/li&#62;
+        &#60;li&#62;Importing a pack over a profile keeps your own config files unless you choose to replace them&#60;/li&#62;
+        &#60;/ul&#62;
+        &#60;h4&#62;Launching and loaders&#60;/h4&#62;
+        &#60;ul&#62;
+        &#60;li&#62;Heroic and Lutris copies started through their own launcher&#60;/li&#62;
+        &#60;li&#62;Skip the intro for Stardew Valley&#60;/li&#62;
+        &#60;li&#62;Console tab commands in BepInEx games with a bridge console&#60;/li&#62;
+        &#60;li&#62;Show the console window and Log level settings for MelonLoader games&#60;/li&#62;
+        &#60;li&#62;The likely culprit named when a BepInEx, MelonLoader or Vintage Story game crashes&#60;/li&#62;
+        &#60;li&#62;A Mortar bridge for REPO, PEAK, Risk of Rain 2 and Content Warning&#60;/li&#62;
+        &#60;li&#62;A typed editor for MelonLoader settings, and its load order shown&#60;/li&#62;
+        &#60;li&#62;Console and Problems for ReturnOfModding, GDWeave, Lovely and Northstar games&#60;/li&#62;
+        &#60;li&#62;Vintage Story mod loader errors listed as problems&#60;/li&#62;
+        &#60;li&#62;A fix that removes an older copy of a plugin when BepInEx skips it for a newer one&#60;/li&#62;
+        &#60;/ul&#62;
+        &#60;h4&#62;Interface and settings&#60;/h4&#62;
+        &#60;ul&#62;
+        &#60;li&#62;A notice when a new mod loader version is out, per game or for every loader&#60;/li&#62;
+        &#60;li&#62;Mouse back and forward buttons and Alt with the arrow keys move between pages&#60;/li&#62;
+        &#60;li&#62;A choice of app font, and an accent colour that follows the desktop&#60;/li&#62;
+        &#60;li&#62;Ask on Discord and Suggest a feature in the Help menu, and Report a bug posting to Mortar&#38;#39;s Discord&#60;/li&#62;
+        &#60;/ul&#62;
+        &#60;h3&#62;Fixed&#60;/h3&#62;
+        &#60;ul&#62;
+        &#60;li&#62;Risk of Rain 2 dedicated servers read their settings from server.cfg&#60;/li&#62;
+        &#60;li&#62;Add this profile to Steam finds the signed-in Steam account on current Steam versions&#60;/li&#62;
+        &#60;li&#62;The Instances and Delay fields show their values&#60;/li&#62;
+        &#60;li&#62;Switching profiles is faster&#60;/li&#62;
+        &#60;li&#62;Mortar starts faster&#60;/li&#62;
+        &#60;li&#62;Thunderstore downloads try another server when one is down&#60;/li&#62;
+        &#60;li&#62;An interrupted or failed download picks up where it stopped instead of starting over&#60;/li&#62;
+        &#60;li&#62;Logs from mods that add timestamps, such as AsyncLoggers, show their time, level and source in place&#60;/li&#62;
+        &#60;li&#62;Freezing a profile also holds mods you install afterwards&#60;/li&#62;
+        &#60;li&#62;Crash reports no longer blame a mod whose name only contains the plugin&#38;#39;s&#60;/li&#62;
+        &#60;li&#62;Mods larger than 2 GB install instead of failing&#60;/li&#62;
+        &#60;li&#62;The close button closes or hides Mortar with one click&#60;/li&#62;
+        &#60;li&#62;Flatpak keeps its saved secrets beside the data folder&#60;/li&#62;
+        &#60;/ul&#62;</content>
+  </entry>
+  <entry>
     <title>Mortar 0.3.7</title>
     <id>https://mortar.rethunk.tech/changelog/#v0.3.7</id>
     <link href="https://mortar.rethunk.tech/changelog/#v0.3.7" />
