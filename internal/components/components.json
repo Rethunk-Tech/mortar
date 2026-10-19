@@ -1,5 +1,5 @@
 {
-  "serial": 1792387675,
+  "serial": 1792420832,
   "components": [
     {
       "game": "melonloader",
@@ -39,10 +39,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-smapi-bridge"
       },
-      "tag": "v0.2.7",
-      "asset": "MortarSmapiBridge-0.2.7.zip",
-      "version": "0.2.7",
-      "sha256": "49549f50cd008ffe7cc27cc19d2977822afa58a6fe11664b08102d5cc9b56c8f"
+      "tag": "v0.2.8",
+      "asset": "MortarSmapiBridge-0.2.8.zip",
+      "version": "0.2.8",
+      "sha256": "08b54dea8b945b1f809792d063b46278afe96b457763e8b9516117237d7e261a"
     },
     {
       "game": "lethal-company",
@@ -53,10 +53,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.2.7",
-      "asset": "MortarBepInExBridge-0.2.7.zip",
-      "version": "0.2.7",
-      "sha256": "d7cfd919e0a151fb276f5066a2e26143c9c48c67e5d2988a5fc5f2bde23786b1"
+      "tag": "v0.3.0",
+      "asset": "MortarBepInExBridge_LethalCompany-0.3.0.zip",
+      "version": "0.3.0",
+      "sha256": "42c2c1ea1e68f5266cad0e5b3df7228ab346d162fe39d53d0296dfe7438835e9"
     },
     {
       "game": "valheim",
@@ -67,10 +67,66 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.2.7",
-      "asset": "MortarBepInExBridge-0.2.7.zip",
-      "version": "0.2.7",
-      "sha256": "d7cfd919e0a151fb276f5066a2e26143c9c48c67e5d2988a5fc5f2bde23786b1"
+      "tag": "v0.3.0",
+      "asset": "MortarBepInExBridge_Valheim-0.3.0.zip",
+      "version": "0.3.0",
+      "sha256": "2cf2b7fe0e8f7e7b353508f62376b5f881dc695f7c51b70e03ff7255eb5dee80"
+    },
+    {
+      "game": "repo",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.3.0",
+      "asset": "MortarBepInExBridge-0.3.0.zip",
+      "version": "0.3.0",
+      "sha256": "01461e888c8bf1b917f8c28a5c3afda05081d5819af4ab5d1f5227912a0c0023"
+    },
+    {
+      "game": "peak",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.3.0",
+      "asset": "MortarBepInExBridge-0.3.0.zip",
+      "version": "0.3.0",
+      "sha256": "01461e888c8bf1b917f8c28a5c3afda05081d5819af4ab5d1f5227912a0c0023"
+    },
+    {
+      "game": "riskofrain2",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.3.0",
+      "asset": "MortarBepInExBridge-0.3.0.zip",
+      "version": "0.3.0",
+      "sha256": "01461e888c8bf1b917f8c28a5c3afda05081d5819af4ab5d1f5227912a0c0023"
+    },
+    {
+      "game": "content-warning",
+      "name": "bridge",
+      "kind": "bridge",
+      "source": {
+        "host": "github.com",
+        "owner": "Rethunk-Tech",
+        "repo": "mortar-bepinex-bridge"
+      },
+      "tag": "v0.3.0",
+      "asset": "MortarBepInExBridge-0.3.0.zip",
+      "version": "0.3.0",
+      "sha256": "01461e888c8bf1b917f8c28a5c3afda05081d5819af4ab5d1f5227912a0c0023"
     }
   ],
   "games": [
@@ -328,8 +384,8 @@
           "name": "BepInEx 5",
           "nexusModId": 3605,
           "companion": "bridge",
-          "package": "denikson-BepInExPack_Valheim",
-          "console": true
+          "console": true,
+          "package": "denikson-BepInExPack_Valheim"
         }
       ],
       "sources": [
@@ -10190,11 +10246,11 @@
       "markerDir": "bin/x64_DX12",
       "metadata": [],
       "paths": {
-        "saves": {
-          "windows": "{documents}/The Witcher 3/gamesaves"
-        },
         "mods": {
           "windows": "{install}"
+        },
+        "saves": {
+          "windows": "{documents}/The Witcher 3/gamesaves"
         }
       },
       "deploy": "profile",
@@ -10373,11 +10429,11 @@
       "markerDir": "bin/x64",
       "metadata": [],
       "paths": {
-        "saves": {
-          "windows": "{home}/Saved Games/CD Projekt Red/Cyberpunk 2077"
-        },
         "mods": {
           "windows": "{install}"
+        },
+        "saves": {
+          "windows": "{home}/Saved Games/CD Projekt Red/Cyberpunk 2077"
         }
       },
       "deploy": "profile",
@@ -10624,12 +10680,12 @@
       "marker": "7DaysToDie.exe",
       "metadata": [],
       "paths": {
+        "mods": {
+          "windows": "{install}/Mods"
+        },
         "saves": {
           "windows": "{appData}/7DaysToDie/Saves",
           "linux": "{xdgData}/7DaysToDie/Saves"
-        },
-        "mods": {
-          "windows": "{install}/Mods"
         }
       },
       "deploy": "profile",
@@ -11567,8 +11623,8 @@
             "name": "Port",
             "flag": "-port",
             "default": "2456",
-            "pattern": "[0-9]{1,5}",
-            "hint": "Valheim also uses the next two ports."
+            "hint": "Valheim also uses the next two ports.",
+            "pattern": "[0-9]{1,5}"
           },
           {
             "id": "world",
@@ -11582,17 +11638,17 @@
             "name": "Password",
             "flag": "-password",
             "required": true,
+            "hint": "At least 5 characters, and not part of the world name.",
             "secret": true,
-            "pattern": ".{5,64}",
-            "hint": "At least 5 characters, and not part of the world name."
+            "pattern": ".{5,64}"
           },
           {
             "id": "public",
             "name": "List publicly (0 or 1)",
             "flag": "-public",
             "default": "0",
-            "pattern": "[01]",
-            "hint": "1 lists the server in the in-game browser; 0 keeps it private."
+            "hint": "1 lists the server in the in-game browser; 0 keeps it private.",
+            "pattern": "[01]"
           }
         ]
       }
@@ -11636,32 +11692,32 @@
           {
             "id": "name",
             "name": "Server name",
+            "cvar": "sv_hostname",
             "default": "Mortar server",
-            "pattern": "[^\";\\n]{1,64}",
-            "cvar": "sv_hostname"
+            "pattern": "[^\";\\n]{1,64}"
           },
           {
             "id": "port",
             "name": "Port",
-            "default": "27015",
-            "pattern": "[0-9]{1,5}",
             "cvar": "sv_port",
-            "hint": "Players join on this port."
+            "default": "27015",
+            "hint": "Players join on this port.",
+            "pattern": "[0-9]{1,5}"
           },
           {
             "id": "password",
             "name": "Password",
-            "secret": true,
-            "pattern": "[^\";\\n]{1,64}",
             "cvar": "sv_password",
-            "hint": "Leave empty for an open server."
+            "hint": "Leave empty for an open server.",
+            "secret": true,
+            "pattern": "[^\";\\n]{1,64}"
           },
           {
             "id": "maxplayers",
             "name": "Player limit",
+            "cvar": "sv_maxplayers",
             "default": "4",
-            "pattern": "[0-9]{1,2}",
-            "cvar": "sv_maxplayers"
+            "pattern": "[0-9]{1,2}"
           }
         ]
       }
@@ -11691,7 +11747,6 @@
           "id": "shimloader",
           "name": "Shimloader",
           "package": "Thunderstore-unreal_shimloader",
-          "placeDir": "Pal/Binaries/Win64",
           "routes": [
             {
               "dir": "shimloader/mod",
@@ -11709,7 +11764,8 @@
               "dir": "shimloader/overlay",
               "track": "subdir"
             }
-          ]
+          ],
+          "placeDir": "Pal/Binaries/Win64"
         }
       ],
       "sources": [
@@ -11744,7 +11800,6 @@
           "id": "shimloader",
           "name": "Shimloader",
           "package": "Thunderstore-unreal_shimloader",
-          "placeDir": "Astro/Binaries/Win64",
           "routes": [
             {
               "dir": "shimloader/mod",
@@ -11763,7 +11818,8 @@
               "dir": "shimloader/overlay",
               "track": "subdir"
             }
-          ]
+          ],
+          "placeDir": "Astro/Binaries/Win64"
         }
       ],
       "sources": [
@@ -11798,7 +11854,6 @@
           "id": "shimloader",
           "name": "Shimloader",
           "package": "Thunderstore-unreal_shimloader",
-          "placeDir": "Panicore/Binaries/Win64",
           "routes": [
             {
               "dir": "shimloader/mod",
@@ -11816,7 +11871,8 @@
               "dir": "shimloader/overlay",
               "track": "subdir"
             }
-          ]
+          ],
+          "placeDir": "Panicore/Binaries/Win64"
         }
       ],
       "sources": [
@@ -11851,7 +11907,6 @@
           "id": "shimloader",
           "name": "Shimloader",
           "package": "Thunderstore-unreal_shimloader",
-          "placeDir": "SoulcaliburVI/Binaries/Win64",
           "routes": [
             {
               "dir": "shimloader/mod",
@@ -11869,7 +11924,8 @@
               "dir": "shimloader/overlay",
               "track": "subdir"
             }
-          ]
+          ],
+          "placeDir": "SoulcaliburVI/Binaries/Win64"
         }
       ],
       "sources": [
@@ -11904,7 +11960,6 @@
           "id": "shimloader",
           "name": "Shimloader",
           "package": "Thunderstore-unreal_shimloader",
-          "placeDir": "Helden/Binaries/Win64",
           "routes": [
             {
               "dir": "shimloader/mod",
@@ -11922,7 +11977,8 @@
               "dir": "shimloader/overlay",
               "track": "subdir"
             }
-          ]
+          ],
+          "placeDir": "Helden/Binaries/Win64"
         }
       ],
       "sources": [
@@ -11957,7 +12013,6 @@
           "id": "shimloader",
           "name": "Shimloader",
           "package": "Thunderstore-unreal_shimloader",
-          "placeDir": "Chameleon/Binaries/Win64",
           "routes": [
             {
               "dir": "shimloader/mod",
@@ -11975,7 +12030,8 @@
               "dir": "shimloader/overlay",
               "track": "subdir"
             }
-          ]
+          ],
+          "placeDir": "Chameleon/Binaries/Win64"
         }
       ],
       "sources": [
@@ -12010,7 +12066,6 @@
           "id": "shimloader",
           "name": "Shimloader",
           "package": "Thunderstore-unreal_shimloader",
-          "placeDir": "Minos/Binaries/Win64",
           "routes": [
             {
               "dir": "shimloader/mod",
@@ -12028,7 +12083,8 @@
               "dir": "shimloader/overlay",
               "track": "subdir"
             }
-          ]
+          ],
+          "placeDir": "Minos/Binaries/Win64"
         }
       ],
       "sources": [
@@ -12063,7 +12119,6 @@
           "id": "shimloader",
           "name": "Shimloader",
           "package": "Thunderstore-unreal_shimloader",
-          "placeDir": "Ride/Binaries/Win64",
           "routes": [
             {
               "dir": "shimloader/mod",
@@ -12081,7 +12136,8 @@
               "dir": "shimloader/overlay",
               "track": "subdir"
             }
-          ]
+          ],
+          "placeDir": "Ride/Binaries/Win64"
         }
       ],
       "sources": [
@@ -12119,7 +12175,6 @@
           "id": "shimloader",
           "name": "Shimloader",
           "package": "Thunderstore-unreal_shimloader",
-          "placeDir": "R5/Binaries/Win64",
           "routes": [
             {
               "dir": "shimloader/mod",
@@ -12137,7 +12192,8 @@
               "dir": "shimloader/overlay",
               "track": "subdir"
             }
-          ]
+          ],
+          "placeDir": "R5/Binaries/Win64"
         }
       ],
       "sources": [
