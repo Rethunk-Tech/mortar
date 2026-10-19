@@ -32,7 +32,7 @@ func TestPrefDefaultsMatchToday(t *testing.T) {
 	if d.KeepDownloadArchives || d.StoreRetentionDays != DefaultStoreRetentionDays {
 		t.Fatal("archive / store defaults")
 	}
-	if d.GamePrefs("stardew").NxmDefaultProfile != "" || d.DefaultModsView != ModsViewGrid {
+	if d.GamePrefs("stardew").NxmDefaultProfile != "" || d.DefaultModsView != ModsViewGrid || d.ImplicitModsView != ImplicitModsNested {
 		t.Fatal("nxm / view defaults")
 	}
 	if !ToggleOn(d.ConfirmRemovals) || d.GamePrefs("stardew").CosmeticConflicts != CosmeticCollapsed {

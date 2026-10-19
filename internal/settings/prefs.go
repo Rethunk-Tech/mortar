@@ -168,7 +168,7 @@ func defaultPrefs() Settings {
 		KeepDownloadArchives:       false,
 		StoreRetentionDays:         DefaultStoreRetentionDays,
 		DefaultModsView:            ModsViewGrid,
-		ImplicitModsView:           ImplicitModsShown,
+		ImplicitModsView:           ImplicitModsNested,
 		ConfirmRemovals:            on(),
 		BackgroundBadgeChecks:      on(),
 		StartScreen:                StartScreenLast,
@@ -249,7 +249,7 @@ func normalizePrefs(s *Settings) {
 		s.DefaultModsView = ModsViewGrid
 	}
 	if !slices.Contains(implicitModsValues, s.ImplicitModsView) {
-		s.ImplicitModsView = ImplicitModsShown
+		s.ImplicitModsView = ImplicitModsNested
 	}
 	if s.ConfirmRemovals == nil {
 		s.ConfirmRemovals = on()
