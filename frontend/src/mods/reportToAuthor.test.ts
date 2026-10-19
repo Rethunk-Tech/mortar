@@ -53,6 +53,12 @@ test('github issue URL encodes title and truncates body', () => {
   expect(decodeURIComponent(url).includes('x'.repeat(6001))).toBe(false)
 })
 
+test('github issue URL refuses a repo that is not owner/name', () => {
+  for (const repo of ['', '..', '../x/y', 'a/../b', 'a/b/c', 'a/b?x=1', 'a/b#c', 'a b/c', './.']) {
+    expect(githubIssueURL(repo, 't', 'b')).toBe('')
+  }
+})
+
 test('report text lists versions and errors', () => {
   const text = buildModReportText(i18n, {
     modName: 'Content Patcher',

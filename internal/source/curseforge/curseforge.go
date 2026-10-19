@@ -969,6 +969,16 @@ func (d Driver) ReportTarget(ctx context.Context, _, id, _ string) (source.Repor
 	}
 	repo := cmp.Or(source.GitHubRepo(m.Links.IssuesURL), source.GitHubRepo(m.Links.SourceURL))
 	return source.ReportTarget{
-		Repo: repo, URL: cmp.Or(m.Links.IssuesURL, m.Links.WebsiteURL, d.ModPageURL("", id)),
+		Repo: repo, URL: cmp.Or(secureLink(m.Links.IssuesURL), secureLink(m.Links.WebsiteURL), d.ModPageURL("", id)),
 	}, nil
+}
+
+// secureLink is raw when it is an https address without credentials, else empty: the site supplies it and the
+// window opens it.
+func secureLink(raw string) string {
+	u, err := url.Parse(source.WebLink(raw))
+	if err != nil || u.Scheme != "https" || u.User != nil {
+		return ""
+	}
+	return raw
 }

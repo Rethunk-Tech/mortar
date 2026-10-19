@@ -4,6 +4,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 // Limits every searching driver shares.
@@ -40,5 +42,9 @@ func GitHubRepo(raw string) string {
 	if len(parts) < 2 || parts[0] == "" || parts[1] == "" {
 		return ""
 	}
-	return parts[0] + "/" + strings.TrimSuffix(parts[1], ".git")
+	repo := parts[0] + "/" + strings.TrimSuffix(parts[1], ".git")
+	if !manifest.ValidGitHubRepo(repo) {
+		return ""
+	}
+	return repo
 }

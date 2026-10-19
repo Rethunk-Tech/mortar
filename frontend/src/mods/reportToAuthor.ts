@@ -71,16 +71,26 @@ function truncateGithubBody(body: string): string {
   return body.slice(0, MAX_GITHUB_BODY)
 }
 
+const GITHUB_REPO = /^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/
+
+// Mirrors manifest.ValidGitHubRepo: "." and "..", which the pattern admits, would move the URL's path.
+function validGithubRepo(repo: string): boolean {
+  const [owner = '', name = ''] = repo.split('/')
+  return (
+    GITHUB_REPO.test(repo) && owner.replaceAll('.', '') !== '' && name.replaceAll('.', '') !== ''
+  )
+}
+
 function githubIssueURL(repo: string, title: string, body: string): string {
   const trimmed = repo.trim()
-  if (trimmed === '') {
+  if (!validGithubRepo(trimmed)) {
     return ''
   }
   const q = new URLSearchParams({
     title,
     body: truncateGithubBody(body),
   })
-  return `https://github.com/${trimmed}/issues/new?${q.toString()}`
+  return `https://github.com/${trimmed.split('/').map(encodeURIComponent).join('/')}/issues/new?${q.toString()}`
 }
 
 function nexusBugsURL(domain: string, modId: number): string {
