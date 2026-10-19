@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/portal"
 )
 
@@ -119,7 +120,7 @@ func secureDir(dir string) error {
 		return fmt.Errorf("secrets folder %s is a link or belongs to another user", dir)
 	}
 	if info.Mode().Perm()&0o077 != 0 {
-		return os.Chmod(dir, 0o700)
+		return fsx.Chmod(dir, 0o700)
 	}
 	return nil
 }

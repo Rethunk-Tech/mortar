@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/portal"
 )
 
@@ -164,7 +165,7 @@ func TestFlatpakStoreTightensAnExistingFolderAndRefusesALink(t *testing.T) {
 	if err := os.Mkdir(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.Chmod(dir, 0o777); err != nil {
+	if err := fsx.Chmod(dir, 0o777); err != nil {
 		t.Fatal(err)
 	}
 	if err := Set("nexus", "k"); err != nil {
@@ -174,12 +175,12 @@ func TestFlatpakStoreTightensAnExistingFolderAndRefusesALink(t *testing.T) {
 		t.Fatalf("folder mode = %v, %v", info.Mode().Perm(), err)
 	}
 
-	real := filepath.Join(t.TempDir(), "elsewhere")
-	if err := os.Mkdir(real, 0o700); err != nil {
+	target := filepath.Join(t.TempDir(), "elsewhere")
+	if err := os.Mkdir(target, 0o700); err != nil {
 		t.Fatal(err)
 	}
 	link := flatpakEnv(t, fixedPortal("master"))
-	if err := os.Symlink(real, link); err != nil {
+	if err := os.Symlink(target, link); err != nil {
 		t.Fatal(err)
 	}
 	if err := Set("nexus", "k"); err == nil {

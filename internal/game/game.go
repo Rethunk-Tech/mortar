@@ -311,7 +311,7 @@ func writeArt(w http.ResponseWriter, r *http.Request, b []byte, modTime time.Tim
 		out, outTyp, err := modpic.Shrink(b, typ, px)
 		if err != nil {
 			if _, seen := shrinkLogged.LoadOrStore(r.URL.Path, true); !seen {
-				log.Printf("game: art %s did not shrink to %d px: %v", r.URL.Path, px, err)
+				log.Printf("game: a Steam hero did not shrink: %v", err)
 			}
 			http.NotFound(w, r)
 			return
