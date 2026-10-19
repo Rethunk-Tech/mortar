@@ -10,13 +10,11 @@ import { MONO } from '../theme/theme.ts'
 import { errorMessage } from '../toasts/report.ts'
 
 const PREVIEW_DEBOUNCE_MS = 300
+const PREVIEW_LINE_PX = 18
+const PREVIEW_HEIGHT_PX = 44
 
 function shellQuote(value: string): string {
   return `'${value.replaceAll("'", "'\\''")}'`
-}
-
-function formatPreview(preview: CommandPreview): string {
-  return [...(preview.env ?? []), (preview.argv ?? []).map(shellQuote).join(' ')].join('\n')
 }
 
 function formatShellLine(preview: CommandPreview): string {
@@ -86,19 +84,26 @@ export function LaunchPreview({
       ) : (
         <Box
           component="pre"
+          // A scroll region needs its own keyboard stop.
+          tabIndex={0}
+          aria-label={t`Direct launch preview`}
           sx={{
             m: 0,
             p: space.gap,
-            // Wrapped rather than scrolled sideways: a scroll region would need its own keyboard stop.
-            whiteSpace: 'pre-wrap',
-            overflowWrap: 'anywhere',
+            // One line at a fixed height, scrolled sideways, so typing never moves the controls below.
+            whiteSpace: 'pre',
+            overflowX: 'auto',
+            overflowY: 'hidden',
+            height: PREVIEW_HEIGHT_PX,
+            lineHeight: `${PREVIEW_LINE_PX}px`,
+            boxSizing: 'border-box',
             color: 'text.secondary',
             fontFamily: MONO,
             fontSize: 12,
             userSelect: 'text',
           }}
         >
-          {formatPreview(preview)}
+          {formatShellLine(preview)}
         </Box>
       )}
     </Box>
