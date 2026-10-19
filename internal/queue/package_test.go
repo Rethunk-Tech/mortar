@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -110,11 +111,28 @@ func TestPackageUpdateInstallsANewDependency(t *testing.T) {
 	}
 }
 
+// manualStall replaces the stall clock so the nth download to start is declared stalled only when the returned func
+// is called; the wall clock never abandons a download, however slow the machine.
+func manualStall(s *Service, nth int32) (fire func()) {
+	var calls atomic.Int32
+	fns := make(chan func(), 1)
+	s.stallTimer = func(_ time.Duration, fn func()) *time.Timer {
+		if calls.Add(1) == nth {
+			fns <- fn
+		}
+		return time.AfterFunc(time.Hour, fn)
+	}
+	return func() { (<-fns)() }
+}
+
 func TestPackageDownloadFallsBackAcrossCDNs(t *testing.T) {
 	dead := httptest.NewServer(http.NotFoundHandler())
 	deadURL := dead.URL
 	dead.Close()
+	hung := make(chan struct{})
+	var hungOnce sync.Once
 	stalled := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hungOnce.Do(func() { close(hung) })
 		<-r.Context().Done()
 	}))
 	defer stalled.Close()
@@ -127,7 +145,7 @@ func TestPackageDownloadFallsBackAcrossCDNs(t *testing.T) {
 
 	f := newFixture(t)
 	f.s.d.CDNs = []string{deadURL, stalled.URL, good.URL}
-	f.s.cdnStall = 150 * time.Millisecond
+	fire := manualStall(f.s, 2)
 	f.s.d.Closure = func(_ context.Context, _ string, _ []thunderstore.Ref, _ bool) ([]thunderstore.Resolved, error) {
 		return []thunderstore.Resolved{{Namespace: "Me", Name: "Mod", Version: "1.0.0", URL: deadURL + "/p/Me-Mod.zip"}}, nil
 	}
@@ -136,6 +154,8 @@ func TestPackageDownloadFallsBackAcrossCDNs(t *testing.T) {
 	if _, err := f.s.Add(t.Context(), []Request{{Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "Me-Mod"}}); err != nil {
 		t.Fatal(err)
 	}
+	<-hung
+	fire()
 	f.wait("done", func(st State) bool { return len(st.Items) == 1 && st.Items[0].State == StateDone })
 	if served.Load() != 1 {
 		t.Fatalf("the working CDN served %d downloads", served.Load())
@@ -191,7 +211,7 @@ func TestPackageStalledCDNHandsItsPartialToTheNext(t *testing.T) {
 
 	f := newFixture(t)
 	f.s.d.CDNs = []string{stalled.URL, good.URL}
-	f.s.cdnStall = 150 * time.Millisecond
+	fire := manualStall(f.s, 1)
 	f.s.d.Closure = func(_ context.Context, _ string, _ []thunderstore.Ref, _ bool) ([]thunderstore.Resolved, error) {
 		return []thunderstore.Resolved{{Namespace: "Me", Name: "Mod", Version: "1.0.0", URL: stalled.URL + "/p/Me-Mod.zip"}}, nil
 	}
@@ -200,6 +220,8 @@ func TestPackageStalledCDNHandsItsPartialToTheNext(t *testing.T) {
 	if _, err := f.s.Add(t.Context(), []Request{{Kind: KindInstall, Game: "riskofrain2", Profile: "p1", Package: "Me-Mod"}}); err != nil {
 		t.Fatal(err)
 	}
+	f.wait("the stalled CDN's partial", func(State) bool { return f.partialSize(f.s.State().Items[0].ID) == cut })
+	fire()
 	f.wait("done", func(st State) bool { return len(st.Items) == 1 && st.Items[0].State == StateDone })
 	if got, _ := rng.Load().(string); got != fmt.Sprintf("bytes=%d-", cut) {
 		t.Fatalf("the next CDN was asked for %q", got)

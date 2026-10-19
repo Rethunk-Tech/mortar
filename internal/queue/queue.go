@@ -408,8 +408,8 @@ type Service struct {
 	premiumInUse int
 	// cdnGood is the Thunderstore CDN that last served a download, kept for the session.
 	cdnGood string
-	// cdnStall is how long a download may receive nothing before the next CDN is tried; zero means cdnStallDefault.
-	cdnStall time.Duration
+	// stallTimer starts the clock that abandons a download receiving nothing for d; nil means time.AfterFunc.
+	stallTimer func(d time.Duration, f func()) *time.Timer
 }
 
 // New reads the saved queue: what was under way is queued again so a partial file can resume, and a file

@@ -216,10 +216,13 @@ func (s *Service) fetchPackage(ctx context.Context, it Item, path string) error 
 
 // fetchStalling is fetch that gives up with errStalled when no bytes arrive for the stall time.
 func (s *Service) fetchStalling(ctx context.Context, it Item, url, path string) error {
-	stall := cmp.Or(s.cdnStall, cdnStallDefault)
+	stall, start := cdnStallDefault, s.stallTimer
+	if start == nil {
+		start = time.AfterFunc
+	}
 	cctx, cancel := context.WithCancelCause(ctx)
 	defer cancel(nil)
-	timer := time.AfterFunc(stall, func() { cancel(errStalled) })
+	timer := start(stall, func() { cancel(errStalled) })
 	defer timer.Stop()
 	err := s.fetchTicking(cctx, it, url, path, func() { timer.Reset(stall) })
 	if err != nil && errors.Is(context.Cause(cctx), errStalled) {
