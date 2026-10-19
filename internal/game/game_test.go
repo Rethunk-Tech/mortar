@@ -266,9 +266,9 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 	if b := caps["lethal-company"]; !b.Order || !b.Console || b.Commands || !b.Startup || b.Assets || b.Frameworks || !b.Overlay || !b.IntroSkip {
 		t.Fatalf("BepInEx = %+v", b)
 	}
-	// PEAK names the bridge as its companion but the catalog builds none for it, so it gets nothing that needs one.
-	if p := caps["peak"]; !p.Console || p.Startup || p.Overlay || p.IntroSkip || p.Commands {
-		t.Fatalf("BepInEx without a bridge component = %+v", p)
+	// PEAK gets the core bridge build: everything the bridge offers, but no console commands, which need game hooks.
+	if p := caps["peak"]; !p.Console || !p.Startup || !p.Overlay || !p.IntroSkip || p.Commands {
+		t.Fatalf("BepInEx with the core bridge = %+v", p)
 	}
 	// Cat Mail Co.'s IL2CPP BepInEx runs without the bridge, so nothing that needs it is offered.
 	if c := caps["cat-mail-co"]; !c.Order || !c.Console || c.Commands || c.Startup || c.Perf || c.Overlay || c.IntroSkip {
