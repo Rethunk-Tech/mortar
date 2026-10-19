@@ -1,6 +1,9 @@
 package problems
 
 import (
+	"errors"
+	"io/fs"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -11,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
+	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -81,5 +85,51 @@ func TestStartFailureIsALoadFailureOnlyForARunThatNeverStarted(t *testing.T) {
 	}
 	if got := startFailure("run-2", launch.Summary{Errors: 3}); len(got) != 0 {
 		t.Fatalf("a run that started is not a start failure: %+v", got)
+	}
+}
+
+func TestSkippedOlderCopyNoPackageOwnsGetsARemovablePath(t *testing.T) {
+	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := t.TempDir()
+	testfs.WriteFile(t, dir, "BepInEx/LogOutput.log",
+		"[14:35:39.1094737] [Warning:   BepInEx] Skipping [Fixture Plugin 1.2.3] because a newer version exists (Fixture Plugin 1.3.0)\n")
+	testfs.WriteFile(t, dir, "BepInEx/plugins/old/Fixture.dll", string(dll))
+	none := func() map[string]framework.Mod { return nil }
+	got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, "", none)
+	if len(got) != 1 || got[0].Kind != bepinex5.KindDuplicateGUID || got[0].Path != "BepInEx/plugins/old/Fixture.dll" {
+		t.Fatalf("failures = %+v", got)
+	}
+	owned := func() map[string]framework.Mod {
+		return map[string]framework.Mod{"fixture plugin 1.2.3": inst("k", "Fixture", "1.2.3", true)}
+	}
+	if got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, "", owned); len(got) != 1 || got[0].Path != "" {
+		t.Fatalf("an owned copy offered a file to delete: %+v", got)
+	}
+}
+
+func TestRemoveSkippedPluginDeletesOnlyAPluginDLLInTheProfile(t *testing.T) {
+	testfs.DataHome(t)
+	_, profiles := testenv.Stores(t)
+	p := testenv.Profile(t, profiles, "lethal-company", "LC")
+	dir, err := profiles.ProfileDir("lethal-company", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testfs.WriteFile(t, dir, "BepInEx/plugins/old/Fixture.dll", "x")
+	testfs.WriteFile(t, dir, "BepInEx/config/keep.cfg", "x")
+	s := &Service{profiles: profiles, cache: map[string]cached{}}
+	for _, bad := range []string{"BepInEx/config/keep.cfg", "BepInEx/plugins/../config/keep.cfg", "../x.dll", "BepInEx/plugins/old"} {
+		if err := s.RemoveSkippedPlugin("lethal-company", p.ID, bad); err == nil {
+			t.Fatalf("%q was removable", bad)
+		}
+	}
+	if err := s.RemoveSkippedPlugin("lethal-company", p.ID, "BepInEx/plugins/old/Fixture.dll"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "BepInEx/plugins/old/Fixture.dll")); !errors.Is(err, fs.ErrNotExist) {
+		t.Fatalf("the DLL is still there: %v", err)
 	}
 }

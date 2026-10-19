@@ -1,7 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
+import { useState } from 'react'
+import { RemoveSkippedPlugin } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { useBrowseView } from '../../browse/view.ts'
 import { useTab } from '../../game/tab.ts'
 import { useLoader } from '../../loader/store.ts'
+import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
 import { useMods } from '../store.ts'
@@ -20,8 +23,44 @@ export function LoadFailureFix({
 }) {
   const { t } = useLingui()
   const failure = problem.loadFailure
+  const [removing, setRemoving] = useState(false)
   const owner = useMods((s) => s.mods.find((m) => failure.key !== '' && m.key === failure.key))
+  const disable = () =>
+    owner
+      ? button(t`Disable`, () =>
+          useMods.getState().setEnabled(owner, false).catch(reportUnexpected),
+        )
+      : null
   switch (failure.kind) {
+    case 'duplicate-guid': {
+      // A copy a package owns is switched off like any plugin; a leftover file in the plugins folder is deleted.
+      const path = failure.path ?? ''
+      if (path === '') {
+        return owner ? disable() : null
+      }
+      return (
+        <>
+          {button(t`Remove old copy`, () => setRemoving(true))}
+          <ConfirmDialog
+            open={removing}
+            title={t`Remove the older copy?`}
+            body={t`BepInEx skipped ${path} because a newer copy of the plugin loaded. Mortar deletes the file.`}
+            confirmLabel={t`Remove`}
+            color="error"
+            onCancel={() => setRemoving(false)}
+            onConfirm={() => {
+              setRemoving(false)
+              const at = openTarget()
+              if (at) {
+                RemoveSkippedPlugin(at.game, at.id, path)
+                  .then(() => useMods.getState().load())
+                  .catch(reportUnexpected)
+              }
+            }}
+          />
+        </>
+      )
+    }
     case 'missing-dependency': {
       const dependency = failure.dependency ?? ''
       return dependency === ''
@@ -56,10 +95,6 @@ export function LoadFailureFix({
         }
       })
     default:
-      return owner
-        ? button(t`Disable`, () =>
-            useMods.getState().setEnabled(owner, false).catch(reportUnexpected),
-          )
-        : null
+      return owner ? disable() : null
   }
 }

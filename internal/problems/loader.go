@@ -1,6 +1,9 @@
 package problems
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -10,6 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/gamelog"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -25,8 +29,14 @@ type LoadFailure struct {
 	Message string `json:"message"`
 	// Dependency is the plugin the failing one lacks, when the log names it.
 	Dependency string `json:"dependency,omitempty"`
-	Line       int    `json:"line"`
+	// Path is a skipped older copy no installed package owns, relative to the profile folder with slashes: a file
+	// left in the plugins folder that RemoveSkippedPlugin can delete.
+	Path string `json:"path,omitempty"`
+	Line int    `json:"line"`
 }
+
+// pluginsDir is where BepInEx loads plugins from, below the profile folder.
+const pluginsDir = "BepInEx/plugins"
 
 // loaderFailures runs the loader's log analyzers over its log in the profile and the Unity player log text, and attributes each finding to an enabled
 // package. A loader without a log, a missing log or a log without findings yields none.
@@ -47,7 +57,39 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners
 	for _, a := range logs.Analyzers() {
 		found = append(found, a.Analyze(loader.Logs{Loader: string(raw), Player: player})...)
 	}
-	return attribute(found, owners)
+	out := attribute(found, owners)
+	for i, f := range out {
+		if f.Kind != bepinex5.KindDuplicateGUID || f.Key != "" {
+			continue
+		}
+		if abs := dotnet.PluginFile(filepath.Join(p.Dir, filepath.FromSlash(pluginsDir)), f.Plugin); abs != "" {
+			rel, _ := filepath.Rel(p.Dir, abs)
+			out[i].Path = filepath.ToSlash(rel)
+		}
+	}
+	return out
+}
+
+// RemoveSkippedPlugin deletes a DLL a LoadFailure's Path named, which BepInEx skipped for a newer copy of the same
+// plugin. Only a plugin file below the profile's plugins folder qualifies.
+func (s *Service) RemoveSkippedPlugin(gameID, id, path string) error {
+	dir, err := s.profiles.ProfileDir(gameID, id)
+	if err != nil {
+		return err
+	}
+	rel := filepath.FromSlash(path)
+	if !filepath.IsLocal(rel) || !strings.EqualFold(filepath.Ext(rel), ".dll") || !strings.HasPrefix(filepath.ToSlash(rel), pluginsDir+"/") {
+		return fmt.Errorf("%s is not a plugin file in this profile", path)
+	}
+	abs := filepath.Join(dir, rel)
+	if info, err := os.Lstat(abs); err != nil || !info.Mode().IsRegular() {
+		return fmt.Errorf("%s is not a plugin file in this profile", path)
+	}
+	if err := fsx.Remove(abs); err != nil {
+		return err
+	}
+	s.ForgetCached()
+	return nil
 }
 
 // attribute turns findings into load failures, naming the installed package behind each plugin the owners know.

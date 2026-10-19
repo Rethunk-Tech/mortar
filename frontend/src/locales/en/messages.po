@@ -52,7 +52,7 @@ msgstr "Launch method"
 msgid "Hidden on Nexus · {0}"
 msgstr "Hidden on Nexus · {0}"
 
-#: src/settings/sections/Appearance.tsx:139
+#: src/settings/sections/Appearance.tsx:138
 msgid "Gentle violet"
 msgstr "Gentle violet"
 
@@ -415,7 +415,7 @@ msgstr "More levels"
 msgid "Switch game"
 msgstr "Switch game"
 
-#: src/settings/sections/Appearance.tsx:134
+#: src/settings/sections/Appearance.tsx:133
 msgid "Sand"
 msgstr "Sand"
 
@@ -554,7 +554,7 @@ msgstr "Deleted profile"
 msgid "Untrack mods"
 msgstr "Untrack mods"
 
-#: src/mods/problemFix/LoadFailureFix.tsx:52
+#: src/mods/problemFix/LoadFailureFix.tsx:91
 msgid "Reinstall loader"
 msgstr "Reinstall loader"
 
@@ -1302,7 +1302,7 @@ msgstr "{path} wait for each other in a loop, so SMAPI skips at least one of the
 msgid "Replaces some files of the mod above"
 msgstr "Replaces some files of the mod above"
 
-#: src/settings/sections/Appearance.tsx:142
+#: src/settings/sections/Appearance.tsx:141
 msgid "Follows your desktop"
 msgstr "Follows your desktop"
 
@@ -1660,12 +1660,12 @@ msgstr "None of {0} are in Saves yet; they will be added. The current Saves fold
 msgid "the connection failed"
 msgstr "the connection failed"
 
-#: src/settings/sections/Appearance.tsx:224
+#: src/settings/sections/Appearance.tsx:233
 msgid "Solid"
 msgstr "Solid"
 
 #: src/settings/sections/Appearance.tsx:109
-#: src/settings/sections/Appearance.tsx:210
+#: src/settings/sections/Appearance.tsx:219
 msgid "Font"
 msgstr "Font"
 
@@ -1957,7 +1957,7 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 msgid "Retry"
 msgstr "Retry"
 
-#: src/settings/sections/Appearance.tsx:136
+#: src/settings/sections/Appearance.tsx:135
 msgid "Copper"
 msgstr "Copper"
 
@@ -3444,7 +3444,7 @@ msgstr "Open the next profile"
 msgid "Flag"
 msgstr "Flag"
 
-#: src/settings/sections/Appearance.tsx:223
+#: src/settings/sections/Appearance.tsx:232
 #: src/settings/sections/Notifications.tsx:57
 msgid "Desktop"
 msgstr "Desktop"
@@ -3562,7 +3562,7 @@ msgid "Gray out"
 msgstr "Gray out"
 
 #: src/profiles/AppearancePickers.tsx:36
-#: src/settings/sections/Appearance.tsx:137
+#: src/settings/sections/Appearance.tsx:136
 msgid "Sky"
 msgstr "Sky"
 
@@ -3794,6 +3794,10 @@ msgstr "Game settings"
 #: src/mods/describe.ts:107
 msgid "{name} is marked abandoned and may no longer be maintained."
 msgstr "{name} is marked abandoned and may no longer be maintained."
+
+#: src/mods/problemFix/LoadFailureFix.tsx:43
+msgid "Remove old copy"
+msgstr "Remove old copy"
 
 #. placeholder {0}: part.text.length.toLocaleString(i18n.locale)
 #: src/share/ListFormat.tsx:161
@@ -4278,7 +4282,7 @@ msgstr "Could not read the game log"
 #: src/mods/ModMenu.tsx:130
 #: src/mods/problemFix/AssetFix.tsx:72
 #: src/mods/problemFix/BrokenFix.tsx:87
-#: src/mods/problemFix/LoadFailureFix.tsx:60
+#: src/mods/problemFix/LoadFailureFix.tsx:30
 #: src/mods/runErrorFixButtons.tsx:46
 #: src/mods/SelectionBarActions.tsx:157
 #: src/mods/SlowStartupSection.tsx:60
@@ -4414,7 +4418,7 @@ msgstr "Search archives"
 msgid "Created"
 msgstr "Created"
 
-#: src/settings/sections/Appearance.tsx:142
+#: src/settings/sections/Appearance.tsx:141
 msgid "System"
 msgstr "System"
 
@@ -4463,7 +4467,7 @@ msgid "Find the cause…"
 msgstr "Find the cause…"
 
 #: src/console/HelpDialog.tsx:119
-#: src/console/VirtualLog.tsx:206
+#: src/console/VirtualLog.tsx:211
 msgid "Game log"
 msgstr "Game log"
 
@@ -4498,7 +4502,7 @@ msgstr "Download the extension"
 msgid "Sun"
 msgstr "Sun"
 
-#: src/mods/problemFix/LoadFailureFix.tsx:29
+#: src/mods/problemFix/LoadFailureFix.tsx:68
 msgid "Find {dependency}"
 msgstr "Find {dependency}"
 
@@ -4681,7 +4685,7 @@ msgstr "The stats each Browse card shows under its summary; choose them from Bro
 
 #: src/profiles/EditProfileDialog.tsx:114
 #: src/profiles/EditProfileDialog.tsx:122
-#: src/settings/sections/Appearance.tsx:244
+#: src/settings/sections/Appearance.tsx:253
 msgid "Choose image…"
 msgstr "Choose image…"
 
@@ -5220,7 +5224,7 @@ msgstr "Delete group {name}?"
 #: src/console/RunProblems.tsx:140
 #: src/game/FarmMenuItem.tsx:104
 #: src/loader/Banner.tsx:44
-#: src/mods/problemFix/LoadFailureFix.tsx:37
+#: src/mods/problemFix/LoadFailureFix.tsx:76
 #: src/mods/runErrorFixButtons.tsx:49
 #: src/mods/UpdateBanner.tsx:82
 #: src/mods/updateReview/EverywhereDialog.tsx:143
@@ -5349,7 +5353,8 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/ProtonRow.tsx:31
 #: src/settings/sections/Appearance.tsx:87
 #: src/settings/sections/Appearance.tsx:117
-#: src/settings/sections/Appearance.tsx:131
+#: src/settings/sections/Appearance.tsx:130
+#: src/settings/sections/Appearance.tsx:209
 #: src/settings/sections/Downloads.tsx:67
 #: src/settings/sections/Downloads.tsx:242
 #: src/settings/sections/Downloads.tsx:273
@@ -5771,8 +5776,8 @@ msgid "A plain icon (Thunderstore needs a 256x256 PNG)"
 msgstr "A plain icon (Thunderstore needs a 256x256 PNG)"
 
 #: src/settings/prefCopy.ts:157
-#: src/settings/sections/Appearance.tsx:147
-#: src/settings/sections/Appearance.tsx:151
+#: src/settings/sections/Appearance.tsx:144
+#: src/settings/sections/Appearance.tsx:213
 msgid "Theme"
 msgstr "Theme"
 
@@ -6025,7 +6030,7 @@ msgstr "Could not read other profiles"
 msgid "Copy the command"
 msgstr "Copy the command"
 
-#: src/settings/sections/Appearance.tsx:233
+#: src/settings/sections/Appearance.tsx:242
 msgid "Background preview"
 msgstr "Background preview"
 
@@ -6192,7 +6197,7 @@ msgstr "Stop the game before moving the data folder."
 msgid "Screenshots you take while playing show here, newest first."
 msgstr "Screenshots you take while playing show here, newest first."
 
-#: src/settings/sections/Appearance.tsx:135
+#: src/settings/sections/Appearance.tsx:134
 msgid "Earthy green"
 msgstr "Earthy green"
 
@@ -6316,7 +6321,7 @@ msgstr "Could not run the command"
 msgid "About Mortar"
 msgstr "About Mortar"
 
-#: src/settings/sections/Appearance.tsx:139
+#: src/settings/sections/Appearance.tsx:138
 msgid "Lavender"
 msgstr "Lavender"
 
@@ -6418,7 +6423,7 @@ msgid "Could not start measuring"
 msgstr "Could not start measuring"
 
 #: src/profiles/AppearancePickers.tsx:26
-#: src/settings/sections/Appearance.tsx:138
+#: src/settings/sections/Appearance.tsx:137
 msgid "Rose"
 msgstr "Rose"
 
@@ -6559,9 +6564,9 @@ msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgid "Where to share"
 msgstr "Where to share"
 
-#: src/settings/sections/Appearance.tsx:213
-#: src/settings/sections/Appearance.tsx:214
-#: src/settings/sections/Appearance.tsx:217
+#: src/settings/sections/Appearance.tsx:222
+#: src/settings/sections/Appearance.tsx:223
+#: src/settings/sections/Appearance.tsx:226
 msgid "Background"
 msgstr "Background"
 
@@ -6804,8 +6809,8 @@ msgstr "Open the command palette"
 msgid "Could not read load order"
 msgstr "Could not read load order"
 
-#: src/settings/sections/Appearance.tsx:222
-#: src/settings/sections/Appearance.tsx:229
+#: src/settings/sections/Appearance.tsx:231
+#: src/settings/sections/Appearance.tsx:238
 msgid "Image"
 msgstr "Image"
 
@@ -7907,7 +7912,7 @@ msgstr "requirements"
 msgid "Source code"
 msgstr "Source code"
 
-#: src/settings/sections/Appearance.tsx:151
+#: src/settings/sections/Appearance.tsx:144
 msgid "color"
 msgstr "color"
 
@@ -8162,7 +8167,7 @@ msgstr "Clear game caches"
 msgid "Copy log and open {pasteHost}"
 msgstr "Copy log and open {pasteHost}"
 
-#: src/settings/sections/Appearance.tsx:136
+#: src/settings/sections/Appearance.tsx:135
 msgid "Warm and bold"
 msgstr "Warm and bold"
 
@@ -8373,7 +8378,7 @@ msgid "Reachable"
 msgstr "Reachable"
 
 #: src/profiles/AppearancePickers.tsx:77
-#: src/settings/sections/Appearance.tsx:151
+#: src/settings/sections/Appearance.tsx:144
 msgid "Colour"
 msgstr "Colour"
 
@@ -8435,7 +8440,7 @@ msgstr "Not found"
 #: src/profiles/EditProfileDialog.tsx:124
 #: src/profiles/GameSettings.tsx:182
 #: src/profiles/OverrideRows.tsx:138
-#: src/settings/sections/Appearance.tsx:254
+#: src/settings/sections/Appearance.tsx:263
 #: src/settings/sections/GameSettings.tsx:213
 msgid "Use default"
 msgstr "Use default"
@@ -9636,6 +9641,10 @@ msgstr "Retention"
 msgid "Patreon post {0}"
 msgstr "Patreon post {0}"
 
+#: src/mods/problemFix/LoadFailureFix.tsx:47
+msgid "BepInEx skipped {path} because a newer copy of the plugin loaded. Mortar deletes the file."
+msgstr "BepInEx skipped {path} because a newer copy of the plugin loaded. Mortar deletes the file."
+
 #: src/mods/storeGroups.ts:32
 msgid "Could not remove from the group"
 msgstr "Could not remove from the group"
@@ -10317,7 +10326,7 @@ msgstr "Downloads: {downloading} {percent}%"
 
 #: src/launch/VanillaPlay.tsx:208
 #: src/profiles/LaunchPresetsBlock.tsx:45
-#: src/settings/sections/Appearance.tsx:134
+#: src/settings/sections/Appearance.tsx:133
 msgid "Default"
 msgstr "Default"
 
@@ -10355,7 +10364,7 @@ msgstr "Problems"
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
-#: src/settings/sections/Appearance.tsx:135
+#: src/settings/sections/Appearance.tsx:134
 msgid "Moss"
 msgstr "Moss"
 
@@ -10977,7 +10986,7 @@ msgstr "Updates ignored"
 msgid "Could not enable {0}"
 msgstr "Could not enable {0}"
 
-#: src/settings/sections/Appearance.tsx:141
+#: src/settings/sections/Appearance.tsx:140
 msgid "Slate"
 msgstr "Slate"
 
@@ -12181,6 +12190,7 @@ msgstr "Got a Mortar link? You see what it holds first. Nexus mods need your Nex
 #: src/mods/ModMenu.tsx:281
 #: src/mods/parts.tsx:175
 #: src/mods/parts.tsx:494
+#: src/mods/problemFix/LoadFailureFix.tsx:48
 #: src/mods/SelectionBarActions.tsx:165
 #: src/mods/SelectionBarDialogs.tsx:83
 #: src/settings/sections/WatchFolders.tsx:41
@@ -12219,6 +12229,10 @@ msgstr "No problems"
 #: src/mods/CategoryEditor.tsx:132
 msgid "Add one to group your mods your own way."
 msgstr "Add one to group your mods your own way."
+
+#: src/mods/problemFix/LoadFailureFix.tsx:46
+msgid "Remove the older copy?"
+msgstr "Remove the older copy?"
 
 #: src/share/MethodPanes.tsx:244
 msgid "Saves this profile as a collection draft to finish and upload on Nexus Mods."
@@ -13068,11 +13082,11 @@ msgstr "{0} is still taking your last share"
 msgid "Game install deleted"
 msgstr "Game install deleted"
 
-#: src/settings/sections/Appearance.tsx:277
+#: src/settings/sections/Appearance.tsx:286
 msgid "Sidebar"
 msgstr "Sidebar"
 
-#: src/settings/sections/Appearance.tsx:137
+#: src/settings/sections/Appearance.tsx:136
 msgid "Cool and calm"
 msgstr "Cool and calm"
 
@@ -13151,7 +13165,7 @@ msgstr "Saves"
 msgid "World"
 msgstr "World"
 
-#: src/settings/sections/Appearance.tsx:140
+#: src/settings/sections/Appearance.tsx:139
 msgid "Fresh and clear"
 msgstr "Fresh and clear"
 
@@ -13432,7 +13446,7 @@ msgstr "Not enough disk space"
 msgid "Clean up storage"
 msgstr "Clean up storage"
 
-#: src/settings/sections/Appearance.tsx:265
+#: src/settings/sections/Appearance.tsx:274
 msgid "Mods view"
 msgstr "Mods view"
 
@@ -13461,9 +13475,9 @@ msgstr "Nothing new"
 msgid "Preparing a temporary copy of this profile…"
 msgstr "Preparing a temporary copy of this profile…"
 
-#: src/settings/sections/Appearance.tsx:150
-#: src/settings/sections/Appearance.tsx:151
-#: src/settings/sections/Appearance.tsx:154
+#: src/settings/sections/Appearance.tsx:144
+#: src/settings/sections/Appearance.tsx:147
+#: src/settings/sections/Appearance.tsx:216
 msgid "Accent colour"
 msgstr "Accent colour"
 
@@ -13723,7 +13737,7 @@ msgid "Skip the waiting downloads of this profile"
 msgstr "Skip the waiting downloads of this profile"
 
 #: src/profiles/AppearancePickers.tsx:34
-#: src/settings/sections/Appearance.tsx:140
+#: src/settings/sections/Appearance.tsx:139
 msgid "Teal"
 msgstr "Teal"
 
@@ -14107,7 +14121,7 @@ msgstr "Nexus Mods · Signed in as {name}"
 msgid "Add {label} item"
 msgstr "Add {label} item"
 
-#: src/settings/sections/Appearance.tsx:141
+#: src/settings/sections/Appearance.tsx:140
 msgid "Quiet grey-blue"
 msgstr "Quiet grey-blue"
 
@@ -14176,7 +14190,7 @@ msgstr "Season"
 msgid "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
 msgstr "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
 
-#: src/settings/sections/Appearance.tsx:138
+#: src/settings/sections/Appearance.tsx:137
 msgid "Soft and warm"
 msgstr "Soft and warm"
 
@@ -14270,7 +14284,7 @@ msgstr "Could not undo: some mods are missing, and the change's record could not
 msgid "Start the game without the Before you play dialog"
 msgstr "Start the game without the Before you play dialog"
 
-#: src/settings/sections/Appearance.tsx:262
+#: src/settings/sections/Appearance.tsx:271
 msgid "Display"
 msgstr "Display"
 

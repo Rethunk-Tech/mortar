@@ -83,3 +83,16 @@ func Owners(dirs []string) map[string]int {
 	}
 	return owners
 }
+
+// PluginFile is the DLL under dir that declares the plugin a BepInEx log names as "name version", or "" for none.
+func PluginFile(dir, label string) string {
+	for _, path := range DLLs(dir) {
+		d, _ := Scan(path)
+		for _, pl := range d.Plugins {
+			if strings.EqualFold(pl.Name+" "+pl.Version, label) {
+				return path
+			}
+		}
+	}
+	return ""
+}
