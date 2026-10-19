@@ -1,4 +1,5 @@
 .task
+FINDINGS.jsonl
 tmp/
 bin
 frontend/dist
