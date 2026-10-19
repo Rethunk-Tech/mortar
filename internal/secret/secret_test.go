@@ -158,3 +158,31 @@ func TestLivePortal(t *testing.T) {
 		t.Fatalf("second call must return the same secret: %v", err)
 	}
 }
+
+func TestFlatpakStoreTightensAnExistingFolderAndRefusesALink(t *testing.T) {
+	dir := flatpakEnv(t, fixedPortal("master"))
+	if err := os.Mkdir(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chmod(dir, 0o777); err != nil {
+		t.Fatal(err)
+	}
+	if err := Set("nexus", "k"); err != nil {
+		t.Fatal(err)
+	}
+	if info, err := os.Stat(dir); err != nil || info.Mode().Perm() != 0o700 {
+		t.Fatalf("folder mode = %v, %v", info.Mode().Perm(), err)
+	}
+
+	real := filepath.Join(t.TempDir(), "elsewhere")
+	if err := os.Mkdir(real, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	link := flatpakEnv(t, fixedPortal("master"))
+	if err := os.Symlink(real, link); err != nil {
+		t.Fatal(err)
+	}
+	if err := Set("nexus", "k"); err == nil {
+		t.Fatal("a symlinked secrets folder was used")
+	}
+}

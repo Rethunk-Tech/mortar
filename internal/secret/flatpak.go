@@ -105,6 +105,25 @@ func load(path string, key []byte) (map[string]string, error) {
 	return m, json.Unmarshal(b, &m)
 }
 
+// secureDir creates dir and holds it to mode 0700: MkdirAll leaves an existing folder's mode alone, and a symlink or
+// another user's folder would put the sealed store where someone else can reach it.
+func secureDir(dir string) error {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return err
+	}
+	info, err := os.Lstat(dir)
+	if err != nil {
+		return err
+	}
+	if !info.IsDir() || !ownedByUser(info) {
+		return fmt.Errorf("secrets folder %s is a link or belongs to another user", dir)
+	}
+	if info.Mode().Perm()&0o077 != 0 {
+		return os.Chmod(dir, 0o700)
+	}
+	return nil
+}
+
 // save writes atomically: a temp file in the same folder (created 0600), then a rename.
 func save(path string, key []byte, m map[string]string) error {
 	b, err := json.Marshal(m)
@@ -117,7 +136,7 @@ func save(path string, key []byte, m map[string]string) error {
 		}
 	}
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o700); err != nil {
+	if err := secureDir(dir); err != nil {
 		return err
 	}
 	tmp, err := os.CreateTemp(dir, ".secrets-*")
