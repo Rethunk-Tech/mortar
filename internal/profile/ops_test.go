@@ -816,3 +816,33 @@ func TestFreezePinsEveryModAndUnfreezeKeepsThePlayersOwnPins(t *testing.T) {
 		t.Fatalf("unfrozen: %+v %+v", a, b)
 	}
 }
+
+func TestAModInstalledAfterAFreezeIsHeldAndUnfreezeLiftsIt(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "local-a", map[string]string{"manifest.json": manifestJSON("Me.A")})
+	e.item(t, "local-b", map[string]string{"manifest.json": manifestJSON("Me.B")})
+	p, _ := e.Create("stardew", "P")
+	if _, err := e.AddEntry("stardew", p.ID, "local-a", Source{}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.SetFrozen("stardew", p.ID, true); err != nil {
+		t.Fatal(err)
+	}
+	got, err := e.AddEntry("stardew", p.ID, "local-b", Source{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b := got.Entries[len(got.Entries)-1]; !b.Pinned || b.PinReason != FrozenPinReason || b.OffersUpdate("9") {
+		t.Fatalf("late install not held: %+v", b)
+	}
+	got, err = e.SetFrozen("stardew", p.ID, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, en := range got.Entries {
+		if en.Pinned {
+			t.Fatalf("unfreeze left %s pinned", en.Key)
+		}
+	}
+}

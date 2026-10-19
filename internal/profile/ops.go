@@ -300,6 +300,9 @@ func (s *Store) addToStaged(game string, p *Profile, dir, key string, source Sou
 	if err != nil {
 		return "", "", err
 	}
+	if frozen(p.Entries) {
+		e.Pinned, e.PinReason = true, FrozenPinReason
+	}
 	p.Entries = append(p.Entries, e)
 	name = cmp.Or(name, key)
 	return filepath.Join(modsDir, stage(name)), filepath.Join(modsDir, name), nil
