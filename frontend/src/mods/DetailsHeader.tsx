@@ -24,7 +24,7 @@ export function DetailsHeader({
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       {picture}
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 16, fontWeight: 700, overflowWrap: 'anywhere' }}>
+        <Typography noWrap={true} title={title} sx={{ fontSize: 16, fontWeight: 700 }}>
           {title}
         </Typography>
         <Typography
