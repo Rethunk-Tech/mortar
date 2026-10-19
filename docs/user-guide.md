@@ -127,7 +127,6 @@ The Config tab can search every config file in the profile and find a setting ac
 - **New:** Thunderstore, CurseForge and GitHub mods that changed since you last looked are marked **New**.
 - **Switching a mod off:** when other enabled mods need it, Mortar offers to switch those off too.
 - **Switched off column:** the Mods list can show a **Switched off** column with when each mod was last switched off, and sort by it.
-- **Remove switched-off mods:** when the profile has switched-off mods, the Mods tab header offers **Remove switched-off mods**, which asks before removing them all.
 - **Report to author…** (the mod's menu) opens a prefilled report for a Thunderstore, CurseForge or Vintage Story mod.
 - **What's new:** an update shows the changes for Thunderstore, CurseForge and Vintage Story mods.
 

@@ -9708,10 +9708,6 @@ msgstr "No other profiles with overrides"
 msgid "a copy of {name}"
 msgstr "a copy of {name}"
 
-#: src/mods/ModsHeaderActions.tsx:25
-msgid "Remove switched-off mods"
-msgstr "Remove switched-off mods"
-
 #: src/profiles/collectionUnlink.ts:33
 msgid "Unlinked collection"
 msgstr "Unlinked collection"
@@ -13544,7 +13540,7 @@ msgstr "Downloaded"
 msgid "Cancelled"
 msgstr "Cancelled"
 
-#: src/mods/ModsHeaderActions.tsx:31
+#: src/mods/ModsHeaderActions.tsx:17
 msgid "Check mods and Mortar for updates (F5)"
 msgstr "Check mods and Mortar for updates (F5)"
 
