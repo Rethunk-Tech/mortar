@@ -119,9 +119,9 @@ A left sidebar and a detail pane. Code: `game/MainScreen.tsx`, `Sidebar.tsx`, `P
 
 The hero, then <a id="home-page"></a>the **Home page** (`game/Home.tsx`, `Hero.tsx`, `HomePanel.tsx`): an action row and a grid of cards (`HomePanel.tsx`; one column when compact).
 
-- **Hero:** bleeds to the pane's edges; the name carries no actions beside it (they are in the action row and the profile menus, [Profile management](#profile-management)). The cover (`game/cover.ts`) is the image under a light solid dim layer whose alpha fades to transparent over the bottom 20% by an alpha mask; the hero has no background of its own.
+- **Hero:** bleeds to the pane's edges; the name carries no actions beside it (they are in the action row and the profile menus, [Profile management](#profile-management)). The cover (`game/cover.ts`) is the image under a light solid dim layer whose alpha fades to transparent over the bottom 20% by an alpha mask; the hero has no background of its own. Under the name, `HeroGlance.tsx` lists the profile's facts on one wrapping line: mods, updates, problems, last played, created and updated (the compact strip keeps its own short counts).
 - **Cover source, in order:** an image the user picked, the Nexus picture of the profile's most-endorsed mod, Steam's hero art for the game (read at runtime, never bundled), a solid tone. Never a random image.
-- **Cards:** a crash card after a crashed run (cause, evidence, **Disable it and play**, **Find the cause…**, a crash bisect, [architecture.md](architecture.md#launch)), notes (saved as typed, capped), At a glance, changes since last run, saves. No card sits alone at one column.
+- **Cards:** a crash card after a crashed run (cause, evidence, **Disable it and play**, **Find the cause…**, a crash bisect, [architecture.md](architecture.md#launch)), notes (saved as typed, capped), changes since last run, saves. No card sits alone at one column.
 
 ### Launching
 
@@ -248,7 +248,7 @@ Under the shared tab header, a full-width **section strip** (one MUI tab per non
 
 Section order and membership: `problemSection.ts`. Rules a change could break:
 
-- **The count** comes from one helper, `problemCount`, feeding the tab chip, sidebar badge, Home's At a glance and cached profile badges, so it is zero only when the tab has nothing to fix. The Mods tab carries no problems banner. While problems load, the chip shows the profile's last known count.
+- **The count** comes from one helper, `problemCount`, feeding the tab chip, sidebar badge, the Home hero and cached profile badges, so it is zero only when the tab has nothing to fix. The Mods tab carries no problems banner. While problems load, the chip shows the profile's last known count.
 - **Never counted:** Cosmetic or harmless, Dismissed, Slow startup, and Redundant (warnings, never the chip). Conflicts count except harmless cosmetic asset conflicts.
 - **Conflicts:** the same mods with the same winner and fix are one row listing every asset.
 - **Slow startup** (`mods/slowStartups.ts`): a mod adding 3 s or more, or a content pack adding 1 s or more, from the latest startup report; a framework that loads content packs (Content Patcher) is never a row itself.

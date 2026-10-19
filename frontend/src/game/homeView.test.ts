@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { changesView, glance, renameSurface, saveCalendarUnknown, savesView } from './homeView.ts'
+import { changesView, renameSurface, saveCalendarUnknown, savesView } from './homeView.ts'
 
 test('changesView shows three lines until expanded', () => {
   const lines = ['a', 'b', 'c', 'd']
@@ -16,10 +16,6 @@ test('savesView drops the calendar for saves without one and counts them all', (
   expect(view.total).toBe(6)
   expect(view.shown[0]?.calendar).toEqual({ year: 3, season: 2 })
   expect(view.shown[1]?.calendar).toBeNull()
-})
-
-test('glance keeps an unread problem count null', () => {
-  expect(glance(3, 0, null).problems).toBeNull()
 })
 
 test('a hidden hero sends a rename to the dialog', () => {

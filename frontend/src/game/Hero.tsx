@@ -14,6 +14,7 @@ import { space } from '../theme/density.ts'
 import { collectionHeader } from './collectionHeader.ts'
 import { compact, compactMeta } from './compact.ts'
 import { HeroCover } from './HeroCover.tsx'
+import { HeroGlance } from './HeroGlance.tsx'
 import { NameField } from './NameField.tsx'
 import { useRenameRequest } from './renameRequest.ts'
 import { useCollectionStatus } from './useCollectionStatus.ts'
@@ -176,6 +177,7 @@ function HeroName({
       >
         {meta.join(' · ')}
       </Typography>
+      <HeroGlance profile={profile} game={game} compactAt={compactAt} />
       <CollectionLine profile={profile} game={game} />
     </Box>
   )

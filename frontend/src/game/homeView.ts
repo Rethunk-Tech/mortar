@@ -1,15 +1,3 @@
-interface GlanceView {
-  mods: number
-  updates: number
-  // Null until the problems are first read, so the line is left out rather than reading "0".
-  problems: number | null
-}
-
-// Updates read only when there are some; a problem count of zero reads as none.
-function glance(mods: number, updates: number, problems: number | null): GlanceView {
-  return { mods, updates, problems }
-}
-
 const CHANGES_COLLAPSED = 3
 
 function changesView(lines: string[], expanded: boolean) {
@@ -52,4 +40,4 @@ function renameSurface(hero: string): 'inline' | 'dialog' {
   return hero === 'hidden' ? 'dialog' : 'inline'
 }
 
-export { changesView, glance, renameSurface, saveCalendar, saveCalendarUnknown, savesView }
+export { changesView, renameSurface, saveCalendar, saveCalendarUnknown, savesView }
