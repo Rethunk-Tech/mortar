@@ -109,6 +109,12 @@ func TestListAndArt(t *testing.T) {
 	if cfg, err := jpeg.DecodeConfig(rec.Body); err != nil || cfg.Width != 320 {
 		t.Errorf("shrunk art = %+v, %v", cfg, err)
 	}
+	// A hero that will not shrink is not served at full size.
+	rec = httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/steam-art/1966720?w=320", nil))
+	if rec.Code != http.StatusNotFound || rec.Body.Len() > 20 {
+		t.Errorf("unshrinkable art = %d with %d bytes, want a 404", rec.Code, rec.Body.Len())
+	}
 }
 
 func testJPEG(t *testing.T, w, h int) []byte {

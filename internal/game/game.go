@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -299,13 +300,23 @@ func artWidth(r *http.Request) int {
 	return px
 }
 
-// writeArt serves a hero image, shrunk to the asked width when the page named one.
+// shrinkLogged holds the art paths whose shrink failure is already logged.
+var shrinkLogged sync.Map
+
+// writeArt serves a hero image, shrunk to the asked width when the page named one. A hero that will not shrink is
+// not served whole: the full-size decode is what the width exists to avoid.
 func writeArt(w http.ResponseWriter, r *http.Request, b []byte, modTime time.Time) {
 	typ := http.DetectContentType(b)
 	if px := artWidth(r); px > 0 {
-		if out, outTyp, err := modpic.Shrink(b, typ, px); err == nil {
-			b, typ = out, outTyp
+		out, outTyp, err := modpic.Shrink(b, typ, px)
+		if err != nil {
+			if _, seen := shrinkLogged.LoadOrStore(r.URL.Path, true); !seen {
+				log.Printf("game: art %s did not shrink to %d px: %v", r.URL.Path, px, err)
+			}
+			http.NotFound(w, r)
+			return
 		}
+		b, typ = out, outTyp
 	}
 	w.Header().Set("Content-Type", typ)
 	w.Header().Set("Cache-Control", "max-age=86400")
