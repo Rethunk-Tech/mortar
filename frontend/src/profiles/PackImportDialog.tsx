@@ -21,13 +21,12 @@ import {
   Preview as PreviewPack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import { PickPackFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
-import { listNames } from '../i18n/list.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { FoundProfileRow } from './FoundProfileRow.tsx'
 import { PackTarget } from './PackTarget.tsx'
-import { packageLine } from './packImport.ts'
+import { importNotes, packageLine } from './packImport.ts'
 import { usePackTarget } from './usePackTarget.ts'
 
 // Imports an r2modman or Gale profile code, or a profile export file, into a new profile or over an existing one: the
@@ -45,7 +44,7 @@ export function PackImportDialog({
   initialPath: string
   onClose: () => void
 }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const [text, setText] = useState('')
   const [path, setPath] = useState('')
   const [preview, setPreview] = useState<Preview | null>(null)
@@ -94,14 +93,7 @@ export function PackImportDialog({
           kind: unsupported.length > 0 || kept.length > 0 ? 'warning' : 'success',
           title: t`Imported ${preview?.name ?? ''}: ${result.queued} to install`,
           ...(unsupported.length > 0 || kept.length > 0
-            ? {
-                body: [
-                  unsupported.length > 0 ? t`Not from Thunderstore: ${listNames(unsupported)}` : '',
-                  kept.length > 0 ? t`Kept your own copies of: ${listNames(kept)}` : '',
-                ]
-                  .filter(Boolean)
-                  .join('. '),
-              }
+            ? { body: importNotes(i18n, unsupported, kept) }
             : {}),
         })
         close()

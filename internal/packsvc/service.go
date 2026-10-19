@@ -14,6 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -262,7 +263,7 @@ func dropDiffering(dir string, files map[string][]byte) []string {
 		if !filepath.IsLocal(filepath.FromSlash(rel)) {
 			continue
 		}
-		have, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(rel)))
+		have, err := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(rel)))
 		if err == nil && !bytes.Equal(have, data) {
 			kept = append(kept, rel)
 			delete(files, rel)

@@ -41,7 +41,10 @@ func TestDeleteUnownedRemovesOnlyFilesNoModOwns(t *testing.T) {
 
 func TestDeleteUnownedRefusesAFileNamedForAnInstalledPlugin(t *testing.T) {
 	s, _ := newService(t)
-	f := s.Profiles.(fakeProfiles)
+	f, ok := s.Profiles.(fakeProfiles)
+	if !ok {
+		t.Fatal("newService builds a fakeProfiles")
+	}
 	cfg := filepath.Join(f.dir, "BepInEx", "config")
 	file := filepath.Join(cfg, "Author.ModName.cfg")
 	body := "## Settings file was created by plugin Mod v1.0.0\n## Plugin GUID: com.author.mod\n\n[A]\n## x\n# Setting type: Boolean\n# Default value: true\nX = true\n"

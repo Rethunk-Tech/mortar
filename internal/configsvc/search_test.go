@@ -24,7 +24,10 @@ func TestHitsInMatchesKeyLabelDescriptionAndSectionName(t *testing.T) {
 
 func TestSearchCoversUnownedCfgAndTextFiles(t *testing.T) {
 	s, _ := newService(t)
-	f := s.Profiles.(fakeProfiles)
+	f, ok := s.Profiles.(fakeProfiles)
+	if !ok {
+		t.Fatal("newService builds a fakeProfiles")
+	}
 	cfg := filepath.Join(f.dir, "BepInEx", "config")
 	if err := os.WriteFile(filepath.Join(cfg, "BepInEx.cfg"), []byte("[Logging]\n## Enable\n# Setting type: Boolean\n# Default value: true\nEnabled = true\n"), 0o600); err != nil {
 		t.Fatal(err)

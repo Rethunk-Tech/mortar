@@ -435,16 +435,16 @@ func TestImportOverAProfileKeepsDifferingFilesUnlessReplaceIsChosen(t *testing.T
 	if err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := os.ReadFile(cfg); string(b) != "mine" || !slices.Equal(res.Kept, []string{"BepInEx/plugins/a.txt"}) {
+	if b, _ := fsx.ReadFile(cfg); string(b) != "mine" || !slices.Equal(res.Kept, []string{"BepInEx/plugins/a.txt"}) {
 		t.Fatalf("the player's file was replaced or not reported: %q, kept %v", b, res.Kept)
 	}
-	if b, _ := os.ReadFile(filepath.Join(dir, "BepInEx", "plugins", "b.txt")); string(b) != "new" {
+	if b, _ := fsx.ReadFile(filepath.Join(dir, "BepInEx", "plugins", "b.txt")); string(b) != "new" {
 		t.Errorf("a file the profile lacked was not written: %q", b)
 	}
 	if _, err := s.Import(context.Background(), Source{Path: path, Replace: true}, "lethal-company", target.ID); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := os.ReadFile(cfg); string(b) != "pack" {
+	if b, _ := fsx.ReadFile(cfg); string(b) != "pack" {
 		t.Errorf("Replace did not write the pack's file: %q", b)
 	}
 }
