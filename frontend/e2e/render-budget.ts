@@ -34,6 +34,8 @@ const BASE = '/var/tmp'
 const SETTLE_MS = Number(process.env.MORTAR_RENDER_SETTLE_MS ?? '3000')
 const IDLE_MS = Number(process.env.MORTAR_RENDER_IDLE_MS ?? '10000')
 const IDLE_SCALE_MS = 10_000
+const QUIET_MS = 1500
+const QUIET_MAX_MS = 60_000
 const TYPE_DELAY_MS = 120
 const STEP_TIMEOUT_MS = 15_000
 
@@ -267,6 +269,8 @@ async function measure(page: Page, meter: Meter, c: Case): Promise<Result> {
     await meter.reset()
     await c.run(page)
     await page.waitForTimeout(SETTLE_MS)
+    // Background checks (a profile's badges) finish after the settle; what they cause belongs to the action, not idle.
+    await meter.untilQuiet(QUIET_MS, QUIET_MAX_MS)
     const action = await meter.read()
     await meter.reset()
     await page.waitForTimeout(IDLE_MS)

@@ -1,5 +1,6 @@
-import type { CDPSession, Page } from '@playwright/test'
+import type { CDPSession, Page, Request } from '@playwright/test'
 
+const QUIET_POLL_MS = 100
 export const TOP = Number(process.env.MORTAR_RENDER_TOP ?? '8')
 // Library building blocks every MUI component renders through; the report names the app's own components instead.
 const LIBRARY =
@@ -44,6 +45,8 @@ type Metrics = Record<string, number>
 
 export class Meter {
   calls = 0
+  private inflight = 0
+  private lastCallAt = 0
   private readonly named = new Map<string, number>()
   private before: Metrics = {}
   private readonly page: Page
@@ -52,13 +55,30 @@ export class Meter {
   constructor(page: Page, cdp: CDPSession) {
     this.page = page
     this.cdp = cdp
+    const settled = (r: Request) => {
+      if (new URL(r.url()).pathname.startsWith('/wails/')) {
+        this.inflight -= 1
+        this.lastCallAt = Date.now()
+      }
+    }
+    page.on('requestfinished', settled)
+    page.on('requestfailed', settled)
     page.on('request', (r) => {
       if (new URL(r.url()).pathname.startsWith('/wails/')) {
+        this.inflight += 1
         this.calls += 1
         const what = (r.postData() ?? '').slice(0, 90)
         this.named.set(what, (this.named.get(what) ?? 0) + 1)
       }
     })
+  }
+
+  /** Waits until no backend call is in flight and none finished for quietMs, or maxMs passes. */
+  async untilQuiet(quietMs: number, maxMs: number) {
+    const end = Date.now() + maxMs
+    while (Date.now() < end && (this.inflight > 0 || Date.now() - this.lastCallAt < quietMs)) {
+      await this.page.waitForTimeout(QUIET_POLL_MS)
+    }
   }
 
   private async metrics(): Promise<Metrics> {
