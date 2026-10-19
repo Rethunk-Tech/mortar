@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Autocomplete, Box, Checkbox, FormControlLabel, TextField } from '@mui/material'
+import { Autocomplete, Box, Checkbox, Chip, FormControlLabel, TextField } from '@mui/material'
 import { memo } from 'react'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
@@ -37,8 +37,20 @@ function CategoryPicker({
       value={value}
       disabled={disabled}
       onChange={(_, next) => onChange(next)}
-      slotProps={{ chip: { size: 'small' } }}
-      sx={{ flex: 1, minWidth: MIN_PICKER_PX }}
+      // The field keeps its one-row height: chips stay on a line and the ones past its edge are clipped.
+      renderValue={(chips, getItemProps) => (
+        <Box sx={{ display: 'flex', gap: 0.5, minWidth: 0, overflow: 'hidden' }}>
+          {chips.map((chip, index) => {
+            const { key, ...props } = getItemProps({ index })
+            return <Chip key={key} size="small" label={chip} sx={{ flexShrink: 0 }} {...props} />
+          })}
+        </Box>
+      )}
+      sx={{
+        flex: 1,
+        minWidth: MIN_PICKER_PX,
+        '& .MuiAutocomplete-inputRoot': { flexWrap: 'nowrap' },
+      }}
       renderInput={(params) => (
         <TextField
           id={params.id}
