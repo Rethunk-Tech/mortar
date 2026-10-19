@@ -65,7 +65,7 @@ jobs:
         run: |
           set -euo pipefail
           gh release download -R Rethunk-Tech/mortar-browser-extension -p mortar-browser-extension.zip -O "$RUNNER_TEMP/ext.zip"
-          ext=$(unzip -p "$RUNNER_TEMP/ext.zip" plural.js | sed -n 's/^globalThis\.mortarProtocol = \([0-9]*\)$/\1/p')
+          ext=$(unzip -p "$RUNNER_TEMP/ext.zip" plural.js | sed -n 's/^const mortarProtocolMax = \([0-9]*\)$/\1/p')
           min=$(sed -n 's/^\tMinProtocol = \([0-9]*\)$/\1/p' internal/nativehost/nativehost.go)
           max=$(sed -n 's/^\tMaxProtocol = \([0-9]*\)$/\1/p' internal/nativehost/nativehost.go)
           if [ -z "$ext" ] || [ -z "$min" ] || [ -z "$max" ] || [ "$ext" -lt "$min" ] || [ "$ext" -gt "$max" ]; then
