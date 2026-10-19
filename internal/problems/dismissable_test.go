@@ -16,3 +16,15 @@ func TestHideDismissedSoftOnly(t *testing.T) {
 		t.Fatalf("got %+v dismissed %+v", got, dismissed)
 	}
 }
+
+func TestDismissedLoadFailureReturnsWithTheNextRun(t *testing.T) {
+	f := LoadFailure{Kind: "missing-dependency", Plugin: "Fixture Plugin 1.2.3", Message: "missing dependencies: x"}
+	other := LoadFailure{Kind: "load-exception", Plugin: "Other 1.0.0", Message: "boom"}
+	tokens := []string{loadFailureToken("run-1", f)}
+	if got := hideDismissedLoadFailures([]LoadFailure{f, other}, "run-1", tokens); len(got) != 1 || got[0].Plugin != "Other 1.0.0" {
+		t.Fatalf("same run: %+v", got)
+	}
+	if got := hideDismissedLoadFailures([]LoadFailure{f, other}, "run-2", tokens); len(got) != 2 {
+		t.Fatalf("next run: %+v", got)
+	}
+}

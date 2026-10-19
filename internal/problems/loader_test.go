@@ -29,14 +29,19 @@ func TestLoaderFailuresAttributeLogFindingsToPackages(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	dir := t.TempDir()
-	testfs.WriteFile(t, dir, "BepInEx/LogOutput.log", string(log))
+	testfs.WriteFile(t, dir, "BepInEx/LogOutput.log", strings.ReplaceAll(string(log), "Youtube Boombox 1.5.0", "Fixture Plugin 1.2.3"))
+	testfs.WriteFile(t, dir, "BepInEx/plugins/boombox/Fixture.dll", string(dll))
 	boombox := inst("boombox", "YoutubeBoombox", "1.0", true)
 	player := "NullReferenceException: boom\n  at Boombox.Plugin.Update () [0x00000] in <abc>:0\n"
-	known := map[string]framework.Mod{"youtube boombox 1.5.0": boombox}
+	known := map[string]framework.Mod{"fixture plugin 1.2.3": boombox}
 	for name, owners := range map[string]map[string]framework.Mod{"known": known, "unknown": {}} {
 		got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, player, func() map[string]framework.Mod { return owners })
-		if len(got) != 3 || got[0].Plugin != "Youtube Boombox 1.5.0" || got[0].Kind != bepinex5.KindMissingDependency {
+		if len(got) != 3 || got[0].Plugin != "Fixture Plugin 1.2.3" || got[0].Kind != bepinex5.KindMissingDependency {
 			t.Fatalf("%s: failures = %+v", name, got)
 		}
 		wantKey := ""
@@ -187,5 +192,31 @@ func TestOrphanRowsOfNewDependenciesWaitForTheQueueToDrain(t *testing.T) {
 	installing = false
 	if got := count(); got != before+1 {
 		t.Fatalf("after the queue drained: %d, want %d", got, before+1)
+	}
+}
+
+func TestLoaderFailuresDropWhatTheProfileHasSinceFixed(t *testing.T) {
+	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	log := "[Error  :   BepInEx] Could not load [Fixture Plugin 1.2.3] because it has missing dependencies: com.sigurd.csync\n"
+	dir := t.TempDir()
+	testfs.WriteFile(t, dir, "BepInEx/LogOutput.log", log)
+	testfs.WriteFile(t, dir, "BepInEx/plugins/fixture/Fixture.dll", string(dll))
+	run := func(owners map[string]framework.Mod) []LoadFailure {
+		return loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, "", func() map[string]framework.Mod { return owners })
+	}
+	if got := run(map[string]framework.Mod{}); len(got) != 1 {
+		t.Fatalf("a dependency still missing: %+v", got)
+	}
+	if got := run(map[string]framework.Mod{"com.sigurd.csync": inst("csync", "CSync", "5.0.0", true)}); len(got) != 0 {
+		t.Fatalf("the dependency is installed now: %+v", got)
+	}
+	if err := os.Remove(filepath.Join(dir, "BepInEx/plugins/fixture/Fixture.dll")); err != nil {
+		t.Fatal(err)
+	}
+	if got := run(map[string]framework.Mod{}); len(got) != 0 {
+		t.Fatalf("the plugin the log names is gone: %+v", got)
 	}
 }

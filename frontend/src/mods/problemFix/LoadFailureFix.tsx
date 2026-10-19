@@ -1,6 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
+import { Button } from '@mui/material'
 import { useState } from 'react'
-import { RemoveSkippedPlugin } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
+import {
+  DismissLoadFailure,
+  RemoveSkippedPlugin,
+} from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { useBrowseView } from '../../browse/view.ts'
 import { useTab } from '../../game/tab.ts'
 import { useLoader } from '../../loader/store.ts'
@@ -12,9 +16,46 @@ import { openTarget } from '../storeView.ts'
 import { useUpdates } from '../updates.ts'
 import type { WarningButton } from './warningButton.tsx'
 
+// The log's rows stay until the next run says otherwise, so each can be dismissed for this run. The game's version and
+// settings rows come from the install rather than a run.
+export function LoadFailureFix({
+  problem,
+  button,
+}: {
+  problem: Extract<Problem, { kind: 'loadFailure' }>
+  button: WarningButton
+}) {
+  const { t } = useLingui()
+  const failure = problem.loadFailure
+  const dismissable = failure.kind !== 'game-version' && failure.kind !== 'game-setting'
+  return (
+    <>
+      <LoadFailureAction problem={problem} button={button} />
+      {dismissable ? (
+        <Button
+          size="small"
+          color="inherit"
+          variant="text"
+          onClick={() => {
+            const at = openTarget()
+            if (at) {
+              DismissLoadFailure(at.game, at.id, failure.kind, failure.plugin, failure.message)
+                .then(() => useMods.getState().loadProblems())
+                .catch(reportUnexpected)
+            }
+          }}
+          sx={{ flexShrink: 0 }}
+        >
+          {t`Dismiss`}
+        </Button>
+      ) : null}
+    </>
+  )
+}
+
 // The fix follows the cause the log names: a missing plugin is found, one built for other versions is updated, a
 // broken loader is reinstalled, and a plugin that clashes or keeps failing is disabled.
-export function LoadFailureFix({
+function LoadFailureAction({
   problem,
   button,
 }: {

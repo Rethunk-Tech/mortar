@@ -142,3 +142,20 @@ func hideDismissed(conflicts []framework.AssetConflict, tokens []string) ([]fram
 		return []string{dismissToken(c.Kind, c.Target)}
 	}, func(c *framework.AssetConflict) DismissedProblem { return DismissedProblem{AssetConflict: c} })
 }
+
+const loadFailureKind = "load-failure"
+
+// loadFailureToken names one load failure of one run, so the dismissal ends when the next run records a new id.
+func loadFailureToken(runID string, f LoadFailure) string {
+	return dismissToken(loadFailureKind, strings.Join([]string{runID, f.Kind, f.Plugin, f.Message}, "\t"))
+}
+
+func hideDismissedLoadFailures(rows []LoadFailure, runID string, tokens []string) []LoadFailure {
+	if runID == "" {
+		return rows
+	}
+	kept, _ := hideRows(rows, tokens, func(f LoadFailure) []string {
+		return []string{loadFailureToken(runID, f)}
+	}, func(*LoadFailure) DismissedProblem { return DismissedProblem{} })
+	return kept
+}

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -57,7 +59,7 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners
 	for _, a := range logs.Analyzers() {
 		found = append(found, a.Analyze(loader.Logs{Loader: string(raw), Player: player})...)
 	}
-	out := attribute(found, owners)
+	out := dropFixed(attribute(found, owners), filepath.Join(p.Dir, filepath.FromSlash(pluginsDir)), owners)
 	for i, f := range out {
 		if f.Kind != bepinex5.KindDuplicateGUID || f.Key != "" {
 			continue
@@ -68,6 +70,27 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners
 		}
 	}
 	return out
+}
+
+// pluginLabel is the "name version" a BepInEx log names a plugin by.
+var pluginLabel = regexp.MustCompile(`\s\d+(\.\d+)+\S*$`)
+
+// dropFixed removes the findings the profile has since fixed, which stay in the log until the next run: a missing
+// dependency that an enabled package now declares, and a plugin named by "name version" that no plugin file in the
+// profile declares any more (it was updated or replaced, or its package left).
+func dropFixed(found []LoadFailure, pluginsPath string, owners func() map[string]framework.Mod) []LoadFailure {
+	if len(found) == 0 {
+		return found
+	}
+	byName := owners()
+	return slices.DeleteFunc(found, func(f LoadFailure) bool {
+		if f.Kind == bepinex5.KindMissingDependency && f.Dependency != "" {
+			if _, ok := byName[strings.ToLower(f.Dependency)]; ok {
+				return true
+			}
+		}
+		return pluginLabel.MatchString(f.Plugin) && dotnet.PluginFile(pluginsPath, f.Plugin) == ""
+	})
 }
 
 // RemoveSkippedPlugin deletes a DLL a LoadFailure's Path named, which BepInEx skipped for a newer copy of the same

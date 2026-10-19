@@ -554,7 +554,41 @@ func (s *Service) withDismissed(gameID, id string, r Result) Result {
 	r.Dismissed = append(r.Dismissed, dismissed...)
 	r.Redundant, dismissed = hideDismissedRedundant(r.Redundant, tokens)
 	r.Dismissed = append(r.Dismissed, dismissed...)
+	if s.Runs != nil {
+		runID, _ := s.Runs.LastRunID(gameID, id)
+		r.LoadFailures = hideDismissedLoadFailures(r.LoadFailures, runID, tokens)
+	}
 	return r
+}
+
+// DismissLoadFailure hides one load failure row of the profile's newest run until the next run is recorded.
+func (s *Service) DismissLoadFailure(_ context.Context, gameID, id, kind, plugin, message string) error {
+	if s.Runs == nil {
+		return errors.New("no run to dismiss a failure of")
+	}
+	runID, err := s.Runs.LastRunID(gameID, id)
+	if err != nil || runID == "" {
+		return errors.New("no run to dismiss a failure of")
+	}
+	bucket := dismissBucket(gameID, id)
+	prefix := loadFailureKind + "\t"
+	token := loadFailureToken(runID, LoadFailure{Kind: kind, Plugin: plugin, Message: message})
+	_, err = s.settings.Update(func(v *settings.Settings) {
+		next := maps.Clone(v.Dismissed)
+		if next == nil {
+			next = map[string][]string{}
+		}
+		// An earlier run's dismissals are over; drop them with the new one.
+		kept := slices.DeleteFunc(slices.Clone(next[bucket]), func(t string) bool {
+			return strings.HasPrefix(t, prefix) && !strings.HasPrefix(t, prefix+runID+"\t")
+		})
+		if !slices.Contains(kept, token) {
+			kept = append(kept, token)
+		}
+		next[bucket] = kept
+		v.Dismissed = next
+	})
+	return err
 }
 
 // DismissRedundant hides one Redundant row for this profile: the mod key, with the keys of the mods that make it
