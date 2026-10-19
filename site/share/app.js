@@ -29,7 +29,8 @@ const SOURCES = {
     label: 'GitHub',
     link: (e) => ({
       href: `https://github.com/${e.repo}/releases/tag/${encodeURIComponent(e.tag)}`,
-      text: `${e.repo} ${e.tag}`,
+      text: `${e.repo.split('/')[1]} ${e.tag}`,
+      author: e.repo.split('/')[0],
     }),
   },
   curseforge: {
@@ -50,7 +51,7 @@ const SOURCES = {
     label: 'itch.io',
     link: (e) => {
       const [user, game] = e.page.split('/')
-      return { href: `https://${user}.itch.io/${game}`, text: `${user}/${game}` }
+      return { href: `https://${user}.itch.io/${game}`, text: game, author: user }
     },
   },
   patreon: {
@@ -64,7 +65,8 @@ const SOURCES = {
     label: 'Thunderstore',
     link: (e, keys) => ({
       href: `https://thunderstore.io/c/${encodeURIComponent(keys.thunderstore)}/p/${e.ns}/${e.name}/`,
-      text: `${e.ns}/${e.name}`,
+      text: e.name,
+      author: e.ns,
     }),
   },
 }
@@ -97,21 +99,21 @@ function size(kb) {
 
 function row(e, sourceKeys) {
   const source = SOURCES[e.kind]
-  const { href, text } = source.link(e, sourceKeys)
+  const { href, text, author } = source.link(e, sourceKeys)
   const li = el('li')
   const src = picture(e)
   const pic = src
-    ? el('img', { className: 'pic', src, alt: '', loading: 'lazy', width: 32, height: 32 })
+    ? el('img', { className: 'pic', src, alt: '', loading: 'lazy', width: 40, height: 40 })
     : el('span', { className: 'pic' })
   if (src) {
     pic.addEventListener('error', () => pic.replaceWith(el('span', { className: 'pic' })))
   }
   const needs = el('span', { className: 'flag', hidden: true })
+  const meta = [author, source.label, e.kb ? size(e.kb) : ''].filter(Boolean).join(' · ')
   li.append(
     pic,
-    el('span', { className: 'source' }, source.label),
     el('a', { href, rel: 'noopener noreferrer' }, text),
-    el('span', { className: 'size' }, e.kb ? size(e.kb) : ''),
+    el('span', { className: 'meta' }, meta),
     needs,
   )
   li.dataset.min = e.min ?? ''
