@@ -58,7 +58,9 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, pt: 0.5 }}>
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-            {t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it.`}
+            {loader === 'shimloader'
+              ? t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from its Thunderstore community.`
+              : t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it.`}
           </Typography>
           <TextField
             size="small"

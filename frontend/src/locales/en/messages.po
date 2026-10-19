@@ -827,6 +827,10 @@ msgstr "Mods in this profile"
 msgid "Apply this profile to all waiting"
 msgstr "Apply this profile to all waiting"
 
+#: src/games/AddGameDialog.tsx:62
+msgid "For a game that is not in Mortar's list. It stays on this computer, and its mods come from its Thunderstore community."
+msgstr "For a game that is not in Mortar's list. It stays on this computer, and its mods come from its Thunderstore community."
+
 #: src/console/HelpDialog.tsx:63
 #: src/mods/ModSections.tsx:160
 msgid "Open"
@@ -894,7 +898,7 @@ msgstr "Remove the shortcut"
 msgid "{count, plural, one {{name} logged # error in the last run. First: {first}} other {{name} logged # errors in the last run. First: {first}}}"
 msgstr "{count, plural, one {{name} logged # error in the last run. First: {first}} other {{name} logged # errors in the last run. First: {first}}}"
 
-#: src/games/AddGameDialog.tsx:79
+#: src/games/AddGameDialog.tsx:81
 msgid "Could not choose the program"
 msgstr "Could not choose the program"
 
@@ -2096,7 +2100,7 @@ msgid "Running for {time}"
 msgstr "Running for {time}"
 
 #: src/firstrun/ProfileStep.tsx:178
-#: src/games/AddGameDialog.tsx:65
+#: src/games/AddGameDialog.tsx:67
 #: src/groups/dialogs.tsx:50
 #: src/mods/CategoryEditor.tsx:42
 #: src/mods/columnLabel.ts:7
@@ -6244,7 +6248,7 @@ msgstr "{gameName} closed with errors"
 msgid "Remove duplicate"
 msgstr "Remove duplicate"
 
-#: src/games/AddGameDialog.tsx:61
+#: src/games/AddGameDialog.tsx:63
 msgid "For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it."
 msgstr "For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it."
 
@@ -6782,7 +6786,7 @@ msgstr "When you enable a mod, also enable its required mods already in the prof
 msgid "Show slowest mods"
 msgstr "Show slowest mods"
 
-#: src/games/AddGameDialog.tsx:77
+#: src/games/AddGameDialog.tsx:79
 msgid "Choose the game's program"
 msgstr "Choose the game's program"
 
@@ -6897,7 +6901,7 @@ msgstr "Downloaded versions stay in the store for re-use."
 msgid "Skip for now"
 msgstr "Skip for now"
 
-#: src/games/AddGameDialog.tsx:85
+#: src/games/AddGameDialog.tsx:87
 msgid "How it is modded"
 msgstr "How it is modded"
 
@@ -7995,7 +7999,7 @@ msgstr "Shortcut removed"
 msgid "Run with this profile"
 msgstr "Run with this profile"
 
-#: src/games/AddGameDialog.tsx:72
+#: src/games/AddGameDialog.tsx:74
 msgid "No game program chosen"
 msgstr "No game program chosen"
 
@@ -9043,7 +9047,7 @@ msgstr "Bosses defeated"
 #: src/console/RunProblems.tsx:138
 #: src/downloads/newDownloads.ts:35
 #: src/game/FarmMenuItem.tsx:104
-#: src/games/AddGameDialog.tsx:135
+#: src/games/AddGameDialog.tsx:137
 #: src/mods/AddToGroupDialog.tsx:105
 #: src/mods/ModDependencyTree.tsx:86
 #: src/mods/ModDependencyTree.tsx:86
@@ -10093,7 +10097,7 @@ msgstr "{profileName} has {0} more than once. {loader} loads only one, so pick w
 msgid "Favourites"
 msgstr "Favourites"
 
-#: src/games/AddGameDialog.tsx:101
+#: src/games/AddGameDialog.tsx:103
 msgid "The game's name in its Thunderstore address (thunderstore.io/c/…). Mortar gets Shimloader and the game's mods from it. Choose the game's shipping program, in Binaries/Win64."
 msgstr "The game's name in its Thunderstore address (thunderstore.io/c/…). Mortar gets Shimloader and the game's mods from it. Choose the game's shipping program, in Binaries/Win64."
 
@@ -10889,7 +10893,7 @@ msgstr "Signed in"
 msgid "{0, plural, one {# difference} other {# differences}}"
 msgstr "{0, plural, one {# difference} other {# differences}}"
 
-#: src/games/AddGameDialog.tsx:82
+#: src/games/AddGameDialog.tsx:84
 msgid "Choose the game's program…"
 msgstr "Choose the game's program…"
 
@@ -12184,7 +12188,7 @@ msgstr "Got a Mortar link? You see what it holds first. Nexus mods need your Nex
 
 #: src/console/RunProblems.tsx:148
 #: src/console/RunProblems.tsx:196
-#: src/games/AddGameDialog.tsx:113
+#: src/games/AddGameDialog.tsx:115
 #: src/mods/CleanupSection.tsx:88
 #: src/mods/ModMenu.tsx:182
 #: src/mods/ModMenu.tsx:281
@@ -14530,7 +14534,7 @@ msgstr "Yesterday"
 msgid "Could not mark the mods implicit"
 msgstr "Could not mark the mods implicit"
 
-#: src/games/AddGameDialog.tsx:99
+#: src/games/AddGameDialog.tsx:101
 msgid "Thunderstore community"
 msgstr "Thunderstore community"
 
@@ -14997,7 +15001,7 @@ msgstr "Applied the next time the server starts. The password stays in this prof
 #: src/console/HelpDialog.tsx:257
 #: src/console/SearchRunsDialog.tsx:177
 #: src/game/FarmMenuItem.tsx:154
-#: src/games/AddGameDialog.tsx:123
+#: src/games/AddGameDialog.tsx:125
 #: src/launch/LaunchLayer.tsx:227
 #: src/launch/SweepDialog.tsx:137
 #: src/mods/AssetMapDialog.tsx:283
@@ -15103,7 +15107,7 @@ msgstr "Send links only"
 msgid "Open in the tray instead of showing the window"
 msgstr "Open in the tray instead of showing the window"
 
-#: src/games/AddGameDialog.tsx:108
+#: src/games/AddGameDialog.tsx:110
 msgid "Games you added"
 msgstr "Games you added"
 
