@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -260,5 +261,20 @@ func TestNorthstarIsNotStartedThroughSteamsProton(t *testing.T) {
 	view := loader.ProfileView{Game: "titanfall-2", Dir: dir, InstallDir: t.TempDir(), Platform: "windows", Runtime: "proton"}
 	if err := l.Contribute(t.Context(), launchplan.New(launchplan.ModeProfile), view); err == nil {
 		t.Fatal("Steam's Proton relay cannot start another executable, so the launch must be refused")
+	}
+}
+
+func TestAMappedDestinationOutsideTheProfileIsRefused(t *testing.T) {
+	root := t.TempDir()
+	dir := filepath.Join(root, "profile")
+	l := Loader{Name: "Escape", Map: func(rel string) string { return "../" + rel }}
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "pack.zip"), map[string]string{"x": "1"})
+	if _, err := l.Install(t.Context(), loader.Target{ProfileDir: dir}, loader.Package{Archive: zip, Version: "1"}, nil); err == nil {
+		t.Fatal("a destination below ../ must be refused")
+	} else if !strings.Contains(err.Error(), "outside the profile") {
+		t.Fatalf("refused for another reason: %v", err)
+	}
+	if fsx.IsFile(filepath.Join(root, "x")) {
+		t.Fatal("the file escaped the profile")
 	}
 }

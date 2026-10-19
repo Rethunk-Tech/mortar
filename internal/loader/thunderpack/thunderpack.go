@@ -164,14 +164,21 @@ func (l Loader) Install(_ context.Context, t loader.Target, pkg loader.Package, 
 			if err != nil {
 				return "", err
 			}
-			if err := fsx.RemoveAll(filepath.Join(t.ProfileDir, filepath.FromSlash(l.dest(filepath.ToSlash(rel))))); err != nil {
+			dst, err := l.localDest(filepath.ToSlash(rel))
+			if err != nil {
+				return "", err
+			}
+			if err := fsx.RemoveAll(filepath.Join(t.ProfileDir, filepath.FromSlash(dst))); err != nil {
 				return "", err
 			}
 		}
 	}
 	var placed []string
 	for _, rel := range files {
-		dst := l.dest(rel)
+		dst, err := l.localDest(rel)
+		if err != nil {
+			return "", err
+		}
 		if dst == "" {
 			continue
 		}
@@ -245,6 +252,15 @@ func (l Loader) dest(rel string) string {
 		}
 	}
 	return rel
+}
+
+// localDest is dest(rel), refused when it would leave the profile.
+func (l Loader) localDest(rel string) (string, error) {
+	dst := l.dest(rel)
+	if dst != "" && !filepath.IsLocal(filepath.FromSlash(dst)) {
+		return "", fmt.Errorf("the %s package places %q outside the profile", l.Name, rel)
+	}
+	return dst, nil
 }
 
 func (l Loader) seeded(rel string) bool {
