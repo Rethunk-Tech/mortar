@@ -111,6 +111,7 @@ const underPictureSx = {
     lineHeight: 1.2,
   },
   '& .MuiButton-startIcon': { display: 'none' },
+  '& .card-progress': { width: '100%' },
   // A status chip (Added, Loader) takes the button's place and shape.
   '& .MuiChip-root': {
     width: '100%',

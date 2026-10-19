@@ -1,12 +1,36 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, LinearProgress, Typography } from '@mui/material'
 import { Check, RotateCw } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Retry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
 import { useQueue } from '../queue/store.ts'
+import { BUTTON_SMALL_HEIGHT } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import type { CardState } from './cardState.ts'
 
 const BAR_PX = 96
+
+// The label and bar fill the Add button's footprint; under a picture the card sizes it to the picture's width.
+function Block({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <Box
+      className="card-progress"
+      sx={{
+        width: BAR_PX,
+        height: BUTTON_SMALL_HEIGHT,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        minWidth: 0,
+      }}
+    >
+      <Typography noWrap={true} title={label} sx={{ fontSize: 12, lineHeight: 1.2 }}>
+        {label}
+      </Typography>
+      {children}
+    </Box>
+  )
+}
 
 // The card's Add button once its mod is on its way: where it stands, and a retry when it failed.
 function CardProgress({ state }: { state: Exclude<CardState, { kind: 'idle' }> }) {
@@ -34,17 +58,15 @@ function CardProgress({ state }: { state: Exclude<CardState, { kind: 'idle' }> }
       )
     case 'downloading':
       return (
-        <Box sx={{ width: BAR_PX }}>
-          <Typography sx={{ fontSize: 12 }}>{t`Downloading ${state.percent}%`}</Typography>
+        <Block label={t`Downloading ${state.percent}%`}>
           <LinearProgress variant="determinate" value={state.percent} />
-        </Box>
+        </Block>
       )
     case 'paused':
       return (
-        <Box sx={{ width: BAR_PX }}>
-          <Typography sx={{ fontSize: 12 }}>{t`Paused at ${state.percent}%`}</Typography>
+        <Block label={t`Paused at ${state.percent}%`}>
           <LinearProgress variant="determinate" color="inherit" value={state.percent} />
-        </Box>
+        </Block>
       )
     default: {
       const label = {
@@ -53,13 +75,12 @@ function CardProgress({ state }: { state: Exclude<CardState, { kind: 'idle' }> }
         installing: t`Installing`,
       }[state.kind]
       return (
-        <Box sx={{ width: BAR_PX }}>
-          <Typography sx={{ fontSize: 12 }}>{label}</Typography>
+        <Block label={label}>
           <LinearProgress
             variant={state.kind === 'queued' ? 'determinate' : 'indeterminate'}
             value={0}
           />
-        </Box>
+        </Block>
       )
     }
   }
