@@ -125,6 +125,9 @@ type Item struct {
 	Repo string `json:"repo,omitempty"`
 	// Alts are the same mod's hits on the game's other sources, set by a merged search that found it on several.
 	Alts []Alt `json:"alts,omitempty"`
+	// Category is the category name the site files the mod under when its search results say it, so Browse can hide a
+	// noisy one even where the site lists its categories only to an account.
+	Category string `json:"category,omitempty"`
 	// Adult marks a mod its site flags as adult content; browse hides it unless the player opted in.
 	Adult bool `json:"adult"`
 	// Obsolete marks a mod its author or site calls obsolete or deprecated, and Broken one the game's compatibility

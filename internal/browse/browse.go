@@ -330,6 +330,13 @@ func (c *Client) fetchMarked(ctx context.Context, info components.GameInfo, id s
 		result.Items = slices.DeleteFunc(result.Items, func(i Item) bool { return i.Adult })
 		result.Total = max(result.Total-(before-len(result.Items)), 0)
 	}
+	if c.HideNoise {
+		before := len(result.Items)
+		result.Items = slices.DeleteFunc(result.Items, func(i Item) bool {
+			return i.Category != "" && noisy(i.Category) && !slices.ContainsFunc(q.Categories, func(in string) bool { return strings.EqualFold(in, i.Category) })
+		})
+		result.Total = max(result.Total-(before-len(result.Items)), 0)
+	}
 	if c.Hidden != nil {
 		before := len(result.Items)
 		result.Items = slices.DeleteFunc(result.Items, c.Hidden)

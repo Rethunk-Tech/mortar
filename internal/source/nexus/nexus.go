@@ -65,6 +65,9 @@ type searchResp struct {
 				UpdatedAt    string `json:"updatedAt"`
 				AdultContent bool   `json:"adultContent"`
 				FileSizeKB   int64  `json:"fileSize"`
+				ModCategory  struct {
+					Name string `json:"name"`
+				} `json:"modCategory"`
 			} `json:"nodes"`
 		} `json:"mods"`
 	} `json:"data"`
@@ -130,7 +133,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		filter = "op:OR, filter:[" + strings.Join(branches, ", ") + "]"
 	}
 	query := fmt.Sprintf(
-		`{ mods(filter:{%s}, sort:[{%s}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt adultContent fileSize } } }`,
+		`{ mods(filter:{%s}, sort:[{%s}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt adultContent fileSize modCategory { name } } } }`,
 		filter, sortClause(q.Sort), source.PageSize, offset,
 	)
 	var parsed searchResp
@@ -161,6 +164,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 			Size:         n.FileSizeKB * 1024,
 			Updated:      n.UpdatedAt,
 			Adult:        n.AdultContent,
+			Category:     n.ModCategory.Name,
 			URL:          nexus.ModURL(q.Key, n.ModID),
 		})
 	}
@@ -190,7 +194,8 @@ func sortClause(sort string) string {
 // account service sets this; without it the driver offers no category choices.
 var CategoryNames func(ctx context.Context, domain string) ([]string, error)
 
-// Categories lists the game's category names, or none while no account lookup is wired.
+// Categories lists the game's category names, or none while no account lookup is wired; each hit still carries its own
+// category name, which Browse filters noise by.
 func (Driver) Categories(ctx context.Context, key string) ([]string, error) {
 	if CategoryNames == nil {
 		return []string{}, nil

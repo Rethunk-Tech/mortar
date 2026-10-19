@@ -310,3 +310,42 @@ func TestSearchExcludesNoiseOnlyWhenAsked(t *testing.T) {
 		t.Fatalf("a source with no categories was given excludes: %v", fake.got.ExcludeCategories)
 	}
 }
+
+type categorizedHits struct{}
+
+func (categorizedHits) ID() string              { return "cathits" }
+func (categorizedHits) Name() string            { return "Cat hits" }
+func (categorizedHits) Modes() []source.Acquire { return nil }
+func (categorizedHits) Search(context.Context, source.Query) (source.Page, error) {
+	return source.Page{Total: 3, Items: []source.Item{
+		{Source: "cathits", ID: "1", Category: "Cheats and God items"},
+		{Source: "cathits", ID: "2", Category: "Utilities"},
+		{Source: "cathits", ID: "3"},
+	}}, nil
+}
+
+var _ = source.Register(categorizedHits{})
+
+func TestNoisyHitsAreDroppedByTheirOwnCategoryWhenTheSourceListsNone(t *testing.T) {
+	g := components.GameInfo{ID: "cg", Sources: []components.GameSource{{ID: "cathits", Key: "k"}}}
+	ids := func(c *Client, f Filter) string {
+		page, err := c.search(context.Background(), g, "cathits", "", 1, f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var out []string
+		for _, i := range page.Items {
+			out = append(out, i.ID)
+		}
+		return fmt.Sprint(out, page.Total)
+	}
+	if got := ids(&Client{HideNoise: true}, Filter{}); got != "[2 3] 2" {
+		t.Errorf("hidden: %s", got)
+	}
+	if got := ids(&Client{HideNoise: true}, Filter{Include: []string{"cheats and god items"}}); got != "[1 2 3] 3" {
+		t.Errorf("included on purpose: %s", got)
+	}
+	if got := ids(&Client{}, Filter{}); got != "[1 2 3] 3" {
+		t.Errorf("noise shown: %s", got)
+	}
+}
