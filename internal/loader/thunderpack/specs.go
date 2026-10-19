@@ -106,6 +106,24 @@ var specs = []Spec{
 		ImportDirs: []string{"UMM"},
 	},
 	{
+		// unreal_shimloader's top dwmapi.dll is the proxy that works (the one in UE4SS/ is not), and UE4SS's own files are
+		// laid out where the shimloader finds them; the proxy and UE4SS sit beside the game's shipping build.
+		LoaderID: "shimloader", Name: "Shimloader",
+		Map:    shimloaderMap,
+		Placed: func(rel string) bool { return !strings.Contains(shimloaderMap(rel), "/") && shimloaderMap(rel) != "" },
+		Files:  []string{"dwmapi.dll", "ue4ss.dll", "UE4SS-settings.ini"},
+		Dirs:   []string{"shimloader/mod", "shimloader/pak", "shimloader/cfg", "shimloader/overlay"},
+		Args: func(dir string, proton bool) []string {
+			var out []string
+			for _, f := range []string{"mod", "pak", "cfg", "overlay"} {
+				out = append(out, "--"+f+"-dir", hostPath(filepath.Join(dir, "shimloader", f), proton))
+			}
+			return out
+		},
+		Overrides: func([]string) []string { return []string{"dwmapi"} }, ProxyDLL: "dwmapi",
+		ImportDirs: []string{"shimloader"}, ConfigFolders: []string{"shimloader/cfg"},
+	},
+	{
 		// Northstar's whole release is laid out in the profile, which it is told is its R2Northstar folder; the launcher
 		// and the libraries around it are placed beside the game's executable.
 		LoaderID: "northstar", Name: "Northstar", Root: "Northstar",
@@ -121,6 +139,28 @@ var specs = []Spec{
 		Overrides: func([]string) []string { return []string{"wsock32"} },
 		Exe:       "NorthstarLauncher.exe", ImportDirs: []string{"R2Northstar"},
 	},
+}
+
+// shimloaderMap is where the unreal_shimloader file rel goes in the profile, "" for one it drops. UE4SS.dll was
+// ue4ss.dll before a release renamed it, and the proxy looks for the lower-case name.
+func shimloaderMap(rel string) string {
+	if rel == "dwmapi.dll" {
+		return rel
+	}
+	below, ok := strings.CutPrefix(rel, "UE4SS/")
+	if !ok {
+		return ""
+	}
+	if mod, ok := strings.CutPrefix(below, "Mods/"); ok {
+		return path.Join("shimloader", "mod", mod)
+	}
+	switch strings.ToLower(below) {
+	case "ue4ss.dll":
+		return "ue4ss.dll"
+	case "ue4ss-settings.ini":
+		return "UE4SS-settings.ini"
+	}
+	return ""
 }
 
 // gdweaveRoute puts the files of the package's own mod folder, the shallowest folder below the package's top that holds a

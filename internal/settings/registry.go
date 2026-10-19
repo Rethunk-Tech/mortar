@@ -225,6 +225,7 @@ var registry = withDefaults([]pref{
 	loaderPref("northstar", pinPref("northstarPin", "northstar")),
 	loaderPref("rivet", pinPref("rivetPin", "rivet")),
 	loaderPref("umm", pinPref("ummPin", "umm")),
+	loaderPref("shimloader", pinPref("shimloaderPin", "shimloader")),
 	overridable(enumPref("defaultLaunchMethod", ScopeGame, launchMethodValues, func(s Settings, g string) string { return s.GamePrefs(g).DefaultLaunchMethod }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.DefaultLaunchMethod = v; putGame(s, g, gp) })),
 	overridable(intPref("instances", ScopeGame, MinInstances, MaxInstances, func(s Settings, g string) int { return s.GamePrefs(g).Instances }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.Instances = n; putGame(s, g, gp) })),
 	overridable(intPref("delaySeconds", ScopeGame, MinDelaySeconds, MaxDelaySeconds, func(s Settings, g string) int { return s.GamePrefs(g).DelaySeconds }, func(s *Settings, g string, n int) { gp := s.GamePrefs(g); gp.DelaySeconds = n; putGame(s, g, gp) })),

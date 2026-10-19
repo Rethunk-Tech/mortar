@@ -490,6 +490,20 @@ type GameLoader struct {
 	// Proxy is the Doorstop proxy library the game's BepInEx pack ships when it is not winhttp.dll (In Silence's pack
 	// renames it to version.dll); one of DoorstopProxies. Checks that run before a profile holds the pack read it here.
 	Proxy string `json:"proxy,omitempty"`
+	// PlaceDir is the slash path below the install of the folder a profile-held loader's executable-side files are
+	// placed in for a launch, when that is not MarkerDir (an Unreal game's Binaries/Win64, beside its shipping build).
+	PlaceDir string `json:"placeDir,omitempty"`
+}
+
+// LoaderPlaceDir is the folder below the install that loader id's executable-side files go in: its entry's PlaceDir,
+// else MarkerDir.
+func (g GameInfo) LoaderPlaceDir(id string) string {
+	for _, l := range g.Loaders {
+		if l.ID == id && l.PlaceDir != "" {
+			return l.PlaceDir
+		}
+	}
+	return g.MarkerDir
 }
 
 // DoorstopProxies are the names a BepInEx pack gives its Doorstop proxy, the usual one first.
@@ -846,6 +860,9 @@ func (g GameInfo) Validate() error {
 	for _, l := range g.Loaders {
 		if l.Proxy != "" && !slices.Contains(DoorstopProxies, l.Proxy) {
 			return fmt.Errorf("game %q names an unknown Doorstop proxy %q", g.ID, l.Proxy)
+		}
+		if l.PlaceDir != "" && (strings.Contains(l.PlaceDir, "\\") || !fs.ValidPath(l.PlaceDir) || l.PlaceDir == ".") {
+			return fmt.Errorf("game %q has an unsafe loader folder %q", g.ID, l.PlaceDir)
 		}
 		for _, r := range l.Routes {
 			if err := r.Validate(); err != nil {

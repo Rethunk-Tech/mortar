@@ -1,6 +1,7 @@
 package thunderpack
 
 import (
+	"os"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -17,6 +18,12 @@ func TestLayout(t *testing.T) {
 	umm := []components.LoaderRoute{
 		{Dir: "UMM/Mods", Extensions: []string{".dll"}, Track: components.TrackSubdir, Default: true},
 		{Dir: "UMM/BroMaker_Storage", Track: components.TrackSubdir},
+	}
+	shim := []components.LoaderRoute{
+		{Dir: "shimloader/mod", Track: components.TrackSubdir, Default: true},
+		{Dir: "shimloader/pak", Extensions: []string{".pak"}, Track: components.TrackSubdir},
+		{Dir: "shimloader/cfg"},
+		{Dir: "shimloader/overlay", Track: components.TrackSubdir},
 	}
 	cases := []struct {
 		loader string
@@ -51,6 +58,14 @@ func TestLayout(t *testing.T) {
 			"Info.json":                 "UMM/Mods/Ns-Mod/Info.json",
 			"BroMaker_Storage/x/y.json": "UMM/BroMaker_Storage/Ns-Mod/x/y.json",
 		}},
+		{"shimloader", []string{"manifest.json", "pak/a.pak", "mod/scripts/main.lua", "cfg/p.cfg", "loose.pak", "other/x.lua", "overlay/o.txt"}, shim, map[string]string{
+			"pak/a.pak":            "shimloader/pak/Ns-Mod/a.pak",
+			"mod/scripts/main.lua": "shimloader/mod/Ns-Mod/scripts/main.lua",
+			"cfg/p.cfg":            "shimloader/cfg/p.cfg",
+			"loose.pak":            "shimloader/pak/Ns-Mod/loose.pak",
+			"other/x.lua":          "shimloader/mod/Ns-Mod/x.lua",
+			"overlay/o.txt":        "shimloader/overlay/Ns-Mod/o.txt",
+		}},
 		{"northstar", []string{"manifest.json", "mods/Skin/mod.json", "mods/Skin/a/b.txt", "readme.txt"}, northstar, map[string]string{
 			"mods/Skin/mod.json": "R2Northstar/mods/Skin/mod.json",
 			"mods/Skin/a/b.txt":  "R2Northstar/mods/Skin/a/b.txt",
@@ -81,6 +96,8 @@ func packOf(id string) (zip map[string]string, version string) {
 		return map[string]string{"manifest.json": "{}", "winmm.dll": "l", "lovely/config.toml": "default"}, "0.10.0"
 	case "rivet":
 		return map[string]string{"manifest.json": "{}", "RivetPack/version.dll": "v", "RivetPack/Rivet.ini": "ini", "RivetPack/Rivet/Loader.dll": "loader"}, "0.1.17"
+	case "shimloader":
+		return map[string]string{"manifest.json": "{}", "dwmapi.dll": "proxy", "UE4SS/dwmapi.dll": "unused", "UE4SS/LICENSE": "l", "UE4SS/UE4SS.dll": "ue4ss", "UE4SS/UE4SS-settings.ini": "ini", "UE4SS/Mods/shared/UEHelpers/UEHelpers.lua": "lua"}, "1.1.7"
 	case "umm":
 		return map[string]string{"manifest.json": "{}", "winhttp.dll": "w", "doorstop_config.ini": "c", ".doorstop_version": "4.4.0", "doorstop_libs/libdoorstop_x64.so": "so", "run_umm.sh": "sh", "UMM/Core/UnityModManager.dll": "umm"}, "1.1.0"
 	}
@@ -110,6 +127,13 @@ func TestInstallAndLaunch(t *testing.T) {
 			target := filepath.Join(p, "UMM", "Core", "UnityModManager.dll")
 			return []string{"--doorstop-enabled", "true", "--doorstop-target-assembly", target, "--doorstop-enable", "true", "--doorstop-target", target}
 		}, []string{"doorstop_config.ini", "winhttp.dll"}, nil},
+		{"shimloader", "palworld", "proton", func(p string) []string {
+			var out []string
+			for _, f := range []string{"mod", "pak", "cfg", "overlay"} {
+				out = append(out, "--"+f+"-dir", "Z:"+backslash(filepath.Join(p, "shimloader", f)))
+			}
+			return out
+		}, []string{"Pal/Binaries/Win64/UE4SS-settings.ini", "Pal/Binaries/Win64/dwmapi.dll", "Pal/Binaries/Win64/ue4ss.dll"}, []string{"dwmapi"}},
 		{"lovely", "balatro", "", func(p string) []string { return []string{"--mod-dir", filepath.Join(p, "mods")} }, []string{"winmm.dll"}, nil},
 		{
 			"northstar", "titanfall-2", "mortar-proton", func(p string) []string {
@@ -192,6 +216,26 @@ func TestAnUpdateKeepsWhatThePlayerHasAndDropsWhatTheReleaseDid(t *testing.T) {
 	install("gdweave", map[string]string{"winmm.dll": "w", "GDWeave/core/GDWeave.dll": "2"}, "2.0.14")
 	if have("GDWeave/core/Gone.dll") || !have("GDWeave/core/GDWeave.dll") || !have("GDWeave/mods/Fish/Fish.dll") {
 		t.Fatal("a core file the release dropped must go and a mod must stay")
+	}
+}
+
+func TestShimloaderLaysUEOut(t *testing.T) {
+	l, _ := loader.Get("shimloader")
+	files, version := packOf("shimloader")
+	dir := filepath.Join(t.TempDir(), "profile")
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "pack.zip"), files)
+	if _, err := l.Install(t.Context(), loader.Target{ProfileDir: dir}, loader.Package{Archive: zip, Version: version}, nil); err != nil {
+		t.Fatal(err)
+	}
+	for rel, want := range map[string]string{"dwmapi.dll": "proxy", "ue4ss.dll": "ue4ss", "UE4SS-settings.ini": "ini", "shimloader/mod/shared/UEHelpers/UEHelpers.lua": "lua"} {
+		if b, _ := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(rel))); string(b) != want {
+			t.Errorf("%s = %q, want %q", rel, b, want)
+		}
+	}
+	for _, rel := range []string{"UE4SS", "shimloader/pak", "shimloader/cfg", "shimloader/overlay"} {
+		if _, err := os.Stat(filepath.Join(dir, filepath.FromSlash(rel))); (rel == "UE4SS") == (err == nil) {
+			t.Errorf("%s: stat error %v", rel, err)
+		}
 	}
 }
 

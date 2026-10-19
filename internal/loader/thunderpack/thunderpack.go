@@ -1,7 +1,7 @@
 // Package thunderpack is the driver of a mod loader that ships as a Thunderstore package and keeps its files in each
 // profile: the profile holds the loader and the mods, the game is started on the profile through a command-line flag,
 // and only the files that must sit beside the executable (a proxy library, Northstar's launcher) are placed in the
-// game folder for a launch and taken out after it. ReturnOfModding, GDWeave, Lovely and Northstar are four Specs of it.
+// game folder for a launch and taken out after it. Each loader is one Spec of it.
 package thunderpack
 
 import (
@@ -43,6 +43,10 @@ type Spec struct {
 	Seed []string
 	// Move renames a top-level pack entry on its way into the profile.
 	Move map[string]string
+	// Map, when set, replaces Move: it is where the pack file rel goes in the profile, "" for a file the install drops.
+	Map func(rel string) string
+	// Dirs are folders an install creates in the profile when the pack has none, for a loader that fails without them.
+	Dirs []string
 	// Files are the profile's top-level paths an install lays out.
 	Files []string
 	// Args are the flags that start the game on the profile in dir; proton asks for paths in Wine's form.
@@ -168,6 +172,9 @@ func (l Loader) Install(_ context.Context, t loader.Target, pkg loader.Package, 
 	var placed []string
 	for _, rel := range files {
 		dst := l.dest(rel)
+		if dst == "" {
+			continue
+		}
 		to := filepath.Join(t.ProfileDir, filepath.FromSlash(dst))
 		if l.seeded(rel) && fsx.IsFile(to) {
 			continue
@@ -180,6 +187,11 @@ func (l Loader) Install(_ context.Context, t loader.Target, pkg loader.Package, 
 		}
 		if l.Placed != nil && l.Placed(rel) {
 			placed = append(placed, dst)
+		}
+	}
+	for _, d := range l.Dirs {
+		if err := os.MkdirAll(filepath.Join(t.ProfileDir, filepath.FromSlash(d)), 0o750); err != nil {
+			return "", err
 		}
 	}
 	if progress != nil {
@@ -224,6 +236,9 @@ func packFiles(dir string) ([]string, error) {
 
 // dest is where the pack file rel goes in the profile.
 func (l Loader) dest(rel string) string {
+	if l.Map != nil {
+		return l.Map(rel)
+	}
 	for from, to := range l.Move {
 		if rel == from || strings.HasPrefix(rel, from+"/") {
 			return to + strings.TrimPrefix(rel, from)
@@ -259,6 +274,7 @@ func (l Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.Pr
 	}
 	proton := p.Runtime == "proton" || p.Runtime == "mortar-proton"
 	info, _ := components.Game(p.Game)
+	placeDir := info.LoaderPlaceDir(l.LoaderID)
 	if l.Exe != "" {
 		// Steam's Proton starts the game through steam -applaunch, which cannot be told to run another executable.
 		if p.Runtime == "proton" {
@@ -270,7 +286,7 @@ func (l Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.Pr
 	}
 	plan.AddArgs(l.Args(p.Dir, proton)...)
 	for _, f := range m.Placed {
-		plan.AddFile(launchplan.PlanFile{Src: filepath.Join(p.Dir, filepath.FromSlash(f)), Dst: filepath.FromSlash(path.Join(info.MarkerDir, f))})
+		plan.AddFile(launchplan.PlanFile{Src: filepath.Join(p.Dir, filepath.FromSlash(f)), Dst: filepath.FromSlash(path.Join(placeDir, f))})
 	}
 	if proton && l.Overrides != nil {
 		for _, dll := range l.Overrides(m.Placed) {

@@ -11157,6 +11157,252 @@
           }
         ]
       }
+    },
+    {
+      "id": "palworld",
+      "name": "Palworld",
+      "enabled": true,
+      "minVersion": "0.3.8",
+      "marker": "Palworld.exe",
+      "r2modmanFolder": "Palworld",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [{ "id": "profile", "root": "{profile}" }],
+      "stores": { "steam": { "appId": "1623730" } },
+      "loaders": [
+        {
+          "id": "shimloader",
+          "name": "Shimloader",
+          "package": "Thunderstore-unreal_shimloader",
+          "placeDir": "Pal/Binaries/Win64",
+          "routes": [
+            { "dir": "shimloader/mod", "track": "subdir", "default": true },
+            { "dir": "shimloader/pak", "track": "subdir" },
+            { "dir": "shimloader/cfg" },
+            { "dir": "shimloader/overlay", "track": "subdir" }
+          ]
+        }
+      ],
+      "sources": [{ "id": "thunderstore", "key": "palworld" }]
+    },
+    {
+      "id": "astroneer",
+      "name": "Astroneer",
+      "enabled": true,
+      "minVersion": "0.3.8",
+      "marker": "Astro.exe",
+      "r2modmanFolder": "Astroneer",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [{ "id": "profile", "root": "{profile}" }],
+      "stores": { "steam": { "appId": "361420" } },
+      "loaders": [
+        {
+          "id": "shimloader",
+          "name": "Shimloader",
+          "package": "Thunderstore-unreal_shimloader",
+          "placeDir": "Astro/Binaries/Win64",
+          "routes": [
+            { "dir": "shimloader/mod", "track": "subdir", "default": true },
+            { "dir": "shimloader/pak", "extensions": [".pak"], "track": "subdir" },
+            { "dir": "shimloader/cfg" },
+            { "dir": "shimloader/overlay", "track": "subdir" }
+          ]
+        }
+      ],
+      "sources": [{ "id": "thunderstore", "key": "astroneer" }]
+    },
+    {
+      "id": "panicore",
+      "name": "Panicore",
+      "enabled": true,
+      "minVersion": "0.3.8",
+      "marker": "Panicore.exe",
+      "r2modmanFolder": "Panicore",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [{ "id": "profile", "root": "{profile}" }],
+      "stores": { "steam": { "appId": "2695940" } },
+      "loaders": [
+        {
+          "id": "shimloader",
+          "name": "Shimloader",
+          "package": "Thunderstore-unreal_shimloader",
+          "placeDir": "Panicore/Binaries/Win64",
+          "routes": [
+            { "dir": "shimloader/mod", "track": "subdir", "default": true },
+            { "dir": "shimloader/pak", "track": "subdir" },
+            { "dir": "shimloader/cfg" },
+            { "dir": "shimloader/overlay", "track": "subdir" }
+          ]
+        }
+      ],
+      "sources": [{ "id": "thunderstore", "key": "panicore" }]
+    },
+    {
+      "id": "soulcalibur-vi",
+      "name": "SOULCALIBUR VI",
+      "enabled": true,
+      "minVersion": "0.3.8",
+      "marker": "SoulcaliburVI.exe",
+      "r2modmanFolder": "SoulcaliburVi",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [{ "id": "profile", "root": "{profile}" }],
+      "stores": { "steam": { "appId": "544750" } },
+      "loaders": [
+        {
+          "id": "shimloader",
+          "name": "Shimloader",
+          "package": "Thunderstore-unreal_shimloader",
+          "placeDir": "SoulcaliburVI/Binaries/Win64",
+          "routes": [
+            { "dir": "shimloader/mod", "track": "subdir", "default": true },
+            { "dir": "shimloader/pak", "track": "subdir" },
+            { "dir": "shimloader/cfg" },
+            { "dir": "shimloader/overlay", "track": "subdir" }
+          ]
+        }
+      ],
+      "sources": [{ "id": "thunderstore", "key": "soulcalibur-vi" }]
+    },
+    {
+      "id": "grain-rot",
+      "name": "Grain Rot",
+      "enabled": true,
+      "minVersion": "0.3.8",
+      "marker": "Helden.exe",
+      "r2modmanFolder": "GrainRot",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [{ "id": "profile", "root": "{profile}" }],
+      "stores": { "steam": { "appId": "4450620" } },
+      "loaders": [
+        {
+          "id": "shimloader",
+          "name": "Shimloader",
+          "package": "Thunderstore-unreal_shimloader",
+          "placeDir": "Helden/Binaries/Win64",
+          "routes": [
+            { "dir": "shimloader/mod", "track": "subdir", "default": true },
+            { "dir": "shimloader/pak", "track": "subdir" },
+            { "dir": "shimloader/cfg" },
+            { "dir": "shimloader/overlay", "track": "subdir" }
+          ]
+        }
+      ],
+      "sources": [{ "id": "thunderstore", "key": "grain-rot" }]
+    },
+    {
+      "id": "meccha-chameleon",
+      "name": "MECCHA CHAMELEON",
+      "enabled": true,
+      "minVersion": "0.3.8",
+      "marker": "PenguinHotel.exe",
+      "r2modmanFolder": "MecchaChameleon",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [{ "id": "profile", "root": "{profile}" }],
+      "stores": { "steam": { "appId": "4704690" } },
+      "loaders": [
+        {
+          "id": "shimloader",
+          "name": "Shimloader",
+          "package": "Thunderstore-unreal_shimloader",
+          "placeDir": "Chameleon/Binaries/Win64",
+          "routes": [
+            { "dir": "shimloader/mod", "track": "subdir", "default": true },
+            { "dir": "shimloader/pak", "track": "subdir" },
+            { "dir": "shimloader/cfg" },
+            { "dir": "shimloader/overlay", "track": "subdir" }
+          ]
+        }
+      ],
+      "sources": [{ "id": "thunderstore", "key": "meccha-chameleon" }]
+    },
+    {
+      "id": "minos",
+      "name": "MINOS",
+      "enabled": true,
+      "minVersion": "0.3.8",
+      "marker": "Minos.exe",
+      "r2modmanFolder": "Minos",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [{ "id": "profile", "root": "{profile}" }],
+      "stores": { "steam": { "appId": "3181650" } },
+      "loaders": [
+        {
+          "id": "shimloader",
+          "name": "Shimloader",
+          "package": "Thunderstore-unreal_shimloader",
+          "placeDir": "Minos/Binaries/Win64",
+          "routes": [
+            { "dir": "shimloader/mod", "track": "subdir", "default": true },
+            { "dir": "shimloader/pak", "track": "subdir" },
+            { "dir": "shimloader/cfg" },
+            { "dir": "shimloader/overlay", "track": "subdir" }
+          ]
+        }
+      ],
+      "sources": [{ "id": "thunderstore", "key": "minos" }]
+    },
+    {
+      "id": "rv-there-yet",
+      "name": "RV There Yet?",
+      "enabled": true,
+      "minVersion": "0.3.8",
+      "marker": "Ride.exe",
+      "r2modmanFolder": "RvThereYet",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [{ "id": "profile", "root": "{profile}" }],
+      "stores": { "steam": { "appId": "3949040" } },
+      "loaders": [
+        {
+          "id": "shimloader",
+          "name": "Shimloader",
+          "package": "Thunderstore-unreal_shimloader",
+          "placeDir": "Ride/Binaries/Win64",
+          "routes": [
+            { "dir": "shimloader/mod", "track": "subdir", "default": true },
+            { "dir": "shimloader/pak", "track": "subdir" },
+            { "dir": "shimloader/cfg" },
+            { "dir": "shimloader/overlay", "track": "subdir" }
+          ]
+        }
+      ],
+      "sources": [{ "id": "thunderstore", "key": "rv-there-yet" }]
+    },
+    {
+      "id": "windrose",
+      "name": "Windrose",
+      "enabled": true,
+      "minVersion": "0.3.8",
+      "marker": "Windrose.exe",
+      "r2modmanFolder": "Windrose",
+      "metadata": [],
+      "deploy": "profile",
+      "targets": [{ "id": "profile", "root": "{profile}" }],
+      "stores": {
+        "steam": { "appId": "3041230" },
+        "epic": { "appNames": ["d08157fbe22d45fcba452680857ac58d"] }
+      },
+      "loaders": [
+        {
+          "id": "shimloader",
+          "name": "Shimloader",
+          "package": "Thunderstore-unreal_shimloader",
+          "placeDir": "R5/Binaries/Win64",
+          "routes": [
+            { "dir": "shimloader/mod", "track": "subdir", "default": true },
+            { "dir": "shimloader/pak", "track": "subdir" },
+            { "dir": "shimloader/cfg" },
+            { "dir": "shimloader/overlay", "track": "subdir" }
+          ]
+        }
+      ],
+      "sources": [{ "id": "thunderstore", "key": "windrose" }]
     }
   ]
 }

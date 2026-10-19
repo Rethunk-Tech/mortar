@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	knownLoaders = []string{"smapi", "bepinex5", "folder", "melonloader", "returnofmodding", "gdweave", "lovely", "northstar", "rivet", "umm"}
+	knownLoaders = []string{"smapi", "bepinex5", "folder", "melonloader", "returnofmodding", "gdweave", "lovely", "northstar", "rivet", "umm", "shimloader"}
 	knownRoles   = []string{"saves", "errorLogs", "startupPreferences", "unityLog", "mods", "options", "tray", "userData", "log", "crashLog", "modConfig", "screenshots"}
 	knownTokens  = []string{"appData", "localAppData", "localLow", "documents", "xdgConfig", "xdgData", "home", "install"}
 	tokenRE      = regexp.MustCompile(`\{([^{}]*)\}`)

@@ -132,6 +132,7 @@ const LOADER_WORDS: Record<string, string> = {
   gdweave: 'GDWeave',
   rivet: 'Rivet',
   umm: 'Unity Mod Manager',
+  shimloader: 'UE4SS',
 }
 const RIVAL_WORDS = ['BepInEx', 'MelonLoader', 'RedLoader', 'Unity Mod Manager', 'UE4SS']
 const norm = (s: string) =>
