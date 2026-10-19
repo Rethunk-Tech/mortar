@@ -99,19 +99,23 @@ const SWATCH_PX = 44
 function FontPicker() {
   const { t } = useLingui()
   const font = useSettings((s) => s.font)
-  const [families, setFamilies] = useState<string[]>([])
-  useEffect(() => {
-    InstalledFonts()
-      .then((list) => setFamilies(list ?? []))
-      .catch(reportUnexpected)
-  }, [])
+  const [families, setFamilies] = useState<string[] | null>(null)
+  // The installed fonts are listed when the picker opens, not whenever settings mount.
+  const loadFamilies = () => {
+    if (families === null) {
+      InstalledFonts()
+        .then((list) => setFamilies(list ?? []))
+        .catch(reportUnexpected)
+    }
+  }
   return (
     <Searchable terms={`${t`Font`} ${t`Typeface`}`}>
       <SettingRow label={t`App font`}>
         <Autocomplete
           size="small"
           sx={{ width: 280 }}
-          options={families}
+          options={families ?? (font === '' ? [] : [font])}
+          onOpen={loadFamilies}
           value={font === '' ? null : font}
           onChange={(_, family) => {
             persist(() => SetByKey('font', family ?? '', ''), t`Could not save that setting`)
@@ -123,13 +127,12 @@ function FontPicker() {
   )
 }
 
-export function Appearance() {
+// Its own component: the desktop's accent colour arrives after mount and re-renders only the swatches, not the page.
+function AccentPicker() {
   const { t } = useLingui()
   const accent = useSettings((s) => s.accent)
-  const background = useSettings((s) => s.background)
-  const backgroundImage = useSettings((s) => s.backgroundImage)
   const reportFailure = reportError(t`Could not save that setting`)
-  const backdropSrc = `/backdrop?mode=image&v=${encodeURIComponent(backgroundImage)}`
+  const systemAccent = useSystemAccent()
   const cards: { name: string; label: string; note: string }[] = [
     { name: 'sand', label: t`Sand`, note: t`Default` },
     { name: 'moss', label: t`Moss`, note: t`Earthy green` },
@@ -141,71 +144,81 @@ export function Appearance() {
     { name: 'slate', label: t`Slate`, note: t`Quiet grey-blue` },
     { name: SYSTEM_ACCENT, label: t`System`, note: t`Follows your desktop` },
   ]
-  const systemAccent = useSystemAccent()
+  return (
+    <Searchable terms={`${t`Accent colour`} ${t`Colour`} ${t`color`} ${t`Theme`}`}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', p: space.pad }}>
+        <RadioGroup
+          aria-label={t`Accent colour`}
+          value={isAccent(accent) || accent === SYSTEM_ACCENT ? accent : ''}
+          onChange={(_, name) => {
+            SetAccent(name).catch(reportFailure)
+          }}
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+            gap: '10px',
+          }}
+        >
+          {cards.map((card) => (
+            <FormControlLabel
+              key={card.name}
+              value={card.name}
+              // The swatch card is the visible control; the radio stays in the tab order for arrow keys.
+              control={<Radio sx={visuallyHidden} />}
+              label={
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: SWATCH_PX,
+                      borderRadius: '6px',
+                      bgcolor: accentColour(card.name, systemAccent),
+                    }}
+                  />
+                  <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
+                    {card.label}
+                  </Box>
+                  <Box component="span" sx={{ fontSize: 12, color: 'var(--mortar-ink-sec)' }}>
+                    {card.note}
+                  </Box>
+                </Box>
+              }
+              sx={{
+                m: 0,
+                p: '12px',
+                position: 'relative',
+                bgcolor: 'var(--mortar-raised)',
+                border: '2px solid transparent',
+                borderRadius: '8px',
+                color: 'var(--mortar-ink)',
+                '& .MuiFormControlLabel-label': { width: '100%' },
+                '&:has(input:checked)': { borderColor: 'var(--mortar-ink)' },
+                [`&:has(input:focus-visible), ${PAD_FOCUS} &:has(input:focus)`]: {
+                  outline: '2px solid',
+                  outlineColor: 'primary.main',
+                },
+              }}
+            />
+          ))}
+        </RadioGroup>
+      </Box>
+    </Searchable>
+  )
+}
+
+export function Appearance() {
+  const { t } = useLingui()
+  const background = useSettings((s) => s.background)
+  const backgroundImage = useSettings((s) => s.backgroundImage)
+  const reportFailure = reportError(t`Could not save that setting`)
+  const backdropSrc = `/backdrop?mode=image&v=${encodeURIComponent(backgroundImage)}`
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
       <SettingsSection title={t`Theme`}>
         <PrefByKey prefKey="theme" hideTitle={true} />
       </SettingsSection>
       <SettingsSection title={t`Accent colour`}>
-        <Searchable terms={`${t`Accent colour`} ${t`Colour`} ${t`color`} ${t`Theme`}`}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px', p: space.pad }}>
-            <RadioGroup
-              aria-label={t`Accent colour`}
-              value={isAccent(accent) || accent === SYSTEM_ACCENT ? accent : ''}
-              onChange={(_, name) => {
-                SetAccent(name).catch(reportFailure)
-              }}
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-                gap: '10px',
-              }}
-            >
-              {cards.map((card) => (
-                <FormControlLabel
-                  key={card.name}
-                  value={card.name}
-                  // The swatch card is the visible control; the radio stays in the tab order for arrow keys.
-                  control={<Radio sx={visuallyHidden} />}
-                  label={
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <Box
-                        sx={{
-                          width: '100%',
-                          height: SWATCH_PX,
-                          borderRadius: '6px',
-                          bgcolor: accentColour(card.name, systemAccent),
-                        }}
-                      />
-                      <Box component="span" sx={{ fontSize: 14, fontWeight: 600 }}>
-                        {card.label}
-                      </Box>
-                      <Box component="span" sx={{ fontSize: 12, color: 'var(--mortar-ink-sec)' }}>
-                        {card.note}
-                      </Box>
-                    </Box>
-                  }
-                  sx={{
-                    m: 0,
-                    p: '12px',
-                    position: 'relative',
-                    bgcolor: 'var(--mortar-raised)',
-                    border: '2px solid transparent',
-                    borderRadius: '8px',
-                    color: 'var(--mortar-ink)',
-                    '& .MuiFormControlLabel-label': { width: '100%' },
-                    '&:has(input:checked)': { borderColor: 'var(--mortar-ink)' },
-                    [`&:has(input:focus-visible), ${PAD_FOCUS} &:has(input:focus)`]: {
-                      outline: '2px solid',
-                      outlineColor: 'primary.main',
-                    },
-                  }}
-                />
-              ))}
-            </RadioGroup>
-          </Box>
-        </Searchable>
+        <AccentPicker />
       </SettingsSection>
       <SettingsSection title={t`Font`}>
         <FontPicker />

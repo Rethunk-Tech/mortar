@@ -11,7 +11,8 @@ import { errorKind } from '../../toasts/errorKind.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 
-export function ItchAccount() {
+// The account answer lands on the row alone, not the section around it.
+function ItchRow() {
   const { t } = useLingui()
   const keyId = useId()
   const [name, setName] = useState<string | null>(null)
@@ -46,56 +47,58 @@ export function ItchAccount() {
       .then(() => setName(''))
       .catch(reportUnexpected)
   }
+  return name ? (
+    <SettingRow label={t`Account`} description={t`Your API key is kept in your system keyring.`}>
+      <Chip size="small" color="primary" label={name} />
+      <Button size="small" onClick={signOut}>
+        {t`Remove key`}
+      </Button>
+    </SettingRow>
+  ) : (
+    <SettingRow
+      label={t`API key`}
+      description={t`Kept in your system keyring. Create one on itch.io under Settings, API keys.`}
+    >
+      <Box
+        component="form"
+        onSubmit={test}
+        sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
+          <TextField
+            id={keyId}
+            slotProps={{ htmlInput: { 'aria-label': t`API key` } }}
+            type="password"
+            size="small"
+            autoComplete="off"
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+            sx={{ width: 260, maxWidth: '100%' }}
+          />
+          <Button
+            type="submit"
+            variant="outlined"
+            disabled={busy || key.trim() === ''}
+            sx={{ flexShrink: 0 }}
+          >
+            {t`Test`}
+          </Button>
+        </Box>
+        {error ? (
+          <Alert variant="compact" severity="error" title={error.details}>
+            {error.message}
+          </Alert>
+        ) : null}
+      </Box>
+    </SettingRow>
+  )
+}
+
+export function ItchAccount() {
+  const { t } = useLingui()
   return (
     <SettingsSection title={t`itch.io`}>
-      {name ? (
-        <SettingRow
-          label={t`Account`}
-          description={t`Your API key is kept in your system keyring.`}
-        >
-          <Chip size="small" color="primary" label={name} />
-          <Button size="small" onClick={signOut}>
-            {t`Remove key`}
-          </Button>
-        </SettingRow>
-      ) : (
-        <SettingRow
-          label={t`API key`}
-          description={t`Kept in your system keyring. Create one on itch.io under Settings, API keys.`}
-        >
-          <Box
-            component="form"
-            onSubmit={test}
-            sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
-              <TextField
-                id={keyId}
-                slotProps={{ htmlInput: { 'aria-label': t`API key` } }}
-                type="password"
-                size="small"
-                autoComplete="off"
-                value={key}
-                onChange={(e) => setKey(e.target.value)}
-                sx={{ width: 260, maxWidth: '100%' }}
-              />
-              <Button
-                type="submit"
-                variant="outlined"
-                disabled={busy || key.trim() === ''}
-                sx={{ flexShrink: 0 }}
-              >
-                {t`Test`}
-              </Button>
-            </Box>
-            {error ? (
-              <Alert variant="compact" severity="error" title={error.details}>
-                {error.message}
-              </Alert>
-            ) : null}
-          </Box>
-        </SettingRow>
-      )}
+      <ItchRow />
     </SettingsSection>
   )
 }

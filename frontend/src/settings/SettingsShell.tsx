@@ -81,7 +81,9 @@ function SearchStatus({
   const query = useSettingsSearch()
   const [hits, setHits] = useState(0)
   useLayoutEffect(() => {
-    setHits(query ? (results.current?.querySelectorAll(SEARCH_HIT).length ?? 0) : 0)
+    // Only whether there are none and whether there are few matters, so a larger count stays one value.
+    const found = query ? (results.current?.querySelectorAll(SEARCH_HIT).length ?? 0) : 0
+    setHits(Math.min(found, FEW_HITS + 1))
   }, [query, results])
   const relatedLabels = query && related ? related.match(query) : []
   return (

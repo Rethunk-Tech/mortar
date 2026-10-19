@@ -1,7 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, Link } from '@mui/material'
 import { type ReactNode, useEffect, useState } from 'react'
-import type { State } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/netstate/models.ts'
 import { Retry } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/netstate/service.ts'
 import {
   GitHubLoggedIn,
@@ -34,8 +33,10 @@ type SourceId = (typeof SOURCES)[number]
 const NEVER_YEAR = 2000
 const seen = (iso: string) => new Date(iso).getFullYear() >= NEVER_YEAR
 
-function Connection({ id, state }: { id: SourceId; state: State | undefined }) {
+// Reads its own state: the network poll landing re-renders this row, not the section's account and quota rows.
+function Connection({ id }: { id: SourceId }) {
   const { t } = useLingui()
+  const state = useOffline((s) => s.states.find((x) => x.id === id))
   const [pending, run] = usePending()
   let chip = <Chip size="small" label={t`Not contacted yet`} />
   let detail: ReactNode = t`Mortar has not asked ${sourceLabel(id)} this session.`
@@ -191,7 +192,6 @@ function Quota({ id }: { id: SourceId }) {
 }
 
 export function Sources() {
-  const states = useOffline((s) => s.states)
   useEffect(() => {
     refresh().catch(reportUnexpected)
   }, [])
@@ -199,7 +199,7 @@ export function Sources() {
     <>
       {SOURCES.map((id) => (
         <SettingsSection key={id} title={sourceLabel(id)}>
-          <Connection id={id} state={states.find((s) => s.id === id)} />
+          <Connection id={id} />
           <Auth id={id} />
           <Quota id={id} />
         </SettingsSection>
