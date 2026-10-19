@@ -239,7 +239,8 @@ func (s *Store) restoreChangedFiles(game, id, from string) error {
 	if err != nil {
 		return err
 	}
-	return filepath.WalkDir(from, func(path string, d fs.DirEntry, err error) error {
+	var written []string
+	err = filepath.WalkDir(from, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || !d.Type().IsRegular() {
 			return err
 		}
@@ -251,8 +252,13 @@ func (s *Store) restoreChangedFiles(game, id, from string) error {
 		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
 			return err
 		}
+		written = append(written, filepath.ToSlash(rel))
 		return datadir.CopyFile(path, to)
 	})
+	if err != nil {
+		return err
+	}
+	return s.markCopiesChanged(game, id, dir, written)
 }
 
 // RestoreBackup makes a new profile from a backup, under a name no profile of the game has, and returns it with the entries

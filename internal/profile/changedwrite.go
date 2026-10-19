@@ -61,6 +61,7 @@ func (s *Store) WriteChangedFiles(game, id string, files map[string][]byte, over
 			return fmt.Errorf("changed file %q reaches a link", rel)
 		}
 	}
+	var written []string
 	for rel, data := range files {
 		to := filepath.Join(dir, filepath.FromSlash(rel))
 		if _, err := os.Lstat(to); err == nil && !overwrite {
@@ -72,8 +73,30 @@ func (s *Store) WriteChangedFiles(game, id string, files map[string][]byte, over
 		if err := fsx.WriteFile(to, data, 0o600); err != nil {
 			return err
 		}
+		written = append(written, rel)
 	}
-	return nil
+	return s.markCopiesChanged(game, id, dir, written)
+}
+
+// markCopiesChanged records the written copies that a package lays out as changed, with a hash no file has, so
+// SyncPackages keeps them over the package's own file instead of treating them as an older install's leftover.
+func (s *Store) markCopiesChanged(game, id, dir string, rels []string) error {
+	files, _, err := s.packageFiles(game, id)
+	if err != nil {
+		return err
+	}
+	rec := readPlaced(dir)
+	n := 0
+	for _, rel := range rels {
+		if _, ok := files[rel]; ok {
+			rec[rel] = placedRec{Hash: "changed copy", Size: -1}
+			n++
+		}
+	}
+	if n == 0 {
+		return nil
+	}
+	return writePlaced(dir, rec)
 }
 
 // linkOnPath reports a symbolic link among the folders and the file of rel below dir.

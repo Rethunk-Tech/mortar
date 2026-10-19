@@ -90,12 +90,11 @@ func TestAMissingProfileCopyIsReseededFromTheStore(t *testing.T) {
 	r.want("Mods/mc.package", "store bytes")
 }
 
-func TestACopyThatDiffersFromTheStoreIsKeptWithoutAValidRecord(t *testing.T) {
+func TestACopyThatDiffersFromTheStoreIsReplacedWithoutAValidRecord(t *testing.T) {
 	t.Parallel()
 	r := newSyncRig(t)
 	r.install(cfSource(10), map[string]string{"mc.package": "store bytes", "same.package": "same"})
 	r.sync()
-	r.write("Mods/mc.package", "player=2 and more")
 	record := r.path(placedFile)
 	for name, damage := range map[string]func(){
 		"missing":    func() { _ = os.Remove(record) },
@@ -103,6 +102,7 @@ func TestACopyThatDiffersFromTheStoreIsKeptWithoutAValidRecord(t *testing.T) {
 		"a list":     func() { _ = os.WriteFile(record, []byte(`["Mods/mc.package"]`), 0o600) },
 		"unreadable": func() { _ = os.Remove(record); _ = os.MkdirAll(record, 0o750) },
 	} {
+		r.write("Mods/mc.package", "player=2 and more")
 		damage()
 		if st, err := os.Stat(record); err == nil && st.IsDir() {
 			// A folder where the record goes cannot be read; the sync must still keep the copy, then the record is rewritten.
@@ -110,10 +110,11 @@ func TestACopyThatDiffersFromTheStoreIsKeptWithoutAValidRecord(t *testing.T) {
 		}
 		for i := range 3 {
 			r.sync()
-			if got := r.read("Mods/mc.package"); got != "player=2 and more" {
+			if got := r.read("Mods/mc.package"); got != "store bytes" {
 				t.Fatalf("%s record, sync %d: the copy is %q", name, i+1, got)
 			}
 		}
+		r.want("replaced/Mods/mc.package", "player=2 and more")
 	}
 	r.want("Mods/same.package", "same")
 }

@@ -95,6 +95,10 @@ func (s *Store) PackageOverrides(gameID, id string) (map[string]int, error) {
 // replaced by an update that dropped the file, or removed), so the settings a mod saved come back with the mod.
 const changedDir = "changed"
 
+// replacedDir holds, by slash path, the unrecorded copies SyncPackages moved aside for a package's file. Nothing restores
+// them: they are what an older install left, not settings the player made.
+const replacedDir = "replaced"
+
 // placedRec is what SyncPackages recorded of a file it placed: the hash of the bytes, and the size and modification
 // time the profile's copy had right after, so a later sync tells a copy a mod or the player changed (written back
 // from the shared folder, adopted, or edited) from one it laid out.
@@ -147,7 +151,8 @@ func recordOf(hash, dst string) (placedRec, error) {
 // files of packages no longer enabled. A package's config file only seeds the profile: once it is there the player's
 // edits stay. So does any other file a mod or the player changed since it was laid out (a script mod's saved
 // settings): it is never overwritten from the store, and when its package goes away it is held under `changed/` and
-// comes back with the package. A game that is redirected has nothing to sync.
+// comes back with the package. A file with no record that differs from the package's is an older install's leftover: the
+// package's file replaces it and the old bytes are kept under `replaced/`. A game that is redirected has nothing to sync.
 func (s *Store) SyncPackages(gameID, id string) error {
 	files, _, err := s.packageFiles(gameID, id)
 	if err != nil || files == nil {
@@ -199,8 +204,8 @@ func (s *Store) SyncPackages(gameID, id string) error {
 	}
 	s.expireHeldCopies(dir)
 	// Every file this sync may place is named first, with the hash it will have, so one that stops part way is still
-	// taken away by the next. A profile copy with no record (a restored backup's, or one the player dropped in) that
-	// differs from the store is never named: it is kept as it is.
+	// taken away by the next. A profile copy with no record that differs from the store is not named here: it is
+	// replaced below, once it has been moved aside.
 	srcHash := map[string]string{}
 	hashOf := func(rel string) (string, error) {
 		if h, ok := srcHash[rel]; ok {
@@ -242,7 +247,9 @@ func (s *Store) SyncPackages(gameID, id string) error {
 		}
 		switch {
 		case statErr == nil && !recorded:
-			// Not ours unless it is the store's own bytes, which a lost record may have left.
+			// The store's own bytes, which a lost record may have left, are adopted. Any other bytes are an older
+			// install's leftover, which would otherwise hold the package at a version it is not: the package's file
+			// replaces it and the old bytes are kept.
 			h, err := hashOf(rel)
 			if err != nil {
 				return err
@@ -251,8 +258,11 @@ func (s *Store) SyncPackages(gameID, id string) error {
 				if next[rel], err = recordOf(h, dst); err != nil {
 					return err
 				}
+				continue
 			}
-			continue
+			if err := holdReplaced(dir, rel); err != nil {
+				return err
+			}
 		case statErr == nil && changedSince(rec, dst):
 			// Still the package's file, with changes that stay; the record keeps it ownable when the package goes.
 			continue
@@ -454,6 +464,19 @@ func holdChanged(dir, rel string) error {
 		return err
 	}
 	return markHeld(dir, rel, time.Now(), true)
+}
+
+// holdReplaced moves an unrecorded copy that a package's file is about to replace under replaced/, which nothing puts
+// back, so removing and re-adding the package never brings the old bytes with it.
+func holdReplaced(dir, rel string) error {
+	to := filepath.Join(dir, replacedDir, filepath.FromSlash(rel))
+	if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
+		return err
+	}
+	if err := fsx.Rename(filepath.Join(dir, filepath.FromSlash(rel)), to); err != nil {
+		return err
+	}
+	return markHeld(dir, replacedDir+"/"+rel, time.Now(), true)
 }
 
 // restoreChanged puts a held copy back in the profile and reports whether there was one.
