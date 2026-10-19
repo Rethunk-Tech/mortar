@@ -742,7 +742,7 @@ msgstr "This log is {size}. Sharing uploads it to smapi.io as a public link."
 msgid "Paste it on the mod's page."
 msgstr "Paste it on the mod's page."
 
-#: src/games/GameMenu.tsx:82
+#: src/games/GameMenu.tsx:153
 msgid "Switch game: {gameLabel}"
 msgstr "Switch game: {gameLabel}"
 
@@ -1366,6 +1366,11 @@ msgstr "Hidden on Nexus"
 #: src/mods/detail.ts:122
 msgid "Back to {backTo}. Saves untouched."
 msgstr "Back to {backTo}. Saves untouched."
+
+#. placeholder {0}: formatWhen(played.at)
+#: src/games/GameMenu.tsx:63
+msgid "played {0}"
+msgstr "played {0}"
 
 #: src/browse/BrowseFilters.tsx:92
 msgid "Sort: most downloaded"
@@ -4150,7 +4155,7 @@ msgstr "95th ms"
 msgid "Data folder moved"
 msgstr "Data folder moved"
 
-#: src/games/GameMenu.tsx:119
+#: src/games/GameMenu.tsx:190
 #: src/games/GameSelect.tsx:417
 msgid "On this computer"
 msgstr "On this computer"
@@ -5827,8 +5832,8 @@ msgstr "Settings backups"
 msgid "{0} stays as it is."
 msgstr "{0} stays as it is."
 
-#: src/games/GameMenu.tsx:82
-#: src/games/GameMenu.tsx:112
+#: src/games/GameMenu.tsx:153
+#: src/games/GameMenu.tsx:183
 msgid "Choose a game"
 msgstr "Choose a game"
 
@@ -8392,7 +8397,7 @@ msgstr "Back up {0}?"
 msgid "Each mod's Entry method, run one after another"
 msgstr "Each mod's Entry method, run one after another"
 
-#: src/games/GameMenu.tsx:123
+#: src/games/GameMenu.tsx:194
 msgid "All games…"
 msgstr "All games…"
 
@@ -8998,7 +9003,7 @@ msgstr "{0} goes back to {previous}, keeping its settings. Your saves are backed
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
-#: src/games/GameMenu.tsx:117
+#: src/games/GameMenu.tsx:188
 #: src/games/GameSelect.tsx:416
 msgid "Recently played"
 msgstr "Recently played"
@@ -9065,6 +9070,7 @@ msgstr "Minutes between background update checks"
 msgid "Show all"
 msgstr "Show all"
 
+#: src/games/GameMenu.tsx:64
 #: src/games/GameSelect.tsx:155
 msgid "{playtime} played"
 msgstr "{playtime} played"
@@ -13645,7 +13651,7 @@ msgstr "Cancelled"
 msgid "Check mods and Mortar for updates (F5)"
 msgstr "Check mods and Mortar for updates (F5)"
 
-#: src/games/GameMenu.tsx:116
+#: src/games/GameMenu.tsx:187
 #: src/settings/sections/AboutDiagnostics.tsx:85
 #: src/settings/sections/DataImport.tsx:27
 msgid "Games"
