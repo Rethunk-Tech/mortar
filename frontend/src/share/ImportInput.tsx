@@ -8,6 +8,9 @@ import { BUTTON_LARGE_HEIGHT } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import type { ImportFlow } from './useImportFlow.ts'
 
+// The buttons beside the link field keep their one-line labels and the field's height.
+const rowButtonSx = { flexShrink: 0, whiteSpace: 'nowrap', height: BUTTON_LARGE_HEIGHT } as const
+
 // Before a preview exists: a link to type or paste, or a file to choose. Parse errors show here.
 export function ImportInput({ flow }: { flow: ImportFlow }) {
   const { t } = useLingui()
@@ -18,10 +21,10 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, p: '20px 18px' }}>
       {flow.tab === 'file' ? (
         <>
-          <Typography sx={{ fontSize: 14 }}>
+          <Typography sx={{ fontSize: 14, textAlign: 'center' }}>
             {t`Open a .mortar file someone sent you. You see what it holds before anything downloads.`}
           </Typography>
-          <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Button
               variant="contained"
               startIcon={<FolderOpen size={16} />}
@@ -71,10 +74,17 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
                 flow.paste().catch(reportUnexpected)
               }}
               size="large"
+              sx={rowButtonSx}
             >
               {t`Paste from clipboard`}
             </Button>
-            <Button type="submit" variant="contained" disabled={!canPreview} size="large">
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={!canPreview}
+              size="large"
+              sx={rowButtonSx}
+            >
               {t`Preview`}
             </Button>
           </Box>

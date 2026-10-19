@@ -24,7 +24,7 @@ import { type Tab as TabId, useImportFlow } from './useImportFlow.ts'
 const dialogSx = {
   bgcolor: 'var(--mortar-panel-solid)',
   border: '1px solid var(--mortar-hairline)',
-  width: 'min(1180px, calc(100% - 72px))',
+  maxWidth: 'none',
   maxHeight: 'none',
   overflow: 'hidden',
   borderRadius: '6px',
@@ -135,6 +135,8 @@ function Body({ request }: { request: ImportRequest }) {
         flexDirection: 'column',
         minHeight: 0,
         maxHeight: 'calc(100vh - 48px)',
+        // A link or file to choose needs a narrow dialog; the preview's tiles need the room.
+        width: preview ? 'min(1180px, calc(100vw - 72px))' : 'min(720px, calc(100vw - 72px))',
       }}
     >
       <Box
@@ -172,8 +174,6 @@ function Body({ request }: { request: ImportRequest }) {
             // Another mod manager's profile has no link or file to switch to.
             visibility: flow.external ? 'hidden' : 'visible',
             '& .MuiTab-root': {
-              flex: 1,
-              maxWidth: 'none',
               minHeight: 46,
               fontSize: 13,
               fontWeight: 600,
