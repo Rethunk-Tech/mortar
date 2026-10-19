@@ -31,7 +31,11 @@ interface StoreItem {
   }
 }
 
+/** Steam stamps every address with a changing `?t=` cache-buster; the committed address stays while only that differs. */
+const unstamped = (u: string) => u.replace(/\?t=\d+$/, '')
+
 export async function refreshSteamArt(appIds: string[]): Promise<void> {
+  const prev = steamArt()
   const art: Record<string, SteamArt> = {}
   for (let i = 0; i < appIds.length; i += BATCH) {
     const ids = appIds.slice(i, i + BATCH).map((appid) => ({ appid: Number(appid) }))
@@ -54,7 +58,11 @@ export async function refreshSteamArt(appIds: string[]): Promise<void> {
         library_capsule_2x: capsule2x,
       } = item.assets ?? {}
       if (format && header) {
-        const url = (file: string) => STORE_ASSETS + format.replace(/\$\{FILENAME\}/, file)
+        const old = Object.values(prev[String(item.appid)] ?? {})
+        const url = (file: string) => {
+          const fresh = STORE_ASSETS + format.replace(/\$\{FILENAME\}/, file)
+          return old.find((u) => unstamped(u) === unstamped(fresh)) ?? fresh
+        }
         art[String(item.appid)] = {
           header: url(header),
           ...(hero ? { hero: url(hero) } : {}),
