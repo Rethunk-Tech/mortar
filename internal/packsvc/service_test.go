@@ -397,3 +397,54 @@ func TestServerSettingsFormKeepsSecretsInsideMortar(t *testing.T) {
 		t.Fatalf("client game form = %+v, %v", plain, err)
 	}
 }
+
+func TestImportOverAProfileKeepsDifferingFilesUnlessReplaceIsChosen(t *testing.T) {
+	base := t.TempDir()
+	ps := profile.OpenIn(filepath.Join(base, "profiles"), store.OpenAt(filepath.Join(base, "store")))
+	target, err := ps.Create("lethal-company", "Mine")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, _ := ps.ProfileDir("lethal-company", target.ID)
+	cfg := filepath.Join(dir, "BepInEx", "plugins", "a.txt")
+	if err := os.MkdirAll(filepath.Dir(cfg), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(cfg, []byte("mine"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	for name, body := range map[string]string{
+		"export.r2x":            "profileName: Friends\nmods:\n  - name: BepInEx-BepInExPack\n    version: {major: 5, minor: 4, patch: 2100}\n    enabled: true\n",
+		"bepinex/plugins/a.txt": "pack",
+		"bepinex/plugins/b.txt": "new",
+	} {
+		w, _ := zw.Create(name)
+		_, _ = w.Write([]byte(body))
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "friends.r2z")
+	if err := os.WriteFile(path, buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s := &Service{Profiles: ps, Queue: &fakeQueue{}}
+	res, err := s.Import(context.Background(), Source{Path: path}, "lethal-company", target.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(cfg); string(b) != "mine" || !slices.Equal(res.Kept, []string{"BepInEx/plugins/a.txt"}) {
+		t.Fatalf("the player's file was replaced or not reported: %q, kept %v", b, res.Kept)
+	}
+	if b, _ := os.ReadFile(filepath.Join(dir, "BepInEx", "plugins", "b.txt")); string(b) != "new" {
+		t.Errorf("a file the profile lacked was not written: %q", b)
+	}
+	if _, err := s.Import(context.Background(), Source{Path: path, Replace: true}, "lethal-company", target.ID); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(cfg); string(b) != "pack" {
+		t.Errorf("Replace did not write the pack's file: %q", b)
+	}
+}

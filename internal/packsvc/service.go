@@ -3,6 +3,7 @@
 package packsvc
 
 import (
+	"bytes"
 	"cmp"
 	"context"
 	"errors"
@@ -65,6 +66,8 @@ func (s *Service) folder() string {
 type Source struct {
 	Path string `json:"path"`
 	Text string `json:"text"`
+	// Replace lets an import into an existing profile overwrite the config files the player already has there.
+	Replace bool `json:"replace"`
 }
 
 // Package is one package of a pack.
@@ -92,6 +95,8 @@ type Result struct {
 	Queued      int      `json:"queued"`
 	Unsupported []string `json:"unsupported"`
 	Disabled    []string `json:"disabled"`
+	// Kept names the pack's files an existing profile already holds with other contents, left as the player has them.
+	Kept []string `json:"kept"`
 }
 
 func (s *Service) read(ctx context.Context, src Source) (pack.Draft, error) {
@@ -203,7 +208,7 @@ func (s *Service) importPack(ctx context.Context, src Source, gameID, profileID,
 	if !slices.ContainsFunc(game.Catalog(), func(g components.GameInfo) bool { return g.ID == gameID }) {
 		return Result{}, errors.New("choose which game this pack is for")
 	}
-	res := Result{Game: gameID, Unsupported: []string{}, Disabled: []string{}}
+	res := Result{Game: gameID, Unsupported: []string{}, Disabled: []string{}, Kept: []string{}}
 	var reqs []queue.Request
 	for _, r := range d.Packages {
 		if bridge.IsOwnListing(r.Native) {
@@ -223,15 +228,22 @@ func (s *Service) importPack(ctx context.Context, src Source, gameID, profileID,
 	if len(reqs) == 0 {
 		return res, errors.New("the pack holds no Thunderstore packages to install")
 	}
+	files := packFiles(d, importRoots(gameID))
 	if profileID == "" {
 		p, err := s.Profiles.Create(gameID, cmpName(cmp.Or(strings.TrimSpace(name), d.Name)))
 		if err != nil {
 			return res, err
 		}
 		profileID = p.ID
+	} else if !src.Replace {
+		dir, err := s.Profiles.ProfileDir(gameID, profileID)
+		if err != nil {
+			return res, err
+		}
+		res.Kept = dropDiffering(dir, files)
 	}
 	res.Profile = profileID
-	if err := s.Profiles.WriteFiles(gameID, profileID, packFiles(d, importRoots(gameID))); err != nil {
+	if err := s.Profiles.WriteFiles(gameID, profileID, files); err != nil {
 		return res, err
 	}
 	for i := range reqs {
@@ -240,6 +252,24 @@ func (s *Service) importPack(ctx context.Context, src Source, gameID, profileID,
 	items, err := s.Queue.Add(ctx, reqs)
 	res.Queued = len(items)
 	return res, err
+}
+
+// dropDiffering removes from files, and returns sorted, each file the profile at dir already holds with other contents.
+// A path that leaves dir stays in files for WriteFiles to refuse.
+func dropDiffering(dir string, files map[string][]byte) []string {
+	kept := []string{}
+	for rel, data := range files {
+		if !filepath.IsLocal(filepath.FromSlash(rel)) {
+			continue
+		}
+		have, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(rel)))
+		if err == nil && !bytes.Equal(have, data) {
+			kept = append(kept, rel)
+			delete(files, rel)
+		}
+	}
+	slices.Sort(kept)
+	return kept
 }
 
 // Extra is an installed Thunderstore package a pack does not list.

@@ -22,9 +22,11 @@ export interface PackTargetState {
   name: string
   extras: Extra[]
   dropExtras: boolean
+  replaceFiles: boolean
   choose: (id: string) => void
   setName: (name: string) => void
   setDropExtras: (drop: boolean) => void
+  setReplaceFiles: (replace: boolean) => void
   reset: () => void
   importPack: () => ReturnType<typeof Import>
 }
@@ -37,6 +39,7 @@ export function usePackTarget(open: boolean, game: string, source: () => Source)
   const [name, setName] = useState('')
   const [extras, setExtras] = useState<Extra[]>([])
   const [dropExtras, setDropExtras] = useState(true)
+  const [replaceFiles, setReplaceFiles] = useState(false)
   useEffect(() => {
     if (open) {
       ListProfiles(game)
@@ -57,12 +60,13 @@ export function usePackTarget(open: boolean, game: string, source: () => Source)
     setTarget('')
     setName('')
     setExtras([])
+    setReplaceFiles(false)
   }, [])
   const importPack = () => {
     if (!target) {
       return ImportAs(source(), game, name.trim())
     }
-    return Import(source(), game, target).then(async (result) => {
+    return Import({ ...source(), replace: replaceFiles }, game, target).then(async (result) => {
       if (dropExtras && extras.length > 0) {
         await RemoveEntries(
           game,
@@ -79,9 +83,11 @@ export function usePackTarget(open: boolean, game: string, source: () => Source)
     name,
     extras,
     dropExtras,
+    replaceFiles,
     choose,
     setName,
     setDropExtras,
+    setReplaceFiles,
     reset,
     importPack,
   }

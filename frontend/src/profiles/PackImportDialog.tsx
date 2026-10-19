@@ -89,11 +89,19 @@ export function PackImportDialog({
       .importPack()
       .then((result) => {
         const unsupported = result.unsupported ?? []
+        const kept = result.kept ?? []
         useToasts.getState().push({
-          kind: unsupported.length > 0 ? 'warning' : 'success',
+          kind: unsupported.length > 0 || kept.length > 0 ? 'warning' : 'success',
           title: t`Imported ${preview?.name ?? ''}: ${result.queued} to install`,
-          ...(unsupported.length > 0
-            ? { body: t`Not from Thunderstore: ${listNames(unsupported)}` }
+          ...(unsupported.length > 0 || kept.length > 0
+            ? {
+                body: [
+                  unsupported.length > 0 ? t`Not from Thunderstore: ${listNames(unsupported)}` : '',
+                  kept.length > 0 ? t`Kept your own copies of: ${listNames(kept)}` : '',
+                ]
+                  .filter(Boolean)
+                  .join('. '),
+              }
             : {}),
         })
         close()

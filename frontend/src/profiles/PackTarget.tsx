@@ -14,7 +14,7 @@ export function PackTarget({
   placeholder: string
 }) {
   const { t } = useLingui()
-  const { target, name, existing, extras, dropExtras } = where
+  const { target, name, existing, extras, dropExtras, replaceFiles } = where
   return (
     <>
       <RadioGroup
@@ -57,6 +57,15 @@ export function PackTarget({
               </MenuItem>
             ))}
           </TextField>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={replaceFiles}
+                onChange={(event) => where.setReplaceFiles(event.target.checked)}
+              />
+            }
+            label={t`Replace my config files with the pack's`}
+          />
           {extras.length > 0 ? (
             <FormControlLabel
               control={
