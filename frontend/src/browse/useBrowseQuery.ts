@@ -22,7 +22,7 @@ const EMPTY_RESULT: BrowseResult = { total: 0, items: [] }
 const NO_FILTER: BrowseFilter = {
   include: [],
   exclude: [],
-  sort: '',
+  sort: 'downloads',
   installed: '',
   obsolete: '',
   broken: '',
