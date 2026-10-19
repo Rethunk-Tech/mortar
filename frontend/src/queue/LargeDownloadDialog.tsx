@@ -12,7 +12,7 @@ import { useQueue } from './store.ts'
 /** Asks before a download over 2 GB starts. Cancel is the default; only "Continue anyway" lets it through. */
 export function LargeDownloadDialog() {
   const { t } = useLingui()
-  const ask = useQueue((s) => largeAsk(s.state.items))
+  const ask = largeAsk(useQueue((s) => s.state.items))
   const item = ask?.item
   const name = item?.name || item?.fileName || item?.package || ''
   const size = formatKb(item?.sizeKb ?? 0)

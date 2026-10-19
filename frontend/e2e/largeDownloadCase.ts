@@ -30,6 +30,8 @@ export function largeDownloadCases(): Case[] {
   return [
     {
       name: 'large-download-modal',
+      // The case reloads the whole app to load the held queue, so its renders are a page load's; the dialog itself is ~25.
+      budget: { updates: 2500 },
       setup: (p) =>
         p.route('**/wails/runtime', async (route) => {
           if ((route.request().postData() ?? '').includes(queueStateId)) {
