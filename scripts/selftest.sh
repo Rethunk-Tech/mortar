@@ -95,7 +95,9 @@ build() {
       (cd "$REPO" && wails3 generate bindings -clean=true -ts -i >"$ROOT/bindings.log" 2>&1)
     fi
     (cd "$REPO" && bun run --cwd frontend build >"$ROOT/frontend-build.log" 2>&1)
-    (cd "$REPO" && go build -tags server -o "$ROOT/mortar-server.new" .)
+    # Stamped past the release like build/linux/Taskfile.yml, so entries for the next patch (minVersion) are read.
+    since=$(cd "$REPO" && git rev-list --count "v$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)..HEAD" 2>/dev/null || true)
+    (cd "$REPO" && go build -tags server ${since:+-ldflags "-X github.com/Rethunk-Tech/mortar/internal/appversion.pastRelease=$since"} -o "$ROOT/mortar-server.new" .)
     # Filed under the key taken before the build: the tree can change while it runs (another worker's edit), and a
     # key taken after would file an older binary under the newer tree.
     rm -rf "$BUILD_CACHE"
