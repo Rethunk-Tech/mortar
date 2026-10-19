@@ -27,3 +27,17 @@ func TestPickCulpritTakesFirstFindingOfAnEnabledMod(t *testing.T) {
 		t.Fatal("a plugin that is no installed mod blames nothing")
 	}
 }
+
+func TestPickCulpritShortTokenDoesNotMatchLongerMod(t *testing.T) {
+	mods := []profile.Mod{
+		{Key: "a", Name: "LethalLib", ID: "EvaisaDev-LethalLib", Enabled: true},
+		{Key: "b", Name: "Lethal Lib Extended", ID: "Owner-LethalLibExtended", Enabled: true},
+	}
+	if m, _, ok := pickCulprit([]loader.Finding{{Plugin: "Lib"}}, mods); ok {
+		t.Fatalf("plugin Lib blamed %q", m.Key)
+	}
+	m, _, ok := pickCulprit([]loader.Finding{{Plugin: "evaisa.lethallib"}}, mods)
+	if !ok || m.Key != "a" {
+		t.Fatalf("culprit = %+v, %v", m, ok)
+	}
+}

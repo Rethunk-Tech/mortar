@@ -2,6 +2,7 @@ package launchsvc
 
 import (
 	"strings"
+	"unicode"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -154,8 +155,9 @@ func (s *Service) gamePathText(gameID, role string) string {
 }
 
 // pickCulprit is the first finding, in log order, whose plugin is an enabled installed mod. A log names a plugin by
-// its display name, GUID or root namespace, so names match when one holds the other once case and punctuation are
-// dropped.
+// its display name, GUID or root namespace: names match when equal once case and punctuation are dropped, or when
+// one is a whole dot or space separated run of the other's segments (a GUID's namespace prefix is noise). A shorter
+// name inside a longer one matches only when it covers at least half of it, so plugin "Lib" never blames "LethalLib".
 func pickCulprit(found []loader.Finding, mods []profile.Mod) (profile.Mod, loader.Finding, bool) {
 	for _, f := range found {
 		plugin := mod.LooseName(f.Plugin)
@@ -167,14 +169,47 @@ func pickCulprit(found []loader.Finding, mods []profile.Mod) (profile.Mod, loade
 				continue
 			}
 			for _, name := range []string{m.Name, string(m.ID), m.Key} {
-				n := mod.LooseName(name)
-				if len(n) >= 3 && (n == plugin || strings.Contains(n, plugin) || strings.Contains(plugin, n)) {
+				if namesMatch(f.Plugin, name) {
 					return m, f, true
 				}
 			}
 		}
 	}
 	return profile.Mod{}, loader.Finding{}, false
+}
+
+func namesMatch(plugin, name string) bool {
+	p, n := mod.LooseName(plugin), mod.LooseName(name)
+	if len(n) < 3 || len(p) < 3 {
+		return false
+	}
+	if n == p {
+		return true
+	}
+	// The mod's name inside the plugin's GUID: any whole segment run counts.
+	if hasSegmentRun(plugin, n, false) {
+		return true
+	}
+	return hasSegmentRun(name, p, true)
+}
+
+// hasSegmentRun reports whether some run of whole segments of s, split at non-alphanumerics, loosely equals want.
+// With half set, want must also cover at least half of s.
+func hasSegmentRun(s, want string, half bool) bool {
+	segs := strings.FieldsFunc(s, func(r rune) bool { return !unicode.IsLetter(r) && !unicode.IsDigit(r) })
+	if half && len(want)*2 < len(mod.LooseName(s)) {
+		return false
+	}
+	for i := range segs {
+		joined := ""
+		for j := i; j < len(segs) && len(joined) < len(want); j++ {
+			joined += mod.LooseName(segs[j])
+		}
+		if joined == want {
+			return true
+		}
+	}
+	return false
 }
 
 func firstLine(s string) string {
