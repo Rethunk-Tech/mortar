@@ -92,8 +92,6 @@ export function newCases(h: Helpers): Case[] {
     },
     {
       name: 'add-game',
-      // Opens Game select first, which is its own case's cost.
-      budget: { updates: 1500 },
       setup: toWorkspace,
       run: async (p) => {
         await openGameSelect(p)
