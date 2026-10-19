@@ -24,3 +24,19 @@ func TestRepoConfigHasAVersion(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestABuildPastItsReleaseReadsTheNextPatch(t *testing.T) {
+	if got := NextPatch("0.3.7"); got != "0.3.8" {
+		t.Errorf("NextPatch = %q", got)
+	}
+	if got := NextPatch("dev"); got != "dev" {
+		t.Errorf("a version that is not x.y.z changed to %q", got)
+	}
+	t.Cleanup(func() { pastRelease = "" })
+	for stamp, want := range map[string]string{"": "0.3.7", "0": "0.3.7", "4": "0.3.8"} {
+		pastRelease = stamp
+		if got := ForCatalog("0.3.7"); got != want {
+			t.Errorf("past %q: ForCatalog = %q, want %q", stamp, got, want)
+		}
+	}
+}

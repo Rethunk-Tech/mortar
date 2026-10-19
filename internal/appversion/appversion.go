@@ -7,6 +7,8 @@ import (
 	"os"
 	"regexp"
 	"runtime/debug"
+	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -76,3 +78,38 @@ var Commit = sync.OnceValue(func() string {
 	}
 	return rev
 })
+
+// pastRelease is set with -ldflags -X to the number of commits since the release tag of the configured version; empty
+// or 0 for the tagged release itself.
+var pastRelease string
+
+// PastRelease is whether this build comes from commits made after its configured version was tagged, so it already
+// holds code the next release will announce.
+func PastRelease() bool {
+	n, err := strconv.Atoi(pastRelease)
+	return err == nil && n > 0
+}
+
+// NextPatch is version with its patch number raised by one; a version that is not x.y.z comes back as it was.
+func NextPatch(version string) string {
+	parts := strings.Split(version, ".")
+	if len(parts) != 3 {
+		return version
+	}
+	patch, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return version
+	}
+	parts[2] = strconv.Itoa(patch + 1)
+	return strings.Join(parts, ".")
+}
+
+// ForCatalog is the version the catalog's minVersion entries are compared with: a build past its release reads
+// entries for the next patch, since the code they need is in it. The version shown and compared for updates is
+// untouched.
+func ForCatalog(version string) string {
+	if PastRelease() {
+		return NextPatch(version)
+	}
+	return version
+}

@@ -153,7 +153,7 @@ func registerEvents() {
 }
 
 func main() {
-	components.SetRunning(version)
+	components.SetRunning(appversion.ForCatalog(version))
 	applyMemoryLimit(os.Getenv)
 	if err := runShowingFailures(); err != nil {
 		os.Exit(1)
