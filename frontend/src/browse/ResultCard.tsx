@@ -118,6 +118,7 @@ const underPictureSx = {
     height: BUTTON_SMALL_HEIGHT,
     borderRadius: `${BUTTON_RADIUS_PX}px`,
   },
+  '& .MuiChip-icon': { display: 'none' },
 } as const
 
 // The title is the card's keyboard stop: Enter opens the details, the menu key the card's menu. A flagged mod's
