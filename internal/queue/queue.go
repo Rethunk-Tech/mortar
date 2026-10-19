@@ -61,13 +61,15 @@ const (
 // Where an item stands. Done, Skipped and Cancelled are final; Failed waits for Retry or Skip; NeedsChoice waits
 // for Choose (a release with several archives), NeedsConfirm for Confirm or Skip (a download SMAPI's update API
 // does not tie to its repository), NeedsFomod for AnswerFomod (a store item with a FOMOD installer), and
-// NeedsRoot for AnswerRoot (an extracted archive with no SMAPI manifest until the user picks a folder).
+// NeedsRoot for AnswerRoot (an extracted archive with no SMAPI manifest until the user picks a folder), and
+// ConfirmLarge for ConfirmLarge or Cancel (a download over LargeDownloadBytes, held before any bytes are fetched).
 const (
 	StateNeedsChoice  = "needs-choice"
 	StateNeedsConfirm = "needs-confirm"
 	StateNeedsFomod   = "needs-fomod"
 	StateNeedsRoot    = "needs-root"
 	StateNeedsMerge   = "needs-merge"
+	StateConfirmLarge = "confirm-large"
 	StateWaitingClick = "waiting-click"
 	StateQueued       = "queued"
 	StateDownloading  = "downloading"
@@ -144,6 +146,8 @@ type Item struct {
 	ErrorKind string `json:"errorKind,omitempty"`
 	// Detection is what the antivirus flagged when the item failed on it; InstallAnyway answers it.
 	Detection *Detection `json:"detection,omitempty"`
+	// LargeOK is the player's go-ahead for a download over LargeDownloadBytes.
+	LargeOK bool `json:"largeOk,omitempty"`
 	// ScanOverride is the detection the player chose to install despite, kept for the download history.
 	ScanOverride string `json:"scanOverride,omitempty"`
 
@@ -364,6 +368,8 @@ type Deps struct {
 	GameBusy func() bool
 	// VerifyNexusMD5 compares a finished Nexus download with the file's API md5 when set.
 	VerifyNexusMD5 func() bool
+	// FreeBytes is the free space on a path's volume; nil means datadir.FreeBytes.
+	FreeBytes func(path string) (int64, error)
 }
 
 // Service is the download queue.
@@ -907,7 +913,7 @@ func (s *Service) drop(match func(*Item) bool) {
 
 // Skip drops an item that has not started, that failed, or that waits for the user.
 func (s *Service) Skip(id string) {
-	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateDownloading, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge)
+	s.end(id, StateSkipped, StateFailed, StateQueued, StateWaitingClick, StateDownloading, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge)
 }
 
 // SkipAll skips every item that has not started.
@@ -915,7 +921,7 @@ func (s *Service) SkipAll() {
 	s.mu.Lock()
 	var ids []string
 	for _, it := range s.items {
-		if slices.Contains([]string{StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge}, it.State) {
+		if slices.Contains([]string{StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge}, it.State) {
 			ids = append(ids, it.ID)
 		}
 	}
@@ -930,7 +936,7 @@ func (s *Service) SkipProfile(game, profileID string) {
 	s.mu.Lock()
 	for _, it := range s.items {
 		if it.Game == game && it.Profile == profileID &&
-			slices.Contains([]string{StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge}, it.State) {
+			slices.Contains([]string{StateQueued, StateWaitingClick, StateNeedsChoice, StateNeedsConfirm, StateNeedsFomod, StateNeedsRoot, StateNeedsMerge, StateConfirmLarge}, it.State) {
 			it.State, it.Progress, it.Speed, it.key, it.staged, it.Error = StateSkipped, 0, 0, "", "", "profile deleted"
 		}
 	}
@@ -1054,7 +1060,7 @@ func notifyDesktopDownload(name, game, profile string, ok bool) {
 
 // Cancel stops an item, including a download under way. An install cannot be interrupted.
 func (s *Service) Cancel(id string) {
-	s.end(id, StateCancelled, StateQueued, StateWaitingClick, StateDownloading)
+	s.end(id, StateCancelled, StateQueued, StateWaitingClick, StateDownloading, StateConfirmLarge)
 }
 
 func (s *Service) end(id, to string, from ...string) { s.endWith(id, to, "", from...) }

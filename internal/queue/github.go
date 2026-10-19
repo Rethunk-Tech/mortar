@@ -206,6 +206,9 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 	if i < 0 {
 		return fmt.Errorf("release %s of %s has no asset %s", it.Tag, it.Repo, it.Asset)
 	}
+	if parked, err := s.guardSize(it, assets[i].Size); parked || err != nil {
+		return err
+	}
 	if err := os.MkdirAll(s.downloadRoot(), 0o700); err != nil {
 		return err
 	}

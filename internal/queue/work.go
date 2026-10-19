@@ -350,6 +350,7 @@ func (s *Service) settle(id string, err error) {
 	var ghLimit *github.RateLimitError
 	var busy *source.BusyError
 	var full *store.DiskFullError
+	var noSpace *NoSpaceError
 	var detected *store.DetectedError
 	switch {
 	case errors.Is(err, context.Canceled):
@@ -374,6 +375,8 @@ func (s *Service) settle(id string, err error) {
 		it.State, it.Error = StateFailed, "Nexus rejected your API key: sign in again in Settings"
 	case errors.Is(err, nexus.ErrQuarantined):
 		it.State, it.Error = StateFailed, "Nexus has quarantined this file; Mortar will not download it"
+	case errors.As(err, &noSpace):
+		it.State, it.Error = StateFailed, noSpace.Error()
 	case errors.As(err, &full):
 		it.State, it.Error = StateFailed, fmt.Sprintf("Not enough disk space: about %d MB is needed", full.NeedMB)
 	case errors.As(err, &detected):
@@ -550,6 +553,9 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		key, expires = cur.key, cur.expires
 	}
 	s.mu.Unlock()
+	if parked, err := s.guardSize(it, it.SizeKB<<10); parked || err != nil {
+		return err
+	}
 	links, err := c.DownloadLinks(ctx, t, it.ModID, it.FileID, key, expires)
 	if err != nil {
 		return usererr.Wrap(usererr.Network, err)

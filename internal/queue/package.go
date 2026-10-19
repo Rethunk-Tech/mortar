@@ -227,6 +227,9 @@ func (s *Service) downloadPackage(ctx context.Context, it Item) error {
 	if it.URL == "" {
 		return errors.New("the package has no download address: add it again")
 	}
+	if parked, err := s.guardSize(it, it.SizeKB<<10); parked || err != nil {
+		return err
+	}
 	if err := os.MkdirAll(s.downloadRoot(), 0o700); err != nil {
 		return err
 	}

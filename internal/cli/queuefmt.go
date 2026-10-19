@@ -11,7 +11,7 @@ func queueHumanState(state string) string {
 		return "waiting"
 	case queue.StateDownloading, queue.StateInstalling:
 		return "downloading"
-	case queue.StateWaitingClick, queue.StateNeedsChoice, queue.StateNeedsConfirm, queue.StateNeedsFomod, queue.StateNeedsRoot, queue.StateNeedsMerge:
+	case queue.StateWaitingClick, queue.StateNeedsChoice, queue.StateNeedsConfirm, queue.StateNeedsFomod, queue.StateNeedsRoot, queue.StateNeedsMerge, queue.StateConfirmLarge:
 		return "needs a click"
 	case queue.StateFailed:
 		return "failed"
@@ -40,7 +40,7 @@ func queueActionCount(st queue.State, sub, id string) int {
 		}
 		if sub == "skip" {
 			switch it.State {
-			case queue.StateQueued, queue.StateWaitingClick, queue.StateNeedsChoice, queue.StateNeedsConfirm, queue.StateNeedsFomod, queue.StateNeedsRoot, queue.StateNeedsMerge:
+			case queue.StateQueued, queue.StateWaitingClick, queue.StateNeedsChoice, queue.StateNeedsConfirm, queue.StateNeedsFomod, queue.StateNeedsRoot, queue.StateNeedsMerge, queue.StateConfirmLarge:
 				n++
 			}
 		}
