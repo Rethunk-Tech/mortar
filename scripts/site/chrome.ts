@@ -3,7 +3,7 @@
 
 export const SITE = 'https://mortar.rethunk.tech'
 export const REPO = 'https://github.com/Rethunk-Tech/mortar'
-const DISCORD = 'https://discord.gg/TfecaTm8J2'
+export const DISCORD = 'https://discord.gg/TfecaTm8J2'
 const OG_IMAGE = {
   url: `${SITE}/img/og-dbcbd71467.jpg`,
   alt: "Mortar's game select: the supported games as a grid of cover art",

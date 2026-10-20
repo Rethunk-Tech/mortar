@@ -294,6 +294,33 @@ export function gamesWinner(md: string, games: number): string {
   })
 }
 
+/** /why/: every comparison, each with the one-paragraph summary that opens its page. */
+export function whyIndexPage(whys: Why[]): string {
+  const cards = whys.map((w) => {
+    const lines = w.md.split('\n').slice(1)
+    const start = lines.findIndex((l) => l.trim() !== '')
+    const end = lines.findIndex((l, i) => i > start && (l.trim() === '' || l.startsWith('|')))
+    const intro = plain(lines.slice(start, end === -1 ? undefined : end).join(' '))
+    return `          <article class="card">
+            <h3><a href="/why/${w.id}/">Mortar vs ${escapeHTML(w.name)}</a></h3>
+            <p>${escapeHTML(intro)}</p>
+          </article>`
+  })
+  return page({
+    path: 'site/why/index.html',
+    title: 'Why Mortar? Compared with other mod managers',
+    description:
+      'How Mortar compares with other mod managers, with sources for every claim about them.',
+    body: `      <h1 class="ext-title">Why Mortar?</h1>
+      <p class="lede">How Mortar compares with each mod manager you might be coming from, with a source for every claim about it.</p>
+      <section class="block">
+        <div class="grid">
+${cards.join('\n')}
+        </div>
+      </section>`,
+  })
+}
+
 export function whyPage(w: Why, counts: Counts): string {
   const filled = w.md
     .replaceAll('GAME_COUNT', String(counts.games))

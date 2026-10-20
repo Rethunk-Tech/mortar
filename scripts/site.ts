@@ -8,13 +8,14 @@ import { basename, dirname } from 'node:path'
 import { refreshSteamArt, steamArt } from './site/art.ts'
 import { brandArt, brandSprite } from './site/brands.ts'
 import { changelogFeed, changelogPage } from './site/changelog.ts'
-import { footer, nav, type Page, page, SITE, seo, urlOf } from './site/chrome.ts'
+import { DISCORD, footer, nav, type Page, page, SITE, seo, urlOf } from './site/chrome.ts'
 import {
   appVersion,
   docPage,
   faqPage,
   landingFaq,
   refreshRivalFacts,
+  whyIndexPage,
   whyPage,
   whyPages,
 } from './site/faq.ts'
@@ -199,6 +200,7 @@ files.set('site/faq/index.html', faqPage(games.length, whys))
 for (const w of whys) {
   files.set(`site/why/${w.id}/index.html`, whyPage(w, counts))
 }
+files.set('site/why/index.html', whyIndexPage(whys))
 const botDocs = [
   ['terms', 'The terms for the Mortar bot that runs the Mortar Mod Manager Discord server.'],
   [
@@ -212,15 +214,33 @@ for (const [doc, description] of botDocs) {
     docPage(`scripts/site/bot/${doc}.md`, `site/bot/${doc}/index.html`, description),
   )
 }
+files.set(
+  'site/bot/index.html',
+  page({
+    path: 'site/bot/index.html',
+    title: 'Mortar bot',
+    description:
+      'The Mortar bot in the Mortar Mod Manager Discord server: its terms and privacy policy.',
+    body: `      <h1 class="ext-title">Mortar bot</h1>
+      <p class="lede">The bot that runs the Mortar Mod Manager Discord server: help-forum log reading, tickets, moderation and release posts.</p>
+      <ul>
+        <li><a href="/bot/terms/">Terms</a></li>
+        <li><a href="/bot/privacy/">Privacy policy</a>: what it reads and keeps, and why.</li>
+      </ul>`,
+  }),
+)
 files.set('site/404.html', notFoundPage())
 for (const [route, invite] of Object.entries(INVITES)) {
   files.set(`site/go/${route}/index.html`, redirectPage(invite))
 }
+files.set('site/go/index.html', redirectPage(DISCORD))
 const listedPages = [
   ...PAGES.map((p) => p.path),
   'site/games/index.html',
   'site/faq/index.html',
+  'site/bot/index.html',
   ...botDocs.map(([doc]) => `site/bot/${doc}/index.html`),
+  'site/why/index.html',
   ...whys.map((w) => `site/why/${w.id}/index.html`),
   'site/guide/index.html',
   'site/changelog/index.html',
