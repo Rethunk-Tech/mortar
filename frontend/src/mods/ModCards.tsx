@@ -31,11 +31,11 @@ import { cardSlice } from './overlayRows.ts'
 import { MIDDLE, opensPage } from './pageClick.ts'
 import {
   LastRunBadge,
-  LetterTile,
   LiveBadge,
   NexusGoneBadge,
   PinBadge,
   ProblemBadge,
+  ProfileModTile,
   UpdateBadge,
 } from './parts.tsx'
 import { useSelection } from './selection.ts'
@@ -66,6 +66,7 @@ const LARGE_LANE_EXTRA = 16
 // The Card details line under the author and version, when any detail is ticked.
 const STATS_LINE_PX = 16
 const TILE_COMPACT_PX = 38
+const TILE_MARGIN_PX = 8
 const TILE_COMPACT_FONT_PX = 19
 const CARD_GAP_PX = '10px'
 const CARD_RADIUS_PX = '6px'
@@ -134,11 +135,14 @@ function ModCardView({
   const cardSize = useSettings((s) => s.gridCardSize) || 'medium'
   const statsLine =
     parseCardStats(useSettings((s) => s.browseCardStats)).length > 0 && cardSize !== 'small'
+  const height = cardHeightPx(cardSize) + (statsLine ? STATS_LINE_PX : 0)
+  // The picture fills the card's height but for an even margin.
+  const tile = height - 2 * TILE_MARGIN_PX
   return (
     <Card
       {...contextMenuProps(m)}
       sx={{
-        height: cardHeightPx(cardSize) + (statsLine ? STATS_LINE_PX : 0),
+        height,
         pl: space.gap,
         pr: 0.75,
         display: 'flex',
@@ -178,7 +182,7 @@ function ModCardView({
           gap: CARD_GAP_PX,
         }}
       >
-        <LetterTile mod={m} fresh={fresh} />
+        <ProfileModTile mod={m} profile={profile} fresh={fresh} size={tile} />
         <Box
           sx={{
             flex: 1,

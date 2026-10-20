@@ -22,4 +22,14 @@ const ICONS: Record<string, { path: string; fill: string }> = {
 // from ICONS.
 const hasSourceLogo = (id: string) => id === 'nexus' || id === 'vsmoddb' || id in ICONS
 
-export { hasSourceLogo, ICONS }
+// A mark laid over a corner of a mod's picture (its source, the favourite star) on a solid chip, readable on any art.
+const pictureMarkSx = {
+  display: 'grid',
+  placeItems: 'center',
+  p: '1px',
+  borderRadius: '4px',
+  bgcolor: 'var(--mortar-raised)',
+  border: '1px solid var(--mortar-hairline)',
+} as const
+
+export { hasSourceLogo, ICONS, pictureMarkSx }

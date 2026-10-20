@@ -146,7 +146,6 @@ function NameCell({ row, profile }: { row: ListRow; profile: Profile }) {
             <CornerDownRight size={14} aria-hidden={true} />
           </Box>
         ) : null}
-        <FavouriteStar starKey={entryFavouriteKey(entryOf(profile, m.key))} />
         <Box component="span" sx={{ ...ellipsis, minWidth: 0 }}>
           {m.name}
         </Box>
@@ -378,7 +377,10 @@ function ModRowView({ row, cols, locale, first, orderedRef, profile, onArrow }: 
         id === 'name'
           ? [
               <Cell key="tile">
-                <LetterTile mod={m} size={26} fresh={fresh} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <FavouriteStar starKey={entryFavouriteKey(entryOf(profile, m.key))} />
+                  <LetterTile mod={m} size={26} fresh={fresh} />
+                </Box>
               </Cell>,
               cellsFor(id, row, locale, profile),
             ]

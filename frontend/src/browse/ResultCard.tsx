@@ -3,7 +3,7 @@ import { Box, ButtonBase, Card, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import { type MouseEvent, memo, useState } from 'react'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
-import { hasSourceLogo } from '../brand/sources/sourceIcons.ts'
+import { hasSourceLogo, pictureMarkSx } from '../brand/sources/sourceIcons.ts'
 import { formatAuthors } from '../mods/authorNormalize.ts'
 import { FavouriteStar } from '../mods/FavouriteStar.tsx'
 import { favouriteKey } from '../mods/favourites.ts'
@@ -25,14 +25,7 @@ const MARK_SHARE = 0.3
 const MARK_MIN_PX = 12
 const MARK_MAX_PX = 16
 
-const markSx = {
-  display: 'grid',
-  placeItems: 'center',
-  p: '1px',
-  borderRadius: '4px',
-  bgcolor: 'var(--mortar-raised)',
-  border: '1px solid var(--mortar-hairline)',
-} as const
+const corner = { position: 'absolute', top: 2, right: 2 } as const
 
 // A mod's picture, with the mark of the site Add installs from in its corner, so every card says where it comes from.
 // A mod on several sites stacks one mark per site there instead, and a click picks the site Add installs from.
@@ -42,14 +35,23 @@ function CardPicture({
   dim,
   source,
   pick,
+  starKey,
+  fill = false,
 }: {
   picture: string
   size: number
   dim: number
   source?: { id: string; name: string }
   pick?: { sources: string[]; names: Map<string, string>; onPick: (source: string) => void }
+  starKey?: string
+  // fill stretches a square picture to the height of the row it sits in; size then only scales the marks.
+  fill?: boolean
 }) {
-  const sx = { width: size, height: size, flexShrink: 0, borderRadius: '4px', opacity: dim }
+  // A filled picture is laid over its square, so the image's own size never sets the row's height.
+  const box = fill
+    ? { position: 'absolute', inset: 0, width: '100%', height: '100%' }
+    : { width: size, height: size }
+  const sx = { ...box, flexShrink: 0, borderRadius: '4px', opacity: dim } as const
   const [failed, setFailed] = useState(false)
   const image =
     picture === '' || failed ? (
@@ -64,47 +66,71 @@ function CardPicture({
         sx={{ ...sx, objectFit: 'cover' }}
       />
     )
-  if (!(source && hasSourceLogo(source.id))) {
+  const logo = source && hasSourceLogo(source.id) ? source : undefined
+  if (!(logo || starKey)) {
     return image
   }
   const mark = Math.min(MARK_MAX_PX, Math.max(MARK_MIN_PX, Math.round(size * MARK_SHARE)))
-  const corner = { position: 'absolute', top: 2, right: 2 } as const
-  if (pick && pick.sources.length > 1) {
-    return (
-      <Box sx={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
-        {image}
-        <Box sx={{ ...corner, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          {pick.sources.map((id) => {
-            const name = pick.names.get(id) ?? id
-            const chosen = id === source.id
-            return (
-              <Tooltip key={id} title={name}>
-                <ButtonBase
-                  aria-label={name}
-                  aria-pressed={chosen}
-                  onClick={() => pick.onPick(id)}
-                  sx={{
-                    ...markSx,
-                    opacity: chosen ? 1 : 0.6,
-                    borderColor: chosen ? 'var(--mortar-ink-dim-60)' : 'var(--mortar-hairline)',
-                    '&:hover': { opacity: 1 },
-                  }}
-                >
-                  {hasSourceLogo(id) ? <SourceLogo id={id} size={mark} /> : name.slice(0, 1)}
-                </ButtonBase>
-              </Tooltip>
-            )
-          })}
-        </Box>
-      </Box>
-    )
-  }
   return (
-    <Box sx={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
+    <Box
+      sx={{
+        position: 'relative',
+        flexShrink: 0,
+        display: 'flex',
+        ...(fill ? { alignSelf: 'stretch', aspectRatio: '1' } : {}),
+      }}
+    >
       {image}
-      <Box role="img" aria-label={source.name} title={source.name} sx={{ ...corner, ...markSx }}>
-        <SourceLogo id={source.id} size={mark} />
-      </Box>
+      {logo && pick && pick.sources.length > 1 ? (
+        <SourcePicks pick={pick} chosen={logo.id} mark={mark} />
+      ) : null}
+      {logo && !(pick && pick.sources.length > 1) ? (
+        <Box
+          role="img"
+          aria-label={logo.name}
+          title={logo.name}
+          sx={{ ...corner, ...pictureMarkSx }}
+        >
+          <SourceLogo id={logo.id} size={mark} />
+        </Box>
+      ) : null}
+      {starKey ? <FavouriteStar starKey={starKey} onPicture={true} /> : null}
+    </Box>
+  )
+}
+
+function SourcePicks({
+  pick,
+  chosen,
+  mark,
+}: {
+  pick: { sources: string[]; names: Map<string, string>; onPick: (source: string) => void }
+  chosen: string
+  mark: number
+}) {
+  return (
+    <Box sx={{ ...corner, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+      {pick.sources.map((id) => {
+        const name = pick.names.get(id) ?? id
+        const on = id === chosen
+        return (
+          <Tooltip key={id} title={name}>
+            <ButtonBase
+              aria-label={name}
+              aria-pressed={on}
+              onClick={() => pick.onPick(id)}
+              sx={{
+                ...pictureMarkSx,
+                opacity: on ? 1 : 0.6,
+                borderColor: on ? 'var(--mortar-ink-dim-60)' : 'var(--mortar-hairline)',
+                '&:hover': { opacity: 1 },
+              }}
+            >
+              {hasSourceLogo(id) ? <SourceLogo id={id} size={mark} /> : name.slice(0, 1)}
+            </ButtonBase>
+          </Tooltip>
+        )
+      })}
     </Box>
   )
 }
@@ -298,7 +324,14 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
       }}
     >
       {row ? (
-        <CardPicture picture={item.picture} size={ROW_PICTURE_PX} dim={dim} source={mark} />
+        <CardPicture
+          picture={item.picture}
+          size={ROW_PICTURE_PX}
+          dim={dim}
+          source={mark}
+          starKey={favouriteKey(item.source, item.id)}
+          fill={true}
+        />
       ) : (
         <Box
           sx={{
@@ -316,6 +349,7 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
             dim={dim}
             source={mark}
             pick={{ sources, names: sourceNames, onPick: setPicked }}
+            starKey={favouriteKey(item.source, item.id)}
           />
           {action}
         </Box>
@@ -330,14 +364,11 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
           opacity: dim,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
-          <CardTitle
-            name={name}
-            flag={flag}
-            onOpen={() => useBrowseSelection.getState().select({ item, source })}
-          />
-          <FavouriteStar starKey={favouriteKey(item.source, item.id)} />
-        </Box>
+        <CardTitle
+          name={name}
+          flag={flag}
+          onOpen={() => useBrowseSelection.getState().select({ item, source })}
+        />
         <Byline author={author} reuploadOf={item.reuploadOf ?? ''} />
         <Typography
           title={summary}

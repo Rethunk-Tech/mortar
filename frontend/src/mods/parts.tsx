@@ -16,7 +16,13 @@ import {
 } from '@mui/material'
 import { ArrowUp, Ban, CircleCheck, CircleX, Pin, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
-import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import type {
+  Mod,
+  Profile,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
+import { hasSourceLogo, pictureMarkSx } from '../brand/sources/sourceIcons.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { errorsLabel } from '../i18n/counts.ts'
 import { listNames } from '../i18n/list.ts'
 import { useLive } from '../launch/live.ts'
@@ -29,10 +35,21 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { dependentsOf, idKey, localId } from './dependents.ts'
 import { useDescribe } from './describe.ts'
 import { unneededImplicit } from './disableUnneeded.ts'
+import { FavouriteStar } from './FavouriteStar.tsx'
+import { entryFavouriteKey } from './favourites.ts'
 import { readsImplicit } from './installReason.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { lastRunSummary, useLastRun } from './lastRun.ts'
-import { concerns, entryOf, modId, nexusIdOf, problemsOf, siblingsOf, updateFor } from './lookup.ts'
+import {
+  concerns,
+  entryOf,
+  modId,
+  nexusIdOf,
+  problemsOf,
+  siblingsOf,
+  sourceKind,
+  updateFor,
+} from './lookup.ts'
 import { NewDot } from './NewSince.tsx'
 import { useNexusPage } from './nexusDetails.ts'
 import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
@@ -46,6 +63,7 @@ const UINT32_RANGE = 2 ** UINT32_BITS
 const HUE_DEGREES = 360
 const TILE_FONT_RATIO = 0.5
 const DEFAULT_TILE_SIZE = 48
+const TILE_MARK_PX = 12
 const SMALL_TILE = 32
 
 function hash(s: string): number {
@@ -184,14 +202,19 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
 // The panel footer's two buttons share one height.
 const footerButtonSx = { height: space.control } as const
 
+// source and starKey lay the mod's source mark and its favourite star over the picture's corners.
 export function LetterTile({
   mod,
   size = DEFAULT_TILE_SIZE,
   fresh = false,
+  source = '',
+  starKey = '',
 }: {
   mod: Pick<Mod, 'id' | 'name'> & { picture?: string }
   size?: number
   fresh?: boolean
+  source?: string
+  starKey?: string
 }) {
   const [failed, setFailed] = useState<string | null>(null)
   const picture = mod.picture && failed !== mod.picture ? mod.picture : ''
@@ -225,7 +248,41 @@ export function LetterTile({
         )}
       </Box>
       <NewDot show={fresh} />
+      {hasSourceLogo(source) ? (
+        <Box
+          role="img"
+          aria-label={sourceLabel(source)}
+          title={sourceLabel(source)}
+          sx={{ ...pictureMarkSx, position: 'absolute', top: 2, right: 2 }}
+        >
+          <SourceLogo id={source} size={TILE_MARK_PX} />
+        </Box>
+      ) : null}
+      {starKey ? <FavouriteStar starKey={starKey} onPicture={true} /> : null}
     </Box>
+  )
+}
+
+// A profile's mod with its source and favourite star on the picture.
+export function ProfileModTile({
+  mod,
+  profile,
+  fresh,
+  size,
+}: {
+  mod: Mod
+  profile: Profile
+  fresh: boolean
+  size: number
+}) {
+  return (
+    <LetterTile
+      mod={mod}
+      size={size}
+      fresh={fresh}
+      source={sourceKind(profile, mod)}
+      starKey={entryFavouriteKey(entryOf(profile, mod.key))}
+    />
   )
 }
 
