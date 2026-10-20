@@ -18,7 +18,9 @@ export function TipBanner({ tip, children }: { tip: TipId; children: ReactNode }
   return (
     <Box
       role="note"
+      className="list-notice"
       sx={{
+        '.list-notice + &': { mt: 0 },
         display: 'flex',
         alignItems: 'center',
         gap: space.gap,

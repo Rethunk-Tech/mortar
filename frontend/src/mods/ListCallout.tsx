@@ -19,9 +19,13 @@ export function ListCallout({
       role="region"
       aria-label={text}
       action={actions}
+      className="list-notice"
       sx={{
         mx: space.gutter,
         mt: 1.25,
+        mb: space.gap,
+        // Notices stacked above the list sit one gap apart, like the list's rows.
+        '.list-notice + &': { mt: 0 },
         flexShrink: 0,
         flexWrap: 'wrap',
         '& .MuiAlert-message': { flex: 1, minWidth: 200 },

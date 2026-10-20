@@ -333,7 +333,7 @@ function createMortarTheme(
         styleOverrides: { root: { padding: `calc(${space.pad} - 4px) ${space.pad} 0` } },
       },
       MuiDialogActions: {
-        styleOverrides: { root: { padding: `8px ${space.pad} ${space.pad}`, gap: space.gap } },
+        styleOverrides: { root: { padding: `12px ${space.pad} ${space.pad}`, gap: space.gap } },
       },
       MuiBackdrop: {
         defaultProps: { transitionDuration: 0 },
