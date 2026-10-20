@@ -1,5 +1,6 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, LinearProgress, Typography } from '@mui/material'
 import { Copy, Map as MapIcon, Plus, ShieldCheck } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
@@ -13,6 +14,7 @@ import { refWant } from '../queue/refWant.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { copyText } from '../share/copyText.ts'
+import { AfterDelay } from '../shell/AfterDelay.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
 import { SectionStrip } from '../shell/SectionStrip.tsx'
@@ -470,6 +472,35 @@ function ProblemActions() {
   )
 }
 
+// The first check of a profile can wait on smapi.io and Nexus, so the empty tab says what it is doing as it waits.
+function CheckingLine() {
+  const { t } = useLingui()
+  const count = useMods((s) => s.mods.length)
+  return (
+    <AfterDelay>
+      <Box
+        sx={{
+          px: space.gutter,
+          pt: space.gutter,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: space.gap,
+        }}
+      >
+        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+          {count > 0
+            ? plural(count, {
+                one: 'Checking # mod for conflicts, missing requirements and compatibility…',
+                other: 'Checking # mods for conflicts, missing requirements and compatibility…',
+              })
+            : t`Checking the mods for problems…`}
+        </Typography>
+        <LinearProgress aria-hidden={true} />
+      </Box>
+    </AfterDelay>
+  )
+}
+
 function ProblemsTab() {
   const { t } = useLingui()
   const result = useOpenProblems()
@@ -485,6 +516,7 @@ function ProblemsTab() {
           onChoose={() => undefined}
           actions={null}
         />
+        <CheckingLine />
         <SkeletonRows
           label={t`Checking the mods for problems…`}
           count={PROBLEM_SKELETON_ROWS}

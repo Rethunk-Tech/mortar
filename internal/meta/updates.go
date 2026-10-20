@@ -22,7 +22,9 @@ const (
 	updatesFile       = "smapi-updates.json"
 	updatesBatch      = 100
 	updatesBackoff    = 5 * time.Minute
-	maxUpdates        = 16 << 20
+	// updatesRefreshTimeout bounds a background refresh, which nobody waits on.
+	updatesRefreshTimeout = 2 * time.Minute
+	maxUpdates            = 16 << 20
 )
 
 // errUpdatesPaused stands in for a failed ask while smapi.io is being given a rest.
@@ -115,8 +117,10 @@ func (r UpdateRequest) key(m InstalledMod) string {
 	return strings.ToLower(strings.Join([]string{m.ID, strings.Join(m.UpdateKeys, ","), m.Version, r.GameVersion, r.APIVersion, r.Platform}, "|"))
 }
 
-// CheckUpdates returns one result per requested mod, in order. Answers younger than an hour come from cache;
-// the rest are asked in batches, and a batch that fails falls back to stale cache, else unknown.
+// CheckUpdates returns one result per requested mod, in order. Answers younger than an hour come from cache. An older
+// answer this build cached is served at once and asked again in the background, so an unreachable smapi.io never
+// holds up a check that has something to show; mods with no answer, or every mod on an explicit Fresh check, are
+// asked in batches, and a batch that fails falls back to stale cache, else unknown.
 func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateResult {
 	c.updatesMu.Lock()
 	defer c.updatesMu.Unlock()
@@ -140,13 +144,21 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 	now := c.now()
 	out := make([]UpdateResult, len(req.Mods))
 	var stale []int
+	var later []InstalledMod
 	for i, m := range req.Mods {
-		if e, ok := store[req.key(m)]; ok && !req.Fresh && now.Sub(e.Fetched) < updatesTTL {
+		e, ok := store[req.key(m)]
+		switch {
+		case ok && !req.Fresh && now.Sub(e.Fetched) < updatesTTL:
 			out[i] = e.Value
-		} else {
+		// Another build's answers carry a zero Fetched and are asked now.
+		case ok && !req.Fresh && e.Value.Known && !e.Fetched.IsZero():
+			out[i] = e.Value
+			later = append(later, req.Mods[i])
+		default:
 			stale = append(stale, i)
 		}
 	}
+	defer c.refreshLater(ctx, req, later)
 	var batches [][]int
 	for start := 0; start < len(stale); start += updatesBatch {
 		batches = append(batches, stale[start:min(start+updatesBatch, len(stale))])
@@ -181,6 +193,21 @@ func (c *Client) CheckUpdates(ctx context.Context, req UpdateRequest) []UpdateRe
 		writeEntry(path, entry[map[string]entry[UpdateResult]]{Fetched: now, Value: store, Build: appversion.Build()})
 	}
 	return out
+}
+
+// refreshLater asks smapi.io about mods again in the background, one refresh at a time; the next check reads what it
+// cached. It outlives the check that started it, so it keeps ctx's values but not its cancellation.
+func (c *Client) refreshLater(ctx context.Context, req UpdateRequest, mods []InstalledMod) {
+	if len(mods) == 0 || !c.updatesRefreshing.CompareAndSwap(false, true) {
+		return
+	}
+	req.Mods, req.Fresh = mods, true
+	go func() {
+		defer c.updatesRefreshing.Store(false)
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), updatesRefreshTimeout)
+		defer cancel()
+		c.CheckUpdates(ctx, req)
+	}()
 }
 
 type updatesAnswer struct {

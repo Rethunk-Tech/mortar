@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
+	"time"
 )
 
 func TestCheckUpdatesReadsCompatibilitySummary(t *testing.T) {
@@ -56,5 +57,40 @@ func TestCheckUpdatesAsksAgainAfterAnotherBuildCached(t *testing.T) {
 	c.CheckUpdates(context.Background(), req)
 	if n := asked.Load(); n != 2 {
 		t.Fatalf("another build's cache is asked again: asked %d times", n)
+	}
+}
+
+// An hour-old answer is shown at once while smapi.io is asked again in the background, so a hanging API never holds a
+// check up; the background answer replaces it.
+func TestCheckUpdatesServesAnOldAnswerAndAsksAgainInTheBackground(t *testing.T) {
+	release := make(chan struct{})
+	var asked atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		if asked.Add(1) > 1 {
+			select {
+			case <-release:
+			case <-time.After(3 * time.Second):
+			}
+		}
+		_, _ = w.Write([]byte(`[{"id":"A.Mod","metadata":{"compatibilityStatus":"Ok"}}]`))
+	}))
+	t.Cleanup(srv.Close)
+	now := time.Now()
+	c := &Client{HTTP: srv.Client(), CacheDir: t.TempDir(), UpdatesURL: srv.URL, Now: func() time.Time { return now }}
+	req := UpdateRequest{Mods: []InstalledMod{{ID: "A.Mod", Version: "1.0.0"}}}
+	c.CheckUpdates(context.Background(), req)
+	now = now.Add(2 * time.Hour)
+	start := time.Now()
+	got := c.CheckUpdates(context.Background(), req)
+	if waited := time.Since(start); waited > time.Second || !got[0].Known || got[0].Compatibility != "Ok" {
+		t.Fatalf("the old answer waited %v for the API: %+v", waited, got[0])
+	}
+	close(release)
+	deadline := time.Now().Add(5 * time.Second)
+	for asked.Load() < 2 || c.updatesRefreshing.Load() {
+		if time.Now().After(deadline) {
+			t.Fatalf("no background refresh: asked %d times", asked.Load())
+		}
+		time.Sleep(10 * time.Millisecond)
 	}
 }

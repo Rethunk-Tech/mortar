@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
@@ -38,6 +39,8 @@ type Client struct {
 	updatesMu sync.Mutex
 	// updatesPause holds off smapi.io after a failed ask; until then stale cache or unknown is served.
 	updatesPause time.Time
+	// updatesRefreshing is set while answers past their hour are asked again in the background.
+	updatesRefreshing atomic.Bool
 }
 
 func (c *Client) client() *http.Client {
