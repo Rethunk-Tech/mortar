@@ -176,7 +176,7 @@ async function gatherPlayIssues(game: string, profileId: string): Promise<PlayIs
             profileName: lastName,
           }
         : null,
-    saveMods: (fit?.lastMissing ?? []).map((m) => ({
+    saveMods: (fit?.missing ?? []).map((m) => ({
       name: m.name || localId(m.id),
       disabled: m.disabled,
     })),

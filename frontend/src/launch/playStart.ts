@@ -8,7 +8,10 @@ import type { Broken } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { UpdateWarning } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { SetOverrides } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type { Fit } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
-import { LastSaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
+import {
+  Dismiss,
+  LastSaveGap,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
@@ -16,7 +19,7 @@ import { isGameId, useNav } from '../nav/store.ts'
 import { foldedOverrides, resolveOverride } from '../profiles/overrideValue.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
-import { reportError, toastError } from '../toasts/report.ts'
+import { reportError, reportUnexpected, toastError } from '../toasts/report.ts'
 import {
   type AutoUpdateRestorePoint,
   type AutoUpdateResult,
@@ -314,10 +317,19 @@ async function answerGraphics(get: LaunchGet, set: LaunchSet, choice: string) {
   await startWithWarning({ get, set, game: ask.game, profile: ask.profile, direct: ask.direct })
 }
 
+// Playing anyway accepts the save's missing mods, so the same list does not stop the next launch.
+async function acceptSaveGap(game: string, profile: string) {
+  const [fit, gap] = await LastSaveGap(game, profile)
+  if (gap) {
+    await Promise.all((fit.missing ?? []).map((m) => Dismiss(fit.folder, m.id)))
+  }
+}
+
 async function playAnyway(get: LaunchGet, set: LaunchSet) {
   const check = get().playCheck
   if (check) {
     set({ playCheck: null })
+    await acceptSaveGap(check.game, check.profile).catch(reportUnexpected)
     await startWithWarning({
       get,
       set,
@@ -333,6 +345,7 @@ async function playAnyway(get: LaunchGet, set: LaunchSet) {
   if (!warn) {
     return
   }
+  await acceptSaveGap(warn.game, warn.profile).catch(reportUnexpected)
   set({ starting: true, startingProfile: warn.profile })
   await startProfile({
     set,

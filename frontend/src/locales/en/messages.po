@@ -1151,11 +1151,6 @@ msgstr "Broken"
 msgid "Bundled mods added"
 msgstr "Bundled mods added"
 
-#. placeholder {0}: missing.length
-#: src/launch/SaveWarnDialog.tsx
-msgid "This save was last played with {0, plural, one {# mod this profile lacks} other {# mods this profile lacks}} ({listed})."
-msgstr "This save was last played with {0, plural, one {# mod this profile lacks} other {# mods this profile lacks}} ({listed})."
-
 #: src/saves/scheduledBackups.ts
 msgid "A scheduled save backup failed"
 msgstr "A scheduled save backup failed"
@@ -6894,10 +6889,6 @@ msgstr "Reset install"
 #: src/mods/EnableRequirementsDialog.tsx
 msgid "Could not enable required mods"
 msgstr "Could not enable required mods"
-
-#: src/launch/SaveWarnDialog.tsx
-msgid "This save needs other mods"
-msgstr "This save needs other mods"
 
 #: src/settings/prefCopy.ts
 msgid "Honour OS"
@@ -15230,7 +15221,6 @@ msgid "{path} wait for each other in a loop, so SMAPI loads none of them."
 msgstr "{path} wait for each other in a loop, so SMAPI loads none of them."
 
 #: src/install/MissingDepsDialog.tsx
-#: src/launch/SaveWarnDialog.tsx
 msgid "Add them"
 msgstr "Add them"
 
@@ -15338,7 +15328,6 @@ msgid "Not in this profile"
 msgstr "Not in this profile"
 
 #: src/launch/PrePlayDialog.tsx
-#: src/launch/SaveWarnDialog.tsx
 #: src/profiles/ProfileMenu.tsx
 msgid "Switch profile"
 msgstr "Switch profile"

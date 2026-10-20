@@ -343,10 +343,9 @@ func (s *Service) LastSaveGap(ctx context.Context, game, profileID string) (fit 
 	}
 	info.Used = asProfileIDs(info.Used, mods)
 	fit, ok = fitFor(info, enabled, asIDs(s.settings.Get().Dismissed[info.Folder]))
+	// Only the mods the save itself names stop a launch. Which profile last ran the save is shown on the Saves tab:
+	// in a game whose saves hold no mod data, another profile's mod list says nothing about this one.
 	s.fillLast(game, &fit, present, enabled)
-	if len(fit.LastMissing) > 0 {
-		ok = true
-	}
 	return fit, ok, nil
 }
 
