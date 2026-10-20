@@ -9,6 +9,48 @@ const SPACE = /\s+/g
 const summary = (html: string) =>
   (FIRST_TEXT.exec(html)?.[1] ?? '').replace(TAG, '').replace(SPACE, ' ').trim()
 const sections = guideSections()
+const bySlug = new Map(sections.map((s) => [s.slug, s]))
+const START = ['install', 'first-run', 'find-and-add-mods']
+// Every guide page sits in one group; a page the guide gains without a group here fails the build.
+const GROUPS = [
+  {
+    title: 'Set up',
+    icon: 'M12 3v12m0 0-4-4m4 4 4-4M5 21h14',
+    slugs: ['install', 'first-run', 'sign-in-to-nexus-mods', 'browser-extension', 'switch-games', 'game-installs'],
+  },
+  {
+    title: 'Mods',
+    icon: 'M10 3h4v3a2 2 0 1 0 4 0V3h3v7h-3a2 2 0 1 0 0 4h3v7h-7v-3a2 2 0 1 0-4 0v3H3v-7h3a2 2 0 1 0 0-4H3V3z',
+    slugs: ['find-and-add-mods', 'modrinth-and-itchio', 'lethal-company-and-thunderstore', 'your-mod-list', 'edit-a-mods-settings', 'antivirus-scan'],
+  },
+  {
+    title: 'Profiles and sharing',
+    icon: 'M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5',
+    slugs: ['profiles', 'pair-your-computers', 'sync-your-profiles-between-computers', 'save-backups-and-restore'],
+  },
+  {
+    title: 'Play and fix',
+    icon: 'M6 4l14 8-14 8z',
+    slugs: ['play', 'problems', 'troubleshooting', 'notifications-and-change-history', 'screenshots', 'stream-overlay'],
+  },
+  {
+    title: 'Mortar itself',
+    icon: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z',
+    slugs: ['updates', 'appearance', 'where-your-data-lives', 'uninstall'],
+  },
+]
+const page = (slug: string) => {
+  const s = bySlug.get(slug)
+  if (!s) {
+    throw new Error(`site: the guide has no page "${slug}"`)
+  }
+  return s
+}
+const grouped = new Set(GROUPS.flatMap((g) => g.slugs))
+const loose = sections.filter((s) => !grouped.has(s.slug)).map((s) => s.slug)
+if (loose.length > 0) {
+  throw new Error(`site: guide pages in no group on /guide/: ${loose.join(', ')}`)
+}
 ---
 
 <Page
@@ -16,25 +58,53 @@ const sections = guideSections()
   description="How to install Mortar, add and update mods, keep profiles, share them, play and read Problems, for every game Mortar supports."
   heading="User guide"
   kicker="Guide"
-  lede="Everything Mortar does, a page per topic."
+  lede="Everything Mortar does, a page per topic. New here? Start with the first three."
   current="guide"
   crumbs={[{ name: 'Guide', href: '/guide/' }]}
   full
 >
-  <div class="prose guide-intro" set:html={guideIntro()} />
-  <ol class="tile-grid guide-index">
+  <ol class="start">
     {
-      sections.map((s, i) => (
+      START.map((slug, i) => (
         <li>
-          <a class="guide-card" href={`/guide/${s.slug}/`}>
-            <span class="num">{String(i + 1).padStart(2, '0')}</span>
-            <b set:html={s.title} />
-            <span class="sum">{summary(s.html)}</span>
+          <a class="start-link" href={`/guide/${slug}/`}>
+            <span class="step">{i + 1}</span>
+            <b set:html={page(slug).title} />
+            <span class="sum">{summary(page(slug).html)}</span>
           </a>
         </li>
       ))
     }
   </ol>
+
+  <div class="groups">
+    {
+      GROUPS.map((g) => (
+        <section class="group">
+          <h2>
+            <span class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d={g.icon} />
+              </svg>
+            </span>
+            {g.title}
+          </h2>
+          <ul>
+            {g.slugs.map((slug) => (
+              <li>
+                <a class="topic" href={`/guide/${slug}/`}>
+                  <b set:html={page(slug).title} />
+                  <span class="sum">{summary(page(slug).html)}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+
+  <div class="about prose" set:html={guideIntro()} />
   <script is:inline type="application/json" id="guide-anchors" set:html={JSON.stringify(guideAnchors())} />
 </Page>
 
@@ -49,47 +119,121 @@ const sections = guideSections()
 </script>
 
 <style>
-  .guide-intro {
-    margin-bottom: 28px;
+  .start {
+    list-style: none;
+    margin: 0 0 56px;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
   }
-  .guide-index {
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
-    grid-auto-rows: 1fr;
-  }
-  .guide-card {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 18px 20px 20px;
+  .start a {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    column-gap: 16px;
+    row-gap: 4px;
+    height: 100%;
+    padding: 22px 24px;
     border: 1px solid var(--line);
+    border-left: 3px solid var(--sand);
     border-radius: 16px;
     background: var(--raised);
     transition:
       border-color 0.2s,
       transform 0.2s;
   }
-  .guide-card:hover {
+  .start a:hover {
     border-color: var(--sand);
     transform: translateY(-3px);
   }
-  .guide-card .num {
+  .step {
+    grid-row: 1 / span 2;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--sand);
     color: var(--sand);
-    font-size: 13px;
     font-weight: 800;
-    letter-spacing: 0.1em;
+    display: grid;
+    place-items: center;
   }
-  .guide-card b {
-    font-size: 18px;
-    line-height: 1.25;
+  .start b {
+    font-size: 19px;
   }
-  .guide-card .sum {
+  .groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
+    gap: 20px;
+    align-items: start;
+  }
+  .group {
+    padding: 22px 22px 10px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--raised);
+  }
+  .group h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 10px;
+    font-size: 20px;
+  }
+  .group .ico {
+    width: 36px;
+    height: 36px;
+    margin: 0;
+    border-radius: 10px;
+  }
+  .group .ico svg {
+    width: 20px;
+    height: 20px;
+  }
+  .group ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .group li + li {
+    border-top: 1px solid var(--line);
+  }
+  .group a {
+    display: grid;
+    gap: 2px;
+    padding: 12px 10px;
+    margin: 0 -10px;
+    border-radius: 10px;
+  }
+  .group b {
+    font-size: 16px;
+  }
+  .group a:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .group a:hover b {
+    color: var(--sand);
+  }
+  .sum {
+    color: var(--dim);
+    font-size: 14px;
     display: -webkit-box;
     -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    overflow: hidden;
+  }
+  .start .sum {
     -webkit-line-clamp: 2;
     line-clamp: 2;
-    overflow: hidden;
-    color: var(--dim);
+  }
+  .about {
+    margin-top: 48px;
+    max-width: 50rem;
     font-size: 15px;
+  }
+  @media (max-width: 900px) {
+    .start {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

@@ -237,7 +237,6 @@ h1.words em > span:nth-child(3) {
   cursor: pointer;
 }
 
-.demo .tag,
 .demo .looplbl {
   position: absolute;
   z-index: 2;
@@ -249,11 +248,6 @@ h1.words em > span:nth-child(3) {
   background: rgba(12, 12, 14, 0.88);
   padding: 6px 10px;
   border-radius: 6px;
-}
-
-.demo .tag {
-  left: 14px;
-  color: var(--sand);
 }
 
 .demo .looplbl {
@@ -270,9 +264,32 @@ h1.words em > span:nth-child(3) {
   background: var(--sand);
   color: var(--sand-ink);
   font-weight: 800;
-  padding: 14px 24px;
+  padding: 16px 30px;
+  font-size: 19px;
   border-radius: 999px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 0 0 10px rgba(214, 177, 122, 0.18),
+    0 0 0 22px rgba(214, 177, 122, 0.07),
+    0 14px 40px rgba(0, 0, 0, 0.6);
+  transition: transform 0.2s ease;
+}
+
+/* Dims the looping preview so the button reads as the thing to press. */
+.demo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(12, 12, 14, 0.45);
+  transition: background 0.2s ease;
+}
+
+.demo:hover::after {
+  background: rgba(12, 12, 14, 0.3);
+}
+
+.demo:hover .play {
+  transform: translate(-50%, -50%) scale(1.05);
 }
 
 /* A span inside the demo's button, so it needs block display for its aspect ratio to give it height. */
