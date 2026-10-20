@@ -9,11 +9,10 @@ import { problemCount } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { userModCount } from '../profiles/count.ts'
+import { ON_ART_SHADOW, ON_ART_TEXT } from './onArt.ts'
 import { useTab } from './tab.ts'
 import { useLastRun } from './useLastRun.ts'
 
-const ON_ART_85 = 'rgba(255, 255, 255, 0.85)'
-const TEXT_SHADOW = '0 1px 8px rgba(0, 0, 0, 0.55)'
 const FONT_PX = 13
 
 // The profile's facts on the hero, under its name: mods, updates, problems, last played, created and updated.
@@ -77,8 +76,8 @@ export function HeroGlance({
         flexWrap: 'wrap',
         columnGap: 0.75,
         fontSize: FONT_PX,
-        color: ON_ART_85,
-        textShadow: TEXT_SHADOW,
+        color: ON_ART_TEXT,
+        textShadow: ON_ART_SHADOW,
         [compactAt]: { display: 'none' },
         '& button': { fontSize: 'inherit', p: 0, verticalAlign: 'baseline' },
       }}

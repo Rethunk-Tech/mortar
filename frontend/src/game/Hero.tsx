@@ -16,6 +16,7 @@ import { compact, compactMeta } from './compact.ts'
 import { HeroCover } from './HeroCover.tsx'
 import { HeroGlance } from './HeroGlance.tsx'
 import { NameField } from './NameField.tsx'
+import { ON_ART_SHADOW, ON_ART_TEXT } from './onArt.ts'
 import { useRenameRequest } from './renameRequest.ts'
 import { useCollectionStatus } from './useCollectionStatus.ts'
 
@@ -29,10 +30,7 @@ const NAME_LINE_COMPACT = 1.3
 // The full hero always sits on game art or the dark band behind it, so its text is light in both themes; the
 // compact strip is a theme surface and takes the theme's ink.
 const ON_ART = '#ffffff'
-const ON_ART_85 = 'rgba(255, 255, 255, 0.85)'
-const NAME_GLOW = '0 1px 16px rgba(0, 0, 0, 0.6)'
 const DESC_FONT_PX = 13
-const DESC_SHADOW = '0 1px 8px rgba(0, 0, 0, 0.55)'
 const DOT = '·'
 const META_FONT_PX = 12
 const HERO_HEIGHT_PX = 150
@@ -57,8 +55,8 @@ function CollectionLine({ profile, game }: { profile: Profile; game: string }) {
       sx={{
         mt: 0.5,
         fontSize: META_FONT_PX + 1,
-        color: ON_ART_85,
-        textShadow: DESC_SHADOW,
+        color: ON_ART_TEXT,
+        textShadow: ON_ART_SHADOW,
         display: 'flex',
         alignItems: 'center',
         gap: 0.75,
@@ -141,7 +139,7 @@ function HeroName({
                 fontWeight: NAME_WEIGHT,
                 lineHeight: NAME_LINE_HEIGHT,
                 color: ON_ART,
-                textShadow: NAME_GLOW,
+                textShadow: ON_ART_SHADOW,
                 [compactAt]: {
                   fontSize: NAME_FONT_COMPACT_PX,
                   lineHeight: NAME_LINE_COMPACT,
@@ -162,8 +160,8 @@ function HeroName({
           sx={{
             mt: 0.5,
             fontSize: DESC_FONT_PX,
-            color: ON_ART_85,
-            textShadow: DESC_SHADOW,
+            color: ON_ART_TEXT,
+            textShadow: ON_ART_SHADOW,
             [compactAt]: { display: 'none' },
           }}
         >
