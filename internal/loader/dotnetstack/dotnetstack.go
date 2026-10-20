@@ -21,9 +21,11 @@ var (
 	unityFrame = regexp.MustCompile(`^([\w.<>` + "`" + `$+]+?)\.([^.\s(:]+)(?:\[[^\]]*\])? ?\(.*\(at .*\)\s*$`)
 	// patchFrame is a Harmony-generated method: DMD<...> wrapper frames, or a patched method renamed "..._Patch1".
 	patchFrame = regexp.MustCompile(`^\s+at (?:\(wrapper [^)]*\) )?(?:DMD<|[\w.<>+]*_Patch\d*\()`)
-	harmonyID  = regexp.MustCompile(`(?i)(?:harmony ?id|patch ?owner|patched by)\W+([A-Za-z0-9_][\w.\-]*)`)
-	stackEnd   = regexp.MustCompile(`^\s*--- End of (?:inner exception )?stack trace`)
-	logPrefix  = regexp.MustCompile(`^\[\d\d:\d\d:\d\d `)
+	// dmdTarget is the method a Harmony wrapper stands in for: "DMD<Namespace.Type::Method>".
+	dmdTarget = regexp.MustCompile(`DMD<([^>]+::[^>]+)>`)
+	harmonyID = regexp.MustCompile(`(?i)(?:harmony ?id|patch ?owner|patched by)\W+([A-Za-z0-9_][\w.\-]*)`)
+	stackEnd  = regexp.MustCompile(`^\s*--- End of (?:inner exception )?stack trace`)
+	logPrefix = regexp.MustCompile(`^\[\d\d:\d\d:\d\d `)
 	// inFile is what closes a frame: a file and line, or Mono's offset and module, or Unity's "(at module:0)".
 	inFile = regexp.MustCompile(` (?:in .*:line \d+|\[0x[0-9a-f]+\] in .*:\d+|\(at .*\))$`)
 )
@@ -125,4 +127,33 @@ func firstPatch(stack []string) string {
 		}
 	}
 	return ""
+}
+
+// Methods names the methods the stack below an exception line runs through, innermost first, as Harmony targets name
+// them ("Namespace.Type::Method"): each frame's method, and for a Harmony wrapper the method it stands in for. lines
+// start at the first line after the exception; the stack ends at the first line that is no frame.
+func Methods(lines []string) []string {
+	var out []string
+	for i, l := range lines {
+		l = strings.TrimRight(l, "\r")
+		if i == 0 && strings.TrimSpace(l) == "Stack trace:" {
+			continue
+		}
+		if m := dmdTarget.FindStringSubmatch(l); m != nil {
+			out = append(out, m[1])
+			continue
+		}
+		m := frameLine.FindStringSubmatch(l)
+		if m == nil {
+			m = unityFrame.FindStringSubmatch(l)
+		}
+		if m == nil {
+			if stackEnd.MatchString(l) {
+				continue
+			}
+			break
+		}
+		out = append(out, m[1]+"::"+m[2])
+	}
+	return out
 }

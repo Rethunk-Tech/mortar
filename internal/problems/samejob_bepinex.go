@@ -3,6 +3,7 @@ package problems
 import (
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
@@ -95,4 +96,39 @@ func packageFootprints(pkgs []profile.PackageRef, mods []framework.Mod) (map[str
 		}
 	}
 	return out, mods
+}
+
+// packagePatchers returns, for a stack's methods, the enabled packages whose plugin DLLs declare a Harmony patch on one of
+// them, by mod name and sorted. The DLLs are read on the first call, which only a ran error makes.
+func packagePatchers(pkgs []profile.PackageRef, mods []framework.Mod) func(methods []string) []string {
+	names := map[string]string{}
+	for _, m := range mods {
+		if m.Enabled {
+			names[m.Key] = m.Name
+		}
+	}
+	targets := sync.OnceValue(func() map[string][]string {
+		out := map[string][]string{} // patched method -> mod names
+		for _, p := range pkgs {
+			name, ok := names[p.Key]
+			if !ok {
+				continue
+			}
+			for _, dll := range dotnet.DLLs(p.Dir) {
+				patches, _ := dotnet.Patches(dll)
+				for _, patch := range patches {
+					out[patch.Target] = append(out[patch.Target], name)
+				}
+			}
+		}
+		return out
+	})
+	return func(methods []string) []string {
+		var out []string
+		for _, m := range methods {
+			out = append(out, targets()[m]...)
+		}
+		slices.Sort(out)
+		return slices.Compact(out)
+	}
 }

@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -40,7 +41,7 @@ func TestLoaderFailuresAttributeLogFindingsToPackages(t *testing.T) {
 	player := "NullReferenceException: boom\n  at Boombox.Plugin.Update () [0x00000] in <abc>:0\n"
 	known := map[string]framework.Mod{"fixture plugin 1.2.3": boombox}
 	for name, owners := range map[string]map[string]framework.Mod{"known": known, "unknown": {}} {
-		got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, player, func() map[string]framework.Mod { return owners })
+		got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, player, func() map[string]framework.Mod { return owners }, nil)
 		if len(got) != 3 || got[0].Plugin != "Fixture Plugin 1.2.3" || got[0].Kind != bepinex5.KindMissingDependency {
 			t.Fatalf("%s: failures = %+v", name, got)
 		}
@@ -51,6 +52,28 @@ func TestLoaderFailuresAttributeLogFindingsToPackages(t *testing.T) {
 		if got[0].Key != wantKey || got[0].Name != boombox.Name && wantKey != "" {
 			t.Fatalf("%s: owner = %q %q", name, got[0].Key, got[0].Name)
 		}
+	}
+}
+
+// An error a plugin hit while running names the method it was thrown in and the other mods that patch a method on
+// its stack, not the mod it is filed under.
+func TestRanErrorNamesWhereItWasThrownAndWhoPatchesIt(t *testing.T) {
+	dir := t.TempDir()
+	testfs.WriteFile(t, dir, "BepInEx/LogOutput.log", "")
+	player := "NullReferenceException: boom\n  at Boombox.Plugin.Update () [0x00000] in <abc>:0\n" +
+		"  at (wrapper dynamic-method) OccludeAudio.DMD<OccludeAudio::Update>(OccludeAudio)\n"
+	owners := func() map[string]framework.Mod {
+		return map[string]framework.Mod{"boombox": {Key: "boombox", Name: "Boombox"}}
+	}
+	patchers := func(methods []string) []string {
+		if slices.Contains(methods, "OccludeAudio::Update") {
+			return []string{"Boombox", "Sound Tweaks"}
+		}
+		return nil
+	}
+	got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, player, owners, patchers)
+	if len(got) != 1 || got[0].Thrown != "Boombox.Plugin.Update" || !slices.Equal(got[0].PatchedBy, []string{"Sound Tweaks"}) {
+		t.Fatalf("rows %+v", got)
 	}
 }
 
@@ -109,14 +132,14 @@ func TestSkippedOlderCopyNoPackageOwnsGetsARemovablePath(t *testing.T) {
 		"[14:35:39.1094737] [Warning:   BepInEx] Skipping [Fixture Plugin 1.2.3] because a newer version exists (Fixture Plugin 1.3.0)\n")
 	testfs.WriteFile(t, dir, "BepInEx/plugins/old/Fixture.dll", string(dll))
 	none := func() map[string]framework.Mod { return nil }
-	got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, "", none)
+	got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, "", none, nil)
 	if len(got) != 1 || got[0].Kind != bepinex5.KindDuplicateGUID || got[0].Path != "BepInEx/plugins/old/Fixture.dll" {
 		t.Fatalf("failures = %+v", got)
 	}
 	owned := func() map[string]framework.Mod {
 		return map[string]framework.Mod{"fixture plugin 1.2.3": inst("k", "Fixture", "1.2.3", true)}
 	}
-	if got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, "", owned); len(got) != 1 || got[0].Path != "" {
+	if got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, "", owned, nil); len(got) != 1 || got[0].Path != "" {
 		t.Fatalf("an owned copy offered a file to delete: %+v", got)
 	}
 }
@@ -205,7 +228,7 @@ func TestLoaderFailuresDropAnUnversionedPluginNoDllDeclaresAnyMore(t *testing.T)
 	testfs.WriteFile(t, dir, "BepInEx/LogOutput.log", log)
 	testfs.WriteFile(t, dir, "BepInEx/plugins/fixture/Fixture.dll", string(dll))
 	run := func() []LoadFailure {
-		return loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, "", func() map[string]framework.Mod { return map[string]framework.Mod{} })
+		return loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, "", func() map[string]framework.Mod { return map[string]framework.Mod{} }, nil)
 	}
 	if got := run(); len(got) != 1 {
 		t.Fatalf("the plugin is still there: %+v", got)
@@ -228,7 +251,7 @@ func TestLoaderFailuresDropWhatTheProfileHasSinceFixed(t *testing.T) {
 	testfs.WriteFile(t, dir, "BepInEx/LogOutput.log", log)
 	testfs.WriteFile(t, dir, "BepInEx/plugins/fixture/Fixture.dll", string(dll))
 	run := func(owners map[string]framework.Mod) []LoadFailure {
-		return loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, "", func() map[string]framework.Mod { return owners })
+		return loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, "", func() map[string]framework.Mod { return owners }, nil)
 	}
 	if got := run(map[string]framework.Mod{}); len(got) != 1 {
 		t.Fatalf("a dependency still missing: %+v", got)
@@ -252,7 +275,7 @@ func TestAttributeKeepsErrorsAfterLoadApartAndOnePerMod(t *testing.T) {
 		{Kind: bepinex5.KindPluginError, Plugin: "FacilityMeltdown", Message: "a"},
 		{Kind: bepinex5.KindUnityException, Plugin: "FacilityMeltdown", Message: "b"},
 		{Kind: bepinex5.KindLoadException, Plugin: "Broken", Message: "c"},
-	}, owners)
+	}, owners, nil)
 	if len(got) != 2 || !got[0].Ran || got[0].Errors != 2 || got[1].Ran || got[1].Plugin != "Broken" {
 		t.Fatalf("rows %+v", got)
 	}

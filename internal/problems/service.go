@@ -392,7 +392,7 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 		r.Broken = append(r.Broken, s.sourceFlagged(ctx, gameID, env.Nexus.Domain, enabledMods)...)
 		if l, ok := game.LoaderOf(gameID, s.profiles.LoaderID(gameID, id)); ok {
 			if dir, err := s.profiles.ProfileDir(gameID, id); err == nil {
-				r.LoadFailures = loaderFailures(l, loader.ProfileView{Game: gameID, Dir: dir}, s.playerLog(gameID, id, l), owners)
+				r.LoadFailures = loaderFailures(l, loader.ProfileView{Game: gameID, Dir: dir}, s.playerLog(gameID, id, l), owners, packagePatchers(pkgs, mods))
 			}
 			if f, bad := gameVersionFailure(gameID, l, env); bad {
 				r.LoadFailures = append(r.LoadFailures, f)

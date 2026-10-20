@@ -1,6 +1,9 @@
 package dotnetstack
 
-import "testing"
+import (
+	"slices"
+	"testing"
+)
 
 func TestBlamesReadsEachRuntimesFrameFormat(t *testing.T) {
 	cases := []struct {
@@ -45,5 +48,21 @@ func TestBlamesIgnoresStacksWithoutAModFrame(t *testing.T) {
 	log := "NullReferenceException: x\nStack trace:\nUnityEngine.GameObject.Find (System.String name) (at <a>:0)\nTMPro.TMP_Text.Update () (at <b>:0)\n"
 	if got := Blames(log, Unity); len(got) != 0 {
 		t.Fatalf("got %+v", got)
+	}
+}
+
+// A Unity stack through a Harmony wrapper names the patched method; the stack ends at the first line that is no frame.
+func TestMethodsReadsFramesAndHarmonyWrappers(t *testing.T) {
+	stack := []string{
+		"Stack trace:",
+		"OccludeAudio.Update () (at <1a2b>:0)",
+		"(wrapper dynamic-method) OccludeAudio.DMD<OccludeAudio::Update>(OccludeAudio)",
+		"  at CoolMod.Patches.Postfix () [0x0001f] in <def>:0",
+		"",
+		"  at Not.Part.Of () [0x0] in <x>:0",
+	}
+	want := []string{"OccludeAudio::Update", "OccludeAudio::Update", "CoolMod.Patches::Postfix"}
+	if got := Methods(stack); !slices.Equal(got, want) {
+		t.Errorf("Methods = %v, want %v", got, want)
 	}
 }

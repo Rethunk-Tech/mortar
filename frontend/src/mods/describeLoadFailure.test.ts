@@ -35,6 +35,18 @@ test('a plugin that loaded and then threw says so, and is not counted as a probl
   expect(problemCount(result)).toBe(1)
 })
 
+test('a ran error names where it was thrown and the other mods that patch it', () => {
+  const ran = { ...row('unity-exception', 'NullReferenceException'), ran: true, errors: 1 }
+  expect(
+    describeLoadFailure({ ...ran, thrown: 'OccludeAudio.Update', patchedBy: ['A', 'B'] }),
+  ).toBe(
+    'ModsEnabled loaded and logged an error while running. It was thrown in OccludeAudio.Update, which A and B also patch.',
+  )
+  expect(describeLoadFailure({ ...ran, thrown: 'OccludeAudio.Update' })).toBe(
+    'ModsEnabled loaded and logged an error while running. It was thrown in OccludeAudio.Update.',
+  )
+})
+
 test("a run's errors count only when the run crashed", () => {
   const runError = { key: 'k', id: 'x', name: 'X', count: 1, first: '', runId: 'r', updated: false }
   const calm = { runErrors: [{ ...runError, severe: false }] } as unknown as Result

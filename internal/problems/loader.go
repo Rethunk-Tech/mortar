@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
+	"github.com/Rethunk-Tech/mortar/internal/loader/dotnetstack"
 	"github.com/Rethunk-Tech/mortar/internal/loader/gamelog"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -38,6 +39,10 @@ type LoadFailure struct {
 	// kind are one row, the first with Errors counting them all.
 	Ran    bool `json:"ran,omitempty"`
 	Errors int  `json:"errors,omitempty"`
+	// Thrown is the method a ran error's stack was thrown in, "Type.Method", and PatchedBy the other enabled mods whose
+	// Harmony patches target a method on that stack: the suspects when the code that threw is the game's.
+	Thrown    string   `json:"thrown,omitempty"`
+	PatchedBy []string `json:"patchedBy,omitempty"`
 }
 
 // pluginsDir is where BepInEx loads plugins from, below the profile folder.
@@ -45,7 +50,7 @@ const pluginsDir = "BepInEx/plugins"
 
 // loaderFailures runs the loader's log analyzers over its log in the profile and the Unity player log text, and attributes each finding to an enabled
 // package. A loader without a log, a missing log or a log without findings yields none.
-func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners func() map[string]framework.Mod) []LoadFailure {
+func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners func() map[string]framework.Mod, patchers func(methods []string) []string) []LoadFailure {
 	logs, ok := l.(loader.WithLogs)
 	if !ok {
 		return nil
@@ -62,7 +67,23 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners
 	for _, a := range logs.Analyzers() {
 		found = append(found, a.Analyze(loader.Logs{Loader: string(raw), Player: player})...)
 	}
-	out := attribute(found, owners)
+	logLines := map[string][]string{}
+	stackOf := func(f loader.Finding) []string {
+		text := string(raw)
+		if f.Source == "Player.log" {
+			text = player
+		}
+		lines, ok := logLines[f.Source]
+		if !ok {
+			lines = strings.Split(text, "\n")
+			logLines[f.Source] = lines
+		}
+		if f.Line <= 0 || f.Line > len(lines) {
+			return nil
+		}
+		return dotnetstack.Methods(lines[f.Line:])
+	}
+	out := attribute(found, owners, func(lf *LoadFailure, f loader.Finding) { explain(lf, stackOf(f), patchers) })
 	if l.ID() == bepinex5.ID {
 		out = dropFixed(out, filepath.Join(p.Dir, filepath.FromSlash(pluginsDir)), owners)
 	}
@@ -138,7 +159,7 @@ func (s *Service) RemoveSkippedPlugin(gameID, id, path string) error {
 }
 
 // attribute turns findings into load failures, naming the installed package behind each plugin the owners know.
-func attribute(found []loader.Finding, owners func() map[string]framework.Mod) []LoadFailure {
+func attribute(found []loader.Finding, owners func() map[string]framework.Mod, explainRan func(*LoadFailure, loader.Finding)) []LoadFailure {
 	if len(found) == 0 {
 		return nil
 	}
@@ -161,6 +182,9 @@ func attribute(found []loader.Finding, owners func() map[string]framework.Mod) [
 			}
 			ranAt[who] = len(out)
 			lf.Ran, lf.Errors = true, 1
+			if explainRan != nil {
+				explainRan(&lf, f)
+			}
 		}
 		out = append(out, lf)
 	}
@@ -217,7 +241,7 @@ func pluginOwners(mods []framework.Mod) map[string]framework.Mod {
 // gameLogFailures reads the game's own log, for a game whose mods have no loader log: Vintage Story's mod loader writes
 // its failures there under the mod's id.
 func gameLogFailures(text string, mods []framework.Mod) []LoadFailure {
-	return attribute(gamelog.Analyze(text), func() map[string]framework.Mod { return modIDOwners(mods) })
+	return attribute(gamelog.Analyze(text), func() map[string]framework.Mod { return modIDOwners(mods) }, nil)
 }
 
 // modIDOwners maps the lower-cased id and name of each enabled mod to it, which is how such a log names a mod.
@@ -230,4 +254,16 @@ func modIDOwners(mods []framework.Mod) map[string]framework.Mod {
 		}
 	}
 	return owners
+}
+
+// explain names where a ran error was thrown and the other mods that patch a method on its stack.
+func explain(lf *LoadFailure, methods []string, patchers func([]string) []string) {
+	if len(methods) == 0 {
+		return
+	}
+	lf.Thrown = strings.Replace(methods[0], "::", ".", 1)
+	if patchers == nil {
+		return
+	}
+	lf.PatchedBy = slices.DeleteFunc(patchers(methods), func(name string) bool { return name == lf.Name })
 }

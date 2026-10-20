@@ -5506,6 +5506,10 @@ msgstr "{0} folder"
 msgid "Meadowlands farm"
 msgstr "Meadowlands farm"
 
+#: src/mods/describe.ts
+msgid "It was thrown in {thrown}."
+msgstr "It was thrown in {thrown}."
+
 #: src/mods/ConfigPresets.tsx
 msgid "Save as preset"
 msgstr "Save as preset"
@@ -13259,6 +13263,11 @@ msgstr "Clear search"
 #: src/console/PerformancePanel.tsx
 msgid "Start the game, then start measuring here to time each mod's event handlers per frame."
 msgstr "Start the game, then start measuring here to time each mod's event handlers per frame."
+
+#. placeholder {0}: patchedBy.length
+#: src/mods/describe.ts
+msgid "{0, plural, one {It was thrown in {thrown}, which {mods} also patches.} other {It was thrown in {thrown}, which {mods} also patch.}}"
+msgstr "{0, plural, one {It was thrown in {thrown}, which {mods} also patches.} other {It was thrown in {thrown}, which {mods} also patch.}}"
 
 #: src/mods/describe.ts
 msgid "{name} is obsolete: {summary}"

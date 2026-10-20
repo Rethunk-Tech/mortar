@@ -262,6 +262,21 @@ function describeDuplicate(d: Extract<Problem, { kind: 'duplicate' }>['duplicate
 
 type LoadFailureRow = Extract<Problem, { kind: 'loadFailure' }>['loadFailure']
 
+// Where a ran error was thrown, and the other mods that patch a method on its stack: those are suspects too.
+function ranWhere(thrown: string, patchedBy: readonly string[]): string {
+  if (thrown === '') {
+    return ''
+  }
+  if (patchedBy.length === 0) {
+    return i18n._(msg`It was thrown in ${thrown}.`)
+  }
+  const mods = listNames(patchedBy)
+  return plural(patchedBy.length, {
+    one: `It was thrown in ${thrown}, which ${mods} also patches.`,
+    other: `It was thrown in ${thrown}, which ${mods} also patch.`,
+  })
+}
+
 // A game-setting row's message is the catalog's own wording for the setting that is off.
 function describeLoadFailure({
   plugin,
@@ -271,13 +286,16 @@ function describeLoadFailure({
   message,
   ran,
   errors,
+  thrown,
+  patchedBy,
 }: LoadFailureRow): string {
   if (ran) {
     const who = name === '' ? plugin : name
-    return plural(errors ?? 1, {
+    const logged = plural(errors ?? 1, {
       one: `${who} loaded and logged an error while running.`,
       other: `${who} loaded and logged # errors while running.`,
     })
+    return [logged, ranWhere(thrown ?? '', patchedBy ?? [])].filter(Boolean).join(' ')
   }
   if (kind === 'game-setting') {
     return message
