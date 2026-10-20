@@ -31,7 +31,10 @@ import {
   UserCheck,
 } from 'lucide-react'
 import { memo, useEffect, useRef, useState } from 'react'
-import { SetListGroupBy } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import {
+  SetByKey,
+  SetListGroupBy,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { useTab } from '../game/tab.ts'
 import { useInstall } from '../install/store.ts'
@@ -81,6 +84,11 @@ const iconWhenCompact = {
     '& .MuiButton-endIcon': { display: 'none' },
     '& .label': { display: 'none' },
   },
+}
+
+function persistImplicitView(view: string) {
+  useSettings.setState({ implicitModsView: view })
+  SetByKey('implicitModsView', view, '').catch(reportUnexpected)
 }
 
 function persistGroupBy(by: GroupBy) {
@@ -145,7 +153,7 @@ function ImplicitViewItems() {
           role="menuitemradio"
           aria-checked={view === item.id}
           selected={view === item.id}
-          onClick={() => useSettings.setState({ implicitModsView: item.id })}
+          onClick={() => persistImplicitView(item.id)}
         >
           <ListItemIcon sx={{ color: 'inherit' }}>
             {view === item.id ? <Check size={16} aria-hidden={true} /> : null}
