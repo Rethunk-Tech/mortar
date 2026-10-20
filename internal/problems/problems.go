@@ -168,18 +168,20 @@ type Result struct {
 	Settings       []framework.SettingHint   `json:"settings"`
 	Cleanup        []framework.Cleanup       `json:"cleanup,omitempty"`
 	// Supporting are the keys of mods that only supply assets for others; it counts as no problem.
-	Supporting    []string              `json:"supporting,omitempty"`
-	Compat        []Compat              `json:"compat,omitempty"`
-	Redundant     []framework.Redundant `json:"redundant,omitempty"`
-	RunErrors     []RunError            `json:"runErrors"`
-	LoadFailures  []LoadFailure         `json:"loadFailures,omitempty"`
-	PluginClashes []PluginClash         `json:"pluginClashes,omitempty"`
-	Deprecated    []DeprecatedPackage   `json:"deprecated,omitempty"`
-	Drift         []profile.Drift       `json:"drift,omitempty"`
-	Damaged       []Damaged             `json:"damaged,omitempty"`
-	Dismissed     []DismissedProblem    `json:"dismissed"`
-	Unknown       bool                  `json:"unknown"`
-	Timings       []CheckTiming         `json:"timings,omitempty"`
+	Supporting   []string              `json:"supporting,omitempty"`
+	Compat       []Compat              `json:"compat,omitempty"`
+	Redundant    []framework.Redundant `json:"redundant,omitempty"`
+	RunErrors    []RunError            `json:"runErrors"`
+	LoadFailures []LoadFailure         `json:"loadFailures,omitempty"`
+	// Replaced are the files sync moved aside for a package's own; they are information, not a count.
+	Replaced      []profile.ReplacedFile `json:"replaced,omitempty"`
+	PluginClashes []PluginClash          `json:"pluginClashes,omitempty"`
+	Deprecated    []DeprecatedPackage    `json:"deprecated,omitempty"`
+	Drift         []profile.Drift        `json:"drift,omitempty"`
+	Damaged       []Damaged              `json:"damaged,omitempty"`
+	Dismissed     []DismissedProblem     `json:"dismissed"`
+	Unknown       bool                   `json:"unknown"`
+	Timings       []CheckTiming          `json:"timings,omitempty"`
 }
 
 // CheckTiming is one check family's duration and item count from the last Problems run for a profile.

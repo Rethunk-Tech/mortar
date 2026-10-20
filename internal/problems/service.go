@@ -558,7 +558,28 @@ func (s *Service) withDismissed(gameID, id string, r Result) Result {
 		runID, _ := s.Runs.LastRunID(gameID, id)
 		r.LoadFailures = hideDismissedLoadFailures(r.LoadFailures, runID, tokens)
 	}
+	if s.profiles != nil {
+		r.Replaced, _ = s.profiles.ReplacedFiles(gameID, id)
+	}
 	return r
+}
+
+// RestoreReplaced puts one replaced file back over the package's own and keeps it as a changed copy.
+func (s *Service) RestoreReplaced(_ context.Context, gameID, id, path string) error {
+	if err := s.profiles.RestoreReplaced(gameID, id, path); err != nil {
+		return err
+	}
+	s.ForgetCached()
+	return nil
+}
+
+// DeleteReplaced removes every file sync replaced in the profile.
+func (s *Service) DeleteReplaced(_ context.Context, gameID, id string) error {
+	if err := s.profiles.DeleteReplaced(gameID, id); err != nil {
+		return err
+	}
+	s.ForgetCached()
+	return nil
 }
 
 // DismissLoadFailure hides one load failure row of the profile's newest run until the next run is recorded.

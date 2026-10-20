@@ -31,6 +31,7 @@ import { problemSections, type Row } from './problemGroups.ts'
 import { formatProblemReport, whyKeysOf } from './problemReport.ts'
 import { chosenSection, type SectionTab, useProblemSection } from './problemSection.ts'
 import { ERROR_SECTIONS, isDismissedRow, useRowText, useSectionTitle } from './problemText.ts'
+import { ReplacedSection } from './ReplacedSection.tsx'
 import { useRedundantRows } from './redundantReason.ts'
 import { CheckTimings, SlowStartupSection } from './SlowStartupSection.tsx'
 import { useSlowStartups } from './slowStartups.ts'
@@ -127,6 +128,7 @@ function useProblemTabs({
   redundantDismissed,
   redundantTokens,
   cleanup,
+  replaced,
   cosmeticConflicts,
   sectionExtras,
 }: {
@@ -136,6 +138,7 @@ function useProblemTabs({
   redundantDismissed: RedundantRows
   redundantTokens: Map<string, string>
   cleanup: Parameters<typeof CleanupSection>[0]['cleanup']
+  replaced: Parameters<typeof ReplacedSection>[0]['files']
   cosmeticConflicts: string
   sectionExtras: (section: ReturnType<typeof problemSections>[number]) => { action?: SectionAction }
 }): ProblemTab[] {
@@ -188,6 +191,13 @@ function useProblemTabs({
       errors: false,
       body: <CleanupSection cleanup={cleanup} />,
     },
+    {
+      id: 'replaced',
+      label: t`Replaced`,
+      count: replaced.length,
+      errors: false,
+      body: <ReplacedSection files={replaced} />,
+    },
   ].filter((tab: ProblemTab) => tab.count > 0 || tab.keep === true)
 }
 
@@ -202,6 +212,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
 
   const sections = problemSections(result)
   const cleanup = result.cleanup ?? []
+  const replaced = result.replaced ?? []
   const compat = result.compat ?? []
   const redundant = redundantRows(result.redundant ?? [])
   const dismissedRedundant = (result.dismissed ?? []).flatMap((d) =>
@@ -223,7 +234,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
       ) ?? []
   const empty =
     sections.filter((s) => s.id !== 'dismissed').length === 0 &&
-    cleanup.length + redundant.length + compat.length === 0 &&
+    cleanup.length + redundant.length + compat.length + replaced.length === 0 &&
     !result.unknown
 
   const sectionExtras = (section: (typeof sections)[number]): { action?: SectionAction } => {
@@ -257,6 +268,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
     redundantDismissed,
     redundantTokens,
     cleanup,
+    replaced,
     cosmeticConflicts,
     sectionExtras,
   })

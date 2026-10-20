@@ -60,3 +60,48 @@ func TestAnUnrecordedDifferingCopyIsReplacedAndKept(t *testing.T) {
 		t.Fatalf("the replaced copy came back: %q", got)
 	}
 }
+
+func TestReplacedFilesCanBeRestoredAsAChangedCopyOrDeleted(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, _ := e.Create(folderGame, "S")
+	zip := zipOf(t, "a.zip", map[string]string{"mc.package": "store bytes"})
+	if _, err := e.InstallSource(t.Context(), folderGame, p.ID, zip, cfSource(10)); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.SyncPackages(folderGame, p.ID); err != nil {
+		t.Fatal(err)
+	}
+	dir, _ := e.ProfileDir(folderGame, p.ID)
+	copyPath := filepath.Join(dir, "Mods", "mc.package")
+	if err := os.WriteFile(copyPath, []byte("old bytes"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove(filepath.Join(dir, placedFile)); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.SyncPackages(folderGame, p.ID); err != nil {
+		t.Fatal(err)
+	}
+	got, err := e.ReplacedFiles(folderGame, p.ID)
+	if err != nil || len(got) != 1 || got[0].Path != "Mods/mc.package" || got[0].Size != int64(len("old bytes")) {
+		t.Fatalf("replaced = %+v, %v", got, err)
+	}
+	if err := e.RestoreReplaced(folderGame, p.ID, "Mods/mc.package"); err != nil {
+		t.Fatal(err)
+	}
+	for range 2 {
+		if err := e.SyncPackages(folderGame, p.ID); err != nil {
+			t.Fatal(err)
+		}
+		if b, _ := fsx.ReadFile(copyPath); string(b) != "old bytes" {
+			t.Fatalf("a restored file was replaced again: %q", b)
+		}
+	}
+	if left, _ := e.ReplacedFiles(folderGame, p.ID); len(left) != 0 {
+		t.Fatalf("restore left %+v", left)
+	}
+	if err := e.DeleteReplaced(folderGame, p.ID); err != nil {
+		t.Fatal(err)
+	}
+}

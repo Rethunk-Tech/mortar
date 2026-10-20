@@ -692,7 +692,7 @@ msgstr "{0, plural, one {Applied the curator's choices for # mod and {1, plural,
 msgid "Startup and window"
 msgstr "Startup and window"
 
-#: src/mods/ProblemsTab.tsx:341
+#: src/mods/ProblemsTab.tsx:353
 msgid "Turns mods off in halves and relaunches until the crash stops"
 msgstr "Turns mods off in halves and relaunches until the crash stops"
 
@@ -1001,6 +1001,11 @@ msgstr "{0} was last played with {1}"
 #: src/mods/updateReview/OptionalUpdates.tsx:30
 msgid "{n, plural, one {Also update # optional file} other {Also update # optional files}}"
 msgstr "{n, plural, one {Also update # optional file} other {Also update # optional files}}"
+
+#. placeholder {0}: files.length
+#: src/mods/ReplacedSection.tsx:67
+msgid "{0, plural, one {Replaced # old file Mortar did not install} other {Replaced # old files Mortar did not install}}"
+msgstr "{0, plural, one {Replaced # old file Mortar did not install} other {Replaced # old files Mortar did not install}}"
 
 #: src/settings/prefCopy.ts:207
 msgid "Start the game without a backup."
@@ -2974,7 +2979,7 @@ msgstr "{gameName} save backups"
 msgid "Unofficial update"
 msgstr "Unofficial update"
 
-#: src/mods/ProblemsTab.tsx:370
+#: src/mods/ProblemsTab.tsx:382
 msgid "No problems to copy."
 msgstr "No problems to copy."
 
@@ -3169,8 +3174,8 @@ msgstr "{label} is replaced by the copy in this backup. The current {label} is b
 msgid "No enabled mods"
 msgstr "No enabled mods"
 
-#: src/mods/ProblemsTab.tsx:186
-#: src/mods/ProblemsTab.tsx:407
+#: src/mods/ProblemsTab.tsx:189
+#: src/mods/ProblemsTab.tsx:419
 msgid "Cleanup"
 msgstr "Cleanup"
 
@@ -4872,7 +4877,7 @@ msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
 #: src/mods/CleanupSection.tsx:72
-#: src/mods/ProblemsTab.tsx:411
+#: src/mods/ProblemsTab.tsx:423
 msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
@@ -5574,7 +5579,7 @@ msgstr "Library"
 msgid "Connection"
 msgstr "Connection"
 
-#: src/mods/ProblemsTab.tsx:429
+#: src/mods/ProblemsTab.tsx:441
 msgid "Harmless"
 msgstr "Harmless"
 
@@ -5826,6 +5831,10 @@ msgstr "A plain icon (Thunderstore needs a 256x256 PNG)"
 #: src/settings/sections/Appearance.tsx:217
 msgid "Theme"
 msgstr "Theme"
+
+#: src/mods/ReplacedSection.tsx:85
+msgid "Mortar replaced these with the mods' own files. Deleting them cannot be undone."
+msgstr "Mortar replaced these with the mods' own files. Deleting them cannot be undone."
 
 #: src/settings/prefCopy.ts:192
 msgid "When Mortar makes a save backup before launching"
@@ -6101,8 +6110,8 @@ msgstr "Read the release notes on GitHub"
 msgid "Backups ({count})"
 msgstr "Backups ({count})"
 
-#: src/mods/ProblemsTab.tsx:270
-#: src/mods/ProblemsTab.tsx:450
+#: src/mods/ProblemsTab.tsx:282
+#: src/mods/ProblemsTab.tsx:462
 msgid "Problem sections"
 msgstr "Problem sections"
 
@@ -6375,8 +6384,8 @@ msgstr "Lavender"
 msgid "Windows' antivirus through AMSI; clamd on Linux when it is running."
 msgstr "Windows' antivirus through AMSI; clamd on Linux when it is running."
 
-#: src/mods/ProblemsTab.tsx:172
-#: src/mods/ProblemsTab.tsx:420
+#: src/mods/ProblemsTab.tsx:175
+#: src/mods/ProblemsTab.tsx:432
 msgid "Redundant"
 msgstr "Redundant"
 
@@ -6597,6 +6606,10 @@ msgstr "Mortar cannot download {0} again."
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
+#: src/mods/ReplacedSection.tsx:42
+msgid "Restore {path}"
+msgstr "Restore {path}"
+
 #: src/launch/LaunchLayer.tsx:270
 #: src/launch/LaunchLayer.tsx:271
 msgid "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
@@ -6645,6 +6658,10 @@ msgstr "How to send it"
 #: src/mods/Toolbar.tsx:485
 msgid "Import a shared profile…"
 msgstr "Import a shared profile…"
+
+#: src/mods/ProblemsTab.tsx:196
+msgid "Replaced"
+msgstr "Replaced"
 
 #: src/settings/startupChecks.ts:35
 msgid "Mortar closed unexpectedly last time"
@@ -7246,7 +7263,7 @@ msgstr "Share as r2modman code…"
 msgid "Load order"
 msgstr "Load order"
 
-#: src/mods/ProblemsTab.tsx:165
+#: src/mods/ProblemsTab.tsx:168
 msgid "Slow startup"
 msgstr "Slow startup"
 
@@ -7725,7 +7742,7 @@ msgstr "Track"
 msgid "The update for {0} did not finish"
 msgstr "The update for {0} did not finish"
 
-#: src/mods/ProblemsTab.tsx:105
+#: src/mods/ProblemsTab.tsx:106
 #: src/mods/problemText.ts:48
 msgid "Dismissed"
 msgstr "Dismissed"
@@ -7945,7 +7962,7 @@ msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
 #: src/mods/AssetMapDialog.tsx:229
-#: src/mods/ProblemsTab.tsx:359
+#: src/mods/ProblemsTab.tsx:371
 msgid "Asset map"
 msgstr "Asset map"
 
@@ -8365,7 +8382,7 @@ msgstr "{label} is set per profile"
 #: src/commandPalette/paletteLabels.ts:13
 #: src/console/CrashDialog.tsx:124
 #: src/console/CrashDialog.tsx:202
-#: src/mods/ProblemsTab.tsx:352
+#: src/mods/ProblemsTab.tsx:364
 msgid "Find the mod that crashes the game…"
 msgstr "Find the mod that crashes the game…"
 
@@ -9566,6 +9583,8 @@ msgid "These come from outside Nexus, so Mortar does not download them."
 msgstr "These come from outside Nexus, so Mortar does not download them."
 
 #: src/mods/OldFilesCallouts.tsx:245
+#: src/mods/ReplacedSection.tsx:70
+#: src/mods/ReplacedSection.tsx:86
 msgid "Delete all"
 msgstr "Delete all"
 
@@ -9682,8 +9701,8 @@ msgid "Main only"
 msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:64
-#: src/mods/ProblemsTab.tsx:158
-#: src/mods/ProblemsTab.tsx:427
+#: src/mods/ProblemsTab.tsx:161
+#: src/mods/ProblemsTab.tsx:439
 msgid "Compatibility"
 msgstr "Compatibility"
 
@@ -9972,7 +9991,7 @@ msgstr "No mods have logged yet"
 msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
-#: src/mods/ProblemsTab.tsx:53
+#: src/mods/ProblemsTab.tsx:54
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
@@ -10759,7 +10778,7 @@ msgid "Fits {name}"
 msgstr "Fits {name}"
 
 #: src/console/PerformancePanel.tsx:156
-#: src/mods/ProblemsTab.tsx:432
+#: src/mods/ProblemsTab.tsx:444
 #: src/mods/ReportToAuthorButton.tsx:202
 #: src/settings/sections/AboutDiagnostics.tsx:140
 #: src/shell/BugReportDialog.tsx:68
@@ -10987,7 +11006,7 @@ msgid "{0, plural, one {# save} other {# saves}}"
 msgstr "{0, plural, one {# save} other {# saves}}"
 
 #: src/console/PerformancePanelParts.tsx:230
-#: src/mods/ProblemsTab.tsx:367
+#: src/mods/ProblemsTab.tsx:379
 #: src/settings/sections/AboutDiagnostics.tsx:227
 msgid "Copy report"
 msgstr "Copy report"
@@ -12121,6 +12140,10 @@ msgstr "Could not repair {name}"
 msgid "Paste a link…"
 msgstr "Paste a link…"
 
+#: src/mods/ReplacedSection.tsx:84
+msgid "Delete the replaced files?"
+msgstr "Delete the replaced files?"
+
 #: src/settings/prefCopyModsView.ts:34
 msgid "Author on cards"
 msgstr "Author on cards"
@@ -12608,7 +12631,7 @@ msgstr "Redo update"
 msgid "Token"
 msgstr "Token"
 
-#: src/mods/ProblemsTab.tsx:457
+#: src/mods/ProblemsTab.tsx:469
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -13396,7 +13419,7 @@ msgstr "Until the game's first scene has loaded"
 #: src/mods/EnableRequirementsDialog.tsx:20
 #: src/mods/EnableRequirementsDialog.tsx:55
 #: src/mods/LoadOrderTab.tsx:66
-#: src/mods/ProblemsTab.tsx:410
+#: src/mods/ProblemsTab.tsx:422
 msgid "Unknown mod"
 msgstr "Unknown mod"
 
@@ -13482,7 +13505,7 @@ msgstr "A preset with this name already exists."
 
 #. placeholder {0}: installable.length
 #. placeholder {0}: wants.length
-#: src/mods/ProblemsTab.tsx:233
+#: src/mods/ProblemsTab.tsx:244
 #: src/saves/lackChips.tsx:113
 msgid "Add all {0}"
 msgstr "Add all {0}"
@@ -13499,7 +13522,7 @@ msgstr "Could not choose the folder"
 msgid "{names} can't be reached; showing what Mortar saved ({asOf})"
 msgstr "{names} can't be reached; showing what Mortar saved ({asOf})"
 
-#: src/mods/ProblemsTab.tsx:305
+#: src/mods/ProblemsTab.tsx:317
 msgid "No problems found"
 msgstr "No problems found"
 
@@ -14885,6 +14908,7 @@ msgstr "Installers ask as usual; Premium accounts also get the curator's choices
 #: src/mods/CleanupSection.tsx:138
 #: src/mods/problemFix/RestoreButton.tsx:17
 #: src/mods/problemFixButtons.tsx:218
+#: src/mods/ReplacedSection.tsx:43
 #: src/saves/BackupsDialog.tsx:254
 #: src/saves/SaveBackupsButton.tsx:53
 #: src/saves/SaveBackupsButton.tsx:95
@@ -15299,7 +15323,7 @@ msgstr "Alert"
 msgid "1 time"
 msgstr "1 time"
 
-#: src/mods/ProblemsTab.tsx:307
+#: src/mods/ProblemsTab.tsx:319
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 
