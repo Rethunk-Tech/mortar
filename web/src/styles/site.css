@@ -54,10 +54,11 @@ code {
   font-size: 0.9em;
 }
 
+/* Only the sides: a section's own top and bottom padding must survive whatever order the stylesheets load in. */
 .wrap {
   max-width: 82rem;
-  margin: 0 auto;
-  padding: 0 24px;
+  margin-inline: auto;
+  padding-inline: 24px;
 }
 
 .visually-hidden {

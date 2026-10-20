@@ -332,7 +332,7 @@
 
 @media (max-width: 520px) {
   .wrap {
-    padding: 0 16px;
+    padding-inline: 16px;
   }
   .nav .btn.primary {
     display: none;
