@@ -186,6 +186,7 @@ A profile is one set of mods. Switching profiles never touches the game folder's
 - **Switch, rename, duplicate, delete:** from the Profiles page or the profile's menu. Play always starts the open profile. Deleted profiles wait in **Recently deleted** (**Restore**, **Delete permanently**).
 - **Freeze:** the profile menu's **Freeze this profile** holds its mods on their versions and offers no updates until **Unfreeze**.
 - **A game that is not listed:** the game list's **Add a game…** takes a name, the game's program and how it is modded (BepInEx 5, BepInEx 6, MelonLoader, Shimloader or a Mods folder). It stays on this computer and has no mod site, so add its mods from archives. A Shimloader game (an Unreal Engine game such as Voices of the Void, whose program to choose is the one in `Binaries/Win64`) also names its Thunderstore community, and its mods come from there. **Remove** in the same dialog forgets it and leaves its folder and profiles on disk.
+- **Open profile folder:** Home's **Profile** menu opens the profile's folder in your file manager.
 - **Profile folder:** the profile menu's **Profile folder…** moves a profile to a folder of your choice, such as one on another drive, and back. The move copies the profile first and checks nothing is running; a profile whose drive is not connected says so there. On another drive its mods are copies instead of links into the shared store.
 - **Share:** **Share profile**, then **Copy link** (names the mods and their Nexus or GitHub files, with pins, groups and install reasons) or save a `.mortar` file (also carries settings and notes; suits large profiles). **Share › Mod list** can also write a Thunderstore dependency string list. For a Thunderstore game, **Save .r2z…** writes an r2modman or Gale profile file without posting a public code.
 - **Import:** **Import** on the Profiles page: **From a link or file…**, **From the game's Mods folder…**, **Restore from a file…** (a **Back up to a file…** backup) or **Import…**. Mortar shows what the profile holds, then installs or queues what is missing.
@@ -318,7 +319,7 @@ A sync folder shares each profile's mod list, sources, settings and mod config f
 
 ## Appearance
 
-**Settings › Appearance** sets the theme, accent colour and background (an image, the desktop wallpaper or a solid colour). **Accent colour** can follow your desktop's (**System**), and **Font** picks the app's typeface. Animated backgrounds hold still while a game runs or **Reduce motion** is on; WebP animations are often a tenth of a GIF's size.
+**Settings › Appearance** sets the theme, accent colour and background (an image, the desktop wallpaper or a solid colour). **Accent colour** can follow your desktop's (**System**), **Font** picks the app's typeface, each shown in itself, and **Size** scales text, controls and spacing together. Animated backgrounds hold still while a game runs or **Reduce motion** is on; WebP animations are often a tenth of a GIF's size.
 
 ## Save backups and restore
 

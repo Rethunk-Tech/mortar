@@ -95,6 +95,7 @@ const defaults: Settings = {
   desktopRunCrashed: true,
   desktopModUpdates: false,
   density: 'comfortable',
+  uiScale: 100,
   theme: 'dark',
   gridCardSize: 'medium',
   showAuthorOnCards: true,

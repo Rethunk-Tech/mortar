@@ -1,4 +1,5 @@
 import { ThemeProvider } from '@mui/material'
+import { Window } from '@wailsio/runtime'
 import React from 'react'
 import { useSettings } from './settings/store.ts'
 import { accentColour, isAccent, useSystemAccent } from './settings/theme.ts'
@@ -16,6 +17,15 @@ export function Themed({ children }: { children: React.ReactNode }) {
   const roomy = useRoomy((s) => s.roomy)
   const reduceMotion = useSettings((s) => s.reduceMotion)
   const colourTheme = useSettings((s) => s.theme)
+  const uiScale = useSettings((s) => s.uiScale)
+  // The webview's own zoom scales every size alike, as a browser's page zoom does; a page served to a browser has no
+  // window to zoom, so CSS zoom stands in there.
+  React.useEffect(() => {
+    const zoom = (uiScale || 100) / 100
+    Window.SetZoom(zoom).catch(() => {
+      document.documentElement.style.zoom = String(zoom)
+    })
+  }, [uiScale])
   const [osReduce, setOsReduce] = React.useState(() =>
     typeof matchMedia === 'function'
       ? matchMedia('(prefers-reduced-motion: reduce)').matches

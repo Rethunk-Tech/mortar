@@ -96,9 +96,13 @@ function DefaultSort() {
 // The accent swatch's height: a picture of the colour, not a control, so it does not follow the density scale.
 const SWATCH_PX = 44
 
+// The Size choices, within the setting's 80 to 150 per cent.
+const UI_SCALES = [80, 90, 100, 110, 125, 150]
+
 function FontPicker() {
   const { t } = useLingui()
   const font = useSettings((s) => s.font)
+  const uiScale = useSettings((s) => s.uiScale)
   const [families, setFamilies] = useState<string[] | null>(null)
   // The installed fonts are listed when the picker opens, not whenever settings mount.
   const loadFamilies = () => {
@@ -109,7 +113,9 @@ function FontPicker() {
     }
   }
   return (
-    <Searchable terms={`${t`App font`} ${t`Font`} ${t`Typeface`}`}>
+    <Searchable
+      terms={`${t`App font`} ${t`Font`} ${t`Typeface`} ${t`Size`} ${t`Zoom`} ${t`Scale`}`}
+    >
       <SettingRow label={t`App font`}>
         <Autocomplete
           size="small"
@@ -120,7 +126,35 @@ function FontPicker() {
           onChange={(_, family) => {
             persist(() => SetByKey('font', family ?? '', ''), t`Could not save that setting`)
           }}
+          // Each face is drawn in itself; content-visibility lays out, and so loads, only the faces in view.
+          renderOption={(props, family) => {
+            const { key, ...rest } = props
+            return (
+              <li
+                key={key}
+                {...rest}
+                style={{ fontFamily: `"${family.replaceAll('"', '\\"')}", sans-serif` }}
+              >
+                {family}
+              </li>
+            )
+          }}
+          slotProps={{
+            listbox: {
+              sx: { '& li': { contentVisibility: 'auto', containIntrinsicSize: 'auto 36px' } },
+            },
+          }}
           renderInput={(params) => <TextField {...params} placeholder={t`Bundled font`} />}
+        />
+      </SettingRow>
+      <SettingRow label={t`Size`} description={t`Scales text, controls and spacing together`}>
+        <PrefSelect
+          label={t`Size`}
+          value={String(uiScale || 100)}
+          onChange={(v) =>
+            persist(() => SetByKey('uiScale', v, ''), t`Could not save that setting`)
+          }
+          options={UI_SCALES.map((n) => ({ value: String(n), label: `${n}%` }))}
         />
       </SettingRow>
     </Searchable>
@@ -206,12 +240,16 @@ function AccentPicker() {
   )
 }
 
+// The smallest width the backdrop server shrinks to (internal/backdrop minWidthPx).
+const PREVIEW_REQUEST_PX = 640
+
 export function Appearance() {
   const { t } = useLingui()
   const background = useSettings((s) => s.background)
   const backgroundImage = useSettings((s) => s.backgroundImage)
   const reportFailure = reportError(t`Could not save that setting`)
-  const backdropSrc = `backdrop?mode=image&v=${encodeURIComponent(backgroundImage)}`
+  // A width makes the server send a JPEG it can shrink, never the system's JPEG XL copy the webview may not draw.
+  const backdropSrc = `backdrop?mode=image&w=${PREVIEW_REQUEST_PX}&v=${encodeURIComponent(backgroundImage)}`
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
       <SettingsSection title={t`Theme`}>

@@ -191,6 +191,8 @@ type Settings struct {
 	// DesktopModUpdates sends a desktop notification when a background check finds updates. Nil means off.
 	DesktopModUpdates *bool  `json:"desktopModUpdates"`
 	Density           string `json:"density"`
+	// UIScale is the window's zoom in percent: text, controls and spacing grow together.
+	UIScale           int    `json:"uiScale"`
 	Theme             string `json:"theme"`
 	GridCardSize      string `json:"gridCardSize"`
 	ShowAuthorOnCards *bool  `json:"showAuthorOnCards"`

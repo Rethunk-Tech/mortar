@@ -154,6 +154,7 @@ var registry = withDefaults([]pref{
 	ptrPref("desktopDownloadFailed", ScopeApp, func(s Settings, _ string) *bool { return s.DesktopDownloadFailed }, func(s *Settings, _ string, on bool) { s.DesktopDownloadFailed = &on }),
 	ptrPref("desktopRunCrashed", ScopeApp, func(s Settings, _ string) *bool { return s.DesktopRunCrashed }, func(s *Settings, _ string, on bool) { s.DesktopRunCrashed = &on }),
 	ptrPref("desktopModUpdates", ScopeApp, func(s Settings, _ string) *bool { return s.DesktopModUpdates }, func(s *Settings, _ string, on bool) { s.DesktopModUpdates = &on }),
+	intPref("uiScale", ScopeApp, MinUIScale, MaxUIScale, func(s Settings, _ string) int { return s.UIScale }, func(s *Settings, _ string, n int) { s.UIScale = n }),
 	enumPref("density", ScopeApp, densityValues, func(s Settings, _ string) string { return s.Density }, func(s *Settings, _, v string) { s.Density = v }),
 	enumPref("theme", ScopeApp, themeValues, func(s Settings, _ string) string { return s.Theme }, func(s *Settings, _, v string) { s.Theme = v }),
 	enumPref("gridCardSize", ScopeApp, gridCardValues, func(s Settings, _ string) string { return s.GridCardSize }, func(s *Settings, _, v string) { s.GridCardSize = v }),

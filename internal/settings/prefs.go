@@ -139,6 +139,9 @@ const (
 	MinConsoleLogCap              = 1000
 	MaxConsoleLogCap              = 100000
 	MinParallelDownloads          = 1
+	MinUIScale                    = 80
+	MaxUIScale                    = 150
+	DefaultUIScale                = 100
 	MaxParallelDownloads          = 8
 	MinDownloadSpeedLimit         = 0
 	MaxDownloadSpeedLimit         = 10000
@@ -181,6 +184,7 @@ func defaultPrefs() Settings {
 		NotifyDownloadFailed:       on(),
 		NotifyRunCrashed:           on(),
 		Density:                    DensityComfortable,
+		UIScale:                    DefaultUIScale,
 		Theme:                      ThemeDark,
 		GridCardSize:               GridCardMedium,
 		ShowAuthorOnCards:          on(),

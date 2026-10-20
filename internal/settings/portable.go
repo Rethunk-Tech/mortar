@@ -20,7 +20,7 @@ var portableFields = []string{
 	"startScreen", "antivirus", "dates", "trashRetentionDays", "historyEventsKept",
 	"notifyDownloadFinished", "notifyDownloadFailed", "notifyRunCrashed",
 	"desktopDownloadFinished", "desktopDownloadFailed", "desktopRunCrashed", "desktopModUpdates",
-	"density", "theme", "gridCardSize", "showAuthorOnCards", "centerConfigControls", "browseCardStats", "reduceMotion", "profileHero",
+	"density", "uiScale", "theme", "gridCardSize", "showAuthorOnCards", "centerConfigControls", "browseCardStats", "reduceMotion", "profileHero",
 	"reuseFomodChoices", "driftChecks",
 	"autoInstallMortarUpdates", "autoTrackNexus",
 	"lanSharing", "lanPort", "lanAllowAnyAddress", "lanName", "lanAutoAcceptPaired", "downloadFolder", "watchFolders", "autoInstallFolders", "syncFolder", "vortexFolder", "packFolder",

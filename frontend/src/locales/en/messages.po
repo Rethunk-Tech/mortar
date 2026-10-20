@@ -2681,6 +2681,10 @@ msgstr "Leave the caches alone."
 msgid "Skip {0}"
 msgstr "Skip {0}"
 
+#: src/settings/sections/Appearance.tsx
+msgid "Scales text, controls and spacing together"
+msgstr "Scales text, controls and spacing together"
+
 #: src/mods/columnLabel.ts
 #: src/mods/NexusDetails.tsx
 #: src/mods/Sidebar.tsx
@@ -3070,6 +3074,7 @@ msgstr "The last launch failed: {message}."
 msgid "Try another spelling, or install a mod by {author} in any profile."
 msgstr "Try another spelling, or install a mod by {author} in any profile."
 
+#: src/settings/sections/Appearance.tsx
 #: src/settings/usePerProfileRelated.tsx
 msgid "Zoom"
 msgstr "Zoom"
@@ -3574,6 +3579,10 @@ msgstr "Suggest a feature…"
 #: src/mods/describe.ts
 msgid "{0} has multiple Nexus files installed: {files}."
 msgstr "{0} has multiple Nexus files installed: {files}."
+
+#: src/settings/sections/Appearance.tsx
+msgid "Scale"
+msgstr "Scale"
 
 #: src/install/NeedsRootCallout.tsx
 msgid "Place the optional file"
@@ -4209,6 +4218,7 @@ msgstr "Edit launch preset"
 
 #: src/browse/BrowseShow.tsx
 #: src/mods/columnLabel.ts
+#: src/settings/sections/Appearance.tsx
 msgid "Size"
 msgstr "Size"
 
@@ -6075,6 +6085,10 @@ msgstr "Background preview"
 #: src/profiles/CompareTop.tsx
 msgid "A friend's link or file…"
 msgstr "A friend's link or file…"
+
+#: src/mods/ProblemsTab.tsx
+msgid "{count, plural, one {Checking # mod for conflicts, missing requirements and compatibility…} other {Checking # mods for conflicts, missing requirements and compatibility…}}"
+msgstr "{count, plural, one {Checking # mod for conflicts, missing requirements and compatibility…} other {Checking # mods for conflicts, missing requirements and compatibility…}}"
 
 #: src/mods/NexusDetails.tsx
 msgid "Created · updated"
