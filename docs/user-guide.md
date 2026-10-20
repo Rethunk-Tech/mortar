@@ -92,6 +92,7 @@ Optional: it marks Nexus pages with what your profile already has and sends Mod 
 
 - **GitHub:** **Add** installs the latest release. Your `gh auth login`, when present, raises GitHub's rate limits. Nobody reviews or scans what is published on GitHub or itch.io, so the first download from either says so once.
 - **Card details:** **Show › Card details** picks what cards list (popularity, downloads, file size, version, last update); the Mods tab uses the same choice.
+- **Your downloads folder:** an archive saved to Downloads, Mortar's download folder or a folder under **Settings › Downloads › Also watch these folders** is offered for install. A watched folder set to **Auto-install** is instead added to the open profile as one mod each time its files change, so a mod's build output is in the game for the next launch; a rebuild replaces the last one, and a change while the game runs waits for it to stop.
 - **Hide from Browse:** a card's menu has **Hide from Browse** and **Hide everything by \<author\>**. The game's settings list **Hidden mods** with **Unhide**. Links and imports still install a hidden mod.
 - **Modpacks, translations and cheats:** the **Exclude categories** picker starts with them; remove a chip to see them.
 - **Open a mod's page:** Ctrl+click a card in Browse, or middle-click a mod in the Mods tab.
