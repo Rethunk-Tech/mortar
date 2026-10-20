@@ -1,27 +1,42 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
 import { ArrowLeft } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { SearchField } from '../shell/SearchField.tsx'
 import { space } from '../theme/density.ts'
 import type { ShellPage } from './SettingsShell.tsx'
-import { setSettingsQuery, useSettingsSearch } from './useSettingsSearch.ts'
+import { setSettingsQuery, settingsQuery, useSettingsSearch } from './useSettingsSearch.ts'
 
 const ACTIVE_WEIGHT = 600
 const ICON_SIZE = 18
 
-// Its own component: only the field follows each key typed, not the nav around it.
+// How long typing pauses before the rows re-filter, so a word typed at speed filters the page once.
+const SEARCH_SETTLE_MS = 150
+
+// Its own component: only the field follows each key typed, not the nav around it. The rows follow the query once
+// typing pauses; a clear from elsewhere (Escape in the shell, closing it) reaches the field at once through the store.
 function NavSearch() {
   const { t } = useLingui()
   const query = useSettingsSearch()
+  const [text, setText] = useState(query)
+  useEffect(() => setText((typed) => (typed.trim() === query.trim() ? typed : query)), [query])
+  useEffect(() => {
+    if (text === settingsQuery()) {
+      return
+    }
+    const id = setTimeout(() => setSettingsQuery(text), SEARCH_SETTLE_MS)
+    return () => clearTimeout(id)
+  }, [text])
   return (
     <SearchField
       label={t`Search settings`}
-      value={query}
-      onChange={setSettingsQuery}
+      value={text}
+      onChange={setText}
       onKeyDown={(e) => {
-        if (e.key === 'Escape' && query) {
+        if (e.key === 'Escape' && text) {
           e.preventDefault()
           e.stopPropagation()
+          setText('')
           setSettingsQuery('')
         }
       }}

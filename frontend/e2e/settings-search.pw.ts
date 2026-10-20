@@ -48,6 +48,8 @@ const SYNONYMS: [string, string][] = [
 test('settings search finds every row by its label, on Mortar and game settings', async ({
   page,
 }) => {
+  // One search per row on both pages, each waiting out the search's settle.
+  test.setTimeout(90_000)
   await openSeedFarm(page)
   await openSettings(page)
   const app = await rowLabels(page)
