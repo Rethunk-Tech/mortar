@@ -198,6 +198,63 @@ function lightControls(ink: string): Components<Theme> {
   }
 }
 
+// Menus, a select's list, Autocomplete and tooltips are popups on one solid surface.
+function popupOverrides(s: ReturnType<typeof surfaces>): Components<Theme> {
+  return {
+    MuiMenuItem: {
+      styleOverrides: { root: { paddingTop: space.menuY, paddingBottom: space.menuY } },
+    },
+    MuiMenu: { defaultProps: { transitionDuration: 0 } },
+    // A heading inside a menu or a select's list reads like the menus' own section headings, on the menu's surface: it
+    // stays put as the list scrolls, so it cannot be see-through.
+    MuiListSubheader: {
+      styleOverrides: {
+        root: {
+          backgroundColor: s.menu,
+          color: 'var(--mortar-ink-sec)',
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          lineHeight: '28px',
+          paddingTop: 6,
+        },
+      },
+    },
+    // An Autocomplete's list is its own Paper, not a Menu, so without this it takes the translucent paper colour.
+    MuiAutocomplete: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: s.menu,
+          border: `1px solid ${s.hairline14}`,
+          borderRadius: MENU_RADIUS_PX,
+        },
+      },
+    },
+    // MUI's tooltip is a translucent grey over whatever it covers; it takes the menu surface like every other popup.
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          backgroundColor: s.menu,
+          color: s.ink,
+          border: `1px solid ${s.hairline14}`,
+        },
+      },
+    },
+    // Every popover, a Menu's included, is a solid surface: the paper colour is translucent over the wallpaper.
+    MuiPopover: {
+      defaultProps: { transitionDuration: 0 },
+      styleOverrides: {
+        paper: {
+          backgroundColor: s.menu,
+          border: `1px solid ${s.hairline14}`,
+          borderRadius: MENU_RADIUS_PX,
+        },
+      },
+    },
+  }
+}
+
 function buttonOverrides(
   s: ReturnType<typeof surfaces>,
   mode: ThemeMode,
@@ -351,41 +408,7 @@ function createMortarTheme(
           },
         },
       },
-      MuiMenuItem: {
-        styleOverrides: { root: { paddingTop: space.menuY, paddingBottom: space.menuY } },
-      },
-      MuiMenu: { defaultProps: { transitionDuration: 0 } },
-      // An Autocomplete's list is its own Paper, not a Menu, so without this it takes the translucent paper colour.
-      MuiAutocomplete: {
-        styleOverrides: {
-          paper: {
-            backgroundColor: s.menu,
-            border: `1px solid ${s.hairline14}`,
-            borderRadius: MENU_RADIUS_PX,
-          },
-        },
-      },
-      // MUI's tooltip is a translucent grey over whatever it covers; it takes the menu surface like every other popup.
-      MuiTooltip: {
-        styleOverrides: {
-          tooltip: {
-            backgroundColor: s.menu,
-            color: s.ink,
-            border: `1px solid ${s.hairline14}`,
-          },
-        },
-      },
-      // Every popover, a Menu's included, is a solid surface: the paper colour is translucent over the wallpaper.
-      MuiPopover: {
-        defaultProps: { transitionDuration: 0 },
-        styleOverrides: {
-          paper: {
-            backgroundColor: s.menu,
-            border: `1px solid ${s.hairline14}`,
-            borderRadius: MENU_RADIUS_PX,
-          },
-        },
-      },
+      ...popupOverrides(s),
       MuiCollapse: { defaultProps: { timeout: 0 } },
       // A sliding exit leaves the modal's backdrop mounted for its duration, so the click right after a drawer closes
       // lands on the backdrop and does nothing.

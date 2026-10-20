@@ -811,6 +811,7 @@ msgstr "Updated on Nexus"
 #: src/mods/problemFix/ListedFix.tsx
 #: src/mods/problemFix/LoadFailureFix.tsx
 #: src/mods/problemFix/SettingFix.tsx
+#: src/mods/runErrorFixButtons.tsx
 #: src/profiles/CrashHintCard.tsx
 #: src/tips/TipBanner.tsx
 #: src/toasts/ToastHost.tsx
@@ -3262,10 +3263,6 @@ msgstr "Waiting for {0}'s profile file to finish syncing. Changes made here are 
 #: src/mods/NexusDetails.tsx
 msgid "Reading the Nexus page…"
 msgstr "Reading the Nexus page…"
-
-#: src/mods/SelectionBar.tsx
-msgid "Make a group"
-msgstr "Make a group"
 
 #: src/mods/updateReview/ReviewFooter.tsx
 msgid "Update in every profile…"
@@ -7553,6 +7550,11 @@ msgstr "Could not add the game"
 #: src/install/batchSummary.ts
 msgid "{failed} could not be added"
 msgstr "{failed} could not be added"
+
+#. placeholder {0}: needed.length
+#: src/mods/AddToGroupDialog.tsx
+msgid "{0, plural, one {Also add the # mod they need} other {Also add the # mods they need}}"
+msgstr "{0, plural, one {Also add the # mod they need} other {Also add the # mods they need}}"
 
 #. placeholder {0}: errorMessage(e)
 #: src/settings/updates.ts
@@ -12706,10 +12708,6 @@ msgstr "Check the file hash when Nexus provides one"
 msgid "{name} takes {own} of your {total} start; {0, plural, one {# content pack causes} other {# content packs cause}} most of it."
 msgstr "{name} takes {own} of your {total} start; {0, plural, one {# content pack causes} other {# content packs cause}} most of it."
 
-#: src/launch/PlayControl.tsx
-msgid "Installing {loaderName}…"
-msgstr "Installing {loaderName}…"
-
 #: src/mods/typedConfig/ConfigTab.tsx
 msgid "Waiting for next launch"
 msgstr "Waiting for next launch"
@@ -13676,7 +13674,6 @@ msgid "The game exited before it started. The console has its output."
 msgstr "The game exited before it started. The console has its output."
 
 #: src/mods/GroupMenu.tsx
-#: src/mods/SelectionBar.tsx
 msgid "Group name"
 msgstr "Group name"
 
@@ -13942,10 +13939,6 @@ msgstr "Run crashed"
 msgid "Could not save the note and tags for {0}"
 msgstr "Could not save the note and tags for {0}"
 
-#: src/mods/storeGroups.ts
-msgid "Could not add to the group"
-msgstr "Could not add to the group"
-
 #: src/launch/PrePlayDialog.tsx
 msgid "Switch to {switchName}"
 msgstr "Switch to {switchName}"
@@ -14075,6 +14068,10 @@ msgstr "Downloading and verifying Mortar {0}…"
 msgid "Delete preset"
 msgstr "Delete preset"
 
+#: src/mods/AddToGroupDialog.tsx
+msgid "Name a group below to create it."
+msgstr "Name a group below to create it."
+
 #: src/settings/sections/General.tsx
 msgid "Tips"
 msgstr "Tips"
@@ -14105,10 +14102,6 @@ msgstr "Add {label} item"
 msgid "Quiet grey-blue"
 msgstr "Quiet grey-blue"
 
-#: src/mods/AddToGroupDialog.tsx
-msgid "Name a group below to create it and add this mod."
-msgstr "Name a group below to create it and add this mod."
-
 #: src/browse/CardAction.tsx
 msgid "Sign in to download"
 msgstr "Sign in to download"
@@ -14129,6 +14122,10 @@ msgstr "Test launch"
 #: src/mods/OptionalFileRows.tsx
 msgid "Download and add on top"
 msgstr "Download and add on top"
+
+#: src/launch/PlayControl.tsx
+msgid "Installing {installing}…"
+msgstr "Installing {installing}…"
 
 #: src/toasts/report.ts
 msgid "That was made by a newer Mortar. Update Mortar to open it."
@@ -14466,6 +14463,10 @@ msgstr "{0, plural, one {# imported} other {# imported}}"
 #: src/share/PreviewDialog.tsx
 msgid "Get Mortar"
 msgstr "Get Mortar"
+
+#: src/launch/PlayInstances.tsx
+msgid "{copies, plural, one {Launch # copy} other {Launch all # copies}}"
+msgstr "{copies, plural, one {Launch # copy} other {Launch all # copies}}"
 
 #: src/console/LogActions.tsx
 msgid "Save log…"
@@ -15283,10 +15284,6 @@ msgstr "Choose a game and profile each time."
 #: src/profiles/historyLabel.ts
 msgid "Set the Nexus page of {name}"
 msgstr "Set the Nexus page of {name}"
-
-#: src/mods/SelectionBar.tsx
-msgid "Make group"
-msgstr "Make group"
 
 #: src/settings/prefCopy.ts
 msgid "Confirm removals"
