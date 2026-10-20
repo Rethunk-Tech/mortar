@@ -10,8 +10,6 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { orderProfiles } from '../game/profileOrder.ts'
 import { When } from '../i18n/When.tsx'
-import { useBadges } from '../mods/badges.ts'
-import { ProfileHealth } from '../mods/ProfileHealth.tsx'
 import { type GameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
@@ -35,7 +33,7 @@ function ProfileCards({
   const profileOrder = useSettings((s) => s.profileOrder)
   const ordered = orderProfiles(profiles, profileOrder, lastPlayed?.profile ?? '')
   const { visible, more } = profileCardsSlice(ordered)
-  const runStarted = useProfileCardsMeta(gameId, profiles, visible, lastPlayed)
+  const runStarted = useProfileCardsMeta(gameId, visible, lastPlayed)
 
   const fail = (title: string, err: unknown) => {
     reportError(title)(err)
@@ -80,7 +78,6 @@ function ProfileCards({
       {visible.map((profile) => (
         <ProfileCard
           key={profile.id}
-          gameId={gameId}
           profile={profile}
           lastPlayedAt={profileCardLastPlayedIso(profile.id, lastPlayed, runStarted)}
           onOpen={(ev) => openProfile(ev, profile.id)}
@@ -110,17 +107,14 @@ function ProfileCards({
 }
 
 function ProfileCard({
-  gameId,
   profile,
   lastPlayedAt,
   onOpen,
 }: {
-  gameId: GameId
   profile: Profile
   lastPlayedAt: string
   onOpen: (ev: MouseEvent) => void
 }) {
-  const counts = useBadges((s) => s.byProfile[profile.id])
   return (
     <ButtonBase
       component="div"
@@ -166,7 +160,6 @@ function ProfileCard({
           <When value={lastPlayedAt} />
         </Box>
       ) : null}
-      <ProfileHealth counts={counts} game={gameId} profileId={profile.id} />
     </ButtonBase>
   )
 }

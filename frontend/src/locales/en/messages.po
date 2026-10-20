@@ -2027,10 +2027,6 @@ msgstr "Could not save the group"
 msgid "Could not update mods before Play"
 msgstr "Could not update mods before Play"
 
-#: src/mods/HealthTooltipContent.tsx
-msgid "{errors} with errors"
-msgstr "{errors} with errors"
-
 #: src/toasts/report.ts
 msgid "Mortar does not have permission to do that."
 msgstr "Mortar does not have permission to do that."
@@ -4009,10 +4005,6 @@ msgstr "Enable and disable mods, and update them for the open profile."
 #: src/profiles/store.ts
 msgid "Could not read your profiles"
 msgstr "Could not read your profiles"
-
-#: src/mods/ProfileHealth.tsx
-msgid "{n, plural, one {# missing requirement} other {# missing requirements}}"
-msgstr "{n, plural, one {# missing requirement} other {# missing requirements}}"
 
 #: src/groups/ApplySavedGroupToProfile.tsx
 #: src/install/DownloadsDialog.tsx
@@ -11286,10 +11278,6 @@ msgstr "Show mods"
 msgid "Mortar finds your games through these launchers. Choose a folder for a game it missed or you moved."
 msgstr "Mortar finds your games through these launchers. Choose a folder for a game it missed or you moved."
 
-#: src/mods/HealthTooltipContent.tsx
-msgid "{crashed, plural, one {# crashed run} other {# crashed runs}}"
-msgstr "{crashed, plural, one {# crashed run} other {# crashed runs}}"
-
 #: src/settings/sections/GameSettings.tsx
 msgid "Could not reset the game install"
 msgstr "Could not reset the game install"
@@ -12300,10 +12288,6 @@ msgstr "Play"
 msgid "From launch until BepInEx's preloader runs"
 msgstr "From launch until BepInEx's preloader runs"
 
-#: src/mods/HealthTooltipContent.tsx
-msgid "{clean} clean"
-msgstr "{clean} clean"
-
 #. placeholder {0}: libraries.length
 #: src/mods/updateReview/SourceGroups.tsx
 msgid "Libraries ({0})"
@@ -13236,11 +13220,6 @@ msgstr "This is a development build of Mortar {0}, so it does not check for upda
 #: src/queue/QueueSheet.tsx
 msgid "{0} downloading"
 msgstr "{0} downloading"
-
-#. placeholder {0}: runs.length
-#: src/mods/HealthTooltipContent.tsx
-msgid "{0, plural, one {Last run: {list}} other {Last # runs: {list}}}"
-msgstr "{0, plural, one {Last run: {list}} other {Last # runs: {list}}}"
 
 #: src/launch/playStart.ts
 msgid "You can roll back the completed updates from the profile history."
