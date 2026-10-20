@@ -132,6 +132,11 @@ export function needsCurseForgeKey(mod: { site: string; reason?: string }): bool
   return mod.site === 'curseforge' && mod.reason === 'curseforge-key'
 }
 
+// A mod.io file the receiver cannot download until they sign in to mod.io in Settings › Accounts.
+export function needsModioToken(mod: { site: string; reason?: string }): boolean {
+  return mod.site === 'modio' && mod.reason === 'modio-token'
+}
+
 // A mod that travelled as a Patreon post alone: the receiver opens the post and saves the file there.
 export function needsPatreonFile(mod: { site: string; reason?: string }): boolean {
   return mod.site === 'patreon' && mod.reason === 'patreon'

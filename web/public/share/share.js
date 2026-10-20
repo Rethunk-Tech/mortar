@@ -46,7 +46,7 @@ function facts(e) {
 }
 
 // An entry is an object naming its source: {s: 'nexus', mod, file}, {s: 'github', repo, tag, asset} or
-// {s: 'thunderstore', ns, name, version}, {s: 'curseforge', mod: project, file}, {s: 'vsmoddb', name: 'modid-assetid',
+// {s: 'thunderstore', ns, name, version}, {s: 'curseforge', mod: project, file}, {s: 'modio', mod, file}, {s: 'vsmoddb', name: 'modid-assetid',
 // file, version}, {s: 'itch', name: 'user/game'} or
 // {s: 'patreon', name: post id}, with optional page facts.
 function entry(e) {
@@ -65,6 +65,7 @@ const READERS = {
       : null,
   curseforge: (e) =>
     positive(e.mod) && positive(e.file) ? { kind: 'curseforge', project: e.mod } : null,
+  modio: (e) => (positive(e.mod) && positive(e.file) ? { kind: 'modio', mod: e.mod } : null),
   vsmoddb: (e) =>
     matches(e.name, MODDB_ID) && positive(e.file) ? { kind: 'vsmoddb', id: e.name } : null,
   itch: (e) => (matches(e.name, ITCH_PAGE) ? { kind: 'itch', page: e.name } : null),
@@ -134,7 +135,7 @@ export async function decodeShare(hash, wasm) {
     throw new ShareError('bad')
   }
   const out = entries.map(entry)
-  for (const kind of ['nexus', 'thunderstore', 'curseforge', 'vsmoddb']) {
+  for (const kind of ['nexus', 'thunderstore', 'curseforge', 'vsmoddb', 'modio']) {
     if (out.some((e) => e.kind === kind) && typeof sourceKeys[kind] !== 'string') {
       throw new ShareError('bad')
     }

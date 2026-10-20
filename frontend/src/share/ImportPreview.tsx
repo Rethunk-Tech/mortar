@@ -28,6 +28,7 @@ import {
   type ModState,
   needsCurseForgeKey,
   needsItchFile,
+  needsModioToken,
   needsPatreonFile,
   type ShownPreview,
   type Summary,
@@ -89,6 +90,7 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
     needsPatreonFile(mod) ? t`Needs a file from its Patreon post` : '',
     needsItchFile(mod) ? t`Needs a file from its itch.io page` : '',
     needsCurseForgeKey(mod) ? t`Needs a CurseForge key, or the file from its page` : '',
+    needsModioToken(mod) ? t`Needs your mod.io access token in Settings, Accounts` : '',
   ].filter(Boolean)
   const byline = [formatAuthors(mod.author), ...notes].filter(Boolean).join(' · ')
   return (

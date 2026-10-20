@@ -65,6 +65,8 @@ type Ref struct {
 	Itch string `json:"itch,omitempty"`
 	// CurseForge is the project id of a CurseForge file, which FileID names; the receiver downloads it with their key.
 	CurseForge int `json:"curseforge,omitempty"`
+	// Modio is the mod id of a mod.io file, which FileID names; the receiver downloads it with their own token.
+	Modio int `json:"modio,omitempty"`
 	// VSModDB is the "<modid>-<assetid>" of a Vintage Story Mod DB release, which FileID (the release id) and Version
 	// name.
 	VSModDB string `json:"vsmoddb,omitempty"`
@@ -210,8 +212,12 @@ var (
 
 func (r Ref) valid() bool {
 	if r.Paradox != "" {
-		return r.ModID == 0 && r.GitHub == "" && r.Package == "" && r.Patreon == "" && r.Itch == "" && r.CurseForge == 0 && r.VSModDB == "" && r.Local == "" &&
+		return r.ModID == 0 && r.GitHub == "" && r.Package == "" && r.Patreon == "" && r.Itch == "" && r.CurseForge == 0 && r.VSModDB == "" && r.Modio == 0 && r.Local == "" &&
 			paradoxRef.MatchString(r.Paradox) && r.FileID > 0 && r.FileID <= maxID && paradoxVer.MatchString(r.Version)
+	}
+	if r.Modio != 0 {
+		return r.ModID == 0 && r.GitHub == "" && r.Package == "" && r.Version == "" && r.Patreon == "" && r.Itch == "" && r.CurseForge == 0 &&
+			r.VSModDB == "" && r.Local == "" && r.Modio > 0 && r.Modio <= maxID && r.FileID > 0 && r.FileID <= maxID
 	}
 	if r.VSModDB != "" {
 		return r.ModID == 0 && r.GitHub == "" && r.Package == "" && r.Patreon == "" && r.Itch == "" && r.CurseForge == 0 && r.Local == "" &&
@@ -287,6 +293,8 @@ func (r Ref) MarshalJSON() ([]byte, error) {
 		w.Source, w.Name = "itch", r.Itch
 	case r.CurseForge != 0:
 		w.Source, w.Mod, w.File = "curseforge", r.CurseForge, r.FileID
+	case r.Modio != 0:
+		w.Source, w.Mod, w.File = "modio", r.Modio, r.FileID
 	case r.VSModDB != "":
 		w.Source, w.Name, w.File, w.Version = "vsmoddb", r.VSModDB, r.FileID, r.Version
 	case r.Paradox != "":
@@ -324,6 +332,8 @@ func parseRef(raw json.RawMessage) (Ref, error) {
 		r.Itch = w.Name
 	case w.Source == "curseforge" && w.Key == "" && w.Repo == "" && w.Tag == "" && w.Asset == "" && w.NS == "" && w.Name == "" && w.Version == "":
 		r.CurseForge, r.FileID = w.Mod, w.File
+	case w.Source == "modio" && w.Key == "" && w.Repo == "" && w.Tag == "" && w.Asset == "" && w.NS == "" && w.Name == "" && w.Version == "":
+		r.Modio, r.FileID = w.Mod, w.File
 	case w.Source == "vsmoddb" && w.Mod == 0 && w.Key == "" && w.Repo == "" && w.Tag == "" && w.Asset == "" && w.NS == "" && w.Name != "":
 		r.VSModDB, r.FileID, r.Version = w.Name, w.File, w.Version
 	case w.Source == "paradox" && w.Mod == 0 && w.Key == "" && w.Repo == "" && w.Tag == "" && w.Asset == "" && w.NS == "" && w.Name != "":
@@ -371,9 +381,10 @@ func checkShared(s Shared) error {
 	// What a game has is the receiver's catalog's word; the link must also name the source, but its sourceKeys never grant one.
 	have := SourceKeys(s.Game)
 	for _, r := range s.Entries {
-		if !r.valid() || !validDetails(r) || (r.GitHub == "" && r.Package == "" && r.Patreon == "" && r.Itch == "" && r.CurseForge == 0 && r.VSModDB == "" && r.Paradox == "" && have["nexus"] == "" || s.SourceKeys["nexus"] == "") ||
+		if !r.valid() || !validDetails(r) || (r.GitHub == "" && r.Package == "" && r.Patreon == "" && r.Itch == "" && r.CurseForge == 0 && r.VSModDB == "" && r.Paradox == "" && r.Modio == 0 && have["nexus"] == "" || s.SourceKeys["nexus"] == "") ||
 			(r.Paradox != "" && (have["paradox"] == "" || s.SourceKeys["paradox"] == "")) ||
 			(r.VSModDB != "" && (have["vsmoddb"] == "" || s.SourceKeys["vsmoddb"] == "")) ||
+			(r.Modio != 0 && (have["modio"] == "" || s.SourceKeys["modio"] == "")) ||
 			(r.Package != "" && (have["thunderstore"] == "" || s.SourceKeys["thunderstore"] == "")) || (r.CurseForge != 0 && (have["curseforge"] == "" || s.SourceKeys["curseforge"] == "")) {
 			return fmt.Errorf("%w: bad entry", ErrMalformed)
 		}
@@ -407,7 +418,7 @@ func validDetails(r Ref) bool {
 			return false
 		}
 	}
-	if r.Overlay != nil && (r.GitHub != "" || r.Package != "" || r.Patreon != "" || r.Itch != "" || r.CurseForge != 0 || r.VSModDB != "" || r.Paradox != "" || !validOverlayPath(r.Overlay.From) || !validOverlayPath(r.Overlay.To)) {
+	if r.Overlay != nil && (r.GitHub != "" || r.Package != "" || r.Patreon != "" || r.Itch != "" || r.CurseForge != 0 || r.VSModDB != "" || r.Paradox != "" || r.Modio != 0 || !validOverlayPath(r.Overlay.From) || !validOverlayPath(r.Overlay.To)) {
 		return false
 	}
 	for _, disabled := range r.Disabled {
@@ -561,6 +572,9 @@ func (r Ref) MatchesEntry(e profile.Entry) bool {
 	if r.CurseForge != 0 {
 		return e.Source.Kind == profile.KindCurseForge && e.Source.Name == strconv.Itoa(r.CurseForge) && e.Source.FileID == r.FileID
 	}
+	if r.Modio != 0 {
+		return e.Source.Kind == profile.KindModio && e.Source.Name == strconv.Itoa(r.Modio) && e.Source.FileID == r.FileID
+	}
 	if r.VSModDB != "" {
 		return e.Source.Kind == profile.KindVSModDB && e.Source.Name == r.VSModDB && e.Source.FileID == r.FileID
 	}
@@ -697,7 +711,7 @@ func roundKB(kb int64) int64 {
 func withoutDetails(s Shared) Shared {
 	out := Shared{Game: s.Game, SourceKeys: s.SourceKeys, Name: s.Name, Entries: make([]Ref, len(s.Entries)), GameVersion: s.GameVersion}
 	for i, r := range s.Entries {
-		out.Entries[i] = Ref{ModID: r.ModID, FileID: r.FileID, GitHub: r.GitHub, Patreon: r.Patreon, Itch: r.Itch, CurseForge: r.CurseForge, VSModDB: r.VSModDB, Paradox: r.Paradox, Package: r.Package, Version: r.Version, Local: r.Local, LocalName: r.LocalName, Implicit: r.Implicit}
+		out.Entries[i] = Ref{ModID: r.ModID, FileID: r.FileID, GitHub: r.GitHub, Patreon: r.Patreon, Itch: r.Itch, CurseForge: r.CurseForge, Modio: r.Modio, VSModDB: r.VSModDB, Paradox: r.Paradox, Package: r.Package, Version: r.Version, Local: r.Local, LocalName: r.LocalName, Implicit: r.Implicit}
 	}
 	return out
 }
@@ -723,6 +737,10 @@ func refOf(e profile.Entry, inc Include) (Ref, string) {
 		project, _ := strconv.Atoi(e.Source.Name)
 		r = Ref{CurseForge: project, FileID: e.Source.FileID}
 		missing = "no CurseForge file recorded"
+	case profile.KindModio:
+		mod, _ := strconv.Atoi(e.Source.Name)
+		r = Ref{Modio: mod, FileID: e.Source.FileID}
+		missing = "no mod.io file recorded"
 	case profile.KindVSModDB:
 		r = Ref{VSModDB: e.Source.Name, FileID: e.Source.FileID, Version: e.Source.Version}
 		missing = "no Mod DB release recorded"

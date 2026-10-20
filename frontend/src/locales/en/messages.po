@@ -4357,6 +4357,10 @@ msgstr "Ask me to endorse mods I keep using"
 msgid "Downloading {0}%"
 msgstr "Downloading {0}%"
 
+#: src/share/ImportPreview.tsx
+msgid "Needs your mod.io access token in Settings, Accounts"
+msgstr "Needs your mod.io access token in Settings, Accounts"
+
 #. placeholder {0}: optionalFor.length.toLocaleString(i18n.locale)
 #: src/mods/Sidebar.tsx
 msgid "Optional for ({0})"

@@ -109,6 +109,7 @@ const SHARE_SOURCES = [
   'itch',
   'patreon',
   'vsmoddb',
+  'modio',
 ]
 
 /** How the share page badges each mod with its source: the sprite mark in its colour, or the artwork file. */
