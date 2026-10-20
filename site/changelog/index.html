@@ -74,7 +74,69 @@
     <main class="wrap dl prose" data-pagefind-body>
       <h1 class="ext-title">Changelog</h1>
       <p class="lede">What changed in each release, newest first. The app shows the same notes in What's new after an update. <a href="/changelog/feed.xml">Follow releases in a feed reader</a>.</p>
-      <details class="release" id="v0.3.8" open>
+      <details class="release" id="v0.3.9" open>
+        <summary><h2>0.3.9 <time datetime="2026-10-19">2026-10-19</time></h2></summary>
+        <p class="release-link"><a href="https://github.com/Rethunk-Tech/mortar/releases/tag/v0.3.9">Downloads and full changelog for 0.3.9</a></p>
+        <h3>New</h3>
+        <h4>Problems and diagnostics</h4>
+        <ul>
+        <li>An error a mod hit while running names the method it was thrown in and the other mods that patch code on that path</li>
+        <li>Errors from a run that went on are listed once under Errors while running, apart from mods that failed to load, and are not counted as problems</li>
+        <li>A File conflicts tab naming the files one package wins from another, with Make … win</li>
+        <li>A mod whose manifest is missing or broken shows as Damaged, with Repair</li>
+        <li>A warning when a mod&#39;s path is too long for a Windows game</li>
+        <li>The files a sync replaced, with Restore and Delete all</li>
+        <li>Last run rows, deprecated mods and compatibility-list rows can be dismissed</li>
+        <li>The console shows an error repeated over and over once, with a ×N count</li>
+        </ul>
+        <h4>Mods and browsing</h4>
+        <ul>
+        <li>One card for a mod its author lists on several sites, with re-uploads marked</li>
+        <li>A folder set to Auto-install puts its contents into the open profile each time they change, for a mod&#39;s build output</li>
+        <li>The first download from GitHub or itch.io says once that nobody moderates the site, and so does importing a profile with such mods</li>
+        <li>Make a group, or Add to group, brings along the mods the chosen ones need</li>
+        <li>Implicit mods nest under the mod that needs them, folded into a +N libraries chip on cards</li>
+        <li>Category pickers show +N for chips that do not fit, and noisy categories start excluded</li>
+        <li>Each game keeps its own include, exclude and sort; Browse sorts by most downloaded by default</li>
+        <li>A long config file lists its sections down the right, and an option centres each setting&#39;s control</li>
+        </ul>
+        <h4>Games</h4>
+        <ul>
+        <li>43 more Thunderstore games on loaders Mortar drives</li>
+        <li>A game no store tracks takes the folder you choose; Voices of the Void on Shimloader</li>
+        <li>Game Select sections fold away, and Hide this game moves to the row&#39;s right-click menu</li>
+        <li>The game switcher shows each game&#39;s art, profile count and when it was last played</li>
+        </ul>
+        <h4>Profiles and launching</h4>
+        <ul>
+        <li>The Play menu holds Instances and Delay, with Launch all copies; on a store launch it offers Direct launch</li>
+        <li>New profile can start from a saved group</li>
+        <li>Restore from a file sits beside Back up in the profile menu</li>
+        <li>Saves open as cards</li>
+        <li>Favourite stars and source marks sit on each mod&#39;s picture</li>
+        </ul>
+        <h3>Changed</h3>
+        <ul>
+        <li>Stacklands, Core Keeper and Wrestling Empire leave the catalog: their Thunderstore pages send modders to the Steam Workshop or mod.io</li>
+        <li>Game Select rows keep one height; the hover grow and its setting are gone</li>
+        </ul>
+        <h3>Fixed</h3>
+        <ul>
+        <li>Add to group from a mod&#39;s menu opens its dialog and takes every selected mod</li>
+        <li>Use Direct launch in the Play menu takes effect at once</li>
+        <li>A save only stops a launch for the mods it names, and Play anyway stops asking about them</li>
+        <li>Before you play counts missing mods once and fits its actions on one row</li>
+        <li>Lethal Company plugins that loaded and then logged errors are no longer reported as failing to load</li>
+        <li>The crash search keeps a library on while a mod that needs it is on, and first checks the crash happens at all</li>
+        <li>Importing profiles from other managers opens the game on the first one, and does not import the same profile twice</li>
+        <li>Opening a config file while another mod&#39;s config still loads no longer leaves the pane empty</li>
+        <li>The Mods and Config tabs do much less work when you switch a mod or pick a file</li>
+        <li>A save is not backed up twice in the same moment</li>
+        <li>The tray shows Mortar instead of Wails</li>
+        <li>Profile names over bright cover art stay readable</li>
+        </ul>
+      </details>
+      <details class="release" id="v0.3.8">
         <summary><h2>0.3.8 <time datetime="2026-10-19">2026-10-19</time></h2></summary>
         <p class="release-link"><a href="https://github.com/Rethunk-Tech/mortar/releases/tag/v0.3.8">Downloads and full changelog for 0.3.8</a></p>
         <h3>New</h3>
