@@ -742,7 +742,7 @@ msgstr "This log is {size}. Sharing uploads it to smapi.io as a public link."
 msgid "Paste it on the mod's page."
 msgstr "Paste it on the mod's page."
 
-#: src/games/GameMenu.tsx:157
+#: src/games/GameMenu.tsx:174
 msgid "Switch game: {gameLabel}"
 msgstr "Switch game: {gameLabel}"
 
@@ -1373,7 +1373,7 @@ msgid "Back to {backTo}. Saves untouched."
 msgstr "Back to {backTo}. Saves untouched."
 
 #. placeholder {0}: formatWhen(played.at)
-#: src/games/GameMenu.tsx:63
+#: src/games/GameMenu.tsx:69
 msgid "played {0}"
 msgstr "played {0}"
 
@@ -4164,7 +4164,7 @@ msgstr "95th ms"
 msgid "Data folder moved"
 msgstr "Data folder moved"
 
-#: src/games/GameMenu.tsx:194
+#: src/games/GameMenu.tsx:211
 #: src/games/GameSelect.tsx:417
 msgid "On this computer"
 msgstr "On this computer"
@@ -5850,8 +5850,8 @@ msgstr "Settings backups"
 msgid "{0} stays as it is."
 msgstr "{0} stays as it is."
 
-#: src/games/GameMenu.tsx:157
-#: src/games/GameMenu.tsx:187
+#: src/games/GameMenu.tsx:174
+#: src/games/GameMenu.tsx:204
 msgid "Choose a game"
 msgstr "Choose a game"
 
@@ -8419,7 +8419,7 @@ msgstr "Back up {0}?"
 msgid "Each mod's Entry method, run one after another"
 msgstr "Each mod's Entry method, run one after another"
 
-#: src/games/GameMenu.tsx:198
+#: src/games/GameMenu.tsx:215
 msgid "All games…"
 msgstr "All games…"
 
@@ -9025,7 +9025,7 @@ msgstr "{0} goes back to {previous}, keeping its settings. Your saves are backed
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
-#: src/games/GameMenu.tsx:192
+#: src/games/GameMenu.tsx:209
 #: src/games/GameSelect.tsx:416
 msgid "Recently played"
 msgstr "Recently played"
@@ -9092,7 +9092,7 @@ msgstr "Minutes between background update checks"
 msgid "Show all"
 msgstr "Show all"
 
-#: src/games/GameMenu.tsx:64
+#: src/games/GameMenu.tsx:70
 #: src/games/GameSelect.tsx:155
 msgid "{playtime} played"
 msgstr "{playtime} played"
@@ -11007,6 +11007,10 @@ msgstr "{0, plural, one {# save} other {# saves}}"
 #: src/settings/sections/AboutDiagnostics.tsx:227
 msgid "Copy report"
 msgstr "Copy report"
+
+#: src/games/GameMenu.tsx:68
+msgid "{profiles, plural, one {# profile} other {# profiles}}"
+msgstr "{profiles, plural, one {# profile} other {# profiles}}"
 
 #. placeholder {0}: libraries.length
 #: src/mods/LibrariesChip.tsx:21
@@ -13685,7 +13689,7 @@ msgstr "Cancelled"
 msgid "Check mods and Mortar for updates (F5)"
 msgstr "Check mods and Mortar for updates (F5)"
 
-#: src/games/GameMenu.tsx:191
+#: src/games/GameMenu.tsx:208
 #: src/settings/sections/AboutDiagnostics.tsx:85
 #: src/settings/sections/DataImport.tsx:27
 msgid "Games"

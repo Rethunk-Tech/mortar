@@ -114,6 +114,9 @@ func (s *Service) ImportGameMods(ctx context.Context, gameID string, move bool) 
 
 func (s *Service) List(game string) ([]Profile, error) { return s.store.List(game) }
 
+// ProfileCounts is how many profiles each game has.
+func (s *Service) ProfileCounts() (map[string]int, error) { return s.store.ProfileCounts() }
+
 func (s *Service) ListDamaged(game string) ([]Profile, error) { return s.store.ListDamaged(game) }
 
 // Repair rebuilds a damaged profile.json from its latest history snapshot.

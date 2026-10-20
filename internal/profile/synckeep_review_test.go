@@ -105,3 +105,23 @@ func TestReplacedFilesCanBeRestoredAsAChangedCopyOrDeleted(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestProfileCountsPerGame(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	if got, err := e.ProfileCounts(); err != nil || len(got) != 0 {
+		t.Fatalf("no profiles yet: %v, %v", got, err)
+	}
+	for _, name := range []string{"A", "B"} {
+		if _, err := e.Create(folderGame, name); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := e.Create("stardew", "C"); err != nil {
+		t.Fatal(err)
+	}
+	got, err := e.ProfileCounts()
+	if err != nil || got[folderGame] != 2 || got["stardew"] != 1 {
+		t.Fatalf("counts = %v, %v", got, err)
+	}
+}

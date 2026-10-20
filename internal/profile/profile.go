@@ -522,6 +522,35 @@ func (s *Store) List(game string) ([]Profile, error) {
 	return out, nil
 }
 
+// ProfileCounts is how many profiles each game has, from the folders alone: no profile.json is read, and a damaged
+// profile counts as the one it is.
+func (s *Store) ProfileCounts() (map[string]int, error) {
+	games, err := os.ReadDir(s.root)
+	if errors.Is(err, os.ErrNotExist) {
+		return map[string]int{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	out := map[string]int{}
+	for _, g := range games {
+		dir, err := s.gameDir(g.Name())
+		if err != nil {
+			continue
+		}
+		dirs, err := os.ReadDir(dir)
+		if err != nil {
+			continue
+		}
+		for _, d := range dirs {
+			if idPattern.MatchString(d.Name()) && isProfileDir(filepath.Join(dir, d.Name()), d) {
+				out[g.Name()]++
+			}
+		}
+	}
+	return out, nil
+}
+
 func usable(p Profile) bool { return p.Error == "" }
 
 func skipDamaged(all []Profile) []Profile {
