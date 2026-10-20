@@ -197,7 +197,7 @@ type CheckTiming struct {
 
 // Count is every row the Problems tab lists except cosmetic conflicts: the number the GUI's chip, badges and the CLI
 // all show. Optional and outside requirements are informational and left out, as are errors a plugin hit after it
-// loaded.
+// loaded and errors logged by a run that did not crash.
 func (r Result) Count() int {
 	missing := 0
 	for _, m := range r.Missing {
@@ -211,8 +211,14 @@ func (r Result) Count() int {
 			failed++
 		}
 	}
+	crashed := 0
+	for _, e := range r.RunErrors {
+		if e.Severe {
+			crashed++
+		}
+	}
 	return missing + len(r.Duplicates) + len(r.Broken) + ConflictRows(r.AssetConflicts) + len(r.Settings) +
-		len(r.RunErrors) + failed + len(r.PluginClashes) + len(r.Drift) + len(r.Damaged) +
+		crashed + failed + len(r.PluginClashes) + len(r.Drift) + len(r.Damaged) +
 		len(r.LongPaths) + len(r.Deprecated) + len(r.Cleanup) + len(r.Compat) + redundantCount(r.Redundant)
 }
 

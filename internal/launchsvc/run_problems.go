@@ -112,7 +112,8 @@ func (s *Service) loaderProblems(gameID, profileID, text, player string) []launc
 	}
 	var out []launch.SMAPIProblem
 	for _, f := range found {
-		if f.Kind == bepinex5.KindPluginError {
+		// Errors a plugin hit after it loaded are listed on the Problems tab, not offered as this run's fixes.
+		if bepinex5.RanAfterLoad(f.Kind) {
 			continue
 		}
 		p := launch.SMAPIProblem{Kind: launch.SMAPIProblemKind(f.Kind), ModName: f.Plugin, Detail: f.Message, Fix: loaderFixes[f.Kind], Dependency: f.Dependency}

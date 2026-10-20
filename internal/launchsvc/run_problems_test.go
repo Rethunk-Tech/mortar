@@ -55,7 +55,8 @@ func TestRunProblemsReadTheBepInExRunAndItsOwnPlayerLog(t *testing.T) {
 	for i, x := range got {
 		kinds[i] = x.Kind
 	}
-	if !slices.Contains(kinds, bepinex5.KindMissingDependency) || !slices.Contains(kinds, bepinex5.KindUnityException) {
+	// The player log's exception came after the plugin loaded: the Problems tab lists it, the run offers no fix for it.
+	if !slices.Contains(kinds, bepinex5.KindMissingDependency) || slices.Contains(kinds, bepinex5.KindUnityException) {
 		t.Fatalf("problems = %+v", got)
 	}
 	for _, x := range got {

@@ -18,14 +18,16 @@ import { problemGuideUrl, problemWhy } from './problemWhy.ts'
 
 function WhyBody({ row }: { row: Row }) {
   const { t } = useLingui()
+  // A plugin that loaded and then threw is explained like a run's errors, not as one that never started.
+  const why = row.kind === 'loadFailure' && row.loadFailure.ran ? 'runError' : row.kind
   return (
     <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
       <Typography sx={{ fontSize: 13, color: 'text.secondary', whiteSpace: 'normal' }}>
-        {problemWhy[row.kind].text()}
+        {problemWhy[why].text()}
       </Typography>
       <Link
         component="button"
-        onClick={() => openPage(problemGuideUrl(row.kind))}
+        onClick={() => openPage(problemGuideUrl(why))}
         sx={{ alignSelf: 'flex-start', fontSize: 13 }}
       >
         {t`Read more in the guide`}

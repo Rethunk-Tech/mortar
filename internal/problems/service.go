@@ -434,6 +434,10 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 			if err == nil {
 				r.RunErrors = RunErrorsFromSummary(runID, summary, mods, owners)
 				r.LoadFailures = append(r.LoadFailures, startFailure(runID, summary)...)
+				// A mod listed under errors after load needs no second row for the same errors, unless the run crashed.
+				r.RunErrors = slices.DeleteFunc(r.RunErrors, func(e RunError) bool {
+					return !e.Severe && slices.ContainsFunc(r.LoadFailures, func(f LoadFailure) bool { return f.Ran && f.Key == e.Key })
+				})
 			}
 		} else if r.RunErrors == nil {
 			r.RunErrors = []RunError{}

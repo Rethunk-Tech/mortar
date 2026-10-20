@@ -62,10 +62,11 @@ const buildProblems = (result: Result): Problem[] => [
 // Optional listed requirements and outside requirements are informational: the server's Count leaves them out.
 const countsAsMissing = (m: Missing): boolean => !(m.optional || m.external)
 
-// A plugin that loaded and then threw still ran, so its errors are shown but not counted.
+// A plugin that loaded and then threw still ran, and so did a run that did not crash: shown, not counted.
 const counts = (p: Problem): boolean =>
   (p.kind !== 'missing' || countsAsMissing(p.missing)) &&
-  (p.kind !== 'loadFailure' || !p.loadFailure.ran)
+  (p.kind !== 'loadFailure' || !p.loadFailure.ran) &&
+  (p.kind !== 'runError' || p.runError.severe)
 export const siblingsOf = (mods: Mod[], mod: Mod) =>
   mods.filter((m) => m.key === mod.key && m.id !== mod.id)
 

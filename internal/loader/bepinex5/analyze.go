@@ -63,6 +63,12 @@ var (
 	chainloaderStart = regexp.MustCompile(`BepInEx\.Bootstrap\.Chainloader[.:]Start ?\(`)
 )
 
+// RanAfterLoad reports whether a finding of this kind came from a plugin that loaded and then threw, in its own code or a
+// patch, or logged an error: it ran, so it is no load failure. A throw while loading is BepInEx's "Error loading" line.
+func RanAfterLoad(kind string) bool {
+	return kind == KindUnityException || kind == KindPluginError || kind == KindPatchException
+}
+
 // loaderSources are the log sources that are BepInEx, Harmony or Unity rather than a plugin speaking for itself.
 var loaderSources = []string{"BepInEx", "Preloader", "HarmonyX", "Unity Log"}
 

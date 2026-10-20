@@ -307,6 +307,8 @@ func TestCountAndWarningCountAddEveryFamily(t *testing.T) {
 		}
 	}
 	one("Missing", "Duplicates", "Broken", "Settings", "RunErrors", "LoadFailures", "PluginClashes", "Drift", "Damaged")
+	// A run's errors count when it crashed; errors from a run that went on are listed but not counted.
+	r.RunErrors[0].Severe = true
 	one("Compat", "Cleanup", "Deprecated")
 	r.AssetConflicts = []framework.AssetConflict{{Cosmetic: true}}
 	if got := r.Count(); got != 12 {

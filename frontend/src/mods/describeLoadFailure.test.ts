@@ -34,3 +34,10 @@ test('a plugin that loaded and then threw says so, and is not counted as a probl
   const result = { loadFailures: [ran, row('load-exception', '')] } as unknown as Result
   expect(problemCount(result)).toBe(1)
 })
+
+test("a run's errors count only when the run crashed", () => {
+  const runError = { key: 'k', id: 'x', name: 'X', count: 1, first: '', runId: 'r', updated: false }
+  const calm = { runErrors: [{ ...runError, severe: false }] } as unknown as Result
+  const crashed = { runErrors: [{ ...runError, severe: true }] } as unknown as Result
+  expect([problemCount(calm), problemCount(crashed)]).toEqual([0, 1])
+})

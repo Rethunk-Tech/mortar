@@ -40,14 +40,6 @@ type LoadFailure struct {
 	Errors int  `json:"errors,omitempty"`
 }
 
-// ranKinds are the findings of a plugin that loaded and then threw: an exception in its own code or a patch, or an
-// error it logged. A throw while loading is BepInEx's own "Error loading" line instead.
-var ranKinds = map[string]bool{
-	bepinex5.KindUnityException: true,
-	bepinex5.KindPluginError:    true,
-	bepinex5.KindPatchException: true,
-}
-
 // pluginsDir is where BepInEx loads plugins from, below the profile folder.
 const pluginsDir = "BepInEx/plugins"
 
@@ -158,7 +150,7 @@ func attribute(found []loader.Finding, owners func() map[string]framework.Mod) [
 		if owner, ok := byName[strings.ToLower(f.Plugin)]; ok {
 			lf.Key, lf.ID, lf.Name = owner.Key, owner.ModID(), owner.Name
 		}
-		if ranKinds[f.Kind] {
+		if bepinex5.RanAfterLoad(f.Kind) {
 			who := lf.Key
 			if who == "" {
 				who = strings.ToLower(f.Plugin)
