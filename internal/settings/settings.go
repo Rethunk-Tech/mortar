@@ -194,6 +194,8 @@ type Settings struct {
 	Theme             string `json:"theme"`
 	GridCardSize      string `json:"gridCardSize"`
 	ShowAuthorOnCards *bool  `json:"showAuthorOnCards"`
+	// CenterConfigControls sets each config entry's control mid-row, nearer its name on a wide window.
+	CenterConfigControls bool `json:"centerConfigControls"`
 	// BrowseCardStats is the stats Browse cards show under the summary: comma-separated ids from browseCardStatValues,
 	// or "none".
 	BrowseCardStats          string `json:"browseCardStats"`

@@ -3593,6 +3593,10 @@ msgstr "Profile sections"
 msgid "Fullscreen resolution height"
 msgstr "Fullscreen resolution height"
 
+#: src/mods/typedConfig/SectionNav.tsx
+msgid "Hide sections"
+msgstr "Hide sections"
+
 #: src/settings/sections/DataUsage.tsx
 msgid "Shared by every game"
 msgstr "Shared by every game"
@@ -10275,6 +10279,10 @@ msgstr "Copy and open Discord"
 msgid "{count, plural, one {# thing to repair} other {# things to repair}}"
 msgstr "{count, plural, one {# thing to repair} other {# things to repair}}"
 
+#: src/settings/prefCopyModsView.ts
+msgid "On a wide window, each config setting's control sits mid-row, nearer its name"
+msgstr "On a wide window, each config setting's control sits mid-row, nearer its name"
+
 #: src/queue/DownloadsPill.tsx
 msgid "Downloads: {downloading} {percent}%"
 msgstr "Downloads: {downloading} {percent}%"
@@ -11269,6 +11277,10 @@ msgstr "{count, plural, one {Marked # mod implicit} other {Marked # mods implici
 #: src/settings/sections/DataUsage.tsx
 msgid "{0} used"
 msgstr "{0} used"
+
+#: src/mods/typedConfig/SectionNav.tsx
+msgid "Sections"
+msgstr "Sections"
 
 #: src/mods/OptionalFileRows.tsx
 msgid "Adds"
@@ -12456,6 +12468,10 @@ msgstr "{list} do the same job: all {0} change {detail}"
 #: src/profiles/historyLabel.ts
 msgid "{count, plural, one {Restored # mod} other {Restored # mods}}"
 msgstr "{count, plural, one {Restored # mod} other {Restored # mods}}"
+
+#: src/settings/prefCopyModsView.ts
+msgid "Centre config controls"
+msgstr "Centre config controls"
 
 #: src/shell/checkForUpdates.ts
 msgid "Mods are up to date"
@@ -14697,6 +14713,10 @@ msgstr "Stay open"
 #: src/profiles/GameSettings.tsx
 msgid "UI scale ({value}%)"
 msgstr "UI scale ({value}%)"
+
+#: src/mods/typedConfig/SectionNav.tsx
+msgid "Show sections"
+msgstr "Show sections"
 
 #: src/mods/typedConfig/ConfigTab.tsx
 msgid "{count, plural, one {# mod has no config yet; mods create it the first time the game runs.} other {# mods have no config yet; mods create it the first time the game runs.}}"

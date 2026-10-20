@@ -98,6 +98,7 @@ const defaults: Settings = {
   theme: 'dark',
   gridCardSize: 'medium',
   showAuthorOnCards: true,
+  centerConfigControls: false,
   browseCardStats: 'popularity,downloads',
   reduceMotion: 'system',
   profileHero: 'full',

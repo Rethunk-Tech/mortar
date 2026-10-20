@@ -154,6 +154,7 @@ var registry = withDefaults([]pref{
 	enumPref("theme", ScopeApp, themeValues, func(s Settings, _ string) string { return s.Theme }, func(s *Settings, _, v string) { s.Theme = v }),
 	enumPref("gridCardSize", ScopeApp, gridCardValues, func(s Settings, _ string) string { return s.GridCardSize }, func(s *Settings, _, v string) { s.GridCardSize = v }),
 	ptrPref("showAuthorOnCards", ScopeApp, func(s Settings, _ string) *bool { return s.ShowAuthorOnCards }, func(s *Settings, _ string, on bool) { s.ShowAuthorOnCards = &on }),
+	boolPref("centerConfigControls", ScopeApp, func(s Settings, _ string) bool { return s.CenterConfigControls }, func(s *Settings, _ string, on bool) { s.CenterConfigControls = on }),
 	browseCardStatsPref(),
 	enumPref("reduceMotion", ScopeApp, reduceMotionValues, func(s Settings, _ string) string { return s.ReduceMotion }, func(s *Settings, _, v string) { s.ReduceMotion = v }),
 	enumPref("profileHero", ScopeApp, heroValues, func(s Settings, _ string) string { return s.ProfileHero }, func(s *Settings, _, v string) { s.ProfileHero = v }),

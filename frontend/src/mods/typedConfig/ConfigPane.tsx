@@ -1,9 +1,10 @@
 import { useLingui } from '@lingui/react/macro'
 import { Alert, Box, Button, IconButton, MenuItem, TextField, Typography } from '@mui/material'
 import { CircleHelp, RotateCcw } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { type RefObject, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { openProfileOf, useProfiles } from '../../profiles/store.ts'
+import { useSettings } from '../../settings/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { SearchField } from '../../shell/SearchField.tsx'
 import { Tooltip } from '../../shell/Tooltip.tsx'
@@ -15,6 +16,7 @@ import { localId } from '../dependents.ts'
 import { configApi } from './api.ts'
 import { showsOneFile, useConfigList } from './configList.ts'
 import { filterFile, humanizeKey, isModified, modifiedCount } from './entries.ts'
+import { SectionNav } from './SectionNav.tsx'
 import { type Target, useTypedConfig } from './store.ts'
 import type { ConfigEntry } from './types.ts'
 import { EntryWidget } from './Widgets.tsx'
@@ -28,6 +30,7 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
   const error = useTypedConfig((s) => s.errors[`${s.current}/${section}/${entry.key}`] ?? '')
   return (
     <Box
+      className="entry-row"
       sx={{
         display: 'grid',
         gridTemplateColumns: 'minmax(0, 1fr) auto 28px',
@@ -202,40 +205,73 @@ function Toolbar({
   )
 }
 
+// A file this long gets the list of its sections beside the entries.
+const NAV_MIN_SECTIONS = 6
+const NAV_MIN_SCREENS = 2
+// On a window this wide, centred controls sit mid-row instead of at the far right.
+const CENTRED_FROM = '@media (min-width: 1440px)'
+
+// Whether the file is long enough for the section list: many sections, or more than two screens of entries.
+function useLongFile(list: RefObject<HTMLElement | null>, sections: number, entries: number) {
+  const [long, setLong] = useState(false)
+  useLayoutEffect(() => {
+    const el = list.current
+    setLong(
+      sections >= NAV_MIN_SECTIONS ||
+        (entries > 0 && el !== null && el.scrollHeight > NAV_MIN_SCREENS * el.clientHeight),
+    )
+  }, [list, sections, entries])
+  return long
+}
+
 function Sections({ shown }: { shown: ReturnType<typeof filterFile> | null }) {
   const { t } = useLingui()
+  const list = useRef<HTMLElement | null>(null)
+  const centred = useSettings((s) => s.centerConfigControls)
+  const names = useMemo(
+    () => (shown?.sections ?? []).map((s) => s.name).filter((n) => n !== ''),
+    [shown],
+  )
+  const entries = (shown?.sections ?? []).reduce((n, s) => n + s.entries.length, 0)
+  const long = useLongFile(list, names.length, entries)
   return (
-    <Box
-      sx={{
-        flex: 1,
-        minWidth: 0,
-        overflowY: 'auto',
-        p: space.pad,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: space.gap,
-      }}
-    >
-      {shown?.sections.map((section) => (
-        <Box
-          key={section.name}
-          component="section"
-          sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
-        >
-          {section.name ? (
-            <Typography component="h2" sx={{ fontSize: 16, fontWeight: 600, mt: 1 }}>
-              {section.name}
-            </Typography>
-          ) : null}
-          {section.entries.map((entry) => (
-            <EntryRow key={entry.key} section={section.name} entry={entry} />
-          ))}
-        </Box>
-      ))}
-      {shown && shown.sections.length === 0 ? (
-        <Typography sx={{ color: 'text.secondary' }}>{t`No entries match.`}</Typography>
-      ) : null}
-    </Box>
+    <>
+      <Box
+        ref={list}
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          overflowY: 'auto',
+          p: space.pad,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: space.gap,
+          ...(centred ? { [CENTRED_FROM]: { '& .entry-row': { pr: '45%' } } } : {}),
+        }}
+      >
+        {shown?.sections.map((section) => (
+          <Box
+            key={section.name}
+            component="section"
+            data-section={section.name}
+            sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
+          >
+            {section.name ? (
+              <Typography component="h2" sx={{ fontSize: 16, fontWeight: 600, mt: 1 }}>
+                {section.name}
+              </Typography>
+            ) : null}
+            {section.entries.map((entry) => (
+              <EntryRow key={entry.key} section={section.name} entry={entry} />
+            ))}
+          </Box>
+        ))}
+        {shown && shown.sections.length === 0 ? (
+          <Typography sx={{ color: 'text.secondary' }}>{t`No entries match.`}</Typography>
+        ) : null}
+      </Box>
+      {long && names.length > 1 ? <SectionNav list={list} names={names} /> : null}
+    </>
   )
 }
 

@@ -24,7 +24,7 @@ var importSections = []string{
 
 var sectionFields = map[string][]string{
 	SectionAppearance: {
-		"accent", "font", "background", "theme", "density", "gridCardSize", "showAuthorOnCards", "browseCardStats", "reduceMotion", "profileHero",
+		"accent", "font", "background", "theme", "density", "gridCardSize", "showAuthorOnCards", "centerConfigControls", "browseCardStats", "reduceMotion", "profileHero",
 		"listColumns", "listSortColumn", "listSortDir", "listGroupBy", "defaultModsView", "implicitModsView", "profileOrder", "sidebarBadges",
 	},
 	SectionNotifications: {
