@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button } from '@mui/material'
-import { memo, useState } from 'react'
+import { memo, useRef, useState } from 'react'
 import { MoveDataFolderPreview } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
 import { useNav } from '../../nav/store.ts'
 import { space } from '../../theme/density.ts'
@@ -13,7 +13,7 @@ import { type MoveState, moveDataFolder } from './DataMoveRun.ts'
 import { StoreCheckRow } from './DataStoreCheck.tsx'
 import { CleanupDialog } from './DataStoreReport.tsx'
 import { Location, UsageRows } from './DataUsage.tsx'
-import { useDataUsage } from './DataUsageLoad.ts'
+import { useDataUsage, useShownOnce } from './DataUsageLoad.ts'
 
 function useMove() {
   const { t } = useLingui()
@@ -78,12 +78,14 @@ const Upkeep = memo(function UpkeepView() {
 export function Storage() {
   const { t } = useLingui()
   const openProfiles = useNav((s) => s.openProfiles)
-  const { usage, restart, error } = useDataUsage()
+  const sentinel = useRef<HTMLSpanElement>(null)
+  const { usage, restart, error } = useDataUsage(useShownOnce(sentinel))
   const move = useMove()
   const [clearing, setClearing] = useState(false)
   const [cleaning, setCleaning] = useState(false)
   return (
     <>
+      <span ref={sentinel} />
       <Location usage={usage} onPicked={move.prepare} />
       {error ? (
         <Box
