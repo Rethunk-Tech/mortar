@@ -11,7 +11,7 @@ export function HomePanel({
   children,
 }: {
   title: string
-  span?: 1 | 2
+  span?: 1 | 2 | 3
   // Names the card so the grid can restyle it by what sits beside it.
   card?: string
   children: ReactNode

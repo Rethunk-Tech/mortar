@@ -144,8 +144,8 @@ export function Home({
       >
         <CrashHintCard game={game} profileId={profile.id} crashedAt={crashedAt} />
         <HomeNotes profile={profile} />
-        <SinceLastRun game={game} profileId={profile.id} />
         <SavesPanel />
+        <SinceLastRun game={game} profileId={profile.id} />
       </Box>
       <EditProfileDialog
         profile={profile}

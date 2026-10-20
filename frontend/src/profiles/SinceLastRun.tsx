@@ -94,7 +94,7 @@ export function SinceLastRun({ game, profileId }: { game: string; profileId: str
   }
   const { shown, canExpand } = changesView(lines, expanded)
   return (
-    <HomePanel title={t`Changes since last run`} span={2}>
+    <HomePanel title={t`Changes since last run`} span={3}>
       <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none', width: '100%' }}>
         {shown.map((line) => (
           <Typography key={line} component="li" noWrap={true} title={line}>
