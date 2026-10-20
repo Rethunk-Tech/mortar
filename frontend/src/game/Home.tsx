@@ -49,7 +49,7 @@ function SavesList() {
         <ListItem
           key={save.folder}
           disablePadding={true}
-          sx={{ minHeight: space.row, gap: space.gap, justifyContent: 'space-between' }}
+          sx={{ gap: space.gap, justifyContent: 'space-between' }}
         >
           <Typography noWrap={true} sx={{ minWidth: 0 }}>
             {saveName(save)}
@@ -133,7 +133,8 @@ export function Home({
           display: 'grid',
           gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
           gap: space.pad,
-          alignItems: 'start',
+          // Cards side by side end level with each other.
+          alignItems: 'stretch',
           px: space.gutter,
           py: space.gutter,
           [compact]: {

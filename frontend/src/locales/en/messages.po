@@ -2003,7 +2003,7 @@ msgstr "Trim…"
 msgid "Stack frame: {0}"
 msgstr "Stack frame: {0}"
 
-#: src/browse/ResultCard.tsx:129
+#: src/browse/ResultCard.tsx:158
 msgid "Marked broken"
 msgstr "Marked broken"
 
@@ -7285,7 +7285,7 @@ msgstr "Slow startup"
 msgid "Pin {name}"
 msgstr "Pin {name}"
 
-#: src/browse/ResultCard.tsx:129
+#: src/browse/ResultCard.tsx:158
 msgid "Deprecated or obsolete"
 msgstr "Deprecated or obsolete"
 
@@ -12228,7 +12228,7 @@ msgstr "Deprecated"
 
 #. placeholder {0}: m.name
 #. placeholder {0}: props.name
-#: src/browse/ResultCard.tsx:130
+#: src/browse/ResultCard.tsx:159
 #: src/mods/ModCards.tsx:194
 msgid "Details of {0}"
 msgstr "Details of {0}"
