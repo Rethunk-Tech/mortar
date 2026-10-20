@@ -109,7 +109,7 @@ function FontPicker() {
     }
   }
   return (
-    <Searchable terms={`${t`Font`} ${t`Typeface`}`}>
+    <Searchable terms={`${t`App font`} ${t`Font`} ${t`Typeface`}`}>
       <SettingRow label={t`App font`}>
         <Autocomplete
           size="small"
