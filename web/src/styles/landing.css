@@ -261,35 +261,55 @@ h1.words em > span:nth-child(3) {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background: var(--sand);
-  color: var(--sand-ink);
-  font-weight: 800;
-  padding: 16px 30px;
-  font-size: 19px;
-  border-radius: 999px;
-  box-shadow:
-    0 0 0 10px rgba(214, 177, 122, 0.18),
-    0 0 0 22px rgba(214, 177, 122, 0.07),
-    0 14px 40px rgba(0, 0, 0, 0.6);
-  transition: transform 0.2s ease;
-}
-
-/* Dims the looping preview so the button reads as the thing to press. */
-.demo::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: rgba(12, 12, 14, 0.45);
-  transition: background 0.2s ease;
-}
-
-.demo:hover::after {
-  background: rgba(12, 12, 14, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 26px 14px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  background: rgba(17, 17, 20, 0.72);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  text-align: left;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .demo:hover .play {
-  transform: translate(-50%, -50%) scale(1.05);
+  transform: translate(-50%, -50%) scale(1.04);
+  border-color: rgba(214, 177, 122, 0.6);
+}
+
+.play-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--sand);
+  color: var(--sand-ink);
+}
+
+.play-icon svg {
+  width: 26px;
+  height: 26px;
+  margin-left: 3px;
+}
+
+.play-text {
+  display: grid;
+  gap: 2px;
+}
+
+.play-text b {
+  font-size: 20px;
+  color: var(--ink);
+}
+
+.play-text small {
+  font-size: 14px;
+  color: var(--dim);
 }
 
 /* A span inside the demo's button, so it needs block display for its aspect ratio to give it height. */
