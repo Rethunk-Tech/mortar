@@ -6018,10 +6018,6 @@ msgstr "Report a bug…"
 msgid "Read the release notes on GitHub"
 msgstr "Read the release notes on GitHub"
 
-#: src/saves/SaveBackupsButton.tsx
-msgid "Backups ({count})"
-msgstr "Backups ({count})"
-
 #: src/mods/ProblemsTab.tsx
 msgid "Problem sections"
 msgstr "Problem sections"
@@ -8178,6 +8174,10 @@ msgstr "Profiles you send between paired computers carry their mod files, whatev
 #: src/sync/SyncOffers.tsx
 msgid "Only settings and options differ."
 msgstr "Only settings and options differ."
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "{count, plural, one {# backup} other {# backups}}"
+msgstr "{count, plural, one {# backup} other {# backups}}"
 
 #: src/firstrun/ProfileStep.tsx
 msgid "From another mod manager"
