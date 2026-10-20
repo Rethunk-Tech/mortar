@@ -118,9 +118,6 @@ function CardAction(props: CardActionProps) {
   const { t } = useLingui()
   const { item, source, state, installed } = props
   const offline = useOfflineReason([source])
-  if (item.loader) {
-    return <Chip size="small" label={t`Loader`} title={t`Mortar installs the loader for you.`} />
-  }
   if (item.bundled) {
     return <Chip size="small" label={t`Built in`} title={t`Installed by Mortar`} />
   }

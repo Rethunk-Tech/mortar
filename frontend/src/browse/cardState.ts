@@ -111,9 +111,9 @@ const inProfile = (profile: Profile | undefined, source: string, id: string): bo
   entryIn(profile, source, id) !== undefined
 
 // Whether the card counts its mod as installed. The profile's entries are the live word and the search's flag counts
-// only until the profile changes, except for a loader: no entry holds it, so its flag stands until the next search.
-function isInstalled(held: boolean, searched: boolean, loader: boolean, fresh: boolean): boolean {
-  return held || (searched && (loader || fresh))
+// only until the profile changes.
+function isInstalled(held: boolean, searched: boolean, fresh: boolean): boolean {
+  return held || (searched && fresh)
 }
 
 export type { CardState }

@@ -26,7 +26,8 @@ func TestMarkAndHide(t *testing.T) {
 	}
 	p := Page{Total: 4, Items: items}
 	c.applyModes(&p, Filter{Installed: ModeHide, Broken: ModeHide, Obsolete: ModeGray})
-	if len(p.Items) != 2 || p.Hidden != 2 || p.Total != 4 {
+	// The loader goes uncounted, so only Plain is left and the broken and installed hits are the two hidden.
+	if len(p.Items) != 1 || p.Items[0].Name != "Plain" || p.Hidden != 2 || p.Total != 4 {
 		t.Fatalf("hidden %d of %+v", p.Hidden, p.Items)
 	}
 }

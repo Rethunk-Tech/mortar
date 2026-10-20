@@ -53,9 +53,10 @@ func (h Holdings) holdLoader(info components.GameInfo, loaderID string) {
 	}
 }
 
-// applyModes drops the hits the filter hides and counts them in Hidden.
+// applyModes drops the hits the filter hides and counts them in Hidden. Mortar's own bridges and the game's loader are
+// dropped uncounted: Mortar installs those itself.
 func (c *Client) applyModes(p *Page, f Filter) {
-	p.Items = slices.DeleteFunc(p.Items, func(it Item) bool { return bridge.IsOwnListing(it.Name) })
+	p.Items = slices.DeleteFunc(p.Items, func(it Item) bool { return it.Loader || bridge.IsOwnListing(it.Name) })
 	before := len(p.Items)
 	p.Items = slices.DeleteFunc(p.Items, func(it Item) bool {
 		return (f.Installed == ModeHide && it.Installed) ||

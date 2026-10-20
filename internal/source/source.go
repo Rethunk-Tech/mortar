@@ -131,10 +131,11 @@ type Item struct {
 	// Adult marks a mod its site flags as adult content; browse hides it unless the player opted in.
 	Adult bool `json:"adult"`
 	// Obsolete marks a mod its author or site calls obsolete or deprecated, and Broken one the game's compatibility
-	// list calls broken; Loader marks the game's mod loader itself, which Mortar installs apart from profiles.
+	// list calls broken.
 	Obsolete bool `json:"obsolete"`
 	Broken   bool `json:"broken"`
-	Loader   bool `json:"loader"`
+	// Loader marks the game's mod loader itself, which Mortar installs from the game's page; Browse drops it.
+	Loader bool `json:"-"`
 	// Bundled marks a mod Mortar installs itself with the loader (its companion), so Add does not apply.
 	Bundled bool `json:"bundled"`
 	// External marks a mod whose author only allows downloads on the site's own page, so Add does not apply.
@@ -149,7 +150,6 @@ type Alt struct {
 	Installed bool   `json:"installed"`
 	Obsolete  bool   `json:"obsolete"`
 	Broken    bool   `json:"broken"`
-	Loader    bool   `json:"loader"`
 	// Endorsements, Stars, Downloads, Version, Updated and Size are that site's own values for the mod.
 	Endorsements int    `json:"endorsements"`
 	Stars        int    `json:"stars"`

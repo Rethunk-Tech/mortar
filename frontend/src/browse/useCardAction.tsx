@@ -41,7 +41,6 @@ function useCardAction(props: ActionProps, item: BrowseItem, source: string): Ca
   const installed = isInstalled(
     held,
     choices.some((c) => c.installed),
-    item.loader,
     profile?.updated === searchedUpdated.current,
   )
   const live = cardState(items, source, id, profileID)

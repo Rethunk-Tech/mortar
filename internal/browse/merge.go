@@ -65,15 +65,12 @@ func thunderstoreRefIn(text string) string {
 // identityOf resolves a hit to its package identity (a SMAPI UniqueID or a loader plugin id), "" when none is known.
 type identityOf func(Item) string
 
-// keys are what ties two hits to one mod across sources, and only references and identities do: the game's loader,
-// the package identity both hits resolve to, the GitHub repository a hit links, or the Thunderstore package its
+// keys are what ties two hits to one mod across sources, and only references and identities do: the package
+// identity both hits resolve to, the GitHub repository a hit links, or the Thunderstore package its
 // summary points at. A name never ties two hits: different mods share names, and a site's author is often the
 // uploader.
 func keys(it Item, ident identityOf) []string {
 	var out []string
-	if it.Loader {
-		out = append(out, "loader")
-	}
 	if ident != nil {
 		if id := ident(it); id != "" {
 			out = append(out, "id:"+id)
@@ -97,7 +94,7 @@ func keys(it Item, ident identityOf) []string {
 
 // mergeSame folds hits of the same mod from different sources into one card, in the position of the group's first
 // hit. The card is the hit of the earliest source in order (the game's catalog order), and the rest are its Alts,
-// each with its own Installed, Obsolete, Broken, Loader and counts. A card with a loader hit is a loader card.
+// each with its own Installed, Obsolete, Broken and counts.
 // Two hits of one source are never merged: a source already lists a mod once.
 func mergeSame(items []Item, order []string, ident identityOf) []Item {
 	rank := func(src string) int {
@@ -139,11 +136,10 @@ func mergeSame(items []Item, order []string, ident identityOf) []Item {
 		}
 		card := members[best]
 		for i, m := range members {
-			card.Loader = card.Loader || m.Loader
 			if i != best {
 				card.Alts = append(card.Alts, source.Alt{
 					Source: m.Source, ID: m.ID, URL: m.URL, Installed: m.Installed,
-					Obsolete: m.Obsolete, Broken: m.Broken, Loader: m.Loader,
+					Obsolete: m.Obsolete, Broken: m.Broken,
 					Endorsements: m.Endorsements, Stars: m.Stars, Downloads: m.Downloads,
 					Version: m.Version, Updated: m.Updated, Size: m.Size,
 				})

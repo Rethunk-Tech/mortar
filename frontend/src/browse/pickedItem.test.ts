@@ -9,7 +9,6 @@ const card = {
   installed: false,
   obsolete: false,
   broken: false,
-  loader: true,
   bundled: false,
   alts: [
     {
@@ -19,7 +18,6 @@ const card = {
       installed: true,
       obsolete: true,
       broken: false,
-      loader: true,
     },
   ],
 } as BrowseItem
@@ -34,8 +32,4 @@ test('the picked source supplies its own id, state and flags', () => {
     installed: true,
     obsolete: true,
   })
-})
-
-test('a merged loader card stays a loader card on every source', () => {
-  expect(pickedItem(card, 'nexus').loader).toBe(true)
 })

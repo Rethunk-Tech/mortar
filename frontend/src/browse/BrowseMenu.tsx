@@ -41,7 +41,7 @@ function Items({
   let addWhy: string | undefined
   if (installed) {
     addWhy = t`Already in this profile.`
-  } else if (shownItem.bundled || shownItem.loader) {
+  } else if (shownItem.bundled) {
     addWhy = t`Mortar installs this itself.`
   }
   return [

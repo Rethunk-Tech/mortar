@@ -214,7 +214,7 @@ msgstr "Where it came in one download with other mods, it is disabled instead."
 msgid "Allow cleanup"
 msgstr "Allow cleanup"
 
-#: src/profiles/HealthDialog.tsx:148
+#: src/profiles/HealthDialog.tsx:149
 msgid "Revert {name} to the installed copy?"
 msgstr "Revert {name} to the installed copy?"
 
@@ -347,7 +347,7 @@ msgstr "Snapshot diff"
 msgid "No notes for this release."
 msgstr "No notes for this release."
 
-#: src/profiles/HealthDialog.tsx:56
+#: src/profiles/HealthDialog.tsx:57
 msgid "{name} is missing from the store"
 msgstr "{name} is missing from the store"
 
@@ -448,7 +448,7 @@ msgstr "{name} needs {detail}, which Mortar cannot install"
 msgid "Duplicate the open profile"
 msgstr "Duplicate the open profile"
 
-#: src/profiles/HealthDialog.tsx:40
+#: src/profiles/HealthDialog.tsx:41
 msgid "Missing from the store"
 msgstr "Missing from the store"
 
@@ -569,7 +569,7 @@ msgstr "Reinstall loader"
 msgid "{chosen} chosen"
 msgstr "{chosen} chosen"
 
-#: src/mods/LoadOrderTab.tsx:110
+#: src/mods/LoadOrderTab.tsx:111
 msgid "Required: {label}"
 msgstr "Required: {label}"
 
@@ -592,7 +592,7 @@ msgstr "Density"
 msgid "Mod store"
 msgstr "Mod store"
 
-#: src/settings/sections/DataStoreReport.tsx:301
+#: src/settings/sections/DataStoreReport.tsx:306
 msgid "Older copies of the same mod"
 msgstr "Older copies of the same mod"
 
@@ -757,7 +757,7 @@ msgid "Show a report first."
 msgstr "Show a report first."
 
 #: src/mods/problemFix/DamagedFix.tsx:40
-#: src/profiles/HealthDialog.tsx:120
+#: src/profiles/HealthDialog.tsx:121
 #: src/profiles/ProfilesPage.tsx:166
 #: src/settings/sections/AboutDiagnostics.tsx:218
 msgid "Repair"
@@ -852,7 +852,7 @@ msgstr "A network request failed."
 msgid "No"
 msgstr "No"
 
-#: src/profiles/HealthDialog.tsx:253
+#: src/profiles/HealthDialog.tsx:258
 msgid "Everything looks fine"
 msgstr "Everything looks fine"
 
@@ -989,7 +989,7 @@ msgstr "Game version not supported"
 msgid "Add a desktop shortcut"
 msgstr "Add a desktop shortcut"
 
-#: src/browse/CardAction.tsx:125
+#: src/browse/CardAction.tsx:122
 msgid "Installed by Mortar"
 msgstr "Installed by Mortar"
 
@@ -1109,7 +1109,7 @@ msgstr "Install by hand: {0}"
 msgid "Add to {targetName}"
 msgstr "Add to {targetName}"
 
-#: src/mods/LoadOrderTab.tsx:429
+#: src/mods/LoadOrderTab.tsx:441
 msgid "Enable mods in the Mods tab to see the order {loader} loads them."
 msgstr "Enable mods in the Mods tab to see the order {loader} loads them."
 
@@ -1391,7 +1391,7 @@ msgstr "Sort: most downloaded"
 msgid "Scan command"
 msgstr "Scan command"
 
-#: src/mods/ModsTab.tsx:139
+#: src/mods/ModsTab.tsx:142
 msgid "Show all mods"
 msgstr "Show all mods"
 
@@ -1854,7 +1854,7 @@ msgstr "Default sort"
 msgid "What you expected"
 msgstr "What you expected"
 
-#: src/profiles/HealthDialog.tsx:80
+#: src/profiles/HealthDialog.tsx:81
 msgid "{count, plural, one {# stored mod is not used by any profile} other {# stored mods are not used by any profile}}"
 msgstr "{count, plural, one {# stored mod is not used by any profile} other {# stored mods are not used by any profile}}"
 
@@ -1922,7 +1922,7 @@ msgstr "The antivirus flagged this download, so Mortar did not install it."
 msgid "Could not dismiss the warning"
 msgstr "Could not dismiss the warning"
 
-#: src/profiles/HealthDialog.tsx:279
+#: src/profiles/HealthDialog.tsx:284
 msgid "Repair all"
 msgstr "Repair all"
 
@@ -1957,19 +1957,19 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 #: src/game/detailStates.tsx:26
 #: src/lan/SendPanel.tsx:194
 #: src/launch/LaunchLayer.tsx:251
-#: src/mods/LoadOrderTab.tsx:421
-#: src/mods/ModsTab.tsx:114
+#: src/mods/LoadOrderTab.tsx:433
+#: src/mods/ModsTab.tsx:115
 #: src/mods/typedConfig/ConfigPane.tsx:419
 #: src/mods/updateReview/updateAll.ts:65
 #: src/profiles/GameModsDialog.tsx:195
-#: src/profiles/HealthDialog.tsx:245
+#: src/profiles/HealthDialog.tsx:246
 #: src/profiles/LaunchPreview.tsx:80
 #: src/queue/QueueBody.tsx:238
 #: src/queue/store.ts:167
 #: src/saves/BackupsDialog.tsx:167
 #: src/saves/SavesTab.tsx:60
 #: src/screenshots/ScreenshotsTab.tsx:134
-#: src/settings/sections/DataStoreReport.tsx:398
+#: src/settings/sections/DataStoreReport.tsx:403
 #: src/settings/sections/Storage.tsx:102
 #: src/settings/sections/Updates.tsx:46
 #: src/shell/ErrorBoundary.tsx:22
@@ -2011,7 +2011,7 @@ msgstr "Marked broken"
 msgid "Trim"
 msgstr "Trim"
 
-#: src/mods/LoadOrderTab.tsx:142
+#: src/mods/LoadOrderTab.tsx:143
 msgid "Show less"
 msgstr "Show less"
 
@@ -2052,7 +2052,7 @@ msgstr "Startup"
 msgid "{count, plural, one {# mod in the game's Mods folder differs from this profile} other {# mods in the game's Mods folder differ from this profile}}"
 msgstr "{count, plural, one {# mod in the game's Mods folder differs from this profile} other {# mods in the game's Mods folder differ from this profile}}"
 
-#: src/profiles/HealthDialog.tsx:55
+#: src/profiles/HealthDialog.tsx:56
 msgid "{name} is missing from the store, and Mortar cannot download it again"
 msgstr "{name} is missing from the store, and Mortar cannot download it again"
 
@@ -2408,7 +2408,7 @@ msgstr "Install anyway…"
 msgid "{0} (optional file)"
 msgstr "{0} (optional file)"
 
-#: src/mods/LoadOrderTab.tsx:282
+#: src/mods/LoadOrderTab.tsx:292
 msgid "The game loader chooses this order. Mortar does not change it."
 msgstr "The game loader chooses this order. Mortar does not change it."
 
@@ -2658,7 +2658,7 @@ msgstr "Include libraries and supporting mods"
 #: src/mods/problemFix/WhereButtons.tsx:47
 #: src/mods/updateReview/UpdateActions.tsx:91
 #: src/mods/updateReview/UpdateActions.tsx:91
-#: src/profiles/HealthDialog.tsx:120
+#: src/profiles/HealthDialog.tsx:121
 #: src/saves/lackChips.tsx:57
 msgid "Queued"
 msgstr "Queued"
@@ -2706,7 +2706,7 @@ msgstr "Not paired · only links"
 msgid "{0} {1}, year {2}"
 msgstr "{0} {1}, year {2}"
 
-#: src/mods/LoadOrderTab.tsx:194
+#: src/mods/LoadOrderTab.tsx:204
 msgid "Dependency cycle"
 msgstr "Dependency cycle"
 
@@ -2724,7 +2724,7 @@ msgstr "New profile"
 msgid "Repaired {name}"
 msgstr "Repaired {name}"
 
-#: src/mods/LoadOrderTab.tsx:271
+#: src/mods/LoadOrderTab.tsx:281
 msgid "Copy load order"
 msgstr "Copy load order"
 
@@ -3147,7 +3147,7 @@ msgid "Delete permanently"
 msgstr "Delete permanently"
 
 #: src/game/ProfileMenuItems.tsx:165
-#: src/profiles/HealthDialog.tsx:269
+#: src/profiles/HealthDialog.tsx:274
 msgid "Check this profile"
 msgstr "Check this profile"
 
@@ -3159,7 +3159,7 @@ msgstr "Compare {summary}"
 msgid "Start Mortar when you sign in to this computer"
 msgstr "Start Mortar when you sign in to this computer"
 
-#: src/settings/sections/DataStoreReport.tsx:294
+#: src/settings/sections/DataStoreReport.tsx:299
 msgid "Mods no profile uses"
 msgstr "Mods no profile uses"
 
@@ -3176,7 +3176,7 @@ msgstr "Ignore updates from {0}"
 msgid "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 msgstr "{label} is replaced by the copy in this backup. The current {label} is backed up first."
 
-#: src/mods/LoadOrderTab.tsx:428
+#: src/mods/LoadOrderTab.tsx:440
 msgid "No enabled mods"
 msgstr "No enabled mods"
 
@@ -3405,7 +3405,7 @@ msgid "Toggle downloads"
 msgstr "Toggle downloads"
 
 #. placeholder {0}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:428
+#: src/settings/sections/DataStoreReport.tsx:433
 msgid "This frees {0}. Deleted mods download again if a profile needs them later."
 msgstr "This frees {0}. Deleted mods download again if a profile needs them later."
 
@@ -3459,7 +3459,7 @@ msgid "What happened"
 msgstr "What happened"
 
 #. placeholder {0}: reverts.length
-#: src/profiles/HealthDialog.tsx:149
+#: src/profiles/HealthDialog.tsx:150
 msgid "{0, plural, one {Revert # mod?} other {Revert # mods?}}"
 msgstr "{0, plural, one {Revert # mod?} other {Revert # mods?}}"
 
@@ -3467,7 +3467,7 @@ msgstr "{0, plural, one {Revert # mod?} other {Revert # mods?}}"
 msgid "No custom categories yet"
 msgstr "No custom categories yet"
 
-#: src/profiles/HealthDialog.tsx:44
+#: src/profiles/HealthDialog.tsx:45
 msgid "Left in the shared folder"
 msgstr "Left in the shared folder"
 
@@ -3620,7 +3620,7 @@ msgid "Update {localName} from {sender}"
 msgstr "Update {localName} from {sender}"
 
 #. placeholder {0}: required.length - INLINE_REQUIRED
-#: src/mods/LoadOrderTab.tsx:145
+#: src/mods/LoadOrderTab.tsx:146
 msgid " · {0} more required"
 msgstr " · {0} more required"
 
@@ -3826,7 +3826,7 @@ msgstr "Not downloadable here"
 msgid "API key set for {itch}"
 msgstr "API key set for {itch}"
 
-#: src/settings/sections/DataStoreReport.tsx:302
+#: src/settings/sections/DataStoreReport.tsx:307
 msgid "a newer copy is kept"
 msgstr "a newer copy is kept"
 
@@ -4053,7 +4053,7 @@ msgid "Add to profile"
 msgstr "Add to profile"
 
 #: src/mods/problemFixButtons.tsx:267
-#: src/profiles/HealthDialog.tsx:153
+#: src/profiles/HealthDialog.tsx:154
 msgid "Your edits to its files are replaced with the installed copy."
 msgstr "Your edits to its files are replaced with the installed copy."
 
@@ -4144,7 +4144,7 @@ msgstr "Console"
 msgid "{both, plural, one {# mod is in both} other {# mods are in both}}"
 msgstr "{both, plural, one {# mod is in both} other {# mods are in both}}"
 
-#: src/mods/ModsTab.tsx:141
+#: src/mods/ModsTab.tsx:144
 msgid "Try a different search or filter."
 msgstr "Try a different search or filter."
 
@@ -4251,7 +4251,7 @@ msgstr "Delete the game folder, then reinstall {gameName} from your launcher."
 msgid "Go back"
 msgstr "Go back"
 
-#: src/settings/sections/DataStoreReport.tsx:111
+#: src/settings/sections/DataStoreReport.tsx:112
 msgid "Unfinished downloads and temporary files"
 msgstr "Unfinished downloads and temporary files"
 
@@ -4286,15 +4286,15 @@ msgstr "Custom categories"
 #: src/mods/problemFixButtons.tsx:213
 #: src/mods/problemFixButtons.tsx:218
 #: src/mods/typedConfig/ConfigPane.tsx:437
-#: src/profiles/HealthDialog.tsx:287
+#: src/profiles/HealthDialog.tsx:292
 #: src/profiles/LaunchPresetsBlock.tsx:54
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:68
 #: src/profiles/ProfilesPage.tsx:173
 #: src/saves/SaveBackupsButton.tsx:102
 #: src/saves/SaveBackupsButton.tsx:214
 #: src/settings/prefCopyGame.ts:76
-#: src/settings/sections/DataStoreReport.tsx:422
-#: src/settings/sections/DataStoreReport.tsx:429
+#: src/settings/sections/DataStoreReport.tsx:427
+#: src/settings/sections/DataStoreReport.tsx:434
 #: src/templates/TemplateDialogs.tsx:116
 #: src/templates/TemplateDialogs.tsx:207
 msgid "Delete"
@@ -4578,7 +4578,7 @@ msgstr "Apply"
 msgid "config.json, as the mod ships it"
 msgstr "config.json, as the mod ships it"
 
-#: src/mods/LoadOrderTab.tsx:204
+#: src/mods/LoadOrderTab.tsx:214
 msgid "The last launch loaded this here, not where its dependencies put it."
 msgstr "The last launch loaded this here, not where its dependencies put it."
 
@@ -4676,7 +4676,7 @@ msgstr "Cancel"
 msgid "A profile with only {loader}. Add mods from {site} or from archives."
 msgstr "A profile with only {loader}. Add mods from {site} or from archives."
 
-#: src/profiles/HealthDialog.tsx:65
+#: src/profiles/HealthDialog.tsx:66
 msgid "The saved change {change} from {when} is missing its config files"
 msgstr "The saved change {change} from {when} is missing its config files"
 
@@ -5104,10 +5104,6 @@ msgstr "Last run: {summary}"
 msgid "Offer new downloads"
 msgstr "Offer new downloads"
 
-#: src/browse/CardAction.tsx:122
-msgid "Loader"
-msgstr "Loader"
-
 #: src/settings/prefCopy.ts:218
 #: src/settings/sections/GameSettings.tsx:347
 msgid "Extra mods folder"
@@ -5377,7 +5373,7 @@ msgstr "Baseline: the mods' timed code is {0} ms of the {1} ms average frame; th
 
 #. placeholder {0}: picked.size
 #. placeholder {1}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:413
+#: src/settings/sections/DataStoreReport.tsx:418
 msgid "{0} selected · {1}"
 msgstr "{0} selected · {1}"
 
@@ -5451,7 +5447,7 @@ msgid "Browse mods"
 msgstr "Browse mods"
 
 #. placeholder {0}: formatBytes(bytes)
-#: src/settings/sections/DataStoreReport.tsx:376
+#: src/settings/sections/DataStoreReport.tsx:381
 msgid "Freed {0}"
 msgstr "Freed {0}"
 
@@ -5572,7 +5568,7 @@ msgstr "Meadowlands farm"
 msgid "Save as preset"
 msgstr "Save as preset"
 
-#: src/profiles/HealthDialog.tsx:41
+#: src/profiles/HealthDialog.tsx:42
 msgid "Changed outside Mortar"
 msgstr "Changed outside Mortar"
 
@@ -5671,7 +5667,7 @@ msgstr "Export…"
 msgid "Choose a file"
 msgstr "Choose a file"
 
-#: src/settings/sections/DataStoreReport.tsx:109
+#: src/settings/sections/DataStoreReport.tsx:110
 msgid "Cached GitHub release lists"
 msgstr "Cached GitHub release lists"
 
@@ -5896,7 +5892,7 @@ msgstr "Search {sourceName}"
 msgid "{0} of {1}"
 msgstr "{0} of {1}"
 
-#: src/profiles/HealthDialog.tsx:60
+#: src/profiles/HealthDialog.tsx:61
 msgid "Files of {name} changed outside Mortar"
 msgstr "Files of {name} changed outside Mortar"
 
@@ -6415,7 +6411,7 @@ msgstr "New profile…"
 msgid "The files will download from each mod's source."
 msgstr "The files will download from each mod's source."
 
-#: src/profiles/HealthDialog.tsx:254
+#: src/profiles/HealthDialog.tsx:259
 msgid "Mortar found nothing to repair in this profile."
 msgstr "Mortar found nothing to repair in this profile."
 
@@ -6652,7 +6648,7 @@ msgstr "Background"
 msgid "Move {0} up"
 msgstr "Move {0} up"
 
-#: src/profiles/HealthDialog.tsx:59
+#: src/profiles/HealthDialog.tsx:60
 msgid "The folder of {name} was deleted outside Mortar"
 msgstr "The folder of {name} was deleted outside Mortar"
 
@@ -6891,7 +6887,7 @@ msgstr "No settings match"
 msgid "Open the command palette"
 msgstr "Open the command palette"
 
-#: src/mods/LoadOrderTab.tsx:419
+#: src/mods/LoadOrderTab.tsx:431
 msgid "Could not read load order"
 msgstr "Could not read load order"
 
@@ -6966,7 +6962,7 @@ msgstr "Disable it and play"
 msgid "Keep forever"
 msgstr "Keep forever"
 
-#: src/profiles/HealthDialog.tsx:144
+#: src/profiles/HealthDialog.tsx:145
 msgid "Delete the unreadable changes from history?"
 msgstr "Delete the unreadable changes from history?"
 
@@ -7005,7 +7001,7 @@ msgstr "Older copy skipped"
 msgid "{endorsements, plural, one {# like} other {# likes}}"
 msgstr "{endorsements, plural, one {# like} other {# likes}}"
 
-#: src/browse/CardAction.tsx:131
+#: src/browse/CardAction.tsx:128
 msgid "Added"
 msgstr "Added"
 
@@ -7298,7 +7294,7 @@ msgid "Premium downloads come from this Nexus server when it offers the file."
 msgstr "Premium downloads come from this Nexus server when it offers the file."
 
 #: src/browse/BrowseMenu.tsx:58
-#: src/browse/CardAction.tsx:136
+#: src/browse/CardAction.tsx:133
 #: src/mods/modActions.ts:81
 #: src/mods/modActions.ts:82
 #: src/mods/ModDependencyTree.tsx:67
@@ -7469,7 +7465,7 @@ msgstr "What's new in {version}"
 msgid "Profiles already made from it are not changed."
 msgstr "Profiles already made from it are not changed."
 
-#: src/mods/LoadOrderTab.tsx:268
+#: src/mods/LoadOrderTab.tsx:278
 msgid "Load order copied"
 msgstr "Load order copied"
 
@@ -7535,7 +7531,7 @@ msgstr "Another preset already has this name."
 msgid "Unknown author"
 msgstr "Unknown author"
 
-#: src/browse/CardAction.tsx:131
+#: src/browse/CardAction.tsx:128
 msgid "In this profile"
 msgstr "In this profile"
 
@@ -7548,7 +7544,7 @@ msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus: {no
 msgid "{0} needs this version or newer."
 msgstr "{0} needs this version or newer."
 
-#: src/profiles/HealthDialog.tsx:243
+#: src/profiles/HealthDialog.tsx:244
 msgid "Could not check this profile"
 msgstr "Could not check this profile"
 
@@ -7910,7 +7906,7 @@ msgstr "Unity exception"
 #: src/mods/problemFixButtons.tsx:263
 #: src/mods/problemFixButtons.tsx:268
 #: src/mods/typedConfig/ConfigPane.tsx:334
-#: src/profiles/HealthDialog.tsx:287
+#: src/profiles/HealthDialog.tsx:292
 msgid "Revert"
 msgstr "Revert"
 
@@ -7968,7 +7964,7 @@ msgid "Mods"
 msgstr "Mods"
 
 #. placeholder {0}: g.items.length
-#: src/settings/sections/DataStoreReport.tsx:313
+#: src/settings/sections/DataStoreReport.tsx:318
 msgid "{0, plural, one {# file} other {# files}}"
 msgstr "{0, plural, one {# file} other {# files}}"
 
@@ -8039,7 +8035,7 @@ msgstr "Reason (optional)"
 msgid "Slowest mods"
 msgstr "Slowest mods"
 
-#: src/settings/sections/DataStoreReport.tsx:396
+#: src/settings/sections/DataStoreReport.tsx:401
 msgid "Could not load what can be cleaned up"
 msgstr "Could not load what can be cleaned up"
 
@@ -8126,7 +8122,7 @@ msgstr "Every archive in the downloads folder is already in a profile or Mortar'
 msgid "Clear download history?"
 msgstr "Clear download history?"
 
-#: src/settings/sections/DataStoreReport.tsx:113
+#: src/settings/sections/DataStoreReport.tsx:114
 msgid "Other cached data"
 msgstr "Other cached data"
 
@@ -8650,7 +8646,7 @@ msgstr "No screenshots yet"
 msgid "No versions are listed."
 msgstr "No versions are listed."
 
-#: src/profiles/HealthDialog.tsx:66
+#: src/profiles/HealthDialog.tsx:67
 msgid "Could not read the saved change {change} from {when}"
 msgstr "Could not read the saved change {change} from {when}"
 
@@ -8717,7 +8713,7 @@ msgstr "Yes"
 msgid "Pinned {name} at its version"
 msgstr "Pinned {name} at its version"
 
-#: src/profiles/HealthDialog.tsx:43
+#: src/profiles/HealthDialog.tsx:44
 msgid "Unfinished launch"
 msgstr "Unfinished launch"
 
@@ -9046,7 +9042,7 @@ msgstr "Could not import"
 msgid "{0, plural, one {Added # mod from {name}; {left, plural, one {# mod} other {# mods}} still to download} other {Added # mods from {name}; {left, plural, one {# mod} other {# mods}} still to download}}"
 msgstr "{0, plural, one {Added # mod from {name}; {left, plural, one {# mod} other {# mods}} still to download} other {Added # mods from {name}; {left, plural, one {# mod} other {# mods}} still to download}}"
 
-#: src/profiles/HealthDialog.tsx:154
+#: src/profiles/HealthDialog.tsx:155
 msgid "The profile itself stays as it is."
 msgstr "The profile itself stays as it is."
 
@@ -9093,7 +9089,7 @@ msgstr "Plugins load"
 
 #: src/nxm/store.ts:109
 #: src/queue/totals.ts:121
-#: src/settings/sections/DataStoreReport.tsx:124
+#: src/settings/sections/DataStoreReport.tsx:125
 #: src/share/arrivals.ts:55
 msgid "Nexus mod {id}"
 msgstr "Nexus mod {id}"
@@ -9527,7 +9523,7 @@ msgstr "Firefox:"
 msgid "Could not restore the collection link"
 msgstr "Could not restore the collection link"
 
-#: src/browse/CardAction.tsx:125
+#: src/browse/CardAction.tsx:122
 msgid "Built in"
 msgstr "Built in"
 
@@ -9659,7 +9655,7 @@ msgstr "Create a new profile"
 msgid "Switch to Load order"
 msgstr "Switch to Load order"
 
-#: src/settings/sections/DataStoreReport.tsx:282
+#: src/settings/sections/DataStoreReport.tsx:287
 msgid "Nothing to clean up."
 msgstr "Nothing to clean up."
 
@@ -9796,7 +9792,7 @@ msgstr "Could not make the list"
 msgid "Missing dependency"
 msgstr "Missing dependency"
 
-#: src/settings/sections/DataStoreReport.tsx:107
+#: src/settings/sections/DataStoreReport.tsx:108
 msgid "Cached Nexus mod details"
 msgstr "Cached Nexus mod details"
 
@@ -9827,7 +9823,7 @@ msgstr "Could not save the template"
 msgid "Implicit mods"
 msgstr "Implicit mods"
 
-#: src/mods/ModsTab.tsx:112
+#: src/mods/ModsTab.tsx:113
 msgid "Could not read the mods: {loadError}"
 msgstr "Could not read the mods: {loadError}"
 
@@ -9929,7 +9925,7 @@ msgstr "Keep the newest backups of each save and delete the rest. Pinned backups
 msgid "{0}: in Mortar"
 msgstr "{0}: in Mortar"
 
-#: src/mods/LoadOrderTab.tsx:190
+#: src/mods/LoadOrderTab.tsx:200
 msgid "These mods require each other."
 msgstr "These mods require each other."
 
@@ -10164,7 +10160,7 @@ msgstr "Message copied"
 msgid "{0, plural, one {Added # mod from {name}; downloading {left, plural, one {# mod} other {# mods}}} other {Added # mods from {name}; downloading {left, plural, one {# mod} other {# mods}}}}"
 msgstr "{0, plural, one {Added # mod from {name}; downloading {left, plural, one {# mod} other {# mods}}} other {Added # mods from {name}; downloading {left, plural, one {# mod} other {# mods}}}}"
 
-#: src/profiles/HealthDialog.tsx:158
+#: src/profiles/HealthDialog.tsx:159
 msgid "The unreadable changes are also deleted from history."
 msgstr "The unreadable changes are also deleted from history."
 
@@ -11086,7 +11082,7 @@ msgstr "Could not check the graphics setting"
 msgid "Profile to add them to"
 msgstr "Profile to add them to"
 
-#: src/profiles/HealthDialog.tsx:69
+#: src/profiles/HealthDialog.tsx:70
 msgid "A launch ended without Mortar putting the game folder back as it was"
 msgstr "A launch ended without Mortar putting the game folder back as it was"
 
@@ -11307,7 +11303,7 @@ msgstr "Add it"
 msgid "Could not change how mod links open"
 msgstr "Could not change how mod links open"
 
-#: src/mods/LoadOrderTab.tsx:275
+#: src/mods/LoadOrderTab.tsx:285
 msgid "Filter load order"
 msgstr "Filter load order"
 
@@ -11701,7 +11697,7 @@ msgstr "Error in a preloader patch"
 msgid "Copy from profile…"
 msgstr "Copy from profile…"
 
-#: src/mods/LoadOrderTab.tsx:111
+#: src/mods/LoadOrderTab.tsx:112
 msgid "Optional: {label}"
 msgstr "Optional: {label}"
 
@@ -11713,7 +11709,7 @@ msgstr "Combine with…"
 msgid "No matching mods"
 msgstr "No matching mods"
 
-#: src/profiles/HealthDialog.tsx:76
+#: src/profiles/HealthDialog.tsx:77
 msgid "A file a mod wrote is too large to copy into the profile and stays in the shared folder"
 msgstr "A file a mod wrote is too large to copy into the profile and stays in the shared folder"
 
@@ -11737,11 +11733,11 @@ msgstr "Not played yet"
 msgid "Importing"
 msgstr "Importing"
 
-#: src/settings/sections/DataStoreReport.tsx:130
+#: src/settings/sections/DataStoreReport.tsx:131
 msgid "Mortar bridge"
 msgstr "Mortar bridge"
 
-#: src/profiles/HealthDialog.tsx:45
+#: src/profiles/HealthDialog.tsx:46
 msgid "Not used by any profile"
 msgstr "Not used by any profile"
 
@@ -11979,7 +11975,7 @@ msgid "itch.io"
 msgstr "itch.io"
 
 #. placeholder {0}: users.length
-#: src/mods/LoadOrderTab.tsx:143
+#: src/mods/LoadOrderTab.tsx:144
 msgid "{0, plural, one {Used by # mod} other {Used by # mods}}"
 msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
 
@@ -12124,7 +12120,7 @@ msgstr "Switch off"
 msgid "{count, plural, one {Try my Mortar profile \"{0}\" for {gameName} (# mod): {1}} other {Try my Mortar profile \"{2}\" for {gameName} (# mods): {3}}}"
 msgstr "{count, plural, one {Try my Mortar profile \"{0}\" for {gameName} (# mod): {1}} other {Try my Mortar profile \"{2}\" for {gameName} (# mods): {3}}}"
 
-#: src/settings/sections/DataStoreReport.tsx:427
+#: src/settings/sections/DataStoreReport.tsx:432
 msgid "Delete the selected items?"
 msgstr "Delete the selected items?"
 
@@ -12564,7 +12560,7 @@ msgstr "the connection was refused"
 msgid "Removed the tag {detail} from {name}"
 msgstr "Removed the tag {detail} from {name}"
 
-#: src/profiles/HealthDialog.tsx:73
+#: src/profiles/HealthDialog.tsx:74
 msgid "Changed bytes of a mod file are kept beside it, since no profile could take them"
 msgstr "Changed bytes of a mod file are kept beside it, since no profile could take them"
 
@@ -12628,7 +12624,7 @@ msgstr "Move back to the data folder"
 msgid "Install"
 msgstr "Install"
 
-#: src/profiles/HealthDialog.tsx:42
+#: src/profiles/HealthDialog.tsx:43
 msgid "History that cannot be read"
 msgstr "History that cannot be read"
 
@@ -12808,7 +12804,7 @@ msgstr "Ask when I press Play"
 msgid "{0} is not installed"
 msgstr "{0} is not installed"
 
-#: src/mods/LoadOrderTab.tsx:414
+#: src/mods/LoadOrderTab.tsx:424
 msgid "Reading load order…"
 msgstr "Reading load order…"
 
@@ -13108,10 +13104,6 @@ msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game
 #: src/game/ProfileMenu.tsx:53
 msgid "Copies"
 msgstr "Copies"
-
-#: src/browse/CardAction.tsx:122
-msgid "Mortar installs the loader for you."
-msgstr "Mortar installs the loader for you."
 
 #: src/settings/sections/General.tsx:203
 #: src/settings/sections/General.tsx:209
@@ -13423,7 +13415,7 @@ msgstr "{added, plural, one {Added # mod} other {Added # mods}}"
 msgid "Use {0}"
 msgstr "Use {0}"
 
-#: src/mods/LoadOrderTab.tsx:110
+#: src/mods/LoadOrderTab.tsx:111
 msgid "Needs {label} (missing)"
 msgstr "Needs {label} (missing)"
 
@@ -13460,7 +13452,7 @@ msgstr "Until the game's first scene has loaded"
 #: src/mods/CleanupSection.tsx:71
 #: src/mods/EnableRequirementsDialog.tsx:20
 #: src/mods/EnableRequirementsDialog.tsx:55
-#: src/mods/LoadOrderTab.tsx:66
+#: src/mods/LoadOrderTab.tsx:67
 #: src/mods/ProblemsTab.tsx:442
 msgid "Unknown mod"
 msgstr "Unknown mod"
@@ -13500,7 +13492,7 @@ msgstr "Could not use that image"
 msgid "{0}'s {1} is {2}; it can match {installed} instead."
 msgstr "{0}'s {1} is {2}; it can match {installed} instead."
 
-#: src/mods/ModsTab.tsx:120
+#: src/mods/ModsTab.tsx:122
 msgid "Loading mods"
 msgstr "Loading mods"
 
@@ -13612,7 +13604,7 @@ msgstr "While this profile runs, Mortar sets your shared saves aside and shows t
 msgid "Not enough disk space"
 msgstr "Not enough disk space"
 
-#: src/settings/sections/DataStoreReport.tsx:382
+#: src/settings/sections/DataStoreReport.tsx:387
 msgid "Clean up storage"
 msgstr "Clean up storage"
 
@@ -13915,7 +13907,7 @@ msgstr "Teal"
 msgid "Could not read this profile"
 msgstr "Could not read this profile"
 
-#: src/settings/sections/DataStoreReport.tsx:289
+#: src/settings/sections/DataStoreReport.tsx:294
 msgid "Select all"
 msgstr "Select all"
 
@@ -13972,7 +13964,7 @@ msgstr "Updates, missing dependencies and links from mod sites land here."
 msgid "Game install"
 msgstr "Game install"
 
-#: src/mods/LoadOrderTab.tsx:112
+#: src/mods/LoadOrderTab.tsx:113
 msgid "Used by: {label}"
 msgstr "Used by: {label}"
 
@@ -14420,7 +14412,7 @@ msgstr "Skip this update"
 msgid "Command-line control"
 msgstr "Command-line control"
 
-#: src/profiles/HealthDialog.tsx:221
+#: src/profiles/HealthDialog.tsx:222
 msgid "Could not repair this profile"
 msgstr "Could not repair this profile"
 
@@ -14806,7 +14798,7 @@ msgstr "Went back to {when}"
 msgid "Download history"
 msgstr "Download history"
 
-#: src/mods/LoadOrderTab.tsx:209
+#: src/mods/LoadOrderTab.tsx:219
 msgid "Last launch"
 msgstr "Last launch"
 
@@ -14853,7 +14845,7 @@ msgstr "imported from a .mortar file"
 msgid "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
 msgstr "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
 
-#: src/mods/ModsTab.tsx:425
+#: src/mods/ModsTab.tsx:428
 msgid "Drop archives anywhere on the window, or use Browse to find mods."
 msgstr "Drop archives anywhere on the window, or use Browse to find mods."
 
@@ -14922,7 +14914,7 @@ msgstr "Compare"
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
 
-#: src/settings/sections/DataStoreReport.tsx:306
+#: src/settings/sections/DataStoreReport.tsx:311
 msgid "Leftover files"
 msgstr "Leftover files"
 
@@ -15187,14 +15179,14 @@ msgstr "Applied the next time the server starts. The password stays in this prof
 #: src/mods/OldFilesCallouts.tsx:275
 #: src/mods/updateReview/ReviewFooter.tsx:29
 #: src/profiles/CompareTop.tsx:148
-#: src/profiles/HealthDialog.tsx:272
+#: src/profiles/HealthDialog.tsx:277
 #: src/profiles/HistoryPanel.tsx:135
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:74
 #: src/profiles/ProfileFolderDialog.tsx:72
 #: src/saves/BackupsDialog.tsx:198
 #: src/settings/sections/About.tsx:130
 #: src/settings/sections/AboutDiagnostics.tsx:225
-#: src/settings/sections/DataStoreReport.tsx:415
+#: src/settings/sections/DataStoreReport.tsx:420
 #: src/share/ImportDialog.tsx:188
 #: src/share/ImportDialog.tsx:191
 #: src/share/ImportFooter.tsx:93
@@ -15609,7 +15601,7 @@ msgstr "Personal API key"
 msgid "Template deleted"
 msgstr "Template deleted"
 
-#: src/mods/ModsTab.tsx:138
+#: src/mods/ModsTab.tsx:141
 #: src/mods/typedConfig/ConfigTab.tsx:475
 msgid "No mods match"
 msgstr "No mods match"
