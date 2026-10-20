@@ -175,6 +175,11 @@
     "url": "https://github.com/nwaples/rardecode"
   },
   {
+    "name": "github.com/pierrec/lz4/v4",
+    "licence": "BSD-3-Clause",
+    "url": "https://github.com/pierrec/lz4"
+  },
+  {
     "name": "github.com/syndtr/goleveldb",
     "licence": "BSD-2-Clause",
     "url": "https://github.com/syndtr/goleveldb"
