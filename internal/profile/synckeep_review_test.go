@@ -101,8 +101,27 @@ func TestReplacedFilesCanBeRestoredAsAChangedCopyOrDeleted(t *testing.T) {
 	if left, _ := e.ReplacedFiles(folderGame, p.ID); len(left) != 0 {
 		t.Fatalf("restore left %+v", left)
 	}
+	// A second stale copy is replaced; Delete all removes the kept bytes and the listing.
+	if err := os.WriteFile(copyPath, []byte("second bytes"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove(filepath.Join(dir, placedFile)); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.SyncPackages(folderGame, p.ID); err != nil {
+		t.Fatal(err)
+	}
+	if again, _ := e.ReplacedFiles(folderGame, p.ID); len(again) != 1 {
+		t.Fatalf("the second replaced copy is not listed: %+v", again)
+	}
 	if err := e.DeleteReplaced(folderGame, p.ID); err != nil {
 		t.Fatal(err)
+	}
+	if left, _ := e.ReplacedFiles(folderGame, p.ID); len(left) != 0 {
+		t.Fatalf("Delete all left %+v", left)
+	}
+	if _, err := os.Stat(filepath.Join(dir, replacedDir, "Mods", "mc.package")); !os.IsNotExist(err) {
+		t.Fatalf("the kept bytes survive Delete all: %v", err)
 	}
 }
 
