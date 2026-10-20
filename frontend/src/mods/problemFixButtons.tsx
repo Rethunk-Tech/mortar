@@ -30,6 +30,7 @@ import { LoadFailureFix } from './problemFix/LoadFailureFix.tsx'
 import { LongPathFix } from './problemFix/LongPathFix.tsx'
 import { MissingFix } from './problemFix/MissingFix.tsx'
 import { PluginClashFix } from './problemFix/PluginClashFix.tsx'
+import { RestoreButton } from './problemFix/RestoreButton.tsx'
 import { SettingFix } from './problemFix/SettingFix.tsx'
 import { WinFix } from './problemFix/WinFix.tsx'
 import type { WarningButton } from './problemFix/warningButton.tsx'
@@ -45,7 +46,10 @@ interface KindProps<K extends Problem['kind']> {
   button: WarningButton
 }
 
-function RunErrorKind({ problem, button }: KindProps<'runError'>) {
+function RunErrorKind({ problem, dismissedToken, button }: KindProps<'runError'>) {
+  if (dismissedToken !== undefined) {
+    return <RestoreButton token={dismissedToken} />
+  }
   return <RunErrorButtons runError={problem.runError} button={button} />
 }
 

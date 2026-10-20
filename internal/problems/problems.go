@@ -158,6 +158,7 @@ type DismissedProblem struct {
 	Setting       *framework.SettingHint   `json:"setting,omitempty"`
 	Redundant     *framework.Redundant     `json:"redundant,omitempty"`
 	LoadFailure   *LoadFailure             `json:"loadFailure,omitempty"`
+	RunError      *RunError                `json:"runError,omitempty"`
 	Deprecated    *DeprecatedPackage       `json:"deprecated,omitempty"`
 	Compat        *Compat                  `json:"compat,omitempty"`
 }

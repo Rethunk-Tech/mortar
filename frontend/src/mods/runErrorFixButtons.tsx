@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
 import type { ReactNode } from 'react'
 import type { RunError } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import { DismissRunError } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { useConsole } from '../console/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
@@ -67,6 +68,22 @@ export function RunErrorButtons({
         sx={{ flexShrink: 0 }}
       >
         {t`Show in log`}
+      </Button>
+      <Button
+        size="small"
+        color="inherit"
+        variant="text"
+        onClick={() => {
+          const at = openTarget()
+          if (at) {
+            DismissRunError(at.game, at.id, runError.key)
+              .then(() => useMods.getState().loadProblems())
+              .catch(reportUnexpected)
+          }
+        }}
+        sx={{ flexShrink: 0 }}
+      >
+        {t`Dismiss`}
       </Button>
     </>
   )

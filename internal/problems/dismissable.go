@@ -10,17 +10,20 @@ import (
 
 // Dismissable is one counted problem a user can dismiss, in the order the CLI numbers them.
 type Dismissable struct {
-	Kind         string // "listed", "abandoned", "conflict", "setting" or "loadFailure"
+	Kind         string // "listed", "abandoned", "conflict", "setting", "loadFailure" or "runError"
 	ID           mod.ID
 	Field        string
 	ConflictKind string
 	Target       string
 	// Failure names a loadFailure row: the log's finding, which Service.DismissLoadFailure hides for the newest run.
 	Failure LoadFailure
+	// Key names a runError row's mod, whose errors in the newest run Service.DismissRunError hides.
+	Key string
 }
 
 // DismissableRows lists the result's dismissable problems: listed requirements, abandoned, deprecated and
-// compatibility-listed mods, counted conflicts, compatibility settings and the rows read from a run's log.
+// compatibility-listed mods, counted conflicts, compatibility settings, the rows read from a run's log and a run's
+// errors per mod.
 func DismissableRows(r Result) []Dismissable {
 	var out []Dismissable
 	for _, x := range r.Missing {
@@ -51,6 +54,9 @@ func DismissableRows(r Result) []Dismissable {
 		if DismissibleLoadFailure(x) {
 			out = append(out, Dismissable{Kind: "loadFailure", Failure: x})
 		}
+	}
+	for _, x := range r.RunErrors {
+		out = append(out, Dismissable{Kind: "runError", Key: x.Key})
 	}
 	return out
 }
@@ -193,4 +199,20 @@ func hideDismissedLoadFailures(rows []LoadFailure, runID string, tokens []string
 	return hideRows(rows, tokens, func(f LoadFailure) []string {
 		return []string{loadFailureToken(runID, f)}
 	}, func(f *LoadFailure) DismissedProblem { return DismissedProblem{LoadFailure: f} })
+}
+
+const runErrorKind = "run-error"
+
+// runErrorToken names one mod's errors row of one run, so the dismissal ends with the next run.
+func runErrorToken(runID, key string) string {
+	return dismissToken(runErrorKind, runID+"\t"+key)
+}
+
+func hideDismissedRunErrors(rows []RunError, runID string, tokens []string) ([]RunError, []DismissedProblem) {
+	if runID == "" {
+		return rows, nil
+	}
+	return hideRows(rows, tokens, func(e RunError) []string {
+		return []string{runErrorToken(runID, e.Key)}
+	}, func(e *RunError) DismissedProblem { return DismissedProblem{RunError: e} })
 }

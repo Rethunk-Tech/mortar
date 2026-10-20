@@ -32,6 +32,8 @@ func (s *Services) dismissProblem(ctx context.Context, gameID, profileID string,
 	case "loadFailure":
 		f := row.Failure
 		return s.Problems.DismissLoadFailure(ctx, gameID, profileID, f.Kind, f.Plugin, f.Message)
+	case "runError":
+		return s.Problems.DismissRunError(ctx, gameID, profileID, row.Key)
 	default:
 		return fmt.Errorf("cannot dismiss problem at index %d", index)
 	}

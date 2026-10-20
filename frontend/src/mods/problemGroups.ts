@@ -159,6 +159,9 @@ export function problemSections(result: Result): ProblemSection[] {
             { token: item.token, row: { kind: 'loadFailure', loadFailure: item.loadFailure } },
           ]
         }
+        if (item.runError) {
+          return [{ token: item.token, row: { kind: 'runError', runError: item.runError } }]
+        }
         return []
       }),
     },

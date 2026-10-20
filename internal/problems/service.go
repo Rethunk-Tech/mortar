@@ -592,6 +592,8 @@ func (s *Service) withDismissed(gameID, id string, r Result) Result {
 		runID, _ := s.Runs.LastRunID(gameID, id)
 		r.LoadFailures, dismissed = hideDismissedLoadFailures(r.LoadFailures, runID, tokens)
 		r.Dismissed = append(r.Dismissed, dismissed...)
+		r.RunErrors, dismissed = hideDismissedRunErrors(r.RunErrors, runID, tokens)
+		r.Dismissed = append(r.Dismissed, dismissed...)
 	}
 	if s.profiles != nil {
 		r.Replaced, _ = s.profiles.ReplacedFiles(gameID, id)
@@ -619,27 +621,41 @@ func (s *Service) DeleteReplaced(_ context.Context, gameID, id string) error {
 
 // DismissLoadFailure hides one load failure row of the profile's newest run until the next run is recorded.
 func (s *Service) DismissLoadFailure(_ context.Context, gameID, id, kind, plugin, message string) error {
+	return s.dismissForRun(gameID, id, loadFailureKind, func(runID string) string {
+		return loadFailureToken(runID, LoadFailure{Kind: kind, Plugin: plugin, Message: message})
+	})
+}
+
+// DismissRunError hides the newest run's errors row for the mod with this key until the next run is recorded.
+func (s *Service) DismissRunError(_ context.Context, gameID, id, key string) error {
+	if key == "" {
+		return errors.New("missing mod key")
+	}
+	return s.dismissForRun(gameID, id, runErrorKind, func(runID string) string { return runErrorToken(runID, key) })
+}
+
+// dismissForRun stores the newest run's token of kind, dropping that kind's tokens from earlier runs, which are over.
+func (s *Service) dismissForRun(gameID, id, kind string, token func(runID string) string) error {
 	if s.Runs == nil {
-		return errors.New("no run to dismiss a failure of")
+		return errors.New("no run to dismiss a row of")
 	}
 	runID, err := s.Runs.LastRunID(gameID, id)
 	if err != nil || runID == "" {
-		return errors.New("no run to dismiss a failure of")
+		return errors.New("no run to dismiss a row of")
 	}
 	bucket := dismissBucket(gameID, id)
-	prefix := loadFailureKind + "\t"
-	token := loadFailureToken(runID, LoadFailure{Kind: kind, Plugin: plugin, Message: message})
+	prefix := kind + "\t"
+	tok := token(runID)
 	_, err = s.settings.Update(func(v *settings.Settings) {
 		next := maps.Clone(v.Dismissed)
 		if next == nil {
 			next = map[string][]string{}
 		}
-		// An earlier run's dismissals are over; drop them with the new one.
 		kept := slices.DeleteFunc(slices.Clone(next[bucket]), func(t string) bool {
 			return strings.HasPrefix(t, prefix) && !strings.HasPrefix(t, prefix+runID+"\t")
 		})
-		if !slices.Contains(kept, token) {
-			kept = append(kept, token)
+		if !slices.Contains(kept, tok) {
+			kept = append(kept, tok)
 		}
 		next[bucket] = kept
 		v.Dismissed = next

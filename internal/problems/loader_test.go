@@ -264,3 +264,11 @@ func TestCountLeavesOutErrorsAfterLoad(t *testing.T) {
 		t.Fatalf("count %d", r.Count())
 	}
 }
+
+func TestARunErrorRowIsDismissedForItsRunOnly(t *testing.T) {
+	rows := []RunError{{Key: "a"}, {Key: "b"}}
+	shown, hidden := hideDismissedRunErrors(rows, "run-2", []string{runErrorToken("run-2", "a"), runErrorToken("run-1", "b")})
+	if len(shown) != 1 || shown[0].Key != "b" || len(hidden) != 1 || hidden[0].RunError.Key != "a" {
+		t.Fatalf("shown %+v hidden %+v", shown, hidden)
+	}
+}
