@@ -20,12 +20,13 @@ export function TipBanner({ tip, children }: { tip: TipId; children: ReactNode }
       role="note"
       sx={{
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         gap: space.gap,
         px: space.pad,
-        py: space.gap,
+        py: 0.5,
         mx: space.gutter,
         mt: 1.25,
+        mb: space.gap,
         bgcolor: 'var(--mortar-panel-solid)',
         border: '1px solid var(--mortar-hairline-12)',
         borderRadius: '8px',

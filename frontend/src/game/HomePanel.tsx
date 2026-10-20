@@ -33,6 +33,8 @@ export function HomePanel({
         bgcolor: 'var(--mortar-panel-85)',
         border: '1px solid var(--mortar-hairline)',
         borderRadius: '10px',
+        // A text button's own padding would set it in from the card's text and push the card's edge out.
+        '& > .MuiButton-text, & > :has(> .MuiButton-text)': { my: '-4px', ml: '-5px' },
       }}
     >
       <Typography
