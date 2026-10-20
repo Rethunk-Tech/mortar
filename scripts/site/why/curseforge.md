@@ -1,4 +1,5 @@
 # Why Mortar? (vs the CurseForge app)
+<!-- tile: Overwolf's client for the CurseForge catalog. -->
 
 The CurseForge app is Overwolf's client for the CurseForge catalog (Minecraft, World of Warcraft). Mortar searches CurseForge too. Use Mortar for its other games, several sites, or an open-source app with no ads.
 

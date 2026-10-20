@@ -1,4 +1,5 @@
 # Why Mortar? (vs r2modman)
+<!-- tile: The long-standing manager for Thunderstore games. -->
 
 r2modman is the long-standing Thunderstore manager; Mortar reads its profiles. Use Mortar for games outside Thunderstore, or for mods from more than one site.
 

@@ -1,4 +1,5 @@
 # Why Mortar? (vs Stardrop)
+<!-- tile: A mod manager made for Stardew Valley alone. -->
 
 Stardrop is a Stardew Valley manager; Mortar reads its profiles. Use Mortar to search for mods in-app, have SMAPI installed, or manage more than Stardew.
 

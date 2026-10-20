@@ -1,4 +1,5 @@
 # Why Mortar? (vs Mod Organizer 2)
+<!-- tile: The usual pick for heavily modded Bethesda games. -->
 
 Mod Organizer 2 is the usual choice for heavily modded Bethesda games; Mortar reads its profiles. Use Mortar for games MO2 supports only lightly, native Linux, or one search across mod sites.
 

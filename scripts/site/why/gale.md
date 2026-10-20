@@ -1,4 +1,5 @@
 # Why Mortar? (vs Gale)
+<!-- tile: An open-source manager for Thunderstore games. -->
 
 Gale is an open-source Thunderstore manager; Mortar reads its profiles. Use Mortar for games outside Thunderstore, or for Nexus and other sites in the same profile.
 

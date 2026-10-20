@@ -302,16 +302,11 @@ export function whyIndexPage(whys: Why[]): string {
       w.id === 'curseforge' && curseforge && 'colour' in curseforge
         ? `<svg class="rival-icon" style="color: ${curseforge.colour}" aria-hidden="true"><use href="/img/brands.svg#curseforge" /></svg>`
         : `<img class="rival-icon" src="/img/managers/${w.id}.png" alt="" width="56" height="56" />`
-    const lines = w.md.split('\n').slice(1)
-    const start = lines.findIndex((l) => l.trim() !== '')
-    const intro = plain(lines[start] ?? '')
-    // The tile already names the manager, so its line starts after "<name> is".
-    const first = (/^.*?[.;](?=\s|$)/.exec(intro)?.[0] ?? intro).replace(
-      new RegExp(`^${w.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} is `, 'i'),
-      '',
-    )
-    const what = first.charAt(0).toUpperCase() + first.slice(1)
-    return `          <li><a class="rival" href="/why/${w.id}/">${icon}<span class="rival-name">${escapeHTML(w.name.replace(/^the /, ''))}</span><span class="rival-what">${escapeHTML(what.replace(/;$/, '.'))}</span></a></li>`
+    const what = /<!-- tile: (.+?) -->/.exec(w.md)?.[1]
+    if (!what) {
+      throw new Error(`site: ${WHY}/${w.id}.md needs a "<!-- tile: ... -->" line for /why/`)
+    }
+    return `          <li><a class="rival" href="/why/${w.id}/">${icon}<span class="rival-name">${escapeHTML(w.name.replace(/^the /, ''))}</span><span class="rival-what">${escapeHTML(what)}</span></a></li>`
   })
   return page({
     path: 'site/why/index.html',

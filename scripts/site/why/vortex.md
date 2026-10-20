@@ -1,4 +1,5 @@
 # Why Mortar? (vs Vortex)
+<!-- tile: Nexus Mods' manager, with deep Bethesda tooling. -->
 
 Vortex is Nexus Mods' manager, with deep Bethesda tooling. Mortar works with Nexus too and reads Vortex profiles. Use Mortar for native Linux and the Steam Deck, several sites, or to skip the account.
 
