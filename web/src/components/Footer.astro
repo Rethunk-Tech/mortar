@@ -1,0 +1,97 @@
+---
+import { appVersion } from '../lib/faq.ts'
+import { DISCORD, REPO } from '../lib/site.ts'
+
+interface Props {
+  band: boolean
+}
+
+const { band } = Astro.props
+const columns = [
+  {
+    title: 'Product',
+    links: [
+      ['/download/', 'Download'],
+      ['/games/', 'Games'],
+      ['/sources/', 'Mod sites'],
+      ['/news/', 'News'],
+      ['/why/', 'Compare'],
+      ['/changelog/', 'Changelog'],
+    ],
+  },
+  {
+    title: 'Help',
+    links: [
+      ['/guide/', 'Guide'],
+      ['/faq/', 'FAQ'],
+      [DISCORD, 'Discord'],
+      ['/go/bug-reports/', 'Report a bug'],
+    ],
+  },
+  {
+    title: 'Project',
+    links: [
+      ['/mission/', 'Mission'],
+      [REPO, 'Source code'],
+      ['/extension/', 'Browser extension'],
+      ['/code-signing/', 'Code signing'],
+      ['/privacy/', 'Privacy'],
+    ],
+  },
+]
+---
+
+<a class="totop" href="#top" aria-label="Back to top"
+  ><svg viewBox="0 0 24 24" aria-hidden="true"
+    ><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"></path></svg
+  ></a
+>
+<footer class="foot">
+  <div class="wrap">
+    {
+      band && (
+        <div class="fcta reveal">
+          <div>
+            <h2>Ready to mod?</h2>
+            <p class="dim">Free, open source, and set up in a minute.</p>
+          </div>
+          <a class="btn primary big" href="/download/">
+            Download Mortar
+          </a>
+        </div>
+      )
+    }
+    <div class="cols">
+      <div>
+        <b class="fbrand"><img src="/img/icon-192.png" width="34" height="34" alt="" />Mortar</b>
+        <p class="dim">A free, open source mod manager for Windows, Linux and the Steam Deck.</p>
+        <div class="social">
+          <a href={REPO} aria-label="GitHub"><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg></a>
+          <a href={DISCORD} aria-label="Discord"><svg style="color:#5865F2" aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg></a>
+          <a href="/news/rss.xml" aria-label="News feed"
+            ><svg viewBox="0 0 24 24" aria-hidden="true"
+              ><g fill="none" stroke="#F99830" stroke-width="2.4" stroke-linecap="round"
+                ><path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14"></path><circle cx="5.5" cy="18.5" r="1.2" fill="#F99830"></circle></g
+              ></svg
+            ></a
+          >
+        </div>
+      </div>
+      {
+        columns.map((c) => (
+          <div>
+            <b>{c.title}</b>
+            {c.links.map(([href, label]) => (
+              <a href={href}>{label}</a>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+    <div class="fbar">
+      <span><a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a> · Version {appVersion()}</span>
+      <span>Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not affiliated with any game developer or mod site.</span>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>

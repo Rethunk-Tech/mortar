@@ -11,5 +11,6 @@ build/windows/nsis/MicrosoftEdgeWebview2Setup.exe
 /components.json
 /components.json.sig
 build/linux/mortar.desktop
-site/pagefind/
-site/_proto/
+# The website is built from web/ into site/.
+/site/
+web/.astro/

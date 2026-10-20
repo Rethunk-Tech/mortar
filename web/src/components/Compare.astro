@@ -1,0 +1,83 @@
+---
+import { IMPORT_FROM, managers } from '../lib/compare.ts'
+import { SOURCE_NAMES } from '../lib/games.ts'
+import Mark from './Mark.astro'
+
+const ms = managers()
+const PLATFORMS: Record<string, string> = { windows: 'Windows', linux: 'Linux', steamdeck: 'Steam Deck' }
+type Row = [label: string, cell: (m: (typeof ms)[number]) => { kind: string; value: string | string[] | undefined }]
+const groups: [string, Row[]][] = [
+  ['Reach', [
+    ['Games', (m) => ({ kind: 'num', value: m.games })],
+    ['Mod sites', (m) => ({ kind: 'sites', value: m.sites })],
+    ['Runs on', (m) => ({ kind: 'platforms', value: m.platforms })],
+  ]],
+  ['Sharing', [
+    ['Shares as', (m) => ({ kind: 'tags', value: m.shares })],
+    ['Opens', (m) => ({ kind: 'tags', value: m.opens })],
+    ['Imports profiles from', (m) => ({ kind: 'imports', value: m.imports })],
+  ]],
+  ['Everyday', [
+    ['Account needed', (m) => ({ kind: 'text', value: m.account })],
+    ['Usage analytics', (m) => ({ kind: 'text', value: m.analytics })],
+    ['Licence', (m) => ({ kind: 'text', value: m.licence })],
+  ]],
+]
+const empty = (v: string | string[] | undefined) => v === undefined || v.length === 0
+---
+
+<div class="k1wrap">
+  <table class="k1">
+    <thead>
+      <tr>
+        <td></td>
+        {ms.map((m, i) => (
+          <th scope="col" class={i === 0 ? 'us' : undefined}>
+            <a class="mgr" href={i === 0 ? '/mission/' : `/why/${m.id}/`}><img src={m.logo} alt="" width="28" height="28" />{m.name}</a>
+          </th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {groups.map(([g, rows]) => (
+        <Fragment>
+          <tr class="group"><th colspan={ms.length + 1} scope="colgroup">{g}</th></tr>
+          {rows.map(([label, cell]) => (
+            <tr>
+              <th scope="row">{label}</th>
+              {ms.map((m, i) => {
+                const c = cell(m)
+                const list = Array.isArray(c.value) ? c.value : []
+                return (
+                  <td class={i === 0 ? 'us' : undefined}>
+                    {empty(c.value) ? (
+                      <span class="none">—</span>
+                    ) : c.kind === 'num' ? (
+                      <span class="num">{c.value}</span>
+                    ) : c.kind === 'sites' ? (
+                      <span class="icons">{list.map((s) => <Mark id={s} label={SOURCE_NAMES[s] ?? s} />)}</span>
+                    ) : c.kind === 'platforms' ? (
+                      <span class="icons">{list.map((p) => <Mark id={p} label={PLATFORMS[p] ?? p} />)}</span>
+                    ) : c.kind === 'tags' ? (
+                      <span class="tags">{list.map((t) => <span>{t}</span>)}</span>
+                    ) : c.kind === 'imports' ? (
+                      <span class="logos">
+                        {list.map((id) => {
+                          const f = IMPORT_FROM[id]
+                          return f?.logo ? <img src={f.logo} alt={f.name} title={f.name} width="28" height="28" /> : <Mark id="thunderstore" label={f?.name ?? id} />
+                        })}
+                      </span>
+                    ) : (
+                      c.value
+                    )}
+                  </td>
+                )
+              })}
+            </tr>
+          ))}
+        </Fragment>
+      ))}
+    </tbody>
+  </table>
+</div>
+<p class="foot-note">— means the project's own documentation does not mention it. Each manager's column links to a comparison that cites its sources.</p>

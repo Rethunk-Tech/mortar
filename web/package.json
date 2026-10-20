@@ -1,0 +1,26 @@
+{
+  "name": "mortar-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --bun astro dev --host 0.0.0.0",
+    "build": "bun --bun astro build",
+    "check": "astro check",
+    "preview": "astro preview --host 0.0.0.0",
+    "refresh": "bun refresh.ts"
+  },
+  "dependencies": {
+    "@astrojs/check": "0.9.11",
+    "@astrojs/rss": "4.0.19",
+    "@astrojs/sitemap": "3.7.4",
+    "@fontsource/atkinson-hyperlegible-next": "5.3.0",
+    "@resvg/resvg-js": "2.6.2",
+    "astro": "7.4.1",
+    "satori": "0.63.1",
+    "typescript": "7.0.2",
+    "simple-icons": "16.35.0"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.3"
+  }
+}

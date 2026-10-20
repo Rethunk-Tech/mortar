@@ -1,0 +1,292 @@
+---
+import Compare from '../components/Compare.astro'
+import Download from '../components/Download.astro'
+import Mark from '../components/Mark.astro'
+import Base from '../layouts/Base.astro'
+import { steamArt } from '../lib/art.ts'
+import { releases } from '../lib/changelog.ts'
+import { questions, whyPages } from '../lib/faq.ts'
+import { artOf, facts, modSites, playableGames } from '../lib/games.ts'
+import { posts, shortDate } from '../lib/news.ts'
+import { DISCORD, markdown } from '../lib/site.ts'
+import '../styles/download.css'
+import '../styles/landing.css'
+
+const games = playableGames()
+const art = steamArt()
+const capsule = (id: string) => {
+  const g = games.find((x) => x.id === id)
+  return g ? artOf(g, art)?.capsule : undefined
+}
+// The best-known games lead the wall and fill the picker before anything is typed.
+const POPULAR = ['stardew', 'lethal-company', 'valheim', 'repo', 'peak', 'content-warning', 'vintage-story', 'sims4']
+const PER_LANE = 9
+const LANES = 4
+const withArt = games.filter((g) => artOf(g, art)?.capsule)
+const pool = [
+  ...withArt.filter((g) => POPULAR.includes(g.id)),
+  ...withArt.filter((g) => !POPULAR.includes(g.id)),
+].slice(0, PER_LANE * LANES)
+const lanes = Array.from({ length: LANES }, (_, l) => pool.filter((_, i) => i % LANES === l))
+const picker = [...games]
+  .sort((a, b) => a.name.localeCompare(b.name))
+  .map((g) => [g.id, g.name, artOf(g, art)?.capsule ?? ''])
+const popular = POPULAR.flatMap((id) => games.find((g) => g.id === id) ?? [])
+
+const latest = releases()[0]
+const all = await posts()
+const releasePosts = all.filter((p) => p.kind === 'release')
+const [now, ...before] = releasePosts
+const sites = modSites()
+
+// Loader families by how many games use them, versions dropped: "BepInEx 5" and "BepInEx 6" are one family.
+const families = new Map<string, number>()
+for (const g of games) {
+  for (const l of g.loaders ?? []) {
+    const family = l.name.replace(/\s+\d.*$/, '')
+    if (family) {
+      families.set(family, (families.get(family) ?? 0) + 1)
+    }
+  }
+}
+const loaders = [...families].sort((a, b) => b[1] - a[1]).map(([n]) => n)
+const SHOWN_LOADERS = 3
+
+const whys = whyPages()
+const FAQ_IDS = [
+  'is-mortar-free',
+  'coming-from-another-mod-manager',
+  'do-i-need-nexus-mods-premium',
+  'does-mortar-host-mod-files',
+  'does-mortar-work-on-the-steam-deck',
+  'windows-says-it-protected-my-pc-is-that-normal',
+]
+const qs = questions(games.length, whys)
+const shownQs = FAQ_IDS.map((id) => {
+  const q = qs.find((x) => x.id === id)
+  if (!q) {
+    throw new Error(`site: the FAQ has no question "${id}" for the landing page`)
+  }
+  return q
+})
+const stores = ['steam', 'gog', 'epic', 'ea', 'lutris', 'xbox']
+const STORE_LABEL: Record<string, string> = { steam: 'Steam', gog: 'GOG', epic: 'Epic Games', ea: 'EA app', lutris: 'Lutris', xbox: 'Xbox app' }
+const lethal = games.find((g) => g.id === 'lethal-company')
+const band = lethal ? artOf(lethal, art)?.hero : undefined
+const features = [
+  { icon: 'layers', title: 'A profile per playthrough', text: 'Its own mods, settings and launch options. Switching is one click.', img: 'profile' },
+  { icon: 'search', title: 'Every mod site in one search', text: 'One card per mod across every site; dependencies come along.', img: 'thunderstore' },
+  { icon: 'link', title: 'Shares as a link', text: 'A whole profile in one link. Friends import it in a click.', img: 'mods' },
+  { icon: 'alert', title: 'Problems explained', text: 'Missing dependencies, conflicts and crashes in plain words, each with a fix.', img: 'problems' },
+  { icon: 'gauge', title: 'See what slows startup', text: 'Time to title screen and what each mod costs, compared with the last launch.', img: 'performance' },
+  { icon: 'folder', title: 'Scanned before it installs', text: 'Each mod goes past your antivirus after unpacking and before it reaches the game.', img: 'settings' },
+]
+---
+
+<Base
+  title="Mortar: a free mod manager for Linux, Windows and Steam Deck"
+  description={`Mortar is a free, open source mod manager for ${games.length} games on Linux, Windows and the Steam Deck. It installs each game's mod loader, keeps a profile per playthrough and shares a whole profile as a link.`}
+>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-layers" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></g></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></g></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"></path><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"></path></g></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><path d="M12 9v4M12 17h.01"></path></g></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><path d="M12 11v5M9.5 13.5 12 16l2.5-2.5"></path></g></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 14l4-4"></path><path d="M3.3 17a10 10 0 1 1 17.4 0"></path></g></symbol>
+  </svg>
+
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <h1 class="words two"><span>Mod</span> <span>your</span> <span>games</span><br /><em><span>without</span> <span>the</span> <span>mess.</span></em></h1>
+        <p class="lede">One app for the loader, the mods and the playthroughs. It tells you what broke before you launch, and shares a whole profile as a link.</p>
+        <div class="cta">
+          <a class="btn primary" href="/download/" id="ctaos">Download Mortar</a>
+          <a class="btn ghost discordghost" href={DISCORD}><svg aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg>Join the Discord</a>
+        </div>
+        {latest && <p class="cta-sub">Version {latest.version} · free · <a href="#download">other systems below</a></p>}
+      </div>
+      <div class="wallbox" role="group" aria-label={`Some of the ${games.length} games Mortar mods`}>
+        <div class="wall">
+          {
+            lanes.map((lane, l) => {
+              const cards = (copy: boolean) =>
+                lane.map((g) => (
+                  <a href={`/${g.id}/`} title={g.name} tabindex={copy ? -1 : undefined} aria-hidden={copy ? 'true' : undefined}>
+                    <img src={artOf(g, art)?.capsule} alt={copy ? '' : g.name} width="300" height="450" loading="lazy" referrerpolicy="no-referrer" />
+                  </a>
+                ))
+              return (
+                <div class="lane">
+                  <div class="track" style={`--t:${70 + l * 9}s`}>
+                    {cards(false)}
+                    {cards(true)}
+                  </div>
+                </div>
+              )
+            })
+          }
+        </div>
+      </div>
+    </div>
+    <div class="metrics reveal">
+      <a href="/games/"><strong data-count={games.length}>{games.length}</strong><span>games</span></a>
+      <a href="/sources/"><strong data-count={sites.length}>{sites.length}</strong><span>mod sites</span></a>
+      {now && latest && <a href={`/news/${now.slug}/`}><strong>{latest.version}</strong><span>released {shortDate(now.date)}</span></a>}
+      <a href="/mission/"><strong>Free</strong><span>no account, AGPL-3.0</span></a>
+    </div>
+  </div>
+
+  <div class="sec" id="demo">
+    <div class="wrap">
+      <div class="shot reveal" id="demo-box">
+        <button type="button" class="demo" id="demo-open" aria-label="Open the interactive demo">
+          <span class="tag">Interactive demo</span>
+          <span class="play">Try it here</span>
+          <span class="loop">
+            <img src="/img/mods.webp" alt="" class="on" width="1280" height="800" />
+            <img src="/img/problems.webp" alt="" width="1280" height="800" loading="lazy" />
+            <img src="/img/profile.webp" alt="" width="1280" height="800" loading="lazy" />
+            <img src="/img/thunderstore.webp" alt="" width="1280" height="800" loading="lazy" />
+          </span>
+          <span class="looplbl">Preview</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap sec">
+    <div class="head reveal"><p class="kicker">How it works</p><h2>From nothing to modded in <em>three steps.</em></h2></div>
+    <ol class="flow stagger">
+      <li class="reveal"><span class="dot">1</span><h3>Pick your game</h3><p>Mortar finds it on your stores, or in a folder you choose.</p><div class="vis stores">{stores.map((s) => <Mark id={s} label={STORE_LABEL[s] ?? s} />)}</div></li>
+      <li class="reveal"><span class="dot">2</span><h3>Mortar sets it up</h3><p>It installs the mod loader the game needs and makes your first profile.</p><div class="vis">{loaders.slice(0, SHOWN_LOADERS).map((n) => <span class="pill ok">{n}</span>)}{loaders.length > SHOWN_LOADERS && <span class="pill">+ {loaders.length - SHOWN_LOADERS} more</span>}</div></li>
+      <li class="reveal"><span class="dot">3</span><h3>Add mods and play</h3><p>Search every site at once, add with one click, press Play.</p><div class="vis"><div class="minimod"><img alt="" src={capsule('lethal-company')} width="44" height="44" loading="lazy" referrerpolicy="no-referrer" /><div><b>MoreCompany</b><span>Thunderstore</span></div><span class="add">Added</span></div></div></li>
+    </ol>
+  </div>
+
+  <div class="artband sec" id="games" style={band ? `background-image:url('${band}')` : undefined}>
+    <div class="wrap split picker" data-slash>
+      <div class="reveal">
+        <p class="kicker">Find your game</p>
+        <h2>Which game are you modding?</h2>
+        <div class="searchbox"><input type="search" placeholder={`Search ${games.length} games…`} aria-label="Search games" aria-keyshortcuts="/" autocomplete="off" /><kbd aria-hidden="true">/</kbd></div>
+        <p class="dim" id="matches" aria-live="polite" data-idle={`${games.length} of them, each with its loader and mod sites set up.`}>{games.length} of them, each with its loader and mod sites set up.</p>
+        <a class="allq" href="/games/">All {games.length} games →</a>
+      </div>
+      <ul class="tiles reveal" id="tiles">
+        {
+          popular.map((g) => (
+            <li>
+              <a href={`/${g.id}/`}>
+                {artOf(g, art)?.capsule ? <img src={artOf(g, art)?.capsule} alt="" width="300" height="450" loading="lazy" referrerpolicy="no-referrer" /> : <b class="letter">{g.name[0]}</b>}
+                <span>{g.name}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <script type="application/json" id="picker-games" set:html={JSON.stringify(picker)} />
+  </div>
+
+  <div class="wrap sec" id="features">
+    <div class="head reveal"><p class="kicker">Features</p><h2>Built for big mod lists.</h2><p class="dim">Hundreds of mods, several playthroughs, friends on the same pack. That is the setup Mortar was built for.</p></div>
+    <div class="f1 stagger">
+      {
+        features.map((f) => (
+          <div class="card tilt reveal">
+            <div class="body"><div class="ico"><svg aria-hidden="true"><use href={`#i-${f.icon}`} /></svg></div><h3>{f.title}</h3><p>{f.text}</p></div>
+            <div class="peek"><img class="zoom" src={`/img/${f.img}.webp`} alt={f.title} width="1280" height="800" loading="lazy" /></div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="wrap sec">
+    <div class="wide spot">
+      <div class="reveal"><p class="kicker">Steam Deck</p><h2>Play from<br /><em>Game Mode.</em></h2><p class="dim">Add a profile to Steam and start it from Game Mode like any other game. Mortar stays out of sight, asks only when something needs an answer, and closes with the game so Steam counts your playtime.</p><ul><li>A gamepad moves focus, confirms, goes back and plays</li><li>Larger targets, laid out for the Deck's 1280×800 screen</li></ul></div>
+      <div class="bleed reveal"><div class="shot"><img class="zoom" src="/img/deck.webp" alt="Mortar on the Steam Deck" width="1280" height="800" loading="lazy" /></div></div>
+    </div>
+  </div>
+  <div class="wrap sec">
+    <div class="wide rev spot">
+      <div class="reveal"><p class="kicker">Your PCs</p><h2>Your profiles on<br /><em>every computer.</em></h2><p class="dim">Pair two of your computers with a short code. A profile you send arrives with its mod files, so nothing downloads twice. No account is involved.</p><ul><li>Nearby computers are found on your network</li><li>The code works once, for five minutes</li></ul></div>
+      <div class="bleed reveal"><div class="shot"><img class="zoom" src="/img/pairing.webp" alt="Pairing two computers" width="1280" height="800" loading="lazy" /></div></div>
+    </div>
+  </div>
+
+  <div class="wrap sec" id="compare">
+    <div class="head reveal"><p class="kicker">Compare</p><h2>Mortar and the others.</h2><p class="dim">Other managers' game counts are read from their own repositories each release; every other fact is taken from their own documentation.</p></div>
+    <div class="reveal"><Compare /></div>
+  </div>
+
+  {
+    now && (
+      <div class="wrap sec" id="news">
+        <div class="w2head reveal">
+          <span class="vb">{now.release?.version}</span>
+          <div>
+            <p class="kicker">What's new</p>
+            <h2>{now.title}</h2>
+            <span class="dim">
+              Released {shortDate(now.date)} · <a href={`/news/${now.slug}/`}>all {now.release?.md.split('\n').filter((l) => l.startsWith('- ')).length} changes</a>
+            </span>
+          </div>
+        </div>
+        <div class="w2 stagger">
+          {now.highlights.map((h) => (
+            <a href={`/news/${now.slug}/`} class="tile reveal">
+              <div class="pic"><img src={h.image} alt="" width="1280" height="800" loading="lazy" /></div>
+              <div class="t"><span class="area">{h.area}</span><h3>{h.title}</h3><p>{h.text}</p></div>
+            </a>
+          ))}
+        </div>
+        <div class="hist stagger">
+          {before.slice(0, 2).map((p) => (
+            <a href={`/news/${p.slug}/`} class="reveal">
+              <span class="top"><span class="vtag">{p.release?.version}</span><span class="dim">{shortDate(p.date)}</span></span>
+              <h3>{p.title}</h3>
+              <p>{p.summary}</p>
+            </a>
+          ))}
+          <a href="/news/" class="reveal more"><b>All news</b><span class="dim">Notes for every version, how-tos, and an RSS feed.</span><em>→</em></a>
+        </div>
+      </div>
+    )
+  }
+
+  <div class="wrap sec dl3" id="download">
+    <div class="head reveal"><p class="kicker">Download</p><h2>Get Mortar. <em>It's free.</em></h2><p class="dim">No account, no ads. It updates itself.</p></div>
+    <Download />
+  </div>
+
+  <div class="wrap sec">
+    <div class="faqgrid">
+      <div class="reveal">
+        <p class="kicker">Questions</p>
+        <h2>Asked often.</h2>
+        <p class="dim">Something else? Ask in the Discord's help forum, where Mortar's bot reads your log for you.</p>
+        <a class="btn discord" href="/go/help/"><svg aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg>Ask on Discord</a>
+        <a href="/faq/" class="allq">All {qs.length} questions →</a>
+      </div>
+      <div class="faq stagger">
+        {
+          shownQs.map((q) => (
+            <details class="reveal">
+              <summary>{q.q}</summary>
+              <div class="a" set:html={markdown(q.a)} />
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</Base>
+
+<script>
+  import { initLanding } from '../scripts/landing.ts'
+
+  initLanding()
+</script>

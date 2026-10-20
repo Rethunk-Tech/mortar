@@ -1,0 +1,182 @@
+/* Download: a card per system and the package-manager commands, on the landing page and /download/. */
+.oscards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.oscard {
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 28px 22px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
+}
+
+.oscard:hover {
+  transform: translateY(-4px);
+  border-color: rgba(214, 177, 122, 0.5);
+}
+
+.oscard.mine {
+  border-color: var(--sand);
+  box-shadow: 0 0 0 1px var(--sand) inset;
+}
+
+.oscard .mark {
+  width: 56px;
+  height: 56px;
+}
+
+.oscard b {
+  font-size: 20px;
+}
+
+.oscard > span:not(.iconwrap) {
+  color: var(--dim);
+  font-size: 14px;
+  min-height: 42px;
+}
+
+.oscard .btn {
+  margin-top: auto;
+  width: 100%;
+  justify-content: center;
+  min-height: 52px;
+}
+
+.oscard .iconwrap {
+  position: relative;
+}
+
+.oscard .iconwrap i {
+  position: absolute;
+  right: -14px;
+  bottom: -4px;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 800;
+  background: var(--sand);
+  color: var(--sand-ink);
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+
+.dlmeta {
+  display: flex;
+  gap: 22px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  color: var(--faint);
+  font-size: 15px;
+}
+
+.dlmeta a {
+  color: var(--dim);
+  border-bottom: 1px dashed var(--line);
+}
+
+.dlmeta a:hover {
+  color: var(--sand);
+  border-color: var(--sand);
+}
+
+.cmds {
+  margin-top: 36px;
+}
+
+.pmchips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.pmchips button {
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 15px inherit;
+  font-family: inherit;
+  color: var(--dim);
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 14px 7px 10px;
+  cursor: pointer;
+}
+
+.pmchips .mark {
+  width: 20px;
+  height: 20px;
+}
+
+.pmchips button[aria-selected="true"] {
+  color: var(--ink);
+  border-color: var(--sand);
+}
+
+.cmdbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #0e0e11;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  min-width: 0;
+  margin-bottom: 10px;
+}
+
+.cmdbox code {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding: 4px 0;
+}
+
+.cmdbox code::before {
+  content: "$ ";
+  color: var(--sand);
+}
+
+.cmdbox button {
+  font: 700 14px inherit;
+  font-family: inherit;
+  background: var(--raised2);
+  color: var(--sand);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  flex: none;
+}
+
+.cmdmore {
+  color: var(--sand);
+}
+
+@media (max-width: 900px) {
+  .oscards {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .oscards {
+    grid-template-columns: 1fr;
+  }
+}

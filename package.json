@@ -3,7 +3,8 @@
   "private": true,
   "packageManager": "bun@1.4.3",
   "workspaces": [
-    "frontend"
+    "frontend",
+    "web"
   ],
   "scripts": {
     "lint": "biome check --error-on-warnings .",
@@ -26,7 +27,6 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
     "knip": "^6.41.0",
-    "pagefind": "1.5.2",
-    "simple-icons": "16.35.0"
+    "pagefind": "1.5.2"
   }
 }

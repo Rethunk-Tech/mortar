@@ -1,0 +1,111 @@
+---
+// A card per system with the visitor's own picked out, and package-manager commands behind one copy button.
+import { releases } from '../lib/changelog.ts'
+import { shortDate } from '../lib/news.ts'
+import Mark from './Mark.astro'
+
+const latest = releases()[0]
+const LATEST = 'https://github.com/Rethunk-Tech/mortar/releases/latest/download/'
+const systems = [
+  { os: 'windows', mark: 'windows', name: 'Windows', what: 'Installer · Windows 10 and 11, no administrator rights', asset: 'mortar-amd64-installer.exe' },
+  { os: 'linux', mark: 'linux', name: 'Linux', what: 'AppImage · x86_64 · Ubuntu 24.04, Fedora 39 or newer', asset: 'mortar-linux-x86_64.AppImage' },
+  { os: 'linux-arm', mark: 'linux', name: 'Linux on ARM64', what: 'AppImage · aarch64', asset: 'mortar-linux-aarch64.AppImage', arm: true },
+  { os: 'deck', mark: 'steamdeck', name: 'Steam Deck', what: 'AppImage in Desktop Mode, then Add to Steam', asset: 'mortar-linux-x86_64.AppImage' },
+]
+const managers = [
+  { mark: 'flatpak', name: 'Flatpak', cmd: 'flatpak install --user https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref', note: 'Any distribution; flatpak update keeps it current.', more: '/download/#flatpak' },
+  { mark: 'debian', name: 'apt', cmd: 'sudo apt install mortar', note: 'Ubuntu 24.04, Debian 13 or newer, after adding the repository once.', more: '/download/#deb' },
+  { mark: 'fedora', name: 'dnf', cmd: 'sudo dnf install mortar', note: 'Fedora 39 or newer, after adding the repository once.', more: '/download/#fedora' },
+  { mark: 'archlinux', name: 'pacman', cmd: 'sudo pacman -Sy mortar', note: 'After adding the repository to pacman.conf once.', more: '/download/#arch' },
+  { mark: 'homebrew', name: 'Homebrew', cmd: 'brew install rethunk-tech/tap/mortar', note: 'Installs the AppImage, which needs FUSE 2.', more: '/download/#brew' },
+  { mark: 'windows', name: 'Scoop', cmd: 'scoop bucket add mortar https://github.com/Rethunk-Tech/scoop-bucket; scoop install mortar/mortar', note: 'Windows; Scoop handles updates.', more: '/download/#windows' },
+]
+---
+
+<div class="oscards stagger">
+  {
+    systems.map((s) => (
+      <div class="oscard reveal" data-os={s.os}>
+        <span class="iconwrap">
+          <Mark id={s.mark} label={s.name} />
+          {s.arm && <i>ARM</i>}
+        </span>
+        <b>{s.name}</b>
+        <span>{s.what}</span>
+        <a class="btn ghost" href={LATEST + s.asset} data-asset={s.asset}>
+          Download
+        </a>
+      </div>
+    ))
+  }
+</div>
+<div class="dlmeta reveal">
+  {latest && <span>Version {latest.version} · {shortDate(new Date(`${latest.date}T00:00:00Z`))}</span>}
+  <a href="/news/">What's new</a>
+  <a href="/download/#verify">Verify your download</a>
+  <a href="https://github.com/Rethunk-Tech/mortar/releases/latest">All releases and checksums</a>
+</div>
+<div class="cmds reveal">
+  <span class="lbl">Or from your package manager</span>
+  <div class="pmchips" role="tablist" aria-label="Package manager">
+    {
+      managers.map((m, i) => (
+        <button type="button" role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-cmd={m.cmd} data-note={m.note} data-more={m.more}>
+          <Mark id={m.mark} label="" />
+          {m.name}
+        </button>
+      ))
+    }
+  </div>
+  <div class="cmdbox"><code class="cmdtext">{managers[0]?.cmd}</code><button type="button" class="cmdcopy">Copy</button></div>
+  <span class="dim small"><span class="cmdnote">{managers[0]?.note}</span> <a class="cmdmore" href={managers[0]?.more}>Full steps</a></span>
+</div>
+
+<script>
+  // Picks out the visitor's system and their package manager, and copies the shown command.
+  const ua = navigator.userAgent
+  const linux = /Linux|X11/i.test(ua) && !/Android/i.test(ua) && !/Windows/i.test(ua)
+  const os = linux ? 'linux' : 'windows'
+  for (const card of document.querySelectorAll<HTMLElement>('.oscard')) {
+    if (card.dataset.os === os) {
+      card.classList.add('mine')
+      const btn = card.querySelector('.btn')
+      btn?.classList.replace('ghost', 'primary')
+      if (btn) {
+        btn.textContent = 'Download · your system'
+      }
+    }
+  }
+  for (const box of document.querySelectorAll<HTMLElement>('.cmds')) {
+    const chips = [...box.querySelectorAll<HTMLButtonElement>('.pmchips button')]
+    const text = box.querySelector('.cmdtext')
+    const note = box.querySelector('.cmdnote')
+    const more = box.querySelector<HTMLAnchorElement>('.cmdmore')
+    const pick = (chip: HTMLButtonElement) => {
+      for (const c of chips) {
+        c.setAttribute('aria-selected', String(c === chip))
+      }
+      if (text && note && more) {
+        text.textContent = chip.dataset.cmd ?? ''
+        note.textContent = chip.dataset.note ?? ''
+        more.href = chip.dataset.more ?? '/download/'
+      }
+    }
+    for (const c of chips) {
+      c.addEventListener('click', () => pick(c))
+    }
+    const scoop = chips.at(-1)
+    if (os === 'windows' && scoop) {
+      pick(scoop)
+    }
+    const copy = box.querySelector<HTMLButtonElement>('.cmdcopy')
+    copy?.addEventListener('click', () => {
+      navigator.clipboard?.writeText(text?.textContent ?? '').then(() => {
+        copy.textContent = 'Copied'
+        setTimeout(() => {
+          copy.textContent = 'Copy'
+        }, 1500)
+      })
+    })
+  }
+</script>

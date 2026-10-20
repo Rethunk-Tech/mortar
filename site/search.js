@@ -144,7 +144,14 @@ function open() {
 button.addEventListener('click', open)
 document.addEventListener('keydown', (e) => {
   const chord = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k'
-  const slash = e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !typing(e.target)
+  // A page with its own "/" search (the landing page's game picker) keeps the key for it.
+  const slash =
+    e.key === '/' &&
+    !e.ctrlKey &&
+    !e.metaKey &&
+    !e.altKey &&
+    !typing(e.target) &&
+    !document.querySelector('[data-slash]')
   if (chord || slash) {
     e.preventDefault()
     open()

@@ -11,7 +11,7 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 ### The website on Astro
 
-Built on the local `site-astro` branch only. Nothing on it is merged, pushed or deployed until the maintainer has looked through it in `astro preview` and approved it.
+Built on local `main`. Nothing of it is pushed or deployed until the maintainer has looked through it in `astro preview` and approved it.
 
 **Why:** the generator (`scripts/site.ts` and `scripts/site/*.ts`, about 1,566 lines of string templates) writes 690 pages that are committed under `site/`, so every copy edit churns hundreds of files and the gate fails on stale output (`scripts/gate.sh:126`). Astro keeps generation at build time, gives the pages components and Markdown, and keeps the output out of git.
 

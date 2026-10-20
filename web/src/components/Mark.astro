@@ -1,0 +1,27 @@
+---
+// A mod site, store or platform mark from /img/brands.svg in its brand colour, or the artwork that stands for it.
+import { ART, MARKS, rgb } from '../lib/brands.ts'
+
+interface Props {
+  id: string
+  label: string
+  class?: string
+}
+
+const { id, label, class: cls = 'mark' } = Astro.props
+const mark = MARKS[id]
+const art = ART[id]
+---
+
+{
+  mark ? (
+    <svg class={cls} role="img" aria-label={label} style={`color:${rgb(mark.colour)}`}>
+      <title>{label}</title>
+      <use href={`/img/brands.svg#${id}`} />
+    </svg>
+  ) : art ? (
+    <img class={cls} src={`/img/vendor/${art}`} alt={label} title={label} width="22" height="22" />
+  ) : (
+    <span class={cls}>{label}</span>
+  )
+}
