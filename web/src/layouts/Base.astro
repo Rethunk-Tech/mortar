@@ -4,6 +4,8 @@ import '@fontsource/atkinson-hyperlegible-next/latin-400.css'
 import '@fontsource/atkinson-hyperlegible-next/latin-500.css'
 import '@fontsource/atkinson-hyperlegible-next/latin-700.css'
 import '@fontsource/atkinson-hyperlegible-next/latin-800.css'
+import body from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff2?url'
+import heading from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-800-normal.woff2?url'
 import '../styles/site.css'
 import '../styles/site-motion.css'
 import Footer from '../components/Footer.astro'
@@ -64,6 +66,9 @@ const ld = [appLd(), ...(crumbs ? [breadcrumbLd(crumbs)] : []), ...jsonLd]
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="alternate" type="application/rss+xml" title="Mortar news" href={`${SITE}/news/rss.xml`} />
     <link rel="alternate" type="application/atom+xml" title="Mortar releases" href={`${SITE}/changelog/feed.xml`} />
+    <!-- Body and heading text arrive before first paint, so the page does not shift when they swap in. -->
+    <link rel="preload" href={body} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={heading} as="font" type="font/woff2" crossorigin />
     <link rel="icon" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/img/icon-192.png" />
     <link rel="sitemap" href="/sitemap-index.xml" />

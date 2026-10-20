@@ -72,6 +72,11 @@ for (const card of document.querySelectorAll<HTMLElement>('.card.tilt')) {
   })
 }
 
+// A code block that scrolls sideways needs a keyboard stop to scroll it.
+for (const pre of document.querySelectorAll('pre')) {
+  pre.tabIndex = 0
+}
+
 const lightbox = document.getElementById('lightbox')
 const big = lightbox?.querySelector('img')
 function closeLightbox() {

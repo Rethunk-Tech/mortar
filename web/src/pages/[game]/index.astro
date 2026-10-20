@@ -84,8 +84,9 @@ const loaderText = f.loader ? `installs ${f.loader}, ` : ''
       <p>A profile for {game.name} shared from Mortar is a link to <code>mortar.rethunk.tech/{game.id}/p</code>. Whoever opens it sees the mod list and imports it into Mortar in one click. The whole profile is inside the link, so nothing is uploaded anywhere.</p>
     </div>
     {
+      
       more.games.length > 0 && (
-        <div data-pagefind-ignore>
+        <div data-pagefind-ignore={true}>
           <h2 class="more-title">{more.title}</h2>
           <ul class="game-grid">
             {more.games.map((o) => (

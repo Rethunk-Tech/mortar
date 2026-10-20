@@ -166,6 +166,8 @@
 }
 
 .cmdmore {
+  text-decoration: underline;
+  text-underline-offset: 3px;
   color: var(--sand);
 }
 
@@ -279,6 +281,8 @@ html.js .dl .panel[hidden] {
 }
 
 .dl a:not(.file):not(.btn) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
   color: var(--sand);
 }
 

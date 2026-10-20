@@ -292,6 +292,7 @@ export function whyHtml(w: Why, counts: Counts): string {
           ? row
           : `<tr><td>${label}</td>${cells.replaceAll('<td>', '<td class="win">')}</tr>`,
       )
+      .replace('<th></th>', '<th><span class="visually-hidden">Compared</span></th>')
       .replace(
         '</table></div>',
         '</table></div>\n<p class="table-note">Highlighted: the stronger of the two, or both where they are even.</p>',

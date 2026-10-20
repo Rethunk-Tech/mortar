@@ -22,8 +22,10 @@
   box-sizing: border-box;
 }
 
+/* The landing page's game wall bleeds past the edge on purpose; nothing may make the page pan sideways. */
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {

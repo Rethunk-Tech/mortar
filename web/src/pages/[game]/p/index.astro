@@ -34,7 +34,8 @@ const hero = artOf(game, steamArt())?.hero
       <h1>Shared {game.name} profile</h1>
     </div>
   </header>
-  <div class="wrap pagebody prose full share">
+  <div class="wrap pagebody">
+  <div class="prose full share">
     <p id="error" class="card" hidden></p>
     <noscript><p class="card">This page needs JavaScript to read the shared profile.</p></noscript>
     <section id="profile" hidden>
@@ -54,6 +55,7 @@ const hero = artOf(game, steamArt())?.hero
     <h2>What is Mortar?</h2>
     <p>A free, open source mod manager for Linux, Windows and Steam Deck. It installs each game's mod loader, keeps each set of mods in its own profile and downloads every mod from its own page. <a href={`/${game.id}/`}>How Mortar handles {game.name}</a></p>
     <p class="muted">Everything on this page happens in your browser; the profile is never sent anywhere. Pictures of GitHub and Thunderstore mods load from those sites.</p>
+  </div>
   </div>
 </Base>
 

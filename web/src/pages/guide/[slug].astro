@@ -49,7 +49,7 @@ const firstLine =
       </nav>
       <article class="prose">
         <Fragment set:html={s.html} />
-        <nav class="pager" aria-label="Guide pages" data-pagefind-ignore>
+        <nav class="pager" aria-label="Previous and next guide page" data-pagefind-ignore>
           {prev && <a class="prev" href={`/guide/${prev.slug}/`}><span>Previous</span><Fragment set:html={prev.title} /></a>}
           {next && <a class="next" href={`/guide/${next.slug}/`}><span>Next</span><Fragment set:html={next.title} /></a>}
         </nav>

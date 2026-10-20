@@ -52,6 +52,7 @@ const article = {
     )
   }
   {Content && <Content />}
+  {p.release && <h2>What changed in {p.release.version}</h2>}
   {p.release && <div class="notes" set:html={p.release.html} />}
   {
     p.release && (

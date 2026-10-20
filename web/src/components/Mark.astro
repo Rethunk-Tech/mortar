@@ -14,7 +14,11 @@ const art = ART[site]
 ---
 
 {
-  mark ? (
+  mark && label === '' ? (
+    <svg class={cls} aria-hidden="true" style={`color:${rgb(mark.colour)}`}>
+      <use href={`/img/brands.svg#${site}`} />
+    </svg>
+  ) : mark ? (
     <svg class={cls} role="img" aria-label={label} style={`color:${rgb(mark.colour)}`}>
       <title>{label}</title>
       <use href={`/img/brands.svg#${site}`} />
