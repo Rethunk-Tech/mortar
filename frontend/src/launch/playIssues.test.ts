@@ -151,3 +151,12 @@ test('overflowIssueCount is the names past the five shown', () => {
   expect(overflowIssueCount({ count: 6, names: ['A', 'B', 'C', 'D', 'E'] })).toBe(1)
   expect(overflowIssueCount({ count: 2, names: ['A', 'B'] })).toBe(0)
 })
+
+test('playIssueSummary names a disabled requirement by its installed copy', () => {
+  expect(
+    playIssueSummary({
+      missing: [missing({ id: 'Need.This', where: null })],
+      nameOf: (id) => (id === 'Need.This' ? 'Need This' : id),
+    })[0]?.names,
+  ).toEqual(['Need This'])
+})

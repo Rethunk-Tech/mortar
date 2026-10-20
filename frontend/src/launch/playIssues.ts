@@ -17,7 +17,9 @@ import { ChangesSince } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { LastSaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
 import { listNames } from '../i18n/list.ts'
 import { localId } from '../mods/dependents.ts'
-import { visibleUpdates } from '../mods/lookup.ts'
+import { missingDepName } from '../mods/describe.ts'
+import { sameId, visibleUpdates } from '../mods/lookup.ts'
+import { useMods } from '../mods/store.ts'
 import { changesSinceCache } from '../profiles/changesSinceCache.ts'
 import { diffLines } from '../profiles/historyDiff.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -63,12 +65,10 @@ function groupOf(
   }
 }
 
-function missingName(m: Missing): { name: string; title?: string } {
-  const page = (m.where?.pageName ?? '').trim()
-  if (page !== '') {
-    return { name: page }
-  }
-  return { name: 'Unknown mod', title: localId(m.id) }
+function missingName(m: Missing, nameOf: (id: string) => string): { name: string; title?: string } {
+  const name = missingDepName(m, nameOf)
+  const unnamed = (m.where?.pageName ?? '').trim() === '' && name === localId(m.id)
+  return unnamed ? { name: 'Unknown mod', title: name } : { name }
 }
 
 function conflictName(c: AssetConflict): { name: string } {
@@ -78,6 +78,7 @@ function conflictName(c: AssetConflict): { name: string } {
 
 function playIssueSummary(input: {
   missing?: Missing[] | null
+  nameOf?: (id: string) => string
   assetConflicts?: AssetConflict[] | null
   broken?: Broken[] | null
   longPaths?: LongPath[] | null
@@ -90,7 +91,9 @@ function playIssueSummary(input: {
   const groups: PlayIssueGroup[] = []
   const missing = groupOf(
     'missing',
-    (input.missing ?? []).filter((m) => !(m.optional || m.external)).map(missingName),
+    (input.missing ?? [])
+      .filter((m) => !(m.optional || m.external))
+      .map((m) => missingName(m, input.nameOf ?? localId)),
   )
   const conflicts = groupOf(
     'conflicts',
@@ -162,6 +165,7 @@ async function gatherPlayIssues(game: string, profileId: string): Promise<PlayIs
     : ''
   const groups = playIssueSummary({
     missing: problems.missing,
+    nameOf: (id) => useMods.getState().mods.find((m) => sameId(m.id, id))?.name ?? localId(id),
     assetConflicts: problems.assetConflicts,
     broken: problems.broken,
     longPaths: problems.longPaths ?? null,
