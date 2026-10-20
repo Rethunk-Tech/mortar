@@ -814,7 +814,7 @@ msgstr "Updated on Nexus"
 #: src/mods/problemFix/LoadFailureFix.tsx:55
 #: src/mods/problemFix/SettingFix.tsx:100
 #: src/profiles/CrashHintCard.tsx:148
-#: src/tips/TipBanner.tsx:38
+#: src/tips/TipBanner.tsx:39
 #: src/toasts/ToastHost.tsx:216
 msgid "Dismiss"
 msgstr "Dismiss"
@@ -1425,7 +1425,7 @@ msgid "Untrack on Nexus"
 msgstr "Untrack on Nexus"
 
 #: src/groups/dialogs.tsx:77
-#: src/groups/SavedGroupsSection.tsx:79
+#: src/groups/SavedGroupsSection.tsx:81
 msgid "Loading saved groups…"
 msgstr "Loading saved groups…"
 
@@ -1912,7 +1912,7 @@ msgstr "{0} fps over {1} s. Frame ms: average {2}, 95th {3}, 99th {4}, worst {5}
 msgid "Windows Firewall blocks incoming sends to Mortar"
 msgstr "Windows Firewall blocks incoming sends to Mortar"
 
-#: src/groups/SavedGroupsSection.tsx:107
+#: src/groups/SavedGroupsSection.tsx:109
 msgid "Could not rename the saved group"
 msgstr "Could not rename the saved group"
 
@@ -4284,7 +4284,7 @@ msgid "Custom categories"
 msgstr "Custom categories"
 
 #: src/game/ProfileDialogHost.tsx:35
-#: src/groups/SavedGroupsSection.tsx:122
+#: src/groups/SavedGroupsSection.tsx:124
 #: src/mods/CategoryEditor.tsx:172
 #: src/mods/OldFilesCallouts.tsx:119
 #: src/mods/problemFixButtons.tsx:213
@@ -5162,7 +5162,7 @@ msgstr "Could not open: {error}"
 msgid "Get the extension"
 msgstr "Get the extension"
 
-#: src/groups/SavedGroupsSection.tsx:86
+#: src/groups/SavedGroupsSection.tsx:88
 #: src/mods/ModDependencyTree.tsx:207
 #: src/mods/Toolbar.tsx:259
 #: src/settings/prefCopyModsView.ts:40
@@ -5437,7 +5437,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/sections/Updates.tsx:167
 #: src/settings/sections/WatchFolders.tsx:20
 #: src/settings/sections/WatchFolders.tsx:28
-#: src/tips/TipBanner.tsx:40
+#: src/tips/TipBanner.tsx:41
 msgid "Could not save that setting"
 msgstr "Could not save that setting"
 
@@ -5677,7 +5677,7 @@ msgstr "Cached GitHub release lists"
 
 #: src/game/NewProfileDialog.tsx:86
 #: src/groups/SavedGroupsSection.tsx:66
-#: src/groups/SavedGroupsSection.tsx:77
+#: src/groups/SavedGroupsSection.tsx:79
 msgid "Saved groups"
 msgstr "Saved groups"
 
@@ -7197,7 +7197,7 @@ msgstr "Port"
 msgid "named in the crash log"
 msgstr "named in the crash log"
 
-#: src/groups/SavedGroupsSection.tsx:138
+#: src/groups/SavedGroupsSection.tsx:140
 msgid "Could not delete the saved group"
 msgstr "Could not delete the saved group"
 
@@ -12506,7 +12506,7 @@ msgstr "{local, plural, one {# mod you added from an archive can't go in the fil
 #. placeholder {0}: drift.folder
 #. placeholder {0}: initialFile ?? name
 #: src/game/ProfileDialogHost.tsx:33
-#: src/groups/SavedGroupsSection.tsx:120
+#: src/groups/SavedGroupsSection.tsx:122
 #: src/mods/CategoryEditor.tsx:170
 #: src/mods/ConfigPresets.tsx:157
 #: src/mods/problemFixButtons.tsx:216
@@ -12520,7 +12520,7 @@ msgstr "Delete {0}?"
 msgid "Beach farm"
 msgstr "Beach farm"
 
-#: src/groups/SavedGroupsSection.tsx:106
+#: src/groups/SavedGroupsSection.tsx:108
 #: src/groups/SaveGroupToLibrary.tsx:48
 #: src/mods/CategoryEditor.tsx:164
 #: src/mods/ConfigPresets.tsx:136
@@ -12762,7 +12762,7 @@ msgstr "Expand sidebar"
 msgid "Mining skill"
 msgstr "Mining skill"
 
-#: src/groups/SavedGroupsSection.tsx:121
+#: src/groups/SavedGroupsSection.tsx:123
 msgid "This saved group will be deleted. Groups already added to profiles stay."
 msgstr "This saved group will be deleted. Groups already added to profiles stay."
 
@@ -13330,7 +13330,7 @@ msgstr "Fresh and clear"
 msgid "{0} of {1} saves fit"
 msgstr "{0} of {1} saves fit"
 
-#: src/groups/SavedGroupsSection.tsx:104
+#: src/groups/SavedGroupsSection.tsx:106
 msgid "Rename saved group"
 msgstr "Rename saved group"
 
@@ -15393,7 +15393,7 @@ msgstr "Enable them"
 msgid "Search all mod sites"
 msgstr "Search all mod sites"
 
-#: src/groups/SavedGroupsSection.tsx:136
+#: src/groups/SavedGroupsSection.tsx:138
 msgid "Saved group deleted"
 msgstr "Saved group deleted"
 
