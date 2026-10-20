@@ -280,11 +280,14 @@ interface Counts {
 }
 
 /** The Games row's stronger side follows Mortar's live count against the first number in the other manager's cell.
- * An "Over N" figure is not exact, so Mortar at or above it reads as even. */
-function gamesWinner(md: string, games: number): string {
+ * An "Over N" figure is not exact: Mortar wins it only by a clear margin, and reads as even short of that. */
+const OVER_MARGIN = 1.1
+
+export function gamesWinner(md: string, games: number): string {
   return md.replace(/^\| Games \| ([^|]*)\| ([^|]*)\|$/m, (row, ours: string, theirs: string) => {
     const n = Number(/\d+/.exec(theirs)?.[0] ?? Number.NaN)
-    if (Number.isNaN(n) || (/^over /i.test(theirs) && games >= n) || games === n) {
+    const over = /^over /i.test(theirs)
+    if (Number.isNaN(n) || games === n || (over && games >= n && games < n * OVER_MARGIN)) {
       return row
     }
     return games > n ? `| Games | !win ${ours}| ${theirs}|` : `| Games | ${ours}| !win ${theirs}|`

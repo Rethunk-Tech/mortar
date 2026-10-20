@@ -8,7 +8,7 @@ Vortex is Nexus Mods' manager, with deep Bethesda tooling. Mortar works with Nex
 | Games | GAME_COUNT | Over VORTEX_COUNT ([README](https://github.com/Nexus-Mods/Vortex)) |
 | Mod sites | !win :nexus: :thunderstore: :curseforge: :github: :vsmoddb: | :nexus: ([README](https://github.com/Nexus-Mods/Vortex)) |
 | Account | !win None needed; Nexus sign-in only for Nexus downloads | Nexus login to download from Nexus |
-| Sharing | A link or a `.mortar` file; opens Nexus Collections and drafts one from a profile | Nexus Collections ([docs](https://github.com/Nexus-Mods/Vortex/blob/master/docs/mod-management/collections.md)) |
+| Sharing | !win A link or a `.mortar` file; opens Nexus Collections and drafts one from a profile | Nexus Collections ([docs](https://github.com/Nexus-Mods/Vortex/blob/master/docs/mod-management/collections.md)) |
 | Usage analytics | !win None | Mixpanel, keyed to the Nexus user id ([docs](https://github.com/Nexus-Mods/Vortex/blob/master/docs/analytics.md)) |
 | Licence | AGPL-3.0 | GPL-3.0 |
 
