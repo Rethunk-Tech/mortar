@@ -3,6 +3,7 @@
 // paths only the store API reveals, so the addresses are looked up once by `bun scripts/site.ts --refresh` and
 // committed, which keeps building the site offline.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import process from 'node:process'
 import { repo } from './site.ts'
 
 const ART = repo('web/src/data/steam-art.json')
@@ -75,6 +76,46 @@ export async function refreshSteamArt(appIds: string[]): Promise<void> {
       }
     }
   }
+  await dropMissing(art)
   const sorted = Object.fromEntries(Object.entries(art).sort(([a], [b]) => Number(a) - Number(b)))
   writeFileSync(ART, `${JSON.stringify(sorted, null, 2)}\n`)
+}
+
+const CHECKS_AT_ONCE = 16
+
+/** Whether Steam serves the file: its store API sometimes names art that answers 404. */
+async function served(url: string): Promise<boolean> {
+  try {
+    return (await fetch(url, { method: 'HEAD' })).ok
+  } catch {
+    return false
+  }
+}
+
+/** Removes every address Steam does not serve, so a card falls back to the art that loads; a game left without a
+ * header has no art at all. */
+async function dropMissing(art: Record<string, SteamArt>): Promise<void> {
+  const urls = Object.values(art).flatMap((a) => Object.values(a).map(String))
+  const missing = new Set<string>()
+  for (let i = 0; i < urls.length; i += CHECKS_AT_ONCE) {
+    const batch = urls.slice(i, i + CHECKS_AT_ONCE)
+    const ok = await Promise.all(batch.map(served))
+    batch.forEach((url, j) => {
+      if (!ok[j]) {
+        missing.add(url)
+      }
+    })
+  }
+  for (const [appId, a] of Object.entries(art)) {
+    if (missing.has(a.header)) {
+      delete art[appId]
+    } else {
+      art[appId] = Object.fromEntries(
+        Object.entries(a).filter(([, url]) => !missing.has(url)),
+      ) as SteamArt
+    }
+  }
+  process.stderr.write(
+    `site: Steam art: ${urls.length} addresses checked, ${missing.size} not served and dropped\n`,
+  )
 }
