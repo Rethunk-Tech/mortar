@@ -4,6 +4,7 @@ import {
   Level,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
+  collapseRepeats,
   countByLevel,
   DEFAULT_FILTERS,
   firstError,
@@ -13,6 +14,7 @@ import {
   isFiltered,
   levelsFromFloor,
   modsOf,
+  repeatCount,
   SHOW_ALL,
   shownLog,
   visible,
@@ -151,4 +153,27 @@ test('hiddenBy names only levels that have lines, plus search and mod filters', 
     mods: [],
     excludeMods: [],
   })
+})
+
+test('an error and its stack written again and again show once, counted', () => {
+  const line = (seq: number, message: string, cont = false) => ({
+    seq,
+    time: '',
+    level: Level.Error,
+    mod: 'Unity Log',
+    message,
+    cont,
+  })
+  const rows = [
+    line(1, 'NullReferenceException'),
+    line(2, '  at OccludeAudio.Update ()', true),
+    line(3, 'NullReferenceException'),
+    line(4, '  at OccludeAudio.Update ()', true),
+    line(5, 'NullReferenceException'),
+    line(6, '  at OccludeAudio.Update ()', true),
+    line(7, 'Releasing render texture'),
+  ]
+  const shown = collapseRepeats(rows)
+  expect(shown.map((row) => row.seq)).toEqual([1, 2, 7])
+  expect(shown.map(repeatCount)).toEqual([3, 1, 1])
 })

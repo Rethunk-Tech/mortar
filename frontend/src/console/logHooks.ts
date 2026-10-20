@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { useMemo } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { shownLog, visible } from './filter.ts'
+import { collapseRepeats, shownLog, visible } from './filter.ts'
 import { useConsole } from './store.ts'
 
 function useMine() {
@@ -18,7 +18,7 @@ export function useShownEntries() {
 export function useVisible() {
   const entries = useShownEntries()
   const filters = useConsole((s) => s.filters)
-  return useMemo(() => visible(entries, filters), [entries, filters])
+  return useMemo(() => collapseRepeats(visible(entries, filters)), [entries, filters])
 }
 
 export function useLevelNames(): Record<Level, string> {

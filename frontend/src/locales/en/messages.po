@@ -7020,6 +7020,10 @@ msgstr "{0, plural, one {Added # mod to {1}} other {Added # mods to {2}}}"
 msgid "Mortar finds games through their launchers. A game installed anywhere else works too: choose its folder when you set it up."
 msgstr "Mortar finds games through their launchers. A game installed anywhere else works too: choose its folder when you set it up."
 
+#: src/console/VirtualLog.tsx
+msgid "Written {repeat} times in a row"
+msgstr "Written {repeat} times in a row"
+
 #: src/mods/OldFilesCallouts.tsx
 msgid "Could not move the old files to trash"
 msgstr "Could not move the old files to trash"

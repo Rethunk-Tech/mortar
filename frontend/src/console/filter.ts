@@ -127,3 +127,44 @@ export function formatAll(rows: Entry[]): string {
 export function incompatibleSMAPI(message: string): boolean {
   return message.includes(INCOMPATIBLE_GAME)
 }
+
+const repeats = new WeakMap<Entry, number>()
+
+const sameLine = (a: Entry, b: Entry | undefined) =>
+  b !== undefined &&
+  a.level === b.level &&
+  a.mod === b.mod &&
+  a.message === b.message &&
+  a.cont === b.cont
+
+// Back-to-back copies of a line and its continuation lines (one error and its stack, logged every frame) show once;
+// repeatCount says how many times it was written.
+export function collapseRepeats(rows: Entry[]): Entry[] {
+  const out: Entry[] = []
+  let last: Entry[] = []
+  let i = 0
+  while (i < rows.length) {
+    const group: Entry[] = []
+    do {
+      const row = rows[i]
+      if (row) {
+        group.push(row)
+      }
+      i++
+    } while (rows[i]?.cont === true)
+    const head = last[0]
+    if (head && last.length === group.length && last.every((e, k) => sameLine(e, group[k]))) {
+      repeats.set(head, (repeats.get(head) ?? 1) + 1)
+      continue
+    }
+    const first = group[0]
+    if (first) {
+      repeats.delete(first)
+    }
+    out.push(...group)
+    last = group
+  }
+  return out
+}
+
+export const repeatCount = (e: Entry): number => repeats.get(e) ?? 1

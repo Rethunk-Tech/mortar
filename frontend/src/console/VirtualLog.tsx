@@ -11,6 +11,7 @@ import {
   linksForModColumn,
   linksInText,
 } from './consoleLinks.ts'
+import { repeatCount } from './filter.ts'
 import { levelChrome } from './levelPalette.ts'
 import type { UpdateNote } from './smapiUpdateNotes.ts'
 import { UpdateNoteTag } from './UpdateNoteTag.tsx'
@@ -90,8 +91,10 @@ function Row({
   onMod: (id: string) => void
   onPath: (path: string) => void
 }) {
+  const { t } = useLingui()
   const theme = useTheme()
   const look = levelChrome(theme, entry.level)
+  const repeat = repeatCount(entry)
   const modLinks = useMemo(
     () => (entry.cont ? [] : linksForModColumn(entry.mod, mods)),
     [entry.cont, entry.mod, mods],
@@ -137,6 +140,24 @@ function Row({
         <Box sx={cell}>
           <Linked text={entry.message} links={messageLinks} onMod={onMod} onPath={onPath} />
         </Box>
+        {repeat > 1 ? (
+          <Box
+            component="span"
+            title={t`Written ${repeat} times in a row`}
+            sx={{
+              ml: 1,
+              px: 0.75,
+              flexShrink: 0,
+              borderRadius: '10px',
+              fontSize: 12,
+              fontVariantNumeric: 'tabular-nums',
+              bgcolor: 'var(--mortar-hairline-16)',
+              color: 'text.secondary',
+            }}
+          >
+            {`×${repeat}`}
+          </Box>
+        ) : null}
         {note ? <UpdateNoteTag note={note} /> : null}
       </Box>
     </Box>
