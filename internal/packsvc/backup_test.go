@@ -1,11 +1,7 @@
 package packsvc
 
 import (
-	"archive/zip"
-	"bytes"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"os"
 	"path/filepath"
 	"strings"
@@ -157,35 +153,6 @@ func TestBackupWithModsRestoresOffline(t *testing.T) {
 		if _, err := freshItems.Path("stardew", "nexus-12-34"); (err == nil) != (queued == 0) {
 			t.Fatalf("%s: store item present: %v", path, err == nil)
 		}
-	}
-}
-
-func TestRestoreReadsAProfileZip(t *testing.T) {
-	dataHome(t)
-	_, profiles := testenv.Stores(t)
-	profileJSON := []byte(`{"id":"old","name":"Old farm"}`)
-	sum := sha256.Sum256(profileJSON)
-	manifest := `{"mortarVersion":"0.0.1","files":{"profile.json":"` + hex.EncodeToString(sum[:]) + `"}}`
-	path := filepath.Join(t.TempDir(), "old.zip")
-	var buf bytes.Buffer
-	zw := zip.NewWriter(&buf)
-	for name, data := range map[string][]byte{"profile.json": profileJSON, "mortar-export.json": []byte(manifest)} {
-		w, _ := zw.Create(name)
-		_, _ = w.Write(data)
-	}
-	if err := zw.Close(); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, buf.Bytes(), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	s := &Service{Profiles: profiles}
-	if _, err := s.Restore(context.Background(), path, ""); err == nil {
-		t.Fatal("a profile zip names no game, so Restore must ask for one")
-	}
-	res, err := s.Restore(context.Background(), path, "stardew")
-	if err != nil || res.Name != "Old farm" || res.Game != "stardew" || res.Profile == "" {
-		t.Fatalf("%+v, %v", res, err)
 	}
 }
 

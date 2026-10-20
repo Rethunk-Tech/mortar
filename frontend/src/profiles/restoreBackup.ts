@@ -6,7 +6,7 @@ import { reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useProfiles } from './store.ts'
 
-// Makes a new profile from a backup file or an older profile zip; mods the file lacks download again.
+// Makes a new profile from a backup file; mods the file lacks download again.
 export async function restoreBackup(): Promise<void> {
   const { game } = useProfiles.getState()
   if (!game) {

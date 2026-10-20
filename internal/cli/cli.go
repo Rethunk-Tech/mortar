@@ -2574,7 +2574,7 @@ takes --game <id>, which may be left out when exactly one game is installed. Out
   profile backup <game> <profile> <file.zip> [--no-mods]
                                           settings, history, configs, saves and the mod files (--no-mods leaves out
                                           mods a site can download again)
-  profile restore <file.zip> [--game <id>]    new profile from a backup or profile zip; downloads missing mods
+  profile restore <file.zip> [--game <id>]    new profile from a backup; downloads missing mods
   profile load-order <game> <profile>    enabled mods in the loader's load order
   profile shortcut <game> <profile> [--remove]  desktop shortcut that plays this profile
   profile set <game> <profile> <field> <value>  notes|color|icon|description|install|launchOptions|launchPrefix|launchEnv|loader|

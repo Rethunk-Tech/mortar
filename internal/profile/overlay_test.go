@@ -1,9 +1,7 @@
 package profile
 
 import (
-	"archive/zip"
 	"errors"
-	"io"
 	"os"
 	"path/filepath"
 	"slices"
@@ -307,63 +305,6 @@ func TestOverlayRevertAndRebuild(t *testing.T) {
 	}
 	if len(reverted.Entries) != 1 || readLive(t, e, p.ID, baseKey, art) != "A-main" {
 		t.Fatalf("revert = %+v", reverted.Entries)
-	}
-}
-
-func TestOverlayExportRestoreRoundTrip(t *testing.T) {
-	t.Parallel()
-	e, p, baseKey, optKey := installOverlayPair(t)
-	second := buildZip(t, "opt2.zip", map[string]string{overlayDir + "/assets/a.png": "A-two"})
-	if _, err := e.InstallSource(t.Context(), "stardew", p.ID, second, overlaySource(3, "opt2.zip")); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := e.SetOverlayEnabled("stardew", p.ID, optKey, true); err != nil {
-		t.Fatal(err)
-	}
-	art := overlayDir + "/assets/a.png"
-	zipPath := filepath.Join(t.TempDir(), "farm.zip")
-	if err := e.ExportZip("stardew", p.ID, zipPath, "0.0.1"); err != nil {
-		t.Fatal(err)
-	}
-	if got := readLive(t, e, p.ID, baseKey, art); got != "A-opt" {
-		t.Fatalf("export changed the live folder: %q", got)
-	}
-	zr, err := zip.OpenReader(zipPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	inZip := map[string]string{}
-	for _, f := range zr.File {
-		rc, _ := f.Open()
-		b, _ := io.ReadAll(rc)
-		_ = rc.Close()
-		inZip[f.Name] = string(b)
-	}
-	_ = zr.Close()
-	if inZip["mods/"+baseKey+"/"+art] != "A-main" || inZip["overlays/"+optKey+"/"+art] != "A-opt" {
-		t.Fatalf("zip does not keep the main folder and its optional files apart: %v", inZip)
-	}
-	if _, ok := inZip["mods/"+baseKey+"/"+overlayDir+"/assets/new.png"]; ok {
-		t.Fatal("a file only an optional file brings was exported in the main folder")
-	}
-	got, err := e.RestoreZip(t.Context(), "stardew", zipPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(got.Entries) != 3 {
-		t.Fatalf("restored entries = %+v", got.Entries)
-	}
-	base, one, two := got.Entries[0], got.Entries[1], got.Entries[2]
-	if one.OverlayOf != base.Key || two.OverlayOf != base.Key || one.OverlayOff || !two.OverlayOff ||
-		one.OverlayTo != overlayDir || one.Source.FileID != 2 {
-		t.Fatalf("restored optional files = %+v", got.Entries)
-	}
-	if readLive(t, e, got.ID, base.Key, art) != "A-opt" || readLive(t, e, got.ID, base.Key, overlayDir+"/assets/new.png") != "N-opt" {
-		t.Fatal("restored optional file not laid over its main file")
-	}
-	drift, err := e.ScanModsDrift("stardew", got.ID)
-	if err != nil || len(drift) != 0 {
-		t.Fatalf("drift = %+v, %v", drift, err)
 	}
 }
 

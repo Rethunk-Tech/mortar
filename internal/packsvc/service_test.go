@@ -73,10 +73,6 @@ func (*fakeProfiles) BackupDirs(string, profile.Profile, func(profile.Entry) boo
 	return nil, errors.New("not in this fake")
 }
 
-func (*fakeProfiles) RestoreZip(context.Context, string, string) (profile.Profile, error) {
-	return profile.Profile{}, errors.New("not in this fake")
-}
-
 func (*fakeProfiles) RestoreBackup(context.Context, string, profile.Profile, map[string][]byte, map[string]string) (profile.Profile, []profile.Entry, error) {
 	return profile.Profile{}, nil, errors.New("not in this fake")
 }
