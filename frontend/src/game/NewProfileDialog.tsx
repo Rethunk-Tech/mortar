@@ -17,9 +17,13 @@ import {
   Duplicate,
   Rename,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import type { SavedGroup } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/models.ts'
+import { Apply } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/service.ts'
 import type { Template } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/models.ts'
 import { NewProfileFromTemplate } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/templates/service.ts'
+import { savedGroupApplied } from '../groups/applied.ts'
 import { savedGroupWants } from '../groups/missingWants.ts'
+import { useSavedGroups } from '../groups/useSavedGroups.ts'
 import { listNames } from '../i18n/list.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
@@ -29,6 +33,7 @@ import { useStarterTemplates } from '../templates/useStarterTemplates.ts'
 import { useTemplates } from '../templates/useTemplates.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { groupStart, savedGroupOf } from './newProfileStart.ts'
 
 const EMPTY = ''
 // A template name cannot start with a control character, so this never collides with one.
@@ -41,6 +46,7 @@ function StartFromSelect({
   copyOf,
   names,
   starters,
+  groups,
   value,
   disabled,
   onChange,
@@ -50,6 +56,7 @@ function StartFromSelect({
   copyOf: string
   names: string[]
   starters: StarterTemplate[]
+  groups: SavedGroup[]
   value: string
   disabled: boolean
   onChange: (value: string) => void
@@ -74,6 +81,12 @@ function StartFromSelect({
         {names.map((name) => (
           <MenuItem key={name} value={name}>
             {name}
+          </MenuItem>
+        ))}
+        {groups.length === 0 ? null : <ListSubheader>{t`Saved groups`}</ListSubheader>}
+        {groups.map((group) => (
+          <MenuItem key={group.id} value={groupStart(group.id)}>
+            {group.name}
           </MenuItem>
         ))}
         {starters.length === 0 ? null : <ListSubheader>{t`Starter templates`}</ListSubheader>}
@@ -114,60 +127,68 @@ async function createFromStarter(name: string, starter: StarterTemplate) {
   })
 }
 
+interface Start {
+  template?: Template | undefined
+  copyOf: string
+  starter?: StarterTemplate | undefined
+  savedGroup?: string | undefined
+}
+
+// Creates the profile from a template and reports what is still to download.
+async function createFromTemplate(game: string, template: Template, name: string, created: string) {
+  const result = await NewProfileFromTemplate(game, template.name, name)
+  await useProfiles.getState().refresh()
+  useProfiles.getState().open(result.profile.id)
+  const missing = result.missing ?? []
+  const wants = savedGroupWants(result.missingMods)
+  const queued = wants.length > 0 && (await download(wants))
+  let title = created
+  if (missing.length > 0) {
+    title = queued
+      ? plural(missing.length, {
+          one: `Created ${name}; downloading # mod`,
+          other: `Created ${name}; downloading # mods`,
+        })
+      : plural(missing.length, {
+          one: `Created ${name}; # mod still to download`,
+          other: `Created ${name}; # mods still to download`,
+        })
+  }
+  useToasts.getState().push({
+    kind: missing.length > 0 && !queued ? 'warning' : 'success',
+    title,
+    changes: [result.profile.lastChange ?? ''],
+  })
+}
+
+async function createFrom(game: string, name: string, start: Start, created: string) {
+  const { template, copyOf, starter, savedGroup } = start
+  if (starter) {
+    await createFromStarter(name, starter)
+  } else if (savedGroup) {
+    await useProfiles.getState().create(name)
+    const profileId = useProfiles.getState().openId
+    savedGroupApplied(await Apply(game, savedGroup, profileId), profileId)
+  } else if (copyOf !== '') {
+    const copy = await Duplicate(game, copyOf)
+    await Rename(game, copy.id, name)
+    await useProfiles.getState().refresh()
+    useProfiles.getState().open(copy.id)
+  } else if (template) {
+    await createFromTemplate(game, template, name, created)
+  } else {
+    await useProfiles.getState().create(name)
+  }
+}
+
 function useCreate(game: string, onClose: () => void) {
   const { t } = useLingui()
-  const create = useProfiles((s) => s.create)
   const [busy, run] = usePending()
-  const submit = (
-    name: string,
-    template: Template | undefined,
-    copyOf: string,
-    starter?: StarterTemplate,
-  ) => {
+  const submit = (name: string, start: Start) => {
     run(
       async () => {
-        if (starter) {
-          await createFromStarter(name, starter)
-          onClose()
-          return
-        }
-        if (copyOf !== '') {
-          const copy = await Duplicate(game, copyOf)
-          await Rename(game, copy.id, name)
-          await useProfiles.getState().refresh()
-          useProfiles.getState().open(copy.id)
-          onClose()
-          return
-        }
-        if (!template) {
-          await create(name)
-          onClose()
-          return
-        }
-        const result = await NewProfileFromTemplate(game, template.name, name)
-        await useProfiles.getState().refresh()
-        useProfiles.getState().open(result.profile.id)
+        await createFrom(game, name, start, t`Created ${name}`)
         onClose()
-        const missing = result.missing ?? []
-        const wants = savedGroupWants(result.missingMods)
-        const queued = wants.length > 0 && (await download(wants))
-        let title = t`Created ${name}`
-        if (missing.length > 0) {
-          title = queued
-            ? plural(missing.length, {
-                one: `Created ${name}; downloading # mod`,
-                other: `Created ${name}; downloading # mods`,
-              })
-            : plural(missing.length, {
-                one: `Created ${name}; # mod still to download`,
-                other: `Created ${name}; # mods still to download`,
-              })
-        }
-        useToasts.getState().push({
-          kind: missing.length > 0 && !queued ? 'warning' : 'success',
-          title,
-          changes: [result.profile.lastChange ?? ''],
-        })
       },
       { errorTitle: t`Could not create the profile` },
     )
@@ -181,6 +202,7 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
   const { templates, reload } = useTemplates(game, open)
   const { busy, submit } = useCreate(game, onClose)
   const starters = useStarterTemplates(game, open)
+  const { savedGroups } = useSavedGroups(game, open)
   const [name, setName] = useState('')
   const [from, setFrom] = useState(EMPTY)
   const [managing, setManaging] = useState(false)
@@ -195,11 +217,13 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
   const template = templates.find((candidate) => candidate.name === from)
   const starter = starters.find((candidate) => STARTER + candidate.id === from)
   const copying = from === COPY && openId !== ''
+  const groupId = savedGroupOf(from)
+  const group = savedGroups.find((candidate) => candidate.id === groupId)
   const trimmed = name.trim()
   const onSubmit = (e: SyntheticEvent) => {
     e.preventDefault()
     if (!(busy || trimmed === '')) {
-      submit(trimmed, template, copying ? openId : '', starter)
+      submit(trimmed, { template, copyOf: copying ? openId : '', starter, savedGroup: group?.id })
     }
   }
   return (
@@ -217,12 +241,16 @@ export function NewProfileDialog({ open, onClose }: { open: boolean; onClose: ()
               slotProps={{ htmlInput: { maxLength: MAX_NAME } }}
               disabled={busy}
             />
-            {templates.length > 0 || starters.length > 0 || openId !== '' ? (
+            {templates.length > 0 ||
+            starters.length > 0 ||
+            savedGroups.length > 0 ||
+            openId !== '' ? (
               <StartFromSelect
                 copyOf={openName}
                 names={templates.map((candidate) => candidate.name)}
                 starters={starters}
-                value={template || starter || copying ? from : EMPTY}
+                groups={savedGroups}
+                value={template || starter || group || copying ? from : EMPTY}
                 disabled={busy}
                 onChange={setFrom}
                 onManage={() => setManaging(true)}

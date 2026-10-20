@@ -555,7 +555,7 @@ msgstr "Deleted profile"
 msgid "Untrack mods"
 msgstr "Untrack mods"
 
-#: src/mods/problemFix/LoadFailureFix.tsx:132
+#: src/mods/problemFix/LoadFailureFix.tsx:138
 msgid "Reinstall loader"
 msgstr "Reinstall loader"
 
@@ -801,7 +801,7 @@ msgstr "Updated on Nexus"
 #: src/mods/problemFix/AssetFix.tsx:104
 #: src/mods/problemFix/BrokenFix.tsx:79
 #: src/mods/problemFix/ListedFix.tsx:26
-#: src/mods/problemFix/LoadFailureFix.tsx:49
+#: src/mods/problemFix/LoadFailureFix.tsx:55
 #: src/mods/problemFix/SettingFix.tsx:100
 #: src/profiles/CrashHintCard.tsx:148
 #: src/tips/TipBanner.tsx:38
@@ -2706,7 +2706,7 @@ msgstr "Dependency cycle"
 
 #: src/commandPalette/paletteLabels.ts:16
 #: src/firstrun/ProfileStep.tsx:194
-#: src/game/NewProfileDialog.tsx:209
+#: src/game/NewProfileDialog.tsx:233
 #: src/nxm/ArrivalDialog.tsx:167
 #: src/profiles/PackTarget.tsx:27
 #: src/share/ImportFooter.tsx:38
@@ -3829,7 +3829,7 @@ msgstr "Game settings"
 msgid "{name} is marked abandoned and may no longer be maintained."
 msgstr "{name} is marked abandoned and may no longer be maintained."
 
-#: src/mods/problemFix/LoadFailureFix.tsx:84
+#: src/mods/problemFix/LoadFailureFix.tsx:90
 msgid "Remove old copy"
 msgstr "Remove old copy"
 
@@ -4316,7 +4316,7 @@ msgstr "Could not read the game log"
 #: src/mods/ModMenu.tsx:130
 #: src/mods/problemFix/AssetFix.tsx:72
 #: src/mods/problemFix/BrokenFix.tsx:87
-#: src/mods/problemFix/LoadFailureFix.tsx:71
+#: src/mods/problemFix/LoadFailureFix.tsx:77
 #: src/mods/runErrorFixButtons.tsx:46
 #: src/mods/SelectionBarActions.tsx:157
 #: src/mods/SlowStartupSection.tsx:60
@@ -4536,7 +4536,7 @@ msgstr "Download the extension"
 msgid "Sun"
 msgstr "Sun"
 
-#: src/mods/problemFix/LoadFailureFix.tsx:109
+#: src/mods/problemFix/LoadFailureFix.tsx:115
 msgid "Find {dependency}"
 msgstr "Find {dependency}"
 
@@ -4615,7 +4615,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/console/HelpDialog.tsx:257
 #: src/console/StartupPanel.tsx:30
 #: src/fomod/Dialog.tsx:256
-#: src/game/NewProfileDialog.tsx:234
+#: src/game/NewProfileDialog.tsx:262
 #: src/groups/ApplySavedGroupToProfile.tsx:74
 #: src/groups/dialogs.tsx:153
 #: src/install/DownloadsDialog.tsx:269
@@ -5276,7 +5276,7 @@ msgstr "Delete group {name}?"
 #: src/console/RunProblems.tsx:140
 #: src/game/FarmMenuItem.tsx:104
 #: src/loader/Banner.tsx:44
-#: src/mods/problemFix/LoadFailureFix.tsx:117
+#: src/mods/problemFix/LoadFailureFix.tsx:123
 #: src/mods/runErrorFixButtons.tsx:49
 #: src/mods/UpdateBanner.tsx:82
 #: src/mods/updateReview/EverywhereDialog.tsx:143
@@ -5648,7 +5648,7 @@ msgstr "You chose not to endorse this mod."
 msgid "These apply only to this profile."
 msgstr "These apply only to this profile."
 
-#: src/game/NewProfileDialog.tsx:73
+#: src/game/NewProfileDialog.tsx:80
 msgid "Copy of {name}"
 msgstr "Copy of {name}"
 
@@ -5665,12 +5665,13 @@ msgstr "Choose a file"
 msgid "Cached GitHub release lists"
 msgstr "Cached GitHub release lists"
 
+#: src/game/NewProfileDialog.tsx:86
 #: src/groups/SavedGroupsSection.tsx:66
 #: src/groups/SavedGroupsSection.tsx:77
 msgid "Saved groups"
 msgstr "Saved groups"
 
-#: src/game/NewProfileDialog.tsx:65
+#: src/game/NewProfileDialog.tsx:72
 msgid "Start from"
 msgstr "Start from"
 
@@ -6454,7 +6455,7 @@ msgid "Move into profile"
 msgstr "Move into profile"
 
 #: src/game/Hero.tsx:118
-#: src/game/NewProfileDialog.tsx:214
+#: src/game/NewProfileDialog.tsx:238
 #: src/profiles/PackTarget.tsx:39
 #: src/profiles/ProfileRow.tsx:206
 msgid "Profile name"
@@ -6735,7 +6736,7 @@ msgstr "Open on Patreon"
 msgid "Allow cleanup before deleting."
 msgstr "Allow cleanup before deleting."
 
-#: src/game/NewProfileDialog.tsx:79
+#: src/game/NewProfileDialog.tsx:92
 msgid "Starter templates"
 msgstr "Starter templates"
 
@@ -7155,7 +7156,7 @@ msgstr "Next"
 msgid "Add archive…"
 msgstr "Add archive…"
 
-#: src/game/NewProfileDialog.tsx:237
+#: src/game/NewProfileDialog.tsx:265
 msgid "Create"
 msgstr "Create"
 
@@ -7454,7 +7455,7 @@ msgstr "Load order copied"
 
 #. placeholder {0}: chosen.description
 #. placeholder {1}: listNames((chosen.packages ?? []).map((p) => p.name))
-#: src/game/NewProfileDialog.tsx:88
+#: src/game/NewProfileDialog.tsx:101
 msgid "{0} Adds {1}."
 msgstr "{0} Adds {1}."
 
@@ -9030,7 +9031,7 @@ msgstr "Could not upload the log"
 msgid "Recently played"
 msgstr "Recently played"
 
-#: src/game/NewProfileDialog.tsx:154
+#: src/game/NewProfileDialog.tsx:190
 #: src/profiles/GameModsDialog.tsx:160
 msgid "Created {name}"
 msgstr "Created {name}"
@@ -9728,7 +9729,7 @@ msgstr "Retention"
 msgid "Patreon post {0}"
 msgstr "Patreon post {0}"
 
-#: src/mods/problemFix/LoadFailureFix.tsx:88
+#: src/mods/problemFix/LoadFailureFix.tsx:94
 msgid "BepInEx skipped {path} because a newer copy of the plugin loaded. Mortar deletes the file."
 msgstr "BepInEx skipped {path} because a newer copy of the plugin loaded. Mortar deletes the file."
 
@@ -9929,8 +9930,8 @@ msgstr "Delete {0}'s old files"
 
 #. placeholder {0}: missing.length
 #. placeholder {0}: mods.length
-#: src/game/NewProfileDialog.tsx:106
-#: src/game/NewProfileDialog.tsx:157
+#: src/game/NewProfileDialog.tsx:119
+#: src/game/NewProfileDialog.tsx:148
 msgid "{0, plural, one {Created {name}; downloading # mod} other {Created {name}; downloading # mods}}"
 msgstr "{0, plural, one {Created {name}; downloading # mod} other {Created {name}; downloading # mods}}"
 
@@ -12304,7 +12305,7 @@ msgstr "Got a Mortar link? You see what it holds first. Nexus mods need your Nex
 #: src/mods/ModMenu.tsx:281
 #: src/mods/parts.tsx:175
 #: src/mods/parts.tsx:494
-#: src/mods/problemFix/LoadFailureFix.tsx:89
+#: src/mods/problemFix/LoadFailureFix.tsx:95
 #: src/mods/SelectionBarActions.tsx:165
 #: src/mods/SelectionBarDialogs.tsx:83
 #: src/settings/sections/WatchFolders.tsx:41
@@ -12344,7 +12345,7 @@ msgstr "No problems"
 msgid "Add one to group your mods your own way."
 msgstr "Add one to group your mods your own way."
 
-#: src/mods/problemFix/LoadFailureFix.tsx:87
+#: src/mods/problemFix/LoadFailureFix.tsx:93
 msgid "Remove the older copy?"
 msgstr "Remove the older copy?"
 
@@ -13529,7 +13530,7 @@ msgstr "{names} can't be reached; showing what Mortar saved ({asOf})"
 msgid "No problems found"
 msgstr "No problems found"
 
-#: src/game/NewProfileDialog.tsx:92
+#: src/game/NewProfileDialog.tsx:105
 #: src/game/TemplateMenuItems.tsx:53
 #: src/profiles/ProfileMenu.tsx:229
 msgid "Manage templates…"
@@ -13718,7 +13719,7 @@ msgstr " {name} wins; {losers} overridden."
 msgid "{0} left out"
 msgstr "{0} left out"
 
-#: src/game/NewProfileDialog.tsx:172
+#: src/game/NewProfileDialog.tsx:193
 msgid "Could not create the profile"
 msgstr "Could not create the profile"
 
@@ -13798,7 +13799,7 @@ msgstr "Could not repair the profile"
 msgid "Record"
 msgstr "Record"
 
-#: src/game/NewProfileDialog.tsx:72
+#: src/game/NewProfileDialog.tsx:79
 msgid "Empty profile"
 msgstr "Empty profile"
 
@@ -13835,8 +13836,8 @@ msgstr "Group name"
 
 #. placeholder {0}: missing.length
 #. placeholder {0}: mods.length
-#: src/game/NewProfileDialog.tsx:110
-#: src/game/NewProfileDialog.tsx:161
+#: src/game/NewProfileDialog.tsx:123
+#: src/game/NewProfileDialog.tsx:152
 msgid "{0, plural, one {Created {name}; # mod still to download} other {Created {name}; # mods still to download}}"
 msgstr "{0, plural, one {Created {name}; # mod still to download} other {Created {name}; # mods still to download}}"
 
