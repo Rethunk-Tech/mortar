@@ -9,6 +9,78 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 ## Ready to build
 
+### The website on Astro
+
+Built on the local `site-astro` branch only. Nothing on it is merged, pushed or deployed until the maintainer has looked through it in `astro preview` and approved it.
+
+**Why:** the generator (`scripts/site.ts` and `scripts/site/*.ts`, about 1,566 lines of string templates) writes 690 pages that are committed under `site/`, so every copy edit churns hundreds of files and the gate fails on stale output (`scripts/gate.sh:126`). Astro keeps generation at build time, gives the pages components and Markdown, and keeps the output out of git.
+
+**Look:** [design/landing-mock/index.html](../design/landing-mock/index.html) is the approved landing page. Its parts, in order:
+
+- **Hero:** a two-line headline, "Download for <your system>" with a version line, and Join the Discord. Beside it, an endless tilted wall of game capsule art that fades out above the metrics.
+- **Metrics line:** each figure links to /games/, /sources/, /news/ or /mission/ and counts up the first time it is seen.
+- **Demo:** a looping preview, then the interactive demo.
+- **How it works:** three steps.
+- **Game picker band:** search under the heading, with eight game tiles.
+- **Feature cards:** six cards that tilt toward the pointer, with a screenshot that rises on hover.
+- **Steam Deck and Your PCs:** large split screenshots.
+- **Comparison:** grouped (Reach, Sharing, Everyday). Only supported icons are shown, in brand colour, and columns size to their content.
+- **What's new:** picture tiles for the latest release, plus cards for the two before it.
+- **Download:** OS cards with your system highlighted, and package-manager chips feeding one copyable command.
+- **FAQ:** a Discord button beside the questions.
+- **Footer:** a "Ready to mod?" band, then the footer columns.
+
+The rules behind it:
+
+- **Type and colour:** Atkinson Hyperlegible Next, self-hosted through `@fontsource`. Sections sit `--gap` (200px) apart and the content is 82rem wide. No gradients beyond alpha fades.
+- **Motion:** sections blur in, the headline settles in, the nav shows the current section and a progress line, and screenshots open in a lightbox. "/" focuses game search. There is a skip link and sand focus rings. All motion is off under `prefers-reduced-motion`.
+
+**Build, stage 1:**
+
+- **Pages:** one layout component replaces `scripts/site/chrome.ts` and the `<!-- x:start -->` blocks. The hand pages in `site/*/index.html` become `.astro` pages.
+- **Game pages:** `[game].astro` and `[game]/p.astro` come from `getStaticPaths()` over `playableGames()` (`scripts/site/games.ts`). `site/share/app.js` and `share.test.ts` move along with the share page.
+- **Content collections:**
+  - FAQ (`scripts/site/faq.md`) and the comparison pages (`scripts/site/why/*.md`).
+  - The guide, split by heading out of `docs/user-guide.md` into pages with a sidebar.
+  - The bot documents.
+  - A new /news collection: one post per release, drafted from `build/release/notes/<tag>.md`, plus how-to posts. It has its own RSS feed.
+- **Data:** counts, the version and the rival figures are read at build time from code, `scripts/site/rival-facts.json` and `steam-art.json`. `--refresh` stays. No figure is typed by hand.
+- **New pages:** /sources/ (the mod sites) and /mission/ (free, no account, AGPL).
+- **SEO:**
+  - A generated Open Graph image per page (Satori).
+  - JSON-LD: FAQPage, BreadcrumbList, and SoftwareApplication on every page.
+  - The sitemap from `@astrojs/sitemap`.
+  - Plausible: the maintainer's Business plan has room. The mortar.rethunk.tech site is added only after approval, with a line in the privacy page.
+  - Search Console, verified by a DNS record the maintainer adds.
+- **Pipeline:**
+  - `site/` output leaves git. The gate step becomes `astro check`, `astro build` and the link and picture checks.
+  - `scripts/site-downloads.ts` reads the build output.
+  - `package-repo.yml` builds Astro before Pagefind (`:93`) and the copy into the `packages` branch (`:105`). App Platform keeps `source_dir: site` (`.do/app.yaml:22`).
+- **Interactive demo:** the real frontend over mocked bindings and the e2e seed profile, as a JS island loaded on click. It has three views: the Mods list, a mod's details, and Problems.
+
+**Stage 2:** unique content per game page:
+
+- generated facts: loader, sites, stores, and top mods from the sources' APIs, cached in a data file;
+- an optional hand-written note per game.
+
+**Traps:**
+
+- Astro under Bun.
+- Biome's `.astro` support.
+- Keeping the gate's test time under budget.
+- The release-only deploy: a site change ships only with a tag.
+- The share page reads its payload in the browser, so it must stay static.
+- Pagefind indexes the built output.
+
+**Done when:**
+
+1. Every current URL still resolves, and the new URLs are added on top.
+2. Every claim on the old pages appears on the new ones, checked by a text diff of claims.
+3. Lighthouse scores 90 or more.
+4. axe passes.
+5. The share page, search, downloads and RSS work.
+6. The maintainer approves it after viewing it locally.
+
 ### The Sims 4 before a release carries it
 
 - **Verify** on a real install and record in [sims4.md](sims4.md): the `Options.ini` section header and whether key names match case-insensitively, a localized Documents folder name ("Die Sims 4"), a DX9 or legacy executable, the stock `Resource.cfg` text, EA's statement of the `.ts4script` depth limit, and `gameProcesses`.
