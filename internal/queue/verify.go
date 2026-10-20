@@ -15,12 +15,15 @@ import (
 
 const packageHashFile = "package-hashes.json"
 
-// verifyDigest checks path against a "sha256:<hex>" or "sha512:<hex>" digest; an empty digest (GitHub did not
-// publish one) passes, and so does CurseForge's "sha1:<hex>", which only names the file for update checks.
+// verifyDigest checks path against a "sha256:<hex>", "sha512:<hex>" or mod.io's "md5:<hex>" digest; an empty digest
+// (GitHub did not publish one) passes, and so does CurseForge's "sha1:<hex>", which only names the file for update checks.
 func verifyDigest(path, digest string) error {
 	digest = strings.ToLower(strings.TrimSpace(digest))
 	if want, ok := strings.CutPrefix(digest, "sha512:"); ok {
 		return compareSHA512(path, want)
+	}
+	if want, ok := strings.CutPrefix(digest, "md5:"); ok {
+		return compareMD5(path, want)
 	}
 	want, ok := strings.CutPrefix(digest, "sha256:")
 	if !ok {
@@ -41,6 +44,18 @@ func compareSHA512(path, want string) error {
 	}
 	if got := hex.EncodeToString(h.Sum(nil)); got != want {
 		return usererr.New(usererr.Damaged, "download is damaged or changed: SHA-512 does not match the one the site published")
+	}
+	return nil
+}
+
+// compareMD5 guards against a damaged download only: MD5 is all mod.io publishes, and the file comes over HTTPS from it.
+func compareMD5(path, want string) error {
+	got, err := fsx.MD5(path)
+	if err != nil {
+		return err
+	}
+	if got != want {
+		return usererr.New(usererr.Damaged, "download is damaged or changed: MD5 does not match the one the site published")
 	}
 	return nil
 }

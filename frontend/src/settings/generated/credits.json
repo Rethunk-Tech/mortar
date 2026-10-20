@@ -20,6 +20,11 @@
     "url": "https://github.com/anegostudios/vsmoddb"
   },
   {
+    "name": "mod.io mark (from the mod.io SDK)",
+    "licence": "Trademark",
+    "url": "https://github.com/modio/modio-sdk"
+  },
+  {
     "name": "Nexus Mods logo (from Vortex)",
     "licence": "GPL-3.0",
     "url": "https://github.com/Nexus-Mods/Vortex"

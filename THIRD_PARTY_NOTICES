@@ -966,7 +966,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-@wailsio/runtime@3.0.0-beta.33
+@wailsio/runtime@3.0.0-beta.34
 licence: MIT
 https://v3.wails.io
 
@@ -4867,6 +4867,14 @@ licence: GPL-3.0
 https://github.com/sharkwouter/minigalaxy
 
 Bundled launcher icon (frontend/src/brand/vendor/minigalaxy.png) from Minigalaxy, licensed under the GNU General Public License v3.0: https://www.gnu.org/licenses/gpl-3.0.html
+
+--------------------------------------------------------------------------------
+
+mod.io mark (from the mod.io SDK)
+licence: Trademark
+https://github.com/modio/modio-sdk
+
+Bundled source icon (frontend/src/brand/vendor/modio.svg) from the mod.io SDK, shown wherever mod.io mods appear as the mod.io API Access Terms (3.3) ask. mod.io and its logo are trademarks of mod.io Pty Ltd.
 
 --------------------------------------------------------------------------------
 

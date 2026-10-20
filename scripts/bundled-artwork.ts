@@ -30,6 +30,13 @@ export const bundledArtwork = [
       'Bundled source icon (frontend/src/brand/vendor/vsmoddb.png) from the Vintage Story Mod DB, Copyright (c) 2021-2025 Anego Studios, licensed under the MIT License: https://opensource.org/license/mit',
   },
   {
+    name: 'mod.io mark (from the mod.io SDK)',
+    licence: 'Trademark',
+    url: 'https://github.com/modio/modio-sdk',
+    notice:
+      'Bundled source icon (frontend/src/brand/vendor/modio.svg) from the mod.io SDK, shown wherever mod.io mods appear as the mod.io API Access Terms (3.3) ask. mod.io and its logo are trademarks of mod.io Pty Ltd.',
+  },
+  {
     name: 'Nexus Mods logo (from Vortex)',
     licence: 'GPL-3.0',
     url: 'https://github.com/Nexus-Mods/Vortex',

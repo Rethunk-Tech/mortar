@@ -9,6 +9,7 @@ import type { BrowseItem } from './browseTypes.ts'
 const MODRINTH = 'modrinth'
 const VSMODDB = 'vsmoddb'
 const PARADOX = 'paradox'
+const MODIO = 'modio'
 const leadingV = /^v(?=\d)/i
 
 /** The stats a Browse card can show under its summary, in the order it shows them (the browseCardStats setting). */
@@ -26,8 +27,8 @@ function formatCardStats(stats: readonly CardStat[]): string {
   return ordered.length === 0 ? 'none' : ordered.join(',')
 }
 
-/** A hit's popularity, which each site counts differently: Nexus endorsements, Thunderstore and Paradox Mods likes, and Modrinth
- * and Mod DB follows all land in endorsements, and only GitHub has stars. */
+/** A hit's popularity, which each site counts differently: Nexus endorsements, Thunderstore and Paradox Mods likes,
+ * Modrinth and Mod DB follows, and mod.io positive ratings all land in endorsements, and only GitHub has stars. */
 function usePopularity(item: BrowseItem): string {
   const { endorsements, stars } = item
   switch (item.source) {
@@ -41,6 +42,8 @@ function usePopularity(item: BrowseItem): string {
     case MODRINTH:
     case VSMODDB:
       return plural(endorsements, { one: '# follower', other: '# followers' })
+    case MODIO:
+      return plural(endorsements, { one: '# positive rating', other: '# positive ratings' })
     default:
       return ''
   }

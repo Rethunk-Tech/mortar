@@ -12,20 +12,21 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
 	"github.com/Rethunk-Tech/mortar/internal/source/itch"
+	"github.com/Rethunk-Tech/mortar/internal/source/modio"
 	"github.com/Rethunk-Tech/mortar/internal/source/modrinth"
 	"github.com/Rethunk-Tech/mortar/internal/source/paradox"
 	"github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
-// DirectFile is what a Modrinth, CurseForge, itch.io, Vintage Story Mod DB or Paradox Mods download needs: the file's address, size and digest, and the projects the
+// DirectFile is what a Modrinth, CurseForge, itch.io, Vintage Story Mod DB, Paradox Mods or mod.io download needs: the file's address, size and digest, and the projects the
 // version requires.
 type DirectFile struct {
 	ID, Name, Version, FileName, URL string
 	SizeKB                           int64
-	// FileID is the site's exact file id where it has one (CurseForge), 0 otherwise.
+	// FileID is the site's exact file id where it has one (CurseForge, mod.io), 0 otherwise.
 	FileID int
-	// Digest is "sha512:<hex>", or empty when the site published none.
+	// Digest is "sha512:<hex>" or mod.io's "md5:<hex>", or empty when the site published none.
 	Digest       string
 	Dependencies []DirectRef
 }
@@ -39,7 +40,7 @@ func (s *Service) expandDirect(ctx context.Context, r Request) ([]Request, error
 	if s.d.Direct == nil {
 		return nil, errors.New("cannot install " + r.Source + " mods here")
 	}
-	loaders := sourceLoaders(r.Game, r.Source)
+	gs := gameSource(r.Game, r.Source)
 	var out []Request
 	seen := map[string]bool{}
 	var visit func(ref DirectRef, root bool, depth int) error
@@ -53,7 +54,7 @@ func (s *Service) expandDirect(ctx context.Context, r Request) ([]Request, error
 			return fmt.Errorf("%s dependencies nest too deep at %s", r.Source, ref.ID)
 		}
 		cctx, cancel := context.WithTimeout(ctx, closureTimeout)
-		f, err := s.d.Direct(cctx, r.Source, ref.ID, ref.Version, loaders)
+		f, err := s.d.Direct(cctx, r.Source, ref.ID, ref.Version, gs)
 		cancel()
 		if manual, ok := errors.AsType[*curseforge.NotDistributableError](err); ok {
 			return s.handOff(manual)
@@ -108,14 +109,15 @@ func (s *Service) handOff(e *curseforge.NotDistributableError) error {
 	return usererr.New(usererr.External, msg+" (the page is open)")
 }
 
-// sourceLoaders are the loaders the game's catalog lists for the source, which narrow the versions a dependency may take.
-func sourceLoaders(gameID, sourceID string) []string {
+// gameSource is the game's catalog entry for the source: its key at the site, and the loaders that narrow the versions
+// a dependency may take.
+func gameSource(gameID, sourceID string) components.GameSource {
 	if g, ok := gameInfo(gameID); ok {
 		if src, ok := g.Source(sourceID); ok {
-			return src.Loaders
+			return src
 		}
 	}
-	return nil
+	return components.GameSource{ID: sourceID}
 }
 
 func gameInfo(gameID string) (components.GameInfo, bool) {
@@ -128,10 +130,10 @@ func gameInfo(gameID string) (components.GameInfo, bool) {
 }
 
 // ResolveDirect is Deps.Direct for the real sites.
-func ResolveDirect(ctx context.Context, src, id, version string, loaders []string) (DirectFile, error) {
+func ResolveDirect(ctx context.Context, src, id, version string, gs components.GameSource) (DirectFile, error) {
 	switch src {
 	case "modrinth":
-		r, err := modrinth.Driver{}.Resolve(ctx, id, version, "", loaders)
+		r, err := modrinth.Driver{}.Resolve(ctx, id, version, "", gs.Loaders)
 		if err != nil {
 			return DirectFile{}, err
 		}
@@ -157,6 +159,17 @@ func ResolveDirect(ctx context.Context, src, id, version string, loaders []strin
 			return DirectFile{}, err
 		}
 		return DirectFile{ID: id, Version: r.UploadID, FileName: r.FileName, URL: r.URL, SizeKB: r.Size >> 10}, nil
+	case "modio":
+		// Dependencies are left to the player: mod.io's include credit links that are not needed to run the mod.
+		r, err := modio.Driver{}.Resolve(ctx, gs.Key, id, version)
+		if err != nil {
+			return DirectFile{}, err
+		}
+		f := DirectFile{ID: id, Name: r.Name, Version: r.Version, FileID: r.FileID, FileName: r.FileName, URL: r.URL, SizeKB: r.Size >> 10}
+		if r.MD5 != "" {
+			f.Digest = "md5:" + r.MD5
+		}
+		return f, nil
 	case "vsmoddb":
 		r, err := vsmoddb.Driver{}.Resolve(ctx, id, version)
 		if err != nil {

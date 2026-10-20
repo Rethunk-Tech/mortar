@@ -7,6 +7,7 @@ import {
   GitHubRate,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { Account as ItchAccountInfo } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/source/itch/service.ts'
+import { Account as ModioAccountInfo } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/source/modio/service.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { formatWhen } from '../../i18n/formatWhen.ts'
 import { openSettings } from '../../nav/store.ts'
@@ -27,6 +28,7 @@ const SOURCES = [
   'itch',
   'vsmoddb',
   'paradox',
+  'modio',
 ] as const
 type SourceId = (typeof SOURCES)[number]
 
@@ -93,9 +95,11 @@ function AccountLink({ children }: { children: ReactNode }) {
 function useAuth(id: SourceId): { ok: boolean | null; text: ReactNode } {
   const { t } = useLingui()
   const nexusSignedIn = useNexus((s) => s.signedIn)
-  const name = useNexus((s) => s.name)
+  const nexusName = useNexus((s) => s.name)
   const [github, setGithub] = useState<boolean | null>(null)
   const [itch, setItch] = useState<string | null>(null)
+  const [modio, setModio] = useState<string | null>(null)
+  const signedInAs = (name: string) => t`Signed in as ${name}`
   // Each source's row asks only about its own account.
   useEffect(() => {
     if (id === 'github') {
@@ -106,11 +110,16 @@ function useAuth(id: SourceId): { ok: boolean | null; text: ReactNode } {
         .then((a) => setItch(a.signedIn ? a.name : ''))
         .catch(reportUnexpected)
     }
+    if (id === 'modio') {
+      ModioAccountInfo()
+        .then((a) => setModio(a.signedIn ? a.name : ''))
+        .catch(reportUnexpected)
+    }
   }, [id])
   switch (id) {
     case 'nexus':
       return nexusSignedIn
-        ? { ok: true, text: t`Signed in as ${name}` }
+        ? { ok: true, text: signedInAs(nexusName) }
         : {
             ok: false,
             text: <AccountLink>{t`Not signed in. Add your API key in Accounts.`}</AccountLink>,
@@ -129,6 +138,15 @@ function useAuth(id: SourceId): { ok: boolean | null; text: ReactNode } {
           t`API key set for ${itch}`
         ) : (
           <AccountLink>{t`API key not set. Itch.io search is off until you add one.`}</AccountLink>
+        ),
+      }
+    case 'modio':
+      return {
+        ok: modio === null ? null : modio !== '',
+        text: modio ? (
+          signedInAs(modio)
+        ) : (
+          <AccountLink>{t`No access token. mod.io search is off until you add one.`}</AccountLink>
         ),
       }
     default:

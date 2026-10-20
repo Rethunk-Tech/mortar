@@ -192,6 +192,7 @@ const BrowseFilters = memo(function BrowseFiltersView({
         vsmoddb: t`Sort: most followed`,
         paradox: t`Sort: top rated`,
         curseforge: t`Sort: most popular`,
+        modio: t`Sort: top rated`,
       }[source] ?? t`Sort: most endorsed`,
     stars: t`Sort: most stars`,
     forks: t`Sort: most forks`,

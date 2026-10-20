@@ -81,7 +81,7 @@ func SHA256(path string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
-// MD5 is the hex MD5 of path's contents; Nexus publishes its file hashes as MD5, so this is for comparing with them
+// MD5 is the hex MD5 of path's contents; Nexus and mod.io publish their file hashes as MD5, so this is for comparing with them
 // and nothing else.
 func MD5(path string) (string, error) {
 	f, err := Open(path)
