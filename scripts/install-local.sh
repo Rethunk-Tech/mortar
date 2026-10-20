@@ -40,6 +40,12 @@ if [ "$windows" = 1 ]; then
   zip -j -q "$HOME/Downloads/mortar-$(git describe --tags --abbrev=0 --match 'v[0-9]*' | sed 's/^v//')-$sha-windows-amd64-installer.zip" bin/mortar-amd64-installer.exe
 fi
 
+# A running copy keeps its old code until it restarts, so it is closed before the swap and the launch at the end
+# opens this build. Exit 3 is "not running"; anything else means a game or downloads kept it open.
+quit=0
+[ -x "$HOME/Apps/mortar.appimage" ] && { "$HOME/Apps/mortar.appimage" quit >/dev/null 2>&1 || quit=$?; }
+[ "$quit" = 0 ] || [ "$quit" = 3 ] || echo "Mortar stayed open (a game or downloads are running): restart it to load $sha" >&2
+
 cp bin/mortar-linux-x86_64.AppImage "$HOME/Downloads/mortar.appimage"
 flatpak run it.mijorus.gearlever --remove "$HOME/Apps/mortar.appimage" <<<y >/dev/null 2>&1 || true
 flatpak run it.mijorus.gearlever --integrate "$HOME/Downloads/mortar.appimage" <<<y >/dev/null 2>&1
