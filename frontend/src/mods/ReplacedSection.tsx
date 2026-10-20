@@ -39,7 +39,7 @@ function ReplacedRow({ file, onRestore }: { file: ReplacedFile; onRestore: () =>
       >
         {file.path}
       </Typography>
-      <Button size="small" aria-label={t`Restore ${{ path: file.path }}`} onClick={onRestore}>
+      <Button size="small" aria-label={t`Restore ${{ label: file.path }}`} onClick={onRestore}>
         {t`Restore`}
       </Button>
     </Box>

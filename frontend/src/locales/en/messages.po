@@ -1252,7 +1252,7 @@ msgstr "Nexus download links"
 msgid "SMAPI loads mods for {ms}."
 msgstr "SMAPI loads mods for {ms}."
 
-#: src/browse/BrowseFilters.tsx:129
+#: src/browse/BrowseFilters.tsx:206
 msgid "Exclude categories"
 msgstr "Exclude categories"
 
@@ -1377,7 +1377,7 @@ msgstr "Back to {backTo}. Saves untouched."
 msgid "played {0}"
 msgstr "played {0}"
 
-#: src/browse/BrowseFilters.tsx:92
+#: src/browse/BrowseFilters.tsx:169
 msgid "Sort: most downloaded"
 msgstr "Sort: most downloaded"
 
@@ -1576,7 +1576,7 @@ msgstr "Use the automatic cover"
 msgid "{found, plural, one {# profile from another mod manager is on this computer. Its mods download from their own sites.} other {# profiles from other mod managers are on this computer. Their mods download from their own sites.}}"
 msgstr "{found, plural, one {# profile from another mod manager is on this computer. Its mods download from their own sites.} other {# profiles from other mod managers are on this computer. Their mods download from their own sites.}}"
 
-#: src/browse/BrowseFilters.tsx:142
+#: src/browse/BrowseFilters.tsx:219
 msgid "Sort: best match"
 msgstr "Sort: best match"
 
@@ -4580,7 +4580,7 @@ msgstr "Check launchers…"
 msgid "Set up"
 msgstr "Set up"
 
-#: src/browse/BrowseFilters.tsx:105
+#: src/browse/BrowseFilters.tsx:182
 msgid "Sort: name (A to Z)"
 msgstr "Sort: name (A to Z)"
 
@@ -5392,6 +5392,7 @@ msgstr "Installed"
 msgid "Mortar did not install this folder. It moves to Mortar's trash."
 msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 
+#: src/browse/BrowsePage.tsx:99
 #: src/browse/BrowsePage.tsx:108
 #: src/browse/BrowseShow.tsx:46
 #: src/firstrunTour/TourAgainButton.tsx:16
@@ -5673,7 +5674,7 @@ msgstr "Saved groups"
 msgid "Start from"
 msgstr "Start from"
 
-#: src/browse/BrowseFilters.tsx:138
+#: src/browse/BrowseFilters.tsx:215
 msgid "Sort"
 msgstr "Sort"
 
@@ -6064,8 +6065,8 @@ msgstr "Choose a file…"
 msgid "clamd socket path"
 msgstr "clamd socket path"
 
-#: src/browse/BrowseFilters.tsx:97
-#: src/browse/BrowseFilters.tsx:98
+#: src/browse/BrowseFilters.tsx:174
+#: src/browse/BrowseFilters.tsx:175
 msgid "Sort: most followed"
 msgstr "Sort: most followed"
 
@@ -6486,7 +6487,7 @@ msgstr "Rose"
 msgid "{names} took over mod links"
 msgstr "{names} took over mod links"
 
-#: src/browse/BrowseFilters.tsx:103
+#: src/browse/BrowseFilters.tsx:180
 msgid "Sort: recently updated"
 msgstr "Sort: recently updated"
 
@@ -6606,10 +6607,6 @@ msgstr "Mortar cannot download {0} again."
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
 
-#: src/mods/ReplacedSection.tsx:42
-msgid "Restore {path}"
-msgstr "Restore {path}"
-
 #: src/launch/LaunchLayer.tsx:270
 #: src/launch/LaunchLayer.tsx:271
 msgid "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
@@ -6642,7 +6639,7 @@ msgstr "The folder of {name} was deleted outside Mortar"
 msgid "Ready to import"
 msgstr "Ready to import"
 
-#: src/browse/BrowseFilters.tsx:108
+#: src/browse/BrowseFilters.tsx:185
 msgid "This source has no categories to filter by"
 msgstr "This source has no categories to filter by"
 
@@ -10546,8 +10543,8 @@ msgstr "Share notes"
 msgid "No notes yet."
 msgstr "No notes yet."
 
-#: src/browse/BrowseFilters.tsx:95
-#: src/browse/BrowseFilters.tsx:100
+#: src/browse/BrowseFilters.tsx:172
+#: src/browse/BrowseFilters.tsx:177
 msgid "Sort: most endorsed"
 msgstr "Sort: most endorsed"
 
@@ -11444,7 +11441,7 @@ msgstr "Export as Thunderstore modpack"
 msgid "{0} in total"
 msgstr "{0} in total"
 
-#: src/browse/BrowseFilters.tsx:102
+#: src/browse/BrowseFilters.tsx:179
 msgid "Sort: most forks"
 msgstr "Sort: most forks"
 
@@ -12023,6 +12020,7 @@ msgid "Check now"
 msgstr "Check now"
 
 #: src/mods/CleanupSection.tsx:135
+#: src/mods/ReplacedSection.tsx:42
 #: src/profiles/HistoryDiffView.tsx:40
 #: src/profiles/HistoryDiffView.tsx:43
 #: src/profiles/ProfilesPage.tsx:85
@@ -13250,7 +13248,7 @@ msgstr "Jump to a letter"
 msgid "it took too long to answer"
 msgstr "it took too long to answer"
 
-#: src/browse/BrowseFilters.tsx:104
+#: src/browse/BrowseFilters.tsx:181
 msgid "Sort: newest"
 msgstr "Sort: newest"
 
@@ -14714,11 +14712,11 @@ msgstr "Paused at {0}%"
 msgid "Search entries"
 msgstr "Search entries"
 
-#: src/browse/BrowseFilters.tsx:96
+#: src/browse/BrowseFilters.tsx:173
 msgid "Sort: top rated"
 msgstr "Sort: top rated"
 
-#: src/browse/BrowseFilters.tsx:99
+#: src/browse/BrowseFilters.tsx:176
 msgid "Sort: most popular"
 msgstr "Sort: most popular"
 
@@ -14778,7 +14776,7 @@ msgstr "Antivirus"
 msgid "To the main menu"
 msgstr "To the main menu"
 
-#: src/browse/BrowseFilters.tsx:121
+#: src/browse/BrowseFilters.tsx:198
 msgid "Include categories"
 msgstr "Include categories"
 
@@ -15630,7 +15628,7 @@ msgstr "Sidebar profile order"
 msgid "Checks the data folder, games, Nexus download links and the browser extension."
 msgstr "Checks the data folder, games, Nexus download links and the browser extension."
 
-#: src/browse/BrowseFilters.tsx:101
+#: src/browse/BrowseFilters.tsx:178
 msgid "Sort: most stars"
 msgstr "Sort: most stars"
 
