@@ -106,12 +106,13 @@ The extension is optional. It marks Nexus pages with what your profile already h
 
 Mods already in the profile show **Added**, whichever site they came from. A helper Mortar installs for a loader shows **Built in**.
 
-## Modrinth and itch.io
+## Modrinth, itch.io and mod.io
 
-A game whose catalog entry lists Modrinth or itch.io gets a chip for it beside **All sources**, and its results join the merged search. Stardew Valley lists neither.
+A game whose catalog entry lists Modrinth, itch.io or mod.io gets a chip for it beside **All sources**, and its results join the merged search. Stardew Valley lists none of them.
 
 - **Modrinth** needs no account. **Add** installs the newest version with its required projects and checks each file's SHA-512.
 - **itch.io** needs your own API key: create one in your itch.io account **Settings › API keys**, paste it into **API key** in **Settings › Accounts** and choose **Test**. The key is kept in your system keyring; **Remove key** forgets it. Until a key is stored the chip is greyed out. itch.io has no sort order or categories, and **Add** takes the game's first upload that is not a demo or soundtrack.
+- **mod.io** needs your own read-only OAuth token: create one at mod.io/me/access, paste it into **Access token** in **Settings › Accounts** and choose **Test**. The token is kept in your system keyring; **Remove token** forgets it. Until a token is stored the chip is greyed out, and a revoked or expired token asks you to add a new one. **Add** checks each file against the hash mod.io publishes and installs the mod alone: its page lists the mods it depends on for you to add. Baldur's Gate 3 mods are listed in the game's mod settings for each launch, so they load without the in-game mod manager.
 
 ## Edit a mod's settings
 
