@@ -1779,50 +1779,6 @@
       ]
     },
     {
-      "id": "stacklands",
-      "name": "Stacklands",
-      "enabled": true,
-      "marker": "Stacklands.exe",
-      "r2modmanFolder": "Stacklands",
-      "metadata": [],
-      "paths": {
-        "unityLog": {
-          "windows": "{localLow}/sokpop/Stacklands/Player.log"
-        }
-      },
-      "deploy": "profile",
-      "targets": [
-        {
-          "id": "profile",
-          "root": "{profile}"
-        }
-      ],
-      "stores": {
-        "steam": {
-          "appId": "1948280"
-        }
-      },
-      "loaders": [
-        {
-          "id": "bepinex5",
-          "name": "BepInEx 5",
-          "companion": "bridge",
-          "package": "BepInEx-BepInExPack_Stacklands"
-        }
-      ],
-      "sources": [
-        {
-          "id": "thunderstore",
-          "key": "stacklands"
-        },
-        {
-          "id": "nexus",
-          "key": "stacklands",
-          "gameId": 4444
-        }
-      ]
-    },
-    {
       "id": "straftat",
       "name": "STRAFTAT",
       "enabled": true,

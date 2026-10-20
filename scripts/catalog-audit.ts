@@ -55,6 +55,8 @@ const LEFT_OUT = new Set([
   'wrestling-empire',
   // Its Thunderstore page says mods moved to mod.io and those left there are out of date.
   'core-keeper',
+  // Its Thunderstore page says mods moved to the Steam Workshop and those left there are out of date.
+  'stacklands',
 ])
 
 const missing = results
