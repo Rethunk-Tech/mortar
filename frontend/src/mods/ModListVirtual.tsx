@@ -341,12 +341,13 @@ export function ModListTable({
             return null
           }
           return (
-            <Box
+            // A plain element: the slot re-renders with the list, and a styled Box costs several components each.
+            <div
               key={item.key}
               data-index={vi.index}
               // The stripe lives on the slot, so a mod moving group restripes the slots, not every memoised row.
               data-striped={item.kind === 'row' && item.stripe ? '' : undefined}
-              sx={{
+              style={{
                 position: 'absolute',
                 top: 0,
                 left: 0,
@@ -366,7 +367,7 @@ export function ModListTable({
                 renderRow={renderRow}
                 onArrow={onArrow}
               />
-            </Box>
+            </div>
           )
         })}
       </ListShell>
