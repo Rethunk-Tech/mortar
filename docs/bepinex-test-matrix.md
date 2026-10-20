@@ -41,7 +41,7 @@ Mortar's bridge client dials the host's 127.0.0.1, which under `--unshare-net` i
 | Unpin and install the latest: the pack's files and Doorstop 4's flag | offline `loader.unpin` |
 | Reinstall a version over itself: the pack's files and flags | offline `loader.reinstall` |
 | The reinstalled latest pack starts: BepInEx 5.4.23 logs its version and Doorstop runs it | launch (a) `loader.reinstall-run` |
-| Per Doorstop: the profile's files are the pack's, the game folder holds the same ini during the run, and the command line carries that Doorstop's flag spelling with the preloader in `Z:` form | offline `loader.pin`, `loader.unpin`, `loader.reinstall` (`mx_files_and_flags`); launch (a) `loader.reinstall-run` and (b) `loader.pin-run` (`mx_doorstop`); `TestLaunchArgs` |
+| Per Doorstop: the profile's files are the pack's, the game folder holds the profile's absolute-target relay ini during the run, and the command line carries that Doorstop's flag spelling with the preloader in `Z:` form | offline `loader.pin`, `loader.unpin`, `loader.reinstall` (`mx_files_and_flags`); launch (a) `loader.reinstall-run` and (b) `loader.pin-run` (`mx_doorstop`); `TestLaunchArgs` |
 | Uninstall: the game folder holds only the two proxy files during a run and hashes as before after every stop; a vanilla start switches off either Doorstop | launch (a) `stop.a`, (c) `launch.exit`, (b) `loader.pin-exit`; `TestLoaderContract`, `TestLaunchArgs`. No vanilla launch is run: it takes no launch prefix, so the regress cannot isolate it from Steam |
 | Wine `winhttp` override in `user.reg` | `TestEnsureWinHTTPOverride`; launches (a), (c) and (b) |
 
