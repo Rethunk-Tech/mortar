@@ -1,0 +1,36 @@
+---
+import Page from '../../layouts/Page.astro'
+import { releases } from '../../lib/changelog.ts'
+import { posts } from '../../lib/news.ts'
+import { REPO } from '../../lib/site.ts'
+
+const all = releases()
+const slugs = new Map(
+  (await posts()).flatMap((p) => (p.release ? [[p.release.version, p.slug]] : [])),
+)
+---
+
+<Page
+  title="Mortar changelog"
+  description="What's new in each Mortar release: new games, features and fixes."
+  heading="Changelog"
+  kicker="Releases"
+  lede={'What changed in each release, newest first. The app shows the same notes in What\'s new after an update. Follow releases in a <a href="/changelog/feed.xml">feed reader</a>.'}
+  crumbs={[{ name: 'Changelog', href: '/changelog/' }]}
+>
+  {
+    all.map((r, i) => (
+      <details class="release" id={`v${r.version}`} open={i === 0}>
+        <summary>
+          <h2>
+            {r.version} <time datetime={r.date}>{r.date}</time>
+          </h2>
+        </summary>
+        <p>
+          <a href={`/news/${slugs.get(r.version)}/`}>Read the {r.version} post</a> · <a href={`${REPO}/releases/tag/v${r.version}`}>Downloads and full changelog for {r.version}</a>
+        </p>
+        <div class="notes" set:html={r.html} />
+      </details>
+    ))
+  }
+</Page>

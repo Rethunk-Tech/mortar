@@ -1,0 +1,34 @@
+---
+import type { GetStaticPaths } from 'astro'
+import Page from '../../layouts/Page.astro'
+import { doc } from '../../lib/faq.ts'
+
+export const getStaticPaths = (() => [
+  {
+    params: { doc: 'terms' },
+    props: {
+      description: 'The terms for the Mortar bot that runs the Mortar Mod Manager Discord server.',
+    },
+  },
+  {
+    params: { doc: 'privacy' },
+    props: {
+      description:
+        'What the Mortar bot in the Mortar Mod Manager Discord server reads and keeps, and why.',
+    },
+  },
+]) satisfies GetStaticPaths
+
+const name = Astro.params.doc ?? ''
+const { description } = Astro.props as { description: string }
+const { title, html } = doc(`web/src/content/bot/${name}.md`)
+---
+
+<Page
+  title={title}
+  description={description}
+  kicker="Mortar bot"
+  crumbs={[{ name: 'Mortar bot', href: '/bot/' }, { name: title, href: `/bot/${name}/` }]}
+>
+  <Fragment set:html={html} />
+</Page>

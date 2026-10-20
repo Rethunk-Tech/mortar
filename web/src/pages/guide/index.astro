@@ -1,0 +1,62 @@
+---
+import Page from '../../layouts/Page.astro'
+import { guideAnchors, guideIntro, guideSections } from '../../lib/guide.ts'
+
+const sections = guideSections()
+---
+
+<Page
+  title="Mortar user guide"
+  description="How to install Mortar, add and update mods, keep profiles, share them, play and read Problems, for every game Mortar supports."
+  heading="User guide"
+  kicker="Guide"
+  lede="Everything Mortar does, a page per topic."
+  current="guide"
+  crumbs={[{ name: 'Guide', href: '/guide/' }]}
+  full
+>
+  <div class="prose guide-intro" set:html={guideIntro()} />
+  <ol class="tile-grid guide-index">
+    {
+      sections.map((s, i) => (
+        <li>
+          <a class="tile-link" href={`/guide/${s.slug}/`}>
+            <span class="num">{String(i + 1).padStart(2, '0')}</span>
+            <b set:html={s.title} />
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+  <script is:inline type="application/json" id="guide-anchors" set:html={JSON.stringify(guideAnchors())} />
+</Page>
+
+<script>
+  // The guide used to be one page: /guide/#<heading> still lands on the page that holds that heading.
+  const id = decodeURIComponent(location.hash.slice(1))
+  const anchors = JSON.parse(document.getElementById('guide-anchors')?.textContent ?? '{}') as Record<string, string>
+  const page = anchors[id]
+  if (page) {
+    location.replace(page === id ? `/guide/${page}/` : `/guide/${page}/#${id}`)
+  }
+</script>
+
+<style>
+  .guide-intro {
+    margin-bottom: 28px;
+  }
+  .guide-index {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  }
+  .guide-index .tile-link {
+    grid-template-columns: 40px 1fr;
+    align-items: center;
+  }
+  .guide-index .num {
+    grid-column: 1;
+    grid-row: 1;
+    color: var(--sand);
+    font-weight: 800;
+    font-size: 15px;
+  }
+</style>

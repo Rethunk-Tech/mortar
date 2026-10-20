@@ -9,6 +9,8 @@ const ART = repo('web/src/data/steam-art.json')
 const STORE_BROWSE = 'https://api.steampowered.com/IStoreBrowseService/GetItems/v1'
 const STORE_ASSETS = 'https://shared.steamstatic.com/store_item_assets/'
 const BATCH = 50
+const CACHE_BUSTER = /\?t=\d+$/
+const FILENAME_TOKEN = /\$\{FILENAME\}/
 
 export interface SteamArt {
   header: string
@@ -33,7 +35,7 @@ interface StoreItem {
 }
 
 /** Steam stamps every address with a changing `?t=` cache-buster; the committed address stays while only that differs. */
-const unstamped = (u: string) => u.replace(/\?t=\d+$/, '')
+const unstamped = (u: string) => u.replace(CACHE_BUSTER, '')
 
 export async function refreshSteamArt(appIds: string[]): Promise<void> {
   const prev = steamArt()
@@ -61,7 +63,7 @@ export async function refreshSteamArt(appIds: string[]): Promise<void> {
       if (format && header) {
         const old = Object.values(prev[String(item.appid)] ?? {})
         const url = (file: string) => {
-          const fresh = STORE_ASSETS + format.replace(/\$\{FILENAME\}/, file)
+          const fresh = STORE_ASSETS + format.replace(FILENAME_TOKEN, file)
           return old.find((u) => unstamped(u) === unstamped(fresh)) ?? fresh
         }
         art[String(item.appid)] = {

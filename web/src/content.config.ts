@@ -1,5 +1,6 @@
+import { defineCollection } from 'astro:content'
 import { glob } from 'astro/loaders'
-import { defineCollection, z } from 'astro:content'
+import { z } from 'astro/zod'
 
 // A release post names its version and takes its date and notes from the release; a how-to carries its own date.
 const news = defineCollection({

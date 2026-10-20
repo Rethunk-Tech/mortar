@@ -1,0 +1,15 @@
+---
+// A brand as a square button with its name as the tooltip; a link when the brand has a page for the game.
+import Mark from './Mark.astro'
+
+interface Props {
+  id: string
+  name: string
+  href?: string | undefined
+}
+
+const { id, name, href } = Astro.props
+const Tag = href ? 'a' : 'span'
+---
+
+<Tag class="fact-icon" href={href} title={name}><Mark site={id} label={name} class="" /></Tag>

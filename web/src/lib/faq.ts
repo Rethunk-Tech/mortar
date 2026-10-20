@@ -1,12 +1,31 @@
 // The FAQ's questions (web/src/content/faq.md), the "Why Mortar?" comparisons (web/src/content/why/<manager>.md) and the
 // outside facts they quote.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import process from 'node:process'
 import { brandIcon } from './brands.ts'
-import { SOURCE_NAMES } from './games.ts'
+import { modSites, SOURCE_NAMES } from './games.ts'
 import { markdown, repo } from './site.ts'
 
 const FAQ = repo('web/src/content/faq.md')
 const WHY = repo('web/src/content/why')
+
+const WHY_HEADING = /^# Why Mortar\? \(vs (.+)\)\n/
+const MD_EXT = /\.md$/
+const TITLE_LINE = /^# .*\n/
+const DOC_TITLE = /^# (.+)\n/
+const QUESTION_SPLIT = /^## /m
+const HEADING_ID = /id="([^"]+)"/
+const MD_LINK = /\[([^\]]+)\]\([^)]+\)/g
+const WHITESPACE = /\s+/g
+const SOURCE_TOKEN_RUN = /(?::[a-z]+:\s*)+/g
+const TOKEN_NAME = /[a-z]+/g
+const CONFIG_VERSION = /^\s+version: "([^"]+)"/m
+const GAMES_ROW = /^\| Games \| ([^|]*)\| ([^|]*)\|$/m
+const FIRST_NUMBER = /\d+/
+const OVER_PREFIX = /^over /i
+const TILE_COMMENT = /<!-- tile: (.+?) -->/
+const RIVAL_TOKEN = /\b[A-Z0-9]+_(?:COUNT|RELEASED?)\b/g
+const TABLE_ROW = /<tr><td>(.*?)<\/td>(.*?)<\/tr>/g
 
 export interface Why {
   id: string
@@ -24,11 +43,11 @@ export function whyPages(): Why[] {
     .sort()
     .map((f) => {
       const md = readFileSync(`${WHY}/${f}`, 'utf8')
-      const name = /^# Why Mortar\? \(vs (.+)\)\n/.exec(md)?.[1]
+      const name = WHY_HEADING.exec(md)?.[1]
       if (!name) {
         throw new Error(`site: ${WHY}/${f} must start with "# Why Mortar? (vs <manager>)"`)
       }
-      return { id: f.replace(/\.md$/, ''), name, md: md.replace(/^# .*\n/, '') }
+      return { id: f.replace(MD_EXT, ''), name, md: md.replace(TITLE_LINE, '') }
     })
 }
 
@@ -39,36 +58,32 @@ export function questions(gameCount: number, whys: Why[]): { q: string; a: strin
     .replaceAll('GAME_COUNT', String(gameCount))
     .replaceAll('WHY_LINKS', whyLinks)
   return md
-    .split(/^## /m)
+    .split(QUESTION_SPLIT)
     .filter((part) => part.trim() !== '')
     .map((part) => {
       const [q = '', ...rest] = part.split('\n')
       const id =
-        Bun.markdown.html(`## ${q}`, { headings: { ids: true } }).match(/id="([^"]+)"/)?.[1] ?? ''
+        Bun.markdown.html(`## ${q}`, { headings: { ids: true } }).match(HEADING_ID)?.[1] ?? ''
       return { q: q.trim(), a: rest.join('\n').trim(), id }
     })
 }
 
-export const plain = (md: string) =>
-  md
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/\s+/g, ' ')
-    .trim()
+export const plain = (md: string) => md.replace(MD_LINK, '$1').replace(WHITESPACE, ' ').trim()
 
 /** A plain Markdown document, titled by its first heading. */
 export function doc(path: string): { title: string; html: string } {
   const md = readFileSync(repo(path), 'utf8')
-  const title = /^# (.+)\n/.exec(md)?.[1]
+  const title = DOC_TITLE.exec(md)?.[1]
   if (!title) {
     throw new Error(`site: ${path} must start with "# <title>"`)
   }
-  return { title, html: markdown(md.replace(/^# .*\n/, '')) }
+  return { title, html: markdown(md.replace(TITLE_LINE, '')) }
 }
 
 /** A run of `:source:` tokens (`:nexus: :github:`) as one row of mod-site icons. */
 const sourceIcons = (html: string) =>
-  html.replace(/(?::[a-z]+:\s*)+/g, (run) => {
-    const ids = run.match(/[a-z]+/g) ?? []
+  html.replace(SOURCE_TOKEN_RUN, (run) => {
+    const ids = run.match(TOKEN_NAME) ?? []
     if (!ids.every((id) => id in SOURCE_NAMES || id === 'hexium')) {
       return run
     }
@@ -105,6 +120,7 @@ const MO2_GAMES =
 const CURSEFORGE_GAMES =
   'https://support.curseforge.com/support/solutions/articles/9000193488-getting-started'
 const BULLET = /^\s*[*-] /gm
+const VORTEX_GAMES = /support for over (\d+) different games/
 const HTML_ITEM = /<li\b/g
 
 const RIVAL_COUNTS: Record<string, { url: string; count: (body: string) => number }> = {
@@ -121,7 +137,7 @@ const RIVAL_COUNTS: Record<string, { url: string; count: (body: string) => numbe
   },
   vortex: {
     url: 'https://raw.githubusercontent.com/Nexus-Mods/Vortex/master/README.md',
-    count: (body) => captured(body, /support for over (\d+) different games/),
+    count: (body) => captured(body, VORTEX_GAMES),
   },
   mo2full: {
     url: MO2_GAMES,
@@ -194,8 +210,8 @@ export async function refreshRivalFacts(): Promise<void> {
       throw new Error(`site: ${id}_count no longer parses from ${src.url}: ${String(err)}`)
     }
   }
-  for (const [id, repo] of Object.entries(RIVAL_RELEASES)) {
-    const url = `https://api.github.com/repos/${repo}/releases/latest`
+  for (const [id, slug] of Object.entries(RIVAL_RELEASES)) {
+    const url = `https://api.github.com/repos/${slug}/releases/latest`
     try {
       const rel = JSON.parse(await getText(url)) as { tag_name: string; published_at: string }
       out[`${id}_release`] = rel.tag_name
@@ -216,7 +232,7 @@ export const rivalFacts = (): Record<string, number | string> =>
 
 /** The app version, from build/config.yml where it is set; a comparison page names it as MORTAR_VERSION. */
 export const appVersion = (): string =>
-  /^\s+version: "([^"]+)"/m.exec(readFileSync(repo('build/config.yml'), 'utf8'))?.[1] ?? ''
+  CONFIG_VERSION.exec(readFileSync(repo('build/config.yml'), 'utf8'))?.[1] ?? ''
 
 /** Mortar's own counts, filled into a comparison page's GAME_COUNT and THUNDERSTORE_COUNT. */
 export interface Counts {
@@ -229,9 +245,9 @@ export interface Counts {
 const OVER_MARGIN = 1.1
 
 export function gamesWinner(md: string, games: number): string {
-  return md.replace(/^\| Games \| ([^|]*)\| ([^|]*)\|$/m, (row, ours: string, theirs: string) => {
-    const n = Number(/\d+/.exec(theirs)?.[0] ?? Number.NaN)
-    const over = /^over /i.test(theirs)
+  return md.replace(GAMES_ROW, (row, ours: string, theirs: string) => {
+    const n = Number(FIRST_NUMBER.exec(theirs)?.[0] ?? Number.NaN)
+    const over = OVER_PREFIX.test(theirs)
     if (Number.isNaN(n) || games === n || (over && games >= n && games < n * OVER_MARGIN)) {
       return row
     }
@@ -241,7 +257,7 @@ export function gamesWinner(md: string, games: number): string {
 
 /** The line under a manager's name on /why/, from the page's "<!-- tile: ... -->" comment. */
 export function whyTile(w: Why): string {
-  const what = /<!-- tile: (.+?) -->/.exec(w.md)?.[1]
+  const what = TILE_COMMENT.exec(w.md)?.[1]
   if (!what) {
     throw new Error(`site: ${WHY}/${w.id}.md needs a "<!-- tile: ... -->" line for /why/`)
   }
@@ -254,7 +270,13 @@ export function whyHtml(w: Why, counts: Counts): string {
     .replaceAll('GAME_COUNT', String(counts.games))
     .replaceAll('THUNDERSTORE_COUNT', String(counts.thunderstore))
     .replaceAll('MORTAR_VERSION', appVersion())
-    .replace(/\b[A-Z0-9]+_(?:COUNT|RELEASED?)\b/g, (token) => {
+    .replaceAll(
+      'MORTAR_SITES',
+      modSites()
+        .map((id) => `:${id}:`)
+        .join(' '),
+    )
+    .replace(RIVAL_TOKEN, (token) => {
       const v = rivalFacts()[token.toLowerCase()]
       if (v === undefined) {
         throw new Error(`site: ${w.id}.md names ${token}, which ${RIVALS} lacks`)
@@ -265,7 +287,7 @@ export function whyHtml(w: Why, counts: Counts): string {
     sourceIcons(markdown(gamesWinner(filled, counts.games)))
       .replaceAll('<td>!win ', '<td class="win">')
       // An even row highlights both sides: every value cell after the row's label.
-      .replace(/<tr><td>(.*?)<\/td>(.*?)<\/tr>/g, (row, label: string, cells: string) =>
+      .replace(TABLE_ROW, (row, label: string, cells: string) =>
         cells.includes('class="win"')
           ? row
           : `<tr><td>${label}</td>${cells.replaceAll('<td>', '<td class="win">')}</tr>`,

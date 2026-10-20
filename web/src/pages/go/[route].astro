@@ -1,0 +1,15 @@
+---
+import type { GetStaticPaths } from 'astro'
+import Redirect from '../../components/Redirect.astro'
+import { INVITES } from '../../lib/site.ts'
+
+export const getStaticPaths = (() =>
+  Object.entries(INVITES).map(([route, target]) => ({
+    params: { route },
+    props: { to: target },
+  }))) satisfies GetStaticPaths
+
+const { to } = Astro.props as { to: string }
+---
+
+<Redirect to={to} />

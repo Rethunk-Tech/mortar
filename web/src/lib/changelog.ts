@@ -5,6 +5,10 @@ import { escapeHTML, repo } from './site.ts'
 
 const NOTES = repo('build/release/notes')
 const METAINFO = repo('build/linux/tech.rethunk.Mortar.metainfo.xml')
+const NOTES_HEADING = /^(##|###) (.+)$/
+const INLINE_CODE = /`([^`]+)`/g
+const RELEASE_VERSION = /<release version="(\d+\.\d+\.\d+)" date=/g
+const NOTES_FILE = /^v(\d+\.\d+\.\d+)\.md$/
 
 function byVersionDesc(a: string, b: string): number {
   const pa = a.split('.').map(Number)
@@ -29,7 +33,7 @@ export function notesHtml(md: string): string {
     }
   }
   for (const line of md.split('\n')) {
-    const heading = /^(##|###) (.+)$/.exec(line)
+    const heading = NOTES_HEADING.exec(line)
     if (heading) {
       close()
       const tag = heading[1] === '##' ? 'h3' : 'h4'
@@ -39,7 +43,7 @@ export function notesHtml(md: string): string {
         out.push('<ul>')
         open = true
       }
-      out.push(`<li>${escapeHTML(line.slice(2)).replace(/`([^`]+)`/g, '<code>$1</code>')}</li>`)
+      out.push(`<li>${escapeHTML(line.slice(2)).replace(INLINE_CODE, '<code>$1</code>')}</li>`)
     }
   }
   close()
@@ -56,12 +60,10 @@ export interface Release {
 /** Every release with written notes, newest first, dated from the metainfo. Notes drafted for the next release, newer than any dated one, wait until it is cut. */
 export function releases(): Release[] {
   const metainfo = readFileSync(METAINFO, 'utf8')
-  const dated = [...metainfo.matchAll(/<release version="(\d+\.\d+\.\d+)" date=/g)].map(
-    (m) => m[1] ?? '',
-  )
+  const dated = [...metainfo.matchAll(RELEASE_VERSION)].map((m) => m[1] ?? '')
   const newest = dated.sort(byVersionDesc)[0] ?? ''
   return readdirSync(NOTES)
-    .map((f) => /^v(\d+\.\d+\.\d+)\.md$/.exec(f)?.[1])
+    .map((f) => NOTES_FILE.exec(f)?.[1])
     .filter((v): v is string => v !== undefined)
     .sort(byVersionDesc)
     .filter((v) => newest === '' || byVersionDesc(v, newest) >= 0)

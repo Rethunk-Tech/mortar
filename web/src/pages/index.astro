@@ -6,11 +6,13 @@ import Base from '../layouts/Base.astro'
 import { steamArt } from '../lib/art.ts'
 import { releases } from '../lib/changelog.ts'
 import { questions, whyPages } from '../lib/faq.ts'
-import { artOf, facts, modSites, playableGames } from '../lib/games.ts'
+import { artOf, modSites, playableGames } from '../lib/games.ts'
 import { posts, shortDate } from '../lib/news.ts'
 import { DISCORD, markdown } from '../lib/site.ts'
 import '../styles/download.css'
 import '../styles/landing.css'
+import '../styles/landing-features.css'
+import '../styles/landing-compare.css'
 
 const games = playableGames()
 const art = steamArt()
@@ -19,15 +21,25 @@ const capsule = (id: string) => {
   return g ? artOf(g, art)?.capsule : undefined
 }
 // The best-known games lead the wall and fill the picker before anything is typed.
-const POPULAR = ['stardew', 'lethal-company', 'valheim', 'repo', 'peak', 'content-warning', 'vintage-story', 'sims4']
+const POPULAR = [
+  'stardew',
+  'lethal-company',
+  'valheim',
+  'repo',
+  'peak',
+  'content-warning',
+  'vintage-story',
+  'sims4',
+]
 const PER_LANE = 9
+const NEWS_ID = 'news'
 const LANES = 4
 const withArt = games.filter((g) => artOf(g, art)?.capsule)
 const pool = [
   ...withArt.filter((g) => POPULAR.includes(g.id)),
   ...withArt.filter((g) => !POPULAR.includes(g.id)),
 ].slice(0, PER_LANE * LANES)
-const lanes = Array.from({ length: LANES }, (_, l) => pool.filter((_, i) => i % LANES === l))
+const lanes = Array.from({ length: LANES }, (_, l) => pool.filter((_game, i) => i % LANES === l))
 const picker = [...games]
   .sort((a, b) => a.name.localeCompare(b.name))
   .map((g) => [g.id, g.name, artOf(g, art)?.capsule ?? ''])
@@ -70,16 +82,53 @@ const shownQs = FAQ_IDS.map((id) => {
   return q
 })
 const stores = ['steam', 'gog', 'epic', 'ea', 'lutris', 'xbox']
-const STORE_LABEL: Record<string, string> = { steam: 'Steam', gog: 'GOG', epic: 'Epic Games', ea: 'EA app', lutris: 'Lutris', xbox: 'Xbox app' }
+const STORE_LABEL: Record<string, string> = {
+  steam: 'Steam',
+  gog: 'GOG',
+  epic: 'Epic Games',
+  ea: 'EA app',
+  lutris: 'Lutris',
+  xbox: 'Xbox app',
+}
 const lethal = games.find((g) => g.id === 'lethal-company')
 const band = lethal ? artOf(lethal, art)?.hero : undefined
 const features = [
-  { icon: 'layers', title: 'A profile per playthrough', text: 'Its own mods, settings and launch options. Switching is one click.', img: 'profile' },
-  { icon: 'search', title: 'Every mod site in one search', text: 'One card per mod across every site; dependencies come along.', img: 'thunderstore' },
-  { icon: 'link', title: 'Shares as a link', text: 'A whole profile in one link. Friends import it in a click.', img: 'mods' },
-  { icon: 'alert', title: 'Problems explained', text: 'Missing dependencies, conflicts and crashes in plain words, each with a fix.', img: 'problems' },
-  { icon: 'gauge', title: 'See what slows startup', text: 'Time to title screen and what each mod costs, compared with the last launch.', img: 'performance' },
-  { icon: 'folder', title: 'Scanned before it installs', text: 'Each mod goes past your antivirus after unpacking and before it reaches the game.', img: 'settings' },
+  {
+    icon: 'layers',
+    title: 'A profile per playthrough',
+    text: 'Its own mods, settings and launch options. Switching is one click.',
+    img: 'profile',
+  },
+  {
+    icon: 'search',
+    title: 'Every mod site in one search',
+    text: 'One card per mod across every site; dependencies come along.',
+    img: 'thunderstore',
+  },
+  {
+    icon: 'link',
+    title: 'Shares as a link',
+    text: 'A whole profile in one link. Friends import it in a click.',
+    img: 'mods',
+  },
+  {
+    icon: 'alert',
+    title: 'Problems explained',
+    text: 'Missing dependencies, conflicts and crashes in plain words, each with a fix.',
+    img: 'problems',
+  },
+  {
+    icon: 'gauge',
+    title: 'See what slows startup',
+    text: 'Time to title screen and what each mod costs, compared with the last launch.',
+    img: 'performance',
+  },
+  {
+    icon: 'folder',
+    title: 'Scanned before it installs',
+    text: 'Each mod goes past your antivirus after unpacking and before it reaches the game.',
+    img: 'settings',
+  },
 ]
 ---
 
@@ -107,13 +156,13 @@ const features = [
         </div>
         {latest && <p class="cta-sub">Version {latest.version} · free · <a href="#download">other systems below</a></p>}
       </div>
-      <div class="wallbox" role="group" aria-label={`Some of the ${games.length} games Mortar mods`}>
+      <section class="wallbox" aria-label={`Some of the ${games.length} games Mortar mods`}>
         <div class="wall">
           {
             lanes.map((lane, l) => {
               const cards = (copy: boolean) =>
                 lane.map((g) => (
-                  <a href={`/${g.id}/`} title={g.name} tabindex={copy ? -1 : undefined} aria-hidden={copy ? 'true' : undefined}>
+                  <a href={`/${g.id}/`} title={g.name} {...(copy ? { tabindex: -1, 'aria-hidden': 'true' } : {})}>
                     <img src={artOf(g, art)?.capsule} alt={copy ? '' : g.name} width="300" height="450" loading="lazy" referrerpolicy="no-referrer" />
                   </a>
                 ))
@@ -128,7 +177,7 @@ const features = [
             })
           }
         </div>
-      </div>
+      </section>
     </div>
     <div class="metrics reveal">
       <a href="/games/"><strong data-count={games.length}>{games.length}</strong><span>games</span></a>
@@ -159,7 +208,7 @@ const features = [
   <div class="wrap sec">
     <div class="head reveal"><p class="kicker">How it works</p><h2>From nothing to modded in <em>three steps.</em></h2></div>
     <ol class="flow stagger">
-      <li class="reveal"><span class="dot">1</span><h3>Pick your game</h3><p>Mortar finds it on your stores, or in a folder you choose.</p><div class="vis stores">{stores.map((s) => <Mark id={s} label={STORE_LABEL[s] ?? s} />)}</div></li>
+      <li class="reveal"><span class="dot">1</span><h3>Pick your game</h3><p>Mortar finds it on your stores, or in a folder you choose.</p><div class="vis stores">{stores.map((s) => <Mark site={s} label={STORE_LABEL[s] ?? s} />)}</div></li>
       <li class="reveal"><span class="dot">2</span><h3>Mortar sets it up</h3><p>It installs the mod loader the game needs and makes your first profile.</p><div class="vis">{loaders.slice(0, SHOWN_LOADERS).map((n) => <span class="pill ok">{n}</span>)}{loaders.length > SHOWN_LOADERS && <span class="pill">+ {loaders.length - SHOWN_LOADERS} more</span>}</div></li>
       <li class="reveal"><span class="dot">3</span><h3>Add mods and play</h3><p>Search every site at once, add with one click, press Play.</p><div class="vis"><div class="minimod"><img alt="" src={capsule('lethal-company')} width="44" height="44" loading="lazy" referrerpolicy="no-referrer" /><div><b>MoreCompany</b><span>Thunderstore</span></div><span class="add">Added</span></div></div></li>
     </ol>
@@ -191,7 +240,7 @@ const features = [
   </div>
 
   <div class="wrap sec" id="features">
-    <div class="head reveal"><p class="kicker">Features</p><h2>Built for big mod lists.</h2><p class="dim">Hundreds of mods, several playthroughs, friends on the same pack. That is the setup Mortar was built for.</p></div>
+    <div class="head reveal"><p class="kicker">Features</p><h2>Built for big mod lists.</h2><p class="dim">Hundreds of mods, several playthroughs, friends on the same pack. That is the setup Mortar was built for.</p><a class="allq" href="/features/">Every feature →</a></div>
     <div class="f1 stagger">
       {
         features.map((f) => (
@@ -224,7 +273,7 @@ const features = [
 
   {
     now && (
-      <div class="wrap sec" id="news">
+      <div class="wrap sec" id={NEWS_ID}>
         <div class="w2head reveal">
           <span class="vb">{now.release?.version}</span>
           <div>

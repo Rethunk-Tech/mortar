@@ -1,0 +1,34 @@
+---
+import type { GetStaticPaths } from 'astro'
+import Page from '../../layouts/Page.astro'
+import { type Why, whyHtml, whyPages } from '../../lib/faq.ts'
+import { playableGames } from '../../lib/games.ts'
+
+export const getStaticPaths = (() =>
+  whyPages().map((why) => ({ params: { id: why.id }, props: { w: why } }))) satisfies GetStaticPaths
+
+interface Props {
+  w: Why
+}
+
+const { w } = Astro.props
+const games = playableGames()
+const html = whyHtml(w, {
+  games: games.length,
+  thunderstore: games.filter((g) => g.sources?.some((s) => s.id === 'thunderstore')).length,
+})
+---
+
+<Page
+  title={`Why Mortar? (vs ${w.name})`}
+  description={`How Mortar compares with ${w.name}, with sources for every claim about ${w.name}.`}
+  kicker="Compare"
+  current="why"
+  crumbs={[{ name: 'Why Mortar?', href: '/why/' }, { name: w.name, href: `/why/${w.id}/` }]}
+>
+  <Fragment set:html={html} />
+  <div class="cta" style="margin-top:40px">
+    <a class="btn primary" href="/download/">Download Mortar</a>
+    <a class="btn ghost" href="/faq/">All questions</a>
+  </div>
+</Page>

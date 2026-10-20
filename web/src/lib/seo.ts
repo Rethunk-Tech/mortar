@@ -2,6 +2,9 @@
 import { appVersion } from './faq.ts'
 import { SITE } from './site.ts'
 
+const EDGE_SLASHES = /^\/|\/$/g
+const HTML_EXT = /\.html$/
+
 export interface Crumb {
   name: string
   href: string
@@ -49,6 +52,6 @@ export function faqLd(qs: { q: string; text: string }[]): object {
 
 /** The link-preview picture the build writes for the page at `path`: /og/<path>.png, the home page as /og/index.png. */
 export function ogPath(path: string): string {
-  const slug = path.replace(/^\/|\/$/g, '').replace(/\.html$/, '')
+  const slug = path.replace(EDGE_SLASHES, '').replace(HTML_EXT, '')
   return `/og/${slug || 'index'}.png`
 }

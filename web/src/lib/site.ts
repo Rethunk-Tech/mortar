@@ -2,6 +2,7 @@
 // from wherever the build was started.
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import process from 'node:process'
 
 export const SITE = 'https://mortar.rethunk.tech'
 export const REPO = 'https://github.com/Rethunk-Tech/mortar'

@@ -1,0 +1,25 @@
+---
+// A page the app opens that forwards to a Discord invite: unlisted, unindexed, with a link for browsers that stay.
+interface Props {
+  to: string
+}
+
+const { to } = Astro.props
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content={`0; url=${to}`} />
+    <link rel="canonical" href={to} />
+    <title>Opening Mortar's Discord</title>
+    <link rel="icon" href="/favicon.png" />
+  </head>
+  <body style="background:#111114;color:#eee;font-family:system-ui,sans-serif;padding:40px">
+    <p><a href={to} style="color:#d6b17a">Open Mortar's Discord</a></p>
+  </body>
+</html>

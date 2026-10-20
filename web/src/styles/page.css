@@ -1,0 +1,472 @@
+/* Inner pages: a page head, a reading column, and the parts several pages share. */
+.pagehead {
+  padding-top: 72px;
+  padding-bottom: 40px;
+}
+
+.pagehead h1 {
+  font-size: clamp(38px, 5vw, 64px);
+  line-height: 1.05;
+  margin: 0 0 16px;
+}
+
+.pagehead .lede {
+  margin: 0;
+}
+
+.pagehead .cta {
+  margin-top: 26px;
+}
+
+.crumbs {
+  margin: 0 0 14px;
+  color: var(--dim);
+  font-size: 15px;
+}
+
+.crumbs a:hover {
+  color: var(--sand);
+}
+
+.pagebody {
+  padding-bottom: calc(var(--gap) / 2);
+}
+
+.prose {
+  max-width: 50rem;
+}
+
+.prose.full {
+  max-width: none;
+}
+
+.prose h2 {
+  margin: 56px 0 14px;
+  font-size: 30px;
+  line-height: 1.15;
+}
+
+.prose h3 {
+  margin: 32px 0 8px;
+  font-size: 21px;
+}
+
+.prose h4 {
+  margin: 22px 0 6px;
+  color: var(--sand);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose p,
+.prose ul,
+.prose ol {
+  color: var(--dim);
+}
+
+.prose li {
+  margin: 6px 0;
+}
+
+.prose strong {
+  color: var(--ink);
+}
+
+.prose a:not([class]) {
+  color: var(--sand);
+  text-decoration: underline;
+  text-decoration-color: rgba(214, 177, 122, 0.4);
+  text-underline-offset: 3px;
+}
+
+.prose a:not([class]):hover {
+  text-decoration-color: var(--sand);
+}
+
+.prose code {
+  background: var(--raised2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1px 6px;
+  color: var(--ink);
+}
+
+.prose pre,
+.code pre {
+  margin: 14px 0;
+  padding: 16px 18px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0e0e11;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.prose pre code,
+.code pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+.prose blockquote {
+  margin: 16px 0;
+  padding: 2px 18px;
+  border-left: 3px solid var(--sand);
+  background: var(--raised);
+  border-radius: 0 10px 10px 0;
+}
+
+.prose img {
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin: 18px 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.table-wrap th,
+.table-wrap td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.table-wrap td {
+  color: var(--dim);
+}
+
+.table-wrap tr:last-child td {
+  border-bottom: 0;
+}
+
+.table-wrap th {
+  background: var(--raised);
+  font-weight: 700;
+}
+
+.table-wrap td:first-child {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* The stronger side of a "Why Mortar?" comparison row. */
+td.win {
+  background: rgba(214, 177, 122, 0.1);
+  box-shadow: inset 3px 0 0 var(--sand);
+  color: var(--ink);
+}
+
+p.table-note {
+  margin-top: 8px;
+  color: var(--faint);
+  font-size: 14px;
+}
+
+.icon-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  vertical-align: middle;
+}
+
+/* A brand as a square button: game pages' facts and the comparisons. */
+.fact-icon {
+  display: inline-grid;
+  place-items: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--raised);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+a.fact-icon {
+  text-decoration: none;
+}
+
+a.fact-icon:hover {
+  border-color: var(--sand);
+}
+
+.fact-icon svg,
+.fact-icon img {
+  width: 22px;
+  height: 22px;
+  border: 0;
+}
+
+/* game cards */
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cover {
+  position: relative;
+  display: block;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--raised);
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
+}
+
+.cover:hover {
+  transform: translateY(-3px);
+  border-color: var(--sand);
+}
+
+.cover-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-text {
+  position: absolute;
+  inset: auto 0 0;
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  background: rgba(10, 10, 12, 0.86);
+}
+
+.cover.no-art .cover-text {
+  inset: 0;
+  align-content: center;
+  text-align: center;
+  background: none;
+}
+
+.cover.no-art .letter {
+  font-size: 56px;
+  font-weight: 800;
+  color: var(--sand);
+}
+
+.game-name {
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.game-meta {
+  color: var(--dim);
+  font-size: 13px;
+}
+
+.game-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  align-items: end;
+  margin: 0 0 18px;
+}
+
+.game-filters label {
+  display: grid;
+  gap: 6px;
+  color: var(--dim);
+  font-size: 14px;
+}
+
+.game-filters input,
+.game-filters select {
+  min-width: 13rem;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #0e0e11;
+  color: var(--ink);
+  font: inherit;
+}
+
+.game-count {
+  color: var(--dim);
+  margin: 0 0 18px;
+}
+
+/* a game's banner: its Steam library art behind the head, faded into the page with an alpha fade */
+.banner {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 30rem;
+  background: var(--bg) var(--hero) center 30% / cover no-repeat;
+}
+
+.banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(17, 17, 20, 0.2),
+    rgba(17, 17, 20, 0.6) 55%,
+    var(--bg)
+  );
+}
+
+.banner.plain {
+  min-height: 0;
+}
+
+.banner.plain::after {
+  content: none;
+}
+
+.banner .wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding-top: 72px;
+  padding-bottom: 40px;
+}
+
+.banner h1 {
+  font-size: clamp(40px, 6vw, 72px);
+  margin: 0 0 14px;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.6);
+}
+
+.banner .lede {
+  margin: 0;
+  color: rgb(225, 225, 232);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7);
+}
+
+.post-list a {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr;
+  gap: 4px 22px;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--raised);
+  transition: border-color 0.2s;
+}
+
+.toc a {
+  display: block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: var(--dim);
+  border-left: 2px solid transparent;
+}
+
+.pager a {
+  display: grid;
+  gap: 2px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.banner .crumbs,
+.banner .crumbs a {
+  color: rgb(225, 225, 232);
+}
+
+.banner .cta {
+  margin-top: 24px;
+}
+
+.facts-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 26px;
+  padding: 16px 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--raised);
+  margin-bottom: 40px;
+}
+
+.facts-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.facts-label {
+  margin-right: 4px;
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.facts-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--line);
+}
+
+.steps-list {
+  list-style: none;
+  counter-reset: s;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.steps-list li {
+  counter-increment: s;
+  position: relative;
+  padding: 16px 18px 16px 62px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--dim);
+  margin: 0;
+}
+
+.steps-list li::before {
+  content: counter(s);
+  position: absolute;
+  left: 16px;
+  top: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--sand);
+  color: var(--sand);
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+}

@@ -1,0 +1,111 @@
+---
+import type { GetStaticPaths } from 'astro'
+import FactIcon from '../../components/FactIcon.astro'
+import GameCard from '../../components/GameCard.astro'
+import Base from '../../layouts/Base.astro'
+import { steamArt } from '../../lib/art.ts'
+import {
+  artOf,
+  facts,
+  type Game,
+  named,
+  neighbours,
+  playableGames,
+  SOURCE_NAMES,
+  STORE_NAMES,
+  sourceURL,
+  steamAppId,
+} from '../../lib/games.ts'
+import '../../styles/page.css'
+import '../../styles/page-lists.css'
+
+export const getStaticPaths = (() =>
+  playableGames().map((g) => ({
+    params: { game: g.id },
+    props: { game: g },
+  }))) satisfies GetStaticPaths
+
+interface Props {
+  game: Game
+}
+
+const { game } = Astro.props
+const games = playableGames()
+const art = steamArt()
+const f = facts(game)
+const appId = steamAppId(game)
+const hero = artOf(game, art)?.hero
+const more = neighbours(game, games)
+const install = f.loader
+  ? `Pick ${game.name}. Mortar installs ${f.loader} and makes your first profile.`
+  : `Pick ${game.name}. Mortar makes your first profile and keeps its mods apart from every other profile's.`
+const loaderText = f.loader ? `installs ${f.loader}, ` : ''
+---
+
+<Base
+  title={`${game.name} mod manager: Mortar`}
+  description={`Mortar is a free, open source mod manager for ${game.name} on Linux, Windows and Steam Deck: it ${loaderText}keeps each set of mods in its own profile and downloads from ${f.sources}.`}
+  current="games"
+  crumbs={[{ name: 'Games', href: '/games/' }, { name: game.name, href: `/${game.id}/` }]}
+>
+  <header slot="before" class:list={['banner', { plain: !hero }]} style={hero ? `--hero: url('${hero}')` : undefined} data-pagefind-body>
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore><a href="/">Mortar</a> › <a href="/games/">Games</a> › {game.name}</nav>
+      <h1>{game.name}</h1>
+      <p class="lede">Mod {game.name} with Mortar, the free and open source mod manager for Linux, Windows and Steam Deck.</p>
+      <div class="cta">
+        <a class="btn primary" href="/download/">Download Mortar</a>
+        <a class="btn ghost" href="/guide/">User guide</a>
+      </div>
+    </div>
+  </header>
+  <div class="wrap pagebody">
+    <div class="facts-strip">
+      <div class="facts-group"><span class="facts-label">Mod loader</span><span class="fact-icon">{f.loader || 'None needed'}</span></div>
+      <span class="facts-sep" aria-hidden="true"></span>
+      <div class="facts-group">
+        <span class="facts-label">Mods from</span>
+        {(game.sources ?? []).map((s) => <FactIcon id={s.id} name={named([s.id], SOURCE_NAMES)[0] ?? s.id} href={sourceURL(s)} />)}
+      </div>
+      <span class="facts-sep" aria-hidden="true"></span>
+      <div class="facts-group">
+        <span class="facts-label">Finds the game in</span>
+        {Object.keys(game.stores ?? {}).map((id) => <FactIcon id={id} name={named([id], STORE_NAMES)[0] ?? id} href={id === 'steam' && appId ? `https://store.steampowered.com/app/${appId}/` : undefined} />)}
+      </div>
+    </div>
+    <div class="prose">
+      <h2>Start modding {game.name}</h2>
+      <ol class="steps-list">
+        <li>Download Mortar for Linux or Windows and open it.</li>
+        <li>{install}</li>
+        <li>Open Browse, add the mods you want, and press Play. Each profile keeps its own mods and settings.</li>
+      </ol>
+      <h2>Share a profile</h2>
+      <p>A profile for {game.name} shared from Mortar is a link to <code>mortar.rethunk.tech/{game.id}/p</code>. Whoever opens it sees the mod list and imports it into Mortar in one click. The whole profile is inside the link, so nothing is uploaded anywhere.</p>
+    </div>
+    {
+      more.games.length > 0 && (
+        <div data-pagefind-ignore>
+          <h2 class="more-title">{more.title}</h2>
+          <ul class="game-grid">
+            {more.games.map((o) => (
+              <GameCard game={o} art={art} />
+            ))}
+          </ul>
+          <p><a class="allq" href="/games/">All {games.length} supported games →</a></p>
+        </div>
+      )
+    }
+  </div>
+</Base>
+
+<style>
+  .more-title {
+    font-size: 30px;
+    margin: 56px 0 18px;
+  }
+  .allq {
+    color: var(--sand);
+    font-weight: 700;
+  }
+</style>

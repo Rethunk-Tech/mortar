@@ -1,0 +1,229 @@
+---
+import Page from '../../layouts/Page.astro'
+import { playableGames } from '../../lib/games.ts'
+import '../../styles/landing.css'
+import '../../styles/landing-features.css'
+import '../../styles/landing-compare.css'
+
+const games = playableGames().length
+const glance = [
+  ['Finds your game', 'Steam, GOG, Epic, the EA app, Heroic, Lutris and more'],
+  ['Installs the mod loader', 'SMAPI or BepInEx, kept up to date'],
+  ['Every mod site', 'Nexus Mods, Thunderstore, CurseForge and more, each from its own page'],
+  ['Free', 'AGPL-3.0, no account needed'],
+]
+const sections = [
+  {
+    title: 'A profile for every playthrough',
+    text: 'Keep a vanilla-plus farm, a Stardew Valley Expanded run and the pack your Lethal Company crew plays side by side. Each profile has its own mods, settings and launch options, and switching is one click.',
+    ticks: [
+      'Install, update and roll back mods per profile',
+      'Updates show the changelog before you take them',
+      'Start new profiles from templates',
+      'Freeze a profile so its mods stay on the versions you have',
+      'Pick the version to install, not only the newest',
+      'Star the mods and profiles you reach for most',
+      'Save backups on a schedule, with a timeline per save',
+    ],
+    img: 'profile',
+    alt: "A mod's detail panel in Mortar with its version, update channel and Keep this version",
+  },
+  {
+    title: 'Stardew Valley on SMAPI',
+    text: 'Mortar installs SMAPI and keeps it up to date, and handles a profile of hundreds of mods with cover art, groups and filters. Each game keeps its own loader, mod sites and settings, so switching games is one click on Game select.',
+    ticks: [
+      'Click Mod Manager Download on Nexus Mods and the mod lands in the right profile',
+      'Import Nexus collections with their FOMOD choices',
+      'SMAPI options set for the game or for one profile',
+    ],
+    img: 'mods',
+    alt: 'Mortar showing a Stardew Valley profile of 805 mods with cover art',
+  },
+  {
+    title: 'Lethal Company, Valheim and more on BepInEx',
+    text: "Mortar installs the BepInEx pack each game needs and keeps every Thunderstore package in the profile, not the game folder. At launch it places BepInEx beside the game and takes it back when the game exits. On Linux, Valheim's native build runs modded without Proton.",
+    ticks: [
+      'Plugin settings stay with the profile and travel when you share it',
+      'Plugins that failed to load or ship twice show up in Problems',
+      'Import your r2modman or Gale profiles, or export a Thunderstore modpack',
+      'If one Thunderstore download server fails, Mortar tries the next',
+      "Valheim and Risk of Rain 2 dedicated servers get their own profiles, which can take a client profile's mods",
+      "Copy the host's mod list for friends to check against theirs, in Stardew Valley, Thunderstore games and Vintage Story",
+    ],
+    img: 'lethal-company',
+    alt: 'A Lethal Company profile in Mortar with its Thunderstore mods',
+  },
+  {
+    title: 'Every mod site in one search',
+    text: 'Browse searches Nexus Mods, Thunderstore, CurseForge, Modrinth, GitHub and the Vintage Story Mod DB at once, whichever the game uses. Add a Thunderstore package and the packages it depends on come with it.',
+    ticks: [
+      'Filter by category, sort by downloads or by last update',
+      'Mods the profile already has are marked',
+      "Every download comes from the mod's own page",
+      'Hide a mod, or everything by one author, from Browse',
+      'Modpacks, translations and cheats start in the exclude filter, one click to remove',
+    ],
+    img: 'thunderstore',
+    alt: 'The Browse tab listing Lethal Company packages from Thunderstore',
+  },
+  {
+    title: 'Know what broke before you launch',
+    text: "Mortar reads every mod's manifest, Content Patcher packs and the loader's log, then explains problems in plain words: missing dependencies, outdated versions and which mod wins each content conflict.",
+    ticks: [
+      'Missing dependencies found and queued for you',
+      'Content conflicts explained file by file',
+      'One-click fixes: switch a mod off or make a pack win',
+      'After a crash, the mod whose code was running is named, in BepInEx, MelonLoader, Vintage Story and SMAPI games',
+    ],
+    img: 'problems',
+    alt: 'The Problems tab explaining which mod wins each content conflict',
+  },
+  {
+    title: 'See what slows your startup',
+    text: 'In Stardew Valley, the bundled SMAPI bridge lets Mortar measure how long the game takes to reach the title screen and what each mod costs along the way, so a slow load has a name.',
+    ticks: ['Time to title screen, compared with the last launch', 'Per-mod startup and in-game cost', 'Game console and logs inside Mortar'],
+    img: 'performance',
+    alt: "The Performance tab with time to title screen and each mod's startup cost",
+  },
+  {
+    title: 'Play from Steam Deck Game Mode',
+    text: 'Add a profile to Steam and start it from Game Mode like any other game. Mortar stays out of sight while the game starts, shows a dialog only when something needs an answer, and closes with the game so Steam counts your playtime.',
+    ticks: [
+      'A gamepad moves focus, confirms, goes back, switches tabs and plays',
+      "Larger touch and gamepad targets, laid out for the Deck's 1280×800 screen",
+      'Diagnostics say how launching works in Desktop Mode and in Game Mode',
+    ],
+    img: 'deck',
+    alt: 'Game select at the Steam Deck’s resolution with the Lethal Company row focused by a gamepad',
+  },
+  {
+    title: 'Your profiles on all your PCs',
+    text: 'Pair two of your own computers with a short code. A profile you send from one to the other arrives with its mod files, from every source, so nothing downloads twice. No account is involved.',
+    ticks: [
+      'Nearby computers are found on your local network',
+      'The code works once, for five minutes',
+      'An unpaired computer still gets the profile and downloads each mod',
+    ],
+    img: 'pairing',
+    alt: 'The Pair a computer dialog showing a one-time pairing code',
+  },
+  {
+    title: 'Scanned before it installs',
+    text: "Every mod is checked by your antivirus after it is unpacked and before it reaches your game: Windows' own scanner, ClamAV, or a command of your choice.",
+    ticks: [],
+    img: 'settings',
+    alt: 'General settings with the antivirus choices: Automatic, clamd socket, custom command or off',
+  },
+]
+---
+
+<Page
+  title="Mortar features: profiles, every mod site, Problems and more"
+  description={`Everything Mortar does for the ${games} games it supports: a profile per playthrough, one search across every mod site, problems explained before you launch, Steam Deck Game Mode and more.`}
+  heading="Every feature."
+  kicker="Features"
+  lede="Hundreds of mods, several playthroughs, friends on the same pack. That is the setup Mortar was built for. The first five mods were never the hard part."
+  crumbs={[{ name: 'Features', href: '/features/' }]}
+  current="features"
+  full
+>
+  <dl class="glance">
+    {
+      glance.map(([k, v]) => (
+        <div>
+          <dt>{k}</dt>
+          <dd>{v}</dd>
+        </div>
+      ))
+    }
+  </dl>
+  <p class="dim">
+    Windows installer, AppImage, Flatpak, .deb, .rpm and Arch packages: <a href="/download/">Download</a>. It supports {games} games, Stardew Valley, Lethal Company, Valheim and The Sims 4 among them: <a href="/games/">see them all</a>.
+  </p>
+
+  {
+    sections.map((s, i) => (
+      <section class:list={['wide', 'spot', 'feature-row', { rev: i % 2 === 1 }]}>
+        <div>
+          <h2>{s.title}</h2>
+          <p class="dim">{s.text}</p>
+          {s.ticks.length > 0 && (
+            <ul>
+              {s.ticks.map((t) => (
+                <li>{t}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div class="shot">
+          <img class="zoom" src={`/img/${s.img}.webp`} alt={s.alt} width="1280" height="800" loading="lazy" />
+        </div>
+      </section>
+    ))
+  }
+
+  <section class="companions">
+    <p class="kicker">Companions</p>
+    <h2>Works with your browser and your game.</h2>
+    <p class="dim">Two optional add-ons, both open source, both installed from inside Mortar.</p>
+    <div class="f1 duo">
+      <div class="card">
+        <div class="body">
+          <h3>Browser extension</h3>
+          <p>Marks Nexus Mods and Thunderstore package pages with what your profile already has and hands downloads and installs to Mortar. For Firefox, Chrome, Edge and other Chromium browsers.</p>
+          <p class="links"><a href="/extension/">About the extension</a> · <a href="https://github.com/Rethunk-Tech/mortar-browser-extension">mortar-browser-extension</a></p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="body">
+          <h3>Game bridge</h3>
+          <p>A small mod Mortar adds to each profile. In Stardew Valley it runs console commands sent from Mortar, exposes Generic Mod Config Menu settings, records startup timings and drives an overlay for streaming. In Lethal Company and Valheim it tells Mortar which plugins the running game loaded.</p>
+          <p class="links"><a href="https://github.com/Rethunk-Tech/mortar-smapi-bridge">mortar-smapi-bridge</a> · <a href="https://github.com/Rethunk-Tech/mortar-bepinex-bridge">mortar-bepinex-bridge</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Page>
+
+<style>
+  .glance {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 14px;
+    margin: 0 0 18px;
+  }
+  .glance div {
+    background: var(--raised);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+  .glance dt {
+    font-weight: 700;
+  }
+  .glance dd {
+    margin: 4px 0 0;
+    color: var(--dim);
+    font-size: 15px;
+  }
+  .feature-row {
+    padding-top: 80px;
+  }
+  .feature-row h2 {
+    margin-top: 0;
+  }
+  .companions {
+    padding-top: 100px;
+  }
+  .duo {
+    grid-template-columns: 1fr 1fr;
+  }
+  .duo .links {
+    margin-top: 12px;
+  }
+  @media (max-width: 900px) {
+    .duo {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

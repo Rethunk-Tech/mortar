@@ -1,0 +1,43 @@
+---
+// One cell of the comparison table, drawn by what kind of value the row holds.
+import { IMPORT_FROM } from '../lib/compare.ts'
+import { SOURCE_NAMES } from '../lib/games.ts'
+import Mark from './Mark.astro'
+
+interface Props {
+  kind: string
+  value: string | string[] | undefined
+}
+
+const { kind, value } = Astro.props
+const PLATFORMS: Record<string, string> = {
+  windows: 'Windows',
+  linux: 'Linux',
+  steamdeck: 'Steam Deck',
+}
+const list = Array.isArray(value) ? value : []
+const isEmpty = value === undefined || value.length === 0
+---
+
+{
+  isEmpty ? (
+    <span class="none">—</span>
+  ) : kind === 'num' ? (
+    <span class="num">{value}</span>
+  ) : kind === 'sites' ? (
+    <span class="icons">{list.map((s) => <Mark site={s} label={SOURCE_NAMES[s] ?? s} />)}</span>
+  ) : kind === 'platforms' ? (
+    <span class="icons">{list.map((p) => <Mark site={p} label={PLATFORMS[p] ?? p} />)}</span>
+  ) : kind === 'tags' ? (
+    <span class="tags">{list.map((t) => <span>{t}</span>)}</span>
+  ) : kind === 'imports' ? (
+    <span class="logos">
+      {list.map((id) => {
+        const f = IMPORT_FROM[id]
+        return f?.logo ? <img src={f.logo} alt={f.name} title={f.name} width="28" height="28" /> : <Mark site="thunderstore" label={f?.name ?? id} />
+      })}
+    </span>
+  ) : (
+    value
+  )
+}

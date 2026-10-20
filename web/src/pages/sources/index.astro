@@ -1,0 +1,95 @@
+---
+import Mark from '../../components/Mark.astro'
+import Page from '../../layouts/Page.astro'
+import { modSites, playableGames, SOURCE_NAMES } from '../../lib/games.ts'
+
+const games = playableGames()
+// What Mortar does with each site, from the user guide. A site the catalog adds without a line here fails the build.
+const ABOUT: Record<string, { url: string; text: string }> = {
+  nexus: {
+    url: 'https://www.nexusmods.com/',
+    text: "Sign in with your personal API key. Premium accounts download inside Mortar; free accounts use Nexus's own Mod Manager Download button, which the browser extension or Mortar's link handler hands to Mortar.",
+  },
+  thunderstore: {
+    url: 'https://thunderstore.io/',
+    text: 'No account needed. Mods install with every dependency they name, and r2modman and Gale codes and .r2z files open in Mortar.',
+  },
+  curseforge: {
+    url: 'https://www.curseforge.com/',
+    text: 'No account needed. Search and install from inside Mortar.',
+  },
+  github: {
+    url: 'https://github.com/',
+    text: "Add installs a mod's latest release. Nobody reviews what is published there, so the first download says so once.",
+  },
+  vsmoddb: {
+    url: 'https://mods.vintagestory.at/',
+    text: "Vintage Story's own mod site. Mortar fetches the mods each one requires, and the Mod DB's 1-click install button can open in Mortar.",
+  },
+  itch: {
+    url: 'https://itch.io/',
+    text: 'Needs your own itch.io API key, kept in your system keyring. Add takes the first upload that is not a demo or soundtrack.',
+  },
+  patreon: {
+    url: 'https://www.patreon.com/',
+    text: 'Paste a Patreon post in Add mod: it opens in your browser, and the file you save from it is offered and recorded under that post.',
+  },
+}
+const sites = modSites().map((id) => {
+  const about = ABOUT[id]
+  if (!about) {
+    throw new Error(`site: /sources/ has no description for the mod site "${id}"`)
+  }
+  return {
+    id,
+    name: SOURCE_NAMES[id] ?? id,
+    count: games.filter((g) => g.sources?.some((s) => s.id === id)).length,
+    ...about,
+  }
+})
+---
+
+<Page
+  title="Mod sites Mortar downloads from"
+  description={`The ${sites.length} mod sites Mortar searches and installs from: ${sites.map((s) => s.name).join(', ')}. Every mod downloads from its own page.`}
+  heading="Mod sites"
+  kicker="Sources"
+  lede={`Mortar searches ${sites.length} mod sites at once and shows one card per mod. Every mod downloads from its own page; Mortar never hosts mod files.`}
+  crumbs={[{ name: 'Mod sites', href: '/sources/' }]}
+  full
+>
+  <ul class="tile-grid sources">
+    {
+      sites.map((s) => (
+        <li>
+          <div class="tile-link">
+            <Mark site={s.id} label="" class="tile-icon" />
+            <b>
+              <a href={s.url}>{s.name}</a>
+            </b>
+            <span class="count">{s.count} {s.count === 1 ? 'game' : 'games'}</span>
+            <span>{s.text}</span>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="dim note">The one exception to downloading from the source: a profile sent between two of your own paired computers carries its mod files. <a href="/guide/pair-your-computers/">How pairing works</a></p>
+</Page>
+
+<style>
+  .sources .tile-link:hover {
+    transform: none;
+  }
+  .sources .count {
+    color: var(--sand);
+    font-weight: 700;
+  }
+  .sources b a {
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .note {
+    margin-top: 28px;
+  }
+</style>

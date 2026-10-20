@@ -1,0 +1,332 @@
+/* The landing page, continued: how it works, the game picker, features and the large screenshots. */
+
+/* how it works: steps joined by a line */
+.flow {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  position: relative;
+}
+
+.flow::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 24px;
+  border-top: 2px dashed rgba(214, 177, 122, 0.35);
+}
+
+.flow li {
+  position: relative;
+  padding-top: 68px;
+  display: flex;
+  flex-direction: column;
+}
+
+.flow .dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--sand);
+  color: var(--sand);
+  font-weight: 800;
+  font-size: 20px;
+  display: grid;
+  place-items: center;
+}
+
+.flow p {
+  color: var(--dim);
+  margin: 0 0 18px;
+}
+
+.flow .vis {
+  margin-top: auto;
+  height: 84px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.flow .stores {
+  justify-content: space-around;
+}
+
+.logos img,
+.logos .mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.flow .stores .mark {
+  width: 36px;
+  height: 36px;
+}
+
+.pill {
+  border: 1px solid var(--line);
+  background: var(--raised2);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 14px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.pill.ok {
+  border-color: rgba(147, 184, 106, 0.5);
+  color: var(--ink);
+}
+
+.minimod {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.minimod img {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.minimod b {
+  display: block;
+  font-size: 15px;
+}
+
+.minimod .add {
+  margin-left: auto;
+  background: rgba(147, 184, 106, 0.16);
+  color: var(--good);
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+/* game picker band */
+.artband {
+  position: relative;
+  background: #16161a center / cover;
+}
+
+.artband::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 14, 17, 0.86);
+}
+
+.artband > * {
+  position: relative;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 56px;
+  align-items: center;
+}
+
+.searchbox {
+  position: relative;
+  margin: 10px 0 14px;
+}
+
+.searchbox input {
+  width: 100%;
+  font: inherit;
+  font-size: 18px;
+  color: var(--ink);
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #0e0e11;
+}
+
+.searchbox input:focus {
+  outline: 2px solid var(--sand);
+  outline-offset: 1px;
+}
+
+.searchbox kbd {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font:
+    700 13px ui-monospace,
+    monospace;
+  color: var(--faint);
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  padding: 2px 8px;
+  background: var(--raised);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tiles a {
+  position: relative;
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--line);
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
+}
+
+.tiles a:hover {
+  transform: translateY(-3px);
+  border-color: var(--sand);
+}
+
+.tiles img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tiles .letter {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  font-size: 56px;
+  font-weight: 800;
+  color: var(--sand);
+  background: var(--raised2);
+}
+
+/* feature cards */
+.f1 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.f1 .body {
+  padding: 26px 26px 18px;
+}
+
+.peek {
+  margin: auto 0 0 26px;
+  height: 150px;
+  overflow: hidden;
+  border-radius: 12px 0 0 0;
+  border: 1px solid var(--line);
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.peek img {
+  width: 640px;
+  max-width: none;
+  transition: transform 0.5s ease;
+}
+
+.k1 .mgr img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.w2 .pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top left;
+  transition: transform 0.5s ease;
+}
+
+.card:hover .peek img {
+  transform: translateY(-34px);
+}
+
+/* Steam Deck and your PCs: large split screenshots */
+.wide {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.wide.rev {
+  grid-template-columns: 7fr 5fr;
+}
+
+.wide.rev > :first-child {
+  order: 2;
+}
+
+.bleed {
+  margin-right: -140px;
+}
+
+.wide.rev .bleed {
+  margin-right: 0;
+  margin-left: -140px;
+}
+
+.spot ul {
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--dim);
+}
+
+.spot li {
+  padding-left: 28px;
+  position: relative;
+  margin: 8px 0;
+}
+
+.spot li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(147, 184, 106, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(147, 184, 106, 0.5);
+}
+
+.spot li::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 10px;
+  width: 6px;
+  height: 3px;
+  border-left: 2px solid var(--good);
+  border-bottom: 2px solid var(--good);
+  transform: rotate(-45deg);
+}

@@ -1,0 +1,68 @@
+---
+import GameCard from '../../components/GameCard.astro'
+import Page from '../../layouts/Page.astro'
+import { steamArt } from '../../lib/art.ts'
+import {
+  facts,
+  type Game,
+  named,
+  playableGames,
+  SOURCE_NAMES,
+  STORE_NAMES,
+} from '../../lib/games.ts'
+
+const games = playableGames()
+const art = steamArt()
+const loaderOf = (g: Game) => facts(g).loader || 'No loader needed'
+const sourcesOf = (g: Game) =>
+  named(
+    (g.sources ?? []).map((s) => s.id),
+    SOURCE_NAMES,
+  )
+const storesOf = (g: Game) => named(Object.keys(g.stores ?? {}), STORE_NAMES)
+const sorted = [...games].sort((a, b) => a.name.localeCompare(b.name))
+const options = (values: string[]) => [...new Set(values)].sort((a, b) => a.localeCompare(b))
+const filters = [
+  { label: 'Mod loader', id: 'game-loader', values: options(games.map(loaderOf)) },
+  { label: 'Mod site', id: 'game-source', values: options(games.flatMap(sourcesOf)) },
+  { label: 'Store', id: 'game-store', values: options(games.flatMap(storesOf)) },
+]
+---
+
+<Page
+  title="Games Mortar supports"
+  description={`The ${games.length} games Mortar manages mods for, with each game's mod loader, mod sites and stores.`}
+  heading="Supported games"
+  kicker="Games"
+  lede={`${games.length} games, each with its mod loader and mod sites set up for you. Pick one to see how Mortar handles it.`}
+  current="games"
+  crumbs={[{ name: 'Games', href: '/games/' }]}
+  full
+>
+  <div class="game-filters">
+    <label>Search <input type="search" id="game-q" autocomplete="off" placeholder="Game name" /></label>
+    {
+      filters.map((f) => (
+        <label>
+          {f.label}
+          <select id={f.id}>
+            <option value="">Any</option>
+            {f.values.map((v) => (
+              <option>{v}</option>
+            ))}
+          </select>
+        </label>
+      ))
+    }
+  </div>
+  <p class="game-count" id="game-count" aria-live="polite"></p>
+  <ul class="game-grid" id="game-grid">
+    {
+      sorted.map((g) => (
+        <GameCard game={g} art={art} data={{ name: g.name.toLowerCase(), loader: loaderOf(g), sources: sourcesOf(g).join('|'), stores: storesOf(g).join('|') }} />
+      ))
+    }
+  </ul>
+</Page>
+
+<script is:inline src="/games.js" defer></script>

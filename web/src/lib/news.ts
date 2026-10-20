@@ -16,13 +16,14 @@ export interface Post {
 }
 
 const slugOf = (version: string) => `mortar-${version.replaceAll('.', '-')}`
+const FIRST_BULLET = /^- (.+)$/m
 
 export async function posts(): Promise<Post[]> {
   const entries = await getCollection('news')
   const byVersion = new Map(entries.flatMap((e) => (e.data.version ? [[e.data.version, e]] : [])))
   const fromReleases = releases().map((r): Post => {
     const e = byVersion.get(r.version)
-    const first = /^- (.+)$/m.exec(r.md)?.[1] ?? ''
+    const first = FIRST_BULLET.exec(r.md)?.[1] ?? ''
     return {
       slug: e?.id ?? slugOf(r.version),
       kind: 'release',

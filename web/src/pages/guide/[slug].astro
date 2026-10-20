@@ -1,0 +1,59 @@
+---
+import type { GetStaticPaths } from 'astro'
+import Base from '../../layouts/Base.astro'
+import { guideSections, type Section } from '../../lib/guide.ts'
+import '../../styles/page.css'
+import '../../styles/page-lists.css'
+
+export const getStaticPaths = (() => {
+  const all = guideSections()
+  return all.map((section, i) => ({
+    params: { slug: section.slug },
+    props: { s: section, prev: all[i - 1], next: all[i + 1] },
+  }))
+}) satisfies GetStaticPaths
+
+interface Props {
+  s: Section
+  prev: Section | undefined
+  next: Section | undefined
+}
+
+const { s, prev, next } = Astro.props
+const title = s.title.replace(/<[^>]+>/g, '')
+const all = guideSections()
+const firstLine =
+  /<p>(.*?)<\/p>/s
+    .exec(s.html)?.[1]
+    ?.replace(/<[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim() ?? ''
+---
+
+<Base
+  title={`${title}: Mortar user guide`}
+  description={firstLine.length > 40 ? firstLine.slice(0, 155) : `${title} in Mortar, the free mod manager for Linux, Windows and Steam Deck.`}
+  current="guide"
+  crumbs={[{ name: 'Guide', href: '/guide/' }, { name: title, href: `/guide/${s.slug}/` }]}
+>
+  <header class="wrap pagehead">
+    <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore><a href="/">Mortar</a> › <a href="/guide/">Guide</a></nav>
+    <h1 set:html={s.title} />
+  </header>
+  <div class="wrap pagebody">
+    <div class="guide-layout">
+      <nav class="toc" aria-label="Guide pages" data-pagefind-ignore>
+        <ol>
+          {all.map((o) => <li><a href={`/guide/${o.slug}/`} aria-current={o.slug === s.slug ? 'page' : undefined}><Fragment set:html={o.title} /></a></li>)}
+        </ol>
+      </nav>
+      <article class="prose">
+        <Fragment set:html={s.html} />
+        <nav class="pager" aria-label="Guide pages" data-pagefind-ignore>
+          {prev && <a class="prev" href={`/guide/${prev.slug}/`}><span>Previous</span><Fragment set:html={prev.title} /></a>}
+          {next && <a class="next" href={`/guide/${next.slug}/`}><span>Next</span><Fragment set:html={next.title} /></a>}
+        </nav>
+      </article>
+    </div>
+  </div>
+</Base>

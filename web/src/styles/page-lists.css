@@ -1,0 +1,235 @@
+/* Inner pages, continued: tiles, news, the FAQ, the changelog and the guide. */
+
+/* tiles: /why/, /sources/, /news/ */
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tile-grid > li {
+  display: flex;
+}
+
+.tile-link {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  column-gap: 16px;
+  row-gap: 4px;
+  align-content: start;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--raised);
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+}
+
+.tile-link:hover {
+  border-color: var(--sand);
+  transform: translateY(-3px);
+}
+
+.tile-link .tile-icon {
+  grid-row: 1 / span 3;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+.tile-link b {
+  font-size: 18px;
+}
+
+.tile-link span {
+  grid-column: 2;
+  color: var(--dim);
+  font-size: 15px;
+}
+
+/* news */
+.post-list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.post-list a:hover {
+  border-color: rgba(214, 177, 122, 0.5);
+}
+
+.post-list h2 {
+  font-size: 21px;
+  margin: 0;
+}
+
+/* FAQ page: each question a card */
+.faq-page h2 {
+  font-size: 22px;
+  margin: 36px 0 8px;
+}
+
+details.release summary h2 {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+}
+
+.post-list a:hover h2 {
+  color: var(--sand);
+}
+
+.post-list .meta {
+  grid-row: 1 / span 2;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  color: var(--faint);
+  font-size: 14px;
+}
+
+.post-list p {
+  margin: 0;
+  color: var(--dim);
+}
+
+.howto-tag {
+  display: inline-block;
+  justify-self: start;
+  font-weight: 800;
+  border-radius: 8px;
+  padding: 2px 10px;
+  font-size: 13px;
+  background: rgba(147, 184, 106, 0.16);
+  color: var(--good);
+}
+
+.notes h3 {
+  margin-top: 40px;
+  font-size: 26px;
+}
+
+.notes h4 {
+  margin-top: 26px;
+}
+
+/* changelog */
+details.release {
+  border-top: 1px solid var(--line);
+  padding: 18px 0;
+}
+
+details.release summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+details.release summary::-webkit-details-marker {
+  display: none;
+}
+
+details.release summary h2::before {
+  content: "›";
+  color: var(--sand);
+  transition: transform 0.15s;
+}
+
+details.release[open] summary h2::before {
+  transform: rotate(90deg);
+}
+
+details.release time {
+  color: var(--faint);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* guide */
+.guide-layout {
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
+}
+
+.toc {
+  position: sticky;
+  top: calc(var(--nav) + 20px);
+  max-height: calc(100vh - var(--nav) - 40px);
+  overflow-y: auto;
+  font-size: 15px;
+}
+
+.toc ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+
+.toc a:hover {
+  color: var(--ink);
+  background: var(--raised);
+}
+
+.toc a[aria-current="page"] {
+  color: var(--ink);
+  background: var(--raised);
+  border-left-color: var(--sand);
+}
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.pager a:hover {
+  border-color: var(--sand);
+}
+
+.pager span {
+  color: var(--faint);
+  font-size: 13px;
+}
+
+.pager .next {
+  margin-left: auto;
+  text-align: right;
+}
+
+@media (max-width: 900px) {
+  .guide-layout {
+    grid-template-columns: 1fr;
+  }
+  .toc {
+    position: static;
+    max-height: none;
+  }
+  .toc ol {
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  }
+  .post-list a {
+    grid-template-columns: 1fr;
+  }
+  .post-list .meta {
+    grid-row: auto;
+    display: flex;
+  }
+  .facts-sep {
+    display: none;
+  }
+}

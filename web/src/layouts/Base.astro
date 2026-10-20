@@ -5,6 +5,7 @@ import '@fontsource/atkinson-hyperlegible-next/latin-500.css'
 import '@fontsource/atkinson-hyperlegible-next/latin-700.css'
 import '@fontsource/atkinson-hyperlegible-next/latin-800.css'
 import '../styles/site.css'
+import '../styles/site-motion.css'
 import Footer from '../components/Footer.astro'
 import Nav from '../components/Nav.astro'
 import { appLd, breadcrumbLd, type Crumb, ogPath } from '../lib/seo.ts'
@@ -14,17 +15,25 @@ interface Props {
   title: string
   description: string
   /** The nav link this page belongs under. */
-  current?: string
+  current?: string | undefined
   /** Not for search engines or the site search: a shared profile, a redirect, the 404. */
-  unlisted?: boolean
+  unlisted?: boolean | undefined
   /** The trail to this page after the home page; the last entry is this page. */
-  crumbs?: Crumb[]
-  jsonLd?: object[]
+  crumbs?: Crumb[] | undefined
+  jsonLd?: object[] | undefined
   /** The footer's "Ready to mod?" band; the download page is already that. */
   band?: boolean
 }
 
-const { title, description, current, unlisted = false, crumbs, jsonLd = [], band = true } = Astro.props
+const {
+  title,
+  description,
+  current,
+  unlisted = false,
+  crumbs,
+  jsonLd = [],
+  band = true,
+} = Astro.props
 const path = Astro.url.pathname
 const url = `${SITE}${path}`
 const image = `${SITE}${ogPath(path)}`
@@ -71,7 +80,9 @@ const ld = [appLd(), ...(crumbs ? [breadcrumbLd(crumbs)] : []), ...jsonLd]
     </main>
     <Footer band={band} />
     <div class="lightbox" id="lightbox" aria-hidden="true"><img alt="" /></div>
-    <script src="../scripts/site.ts"></script>
+    <script>
+      import '../scripts/site.ts'
+    </script>
     <script is:inline src="/search.js" defer></script>
   </body>
 </html>

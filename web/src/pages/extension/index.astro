@@ -1,0 +1,116 @@
+---
+import Base from '../../layouts/Base.astro'
+import '../../styles/page.css'
+import '../../styles/page-lists.css'
+import '../../styles/landing.css'
+import '../../styles/landing-features.css'
+import '../../styles/landing-compare.css'
+
+const XPI =
+  'https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest/download/mortar-browser-extension.xpi'
+const CHROME = 'https://chromewebstore.google.com/detail/hboeppdoecbglcmfojappgehkbecdfbi'
+const SOURCE = 'https://github.com/Rethunk-Tech/mortar-browser-extension'
+const what = [
+  {
+    title: 'Mod Manager Download, into Mortar',
+    text: "Click Nexus's own Mod Manager Download button and the file goes to the right Mortar profile. The extension never starts a download by itself.",
+    icon: 'M12 3v12m0 0-4-4m4 4 4-4M5 21h14',
+  },
+  {
+    title: 'Marks what you have',
+    text: "Mod pages, file lists and search results show which mods and files the open profile already has, so you don't download twice.",
+    icon: 'M20 6 9 17l-5-5',
+  },
+  {
+    title: 'Updates and warnings',
+    text: 'The toolbar popup lists updates for the mods in your profile and flags broken or obsolete mods on their pages.',
+    icon: 'M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z',
+  },
+]
+---
+
+<Base
+  title="Mortar browser extension"
+  description="The Mortar browser extension marks Nexus Mods pages with what your Mortar profile already has and hands Mod Manager Download clicks to Mortar. For Firefox, Chrome and Edge."
+  current="extension"
+  crumbs={[{ name: 'Browser extension', href: '/extension/' }]}
+>
+  <div class="wrap pagehead">
+    <div class="wide spot">
+      <div>
+        <p class="kicker">Browser extension</p>
+        <h1>Nexus Mods, aware of <em>your profile.</em></h1>
+        <p class="lede">See which mods your Mortar profile already has while you browse Nexus Mods, and send Mod Manager Download clicks straight to Mortar. For Firefox, Chrome, Edge and other Chromium browsers.</p>
+        <div class="cta">
+          <a class="btn primary" href={XPI}>Get it for Firefox</a>
+          <a class="store-badge" href={CHROME}><img src="/img/chrome-web-store.png" alt="Available in the Chrome Web Store" width="165" height="50" /></a>
+        </div>
+        <p class="cta-sub">Free and open source. Needs Mortar on the same computer.</p>
+      </div>
+      <div class="ext-shot"><img class="shot zoom" src="/img/extension.webp" width="380" height="264" alt="The extension popup connected to Mortar: 660 Nexus mods in the Main profile and the updates available for them" /></div>
+    </div>
+  </div>
+
+  <div class="wrap sec">
+    <div class="head"><p class="kicker">What it does</p><h2>Three jobs, on the pages you already use.</h2></div>
+    <div class="f1">
+      {
+        what.map((w) => (
+          <div class="card">
+            <div class="body">
+              <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={w.icon} /></svg></div>
+              <h3>{w.title}</h3>
+              <p>{w.text}</p>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="wrap sec prose" id="install">
+    <h2>Install</h2>
+    <ol class="steps-list">
+      <li><strong>Firefox:</strong> open the downloaded <code>.xpi</code> in Firefox, or drop it on <code>about:addons</code>, and confirm.</li>
+      <li><strong>Chrome and Edge:</strong> choose <strong>Add to Chrome</strong> on the <a href={CHROME}>Chrome Web Store page</a>. Edge installs it from the same page.</li>
+      <li>In Mortar, open Settings › Downloads. It shows the extension as connected once you visit Nexus Mods.</li>
+    </ol>
+  </div>
+
+  <div class="wrap sec" id="privacy">
+    <div class="faqgrid">
+      <div>
+        <p class="kicker">Privacy</p>
+        <h2>It talks only to Mortar.</h2>
+        <p class="dim">The extension talks only to the Mortar app on your own computer, through the browser's native messaging. It has no server, no analytics and no telemetry.</p>
+      </div>
+      <div class="faq">
+        <details open>
+          <summary>Privacy policy</summary>
+          <div class="a"><p>Mortar's browser extension reads Nexus Mods pages in your browser to mark mods and to pass Mod Manager Download links to the Mortar desktop app installed on your own computer, using the browser's native messaging. The only data exchanged is Nexus mod ids, file ids and nxm:// links, and Thunderstore package names, going to Mortar, and installed-mod and update information coming back. It runs only on https://www.nexusmods.com and on Thunderstore package pages (https://thunderstore.io/c/*/p/*). The extension makes no network requests of its own, has no server, analytics or telemetry, and sends nothing to the developers or any third party. Your display choice and filter settings are stored in your browser's extension storage and never leave it. Uninstalling the extension removes them.</p></div>
+        </details>
+        <details>
+          <summary>Permissions it asks for</summary>
+          <div class="a"><p><code>nativeMessaging</code> to reach Mortar on your computer; access to <code>www.nexusmods.com</code>, to read and mark its pages, and to Thunderstore package pages, to mark a package and add its Install in Mortar button; <code>scripting</code> to add its marks to Nexus tabs that were already open when it was installed; <code>storage</code> for your display settings; <code>alarms</code> to refresh the update check.</p></div>
+        </details>
+        <details>
+          <summary>Source code</summary>
+          <div class="a"><p>Every line is public at <a href={SOURCE}>github.com/Rethunk-Tech/mortar-browser-extension</a>, with no build step: the files in the release are the files in the repository.</p></div>
+        </details>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .store-badge img {
+    height: 50px;
+    width: auto;
+  }
+  .ext-shot {
+    justify-self: center;
+  }
+  .ext-shot img {
+    max-width: 420px;
+  }
+</style>

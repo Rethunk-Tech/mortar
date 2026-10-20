@@ -1,0 +1,33 @@
+---
+import Page from '../../layouts/Page.astro'
+import { longDate, posts } from '../../lib/news.ts'
+
+const all = await posts()
+---
+
+<Page
+  title="Mortar news"
+  description="Mortar's release posts and how-tos: new games, features and fixes in each version, and how to get the most out of Mortar."
+  heading="News"
+  kicker="News"
+  lede={'A post for every release, and how-tos. Follow along in a feed reader with the <a href="/news/rss.xml">RSS feed</a>.'}
+  current="news"
+  crumbs={[{ name: 'News', href: '/news/' }]}
+>
+  <ul class="post-list">
+    {
+      all.map((p) => (
+        <li>
+          <a class="post" href={`/news/${p.slug}/`}>
+            <span class="meta">
+              {p.release ? <span class="vtag hot">{p.release.version}</span> : <span class="howto-tag">How-to</span>}
+              <time datetime={p.date.toISOString().slice(0, 10)}>{longDate(p.date)}</time>
+            </span>
+            <h2>{p.title}</h2>
+            <p>{p.summary}</p>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Page>

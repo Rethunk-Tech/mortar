@@ -1,0 +1,416 @@
+/* The landing page, continued: the comparison, what's new and questions, then the narrow-screen and reduced-motion overrides. */
+
+/* compare */
+.k1wrap {
+  overflow-x: auto;
+}
+
+.k1 {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 16px;
+  table-layout: auto;
+}
+
+.k1 th,
+.k1 td {
+  padding: 14px 18px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--line);
+}
+
+.k1 thead th,
+.k1 thead td {
+  border-bottom: 0;
+  padding-bottom: 12px;
+  position: sticky;
+  top: 76px;
+  z-index: 2;
+  background: var(--bg);
+}
+
+.k1 thead th.us {
+  background: #1c1a17;
+  border-top: 3px solid var(--sand);
+}
+
+.k1 .mgr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.k1 th[scope="row"] {
+  color: var(--dim);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.k1 .group th {
+  color: var(--sand);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding-top: 30px;
+  border-bottom: 1px solid rgba(214, 177, 122, 0.3);
+}
+
+.k1 .us {
+  background: rgba(214, 177, 122, 0.07);
+}
+
+.k1 tbody tr:last-child .us {
+  border-radius: 0 0 12px 12px;
+}
+
+.k1 tbody tr:not(.group):hover td,
+.k1 tbody tr:not(.group):hover th {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.k1 tbody tr:not(.group):hover td.us {
+  background: rgba(214, 177, 122, 0.12);
+}
+
+.k1 .num {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.k1 .none {
+  color: var(--faint);
+}
+
+.k1 .tags,
+.k1 .icons,
+.logos {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.k1 .icons {
+  gap: 14px;
+}
+
+.logos {
+  gap: 10px;
+}
+
+.k1 .tags span {
+  background: var(--raised2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.foot-note {
+  color: var(--faint);
+  font-size: 14px;
+  margin-top: 14px;
+}
+
+/* what's new: the latest release's highlights, then the two before it */
+.w2head {
+  display: flex;
+  align-items: end;
+  gap: 18px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.w2head h2 {
+  margin: 0;
+}
+
+.w2head .kicker {
+  margin: 0 0 4px;
+}
+
+.w2head .vb {
+  background: var(--sand);
+  color: var(--sand-ink);
+  font-weight: 800;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 22px;
+}
+
+.w2head a {
+  color: var(--sand);
+}
+
+.w2 {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 18px;
+}
+
+.w2 .tile {
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s;
+}
+
+.w2 .tile:hover {
+  transform: translateY(-4px);
+  border-color: rgba(214, 177, 122, 0.45);
+}
+
+.w2 .pic {
+  height: 170px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+}
+
+.w2 .tile:hover .pic img {
+  transform: scale(1.04);
+}
+
+.w2 .t {
+  padding: 20px 22px;
+}
+
+.hist a p {
+  margin: 0;
+  color: var(--dim);
+  font-size: 15px;
+}
+
+.w2 .tile p {
+  margin: 0;
+  color: var(--dim);
+  font-size: 16px;
+}
+
+.area {
+  display: inline-block;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sand);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.hist {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.8fr;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.hist a {
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.2s;
+}
+
+.hist a:hover {
+  border-color: rgba(214, 177, 122, 0.45);
+}
+
+.hist a h3 {
+  margin: 4px 0 0;
+  font-size: 18px;
+}
+
+.hist a:hover h3 {
+  color: var(--sand);
+}
+
+.hist .top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hist .more {
+  justify-content: center;
+  background: transparent;
+  border-style: dashed;
+}
+
+.hist .more em {
+  font-style: normal;
+  color: var(--sand);
+  font-size: 26px;
+}
+
+.dl3 .head {
+  text-align: center;
+  margin: 0 auto 36px;
+}
+
+/* questions */
+.faqgrid {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 56px;
+  align-items: start;
+}
+
+.allq {
+  display: block;
+  color: var(--sand);
+  font-weight: 700;
+  margin-top: 16px;
+}
+
+.faq {
+  display: grid;
+  gap: 12px;
+}
+
+.faq details {
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 22px;
+}
+
+.faq details::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition:
+    block-size 0.3s ease,
+    content-visibility 0.3s allow-discrete;
+}
+
+.faq details[open]::details-content {
+  block-size: auto;
+}
+
+.faq summary {
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq summary::after {
+  content: "+";
+  color: var(--sand);
+  font-size: 22px;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+.faq details[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.faq .a {
+  color: var(--dim);
+  margin: 12px 0 0;
+}
+
+.faq .a p,
+.faq .a ul {
+  margin: 0 0 8px;
+}
+
+.faq .a a {
+  color: var(--sand);
+}
+
+@media (max-width: 900px) {
+  .hero,
+  .split,
+  .w2,
+  .f1,
+  .flow,
+  .faqgrid,
+  .hist,
+  .wide,
+  .wide.rev {
+    grid-template-columns: 1fr;
+  }
+  h1.two {
+    white-space: normal;
+  }
+  .wallbox {
+    height: 420px;
+  }
+  .metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+  .metrics a:nth-child(2) {
+    border-right: 0;
+  }
+  .flow::before {
+    display: none;
+  }
+  .bleed,
+  .wide.rev .bleed {
+    margin: 0;
+  }
+  .wide.rev > :first-child {
+    order: 0;
+  }
+  .tiles {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .metrics strong {
+    font-size: 34px;
+  }
+  .flow .vis {
+    flex-wrap: wrap;
+    height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  h1.words > span,
+  h1.words em > span,
+  .wall {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: none;
+  }
+  .wall {
+    transform: rotate(-8deg);
+  }
+  .track,
+  .loop img.on {
+    animation: none;
+  }
+  .track a,
+  .metrics a,
+  .peek img,
+  .w2 .tile,
+  .oscard {
+    transition: none;
+  }
+}

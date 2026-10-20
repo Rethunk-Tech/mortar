@@ -4,10 +4,10 @@
   "type": "module",
   "scripts": {
     "dev": "bun --bun astro dev --host 0.0.0.0",
-    "build": "bun --bun astro build",
+    "build": "bun --bun astro build && bun ../scripts/site-demo.ts ../site/demo && bun scripts/check.ts",
     "check": "astro check",
     "preview": "astro preview --host 0.0.0.0",
-    "refresh": "bun refresh.ts"
+    "refresh": "bun scripts/refresh.ts"
   },
   "dependencies": {
     "@astrojs/check": "0.9.11",
@@ -17,7 +17,6 @@
     "@resvg/resvg-js": "2.6.2",
     "astro": "7.4.1",
     "satori": "0.63.1",
-    "typescript": "7.0.2",
     "simple-icons": "16.35.0"
   },
   "devDependencies": {

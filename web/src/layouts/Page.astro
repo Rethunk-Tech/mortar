@@ -1,0 +1,62 @@
+---
+// An inner page: breadcrumbs, a page head and a reading column, in the site frame.
+import '../styles/page.css'
+import '../styles/page-lists.css'
+import type { Crumb } from '../lib/seo.ts'
+import Base from './Base.astro'
+
+interface Props {
+  title: string
+  description: string
+  /** The page's own heading, when it differs from the document title. */
+  heading?: string
+  kicker?: string
+  lede?: string
+  current?: string
+  crumbs?: Crumb[]
+  jsonLd?: object[]
+  unlisted?: boolean
+  /** Full width instead of the reading column. */
+  full?: boolean
+}
+
+const {
+  title,
+  description,
+  heading = title,
+  kicker,
+  lede,
+  current,
+  crumbs,
+  jsonLd,
+  unlisted,
+  full = false,
+} = Astro.props
+---
+
+<Base title={title} description={description} current={current} crumbs={crumbs} jsonLd={jsonLd} unlisted={unlisted}>
+  <header class="wrap pagehead">
+    {
+      crumbs && crumbs.length > 1 && (
+        <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore>
+          <a href="/">Mortar</a>
+          {crumbs.slice(0, -1).map((c) => (
+            <Fragment>
+              {' › '}
+              <a href={c.href}>{c.name}</a>
+            </Fragment>
+          ))}
+        </nav>
+      )
+    }
+    {kicker && <p class="kicker">{kicker}</p>}
+    <h1>{heading}</h1>
+    {lede && <p class="lede" set:html={lede} />}
+    <slot name="cta" />
+  </header>
+  <div class="wrap pagebody">
+    <div class:list={['prose', { full }]}>
+      <slot />
+    </div>
+  </div>
+</Base>

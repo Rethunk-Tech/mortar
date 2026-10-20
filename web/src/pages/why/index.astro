@@ -1,0 +1,33 @@
+---
+import Mark from '../../components/Mark.astro'
+import Page from '../../layouts/Page.astro'
+import { whyPages, whyTile } from '../../lib/faq.ts'
+
+const whys = whyPages()
+const LEADING_THE = /^the /
+---
+
+<Page
+  title="Why Mortar? Compared with other mod managers"
+  description="How Mortar compares with other mod managers, with sources for every claim about them."
+  heading="Why Mortar?"
+  kicker="Compare"
+  lede="Pick the manager you use now to see how Mortar compares, with a source for every claim about it."
+  current="why"
+  crumbs={[{ name: 'Why Mortar?', href: '/why/' }]}
+  full
+>
+  <ul class="tile-grid">
+    {
+      whys.map((w) => (
+        <li>
+          <a class="tile-link" href={`/why/${w.id}/`}>
+            {w.id === 'curseforge' ? <Mark site="curseforge" label="" class="tile-icon" /> : <img class="tile-icon" src={`/img/managers/${w.id}.png`} alt="" width="56" height="56" />}
+            <b>{w.name.replace(LEADING_THE, '')}</b>
+            <span>{whyTile(w)}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Page>

@@ -1,0 +1,23 @@
+---
+import Page from '../../layouts/Page.astro'
+import { plain, questions, whyPages } from '../../lib/faq.ts'
+import { playableGames } from '../../lib/games.ts'
+import { faqLd } from '../../lib/seo.ts'
+import { markdown } from '../../lib/site.ts'
+
+const qs = questions(playableGames().length, whyPages())
+const html = markdown(qs.map((x) => `## ${x.q}\n\n${x.a}\n`).join('\n'))
+---
+
+<Page
+  title="Mortar FAQ"
+  description="Answers about Mortar: price, games, Nexus Mods, the Steam Deck, downloads and coming from another mod manager."
+  heading="Questions"
+  kicker="FAQ"
+  lede={'Short answers about Mortar. The <a href="/guide/">user guide</a> covers everything in detail, and the <a href="/go/help/">Discord help forum</a> answers the rest.'}
+  current="faq"
+  crumbs={[{ name: 'FAQ', href: '/faq/' }]}
+  jsonLd={[faqLd(qs.map((x) => ({ q: x.q, text: plain(x.a) })))]}
+>
+  <div class="faq-page" set:html={html} />
+</Page>

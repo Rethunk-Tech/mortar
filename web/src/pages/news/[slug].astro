@@ -1,0 +1,107 @@
+---
+import { render } from 'astro:content'
+import type { GetStaticPaths } from 'astro'
+import Page from '../../layouts/Page.astro'
+import { longDate, type Post, posts } from '../../lib/news.ts'
+import { REPO, SITE } from '../../lib/site.ts'
+
+export const getStaticPaths = (async () =>
+  (await posts()).map((post) => ({ params: { slug: post.slug }, props: { p: post } }))) satisfies GetStaticPaths
+
+interface Props {
+  p: Post
+}
+
+const { p } = Astro.props
+const { Content } = p.entry ? await render(p.entry) : { Content: undefined }
+const article = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: p.title,
+  description: p.summary,
+  datePublished: p.date.toISOString(),
+  url: `${SITE}/news/${p.slug}/`,
+  author: { '@type': 'Organization', name: 'Rethunk.Tech', url: 'https://we.rethunk.tech/' },
+}
+---
+
+<Page
+  title={p.release ? `Mortar ${p.release.version}: ${p.title}` : `${p.title}: Mortar`}
+  description={p.summary}
+  heading={p.title}
+  kicker={p.release ? `Mortar ${p.release.version} · ${longDate(p.date)}` : `How-to · ${longDate(p.date)}`}
+  lede={p.summary}
+  current="news"
+  crumbs={[{ name: 'News', href: '/news/' }, { name: p.title, href: `/news/${p.slug}/` }]}
+  jsonLd={[article]}
+>
+  {
+    p.highlights.length > 0 && (
+      <div class="highlights">
+        {p.highlights.map((h) => (
+          <figure>
+            <img class="zoom" src={h.image} alt={h.title} width="1280" height="800" loading="lazy" />
+            <figcaption>
+              <span class="area">{h.area}</span>
+              <b>{h.title}</b>
+              {h.text}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    )
+  }
+  {Content && <Content />}
+  {p.release && <div class="notes" set:html={p.release.html} />}
+  {
+    p.release && (
+      <p>
+        <a href={`${REPO}/releases/tag/v${p.release.version}`}>Downloads and checksums for {p.release.version}</a> · <a href="/changelog/">Every release</a>
+      </p>
+    )
+  }
+  <div class="cta" style="margin-top:40px">
+    <a class="btn primary" href="/download/">Download Mortar</a>
+    <a class="btn ghost" href="/news/">All news</a>
+  </div>
+</Page>
+
+<style>
+  .highlights {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    margin-bottom: 24px;
+  }
+  figure {
+    margin: 0;
+    background: var(--raised);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  figure img {
+    border: 0;
+    border-radius: 0;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: top left;
+  }
+  figcaption {
+    display: grid;
+    gap: 4px;
+    padding: 14px 16px;
+    color: var(--dim);
+    font-size: 15px;
+  }
+  figcaption b {
+    color: var(--ink);
+  }
+  .area {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sand);
+    font-weight: 700;
+  }
+</style>

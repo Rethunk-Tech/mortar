@@ -7,18 +7,79 @@ import Mark from './Mark.astro'
 const latest = releases()[0]
 const LATEST = 'https://github.com/Rethunk-Tech/mortar/releases/latest/download/'
 const systems = [
-  { os: 'windows', mark: 'windows', name: 'Windows', what: 'Installer · Windows 10 and 11, no administrator rights', asset: 'mortar-amd64-installer.exe' },
-  { os: 'linux', mark: 'linux', name: 'Linux', what: 'AppImage · x86_64 · Ubuntu 24.04, Fedora 39 or newer', asset: 'mortar-linux-x86_64.AppImage' },
-  { os: 'linux-arm', mark: 'linux', name: 'Linux on ARM64', what: 'AppImage · aarch64', asset: 'mortar-linux-aarch64.AppImage', arm: true },
-  { os: 'deck', mark: 'steamdeck', name: 'Steam Deck', what: 'AppImage in Desktop Mode, then Add to Steam', asset: 'mortar-linux-x86_64.AppImage' },
+  {
+    os: 'windows',
+    mark: 'windows',
+    name: 'Windows',
+    what: 'Installer · Windows 10 and 11, no administrator rights',
+    asset: 'mortar-amd64-installer.exe',
+  },
+  {
+    os: 'linux',
+    mark: 'linux',
+    name: 'Linux',
+    what: 'AppImage · x86_64 · Ubuntu 24.04, Fedora 39 or newer',
+    asset: 'mortar-linux-x86_64.AppImage',
+  },
+  {
+    os: 'linux-arm',
+    mark: 'linux',
+    name: 'Linux on ARM64',
+    what: 'AppImage · aarch64',
+    asset: 'mortar-linux-aarch64.AppImage',
+    arm: true,
+  },
+  {
+    os: 'deck',
+    mark: 'steamdeck',
+    name: 'Steam Deck',
+    what: 'AppImage in Desktop Mode, then Add to Steam',
+    asset: 'mortar-linux-x86_64.AppImage',
+  },
 ]
 const managers = [
-  { mark: 'flatpak', name: 'Flatpak', cmd: 'flatpak install --user https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref', note: 'Any distribution; flatpak update keeps it current.', more: '/download/#flatpak' },
-  { mark: 'debian', name: 'apt', cmd: 'sudo apt install mortar', note: 'Ubuntu 24.04, Debian 13 or newer, after adding the repository once.', more: '/download/#deb' },
-  { mark: 'fedora', name: 'dnf', cmd: 'sudo dnf install mortar', note: 'Fedora 39 or newer, after adding the repository once.', more: '/download/#fedora' },
-  { mark: 'archlinux', name: 'pacman', cmd: 'sudo pacman -Sy mortar', note: 'After adding the repository to pacman.conf once.', more: '/download/#arch' },
-  { mark: 'homebrew', name: 'Homebrew', cmd: 'brew install rethunk-tech/tap/mortar', note: 'Installs the AppImage, which needs FUSE 2.', more: '/download/#brew' },
-  { mark: 'windows', name: 'Scoop', cmd: 'scoop bucket add mortar https://github.com/Rethunk-Tech/scoop-bucket; scoop install mortar/mortar', note: 'Windows; Scoop handles updates.', more: '/download/#windows' },
+  {
+    mark: 'flatpak',
+    name: 'Flatpak',
+    cmd: 'flatpak install --user https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref',
+    note: 'Any distribution; flatpak update keeps it current.',
+    more: '/download/#flatpak',
+  },
+  {
+    mark: 'debian',
+    name: 'apt',
+    cmd: 'sudo apt install mortar',
+    note: 'Ubuntu 24.04, Debian 13 or newer, after adding the repository once.',
+    more: '/download/#deb',
+  },
+  {
+    mark: 'fedora',
+    name: 'dnf',
+    cmd: 'sudo dnf install mortar',
+    note: 'Fedora 39 or newer, after adding the repository once.',
+    more: '/download/#fedora',
+  },
+  {
+    mark: 'archlinux',
+    name: 'pacman',
+    cmd: 'sudo pacman -Sy mortar',
+    note: 'After adding the repository to pacman.conf once.',
+    more: '/download/#arch',
+  },
+  {
+    mark: 'homebrew',
+    name: 'Homebrew',
+    cmd: 'brew install rethunk-tech/tap/mortar',
+    note: 'Installs the AppImage, which needs FUSE 2.',
+    more: '/download/#brew',
+  },
+  {
+    mark: 'windows',
+    name: 'Scoop',
+    cmd: 'scoop bucket add mortar https://github.com/Rethunk-Tech/scoop-bucket; scoop install mortar/mortar',
+    note: 'Windows; Scoop handles updates.',
+    more: '/download/#windows',
+  },
 ]
 ---
 
@@ -27,8 +88,8 @@ const managers = [
     systems.map((s) => (
       <div class="oscard reveal" data-os={s.os}>
         <span class="iconwrap">
-          <Mark id={s.mark} label={s.name} />
-          {s.arm && <i>ARM</i>}
+          <Mark site={s.mark} label={s.name} />
+          {s.arm ? <i>ARM</i> : null}
         </span>
         <b>{s.name}</b>
         <span>{s.what}</span>
@@ -51,7 +112,7 @@ const managers = [
     {
       managers.map((m, i) => (
         <button type="button" role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-cmd={m.cmd} data-note={m.note} data-more={m.more}>
-          <Mark id={m.mark} label="" />
+          <Mark site={m.mark} label="" />
           {m.name}
         </button>
       ))

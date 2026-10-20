@@ -33,7 +33,7 @@ function setMenu(open: boolean) {
     menu.setAttribute('aria-expanded', String(open))
   }
 }
-menu?.addEventListener('click', () => setMenu(drawer?.hidden ?? false))
+menu?.addEventListener('click', () => setMenu(drawer?.hidden === true))
 document.addEventListener('click', (e) => {
   const t = e.target
   if (drawer && !drawer.hidden && t instanceof Node && !drawer.contains(t) && !menu?.contains(t)) {
@@ -91,7 +91,7 @@ document.addEventListener('click', (e) => {
     closeLightbox()
   }
 })
-addEventListener('keydown', (e) => {
+globalThis.addEventListener('keydown', (e: KeyboardEvent) => {
   if (e.key === 'Escape') {
     closeLightbox()
     setMenu(false)

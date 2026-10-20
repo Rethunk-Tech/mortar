@@ -51,7 +51,7 @@ function picker() {
   const tiles = document.getElementById('tiles')
   const matches = document.getElementById('matches')
   const data = document.getElementById('picker-games')?.textContent
-  if (!input || !tiles || !matches || !data) {
+  if (!(input && tiles && matches && data)) {
     return
   }
   const games = JSON.parse(data) as [id: string, name: string, capsule: string][]
@@ -96,7 +96,7 @@ function picker() {
         ? 'No game by that name.'
         : `${hits.length} ${hits.length === 1 ? 'match' : 'matches'}${hits.length > PICKER_TILES ? `; showing the first ${PICKER_TILES}` : ''}`
   })
-  addEventListener('keydown', (e) => {
+  globalThis.addEventListener('keydown', (e: KeyboardEvent) => {
     const t = e.target
     if (
       e.key !== '/' ||
