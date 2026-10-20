@@ -162,7 +162,7 @@ func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text s
 	}
 	items := interleave(answered)
 	sortMerged(items, f.Sort)
-	merged.Items = mergeSame(items, ranked(c.Prefer, ids), c.identity(ctx))
+	merged.Items = mergeSame(items, ranked(c.Prefer, ids), c.identity(ctx), aliasesOf(components.Authors()))
 	return merged, nil
 }
 

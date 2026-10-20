@@ -11404,5 +11404,6 @@
       ],
       "sources": [{ "id": "thunderstore", "key": "windrose" }]
     }
-  ]
+  ],
+  "authors": [{ "names": ["Evaisa", "EvaisaDev"] }]
 }

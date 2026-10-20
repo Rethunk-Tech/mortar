@@ -79,6 +79,7 @@ type SourceComponent struct {
 type SourceFile struct {
 	Components []SourceComponent `json:"components"`
 	Games      []GameInfo        `json:"games"`
+	Authors    []AuthorAliases   `json:"authors,omitempty"`
 }
 
 // KnownBroken is one curated entry: a mod or package that does not work in some versions of the game's mods or of the
@@ -1051,6 +1052,14 @@ type Manifest struct {
 	Serial     uint64      `json:"serial"`
 	Components []Component `json:"components"`
 	Games      []GameInfo  `json:"games"`
+	// Authors are people known by different names on different mod sites.
+	Authors []AuthorAliases `json:"authors,omitempty"`
+}
+
+// AuthorAliases is one person's names on the mod sites (a Thunderstore team and a GitHub account, say), which Browse
+// counts as one author when it folds the same mod from two sites into one card.
+type AuthorAliases struct {
+	Names []string `json:"names"`
 }
 
 // Validate checks the source host, component identity and asset digest.

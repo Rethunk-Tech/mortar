@@ -140,6 +140,9 @@ type Item struct {
 	Bundled bool `json:"bundled"`
 	// External marks a mod whose author only allows downloads on the site's own page, so Add does not apply.
 	External bool `json:"external,omitempty"`
+	// ReuploadOf names the mod this hit may copy: one of the same name by another author on another site, with more
+	// downloads, as "name by author".
+	ReuploadOf string `json:"reuploadOf,omitempty"`
 }
 
 // Alt is the same mod on another source: where to open it and install it from, and that hit's own flags.

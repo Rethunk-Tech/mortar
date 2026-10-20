@@ -30,6 +30,20 @@ func Games() []GameInfo {
 	return withUserGames(m.Games)
 }
 
+// Authors are the author aliases in use: the selected manifest's, else the bundled one's.
+func Authors() []AuthorAliases {
+	if c := active.Load(); c != nil {
+		if a := c.Manifest().Authors; len(a) > 0 {
+			return a
+		}
+	}
+	m, err := BundledManifest()
+	if err != nil {
+		return nil
+	}
+	return m.Authors
+}
+
 // Game is the catalog entry with id, from the selected manifest when it lists the game, else the bundled one.
 func Game(id string) (GameInfo, bool) {
 	var g GameInfo

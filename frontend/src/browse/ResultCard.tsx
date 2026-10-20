@@ -191,6 +191,28 @@ function CardTitle(props: { name: string; flag: 'error' | 'warning' | null; onOp
 const onControl = (e: MouseEvent<HTMLElement>) =>
   e.target instanceof Element && e.target.closest('button, a, [role="button"]') !== null
 
+// The author line, and under it a note when another site lists a mod of this name by someone else with more downloads.
+function Byline({ author, reuploadOf }: { author: string; reuploadOf: string }) {
+  const { t } = useLingui()
+  return (
+    <>
+      {author === '' ? null : (
+        <Typography
+          noWrap={true}
+          sx={{ fontSize: 12, fontWeight: 500, color: 'var(--mortar-accent-ink)' }}
+        >
+          {formatAuthors(author)}
+        </Typography>
+      )}
+      {reuploadOf === '' ? null : (
+        <Typography noWrap={true} title={reuploadOf} sx={{ fontSize: 12, color: 'warning.main' }}>
+          {t`Possibly a re-upload of ${reuploadOf}`}
+        </Typography>
+      )}
+    </>
+  )
+}
+
 // Each stat stays whole and the line wraps between them on a narrow card.
 function StatsLine({ stats }: { stats: string[] }) {
   if (stats.length === 0) {
@@ -316,14 +338,7 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
           />
           <FavouriteStar starKey={favouriteKey(item.source, item.id)} />
         </Box>
-        {author === '' ? null : (
-          <Typography
-            noWrap={true}
-            sx={{ fontSize: 12, fontWeight: 500, color: 'var(--mortar-accent-ink)' }}
-          >
-            {formatAuthors(author)}
-          </Typography>
-        )}
+        <Byline author={author} reuploadOf={item.reuploadOf ?? ''} />
         <Typography
           title={summary}
           sx={{

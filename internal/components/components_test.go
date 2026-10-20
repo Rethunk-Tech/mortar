@@ -675,7 +675,8 @@ func TestBundledGamesAreTheSourcesGames(t *testing.T) {
 		t.Fatal(err)
 	}
 	var src struct {
-		Games []GameInfo `json:"games"`
+		Games   []GameInfo      `json:"games"`
+		Authors []AuthorAliases `json:"authors"`
 	}
 	if err := json.Unmarshal(raw, &src); err != nil {
 		t.Fatal(err)
@@ -684,8 +685,8 @@ func TestBundledGamesAreTheSourcesGames(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(m.Games, src.Games) {
-		t.Fatal("internal/components/components.json's games differ from components.source.json's: edit the source and run wails3 task components:refresh")
+	if !reflect.DeepEqual(m.Games, src.Games) || !reflect.DeepEqual(m.Authors, src.Authors) {
+		t.Fatal("internal/components/components.json's games or authors differ from components.source.json's: edit the source and run wails3 task components:refresh")
 	}
 }
 

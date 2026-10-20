@@ -74,7 +74,7 @@ func run(ctx context.Context, o options) error {
 	if err != nil {
 		return err
 	}
-	manifest := components.Manifest{Serial: serial, Components: resolved, Games: source.Games}
+	manifest := components.Manifest{Serial: serial, Components: resolved, Games: source.Games, Authors: source.Authors}
 	if err := manifest.Validate(); err != nil {
 		return err
 	}

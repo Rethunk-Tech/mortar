@@ -18,24 +18,36 @@ func TestMergeSameFoldsHitsThatLinkEachOther(t *testing.T) {
 		{Source: "github", ID: "alice/cool", Name: "alice/cool", Author: "alice", Repo: "alice/cool", Installed: true},
 		{Source: "github", ID: "bob/other", Name: "other", Author: "bob", Repo: "bob/other"},
 	}
-	got := mergeSame(items, []string{"thunderstore", "nexus", "github"}, nil)
-	if len(got) != 3 {
+	got := mergeSame(items, []string{"thunderstore", "nexus", "github"}, nil, nil)
+	// Nexus's "Cool Mod" by Alice joins through name and author, GitHub's through the repository.
+	if len(got) != 2 {
 		t.Fatalf("cards = %+v", got)
 	}
-	card := got[1]
-	if card.Source != "thunderstore" || len(card.Alts) != 1 || card.Alts[0].Source != "github" || !card.Alts[0].Installed {
+	card := got[0]
+	if card.Source != "thunderstore" || len(card.Alts) != 2 || card.Alts[1].Source != "github" || !card.Alts[1].Installed {
 		t.Errorf("merged card = %+v", card)
 	}
 }
 
-func TestMergeSameNeverMergesOnNames(t *testing.T) {
+func TestMergeSameTiesANameOnlyThroughItsAuthor(t *testing.T) {
 	got := mergeSame([]Item{
-		{Source: "nexus", ID: "1", Name: "Radar Map", Author: "same"},
-		{Source: "github", ID: "x/radar-map", Name: "Radar Map", Author: "same"},
-		{Source: "thunderstore", ID: "A-RadarMap", Name: "RadarMap", Author: "A"},
-	}, []string{"thunderstore", "nexus", "github"}, nil)
-	if len(got) != 3 {
+		{Source: "thunderstore", ID: "notnotnotswipez-MoreCompany", Name: "MoreCompany", Author: "notnotnotswipez", Downloads: 27_000_000},
+		{Source: "nexus", ID: "1", Name: "More Company", Author: "Cyb3rdev", Downloads: 175_000},
+		{Source: "curseforge", ID: "2", Name: "Lethal Level Loader", Author: "IAmBatby"},
+		{Source: "thunderstore", ID: "IAmBatby-LethalLevelLoader", Name: "LethalLevelLoader", Author: "IAmBatby"},
+		{Source: "github", ID: "EvaisaDev/LethalLib", Name: "LethalLib", Author: "EvaisaDev"},
+		{Source: "thunderstore", ID: "Evaisa-LethalLib", Name: "LethalLib", Author: "Evaisa"},
+	}, []string{"thunderstore", "nexus", "curseforge", "github"}, nil,
+		aliasesOf([]components.AuthorAliases{{Names: []string{"Evaisa", "EvaisaDev"}}}))
+	cards := map[string]Item{}
+	for _, c := range got {
+		cards[c.Source+":"+c.Name] = c
+	}
+	if len(got) != 4 || len(cards["thunderstore:LethalLevelLoader"].Alts) != 1 || len(cards["thunderstore:LethalLib"].Alts) != 1 {
 		t.Fatalf("cards = %+v", got)
+	}
+	if cards["nexus:More Company"].ReuploadOf != "MoreCompany by notnotnotswipez" || cards["thunderstore:MoreCompany"].ReuploadOf != "" {
+		t.Errorf("re-upload marks = %+v", got)
 	}
 }
 
@@ -54,7 +66,7 @@ func TestMergeSameTiesHitsThatShareAPackageIdentity(t *testing.T) {
 		{Source: "github", ID: "pathoschild/cool", Name: "pathoschild/cool"},
 		{Source: "nexus", ID: "9", Name: "Cool"},
 		{Source: "github", ID: "nobody/unknown", Name: "Cool"},
-	}, []string{"nexus", "github"}, ident)
+	}, []string{"nexus", "github"}, ident, nil)
 	if len(got) != 3 || len(got[0].Alts) != 1 || got[0].Alts[0].ID != "pathoschild/cool" {
 		t.Fatalf("cards = %+v", got)
 	}
@@ -66,7 +78,7 @@ func TestMergeSameTiesBySummaryLinks(t *testing.T) {
 		{Source: "github", ID: "alice/cool-mod", Name: "other", Repo: "alice/cool-mod"},
 		{Source: "nexus", ID: "4", Name: "Another", Summary: "See https://thunderstore.io/c/lethal-company/p/Bob/Thing/"},
 		{Source: "thunderstore", ID: "Bob-Thing", Name: "Something"},
-	}, []string{"thunderstore", "nexus", "github"}, nil)
+	}, []string{"thunderstore", "nexus", "github"}, nil, nil)
 	if len(got) != 2 {
 		t.Fatalf("cards = %+v", got)
 	}
@@ -77,11 +89,11 @@ func TestSummaryLinksNeedTheRealHost(t *testing.T) {
 		"https://evilgithub.com/Alice/Cool-Mod", "https://github.com.evil.example/Alice/Cool-Mod", "github.com/Alice/Cool-Mod",
 		"https://notthunderstore.io/c/lethal-company/p/Bob/Thing/", "https://thunderstore.io.evil.example/c/x/p/Bob/Thing/",
 	} {
-		if got := keys(Item{Source: "nexus", ID: "1", Summary: summary}, nil); len(got) != 0 {
+		if got := keys(Item{Source: "nexus", ID: "1", Summary: summary}, nil, nil); len(got) != 0 {
 			t.Errorf("%s gave %v", summary, got)
 		}
 	}
-	if got := keys(Item{Source: "nexus", Summary: "at https://www.github.com/Alice/Cool-Mod and more"}, nil); len(got) != 1 || got[0] != "repo:alice/cool-mod" {
+	if got := keys(Item{Source: "nexus", Summary: "at https://www.github.com/Alice/Cool-Mod and more"}, nil, nil); len(got) != 1 || got[0] != "repo:alice/cool-mod" {
 		t.Errorf("www link gave %v", got)
 	}
 }
@@ -120,7 +132,7 @@ func TestCompatListTiesANexusAndAGitHubHitThroughTheirUniqueID(t *testing.T) {
 		{Source: "nexus", ID: "7", Name: "Cool"},
 		{Source: "github", ID: "Pathoschild/Cool", Name: "Pathoschild/Cool"},
 		{Source: "github", ID: "someone/else", Name: "Cool"},
-	}, []string{"nexus", "github"}, c.identity(t.Context()))
+	}, []string{"nexus", "github"}, c.identity(t.Context()), nil)
 	if len(got) != 2 || len(got[0].Alts) != 1 {
 		t.Fatalf("cards = %+v", got)
 	}
@@ -132,7 +144,7 @@ func TestKeysDropTheFullStopAfterAGitHubLink(t *testing.T) {
 		"See https://github.com/alice/cool-mod.git.",
 		"https://github.com/alice/cool-mod...",
 	} {
-		got := keys(Item{Summary: summary}, nil)
+		got := keys(Item{Summary: summary}, nil, nil)
 		if len(got) != 1 || got[0] != "repo:alice/cool-mod" {
 			t.Errorf("keys(%q) = %v", summary, got)
 		}
