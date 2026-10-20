@@ -72,7 +72,25 @@ const ld = [appLd(), ...(crumbs ? [breadcrumbLd(crumbs)] : []), ...jsonLd]
     <link rel="icon" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/img/icon-192.png" />
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <script is:inline defer data-domain="mortar.rethunk.tech" src="https://plausible.io/js/script.js"></script>
+    <script is:inline async src="https://plausible.io/js/pa-Q6uQ-Ve40xbXZhAAHIlnr.js"></script>
+    <!-- Plausible's queue: calls made before its script loads wait in plausible.q, and init's options in plausible.o. -->
+    <script is:inline>
+      {
+        const p =
+          globalThis.plausible ||
+          ((...args) => {
+            p.q = p.q || []
+            p.q.push(args)
+          })
+        p.init =
+          p.init ||
+          ((options) => {
+            p.o = options || {}
+          })
+        globalThis.plausible = p
+        p.init()
+      }
+    </script>
     <script is:inline>document.documentElement.classList.remove('no-js')</script>
     {ld.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o)} />)}
     <slot name="head" />
