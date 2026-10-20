@@ -1,6 +1,6 @@
 # GUI design
 
-The design system and screen rules for Mortar's UI. Read it before any UI change. The code in `frontend/src` is the record of every label, tooltip, menu entry and state: this doc gives the rules that apply everywhere, then per screen its purpose, structure and the rules a change could break. Concrete (`LethalModding/Concrete`, archived) is one reference for the look, not a template to copy.
+The design system and screen rules for Mortar's UI. Read it before any UI change. The code in `frontend/src` is the record of every label, tooltip, menu entry and state: this doc gives the rules that apply everywhere, then per screen its purpose, structure and the rules a change could break. Code paths are relative to `frontend/src`, except `e2e/`, which is `frontend/e2e`. Concrete (`LethalModding/Concrete`, archived) is one reference for the look, not a template to copy.
 
 ## Window
 
@@ -228,10 +228,10 @@ Every save in the Saves folder with its fit for the profile, as a list or a card
 Finds mods to add to the open profile; the shared header has no page actions here. Code: `browse/` (`BrowsePage.tsx`, `BrowseToolbar.tsx`, `BrowseFilters.tsx`, `BrowseShow.tsx`, `browseSort.ts`, `ResultCard.tsx`, `CardAction.tsx`, `cardState.ts`).
 
 - **Source:** **All sources** (when more than one is searchable) then a chip per source in catalog order. A gated source (itch.io without an API key) is disabled with its reason as the tooltip. With nothing typed every source lists its top mods, so the tab opens on results.
-- **Sort** offers best match and only the sorts the chosen source orders by on its own server, named for that source's metric (`browseSort.ts`). **All sources** offers best match, most downloaded and recently updated: the last two merge every source's page into one order, and a hit without a value (a GitHub repo has no download count) lands after those that have one. A sort the source does not offer falls back to best match.
+- **Sort** offers best match and only the sorts the chosen source orders by on its own server, named for that source's metric (`browseSort.ts`). **All sources** offers best match, most downloaded and recently updated: the last two rank every source's hits as one list, leaving out a source that cannot sort that way (GitHub under most downloaded) and naming it in the footer; best match interleaves each source's own page. A sort the source does not offer falls back to best match.
 - **Show** (filter-icon button, primary while any row is not Off): **Mods in this profile**, **Obsolete** and **Broken**, each **Off**, **Gray out** (dimmed, its action stays readable) or **Hide**, and Obsolete and Broken also **Flag** (a warning triangle before the name, in the warning colour or for broken the error colour, named in the title's accessible label; no outline); **Broken** is disabled with a tooltip when the game has no compatibility list.
 - **Results:** a card has a thumbnail read through the local picture cache, with the mark of the source Add installs from in its top-right corner, name, author (accent colour), two-line summary and stats line. In the grid the action sits under the picture, as wide as it; the card carries no open-page button (the page opens from its menu and details); list rows keep an open-page icon. Action labels stay short, each with its full sentence as tooltip and accessible name. A hit that may copy a better-downloaded mod of the same name by someone else says **Possibly a re-upload of … by …** under its author. A mod several sources list is one card with a mark per source that picks where it installs from: stacked in the picture's corner in the grid, a badge line under the stats in list rows.
-- **Footer bar** under the results, outside the scroll area: "N results", "· N hidden" for hits Show hid and "· <source> did not answer" for a failed source. More than 20 results page at the foot.
+- **Footer bar** under the results, outside the scroll area: "N results", "· N hidden" for hits Show hid "· <source> did not answer" for a failed source, and "· <source> can't sort this way" for one a ranked sort leaves out. More than 20 results page at the foot.
 - **Action** (`CardAction.tsx`, `cardState.ts`): Nexus **Download** for Premium (**Sign in** while signed out), **Get** (opens the files page) for a free account, **Add** on every other source; progress shows in place, then **Added**. The game's loader is not listed (Mortar installs it from the game's page, `applyModes`); a companion Mortar installs itself shows **Built in**.
 
 ## Problems tab
@@ -396,7 +396,7 @@ Each game runs its own setup when first opened from Game Select while not set up
 
 ## Settings
 
-Mortar's Settings holds only what is Mortar-wide, never one game's (the one exception is Downloads' default profile for Nexus links, labelled with its game). Per-game settings are the [Game settings](#game-settings) page. Code: `settings/SettingsPage.tsx`, `SettingsShell.tsx`, `SettingsNav.tsx`, `PrefRow.tsx`, `prefSpecs.ts`, `sections/` (one file per page); the registry is `internal/settings/registry.go`. Docs never state a setting's default; `mortar settings get` shows it.
+Mortar's Settings holds only what is Mortar-wide, never one game's (the one exception is Downloads' default profile for Nexus links, labelled with its game). Per-game settings are the [Game settings](#game-settings) page. Code: `settings/SettingsPage.tsx`, `SettingsShell.tsx`, `SettingsNav.tsx`, `PrefRow.tsx`, `prefSpecs.ts`, `sections/` (one file per page); the registry is `internal/settings/registry.go`.
 
 ### Layout
 

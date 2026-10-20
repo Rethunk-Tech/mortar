@@ -84,7 +84,7 @@ The extension is optional. It marks Nexus pages with what your profile already h
 
 ## Find and add mods
 
-**Browse** searches every site the game's mods come from at once (for Stardew Valley, Nexus Mods and GitHub). A mod several sites list is one card; its badge picks the site to install from, and **Preferred source** on the game's **Mods** page sets the default. The chips beside **All sources** narrow to one site.
+**Browse** searches every site the game's mods come from at once (for Stardew Valley, Nexus Mods, CurseForge and GitHub). A mod several sites list is one card; its badge picks the site to install from, and **Preferred source** on the game's **Mods** page sets the default. The chips beside **All sources** narrow to one site.
 
 1. Open **Browse**. With nothing typed, each site lists its top mods.
 2. Type a name; results update as you type.
@@ -101,7 +101,7 @@ The extension is optional. It marks Nexus pages with what your profile already h
 ### Narrow and sort the results
 
 - **Include categories** and **Exclude categories** filter by category; sites without categories (GitHub, or Nexus while signed out) turn them off.
-- **Sort** orders each site's results.
+- **Sort** orders the results. Under **All sources**, most downloaded and recently updated rank every site's results as one list; a site that cannot sort that way (GitHub has no download count) is left out and named under the results. Best match takes turns between sites, each in its own order.
 - **Show** has rows for **Mods in this profile**, **Obsolete** and **Broken**, each **Off**, **Gray out** or **Hide** (counted as "N hidden"); **Obsolete** and **Broken** can also **Flag** a mod with a warning mark before its name. **Broken** needs a compatibility list, which Stardew Valley has.
 
 Mods already in the profile show **Added**, whichever site they came from. A helper Mortar installs for a loader shows **Built in**.
@@ -139,7 +139,7 @@ The Config tab can search every config file in the profile and find a setting ac
 
 ## Lethal Company and Thunderstore
 
-Lethal Company's mods are Thunderstore packages on BepInEx. Mortar installs BepInEx, searches Thunderstore alongside Nexus Mods and GitHub, and **Add** installs a package with its dependencies. A dependency still missing is flagged on the Load order tab and in **Before you play**.
+Lethal Company's mods are Thunderstore packages on BepInEx. Mortar installs BepInEx, searches Thunderstore alongside Nexus Mods, CurseForge and GitHub, and **Add** installs a package with its dependencies. A dependency still missing is flagged on the Load order tab and in **Before you play**.
 
 - **Thunderstore links:** `ror2mm://` links (**Install with Mod Manager**) stay with your other manager until you turn on **Handle Thunderstore links** in Settings › Downloads (turn it off to hand them back). A link names no game, so it installs into the open game when that game has a Thunderstore community.
 - **CurseForge links:** turn on **Handle CurseForge links** in Settings › Downloads, or tick **Open CurseForge Install links with Mortar** on the Windows installer's last page. A mod for a managed game asks which profile it goes into; other games' links go back to the CurseForge app.
