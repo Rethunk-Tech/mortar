@@ -1,6 +1,6 @@
 # Security model
 
-What Mortar treats as untrusted input, the code that refuses it, and the test that fails if the guard goes. Reporting a vulnerability and verifying downloads: [SECURITY.md](../SECURITY.md). Paths are relative to `internal/` unless they start with `main.go`.
+What Mortar treats as untrusted input, the code that refuses it, and the test that fails if the guard goes. Reporting a vulnerability and verifying downloads: [SECURITY.md](../SECURITY.md). A path that names no top-level folder (`internal/`, `frontend/`, `web/`, `main.go`) is under `internal/`.
 
 Mortar runs as the signed-in user with no elevated component, so every guard protects the user's own files from a crafted download, pack, link, peer or page.
 

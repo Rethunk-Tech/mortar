@@ -32,7 +32,7 @@ Prerequisites (including the `wails3` CLI built from the pinned Wails fork), bui
 
 ## Features
 
-- Discovers the games in its catalog (Stardew Valley, Lethal Company, Valheim, Vintage Story, The Sims 4 and many Thunderstore games) on Steam (including Flatpak Steam), GOG, Epic Games, the EA app, the Xbox app, Heroic, Minigalaxy, Lutris and Bottles, and installs each game's mod loader.
+- Discovers the games in its catalog on Steam (including Flatpak Steam), GOG, Epic Games, the EA app, the Xbox app, Heroic, Minigalaxy, Lutris and Bottles, and installs each game's mod loader.
 - Keeps each set of mods in its own profile, with install, update, rollback and share as a link or `.mortar` file.
 - Downloads from Nexus Mods, Thunderstore, CurseForge, GitHub and the Vintage Story Mod DB for the games that list them, and records files saved from Patreon posts and itch.io pages; never re-hosts mod files.
 - Edits a mod's config as a typed form, can keep a profile's saves separate, and shares profiles between your computers through a sync folder.

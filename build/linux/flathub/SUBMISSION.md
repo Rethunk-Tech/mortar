@@ -23,8 +23,9 @@ Mortar
 tech.rethunk.Mortar
 
 ### Description
-Desktop mod manager for Stardew Valley (SMAPI, Nexus Mods). Finds the game, installs its mod loader, keeps each
-set of mods in a profile, launches the game with the chosen profile and shares a profile as a link.
+Desktop mod manager for several games (Stardew Valley, Lethal Company, Valheim, Vintage Story, The Sims 4 and many
+Thunderstore games). Finds the game, installs its mod loader, keeps each set of mods in a profile, launches the game
+with the chosen profile and shares a profile as a link.
 
 ### Homepage / source
 https://github.com/Rethunk-Tech/mortar (AGPL-3.0-only)
@@ -41,8 +42,9 @@ https://github.com/Rethunk-Tech/mortar (AGPL-3.0-only)
   org.freedesktop.Sdk.Extension.node24 and yarn's offline mirror (node-sources.json, from flatpak-node-generator;
   the project uses bun, so `yarn.lock` is bun's lock written in yarn's format). The Wails CLI is built from the
   same Go sources to generate the frontend's TypeScript bindings. No install scripts run.
-- finish-args: network (mod downloads), Wayland/X11 with ipc and DRI (WebKitGTK window), xdg-download (mod archives
-  the user downloads), /run/media and /mnt (game libraries on other drives), org.freedesktop.Notifications (download and run notices) and org.kde.StatusNotifierWatcher with
+- finish-args: network (mod downloads), Wayland/X11 with ipc and DRI (WebKitGTK window), input devices (controller
+  navigation), xdg-download (mod archives the user downloads), `~/GOG Games` and `~/Games/Heroic` (default GOG and
+  Heroic install folders), /run/media and /mnt (game libraries on other drives), org.freedesktop.Notifications (download and run notices) and org.kde.StatusNotifierWatcher with
   `org.kde.StatusNotifierItem-2-1` (the optional tray icon). Account keys are sealed with the Secret portal's key, launch at login uses the Background portal, and per-profile shortcuts the DynamicLauncher portal; the
   single-instance name is `tech.rethunk.Mortar.SingleInstance`, under the app id.
 

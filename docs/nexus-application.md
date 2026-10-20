@@ -2,7 +2,7 @@
 
 What Mortar sent Nexus Mods to register (emailed to support@nexusmods.com) and the facts behind it.
 
-## How Nexus handles this (researched 2026-10-04)
+## How Nexus handles this
 
 - API acceptable use policy ([help.nexusmods.com/article/114](https://help.nexusmods.com/article/114-api-acceptable-use-policy)): to register an app, email support@nexusmods.com with a testing build, then submit the name, description and logo and receive a "slug" for SSO. Requests must carry accurate `Application-Name` and `Application-Version` headers. It prohibits bulk fetching to rehost data, and storing users' keys on your own server or using them without the user initiating the action. It does not mention OAuth, redirect URIs or nxm://.
 - Original API announcement ([nexusmods.com/news/13921](https://www.nexusmods.com/news/13921)): contact the Community Managers to get an app approved; only approved apps can use SSO; users can still paste a personal API key.
@@ -39,11 +39,11 @@ Nexus's reply: the primary failing point is personal API keys, which must be rem
 
 OAuth2 authorization code with PKCE as a public client (no client secret on the user's machine), because Mortar is a desktop app. Redirect URI, scopes and token use are in the table above.
 
-- Today, until Nexus issues the client id, Mortar uses the user's personal API key, held in the OS keyring and sent only from the user's own machine, never to a Mortar server (Mortar has none).
+- A build without a client id signs in with the user's personal API key, held in the OS keyring and sent only from the user's own machine, never to a Mortar server (Mortar has none).
 
 ## What Mortar calls
 
-REST v1 (`https://api.nexusmods.com`): `users/validate.json`, `games/{game}.json`, `games/{game}/mods/{id}.json`, `mods/{id}/files.json`, `mods/{id}/changelogs.json`, `mods/{id}/files/{file}/download_link.json`, `mods/{id}/endorse.json`, `mods/{id}/abstain.json`, `user/tracked_mods.json`; and v2 GraphQL (`/v2/graphql`) for batched update checks. Game: `stardewvalley` only.
+REST v1 (`https://api.nexusmods.com`): `users/validate.json`, `games/{game}.json`, `games/{game}/mods/{id}.json`, `mods/{id}/files.json`, `mods/{id}/changelogs.json`, `mods/{id}/files/{file}/download_link.json`, `mods/{id}/endorse.json`, `mods/{id}/abstain.json`, `user/tracked_mods.json`; and v2 GraphQL (`/v2/graphql`) for batched update checks. Games: the Nexus domain of each catalog game that lists a Nexus source.
 
 ## How downloads start
 
@@ -68,20 +68,3 @@ User-Agent: Mortar/<app version>
 ## Data handling
 
 User API key/tokens stay in the OS keyring on the user's machine. Mortar runs no server and sends no Nexus data to any third party. Cached Nexus metadata is stored locally for the user's own use.
-
-## Short message to Nexus support (support@nexusmods.com)
-
-Subject: Application registration request: Mortar (Stardew Valley mod manager)
-
-Hello,
-
-I would like to register Mortar, an open-source desktop mod manager for Stardew Valley (https://github.com/Rethunk-Tech/mortar), under the API acceptable use policy. It currently uses users' personal API keys held in their OS keyring and sends accurate `Application-Name: Mortar`, `Application-Version` and `User-Agent: Mortar/<version>` headers; it tracks the X-RL rate-limit headers and stops before the limits are reached. Downloads start only from the Mod Manager Download button or a Premium download the user asked for.
-
-Could you tell me:
-1. Whether to register for legacy SSO (slug `mortar`) or an OAuth2 PKCE client, and how to get a client id.
-2. Whether a custom-scheme redirect `nxm://oauth/callback` is accepted for a desktop app, or a loopback redirect is required.
-3. The scopes available to a third-party client.
-4. What logo size and testing build you need.
-
-Thank you,
-Damon Blais (@Albinogeek)

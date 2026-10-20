@@ -119,7 +119,7 @@ MORTAR_UPDATE_KEY=/path/to/updater.key wails3 task release:manifest VERSION=1.2.
 3. The signed `manifest.json`, the rendered AUR `PKGBUILD` and `SRCINFO` (the release asset for `.SRCINFO`), the Flathub manifest and `SUBMISSION.md`, and the GitHub release with all of them.
 
 - **Notes** are user-facing: `build/release/notes.sh` keeps `feat`, `fix` and `perf` commits since the previous `v*` tag outside internal scopes, in sentence case, grouped New and Fixed by area (games, browsing, profiles and sharing, launching, problems, downloads, saves, interface), at most 15 lines each, with a changelog link.
-- **Immutable releases:** the release is created as a draft, every draft asset is downloaded and checked against the staged files and the manifest's digests (`build/release/verify.sh`), and only then published; a rerun finishes the existing draft. After publishing, `build/release/verify.sh --public` fetches the manifest, its assets, the pinned component assets and the newest components manifest without a token: a warning while the repo is private, a failure once public.
+- **Immutable releases:** the release is created as a draft, every draft asset is downloaded and checked against the staged files and the manifest's digests (`build/release/verify.sh`), and only then published; a rerun finishes the existing draft. After publishing, `build/release/verify.sh --public` fetches the manifest, its assets, the pinned component assets and the newest components manifest without a token: an unreachable URL fails the check when its repo is public and only warns when it is private.
 - **Dry run:** a manual dispatch (Actions › Release › Run workflow) runs both legs, the signed manifest, package-manager sources, the notes (in the run summary) and `build/release/verify.sh --staged` for `build/config.yml`'s version, with no GitHub release and no attestation. A tag run reads the caches a dispatch on `main` saved but cannot share its own, so the dry run warms them for the tag.
 - **Secret `MORTAR_UPDATE_KEY`** holds the private key file's PEM contents, not its path:
 
@@ -138,13 +138,13 @@ Per release:
 
 ### Flathub
 
-CI attaches a single-file `.flatpak` for sideloading, built by `build/linux/flatpak/tech.rethunk.Mortar.yml` from the CI binary; users get the Flatpak from Mortar's own repo at mortar.rethunk.tech/packages until Flathub approves it. The Flathub listing is a pending, separate submission that builds the tagged source.
+CI attaches a single-file `.flatpak` for sideloading, built by `build/linux/flatpak/tech.rethunk.Mortar.yml` from the CI binary; users get the Flatpak from Mortar's own repo at mortar.rethunk.tech/packages. The Flathub listing is a separate submission that builds the tagged source.
 
 - `build/linux/flathub/render.sh OUT_DIR` writes it. `tech.rethunk.Mortar.yml` is the sideload manifest's header and finish-args (the one list of permissions; `build/linux/flathub/render.test.ts` keeps the Flathub template free of its own) above `build/linux/flathub/tech.rethunk.Mortar.yml`'s modules, which build the wails3 CLI, the TypeScript bindings, the frontend (`vite build`; catalogs, credits and notices are committed) and Mortar with `-X main.packaged=flatpak`, inside the GNOME SDK with the Go and Node 24 SDK extensions and no network.
 - `go-sources.json` lists every proxy.golang.org file a clean amd64 and arm64 build reads, served by `GOPROXY=file://`. `node-sources.json` comes from [flatpak-node-generator](https://github.com/flatpak/flatpak-builder-tools/tree/master/node) over `yarn.lock` (bun's lock in yarn v1 format; the generator reads no bun lock).
 - Rendering needs network, Go, bun, jq and `uvx`. `--local` builds this checkout's HEAD instead of the tag, for `flatpak run org.flatpak.Builder` tests; the builder sees only home and `/var/tmp`, so test from a clone there.
 - Each release attaches the four files with a `flathub-` prefix and `flathub-SUBMISSION.md` (the PR text). To submit: meet the [Flathub app requirements](https://docs.flathub.org/docs/for-app-authors/requirements) (AppStream metainfo `tech.rethunk.Mortar.metainfo.xml`, 128×128 and 256×256 icons, screenshots, AGPL-3.0 license text; builds from source with no network, every dependency a manifest source with a public URL), fork [flathub/flathub](https://github.com/flathub/flathub), open a PR adding `tech.rethunk.Mortar`, then maintain the app repo Flathub creates.
-- finish-args grant: network, Wayland/X11 with ipc, DRI, native and Flatpak Steam libraries, read-only Heroic (`xdg-config/heroic`) and Lutris (`xdg-data/lutris`) configs, read-write Flatpak Lutris and Heroic app data, `~/GOG Games`, `~/Games/Heroic`, `xdg-download`, `/run/media` and `/mnt` (second-drive Steam libraries), and `org.freedesktop.Flatpak` (`flatpak-spawn --host` starts Steam and the game outside the sandbox). Launch at login and profile shortcuts use the Background and DynamicLauncher portals. The game-library paths and `flatpak-spawn` are the linter exceptions `SUBMISSION.md` requests.
+- finish-args (listed in `build/linux/flatpak/tech.rethunk.Mortar.yml`) cover the game libraries and launcher data Mortar manages, plus `org.freedesktop.Flatpak` (`flatpak-spawn --host` starts Steam and the game outside the sandbox). Launch at login and profile shortcuts use the Background and DynamicLauncher portals. The game-library paths and `flatpak-spawn` are the linter exceptions `SUBMISSION.md` requests.
 
 ### winget
 
@@ -175,7 +175,7 @@ wails3 task components:refresh
   gh api repos/Rethunk-Tech/mortar/dispatches -f event_type=components
   ```
 
-- The workflow writes the secret to a temporary file, runs the generator with `GOTMPDIR=/var/tmp TMPDIR=/var/tmp`, and creates a `components-v2-<serial>` release (not marked latest) holding `components.json` and `components.json.sig`, each published once (releases are immutable). Until `Rethunk-Tech/mortar-smapi-bridge` is public the generator fails with a 404 looking it up, since the workflow's token reads only this repo.
+- The workflow writes the secret to a temporary file, runs the generator with `GOTMPDIR=/var/tmp TMPDIR=/var/tmp`, and creates a `components-v2-<serial>` release (not marked latest) holding `components.json` and `components.json.sig`, each published once (releases are immutable). The workflow's token reads only this repo, so a component on a private repo fails the run with a 404.
 
 ## Adding a game
 
@@ -223,7 +223,7 @@ A game on a loader, store and sources Mortar already has needs no Go: `game.Find
 2. **Components.** A loader whose release Mortar installs (SMAPI) or a companion (the bridge) is a `components` entry with a GitHub source, an asset pattern and a version policy. BepInEx ships as a Thunderstore package and needs none.
 3. **Manifest.** Regenerate the embedded manifest ([Publishing components](#publishing-components)).
 4. **Check.** `go test ./internal/components ./internal/source/all` runs `GameInfo.Validate` and `TestEveryCatalogReferenceResolves`.
-5. **Try it.** `TestACatalogOnlyGameNeedsNoCode` (`internal/game`: a test-only Content Warning entry is selectable, found on Steam and given BepInEx) and `TestACatalogOnlyGameBrowsesAndAdds` (`internal/browse`) are the pattern: put the entry in a test manifest selected with `components.Use` (never the shipped catalog). In the sandbox, `MORTAR_ENABLE_GAMES=<id>` (the self-test sets `lethal-company`; `MORTAR_SELFTEST_ENABLE` overrides) switches on a game the bundled manifest lists as disabled, so the entry must be in `components.source.json` and the regenerated bundled manifest first. `scripts/selftest.sh` copies Stardew Valley, Lethal Company and Valheim (when installed) into its Steam library and `seed` fills profiles for the first two; a new game needs its app id and folder added to the script.
+5. **Try it.** `TestACatalogOnlyGameNeedsNoCode` (`internal/game`: a test-only Content Warning entry is selectable, found on Steam and given BepInEx) and `TestACatalogOnlyGameBrowsesAndAdds` (`internal/browse`) are the pattern: put the entry in a test manifest selected with `components.Use` (never the shipped catalog). In the sandbox, `MORTAR_ENABLE_GAMES=<id>` ([Run and build](#run-and-build)) switches on a game the bundled manifest lists as disabled, so the entry must be in `components.source.json` and the regenerated bundled manifest first. `scripts/selftest.sh` copies Stardew Valley, Lethal Company and Valheim (when installed) into its Steam library and `seed` fills profiles for the first two; a new game needs its app id and folder added to the script.
 6. **Enable.** Flip `enabled` to true and publish the manifest.
 
 ### Drivers
@@ -250,4 +250,4 @@ go test ./internal/source/all ./internal/components ./internal/gamestore ./inter
 scripts/selftest.sh start
 ```
 
-`scripts/selftest.sh` serves the sandbox at `http://127.0.0.1:$PORT` (default 9455); `setup` creates the Steam library only. It names Stardew Valley and Lethal Company itself (`APP_ID`, `LC_APP_ID`, `LC_FOLDER`, `seed_lc`); a new game needs the same before the sandbox holds a copy.
+`scripts/selftest.sh setup` creates the sandbox's Steam library only.
