@@ -88,7 +88,8 @@ const ld = [appLd(), ...(crumbs ? [breadcrumbLd(crumbs)] : []), ...jsonLd]
             p.o = options || {}
           })
         globalThis.plausible = p
-        p.init()
+        // Plausible reports location.href, and a share link carries the whole profile after the #.
+        p.init({ transformRequest: (request) => ({ ...request, u: request.u.split('#')[0] }) })
       }
     </script>
     <script is:inline>document.documentElement.classList.remove('no-js')</script>
