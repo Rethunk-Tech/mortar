@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -40,7 +41,7 @@ func TestRestoreReplacedPutsTheFileBackAndForgetsTheCachedCheck(t *testing.T) {
 	if err := s.RestoreReplaced(t.Context(), "lethal-company", id, "BepInEx/config/x.cfg"); err != nil {
 		t.Fatal(err)
 	}
-	if b, err := os.ReadFile(filepath.Join(dir, "BepInEx", "config", "x.cfg")); err != nil || string(b) != "old" {
+	if b, err := fsx.ReadFile(filepath.Join(dir, "BepInEx", "config", "x.cfg")); err != nil || string(b) != "old" {
 		t.Fatalf("restored file = %q, %v", b, err)
 	}
 	if _, err := os.Stat(kept); !os.IsNotExist(err) {
