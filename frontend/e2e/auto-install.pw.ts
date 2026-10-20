@@ -1,8 +1,8 @@
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, test } from '@playwright/test'
-import { openProfile } from './app.ts'
+import { openSeedFarm, switchProfile } from './app.ts'
 import { serverEnv } from './sandbox.ts'
 
 // A watched folder set to Auto-install lands in the open profile when its files change, and a rebuild replaces it.
@@ -46,7 +46,8 @@ test.afterAll(() => {
 })
 
 test('a build folder is added on change and replaced on rebuild', async ({ page }) => {
-  await openProfile(page, PROFILE)
+  await openSeedFarm(page)
+  await switchProfile(page, PROFILE)
   write('1.0.0')
   // The view switch shows once the profile holds a mod.
   await page.getByRole('button', { name: 'List view' }).click({ timeout: 15_000 })
@@ -56,20 +57,22 @@ test('a build folder is added on change and replaced on rebuild', async ({ page 
   write('1.0.1')
   await expect(rows.first()).toContainText('1.0.1', { timeout: 15_000 })
   await expect(rows).toHaveCount(1)
-  // A rebuild that keeps the version is still installed: a developer's next build rarely bumps it.
+  // A rebuild that keeps the version is still installed: a developer's next build rarely bumps it. The store keys a
+  // folder by its contents, so new bytes give the profile's entry a new key.
+  const before = buildKeys()
   write('1.0.1', 'second')
-  await expect.poll(installedDll, { timeout: 15_000 }).toBe('build second')
+  await expect
+    .poll(() => buildKeys().join() !== before.join() && buildKeys().length === 1, {
+      timeout: 15_000,
+    })
+    .toBe(true)
   await expect(rows).toHaveCount(1)
 })
 
-// The profile's copy of the build's assembly.
-function installedDll() {
-  const mods = `${env.XDG_DATA_HOME || `${env.HOME}/.local/share`}/mortar/profiles/stardew/${profileId}/mods`
-  for (const entry of readdirSync(mods)) {
-    const dll = `${mods}/${entry}/BuildPack.dll`
-    if (existsSync(dll)) {
-      return readFileSync(dll, 'utf8')
-    }
-  }
-  return ''
+// The keys of the profile's entries for the build, as the CLI lists them.
+function buildKeys(): string[] {
+  const mods: { name: string; key: string }[] = JSON.parse(
+    cli('--json', 'mods', 'stardew', PROFILE),
+  )
+  return mods.filter((m) => m.name === 'Build Pack').map((m) => m.key)
 }
