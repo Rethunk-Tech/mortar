@@ -3,7 +3,7 @@ import { Box, ButtonBase, Card, Typography } from '@mui/material'
 import { TriangleAlert } from 'lucide-react'
 import { type MouseEvent, memo, useState } from 'react'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
-import { hasSourceLogo, pictureMarkSx } from '../brand/sources/sourceIcons.ts'
+import { hasSourceLogo, PICTURE_MARK_PX, pictureMarkSx } from '../brand/sources/sourceIcons.ts'
 import { formatAuthors } from '../mods/authorNormalize.ts'
 import { FavouriteStar } from '../mods/FavouriteStar.tsx'
 import { favouriteKey } from '../mods/favourites.ts'
@@ -21,9 +21,6 @@ import { parseCardStats, useCardStats } from './stats.ts'
 import { useCardAction } from './useCardAction.tsx'
 
 // The source mark in the picture's corner is about a third of the picture, within what stays legible.
-const MARK_SHARE = 0.3
-const MARK_MIN_PX = 12
-const MARK_MAX_PX = 16
 
 const corner = { position: 'absolute', top: 2, right: 2 } as const
 
@@ -70,7 +67,7 @@ function CardPicture({
   if (!(logo || starKey)) {
     return image
   }
-  const mark = Math.min(MARK_MAX_PX, Math.max(MARK_MIN_PX, Math.round(size * MARK_SHARE)))
+  const mark = PICTURE_MARK_PX
   return (
     <Box
       sx={{

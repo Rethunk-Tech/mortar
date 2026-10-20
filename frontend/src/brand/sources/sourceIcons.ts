@@ -32,4 +32,7 @@ const pictureMarkSx = {
   border: '1px solid var(--mortar-hairline)',
 } as const
 
-export { hasSourceLogo, ICONS, pictureMarkSx }
+// Every mark on a mod's picture is this size, so a source logo and the favourite star match wherever they show.
+const PICTURE_MARK_PX = 16
+
+export { hasSourceLogo, ICONS, PICTURE_MARK_PX, pictureMarkSx }

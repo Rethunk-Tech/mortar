@@ -1,12 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
 import { IconButton } from '@mui/material'
 import { Star } from 'lucide-react'
-import { pictureMarkSx } from '../brand/sources/sourceIcons.ts'
+import { PICTURE_MARK_PX, pictureMarkSx } from '../brand/sources/sourceIcons.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { setStarred, useStarred } from './favourites.ts'
 
 const SIZE = 15
-const ON_PICTURE_SIZE = 12
 
 // The star on a mod: filled when the game stars the mod, a click toggles it. It is for a mod with a key (a site).
 // onPicture lays it over the top-left corner of the mod's picture.
@@ -43,14 +42,13 @@ export function FavouriteStar({
               left: 2,
               // Above a card title's click-anywhere overlay.
               zIndex: 2,
-              p: '2px',
               '&:hover': { bgcolor: 'var(--mortar-raised)', color: 'warning.main' },
             }
           : {}),
       }}
     >
       <Star
-        size={onPicture ? ON_PICTURE_SIZE : SIZE}
+        size={onPicture ? PICTURE_MARK_PX : SIZE}
         fill={on ? 'currentColor' : 'none'}
         aria-hidden={true}
       />

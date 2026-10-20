@@ -21,7 +21,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
-import { hasSourceLogo, pictureMarkSx } from '../brand/sources/sourceIcons.ts'
+import { hasSourceLogo, PICTURE_MARK_PX, pictureMarkSx } from '../brand/sources/sourceIcons.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { errorsLabel } from '../i18n/counts.ts'
 import { listNames } from '../i18n/list.ts'
@@ -63,7 +63,6 @@ const UINT32_RANGE = 2 ** UINT32_BITS
 const HUE_DEGREES = 360
 const TILE_FONT_RATIO = 0.5
 const DEFAULT_TILE_SIZE = 48
-const TILE_MARK_PX = 12
 const SMALL_TILE = 32
 
 function hash(s: string): number {
@@ -255,7 +254,7 @@ export function LetterTile({
           title={sourceLabel(source)}
           sx={{ ...pictureMarkSx, position: 'absolute', top: 2, right: 2 }}
         >
-          <SourceLogo id={source} size={TILE_MARK_PX} />
+          <SourceLogo id={source} size={PICTURE_MARK_PX} />
         </Box>
       ) : null}
       {starKey ? <FavouriteStar starKey={starKey} onPicture={true} /> : null}

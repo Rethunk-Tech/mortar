@@ -377,7 +377,7 @@ function ModRowView({ row, cols, locale, first, orderedRef, profile, onArrow }: 
         id === 'name'
           ? [
               <Cell key="tile">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <FavouriteStar starKey={entryFavouriteKey(entryOf(profile, m.key))} />
                   <LetterTile mod={m} size={26} fresh={fresh} />
                 </Box>

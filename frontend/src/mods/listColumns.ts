@@ -243,7 +243,7 @@ function listGridColumns(cols: readonly ListColumnId[]): string {
   for (const id of cols) {
     if (id === 'name') {
       // The favourite star, then the mod's 26px picture.
-      parts.push('50px')
+      parts.push('54px')
     }
     parts.push(LIST_COLUMN_WIDTH[id])
   }
