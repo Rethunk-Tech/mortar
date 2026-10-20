@@ -12,6 +12,7 @@ import { BrowseMenu } from './BrowseMenu.tsx'
 import { BrowseToolbar } from './BrowseToolbar.tsx'
 import { ALL, FIRST_PAGE, GITHUB, searchHint } from './browseConstants.ts'
 import { type BrowseModes, formatModes } from './browseModes.ts'
+import { savePicks } from './browsePicks.ts'
 import { PAGE_SIZE } from './browseState.ts'
 import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts'
 import { hitKey, stepSelection, useBrowseSelection } from './selection.ts'
@@ -79,7 +80,6 @@ function useBrowseHandlers(
   }: Pick<ReturnType<typeof useBrowseQuery>, 'setSource' | 'setText' | 'setPage'>,
 ) {
   const { t } = useLingui()
-  const setFilter = useBrowseView((s) => s.setFilter)
   const onSource = useCallback(
     (next: string) => {
       setSource(next)
@@ -96,10 +96,10 @@ function useBrowseHandlers(
   )
   const onFilter = useCallback(
     (next: BrowseFilter) => {
-      setFilter(game, next)
+      savePicks(game, next, t`Could not save that setting`)
       setPage(FIRST_PAGE)
     },
-    [setFilter, game, setPage],
+    [game, t, setPage],
   )
   const onModes = useCallback(
     (next: BrowseModes) => {

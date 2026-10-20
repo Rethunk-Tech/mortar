@@ -74,6 +74,9 @@ type GameSettings struct {
 	// BrowseFilters is Browse's "Show" choice for this game: space-separated row=mode pairs (installed, obsolete,
 	// broken; off, gray or hide).
 	BrowseFilters string `json:"browseFilters,omitempty"`
+	// BrowsePicks is the include and exclude categories and the sort the player chose in Browse for this game, as
+	// JSON; empty until the player first edits them, which is when the default excludes stop applying.
+	BrowsePicks string `json:"browsePicks,omitempty"`
 	// HiddenMods are the mods the player hid from Browse; they stay installable from links and imports.
 	HiddenMods []HiddenMod `json:"hiddenMods,omitempty"`
 	// FavouriteMods are the mods the player starred, as "source:id" keys in lower case; see FavouriteKey.
@@ -268,6 +271,7 @@ var registry = withDefaults([]pref{
 		putGame(s, g, gp)
 	}),
 	strPref("browseFilters", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).BrowseFilters }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BrowseFilters = v; putGame(s, g, gp) }),
+	strPref("browsePicks", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).BrowsePicks }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BrowsePicks = v; putGame(s, g, gp) }),
 	strPref("sourceOrder", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).SourceOrder }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SourceOrder = v; putGame(s, g, gp) }),
 	overridable(enumPref("gameSettingsMode", ScopeGame, gameSettingsModeValues, func(s Settings, g string) string { return s.GamePrefs(g).GameSettingsMode }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.GameSettingsMode = v; putGame(s, g, gp) })),
 	overridable(enumPref("cacheClearing", ScopeGame, cacheClearingValues, func(s Settings, g string) string { return s.GamePrefs(g).CacheClearing }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.CacheClearing = v; putGame(s, g, gp) })),
@@ -368,6 +372,9 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	}
 	if src.BrowseFilters != "" {
 		dst.BrowseFilters = src.BrowseFilters
+	}
+	if src.BrowsePicks != "" {
+		dst.BrowsePicks = src.BrowsePicks
 	}
 	if src.BackupBeforePlay != "" {
 		dst.BackupBeforePlay = src.BackupBeforePlay

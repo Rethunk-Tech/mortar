@@ -4,6 +4,7 @@ import { useLoaded } from '../shell/useLoaded.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { ALL, FIRST_PAGE } from './browseConstants.ts'
 import { parseModes } from './browseModes.ts'
+import { parsePicks } from './browsePicks.ts'
 import { effectiveSort, sortsFor } from './browseSort.ts'
 import { clampPage, PAGE_SIZE } from './browseState.ts'
 import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts'
@@ -41,7 +42,11 @@ function useBrowseQuery({
   sources,
   defaultExcludes,
 }: Pick<BrowsePageProps, 'game' | 'profileID' | 'search' | 'sources' | 'defaultExcludes'>) {
-  const chosenFilter = useBrowseView((s) => s.filters[game])
+  const savedPicks = useSettings((s) => s.games?.[game]?.browsePicks ?? '')
+  const chosenFilter = useMemo(() => {
+    const picks = parsePicks(savedPicks)
+    return picks ? { ...NO_FILTER, ...picks } : undefined
+  }, [savedPicks])
   const saved = useSettings((s) => s.games?.[game]?.browseFilters ?? '')
   const modes = useMemo(() => parseModes(saved), [saved])
   const [chosen, setSource] = useState(ALL)
