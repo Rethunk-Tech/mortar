@@ -1,4 +1,8 @@
+import { useEffect, useState } from 'react'
 import type { FileConflict } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { FileConflicts } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { reportUnexpected } from '../toasts/report.ts'
 
 /** The files one winner takes from the same set of mods, so a hundred shared files read as one row. */
 export interface ConflictGroup {
@@ -20,4 +24,21 @@ export function groupConflicts(conflicts: readonly FileConflict[]): ConflictGrou
     }
   }
   return [...groups.values()].toSorted((a, b) => b.paths.length - a.paths.length)
+}
+
+/** The open profile's package file conflicts, read again whenever the profile changes. */
+export function useFileConflicts(): ConflictGroup[] {
+  const game = useProfiles((s) => s.game?.id ?? '')
+  const open = useProfiles(openProfileOf)
+  const [groups, setGroups] = useState<ConflictGroup[]>([])
+  useEffect(() => {
+    if (!(game && open)) {
+      setGroups([])
+      return
+    }
+    FileConflicts(game, open.id)
+      .then((got) => setGroups(groupConflicts(got ?? [])))
+      .catch(reportUnexpected)
+  }, [game, open])
+  return groups
 }

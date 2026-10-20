@@ -8,7 +8,7 @@ export interface NestedBox {
   text: string
 }
 
-export async function nestedBoxes(page: Page): Promise<NestedBox[]> {
+export function nestedBoxes(page: Page): Promise<NestedBox[]> {
   return page.evaluate(() => {
     const Surface = '.MuiDialog-paper, .MuiPopover-paper, .MuiMenu-paper, .MuiTooltip-tooltip'
     const clear = (c: string) => c === 'rgba(0, 0, 0, 0)' || c === 'transparent'

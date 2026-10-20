@@ -1,36 +1,15 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
-import {
-  FileConflicts,
-  MakePackageWin,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { MakePackageWin } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { listNames } from '../i18n/list.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { type ConflictGroup, groupConflicts } from './fileConflicts.ts'
+import type { ConflictGroup } from './fileConflicts.ts'
 import { useMods } from './store.ts'
 
 const SHOWN_PATHS = 3
-
-/** The open profile's package file conflicts, read again whenever the profile changes. */
-export function useFileConflicts(): ConflictGroup[] {
-  const game = useProfiles((s) => s.game?.id ?? '')
-  const open = useProfiles(openProfileOf)
-  const [groups, setGroups] = useState<ConflictGroup[]>([])
-  useEffect(() => {
-    if (!(game && open)) {
-      setGroups([])
-      return
-    }
-    FileConflicts(game, open.id)
-      .then((got) => setGroups(groupConflicts(got ?? [])))
-      .catch(reportUnexpected)
-  }, [game, open])
-  return groups
-}
 
 function ConflictRow({ group }: { group: ConflictGroup }) {
   const { t, i18n } = useLingui()
@@ -38,6 +17,10 @@ function ConflictRow({ group }: { group: ConflictGroup }) {
   const name = (key: string) => mods.find((m) => m.key === key)?.name ?? key
   const files = group.paths.slice(0, SHOWN_PATHS).join(', ')
   const more = group.paths.length - SHOWN_PATHS
+  const fileList =
+    more > 0
+      ? t`${listNames(group.paths.slice(0, SHOWN_PATHS))} and ${{ count: more }} more`
+      : files
   const makeWin = (loser: string) => {
     const s = useProfiles.getState()
     const open = openProfileOf(s)
@@ -72,9 +55,7 @@ function ConflictRow({ group }: { group: ConflictGroup }) {
         title={group.paths.join('\n')}
         sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)', wordBreak: 'break-word' }}
       >
-        {more > 0
-          ? t`${listNames(group.paths.slice(0, SHOWN_PATHS))} and ${{ count: more }} more`
-          : files}
+        {fileList}
       </Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: space.gap }}>
         {group.beaten.map((loser) => {
