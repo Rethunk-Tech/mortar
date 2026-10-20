@@ -2,6 +2,12 @@
 import Page from '../../layouts/Page.astro'
 import { guideAnchors, guideIntro, guideSections } from '../../lib/guide.ts'
 
+const FIRST_TEXT = /<(?:p|li)>(.*?)<\/(?:p|li)>/s
+const TAG = /<[^>]+>/g
+const SPACE = /\s+/g
+// Each page's first sentence or line, as the card's summary.
+const summary = (html: string) =>
+  (FIRST_TEXT.exec(html)?.[1] ?? '').replace(TAG, '').replace(SPACE, ' ').trim()
 const sections = guideSections()
 ---
 
@@ -20,9 +26,10 @@ const sections = guideSections()
     {
       sections.map((s, i) => (
         <li>
-          <a class="tile-link" href={`/guide/${s.slug}/`}>
+          <a class="guide-card" href={`/guide/${s.slug}/`}>
             <span class="num">{String(i + 1).padStart(2, '0')}</span>
             <b set:html={s.title} />
+            <span class="sum">{summary(s.html)}</span>
           </a>
         </li>
       ))
@@ -46,17 +53,43 @@ const sections = guideSections()
     margin-bottom: 28px;
   }
   .guide-index {
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+    grid-auto-rows: 1fr;
   }
-  .guide-index .tile-link {
-    grid-template-columns: 40px 1fr;
-    align-items: center;
+  .guide-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 18px 20px 20px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--raised);
+    transition:
+      border-color 0.2s,
+      transform 0.2s;
   }
-  .guide-index .num {
-    grid-column: 1;
-    grid-row: 1;
+  .guide-card:hover {
+    border-color: var(--sand);
+    transform: translateY(-3px);
+  }
+  .guide-card .num {
     color: var(--sand);
+    font-size: 13px;
     font-weight: 800;
+    letter-spacing: 0.1em;
+  }
+  .guide-card b {
+    font-size: 18px;
+    line-height: 1.25;
+  }
+  .guide-card .sum {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    color: var(--dim);
     font-size: 15px;
   }
 </style>

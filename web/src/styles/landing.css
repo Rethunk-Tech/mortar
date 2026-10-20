@@ -33,10 +33,10 @@ h1.two {
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 5px 8px;
+  padding: 28px 8px 6px;
   font-size: 12px;
   font-weight: 700;
-  background: rgba(10, 10, 12, 0.8);
+  background: linear-gradient(to bottom, rgba(17, 17, 20, 0), rgba(17, 17, 20, 0.92) 55%);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -230,6 +230,7 @@ h1.words em > span:nth-child(3) {
   display: block;
   width: 100%;
   padding: 0;
+  border: 0;
   background: none;
   color: inherit;
   font: inherit;
@@ -274,7 +275,9 @@ h1.words em > span:nth-child(3) {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
+/* A span inside the demo's button, so it needs block display for its aspect ratio to give it height. */
 .loop {
+  display: block;
   position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
