@@ -82,19 +82,23 @@ function GameStrip({
         borderColor: current ? 'primary.main' : 'transparent',
         color: '#fff',
         bgcolor: 'var(--mortar-raised)',
-        backgroundImage: art ? `url("${art}")` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
         '&::before': {
           content: '""',
           position: 'absolute',
           inset: 0,
+          zIndex: 1,
           bgcolor: 'rgba(0, 0, 0, 0.58)',
         },
         '&:hover::before, &.Mui-focusVisible::before': { bgcolor: 'rgba(0, 0, 0, 0.42)' },
       }}
     >
-      <Box sx={{ position: 'relative', minWidth: 0 }}>
+      <Box
+        component={art ? 'img' : 'span'}
+        {...(art ? { src: art, alt: '', draggable: false } : {})}
+        aria-hidden={true}
+        sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+      />
+      <Box sx={{ position: 'relative', zIndex: 2, minWidth: 0 }}>
         <Typography noWrap={true} sx={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25 }}>
           {game.name}
         </Typography>
