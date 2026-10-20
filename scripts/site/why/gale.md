@@ -4,7 +4,7 @@ Gale is an open-source Thunderstore manager; Mortar reads its profiles. Use Mort
 
 | | Mortar | Gale |
 | --- | --- | --- |
-| Platforms | Windows, Linux, Steam Deck | Windows, Linux ([README](https://github.com/Kesomannen/gale)) |
+| Platforms | !win Windows, Linux, Steam Deck | Windows, Linux ([README](https://github.com/Kesomannen/gale)) |
 | Games | GAME_COUNT, including Stardew Valley, Vintage Story and The Sims 4 | GALE_COUNT Thunderstore games ([games.json](https://github.com/Kesomannen/gale/blob/master/src-tauri/games.json)) |
 | Mod sites | !win :nexus: :thunderstore: :curseforge: :github: :vsmoddb: | :thunderstore: :hexium: ([README](https://github.com/Kesomannen/gale)) |
 | Sharing | A link or a `.mortar` file; opens Gale and r2modman codes and files | Codes and files compatible with r2modman, modpack upload to Thunderstore ([Features](https://github.com/Kesomannen/gale/wiki/Features)) |

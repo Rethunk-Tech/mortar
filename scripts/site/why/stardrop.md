@@ -4,7 +4,7 @@ Stardrop is a Stardew Valley manager; Mortar reads its profiles. Use Mortar to s
 
 | | Mortar | Stardrop |
 | --- | --- | --- |
-| Platforms | Windows, Linux, Steam Deck | !win Windows, Linux, macOS ([STARDROP_RELEASE](https://github.com/Floogen/Stardrop/releases/latest)) |
+| Platforms | Windows, Linux, Steam Deck | Windows, Linux, macOS ([STARDROP_RELEASE](https://github.com/Floogen/Stardrop/releases/latest)) |
 | Games | GAME_COUNT | 1, Stardew Valley ([docs](https://floogen.gitbook.io/stardrop/what-is-stardrop)) |
 | SMAPI | !win Installed for you; updates offered | Must be installed first; updates offered ([docs](https://floogen.gitbook.io/stardrop/getting-started/installing-stardrop/linux)) |
 | Finding mods | !win Browse searches :nexus: :curseforge: :github: | Local archives, or Mod Manager Download on :nexus: ([docs](https://floogen.gitbook.io/stardrop/guides/using-stardrop/adding-a-mod)) |
