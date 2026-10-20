@@ -23,7 +23,7 @@ var portableFields = []string{
 	"density", "theme", "gridCardSize", "showAuthorOnCards", "centerConfigControls", "browseCardStats", "reduceMotion", "profileHero",
 	"reuseFomodChoices", "driftChecks",
 	"autoInstallMortarUpdates", "autoTrackNexus",
-	"lanSharing", "lanPort", "lanAllowAnyAddress", "lanName", "lanAutoAcceptPaired", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "packFolder",
+	"lanSharing", "lanPort", "lanAllowAnyAddress", "lanName", "lanAutoAcceptPaired", "downloadFolder", "watchFolders", "autoInstallFolders", "syncFolder", "vortexFolder", "packFolder",
 	"profileOrder", "autoRetryDownloads", "thunderstoreHost", "sidebarBadges",
 	"shareIncludeDisabledMods", "shareIncludeFomodChoices", "shareIncludeNotes", "shareIncludeConfigFiles", "shareIncludeProblemChoices", "shareIncludeLibraries",
 	"updateDigest", "verifyNexusMD5", "showAdultContent", "launchAtLogin", "startMinimised", "rememberWindow", "extensionConnection",

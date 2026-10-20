@@ -254,6 +254,11 @@ msgstr "List mods inside a folder whose name starts with a dot, which SMAPI skip
 msgid "{names} can't be reached, so Mortar can't check for mod updates"
 msgstr "{names} can't be reached, so Mortar can't check for mod updates"
 
+#. placeholder {0}: sets.length
+#: src/mods/OldFilesCallouts.tsx
+msgid "{0, plural, one {# updated mod} other {# updated mods}}"
+msgstr "{0, plural, one {# updated mod} other {# updated mods}}"
+
 #: src/mods/problemFix/FileConflictFix.tsx
 #: src/mods/problemFix/WinFix.tsx
 msgid "Make {name} win"
@@ -625,6 +630,10 @@ msgstr "Could not change mods"
 #: src/loader/Banner.tsx
 msgid "{0} here is another mod manager's copy, linked from {1}. Removing that manager removes {2}."
 msgstr "{0} here is another mod manager's copy, linked from {1}. Removing that manager removes {2}."
+
+#: src/settings/sections/WatchFolders.tsx
+msgid "Folder to watch"
+msgstr "Folder to watch"
 
 #: src/profiles/historyLabel.ts
 msgid "{count, plural, one {Moved # mod from the game's Mods folder} other {Moved # mods from the game's Mods folder}}"
@@ -1454,6 +1463,10 @@ msgstr "Could not add the update downloads"
 msgid "Could not publish the code"
 msgstr "Could not publish the code"
 
+#: src/mods/OldFilesCallouts.tsx
+msgid "{files, plural, one {# file} other {# files}}"
+msgstr "{files, plural, one {# file} other {# files}}"
+
 #: src/settings/sections/Accounts.tsx
 msgid "In use"
 msgstr "In use"
@@ -2094,6 +2107,10 @@ msgstr "Page"
 msgid "Running for {time}"
 msgstr "Running for {time}"
 
+#: src/downloads/autoInstall.ts
+msgid "Your build changed; it is added when the game stops"
+msgstr "Your build changed; it is added when the game stops"
+
 #: src/firstrun/ProfileStep.tsx
 #: src/games/AddGameDialog.tsx
 #: src/groups/dialogs.tsx
@@ -2185,10 +2202,6 @@ msgstr "SMAPI unofficial builds"
 #: src/settings/sections/DataUsage.tsx
 msgid "Usage"
 msgstr "Usage"
-
-#: src/settings/sections/WatchFolders.tsx
-msgid "Folder to watch for archives"
-msgstr "Folder to watch for archives"
 
 #: src/queue/QueueHistory.tsx
 msgid "Clears the list of past downloads; downloads in progress are unaffected. Failed items lose Retry until downloaded again."
@@ -3919,6 +3932,10 @@ msgstr "L{0}"
 msgid "Included"
 msgstr "Included"
 
+#: src/settings/sections/WatchFolders.tsx
+msgid "What to do with {dir}"
+msgstr "What to do with {dir}"
+
 #. placeholder {0}: reqs.length
 #: src/queue/actions.ts
 msgid "{0, plural, one {# download added} other {# downloads added}}"
@@ -4088,6 +4105,12 @@ msgstr "Stopped at the API limit; {0} left"
 #: src/settings/GameSettingsPage.tsx
 msgid "Console"
 msgstr "Console"
+
+#. placeholder {0}: plural(sets.length, { one: '# updated mod', other: '# updated mods' })
+#. placeholder {1}: plural(files, { one: '# file', other: '# files' })
+#: src/mods/OldFilesCallouts.tsx
+msgid "{0} no longer include {1} from their old versions. Keep them or delete them?"
+msgstr "{0} no longer include {1} from their old versions. Keep them or delete them?"
 
 #: src/profiles/MergeDialog.tsx
 msgid "{both, plural, one {# mod is in both} other {# mods are in both}}"
@@ -4947,6 +4970,10 @@ msgstr "{0, plural, one {Remove # mod} other {Remove # mods}}"
 #: src/console/ConsoleTab.tsx
 msgid "{0, plural, one {Show it} other {Show all # lines}}"
 msgstr "{0, plural, one {Show it} other {Show all # lines}}"
+
+#: src/settings/sections/WatchFolders.tsx
+msgid "Offer installs: new archives (.zip, .7z, .rar, .tar.gz and the like) that land in the folder are offered for install. Auto-install: the folder itself is installed into the open profile as one mod each time its files change, for a mod's build output; a rebuild replaces the last one. Subfolders are not watched."
+msgstr "Offer installs: new archives (.zip, .7z, .rar, .tar.gz and the like) that land in the folder are offered for install. Auto-install: the folder itself is installed into the open profile as one mod each time its files change, for a mod's build output; a rebuild replaces the last one. Subfolders are not watched."
 
 #: src/profiles/HistoryPanel.tsx
 msgid "Profile changes will appear here."
@@ -7599,6 +7626,11 @@ msgstr "Edited the settings of {name}"
 msgid "A folder of unpacked mods to add from the Add menu"
 msgstr "A folder of unpacked mods to add from the Add menu"
 
+#. placeholder {0}: plural(mods.length, { one: '# tracked mod on Nexus is not in this profile', other: '# tracked mods on Nexus are not in this profile', })
+#: src/mods/TrackedNotInProfile.tsx
+msgid "{0}"
+msgstr "{0}"
+
 #. placeholder {0}: e.name
 #: src/queue/QueueHistory.tsx
 msgid "Show {0} in its profile"
@@ -7929,6 +7961,10 @@ msgstr "Compatibility tool"
 #: src/settings/sections/NexusSSO.tsx
 msgid "Connecting…"
 msgstr "Connecting…"
+
+#: src/settings/sections/WatchFolders.tsx
+msgid "Auto-install"
+msgstr "Auto-install"
 
 #: src/mods/updateReview/UndoAllConfirm.tsx
 msgid "Undo all also reverts later changes"
@@ -11264,11 +11300,6 @@ msgstr "Nearby computers can't reach Mortar. Set the network to Private in Windo
 #: src/mods/SlowStartupSection.tsx
 msgid "Content Patcher packs"
 msgstr "Content Patcher packs"
-
-#. placeholder {0}: sets.length
-#: src/mods/OldFilesCallouts.tsx
-msgid "{0, plural, one {# updated mod} other {# updated mods}} no longer include {files, plural, one {# file} other {# files}} from their old versions. Keep them or delete them?"
-msgstr "{0, plural, one {# updated mod} other {# updated mods}} no longer include {files, plural, one {# file} other {# files}} from their old versions. Keep them or delete them?"
 
 #: src/saves/SaveGapLine.tsx
 msgid "Add the missing mods"
@@ -14918,10 +14949,6 @@ msgstr "{0} ({1})"
 msgid "Year {0} {1}"
 msgstr "Year {0} {1}"
 
-#: src/settings/sections/WatchFolders.tsx
-msgid "New archives (.zip, .7z, .rar, .tar.gz, .tar.xz, .tar.zst and the like) that land in them are offered for install. Subfolders are not watched."
-msgstr "New archives (.zip, .7z, .rar, .tar.gz, .tar.xz, .tar.zst and the like) that land in them are offered for install. Subfolders are not watched."
-
 #: src/profiles/ProfileRow.tsx
 msgid "{deployed} deployed"
 msgstr "{deployed} deployed"
@@ -15140,6 +15167,10 @@ msgstr "Checked {0}"
 #: src/launch/UpdateWarnDialog.tsx
 msgid "The game was updated"
 msgstr "The game was updated"
+
+#: src/settings/sections/WatchFolders.tsx
+msgid "Offer installs"
+msgstr "Offer installs"
 
 #: src/console/PerformanceComparison.tsx
 msgid "Before ms"

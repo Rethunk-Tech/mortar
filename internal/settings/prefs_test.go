@@ -122,7 +122,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"shareIncludeConfigFiles": "false", "shareIncludeProblemChoices": "false", "shareIncludeLibraries": "false", "verifyNexusMD5": "true", "launchAtLogin": "true",
 		"startMinimised": "true", "rememberWindow": "true", "extensionConnection": "off",
 		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep", "gameSettingsMode": "warn", "font": "Open Sans", "cacheClearing": "off", "dependencyVersions": "exact", "thunderstoreHost": "gcdn.thunderstore.io",
-		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "watchFolders": "/var/tmp/mortar-watch", "syncFolder": "/var/tmp/mortar-sync", "browseFilters": "installed=hide", "browsePicks": `{"include":["Maps"],"exclude":[],"sort":"downloads"}`, "showAdultContent": "true",
+		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "watchFolders": "/var/tmp/mortar-watch", "autoInstallFolders": "/var/tmp/mortar-build", "syncFolder": "/var/tmp/mortar-sync", "browseFilters": "installed=hide", "browsePicks": `{"include":["Maps"],"exclude":[],"sort":"downloads"}`, "showAdultContent": "true",
 		"keepInTray": "false", "includeBetaReleases": "false", "includePrereleaseModVersions": "true", "askEndorseMods": "true", "listColumns": "on,name,version",
 		"checkOnlyEnabledMods": "true", "enableModsWhenInstalled": "false", "tellWhenLoaderOut": "false",
 	}
@@ -276,6 +276,11 @@ func TestWatchedFoldersKeepsAbsoluteUniquePaths(t *testing.T) {
 	s := Settings{WatchFolders: strings.Join([]string{a, "rel", a, " " + b + " "}, string(os.PathListSeparator))}
 	if got := s.WatchedFolders(); !slices.Equal(got, []string{a, b}) {
 		t.Errorf("WatchedFolders = %v", got)
+	}
+	// A folder that auto-installs is not also offered from.
+	s.AutoInstallFolders = b
+	if got := s.WatchedFolders(); !slices.Equal(got, []string{a}) {
+		t.Errorf("WatchedFolders with %s auto-installing = %v", b, got)
 	}
 }
 

@@ -531,10 +531,20 @@ func (s Settings) AutoInstallMortar() bool {
 	return ToggleOn(s.AutoInstallMortarUpdates)
 }
 
-// WatchedFolders lists the extra archive folders: absolute paths only, each once.
+// WatchedFolders lists the extra archive folders: absolute paths only, each once, none that auto-installs.
 func (s Settings) WatchedFolders() []string {
+	auto := s.AutoInstalledFolders()
+	return slices.DeleteFunc(pathList(s.WatchFolders), func(d string) bool { return slices.Contains(auto, d) })
+}
+
+// AutoInstalledFolders lists the folders installed as a mod whenever they change: absolute paths only, each once.
+func (s Settings) AutoInstalledFolders() []string {
+	return pathList(s.AutoInstallFolders)
+}
+
+func pathList(joined string) []string {
 	var out []string
-	for _, d := range filepath.SplitList(s.WatchFolders) {
+	for _, d := range filepath.SplitList(joined) {
 		if d = strings.TrimSpace(d); filepath.IsAbs(d) && !slices.Contains(out, d) {
 			out = append(out, d)
 		}

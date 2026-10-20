@@ -62,6 +62,18 @@ func TestBurstFiresOnce(t *testing.T) {
 	}
 }
 
+// A build folder's event names the folder, so the window installs that one.
+func TestAutoInstallNamesItsFolder(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	g := start(t, func() []Target { return []Target{{AutoInstallEvent, "lethal-company", dir}} })
+	_ = os.WriteFile(filepath.Join(dir, "MyMod.dll"), []byte("x"), 0o600)
+	want := AutoInstallEvent + ":" + fmt.Sprint(AutoInstall{Game: "lethal-company", Dir: dir})
+	if evs := g.wait(t, 1); evs[0] != want {
+		t.Fatalf("events = %v, want %s", evs, want)
+	}
+}
+
 func TestMissingFolderFiresWhenItAppears(t *testing.T) {
 	t.Parallel()
 	dir := filepath.Join(t.TempDir(), "Mods")

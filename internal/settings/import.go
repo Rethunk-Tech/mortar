@@ -37,7 +37,7 @@ var sectionFields = map[string][]string{
 		"includePrereleaseModVersions", "checkOnlyEnabledMods", "enableModsWhenInstalled", "includeBetaReleases", "showAdultContent",
 		"autoInstallMortarUpdates", "backgroundBadgeChecks", "reuseFomodChoices", "driftChecks",
 	},
-	SectionStorage: {"keepDownloadArchives", "storeRetentionDays", "trashRetentionDays", "historyEventsKept", "downloadFolder", "watchFolders", "syncFolder", "vortexFolder", "packFolder"},
+	SectionStorage: {"keepDownloadArchives", "storeRetentionDays", "trashRetentionDays", "historyEventsKept", "downloadFolder", "watchFolders", "autoInstallFolders", "syncFolder", "vortexFolder", "packFolder"},
 	SectionSharing: {
 		"shareIncludeDisabledMods", "shareIncludeFomodChoices", "shareIncludeNotes", "shareIncludeConfigFiles", "shareIncludeProblemChoices",
 		"shareIncludeLibraries",

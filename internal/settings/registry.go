@@ -172,6 +172,7 @@ var registry = withDefaults([]pref{
 	vortexFolderPref(),
 	packFolderPref(),
 	strPref("watchFolders", ScopeApp, func(s Settings, _ string) string { return s.WatchFolders }, func(s *Settings, _, v string) { s.WatchFolders = v }),
+	strPref("autoInstallFolders", ScopeApp, func(s Settings, _ string) string { return s.AutoInstallFolders }, func(s *Settings, _, v string) { s.AutoInstallFolders = v }),
 	enumPref("profileOrder", ScopeApp, profileOrderValues, func(s Settings, _ string) string { return s.ProfileOrder }, func(s *Settings, _, v string) { s.ProfileOrder = v }),
 	enumPref("thunderstoreHost", ScopeApp, thunderstoreHostValues, func(s Settings, _ string) string { return s.ThunderstoreHost }, func(s *Settings, _, v string) { s.ThunderstoreHost = v }),
 	enumPref("autoRetryDownloads", ScopeApp, autoRetryValues, func(s Settings, _ string) string { return s.AutoRetryDownloads }, func(s *Settings, _, v string) { s.AutoRetryDownloads = v }),

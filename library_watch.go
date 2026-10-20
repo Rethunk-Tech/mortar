@@ -67,6 +67,9 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 				for _, dir := range downloadDirs(store, dataDir) {
 					out = append(out, folderwatch.Target{Event: folderwatch.DownloadsEvent, Game: id, Dir: dir})
 				}
+				for _, dir := range cur.AutoInstalledFolders() {
+					out = append(out, folderwatch.Target{Event: folderwatch.AutoInstallEvent, Game: id, Dir: dir})
+				}
 				if cur.SyncFolder != "" {
 					for _, g := range game.Implemented() {
 						out = append(out, folderwatch.Target{Event: syncsvc.FolderEvent, Game: g, Dir: filepath.Join(cur.SyncFolder, g)})

@@ -19,7 +19,22 @@ const (
 	ModsFolderEvent  = "library:mods-folder"
 	ExtraFolderEvent = "library:extra-folder"
 	DownloadsEvent   = "library:downloads"
+	AutoInstallEvent = "library:auto-install"
 )
+
+// AutoInstall is AutoInstallEvent's data: the folder that changed, so the window installs that one.
+type AutoInstall struct {
+	Game string `json:"game"`
+	Dir  string `json:"dir"`
+}
+
+// data is what an event carries: the game, or for a folder that auto-installs, the folder too.
+func (t Target) data() any {
+	if t.Event == AutoInstallEvent {
+		return AutoInstall{Game: t.Game, Dir: t.Dir}
+	}
+	return t.Game
+}
 
 // Target is one folder to watch; Event is emitted with Game after a burst of changes in it.
 type Target struct {
@@ -95,7 +110,7 @@ func Run(ctx context.Context, d Deps) error {
 			return
 		}
 		clear(a.writing)
-		d.Emit(a.t.Event, a.t.Game)
+		d.Emit(a.t.Event, a.t.data())
 	}
 	retarget := func() {
 		mu.Lock()
@@ -137,13 +152,14 @@ func Run(ctx context.Context, d Deps) error {
 			a.timer = time.AfterFunc(quiet, func() {
 				mu.Lock()
 				now := a.t
-				waits := now.Event == DownloadsEvent && len(a.writing) > 0
+				// A build still writing its output waits like a download does.
+				waits := (now.Event == DownloadsEvent || now.Event == AutoInstallEvent) && len(a.writing) > 0
 				mu.Unlock()
 				if waits {
 					settle(a)
 					return
 				}
-				d.Emit(now.Event, now.Game)
+				d.Emit(now.Event, now.data())
 			})
 			if !missing[dir] {
 				a.timer.Stop()

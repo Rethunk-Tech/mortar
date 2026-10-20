@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"path/filepath"
+	"slices"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
@@ -37,6 +38,15 @@ func (s *Service) InstallExtraFolderMod(ctx context.Context, game, id, folder st
 	}
 	if filepath.Dir(filepath.Clean(folder)) != filepath.Clean(root) || !datadir.RealDirUnder(resolved, folder) {
 		return InstallResult{}, errors.New("that folder is not in the extra mods folder")
+	}
+	return s.store.InstallFolder(ctx, game, id, folder)
+}
+
+// InstallBuildFolder installs folder, one of the folders set to auto-install, into the profile as one local mod; a
+// rebuild replaces the entry the previous install added, since both hold the same mods.
+func (s *Service) InstallBuildFolder(ctx context.Context, game, id, folder string) (InstallResult, error) {
+	if !slices.Contains(s.settings.Get().AutoInstalledFolders(), folder) {
+		return InstallResult{}, errors.New("that folder is not set to auto-install")
 	}
 	return s.store.InstallFolder(ctx, game, id, folder)
 }

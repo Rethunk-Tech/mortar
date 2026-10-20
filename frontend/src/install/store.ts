@@ -11,6 +11,7 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   InstallArchive,
+  InstallBuildFolder,
   InstallExtraFolderMod,
   InstallRemap,
   RemoveEntry,
@@ -332,6 +333,7 @@ export const useInstall = create<{
   install: (paths: string[]) => Promise<void>
   installDownloads: (files: { path: string; mtime: number }[]) => Promise<void>
   installFromExtraFolder: (folders: string[]) => Promise<void>
+  installFromBuildFolder: (folder: string) => Promise<void>
   pick: () => Promise<void>
 }>((set, get) => ({
   pending: 0,
@@ -383,6 +385,13 @@ export const useInstall = create<{
       folders,
       set,
       (game, profile, folder) => () => InstallExtraFolderMod(game, profile, folder),
+      false,
+    ),
+  installFromBuildFolder: (folder) =>
+    runInstalls(
+      [folder],
+      set,
+      (game, profile, dir) => () => InstallBuildFolder(game, profile, dir),
       false,
     ),
   pick: async () => {
