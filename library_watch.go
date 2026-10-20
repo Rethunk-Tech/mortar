@@ -73,9 +73,9 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 				for _, dir := range cur.AutoInstalledFolders() {
 					out = append(out, folderwatch.Target{Event: folderwatch.AutoInstallEvent, Game: id, Dir: dir})
 				}
-				if cur.SyncFolder != "" {
-					for _, g := range game.Implemented() {
-						out = append(out, folderwatch.Target{Event: syncsvc.FolderEvent, Game: g, Dir: filepath.Join(cur.SyncFolder, g)})
+				for _, g := range game.Implemented() {
+					if dir := cur.SyncFolderFor(g); dir != "" {
+						out = append(out, folderwatch.Target{Event: syncsvc.FolderEvent, Game: g, Dir: filepath.Join(dir, g)})
 					}
 				}
 				// A game that names its own mods folder (a folder game) has it filled by Mortar for each launch, and the

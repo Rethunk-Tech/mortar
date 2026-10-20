@@ -782,7 +782,7 @@ func run() error {
 	})
 	syncSvc, err := syncsvc.New(syncsvc.Deps{
 		Source: syncsvc.NewSource(profiles, shareSvc),
-		Folder: func() string { return store.Get().SyncFolder },
+		Folder: func(game string) string { return store.Get().SyncFolderFor(game) },
 		Dir:    dataDir, Quiet: 5 * time.Second, Stall: syncScan, Emit: emit,
 	})
 	if err != nil {

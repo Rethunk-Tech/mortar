@@ -56,7 +56,7 @@ func (m *modMachine) edit(id string, mods ...int) {
 func newModMachine(t *testing.T, folder, name string, clock *time.Time) (*Service, *modMachine) {
 	t.Helper()
 	m := &modMachine{machine: &machine{profiles: map[string]string{}, updated: map[string]time.Time{}, names: map[string]string{}, clock: clock}, mods: map[string][]int{}, fail: map[int]bool{}}
-	s, err := New(Deps{Source: m, Folder: func() string { return folder }, Dir: t.TempDir(), Machine: name})
+	s, err := New(Deps{Source: m, Folder: func(string) string { return folder }, Dir: t.TempDir(), Machine: name})
 	if err != nil {
 		t.Fatal(err)
 	}

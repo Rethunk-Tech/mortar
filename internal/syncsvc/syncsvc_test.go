@@ -63,7 +63,7 @@ func (m *machine) Apply(_ context.Context, _, id string, payload []byte) error {
 func newMachine(t *testing.T, folder, name string, clock *time.Time) (*Service, *machine) {
 	t.Helper()
 	m := &machine{profiles: map[string]string{}, updated: map[string]time.Time{}, names: map[string]string{}, clock: clock}
-	s, err := New(Deps{Source: m, Folder: func() string { return folder }, Dir: t.TempDir(), Machine: name})
+	s, err := New(Deps{Source: m, Folder: func(string) string { return folder }, Dir: t.TempDir(), Machine: name})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -279,5 +279,20 @@ func TestAVersionFileAheadOfItsPayloadShowsAsStalled(t *testing.T) {
 	copyFile(fa, fb, "main.mortar")
 	if offers := scan(t, b); len(offers) != 1 || len(b.Stalled()) != 0 {
 		t.Fatalf("once the payload arrives: offers %+v, stalled %+v", offers, b.Stalled())
+	}
+}
+
+func TestGameWithoutFolderIsNotSynced(t *testing.T) {
+	folder := t.TempDir()
+	clock := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	m := &machine{profiles: map[string]string{}, updated: map[string]time.Time{}, names: map[string]string{}, clock: &clock}
+	s, err := New(Deps{Source: m, Folder: func(string) string { return "" }, Dir: t.TempDir(), Machine: "Desktop"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	m.set("main", "v1")
+	scan(t, s)
+	if _, err := os.Stat(filepath.Join(folder, "stardew")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("stat = %v", err)
 	}
 }

@@ -32,6 +32,10 @@ msgstr "Performance"
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
+#: src/game/ProfileMenu.tsx
+msgid "Open profile folder"
+msgstr "Open profile folder"
+
 #: src/browse/ResultCard.tsx
 msgid "Possibly a re-upload of {reuploadOf}"
 msgstr "Possibly a re-upload of {reuploadOf}"
@@ -126,6 +130,7 @@ msgid "Failed ({0})"
 msgstr "Failed ({0})"
 
 #: src/profiles/CompareTop.tsx
+#: src/settings/sections/GameSync.tsx
 #: src/settings/sections/SyncFolder.tsx
 msgid "Choose…"
 msgstr "Choose…"
@@ -905,6 +910,10 @@ msgstr "Could not change the details"
 #: src/sync/store.ts
 msgid "{0} was changed on {1} and here"
 msgstr "{0} was changed on {1} and here"
+
+#: src/settings/sections/SyncFolder.tsx
+msgid "Profile settings, mod lists and configs are written here and offered to other machines using the same folder (through Syncthing, Dropbox or a NAS). Mod files are not copied; each machine downloads them from their sources. Each game syncs into its own subfolder, and a game can use a folder of its own or turn sync off in its settings."
+msgstr "Profile settings, mod lists and configs are written here and offered to other machines using the same folder (through Syncthing, Dropbox or a NAS). Mod files are not copied; each machine downloads them from their sources. Each game syncs into its own subfolder, and a game can use a folder of its own or turn sync off in its settings."
 
 #: src/settings/prefCopy.ts
 msgid "How timestamps are shown"
@@ -2914,6 +2923,10 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 msgid "Undo"
 msgstr "Undo"
 
+#: src/settings/sections/GameSync.tsx
+msgid "No folder chosen"
+msgstr "No folder chosen"
+
 #: src/game/BackupMenuItems.tsx
 msgid "Mods a site can download again are left out; restoring downloads them."
 msgstr "Mods a site can download again are left out; restoring downloads them."
@@ -4759,6 +4772,10 @@ msgstr "Use update source"
 msgid "Reported by {0}"
 msgstr "Reported by {0}"
 
+#: src/settings/prefCopyGame.ts
+msgid "This game's folder"
+msgstr "This game's folder"
+
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyAntivirus.ts
 #: src/settings/sections/Downloads.tsx
@@ -5380,6 +5397,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/sections/Downloads.tsx
 #: src/settings/sections/ExtraModsFolders.tsx
 #: src/settings/sections/GameSettings.tsx
+#: src/settings/sections/GameSync.tsx
 #: src/settings/sections/General.tsx
 #: src/settings/sections/HiddenMods.tsx
 #: src/settings/sections/LoaderRow.tsx
@@ -6266,10 +6284,6 @@ msgstr "How this Mortar appears to nearby installations"
 #: src/console/ConsoleTab.tsx
 msgid "Filter by level or mod, and use Share log to upload this run to smapi.io."
 msgstr "Filter by level or mod, and use Share log to upload this run to smapi.io."
-
-#: src/settings/sections/SyncFolder.tsx
-msgid "Profile settings, mod lists and configs are written here and offered to other machines using the same folder (through Syncthing, Dropbox or a NAS). Mod files are not copied; each machine downloads them from their sources. Off by default."
-msgstr "Profile settings, mod lists and configs are written here and offered to other machines using the same folder (through Syncthing, Dropbox or a NAS). Mod files are not copied; each machine downloads them from their sources. Off by default."
 
 #: src/mods/problemText.ts
 msgid "Duplicate plugins"
@@ -8055,6 +8069,10 @@ msgstr "Every archive in the downloads folder is already in a profile or Mortar'
 #: src/queue/QueueHistory.tsx
 msgid "Clear download history?"
 msgstr "Clear download history?"
+
+#: src/settings/prefCopyGame.ts
+msgid "Do not sync this game's profiles."
+msgstr "Do not sync this game's profiles."
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Other cached data"
@@ -10621,6 +10639,10 @@ msgstr "Other games"
 msgid "Could not rename the group"
 msgstr "Could not rename the group"
 
+#: src/settings/prefCopyGame.ts
+msgid "Where this game's profiles are shared between your computers"
+msgstr "Where this game's profiles are shared between your computers"
+
 #: src/launch/VanillaPlay.tsx
 msgid "Play with"
 msgstr "Play with"
@@ -11245,6 +11267,10 @@ msgstr "Use my normal settings"
 #: src/settings/prefCopy.ts
 msgid "Hide to tray"
 msgstr "Hide to tray"
+
+#: src/settings/prefCopyGame.ts
+msgid "Use the sync folder set under Mods and profiles, if any."
+msgstr "Use the sync folder set under Mods and profiles, if any."
 
 #: src/console/HelpDialog.tsx
 msgid "Log link"
@@ -12014,6 +12040,11 @@ msgstr "{count, plural, one {Try my Mortar profile \"{0}\" for {gameName} (# mod
 msgid "Delete the selected items?"
 msgstr "Delete the selected items?"
 
+#: src/settings/prefCopyGame.ts
+#: src/settings/sections/GameSync.tsx
+msgid "Sync folder for this game"
+msgstr "Sync folder for this game"
+
 #. placeholder {0}: item.name
 #: src/queue/store.ts
 msgid "Could not download {0}"
@@ -12031,6 +12062,10 @@ msgstr "Empty trash"
 #: src/lan/SendPanel.tsx
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
+
+#: src/settings/prefCopyGame.ts
+msgid "Sync into a folder chosen for this game alone."
+msgstr "Sync into a folder chosen for this game alone."
 
 #: src/profiles/store.ts
 msgid "Could not restore the profile"
@@ -14229,6 +14264,10 @@ msgstr "Could not update tags for the selected mods"
 msgid "Continue"
 msgstr "Continue"
 
+#: src/settings/prefCopyGame.ts
+msgid "Profile sync"
+msgstr "Profile sync"
+
 #: src/browse/BrowseDetails.tsx
 #: src/mods/ModDependencyTree.tsx
 #: src/mods/NexusDetails.tsx
@@ -14289,6 +14328,10 @@ msgstr "Could not undo: some mods are missing, and the change's record could not
 #: src/settings/prefCopyGame.ts
 msgid "Start the game without the Before you play dialog"
 msgstr "Start the game without the Before you play dialog"
+
+#: src/settings/prefCopyGame.ts
+msgid "Mortar-wide folder"
+msgstr "Mortar-wide folder"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Display"
@@ -15454,6 +15497,10 @@ msgstr "{0} of {1} requests left · resets {2}"
 #: src/settings/shortcutLabels.ts
 msgid "Focus the previous mod"
 msgstr "Focus the previous mod"
+
+#: src/settings/prefCopyGame.ts
+msgid "The folder this game's profiles sync into"
+msgstr "The folder this game's profiles sync into"
 
 #: src/mods/listRows.ts
 msgid "Nexus Mods, file unknown"

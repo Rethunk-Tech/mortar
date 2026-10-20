@@ -63,8 +63,8 @@ type Source interface {
 // Deps wires the service to the app.
 type Deps struct {
 	Source Source
-	// Folder is the sync folder; empty turns sync off.
-	Folder func() string
+	// Folder is the sync folder for a game; empty turns sync off for it.
+	Folder func(game string) string
 	// Dir holds this machine's sync state.
 	Dir string
 	// Machine is the name other machines see; empty uses the host name.
@@ -280,18 +280,16 @@ func (s *Service) Offers() []Offer {
 func (s *Service) Scan(ctx context.Context) ([]Offer, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	folder := s.d.Folder()
-	if folder == "" {
-		s.offers, s.stalled, s.lagging = nil, nil, nil
-		s.announceStalled()
-		return []Offer{}, nil
-	}
 	var offers []Offer
 	var errs []error
 	known := map[string]bool{}
 	lagSeen := map[string]bool{}
 	s.stalled = nil
 	for _, game := range s.d.Source.Games() {
+		folder := s.d.Folder(game)
+		if folder == "" {
+			continue
+		}
 		refs, err := s.d.Source.Profiles(game)
 		if err != nil {
 			errs = append(errs, err)
@@ -487,7 +485,7 @@ var errNotArrived = errors.New("the other machine's change has not fully arrived
 func (s *Service) Resolve(ctx context.Context, game, remote, revision, choice string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	folder := s.d.Folder()
+	folder := s.d.Folder(game)
 	o, ok := s.find(game, remote)
 	if folder == "" || !ok {
 		return usererr.New(usererr.NotFound, "that change is no longer waiting")
@@ -574,7 +572,7 @@ func (s *Service) ref(game, id string) (Ref, error) {
 func (s *Service) Diff(ctx context.Context, game, remote string) (Diff, error) {
 	s.mu.Lock()
 	o, ok := s.find(game, remote)
-	folder := s.d.Folder()
+	folder := s.d.Folder(game)
 	s.mu.Unlock()
 	if !ok {
 		return Diff{}, usererr.New(usererr.NotFound, "that change is no longer waiting")

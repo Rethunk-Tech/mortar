@@ -301,7 +301,7 @@ The bell in the title bar (Ctrl+Shift+N) opens **Notifications**. **New** holds 
 
 A sync folder shares each profile's mod list, sources, settings and mod config files between your computers through a folder another tool carries (Syncthing, Dropbox, a NAS). Mod files are never copied; each computer downloads them from their sources.
 
-1. On each computer open **Settings › Mods and profiles**, find **Sync folder**, choose **Choose…** and pick the folder your sync tool keeps in step.
+1. On each computer open **Settings › Mods and profiles**, find **Sync folder**, choose **Choose…** and pick the folder your sync tool keeps in step. Each game syncs into its own subfolder; in a game's settings, **Profile sync** can give that game a folder of its own or turn sync off for it.
 2. Work as usual; a few seconds after a profile stops changing, Mortar writes it into the folder.
 3. On another computer a toast says **\<profile\> was changed on \<computer\>**. **Review** opens **Changes from your other machines**: **Show diff**, **Apply** (make your profile match), **Keep mine** (overwrite the other revision) or **Later**.
 4. If both computers changed the same profile, Mortar never merges: pick **Use theirs** or **Keep mine**.

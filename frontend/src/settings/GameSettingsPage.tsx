@@ -24,6 +24,7 @@ import { SettingsSection } from './SettingsSection.tsx'
 import { SettingsShell, type ShellPage } from './SettingsShell.tsx'
 import { HistoryUsageRows } from './sections/DataHistory.tsx'
 import { DismissedFolders } from './sections/DismissedFolders.tsx'
+import { GameSync } from './sections/GameSync.tsx'
 import { ExtraModsFolders } from './sections/ExtraModsFolders.tsx'
 import { BackupsPage, GameFolder, LoaderPage } from './sections/GameSettings.tsx'
 import { HiddenMods } from './sections/HiddenMods.tsx'
@@ -149,6 +150,7 @@ function GamePages({
             <SettingsSection title={t`Mods`}>
               <PrefKeys keys={modsPrefKeys(info, loader)} game={game} />
               <ExtraModsFolders />
+              <GameSync />
               <SourceOrder />
               <HiddenMods />
             </SettingsSection>

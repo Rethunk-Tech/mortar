@@ -106,6 +106,10 @@ const (
 	CacheClearingAuto = "auto"
 	CacheClearingOff  = "off"
 
+	SyncFollow = "follow"
+	SyncOwn    = "own"
+	SyncOff    = "off"
+
 	DependencyNewest = "newest"
 	DependencyExact  = "exact"
 
@@ -466,6 +470,7 @@ var (
 	oldFilesValues            = []string{OldFilesAsk, OldFilesDelete, OldFilesKeep}
 	gameSettingsModeValues    = []string{GameSettingsEdit, GameSettingsWarn}
 	cacheClearingValues       = []string{CacheClearingAuto, CacheClearingOff}
+	syncModeValues            = []string{SyncFollow, SyncOwn, SyncOff}
 	dependencyVersionValues   = []string{DependencyNewest, DependencyExact}
 )
 
@@ -540,6 +545,18 @@ func (s Settings) WatchedFolders() []string {
 // AutoInstalledFolders lists the folders installed as a mod whenever they change: absolute paths only, each once.
 func (s Settings) AutoInstalledFolders() []string {
 	return pathList(s.AutoInstallFolders)
+}
+
+// SyncFolderFor is the folder the game's profiles sync into; empty means sync is off for the game.
+func (s Settings) SyncFolderFor(game string) string {
+	g := s.GamePrefs(game)
+	switch g.SyncMode {
+	case SyncOwn:
+		return g.SyncOwnFolder
+	case SyncOff:
+		return ""
+	}
+	return s.SyncFolder
 }
 
 // ExtraModsFolderList lists the game's extra mods folders: absolute paths only, each once.

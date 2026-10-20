@@ -62,6 +62,31 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
         },
       ],
     },
+    syncMode: {
+      label: i18n._(msg`Profile sync`),
+      description: i18n._(msg`Where this game's profiles are shared between your computers`),
+      options: [
+        {
+          value: 'follow',
+          label: i18n._(msg`Mortar-wide folder`),
+          hint: i18n._(msg`Use the sync folder set under Mods and profiles, if any.`),
+        },
+        {
+          value: 'own',
+          label: i18n._(msg`This game's folder`),
+          hint: i18n._(msg`Sync into a folder chosen for this game alone.`),
+        },
+        {
+          value: 'off',
+          label: i18n._(msg`Off`),
+          hint: i18n._(msg`Do not sync this game's profiles.`),
+        },
+      ],
+    },
+    syncOwnFolder: {
+      label: i18n._(msg`Sync folder for this game`),
+      description: i18n._(msg`The folder this game's profiles sync into`),
+    },
     oldFilesOnUpdate: {
       label: i18n._(msg`Files an update no longer includes`),
       description: i18n._(msg`What happens to files the new version of a mod leaves out`),

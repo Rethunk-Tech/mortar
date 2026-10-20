@@ -124,7 +124,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep", "gameSettingsMode": "warn", "font": "Open Sans", "cacheClearing": "off", "dependencyVersions": "exact", "thunderstoreHost": "gcdn.thunderstore.io",
 		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "watchFolders": "/var/tmp/mortar-watch", "autoInstallFolders": "/var/tmp/mortar-build", "syncFolder": "/var/tmp/mortar-sync", "browseFilters": "installed=hide", "browsePicks": `{"include":["Maps"],"exclude":[],"sort":"downloads"}`, "showAdultContent": "true",
 		"keepInTray": "false", "includeBetaReleases": "false", "includePrereleaseModVersions": "true", "askEndorseMods": "true", "listColumns": "on,name,version",
-		"checkOnlyEnabledMods": "true", "enableModsWhenInstalled": "false", "tellWhenLoaderOut": "false",
+		"checkOnlyEnabledMods": "true", "enableModsWhenInstalled": "false", "tellWhenLoaderOut": "false", "syncMode": "own", "syncOwnFolder": "/var/tmp/mortar-sync-own",
 	}
 	vortex := filepath.Join(t.TempDir(), "Vortex")
 	if err := os.MkdirAll(filepath.Join(vortex, "state.v2"), 0o750); err != nil {
@@ -482,5 +482,21 @@ func TestStarringAModIsPerGameAndUndoable(t *testing.T) {
 	}
 	if len(st.Get().GamePrefs("a").FavouriteMods) != 0 {
 		t.Fatal("still starred")
+	}
+}
+
+func TestSyncFolderForFollowsOwnOrOff(t *testing.T) {
+	s := Defaults()
+	s.SyncFolder = "/sync"
+	for mode, want := range map[string]string{SyncFollow: "/sync", SyncOwn: "/own", SyncOff: ""} {
+		gp := s.GamePrefs("a")
+		gp.SyncMode, gp.SyncOwnFolder = mode, "/own"
+		putGame(&s, "a", gp)
+		if got := s.SyncFolderFor("a"); got != want {
+			t.Errorf("%s = %q, want %q", mode, got, want)
+		}
+	}
+	if got := s.SyncFolderFor("b"); got != "/sync" {
+		t.Errorf("untouched game = %q", got)
 	}
 }

@@ -69,6 +69,9 @@ type GameSettings struct {
 	GameSettingsMode   string `json:"gameSettingsMode,omitempty"`
 	CacheClearing      string `json:"cacheClearing,omitempty"`
 	DependencyVersions string `json:"dependencyVersions,omitempty"`
+	// SyncMode is whether the game's profiles sync into the Mortar-wide sync folder, into SyncOwnFolder, or not at all.
+	SyncMode      string `json:"syncMode,omitempty"`
+	SyncOwnFolder string `json:"syncOwnFolder,omitempty"`
 	// SourceOrder is the comma-separated source ids the player prefers, first first; sources it omits follow in
 	// catalog order.
 	SourceOrder string `json:"sourceOrder,omitempty"`
@@ -278,6 +281,8 @@ var registry = withDefaults([]pref{
 	overridable(enumPref("gameSettingsMode", ScopeGame, gameSettingsModeValues, func(s Settings, g string) string { return s.GamePrefs(g).GameSettingsMode }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.GameSettingsMode = v; putGame(s, g, gp) })),
 	overridable(enumPref("cacheClearing", ScopeGame, cacheClearingValues, func(s Settings, g string) string { return s.GamePrefs(g).CacheClearing }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.CacheClearing = v; putGame(s, g, gp) })),
 	overridable(enumPref("dependencyVersions", ScopeGame, dependencyVersionValues, func(s Settings, g string) string { return s.GamePrefs(g).DependencyVersions }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.DependencyVersions = v; putGame(s, g, gp) })),
+	enumPref("syncMode", ScopeGame, syncModeValues, func(s Settings, g string) string { return s.GamePrefs(g).SyncMode }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SyncMode = v; putGame(s, g, gp) }),
+	strPref("syncOwnFolder", ScopeGame, func(s Settings, g string) string { return s.GamePrefs(g).SyncOwnFolder }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.SyncOwnFolder = v; putGame(s, g, gp) }),
 	enumPref("oldFilesOnUpdate", ScopeGame, oldFilesValues, func(s Settings, g string) string { return s.GamePrefs(g).OldFilesOnUpdate }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.OldFilesOnUpdate = v; putGame(s, g, gp) }),
 })
 
@@ -340,6 +345,7 @@ func defaultGameSettings() GameSettings {
 		GameSettingsMode:            GameSettingsEdit,
 		CacheClearing:               CacheClearingAuto,
 		DependencyVersions:          DependencyNewest,
+		SyncMode:                    SyncFollow,
 	}
 }
 
@@ -462,6 +468,10 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	if src.DependencyVersions != "" {
 		dst.DependencyVersions = src.DependencyVersions
 	}
+	if src.SyncMode != "" {
+		dst.SyncMode = src.SyncMode
+	}
+	dst.SyncOwnFolder = src.SyncOwnFolder
 }
 
 func normalizeGame(id string, g *GameSettings) {
@@ -532,6 +542,9 @@ func normalizeGame(id string, g *GameSettings) {
 	if !slices.Contains(dependencyVersionValues, g.DependencyVersions) {
 		g.DependencyVersions = d.DependencyVersions
 	}
+	if !slices.Contains(syncModeValues, g.SyncMode) {
+		g.SyncMode = d.SyncMode
+	}
 	if !slices.Contains(gameSettingsModeValues, g.GameSettingsMode) {
 		g.GameSettingsMode = d.GameSettingsMode
 	}
@@ -585,6 +598,9 @@ func validateGame(g GameSettings) error {
 	}
 	if !slices.Contains(cacheClearingValues, g.CacheClearing) {
 		return fmt.Errorf("cache clearing must be auto or off, got %q", g.CacheClearing)
+	}
+	if !slices.Contains(syncModeValues, g.SyncMode) {
+		return fmt.Errorf("sync mode must be follow, own or off, got %q", g.SyncMode)
 	}
 	if !slices.Contains(dependencyVersionValues, g.DependencyVersions) {
 		return fmt.Errorf("dependency versions must be newest or exact, got %q", g.DependencyVersions)
