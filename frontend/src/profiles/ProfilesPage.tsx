@@ -291,7 +291,8 @@ const ProfilesHeader = memo(function ProfilesHeaderView({
 }: {
   game: string
   onBack: () => void
-  onCreate: () => void
+  // Left out while the list is empty: the empty state offers New profile itself.
+  onCreate: (() => void) | undefined
 }) {
   const { t } = useLingui()
   const importMenuId = useId()
@@ -356,14 +357,16 @@ const ProfilesHeader = memo(function ProfilesHeaderView({
         ))}
       </Menu>
       {dialogs}
-      <Button
-        variant="contained"
-        startIcon={<Plus size={16} />}
-        onClick={onCreate}
-        sx={{ height: 40, px: space.pad, fontSize: 14 }}
-      >
-        {t`New profile…`}
-      </Button>
+      {onCreate ? (
+        <Button
+          variant="contained"
+          startIcon={<Plus size={16} />}
+          onClick={onCreate}
+          sx={{ height: 40, px: space.pad, fontSize: 14 }}
+        >
+          {t`New profile…`}
+        </Button>
+      ) : null}
     </Box>
   )
 })
@@ -414,7 +417,11 @@ export function ProfilesPage() {
   }
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <ProfilesHeader game={game} onBack={closeProfiles} onCreate={openCreate} />
+      <ProfilesHeader
+        game={game}
+        onBack={closeProfiles}
+        onCreate={profiles.length === 0 && damaged.length === 0 ? undefined : openCreate}
+      />
       <FindModSearch profiles={profiles} />
       <Box
         sx={{

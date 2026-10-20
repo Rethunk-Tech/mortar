@@ -428,6 +428,7 @@ export function StreamOverlay({ game }: { game: string }) {
     <SettingsSection title={t`Stream overlay`}>
       <SettingRow
         label={t`Stream overlay`}
+        hideTitle={true}
         description={t`Show live game info in OBS. Changes apply the next time you press Play.`}
       >
         <PrefSwitch

@@ -177,8 +177,7 @@ function GameFolder({
     setError(null)
     run.then(onRefresh).catch((e: unknown) => setError(inlineError(e)))
   }
-  const runtimeVersion = installs.find((i) => i.dir === folder)?.runtimeVersion
-  const gameVersion = installs.find((i) => i.dir === folder)?.version
+  const install = installs.find((i) => i.dir === folder)
   const known = storeName(store)
   const foundIn = known ? t(known) : t`Steam`
   let source = t`${gameName} was not found. Browse to its folder.`
@@ -192,6 +191,7 @@ function GameFolder({
       <SettingsSection title={t`Game folder`}>
         <SettingRow
           label={t`Game folder`}
+          hideTitle={true}
           description={`${folder || t`Not found`} · ${source}${versionNote}`}
         >
           <Box sx={{ display: 'flex', gap: space.gap }}>
@@ -215,20 +215,22 @@ function GameFolder({
             ) : null}
           </Box>
         </SettingRow>
-        {gameVersion ? (
+        {install?.version ? (
           <SettingRow
-            label={STEAM_BUILD.test(gameVersion) ? t`Steam build` : t`Game version`}
+            label={STEAM_BUILD.test(install.version) ? t`Steam build` : t`Game version`}
             description={t`Read from the game's install.`}
           >
-            <Box sx={{ fontSize: 14, color: 'var(--mortar-ink-sec)' }}>{gameVersion}</Box>
+            <Box sx={{ fontSize: 14, color: 'var(--mortar-ink-sec)' }}>{install.version}</Box>
           </SettingRow>
         ) : null}
-        {runtimeVersion ? (
+        {install?.runtimeVersion ? (
           <SettingRow
             label={t`Compatibility tool`}
             description={t`Chosen in the game's Steam properties.`}
           >
-            <Box sx={{ fontSize: 14, color: 'var(--mortar-ink-sec)' }}>{runtimeVersion}</Box>
+            <Box sx={{ fontSize: 14, color: 'var(--mortar-ink-sec)' }}>
+              {install.runtimeVersion}
+            </Box>
           </SettingRow>
         ) : null}
         {error ? (
