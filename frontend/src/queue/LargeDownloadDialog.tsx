@@ -57,9 +57,11 @@ export function LargeDownloadDialog() {
         ) : null}
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap' }}>
+        <Button autoFocus={true} onClick={cancel}>
+          {t`Cancel`}
+        </Button>
         <Button
-          variant="outlined"
-          color="error"
+          variant="contained"
           onClick={() => {
             if (item) {
               Promise.resolve(ConfirmLarge(item.id)).catch(reportUnexpected)
@@ -67,9 +69,6 @@ export function LargeDownloadDialog() {
           }}
         >
           {t`Continue anyway`}
-        </Button>
-        <Button variant="contained" autoFocus={true} onClick={cancel}>
-          {t`Cancel`}
         </Button>
       </DialogActions>
     </Dialog>

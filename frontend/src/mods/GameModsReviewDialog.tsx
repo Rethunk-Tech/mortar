@@ -214,7 +214,6 @@ export function GameModsReviewDialog({
             </Button>
             <LockedReason locked={locked}>
               <Button
-                variant="outlined"
                 disabled={busy || locked || chosen.length === 0}
                 onClick={() => sync(true)}
               >
