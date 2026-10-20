@@ -36,7 +36,9 @@ export function modsViewPrefs(i18n: I18n): Record<string, PrefCopy> {
     },
     centerConfigControls: {
       label: i18n._(msg`Centre config controls`),
-      description: i18n._(msg`On a wide window, each config setting's control sits mid-row, nearer its name`),
+      description: i18n._(
+        msg`On a wide window, each config setting's control sits mid-row, nearer its name`,
+      ),
     },
     listGroupBy: {
       label: i18n._(msg`Default grouping`),
