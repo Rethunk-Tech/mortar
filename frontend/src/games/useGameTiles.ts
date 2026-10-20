@@ -2,10 +2,13 @@ import { useLingui } from '@lingui/react/macro'
 import { useCallback, useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import {
+  List,
+  ProfileCounts,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { Get } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { gameSetupNeeded } from '../firstrun/needed.ts'
+import { setupNeeded } from '../firstrun/needed.ts'
 import { useRefreshOnFocus } from '../firstrun/useRefreshOnFocus.ts'
 import { useLoader } from '../loader/store.ts'
 import { isGameId } from '../nav/store.ts'
@@ -43,14 +46,14 @@ function useGameTiles() {
   }, [checkLoader, loaderGame])
   const refresh = useCallback(() => {
     setLoadError(null)
-    Promise.all([loadGameStatus(), Get()])
-      .then(async ([s, settings]) => {
+    Promise.all([loadGameStatus(), Get(), ProfileCounts()])
+      .then(async ([s, settings, counts]) => {
         const entries = await Promise.all(
           s.games
             .filter((g) => g.available)
             .map(async (g): Promise<[string, GameState]> => {
-              const [listed, setupNeeded] = await Promise.all([List(g.id), gameSetupNeeded(g)])
-              const profiles = listed ?? []
+              // Most of the catalog has no profiles: one count for every game, and a listing only where there are some.
+              const profiles = (counts?.[g.id] ?? 0) > 0 ? ((await List(g.id)) ?? []) : []
               const played = settings.lastPlayed?.[g.id]
               const still = Boolean(
                 played?.profile && profiles.some((p) => p.id === played.profile),
@@ -59,7 +62,7 @@ function useGameTiles() {
                 g.id,
                 {
                   profiles,
-                  setupNeeded,
+                  setupNeeded: setupNeeded(g, profiles.length),
                   lastPlayedId: still && played ? played.profile : '',
                   lastPlayedAt: still && played ? played.at : '',
                   lastPlayed: still && played ? played : undefined,
