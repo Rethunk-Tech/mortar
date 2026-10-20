@@ -25,6 +25,7 @@ import { rememberLanProfile } from '../lan/resume.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
+import { warnUnmoderated } from '../queue/unmoderated.ts'
 import { errorMessage, reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { beginWork } from '../toasts/usePending.ts'
@@ -276,6 +277,11 @@ export function useImportFlow(
     try {
       const session = preview?.session ?? ''
       const skip = [...excluded]
+      // A share can bring mods from a site nobody moderates; the first download from it is warned about here too.
+      const sites = (preview?.mods ?? []).filter((m) => !excluded.has(m.key)).map((m) => m.site)
+      if (!(await warnUnmoderated(sites))) {
+        return
+      }
       const result = replace
         ? await Replace(game, session, profileId, skip)
         : await Import(game, session, intoOpen ? profileId : '', skip)
