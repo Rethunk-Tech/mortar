@@ -77,7 +77,7 @@ In the downloads panel, **Pause** stops one download and keeps what it has fetch
 
 ## Browser extension
 
-Optional: it marks Nexus pages with what your profile already has and sends Mod Manager Download clicks to Mortar. **Settings › Downloads** has a **Download the extension** button for `mortar-browser-extension.zip` from its [releases](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest), and says **The browser extension is too old for this Mortar** (or too new) when versions drift.
+The extension is optional. It marks Nexus pages with what your profile already has and sends Mod Manager Download clicks to Mortar. **Settings › Downloads** has a **Download the extension** button for `mortar-browser-extension.zip` from its [releases](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest), and says **The browser extension is too old for this Mortar** (or too new) when versions drift.
 
 - **Chrome, Edge, other Chromium:** unzip, open `chrome://extensions`, turn on Developer mode, choose **Load unpacked** and pick the folder.
 - **Firefox:** open `mortar-browser-extension.xpi` from the latest release in Firefox, or drop it on `about:addons`. Mozilla signs it, so it stays installed. Without an `.xpi`, use the zip: `about:debugging`, **This Firefox**, **Load Temporary Add-on**, pick `manifest.json` (removed when Firefox restarts).
@@ -185,7 +185,7 @@ A profile is one set of mods. Switching profiles never touches the game folder's
 - **Why each mod is there:** a mod you add is **Explicit**; one added because another needs it is **Implicit**. Group the Mods list by **Install reason**, and right-click a mod to mark it either way.
 - **Switch, rename, duplicate, delete:** from the Profiles page or the profile's menu. Play always starts the open profile. Deleted profiles wait in **Recently deleted** (**Restore**, **Delete permanently**).
 - **Freeze:** the profile menu's **Freeze this profile** holds its mods on their versions and offers no updates until **Unfreeze**.
-- **A game that is not listed:** the game list's **Add a game…** takes a name, the game's program and how it is modded (BepInEx 5, BepInEx 6, MelonLoader, Shimloader or a Mods folder). It stays on this computer and has no mod site, so add its mods from archives; a Shimloader game (an Unreal Engine game such as Voices of the Void, whose program to choose is the one in `Binaries/Win64`) also names its Thunderstore community, and its mods come from there; **Remove** in the same dialog forgets it and leaves its folder and profiles on disk.
+- **A game that is not listed:** the game list's **Add a game…** takes a name, the game's program and how it is modded (BepInEx 5, BepInEx 6, MelonLoader, Shimloader or a Mods folder). It stays on this computer and has no mod site, so add its mods from archives. A Shimloader game (an Unreal Engine game such as Voices of the Void, whose program to choose is the one in `Binaries/Win64`) also names its Thunderstore community, and its mods come from there. **Remove** in the same dialog forgets it and leaves its folder and profiles on disk.
 - **Profile folder:** the profile menu's **Profile folder…** moves a profile to a folder of your choice, such as one on another drive, and back. The move copies the profile first and checks nothing is running; a profile whose drive is not connected says so there. On another drive its mods are copies instead of links into the shared store.
 - **Share:** **Share profile**, then **Copy link** (names the mods and their Nexus or GitHub files, with pins, groups and install reasons) or save a `.mortar` file (also carries settings and notes; suits large profiles). **Share › Mod list** can also write a Thunderstore dependency string list. For a Thunderstore game, **Save .r2z…** writes an r2modman or Gale profile file without posting a public code.
 - **Import:** **Import** on the Profiles page: **From a link or file…**, **From the game's Mods folder…**, **Restore from a file…** (a **Back up to a file…** backup or an older profile zip) or **Import…**. Mortar shows what the profile holds, then installs or queues what is missing.
@@ -279,7 +279,7 @@ On Windows, a mod's file whose full path, where the game reads it, is 260 charac
 
 #### Files two packages ship
 
-Two enabled packages ship a file at the same path, and the one later in the package order replaces the other's copy. The row names the winner, the packages it beats and the files. **Make … win** moves a beaten package to just after the winner. This is information, not a count.
+Two enabled packages ship a file at the same path, and the one later in the package order replaces the other's copy. The row names the winner, the packages it beats and the files. **Make … win** moves a beaten package to just after the winner. These rows are for information and are not counted as problems.
 
 #### Plugins shipped twice
 
