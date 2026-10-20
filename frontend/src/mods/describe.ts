@@ -272,8 +272,8 @@ function ranWhere(thrown: string, patchedBy: readonly string[]): string {
   }
   const mods = listNames(patchedBy)
   return plural(patchedBy.length, {
-    one: `It was thrown in ${thrown}, which ${mods} also patches.`,
-    other: `It was thrown in ${thrown}, which ${mods} also patch.`,
+    one: `It was thrown in ${thrown}; ${mods} also patches code on that path.`,
+    other: `It was thrown in ${thrown}; ${mods} also patch code on that path.`,
   })
 }
 

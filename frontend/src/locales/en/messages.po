@@ -7096,6 +7096,11 @@ msgstr "Create"
 msgid "Console level"
 msgstr "Console level"
 
+#. placeholder {0}: patchedBy.length
+#: src/mods/describe.ts
+msgid "{0, plural, one {It was thrown in {thrown}; {mods} also patches code on that path.} other {It was thrown in {thrown}; {mods} also patch code on that path.}}"
+msgstr "{0, plural, one {It was thrown in {thrown}; {mods} also patches code on that path.} other {It was thrown in {thrown}; {mods} also patch code on that path.}}"
+
 #: src/settings/sections/StreamOverlay.tsx
 msgid "All values"
 msgstr "All values"
@@ -13263,11 +13268,6 @@ msgstr "Clear search"
 #: src/console/PerformancePanel.tsx
 msgid "Start the game, then start measuring here to time each mod's event handlers per frame."
 msgstr "Start the game, then start measuring here to time each mod's event handlers per frame."
-
-#. placeholder {0}: patchedBy.length
-#: src/mods/describe.ts
-msgid "{0, plural, one {It was thrown in {thrown}, which {mods} also patches.} other {It was thrown in {thrown}, which {mods} also patch.}}"
-msgstr "{0, plural, one {It was thrown in {thrown}, which {mods} also patches.} other {It was thrown in {thrown}, which {mods} also patch.}}"
 
 #: src/mods/describe.ts
 msgid "{name} is obsolete: {summary}"

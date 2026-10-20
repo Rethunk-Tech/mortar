@@ -40,7 +40,7 @@ test('a ran error names where it was thrown and the other mods that patch it', (
   expect(
     describeLoadFailure({ ...ran, thrown: 'OccludeAudio.Update', patchedBy: ['A', 'B'] }),
   ).toBe(
-    'ModsEnabled loaded and logged an error while running. It was thrown in OccludeAudio.Update, which A and B also patch.',
+    'ModsEnabled loaded and logged an error while running. It was thrown in OccludeAudio.Update; A and B also patch code on that path.',
   )
   expect(describeLoadFailure({ ...ran, thrown: 'OccludeAudio.Update' })).toBe(
     'ModsEnabled loaded and logged an error while running. It was thrown in OccludeAudio.Update.',
