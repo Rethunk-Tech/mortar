@@ -1,6 +1,6 @@
-# PEAK: research for the sixth catalog game
+# PEAK: research
 
-Co-op climbing game on the BepInEx 5 path. Ids read 2026-10-09 from the named source.
+Co-op climbing game on the BepInEx 5 path. Ids come from the named source.
 
 - **Discovery:** Steam app `3527290` (Steam's store search API; r2modman's ecosystem schema agrees). Executable `PEAK.exe`, Steam folder `PEAK`. Windows-only, so Proton on Linux. Hero art is Steam's `library_hero.jpg`, which answers 200.
 - **Loader:** the community's own pack `BepInEx-BepInExPack_PEAK` 5.4.75301 (Thunderstore API; the only BepInExPack in the `peak` community), holding `BepInExPack_PEAK/winhttp.dll`, `doorstop_config.ini` and `.doorstop_version` 4.4.1.

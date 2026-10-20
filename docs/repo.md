@@ -1,6 +1,6 @@
-# R.E.P.O.: research for the fourth catalog game
+# R.E.P.O.: research
 
-Unity co-op game on the BepInEx 5 path, the nearest relative of Lethal Company. Ids read 2026-10-09 from the named source; the catalog (`internal/components/components.json`) holds the wiring.
+Unity co-op game on the BepInEx 5 path, the nearest relative of Lethal Company. Ids come from the named source; the catalog (`internal/components/components.json`) holds the wiring.
 
 - **Discovery:** Steam app `3241660` (Steam's `storesearch?term=R.E.P.O.`; r2modman's ecosystem schema `distributions` agrees). Executable `REPO.exe`, Steam folder `REPO` (the schema's `exeNames`, `steamFolderName`). Windows-only, so Proton on Linux. Hero art is Steam's `library_hero.jpg`, which answers 200.
 - **Loader:** Thunderstore community `repo` lists the generic `BepInEx-BepInExPack` 5.4.2305 (so no catalog `package` key), holding `BepInExPack/winhttp.dll`, `doorstop_config.ini` and `.doorstop_version` 4.5.0.

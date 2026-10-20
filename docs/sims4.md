@@ -1,6 +1,6 @@
 # The Sims 4: catalog facts
 
-Each fact carries its source and a state: confirmed (a primary or near-primary source), unconfirmed (community posts only, or none reached), contradicted. EA Help answered slowly or not at all, several EA forum threads answered 403 and were read through search summaries, and PCGamingWiki answered 403.
+Each fact carries its source and a state: confirmed (a primary or near-primary source), unconfirmed (community posts only, or none reached), contradicted.
 
 | Fact | State | Source |
 | --- | --- | --- |
@@ -28,4 +28,4 @@ Each fact carries its source and a state: confirmed (a primary or near-primary s
 
 The catalog entry (`internal/components/components.json` `sims4`) matches every confirmed row; `folderNames` holds the four localized folder names and Mortar uses whichever exists and changed last. Depths count folders below the target root.
 
-Unverified, and tracked in [design.md](design.md#the-sims-4-what-is-left-to-check): the `Options.ini` section header and key-name case (Mortar's check finds the keys in any section, ignoring case), and an EA statement of the `.ts4script` depth limit.
+Unverified, and tracked in [design.md](design.md#the-sims-4-before-a-release-carries-it): the `Options.ini` section header and key-name case (Mortar's check finds the keys in any section, ignoring case), and an EA statement of the `.ts4script` depth limit.
