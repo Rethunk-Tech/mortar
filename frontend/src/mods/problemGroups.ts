@@ -137,6 +137,11 @@ export function problemSections(result: Result): ProblemSection[] {
         if (item.setting) {
           return [{ token: item.token, row: { kind: 'setting', setting: item.setting } }]
         }
+        if (item.loadFailure) {
+          return [
+            { token: item.token, row: { kind: 'loadFailure', loadFailure: item.loadFailure } },
+          ]
+        }
         return []
       }),
     },

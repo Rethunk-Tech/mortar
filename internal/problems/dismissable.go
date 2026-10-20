@@ -162,12 +162,11 @@ func loadFailureToken(runID string, f LoadFailure) string {
 	return dismissToken(loadFailureKind, strings.Join([]string{runID, f.Kind, f.Plugin, f.Message}, "\t"))
 }
 
-func hideDismissedLoadFailures(rows []LoadFailure, runID string, tokens []string) []LoadFailure {
+func hideDismissedLoadFailures(rows []LoadFailure, runID string, tokens []string) ([]LoadFailure, []DismissedProblem) {
 	if runID == "" {
-		return rows
+		return rows, nil
 	}
-	kept, _ := hideRows(rows, tokens, func(f LoadFailure) []string {
+	return hideRows(rows, tokens, func(f LoadFailure) []string {
 		return []string{loadFailureToken(runID, f)}
-	}, func(*LoadFailure) DismissedProblem { return DismissedProblem{} })
-	return kept
+	}, func(f *LoadFailure) DismissedProblem { return DismissedProblem{LoadFailure: f} })
 }

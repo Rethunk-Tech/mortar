@@ -180,3 +180,25 @@ test('dismissed notes sharing one requirement token get distinct row keys', () =
   expect(keys).toHaveLength(3)
   expect(new Set(keys).size).toBe(3)
 })
+
+test('a dismissed load failure is listed so it can be restored', () => {
+  const loadFailure = {
+    kind: 'load-exception',
+    plugin: 'Alpha 1.0.0',
+    message: 'boom',
+    key: '',
+    id: '',
+    name: '',
+    line: 0,
+  }
+  const sections = problemSections({
+    ...emptyResult(),
+    dismissed: [{ token: 'load-failure\trun\tk', loadFailure }],
+  })
+  const [section] = sections
+  expect(section?.id).toBe('dismissed')
+  expect(section?.rows[0]).toMatchObject({
+    token: 'load-failure\trun\tk',
+    row: { kind: 'loadFailure' },
+  })
+})

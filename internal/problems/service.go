@@ -556,7 +556,8 @@ func (s *Service) withDismissed(gameID, id string, r Result) Result {
 	r.Dismissed = append(r.Dismissed, dismissed...)
 	if s.Runs != nil {
 		runID, _ := s.Runs.LastRunID(gameID, id)
-		r.LoadFailures = hideDismissedLoadFailures(r.LoadFailures, runID, tokens)
+		r.LoadFailures, dismissed = hideDismissedLoadFailures(r.LoadFailures, runID, tokens)
+		r.Dismissed = append(r.Dismissed, dismissed...)
 	}
 	if s.profiles != nil {
 		r.Replaced, _ = s.profiles.ReplacedFiles(gameID, id)

@@ -21,10 +21,14 @@ func TestDismissedLoadFailureReturnsWithTheNextRun(t *testing.T) {
 	f := LoadFailure{Kind: "missing-dependency", Plugin: "Fixture Plugin 1.2.3", Message: "missing dependencies: x"}
 	other := LoadFailure{Kind: "load-exception", Plugin: "Other 1.0.0", Message: "boom"}
 	tokens := []string{loadFailureToken("run-1", f)}
-	if got := hideDismissedLoadFailures([]LoadFailure{f, other}, "run-1", tokens); len(got) != 1 || got[0].Plugin != "Other 1.0.0" {
+	got, dismissed := hideDismissedLoadFailures([]LoadFailure{f, other}, "run-1", tokens)
+	if len(got) != 1 || got[0].Plugin != "Other 1.0.0" {
 		t.Fatalf("same run: %+v", got)
 	}
-	if got := hideDismissedLoadFailures([]LoadFailure{f, other}, "run-2", tokens); len(got) != 2 {
+	if len(dismissed) != 1 || dismissed[0].LoadFailure == nil || dismissed[0].LoadFailure.Plugin != f.Plugin || dismissed[0].Token != tokens[0] {
+		t.Fatalf("the hidden row cannot be restored: %+v", dismissed)
+	}
+	if got, _ := hideDismissedLoadFailures([]LoadFailure{f, other}, "run-2", tokens); len(got) != 2 {
 		t.Fatalf("next run: %+v", got)
 	}
 }

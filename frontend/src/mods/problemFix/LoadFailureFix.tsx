@@ -14,20 +14,26 @@ import type { Problem } from '../lookup.ts'
 import { useMods } from '../store.ts'
 import { openTarget } from '../storeView.ts'
 import { useUpdates } from '../updates.ts'
+import { RestoreButton } from './RestoreButton.tsx'
 import type { WarningButton } from './warningButton.tsx'
 
 // The log's rows stay until the next run says otherwise, so each can be dismissed for this run. The game's version and
 // settings rows come from the install rather than a run.
 export function LoadFailureFix({
   problem,
+  dismissedToken,
   button,
 }: {
   problem: Extract<Problem, { kind: 'loadFailure' }>
+  dismissedToken?: string | undefined
   button: WarningButton
 }) {
   const { t } = useLingui()
   const failure = problem.loadFailure
   const dismissable = failure.kind !== 'game-version' && failure.kind !== 'game-setting'
+  if (dismissedToken !== undefined) {
+    return <RestoreButton token={dismissedToken} />
+  }
   return (
     <>
       <LoadFailureAction problem={problem} button={button} />

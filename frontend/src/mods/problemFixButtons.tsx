@@ -85,8 +85,8 @@ function PluginClashKind({ problem, button }: KindProps<'pluginClash'>) {
   return <PluginClashFix problem={problem} button={button} />
 }
 
-function LoadFailureKind({ problem, button }: KindProps<'loadFailure'>) {
-  return <LoadFailureFix problem={problem} button={button} />
+function LoadFailureKind({ problem, dismissedToken, button }: KindProps<'loadFailure'>) {
+  return <LoadFailureFix problem={problem} dismissedToken={dismissedToken} button={button} />
 }
 
 const problemFixes = {
