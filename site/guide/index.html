@@ -180,6 +180,7 @@ sudo pacman -Sy mortar
 <ul>
 <li><strong>GitHub:</strong> <strong>Add</strong> installs the latest release. Your <code>gh auth login</code>, when present, raises GitHub's rate limits. Nobody reviews or scans what is published on GitHub or itch.io, so the first download from either says so once.</li>
 <li><strong>Card details:</strong> <strong>Show › Card details</strong> picks what cards list (popularity, downloads, file size, version, last update); the Mods tab uses the same choice.</li>
+<li><strong>Your downloads folder:</strong> an archive saved to Downloads, Mortar's download folder or a folder under <strong>Settings › Downloads › Also watch these folders</strong> is offered for install. A watched folder set to <strong>Auto-install</strong> is instead added to the open profile as one mod each time its files change, so a mod's build output is in the game for the next launch; a rebuild replaces the last one, and a change while the game runs waits for it to stop.</li>
 <li><strong>Hide from Browse:</strong> a card's menu has <strong>Hide from Browse</strong> and <strong>Hide everything by &lt;author&gt;</strong>. The game's settings list <strong>Hidden mods</strong> with <strong>Unhide</strong>. Links and imports still install a hidden mod.</li>
 <li><strong>Modpacks, translations and cheats:</strong> the <strong>Exclude categories</strong> picker starts with them; remove a chip to see them.</li>
 <li><strong>Open a mod's page:</strong> Ctrl+click a card in Browse, or middle-click a mod in the Mods tab.</li>
@@ -307,7 +308,7 @@ sudo pacman -Sy mortar
 </tbody>
 </table></div>
 <h4 id="errors-while-running">Errors while running</h4>
-<p>A plugin that loaded and then logged errors or threw an exception is listed here, once per mod with its error count. It ran, so these rows are not counted as problems; <strong>Disable</strong> or <strong>Update</strong> it if the game misbehaves, or <strong>Dismiss</strong> the row for that run.</p>
+<p>A plugin that loaded and then logged errors or threw an exception is listed here, once per mod with its error count. The row names the method the error was thrown in and the other enabled mods that patch code on the path it ran, since one of them may be the cause. It ran, so these rows are not counted as problems; <strong>Disable</strong> or <strong>Update</strong> it if the game misbehaves, or <strong>Dismiss</strong> the row for that run.</p>
 <h4 id="failed-to-load">Failed to load</h4>
 <p>The loader's log shows a plugin did not start, so its features are missing. The row quotes the log line; usual causes are a wrong game version or a missing requirement. The button follows the cause:</p>
 <div class="table-wrap"><table>
