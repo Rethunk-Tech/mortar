@@ -8,11 +8,6 @@ import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
-interface AutoInstall {
-  game: string
-  dir: string
-}
-
 // Folders that changed while the game ran, installed once it stops.
 const waiting = new Set<string>()
 let stopWaiting: (() => void) | null = null
@@ -61,7 +56,7 @@ export function initAutoInstall() {
   }
   listening = true
   Events.On('library:auto-install', (event) => {
-    const { game, dir } = event.data as AutoInstall
+    const { game, dir } = event.data
     install(game, dir)
   })
 }

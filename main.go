@@ -136,6 +136,7 @@ func registerEvents() {
 	application.RegisterEvent[string](folderwatch.ModsFolderEvent)
 	application.RegisterEvent[string](folderwatch.ExtraFolderEvent)
 	application.RegisterEvent[string](folderwatch.DownloadsEvent)
+	application.RegisterEvent[folderwatch.AutoInstall](folderwatch.AutoInstallEvent)
 	application.RegisterEvent[[]syncsvc.Offer](syncsvc.OffersEvent)
 	application.RegisterEvent[[]syncsvc.Stall](syncsvc.StalledEvent)
 	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)
