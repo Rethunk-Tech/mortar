@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import {
+  Box,
   Button,
   ButtonGroup,
   Dialog,
@@ -13,7 +14,7 @@ import {
   RadioGroup,
 } from '@mui/material'
 import { ChevronDown, Gamepad2, Play, Star } from 'lucide-react'
-import { type MouseEvent, useState } from 'react'
+import { type MouseEvent, type ReactNode, useState } from 'react'
 import { routeGame, useNav } from '../nav/store.ts'
 import type { PlayPreset } from '../profiles/profilePresets.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
@@ -159,6 +160,7 @@ export function VanillaPlay({
   presets,
   playWith,
   setDefault,
+  options,
 }: {
   game: string
   playDisabled: boolean
@@ -169,6 +171,8 @@ export function VanillaPlay({
   presets: PlayPreset[]
   playWith: (key: string) => void
   setDefault: (key: string) => void
+  // Settings for the next launch, shown under the menu's actions.
+  options?: ReactNode
 }) {
   const { t } = useLingui()
   const [menu, setMenu] = useState<HTMLElement | null>(null)
@@ -241,6 +245,11 @@ export function VanillaPlay({
             />,
           ]
         })}
+        {options ? <MenuRule /> : null}
+        {options ? (
+          // The fields take their own arrow keys and typing; the menu would move focus on them.
+          <Box onKeyDown={(e) => e.stopPropagation()}>{options}</Box>
+        ) : null}
       </Menu>
       <Dialog open={choosing} onClose={() => setChoosing(false)}>
         <DialogTitle>{t`Default launch preset`}</DialogTitle>

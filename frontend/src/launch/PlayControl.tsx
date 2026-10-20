@@ -87,7 +87,6 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
   const scene = useLive((s) => (s.game === game ? s.scene : ''))
   // Fields, not the profiles: a save of the open profile re-renders this only when what it shows changed.
   const runningName = useProfiles((s) => s.profiles.find((p) => p.id === status?.profile)?.name)
-  const replaceProfile = useProfiles((s) => s.replace)
   const presets = useOpenPresets()
 
   if (running) {
@@ -191,7 +190,6 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
   const direct = playDirect()
   return (
     <>
-      {direct && !rail ? <PlayInstances game={game} /> : null}
       <VanillaPlay
         game={game}
         playDisabled={openId === '' || launching || busy}
@@ -200,10 +198,11 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
         rail={rail}
         play={() => start(game, openId, direct, '')}
         presets={presets}
+        options={direct ? <PlayInstances game={game} /> : undefined}
         playWith={(key) => start(game, openId, direct, key)}
         setDefault={(key) =>
           SetDefaultLaunchPreset(game, openId, key === BASE_PRESET ? '' : key)
-            .then(replaceProfile)
+            .then(useProfiles.getState().replace)
             .catch(reportError(t`Could not set the default launch preset`))
         }
       />
