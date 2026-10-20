@@ -11,10 +11,7 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 ### The website on Astro
 
-**Left from stage 1, for the maintainer:**
-
-- Plausible: add mortar.rethunk.tech as a site on the Business plan; the script is in `web/src/layouts/Base.astro`.
-- Search Console, verified by a DNS record.
+**Left from stage 1, for the maintainer:** Search Console, verified by a DNS record.
 
 **Stage 2:** unique content per game page:
 
