@@ -52,6 +52,48 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.3.9" date="2026-10-19">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>Drop Stacklands, whose Thunderstore page sends modders to the Steam Workshop</li>
+          <li>Drop Core Keeper, whose Thunderstore page sends modders to mod.io</li>
+          <li>Drop Wrestling Empire, whose Thunderstore page sends modders to the Steam Workshop</li>
+          <li>Game Select sections fold away, and Hide this game moves to the row's right-click menu</li>
+          <li>Game Select rows keep one height; the hover grow and its setting are gone</li>
+          <li>A game no store tracks takes the folder the player chooses; Voices of the Void on Shimloader</li>
+          <li>43 Thunderstore games on loaders Mortar drives, from r2modman's ecosystem list</li>
+          <li>The game switcher shows each game's profile count</li>
+          <li>The game switcher shows each game as a strip of its art with when it was last played</li>
+          <li>One card for the same name by the same author across sites, author aliases in the catalog, re-uploads marked</li>
+          <li>Category pickers show +N for the chips that do not fit</li>
+          <li>Keep each game's include, exclude and sort in its game settings</li>
+          <li>Fold nested implicit mods into a +N libraries chip on the card view</li>
+          <li>Noisy categories start in the exclude picker instead of a checkbox</li>
+          <li>Sort by most downloaded by default</li>
+          <li>…and 22 more</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>The row menu's helper lives apart from its component, and its selector allocates nothing</li>
+          <li>A Game Select row is the height the list places it at, so rows no longer overlap by 4px</li>
+          <li>Switcher strip art is an image under the tint, so a game without art keeps its placeholder</li>
+          <li>The open game's strip edge uses the accent colour</li>
+          <li>Collapsed groups load once per game, not again by an effect on every mount</li>
+          <li>The filter row sits as far above the results as below the search</li>
+          <li>The +N category chip lines up with the chips beside it</li>
+          <li>A grid card's source picker sits on its picture</li>
+          <li>The game's loader is not listed; Mortar installs it from the game's page</li>
+          <li>List slots are plain elements, not styled Boxes</li>
+          <li>The Implicit mods choice in Show is saved, not only applied until reload</li>
+          <li>A status chip under a card's picture drops its icon to fit, like the buttons</li>
+          <li>Card progress shows the percentage, with the full status on hover</li>
+          <li>Card progress fills the Add button footprint under the picture</li>
+          <li>Add category is the left action of the Custom categories dialog</li>
+          <li>…and 57 more</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3.8" date="2026-10-19" />
     <release version="0.3.7" date="2026-10-19">
       <description>
