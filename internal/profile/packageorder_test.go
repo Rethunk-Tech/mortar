@@ -99,3 +99,38 @@ func TestSyncStoppedPartWayStillTakesItsFilesBack(t *testing.T) {
 		t.Fatalf("the removed package's a.dll is still loaded: %v", err)
 	}
 }
+
+func TestFileConflictsNameTheWinnerAndWhoItBeats(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	ps := profile.OpenIn(dir, store.OpenAt(filepath.Join(dir, "store")))
+	const lc = "lethal-company"
+	p, err := ps.Create(lc, "Friends")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var loaded profile.InstallResult
+	for _, name := range []string{"A", "B", "C"} {
+		files := map[string]string{
+			"manifest.json":           `{"name":"` + name + `","version_number":"1.0.0"}`,
+			"config/Shared.cfg":       name,
+			"config/" + name + ".cfg": name,
+		}
+		zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), name+".zip"), files)
+		if loaded, err = ps.InstallSource(t.Context(), lc, p.ID, zip, profile.Source{Kind: profile.KindThunderstore, Name: "Ns-" + name, Version: "1.0.0"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	a, b, c := loaded.Profile.Entries[0].Key, loaded.Profile.Entries[1].Key, loaded.Profile.Entries[2].Key
+	got, err := ps.FileConflicts(lc, p.ID)
+	if err != nil || len(got) != 1 || got[0].Winner != c || len(got[0].Beaten) != 2 || got[0].Beaten[0] != a || got[0].Beaten[1] != b {
+		t.Fatalf("conflicts = %+v, %v", got, err)
+	}
+	if _, err := ps.MakePackageWin(lc, p.ID, a, c); err != nil {
+		t.Fatal(err)
+	}
+	got, err = ps.FileConflicts(lc, p.ID)
+	if err != nil || len(got) != 1 || got[0].Winner != a {
+		t.Fatalf("after moving A last: %+v, %v", got, err)
+	}
+}

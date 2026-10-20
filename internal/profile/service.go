@@ -404,6 +404,16 @@ func (s *Service) MovePackage(game, id, key string, delta int) (Profile, error) 
 	return s.store.MovePackage(game, id, key, delta)
 }
 
+// MakePackageWin moves a mod to just after another in the package order, so it wins the files both provide.
+func (s *Service) MakePackageWin(game, id, key, over string) (Profile, error) {
+	return s.store.MakePackageWin(game, id, key, over)
+}
+
+// FileConflicts lists the files more than one enabled package ships, the entry that wins each and the ones it beats.
+func (s *Service) FileConflicts(game, id string) ([]FileConflict, error) {
+	return s.store.FileConflicts(game, id)
+}
+
 // PackageOverrides maps a mod's key to the number of files it wins over earlier mods.
 func (s *Service) PackageOverrides(game, id string) (map[string]int, error) {
 	return s.store.PackageOverrides(game, id)

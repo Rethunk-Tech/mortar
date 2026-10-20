@@ -55,18 +55,25 @@ func (s *Store) packageFiles(gameID, id string) (files map[string]packageFile, w
 			}
 			// A later entry's file replaces an earlier one that differs only in case: both are one file on Windows.
 			fold := fsx.FoldCase(rel)
+			var beaten []string
 			if prev, taken := byFold[fold]; taken {
+				beaten = append(slices.Clone(files[prev].beaten), files[prev].key)
 				delete(files, prev)
 				wins[e.Key]++
 			}
 			byFold[fold] = rel
-			files[rel] = packageFile{src: filepath.Join(arch.Dir, filepath.FromSlash(f.Src)), key: e.Key}
+			files[rel] = packageFile{src: filepath.Join(arch.Dir, filepath.FromSlash(f.Src)), key: e.Key, beaten: beaten}
 		}
 	}
 	return files, wins, nil
 }
 
-type packageFile struct{ src, key string }
+// packageFile is a file a package lays out: where it is read from, the entry that wins it, and the entries before it
+// that ship the same file, in package order.
+type packageFile struct {
+	src, key string
+	beaten   []string
+}
 
 func targetPrefix(info components.GameInfo, id string) string {
 	t, _ := info.Target(id)
@@ -82,6 +89,30 @@ func (s *Store) PackageFileOwners(gameID, id string) (map[string]string, error) 
 		owners[rel] = f.key
 	}
 	return owners, err
+}
+
+// FileConflict is a file two or more enabled packages ship: the entry that wins it and the entries it beats. A later
+// entry in the profile's package order replaces an earlier one's copy.
+type FileConflict struct {
+	Path   string   `json:"path"`
+	Winner string   `json:"winner"`
+	Beaten []string `json:"beaten"`
+}
+
+// FileConflicts lists the files more than one enabled package ships, by path. A game that is redirected has none.
+func (s *Store) FileConflicts(gameID, id string) ([]FileConflict, error) {
+	files, _, err := s.packageFiles(gameID, id)
+	if err != nil {
+		return nil, err
+	}
+	var out []FileConflict
+	for rel, f := range files {
+		if len(f.beaten) > 0 {
+			out = append(out, FileConflict{Path: rel, Winner: f.key, Beaten: f.beaten})
+		}
+	}
+	slices.SortFunc(out, func(a, b FileConflict) int { return strings.Compare(a.Path, b.Path) })
+	return out, nil
 }
 
 // PackageOverrides counts, for each entry key, the files it wins over an earlier package. A game that is

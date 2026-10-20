@@ -25,6 +25,7 @@ import { AssetMapDialog } from './AssetMapDialog.tsx'
 import { CleanupSection } from './CleanupSection.tsx'
 import { CompatSection } from './CompatSection.tsx'
 import { compatReportChunks } from './compatChip.ts'
+import { FileConflictsSection, useFileConflicts } from './FileConflictsSection.tsx'
 import { LockedNote } from './LockedNote.tsx'
 import { ProblemRows } from './ProblemRows.tsx'
 import { problemSections, type Row } from './problemGroups.ts'
@@ -147,6 +148,7 @@ function useProblemTabs({
   const { t } = useLingui()
   const sectionTitle = useSectionTitle()
   const slowCount = useSlowStartups().length
+  const fileConflicts = useFileConflicts()
   return [
     ...sections
       .filter((s) => !(s.id === 'cosmetic' && cosmeticConflicts === 'hidden'))
@@ -193,6 +195,13 @@ function useProblemTabs({
       count: cleanup.length,
       errors: false,
       body: <CleanupSection cleanup={cleanup} />,
+    },
+    {
+      id: 'fileConflicts',
+      label: t`File conflicts`,
+      count: fileConflicts.length,
+      errors: false,
+      body: <FileConflictsSection groups={fileConflicts} />,
     },
     {
       id: 'replaced',
@@ -318,7 +327,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
         <Box sx={{ mx: `calc(-1 * ${space.gutter})`, mb: -1 }}>
           <LockedNote />
         </Box>
-        {empty ? (
+        {empty && tabs.length === 0 ? (
           <EmptyState
             icon={<ShieldCheck size={40} aria-hidden={true} />}
             title={t`No problems found`}
