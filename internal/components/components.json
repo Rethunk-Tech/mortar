@@ -11590,6 +11590,53 @@
       ]
     },
     {
+      "id": "baldurs-gate-3",
+      "name": "Baldur's Gate 3",
+      "enabled": true,
+      "minVersion": "0.3.10",
+      "importIds": {
+        "vortex": "baldursgate3"
+      },
+      "marker": "bg3.exe",
+      "markerDir": "bin",
+      "metadata": [],
+      "paths": {
+        "mods": {
+          "windows": "{localAppData}/Larian Studios/Baldur's Gate 3/Mods"
+        },
+        "options": {
+          "windows": "{localAppData}/Larian Studios/Baldur's Gate 3/PlayerProfiles/Public/modsettings.lsx"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "mods",
+          "root": "{profile}/Mods",
+          "maxDepth": {
+            "pak": 0
+          }
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1086940"
+        }
+      },
+      "loaders": [
+        {
+          "id": "larian",
+          "name": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "modio",
+          "key": "6715"
+        }
+      ]
+    },
+    {
       "id": "deep-rock-galactic",
       "name": "Deep Rock Galactic",
       "enabled": true,
