@@ -22,6 +22,7 @@ import { ArrivalDialog } from './nxm/ArrivalDialog.tsx'
 import { ProfilesPage } from './profiles/ProfilesPage.tsx'
 import { QuitPrompt } from './QuitPrompt.tsx'
 import { LargeDownloadDialog } from './queue/LargeDownloadDialog.tsx'
+import { UnmoderatedDialog } from './queue/UnmoderatedDialog.tsx'
 import { GameSettingsPage } from './settings/GameSettingsPage.tsx'
 import { SettingsPage } from './settings/SettingsPage.tsx'
 import { useStartupChecks } from './settings/startupChecks.ts'
@@ -109,6 +110,7 @@ export function App() {
       <AvOverrideDialog />
       <LargeDownloadDialog />
       <HandoffDialog />
+      <UnmoderatedDialog />
       <FirstRunTour />
       <PinReasonDialog />
       <ShareDialog />

@@ -11,6 +11,7 @@ import { useNexus } from '../settings/nexus.ts'
 import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useQueue } from './store.ts'
+import { warnUnmoderated } from './unmoderated.ts'
 
 // What a caller says about a file; the rest is filled in.
 export type Want = Pick<Request, 'kind'> &
@@ -36,6 +37,10 @@ export type Want = Pick<Request, 'kind'> &
     >
   >
 
+// The site a want downloads from: named, else a repository is GitHub's and a package Thunderstore's.
+const wantSource = (r: Want): string =>
+  r.source || (r.repo ? 'github' : r.package ? 'thunderstore' : 'nexus')
+
 // Queues files for the open profile. Nexus files cannot download while signed out: say so and point at the
 // sign-in instead. GitHub needs no account.
 export async function download(reqs: Want[], showQueue = false): Promise<boolean> {
@@ -55,6 +60,9 @@ export async function queueWants(reqs: Want[], showQueue = false): Promise<Item[
       ),
       action: { label: i18n._(msg`Open settings`), run: () => openSettings('accounts') },
     })
+    return
+  }
+  if (!(await warnUnmoderated(reqs.map(wantSource)))) {
     return
   }
   const at = openTarget()

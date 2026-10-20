@@ -7858,6 +7858,10 @@ msgstr "Every change waiting for the next start is discarded."
 msgid "Could not change how Nexus links open"
 msgstr "Could not change how Nexus links open"
 
+#: src/queue/UnmoderatedDialog.tsx
+msgid "{sites} is not moderated"
+msgstr "{sites} is not moderated"
+
 #: src/mods/SlowStartupSection.tsx
 msgid "requirements"
 msgstr "requirements"
@@ -9445,6 +9449,7 @@ msgstr "Store"
 
 #: src/browse/CardAction.tsx
 #: src/mods/Toolbar.tsx
+#: src/queue/UnmoderatedDialog.tsx
 #: src/settings/prefCopyModsView.ts
 #: src/share/ImportPreview.tsx
 msgid "Download"
@@ -10648,6 +10653,10 @@ msgstr "Problems only"
 #: src/profiles/ProfilesPage.tsx
 msgid "Damaged"
 msgstr "Damaged"
+
+#: src/queue/UnmoderatedDialog.tsx
+msgid "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
+msgstr "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
 
 #: src/console/RunProblems.tsx
 #: src/install/noModText.ts
