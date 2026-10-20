@@ -12,6 +12,8 @@ import { fitChips } from './fitChips.ts'
 const MIN_PICKER_PX = 180
 const CHIP_GAP_PX = 4
 const MORE_CHIP_PX = 44
+// Room the typing area keeps after the chips: Autocomplete's input minimum and its padding.
+const INPUT_ROOM_PX = 48
 
 // The chosen categories on one row. Chips that do not fit are replaced by a "+N" chip whose tooltip lists them. Every
 // chip is also drawn once, invisibly and out of flow, to measure it, so the row never changes height or jumps.
@@ -29,16 +31,26 @@ function FittedChips({
     if (chips.length === 0) {
       return
     }
+    // The row only takes the chips' width, so the caret sits right after them; what fits is measured on the field.
+    const field = row.current?.parentElement
     const refit = () => {
       const widths = [...(measure.current?.children ?? [])].map(
         (c) => c.getBoundingClientRect().width,
       )
-      setShown(fitChips(widths, row.current?.clientWidth ?? 0, CHIP_GAP_PX, MORE_CHIP_PX))
+      const style = field ? getComputedStyle(field) : null
+      const room =
+        field && style
+          ? field.clientWidth -
+            Number.parseFloat(style.paddingLeft) -
+            Number.parseFloat(style.paddingRight) -
+            INPUT_ROOM_PX
+          : 0
+      setShown(fitChips(widths, Math.max(room, 0), CHIP_GAP_PX, MORE_CHIP_PX))
     }
     refit()
     const observer = new ResizeObserver(refit)
-    if (row.current) {
-      observer.observe(row.current)
+    if (field) {
+      observer.observe(field)
     }
     return () => observer.disconnect()
   }, [chips])
@@ -53,7 +65,7 @@ function FittedChips({
         // Autocomplete's own margin on its chips would set them off from the +N chip, which is not one of its tags.
         '& .MuiAutocomplete-tag': { m: 0 },
         minWidth: 0,
-        flex: 1,
+        flex: '0 1 auto',
         overflow: 'hidden',
         position: 'relative',
       }}
