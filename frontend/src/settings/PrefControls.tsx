@@ -115,7 +115,7 @@ export function PrefCards({
       aria-label={label}
       value={value}
       onChange={(_, v) => onChange(v)}
-      sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}
     >
       {options.map((o) => (
         <FormControlLabel
@@ -128,21 +128,15 @@ export function PrefCards({
               {o.hint ? <Box sx={{ fontSize: 14, color: 'text.secondary' }}>{o.hint}</Box> : null}
             </Box>
           }
+          // Plain rows inside the setting's tile, which is already the card: the radio marks the choice.
           sx={{
             m: 0,
             alignItems: 'flex-start',
             gap: space.gap,
-            px: space.pad,
-            py: space.gap,
+            px: 0.75,
+            py: 0.5,
             borderRadius: '6px',
-            bgcolor: 'var(--mortar-raised)',
-            // The tint sits over the card's opaque fill; a translucent bgcolor would let the panel behind show through.
-            '&:hover': { boxShadow: 'inset 0 0 0 999px var(--mortar-hairline)' },
-            '&:has(input:checked)': {
-              outline: '2px solid',
-              outlineOffset: '-2px',
-              outlineColor: 'primary.main',
-            },
+            '&:hover': { bgcolor: 'var(--mortar-hairline)' },
           }}
         />
       ))}
