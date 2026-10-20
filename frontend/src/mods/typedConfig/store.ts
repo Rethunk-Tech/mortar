@@ -92,10 +92,16 @@ const useTypedConfig = create<{
       set({ target, files: [], current: '', errors: {}, loadError: '' })
       try {
         const files = await configApi.files(target)
+        // A mod opened since this began owns the pane now; its own open fills it.
+        if (get().target !== target) {
+          return
+        }
         set({ files })
         await get().select(files.find((f) => f.name === file)?.name ?? files[0]?.name ?? '')
       } catch (e) {
-        set({ loadError: errorMessage(e) })
+        if (get().target === target) {
+          set({ loadError: errorMessage(e) })
+        }
       }
     },
     select: async (file) => {
@@ -108,9 +114,14 @@ const useTypedConfig = create<{
       set({ current: file })
       try {
         const sections = await configApi.schema(target, file)
+        if (get().target !== target) {
+          return
+        }
         set((s) => ({ files: s.files.map((f) => (f.name === file ? { ...f, sections } : f)) }))
       } catch (e) {
-        set({ loadError: errorMessage(e) })
+        if (get().target === target) {
+          set({ loadError: errorMessage(e) })
+        }
       }
     },
     set: (section, key, value) => {
