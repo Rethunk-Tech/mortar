@@ -187,7 +187,7 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
         rail={rail}
         play={() => start(game, openId, direct, '')}
         presets={presets}
-        options={direct ? <PlayInstances game={game} /> : undefined}
+        options={<PlayInstances game={game} direct={direct} />}
         playWith={(key) => start(game, openId, direct, key)}
         setDefault={(key) =>
           SetDefaultLaunchPreset(game, openId, key === BASE_PRESET ? '' : key)

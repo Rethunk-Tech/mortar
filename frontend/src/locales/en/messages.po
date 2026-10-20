@@ -2757,6 +2757,10 @@ msgstr "Lime"
 msgid "Don't ask about these"
 msgstr "Don't ask about these"
 
+#: src/launch/PlayInstances.tsx
+msgid "Several copies start only with Direct launch."
+msgstr "Several copies start only with Direct launch."
+
 #. placeholder {0}: group.count
 #: src/launch/PrePlayDialog.tsx
 msgid "Conflicts ({0})"
