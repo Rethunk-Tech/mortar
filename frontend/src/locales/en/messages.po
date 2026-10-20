@@ -2125,7 +2125,7 @@ msgstr "Your build changed; it is added when the game stops"
 msgid "Name"
 msgstr "Name"
 
-#: src/mods/typedConfig/ConfigTab.tsx
+#: src/mods/typedConfig/OtherFiles.tsx
 msgid "Loader and other"
 msgstr "Loader and other"
 
@@ -4274,6 +4274,7 @@ msgstr "Not checked yet."
 
 #: src/mods/problemText.ts
 #: src/mods/typedConfig/ConfigTab.tsx
+#: src/mods/typedConfig/OtherFiles.tsx
 #: src/updates/WhatsNewDialog.tsx
 msgid "Changed"
 msgstr "Changed"
