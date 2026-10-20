@@ -761,6 +761,10 @@ msgstr "Show a report first."
 msgid "Repair"
 msgstr "Repair"
 
+#: src/mods/problemText.ts
+msgid "Errors while running"
+msgstr "Errors while running"
+
 #: src/settings/prefCopy.ts
 msgid "This computer"
 msgstr "This computer"
@@ -1486,6 +1490,11 @@ msgstr "Install Mortar's copy"
 #: src/queue/QueueHistory.tsx
 msgid "All outcomes"
 msgstr "All outcomes"
+
+#. placeholder {0}: errors ?? 1
+#: src/mods/describe.ts
+msgid "{0, plural, one {{who} loaded and logged an error while running.} other {{who} loaded and logged # errors while running.}}"
+msgstr "{0, plural, one {{who} loaded and logged an error while running.} other {{who} loaded and logged # errors while running.}}"
 
 #: src/queue/store.ts
 #: src/share/importCompletion.ts

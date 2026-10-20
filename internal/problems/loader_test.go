@@ -243,3 +243,24 @@ func TestLoaderFailuresDropWhatTheProfileHasSinceFixed(t *testing.T) {
 		t.Fatalf("the plugin the log names is gone: %+v", got)
 	}
 }
+
+func TestAttributeKeepsErrorsAfterLoadApartAndOnePerMod(t *testing.T) {
+	owners := func() map[string]framework.Mod {
+		return map[string]framework.Mod{"facilitymeltdown": {Key: "loaforc-FacilityMeltdown", Name: "FacilityMeltdown"}}
+	}
+	got := attribute([]loader.Finding{
+		{Kind: bepinex5.KindPluginError, Plugin: "FacilityMeltdown", Message: "a"},
+		{Kind: bepinex5.KindUnityException, Plugin: "FacilityMeltdown", Message: "b"},
+		{Kind: bepinex5.KindLoadException, Plugin: "Broken", Message: "c"},
+	}, owners)
+	if len(got) != 2 || !got[0].Ran || got[0].Errors != 2 || got[1].Ran || got[1].Plugin != "Broken" {
+		t.Fatalf("rows %+v", got)
+	}
+}
+
+func TestCountLeavesOutErrorsAfterLoad(t *testing.T) {
+	r := Result{LoadFailures: []LoadFailure{{Plugin: "A", Ran: true, Errors: 3}, {Plugin: "B", Kind: bepinex5.KindLoadException}}}
+	if r.Count() != 1 {
+		t.Fatalf("count %d", r.Count())
+	}
+}

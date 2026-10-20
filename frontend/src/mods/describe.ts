@@ -263,7 +263,22 @@ function describeDuplicate(d: Extract<Problem, { kind: 'duplicate' }>['duplicate
 type LoadFailureRow = Extract<Problem, { kind: 'loadFailure' }>['loadFailure']
 
 // A game-setting row's message is the catalog's own wording for the setting that is off.
-function describeLoadFailure({ plugin, name, kind, dependency, message }: LoadFailureRow): string {
+function describeLoadFailure({
+  plugin,
+  name,
+  kind,
+  dependency,
+  message,
+  ran,
+  errors,
+}: LoadFailureRow): string {
+  if (ran) {
+    const who = name === '' ? plugin : name
+    return plural(errors ?? 1, {
+      one: `${who} loaded and logged an error while running.`,
+      other: `${who} loaded and logged # errors while running.`,
+    })
+  }
   if (kind === 'game-setting') {
     return message
   }

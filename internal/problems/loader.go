@@ -34,6 +34,18 @@ type LoadFailure struct {
 	// left in the plugins folder that RemoveSkippedPlugin can delete.
 	Path string `json:"path,omitempty"`
 	Line int    `json:"line"`
+	// Ran marks an error the plugin hit after it loaded: it ran, so this is not a load failure. A mod's errors of this
+	// kind are one row, the first with Errors counting them all.
+	Ran    bool `json:"ran,omitempty"`
+	Errors int  `json:"errors,omitempty"`
+}
+
+// ranKinds are the findings of a plugin that loaded and then threw: an exception in its own code or a patch, or an
+// error it logged. A throw while loading is BepInEx's own "Error loading" line instead.
+var ranKinds = map[string]bool{
+	bepinex5.KindUnityException: true,
+	bepinex5.KindPluginError:    true,
+	bepinex5.KindPatchException: true,
 }
 
 // pluginsDir is where BepInEx loads plugins from, below the profile folder.
@@ -140,10 +152,23 @@ func attribute(found []loader.Finding, owners func() map[string]framework.Mod) [
 	}
 	byName := owners()
 	out := make([]LoadFailure, 0, len(found))
+	ranAt := map[string]int{}
 	for _, f := range found {
 		lf := LoadFailure{Plugin: f.Plugin, Kind: f.Kind, Message: f.Message, Dependency: f.Dependency, Line: f.Line}
 		if owner, ok := byName[strings.ToLower(f.Plugin)]; ok {
 			lf.Key, lf.ID, lf.Name = owner.Key, owner.ModID(), owner.Name
+		}
+		if ranKinds[f.Kind] {
+			who := lf.Key
+			if who == "" {
+				who = strings.ToLower(f.Plugin)
+			}
+			if i, ok := ranAt[who]; ok {
+				out[i].Errors++
+				continue
+			}
+			ranAt[who] = len(out)
+			lf.Ran, lf.Errors = true, 1
 		}
 		out = append(out, lf)
 	}

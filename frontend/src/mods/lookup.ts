@@ -62,6 +62,10 @@ const buildProblems = (result: Result): Problem[] => [
 // Optional listed requirements and outside requirements are informational: the server's Count leaves them out.
 const countsAsMissing = (m: Missing): boolean => !(m.optional || m.external)
 
+// A plugin that loaded and then threw still ran, so its errors are shown but not counted.
+const counts = (p: Problem): boolean =>
+  (p.kind !== 'missing' || countsAsMissing(p.missing)) &&
+  (p.kind !== 'loadFailure' || !p.loadFailure.ran)
 export const siblingsOf = (mods: Mod[], mod: Mod) =>
   mods.filter((m) => m.key === mod.key && m.id !== mod.id)
 
@@ -216,7 +220,7 @@ export const missingCount = (result: Result | null): number =>
 // The one count the Problems chip, the sidebar badge, Home and the badges share: every item the Problems tab lists
 // except the harmless (cosmetic) asset conflicts, which that tab sets apart and which never need a fix.
 export const problemCount = (result: Result | null): number =>
-  problemsOf(result).filter((p) => p.kind !== 'missing' || countsAsMissing(p.missing)).length +
+  problemsOf(result).filter(counts).length +
   (result?.drift?.length ?? 0) +
   (result?.cleanup?.length ?? 0) +
   (result?.compat?.length ?? 0) +

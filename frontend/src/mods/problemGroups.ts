@@ -20,7 +20,8 @@ export const isInfoRow = (p: Row): boolean =>
   p.kind === 'setting' ||
   p.kind === 'deprecated' ||
   p.kind === 'fileConflict' ||
-  (p.kind === 'runError' && !p.runError.severe)
+  (p.kind === 'runError' && !p.runError.severe) ||
+  (p.kind === 'loadFailure' && p.loadFailure.ran === true)
 
 export type ProblemSectionId =
   | 'missing'
@@ -30,6 +31,7 @@ export type ProblemSectionId =
   | 'longPaths'
   | 'runErrors'
   | 'loadFailures'
+  | 'ranWithErrors'
   | 'pluginClashes'
   | 'deprecated'
   | 'drift'
@@ -96,9 +98,15 @@ export function problemSections(result: Result): ProblemSection[] {
     },
     {
       id: 'loadFailures',
-      rows: (result.loadFailures ?? []).map(
-        (loadFailure): Row => ({ kind: 'loadFailure', loadFailure }),
-      ),
+      rows: (result.loadFailures ?? [])
+        .filter((loadFailure) => !loadFailure.ran)
+        .map((loadFailure): Row => ({ kind: 'loadFailure', loadFailure })),
+    },
+    {
+      id: 'ranWithErrors',
+      rows: (result.loadFailures ?? [])
+        .filter((loadFailure) => loadFailure.ran)
+        .map((loadFailure): Row => ({ kind: 'loadFailure', loadFailure })),
     },
     {
       id: 'pluginClashes',

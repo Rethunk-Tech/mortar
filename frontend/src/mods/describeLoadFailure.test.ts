@@ -1,5 +1,7 @@
 import { expect, test } from 'bun:test'
+import type { Result } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { describeLoadFailure } from './describe.ts'
+import { problemCount } from './lookup.ts'
 import { loadKindText } from './problemText.ts'
 
 const row = (kind: string, message: string) => ({
@@ -24,4 +26,11 @@ test('other load failures keep their sentences', () => {
   expect(describeLoadFailure(row('run-failed', 'no display'))).toBe(
     'The last launch failed: no display.',
   )
+})
+
+test('a plugin that loaded and then threw says so, and is not counted as a problem', () => {
+  const ran = { ...row('unity-exception', 'NullReferenceException'), ran: true, errors: 2 }
+  expect(describeLoadFailure(ran)).toBe('ModsEnabled loaded and logged 2 errors while running.')
+  const result = { loadFailures: [ran, row('load-exception', '')] } as unknown as Result
+  expect(problemCount(result)).toBe(1)
 })
