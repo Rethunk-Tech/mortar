@@ -25,17 +25,37 @@ type Installed struct {
 	manifest.Manifest
 }
 
-// Installed reads the manifest of every mod in the profile. A mod whose folder or manifest is gone or no longer
-// parses is skipped, since nothing can be said about it. A package has no SMAPI manifest, so its components stand
-// as recorded at install, with the store item as their folder and the needs its Thunderstore manifest lists.
+// UnreadableManifest is a mod of the profile whose manifest is gone (Missing) or no longer parses.
+type UnreadableManifest struct {
+	Key     string
+	Folder  string
+	Missing bool
+}
+
+// Installed reads the manifest of every mod in the profile. A mod whose manifest is gone or no longer parses is left
+// out, since nothing can be said about it; UnreadableManifests names those. A package has no SMAPI manifest, so its
+// components stand as recorded at install, with the store item as their folder and the needs its Thunderstore
+// manifest lists.
 func (s *Store) Installed(game, id string) ([]Installed, error) {
+	out, _, err := s.installed(game, id)
+	return out, err
+}
+
+// UnreadableManifests lists the profile's mods that Installed leaves out for their manifest.
+func (s *Store) UnreadableManifests(game, id string) ([]UnreadableManifest, error) {
+	_, bad, err := s.installed(game, id)
+	return bad, err
+}
+
+func (s *Store) installed(game, id string) ([]Installed, []UnreadableManifest, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	p, dir, err := s.readDir(game, id)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	var out []Installed
+	var bad []UnreadableManifest
 	for _, e := range p.Entries {
 		if !e.hasFolder() {
 			out = append(out, s.packageInstalled(game, e)...)
@@ -44,7 +64,7 @@ func (s *Store) Installed(game, id string) ([]Installed, error) {
 		for _, m := range e.Mods {
 			plain, dotted, err := ModPaths(filepath.Join(dir, "mods"), e.Key, m.Folder)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			enabled := e.Enabled(m.ID)
 			folder := plain
@@ -53,10 +73,15 @@ func (s *Store) Installed(game, id string) ([]Installed, error) {
 			}
 			b, err := fsx.ReadFile(filepath.Join(folder, manifest.FileName))
 			if err != nil {
+				// A folder that is gone altogether is drift, which offers Restore.
+				if _, statErr := fsx.Stat(folder); statErr == nil {
+					bad = append(bad, UnreadableManifest{Key: e.Key, Folder: folder, Missing: true})
+				}
 				continue
 			}
 			mf, err := manifest.Parse(b)
 			if err != nil {
+				bad = append(bad, UnreadableManifest{Key: e.Key, Folder: folder})
 				continue
 			}
 			out = append(out, Installed{
@@ -67,7 +92,7 @@ func (s *Store) Installed(game, id string) ([]Installed, error) {
 			})
 		}
 	}
-	return out, nil
+	return out, bad, nil
 }
 
 func (s *Store) packageInstalled(game string, e Entry) []Installed {

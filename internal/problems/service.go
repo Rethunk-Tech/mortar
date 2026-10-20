@@ -22,6 +22,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -513,7 +514,7 @@ type driftScan struct {
 }
 
 func (s *Service) withDrift(gameID, id, fp string, r Result) (Result, error) {
-	r.Damaged = s.damagedMods(gameID, id)
+	r.Damaged = append(s.damagedMods(gameID, id), s.unreadableManifests(gameID, id)...)
 	if s.settings != nil && !s.settings.Get().DriftChecksOn() {
 		r.Drift = []profile.Drift{}
 		return r, nil
@@ -897,6 +898,29 @@ func (s *Service) Pages(gameID, id string) (map[string]string, error) {
 		return nil, err
 	}
 	return Pages(mods, gameID), nil
+}
+
+// unreadableManifests is a Damaged row for each mod whose manifest is gone or no longer parses: without one the mod
+// is in no other list, and Repair fetches it again.
+func (s *Service) unreadableManifests(gameID, id string) []Damaged {
+	if s.profiles == nil {
+		return nil
+	}
+	bad, err := s.profiles.UnreadableManifests(gameID, id)
+	if err != nil {
+		return nil
+	}
+	out := make([]Damaged, 0, len(bad))
+	for _, b := range bad {
+		d := Damaged{Key: b.Key, Name: filepath.Base(b.Folder), Files: []string{manifest.FileName}}
+		if b.Missing {
+			d.Missing = 1
+		} else {
+			d.Changed = 1
+		}
+		out = append(out, d)
+	}
+	return out
 }
 
 // maxDamagedFiles bounds the file names a Damaged row carries.

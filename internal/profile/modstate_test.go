@@ -53,6 +53,43 @@ func TestInstalledReturnsModFolders(t *testing.T) {
 	}
 }
 
+func TestUnreadableManifestsNameTheModsInstalledLeavesOut(t *testing.T) {
+	t.Parallel()
+	m := manifestJSON("me.a")
+	e, p := updEnv(t, map[string]string{"A/manifest.json": m}, nil)
+	folder, err := e.ModFolder("stardew", p.ID, "a-1", "smapi:me.a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	unreadable := func() []UnreadableManifest {
+		t.Helper()
+		bad, err := e.UnreadableManifests("stardew", p.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return bad
+	}
+	if bad := unreadable(); len(bad) != 0 {
+		t.Fatalf("a readable manifest reported: %+v", bad)
+	}
+	writeFile(t, folder, "manifest.json", "{ not json")
+	if bad := unreadable(); len(bad) != 1 || bad[0].Key != "a-1" || bad[0].Missing {
+		t.Fatalf("corrupt manifest: %+v", bad)
+	}
+	if err := os.Remove(filepath.Join(folder, "manifest.json")); err != nil {
+		t.Fatal(err)
+	}
+	if bad := unreadable(); len(bad) != 1 || !bad[0].Missing {
+		t.Fatalf("missing manifest: %+v", bad)
+	}
+	if err := os.RemoveAll(folder); err != nil {
+		t.Fatal(err)
+	}
+	if bad := unreadable(); len(bad) != 0 {
+		t.Fatalf("a folder that is gone is drift, not an unreadable manifest: %+v", bad)
+	}
+}
+
 func TestModStateAndResetConfig(t *testing.T) {
 	t.Parallel()
 	m := manifestJSON("me.a")
