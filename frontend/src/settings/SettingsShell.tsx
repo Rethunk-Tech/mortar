@@ -202,10 +202,13 @@ export function SettingsShell<Id extends string>({
           minWidth: 0,
           overflow: 'auto',
           px: space.gutter,
-          py: space.gutter,
+          pt: space.gutter,
           display: 'flex',
           flexDirection: 'column',
           gap: space.pad,
+          // WebKit leaves a flex scroller's bottom padding out of what scrolls, so a spacer keeps the last card off
+          // the window's edge.
+          '&::after': { content: '""', flexShrink: 0, height: space.gutter },
         }}
       >
         <Box

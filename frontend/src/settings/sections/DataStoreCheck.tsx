@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, LinearProgress, Typography } from '@mui/material'
+import { Alert, Box, Button, LinearProgress, Typography } from '@mui/material'
 import { Events } from '@wailsio/runtime'
 import { useEffect, useState } from 'react'
 import type {
@@ -34,28 +34,28 @@ function Result({ summary }: { summary: Summary }) {
   const damaged = summary.damaged ?? []
   const checked = plural(summary.checked, { one: '# mod checked', other: '# mods checked' })
   if (damaged.length === 0) {
-    return (
-      <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-        {summary.failed > 0
-          ? t`${checked}. ${plural(summary.failed, { one: '# could not be read.', other: '# could not be read.' })}`
-          : t`${checked}. All files are intact.`}
-      </Typography>
+    return summary.failed > 0 ? (
+      <Alert variant="compact" severity="warning">
+        {t`${checked}. ${plural(summary.failed, { one: '# could not be read.', other: '# could not be read.' })}`}
+      </Alert>
+    ) : (
+      <Alert variant="compact" severity="success">
+        {t`${checked}. All files are intact.`}
+      </Alert>
     )
   }
   const bad = plural(damaged.length, { one: '# has damaged files', other: '# have damaged files' })
   return (
-    <Box sx={{ fontSize: 14 }}>
-      <Typography
-        sx={{ fontSize: 14 }}
-      >{t`${checked}; ${bad}. Repair them from each profile's Problems tab.`}</Typography>
-      <Box component="ul" sx={{ m: 0, mt: 0.5, pl: space.pad, color: 'text.secondary' }}>
+    <Alert variant="compact" severity="error">
+      {t`${checked}; ${bad}. Repair them from each profile's Problems tab.`}
+      <Box component="ul" sx={{ m: 0, mt: 0.5, pl: space.pad }}>
         {damaged.map((item) => (
           <li key={`${item.game}/${item.key}`}>
             {t`${item.name}: ${item.missing} missing, ${item.changed} changed, ${item.extra} extra`}
           </li>
         ))}
       </Box>
-    </Box>
+    </Alert>
   )
 }
 

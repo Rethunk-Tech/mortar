@@ -23,7 +23,7 @@ import { type InlineError, inlineError } from '../toasts/report.ts'
 
 const STATUS_ICON = 30
 // Two columns once each can hold a row comfortably.
-const COLUMN_MIN = 460
+const COLUMN_MIN = 400
 
 const pathSx = { fontSize: 13, userSelect: 'text', overflowWrap: 'anywhere' } as const
 
