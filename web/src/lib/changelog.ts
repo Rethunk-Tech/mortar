@@ -23,7 +23,7 @@ function byVersionDesc(a: string, b: string): number {
 }
 
 /** A notes file's "## Group", "### Area" and "- line" lines as HTML. */
-export function notesHtml(md: string): string {
+function notesHtml(md: string): string {
   const out: string[] = []
   let open = false
   const close = () => {

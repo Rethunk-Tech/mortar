@@ -31,7 +31,8 @@
         "scripts/*.ts",
         "test/*.test.ts"
       ],
-      "project": ["**/*.{ts,astro,js}"]
+      "project": ["**/*.{ts,astro,js}"],
+      "ignoreUnresolved": ["/pagefind/pagefind.js"]
     }
   }
 }

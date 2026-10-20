@@ -4,7 +4,7 @@ import Download from '../components/Download.astro'
 import Mark from '../components/Mark.astro'
 import Base from '../layouts/Base.astro'
 import { steamArt } from '../lib/art.ts'
-import { releases } from '../lib/changelog.ts'
+import { changeCount, releases } from '../lib/changelog.ts'
 import { questions, whyPages } from '../lib/faq.ts'
 import { artOf, modSites, playableGames } from '../lib/games.ts'
 import { posts, shortDate } from '../lib/news.ts'
@@ -280,7 +280,7 @@ const features = [
             <p class="kicker">What's new</p>
             <h2>{now.title}</h2>
             <span class="dim">
-              Released {shortDate(now.date)} · <a href={`/news/${now.slug}/`}>all {now.release?.md.split('\n').filter((l) => l.startsWith('- ')).length} changes</a>
+              Released {shortDate(now.date)} · <a href={`/news/${now.slug}/`}>all {now.release ? changeCount(now.release) : ''} changes</a>
             </span>
           </div>
         </div>
