@@ -4863,11 +4863,21 @@
       "marker": "Gladio Mori.exe",
       "r2modmanFolder": "GladioMori",
       "metadata": [],
+      "paths": {
+        "mods": {
+          "windows": "{install}/Mods"
+        }
+      },
       "deploy": "profile",
       "targets": [
         {
           "id": "profile",
           "root": "{profile}"
+        },
+        {
+          "id": "mods",
+          "root": "{profile}/GameMods",
+          "modRoot": "*"
         }
       ],
       "stores": {
@@ -4885,6 +4895,10 @@
         {
           "id": "thunderstore",
           "key": "gladio-mori"
+        },
+        {
+          "id": "modio",
+          "key": "11453"
         }
       ]
     },
@@ -8202,11 +8216,21 @@
       "marker": "Timberborn.exe",
       "r2modmanFolder": "Timberborn",
       "metadata": [],
+      "paths": {
+        "mods": {
+          "windows": "{documents}/Timberborn/Mods"
+        }
+      },
       "deploy": "profile",
       "targets": [
         {
           "id": "profile",
           "root": "{profile}"
+        },
+        {
+          "id": "mods",
+          "root": "{profile}/GameMods",
+          "modRoot": "*"
         }
       ],
       "stores": {
@@ -8237,6 +8261,10 @@
           "id": "nexus",
           "key": "timberborn",
           "gameId": 4074
+        },
+        {
+          "id": "modio",
+          "key": "3659"
         }
       ]
     },
@@ -8552,6 +8580,9 @@
       "r2modmanFolder": "BONELAB",
       "metadata": [],
       "paths": {
+        "mods": {
+          "windows": "{localLow}/Stress Level Zero/BONELAB/Mods"
+        },
         "saves": {
           "windows": "{localLow}/Stress Level Zero/BONELAB/Saves"
         },
@@ -8564,6 +8595,12 @@
         {
           "id": "profile",
           "root": "{profile}"
+        },
+        {
+          "id": "mods",
+          "root": "{profile}/GameMods",
+          "keepWhole": ["bundle"],
+          "modRoot": "*.pallet.json"
         }
       ],
       "stores": {
@@ -8663,6 +8700,10 @@
           "id": "nexus",
           "key": "bonelab",
           "gameId": 4832
+        },
+        {
+          "id": "modio",
+          "key": "3809"
         }
       ]
     },
@@ -11537,13 +11578,53 @@
       },
       "loaders": [
         {
-          "id": "folder"
+          "id": "folder",
+          "name": ""
         }
       ],
       "sources": [
         {
           "id": "modio",
           "key": "5289"
+        }
+      ]
+    },
+    {
+      "id": "deep-rock-galactic",
+      "name": "Deep Rock Galactic",
+      "enabled": true,
+      "minVersion": "0.3.10",
+      "marker": "FSD-Win64-Shipping.exe",
+      "markerDir": "FSD/Binaries/Win64",
+      "metadata": [],
+      "paths": {
+        "mods": {
+          "windows": "{install}/FSD/Mods"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "mods",
+          "root": "{profile}/Mods",
+          "modRoot": "*.pak"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "548430"
+        }
+      },
+      "loaders": [
+        {
+          "id": "folder",
+          "name": ""
+        }
+      ],
+      "sources": [
+        {
+          "id": "modio",
+          "key": "2475"
         }
       ]
     },

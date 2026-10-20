@@ -38,6 +38,7 @@ export const SOURCE_NAMES: Record<string, string> = {
   itch: 'itch.io',
   patreon: 'Patreon',
   paradox: 'Paradox Mods',
+  modio: 'mod.io',
 }
 
 let playable: Game[] | undefined

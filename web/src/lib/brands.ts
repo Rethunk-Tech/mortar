@@ -73,6 +73,7 @@ export const MARKS: Record<string, { path: string; colour: string }> = {
 export const ART: Record<string, string> = {
   nexus: 'nexusmods.svg',
   vsmoddb: 'vsmoddb.png',
+  modio: 'modio.svg',
   bottles: 'bottles.svg',
 }
 
