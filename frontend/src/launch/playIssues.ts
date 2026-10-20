@@ -2,6 +2,7 @@ import type { AssetConflict } from '../../bindings/github.com/Rethunk-Tech/morta
 import { Runs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type {
   Broken,
+  LongPath,
   Missing,
   Result,
   Update,
@@ -29,6 +30,7 @@ type PlayIssueKind =
   | 'conflicts'
   | 'updates'
   | 'broken'
+  | 'longPaths'
   | 'lastProfile'
   | 'changes'
   | 'saveMods'
@@ -78,6 +80,7 @@ function playIssueSummary(input: {
   missing?: Missing[] | null
   assetConflicts?: AssetConflict[] | null
   broken?: Broken[] | null
+  longPaths?: LongPath[] | null
   updates?: Update[] | null
   currentProfileId?: string
   lastPlayed?: { folder: string; farm: string; profileId: string; profileName: string } | null
@@ -103,7 +106,11 @@ function playIssueSummary(input: {
       .filter((b) => b.status === 'broken' || b.status === 'obsolete' || b.status === 'cycle')
       .map((b) => ({ name: b.name })),
   )
-  for (const g of [missing, conflicts, updates, broken]) {
+  const longPaths = groupOf(
+    'longPaths',
+    (input.longPaths ?? []).map((l) => ({ name: l.name })),
+  )
+  for (const g of [missing, conflicts, updates, broken, longPaths]) {
     if (g) {
       groups.push(g)
     }
@@ -157,6 +164,7 @@ async function gatherPlayIssues(game: string, profileId: string): Promise<PlayIs
     missing: problems.missing,
     assetConflicts: problems.assetConflicts,
     broken: problems.broken,
+    longPaths: problems.longPaths ?? null,
     updates: visibleUpdates(updates, profile),
     currentProfileId: profileId,
     lastPlayed:

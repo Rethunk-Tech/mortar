@@ -304,6 +304,12 @@ export function useDescribe(): Describe {
         return describeLoadFailure(p.loadFailure)
       case 'damaged':
         return t`${p.damaged.name} has damaged files.`
+      case 'longPath': {
+        const { key, name, length } = p.longPath
+        return key === ''
+          ? t`${name}, a folder no mod owns, has a file path ${{ count: length }} characters long, more than most Windows games can open.`
+          : t`${name} has a file path ${{ count: length }} characters long, more than most Windows games can open.`
+      }
       case 'deprecated': {
         const { name, replacement } = p.deprecated
         return replacement

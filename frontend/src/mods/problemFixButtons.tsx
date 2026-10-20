@@ -26,6 +26,7 @@ import { DamagedFix } from './problemFix/DamagedFix.tsx'
 import { DeprecatedFix } from './problemFix/DeprecatedFix.tsx'
 import { DuplicateFix } from './problemFix/DuplicateFix.tsx'
 import { LoadFailureFix } from './problemFix/LoadFailureFix.tsx'
+import { LongPathFix } from './problemFix/LongPathFix.tsx'
 import { MissingFix } from './problemFix/MissingFix.tsx'
 import { PluginClashFix } from './problemFix/PluginClashFix.tsx'
 import { SettingFix } from './problemFix/SettingFix.tsx'
@@ -73,6 +74,10 @@ function DamagedKind({ problem, button }: KindProps<'damaged'>) {
   return <DamagedFix problem={problem} button={button} />
 }
 
+function LongPathKind({ problem, button }: KindProps<'longPath'>) {
+  return <LongPathFix problem={problem} button={button} />
+}
+
 function MissingKind({ problem, dismissedToken, button }: KindProps<'missing'>) {
   return <MissingFix problem={problem} dismissedToken={dismissedToken} button={button} />
 }
@@ -98,6 +103,7 @@ const problemFixes = {
   asset: AssetKind,
   missing: MissingKind,
   damaged: DamagedKind,
+  longPath: LongPathKind,
   pluginClash: PluginClashKind,
   deprecated: DeprecatedKind,
 } satisfies { [K in Problem['kind']]: ComponentType<KindProps<K>> }

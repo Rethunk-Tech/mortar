@@ -156,7 +156,15 @@ function ProblemRow({ row, dismissed }: { row: Row; dismissed?: DismissedRow }) 
           </Box>
         </Box>
         {authorNote === '' ? null : (
-          <Typography sx={{ mt: 0.5, fontSize: 13, color: 'text.secondary', whiteSpace: 'normal' }}>
+          <Typography
+            sx={{
+              mt: 0.5,
+              fontSize: 13,
+              color: 'text.secondary',
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
+            }}
+          >
             {authorNote}
           </Typography>
         )}

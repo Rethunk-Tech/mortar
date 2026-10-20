@@ -129,7 +129,7 @@ Code: `frontend/src/launch/`.
 
 - **Launch overlay** (`LaunchLayer.tsx`): an MUI Modal over the window (focus trapped, Esc hides it, the window controls stay clickable through a cut-out) until the game is up or the launch fails.
 - While the game runs, Play becomes a Running status with **Stop game** and the profile's mod controls lock ("Stop the game to change mods."): switching, removing, installing, dropping archives.
-- **Pre-Play dialogs** are each omitted when nothing applies and follow the dialog action rule ([Buttons and dialogs](#buttons-and-dialogs)): `PrePlayDialog.tsx` (missing dependencies, conflicts, pending updates, broken mods, a newest save last played with another profile; opt-out stored on the profile), `UpdateWarnDialog.tsx` (game version changed since the last launch, never on a first launch), `SaveWarnDialog.tsx` (the newest save uses mods the profile lacks; an unreadable save does not ask), `GraphicsDialog.tsx` (the catalog offers graphics APIs and the profile resolves none; the answer is saved to the game's Graphics API setting, and Play asks once more if the last run exited within seconds under a non-recommended choice).
+- **Pre-Play dialogs** are each omitted when nothing applies and follow the dialog action rule ([Buttons and dialogs](#buttons-and-dialogs)): `PrePlayDialog.tsx` (missing dependencies, conflicts, pending updates, broken mods, paths too long for Windows, a newest save last played with another profile; opt-out stored on the profile), `UpdateWarnDialog.tsx` (game version changed since the last launch, never on a first launch), `SaveWarnDialog.tsx` (the newest save uses mods the profile lacks; an unreadable save does not ask), `GraphicsDialog.tsx` (the catalog offers graphics APIs and the profile resolves none; the answer is saved to the game's Graphics API setting, and Play asks once more if the last run exited within seconds under a non-recommended choice).
 - **After a run:** a crash shows the Home crash card; a Mortar-started launch that ends with errors or a SMAPI crash opens the closed-with-errors dialog (`console/CrashDialog.tsx`).
 
 ## Tab header
@@ -254,6 +254,7 @@ Section order and membership: `problemSection.ts`. Rules a change could break:
 - **Slow startup** (`mods/slowStartups.ts`): a mod adding 3 s or more, or a content pack adding 1 s or more, from the latest startup report; a framework that loads content packs (Content Patcher) is never a row itself.
 - **Redundant:** mods replaced by an enabled replacement, packs every edit of which later packs overwrite, and C# mods doing the same job. A same-job group is one row with a **Remove one…** menu. Every row has a quiet **Dismiss** for a finding the player judges wrong; dismissed rows return by themselves when a different set of mods makes the mod redundant.
 - **Damaged files:** **Repair** downloads again from the source, or for a local mod re-extracts from its archive if still in downloads.
+- **Paths too long:** **Open storage settings** for a file the game reads in the profile, where moving the data folder shortens it; no button for one placed in the game's own folder, which only a shorter game folder fixes.
 
 ### Rows and fixes
 

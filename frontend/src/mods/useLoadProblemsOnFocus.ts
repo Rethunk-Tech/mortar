@@ -3,8 +3,14 @@ import { useEffect } from 'react'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useMods } from './store.ts'
+import { openTarget } from './storeView.ts'
 
 const FOCUS_DEBOUNCE_MS = 400
+
+interface ProblemsChanged {
+  game: string
+  profile: string
+}
 
 // The hook is mounted by the sidebar and by both Problems views, so each would add its own focus listener and one
 // focus would start one scan per listener. The listeners are shared: the first user adds them, the last removes them.
@@ -40,11 +46,20 @@ function attachFocusListeners(loadProblems: () => Promise<void>) {
   }
   // A scan that was waiting on the keyring prompt retries once the user unlocks it.
   const offUnlocked = Events.On('keyring:unlocked', scan)
+  // A load answers before the paths-too-long walk of changed mods ends, whose rows then come with problems:changed.
+  const offChanged = Events.On('problems:changed', (event) => {
+    const changed = event.data as ProblemsChanged
+    const open = openTarget()
+    if (open?.game === changed.game && open.id === changed.profile) {
+      loadProblems().catch(reportUnexpected)
+    }
+  })
   globalThis.addEventListener('focus', scan)
   document.addEventListener('visibilitychange', onVisible)
   return () => {
     globalThis.clearTimeout(timer)
     offUnlocked()
+    offChanged()
     globalThis.removeEventListener('focus', scan)
     document.removeEventListener('visibilitychange', onVisible)
   }

@@ -182,6 +182,7 @@ type Result struct {
 	Deprecated    []DeprecatedPackage    `json:"deprecated,omitempty"`
 	Drift         []profile.Drift        `json:"drift,omitempty"`
 	Damaged       []Damaged              `json:"damaged,omitempty"`
+	LongPaths     []LongPath             `json:"longPaths,omitempty"`
 	Dismissed     []DismissedProblem     `json:"dismissed"`
 	Unknown       bool                   `json:"unknown"`
 	Timings       []CheckTiming          `json:"timings,omitempty"`
@@ -205,7 +206,7 @@ func (r Result) Count() int {
 	}
 	return missing + len(r.Duplicates) + len(r.Broken) + ConflictRows(r.AssetConflicts) + len(r.Settings) +
 		len(r.RunErrors) + len(r.LoadFailures) + len(r.PluginClashes) + len(r.Drift) + len(r.Damaged) +
-		len(r.Deprecated) + len(r.Cleanup) + len(r.Compat) + redundantCount(r.Redundant)
+		len(r.LongPaths) + len(r.Deprecated) + len(r.Cleanup) + len(r.Compat) + redundantCount(r.Redundant)
 }
 
 // WarningCount is the cosmetic asset conflicts, which the Problems tab sets apart and which never need a fix.

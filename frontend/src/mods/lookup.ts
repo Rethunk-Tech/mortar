@@ -9,6 +9,7 @@ import type {
   DeprecatedPackage,
   Duplicate,
   LoadFailure,
+  LongPath,
   Missing,
   PluginClash,
   Result,
@@ -50,6 +51,7 @@ const buildProblems = (result: Result): Problem[] => [
   ),
   ...(result.settings ?? []).map((setting): Problem => ({ kind: 'setting', setting })),
   ...(result.damaged ?? []).map((damaged): Problem => ({ kind: 'damaged', damaged })),
+  ...(result.longPaths ?? []).map((longPath): Problem => ({ kind: 'longPath', longPath })),
   ...(result.deprecated ?? []).map((deprecated): Problem => ({ kind: 'deprecated', deprecated })),
   ...(result.pluginClashes ?? []).map(
     (pluginClash): Problem => ({ kind: 'pluginClash', pluginClash }),
@@ -129,6 +131,7 @@ export type Problem =
   | { kind: 'loadFailure'; loadFailure: LoadFailure }
   | { kind: 'setting'; setting: SettingHint }
   | { kind: 'damaged'; damaged: Damaged }
+  | { kind: 'longPath'; longPath: LongPath }
   | { kind: 'pluginClash'; pluginClash: PluginClash }
   | { kind: 'deprecated'; deprecated: DeprecatedPackage }
 
@@ -177,6 +180,9 @@ export function concerns(p: Problem, mod: Mod): boolean {
   }
   if (p.kind === 'damaged') {
     return p.damaged.key === mod.key
+  }
+  if (p.kind === 'longPath') {
+    return p.longPath.key === mod.key
   }
   if (p.kind === 'deprecated') {
     return p.deprecated.key === mod.key

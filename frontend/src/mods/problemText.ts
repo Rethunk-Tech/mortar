@@ -28,6 +28,8 @@ function useSectionTitle() {
         return t`Broken or outdated mods`
       case 'damaged':
         return t`Damaged`
+      case 'longPaths':
+        return t`Paths too long`
       case 'runErrors':
         return t`Last run`
       case 'loadFailures':
@@ -64,6 +66,8 @@ function useRowText() {
       note = row.setting.description.trim()
     } else if (row.kind === 'loadFailure') {
       note = loadKindText(row.loadFailure.kind)
+    } else if (row.kind === 'longPath') {
+      note = row.longPath.longest
     }
     let text = row.kind === 'drift' ? describeDrift(row.drift) : describe(row)
     if (note !== '' && text.endsWith(`: ${note}`)) {

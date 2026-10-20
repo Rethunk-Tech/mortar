@@ -268,6 +268,10 @@ A mod works better, or only works, with a setting changed. Nothing is wrong yet.
 
 Files of a stored mod went missing, changed or appeared since Mortar stored it (an antivirus, a disk fault, a manual edit). Reinstall the mod to restore them.
 
+#### Paths too long
+
+On Windows, a mod's file whose full path, where the game reads it, is 260 characters or more. A game opens such a file only when it is built for long paths, which most are not, and turning on long paths in Windows does not change that. The row names the longest path. A file the game reads from the profile gets a shorter path when you move Mortar's data folder somewhere shorter: **Open storage settings**, then **Move…**. A file placed in the game's own mods folder needs the game in a shorter folder. Linux, including games under Proton, is not affected.
+
 #### Plugins shipped twice
 
 Two enabled packages carry the same plugin. The loader starts only one, so you may be running the older. **Keep newer** leaves the newest enabled.

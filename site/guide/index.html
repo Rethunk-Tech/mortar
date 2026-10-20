@@ -323,6 +323,8 @@ sudo pacman -Sy mortar
 <p>A mod works better, or only works, with a setting changed. Nothing is wrong yet. The row names the setting and the button changes it.</p>
 <h4 id="damaged-files">Damaged files</h4>
 <p>Files of a stored mod went missing, changed or appeared since Mortar stored it (an antivirus, a disk fault, a manual edit). Reinstall the mod to restore them.</p>
+<h4 id="paths-too-long">Paths too long</h4>
+<p>On Windows, a mod's file whose full path, where the game reads it, is 260 characters or more. A game opens such a file only when it is built for long paths, which most are not, and turning on long paths in Windows does not change that. The row names the longest path. A file the game reads from the profile gets a shorter path when you move Mortar's data folder somewhere shorter: <strong>Open storage settings</strong>, then <strong>Move…</strong>. A file placed in the game's own mods folder needs the game in a shorter folder. Linux, including games under Proton, is not affected.</p>
 <h4 id="plugins-shipped-twice">Plugins shipped twice</h4>
 <p>Two enabled packages carry the same plugin. The loader starts only one, so you may be running the older. <strong>Keep newer</strong> leaves the newest enabled.</p>
 <h4 id="deprecated-packages">Deprecated packages</h4>

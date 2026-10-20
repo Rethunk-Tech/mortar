@@ -26,6 +26,7 @@ export type ProblemSectionId =
   | 'conflicts'
   | 'broken'
   | 'damaged'
+  | 'longPaths'
   | 'runErrors'
   | 'loadFailures'
   | 'pluginClashes'
@@ -83,6 +84,10 @@ export function problemSections(result: Result): ProblemSection[] {
     {
       id: 'damaged',
       rows: (result.damaged ?? []).map((damaged): Row => ({ kind: 'damaged', damaged })),
+    },
+    {
+      id: 'longPaths',
+      rows: (result.longPaths ?? []).map((longPath): Row => ({ kind: 'longPath', longPath })),
     },
     {
       id: 'runErrors',

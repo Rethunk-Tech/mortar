@@ -1816,6 +1816,7 @@ func (c *cmd) printProblemsText(r problems.Result) {
 	fmt.Fprintf(c.out, "outside edits: %d\n", len(r.Drift))
 	fmt.Fprintf(c.out, "cleanup: %d\n", len(r.Cleanup))
 	fmt.Fprintf(c.out, "compat: %d\n", len(r.Compat))
+	fmt.Fprintf(c.out, "long paths: %d\n", len(r.LongPaths))
 	fmt.Fprintf(c.out, "counted: %d\n", r.Count())
 	fmt.Fprintf(c.out, "harmless: %d\n", harmless)
 }
@@ -1877,6 +1878,9 @@ func (c *cmd) printProblems(r problems.Result) {
 	}
 	for _, x := range r.Drift {
 		fmt.Fprintf(c.out, "edited     %s %s\n", x.Kind, x.Folder)
+	}
+	for _, x := range r.LongPaths {
+		fmt.Fprintf(c.out, "long path  %s: %d files, longest %d characters: %s\n", x.Name, x.Files, x.Length, x.Longest)
 	}
 	fmt.Fprintf(c.out, "Dismissed (%d)\n", len(r.Dismissed))
 }

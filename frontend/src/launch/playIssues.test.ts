@@ -109,7 +109,7 @@ test('playIssueSummary names a missing requirement Unknown mod when the page has
   ])
 })
 
-test('playIssueSummary groups required missing, non-cosmetic conflicts, updates, and broken or obsolete', () => {
+test('playIssueSummary groups required missing, non-cosmetic conflicts, updates, broken or obsolete, and long paths', () => {
   const names = ['A', 'B', 'C', 'D', 'E', 'F']
   expect(
     playIssueSummary({
@@ -133,6 +133,9 @@ test('playIssueSummary groups required missing, non-cosmetic conflicts, updates,
         broken({ name: 'Old', status: 'obsolete' }),
         broken({ name: 'Dead', status: 'abandoned' }),
       ],
+      longPaths: [
+        { key: 'nexus-1-2', name: 'Deep', files: 2, longest: 'x', length: 270, placed: false },
+      ],
       updates: names.map((name, i) => update({ name, key: String(i) })),
     }),
   ).toEqual([
@@ -140,6 +143,7 @@ test('playIssueSummary groups required missing, non-cosmetic conflicts, updates,
     { kind: 'conflicts', count: 1, names: ['SVE and Other'] },
     { kind: 'updates', count: 6, names: ['A', 'B', 'C', 'D', 'E'] },
     { kind: 'broken', count: 1, names: ['Old'] },
+    { kind: 'longPaths', count: 1, names: ['Deep'] },
   ])
 })
 

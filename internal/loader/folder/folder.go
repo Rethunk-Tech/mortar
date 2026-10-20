@@ -42,6 +42,22 @@ func (Loader) Install(context.Context, loader.Target, loader.Package, func(loade
 	return "", errors.New("this game has no mod loader to install")
 }
 
+// PlacedFolder is the mods target's folder in the profile, whose files Contribute places in the game's mods folder.
+func (Loader) PlacedFolder(gameID string) (string, string, bool) {
+	info, ok := components.Game(gameID)
+	if !ok {
+		return "", "", false
+	}
+	if _, has := info.Paths[ModsRole]; !has {
+		return "", "", false
+	}
+	t, ok := info.Target(TargetID)
+	if !ok {
+		return "", "", false
+	}
+	return t.ProfileFolder(), ModsRole, true
+}
+
 // Contribute places every file the profile's enabled mods laid out in the mods target's folder into the game's mods
 // folder. Files the player already has there are the deployer's to displace and give back, never the loader's.
 func (Loader) Contribute(_ context.Context, plan *launchplan.Plan, p loader.ProfileView) error {

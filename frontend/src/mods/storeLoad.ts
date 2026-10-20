@@ -2,7 +2,7 @@ import { msg } from '@lingui/core/macro'
 import type { Result } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import {
   Pages,
-  Problems,
+  ProblemsNoWait,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { Mods } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
@@ -32,7 +32,7 @@ async function scanProblems(
     set({ problems: null })
   }
   try {
-    const problems = await Problems(target.game, target.id)
+    const problems = await ProblemsNoWait(target.game, target.id)
     if (openTarget()?.id === target.id) {
       const was = get().problemsFor === target.id ? get().problems : null
       set({

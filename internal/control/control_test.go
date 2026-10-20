@@ -65,6 +65,14 @@ func TestModProblemsFiltersByNexusModAndOmitsCosmeticConflicts(t *testing.T) {
 	}
 }
 
+func TestPlayCheckNamesEntriesWithLongPaths(t *testing.T) {
+	result := problems.Result{LongPaths: []problems.LongPath{{Key: "nexus-1-2", Name: "Deep Pack", Files: 3}}}
+	got := playIssueGroups(profile.Profile{}, result, problems.UpdatesResult{}, false)
+	if len(got) != 1 || got[0].Kind != "longPaths" || got[0].Count != 1 || len(got[0].Names) != 1 || got[0].Names[0] != "Deep Pack" {
+		t.Fatalf("playIssueGroups = %+v", got)
+	}
+}
+
 func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 	dir := t.TempDir()
 	ctx, cancel := context.WithCancel(context.Background())

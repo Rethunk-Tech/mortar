@@ -41,7 +41,6 @@ Parked; take up when asked.
 - **Hosted share service** with short codes and share versioning; the **Xbox app** version (WindowsApps folders are locked down); an **Add to Mortar** button on Nexus listing tiles, which needs Nexus's approval first ([nexus-application.md](nexus-application.md)).
 - **Settings:** an offline mode that never contacts the network.
 - **EA App libraries on another drive** are found only once the player adds the folder (`internal/gamestore/drivers.go` `eaDirs`).
-- **Long mod paths:** a path longer than Windows reads (260 characters) is copied without a warning.
 - **Windows code signing** with Azure Trusted Signing; until then installers stay unsigned and are checked against the signed `SHA256SUMS`.
 - **Registering Mortar with Nexus:** SSO and OAuth PKCE are built behind `nexussso.Slug` / `ClientID`, waiting for Nexus approval ([nexus-application.md](nexus-application.md)).
 - **Discord release post** drafted beside the release notes, once the new Discord thread exists.

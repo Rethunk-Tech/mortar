@@ -55,6 +55,8 @@ type Service struct {
 	firstCheck      sync.Once
 	// Installing reports whether the download queue still has work for the profile; nil means never.
 	Installing func(gameID, profileID string) bool
+	// Emit sends ChangedEvent when rows a check answered without come in.
+	Emit func(name string, data any)
 
 	mu      sync.Mutex
 	drift   map[string]driftScan
@@ -64,6 +66,7 @@ type Service struct {
 	assets  map[string]cachedIndex
 	// orphans are the keys of the unneeded implicit mods the last check outside an install reported, per profile.
 	orphans map[string]map[string]bool
+	long    map[string]*longPathWalk
 }
 
 type problemCall struct {
@@ -127,7 +130,7 @@ func (c cached) fresh(fp string, now time.Time) bool {
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store, m *meta.Client) *Service {
-	return &Service{home: home, settings: s, profiles: profiles, meta: m, drift: map[string]driftScan{}, cache: map[string]cached{}, updates: map[string]cachedUpdates{}, checks: map[string]*problemCall{}, assets: map[string]cachedIndex{}, orphans: map[string]map[string]bool{}}
+	return &Service{home: home, settings: s, profiles: profiles, meta: m, drift: map[string]driftScan{}, cache: map[string]cached{}, updates: map[string]cachedUpdates{}, checks: map[string]*problemCall{}, assets: map[string]cachedIndex{}, orphans: map[string]map[string]bool{}, long: map[string]*longPathWalk{}}
 }
 
 func platform() string {
@@ -265,7 +268,19 @@ func (s *Service) installed(gameID, id string) ([]framework.Mod, error) {
 // Problems checks the profile's mods and leaves out each conflict's evidence, which is most of the result and
 // only an expanded row shows; ConflictEvidence fetches it.
 func (s *Service) Problems(ctx context.Context, gameID, id string) (Result, error) {
-	r, err := s.ProblemsWithEvidence(ctx, gameID, id)
+	r, err := s.problems(ctx, gameID, id, true)
+	return s.withoutEvidence(r, err)
+}
+
+// ProblemsNoWait is Problems for the window's own loads, answered before the paths-too-long walk of changed mods ends:
+// until it does, the result holds the rows the walk before found, and ChangedEvent names the profile when the new ones
+// are in. The walk is about a sixth of a cold check of an 800-mod profile, for a row only Windows builds show.
+func (s *Service) ProblemsNoWait(ctx context.Context, gameID, id string) (Result, error) {
+	r, err := s.problems(ctx, gameID, id, false)
+	return s.withoutEvidence(r, err)
+}
+
+func (s *Service) withoutEvidence(r Result, err error) (Result, error) {
 	if s.AfterFirstCheck != nil {
 		s.firstCheck.Do(s.AfterFirstCheck)
 	}
@@ -311,6 +326,11 @@ func (s *Service) ConflictEvidence(ctx context.Context, gameID, id, kind, target
 //
 //wails:ignore
 func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (Result, error) {
+	return s.problems(ctx, gameID, id, true)
+}
+
+// problems is ProblemsWithEvidence, waiting for the paths-too-long walk only when wait is set.
+func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (Result, error) {
 	mods, err := s.installed(gameID, id)
 	if err != nil {
 		return Result{}, err
@@ -347,15 +367,18 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 	s.mu.Lock()
 	c, ok := s.cache[key]
 	s.mu.Unlock()
+	walk := func() *longPathWalk {
+		return s.longPathWalkOf(gameID, id, fp, func() []LongPath { return s.longPaths(gameID, id, mods) })
+	}
 	if ok && c.fresh(fp, time.Now()) {
-		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, s.withSaveFarms(ctx, gameID, id, c.result), gameID, mods, c.sameJob)))
+		return s.withDrift(gameID, id, fp, s.withLongPaths(ctx, walk(), wait, s.withDismissed(gameID, id, s.withCompat(ctx, s.withSaveFarms(ctx, gameID, id, c.result), gameID, mods, c.sameJob))))
 	}
 
 	checkKey := key + "\x00" + fp
 	s.mu.Lock()
 	if c, ok := s.cache[key]; ok && c.fresh(fp, time.Now()) {
 		s.mu.Unlock()
-		return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, s.withSaveFarms(ctx, gameID, id, c.result), gameID, mods, c.sameJob)))
+		return s.withDrift(gameID, id, fp, s.withLongPaths(ctx, walk(), wait, s.withDismissed(gameID, id, s.withCompat(ctx, s.withSaveFarms(ctx, gameID, id, c.result), gameID, mods, c.sameJob))))
 	}
 	s.mu.Unlock()
 
@@ -444,7 +467,8 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 		}
 		logCheckTimings(id, r.Timings)
 		r.Cleanup = s.settleOrphans(key, r.Cleanup, installing)
-		s.recordHealth(gameID, id, env, mods, r)
+		// The walk starts once the rest of the check is done, so it never slows an answer that does not wait for it.
+		s.recordHealthAfter(walk(), gameID, id, env, mods, r)
 		return r
 	})
 	if err != nil {
@@ -457,7 +481,7 @@ func (s *Service) ProblemsWithEvidence(ctx context.Context, gameID, id string) (
 	}
 	s.cache[key] = entry
 	s.mu.Unlock()
-	return s.withDrift(gameID, id, fp, s.withDismissed(gameID, id, s.withCompat(ctx, s.withSaveFarms(ctx, gameID, id, r), gameID, mods, entry.sameJob)))
+	return s.withDrift(gameID, id, fp, s.withLongPaths(ctx, walk(), wait, s.withDismissed(gameID, id, s.withCompat(ctx, s.withSaveFarms(ctx, gameID, id, r), gameID, mods, entry.sameJob))))
 }
 
 // settleOrphans keeps the count steady while the queue installs: a dependency lands before the mod that needs it, so
@@ -499,6 +523,7 @@ func (s *Service) ForgetCached() {
 	s.drift = map[string]driftScan{}
 	s.updates = map[string]cachedUpdates{}
 	s.assets = map[string]cachedIndex{}
+	s.long = map[string]*longPathWalk{}
 	s.mu.Unlock()
 	framework.Forget()
 }
@@ -786,6 +811,14 @@ func (s *Service) fixStaleManifests(gameID, id string, held []Held) {
 
 func hideUpdates(r UpdatesResult, mods []framework.Mod, set settings.Settings) UpdatesResult {
 	return HideHeld(r, mods, set.IncludePrereleaseModVersions, set.SmapiBuilds)
+}
+
+// recordHealthAfter records the check's health point once walk has its rows, which the count includes.
+func (s *Service) recordHealthAfter(walk *longPathWalk, gameID, id string, env Environment, mods []framework.Mod, r Result) {
+	s.afterLongPaths(walk, func() {
+		r.LongPaths = walk.rows
+		s.recordHealth(gameID, id, env, mods, r)
+	})
 }
 
 func (s *Service) recordHealth(gameID, id string, env Environment, mods []framework.Mod, r Result) {

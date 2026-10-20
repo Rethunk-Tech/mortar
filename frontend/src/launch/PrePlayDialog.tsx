@@ -41,6 +41,8 @@ function GroupHeading({ group }: { group: PlayIssueGroup }) {
       return t`Pending updates (${group.count})`
     case 'broken':
       return t`Broken or obsolete (${group.count})`
+    case 'longPaths':
+      return t`Paths too long for Windows (${group.count})`
     case 'lastProfile':
       return t`${group.save} was last played with ${group.profileName}`
     case 'changes':

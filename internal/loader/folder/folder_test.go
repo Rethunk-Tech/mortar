@@ -103,6 +103,19 @@ func TestEnabledModsAreSwappedIntoTheModsFolderAndTakenBack(t *testing.T) {
 	if len(plan.Files) != 4 {
 		t.Fatalf("two enabled mods of two files each must be placed, got %+v", plan.Files)
 	}
+	places, ok := l.(loader.PlacesFolder)
+	if !ok {
+		t.Fatal("the folder loader must say which folder it places")
+	}
+	folder, role, ok := places.PlacedFolder(gameID)
+	if !ok || folder != "Mods" || role != "mods" {
+		t.Fatalf("PlacedFolder = %q, %q, %v", folder, role, ok)
+	}
+	for _, f := range plan.Files {
+		if f.Root != role || f.Src != filepath.Join(profDir, folder, f.Dst) {
+			t.Fatalf("%+v is not the placed folder's file at the same path below the %s folder", f, role)
+		}
+	}
 
 	mods := filepath.Join(t.TempDir(), "Documents", "Mods")
 	if err := os.MkdirAll(filepath.Join(mods, "one"), 0o750); err != nil {
@@ -155,6 +168,11 @@ func TestAnUnknownGameIsRefused(t *testing.T) {
 	l, _ := loader.Get("folder")
 	if err := l.Contribute(t.Context(), launchplan.New(launchplan.ModeProfile), loader.ProfileView{Game: "no-such-game"}); err == nil {
 		t.Fatal("an unknown game must be refused")
+	}
+	if places, ok := l.(loader.PlacesFolder); !ok {
+		t.Fatal("the folder loader must say which folder it places")
+	} else if _, _, ok := places.PlacedFolder("no-such-game"); ok {
+		t.Fatal("an unknown game places no folder")
 	}
 }
 

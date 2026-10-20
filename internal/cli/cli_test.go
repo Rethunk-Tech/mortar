@@ -636,6 +636,7 @@ func TestProfileListAndProblemsText(t *testing.T) {
 		"problems": problems.Result{
 			Missing:        []problems.Missing{{ID: "smapi:Need.Mod", Optional: false}, {ID: "smapi:Opt", Optional: true}},
 			AssetConflicts: []framework.AssetConflict{{Kind: "load", Target: "x", Names: []string{"A"}}, {Kind: "edit", Target: "y", Cosmetic: true}},
+			LongPaths:      []problems.LongPath{{Key: "nexus-1-2", Name: "Deep", Files: 1, Length: 270}},
 		},
 	}
 	r := invoke(t, results, "profile", "list", "stardew", "Farm", "--format", "text")
@@ -653,7 +654,7 @@ func TestProfileListAndProblemsText(t *testing.T) {
 		t.Fatalf("profile list needs format: %+v", r)
 	}
 	r = invoke(t, results, "problems", "stardew", "Farm", "--format", "text")
-	if r.code != 0 || !strings.Contains(r.out, "missing: 1") || !strings.Contains(r.out, "conflicts: 1") || !strings.Contains(r.out, "harmless: 2") {
+	if r.code != 0 || !strings.Contains(r.out, "missing: 1") || !strings.Contains(r.out, "conflicts: 1") || !strings.Contains(r.out, "harmless: 2") || !strings.Contains(r.out, "long paths: 1") || !strings.Contains(r.out, "counted: 3") {
 		t.Fatalf("problems text: %q", r.out)
 	}
 }

@@ -145,6 +145,14 @@ type InstalledVersion interface {
 // this path role.
 type WithPlayerLog interface{ PlayerLogRole() string }
 
+// PlacesFolder is a loader that places the files of one profile folder into a folder of the game for each launch, where
+// the game reads them (the folder loader's mods); the game reads the rest of the profile where it is.
+type PlacesFolder interface {
+	// PlacedFolder is the slash path below the profile's root whose files are placed, "" for the whole profile, and the
+	// catalog path role of the folder they go in; ok is false when the game names neither.
+	PlacedFolder(gameID string) (folder, role string, ok bool)
+}
+
 // WithConfig is a loader whose mods keep settings files in the profile that Mortar may edit, and that a shared
 // profile carries.
 type WithConfig interface {

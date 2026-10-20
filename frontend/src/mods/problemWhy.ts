@@ -66,6 +66,13 @@ export const problemWhy: Record<Row['kind'], Why> = {
         msg`Files of this stored mod went missing, changed or appeared after Mortar stored it. An antivirus, a disk fault or a manual edit can cause that, and the mod may misbehave.`,
       ),
   },
+  longPath: {
+    anchor: 'paths-too-long',
+    text: () =>
+      i18n._(
+        msg`Windows programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Turning on long paths in Windows does not change that for such a game.`,
+      ),
+  },
   pluginClash: {
     anchor: 'plugins-shipped-twice',
     text: () =>
