@@ -72,14 +72,19 @@ function ConflictRow({ group }: { group: ConflictGroup }) {
         title={group.paths.join('\n')}
         sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)', wordBreak: 'break-word' }}
       >
-        {more > 0 ? t`${files} and ${more} more` : files}
+        {more > 0
+          ? t`${listNames(group.paths.slice(0, SHOWN_PATHS))} and ${{ count: more }} more`
+          : files}
       </Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: space.gap }}>
-        {group.beaten.map((loser) => (
-          <Button key={loser} size="small" onClick={() => makeWin(loser)}>
-            {t`Make ${name(loser)} win`}
-          </Button>
-        ))}
+        {group.beaten.map((loser) => {
+          const loserName = name(loser)
+          return (
+            <Button key={loser} size="small" onClick={() => makeWin(loser)}>
+              {t`Make ${{ name: loserName }} win`}
+            </Button>
+          )
+        })}
       </Box>
     </Box>
   )

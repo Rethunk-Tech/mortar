@@ -213,10 +213,7 @@ export function GameModsReviewDialog({
               {t`Cancel`}
             </Button>
             <LockedReason locked={locked}>
-              <Button
-                disabled={busy || locked || chosen.length === 0}
-                onClick={() => sync(true)}
-              >
+              <Button disabled={busy || locked || chosen.length === 0} onClick={() => sync(true)}>
                 {t`Move into profile`}
               </Button>
             </LockedReason>

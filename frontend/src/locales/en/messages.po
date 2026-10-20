@@ -249,6 +249,7 @@ msgstr "List mods inside a folder whose name starts with a dot, which SMAPI skip
 msgid "{names} can't be reached, so Mortar can't check for mod updates"
 msgstr "{names} can't be reached, so Mortar can't check for mod updates"
 
+#: src/mods/FileConflictsSection.tsx:84
 #: src/mods/problemFix/WinFix.tsx:90
 msgid "Make {name} win"
 msgstr "Make {name} win"
@@ -4952,7 +4953,7 @@ msgstr "Download speed limit (MB/s)"
 msgid "Mods from the same download are removed together: {0}. You can undo this."
 msgstr "Mods from the same download are removed together: {0}. You can undo this."
 
-#: src/mods/GameModsReviewDialog.tsx:229
+#: src/mods/GameModsReviewDialog.tsx:226
 msgid "Copy into profile"
 msgstr "Copy into profile"
 
@@ -6450,7 +6451,7 @@ msgstr "Open mod"
 msgid "Open on GitHub"
 msgstr "Open on GitHub"
 
-#: src/mods/GameModsReviewDialog.tsx:220
+#: src/mods/GameModsReviewDialog.tsx:217
 msgid "Move into profile"
 msgstr "Move into profile"
 
@@ -6617,11 +6618,6 @@ msgstr "Mortar can start {name} directly instead, without the Steam overlay or S
 msgid "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 
-#. placeholder {0}: name(loser)
-#: src/mods/FileConflictsSection.tsx:80
-msgid "Make {0} win"
-msgstr "Make {0} win"
-
 #: src/share/DestinationGrid.tsx:80
 msgid "Where to share"
 msgstr "Where to share"
@@ -6693,10 +6689,6 @@ msgstr "Install yourself"
 #: src/launchers/LauncherList.tsx:203
 msgid "Found"
 msgstr "Found"
-
-#: src/mods/FileConflictsSection.tsx:75
-msgid "{files} and {more} more"
-msgstr "{files} and {more} more"
 
 #: src/launch/PrePlayDialog.tsx:130
 msgid "Before you play"
@@ -7774,7 +7766,9 @@ msgid "Profile code"
 msgstr "Profile code"
 
 #. placeholder {0}: listNames(group.names)
+#. placeholder {0}: listNames(group.paths.slice(0, SHOWN_PATHS))
 #: src/launch/PrePlayDialog.tsx:74
+#: src/mods/FileConflictsSection.tsx:76
 msgid "{0} and {count} more"
 msgstr "{0} and {count} more"
 
@@ -15164,7 +15158,7 @@ msgstr "Applied the next time the server starts. The password stays in this prof
 #: src/mods/AssetMapDialog.tsx:283
 #: src/mods/AuthorDialog.tsx:166
 #: src/mods/ChangelogDialog.tsx:104
-#: src/mods/GameModsReviewDialog.tsx:235
+#: src/mods/GameModsReviewDialog.tsx:232
 #: src/mods/OldFilesCallouts.tsx:275
 #: src/mods/updateReview/ReviewFooter.tsx:29
 #: src/profiles/CompareTop.tsx:148
