@@ -27,7 +27,7 @@ import { requirementNameIn } from './requirementName.ts'
 import { useMods } from './store.ts'
 
 const INLINE_REQUIRED = 4
-const ROW_ESTIMATE_PX = 72
+const ROW_ESTIMATE_PX = 44
 const INLINE_USERS = 2
 
 function DepChip({
@@ -131,7 +131,7 @@ function DepChips({
     return null
   }
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 0.75 }}>
+    <>
       {shownRequired.map((id) => chip('req', id, missingIds.has(idKey(id))))}
       {optional.map((id) => chip('opt', id))}
       {open || users.length <= INLINE_USERS ? users.map((id) => chip('dep', id)) : null}
@@ -149,7 +149,7 @@ function DepChips({
           onClick={() => setOpen((v) => !v)}
         />
       ) : null}
-    </Box>
+    </>
   )
 }
 
@@ -184,7 +184,16 @@ const OrderRowBody = memo(function OrderRowContent({ row, names, onScroll }: Row
         {row.position}
       </Typography>
       <Box sx={{ minWidth: 0, flex: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minWidth: 0 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            columnGap: space.gap,
+            rowGap: 0.75,
+            minWidth: 0,
+          }}
+        >
           <RowName row={row} />
           {row.cycle ? (
             <Tooltip title={t`These mods require each other.`} describeChild={true}>
@@ -212,8 +221,8 @@ const OrderRowBody = memo(function OrderRowContent({ row, names, onScroll }: Row
               />
             </Tooltip>
           ) : null}
+          <DepChips row={row} names={names} onScroll={onScroll} />
         </Box>
-        <DepChips row={row} names={names} onScroll={onScroll} />
       </Box>
     </>
   )
@@ -339,12 +348,10 @@ function OrderSkeleton({ label }: { label: string }) {
           }}
         >
           <Skeleton width={24} />
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: space.gap }}>
             <Skeleton width={SKELETON_NAME[i % SKELETON_NAME.length]} />
-            <Box sx={{ display: 'flex', gap: 0.75, mt: 0.75 }}>
-              <Skeleton variant="rounded" width={120} height={22} />
-              <Skeleton variant="rounded" width={90} height={22} />
-            </Box>
+            <Skeleton variant="rounded" width={120} height={22} />
+            <Skeleton variant="rounded" width={90} height={22} />
           </Box>
         </Box>
       ))}
