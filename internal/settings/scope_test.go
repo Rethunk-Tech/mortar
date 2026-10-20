@@ -43,7 +43,7 @@ func TestFileIsSplitByScope(t *testing.T) {
 	if _, ok := doc.Global["nexusName"]; ok {
 		t.Fatalf("a source key sits in global: %s", b)
 	}
-	if doc.Loaders["smapi"]["builds"] != "show" || doc.Games["stardew"]["smapiBuilds"] != nil {
+	if doc.Loaders["smapi"]["builds"] != nil || doc.Games["stardew"]["smapiBuilds"] != nil {
 		t.Fatalf("loader scope: %s", b)
 	}
 	if doc.Loaders["stardew/smapi"]["pin"] != "4.0.0" || doc.Loaders["valheim/bepinex5"]["lastSweepVersion"] != "5.4.2304" || doc.Global["loaderPrefs"] != nil {
@@ -142,5 +142,52 @@ func TestLoaderPinAndSweepBelongToOneGame(t *testing.T) {
 	}
 	if got.LoaderPrefs[LoaderKey("valheim", "bepinex5")].LastSweepVersion != "" {
 		t.Fatalf("sweep = %+v", got.LoaderPrefs)
+	}
+}
+
+func TestFileHoldsOnlyWhatDiffersFromTheDefaults(t *testing.T) {
+	s, dir := open(t)
+	if _, err := s.Update(func(*Settings) {}); err != nil {
+		t.Fatal(err)
+	}
+	b, err := fsx.ReadFile(filepath.Join(dir, FileName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc struct {
+		Global  map[string]any `json:"global"`
+		Sources map[string]any `json:"sources"`
+		Loaders map[string]any `json:"loaders"`
+		Games   map[string]any `json:"games"`
+	}
+	if err := json.Unmarshal(b, &doc); err != nil {
+		t.Fatal(err)
+	}
+	if len(doc.Global)+len(doc.Sources)+len(doc.Loaders)+len(doc.Games) != 0 {
+		t.Fatalf("a settings file at the defaults holds values: %s", b)
+	}
+	if _, err := s.Update(func(v *Settings) { v.Accent = "moss" }); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Update(func(v *Settings) { v.Accent = Defaults().Accent }); err != nil {
+		t.Fatal(err)
+	}
+	if b2, _ := fsx.ReadFile(filepath.Join(dir, FileName)); string(b2) != string(b) {
+		t.Fatalf("setting a value back to its default left it in the file: %s", b2)
+	}
+}
+
+func TestADefaultChangedInCodeReachesAFileThatNeverSetIt(t *testing.T) {
+	file := []byte(`{"formatVersion":1,"global":{"accent":"moss"},"games":{"stardew":{"runsKept":7}}}`)
+	got, err := decodeFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := Defaults()
+	if got.ListGroupBy != want.ListGroupBy || got.ImplicitModsView != want.ImplicitModsView || got.Accent != "moss" {
+		t.Fatalf("a key the file lacks is not its default: %q %q %q", got.ListGroupBy, got.ImplicitModsView, got.Accent)
+	}
+	if g := got.GamePrefs("stardew"); g.RunsKept != 7 || g.SaveBackupsKept != defaultGameSettingsFor("stardew").SaveBackupsKept {
+		t.Fatalf("game prefs = %+v", g)
 	}
 }

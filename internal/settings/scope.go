@@ -175,7 +175,61 @@ func encodeFile(s Settings) (diskFile, error) {
 		return diskFile{}, err
 	}
 	delete(flat, "formatVersion")
-	return diskFile{FormatVersion: s.FormatVersion, scoped: split(flat)}, nil
+	def, err := asObject(Defaults())
+	if err != nil {
+		return diskFile{}, err
+	}
+	// The shortcuts in s are the user's overrides, which the defaults never equal; none is the common case.
+	def["shortcuts"] = json.RawMessage("{}")
+	for k, v := range flat {
+		if d, ok := def[k]; ok && bytes.Equal(v, d) {
+			delete(flat, k)
+		}
+	}
+	doc := diskFile{FormatVersion: s.FormatVersion, scoped: split(flat)}
+	if len(doc.Games) > 0 {
+		games, err := stripDefaultGames(doc.Games)
+		if err != nil {
+			return diskFile{}, err
+		}
+		doc.Games = games
+	}
+	return doc, nil
+}
+
+// stripDefaultGames drops, from each game's block, the prefs that equal that game's defaults, and the games left with
+// none, so a default changed in code reaches a game that never set it.
+func stripDefaultGames(raw json.RawMessage) (json.RawMessage, error) {
+	var games map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &games); err != nil {
+		return nil, err
+	}
+	for id, block := range games {
+		def, err := asObject(defaultGameSettingsFor(id))
+		if err != nil {
+			return nil, err
+		}
+		var fields map[string]json.RawMessage
+		if err := json.Unmarshal(block, &fields); err != nil {
+			return nil, err
+		}
+		for k, v := range fields {
+			if d, ok := def[k]; ok && bytes.Equal(v, d) {
+				delete(fields, k)
+			}
+		}
+		if len(fields) == 0 {
+			delete(games, id)
+			continue
+		}
+		if games[id], err = json.Marshal(fields); err != nil {
+			return nil, err
+		}
+	}
+	if len(games) == 0 {
+		return nil, nil
+	}
+	return json.Marshal(games)
 }
 
 // decodeFile reads a settings.json document.
@@ -193,9 +247,29 @@ func decodeFile(b []byte) (Settings, error) {
 	if err != nil {
 		return Settings{}, err
 	}
-	var s Settings
+	// A key the file lacks keeps its default, so a default changed in code reaches a file that never set it. The
+	// shortcuts are the exception: the file holds only the user's overrides, which normalizeShortcuts lays over the
+	// defaults.
+	s := Defaults()
+	s.Shortcuts = nil
 	if err := json.Unmarshal(merged, &s); err != nil {
 		return Settings{}, err
 	}
+	for id, block := range d.gameBlocks() {
+		g := defaultGameSettingsFor(id)
+		if err := json.Unmarshal(block, &g); err != nil {
+			return Settings{}, err
+		}
+		s.Games[id] = &g
+	}
 	return s, nil
+}
+
+// gameBlocks is the file's per-game blocks by game id.
+func (d diskFile) gameBlocks() map[string]json.RawMessage {
+	var games map[string]json.RawMessage
+	if len(d.Games) > 0 && json.Unmarshal(d.Games, &games) == nil {
+		return games
+	}
+	return nil
 }
