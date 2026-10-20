@@ -62,7 +62,8 @@ export async function queueWants(reqs: Want[], showQueue = false): Promise<Item[
     })
     return
   }
-  if (!(await warnUnmoderated(reqs.map(wantSource)))) {
+  // An update replaces a mod the player already took from that site; only new downloads are warned about.
+  if (!(await warnUnmoderated(reqs.filter((r) => !r.currentKey).map(wantSource)))) {
     return
   }
   const at = openTarget()
