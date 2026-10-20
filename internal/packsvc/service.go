@@ -29,6 +29,7 @@ import (
 type profiles interface {
 	Create(game, name string) (profile.Profile, error)
 	List(game string) ([]profile.Profile, error)
+	SetImportedFrom(game, id, path string) (profile.Profile, error)
 	WriteFiles(game, id string, files map[string][]byte) error
 	ProfileDir(game, id string) (string, error)
 	SetModpackDraft(game, id string, d profile.ModpackDraft) (profile.Profile, error)
@@ -123,6 +124,8 @@ type LocalProfile struct {
 	Source string `json:"source"`
 	// Mods counts its packages; 0 when the profile could not be read.
 	Mods int `json:"mods"`
+	// Imported is set when a profile of this game was already imported from it.
+	Imported bool `json:"imported"`
 }
 
 // LocalProfiles lists the game's profiles in the data folders of r2modman (the folders below
@@ -165,6 +168,16 @@ func (s *Service) LocalProfiles(gameID string) ([]LocalProfile, error) {
 					out = append(out, s.local(p.Name, p.Path, "Gale"))
 				}
 			}
+		}
+	}
+	if s.Profiles == nil {
+		return out, nil
+	}
+	if have, err := s.Profiles.List(gameID); err == nil {
+		for i := range out {
+			out[i].Imported = slices.ContainsFunc(have, func(p profile.Profile) bool {
+				return p.ImportedFrom != "" && p.ImportedFrom == filepath.Clean(out[i].Path)
+			})
 		}
 	}
 	return out, nil
@@ -236,6 +249,11 @@ func (s *Service) importPack(ctx context.Context, src Source, gameID, profileID,
 			return res, err
 		}
 		profileID = p.ID
+		if src.Path != "" {
+			if _, err := s.Profiles.SetImportedFrom(gameID, profileID, filepath.Clean(src.Path)); err != nil {
+				return res, err
+			}
+		}
 	} else if !src.Replace {
 		dir, err := s.Profiles.ProfileDir(gameID, profileID)
 		if err != nil {

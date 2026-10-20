@@ -18,6 +18,14 @@ func (s *Store) SetOrigin(game, id, kind, copyOf string) (Profile, error) {
 	})
 }
 
+// SetImportedFrom records the other manager's profile folder this profile was imported from. It does not touch mods/.
+func (s *Store) SetImportedFrom(game, id, path string) (Profile, error) {
+	return s.update(game, id, func(p *Profile, _ string) error {
+		p.ImportedFrom = path
+		return nil
+	})
+}
+
 // SetCollection records the Nexus collection this profile was imported from. It does not touch mods/.
 func (s *Store) SetCollection(game, id string, ref CollectionRef) (Profile, error) {
 	return s.update(game, id, func(p *Profile, _ string) error {

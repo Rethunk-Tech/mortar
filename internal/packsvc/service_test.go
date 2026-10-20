@@ -47,6 +47,12 @@ func (f *fakeProfiles) Create(_, name string) (profile.Profile, error) {
 
 func (f *fakeProfiles) List(string) ([]profile.Profile, error) { return f.list, nil }
 
+func (f *fakeProfiles) SetImportedFrom(_, id, path string) (profile.Profile, error) {
+	p := profile.Profile{ID: id, ImportedFrom: path}
+	f.list = append(f.list, p)
+	return p, nil
+}
+
 func (f *fakeProfiles) SetModpackDraft(_, id string, d profile.ModpackDraft) (profile.Profile, error) {
 	f.drafts = append(f.drafts, d)
 	for i := range f.list {
@@ -233,6 +239,13 @@ func TestLocalProfilesListsTheGamesR2modmanProfiles(t *testing.T) {
 	}
 	if got, _ := (&Service{}).LocalProfiles("stardew"); len(got) != 0 {
 		t.Fatalf("a game r2modman does not know: %+v", got)
+	}
+	store := &fakeProfiles{}
+	if _, err := store.SetImportedFrom("lethal-company", "p1", filepath.Join(profiles, "Friends")); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := (&Service{Profiles: store}).LocalProfiles("lethal-company"); len(got) != 1 || !got[0].Imported {
+		t.Fatalf("an imported profile is not marked: %+v", got)
 	}
 }
 

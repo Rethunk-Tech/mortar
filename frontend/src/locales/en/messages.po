@@ -4386,6 +4386,11 @@ msgstr "Copy CSS"
 msgid "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 msgstr "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
 
+#. placeholder {0}: f.source
+#: src/profiles/ImportWizard.tsx
+msgid "{0} · Imported"
+msgstr "{0} · Imported"
+
 #: src/console/UpdateNoteTag.tsx
 msgid "This profile skips this version, so Mortar does not offer it."
 msgstr "This profile skips this version, so Mortar does not offer it."

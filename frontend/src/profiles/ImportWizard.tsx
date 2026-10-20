@@ -34,6 +34,8 @@ interface Found {
   // A pack profile reads from a folder; an external one is previewed by source kind and id.
   pack?: string
   external?: { kind: string; id: string }
+  // Already brought into one of this game's profiles; importing it again would make a copy.
+  imported?: boolean
 }
 
 // One place to import from every manager found on this computer: r2modman, Gale, Vortex, Mod Organizer 2 and
@@ -71,6 +73,7 @@ export function ImportWizard({
             name: p.name,
             mods: p.mods,
             pack: p.path,
+            imported: p.imported,
           })),
         ),
       )
@@ -124,10 +127,10 @@ export function ImportWizard({
             <FoundProfileRow
               key={f.key}
               name={f.name}
-              source={f.source}
+              source={f.imported ? t`${f.source} · Imported` : f.source}
               mods={f.mods}
-              disabled={busy}
-              {...(f.pack
+              disabled={busy || f.imported === true}
+              {...(f.pack && !f.imported
                 ? {
                     check: {
                       checked: chosen.includes(f.pack),

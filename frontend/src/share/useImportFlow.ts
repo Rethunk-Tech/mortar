@@ -94,7 +94,7 @@ async function showPreview(pending: Promise<Preview>, state: PreviewState) {
 // Shows what an import filled: the open profile refreshed, or the new one opened on its game's page.
 // A new profile registers mortar:// and .mortar (idempotent): an import can arrive before first run finished,
 // including via the Nexus sign-in detour, which leaves the setup route behind.
-async function showImported(game: string, intoOpen: boolean, id: string) {
+export async function showImported(game: string, intoOpen: boolean, id: string) {
   if (intoOpen) {
     await useProfiles.getState().refresh()
   } else {

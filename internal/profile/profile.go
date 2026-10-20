@@ -251,6 +251,8 @@ type Profile struct {
 	// Origin is how the profile was created when that is known: OriginLink, OriginMortar,
 	// OriginGameMods, OriginCopy, or OriginCollection. Empty for a profile made with New profile.
 	Origin string `json:"origin,omitempty"`
+	// ImportedFrom is the other mod manager's profile folder this one was imported from, so it is not imported twice.
+	ImportedFrom string `json:"importedFrom,omitempty"`
 	// Collection is the Nexus collection this profile was imported from, when Origin is OriginCollection.
 	Collection *CollectionRef `json:"collection,omitempty"`
 	// CopyOf is the source profile's name when Origin is OriginCopy.
