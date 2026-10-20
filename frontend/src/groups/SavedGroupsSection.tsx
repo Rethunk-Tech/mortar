@@ -71,6 +71,8 @@ export const SavedGroupsSection = memo(function SavedGroupsSectionView({
           p: space.pad,
           bgcolor: 'var(--mortar-panel)',
           borderRadius: '8px',
+          // The panel's own padding is the empty state's room below.
+          '& > .empty-state': { pb: 0 },
         }}
       >
         <Typography component="h2" sx={{ fontSize: 16, fontWeight: 700 }}>

@@ -27,6 +27,7 @@ export function EmptyState({
 }) {
   return (
     <Box
+      className="empty-state"
       sx={{
         flex: 1,
         display: 'flex',
