@@ -1,7 +1,7 @@
 // /faq/ from scripts/site/faq.md, the "Why Mortar?" pages from scripts/site/why/<manager>.md, and the landing page's
 // short list of questions that links into the FAQ.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { brandIcon } from './brands.ts'
+import { brandIcon, shareMarks } from './brands.ts'
 import { escapeHTML, page } from './chrome.ts'
 import { SOURCE_NAMES } from './games.ts'
 
@@ -294,17 +294,15 @@ export function gamesWinner(md: string, games: number): string {
   })
 }
 
-/** /why/: every comparison, each with the one-paragraph summary that opens its page. */
+/** /why/: a tile per manager Mortar is compared with, its app icon over its name. */
 export function whyIndexPage(whys: Why[]): string {
-  const cards = whys.map((w) => {
-    const lines = w.md.split('\n').slice(1)
-    const start = lines.findIndex((l) => l.trim() !== '')
-    const end = lines.findIndex((l, i) => i > start && (l.trim() === '' || l.startsWith('|')))
-    const intro = plain(lines.slice(start, end === -1 ? undefined : end).join(' '))
-    return `          <article class="card">
-            <h3><a href="/why/${w.id}/">Mortar vs ${escapeHTML(w.name)}</a></h3>
-            <p>${escapeHTML(intro)}</p>
-          </article>`
+  const curseforge = shareMarks().curseforge
+  const tiles = whys.map((w) => {
+    const icon =
+      w.id === 'curseforge' && curseforge && 'colour' in curseforge
+        ? `<svg class="rival-icon" style="color: ${curseforge.colour}" aria-hidden="true"><use href="/img/brands.svg#curseforge" /></svg>`
+        : `<img class="rival-icon" src="/img/managers/${w.id}.png" alt="" width="56" height="56" />`
+    return `          <li><a class="rival" href="/why/${w.id}/">${icon}<span>${escapeHTML(w.name.replace(/^the /, ''))}</span></a></li>`
   })
   return page({
     path: 'site/why/index.html',
@@ -312,12 +310,10 @@ export function whyIndexPage(whys: Why[]): string {
     description:
       'How Mortar compares with other mod managers, with sources for every claim about them.',
     body: `      <h1 class="ext-title">Why Mortar?</h1>
-      <p class="lede">How Mortar compares with each mod manager you might be coming from, with a source for every claim about it.</p>
-      <section class="block">
-        <div class="grid">
-${cards.join('\n')}
-        </div>
-      </section>`,
+      <p class="lede">Pick the manager you use now to see how Mortar compares, with a source for every claim about it.</p>
+      <ul class="rival-grid">
+${tiles.join('\n')}
+      </ul>`,
   })
 }
 
