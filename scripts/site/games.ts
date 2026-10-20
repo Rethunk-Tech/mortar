@@ -228,11 +228,7 @@ export function sharePage(g: Game, art: Record<string, SteamArt>): string {
     index: false,
     css: '/share/share.css',
     module: '/share/app.js',
-    hero: banner(
-      g,
-      art,
-      `<h1>Shared ${name} profile</h1>`,
-    ),
+    hero: banner(g, art, `<h1>Shared ${name} profile</h1>`),
     body: `      <p id="error" class="card" hidden></p>
       <noscript><p class="card">This page needs JavaScript to read the shared profile.</p></noscript>
       <section id="profile" hidden>

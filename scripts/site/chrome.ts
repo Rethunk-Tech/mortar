@@ -15,7 +15,7 @@ export interface Page {
   path: string
   root: string
   current?: 'download' | 'extension' | 'guide' | 'games' | 'faq'
-  footer: { downloads?: boolean; agpl?: boolean; source?: string }
+  footer: { agpl?: boolean; source?: string }
 }
 
 export function escapeHTML(raw: string): string {
@@ -82,15 +82,13 @@ export function nav(p: Page): string {
 }
 
 export function footer(p: Page): string {
-  const { downloads, agpl, source = REPO } = p.footer
+  const { agpl, source = REPO } = p.footer
+  // Guide, Discord, Mortar's source and Download are in the nav on every page; the footer adds only what it lacks.
   const links = [
-    '<a href="/guide/">Guide</a>',
     '<a href="/changelog/">Changelog</a>',
     '<a href="/privacy/">Privacy</a>',
     '<a href="/code-signing/">Code signing</a>',
-    `<a href="${source}">Source</a>`,
-    `<a href="${DISCORD}">Discord</a>`,
-    ...(downloads ? ['<a href="/download/">Downloads</a>'] : []),
+    ...(source === REPO ? [] : [`<a href="${source}">Source</a>`]),
     ...(agpl ? ['<a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a>'] : []),
   ]
   return `<footer class="foot">
@@ -159,7 +157,7 @@ export function page(p: {
   const frame: Page = {
     path: p.path,
     root: '/',
-    footer: { downloads: true },
+    footer: {},
     ...(p.current ? { current: p.current } : {}),
   }
   return `<!doctype html>

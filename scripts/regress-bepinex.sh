@@ -423,6 +423,10 @@ PY
   mx_check live.badges "${badges:-no live event to read badges from}" test "${badges%% *}" = OK
 }
 
+# mx_not_runtime_written drops the entries of a mod that rewrites its own files in the game folder every run (a copy of
+# the folder from a real install can already hold them), which are the mod's and not Mortar's to restore.
+mx_not_runtime_written() { grep -v ' \./BoomboxController/'; }
+
 # mx_purged TAG requires every entry the game folder had before the first launch to hash the same and the Doorstop
 # proxy files to be gone. Files a mod itself writes into the game folder at run time (BoomboxController keeps its
 # settings and a yt-dlp.exe there) are Mortar's to leave alone; they are listed in $ROOT/game-added-TAG.txt.
@@ -430,7 +434,7 @@ mx_purged() {
   tree_hash "$mx_game" >"$ROOT/game-after-$1.txt"
   diff "$ROOT/game-before.txt" "$ROOT/game-after-$1.txt" | sed -n 's/^> //p' >"$ROOT/game-added-$1.txt"
   local changed proxy
-  changed=$(diff "$ROOT/game-before.txt" "$ROOT/game-after-$1.txt" | grep -c '^<')
+  changed=$(diff <(mx_not_runtime_written <"$ROOT/game-before.txt") <(mx_not_runtime_written <"$ROOT/game-after-$1.txt") | grep -c '^<')
   proxy=$(grep -cE '^f [0-7]+ \./(winhttp\.dll|doorstop_config\.ini) ' "$ROOT/game-added-$1.txt")
   if [ "$changed" -ne 0 ] || [ "$proxy" -ne 0 ]; then
     echo "$changed entries changed or removed, $proxy proxy files left; see $ROOT/game-after-$1.txt"
@@ -449,7 +453,7 @@ mx_doorstop_files() {
     echo "the pack's doorstop_config.ini and .doorstop_version"
   fi
 }
-mx_doorstop_ok() { echo "the pack's doorstop_config.ini and .doorstop_version; the game folder holds the same ini; the game started with the Doorstop flags for this pack"; }
+mx_doorstop_ok() { echo "the pack's doorstop_config.ini and .doorstop_version; the game folder holds the profile's absolute-target relay ini; the game started with the Doorstop flags for this pack"; }
 
 # mx_order_problems ORDER names each row of a `profile load-order --json` file placed before a plugin it needs. Rows
 # are plugins keyed bepinex:GUID, not packages; which plugins they cover is checked against launch (a)'s Loading lines.
@@ -487,8 +491,8 @@ mx_doorstop() {
   args=$(tr '\0' ' ' <"/proc/$pid/cmdline" 2>/dev/null)
   if [ "$files" != "the pack's doorstop_config.ini and .doorstop_version" ]; then
     echo "$files"
-  elif ! cmp -s "$(mx_dir "$1")/doorstop_config.ini" "$mx_game/doorstop_config.ini"; then
-    echo "the game folder's doorstop_config.ini differs from the profile's"
+  elif ! cmp -s "$(mx_dir "$1")/.mortar-doorstop_config.ini" "$mx_game/doorstop_config.ini"; then
+    echo "the game folder's doorstop_config.ini is not the profile's absolute-target relay copy"
   elif [[ "$args" != *"$flag $target"* ]]; then
     echo "the game's command line lacks $flag $target: $args"
   else
