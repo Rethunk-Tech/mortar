@@ -8,7 +8,7 @@ const SCRIPT = fileURLToPath(new URL('../../scripts/selftest.sh', import.meta.ur
 // The sandbox holds copies of the games (GBs), so it lives on disk: /tmp is a tmpfs.
 const BASE = '/var/tmp'
 /** Catalog ids the sandbox enables for itself (comma separated), as scripts/selftest.sh reads them. */
-export const SANDBOX_GAMES = 'lethal-company,sims4'
+const SANDBOX_GAMES = 'lethal-company,sims4'
 const PREFIX = 'mortar-e2e-'
 const FREE_PORT = `const s = require('node:net').createServer().listen(0, '127.0.0.1', () => { console.log(s.address().port); s.close() })`
 const STOP_WAIT_MS = 10_000

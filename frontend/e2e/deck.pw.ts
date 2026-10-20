@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { ENABLED_GAMES, openGameSelect, openSeedFarm, openSettings } from './app.ts'
+import { openGameSelect, openSeedFarm, openSettings } from './app.ts'
 import { DOWN, installPad, press } from './pad.ts'
 
 // The Steam Deck's screen, which Mortar fills in Game Mode.
@@ -60,7 +60,8 @@ test('the arrow keys walk the Game select tiles', async ({ page }) => {
   await openSeedFarm(page)
   await openGameSelect(page)
   const tiles = page.locator('[data-tile]')
-  await expect(tiles).toHaveCount(ENABLED_GAMES)
+  // The list is virtual: only the rows in view are tiles.
+  await expect(tiles.first()).toBeVisible()
   await page.getByRole('button', { name: 'Open Stardew Valley' }).focus()
   await page.keyboard.press('ArrowRight')
   expect(await tiles.nth(1).evaluate((t) => t.contains(document.activeElement))).toBe(true)

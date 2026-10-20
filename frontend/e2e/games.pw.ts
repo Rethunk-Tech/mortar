@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { ENABLED_GAMES, openGameSelect, openSeedFarm, openSettings } from './app.ts'
+import { openGameSelect, openSeedFarm, openSettings } from './app.ts'
 
 // Browse reaches the real Nexus and GitHub search endpoints from the sandbox; the suite has no offline network
 // fixture, so that spec skips itself when they cannot be reached.
@@ -43,7 +43,8 @@ test('hovering a Game Select row grows it taller and leaves its art and the othe
   await openSeedFarm(page)
   await openGameSelect(page)
   const tiles = page.locator('[data-tile]')
-  await expect(tiles).toHaveCount(ENABLED_GAMES)
+  // The list is virtual: only the rows in view are tiles.
+  await expect(tiles.first()).toBeVisible()
   const heights = () => tiles.evaluateAll((els) => els.map((e) => e.clientHeight))
   // A row the pointer crossed on the way here is still easing back; wait until every row is at rest.
   await page.mouse.move(0, 0)
