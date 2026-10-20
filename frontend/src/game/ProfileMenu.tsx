@@ -3,6 +3,7 @@ import { Menu } from '@mui/material'
 import {
   ChevronDown,
   Copy,
+  FolderOpen,
   GitCompare,
   GitMerge,
   History,
@@ -26,6 +27,7 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
   const duplicate = useProfiles((s) => s.duplicate)
+  const openFolder = useProfiles((s) => s.openFolder)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const close = () => setAnchor(null)
   return (
@@ -47,6 +49,14 @@ export function ProfileMenu({ profile }: { profile: Profile }) {
           onClick={() => {
             close()
             openProfileDialog('edit', profile.id)
+          }}
+        />
+        <MenuAction
+          icon={<FolderOpen size={16} />}
+          label={t`Open profile folder`}
+          onClick={() => {
+            close()
+            openFolder(profile.id).catch(reportUnexpected)
           }}
         />
         <MenuRule />
