@@ -19,8 +19,8 @@ type Dismissable struct {
 	Failure LoadFailure
 }
 
-// DismissableRows lists the result's dismissable problems: listed requirements, abandoned mods,
-// counted conflicts, compatibility settings and the rows read from a run's log.
+// DismissableRows lists the result's dismissable problems: listed requirements, abandoned, deprecated and
+// compatibility-listed mods, counted conflicts, compatibility settings and the rows read from a run's log.
 func DismissableRows(r Result) []Dismissable {
 	var out []Dismissable
 	for _, x := range r.Missing {
@@ -29,9 +29,15 @@ func DismissableRows(r Result) []Dismissable {
 		}
 	}
 	for _, x := range r.Broken {
-		if dismissibleBroken(x) {
+		if DismissibleBroken(x) {
 			out = append(out, Dismissable{Kind: "abandoned", ID: x.ID})
 		}
+	}
+	for _, x := range r.Deprecated {
+		out = append(out, Dismissable{Kind: "abandoned", ID: x.ID})
+	}
+	for _, x := range r.Compat {
+		out = append(out, Dismissable{Kind: "abandoned", ID: x.ID})
 	}
 	for _, x := range r.AssetConflicts {
 		if !x.Cosmetic && x.Kind != "" {
@@ -42,21 +48,21 @@ func DismissableRows(r Result) []Dismissable {
 		out = append(out, Dismissable{Kind: "setting", ID: x.ID, Field: x.Field})
 	}
 	for _, x := range r.LoadFailures {
-		if dismissibleLoadFailure(x) {
+		if DismissibleLoadFailure(x) {
 			out = append(out, Dismissable{Kind: "loadFailure", Failure: x})
 		}
 	}
 	return out
 }
 
-// dismissibleLoadFailure is a row from a run's log; the game's version and settings rows come from the install.
-func dismissibleLoadFailure(f LoadFailure) bool {
+// DismissibleLoadFailure is a row from a run's log; the game's version and settings rows come from the install.
+func DismissibleLoadFailure(f LoadFailure) bool {
 	return f.Kind != KindGameVersion && f.Kind != KindGameSetting
 }
 
-// dismissibleBroken is advice rather than a fault to fix: an abandoned, obsolete or deprecated mod, or one its source
+// DismissibleBroken is advice rather than a fault to fix: an abandoned, obsolete or deprecated mod, or one its source
 // flags.
-func dismissibleBroken(b Broken) bool {
+func DismissibleBroken(b Broken) bool {
 	return b.Status == "abandoned" || b.Status == "obsolete" || b.Status == "deprecated" || b.Source != ""
 }
 
@@ -127,11 +133,29 @@ func hideDismissedRedundant(rows []framework.Redundant, tokens []string) ([]fram
 
 func hideDismissedBroken(broken []Broken, tokens []string) ([]Broken, []DismissedProblem) {
 	return hideRows(broken, tokens, func(b Broken) []string {
-		if !dismissibleBroken(b) {
+		if !DismissibleBroken(b) {
 			return nil
 		}
-		return []string{dismissToken("broken", b.ID.Fold())}
+		return []string{modAdviceToken(b.ID)}
 	}, func(b *Broken) DismissedProblem { return DismissedProblem{Broken: b} })
+}
+
+// modAdviceToken is the one dismissal for advice about a mod's standing: an author-marked broken row, a deprecated
+// package or a compatibility-list entry.
+func modAdviceToken(id mod.ID) string {
+	return dismissToken("broken", id.Fold())
+}
+
+func hideDismissedDeprecated(rows []DeprecatedPackage, tokens []string) ([]DeprecatedPackage, []DismissedProblem) {
+	return hideRows(rows, tokens, func(d DeprecatedPackage) []string {
+		return []string{modAdviceToken(d.ID)}
+	}, func(d *DeprecatedPackage) DismissedProblem { return DismissedProblem{Deprecated: d} })
+}
+
+func hideDismissedCompat(rows []Compat, tokens []string) ([]Compat, []DismissedProblem) {
+	return hideRows(rows, tokens, func(c Compat) []string {
+		return []string{modAdviceToken(c.ID)}
+	}, func(c *Compat) DismissedProblem { return DismissedProblem{Compat: c} })
 }
 
 func hideDismissedListed(missing []Missing, tokens []string) ([]Missing, []DismissedProblem) {

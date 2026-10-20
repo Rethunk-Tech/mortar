@@ -77,8 +77,8 @@ function MissingKind({ problem, dismissedToken, button }: KindProps<'missing'>) 
   return <MissingFix problem={problem} dismissedToken={dismissedToken} button={button} />
 }
 
-function DeprecatedKind({ problem, button }: KindProps<'deprecated'>) {
-  return <DeprecatedFix problem={problem} button={button} />
+function DeprecatedKind({ problem, dismissedToken, button }: KindProps<'deprecated'>) {
+  return <DeprecatedFix problem={problem} dismissedToken={dismissedToken} button={button} />
 }
 
 function PluginClashKind({ problem, button }: KindProps<'pluginClash'>) {

@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"encoding/json"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -843,6 +844,23 @@ func TestProblemsTextLabelsActiveRowsAndCountsConflictGroups(t *testing.T) {
 	if r.code != 0 || !strings.HasPrefix(r.out, "1 problems: 0 missing, 0 duplicates, 0 broken, 1 conflict groups") ||
 		active < 0 || dismissed < active || strings.Index(r.out, "conflict   edit Data/One") < active {
 		t.Fatalf("output = %q", r.out)
+	}
+}
+
+// mortar problems dismiss N dismisses DismissableRows(r)[N-1], so the listing must number exactly those rows.
+func TestProblemsTextNumbersEveryDismissableRow(t *testing.T) {
+	r := problems.Result{
+		Missing:      []problems.Missing{{DependentName: "Pack", ID: "smapi:Need", Listed: true}},
+		Broken:       []problems.Broken{{Name: "Old", ID: "smapi:Old", Status: "obsolete"}, {Name: "Bad", ID: "smapi:Bad", Status: "broken"}},
+		Deprecated:   []problems.DeprecatedPackage{{Name: "Dep", ID: "ts:Dep", Version: "1.0.0"}},
+		Compat:       []problems.Compat{{Name: "Listed", ID: "smapi:Listed", Status: "unofficial"}},
+		Settings:     []framework.SettingHint{{Name: "S", Field: "F", Current: "x", ForNames: []string{"A"}}},
+		LoadFailures: []problems.LoadFailure{{Name: "Plug", Kind: "missing-dependency", Message: "needs X"}, {Kind: problems.KindGameVersion, Message: "game"}},
+	}
+	out := invoke(t, map[string]any{"problems": r}, "problems", "stardew", "Farm").out
+	want := len(problems.DismissableRows(r))
+	if got := len(regexp.MustCompile(`(?m)^ *[0-9]+  `).FindAllString(out, -1)); got != want {
+		t.Fatalf("numbered %d rows, %d dismissable:\n%s", got, want, out)
 	}
 }
 

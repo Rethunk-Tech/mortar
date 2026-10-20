@@ -5,7 +5,7 @@ import { reportUnexpected } from '../../toasts/report.ts'
 import { type Problem, sameId } from '../lookup.ts'
 import { openPage } from '../menu.ts'
 import { useMods } from '../store.ts'
-import { RestoreButton } from './RestoreButton.tsx'
+import { DismissAdvice } from './DismissAdvice.tsx'
 import { WhereButtons } from './WhereButtons.tsx'
 import type { WarningButton } from './warningButton.tsx'
 
@@ -21,7 +21,6 @@ export function BrokenFix({
   const { t } = useLingui()
   const mods = useMods((s) => s.mods)
   const setEnabled = useMods((s) => s.setEnabled)
-  const dismissAbandoned = useMods((s) => s.dismissAbandoned)
   const { broken } = problem
   const mod = mods.find((m) => m.key === broken.key && sameId(m.id, broken.id))
   const where = broken.replacement
@@ -59,27 +58,13 @@ export function BrokenFix({
       </Button>
     )
   }
-  let dismiss: ReactNode = null
-  if (dismissedToken !== undefined) {
-    dismiss = <RestoreButton token={dismissedToken} />
-  } else if (
+  const advice =
+    dismissedToken !== undefined ||
     broken.status === 'abandoned' ||
     broken.status === 'obsolete' ||
     broken.status === 'deprecated' ||
     (broken.source ?? '') !== ''
-  ) {
-    dismiss = (
-      <Button
-        size="small"
-        color="inherit"
-        variant="text"
-        onClick={() => dismissAbandoned(broken.id).catch(reportUnexpected)}
-        sx={{ flexShrink: 0 }}
-      >
-        {t`Dismiss`}
-      </Button>
-    )
-  }
+  const dismiss = advice ? <DismissAdvice id={broken.id} dismissedToken={dismissedToken} /> : null
   return (
     <>
       {replace}

@@ -548,6 +548,10 @@ func (s *Service) withDismissed(gameID, id string, r Result) Result {
 	r.Dismissed = append(r.Dismissed, dismissed...)
 	r.Broken, dismissed = hideDismissedBroken(r.Broken, tokens)
 	r.Dismissed = append(r.Dismissed, dismissed...)
+	r.Deprecated, dismissed = hideDismissedDeprecated(r.Deprecated, tokens)
+	r.Dismissed = append(r.Dismissed, dismissed...)
+	r.Compat, dismissed = hideDismissedCompat(r.Compat, tokens)
+	r.Dismissed = append(r.Dismissed, dismissed...)
 	r.Missing, dismissed = hideDismissedListed(r.Missing, tokens)
 	r.Dismissed = append(r.Dismissed, dismissed...)
 	r.Settings, dismissed = hideDismissedSettings(r.Settings, tokens)
@@ -622,13 +626,13 @@ func (s *Service) DismissRedundant(_ context.Context, gameID, id, kind, key stri
 	return s.appendDismissed(dismissBucket(gameID, id), redundantToken(kind, key, by))
 }
 
-// DismissAbandonedMod hides an author-marked broken row for this profile until the mod is gone.
+// DismissAbandonedMod hides the advice rows about a mod's standing (author-marked broken, deprecated, on the
+// compatibility list) for this profile until the mod is gone.
 func (s *Service) DismissAbandonedMod(_ context.Context, gameID, id string, uniqueID mod.ID) error {
 	if uniqueID == "" {
 		return errors.New("missing mod id")
 	}
-	token := dismissToken("broken", uniqueID.Fold())
-	return s.appendDismissed(dismissBucket(gameID, id), token)
+	return s.appendDismissed(dismissBucket(gameID, id), modAdviceToken(uniqueID))
 }
 
 // DismissListedRequirement hides a Nexus-listed requirement for this profile until it is gone.

@@ -124,6 +124,7 @@ function RedundantSection({
 function useProblemTabs({
   sections,
   compat,
+  compatDismissed,
   redundant,
   redundantDismissed,
   redundantTokens,
@@ -134,6 +135,7 @@ function useProblemTabs({
 }: {
   sections: ReturnType<typeof problemSections>
   compat: Compat[]
+  compatDismissed: { token: string; row: Compat }[]
   redundant: RedundantRows
   redundantDismissed: RedundantRows
   redundantTokens: Map<string, string>
@@ -161,7 +163,8 @@ function useProblemTabs({
       label: t`Compatibility`,
       count: compat.length,
       errors: false,
-      body: <CompatSection rows={compat} />,
+      keep: compatDismissed.length > 0,
+      body: <CompatSection rows={compat} dismissed={compatDismissed} />,
     },
     {
       id: 'slow',
@@ -214,6 +217,9 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
   const cleanup = result.cleanup ?? []
   const replaced = result.replaced ?? []
   const compat = result.compat ?? []
+  const compatDismissed = (result.dismissed ?? []).flatMap((d) =>
+    d.compat ? [{ token: d.token, row: d.compat }] : [],
+  )
   const redundant = redundantRows(result.redundant ?? [])
   const dismissedRedundant = (result.dismissed ?? []).flatMap((d) =>
     d.redundant ? [{ token: d.token, item: d.redundant }] : [],
@@ -264,6 +270,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
   const tabs = useProblemTabs({
     sections,
     compat,
+    compatDismissed,
     redundant,
     redundantDismissed,
     redundantTokens,

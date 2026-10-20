@@ -16,3 +16,13 @@ func TestHideDismissedAbandoned(t *testing.T) {
 		t.Fatalf("a token of another kind hides the row: got %+v dismissed %+v", leftover, extra)
 	}
 }
+
+func TestOneModAdviceDismissalHidesItsDeprecatedAndCompatRows(t *testing.T) {
+	tokens := []string{modAdviceToken("ts:A")}
+	deprecated, hiddenDep := hideDismissedDeprecated([]DeprecatedPackage{{ID: "ts:A"}, {ID: "ts:B"}}, tokens)
+	compat, hiddenCompat := hideDismissedCompat([]Compat{{ID: "ts:A"}}, tokens)
+	if len(deprecated) != 1 || deprecated[0].ID != "ts:B" || len(hiddenDep) != 1 || hiddenDep[0].Deprecated == nil ||
+		len(compat) != 0 || len(hiddenCompat) != 1 || hiddenCompat[0].Compat == nil {
+		t.Fatalf("deprecated %+v %+v, compat %+v %+v", deprecated, hiddenDep, compat, hiddenCompat)
+	}
+}

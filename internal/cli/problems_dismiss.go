@@ -32,6 +32,15 @@ func dismissedKindText(d problems.DismissedProblem) (kind, text string) {
 		}
 		return "redundant", fmt.Sprintf("%s (%s): %s", d.Redundant.Name, d.Redundant.Kind, strings.Join(by, ", "))
 	}
+	if d.Deprecated != nil {
+		return "abandoned", fmt.Sprintf("%s %s: deprecated", d.Deprecated.Name, d.Deprecated.Version)
+	}
+	if d.Compat != nil {
+		return "abandoned", fmt.Sprintf("%s: %s %s", d.Compat.Name, d.Compat.Status, d.Compat.Summary)
+	}
+	if d.LoadFailure != nil {
+		return "loadFailure", fmt.Sprintf("%s: %s", d.LoadFailure.Name, d.LoadFailure.Message)
+	}
 	return "unknown", d.Token
 }
 

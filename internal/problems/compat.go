@@ -12,7 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
-// Compat is one profile mod's SMAPI compatibility-list row. It is informational and is not counted.
+// Compat is one profile mod's SMAPI compatibility-list row: advice, counted until dismissed.
 type Compat struct {
 	Key           string `json:"key"`
 	ID            mod.ID `json:"id"`

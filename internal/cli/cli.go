@@ -1837,11 +1837,17 @@ func (c *cmd) printProblems(r problems.Result) {
 		fmt.Fprintf(c.out, "duplicate  %s (%s)\n", x.Name, x.ID)
 	}
 	for _, x := range r.Broken {
-		if x.Status == "abandoned" {
+		if problems.DismissibleBroken(x) {
 			fmt.Fprintf(c.out, "%s  broken     %s: %s %s\n", next(), x.Name, x.Status, x.Summary)
 		} else {
 			fmt.Fprintf(c.out, "broken     %s: %s %s\n", x.Name, x.Status, x.Summary)
 		}
+	}
+	for _, x := range r.Deprecated {
+		fmt.Fprintf(c.out, "%s  deprecated %s %s\n", next(), x.Name, x.Version)
+	}
+	for _, x := range r.Compat {
+		fmt.Fprintf(c.out, "%s  compat     %s: %s %s\n", next(), x.Name, x.Status, x.Summary)
 	}
 	for _, x := range r.AssetConflicts {
 		if !x.Cosmetic {
@@ -1854,6 +1860,13 @@ func (c *cmd) printProblems(r problems.Result) {
 	}
 	for _, x := range r.Settings {
 		fmt.Fprintf(c.out, "%s  setting    %s\n", next(), settingText(x))
+	}
+	for _, x := range r.LoadFailures {
+		if problems.DismissibleLoadFailure(x) {
+			fmt.Fprintf(c.out, "%s  load       %s: %s\n", next(), x.Name, x.Message)
+		} else {
+			fmt.Fprintf(c.out, "load       %s: %s\n", x.Name, x.Message)
+		}
 	}
 	for _, x := range r.RunErrors {
 		fmt.Fprintf(c.out, "run error  %s (%s)\n", x.Name, x.ID)

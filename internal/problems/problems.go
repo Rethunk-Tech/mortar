@@ -158,6 +158,8 @@ type DismissedProblem struct {
 	Setting       *framework.SettingHint   `json:"setting,omitempty"`
 	Redundant     *framework.Redundant     `json:"redundant,omitempty"`
 	LoadFailure   *LoadFailure             `json:"loadFailure,omitempty"`
+	Deprecated    *DeprecatedPackage       `json:"deprecated,omitempty"`
+	Compat        *Compat                  `json:"compat,omitempty"`
 }
 
 // Result is everything found for one profile. Unknown is set when a lookup failed, so the lists may be short.
