@@ -7,7 +7,7 @@ import { space } from '../../theme/density.ts'
 import { persist } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
-import { separator, split } from './WatchFolders.tsx'
+import { separator, split } from './pathList.ts'
 
 function ExtraModsFolders() {
   const { t } = useLingui()

@@ -6,10 +6,7 @@ import { space } from '../../theme/density.ts'
 import { persist } from '../persist.ts'
 import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
-
-// Joins the folders the way the settings store them: one path-list string, ';' on Windows and ':' elsewhere.
-export const separator = navigator.userAgent.includes('Windows') ? ';' : ':'
-export const split = (value: string) => (value === '' ? [] : value.split(separator))
+import { separator, split } from './pathList.ts'
 
 type Mode = 'offer' | 'auto'
 const KEYS: Record<Mode, string> = { offer: 'watchFolders', auto: 'autoInstallFolders' }

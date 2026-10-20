@@ -2,8 +2,8 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { useCurrentGame } from '../../nav/currentGame.ts'
 import { space } from '../../theme/density.ts'
-import { pickFolderSetting } from '../persist.ts'
 import { PrefByKey } from '../PrefRow.tsx'
+import { pickFolderSetting } from '../persist.ts'
 import { useSettings } from '../store.ts'
 
 function GameSync() {
