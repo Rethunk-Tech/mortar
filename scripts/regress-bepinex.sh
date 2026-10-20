@@ -322,6 +322,9 @@ print(("OK " if ok else "BAD ") + f"{os.path.basename(path)}: {len(r['mods'])} r
 PY
   )
   mx_check startup.report "${out#* }" test "${out%% *}" = OK
+  out=$(python3 -c 'import json,sys; r=json.load(open(sys.argv[1])); m=r["mods"]; print(len([x for x in m if x.get("patchMs",0)>0]), sum(x.get("patchMs",0) for x in m), len([x for x in m if x.get("sampleMs",0)>0]), sum(x.get("sampleMs",0) for x in m), r.get("sampledOtherMs", -1))' "$report" 2>&1)
+  mx_check startup.patches "plugins with patch time, total patchMs, plugins with a share, total sampleMs, sampledOtherMs = $out" \
+    python3 -c 'import sys; a=sys.argv[1].split(); sys.exit(not (len(a)==5 and int(a[0])>0 and int(a[1])>0 and int(a[4])>=0))' "$out"
   mx_wails launchsvc.Service.StartupReports '"lethal-company"' "$(mx_q "$1")" >"$ROOT/startup-mortar-a.json"
   out=$(mx_json "$ROOT/startup-mortar-a.json" '(len(d[0]["mods"]), sum(m["id"].startswith("thunderstore:") for m in d[0]["mods"]), [m["id"] for m in d[0]["mods"] if not m["id"].startswith("thunderstore:")])' 2>&1)
   mx_check startup.mortar "Mortar's newest startup report: (rows, rows named by a package, the rest) = $out" \
@@ -372,9 +375,11 @@ PY
   )
   mx_check perf.summary "${out#* }" test "${out%% *}" = OK
   e_after=$(mx_exceptions "$2" "${n1:-$(wc -l <"$2")}")
-  mortar=$(sed -n "${n1:-1},\$p" "$2" | grep -c 'MortarBepInExBridge\.Perf\|PerfHost')
-  mx_check perf.stable "exception lines in LogOutput.log: $e_before in the 10s before wrapping, $e_after in the ${n1:+10s }after; $mortar naming the bridge's measuring" \
-    test "${e_after:-0}" -le "${e_before:-0}" -a "$mortar" = 0
+  # A measured launch wraps from the first frame, so the exceptions a mod throws at the menu fall after the wrapping
+  # either way; what shows the wrapping broke something is an exception that names the bridge's measuring.
+  mortar=$(grep -c 'MortarBepInExBridge\.Perf\|MortarBepInExBridge\.PatchTim\|PerfHost' "$2")
+  mx_check perf.stable "exception lines in LogOutput.log: $e_before in the 10s before the perf start, $e_after after (the game's and mods' own); $mortar naming the bridge's measuring" \
+    test "$mortar" = 0
 }
 
 # mx_live_rows PROFILE checks the window's launch:live events during launch (a), recorded since the relay let Mortar

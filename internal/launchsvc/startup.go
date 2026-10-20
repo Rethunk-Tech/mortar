@@ -49,15 +49,18 @@ type StartupPack struct {
 
 // StartupMod is one mod's exclusive startup time by where it was spent.
 type StartupMod struct {
-	SampleMs int64            `json:"sampleMs"`
-	ID       mod.ID           `json:"id"`
-	Name     string           `json:"name"`
-	Version  string           `json:"version"`
-	EntryMs  int64            `json:"entryMs"`
-	EventMs  map[string]int64 `json:"eventMs"`
-	AssetMs  int64            `json:"assetMs"`
-	LoadMs   int64            `json:"loadMs"`
-	Packs    []StartupPack    `json:"packs"`
+	SampleMs int64  `json:"sampleMs"`
+	ID       mod.ID `json:"id"`
+	Name     string `json:"name"`
+	Version  string `json:"version"`
+	EntryMs  int64  `json:"entryMs"`
+	// PatchMs is the time the mod spent applying its Harmony patches (BepInEx); it is part of EntryMs when the mod
+	// patches in Awake.
+	PatchMs int64            `json:"patchMs"`
+	EventMs map[string]int64 `json:"eventMs"`
+	AssetMs int64            `json:"assetMs"`
+	LoadMs  int64            `json:"loadMs"`
+	Packs   []StartupPack    `json:"packs"`
 }
 
 // StartupReport is one launch's startup timings as the bridge writes them.
@@ -205,12 +208,14 @@ func pluginsToPackages(r *StartupReport, owners func() map[string]startupOwner) 
 	out := make([]StartupMod, 0, len(r.Mods))
 	at := map[mod.ID]int{}
 	for _, m := range r.Mods {
-		row := StartupMod{ID: mod.NewID(mod.FormatBepInEx, string(m.ID)), Name: m.Name, Version: m.Version, EntryMs: m.EntryMs}
+		row := StartupMod{ID: mod.NewID(mod.FormatBepInEx, string(m.ID)), Name: m.Name, Version: m.Version, EntryMs: m.EntryMs, PatchMs: m.PatchMs, SampleMs: m.SampleMs}
 		if o, ok := owners()[strings.ToLower(string(m.ID))]; ok {
 			row.ID, row.Name, row.Version = o.ID, o.Name, o.Version
 		}
 		if i, seen := at[row.ID]; seen {
 			out[i].EntryMs += row.EntryMs
+			out[i].PatchMs += row.PatchMs
+			out[i].SampleMs += row.SampleMs
 			continue
 		}
 		at[row.ID] = len(out)

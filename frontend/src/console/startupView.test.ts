@@ -27,6 +27,7 @@ const mod = (
     assetMs: 0,
     loadMs: 0,
     sampleMs: 0,
+    patchMs: 0,
     eventMs,
     packs: [],
     ...rest,
@@ -142,6 +143,12 @@ test("why is the biggest of a mod's own costs", () => {
   })
   expect(whyOf(mod('b', {}, { loadMs: 40, assetMs: 60 }))?.kind).toBe('assets')
   expect(whyOf(mod('c', {}))).toBeNull()
+})
+
+test('a BepInEx plugin names its patches when they outweigh the rest of its load', () => {
+  expect(whyOf(mod('p', {}, { entryMs: 900, patchMs: 700 }))).toEqual({ kind: 'patches', ms: 700 })
+  expect(whyOf(mod('q', {}, { entryMs: 900, patchMs: 100 }))).toEqual({ kind: 'entry', ms: 800 })
+  expect(whyOf(mod('r', {}, { entryMs: 100, sampleMs: 400 }))?.kind).toBe('sampled')
 })
 
 test('pickReport shows the chosen report, else the newest', () => {

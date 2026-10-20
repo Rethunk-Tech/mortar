@@ -290,7 +290,11 @@ test('the measured launch rows read the startup report, Mortar naming its rows b
           titleScreen: 9000,
         },
         entryMissed: 0,
-        mods: [{ id: 'a' }, { id: 'b' }],
+        mods: [
+          { id: 'a', patchMs: 40 },
+          { id: 'b', sampleMs: 12 },
+        ],
+        sampledOtherMs: 800,
       }),
     )
     writeFileSync(
@@ -326,11 +330,12 @@ test('the measured launch rows read the startup report, Mortar naming its rows b
     expect(rows.map((r) => `${r[0]} ${r[1]}`)).toEqual([
       'startup.patcher PASS',
       'startup.report PASS',
+      'startup.patches PASS',
       'startup.mortar FAIL',
       'live.scene PASS',
       'live.badges PASS',
     ])
-    expect(rows[2]?.[2]).toContain('bepinex:loose')
+    expect(rows[3]?.[2]).toContain('bepinex:loose')
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

@@ -138,16 +138,17 @@ function startupFindings(report: StartupReport, previous: StartupReport | undefi
   return out.slice(0, MAX_FINDINGS)
 }
 
-type WhyKind = 'event' | 'assets' | 'entry' | 'sampled'
+type WhyKind = 'event' | 'assets' | 'entry' | 'patches' | 'sampled'
 
 /** The one thing that costs a mod the most, from its own timings: its slowest event, assets and packs, Entry, or the
- * sampled time inside its patches. */
+ * time spent applying its patches or sampled inside them. */
 function whyOf(mod: StartupMod): { kind: WhyKind; ms: number; event?: string } | null {
   const event = slowestEvent(mod)
   const candidates: { kind: WhyKind; ms: number; event?: string }[] = [
     { kind: 'event', ms: event?.[1] ?? 0, ...(event ? { event: event[0] } : {}) },
     { kind: 'assets', ms: mod.assetMs + mod.loadMs },
-    { kind: 'entry', ms: mod.entryMs },
+    { kind: 'entry', ms: Math.max(0, mod.entryMs - mod.patchMs) },
+    { kind: 'patches', ms: mod.patchMs },
     { kind: 'sampled', ms: mod.sampleMs },
   ]
   const best = candidates.reduce((a, b) => (b.ms > a.ms ? b : a))
@@ -158,7 +159,8 @@ const rowAnchor = (id: string) => `startup-mod-${id}`
 
 function modTotal(mod: StartupMod): number {
   const events = Object.values(mod.eventMs ?? {}).reduce((n: number, ms) => n + (ms ?? 0), 0)
-  return mod.entryMs + mod.assetMs + mod.loadMs + events
+  // BepInEx patches mostly in Awake, inside the load; one that patches later still counts.
+  return Math.max(mod.entryMs, mod.patchMs) + mod.assetMs + mod.loadMs + events
 }
 
 function slowestEvent(mod: StartupMod): [string, number] | null {

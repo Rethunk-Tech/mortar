@@ -146,8 +146,8 @@ func TestBepInExReportRowsBecomeTheirPackages(t *testing.T) {
 	dir := t.TempDir()
 	report := `{"schema":1,"loader":"5.4.21.0","processStart":"2026-10-06T18:00:00.000Z",` +
 		`"phases":{"bridgeEntry":900,"entryDone":3000,"gameLaunched":3800,"titleMenu":5000,"titleScreen":9000},"entryTimed":true,` +
-		`"mods":[{"id":"com.a.core","name":"Core","version":"1.0.0","entryMs":300},{"id":"com.a.extra","name":"Extra","version":"1.0.0","entryMs":50},` +
-		`{"id":"loose.plugin","name":"Loose","version":"0.1.0","entryMs":20}],"otherMs":7730}`
+		`"mods":[{"id":"com.a.core","name":"Core","version":"1.0.0","entryMs":300,"patchMs":120,"sampleMs":600},{"id":"com.a.extra","name":"Extra","version":"1.0.0","entryMs":50,"patchMs":30,"sampleMs":40},` +
+		`{"id":"loose.plugin","name":"Loose","version":"0.1.0","entryMs":20}],"otherMs":7730,"sampledOtherMs":4200}`
 	if err := os.WriteFile(filepath.Join(dir, "20261006T180000Z.json"), []byte(report), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -158,10 +158,10 @@ func TestBepInExReportRowsBecomeTheirPackages(t *testing.T) {
 		t.Fatalf("%v %+v", err, got)
 	}
 	mods := got[0].Mods
-	if len(mods) != 2 || mods[0].ID != pkg.ID || mods[0].Name != "Pack" || mods[0].EntryMs != 350 || mods[1].ID != "bepinex:loose.plugin" || mods[1].EntryMs != 20 {
+	if len(mods) != 2 || mods[0].ID != pkg.ID || mods[0].Name != "Pack" || mods[0].EntryMs != 350 || mods[0].PatchMs != 150 || mods[0].SampleMs != 640 || mods[1].PatchMs != 0 || mods[1].ID != "bepinex:loose.plugin" || mods[1].EntryMs != 20 {
 		t.Fatalf("%+v", mods)
 	}
-	if got[0].Phases.TitleScreen != 9000 || !got[0].EntryTimed {
+	if got[0].SampledOtherMs != 4200 || got[0].Phases.TitleScreen != 9000 || !got[0].EntryTimed {
 		t.Fatalf("%+v", got[0])
 	}
 }

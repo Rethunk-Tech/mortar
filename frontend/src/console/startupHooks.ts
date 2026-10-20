@@ -36,8 +36,10 @@ export function useWhy() {
         return t`assets and packs ${ms}`
       case 'entry':
         return smapi ? t`slow Entry ${ms}` : t`slow load ${ms}`
+      case 'patches':
+        return t`applying its patches ${ms}`
       default:
-        return t`time in its patches ${ms}`
+        return smapi ? t`time in its patches ${ms}` : t`time in game ${ms}`
     }
   }
 }
