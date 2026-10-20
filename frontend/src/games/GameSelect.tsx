@@ -33,7 +33,7 @@ import { ListFooter } from './ListFooter.tsx'
 import { gameOrder, initialOf } from './order.ts'
 import { ProfileCards } from './ProfileCards.tsx'
 import { formatPlaytime } from './playtime.ts'
-import { hoverFocus, listItemSx, ROW_PX } from './rowStyles.ts'
+import { listItemSx, ROW_PX } from './rowStyles.ts'
 import { storeName } from './storeName.ts'
 import { useGameTiles } from './useGameTiles.ts'
 import { useOpenGame } from './useOpenGame.ts'
@@ -398,7 +398,6 @@ function GameSelect() {
   const { status, loadError, refresh, tileProps } = useGameTiles()
   const lastGame = useSettings((s) => s.lastGame)
   const played = useSettings((s) => s.lastPlayed)
-  const growRows = useSettings((s) => s.growGameRows) !== false
   const scroller = useRef<HTMLElement | null>(null)
   const [current, setCurrent] = useState('')
   const hiddenIds = useSettings((s) => s.hiddenGames)
@@ -493,7 +492,6 @@ function GameSelect() {
             ...(rail
               ? { scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }
               : {}),
-            ...(growRows ? hoverFocus : {}),
           }}
           onScroll={rail ? markLetter : undefined}
           onKeyDown={(e) => arrowFocus(e, '[data-tile]')}

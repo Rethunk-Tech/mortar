@@ -313,7 +313,7 @@ A sync folder shares each profile's mod list, sources, settings and mod config f
 
 ## Appearance
 
-**Settings › Appearance** sets the theme, accent colour and background (an image, the desktop wallpaper or a solid colour). **Accent colour** can follow your desktop's (**System**), and **Font** picks the app's typeface. Animated backgrounds hold still while a game runs or **Reduce motion** is on; WebP animations are often a tenth of a GIF's size. Turn off **Grow game rows on hover** to keep Game select's rows a fixed height.
+**Settings › Appearance** sets the theme, accent colour and background (an image, the desktop wallpaper or a solid colour). **Accent colour** can follow your desktop's (**System**), and **Font** picks the app's typeface. Animated backgrounds hold still while a game runs or **Reduce motion** is on; WebP animations are often a tenth of a GIF's size.
 
 ## Save backups and restore
 

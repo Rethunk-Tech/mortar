@@ -5,10 +5,6 @@ import { openGameSelect, openSeedFarm, openSettings } from './app.ts'
 // fixture, so that spec skips itself when they cannot be reached.
 const SEARCH_WAIT_MS = 20_000
 const REACH_MS = 3000
-// A Game Select row's height at rest, and how much taller the row under the pointer stands (GameSelect ROW_PX,
-// ROW_GROW_PX).
-const ROW_PX = 168
-const ROW_GROW_PX = 72
 
 /** Whether the sites Browse searches answer from this machine. */
 async function online(): Promise<boolean> {
@@ -35,28 +31,6 @@ test('Game Select lists Stardew Valley before Lethal Company', async ({ page }) 
   // The centre of the tile is its profile cards, which open their own profile.
   await stardew.click({ position: { x: 8, y: 8 } })
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
-})
-
-test('hovering a Game Select row grows it taller and leaves its art and the other rows alone', async ({
-  page,
-}) => {
-  await openSeedFarm(page)
-  await openGameSelect(page)
-  const tiles = page.locator('[data-tile]')
-  // The list is virtual: only the rows in view are tiles.
-  await expect(tiles.first()).toBeVisible()
-  const heights = () => tiles.evaluateAll((els) => els.map((e) => e.clientHeight))
-  // A row the pointer crossed on the way here is still easing back; wait until every row is at rest.
-  await page.mouse.move(0, 0)
-  await expect.poll(async () => Math.max(...(await heights()))).toBe(ROW_PX)
-  const before = await heights()
-  await tiles.first().hover()
-  await expect.poll(async () => (await heights())[0]).toBe(ROW_PX + ROW_GROW_PX)
-  expect((await heights()).slice(1)).toEqual(before.slice(1))
-  await expect(tiles.last()).toHaveCSS('filter', 'none')
-  await expect(tiles.first().locator('[data-art]')).toHaveCSS('transform', 'none')
-  const list = tiles.first().locator('..')
-  expect(await list.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true)
 })
 
 test('Browse defaults to All sources and a search shows results from more than one source', async ({

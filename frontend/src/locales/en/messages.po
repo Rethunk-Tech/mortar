@@ -2197,10 +2197,6 @@ msgstr "Launch presets"
 msgid "{pickedName} is used after Save."
 msgstr "{pickedName} is used after Save."
 
-#: src/settings/prefCopy.ts
-msgid "Grow game rows on hover"
-msgstr "Grow game rows on hover"
-
 #: src/groups/SaveGroupToLibrary.tsx
 msgid "Saved group name"
 msgstr "Saved group name"
@@ -14502,10 +14498,6 @@ msgstr "Copy link"
 #: src/settings/sections/nxmHandler.tsx
 msgid "Mortar downloads and installs a mod when you click Mod Manager Download on Nexus."
 msgstr "Mortar downloads and installs a mod when you click Mod Manager Download on Nexus."
-
-#: src/settings/prefCopy.ts
-msgid "The game under the pointer or focus grows taller and shows more art"
-msgstr "The game under the pointer or focus grows taller and shows more art"
 
 #: src/settings/SettingsNav.tsx
 msgid "Settings sections"

@@ -182,7 +182,6 @@ func defaultPrefs() Settings {
 		ShowAuthorOnCards:          on(),
 		BrowseCardStats:            defaultBrowseCardStats,
 		ReduceMotion:               ReduceMotionSystem,
-		GrowGameRows:               on(),
 		ProfileHero:                HeroFull,
 		ReuseFomodChoices:          on(),
 		DriftChecks:                on(),
@@ -293,9 +292,6 @@ func normalizePrefs(s *Settings) {
 	s.BrowseCardStats = sanitizeBrowseCardStats(s.BrowseCardStats)
 	if !slices.Contains(reduceMotionValues, s.ReduceMotion) {
 		s.ReduceMotion = ReduceMotionSystem
-	}
-	if s.GrowGameRows == nil {
-		s.GrowGameRows = on()
 	}
 	if !slices.Contains(heroValues, s.ProfileHero) {
 		s.ProfileHero = HeroFull

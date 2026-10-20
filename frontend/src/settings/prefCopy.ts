@@ -171,10 +171,6 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
         { value: 'never', label: i18n._(msg`Never`) },
       ],
     },
-    growGameRows: {
-      label: i18n._(msg`Grow game rows on hover`),
-      description: i18n._(msg`The game under the pointer or focus grows taller and shows more art`),
-    },
     profileHero: {
       label: i18n._(msg`Profile hero`),
       description: i18n._(msg`The banner at the top of a profile`),
