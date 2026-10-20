@@ -764,3 +764,17 @@ func TestMinVersionIsCheckedAgainstTheRunningCatalogVersion(t *testing.T) {
 		t.Errorf("a 0.3.7 build past its release dropped an entry that needs 0.3.8 (%d)", got)
 	}
 }
+
+func TestAStorelessGameNeedsManualFolder(t *testing.T) {
+	g, ok := bundledGame("voices-of-the-void")
+	if !ok || !g.ManualFolder || g.Stores != (GameStores{}) {
+		t.Fatalf("bundled Voices of the Void = %+v, %v", g, ok)
+	}
+	if err := g.Validate(); err != nil {
+		t.Fatalf("a manual-folder game is refused: %v", err)
+	}
+	g.ManualFolder = false
+	if err := g.Validate(); err == nil {
+		t.Fatal("an enabled game with no store and no manualFolder passed")
+	}
+}

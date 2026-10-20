@@ -13645,6 +13645,54 @@
           "key": "very-very-valet"
         }
       ]
+    },
+    {
+      "id": "voices-of-the-void",
+      "name": "Voices of the Void",
+      "enabled": true,
+      "marker": "VotV.exe",
+      "r2modmanFolder": "VotV",
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "profile",
+          "root": "{profile}"
+        }
+      ],
+      "stores": {},
+      "manualFolder": true,
+      "loaders": [
+        {
+          "id": "shimloader",
+          "name": "Shimloader",
+          "package": "Thunderstore-unreal_shimloader",
+          "placeDir": "VotV/Binaries/Win64",
+          "routes": [
+            {
+              "dir": "shimloader/mod",
+              "track": "subdir",
+              "default": true
+            },
+            {
+              "dir": "shimloader/pak",
+              "track": "subdir"
+            },
+            {
+              "dir": "shimloader/cfg"
+            },
+            {
+              "dir": "shimloader/overlay",
+              "track": "subdir"
+            }
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "id": "thunderstore",
+          "key": "voices-of-the-void"
+        }
+      ]
     }
   ],
   "authors": [

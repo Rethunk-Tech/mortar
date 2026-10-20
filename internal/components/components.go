@@ -190,10 +190,13 @@ type GameInfo struct {
 	// placed into the install for the launch and taken back after).
 	Deploy string `json:"deploy"`
 	// Targets are the places the game's mod files go.
-	Targets []TargetDef  `json:"targets"`
-	Stores  GameStores   `json:"stores"`
-	Loaders []GameLoader `json:"loaders"`
-	Sources []GameSource `json:"sources"`
+	Targets []TargetDef `json:"targets"`
+	Stores  GameStores  `json:"stores"`
+	// ManualFolder marks a game sold where no store app tracks it (an itch.io download unpacked anywhere): it names no
+	// store, and the player browses to its folder, as for a game they add themselves.
+	ManualFolder bool         `json:"manualFolder,omitempty"`
+	Loaders      []GameLoader `json:"loaders"`
+	Sources      []GameSource `json:"sources"`
 	// Templates are starter profiles offered when creating one: a named list of packages, each queued through the
 	// normal download path.
 	Templates []StarterTemplate `json:"templates,omitempty"`
@@ -820,8 +823,8 @@ func (g GameInfo) Validate() error {
 	if g.Enabled && len(g.Targets) == 0 {
 		return fmt.Errorf("enabled game %q needs a content target", g.ID)
 	}
-	if g.Enabled && g.Stores == (GameStores{}) {
-		return fmt.Errorf("enabled game %q needs a store", g.ID)
+	if g.Enabled && g.Stores == (GameStores{}) && !g.ManualFolder {
+		return fmt.Errorf("enabled game %q needs a store, or manualFolder", g.ID)
 	}
 	names := []string{g.Marker}
 	if g.LinuxMarker != "" {
