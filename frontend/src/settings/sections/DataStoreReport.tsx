@@ -29,6 +29,7 @@ import type {
 import { gameInfo } from '../../games/info.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
+import { AfterDelay } from '../../shell/AfterDelay.tsx'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { space } from '../../theme/density.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -259,7 +260,11 @@ function CleanupBody({
 }) {
   const { t, i18n } = useLingui()
   if (store === null) {
-    return <Skeleton height={44} />
+    return (
+      <AfterDelay>
+        <Skeleton height={44} />
+      </AfterDelay>
+    )
   }
   const items = [...store.unused, ...store.older]
   const allIds = [...items.map((s) => s.id), ...leftovers.map((g) => g.kind)]

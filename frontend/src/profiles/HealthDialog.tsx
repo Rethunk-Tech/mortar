@@ -24,6 +24,7 @@ import { i18n } from '../i18n/index.ts'
 import { absoluteWhen } from '../i18n/when.ts'
 import { openSettings } from '../nav/store.ts'
 import { download } from '../queue/actions.ts'
+import { AfterDelay } from '../shell/AfterDelay.tsx'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { space } from '../theme/density.ts'
@@ -247,7 +248,11 @@ export function HealthDialog({
       </Box>
     )
   } else if (findings === null) {
-    body = <Skeleton height={44} />
+    body = (
+      <AfterDelay>
+        <Skeleton height={44} />
+      </AfterDelay>
+    )
   } else if (findings.length === 0) {
     body = (
       <EmptyState compact={true} icon={<ShieldCheck size={28} />} title={t`Everything looks fine`}>

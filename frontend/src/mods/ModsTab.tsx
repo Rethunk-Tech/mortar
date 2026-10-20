@@ -13,6 +13,7 @@ import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { boundShortcut, dialogOpen } from '../settings/shortcuts.ts'
 import { useSettings } from '../settings/store.ts'
+import { AfterDelay } from '../shell/AfterDelay.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { space } from '../theme/density.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
@@ -115,20 +116,22 @@ const ModsBody = memo(function ModsBodyView({
         </Button>
       </Box>
     ) : (
-      <Box
-        role="status"
-        aria-label={t`Loading mods`}
-        sx={{ px: space.pad, display: 'flex', flexDirection: 'column', gap: space.gap }}
-      >
-        {LOADING_ROWS.map((n) => (
-          <Skeleton
-            key={n}
-            variant="rounded"
-            height={ROW_HEIGHT}
-            sx={{ bgcolor: 'var(--mortar-hairline-faint)' }}
-          />
-        ))}
-      </Box>
+      <AfterDelay>
+        <Box
+          role="status"
+          aria-label={t`Loading mods`}
+          sx={{ px: space.pad, display: 'flex', flexDirection: 'column', gap: space.gap }}
+        >
+          {LOADING_ROWS.map((n) => (
+            <Skeleton
+              key={n}
+              variant="rounded"
+              height={ROW_HEIGHT}
+              sx={{ bgcolor: 'var(--mortar-hairline-faint)' }}
+            />
+          ))}
+        </Box>
+      </AfterDelay>
     )
   }
   if (shown.length === 0 && filtering) {

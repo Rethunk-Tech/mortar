@@ -12,6 +12,7 @@ import { PageActions } from '../game/PageActions.tsx'
 import { useTab } from '../game/tab.ts'
 import { useGameLoader } from '../games/info.ts'
 import { copyText } from '../share/copyText.ts'
+import { AfterDelay } from '../shell/AfterDelay.tsx'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
@@ -418,7 +419,11 @@ export function LoadOrderTab({ profile, game }: { profile: Profile; game: string
   }, [rows, pageNames])
 
   if (rows === null) {
-    return <OrderSkeleton label={t`Reading load order…`} />
+    return (
+      <AfterDelay>
+        <OrderSkeleton label={t`Reading load order…`} />
+      </AfterDelay>
+    )
   }
   const kind = loadOrderEmptyKind(failed, rows.length)
   if (kind === 'error') {

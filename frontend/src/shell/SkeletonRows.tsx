@@ -1,5 +1,6 @@
 import type { SxProps, Theme } from '@mui/material'
 import { Box, Skeleton } from '@mui/material'
+import { AfterDelay } from './AfterDelay.tsx'
 
 const GAP = 0.75
 
@@ -16,17 +17,19 @@ export function SkeletonRows({
   sx?: SxProps<Theme>
 }) {
   return (
-    <Box
-      role="status"
-      aria-label={label}
-      sx={[
-        { display: 'flex', flexDirection: 'column', gap: GAP },
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
-    >
-      {Array.from({ length: count }, (_, n) => `row-${n}`).map((key) => (
-        <Skeleton key={key} variant="rounded" height={height} />
-      ))}
-    </Box>
+    <AfterDelay>
+      <Box
+        role="status"
+        aria-label={label}
+        sx={[
+          { display: 'flex', flexDirection: 'column', gap: GAP },
+          ...(Array.isArray(sx) ? sx : [sx]),
+        ]}
+      >
+        {Array.from({ length: count }, (_, n) => `row-${n}`).map((key) => (
+          <Skeleton key={key} variant="rounded" height={height} />
+        ))}
+      </Box>
+    </AfterDelay>
   )
 }
