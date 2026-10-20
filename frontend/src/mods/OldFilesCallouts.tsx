@@ -10,11 +10,8 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
-import type {
-  OldFiles,
-  Profile,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { memo, useCallback, useEffect, useState } from 'react'
+import type { OldFiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   PendingOldFiles,
   ResolveOldFiles,
@@ -145,26 +142,32 @@ function OldFilesCallout({
 
 // One callout when a single entry's last update set files aside; with more, one summary callout, so a large
 // update cannot push the mod list off the page, and a dialog listing each entry.
-export function OldFilesCallouts({ profile }: { profile: Profile }) {
+export const OldFilesCallouts = memo(function OldFilesCalloutsView({
+  profileId,
+  updated,
+}: {
+  profileId: string
+  updated: string
+}) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
   const locked = useLocked()
   const [pending, run] = usePending()
   const [reviewing, setReviewing] = useState(false)
   const [found, setFound] = useState<{ id: string; sets: OldFiles[] }>({ id: '', sets: [] })
-  const sets = found.id === profile.id ? found.sets : []
+  const sets = found.id === profileId ? found.sets : []
   const refetch = useCallback(
     () =>
-      PendingOldFiles(game, profile.id)
-        .then((list) => setFound({ id: profile.id, sets: list ?? [] }))
+      PendingOldFiles(game, profileId)
+        .then((list) => setFound({ id: profileId, sets: list ?? [] }))
         .catch(reportUnexpected),
-    [game, profile.id],
+    [game, profileId],
   )
   useEffect(() => {
-    if (game !== '' && profile.updated !== '') {
+    if (game !== '' && updated !== '') {
       refetch().catch(reportUnexpected)
     }
-  }, [game, profile.updated, refetch])
+  }, [game, updated, refetch])
   const done = (key: string) =>
     setFound((f) => ({ ...f, sets: f.sets.filter((s) => s.key !== key) }))
   const callout = (set: OldFiles) => (
@@ -172,7 +175,7 @@ export function OldFilesCallouts({ profile }: { profile: Profile }) {
       key={set.key}
       set={set}
       game={game}
-      profileId={profile.id}
+      profileId={profileId}
       onRestored={() => {
         refetch().catch(reportUnexpected)
       }}
@@ -194,7 +197,7 @@ export function OldFilesCallouts({ profile }: { profile: Profile }) {
     run(
       async () => {
         for (const set of sets) {
-          await ResolveOldFiles(game, profile.id, set.key, true)
+          await ResolveOldFiles(game, profileId, set.key, true)
           done(set.key)
         }
         setReviewing(false)
@@ -207,7 +210,7 @@ export function OldFilesCallouts({ profile }: { profile: Profile }) {
       async () => {
         const tokens: string[] = []
         for (const set of sets) {
-          tokens.push(await TrashOldFiles(game, profile.id, set.key))
+          tokens.push(await TrashOldFiles(game, profileId, set.key))
           done(set.key)
         }
         setReviewing(false)
@@ -216,9 +219,9 @@ export function OldFilesCallouts({ profile }: { profile: Profile }) {
           title: trashedTitle(files),
           action: {
             label: i18n._(msg`Undo`),
-            profileId: profile.id,
+            profileId,
             run: () =>
-              Promise.all(tokens.map((token) => RestoreOldFiles(game, profile.id, token)))
+              Promise.all(tokens.map((token) => RestoreOldFiles(game, profileId, token)))
                 .then(refetch)
                 .catch(reportUnexpected),
           },
@@ -278,4 +281,4 @@ export function OldFilesCallouts({ profile }: { profile: Profile }) {
       </Dialog>
     </>
   )
-}
+})

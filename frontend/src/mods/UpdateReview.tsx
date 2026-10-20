@@ -1,9 +1,9 @@
 import { Dialog, DialogContent } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import type { Update } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useNowValue } from '../i18n/useNow.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -21,7 +21,6 @@ import { ReviewFooter } from './updateReview/ReviewFooter.tsx'
 import { ReviewTitle } from './updateReview/ReviewTitle.tsx'
 import { SourceGroups } from './updateReview/SourceGroups.tsx'
 import { UndoAllConfirm } from './updateReview/UndoAllConfirm.tsx'
-import { UpdateBar as ReviewBar } from './updateReview/UpdateBar.tsx'
 import {
   listedBySource,
   needChoiceUpdates,
@@ -32,10 +31,6 @@ import { WithheldGroup } from './updateReview/WithheldGroup.tsx'
 import { installedCaution, pendingUpdate, withOptional } from './updateReview/wants.ts'
 import { useEmptyReviewNotice, withheldUpdates } from './updateReview/withheld.ts'
 import { checkedLabel, useUpdates } from './updates.ts'
-
-function UpdateBar() {
-  return <ReviewBar />
-}
 
 function useMergeCachedDetails(open: boolean) {
   const updates = useUpdates((s) => s.updates)
@@ -58,7 +53,23 @@ function uncachedNexusIds(
   ]
 }
 
-function UpdateReview({ profile }: { profile: Profile }) {
+// Mounted from the first time the review opens (then kept, so it can fade out): until then a save of the profile
+// does not rebuild a closed review.
+const UpdateReview = memo(function UpdateReviewGate() {
+  const open = useUpdates((s) => s.reviewing)
+  const [opened, setOpened] = useState(open)
+  if (open && !opened) {
+    setOpened(true)
+  }
+  return opened ? <OpenProfileReview /> : null
+})
+
+function OpenProfileReview() {
+  const profile = useProfiles(openProfileOf)
+  return profile ? <UpdateReviewDialog profile={profile} /> : null
+}
+
+function UpdateReviewDialog({ profile }: { profile: Profile }) {
   const signedIn = useNexus((s) => s.signedIn)
   const gameId = useProfiles((s) => s.game?.id ?? '')
   const open = useUpdates((s) => s.reviewing)
@@ -140,4 +151,4 @@ function UpdateReview({ profile }: { profile: Profile }) {
   )
 }
 
-export { UpdateBar, UpdateReview }
+export { UpdateReview }

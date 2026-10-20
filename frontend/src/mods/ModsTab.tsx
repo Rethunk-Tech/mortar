@@ -47,7 +47,8 @@ import { useMods } from './store.ts'
 import { storedFilter, storedTags, type View } from './storeView.ts'
 import { EmptyMods, type ModFilter, Toolbar } from './Toolbar.tsx'
 import { TrackedNotInProfile } from './TrackedNotInProfile.tsx'
-import { UpdateBar, UpdateReview } from './UpdateReview.tsx'
+import { UpdateReview } from './UpdateReview.tsx'
+import { UpdateBar } from './updateReview/UpdateBar.tsx'
 import { useUpdates } from './updates.ts'
 
 function SelectionKeys({ shown }: { shown: Mod[] }) {
@@ -330,7 +331,7 @@ function FilteredMods({ profile }: { profile: Profile }) {
         selectedTags={selectedTags}
         onTags={onTags}
       />
-      <TrackedNotInProfile profile={profile} />
+      <TrackedNotInProfile profileId={profile.id} />
       <LockedNote />
       <SelectionKeys shown={shown} />
       <SelectionBar profileId={profile.id} mods={shown} />
@@ -412,9 +413,9 @@ export function ModsTab({ profile }: { profile: Profile }) {
   if (userModCount(profile) === 0) {
     return (
       <>
-        <TrackedNotInProfile profile={profile} />
-        <OldFilesCallouts profile={profile} />
-        <NewFoldersCallout profile={profile} />
+        <TrackedNotInProfile profileId={profile.id} />
+        <OldFilesCallouts profileId={profile.id} updated={String(profile.updated)} />
+        <NewFoldersCallout profileId={profile.id} updated={String(profile.updated)} />
         <EmptyMods profileId={profile.id} />
       </>
     )
@@ -429,12 +430,12 @@ export function ModsTab({ profile }: { profile: Profile }) {
       </TipBanner>
       <ModsHeaderActions />
       <UpdateBar />
-      <OldFilesCallouts profile={profile} />
-      <NewFoldersCallout profile={profile} />
-      <FrozenCallout profile={profile} />
-      <LegacyReasonsCallout profile={profile} />
+      <OldFilesCallouts profileId={profile.id} updated={String(profile.updated)} />
+      <NewFoldersCallout profileId={profile.id} updated={String(profile.updated)} />
+      <FrozenCallout />
+      <LegacyReasonsCallout />
       <FilteredMods profile={profile} />
-      <UpdateReview profile={profile} />
+      <UpdateReview />
       <ModContextMenu />
       <SetNexusPageDialog />
       <EndorsePrompt profile={profile} />

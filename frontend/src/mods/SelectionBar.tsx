@@ -49,6 +49,10 @@ function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod[] }) {
   const tags = [...new Set((profile?.entries ?? []).flatMap((entry) => entry.tags ?? []))].sort()
   // One selected mod is covered by the details panel and its menu; the bar is for acting on several.
   const multi = ids.length > 1
+  // With nothing selected and no dialog open there is nothing to draw, so a profile save skips the closed dialogs.
+  if (ids.length === 0 && !(alsoOpen || groupOpen || tagOpen || categoryOpen)) {
+    return null
+  }
   return (
     <>
       {multi ? (

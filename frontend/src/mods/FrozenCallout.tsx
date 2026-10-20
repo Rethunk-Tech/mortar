@@ -1,14 +1,16 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
-import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { memo } from 'react'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { setFrozen } from './freeze.ts'
 import { isFrozen } from './frozen.ts'
 import { ListCallout } from './ListCallout.tsx'
 
 // Shown above the mod list while the profile is frozen, with the way out.
-export function FrozenCallout({ profile }: { profile: Profile }) {
+export const FrozenCallout = memo(function FrozenCalloutView() {
   const { t } = useLingui()
-  if (!isFrozen(profile)) {
+  const frozen = useProfiles((s) => isFrozen(openProfileOf(s)))
+  if (!frozen) {
     return null
   }
   return (
@@ -21,4 +23,4 @@ export function FrozenCallout({ profile }: { profile: Profile }) {
       }
     />
   )
-}
+})

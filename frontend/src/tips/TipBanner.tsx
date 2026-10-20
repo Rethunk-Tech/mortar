@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
 import { X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { memo, type ReactNode } from 'react'
 import { SetTipsSeen } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useSettings } from '../settings/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
@@ -9,7 +9,14 @@ import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { type TipId, tipVisible } from './visible.ts'
 
-export function TipBanner({ tip, children }: { tip: TipId; children: ReactNode }) {
+// Memoised: its text is a stable string, so the page it sits on re-rendering leaves it alone.
+export const TipBanner = memo(function TipBannerView({
+  tip,
+  children,
+}: {
+  tip: TipId
+  children: ReactNode
+}) {
   const { t } = useLingui()
   const seen = useSettings((s) => s.tipsSeen)
   if (!tipVisible(seen, tip)) {
@@ -48,4 +55,4 @@ export function TipBanner({ tip, children }: { tip: TipId; children: ReactNode }
       </TipIconButton>
     </Box>
   )
-}
+})

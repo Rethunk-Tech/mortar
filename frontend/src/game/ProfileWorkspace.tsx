@@ -1,4 +1,5 @@
 import { Box } from '@mui/material'
+import type { ReactNode } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { BrowseHost } from '../browse/BrowseHost.tsx'
 import { ConsoleTab } from '../console/ConsoleTab.tsx'
@@ -10,6 +11,7 @@ import { ProblemsTab } from '../mods/ProblemsTab.tsx'
 import { RemoveDialog } from '../mods/parts.tsx'
 import { ConfigTab } from '../mods/typedConfig/ConfigTab.tsx'
 import { useConfigListLoaded } from '../mods/typedConfig/configList.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { SavesTab } from '../saves/SavesTab.tsx'
 import { ScreenshotsTab } from '../screenshots/ScreenshotsTab.tsx'
 import { usePasteLink } from '../share/usePasteLink.ts'
@@ -18,18 +20,24 @@ import { Home } from './Home.tsx'
 import { TabHeader } from './TabHeader.tsx'
 import { PANEL_ID, tabDomId, useTab } from './tab.ts'
 
-export function ProfileWorkspace({
-  profile,
-  game,
-  gameName,
-}: {
-  profile: Profile
-  game: string
-  gameName: string
-}) {
+// The tab that shows the whole open profile reads it here, so a save re-renders that tab and not the workspace.
+function WithProfile({ show }: { show: (profile: Profile) => ReactNode }) {
+  const profile = useProfiles(openProfileOf)
+  return profile ? show(profile) : null
+}
+
+// Rereads the config list on each save of the open profile; its own component, so a save re-renders only this.
+function ConfigListFollower({ game, id }: { game: string; id: string }) {
+  const updated = useProfiles((s) => openProfileOf(s)?.updated ?? '')
+  useConfigListLoaded(game, { id, updated })
+  return null
+}
+
+export function ProfileWorkspace({ game, gameName }: { game: string; gameName: string }) {
   const tab = useTab((s) => s.tab)
-  usePasteLink(profile.id)
-  useConfigListLoaded(game, profile)
+  const id = useProfiles((s) => s.openId)
+  const name = useProfiles((s) => openProfileOf(s)?.name ?? '')
+  usePasteLink(id)
   return (
     <Box
       role="tabpanel"
@@ -37,26 +45,37 @@ export function ProfileWorkspace({
       aria-labelledby={tabDomId(tab)}
       sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}
     >
+      <ConfigListFollower game={game} id={id} />
       {tab === 'home' ? (
-        <Home key={`home-${profile.id}`} profile={profile} game={game} gameName={gameName} />
+        <WithProfile
+          key={`home-${id}`}
+          show={(profile) => <Home profile={profile} game={game} gameName={gameName} />}
+        />
       ) : null}
       {tab === 'home' ? null : <TabHeader />}
-      <ErrorBoundary resetKey={`${tab}-${profile.id}`}>
+      <ErrorBoundary resetKey={`${tab}-${id}`}>
         {tab === 'console' ? <ConsoleTab game={game} /> : null}
         {tab === 'performance' ? <PerformanceTab game={game} /> : null}
-        {tab === 'config' ? <ConfigTab profile={profile} game={game} /> : null}
-        {tab === 'saves' ? <SavesTab profile={profile} game={game} /> : null}
+        {tab === 'config' ? (
+          <WithProfile show={(profile) => <ConfigTab profile={profile} game={game} />} />
+        ) : null}
+        {tab === 'saves' ? (
+          <WithProfile show={(profile) => <SavesTab profile={profile} game={game} />} />
+        ) : null}
         {tab === 'screenshots' ? <ScreenshotsTab game={game} /> : null}
         {tab === 'load-order' ? (
-          <LoadOrderTab key={`load-order-${profile.id}`} profile={profile} game={game} />
+          <WithProfile
+            key={`load-order-${id}`}
+            show={(profile) => <LoadOrderTab profile={profile} game={game} />}
+          />
         ) : null}
-        {tab === 'browse' ? (
-          <BrowseHost key={`browse-${profile.id}`} game={game} profileID={profile.id} />
+        {tab === 'browse' ? <BrowseHost key={`browse-${id}`} game={game} profileID={id} /> : null}
+        {tab === 'mods' ? (
+          <WithProfile key={`mods-${id}`} show={(profile) => <ModsTab profile={profile} />} />
         ) : null}
-        {tab === 'mods' ? <ModsTab key={`mods-${profile.id}`} profile={profile} /> : null}
         {tab === 'problems' ? (
           <Box
-            key={`problems-${profile.id}`}
+            key={`problems-${id}`}
             sx={{
               flex: 1,
               minHeight: 0,
@@ -70,7 +89,7 @@ export function ProfileWorkspace({
         ) : null}
         {/* Mods and Problems both open these, so they live above either tab. */}
         <RemoveDialog />
-        <DuplicateDialog profileName={profile.name} />
+        <DuplicateDialog profileName={name} />
       </ErrorBoundary>
     </Box>
   )

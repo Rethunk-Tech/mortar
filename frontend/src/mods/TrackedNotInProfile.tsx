@@ -9,12 +9,11 @@ import {
   Typography,
 } from '@mui/material'
 import { ChevronDown, ExternalLink, Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import {
   ModName,
   TrackedMissing,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
-import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { currentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -88,7 +87,11 @@ function TrackedRow({
   )
 }
 
-function TrackedNotInProfile({ profile }: { profile: Profile }) {
+const TrackedNotInProfile = memo(function TrackedNotInProfileView({
+  profileId,
+}: {
+  profileId: string
+}) {
   const { t } = useLingui()
   const signedIn = useNexus((s) => s.signedIn)
   const premium = useNexus((s) => s.premium)
@@ -101,7 +104,7 @@ function TrackedNotInProfile({ profile }: { profile: Profile }) {
       return
     }
     let live = true
-    TrackedMissing(gameId, profile.id)
+    TrackedMissing(gameId, profileId)
       .then((list) => {
         if (live) {
           setMods(list ?? [])
@@ -112,7 +115,7 @@ function TrackedNotInProfile({ profile }: { profile: Profile }) {
     return () => {
       live = false
     }
-  }, [signedIn, gameId, profile.id])
+  }, [signedIn, gameId, profileId])
   if (!signedIn || mods.length === 0) {
     return null
   }
@@ -142,7 +145,7 @@ function TrackedNotInProfile({ profile }: { profile: Profile }) {
           <TrackedRow
             key={mod.modId}
             mod={mod}
-            profileId={profile.id}
+            profileId={profileId}
             premium={premium}
             locked={locked}
           />
@@ -150,6 +153,6 @@ function TrackedNotInProfile({ profile }: { profile: Profile }) {
       </AccordionDetails>
     </Accordion>
   )
-}
+})
 
 export { TrackedNotInProfile }

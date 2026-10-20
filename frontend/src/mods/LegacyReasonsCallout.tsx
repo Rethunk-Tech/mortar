@@ -1,10 +1,9 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Button } from '@mui/material'
-import { useState } from 'react'
-import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { memo, useState } from 'react'
 import { SetIntentOffered } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useCustomCategories } from './customCategories.ts'
 import { customCategoryById, resolvedCategoryLabel } from './group.ts'
@@ -20,8 +19,14 @@ const NONE: string[] = []
 
 // Once per profile from before install reasons: offers to mark the libraries and tilesheet packs its game's defaults
 // name as implicit. Either answer ends the offer.
-export function LegacyReasonsCallout({ profile }: { profile: Profile }) {
+export const LegacyReasonsCallout = memo(function LegacyReasonsCalloutView() {
+  const offered = useProfiles((s) => openProfileOf(s)?.intentOffered ?? true)
+  return offered ? null : <LegacyReasonsOffer />
+})
+
+function LegacyReasonsOffer() {
   const { t } = useLingui()
+  const profile = useProfiles(openProfileOf)
   const mods = useMods((s) => s.mods)
   const game = useProfiles((s) => s.game?.id ?? '')
   const nexusById = useNexusDetails((s) => s.byId)
@@ -29,7 +34,7 @@ export function LegacyReasonsCallout({ profile }: { profile: Profile }) {
   const supporting = useMods((s) => s.problems?.supporting ?? NONE)
   const [pending, run] = usePending()
   const [reviewing, setReviewing] = useState(false)
-  if (profile.intentOffered) {
+  if (!profile || profile.intentOffered) {
     return null
   }
   const picks = legacyImplicit(
