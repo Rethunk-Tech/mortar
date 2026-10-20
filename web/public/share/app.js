@@ -191,6 +191,12 @@ async function main() {
   $('profile').hidden = false
   $('open').href = `mortar://${share.game}/p/${payload}`
   $('open').hidden = false
+  // Counted with the game and the list's size only: the payload is the profile and never leaves the browser.
+  $('open').addEventListener('click', () => {
+    globalThis.plausible?.('Share: Open in Mortar', {
+      props: { game: share.game, mods: String(share.entries.length) },
+    })
+  })
   $('download').hidden = false
   $('download').addEventListener('click', () => {
     navigator.clipboard?.writeText(link).then(

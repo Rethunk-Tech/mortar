@@ -124,6 +124,8 @@ const managers = [
 
 <script>
   // Picks out the visitor's system and their package manager, and copies the shown command.
+  import { track } from '../scripts/track.ts'
+
   const ua = navigator.userAgent
   const linux = /Linux|X11/i.test(ua) && !/Android/i.test(ua) && !/Windows/i.test(ua)
   const os = linux ? 'linux' : 'windows'
@@ -161,6 +163,8 @@ const managers = [
     }
     const copy = box.querySelector<HTMLButtonElement>('.cmdcopy')
     copy?.addEventListener('click', () => {
+      const chosen = chips.find((c) => c.getAttribute('aria-selected') === 'true') ?? chips[0]
+      track('Install command: Copy', { manager: chosen?.textContent?.trim() ?? '' })
       navigator.clipboard?.writeText(text?.textContent ?? '').then(() => {
         copy.textContent = 'Copied'
         setTimeout(() => {

@@ -16,3 +16,9 @@ import Page from '../layouts/Page.astro'
     <a class="btn ghost" href="/games/">All games</a>
   </div>
 </Page>
+
+<script>
+  import { track } from '../scripts/track.ts'
+
+  track('404', { path: location.pathname })
+</script>

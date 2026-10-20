@@ -2,6 +2,8 @@
 // loaded on first open; a local preview without one says so instead of failing.
 const MAX_RESULTS = 8
 const DEBOUNCE_MS = 200
+const MISS_MS = 1500
+const QUERY_CHARS = 60
 const button = document.querySelector('.nav-search')
 
 let dialog
@@ -10,6 +12,7 @@ let list
 let status
 let pagefind
 let timer
+let missTimer
 let run = 0
 let active = -1
 
@@ -106,6 +109,15 @@ async function search(query) {
     }
     show(data.map(row))
     status.textContent = data.length > 0 ? '' : 'Nothing matched.'
+    clearTimeout(missTimer)
+    if (data.length === 0) {
+      // Only a search left empty for a moment counts, not each half-typed word on the way to a match.
+      missTimer = setTimeout(() => {
+        globalThis.plausible?.('Search: No results', {
+          props: { query: term.toLowerCase().slice(0, QUERY_CHARS) },
+        })
+      }, MISS_MS)
+    }
   } catch {
     if (mine === run) {
       show([])

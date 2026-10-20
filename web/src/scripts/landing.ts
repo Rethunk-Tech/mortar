@@ -1,5 +1,7 @@
 // The landing page: the download button names the visitor's system, the metrics count up once, the game picker
 // searches as you type ("/" jumps to it), and the demo preview loops until a click swaps in the real app.
+import { track } from './track.ts'
+
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
 const PICKER_TILES = 8
 const COUNT_MS = 1200
@@ -125,6 +127,7 @@ function demo() {
       }, LOOP_MS)
   document.getElementById('demo-open')?.addEventListener('click', (e) => {
     clearInterval(timer)
+    track('Demo: Start')
     const frame = document.createElement('iframe')
     frame.className = 'demo-frame'
     frame.src = '/demo/'
