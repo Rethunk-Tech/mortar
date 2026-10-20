@@ -9,7 +9,8 @@ import { chromium, type Page } from '@playwright/test'
 //   bun frontend/e2e/screens.ts --url http://127.0.0.1:9455 --out /var/tmp/screens
 // A screen whose controls are not found is skipped with a note.
 // --set site instead takes the product screenshots, each at its own size, and puts them where they are cited: WebP in
-// web/public/img (cwebp on PATH), and the metainfo and README ones as PNG in build/linux/screenshots.
+// web/public/img (cwebp on PATH), and the metainfo and README ones as PNG in build/linux/screenshots. --only a,b takes
+// just those scenes.
 
 const arg = (name: string, fallback: string) => {
   const i = process.argv.indexOf(`--${name}`)
@@ -251,6 +252,33 @@ const SITE: Scene[] = [
         .evaluate((h) => h.scrollIntoView({ block: 'start' }))
     },
   },
+  // Needs a folder in autoInstallFolders: the folder picker is native, so the sandbox's setting is set beforehand.
+  {
+    name: 'watch-folders',
+    ...DESK,
+    profile: STARDEW,
+    steps: async (page) => {
+      await settings(page, 'Downloads')
+      await page
+        .getByText('Also watch these folders', { exact: true })
+        .first()
+        .evaluate((h) => h.scrollIntoView({ block: 'center' }))
+    },
+  },
+  {
+    name: 'config',
+    ...DESK,
+    profile: STARDEW,
+    steps: async (page) => {
+      await click(page, 'tab', 'Config')
+      // The first button is the group's header, which would fold the list away.
+      await page
+        .getByRole('group', { name: 'Mods with settings' })
+        .getByRole('button')
+        .nth(1)
+        .click({ timeout: STEP_MS })
+    },
+  },
 ]
 
 function publishSite() {
@@ -267,7 +295,8 @@ function publishSite() {
 async function siteShots() {
   mkdirSync(out, { recursive: true })
   const browser = await chromium.launch()
-  for (const scene of SITE) {
+  const only = arg('only', '').split(',').filter(Boolean)
+  for (const scene of SITE.filter((s) => only.length === 0 || only.includes(s.name))) {
     const context = await browser.newContext({
       viewport: { width: scene.width, height: scene.height },
       colorScheme: 'dark',
