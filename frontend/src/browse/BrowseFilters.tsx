@@ -194,7 +194,6 @@ const BrowseFilters = memo(function BrowseFiltersView({
         gap: space.gap,
         flexWrap: 'wrap',
         px: space.pad,
-        pb: 0.75,
       }}
     >
       <CategoryPicker
