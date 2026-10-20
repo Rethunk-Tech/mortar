@@ -96,7 +96,7 @@ const features = [
   {
     icon: 'layers',
     title: 'A profile per playthrough',
-    text: 'Its own mods, settings and launch options. Switching is one click.',
+    text: 'Each one has its own mods, settings and launch options. Switching takes one click.',
     img: 'profile',
   },
   {
@@ -108,7 +108,7 @@ const features = [
   {
     icon: 'link',
     title: 'Shares as a link',
-    text: 'A whole profile in one link. Friends import it in a click.',
+    text: 'A whole profile fits in one link, and friends import it with a click.',
     img: 'mods',
   },
   {
@@ -120,7 +120,7 @@ const features = [
   {
     icon: 'gauge',
     title: 'See what slows startup',
-    text: 'Time to title screen and what each mod costs, compared with the last launch.',
+    text: 'Time to the title screen and what each mod costs, next to the last launch.',
     img: 'performance',
   },
   {
@@ -135,6 +135,7 @@ const features = [
 <Base
   title="Mortar: a free mod manager for Linux, Windows and Steam Deck"
   description={`Mortar is a free, open source mod manager for ${games.length} games on Linux, Windows and the Steam Deck. It installs each game's mod loader, keeps a profile per playthrough and shares a whole profile as a link.`}
+  band={false}
 >
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="i-layers" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="m2 17 10 5 10-5"></path><path d="m2 12 10 5 10-5"></path></g></symbol>
@@ -212,7 +213,7 @@ const features = [
     <ol class="flow stagger">
       <li class="reveal"><span class="dot">1</span><h3>Pick your game</h3><p>Mortar finds it on your stores, or in a folder you choose.</p><div class="vis stores">{stores.map((s) => <Mark site={s} label={STORE_LABEL[s] ?? s} />)}</div></li>
       <li class="reveal"><span class="dot">2</span><h3>Mortar sets it up</h3><p>It installs the mod loader the game needs and makes your first profile.</p><div class="vis">{loaders.slice(0, SHOWN_LOADERS).map((n) => <span class="pill ok">{n}</span>)}{loaders.length > SHOWN_LOADERS && <span class="pill">+ {loaders.length - SHOWN_LOADERS} more</span>}</div></li>
-      <li class="reveal"><span class="dot">3</span><h3>Add mods and play</h3><p>Search every site at once, add with one click, press Play.</p><div class="vis"><div class="minimod"><img alt="" src={capsule('lethal-company')} width="44" height="44" loading="lazy" referrerpolicy="no-referrer" /><div><b>MoreCompany</b><span>Thunderstore</span></div><span class="add">Added</span></div></div></li>
+      <li class="reveal"><span class="dot">3</span><h3>Add mods and play</h3><p>Search every site at once, add a mod with one click, then press Play.</p><div class="vis"><div class="minimod"><img alt="" src={capsule('lethal-company')} width="44" height="44" loading="lazy" referrerpolicy="no-referrer" /><div><b>MoreCompany</b><span>Thunderstore</span></div><span class="add">Added</span></div></div></li>
     </ol>
   </div>
 
@@ -242,7 +243,7 @@ const features = [
   </div>
 
   <div class="wrap sec" id="features">
-    <div class="head reveal"><p class="kicker">Features</p><h2>Built for big mod lists.</h2><p class="dim">Hundreds of mods, several playthroughs, friends on the same pack. That is the setup Mortar was built for.</p><a class="allq" href="/features/">Every feature →</a></div>
+    <div class="head reveal"><p class="kicker">Features</p><h2>Built for big mod lists.</h2><p class="dim">Mortar expects hundreds of mods, several playthroughs and friends on the same pack.</p><a class="allq" href="/features/">Every feature →</a></div>
     <div class="f1 stagger">
       {
         features.map((f) => (
@@ -257,19 +258,19 @@ const features = [
 
   <div class="wrap sec">
     <div class="wide spot">
-      <div class="reveal"><p class="kicker">Steam Deck</p><h2>Play from<br /><em>Game Mode.</em></h2><p class="dim">Add a profile to Steam and start it from Game Mode like any other game. Mortar stays out of sight, asks only when something needs an answer, and closes with the game so Steam counts your playtime.</p><ul><li>A gamepad moves focus, confirms, goes back and plays</li><li>Larger targets, laid out for the Deck's 1280×800 screen</li></ul></div>
+      <div class="reveal"><p class="kicker">Steam Deck</p><h2>Play from<br /><em>Game Mode.</em></h2><p class="dim">Add a profile to Steam and start it from Game Mode like any other game. Mortar stays out of sight and only asks when something needs an answer. It closes with the game, so Steam counts your playtime.</p><ul><li>A gamepad moves focus, confirms, goes back and plays</li><li>Larger targets, laid out for the Deck's 1280×800 screen</li></ul></div>
       <div class="bleed reveal"><div class="shot"><img class="zoom" src="/img/deck.webp" alt="Mortar on the Steam Deck" width="1280" height="800" loading="lazy" /></div></div>
     </div>
   </div>
   <div class="wrap sec">
     <div class="wide rev spot">
-      <div class="reveal"><p class="kicker">Your PCs</p><h2>Your profiles on<br /><em>every computer.</em></h2><p class="dim">Pair two of your computers with a short code. A profile you send arrives with its mod files, so nothing downloads twice. No account is involved.</p><ul><li>Nearby computers are found on your network</li><li>The code works once, for five minutes</li></ul></div>
+      <div class="reveal"><p class="kicker">Your PCs</p><h2>Your profiles on<br /><em>every computer.</em></h2><p class="dim">Pair two of your computers with a short code. A profile you send arrives with its mod files, so nothing downloads twice. You don't need an account.</p><ul><li>Nearby computers are found on your network</li><li>The code works once, for five minutes</li></ul></div>
       <div class="bleed reveal"><div class="shot"><img class="zoom" src="/img/pairing.webp" alt="Pairing two computers" width="1280" height="800" loading="lazy" /></div></div>
     </div>
   </div>
 
   <div class="wrap sec" id="compare">
-    <div class="head reveal"><p class="kicker">Compare</p><h2>Mortar and the others.</h2><p class="dim">Other managers' game counts are read from their own repositories each release; every other fact is taken from their own documentation.</p></div>
+    <div class="head reveal"><p class="kicker">Compare</p><h2>Mortar and the others.</h2><p class="dim">Other managers' game counts come from their own repositories, read again each release. Every other fact comes from their own documentation.</p></div>
     <div class="reveal"><Compare /></div>
   </div>
 
@@ -309,7 +310,7 @@ const features = [
   }
 
   <div class="wrap sec dl3" id="download">
-    <div class="head reveal"><p class="kicker">Download</p><h2>Get Mortar. <em>It's free.</em></h2><p class="dim">No account, no ads. It updates itself.</p></div>
+    <div class="head reveal"><p class="kicker">Download</p><h2>Get Mortar. <em>It's free.</em></h2><p class="dim">There's no account and no ads, and it updates itself.</p></div>
     <Download />
   </div>
 
