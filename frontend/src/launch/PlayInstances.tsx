@@ -14,7 +14,7 @@ export function PlayInstances({ game }: { game: string }) {
   const delay = specByKey(specs, 'delaySeconds')
   const instancesRaw = useSettings((s) => (instances ? prefRaw(s, instances, game) : undefined))
   const delayRaw = useSettings((s) => (delay ? prefRaw(s, delay, game) : undefined))
-  if (!instances || !delay) {
+  if (!(instances && delay)) {
     return null
   }
   return (
