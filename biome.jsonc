@@ -17,8 +17,7 @@
       "!**/generated",
       "!**/locales/*/messages.ts",
       "!**/vendor",
-      "!.claude",
-      "!design/landing-mock"
+      "!.claude"
     ]
   },
 
