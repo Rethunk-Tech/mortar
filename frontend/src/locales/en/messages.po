@@ -4114,8 +4114,8 @@ msgstr "95th ms"
 msgid "Data folder moved"
 msgstr "Data folder moved"
 
+#: src/games/gameList.ts
 #: src/games/GameMenu.tsx
-#: src/games/GameSelect.tsx
 msgid "On this computer"
 msgstr "On this computer"
 
@@ -5320,7 +5320,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/browse/BrowseShow.tsx
 #: src/firstrunTour/TourAgainButton.tsx
 #: src/firstrunTour/useFirstRunTour.ts
-#: src/games/GameSelect.tsx
+#: src/games/GameRowMenu.tsx
 #: src/settings/GraphicsApiRow.tsx
 #: src/settings/PrefControls.tsx
 #: src/settings/PrefRow.tsx
@@ -8906,8 +8906,8 @@ msgstr "{0} goes back to {previous}, keeping its settings. Your saves are backed
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
 
+#: src/games/gameList.ts
 #: src/games/GameMenu.tsx
-#: src/games/GameSelect.tsx
 msgid "Recently played"
 msgstr "Recently played"
 
@@ -9927,7 +9927,7 @@ msgstr "Undo only this mod's change from this entry. Everything else stays as it
 msgid "Unofficial update available: {0}"
 msgstr "Unofficial update available: {0}"
 
-#: src/games/GameSelect.tsx
+#: src/games/GameRowMenu.tsx
 msgid "Hide this game"
 msgstr "Hide this game"
 
@@ -10526,7 +10526,7 @@ msgstr "A saved group keeps at least one mod; delete the saved group instead"
 msgid "Could not reset the settings of {0}"
 msgstr "Could not reset the settings of {0}"
 
-#: src/games/GameSelect.tsx
+#: src/games/gameList.ts
 msgid "Other games"
 msgstr "Other games"
 
@@ -11018,7 +11018,7 @@ msgstr "Save backup folder"
 msgid ".mortar file"
 msgstr ".mortar file"
 
-#: src/games/GameSelect.tsx
+#: src/games/GameRowMenu.tsx
 #: src/mods/HiddenInside.tsx
 #: src/settings/sections/HiddenMods.tsx
 msgid "Unhide"
@@ -12524,7 +12524,7 @@ msgid "Switch {0} to {1}?"
 msgstr "Switch {0} to {1}?"
 
 #: src/firstrun/GameSetup.tsx
-#: src/games/GameSelect.tsx
+#: src/games/gameList.ts
 msgid "All games"
 msgstr "All games"
 

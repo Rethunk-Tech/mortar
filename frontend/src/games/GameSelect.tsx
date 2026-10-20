@@ -1,13 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { useVirtualizer } from '@tanstack/react-virtual'
-import { Eye, EyeOff, Play, Settings } from 'lucide-react'
+import { useVirtualizer, type Virtualizer } from '@tanstack/react-virtual'
+import { Play, Settings } from 'lucide-react'
 import { type MouseEvent, memo, useCallback, useRef, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import {
-  SetGameHidden,
   SetLastGame,
   SetLastProfile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
@@ -26,11 +25,18 @@ import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { reportError } from '../toasts/report.ts'
 import { gameArt } from './art.ts'
-import { listItems, useFindGame, useTypeToScroll } from './gameList.ts'
-import { listedGames } from './hidden.ts'
+import { type GameMenuAt, GameRowMenu, gameMenuAt } from './GameRowMenu.tsx'
+import { GroupHeading } from './GroupHeading.tsx'
+import {
+  type Item,
+  useCollapsedSections,
+  useFindGame,
+  useSections,
+  useTypeToScroll,
+} from './gameList.ts'
 import { LetterRail } from './LetterRail.tsx'
 import { ListFooter } from './ListFooter.tsx'
-import { gameOrder, initialOf } from './order.ts'
+import { initialOf } from './order.ts'
 import { ProfileCards } from './ProfileCards.tsx'
 import { formatPlaytime } from './playtime.ts'
 import { listItemSx, ROW_PX } from './rowStyles.ts'
@@ -185,7 +191,6 @@ interface RowProps {
   lastPlayedAt: string
   lastPlayedId: string
   playtimeMs: number
-  hidden: boolean
   cards: { gameId: GameId; profiles: Profile[]; lastPlayed: Played | undefined } | undefined
 }
 
@@ -199,7 +204,6 @@ function RowView({
   lastPlayedAt,
   lastPlayedId,
   playtimeMs,
-  hidden,
   cards,
 }: RowProps) {
   const { t } = useLingui()
@@ -257,19 +261,6 @@ function RowView({
         }}
       >
         <SourceBadges sources={game.sources ?? []} />
-        <Button
-          type="button"
-          size="small"
-          color="inherit"
-          startIcon={hidden ? <Eye size={14} /> : <EyeOff size={14} />}
-          onClick={() =>
-            SetGameHidden(game.id, !hidden).catch((err: unknown) =>
-              fail(t`Could not save that setting`, err),
-            )
-          }
-        >
-          {hidden ? t`Unhide` : t`Hide this game`}
-        </Button>
         {openable && playId ? (
           <Button
             type="button"
@@ -344,42 +335,8 @@ const Row = memo(
     a.lastPlayedAt === b.lastPlayedAt &&
     a.lastPlayedId === b.lastPlayedId &&
     a.playtimeMs === b.playtimeMs &&
-    a.hidden === b.hidden &&
     sameCards(a.cards, b.cards),
 )
-
-const GroupHeading = memo(function GroupHeadingView({
-  children,
-  count,
-}: {
-  children: string
-  count: number
-}) {
-  return (
-    <Typography
-      component="h2"
-      sx={{
-        m: 0,
-        px: '40px',
-        pt: '14px',
-        pb: '8px',
-        fontSize: 12,
-        fontWeight: 700,
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
-        color: 'var(--mortar-ink-sec)',
-      }}
-    >
-      {children}
-      <Box
-        component="span"
-        sx={{ ml: 1, color: 'var(--mortar-ink-dim-60)', fontVariantNumeric: 'tabular-nums' }}
-      >
-        {count}
-      </Box>
-    </Typography>
-  )
-})
 
 // A shorter list fits without a rail to jump through it.
 const RAIL_MIN_GAMES = 8
@@ -393,30 +350,56 @@ function useLatestJump() {
   return { jumpRef, onJump }
 }
 
+// The rows in view: section headings and games, each placed where the virtual list puts it.
+function VirtualRows({
+  virtualizer,
+  items,
+  tileProps,
+  onToggle,
+}: {
+  virtualizer: Virtualizer<HTMLElement, Element>
+  items: Item[]
+  tileProps: (game: GameInfo) => RowProps
+  onToggle: (id: string) => void
+}) {
+  return (
+    <Box sx={{ position: 'relative', width: '100%', height: virtualizer.getTotalSize() }}>
+      {virtualizer.getVirtualItems().map((v) => {
+        const it = items[v.index]
+        return (
+          <Box
+            key={v.key}
+            sx={listItemSx}
+            style={{ height: v.size, transform: `translateY(${v.start}px)` }}
+          >
+            {it?.kind === 'heading' ? (
+              <GroupHeading
+                id={it.id}
+                label={it.label}
+                count={it.count}
+                collapsed={it.collapsed}
+                onToggle={onToggle}
+              />
+            ) : null}
+            {it?.kind === 'game' ? <Row {...tileProps(it.game)} /> : null}
+          </Box>
+        )
+      })}
+    </Box>
+  )
+}
+
 function GameSelect() {
   const { t } = useLingui()
   const { status, loadError, refresh, tileProps } = useGameTiles()
-  const lastGame = useSettings((s) => s.lastGame)
-  const played = useSettings((s) => s.lastPlayed)
   const scroller = useRef<HTMLElement | null>(null)
   const [current, setCurrent] = useState('')
   const hiddenIds = useSettings((s) => s.hiddenGames)
   const [showHidden, setShowHidden] = useState(false)
   const { jumpRef, onJump } = useLatestJump()
-  const ordered = gameOrder(
-    listedGames(status?.games ?? [], hiddenIds, showHidden),
-    lastGame,
-    played,
-  )
-  const { recent } = ordered
-  // Games found on this computer come before the rest of the catalog, most of which is not set up here.
-  const found = ordered.rest.filter((g) => g.available && g.installed)
-  const rest = ordered.rest.filter((g) => !(g.available && g.installed))
-  const items = listItems([
-    { label: t`Recently played`, games: recent },
-    { label: t`On this computer`, games: found },
-    { label: recent.length + found.length > 0 ? t`Other games` : t`All games`, games: rest },
-  ])
+  const { collapsed, toggle, expandAll } = useCollapsedSections()
+  const [menu, setMenu] = useState<GameMenuAt | null>(null)
+  const { rest, items } = useSections(status?.games ?? [], hiddenIds, showHidden, collapsed)
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scroller.current,
@@ -445,6 +428,13 @@ function GameSelect() {
     setShowHidden,
     listed: (id) => items.some((it) => it.kind === 'game' && it.game.id === id),
     reveal,
+    unfold: () => {
+      if (collapsed.size === 0) {
+        return false
+      }
+      expandAll()
+      return true
+    },
   })
   useTypeToScroll(status?.games.filter((g) => g.available) ?? [], findGame)
   if (loadError) {
@@ -453,7 +443,7 @@ function GameSelect() {
   if (!status) {
     return <LoadingRow>{t`Loading…`}</LoadingRow>
   }
-  const rail = rest.length >= RAIL_MIN_GAMES
+  const rail = rest.length >= RAIL_MIN_GAMES && !collapsed.has('rest')
   const letters = [...new Set(rest.map((g) => initialOf(g.name)))]
   // The rail marks the letter of the first alphabetical row still in view.
   const restIds = new Set(rest.map((g) => g.id))
@@ -495,27 +485,24 @@ function GameSelect() {
           }}
           onScroll={rail ? markLetter : undefined}
           onKeyDown={(e) => arrowFocus(e, '[data-tile]')}
+          onContextMenu={(e) => {
+            const at = gameMenuAt(e)
+            if (at) {
+              e.preventDefault()
+              setMenu(at)
+            }
+          }}
         >
-          <Box sx={{ position: 'relative', width: '100%', height: virtualizer.getTotalSize() }}>
-            {virtualizer.getVirtualItems().map((v) => {
-              const it = items[v.index]
-              return (
-                <Box
-                  key={v.key}
-                  sx={listItemSx}
-                  style={{ height: v.size, transform: `translateY(${v.start}px)` }}
-                >
-                  {it?.kind === 'heading' ? (
-                    <GroupHeading count={it.count}>{it.label}</GroupHeading>
-                  ) : null}
-                  {it?.kind === 'game' ? <Row {...tileProps(it.game)} /> : null}
-                </Box>
-              )
-            })}
-          </Box>
+          <VirtualRows
+            virtualizer={virtualizer}
+            items={items}
+            tileProps={tileProps}
+            onToggle={toggle}
+          />
         </Box>
         {rail ? <LetterRail letters={letters} current={current} onJump={onJump} /> : null}
       </Box>
+      <GameRowMenu at={menu} onClose={() => setMenu(null)} />
       <ListFooter
         games={status.games}
         hiddenCount={hiddenIds?.length ?? 0}

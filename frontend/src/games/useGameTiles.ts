@@ -34,7 +34,6 @@ function useGameTiles() {
   const loaderStatus = useLoader((s) => s.status)
   const checkLoader = useLoader((s) => s.check)
   const lastGame = useSettings((s) => s.lastGame)
-  const hiddenGames = useSettings((s) => s.hiddenGames)
   const availableGames = status?.games.filter((g) => g.available) ?? []
   const loaderGame = (availableGames.find((g) => g.id === lastGame) ?? availableGames[0])?.id
   useEffect(() => {
@@ -106,7 +105,6 @@ function useGameTiles() {
       lastPlayedAt: st?.lastPlayedAt ?? '',
       lastPlayedId: st?.setupNeeded ? '' : lastId,
       playtimeMs: st?.playtimeMs ?? 0,
-      hidden: hiddenGames?.includes(g.id) ?? false,
       cards:
         showCards && isGameId(g.id)
           ? { gameId: g.id, profiles: st.profiles, lastPlayed: st.lastPlayed }
