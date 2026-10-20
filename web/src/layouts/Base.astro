@@ -72,6 +72,7 @@ const ld = [appLd(), ...(crumbs ? [breadcrumbLd(crumbs)] : []), ...jsonLd]
     <link rel="icon" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/img/icon-192.png" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <script is:inline defer data-domain="mortar.rethunk.tech" src="https://plausible.io/js/script.js"></script>
     <script is:inline>document.documentElement.classList.remove('no-js')</script>
     {ld.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o)} />)}
     <slot name="head" />
