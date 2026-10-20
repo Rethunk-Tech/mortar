@@ -2757,10 +2757,6 @@ msgstr "Lime"
 msgid "Don't ask about these"
 msgstr "Don't ask about these"
 
-#: src/launch/PlayInstances.tsx
-msgid "Several copies start only with Direct launch."
-msgstr "Several copies start only with Direct launch."
-
 #. placeholder {0}: group.count
 #: src/launch/PrePlayDialog.tsx
 msgid "Conflicts ({0})"
@@ -3355,6 +3351,10 @@ msgstr "{0, plural, one {# line is hidden by the filters: {why}.} other {# lines
 #: src/settings/shortcutLabels.ts
 msgid "Toggle downloads"
 msgstr "Toggle downloads"
+
+#: src/launch/PlayInstances.tsx
+msgid "s"
+msgstr "s"
 
 #. placeholder {0}: formatBytes(bytes)
 #: src/settings/sections/DataStoreReport.tsx
@@ -5334,6 +5334,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/firstrunTour/TourAgainButton.tsx
 #: src/firstrunTour/useFirstRunTour.ts
 #: src/games/GameRowMenu.tsx
+#: src/launch/PlayInstances.tsx
 #: src/settings/GraphicsApiRow.tsx
 #: src/settings/PrefControls.tsx
 #: src/settings/PrefRow.tsx
@@ -7630,6 +7631,10 @@ msgstr "Track"
 msgid "The update for {0} did not finish"
 msgstr "The update for {0} did not finish"
 
+#: src/launch/PlayInstances.tsx
+msgid "This game starts through its store, which runs one copy. A Direct launch can start several."
+msgstr "This game starts through its store, which runs one copy. A Direct launch can start several."
+
 #: src/mods/CompatSection.tsx
 #: src/mods/ProblemsTab.tsx
 #: src/mods/problemText.ts
@@ -9533,6 +9538,10 @@ msgstr "{0, plural, one {# optional file} other {# optional files}}"
 msgid "Close details"
 msgstr "Close details"
 
+#: src/launch/PlayInstances.tsx
+msgid "Delay between"
+msgstr "Delay between"
+
 #: src/firstrun/GameSetup.tsx
 #: src/queue/store.ts
 msgid "{name} installed"
@@ -10435,6 +10444,10 @@ msgstr "Sort: most endorsed"
 msgid "Details copied"
 msgstr "Details copied"
 
+#: src/launch/PlayInstances.tsx
+msgid "Copies of the game"
+msgstr "Copies of the game"
+
 #: src/mods/ModMenu.tsx
 #: src/mods/problemFix/MissingFix.tsx
 #: src/mods/SelectionBarActions.tsx
@@ -11210,10 +11223,6 @@ msgstr "Move up"
 #: src/queue/QueueBody.tsx
 msgid "Open download page"
 msgstr "Open download page"
-
-#: src/launch/PlayInstances.tsx
-msgid "Delay (s)"
-msgstr "Delay (s)"
 
 #: src/profiles/HistoryEventRow.tsx
 #: src/profiles/MergeDialog.tsx
@@ -12262,6 +12271,10 @@ msgstr "Kept in your system keyring. Create one on itch.io under Settings, API k
 msgid "Delete {0} permanently?"
 msgstr "Delete {0} permanently?"
 
+#: src/launch/PlayInstances.tsx
+msgid "Use Direct launch"
+msgstr "Use Direct launch"
+
 #: src/mods/markImplicit.ts
 msgid "Could not mark the mods explicit"
 msgstr "Could not mark the mods explicit"
@@ -12915,6 +12928,7 @@ msgid "{loader} is the loader every {gameName} mod needs. It goes into the game 
 msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
 
 #: src/game/ProfileMenu.tsx
+#: src/launch/PlayInstances.tsx
 msgid "Copies"
 msgstr "Copies"
 

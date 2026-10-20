@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Box,
   FormControlLabel,
+  InputAdornment,
   MenuItem,
   Radio,
   RadioGroup,
@@ -210,6 +211,8 @@ export function PrefNumber({
   onCommit,
   label,
   disabled = false,
+  width = 120,
+  suffix = '',
 }: {
   value: number
   min: number
@@ -217,6 +220,9 @@ export function PrefNumber({
   onCommit: (n: number) => Promise<void>
   label: string
   disabled?: boolean
+  width?: number
+  // A unit shown inside the field's end, such as "s".
+  suffix?: string
 }) {
   const { t } = useLingui()
   const [draft, setDraft] = useState(String(value))
@@ -252,8 +258,13 @@ export function PrefNumber({
           e.target.blur()
         }
       }}
-      slotProps={{ htmlInput: { min, max, step: 1, 'aria-label': label } }}
-      sx={{ width: 120 }}
+      slotProps={{
+        htmlInput: { min, max, step: 1, 'aria-label': label },
+        ...(suffix
+          ? { input: { endAdornment: <InputAdornment position="end">{suffix}</InputAdornment> } }
+          : {}),
+      }}
+      sx={{ width }}
     />
   )
 }
