@@ -2,7 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
-import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { memo } from 'react'
 import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { useBadges } from '../mods/badges.ts'
 import { problemCount } from '../mods/lookup.ts'
@@ -10,6 +10,7 @@ import { useMods } from '../mods/store.ts'
 import { useUpdates } from '../mods/updates.ts'
 import { colorHex } from '../profiles/appearance.ts'
 import { userModCount } from '../profiles/count.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useSaves } from '../saves/store.ts'
 import { space } from '../theme/density.ts'
 import { compact, saveFits } from './compact.ts'
@@ -53,17 +54,25 @@ function Chip({
 }
 
 // The strip every tab but Home opens with: the profile's name and status, and a slot for the tab's own buttons.
-export function TabHeader({ profile }: { profile: Profile }) {
+// It reads the open profile's few fields itself, so a change elsewhere in the profile (a mod switched) leaves it alone.
+export const TabHeader = memo(function TabHeaderView() {
   const { t } = useLingui()
+  const id = useProfiles((s) => s.openId)
+  const name = useProfiles((s) => openProfileOf(s)?.name ?? '')
+  const color = useProfiles((s) => openProfileOf(s)?.color)
+  const notes = useProfiles((s) => notesFirstLine(openProfileOf(s)?.notes ?? ''))
+  const modCount = useProfiles((s) => {
+    const open = openProfileOf(s)
+    return open ? userModCount(open) : 0
+  })
   const setTab = useTab((s) => s.setTab)
   const setReviewing = useUpdates((s) => s.setReviewing)
-  const badges = useBadges((s) => s.byProfile[profile.id])
+  const badges = useBadges((s) => s.byProfile[id])
   const fits = useSaves((s) => s.fits)
   const setSlot = usePageActionsSlot((s) => s.setSlot)
   const updates = badges?.updates ?? 0
   const problems = useMods((s) => (s.problems === null ? 0 : problemCount(s.problems)))
   const saves = saveFits(fits)
-  const notes = notesFirstLine(profile.notes ?? '')
   const go = (tab: TabId) => () => setTab(tab)
   // A save that records no mod list cannot fit or miss, so a game with only those shows the plain count.
   const savesLabel = (s: typeof saves) =>
@@ -80,15 +89,15 @@ export function TabHeader({ profile }: { profile: Profile }) {
         alignItems: 'center',
         gap: space.gap,
         px: space.gutter,
-        bgcolor: (th) => alpha(colorHex(profile.color) ?? th.palette.primary.main, TINT),
+        bgcolor: (th) => alpha(colorHex(color) ?? th.palette.primary.main, TINT),
         borderBottom: '1px solid var(--mortar-hairline)',
       }}
     >
       <Typography noWrap={true} component="h1" sx={{ fontSize: 18, fontWeight: 700, minWidth: 0 }}>
-        {profile.name}
+        {name}
       </Typography>
       <Box sx={{ display: 'flex', gap: space.gap, flexShrink: 0 }}>
-        <Chip label={modsLabel(userModCount(profile))} onClick={go('mods')} />
+        <Chip label={modsLabel(modCount)} onClick={go('mods')} />
         {updates > 0 ? (
           <Chip
             label={updatesLabel(updates)}
@@ -135,4 +144,4 @@ export function TabHeader({ profile }: { profile: Profile }) {
       />
     </Box>
   )
-}
+})

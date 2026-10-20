@@ -40,7 +40,7 @@ export function ProfileWorkspace({
       {tab === 'home' ? (
         <Home key={`home-${profile.id}`} profile={profile} game={game} gameName={gameName} />
       ) : null}
-      {tab === 'home' ? null : <TabHeader profile={profile} />}
+      {tab === 'home' ? null : <TabHeader />}
       <ErrorBoundary resetKey={`${tab}-${profile.id}`}>
         {tab === 'console' ? <ConsoleTab game={game} /> : null}
         {tab === 'performance' ? <PerformanceTab game={game} /> : null}
