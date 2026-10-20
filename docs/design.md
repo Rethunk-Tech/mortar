@@ -20,7 +20,7 @@ Decided work, short enough to build cold. Delete an item in the change that land
 
 **Why:** mod.io is an official mod channel for Blade & Sorcery, BONELAB, Ready or Not, S.T.A.L.K.E.R. 2 and Timberborn, and the only one for Gladio Mori. Outside the catalog it is how Baldur's Gate 3 (Larian supports mods only through mod.io) and Deep Rock Galactic ship mods, and it would bring back Core Keeper (dropped in 0.3.9 for lack of a live source). Neither r2modman (it declined, issue #942) nor Gale supports it.
 
-**First, before code:** create a mod.io API key at mod.io/me/access and read each target game's `api_access_options` with `GET /v1/games/{id}`. Only a game with the `OPEN` bit allows third-party access, so build for those alone. When requesting the key, write to mod.io about what Mortar does: API Access Terms 3.5 forbids "a competing or replacement product".
+**Access:** every target game allows third-party API access (`api_access_options` has `OPEN`): Blade & Sorcery (mod.io game 3852, 2,287 mods), BONELAB (3809, 16,606), Ready or Not (3791, 15), S.T.A.L.K.E.R. 2 (5761, 371), Timberborn (3659, 3,002), Gladio Mori (11453, 357), Baldur's Gate 3 (6715, 8,840), Deep Rock Galactic (2475, 4,898) and Core Keeper (5289, 359). All but Deep Rock Galactic also set `DOWNLOADS`; its download URLs carry a changing verification hash. None needs a signed-in user to download. Before shipping, tell mod.io what Mortar does: API Access Terms 3.5 forbids "a competing or replacement product".
 
 **Decided shape:**
 
