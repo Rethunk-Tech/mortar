@@ -437,11 +437,13 @@ func TestAnInstanceEndingLeavesTheControlFileOfTheOneThatReplacedIt(t *testing.T
 	doneA := make(chan error, 1)
 	go func() { doneA <- Serve(ctxA, dir, "a", echo) }()
 	waitFile(t, path, true)
-	if pid, ok := controlwire.Live(dir); !ok || pid != os.Getpid() {
+	if pid, ok := controlwire.Live(t.Context(), dir); !ok || pid != os.Getpid() {
 		t.Fatalf("Live = %d, %v", pid, ok)
 	}
 	first, _ := fsx.ReadFile(path)
-	go func() { _ = Serve(t.Context(), dir, "b", echo) }()
+	ctxB, cancelB := context.WithCancel(context.Background())
+	doneB := make(chan error, 1)
+	go func() { doneB <- Serve(ctxB, dir, "b", echo) }()
 	for range 200 {
 		if cur, _ := fsx.ReadFile(path); len(cur) > 0 && string(cur) != string(first) {
 			break
@@ -456,6 +458,10 @@ func TestAnInstanceEndingLeavesTheControlFileOfTheOneThatReplacedIt(t *testing.T
 	var hello controlwire.Hello
 	if err := controlwire.CallDir(dir, "hello", nil, &hello, time.Second); err != nil || hello.Version != "b" {
 		t.Fatalf("the replacing instance lost its control file: %+v, %v", hello, err)
+	}
+	cancelB()
+	if err := <-doneB; !errors.Is(err, context.Canceled) {
+		t.Fatalf("Serve b: %v", err)
 	}
 }
 

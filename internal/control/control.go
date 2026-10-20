@@ -83,6 +83,42 @@ type Handler func(ctx context.Context, method string, p Params) (any, error)
 // republishEvery is how often a running app checks that its discovery file is still there.
 var republishEvery = 15 * time.Second
 
+// answers reports whether an app answers on the data folder's control file.
+func answers(ctx context.Context, dir string) bool {
+	_, ok := controlwire.Live(ctx, dir)
+	return ok
+}
+
+// republish writes the discovery file b back whenever it goes missing while the app runs, unless another app now
+// answers on the folder.
+func republish(ctx context.Context, every time.Duration, dir, path string, b []byte) {
+	tick := time.NewTicker(every)
+	defer tick.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-tick.C:
+			if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) && !answers(ctx, dir) {
+				_ = datadir.WriteFile(path, b, 0o600)
+			}
+		}
+	}
+}
+
+// release ends this app's claim on the discovery file b. Another instance may have taken the file over since, and
+// removing its file would hide it from the CLI; the app this one replaced gets its own file back if it still answers.
+func release(ctx context.Context, dir, path string, b, prev []byte) {
+	cur, err := fsx.ReadFile(path)
+	if err != nil || !bytes.Equal(cur, b) {
+		return
+	}
+	if len(prev) > 0 && datadir.WriteFile(path, prev, 0o600) == nil && answers(ctx, dir) {
+		return
+	}
+	_ = os.Remove(path)
+}
+
 // Serve listens until ctx ends, then removes the discovery file. It takes the file over from an app still running
 // (a restart starts the new one before the old one is gone), and on exit gives the file back to that app if it still
 // answers, so a short-lived second process on the data folder does not hide a long-running app from the CLI.
@@ -113,40 +149,19 @@ func Serve(ctx context.Context, dir, version string, h Handler) error {
 		_ = ln.Close()
 		return err
 	}
+	go republish(ctx, republishEvery, dir, path, b)
+	released := make(chan struct{})
 	go func() {
-		tick := time.NewTicker(republishEvery)
-		defer tick.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-tick.C:
-				// Something else removed the file while this app runs; put it back unless another app now owns it.
-				if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
-					if _, live := controlwire.Live(dir); !live {
-						_ = datadir.WriteFile(path, b, 0o600)
-					}
-				}
-			}
-		}
-	}()
-	go func() {
+		defer close(released)
 		<-ctx.Done()
 		_ = ln.Close()
-		// Another instance may have taken the file over since; removing it would hide that one from the CLI.
-		if cur, err := fsx.ReadFile(path); err == nil && bytes.Equal(cur, b) {
-			if len(prev) > 0 && datadir.WriteFile(path, prev, 0o600) == nil {
-				if _, live := controlwire.Live(dir); live {
-					return
-				}
-			}
-			_ = os.Remove(path)
-		}
+		release(context.WithoutCancel(ctx), dir, path, b, prev)
 	}()
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
 			if ctx.Err() != nil {
+				<-released
 				return ctx.Err()
 			}
 			return err

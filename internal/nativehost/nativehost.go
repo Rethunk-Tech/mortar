@@ -4,6 +4,7 @@ package nativehost
 
 import (
 	"cmp"
+	"context"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
@@ -56,7 +57,7 @@ const (
 // mortarRunning reports whether a Mortar that holds this control file's token is answering. A port that merely accepts
 // connections may belong to another program that reused a dead app's port, and the token must never be sent there.
 func mortarRunning(dir string) bool {
-	_, ok := controlwire.Live(dir)
+	_, ok := controlwire.Live(context.Background(), dir)
 	return ok
 }
 

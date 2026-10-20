@@ -2,6 +2,7 @@ package control
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -16,7 +17,7 @@ func echoHandler(context.Context, string, Params) (any, error) { return true, ni
 func waitLive(t *testing.T, dir string) {
 	t.Helper()
 	for range 100 {
-		if _, ok := controlwire.Live(dir); ok {
+		if _, ok := controlwire.Live(t.Context(), dir); ok {
 			return
 		}
 		time.Sleep(20 * time.Millisecond)
@@ -43,7 +44,9 @@ func TestAnEndingSecondServerGivesTheControlFileBackToTheRunningApp(t *testing.T
 		time.Sleep(10 * time.Millisecond)
 	}
 	stopB()
-	<-doneB
+	if err := <-doneB; !errors.Is(err, context.Canceled) {
+		t.Fatalf("Serve b: %v", err)
+	}
 	time.Sleep(50 * time.Millisecond)
 	var hello controlwire.Hello
 	if err := controlwire.CallDir(dir, "hello", nil, &hello, time.Second); err != nil || hello.Version != "a" {
@@ -65,7 +68,7 @@ func TestARemovedControlFileIsWrittenBack(t *testing.T) {
 		t.Fatal(err)
 	}
 	for range 100 {
-		if _, ok := controlwire.Live(dir); ok {
+		if _, ok := controlwire.Live(t.Context(), dir); ok {
 			return
 		}
 		time.Sleep(20 * time.Millisecond)

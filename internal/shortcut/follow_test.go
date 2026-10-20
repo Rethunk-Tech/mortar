@@ -43,7 +43,7 @@ func serve(t *testing.T, states ...launchsvc.State) (dir string, asked func() []
 	t.Cleanup(func() { cancel(); <-done })
 	deadline := time.Now().Add(5 * time.Second)
 	for {
-		if _, ok := controlwire.Live(dir); ok {
+		if _, ok := controlwire.Live(t.Context(), dir); ok {
 			break
 		}
 		if time.Now().After(deadline) {

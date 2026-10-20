@@ -289,7 +289,7 @@ func run() error {
 	// The single-instance handoff exits this process at once, so a Steam session for a running Mortar forwards its
 	// request over the control channel instead and stays until the game closes, for Steam to count the playtime.
 	if r, ok := shortcut.Parse(os.Args[1:]); ok && shortcut.SteamSession(os.Args[1:]) {
-		if _, running := controlwire.Live(dataDir); running {
+		if _, running := controlwire.Live(context.Background(), dataDir); running {
 			if err := shortcut.Follow(dataDir, r, time.Second, steamSessionPatience); err != nil {
 				log.Printf("steam session: %v", err)
 			}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 	"os/signal"
@@ -187,10 +188,10 @@ func (s *QuitService) OnWindowClose(keepInTray, playMode bool) bool {
 // rotates the log, recovers deploys or takes over the control file. A restart's previous process may still be exiting,
 // so an answer is only trusted once it persists.
 func otherInstance(dataDir string) (int, bool) {
-	pid, ok := controlwire.Live(dataDir)
+	pid, ok := controlwire.Live(context.Background(), dataDir)
 	for deadline := time.Now().Add(5 * time.Second); ok && time.Now().Before(deadline); {
 		time.Sleep(200 * time.Millisecond)
-		pid, ok = controlwire.Live(dataDir)
+		pid, ok = controlwire.Live(context.Background(), dataDir)
 	}
 	return pid, ok
 }

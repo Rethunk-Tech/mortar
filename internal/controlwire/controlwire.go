@@ -64,13 +64,13 @@ func (e *RemoteError) Error() string { return e.Msg }
 
 // Live returns the pid of the Mortar app that answers hello with the token in dir's control file. A port that merely
 // accepts connections may belong to another program that reused a dead app's port, so only a token match counts.
-func Live(dir string) (int, bool) {
-	d, conn, err := dial(dir)
+func Live(ctx context.Context, dir string) (int, bool) {
+	d, conn, err := dial(ctx, dir)
 	if err != nil {
 		return 0, false
 	}
 	_ = conn.Close()
-	if CallDir(dir, "hello", nil, nil, 2*time.Second) != nil {
+	if callDir(ctx, dir, "hello", nil, nil, 2*time.Second) != nil {
 		return 0, false
 	}
 	return d.PID, true
@@ -82,7 +82,7 @@ func Live(dir string) (int, bool) {
 func Unanswering(dir string, wait time.Duration) (int, bool) {
 	deadline := time.Now().Add(wait)
 	for {
-		d, conn, err := dial(dir)
+		d, conn, err := dial(context.Background(), dir)
 		if err != nil {
 			return 0, false
 		}
@@ -97,7 +97,7 @@ func Unanswering(dir string, wait time.Duration) (int, bool) {
 	}
 }
 
-func dial(dir string) (Discovery, net.Conn, error) {
+func dial(ctx context.Context, dir string) (Discovery, net.Conn, error) {
 	var d Discovery
 	root, err := os.OpenRoot(dir)
 	if err != nil {
@@ -120,7 +120,7 @@ func dial(dir string) (Discovery, net.Conn, error) {
 	if d.Port < 1 || d.Port > 65535 {
 		return d, nil, ErrNotRunning
 	}
-	conn, err := (&net.Dialer{Timeout: 2 * time.Second}).DialContext(context.Background(), "tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(d.Port)))
+	conn, err := (&net.Dialer{Timeout: 2 * time.Second}).DialContext(ctx, "tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(d.Port)))
 	if err != nil {
 		return d, nil, ErrNotRunning
 	}
@@ -130,7 +130,11 @@ func dial(dir string) (Discovery, net.Conn, error) {
 // CallDir sends one request to the app whose data folder is dir and decodes its result into out (nil to discard
 // it). timeout bounds the whole call.
 func CallDir(dir, method string, params, out any, timeout time.Duration) error {
-	d, conn, err := dial(dir)
+	return callDir(context.Background(), dir, method, params, out, timeout)
+}
+
+func callDir(ctx context.Context, dir, method string, params, out any, timeout time.Duration) error {
+	d, conn, err := dial(ctx, dir)
 	if err != nil {
 		return err
 	}
