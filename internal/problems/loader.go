@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 
@@ -59,7 +58,10 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners
 	for _, a := range logs.Analyzers() {
 		found = append(found, a.Analyze(loader.Logs{Loader: string(raw), Player: player})...)
 	}
-	out := dropFixed(attribute(found, owners), filepath.Join(p.Dir, filepath.FromSlash(pluginsDir)), owners)
+	out := attribute(found, owners)
+	if l.ID() == bepinex5.ID {
+		out = dropFixed(out, filepath.Join(p.Dir, filepath.FromSlash(pluginsDir)), owners)
+	}
 	for i, f := range out {
 		if f.Kind != bepinex5.KindDuplicateGUID || f.Key != "" {
 			continue
@@ -72,24 +74,40 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners
 	return out
 }
 
-// pluginLabel is the "name version" a BepInEx log names a plugin by.
-var pluginLabel = regexp.MustCompile(`\s\d+(\.\d+)+\S*$`)
+// namedByPlugin is the finding kinds whose Plugin is the plugin's GUID, name or "name version" as BepInEx logged it,
+// rather than a namespace read off a stack.
+var namedByPlugin = []string{
+	bepinex5.KindMissingDependency, bepinex5.KindIncompatible, bepinex5.KindIncompatiblePlugin,
+	bepinex5.KindLoaderVersion, bepinex5.KindLoadException, bepinex5.KindDependencyNotLoaded,
+}
 
 // dropFixed removes the findings the profile has since fixed, which stay in the log until the next run: a missing
-// dependency that an enabled package now declares, and a plugin named by "name version" that no plugin file in the
-// profile declares any more (it was updated or replaced, or its package left).
+// dependency that an enabled package now declares, and a finding about a plugin that no plugin file in the profile
+// declares any more (updated to another version, replaced, or its package left).
 func dropFixed(found []LoadFailure, pluginsPath string, owners func() map[string]framework.Mod) []LoadFailure {
 	if len(found) == 0 {
 		return found
 	}
 	byName := owners()
+	var declared map[string]bool
+	gone := func(plugin string) bool {
+		if declared == nil {
+			declared = map[string]bool{}
+			for _, pl := range dotnet.PluginsIn(pluginsPath) {
+				for _, n := range []string{pl.GUID, pl.Name, pl.Name + " " + pl.Version} {
+					declared[strings.ToLower(n)] = true
+				}
+			}
+		}
+		return !declared[strings.ToLower(plugin)]
+	}
 	return slices.DeleteFunc(found, func(f LoadFailure) bool {
 		if f.Kind == bepinex5.KindMissingDependency && f.Dependency != "" {
 			if _, ok := byName[strings.ToLower(f.Dependency)]; ok {
 				return true
 			}
 		}
-		return pluginLabel.MatchString(f.Plugin) && dotnet.PluginFile(pluginsPath, f.Plugin) == ""
+		return slices.Contains(namedByPlugin, f.Kind) && f.Plugin != "" && gone(f.Plugin)
 	})
 }
 

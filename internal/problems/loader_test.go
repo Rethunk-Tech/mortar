@@ -195,6 +195,29 @@ func TestOrphanRowsOfNewDependenciesWaitForTheQueueToDrain(t *testing.T) {
 	}
 }
 
+func TestLoaderFailuresDropAnUnversionedPluginNoDllDeclaresAnyMore(t *testing.T) {
+	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	log := "[Error  :   BepInEx] Could not load [com.fixture.plugin] because it has missing dependencies: com.sigurd.csync\n"
+	dir := t.TempDir()
+	testfs.WriteFile(t, dir, "BepInEx/LogOutput.log", log)
+	testfs.WriteFile(t, dir, "BepInEx/plugins/fixture/Fixture.dll", string(dll))
+	run := func() []LoadFailure {
+		return loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, "", func() map[string]framework.Mod { return map[string]framework.Mod{} })
+	}
+	if got := run(); len(got) != 1 {
+		t.Fatalf("the plugin is still there: %+v", got)
+	}
+	if err := os.Remove(filepath.Join(dir, "BepInEx/plugins/fixture/Fixture.dll")); err != nil {
+		t.Fatal(err)
+	}
+	if got := run(); len(got) != 0 {
+		t.Fatalf("no plugin file declares com.fixture.plugin now: %+v", got)
+	}
+}
+
 func TestLoaderFailuresDropWhatTheProfileHasSinceFixed(t *testing.T) {
 	dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", "mod.dll"))
 	if err != nil {
