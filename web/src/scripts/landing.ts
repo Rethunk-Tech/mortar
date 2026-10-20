@@ -128,7 +128,7 @@ function demo() {
     const frame = document.createElement('iframe')
     frame.className = 'demo-frame'
     frame.src = '/demo/'
-    frame.title = 'Mortar demo: a sample Stardew Valley profile'
+    frame.title = 'Mortar demo: a sample Lethal Company profile'
     ;(e.currentTarget as HTMLElement).replaceWith(frame)
     frame.focus()
   })
