@@ -102,7 +102,8 @@ test('problems and updates are counted per finding', () => {
           name: 'C',
           count: 1,
           first: 'err',
-          severe: false,
+          // A run that crashed: its errors count, where a run that went on is listed only.
+          severe: true,
           runId: 'run-1',
         },
       ],
