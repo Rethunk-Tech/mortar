@@ -231,8 +231,7 @@ export function sharePage(g: Game, art: Record<string, SteamArt>): string {
     hero: banner(
       g,
       art,
-      `<h1>Shared ${name} profile</h1>
-        <p class="lede">A ${name} mod profile made with Mortar. Look through its mods, then open it in Mortar, or get Mortar first.</p>`,
+      `<h1>Shared ${name} profile</h1>`,
     ),
     body: `      <p id="error" class="card" hidden></p>
       <noscript><p class="card">This page needs JavaScript to read the shared profile.</p></noscript>
@@ -251,7 +250,7 @@ export function sharePage(g: Game, art: Record<string, SteamArt>): string {
       </div>
       <p id="copied" class="muted" hidden>Link copied. After installing Mortar, paste it into Import.</p>
       <h2>What is Mortar?</h2>
-      <p>A free, open source mod manager for Linux, Windows and Steam Deck. It installs each game's mod loader, keeps each set of mods in its own profile and downloads every mod from its own page. <a href="/${g.id}/">How Mortar handles ${name}</a> · <a href="/download/">Download Mortar</a></p>
+      <p>A free, open source mod manager for Linux, Windows and Steam Deck. It installs each game's mod loader, keeps each set of mods in its own profile and downloads every mod from its own page. <a href="/${g.id}/">How Mortar handles ${name}</a></p>
       <p class="muted">Everything on this page happens in your browser; the profile is never sent anywhere. Pictures of GitHub and Thunderstore mods load from those sites.</p>`,
   })
 }
