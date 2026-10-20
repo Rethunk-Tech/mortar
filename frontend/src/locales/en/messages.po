@@ -2113,7 +2113,7 @@ msgstr "Running for {time}"
 #: src/mods/CategoryEditor.tsx:42
 #: src/mods/columnLabel.ts:7
 #: src/mods/ModDisplayEdit.tsx:79
-#: src/profiles/EditProfileDialog.tsx:288
+#: src/profiles/EditProfileDialog.tsx:282
 #: src/profiles/LaunchPresetDialog.tsx:60
 #: src/settings/prefCopy.ts:367
 #: src/share/ModpackDialog.tsx:174
@@ -2860,7 +2860,7 @@ msgstr "Track a Nexus mod when Mortar installs it"
 msgid "Skipped"
 msgstr "Skipped"
 
-#: src/profiles/EditProfileDialog.tsx:473
+#: src/profiles/EditProfileDialog.tsx:467
 msgid "Edit profile"
 msgstr "Edit profile"
 
@@ -4641,7 +4641,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/mods/SelectionBarDialogs.tsx:87
 #: src/mods/SelectionBarDialogs.tsx:137
 #: src/mods/SetNexusPageDialog.tsx:115
-#: src/profiles/EditProfileDialog.tsx:504
+#: src/profiles/EditProfileDialog.tsx:498
 #: src/profiles/GameModsDialog.tsx:219
 #: src/profiles/ImportWizard.tsx:170
 #: src/profiles/LaunchPresetDialog.tsx:91
@@ -9975,7 +9975,7 @@ msgstr "That request was not valid."
 
 #: src/browse/BrowseDetails.tsx:101
 #: src/mods/NexusDetails.tsx:267
-#: src/profiles/EditProfileDialog.tsx:317
+#: src/profiles/EditProfileDialog.tsx:311
 #: src/share/ModpackDialog.tsx:197
 msgid "Description"
 msgstr "Description"
@@ -11887,7 +11887,7 @@ msgstr "Maximise"
 msgid "Handle \"Mod Manager Download\" links"
 msgstr "Handle \"Mod Manager Download\" links"
 
-#: src/profiles/EditProfileDialog.tsx:505
+#: src/profiles/EditProfileDialog.tsx:499
 msgid "Loading game settings…"
 msgstr "Loading game settings…"
 
@@ -12487,7 +12487,7 @@ msgstr "Beach farm"
 #: src/mods/ConfigPresets.tsx:136
 #: src/mods/ModDisplayEdit.tsx:97
 #: src/mods/typedConfig/ConfigPane.tsx:337
-#: src/profiles/EditProfileDialog.tsx:507
+#: src/profiles/EditProfileDialog.tsx:501
 #: src/profiles/LaunchPresetDialog.tsx:96
 #: src/saves/SaveListRow.tsx:66
 #: src/templates/TemplateDialogs.tsx:71
@@ -13089,6 +13089,7 @@ msgid "CurseForge mod {id}"
 msgstr "CurseForge mod {id}"
 
 #: src/console/PerformanceTab.tsx:60
+#: src/console/StartupTable.tsx:118
 msgid "In game"
 msgstr "In game"
 
@@ -13449,7 +13450,7 @@ msgid "Move data folder"
 msgstr "Move data folder"
 
 #: src/game/ProfileMenuItems.tsx:194
-#: src/profiles/EditProfileDialog.tsx:460
+#: src/profiles/EditProfileDialog.tsx:454
 msgid "Could not use that image"
 msgstr "Could not use that image"
 
@@ -13657,7 +13658,6 @@ msgstr "Delete category"
 msgid "{count, plural, one {Replaced by {by}, which is also enabled} other {Replaced by {by}, which are also enabled}}"
 msgstr "{count, plural, one {Replaced by {by}, which is also enabled} other {Replaced by {by}, which are also enabled}}"
 
-#: src/console/StartupTable.tsx:118
 #: src/console/StartupTable.tsx:142
 msgid "Sampled"
 msgstr "Sampled"

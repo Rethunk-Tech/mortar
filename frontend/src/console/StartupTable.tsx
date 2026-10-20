@@ -115,7 +115,7 @@ function ModDetails({ mod, sampled }: { mod: StartupMod; sampled: boolean }) {
         <Detail label={t`Load`} value={mod.entryMs > 0 ? duration(mod.entryMs) : '—'} />
         {mod.patchMs > 0 ? <Detail label={t`Patches`} value={duration(mod.patchMs)} /> : null}
         {sampled ? (
-          <Detail label={t`Sampled`} value={mod.sampleMs ? duration(mod.sampleMs) : '—'} />
+          <Detail label={t`In game`} value={mod.sampleMs ? duration(mod.sampleMs) : '—'} />
         ) : null}
       </Box>
     )
