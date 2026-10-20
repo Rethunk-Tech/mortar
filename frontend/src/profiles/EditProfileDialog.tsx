@@ -204,20 +204,14 @@ interface ProfileFieldsProps {
   initialTab: FieldsTab
 }
 
-// Every panel stays mounted and shares one grid cell, so a field keeps what was typed in it and the dialog keeps the
-// height of its tallest tab while another is open. The cell is capped at the dialog's height and each panel scrolls
-// only its own content, so a short tab never scrolls through the tallest one's height.
+// Every panel stays mounted, so a field keeps what was typed in it, but only the open one takes space: the dialog is
+// as tall as that tab, up to the window, and scrolls when the tab is taller.
 const contentSx = {
   pt: space.pad,
-  display: 'grid',
-  gridTemplateRows: 'minmax(0, 1fr)',
-  overflow: 'hidden',
-}
+  overflowY: 'auto',
+} as const
 
 const panelSx = {
-  gridArea: '1 / 1',
-  minHeight: 0,
-  overflowY: 'auto',
   // Room inside the scroll box for a slider's thumb at its far end.
   overflowX: 'hidden',
   px: 1,
@@ -269,7 +263,7 @@ function ProfileFields({
       role="tabpanel"
       id={`${ids}-panel-${id}`}
       aria-labelledby={`${ids}-tab-${id}`}
-      sx={{ ...panelSx, visibility: tab === id ? 'visible' : 'hidden' }}
+      sx={{ ...panelSx, display: tab === id ? 'block' : 'none' }}
     >
       {children}
     </Box>
