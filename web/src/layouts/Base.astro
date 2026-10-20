@@ -88,8 +88,12 @@ const ld = [appLd(), ...(crumbs ? [breadcrumbLd(crumbs)] : []), ...jsonLd]
             p.o = options || {}
           })
         globalThis.plausible = p
-        // Plausible reports location.href, and a share link carries the whole profile after the #.
-        p.init({ transformRequest: (request) => ({ ...request, u: request.u.split('#')[0] }) })
+        // A share link carries the whole profile after the #, and its Open in Mortar link carries it in a mortar://
+        // address that Plausible would report as an outbound click; that click has its own event instead.
+        p.init({
+          transformRequest: (request) =>
+            String(request.p?.url ?? '').startsWith('mortar:') ? null : { ...request, u: request.u.split('#')[0] },
+        })
       }
     </script>
     <script is:inline>document.documentElement.classList.remove('no-js')</script>
