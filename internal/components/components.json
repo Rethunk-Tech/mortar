@@ -1,5 +1,5 @@
 {
-  "serial": 1792420832,
+  "serial": 1792460180,
   "components": [
     {
       "game": "melonloader",
@@ -53,10 +53,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.0",
-      "asset": "MortarBepInExBridge_LethalCompany-0.3.0.zip",
-      "version": "0.3.0",
-      "sha256": "42c2c1ea1e68f5266cad0e5b3df7228ab346d162fe39d53d0296dfe7438835e9"
+      "tag": "v0.3.1",
+      "asset": "MortarBepInExBridge_LethalCompany-0.3.1.zip",
+      "version": "0.3.1",
+      "sha256": "3f9fe25f75c01a367ed54e8ef3c2278aa18992032d2f1972b80f0f932806cd41"
     },
     {
       "game": "valheim",
@@ -67,10 +67,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.0",
-      "asset": "MortarBepInExBridge_Valheim-0.3.0.zip",
-      "version": "0.3.0",
-      "sha256": "2cf2b7fe0e8f7e7b353508f62376b5f881dc695f7c51b70e03ff7255eb5dee80"
+      "tag": "v0.3.1",
+      "asset": "MortarBepInExBridge_Valheim-0.3.1.zip",
+      "version": "0.3.1",
+      "sha256": "f9aa1f4f2be5b880f6cd55fbc390fc9bb628c17804b7e1dd17c86a49ee439af1"
     },
     {
       "game": "repo",
@@ -81,10 +81,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.0",
-      "asset": "MortarBepInExBridge-0.3.0.zip",
-      "version": "0.3.0",
-      "sha256": "01461e888c8bf1b917f8c28a5c3afda05081d5819af4ab5d1f5227912a0c0023"
+      "tag": "v0.3.1",
+      "asset": "MortarBepInExBridge-0.3.1.zip",
+      "version": "0.3.1",
+      "sha256": "3bd7a7ebef246ee7c981d1fdf122c283c0148eb731c904a72b9342c22aaae19a"
     },
     {
       "game": "peak",
@@ -95,10 +95,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.0",
-      "asset": "MortarBepInExBridge-0.3.0.zip",
-      "version": "0.3.0",
-      "sha256": "01461e888c8bf1b917f8c28a5c3afda05081d5819af4ab5d1f5227912a0c0023"
+      "tag": "v0.3.1",
+      "asset": "MortarBepInExBridge-0.3.1.zip",
+      "version": "0.3.1",
+      "sha256": "3bd7a7ebef246ee7c981d1fdf122c283c0148eb731c904a72b9342c22aaae19a"
     },
     {
       "game": "riskofrain2",
@@ -109,10 +109,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.0",
-      "asset": "MortarBepInExBridge-0.3.0.zip",
-      "version": "0.3.0",
-      "sha256": "01461e888c8bf1b917f8c28a5c3afda05081d5819af4ab5d1f5227912a0c0023"
+      "tag": "v0.3.1",
+      "asset": "MortarBepInExBridge-0.3.1.zip",
+      "version": "0.3.1",
+      "sha256": "3bd7a7ebef246ee7c981d1fdf122c283c0148eb731c904a72b9342c22aaae19a"
     },
     {
       "game": "content-warning",
@@ -123,10 +123,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-bepinex-bridge"
       },
-      "tag": "v0.3.0",
-      "asset": "MortarBepInExBridge-0.3.0.zip",
-      "version": "0.3.0",
-      "sha256": "01461e888c8bf1b917f8c28a5c3afda05081d5819af4ab5d1f5227912a0c0023"
+      "tag": "v0.3.1",
+      "asset": "MortarBepInExBridge-0.3.1.zip",
+      "version": "0.3.1",
+      "sha256": "3bd7a7ebef246ee7c981d1fdf122c283c0148eb731c904a72b9342c22aaae19a"
     }
   ],
   "games": [
@@ -12209,6 +12209,7 @@
       "enabled": true,
       "marker": "Arcus Chroma.exe",
       "r2modmanFolder": "ArcusChroma",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12241,6 +12242,7 @@
       "enabled": true,
       "marker": "Back To The Dawn.exe",
       "r2modmanFolder": "BacktotheDawn",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12273,6 +12275,7 @@
       "enabled": true,
       "marker": "Betrayal Beach.exe",
       "r2modmanFolder": "BetrayalBeach",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12305,6 +12308,7 @@
       "enabled": true,
       "marker": "CaL-ABP-Windows.exe",
       "r2modmanFolder": "CatsAreLiquidABP",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12337,6 +12341,7 @@
       "enabled": true,
       "marker": "Dusk.exe",
       "r2modmanFolder": "DUSK",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12369,6 +12374,7 @@
       "enabled": true,
       "marker": "GoreBox.exe",
       "r2modmanFolder": "GoreBox",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12402,6 +12408,7 @@
       "enabled": true,
       "marker": "Magicite.exe",
       "r2modmanFolder": "Magicite",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12434,6 +12441,7 @@
       "enabled": true,
       "marker": "Meeple Station.exe",
       "r2modmanFolder": "MeepleStation",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12466,6 +12474,7 @@
       "enabled": true,
       "marker": "Nearly Dead.exe",
       "r2modmanFolder": "NearlyDead",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12499,6 +12508,7 @@
       "enabled": true,
       "marker": "OddRemedy.exe",
       "r2modmanFolder": "OddRemedy",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12531,6 +12541,7 @@
       "enabled": true,
       "marker": "Shadows Over Loathing.exe",
       "r2modmanFolder": "ShadowsOverLoathing",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12563,6 +12574,7 @@
       "enabled": true,
       "marker": "SongsOfConquest.exe",
       "r2modmanFolder": "SongsOfConquest",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12595,6 +12607,7 @@
       "enabled": true,
       "marker": "Tank Team.exe",
       "r2modmanFolder": "TankTeam",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12627,6 +12640,7 @@
       "enabled": true,
       "marker": "The Ouroboros King.exe",
       "r2modmanFolder": "TheOuroborosKing",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12659,6 +12673,7 @@
       "enabled": true,
       "marker": "VTOLVR.exe",
       "r2modmanFolder": "VTOL_VR",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12691,6 +12706,7 @@
       "enabled": true,
       "marker": "WLKRR.exe",
       "r2modmanFolder": "WeLoveKatamariRerollRoyalReverie",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12724,6 +12740,7 @@
       "enabled": true,
       "marker": "A Dance of Fire and Ice.exe",
       "r2modmanFolder": "AdanceOfFireAndIce",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12744,9 +12761,7 @@
           "routes": [
             {
               "dir": "UMM/Mods",
-              "extensions": [
-                ".dll"
-              ],
+              "extensions": [".dll"],
               "track": "subdir",
               "default": true
             }
@@ -12766,6 +12781,7 @@
       "enabled": true,
       "marker": "Aeruta.exe",
       "r2modmanFolder": "Aeruta",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12799,6 +12815,7 @@
       "enabled": true,
       "marker": "Block Story.exe",
       "r2modmanFolder": "BlockStory",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12831,6 +12848,7 @@
       "enabled": true,
       "marker": "Chill With You.exe",
       "r2modmanFolder": "ChillWithYouLoFiStory",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12863,6 +12881,7 @@
       "enabled": true,
       "marker": "Crawlspace.exe",
       "r2modmanFolder": "Crawlspace",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12895,6 +12914,7 @@
       "enabled": true,
       "marker": "CultOfPin.exe",
       "r2modmanFolder": "CultOfPiN",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12927,6 +12947,7 @@
       "enabled": true,
       "marker": "Deadly Delivery.exe",
       "r2modmanFolder": "DeadlyDelivery",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12960,6 +12981,7 @@
       "enabled": true,
       "marker": "Factory Planner.exe",
       "r2modmanFolder": "FactoryPlanner",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -12993,6 +13015,7 @@
       "enabled": true,
       "marker": "fm.exe",
       "r2modmanFolder": "FootballManager26",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13026,6 +13049,7 @@
       "enabled": true,
       "marker": "GRIME.exe",
       "r2modmanFolder": "Grime",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13038,9 +13062,7 @@
           "appId": "1123050"
         },
         "epic": {
-          "appNames": [
-            "028263f54a874e35800d142275254d2c"
-          ]
+          "appNames": ["028263f54a874e35800d142275254d2c"]
         }
       },
       "loaders": [
@@ -13063,6 +13085,7 @@
       "enabled": true,
       "marker": "KeyWe.exe",
       "r2modmanFolder": "KeyWe",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13095,6 +13118,7 @@
       "enabled": true,
       "marker": "Limitless Survivor.exe",
       "r2modmanFolder": "LimitlessSurvivor",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13127,6 +13151,7 @@
       "enabled": true,
       "marker": "LumenTale Memories of Trey.exe",
       "r2modmanFolder": "LumenTaleMemoriesOfTrey",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13160,6 +13185,7 @@
       "enabled": true,
       "marker": "AnimalSpa.exe",
       "r2modmanFolder": "MaltesesFluffyOnsen",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13192,6 +13218,7 @@
       "enabled": true,
       "marker": "Modulus.exe",
       "r2modmanFolder": "ModulusFactoryAutomation",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13224,6 +13251,7 @@
       "enabled": true,
       "marker": "Nucleares.exe",
       "r2modmanFolder": "Nucleares",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13256,6 +13284,7 @@
       "enabled": true,
       "marker": "Paper Animal Adventure.exe",
       "r2modmanFolder": "PaperAnimalAdventure",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13289,6 +13318,7 @@
       "enabled": true,
       "marker": "Pushing it! Together.exe",
       "r2modmanFolder": "PushingItTogetherSisyphusCoOp",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13321,6 +13351,7 @@
       "enabled": true,
       "marker": "Return From Core.exe",
       "r2modmanFolder": "ReturnFromCore",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13353,6 +13384,7 @@
       "enabled": true,
       "marker": "Side Effects.exe",
       "r2modmanFolder": "SideEffects",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13385,6 +13417,7 @@
       "enabled": true,
       "marker": "SlashersKeep.exe",
       "r2modmanFolder": "SlashersKeep",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13417,6 +13450,7 @@
       "enabled": true,
       "marker": "Smushi Come Home.exe",
       "r2modmanFolder": "SmushiComeHome",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13449,6 +13483,7 @@
       "enabled": true,
       "marker": "Survival Fountain of Youth.exe",
       "r2modmanFolder": "SurvivalFountainOfYouth",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13461,9 +13496,7 @@
           "appId": "1967630"
         },
         "epic": {
-          "appNames": [
-            "b628a8803ed34779aed1791026c08f36"
-          ]
+          "appNames": ["b628a8803ed34779aed1791026c08f36"]
         }
       },
       "loaders": [
@@ -13486,6 +13519,7 @@
       "enabled": true,
       "marker": "game.exe",
       "r2modmanFolder": "TheSexyBrutale",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13518,6 +13552,7 @@
       "enabled": true,
       "marker": "Tiny Rogues.exe",
       "r2modmanFolder": "TinyRogues",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13551,6 +13586,7 @@
       "enabled": true,
       "marker": "Tunguska.exe",
       "r2modmanFolder": "TunguskaTheVisitation",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13583,6 +13619,7 @@
       "enabled": true,
       "marker": "VeryVeryValet_Release.exe",
       "r2modmanFolder": "VeryVeryValet",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13612,10 +13649,7 @@
   ],
   "authors": [
     {
-      "names": [
-        "Evaisa",
-        "EvaisaDev"
-      ]
+      "names": ["Evaisa", "EvaisaDev"]
     }
   ]
 }
