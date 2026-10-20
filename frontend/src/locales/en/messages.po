@@ -4654,10 +4654,6 @@ msgstr "The stats each Browse card shows under its summary; choose them from Bro
 msgid "Choose image…"
 msgstr "Choose image…"
 
-#: src/launch/PrePlayDialog.tsx
-msgid "Check these before you play."
-msgstr "Check these before you play."
-
 #: src/settings/sections/DataUsage.tsx
 msgid "By game"
 msgstr "By game"
@@ -7627,11 +7623,6 @@ msgstr "Paused ({0})"
 msgid "Profile code"
 msgstr "Profile code"
 
-#. placeholder {0}: listNames(group.names)
-#: src/launch/PrePlayDialog.tsx
-msgid "{0} and {count} more"
-msgstr "{0} and {count} more"
-
 #: src/mods/ModMenu.tsx
 #: src/mods/SelectionBarActions.tsx
 #: src/mods/Sidebar.tsx
@@ -8306,6 +8297,10 @@ msgstr "Could not roll back updates"
 #: src/settings/sections/DataBackups.tsx
 msgid "Backups to keep per save"
 msgstr "Backups to keep per save"
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Add missing mods"
+msgstr "Add missing mods"
 
 #: src/settings/sections/Updates.tsx
 #: src/updates/UpdateReadyBanner.tsx
@@ -11225,7 +11220,6 @@ msgstr "Content Patcher packs"
 msgid "{0, plural, one {# updated mod} other {# updated mods}} no longer include {files, plural, one {# file} other {# files}} from their old versions. Keep them or delete them?"
 msgstr "{0, plural, one {# updated mod} other {# updated mods}} no longer include {files, plural, one {# file} other {# files}} from their old versions. Keep them or delete them?"
 
-#: src/launch/PrePlayDialog.tsx
 #: src/saves/SaveGapLine.tsx
 msgid "Add the missing mods"
 msgstr "Add the missing mods"

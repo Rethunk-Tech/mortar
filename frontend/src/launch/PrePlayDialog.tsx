@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   FormControlLabel,
   List,
@@ -67,31 +66,30 @@ function Group({ group }: { group: PlayIssueGroup }) {
   const extra = overflowIssueCount(group)
   return (
     <>
-      <Typography sx={{ mt: 1.5, fontWeight: 600 }}>
+      <Typography sx={{ mt: 1.5, '&:first-of-type': { mt: 0 }, fontWeight: 600 }}>
         <GroupHeading group={group} />
       </Typography>
       {group.kind === 'saveMods' || group.kind === 'saveModsOff' ? (
         <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-          {extra > 0
-            ? t`${listNames(group.names)} and ${{ count: extra }} more`
-            : listNames(group.names)}
+          {listNames(group.names, undefined, group.count)}
         </Typography>
       ) : null}
       {group.names.length === 0 ||
       group.kind === 'saveMods' ||
       group.kind === 'saveModsOff' ? null : (
-        <List dense={true}>
+        <List dense={true} disablePadding={true}>
           {group.names.map((name, i) => (
-            <ListItem key={name} disableGutters={true}>
+            <ListItem key={name} disableGutters={true} sx={{ py: 0 }}>
               <ListItemText
+                sx={{ my: 0 }}
                 primary={name}
                 slotProps={{ primary: { title: group.nameTitles?.[i] } }}
               />
             </ListItem>
           ))}
           {extra > 0 ? (
-            <ListItem disableGutters={true}>
-              <ListItemText primary={t`and ${{ count: extra }} more`} />
+            <ListItem disableGutters={true} sx={{ py: 0 }}>
+              <ListItemText sx={{ my: 0 }} primary={t`and ${{ count: extra }} more`} />
             </ListItem>
           ) : null}
         </List>
@@ -127,11 +125,10 @@ export function PrePlayDialog() {
     <Dialog
       open={check !== null}
       onClose={() => persistThen(quit)}
-      slotProps={{ paper: { sx: { maxWidth: 480 } } }}
+      slotProps={{ paper: { sx: { maxWidth: 560 } } }}
     >
       <DialogTitle>{t`Before you play`}</DialogTitle>
       <DialogContent>
-        <DialogContentText>{t`Check these before you play.`}</DialogContentText>
         {(check?.groups ?? []).map((group) => (
           <Group key={group.kind} group={group} />
         ))}
@@ -210,7 +207,7 @@ export function PrePlayDialog() {
               )
             }
           >
-            {t`Add the missing mods`}
+            {t`Add missing mods`}
           </Button>
         ) : null}
         <Button
