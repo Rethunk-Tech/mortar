@@ -82,7 +82,8 @@ func (s *Service) launchPlan(ctx context.Context, g game.Game, inst game.Install
 		return nil, err
 	}
 	// A BepInEx or MelonLoader game with a mods folder of its own (mod.io content) also has that folder placed.
-	if _, _, placed := (folder.Loader{}).PlacedFolder(g.ID()); placed && l.ID() != folder.ID {
+	_, own := l.(loader.PlacesFolder)
+	if _, _, placed := (folder.Loader{}).PlacedFolder(g.ID()); placed && !own {
 		if err := (folder.Loader{}).Contribute(ctx, plan, view); err != nil {
 			return nil, err
 		}

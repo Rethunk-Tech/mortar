@@ -13,6 +13,7 @@ require (
 	github.com/hashicorp/mdns v1.0.7
 	github.com/klauspost/compress v1.20.3
 	github.com/nwaples/rardecode/v2 v2.4.5
+	github.com/pierrec/lz4/v4 v4.1.33
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/ulikunitz/xz v0.5.17
 	github.com/wailsapp/wails/v3 v3.0.0-beta.33
@@ -40,7 +41,6 @@ require (
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/miekg/dns v1.1.73 // indirect
 	github.com/ncruces/go-strftime v1.1.0 // indirect
-	github.com/pierrec/lz4/v4 v4.1.33 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/stangelandcl/ppmd v0.1.1 // indirect
