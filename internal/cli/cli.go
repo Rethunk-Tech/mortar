@@ -654,6 +654,8 @@ func (c *cmd) dispatch() error {
 				return c.profileBackup()
 			case "restore":
 				return c.profileRestore()
+			case "freeze", "unfreeze", "favourite", "unfavourite":
+				return c.profileMark(c.args[1])
 			}
 		}
 		return c.profile()
@@ -690,6 +692,8 @@ func (c *cmd) dispatch() error {
 				return c.modsReport()
 			case "by-author":
 				return c.modsByAuthor()
+			case "favourite", "unfavourite", "favourites":
+				return c.modsFavourite(c.args[1])
 			}
 		}
 	}
@@ -2257,7 +2261,7 @@ func (c *cmd) queue() error {
 			return c.queueAdd()
 		case "retry-failed":
 			return c.queueRetryFailed()
-		case "pause-item", "resume-item", "top":
+		case "pause-item", "resume-item", "top", "up", "down":
 			if len(c.args) < 3 {
 				return usageError{"queue " + sub + " needs an item id"}
 			}
@@ -2549,6 +2553,8 @@ takes --game <id>, which may be left out when exactly one game is installed. Out
   history revert <game> <profile> <eventId> --item <mod>
   profile changes <game> <profile>       changes since last run
   profile good <game> <profile> [--mark|--restore]
+  profile freeze|unfreeze <game> <profile>  hold every mod at its version, or let updates in again
+  profile favourite|unfavourite <game> <profile>
   profile revert <game> <profile> <eventId>
   profile import <code|key|file> [--game <id>] [--name N | --profile P] [--preview]
   profile import --from vortex|mo2 [--game <id>] [<their profile>] [--preview]
@@ -2582,6 +2588,8 @@ takes --game <id>, which may be left out when exactly one game is installed. Out
   mods split <game> <profile> <mod> <file>
   mods combine <game> <profile> <mod> <into-mod>
   mods win <game> <profile> <winner> <loser> [--undo]
+  mods favourite|unfavourite <game> <profile> <mod>...  star mods for the game
+  mods favourites <game>                 the game's starred mods
   mods files <game> <profile> <mod>       linked extra files (keys for mods split)
   mods config <game> <profile> <mod> [<field> <value>]  print or set one config field (BepInEx and Vintage Story
                                           files list as file/section/key)
@@ -2634,6 +2642,7 @@ takes --game <id>, which may be left out when exactly one game is installed. Out
   queue retry-failed                      requeue every retryable failed download in the history
   queue pause|resume|clear                control the download queue
   queue pause-item|resume-item|top ID     pause or resume one download, or download it now
+  queue up|down ID                        move one download a place up or down the queue
   browse <game> <text> [--source <id>|all] [--page N]  search a source, or all of them (default)
   update <game> <profile> <mod id>...|--all
                                           queue available mod updates

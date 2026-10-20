@@ -16,6 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/savessvc"
 	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 )
@@ -377,7 +378,7 @@ func TestCompleteOffersVerbsGamesAndProfiles(t *testing.T) {
 	if r := invoke(t, results, "__complete", "lan", "pa"); !strings.Contains(r.out, "pair") || !strings.Contains(r.out, "paired") {
 		t.Errorf("lan pair: %q", r.out)
 	}
-	if r := invoke(t, results, "__complete", "profile", "fa"); strings.TrimSpace(r.out) != "farm" {
+	if r := invoke(t, results, "__complete", "profile", "fa"); strings.TrimSpace(r.out) != "farm\nfavourite" {
 		t.Errorf("profile farm: %q", r.out)
 	}
 	if r := invoke(t, results, "__complete", "profile", "farm", ""); !strings.Contains(r.out, "export") || !strings.Contains(r.out, "check") || strings.Contains(r.out, "stardew") {
@@ -919,5 +920,21 @@ func TestModsTableNamesTheArchiveOfAFolderGamesEntries(t *testing.T) {
 	r = invoke(t, map[string]any{"mods.remove": control.Removed{Mods: []string{"a.package"}}}, "mods", "remove", "sims4", "abc", "pkg-1")
 	if r.code != 0 || r.calls[0].params.IDs[0] != "pkg-1" {
 		t.Fatalf("remove by archive: %+v", r)
+	}
+}
+
+func TestFreezeFavouriteAndQueueMoveCallTheirMethods(t *testing.T) {
+	results := map[string]any{
+		"profile.freeze": profile.Profile{Name: "Farm"}, "mods.favourite": []string{"nexus:1"}, "queue.up": queue.State{},
+	}
+	for args, method := range map[string]string{
+		"profile freeze stardew Farm":         "profile.freeze",
+		"mods favourite stardew Farm smapi:A": "mods.favourite",
+		"queue up 7":                          "queue.up",
+	} {
+		r := invoke(t, results, strings.Fields(args)...)
+		if r.code != 0 || len(r.calls) == 0 || r.calls[len(r.calls)-1].method != method {
+			t.Errorf("%s: %+v", args, r)
+		}
 	}
 }

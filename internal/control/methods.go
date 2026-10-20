@@ -485,6 +485,13 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	case "queue.top":
 		s.Queue.Top(p.Name)
 		return s.Queue.State(), nil
+	case "queue.up", "queue.down":
+		delta := 1
+		if method == "queue.up" {
+			delta = -1
+		}
+		s.Queue.Move(p.Name, delta)
+		return s.Queue.State(), nil
 	case "queue.clear":
 		s.Queue.ClearFinished()
 		return s.Queue.State(), nil
@@ -689,6 +696,9 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 	if res, ok, err := s.handleMore(ctx, method, p); ok {
 		return res, err
 	}
+	if method == "mods.favourites" {
+		return s.Settings.Get().GamePrefs(p.Game).FavouriteMods, nil
+	}
 	if method == "logs.search" {
 		prof, err := s.resolve(p.Game, p.Profile)
 		if err != nil {
@@ -791,6 +801,14 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		return s.storeRepair(ctx, p, id)
 	case "profile.repair":
 		return s.changed(p.Game, func() (any, error) { return s.Profiles.Repair(p.Game, id) })
+	case "profile.freeze", "profile.unfreeze":
+		return s.changed(p.Game, func() (any, error) { return s.Profiles.SetFrozen(p.Game, id, method == "profile.freeze") })
+	case "profile.favourite", "profile.unfavourite":
+		return s.changed(p.Game, func() (any, error) {
+			return s.Profiles.SetFavourite(p.Game, id, method == "profile.favourite")
+		})
+	case "mods.favourite", "mods.unfavourite":
+		return s.setModFavourites(p.Game, prof, p.IDs, method == "mods.favourite")
 	case "profile.shortcut":
 		return s.profileShortcut(p.Game, id, p.Remove)
 	case "profile.steam":
