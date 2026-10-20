@@ -27,6 +27,8 @@ export interface Sample {
   heapMiB: number
   nodes: number
   listeners: number
+  // Wall time from the action's start to its last React commit.
+  settledMs: number
 }
 
 interface PageCounts {
@@ -39,6 +41,7 @@ interface PageCounts {
   mutations: number
   longTasks: number
   longMs: number
+  settledMs: number
 }
 
 type Metrics = Record<string, number>
@@ -116,6 +119,7 @@ export class Meter {
       mutations: c.mutations,
       longTasks: c.longTasks,
       longMs: Math.round(c.longMs),
+      settledMs: Math.round(c.settledMs),
       calls: this.calls,
       callsBy: [...this.named].sort((a, b) => b[1] - a[1]).slice(0, TOP),
       layouts: delta('LayoutCount'),

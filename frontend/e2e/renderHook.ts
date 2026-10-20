@@ -2,7 +2,7 @@
 // component counts when React did work on it in that commit (PerformedWork), as a mount without a previous fiber or as
 // an update with one; subtrees React reused untouched are not walked.
 export const HOOK = `(() => {
-  const st = { commits: 0, mounts: 0, updates: 0, names: {}, roots: {}, why: {}, mutations: 0, longTasks: 0, longMs: 0 }
+  const st = { commits: 0, mounts: 0, updates: 0, names: {}, roots: {}, why: {}, mutations: 0, longTasks: 0, longMs: 0, t0: performance.now(), last: 0 }
   const COMPONENT = new Set([0, 1, 11, 14, 15])
   const nameOf = (f) => {
     const t = f.type
@@ -58,7 +58,7 @@ export const HOOK = `(() => {
     renderers: new Map(),
     inject(r) { this.renderers.set(this.renderers.size + 1, r); return this.renderers.size },
     onScheduleFiberRoot() {},
-    onCommitFiberRoot(_id, root) { st.commits++; try { walk(root.current.child, null) } catch {} },
+    onCommitFiberRoot(_id, root) { st.commits++; st.last = performance.now(); try { walk(root.current.child, null) } catch {} },
     onCommitFiberUnmount() {},
     onPostCommitFiberRoot() {},
     checkDCE() {},
@@ -72,7 +72,8 @@ export const HOOK = `(() => {
     })
   })
   window.mortarRenders = {
-    reset() { Object.assign(st, { commits: 0, mounts: 0, updates: 0, names: {}, roots: {}, why: {}, mutations: 0, longTasks: 0, longMs: 0 }) },
-    read() { return { ...st, names: { ...st.names }, roots: { ...st.roots }, why: { ...st.why } } },
+    reset() { Object.assign(st, { commits: 0, mounts: 0, updates: 0, names: {}, roots: {}, why: {}, mutations: 0, longTasks: 0, longMs: 0, t0: performance.now(), last: 0 }) },
+    // settledMs: from the reset to the last commit, the wall time until the screen stopped changing.
+    read() { return { ...st, settledMs: st.last > 0 ? st.last - st.t0 : 0, names: { ...st.names }, roots: { ...st.roots }, why: { ...st.why } } },
   }
 })()`

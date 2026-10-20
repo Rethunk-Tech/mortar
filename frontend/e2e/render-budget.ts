@@ -309,10 +309,10 @@ async function measure(page: Page, meter: Meter, c: Case): Promise<Result> {
 const pad = (v: string | number, n: number) => String(v).padStart(n)
 
 function report(results: Result[]): string {
-  const head = `${'case'.padEnd(18)}${pad('commits', 8)}${pad('mounted', 9)}${pad('re-rend', 9)}${pad('mutate', 8)}${pad('layout', 7)}${pad('script', 8)}${pad('long', 6)}${pad('calls', 6)}${pad('heap', 7)}${pad('nodes', 7)} | idle/10s: ${pad('commits', 7)}${pad('re-rend', 8)}${pad('calls', 6)}`
+  const head = `${'case'.padEnd(18)}${pad('commits', 8)}${pad('mounted', 9)}${pad('re-rend', 9)}${pad('mutate', 8)}${pad('layout', 7)}${pad('script', 8)}${pad('settled', 9)}${pad('long', 6)}${pad('calls', 6)}${pad('heap', 7)}${pad('nodes', 7)} | idle/10s: ${pad('commits', 7)}${pad('re-rend', 8)}${pad('calls', 6)}`
   const lines = [
     head,
-    '  action: commits, components mounted and re-rendered, DOM mutations, layouts, script ms, long tasks, backend calls, then JS heap MiB and DOM nodes after it',
+    '  action: commits, components mounted and re-rendered, DOM mutations, layouts, script ms, ms until the last commit, long tasks, backend calls, then JS heap MiB and DOM nodes after it',
   ]
   for (const r of results) {
     if (!(r.action && r.idle)) {
@@ -322,7 +322,7 @@ function report(results: Result[]): string {
     const a = r.action
     const i = r.idle
     lines.push(
-      `${r.name.padEnd(18)}${pad(a.commits, 8)}${pad(a.mounts, 9)}${pad(a.updates, 9)}${pad(a.mutations, 8)}${pad(a.layouts, 7)}${pad(a.scriptMs, 8)}${pad(a.longTasks, 6)}${pad(a.calls, 6)}${pad(a.heapMiB, 7)}${pad(a.nodes, 7)} | ${' '.repeat(10)}${pad(i.commits, 7)}${pad(i.updates, 8)}${pad(i.calls, 6)}${r.over.length > 0 ? `  OVER: ${r.over.join('; ')}` : ''}`,
+      `${r.name.padEnd(18)}${pad(a.commits, 8)}${pad(a.mounts, 9)}${pad(a.updates, 9)}${pad(a.mutations, 8)}${pad(a.layouts, 7)}${pad(a.scriptMs, 8)}${pad(a.settledMs, 9)}${pad(a.longTasks, 6)}${pad(a.calls, 6)}${pad(a.heapMiB, 7)}${pad(a.nodes, 7)} | ${' '.repeat(10)}${pad(i.commits, 7)}${pad(i.updates, 8)}${pad(i.calls, 6)}${r.over.length > 0 ? `  OVER: ${r.over.join('; ')}` : ''}`,
     )
     const top = [...a.top, ...i.top.map(([n, v]) => [`idle ${n}`, v] as [string, number])]
     if (r.over.length > 0 && top.length > 0) {
