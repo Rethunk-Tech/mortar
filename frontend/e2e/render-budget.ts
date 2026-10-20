@@ -8,6 +8,7 @@ import {
   openSettings,
   waitForQuietNotices,
 } from './app.ts'
+import { nestedBoxes } from './renderBoxes.ts'
 import { newCases } from './renderCases.ts'
 import { HOOK } from './renderHook.ts'
 import { Meter, type Sample } from './renderMeter.ts'
@@ -368,6 +369,11 @@ async function run(baseURL: string, chosen: Case[]): Promise<Result[]> {
     for (const c of chosen) {
       results.push(await measure(page, meter, c))
       console.log(`${c.name} measured`)
+      if (process.env.MORTAR_RENDER_BOXES) {
+        for (const b of await nestedBoxes(page)) {
+          console.log(`BOX ${c.name} | ${b.inner} in ${b.outer} | ${b.text}`)
+        }
+      }
     }
     return results
   } finally {
