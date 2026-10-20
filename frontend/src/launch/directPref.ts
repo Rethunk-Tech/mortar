@@ -14,3 +14,16 @@ export function playDirect(): boolean {
   )
   return method === 'direct'
 }
+
+// playDirect for a component: it follows the game's launch method and the open profile's override as they change.
+export function usePlayDirect(): boolean {
+  const method = useSettings((s) => gamePrefs(s).defaultLaunchMethod)
+  const overrides = useProfiles((s) => s.profiles.find((p) => p.id === s.openId)?.overrides)
+  return (
+    resolveOverride(
+      'defaultLaunchMethod',
+      method,
+      overrides ? foldedOverrides({ overrides }) : undefined,
+    ) === 'direct'
+  )
+}

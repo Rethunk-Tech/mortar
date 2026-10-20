@@ -171,8 +171,8 @@ export function VanillaPlay({
   presets: PlayPreset[]
   playWith: (key: string) => void
   setDefault: (key: string) => void
-  // Settings for the next launch, shown under the menu's actions.
-  options?: ReactNode
+  // Settings for the next launch, shown under the menu's actions; close shuts the menu.
+  options?: (close: () => void) => ReactNode
 }) {
   const { t } = useLingui()
   const [menu, setMenu] = useState<HTMLElement | null>(null)
@@ -248,7 +248,7 @@ export function VanillaPlay({
         {options ? <MenuRule /> : null}
         {options ? (
           // The fields take their own arrow keys and typing; the menu would move focus on them.
-          <Box onKeyDown={(e) => e.stopPropagation()}>{options}</Box>
+          <Box onKeyDown={(e) => e.stopPropagation()}>{options(() => setMenu(null))}</Box>
         ) : null}
       </Menu>
       <Dialog open={choosing} onClose={() => setChoosing(false)}>

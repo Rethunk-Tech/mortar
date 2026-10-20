@@ -1,4 +1,4 @@
-import { plural } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Typography } from '@mui/material'
 import { Square } from 'lucide-react'
@@ -9,13 +9,14 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { SetDefaultLaunchPreset } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useGameLoader } from '../games/info.ts'
+import { i18n } from '../i18n/index.ts'
 import { useLoader } from '../loader/store.ts'
 import { BASE_PRESET, playPresets } from '../profiles/profilePresets.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
-import { playDirect } from './directPref.ts'
+import { usePlayDirect } from './directPref.ts'
 import { PlayInstances } from './PlayInstances.tsx'
 import { PLAY_HEIGHT_PX } from './playHeight.ts'
 import { StopDialog } from './StopDialog.tsx'
@@ -68,6 +69,14 @@ function useOpenPresets() {
   return playPresets({ launchPresets, defaultLaunchPreset })
 }
 
+// Play's label says what holds it back: mods updating first, else the loader installing.
+function playLabel(installing: string, updating: number): string {
+  if (updating > 0) {
+    return plural(updating, { one: 'Updating # mod…', other: 'Updating # mods…' })
+  }
+  return installing ? i18n._(msg`Installing ${installing}…`) : i18n._(msg`Play`)
+}
+
 // `rail` is the narrow sidebar: Play and Stop shrink to icons.
 export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
   const { t } = useLingui()
@@ -86,6 +95,7 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
   // Fields, not the profiles: a save of the open profile re-renders this only when what it shows changed.
   const runningName = useProfiles((s) => s.profiles.find((p) => p.id === status?.profile)?.name)
   const presets = useOpenPresets()
+  const direct = usePlayDirect()
 
   if (running) {
     const who = runningName !== undefined && status?.profile !== openId ? runningName : ''
@@ -169,32 +179,32 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
 
   const busy = starting || installingLoader
   const launching = state === State.Launching
-  let label = t`Play`
-  if (installingLoader) {
-    label = t`Installing ${loaderName}…`
-  }
-  if (updating > 0) {
-    label = t`${plural(updating, { one: 'Updating # mod…', other: 'Updating # mods…' })}`
-  }
-  const direct = playDirect()
+  const label = playLabel(installingLoader ? loaderName : '', updating)
   return (
-    <>
-      <VanillaPlay
-        game={game}
-        playDisabled={openId === '' || launching || busy}
-        vanillaDisabled={launching || busy}
-        label={label}
-        rail={rail}
-        play={() => start(game, openId, direct, '')}
-        presets={presets}
-        options={<PlayInstances game={game} direct={direct} />}
-        playWith={(key) => start(game, openId, direct, key)}
-        setDefault={(key) =>
-          SetDefaultLaunchPreset(game, openId, key === BASE_PRESET ? '' : key)
-            .then(useProfiles.getState().replace)
-            .catch(reportError(t`Could not set the default launch preset`))
-        }
-      />
-    </>
+    <VanillaPlay
+      game={game}
+      playDisabled={openId === '' || launching || busy}
+      vanillaDisabled={launching || busy}
+      label={label}
+      rail={rail}
+      play={() => start(game, openId, direct, '')}
+      presets={presets}
+      options={(close) => (
+        <PlayInstances
+          game={game}
+          direct={direct}
+          onLaunch={() => {
+            close()
+            start(game, openId, direct, '')
+          }}
+        />
+      )}
+      playWith={(key) => start(game, openId, direct, key)}
+      setDefault={(key) =>
+        SetDefaultLaunchPreset(game, openId, key === BASE_PRESET ? '' : key)
+          .then(useProfiles.getState().replace)
+          .catch(reportError(t`Could not set the default launch preset`))
+      }
+    />
   )
 }
