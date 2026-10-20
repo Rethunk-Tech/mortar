@@ -1,7 +1,7 @@
 git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 h1:N3IGoHHp9pb6mj1cbXbuaSXV/UMKwmbKLf53nQmtqMA=
 git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3/go.mod h1:QtOLZGz8olr4qH2vWK0QH0w0O4T9fEIjMuWpKUsH7nc=
-github.com/Rethunk-AI/wails/v3 v3.0.0-beta.28.0.20261019091302-29d7ded026cd h1:05XCH503Gcv8l0vWfG91jboby5B4p5qV4k6Kd9w66+o=
-github.com/Rethunk-AI/wails/v3 v3.0.0-beta.28.0.20261019091302-29d7ded026cd/go.mod h1:Tk3i8pyehpIdV4aS9GfpgGjk7eOjuSpCrpyJXpS6y64=
+github.com/Rethunk-AI/wails/v3 v3.0.0-beta.28.0.20261020133205-4256088c53d4 h1:wjXJtgkgG25grJ5OSbyNpcYlvQEx+u7RjY0mruan4l0=
+github.com/Rethunk-AI/wails/v3 v3.0.0-beta.28.0.20261020133205-4256088c53d4/go.mod h1:Tk3i8pyehpIdV4aS9GfpgGjk7eOjuSpCrpyJXpS6y64=
 github.com/adrg/xdg v0.5.3 h1:xRnxJXne7+oWDatRhR1JLnvuccuIeCoBu2rtuLqQB78=
 github.com/adrg/xdg v0.5.3/go.mod h1:nlTsY+NNiCBGCK2tpm09vRqfVzrc2fLmXGpBLF0zlTQ=
 github.com/andybalholm/brotli v1.2.6 h1:ftYnfj6usCp+UGV5kSJ3+chpMQgU+gJf/AxsUQ52REI=
