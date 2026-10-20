@@ -227,7 +227,7 @@ func searchCached(ctx context.Context, id string, s source.Searcher, q source.Qu
 		netstate.Record(id, err)
 		return page, err
 	}
-	key := fmt.Sprintf("%T|%s|%s|%d|%s|%q|%q", s, q.Game, q.Key, q.Page, q.Sort, q.Categories, q.ExcludeCategories)
+	key := fmt.Sprintf("%s|%s|%s|%d|%d|%s|%q|%q", id, q.Game, q.Key, q.Page, q.Len(), q.Sort, q.Categories, q.ExcludeCategories)
 	topMu.Lock()
 	e, ok := topCache[key]
 	topMu.Unlock()
