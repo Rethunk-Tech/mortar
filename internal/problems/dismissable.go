@@ -10,15 +10,17 @@ import (
 
 // Dismissable is one counted problem a user can dismiss, in the order the CLI numbers them.
 type Dismissable struct {
-	Kind         string // "listed", "abandoned", "conflict" or "setting"
+	Kind         string // "listed", "abandoned", "conflict", "setting" or "loadFailure"
 	ID           mod.ID
 	Field        string
 	ConflictKind string
 	Target       string
+	// Failure names a loadFailure row: the log's finding, which Service.DismissLoadFailure hides for the newest run.
+	Failure LoadFailure
 }
 
 // DismissableRows lists the result's dismissable problems: listed requirements, abandoned mods,
-// counted conflicts and compatibility settings.
+// counted conflicts, compatibility settings and the rows read from a run's log.
 func DismissableRows(r Result) []Dismissable {
 	var out []Dismissable
 	for _, x := range r.Missing {
@@ -39,7 +41,17 @@ func DismissableRows(r Result) []Dismissable {
 	for _, x := range r.Settings {
 		out = append(out, Dismissable{Kind: "setting", ID: x.ID, Field: x.Field})
 	}
+	for _, x := range r.LoadFailures {
+		if dismissibleLoadFailure(x) {
+			out = append(out, Dismissable{Kind: "loadFailure", Failure: x})
+		}
+	}
 	return out
+}
+
+// dismissibleLoadFailure is a row from a run's log; the game's version and settings rows come from the install.
+func dismissibleLoadFailure(f LoadFailure) bool {
+	return f.Kind != KindGameVersion && f.Kind != KindGameSetting
 }
 
 // dismissibleBroken is advice rather than a fault to fix: an abandoned, obsolete or deprecated mod, or one its source

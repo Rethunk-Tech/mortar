@@ -29,6 +29,9 @@ func (s *Services) dismissProblem(ctx context.Context, gameID, profileID string,
 		return s.Problems.DismissAssetConflict(ctx, gameID, profileID, row.ConflictKind, row.Target)
 	case "setting":
 		return s.Problems.DismissSetting(ctx, gameID, profileID, row.ID, row.Field)
+	case "loadFailure":
+		f := row.Failure
+		return s.Problems.DismissLoadFailure(ctx, gameID, profileID, f.Kind, f.Plugin, f.Message)
 	default:
 		return fmt.Errorf("cannot dismiss problem at index %d", index)
 	}

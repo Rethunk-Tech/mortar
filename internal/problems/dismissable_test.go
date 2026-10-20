@@ -28,3 +28,15 @@ func TestDismissedLoadFailureReturnsWithTheNextRun(t *testing.T) {
 		t.Fatalf("next run: %+v", got)
 	}
 }
+
+func TestDismissableRowsIncludeTheRunLogFailures(t *testing.T) {
+	r := Result{LoadFailures: []LoadFailure{
+		{Kind: "missing-dependency", Plugin: "Fixture Plugin 1.2.3", Message: "missing dependencies: x"},
+		{Kind: KindGameVersion, Plugin: "bepinex5"},
+		{Kind: KindGameSetting, Plugin: "cfg"},
+	}}
+	rows := DismissableRows(r)
+	if len(rows) != 1 || rows[0].Kind != "loadFailure" || rows[0].Failure.Plugin != "Fixture Plugin 1.2.3" {
+		t.Fatalf("rows = %+v", rows)
+	}
+}
