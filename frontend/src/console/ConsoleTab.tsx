@@ -17,6 +17,7 @@ import { listNames } from '../i18n/list.ts'
 import { useGameBusy, useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { onFilterFocus } from '../mods/filterFocus.ts'
+import { saveOpenPref } from '../profiles/openOverrides.ts'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -25,6 +26,7 @@ import { SearchField } from '../shell/SearchField.tsx'
 import { space } from '../theme/density.ts'
 import { MONO, PAD_FOCUS } from '../theme/theme.ts'
 import { TipBanner } from '../tips/TipBanner.tsx'
+import { reportUnexpected } from '../toasts/report.ts'
 import { hiddenBy, incompatibleSMAPI, isFiltered, modsOf } from './filter.ts'
 import { stepHistory } from './history.ts'
 import { LevelToggles } from './LevelToggles.tsx'
@@ -347,6 +349,36 @@ function FilteredEmpty() {
   )
 }
 
+// Show times and Follow new lines: a click saves the choice where the open profile reads it.
+function ViewToggles({ game }: { game: string }) {
+  const { t } = useLingui()
+  const timestamps = useConsole((s) => s.timestamps)
+  const follow = useConsole((s) => s.follow)
+  const { setTimestamps, setFollow } = useConsole.getState()
+  return (
+    <>
+      <IconAction
+        label={t`Show times`}
+        icon={<Clock size={16} />}
+        pressed={timestamps}
+        onClick={() => {
+          setTimestamps(!timestamps)
+          saveOpenPref(game, 'consoleTimestamps', String(!timestamps)).catch(reportUnexpected)
+        }}
+      />
+      <IconAction
+        label={t`Follow new lines`}
+        icon={<ArrowDownToLine size={16} />}
+        pressed={follow}
+        onClick={() => {
+          setFollow(!follow)
+          saveOpenPref(game, 'consoleFollow', String(!follow)).catch(reportUnexpected)
+        }}
+      />
+    </>
+  )
+}
+
 export function ConsoleTab({ game }: { game: string }) {
   const { t } = useLingui()
   const entries = useShownEntries()
@@ -354,7 +386,7 @@ export function ConsoleTab({ game }: { game: string }) {
   const timestamps = useConsole((s) => s.timestamps)
   const follow = useConsole((s) => s.follow)
   const jump = useConsole((s) => s.jump)
-  const { load, setMods, clearFilters, setTimestamps, setFollow } = useConsole.getState()
+  const { load, setMods, clearFilters, setFollow } = useConsole.getState()
   const shown = useConsole((s) => s.shown)
   const openId = useProfiles((s) => s.openId)
   const viewingRun = useConsole((s) => s.viewingRun)
@@ -417,18 +449,7 @@ export function ConsoleTab({ game }: { game: string }) {
         <LevelToggles />
         <ModPicker />
         <RunsPicker game={game} />
-        <IconAction
-          label={t`Show times`}
-          icon={<Clock size={16} />}
-          pressed={timestamps}
-          onClick={() => setTimestamps(!timestamps)}
-        />
-        <IconAction
-          label={t`Follow new lines`}
-          icon={<ArrowDownToLine size={16} />}
-          pressed={follow}
-          onClick={() => setFollow(!follow)}
-        />
+        <ViewToggles game={game} />
         {isFiltered(filters) ? (
           <IconAction
             label={t`Clear filters`}
