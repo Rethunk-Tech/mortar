@@ -1,0 +1,73 @@
+name: Catalog drift
+
+# Weekly: compares the game catalog with Thunderstore, Nexus and CurseForge (scripts/catalog-audit.ts, the
+# components:audit task) and keeps one issue listing what drifted. A clean week closes it.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: catalog-drift
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: Rethunk-Tech/gh-actions/setup-bun@043d9f8fb8b04b983fa8f7012b28241fd20f17b4 # v1.18
+
+      # The audit prints each finding on an indented line and exits 1 when a catalog community or loader pack is gone.
+      - name: Audit the catalog
+        id: audit
+        run: |
+          set -uo pipefail
+          status=0
+          bun scripts/catalog-audit.ts >"$RUNNER_TEMP/audit.txt" 2>&1 || status=$?
+          cat "$RUNNER_TEMP/audit.txt"
+          drift=false
+          if [ "$status" -ne 0 ] || grep -q '^  ' "$RUNNER_TEMP/audit.txt"; then
+            drift=true
+          fi
+          echo "drift=$drift" >>"$GITHUB_OUTPUT"
+
+      - name: Open, update or close the drift issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          DRIFT: ${{ steps.audit.outputs.drift }}
+        run: |
+          set -euo pipefail
+          title="Catalog drift"
+          label="catalog-drift"
+          gh label create "$label" --repo "$REPOSITORY" --color ededed --description "The weekly catalog audit found drift" 2>/dev/null || true
+          number="$(gh issue list --repo "$REPOSITORY" --label "$label" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')"
+          if [ "$DRIFT" = true ]; then
+            {
+              echo "The weekly \`components:audit\` run found drift ($(date -u +%F)):"
+              echo
+              echo '```'
+              cat "$RUNNER_TEMP/audit.txt"
+              echo '```'
+            } >"$RUNNER_TEMP/body.md"
+            if [ -n "$number" ]; then
+              gh issue edit "$number" --repo "$REPOSITORY" --body-file "$RUNNER_TEMP/body.md"
+            else
+              gh issue create --repo "$REPOSITORY" --title "$title" --label "$label" --body-file "$RUNNER_TEMP/body.md"
+            fi
+          elif [ -n "$number" ]; then
+            gh issue close "$number" --repo "$REPOSITORY" --comment "The audit is clean again ($(date -u +%F))."
+          fi

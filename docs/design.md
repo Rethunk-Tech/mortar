@@ -38,7 +38,6 @@ Parked; take up when asked.
 - **Upload a modpack to Thunderstore** from Mortar, as Gale does (its `ApiKeyPref` and modpack page): a team token in the OS keyring, the submission API's multipart upload behind a preview step. Today **Export as Thunderstore modpack…** writes the zip for a manual upload.
 - **A game version per profile** (Gale #157), e.g. Lethal Company v50 for an old modpack beside the latest: fetch the older build with Steam's depot downloader into a per-version folder the profile launches from. With it, a per-profile "mod versions up to" date (Gale #454) that browse, install and update honour, so the mods match that game build.
 - **Translate a mod's description** into the player's language (as StarModsManager does for Stardew), optional and per description; revisit together with the app's own translations.
-- **Catalog drift check in CI:** `components:audit` on a schedule, opening an issue on drift.
 - **Hosted share service** with short codes and share versioning; the **Xbox app** version (WindowsApps folders are locked down); an **Add to Mortar** button on Nexus listing tiles, which needs Nexus's approval first ([nexus-application.md](nexus-application.md)).
 - **Settings:** new profiles starting as a copy of the open profile or from a saved group; an offline mode that never contacts the network.
 - **EA App libraries on another drive** are found only once the player adds the folder (`internal/gamestore/drivers.go` `eaDirs`).
