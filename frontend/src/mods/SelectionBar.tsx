@@ -5,8 +5,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { CopyModsWithNeeds } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { openShare } from '../share/store.ts'
-import { PromptDialog } from '../shell/PromptDialog.tsx'
-import { reportUnexpected } from '../toasts/report.ts'
+import { AddToGroupDialog } from './AddToGroupDialog.tsx'
 import { useCustomCategories } from './customCategories.ts'
 import { modId, visibleUpdates } from './lookup.ts'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
@@ -15,11 +14,8 @@ import { CategorySelectionDialog, TagSelectionDialog } from './SelectionBarDialo
 import { useSelection } from './selection.ts'
 import { skipSourceGroups } from './skipSources.ts'
 import { useMods } from './store.ts'
-import { addModsToGroup } from './storeGroups.ts'
 import { useUpdates } from './updates.ts'
 import { useLocked } from './useLocked.ts'
-
-const MAX_GROUP_NAME = 60
 
 function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod[] }) {
   const { t } = useLingui()
@@ -76,17 +72,11 @@ function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod[] }) {
           clear={clear}
         />
       ) : null}
-      <PromptDialog
+      <AddToGroupDialog
         open={groupOpen}
-        title={t`Make a group`}
-        label={t`Group name`}
-        maxLength={MAX_GROUP_NAME}
-        confirmLabel={t`Make group`}
-        onCancel={() => setGroupOpen(false)}
-        onSubmit={(name) => {
-          setGroupOpen(false)
-          addModsToGroup(keys, name).catch(reportUnexpected)
-        }}
+        onClose={() => setGroupOpen(false)}
+        mods={selected}
+        profile={profile}
       />
       <TagSelectionDialog
         open={tagOpen}

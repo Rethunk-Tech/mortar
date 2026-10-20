@@ -130,10 +130,8 @@ export function ModGroupItems({
     <>
       <AddToGroupMenuItem
         locked={locked}
-        onClick={() => {
-          close()
-          onAdd()
-        }}
+        // The menu's owner hides it and opens the dialog; closing here would unmount both.
+        onClick={onAdd}
       />
       {holding.map((g) => (
         <LockedReason key={g.name} locked={locked}>

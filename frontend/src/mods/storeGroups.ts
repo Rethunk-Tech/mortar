@@ -39,18 +39,6 @@ export const renameGroup = (name: string, next: string) =>
 export const deleteGroup = (name: string) =>
   groupCall(msg`Could not delete the group`, (game, id) => DeleteGroup(game, id, name))
 
-export async function addModToGroup(key: string, name: string) {
-  const target = openTarget()
-  if (!target) {
-    return
-  }
-  try {
-    useProfiles.getState().replace(await AddToGroup(target.game, target.id, name, key))
-  } catch (e) {
-    reportError(i18n._(msg`Could not add to the group`))(e)
-  }
-}
-
 // Puts the entries in the named group, creating it when the profile has none by that name.
 export async function addModsToGroup(keys: string[], name: string) {
   const target = openTarget()

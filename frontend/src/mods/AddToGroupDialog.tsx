@@ -1,24 +1,33 @@
+import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   MenuItem,
   TextField,
 } from '@mui/material'
 import { FolderPlus } from 'lucide-react'
 import { useState } from 'react'
-import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import type {
+  Mod,
+  Profile,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
+import { requirementKeys } from './dependents.ts'
 import { LockedReason } from './LockedReason.tsx'
-import { addModToGroup } from './storeGroups.ts'
+import { useMods } from './store.ts'
+import { addModsToGroup } from './storeGroups.ts'
 import { useLocked } from './useLocked.ts'
 
 const ICON_SIZE = 16
+const MAX_GROUP_NAME = 60
 
 function AddToGroupMenuItem({ locked, onClick }: { locked: boolean; onClick: () => void }) {
   const { t } = useLingui()
@@ -34,27 +43,32 @@ function AddToGroupMenuItem({ locked, onClick }: { locked: boolean; onClick: () 
   )
 }
 
+// Adds the mods, and by default what they need, to a group the profile has or a new one.
 function AddToGroupDialog({
   open,
   onClose,
-  entryKey,
+  mods,
   profile,
 }: {
   open: boolean
   onClose: () => void
-  entryKey: string
+  mods: Mod[]
   profile: Profile | undefined
 }) {
   const { t } = useLingui()
   const locked = useLocked()
   const [name, setName] = useState('')
+  const [withNeeds, setWithNeeds] = useState(true)
+  const all = useMods((s) => s.mods)
+  const needed = open ? requirementKeys(all, mods) : []
   const groups = profile?.groups ?? []
   const add = async (groupName: string) => {
     const trimmed = groupName.trim()
     if (trimmed === '' || locked) {
       return
     }
-    await addModToGroup(entryKey, trimmed)
+    const keys = [...new Set(mods.map((m) => m.key))]
+    await addModsToGroup(withNeeds ? [...keys, ...needed] : keys, trimmed)
     setName('')
     onClose()
   }
@@ -65,7 +79,7 @@ function AddToGroupDialog({
         <DialogContent>
           {groups.length === 0 ? (
             <EmptyState compact={true} icon={<FolderPlus size={28} />} title={t`No groups yet`}>
-              {t`Name a group below to create it and add this mod.`}
+              {t`Name a group below to create it.`}
             </EmptyState>
           ) : null}
           {groups.map((g) => (
@@ -86,6 +100,7 @@ function AddToGroupDialog({
             fullWidth={true}
             value={name}
             disabled={locked}
+            slotProps={{ htmlInput: { maxLength: MAX_GROUP_NAME } }}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -94,6 +109,15 @@ function AddToGroupDialog({
               }
             }}
           />
+          {needed.length > 0 ? (
+            <FormControlLabel
+              control={<Checkbox checked={withNeeds} onChange={(_, on) => setWithNeeds(on)} />}
+              label={plural(needed.length, {
+                one: 'Also add the # mod they need',
+                other: 'Also add the # mods they need',
+              })}
+            />
+          ) : null}
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>{t`Cancel`}</Button>

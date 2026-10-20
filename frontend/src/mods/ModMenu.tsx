@@ -335,7 +335,7 @@ function ModActionMenu({
   return (
     <>
       <Menu
-        open={!categoryOpen}
+        open={!(categoryOpen || groupOpen)}
         onClose={onClose}
         anchorEl={'el' in anchor ? anchor.el : undefined}
         {...position}
@@ -402,8 +402,11 @@ function ModActionMenu({
       />
       <AddToGroupDialog
         open={groupOpen}
-        onClose={() => setGroupOpen(false)}
-        entryKey={mod.key}
+        onClose={() => {
+          setGroupOpen(false)
+          onClose()
+        }}
+        mods={actingMods(mod)}
         profile={profile}
       />
     </>

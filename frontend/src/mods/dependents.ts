@@ -51,3 +51,30 @@ export function dependentsOf<
   }
   return out
 }
+
+// The entry keys of every mod the chosen ones need, followed through what those need in turn, leaving out the chosen.
+export function requirementKeys<
+  T extends {
+    id: string
+    key: string
+    needs?: readonly string[] | null
+    optional?: readonly string[] | null
+    contentPackFor?: string | null
+  },
+>(all: readonly T[], chosen: readonly T[]): string[] {
+  const byId = new Map(all.map((m) => [idKey(m.id), m]))
+  const have = new Set(chosen.map((m) => m.key))
+  const out: string[] = []
+  const queue = [...chosen]
+  for (let i = 0; i < queue.length; i++) {
+    for (const id of requiredIdsOf(queue[i] ?? {})) {
+      const dep = byId.get(idKey(id))
+      if (dep && !have.has(dep.key)) {
+        have.add(dep.key)
+        out.push(dep.key)
+        queue.push(dep)
+      }
+    }
+  }
+  return out
+}
