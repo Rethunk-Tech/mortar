@@ -90,7 +90,7 @@ Optional: it marks Nexus pages with what your profile already has and sends Mod 
 2. Type a name; results update as you type.
 3. Choose **Add** (**Download** on Nexus with Premium) on a card. It shows progress, then **Added**. On Nexus with a free account the button is **Get**, which opens the mod's files page.
 
-- **GitHub:** **Add** installs the latest release. Your `gh auth login`, when present, raises GitHub's rate limits.
+- **GitHub:** **Add** installs the latest release. Your `gh auth login`, when present, raises GitHub's rate limits. Nobody reviews or scans what is published on GitHub or itch.io, so the first download from either says so once.
 - **Card details:** **Show › Card details** picks what cards list (popularity, downloads, file size, version, last update); the Mods tab uses the same choice.
 - **Hide from Browse:** a card's menu has **Hide from Browse** and **Hide everything by \<author\>**. The game's settings list **Hidden mods** with **Unhide**. Links and imports still install a hidden mod.
 - **Modpacks, translations and cheats:** the **Exclude categories** picker starts with them; remove a chip to see them.
@@ -123,7 +123,7 @@ Mortar edits a mod's config as a form, and other files a BepInEx mod keeps (YAML
 
 The **Config** tab (Ctrl+6) lists every mod with settings. A change under **In-game menu** (Generic Mod Config Menu) says **Applied when the game next starts**.
 
-The Config tab can search every config file in the profile and find a setting across all the profile's files. **Delete file** removes a config file no mod owns.
+The Config tab can search every config file in the profile and find a setting across all the profile's files. **Delete file** removes a config file no mod owns. A long file lists its sections down the right; click one to jump there. **Centre config controls** under **Settings › Appearance** sets each control nearer its name on a wide window.
 
 ## Your mod list
 
@@ -161,7 +161,7 @@ On Windows, sharing is off while every connected network is **Public**; set it t
 
 ## Switch games
 
-Click the game's name in the title bar; it opens on the profile you used last. **All games…** opens Game select, where a game's menu has **Hide this game** (and **Unhide**) to keep it off the list.
+Click the game's name in the title bar; it opens on the profile you used last. **All games…** opens Game select, where right-clicking a game offers **Hide this game** (and **Unhide**) to keep it off the list, and clicking a section's heading folds it away.
 
 The mouse's back and forward buttons, and Alt with the left and right arrows, move through the pages you opened.
 
@@ -198,12 +198,12 @@ A profile is one set of mods. Switching profiles never touches the game folder's
 
 ## Play
 
-**Play** applies the profile's mod list and starts the game through SMAPI. Direct Play (not a Steam or store URL launch) can start more than one instance, spaced by a delay, for local multiplayer.
+**Play** applies the profile's mod list and starts the game through SMAPI. Direct Play (not a Steam or store URL launch) can start more than one instance, spaced by a delay, for local multiplayer: set both in the menu beside **Play**.
 
 After a crash, a card on the profile's Home names the likely cause from the loader's log (for Lethal Company also Unity's player log, where a crash prints `Crash!!!` or `Fatal error`), and when the logs name no mod, from the game's crash dump (Unity's crash folder, a Windows error report or `coredumpctl`). For BepInEx, MelonLoader, Vintage Story and SMAPI games, an exception stack in the logs that runs through one mod's code names that mod.
 
 - **Most likely cause: \<mod\>** shows the log line and the **Stack frame** or dump line. **Disable it and play** switches that mod off and relaunches.
-- **Find the cause…** halves the mods and relaunches until one is left. **Dismiss** hides the card for that run.
+- **Find the cause…** first checks that the game crashes with every mod on, then turns mods off in halves and relaunches until one is left. A library stays on while a mod that needs it is on. **Dismiss** hides the card for that run.
 
 A Heroic or Lutris copy starts through its own launcher, so the game runs in the prefix and runner the launcher keeps for it. **Skip the intro** in Stardew Valley's settings skips the title intro. In a BepInEx game whose bridge has a console, the **Console** tab takes commands.
 
@@ -248,6 +248,10 @@ The Console's **Problems in this run** strip reads SMAPI's log and offers one fi
 | **Update SMAPI** | A mod that needs a newer SMAPI |
 | **Disable** | A mod that crashed on entry, has a broken manifest or DLL, is obsolete or needs a newer game, or a content pack whose patches failed |
 | **Remove duplicate**, **Remove** | A mod installed twice; a mod SMAPI flags as malicious |
+
+#### Errors while running
+
+A plugin that loaded and then logged errors or threw an exception is listed here, once per mod with its error count. It ran, so these rows are not counted as problems; **Disable** or **Update** it if the game misbehaves, or **Dismiss** the row for that run.
 
 #### Failed to load
 
