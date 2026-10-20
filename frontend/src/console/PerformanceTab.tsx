@@ -40,13 +40,17 @@ function ReportPicker({
   )
 }
 
-// The in-game reports are saved per profile, so a profile with none starts with the section closed.
-function InGame({ game }: { game: string }) {
+// The in-game reports are saved per profile, so a profile with none starts with the section closed; a profile never
+// measured at all has nothing to show there.
+function InGame({ game, measured }: { game: string; measured: boolean }) {
   const { t } = useLingui()
   const openId = useProfiles((s) => s.openId)
   const [saved] = useSavedReports(game, openId)
   const [choice, setChoice] = useState<boolean | null>(null)
   const open = choice ?? saved.length > 0
+  if (!measured && saved.length === 0) {
+    return null
+  }
   return (
     <Box component="section">
       {/* The button sits inside the heading, so the section is still found by heading navigation. */}
@@ -104,7 +108,7 @@ export function PerformanceTab({ game }: { game: string }) {
         cancelMeasure={cancelMeasure}
         selected={selected}
       >
-        {smapi || perf ? <InGame game={game} /> : null}
+        {smapi || perf ? <InGame game={game} measured={(reports?.length ?? 0) > 0} /> : null}
       </StartupPanel>
     </Box>
   )
