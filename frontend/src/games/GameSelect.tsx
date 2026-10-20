@@ -306,7 +306,8 @@ function RowView({
     alignItems: 'center',
     gap: '24px',
     px: '40px',
-    py: '20px',
+    // The sources, Hide and Play column is 132px; with this padding a row is the ROW_PX the virtual list places it at.
+    py: '18px',
     minHeight: ROW_PX,
     flexShrink: 0,
     overflow: 'hidden',
