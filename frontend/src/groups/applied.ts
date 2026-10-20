@@ -19,7 +19,7 @@ export function savedGroupApplied(result: ApplyResult, profileId: string): void 
   const missing = result.missing ?? []
   const added = plural(result.added, { one: '# mod added', other: '# mods added' })
   const wants = open ? savedGroupWants(result.missingMods) : []
-  const group = result.group
+  const { group } = result
   useToasts.getState().push({
     kind: missing.length > 0 ? 'warning' : 'success',
     title: group ? i18n._(msg`Added the group ${group}`) : i18n._(msg`Saved group added`),
