@@ -53,6 +53,8 @@ const live = new Set(results.map((c) => c.identifier))
 const LEFT_OUT = new Set([
   // Its Thunderstore page says mods moved to the Steam Workshop and those left there are out of date.
   'wrestling-empire',
+  // Its Thunderstore page says mods moved to mod.io and those left there are out of date.
+  'core-keeper',
 ])
 
 const missing = results
@@ -127,7 +129,6 @@ const NEXUS_LEFT_OUT = new Set([
   'west-of-loathing',
   'word-play',
   'among-us',
-  'core-keeper',
   'patapon-1-2-replay',
   'wildfrost',
   'hard-bullet',

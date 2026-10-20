@@ -7745,40 +7745,6 @@
       ]
     },
     {
-      "id": "core-keeper",
-      "name": "Core Keeper",
-      "enabled": true,
-      "marker": "CoreKeeper.exe",
-      "r2modmanFolder": "CoreKeeper",
-      "metadata": [],
-      "deploy": "profile",
-      "targets": [
-        {
-          "id": "profile",
-          "root": "{profile}"
-        }
-      ],
-      "stores": {
-        "steam": {
-          "appId": "1621690"
-        }
-      },
-      "loaders": [
-        {
-          "id": "bepinex5",
-          "name": "BepInEx 6 (IL2CPP)",
-          "package": "BepInEx-BepInExPack_Core_Keeper",
-          "major": 6
-        }
-      ],
-      "sources": [
-        {
-          "id": "thunderstore",
-          "key": "core-keeper"
-        }
-      ]
-    },
-    {
       "id": "rogue-tower",
       "name": "Rogue Tower",
       "enabled": true,

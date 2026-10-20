@@ -178,7 +178,7 @@ sudo pacman -Sy mortar
 <li>Choose <strong>Add</strong> (<strong>Download</strong> on Nexus with Premium) on a card. It shows progress, then <strong>Added</strong>. On Nexus with a free account the button is <strong>Get</strong>, which opens the mod's files page.</li>
 </ol>
 <ul>
-<li><strong>GitHub:</strong> <strong>Add</strong> installs the latest release. Your <code>gh auth login</code>, when present, raises GitHub's rate limits.</li>
+<li><strong>GitHub:</strong> <strong>Add</strong> installs the latest release. Your <code>gh auth login</code>, when present, raises GitHub's rate limits. Nobody reviews or scans what is published on GitHub or itch.io, so the first download from either says so once.</li>
 <li><strong>Card details:</strong> <strong>Show › Card details</strong> picks what cards list (popularity, downloads, file size, version, last update); the Mods tab uses the same choice.</li>
 <li><strong>Hide from Browse:</strong> a card's menu has <strong>Hide from Browse</strong> and <strong>Hide everything by &lt;author&gt;</strong>. The game's settings list <strong>Hidden mods</strong> with <strong>Unhide</strong>. Links and imports still install a hidden mod.</li>
 <li><strong>Modpacks, translations and cheats:</strong> the <strong>Exclude categories</strong> picker starts with them; remove a chip to see them.</li>
@@ -207,7 +207,7 @@ sudo pacman -Sy mortar
 <li><strong>Presets</strong> saves the file's values under a name and applies them to any profile's copy.</li>
 </ol>
 <p>The <strong>Config</strong> tab (Ctrl+6) lists every mod with settings. A change under <strong>In-game menu</strong> (Generic Mod Config Menu) says <strong>Applied when the game next starts</strong>.</p>
-<p>The Config tab can search every config file in the profile and find a setting across all the profile's files. <strong>Delete file</strong> removes a config file no mod owns.</p>
+<p>The Config tab can search every config file in the profile and find a setting across all the profile's files. <strong>Delete file</strong> removes a config file no mod owns. A long file lists its sections down the right; click one to jump there. <strong>Centre config controls</strong> under <strong>Settings › Appearance</strong> sets each control nearer its name on a wide window.</p>
 <h2 id="your-mod-list">Your mod list</h2>
 <ul>
 <li><strong>Favourites:</strong> the star on a mod marks it a favourite; the profile menu's <strong>Add to favourites</strong> does the same for a profile.</li>
@@ -239,7 +239,7 @@ sudo pacman -Sy mortar
 <p>To send, use <strong>Share…</strong>, <strong>Nearby</strong>, and pick the computer. The receiver is asked to accept unless <strong>Auto-accept from paired computers</strong> is on.</p>
 <p>On Windows, sharing is off while every connected network is <strong>Public</strong>; set it to <strong>Private</strong>, and use <strong>Fix</strong> in Settings › General if the firewall still blocks Mortar.</p>
 <h2 id="switch-games">Switch games</h2>
-<p>Click the game's name in the title bar; it opens on the profile you used last. <strong>All games…</strong> opens Game select, where a game's menu has <strong>Hide this game</strong> (and <strong>Unhide</strong>) to keep it off the list.</p>
+<p>Click the game's name in the title bar; it opens on the profile you used last. <strong>All games…</strong> opens Game select, where right-clicking a game offers <strong>Hide this game</strong> (and <strong>Unhide</strong>) to keep it off the list, and clicking a section's heading folds it away.</p>
 <p>The mouse's back and forward buttons, and Alt with the left and right arrows, move through the pages you opened.</p>
 <h2 id="game-installs">Game installs</h2>
 <p>A game installed more than once (Steam and GOG, a beta branch, another folder) has a separate install for each. A profile uses the selected install unless you pin it in the game's settings; profiles pinned to different installs can run at once.</p>
@@ -267,11 +267,11 @@ sudo pacman -Sy mortar
 <li><strong>Separate saves:</strong> profile menu › <strong>Edit profile</strong>, enable <strong>Keep this profile's saves separate</strong> and confirm. Leave <strong>Start with a copy of my current saves</strong> ticked to start from your saves, or untick it to start empty. On each Play Mortar swaps in the profile's own <code>saves</code> folder and restores the shared one when the game closes (or at the next start). Nothing is deleted. Only games with a save folder have it.</li>
 </ul>
 <h2 id="play">Play</h2>
-<p><strong>Play</strong> applies the profile's mod list and starts the game through SMAPI. Direct Play (not a Steam or store URL launch) can start more than one instance, spaced by a delay, for local multiplayer.</p>
+<p><strong>Play</strong> applies the profile's mod list and starts the game through SMAPI. Direct Play (not a Steam or store URL launch) can start more than one instance, spaced by a delay, for local multiplayer: set both in the menu beside <strong>Play</strong>.</p>
 <p>After a crash, a card on the profile's Home names the likely cause from the loader's log (for Lethal Company also Unity's player log, where a crash prints <code>Crash!!!</code> or <code>Fatal error</code>), and when the logs name no mod, from the game's crash dump (Unity's crash folder, a Windows error report or <code>coredumpctl</code>). For BepInEx, MelonLoader, Vintage Story and SMAPI games, an exception stack in the logs that runs through one mod's code names that mod.</p>
 <ul>
 <li><strong>Most likely cause: &lt;mod&gt;</strong> shows the log line and the <strong>Stack frame</strong> or dump line. <strong>Disable it and play</strong> switches that mod off and relaunches.</li>
-<li><strong>Find the cause…</strong> halves the mods and relaunches until one is left. <strong>Dismiss</strong> hides the card for that run.</li>
+<li><strong>Find the cause…</strong> first checks that the game crashes with every mod on, then turns mods off in halves and relaunches until one is left. A library stays on while a mod that needs it is on. <strong>Dismiss</strong> hides the card for that run.</li>
 </ul>
 <p>A Heroic or Lutris copy starts through its own launcher, so the game runs in the prefix and runner the launcher keeps for it. <strong>Skip the intro</strong> in Stardew Valley's settings skips the title intro. In a BepInEx game whose bridge has a console, the <strong>Console</strong> tab takes commands.</p>
 <p>On Windows, Steam's own <strong>Play</strong> starts SMAPI with the game's own <code>Mods</code> folder, not a profile. Press Play in Mortar, or use the profile menu's <strong>Add a shortcut that plays this profile</strong> (Start Menu on Windows, launcher entry on Linux) or <strong>Add this profile to Steam</strong> (a non-Steam game; close Steam first).</p>
@@ -306,6 +306,8 @@ sudo pacman -Sy mortar
 <tr><td><strong>Remove duplicate</strong>, <strong>Remove</strong></td><td>A mod installed twice; a mod SMAPI flags as malicious</td></tr>
 </tbody>
 </table></div>
+<h4 id="errors-while-running">Errors while running</h4>
+<p>A plugin that loaded and then logged errors or threw an exception is listed here, once per mod with its error count. It ran, so these rows are not counted as problems; <strong>Disable</strong> or <strong>Update</strong> it if the game misbehaves, or <strong>Dismiss</strong> the row for that run.</p>
 <h4 id="failed-to-load">Failed to load</h4>
 <p>The loader's log shows a plugin did not start, so its features are missing. The row quotes the log line; usual causes are a wrong game version or a missing requirement. The button follows the cause:</p>
 <div class="table-wrap"><table>
