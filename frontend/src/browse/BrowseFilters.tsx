@@ -48,7 +48,10 @@ function FittedChips({
       ref={row}
       sx={{
         display: 'flex',
+        alignItems: 'center',
         gap: `${CHIP_GAP_PX}px`,
+        // Autocomplete's own margin on its chips would set them off from the +N chip, which is not one of its tags.
+        '& .MuiAutocomplete-tag': { m: 0 },
         minWidth: 0,
         flex: 1,
         overflow: 'hidden',
