@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"io/fs"
 	"log"
 	"net"
 	"os"
@@ -79,7 +80,12 @@ type request struct {
 // Handler runs one method.
 type Handler func(ctx context.Context, method string, p Params) (any, error)
 
-// Serve listens until ctx ends, then removes the discovery file.
+// republishEvery is how often a running app checks that its discovery file is still there.
+var republishEvery = 15 * time.Second
+
+// Serve listens until ctx ends, then removes the discovery file. It takes the file over from an app still running
+// (a restart starts the new one before the old one is gone), and on exit gives the file back to that app if it still
+// answers, so a short-lived second process on the data folder does not hide a long-running app from the CLI.
 func Serve(ctx context.Context, dir, version string, h Handler) error {
 	ln, err := (&net.ListenConfig{}).Listen(ctx, "tcp", "127.0.0.1:0")
 	if err != nil {
@@ -97,6 +103,7 @@ func Serve(ctx context.Context, dir, version string, h Handler) error {
 		return errors.New("control: listener has no TCP address")
 	}
 	path := filepath.Join(dir, controlwire.FileName)
+	prev, _ := fsx.ReadFile(path)
 	b, err := json.Marshal(controlwire.Discovery{Port: tcp.Port, Token: token, PID: os.Getpid(), Version: version, Protocol: controlwire.Protocol})
 	if err != nil {
 		_ = ln.Close()
@@ -107,10 +114,32 @@ func Serve(ctx context.Context, dir, version string, h Handler) error {
 		return err
 	}
 	go func() {
+		tick := time.NewTicker(republishEvery)
+		defer tick.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-tick.C:
+				// Something else removed the file while this app runs; put it back unless another app now owns it.
+				if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
+					if _, live := controlwire.Live(dir); !live {
+						_ = datadir.WriteFile(path, b, 0o600)
+					}
+				}
+			}
+		}
+	}()
+	go func() {
 		<-ctx.Done()
 		_ = ln.Close()
 		// Another instance may have taken the file over since; removing it would hide that one from the CLI.
 		if cur, err := fsx.ReadFile(path); err == nil && bytes.Equal(cur, b) {
+			if len(prev) > 0 && datadir.WriteFile(path, prev, 0o600) == nil {
+				if _, live := controlwire.Live(dir); live {
+					return
+				}
+			}
 			_ = os.Remove(path)
 		}
 	}()
