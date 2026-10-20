@@ -19,6 +19,7 @@ export const isInfoRow = (p: Row): boolean =>
   (p.kind === 'missing' && p.missing.listed) ||
   p.kind === 'setting' ||
   p.kind === 'deprecated' ||
+  p.kind === 'fileConflict' ||
   (p.kind === 'runError' && !p.runError.severe)
 
 export type ProblemSectionId =

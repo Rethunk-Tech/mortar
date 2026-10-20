@@ -250,7 +250,7 @@ msgstr "List mods inside a folder whose name starts with a dot, which SMAPI skip
 msgid "{names} can't be reached, so Mortar can't check for mod updates"
 msgstr "{names} can't be reached, so Mortar can't check for mod updates"
 
-#: src/mods/FileConflictsSection.tsx:65
+#: src/mods/problemFix/FileConflictFix.tsx:31
 #: src/mods/problemFix/WinFix.tsx:90
 msgid "Make {name} win"
 msgstr "Make {name} win"
@@ -698,7 +698,7 @@ msgstr "{0, plural, one {Applied the curator's choices for # mod and {1, plural,
 msgid "Startup and window"
 msgstr "Startup and window"
 
-#: src/mods/ProblemsTab.tsx:370
+#: src/mods/ProblemsTab.tsx:373
 msgid "Turns mods off in halves and relaunches until the crash stops"
 msgstr "Turns mods off in halves and relaunches until the crash stops"
 
@@ -981,7 +981,7 @@ msgstr "Mark a known good point first."
 msgid "This profile"
 msgstr "This profile"
 
-#: src/mods/problemText.ts:93
+#: src/mods/problemText.ts:95
 msgid "Game version not supported"
 msgstr "Game version not supported"
 
@@ -1234,11 +1234,11 @@ msgstr "That item could not be found."
 msgid "Switch to Problems"
 msgstr "Switch to Problems"
 
-#: src/console/PerformanceTab.tsx:93
+#: src/console/PerformanceTab.tsx:97
 msgid "Measure next launch"
 msgstr "Measure next launch"
 
-#: src/mods/problemWhy.ts:94
+#: src/mods/problemWhy.ts:101
 msgid "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
 msgstr "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
 
@@ -2391,7 +2391,7 @@ msgstr "Already retrying failed downloads"
 msgid "Files added"
 msgstr "Files added"
 
-#: src/mods/problemFixButtons.tsx:233
+#: src/mods/problemFixButtons.tsx:239
 msgid "Forget"
 msgstr "Forget"
 
@@ -2450,7 +2450,7 @@ msgstr "Switch to Browse"
 msgid "Could not save the tool"
 msgstr "Could not save the tool"
 
-#: src/mods/problemText.ts:109
+#: src/mods/problemText.ts:111
 msgid "The game never started"
 msgstr "The game never started"
 
@@ -2811,7 +2811,7 @@ msgstr "Shared by all downloads, and applied to running ones. 0 is unlimited."
 msgid "Writes a zip with logs and settings, personal paths removed, to attach to a bug report."
 msgstr "Writes a zip with logs and settings, personal paths removed, to attach to a bug report."
 
-#: src/mods/problemText.ts:87
+#: src/mods/problemText.ts:89
 msgid "Error while loading"
 msgstr "Error while loading"
 
@@ -2922,7 +2922,7 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 #: src/mods/overlayActions.ts:36
 #: src/mods/overlayActions.ts:100
 #: src/mods/problemFix/WinFix.tsx:66
-#: src/mods/problemFixButtons.tsx:122
+#: src/mods/problemFixButtons.tsx:128
 #: src/mods/SplitCombineItems.tsx:41
 #: src/mods/storeEntries.ts:55
 #: src/mods/storeEntries.ts:93
@@ -2985,7 +2985,7 @@ msgstr "{gameName} save backups"
 msgid "Unofficial update"
 msgstr "Unofficial update"
 
-#: src/mods/ProblemsTab.tsx:399
+#: src/mods/ProblemsTab.tsx:402
 msgid "No problems to copy."
 msgstr "No problems to copy."
 
@@ -3180,8 +3180,8 @@ msgstr "{label} is replaced by the copy in this backup. The current {label} is b
 msgid "No enabled mods"
 msgstr "No enabled mods"
 
-#: src/mods/ProblemsTab.tsx:195
-#: src/mods/ProblemsTab.tsx:436
+#: src/mods/ProblemsTab.tsx:194
+#: src/mods/ProblemsTab.tsx:439
 msgid "Cleanup"
 msgstr "Cleanup"
 
@@ -3630,7 +3630,7 @@ msgstr " · {0} more required"
 msgid "Host {0}, yours {1}"
 msgstr "Host {0}, yours {1}"
 
-#: src/mods/problemFixButtons.tsx:247
+#: src/mods/problemFixButtons.tsx:253
 msgid "Keep my changes"
 msgstr "Keep my changes"
 
@@ -3920,7 +3920,7 @@ msgstr "{count, plural, one {# error} other {# errors}}"
 msgid "Downloaded mods no profile uses"
 msgstr "Downloaded mods no profile uses"
 
-#: src/mods/problemText.ts:103
+#: src/mods/problemText.ts:105
 msgid "Needs a newer loader"
 msgstr "Needs a newer loader"
 
@@ -4052,7 +4052,7 @@ msgstr "{n, plural, one {# missing requirement} other {# missing requirements}}"
 msgid "Add to profile"
 msgstr "Add to profile"
 
-#: src/mods/problemFixButtons.tsx:261
+#: src/mods/problemFixButtons.tsx:267
 #: src/profiles/HealthDialog.tsx:153
 msgid "Your edits to its files are replaced with the installed copy."
 msgstr "Your edits to its files are replaced with the installed copy."
@@ -4283,8 +4283,8 @@ msgstr "Custom categories"
 #: src/groups/SavedGroupsSection.tsx:122
 #: src/mods/CategoryEditor.tsx:172
 #: src/mods/OldFilesCallouts.tsx:119
-#: src/mods/problemFixButtons.tsx:207
-#: src/mods/problemFixButtons.tsx:212
+#: src/mods/problemFixButtons.tsx:213
+#: src/mods/problemFixButtons.tsx:218
 #: src/mods/typedConfig/ConfigPane.tsx:437
 #: src/profiles/HealthDialog.tsx:287
 #: src/profiles/LaunchPresetsBlock.tsx:54
@@ -4534,7 +4534,7 @@ msgstr "Local"
 msgid "Review mod updates"
 msgstr "Review mod updates"
 
-#: src/mods/problemText.ts:105
+#: src/mods/problemText.ts:107
 msgid "Loader failed to start"
 msgstr "Loader failed to start"
 
@@ -4887,7 +4887,7 @@ msgid "Importing into {name}"
 msgstr "Importing into {name}"
 
 #: src/mods/CleanupSection.tsx:72
-#: src/mods/ProblemsTab.tsx:440
+#: src/mods/ProblemsTab.tsx:443
 msgid "Not needed by any enabled mod"
 msgstr "Not needed by any enabled mod"
 
@@ -4937,7 +4937,7 @@ msgstr "{off} switched off"
 msgid "A mod with several tags appears under its first tag."
 msgstr "A mod with several tags appears under its first tag."
 
-#: src/mods/problemText.ts:107
+#: src/mods/problemText.ts:109
 msgid "Game setting off"
 msgstr "Game setting off"
 
@@ -5129,7 +5129,7 @@ msgstr "Just this mod"
 msgid "Links for games Mortar does not manage open in the app that had them before."
 msgstr "Links for games Mortar does not manage open in the app that had them before."
 
-#: src/mods/describe.ts:360
+#: src/mods/describe.ts:372
 msgid "{name} was changed outside Mortar."
 msgstr "{name} was changed outside Mortar."
 
@@ -5398,7 +5398,7 @@ msgstr "Working directory"
 msgid "Installed"
 msgstr "Installed"
 
-#: src/mods/problemFixButtons.tsx:211
+#: src/mods/problemFixButtons.tsx:217
 msgid "Mortar did not install this folder. It moves to Mortar's trash."
 msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 
@@ -5590,7 +5590,7 @@ msgstr "Library"
 msgid "Connection"
 msgstr "Connection"
 
-#: src/mods/ProblemsTab.tsx:458
+#: src/mods/ProblemsTab.tsx:461
 msgid "Harmless"
 msgstr "Harmless"
 
@@ -5734,7 +5734,7 @@ msgstr "Homo Sapiens"
 msgid "{0} skipped"
 msgstr "{0} skipped"
 
-#: src/mods/problemWhy.ts:87
+#: src/mods/problemWhy.ts:94
 msgid "The author marked this mod as deprecated. It will not get fixes and may break with the next game update."
 msgstr "The author marked this mod as deprecated. It will not get fixes and may break with the next game update."
 
@@ -5981,7 +5981,7 @@ msgid "Could not add the saved group"
 msgstr "Could not add the saved group"
 
 #. placeholder {0}: copies.length
-#: src/mods/describe.ts:325
+#: src/mods/describe.ts:337
 msgid "{names} all {0} ship the plugin {guid}, and BepInEx loads only one."
 msgstr "{names} all {0} ship the plugin {guid}, and BepInEx loads only one."
 
@@ -6063,6 +6063,10 @@ msgstr "{remaining} of {limit} left this hour; the count resets {when}."
 msgid "{dependentName} needs {dep}, which this profile lacks."
 msgstr "{dependentName} needs {dep}, which this profile lacks."
 
+#: src/mods/problemWhy.ts:80
+msgid "Two enabled packages ship a file at the same path. The one later in the package order replaces the other's copy, so only its version is in the game."
+msgstr "Two enabled packages ship a file at the same path. The one later in the package order replaces the other's copy, so only its version is in the game."
+
 #: src/share/MethodPanes.tsx:313
 msgid "Save .r2z…"
 msgstr "Save .r2z…"
@@ -6122,8 +6126,8 @@ msgstr "Read the release notes on GitHub"
 msgid "Backups ({count})"
 msgstr "Backups ({count})"
 
-#: src/mods/ProblemsTab.tsx:299
-#: src/mods/ProblemsTab.tsx:479
+#: src/mods/ProblemsTab.tsx:302
+#: src/mods/ProblemsTab.tsx:482
 msgid "Problem sections"
 msgstr "Problem sections"
 
@@ -6396,8 +6400,8 @@ msgstr "Lavender"
 msgid "Windows' antivirus through AMSI; clamd on Linux when it is running."
 msgstr "Windows' antivirus through AMSI; clamd on Linux when it is running."
 
-#: src/mods/ProblemsTab.tsx:181
-#: src/mods/ProblemsTab.tsx:449
+#: src/mods/ProblemsTab.tsx:180
+#: src/mods/ProblemsTab.tsx:452
 msgid "Redundant"
 msgstr "Redundant"
 
@@ -6437,6 +6441,13 @@ msgstr "{0, plural, one {# change} other {# changes}}"
 #: src/nxm/store.ts:180
 msgid "You started this download on Nexus. Show Mortar to choose the profile it goes into."
 msgstr "You started this download on Nexus. Show Mortar to choose the profile it goes into."
+
+#. placeholder {0}: paths.length
+#. placeholder {1}: keyName(winner)
+#. placeholder {2}: keyName(winner)
+#: src/mods/describe.ts:319
+msgid "{0, plural, one {{1} wins # file over {losers}.} other {{2} wins # files over {losers}.}}"
+msgstr "{0, plural, one {{1} wins # file over {losers}.} other {{2} wins # files over {losers}.}}"
 
 #: src/settings/ProtonRow.tsx:26
 msgid "The newest Steam has"
@@ -6666,7 +6677,7 @@ msgstr "How to send it"
 msgid "Import a shared profile…"
 msgstr "Import a shared profile…"
 
-#: src/mods/ProblemsTab.tsx:209
+#: src/mods/ProblemsTab.tsx:212
 msgid "Replaced"
 msgstr "Replaced"
 
@@ -6986,7 +6997,7 @@ msgstr "Saved on version {0}"
 msgid "Config files"
 msgstr "Config files"
 
-#: src/mods/problemText.ts:99
+#: src/mods/problemText.ts:101
 msgid "Older copy skipped"
 msgstr "Older copy skipped"
 
@@ -7270,7 +7281,7 @@ msgstr "Share as r2modman code…"
 msgid "Load order"
 msgstr "Load order"
 
-#: src/mods/ProblemsTab.tsx:174
+#: src/mods/ProblemsTab.tsx:173
 msgid "Slow startup"
 msgstr "Slow startup"
 
@@ -7304,15 +7315,6 @@ msgstr "Open page"
 msgid "{count} to download"
 msgstr "{count} to download"
 
-#. placeholder {0}: group.paths.length
-#. placeholder {1}: name(group.winner)
-#. placeholder {2}: listNames(group.beaten.map(name))
-#. placeholder {3}: name(group.winner)
-#. placeholder {4}: listNames(group.beaten.map(name))
-#: src/mods/FileConflictsSection.tsx:48
-msgid "{0, plural, one {{1} wins # file over {2}} other {{3} wins # files over {4}}}"
-msgstr "{0, plural, one {{1} wins # file over {2}} other {{3} wins # files over {4}}}"
-
 #: src/install/DownloadsDialog.tsx:125
 msgid "Archives"
 msgstr "Archives"
@@ -7324,7 +7326,7 @@ msgstr "Archives"
 msgid "{0, plural, one {# skipped} other {# skipped}}"
 msgstr "{0, plural, one {# skipped} other {# skipped}}"
 
-#: src/mods/problemFixButtons.tsx:120
+#: src/mods/problemFixButtons.tsx:126
 msgid "Moved {folder} to Mortar's trash"
 msgstr "Moved {folder} to Mortar's trash"
 
@@ -7577,7 +7579,7 @@ msgstr "API key"
 msgid "Could not rename the template"
 msgstr "Could not rename the template"
 
-#: src/mods/problemText.ts:85
+#: src/mods/problemText.ts:87
 msgid "Incompatible version"
 msgstr "Incompatible version"
 
@@ -7759,7 +7761,7 @@ msgid "The update for {0} did not finish"
 msgstr "The update for {0} did not finish"
 
 #: src/mods/CompatSection.tsx:85
-#: src/mods/ProblemsTab.tsx:108
+#: src/mods/ProblemsTab.tsx:107
 #: src/mods/problemText.ts:50
 msgid "Dismissed"
 msgstr "Dismissed"
@@ -7774,9 +7776,7 @@ msgid "Profile code"
 msgstr "Profile code"
 
 #. placeholder {0}: listNames(group.names)
-#. placeholder {0}: listNames(group.paths.slice(0, SHOWN_PATHS))
 #: src/launch/PrePlayDialog.tsx:76
-#: src/mods/FileConflictsSection.tsx:22
 msgid "{0} and {count} more"
 msgstr "{0} and {count} more"
 
@@ -7903,12 +7903,12 @@ msgstr "Add to group…"
 msgid "Pair a computer"
 msgstr "Pair a computer"
 
-#: src/mods/problemText.ts:95
+#: src/mods/problemText.ts:97
 msgid "Unity exception"
 msgstr "Unity exception"
 
-#: src/mods/problemFixButtons.tsx:257
-#: src/mods/problemFixButtons.tsx:262
+#: src/mods/problemFixButtons.tsx:263
+#: src/mods/problemFixButtons.tsx:268
 #: src/mods/typedConfig/ConfigPane.tsx:334
 #: src/profiles/HealthDialog.tsx:287
 msgid "Revert"
@@ -7944,7 +7944,7 @@ msgstr "Use theirs"
 msgid "Direct launch preview"
 msgstr "Direct launch preview"
 
-#: src/mods/describe.ts:324
+#: src/mods/describe.ts:336
 msgid "{names} both ship the plugin {guid}, and BepInEx loads only one."
 msgstr "{names} both ship the plugin {guid}, and BepInEx loads only one."
 
@@ -7976,7 +7976,7 @@ msgstr "{0, plural, one {# file} other {# files}}"
 msgid "Thunderstore download host"
 msgstr "Thunderstore download host"
 
-#: src/mods/problemText.ts:101
+#: src/mods/problemText.ts:103
 msgid "Incompatible with another plugin"
 msgstr "Incompatible with another plugin"
 
@@ -7990,7 +7990,7 @@ msgid "Could not switch {0}"
 msgstr "Could not switch {0}"
 
 #: src/mods/AssetMapDialog.tsx:229
-#: src/mods/ProblemsTab.tsx:388
+#: src/mods/ProblemsTab.tsx:391
 msgid "Asset map"
 msgstr "Asset map"
 
@@ -8410,7 +8410,7 @@ msgstr "{label} is set per profile"
 #: src/commandPalette/paletteLabels.ts:13
 #: src/console/CrashDialog.tsx:124
 #: src/console/CrashDialog.tsx:202
-#: src/mods/ProblemsTab.tsx:381
+#: src/mods/ProblemsTab.tsx:384
 msgid "Find the mod that crashes the game…"
 msgstr "Find the mod that crashes the game…"
 
@@ -9733,8 +9733,8 @@ msgid "Main only"
 msgstr "Main only"
 
 #: src/mods/CompatChip.tsx:64
-#: src/mods/ProblemsTab.tsx:166
-#: src/mods/ProblemsTab.tsx:456
+#: src/mods/ProblemsTab.tsx:165
+#: src/mods/ProblemsTab.tsx:459
 msgid "Compatibility"
 msgstr "Compatibility"
 
@@ -9792,7 +9792,7 @@ msgstr "Windowed resolution width"
 msgid "Could not make the list"
 msgstr "Could not make the list"
 
-#: src/mods/problemText.ts:83
+#: src/mods/problemText.ts:85
 msgid "Missing dependency"
 msgstr "Missing dependency"
 
@@ -10023,7 +10023,7 @@ msgstr "No mods have logged yet"
 msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
 
-#: src/mods/ProblemsTab.tsx:56
+#: src/mods/ProblemsTab.tsx:55
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
@@ -10810,7 +10810,7 @@ msgid "Fits {name}"
 msgstr "Fits {name}"
 
 #: src/console/PerformancePanel.tsx:156
-#: src/mods/ProblemsTab.tsx:461
+#: src/mods/ProblemsTab.tsx:464
 #: src/mods/ReportToAuthorButton.tsx:202
 #: src/settings/sections/AboutDiagnostics.tsx:140
 #: src/shell/BugReportDialog.tsx:68
@@ -11038,7 +11038,7 @@ msgid "{0, plural, one {# save} other {# saves}}"
 msgstr "{0, plural, one {# save} other {# saves}}"
 
 #: src/console/PerformancePanelParts.tsx:230
-#: src/mods/ProblemsTab.tsx:396
+#: src/mods/ProblemsTab.tsx:399
 #: src/settings/sections/AboutDiagnostics.tsx:227
 msgid "Copy report"
 msgstr "Copy report"
@@ -11113,7 +11113,7 @@ msgstr "Existing OBS sources stop working until their URLs are copied again."
 msgid "Pause {0}"
 msgstr "Pause {0}"
 
-#: src/mods/problemWhy.ts:80
+#: src/mods/problemWhy.ts:87
 msgid "Two enabled mods carry the same plugin. The loader starts only one of them, so you may be running the older copy."
 msgstr "Two enabled mods carry the same plugin. The loader starts only one of them, so you may be running the older copy."
 
@@ -11283,7 +11283,7 @@ msgid "Needs a file from its itch.io page"
 msgstr "Needs a file from its itch.io page"
 
 #. placeholder {0}: d.folder
-#: src/mods/describe.ts:354
+#: src/mods/describe.ts:366
 msgid "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 msgstr "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 
@@ -11556,7 +11556,7 @@ msgstr "Whole file"
 msgid "SMAPI UniqueID"
 msgstr "SMAPI UniqueID"
 
-#: src/mods/describe.ts:317
+#: src/mods/describe.ts:329
 msgid "{name} is deprecated on Thunderstore."
 msgstr "{name} is deprecated on Thunderstore."
 
@@ -11607,7 +11607,7 @@ msgstr "The antivirus flagged it, so Mortar did not install it."
 msgid "{0, plural, one {Import # profile} other {Import # profiles}}"
 msgstr "{0, plural, one {Import # profile} other {Import # profiles}}"
 
-#: src/mods/problemText.ts:89
+#: src/mods/problemText.ts:91
 msgid "Error in a patch"
 msgstr "Error in a patch"
 
@@ -11693,7 +11693,7 @@ msgstr "Skip pre-Play check"
 msgid "Add a saved group to {profileName}"
 msgstr "Add a saved group to {profileName}"
 
-#: src/mods/problemText.ts:91
+#: src/mods/problemText.ts:93
 msgid "Error in a preloader patch"
 msgstr "Error in a preloader patch"
 
@@ -12108,7 +12108,7 @@ msgstr "Import…"
 msgid "Install {name}?"
 msgstr "Install {name}?"
 
-#: src/mods/describe.ts:316
+#: src/mods/describe.ts:328
 msgid "{name} is deprecated on Thunderstore; its page points to {replacement}."
 msgstr "{name} is deprecated on Thunderstore; its page points to {replacement}."
 
@@ -12509,7 +12509,7 @@ msgstr "{local, plural, one {# mod you added from an archive can't go in the fil
 #: src/groups/SavedGroupsSection.tsx:120
 #: src/mods/CategoryEditor.tsx:170
 #: src/mods/ConfigPresets.tsx:157
-#: src/mods/problemFixButtons.tsx:210
+#: src/mods/problemFixButtons.tsx:216
 #: src/mods/typedConfig/ConfigPane.tsx:435
 #: src/profiles/LaunchPresetsBlock.tsx:196
 #: src/profiles/LaunchPresetTemplatesDialog.tsx:78
@@ -12672,7 +12672,7 @@ msgstr "Redo update"
 msgid "Token"
 msgstr "Token"
 
-#: src/mods/ProblemsTab.tsx:486
+#: src/mods/ProblemsTab.tsx:489
 msgid "Checking the mods for problems…"
 msgstr "Checking the mods for problems…"
 
@@ -13127,7 +13127,7 @@ msgstr "Health"
 msgid "CurseForge mod {id}"
 msgstr "CurseForge mod {id}"
 
-#: src/console/PerformanceTab.tsx:60
+#: src/console/PerformanceTab.tsx:64
 #: src/console/StartupTable.tsx:118
 msgid "In game"
 msgstr "In game"
@@ -13461,7 +13461,7 @@ msgstr "Until the game's first scene has loaded"
 #: src/mods/EnableRequirementsDialog.tsx:20
 #: src/mods/EnableRequirementsDialog.tsx:55
 #: src/mods/LoadOrderTab.tsx:66
-#: src/mods/ProblemsTab.tsx:439
+#: src/mods/ProblemsTab.tsx:442
 msgid "Unknown mod"
 msgstr "Unknown mod"
 
@@ -13547,7 +13547,7 @@ msgstr "A preset with this name already exists."
 
 #. placeholder {0}: installable.length
 #. placeholder {0}: wants.length
-#: src/mods/ProblemsTab.tsx:260
+#: src/mods/ProblemsTab.tsx:263
 #: src/saves/lackChips.tsx:113
 msgid "Add all {0}"
 msgstr "Add all {0}"
@@ -13564,7 +13564,7 @@ msgstr "Could not choose the folder"
 msgid "{names} can't be reached; showing what Mortar saved ({asOf})"
 msgstr "{names} can't be reached; showing what Mortar saved ({asOf})"
 
-#: src/mods/ProblemsTab.tsx:334
+#: src/mods/ProblemsTab.tsx:337
 msgid "No problems found"
 msgstr "No problems found"
 
@@ -13574,7 +13574,7 @@ msgstr "No problems found"
 msgid "Manage templates…"
 msgstr "Manage templates…"
 
-#: src/mods/describe.ts:358
+#: src/mods/describe.ts:370
 msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
@@ -14178,7 +14178,7 @@ msgstr "Expand {0}"
 msgid "install reasons"
 msgstr "install reasons"
 
-#: src/mods/problemText.ts:97
+#: src/mods/problemText.ts:99
 msgid "A plugin it needs failed"
 msgstr "A plugin it needs failed"
 
@@ -14333,7 +14333,7 @@ msgstr "That was made by a newer Mortar. Update Mortar to open it."
 msgid "Profile history: {0}"
 msgstr "Profile history: {0}"
 
-#: src/mods/problemFixButtons.tsx:260
+#: src/mods/problemFixButtons.tsx:266
 msgid "Revert {entryName}?"
 msgstr "Revert {entryName}?"
 
@@ -14628,7 +14628,7 @@ msgstr "GOG via Minigalaxy"
 msgid "Open post"
 msgstr "Open post"
 
-#: src/mods/problemText.ts:111
+#: src/mods/problemText.ts:113
 msgid "Plugin reported an error"
 msgstr "Plugin reported an error"
 
@@ -14948,7 +14948,7 @@ msgstr "Installers ask as usual; Premium accounts also get the curator's choices
 
 #: src/mods/CleanupSection.tsx:138
 #: src/mods/problemFix/RestoreButton.tsx:17
-#: src/mods/problemFixButtons.tsx:224
+#: src/mods/problemFixButtons.tsx:230
 #: src/mods/ReplacedSection.tsx:43
 #: src/saves/BackupsDialog.tsx:254
 #: src/saves/SaveBackupsButton.tsx:53
@@ -15270,7 +15270,7 @@ msgstr "Remove {0} from this profile?"
 msgid "On"
 msgstr "On"
 
-#: src/mods/ProblemsTab.tsx:202
+#: src/mods/ProblemsTab.tsx:201
 msgid "File conflicts"
 msgstr "File conflicts"
 
@@ -15368,7 +15368,7 @@ msgstr "Alert"
 msgid "1 time"
 msgstr "1 time"
 
-#: src/mods/ProblemsTab.tsx:336
+#: src/mods/ProblemsTab.tsx:339
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
 
@@ -15581,7 +15581,7 @@ msgstr "Sound volume ({value}%)"
 msgid "Reuse FOMOD choices"
 msgstr "Reuse FOMOD choices"
 
-#: src/mods/problemFixButtons.tsx:197
+#: src/mods/problemFixButtons.tsx:203
 msgid "Adopt"
 msgstr "Adopt"
 

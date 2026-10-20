@@ -25,6 +25,7 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
 import { idKey } from './dependents.ts'
+import type { ConflictGroup } from './fileConflicts.ts'
 import { offersNexusDownload } from './nexusMark.ts'
 import { assetRows } from './problemGroups.ts'
 import { redundantRowCount } from './sameJobGroups.ts'
@@ -132,6 +133,7 @@ export type Problem =
   | { kind: 'setting'; setting: SettingHint }
   | { kind: 'damaged'; damaged: Damaged }
   | { kind: 'longPath'; longPath: LongPath }
+  | { kind: 'fileConflict'; fileConflict: ConflictGroup }
   | { kind: 'pluginClash'; pluginClash: PluginClash }
   | { kind: 'deprecated'; deprecated: DeprecatedPackage }
 
@@ -189,6 +191,9 @@ export function concerns(p: Problem, mod: Mod): boolean {
   }
   if (p.kind === 'pluginClash') {
     return (p.pluginClash.copies ?? []).some((c) => c.key === mod.key)
+  }
+  if (p.kind === 'fileConflict') {
+    return p.fileConflict.winner === mod.key || p.fileConflict.beaten.includes(mod.key)
   }
   return sameId(p.missing.dependentId, mod.id)
 }

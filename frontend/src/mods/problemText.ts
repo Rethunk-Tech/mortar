@@ -68,6 +68,8 @@ function useRowText() {
       note = loadKindText(row.loadFailure.kind)
     } else if (row.kind === 'longPath') {
       note = row.longPath.longest
+    } else if (row.kind === 'fileConflict') {
+      note = row.fileConflict.paths.join(', ')
     }
     let text = row.kind === 'drift' ? describeDrift(row.drift) : describe(row)
     if (note !== '' && text.endsWith(`: ${note}`)) {

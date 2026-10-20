@@ -73,6 +73,13 @@ export const problemWhy: Record<Row['kind'], Why> = {
         msg`Windows programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Turning on long paths in Windows does not change that for such a game.`,
       ),
   },
+  fileConflict: {
+    anchor: 'files-two-packages-ship',
+    text: () =>
+      i18n._(
+        msg`Two enabled packages ship a file at the same path. The one later in the package order replaces the other's copy, so only its version is in the game.`,
+      ),
+  },
   pluginClash: {
     anchor: 'plugins-shipped-twice',
     text: () =>

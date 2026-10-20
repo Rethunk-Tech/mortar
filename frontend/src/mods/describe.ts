@@ -310,6 +310,18 @@ export function useDescribe(): Describe {
           ? t`${name}, a folder no mod owns, has a file path ${{ count: length }} characters long, more than most Windows games can open.`
           : t`${name} has a file path ${{ count: length }} characters long, more than most Windows games can open.`
       }
+      case 'fileConflict': {
+        const { winner, beaten, paths } = p.fileConflict
+        const keyName = (key: string) =>
+          useMods.getState().mods.find((m) => m.key === key)?.name ?? key
+        const losers = listNames(beaten.map(keyName))
+        return i18n._(
+          plural(paths.length, {
+            one: `${keyName(winner)} wins # file over ${losers}.`,
+            other: `${keyName(winner)} wins # files over ${losers}.`,
+          }),
+        )
+      }
       case 'deprecated': {
         const { name, replacement } = p.deprecated
         return replacement

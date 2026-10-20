@@ -25,6 +25,7 @@ import { BrokenFix } from './problemFix/BrokenFix.tsx'
 import { DamagedFix } from './problemFix/DamagedFix.tsx'
 import { DeprecatedFix } from './problemFix/DeprecatedFix.tsx'
 import { DuplicateFix } from './problemFix/DuplicateFix.tsx'
+import { FileConflictFix } from './problemFix/FileConflictFix.tsx'
 import { LoadFailureFix } from './problemFix/LoadFailureFix.tsx'
 import { LongPathFix } from './problemFix/LongPathFix.tsx'
 import { MissingFix } from './problemFix/MissingFix.tsx'
@@ -86,6 +87,10 @@ function DeprecatedKind({ problem, dismissedToken, button }: KindProps<'deprecat
   return <DeprecatedFix problem={problem} dismissedToken={dismissedToken} button={button} />
 }
 
+function FileConflictKind({ problem, button }: KindProps<'fileConflict'>) {
+  return <FileConflictFix problem={problem} button={button} />
+}
+
 function PluginClashKind({ problem, button }: KindProps<'pluginClash'>) {
   return <PluginClashFix problem={problem} button={button} />
 }
@@ -106,6 +111,7 @@ const problemFixes = {
   longPath: LongPathKind,
   pluginClash: PluginClashKind,
   deprecated: DeprecatedKind,
+  fileConflict: FileConflictKind,
 } satisfies { [K in Problem['kind']]: ComponentType<KindProps<K>> }
 
 // Moves a folder Mortar did not install to its trash, with an Undo that puts it back.

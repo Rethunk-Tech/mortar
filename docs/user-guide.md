@@ -272,6 +272,10 @@ Files of a stored mod went missing, changed or appeared since Mortar stored it (
 
 On Windows, a mod's file whose full path, where the game reads it, is 260 characters or more. A game opens such a file only when it is built for long paths, which most are not, and turning on long paths in Windows does not change that. The row names the longest path. A file the game reads from the profile gets a shorter path when you move Mortar's data folder somewhere shorter: **Open storage settings**, then **Move…**. A file placed in the game's own mods folder needs the game in a shorter folder. Linux, including games under Proton, is not affected.
 
+#### Files two packages ship
+
+Two enabled packages ship a file at the same path, and the one later in the package order replaces the other's copy. The row names the winner, the packages it beats and the files. **Make … win** moves a beaten package to just after the winner. This is information, not a count.
+
 #### Plugins shipped twice
 
 Two enabled packages carry the same plugin. The loader starts only one, so you may be running the older. **Keep newer** leaves the newest enabled.

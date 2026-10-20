@@ -25,7 +25,6 @@ import { AssetMapDialog } from './AssetMapDialog.tsx'
 import { CleanupSection } from './CleanupSection.tsx'
 import { CompatSection } from './CompatSection.tsx'
 import { compatReportChunks } from './compatChip.ts'
-import { FileConflictsSection } from './FileConflictsSection.tsx'
 import { useFileConflicts } from './fileConflicts.ts'
 import { LockedNote } from './LockedNote.tsx'
 import { ProblemRows } from './ProblemRows.tsx'
@@ -202,7 +201,11 @@ function useProblemTabs({
       label: t`File conflicts`,
       count: fileConflicts.length,
       errors: false,
-      body: <FileConflictsSection groups={fileConflicts} />,
+      body: (
+        <ProblemRows
+          rows={fileConflicts.map((fileConflict): Row => ({ kind: 'fileConflict', fileConflict }))}
+        />
+      ),
     },
     {
       id: 'replaced',
