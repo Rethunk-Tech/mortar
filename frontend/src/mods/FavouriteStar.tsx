@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { IconButton } from '@mui/material'
 import { Star } from 'lucide-react'
-import { PICTURE_MARK_PX, pictureMarkSx } from '../brand/sources/sourceIcons.ts'
+import { PICTURE_MARK_PX } from '../brand/sources/sourceIcons.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { setStarred, useStarred } from './favourites.ts'
 
@@ -36,13 +36,17 @@ export function FavouriteStar({
         color: on ? 'warning.main' : 'text.disabled',
         ...(onPicture
           ? {
-              ...pictureMarkSx,
               position: 'absolute',
               top: 2,
               left: 2,
+              p: '2px',
               // Above a card title's click-anywhere overlay.
               zIndex: 2,
-              '&:hover': { bgcolor: 'var(--mortar-raised)', color: 'warning.main' },
+              // No chip behind it: a dark edge keeps the outline readable on any art.
+              color: on ? 'warning.main' : 'common.white',
+              filter:
+                'drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.95)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7))',
+              '&:hover': { bgcolor: 'transparent', color: 'warning.main' },
             }
           : {}),
       }}

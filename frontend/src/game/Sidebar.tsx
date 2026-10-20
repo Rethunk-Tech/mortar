@@ -1,13 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
 import {
-  ChevronLeft,
-  ChevronRight,
   Gauge,
   House,
   Images,
   List,
   type LucideIcon,
+  PanelLeftClose,
+  PanelLeftOpen,
   Save,
   Search,
   SlidersHorizontal,
@@ -295,7 +295,7 @@ function CollapseButton({ rail }: { rail: boolean }) {
   const { t } = useLingui()
   const toggle = useSidebarCollapsed((s) => s.toggle)
   const label = rail ? t`Expand sidebar` : t`Collapse sidebar`
-  const Chevron = rail ? ChevronRight : ChevronLeft
+  const Chevron = rail ? PanelLeftOpen : PanelLeftClose
   const button = (
     <ButtonBase
       aria-label={label}
