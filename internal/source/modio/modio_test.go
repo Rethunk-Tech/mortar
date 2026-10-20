@@ -124,7 +124,4 @@ func TestTokenAndGameKey(t *testing.T) {
 	if _, err := (Driver{Token: d.Token}).Search(context.Background(), source.Query{Key: "evil.host/x"}); err == nil {
 		t.Fatal("a non-numeric game key reached the address")
 	}
-	if d.ModPageURL("3659", "42") != "https://mod.io/g/3659/m/42" || d.ModPageURL("x", "42") != "" {
-		t.Fatal("page link")
-	}
 }

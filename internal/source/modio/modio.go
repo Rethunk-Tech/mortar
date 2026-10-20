@@ -26,7 +26,6 @@ const AccountURL = "https://api.mod.io/v1"
 
 const (
 	keyName = "modio"
-	siteURL = "https://mod.io"
 	// platform picks each mod's Windows file: every game modded through mod.io here runs its Windows build, under
 	// Proton on Linux.
 	platform = "windows"
@@ -64,14 +63,6 @@ func (Driver) Modes() []source.Acquire { return []source.Acquire{source.Download
 
 // Hosts is the site's web host.
 func (Driver) Hosts() []string { return []string{"mod.io"} }
-
-// ModPageURL is the mod's page, which the site serves by numeric game and mod id as well as by name.
-func (Driver) ModPageURL(key, id string) string {
-	if !gameKey.MatchString(key) || !gameKey.MatchString(id) {
-		return ""
-	}
-	return siteURL + "/g/" + key + "/m/" + id
-}
 
 // MaxPageSize is the API's largest _limit.
 func (Driver) MaxPageSize() int { return 100 }
@@ -199,11 +190,12 @@ type modList struct {
 	Total int   `json:"result_total"`
 }
 
-func (d Driver) item(key string, m mod) source.Item {
+func (d Driver) item(m mod) source.Item {
 	it := source.Item{
 		Source: d.ID(), ID: strconv.Itoa(m.ID), Name: m.Name, Summary: m.Summary, Author: m.SubmittedBy.Username,
 		Picture: m.Logo.Thumb, Endorsements: m.Stats.RatingsPositive, Downloads: m.Stats.Downloads,
-		Size: m.Modfile.Filesize, URL: cmp.Or(source.WebLink(m.ProfileURL), d.ModPageURL(key, strconv.Itoa(m.ID))),
+		// A mod's page is named by the game's and the mod's slugs, which only the API's answer gives.
+		Size: m.Modfile.Filesize, URL: source.WebLink(m.ProfileURL),
 		Adult: m.Maturity&maturityExplicit != 0,
 	}
 	if m.Modfile.ID != 0 {
@@ -237,7 +229,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	}
 	items := make([]source.Item, 0, len(parsed.Data))
 	for _, m := range parsed.Data {
-		items = append(items, d.item(q.Key, m))
+		items = append(items, d.item(m))
 	}
 	return source.Page{Total: parsed.Total, Items: items}, nil
 }
@@ -372,7 +364,7 @@ func (d Driver) Latest(ctx context.Context, src components.GameSource, _ string,
 				continue
 			}
 			out[f.Digest] = source.Latest{
-				ProjectID: f.ID, Version: m.Modfile.version(), VersionID: strconv.Itoa(m.Modfile.ID), URL: d.item(src.Key, m).URL,
+				ProjectID: f.ID, Version: m.Modfile.version(), VersionID: strconv.Itoa(m.Modfile.ID), URL: source.WebLink(m.ProfileURL),
 			}
 		}
 	}
