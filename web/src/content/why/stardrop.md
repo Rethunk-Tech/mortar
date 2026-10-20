@@ -20,4 +20,4 @@ Stardrop is a Stardew Valley manager; Mortar reads its profiles. Use Mortar to s
 
 ## Moving from Stardrop
 
-Profiles → **Import…**: Mortar lists Stardrop profiles, with a preview. Stardrop and the game's Mods folder are left as they were.
+In Profiles, choose **Import…** and Mortar lists Stardrop profiles, with a preview. Stardrop and the game's Mods folder are left as they were.

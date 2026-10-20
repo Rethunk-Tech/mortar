@@ -20,4 +20,4 @@ Gale is an open-source Thunderstore manager; Mortar reads its profiles. Use Mort
 
 ## Moving from Gale
 
-Profiles → **Import…**: Mortar lists Gale profiles for the game, with a preview. A Gale code or file works through **Use a code or file…**. Gale profiles are left as they were.
+In Profiles, choose **Import…** and Mortar lists Gale profiles for the game, with a preview. A Gale code or file works through **Use a code or file…**. Gale profiles are left as they were.

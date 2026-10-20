@@ -6,7 +6,7 @@ date: 2026-10-20
 image: /img/mods.webp
 ---
 
-A Mortar profile is one set of mods. When a friend needs the same set, you don't send them a list to rebuild by hand. You send the profile.
+A Mortar profile is one set of mods. When a friend needs the same set, you send them the profile, so nobody rebuilds a list by hand.
 
 ## Copy a link
 

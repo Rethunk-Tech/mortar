@@ -21,4 +21,4 @@ Mod Organizer 2 is the usual choice for heavily modded Bethesda games; Mortar re
 
 ## Moving from Mod Organizer 2
 
-Profiles → **Import…**: Mortar lists MO2 profiles for the game, with a preview. MO2's folders are read, never changed.
+In Profiles, choose **Import…** and Mortar lists MO2 profiles for the game, with a preview. MO2's folders are read, never changed.

@@ -19,4 +19,4 @@ r2modman is the long-standing Thunderstore manager; Mortar reads its profiles. U
 
 ## Moving from r2modman
 
-Profiles → **Import…**: Mortar lists r2modman profiles for the game, with a preview. A profile code or `.r2z` file works through **Use a code or file…**. r2modman profiles are left as they were.
+In Profiles, choose **Import…** and Mortar lists r2modman profiles for the game, with a preview. A profile code or `.r2z` file works through **Use a code or file…**. r2modman profiles are left as they were.

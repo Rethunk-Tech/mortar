@@ -1,41 +1,41 @@
 ## Is Mortar free?
 
-Yes. AGPL-3.0; no account, ads or tracking in the app.
+Yes. It's AGPL-3.0, and the app has no account, ads or tracking.
 
 ## Which games does it support?
 
-[GAME_COUNT games](/games/). Finds them on Steam (including Flatpak), GOG, Epic, the EA app, the Xbox app, Heroic, Lutris, Bottles, or a folder you choose.
+[GAME_COUNT games](/games/). Mortar finds them on Steam (the Flatpak Steam too), GOG, Epic, the EA app, the Xbox app, Heroic, Lutris and Bottles, or in a folder you choose.
 
 ## Coming from another mod manager?
 
-Imports profiles from r2modman, Gale, Vortex, Mod Organizer 2 and Stardrop.
+Mortar imports profiles from r2modman, Gale, Vortex, Mod Organizer 2 and Stardrop.
 
 WHY_LINKS
 
 ## Do I need Nexus Mods Premium?
 
-No. Free Nexus account: Mod Manager Download on the mod's page. Premium can also download from inside Mortar.
+No. With a free Nexus account you click Mod Manager Download on the mod's page. Premium can also download from inside Mortar.
 
 ## Does Mortar host mod files?
 
-No. Each mod downloads from its own page (Nexus, Thunderstore, CurseForge, Modrinth, GitHub, Vintage Story Mod DB). Exception: LAN send between your own computers.
+No. Each mod downloads from its own page on Nexus, Thunderstore, CurseForge, Modrinth, GitHub or the Vintage Story Mod DB. The one exception is a LAN send between your own computers.
 
 ## Does Mortar work on the Steam Deck?
 
-Yes. Desktop Mode: [AppImage](/download/#appimage), then a profile's Add to Steam for Game Mode. The Flatpak cannot add itself to Steam.
+Yes. Install the [AppImage](/download/#appimage) in Desktop Mode, then use a profile's Add to Steam to play it from Game Mode. The Flatpak cannot add itself to Steam.
 
 ## Windows says it protected my PC. Is that normal?
 
-Yes. Builds are not code-signed; SmartScreen warns once. More info → Run anyway.
+Yes. The builds are not code-signed, so SmartScreen warns once. Choose More info, then Run anyway.
 
 ## How do I know a download is genuine?
 
-GitHub Actions builds from public source. Repos, Flatpak and checksums are signed; Mortar checks a signature before installing an update. [Code signing](/code-signing/).
+GitHub Actions builds every release from the public source. The package repositories, the Flatpak and the checksums are signed, and Mortar checks a signature before it installs an update. More in [code signing](/code-signing/).
 
 ## What happened to Concrete?
 
-[Concrete](https://github.com/LethalModding/Concrete) is archived; Mortar is its successor.
+[Concrete](https://github.com/LethalModding/Concrete) is archived, and Mortar is its successor.
 
 ## Where do I report a bug?
 
-Report a Mortar bug in the app's help menu (attaches diagnostics), or a [GitHub issue](https://github.com/Rethunk-Tech/mortar/issues).
+Use Report a Mortar bug in the app's help menu, which attaches diagnostics, or open a [GitHub issue](https://github.com/Rethunk-Tech/mortar/issues).

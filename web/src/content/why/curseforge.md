@@ -19,4 +19,4 @@ The CurseForge app is Overwolf's client for the CurseForge catalog (Minecraft, W
 
 ## Moving from the CurseForge app
 
-For Stardew Valley and The Sims 4, **Import from the game's Mods folder** on Profiles. Mortar copies them into a profile and leaves the game folder unchanged.
+For Stardew Valley and The Sims 4, use **Import from the game's Mods folder** on Profiles. Mortar copies the mods into a profile and leaves the game folder unchanged.

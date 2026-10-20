@@ -20,4 +20,4 @@ Vortex is Nexus Mods' manager, with deep Bethesda tooling. Mortar works with Nex
 
 ## Moving from Vortex
 
-Profiles → **Import…**: Mortar lists Vortex profiles for the game, with a preview. Mods Vortex linked into the game folder are copied, not moved, so Vortex keeps working. A Nexus Collection link opens in Mortar like a shared profile.
+In Profiles, choose **Import…** and Mortar lists Vortex profiles for the game, with a preview. Mods Vortex linked into the game folder are copied, not moved, so Vortex keeps working. A Nexus Collection link opens in Mortar like a shared profile.
