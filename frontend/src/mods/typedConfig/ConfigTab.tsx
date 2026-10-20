@@ -43,6 +43,7 @@ import {
   selectionOf,
   useConfigList,
 } from './configList.ts'
+import { OtherFiles } from './OtherFiles.tsx'
 
 const LIST_WIDTH_PX = 300
 const MIN_SETTING_QUERY = 2
@@ -198,51 +199,6 @@ function WithoutConfig({ count }: { count: number }) {
         other: '# mods have no config yet; mods create it the first time the game runs.',
       })}
     </Typography>
-  )
-}
-
-// Shares the mod groups' collapse state under a key no group name can take.
-const OTHER_GROUP_KEY = '\u0000loader-and-other'
-
-function OtherFiles({
-  view,
-  other,
-  selection,
-  onChoose,
-}: {
-  view: GroupsView
-  other: { name: string; changed?: boolean }[]
-  selection: string | undefined
-  onChoose: (selection: string) => void
-}) {
-  const { t } = useLingui()
-  return (
-    <>
-      <GroupHeaderRow
-        groupKey={OTHER_GROUP_KEY}
-        count={other.length}
-        label={t`Loader and other`}
-        collapsed={view.collapsed}
-        gameId={view.gameId}
-        setCollapsed={view.setCollapsed}
-        groupBy="none"
-        tagHint=""
-        groups={[]}
-      />
-      {view.collapsed[OTHER_GROUP_KEY] === true
-        ? null
-        : other.map((f) => (
-            <ListItemButton
-              key={f.name}
-              selected={fileSelection(f.name) === selection}
-              onClick={() => onChoose(fileSelection(f.name))}
-              sx={{ minHeight: space.row }}
-            >
-              <ListItemText primary={f.name} slotProps={{ primary: { noWrap: true } }} />
-              {f.changed ? <Chip size="small" variant="outlined" label={t`Changed`} /> : null}
-            </ListItemButton>
-          ))}
-    </>
   )
 }
 
