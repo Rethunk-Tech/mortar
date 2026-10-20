@@ -19,7 +19,9 @@ function sources(dir: string): string[] {
 // other scheme. A direct Browser.OpenURL, window.open or a link the webview follows would let remote data pick the scheme.
 test('nothing opens an address except the opener service', () => {
   const offenders: string[] = []
-  for (const path of sources(join(import.meta.dir, '..'))) {
+  // The website demo (src/demo) is its own entry, never in the app's build, and opens only its fixed download page.
+  const demo = join(import.meta.dir, '..', 'demo')
+  for (const path of sources(join(import.meta.dir, '..')).filter((p) => !p.startsWith(demo))) {
     const text = readFileSync(path, 'utf8')
     if (OPENERS.test(text)) {
       offenders.push(path)
