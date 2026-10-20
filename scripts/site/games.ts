@@ -182,7 +182,7 @@ export function gamePage(g: Game, art: Record<string, SteamArt>, games: Game[]):
       </div>
       <h2>Start modding ${name}</h2>
       <ol class="steps">
-        <li><a href="/download/">Download Mortar</a> for Linux or Windows and open it.</li>
+        <li>Download Mortar for Linux or Windows and open it.</li>
         <li>${install}</li>
         <li>Open Browse, add the mods you want, and press Play. Each profile keeps its own mods and settings.</li>
       </ol>
