@@ -62,6 +62,13 @@ export function useModGroups(mods: Mod[], profile: Profile, fold = false) {
   )
   const gameId = useProfiles((s) => s.game?.id) ?? ''
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => loadCollapsed(gameId))
+  // Another game's groups load as the game changes, during render: an effect would first draw them for the old game,
+  // and on mount would set a fresh copy of the state just loaded.
+  const [collapsedFor, setCollapsedFor] = useState(gameId)
+  if (collapsedFor !== gameId) {
+    setCollapsedFor(gameId)
+    setCollapsed(loadCollapsed(gameId))
+  }
   const byId = useNexusDetails((s) => s.byId)
   const customCategories = useCustomCategories((s) => s.categories)
   const customById = useMemo(() => customCategoryById(customCategories), [customCategories])
@@ -71,9 +78,6 @@ export function useModGroups(mods: Mod[], profile: Profile, fold = false) {
   const problems = useMods((s) => s.problems)
   const updates = useUpdates((s) => s.updates)
   const nested = useSettings((s) => s.implicitModsView) === 'nested'
-  useEffect(() => {
-    setCollapsed(loadCollapsed(gameId))
-  }, [gameId])
   const nexusIds = mods
     .map((m) => nexusIdOf(profile, m))
     .filter((id) => id > 0)
