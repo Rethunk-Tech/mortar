@@ -2428,39 +2428,6 @@
       ]
     },
     {
-      "id": "wrestling-empire",
-      "name": "Wrestling Empire",
-      "enabled": true,
-      "marker": "Wrestling Empire.exe",
-      "r2modmanFolder": "WrestlingEmpire",
-      "metadata": [],
-      "deploy": "profile",
-      "targets": [
-        {
-          "id": "profile",
-          "root": "{profile}"
-        }
-      ],
-      "stores": {
-        "steam": {
-          "appId": "1620340"
-        }
-      },
-      "loaders": [
-        {
-          "id": "bepinex5",
-          "name": "BepInEx 5",
-          "companion": "bridge"
-        }
-      ],
-      "sources": [
-        {
-          "id": "thunderstore",
-          "key": "wrestling-empire"
-        }
-      ]
-    },
-    {
       "id": "yapyap",
       "name": "YAPYAP",
       "enabled": true,

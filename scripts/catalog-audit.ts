@@ -49,8 +49,20 @@ for (const g of games) {
 const { results } = await json<{ results: Community[] }>(`${API}/cyberstorm/community/`)
 const live = new Set(results.map((c) => c.identifier))
 
+// Communities whose own page sends modders elsewhere; they stay out of the catalog.
+const LEFT_OUT = new Set([
+  // Its Thunderstore page says mods moved to the Steam Workshop and those left there are out of date.
+  'wrestling-empire',
+])
+
 const missing = results
-  .filter((c) => c.is_listed && !keyed.has(c.identifier) && c.total_package_count >= MIN_PACKAGES)
+  .filter(
+    (c) =>
+      c.is_listed &&
+      !keyed.has(c.identifier) &&
+      !LEFT_OUT.has(c.identifier) &&
+      c.total_package_count >= MIN_PACKAGES,
+  )
   .toSorted((a, b) => b.total_package_count - a.total_package_count)
 console.log(
   `${missing.length} listed communities with ${MIN_PACKAGES}+ packages are not in the catalog:`,
@@ -96,7 +108,6 @@ const NEXUS_LEFT_OUT = new Set([
   'scrap-mechanic',
   'chrono-ark',
   'lethal-league-blaze',
-  'wrestling-empire',
   'gatekeeper',
   'in-falsus',
   'pac-man-world-re-pac',
