@@ -1,3 +1,6 @@
+import { readdirSync, readFileSync } from 'node:fs'
+import { basename, dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { CDPSession, Page, Request } from '@playwright/test'
 
 const QUIET_POLL_MS = 100
@@ -6,6 +9,34 @@ const TOP = Number(process.env.MORTAR_RENDER_TOP ?? '8')
 const LIBRARY =
   /^(Insertion|Styled\(|Mui|Box$|Typography$|ButtonBase$|anonymous$|TouchRipple|Ripple$|Popper|Portal$|Grow$|Fade$|Collapse$|Transition|SvgIcon$|Tooltip$|Modal$|Dialog$|Paper$|Button$|IconButton$|InputBase$|FormControl$|Chip$|Menu$|List|TableCell$|TableRow$)/
 const MIB = 1024 * 1024
+const BINDINGS = fileURLToPath(new URL('../bindings', import.meta.url))
+const BINDING_CALL = /export function (\w+)\([^)]*\)[^{]*\{\s*return \$Call\.ByID\((\d+)/g
+
+// A backend call names its method by a numeric id; the generated bindings say which service method each id is.
+function methodNames(): Map<number, string> {
+  const out = new Map<number, string>()
+  for (const file of readdirSync(BINDINGS, { recursive: true, encoding: 'utf8' })) {
+    if (!file.endsWith('service.ts')) {
+      continue
+    }
+    const service = basename(dirname(file))
+    for (const [, name, id] of readFileSync(join(BINDINGS, file), 'utf8').matchAll(BINDING_CALL)) {
+      out.set(Number(id), `${service}.${name}`)
+    }
+  }
+  return out
+}
+
+const METHODS = methodNames()
+
+function methodOf(body: string): string {
+  try {
+    const id = (JSON.parse(body) as { args?: { methodID?: number } }).args?.methodID
+    return id === undefined ? 'unknown' : (METHODS.get(id) ?? String(id))
+  } catch {
+    return 'unknown'
+  }
+}
 
 export interface Sample {
   commits: number
@@ -29,6 +60,8 @@ export interface Sample {
   listeners: number
   // Wall time from the action's start to its last React commit.
   settledMs: number
+  /** What started the cascades of that last commit. */
+  lastWhy: string[]
 }
 
 interface PageCounts {
@@ -42,6 +75,7 @@ interface PageCounts {
   longTasks: number
   longMs: number
   settledMs: number
+  lastWhy: string[]
 }
 
 type Metrics = Record<string, number>
@@ -70,7 +104,7 @@ export class Meter {
       if (new URL(r.url()).pathname.startsWith('/wails/')) {
         this.inflight += 1
         this.calls += 1
-        const what = (r.postData() ?? '').slice(0, 90)
+        const what = methodOf(r.postData() ?? '')
         this.named.set(what, (this.named.get(what) ?? 0) + 1)
       }
     })
@@ -120,6 +154,7 @@ export class Meter {
       longTasks: c.longTasks,
       longMs: Math.round(c.longMs),
       settledMs: Math.round(c.settledMs),
+      lastWhy: c.lastWhy,
       calls: this.calls,
       callsBy: [...this.named].sort((a, b) => b[1] - a[1]).slice(0, TOP),
       layouts: delta('LayoutCount'),

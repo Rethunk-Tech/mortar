@@ -324,6 +324,9 @@ function report(results: Result[]): string {
     lines.push(
       `${r.name.padEnd(18)}${pad(a.commits, 8)}${pad(a.mounts, 9)}${pad(a.updates, 9)}${pad(a.mutations, 8)}${pad(a.layouts, 7)}${pad(a.scriptMs, 8)}${pad(a.settledMs, 9)}${pad(a.longTasks, 6)}${pad(a.calls, 6)}${pad(a.heapMiB, 7)}${pad(a.nodes, 7)} | ${' '.repeat(10)}${pad(i.commits, 7)}${pad(i.updates, 8)}${pad(i.calls, 6)}${r.over.length > 0 ? `  OVER: ${r.over.join('; ')}` : ''}`,
     )
+    if (a.lastWhy.length > 0) {
+      lines.push(`${' '.repeat(18)}last commit at ${a.settledMs} ms: ${a.lastWhy.join(' | ')}`)
+    }
     const top = [...a.top, ...i.top.map(([n, v]) => [`idle ${n}`, v] as [string, number])]
     if (r.over.length > 0 && top.length > 0) {
       lines.push(
