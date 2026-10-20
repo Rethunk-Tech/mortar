@@ -678,3 +678,33 @@ func TestFolderGameMovesThePlayersModsFolderInWhereEachFileSat(t *testing.T) {
 		t.Fatalf("a move left %v in the game's folder", leftNames)
 	}
 }
+
+// A mod.io file holding a DLL is the game's own mod, not a BepInEx plugin: it goes to the placed mods target whole.
+func TestModioFileOnABepInExGameGoesToItsModsFolder(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("gladio-mori", "G")
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := zipOf(t, "m.zip", map[string]string{"GunioMori.dll": "d", "equipment": "e"})
+	res, err := e.InstallSource(t.Context(), "gladio-mori", p.ID, zip, Source{Kind: KindModio, Name: "42", FileID: 9, Version: "1.0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Profile.Entries) != 1 {
+		t.Fatalf("entries = %v", keysOf(res.Profile))
+	}
+	owners, err := e.PackageFileOwners("gladio-mori", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(owners) != 2 {
+		t.Fatalf("owners = %v", owners)
+	}
+	for f := range owners {
+		if !strings.HasPrefix(f, "GameMods/") || !strings.HasSuffix(f, "/GunioMori.dll") && !strings.HasSuffix(f, "/equipment") {
+			t.Fatalf("owners = %v", owners)
+		}
+	}
+}

@@ -352,8 +352,9 @@ type TargetDef struct {
 	// out a file with one installs as a single entry holding every file it laid out, since such files only work
 	// beside their siblings. An archive with none splits into one entry per file.
 	KeepWhole []string `json:"keepWhole,omitempty"`
-	// ModRoot is the file name that marks a mod's own folder in a folder-loader archive (Vintage Story's
-	// modinfo.json): the folder holding it is laid out whole as one folder below the target, and the archive is one
+	// ModRoot is the file name that marks a mod's own folder in an archive bound for a placed mods target (Vintage
+	// Story's modinfo.json), a case-insensitive path.Match pattern ("*.pak"; "*" makes every archive one folder): the
+	// folder holding the shallowest match is laid out whole as one folder below the target, and the archive is one
 	// entry. An archive without it is laid out as loose files.
 	ModRoot string `json:"modRoot,omitempty"`
 	// Role names a path role instead of a profile folder: the target's files are placed at install in that folder of

@@ -37,6 +37,9 @@ func installerGame(gameID string) installer.Game {
 	for _, t := range info.Targets {
 		g.Targets = append(g.Targets, installer.Target{ID: t.ID, Root: t.Root, MaxDepth: t.MaxDepth, KeepWhole: t.KeepWhole, ModRoot: t.ModRoot, Extensions: t.Extensions, Shared: t.Role != "", Role: t.Role, Sources: t.Sources})
 	}
+	_, hasMods := info.Paths[installer.TargetMods]
+	_, hasTarget := info.Target(installer.TargetMods)
+	g.Placed = hasMods && hasTarget
 	return g
 }
 
@@ -50,11 +53,16 @@ func (s *Store) pick(game, key string) (installer.Archive, installer.Game, insta
 	arch.Source, arch.Package, _, _ = s.items.Meta(game, key)
 	g := installerGame(game)
 	inst, _ := installer.Pick(arch, g)
+	src := arch.Source
+	// A mod.io file is the game's own content, never a loader plugin, so it goes to the placed mods target whatever
+	// its shape, unless the game gives mod.io a target of its own.
+	if src == KindModio && g.Placed && inst.ID() != installer.DriverSourceTarget {
+		inst, _ = installer.Get("plain")
+	}
 	if _, statErr := os.Stat(filepath.Join(root, "manifest.json")); inst.ID() == driverThunderstore && statErr == nil {
 		// The driver names files by package, Namespace-Name, which is not the store key. An archive from disk has only
 		// the manifest's name, which the driver reads itself. A BepInEx mod without a manifest keeps the store key.
-		var src string
-		src, arch.Key, _, _ = s.items.Meta(game, key)
+		arch.Key = arch.Package
 		// A GitHub item is described by owner/repo, which may hold a dash but is no package name.
 		if _, _, isTS := strings.Cut(arch.Key, "-"); !isTS || strings.Contains(arch.Key, "/") {
 			arch.Key = ""
@@ -176,7 +184,7 @@ func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool,
 	if err == nil && inst.ID() == installer.DriverSourceTarget {
 		return []Component{{ID: mod.NewID(mod.FormatFolder, key), Name: cmp.Or(title, key), Folder: "."}}, true, nil
 	}
-	if err == nil && inst.ID() == "plain" && slices.Contains(g.Loaders, folderLoader) {
+	if err == nil && inst.ID() == "plain" && g.Placed {
 		c := Component{ID: mod.NewID(mod.FormatFolder, key), Name: cmp.Or(title, key), Folder: "."}
 		if file, ok := installer.ModRootFile(arch, g); ok {
 			if b, rerr := fsx.ReadFile(filepath.Join(arch.Dir, filepath.FromSlash(file))); rerr == nil {
@@ -220,11 +228,11 @@ func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool,
 	return []Component{{ID: mod.NewID(mod.FormatThunderstore, id), Version: m.Version, Name: m.Name, Author: author, Folder: ".", Needs: needs}}, true, nil
 }
 
-// placesInSharedFolders reports an item that is laid out and placed as a folder game's is, whatever the game's loader:
-// its source has a target of its own in the game.
-func (s *Store) placesInSharedFolders(game, key string) bool {
-	_, _, inst, err := s.pick(game, key)
-	return err == nil && inst.ID() == installer.DriverSourceTarget
+// folderItem reports whether the store item key is laid out and placed as a folder game's mod is, whatever the game's
+// loader: as one folder mod in the game's placed mods target, or whole in a target its source has of its own.
+func (s *Store) folderItem(game, key string) bool {
+	_, g, inst, err := s.pick(game, key)
+	return err == nil && (inst.ID() == installer.DriverSourceTarget || g.Placed && inst.ID() == "plain")
 }
 
 // folderLoader is the id of the loader of a game whose mods are files in a folder the game reads (internal/loader/folder).
@@ -253,7 +261,7 @@ func pluginComponent(key, dir string) Component {
 // placePackageLocked adds a Thunderstore package to the profile, or swaps it in for another version of the same
 // package. Nothing is copied: the entry records the package, and the launch deploys its files.
 func (s *Store) placePackageLocked(game, id, key string, source Source, mods []Component) (Profile, bool, bool, error) {
-	if slices.Contains(installerGame(game).Loaders, folderLoader) || s.placesInSharedFolders(game, key) {
+	if s.folderItem(game, key) {
 		return s.placeFolderLocked(game, id, key, source, mods)
 	}
 	var updated, changed bool

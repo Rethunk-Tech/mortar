@@ -4,7 +4,7 @@ import "testing"
 
 func TestFolderGameLayoutRoutesTrayFilesAndKeepsTheDepthCap(t *testing.T) {
 	t.Parallel()
-	g := Game{Loaders: []string{"folder"}, Targets: []Target{
+	g := Game{Loaders: []string{"folder"}, Placed: true, Targets: []Target{
 		{ID: TargetMods, MaxDepth: map[string]int{"package": 2}},
 		{ID: "tray", Shared: true, Extensions: []string{"trayitem"}},
 	}}

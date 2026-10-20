@@ -74,6 +74,9 @@ func (g Game) IsShared(id string) bool {
 type Game struct {
 	Loaders []string
 	Targets []Target
+	// Placed means the mods target is placed into a mods folder the game reads at launch, as a folder game's always is
+	// and a BepInEx or MelonLoader game's is for content its loader does not take (mod.io's).
+	Placed bool
 	// Routes are the BepInEx install folders the catalog adds for the game (components.GameLoader.Routes).
 	Routes []components.LoaderRoute
 }
@@ -81,7 +84,7 @@ type Game struct {
 // Splits reports whether a folder-loader game takes the layout as one entry per file: the game reads the mods target
 // as loose files, and none of the layout's files in it is of a kind that only works beside its siblings.
 func (g Game) Splits(l Layout) bool {
-	if !slices.Contains(g.Loaders, "folder") {
+	if !g.Placed {
 		return false
 	}
 	ti := slices.IndexFunc(g.Targets, func(t Target) bool { return t.ID == TargetMods })
@@ -91,7 +94,7 @@ func (g Game) Splits(l Layout) bool {
 	keep, root := g.Targets[ti].KeepWhole, g.Targets[ti].ModRoot
 	return !slices.ContainsFunc(l.Files, func(f File) bool {
 		return f.Target == TargetMods && (slices.Contains(keep, strings.ToLower(strings.TrimPrefix(path.Ext(f.Rel), "."))) ||
-			root != "" && strings.EqualFold(path.Base(f.Rel), root))
+			root != "" && MatchesModRoot(path.Base(f.Rel), root))
 	})
 }
 
