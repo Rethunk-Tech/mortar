@@ -224,7 +224,7 @@ export function Appearance() {
         <FontPicker />
       </SettingsSection>
       <SettingsSection title={t`Background`}>
-        <SettingRow label={t`Background`} hideTitle={true}>
+        <SettingRow label={t`Window background`}>
           <PrefSegmented
             value={background}
             label={t`Background`}

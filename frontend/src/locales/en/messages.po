@@ -6632,7 +6632,6 @@ msgid "Where to share"
 msgstr "Where to share"
 
 #: src/settings/sections/Appearance.tsx:226
-#: src/settings/sections/Appearance.tsx:227
 #: src/settings/sections/Appearance.tsx:230
 msgid "Background"
 msgstr "Background"
@@ -12205,6 +12204,10 @@ msgstr "Sparkles"
 #: src/QuitPrompt.tsx:21
 msgid "Quit"
 msgstr "Quit"
+
+#: src/settings/sections/Appearance.tsx:227
+msgid "Window background"
+msgstr "Window background"
 
 #. placeholder {0}: different.length
 #: src/mods/GameModsReviewDialog.tsx:69
