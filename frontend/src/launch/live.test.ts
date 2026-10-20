@@ -20,13 +20,12 @@ const run = {
 
 test('a live report badges each package loaded or not, and a stopped game clears it', () => {
   applyLive(run)
-  expect(useLive.getState().scene).toBe('MainMenu')
   expect(useLive.getState().loaded).toEqual({
     'thunderstore:ns-fixture': true,
     'thunderstore:ns-broken': false,
   })
   clearLiveUnlessRunning(idle('stardew'))
-  expect(useLive.getState().scene).toBe('MainMenu')
+  expect(useLive.getState().game).toBe('lethal-company')
   clearLiveUnlessRunning(idle('lethal-company'))
-  expect(useLive.getState()).toEqual({ game: '', profile: '', scene: '', loaded: {} })
+  expect(useLive.getState()).toEqual({ game: '', profile: '', loaded: {} })
 })

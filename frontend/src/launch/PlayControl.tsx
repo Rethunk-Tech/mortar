@@ -16,7 +16,6 @@ import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { playDirect } from './directPref.ts'
-import { useLive } from './live.ts'
 import { PlayInstances } from './PlayInstances.tsx'
 import { PLAY_HEIGHT_PX } from './playHeight.ts'
 import { StopDialog } from './StopDialog.tsx'
@@ -84,7 +83,6 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
   const state = stateOf(status, game)
   const running = state === State.Running
   const time = useElapsed(status?.since ?? 0, running)
-  const scene = useLive((s) => (s.game === game ? s.scene : ''))
   // Fields, not the profiles: a save of the open profile re-renders this only when what it shows changed.
   const runningName = useProfiles((s) => s.profiles.find((p) => p.id === status?.profile)?.name)
   const presets = useOpenPresets()
@@ -122,15 +120,6 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
               >
                 {who === '' ? t`Running` : t`Running ${who}`}
               </Typography>
-              {scene ? (
-                <Typography
-                  noWrap={true}
-                  title={t`Current scene`}
-                  sx={{ fontSize: 13, color: 'var(--mortar-ink-soft)', minWidth: 0 }}
-                >
-                  {scene}
-                </Typography>
-              ) : null}
               <Typography
                 noWrap={true}
                 sx={{

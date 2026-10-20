@@ -10,13 +10,12 @@ import { sameValue } from '../shell/sameValue.ts'
 interface Live {
   game: string
   profile: string
-  scene: string
   // Whether each package that ships plugins has any of them loaded, by idKey of its mod id. The game's plugins are
   // a set, so this says nothing about load order.
   loaded: Record<string, boolean>
 }
 
-const EMPTY: Live = { game: '', profile: '', scene: '', loaded: {} }
+const EMPTY: Live = { game: '', profile: '', loaded: {} }
 
 export const useLive = create<Live>(() => EMPTY)
 
@@ -25,7 +24,7 @@ export function applyLive(run: LiveRun) {
   for (const m of run.mods ?? []) {
     loaded[idKey(m.id)] = m.loaded
   }
-  const next = { game: run.game, profile: run.profile, scene: run.scene, loaded }
+  const next = { game: run.game, profile: run.profile, loaded }
   if (!sameValue(useLive.getState(), next)) {
     useLive.setState(next)
   }

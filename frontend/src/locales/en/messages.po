@@ -9216,10 +9216,6 @@ msgstr "Collapse sidebar"
 msgid "Could not untrack"
 msgstr "Could not untrack"
 
-#: src/launch/PlayControl.tsx
-msgid "Current scene"
-msgstr "Current scene"
-
 #: src/console/LogActions.tsx
 msgid "Copy log"
 msgstr "Copy log"
