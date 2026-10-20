@@ -10723,7 +10723,10 @@
       "targets": [{ "id": "mods", "root": "{profile}/Mods", "modRoot": "manifest.json" }],
       "stores": { "steam": { "appId": "629730" } },
       "loaders": [{ "id": "folder" }],
-      "sources": [{ "id": "nexus", "key": "bladeandsorcery", "gameId": 2673 }]
+      "sources": [
+        { "id": "nexus", "key": "bladeandsorcery", "gameId": 2673 },
+        { "id": "modio", "key": "3852" }
+      ]
     },
     {
       "id": "monster-hunter-world",
@@ -10994,7 +10997,24 @@
       "targets": [{ "id": "mods", "root": "{profile}/Mods", "keepWhole": ["utoc"] }],
       "stores": { "steam": { "appId": "1643320" } },
       "loaders": [{ "id": "folder" }],
-      "sources": [{ "id": "nexus", "key": "stalker2heartofchornobyl", "gameId": 6944 }]
+      "sources": [
+        { "id": "nexus", "key": "stalker2heartofchornobyl", "gameId": 6944 },
+        { "id": "modio", "key": "5761" }
+      ]
+    },
+    {
+      "id": "core-keeper",
+      "name": "Core Keeper",
+      "enabled": true,
+      "minVersion": "0.3.10",
+      "marker": "CoreKeeper.exe",
+      "metadata": [],
+      "paths": { "mods": { "windows": "{install}/CoreKeeper_Data/StreamingAssets/Mods" } },
+      "deploy": "profile",
+      "targets": [{ "id": "mods", "root": "{profile}/Mods", "modRoot": "ModManifest.json" }],
+      "stores": { "steam": { "appId": "1621690" } },
+      "loaders": [{ "id": "folder" }],
+      "sources": [{ "id": "modio", "key": "5289" }]
     },
     {
       "id": "broforce",

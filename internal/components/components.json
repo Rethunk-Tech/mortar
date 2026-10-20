@@ -10804,6 +10804,10 @@
           "id": "nexus",
           "key": "bladeandsorcery",
           "gameId": 2673
+        },
+        {
+          "id": "modio",
+          "key": "3852"
         }
       ]
     },
@@ -11499,6 +11503,47 @@
           "id": "nexus",
           "key": "stalker2heartofchornobyl",
           "gameId": 6944
+        },
+        {
+          "id": "modio",
+          "key": "5761"
+        }
+      ]
+    },
+    {
+      "id": "core-keeper",
+      "name": "Core Keeper",
+      "enabled": true,
+      "minVersion": "0.3.10",
+      "marker": "CoreKeeper.exe",
+      "metadata": [],
+      "paths": {
+        "mods": {
+          "windows": "{install}/CoreKeeper_Data/StreamingAssets/Mods"
+        }
+      },
+      "deploy": "profile",
+      "targets": [
+        {
+          "id": "mods",
+          "root": "{profile}/Mods",
+          "modRoot": "ModManifest.json"
+        }
+      ],
+      "stores": {
+        "steam": {
+          "appId": "1621690"
+        }
+      },
+      "loaders": [
+        {
+          "id": "folder"
+        }
+      ],
+      "sources": [
+        {
+          "id": "modio",
+          "key": "5289"
         }
       ]
     },
