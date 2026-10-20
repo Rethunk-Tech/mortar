@@ -5,7 +5,7 @@ import { CloudOff, Search, SearchX } from 'lucide-react'
 import { memo, useLayoutEffect, useRef, useState } from 'react'
 import { arrowFocus } from '../shell/arrowFocus.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { unreachableNote } from '../shell/offlineText.ts'
+import { unreachableNote, unsortedNote } from '../shell/offlineText.ts'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { space } from '../theme/density.ts'
 import type { InlineError } from '../toasts/report.ts'
@@ -116,6 +116,7 @@ function ResultFooter({ result }: { result: BrowseResult }) {
       {plural(result.total, { one: '# result', other: '# results' })}
       {result.hidden ? ` · ${t`${result.hidden} hidden`}` : ''}
       {result.failed && result.failed.length > 0 ? ` · ${unreachableNote(result.failed)}` : ''}
+      {result.unsorted && result.unsorted.length > 0 ? ` · ${unsortedNote(result.unsorted)}` : ''}
     </Typography>
   )
 }

@@ -84,6 +84,9 @@ func facet(key string) string {
 	return "categories:" + key
 }
 
+// MaxPageSize is the search API's largest limit.
+func (Driver) MaxPageSize() int { return 100 }
+
 // Sorts are Modrinth's search indexes other than relevance; it has no name sort.
 func (Driver) Sorts() []string {
 	return []string{source.SortDownloads, source.SortEndorsements, source.SortUpdated, source.SortNewest}
@@ -146,8 +149,8 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	params.Set("query", q.Text)
 	params.Set("facets", string(raw))
 	params.Set("index", sortIndex(q.Sort))
-	params.Set("limit", strconv.Itoa(source.PageSize))
-	params.Set("offset", strconv.Itoa(max(q.Page-source.FirstPage, 0)*source.PageSize))
+	params.Set("limit", strconv.Itoa(q.Len()))
+	params.Set("offset", strconv.Itoa(max(q.Page-source.FirstPage, 0)*q.Len()))
 	var parsed searchResp
 	if err := d.get(ctx, "/search", params, q.Version, &parsed); err != nil {
 		return source.Page{}, err

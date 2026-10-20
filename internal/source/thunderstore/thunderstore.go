@@ -72,6 +72,9 @@ func score(p pkg, tokens []string) int {
 	return total
 }
 
+// MaxPageSize bounds a page of the cached listing, which costs no request at any size.
+func (Driver) MaxPageSize() int { return 100 }
+
 // Sorts are the orders of the cached full listing, so they cover every package, not one page.
 func (Driver) Sorts() []string {
 	return []string{source.SortDownloads, source.SortEndorsements, source.SortUpdated, source.SortNewest, source.SortName}
@@ -118,8 +121,8 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		}
 		return b.p.Downloads - a.p.Downloads
 	})
-	start := max(q.Page-source.FirstPage, 0) * source.PageSize
-	end := min(start+source.PageSize, len(hits))
+	start := max(q.Page-source.FirstPage, 0) * q.Len()
+	end := min(start+q.Len(), len(hits))
 	items := make([]source.Item, 0, max(end-start, 0))
 	for i := start; i < end; i++ {
 		items = append(items, d.item(hits[i].p))

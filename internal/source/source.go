@@ -75,6 +75,21 @@ type Query struct {
 	ExcludeCategories []string
 	// Sort is one of the Sort constants; empty keeps the source's own order.
 	Sort string
+	// Size is how many hits a page holds; 0 is PageSize. Only a Sizer is asked for more.
+	Size int
+}
+
+// Len is how many hits a page of q holds.
+func (q Query) Len() int {
+	if q.Size > 0 {
+		return q.Size
+	}
+	return PageSize
+}
+
+// Sizer is a source that serves pages larger than PageSize in one request, up to MaxPageSize hits.
+type Sizer interface {
+	MaxPageSize() int
 }
 
 // Sort orders a search; "" is best match. A source honours only the sorts its Sorter lists, in its own API, so a
@@ -162,8 +177,8 @@ type Alt struct {
 	Size         int64  `json:"size"`
 }
 
-// Page is one slice of search hits. A merged search across sources also sets Pages, the page count of its largest
-// source, and Failed, the names of sources that did not answer.
+// Page is one slice of search hits. A merged search across sources also sets Pages, its page count, and Failed, the
+// names of sources that did not answer.
 type Page struct {
 	Total int `json:"total"`
 	Pages int `json:"pages,omitempty"`
@@ -172,6 +187,8 @@ type Page struct {
 	Items  []Item `json:"items"`
 	// Failed are the ids of the sources that did not answer.
 	Failed []string `json:"failed,omitempty"`
+	// Unsorted are the ids of the sources a merged search left out because they cannot order by its sort.
+	Unsorted []string `json:"unsorted,omitempty"`
 }
 
 // Searcher is a source that can list mods matching text.

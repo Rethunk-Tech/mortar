@@ -213,3 +213,20 @@ func TestLatestAsksForBetasOnTheBetaChannel(t *testing.T) {
 		t.Fatalf("version types %v, err %v", types, err)
 	}
 }
+
+func TestSearchAsksForTheQuerysPageSize(t *testing.T) {
+	t.Parallel()
+	var got string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got = r.URL.Query().Get("limit") + "/" + r.URL.Query().Get("offset")
+		_, _ = w.Write([]byte(`{"total_hits":0,"hits":[]}`))
+	}))
+	t.Cleanup(srv.Close)
+	d := Driver{URL: srv.URL, HTTP: srv.Client()}
+	if _, err := d.Search(context.Background(), source.Query{Key: "fabric", Page: 2, Size: d.MaxPageSize()}); err != nil {
+		t.Fatal(err)
+	}
+	if got != "100/100" {
+		t.Fatalf("limit/offset %s", got)
+	}
+}

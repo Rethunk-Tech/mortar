@@ -73,6 +73,9 @@ type searchResp struct {
 	} `json:"data"`
 }
 
+// MaxPageSize is the most mods one GraphQL mods query returns: asking for more still answers 80.
+func (Driver) MaxPageSize() int { return 80 }
+
 // Search lists mods of the game, most endorsed first.
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	if q.Key == "" {
@@ -80,7 +83,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	}
 	base := cmp.Or(d.URL, nexus.BaseURL)
 	client := cmp.Or(d.HTTP, http.DefaultClient)
-	offset := (q.Page - source.FirstPage) * source.PageSize
+	offset := (q.Page - source.FirstPage) * q.Len()
 	// A JSON string is a valid GraphQL string, so no input can end the literal or inject a field.
 	key, err := json.Marshal(q.Key)
 	if err != nil {
@@ -134,7 +137,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	}
 	query := fmt.Sprintf(
 		`{ mods(filter:{%s}, sort:[{%s}], count: %d, offset: %d) { totalCount nodes { modId name summary author version endorsements downloads pictureUrl updatedAt adultContent fileSize modCategory { name } } } }`,
-		filter, sortClause(q.Sort), source.PageSize, offset,
+		filter, sortClause(q.Sort), q.Len(), offset,
 	)
 	var parsed searchResp
 	err = source.DoJSON(ctx, source.Request{

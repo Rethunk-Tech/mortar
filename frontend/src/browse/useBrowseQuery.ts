@@ -17,6 +17,7 @@ interface BrowseResult {
   items: BrowseItem[]
   pages?: number
   failed?: string[]
+  unsorted?: string[]
   hidden?: number
 }
 

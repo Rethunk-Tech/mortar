@@ -9,6 +9,7 @@ interface BrowsePageResult {
   // A search across every source sets pages (its largest source's page count) and names sources that did not answer.
   pages?: number
   failed?: string[]
+  unsorted?: string[]
   hidden?: number
 }
 

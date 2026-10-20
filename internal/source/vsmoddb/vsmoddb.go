@@ -72,6 +72,9 @@ func (d Driver) get(ctx context.Context, path string, params url.Values, out any
 	}, out)
 }
 
+// MaxPageSize is a page of the listing; the API takes any limit.
+func (Driver) MaxPageSize() int { return 100 }
+
 // Sorts are the Mod DB's orders other than its own; it has no name order.
 func (Driver) Sorts() []string {
 	return []string{source.SortDownloads, source.SortEndorsements, source.SortUpdated, source.SortNewest}
@@ -128,7 +131,7 @@ func pageURL(alias string, assetID int) string {
 // read a count if the API ever gives one.
 func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error) {
 	page := max(q.Page-source.FirstPage, 0) + 1
-	params := url.Values{"limit": {strconv.Itoa(page * source.PageSize)}}
+	params := url.Values{"limit": {strconv.Itoa(page * q.Len())}}
 	if q.Text != "" {
 		params.Set("text", q.Text)
 	}
@@ -160,10 +163,10 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 		return source.Page{}, err
 	}
 	total := len(parsed.Mods)
-	if total == page*source.PageSize {
+	if total == page*q.Len() {
 		total++
 	}
-	start := min((page-1)*source.PageSize, len(parsed.Mods))
+	start := min((page-1)*q.Len(), len(parsed.Mods))
 	out := source.Page{Total: total, Items: []source.Item{}}
 	for _, m := range parsed.Mods[start:] {
 		if !source.CategoryMatch(m.Tags, nil, q.ExcludeCategories) {

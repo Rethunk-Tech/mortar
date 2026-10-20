@@ -18,6 +18,11 @@ function unreachableNote(ids: readonly string[]): string {
   return i18n._(msg`${sourceNames(ids)} can't be reached`)
 }
 
+// A merged search sorted by something these sources cannot sort by leaves them out; choosing one as the source lists it.
+function unsortedNote(ids: readonly string[]): string {
+  return i18n._(msg`${sourceNames(ids)} can't sort this way: pick it as the source to see its mods`)
+}
+
 // The sentence for the banner and for the tooltip of each action it disables: every source that is down, each with
 // the time of the data Mortar is showing for it, or that it has nothing saved yet.
 function offlineMessage(unsorted: State[], locale: string): string {
@@ -106,6 +111,7 @@ function updateSources(update: { source: string; nexusId: number }): string[] {
 export {
   offlineMessage,
   unreachableNote,
+  unsortedNote,
   updateSources,
   updatesOfflineReason,
   updatesReasonOf,

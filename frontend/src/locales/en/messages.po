@@ -14498,6 +14498,11 @@ msgstr "Broken or outdated mods"
 msgid "Could not check for mod updates"
 msgstr "Could not check for mod updates"
 
+#. placeholder {0}: sourceNames(ids)
+#: src/shell/offlineText.ts
+msgid "{0} can't sort this way: pick it as the source to see its mods"
+msgstr "{0} can't sort this way: pick it as the source to see its mods"
+
 #. placeholder {0}: res.imported
 #. placeholder {0}: result.imported
 #: src/mods/GameModsReviewDialog.tsx

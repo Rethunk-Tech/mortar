@@ -138,3 +138,21 @@ func TestSearchTellsABusySiteFromARefusedRequest(t *testing.T) {
 		t.Fatalf("a refused request: %v", err)
 	}
 }
+
+func TestSearchAsksForTheQuerysPageSize(t *testing.T) {
+	t.Parallel()
+	var gotBody string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw, _ := io.ReadAll(r.Body)
+		gotBody = string(raw)
+		_, _ = w.Write([]byte(`{"data":{"mods":{"totalCount":0,"nodes":[]}}}`))
+	}))
+	t.Cleanup(srv.Close)
+	d := Driver{URL: srv.URL}
+	if _, err := d.Search(context.Background(), source.Query{Key: "stardewvalley", Page: 2, Size: d.MaxPageSize()}); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(gotBody, "count: 80, offset: 80") {
+		t.Fatalf("body %s", gotBody)
+	}
+}

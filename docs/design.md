@@ -18,33 +18,6 @@ Decided work, short enough to build cold. Delete an item in the change that land
 - generated facts: loader, sites, stores, and top mods from the sources' APIs, cached in a data file under `web/src/data/` that `bun run site:refresh` writes;
 - an optional hand-written note per game.
 
-### All sources sorted as one list (for the maintainer's review)
-
-**Why:** a sorted All sources page is one page of every source laid side by side. `searchAll` (`internal/browse/browse.go:120`) asks each source for the same page number, `interleave` (`:186`) zips the answers, and `sortMerged` (`internal/browse/sort.go:16`) only orders that one page. So each source's weakest hits on its page 1 sit above another source's page 2. GitHub makes it worse: it cannot sort by downloads (`internal/source/github/github.go:100`), so a downloads sort sends it as best match, and its page 1 lands on every merged page 1.
-
-**Decided shape:**
-
-- **Merge, then page.** For a sort in `MergedSorts`, merged page N is items N×20−19 to N×20 of one k-way merge over every source's hits in that source's own sorted order. Each source already returns pages sorted by the key in its API, so the merge is exact.
-- **Fetch ahead.** Before placing a hit, any source whose last fetched hit could still outrank it, and that has more pages, fetches its next page first. Page N costs each source at most N+1 pages, and those come through `searchCached`, so paging back costs nothing.
-- **A cursor per query:** each source's fetched hits and its next page, kept in the browse `Client` in memory and keyed by game, text, filter and sort. It is dropped after `topTTL` or when the query changes. That fits one desktop user; a shared server would need a cap per session.
-- **A source that cannot sort by the key** (GitHub under downloads) leaves the merged list for that sort. The page names it with a link to that source's own list, rather than mixing unordered hits into an ordered one.
-- **Best match stays interleaved:** relevance scores do not compare across sites.
-- **`mergeSame` runs over the merged window before slicing,** so a card takes its best member's place, and folding cross-source duplicates never leaves a short page.
-- **Counts:** `Total` is the sum of the sources' totals, and `Pages` is that sum divided by 20, instead of the largest source's page count (`browse.go:154`). `pagedTotal` (`frontend/src/browse/useBrowseQuery.ts:34`) then needs no change.
-
-**Traps:**
-
-- The exact merge holds only while each source's downloads sort orders by the same number Mortar shows. That holds today for Nexus (`nexus.go:181`), CurseForge (`curseforge.go:564`), Thunderstore (`thunderstore.go:105`), Modrinth and VS ModDB. A sort test per source should pin it, so a source whose API order drifts from its numbers is caught and left out like GitHub.
-- A source that fails on a later page keeps the hits already fetched, and is named in `Failed`.
-- Category include filters already drop sources without categories (`browse.go:122`); the cursor key must include the filter.
-- Hidden hits are dropped before merging, so `Hidden` counts the window, not one page.
-- Nexus caps deep offsets: cap merged paging at the shallowest source's limit and say so.
-
-**Done when:**
-
-1. A unit test with fake sources passes. Merged page 1 is the top 20 by downloads across sources, a weaker source contributes nothing to it, fetch-ahead stops at N+1 pages per source, an unsortable source is left out and named, and a source failing on page 3 keeps its first two pages.
-2. In the sandbox, Lethal Company All sources sorted by downloads has nothing on page 1 with fewer downloads than anything on page 2, no GitHub hit, and the note naming GitHub.
-
 ### The Sims 4 before a release carries it
 
 - **Verify** on a real install and record in [sims4.md](sims4.md): the `Options.ini` section header and whether key names match case-insensitively, a localized Documents folder name ("Die Sims 4"), a DX9 or legacy executable, the stock `Resource.cfg` text, EA's statement of the `.ts4script` depth limit, and `gameProcesses`.

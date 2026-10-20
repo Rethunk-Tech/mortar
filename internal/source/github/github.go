@@ -95,6 +95,9 @@ func (d *Driver) remember(key string, page source.Page) {
 	d.cache[key] = cacheEntry{page: page, until: now.Add(cacheTTL)}
 }
 
+// MaxPageSize is the search API's largest per_page.
+func (*Driver) MaxPageSize() int { return 100 }
+
 // Sorts are the sorts the repository search honours. It has no download count (a repository's downloads are
 // release-asset counts that need a request per repository), no name sort and none by creation date.
 func (*Driver) Sorts() []string {
@@ -137,7 +140,7 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 	if by := sortParam(q.Sort, q.Text); by != "" {
 		params.Set("sort", by)
 	}
-	params.Set("per_page", strconv.Itoa(source.PageSize))
+	params.Set("per_page", strconv.Itoa(q.Len()))
 	params.Set("page", strconv.Itoa(q.Page))
 	ctx, cancel := context.WithTimeout(ctx, source.RequestTimeout)
 	defer cancel()

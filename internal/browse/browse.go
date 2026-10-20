@@ -114,9 +114,10 @@ func (c *Client) Search(ctx context.Context, game, sourceID, text string, page i
 	return c.search(ctx, info, sourceID, text, page, f)
 }
 
-// searchAll asks every searchable source for the same page at once and interleaves the answers, so each source keeps
-// its own ranking and none crowds out the rest. Sources that fail, and parts of a source that did not answer, are named in Failed; only when all fail is it an
-// error.
+// searchAll serves one page across every searchable source. Sorted by one of MergedSorts it is one ranked list
+// (searchRanked); by best match, whose scores do not compare across sites, it asks each source for the same page and
+// interleaves the answers, so each keeps its own ranking. Sources that fail, and parts of a source that did not answer,
+// are named in Failed; only when all fail is it an error.
 func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text string, page int, f Filter) (Page, error) {
 	sources := slices.DeleteFunc(source.Searchable(info), func(s source.Source) bool { return source.Unavailable(s) != "" })
 	if len(f.Include) > 0 {
@@ -128,6 +129,11 @@ func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text s
 	}
 	if len(sources) == 0 {
 		return Page{}, fmt.Errorf("%w: %s has no searchable source", ErrUnknownSource, info.ID)
+	}
+	if slices.Contains(MergedSorts, f.Sort) && slices.ContainsFunc(sources, func(s source.Source) bool {
+		return slices.Contains(source.SortsOf(s), f.Sort)
+	}) {
+		return c.searchRanked(ctx, info, sources, text, page, f)
 	}
 	pages := make([]Page, len(sources))
 	errs := make([]error, len(sources))
@@ -161,7 +167,6 @@ func (c *Client) searchAll(ctx context.Context, info components.GameInfo, text s
 		ids[i] = s.ID()
 	}
 	items := interleave(answered)
-	sortMerged(items, f.Sort)
 	merged.Items = mergeSame(items, ranked(c.Prefer, ids), c.identity(ctx), aliasesOf(components.Authors()))
 	return merged, nil
 }

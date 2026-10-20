@@ -39,6 +39,7 @@ const search: BrowseSearch = async ({
     pages: result.pages ?? 0,
     hidden: result.hidden ?? 0,
     failed: result.failed ?? [],
+    unsorted: result.unsorted ?? [],
   }
 }
 
