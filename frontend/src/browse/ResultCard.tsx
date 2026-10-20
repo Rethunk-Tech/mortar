@@ -9,6 +9,7 @@ import { FavouriteStar } from '../mods/FavouriteStar.tsx'
 import { favouriteKey } from '../mods/favourites.ts'
 import { MIDDLE, opensPage } from '../mods/pageClick.ts'
 import { useSettings } from '../settings/store.ts'
+import { Tooltip } from '../shell/Tooltip.tsx'
 import { BUTTON_RADIUS_PX, BUTTON_SMALL_HEIGHT } from '../theme/theme.ts'
 import { GRAY_OPACITY, PICTURE_PX, ROW_PICTURE_PX } from './browseConstants.ts'
 import type { BrowseModes } from './browseModes.ts'
@@ -24,17 +25,29 @@ const MARK_SHARE = 0.3
 const MARK_MIN_PX = 12
 const MARK_MAX_PX = 16
 
+const markSx = {
+  display: 'grid',
+  placeItems: 'center',
+  p: '1px',
+  borderRadius: '4px',
+  bgcolor: 'var(--mortar-raised)',
+  border: '1px solid var(--mortar-hairline)',
+} as const
+
 // A mod's picture, with the mark of the site Add installs from in its corner, so every card says where it comes from.
+// A mod on several sites stacks one mark per site there instead, and a click picks the site Add installs from.
 function CardPicture({
   picture,
   size,
   dim,
   source,
+  pick,
 }: {
   picture: string
   size: number
   dim: number
   source?: { id: string; name: string }
+  pick?: { sources: string[]; names: Map<string, string>; onPick: (source: string) => void }
 }) {
   const sx = { width: size, height: size, flexShrink: 0, borderRadius: '4px', opacity: dim }
   const [failed, setFailed] = useState(false)
@@ -55,25 +68,41 @@ function CardPicture({
     return image
   }
   const mark = Math.min(MARK_MAX_PX, Math.max(MARK_MIN_PX, Math.round(size * MARK_SHARE)))
+  const corner = { position: 'absolute', top: 2, right: 2 } as const
+  if (pick && pick.sources.length > 1) {
+    return (
+      <Box sx={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
+        {image}
+        <Box sx={{ ...corner, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          {pick.sources.map((id) => {
+            const name = pick.names.get(id) ?? id
+            const chosen = id === source.id
+            return (
+              <Tooltip key={id} title={name}>
+                <ButtonBase
+                  aria-label={name}
+                  aria-pressed={chosen}
+                  onClick={() => pick.onPick(id)}
+                  sx={{
+                    ...markSx,
+                    opacity: chosen ? 1 : 0.6,
+                    borderColor: chosen ? 'var(--mortar-ink-dim-60)' : 'var(--mortar-hairline)',
+                    '&:hover': { opacity: 1 },
+                  }}
+                >
+                  {hasSourceLogo(id) ? <SourceLogo id={id} size={mark} /> : name.slice(0, 1)}
+                </ButtonBase>
+              </Tooltip>
+            )
+          })}
+        </Box>
+      </Box>
+    )
+  }
   return (
     <Box sx={{ position: 'relative', flexShrink: 0, display: 'flex' }}>
       {image}
-      <Box
-        role="img"
-        aria-label={source.name}
-        title={source.name}
-        sx={{
-          position: 'absolute',
-          top: 2,
-          right: 2,
-          display: 'grid',
-          placeItems: 'center',
-          p: '1px',
-          borderRadius: '4px',
-          bgcolor: 'var(--mortar-raised)',
-          border: '1px solid var(--mortar-hairline)',
-        }}
-      >
+      <Box role="img" aria-label={source.name} title={source.name} sx={{ ...corner, ...markSx }}>
         <SourceLogo id={source.id} size={mark} />
       </Box>
     </Box>
@@ -162,6 +191,31 @@ function CardTitle(props: { name: string; flag: 'error' | 'warning' | null; onOp
 const onControl = (e: MouseEvent<HTMLElement>) =>
   e.target instanceof Element && e.target.closest('button, a, [role="button"]') !== null
 
+// Each stat stays whole and the line wraps between them on a narrow card.
+function StatsLine({ stats }: { stats: string[] }) {
+  if (stats.length === 0) {
+    return null
+  }
+  return (
+    <Typography
+      sx={{
+        fontSize: 12,
+        color: 'var(--mortar-ink-dim-60)',
+        fontVariantNumeric: 'tabular-nums',
+        display: 'flex',
+        flexWrap: 'wrap',
+        columnGap: 0.75,
+      }}
+    >
+      {stats.map((s, i) => (
+        <Box component="span" key={s} sx={{ whiteSpace: 'nowrap' }}>
+          {i === 0 ? s : `· ${s}`}
+        </Box>
+      ))}
+    </Typography>
+  )
+}
+
 const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
   const { row, item, modes, sourceNames } = props
   const { name, summary, author } = item
@@ -234,7 +288,13 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
             ...underPictureSx,
           }}
         >
-          <CardPicture picture={item.picture} size={PICTURE_PX} dim={dim} source={mark} />
+          <CardPicture
+            picture={item.picture}
+            size={PICTURE_PX}
+            dim={dim}
+            source={mark}
+            pick={{ sources, names: sourceNames, onPick: setPicked }}
+          />
           {action}
         </Box>
       )}
@@ -277,26 +337,10 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
         >
           {summary}
         </Typography>
-        {stats.length === 0 ? null : (
-          // Each stat stays whole and the line wraps between them on a narrow card.
-          <Typography
-            sx={{
-              fontSize: 12,
-              color: 'var(--mortar-ink-dim-60)',
-              fontVariantNumeric: 'tabular-nums',
-              display: 'flex',
-              flexWrap: 'wrap',
-              columnGap: 0.75,
-            }}
-          >
-            {stats.map((s, i) => (
-              <Box component="span" key={s} sx={{ whiteSpace: 'nowrap' }}>
-                {i === 0 ? s : `· ${s}`}
-              </Box>
-            ))}
-          </Typography>
-        )}
-        <SourceBadges sources={sources} picked={source} names={sourceNames} onPick={setPicked} />
+        <StatsLine stats={stats} />
+        {row ? (
+          <SourceBadges sources={sources} picked={source} names={sourceNames} onPick={setPicked} />
+        ) : null}
       </Box>
       {row ? action : null}
     </Card>
