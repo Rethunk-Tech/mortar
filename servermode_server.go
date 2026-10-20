@@ -52,7 +52,7 @@ func forwardLaunch(dataDir string, args []string) bool {
 	if len(args) == 0 {
 		return false
 	}
-	if _, running := controlwire.Live(dataDir); !running {
+	if _, running := controlwire.Live(context.Background(), dataDir); !running {
 		return false
 	}
 	for _, arg := range args {
