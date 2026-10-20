@@ -40,7 +40,8 @@ func Scheduled(ctx context.Context, l saves.Layout, backupsDir, profile string, 
 				errs = append(errs, err)
 				continue
 			}
-			if !changed.After(last) {
+			// A backup's stamp keeps milliseconds; a save written in the same millisecond is the one it holds.
+			if !changed.Truncate(time.Millisecond).After(last) {
 				run.Unchanged++
 				continue
 			}
