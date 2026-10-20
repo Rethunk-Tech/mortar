@@ -25,7 +25,7 @@ import { LoadErrorRow, LoadingRow } from '../shell/LoadingRow.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { reportError } from '../toasts/report.ts'
 import { gameArt } from './art.ts'
-import { type GameMenuAt, GameRowMenu, gameMenuAt } from './GameRowMenu.tsx'
+import { GameRowMenu } from './GameRowMenu.tsx'
 import { GroupHeading } from './GroupHeading.tsx'
 import {
   type Item,
@@ -34,6 +34,7 @@ import {
   useSections,
   useTypeToScroll,
 } from './gameList.ts'
+import { type GameMenuAt, gameMenuAt } from './gameMenuAt.ts'
 import { LetterRail } from './LetterRail.tsx'
 import { ListFooter } from './ListFooter.tsx'
 import { initialOf } from './order.ts'

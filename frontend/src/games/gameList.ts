@@ -15,7 +15,7 @@ export type Item =
   | { kind: 'heading'; key: string; id: string; label: string; count: number; collapsed: boolean }
   | { kind: 'game'; key: string; game: Game }
 
-export function listItems(
+function listItems(
   groups: { id: string; label: string; games: Game[] }[],
   collapsed: ReadonlySet<string>,
 ): Item[] {
