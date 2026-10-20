@@ -63,7 +63,10 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 					}
 					id = ids[0]
 				}
-				out := []folderwatch.Target{{Event: folderwatch.ExtraFolderEvent, Game: id, Dir: cur.GamePrefs(id).ExtraModsFolder}}
+				var out []folderwatch.Target
+				for _, dir := range cur.GamePrefs(id).ExtraModsFolderList() {
+					out = append(out, folderwatch.Target{Event: folderwatch.ExtraFolderEvent, Game: id, Dir: dir})
+				}
 				for _, dir := range downloadDirs(store, dataDir) {
 					out = append(out, folderwatch.Target{Event: folderwatch.DownloadsEvent, Game: id, Dir: dir})
 				}

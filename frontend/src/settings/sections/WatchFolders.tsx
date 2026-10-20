@@ -8,8 +8,8 @@ import { SettingRow } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 
 // Joins the folders the way the settings store them: one path-list string, ';' on Windows and ':' elsewhere.
-const separator = navigator.userAgent.includes('Windows') ? ';' : ':'
-const split = (value: string) => (value === '' ? [] : value.split(separator))
+export const separator = navigator.userAgent.includes('Windows') ? ';' : ':'
+export const split = (value: string) => (value === '' ? [] : value.split(separator))
 
 type Mode = 'offer' | 'auto'
 const KEYS: Record<Mode, string> = { offer: 'watchFolders', auto: 'autoInstallFolders' }

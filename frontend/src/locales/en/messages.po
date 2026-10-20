@@ -342,6 +342,10 @@ msgstr "Copy message {0}"
 msgid "{name} broke in {brokeIn}."
 msgstr "{name} broke in {brokeIn}."
 
+#: src/mods/ExtraFolderDialog.tsx
+msgid "No mods in the extra mods folders"
+msgstr "No mods in the extra mods folders"
+
 #: src/game/HomeNotes.tsx
 msgid "Edit notes"
 msgstr "Edit notes"
@@ -995,6 +999,10 @@ msgstr "This profile"
 #: src/mods/problemText.ts
 msgid "Game version not supported"
 msgstr "Game version not supported"
+
+#: src/mods/ExtraFolderDialog.tsx
+msgid "Reading the extra mods folders…"
+msgstr "Reading the extra mods folders…"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Add a desktop shortcut"
@@ -3464,6 +3472,11 @@ msgstr "Attach diagnostics (a zip of checks, logs and settings with secrets and 
 msgid "Paused {0}%"
 msgstr "Paused {0}%"
 
+#: src/settings/prefCopy.ts
+#: src/settings/sections/ExtraModsFolders.tsx
+msgid "Extra mods folders"
+msgstr "Extra mods folders"
+
 #: src/console/PerformancePanelParts.tsx
 msgid "Show report"
 msgstr "Show report"
@@ -3522,7 +3535,6 @@ msgstr "Search all runs…"
 #: src/install/NeedsRootCallout.tsx
 #: src/profiles/PackFolderPrompt.tsx
 #: src/profiles/VortexFolderPrompt.tsx
-#: src/settings/sections/GameSettings.tsx
 #: src/tools/ToolEditorDialog.tsx
 msgid "Choose folder…"
 msgstr "Choose folder…"
@@ -4438,6 +4450,10 @@ msgstr "The game started without errors"
 msgid "Hidden"
 msgstr "Hidden"
 
+#: src/mods/ExtraFolderDialog.tsx
+msgid "Change folders"
+msgstr "Change folders"
+
 #: src/nxm/store.ts
 msgid "Mortar · Install {name}?"
 msgstr "Mortar · Install {name}?"
@@ -5018,6 +5034,11 @@ msgstr "Focus the next mod"
 msgid "Mortar uses your gh login for GitHub requests, which raises the rate limit."
 msgstr "Mortar uses your gh login for GitHub requests, which raises the rate limit."
 
+#: src/settings/prefCopy.ts
+#: src/settings/sections/ExtraModsFolders.tsx
+msgid "Folders of unpacked mods to add from the Add menu"
+msgstr "Folders of unpacked mods to add from the Add menu"
+
 #. placeholder {0}: item.repo
 #. placeholder {1}: item.tag
 #: src/queue/QueueBody.tsx
@@ -5054,8 +5075,7 @@ msgstr "Last run: {summary}"
 msgid "Offer new downloads"
 msgstr "Offer new downloads"
 
-#: src/settings/prefCopy.ts
-#: src/settings/sections/GameSettings.tsx
+#: src/settings/sections/ExtraModsFolders.tsx
 msgid "Extra mods folder"
 msgstr "Extra mods folder"
 
@@ -5358,6 +5378,7 @@ msgstr "Mortar did not install this folder. It moves to Mortar's trash."
 #: src/settings/ProtonRow.tsx
 #: src/settings/sections/Appearance.tsx
 #: src/settings/sections/Downloads.tsx
+#: src/settings/sections/ExtraModsFolders.tsx
 #: src/settings/sections/GameSettings.tsx
 #: src/settings/sections/General.tsx
 #: src/settings/sections/HiddenMods.tsx
@@ -7624,10 +7645,6 @@ msgstr "Click the game's name in the title bar to open the game menu and jump to
 msgid "Edited the settings of {name}"
 msgstr "Edited the settings of {name}"
 
-#: src/settings/prefCopy.ts
-msgid "A folder of unpacked mods to add from the Add menu"
-msgstr "A folder of unpacked mods to add from the Add menu"
-
 #. placeholder {0}: plural(mods.length, { one: '# tracked mod on Nexus is not in this profile', other: '# tracked mods on Nexus are not in this profile', })
 #: src/mods/TrackedNotInProfile.tsx
 msgid "{0}"
@@ -7703,10 +7720,6 @@ msgstr "Levels"
 #: src/console/useStartupReports.ts
 msgid "Could not cancel the measured launch"
 msgstr "Could not cancel the measured launch"
-
-#: src/mods/ExtraFolderDialog.tsx
-msgid "Reading {folder}…"
-msgstr "Reading {folder}…"
 
 #. placeholder {0}: d.name
 #: src/mods/describe.ts
@@ -8030,6 +8043,10 @@ msgstr "Could not remove the shortcut"
 #: src/settings/prefCopy.ts
 msgid "Pick up where you left off."
 msgstr "Pick up where you left off."
+
+#: src/mods/ExtraFolderMenu.tsx
+msgid "The extra mods folders…"
+msgstr "The extra mods folders…"
 
 #: src/install/DownloadsDialog.tsx
 msgid "Every archive in the downloads folder is already in a profile or Mortar's store."
@@ -8682,7 +8699,6 @@ msgid "Where the time goes"
 msgstr "Where the time goes"
 
 #: src/install/DownloadsDialog.tsx
-#: src/mods/ExtraFolderDialog.tsx
 msgid "Change folder"
 msgstr "Change folder"
 
@@ -8889,6 +8905,7 @@ msgid "Contents of {name}"
 msgstr "Contents of {name}"
 
 #: src/launchers/LauncherList.tsx
+#: src/settings/sections/ExtraModsFolders.tsx
 #: src/settings/sections/WatchFolders.tsx
 msgid "Add folder…"
 msgstr "Add folder…"
@@ -12121,10 +12138,6 @@ msgstr "Ask before removing mods from a profile"
 msgid "This start was {by} slower than the one before."
 msgstr "This start was {by} slower than the one before."
 
-#: src/mods/ExtraFolderMenu.tsx
-msgid "The extra mods folder…"
-msgstr "The extra mods folder…"
-
 #: src/profiles/historyLabel.ts
 msgid "Set {detail} of {name} for the next start"
 msgstr "Set {detail} of {name} for the next start"
@@ -12210,6 +12223,7 @@ msgstr "Got a Mortar link? You see what it holds first. Nexus mods need your Nex
 #: src/mods/problemFix/LoadFailureFix.tsx
 #: src/mods/SelectionBarActions.tsx
 #: src/mods/SelectionBarDialogs.tsx
+#: src/settings/sections/ExtraModsFolders.tsx
 #: src/settings/sections/WatchFolders.tsx
 #: src/tools/ToolsManageDialog.tsx
 msgid "Remove"
@@ -12400,10 +12414,6 @@ msgstr "Save"
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "Extra launch arguments for this profile. Mortar already adds the ones the mod loader needs."
 msgstr "Extra launch arguments for this profile. Mortar already adds the ones the mod loader needs."
-
-#: src/mods/ExtraFolderDialog.tsx
-msgid "No mods in {folder}"
-msgstr "No mods in {folder}"
 
 #: src/install/DownloadsDialog.tsx
 #: src/mods/DuplicateDialog.tsx
@@ -14173,7 +14183,6 @@ msgid "Enable them too"
 msgstr "Enable them too"
 
 #: src/console/LogActions.tsx
-#: src/settings/sections/GameSettings.tsx
 #: src/toasts/HistoryButton.tsx
 msgid "Clear"
 msgstr "Clear"

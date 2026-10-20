@@ -12,8 +12,8 @@ import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { ExtraFolderDialog } from './ExtraFolderDialog.tsx'
 
-// The chevron of the Add split button: archives from the downloads folder or the game's extra mods folder (when
-// one is set), and whole sets of mods (a template, a saved group). The archive pick is the button beside it, so the menu
+// The chevron of the Add split button: archives from the downloads folder or the game's extra mods folders (when
+// any is set), and whole sets of mods (a template, a saved group). The archive pick is the button beside it, so the menu
 // does not repeat it.
 export function ExtraFolderMenu({
   folder,
@@ -66,7 +66,7 @@ export function ExtraFolderMenu({
         {folder === '' ? null : (
           <MenuAction
             icon={<FolderOpen size={16} aria-hidden={true} />}
-            label={t`The extra mods folder…`}
+            label={t`The extra mods folders…`}
             onClick={() => {
               setAnchor(null)
               setOpen(true)
@@ -97,7 +97,7 @@ export function ExtraFolderMenu({
           onApplied={(result) => savedGroupApplied(result, profileId)}
         />
       ) : null}
-      <ExtraFolderDialog open={open} game={game} folder={folder} onClose={() => setOpen(false)} />
+      <ExtraFolderDialog open={open} game={game} onClose={() => setOpen(false)} />
     </>
   )
 }

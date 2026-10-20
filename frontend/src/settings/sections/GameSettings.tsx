@@ -13,7 +13,6 @@ import {
 import { OpenSteamValidate } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import {
   ChooseGameFolder,
-  SetByKey,
   SetGameFolder,
   SetGameStore,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
@@ -27,7 +26,7 @@ import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError, reportError, toastError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
 import { PrefByKey, PrefKeys } from '../PrefRow.tsx'
-import { persist, pickFolderSetting } from '../persist.ts'
+import { pickFolderSetting } from '../persist.ts'
 import { Searchable, SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { useSettings } from '../store.ts'
 import { BackupsUsageRow } from './DataBackups.tsx'
@@ -339,34 +338,6 @@ function LoaderPage({
   )
 }
 
-function ExtraModsFolder() {
-  const { t } = useLingui()
-  const game = useCurrentGame()
-  const folder = useSettings((s) => s.games?.[game]?.extraModsFolder ?? '')
-  const choose = () =>
-    pickFolderSetting(t`Extra mods folder`, 'extraModsFolder', game, t`Could not save that setting`)
-  const clear = () =>
-    persist(() => SetByKey('extraModsFolder', '', game), t`Could not save that setting`)
-  return (
-    <PrefByKey
-      prefKey="extraModsFolder"
-      game={game}
-      extra={
-        <Box sx={{ display: 'flex', gap: space.gap, flexShrink: 0 }}>
-          {folder ? (
-            <Button onClick={clear} sx={noShrink}>
-              {t`Clear`}
-            </Button>
-          ) : null}
-          <Button variant="outlined" onClick={choose} sx={noShrink}>
-            {t`Choose folder…`}
-          </Button>
-        </Box>
-      }
-    />
-  )
-}
-
 function BackupsPage() {
   const { t } = useLingui()
   const game = useCurrentGame()
@@ -396,4 +367,4 @@ function BackupsPage() {
   )
 }
 
-export { BackupsPage, ExtraModsFolder, GameFolder, LoaderPage }
+export { BackupsPage, GameFolder, LoaderPage }

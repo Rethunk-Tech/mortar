@@ -19,12 +19,10 @@ import { usePreviewRows } from './usePreviewRows.ts'
 export function ExtraFolderDialog({
   open,
   game,
-  folder,
   onClose,
 }: {
   open: boolean
   game: string
-  folder: string
   onClose: () => void
 }) {
   const { t } = useLingui()
@@ -53,13 +51,13 @@ export function ExtraFolderDialog({
         onClose()
       }}
     >
-      {loading ? <LoadingRow>{t`Reading ${folder}…`}</LoadingRow> : null}
+      {loading ? <LoadingRow>{t`Reading the extra mods folders…`}</LoadingRow> : null}
       {error === null ? null : <ErrorRetry error={error} onRetry={reload} />}
       {empty ? (
         <EmptyState
           compact={true}
           icon={<FolderOpen />}
-          title={t`No mods in ${folder}`}
+          title={t`No mods in the extra mods folders`}
           action={
             <Button
               onClick={() => {
@@ -67,7 +65,7 @@ export function ExtraFolderDialog({
                 useNav.getState().openGameSettings()
               }}
             >
-              {t`Change folder`}
+              {t`Change folders`}
             </Button>
           }
         >

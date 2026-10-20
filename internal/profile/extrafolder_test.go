@@ -22,9 +22,11 @@ func TestExtraFolderListsAndInstallsOnlyItsOwnFolders(t *testing.T) {
 	extra := t.TempDir()
 	writeFile(t, extra, "A/manifest.json", manifestJSON("me.a"))
 	writeFile(t, extra, "Pack/B/manifest.json", manifestJSON("me.b"))
-	setGamePref(t, st, "extraModsFolder", extra)
+	second := t.TempDir()
+	writeFile(t, second, "C/manifest.json", manifestJSON("me.c"))
+	setGamePref(t, st, "extraModsFolder", extra+string(filepath.ListSeparator)+second)
 	got, err := svc.ExtraFolderMods("stardew")
-	if err != nil || len(got.Mods) != 2 {
+	if err != nil || len(got.Mods) != 3 {
 		t.Fatalf("listed = %+v, %v", got, err)
 	}
 	folder := ""
@@ -39,6 +41,9 @@ func TestExtraFolderListsAndInstallsOnlyItsOwnFolders(t *testing.T) {
 	res, err := svc.InstallExtraFolderMod(t.Context(), "stardew", p.ID, folder)
 	if err != nil || len(res.Added) != 1 {
 		t.Fatalf("install = %+v, %v", res, err)
+	}
+	if res, err := svc.InstallExtraFolderMod(t.Context(), "stardew", p.ID, filepath.Join(second, "C")); err != nil || len(res.Added) != 1 {
+		t.Fatalf("install from second folder = %+v, %v", res, err)
 	}
 	for _, bad := range []string{t.TempDir(), filepath.Join(extra, "Pack", "B"), extra} {
 		if _, err := svc.InstallExtraFolderMod(t.Context(), "stardew", p.ID, bad); err == nil {

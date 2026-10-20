@@ -62,12 +62,13 @@ type GameSettings struct {
 	LastDownloadsSeen     int64                  `json:"lastDownloadsSeen,omitempty"`
 	LastSweepGameVersion  string                 `json:"lastSweepGameVersion,omitempty"`
 	LaunchPresetTemplates []LaunchPresetTemplate `json:"launchPresetTemplates,omitempty"`
-	ExtraModsFolder       string                 `json:"extraModsFolder,omitempty"`
-	ShowDotHiddenMods     bool                   `json:"showDotHiddenMods,omitempty"`
-	OldFilesOnUpdate      string                 `json:"oldFilesOnUpdate,omitempty"`
-	GameSettingsMode      string                 `json:"gameSettingsMode,omitempty"`
-	CacheClearing         string                 `json:"cacheClearing,omitempty"`
-	DependencyVersions    string                 `json:"dependencyVersions,omitempty"`
+	// ExtraModsFolder is a path list (the OS separator between folders) of unpacked-mod folders to add from.
+	ExtraModsFolder    string `json:"extraModsFolder,omitempty"`
+	ShowDotHiddenMods  bool   `json:"showDotHiddenMods,omitempty"`
+	OldFilesOnUpdate   string `json:"oldFilesOnUpdate,omitempty"`
+	GameSettingsMode   string `json:"gameSettingsMode,omitempty"`
+	CacheClearing      string `json:"cacheClearing,omitempty"`
+	DependencyVersions string `json:"dependencyVersions,omitempty"`
 	// SourceOrder is the comma-separated source ids the player prefers, first first; sources it omits follow in
 	// catalog order.
 	SourceOrder string `json:"sourceOrder,omitempty"`

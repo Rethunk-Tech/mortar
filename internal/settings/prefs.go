@@ -542,6 +542,11 @@ func (s Settings) AutoInstalledFolders() []string {
 	return pathList(s.AutoInstallFolders)
 }
 
+// ExtraModsFolderList lists the game's extra mods folders: absolute paths only, each once.
+func (g GameSettings) ExtraModsFolderList() []string {
+	return pathList(g.ExtraModsFolder)
+}
+
 func pathList(joined string) []string {
 	var out []string
 	for _, d := range filepath.SplitList(joined) {
