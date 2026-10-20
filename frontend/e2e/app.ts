@@ -14,8 +14,15 @@ export async function openSeedFarm(page: Page) {
   if (!(await farm.isVisible())) {
     await openGameSelect(page)
   }
-  await farm.click()
-  await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
+  const mods = page.getByRole('tab', { name: 'Mods' })
+  // A click can land while the list is still settling; clicking again opens it, as openProfile does.
+  for (let attempt = 0; attempt < 3 && !(await mods.isVisible()); attempt++) {
+    if (await farm.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await farm.click()
+    }
+    await mods.waitFor({ timeout: 8000 }).catch(() => undefined)
+  }
+  await expect(mods).toBeVisible()
   // The tour shows once per sandbox, so only the first spec sees it.
   const skip = page.getByRole('button', { name: 'Skip tour' })
   if (await skip.isVisible({ timeout: 1500 }).catch(() => false)) {
