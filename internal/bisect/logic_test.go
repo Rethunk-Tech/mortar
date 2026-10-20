@@ -2,6 +2,7 @@ package bisect
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"slices"
 	"testing"
@@ -48,7 +49,36 @@ func TestFindUsesFakeRunnerToNarrowFailingGroup(t *testing.T) {
 	if want := []string{"framework", "pack"}; !reflect.DeepEqual(ids, want) {
 		t.Fatalf("found = %#v, want %#v", ids, want)
 	}
-	if len(tested) != 2 {
-		t.Fatalf("runner calls = %d, want 2", len(tested))
+	if len(tested) != 3 || len(tested[0]) != 0 {
+		t.Fatalf("runs = %v, want every mod on first, then two halves", tested)
+	}
+}
+
+func TestFindKeepsALibraryOnWhileAnythingThatNeedsItIsOn(t *testing.T) {
+	mods := []Mod{{ID: "lib"}}
+	for _, id := range []string{"a", "b", "c", "d", "e", "f", "g"} {
+		mods = append(mods, Mod{ID: id, Dependencies: []string{"lib"}})
+	}
+	got, err := find(context.Background(), mods, func(_ context.Context, off []string) (bool, error) {
+		if slices.Contains(off, "lib") {
+			for _, m := range mods[1:] {
+				if !slices.Contains(off, m.ID) {
+					t.Fatalf("lib off while %s, which needs it, is on: %v", m.ID, off)
+				}
+			}
+		}
+		return !slices.Contains(off, "f"), nil
+	}, nil)
+	if err != nil || len(got) != 1 || got[0].ID != "f" {
+		t.Fatalf("found %v, %v; want f", got, err)
+	}
+}
+
+func TestFindBlamesNobodyWhenEveryModOnRunsClean(t *testing.T) {
+	_, err := find(context.Background(), []Mod{{ID: "a"}, {ID: "b"}}, func(context.Context, []string) (bool, error) {
+		return false, nil
+	}, nil)
+	if !errors.Is(err, ErrNoCrash) {
+		t.Fatalf("err = %v, want ErrNoCrash", err)
 	}
 }

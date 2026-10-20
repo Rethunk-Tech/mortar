@@ -20,111 +20,93 @@ type Progress struct {
 	ModsLeft int
 }
 
-func dependencyGroups(mods []Mod) [][]Mod {
-	parent := make(map[string]string, len(mods))
-	known := make(map[string]Mod, len(mods))
-	for _, mod := range mods {
-		parent[mod.ID] = mod.ID
-		known[mod.ID] = mod
-	}
-	var find func(string) string
-	find = func(id string) string {
-		root := parent[id]
-		if root != id {
-			parent[id] = find(root)
-		}
-		return parent[id]
-	}
-	union := func(a, b string) {
-		if _, ok := parent[a]; !ok {
-			return
-		}
-		if _, ok := parent[b]; !ok {
-			return
-		}
-		a, b = find(a), find(b)
-		if a != b {
-			parent[b] = a
-		}
-	}
-	groups := make(map[string]string)
-	for _, mod := range mods {
-		if mod.Group == "" {
-			continue
-		}
-		if first, ok := groups[mod.Group]; ok {
-			union(first, mod.ID)
-		} else {
-			groups[mod.Group] = mod.ID
-		}
-	}
-	for _, mod := range mods {
-		for _, dependency := range mod.Dependencies {
-			union(mod.ID, dependency)
-		}
-	}
-	byRoot := make(map[string][]Mod)
-	order := make([]string, 0, len(mods))
-	for _, mod := range mods {
-		root := find(mod.ID)
-		if _, ok := byRoot[root]; !ok {
-			order = append(order, root)
-		}
-		byRoot[root] = append(byRoot[root], known[mod.ID])
-	}
-	out := make([][]Mod, 0, len(order))
-	for _, root := range order {
-		out = append(out, byRoot[root])
-	}
-	return out
-}
+// ErrNoCrash is a check whose first run, with every mod on, did not crash: there is nothing to narrow down.
+var ErrNoCrash = errors.New("the game did not crash with every mod on, so no mod is to blame")
 
+// find narrows the mods down to the one the crash needs. Each step switches off half of the suspects and every mod
+// that needs them, never a mod something still on needs: suspects nothing else among them needs go first, so a
+// library is tested only once its dependents are cleared. A crash with them off clears them; no crash convicts them.
+// Mods that always switch together (one package) are found together.
 func find(ctx context.Context, mods []Mod, run func(context.Context, []string) (bool, error), report func(Progress)) ([]Mod, error) {
-	groups := dependencyGroups(mods)
-	if len(groups) == 0 {
+	if len(mods) == 0 {
 		return nil, errors.New("no user mods to test")
 	}
-	total := 0
-	for n := len(groups); n > 1; n = (n + 1) / 2 {
-		total++
+	crashed, err := run(ctx, nil)
+	if err != nil {
+		return nil, err
 	}
-	candidates := append([][]Mod(nil), groups...)
-	for step := 1; len(candidates) > 1; step++ {
+	if !crashed {
+		return nil, ErrNoCrash
+	}
+	suspects := make([]string, len(mods))
+	for i, m := range mods {
+		suspects[i] = m.ID
+	}
+	total := progressSteps(len(suspects))
+	for step := 1; len(suspects) > 1; step++ {
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
-		mid := (len(candidates) + 1) / 2
-		left := candidates[:mid]
-		right := candidates[mid:]
-		seeds := make([]string, 0)
-		for _, group := range left {
-			for _, mod := range group {
-				seeds = append(seeds, mod.ID)
-			}
+		off := split(mods, suspects)
+		if off == nil {
+			break
 		}
-		disabled := DisableClosure(mods, seeds)
 		if report != nil {
-			report(Progress{Step: step, Total: total, ModsLeft: len(flatten(right))})
+			report(Progress{Step: step, Total: max(total, step), ModsLeft: len(suspects)})
 		}
-		failed, err := run(ctx, disabled)
+		failed, err := run(ctx, off)
 		if err != nil {
 			return nil, err
 		}
-		if failed {
-			candidates = right
-		} else {
-			candidates = left
+		// Still crashing with them off clears them; running clean convicts one of them.
+		suspects = slices.DeleteFunc(suspects, func(id string) bool { return slices.Contains(off, id) == failed })
+	}
+	found := make([]Mod, 0, len(suspects))
+	for _, m := range mods {
+		if slices.Contains(suspects, m.ID) {
+			found = append(found, m)
 		}
 	}
-	return append([]Mod(nil), candidates[0]...), nil
+	return found, nil
 }
 
-func flatten(groups [][]Mod) []Mod {
-	var mods []Mod
-	for _, group := range groups {
-		mods = append(mods, group...)
+// split is the mods to switch off for the next step: half of the suspects, those nothing else among them needs first,
+// with everything that needs them. It leaves at least one suspect on, or returns nil when no split does (one package).
+func split(mods []Mod, suspects []string) []string {
+	needed := map[string]bool{}
+	for _, m := range mods {
+		if slices.Contains(suspects, m.ID) {
+			for _, d := range m.Dependencies {
+				needed[d] = true
+			}
+		}
 	}
-	return mods
+	order := slices.Clone(suspects)
+	slices.SortStableFunc(order, func(a, b string) int {
+		switch {
+		case needed[a] == needed[b]:
+			return 0
+		case needed[a]:
+			return 1
+		}
+		return -1
+	})
+	for k := (len(order) + 1) / 2; k >= 1; k-- {
+		off := DisableClosure(mods, order[:k])
+		if slices.ContainsFunc(suspects, func(id string) bool { return !slices.Contains(off, id) }) {
+			return off
+		}
+	}
+	return nil
+}
+
+func progressSteps(n int) int {
+	steps := 0
+	for n > 1 {
+		steps++
+		n = (n + 1) / 2
+	}
+	return steps
 }
 
 // DisableClosure returns every mod disabled by the seed mods, including their

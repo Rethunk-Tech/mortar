@@ -187,20 +187,9 @@ func (s *Service) run(ctx context.Context, j *job) {
 		Game:     j.game,
 		Profile:  j.profile,
 		State:    StateDone,
-		Step:     progressSteps(len(dependencyGroups(mods))),
-		Total:    progressSteps(len(dependencyGroups(mods))),
 		ModsLeft: len(result.Mods),
 		Result:   result,
 	})
-}
-
-func progressSteps(groups int) int {
-	steps := 0
-	for groups > 1 {
-		steps++
-		groups = (groups + 1) / 2
-	}
-	return steps
 }
 
 func (s *Service) setStatus(status Status) {
