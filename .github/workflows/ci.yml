@@ -40,7 +40,7 @@ jobs:
           site=true
           if [ -n "$BASE" ] && [ "$BASE" != 0000000000000000000000000000000000000000 ]; then
             files="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE...$HEAD" --jq '.files[].filename')"
-            if [ -n "$files" ] && [ "$(printf '%s\n' "$files" | wc -l)" -lt 300 ] && ! printf '%s\n' "$files" | grep -q '^site/'; then
+            if [ -n "$files" ] && [ "$(printf '%s\n' "$files" | wc -l)" -lt 300 ] && ! printf '%s\n' "$files" | grep -q '^web/'; then
               site=false
             fi
             # The compare API lists at most 300 files; a longer list runs the gate.

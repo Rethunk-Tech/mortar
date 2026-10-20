@@ -1,20 +1,11 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "ignoreBinaries": ["appstreamcli", "bwrap", "cwebp", "go", "govulncheck", "ss", "wails3"],
-  "ignore": ["site/vendor/**"],
+  "ignore": ["web/public/vendor/**"],
   "workspaces": {
     ".": {
-      "entry": [
-        "site/share/app.js",
-        "site/landing.js",
-        "site/download.js",
-        "site/games.js",
-        "site/search.js",
-        "site/nav.js",
-        "site/guide.js",
-        "scripts/site-demo.ts"
-      ],
-      "project": ["site/**/*.js", "scripts/**/*.ts"]
+      "entry": ["scripts/site-demo.ts"],
+      "project": ["scripts/**/*.ts"]
     },
     "frontend": {
       "entry": [
@@ -30,6 +21,17 @@
         "vite.demo.config.ts"
       ],
       "vite": false
+    },
+    "web": {
+      "entry": [
+        "public/share/app.js",
+        "public/download.js",
+        "public/games.js",
+        "public/search.js",
+        "scripts/*.ts",
+        "test/*.test.ts"
+      ],
+      "project": ["**/*.{ts,astro,js}"]
     }
   }
 }

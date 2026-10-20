@@ -1,6 +1,6 @@
-// Resolves every download link on the site against the GitHub releases it points at, so a renamed or missing asset
-// fails here instead of on a visitor's click. release.yml runs it once a release is published; locally it is
-// `bun scripts/site-downloads.ts` (set GH_TOKEN to avoid the anonymous API rate limit).
+// Resolves every download link on the built site (bun run site) against the GitHub releases it points at, so a renamed
+// or missing asset fails here instead of on a visitor's click. The site publish runs it after each release; locally it
+// is `bun scripts/site-downloads.ts` (set GH_TOKEN to avoid the anonymous API rate limit).
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 

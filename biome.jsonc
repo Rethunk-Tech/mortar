@@ -18,8 +18,7 @@
       "!**/locales/*/messages.ts",
       "!**/vendor",
       "!.claude",
-      "!site/changelog",
-      "!site/games"
+      "!design/landing-mock"
     ]
   },
 
@@ -32,6 +31,9 @@
   },
 
   // canon ts-biome-00024; canon ts-bun-biome-00002
+  // Lints and formats .astro templates, not only their frontmatter, so a name used only in the template counts as used.
+  "html": { "experimentalFullSupportEnabled": true },
+
   "javascript": {
     "globals": ["Bun"],
     "formatter": {
@@ -324,6 +326,17 @@
     {
       "includes": ["**/scroll-region.tsx"],
       "linter": { "rules": { "a11y": { "noNoninteractiveTabindex": "off" } } }
+    },
+    // Astro templates are HTML, not React: React's prop names do not apply, and Fragment is Astro's own element.
+    {
+      "includes": ["**/*.astro"],
+      "javascript": { "globals": ["Fragment"] },
+      "linter": { "rules": { "suspicious": { "noUnknownAttribute": "off" } } }
+    },
+    // The site's pages and data modules run at build time in Bun, reading the repo's files.
+    {
+      "includes": ["web/src/lib/**", "web/src/pages/**", "web/src/content.config.ts"],
+      "linter": { "rules": { "correctness": { "noNodejsModules": "off" } } }
     }
   ]
 }

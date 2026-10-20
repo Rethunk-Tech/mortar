@@ -49,7 +49,6 @@ jobs:
         with:
           ref: ${{ inputs.site }}
           path: site-src
-          sparse-checkout: site
           persist-credentials: false
 
       - name: Download packages
@@ -75,17 +74,37 @@ jobs:
           path: ${{ runner.temp }}/packages
           if-no-files-found: error
 
-      # The search index is built over the finished pages and is never committed, so the published tree gets it here.
-      - name: Setup Bun
-        uses: Rethunk-Tech/gh-actions/setup-bun@043d9f8fb8b04b983fa8f7012b28241fd20f17b4 # v1.18
+      # The site's demo is the app's own frontend, so it needs Bun, the workspace and the generated bindings.
+      - name: Set up Mortar
+        uses: ./.github/actions/setup-mortar
+        with:
+          native: "false"
 
       # Other managers' counts and releases and the Steam art move between releases; the tag's site is rebuilt with
-      # them fresh so a published claim is never older than the publish. A site from another ref is published as is.
+      # them fresh so a published claim is never older than the publish. A site from another ref is built as it is.
       - name: Refresh the site's outside facts
         if: inputs.site == ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: bun scripts/site.ts --refresh
+        run: bun run site:refresh
+
+      - name: Build the site
+        if: inputs.site == ''
+        run: bun run site
+
+      - name: Build the site from its ref
+        if: inputs.site != ''
+        working-directory: site-src
+        run: bun install --frozen-lockfile && bun run bindings && bun run site
+
+      # The site's download links follow the latest release, so a renamed asset breaks them the moment it publishes.
+      - name: Site download links
+        if: inputs.site == ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bun scripts/site-downloads.ts
+
+      # The search index is built over the finished pages and is never committed, so the published tree gets it here.
 
       - name: Index the site for search
         env:

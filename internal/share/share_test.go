@@ -707,10 +707,10 @@ func TestPageFactsRoundTrip(t *testing.T) {
 	}
 }
 
-// The share page's decoder reads the same file (site/share/share.test.ts), so the app and the page agree on links.
+// The share page's decoder reads the same file (web/test/share.test.ts), so the app and the page agree on links.
 func TestSiteReadsTheAppsLinks(t *testing.T) {
 	t.Parallel()
-	b, err := os.ReadFile("../../site/share/testdata/go-link.txt")
+	b, err := os.ReadFile("../../web/test/testdata/go-link.txt")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -19,10 +19,11 @@
     "mem": "scripts/mem-budget.sh",
     "renders": "scripts/render-budget.sh",
     "vuln": "govulncheck ./...",
-    "site": "bun scripts/site.ts --check",
+    "site": "bun run --cwd web build",
     "site:search": "pagefind --site site --output-subdir pagefind",
     "site:downloads": "bun scripts/site-downloads.ts",
-    "i18n:dupes": "bun scripts/i18n-dupes.ts"
+    "i18n:dupes": "bun scripts/i18n-dupes.ts",
+    "site:refresh": "bun run --cwd web refresh"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

@@ -123,7 +123,6 @@ step shellcheck bash -c "set -o pipefail; git ls-files -co --exclude-standard -z
 pids[racechain]=$!
 step golangci-windows env GOGC=400 GOOS=windows golangci-lint run --allow-parallel-runners
 step version go run ./cmd/version -check
-step site bun scripts/site.ts --check
 step i18n-dupes bun scripts/i18n-dupes.ts
 step metainfo appstreamcli validate --strict --no-net build/linux/tech.rethunk.Mortar.metainfo.xml
 
@@ -132,6 +131,9 @@ wait "$bindings_pid" || {
   exit 1
 }
 step biome bun run --silent lint
+# The site and its demo need the bindings too; the build checks every link and picture it writes.
+step site bun run --silent site
+step site-types bun run --cwd web --silent check
 step knip bunx knip
 step tsc bun run --cwd frontend tsc --noEmit
 # A CI runner shares its few cores with the race build and both lints running beside this, so tests that finish in

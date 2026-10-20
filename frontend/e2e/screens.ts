@@ -1,6 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { createHash } from 'node:crypto'
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
@@ -10,8 +9,7 @@ import { chromium, type Page } from '@playwright/test'
 //   bun frontend/e2e/screens.ts --url http://127.0.0.1:9455 --out /var/tmp/screens
 // A screen whose controls are not found is skipped with a note.
 // --set site instead takes the product screenshots, each at its own size, and puts them where they are cited: WebP in
-// site/img (cwebp on PATH), the metainfo and README ones as PNG in build/linux/screenshots, and the link preview as a
-// JPEG named by its content in site/img, with site/index.html's og:image pointed at it.
+// web/public/img (cwebp on PATH), and the metainfo and README ones as PNG in build/linux/screenshots.
 
 const arg = (name: string, fallback: string) => {
   const i = process.argv.indexOf(`--${name}`)
@@ -59,7 +57,7 @@ async function shot(page: Page, name: string, steps: () => Promise<void>, file =
     }
     await settle(page)
     const path = `${out}/${file}`
-    await page.screenshot(path.endsWith('.jpg') ? { path, quality: OG_QUALITY } : { path })
+    await page.screenshot({ path })
     written.push(path)
   } catch (e) {
     skipped.push(`${name}: ${String(e).split('\n')[0]}`)
@@ -162,16 +160,11 @@ async function padPress(page: Page, button: number) {
   await page.waitForTimeout(150)
 }
 
-// The link preview unfurlers show: 1200x630 is the size Facebook, Discord and X all crop to without letterboxing.
-const OG = { name: 'og', file: 'og.jpg', width: 1200, height: 630 }
-const OG_QUALITY = 88
 const WEBP_QUALITY = '82'
 const METAINFO = ['mods', 'problems', 'performance', 'settings']
 const ROOT = fileURLToPath(new URL('../..', import.meta.url))
 
 const SITE: Scene[] = [
-  { ...OG, steps: openGameSelect },
-  { name: 'games', ...WIDE, steps: openGameSelect },
   { name: 'profile', ...DESK, profile: STARDEW, steps: (page) => click(page, 'tab', 'Home') },
   {
     name: 'mods',
@@ -189,20 +182,6 @@ const SITE: Scene[] = [
         .or(page.getByRole('button', { name: 'Pin version' }))
         .first()
         .waitFor({ timeout: STEP_MS })
-    },
-  },
-  {
-    name: 'lethal-company',
-    ...WIDE,
-    profile: LETHAL,
-    steps: async (page) => {
-      await click(page, 'tab', 'Mods')
-      // A profile from before install reasons asks about them once; the picture shows the answered list.
-      await page
-        .getByRole('region', { name: /as libraries or supporting mods$/ })
-        .getByRole('button', { name: 'Mark implicit' })
-        .click({ timeout: STEP_MS })
-        .catch(() => undefined)
     },
   },
   {
@@ -274,27 +253,10 @@ const SITE: Scene[] = [
   },
 ]
 
-// Unfurlers cache an image by URL, so the preview's name changes with its content and the old one is removed.
 function publishSite() {
-  const img = join(ROOT, 'site/img')
+  const img = join(ROOT, 'web/public/img')
   for (const path of written) {
-    const name = basename(path).replace(/\.(png|jpg)$/, '')
-    if (name === OG.name) {
-      const hash = createHash('sha256').update(readFileSync(path)).digest('hex').slice(0, 10)
-      for (const old of readdirSync(img).filter((f) => /^og-[0-9a-f]+\.jpg$/.test(f))) {
-        rmSync(join(img, old))
-      }
-      copyFileSync(path, join(img, `og-${hash}.jpg`))
-      const index = join(ROOT, 'site/index.html')
-      writeFileSync(
-        index,
-        readFileSync(index, 'utf8').replace(
-          /(property="og:image"\s+content=")[^"]*/,
-          `$1https://mortar.rethunk.tech/img/og-${hash}.jpg`,
-        ),
-      )
-      continue
-    }
+    const name = basename(path).replace(/\.png$/, '')
     execFileSync('cwebp', ['-quiet', '-q', WEBP_QUALITY, path, '-o', join(img, `${name}.webp`)])
     if (METAINFO.includes(name)) {
       copyFileSync(path, join(ROOT, 'build/linux/screenshots', `${name}.png`))
