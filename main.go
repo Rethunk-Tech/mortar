@@ -1340,6 +1340,9 @@ func run() error {
 		}
 		if tray == nil {
 			tray = app.SystemTray.New().SetIcon(appIcon)
+			// Without a label the Linux tray item is titled "Wails", and Windows shows no name on hover.
+			tray.SetLabel("Mortar")
+			tray.SetTooltip("Mortar")
 			trayMenu = app.NewMenu()
 			tray.SetMenu(trayMenu)
 			tray.OnClick(func() {
