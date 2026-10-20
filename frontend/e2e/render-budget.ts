@@ -10,6 +10,7 @@ import {
 } from './app.ts'
 import { nestedBoxes } from './renderBoxes.ts'
 import { newCases } from './renderCases.ts'
+import { unevenSpacing } from './renderGaps.ts'
 import { HOOK } from './renderHook.ts'
 import { Meter, type Sample } from './renderMeter.ts'
 import { sandboxPort, selftest } from './sandbox.ts'
@@ -27,6 +28,7 @@ import { sandboxPort, selftest } from './sandbox.ts'
 //   MORTAR_RENDER_PROFILE=<name>       open this profile (default: whichever profile Mortar reopens; seeded: Seed Farm)
 //   MORTAR_RENDER_ONLY=mods,config     run only the cases whose names start with these
 //   MORTAR_RENDER_SETTLE_MS / _IDLE_MS how long an action may settle (3000) and how long idle is watched (10000)
+//   MORTAR_RENDER_GAPS=1              print each screen's unevenly spaced stacks and cards (renderGaps.ts)
 //   MORTAR_RENDER_TOP=<n>              how many components, roots and causes each case lists (8)
 // Writes render-budget.json under MORTAR_RENDER_OUT (default /var/tmp/render-budget-<ts>) and exits 1 when a case is
 // over its budget or fails.
@@ -372,6 +374,11 @@ async function run(baseURL: string, chosen: Case[]): Promise<Result[]> {
       if (process.env.MORTAR_RENDER_BOXES) {
         for (const b of await nestedBoxes(page)) {
           console.log(`BOX ${c.name} | ${b.inner} in ${b.outer} | ${b.text}`)
+        }
+      }
+      if (process.env.MORTAR_RENDER_GAPS) {
+        for (const g of await unevenSpacing(page)) {
+          console.log(`GAP ${c.name} | ${g.kind} ${g.sizes.join('/')} | ${g.where} | ${g.text}`)
         }
       }
     }
