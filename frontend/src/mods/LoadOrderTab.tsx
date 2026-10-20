@@ -21,9 +21,9 @@ import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { idKey, localId } from './dependents.ts'
-import { useDetail } from './detail.ts'
 import { formatLoadOrderCopy, loadOrderEmptyKind } from './loadOrderText.ts'
 import { sameId } from './lookup.ts'
+import { focusMod } from './openMod.ts'
 import { requirementNameIn } from './requirementName.ts'
 import { useMods } from './store.ts'
 
@@ -80,7 +80,7 @@ function RowName({ row }: { row: Row }) {
       title={title}
       onClick={() => {
         useTab.getState().setTab('mods')
-        useDetail.getState().show(listed)
+        focusMod(listed)
       }}
       sx={{ fontWeight: 600, minWidth: 0, color: 'text.primary', textAlign: 'left' }}
     >

@@ -38,6 +38,7 @@ import { hasAllTags, matchesQuery, searchFields } from './modSearch.ts'
 import { NewFoldersCallout } from './NewFoldersCallout.tsx'
 import { useNexusDetails } from './nexusDetails.ts'
 import { OldFilesCallouts } from './OldFilesCallouts.tsx'
+import { focusMod } from './openMod.ts'
 import { addedWithin, WEEK_MS } from './recent.ts'
 import { SelectionBar } from './SelectionBar.tsx'
 import { SetNexusPageDialog } from './SetNexusPageDialog.tsx'
@@ -400,8 +401,9 @@ export function ModsTab({ profile }: { profile: Profile }) {
     load()
       .then(() => {
         const id = useDetail.getState().takePending()
-        if (id) {
-          useDetail.getState().show(useMods.getState().mods.find((m) => modId(m) === id) ?? null)
+        const pending = id ? useMods.getState().mods.find((m) => modId(m) === id) : undefined
+        if (pending) {
+          focusMod(pending)
         }
       })
       .catch(reportUnexpected)

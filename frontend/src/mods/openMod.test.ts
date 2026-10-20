@@ -7,7 +7,7 @@ import { useMods } from './store.ts'
 
 const mod = (key: string, id: string) => ({ key, id, name: id }) as Mod
 
-test('openMod opens the details of the mod with that id and entry key, loading the list when needed', async () => {
+test('openMod filters the list to the mod with that id and entry key and opens its details, loading the list when needed', async () => {
   useDetail.setState(useDetail.getInitialState(), true)
   useTab.getState().setTab('browse')
   let loads = 0
@@ -16,11 +16,12 @@ test('openMod opens the details of the mod with that id and entry key, loading t
     mods: [],
     load: async () => {
       loads += 1
-      useMods.setState({ mods: [mod('a', 'Same.Id'), mod('b', 'Same.Id')] })
+      useMods.setState({ mods: [mod('a', 'Same.Id'), mod('b', 'Same.Id')], modsFor: 'p1' })
     },
   })
   await openMod({ id: 'same.id', key: 'b' })
   expect(loads).toBe(1)
   expect(useTab.getState().tab).toBe('mods')
   expect(useDetail.getState().detailId).toBe('b/Same.Id')
+  expect(useMods.getState().queries.p1).toBe('Same.Id')
 })

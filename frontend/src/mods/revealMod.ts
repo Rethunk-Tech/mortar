@@ -2,8 +2,8 @@ import { useTab } from '../game/tab.ts'
 import { isGameId, useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
-import { useDetail } from './detail.ts'
 import { nexusIdOf } from './lookup.ts'
+import { focusMod } from './openMod.ts'
 import { useMods } from './store.ts'
 
 // revealMod opens a profile's Mods tab with one mod selected in the sidebar, matched by its Nexus ID or else its name.
@@ -25,7 +25,7 @@ async function revealMod(game: string, profileId: string, nexusId: number, name:
     (profile && nexusId > 0 ? mods.find((m) => nexusIdOf(profile, m) === nexusId) : undefined) ??
     mods.find((m) => m.name === name)
   if (mod) {
-    useDetail.getState().show(mod)
+    focusMod(mod)
   }
 }
 
