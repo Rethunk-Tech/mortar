@@ -1,7 +1,7 @@
 // A page and a share page per playable game in the bundled catalog, and the linked game list on the landing page.
 import { readFileSync } from 'node:fs'
 import type { SteamArt } from './art.ts'
-import { brandIcon } from './brands.ts'
+import { brandIcon, shareMarks } from './brands.ts'
 import { escapeHTML, listed, page, SITE } from './chrome.ts'
 
 const CATALOG = 'internal/components/components.json'
@@ -234,16 +234,16 @@ export function sharePage(g: Game, art: Record<string, SteamArt>): string {
       `<h1>Shared ${name} profile</h1>
         <p class="lede">A ${name} mod profile made with Mortar. Look through its mods, then open it in Mortar, or get Mortar first.</p>`,
     ),
-    body: `      <p id="error" class="card share-card" hidden></p>
-      <noscript><p class="card share-card">This page needs JavaScript to read the shared profile.</p></noscript>
-      <section id="profile" class="card share-card" hidden>
+    body: `      <p id="error" class="card" hidden></p>
+      <noscript><p class="card">This page needs JavaScript to read the shared profile.</p></noscript>
+      <section id="profile" hidden>
         <p id="name" class="title"></p>
         <p class="muted"><span id="count"></span>. Mortar resolves mod names when you import.</p>
         <label id="versionRow" hidden>Your game version
           <input id="version" inputmode="decimal" autocomplete="off" />
           <span id="flagged" class="muted"></span>
         </label>
-        <ul id="list"></ul>
+        <ul id="list" data-marks="${escapeHTML(JSON.stringify(shareMarks()))}"></ul>
       </section>
       <div class="actions">
         <a id="open" class="btn" href="mortar://" hidden>Open in Mortar</a>

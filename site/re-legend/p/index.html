@@ -80,16 +80,16 @@
       </div>
     </header>
     <main class="wrap dl prose after-bleed">
-      <p id="error" class="card share-card" hidden></p>
-      <noscript><p class="card share-card">This page needs JavaScript to read the shared profile.</p></noscript>
-      <section id="profile" class="card share-card" hidden>
+      <p id="error" class="card" hidden></p>
+      <noscript><p class="card">This page needs JavaScript to read the shared profile.</p></noscript>
+      <section id="profile" hidden>
         <p id="name" class="title"></p>
         <p class="muted"><span id="count"></span>. Mortar resolves mod names when you import.</p>
         <label id="versionRow" hidden>Your game version
           <input id="version" inputmode="decimal" autocomplete="off" />
           <span id="flagged" class="muted"></span>
         </label>
-        <ul id="list"></ul>
+        <ul id="list" data-marks="{&#34;thunderstore&#34;:{&#34;colour&#34;:&#34;rgb(35, 255, 176)&#34;},&#34;nexus&#34;:{&#34;art&#34;:&#34;/img/vendor/nexusmods.svg&#34;},&#34;curseforge&#34;:{&#34;colour&#34;:&#34;rgb(241, 100, 54)&#34;},&#34;github&#34;:{&#34;colour&#34;:&#34;currentColor&#34;},&#34;itch&#34;:{&#34;colour&#34;:&#34;rgb(250, 92, 92)&#34;},&#34;patreon&#34;:{&#34;colour&#34;:&#34;currentColor&#34;},&#34;vsmoddb&#34;:{&#34;art&#34;:&#34;/img/vendor/vsmoddb.png&#34;}}"></ul>
       </section>
       <div class="actions">
         <a id="open" class="btn" href="mortar://" hidden>Open in Mortar</a>

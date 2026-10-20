@@ -97,7 +97,27 @@ function size(kb) {
   return ''
 }
 
-function row(e, sourceKeys) {
+// badge is the source's mark over the corner of the mod's picture, its name in the tooltip and accessible label.
+function badge(kind, label, marks) {
+  const mark = marks[kind]
+  const b = el('span', { className: 'badge', title: label })
+  b.setAttribute('role', 'img')
+  b.setAttribute('aria-label', label)
+  if (mark?.colour) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.setAttribute('aria-hidden', 'true')
+    svg.style.color = mark.colour
+    const use = document.createElementNS('http://www.w3.org/2000/svg', 'use')
+    use.setAttribute('href', `/img/brands.svg#${kind}`)
+    svg.append(use)
+    b.append(svg)
+  } else if (mark?.art) {
+    b.append(el('img', { src: mark.art, alt: '' }))
+  }
+  return b
+}
+
+function row(e, sourceKeys, marks) {
   const source = SOURCES[e.kind]
   const { href, text, author } = source.link(e, sourceKeys)
   const li = el('li')
@@ -109,9 +129,11 @@ function row(e, sourceKeys) {
     pic.addEventListener('error', () => pic.replaceWith(el('span', { className: 'pic' })))
   }
   const needs = el('span', { className: 'flag', hidden: true })
-  const meta = [author, source.label, e.kb ? size(e.kb) : ''].filter(Boolean).join(' · ')
+  const meta = [author, e.kb ? size(e.kb) : ''].filter(Boolean).join(' · ')
+  const framed = el('span', { className: 'picwrap' })
+  framed.append(pic, badge(e.kind, source.label, marks))
   li.append(
-    pic,
+    framed,
     el('a', { href, rel: 'noopener noreferrer' }, text),
     el('span', { className: 'meta' }, meta),
     needs,
@@ -155,7 +177,8 @@ async function main() {
   }
   $('name').textContent = share.name
   $('count').textContent = `${share.entries.length} ${share.entries.length === 1 ? 'mod' : 'mods'}`
-  $('list').append(...share.entries.map((e) => row(e, share.sourceKeys)))
+  const marks = JSON.parse($('list').dataset.marks || '{}')
+  $('list').append(...share.entries.map((e) => row(e, share.sourceKeys, marks)))
   const total = share.entries.reduce((n, e) => n + (e.kb ?? 0), 0)
   if (total > 0) {
     $('count').textContent += `, about ${size(total)}`

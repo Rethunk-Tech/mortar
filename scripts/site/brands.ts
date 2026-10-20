@@ -101,6 +101,32 @@ export function brandArt(): [string, Buffer][] {
   ])
 }
 
+// The mod sources a share link can name, by the kind the link uses.
+const SHARE_SOURCES = [
+  'thunderstore',
+  'nexus',
+  'curseforge',
+  'github',
+  'itch',
+  'patreon',
+  'vsmoddb',
+]
+
+/** How the share page badges each mod with its source: the sprite mark in its colour, or the artwork file. */
+export function shareMarks(): Record<string, { colour: string } | { art: string }> {
+  const out: Record<string, { colour: string } | { art: string }> = {}
+  for (const id of SHARE_SOURCES) {
+    const mark = MARKS[id]
+    const art = ART[id]
+    if (mark) {
+      out[id] = { colour: rgb(mark.colour) }
+    } else if (art) {
+      out[id] = { art: `/img/vendor/${art}` }
+    }
+  }
+  return out
+}
+
 /** A brand's mark as a square button, its name in the tooltip and accessible label; a link when the brand has a page
  * for the game. A brand with no mark shows its name instead. */
 export function brandIcon(id: string, name: string, href?: string): string {
