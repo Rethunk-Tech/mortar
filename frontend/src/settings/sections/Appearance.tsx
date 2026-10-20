@@ -211,7 +211,7 @@ export function Appearance() {
   const background = useSettings((s) => s.background)
   const backgroundImage = useSettings((s) => s.backgroundImage)
   const reportFailure = reportError(t`Could not save that setting`)
-  const backdropSrc = `/backdrop?mode=image&v=${encodeURIComponent(backgroundImage)}`
+  const backdropSrc = `backdrop?mode=image&v=${encodeURIComponent(backgroundImage)}`
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
       <SettingsSection title={t`Theme`}>

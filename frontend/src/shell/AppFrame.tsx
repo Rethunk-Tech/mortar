@@ -54,9 +54,10 @@ export function AppFrame({ children }: { children: ReactNode }) {
     >
       {showBackdrop ? (
         <>
+          {/* Relative, so the website's demo (src/demo) served from a folder loads its own copy. */}
           <BackdropImage
             alt=""
-            src={`/backdrop?mode=${backdropMode}&w=${width}&v=${encodeURIComponent(backdropImage)}`}
+            src={`backdrop?mode=${backdropMode}&w=${width}&v=${encodeURIComponent(backdropImage)}`}
             sx={{
               position: 'absolute',
               inset: 0,

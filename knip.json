@@ -11,7 +11,8 @@
         "site/games.js",
         "site/search.js",
         "site/nav.js",
-        "site/guide.js"
+        "site/guide.js",
+        "scripts/site-demo.ts"
       ],
       "project": ["site/**/*.js", "scripts/**/*.ts"]
     },
@@ -22,7 +23,11 @@
         "vite.config.ts",
         "e2e/mem-budget.ts",
         "e2e/render-budget.ts",
-        "e2e/screens.ts"
+        "e2e/screens.ts",
+        "e2e/record-demo.ts",
+        "e2e/demo-check.ts",
+        "src/demo/entry.ts",
+        "vite.demo.config.ts"
       ],
       "vite": false
     }
