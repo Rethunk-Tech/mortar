@@ -169,7 +169,9 @@ async function main() {
   const configured = /^\s+version: "([^"]+)"/m.exec(readFileSync('build/config.yml', 'utf8'))?.[1]
   const released = latest[ASSET_REPO]?.tag_name.replace(/^v/, '')
   if (configured && released && configured !== released) {
-    console.log(`site downloads: ${configured} is not released yet (latest is ${released}); checked when it publishes`)
+    console.log(
+      `site downloads: ${configured} is not released yet (latest is ${released}); checked when it publishes`,
+    )
     return
   }
   const all = Object.values(html).join('\n')
