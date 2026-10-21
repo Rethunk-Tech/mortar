@@ -2405,6 +2405,7 @@
       "r2modmanFolder": "CatMailCo",
       "metadata": [],
       "paths": {
+        "saves": { "windows": "{localLow}/Maracas Studio/CatMailCo" },
         "unityLog": {
           "windows": "{localLow}/Maracas Studio/CatMailCo/Player.log"
         }

@@ -1,5 +1,5 @@
 {
-  "serial": 1792548236,
+  "serial": 1792552597,
   "components": [
     {
       "game": "melonloader",
@@ -2429,6 +2429,9 @@
       "r2modmanFolder": "CatMailCo",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Maracas Studio/CatMailCo"
+        },
         "unityLog": {
           "windows": "{localLow}/Maracas Studio/CatMailCo/Player.log"
         }
