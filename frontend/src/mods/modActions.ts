@@ -10,6 +10,7 @@ export type PageHost =
   | 'itch'
   | 'patreon'
   | 'vsmoddb'
+  | 'paradox'
   | 'web'
   | ''
 export type ModAction =
@@ -63,6 +64,9 @@ export const hostOf = (url: string | undefined): PageHost => {
   if (on('mods.vintagestory.at')) {
     return 'vsmoddb'
   }
+  if (on('mods.paradoxplaza.com')) {
+    return 'paradox'
+  }
   return on('itch.io') ? 'itch' : 'web'
 }
 
@@ -78,6 +82,7 @@ export const openPageLabel = (i18n: I18n, host: PageHost): string =>
       itch: msg`Open on itch.io`,
       patreon: msg`Open on Patreon`,
       vsmoddb: msg`Open on the Mod DB`,
+      paradox: msg`Open on Paradox Mods`,
       web: msg`Open page`,
       '': msg`Open page`,
     }[host],

@@ -5527,6 +5527,10 @@ msgstr "A portable copy keeps its data beside the program."
 msgid "Not in this profile ({0})"
 msgstr "Not in this profile ({0})"
 
+#: src/mods/modActions.ts
+msgid "Open on Paradox Mods"
+msgstr "Open on Paradox Mods"
+
 #: src/settings/sections/General.tsx
 msgid "Save these settings to a file, or load them on another computer."
 msgstr "Save these settings to a file, or load them on another computer."
