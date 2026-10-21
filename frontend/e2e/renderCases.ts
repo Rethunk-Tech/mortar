@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test'
-import { openGameSelect, openProfile } from './app.ts'
+import { openGameSelect, openProfile, openSettings } from './app.ts'
 import { largeDownloadCases } from './largeDownloadCase.ts'
 import { pausedDownloadCases } from './pausedDownloadCase.ts'
-import type { Case } from './render-budget.ts'
+import { type Case, VIEWPORT } from './render-budget.ts'
 
 /** What the render budget's own cases already define, which the cases of the newer screens reuse. */
 export interface Helpers {
@@ -117,6 +117,32 @@ export function newCases(h: Helpers): Case[] {
         await p.getByRole('button', { name: /settings$/ }).click()
         await p.getByText('Mods', { exact: true }).last().click()
         await p.getByText('Hidden mods', { exact: true }).waitFor()
+      },
+    },
+    {
+      // A page holds as many results as fit, so a large window mounts the most cards a Browse page ever does.
+      name: 'browse-large-window',
+      setup: async (p) => {
+        await tab(p, 'Home')
+        await p.setViewportSize({ width: 2560, height: 1440 })
+      },
+      run: (p) => tab(p, 'Browse'),
+      teardown: (p) => p.setViewportSize(VIEWPORT),
+    },
+    {
+      // No setting matches, so the search offers the open game's settings; picking it carries the text over.
+      name: 'settings-search-game',
+      setup: async (p) => {
+        await toWorkspace(p)
+        await openSettings(p)
+        await typeInto(p, /^Search/, 'zzqx')
+      },
+      run: async (p) => {
+        await p.getByRole('button', { name: /^Search .* settings$/ }).click()
+        await p
+          .getByRole('textbox', { name: /^Search/ })
+          .first()
+          .waitFor()
       },
     },
     {

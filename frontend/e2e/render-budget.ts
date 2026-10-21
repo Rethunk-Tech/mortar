@@ -34,6 +34,7 @@ import { sandboxPort, selftest } from './sandbox.ts'
 // over its budget or fails.
 
 const BASE = '/var/tmp'
+export const VIEWPORT = { width: 1400, height: 840 }
 const SETTLE_MS = Number(process.env.MORTAR_RENDER_SETTLE_MS ?? '3000')
 const IDLE_MS = Number(process.env.MORTAR_RENDER_IDLE_MS ?? '10000')
 const IDLE_SCALE_MS = 10_000
@@ -58,6 +59,8 @@ export interface Case {
   setup?: (page: Page) => Promise<void>
   /** The measured action. */
   run: (page: Page) => Promise<void>
+  /** Undoes what setup changed for the cases after it, such as the window size. Runs even when the case fails. */
+  teardown?: (page: Page) => Promise<void>
   budget?: Partial<Budget>
 }
 
@@ -303,6 +306,8 @@ async function measure(page: Page, meter: Meter, c: Case): Promise<Result> {
     return { name: c.name, action, idle, over: overBudget(c, action, idle) }
   } catch (e) {
     return { name: c.name, over: [], failure: String(e).split('\n')[0] }
+  } finally {
+    await c.teardown?.(page)
   }
 }
 
@@ -363,7 +368,7 @@ function chosenCases(): Case[] {
 async function run(baseURL: string, chosen: Case[]): Promise<Result[]> {
   const browser = await chromium.launch()
   try {
-    const page = await browser.newPage({ baseURL, viewport: { width: 1400, height: 840 } })
+    const page = await browser.newPage({ baseURL, viewport: VIEWPORT })
     page.setDefaultTimeout(STEP_TIMEOUT_MS)
     await page.addInitScript(HOOK)
     const cdp = await page.context().newCDPSession(page)
