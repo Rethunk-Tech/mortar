@@ -108,6 +108,19 @@ func Record(id string, err error) {
 	}
 }
 
+// Offline reports whether this session has requested some source and every one it requested was unreachable at its
+// last request: the machine is likely offline, so optional fetches wait.
+func Offline() bool {
+	mu.Lock()
+	defer mu.Unlock()
+	for _, st := range states {
+		if !st.Unreachable {
+			return false
+		}
+	}
+	return len(states) > 0
+}
+
 // Service is the window's reachability API.
 type Service struct{}
 

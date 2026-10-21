@@ -13,15 +13,24 @@ import (
 
 func TestRecordKeepsStateOnNonNetworkErrors(t *testing.T) {
 	states = map[string]State{}
+	if Offline() {
+		t.Fatal("offline before any request")
+	}
 	Record("nexus", context.DeadlineExceeded)
 	Record("nexus", errors.New("401 unauthorized"))
 	Record("nexus", context.Canceled)
 	if got := (&Service{}).States(); len(got) != 1 || !got[0].Unreachable {
 		t.Fatalf("want one unreachable source, got %+v", got)
 	}
+	if !Offline() {
+		t.Fatal("every source requested is unreachable, so the machine is offline")
+	}
 	Record("nexus", nil)
 	if got := (&Service{}).States(); got[0].Unreachable || got[0].LastOK.IsZero() || got[0].LastFail.IsZero() {
 		t.Fatalf("success should clear Unreachable and keep both times, got %+v", got[0])
+	}
+	if Offline() {
+		t.Fatal("a reachable source means online")
 	}
 }
 

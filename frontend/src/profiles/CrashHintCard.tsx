@@ -108,6 +108,19 @@ export function CrashHintCard({
                 ? t`Most likely cause: ${hint.modName} (${hint.reason || named})`
                 : hint.reason || t`The log does not name a mod.`}
             </Typography>
+            {hint.nativeFrame ? (
+              <Typography
+                title={hint.nativeFrame}
+                sx={{
+                  fontSize: 12,
+                  color: 'text.secondary',
+                  fontFamily: MONO,
+                  wordBreak: 'break-all',
+                }}
+              >
+                {t`Crashed in ${hint.nativeFrame}`}
+              </Typography>
+            ) : null}
             {culprit && hint.evidence ? (
               <Typography
                 title={hint.evidence}

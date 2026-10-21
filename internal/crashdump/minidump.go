@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"unicode/utf16"
+
+	"github.com/Rethunk-Tech/mortar/internal/symsrv"
 )
 
 // Fault is the module a crash happened in. Module is empty when the address lies in none of the process's modules.
@@ -23,6 +25,13 @@ type Fault struct {
 	CalledFrom string
 	// ReportDir is the folder of the crash report a mod library kept, for the player to open.
 	ReportDir string
+	// Offset is the crash address's offset into Module when HasOffset, and CodeView that module's debug record when
+	// the dump carries it: what a symbol server needs to name the function. ModulePath is where the event log says
+	// Module was loaded from, whose own record serves when the dump gave none.
+	Offset     uint64
+	HasOffset  bool
+	CodeView   symsrv.CodeView
+	ModulePath string
 }
 
 const (
@@ -33,6 +42,7 @@ const (
 	maxStreams       = 64
 	maxModules       = 4096
 	maxNameBytes     = 1 << 12
+	maxCodeView      = 1 << 10
 )
 
 var errNotMinidump = errors.New("not a minidump")
@@ -94,7 +104,13 @@ func ParseMinidump(r io.ReaderAt, size int64) (Fault, error) {
 		if err != nil {
 			return Fault{}, err
 		}
-		fault.Module = baseName(name)
+		fault.Module, fault.Offset, fault.HasOffset = baseName(name), addr-base, true
+		if cvSize, cvRva := le.Uint32(m[76:]), le.Uint32(m[80:]); cvSize <= maxCodeView && int64(cvRva)+int64(cvSize) <= size {
+			raw := make([]byte, cvSize)
+			if _, err := r.ReadAt(raw, int64(cvRva)); err == nil {
+				fault.CodeView, _ = symsrv.ParseCodeView(raw)
+			}
+		}
 		break
 	}
 	return fault, nil

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -26,10 +27,12 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/netstate"
 	"github.com/Rethunk-Tech/mortar/internal/overlay"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
+	"github.com/Rethunk-Tech/mortar/internal/symsrv"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
@@ -185,6 +188,8 @@ type Service struct {
 	SweepCompat      func(ctx context.Context) (meta.CompatIndex, error)
 	SweepHasUpdate   func(uniqueID mod.ID, nexusID int) bool
 	SweepMissingDeps func(gameID, profileID string) int
+	// Symbols names native crash frames from symbol servers; nil names none.
+	Symbols *symsrv.Resolver
 }
 
 func NewService(home string, s *settings.Store, profiles *profile.Store) *Service {
@@ -196,6 +201,21 @@ func NewService(home string, s *settings.Store, profiles *profile.Store) *Servic
 		EnsureLoader: func(context.Context, string, string, bool) error {
 			return errors.New("the loader cannot be installed here")
 		},
+		Symbols: symbolResolver(),
+	}
+}
+
+// symbolWait is how long explaining a crash waits for a PDB download before showing the module and offset instead.
+const symbolWait = 5 * time.Second
+
+func symbolResolver() *symsrv.Resolver {
+	dir, err := datadir.Dir()
+	if err != nil {
+		return nil
+	}
+	return &symsrv.Resolver{
+		HTTP: &http.Client{Timeout: 10 * time.Minute}, Dir: filepath.Join(dir, "cache", "symbols"),
+		Online: func() bool { return !netstate.Offline() }, Wait: symbolWait,
 	}
 }
 

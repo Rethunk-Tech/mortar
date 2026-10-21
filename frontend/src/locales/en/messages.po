@@ -1055,6 +1055,11 @@ msgstr "Resize details"
 msgid "Delete group (mods stay)"
 msgstr "Delete group (mods stay)"
 
+#. placeholder {0}: hint.nativeFrame
+#: src/profiles/CrashHintCard.tsx
+msgid "Crashed in {0}"
+msgstr "Crashed in {0}"
+
 #: src/settings/sections/NexusMods.tsx
 msgid "Free"
 msgstr "Free"

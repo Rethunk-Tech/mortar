@@ -20,6 +20,10 @@ func Windows(crashDumps, temp string, exes []string, since time.Time) []Fault {
 	for _, dir := range unityCrashDirs(temp, since) {
 		if b, err := readErrorLog(dir); err == nil {
 			if f, ok := ParseUnityErrorLog(string(b)); ok {
+				// The log names the module; the dump beside it has the offset and the module's debug record.
+				if d, ok := readDump(filepath.Join(dir, "crash.dmp")); ok && strings.EqualFold(stem(d.Module), stem(f.Module)) {
+					f.Offset, f.HasOffset, f.CodeView = d.Offset, d.HasOffset, d.CodeView
+				}
 				out = append(out, f)
 				continue
 			}
@@ -77,3 +81,5 @@ func readDump(path string) (Fault, bool) {
 	fault, err := ParseMinidump(f, info.Size())
 	return fault, err == nil
 }
+
+func stem(module string) string { return strings.TrimSuffix(module, filepath.Ext(module)) }

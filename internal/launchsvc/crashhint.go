@@ -26,6 +26,9 @@ type CrashHint struct {
 	Reason string `json:"reason"`
 	// Evidence is the log line behind the blame, such as the stack frame that runs through the mod's code.
 	Evidence string `json:"evidence"`
+	// NativeFrame is the native function the game died in, from its crash dump or the event log:
+	// "UnityPlayer!GfxDeviceD3D11::DrawBuffers (+0x1c)", or "UnityPlayer.dll+0x1a2b3c" without symbols.
+	NativeFrame string `json:"nativeFrame,omitempty"`
 	// ReportDir is the folder of a crash report the game's mod library kept, empty when it kept none; the window opens
 	// it through OpenCrashReport.
 	ReportDir string `json:"reportDir"`
@@ -60,8 +63,8 @@ func (s *Service) CrashHint(gameID, profileID string) (*CrashHint, error) {
 			hint.ModKey, hint.ModName, hint.Reason, hint.Evidence = m.Key, m.Name, b.Exception, b.Frame
 			return hint, nil
 		}
-		if m, reason, evidence, reportDir, ok := s.dumpBlame(gameID, profileID, run, installed); ok {
-			hint.Evidence, hint.ReportDir = evidence, reportDir
+		if m, reason, evidence, native, reportDir, ok := s.dumpBlame(gameID, profileID, run, installed); ok {
+			hint.Evidence, hint.NativeFrame, hint.ReportDir = evidence, native, reportDir
 			if m.Key != "" {
 				hint.ModKey, hint.ModName, hint.Reason = m.Key, m.Name, "The game crashed inside this mod's code."
 				return hint, nil

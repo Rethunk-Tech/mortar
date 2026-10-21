@@ -32,7 +32,7 @@ func TestParseEventLog(t *testing.T) {
 		t.Errorf("managed fault = %+v", managed)
 	}
 	native := got[1]
-	if native.Module != "KERNELBASE.dll" || native.Detail != "exception c0000005 at offset 00000000001c408a" {
+	if native.Module != "KERNELBASE.dll" || native.Detail != "exception c0000005 at offset 00000000001c408a" || !native.HasOffset || native.Offset != 0x1c408a {
 		t.Errorf("native fault = %+v", native)
 	}
 }

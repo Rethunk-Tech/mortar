@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -100,7 +101,14 @@ func (e applicationEvent) fault(exes []string) (Fault, bool) {
 		if !namesExe(e.Data[0], exes) {
 			return Fault{}, false
 		}
-		return Fault{Module: e.Data[3], Detail: fmt.Sprintf("exception %s at offset %s", e.Data[6], e.Data[7])}, true
+		f := Fault{Module: e.Data[3], Detail: fmt.Sprintf("exception %s at offset %s", e.Data[6], e.Data[7])}
+		if off, err := strconv.ParseUint(strings.TrimPrefix(strings.TrimSpace(e.Data[7]), "0x"), 16, 64); err == nil {
+			f.Offset, f.HasOffset = off, true
+		}
+		if len(e.Data) > 11 && strings.Contains(e.Data[11], `\`) {
+			f.ModulePath = strings.TrimSpace(e.Data[11])
+		}
+		return f, true
 	}
 	return Fault{}, false
 }

@@ -15,6 +15,7 @@ type testModule struct {
 	name string
 	base uint64
 	size uint32
+	cv   []byte
 }
 
 // u32 narrows a test fixture's offset or count, which always fits.
@@ -50,10 +51,15 @@ func minidump(addr uint64, mods ...testModule) []byte {
 		le.PutUint64(entry[0:], m.base)
 		le.PutUint32(entry[8:], m.size)
 		le.PutUint32(entry[20:], u32(strAt+strs.Len()))
-		buf.Write(entry)
 		u := utf16.Encode([]rune(m.name))
 		_ = binary.Write(&strs, le, u32(len(u)*2))
 		_ = binary.Write(&strs, le, u)
+		if m.cv != nil {
+			le.PutUint32(entry[76:], u32(len(m.cv)))
+			le.PutUint32(entry[80:], u32(strAt+strs.Len()))
+			strs.Write(m.cv)
+		}
+		buf.Write(entry)
 	}
 	buf.Write(strs.Bytes())
 	return buf.Bytes()
@@ -62,12 +68,12 @@ func minidump(addr uint64, mods ...testModule) []byte {
 func TestMinidumpNamesTheModuleHoldingTheFaultAddress(t *testing.T) {
 	t.Parallel()
 	dump := minidump(0x7ff800001234,
-		testModule{`C:\Game\Game.exe`, 0x140000000, 0x2000000},
-		testModule{`C:\Game\Mods\Cool\Cool.dll`, 0x7ff800000000, 0x10000},
-		testModule{`C:\Windows\System32\ntdll.dll`, 0x7ff900000000, 0x200000},
+		testModule{`C:\Game\Game.exe`, 0x140000000, 0x2000000, nil},
+		testModule{`C:\Game\Mods\Cool\Cool.dll`, 0x7ff800000000, 0x10000, []byte("RSDS0123456789abcdef\x02\x00\x00\x00C:\\build\\Cool.pdb\x00")},
+		testModule{`C:\Windows\System32\ntdll.dll`, 0x7ff900000000, 0x200000, nil},
 	)
 	got, err := ParseMinidump(bytes.NewReader(dump), int64(len(dump)))
-	if err != nil || got.Module != "Cool.dll" {
+	if err != nil || got.Module != "Cool.dll" || got.Offset != 0x1234 || got.CodeView.PDB != "Cool.pdb" || got.CodeView.Age != 2 {
 		t.Fatalf("fault = %+v, %v", got, err)
 	}
 	if got.Detail != "exception 0xc0000005 at 0x7ff800001234" {
@@ -77,7 +83,7 @@ func TestMinidumpNamesTheModuleHoldingTheFaultAddress(t *testing.T) {
 
 func TestMinidumpWithAnAddressInNoModuleNamesNone(t *testing.T) {
 	t.Parallel()
-	dump := minidump(0x1, testModule{`C:\Game\Game.exe`, 0x140000000, 0x2000000})
+	dump := minidump(0x1, testModule{`C:\Game\Game.exe`, 0x140000000, 0x2000000, nil})
 	got, err := ParseMinidump(bytes.NewReader(dump), int64(len(dump)))
 	if err != nil || got.Module != "" {
 		t.Fatalf("fault = %+v, %v", got, err)
@@ -89,7 +95,7 @@ func TestMinidumpRejectsGarbageAndTruncation(t *testing.T) {
 	for name, data := range map[string][]byte{
 		"empty":     nil,
 		"not a dmp": bytes.Repeat([]byte("x"), 200),
-		"truncated": minidump(0x1, testModule{"a.dll", 0, 10})[:60],
+		"truncated": minidump(0x1, testModule{"a.dll", 0, 10, nil})[:60],
 	} {
 		if _, err := ParseMinidump(bytes.NewReader(data), int64(len(data))); err == nil {
 			t.Errorf("%s: parsed", name)
@@ -146,7 +152,7 @@ func TestWindowsReadsOnlyDumpsNewerThanTheRun(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	dump := minidump(0x10, testModule{`C:\Mods\Old.dll`, 0, 0x100})
+	dump := minidump(0x10, testModule{`C:\Mods\Old.dll`, 0, 0x100, nil})
 	oldDump := filepath.Join(crashDumps, "Game.exe.100.dmp")
 	newDump := filepath.Join(crashDumps, "Game.exe.200.dmp")
 	for _, p := range []string{oldDump, newDump} {
