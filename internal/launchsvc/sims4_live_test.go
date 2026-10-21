@@ -70,7 +70,7 @@ func newSims4World(t *testing.T) *sims4World {
 		t.Fatal(err)
 	}
 	_, profiles := testenv.Stores(t)
-	profiles.TrayFolder = func(id string) (string, error) { return game.PathFor(home, set.Get(), id, "", "tray") }
+	profiles.TrayFolder = func(id, role string) (string, error) { return game.PathFor(home, set.Get(), id, "", role) }
 	p := testenv.Profile(t, profiles, sims4, "A")
 	w.svc, w.profiles, w.set, w.profileID = NewService(home, set, profiles), profiles, set, p.ID
 	return w

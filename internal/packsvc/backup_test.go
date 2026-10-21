@@ -160,7 +160,7 @@ func TestBackupOfAFolderGameProfileCarriesTheSplitArchiveOnceAndReplacesTray(t *
 	dataHome(t)
 	_, profiles := testenv.Stores(t)
 	tray := filepath.Join(t.TempDir(), "Tray")
-	profiles.TrayFolder = func(string) (string, error) { return tray, nil }
+	profiles.TrayFolder = func(string, string) (string, error) { return tray, nil }
 	p := testenv.Profile(t, profiles, "sims4", "Sims")
 	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "h.zip"), map[string]string{"a.package": "1", "b.package": "2", "Smith.trayitem": "t"})
 	src := profile.Source{Kind: profile.KindCurseForge, Name: "Pack", ModID: 7, FileID: 10}
@@ -175,7 +175,7 @@ func TestBackupOfAFolderGameProfileCarriesTheSplitArchiveOnceAndReplacesTray(t *
 	dataHome(t)
 	_, fresh := testenv.Stores(t)
 	freshTray := filepath.Join(t.TempDir(), "Tray")
-	fresh.TrayFolder = func(string) (string, error) { return freshTray, nil }
+	fresh.TrayFolder = func(string, string) (string, error) { return freshTray, nil }
 	res, err := (&Service{Profiles: fresh, Queue: &fakeQueue{}}).Restore(context.Background(), dest, "")
 	if err != nil {
 		t.Fatal(err)
