@@ -156,10 +156,6 @@ msgstr "Could not switch the selected mods"
 msgid "Open profile"
 msgstr "Open profile"
 
-#: src/console/PerformancePanel.tsx
-msgid "Use Measure next launch under Startup and play; then start measuring here to time each plugin per frame."
-msgstr "Use Measure next launch under Startup and play; then start measuring here to time each plugin per frame."
-
 #: src/mods/ConfigPresets.tsx
 msgid "Presets"
 msgstr "Presets"
@@ -2051,6 +2047,7 @@ msgstr "Mortar does not have permission to do that."
 msgid "Could not ignore updates from {source}"
 msgstr "Could not ignore updates from {source}"
 
+#: src/console/PerformanceTab.tsx
 #: src/mods/columnLabel.ts
 msgid "Startup"
 msgstr "Startup"
@@ -2778,6 +2775,10 @@ msgstr "Why?"
 #: src/console/HelpDialog.tsx
 msgid "Upload log"
 msgstr "Upload log"
+
+#: src/console/PerformanceTab.tsx
+msgid "Performance views"
+msgstr "Performance views"
 
 #: src/launch/LaunchLayer.tsx
 msgid "Launch without Steam"
@@ -12234,6 +12235,10 @@ msgstr "No problems"
 msgid "Add one to group your mods your own way."
 msgstr "Add one to group your mods your own way."
 
+#: src/console/PerformancePanel.tsx
+msgid "Start the game, then start measuring here to time each plugin per frame."
+msgstr "Start the game, then start measuring here to time each plugin per frame."
+
 #: src/mods/problemFix/LoadFailureFix.tsx
 msgid "Remove the older copy?"
 msgstr "Remove the older copy?"
@@ -12258,6 +12263,10 @@ msgstr "Could not save the graphics choice"
 #: src/launch/store.ts
 msgid "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
 msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
+
+#: src/console/PerformancePanel.tsx
+msgid "This BepInEx Bridge measures in game only on a measured launch. Use Measure next launch under Startup and play again."
+msgstr "This BepInEx Bridge measures in game only on a measured launch. Use Measure next launch under Startup and play again."
 
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "Stop the game to test a launch."
@@ -12550,10 +12559,6 @@ msgstr "Config file"
 #: src/browse/BrowseBody.tsx
 msgid "{0, plural, one {# result} other {# results}}"
 msgstr "{0, plural, one {# result} other {# results}}"
-
-#: src/console/PerformancePanel.tsx
-msgid "This launch was not measured. Use Measure next launch under Startup, play again, then start measuring here."
-msgstr "This launch was not measured. Use Measure next launch under Startup, play again, then start measuring here."
 
 #: src/saves/SaveRow.tsx
 msgid "Riverland farm"

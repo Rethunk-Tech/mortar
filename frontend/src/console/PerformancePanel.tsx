@@ -85,11 +85,11 @@ function BridgePanel({ game }: { game: string }) {
   const saved = useSavedReports(game, openId)
   const perf = useBridgePerf({ game, openId, running, setSavedReports: saved[1] })
   const smapi = useProfileLoader()?.id === 'smapi'
-  let hint = t`Use Measure next launch under Startup and play; then start measuring here to time each plugin per frame.`
+  let hint = t`Start the game, then start measuring here to time each plugin per frame.`
   if (smapi) {
     hint = t`Start the game, then start measuring here to time each mod's event handlers per frame.`
   } else if (perf.unmeasured) {
-    hint = t`This launch was not measured. Use Measure next launch under Startup, play again, then start measuring here.`
+    hint = t`This BepInEx Bridge measures in game only on a measured launch. Use Measure next launch under Startup and play again.`
   }
   return (
     <PanelView
