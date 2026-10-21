@@ -38,7 +38,6 @@ export function ImportFooter({
     runLabel = t`New profile`
   }
   const [askReplace, setAskReplace] = useState(false)
-  const closeDialog = useImportDialog((s) => s.close)
   const targetId = useImportDialog((s) => s.request?.profileId ?? '')
   const targetLocked = useProfileLocked(targetId)
   return (
@@ -83,24 +82,6 @@ export function ImportFooter({
           pb: space.gap,
         }}
       >
-        <Button
-          variant="text"
-          color="inherit"
-          onClick={closeDialog}
-          disabled={flow.busy}
-          sx={{ height: 40 }}
-        >
-          {t`Close`}
-        </Button>
-        <Button
-          variant="text"
-          color="inherit"
-          onClick={flow.reset}
-          disabled={flow.busy}
-          sx={{ height: 40 }}
-        >
-          {t`Reset`}
-        </Button>
         <Box sx={{ flex: 1 }} />
         {targetName ? (
           <LockedReason locked={targetLocked}>

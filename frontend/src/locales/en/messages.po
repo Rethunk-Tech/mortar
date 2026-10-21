@@ -3404,6 +3404,10 @@ msgstr "Import from {manager}"
 msgid "Archive"
 msgstr "Archive"
 
+#: src/share/ImportDialog.tsx
+msgid "Working"
+msgstr "Working"
+
 #: src/commandPalette/paletteLabels.ts
 #: src/settings/shortcutLabels.ts
 msgid "Switch to Mods"
@@ -10104,7 +10108,6 @@ msgstr "{label} is not in {0}"
 #: src/mods/ModSections.tsx
 #: src/settings/sections/GameSettings.tsx
 #: src/settings/sections/Shortcuts.tsx
-#: src/share/ImportFooter.tsx
 msgid "Reset"
 msgstr "Reset"
 
@@ -14642,6 +14645,10 @@ msgstr "Reinstall"
 msgid "Compare"
 msgstr "Compare"
 
+#: src/share/ImportInput.tsx
+msgid "Reading…"
+msgstr "Reading…"
+
 #: src/settings/sections/Updates.tsx
 #: src/shell/checkForUpdates.ts
 msgid "Checking for updates…"
@@ -14907,7 +14914,6 @@ msgstr "Applied the next time the server starts. The password stays in this prof
 #: src/settings/sections/AboutDiagnostics.tsx
 #: src/settings/sections/DataStoreReport.tsx
 #: src/share/ImportDialog.tsx
-#: src/share/ImportFooter.tsx
 #: src/share/PreviewDialog.tsx
 #: src/share/ShareDialog.tsx
 #: src/shell/TitleBar.tsx

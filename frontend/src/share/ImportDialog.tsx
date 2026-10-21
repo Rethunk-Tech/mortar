@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Dialog, IconButton, Typography } from '@mui/material'
+import { Box, Dialog, IconButton, LinearProgress, Typography } from '@mui/material'
 import { ArrowLeft, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { localId } from '../mods/dependents.ts'
@@ -245,6 +245,10 @@ function Body({ request }: { request: ImportRequest }) {
             </IconButton>
           </span>
         </Tooltip>
+      </Box>
+      {/* Reading a link, code or file, or importing, can take a while: a thin bar says it is under way. */}
+      <Box sx={{ height: 2, flexShrink: 0 }}>
+        {flow.busy ? <LinearProgress sx={{ height: 2 }} aria-label={t`Working`} /> : null}
       </Box>
       {preview ? (
         <>

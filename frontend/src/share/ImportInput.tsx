@@ -83,7 +83,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
               size="large"
               sx={rowButtonSx}
             >
-              {t`Preview`}
+              {flow.busy ? t`Reading…` : t`Preview`}
             </Button>
           </Box>
         </>
