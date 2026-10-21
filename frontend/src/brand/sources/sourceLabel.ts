@@ -6,6 +6,7 @@ const LABELS: Record<string, string> = {
   curseforge: 'CurseForge',
   itch: 'itch.io',
   vsmoddb: 'VS Mod DB',
+  paradox: 'Paradox Mods',
   smapi: 'smapi.io',
 }
 

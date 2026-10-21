@@ -190,6 +190,7 @@ const BrowseFilters = memo(function BrowseFiltersView({
         thunderstore: t`Sort: top rated`,
         modrinth: t`Sort: most followed`,
         vsmoddb: t`Sort: most followed`,
+        paradox: t`Sort: top rated`,
         curseforge: t`Sort: most popular`,
       }[source] ?? t`Sort: most endorsed`,
     stars: t`Sort: most stars`,

@@ -26,6 +26,7 @@ const SOURCES = [
   'curseforge',
   'itch',
   'vsmoddb',
+  'paradox',
 ] as const
 type SourceId = (typeof SOURCES)[number]
 

@@ -28,6 +28,7 @@ const RELEASE_SOURCES = new Set([
   'modrinth',
   'curseforge',
   'vsmoddb',
+  'paradox',
 ])
 
 /** Whether the source lists a mod's versions (itch.io does not). */
