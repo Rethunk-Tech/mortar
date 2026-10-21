@@ -104,7 +104,7 @@ type Result struct {
 
 func (s *Service) read(ctx context.Context, src Source) (pack.Draft, error) {
 	return pack.Read(ctx, pack.Input{Path: src.Path, Text: src.Text},
-		s.Code, pack.Profile{GameByFolder: game.ByR2modmanFolder}, pack.Gale{GameBySlug: gameByThunderstoreKey, DB: pack.GaleDB(s.folder())}, pack.Modpack{})
+		s.Code, pack.GaleCode{HTTP: s.Code.HTTP}, pack.Profile{GameByFolder: game.ByR2modmanFolder}, pack.Gale{GameBySlug: gameByThunderstoreKey, DB: pack.GaleDB(s.folder())}, pack.Modpack{})
 }
 
 // gameByThunderstoreKey is the catalog game whose Thunderstore community key is slug, which is what Gale names a game.
