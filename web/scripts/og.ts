@@ -110,7 +110,8 @@ function words(html: string): { title: string; description: string } | undefined
   // "Mortar: <what it is>" titles read badly cut; their page heading says it better.
   const h1 = /<h1[^>]*>(.*?)<\/h1>/s
     .exec(html)?.[1]
-    ?.replace(/<[^>]+>/g, '')
+    ?.replace(/<br\s*\/?>/g, ' ')
+    .replace(/<[^>]+>/g, '')
     .replace(/\s+/g, ' ')
     .trim()
   const own = decodeEntities(title)
