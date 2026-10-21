@@ -1,0 +1,97 @@
+/* /games/: the covers/list switch and the list view. */
+.game-more {
+  display: none;
+}
+
+.game-view {
+  display: inline-flex;
+  min-width: 0;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.game-view button {
+  font: inherit;
+  color: var(--dim);
+  background: var(--raised);
+  border: 0;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.game-view button + button {
+  border-left: 1px solid var(--line);
+}
+
+.game-view button[aria-pressed="true"] {
+  color: var(--ink);
+  background: var(--raised2);
+}
+
+/* /games/ list view: one row per game with its loader, mod sites and stores in columns */
+.game-grid.list {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.game-grid.list .cover {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 14px;
+  align-items: center;
+  aspect-ratio: auto;
+  padding: 6px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+}
+
+.game-grid.list .cover:hover {
+  transform: none;
+  background: var(--raised);
+}
+
+.game-grid.list .cover-art,
+.game-grid.list .letter {
+  position: static;
+  width: 36px;
+  height: 54px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.game-grid.list .cover.no-art .letter {
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  background: var(--raised);
+}
+
+.game-grid.list .cover-text,
+.game-grid.list .cover.no-art .cover-text {
+  position: static;
+  grid-template-columns: minmax(12rem, 2fr) 1fr 1.5fr 1fr;
+  gap: 4px 16px;
+  align-items: center;
+  padding: 0;
+  text-align: start;
+  background: none;
+}
+
+.game-grid.list .game-meta,
+.game-grid.list .game-more {
+  display: block;
+  color: var(--dim);
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  .game-grid.list .cover-text,
+  .game-grid.list .cover.no-art .cover-text {
+    grid-template-columns: 1fr;
+  }
+}

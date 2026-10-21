@@ -26,6 +26,6 @@ const src = a?.capsule ?? a?.header
         <span class="letter" aria-hidden="true">{game.name.charAt(0)}</span>
       )
     }
-    <span class="cover-text"><span class="game-name">{game.name}</span><span class="game-meta">{meta}</span></span>
+    <span class="cover-text"><span class="game-name">{game.name}</span><span class="game-meta">{meta}</span>{data.sources !== undefined && <span class="game-more">{data.sources.split('|').join(', ')}</span>}{data.stores !== undefined && <span class="game-more">{data.stores.split('|').join(', ')}</span>}</span>
   </a>
 </li>

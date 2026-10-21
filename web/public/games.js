@@ -1,4 +1,4 @@
-// Filters the /games/ grid by name, mod loader, mod site and store; every card is in the page, so this only hides.
+// Filters the /games/ grid by name, mod loader, mod site and store, and switches covers and list; every card is in the page, so this only hides.
 const grid = document.getElementById('game-grid')
 const count = document.getElementById('game-count')
 const field = (id) => document.getElementById(id)
@@ -25,6 +25,29 @@ function apply() {
   }
   count.textContent =
     shown === cards.length ? `${shown} games` : `${shown} of ${cards.length} games`
+}
+
+const views = [...document.querySelectorAll('[data-view]')]
+function view(name) {
+  grid.classList.toggle('list', name === 'list')
+  for (const b of views) {
+    b.setAttribute('aria-pressed', String(b.dataset.view === name))
+  }
+}
+for (const b of views) {
+  b.addEventListener('click', () => {
+    view(b.dataset.view)
+    try {
+      localStorage.setItem('games-view', b.dataset.view)
+    } catch {
+      // Storage blocked: the view is not remembered.
+    }
+  })
+}
+try {
+  view(localStorage.getItem('games-view') ?? 'covers')
+} catch {
+  // Storage blocked: covers it is.
 }
 
 for (const el of [q, loader, source, store]) {

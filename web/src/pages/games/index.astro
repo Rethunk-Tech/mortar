@@ -1,4 +1,5 @@
 ---
+import '../../styles/games.css'
 import GameCard from '../../components/GameCard.astro'
 import Page from '../../layouts/Page.astro'
 import { steamArt } from '../../lib/art.ts'
@@ -54,6 +55,10 @@ const filters = [
         </label>
       ))
     }
+    <fieldset class="game-view" aria-label="View">
+      <button type="button" data-view="covers" aria-pressed="true">Covers</button>
+      <button type="button" data-view="list" aria-pressed="false">List</button>
+    </fieldset>
   </div>
   <p class="game-count" id="game-count" aria-live="polite"></p>
   <ul class="game-grid" id="game-grid">
