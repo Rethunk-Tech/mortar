@@ -4631,7 +4631,6 @@ msgstr "Mortar already named the likely mod for the last crash."
 #: src/settings/sections/NexusSSO.tsx
 #: src/settings/sections/nxmHandler.tsx
 #: src/share/ModpackDialog.tsx
-#: src/share/ShareFooter.tsx
 #: src/shell/BugReportDialog.tsx
 #: src/shell/ConfirmDialog.tsx
 #: src/shell/PromptDialog.tsx
