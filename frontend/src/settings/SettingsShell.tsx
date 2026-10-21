@@ -73,7 +73,7 @@ function SearchStatus({
   related,
   elsewhere,
 }: {
-  results: { readonly current: HTMLDivElement | null }
+  results: HTMLDivElement | null
   related: Related
   elsewhere: Elsewhere
 }) {
@@ -82,7 +82,7 @@ function SearchStatus({
   const [hits, setHits] = useState(0)
   useLayoutEffect(() => {
     // Only whether there are none and whether there are few matters, so a larger count stays one value.
-    const found = query ? (results.current?.querySelectorAll(SEARCH_HIT).length ?? 0) : 0
+    const found = query ? (results?.querySelectorAll(SEARCH_HIT).length ?? 0) : 0
     setHits(Math.min(found, FEW_HITS + 1))
   }, [query, results])
   const relatedLabels = query && related ? related.match(query) : []
@@ -150,7 +150,9 @@ export function SettingsShell<Id extends string>({
   // Whether a search runs, not its text: the rows follow the text themselves, so typing re-renders only them.
   const searching = useSettingsSearching()
   const pane = useRef<HTMLDivElement>(null)
-  const results = useRef<HTMLDivElement>(null)
+  // State, not a ref: SearchStatus sits inside this box, and a parent's ref is only set after its children's layout
+  // effects run, so the first count would find no box.
+  const [results, setResults] = useState<HTMLDivElement | null>(null)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && settingsQuery()) {
@@ -236,7 +238,7 @@ export function SettingsShell<Id extends string>({
           {searching ? null : actions[current]}
         </Box>
         <Box
-          ref={results}
+          ref={setResults}
           sx={{
             width: '100%',
             maxWidth: CONTENT_MAX,
