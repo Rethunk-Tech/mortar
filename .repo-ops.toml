@@ -1,0 +1,8 @@
+# astro check refuses TypeScript 7, and @astrojs/ts-content-mapper (its TS 7 path) needs 7.1, still in beta. The app
+# frontend is on TypeScript 7; only the site holds.
+[[hold]]
+package = "typescript"
+max_version = "6"
+ecosystem = "node"
+workspace = "web"
+reason = "astro check refuses TypeScript 7 until @astrojs/ts-content-mapper's TypeScript 7.1 is stable"
