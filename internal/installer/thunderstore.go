@@ -87,7 +87,7 @@ func (thunderstoreRules) Layout(a Archive, g Game, _ Choices) (Layout, error) {
 	route := router(g, all, pkg)
 	for _, f := range all {
 		dest := route(f)
-		if dest == "" {
+		if dest == "" || skip(f) {
 			continue
 		}
 		file := File{Src: f, Target: TargetProfile, Rel: dest}
