@@ -18,22 +18,27 @@ var blockedExtensions = []string{
 
 // ProfileFiles is the pack's config files and loose files as the profile holds them, by r2modman's import rule
 // (ProfileUtils.ts:56-67): a config/ entry goes below BepInEx/, any other path is relative to the profile, and
-// executable types are skipped. Mortar's profile folder also holds its own records (profile.json, history, saves), so
-// only a file below one of roots, the game's loaders' import folders, is kept, written under the root's own spelling. A
-// file the pack lists twice keeps its config. skipped lists, sorted, the paths left out.
-func ProfileFiles(d Draft, roots []string) (out map[string][]byte, skipped []string) {
+// executable types are skipped. Mortar's profile folder also holds its own records (profile.json, history, saves) and
+// the loader files Mortar writes itself (doorstop_config.ini), so only a file below one of roots, the game's loaders'
+// import folders, is kept, written under the root's own spelling; anything else is dropped without a word, as nothing
+// the player chose is lost. A file the pack lists twice keeps its config. programs lists, sorted, the executables left
+// out, which the player should hear about.
+func ProfileFiles(d Draft, roots []string) (out map[string][]byte, programs []string) {
 	out = map[string][]byte{}
 	keep := func(p string, data []byte) {
 		w, ok := winPath(p)
 		if ok {
 			first, rest, cut := strings.Cut(w, "/")
 			i := slices.IndexFunc(roots, func(r string) bool { return strings.EqualFold(r, first) })
-			if cut && i >= 0 && !slices.ContainsFunc(blockedExtensions, func(e string) bool { return strings.HasSuffix(strings.ToLower(w), e) }) {
-				out[roots[i]+"/"+rest] = data
+			if !cut || i < 0 {
 				return
 			}
+			if slices.ContainsFunc(blockedExtensions, func(e string) bool { return strings.HasSuffix(strings.ToLower(w), e) }) {
+				programs = append(programs, p)
+				return
+			}
+			out[roots[i]+"/"+rest] = data
 		}
-		skipped = append(skipped, p)
 	}
 	for _, f := range d.Loose {
 		keep(f.Path, f.Data)
@@ -41,8 +46,8 @@ func ProfileFiles(d Draft, roots []string) (out map[string][]byte, skipped []str
 	for _, f := range d.Configs {
 		keep("BepInEx/"+f.Path, f.Data)
 	}
-	slices.Sort(skipped)
-	return out, skipped
+	slices.Sort(programs)
+	return out, programs
 }
 
 // winPath is p with each segment's trailing dots and spaces removed, as Windows stores it, so "evil.dll." is judged as

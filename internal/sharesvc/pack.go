@@ -91,13 +91,13 @@ func (s *Service) previewDraft(ctx context.Context, game string, d pack.Draft, p
 	out.Mods = append(rows, out.Mods...)
 	out.Game = game
 	out.Settings += len(files)
-	out.SkippedSettings = skipped
+	out.SkippedPrograms = skipped
 	s.mu.Lock()
 	if s.current != nil && s.current.id == out.Session {
 		s.current.preview.Mods = out.Mods
 		s.current.preview.Game = game
 		s.current.preview.Settings = out.Settings
-		s.current.preview.SkippedSettings = skipped
+		s.current.preview.SkippedPrograms = skipped
 		s.current.packFiles = files
 		s.current.importedFrom = importedFrom
 	}

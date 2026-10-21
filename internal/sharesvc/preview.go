@@ -127,7 +127,9 @@ type Preview struct {
 	// Choices counts the dismissed problems and conflict winners the share carries.
 	Choices int `json:"choices"`
 	// SkippedSettings lists the external import's config files left out as too large, as mod id/path.
-	SkippedSettings []string    `json:"skippedSettings,omitempty"`
+	SkippedSettings []string `json:"skippedSettings,omitempty"`
+	// SkippedPrograms lists the executable files a profile code or file carried, which Mortar never copies.
+	SkippedPrograms []string    `json:"skippedPrograms,omitempty"`
 	Mods            []Mod       `json:"mods"`
 	Problems        []Problem   `json:"problems"`
 	SignedIn        bool        `json:"signedIn"`

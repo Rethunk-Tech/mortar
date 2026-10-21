@@ -30,3 +30,15 @@ func TestPackFilesJudgeNamesAsWindowsStoresThem(t *testing.T) {
 		t.Fatalf("files = %v", slices.Collect(maps.Keys(got)))
 	}
 }
+
+func TestPackFilesNameOnlyTheProgramsTheyLeaveOut(t *testing.T) {
+	got, programs := ProfileFiles(Draft{Loose: []File{
+		{Path: "doorstop_config.ini", Data: []byte("[General]")},
+		{Path: "profile.json", Data: []byte("{}")},
+		{Path: "BepInEx/plugins/run.dll", Data: []byte("MZ")},
+		{Path: "BepInEx/plugins/readme.txt", Data: []byte("r")},
+	}}, ImportRoots("lethal-company"))
+	if len(got) != 1 || !slices.Equal(programs, []string{"BepInEx/plugins/run.dll"}) {
+		t.Fatalf("files = %v, programs = %v", slices.Collect(maps.Keys(got)), programs)
+	}
+}

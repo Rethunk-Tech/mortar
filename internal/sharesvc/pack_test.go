@@ -98,8 +98,8 @@ func TestPreviewLinkReadsABareCodeAndAHashCode(t *testing.T) {
 			t.Errorf("an unresolvable package must be an unavailable row: %+v", gone)
 		}
 		// One config file lands; run.dll is an executable type and is listed as left out.
-		if pv.Settings != 1 || !slices.Equal(pv.SkippedSettings, []string{"BepInEx/plugins/run.dll"}) {
-			t.Errorf("settings %d, skipped %v", pv.Settings, pv.SkippedSettings)
+		if pv.Settings != 1 || !slices.Equal(pv.SkippedPrograms, []string{"BepInEx/plugins/run.dll"}) {
+			t.Errorf("settings %d, skipped %v", pv.Settings, pv.SkippedPrograms)
 		}
 	}
 }
