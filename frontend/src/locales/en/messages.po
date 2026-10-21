@@ -819,6 +819,7 @@ msgstr "Updated on Nexus"
 #: src/mods/problemFix/LoadFailureFix.tsx
 #: src/mods/problemFix/SettingFix.tsx
 #: src/mods/runErrorFixButtons.tsx
+#: src/mods/updateReview/UpdateBar.tsx
 #: src/profiles/CrashHintCard.tsx
 #: src/tips/TipBanner.tsx
 #: src/toasts/ToastHost.tsx
@@ -3336,10 +3337,6 @@ msgstr "Sound volume"
 msgid "Off"
 msgstr "Off"
 
-#: src/mods/updateReview/UpdateBar.tsx
-msgid "Updates are unknown: the update service could not be reached."
-msgstr "Updates are unknown: the update service could not be reached."
-
 #: src/mods/HiddenInside.tsx
 msgid "SMAPI skips folders whose names start with a dot."
 msgstr "SMAPI skips folders whose names start with a dot."
@@ -3648,6 +3645,7 @@ msgid "Measuring… {0}"
 msgstr "Measuring… {0}"
 
 #: src/firstrun/LoaderStep.tsx
+#: src/mods/updateReview/UpdateBar.tsx
 msgid "Check again"
 msgstr "Check again"
 
@@ -9747,6 +9745,10 @@ msgstr "Let the operating system choose a free port"
 msgid "Reset the settings of {name}"
 msgstr "Reset the settings of {name}"
 
+#: src/mods/updateReview/UpdateBar.tsx
+msgid "Some update checks did not answer in time, so updates for those mods are unknown."
+msgstr "Some update checks did not answer in time, so updates for those mods are unknown."
+
 #. placeholder {0}: size === null ? '…' : formatBytes(size)
 #: src/game/BackupMenuItems.tsx
 msgid "The backup holds up to {0}: the profile, its settings and config files, and its own saves when it keeps them."
@@ -11446,6 +11448,7 @@ msgstr "Nexus expects a 7z. Repack collection.zip as a 7z with 7-Zip before uplo
 msgid "Optional file"
 msgstr "Optional file"
 
+#: src/mods/updateReview/UpdateBar.tsx
 #: src/settings/sections/General.tsx
 msgid "Checking…"
 msgstr "Checking…"

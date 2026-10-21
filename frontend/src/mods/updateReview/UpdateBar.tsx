@@ -2,10 +2,12 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { ArrowUp } from 'lucide-react'
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { useProfiles } from '../../profiles/store.ts'
 import { space } from '../../theme/density.ts'
+import { reportUnexpected } from '../../toasts/report.ts'
 import { useBadges } from '../badges.ts'
+import { ListCallout } from '../ListCallout.tsx'
 import { visibleUpdates } from '../lookup.ts'
 import { accent } from '../paper.ts'
 import { useUpdates } from '../updates.ts'
@@ -18,13 +20,36 @@ export const UpdateBar = memo(function UpdateBarView() {
   const openId = useProfiles((s) => s.openId)
   const count = useBadges((s) => s.byProfile[openId]?.updates ?? 0)
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === openId))
+  const checkNow = useUpdates((s) => s.checkNow)
   const [first] = visibleUpdates(updates, profile)
+  // Dismissed for this answer only: the next check's answer brings the notice back if it is still incomplete.
+  const [dismissed, setDismissed] = useState<unknown>(null)
+  const [checking, setChecking] = useState(false)
   if (count === 0) {
-    return updates?.unknown ? (
-      <Typography sx={{ mx: space.gutter, mt: 1, fontSize: 12, color: 'text.secondary' }}>
-        {t`Updates are unknown: the update service could not be reached.`}
-      </Typography>
-    ) : null
+    if (!updates?.unknown || dismissed === updates) {
+      return null
+    }
+    const retry = () => {
+      setChecking(true)
+      checkNow()
+        .catch(reportUnexpected)
+        .finally(() => setChecking(false))
+    }
+    return (
+      <ListCallout
+        text={t`Some update checks did not answer in time, so updates for those mods are unknown.`}
+        actions={
+          <>
+            <Button size="small" variant="outlined" disabled={checking} onClick={retry}>
+              {checking ? t`Checking…` : t`Check again`}
+            </Button>
+            <Button size="small" color="inherit" onClick={() => setDismissed(updates)}>
+              {t`Dismiss`}
+            </Button>
+          </>
+        }
+      />
+    )
   }
   return (
     <Box
