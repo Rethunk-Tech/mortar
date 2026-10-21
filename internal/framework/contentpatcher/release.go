@@ -1,7 +1,6 @@
 package contentpatcher
 
 import (
-	"runtime/debug"
 	"sync"
 	"time"
 )
@@ -59,5 +58,4 @@ func releasePacks(gen int) {
 		parts.entries, parts.loaded = map[string]partEntry{}, false
 	}
 	parts.Unlock()
-	debug.FreeOSMemory()
 }

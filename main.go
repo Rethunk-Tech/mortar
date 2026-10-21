@@ -999,6 +999,7 @@ func run() error {
 	launchsvc.SetLife(launches, queueCtx)
 	go storecheck.Run(queueCtx, checkSvc)
 	go syncSvc.Run(queueCtx, syncScan)
+	go trimWhenQuiet(queueCtx)
 	watchLibraryFolders(queueCtx, home, dataDir, store, func(name string, data any) {
 		if name == syncsvc.FolderEvent {
 			syncSvc.Kick()
