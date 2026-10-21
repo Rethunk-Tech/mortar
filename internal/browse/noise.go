@@ -31,11 +31,11 @@ func noisyNames(names []string) []string {
 }
 
 // categoriesCached is the source's category names for the game, reused for categoryTTL; a source without categories
-// or a failed lookup gives none.
-func categoriesCached(ctx context.Context, game string, s source.Source, key string) []string {
+// gives none, and a failed lookup gives none and its error.
+func categoriesCached(ctx context.Context, game string, s source.Source, key string) ([]string, error) {
 	cat, ok := s.(source.Categorizer)
 	if !ok {
-		return nil
+		return nil, nil
 	}
 	id := game + "|" + s.ID()
 	catMu.Lock()
@@ -45,12 +45,12 @@ func categoriesCached(ctx context.Context, game string, s source.Source, key str
 		names, err := cat.Categories(ctx, key)
 		if err != nil {
 			slog.Warn("could not list categories", "game", game, "source", s.ID(), "err", err)
-			return nil
+			return nil, err
 		}
 		e.names, e.until = names, time.Now().Add(categoryTTL)
 		catMu.Lock()
 		catCache[id] = e
 		catMu.Unlock()
 	}
-	return e.names
+	return e.names, nil
 }

@@ -171,7 +171,7 @@ const BrowseFilters = memo(function BrowseFiltersView({
   source,
   sorts,
 }: {
-  categories: string[]
+  categories: { names: string[]; why: string }
   filter: BrowseFilter
   onFilter: (next: BrowseFilter) => void
   modes: BrowseModes
@@ -199,8 +199,11 @@ const BrowseFilters = memo(function BrowseFiltersView({
     newest: t`Sort: newest`,
     name: t`Sort: name (A to Z)`,
   }
-  const none = categories.length === 0
-  const title = t`This source has no categories to filter by`
+  const { names, why } = categories
+  const none = names.length === 0
+  const title = why
+    ? t`Could not load categories: ${why}`
+    : t`This source has no categories to filter by`
   return (
     <Box
       sx={{
@@ -213,7 +216,7 @@ const BrowseFilters = memo(function BrowseFiltersView({
     >
       <CategoryPicker
         label={t`Include categories`}
-        options={categories}
+        options={names}
         value={filter.include}
         onChange={(include) => onFilter({ ...filter, include })}
         disabled={none}
@@ -221,7 +224,7 @@ const BrowseFilters = memo(function BrowseFiltersView({
       />
       <CategoryPicker
         label={t`Exclude categories`}
-        options={categories}
+        options={names}
         value={filter.exclude}
         onChange={(exclude) => onFilter({ ...filter, exclude })}
         disabled={none}

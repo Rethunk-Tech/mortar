@@ -15099,6 +15099,10 @@ msgstr "The game was updated"
 msgid "Offer installs"
 msgstr "Offer installs"
 
+#: src/browse/BrowseFilters.tsx
+msgid "Could not load categories: {why}"
+msgstr "Could not load categories: {why}"
+
 #: src/console/PerformanceComparison.tsx
 msgid "Before ms"
 msgstr "Before ms"

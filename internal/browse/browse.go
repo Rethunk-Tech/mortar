@@ -360,7 +360,8 @@ var (
 )
 
 // Categories lists the category names of one source, or of every source that has categories when sourceID is
-// AllSources. Answers are cached for a day; a source that fails is skipped.
+// AllSources. Answers are cached for a day; a source that fails is skipped, and the error comes back only when no
+// source gave any, so the pickers can say why they are empty.
 func (c *Client) Categories(ctx context.Context, game, sourceID string) ([]string, error) {
 	info, ok := catalogGame(game)
 	if !ok {
@@ -370,10 +371,22 @@ func (c *Client) Categories(ctx context.Context, game, sourceID string) ([]strin
 	if id := strings.ToLower(strings.TrimSpace(sourceID)); id != AllSources {
 		sources = slices.DeleteFunc(sources, func(s source.Source) bool { return s.ID() != id })
 	}
+	return categoriesOf(ctx, info, sources)
+}
+
+func categoriesOf(ctx context.Context, info components.GameInfo, sources []source.Source) ([]string, error) {
 	var all []string
+	var errs []error
 	for _, s := range sources {
 		gs, _ := info.Source(s.ID())
-		all = append(all, categoriesCached(ctx, info.ID, s, gs.Key)...)
+		names, err := categoriesCached(ctx, info.ID, s, gs.Key)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		all = append(all, names...)
+	}
+	if len(all) == 0 && len(errs) > 0 {
+		return nil, errors.Join(errs...)
 	}
 	return source.UniqueNames(all), nil
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -195,6 +196,25 @@ func TestFilterReachesSourcesAndIncludeSkipsSourcesWithoutCategories(t *testing.
 	page, err = (&Client{}).searchAll(context.Background(), game, "q", 1, Filter{Exclude: []string{"x"}})
 	if err != nil || len(page.Items) < 2 {
 		t.Fatalf("exclude-only keeps every source: %+v %v", page, err)
+	}
+}
+
+type lockedCats struct{ catSource }
+
+func (*lockedCats) ID() string { return "lockedcats" }
+func (*lockedCats) Categories(context.Context, string) ([]string, error) {
+	return nil, errors.New("keyring is locked")
+}
+
+func TestCategoriesSayWhyOnlyWhenNoSourceGaveAny(t *testing.T) {
+	game := components.GameInfo{ID: "why", Sources: []components.GameSource{{ID: "lockedcats"}, {ID: "catsrc"}}}
+	locked := &lockedCats{}
+	names, err := categoriesOf(context.Background(), game, []source.Source{locked, cat})
+	if err != nil || len(names) != 2 {
+		t.Fatalf("one source answering is enough: %v %v", names, err)
+	}
+	if _, err := categoriesOf(context.Background(), game, []source.Source{locked}); err == nil || !strings.Contains(err.Error(), "keyring is locked") {
+		t.Fatalf("err = %v, want the failing source's reason", err)
 	}
 }
 
