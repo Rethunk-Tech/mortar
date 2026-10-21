@@ -46,3 +46,12 @@ func TestThunderstoreRowCarriesTheIndexIcon(t *testing.T) {
 		t.Errorf("a package the index lacks has icon %q", got)
 	}
 }
+
+func TestAnInstalledRowShowsThePictureItsEntryHas(t *testing.T) {
+	const pic = "https://staticdelivery.nexusmods.com/mods/1/images/7/a.png"
+	r := &resolver{target: []profile.Entry{{Source: profile.Source{Kind: profile.KindPatreon, Name: "123", Picture: pic}}}}
+	mods, _ := r.resolve(t.Context(), []share.Ref{{Patreon: "123"}, {Patreon: "456"}})
+	if len(mods) != 2 || mods[0].Icon != pic || mods[1].Icon != "" {
+		t.Fatalf("mods %+v", mods)
+	}
+}

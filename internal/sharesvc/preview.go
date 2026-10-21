@@ -495,6 +495,16 @@ func (r *resolver) paradox(ctx context.Context, ref share.Ref) Mod {
 	return m
 }
 
+// entryPicture is the picture the profile already shows for the mod ref names, so an installed row needs no lookup.
+func (r *resolver) entryPicture(ref share.Ref) string {
+	for _, e := range r.target {
+		if e.Source.Picture != "" && ref.MatchesEntry(e) {
+			return e.Source.Picture
+		}
+	}
+	return ""
+}
+
 func (r *resolver) hasPackage(pkg, version string) bool {
 	return slices.ContainsFunc(r.target, func(e profile.Entry) bool {
 		return e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, pkg) && (version == "" || e.Source.Version == version)
@@ -573,34 +583,37 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 	r.checkPackages(ctx, refs)
 	mods := make([]Mod, 0, len(refs))
 	// A source is the game's only by the receiver's own catalog; the link's sourceKeys never decide it.
-	add := func(source string, m Mod) {
+	add := func(source string, ref share.Ref, m Mod) {
 		if source != "" && r.game != "" && !r.catalogHas(source) {
 			m.State, m.Reason = StateUnavailable, ReasonNoSource
+		}
+		if m.Icon == "" && m.State == StateInstalled {
+			m.Icon = r.entryPicture(ref)
 		}
 		mods = append(mods, m)
 	}
 	for _, ref := range refs {
 		switch {
 		case ref.Local != "":
-			add("", r.local(ref))
+			add("", ref, r.local(ref))
 		case ref.Patreon != "":
-			add("patreon", r.patreon(ref))
+			add("patreon", ref, r.patreon(ref))
 		case ref.Itch != "":
-			add("itch", r.itch(ref))
+			add("itch", ref, r.itch(ref))
 		case ref.CurseForge != 0:
-			add("curseforge", r.curseforge(ctx, ref))
+			add("curseforge", ref, r.curseforge(ctx, ref))
 		case ref.VSModDB != "":
-			add("vsmoddb", r.vsmoddb(ctx, ref))
+			add("vsmoddb", ref, r.vsmoddb(ctx, ref))
 		case ref.Paradox != "":
-			add("paradox", r.paradox(ctx, ref))
+			add("paradox", ref, r.paradox(ctx, ref))
 		case ref.Package != "":
-			add("thunderstore", r.thunderstore(ref))
+			add("thunderstore", ref, r.thunderstore(ref))
 		case ref.GitHub != "":
-			add("github", r.github(ref))
+			add("github", ref, r.github(ref))
 		default:
 			m := r.nexus(ref.ModID, ref.FileID, StateDownload)
 			m.Disabled, m.Fomod, m.Overlay = append([]mod.ID{}, ref.Disabled...), ref.Fomod, ref.Overlay
-			add("nexus", m)
+			add("nexus", ref, m)
 		}
 		// A mod the sender marked implicit is offered as a dependency, as one the preview adds itself is.
 		if last := &mods[len(mods)-1]; ref.Implicit {
