@@ -28,7 +28,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Bun
-        uses: Rethunk-Tech/gh-actions/setup-bun@043d9f8fb8b04b983fa8f7012b28241fd20f17b4 # v1.18
+        uses: Rethunk-Tech/gh-actions/setup-bun@79cf1f780ce44c714a6928098da557539eba150f # v1.20
 
       # The audit prints each finding on an indented line and exits 1 when a catalog community or loader pack is gone.
       - name: Audit the catalog
