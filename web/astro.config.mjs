@@ -9,6 +9,8 @@ export default defineConfig({
   site: 'https://mortar.rethunk.tech',
   outDir: '../site',
   build: { format: 'directory' },
+  // Astro's compressor drops the line break between a word and an inline tag ("run<code>"), gluing them together.
+  compressHTML: false,
   devToolbar: { enabled: false },
   integrations: [og(), sitemap({ filter: (page) => !unlisted.test(new URL(page).pathname) })],
 })

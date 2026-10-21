@@ -181,6 +181,10 @@
   .oscards {
     grid-template-columns: 1fr;
   }
+
+  .oscard.mine {
+    order: -1;
+  }
 }
 
 /* /download/: a tab per system, a sub-tab per Linux distribution, commands with copy buttons */
