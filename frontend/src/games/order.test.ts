@@ -7,18 +7,23 @@ const games = ['Stardew Valley', 'Lethal Company', 'Valheim', 'R.E.P.O.', 'PEAK'
 const names = (list: { name: string }[]) => list.map((g) => g.name)
 
 test('the three most recently used games lead, newest first, and the rest follow by name', () => {
-  const { recent, rest } = gameOrder(games, 'peak', {
-    valheim: { at: '2026-10-01T00:00:00Z' },
-    'stardew valley': { at: '2026-10-05T00:00:00Z' },
-    'the sims 4': { at: '2026-10-03T00:00:00Z' },
-    peak: { at: '2026-09-01T00:00:00Z' },
-  })
+  const { recent, rest } = gameOrder(
+    games,
+    'peak',
+    {
+      valheim: { at: '2026-10-01T00:00:00Z' },
+      'stardew valley': { at: '2026-10-05T00:00:00Z' },
+      'the sims 4': { at: '2026-10-03T00:00:00Z' },
+      peak: { at: '2026-09-01T00:00:00Z' },
+    },
+    { peak: 'p1' },
+  )
   expect(names(recent)).toEqual(['PEAK', 'Stardew Valley', 'The Sims 4'])
   expect(names(rest)).toEqual(['Lethal Company', 'R.E.P.O.', 'Valheim'])
 })
 
 test('with nothing used yet every game is listed by name', () => {
-  const { recent, rest } = gameOrder(games, '', undefined)
+  const { recent, rest } = gameOrder(games, '', undefined, undefined)
   expect(recent).toEqual([])
   expect(names(rest)).toEqual([
     'Lethal Company',
@@ -34,4 +39,9 @@ test('a game is filed under its first letter, and under # when it starts with a 
   expect(initialOf('R.E.P.O.')).toBe('R')
   expect(initialOf('20 Minutes Till Dawn')).toBe('#')
   expect(initialOf('Éclat')).toBe('E')
+})
+
+test('a game opened only for its setup page is not recently played', () => {
+  const { recent } = gameOrder(games, 'valheim', { peak: { at: '2026-10-01T00:00:00Z' } }, {})
+  expect(names(recent)).toEqual(['PEAK'])
 })

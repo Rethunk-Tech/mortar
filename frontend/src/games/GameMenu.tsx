@@ -130,6 +130,7 @@ export const GameMenu = memo(function GameMenuView() {
   const games = useGames()
   const lastGame = useSettings((s) => s.lastGame)
   const played = useSettings((s) => s.lastPlayed)
+  const profiles = useSettings((s) => s.lastProfile)
   const hidden = useSettings((s) => s.hiddenGames)
   const { anchor, close, trigger } = useTitleMenu('game')
   // Read each time the menu opens: the folders are counted, no profile is read.
@@ -150,6 +151,7 @@ export const GameMenu = memo(function GameMenuView() {
     ),
     lastGame,
     played,
+    profiles,
   )
   // The rest of the catalog, mostly games not set up here, is one click away under All games.
   const found = rest.filter((g) => g.installed)

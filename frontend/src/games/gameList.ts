@@ -152,7 +152,8 @@ export function useSections(
   const { t } = useLingui()
   const lastGame = useSettings((s) => s.lastGame)
   const played = useSettings((s) => s.lastPlayed)
-  const ordered = gameOrder(listedGames(games, hiddenIds, showHidden), lastGame, played)
+  const profiles = useSettings((s) => s.lastProfile)
+  const ordered = gameOrder(listedGames(games, hiddenIds, showHidden), lastGame, played, profiles)
   const { recent } = ordered
   const found = ordered.rest.filter((g) => g.available && g.installed)
   const rest = ordered.rest.filter((g) => !(g.available && g.installed))
