@@ -74,7 +74,7 @@ func TestBackupNeededWhenTheGameWasUpdated(t *testing.T) {
 }
 
 func TestAGameWithNoSaveFolderSkipsTheBackupBeforePlay(t *testing.T) {
-	if err := (&Service{}).backupChangedSaves(t.Context(), "cities-skylines-ii", "p", "", t.TempDir()); err != nil {
+	if err := (&Service{}).backupChangedSaves(t.Context(), "riskofrain2", "p", "", t.TempDir()); err != nil {
 		t.Fatalf("backup = %v, want nothing to do", err)
 	}
 }
