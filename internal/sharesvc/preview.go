@@ -21,6 +21,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
 	"github.com/Rethunk-Tech/mortar/internal/source/itch"
@@ -55,6 +56,8 @@ const (
 	// ReasonCurseForgeKey is a CurseForge file Mortar cannot fetch until the receiver has a CurseForge key; the page link
 	// is the way to fetch it by hand.
 	ReasonCurseForgeKey = "curseforge-key"
+	// ReasonNotInIndex is a Thunderstore package the community's index cannot resolve; Detail says why.
+	ReasonNotInIndex = "not-in-index"
 )
 
 // Kinds of Problem.
@@ -78,11 +81,13 @@ type Mod struct {
 	State   string `json:"state"`
 	Enabled bool   `json:"enabled"`
 	Reason  string `json:"reason"`
-	ModID   int    `json:"modId"`
-	FileID  int    `json:"fileId"`
-	Repo    string `json:"repo"`
-	Tag     string `json:"tag"`
-	Asset   string `json:"asset"`
+	// Detail is the specific cause of an unavailable mod, when Reason alone does not say.
+	Detail string `json:"detail,omitempty"`
+	ModID  int    `json:"modId"`
+	FileID int    `json:"fileId"`
+	Repo   string `json:"repo"`
+	Tag    string `json:"tag"`
+	Asset  string `json:"asset"`
 	// fileName is the Nexus archive's name, which its entry records as the source name.
 	fileName string
 	// Package is a Thunderstore "Namespace-Name"; Version then names the version, or the newest when empty.
@@ -113,8 +118,10 @@ type Problem struct {
 // Preview is what an import would do. Settings counts the config files a .mortar file or an external profile carries.
 type Preview struct {
 	// Session names this preview; Import takes it back so it acts on exactly what the dialog shows.
-	Session  string `json:"session"`
-	Name     string `json:"name"`
+	Session string `json:"session"`
+	Name    string `json:"name"`
+	// Game is the game a pack was read for, which a pack's own game fills in when the caller named none.
+	Game     string `json:"game,omitempty"`
 	Notes    string `json:"notes"`
 	Settings int    `json:"settings"`
 	// Choices counts the dismissed problems and conflict winners the share carries.
@@ -187,11 +194,14 @@ const (
 // resolver looks one import up. Its answers come from the mod dataset and, when signed in, Nexus's file lists;
 // a lookup that fails leaves the mod as the link named it rather than failing the preview.
 type resolver struct {
-	meta     problems.Meta
-	files    func(ctx context.Context, t nexus.Title, modID int) ([]nexus.File, error)
-	signedIn bool
-	premium  bool
-	env      problems.Environment
+	// unresolvable names the Thunderstore packages the index cannot resolve (see Deps.Unresolvable); unresolved is its answer.
+	unresolvable func(ctx context.Context, reqs []queue.Request) map[string]string
+	unresolved   map[string]string
+	meta         problems.Meta
+	files        func(ctx context.Context, t nexus.Title, modID int) ([]nexus.File, error)
+	signedIn     bool
+	premium      bool
+	env          problems.Environment
 	// requirements reads what Nexus pages list as required; nil skips that check.
 	requirements problems.RequirementsOf
 	game         string
@@ -491,7 +501,9 @@ func (r *resolver) thunderstore(ref share.Ref) Mod {
 		Package: ref.Package, PageURL: thunderstore.Driver{}.ModPageURL(share.SourceKeys(r.game)["thunderstore"], ref.Package),
 		State: StateDownload, IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
 	}
-	if r.hasPackage(ref.Package, ref.Version) {
+	if why, bad := r.unresolved[ref.Package]; bad {
+		m.State, m.Reason, m.Detail = StateUnavailable, ReasonNotInIndex, why
+	} else if r.hasPackage(ref.Package, ref.Version) {
 		m.State = StateInstalled
 	} else if ref.Version != "" && r.storedKey(store.PackageKey(ref.Package, ref.Version)) {
 		m.State, r.storedKeys[m.Key] = StateInstalled, true
@@ -550,6 +562,7 @@ func nexusIDs(refs []share.Ref) []int {
 // resolve looks every shared file up, then the dependencies the shared mods need.
 func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Problem) {
 	r.load(ctx, nexusIDs(refs))
+	r.checkPackages(ctx, refs)
 	mods := make([]Mod, 0, len(refs))
 	// A source is the game's only by the receiver's own catalog; the link's sourceKeys never decide it.
 	add := func(source string, m Mod) {
@@ -751,4 +764,20 @@ func (r *resolver) catalogHas(id string) bool {
 	}
 	_, ok = g.Source(id)
 	return ok
+}
+
+// checkPackages asks which of the refs' Thunderstore packages the index cannot resolve; the profile's own are not asked.
+func (r *resolver) checkPackages(ctx context.Context, refs []share.Ref) {
+	if r.unresolvable == nil {
+		return
+	}
+	var reqs []queue.Request
+	for _, ref := range refs {
+		if ref.Package != "" && !r.hasPackage(ref.Package, ref.Version) {
+			reqs = append(reqs, queue.Request{Package: ref.Package, Version: ref.Version})
+		}
+	}
+	if len(reqs) > 0 {
+		r.unresolved = r.unresolvable(ctx, reqs)
+	}
 }

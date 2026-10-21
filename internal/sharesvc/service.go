@@ -31,6 +31,7 @@ import (
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/migrate"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
@@ -98,6 +99,13 @@ type Deps struct {
 	// NexusPages gives many Nexus pages' data in a few batched requests, for the requirements they list; nil skips them.
 	NexusPages problems.NexusPagesOf
 	Queue      Queue
+	// Unresolvable maps each Thunderstore package of reqs the community's index cannot resolve to why, so the preview
+	// shows it as unavailable instead of the import failing; nil checks nothing.
+	Unresolvable func(ctx context.Context, game, profileID string, reqs []queue.Request) map[string]string
+	// PackCode reads r2modman codes; the zero value talks to the real Thunderstore.
+	PackCode pack.Code
+	// PackFolder is the player's own r2modman or Gale data folder, for managers kept outside their default places.
+	PackFolder func() string
 	// Stored reports whether a source key is already available in Mortar's store.
 	Stored func(game, key string) bool
 	// Dismissals keeps the dismissed problems of each profile; nil means a share neither carries nor adopts them.
@@ -154,6 +162,10 @@ type session struct {
 	loaderConfigs []share.LoaderConfig
 	// changedFiles are the sender's changed copies of mod files, written into the profile like the loader's configs.
 	changedFiles []share.ChangedFile
+	// packFiles are an imported pack's config and loose files by profile path; importedFrom is the local profile
+	// folder it was read from.
+	packFiles    map[string][]byte
+	importedFrom string
 	origin       string
 	collection   *profile.CollectionRef
 	// archiveLink is the collection's archive path; archiveTried marks that Import already fetched it.
@@ -418,6 +430,13 @@ func (s *Service) PreviewLink(ctx context.Context, game, text, profileID string)
 	if domain, modID, ok := nexus.ParseModURL(text); ok {
 		return s.previewModPage(ctx, game, domain, modID, profileID)
 	}
+	if in := (pack.Input{Text: text}); s.d.PackCode.Detect(in) {
+		d, err := s.readPack(ctx, in)
+		if err != nil {
+			return Preview{}, err
+		}
+		return s.previewDraft(ctx, game, d, profileID, "")
+	}
 	shared, err := share.Parse(text)
 	if err != nil {
 		return Preview{}, unreadable(err)
@@ -454,8 +473,14 @@ func unreadable(err error) error {
 	return err
 }
 
-// PreviewFile reads a .mortar file and resolves what it names.
+// PreviewFile reads a .mortar file, or another manager's pack (an r2modman .r2z, a Thunderstore modpack zip, a profile
+// folder), and resolves what it names.
 func (s *Service) PreviewFile(ctx context.Context, game, file, profileID string) (Preview, error) {
+	if d, err := s.readPack(ctx, pack.Input{Path: file}); err == nil {
+		return s.previewDraft(ctx, game, d, profileID, "")
+	} else if !errors.Is(err, pack.ErrUnknown) {
+		return Preview{}, err
+	}
 	pv, err := share.Read(file)
 	if err != nil {
 		return Preview{}, unreadable(err)
@@ -640,6 +665,11 @@ func (s *Service) resolverFor(game, profileID string) (*resolver, error) {
 		game: game, stored: s.d.Stored, storedKeys: map[string]bool{}, requirements: s.d.NexusPages.Requirements(game),
 		curseforgeUnavailable: curseforgeUnavailable, curseforgeName: curseforgeProjectName,
 		vsmoddbRelease: vsmoddb.Driver{}.Resolve, paradoxVersion: paradox.Driver{}.Resolve,
+	}
+	if s.d.Unresolvable != nil {
+		r.unresolvable = func(ctx context.Context, reqs []queue.Request) map[string]string {
+			return s.d.Unresolvable(ctx, game, profileID, reqs)
+		}
 	}
 	if profileID == "" {
 		return r, nil
@@ -940,6 +970,13 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			}
 			p = stamped
 		}
+		if cur.importedFrom != "" {
+			stamped, err := s.d.Profiles.SetImportedFrom(game, p.ID, cur.importedFrom)
+			if err != nil {
+				return Result{}, errors.Join(err, s.d.Profiles.Delete(game, p.ID))
+			}
+			p = stamped
+		}
 		if cur.collection != nil {
 			stamped, err := s.d.Profiles.SetCollection(game, p.ID, *cur.collection)
 			if err != nil {
@@ -995,6 +1032,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	if err := errors.Join(
 		s.writeLoaderConfigs(game, profileID, cur.loaderConfigs, created || replace),
 		s.writeChangedFiles(game, profileID, cur.changedFiles, created || replace),
+		s.writePackFiles(game, profileID, cur.packFiles, created || replace),
 	); err != nil {
 		if created {
 			err = errors.Join(err, s.d.Profiles.Delete(game, profileID))

@@ -770,8 +770,10 @@ func run() error {
 			}
 			return c.CollectionArchive(ctx, link)
 		},
-		Env:   problemsSvc.Environment,
-		Queue: queueSvc,
+		Env:          problemsSvc.Environment,
+		Queue:        queueSvc,
+		Unresolvable: queueSvc.Unresolvable,
+		PackFolder:   func() string { return store.Get().PackFolder },
 		Stored: func(gameID, key string) bool {
 			_, err := items.Path(gameID, key)
 			return err == nil
