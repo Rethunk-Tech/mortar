@@ -1,14 +1,18 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { ClipboardPaste, FolderOpen } from 'lucide-react'
 import { liveHandoff, useHandoff } from '../install/handoff.ts'
 import { space } from '../theme/density.ts'
-import { BUTTON_LARGE_HEIGHT } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import type { ImportFlow } from './useImportFlow.ts'
-
-// The buttons beside the link field keep their one-line labels and the field's height.
-const rowButtonSx = { flexShrink: 0, whiteSpace: 'nowrap', height: BUTTON_LARGE_HEIGHT } as const
 
 // Before a preview exists: a link to type or paste, or a file to choose. Parse errors show here.
 export function ImportInput({ flow }: { flow: ImportFlow }) {
@@ -37,7 +41,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
         </>
       ) : (
         <>
-          <Typography sx={{ fontSize: 14 }}>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
             {t`Paste a Mortar link, a Nexus collection, an r2modman or Gale code, a Patreon post, an itch.io page or (Premium) a Nexus mod link.`}
           </Typography>
           <Box
@@ -48,7 +52,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
                 flow.previewLink(flow.text).catch(reportUnexpected)
               }
             }}
-            sx={{ display: 'flex', gap: space.gap }}
+            sx={{ display: 'flex', alignItems: 'flex-start', gap: space.gap }}
           >
             <TextField
               size="small"
@@ -57,31 +61,40 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
               placeholder={t`Link or code`}
               value={flow.text}
               onChange={(e) => flow.setText(e.target.value)}
+              error={flow.error !== ''}
+              helperText={flow.error || undefined}
               slotProps={{
                 htmlInput: { 'aria-label': t`Link or code`, spellCheck: false },
+                formHelperText: { role: 'alert', sx: { mx: 0, fontSize: 13 } },
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Tooltip title={t`Paste`}>
+                        <span>
+                          <IconButton
+                            edge="end"
+                            size="small"
+                            aria-label={t`Paste`}
+                            disabled={flow.busy}
+                            onClick={() => {
+                              flow.paste().catch(reportUnexpected)
+                            }}
+                          >
+                            <ClipboardPaste size={16} />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </InputAdornment>
+                  ),
+                },
               }}
-              // As tall as the large button beside it.
-              sx={{ userSelect: 'text', '& .MuiInputBase-root': { height: BUTTON_LARGE_HEIGHT } }}
+              sx={{ userSelect: 'text' }}
             />
-            <Button
-              variant="outlined"
-              color="inherit"
-              startIcon={<ClipboardPaste size={16} />}
-              disabled={flow.busy}
-              onClick={() => {
-                flow.paste().catch(reportUnexpected)
-              }}
-              size="large"
-              sx={rowButtonSx}
-            >
-              {t`Paste`}
-            </Button>
             <Button
               type="submit"
               variant="contained"
               disabled={!canPreview}
-              size="large"
-              sx={rowButtonSx}
+              sx={{ flexShrink: 0, whiteSpace: 'nowrap', height: 40, minWidth: 104 }}
             >
               {flow.busy ? t`Reading…` : t`Preview`}
             </Button>
@@ -95,7 +108,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
             : t`Opened the itch.io page. Save the file from it; Mortar offers it from your Downloads folder.`}
         </Typography>
       ) : null}
-      {flow.error ? (
+      {flow.tab === 'file' && flow.error ? (
         <Typography role="alert" sx={{ fontSize: 14, color: 'error.light' }}>
           {flow.error}
         </Typography>

@@ -7455,6 +7455,10 @@ msgstr "{0} needs this version or newer."
 msgid "Could not check this profile"
 msgstr "Could not check this profile"
 
+#: src/share/importError.ts
+msgid "Mortar doesn't recognise this. Paste a Mortar link, a Nexus collection, or an r2modman or Gale code."
+msgstr "Mortar doesn't recognise this. Paste a Mortar link, a Nexus collection, or an r2modman or Gale code."
+
 #: src/share/MethodPanes.tsx
 msgid "{length} of {limit} characters · too long for one Discord message"
 msgstr "{length} of {limit} characters · too long for one Discord message"
@@ -10202,6 +10206,10 @@ msgstr "These mods may add the same item: {0}."
 msgid "Sign in to Nexus Mods in Settings before downloading from a link."
 msgstr "Sign in to Nexus Mods in Settings before downloading from a link."
 
+#: src/share/importError.ts
+msgid "Nothing was found for that link or code. Codes expire, so ask for a new one."
+msgstr "Nothing was found for that link or code. Codes expire, so ask for a new one."
+
 #: src/settings/NexusMeter.tsx
 msgid "Nexus is throttling requests until the window resets."
 msgstr "Nexus is throttling requests until the window resets."
@@ -12000,6 +12008,10 @@ msgstr "Sparkles"
 #: src/QuitPrompt.tsx
 msgid "Quit"
 msgstr "Quit"
+
+#: src/share/importError.ts
+msgid "Mortar can't read this. Check that the whole link, code or file came through."
+msgstr "Mortar can't read this. Check that the whole link, code or file came through."
 
 #: src/settings/sections/Appearance.tsx
 msgid "Window background"

@@ -27,10 +27,11 @@ import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useQueue } from '../queue/store.ts'
 import { warnUnmoderated } from '../queue/unmoderated.ts'
-import { errorMessage, reportUnexpected, toastError } from '../toasts/report.ts'
+import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { beginWork } from '../toasts/usePending.ts'
 import { trackImport } from './importCompletion.ts'
+import { importErrorMessage } from './importError.ts'
 import { type ShownPreview, shownPreview } from './logic.ts'
 import { promptSaveImported } from './savePrompt.ts'
 import { type ImportOptions, importAfterSignIn, useImportDialog } from './store.ts'
@@ -84,7 +85,7 @@ async function showPreview(pending: Promise<Preview>, state: PreviewState) {
   } catch (e) {
     if (n === latest.current) {
       setPreview(null)
-      setError(errorMessage(e))
+      setError(importErrorMessage(e))
     }
   } finally {
     if (n === latest.current) {
@@ -315,7 +316,7 @@ export function useImportFlow(
         close()
       }
     } catch (e) {
-      setError(errorMessage(e))
+      setError(importErrorMessage(e))
     } finally {
       importing.current = false
       setImportBusy(false)

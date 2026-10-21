@@ -474,8 +474,9 @@ func unreadable(err error) error {
 	switch {
 	case errors.Is(err, share.ErrNewerVersion):
 		return usererr.Wrap(usererr.Outdated, err)
-	case errors.Is(err, share.ErrMalformed), errors.Is(err, share.ErrNotLink), errors.Is(err, share.ErrTooLarge),
-		errors.Is(err, share.ErrBadFile):
+	case errors.Is(err, share.ErrNotLink):
+		return usererr.Wrap(usererr.Invalid, err)
+	case errors.Is(err, share.ErrMalformed), errors.Is(err, share.ErrTooLarge), errors.Is(err, share.ErrBadFile):
 		return usererr.Wrap(usererr.Damaged, err)
 	}
 	return err
