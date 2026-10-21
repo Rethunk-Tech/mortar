@@ -69,6 +69,15 @@ var patchKinds = map[string]string{
 	"Prefix": PatchPrefix, "Postfix": PatchPostfix, "Transpiler": PatchTranspiler, "Finalizer": PatchFinalizer,
 }
 
+// PatchKindByName is the kind Harmony gives a patch method by its name alone (Prefix, Postfix, Transpiler, Finalizer),
+// or "".
+func PatchKindByName(method string) string {
+	if strings.HasPrefix(method, "Harmony") {
+		return ""
+	}
+	return patchKinds[method]
+}
+
 // Patches lists the Harmony patches the assembly at path declares with [HarmonyPatch] on a class, its methods or both,
 // each method a [HarmonyPrefix]-style attribute or its name (Prefix, Postfix, Transpiler, Finalizer) marks, and the
 // HookGen hooks it subscribes: On.Type.add_Method as a hook, IL.Type.add_Method as a transpiler. Patches a plugin

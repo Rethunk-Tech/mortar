@@ -48,7 +48,7 @@ var (
 	depNotLoaded  = regexp.MustCompile(`^Skipping \[([^\]]+)\] because it has a dependency that was not loaded\.`)
 	loadError     = regexp.MustCompile(`^Error loading \[([^\]]+)\] ?: (.*)$`)
 	preloaderFail = regexp.MustCompile(`^(Failed to load patcher \[[^\]]+\]|Failed to run \[[^\]]+\] when patching \[[^\]]+\]|Failed to run (?:Initializer|Finalizer) of \S+|Could not run preloader!)(.*)$`)
-	harmonyError  = regexp.MustCompile(`^Error while running (?:static )?\S+ ([\w.]+)::\S+?\(.*\)\. Error: (.*)$`)
+	harmonyError  = regexp.MustCompile(`^Error while running (?:static )?\S+ ([\w.+]+)::(\S+?)\(.*\)\. Error: (.*)$`)
 	// Harmony rejecting a patch while a plugin loads reaches the log through Unity's logger, naming the patch method.
 	patchTarget = regexp.MustCompile(`^\w+Exception: .*for patch method (?:static )?(?:\S+ )?([\w.+]+)::`)
 	patchWords  = regexp.MustCompile(`(?i)transpiler|prefix|postfix|harmony|patch`)
@@ -67,6 +67,21 @@ var (
 // patch, or logged an error: it ran, so it is no load failure. A throw while loading is BepInEx's "Error loading" line.
 func RanAfterLoad(kind string) bool {
 	return kind == KindUnityException || kind == KindPluginError || kind == KindPatchException
+}
+
+// HarmonyPatchMethod is the patch method, "Namespace.Type::Method", a LogOutput.log line says HarmonyX could not run.
+// The stack below such a line holds only the Harmony wrapper of the method it patches.
+func HarmonyPatchMethod(line string) (string, bool) {
+	_, line = launch.SplitBepInExStamp(strings.TrimRight(line, "\r"))
+	m := logLine.FindStringSubmatch(line)
+	if m == nil {
+		return "", false
+	}
+	g := harmonyError.FindStringSubmatch(m[3])
+	if g == nil {
+		return "", false
+	}
+	return g[1] + "::" + g[2], true
 }
 
 // loaderSources are the log sources that are BepInEx, Harmony or Unity rather than a plugin speaking for itself.
@@ -172,7 +187,7 @@ func classify(line string) (f Finding, ok bool) {
 		return Finding{Kind: KindPreloader, Message: msg}, true
 	case g(harmonyError) != nil:
 		g := g(harmonyError)
-		return Finding{Kind: KindPatchException, Plugin: rootNamespace(g[1]), Message: g[2]}, true
+		return Finding{Kind: KindPatchException, Plugin: rootNamespace(g[1]), Message: g[3]}, true
 	case g(patchTarget) != nil:
 		return Finding{Kind: KindPatchException, Plugin: rootNamespace(g(patchTarget)[1]), Message: msg}, true
 	case level == "Fatal" && source == "BepInEx" && msg == "Error occurred starting the game":

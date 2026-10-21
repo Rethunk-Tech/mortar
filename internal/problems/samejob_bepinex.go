@@ -98,17 +98,33 @@ func packageFootprints(pkgs []profile.PackageRef, mods []framework.Mod) (map[str
 	return out, mods
 }
 
-// packagePatchers returns, for a stack's methods, the enabled packages whose plugin DLLs declare a Harmony patch on one of
-// them, by mod name and sorted. The DLLs are read on the first call, which only a ran error makes.
-func packagePatchers(pkgs []profile.PackageRef, mods []framework.Mod) func(methods []string) []string {
+// patchIndex is what a ran error's stack is matched against: the enabled packages' plugin DLLs, read on first use,
+// which only a ran error makes.
+type patchIndex struct {
+	read func() patchMaps
+}
+
+type patchMaps struct {
+	targets map[string][]string    // patched method -> mod names
+	patches map[string]patchOwner  // patch method -> its mod and kind
+	modules map[string]moduleOwner // MVID -> the DLL and its mod
+}
+
+type patchOwner struct{ mod, kind string }
+
+type moduleOwner struct{ dll, mod, symbols string }
+
+// packagePatchers indexes the Harmony patches and module ids of the enabled packages' DLLs. A module two packages
+// ship (the same DLL, so the same MVID) belongs to the first.
+func packagePatchers(pkgs []profile.PackageRef, mods []framework.Mod) *patchIndex {
 	names := map[string]string{}
 	for _, m := range mods {
 		if m.Enabled {
 			names[m.Key] = m.Name
 		}
 	}
-	targets := sync.OnceValue(func() map[string][]string {
-		out := map[string][]string{} // patched method -> mod names
+	return &patchIndex{read: sync.OnceValue(func() patchMaps {
+		out := patchMaps{targets: map[string][]string{}, patches: map[string]patchOwner{}, modules: map[string]moduleOwner{}}
 		for _, p := range pkgs {
 			name, ok := names[p.Key]
 			if !ok {
@@ -117,18 +133,29 @@ func packagePatchers(pkgs []profile.PackageRef, mods []framework.Mod) func(metho
 			for _, dll := range dotnet.DLLs(p.Dir) {
 				patches, _ := dotnet.Patches(dll)
 				for _, patch := range patches {
-					out[patch.Target] = append(out[patch.Target], name)
+					out.targets[patch.Target] = append(out.targets[patch.Target], name)
+					if _, seen := out.patches[patch.Method]; !seen && patch.Method != "" {
+						out.patches[patch.Method] = patchOwner{name, patch.Kind}
+					}
+				}
+				if mvid, symbols := dotnet.Identity(dll); mvid != "" {
+					if _, seen := out.modules[mvid]; !seen {
+						out.modules[mvid] = moduleOwner{dll, name, symbols}
+					}
 				}
 			}
 		}
 		return out
-	})
-	return func(methods []string) []string {
-		var out []string
-		for _, m := range methods {
-			out = append(out, targets()[m]...)
-		}
-		slices.Sort(out)
-		return slices.Compact(out)
+	})}
+}
+
+// patchedBy returns, for a stack's methods, the enabled packages whose plugin DLLs declare a Harmony patch on one of
+// them, by mod name and sorted.
+func (x *patchIndex) patchedBy(methods []string) []string {
+	var out []string
+	for _, m := range methods {
+		out = append(out, x.read().targets[m]...)
 	}
+	slices.Sort(out)
+	return slices.Compact(out)
 }

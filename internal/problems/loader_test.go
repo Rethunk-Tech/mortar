@@ -55,25 +55,58 @@ func TestLoaderFailuresAttributeLogFindingsToPackages(t *testing.T) {
 	}
 }
 
-// An error a plugin hit while running names the method it was thrown in and the other mods that patch a method on
-// its stack, not the mod it is filed under.
+// An error a plugin hit while running names the method it was thrown in, the other mods that patch a method on its
+// stack (not the mod it is filed under), the Harmony patch the mod's frame ran in and its source line or why there is
+// none. alpha ships testdata/embedded.dll (portable symbols), beta testdata/mod.dll (none); both declare the same
+// patches, so each patches Farmer.Update. The frames are real Mono and HarmonyX shapes.
 func TestRanErrorNamesWhereItWasThrownAndWhoPatchesIt(t *testing.T) {
 	dir := t.TempDir()
-	testfs.WriteFile(t, dir, "BepInEx/LogOutput.log", "")
-	player := "NullReferenceException: boom\n  at Boombox.Plugin.Update () [0x00000] in <abc>:0\n" +
-		"  at (wrapper dynamic-method) OccludeAudio.DMD<OccludeAudio::Update>(OccludeAudio)\n"
-	owners := func() map[string]framework.Mod {
-		return map[string]framework.Mod{"boombox": {Key: "boombox", Name: "Boombox"}}
-	}
-	patchers := func(methods []string) []string {
-		if slices.Contains(methods, "OccludeAudio::Update") {
-			return []string{"Boombox", "Sound Tweaks"}
+	testfs.WriteFile(t, dir, "BepInEx/LogOutput.log", "[Error  :  HarmonyX] Error while running static void Gamma.Patches.RoundPatch::Reporting(). Error: System.TypeLoadException: Failure has occurred while loading a type.\n"+
+		"  at (wrapper dynamic-method) RoundManager.DMD<RoundManager::GenerateNewFloor>(RoundManager)\n")
+	player := "NullReferenceException: alpha broke\n" +
+		"  at Alpha.Patches.MenuPatch.Postfix (MenuManager __instance) [0x0002e] in ./Patches/MenuPatch.cs:17 \n" +
+		"  at (wrapper dynamic-method) MenuManager.DMD<MenuManager::Start>(MenuManager)\n" +
+		"  at (wrapper dynamic-method) StardewValley.Farmer.DMD<StardewValley.Farmer::Update>(StardewValley.Farmer)\n\n" +
+		"NullReferenceException: beta broke\n" +
+		"  at SoundManager.PlayAmbientSound () [0x00010] in <0123456789abcdef0123456789abcdef>:IL_0010 \n" +
+		"  at Beta.SaveManager.Prefix () [0x00001] in <5fbed16890e94601b0c1d6bd5787551f>:IL_0001 \n" +
+		"  at (wrapper dynamic-method) GameNetworkManager.DMD<GameNetworkManager::SaveLocalPlayerValues>(GameNetworkManager)\n\n" +
+		"NullReferenceException: fixture broke\n" +
+		"  at Fixture.Patches.FarmerPatches.SkipUpdate () [0x00000] in <bae0cdbd54c4427189879800db2c4c0e>:IL_0000 \n" +
+		"  at (wrapper dynamic-method) StardewValley.Farmer.DMD<StardewValley.Farmer::Update>(StardewValley.Farmer)\n"
+	var pkgs []profile.PackageRef
+	var mods []framework.Mod
+	for _, p := range []struct{ key, name, dll string }{{"alpha", "Alpha", "embedded.dll"}, {"beta", "Beta", "mod.dll"}} {
+		dll, err := fsx.ReadFile(filepath.Join("..", "dotnet", "testdata", p.dll))
+		if err != nil {
+			t.Fatal(err)
 		}
-		return nil
+		pkg := t.TempDir()
+		testfs.WriteFile(t, pkg, "plugins/Mod.dll", string(dll))
+		pkgs = append(pkgs, profile.PackageRef{Key: p.key, Enabled: true, Dir: pkg})
+		mods = append(mods, framework.Mod{Key: p.key, Name: p.name, Enabled: true})
 	}
-	got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, player, owners, patchers)
-	if len(got) != 1 || got[0].Thrown != "Boombox.Plugin.Update" || !slices.Equal(got[0].PatchedBy, []string{"Sound Tweaks"}) {
+	owners := func() map[string]framework.Mod { return map[string]framework.Mod{"alpha": mods[0], "beta": mods[1]} }
+	got := loaderFailures(bepinex5.Loader{}, loader.ProfileView{Dir: dir}, player, owners, packagePatchers(pkgs, mods))
+	type row struct {
+		thrown, source, noSource string
+		patch                    RanPatch
+		patchedBy                []string
+	}
+	want := map[string]row{
+		"Gamma":   {"Gamma.Patches.RoundPatch.Reporting", "", "", RanPatch{Method: "Gamma.Patches.RoundPatch.Reporting", Target: "RoundManager.GenerateNewFloor"}, nil},
+		"Alpha":   {"Alpha.Patches.MenuPatch.Postfix", "MenuPatch.cs:17", "", RanPatch{"Alpha", "postfix", "Alpha.Patches.MenuPatch.Postfix", "MenuManager.Start"}, []string{"Beta"}},
+		"Beta":    {"SoundManager.PlayAmbientSound", "", NoSourceNoSymbols, RanPatch{"Beta", "prefix", "Beta.SaveManager.Prefix", "GameNetworkManager.SaveLocalPlayerValues"}, nil},
+		"Fixture": {"Fixture.Patches.FarmerPatches.SkipUpdate", "", NoSourceNoLine, RanPatch{"Alpha", "prefix-skip", "Fixture.Patches.FarmerPatches.SkipUpdate", "StardewValley.Farmer.Update"}, []string{"Alpha", "Beta"}},
+	}
+	if len(got) != len(want) {
 		t.Fatalf("rows %+v", got)
+	}
+	for _, f := range got {
+		w, ok := want[f.Plugin]
+		if !ok || f.Patch == nil || f.Thrown != w.thrown || f.Source != w.source || f.NoSource != w.noSource || *f.Patch != w.patch || !slices.Equal(f.PatchedBy, w.patchedBy) {
+			t.Errorf("%s: %+v patch %+v", f.Plugin, f, f.Patch)
+		}
 	}
 }
 

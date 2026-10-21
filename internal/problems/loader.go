@@ -43,14 +43,41 @@ type LoadFailure struct {
 	// Harmony patches target a method on that stack: the suspects when the code that threw is the game's.
 	Thrown    string   `json:"thrown,omitempty"`
 	PatchedBy []string `json:"patchedBy,omitempty"`
+	// Patch is the Harmony patch the error was thrown in or called from, when the stack shows the mod's frame inside a
+	// Harmony wrapper.
+	Patch *RanPatch `json:"patch,omitempty"`
+	// Source is the file (base name) and line of the mod's innermost frame, "MenuManagerPatch.cs:17", when the runtime
+	// printed it; otherwise NoSource is why not (a NoSource value), when the frame names its module.
+	Source   string `json:"source,omitempty"`
+	NoSource string `json:"noSource,omitempty"`
 }
+
+// RanPatch is a Harmony patch on a ran error's stack: the mod that declares it, its kind (a dotnet Patch kind, or ""
+// when neither an attribute nor its name says), and the patch method and the method it patches, both "Type.Method".
+type RanPatch struct {
+	Mod    string `json:"mod,omitempty"`
+	Kind   string `json:"kind,omitempty"`
+	Method string `json:"method"`
+	Target string `json:"target"`
+}
+
+// Why a ran error's mod frame has no Source.
+const (
+	NoSourceNoSymbols  = "no-symbols"
+	NoSourceWindowsPDB = "windows-pdb"
+	// NoSourceNoLine is a DLL with readable symbols for which the runtime printed no line: generated code such as a
+	// Netcode RPC handler.
+	NoSourceNoLine = "no-line"
+	// NoSourceNotInProfile is a module no enabled package ships.
+	NoSourceNotInProfile = "not-in-profile"
+)
 
 // pluginsDir is where BepInEx loads plugins from, below the profile folder.
 const pluginsDir = "BepInEx/plugins"
 
 // loaderFailures runs the loader's log analyzers over its log in the profile and the Unity player log text, and attributes each finding to an enabled
 // package. A loader without a log, a missing log or a log without findings yields none.
-func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners func() map[string]framework.Mod, patchers func(methods []string) []string) []LoadFailure {
+func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners func() map[string]framework.Mod, patches *patchIndex) []LoadFailure {
 	logs, ok := l.(loader.WithLogs)
 	if !ok {
 		return nil
@@ -68,7 +95,7 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners
 		found = append(found, a.Analyze(loader.Logs{Loader: string(raw), Player: player})...)
 	}
 	logLines := map[string][]string{}
-	stackOf := func(f loader.Finding) []string {
+	stackOf := func(f loader.Finding) []dotnetstack.Frame {
 		text := string(raw)
 		if f.Source == "Player.log" {
 			text = player
@@ -81,9 +108,13 @@ func loaderFailures(l loader.Loader, p loader.ProfileView, player string, owners
 		if f.Line <= 0 || f.Line > len(lines) {
 			return nil
 		}
-		return dotnetstack.Methods(lines[f.Line:])
+		frames := dotnetstack.Frames(lines[f.Line:])
+		if method, ok := bepinex5.HarmonyPatchMethod(lines[f.Line-1]); ok {
+			frames = append([]dotnetstack.Frame{{Method: method}}, frames...)
+		}
+		return frames
 	}
-	out := attribute(found, owners, func(lf *LoadFailure, f loader.Finding) { explain(lf, stackOf(f), patchers) })
+	out := attribute(found, owners, func(lf *LoadFailure, f loader.Finding) { explain(lf, stackOf(f), owners, patches) })
 	if l.ID() == bepinex5.ID {
 		out = dropFixed(out, filepath.Join(p.Dir, filepath.FromSlash(pluginsDir)), owners)
 	}
@@ -256,14 +287,71 @@ func modIDOwners(mods []framework.Mod) map[string]framework.Mod {
 	return owners
 }
 
-// explain names where a ran error was thrown and the other mods that patch a method on its stack.
-func explain(lf *LoadFailure, methods []string, patchers func([]string) []string) {
-	if len(methods) == 0 {
+// explain names where a ran error was thrown, the other mods that patch a method on its stack, the Harmony patch the
+// mod's innermost frame ran in, and that frame's source line or why there is none. Game, engine and loader frames get
+// neither.
+func explain(lf *LoadFailure, frames []dotnetstack.Frame, owners func() map[string]framework.Mod, patches *patchIndex) {
+	if len(frames) == 0 {
 		return
 	}
-	lf.Thrown = strings.Replace(methods[0], "::", ".", 1)
-	if patchers == nil {
+	lf.Thrown = dotted(frames[0].Method)
+	if patches == nil {
 		return
 	}
-	lf.PatchedBy = slices.DeleteFunc(patchers(methods), func(name string) bool { return name == lf.Name })
+	methods := make([]string, len(frames))
+	for i, f := range frames {
+		methods[i] = f.Method
+	}
+	lf.PatchedBy = slices.DeleteFunc(patches.patchedBy(methods), func(name string) bool { return name == lf.Name })
+	at := slices.IndexFunc(frames, func(f dotnetstack.Frame) bool { return modFrame(f.Method) && !f.DMD })
+	if at < 0 {
+		return
+	}
+	mod := frames[at]
+	index := patches.read()
+	lf.Source = mod.Source
+	if lf.Source == "" && mod.Module != "" {
+		switch owner, ok := index.modules[mod.Module]; {
+		case !ok:
+			lf.NoSource = NoSourceNotInProfile
+		case owner.symbols == dotnet.SymbolsWindows:
+			lf.NoSource = NoSourceWindowsPDB
+		case owner.symbols == dotnet.SymbolsPortable:
+			lf.NoSource = NoSourceNoLine
+		default:
+			lf.NoSource = NoSourceNoSymbols
+		}
+	}
+	wrapper := slices.IndexFunc(frames[at:], func(f dotnetstack.Frame) bool { return f.DMD })
+	if wrapper <= 0 {
+		return
+	}
+	patch, target := frames[at+wrapper-1], frames[at+wrapper]
+	if !modFrame(patch.Method) {
+		return
+	}
+	p := &RanPatch{Method: dotted(patch.Method), Target: dotted(target.Method)}
+	if owner, ok := index.patches[patch.Method]; ok {
+		p.Mod, p.Kind = owner.mod, owner.kind
+	} else {
+		p.Kind = dotnet.PatchKindByName(patch.Method[strings.LastIndex(patch.Method, "::")+2:])
+	}
+	if owner, ok := index.modules[patch.Module]; p.Mod == "" && ok {
+		p.Mod = owner.mod
+	}
+	if root, _, _ := strings.Cut(patch.Method, "."); p.Mod == "" && owners != nil {
+		p.Mod = owners()[strings.ToLower(root)].Name
+	}
+	lf.Patch = p
 }
+
+// modFrame reports whether a frame's method is a mod's: it has a namespace (Unity games' own code mostly has none) and
+// that namespace is not the engine's, the runtime's or a loader's.
+func modFrame(method string) bool {
+	typ, _, _ := strings.Cut(method, "::")
+	root, _, dotted := strings.Cut(typ, ".")
+	return dotted && !dotnetstack.Unity[strings.ToLower(root)]
+}
+
+// dotted names a "Type::Method" as "Type.Method".
+func dotted(method string) string { return strings.Replace(method, "::", ".", 1) }
