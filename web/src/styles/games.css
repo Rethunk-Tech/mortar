@@ -89,7 +89,27 @@
   font-size: 14px;
 }
 
+.game-head {
+  display: none;
+}
+
+/* Lines up with a row: its padding, the 36px art and the gap before the text columns. */
+.game-head:has(+ .game-grid.list) {
+  display: grid;
+  grid-template-columns: minmax(12rem, 2fr) 1fr 1.5fr 1fr;
+  gap: 4px 16px;
+  padding: 0 12px 8px 62px;
+  border-bottom: 1px solid var(--line);
+  color: var(--faint);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 @media (max-width: 760px) {
+  .game-head:has(+ .game-grid.list) {
+    display: none;
+  }
+
   .game-grid.list .cover-text,
   .game-grid.list .cover.no-art .cover-text {
     grid-template-columns: 1fr;

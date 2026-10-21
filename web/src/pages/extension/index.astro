@@ -31,7 +31,7 @@ const what = [
 
 <Base
   title="Mortar browser extension"
-  description="The Mortar browser extension marks Nexus Mods pages with what your Mortar profile already has and hands Mod Manager Download clicks to Mortar. For Firefox, Chrome and Edge."
+  description="The Mortar browser extension marks Nexus Mods, Thunderstore, CurseForge and Vintage Story Mod DB pages with what your Mortar profile already has and hands their install buttons to Mortar. For Firefox, Chrome and Edge."
   current="extension"
   crumbs={[{ name: 'Browser extension', href: '/extension/' }]}
 >
@@ -39,8 +39,8 @@ const what = [
     <div class="wide spot">
       <div>
         <p class="kicker">Browser extension</p>
-        <h1>Nexus Mods, aware of <em>your profile.</em></h1>
-        <p class="lede">See which mods your Mortar profile already has while you browse Nexus Mods, and send Mod Manager Download clicks straight to Mortar. For Firefox, Chrome, Edge and other Chromium browsers.</p>
+        <h1>Mod sites, aware of <em>your profile.</em></h1>
+        <p class="lede">See which mods your Mortar profile already has while you browse Nexus Mods, Thunderstore, CurseForge or the Vintage Story Mod DB, and send their install buttons straight to Mortar. For Firefox, Chrome, Edge and other Chromium browsers.</p>
         <div class="cta">
           <a class="btn primary" href={XPI}>Get it for Firefox</a>
           <a class="store-badge" href={CHROME}><img src="/img/chrome-web-store.png" alt="Available in the Chrome Web Store" width="165" height="50" /></a>
@@ -87,11 +87,11 @@ const what = [
       <div class="faq">
         <details open>
           <summary>Privacy policy</summary>
-          <div class="a"><p>Mortar's browser extension reads Nexus Mods pages in your browser to mark mods and to pass Mod Manager Download links to the Mortar desktop app installed on your own computer, using the browser's native messaging. The only data exchanged is Nexus mod ids, file ids and nxm:// links, and Thunderstore package names, going to Mortar, and installed-mod and update information coming back. It runs only on https://www.nexusmods.com and on Thunderstore package pages (https://thunderstore.io/c/*/p/*). The extension makes no network requests of its own, has no server, analytics or telemetry, and sends nothing to the developers or any third party. Your display choice and filter settings are stored in your browser's extension storage and never leave it. Uninstalling the extension removes them.</p></div>
+          <div class="a"><p>Mortar's browser extension reads Nexus Mods, Thunderstore, CurseForge and Vintage Story Mod DB pages in your browser to mark mods and to pass their install links to the Mortar desktop app installed on your own computer, using the browser's native messaging. The only data exchanged is Nexus mod ids, file ids and nxm:// links, Thunderstore package names, CurseForge project ids, mod names and curseforge:// links, and Mod DB mod ids and install links, going to Mortar, and installed-mod and update information coming back. It runs only on https://www.nexusmods.com, Thunderstore community and package pages (https://thunderstore.io/c/*), https://www.curseforge.com and https://mods.vintagestory.at. The extension makes no network requests of its own, has no server, analytics or telemetry, and sends nothing to the developers or any third party. Your display choice and filter settings are stored in your browser's extension storage and never leave it. Uninstalling the extension removes them.</p></div>
         </details>
         <details>
           <summary>Permissions it asks for</summary>
-          <div class="a"><p><code>nativeMessaging</code> to reach Mortar on your computer; access to <code>www.nexusmods.com</code>, to read and mark its pages, and to Thunderstore package pages, to mark a package and add its Install in Mortar button; <code>scripting</code> to add its marks to Nexus tabs that were already open when it was installed; <code>storage</code> for your display settings; <code>alarms</code> to refresh the update check.</p></div>
+          <div class="a"><p><code>nativeMessaging</code> to reach Mortar on your computer; access to <code>www.nexusmods.com</code>, to read and mark its pages, to Thunderstore pages, to mark a package and add its Install in Mortar button, and to <code>www.curseforge.com</code> and <code>mods.vintagestory.at</code>, to mark mods and hand their Install buttons to Mortar; <code>scripting</code> to add its marks to Nexus tabs that were already open when it was installed; <code>storage</code> for your display settings; <code>alarms</code> to refresh the update check.</p></div>
         </details>
         <details>
           <summary>Source code</summary>
