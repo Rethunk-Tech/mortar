@@ -1,9 +1,11 @@
 package opener
 
 import (
+	"bytes"
 	"io/fs"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 
@@ -14,6 +16,10 @@ import (
 // nexussvc's sign-in page (opener.Web first) and datadir.Open (a local path checked by checkOpenable). Anything new
 // that starts a handler has to be added here on purpose.
 var handlerStarts = regexp.MustCompile(`Browser\.(OpenURL|OpenFile)\(|"xdg-open"|"explorer"|rundll32|ShellExecute|"gio",\s*"open"`)
+
+// handlerWords holds a word every handlerStarts match contains; a file with none is skipped before the regexp, which
+// the race detector slows twentyfold over the repo's Go source.
+var handlerWords = [][]byte{[]byte("Browser."), []byte("xdg-open"), []byte("explorer"), []byte("rundll32"), []byte("ShellExecute"), []byte(`"gio"`)}
 
 func rel0(root, path string) string {
 	return filepath.ToSlash(strings.TrimPrefix(path, root+string(filepath.Separator)))
@@ -50,7 +56,7 @@ func TestOnlyTheGuardedCallersStartTheSystemHandler(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		if handlerStarts.Match(b) {
+		if slices.ContainsFunc(handlerWords, func(w []byte) bool { return bytes.Contains(b, w) }) && handlerStarts.Match(b) {
 			offenders = append(offenders, rel)
 		}
 		return nil
