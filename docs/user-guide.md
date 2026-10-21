@@ -254,7 +254,7 @@ The Console's **Problems in this run** strip reads SMAPI's log and offers one fi
 
 #### Errors while running
 
-A plugin that loaded and then logged errors or threw an exception is listed here, once per mod with its error count. The row names the method the error was thrown in and the other enabled mods that patch code on the path it ran, since one of them may be the cause. It ran, so these rows are not counted as problems; **Disable** or **Update** it if the game misbehaves, or **Dismiss** the row for that run.
+A plugin that loaded and then logged errors or threw an exception is listed here, once per mod with its error count. The row names the method the error was thrown in and the other enabled mods that patch code on the path it ran, since one of them may be the cause. When the mod's code ran as a Harmony patch, the row names the patch, its kind and the game method it patches, with the source file and line when the mod ships readable debug symbols, or says why the line is unknown. It ran, so these rows are not counted as problems; **Disable** or **Update** it if the game misbehaves, or **Dismiss** the row for that run.
 
 #### Failed to load
 

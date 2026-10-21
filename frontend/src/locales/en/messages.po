@@ -95,6 +95,10 @@ msgstr "Make a group…"
 msgid "Other"
 msgstr "Other"
 
+#: src/mods/describe.ts
+msgid "prefix"
+msgstr "prefix"
+
 #: src/settings/updates.ts
 msgid "Could not reach GitHub. Check your connection and try again."
 msgstr "Could not reach GitHub. Check your connection and try again."
@@ -364,6 +368,10 @@ msgstr "Could not save the file"
 #: src/console/useStartupReports.ts
 msgid "Could not ask for a measured launch"
 msgstr "Could not ask for a measured launch"
+
+#: src/mods/describe.ts
+msgid "It was thrown in {thrown}, called from its {kind} {method} on {target}"
+msgstr "It was thrown in {thrown}, called from its {kind} {method} on {target}"
 
 #: src/saves/lackChipActions.tsx
 msgid "Enable {name} in this profile"
@@ -1426,6 +1434,10 @@ msgstr "Loading saved groups…"
 msgid "Select all mods"
 msgstr "Select all mods"
 
+#: src/mods/describe.ts
+msgid "Harmony patch"
+msgstr "Harmony patch"
+
 #: src/share/DestinationGrid.tsx
 msgid "An r2modman code or modpack"
 msgstr "An r2modman code or modpack"
@@ -1483,6 +1495,10 @@ msgstr "{count, plural, one {{name} was updated since this run and logged # erro
 #: src/mods/ModSections.tsx
 msgid "Settings from the mod's in-game menu"
 msgstr "Settings from the mod's in-game menu"
+
+#: src/mods/describe.ts
+msgid "It was thrown in {thrown}; {suspects}"
+msgstr "It was thrown in {thrown}; {suspects}"
 
 #: src/launch/VanillaPlay.tsx
 msgid "More play options"
@@ -2273,6 +2289,10 @@ msgstr "Files of this stored mod went missing, changed or appeared after Mortar 
 #: src/mods/HiddenInside.tsx
 msgid "Could not unhide the mod"
 msgstr "Could not unhide the mod"
+
+#: src/mods/describe.ts
+msgid "; the runtime printed no source line for that method (generated code)."
+msgstr "; the runtime printed no source line for that method (generated code)."
 
 #: src/shell/BugReportDialog.tsx
 msgid "A short summary"
@@ -4051,6 +4071,10 @@ msgstr "Skip sharing"
 msgid "The game is using this profile. Stop the game to change mods."
 msgstr "The game is using this profile. Stop the game to change mods."
 
+#: src/mods/describe.ts
+msgid "; {mod} ships Windows-format symbols, which the game cannot read."
+msgstr "; {mod} ships Windows-format symbols, which the game cannot read."
+
 #: src/profiles/CompareDialog.tsx
 msgid "Compare against a friend's profile or a multiplayer host's list."
 msgstr "Compare against a friend's profile or a multiplayer host's list."
@@ -5506,10 +5530,6 @@ msgstr "{0} folder"
 msgid "Meadowlands farm"
 msgstr "Meadowlands farm"
 
-#: src/mods/describe.ts
-msgid "It was thrown in {thrown}."
-msgstr "It was thrown in {thrown}."
-
 #: src/mods/ConfigPresets.tsx
 msgid "Save as preset"
 msgstr "Save as preset"
@@ -5718,6 +5738,10 @@ msgstr "Needs your choice ({0})"
 #: src/profiles/historyLabel.ts
 msgid "Unlinked the collection {name}"
 msgstr "Unlinked the collection {name}"
+
+#: src/mods/describe.ts
+msgid ", at {file} line {line}."
+msgstr ", at {file} line {line}."
 
 #: src/profiles/store.ts
 msgid "Could not permanently delete the profile"
@@ -5956,6 +5980,10 @@ msgstr "Empty trash?"
 msgid "Delete them; rolling back still restores the old version."
 msgstr "Delete them; rolling back still restores the old version."
 
+#: src/mods/describe.ts
+msgid "; {mod} ships no debug symbols, so its source line is unknown."
+msgstr "; {mod} ships no debug symbols, so its source line is unknown."
+
 #: src/settings/sections/Updates.tsx
 msgid "Could not read this Mortar build's version: {failed}"
 msgstr "Could not read this Mortar build's version: {failed}"
@@ -6013,6 +6041,11 @@ msgstr "Choose a file…"
 #: src/settings/prefCopyAntivirus.ts
 msgid "clamd socket path"
 msgstr "clamd socket path"
+
+#. placeholder {0}: patchedBy.length
+#: src/mods/describe.ts
+msgid "{0, plural, one {{mods} also patches code on that path.} other {{mods} also patch code on that path.}}"
+msgstr "{0, plural, one {{mods} also patches code on that path.} other {{mods} also patch code on that path.}}"
 
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most followed"
@@ -7091,11 +7124,6 @@ msgstr "Create"
 #: src/settings/prefCopy.ts
 msgid "Console level"
 msgstr "Console level"
-
-#. placeholder {0}: patchedBy.length
-#: src/mods/describe.ts
-msgid "{0, plural, one {It was thrown in {thrown}; {mods} also patches code on that path.} other {It was thrown in {thrown}; {mods} also patch code on that path.}}"
-msgstr "{0, plural, one {It was thrown in {thrown}; {mods} also patches code on that path.} other {It was thrown in {thrown}; {mods} also patch code on that path.}}"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "All values"
@@ -9307,6 +9335,10 @@ msgstr "Nexus Mods · Not signed in"
 msgid "No launchers found. Continue and choose each game's folder when you open it."
 msgstr "No launchers found. Continue and choose each game's folder when you open it."
 
+#: src/mods/describe.ts
+msgid "finalizer"
+msgstr "finalizer"
+
 #. placeholder {0}: status.error
 #: src/launch/store.ts
 msgid "Wine stopped on an error before {name} started: {0}"
@@ -9732,6 +9764,10 @@ msgstr "Executable"
 #: src/launch/UpdateWarnDialog.tsx
 msgid "Play anyway"
 msgstr "Play anyway"
+
+#: src/mods/describe.ts
+msgid "postfix"
+msgstr "postfix"
 
 #: src/console/startupHooks.ts
 msgid "applying its patches {ms}"
@@ -12459,6 +12495,10 @@ msgstr "{list} do the same job: all {0} change {detail}"
 msgid "{count, plural, one {Restored # mod} other {Restored # mods}}"
 msgstr "{count, plural, one {Restored # mod} other {Restored # mods}}"
 
+#: src/mods/describe.ts
+msgid "transpiler"
+msgstr "transpiler"
+
 #: src/settings/prefCopyModsView.ts
 msgid "Centre config controls"
 msgstr "Centre config controls"
@@ -12571,6 +12611,10 @@ msgstr "This saved group will be deleted. Groups already added to profiles stay.
 #: src/console/StartupSections.tsx
 msgid "First scene"
 msgstr "First scene"
+
+#: src/mods/describe.ts
+msgid "It was thrown in {thrown}"
+msgstr "It was thrown in {thrown}"
 
 #: src/share/ImportPreview.tsx
 msgid "Dependency"
@@ -12964,6 +13008,10 @@ msgstr "Older changes are dropped and can no longer be undone."
 #: src/install/DropOverlay.tsx
 msgid "Drop to install into {0}"
 msgstr "Drop to install into {0}"
+
+#: src/mods/describe.ts
+msgid "{mod}'s {kind} {method} on {target} threw it"
+msgstr "{mod}'s {kind} {method} on {target} threw it"
 
 #: src/mods/DuplicateDialog.tsx
 msgid "Newer."
@@ -14115,6 +14163,10 @@ msgstr "Game and {loader}"
 msgid "Tools"
 msgstr "Tools"
 
+#: src/mods/describe.ts
+msgid "It was thrown in {thrown}, called from {mod}'s {kind} {method} on {target}"
+msgstr "It was thrown in {thrown}, called from {mod}'s {kind} {method} on {target}"
+
 #: src/mods/problemWhy.ts
 msgid "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
 msgstr "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
@@ -14176,6 +14228,10 @@ msgstr "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 #: src/mods/updateReview/UpdateActions.tsx
 msgid "Skip this update"
 msgstr "Skip this update"
+
+#: src/mods/describe.ts
+msgid "hook"
+msgstr "hook"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Command-line control"
@@ -15221,6 +15277,10 @@ msgstr "Save diagnostics"
 #: src/mods/describe.ts
 msgid "{path} wait for each other in a loop, so SMAPI loads none of them."
 msgstr "{path} wait for each other in a loop, so SMAPI loads none of them."
+
+#: src/mods/describe.ts
+msgid "Its {kind} {method} on {target} threw it"
+msgstr "Its {kind} {method} on {target} threw it"
 
 #: src/install/MissingDepsDialog.tsx
 msgid "Add them"

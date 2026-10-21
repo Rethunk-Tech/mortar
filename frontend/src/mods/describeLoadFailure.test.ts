@@ -47,6 +47,43 @@ test('a ran error names where it was thrown and the other mods that patch it', (
   )
 })
 
+test('a ran error in a patch names the patch, its target and its source line, or why there is none', () => {
+  const ran = {
+    ...row('unity-exception', 'MissingMethodException'),
+    name: 'LethalCasino',
+    ran: true,
+    errors: 1,
+  }
+  const patch = {
+    mod: 'LethalCasino',
+    kind: 'postfix',
+    method: 'LethalCasino.Patches.MenuManagerPatch.StartPatch',
+    target: 'MenuManager.Start',
+  }
+  expect(
+    describeLoadFailure({ ...ran, thrown: patch.method, patch, source: 'MenuManagerPatch.cs:17' }),
+  ).toBe(
+    'LethalCasino loaded and logged an error while running. Its postfix MenuManagerPatch.StartPatch on MenuManager.Start threw it, at MenuManagerPatch.cs line 17.',
+  )
+  const emotes = {
+    mod: 'TooManyEmotes',
+    kind: '',
+    method: 'TooManyEmotes.SaveManager.SaveLocalPlayerValues',
+    target: 'GameNetworkManager.SaveLocalPlayerValues',
+  }
+  expect(
+    describeLoadFailure({
+      ...ran,
+      thrown: 'SoundManager.PlayAmbientSound',
+      patch: emotes,
+      noSource: 'no-symbols',
+      patchedBy: ['A'],
+    }),
+  ).toBe(
+    "LethalCasino loaded and logged an error while running. It was thrown in SoundManager.PlayAmbientSound, called from TooManyEmotes's Harmony patch SaveManager.SaveLocalPlayerValues on GameNetworkManager.SaveLocalPlayerValues; TooManyEmotes ships no debug symbols, so its source line is unknown. A also patches code on that path.",
+  )
+})
+
 test("a run's errors count only when the run crashed", () => {
   const runError = { key: 'k', id: 'x', name: 'X', count: 1, first: '', runId: 'r', updated: false }
   const calm = { runErrors: [{ ...runError, severe: false }] } as unknown as Result
