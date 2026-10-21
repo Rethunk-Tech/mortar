@@ -147,9 +147,12 @@
   color: var(--sand);
 }
 
+/* A release has two or three highlights; the first is wider and the rest share the row, so none leaves a gap. */
 .w2 {
   display: grid;
-  grid-template-columns: 1.3fr 1fr 1fr;
+  grid-template-columns: 1.3fr;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
   gap: 18px;
 }
 
@@ -349,6 +352,9 @@
   .wide,
   .wide.rev {
     grid-template-columns: 1fr;
+  }
+  .w2 {
+    grid-auto-flow: row;
   }
   h1.two {
     white-space: normal;
