@@ -35,14 +35,14 @@ runs:
 
     - name: Setup Go
       if: inputs.native == 'true'
-      uses: Rethunk-Tech/gh-actions/setup-go@79cf1f780ce44c714a6928098da557539eba150f # v1.20
+      uses: Rethunk-Tech/gh-actions/setup-go@5992e857707202bc73acf8a0a854add36ece781e # v1.21
       with:
         go-version-file: go.mod
 
     # Without the app's compile there is no build cache worth restoring (1.4 GB), so only the module cache is kept.
     - name: Setup Go (no build cache)
       if: inputs.native != 'true'
-      uses: Rethunk-Tech/gh-actions/setup-go@79cf1f780ce44c714a6928098da557539eba150f # v1.20
+      uses: Rethunk-Tech/gh-actions/setup-go@5992e857707202bc73acf8a0a854add36ece781e # v1.21
       with:
         go-version-file: go.mod
         cache-build: "false"
@@ -92,7 +92,7 @@ runs:
 
     - name: Setup Bun
       if: inputs.frontend == 'true'
-      uses: Rethunk-Tech/gh-actions/setup-bun@79cf1f780ce44c714a6928098da557539eba150f # v1.20
+      uses: Rethunk-Tech/gh-actions/setup-bun@5992e857707202bc73acf8a0a854add36ece781e # v1.21
 
     # main.go embeds frontend/dist, so Go's typecheck in the gate needs it built.
     - name: Install dependencies and build the frontend

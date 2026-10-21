@@ -63,7 +63,7 @@ jobs:
 
       - name: Setup Go
         if: ${{ !cancelled() && steps.changes.outputs.code != 'true' }}
-        uses: Rethunk-Tech/gh-actions/setup-go@79cf1f780ce44c714a6928098da557539eba150f # v1.20
+        uses: Rethunk-Tech/gh-actions/setup-go@5992e857707202bc73acf8a0a854add36ece781e # v1.21
         with:
           go-version-file: go.mod
           cache-build: "false"
