@@ -14,6 +14,10 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
+// ErrOpenInPage is what a server build's opener returns instead of starting the host's browser, which a sandboxed
+// server cannot show to the person using it; the window opens the address in its own tab when it sees this text.
+var ErrOpenInPage = errors.New("mortar:open-in-page")
+
 // maxURL bounds what is passed to the handler; longer is not a page address.
 const maxURL = 2048
 

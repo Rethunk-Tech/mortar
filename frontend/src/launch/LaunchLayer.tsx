@@ -236,9 +236,7 @@ function Failure({ game }: { game: string }) {
         </Button>
         {mod ? <SwitchOffButton mod={mod} /> : null}
         {nexusID > 0 ? (
-          <Button
-            onClick={() => openPage(nexusModUrl(nexusID, nexusDomain())).catch(reportUnexpected)}
-          >
+          <Button onClick={() => openPage(nexusModUrl(nexusID, nexusDomain()))}>
             {openPageLabel(i18n, 'nexus')}
           </Button>
         ) : null}

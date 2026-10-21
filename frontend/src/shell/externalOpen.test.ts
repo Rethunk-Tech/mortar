@@ -21,7 +21,11 @@ test('nothing opens an address except the opener service', () => {
   const offenders: string[] = []
   // The website demo (src/demo) is its own entry, never in the app's build, and opens only its fixed download page.
   const demo = join(import.meta.dir, '..', 'demo')
-  for (const path of sources(join(import.meta.dir, '..')).filter((p) => !p.startsWith(demo))) {
+  // openWeb opens a tab only for the address the backend opener already accepted and handed back in a server build.
+  const openWeb = join(import.meta.dir, 'openWeb.ts')
+  for (const path of sources(join(import.meta.dir, '..')).filter(
+    (p) => !p.startsWith(demo) && p !== openWeb,
+  )) {
     const text = readFileSync(path, 'utf8')
     if (OPENERS.test(text)) {
       offenders.push(path)

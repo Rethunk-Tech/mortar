@@ -4,9 +4,9 @@ import {
   HandoffPage,
   InstallHandoffDownload,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts'
-import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import type { InstallResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { i18n } from '../i18n/index.ts'
+import { openWeb } from '../shell/openWeb.ts'
 import { askHandoff } from './handoffConfirm.ts'
 
 export interface HandoffRef {
@@ -45,7 +45,7 @@ export async function startHandoff(text: string): Promise<boolean> {
     forget()
     return false
   }
-  await OpenWeb(page.url)
+  await openWeb(page.url)
   useHandoff.getState().set({ ...page, openedAt: Date.now() })
   return true
 }

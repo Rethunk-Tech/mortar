@@ -1,6 +1,5 @@
 import type { KeyboardEvent, MouseEvent } from 'react'
 import { create } from 'zustand'
-import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import type {
   Entry,
   Mod,
@@ -11,6 +10,7 @@ import {
   Revert,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
+import { openWeb } from '../shell/openWeb.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { partKey, supportParts } from './installReason.ts'
 import { entryOf, modId, updateFor } from './lookup.ts'
@@ -49,7 +49,9 @@ export const ICON_SIZE = 16
 
 // The one way a link leaves the window: the backend opens http and https addresses only, so a link in remote data
 // (a page, a changelog, a collection) can never start another app.
-export const openPage = (url: string) => OpenWeb(url).catch(reportUnexpected)
+export const openPage = (url: string): void => {
+  openWeb(url).catch(reportUnexpected)
+}
 
 /** Opens the mod's page on its site, when the app knows one. */
 export function openModPage(mod: Mod) {

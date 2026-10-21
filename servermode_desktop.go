@@ -2,6 +2,9 @@
 
 package main
 
+// serverBuild is false in the desktop build, whose window can hand an address to the system's browser.
+const serverBuild = false
+
 // prepareServerMode has nothing to check in a desktop build, which has a single-instance lock and serves no HTTP port.
 func prepareServerMode() error { return nil }
 

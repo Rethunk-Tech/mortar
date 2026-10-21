@@ -135,7 +135,7 @@ function MoreActions({
             label={openPageLabel(i18n, 'nexus')}
             onClick={() => {
               close()
-              openPage(nexusModUrl(nexusID, nexusDomain())).catch(reportUnexpected)
+              openPage(nexusModUrl(nexusID, nexusDomain()))
             }}
           />
         ) : null}

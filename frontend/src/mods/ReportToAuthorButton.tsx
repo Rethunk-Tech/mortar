@@ -19,7 +19,6 @@ import {
   RunLines,
   RunLog,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
-import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import type {
   Mod,
   Profile,
@@ -35,6 +34,7 @@ import { gameName } from '../games/info.ts'
 import { useLoader } from '../loader/store.ts'
 import { useProfileLoader } from '../profiles/store.ts'
 import { useMortarUpdate } from '../settings/updates.ts'
+import { openWeb } from '../shell/openWeb.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -120,7 +120,7 @@ async function finishReport(opts: {
   const report = buildModReport(i18n, fields)
   await Clipboard.SetText(report.text)
   if (report.url !== '') {
-    await OpenWeb(report.url)
+    await openWeb(report.url)
   }
   if (report.nexus || report.page || report.cut) {
     push({

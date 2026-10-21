@@ -364,7 +364,12 @@ func run() error {
 			},
 		},
 	})
-	openSvc := &opener.Service{Open: func(u string) error { return app.Browser.OpenURL(u) }}
+	openSvc := &opener.Service{Open: func(u string) error {
+		if serverBuild {
+			return opener.ErrOpenInPage
+		}
+		return app.Browser.OpenURL(u)
+	}}
 	if pid, ok := otherInstance(dataDir); ok {
 		return fmt.Errorf("mortar (pid %d) is already running with the data folder %s", pid, dataDir)
 	}

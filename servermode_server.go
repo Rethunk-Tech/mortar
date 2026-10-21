@@ -18,6 +18,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
+// serverBuild is true in the server build, whose window is a browser tab on another process's display.
+const serverBuild = true
+
 // realDataOptIn lets a server build run on the account's own data folder.
 const realDataOptIn = "MORTAR_SERVER_REAL_DATA"
 

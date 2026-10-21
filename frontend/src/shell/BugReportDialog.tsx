@@ -13,7 +13,6 @@ import {
   Typography,
 } from '@mui/material'
 import { type SyntheticEvent, useEffect, useId, useState } from 'react'
-import { OpenWeb } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
 import {
   BugText,
   BugURL,
@@ -25,6 +24,7 @@ import { copyText } from '../share/copyText.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { type Destination, GO, getDestination, REPORT_KEY, setDestination } from './destination.ts'
+import { openWeb } from './openWeb.ts'
 import { useBugReport } from './reportBug.ts'
 import { saveDiagnostics } from './saveDiagnostics.ts'
 import { useDiscardGuard } from './useDiscardGuard.tsx'
@@ -77,7 +77,7 @@ export function BugReportDialog() {
     }
     attach
       .then(() => BugURL(game ?? '', report))
-      .then((url) => OpenWeb(url))
+      .then((url) => openWeb(url))
       .then(close, reportUnexpected)
   }
   return (
