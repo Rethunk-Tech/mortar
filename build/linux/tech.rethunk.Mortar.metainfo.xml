@@ -71,6 +71,7 @@
           <li>Save folders for 46 more Unity games, so their saves list and back up</li>
           <li>The browser extension talks protocol 4 and reports updates from every site</li>
           <li>After a game crashes, its crash card also reads CatLib's crash report and opens its folder, and on Windows the Windows event log</li>
+          <li>When a game started directly crashes, the end of its output goes into the run's log, and a mod named in a .NET exception there is blamed on the crash card</li>
           <li>Mortar's own process holds about a third of the memory at idle that it did, returning what start-up used once it goes quiet</li>
         </ul>
         <p>Changed</p>
