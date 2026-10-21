@@ -75,6 +75,8 @@ func (d Driver) sideVersions(ctx context.Context, key, namespace, name, mortarVe
 var (
 	refreshMu    sync.Mutex
 	refreshTried = map[string]time.Time{}
+	// refreshes lets a test wait for a refresh to finish writing before its cache folder is removed.
+	refreshes sync.WaitGroup
 )
 
 // refreshInBackground refreshes the community's index once per refreshAfter, which rewrites the side file when the
@@ -88,10 +90,10 @@ func (d Driver) refreshInBackground(ctx context.Context, key, ua string) {
 	}
 	refreshTried[tried] = d.now()
 	bg, cancel := context.WithTimeout(context.WithoutCancel(ctx), refreshTimeout)
-	go func() {
+	refreshes.Go(func() {
 		defer cancel()
 		_, _ = d.buildListing(bg, key, ua)
-	}()
+	})
 }
 
 // refreshTimeout bounds a background index refresh, which downloads every chunk of a large community.

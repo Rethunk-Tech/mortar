@@ -167,6 +167,7 @@ func waitFor(t *testing.T, ok func() bool) {
 			t.Fatal("timed out waiting for the background refresh")
 		}
 	}
+	refreshes.Wait()
 }
 
 func TestChangedIndexRebuilds(t *testing.T) {
