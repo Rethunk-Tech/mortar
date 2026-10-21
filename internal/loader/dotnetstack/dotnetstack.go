@@ -5,6 +5,7 @@ package dotnetstack
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/loader"
@@ -141,12 +142,15 @@ func firstPatch(stack []string) string {
 
 // Frame is one frame of a stack. Method is "Namespace.Type::Method", for a Harmony wrapper (DMD) the method it stands
 // in for. Source is the file's base name and line when the runtime printed them; Module is the assembly's MVID, 32
-// lowercase hex digits, when it printed that instead because it had no symbols for the method.
+// lowercase hex digits, when it printed that instead because it had no symbols for the method, and IL the offset it
+// printed with it. Params counts the arguments the frame lists, which tells overloads apart.
 type Frame struct {
 	Method string
 	DMD    bool
 	Source string
 	Module string
+	IL     int
+	Params int
 }
 
 // Frames reads the stack below an exception line, innermost first. lines start at the first line after the exception;
@@ -174,26 +178,58 @@ func frameOf(l string) (Frame, bool) {
 	if m := dmdTarget.FindStringSubmatch(l); m != nil {
 		return Frame{Method: m[1], DMD: true}, true
 	}
-	m := frameLine.FindStringSubmatch(l)
-	for _, re := range []*regexp.Regexp{unityFrame, wrapperFrame, colonFrame} {
-		if m != nil {
+	var m []int
+	for _, re := range []*regexp.Regexp{frameLine, unityFrame, wrapperFrame, colonFrame} {
+		if m = re.FindStringSubmatchIndex(l); m != nil {
 			break
 		}
-		m = re.FindStringSubmatch(l)
 	}
 	if m == nil {
 		return Frame{}, false
 	}
-	f := Frame{Method: m[1] + "::" + m[2]}
+	f := Frame{Method: l[m[2]:m[3]] + "::" + l[m[4]:m[5]], Params: params(l[m[4]:])}
 	if loc := location.FindStringSubmatch(l); loc != nil {
 		path, line := loc[1]+loc[3]+loc[5], loc[2]+loc[4]+loc[6]
 		if id := mvid.FindStringSubmatch(path); id != nil {
 			f.Module = id[1]
+			il, _ := strconv.ParseInt(strings.TrimPrefix(line, "IL_"), 16, 32)
+			f.IL = int(il)
 		} else if !strings.HasPrefix(path, "<") && !strings.HasPrefix(line, "IL_") && line != "0" {
 			f.Source = path[strings.LastIndexAny(path, `/\`)+1:] + ":" + line
 		}
 	}
 	return f, true
+}
+
+// params counts the arguments in the first parenthesised list of s, skipping commas inside generic brackets.
+func params(s string) int {
+	_, args, ok := strings.Cut(s, "(")
+	if !ok {
+		return 0
+	}
+	n, depth := 0, 0
+	for _, r := range args {
+		switch r {
+		case '(', '[', '<':
+			depth++
+		case ']', '>':
+			depth--
+		case ')':
+			if depth == 0 {
+				return n
+			}
+			depth--
+		case ',':
+			if depth == 0 {
+				n++
+			}
+		default:
+			if n == 0 && r != ' ' {
+				n = 1
+			}
+		}
+	}
+	return n
 }
 
 // Methods names the methods the stack below an exception line runs through, innermost first, as Harmony targets name

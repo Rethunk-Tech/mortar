@@ -47,7 +47,8 @@ type LoadFailure struct {
 	// Harmony wrapper.
 	Patch *RanPatch `json:"patch,omitempty"`
 	// Source is the file (base name) and line of the mod's innermost frame, "MenuManagerPatch.cs:17", when the runtime
-	// printed it; otherwise NoSource is why not (a NoSource value), when the frame names its module.
+	// printed it or the DLL's validated portable PDB gives it; otherwise NoSource is why not (a NoSource value), when
+	// the frame names its module.
 	Source   string `json:"source,omitempty"`
 	NoSource string `json:"noSource,omitempty"`
 }
@@ -317,7 +318,11 @@ func explain(lf *LoadFailure, frames []dotnetstack.Frame, owners func() map[stri
 		case owner.symbols == dotnet.SymbolsWindows:
 			lf.NoSource = NoSourceWindowsPDB
 		case owner.symbols == dotnet.SymbolsPortable:
-			lf.NoSource = NoSourceNoLine
+			// The runtime printed no line although the DLL ships readable symbols: an older runtime that could not read
+			// them, or generated code they do not cover, which SourceLine finds no point for.
+			if lf.Source = dotnet.SourceLine(owner.dll, mod.Method, mod.Params, mod.IL); lf.Source == "" {
+				lf.NoSource = NoSourceNoLine
+			}
 		default:
 			lf.NoSource = NoSourceNoSymbols
 		}

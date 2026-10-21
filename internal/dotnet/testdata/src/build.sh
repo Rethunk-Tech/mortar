@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rebuilds ../mod.dll, the compiled fixture the reader's tests read, ../embedded.dll, the same with its symbols embedded, and ../e2e/*.dll, the ones the e2e specs install. The game stand-in is built only to compile against.
+# Rebuilds ../mod.dll, the compiled fixture the reader's tests read, ../embedded.dll, the same with its symbols embedded, ../portable/Mod.{dll,pdb} with them beside it, and ../e2e/*.dll, the ones the e2e specs install. The game stand-in is built only to compile against.
 set -euo pipefail
 cd "$(dirname "$0")"
 out=$(mktemp -d "${TMPDIR:-/var/tmp}/dotnet-fixture.XXXXXX")
@@ -11,6 +11,9 @@ dotnet build Mod/Mod.csproj -c Release -o "$out" -p:Deterministic=true -p:DebugT
 cp "$out/Mod.dll" ../mod.dll
 dotnet build Mod/Mod.csproj -c Release -o "$out/embedded" -p:Deterministic=true -p:DebugType=embedded -nologo -v quiet
 cp "$out/embedded/Mod.dll" ../embedded.dll
+dotnet build Mod/Mod.csproj -c Release -o "$out/portable" -p:Deterministic=true -p:DebugType=portable -nologo -v quiet
+mkdir -p ../portable
+cp "$out/portable/Mod.dll" "$out/portable/Mod.pdb" ../portable/
 mkdir -p ../e2e
 for name in Small Large Filler Alpha Beta; do
   dotnet build E2E/E2E.csproj -c Release -o "$out/$name" -p:Fixture="$name" -p:Deterministic=true -p:DebugType=none -nologo -v quiet

@@ -57,8 +57,9 @@ func TestLoaderFailuresAttributeLogFindingsToPackages(t *testing.T) {
 
 // An error a plugin hit while running names the method it was thrown in, the other mods that patch a method on its
 // stack (not the mod it is filed under), the Harmony patch the mod's frame ran in and its source line or why there is
-// none. alpha ships testdata/embedded.dll (portable symbols), beta testdata/mod.dll (none); both declare the same
-// patches, so each patches Farmer.Update. The frames are real Mono and HarmonyX shapes.
+// none. alpha ships testdata/embedded.dll (portable symbols, which give the line the runtime did not print), beta
+// testdata/mod.dll (none); both declare the same patches, so each patches Farmer.Update. The frames are real Mono and
+// HarmonyX shapes.
 func TestRanErrorNamesWhereItWasThrownAndWhoPatchesIt(t *testing.T) {
 	dir := t.TempDir()
 	testfs.WriteFile(t, dir, "BepInEx/LogOutput.log", "[Error  :  HarmonyX] Error while running static void Gamma.Patches.RoundPatch::Reporting(). Error: System.TypeLoadException: Failure has occurred while loading a type.\n"+
@@ -97,7 +98,7 @@ func TestRanErrorNamesWhereItWasThrownAndWhoPatchesIt(t *testing.T) {
 		"Gamma":   {"Gamma.Patches.RoundPatch.Reporting", "", "", RanPatch{Method: "Gamma.Patches.RoundPatch.Reporting", Target: "RoundManager.GenerateNewFloor"}, nil},
 		"Alpha":   {"Alpha.Patches.MenuPatch.Postfix", "MenuPatch.cs:17", "", RanPatch{"Alpha", "postfix", "Alpha.Patches.MenuPatch.Postfix", "MenuManager.Start"}, []string{"Beta"}},
 		"Beta":    {"SoundManager.PlayAmbientSound", "", NoSourceNoSymbols, RanPatch{"Beta", "prefix", "Beta.SaveManager.Prefix", "GameNetworkManager.SaveLocalPlayerValues"}, nil},
-		"Fixture": {"Fixture.Patches.FarmerPatches.SkipUpdate", "", NoSourceNoLine, RanPatch{"Alpha", "prefix-skip", "Fixture.Patches.FarmerPatches.SkipUpdate", "StardewValley.Farmer.Update"}, []string{"Alpha", "Beta"}},
+		"Fixture": {"Fixture.Patches.FarmerPatches.SkipUpdate", "Mod.cs:85", "", RanPatch{"Alpha", "prefix-skip", "Fixture.Patches.FarmerPatches.SkipUpdate", "StardewValley.Farmer.Update"}, []string{"Alpha", "Beta"}},
 	}
 	if len(got) != len(want) {
 		t.Fatalf("rows %+v", got)

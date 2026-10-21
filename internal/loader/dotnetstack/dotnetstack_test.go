@@ -78,14 +78,14 @@ func TestFramesReadsRealStacks(t *testing.T) {
 		at            int
 		want          Frame
 	}{
-		{casino, 23, 0, Frame{Method: "LethalCasino.Patches.MenuManagerPatch::StartPatch", Source: "MenuManagerPatch.cs:17"}},
+		{casino, 23, 0, Frame{Method: "LethalCasino.Patches.MenuManagerPatch::StartPatch", Source: "MenuManagerPatch.cs:17", Params: 1}},
 		{casino, 23, 1, Frame{Method: "MenuManager::Start", DMD: true}},
-		{casino, 23, 2, Frame{Method: "MonoMod.Utils.DynamicMethodDefinition::Trampoline<MenuManager::Start>?659680686"}},
-		{casino, 23, 21, Frame{Method: "Mirage.Hook.Config+syncConfig@23-1::Invoke", Source: "Config.fs:24"}},
-		{meltdown, 8, 0, Frame{Method: "FacilityMeltdown.MeltdownSequence.Behaviours.MeltdownHandler+<>c__DisplayClass20_0::<HandleEnemies>b__0", Source: "MeltdownHandler.cs:180"}},
-		{meltdown, 8, 1, Frame{Method: "System.Linq.Enumerable+WhereListIterator`1[TSource]::ToList", Module: "ea489521390f48908a7ce45cb17a6848"}},
-		{meltdown, 8, 5, Frame{Method: "FacilityMeltdown.MeltdownSequence.Behaviours.MeltdownHandler::__rpc_handler_3631067672", Module: "f723873df70c4b288182bf3c0363ab12"}},
-		{emotes, 8, 0, Frame{Method: "TooManyEmotes.SaveManager::SaveLocalPlayerValues", Module: "ba9a980d78984b3fb839a44a6ac6a81c"}},
+		{casino, 23, 2, Frame{Method: "MonoMod.Utils.DynamicMethodDefinition::Trampoline<MenuManager::Start>?659680686", Params: 1}},
+		{casino, 23, 21, Frame{Method: "Mirage.Hook.Config+syncConfig@23-1::Invoke", Source: "Config.fs:24", Params: 2}},
+		{meltdown, 8, 0, Frame{Method: "FacilityMeltdown.MeltdownSequence.Behaviours.MeltdownHandler+<>c__DisplayClass20_0::<HandleEnemies>b__0", Source: "MeltdownHandler.cs:180", Params: 1}},
+		{meltdown, 8, 1, Frame{Method: "System.Linq.Enumerable+WhereListIterator`1[TSource]::ToList", Module: "ea489521390f48908a7ce45cb17a6848", IL: 0x17}},
+		{meltdown, 8, 5, Frame{Method: "FacilityMeltdown.MeltdownSequence.Behaviours.MeltdownHandler::__rpc_handler_3631067672", Module: "f723873df70c4b288182bf3c0363ab12", IL: 0x2e, Params: 3}},
+		{emotes, 8, 0, Frame{Method: "TooManyEmotes.SaveManager::SaveLocalPlayerValues", Module: "ba9a980d78984b3fb839a44a6ac6a81c", IL: 1}},
 		{emotes, 8, 1, Frame{Method: "GameNetworkManager::SaveLocalPlayerValues", DMD: true}},
 		{harmonyx, 1, 0, Frame{Method: "RoundManager::GenerateNewFloor", DMD: true}},
 	} {
