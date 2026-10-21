@@ -99,16 +99,20 @@ func (d Driver) Versions(ctx context.Context, key, namespace, name, mortarVersio
 	if out, ok := d.sideVersions(ctx, key, namespace, name, mortarVersion); ok {
 		return out, nil
 	}
-	pk, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
+	// A miss (first start, or a refresh that changed the index) reads the stored listing a package at a time instead of
+	// loading it: the loader asks at every start, and a loaded listing stays in memory for listingIdle.
+	path, err := d.listingFile(ctx, key, source.UserAgentWithSite(mortarVersion))
 	if err != nil {
 		return nil, err
 	}
-	for _, p := range pk {
-		if strings.EqualFold(p.Owner, namespace) && strings.EqualFold(p.Name, name) {
-			out := versionsOf(p)
-			d.rememberVersions(key, namespace, name, out)
-			return out, nil
-		}
+	p, ok, err := findListed(path, namespace, name)
+	if err != nil {
+		return nil, err
+	}
+	if ok {
+		out := versionsOf(p)
+		d.rememberVersions(key, namespace, name, out)
+		return out, nil
 	}
 	return nil, fmt.Errorf("%s-%s is not in the %s index", namespace, name, key)
 }

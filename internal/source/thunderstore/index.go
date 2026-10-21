@@ -314,8 +314,18 @@ func dropOtherListings(dir, key, keep string) {
 }
 
 func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
+	path, err := d.listingFile(ctx, key, ua)
+	if err != nil {
+		return nil, err
+	}
+	return loadPackages(key, path)
+}
+
+// listingFile is the path of the community's stored listing, downloaded and built first when the cached one is older
+// than refreshAfter, kept when the site cannot be reached.
+func (d Driver) listingFile(ctx context.Context, key, ua string) (string, error) {
 	if !communityKey.MatchString(key) {
-		return nil, fmt.Errorf("%q is not a Thunderstore community key", key)
+		return "", fmt.Errorf("%q is not a Thunderstore community key", key)
 	}
 	// One build per community: a second caller waits, then finds the listing the first one wrote.
 	mu := buildLock(key)
@@ -327,51 +337,49 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 	if b, err := fsx.ReadFile(metaPath); err == nil {
 		_ = json.Unmarshal(b, &meta)
 	}
-	pkgPath := func(hash string) string { return listingPath(dir, key, hash) }
-	if meta.Hash != "" && d.now().Sub(meta.Fetched) < refreshAfter {
-		if pk, err := loadPackages(key, pkgPath(meta.Hash)); err == nil {
-			return pk, nil
-		}
+	cached := func() (string, bool) {
+		path := listingPath(dir, key, meta.Hash)
+		_, err := os.Stat(path)
+		return path, meta.Hash != "" && err == nil
+	}
+	if path, ok := cached(); ok && d.now().Sub(meta.Fetched) < refreshAfter {
+		return path, nil
 	}
 	if err := os.MkdirAll(dir, 0o700); err != nil {
-		return nil, err
+		return "", err
 	}
 	var chunks []string
 	hash, err := d.getJSON(ctx, d.indexURL(key), ua, &chunks)
 	if err != nil {
-		if meta.Hash != "" {
-			if pk, lerr := loadPackages(key, pkgPath(meta.Hash)); lerr == nil {
-				return pk, nil
-			}
+		if path, ok := cached(); ok {
+			return path, nil
 		}
-		return nil, err
+		return "", err
 	}
 	if len(chunks) > maxChunks {
-		return nil, fmt.Errorf("index lists %d chunks", len(chunks))
+		return "", fmt.Errorf("index lists %d chunks", len(chunks))
 	}
 	for _, c := range chunks {
 		if !d.chunkAllowed(c) {
-			return nil, fmt.Errorf("index names a chunk outside Thunderstore: %s", c)
+			return "", fmt.Errorf("index names a chunk outside Thunderstore: %s", c)
 		}
 	}
-	if _, err := os.Stat(pkgPath(hash)); err != nil {
-		if err := d.build(ctx, chunks, pkgPath(hash), ua); err != nil {
-			return nil, err
+	path := listingPath(dir, key, hash)
+	if _, err := os.Stat(path); err != nil {
+		if err := d.build(ctx, chunks, path, ua); err != nil {
+			return "", err
 		}
 	}
-	dropOtherListings(dir, key, pkgPath(hash))
+	dropOtherListings(dir, key, path)
 	nm, err := json.Marshal(cacheMeta{Hash: hash, Fetched: d.now()})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	if err := datadir.WriteFile(metaPath, nm, 0o644); err != nil {
-		return nil, err
+		return "", err
 	}
-	pk, err := loadPackages(key, pkgPath(hash))
-	if err == nil {
-		refreshSide(dir, key, hash, pk)
-	}
-	return pk, err
+	refreshSide(dir, key, hash, path)
+	return path, nil
 }
 
 // build downloads every chunk and writes the slimmed listing to path as it goes, so neither a chunk nor the whole
@@ -510,7 +518,7 @@ func dedupeIDs(pk []pkg) []pkg {
 		}
 		drop = true
 		o := pk[j]
-		if o.Hidden != p.Hidden && p.Hidden || o.Hidden == p.Hidden && o.Updated >= p.Updated {
+		if keepsOver(o, p) {
 			pk[i].Versions = nil
 		} else {
 			pk[j].Versions = nil
@@ -521,6 +529,12 @@ func dedupeIDs(pk []pkg) []pkg {
 		return pk
 	}
 	return slices.DeleteFunc(pk, func(p pkg) bool { return p.Versions == nil })
+}
+
+// keepsOver reports whether listing o wins over its case-folded twin p, which comes after it: the live listing wins,
+// then the more recently updated, then the first.
+func keepsOver(o, p pkg) bool {
+	return o.Hidden != p.Hidden && p.Hidden || o.Hidden == p.Hidden && o.Updated >= p.Updated
 }
 
 // releaseListing drops the loaded listing of key when it is still the one read from path.

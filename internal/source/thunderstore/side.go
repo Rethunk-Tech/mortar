@@ -1,6 +1,7 @@
 package thunderstore
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"path/filepath"
@@ -113,20 +114,66 @@ func (d Driver) rememberVersions(key, namespace, name string, versions []string)
 	writeSide(dir, key, s)
 }
 
-// refreshSide rewrites the side file for a freshly built listing, for the packages it already held.
-func refreshSide(dir, key, hash string, pk []pkg) {
+// refreshSide rewrites the side file for a freshly built listing at path, for the packages it already held. It reads the
+// listing a package at a time, so a refresh holds no more of it than those packages.
+func refreshSide(dir, key, hash, path string) {
 	sideMu.Lock()
-	defer sideMu.Unlock()
 	old := readSide(dir, key)
-	if len(old.Versions) == 0 {
+	sideMu.Unlock()
+	if len(old.Versions) == 0 || old.Hash == hash {
+		return
+	}
+	found := map[string]pkg{}
+	err := eachListed(path, func(p *pkg) {
+		id := sideID(p.Owner, p.Name)
+		if _, asked := old.Versions[id]; !asked {
+			return
+		}
+		if o, seen := found[id]; !seen || !keepsOver(o, *p) {
+			found[id] = *p
+		}
+	})
+	if err != nil {
 		return
 	}
 	s := sideFile{Hash: hash, Versions: map[string][]string{}}
-	for _, p := range pk {
-		id := sideID(p.Owner, p.Name)
-		if _, asked := old.Versions[id]; asked {
-			s.Versions[id] = versionsOf(p)
-		}
+	for id, p := range found {
+		s.Versions[id] = versionsOf(p)
 	}
+	sideMu.Lock()
+	defer sideMu.Unlock()
 	writeSide(dir, key, s)
+}
+
+// eachListed hands fn each package of the stored listing at path in turn, keeping none of them.
+func eachListed(path string, fn func(*pkg)) error {
+	f, err := fsx.Open(path)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = f.Close() }()
+	dec := json.NewDecoder(bufio.NewReader(f))
+	if err := expectArray(dec); err != nil {
+		return err
+	}
+	for dec.More() {
+		var p pkg
+		if err := dec.Decode(&p); err != nil {
+			return err
+		}
+		fn(&p)
+	}
+	return nil
+}
+
+// findListed is the package namespace-name in the stored listing at path, read a package at a time.
+func findListed(path, namespace, name string) (pkg, bool, error) {
+	var found pkg
+	ok := false
+	err := eachListed(path, func(p *pkg) {
+		if strings.EqualFold(p.Owner, namespace) && strings.EqualFold(p.Name, name) && (!ok || !keepsOver(found, *p)) {
+			found, ok = *p, true
+		}
+	})
+	return found, ok, err
 }

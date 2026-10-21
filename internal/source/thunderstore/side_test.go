@@ -66,3 +66,20 @@ func TestVersionsAnswerFromTheSideFileWithoutTheListing(t *testing.T) {
 		t.Fatal("nothing refreshed the index")
 	}
 }
+
+func TestVersionsOnAColdCacheLeavesNoListingInMemory(t *testing.T) {
+	f := newFake(t)
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	memoMu.Lock()
+	clear(memo)
+	memoMu.Unlock()
+	got, err := d.Versions(t.Context(), "lethal-company", "Alice", "MoreCompany", "1.2.3")
+	if err != nil || len(got) == 0 {
+		t.Fatalf("versions = %v, %v", got, err)
+	}
+	memoMu.Lock()
+	defer memoMu.Unlock()
+	if _, held := memo["lethal-company"]; held {
+		t.Fatal("a version lookup kept the whole listing in memory")
+	}
+}
