@@ -35,6 +35,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/share"
+	"github.com/Rethunk-Tech/mortar/internal/source/paradox"
 	"github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -638,7 +639,7 @@ func (s *Service) resolverFor(game, profileID string) (*resolver, error) {
 		meta: s.d.Meta, files: s.d.Files, signedIn: s.d.SignedIn(), premium: s.d.Premium(), env: s.d.Env(game),
 		game: game, stored: s.d.Stored, storedKeys: map[string]bool{}, requirements: s.d.NexusPages.Requirements(game),
 		curseforgeUnavailable: curseforgeUnavailable, curseforgeName: curseforgeProjectName,
-		vsmoddbRelease: vsmoddb.Driver{}.Resolve,
+		vsmoddbRelease: vsmoddb.Driver{}.Resolve, paradoxVersion: paradox.Driver{}.Resolve,
 	}
 	if profileID == "" {
 		return r, nil
@@ -731,6 +732,9 @@ func (m Mod) storedEntry() (storedEntry, bool) {
 	case SiteVSModDB:
 		src := profile.Source{Kind: profile.KindVSModDB, Name: m.Package, FileID: m.FileID, Version: m.Version}.WithDisabled(m.Disabled)
 		return storedEntry{key: store.PackageKey(profile.KindVSModDB+":"+m.Package, m.Version), source: src}, true
+	case SiteParadox:
+		src := profile.Source{Kind: profile.KindParadox, Name: m.Package, FileID: m.FileID, Version: m.Version}.WithDisabled(m.Disabled)
+		return storedEntry{key: store.PackageKey(profile.KindParadox+":"+m.Package, m.Version), source: src}, true
 	case SiteGitHub:
 		src := profile.Source{Kind: profile.KindGitHub, Name: m.Asset, Version: m.Tag, Repo: m.Repo, Tag: m.Tag, Asset: m.Asset}
 		return storedEntry{key: github.Key(m.Author, m.Name, m.Tag, m.Asset), source: withChoices(src, m)}, true
@@ -769,7 +773,7 @@ func requestFor(game, profileID string, m Mod) queue.Request {
 		r.Repo, r.Tag, r.Asset = m.Repo, m.Tag, m.Asset
 		return r
 	}
-	if m.Site == SiteCurseForge || m.Site == SiteVSModDB {
+	if m.Site == SiteCurseForge || m.Site == SiteVSModDB || m.Site == SiteParadox {
 		r.Source, r.Package, r.PackageFile = m.Site, m.Package, m.FileID
 		return r
 	}

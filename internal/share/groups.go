@@ -100,6 +100,11 @@ func identityOf(e profile.Entry) (Ref, bool) {
 			return Ref{}, false
 		}
 		return Ref{VSModDB: e.Source.Name, FileID: e.Source.FileID, Version: e.Source.Version}, true
+	case profile.KindParadox:
+		if e.Source.Name == "" || e.Source.FileID <= 0 {
+			return Ref{}, false
+		}
+		return Ref{Paradox: e.Source.Name, FileID: e.Source.FileID, Version: e.Source.Version}, true
 	case profile.KindThunderstore:
 		if e.Source.Name == "" {
 			return Ref{}, false

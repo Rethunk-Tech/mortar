@@ -24,6 +24,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
 	"github.com/Rethunk-Tech/mortar/internal/source/itch"
+	"github.com/Rethunk-Tech/mortar/internal/source/paradox"
 	"github.com/Rethunk-Tech/mortar/internal/source/patreon"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"
@@ -172,6 +173,8 @@ const (
 	SiteCurseForge = "curseforge"
 	// SiteVSModDB is a Vintage Story Mod DB release.
 	SiteVSModDB = "vsmoddb"
+	// SiteParadox is a Paradox Mods version.
+	SiteParadox = "paradox"
 )
 
 const (
@@ -203,6 +206,8 @@ type resolver struct {
 	curseforgeName func(ctx context.Context, project string) string
 	// vsmoddbRelease reads a Mod DB release's mod name; nil asks nothing.
 	vsmoddbRelease func(ctx context.Context, id, version string) (vsmoddb.Resolved, error)
+	// paradoxVersion reads a Paradox Mods version's mod name; nil asks nothing.
+	paradoxVersion func(ctx context.Context, id, version string) (paradox.Resolved, error)
 
 	infos map[int]*modInfo
 }
@@ -452,6 +457,27 @@ func (r *resolver) vsmoddb(ctx context.Context, ref share.Ref) Mod {
 	return m
 }
 
+// paradox resolves a shared Paradox Mods version: installed when the profile or the store holds it, else downloaded.
+func (r *resolver) paradox(ctx context.Context, ref share.Ref) Mod {
+	m := Mod{
+		Key: "paradox:" + ref.Paradox + ":" + strconv.Itoa(ref.FileID), Site: SiteParadox, Name: "Paradox mod " + ref.Paradox,
+		Package: ref.Paradox, FileID: ref.FileID, Version: ref.Version, PageURL: paradox.Driver{}.ModPageURL("", ref.Paradox),
+		State: StateDownload, IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
+	}
+	switch {
+	case slices.ContainsFunc(r.target, ref.MatchesEntry):
+		m.State = StateInstalled
+	case r.storedKey(store.PackageKey(profile.KindParadox+":"+ref.Paradox, ref.Version)):
+		m.State, r.storedKeys[m.Key] = StateInstalled, true
+	}
+	if r.paradoxVersion != nil {
+		if found, err := r.paradoxVersion(ctx, ref.Paradox, strconv.Itoa(ref.FileID)); err == nil && found.Name != "" {
+			m.Name = found.Name
+		}
+	}
+	return m
+}
+
 func (r *resolver) hasPackage(pkg, version string) bool {
 	return slices.ContainsFunc(r.target, func(e profile.Entry) bool {
 		return e.Source.Kind == profile.KindThunderstore && strings.EqualFold(e.Source.Name, pkg) && (version == "" || e.Source.Version == version)
@@ -514,7 +540,7 @@ func (r *resolver) storedKey(key string) bool {
 func nexusIDs(refs []share.Ref) []int {
 	var ids []int
 	for _, ref := range refs {
-		if ref.GitHub == "" && ref.Package == "" && ref.Local == "" && ref.Patreon == "" && ref.Itch == "" && ref.CurseForge == 0 && ref.VSModDB == "" && !slices.Contains(ids, ref.ModID) {
+		if ref.GitHub == "" && ref.Package == "" && ref.Local == "" && ref.Patreon == "" && ref.Itch == "" && ref.CurseForge == 0 && ref.VSModDB == "" && ref.Paradox == "" && !slices.Contains(ids, ref.ModID) {
 			ids = append(ids, ref.ModID)
 		}
 	}
@@ -544,6 +570,8 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 			add("curseforge", r.curseforge(ctx, ref))
 		case ref.VSModDB != "":
 			add("vsmoddb", r.vsmoddb(ctx, ref))
+		case ref.Paradox != "":
+			add("paradox", r.paradox(ctx, ref))
 		case ref.Package != "":
 			add("thunderstore", r.thunderstore(ref))
 		case ref.GitHub != "":

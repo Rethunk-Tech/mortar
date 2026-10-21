@@ -21,6 +21,9 @@ func sourceToken(kind string, modID, fileID int, repo, tag, asset, pkg string) s
 	if kind == profile.KindVSModDB && pkg != "" {
 		return fmt.Sprintf("v:%s:%d", pkg, fileID)
 	}
+	if kind == profile.KindParadox && pkg != "" {
+		return fmt.Sprintf("x:%s:%d", pkg, fileID)
+	}
 	if pkg != "" {
 		return "t:" + strings.ToLower(pkg)
 	}
@@ -41,7 +44,7 @@ func entryToken(e profile.Entry) string {
 }
 
 func thunderstoreName(e profile.Entry) string {
-	if e.Source.Kind == profile.KindThunderstore || e.Source.Kind == profile.KindCurseForge || e.Source.Kind == profile.KindVSModDB {
+	if e.Source.Kind == profile.KindThunderstore || e.Source.Kind == profile.KindCurseForge || e.Source.Kind == profile.KindVSModDB || e.Source.Kind == profile.KindParadox {
 		return e.Source.Name
 	}
 	return ""

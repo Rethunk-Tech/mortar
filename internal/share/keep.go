@@ -25,6 +25,8 @@ func (r Ref) Identity() string {
 		return "i:" + r.Itch
 	case r.CurseForge != 0:
 		return fmt.Sprintf("c:%d:%d", r.CurseForge, r.FileID)
+	case r.Paradox != "":
+		return fmt.Sprintf("x:%s:%d", r.Paradox, r.FileID)
 	case r.GitHub != "":
 		return "g:" + strings.ToLower(r.GitHub)
 	default:
