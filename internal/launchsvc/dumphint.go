@@ -12,12 +12,13 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/crashdump"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/loader/dotnetstack"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
 // dumpBlame is what the crash a run left behind says: the enabled mod whose DLL the process died in, or, when it was
-// not a mod's, which part of the game was (reason). Windows dumps are looked for in the user's profile, which for a
+// not a mod's, which part of the game was (reason). Windows dumps and the Application event log are looked for in the user's profile, which for a
 // game under Proton is the prefix's; a Linux process is asked of systemd-coredump. Nothing found says nothing.
 func (s *Service) dumpBlame(gameID string, run Run, mods []profile.Installed) (m profile.Installed, reason, evidence string, ok bool) {
 	started, err := time.Parse(time.RFC3339Nano, run.Started)
@@ -30,6 +31,12 @@ func (s *Service) dumpBlame(gameID string, run Run, mods []profile.Installed) (m
 	}
 	exes := game.ProcessNames(g)
 	for _, fault := range s.faultsSince(gameID, exes, started) {
+		if fault.Managed != "" {
+			if m, b, ok := blamedMod(dotnetstack.Blames(fault.Managed, dotnetstack.Unity), mods); ok {
+				return m, "", "Windows event log: " + b.Exception + " at " + b.Frame, true
+			}
+			continue
+		}
 		kind, mod := classifyFault(fault.Module, exes, mods)
 		evidence = "crash dump: faulting module " + fault.Module
 		if fault.Detail != "" {
@@ -59,10 +66,10 @@ func (s *Service) faultsSince(gameID string, exes []string, since time.Time) []c
 	set := s.settings.Get()
 	crashDumps, errA := game.PathIn(s.home, set, gameID, "", components.PathTemplate{Windows: `{localAppData}\CrashDumps`})
 	temp, errB := game.PathIn(s.home, set, gameID, "", components.PathTemplate{Windows: `{localAppData}\Temp`})
-	if errA == nil && errB == nil {
-		return crashdump.Windows(crashDumps, temp, exes, since)
-	}
 	var out []crashdump.Fault
+	if errA == nil && errB == nil {
+		return append(crashdump.Windows(crashDumps, temp, exes, since), crashdump.EventLog(context.Background(), exes, since)...)
+	}
 	for _, exe := range exes {
 		comm := strings.TrimSuffix(exe, filepath.Ext(exe))
 		if f, ok := crashdump.Coredump(context.Background(), comm[:min(len(comm), 15)], since); ok {

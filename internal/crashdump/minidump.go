@@ -1,5 +1,5 @@
 // Package crashdump reads what a native crash leaves behind (a Windows minidump, a Unity error.log, a systemd
-// coredump report) just far enough to name the module the process died in.
+// coredump report, the Windows event log) just far enough to name the module the process died in.
 package crashdump
 
 import (
@@ -15,6 +15,10 @@ type Fault struct {
 	Module string
 	// Detail is the exception in a few words, such as "exception 0xc0000005 at 0x7ff8a1b2c3d4".
 	Detail string
+	// Frame is, for an unhandled .NET exception, the first stack frame outside the runtime and the loader.
+	Frame string
+	// Managed is that exception's text and stack, for blaming a mod by namespace.
+	Managed string
 }
 
 const (
