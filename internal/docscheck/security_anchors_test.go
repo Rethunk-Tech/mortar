@@ -75,7 +75,7 @@ func resolve(t *testing.T, root *os.Root, rel string) string {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() && (d.Name() == "node_modules" || d.Name() == ".git" || d.Name() == "tmp") {
+		if d.IsDir() && (d.Name() == "node_modules" || d.Name() == ".git" || d.Name() == ".claude" || d.Name() == "tmp") {
 			return fs.SkipDir
 		}
 		if !d.IsDir() && strings.HasSuffix(path, "/"+rel) {

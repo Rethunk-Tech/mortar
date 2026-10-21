@@ -14,3 +14,6 @@ build/linux/mortar.desktop
 # The website is built from web/ into site/.
 /site/
 web/.astro/
+
+# Claude Code agent worktrees: full nested checkouts of this repo.
+/.claude/worktrees/
