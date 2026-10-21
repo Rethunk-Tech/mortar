@@ -1,5 +1,5 @@
 // Package crashdump reads what a native crash leaves behind (a Windows minidump, a Unity error.log, a systemd
-// coredump report, the Windows event log) just far enough to name the module the process died in.
+// coredump report, the Windows event log, CatLib's crash report) just far enough to name the module the process died in.
 package crashdump
 
 import (
@@ -19,6 +19,10 @@ type Fault struct {
 	Frame string
 	// Managed is that exception's text and stack, for blaming a mod by namespace.
 	Managed string
+	// CalledFrom is, for a CatLib report, the first frame outside Windows and the C runtime.
+	CalledFrom string
+	// ReportDir is the folder of the crash report a mod library kept, for the player to open.
+	ReportDir string
 }
 
 const (

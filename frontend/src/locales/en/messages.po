@@ -5555,6 +5555,10 @@ msgstr "Loading changes…"
 msgid "Launch environment"
 msgstr "Launch environment"
 
+#: src/profiles/CrashHintCard.tsx
+msgid "Open the crash report"
+msgstr "Open the crash report"
+
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyGame.ts
 msgid "Ask"

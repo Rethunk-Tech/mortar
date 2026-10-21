@@ -1,9 +1,11 @@
 package launchsvc
 
 import (
+	"errors"
 	"strings"
 	"unicode"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -24,6 +26,9 @@ type CrashHint struct {
 	Reason string `json:"reason"`
 	// Evidence is the log line behind the blame, such as the stack frame that runs through the mod's code.
 	Evidence string `json:"evidence"`
+	// ReportDir is the folder of a crash report the game's mod library kept, empty when it kept none; the window opens
+	// it through OpenCrashReport.
+	ReportDir string `json:"reportDir"`
 }
 
 // CrashHint explains the profile's latest recorded run: the mod its log blames, or what the log showed when none.
@@ -55,8 +60,8 @@ func (s *Service) CrashHint(gameID, profileID string) (*CrashHint, error) {
 			hint.ModKey, hint.ModName, hint.Reason, hint.Evidence = m.Key, m.Name, b.Exception, b.Frame
 			return hint, nil
 		}
-		if m, reason, evidence, ok := s.dumpBlame(gameID, run, installed); ok {
-			hint.Evidence = evidence
+		if m, reason, evidence, reportDir, ok := s.dumpBlame(gameID, profileID, run, installed); ok {
+			hint.Evidence, hint.ReportDir = evidence, reportDir
 			if m.Key != "" {
 				hint.ModKey, hint.ModName, hint.Reason = m.Key, m.Name, "The game crashed inside this mod's code."
 				return hint, nil
@@ -70,6 +75,19 @@ func (s *Service) CrashHint(gameID, profileID string) (*CrashHint, error) {
 		hint.Reason = found[0].Message
 	}
 	return hint, nil
+}
+
+// OpenCrashReport shows the profile's latest crash report folder in the system file manager. The folder is the one
+// CrashHint finds, never a path the caller names.
+func (s *Service) OpenCrashReport(gameID, profileID string) error {
+	hint, err := s.CrashHint(gameID, profileID)
+	if err != nil {
+		return err
+	}
+	if hint == nil || hint.ReportDir == "" {
+		return errors.New("the last run left no crash report")
+	}
+	return datadir.Open(hint.ReportDir)
 }
 
 // loaderFindings runs the profile loader's log analyzers over its logs; nil when it has none.

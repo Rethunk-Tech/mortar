@@ -20,33 +20,39 @@ import (
 // dumpBlame is what the crash a run left behind says: the enabled mod whose DLL the process died in, or, when it was
 // not a mod's, which part of the game was (reason). Windows dumps and the Application event log are looked for in the user's profile, which for a
 // game under Proton is the prefix's; a Linux process is asked of systemd-coredump. Nothing found says nothing.
-func (s *Service) dumpBlame(gameID string, run Run, mods []profile.Installed) (m profile.Installed, reason, evidence string, ok bool) {
+func (s *Service) dumpBlame(gameID, profileID string, run Run, mods []profile.Installed) (m profile.Installed, reason, evidence, reportDir string, ok bool) {
 	started, err := time.Parse(time.RFC3339Nano, run.Started)
 	if err != nil {
-		return profile.Installed{}, "", "", false
+		return profile.Installed{}, "", "", "", false
 	}
 	g, err := game.Require(gameID)
 	if err != nil {
-		return profile.Installed{}, "", "", false
+		return profile.Installed{}, "", "", "", false
 	}
 	exes := game.ProcessNames(g)
-	for _, fault := range s.faultsSince(gameID, exes, started) {
+	for _, fault := range s.faultsSince(gameID, profileID, exes, started) {
 		if fault.Managed != "" {
 			if m, b, ok := blamedMod(dotnetstack.Blames(fault.Managed, dotnetstack.Unity), mods); ok {
-				return m, "", "Windows event log: " + b.Exception + " at " + b.Frame, true
+				return m, "", "Windows event log: " + b.Exception + " at " + b.Frame, reportDir, true
 			}
 			continue
+		}
+		if fault.ReportDir != "" {
+			reportDir = fault.ReportDir
 		}
 		kind, mod := classifyFault(fault.Module, exes, mods)
 		evidence = "crash dump: faulting module " + fault.Module
 		if fault.Detail != "" {
 			evidence += " (" + fault.Detail + ")"
 		}
+		if fault.CalledFrom != "" {
+			evidence += ", called from " + fault.CalledFrom
+		}
 		switch kind {
 		case faultUnknown:
 			continue
 		case faultMod:
-			return mod, "", evidence, true
+			return mod, "", evidence, reportDir, true
 		case faultGame:
 			reason = fmt.Sprintf("The game itself crashed (%s), not a mod's code.", fault.Module)
 		case faultUnity:
@@ -54,12 +60,12 @@ func (s *Service) dumpBlame(gameID string, run Run, mods []profile.Installed) (m
 		case faultMono:
 			reason = fmt.Sprintf("The Mono runtime crashed (%s), not a mod's code.", fault.Module)
 		}
-		return profile.Installed{}, reason, evidence, true
+		return profile.Installed{}, reason, evidence, reportDir, true
 	}
-	return profile.Installed{}, "", "", false
+	return profile.Installed{}, "", evidence, reportDir, reportDir != ""
 }
 
-func (s *Service) faultsSince(gameID string, exes []string, since time.Time) []crashdump.Fault {
+func (s *Service) faultsSince(gameID, profileID string, exes []string, since time.Time) []crashdump.Fault {
 	if s.settings == nil {
 		return nil
 	}
@@ -67,8 +73,14 @@ func (s *Service) faultsSince(gameID string, exes []string, since time.Time) []c
 	crashDumps, errA := game.PathIn(s.home, set, gameID, "", components.PathTemplate{Windows: `{localAppData}\CrashDumps`})
 	temp, errB := game.PathIn(s.home, set, gameID, "", components.PathTemplate{Windows: `{localAppData}\Temp`})
 	var out []crashdump.Fault
+	if dir, err := s.profiles.ProfileDir(gameID, profileID); err == nil {
+		if f, ok := crashdump.CatLib(dir, since); ok {
+			out = append(out, f)
+		}
+	}
 	if errA == nil && errB == nil {
-		return append(crashdump.Windows(crashDumps, temp, exes, since), crashdump.EventLog(context.Background(), exes, since)...)
+		out = append(out, crashdump.Windows(crashDumps, temp, exes, since)...)
+		return append(out, crashdump.EventLog(context.Background(), exes, since)...)
 	}
 	for _, exe := range exes {
 		comm := strings.TrimSuffix(exe, filepath.Ext(exe))

@@ -1,10 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
 import { alpha, Box, Button, Typography } from '@mui/material'
-import { PowerOff, Search, TriangleAlert, X } from 'lucide-react'
+import { FolderOpen, PowerOff, Search, TriangleAlert, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bisect/service.ts'
 import type { CrashHint as Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
-import { CrashHint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import {
+  CrashHint,
+  OpenCrashReport,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { BisectDialog } from '../console/BisectDialog.tsx'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLaunch } from '../launch/store.ts'
@@ -137,6 +140,16 @@ export function CrashHintCard({
           >
             {t`Find the cause…`}
           </Button>
+          {hint.reportDir ? (
+            <Button
+              variant="outlined"
+              color="inherit"
+              startIcon={<FolderOpen size={16} />}
+              onClick={() => OpenCrashReport(game, profileId).catch(reportUnexpected)}
+            >
+              {t`Open the crash report`}
+            </Button>
+          ) : null}
           <Button
             color="inherit"
             startIcon={<X size={16} />}

@@ -12,6 +12,7 @@ const OUTSIDE = new Set([
   'game.OpenScreenshotsFolder',
   'lan.Pair',
   'lan.PairCode',
+  'launchsvc.OpenCrashReport',
   'loadersvc.Install',
   'loadersvc.InstallVersion',
   'nexussvc.SignIn',
