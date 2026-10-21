@@ -31,7 +31,7 @@ func (s *Service) TrackedMissing(ctx context.Context, gameID, profileID string) 
 		return nil, err
 	}
 	installed := profileNexusModIDs(p)
-	mods, err := s.TrackedMods(ctx)
+	mods, err := s.trackedForCard(ctx)
 	if err != nil {
 		return nil, err
 	}

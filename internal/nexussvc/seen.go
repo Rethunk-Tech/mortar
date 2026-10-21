@@ -2,6 +2,7 @@ package nexussvc
 
 import (
 	"errors"
+	"path/filepath"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 )
@@ -20,6 +21,7 @@ func (s *Service) UseDataDir(dir string) error {
 	}
 	s.seen = st
 	s.prompts = prompts
+	s.trackedPath = filepath.Join(dir, trackedFile)
 	return nil
 }
 

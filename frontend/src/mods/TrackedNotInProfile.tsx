@@ -8,8 +8,9 @@ import {
   Button,
   Typography,
 } from '@mui/material'
+import { Events } from '@wailsio/runtime'
 import { ChevronDown, ExternalLink, Plus } from 'lucide-react'
-import { memo, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 import {
   ModName,
   TrackedMissing,
@@ -98,10 +99,10 @@ const TrackedNotInProfile = memo(function TrackedNotInProfileView({
   const gameId = useProfiles((s) => s.game?.id)
   const locked = useLocked()
   const [mods, setMods] = useState<TrackedMod[]>([])
-  useEffect(() => {
+  const load = useCallback(() => {
     if (!(signedIn && gameId)) {
       setMods([])
-      return
+      return () => undefined
     }
     let live = true
     TrackedMissing(gameId, profileId)
@@ -111,11 +112,13 @@ const TrackedNotInProfile = memo(function TrackedNotInProfileView({
         }
       })
       .catch(reportUnexpected)
-
     return () => {
       live = false
     }
   }, [signedIn, gameId, profileId])
+  useEffect(load, [load])
+  // The first answer may be the copy kept on disk; the background refresh says when Nexus differs.
+  useEffect(() => Events.On('nexus:tracked', load), [load])
   if (!signedIn || mods.length === 0) {
     return null
   }

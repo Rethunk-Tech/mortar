@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync/atomic"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
@@ -43,6 +44,9 @@ type Service struct {
 	meta    *meta.Client
 	seen    *nexus.SeenStore
 	prompts *promptStore
+	// trackedPath is where the signed-in user's tracked list is kept between runs; empty keeps it in memory only.
+	trackedPath string
+	refreshing  atomic.Bool
 	// App is set after application.New so sign-in and sign-out can emit events.
 	App winhost.Host
 	// Profiles is the app's profile store, read when untracking only the mods no profile uses.
@@ -97,6 +101,7 @@ func (s *Service) SignOut() (Account, error) {
 	if err := errors.Join(forgetKey(), nexussso.Forget()); err != nil {
 		return Account{}, err
 	}
+	s.forgetTracked()
 	return s.update(func(v *settings.Settings) { v.NexusUserID, v.NexusName, v.NexusPremium = 0, "", false })
 }
 
@@ -257,6 +262,7 @@ func (s *Service) Track(ctx context.Context, gameID string, modID int) error {
 	if err != nil {
 		return err
 	}
+	s.forgetTracked()
 	return c.Track(ctx, t, modID)
 }
 
@@ -266,5 +272,6 @@ func (s *Service) Untrack(ctx context.Context, gameID string, modID int) error {
 	if err != nil {
 		return err
 	}
+	s.forgetTracked()
 	return c.Untrack(ctx, t, modID)
 }
