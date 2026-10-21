@@ -6,7 +6,7 @@ import Base from '../layouts/Base.astro'
 import { steamArt } from '../lib/art.ts'
 import { changeCount, releases } from '../lib/changelog.ts'
 import { questions, whyPages } from '../lib/faq.ts'
-import { artOf, modSites, playableGames } from '../lib/games.ts'
+import { artOf, modSites, playableGames, STORE_NAMES } from '../lib/games.ts'
 import { posts, shortDate } from '../lib/news.ts'
 import { DISCORD, markdown } from '../lib/site.ts'
 import '../styles/download.css'
@@ -82,14 +82,6 @@ const shownQs = FAQ_IDS.map((id) => {
   return q
 })
 const stores = ['steam', 'gog', 'epic', 'ea', 'lutris', 'xbox']
-const STORE_LABEL: Record<string, string> = {
-  steam: 'Steam',
-  gog: 'GOG',
-  epic: 'Epic Games',
-  ea: 'EA app',
-  lutris: 'Lutris',
-  xbox: 'Xbox app',
-}
 const lethal = games.find((g) => g.id === 'lethal-company')
 const band = lethal ? artOf(lethal, art)?.hero : undefined
 const features = [
@@ -211,7 +203,7 @@ const features = [
   <div class="wrap sec">
     <div class="head reveal"><p class="kicker">How it works</p><h2>From nothing to modded in <em>three steps.</em></h2></div>
     <ol class="flow stagger">
-      <li class="reveal"><span class="dot">1</span><h3>Pick your game</h3><p>Mortar finds it on your stores, or in a folder you choose.</p><div class="vis stores">{stores.map((s) => <Mark site={s} label={STORE_LABEL[s] ?? s} />)}</div></li>
+      <li class="reveal"><span class="dot">1</span><h3>Pick your game</h3><p>Mortar finds it on your stores, or in a folder you choose.</p><div class="vis stores">{stores.map((s) => <Mark site={s} label={STORE_NAMES[s] ?? s} />)}</div></li>
       <li class="reveal"><span class="dot">2</span><h3>Mortar sets it up</h3><p>It installs the mod loader the game needs and makes your first profile.</p><div class="vis">{loaders.slice(0, SHOWN_LOADERS).map((n) => <span class="pill ok">{n}</span>)}{loaders.length > SHOWN_LOADERS && <span class="pill">+ {loaders.length - SHOWN_LOADERS} more</span>}</div></li>
       <li class="reveal"><span class="dot">3</span><h3>Add mods and play</h3><p>Search every site at once, add a mod with one click, then press Play.</p><div class="vis"><div class="minimod"><img alt="" src={capsule('lethal-company')} width="44" height="44" loading="lazy" referrerpolicy="no-referrer" /><div><b>MoreCompany</b><span>Thunderstore</span></div><span class="add">Added</span></div></div></li>
     </ol>

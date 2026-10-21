@@ -1,5 +1,6 @@
 // The landing page: the download button names the visitor's system, the metrics count up once, the game picker
 // searches as you type ("/" jumps to it), and the demo preview loops until a click swaps in the real app.
+import { visitorOS } from './os.ts'
 import { track } from './track.ts'
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -9,12 +10,10 @@ const LOOP_MS = 3500
 
 function systemButton() {
   const cta = document.getElementById('ctaos')
-  const ua = navigator.userAgent
-  const linux = /Linux|X11/i.test(ua) && !/Android/i.test(ua) && !/Windows/i.test(ua)
-  if (cta) {
-    const id = linux ? 'linux' : 'windows'
-    cta.innerHTML = `<svg aria-hidden="true"><use href="/img/brands.svg#${id}"></use></svg>Download for ${linux ? 'Linux' : 'Windows'}`
-    cta.setAttribute('href', `/download/#${linux ? 'linux' : 'windows'}`)
+  const os = visitorOS()
+  if (cta && os) {
+    cta.innerHTML = `<svg aria-hidden="true"><use href="/img/brands.svg#${os}"></use></svg>Download for ${os === 'linux' ? 'Linux' : 'Windows'}`
+    cta.setAttribute('href', `/download/#${os}`)
   }
 }
 

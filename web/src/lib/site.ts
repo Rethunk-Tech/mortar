@@ -7,6 +7,8 @@ import process from 'node:process'
 export const SITE = 'https://mortar.rethunk.tech'
 export const REPO = 'https://github.com/Rethunk-Tech/mortar'
 export const DISCORD = 'https://discord.gg/TfecaTm8J2'
+// The Mortar packages OpenPGP key, which signs the package repositories and each release's SHA256SUMS.
+export const PACKAGES_FINGERPRINT = 'D8B1 C4C2 05C5 FB36 33CB 8B99 00B7 5959 B637 DCB5'
 
 // Permanent invites, by the route the app opens under /go/; a moved channel needs only a change here.
 export const INVITES: Record<string, string> = {

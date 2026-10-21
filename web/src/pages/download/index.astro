@@ -1,8 +1,25 @@
 ---
 import Base from '../../layouts/Base.astro'
+import { releases } from '../../lib/changelog.ts'
+import { PACKAGES_FINGERPRINT } from '../../lib/site.ts'
 import '../../styles/download.css'
 import '../../styles/page.css'
 import '../../styles/page-lists.css'
+
+const version = releases()[0]?.version ?? ''
+const LATEST = 'https://github.com/Rethunk-Tech/mortar/releases/latest/download/'
+// The site deploys with each release, so the version it was built with names that release's packages.
+const pkg = (asset: string) => LATEST + asset.replace('VERSION', version)
+const packages = [
+  { asset: 'mortar_VERSION_amd64.deb', name: '.deb, amd64', note: 'Ubuntu and Debian, no updates' },
+  { asset: 'mortar_VERSION_arm64.deb', name: '.deb, arm64', note: 'Ubuntu and Debian, no updates' },
+  { asset: 'mortar-VERSION-1.x86_64.rpm', name: '.rpm, x86_64', note: 'Fedora, no updates' },
+  { asset: 'mortar-VERSION-1.aarch64.rpm', name: '.rpm, aarch64', note: 'Fedora, no updates' },
+  { asset: 'mortar-VERSION-1-x86_64.pkg.tar.zst', name: 'Arch package, x86_64', note: 'pacman -U, no updates' },
+  { asset: 'mortar-VERSION-1-aarch64.pkg.tar.zst', name: 'Arch package, aarch64', note: 'pacman -U, no updates' },
+  { asset: 'mortar-linux-x86_64.flatpak', name: 'Flatpak bundle, x86_64', note: 'flatpak install, no updates' },
+  { asset: 'mortar-linux-aarch64.flatpak', name: 'Flatpak bundle, aarch64', note: 'flatpak install, no updates' },
+]
 ---
 
 <Base
@@ -15,9 +32,9 @@ import '../../styles/page-lists.css'
   <header class="wrap pagehead">
     <p class="kicker">Download</p>
     <h1>Get Mortar. <em>It's free.</em></h1>
-    <p class="lede">It's open source too. <span id="version">The latest release</span> runs on Windows and Linux, x64 and ARM64, and on the Steam Deck.</p>
+    <p class="lede">It's open source too. <span id="version">{version ? `Mortar v${version}` : 'The latest release'}</span> runs on Windows and Linux, x64 and ARM64, and on the Steam Deck.</p>
   </header>
-  <div class="wrap sec dl">
+  <div class="wrap sec dl" data-version={version}>
 <p class="forsys jsonly">For <b id="sysname">your system</b>. <button type="button" class="linkish" id="other" aria-expanded="false" aria-controls="systems">Not your system?</button></p>
 <div class="tabs" id="systems" role="tablist" aria-label="Platform">
   <button
@@ -44,7 +61,7 @@ import '../../styles/page-lists.css'
 >
   <p class="muted">
     Windows 10 and 11. Mortar installs for your user, so it needs no
-    administrator rights.
+    administrator rights. It needs Microsoft's WebView2 Runtime, which the installer adds when missing.
   </p>
   <div class="files">
     <a
@@ -165,29 +182,21 @@ scoop install mortar/mortar</code></pre>
         <strong>Portable, ARM64</strong
         ><span>Uses the system's GTK 4 and WebKitGTK 6</span>
       </a>
-      <a class="file" data-asset="mortar_VERSION_amd64.deb" href="https://github.com/Rethunk-Tech/mortar/releases/latest">
-        <strong>.deb, amd64</strong><span>Ubuntu and Debian, no updates</span>
-      </a>
-      <a class="file" data-asset="mortar-VERSION-1.x86_64.rpm" href="https://github.com/Rethunk-Tech/mortar/releases/latest">
-        <strong>.rpm, x86_64</strong><span>Fedora, no updates</span>
-      </a>
-      <a class="file" data-asset="mortar-VERSION-1-x86_64.pkg.tar.zst" href="https://github.com/Rethunk-Tech/mortar/releases/latest">
-        <strong>Arch package, x86_64</strong><span>pacman -U, no updates</span>
-      </a>
-      <a
-        class="file"
-        data-asset="mortar-linux-x86_64.flatpak"
-        href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-x86_64.flatpak"
-      >
-        <strong>Flatpak bundle, x86_64</strong><span>flatpak install, no updates</span>
-      </a>
+      {
+        packages.map((p) => (
+          <a class="file" data-asset={p.asset} href={pkg(p.asset)}>
+            <strong>{p.name}</strong>
+            <span>{p.note}</span>
+          </a>
+        ))
+      }
     </div>
+    <p class="muted">To run the x86_64 AppImage:</p>
     <pre><code>chmod +x mortar-linux-x86_64.AppImage
 ./mortar-linux-x86_64.AppImage</code></pre>
     <p class="muted">
       The first run adds Mortar to your applications menu and takes
-      <code>nxm://</code> links and <code>.mortar</code> files. ARM64 packages are on the
-      <a href="https://github.com/Rethunk-Tech/mortar/releases/latest">release page</a>.
+      <code>nxm://</code> links and <code>.mortar</code> files.
     </p>
   </div>
 
@@ -219,7 +228,8 @@ scoop install mortar/mortar</code></pre>
     <p class="muted">
       Ubuntu 24.04, Debian 13 or newer, on amd64 and arm64. Mortar then updates with the rest of your system.
     </p>
-    <pre><code>sudo curl -fsSLo /usr/share/keyrings/mortar-archive-keyring.gpg https://mortar.rethunk.tech/packages/mortar-archive-keyring.gpg
+    <pre><code>sudo apt update &amp;&amp; sudo apt install curl
+sudo curl -fsSLo /usr/share/keyrings/mortar-archive-keyring.gpg https://mortar.rethunk.tech/packages/mortar-archive-keyring.gpg
 sudo curl -fsSLo /etc/apt/sources.list.d/mortar.list https://mortar.rethunk.tech/packages/mortar.list
 sudo apt update &amp;&amp; sudo apt install mortar</code></pre>
   </div>
@@ -249,9 +259,9 @@ sudo dnf install mortar</code></pre>
       repository to <code>/etc/pacman.conf</code> and install.
     </p>
     <pre><code>curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | sudo pacman-key --add -
-sudo pacman-key --lsign-key D8B1C4C205C5FB3633CB8B9900B75959B637DCB5
+sudo pacman-key --lsign-key {PACKAGES_FINGERPRINT.replaceAll(' ', '')}
 curl -fsSL https://mortar.rethunk.tech/packages/pacman.conf | sudo tee -a /etc/pacman.conf
-sudo pacman -Sy mortar</code></pre>
+sudo pacman -Syu mortar</code></pre>
   </div>
 
   <div
@@ -298,7 +308,7 @@ sudo pacman -Sy mortar</code></pre>
       <strong>Is executable</strong>. Run it.
     </li>
     <li>
-      Set up your game, then open a profile's menu and choose <strong>Add to Steam</strong>. The profile appears
+      Set up your game, close Steam, then open a profile's menu and choose <strong>Add this profile to Steam</strong>. The profile appears
       in Game Mode, and playing it there starts the game with that profile's mods.
     </li>
   </ol>
@@ -314,8 +324,8 @@ sudo pacman -Sy mortar</code></pre>
   aria-labelledby="tab-extension"
 >
   <p class="muted">
-    Optional. It marks Nexus Mods pages with what your profile already has
-    and hands Mod Manager Download clicks to Mortar. Mortar's Settings ›
+    Optional. It marks Nexus Mods, Thunderstore, CurseForge and Vintage Story Mod DB pages with what your profile
+    already has and hands their install buttons to Mortar. Mortar's Settings ›
     Downloads links it too. <a href="/extension/">What it does, and privacy</a>.
   </p>
   <div class="files">
@@ -377,13 +387,13 @@ gh attestation verify "$f" --repo Rethunk-Tech/mortar</code></pre>
   <p class="fingerprint">
     One key, “Mortar packages &lt;opensource@rethunk.tech&gt;”, signs every release's <code>SHA256SUMS</code> and
     the apt, dnf, pacman and Flatpak repositories, so every download checks against the same fingerprint:
-    <code>D8B1 C4C2 05C5 FB36 33CB 8B99 00B7 5959 B637 DCB5</code>.
-    <a href="/packages/">Repository details</a> · <a href="/code-signing/">Code signing policy</a>
+    <code>{PACKAGES_FINGERPRINT}</code>.
+    <a href="/code-signing/">Code signing policy</a>
   </p>
 </section>
 
 
-<p class="muted all">
+<p class="muted">
   Checksums, release notes and every build:
   <a href="https://github.com/Rethunk-Tech/mortar/releases/latest"
     >latest release on GitHub</a
@@ -392,4 +402,6 @@ gh attestation verify "$f" --repo Rethunk-Tech/mortar</code></pre>
   </div>
 </Base>
 
-<script is:inline src="/download.js" defer></script>
+<script>
+  import '../../scripts/download.js'
+</script>

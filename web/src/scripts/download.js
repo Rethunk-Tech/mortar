@@ -1,9 +1,8 @@
-const windowsRe = /Windows/i
-const linuxRe = /Linux|X11/i
-const androidRe = /Android/i
+import { visitorOS } from './os.ts'
+
 const fedoraRe = /Fedora/i
 const debianRe = /Ubuntu|Debian/i
-const archRe = /Arch/i
+const archRe = /Arch Linux|archlinux/i
 const versionRe = /VERSION/g
 const leadingVRe = /^v/
 const copiedMs = 1500
@@ -67,11 +66,10 @@ function mortarSize(bytes) {
   return bytes >= mib ? `${(bytes / mib).toFixed(1)} MB` : `${Math.round(bytes / kib)} KB`
 }
 
-let mortarVersion = ''
+const mortarVersion = document.querySelector('.dl')?.dataset.version ?? ''
 
 function mortarRelease(rel) {
   const version = rel.tag_name.replace(leadingVRe, '')
-  mortarVersion = version
   document.getElementById('version').textContent = `Mortar ${rel.tag_name}`
   const assets = new Map(rel.assets.map((a) => [a.name, a]))
   for (const link of document.querySelectorAll('[data-asset]')) {
@@ -110,7 +108,8 @@ function mortarRelease(rel) {
   } else if (hash === 'appimage') {
     mode = 'linux-files'
   }
-  let platform = 'windows'
+  const os = visitorOS()
+  let platform = os ?? 'windows'
   if (
     distroIds.includes(hash) ||
     modeIds.includes(hash) ||
@@ -120,15 +119,15 @@ function mortarRelease(rel) {
     platform = 'linux'
   } else if (hash === 'windows' || hash === 'deck' || hash === 'extension') {
     platform = hash
-  } else if (linuxRe.test(ua) && !androidRe.test(ua) && !windowsRe.test(ua)) {
-    platform = 'linux'
   }
 
   const systems = document.getElementById('systems')
   const other = document.getElementById('other')
   const sysname = document.getElementById('sysname')
   const verify = document.getElementById('verify')
-  systems.hidden = true
+  // A system Mortar has no build for sees every choice instead of a guess.
+  systems.hidden = os !== null
+  other.parentElement.hidden = os === null
   other.addEventListener('click', () => {
     systems.hidden = !systems.hidden
     other.setAttribute('aria-expanded', String(!systems.hidden))
@@ -144,7 +143,7 @@ function mortarRelease(rel) {
   // The verify commands name the file the visitor last picked.
   document.addEventListener('click', (e) => {
     const link = e.target.closest('.file[data-asset]')
-    if (!link || (link.dataset.asset.includes('VERSION') && !mortarVersion)) {
+    if (!link) {
       return
     }
     const name = link.dataset.asset.replace(versionRe, mortarVersion)

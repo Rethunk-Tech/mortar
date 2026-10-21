@@ -176,8 +176,8 @@ cat >"$OUT/index.html" <<EOF
     <title>Mortar package repository</title>
   </head>
   <body>
-    <p>Signed apt, dnf and pacman repository for Mortar (key $FPR). Setup steps:
-      <a href="https://github.com/Rethunk-Tech/mortar/blob/main/docs/user-guide.md">the Mortar user guide</a>.</p>
+    <p>Signed apt, dnf, pacman and Flatpak repositories for Mortar (key $FPR). Setup steps:
+      <a href="https://mortar.rethunk.tech/download/#linux-cli">mortar.rethunk.tech/download</a>.</p>
   </body>
 </html>
 EOF

@@ -1,5 +1,6 @@
 ---
 import Page from '../../layouts/Page.astro'
+import { PACKAGES_FINGERPRINT } from '../../lib/site.ts'
 ---
 
 <Page
@@ -16,7 +17,7 @@ import Page from '../../layouts/Page.astro'
       <tr><th>Artifact</th><th>Signature</th><th>Checked by</th></tr>
     </thead>
     <tbody>
-      <tr><td>Every release file</td><td><code>SHA256SUMS</code>, signed with the Mortar packages OpenPGP key, and a GitHub build provenance attestation</td><td>You: <code>gpg --verify</code>, <code>sha256sum --check</code>, <code>gh attestation verify</code></td></tr>
+      <tr><td>Every release file</td><td><code>SHA256SUMS</code>, signed with the Mortar packages OpenPGP key, and a GitHub build provenance attestation</td><td>You, with the Windows or Linux commands under <a href="/download/#verify">Verify your download</a></td></tr>
       <tr><td>In-app updates</td><td>ed25519 signature for each file in the release's <code>manifest.json</code></td><td>Mortar, before it installs an update</td></tr>
       <tr><td>apt, dnf and pacman repositories</td><td>Repository metadata and each <code>.rpm</code> and Arch package, signed with the Mortar packages key</td><td>apt, dnf and pacman</td></tr>
       <tr><td>Scoop and Homebrew</td><td>SHA-256 of each download pinned in the manifest, taken from the signed <code>SHA256SUMS</code></td><td>Scoop and Homebrew</td></tr>
@@ -25,7 +26,7 @@ import Page from '../../layouts/Page.astro'
   </table>
 </div>
 <p>
-  The Mortar packages key is <code>D8B1 C4C2 05C5 FB36 33CB 8B99 00B7 5959 B637 DCB5</code>, published at
+  The Mortar packages key is <code>{PACKAGES_FINGERPRINT}</code>, published at
   <a href="/packages/mortar-archive-keyring.asc">mortar.rethunk.tech/packages</a>, in the
   <a href="https://github.com/Rethunk-Tech/mortar/blob/main/build/linux/repo/mortar-archive-keyring.asc">repository</a>
   and on keyserver.ubuntu.com. The private keys live only in the repository's GitHub Actions secrets.

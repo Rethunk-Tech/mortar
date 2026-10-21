@@ -18,7 +18,7 @@ const systems = [
     os: 'linux',
     mark: 'linux',
     name: 'Linux',
-    what: 'AppImage · x86_64 · Ubuntu 24.04, Fedora 39 or newer',
+    what: 'AppImage · x86_64 · Ubuntu 24.04, Debian 13, Fedora 39 or newer',
     asset: 'mortar-linux-x86_64.AppImage',
   },
   {
@@ -33,7 +33,7 @@ const systems = [
     os: 'deck',
     mark: 'steamdeck',
     name: 'Steam Deck',
-    what: 'AppImage in Desktop Mode, then Add to Steam',
+    what: 'AppImage in Desktop Mode, then Add this profile to Steam',
     asset: 'mortar-linux-x86_64.AppImage',
   },
 ]
@@ -62,7 +62,7 @@ const managers = [
   {
     mark: 'archlinux',
     name: 'pacman',
-    cmd: 'sudo pacman -Sy mortar',
+    cmd: 'sudo pacman -Syu mortar',
     note: 'After adding the repository to pacman.conf once.',
     more: '/download/#arch',
   },
@@ -124,11 +124,10 @@ const managers = [
 
 <script>
   // Picks out the visitor's system and their package manager, and copies the shown command.
+  import { visitorOS } from '../scripts/os.ts'
   import { track } from '../scripts/track.ts'
 
-  const ua = navigator.userAgent
-  const linux = /Linux|X11/i.test(ua) && !/Android/i.test(ua) && !/Windows/i.test(ua)
-  const os = linux ? 'linux' : 'windows'
+  const os = visitorOS()
   for (const card of document.querySelectorAll<HTMLElement>('.oscard')) {
     if (card.dataset.os === os) {
       card.classList.add('mine')

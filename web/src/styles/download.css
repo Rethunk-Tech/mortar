@@ -1,4 +1,4 @@
-/* Download: a card per system and the package-manager commands, on the landing page and /download/. */
+/* The landing page's download cards and package-manager commands, then the /download/ page. */
 .oscards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -238,9 +238,6 @@
 }
 .mk-steamdeck {
   color: rgb(26, 159, 255);
-}
-.mk-appimage {
-  color: rgb(115, 159, 185);
 }
 .mk-flatpak {
   color: rgb(74, 144, 217);
