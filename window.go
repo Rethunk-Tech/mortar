@@ -26,6 +26,8 @@ type windowGeom struct {
 	Y int `json:"y"`
 	W int `json:"w"`
 	H int `json:"h"`
+	// Max reopens the window maximised; X, Y, W and H stay the size it returns to when restored.
+	Max bool `json:"max,omitempty"`
 }
 
 type screenRect struct {
@@ -47,6 +49,21 @@ func loadWindowGeom(dataDir string, screens []screenRect) (windowGeom, bool) {
 	}
 	g.X, g.Y, g.W, g.H = clampWindow(g.X, g.Y, g.W, g.H, screens)
 	return g, true
+}
+
+// closingGeom is what to remember when the window closes: its bounds when it is a normal window, or, when it is
+// maximised, the last normal bounds kept from before with Max set, so the next start neither opens a window the size
+// of the screen nor forgets that it was maximised.
+func closingGeom(prev windowGeom, havePrev, maximised bool, cur windowGeom) windowGeom {
+	if !maximised {
+		cur.Max = false
+		return cur
+	}
+	if !havePrev {
+		prev = windowGeom{W: defaultWindowWidth, H: defaultWindowHeight}
+	}
+	prev.Max = true
+	return prev
 }
 
 func saveWindowGeom(dataDir string, g windowGeom) {

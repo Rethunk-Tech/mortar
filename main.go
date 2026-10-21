@@ -1095,6 +1095,9 @@ func run() error {
 		if store.Get().RememberWindow {
 			if g, ok := loadWindowGeom(dataDir, screensOf(app)); ok {
 				opts.X, opts.Y, opts.Width, opts.Height = g.X, g.Y, g.W, g.H
+				if g.Max {
+					opts.StartState = application.WindowStateMaximised
+				}
 			}
 		}
 		w := app.Window.NewWithOptions(opts)
@@ -1106,7 +1109,8 @@ func run() error {
 		w.RegisterHook(events.Common.WindowClosing, func(e *application.WindowEvent) {
 			if store.Get().RememberWindow && !plays.PlayMode() {
 				x, y := w.Position()
-				saveWindowGeom(dataDir, windowGeom{X: x, Y: y, W: w.Width(), H: w.Height()})
+				prev, havePrev := loadWindowGeom(dataDir, nil)
+				saveWindowGeom(dataDir, closingGeom(prev, havePrev, w.IsMaximised(), windowGeom{X: x, Y: y, W: w.Width(), H: w.Height()}))
 			}
 			if !quitSvc.OnWindowClose(store.Get().KeepInTray, plays.PlayMode()) {
 				e.Cancel()
