@@ -633,18 +633,28 @@ func loadPNGAlpha(root, rel, fileKey string) (pngAlpha, bool) {
 			return pix, pix.a != nil
 		}
 	}
-	file, err := os.OpenInRoot(root, filepath.FromSlash(rel))
-	if err != nil {
-		pngAlphaCache.Store(fileKey, pngAlpha{})
-		return pngAlpha{}, false
+	diskPath := alphaDiskPath(fileKey)
+	pix, ok := pngAlpha{}, false
+	if diskPath != "" {
+		pix, ok = readAlphaDisk(diskPath)
 	}
-	pix, ok := decodePNGAlpha(file)
-	_ = file.Close()
 	if !ok {
-		pngAlphaCache.Store(fileKey, pngAlpha{})
-		return pngAlpha{}, false
+		file, err := os.OpenInRoot(root, filepath.FromSlash(rel))
+		if err != nil {
+			pngAlphaCache.Store(fileKey, pngAlpha{})
+			return pngAlpha{}, false
+		}
+		pix, ok = decodePNGAlpha(file)
+		_ = file.Close()
+		if !ok {
+			pngAlphaCache.Store(fileKey, pngAlpha{})
+			return pngAlpha{}, false
+		}
+		pix.a = packNonzeroMask(pix.a)
+		if diskPath != "" {
+			writeAlphaDisk(diskPath, pix)
+		}
 	}
-	pix.a = packNonzeroMask(pix.a)
 	actual, loaded := pngAlphaCache.LoadOrStore(fileKey, pix)
 	if loaded {
 		releaseAlpha(pix.a)

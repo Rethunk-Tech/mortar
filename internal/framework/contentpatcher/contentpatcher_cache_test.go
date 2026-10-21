@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -507,5 +508,87 @@ func TestPackCacheNoticesAConfigThatAppearsLater(t *testing.T) {
 	}
 	if packFingerprintValid(root, pack.files, pack.fingerprint) {
 		t.Fatal("the config.json that appeared was not noticed")
+	}
+}
+
+// A data folder that was moved or copied keeps its pack cache: packs are keyed by their path under the data folder.
+func TestPackDiskCacheSurvivesAMovedDataFolder(t *testing.T) {
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	oldHome := t.TempDir()
+	t.Setenv("XDG_DATA_HOME", oldHome)
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+
+	im, _, _ := diskCachePack(t)
+	inside := filepath.Join(oldHome, "mortar", "profiles", "p", "mods", "pack")
+	if err := os.MkdirAll(filepath.Dir(inside), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Rename(im.Folder, inside); err != nil {
+		t.Fatal(err)
+	}
+	im.Folder = inside
+	readContentPack(im)
+	flushPackDiskCache([]framework.Mod{im})
+
+	newHome := t.TempDir()
+	if err := os.Rename(filepath.Join(oldHome, "mortar"), filepath.Join(newHome, "mortar")); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("XDG_DATA_HOME", newHome)
+	im.Folder = filepath.Join(newHome, "mortar", "profiles", "p", "mods", "pack")
+
+	// Same size and mtime, different text: only a cache hit still reports the old patches.
+	content := filepath.Join(im.Folder, "content.json")
+	info, err := os.Stat(content)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(content, []byte(strings.Repeat(" ", int(info.Size()))), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(content, info.ModTime(), info.ModTime()); err != nil {
+		t.Fatal(err)
+	}
+	resetContentPackCaches()
+	if got := readContentPack(im); len(got.patches) != 2 {
+		t.Fatalf("a moved data folder missed the pack cache: %d patches", len(got.patches))
+	}
+}
+
+// An unchanged image's alpha mask comes from the disk cache, not from decoding the PNG again.
+func TestOverlayAlphaMaskIsKeptOnDisk(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+	loadPackDiskCache()
+
+	im, _, pngPath := diskCachePack(t)
+	key, ok := pngFileKey(im.Folder, "patch.png")
+	if !ok {
+		t.Fatal("pngFileKey")
+	}
+	first, ok := loadPNGAlpha(im.Folder, "patch.png", key)
+	if !ok {
+		t.Fatal("loadPNGAlpha")
+	}
+	want := slices.Clone(first.a)
+
+	// The same size and mtime with bytes no PNG decoder accepts: only the disk cache can still answer.
+	info, err := os.Stat(pngPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(pngPath, make([]byte, info.Size()), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(pngPath, info.ModTime(), info.ModTime()); err != nil {
+		t.Fatal(err)
+	}
+	pngAlphaCache = sync.Map{}
+	got, ok := loadPNGAlpha(im.Folder, "patch.png", key)
+	if !ok || got.w != first.w || got.h != first.h || !bytes.Equal(got.a, want) {
+		t.Fatalf("mask after a restart = %v %dx%d, want the decoded one", ok, got.w, got.h)
 	}
 }

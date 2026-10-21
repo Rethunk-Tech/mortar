@@ -197,7 +197,7 @@ type cachedPack struct {
 	farms map[string]string
 }
 
-const contentPackParserVersion = 23
+const contentPackParserVersion = 24
 
 // absentSize stamps a file that was not there, so the cache is dropped when it appears.
 const absentSize = -1
@@ -312,8 +312,27 @@ var packDiskState struct {
 	sync.Mutex
 	loaded  bool
 	path    string
+	base    string
 	entries map[string]diskPackEntry
 	dirty   bool
+}
+
+// packKey names a pack folder in the disk cache: the path under the data folder when it is inside, so a moved or
+// copied data folder still finds its packs, else the absolute path.
+func packKey(base, root string) string {
+	if base != "" && datadir.UnderRoot(base, root) {
+		if rel, err := filepath.Rel(base, root); err == nil {
+			return filepath.ToSlash(rel)
+		}
+	}
+	return root
+}
+
+func packKeyRoot(base, key string) string {
+	if filepath.IsAbs(key) {
+		return key
+	}
+	return filepath.Join(base, filepath.FromSlash(key))
 }
 
 type cpTokenDefinition struct {
@@ -829,14 +848,6 @@ func packFingerprintValid(root string, files []packFileStamp, fingerprint string
 	return packFilesFingerprint(current) == fingerprint
 }
 
-func contentPackCachePath() (string, error) {
-	base, err := datadir.Dir()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(base, "cache", "problems-content-packs.json"), nil
-}
-
 func zipPackCache(raw []byte) ([]byte, error) {
 	var buf bytes.Buffer
 	writer := gzip.NewWriter(&buf)
@@ -863,10 +874,11 @@ func unzipPackCache(raw []byte) ([]byte, bool) {
 }
 
 func loadPackDiskCache() string {
-	path, err := contentPackCachePath()
+	base, err := datadir.Dir()
 	if err != nil {
 		return ""
 	}
+	path := filepath.Join(base, "cache", "problems-content-packs.json")
 	packDiskState.Lock()
 	defer packDiskState.Unlock()
 	if packDiskState.loaded && packDiskState.path == path {
@@ -874,6 +886,7 @@ func loadPackDiskCache() string {
 	}
 	packDiskState.loaded = true
 	packDiskState.path = path
+	packDiskState.base = base
 	packDiskState.entries = map[string]diskPackEntry{}
 	packDiskState.dirty = false
 	f, err := fsx.Open(path)
@@ -945,7 +958,7 @@ func decodeDiskPack(raw []byte) (diskCachedPack, bool) {
 func diskPackEntryFor(root string) (diskPackEntry, bool) {
 	packDiskState.Lock()
 	defer packDiskState.Unlock()
-	entry, ok := packDiskState.entries[root]
+	entry, ok := packDiskState.entries[packKey(packDiskState.base, root)]
 	return entry, ok
 }
 
@@ -955,7 +968,7 @@ func storeDiskPackEntry(root string, entry diskPackEntry) {
 	if packDiskState.entries == nil {
 		packDiskState.entries = map[string]diskPackEntry{}
 	}
-	packDiskState.entries[root] = entry
+	packDiskState.entries[packKey(packDiskState.base, root)] = entry
 	packDiskState.dirty = true
 }
 
@@ -972,9 +985,9 @@ func flushPackDiskCache(mods []framework.Mod) {
 		return
 	}
 	packDiskState.Lock()
-	for root := range packDiskState.entries {
-		if _, err := os.Stat(root); err != nil {
-			delete(packDiskState.entries, root)
+	for key := range packDiskState.entries {
+		if _, err := os.Stat(packKeyRoot(packDiskState.base, key)); err != nil {
+			delete(packDiskState.entries, key)
 			packDiskState.dirty = true
 		}
 	}
