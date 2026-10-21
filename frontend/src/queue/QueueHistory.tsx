@@ -38,6 +38,8 @@ import {
 import { RetryAllButton } from './RetryAllButton.tsx'
 
 const millisecondsPerSecond = 1000
+// Between the parts of a history row's detail line.
+const DETAIL_SEPARATOR = ' · '
 
 // A classified failure reads as the plain sentence; an unclassified one keeps its own text, which is all there is.
 function failureText(error: string): string {
@@ -246,7 +248,7 @@ export function HistoryList({
                   {e.size > 0 ? ` · ${formatBytes(e.size)}` : ''}
                   {e.finished ? (
                     <>
-                      {' · '}
+                      {DETAIL_SEPARATOR}
                       <When value={e.finished * millisecondsPerSecond} withTime={true} />
                     </>
                   ) : null}
