@@ -60,6 +60,19 @@ runs:
         path: ${{ env.MORTAR_GOBIN }}
         key: mortar-tools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('go.mod', 'go.sum', '.github/actions/setup-mortar/action.yml') }}-lint-${{ inputs.lint-tools }}-nfpm-${{ inputs.nfpm }}-native-${{ inputs.native }}
 
+    # Without its analysis cache golangci-lint re-checks every package: about 80 s of CPU per pass, linux and windows
+    # both, which was the gate's critical path on a 4-core runner; warm it is 4 s, from a 43 MB cache. Packages a
+    # commit changes are re-checked on top of the restored cache, so the key moves only with the inputs that touch
+    # every package.
+    - name: Cache golangci-lint analysis
+      if: inputs.lint-tools == 'true'
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.cache/golangci-lint
+        key: mortar-golangci-${{ runner.os }}-${{ hashFiles('go.sum', '.golangci.yml', '.github/actions/setup-mortar/action.yml') }}
+        restore-keys: |
+          mortar-golangci-${{ runner.os }}-
+
     # go.mod replaces wailsapp/wails/v3 with the Rethunk-AI fork, and `go install module@version` ignores
     # replace directives, so the CLI is built inside the fork's own module at the exact version go.mod pins.
     - name: Go tools
