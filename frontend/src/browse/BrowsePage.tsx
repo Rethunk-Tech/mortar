@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { persist } from '../settings/persist.ts'
 import { useOfflineEmpty } from '../shell/offlineText.ts'
@@ -10,10 +10,20 @@ import { BrowseDetails } from './BrowseDetails.tsx'
 import { BrowseFilters } from './BrowseFilters.tsx'
 import { BrowseMenu } from './BrowseMenu.tsx'
 import { BrowseToolbar } from './BrowseToolbar.tsx'
-import { ALL, FIRST_PAGE, GITHUB, searchHint } from './browseConstants.ts'
+import {
+  ALL,
+  CARD_MIN_PX,
+  CARD_PAD_PX,
+  FIRST_PAGE,
+  GAP_PX,
+  GITHUB,
+  PICTURE_PX,
+  ROW_PICTURE_PX,
+  searchHint,
+} from './browseConstants.ts'
 import { type BrowseModes, formatModes } from './browseModes.ts'
 import { savePicks } from './browsePicks.ts'
-import { PAGE_SIZE } from './browseState.ts'
+import { PAGE_SIZE, screenSize } from './browseState.ts'
 import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts'
 import { hitKey, stepSelection, useBrowseSelection } from './selection.ts'
 import { pagedTotal, useBrowseQuery } from './useBrowseQuery.ts'
@@ -58,15 +68,64 @@ function useSelectionKeys(items: BrowseItem[]) {
 
 // ALL searches every source the game has; it is the default so where a mod is published never matters to the player.
 
+// The pager under the results and its margin, which the rows that fit leave room for.
+const PAGER_PX = 48
+const REFIT_MS = 200
+
+// How many results fill the results box: its grid's columns times the card rows that fit above the pager, measured
+// from a rendered card once there is one. Re-measured when the box resizes or its cards change.
+function useScreenFit(box: RefObject<HTMLDivElement | null>, view: string): number {
+  const [fit, setFit] = useState(PAGE_SIZE)
+  useEffect(() => {
+    const el = box.current
+    if (!el) {
+      return
+    }
+    const grid = view === 'grid'
+    const measure = () => {
+      const style = getComputedStyle(el)
+      const width =
+        el.clientWidth -
+        Number.parseFloat(style.paddingLeft) -
+        Number.parseFloat(style.paddingRight)
+      const height =
+        el.clientHeight -
+        Number.parseFloat(style.paddingTop) -
+        Number.parseFloat(style.paddingBottom) -
+        PAGER_PX
+      const rowPx =
+        el.querySelector<HTMLElement>('[data-hit]')?.offsetHeight ??
+        (grid ? PICTURE_PX : ROW_PICTURE_PX) + CARD_PAD_PX
+      const columns = grid ? Math.max(1, Math.floor((width + GAP_PX) / (CARD_MIN_PX + GAP_PX))) : 1
+      const rows = Math.max(1, Math.floor((height + GAP_PX) / (rowPx + GAP_PX)))
+      setFit(screenSize(columns, rows))
+    }
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const later = () => {
+      clearTimeout(timer)
+      timer = setTimeout(measure, REFIT_MS)
+    }
+    const resized = new ResizeObserver(later)
+    resized.observe(el)
+    const changed = new MutationObserver(later)
+    changed.observe(el, { childList: true, subtree: true })
+    measure()
+    return () => {
+      clearTimeout(timer)
+      resized.disconnect()
+      changed.disconnect()
+    }
+  }, [box, view])
+  return fit
+}
+
 // A new page of results starts at its top rather than where the last page was scrolled to.
-function useTopOnPage(page: number) {
-  const ref = useRef<HTMLDivElement>(null)
+function useTopOnPage(ref: RefObject<HTMLDivElement | null>, page: number) {
   useEffect(() => {
     if (page >= FIRST_PAGE) {
       ref.current?.scrollTo({ top: 0 })
     }
-  }, [page])
-  return ref
+  }, [ref, page])
 }
 // The toolbar's and filters' handlers, stable so those memoised parts skip a render when results arrive.
 const clearSearch = () => useBrowseView.getState().setDraft('')
@@ -131,17 +190,20 @@ function BrowsePage({
 }: BrowsePageProps) {
   const { t } = useLingui()
   const view = useBrowseView((s) => s.view)
+  const results = useRef<HTMLDivElement>(null)
+  const fit = useScreenFit(results, view)
   const query = useBrowseQuery({
     game,
     profileID,
     search,
     sources: searchable,
     defaultExcludes,
+    fit,
   })
-  const { filter, sorts, modes, source, page, setPage, result } = query
+  const { filter, sorts, modes, source, page, setPage, result, size } = query
   const offline = useOfflineEmpty(source === ALL ? searchable.map((s) => s.id) : [source])
   const categoryNames = useCategoryNames({ categories, game, source, skip: source === GITHUB })
-  const pageCount = Math.max(FIRST_PAGE, Math.ceil(pagedTotal(result) / PAGE_SIZE) || FIRST_PAGE)
+  const pageCount = Math.max(FIRST_PAGE, Math.ceil(pagedTotal(result) / size) || FIRST_PAGE)
   // Stable, so the memoised toolbar skips a render when results arrive.
   const sources = useMemo(
     () => [
@@ -155,7 +217,7 @@ function BrowsePage({
   const retry = useCallback(() => setRetry((n) => n + 1), [setRetry])
   const sourceName = sources.find((s) => s.value === source)?.label ?? ''
   useSelectionKeys(result.items)
-  const results = useTopOnPage(page)
+  useTopOnPage(results, page)
   const sourceNames = useMemo(() => new Map(searchable.map((s) => [s.id, s.name])), [searchable])
   // One object for every card, kept while its parts are, so the memoised cards skip a render when results arrive.
   const card = useMemo(
@@ -182,12 +244,9 @@ function BrowsePage({
       sourceNames,
     ],
   )
-  let placeholder = t`Search ${sourceName}`
-  if (source === ALL) {
-    placeholder = t`Search all mod sites`
-  } else if (source === GITHUB) {
-    placeholder = t`Search GitHub releases`
-  }
+  const placeholder =
+    { [ALL]: t`Search all mod sites`, [GITHUB]: t`Search GitHub releases` }[source] ??
+    t`Search ${sourceName}`
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <BrowseToolbar

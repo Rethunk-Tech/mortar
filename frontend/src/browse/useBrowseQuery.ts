@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSettings } from '../settings/store.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
@@ -6,7 +6,7 @@ import { ALL, FIRST_PAGE } from './browseConstants.ts'
 import { parseModes } from './browseModes.ts'
 import { parsePicks } from './browsePicks.ts'
 import { effectiveSort, sortsFor } from './browseSort.ts'
-import { clampPage, PAGE_SIZE } from './browseState.ts'
+import { clampPage, PAGE_SIZE, pageKeeping, screenSpan } from './browseState.ts'
 import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts'
 import { useBrowseView } from './view.ts'
 
@@ -36,13 +36,59 @@ function pagedTotal(r: BrowseResult): number {
   return r.pages ? r.pages * PAGE_SIZE : r.total
 }
 
+// One screen from the source pages it spans: their hits in order, the hidden counts added and the failed sources once.
+function joinPages(parts: BrowseResult[], skip: number, size: number): BrowseResult {
+  const [head = EMPTY_RESULT] = parts
+  return {
+    ...head,
+    items: parts.flatMap((p) => p.items).slice(skip, skip + size),
+    hidden: parts.reduce((n, p) => n + (p.hidden ?? 0), 0),
+    failed: [...new Set(parts.flatMap((p) => p.failed ?? []))],
+  }
+}
+
+// One screen of `size` hits on screen `page`, from the source pages it spans; pages already fetched for this search
+// are reused. A source page holding more than a page of hits comes back whole.
+async function loadScreen(
+  pages: Map<number, Promise<BrowseResult>>,
+  fetchPage: (page: number) => Promise<BrowseResult>,
+  page: number,
+  size: number,
+): Promise<{ next: BrowseResult; whole: boolean }> {
+  const sourcePage = (p: number) => {
+    let got = pages.get(p)
+    if (!got) {
+      got = fetchPage(p)
+      pages.set(p, got)
+      got.catch(() => pages.delete(p))
+    }
+    return got
+  }
+  const { first, last, skip } = screenSpan(page, size)
+  const head = await sourcePage(first)
+  if (head.items.length > PAGE_SIZE) {
+    return { next: head, whole: true }
+  }
+  const known = head.pages ?? Math.ceil(head.total / PAGE_SIZE)
+  const rest = await Promise.all(
+    Array.from({ length: Math.max(0, Math.min(last, known) - first) }, (_, i) =>
+      sourcePage(first + 1 + i),
+    ),
+  )
+  return { next: joinPages([head, ...rest], skip, size), whole: false }
+}
+
 function useBrowseQuery({
   game,
   profileID,
   search,
   sources,
   defaultExcludes,
-}: Pick<BrowsePageProps, 'game' | 'profileID' | 'search' | 'sources' | 'defaultExcludes'>) {
+  fit,
+}: Pick<BrowsePageProps, 'game' | 'profileID' | 'search' | 'sources' | 'defaultExcludes'> & {
+  // How many results fill the window.
+  fit: number
+}) {
   const savedPicks = useSettings((s) => s.games?.[game]?.browsePicks ?? '')
   const chosenFilter = useMemo(() => {
     const picks = parsePicks(savedPicks)
@@ -78,6 +124,22 @@ function useBrowseQuery({
   const [result, setResult] = useState<BrowseResult>(EMPTY_RESULT)
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState<InlineError | null>(null)
+  // A search across sources with a sort none of them ranks returns every source's page at once; those pages are shown
+  // as they come, since screens cut from them would skip hits.
+  const [whole, setWhole] = useState(false)
+  const size = whole ? PAGE_SIZE : fit
+  const shown = useRef(size)
+  useEffect(() => {
+    const from = shown.current
+    if (from !== size) {
+      setPage((current) => pageKeeping(current, from, size))
+      shown.current = size
+    }
+  }, [size])
+  const fetched = useRef<{ key: string; pages: Map<number, Promise<BrowseResult>> }>({
+    key: '',
+    pages: new Map(),
+  })
 
   const pendingQuery = useBrowseView((s) => s.pendingQuery)
   useEffect(() => {
@@ -97,12 +159,22 @@ function useBrowseQuery({
     }
     let cancelled = false
     setStatus('loading')
-    search({ game, source, text, page, profileID, filter })
-      .then((next) => {
+    const key = JSON.stringify([game, source, text, profileID, filter, retry, hides])
+    if (fetched.current.key !== key) {
+      fetched.current = { key, pages: new Map() }
+    }
+    loadScreen(
+      fetched.current.pages,
+      (p) => search({ game, source, text, page: p, profileID, filter }),
+      page,
+      size,
+    )
+      .then(({ next, whole: all }) => {
         if (!cancelled) {
+          setWhole(all)
           setResult(next)
           setStatus('done')
-          setPage((current) => clampPage({ page: current, total: pagedTotal(next) }))
+          setPage((current) => clampPage({ page: current, total: pagedTotal(next), size }))
         }
       })
       .catch((err: unknown) => {
@@ -114,7 +186,7 @@ function useBrowseQuery({
     return () => {
       cancelled = true
     }
-  }, [game, source, text, page, profileID, search, retry, hides, filter, waiting])
+  }, [game, source, text, page, size, profileID, search, retry, hides, filter, waiting])
 
   return {
     filter,
@@ -126,6 +198,7 @@ function useBrowseQuery({
     setText,
     page,
     setPage,
+    size,
     setRetry,
     result,
     status,

@@ -10,6 +10,8 @@ const PICTURE_PX = 72
 const ROW_PICTURE_PX = 40
 const CARD_MIN_PX = 340
 const GAP_PX = 6
+// A result card is its picture plus the card's vertical padding.
+const CARD_PAD_PX = 24
 const ICON_SIZE = 40
 const STALE_OPACITY = 0.6
 const GRAY_OPACITY = 0.5
@@ -44,6 +46,7 @@ const grid = {
 export {
   ALL,
   CARD_MIN_PX,
+  CARD_PAD_PX,
   FIRST_PAGE,
   GAP_PX,
   GITHUB,

@@ -10,6 +10,7 @@ import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { space } from '../theme/density.ts'
 import type { InlineError } from '../toasts/report.ts'
 import {
+  CARD_PAD_PX,
   FIRST_PAGE,
   grid,
   ICON_SIZE,
@@ -27,9 +28,6 @@ import type { BrowseResult, Status } from './useBrowseQuery.ts'
 function cardAction(card: HTMLElement): HTMLElement | null {
   return [...card.querySelectorAll<HTMLElement>('button:not(:disabled)')].at(-1) ?? null
 }
-
-// A result card is its picture plus the card's vertical padding.
-const CARD_PAD_PX = 24
 
 type CardShared = Omit<ResultCardProps, 'row' | 'item'>
 
