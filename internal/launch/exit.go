@@ -7,6 +7,8 @@ type Exit struct {
 	Code    int    `json:"code"`
 	Signal  string `json:"signal,omitempty"`
 	Stopped bool   `json:"stopped,omitempty"`
+	// Output is the tail of what the process wrote to stdout and stderr; set only for a direct start Mortar captured.
+	Output string `json:"-"`
 }
 
 // DescribeExit is the short clause for notices and CLI ("exited with code 134 (SIGABRT)").

@@ -229,9 +229,15 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 		return &Failure{Hint: c.Failure, Err: err}
 	}
 	out := captureOf(exited)
+	// A game that comes up with an exit callback keeps its capture until it exits, so the callback gets the output.
+	keep := false
 	if out != nil {
 		captured.Delete(exited)
-		defer out.release()
+		defer func() {
+			if !keep {
+				out.release()
+			}
+		}()
 	}
 	// stalled reports a known cause in the process's output while the game is not up, and ends the process: Wine
 	// leaves an assertion dialog open forever, so waiting out the timeout would only hide the reason.
@@ -261,7 +267,13 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 		}
 		if c.OnExit != nil && exited != nil && !c.Relay {
 			ch := exited
-			go func() { c.OnExit(WaitError(<-ch)) }()
+			keep = true
+			go func() {
+				x := WaitError(<-ch)
+				x.Output = out.tail()
+				out.release()
+				c.OnExit(x)
+			}()
 		}
 		return nil
 	}

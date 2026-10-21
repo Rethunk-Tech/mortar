@@ -23,6 +23,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
+	"github.com/Rethunk-Tech/mortar/internal/loader/dotnetstack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -415,6 +416,13 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	} else if !stats.Crashed && hasPlayer && unityCrashed(player) {
 		stats.Crashed = true
 	}
+	var stderr string
+	if sess.haveExit && launch.ExitCrashed(sess.exit) {
+		stderr = strings.TrimSpace(sess.exit.Output)
+	}
+	if stderr != "" {
+		text += "\n\nGame output (stdout and stderr, end of the run):\n" + stderr + "\n"
+	}
 	text = launch.CapLog(text, launch.MaxLogBytes)
 	ended := time.Now()
 	if started.IsZero() {
@@ -442,6 +450,9 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 	var cause Cause
 	if !stopped || stats.Crashed {
 		cause = s.cause(g.ID(), profileID, text)
+		if cause.ModName == "" && stderr != "" {
+			cause = s.outputCause(g.ID(), profileID, stderr)
+		}
 	}
 	run := Run{
 		ID: id, Started: started.UTC().Format(time.RFC3339Nano), Ended: ended.UTC().Format(time.RFC3339Nano),
@@ -547,6 +558,23 @@ func (s *Service) cause(gameID, profileID, text string) Cause {
 		}
 	}
 	return Cause{}
+}
+
+// outputCause blames the enabled mod a managed stack in the process's own output runs through: a CoreCLR game under
+// Wine prints its unhandled exception there and nowhere else.
+func (s *Service) outputCause(gameID, profileID, output string) Cause {
+	installed, err := s.profiles.Installed(gameID, profileID)
+	if err != nil {
+		return Cause{}
+	}
+	m, b, ok := blamedMod(dotnetstack.Blames(output, dotnetstack.Unity), installed)
+	if !ok {
+		return Cause{}
+	}
+	return Cause{
+		ModKey: m.Key, ModName: m.Name, ID: m.ModID(), Reason: "mod-exception",
+		Detail: fmt.Sprintf("%s: %s at %s.", m.Name, b.Exception, b.Frame),
+	}
 }
 
 func missingFileCause(mods []profile.Mod, modsDir string, lines []string) (Cause, bool) {

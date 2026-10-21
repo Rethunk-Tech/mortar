@@ -1,6 +1,7 @@
 package launchsvc
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -116,5 +117,44 @@ func TestRunEndNotificationTextExit(t *testing.T) {
 	})
 	if title != "Stardew Valley crashed" || body != "exited with code 134 (SIGABRT)" {
 		t.Fatalf("got %q / %q", title, body)
+	}
+}
+
+const coreclrStderr = "wine: some noise\nUnhandled exception. System.NullReferenceException: Object reference not set to an instance of an object.\n" +
+	"   at BetterRepair.Logic.X() in /src/Logic.cs:line 12\n   at Game.Main()\n"
+
+func TestAnAbnormalExitKeepsTheProcessOutputAndBlamesItsMod(t *testing.T) {
+	svc, p, _, _ := runEnv(t)
+	addSweepMod(t, svc.profiles, p.ID, "Author.BetterRepair", "BetterRepair")
+	g := game.Find("stardew")
+	svc.mu.Lock()
+	svc.logs[keyOf(g)] = session{profile: p.ID, haveExit: true, exit: launch.Exit{Code: 134, Output: coreclrStderr}}
+	svc.mu.Unlock()
+	svc.record(g, p.ID, time.Now(), false)
+	runs, err := svc.Runs("stardew", p.ID)
+	if err != nil || len(runs) != 1 {
+		t.Fatalf("runs = %#v, %v", runs, err)
+	}
+	text, err := svc.RunLog("stardew", p.ID, runs[0].ID)
+	t.Logf("run log:\n%s", text)
+	if err != nil || !strings.Contains(text, "Game output") || !strings.Contains(text, "at BetterRepair.Logic.X()") {
+		t.Fatalf("run log = %q, %v", text, err)
+	}
+	if runs[0].Cause == nil || runs[0].Cause.ModName != "BetterRepair" {
+		t.Fatalf("cause = %#v", runs[0].Cause)
+	}
+}
+
+func TestACleanExitAddsNoProcessOutput(t *testing.T) {
+	svc, p, _, _ := runEnv(t)
+	g := game.Find("stardew")
+	svc.mu.Lock()
+	svc.logs[keyOf(g)] = session{profile: p.ID, haveExit: true, exit: launch.Exit{Output: coreclrStderr}}
+	svc.mu.Unlock()
+	svc.record(g, p.ID, time.Now(), false)
+	runs, _ := svc.Runs("stardew", p.ID)
+	text, _ := svc.RunLog("stardew", p.ID, runs[0].ID)
+	if strings.Contains(text, "Game output") || runs[0].Cause != nil {
+		t.Fatalf("clean exit run log = %q, cause %#v", text, runs[0].Cause)
 	}
 }
