@@ -37,6 +37,7 @@ export const SOURCE_NAMES: Record<string, string> = {
   vsmoddb: 'Vintage Story Mod DB',
   itch: 'itch.io',
   patreon: 'Patreon',
+  paradox: 'Paradox Mods',
 }
 
 let playable: Game[] | undefined
