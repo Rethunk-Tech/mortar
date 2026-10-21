@@ -54,6 +54,11 @@ func TestProcesses(t *testing.T) {
 	if procs[0].UsesModsPath("/p/other/mods") {
 		t.Fatal("matched an unrelated mods path")
 	}
+	add("107", "/bin/sh\x00-c\x00steam-runtime-launch\x00")
+	add("108", `Z:\\g\\SH.EXE`+"\x00")
+	if sh, err := Processes(proc, "SH"); err != nil || len(sh) != 1 || sh[0].PID != 108 {
+		t.Fatalf("a shell is not SUPERHOT's SH, its Windows exe is: %+v, %v", sh, err)
+	}
 	add("106", "/g/StardewValley\x00")
 	if both, err := Processes(proc, "StardewValley", "StardewModdingAPI"); err != nil || len(both) != 5 {
 		t.Fatalf("one pass for two names = %+v, %v", both, err)

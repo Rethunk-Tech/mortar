@@ -17,9 +17,13 @@ import (
 // runs reports whether args start the program name, directly or through dotnet or mono.
 func runs(args []string, name string) bool {
 	is := func(a string) bool {
-		// Wine and Proton processes carry the Windows path of the game as their program.
+		// Wine and Proton processes carry the Windows path of the game as their program, and Windows names ignore
+		// case. A Linux name is matched exactly: ignoring case there makes /bin/sh SUPERHOT's "SH".
 		base := filepath.Base(strings.ReplaceAll(a, `\`, "/"))
-		return strings.EqualFold(strings.TrimSuffix(strings.TrimSuffix(base, ".exe"), ".dll"), name)
+		if ext := strings.ToLower(filepath.Ext(base)); ext == ".exe" || ext == ".dll" {
+			return strings.EqualFold(strings.TrimSuffix(base, filepath.Ext(base)), name)
+		}
+		return base == name
 	}
 	if len(args) == 0 {
 		return false
