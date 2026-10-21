@@ -5,10 +5,11 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const SITE = 'site'
-// download.js fills data-asset links from this repo's latest release, putting the version where VERSION stands.
+// A data-asset names a file of this repo's release, with the release's version where VERSION stands.
 const ASSET_REPO = 'Rethunk-Tech/mortar'
-const LATEST_ASSET =
-  /^https:\/\/github\.com\/([^/]+\/[^/]+)\/releases\/latest\/download\/([^/?#]+)$/
+// A download link names a release by tag (releases/download/v1.2.3/) or follows the latest (releases/latest/download/).
+const RELEASE_ASSET =
+  /^https:\/\/github\.com\/([^/]+\/[^/]+)\/releases\/(?:latest\/download|download\/([^/]+))\/([^/?#]+)$/
 const PACKAGE_URL = /https:\/\/mortar\.rethunk\.tech\/packages\/[^\s"'<]+/g
 const BREW = /brew install ([\w-]+)\/([\w-]+)\/([\w-]+)/g
 const FORMULA_ASSET =
@@ -37,45 +38,49 @@ function anchorsOf(page: string, html: string): Anchor[] {
   }))
 }
 
-function latestAsset(a: Anchor): RegExpExecArray | null {
-  return a.href ? LATEST_ASSET.exec(a.href) : null
+/** The release an anchor's link names, as repo@tag (tag "latest" for a latest link), and the file in it. */
+function linkedAsset(a: Anchor): { key: string; repo: string; name: string } | null {
+  const m = a.href ? RELEASE_ASSET.exec(a.href) : null
+  return m ? { key: `${m[1]}@${m[2] ?? 'latest'}`, repo: m[1], name: m[3] } : null
 }
 
-/** The repos whose latest release the anchors need. */
+/** The releases (repo@tag) the anchors need. */
 function reposOf(anchors: Anchor[]): string[] {
-  const repos = new Set<string>()
+  const keys = new Set<string>()
   for (const a of anchors) {
-    const m = latestAsset(a)
-    if (m) {
-      repos.add(m[1])
-    }
-    if (a.asset) {
-      repos.add(ASSET_REPO)
+    const l = linkedAsset(a)
+    if (l) {
+      keys.add(l.key)
+    } else if (a.asset) {
+      keys.add(`${ASSET_REPO}@latest`)
     }
   }
-  return [...repos]
+  return [...keys]
 }
 
-/** Every anchor whose asset is missing from the latest release it names, or whose href and data-asset disagree. */
-function anchorProblems(anchors: Anchor[], latest: Record<string, Release>): string[] {
+/** Every anchor whose file is missing from the release its link names, or whose href and data-asset disagree. */
+function anchorProblems(anchors: Anchor[], releases: Record<string, Release>): string[] {
   const out: string[] = []
-  const has = (repo: string, name: string) =>
-    latest[repo]?.assets.some((x) => x.name === name) ?? false
-  const tag = latest[ASSET_REPO]?.tag_name ?? ''
-  const version = tag.replace(/^v/, '')
+  const has = (key: string, name: string) =>
+    releases[key]?.assets.some((x) => x.name === name) ?? false
   for (const a of anchors) {
-    const m = latestAsset(a)
-    if (m && !has(m[1], m[2])) {
+    const l = linkedAsset(a)
+    if (l && !has(l.key, l.name)) {
       out.push(
-        `${a.page}: ${a.href} names no asset of ${m[1]} ${latest[m[1]]?.tag_name ?? '(no release)'}`,
+        `${a.page}: ${a.href} names no asset of ${l.repo} ${releases[l.key]?.tag_name ?? '(no release)'}`,
       )
     }
-    const name = a.asset?.replaceAll('VERSION', version)
-    if (name && !has(ASSET_REPO, name)) {
+    if (!a.asset) {
+      continue
+    }
+    const key = l?.repo === ASSET_REPO ? l.key : `${ASSET_REPO}@latest`
+    const tag = releases[key]?.tag_name ?? ''
+    const name = a.asset.replaceAll('VERSION', tag.replace(/^v/, ''))
+    if (!has(key, name)) {
       out.push(`${a.page}: data-asset ${a.asset} is ${name}, which ${ASSET_REPO} ${tag} lacks`)
     }
-    if (name && m && m[2] !== name) {
-      out.push(`${a.page}: href asset ${m[2]} differs from data-asset ${name}`)
+    if (l && l.name !== name) {
+      out.push(`${a.page}: href asset ${l.name} differs from data-asset ${name}`)
     }
   }
   return out
@@ -154,20 +159,21 @@ async function brewProblems(text: string, latest: Record<string, Release>): Prom
 async function main() {
   const html = Object.fromEntries(pages(SITE).map((p) => [p, readFileSync(p, 'utf8')]))
   const anchors = Object.entries(html).flatMap(([page, body]) => anchorsOf(page, body))
-  const latest: Record<string, Release> = {}
+  const releases: Record<string, Release> = {}
   const problems: string[] = []
-  for (const repo of reposOf(anchors)) {
-    const rel = await release(repo, 'latest')
+  for (const key of new Set([...reposOf(anchors), `${ASSET_REPO}@latest`])) {
+    const [repo = '', tag = 'latest'] = key.split('@')
+    const rel = await release(repo, tag === 'latest' ? 'latest' : `tags/${tag}`)
     if (rel) {
-      latest[repo] = rel
+      releases[key] = rel
     } else {
-      problems.push(`${repo} has no latest release the API returns`)
+      problems.push(`${repo} has no ${tag} release the API returns`)
     }
   }
   // The site names the version build/config.yml sets, which has no release until its tag publishes; the publish after
   // that release checks the site again, so a main commit ahead of the latest release has nothing to check yet.
   const configured = /^\s+version: "([^"]+)"/m.exec(readFileSync('build/config.yml', 'utf8'))?.[1]
-  const released = latest[ASSET_REPO]?.tag_name.replace(/^v/, '')
+  const released = releases[`${ASSET_REPO}@latest`]?.tag_name.replace(/^v/, '')
   if (configured && released && configured !== released) {
     console.log(
       `site downloads: ${configured} is not released yet (latest is ${released}); checked when it publishes`,
@@ -176,9 +182,16 @@ async function main() {
   }
   const all = Object.values(html).join('\n')
   problems.push(
-    ...anchorProblems(anchors, latest),
+    ...anchorProblems(anchors, releases),
     ...(await packageProblems(all)),
-    ...(await brewProblems(all, latest)),
+    ...(await brewProblems(
+      all,
+      Object.fromEntries(
+        Object.entries(releases)
+          .filter(([k]) => k.endsWith('@latest'))
+          .map(([k, v]) => [k.slice(0, -'@latest'.length), v]),
+      ),
+    )),
   )
   if (problems.length > 0) {
     console.error(problems.join('\n'))

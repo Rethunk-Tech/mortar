@@ -7,9 +7,9 @@ import '../../styles/page.css'
 import '../../styles/page-lists.css'
 
 const version = releases()[0]?.version ?? ''
-const LATEST = 'https://github.com/Rethunk-Tech/mortar/releases/latest/download/'
-// The site deploys with each release, so the version it was built with names that release's packages.
-const pkg = (asset: string) => LATEST + asset.replace('VERSION', version)
+// The site deploys with each release, so its links name that release's files: a download is the version the page shows.
+const RELEASE = `https://github.com/Rethunk-Tech/mortar/releases/download/v${version}/`
+const pkg = (asset: string) => RELEASE + asset.replace('VERSION', version)
 const packages = [
   { asset: 'mortar_VERSION_amd64.deb', name: '.deb, amd64', note: 'Ubuntu and Debian, no updates' },
   { asset: 'mortar_VERSION_arm64.deb', name: '.deb, arm64', note: 'Ubuntu and Debian, no updates' },
@@ -32,7 +32,7 @@ const packages = [
   <header class="wrap pagehead">
     <p class="kicker">Download</p>
     <h1>Get Mortar. <em>It's free.</em></h1>
-    <p class="lede">It's open source too. <span id="version">{version ? `Mortar v${version}` : 'The latest release'}</span> runs on Windows and Linux, x64 and ARM64, and on the Steam Deck.</p>
+    <p class="lede">It's open source too. Mortar runs on Windows and Linux, x64 and ARM64, and on the Steam Deck.</p>
   </header>
   <div class="wrap sec dl" data-version={version}>
 <p class="forsys jsonly">For <b id="sysname">your system</b>. <button type="button" class="linkish" id="other" aria-expanded="false" aria-controls="systems">Not your system?</button></p>
@@ -67,14 +67,14 @@ const packages = [
     <a
       class="file primary"
       data-asset="mortar-amd64-installer.exe"
-      href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-amd64-installer.exe"
+      href={RELEASE + "mortar-amd64-installer.exe"}
     >
       <strong>Installer, x64</strong><span>Most PCs</span>
     </a>
     <a
       class="file"
       data-asset="mortar-arm64-installer.exe"
-      href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-arm64-installer.exe"
+      href={RELEASE + "mortar-arm64-installer.exe"}
     >
       <strong>Installer, ARM64</strong
       ><span>Snapdragon and other ARM PCs</span>
@@ -82,14 +82,14 @@ const packages = [
     <a
       class="file"
       data-asset="mortar-windows-amd64.exe"
-      href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-windows-amd64.exe"
+      href={RELEASE + "mortar-windows-amd64.exe"}
     >
       <strong>Portable, x64</strong><span>Runs from any folder</span>
     </a>
     <a
       class="file"
       data-asset="mortar-windows-arm64.exe"
-      href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-windows-arm64.exe"
+      href={RELEASE + "mortar-windows-arm64.exe"}
     >
       <strong>Portable, ARM64</strong><span>Runs from any folder</span>
     </a>
@@ -153,7 +153,7 @@ scoop install mortar/mortar</code></pre>
       <a
         class="file primary"
         data-asset="mortar-linux-x86_64.AppImage"
-        href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-x86_64.AppImage"
+        href={RELEASE + "mortar-linux-x86_64.AppImage"}
       >
         <strong>AppImage, x86_64</strong
         ><span>Nothing else to install</span>
@@ -161,7 +161,7 @@ scoop install mortar/mortar</code></pre>
       <a
         class="file"
         data-asset="mortar-linux-aarch64.AppImage"
-        href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-aarch64.AppImage"
+        href={RELEASE + "mortar-linux-aarch64.AppImage"}
       >
         <strong>AppImage, ARM64</strong
         ><span>Nothing else to install</span>
@@ -169,7 +169,7 @@ scoop install mortar/mortar</code></pre>
       <a
         class="file"
         data-asset="mortar-linux-amd64"
-        href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-amd64"
+        href={RELEASE + "mortar-linux-amd64"}
       >
         <strong>Portable, x86_64</strong
         ><span>Uses the system's GTK 4 and WebKitGTK 6</span>
@@ -177,7 +177,7 @@ scoop install mortar/mortar</code></pre>
       <a
         class="file"
         data-asset="mortar-linux-arm64"
-        href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-arm64"
+        href={RELEASE + "mortar-linux-arm64"}
       >
         <strong>Portable, ARM64</strong
         ><span>Uses the system's GTK 4 and WebKitGTK 6</span>
@@ -296,7 +296,7 @@ sudo pacman -Syu mortar</code></pre>
     <a
       class="file primary"
       data-asset="mortar-linux-x86_64.AppImage"
-      href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-x86_64.AppImage"
+      href={RELEASE + "mortar-linux-x86_64.AppImage"}
     >
       <strong>AppImage, x86_64</strong><span>For the Steam Deck</span>
     </a>
@@ -364,7 +364,7 @@ sudo pacman -Syu mortar</code></pre>
   <div data-for="windows">
     <p class="muted">In PowerShell. <code>gpg</code> comes with <a href="https://gpg4win.org/">Gpg4win</a>, <code>gh</code> is the <a href="https://cli.github.com/">GitHub CLI</a>.</p>
     <pre><code>$f = '<span class="vfile">mortar-amd64-installer.exe</span>'
-$base = 'https://github.com/Rethunk-Tech/mortar/releases/latest/download'
+$base = 'https://github.com/Rethunk-Tech/mortar/releases/download/v{version}'
 Invoke-WebRequest "$base/SHA256SUMS" -OutFile SHA256SUMS
 Invoke-WebRequest "$base/SHA256SUMS.asc" -OutFile SHA256SUMS.asc
 Invoke-WebRequest https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc -OutFile mortar.asc
@@ -377,8 +377,8 @@ gh attestation verify $f --repo Rethunk-Tech/mortar</code></pre>
   <div data-for="linux">
     <p class="muted">In a terminal.</p>
     <pre><code>f=<span class="vfile">mortar-linux-x86_64.AppImage</span>
-curl -fsSLO https://github.com/Rethunk-Tech/mortar/releases/latest/download/SHA256SUMS
-curl -fsSLO https://github.com/Rethunk-Tech/mortar/releases/latest/download/SHA256SUMS.asc
+curl -fsSLO https://github.com/Rethunk-Tech/mortar/releases/download/v{version}/SHA256SUMS
+curl -fsSLO https://github.com/Rethunk-Tech/mortar/releases/download/v{version}/SHA256SUMS.asc
 curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | gpg --import
 gpg --verify SHA256SUMS.asc SHA256SUMS
 grep "  $f\$" SHA256SUMS | sha256sum --check
@@ -395,7 +395,7 @@ gh attestation verify "$f" --repo Rethunk-Tech/mortar</code></pre>
 
 <p class="muted">
   Checksums, release notes and every build:
-  <a href="https://github.com/Rethunk-Tech/mortar/releases/latest"
+  <a href={`https://github.com/Rethunk-Tech/mortar/releases/tag/v${version}`}
     >latest release on GitHub</a
   >.
 </p>

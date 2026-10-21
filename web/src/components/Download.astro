@@ -5,7 +5,8 @@ import { shortDate } from '../lib/news.ts'
 import Mark from './Mark.astro'
 
 const [latest] = releases()
-const LATEST = 'https://github.com/Rethunk-Tech/mortar/releases/latest/download/'
+// The site deploys with each release, so its links name that release's files: a download is the version the page shows.
+const RELEASE = `https://github.com/Rethunk-Tech/mortar/releases/download/v${latest?.version}/`
 const systems = [
   {
     os: 'windows',
@@ -93,7 +94,7 @@ const managers = [
         </span>
         <b>{s.name}</b>
         <span>{s.what}</span>
-        <a class="btn ghost" href={LATEST + s.asset} data-asset={s.asset}>
+        <a class="btn ghost" href={RELEASE + s.asset} data-asset={s.asset}>
           Download
         </a>
       </div>
@@ -104,7 +105,7 @@ const managers = [
   {latest && <span>Version {latest.version} · {shortDate(new Date(`${latest.date}T00:00:00Z`))}</span>}
   <a href="/news/">What's new</a>
   <a href="/download/#verify">Verify your download</a>
-  <a href="https://github.com/Rethunk-Tech/mortar/releases/latest">All releases and checksums</a>
+  <a href="https://github.com/Rethunk-Tech/mortar/releases">All releases and checksums</a>
 </div>
 <div class="cmds reveal">
   <span class="lbl">Or from your package manager</span>

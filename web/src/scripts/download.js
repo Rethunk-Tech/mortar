@@ -70,7 +70,6 @@ const mortarVersion = document.querySelector('.dl')?.dataset.version ?? ''
 
 function mortarRelease(rel) {
   const version = rel.tag_name.replace(leadingVRe, '')
-  document.getElementById('version').textContent = `Mortar ${rel.tag_name}`
   const assets = new Map(rel.assets.map((a) => [a.name, a]))
   for (const link of document.querySelectorAll('[data-asset]')) {
     const asset = assets.get(link.dataset.asset.replace(versionRe, version))
@@ -156,7 +155,8 @@ function mortarRelease(rel) {
   mortarTabs(document.querySelector('.tabs.modes'), mode)
   mortarTabs(document.querySelector('.tabs.sub'), distro)
   mortarCopyButtons()
-  fetch('https://api.github.com/repos/Rethunk-Tech/mortar/releases/latest')
+  // The page's own release, for file sizes; the links already name it.
+  fetch(`https://api.github.com/repos/Rethunk-Tech/mortar/releases/tags/v${mortarVersion}`)
     .then((r) => (r.ok ? r.json() : null))
     .then((rel) => {
       if (rel?.tag_name) {
