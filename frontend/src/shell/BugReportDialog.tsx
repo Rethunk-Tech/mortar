@@ -18,6 +18,7 @@ import {
   BugText,
   BugURL,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openPage } from '../mods/menu.ts'
 import { openPageLabel } from '../mods/modActions.ts'
 import { copyText } from '../share/copyText.ts'
@@ -102,8 +103,8 @@ export function BugReportDialog() {
               }
             }}
           >
-            <ToggleButton value="discord">{t`Discord`}</ToggleButton>
-            <ToggleButton value="github">{t`GitHub`}</ToggleButton>
+            <ToggleButton value="discord">{sourceLabel('discord')}</ToggleButton>
+            <ToggleButton value="github">{sourceLabel('github')}</ToggleButton>
           </ToggleButtonGroup>
           <TextField
             label={t`Title`}

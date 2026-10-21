@@ -168,7 +168,7 @@ export function FindStep({
   const [typing, setTyping] = useState(false)
   const dir = game.installDir
   const named = storeName(game.store)
-  const caption = named ? t`Found in ${{ path: t(named) }}` : t`Folder chosen by you`
+  const caption = named ? t`Found in ${{ path: named }}` : t`Folder chosen by you`
   useRefreshOnFocus(refresh, !found)
   useEffect(() => {
     if (dir) {

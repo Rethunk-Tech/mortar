@@ -7,6 +7,7 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openPage } from '../mods/menu.ts'
 import { type Destination, GO, getDestination, SUGGEST_KEY, setDestination } from './destination.ts'
 import { useSuggest } from './suggest.ts'
@@ -39,10 +40,10 @@ export function SuggestDialog() {
       <DialogActions>
         <Button onClick={close}>{t`Cancel`}</Button>
         <Button variant={variant('github')} onClick={go('github')}>
-          {t`GitHub`}
+          {sourceLabel('github')}
         </Button>
         <Button variant={variant('discord')} onClick={go('discord')}>
-          {t`Discord`}
+          {sourceLabel('discord')}
         </Button>
       </DialogActions>
     </Dialog>

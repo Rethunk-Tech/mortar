@@ -246,7 +246,7 @@ export function HistoryList({
                   {e.size > 0 ? ` · ${formatBytes(e.size)}` : ''}
                   {e.finished ? (
                     <>
-                      {t` · `}
+                      {' · '}
                       <When value={e.finished * millisecondsPerSecond} withTime={true} />
                     </>
                   ) : null}

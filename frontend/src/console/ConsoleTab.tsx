@@ -128,7 +128,7 @@ function CauseBanner({ game, profile, run }: { game: string; profile: string; ru
   }, [game, profile, run])
   return cause?.modName ? (
     <Alert variant="compact" severity="error" sx={{ mx: space.gutter, mb: space.gap }}>
-      <strong>{t`Caused by ${cause.modName}`}</strong> {t`·`} {cause.detail}
+      <strong>{t`Caused by ${cause.modName}`}</strong> {'·'} {cause.detail}
     </Alert>
   ) : null
 }

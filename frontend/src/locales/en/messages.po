@@ -1370,10 +1370,6 @@ msgstr "Last opened profile"
 msgid "Open page on {0}"
 msgstr "Open page on {0}"
 
-#: src/games/storeName.ts
-msgid "Flatpak Steam"
-msgstr "Flatpak Steam"
-
 #. placeholder {0}: listNames(h.missingNames)
 #: src/profiles/HistoryPanel.tsx
 msgid "Could not restore {0}"
@@ -3071,10 +3067,6 @@ msgstr "Try another spelling, or install a mod by {author} in any profile."
 msgid "Zoom"
 msgstr "Zoom"
 
-#: src/games/storeName.ts
-msgid "Lutris"
-msgstr "Lutris"
-
 #: src/commandPalette/CommandPalette.tsx
 #: src/settings/SettingsPage.tsx
 msgid "Mods and profiles"
@@ -3116,10 +3108,6 @@ msgstr "Every key returns to its default."
 #: src/settings/prefCopyModsView.ts
 msgid "Medium"
 msgstr "Medium"
-
-#: src/games/storeName.ts
-msgid "Flatpak"
-msgstr "Flatpak"
 
 #: src/browse/BrowseDetails.tsx
 msgid "Support the author"
@@ -5562,10 +5550,6 @@ msgstr "Connection"
 msgid "Harmless"
 msgstr "Harmless"
 
-#: src/games/storeName.ts
-msgid "EA App"
-msgstr "EA App"
-
 #: src/mods/redundantReason.ts
 msgid "{list} do the same job: both change {detail}"
 msgstr "{list} do the same job: both change {detail}"
@@ -7651,11 +7635,6 @@ msgstr "Click the game's name in the title bar to open the game menu and jump to
 msgid "Edited the settings of {name}"
 msgstr "Edited the settings of {name}"
 
-#. placeholder {0}: plural(mods.length, { one: '# tracked mod on Nexus is not in this profile', other: '# tracked mods on Nexus are not in this profile', })
-#: src/mods/TrackedNotInProfile.tsx
-msgid "{0}"
-msgstr "{0}"
-
 #. placeholder {0}: e.name
 #: src/queue/QueueHistory.tsx
 msgid "Show {0} in its profile"
@@ -8513,10 +8492,6 @@ msgstr "Show diff"
 msgid "Use the plain icon"
 msgstr "Use the plain icon"
 
-#: src/games/storeName.ts
-msgid "GOG"
-msgstr "GOG"
-
 #. placeholder {0}: entry.error ?? ''
 #: src/mods/NexusDetails.tsx
 msgid "Could not read the Nexus page: {0}"
@@ -9055,10 +9030,6 @@ msgstr "{playtime} played"
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Could not run diagnostics"
 msgstr "Could not run diagnostics"
-
-#: src/console/ConsoleTab.tsx
-msgid "·"
-msgstr "·"
 
 #: src/game/ProfileMenuItems.tsx
 #: src/mods/FavouriteStar.tsx
@@ -9892,10 +9863,6 @@ msgstr "{plugin} failed to load ({name})."
 msgid "An install is already running."
 msgstr "An install is already running."
 
-#: src/games/storeName.ts
-msgid "Epic Games"
-msgstr "Epic Games"
-
 #: src/mods/CleanupSection.tsx
 msgid "This change can be undone from History."
 msgstr "This change can be undone from History."
@@ -10129,12 +10096,6 @@ msgstr "Favourites"
 msgid "The game's name in its Thunderstore address (thunderstore.io/c/…). Mortar gets Shimloader and the game's mods from it. Choose the game's shipping program, in Binaries/Win64."
 msgstr "The game's name in its Thunderstore address (thunderstore.io/c/…). Mortar gets Shimloader and the game's mods from it. Choose the game's shipping program, in Binaries/Win64."
 
-#: src/share/ListFormat.tsx
-#: src/shell/BugReportDialog.tsx
-#: src/shell/SuggestDialog.tsx
-msgid "Discord"
-msgstr "Discord"
-
 #: src/lan/SendPanel.tsx
 msgid "Send to an address…"
 msgstr "Send to an address…"
@@ -10183,10 +10144,6 @@ msgstr "Arguments"
 #: src/profiles/EditProfileDialog.tsx
 msgid "Profile settings"
 msgstr "Profile settings"
-
-#: src/games/storeName.ts
-msgid "Xbox"
-msgstr "Xbox"
 
 #. placeholder {0}: profileA.name
 #. placeholder {0}: profileB.name
@@ -11500,14 +11457,6 @@ msgstr "Error in a patch"
 msgid "Report it so it can be fixed."
 msgstr "Report it so it can be fixed."
 
-#: src/mods/listRows.ts
-#: src/mods/Sidebar.tsx
-#: src/settings/sections/Accounts.tsx
-#: src/shell/BugReportDialog.tsx
-#: src/shell/SuggestDialog.tsx
-msgid "GitHub"
-msgstr "GitHub"
-
 #: src/share/MethodPanes.tsx
 msgid "Nexus expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
 msgstr "Nexus expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
@@ -11827,10 +11776,6 @@ msgstr "Could not inspect the destination folder"
 msgid "{a} and {b} each wait for the other, so SMAPI skips at least one of them."
 msgstr "{a} and {b} each wait for the other, so SMAPI skips at least one of them."
 
-#: src/games/storeName.ts
-msgid "GOG via Heroic"
-msgstr "GOG via Heroic"
-
 #: src/console/StartupPanel.tsx
 msgid "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
 msgstr "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
@@ -11854,10 +11799,6 @@ msgstr "Multiplayer mod list"
 #: src/profiles/historyLabel.ts
 msgid "Disabled {names}"
 msgstr "Disabled {names}"
-
-#: src/settings/sections/ItchAccount.tsx
-msgid "itch.io"
-msgstr "itch.io"
 
 #. placeholder {0}: users.length
 #: src/mods/LoadOrderTab.tsx
@@ -12146,10 +12087,6 @@ msgstr "Set {detail} of {name} for the next start"
 #: src/settings/sections/General.tsx
 msgid "Lets nearby Mortar users find this installation and exchange profile links."
 msgstr "Lets nearby Mortar users find this installation and exchange profile links."
-
-#: src/games/storeName.ts
-msgid "Bottles"
-msgstr "Bottles"
 
 #. placeholder {0}: formatWhen(limits.hourly.reset)
 #. placeholder {1}: formatWhen(limits.daily.reset)
@@ -12656,13 +12593,6 @@ msgstr "Not contacted yet"
 #: src/console/UpdateNoteTag.tsx
 msgid "Already installed"
 msgstr "Already installed"
-
-#: src/games/storeName.ts
-#: src/screenshots/ScreenshotsTab.tsx
-#: src/settings/prefCopy.ts
-#: src/settings/sections/GameSettings.tsx
-msgid "Steam"
-msgstr "Steam"
 
 #: src/sync/SyncOffers.tsx
 msgid "Changes from your other machines"
@@ -14037,10 +13967,6 @@ msgstr "Applied when the game next starts"
 msgid "Search Nexus Mods. Download installs the mod into this profile."
 msgstr "Search Nexus Mods. Download installs the mod into this profile."
 
-#: src/games/storeName.ts
-msgid "Epic via Heroic"
-msgstr "Epic via Heroic"
-
 #: src/lan/OutgoingProgress.tsx
 msgid "Sending to {peer} stopped: {why}"
 msgstr "Sending to {peer} stopped: {why}"
@@ -14459,10 +14385,6 @@ msgstr "See which mods slow the game"
 #: src/games/GameSelect.tsx
 msgid "Set up {0}"
 msgstr "Set up {0}"
-
-#: src/games/storeName.ts
-msgid "GOG via Minigalaxy"
-msgstr "GOG via Minigalaxy"
 
 #: src/share/ImportPreview.tsx
 msgid "Open post"
@@ -15156,14 +15078,6 @@ msgstr "{0, plural, one {# new feature} other {# new features}}"
 msgid "No saves yet"
 msgstr "No saves yet"
 
-#: src/mods/listRows.ts
-#: src/mods/Sidebar.tsx
-#: src/share/DestinationGrid.tsx
-#: src/share/ListFormat.tsx
-#: src/share/ShareDialog.tsx
-msgid "Thunderstore"
-msgstr "Thunderstore"
-
 #: src/share/ShareFooter.tsx
 msgid "Copy as a message"
 msgstr "Copy as a message"
@@ -15428,13 +15342,13 @@ msgstr "Not in this profile"
 msgid "Switch profile"
 msgstr "Switch profile"
 
-#: src/queue/QueueHistory.tsx
-msgid " · "
-msgstr " · "
-
 #: src/settings/sections/NexusMods.tsx
 msgid "Personal API key"
 msgstr "Personal API key"
+
+#: src/games/storeName.ts
+msgid "{name} via {launcher}"
+msgstr "{name} via {launcher}"
 
 #: src/templates/TemplateDialogs.tsx
 msgid "Template deleted"

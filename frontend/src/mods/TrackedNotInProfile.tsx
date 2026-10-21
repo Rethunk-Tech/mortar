@@ -93,7 +93,6 @@ const TrackedNotInProfile = memo(function TrackedNotInProfileView({
 }: {
   profileId: string
 }) {
-  const { t } = useLingui()
   const signedIn = useNexus((s) => s.signedIn)
   const premium = useNexus((s) => s.premium)
   const gameId = useProfiles((s) => s.game?.id)
@@ -120,10 +119,10 @@ const TrackedNotInProfile = memo(function TrackedNotInProfileView({
   if (!signedIn || mods.length === 0) {
     return null
   }
-  const heading = t`${plural(mods.length, {
+  const heading = plural(mods.length, {
     one: '# tracked mod on Nexus is not in this profile',
     other: '# tracked mods on Nexus are not in this profile',
-  })}`
+  })
   return (
     <Accordion
       disableGutters={true}

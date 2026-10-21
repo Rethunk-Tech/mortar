@@ -13,6 +13,7 @@ import type {
   Shot,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/shots/models.ts'
 import { PageActions } from '../game/PageActions.tsx'
+import { storeName } from '../games/storeName.ts'
 import { When } from '../i18n/When.tsx'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -187,7 +188,7 @@ export function ScreenshotsTab({ game }: { game: string }) {
               }}
             >
               <When value={s.at} withTime={true} />
-              {both && s.source === STEAM ? <span>{t`Steam`}</span> : null}
+              {both && s.source === STEAM ? <span>{storeName('steam')}</span> : null}
             </Box>
           </ButtonBase>
         ))}

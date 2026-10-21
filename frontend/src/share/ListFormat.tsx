@@ -4,6 +4,7 @@ import { Box, Button, ToggleButton, ToggleButtonGroup, Typography } from '@mui/m
 import { Check, Copy, FileText, MessageSquare, Package, Save, Type } from 'lucide-react'
 import { useState } from 'react'
 import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { safeFileName } from '../console/save.ts'
 import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -32,8 +33,8 @@ function useFormatOptions(): { id: ModListFormat; label: string; icon: typeof Fi
   return [
     { id: 'markdown', label: t`Markdown`, icon: FileText },
     { id: 'plain', label: t`Plain text`, icon: Type },
-    { id: 'discord', label: t`Discord`, icon: MessageSquare },
-    { id: 'thunderstore', label: t`Thunderstore`, icon: Package },
+    { id: 'discord', label: sourceLabel('discord'), icon: MessageSquare },
+    { id: 'thunderstore', label: sourceLabel('thunderstore'), icon: Package },
   ]
 }
 

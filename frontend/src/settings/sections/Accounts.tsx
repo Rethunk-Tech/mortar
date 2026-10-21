@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Chip } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { GitHubLoggedIn } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
+import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { ItchAccount } from './ItchAccount.tsx'
@@ -35,9 +36,8 @@ function GitHubLogin() {
 }
 
 function GitHubAccount() {
-  const { t } = useLingui()
   return (
-    <SettingsSection title={t`GitHub`}>
+    <SettingsSection title={sourceLabel('github')}>
       <GitHubLogin />
     </SettingsSection>
   )

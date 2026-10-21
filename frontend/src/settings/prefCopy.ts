@@ -1,5 +1,6 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
+import { storeName } from '../games/storeName.ts'
 import { antivirusPrefs, type PrefCopy } from './prefCopyAntivirus.ts'
 import { gamePrefs } from './prefCopyGame.ts'
 import { modsViewPrefs } from './prefCopyModsView.ts'
@@ -50,7 +51,7 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
         msg`How Play starts the game. Direct skips Steam's overlay and playtime.`,
       ),
       options: [
-        { value: 'steam', label: i18n._(msg`Steam`) },
+        { value: 'steam', label: storeName('steam') },
         { value: 'direct', label: i18n._(msg`Direct`) },
       ],
     },

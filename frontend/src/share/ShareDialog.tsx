@@ -2,6 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, Typography } from '@mui/material'
 import { ArrowLeft, X } from 'lucide-react'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
@@ -40,7 +41,7 @@ export function ShareDialog() {
   const names = {
     mortar: t`Mortar`,
     nexus: t`Nexus Mods`,
-    thunderstore: t`Thunderstore`,
+    thunderstore: sourceLabel('thunderstore'),
     nearby: t`Nearby computer`,
     list: t`Mod list`,
   }

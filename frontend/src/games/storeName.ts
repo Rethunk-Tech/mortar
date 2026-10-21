@@ -1,21 +1,34 @@
-import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
+import { i18n } from '../i18n/index.ts'
 
-const NAMES: Record<string, MessageDescriptor> = {
-  steam: msg`Steam`,
-  'flatpak-steam': msg`Flatpak Steam`,
-  gog: msg`GOG`,
-  'gog-heroic': msg`GOG via Heroic`,
-  'gog-minigalaxy': msg`GOG via Minigalaxy`,
-  lutris: msg`Lutris`,
-  bottles: msg`Bottles`,
-  ea: msg`EA App`,
-  epic: msg`Epic Games`,
-  'epic-heroic': msg`Epic via Heroic`,
-  xbox: msg`Xbox`,
-  standalone: msg`Default folder`,
-  flatpak: msg`Flatpak`,
+// Store and launcher names are brands, shown as they are; only the words around them are translated.
+const BRANDS: Record<string, string> = {
+  steam: 'Steam',
+  'flatpak-steam': 'Flatpak Steam',
+  gog: 'GOG',
+  lutris: 'Lutris',
+  bottles: 'Bottles',
+  ea: 'EA App',
+  epic: 'Epic Games',
+  xbox: 'Xbox',
+  flatpak: 'Flatpak',
+}
+const VIA: Record<string, [store: string, launcher: string]> = {
+  'gog-heroic': ['GOG', 'Heroic'],
+  'gog-minigalaxy': ['GOG', 'Minigalaxy'],
+  'epic-heroic': ['Epic', 'Heroic'],
 }
 
 // The store an install came from, as the window names it; "" for a folder the user chose.
-export const storeName = (store: string): MessageDescriptor | null => NAMES[store] ?? null
+export function storeName(store: string): string {
+  const brand = BRANDS[store]
+  if (brand) {
+    return brand
+  }
+  const via = VIA[store]
+  if (via) {
+    const [name, launcher] = via
+    return i18n._(msg`${name} via ${launcher}`)
+  }
+  return store === 'standalone' ? i18n._(msg`Default folder`) : ''
+}

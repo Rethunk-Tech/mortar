@@ -9,6 +9,7 @@ const LABELS: Record<string, string> = {
   vsmoddb: 'VS Mod DB',
   paradox: 'Paradox Mods',
   smapi: 'smapi.io',
+  discord: 'Discord',
 }
 
 export const sourceLabel = (id: string): string => LABELS[id] ?? id

@@ -12,6 +12,7 @@ import {
   CopyModsWithNeeds,
   ProfilesWithMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -499,8 +500,8 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   const sourceName = kindLabel(kind, {
     archive: t`Archive`,
     nexus: t`Nexus Mods`,
-    github: t`GitHub`,
-    thunderstore: t`Thunderstore`,
+    github: sourceLabel('github'),
+    thunderstore: sourceLabel('thunderstore'),
   })
   return (
     <Box

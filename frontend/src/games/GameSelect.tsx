@@ -158,8 +158,12 @@ function useLoaderLine({
   useNow()
   const ago = lastPlayedName ? formatWhen(lastPlayedAt) : ''
   const playtime = formatPlaytime(playtimeMs, i18n.locale)
-  const named = game.store ? storeName(game.store) : null
-  return [loader, named ? t(named) : '', ago, playtime ? t`${playtime} played` : '']
+  return [
+    loader,
+    game.store ? storeName(game.store) : '',
+    ago,
+    playtime ? t`${playtime} played` : '',
+  ]
     .filter(Boolean)
     .join(' · ')
 }

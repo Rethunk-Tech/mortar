@@ -11,6 +11,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { PackageOverrides } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { modTotal } from '../console/startupView.ts'
 import { sameValue } from '../shell/sameValue.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -139,8 +140,8 @@ function toListRow(
   const known = kindLabel(entry?.source.kind ?? '', {
     archive: i18n._(msg`Archive`),
     nexus: i18n._(msg`Nexus Mods`),
-    github: i18n._(msg`GitHub`),
-    thunderstore: i18n._(msg`Thunderstore`),
+    github: sourceLabel('github'),
+    thunderstore: sourceLabel('thunderstore'),
   })
   const fileless = entry?.source.kind === 'nexus' && !pageless && (entry.source.fileId ?? 0) <= 0
   const unknownFile = fileless ? i18n._(msg`Nexus Mods, file unknown`) : known

@@ -96,9 +96,8 @@ function ItchRow() {
 }
 
 export function ItchAccount() {
-  const { t } = useLingui()
   return (
-    <SettingsSection title={t`itch.io`}>
+    <SettingsSection title={sourceLabel('itch')}>
       <ItchRow />
     </SettingsSection>
   )

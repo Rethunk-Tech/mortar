@@ -4,6 +4,7 @@ import { List, Wifi } from 'lucide-react'
 import { type KeyboardEvent, type ReactNode, useRef } from 'react'
 import { Logo } from '../brand/Logo.tsx'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { space } from '../theme/density.ts'
 import { type Destination, type DestinationEntry, gridColumns } from './methods.ts'
 
@@ -59,7 +60,7 @@ export function DestinationGrid({
     },
     thunderstore: {
       icon: <SourceLogo id={THUNDERSTORE} size={ICON} />,
-      name: t`Thunderstore`,
+      name: sourceLabel('thunderstore'),
       hint: t`An r2modman code or modpack`,
     },
     nearby: {

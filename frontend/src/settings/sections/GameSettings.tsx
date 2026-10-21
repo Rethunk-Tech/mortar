@@ -43,9 +43,7 @@ const STORE_VIA = /^(gog|epic)-/
 const launcherOf = (store: string) => store.replace(STORE_VIA, '')
 
 function StoreLabel({ store }: { store: string }) {
-  const { t } = useLingui()
-  const named = storeName(store)
-  return named ? t(named) : t`Steam`
+  return storeName(store) || storeName('steam')
 }
 
 function ResetInstallDialog({
@@ -177,8 +175,7 @@ function GameFolder({
     run.then(onRefresh).catch((e: unknown) => setError(inlineError(e)))
   }
   const install = installs.find((i) => i.dir === folder)
-  const known = storeName(store)
-  const foundIn = known ? t(known) : t`Steam`
+  const foundIn = storeName(store) || storeName('steam')
   let source = t`${gameName} was not found. Browse to its folder.`
   if (override) {
     source = t`Chosen by you`
