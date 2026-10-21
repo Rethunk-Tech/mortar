@@ -54,7 +54,10 @@ interface Fetched {
   done: Map<number, BrowseResult>
 }
 
-type Screen = { next: BrowseResult; whole: boolean }
+interface Screen {
+  next: BrowseResult
+  whole: boolean
+}
 
 // The screen from source pages that have already answered, or null while one of them is still to fetch.
 function cachedScreen(done: Map<number, BrowseResult>, page: number, size: number): Screen | null {
