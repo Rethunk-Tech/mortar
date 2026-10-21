@@ -180,6 +180,7 @@ export function FilePane({
       <Typography sx={note}>
         {t`A .mortar file holds the link's mods plus their settings files. Send it; they open it from Mortar's Import.`}
       </Typography>
+      <Included info={info} total={total} include={include} onInclude={onInclude} target="file" />
       <Box>
         <Button
           variant="contained"
@@ -211,7 +212,6 @@ export function FilePane({
           </Box>
         </Box>
       ) : null}
-      <Included info={info} total={total} include={include} onInclude={onInclude} target="file" />
     </Pane>
   )
 }

@@ -64,7 +64,8 @@ export function ShareDialog() {
             bgcolor: 'var(--mortar-panel-solid)',
             border: '1px solid var(--mortar-hairline-12)',
             width: 'min(880px, calc(100% - 48px))',
-            height: destination ? 'min(600px, calc(100% - 48px))' : 'auto',
+            // Only the mod list's text needs the room; every other destination is as tall as what it shows.
+            height: destination === 'list' ? 'min(600px, calc(100% - 48px))' : 'auto',
             maxHeight: 'calc(100% - 48px)',
             overflow: 'hidden',
             borderRadius: '12px',

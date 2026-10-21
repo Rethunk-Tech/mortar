@@ -67,7 +67,6 @@ function MortarPanel({ built }: { built: ReturnType<typeof useShareBuild> }) {
           onInclude={setInclude}
         />
       )}
-      <Box sx={{ flex: 1 }} />
       <Box sx={{ pt: space.pad }}>
         <Button
           variant="text"
