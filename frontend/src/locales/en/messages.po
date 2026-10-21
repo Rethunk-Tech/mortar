@@ -1799,6 +1799,10 @@ msgstr "Its main file is no longer in this profile."
 msgid "Sprout"
 msgstr "Sprout"
 
+#: src/settings/sections/ModioAccount.tsx
+msgid "Your access token is kept in your system keyring."
+msgstr "Your access token is kept in your system keyring."
+
 #: src/shell/offlineText.ts
 msgid "{name} as of {at}"
 msgstr "{name} as of {at}"
@@ -2620,6 +2624,10 @@ msgstr "In-game menu"
 msgid "Include libraries and supporting mods"
 msgstr "Include libraries and supporting mods"
 
+#: src/settings/sections/Sources.tsx
+msgid "No access token. mod.io search is off until you add one."
+msgstr "No access token. mod.io search is off until you add one."
+
 #: src/browse/CardProgress.tsx
 #: src/mods/ModDependencyTree.tsx
 #: src/mods/problemFix/WhereButtons.tsx
@@ -3075,6 +3083,7 @@ msgid "Local archives can't go here"
 msgstr "Local archives can't go here"
 
 #: src/settings/sections/ItchAccount.tsx
+#: src/settings/sections/ModioAccount.tsx
 #: src/settings/sections/Sources.tsx
 msgid "Account"
 msgstr "Account"
@@ -3340,6 +3349,10 @@ msgstr "Off"
 #: src/mods/HiddenInside.tsx
 msgid "SMAPI skips folders whose names start with a dot."
 msgstr "SMAPI skips folders whose names start with a dot."
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "Kept in your system keyring. Create a read-only OAuth token at mod.io/me/access."
+msgstr "Kept in your system keyring. Create a read-only OAuth token at mod.io/me/access."
 
 #: src/settings/prefCopyModsView.ts
 msgid "Default grouping"
@@ -4344,6 +4357,10 @@ msgstr "Ask me to endorse mods I keep using"
 msgid "Downloading {0}%"
 msgstr "Downloading {0}%"
 
+#: src/share/ImportPreview.tsx
+msgid "Needs your mod.io access token in Settings, Accounts"
+msgstr "Needs your mod.io access token in Settings, Accounts"
+
 #. placeholder {0}: optionalFor.length.toLocaleString(i18n.locale)
 #: src/mods/Sidebar.tsx
 msgid "Optional for ({0})"
@@ -5249,6 +5266,10 @@ msgstr "Update"
 #: src/settings/sections/Downloads.tsx
 msgid "Chrome, Edge or another Chromium browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
 msgstr "Chrome, Edge or another Chromium browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "Remove token"
+msgstr "Remove token"
 
 #: src/shell/FlatpakGrant.tsx
 msgid "Access granted"
@@ -9789,6 +9810,7 @@ msgid "Click a mod to show it in Mods"
 msgstr "Click a mod to show it in Mods"
 
 #: src/settings/sections/ItchAccount.tsx
+#: src/settings/sections/ModioAccount.tsx
 msgid "Test"
 msgstr "Test"
 
@@ -9966,6 +9988,10 @@ msgstr "Unofficial update available: {0}"
 msgid "Hide this game"
 msgstr "Hide this game"
 
+#: src/settings/sections/ModioAccount.tsx
+msgid "mod.io"
+msgstr "mod.io"
+
 #: src/settings/sections/ScheduledStatus.tsx
 msgid "Last scheduled backup {when}"
 msgstr "Last scheduled backup {when}"
@@ -10020,6 +10046,10 @@ msgstr "Sent {profileName} to {0}; they'll copy the files from you"
 #: src/sync/SyncOffers.tsx
 msgid "{0} was changed on {1} and on this machine"
 msgstr "{0} was changed on {1} and on this machine"
+
+#: src/browse/stats.ts
+msgid "{endorsements, plural, one {# positive rating} other {# positive ratings}}"
+msgstr "{endorsements, plural, one {# positive rating} other {# positive ratings}}"
 
 #: src/console/StartupSections.tsx
 msgid "SMAPI loads mods"
@@ -11932,6 +11962,10 @@ msgstr "Switch off"
 #: src/share/ShareDialog.tsx
 msgid "{count, plural, one {Try my Mortar profile \"{0}\" for {gameName} (# mod): {1}} other {Try my Mortar profile \"{2}\" for {gameName} (# mods): {3}}}"
 msgstr "{count, plural, one {Try my Mortar profile \"{0}\" for {gameName} (# mod): {1}} other {Try my Mortar profile \"{2}\" for {gameName} (# mods): {3}}}"
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "Access token"
+msgstr "Access token"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Delete the selected items?"
@@ -14101,6 +14135,10 @@ msgstr "Clear"
 #: src/settings/sections/nxmHandler.tsx
 msgid "Handle links"
 msgstr "Handle links"
+
+#: src/settings/sections/ModioAccount.tsx
+msgid "mod.io rejected your access token"
+msgstr "mod.io rejected your access token"
 
 #: src/saves/SaveListRow.tsx
 #: src/settings/sections/StreamOverlay.tsx

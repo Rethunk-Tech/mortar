@@ -6,6 +6,7 @@ import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
 import { ItchAccount } from './ItchAccount.tsx'
+import { ModioAccount } from './ModioAccount.tsx'
 import { NexusMods } from './NexusMods.tsx'
 
 // The login answer lands on the row alone, not the section around it.
@@ -49,6 +50,7 @@ export function Accounts() {
       <NexusMods />
       <GitHubAccount />
       <ItchAccount />
+      <ModioAccount />
     </>
   )
 }

@@ -73,6 +73,7 @@ export const MARKS: Record<string, { path: string; colour: string }> = {
 export const ART: Record<string, string> = {
   nexus: 'nexusmods.svg',
   vsmoddb: 'vsmoddb.png',
+  modio: 'modio.svg',
   bottles: 'bottles.svg',
 }
 
@@ -108,6 +109,7 @@ const SHARE_SOURCES = [
   'itch',
   'patreon',
   'vsmoddb',
+  'modio',
 ]
 
 /** How the share page badges each mod with its source: the sprite mark in its colour, or the artwork file. */

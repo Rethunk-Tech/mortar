@@ -1,4 +1,5 @@
 import { BrandMark } from '../BrandMark.tsx'
+import modio from '../vendor/modio.svg'
 import nexusmods from '../vendor/nexusmods.svg'
 import vsmoddb from '../vendor/vsmoddb.png'
 import { ICONS } from './sourceIcons.ts'
@@ -21,6 +22,9 @@ function SourceLogo({ id, size }: { id: string; size: number }) {
   }
   if (id === 'vsmoddb') {
     return <img src={vsmoddb} alt="" width={size} height={size} />
+  }
+  if (id === 'modio') {
+    return <img src={modio} alt="" width={size} height={size} />
   }
   const icon = ICONS[id]
   if (!icon) {

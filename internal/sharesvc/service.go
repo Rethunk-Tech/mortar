@@ -672,7 +672,7 @@ func (s *Service) resolverFor(game, profileID string) (*resolver, error) {
 	r := &resolver{
 		meta: s.d.Meta, files: s.d.Files, signedIn: s.d.SignedIn(), premium: s.d.Premium(), env: s.d.Env(game),
 		game: game, stored: s.d.Stored, storedKeys: map[string]bool{}, requirements: s.d.NexusPages.Requirements(game),
-		curseforgeUnavailable: curseforgeUnavailable, curseforgeName: curseforgeProjectName,
+		curseforgeUnavailable: curseforgeUnavailable, curseforgeName: curseforgeProjectName, modioUnavailable: modioUnavailable,
 		vsmoddbRelease: vsmoddb.Driver{}.Resolve, paradoxVersion: paradox.Driver{}.Resolve,
 	}
 	if s.d.Unresolvable != nil {
@@ -771,6 +771,9 @@ func (m Mod) storedEntry() (storedEntry, bool) {
 	case SiteCurseForge:
 		src := profile.Source{Kind: profile.KindCurseForge, Name: m.Package, FileID: m.FileID}.WithDisabled(m.Disabled)
 		return storedEntry{key: store.PackageKey(profile.KindCurseForge+":"+m.Package, strconv.Itoa(m.FileID)), source: src}, true
+	case SiteModio:
+		src := profile.Source{Kind: profile.KindModio, Name: m.Package, FileID: m.FileID}.WithDisabled(m.Disabled)
+		return storedEntry{key: store.PackageKey(profile.KindModio+":"+m.Package, strconv.Itoa(m.FileID)), source: src}, true
 	case SiteVSModDB:
 		src := profile.Source{Kind: profile.KindVSModDB, Name: m.Package, FileID: m.FileID, Version: m.Version}.WithDisabled(m.Disabled)
 		return storedEntry{key: store.PackageKey(profile.KindVSModDB+":"+m.Package, m.Version), source: src}, true
@@ -815,7 +818,7 @@ func requestFor(game, profileID string, m Mod) queue.Request {
 		r.Repo, r.Tag, r.Asset = m.Repo, m.Tag, m.Asset
 		return r
 	}
-	if m.Site == SiteCurseForge || m.Site == SiteVSModDB || m.Site == SiteParadox {
+	if m.Site == SiteCurseForge || m.Site == SiteVSModDB || m.Site == SiteParadox || m.Site == SiteModio {
 		r.Source, r.Package, r.PackageFile = m.Site, m.Package, m.FileID
 		return r
 	}

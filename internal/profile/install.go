@@ -89,7 +89,7 @@ func (s *Store) InstallSource(ctx context.Context, game, id, path string, source
 		key = store.NexusKey(source.ModID, source.FileID)
 	case KindThunderstore:
 		key = store.PackageKey(source.Name, source.Version)
-	case KindCurseForge:
+	case KindCurseForge, KindModio:
 		// File display names are author-written and repeat, so the file id keys the store item.
 		key = store.PackageKey(source.Kind+":"+source.Name, strconv.Itoa(source.FileID))
 	case KindModrinth, KindItch, KindVSModDB, KindParadox:

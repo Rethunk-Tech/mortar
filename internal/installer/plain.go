@@ -21,9 +21,9 @@ func (plain) Layout(a Archive, g Game, _ Choices) (Layout, error) {
 	if err != nil {
 		return Layout{}, err
 	}
-	// A folder game's mods are loose files the game reads below the target, so no folder is made for the archive,
+	// A placed mods target's mods are loose files the game reads below it, so no folder is made for the archive,
 	// unless the archive holds a mod folder of its own.
-	folder := slices.Contains(g.Loaders, "folder")
+	folder := g.Placed
 	if file, ok := modRootFile(all, g); folder && ok {
 		return wholeFolder(a, g, all, path.Dir(file))
 	}
@@ -42,6 +42,13 @@ func (plain) Layout(a Archive, g Game, _ Choices) (Layout, error) {
 		}
 	}
 	return l, validate(l, g)
+}
+
+// MatchesModRoot reports whether a file's base name is the mods target's ModRoot, a case-insensitive path.Match
+// pattern: "*" makes every archive one folder, its own top folder or the archive root.
+func MatchesModRoot(name, root string) bool {
+	ok, err := path.Match(strings.ToLower(root), strings.ToLower(name))
+	return err == nil && ok
 }
 
 // ModRootFile is the slash path in the archive of the shallowest file named as the mods target's ModRoot.
@@ -66,7 +73,7 @@ func modRootFile(all []string, g Game) (string, bool) {
 	}
 	best, found := "", false
 	for _, f := range all {
-		if skip(f) || !strings.EqualFold(path.Base(f), g.Targets[ti].ModRoot) {
+		if skip(f) || !MatchesModRoot(path.Base(f), g.Targets[ti].ModRoot) {
 			continue
 		}
 		if !found || depth(path.Dir(f)) < depth(path.Dir(best)) {

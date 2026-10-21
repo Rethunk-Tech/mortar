@@ -21,6 +21,7 @@ var probeURL = map[string]string{
 	"modrinth":     "https://api.modrinth.com",
 	"curseforge":   "https://api.curseforge.com",
 	"itch":         "https://itch.io",
+	"modio":        "https://api.mod.io",
 	"vsmoddb":      "https://mods.vintagestory.at",
 	"paradox":      "https://api.paradox-interactive.com",
 	"smapi":        "https://smapi.io",

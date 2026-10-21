@@ -58,6 +58,8 @@ const (
 	ReasonCurseForgeKey = "curseforge-key"
 	// ReasonNotInIndex is a Thunderstore package the community's index cannot resolve; Detail says why.
 	ReasonNotInIndex = "not-in-index"
+	// ReasonModioToken is a mod.io file Mortar cannot fetch until the receiver signs in to mod.io.
+	ReasonModioToken = "modio-token"
 )
 
 // Kinds of Problem.
@@ -182,6 +184,8 @@ const (
 	SiteItch = "itch"
 	// SiteCurseForge is a CurseForge file.
 	SiteCurseForge = "curseforge"
+	// SiteModio is a mod.io file.
+	SiteModio = "modio"
 	// SiteVSModDB is a Vintage Story Mod DB release.
 	SiteVSModDB = "vsmoddb"
 	// SiteParadox is a Paradox Mods version.
@@ -221,6 +225,8 @@ type resolver struct {
 	curseforgeUnavailable func() string
 	// curseforgeName is a CurseForge project's name, or "" when it cannot be read; nil asks nothing.
 	curseforgeName func(ctx context.Context, project string) string
+	// modioUnavailable says why mod.io cannot be used now (no token), or "" when it can; nil means it can.
+	modioUnavailable func() string
 	// vsmoddbRelease reads a Mod DB release's mod name; nil asks nothing.
 	vsmoddbRelease func(ctx context.Context, id, version string) (vsmoddb.Resolved, error)
 	// paradoxVersion reads a Paradox Mods version's mod name; nil asks nothing.
@@ -453,6 +459,26 @@ func (r *resolver) curseforge(ctx context.Context, ref share.Ref) Mod {
 	return m
 }
 
+// modio resolves a shared mod.io file: installed when the profile or the store holds it, downloaded when the receiver
+// is signed in to mod.io, and otherwise waiting on that sign-in. A link names no page: mod.io names pages by slugs.
+func (r *resolver) modio(ref share.Ref) Mod {
+	id := strconv.Itoa(ref.Modio)
+	m := Mod{
+		Key: "modio:" + id + ":" + strconv.Itoa(ref.FileID), Site: SiteModio, Name: "mod.io mod " + id,
+		Package: id, FileID: ref.FileID,
+		State: StateDownload, IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
+	}
+	switch {
+	case slices.ContainsFunc(r.target, ref.MatchesEntry):
+		m.State = StateInstalled
+	case r.storedKey(store.PackageKey(profile.KindModio+":"+id, strconv.Itoa(ref.FileID))):
+		m.State, r.storedKeys[m.Key] = StateInstalled, true
+	case r.modioUnavailable != nil && r.modioUnavailable() != "":
+		m.State, m.Reason = StateUnavailable, ReasonModioToken
+	}
+	return m
+}
+
 // vsmoddb resolves a shared Mod DB release: installed when the profile or the store holds it, else downloaded.
 func (r *resolver) vsmoddb(ctx context.Context, ref share.Ref) Mod {
 	m := Mod{
@@ -570,7 +596,7 @@ func (r *resolver) storedKey(key string) bool {
 func nexusIDs(refs []share.Ref) []int {
 	var ids []int
 	for _, ref := range refs {
-		if ref.GitHub == "" && ref.Package == "" && ref.Local == "" && ref.Patreon == "" && ref.Itch == "" && ref.CurseForge == 0 && ref.VSModDB == "" && ref.Paradox == "" && !slices.Contains(ids, ref.ModID) {
+		if ref.GitHub == "" && ref.Package == "" && ref.Local == "" && ref.Patreon == "" && ref.Itch == "" && ref.CurseForge == 0 && ref.VSModDB == "" && ref.Paradox == "" && ref.Modio == 0 && !slices.Contains(ids, ref.ModID) {
 			ids = append(ids, ref.ModID)
 		}
 	}
@@ -602,6 +628,8 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 			add("itch", ref, r.itch(ref))
 		case ref.CurseForge != 0:
 			add("curseforge", ref, r.curseforge(ctx, ref))
+		case ref.Modio != 0:
+			add("modio", ref, r.modio(ref))
 		case ref.VSModDB != "":
 			add("vsmoddb", ref, r.vsmoddb(ctx, ref))
 		case ref.Paradox != "":

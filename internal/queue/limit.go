@@ -81,6 +81,9 @@ func (s *Service) limitFor(ctx context.Context, source string) *sourceLimit {
 	case source == "curseforge":
 		// CurseForge publishes no request quota for its API key; this keeps one Mortar to a few calls a second.
 		l = newSourceLimit(3, 5, 3, now)
+	case source == "modio":
+		// mod.io allows a signed-in player 120 requests a minute.
+		l = newSourceLimit(3, 5, 1.5, now)
 	case source == "vsmoddb":
 		// The Vintage Story Mod DB publishes no quota; an update check asks it once per installed mod.
 		l = newSourceLimit(3, 5, 3, now)

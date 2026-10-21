@@ -110,6 +110,9 @@ func transferItems(shared share.Shared) []transferItem {
 			item = transferItem{Key: store.PackageKey(profile.KindCurseForge+":"+project, strconv.Itoa(ref.FileID)), Source: profile.KindCurseForge, Package: project}
 		case ref.VSModDB != "":
 			item = transferItem{Key: store.PackageKey(profile.KindVSModDB+":"+ref.VSModDB, ref.Version), Source: profile.KindVSModDB, Package: ref.VSModDB, Version: ref.Version}
+		case ref.Modio != 0:
+			mod := strconv.Itoa(ref.Modio)
+			item = transferItem{Key: store.PackageKey(profile.KindModio+":"+mod, strconv.Itoa(ref.FileID)), Source: profile.KindModio, Package: mod}
 		case ref.Paradox != "":
 			item = transferItem{Key: store.PackageKey(profile.KindParadox+":"+ref.Paradox, ref.Version), Source: profile.KindParadox, Package: ref.Paradox, Version: ref.Version}
 		case ref.GitHub != "":

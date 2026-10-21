@@ -95,6 +95,12 @@ func identityOf(e profile.Entry) (Ref, bool) {
 			return Ref{}, false
 		}
 		return Ref{CurseForge: project, FileID: e.Source.FileID}, true
+	case profile.KindModio:
+		mod, err := strconv.Atoi(e.Source.Name)
+		if err != nil || mod <= 0 || e.Source.FileID <= 0 {
+			return Ref{}, false
+		}
+		return Ref{Modio: mod, FileID: e.Source.FileID}, true
 	case profile.KindVSModDB:
 		if e.Source.Name == "" || e.Source.FileID <= 0 {
 			return Ref{}, false

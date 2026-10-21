@@ -20,6 +20,11 @@
     "url": "https://github.com/anegostudios/vsmoddb"
   },
   {
+    "name": "mod.io mark (from the mod.io SDK)",
+    "licence": "Trademark",
+    "url": "https://github.com/modio/modio-sdk"
+  },
+  {
     "name": "Nexus Mods logo (from Vortex)",
     "licence": "GPL-3.0",
     "url": "https://github.com/Nexus-Mods/Vortex"
@@ -168,6 +173,11 @@
     "name": "github.com/nwaples/rardecode/v2",
     "licence": "BSD-2-Clause",
     "url": "https://github.com/nwaples/rardecode"
+  },
+  {
+    "name": "github.com/pierrec/lz4/v4",
+    "licence": "BSD-3-Clause",
+    "url": "https://github.com/pierrec/lz4"
   },
   {
     "name": "github.com/syndtr/goleveldb",

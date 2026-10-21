@@ -20,9 +20,10 @@ const ICONS: Record<string, { path: string; fill: string }> = {
   paradox: { path: siParadoxinteractive.path, fill: 'var(--mortar-ink)' },
 }
 
-// Nexus's and the Vintage Story Mod DB's logos are artwork rather than vector marks, so SourceLogo draws them apart
-// from ICONS.
-const hasSourceLogo = (id: string) => id === 'nexus' || id === 'vsmoddb' || id in ICONS
+// Nexus's, the Vintage Story Mod DB's and mod.io's logos are artwork rather than 24x24 marks, so SourceLogo draws them
+// apart from ICONS.
+const hasSourceLogo = (id: string) =>
+  id === 'nexus' || id === 'vsmoddb' || id === 'modio' || id in ICONS
 
 // A mark laid over a corner of a mod's picture (its source, the favourite star) on a solid chip, readable on any art.
 const pictureMarkSx = {

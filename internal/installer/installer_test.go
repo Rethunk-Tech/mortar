@@ -241,7 +241,7 @@ func TestLayoutRefusals(t *testing.T) {
 
 func TestFolderGameSplitsUnlessAKeepWholeFileIsLaidOut(t *testing.T) {
 	t.Parallel()
-	g := Game{Loaders: []string{"folder"}, Targets: []Target{{ID: TargetMods, KeepWhole: []string{"ts4script"}}}}
+	g := Game{Loaders: []string{"folder"}, Placed: true, Targets: []Target{{ID: TargetMods, KeepWhole: []string{"ts4script"}}}}
 	pkg := Layout{Files: []File{{Target: TargetMods, Rel: "a.package"}, {Target: TargetMods, Rel: "b.PACKAGE"}}}
 	script := Layout{Files: append(slices.Clone(pkg.Files), File{Target: TargetMods, Rel: "m.Ts4Script"})}
 	if !g.Splits(pkg) || g.Splits(script) {
@@ -254,7 +254,7 @@ func TestFolderGameSplitsUnlessAKeepWholeFileIsLaidOut(t *testing.T) {
 
 func TestFolderGameLaysAModRootFolderOutWholeAsOneEntry(t *testing.T) {
 	t.Parallel()
-	g := Game{Loaders: []string{"folder"}, Targets: []Target{{ID: TargetMods, ModRoot: "modinfo.json"}}}
+	g := Game{Loaders: []string{"folder"}, Placed: true, Targets: []Target{{ID: TargetMods, ModRoot: "modinfo.json"}}}
 	l, err := (plain{}).Layout(extracted(t, "k", map[string]string{
 		"CarryOn/modinfo.json": "{}", "CarryOn/assets/a.json": "{}", "CarryOn/x/modinfo.json": "{}", "readme.txt": "x",
 	}), g, nil)
@@ -272,5 +272,35 @@ func TestFolderGameLaysAModRootFolderOutWholeAsOneEntry(t *testing.T) {
 	loose, err := (plain{}).Layout(extracted(t, "k", map[string]string{"Mod.cs": "x"}), g, nil)
 	if err != nil || len(loose.Files) != 1 || loose.Files[0].Rel != "Mod.cs" {
 		t.Fatalf("loose = %+v, %v", loose, err)
+	}
+}
+
+func TestModRootPatternsMakeOneFolderPerArchive(t *testing.T) {
+	t.Parallel()
+	layout := func(root string, files map[string]string) map[string]bool {
+		t.Helper()
+		g := Game{Placed: true, Targets: []Target{{ID: TargetMods, ModRoot: root}}}
+		l, err := (plain{}).Layout(extracted(t, "k", files), g, nil)
+		if err != nil || g.Splits(l) {
+			t.Fatalf("%s: %+v, %v, splits %v", root, l, err, g.Splits(l))
+		}
+		got := map[string]bool{}
+		for _, f := range l.Files {
+			got[f.Rel] = true
+		}
+		return got
+	}
+	// A pak at the root and one a folder down both land in the archive's own folder.
+	if got := layout("*.pak", map[string]string{"Mod.PAK": "x"}); len(got) != 1 || !got["k/Mod.PAK"] {
+		t.Fatalf("root pak: %v", got)
+	}
+	if got := layout("*.pak", map[string]string{"Mod/m.pak": "x"}); len(got) != 1 || !got["k/m.pak"] {
+		t.Fatalf("pak in a folder: %v", got)
+	}
+	if got := layout("*", map[string]string{"a.dll": "x", "maps": "y"}); len(got) != 2 || !got["k/a.dll"] || !got["k/maps"] {
+		t.Fatalf("folder per archive: %v", got)
+	}
+	if MatchesModRoot("x.pak", "[") {
+		t.Fatal("a broken pattern matched")
 	}
 }

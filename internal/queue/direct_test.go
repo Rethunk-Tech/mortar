@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
 	"github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -22,6 +23,12 @@ func TestVerifyDigestSHA512(t *testing.T) {
 	if err := verifyDigest(p, "sha512:00"); err == nil {
 		t.Error("a wrong digest passed")
 	}
+	if err := verifyDigest(p, "md5:900150983cd24fb0d6963f7d28e17f72"); err != nil {
+		t.Errorf("matching MD5: %v", err)
+	}
+	if err := verifyDigest(p, "md5:00"); err == nil {
+		t.Error("a wrong MD5 passed")
+	}
 }
 
 func TestExpandDirectQueuesDependenciesFirstOnce(t *testing.T) {
@@ -30,7 +37,7 @@ func TestExpandDirectQueuesDependenciesFirstOnce(t *testing.T) {
 		"a":    {Version: "1", URL: "u/a", Dependencies: []DirectRef{{ID: "b"}}},
 		"b":    {Version: "5", URL: "u/b"},
 	}
-	s := &Service{d: Deps{Direct: func(_ context.Context, src, id, _ string, _ []string) (DirectFile, error) {
+	s := &Service{d: Deps{Direct: func(_ context.Context, src, id, _ string, _ components.GameSource) (DirectFile, error) {
 		if src != "modrinth" {
 			t.Errorf("source %q", src)
 		}
@@ -56,7 +63,7 @@ func TestExpandDirectOpensThePageOfAForbiddenFile(t *testing.T) {
 	var opened string
 	s := &Service{d: Deps{
 		OpenURL: func(u string) error { opened = u; return nil },
-		Direct: func(context.Context, string, string, string, []string) (DirectFile, error) {
+		Direct: func(context.Context, string, string, string, components.GameSource) (DirectFile, error) {
 			return DirectFile{}, &curseforge.NotDistributableError{Mod: "Shut", PageURL: "https://www.curseforge.com/projects/20"}
 		},
 	}}
@@ -68,7 +75,7 @@ func TestExpandDirectOpensThePageOfAForbiddenFile(t *testing.T) {
 
 func TestExpandDirectPinsCurseForgeFileID(t *testing.T) {
 	var asked string
-	s := &Service{d: Deps{Direct: func(_ context.Context, _, _, version string, _ []string) (DirectFile, error) {
+	s := &Service{d: Deps{Direct: func(_ context.Context, _, _, version string, _ components.GameSource) (DirectFile, error) {
 		asked = version
 		return DirectFile{Version: "Content Patcher 2.9.1", FileID: 777, URL: "u"}, nil
 	}}}
@@ -88,7 +95,7 @@ func TestExpandDirectPinsCurseForgeFileID(t *testing.T) {
 }
 
 func TestExpandDirectKeepsThePicturePerEntryOnlyForTheRoot(t *testing.T) {
-	s := &Service{d: Deps{Direct: func(_ context.Context, _, id, _ string, _ []string) (DirectFile, error) {
+	s := &Service{d: Deps{Direct: func(_ context.Context, _, id, _ string, _ components.GameSource) (DirectFile, error) {
 		if id == "root" {
 			return DirectFile{Version: "1", URL: "u", Dependencies: []DirectRef{{ID: "dep"}}}, nil
 		}

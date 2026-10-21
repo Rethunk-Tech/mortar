@@ -16,30 +16,6 @@ Decided work, short enough to build cold. Delete an item in the change that land
 - top mods from the sources' APIs, cached in a data file under `web/src/data/` that `bun run site:refresh` writes (`web/scripts/refresh.ts` writes only `rival-facts.json` and `steam-art.json` today);
 - an optional hand-written note per game.
 
-### mod.io as a source
-
-**Why:** mod.io is an official mod channel for Blade & Sorcery, BONELAB, Ready or Not, S.T.A.L.K.E.R. 2 and Timberborn, and the only one for Gladio Mori. Outside the catalog it is how Baldur's Gate 3 (Larian supports mods only through mod.io) and Deep Rock Galactic ship mods, and it would bring back Core Keeper (dropped in 0.3.9 for lack of a live source). Neither r2modman (it declined, issue #942) nor Gale supports it.
-
-**Access:** every target game allows third-party API access (`api_access_options` has `OPEN`): Blade & Sorcery (mod.io game 3852, 2,287 mods), BONELAB (3809, 16,606), Ready or Not (3791, 15), S.T.A.L.K.E.R. 2 (5761, 371), Timberborn (3659, 3,002), Gladio Mori (11453, 357), Baldur's Gate 3 (6715, 8,840), Deep Rock Galactic (2475, 4,898) and Core Keeper (5289, 359). All but Deep Rock Galactic also set `DOWNLOADS`; its download URLs carry a changing verification hash. None needs a signed-in user to download. Before shipping, tell mod.io what Mortar does: API Access Terms 3.5 forbids "a competing or replacement product".
-
-**Decided shape:**
-
-- A `internal/source/modio` driver shaped like `internal/source/modrinth`: `Search`, `Sorts` (downloads, updated, newest), `Details`, files and dependencies.
-- **Sign-in per user**, like itch.io (`internal/source/itch/service.go:32`). The player pastes a read-only OAuth token from mod.io/me/access, Mortar tests it and keeps it in the keyring (`internal/secret`), and Settings › Accounts shows the account. A key shipped in the binary does not work: a user key is capped at 60 requests per minute across every install sharing it, while a user's own token gets 120. mint, a Deep Rock Galactic manager, works the same way (`trumank/mint` `src/providers/modio.rs:300-305`). Tokens have no refresh, so an expired token asks the player to sign in again.
-- **Downloads:** fetch the modfile again right before each download, since `binary_url` can expire. Check the file's MD5 (the only hash mod.io gives), and send `X-Modio-Platform: windows` for Proton games and `linux` for native ones. Honour `retry-after` on a 429.
-- **Dependencies** come from `?recursive=true`, but some creators list soft "credit" links, so a dependency is offered, never installed unasked.
-- **Placement:** install into the game's manual mod path, never the mod.io SDK's cache, which the game's own client syncs and may overwrite.
-- **Branding:** show mod.io's mark and name wherever its mods appear (terms 3.3).
-- Catalog: add `modio` to the five games above and Gladio Mori. Baldur's Gate 3, Deep Rock Galactic and Core Keeper are separate catalog entries with their own install layouts, sized per game.
-
-**Traps:**
-
-- A game that sets `AUTHORISED_DOWNLOADS` needs the token for every download, and `PAID_DOWNLOADS` also needs ownership.
-- Requests go to the per-key host `u-{user-id}.modapi.io`.
-- Re-check Shadows of Doubt: it moved to Steam Workshop in January 2026.
-
-**Done when:** with a test token, Browse lists Timberborn's mod.io mods with all sources sorted by downloads. Installing one checks its MD5, places it in the profile's mod path, and offers its dependencies. A revoked token shows the sign-in prompt.
-
 ### The Sims 4 before a release carries it
 
 - **Verify** on a real install and record in [sims4.md](sims4.md): the `Options.ini` section header and whether key names match case-insensitively, and EA's statement of the `.ts4script` depth limit.

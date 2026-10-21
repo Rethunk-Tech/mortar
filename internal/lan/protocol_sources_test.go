@@ -36,3 +36,11 @@ func TestTransferItemsKeyParadoxModsByTheirVersion(t *testing.T) {
 		t.Fatalf("item = %+v", items[0])
 	}
 }
+
+func TestTransferItemsKeyModioFilesByTheirFileID(t *testing.T) {
+	t.Parallel()
+	items := transferItems(share.Shared{Entries: []share.Ref{{Modio: 42, FileID: 9}}})
+	if len(items) != 1 || items[0].Key != store.PackageKey("modio:42", "9") || items[0].Source != profile.KindModio || items[0].Package != "42" {
+		t.Fatalf("items = %+v", items)
+	}
+}

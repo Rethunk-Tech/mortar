@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/iniedit"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader/folder"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	gameruntime "github.com/Rethunk-Tech/mortar/internal/runtime"
 	"github.com/Rethunk-Tech/mortar/internal/savesiso"
@@ -79,6 +80,13 @@ func (s *Service) launchPlan(ctx context.Context, g game.Game, inst game.Install
 	}
 	if err := l.Contribute(ctx, plan, view); err != nil {
 		return nil, err
+	}
+	// A BepInEx or MelonLoader game with a mods folder of its own (mod.io content) also has that folder placed.
+	_, own := l.(loader.PlacesFolder)
+	if _, _, placed := (folder.Loader{}).PlacedFolder(g.ID()); placed && !own {
+		if err := (folder.Loader{}).Contribute(ctx, plan, view); err != nil {
+			return nil, err
+		}
 	}
 	if err := s.armIntroSkip(g, l, profileID, view.Dir); err != nil {
 		return nil, err
