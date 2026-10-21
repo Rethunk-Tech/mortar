@@ -1,10 +1,11 @@
 package contentpatcher
 
 import (
+	"bufio"
 	"compress/gzip"
 	"crypto/sha256"
-	"encoding/binary"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -65,16 +66,16 @@ func readAlphaDisk(path string) (pngAlpha, bool) {
 	if err != nil {
 		return pngAlpha{}, false
 	}
-	var head [8]byte
-	if _, err := io.ReadFull(zr, head[:]); err != nil {
+	br := bufio.NewReader(zr)
+	var w, h int
+	if _, err := fmt.Fscanf(br, "%d %d\n", &w, &h); err != nil {
 		return pngAlpha{}, false
 	}
-	w, h := int(binary.BigEndian.Uint32(head[:4])), int(binary.BigEndian.Uint32(head[4:]))
 	if w <= 0 || h <= 0 || w > 1<<16 || h > 1<<16 {
 		return pngAlpha{}, false
 	}
 	mask := acquireAlpha((w*h + 7) / 8)
-	if _, err := io.ReadFull(zr, mask); err != nil {
+	if _, err := io.ReadFull(br, mask); err != nil {
 		releaseAlpha(mask)
 		return pngAlpha{}, false
 	}
@@ -94,10 +95,7 @@ func writeAlphaDisk(path string, pix pngAlpha) {
 		if err != nil {
 			return err
 		}
-		var head [8]byte
-		binary.BigEndian.PutUint32(head[:4], uint32(pix.w))
-		binary.BigEndian.PutUint32(head[4:], uint32(pix.h))
-		if _, err := zw.Write(head[:]); err != nil {
+		if _, err := fmt.Fprintf(zw, "%d %d\n", pix.w, pix.h); err != nil {
 			return err
 		}
 		if _, err := zw.Write(pix.a); err != nil {

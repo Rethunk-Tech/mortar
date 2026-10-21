@@ -164,7 +164,7 @@ func serve(w http.ResponseWriter, r *http.Request, src io.ReadSeeker, typ, id st
 	if px, err := strconv.Atoi(query); err == nil && px >= minWidthPx && px <= maxWidthPx && typ != "image/jxl" {
 		cached := filepath.Join(cacheDir, name)
 		if cacheDir != "" {
-			if b, err := os.ReadFile(cached); err == nil {
+			if b, err := fsx.ReadFile(cached); err == nil {
 				w.Header().Set("Content-Type", http.DetectContentType(b))
 				http.ServeContent(w, r, "", mod, bytes.NewReader(b))
 				return
