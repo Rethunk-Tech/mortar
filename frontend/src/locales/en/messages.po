@@ -6279,6 +6279,10 @@ msgstr "Cosmetic overlaps on the Problems tab"
 msgid "Pin this version"
 msgstr "Pin this version"
 
+#: src/mods/ReportToAuthorButton.tsx
+msgid "The issue holds the start of it. Paste the whole report over it."
+msgstr "The issue holds the start of it. Paste the whole report over it."
+
 #: src/profiles/historyLabel.ts
 msgid "Tagged {name} with {detail}"
 msgstr "Tagged {name} with {detail}"

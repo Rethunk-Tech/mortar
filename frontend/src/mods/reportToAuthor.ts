@@ -9,6 +9,8 @@ import { nexusModUrl } from './nexusUrl.ts'
 
 const MAX_ERROR_LINES = 20
 const MAX_GITHUB_BODY = 6000
+// The longest address Mortar's opener accepts (internal/opener maxURL).
+const MAX_URL = 2048
 
 interface ModReportFields {
   modName: string
@@ -34,6 +36,8 @@ interface ModReportResult {
   nexus: boolean
   github: boolean
   page: boolean
+  // The issue link left part of the text out; the whole text is on the clipboard.
+  cut: boolean
 }
 
 function modErrorLines(entries: readonly Entry[], modName: string): string[] {
@@ -81,16 +85,25 @@ function validGithubRepo(repo: string): boolean {
   )
 }
 
-function githubIssueURL(repo: string, title: string, body: string): string {
+function githubIssueURL(repo: string, title: string, body: string): { url: string; cut: boolean } {
   const trimmed = repo.trim()
   if (!validGithubRepo(trimmed)) {
-    return ''
+    return { url: '', cut: false }
   }
-  const q = new URLSearchParams({
-    title,
-    body: truncateGithubBody(body),
-  })
-  return `https://github.com/${trimmed.split('/').map(encodeURIComponent).join('/')}/issues/new?${q.toString()}`
+  const base = `https://github.com/${trimmed.split('/').map(encodeURIComponent).join('/')}/issues/new?`
+  const at = (n: number) => base + new URLSearchParams({ title, body: body.slice(0, n) }).toString()
+  // Encoding grows each character by up to nine, so the longest body that fits is found by halving.
+  let lo = 0
+  let hi = Math.min(body.length, MAX_GITHUB_BODY)
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2)
+    if (at(mid).length <= MAX_URL) {
+      lo = mid
+    } else {
+      hi = mid - 1
+    }
+  }
+  return { url: at(lo).length <= MAX_URL ? at(lo) : '', cut: lo < body.length }
 }
 
 function nexusBugsURL(domain: string, modId: number): string {
@@ -135,13 +148,8 @@ function buildAuthorReportUrl(text: string, fields: ModReportFields): ModReportR
     modId = source.modId ?? 0
   }
   if (repo.trim() !== '') {
-    return {
-      text,
-      url: githubIssueURL(repo, title, text),
-      nexus: false,
-      github: true,
-      page: false,
-    }
+    const { url, cut } = githubIssueURL(repo, title, text)
+    return { text, url, nexus: false, github: true, page: false, cut }
   }
   if (modId > 0 && nexusDomain !== '') {
     return {
@@ -150,9 +158,10 @@ function buildAuthorReportUrl(text: string, fields: ModReportFields): ModReportR
       nexus: true,
       github: false,
       page: false,
+      cut: false,
     }
   }
-  return { text, url: pageUrl, nexus: false, github: false, page: pageUrl !== '' }
+  return { text, url: pageUrl, nexus: false, github: false, page: pageUrl !== '', cut: false }
 }
 
 function buildModReport(i18n: I18n, fields: ModReportFields): ModReportResult {

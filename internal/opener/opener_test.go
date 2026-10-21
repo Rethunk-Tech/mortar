@@ -72,3 +72,9 @@ func FuzzWeb(f *testing.F) {
 		}
 	})
 }
+
+func TestATooLongAddressSaysSo(t *testing.T) {
+	if _, err := Web("https://github.com/a/b/issues/new?body=" + strings.Repeat("x", maxURL)); err == nil || !strings.Contains(err.Error(), "too long") {
+		t.Fatalf("err %v", err)
+	}
+}

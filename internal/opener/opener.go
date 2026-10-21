@@ -20,7 +20,11 @@ const maxURL = 2048
 // Web checks that raw is an http or https address with a host and returns it for the handler. A scheme other than
 // those, a missing host, a user name or password, control characters or spaces are refused.
 func Web(raw string) (string, error) {
-	if raw == "" || len(raw) > maxURL || strings.ContainsFunc(raw, func(r rune) bool { return unicode.IsControl(r) || unicode.IsSpace(r) }) {
+	if len(raw) > maxURL {
+		log.Printf("opener: refused a %d-character address: the limit is %d", len(raw), maxURL)
+		return "", usererr.New(usererr.Invalid, "That link is too long to open.")
+	}
+	if raw == "" || strings.ContainsFunc(raw, func(r rune) bool { return unicode.IsControl(r) || unicode.IsSpace(r) }) {
 		return "", refused(raw)
 	}
 	u, err := url.Parse(raw)

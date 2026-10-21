@@ -112,20 +112,21 @@ async function finishReport(opts: {
   i18n: I18n
   copiedTitle: string
   pasteHint: string
+  cutHint: string
   fields: ModReportFields
   push: ReturnType<typeof useToasts.getState>['push']
 }): Promise<void> {
-  const { i18n, copiedTitle, pasteHint, fields, push } = opts
+  const { i18n, copiedTitle, pasteHint, cutHint, fields, push } = opts
   const report = buildModReport(i18n, fields)
   await Clipboard.SetText(report.text)
   if (report.url !== '') {
     await OpenWeb(report.url)
   }
-  if (report.nexus || report.page) {
+  if (report.nexus || report.page || report.cut) {
     push({
       kind: 'success',
       title: copiedTitle,
-      body: pasteHint,
+      body: report.cut ? cutHint : pasteHint,
     })
     return
   }
@@ -201,6 +202,7 @@ export function ReportToAuthorButton({
         i18n,
         copiedTitle: t`Report copied`,
         pasteHint: t`Paste it on the mod's page.`,
+        cutHint: t`The issue holds the start of it. Paste the whole report over it.`,
         fields,
         push,
       })

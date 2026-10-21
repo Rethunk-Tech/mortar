@@ -45,17 +45,21 @@ test('mod error lines keep continuations and cap at twenty', () => {
   ])
 })
 
-test('github issue URL encodes title and truncates body', () => {
-  const body = `${'x'.repeat(7000)}`
-  const url = githubIssueURL('Pathoschild/ContentPatcher', 'Error in CP', body)
+test('github issue URL encodes the title and cuts the body to an address the opener takes', () => {
+  const body = `Mod: CatLib\n${'é x'.repeat(3000)}`
+  const { url, cut } = githubIssueURL('Pathoschild/ContentPatcher', 'Error in CP', body)
   expect(url.startsWith('https://github.com/Pathoschild/ContentPatcher/issues/new?')).toBe(true)
   expect(url).toContain('title=Error+in+CP')
-  expect(decodeURIComponent(url).includes('x'.repeat(6001))).toBe(false)
+  expect(url.length).toBeLessThanOrEqual(2048)
+  expect(cut).toBe(true)
+  const short = githubIssueURL('a/b', 't', 'short body')
+  expect(short.cut).toBe(false)
+  expect(new URL(short.url).searchParams.get('body')).toBe('short body')
 })
 
 test('github issue URL refuses a repo that is not owner/name', () => {
   for (const repo of ['', '..', '../x/y', 'a/../b', 'a/b/c', 'a/b?x=1', 'a/b#c', 'a b/c', './.']) {
-    expect(githubIssueURL(repo, 't', 'b')).toBe('')
+    expect(githubIssueURL(repo, 't', 'b').url).toBe('')
   }
 })
 
