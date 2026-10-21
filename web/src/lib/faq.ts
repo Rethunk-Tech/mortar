@@ -3,7 +3,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { brandIcon } from './brands.ts'
-import { modSites, SOURCE_NAMES } from './games.ts'
+import { modSites, named, SOURCE_NAMES } from './games.ts'
 import { markdown, repo } from './site.ts'
 
 const FAQ = repo('web/src/content/faq.md')
@@ -57,6 +57,10 @@ export function questions(gameCount: number, whys: Why[]): { q: string; a: strin
   const md = readFileSync(FAQ, 'utf8')
     .replaceAll('GAME_COUNT', String(gameCount))
     .replaceAll('WHY_LINKS', whyLinks)
+    .replaceAll(
+      'MOD_SITES',
+      new Intl.ListFormat('en', { type: 'disjunction' }).format(named(modSites(), SOURCE_NAMES)),
+    )
   return md
     .split(QUESTION_SPLIT)
     .filter((part) => part.trim() !== '')

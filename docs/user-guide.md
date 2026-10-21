@@ -4,7 +4,7 @@ Mortar manages mods for the PC games its catalog enables, starting with Stardew 
 
 ## Install
 
-Download from [Releases](https://github.com/Rethunk-Tech/mortar/releases/latest).
+Download from [mortar.rethunk.tech/download](https://mortar.rethunk.tech/download/), or every file from [Releases](https://github.com/Rethunk-Tech/mortar/releases/latest).
 
 ### Windows
 
@@ -51,7 +51,7 @@ Arch (x86_64, aarch64):
 curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | sudo pacman-key --add -
 sudo pacman-key --lsign-key D8B1C4C205C5FB3633CB8B9900B75959B637DCB5
 curl -fsSL https://mortar.rethunk.tech/packages/pacman.conf | sudo tee -a /etc/pacman.conf
-sudo pacman -Sy mortar
+sudo pacman -Syu mortar
 ```
 
 ## First run
@@ -79,7 +79,7 @@ In the downloads panel, **Pause** stops one download and keeps what it has fetch
 
 The extension is optional. It marks Nexus pages with what your profile already has and sends Mod Manager Download clicks to Mortar. **Settings › Downloads** has a **Download the extension** button for `mortar-browser-extension.zip` from its [releases](https://github.com/Rethunk-Tech/mortar-browser-extension/releases/latest), and says **The browser extension is too old for this Mortar** (or too new) when versions drift.
 
-- **Chrome, Edge, other Chromium:** unzip, open `chrome://extensions`, turn on Developer mode, choose **Load unpacked** and pick the folder.
+- **Chrome, Edge, other Chromium:** install it from the [Chrome Web Store](https://chromewebstore.google.com/detail/hboeppdoecbglcmfojappgehkbecdfbi), which keeps it updated. To try a build from the zip instead: unzip, open `chrome://extensions`, turn on Developer mode, choose **Load unpacked** and pick the folder.
 - **Firefox:** open `mortar-browser-extension.xpi` from the latest release in Firefox, or drop it on `about:addons`. Mozilla signs it, so it stays installed. Without an `.xpi`, use the zip: `about:debugging`, **This Firefox**, **Load Temporary Add-on**, pick `manifest.json` (removed when Firefox restarts).
 
 ## Find and add mods
@@ -349,7 +349,7 @@ To move the data, stop the game, open **Settings › Storage** and choose **Move
 Close Steam first so the Steam cleanup sticks: Steam rewrites its shortcut list on exit.
 
 - **Windows:** Settings › Apps, or the uninstaller in the install folder. It removes the program, shortcuts, the start-at-login entry and the profiles you added to Steam, and leaves your data folder, SMAPI and the game folder; delete `%LOCALAPPDATA%\Mortar` to remove profiles, mods and settings.
-- **Linux:** first run `mortar --release-links && mortar uninstall-cleanup` (AppImage: `./Mortar.AppImage --release-links && ./Mortar.AppImage uninstall-cleanup`; Flatpak: `flatpak run tech.rethunk.Mortar` with the same two arguments). It gives nxm:// links back and removes the extension's connection, the start-at-login entry, profile shortcuts, Steam profiles, and what an AppImage or portable binary added to the menu. Then remove the package, AppImage or Flatpak. Removing a `.deb`, `.rpm` or Arch package with `sudo` runs those steps for your own account only. Delete the data folder to remove profiles and mods.
+- **Linux:** first run `mortar --release-links && mortar uninstall-cleanup` (AppImage: `./mortar-linux-x86_64.AppImage --release-links && ./mortar-linux-x86_64.AppImage uninstall-cleanup`, or the `aarch64` file; Flatpak: `flatpak run tech.rethunk.Mortar --release-links && flatpak run tech.rethunk.Mortar uninstall-cleanup`). It gives nxm:// links back and removes the extension's connection, the start-at-login entry, profile shortcuts, Steam profiles, and what an AppImage or portable binary added to the menu. Then remove the package, AppImage or Flatpak. Removing a `.deb`, `.rpm` or Arch package with `sudo` runs those steps for your own account only. Delete the data folder to remove profiles and mods.
 
 ## Stream overlay
 

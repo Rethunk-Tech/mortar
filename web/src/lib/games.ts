@@ -58,7 +58,7 @@ export function named(ids: string[], names: Record<string, string>): string[] {
   return ids.map((id) => {
     const name = names[id]
     if (!name) {
-      throw new Error(`site: no display name for "${id}"; add it to scripts/site/games.ts`)
+      throw new Error(`site: no display name for "${id}"; add it to web/src/lib/games.ts`)
     }
     return name
   })

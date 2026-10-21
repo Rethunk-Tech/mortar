@@ -18,11 +18,11 @@ No. With a free Nexus account you click Mod Manager Download on the mod's page. 
 
 ## Does Mortar host mod files?
 
-No. Each mod downloads from its own page on Nexus, Thunderstore, CurseForge, Modrinth, GitHub or the Vintage Story Mod DB. The one exception is a LAN send between your own computers.
+No. Each mod downloads from its own page on MOD_SITES. The one exception is a LAN send between your own computers.
 
 ## Does Mortar work on the Steam Deck?
 
-Yes. Install the [AppImage](/download/#deck) in Desktop Mode, then use a profile's Add to Steam to play it from Game Mode. The Flatpak cannot add itself to Steam.
+Yes. Install the [AppImage](/download/#deck) in Desktop Mode, then close Steam and use a profile's Add this profile to Steam to play it from Game Mode. The Flatpak cannot add itself to Steam.
 
 ## Windows says it protected my PC. Is that normal?
 
@@ -38,4 +38,4 @@ GitHub Actions builds every release from the public source. The package reposito
 
 ## Where do I report a bug?
 
-Use Report a Mortar bug in the app's help menu, which attaches diagnostics, or open a [GitHub issue](https://github.com/Rethunk-Tech/mortar/issues).
+Use Report a bug in the Mortar menu, which attaches diagnostics, or open a [GitHub issue](https://github.com/Rethunk-Tech/mortar/issues).
