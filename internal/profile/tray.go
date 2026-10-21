@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -17,10 +18,26 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
-// TrayFile is a file placed in the shared Tray folder and the SHA-256 of what was placed.
+// trayRole is the path role of the Tray folder, which a TrayFile with no role belongs to.
+const trayRole = "tray"
+
+// TrayFile is a file placed in a shared folder of the game and the SHA-256 of what was placed. Role is the path role
+// of that folder, empty for the Tray folder.
 type TrayFile struct {
 	Rel  string `json:"rel"`
 	Hash string `json:"hash"`
+	Role string `json:"role,omitempty"`
+}
+
+// folded is the file's identity across the profiles of a game: its role and its path as the file system folds it.
+func (f TrayFile) folded() string { return trayFold(cmp.Or(f.Role, trayRole) + "|" + f.Rel) }
+
+// trayFileRole is the TrayFile role for a path role: empty for the Tray folder, so older entries read the same.
+func trayFileRole(role string) string {
+	if role == trayRole {
+		return ""
+	}
+	return role
 }
 
 // trayEntryKey is the key of the entry that holds an archive's Tray files beside its mods entries. A laid-out file's
@@ -49,7 +66,7 @@ func (s *Store) trayOwners(game string, p *Profile) map[string]string {
 	add := func(es []Entry) {
 		for _, e := range es {
 			for _, f := range e.TrayFiles {
-				owners[trayFold(f.Rel)] = f.Hash
+				owners[f.folded()] = f.Hash
 			}
 		}
 	}
@@ -64,11 +81,11 @@ func (s *Store) trayOwners(game string, p *Profile) map[string]string {
 	return owners
 }
 
-func (s *Store) trayFolder(game string) (string, error) {
+func (s *Store) trayFolder(game, role string) (string, error) {
 	if s.TrayFolder == nil {
-		return "", errors.New("this game has no Tray folder")
+		return "", errors.New("this game has no shared folder")
 	}
-	return s.TrayFolder(game)
+	return s.TrayFolder(game, cmp.Or(role, trayRole))
 }
 
 // trayPlacement is the outcome of placeTray: what the entry holds, and how to finish or undo the placement.
@@ -88,23 +105,15 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 	if len(files) == 0 {
 		return noTray(), nil
 	}
-	dir, err := s.trayFolder(game)
-	if err != nil {
-		return noTray(), err
-	}
 	owners := s.trayOwners(game, p)
-	folded := make(map[string]string, len(replace))
-	for rel, h := range replace {
-		folded[trayFold(rel)] = h
-	}
-	replace = folded
+	g := installerGame(game)
 	var placed []string
 	type aside struct{ dst, held string }
 	var asides []aside
 	pl := trayPlacement{
 		undo: func() {
 			for _, r := range placed {
-				_ = fsx.Remove(filepath.Join(dir, filepath.FromSlash(r)))
+				_ = fsx.Remove(r)
 			}
 			for _, a := range asides {
 				_ = fsx.Rename(a.held, a.dst)
@@ -121,35 +130,43 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 		return noTray(), err
 	}
 	for _, f := range files {
+		role := trayFileRole(g.RoleOf(f.Target))
+		dir, err := s.trayFolder(game, role)
+		if err != nil {
+			return fail(err)
+		}
 		dst := filepath.Join(dir, filepath.FromSlash(f.Rel))
 		if !filepath.IsLocal(filepath.FromSlash(f.Rel)) {
-			return fail(fmt.Errorf("%s leaves the Tray folder", f.Rel))
+			return fail(fmt.Errorf("%s leaves the shared folder", f.Rel))
 		}
+		held := TrayFile{Rel: f.Rel, Role: role}
+		key := held.folded()
 		src := filepath.Join(arch.Dir, filepath.FromSlash(f.Src))
 		h, err := fsx.SHA256(src)
 		if err != nil {
 			return fail(err)
 		}
-		if oh, ours := owners[trayFold(f.Rel)]; ours {
+		held.Hash = h
+		if oh, ours := owners[key]; ours {
 			if oh != h {
 				return fail(refuseTray(f.Rel, "another mod in your profiles placed a different file there"))
 			}
-			pl.held = append(pl.held, TrayFile{Rel: f.Rel, Hash: h})
+			pl.held = append(pl.held, held)
 			continue
 		}
 		if _, err := os.Lstat(dst); err == nil {
 			dh, herr := fsx.SHA256(dst)
-			rec, mine := replace[trayFold(f.Rel)]
+			rec, mine := replace[key]
 			switch {
 			case herr == nil && mine && dh == rec && dh == h:
-				pl.held = append(pl.held, TrayFile{Rel: f.Rel, Hash: h})
+				pl.held = append(pl.held, held)
 				continue
 			case herr == nil && mine && dh == rec:
-				held := dst + ".mortar-replaced"
-				if err := fsx.Rename(dst, held); err != nil {
+				setAside := dst + ".mortar-replaced"
+				if err := fsx.Rename(dst, setAside); err != nil {
 					return fail(err)
 				}
-				asides = append(asides, aside{dst, held})
+				asides = append(asides, aside{dst, setAside})
 			case herr == nil && dh == h:
 				continue
 			default:
@@ -164,8 +181,8 @@ func (s *Store) placeTray(game string, p *Profile, arch installer.Archive, files
 		if err := datadir.CopyFile(src, dst); err != nil {
 			return fail(err)
 		}
-		placed = append(placed, f.Rel)
-		pl.held = append(pl.held, TrayFile{Rel: f.Rel, Hash: h})
+		placed = append(placed, dst)
+		pl.held = append(pl.held, held)
 	}
 	return pl, nil
 }
@@ -180,14 +197,14 @@ func (s *Store) releaseTray(game string, p *Profile, files []TrayFile) {
 	if len(files) == 0 {
 		return
 	}
-	dir, err := s.trayFolder(game)
-	if err != nil {
-		log.Printf("profile: release Tray files: %v", err)
-		return
-	}
 	owners := s.trayOwners(game, p)
 	for _, f := range files {
-		if _, held := owners[trayFold(f.Rel)]; held {
+		if _, held := owners[f.folded()]; held {
+			continue
+		}
+		dir, err := s.trayFolder(game, f.Role)
+		if err != nil {
+			log.Printf("profile: release shared files: %v", err)
 			continue
 		}
 		dst := filepath.Join(dir, filepath.FromSlash(f.Rel))

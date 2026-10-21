@@ -1,5 +1,5 @@
 {
-  "serial": 1792460180,
+  "serial": 1792548236,
   "components": [
     {
       "game": "melonloader",
@@ -4093,6 +4093,9 @@
       "r2modmanFolder": "CitiesSkylines2",
       "metadata": [],
       "paths": {
+        "pdxMods": {
+          "windows": "{localLow}/Colossal Order/Cities Skylines II/Mods"
+        },
         "unityLog": {
           "windows": "{localLow}/Colossal Order/Cities Skylines II/Player.log"
         }
@@ -4102,6 +4105,12 @@
         {
           "id": "profile",
           "root": "{profile}"
+        },
+        {
+          "id": "pdx",
+          "root": "",
+          "role": "pdxMods",
+          "sources": ["paradox"]
         }
       ],
       "stores": {
@@ -4127,6 +4136,10 @@
           "id": "nexus",
           "key": "citiesskylines2",
           "gameId": 5833
+        },
+        {
+          "id": "paradox",
+          "key": "cities_skylines_2"
         }
       ]
     },
@@ -13541,6 +13554,7 @@
       "enabled": true,
       "marker": "VotV.exe",
       "r2modmanFolder": "VotV",
+      "metadata": null,
       "deploy": "profile",
       "targets": [
         {
@@ -13555,7 +13569,6 @@
           "id": "shimloader",
           "name": "Shimloader",
           "package": "Thunderstore-unreal_shimloader",
-          "placeDir": "VotV/Binaries/Win64",
           "routes": [
             {
               "dir": "shimloader/mod",
@@ -13573,7 +13586,8 @@
               "dir": "shimloader/overlay",
               "track": "subdir"
             }
-          ]
+          ],
+          "placeDir": "VotV/Binaries/Win64"
         }
       ],
       "sources": [

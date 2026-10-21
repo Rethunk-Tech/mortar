@@ -47,7 +47,7 @@ func NewService(store *Store, home string, settings *settings.Store) *Service {
 	}
 	store.home, store.settings = home, settings
 	if settings != nil {
-		store.TrayFolder = func(id string) (string, error) { return game.PathFor(home, settings.Get(), id, "", "tray") }
+		store.TrayFolder = func(id, role string) (string, error) { return game.PathFor(home, settings.Get(), id, "", role) }
 	}
 	svc := &Service{store: store, home: home, settings: settings}
 	store.GameModsProgress = func(p GameModsProgress) {

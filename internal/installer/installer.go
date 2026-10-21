@@ -23,6 +23,8 @@ type Archive struct {
 	FS  fs.FS
 	// Key is the package's identity: the folder name of a plain install and the Namespace-Name of a Thunderstore package.
 	Key string
+	// Source and Package are the site the archive came from and its id there, when the store knows them.
+	Source, Package string
 	// Eval is what a FOMOD's conditions read: the files already installed and the game's version.
 	Eval fomod.EvalContext
 }
@@ -47,6 +49,20 @@ type Target struct {
 	Extensions []string
 	// Shared marks a target whose files are placed at install in a folder every profile uses (components.TargetDef.Role).
 	Shared bool
+	// Role is the game's path role a Shared target places into.
+	Role string
+	// Sources are the source ids whose archives this target takes whole (components.TargetDef.Sources).
+	Sources []string
+}
+
+// RoleOf is the path role the shared target id places into, "" for a target that is not shared.
+func (g Game) RoleOf(id string) string {
+	for _, t := range g.Targets {
+		if t.ID == id && t.Shared {
+			return t.Role
+		}
+	}
+	return ""
 }
 
 // IsShared reports whether target id is placed at install in a folder every profile shares.
@@ -102,7 +118,7 @@ type Installer interface {
 }
 
 // detectionOrder is the order drivers are asked: the most specific shape first, plain last because it takes anything.
-var detectionOrder = []string{"fomod", "thunderstore-rules", "plain"}
+var detectionOrder = []string{"source-target", "fomod", "thunderstore-rules", "plain"}
 
 var (
 	mu       sync.RWMutex

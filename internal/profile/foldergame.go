@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"slices"
@@ -28,6 +29,8 @@ func supersedes(next, old Source) bool {
 			github.Shape(next.Asset) == github.Shape(old.Asset)
 	case KindLocal:
 		return false
+	case KindParadox:
+		return next.Name == old.Name && next.Version != old.Version
 	}
 	return next.replacing > 0 && next.ModID == old.ModID && old.FileID == next.replacing
 }
@@ -107,7 +110,7 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 		for _, e := range old {
 			released = append(released, e.TrayFiles...)
 			for _, f := range e.TrayFiles {
-				replace[f.Rel] = f.Hash
+				replace[f.folded()] = f.Hash
 			}
 		}
 		placement, err = s.placeTray(game, p, arch, trayFiles, replace)
@@ -116,9 +119,13 @@ func (s *Store) placeFolderLocked(game, id, key string, source Source, whole []C
 		}
 		if held := placement.held; len(held) > 0 {
 			k := trayEntryKey(key)
+			name := "Tray files"
+			if held[0].Role != "" {
+				name = cmp.Or(source.ModName, key)
+			}
 			fresh = append(fresh, Entry{
 				Key: k, Item: key, Source: source, Disabled: []mod.ID{}, Added: time.Now().UTC(), Package: true, Tray: true, TrayFiles: held, Implicit: source.startsImplicit(),
-				Mods: []Component{{ID: mod.NewID(mod.FormatFolder, k), Name: "Tray files", Folder: "."}},
+				Mods: []Component{{ID: mod.NewID(mod.FormatFolder, k), Name: name, Folder: "."}},
 			})
 		}
 		for i := range fresh {
@@ -231,7 +238,7 @@ func (s *Store) placeRestoredTray(game, id string, p *Profile, restored, current
 	item := ""
 	for _, e := range restored {
 		for _, f := range e.TrayFiles {
-			want[f.Rel] = true
+			want[f.folded()] = true
 			item = e.StoreKey()
 		}
 	}
@@ -245,14 +252,14 @@ func (s *Store) placeRestoredTray(game, id string, p *Profile, restored, current
 	g := installerGame(game)
 	var files []installer.File
 	for _, f := range l.Files {
-		if g.IsShared(f.Target) && want[f.Rel] {
+		if g.IsShared(f.Target) && want[TrayFile{Rel: f.Rel, Role: trayFileRole(g.RoleOf(f.Target))}.folded()] {
 			files = append(files, f)
 		}
 	}
 	replace := map[string]string{}
 	for _, e := range current {
 		for _, f := range e.TrayFiles {
-			replace[f.Rel] = f.Hash
+			replace[f.folded()] = f.Hash
 		}
 	}
 	pl, err := s.placeTray(game, p, arch, files, replace)

@@ -35,7 +35,7 @@ func installerGame(gameID string) installer.Game {
 		g.Routes = append(g.Routes, l.Routes...)
 	}
 	for _, t := range info.Targets {
-		g.Targets = append(g.Targets, installer.Target{ID: t.ID, Root: t.Root, MaxDepth: t.MaxDepth, KeepWhole: t.KeepWhole, ModRoot: t.ModRoot, Extensions: t.Extensions, Shared: t.Role != ""})
+		g.Targets = append(g.Targets, installer.Target{ID: t.ID, Root: t.Root, MaxDepth: t.MaxDepth, KeepWhole: t.KeepWhole, ModRoot: t.ModRoot, Extensions: t.Extensions, Shared: t.Role != "", Role: t.Role, Sources: t.Sources})
 	}
 	return g
 }
@@ -47,6 +47,7 @@ func (s *Store) pick(game, key string) (installer.Archive, installer.Game, insta
 		return installer.Archive{}, installer.Game{}, nil, err
 	}
 	arch := installer.Open(root, key)
+	arch.Source, arch.Package, _, _ = s.items.Meta(game, key)
 	g := installerGame(game)
 	inst, _ := installer.Pick(arch, g)
 	if _, statErr := os.Stat(filepath.Join(root, "manifest.json")); inst.ID() == driverThunderstore && statErr == nil {
@@ -172,6 +173,9 @@ func cutSuffixFold(s, suffix string) (string, bool) {
 // name on its source's page, which names a folder game's mod when its files carry no name of their own.
 func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool, err error) {
 	arch, g, inst, err := s.pick(game, key)
+	if err == nil && inst.ID() == installer.DriverSourceTarget {
+		return []Component{{ID: mod.NewID(mod.FormatFolder, key), Name: cmp.Or(title, key), Folder: "."}}, true, nil
+	}
 	if err == nil && inst.ID() == "plain" && slices.Contains(g.Loaders, folderLoader) {
 		c := Component{ID: mod.NewID(mod.FormatFolder, key), Name: cmp.Or(title, key), Folder: "."}
 		if file, ok := installer.ModRootFile(arch, g); ok {
@@ -216,6 +220,13 @@ func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool,
 	return []Component{{ID: mod.NewID(mod.FormatThunderstore, id), Version: m.Version, Name: m.Name, Author: author, Folder: ".", Needs: needs}}, true, nil
 }
 
+// placesInSharedFolders reports an item that is laid out and placed as a folder game's is, whatever the game's loader:
+// its source has a target of its own in the game.
+func (s *Store) placesInSharedFolders(game, key string) bool {
+	_, _, inst, err := s.pick(game, key)
+	return err == nil && inst.ID() == installer.DriverSourceTarget
+}
+
 // folderLoader is the id of the loader of a game whose mods are files in a folder the game reads (internal/loader/folder).
 const folderLoader = "folder"
 
@@ -242,7 +253,7 @@ func pluginComponent(key, dir string) Component {
 // placePackageLocked adds a Thunderstore package to the profile, or swaps it in for another version of the same
 // package. Nothing is copied: the entry records the package, and the launch deploys its files.
 func (s *Store) placePackageLocked(game, id, key string, source Source, mods []Component) (Profile, bool, bool, error) {
-	if slices.Contains(installerGame(game).Loaders, folderLoader) {
+	if slices.Contains(installerGame(game).Loaders, folderLoader) || s.placesInSharedFolders(game, key) {
 		return s.placeFolderLocked(game, id, key, source, mods)
 	}
 	var updated, changed bool

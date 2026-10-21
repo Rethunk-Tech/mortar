@@ -318,7 +318,7 @@ func TestFolderGameTrayFilesInstallAndUninstallBesideThePlayersOwn(t *testing.T)
 	t.Parallel()
 	e := newEnv(t)
 	tray := filepath.Join(t.TempDir(), "Tray")
-	e.TrayFolder = func(string) (string, error) { return tray, nil }
+	e.TrayFolder = func(string, string) (string, error) { return tray, nil }
 	if err := os.MkdirAll(tray, 0o750); err != nil {
 		t.Fatal(err)
 	}
@@ -360,7 +360,7 @@ func TestFolderGameTrayNeverReplacesAFileOfThePlayers(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
 	tray := filepath.Join(t.TempDir(), "Tray")
-	e.TrayFolder = func(string) (string, error) { return tray, nil }
+	e.TrayFolder = func(string, string) (string, error) { return tray, nil }
 	if err := os.MkdirAll(tray, 0o750); err != nil {
 		t.Fatal(err)
 	}
@@ -384,7 +384,7 @@ func trayEnv(t *testing.T) (env, string) {
 	t.Helper()
 	e := newEnv(t)
 	tray := filepath.Join(t.TempDir(), "Tray")
-	e.TrayFolder = func(string) (string, error) { return tray, nil }
+	e.TrayFolder = func(string, string) (string, error) { return tray, nil }
 	if err := os.MkdirAll(tray, 0o750); err != nil {
 		t.Fatal(err)
 	}

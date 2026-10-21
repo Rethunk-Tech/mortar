@@ -362,6 +362,10 @@ type TargetDef struct {
 	// Extensions are the lower-case extensions (no dot) of files a folder-loader archive lays out in this target
 	// rather than in mods.
 	Extensions []string `json:"extensions,omitempty"`
+	// Sources are the source ids whose archives are laid out whole in this target, whatever the game's loader makes of
+	// them (Paradox Mods archives go to the game's own Mods folder, not into the loader). Only a Role target takes
+	// them.
+	Sources []string `json:"sources,omitempty"`
 }
 
 // ProfileFolder is the folder below the profile's root that the target's files are laid out in: "" for {profile},
@@ -963,6 +967,14 @@ func (g GameInfo) Validate() error {
 			}
 		} else if t.ID == "" || !underToken(t.Root, "{profileMods}", "{profile}") {
 			return fmt.Errorf("game %q has a target without an id or with an unknown root %q", g.ID, t.Root)
+		}
+		if len(t.Sources) > 0 && t.Role == "" {
+			return fmt.Errorf("game %q target %q lists sources but names no path role", g.ID, t.ID)
+		}
+		for _, src := range t.Sources {
+			if src == "" || src != strings.ToLower(src) || strings.ContainsAny(src, " /\\") {
+				return fmt.Errorf("game %q target %q has an unusable source %q", g.ID, t.ID, src)
+			}
 		}
 		for _, ext := range t.Extensions {
 			if ext == "" || ext != strings.ToLower(ext) || strings.ContainsAny(ext, ".\\/") {

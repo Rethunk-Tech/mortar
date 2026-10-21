@@ -319,8 +319,8 @@ type Store struct {
 	Bundled func(game string) []Bundle
 	// Created is called after Create has added a profile; nil means nothing.
 	Created func(game string)
-	// TrayFolder is the game's shared folder for tray content (the catalog's tray path role); nil means the game has none.
-	TrayFolder func(game string) (string, error)
+	// TrayFolder is the game's shared folder for tray content (the catalog's tray path role), or of another shared path role; nil means the game has none.
+	TrayFolder func(game, role string) (string, error)
 	// Tidied is told about each repair rebuild makes to a profile's mods folder (what was done, the profile's name, the
 	// folder); nil means nothing.
 	Tidied func(what, profileName, folder string)

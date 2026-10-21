@@ -337,7 +337,7 @@ func (s *Store) addEntryLocked(game, id, key string, source Source) (Profile, er
 	}
 	if mods, isPackage, err := s.packageMods(game, key, source.ModName); err != nil {
 		return Profile{}, err
-	} else if isPackage && slices.Contains(installerGame(game).Loaders, folderLoader) {
+	} else if isPackage && (slices.Contains(installerGame(game).Loaders, folderLoader) || s.placesInSharedFolders(game, key)) {
 		p, _, _, err := s.placeFolderLocked(game, id, key, source, mods)
 		return p, err
 	}
