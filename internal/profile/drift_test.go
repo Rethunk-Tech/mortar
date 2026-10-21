@@ -400,6 +400,12 @@ func TestStoreListingKeptAcrossStarts(t *testing.T) {
 		t.Fatal(err)
 	}
 	saveStoreListings()
+	storeListings.Lock()
+	held := len(storeListings.byPath)
+	storeListings.Unlock()
+	if held != 0 {
+		t.Fatalf("%d saved listings stayed in memory", held)
+	}
 	reset()
 	// Removing a nested file leaves the item folder's own mtime alone, so only a kept listing still names it.
 	if err := os.Remove(filepath.Join(peer, "sub", "a.dll")); err != nil {

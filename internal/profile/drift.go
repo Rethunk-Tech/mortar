@@ -344,10 +344,12 @@ func loadStoreListingsLocked() {
 	}
 }
 
-// saveStoreListings writes the listings measured since the last write.
+// saveStoreListings writes the listings measured since the last write, then lets go of them: a drift check reads them
+// once, and on a large profile they hold tens of megabytes of file names that the next check reads back from disk.
 func saveStoreListings() {
 	storeListings.Lock()
 	if !storeListings.dirty {
+		releaseStoreListingsLocked()
 		storeListings.Unlock()
 		return
 	}
@@ -373,11 +375,19 @@ func saveStoreListings() {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return
 	}
-	if err := datadir.WriteFile(path, buf.Bytes(), 0o600); err != nil {
-		storeListings.Lock()
+	err = datadir.WriteFile(path, buf.Bytes(), 0o600)
+	storeListings.Lock()
+	defer storeListings.Unlock()
+	if err != nil {
 		storeListings.dirty = true
-		storeListings.Unlock()
+	} else if !storeListings.dirty {
+		releaseStoreListingsLocked()
 	}
+}
+
+// releaseStoreListingsLocked drops the listings the cache file holds; the next lookup reads the file again.
+func releaseStoreListingsLocked() {
+	storeListings.byPath, storeListings.loaded = map[string]storeListing{}, false
 }
 
 func storeListingFor(peer string) (storeListing, error) {
