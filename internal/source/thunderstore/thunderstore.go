@@ -174,15 +174,8 @@ func (d Driver) Items(ctx context.Context, key, mortarVersion string, ids []stri
 
 // Categories lists the community's package categories, sorted.
 func (d Driver) Categories(ctx context.Context, key string) ([]string, error) {
-	pk, err := d.packages(ctx, key, source.UserAgentWithSite(""))
-	if err != nil {
-		return nil, err
-	}
-	var all []string
-	for _, p := range pk {
-		all = append(all, p.Categories...)
-	}
-	return source.UniqueNames(all), nil
+	s, err := d.derived(ctx, key, source.UserAgentWithSite(""))
+	return s.Categories, err
 }
 
 // Deprecation is the index's word on a package its author deprecated. Replacement is another listed package the

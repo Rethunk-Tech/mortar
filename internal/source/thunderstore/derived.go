@@ -8,14 +8,17 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
-// What the Problems check asks of the whole listing (which packages are deprecated) is worked out once per stored listing and kept in a small file beside it, so neither asks a
+// What the Problems check and Browse's filters ask of the whole listing (which packages are deprecated, which
+// categories exist) is worked out once per stored listing and kept in a small file beside it, so neither asks a
 // start to decode tens of megabytes.
 
 type derivedFile struct {
 	// Listing is the file name of the stored listing this was worked out from.
 	Listing     string                 `json:"listing"`
+	Categories  []string               `json:"categories"`
 	Deprecation map[string]Deprecation `json:"deprecation"`
 }
 
@@ -66,7 +69,7 @@ func deriveFrom(path string) (derivedFile, error) {
 		if o, seen := winners[id]; seen && keepsOver(o, *p) {
 			return
 		}
-		w := pkg{Owner: p.Owner, Name: p.Name, Hidden: p.Hidden, Updated: p.Updated}
+		w := pkg{Owner: p.Owner, Name: p.Name, Hidden: p.Hidden, Updated: p.Updated, Categories: p.Categories}
 		if p.Hidden {
 			w.Summary = p.Summary
 		}
@@ -75,8 +78,10 @@ func deriveFrom(path string) (derivedFile, error) {
 	if err != nil {
 		return derivedFile{}, err
 	}
+	var cats []string
 	live := map[string]string{}
 	for _, p := range winners {
+		cats = append(cats, p.Categories...)
 		if !p.Hidden {
 			live[strings.ToLower(p.Owner+"-"+p.Name)] = p.Owner + "-" + p.Name
 		}
@@ -88,5 +93,5 @@ func deriveFrom(path string) (derivedFile, error) {
 			out[self] = Deprecation{Replacement: replacementFor(p, self, live)}
 		}
 	}
-	return derivedFile{Listing: filepath.Base(path), Deprecation: out}, nil
+	return derivedFile{Listing: filepath.Base(path), Categories: source.UniqueNames(cats), Deprecation: out}, nil
 }
