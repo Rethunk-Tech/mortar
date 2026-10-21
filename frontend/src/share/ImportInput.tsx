@@ -87,7 +87,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
               type="submit"
               variant="contained"
               disabled={!canPreview}
-              sx={{ flexShrink: 0, whiteSpace: 'nowrap', height: 40, minWidth: 104 }}
+              sx={{ flexShrink: 0, whiteSpace: 'nowrap', height: space.control, minWidth: 104 }}
             >
               {flow.busy ? t`Reading…` : t`Preview`}
             </Button>
