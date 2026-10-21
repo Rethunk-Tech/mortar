@@ -18,6 +18,11 @@ import satori from 'satori'
 
 const WIDTH = 1200
 const HEIGHT = 630
+const LONG_TITLE_CHARS = 48
+const LONG_TITLE_PX = 56
+const TITLE_PX = 68
+const DESCRIPTION_MAX = 160
+const DESCRIPTION_CUT = 157
 const CACHE = 'node_modules/.cache/og'
 const FONTS =
   'node_modules/@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin'
@@ -52,7 +57,7 @@ const el = (
 })
 
 function card(title: string, description: string, icon: string): Node {
-  const big = title.length > 48 ? 56 : 68
+  const big = title.length > LONG_TITLE_CHARS ? LONG_TITLE_PX : TITLE_PX
   return el(
     'div',
     {
@@ -112,8 +117,8 @@ function words(html: string): { title: string; description: string } | undefined
   return {
     title: own.startsWith('Mortar: ') && h1 ? decodeEntities(h1) : own.replace(/: Mortar$/, ''),
     description:
-      description.length > 160
-        ? `${description.slice(0, 157).replace(/\s+\S*$/, '')}…`
+      description.length > DESCRIPTION_MAX
+        ? `${description.slice(0, DESCRIPTION_CUT).replace(/\s+\S*$/, '')}…`
         : description,
   }
 }

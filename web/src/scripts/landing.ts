@@ -6,6 +6,7 @@ import { track } from './track.ts'
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
 const PICKER_TILES = 8
 const COUNT_MS = 1200
+const EASE_POWER = 3
 const LOOP_MS = 3500
 
 function systemButton() {
@@ -33,7 +34,7 @@ function countUp() {
       const t0 = performance.now()
       const step = (t: number) => {
         const k = Math.min(1, (t - t0) / COUNT_MS)
-        const eased = 1 - (1 - k) ** 3
+        const eased = 1 - (1 - k) ** EASE_POWER
         els.forEach((el, i) => {
           el.textContent = String(Math.round((targets[i] ?? 0) * eased))
         })

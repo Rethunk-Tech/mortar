@@ -18,11 +18,18 @@ const src = a?.capsule ?? a?.header
 <li {...Object.fromEntries(Object.entries(data).map(([k, v]) => [`data-${k}`, v]))}>
   <a class:list={['cover', { 'no-art': !src }]} href={`/${game.id}/`}>
     {
-      a?.capsule ? (
+      a?.capsule && (
         <img class="cover-art" src={a.capsule} srcset={a.capsule2x ? `${a.capsule} 1x, ${a.capsule2x} 2x` : undefined} width="300" height="450" alt="" loading="lazy" referrerpolicy="no-referrer" />
-      ) : a?.header ? (
+      )
+    }
+    {
+      !a?.capsule && a?.header && (
         <img class="cover-art" src={a.header} width="460" height="215" alt="" loading="lazy" referrerpolicy="no-referrer" />
-      ) : (
+      )
+    }
+    {
+      
+      !(a?.capsule || a?.header ) && (
         <span class="letter" aria-hidden="true">{game.name.charAt(0)}</span>
       )
     }

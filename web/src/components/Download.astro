@@ -4,7 +4,7 @@ import { releases } from '../lib/changelog.ts'
 import { shortDate } from '../lib/news.ts'
 import Mark from './Mark.astro'
 
-const latest = releases()[0]
+const [latest] = releases()
 const LATEST = 'https://github.com/Rethunk-Tech/mortar/releases/latest/download/'
 const systems = [
   {
@@ -127,6 +127,7 @@ const managers = [
   import { visitorOS } from '../scripts/os.ts'
   import { track } from '../scripts/track.ts'
 
+  const COPIED_MS = 1500
   const os = visitorOS()
   for (const card of document.querySelectorAll<HTMLElement>('.oscard')) {
     if (card.dataset.os === os) {
@@ -168,7 +169,7 @@ const managers = [
         copy.textContent = 'Copied'
         setTimeout(() => {
           copy.textContent = 'Copy'
-        }, 1500)
+        }, COPIED_MS)
       })
     })
   }

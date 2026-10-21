@@ -8,6 +8,7 @@ const SOURCE = 'components.source.json'
 const API = 'https://thunderstore.io/api'
 // A community smaller than this is not worth a catalog entry yet.
 const MIN_PACKAGES = 20
+const PAGE_SIZE = 1000
 
 interface Game {
   id: string
@@ -176,9 +177,9 @@ interface NexusGame {
   modCount: number
 }
 const nexusGames = new Map<string, NexusGame>()
-for (let offset = 0; ; offset += 1000) {
+for (let offset = 0; ; offset += PAGE_SIZE) {
   const { games: page } = await nexus<{ games: { totalCount: number; nodes: NexusGame[] } }>(
-    `{ games(count: 1000, offset: ${offset}) { totalCount nodes { id domainName name modCount } } }`,
+    `{ games(count: ${PAGE_SIZE}, offset: ${offset}) { totalCount nodes { id domainName name modCount } } }`,
   )
   for (const g of page.nodes) {
     const k = norm(g.name)

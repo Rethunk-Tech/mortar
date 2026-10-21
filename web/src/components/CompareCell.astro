@@ -10,6 +10,7 @@ interface Props {
 }
 
 const { kind, value } = Astro.props
+const KINDS = ['num', 'sites', 'platforms', 'tags', 'imports']
 const PLATFORMS: Record<string, string> = {
   windows: 'Windows',
   linux: 'Linux',
@@ -19,25 +20,21 @@ const list = Array.isArray(value) ? value : []
 const isEmpty = value === undefined || value.length === 0
 ---
 
-{
-  isEmpty ? (
-    <span class="none">—</span>
-  ) : kind === 'num' ? (
-    <span class="num">{value}</span>
-  ) : kind === 'sites' ? (
-    <span class="icons">{list.map((s) => <Mark site={s} label={SOURCE_NAMES[s] ?? s} />)}</span>
-  ) : kind === 'platforms' ? (
-    <span class="icons">{list.map((p) => <Mark site={p} label={PLATFORMS[p] ?? p} />)}</span>
-  ) : kind === 'tags' ? (
-    <span class="tags">{list.map((t) => <span>{t}</span>)}</span>
-  ) : kind === 'imports' ? (
-    <span class="logos">
-      {list.map((id) => {
-        const f = IMPORT_FROM[id]
-        return f?.logo ? <img src={f.logo} alt={f.name} title={f.name} width="28" height="28" /> : <Mark site="thunderstore" label={f?.name ?? id} />
-      })}
-    </span>
-  ) : (
-    value
-  )
-}
+{isEmpty && <span class="none">—</span>}
+{!isEmpty && kind === 'num' && <span class="num">{value}</span>}
+{!isEmpty && kind === 'sites' && (
+  <span class="icons">{list.map((s) => <Mark site={s} label={SOURCE_NAMES[s] ?? s} />)}</span>
+)}
+{!isEmpty && kind === 'platforms' && (
+  <span class="icons">{list.map((p) => <Mark site={p} label={PLATFORMS[p] ?? p} />)}</span>
+)}
+{!isEmpty && kind === 'tags' && <span class="tags">{list.map((t) => <span>{t}</span>)}</span>}
+{!isEmpty && kind === 'imports' && (
+  <span class="logos">
+    {list.map((id) => {
+      const f = IMPORT_FROM[id]
+      return f?.logo ? <img src={f.logo} alt={f.name} title={f.name} width="28" height="28" /> : <Mark site="thunderstore" label={f?.name ?? id} />
+    })}
+  </span>
+)}
+{!(isEmpty || KINDS.includes(kind) ) && value}

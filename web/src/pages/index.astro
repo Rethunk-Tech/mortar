@@ -32,6 +32,8 @@ const POPULAR = [
   'sims4',
 ]
 const PER_LANE = 9
+const LANE_BASE_S = 70
+const LANE_STEP_S = 9
 const NEWS_ID = 'news'
 const LANES = 4
 const withArt = games.filter((g) => artOf(g, art)?.capsule)
@@ -45,7 +47,7 @@ const picker = [...games]
   .map((g) => [g.id, g.name, artOf(g, art)?.capsule ?? ''])
 const popular = POPULAR.flatMap((id) => games.find((g) => g.id === id) ?? [])
 
-const latest = releases()[0]
+const [latest] = releases()
 const all = await posts()
 const releasePosts = all.filter((p) => p.kind === 'release')
 const [now, ...before] = releasePosts
@@ -161,7 +163,7 @@ const features = [
                 ))
               return (
                 <div class="lane">
-                  <div class="track" style={`--t:${70 + l * 9}s`}>
+                  <div class="track" style={`--t:${LANE_BASE_S + l * LANE_STEP_S}s`}>
                     {cards(false)}
                     {cards(true)}
                   </div>

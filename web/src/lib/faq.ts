@@ -172,7 +172,7 @@ const RIVAL_RELEASES: Record<string, string> = {
 }
 
 async function getText(url: string): Promise<string> {
-  const token = process.env.GITHUB_TOKEN
+  const token = Bun.env.GITHUB_TOKEN
   const res = await fetch(
     url,
     token && url.startsWith('https://api.github.com/')
@@ -211,7 +211,9 @@ export async function refreshRivalFacts(): Promise<void> {
     try {
       out[`${id}_count`] = src.count(body)
     } catch (err) {
-      throw new Error(`site: ${id}_count no longer parses from ${src.url}: ${String(err)}`)
+      throw new Error(`site: ${id}_count no longer parses from ${src.url}: ${String(err)}`, {
+        cause: err,
+      })
     }
   }
   for (const [id, slug] of Object.entries(RIVAL_RELEASES)) {

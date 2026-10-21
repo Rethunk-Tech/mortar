@@ -1,5 +1,8 @@
 // Site-wide behaviour: the nav's border, progress line and current section, the narrow-screen menu, sections blurring
 // in, feature cards tilting toward the pointer and screenshots opening full size.
+const PERCENT = 100
+const UPPER_THIRD = 3
+const CENTRE = 0.5
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
 const nav = document.querySelector<HTMLElement>('.nav')
 const progress = document.getElementById('progress')
@@ -10,11 +13,11 @@ function onScroll() {
   nav?.classList.toggle('scrolled', scrollY > 10)
   const max = document.documentElement.scrollHeight - innerHeight
   if (progress) {
-    progress.style.width = `${max > 0 ? (scrollY / max) * 100 : 0}%`
+    progress.style.width = `${max > 0 ? (scrollY / max) * PERCENT : 0}%`
   }
   let current = ''
   for (const s of sections) {
-    if (s.getBoundingClientRect().top < innerHeight / 3) {
+    if (s.getBoundingClientRect().top < innerHeight / UPPER_THIRD) {
       current = s.id
     }
   }
@@ -63,8 +66,8 @@ for (const card of document.querySelectorAll<HTMLElement>('.card.tilt')) {
       return
     }
     const r = card.getBoundingClientRect()
-    const x = (e.clientX - r.left) / r.width - 0.5
-    const y = (e.clientY - r.top) / r.height - 0.5
+    const x = (e.clientX - r.left) / r.width - CENTRE
+    const y = (e.clientY - r.top) / r.height - CENTRE
     card.style.transform = `perspective(1000px) rotateY(${x * TILT_DEG}deg) rotateX(${-y * TILT_DEG}deg) translateZ(0)`
   })
   card.addEventListener('pointerleave', () => {

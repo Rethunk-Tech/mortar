@@ -4,6 +4,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const OUT = '../site'
+const MAX_LISTED = 40
 // Served beside the site rather than built by it: the package repositories and the search index (built at publish).
 const ELSEWHERE = /^\/(packages|pagefind)\//
 
@@ -40,7 +41,7 @@ const unused = pictures.filter((f) => !all.includes(`/img/${f}`))
 console.log(
   `site check: ${pages.length} pages, ${broken.length} broken links, ${unused.length} unused pictures`,
 )
-for (const b of broken.slice(0, 40)) {
+for (const b of broken.slice(0, MAX_LISTED)) {
   console.error(`broken: ${b}`)
 }
 for (const u of unused) {

@@ -19,6 +19,8 @@ interface Props {
   next: Section | undefined
 }
 
+const MIN_FIRST_LINE = 40
+const DESCRIPTION_MAX = 155
 const { s, prev, next } = Astro.props
 const title = s.title.replace(/<[^>]+>/g, '')
 const all = guideSections()
@@ -32,7 +34,7 @@ const firstLine =
 
 <Base
   title={`${title}: Mortar user guide`}
-  description={firstLine.length > 40 ? firstLine.slice(0, 155) : `${title} in Mortar, the free mod manager for Linux, Windows and Steam Deck.`}
+  description={firstLine.length > MIN_FIRST_LINE ? firstLine.slice(0, DESCRIPTION_MAX) : `${title} in Mortar, the free mod manager for Linux, Windows and Steam Deck.`}
   current="guide"
   crumbs={[{ name: 'Guide', href: '/guide/' }, { name: title, href: `/guide/${s.slug}/` }]}
 >
