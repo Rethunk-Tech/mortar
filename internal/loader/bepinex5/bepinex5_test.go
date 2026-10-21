@@ -288,6 +288,8 @@ func TestRoute(t *testing.T) {
 		"core/Lib.dll":                    "BepInEx/core/Ns-Mod/Lib.dll",
 		"manifest.json":                   "BepInEx/plugins/Ns-Mod/manifest.json",
 		"README.md":                       "BepInEx/plugins/Ns-Mod/README.md",
+		"Mod.pdb":                         "BepInEx/plugins/Ns-Mod/Mod.pdb",
+		"plugins/Sub/Mod.dll.mdb":         "BepInEx/plugins/Ns-Mod/Sub/Mod.dll.mdb",
 		"../evil.dll":                     "",
 		"config/../../evil.cfg":           "",
 		`plugins\..\..\evil.dll`:          "",
