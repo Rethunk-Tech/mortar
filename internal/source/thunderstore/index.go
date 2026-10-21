@@ -487,11 +487,40 @@ func loadPackages(key, path string) ([]pkg, error) {
 	if !c.known() {
 		return nil, errors.New("the listing names a dependency it does not hold")
 	}
+	pk = dedupeIDs(pk)
 	if old, ok := memo[key]; ok {
 		old.idle.Stop()
 	}
 	memo[key] = memoEntry{path, pk, time.AfterFunc(listingIdle, func() { releaseListing(key, path) })}
 	return pk, nil
+}
+
+// dedupeIDs keeps one listing per case-folded id. Thunderstore treats names case-insensitively but lets a deprecated
+// package keep a differently-cased twin of a live one, so every lookup by id would otherwise land on whichever came
+// last. The live listing wins, then the more recently updated.
+func dedupeIDs(pk []pkg) []pkg {
+	at := make(map[string]int, len(pk))
+	drop := false
+	for i, p := range pk {
+		id := packageID(p.Owner, p.Name)
+		j, seen := at[id]
+		if !seen {
+			at[id] = i
+			continue
+		}
+		drop = true
+		o := pk[j]
+		if o.Hidden != p.Hidden && p.Hidden || o.Hidden == p.Hidden && o.Updated >= p.Updated {
+			pk[i].Versions = nil
+		} else {
+			pk[j].Versions = nil
+			at[id] = i
+		}
+	}
+	if !drop {
+		return pk
+	}
+	return slices.DeleteFunc(pk, func(p pkg) bool { return p.Versions == nil })
 }
 
 // releaseListing drops the loaded listing of key when it is still the one read from path.

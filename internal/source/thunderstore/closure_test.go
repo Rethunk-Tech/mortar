@@ -142,3 +142,24 @@ func TestSearchLeavesOutModManagers(t *testing.T) {
 		}
 	}
 }
+
+// Thunderstore lets a deprecated package keep a differently-cased twin of a live one (recorded from lethal-company:
+// MelanieMelicious_2_sToRy_ShIp... 2.2.14 beside a deprecated ..._2_Story_Ship... 0.2.3).
+func TestClosureCaseTwinKeepsTheLivePackage(t *testing.T) {
+	for _, liveFirst := range []bool{true, false} {
+		f := newFake(t)
+		live := custom("Mel", "Two_sToRy_Ship", v("2.2.14"), v("2.2.13"))
+		twin := custom("Mel", "Two_Story_Ship", v("0.2.3"))
+		twin["is_deprecated"] = true
+		if liveFirst {
+			f.chunk0, f.chunk1 = append(f.chunk0, live), append(f.chunk1, twin)
+		} else {
+			f.chunk0, f.chunk1 = append(f.chunk0, twin), append(f.chunk1, live)
+		}
+		d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+		got, err := d.Closure(t.Context(), "lethal-company", []Ref{{"Mel", "Two_sToRy_Ship", "2.2.14"}}, "1.2.3", false)
+		if err != nil || len(got) != 1 || got[0].Version != "2.2.14" {
+			t.Fatalf("liveFirst=%v: %v %v", liveFirst, got, err)
+		}
+	}
+}
