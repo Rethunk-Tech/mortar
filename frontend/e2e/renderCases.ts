@@ -2,7 +2,8 @@ import type { Locator, Page } from '@playwright/test'
 import { openGameSelect, openProfile, openSettings } from './app.ts'
 import { largeDownloadCases } from './largeDownloadCase.ts'
 import { pausedDownloadCases } from './pausedDownloadCase.ts'
-import { type Case, VIEWPORT } from './render-budget.ts'
+import type { Case } from './render-budget.ts'
+import { VIEWPORT } from './renderViewport.ts'
 
 /** What the render budget's own cases already define, which the cases of the newer screens reuse. */
 export interface Helpers {

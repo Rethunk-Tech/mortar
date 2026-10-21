@@ -13,6 +13,7 @@ import { newCases } from './renderCases.ts'
 import { unevenSpacing } from './renderGaps.ts'
 import { HOOK } from './renderHook.ts'
 import { Meter, type Sample } from './renderMeter.ts'
+import { VIEWPORT } from './renderViewport.ts'
 import { sandboxPort, selftest } from './sandbox.ts'
 
 // Render budget: walks every screen and the common interactions of a copied (or seeded) profile in headless Chromium and
@@ -34,7 +35,7 @@ import { sandboxPort, selftest } from './sandbox.ts'
 // over its budget or fails.
 
 const BASE = '/var/tmp'
-export const VIEWPORT = { width: 1400, height: 840 }
+
 const SETTLE_MS = Number(process.env.MORTAR_RENDER_SETTLE_MS ?? '3000')
 const IDLE_MS = Number(process.env.MORTAR_RENDER_IDLE_MS ?? '10000')
 const IDLE_SCALE_MS = 10_000

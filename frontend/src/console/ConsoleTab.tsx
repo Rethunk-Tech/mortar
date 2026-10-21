@@ -114,6 +114,8 @@ function SearchBox() {
   )
 }
 
+// Between the cause's mod and what it did.
+const CAUSE_SEPARATOR = ' · '
 const NO_HISTORY: string[] = []
 
 function CauseBanner({ game, profile, run }: { game: string; profile: string; run: string }) {
@@ -128,7 +130,9 @@ function CauseBanner({ game, profile, run }: { game: string; profile: string; ru
   }, [game, profile, run])
   return cause?.modName ? (
     <Alert variant="compact" severity="error" sx={{ mx: space.gutter, mb: space.gap }}>
-      <strong>{t`Caused by ${cause.modName}`}</strong> {'·'} {cause.detail}
+      <strong>{t`Caused by ${cause.modName}`}</strong>
+      {CAUSE_SEPARATOR}
+      {cause.detail}
     </Alert>
   ) : null
 }
