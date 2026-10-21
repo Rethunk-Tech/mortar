@@ -11,7 +11,7 @@ import { DestinationGrid } from './DestinationGrid.tsx'
 import { DestinationPanel } from './DestinationPanel.tsx'
 import { type ShownInfo, sharedMods } from './logic.ts'
 import { shareDestinations } from './methods.ts'
-import { CancelFooter, MessageFooter } from './ShareFooter.tsx'
+import { MessageFooter } from './ShareFooter.tsx'
 import { useShareBuild } from './useShareBuild.ts'
 
 function shareMessage(info: ShownInfo, gameName: string): string {
@@ -116,11 +116,7 @@ export function ShareDialog() {
               <DestinationGrid entries={entries} lastUsed={lastUsed} onChoose={choose} />
             )}
           </Box>
-          {destination === 'mortar' ? (
-            <MessageFooter info={info} message={message} />
-          ) : (
-            destination === null && <CancelFooter onCancel={close} />
-          )}
+          {destination === 'mortar' ? <MessageFooter info={info} message={message} /> : null}
         </Box>
       ) : null}
     </Dialog>

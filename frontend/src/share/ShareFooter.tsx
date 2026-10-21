@@ -32,15 +32,3 @@ export function MessageFooter({ info, message }: { info: ShownInfo; message: str
     </Box>
   )
 }
-
-export function CancelFooter({ onCancel }: { onCancel: () => void }) {
-  const { t } = useLingui()
-  return (
-    <Box sx={footer}>
-      <Box sx={{ flex: 1 }} />
-      <Button color="inherit" onClick={onCancel}>
-        {t`Cancel`}
-      </Button>
-    </Box>
-  )
-}
