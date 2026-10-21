@@ -1,14 +1,10 @@
 package contentpatcher
 
-import (
-	"sync"
-	"time"
-)
+import "sync"
 
-// packIdleRelease is how long the parsed packs stay in memory after the last check. A check reads every pack, then
-// nothing reads them until the next one, which can be hours away; on a large profile they hold around 100 MB, while
-// reading them back from the disk caches costs the next check a fraction of a second.
-const packIdleRelease = 2 * time.Minute
+// A check reads every pack, then nothing reads them until the next one, which can be hours away; on a large profile
+// they hold around 100 MB, while reading them back from the disk caches costs the next check a fraction of a second.
+// So the packs leave memory as soon as the last check holding them ends.
 
 var packUse struct {
 	sync.Mutex
@@ -16,8 +12,7 @@ var packUse struct {
 	gen    int
 }
 
-// holdPacks marks a check that reads packs; the func it returns ends it and, once no check is running, schedules the
-// packs' release.
+// holdPacks marks a check that reads packs; the func it returns ends it and, once no check is running, releases them.
 func holdPacks() func() {
 	packUse.Lock()
 	packUse.active++
@@ -25,11 +20,11 @@ func holdPacks() func() {
 	packUse.Unlock()
 	return func() {
 		packUse.Lock()
-		defer packUse.Unlock()
 		packUse.active--
-		if packUse.active == 0 {
-			gen := packUse.gen
-			time.AfterFunc(packIdleRelease, func() { releasePacks(gen) })
+		last, gen := packUse.active == 0, packUse.gen
+		packUse.Unlock()
+		if last {
+			releasePacks(gen)
 		}
 	}
 }

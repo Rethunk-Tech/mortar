@@ -40,4 +40,25 @@ func TestIdlePacksAreReleasedAndReadBackFromDisk(t *testing.T) {
 	release()
 }
 
+// A check that saved its disk cache leaves neither the parsed packs nor their encoded copies in memory once it ends.
+func TestPacksLeaveMemoryWhenTheLastCheckEnds(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+	im, _, _ := diskCachePack(t)
+	end := holdPacks()
+	readContentPack(im)
+	flushPackDiskCache([]framework.Mod{im})
+	end()
+	if _, held := packCache.Load(cleanFolder(im)); held {
+		t.Fatal("the parsed packs outlived the check")
+	}
+	packDiskState.Lock()
+	defer packDiskState.Unlock()
+	if packDiskState.entries != nil {
+		t.Fatal("the encoded packs outlived the check")
+	}
+}
+
 func cleanFolder(im framework.Mod) string { return filepath.Clean(im.Folder) }

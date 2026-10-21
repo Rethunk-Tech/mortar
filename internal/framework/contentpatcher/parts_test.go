@@ -47,6 +47,9 @@ func analyzeMods(mods []framework.Mod) framework.Findings {
 // and that the first check reused at least one part kept before the change.
 func incrementalMatchesFull(t *testing.T, mods []framework.Mod, wantConflicts int) {
 	t.Helper()
+	// Holding the packs keeps the parts in memory across the check, where the count below reads them.
+	loadParts()
+	end := holdPacks()
 	parts.Lock()
 	before := map[string]bool{}
 	for key := range parts.entries {
@@ -62,6 +65,7 @@ func incrementalMatchesFull(t *testing.T, mods []framework.Mod, wantConflicts in
 		}
 	}
 	parts.Unlock()
+	end()
 	if reused == 0 {
 		t.Fatal("the check after the change reused no part")
 	}
