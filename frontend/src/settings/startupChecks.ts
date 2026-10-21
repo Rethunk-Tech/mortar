@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { useEffect } from 'react'
-import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import {
   Get,
   SetLastProfile,
@@ -10,6 +9,7 @@ import { loadGameStatus } from '../games/status.ts'
 import { useLoader } from '../loader/store.ts'
 import { loadUpdates } from '../mods/updates.ts'
 import { settledLastProfile } from '../profiles/lastProfile.ts'
+import { listProfiles } from '../profiles/listProfiles.ts'
 import { reportBug } from '../shell/reportBug.ts'
 import { useToasts } from '../toasts/store.ts'
 import { lastRunCrashToast } from './crashToast.ts'
@@ -48,7 +48,7 @@ export function useStartupChecks() {
             .filter(([game, profile]) => game && profile)
             .map(async ([game, profile]) => {
               // The remembered profile may have been deleted since, which the update check would reject.
-              const id = settledLastProfile((await List(game)) ?? [], profile)
+              const id = settledLastProfile((await listProfiles(game)) ?? [], profile)
               if (id !== profile) {
                 await SetLastProfile(game, id)
               }
@@ -65,7 +65,7 @@ export function useStartupChecks() {
           g.available &&
           g.installed &&
           shouldRunStartupCheck(s.games?.[g.id]?.tellWhenLoaderOut) &&
-          ((await List(g.id)) ?? []).length > 0
+          ((await listProfiles(g.id)) ?? []).length > 0
         ) {
           await useLoader.getState().check(g.id)
           maybeToastLoader(g.id)

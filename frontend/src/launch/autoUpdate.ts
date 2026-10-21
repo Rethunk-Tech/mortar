@@ -5,7 +5,6 @@ import { Updates } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
   History,
-  List,
   Revert,
   RollBack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
@@ -21,6 +20,7 @@ import { i18n } from '../i18n/index.ts'
 import { installableUpdate, visibleUpdates } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { updateWant, withOptionalLoaded } from '../mods/updateReview/wants.ts'
+import { listProfiles } from '../profiles/listProfiles.ts'
 import { foldedOverrides, resolveOverride } from '../profiles/overrideValue.ts'
 import { useProfiles } from '../profiles/store.ts'
 import type { Want } from '../queue/actions.ts'
@@ -239,7 +239,7 @@ async function updateBeforePlay(
 }
 
 async function currentUpdateKeys(point: AutoUpdateRestorePoint): Promise<string[]> {
-  const profiles = await List(point.game)
+  const profiles = await listProfiles(point.game)
   const profile = profiles?.find((candidate) => candidate.id === point.profileId)
   if (!profile) {
     return []

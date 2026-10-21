@@ -10,8 +10,8 @@ import {
   ServerSettings as ReadForm,
   SetServerSetting,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
-import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { listProfiles } from './listProfiles.ts'
 import { serverFieldChanged, serverFieldError } from './serverForm.ts'
 
 function ServerField({
@@ -76,7 +76,7 @@ export function ServerSettings({ gameId, profileId }: { gameId: string; profileI
     if (!clientGame) {
       return
     }
-    List(clientGame)
+    listProfiles(clientGame)
       .then((all) =>
         setClients((all ?? []).filter((p) => !p.error).map((p) => ({ id: p.id, name: p.name }))),
       )

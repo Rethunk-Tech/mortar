@@ -10,7 +10,6 @@ import {
   Create,
   Delete,
   Duplicate,
-  List,
   ListDamaged,
   ListTrash,
   OpenFolder,
@@ -33,6 +32,7 @@ import { keepFields, sameValue } from '../shell/sameValue.ts'
 import { reportError } from '../toasts/report.ts'
 import { setLatestChange, useToasts } from '../toasts/store.ts'
 import { settledLastProfile } from './lastProfile.ts'
+import { listProfiles } from './listProfiles.ts'
 
 const fail = reportError
 
@@ -69,7 +69,7 @@ async function duplicateProfile(
   }
   try {
     const p = await Duplicate(game.id, id)
-    const listed = splitListed((await List(game.id)) ?? [p])
+    const listed = splitListed((await listProfiles(game.id)) ?? [p])
     if (get().game?.id !== game.id) {
       return
     }
@@ -99,7 +99,7 @@ async function refreshList(
 ) {
   const { game } = get()
   if (game) {
-    const listed = splitListed((await List(game.id)) ?? [])
+    const listed = splitListed((await listProfiles(game.id)) ?? [])
     // A reply for the game left meanwhile must not land in the next game's list.
     if (get().game?.id === game.id) {
       // Every save is followed by this reread; profiles it did not change keep their objects, so the screens showing
@@ -255,7 +255,7 @@ async function restoreProfile(
     return
   }
   await Restore(game.id, id)
-  const listed = splitListed((await List(game.id)) ?? [])
+  const listed = splitListed((await listProfiles(game.id)) ?? [])
   if (get().game?.id !== game.id) {
     return
   }
@@ -267,7 +267,7 @@ async function restoreProfile(
 async function read(gameId: string, current: string) {
   const [{ games }, list, damagedList] = await Promise.all([
     loadGameStatus(),
-    List(gameId),
+    listProfiles(gameId),
     ListDamaged(gameId),
   ])
   const { profiles } = splitListed(list)

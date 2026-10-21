@@ -2,16 +2,14 @@ import { useLingui } from '@lingui/react/macro'
 import { useCallback, useEffect, useState } from 'react'
 import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import {
-  List,
-  ProfileCounts,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { ProfileCounts } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { Get } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { setupNeeded } from '../firstrun/needed.ts'
 import { useRefreshOnFocus } from '../firstrun/useRefreshOnFocus.ts'
 import { useLoader } from '../loader/store.ts'
 import { isGameId } from '../nav/store.ts'
+import { listProfiles } from '../profiles/listProfiles.ts'
 import { useSettings } from '../settings/store.ts'
 import { sameValue } from '../shell/sameValue.ts'
 import { type InlineError, inlineError, reportError } from '../toasts/report.ts'
@@ -53,7 +51,7 @@ function useGameTiles() {
             .filter((g) => g.available)
             .map(async (g): Promise<[string, GameState]> => {
               // Most of the catalog has no profiles: one count for every game, and a listing only where there are some.
-              const profiles = (counts?.[g.id] ?? 0) > 0 ? ((await List(g.id)) ?? []) : []
+              const profiles = (counts?.[g.id] ?? 0) > 0 ? ((await listProfiles(g.id)) ?? []) : []
               const played = settings.lastPlayed?.[g.id]
               const still = Boolean(
                 played?.profile && profiles.some((p) => p.id === played.profile),

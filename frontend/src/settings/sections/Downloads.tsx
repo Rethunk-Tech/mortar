@@ -10,7 +10,6 @@ import {
   LinkSources,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
 import type { Profile } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { List as ListProfiles } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import {
   SetByKey,
   SetNexusPreferredDownloadServer,
@@ -19,6 +18,7 @@ import {
 import { ExtensionContact } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { When } from '../../i18n/When.tsx'
 import { openPage } from '../../mods/menu.ts'
+import { listProfiles } from '../../profiles/listProfiles.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { sameValue } from '../../shell/sameValue.ts'
 import { reportUnexpected, toastError } from '../../toasts/report.ts'
@@ -50,7 +50,7 @@ function NxmDefaultProfile({ game, gameName }: { game: string; gameName: string 
   const value = useSettings((s) => s.games?.[game]?.nxmDefaultProfile ?? '')
   useEffect(() => {
     const keep = (next: Named[]) => setProfiles((prev) => (sameValue(prev, next) ? prev : next))
-    ListProfiles(game)
+    listProfiles(game)
       .then((ps) => keep(namesOf(ps ?? [])))
       .catch(() => keep([]))
   }, [game])

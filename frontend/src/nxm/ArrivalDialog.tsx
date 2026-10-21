@@ -14,10 +14,10 @@ import { UserRound } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import type { Arrival } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { formatKb } from '../i18n/bytes.ts'
 import { useNexusDetails } from '../mods/nexusDetails.ts'
+import { listProfiles } from '../profiles/listProfiles.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useSettings } from '../settings/store.ts'
@@ -68,7 +68,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
   const [error, setError] = useState<InlineError | null>(null)
   const [applyAll, setApplyAll] = useState(false)
   const load = useCallback(() => {
-    List(game)
+    listProfiles(game)
       .then((list) => setProfiles(list ?? []))
       .catch((e: unknown) => {
         setProfiles([])
