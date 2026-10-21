@@ -1,6 +1,7 @@
 package dotnet
 
 import (
+	"cmp"
 	"fmt"
 	"slices"
 	"strings"
@@ -20,9 +21,10 @@ const (
 	PatchHook = "hook"
 )
 
-// Patch is one Harmony patch an assembly declares with attributes: the method it targets as "Namespace.Type::Method"
-// and its kind.
-type Patch struct{ Target, Kind string }
+// Patch is one Harmony patch an assembly declares with attributes: the method it targets as "Namespace.Type::Method",
+// its kind, and the patch method itself as a stack frame names it ("Namespace.Outer+Inner::Method"; empty for a HookGen
+// hook, whose handler is usually a lambda).
+type Patch struct{ Target, Kind, Method string }
 
 // patchInfo is what [HarmonyPatch] attributes have said so far about a patch's target.
 type patchInfo struct{ typ, method, methodType string }
@@ -138,7 +140,7 @@ func Patches(path string) (out []Patch, err error) {
 			if kind == PatchPrefix && returnsBool(m.blob(m.cell(tMethodDef, md, 4))) {
 				kind = PatchSkip
 			}
-			if p := (Patch{Target: target, Kind: kind}); !seen[p] {
+			if p := (Patch{Target: target, Kind: kind, Method: m.typeDefName(t) + "::" + m.str(m.cell(tMethodDef, md, 3))}); !seen[p] {
 				seen[p] = true
 				out = append(out, p)
 			}
@@ -165,8 +167,34 @@ func Patches(path string) (out []Patch, err error) {
 			out = append(out, p)
 		}
 	}
-	slices.SortFunc(out, func(a, b Patch) int { return strings.Compare(a.Target+a.Kind, b.Target+b.Kind) })
+	slices.SortFunc(out, func(a, b Patch) int {
+		return cmp.Or(strings.Compare(a.Target+a.Kind, b.Target+b.Kind), strings.Compare(a.Method, b.Method))
+	})
 	return out, nil
+}
+
+// typeDefName names a type the module defines as a stack frame does: "Namespace.Outer+Inner". Nesting deeper than a
+// crafted cycle could reach stops.
+func (m *module) typeDefName(t int) string {
+	name := m.str(m.cell(tTypeDef, t, 1))
+	for range 32 {
+		outer := 0
+		for row := 1; row <= m.rows[tNested]; row++ {
+			if int(m.cell(tNested, row, 0)) == t {
+				outer = int(m.cell(tNested, row, 1))
+				break
+			}
+		}
+		if outer == 0 || outer == t {
+			break
+		}
+		t = outer
+		name = m.str(m.cell(tTypeDef, t, 1)) + "+" + name
+	}
+	if ns := m.str(m.cell(tTypeDef, t, 2)); ns != "" {
+		return ns + "." + name
+	}
+	return name
 }
 
 // returnsBool reads a method signature's return type.

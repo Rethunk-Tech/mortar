@@ -8,15 +8,20 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
-// FuzzAssembly feeds plugin DLLs, as a downloaded mod ships them, through both metadata readers: the BepInEx
-// plugin scan every install runs and the member-write scan.
+// FuzzAssembly feeds plugin DLLs, as a downloaded mod ships them, through each metadata reader: the BepInEx plugin
+// scan every install runs, the member-write and Harmony patch scans, and the identity a ran error's stack is matched by.
 func FuzzAssembly(f *testing.F) {
 	dll, err := fsx.ReadFile(filepath.Join("testdata", "mod.dll"))
 	if err != nil {
 		f.Fatal(err)
 	}
+	embedded, err := fsx.ReadFile(filepath.Join("testdata", "embedded.dll"))
+	if err != nil {
+		f.Fatal(err)
+	}
 	f.Add(dll)
 	f.Add(dll[:len(dll)/2])
+	f.Add(embedded)
 	f.Add([]byte("MZ"))
 	f.Fuzz(func(t *testing.T, data []byte) {
 		path := filepath.Join(t.TempDir(), "mod.dll")
@@ -25,6 +30,8 @@ func FuzzAssembly(f *testing.F) {
 		}
 		_, _ = Scan(path)
 		_, _ = Writes(path, "StardewValley", "Netcode")
+		_, _ = Patches(path)
+		_, _ = Identity(path)
 	})
 }
 

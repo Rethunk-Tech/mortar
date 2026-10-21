@@ -37,6 +37,7 @@ const (
 	tAssemblyRef = 0x23
 	tFile        = 0x26
 	tExported    = 0x27
+	tNested      = 0x29
 	tGenParam    = 0x2A
 	tMethodSpec  = 0x2B
 	tGPConstr    = 0x2C
@@ -88,51 +89,51 @@ const (
 )
 
 var schema = [tableCount][]int{
-	0x00: {u16, str, guid, guid, guid},
-	0x01: {cod + cResolutionScope, str, str},
-	0x02: {u32, str, str, cod + cTypeDefOrRef, tbl + tField, tbl + tMethodDef},
-	0x03: {tbl + tField},
-	0x04: {u16, str, blob},
-	0x05: {tbl + tMethodDef},
-	0x06: {u32, u16, u16, str, blob, tbl + tParam},
-	0x07: {tbl + tParam},
-	0x08: {u16, u16, str},
-	0x09: {tbl + tTypeDef, cod + cTypeDefOrRef},
-	0x0A: {cod + cMemberRefParent, str, blob},
-	0x0B: {u16, cod + cHasConstant, blob},
-	0x0C: {cod + cHasCustomAttribute, cod + cCustomAttributeType, blob},
-	0x0D: {cod + cHasFieldMarshal, blob},
-	0x0E: {u16, cod + cHasDeclSecurity, blob},
-	0x0F: {u16, u32, tbl + tTypeDef},
-	0x10: {u32, tbl + tField},
-	0x11: {blob},
-	0x12: {tbl + tTypeDef, tbl + tEvent},
-	0x13: {tbl + tEvent},
-	0x14: {u16, str, cod + cTypeDefOrRef},
-	0x15: {tbl + tTypeDef, tbl + tProperty},
-	0x16: {tbl + tProperty},
-	0x17: {u16, str, blob},
-	0x18: {u16, tbl + tMethodDef, cod + cHasSemantics},
-	0x19: {tbl + tTypeDef, cod + cMethodDefOrRef, cod + cMethodDefOrRef},
-	0x1A: {str},
-	0x1B: {blob},
-	0x1C: {u16, cod + cMemberForwarded, str, tbl + tModuleRef},
-	0x1D: {u32, tbl + tField},
-	0x1E: {u32, u32},
-	0x1F: {u32},
-	0x20: {u32, u16, u16, u16, u16, u32, blob, str, str},
-	0x21: {u32},
-	0x22: {u32, u32, u32},
-	0x23: {u16, u16, u16, u16, u32, blob, str, str, blob},
-	0x24: {u32, tbl + tAssemblyRef},
-	0x25: {u32, u32, u32, tbl + tAssemblyRef},
-	0x26: {u32, str, blob},
-	0x27: {u32, u32, str, str, cod + cImplementation},
-	0x28: {u32, u32, str, cod + cImplementation},
-	0x29: {tbl + tTypeDef, tbl + tTypeDef},
-	0x2A: {u16, u16, cod + cTypeOrMethodDef, str},
-	0x2B: {cod + cMethodDefOrRef, blob},
-	0x2C: {tbl + tGenParam, cod + cTypeDefOrRef},
+	0x00:    {u16, str, guid, guid, guid},
+	0x01:    {cod + cResolutionScope, str, str},
+	0x02:    {u32, str, str, cod + cTypeDefOrRef, tbl + tField, tbl + tMethodDef},
+	0x03:    {tbl + tField},
+	0x04:    {u16, str, blob},
+	0x05:    {tbl + tMethodDef},
+	0x06:    {u32, u16, u16, str, blob, tbl + tParam},
+	0x07:    {tbl + tParam},
+	0x08:    {u16, u16, str},
+	0x09:    {tbl + tTypeDef, cod + cTypeDefOrRef},
+	0x0A:    {cod + cMemberRefParent, str, blob},
+	0x0B:    {u16, cod + cHasConstant, blob},
+	0x0C:    {cod + cHasCustomAttribute, cod + cCustomAttributeType, blob},
+	0x0D:    {cod + cHasFieldMarshal, blob},
+	0x0E:    {u16, cod + cHasDeclSecurity, blob},
+	0x0F:    {u16, u32, tbl + tTypeDef},
+	0x10:    {u32, tbl + tField},
+	0x11:    {blob},
+	0x12:    {tbl + tTypeDef, tbl + tEvent},
+	0x13:    {tbl + tEvent},
+	0x14:    {u16, str, cod + cTypeDefOrRef},
+	0x15:    {tbl + tTypeDef, tbl + tProperty},
+	0x16:    {tbl + tProperty},
+	0x17:    {u16, str, blob},
+	0x18:    {u16, tbl + tMethodDef, cod + cHasSemantics},
+	0x19:    {tbl + tTypeDef, cod + cMethodDefOrRef, cod + cMethodDefOrRef},
+	0x1A:    {str},
+	0x1B:    {blob},
+	0x1C:    {u16, cod + cMemberForwarded, str, tbl + tModuleRef},
+	0x1D:    {u32, tbl + tField},
+	0x1E:    {u32, u32},
+	0x1F:    {u32},
+	0x20:    {u32, u16, u16, u16, u16, u32, blob, str, str},
+	0x21:    {u32},
+	0x22:    {u32, u32, u32},
+	0x23:    {u16, u16, u16, u16, u32, blob, str, str, blob},
+	0x24:    {u32, tbl + tAssemblyRef},
+	0x25:    {u32, u32, u32, tbl + tAssemblyRef},
+	0x26:    {u32, str, blob},
+	0x27:    {u32, u32, str, str, cod + cImplementation},
+	0x28:    {u32, u32, str, cod + cImplementation},
+	tNested: {tbl + tTypeDef, tbl + tTypeDef},
+	0x2A:    {u16, u16, cod + cTypeOrMethodDef, str},
+	0x2B:    {cod + cMethodDefOrRef, blob},
+	0x2C:    {tbl + tGenParam, cod + cTypeDefOrRef},
 }
 
 type module struct {
@@ -141,6 +142,8 @@ type module struct {
 	sections []*pe.Section
 	strings  []byte
 	blobs    []byte
+	guids    []byte
+	debug    []byte
 	rows     [tableCount]int
 	start    [tableCount]int
 	rowSize  [tableCount]int
@@ -205,6 +208,11 @@ func open(data []byte) (*module, error) {
 		return nil, errors.New("not a .NET assembly")
 	}
 	m := &module{img: data, sections: f.Sections}
+	if len(dirs) > pe.IMAGE_DIRECTORY_ENTRY_DEBUG {
+		if d := dirs[pe.IMAGE_DIRECTORY_ENTRY_DEBUG]; d.VirtualAddress != 0 {
+			m.debug = m.at(int(d.VirtualAddress))[:d.Size]
+		}
+	}
 	cli := m.at(int(dirs[pe.IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR].VirtualAddress))
 	root := m.at(int(le32(cli[8:])))
 	if le32(root) != 0x424A5342 {
@@ -227,6 +235,8 @@ func open(data []byte) (*module, error) {
 			m.strings = body
 		case "#Blob":
 			m.blobs = body
+		case "#GUID":
+			m.guids = body
 		}
 	}
 	if tables == nil {
