@@ -97,7 +97,7 @@ func TestLayoutGoldens(t *testing.T) {
 				"manifest.json": `{"name":"Mod","version_number":"1.0.0"}`, "icon.png": "i", "README.md": "r", "plugins/Mod.dll": "d", "Assets/x.bundle": "b",
 			},
 			nil, "thunderstore-rules",
-			"profile:BepInEx/plugins/Ns-Mod/Mod.dll<-plugins/Mod.dll profile:BepInEx/plugins/Ns-Mod/x.bundle<-Assets/x.bundle",
+			"profile:BepInEx/plugins/Ns-Mod/Mod.dll<-plugins/Mod.dll profile:BepInEx/plugins/Ns-Mod/README.md<-README.md profile:BepInEx/plugins/Ns-Mod/icon.png<-icon.png profile:BepInEx/plugins/Ns-Mod/manifest.json<-manifest.json profile:BepInEx/plugins/Ns-Mod/x.bundle<-Assets/x.bundle",
 		},
 		{
 			// MirageCore's shape: libraries in folders of their own, loaded from beside the plugin, each with a LICENSE.
@@ -108,7 +108,7 @@ func TestLayoutGoldens(t *testing.T) {
 			},
 			nil, "thunderstore-rules",
 			"profile:BepInEx/plugins/Ns-Core/Core.dll<-Core.dll profile:BepInEx/plugins/Ns-Core/FSharp.Core.dll<-FSharp.Core/FSharp.Core.dll " +
-				"profile:BepInEx/plugins/Ns-Core/LICENSE<-SileroVAD/LICENSE profile:BepInEx/plugins/Ns-Core/MOD.DLL<-Sub/MOD.DLL",
+				"profile:BepInEx/plugins/Ns-Core/LICENSE<-SileroVAD/LICENSE profile:BepInEx/plugins/Ns-Core/MOD.DLL<-Sub/MOD.DLL profile:BepInEx/plugins/Ns-Core/manifest.json<-manifest.json",
 		},
 		{
 			"config-only Thunderstore package", bep, "Ns-Cfg",
@@ -116,7 +116,7 @@ func TestLayoutGoldens(t *testing.T) {
 				"manifest.json": `{"name":"Cfg","version_number":"1.0.0"}`, "config/ns.cfg.cfg": "c",
 			},
 			nil, "thunderstore-rules",
-			"profile:BepInEx/config/ns.cfg.cfg<-config/ns.cfg.cfg",
+			"profile:BepInEx/config/ns.cfg.cfg<-config/ns.cfg.cfg profile:BepInEx/plugins/Ns-Cfg/manifest.json<-manifest.json",
 		},
 		{
 			// The BOM is what Evaisa-HookGenPatcher's manifest carries; Thunderstore accepts it.
@@ -126,7 +126,7 @@ func TestLayoutGoldens(t *testing.T) {
 				"patchers/BepInEx.MonoMod.HookGenPatcher/HookGen.dll": "d",
 			},
 			nil, "thunderstore-rules",
-			"profile:BepInEx/patchers/Evaisa-HookGenPatcher/BepInEx.MonoMod.HookGenPatcher/HookGen.dll<-patchers/BepInEx.MonoMod.HookGenPatcher/HookGen.dll",
+			"profile:BepInEx/patchers/Evaisa-HookGenPatcher/BepInEx.MonoMod.HookGenPatcher/HookGen.dll<-patchers/BepInEx.MonoMod.HookGenPatcher/HookGen.dll profile:BepInEx/plugins/Evaisa-HookGenPatcher/README.md<-README.md profile:BepInEx/plugins/Evaisa-HookGenPatcher/icon.png<-icon.png profile:BepInEx/plugins/Evaisa-HookGenPatcher/manifest.json<-manifest.json",
 		},
 		{
 			"config and patchers Thunderstore package", bep, "Ns-Gen",
@@ -136,7 +136,7 @@ func TestLayoutGoldens(t *testing.T) {
 			},
 			nil, "thunderstore-rules",
 			"profile:BepInEx/config/Gen.cfg<-config/Gen.cfg profile:BepInEx/core/Ns-Gen/Core.dll<-BepInEx/core/Core.dll " +
-				"profile:BepInEx/patchers/Ns-Gen/Gen/Gen.dll<-patchers/Gen/Gen.dll profile:BepInEx/plugins/Ns-Gen/Loose.dll<-Loose.dll",
+				"profile:BepInEx/patchers/Ns-Gen/Gen/Gen.dll<-patchers/Gen/Gen.dll profile:BepInEx/plugins/Ns-Gen/Loose.dll<-Loose.dll profile:BepInEx/plugins/Ns-Gen/icon.png<-icon.png profile:BepInEx/plugins/Ns-Gen/manifest.json<-manifest.json",
 		},
 		{
 			"BepInEx plugin from another site, without a manifest", bep, "nexus-17-1",

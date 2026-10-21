@@ -332,12 +332,13 @@ func VanillaArgs() []string {
 }
 
 // Route is where a file of Thunderstore package pkg (Namespace-Name) goes in the profile root, from its path relPath
-// inside the package zip, or "" when the file is package metadata or unsafe. It follows r2modman's BepInEx rules
+// inside the package zip, or "" when the path is unsafe. It follows r2modman's BepInEx rules
 // (r2modmanPlus src/installers/InstallRulePluginInstaller.ts, buildInstallForRuleSubtype), which mod authors build
 // and test against: the first folder on the path named plugins, patchers, monomod, core or config, at any depth, is
 // that rule's folder and keeps the structure below it (plugins, patchers, monomod and core in a folder named for the
 // package, config flat). A file under no such folder is placed by its name alone, a .mm.dll in monomod and anything
-// else in plugins, so the folders above it are flattened away: packages such as MirageCore ship FSharp.Core/FSharp.Core.dll
+// else in plugins (the package's own manifest.json and icon.png too, which in-game mod menus read), so the folders
+// above it are flattened away: packages such as MirageCore ship FSharp.Core/FSharp.Core.dll
 // and load it from beside their plugin. The game's routes (components.LoaderRoute) add folders of the same kind, each
 // matched by its last segment at any depth, and extensions that send a file there wherever it sits.
 func Route(relPath, pkg string, routes []components.LoaderRoute) string {
@@ -362,12 +363,6 @@ func Route(relPath, pkg string, routes []components.LoaderRoute) string {
 		}
 	}
 	name := segs[len(segs)-1]
-	if len(segs) == 1 {
-		switch strings.ToLower(name) {
-		case "manifest.json", "icon.png", "readme.md", "changelog.md":
-			return ""
-		}
-	}
 	if r, ok := components.RouteByExtension(routes, name); ok {
 		return r.Place(pkg, name, p)
 	}
