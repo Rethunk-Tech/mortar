@@ -70,7 +70,8 @@ jobs:
 
       - name: Offline gate
         if: ${{ !cancelled() && steps.changes.outputs.code == 'true' }}
-        run: bun run gate
+        # The step times show where a runner's few cores go; a fast workstation hides it.
+        run: bun run gate --profile
 
       # The site deploys from main by hand, so a change to its pages is checked against the live release here.
       - name: Site download links

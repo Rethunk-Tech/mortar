@@ -17,6 +17,67 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # A tag normally points at a commit CI gates on main, often still running because the tag and main are pushed
+  # together. Waiting for that run costs a runner idling; gating again cost twelve minutes of the packaging leg.
+  ci-passed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      actions: read
+    outputs:
+      ok: ${{ steps.ci.outputs.ok }}
+    steps:
+      - name: CI on this commit
+        id: ci
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          set -euo pipefail
+          ok=false
+          if [ "$REF_TYPE" = tag ]; then
+            runs="repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&event=push"
+            id=
+            for _ in $(seq 24); do
+              id="$(gh api "$runs" --jq '.workflow_runs[0].id // empty')"
+              [ -n "$id" ] && break
+              sleep 5
+            done
+            if [ -n "$id" ]; then
+              while [ "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id" --jq .status)" != completed ]; do
+                sleep 20
+              done
+              if [ "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id" --jq .conclusion)" = success ]; then
+                ok=true
+              fi
+            fi
+          fi
+          echo "CI passed on $GITHUB_SHA: $ok"
+          echo "ok=$ok" >>"$GITHUB_OUTPUT"
+
+  # Dispatch runs, and a tag whose CI run failed or was cancelled, gate here, beside packaging rather than before it.
+  gate:
+    needs: ci-passed
+    if: needs.ci-passed.outputs.ok != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Mortar
+        uses: ./.github/actions/setup-mortar
+        with:
+          apt-packages: appstream
+          lint-tools: "true"
+
+      - name: Offline gate
+        run: bun run gate --profile
+
   release:
     strategy:
       fail-fast: false
@@ -73,30 +134,6 @@ jobs:
             exit 1
           fi
 
-      # A tag normally points at a commit CI already gated on main; re-running the gate then buys nothing.
-      # Dispatch runs always gate.
-      - name: Gate needed
-        id: gate
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REF_TYPE: ${{ github.ref_type }}
-          GOARCH: ${{ matrix.goarch }}
-        run: |
-          set -euo pipefail
-          passed=0
-          if [ "$REF_TYPE" = tag ]; then
-            passed="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&event=push&status=success" --jq .total_count)"
-          fi
-          if [ "$GOARCH" != amd64 ]; then
-            echo "The gate runs on the amd64 leg only, as in ci.yml"
-            echo "run=false" >>"$GITHUB_OUTPUT"
-          elif [ "$passed" -gt 0 ]; then
-            echo "CI already passed on $GITHUB_SHA; skipping the gate"
-            echo "run=false" >>"$GITHUB_OUTPUT"
-          else
-            echo "run=true" >>"$GITHUB_OUTPUT"
-          fi
-
       # The GNOME SDK, the build and its repo need more space than the hosted runner leaves free, and deleting these
       # preinstalled toolchains takes a minute, so it runs beside the build and the Flatpak step waits for it.
       - name: Free disk space
@@ -108,7 +145,6 @@ jobs:
         uses: ./.github/actions/setup-mortar
         with:
           apt-packages: appstream rpm flatpak dbus-daemon${{ matrix.windows && ' nsis' || '' }}
-          lint-tools: ${{ steps.gate.outputs.run }}
           nfpm: "true"
 
       - name: Version agreement
@@ -123,10 +159,6 @@ jobs:
             echo "tag $REF_NAME does not match build/config.yml version $cfg_ver" >&2
             exit 1
           fi
-
-      - name: Offline gate
-        if: steps.gate.outputs.run == 'true'
-        run: bun run gate
 
       - name: Cache AppImage tools
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -221,7 +253,8 @@ jobs:
           if-no-files-found: error
 
   finalize:
-    needs: release
+    needs: [release, ci-passed, gate]
+    if: ${{ !cancelled() && needs.release.result == 'success' && (needs.ci-passed.outputs.ok == 'true' || needs.gate.result == 'success') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
