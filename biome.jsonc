@@ -332,6 +332,12 @@
       "javascript": { "globals": ["Fragment"] },
       "linter": { "rules": { "suspicious": { "noUnknownAttribute": "off" } } }
     },
+    // canon ts-biome-00033 deviation (canon.toml): the site is one language with no catalogue; the app's strings go
+    // through Lingui, where the rule stays on.
+    {
+      "includes": ["web/**"],
+      "linter": { "rules": { "style": { "noJsxLiterals": "off" } } }
+    },
     // The site's pages and data modules run at build time in Bun, reading the repo's files.
     {
       "includes": ["web/src/lib/**", "web/src/pages/**", "web/src/content.config.ts"],

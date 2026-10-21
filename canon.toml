@@ -5,3 +5,6 @@ reconciled = "canon v0.1.0-poc"
 # #6201, #6202 and #6239; docs/design.md); gomoddirectives.replace-allow-list names it. A non-local replace is the only
 # way to consume that fork until those PRs ship in a tagged v3 beta; a local replace would mean vendoring Wails.
 "go-golangci-lint-00011" = "go.mod replaces wails/v3 with the Rethunk-AI fork until upstream PRs wailsapp/wails#6200, #6201, #6202 and #6239 ship in a tagged v3 beta"
+# The Astro site (web/) is English only and has no translation catalogue (translations are "not yet", AGENTS.md), so its
+# templates' copy stays literal; the app frontend routes every string through Lingui and keeps the rule.
+"ts-biome-00033" = "web/ is a single-language site with no i18n library; the Lingui frontend keeps noJsxLiterals on"
