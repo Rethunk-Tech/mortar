@@ -2,6 +2,7 @@ package browse
 
 import (
 	"context"
+	"log/slog"
 	"slices"
 	"strings"
 	"time"
@@ -43,6 +44,7 @@ func categoriesCached(ctx context.Context, game string, s source.Source, key str
 	if !hit || !time.Now().Before(e.until) {
 		names, err := cat.Categories(ctx, key)
 		if err != nil {
+			slog.Warn("could not list categories", "game", game, "source", s.ID(), "err", err)
 			return nil
 		}
 		e.names, e.until = names, time.Now().Add(categoryTTL)
