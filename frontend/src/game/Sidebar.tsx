@@ -237,6 +237,7 @@ function Sections({ rail }: { rail: boolean }) {
     console: Boolean(loader?.console),
     startup: Boolean(loader?.startup),
     screenshots: Boolean(gameInfo?.hasScreenshots),
+    saves: Boolean(gameInfo?.hasSaves),
   }
   // A section saved from another game or loader is not there; fall back to Mods.
   const unavailable = loader !== undefined && tabUnavailable(current, caps)

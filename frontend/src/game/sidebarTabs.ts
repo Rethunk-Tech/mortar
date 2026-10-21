@@ -8,6 +8,7 @@ interface SidebarCaps {
   console: boolean
   startup: boolean
   screenshots: boolean
+  saves: boolean
 }
 
 interface SidebarCounts {
@@ -37,7 +38,7 @@ function sidebarGroups(caps: SidebarCaps, counts: SidebarCounts): SidebarGroup[]
       id: 'library',
       entries: [
         { id: 'mods', badge: count(counts.updates, 'primary') },
-        { id: 'saves', badge: null },
+        ...(caps.saves ? [{ id: 'saves' as const, badge: null }] : []),
         { id: 'config', badge: null },
         ...(caps.screenshots ? [{ id: 'screenshots' as const, badge: null }] : []),
       ],
@@ -62,7 +63,8 @@ function tabUnavailable(tab: TabId, caps: SidebarCaps): boolean {
     (tab === 'load-order' && !caps.order) ||
     (tab === 'console' && !caps.console) ||
     (tab === 'performance' && !caps.startup) ||
-    (tab === 'screenshots' && !caps.screenshots)
+    (tab === 'screenshots' && !caps.screenshots) ||
+    (tab === 'saves' && !caps.saves)
   )
 }
 

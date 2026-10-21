@@ -101,7 +101,7 @@ function GamePages({
       : []),
     { id: 'play', label: t`Play`, icon: Play },
     { id: 'mods', label: t`Mods`, icon: Package },
-    { id: 'backups', label: t`Save backups`, icon: Archive },
+    ...(info?.hasSaves ? [{ id: 'backups' as const, label: t`Save backups`, icon: Archive }] : []),
     ...(loader?.console
       ? [{ id: 'console' as const, label: t`Console`, icon: SquareTerminal }]
       : []),

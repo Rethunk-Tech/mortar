@@ -3,6 +3,7 @@ import { Box, Button, List, ListItem, Typography } from '@mui/material'
 import { List as ListIcon, Settings2, Share2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { useGameInfo } from '../games/info.ts'
 import { useNav } from '../nav/store.ts'
 import { CrashHintCard } from '../profiles/CrashHintCard.tsx'
 import { EditProfileDialog } from '../profiles/EditProfileDialog.tsx'
@@ -93,6 +94,7 @@ export function Home({
 }) {
   const { t } = useLingui()
   const openGameSettings = useNav((s) => s.openGameSettings)
+  const hasSaves = Boolean(useGameInfo(game)?.hasSaves)
   const hero = useSettings((s) => s.profileHero) || 'full'
   const renameId = useRenameRequest((s) => s.id)
   const [renaming, setRenaming] = useState(false)
@@ -144,7 +146,7 @@ export function Home({
       >
         <CrashHintCard game={game} profileId={profile.id} crashedAt={crashedAt} />
         <HomeNotes profile={profile} />
-        <SavesPanel />
+        {hasSaves ? <SavesPanel /> : null}
         <SinceLastRun game={game} profileId={profile.id} />
       </Box>
       <EditProfileDialog

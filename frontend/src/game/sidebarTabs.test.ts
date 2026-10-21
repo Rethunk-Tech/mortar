@@ -1,8 +1,8 @@
 import { expect, test } from 'bun:test'
 import { sidebarGroups, tabUnavailable } from './sidebarTabs.ts'
 
-const full = { order: true, console: true, startup: true, screenshots: true }
-const none = { order: false, console: false, startup: false, screenshots: false }
+const full = { order: true, console: true, startup: true, screenshots: true, saves: true }
+const none = { order: false, console: false, startup: false, screenshots: false, saves: false }
 
 test('the sidebar lists every group for a loader with all capabilities, in order', () => {
   const groups = sidebarGroups(full, { updates: 0, problems: 0 })
@@ -41,8 +41,13 @@ test('Mods carries the update count and Problems the problem count, each only wh
 
 test('Config is in the Library group for a loader without any capability', () => {
   const library = sidebarGroups(none, { updates: 0, problems: 0 }).find((g) => g.id === 'library')
-  expect(library?.entries.map((e) => e.id)).toEqual(['mods', 'saves', 'config'])
+  expect(library?.entries.map((e) => e.id)).toEqual(['mods', 'config'])
   expect(tabUnavailable('config', none)).toBe(false)
+})
+
+test('a game without a save folder has no Saves section', () => {
+  const library = sidebarGroups(none, { updates: 0, problems: 0 }).find((g) => g.id === 'library')
+  expect(library?.entries.map((e) => e.id)).not.toContain('saves')
 })
 
 test('a saved section the loader lacks is unavailable', () => {
@@ -50,6 +55,7 @@ test('a saved section the loader lacks is unavailable', () => {
   expect(tabUnavailable('console', none)).toBe(true)
   expect(tabUnavailable('performance', none)).toBe(true)
   expect(tabUnavailable('screenshots', none)).toBe(true)
+  expect(tabUnavailable('saves', none)).toBe(true)
   expect(tabUnavailable('mods', none)).toBe(false)
   expect(tabUnavailable('console', full)).toBe(false)
 })
