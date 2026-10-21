@@ -22,7 +22,7 @@ No. Each mod downloads from its own page on Nexus, Thunderstore, CurseForge, Mod
 
 ## Does Mortar work on the Steam Deck?
 
-Yes. Install the [AppImage](/download/#appimage) in Desktop Mode, then use a profile's Add to Steam to play it from Game Mode. The Flatpak cannot add itself to Steam.
+Yes. Install the [AppImage](/download/#deck) in Desktop Mode, then use a profile's Add to Steam to play it from Game Mode. The Flatpak cannot add itself to Steam.
 
 ## Windows says it protected my PC. Is that normal?
 

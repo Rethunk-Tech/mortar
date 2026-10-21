@@ -1,5 +1,4 @@
 ---
-import Download from '../../components/Download.astro'
 import Base from '../../layouts/Base.astro'
 import '../../styles/download.css'
 import '../../styles/page.css'
@@ -18,12 +17,9 @@ import '../../styles/page-lists.css'
     <h1>Get Mortar. <em>It's free.</em></h1>
     <p class="lede">It's open source too. <span id="version">The latest release</span> runs on Windows and Linux, x64 and ARM64, and on the Steam Deck.</p>
   </header>
-  <div class="wrap">
-    <Download />
-  </div>
   <div class="wrap sec dl">
-    <div class="head"><p class="kicker">Every way to install</p><h2>Pick your system.</h2></div>
-<div class="tabs" role="tablist" aria-label="Platform">
+<p class="forsys jsonly">For <b id="sysname">your system</b>. <button type="button" class="linkish" id="other" aria-expanded="false" aria-controls="systems">Not your system?</button></p>
+<div class="tabs" id="systems" role="tablist" aria-label="Platform">
   <button
     type="button"
     role="tab"
@@ -94,9 +90,6 @@ import '../../styles/page-lists.css'
     </li>
     <li>Mortar updates itself from then on.</li>
   </ol>
-  <p class="muted">
-    To check the download before running it, see the <a href="/code-signing/">code signing policy</a>.
-  </p>
   <h3>Scoop</h3>
   <p class="muted">
     From Mortar's own bucket, with every download pinned by its SHA-256. Scoop then handles updates.
@@ -111,135 +104,33 @@ scoop install mortar/mortar</code></pre>
   role="tabpanel"
   aria-labelledby="tab-linux"
 >
-  <p class="muted">
-    Install from the package repository and Mortar updates with the rest
-    of your system. Pick your distribution:
-  </p>
-  <div class="tabs sub" role="tablist" aria-label="Distribution">
-    <button type="button" role="tab" id="tab-deb" aria-controls="deb"><svg class="mk mk-debian" aria-hidden="true"><use href="/img/brands.svg#debian" /></svg>Ubuntu and Debian</button>
-    <button
-      type="button"
-      role="tab"
-      id="tab-fedora"
-      aria-controls="fedora"
-    ><svg class="mk mk-fedora" aria-hidden="true"><use href="/img/brands.svg#fedora" /></svg>Fedora</button>
-    <button type="button" role="tab" id="tab-arch" aria-controls="arch"><svg class="mk mk-archlinux" aria-hidden="true"><use href="/img/brands.svg#archlinux" /></svg>Arch</button>
-    <button
-      type="button"
-      role="tab"
-      id="tab-flatpak"
-      aria-controls="flatpak"
-    ><svg class="mk mk-flatpak" aria-hidden="true"><use href="/img/brands.svg#flatpak" /></svg>Flatpak</button>
-    <button
-      type="button"
-      role="tab"
-      id="tab-appimage"
-      aria-controls="appimage"
-    ><svg class="mk mk-appimage" aria-hidden="true"><use href="/img/brands.svg#appimage" /></svg>AppImage</button>
-    <button type="button" role="tab" id="tab-brew" aria-controls="brew"><svg class="mk mk-homebrew" aria-hidden="true"><use href="/img/brands.svg#homebrew" /></svg>Homebrew</button>
+  <div class="tabs modes" role="tablist" aria-label="How to install">
+    <button type="button" role="tab" id="tab-linux-store" aria-controls="linux-store">Software center</button>
+    <button type="button" role="tab" id="tab-linux-files" aria-controls="linux-files">Download a file</button>
+    <button type="button" role="tab" id="tab-linux-cli" aria-controls="linux-cli">Command line</button>
   </div>
 
-  <div
-    class="panel sub"
-    id="deb"
-    role="tabpanel"
-    aria-labelledby="tab-deb"
-  >
+  <div class="panel sub" id="linux-store" role="tabpanel" aria-labelledby="tab-linux-store">
     <p class="muted">
-      Ubuntu 24.04, Debian 13 or newer, on amd64 and arm64.
+      Any distribution with Flatpak, x86_64 or aarch64. Opening the link adds Mortar's signed Flatpak repository in
+      GNOME Software, KDE Discover or your system's own app store, which then keeps Mortar up to date. The GNOME
+      runtime comes from Flathub.
     </p>
-    <pre><code>sudo curl -fsSLo /usr/share/keyrings/mortar-archive-keyring.gpg https://mortar.rethunk.tech/packages/mortar-archive-keyring.gpg
-sudo curl -fsSLo /etc/apt/sources.list.d/mortar.list https://mortar.rethunk.tech/packages/mortar.list
-sudo apt update &amp;&amp; sudo apt install mortar</code></pre>
-    <p class="muted">
-      Or install a single
-      <a
-        data-asset="mortar_VERSION_amd64.deb"
-        href="https://github.com/Rethunk-Tech/mortar/releases/latest"
-        >.deb</a
-      >
-      without updates: <code>sudo apt install ./mortar_*_amd64.deb</code>
-    </p>
-  </div>
-
-  <div
-    class="panel sub"
-    id="fedora"
-    role="tabpanel"
-    aria-labelledby="tab-fedora"
-  >
-    <p class="muted">
-      Fedora 39 or newer, on x86_64 and aarch64. dnf asks once to import
-      the key; check its fingerprint against the one below.
-    </p>
-    <pre><code>sudo curl -fsSLo /etc/yum.repos.d/mortar.repo https://mortar.rethunk.tech/packages/mortar.repo
-sudo dnf install mortar</code></pre>
-    <p class="muted">
-      Or install a single
-      <a
-        data-asset="mortar-VERSION-1.x86_64.rpm"
-        href="https://github.com/Rethunk-Tech/mortar/releases/latest"
-        >.rpm</a
-      >
-      without updates: <code>sudo dnf install ./mortar-*.rpm</code>
-    </p>
-  </div>
-
-  <div
-    class="panel sub"
-    id="arch"
-    role="tabpanel"
-    aria-labelledby="tab-arch"
-  >
-    <p class="muted">
-      x86_64 and aarch64. These commands trust the Mortar key, add the
-      repository to <code>/etc/pacman.conf</code> and install.
-    </p>
-    <pre><code>curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | sudo pacman-key --add -
-sudo pacman-key --lsign-key D8B1C4C205C5FB3633CB8B9900B75959B637DCB5
-curl -fsSL https://mortar.rethunk.tech/packages/pacman.conf | sudo tee -a /etc/pacman.conf
-sudo pacman -Sy mortar</code></pre>
-    <p class="muted">
-      Or install a single
-      <a
-        data-asset="mortar-VERSION-1-x86_64.pkg.tar.zst"
-        href="https://github.com/Rethunk-Tech/mortar/releases/latest"
-        >package</a
-      >
-      without updates: <code>sudo pacman -U mortar-*.pkg.tar.zst</code>
-    </p>
-  </div>
-
-  <div
-    class="panel sub"
-    id="flatpak"
-    role="tabpanel"
-    aria-labelledby="tab-flatpak"
-  >
-    <p class="muted">
-      Any distribution with Flatpak, x86_64 or aarch64. It brings its own libraries, so it also runs on older
-      systems. This adds Mortar's signed Flatpak repository, so <code>flatpak update</code> keeps it
-      current; the GNOME runtime comes from Flathub.
-    </p>
-    <pre><code>flatpak install --user https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref</code></pre>
+    <div class="files">
+      <a class="file primary" href="https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref">
+        <strong>Install with Flatpak</strong><span>Opens in your software center</span>
+      </a>
+    </div>
     <p class="muted">
       The sandbox only sees the usual game folders. For a game installed elsewhere, run
-      <code>flatpak override --user --filesystem=&lt;folder&gt; tech.rethunk.Mortar</code>. A single
-      <a data-asset="mortar-linux-x86_64.flatpak" href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-x86_64.flatpak">bundle file</a>
-      is also on each release, without updates.
+      <code>flatpak override --user --filesystem=&lt;folder&gt; tech.rethunk.Mortar</code>.
     </p>
   </div>
 
-  <div
-    class="panel sub"
-    id="appimage"
-    role="tabpanel"
-    aria-labelledby="tab-appimage"
-  >
-    <h3>AppImage and portable program</h3>
+  <div class="panel sub" id="linux-files" role="tabpanel" aria-labelledby="tab-linux-files">
     <p class="muted">
-      Ubuntu 24.04, Debian 13, Fedora 39 or a newer Linux (glibc 2.38).
-      Both update themselves in place.
+      The AppImage and the portable program run on Ubuntu 24.04, Debian 13, Fedora 39 or a newer Linux (glibc 2.38)
+      and update themselves in place. A single package installs without updates.
     </p>
     <div class="files">
       <a
@@ -274,13 +165,106 @@ sudo pacman -Sy mortar</code></pre>
         <strong>Portable, ARM64</strong
         ><span>Uses the system's GTK 4 and WebKitGTK 6</span>
       </a>
+      <a class="file" data-asset="mortar_VERSION_amd64.deb" href="https://github.com/Rethunk-Tech/mortar/releases/latest">
+        <strong>.deb, amd64</strong><span>Ubuntu and Debian, no updates</span>
+      </a>
+      <a class="file" data-asset="mortar-VERSION-1.x86_64.rpm" href="https://github.com/Rethunk-Tech/mortar/releases/latest">
+        <strong>.rpm, x86_64</strong><span>Fedora, no updates</span>
+      </a>
+      <a class="file" data-asset="mortar-VERSION-1-x86_64.pkg.tar.zst" href="https://github.com/Rethunk-Tech/mortar/releases/latest">
+        <strong>Arch package, x86_64</strong><span>pacman -U, no updates</span>
+      </a>
+      <a
+        class="file"
+        data-asset="mortar-linux-x86_64.flatpak"
+        href="https://github.com/Rethunk-Tech/mortar/releases/latest/download/mortar-linux-x86_64.flatpak"
+      >
+        <strong>Flatpak bundle, x86_64</strong><span>flatpak install, no updates</span>
+      </a>
     </div>
     <pre><code>chmod +x mortar-linux-x86_64.AppImage
 ./mortar-linux-x86_64.AppImage</code></pre>
     <p class="muted">
       The first run adds Mortar to your applications menu and takes
-      <code>nxm://</code> links and <code>.mortar</code> files.
+      <code>nxm://</code> links and <code>.mortar</code> files. ARM64 packages are on the
+      <a href="https://github.com/Rethunk-Tech/mortar/releases/latest">release page</a>.
     </p>
+  </div>
+
+  <div class="panel sub" id="linux-cli" role="tabpanel" aria-labelledby="tab-linux-cli">
+  <div class="tabs sub" role="tablist" aria-label="Distribution">
+    <button type="button" role="tab" id="tab-deb" aria-controls="deb"><svg class="mk mk-debian" aria-hidden="true"><use href="/img/brands.svg#debian" /></svg>Ubuntu and Debian</button>
+    <button
+      type="button"
+      role="tab"
+      id="tab-fedora"
+      aria-controls="fedora"
+    ><svg class="mk mk-fedora" aria-hidden="true"><use href="/img/brands.svg#fedora" /></svg>Fedora</button>
+    <button type="button" role="tab" id="tab-arch" aria-controls="arch"><svg class="mk mk-archlinux" aria-hidden="true"><use href="/img/brands.svg#archlinux" /></svg>Arch</button>
+    <button
+      type="button"
+      role="tab"
+      id="tab-flatpak"
+      aria-controls="flatpak"
+    ><svg class="mk mk-flatpak" aria-hidden="true"><use href="/img/brands.svg#flatpak" /></svg>Flatpak</button>
+    <button type="button" role="tab" id="tab-brew" aria-controls="brew"><svg class="mk mk-homebrew" aria-hidden="true"><use href="/img/brands.svg#homebrew" /></svg>Homebrew</button>
+  </div>
+
+  <div
+    class="panel sub"
+    id="deb"
+    role="tabpanel"
+    aria-labelledby="tab-deb"
+  >
+    <p class="muted">
+      Ubuntu 24.04, Debian 13 or newer, on amd64 and arm64. Mortar then updates with the rest of your system.
+    </p>
+    <pre><code>sudo curl -fsSLo /usr/share/keyrings/mortar-archive-keyring.gpg https://mortar.rethunk.tech/packages/mortar-archive-keyring.gpg
+sudo curl -fsSLo /etc/apt/sources.list.d/mortar.list https://mortar.rethunk.tech/packages/mortar.list
+sudo apt update &amp;&amp; sudo apt install mortar</code></pre>
+  </div>
+
+  <div
+    class="panel sub"
+    id="fedora"
+    role="tabpanel"
+    aria-labelledby="tab-fedora"
+  >
+    <p class="muted">
+      Fedora 39 or newer, on x86_64 and aarch64. dnf asks once to import
+      the key; check its fingerprint against the one under <a href="#verify">Verify your download</a>.
+    </p>
+    <pre><code>sudo curl -fsSLo /etc/yum.repos.d/mortar.repo https://mortar.rethunk.tech/packages/mortar.repo
+sudo dnf install mortar</code></pre>
+  </div>
+
+  <div
+    class="panel sub"
+    id="arch"
+    role="tabpanel"
+    aria-labelledby="tab-arch"
+  >
+    <p class="muted">
+      x86_64 and aarch64. These commands trust the Mortar key, add the
+      repository to <code>/etc/pacman.conf</code> and install.
+    </p>
+    <pre><code>curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | sudo pacman-key --add -
+sudo pacman-key --lsign-key D8B1C4C205C5FB3633CB8B9900B75959B637DCB5
+curl -fsSL https://mortar.rethunk.tech/packages/pacman.conf | sudo tee -a /etc/pacman.conf
+sudo pacman -Sy mortar</code></pre>
+  </div>
+
+  <div
+    class="panel sub"
+    id="flatpak"
+    role="tabpanel"
+    aria-labelledby="tab-flatpak"
+  >
+    <p class="muted">
+      Any distribution with Flatpak, x86_64 or aarch64. This adds Mortar's signed Flatpak repository, so
+      <code>flatpak update</code> keeps it current.
+    </p>
+    <pre><code>flatpak install --user https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref</code></pre>
   </div>
 
   <div class="panel sub" id="brew" role="tabpanel" aria-labelledby="tab-brew">
@@ -290,13 +274,7 @@ sudo pacman -Sy mortar</code></pre>
     </p>
     <pre><code>brew install rethunk-tech/tap/mortar</code></pre>
   </div>
-
-  <p class="fingerprint">
-    Packages are signed by “Mortar packages
-    &lt;opensource@rethunk.tech&gt;”, fingerprint
-    <code>D8B1 C4C2 05C5 FB36 33CB 8B99 00B7 5959 B637 DCB5</code>.
-    <a href="/packages/">Repository details</a>
-  </p>
+  </div>
 </section>
 
 <section class="panel" id="deck" role="tabpanel" aria-labelledby="tab-deck">
@@ -373,13 +351,35 @@ sudo pacman -Sy mortar</code></pre>
     Every release carries <code>SHA256SUMS</code>, signed with the Mortar packages key, and a GitHub build
     provenance attestation for each file. With the downloaded file in the current folder:
   </p>
-  <pre><code>curl -fsSLO https://github.com/Rethunk-Tech/mortar/releases/latest/download/SHA256SUMS
+  <div data-for="windows">
+    <p class="muted">In PowerShell. <code>gpg</code> comes with <a href="https://gpg4win.org/">Gpg4win</a>, <code>gh</code> is the <a href="https://cli.github.com/">GitHub CLI</a>.</p>
+    <pre><code>$f = '<span class="vfile">mortar-amd64-installer.exe</span>'
+$base = 'https://github.com/Rethunk-Tech/mortar/releases/latest/download'
+Invoke-WebRequest "$base/SHA256SUMS" -OutFile SHA256SUMS
+Invoke-WebRequest "$base/SHA256SUMS.asc" -OutFile SHA256SUMS.asc
+Invoke-WebRequest https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc -OutFile mortar.asc
+gpg --import mortar.asc
+gpg --verify SHA256SUMS.asc SHA256SUMS
+$want = (Select-String -Path SHA256SUMS -Pattern "  $([regex]::Escape($f))$").Line.Split(' ')[0]
+if ((Get-FileHash $f).Hash -eq $want) { 'OK' } else { 'MISMATCH' }
+gh attestation verify $f --repo Rethunk-Tech/mortar</code></pre>
+  </div>
+  <div data-for="linux">
+    <p class="muted">In a terminal.</p>
+    <pre><code>f=<span class="vfile">mortar-linux-x86_64.AppImage</span>
+curl -fsSLO https://github.com/Rethunk-Tech/mortar/releases/latest/download/SHA256SUMS
 curl -fsSLO https://github.com/Rethunk-Tech/mortar/releases/latest/download/SHA256SUMS.asc
 curl -fsSL https://mortar.rethunk.tech/packages/mortar-archive-keyring.asc | gpg --import
 gpg --verify SHA256SUMS.asc SHA256SUMS
-sha256sum --check --ignore-missing SHA256SUMS
-gh attestation verify &lt;file&gt; --repo Rethunk-Tech/mortar</code></pre>
-  <p class="muted">The key's fingerprint is <code>D8B1 C4C2 05C5 FB36 33CB 8B99 00B7 5959 B637 DCB5</code>. More in the <a href="/code-signing/">code signing policy</a>.</p>
+grep "  $f\$" SHA256SUMS | sha256sum --check
+gh attestation verify "$f" --repo Rethunk-Tech/mortar</code></pre>
+  </div>
+  <p class="fingerprint">
+    One key, “Mortar packages &lt;opensource@rethunk.tech&gt;”, signs every release's <code>SHA256SUMS</code> and
+    the apt, dnf, pacman and Flatpak repositories, so every download checks against the same fingerprint:
+    <code>D8B1 C4C2 05C5 FB36 33CB 8B99 00B7 5959 B637 DCB5</code>.
+    <a href="/packages/">Repository details</a> · <a href="/code-signing/">Code signing policy</a>
+  </p>
 </section>
 
 

@@ -360,3 +360,53 @@ html.js .dl .panel[hidden] {
   color: var(--dim);
   font-size: 15px;
 }
+
+/* /download/ opens on the visitor's system; the platform tabs wait behind "Not your system?" */
+html:not(.js) .jsonly,
+.dl .tabs[hidden] {
+  display: none;
+}
+
+.forsys {
+  font-size: 18px;
+  margin: 0 0 14px;
+}
+
+.linkish {
+  font: inherit;
+  color: var(--sand);
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-left: 6px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.dl .tabs.modes {
+  display: inline-flex;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.dl .tabs.modes button {
+  border: 0;
+  border-radius: 0;
+  font-size: 15px;
+  padding: 9px 16px;
+}
+
+.dl .tabs.modes button + button {
+  border-left: 1px solid var(--line);
+}
+
+.dl .tabs.modes button[aria-selected="true"] {
+  background: var(--raised2);
+}
+
+.sec.dl {
+  padding-top: 8px;
+}
