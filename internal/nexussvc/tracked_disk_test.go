@@ -34,7 +34,8 @@ func TestTrackedForCardAnswersFromDiskAndRefreshesInBackground(t *testing.T) {
 			if slow.Load() {
 				time.Sleep(300 * time.Millisecond)
 			}
-			_, _ = w.Write([]byte(body.Load().(string)))
+			list, _ := body.Load().(string)
+			_, _ = w.Write([]byte(list))
 		}
 	}))
 	defer srv.Close()

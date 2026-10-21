@@ -61,7 +61,7 @@ func (s *Service) trackedForCard(ctx context.Context) ([]nexus.TrackedMod, error
 	if s.refreshing.CompareAndSwap(false, true) {
 		go func() {
 			defer s.refreshing.Store(false)
-			bg, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+			bg, cancel := context.WithTimeout(context.WithoutCancel(ctx), 2*time.Minute)
 			defer cancel()
 			fresh, err := s.fetchTracked(bg)
 			if err == nil && !slices.Equal(fresh, kept) && s.App != nil {

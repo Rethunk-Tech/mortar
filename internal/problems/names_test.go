@@ -36,7 +36,8 @@ func (s *slowMeta) Page(ctx context.Context, id int) (meta.Page, error) {
 }
 
 func TestDependencyNamesLookUpInParallelWithinTheBound(t *testing.T) {
-	m := &slowMeta{fakeMeta: fakeMeta{refs: map[string][]meta.Ref{}, pages: map[int]meta.Page{}}}
+	m := &slowMeta{}
+	m.refs, m.pages = map[string][]meta.Ref{}, map[int]meta.Page{}
 	var ids []string
 	for i := 1; i <= 24; i++ {
 		id := fmt.Sprintf("smapi:Mod.N%d", i)
