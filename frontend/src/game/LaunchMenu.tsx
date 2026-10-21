@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { ListItemText, Menu, MenuItem } from '@mui/material'
-import { ChevronDown, Play, Rocket, Settings2 } from 'lucide-react'
+import { ChevronDown, Play, Settings2, Wrench } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
@@ -27,12 +27,12 @@ export function LaunchMenu({ game, profile }: { game: string; profile: Profile }
   return (
     <>
       <HomeButton
-        icon={<Rocket size={16} />}
+        icon={<Wrench size={16} />}
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
       >
-        {t`Launch`}
+        {t`Tools`}
         <ChevronDown size={14} aria-hidden={true} />
       </HomeButton>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={close}>

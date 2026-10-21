@@ -14106,6 +14106,10 @@ msgstr "Season"
 msgid "Game and {loader}"
 msgstr "Game and {loader}"
 
+#: src/game/LaunchMenu.tsx
+msgid "Tools"
+msgstr "Tools"
+
 #: src/mods/problemWhy.ts
 msgid "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
 msgstr "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
@@ -15114,7 +15118,6 @@ msgid "Your antivirus ({0}) reports {1}{where}. Mod loaders and their DLLs often
 msgstr "Your antivirus ({0}) reports {1}{where}. Mod loaders and their DLLs often trip heuristics, but a real detection can harm your computer. Install only a file you trust. Mortar records this choice in the profile's history."
 
 #: src/console/PerformanceTab.tsx
-#: src/game/LaunchMenu.tsx
 #: src/profiles/EditProfileDialog.tsx
 msgid "Launch"
 msgstr "Launch"
