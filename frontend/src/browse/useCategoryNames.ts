@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { errorMessage } from '../toasts/report.ts'
 
@@ -19,7 +20,8 @@ function useCategoryNames({
     [categories, game, source, skip],
     [],
   )
-  return { names, why: error ? errorMessage(error) : '' }
+  // One object while its parts are, so the memoised filter row skips a render when results arrive.
+  return useMemo(() => ({ names, why: error ? errorMessage(error) : '' }), [names, error])
 }
 
 export { useCategoryNames }
