@@ -134,10 +134,10 @@ function mortarRelease(rel) {
   })
   systems.addEventListener('mortar-select', (e) => {
     sysname.textContent = document.getElementById(`tab-${e.detail}`).textContent.trim()
-    const os = e.detail === 'windows' ? 'windows' : 'linux'
+    const commands = e.detail === 'windows' ? 'windows' : 'linux'
     verify.hidden = e.detail === 'extension'
     for (const block of verify.querySelectorAll('[data-for]')) {
-      block.hidden = block.dataset.for !== os
+      block.hidden = block.dataset.for !== commands
     }
   })
   // The verify commands name the file the visitor last picked.
