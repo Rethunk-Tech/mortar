@@ -352,7 +352,7 @@ func run() error {
 						return settings.Defaults()
 					}
 					return store.Get()
-				}, backdrop.SystemDefault, backdrop.DesktopWallpaper),
+				}, backdrop.SystemDefault, backdrop.DesktopWallpaper, filepath.Join(dataDir, "cache", "backdrop")),
 			),
 		},
 		OnShutdown: shutdown,

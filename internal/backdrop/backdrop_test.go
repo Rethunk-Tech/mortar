@@ -5,13 +5,14 @@ import (
 	"image"
 	"image/color"
 	"image/gif"
-	_ "image/jpeg"
+	"image/jpeg"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -31,7 +32,7 @@ func getMode(t *testing.T, mode, user, system string, desktop func() string) *ht
 	t.Helper()
 	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) })
 	cur := func() settings.Settings { return settings.Settings{Background: mode, BackgroundImage: user} }
-	h := Middleware(cur, system, desktop)(next)
+	h := Middleware(cur, system, desktop, "")(next)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path, nil))
 	return rec
@@ -105,7 +106,7 @@ func TestBundledIsJPEG(t *testing.T) {
 
 func TestOtherPathsPassThrough(t *testing.T) {
 	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) })
-	h := Middleware(func() settings.Settings { return settings.Defaults() }, "", none)(next)
+	h := Middleware(func() settings.Settings { return settings.Defaults() }, "", none, "")(next)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/backdrop/x", nil))
 	if rec.Code != http.StatusTeapot {
@@ -155,14 +156,23 @@ func TestRequestedModeWinsAndIsUncached(t *testing.T) {
 	sys := write(t, dir, "sys.webp", "system")
 	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) })
 	stale := func() settings.Settings { return settings.Settings{Background: settings.BackgroundDesktop} }
-	h := Middleware(stale, sys, func() string { return wall })(next)
+	h := Middleware(stale, sys, func() string { return wall }, "")(next)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?mode=image&v=", nil))
 	if rec.Body.String() != "system" {
 		t.Fatalf("mode=image served %q, want the default image", rec.Body.String())
 	}
-	if rec.Header().Get("Cache-Control") != "no-store" || rec.Header().Get("Last-Modified") != "" {
+	if rec.Header().Get("Cache-Control") != "no-cache" || rec.Header().Get("ETag") == "" {
 		t.Fatalf("headers %v allow a stale revalidation", rec.Header())
+	}
+	// An older desktop file than the cached image must not win an If-Modified-Since check: the ETag differs.
+	stale304 := httptest.NewRecorder()
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?mode=desktop", nil)
+	req.Header.Set("If-None-Match", rec.Header().Get("ETag"))
+	req.Header.Set("If-Modified-Since", time.Now().Add(time.Hour).UTC().Format(http.TimeFormat))
+	h.ServeHTTP(stale304, req)
+	if stale304.Code != http.StatusOK || stale304.Body.String() != "desk" {
+		t.Fatalf("another file answered %d %q to the first one's validators", stale304.Code, stale304.Body.String())
 	}
 	rec = httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?mode=bogus", nil))
@@ -178,7 +188,7 @@ func TestJXLNeedsAClientThatAcceptsIt(t *testing.T) {
 	dir := t.TempDir()
 	sys := write(t, dir, "sys.jxl", "jxl")
 	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) })
-	h := Middleware(func() settings.Settings { return settings.Settings{Background: settings.BackgroundImage} }, sys, none)(next)
+	h := Middleware(func() settings.Settings { return settings.Settings{Background: settings.BackgroundImage} }, sys, none, "")(next)
 	for accept, want := range map[string]string{"image/jxl,image/*": "image/jxl", "image/webp,image/*": "image/jpeg"} {
 		req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path, nil)
 		req.Header.Set("Accept", accept)
@@ -192,7 +202,7 @@ func TestJXLNeedsAClientThatAcceptsIt(t *testing.T) {
 
 func TestWidthParameterShrinksTheBackdrop(t *testing.T) {
 	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusTeapot) })
-	h := Middleware(func() settings.Settings { return settings.Defaults() }, "", none)(next)
+	h := Middleware(func() settings.Settings { return settings.Defaults() }, "", none, "")(next)
 	width := func(query string) int {
 		t.Helper()
 		rec := httptest.NewRecorder()
@@ -233,7 +243,7 @@ func TestAnimatedBackdropsKeepTheirFrames(t *testing.T) {
 		cur := func() settings.Settings {
 			return settings.Settings{Background: settings.BackgroundImage, BackgroundImage: wall}
 		}
-		h := Middleware(cur, "", none)(http.NotFoundHandler())
+		h := Middleware(cur, "", none, "")(http.NotFoundHandler())
 		rec := httptest.NewRecorder()
 		h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?w=1280", nil))
 		if rec.Body.String() != body {
@@ -246,12 +256,65 @@ func TestAnimatedBackdropsKeepTheirFrames(t *testing.T) {
 func TestASizedDefaultBackdropIsTheBundledJPEG(t *testing.T) {
 	dir := t.TempDir()
 	sys := write(t, dir, "sys.jxl", "jxl")
-	h := Middleware(func() settings.Settings { return settings.Settings{Background: settings.BackgroundImage} }, sys, none)(http.NotFoundHandler())
+	h := Middleware(func() settings.Settings { return settings.Settings{Background: settings.BackgroundImage} }, sys, none, "")(http.NotFoundHandler())
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?w=1280", nil)
 	req.Header.Set("Accept", "image/jxl,image/*")
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	if got := rec.Header().Get("Content-Type"); got != "image/jpeg" {
 		t.Errorf("type %q, want the bundled JPEG", got)
+	}
+}
+
+// A start after the first serves the kept shrunk copy, dated by its source so the WebView can revalidate it.
+func TestShrunkBackdropIsKeptOnDiskAndDated(t *testing.T) {
+	dir := t.TempDir()
+	cache := filepath.Join(dir, "cache")
+	img := image.NewNRGBA(image.Rect(0, 0, 2000, 40))
+	var src bytes.Buffer
+	if err := jpeg.Encode(&src, img, nil); err != nil {
+		t.Fatal(err)
+	}
+	wall := write(t, dir, "wall.jpg", src.String())
+	cur := func() settings.Settings {
+		return settings.Settings{Background: settings.BackgroundImage, BackgroundImage: wall}
+	}
+	h := Middleware(cur, "", none, cache)(http.NotFoundHandler())
+	fetch := func(h http.Handler, header http.Header) *httptest.ResponseRecorder {
+		req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, Path+"?w=1280", nil)
+		req.Header = header
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, req)
+		return rec
+	}
+	first := fetch(h, http.Header{})
+	if cfg, _, err := image.DecodeConfig(first.Body); err != nil || cfg.Width != 1280 {
+		t.Fatalf("shrunk to %v, %v", cfg.Width, err)
+	}
+	if first.Header().Get("Last-Modified") == "" {
+		t.Fatal("no Last-Modified")
+	}
+	kept, err := os.ReadDir(cache)
+	if err != nil || len(kept) != 1 {
+		t.Fatalf("kept copies = %v, %v", kept, err)
+	}
+	// Corrupt the source in place, keeping size and date: only the kept copy can still answer with 1280 pixels.
+	info, err := os.Stat(wall)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(wall, make([]byte, info.Size()), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(wall, info.ModTime(), info.ModTime()); err != nil {
+		t.Fatal(err)
+	}
+	second := fetch(h, http.Header{})
+	if cfg, _, err := image.DecodeConfig(second.Body); err != nil || cfg.Width != 1280 {
+		t.Fatalf("second start served %v, %v", cfg.Width, err)
+	}
+	revalidate := fetch(h, http.Header{"If-None-Match": {first.Header().Get("ETag")}})
+	if revalidate.Code != http.StatusNotModified {
+		t.Fatalf("revalidation = %d, want 304", revalidate.Code)
 	}
 }

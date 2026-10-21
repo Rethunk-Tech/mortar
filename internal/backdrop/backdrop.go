@@ -5,7 +5,9 @@ package backdrop
 
 import (
 	"bytes"
+	"crypto/sha256"
 	_ "embed" // bundled wallpaper
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -18,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/modpic"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -90,8 +93,8 @@ func candidates(cur settings.Settings, system string, desktop func() string) []s
 }
 
 // Middleware serves GET /backdrop for the current settings: the first servable candidate, else the bundled
-// copy. Solid mode has no backdrop.
-func Middleware(current func() settings.Settings, system string, desktop func() string) func(http.Handler) http.Handler {
+// copy. Solid mode has no backdrop. Shrunk copies are kept in cacheDir (none when empty).
+func Middleware(current func() settings.Settings, system string, desktop func() string, cacheDir string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path != Path {
@@ -108,9 +111,10 @@ func Middleware(current func() settings.Settings, system string, desktop func() 
 				http.NotFound(w, r)
 				return
 			}
-			// The file behind the one URL changes with the mode and the desktop, and an older file's date would win a
-			// Last-Modified revalidation, so the local file is served uncached and undated.
-			w.Header().Set("Cache-Control", "no-store")
+			// The file behind the one URL changes with the mode and the desktop, and an older file's date would win an
+			// If-Modified-Since revalidation, so every answer carries an ETag naming the file, width and date, which
+			// the browser checks first.
+			w.Header().Set("Cache-Control", "no-cache")
 			w.Header().Set("Vary", "Accept")
 			jxl := !negotiates || strings.Contains(r.Header.Get("Accept"), "image/jxl")
 			for _, path := range candidates(cur, system, desktop) {
@@ -128,10 +132,16 @@ func Middleware(current func() settings.Settings, system string, desktop func() 
 					continue
 				}
 				defer func() { _ = f.Close() }()
-				serve(w, r, f, typ)
+				var mod time.Time
+				id := path
+				if info, err := f.Stat(); err == nil {
+					mod = info.ModTime()
+					id += "\x00" + strconv.FormatInt(info.Size(), 10) + "\x00" + strconv.FormatInt(mod.UnixNano(), 10)
+				}
+				serve(w, r, f, typ, id, mod, cacheDir)
 				return
 			}
-			serve(w, r, bytes.NewReader(bundled), "image/jpeg")
+			serve(w, r, bytes.NewReader(bundled), "image/jpeg", "bundled", time.Time{}, cacheDir)
 		})
 	}
 }
@@ -144,13 +154,29 @@ const (
 
 // serve writes the image as it is, or shrunk to the width the page asked for with ?w=, so the browser does not decode
 // a 4K wallpaper to fill a smaller window. JPEG XL cannot be decoded here and an animation would lose its frames, so
-// both are served whole; the page freezes an animation itself when motion is reduced.
-func serve(w http.ResponseWriter, r *http.Request, src io.ReadSeeker, typ string) {
-	if px, err := strconv.Atoi(r.URL.Query().Get("w")); err == nil && px >= minWidthPx && px <= maxWidthPx && typ != "image/jxl" {
+// both are served whole; the page freezes an animation itself when motion is reduced. id names the source's version;
+// a shrunk copy is kept in cacheDir under it, so a start after the first does not shrink again.
+func serve(w http.ResponseWriter, r *http.Request, src io.ReadSeeker, typ, id string, mod time.Time, cacheDir string) {
+	query := r.URL.Query().Get("w")
+	sum := sha256.Sum256([]byte(id + "\x00" + typ + "\x00" + query))
+	name := hex.EncodeToString(sum[:])
+	w.Header().Set("ETag", `"`+name[:32]+`"`)
+	if px, err := strconv.Atoi(query); err == nil && px >= minWidthPx && px <= maxWidthPx && typ != "image/jxl" {
+		cached := filepath.Join(cacheDir, name)
+		if cacheDir != "" {
+			if b, err := os.ReadFile(cached); err == nil {
+				w.Header().Set("Content-Type", http.DetectContentType(b))
+				http.ServeContent(w, r, "", mod, bytes.NewReader(b))
+				return
+			}
+		}
 		if b, err := modpic.ReadCapped(src, maxSourceBytes); err == nil && !animated(b, typ) {
 			if out, outTyp, err := modpic.Shrink(b, typ, px); err == nil {
+				if cacheDir != "" && len(out) < len(b) {
+					keep(cacheDir, cached, out)
+				}
 				w.Header().Set("Content-Type", outTyp)
-				http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(out))
+				http.ServeContent(w, r, "", mod, bytes.NewReader(out))
 				return
 			}
 		}
@@ -160,7 +186,32 @@ func serve(w http.ResponseWriter, r *http.Request, src io.ReadSeeker, typ string
 		}
 	}
 	w.Header().Set("Content-Type", typ)
-	http.ServeContent(w, r, "", time.Time{}, src)
+	http.ServeContent(w, r, "", mod, src)
+}
+
+// keptCopies bounds the shrunk copies on disk: a few widths of the current image, and older images' leftovers.
+const keptCopies = 8
+
+// keep writes one shrunk copy and drops the oldest beyond keptCopies.
+func keep(dir, path string, b []byte) {
+	if os.MkdirAll(dir, 0o700) != nil || datadir.WriteFile(path, b, 0o600) != nil {
+		return
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil || len(entries) <= keptCopies {
+		return
+	}
+	slices.SortFunc(entries, func(a, b os.DirEntry) int {
+		ai, aerr := a.Info()
+		bi, berr := b.Info()
+		if aerr != nil || berr != nil {
+			return 0
+		}
+		return ai.ModTime().Compare(bi.ModTime())
+	})
+	for _, e := range entries[:len(entries)-keptCopies] {
+		_ = os.Remove(filepath.Join(dir, e.Name()))
+	}
 }
 
 const maxSourceBytes = 64 << 20
