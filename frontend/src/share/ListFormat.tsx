@@ -7,6 +7,7 @@ import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { safeFileName } from '../console/save.ts'
 import { listNames } from '../i18n/list.ts'
+import { hasThunderstore } from '../profiles/hasThunderstore.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
@@ -28,13 +29,18 @@ const text = {
   userSelect: 'text',
 } as const
 
-function useFormatOptions(): { id: ModListFormat; label: string; icon: typeof FileText }[] {
+// Thunderstore's dependency list is offered only for a game whose mods come from Thunderstore.
+function useFormatOptions(
+  thunderstore: boolean,
+): { id: ModListFormat; label: string; icon: typeof FileText }[] {
   const { t } = useLingui()
   return [
-    { id: 'markdown', label: t`Markdown`, icon: FileText },
-    { id: 'plain', label: t`Plain text`, icon: Type },
-    { id: 'discord', label: sourceLabel('discord'), icon: MessageSquare },
-    { id: 'thunderstore', label: sourceLabel('thunderstore'), icon: Package },
+    { id: 'markdown' as const, label: t`Markdown`, icon: FileText },
+    { id: 'plain' as const, label: t`Plain text`, icon: Type },
+    { id: 'discord' as const, label: sourceLabel('discord'), icon: MessageSquare },
+    ...(thunderstore
+      ? [{ id: 'thunderstore' as const, label: sourceLabel('thunderstore'), icon: Package }]
+      : []),
   ]
 }
 
@@ -56,7 +62,9 @@ export function ListFormat() {
   const { t, i18n } = useLingui()
   const profileId = useShareDialog((s) => s.profileId)
   const keys = useShareDialog((s) => s.keys)
-  const format = useShareDialog((s) => s.listFormat)
+  const thunderstore = useProfiles((s) => hasThunderstore(s.game))
+  const chosenFormat = useShareDialog((s) => s.listFormat)
+  const format = chosenFormat === 'thunderstore' && !thunderstore ? 'markdown' : chosenFormat
   const setFormat = useShareDialog((s) => s.setListFormat)
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === profileId))
   const [copied, setCopied] = useState(0)
@@ -67,7 +75,7 @@ export function ListFormat() {
   const skipped = format === 'thunderstore' ? skippedForDependencies(items) : []
   const next = copied >= total ? 0 : copied
   const off = items.filter((item) => !item.enabled).length
-  const options = useFormatOptions()
+  const options = useFormatOptions(thunderstore)
   const count = items.length
   const summary = [
     plural(count, { one: '# mod', other: '# mods' }),
