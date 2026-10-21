@@ -76,6 +76,10 @@
         </ul>
         <p>Changed</p>
         <ul>
+          <li>Load order names missing dependencies in seconds instead of half a minute on a first visit</li>
+          <li>Starting Mortar does less work: Content Patcher checks survive a moved data folder, overlay images are not decoded again, the weekly profile check waits until Mortar is idle, and the backdrop is resized once</li>
+          <li>Thunderstore answers from the stored listing at once and refreshes it in the background, and Problems and Browse no longer decode the whole listing</li>
+          <li>The tracked Nexus mods card shows at once from the last list and refreshes behind it</li>
           <li>Problems shows the last SMAPI answer at once and asks smapi.io again in the background, and an empty tab says what it is checking</li>
           <li>Opening Game Select runs no Problems or Updates checks, and Storage measures disk use only once its section is on screen</li>
           <li>The category pickers say why categories could not load instead of that the site has none</li>
