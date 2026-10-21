@@ -6771,10 +6771,6 @@ msgstr "Conflict scan depth"
 msgid "No release is published yet."
 msgstr "No release is published yet."
 
-#: src/share/ImportInput.tsx
-msgid "Paste from clipboard"
-msgstr "Paste from clipboard"
-
 #: src/settings/prefCopy.ts
 msgid "When you enable a mod, also enable its required mods already in the profile"
 msgstr "When you enable a mod, also enable its required mods already in the profile"
@@ -7120,6 +7116,10 @@ msgstr "Port"
 #: src/profiles/CrashHintCard.tsx
 msgid "named in the crash log"
 msgstr "named in the crash log"
+
+#: src/share/ImportInput.tsx
+msgid "Paste"
+msgstr "Paste"
 
 #: src/groups/SavedGroupsSection.tsx
 msgid "Could not delete the saved group"

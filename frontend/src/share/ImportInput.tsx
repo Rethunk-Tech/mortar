@@ -76,7 +76,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
               size="large"
               sx={rowButtonSx}
             >
-              {t`Paste from clipboard`}
+              {t`Paste`}
             </Button>
             <Button
               type="submit"
