@@ -9,6 +9,9 @@ import { honourReducedMotion } from './theme/reducedMotion.ts'
 import { useRoomy } from './theme/roomy.ts'
 import { createMortarTheme } from './theme/theme.ts'
 
+const DEFAULT_UI_SCALE = 100
+const PERCENT = 100
+
 export function Themed({ children }: { children: React.ReactNode }) {
   const accent = useSettings((s) => s.accent)
   const systemAccent = useSystemAccent()
@@ -21,7 +24,7 @@ export function Themed({ children }: { children: React.ReactNode }) {
   // The webview's own zoom scales every size alike, as a browser's page zoom does; a page served to a browser has no
   // window to zoom, so CSS zoom stands in there.
   React.useEffect(() => {
-    const zoom = (uiScale || 100) / 100
+    const zoom = (uiScale || DEFAULT_UI_SCALE) / PERCENT
     Window.SetZoom(zoom).catch(() => {
       document.documentElement.style.zoom = String(zoom)
     })

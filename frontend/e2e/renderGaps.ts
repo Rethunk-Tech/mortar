@@ -46,13 +46,13 @@ export function unevenSpacing(page: Page): Promise<UnevenSpace[]> {
           right = Math.max(right, r.right)
         }
       }
-      const walk = document.createTreeWalker(el, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT)
+      const walk = document.createTreeWalker(el, NodeFilter.SHOW_ELEMENT + NodeFilter.SHOW_TEXT)
       for (
         let node: Node | null = walk.currentNode;
         node && n < MaxPainted;
         node = walk.nextNode()
       ) {
-        n++
+        n += 1
         if (node.nodeType === Node.TEXT_NODE) {
           if ((node.textContent ?? '').trim() !== '') {
             const range = document.createRange()

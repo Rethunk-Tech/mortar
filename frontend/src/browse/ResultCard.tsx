@@ -11,7 +11,7 @@ import { MIDDLE, opensPage } from '../mods/pageClick.ts'
 import { useSettings } from '../settings/store.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { BUTTON_RADIUS_PX, BUTTON_SMALL_HEIGHT } from '../theme/theme.ts'
-import { GRAY_OPACITY, PICTURE_PX, ROW_PICTURE_PX } from './browseConstants.ts'
+import { GRAY_OPACITY, PICTURE_PX, ROW_PICTURE_PX, STALE_OPACITY } from './browseConstants.ts'
 import type { BrowseModes } from './browseModes.ts'
 import type { BrowseItem, ResultCardProps } from './browseTypes.ts'
 import { pictureSrc } from './pictureSrc.ts'
@@ -118,7 +118,7 @@ function SourcePicks({
               onClick={() => pick.onPick(id)}
               sx={{
                 ...pictureMarkSx,
-                opacity: on ? 1 : 0.6,
+                opacity: on ? 1 : STALE_OPACITY,
                 borderColor: on ? 'var(--mortar-ink-dim-60)' : 'var(--mortar-hairline)',
                 '&:hover': { opacity: 1 },
               }}

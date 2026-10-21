@@ -11,6 +11,7 @@ import { MenuHeading } from '../shell/TitleMenu.tsx'
 import { reportError } from '../toasts/report.ts'
 
 const FIELD_PX = 96
+const DEFAULT_MAX_INSTANCES = 8
 const INSET_PX = 16
 const NOTE_MAX_PX = 260
 
@@ -56,7 +57,7 @@ export function PlayInstances({
               <PrefNumber
                 value={copies}
                 min={instances.min ?? 1}
-                max={instances.max || 8}
+                max={instances.max || DEFAULT_MAX_INSTANCES}
                 label={t`Instances`}
                 width={FIELD_PX}
                 onCommit={(n) => SetByKey('instances', String(n), game)}

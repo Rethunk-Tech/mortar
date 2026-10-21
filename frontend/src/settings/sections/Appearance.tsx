@@ -97,7 +97,8 @@ function DefaultSort() {
 const SWATCH_PX = 44
 
 // The Size choices, within the setting's 80 to 150 per cent.
-const UI_SCALES = [80, 90, 100, 110, 125, 150]
+const DEFAULT_UI_SCALE = 100
+const UI_SCALES = ['80', '90', '100', '110', '125', '150']
 
 function FontPicker() {
   const { t } = useLingui()
@@ -150,11 +151,11 @@ function FontPicker() {
       <SettingRow label={t`Size`} description={t`Scales text, controls and spacing together`}>
         <PrefSelect
           label={t`Size`}
-          value={String(uiScale || 100)}
+          value={String(uiScale || DEFAULT_UI_SCALE)}
           onChange={(v) =>
             persist(() => SetByKey('uiScale', v, ''), t`Could not save that setting`)
           }
-          options={UI_SCALES.map((n) => ({ value: String(n), label: `${n}%` }))}
+          options={UI_SCALES.map((n) => ({ value: n, label: `${n}%` }))}
         />
       </SettingRow>
     </Searchable>

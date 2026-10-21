@@ -8,6 +8,8 @@ import { space } from '../../theme/density.ts'
 
 const OPEN_KEY = 'mortar.configSectionNav'
 const WIDTH_PX = 220
+const ACTIVE_WEIGHT = 600
+const IDLE_WEIGHT = 400
 // A section counts as the one in view once its heading is within this far of the list's top.
 const TOP_SLACK_PX = 24
 
@@ -103,7 +105,7 @@ export function SectionNav({
                   borderLeft: '2px solid',
                   borderColor: on ? 'primary.main' : 'transparent',
                   color: on ? 'primary.main' : 'text.secondary',
-                  fontWeight: on ? 600 : 400,
+                  fontWeight: on ? ACTIVE_WEIGHT : IDLE_WEIGHT,
                   '&:hover': { color: 'text.primary' },
                 }}
                 title={name}

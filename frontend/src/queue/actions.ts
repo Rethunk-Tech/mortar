@@ -38,8 +38,15 @@ export type Want = Pick<Request, 'kind'> &
   >
 
 // The site a want downloads from: named, else a repository is GitHub's and a package Thunderstore's.
-const wantSource = (r: Want): string =>
-  r.source || (r.repo ? 'github' : r.package ? 'thunderstore' : 'nexus')
+function wantSource(r: Want): string {
+  if (r.source) {
+    return r.source
+  }
+  if (r.repo) {
+    return 'github'
+  }
+  return r.package ? 'thunderstore' : 'nexus'
+}
 
 // Queues files for the open profile. Nexus files cannot download while signed out: say so and point at the
 // sign-in instead. GitHub needs no account.

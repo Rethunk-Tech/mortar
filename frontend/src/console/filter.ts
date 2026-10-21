@@ -150,14 +150,14 @@ export function collapseRepeats(rows: Entry[]): Entry[] {
       if (row) {
         group.push(row)
       }
-      i++
+      i += 1
     } while (rows[i]?.cont === true)
-    const head = last[0]
+    const [head] = last
     if (head && last.length === group.length && last.every((e, k) => sameLine(e, group[k]))) {
       repeats.set(head, (repeats.get(head) ?? 1) + 1)
       continue
     }
-    const first = group[0]
+    const [first] = group
     if (first) {
       repeats.delete(first)
     }

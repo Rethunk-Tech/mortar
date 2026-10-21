@@ -66,8 +66,8 @@ export function requirementKeys<
   const have = new Set(chosen.map((m) => m.key))
   const out: string[] = []
   const queue = [...chosen]
-  for (let i = 0; i < queue.length; i++) {
-    for (const id of requiredIdsOf(queue[i] ?? {})) {
+  for (const mod of queue) {
+    for (const id of requiredIdsOf(mod)) {
       const dep = byId.get(idKey(id))
       if (dep && !have.has(dep.key)) {
         have.add(dep.key)

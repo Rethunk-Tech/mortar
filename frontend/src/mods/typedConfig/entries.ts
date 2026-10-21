@@ -3,6 +3,8 @@ import type { ConfigEntry, ConfigFile, ConfigValue } from './types.ts'
 
 // A range this small reads better as a slider than as a field to type into.
 const SLIDER_MAX_SPAN = 100
+const RGB_LENGTH = 6
+const RGBA_LENGTH = 8
 
 const sameValue = (a: ConfigValue, b: ConfigValue): boolean =>
   Array.isArray(a) && Array.isArray(b)
@@ -60,7 +62,7 @@ const isHexColor = (s: string): boolean => HEX_COLOR.test(s)
 function formatLike(picked: string, current: string): string {
   const rgb = picked.replace('#', '')
   const digits = current.replace('#', '')
-  const alpha = digits.length === 8 ? digits.slice(6) : ''
+  const alpha = digits.length === RGBA_LENGTH ? digits.slice(RGB_LENGTH) : ''
   const lower = digits === digits.toLowerCase() && digits !== digits.toUpperCase()
   const body = `${rgb}${alpha}`
   return `${current.startsWith('#') ? '#' : ''}${lower ? body.toLowerCase() : body.toUpperCase()}`
