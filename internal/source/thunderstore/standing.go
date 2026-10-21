@@ -21,16 +21,32 @@ func (d Driver) Standings(ctx context.Context, version string, ids []string) (ma
 	}
 	out := map[string]source.Standing{}
 	for key, names := range byKey {
-		pk, err := d.packages(ctx, key, source.UserAgentWithSite(version))
+		path, err := d.listingFile(ctx, key, source.UserAgentWithSite(version))
 		if err != nil {
 			return nil, err
 		}
-		if len(pk) == 0 {
-			continue
+		want := make(map[string]bool, len(names))
+		for _, name := range names {
+			want[strings.ToLower(name)] = true
 		}
-		listed := make(map[string]bool, len(pk))
-		for _, p := range pk {
-			listed[packageID(p.Owner, p.Name)] = true
+		// The problems check asks at every start, so unless Browse already holds the listing it is read a package at a
+		// time rather than loaded and kept for listingIdle.
+		listed, seen := map[string]bool{}, false
+		note := func(p *pkg) {
+			seen = true
+			if id := packageID(p.Owner, p.Name); want[id] {
+				listed[id] = true
+			}
+		}
+		if pk, ok := memoized(key, path); ok {
+			for i := range pk {
+				note(&pk[i])
+			}
+		} else if err := eachListed(path, note); err != nil {
+			return nil, err
+		}
+		if !seen {
+			continue
 		}
 		for _, name := range names {
 			if !listed[strings.ToLower(name)] {

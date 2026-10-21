@@ -239,9 +239,17 @@ func TestDeprecatedListsPackagesAndTheirNamedReplacement(t *testing.T) {
 func TestStandingsFlagOnlyPackagesTheIndexNoLongerLists(t *testing.T) {
 	f := newFake(t)
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	memoMu.Lock()
+	clear(memo)
+	memoMu.Unlock()
 	ids := []string{"lethal-company/Alice-MoreCompany", "lethal-company/dave-library", "lethal-company/Eve-OldMod", "lethal-company/Gone-Mod", "no-slash"}
 	got, err := d.Standings(t.Context(), "1.2.3", ids)
 	if err != nil || len(got) != 1 || got["lethal-company/Gone-Mod"].State != "removed" {
 		t.Fatalf("a listed or deprecated package is not removed, only a missing one: %+v %v", got, err)
+	}
+	memoMu.Lock()
+	defer memoMu.Unlock()
+	if _, held := memo["lethal-company"]; held {
+		t.Fatal("a standing check kept the whole listing in memory")
 	}
 }
