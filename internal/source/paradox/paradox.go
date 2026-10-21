@@ -58,6 +58,9 @@ var (
 	namePattern = regexp.MustCompile(`^[A-Za-z0-9-]{1,64}$`)
 )
 
+// ValidID reports whether id is a Paradox Mods mod id.
+func ValidID(id string) bool { return modIDPattern.MatchString(id) }
+
 // ModPageURL is the mod's page; gameKey does not enter the address.
 func (Driver) ModPageURL(_, id string) string {
 	if !modIDPattern.MatchString(id) {

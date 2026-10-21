@@ -13,6 +13,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/source/modrinth"
+	"github.com/Rethunk-Tech/mortar/internal/source/paradox"
 )
 
 // installTimeout bounds the app's answer to a queued install; the queue only takes the request, the downloads run on.
@@ -50,10 +52,10 @@ func (h handlers) answerPackages(req request) reply {
 	return rep
 }
 
-// answerProjects replies to installedProjects for a CurseForge or Mod DB game key. A key Mortar does not manage (the
+// answerProjects replies to installedProjects for a CurseForge, Mod DB, Paradox or Modrinth game key. A key Mortar does not manage (the
 // extension's probe sends none) still gets the games list.
 func (h handlers) answerProjects(req request) reply {
-	if (req.Source != "curseforge" && req.Source != "vsmoddb") || h.projects == nil {
+	if req.Source == "nexus" || req.Source == "thunderstore" || !req.reads(req.Source) || h.projects == nil {
 		return reply{Error: "Mortar does not read " + req.Source + " pages"}
 	}
 	st, name, found := h.projects(req.Source, req.SourceGameKey)
@@ -63,6 +65,39 @@ func (h handlers) answerProjects(req request) reply {
 			found = []hostProject{}
 		}
 		rep.Projects = &found
+	}
+	return rep
+}
+
+// answerInstallProject queues a Paradox or Modrinth project into the open profile, refusing an id the source's own
+// pattern rejects before anything reaches the app.
+func (h handlers) answerInstallProject(req request) reply {
+	var valid bool
+	switch req.Source {
+	case "paradox":
+		valid = paradox.ValidID(req.Project)
+	case "modrinth":
+		valid = modrinth.ValidID(req.Project)
+	default:
+		return reply{Error: "Mortar does not install from " + req.Source + " pages"}
+	}
+	if !valid || h.projects == nil {
+		return reply{Error: "not a " + req.Source + " project id"}
+	}
+	st, name, _ := h.projects(req.Source, req.SourceGameKey)
+	rep := reply{State: st, Connected: st == stateReady, Profile: name, Games: hostGames()}
+	switch {
+	case st == stateOff:
+	case st != stateReady:
+		rep.Error = "open a profile for this game in Mortar first"
+	case h.installProject == nil:
+		rep.Error = "Mortar cannot install projects here"
+	default:
+		if err := h.installProject(req.Source, req.SourceGameKey, req.Project); err != nil {
+			rep.Error = err.Error()
+		} else {
+			rep.OK = true
+		}
 	}
 	return rep
 }
@@ -150,8 +185,25 @@ func queuePackage(key, pkg string) error {
 	}, nil, installTimeout)
 }
 
-// activeProjects lists the CurseForge projects or Mod DB mods the source's game holds in its open profile. A
-// CurseForge entry's Name is the project id; a Mod DB entry's is "<modid>-<assetid>", which pages are addressed by.
+// queueProject asks the running app to queue the project's newest version, with its dependencies, into the source's
+// game's open profile.
+func queueProject(src, key, project string) error {
+	info, ok := gameBySourceKey(src, key)
+	if !ok {
+		return os.ErrNotExist
+	}
+	dataDir, err := datadir.Dir()
+	if err != nil {
+		return err
+	}
+	return controlwire.CallDir(dataDir, "installPackage", map[string]any{
+		"game": info.ID, "profile": openProfile(info), "name": project, "source": src,
+	}, nil, installTimeout)
+}
+
+// activeProjects lists the CurseForge, Mod DB, Paradox or Modrinth projects the source's game holds in its open
+// profile. A CurseForge entry's Name is the project id; a Mod DB entry's is "<modid>-<assetid>", which pages are
+// addressed by; a Paradox entry's is the mod id and a Modrinth entry's the project id.
 func activeProjects(src, key string) (state, profile string, projects []hostProject) {
 	info, ok := gameBySourceKey(src, key)
 	if !ok {
@@ -199,6 +251,8 @@ func activeProjects(src, key string) (state, profile string, projects []hostProj
 		}
 		projects = append(projects, hostProject{ID: id, Name: name})
 	}
-	withSlugs(src, projects, driverIDs)
+	if src != "paradox" {
+		withSlugs(src, projects, driverIDs)
+	}
 	return state, profile, projects
 }

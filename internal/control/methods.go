@@ -1027,7 +1027,7 @@ func (s *Services) Handle(ctx context.Context, method string, p Params) (any, er
 		}
 		return modProblems(prof, result, p.Source, p.ID), nil
 	case "installPackage":
-		_, err := s.Queue.Add(ctx, []queue.Request{{Kind: queue.KindInstall, Game: p.Game, Profile: id, Package: p.Name}})
+		_, err := s.Queue.Add(ctx, []queue.Request{{Kind: queue.KindInstall, Game: p.Game, Profile: id, Package: p.Name, Source: p.Source}})
 		return nil, err
 	case "updates":
 		return s.Problems.Updates(ctx, p.Game, id)

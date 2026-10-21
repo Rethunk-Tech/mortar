@@ -12,6 +12,7 @@ import (
 	"maps"
 	"net/http"
 	"net/url"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -45,6 +46,23 @@ func (Driver) Modes() []source.Acquire { return []source.Acquire{source.Download
 
 // Hosts is the site's web host.
 func (Driver) Hosts() []string { return []string{"modrinth.com"} }
+
+// idPattern is a project id or slug: Modrinth ids are base-62 and slugs add dots, underscores and hyphens.
+var idPattern = regexp.MustCompile(`^[A-Za-z0-9._-]{1,64}$`)
+
+// ValidID reports whether id is a project id or slug as the extension may name it.
+func ValidID(id string) bool { return idPattern.MatchString(id) }
+
+// PageURL is the project's page address, whose last segment is its slug.
+func (d Driver) PageURL(ctx context.Context, id string) (string, error) {
+	var project struct {
+		Slug string `json:"slug"`
+	}
+	if err := d.get(ctx, "/project/"+url.PathEscape(id), nil, "", &project); err != nil {
+		return "", err
+	}
+	return d.ModPageURL("", project.Slug), nil
+}
 
 // ModPageURL is the project's page; id is the project id or slug, and gameKey does not enter the address.
 func (Driver) ModPageURL(_, id string) string {

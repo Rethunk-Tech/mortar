@@ -40,12 +40,12 @@ const (
 	FirefoxID = "mortar@rethunk.tech"
 	// maxMessage bounds what Mortar reads; a link is a few hundred bytes.
 	maxMessage = 64 * 1024
-	// Protocol is the native-messaging protocol Mortar speaks, sent in every reply; the extension checks it against
-	// its own range. MinProtocol and MaxProtocol are the extension protocols Mortar answers; a request that sends
-	// none counts as protocol 0.
-	Protocol    = 3
+	// Protocol is the newest native-messaging protocol Mortar speaks. A reply carries the request's own protocol when
+	// it is within MinProtocol..MaxProtocol (an older extension rejects a reply above its range), else Protocol; a
+	// request that sends none counts as protocol 0.
+	Protocol    = 4
 	MinProtocol = 3
-	MaxProtocol = 3
+	MaxProtocol = 4
 )
 
 // Protocol mismatches Mortar reports on a refused message and records for Settings.
@@ -110,12 +110,33 @@ type request struct {
 	ModID         int    `json:"modId"`
 	// Package is a Thunderstore "Namespace-Name" for installPackage.
 	Package string `json:"package"`
+	// Project is the source's own project id for installProject (a Paradox mod id, a Modrinth project id or slug).
+	Project string `json:"project"`
+}
+
+// version is the protocol the request speaks, which its reply echoes; Protocol when it sent none Mortar answers.
+func (r request) version() int {
+	if r.Protocol != nil && *r.Protocol >= MinProtocol && *r.Protocol <= MaxProtocol {
+		return *r.Protocol
+	}
+	return Protocol
+}
+
+// reads reports whether Mortar answers pages of the source at the request's protocol.
+func (r request) reads(source string) bool {
+	switch source {
+	case "nexus", "thunderstore", "curseforge", "vsmoddb":
+		return true
+	case "paradox", "modrinth":
+		return r.version() >= 4
+	}
+	return false
 }
 
 // gameKey is the page's game key for the source: a Nexus domain or a Thunderstore community, which the handlers
 // resolve to a Mortar game; empty for a source Mortar does not read pages of.
 func (r request) gameKey() string {
-	if r.Source != "nexus" && r.Source != "thunderstore" && r.Source != "curseforge" && r.Source != "vsmoddb" {
+	if !r.reads(r.Source) {
 		return ""
 	}
 	return r.SourceGameKey
@@ -163,11 +184,16 @@ type hostProject struct {
 	Slug string `json:"slug,omitempty"`
 }
 
+// modUpdate is one pending update. Source, ID and URL (the mod's page) are protocol 4 and name the mod at its source;
+// ModID is set for Nexus rows.
 type modUpdate struct {
-	ModID     int    `json:"modId"`
+	ModID     int    `json:"modId,omitempty"`
 	Name      string `json:"name"`
 	Installed string `json:"installed"`
 	Latest    string `json:"latest"`
+	Source    string `json:"source,omitempty"`
+	ID        string `json:"id,omitempty"`
+	URL       string `json:"url,omitempty"`
 }
 
 type modProblem struct {
@@ -303,6 +329,10 @@ type handlers struct {
 	installPackage func(key, pkg string) error
 	// projects answers installedProjects for a CurseForge or Mod DB game key.
 	projects func(source, key string) (state, profile string, projects []hostProject)
+	// installProject queues a Paradox or Modrinth project into the source's game's open profile.
+	installProject func(source, key, project string) error
+	// profileUpdates answers protocol 4 updates: every source's pending updates for the source's game.
+	profileUpdates func(source, key string) (state, profile string, rows []modUpdate)
 }
 
 // ServeFrom answers messages from r until it closes, handing each message's link to open. args are those the browser
@@ -314,11 +344,15 @@ func ServeFrom(args []string, r io.Reader, w io.Writer, open func(link string) e
 		open:    open, installed: activeNexusModIDs, im: nexusModProfiles, state: activeNexusState,
 		updates: activeNexusUpdates, broken: brokenNexusModIDs, problems: nexusModProblems,
 		requirements: nexusPageRequirements, packages: activePackages, installPackage: queuePackage, projects: activeProjects,
+		installProject: queueProject, profileUpdates: activeProfileUpdates,
 	})
 }
 
 // answer is the reply to one data request; a link is handled by the caller.
 func (h handlers) answer(req request) reply {
+	if req.Type == "installProject" && req.version() >= 4 {
+		return h.answerInstallProject(req)
+	}
 	if req.Type == "installedProjects" {
 		return h.answerProjects(req)
 	}
@@ -366,7 +400,10 @@ func (h handlers) answer(req request) reply {
 		}
 	case "updates":
 		rows := []modUpdate{}
-		if st != stateOff && h.updates != nil {
+		switch {
+		case req.version() >= 4 && h.profileUpdates != nil:
+			st, name, rows = h.profileUpdates(req.Source, req.SourceGameKey)
+		case st != stateOff && h.updates != nil:
 			name, rows = h.updates(req.gameKey())
 		}
 		if rows == nil {
@@ -416,7 +453,7 @@ func serveHandlers(r io.Reader, w io.Writer, h handlers) error {
 		default:
 			rep = h.answer(req)
 		}
-		rep.Protocol = Protocol
+		rep.Protocol = req.version()
 		rep.Accent = accentColor()
 		out, err := json.Marshal(rep)
 		if err != nil {

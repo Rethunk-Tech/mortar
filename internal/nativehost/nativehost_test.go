@@ -519,7 +519,7 @@ func TestActiveNexusUpdatesFromCache(t *testing.T) {
 	if rows[1].Name != "Zed" || rows[1].ModID != 10 || rows[1].Latest != "2.0.0" {
 		t.Fatalf("named update = %+v", rows[1])
 	}
-	in := frame(t, request{Type: "updates", Source: "nexus", SourceGameKey: "stardewvalley"})
+	in := frame(t, request{Protocol: new(3), Type: "updates", Source: "nexus", SourceGameKey: "stardewvalley"})
 	var out bytes.Buffer
 	if err := ServeFrom(nil, bytes.NewReader(in), &out, func(string) error {
 		t.Fatal("updates request opened a link")
@@ -761,5 +761,151 @@ func TestSlugOfReadsTheLastSegment(t *testing.T) {
 		if got := slugOf(c.src, c.page); got != c.want {
 			t.Errorf("slugOf(%q, %q) = %q, want %q", c.src, c.page, got, c.want)
 		}
+	}
+}
+
+func TestRepliesEchoTheRequestsProtocolAndHoldProtocol4Back(t *testing.T) {
+	h := handlers{
+		updates: func(string) (string, []modUpdate) { return "P", []modUpdate{{ModID: 1, Name: "A"}} },
+		state:   func(string) (string, string) { return stateReady, "P" },
+		profileUpdates: func(string, string) (string, string, []modUpdate) {
+			return stateReady, "P", []modUpdate{{Name: "B", Source: "modrinth"}}
+		},
+		projects:       func(string, string) (string, string, []hostProject) { return stateReady, "P", nil },
+		installProject: func(string, string, string) error { t.Fatal("protocol 3 installProject reached the app"); return nil },
+	}
+	in := bytes.Join([][]byte{
+		frame(t, request{Protocol: new(3), Type: "updates", Source: "nexus", SourceGameKey: "stardewvalley"}),
+		frame(t, request{Protocol: new(3), Type: "installProject", Source: "paradox", SourceGameKey: "cities_skylines_2", Project: "1"}),
+		frame(t, request{Protocol: new(3), Type: "installedProjects", Source: "paradox", SourceGameKey: "cities_skylines_2"}),
+		frame(t, request{Protocol: new(4), Type: "updates", Source: "nexus", SourceGameKey: "stardewvalley"}),
+		frame(t, request{Protocol: new(5), Type: "updates"}),
+	}, nil)
+	var out bytes.Buffer
+	if err := serveHandlers(bytes.NewReader(in), &out, h); err != nil {
+		t.Fatal(err)
+	}
+	v3, v3install, v3projects, v4, tooNew := readReply(t, &out), readReply(t, &out), readReply(t, &out), readReply(t, &out), readReply(t, &out)
+	if v3.Protocol != 3 || v3.Updates == nil || (*v3.Updates)[0].Name != "A" || (*v3.Updates)[0].Source != "" {
+		t.Errorf("protocol 3 updates = %+v", v3)
+	}
+	if v3install.Protocol != 3 || v3install.Error == "" || v3install.OK {
+		t.Errorf("protocol 3 installProject = %+v", v3install)
+	}
+	if v3projects.Protocol != 3 || v3projects.Error == "" || v3projects.Projects != nil {
+		t.Errorf("protocol 3 paradox projects = %+v", v3projects)
+	}
+	if v4.Protocol != 4 || v4.Updates == nil || (*v4.Updates)[0].Source != "modrinth" {
+		t.Errorf("protocol 4 updates = %+v", v4)
+	}
+	if tooNew.Protocol != Protocol || tooNew.ProtocolError != ExtensionTooNew {
+		t.Errorf("protocol 5 = %+v", tooNew)
+	}
+}
+
+func TestUpdateRowsNameTheModAtItsSource(t *testing.T) {
+	info, ok := gameBySourceKey("paradox", "cities_skylines_2")
+	if !ok {
+		t.Fatal("Cities: Skylines II lists no Paradox key")
+	}
+	nexusDomain := info.NexusDomain()
+	for _, c := range []struct {
+		name string
+		in   appUpdate
+		want modUpdate
+		ok   bool
+	}{
+		{"nexus", appUpdate{Name: "N", NexusID: 7, Version: "2"}, modUpdate{ModID: 7, Name: "N", Latest: "2", Source: "nexus", ID: "7", URL: "https://www.nexusmods.com/" + nexusDomain + "/mods/7"}, true},
+		{"thunderstore", appUpdate{Name: "T", Package: "Me-Mod"}, modUpdate{Name: "T", Source: "thunderstore", ID: "Me-Mod", URL: "https://thunderstore.io/c/cities-skylines-ii/p/Me/Mod/"}, true},
+		{"paradox", appUpdate{Name: "P", Package: "12345", PackageSource: "paradox"}, modUpdate{Name: "P", Source: "paradox", ID: "12345", URL: "https://mods.paradoxplaza.com/mods/12345/Windows"}, true},
+		{"modrinth", appUpdate{Name: "M", Package: "AANobbMI", PackageSource: "modrinth"}, modUpdate{Name: "M", Source: "modrinth", ID: "AANobbMI"}, true},
+		{"github", appUpdate{Name: "G", GitHubRepo: "o/r"}, modUpdate{Name: "G", Source: "github", ID: "o/r", URL: "https://github.com/o/r"}, true},
+		{"switch", appUpdate{Name: "S", Package: "Me-Mod", Switch: true}, modUpdate{}, false},
+		{"unofficial", appUpdate{Name: "U", NexusID: 1, Unofficial: true}, modUpdate{}, false},
+		{"nothing to name", appUpdate{Name: "X"}, modUpdate{}, false},
+	} {
+		got, ok := updateRow(info, c.in)
+		if ok != c.ok || got != c.want {
+			t.Errorf("%s: got %+v %v, want %+v %v", c.name, got, ok, c.want, c.ok)
+		}
+	}
+}
+
+func TestServeAnswersParadoxAndModrinthProjects(t *testing.T) {
+	var queued []string
+	h := handlers{
+		projects: func(source, key string) (string, string, []hostProject) {
+			if key == "closed" {
+				return stateNoProfile, "", nil
+			}
+			return stateReady, "Run", []hostProject{{ID: "AANobbMI", Name: "Sodium", Slug: "sodium"}}
+		},
+		installProject: func(source, key, project string) error {
+			queued = append(queued, source+"/"+key+"/"+project)
+			return nil
+		},
+	}
+	req := func(typ, source, key, project string) []byte {
+		return frame(t, request{Protocol: new(4), Type: typ, Source: source, SourceGameKey: key, Project: project})
+	}
+	in := bytes.Join([][]byte{
+		req("installedProjects", "modrinth", "project_type:mod", ""),
+		req("installProject", "modrinth", "project_type:mod", "sodium"),
+		req("installProject", "paradox", "cities_skylines_2", "12345"),
+		req("installProject", "paradox", "cities_skylines_2", "12a"),
+		req("installProject", "paradox", "cities_skylines_2", "1234567890"),
+		req("installProject", "modrinth", "project_type:mod", "../x"),
+		req("installProject", "modrinth", "project_type:mod", ""),
+		req("installProject", "curseforge", "4643", "99"),
+		req("installProject", "paradox", "closed", "12345"),
+	}, nil)
+	var out bytes.Buffer
+	if err := serveHandlers(bytes.NewReader(in), &out, h); err != nil {
+		t.Fatal(err)
+	}
+	listed := readReply(t, &out)
+	if listed.Projects == nil || !slices.Equal(*listed.Projects, []hostProject{{ID: "AANobbMI", Name: "Sodium", Slug: "sodium"}}) || !listed.Connected {
+		t.Errorf("installedProjects = %+v", listed)
+	}
+	for i, want := range []bool{true, true, false, false, false, false, false, false} {
+		got := readReply(t, &out)
+		if got.OK != want || (!want && got.Error == "") {
+			t.Errorf("installProject %d = %+v, want ok %v", i, got, want)
+		}
+	}
+	if !slices.Equal(queued, []string{"modrinth/project_type:mod/sodium", "paradox/cities_skylines_2/12345"}) {
+		t.Errorf("queued %v", queued)
+	}
+}
+
+func TestQueueProjectRefusesAGameThatDoesNotListTheSource(t *testing.T) {
+	if err := queueProject("paradox", "not-a-key", "1"); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("unlisted key = %v", err)
+	}
+	if err := queueProject("modrinth", "cities_skylines_2", "1"); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("source the game does not list = %v", err)
+	}
+}
+
+func TestActiveProjectsReadsParadoxEntries(t *testing.T) {
+	dir := listenControl(t, `{"global":{"lastProfile":{"cities-skylines-ii":"p1"}}}`)
+	pdir := filepath.Join(dir, "profiles", "cities-skylines-ii", "p1")
+	if err := os.MkdirAll(pdir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	body := `{"name":"City","entries":[{"source":{"kind":"paradox","name":"777","modName":"Traffic"}},{"source":{"kind":"nexus","modId":5}}]}`
+	if err := os.WriteFile(filepath.Join(pdir, "profile.json"), []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	st, name, got := activeProjects("paradox", "cities_skylines_2")
+	if st != stateReady || name != "City" || !slices.Equal(got, []hostProject{{ID: "777", Name: "Traffic"}}) {
+		t.Fatalf("got %q %q %v", st, name, got)
+	}
+}
+
+func TestHostGamesListParadoxKeys(t *testing.T) {
+	i := slices.IndexFunc(hostGames(), func(g hostGame) bool { return g.ID == "cities-skylines-ii" })
+	if i < 0 || hostGames()[i].Sources["paradox"] != "cities_skylines_2" {
+		t.Fatalf("games = %+v", hostGames())
 	}
 }

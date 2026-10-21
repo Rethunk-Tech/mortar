@@ -14,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/source/curseforge"
+	"github.com/Rethunk-Tech/mortar/internal/source/modrinth"
 	"github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"
 )
 
@@ -47,8 +48,11 @@ func slugOf(src, page string) string {
 
 // fetchPage asks the site for one project's page address; id is what the site's driver takes.
 func fetchPage(ctx context.Context, src, id string) (string, error) {
-	if src == "curseforge" {
+	switch src {
+	case "curseforge":
 		return curseforge.Driver{}.PageURL(ctx, id)
+	case "modrinth":
+		return modrinth.Driver{}.PageURL(ctx, id)
 	}
 	items, err := vsmoddb.Driver{}.Items(ctx, "", "", []string{id})
 	for _, it := range items {

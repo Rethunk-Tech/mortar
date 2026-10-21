@@ -26,6 +26,7 @@ func FuzzServe(f *testing.F) {
 	f.Add(frame(`{"type":"mod","source":"nexus","sourceGameKey":"stardewvalley","modId":1,"protocol":1}`))
 	f.Add(frame(`{"type":"installPackage","source":"thunderstore","sourceGameKey":"lethal-company","package":"a-b"}`))
 	f.Add(frame(`{"type":"installed","protocol":-1}`))
+	f.Add(frame(`{"type":"installProject","protocol":4,"source":"modrinth","sourceGameKey":"k","project":"../x"}`))
 	f.Add([]byte{0xff, 0xff, 0xff, 0x7f})
 	stub := handlers{
 		open:      func(string) error { return nil },
@@ -40,6 +41,8 @@ func FuzzServe(f *testing.F) {
 		},
 		packages:       func(string) (string, string, []string) { return stateReady, "P", nil },
 		installPackage: func(string, string) error { return nil },
+		projects:       func(string, string) (string, string, []hostProject) { return stateReady, "P", nil },
+		installProject: func(string, string, string) error { return nil },
 	}
 	f.Fuzz(func(t *testing.T, in []byte) {
 		_ = serveHandlers(bytes.NewReader(in), io.Discard, stub)
