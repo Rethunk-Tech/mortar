@@ -47,20 +47,54 @@ function joinPages(parts: BrowseResult[], skip: number, size: number): BrowseRes
   }
 }
 
+interface Fetched {
+  key: string
+  pages: Map<number, Promise<BrowseResult>>
+  // The source pages that have answered, so a screen made only of those shows without a loading pass.
+  done: Map<number, BrowseResult>
+}
+
+type Screen = { next: BrowseResult; whole: boolean }
+
+// The screen from source pages that have already answered, or null while one of them is still to fetch.
+function cachedScreen(done: Map<number, BrowseResult>, page: number, size: number): Screen | null {
+  const { first, last, skip } = screenSpan(page, size)
+  const head = done.get(first)
+  if (!head) {
+    return null
+  }
+  if (head.items.length > PAGE_SIZE) {
+    return { next: head, whole: true }
+  }
+  const known = head.pages ?? Math.ceil(head.total / PAGE_SIZE)
+  const parts = [head]
+  for (let p = first + 1; p <= Math.min(last, known); p += 1) {
+    const part = done.get(p)
+    if (!part) {
+      return null
+    }
+    parts.push(part)
+  }
+  return { next: joinPages(parts, skip, size), whole: false }
+}
+
 // One screen of `size` hits on screen `page`, from the source pages it spans; pages already fetched for this search
 // are reused. A source page holding more than a page of hits comes back whole.
 async function loadScreen(
-  pages: Map<number, Promise<BrowseResult>>,
+  { pages, done }: Fetched,
   fetchPage: (page: number) => Promise<BrowseResult>,
   page: number,
   size: number,
-): Promise<{ next: BrowseResult; whole: boolean }> {
+): Promise<Screen> {
   const sourcePage = (p: number) => {
     let got = pages.get(p)
     if (!got) {
       got = fetchPage(p)
       pages.set(p, got)
-      got.catch(() => pages.delete(p))
+      got.then(
+        (answer) => done.set(p, answer),
+        () => pages.delete(p),
+      )
     }
     return got
   }
@@ -136,10 +170,7 @@ function useBrowseQuery({
       shown.current = size
     }
   }, [size])
-  const fetched = useRef<{ key: string; pages: Map<number, Promise<BrowseResult>> }>({
-    key: '',
-    pages: new Map(),
-  })
+  const fetched = useRef<Fetched>({ key: '', pages: new Map(), done: new Map() })
 
   const pendingQuery = useBrowseView((s) => s.pendingQuery)
   useEffect(() => {
@@ -158,23 +189,31 @@ function useBrowseQuery({
       return
     }
     let cancelled = false
-    setStatus('loading')
     const key = JSON.stringify([game, source, text, profileID, filter, retry, hides])
     if (fetched.current.key !== key) {
-      fetched.current = { key, pages: new Map() }
+      fetched.current = { key, pages: new Map(), done: new Map() }
     }
+    const show = ({ next, whole: all }: Screen) => {
+      setWhole(all)
+      setResult(next)
+      setStatus('done')
+      setPage((current) => clampPage({ page: current, total: pagedTotal(next), size }))
+    }
+    const ready = cachedScreen(fetched.current.done, page, size)
+    if (ready) {
+      show(ready)
+      return
+    }
+    setStatus('loading')
     loadScreen(
-      fetched.current.pages,
+      fetched.current,
       (p) => search({ game, source, text, page: p, profileID, filter }),
       page,
       size,
     )
-      .then(({ next, whole: all }) => {
+      .then((screen) => {
         if (!cancelled) {
-          setWhole(all)
-          setResult(next)
-          setStatus('done')
-          setPage((current) => clampPage({ page: current, total: pagedTotal(next), size }))
+          show(screen)
         }
       })
       .catch((err: unknown) => {
@@ -206,4 +245,4 @@ function useBrowseQuery({
   }
 }
 
-export { type BrowseResult, pagedTotal, type Status, useBrowseQuery }
+export { type BrowseResult, cachedScreen, pagedTotal, type Status, useBrowseQuery }
