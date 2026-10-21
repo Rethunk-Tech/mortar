@@ -19,6 +19,7 @@ import { overlayGame, useLaunch } from './launch/store.ts'
 import { PinReasonDialog } from './mods/pinReasonDialog.tsx'
 import { isGameId, useNav } from './nav/store.ts'
 import { ArrivalDialog } from './nxm/ArrivalDialog.tsx'
+import { GameModsDialogHost } from './profiles/GameModsDialogHost.tsx'
 import { ProfilesPage } from './profiles/ProfilesPage.tsx'
 import { QuitPrompt } from './QuitPrompt.tsx'
 import { LargeDownloadDialog } from './queue/LargeDownloadDialog.tsx'
@@ -116,6 +117,7 @@ export function App() {
       <ShareDialog />
       <ProfileDialogHost />
       <ImportDialog />
+      <GameModsDialogHost />
       <DownloadsDialog />
       <WhatsNewDialog />
       <BugReportDialog />

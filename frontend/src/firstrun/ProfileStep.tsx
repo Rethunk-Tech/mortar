@@ -17,8 +17,6 @@ import { useGameLoader, useGameName } from '../games/info.ts'
 import { type GameId, useNav } from '../nav/store.ts'
 import { useExternalImportSources } from '../profiles/externalImportSources.ts'
 import { GameModsDialog } from '../profiles/GameModsDialog.tsx'
-import { ImportWizard } from '../profiles/ImportWizard.tsx'
-import { PackImportDialog } from '../profiles/PackImportDialog.tsx'
 import { openImport } from '../share/store.ts'
 import { space } from '../theme/density.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
@@ -39,8 +37,6 @@ function ManagerImportCard({ game }: { game: GameId }) {
   const { t } = useLingui()
   const { sources: external } = useExternalImportSources(game, true)
   const [packs, setPacks] = useState(0)
-  const [wizard, setWizard] = useState(false)
-  const [packPath, setPackPath] = useState<string | null>(null)
   useEffect(() => {
     LocalProfiles(game)
       .then((list) => setPacks(list?.length ?? 0))
@@ -64,22 +60,9 @@ function ManagerImportCard({ game }: { game: GameId }) {
         })}
       </Typography>
       <Box sx={{ flex: 1 }} />
-      <Button variant="outlined" size="large" onClick={() => setWizard(true)}>
+      <Button variant="outlined" size="large" onClick={() => openImport({ managers: true })}>
         {t`Choose a profile…`}
       </Button>
-      <ImportWizard
-        open={wizard}
-        game={game}
-        onClose={() => setWizard(false)}
-        onPickPack={setPackPath}
-        onOwnCode={null}
-      />
-      <PackImportDialog
-        open={packPath !== null}
-        game={game}
-        initialPath={packPath ?? ''}
-        onClose={() => setPackPath(null)}
-      />
     </Box>
   )
 }

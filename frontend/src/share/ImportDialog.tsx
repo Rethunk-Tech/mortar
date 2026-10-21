@@ -1,11 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, Dialog, IconButton, Tab, Tabs, Typography } from '@mui/material'
-import { X } from 'lucide-react'
+import { Box, Dialog, IconButton, Typography } from '@mui/material'
+import { ArrowLeft, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { localId } from '../mods/dependents.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
+import { useGameModsDialog } from '../profiles/gameModsDialog.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
@@ -15,7 +17,9 @@ import { CompareSummary } from './CompareSummary.tsx'
 import { ImportFooter } from './ImportFooter.tsx'
 import { ImportInput } from './ImportInput.tsx'
 import { Tiles } from './ImportPreview.tsx'
+import { type ImportSource, ImportSources } from './ImportSources.tsx'
 import { missingModName, summarize } from './logic.ts'
+import { ManagerPane } from './ManagerPane.tsx'
 import { SaveImportedTemplateHost } from './SaveImportedTemplate.tsx'
 import { seedPreview } from './seedPreview.ts'
 import { type ImportRequest, useImportDialog } from './store.ts'
@@ -110,6 +114,43 @@ function useSeedPreview(
   ])
 }
 
+// Before a preview: the grid of places a profile comes from, the link or file field, or other managers' profiles.
+function ImportPane({
+  flow,
+  game,
+  close,
+}: {
+  flow: ReturnType<typeof useImportFlow>
+  game: string
+  close: () => void
+}) {
+  if (flow.tab === 'choose') {
+    return (
+      <ImportSources
+        onChoose={(picked: ImportSource) => {
+          if (picked === 'folder') {
+            close()
+            useGameModsDialog.getState().open(game)
+            return
+          }
+          flow.setTab(picked)
+        }}
+      />
+    )
+  }
+  if (flow.tab === 'manager') {
+    return (
+      <ManagerPane
+        game={game}
+        onFolder={(folder) => flow.previewLocalProfile(folder).catch(reportUnexpected)}
+        onExternal={(found) => flow.previewExternal(found).catch(reportUnexpected)}
+        onDone={close}
+      />
+    )
+  }
+  return <ImportInput flow={flow} />
+}
+
 function Body({ request }: { request: ImportRequest }) {
   const { t } = useLingui()
   const close = useImportDialog((s) => s.close)
@@ -128,6 +169,24 @@ function Body({ request }: { request: ImportRequest }) {
 
   const { preview } = flow
   const hasMods = preview !== null && preview.mods.length > 0
+  const steps: Record<TabId, string> = {
+    choose: '',
+    link: t`A link or code`,
+    file: t`A file`,
+    manager: t`Another mod manager`,
+  }
+  const step = flow.external ? '' : steps[flow.tab]
+  const back = () => {
+    const previewing = preview !== null
+    const typed = flow.text
+    flow.reset()
+    if (previewing) {
+      // Back from a preview returns to what was pasted, so it can be corrected.
+      flow.setText(typed)
+    } else {
+      setTab('choose')
+    }
+  }
   return (
     <Box
       sx={{
@@ -148,43 +207,32 @@ function Body({ request }: { request: ImportRequest }) {
           borderBottom: '1px solid var(--mortar-hairline)',
         }}
       >
+        {preview || (flow.tab !== 'choose' && !flow.external) ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', pl: '8px' }}>
+            <TipIconButton label={t`Back`} disabled={flow.busy} onClick={back}>
+              <ArrowLeft size={18} />
+            </TipIconButton>
+          </Box>
+        ) : null}
         <Typography
           component="h2"
           sx={{
             display: 'flex',
             alignItems: 'center',
             px: '18px',
-            minWidth: 200,
+            flexGrow: 1,
+            minWidth: 0,
             fontSize: 17,
             whiteSpace: 'nowrap',
           }}
         >
-          {manager ? t`Import from ${manager}` : t`Import profile from…`}
+          {manager ? t`Import from ${manager}` : t`Import a profile`}
+          {step ? (
+            <Box component="span" sx={{ ml: 1.25, color: 'text.secondary', fontSize: 14 }}>
+              {step}
+            </Box>
+          ) : null}
         </Typography>
-        <Tabs
-          value={flow.tab}
-          onChange={(_, next: TabId) => {
-            flow.reset()
-            setTab(next)
-          }}
-          aria-label={t`Where the profile comes from`}
-          sx={{
-            flexGrow: 1,
-            minHeight: 46,
-            // Another mod manager's profile has no link or file to switch to.
-            visibility: flow.external ? 'hidden' : 'visible',
-            '& .MuiTab-root': {
-              minHeight: 46,
-              fontSize: 13,
-              fontWeight: 600,
-              color: 'text.secondary',
-              '&.Mui-selected': { color: 'var(--mortar-accent-ink)', fontWeight: 700 },
-            },
-          }}
-        >
-          <Tab value="link" label={t`Link`} disabled={flow.busy} />
-          <Tab value="file" label={t`.mortar file`} disabled={flow.busy} />
-        </Tabs>
         <Tooltip title={t`Close`} describeChild={true}>
           <span>
             <IconButton
@@ -233,7 +281,7 @@ function Body({ request }: { request: ImportRequest }) {
           />
         </>
       ) : (
-        <ImportInput flow={flow} />
+        <ImportPane flow={flow} game={game} close={close} />
       )}
     </Box>
   )

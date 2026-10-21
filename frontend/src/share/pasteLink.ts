@@ -1,9 +1,12 @@
-type PastedLinkKind = 'share' | 'collection' | 'mod'
+type PastedLinkKind = 'share' | 'collection' | 'mod' | 'code'
 
 const SHARE_HOST = 'mortar.rethunk.tech'
 const APP_LINK = 'mortar://'
 const NEXUS_HOSTS = new Set(['nexusmods.com', 'www.nexusmods.com', 'next.nexusmods.com'])
 
+// An r2modman or Gale profile code: Thunderstore's key for it, or the code itself.
+const PROFILE_KEY = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const PROFILE_CODE = '#r2modman'
 const SHARE_PATH = /^\/[^/]+\/p$/
 const TRAILING_SLASHES = /\/+$/
 const COLLECTION = /^\/games\/[^/]+\/collections\/[^/]+(?:\/revisions\/\d+)?$/
@@ -39,6 +42,9 @@ function classifyPastedLink(text: string): PastedLinkKind | null {
   }
   if (value.startsWith(APP_LINK)) {
     return 'share'
+  }
+  if (PROFILE_KEY.test(value) || value.startsWith(PROFILE_CODE)) {
+    return 'code'
   }
   let url: URL
   try {

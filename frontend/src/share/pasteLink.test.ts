@@ -14,6 +14,8 @@ test('classifyPastedLink recognises share, collection and mod links', () => {
   ).toBe('collection')
   expect(classifyPastedLink('https://nexusmods.com/stardewvalley/mods/1915')).toBe('mod')
   expect(classifyPastedLink('https://www.nexusmods.com/games/stardewvalley/mods/1915')).toBe('mod')
+  expect(classifyPastedLink('01a15c4d-46de-0960-30aa-56d8f50082a6')).toBe('code')
+  expect(classifyPastedLink('#r2modman\nUEsDBBQ')).toBe('code')
 })
 
 test('classifyPastedLink rejects http, other hosts and plain text', () => {

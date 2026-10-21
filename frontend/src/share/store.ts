@@ -57,11 +57,14 @@ export interface ImportOptions {
   collectionUpdate?: boolean
   // The sending computer's profile, when a paired share carried one: where the import lands is remembered.
   lan?: LanOrigin
+  // Opens straight on the list of other mod managers' profiles.
+  managers?: boolean
 }
 
 export interface ImportRequest {
   profileId: string
-  tab: 'link' | 'file' | 'data'
+  // `choose` opens on the grid of places a profile can come from, when nothing was handed to the dialog.
+  tab: 'choose' | 'link' | 'file' | 'data' | 'manager'
   seed: string
   // Changes on every open, so opening again with the same seed previews again.
   run: number
@@ -79,14 +82,26 @@ export const useImportDialog = create<{
 }>((set) => ({
   request: null,
   busy: false,
-  open: ({ profileId = '', link = '', file = '', data = '', external, collectionUpdate, lan }) => {
+  open: ({
+    profileId = '',
+    link = '',
+    file = '',
+    data = '',
+    external,
+    collectionUpdate,
+    lan,
+    managers,
+  }) => {
     runs += 1
-    let tab: ImportRequest['tab'] = 'link'
+    let tab: ImportRequest['tab'] = link || external || collectionUpdate ? 'link' : 'choose'
     if (file) {
       tab = 'file'
     }
     if (data) {
       tab = 'data'
+    }
+    if (managers) {
+      tab = 'manager'
     }
     set({
       request: {

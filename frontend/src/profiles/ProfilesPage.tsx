@@ -15,7 +15,7 @@ import {
 } from '@dnd-kit/sortable'
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, ButtonBase, Menu, Typography } from '@mui/material'
+import { Box, Button, ButtonBase, Typography } from '@mui/material'
 import {
   ArrowLeft,
   Download,
@@ -26,7 +26,7 @@ import {
   Trash2,
   Wrench,
 } from 'lucide-react'
-import { memo, useCallback, useEffect, useId, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import type {
   Profile,
   TrashItem,
@@ -40,9 +40,9 @@ import { useCurrentGame } from '../nav/currentGame.ts'
 import { useNav } from '../nav/store.ts'
 import { dialogOpen, isTypingTarget } from '../settings/shortcuts.ts'
 import { shouldLeavePageOnEscape } from '../settings/shouldLeavePageOnEscape.ts'
+import { openImport } from '../share/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { MenuAction } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
@@ -53,7 +53,6 @@ import { findModInProfiles, onFindAllFocus, openModInProfile } from './findMod.t
 import { ProfileRow } from './ProfileRow.tsx'
 import { useProfiles } from './store.ts'
 import { useBudgets } from './useBudgets.ts'
-import { useProfileImport } from './useProfileImport.tsx'
 
 function TrashRow({ item }: { item: TrashItem }) {
   const { t } = useLingui()
@@ -285,20 +284,14 @@ const FindModSearch = memo(function FindModSearchView({ profiles }: { profiles: 
 })
 
 const ProfilesHeader = memo(function ProfilesHeaderView({
-  game,
   onBack,
   onCreate,
 }: {
-  game: string
   onBack: () => void
   // Left out while the list is empty: the empty state offers New profile itself.
   onCreate: (() => void) | undefined
 }) {
   const { t } = useLingui()
-  const importMenuId = useId()
-  const [importAnchor, setImportAnchor] = useState<HTMLElement | null>(null)
-  const { entries, dialogs } = useProfileImport(game)
-  const closeImportMenu = () => setImportAnchor(null)
   return (
     <Box
       sx={{
@@ -330,33 +323,11 @@ const ProfilesHeader = memo(function ProfilesHeaderView({
         variant="outlined"
         color="inherit"
         startIcon={<Download size={16} />}
-        aria-haspopup="menu"
-        aria-expanded={importAnchor !== null}
-        aria-controls={importMenuId}
-        onClick={(event) => setImportAnchor(event.currentTarget)}
+        onClick={() => openImport()}
         sx={{ height: 40, px: space.pad, fontSize: 14 }}
       >
-        {t`Import`}
+        {t`Import…`}
       </Button>
-      <Menu
-        id={importMenuId}
-        anchorEl={importAnchor}
-        open={importAnchor !== null}
-        onClose={closeImportMenu}
-      >
-        {entries.map((entry) => (
-          <MenuAction
-            key={entry.key}
-            icon={<entry.icon size={16} aria-hidden={true} />}
-            label={entry.label}
-            onClick={() => {
-              closeImportMenu()
-              entry.run()
-            }}
-          />
-        ))}
-      </Menu>
-      {dialogs}
       {onCreate ? (
         <Button
           variant="contained"
@@ -418,7 +389,6 @@ export function ProfilesPage() {
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <ProfilesHeader
-        game={game}
         onBack={closeProfiles}
         onCreate={profiles.length === 0 && damaged.length === 0 ? undefined : openCreate}
       />

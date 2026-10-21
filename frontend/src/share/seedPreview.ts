@@ -15,7 +15,7 @@ export async function seedPreview(
     previewCollectionUpdate: () => Promise<void>
   },
 ) {
-  flow.setTab(request.tab === 'link' ? 'link' : 'file')
+  flow.setTab(request.tab === 'data' ? 'file' : request.tab)
   if (request.collectionUpdate) {
     await flow.previewCollectionUpdate()
     return

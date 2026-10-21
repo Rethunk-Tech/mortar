@@ -266,7 +266,7 @@ export const ProfileMenu = memo(function ProfileMenuView({ game }: { game: strin
   const [creating, setCreating] = useState(false)
   const [managing, setManaging] = useState(false)
   const [context, setContext] = useState<{ id: string; position: Position | null } | null>(null)
-  const { entries, dialogs } = useProfileImport(game)
+  const entries = useProfileImport()
   const { templates, reload } = useTemplates(game, anchor !== null || managing)
   const contextProfile = context ? profiles.find((p) => p.id === context.id) : undefined
   const showContext = useCallback(
@@ -323,7 +323,6 @@ export const ProfileMenu = memo(function ProfileMenuView({ game }: { game: strin
       ) : null}
       {newProfile}
       {manageTemplates}
-      {dialogs}
     </>
   )
 })

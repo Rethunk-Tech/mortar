@@ -2,7 +2,6 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { ClipboardPaste, FolderOpen } from 'lucide-react'
 import { liveHandoff, useHandoff } from '../install/handoff.ts'
-import { useCurrentGame } from '../nav/currentGame.ts'
 import { space } from '../theme/density.ts'
 import { BUTTON_LARGE_HEIGHT } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -14,7 +13,6 @@ const rowButtonSx = { flexShrink: 0, whiteSpace: 'nowrap', height: BUTTON_LARGE_
 // Before a preview exists: a link to type or paste, or a file to choose. Parse errors show here.
 export function ImportInput({ flow }: { flow: ImportFlow }) {
   const { t } = useLingui()
-  const game = useCurrentGame()
   const handoff = liveHandoff(useHandoff((s) => s.page))
   const canPreview = !flow.busy && flow.text.trim() !== ''
   return (
@@ -22,7 +20,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
       {flow.tab === 'file' ? (
         <>
           <Typography sx={{ fontSize: 14, textAlign: 'center' }}>
-            {t`Open a .mortar file someone sent you. You see what it holds before anything downloads.`}
+            {t`Open a .mortar file, an r2modman or Gale .r2z, or a Thunderstore modpack. You see what it holds before anything downloads.`}
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Button
@@ -40,7 +38,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
       ) : (
         <>
           <Typography sx={{ fontSize: 14 }}>
-            {t`Paste a share link, a collection link, a Patreon post link, an itch.io page link, or (Premium) a Nexus mod link with Ctrl+V.`}
+            {t`Paste a Mortar link, a Nexus collection, an r2modman or Gale code, a Patreon post, an itch.io page or (Premium) a Nexus mod link.`}
           </Typography>
           <Box
             component="form"
@@ -56,11 +54,11 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
               size="small"
               fullWidth={true}
               autoFocus={true}
-              placeholder={`https://mortar.rethunk.tech/${game}/p#…`}
+              placeholder={t`Link or code`}
               value={flow.text}
               onChange={(e) => flow.setText(e.target.value)}
               slotProps={{
-                htmlInput: { 'aria-label': t`Share link`, spellCheck: false },
+                htmlInput: { 'aria-label': t`Link or code`, spellCheck: false },
               }}
               // As tall as the large button beside it.
               sx={{ userSelect: 'text', '& .MuiInputBase-root': { height: BUTTON_LARGE_HEIGHT } }}

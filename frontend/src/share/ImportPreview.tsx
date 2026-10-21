@@ -271,6 +271,22 @@ function Pill({
   )
 }
 
+// Files an import left out, and why.
+function LeftOut({ title, paths }: { title: string; paths: string[] }) {
+  return (
+    <Box>
+      <Typography variant="body2" sx={{ fontWeight: 600, color: SHARE_CARD.muted }}>
+        {title}
+      </Typography>
+      <Box component="ul" sx={{ m: 0, pl: space.pad, fontSize: 13, color: SHARE_CARD.muted }}>
+        {paths.map((p) => (
+          <li key={p}>{p}</li>
+        ))}
+      </Box>
+    </Box>
+  )
+}
+
 function CountLabel({ state, count }: { state: ModState; count: number }) {
   const { t } = useLingui()
   return {
@@ -363,6 +379,7 @@ export function StatusBar({
     other: 'with # settings files, written once their mods are installed',
   })
   const skippedSettings = preview.skippedSettings ?? []
+  const skippedPrograms = preview.skippedPrograms ?? []
   const carried = carriedBy(preview)
   const carriedLabels = {
     notes: t`Notes`.toLocaleLowerCase(i18n.locale),
@@ -420,19 +437,22 @@ export function StatusBar({
           {detail}
         </Typography>
         {skippedSettings.length > 0 ? (
-          <Box>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: SHARE_CARD.muted }}>
-              {plural(skippedSettings.length, {
-                one: '# settings file was left out (too large):',
-                other: '# settings files were left out (too large):',
-              })}
-            </Typography>
-            <Box component="ul" sx={{ m: 0, pl: space.pad, fontSize: 13, color: SHARE_CARD.muted }}>
-              {skippedSettings.map((p) => (
-                <li key={p}>{p}</li>
-              ))}
-            </Box>
-          </Box>
+          <LeftOut
+            title={plural(skippedSettings.length, {
+              one: '# settings file was left out (too large):',
+              other: '# settings files were left out (too large):',
+            })}
+            paths={skippedSettings}
+          />
+        ) : null}
+        {skippedPrograms.length > 0 ? (
+          <LeftOut
+            title={plural(skippedPrograms.length, {
+              one: '# program file was left out; Mortar copies settings, not programs:',
+              other: '# program files were left out; Mortar copies settings, not programs:',
+            })}
+            paths={skippedPrograms}
+          />
         ) : null}
       </Box>
       <Box sx={{ flex: 1 }} />
