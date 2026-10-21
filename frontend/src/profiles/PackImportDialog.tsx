@@ -89,11 +89,12 @@ export function PackImportDialog({
       .then((result) => {
         const unsupported = result.unsupported ?? []
         const kept = result.kept ?? []
+        const skipped = result.skipped ?? []
         useToasts.getState().push({
-          kind: unsupported.length > 0 || kept.length > 0 ? 'warning' : 'success',
+          kind: unsupported.length > 0 || kept.length > 0 || skipped.length > 0 ? 'warning' : 'success',
           title: t`Imported ${preview?.name ?? ''}: ${result.queued} to install`,
-          ...(unsupported.length > 0 || kept.length > 0
-            ? { body: importNotes(i18n, unsupported, kept) }
+          ...(unsupported.length > 0 || kept.length > 0 || skipped.length > 0
+            ? { body: importNotes(i18n, unsupported, kept, skipped) }
             : {}),
         })
         close()

@@ -15,9 +15,10 @@ export function packageLine(p: Package, off: string): string {
 }
 
 /** What an import left undone: packages from other sources, and files the player's profile already held with other contents. */
-export function importNotes(i18n: I18n, unsupported: string[], kept: string[]): string {
+export function importNotes(i18n: I18n, unsupported: string[], kept: string[], skipped: string[] = []): string {
   return [
     unsupported.length > 0 ? i18n._(msg`Not from Thunderstore: ${listNames(unsupported)}`) : '',
+    skipped.length > 0 ? i18n._(msg`Skipped, not on Thunderstore: ${listNames(skipped)}`) : '',
     kept.length > 0 ? i18n._(msg`Kept your own copies of: ${listNames(kept)}`) : '',
   ]
     .filter(Boolean)

@@ -95,6 +95,30 @@ func (s *Service) expandPackages(ctx context.Context, reqs []Request) ([]Request
 	return out, nil
 }
 
+// Unresolvable maps each Thunderstore package of reqs whose closure fails on its own (not in the community's index,
+// a loader pack outside the series Mortar runs, a dependency that is gone) to the reason, so a caller can leave it
+// out instead of failing the whole request.
+func (s *Service) Unresolvable(ctx context.Context, gameID, profileID string, reqs []Request) map[string]string {
+	out := map[string]string{}
+	if s.d.Closure == nil {
+		return out
+	}
+	exact := s.d.ExactDependencies != nil && s.d.ExactDependencies(gameID, profileID)
+	for _, q := range reqs {
+		if q.Package == "" || q.Source != "" {
+			continue
+		}
+		ns, name, _ := strings.Cut(q.Package, "-")
+		cctx, cancel := context.WithTimeout(ctx, closureTimeout)
+		_, err := s.d.Closure(cctx, gameID, []thunderstore.Ref{{Namespace: ns, Name: name, Version: q.Version}}, exact)
+		cancel()
+		if err != nil {
+			out[q.Package] = err.Error()
+		}
+	}
+	return out
+}
+
 // packageNeeds is the lowercase package ids of a package's "Namespace-Name-Version" dependencies.
 func packageNeeds(deps []string) []string {
 	var out []string

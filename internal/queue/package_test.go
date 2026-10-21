@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -225,5 +226,19 @@ func TestPackageStalledCDNHandsItsPartialToTheNext(t *testing.T) {
 	f.wait("done", func(st State) bool { return len(st.Items) == 1 && st.Items[0].State == StateDone })
 	if got, _ := rng.Load().(string); got != fmt.Sprintf("bytes=%d-", cut) {
 		t.Fatalf("the next CDN was asked for %q", got)
+	}
+}
+
+func TestUnresolvableNamesOnlyThePackagesWhoseClosureFails(t *testing.T) {
+	f := newFixture(t)
+	f.s.d.Closure = func(_ context.Context, _ string, roots []thunderstore.Ref, _ bool) ([]thunderstore.Resolved, error) {
+		if roots[0].Name == "Gone" {
+			return nil, errors.New("me-gone 1.0.0 is not in the index")
+		}
+		return nil, nil
+	}
+	got := f.s.Unresolvable(t.Context(), "riskofrain2", "p1", []Request{{Package: "Me-Gone", Version: "1.0.0"}, {Package: "Me-Fine"}, {Kind: KindInstall}})
+	if len(got) != 1 || got["Me-Gone"] != "me-gone 1.0.0 is not in the index" {
+		t.Errorf("got %v", got)
 	}
 }

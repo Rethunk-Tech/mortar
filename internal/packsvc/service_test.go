@@ -77,7 +77,14 @@ func (*fakeProfiles) RestoreBackup(context.Context, string, profile.Profile, map
 	return profile.Profile{}, nil, errors.New("not in this fake")
 }
 
-type fakeQueue struct{ got []queue.Request }
+type fakeQueue struct {
+	got []queue.Request
+	bad map[string]string
+}
+
+func (f *fakeQueue) Unresolvable(context.Context, string, string, []queue.Request) map[string]string {
+	return f.bad
+}
 
 func (f *fakeQueue) Add(_ context.Context, reqs []queue.Request) ([]queue.Item, error) {
 	f.got = append(f.got, reqs...)
@@ -455,5 +462,16 @@ func TestImportOverAProfileKeepsDifferingFilesUnlessReplaceIsChosen(t *testing.T
 	}
 	if b, _ := fsx.ReadFile(cfg); string(b) != "pack" {
 		t.Errorf("Replace did not write the pack's file: %q", b)
+	}
+}
+
+func TestImportSkipsUnresolvablePackagesAndKeepsTheRest(t *testing.T) {
+	q := &fakeQueue{bad: map[string]string{"Alice-MoreCompany": "alice-morecompany 1.2.3 is not in the index"}}
+	res, err := (&Service{Profiles: &fakeProfiles{}, Queue: q}).Import(context.Background(), Source{Path: writeR2z(t)}, "stardew", "")
+	if err != nil || res.Queued != 1 || len(q.got) != 1 || q.got[0].Package != "BepInEx-BepInExPack" {
+		t.Fatalf("queued %+v, %+v, %v", q.got, res, err)
+	}
+	if !slices.Equal(res.Skipped, []string{"Alice-MoreCompany: alice-morecompany 1.2.3 is not in the index"}) || len(res.Disabled) != 0 {
+		t.Errorf("result %+v", res)
 	}
 }

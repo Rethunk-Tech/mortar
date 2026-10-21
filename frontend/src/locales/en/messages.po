@@ -2703,6 +2703,11 @@ msgstr "Dependency cycle"
 msgid "New profile"
 msgstr "New profile"
 
+#. placeholder {0}: listNames(skipped)
+#: src/profiles/packImport.ts
+msgid "Skipped, not on Thunderstore: {0}"
+msgstr "Skipped, not on Thunderstore: {0}"
+
 #: src/mods/problemFix/DamagedFix.tsx
 #: src/profiles/store.ts
 msgid "Repaired {name}"

@@ -41,6 +41,7 @@ type profiles interface {
 // downloads is the part of queue.Service the service uses.
 type downloads interface {
 	Add(ctx context.Context, reqs []queue.Request) ([]queue.Item, error)
+	Unresolvable(ctx context.Context, gameID, profileID string, reqs []queue.Request) map[string]string
 }
 
 // Service reads packs and puts their packages in the download queue.
@@ -96,6 +97,8 @@ type Result struct {
 	Queued      int      `json:"queued"`
 	Unsupported []string `json:"unsupported"`
 	Disabled    []string `json:"disabled"`
+	// Skipped names packages Thunderstore's index could not resolve, each with the reason; the rest of the pack imported.
+	Skipped []string `json:"skipped"`
 	// Kept names the pack's files an existing profile already holds with other contents, left as the player has them.
 	Kept []string `json:"kept"`
 }
@@ -221,7 +224,7 @@ func (s *Service) importPack(ctx context.Context, src Source, gameID, profileID,
 	if !slices.ContainsFunc(game.Catalog(), func(g components.GameInfo) bool { return g.ID == gameID }) {
 		return Result{}, errors.New("choose which game this pack is for")
 	}
-	res := Result{Game: gameID, Unsupported: []string{}, Disabled: []string{}, Kept: []string{}}
+	res := Result{Game: gameID, Unsupported: []string{}, Disabled: []string{}, Skipped: []string{}, Kept: []string{}}
 	var reqs []queue.Request
 	for _, r := range d.Packages {
 		if bridge.IsOwnListing(r.Native) {
@@ -237,6 +240,16 @@ func (s *Service) importPack(ctx context.Context, src Source, gameID, profileID,
 			req.Disabled = []mod.ID{mod.NewID(mod.FormatThunderstore, r.Native)}
 		}
 		reqs = append(reqs, req)
+	}
+	if bad := s.Queue.Unresolvable(ctx, gameID, profileID, reqs); len(bad) > 0 {
+		reqs = slices.DeleteFunc(reqs, func(r queue.Request) bool {
+			why, skip := bad[r.Package]
+			if skip {
+				res.Skipped = append(res.Skipped, r.Package+": "+why)
+				res.Disabled = slices.DeleteFunc(res.Disabled, func(n string) bool { return n == r.Package })
+			}
+			return skip
+		})
 	}
 	if len(reqs) == 0 {
 		return res, errors.New("the pack holds no Thunderstore packages to install")

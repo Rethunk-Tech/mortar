@@ -23,6 +23,10 @@ func (q *recordQueue) Add(_ context.Context, reqs []queue.Request) ([]queue.Item
 	return make([]queue.Item, len(reqs)), nil
 }
 
+func (*recordQueue) Unresolvable(context.Context, string, string, []queue.Request) map[string]string {
+	return nil
+}
+
 func TestPackImportFetchesACodeAndQueuesItIntoANamedProfile(t *testing.T) {
 	t.Setenv("MORTAR_ENABLE_GAMES", "lethal-company")
 	const key = "019c9378-d2e6-4fec-5a2f-e4b22f8cf1d1"
