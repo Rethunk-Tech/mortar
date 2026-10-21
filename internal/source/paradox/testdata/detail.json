@@ -1,4 +1,48 @@
-{"result":"OK","modDetail":{"author":"yenyang","displayName":"Anarchy","game":"cities_skylines_2","longDescription":"Anarchy disables error checks.\n\n## Dependencies\n\nUnified Icon Library","name":"25faeda9-b17e-4525-a08f-ba219ed13524","modId":"74604","modVersion":"40","userModVersion":"1.8.0","tags":["Code Mod"],"requirements":[{"productType":"MOD","id":"74417","name":"Unified Icon Library","version":40,"dependencyVersion":null},{"productType":"DLC","id":"1","name":"Beach Properties","version":1},{"productType":"MOD","id":"74604","name":"itself","version":1}],"changelog":[
-{"modVersion":38,"released":"2026-08-01 10:00:00","details":"## Patch V1.7.9\n\n* fix","size":1,"userModVersion":"1.7.9"},
-{"modVersion":40,"released":"2026-09-15 03:23:57","details":"<p>Patch <b>1.8.0</b></p>","size":2,"userModVersion":"1.8.0"},
-{"modVersion":39,"released":"2026-09-01 10:00:00","details":"## Patch V1.8.0 beta","size":3,"userModVersion":"1.7.10"}]}}
+{
+  "result": "OK",
+  "modDetail": {
+    "author": "yenyang",
+    "displayName": "Anarchy",
+    "game": "cities_skylines_2",
+    "longDescription": "Anarchy disables error checks.\n\n## Dependencies\n\nUnified Icon Library",
+    "name": "25faeda9-b17e-4525-a08f-ba219ed13524",
+    "modId": "74604",
+    "modVersion": "40",
+    "userModVersion": "1.8.0",
+    "tags": ["Code Mod"],
+    "requirements": [
+      {
+        "productType": "MOD",
+        "id": "74417",
+        "name": "Unified Icon Library",
+        "version": 40,
+        "dependencyVersion": null
+      },
+      { "productType": "DLC", "id": "1", "name": "Beach Properties", "version": 1 },
+      { "productType": "MOD", "id": "74604", "name": "itself", "version": 1 }
+    ],
+    "changelog": [
+      {
+        "modVersion": 38,
+        "released": "2026-08-01 10:00:00",
+        "details": "## Patch V1.7.9\n\n* fix",
+        "size": 1,
+        "userModVersion": "1.7.9"
+      },
+      {
+        "modVersion": 40,
+        "released": "2026-09-15 03:23:57",
+        "details": "<p>Patch <b>1.8.0</b></p>",
+        "size": 2,
+        "userModVersion": "1.8.0"
+      },
+      {
+        "modVersion": 39,
+        "released": "2026-09-01 10:00:00",
+        "details": "## Patch V1.8.0 beta",
+        "size": 3,
+        "userModVersion": "1.7.10"
+      }
+    ]
+  }
+}

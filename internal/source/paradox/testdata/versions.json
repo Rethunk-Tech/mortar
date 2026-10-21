@@ -1,5 +1,9 @@
-{"modVersions":[
-{"created":"2024-02-27T18:43:45.000+0000","size":901017,"userVersion":"1.4.0","id":1},
-{"created":"2026-08-01T10:00:00.000+0000","size":500,"userVersion":"","id":38},
-{"created":"2026-09-01T10:00:00.000+0000","size":600,"userVersion":"1.7.10","id":39},
-{"created":"2026-09-15T03:23:57.000+0000","size":670237,"userVersion":"1.8.0","id":40}],"result":"OK"}
+{
+  "modVersions": [
+    { "created": "2024-02-27T18:43:45.000+0000", "size": 901017, "userVersion": "1.4.0", "id": 1 },
+    { "created": "2026-08-01T10:00:00.000+0000", "size": 500, "userVersion": "", "id": 38 },
+    { "created": "2026-09-01T10:00:00.000+0000", "size": 600, "userVersion": "1.7.10", "id": 39 },
+    { "created": "2026-09-15T03:23:57.000+0000", "size": 670237, "userVersion": "1.8.0", "id": 40 }
+  ],
+  "result": "OK"
+}

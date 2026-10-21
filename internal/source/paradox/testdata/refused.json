@@ -1,1 +1,6 @@
-{"result":"Failure","errorCode":"bad-input","errorMessage":"Mod is corrupted or chosen operating system is not supported","detail":""}
+{
+  "result": "Failure",
+  "errorCode": "bad-input",
+  "errorMessage": "Mod is corrupted or chosen operating system is not supported",
+  "detail": ""
+}

@@ -1,5 +1,46 @@
-{"totalCount":27068,"mods":[
-{"arch":"Any","author":"yenyang","displayName":"Anarchy","game":"cities_skylines_2","installedCount":1047436,"modVersion":"40","modId":"74604","name":"25faeda9-b17e-4525-a08f-ba219ed13524","os":"Windows","rating":5,"ratingsTotal":14464,"requiredVersion":"1.6.*","shortDescription":"Disables Error Checks and does not show errors.","state":"published","tags":["Code Mod"],"updated":"2026-09-15T19:59:20.000Z","displayImagePath":"https://modscontent.paradox-interactive.com/cities_skylines_2/25faeda9-b17e-4525-a08f-ba219ed13524/content/covers/cover_40.jpg","userModVersion":null},
-{"arch":"Any","author":"ds1chris1","displayName":"willington","game":"cities_skylines_2","installedCount":3,"modVersion":"1","modId":"99085","name":"3875a1c9-2865-479a-909a-6a0e960c1871","os":"Any","rating":0,"ratingsTotal":0,"shortDescription":"w","state":"published","tags":["Map","North American"],"updated":"2025-01-09T09:22:44.000Z","displayImagePath":"https://modscontent.paradox-interactive.com/cities_skylines_2/3875a1c9-2865-479a-909a-6a0e960c1871/content/cover.jpg","userModVersion":null},
-{"displayName":"bad id","modId":"../x","tags":[]}
-],"result":"OK"}
+{
+  "totalCount": 27068,
+  "mods": [
+    {
+      "arch": "Any",
+      "author": "yenyang",
+      "displayName": "Anarchy",
+      "game": "cities_skylines_2",
+      "installedCount": 1047436,
+      "modVersion": "40",
+      "modId": "74604",
+      "name": "25faeda9-b17e-4525-a08f-ba219ed13524",
+      "os": "Windows",
+      "rating": 5,
+      "ratingsTotal": 14464,
+      "requiredVersion": "1.6.*",
+      "shortDescription": "Disables Error Checks and does not show errors.",
+      "state": "published",
+      "tags": ["Code Mod"],
+      "updated": "2026-09-15T19:59:20.000Z",
+      "displayImagePath": "https://modscontent.paradox-interactive.com/cities_skylines_2/25faeda9-b17e-4525-a08f-ba219ed13524/content/covers/cover_40.jpg",
+      "userModVersion": null
+    },
+    {
+      "arch": "Any",
+      "author": "ds1chris1",
+      "displayName": "willington",
+      "game": "cities_skylines_2",
+      "installedCount": 3,
+      "modVersion": "1",
+      "modId": "99085",
+      "name": "3875a1c9-2865-479a-909a-6a0e960c1871",
+      "os": "Any",
+      "rating": 0,
+      "ratingsTotal": 0,
+      "shortDescription": "w",
+      "state": "published",
+      "tags": ["Map", "North American"],
+      "updated": "2025-01-09T09:22:44.000Z",
+      "displayImagePath": "https://modscontent.paradox-interactive.com/cities_skylines_2/3875a1c9-2865-479a-909a-6a0e960c1871/content/cover.jpg",
+      "userModVersion": null
+    },
+    { "displayName": "bad id", "modId": "../x", "tags": [] }
+  ],
+  "result": "OK"
+}
