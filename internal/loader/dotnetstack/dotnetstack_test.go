@@ -1,7 +1,9 @@
 package dotnetstack
 
 import (
-	"slices"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -51,18 +53,49 @@ func TestBlamesIgnoresStacksWithoutAModFrame(t *testing.T) {
 	}
 }
 
-// A Unity stack through a Harmony wrapper names the patched method; the stack ends at the first line that is no frame.
-func TestMethodsReadsFramesAndHarmonyWrappers(t *testing.T) {
-	stack := []string{
-		"Stack trace:",
-		"OccludeAudio.Update () (at <1a2b>:0)",
-		"(wrapper dynamic-method) OccludeAudio.DMD<OccludeAudio::Update>(OccludeAudio)",
-		"  at CoolMod.Patches.Postfix () [0x0001f] in <def>:0",
-		"",
-		"  at Not.Part.Of () [0x0] in <x>:0",
+// Real stacks from a Lethal Company run, one per block: Unity's format through MonoMod hooks (LethalCasino), Mono's
+// Exception.ToString with source lines and symbol-less frames (FacilityMeltdown), a patch without symbols inside its
+// Harmony wrapper (TooManyEmotes), and HarmonyX's own report of a patch it could not run. Each stack ends at the
+// blank line after it.
+func TestFramesReadsRealStacks(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("testdata", "lc-stacks.log"))
+	if err != nil {
+		t.Fatal(err)
 	}
-	want := []string{"OccludeAudio::Update", "OccludeAudio::Update", "CoolMod.Patches::Postfix"}
-	if got := Methods(stack); !slices.Equal(got, want) {
-		t.Errorf("Methods = %v, want %v", got, want)
+	lines := strings.Split(string(data), "\n")
+	var stacks [][]Frame
+	for i := range lines {
+		if i == 0 || strings.TrimSpace(lines[i-1]) == "" && strings.TrimSpace(lines[i]) != "" {
+			stacks = append(stacks, Frames(lines[i+1:]))
+		}
+	}
+	casino, meltdown, emotes, harmonyx := 0, 1, 2, 3
+	if len(stacks) != 4 {
+		t.Fatalf("%d stacks", len(stacks))
+	}
+	for _, c := range []struct {
+		stack, frames int
+		at            int
+		want          Frame
+	}{
+		{casino, 23, 0, Frame{Method: "LethalCasino.Patches.MenuManagerPatch::StartPatch", Source: "MenuManagerPatch.cs:17"}},
+		{casino, 23, 1, Frame{Method: "MenuManager::Start", DMD: true}},
+		{casino, 23, 2, Frame{Method: "MonoMod.Utils.DynamicMethodDefinition::Trampoline<MenuManager::Start>?659680686"}},
+		{casino, 23, 21, Frame{Method: "Mirage.Hook.Config+syncConfig@23-1::Invoke", Source: "Config.fs:24"}},
+		{meltdown, 8, 0, Frame{Method: "FacilityMeltdown.MeltdownSequence.Behaviours.MeltdownHandler+<>c__DisplayClass20_0::<HandleEnemies>b__0", Source: "MeltdownHandler.cs:180"}},
+		{meltdown, 8, 1, Frame{Method: "System.Linq.Enumerable+WhereListIterator`1[TSource]::ToList", Module: "ea489521390f48908a7ce45cb17a6848"}},
+		{meltdown, 8, 5, Frame{Method: "FacilityMeltdown.MeltdownSequence.Behaviours.MeltdownHandler::__rpc_handler_3631067672", Module: "f723873df70c4b288182bf3c0363ab12"}},
+		{emotes, 8, 0, Frame{Method: "TooManyEmotes.SaveManager::SaveLocalPlayerValues", Module: "ba9a980d78984b3fb839a44a6ac6a81c"}},
+		{emotes, 8, 1, Frame{Method: "GameNetworkManager::SaveLocalPlayerValues", DMD: true}},
+		{harmonyx, 1, 0, Frame{Method: "RoundManager::GenerateNewFloor", DMD: true}},
+	} {
+		got := stacks[c.stack]
+		if len(got) != c.frames || got[c.at] != c.want {
+			t.Errorf("stack %d: %d frames, [%d] = %+v, want %d and %+v", c.stack, len(got), c.at, got[min(c.at, len(got)-1)], c.frames, c.want)
+		}
+	}
+	blames := Blames(string(data), Unity)
+	if len(blames) < 3 || blames[2].Frame != "at TooManyEmotes.SaveManager.SaveLocalPlayerValues ()" {
+		t.Errorf("a frame's symbol-less location is cut from its blame: %+v", blames)
 	}
 }

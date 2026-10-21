@@ -16,9 +16,9 @@ var (
 	exceptionLine = regexp.MustCompile(`\b((?:\w+\.)*\w*Exception): (.*)$`)
 	// frameLine is a frame of a .NET stack: "   at Namespace.Type.Method(args) in file:line N". Mono and Unity print a
 	// space before the argument list.
-	frameLine = regexp.MustCompile(`^\s+at (?:\(wrapper [^)]*\) )?([\w.<>` + "`" + `$+]+?)\.([^.\s(]+)(?:\[[^\]]*\])? ?\(`)
+	frameLine = regexp.MustCompile(`^\s+at (?:\(wrapper [^)]*\) )?([\w.<>` + "`" + `$+@\[\]-]+?)\.([^.\s(]+)(?:\[[^\]]*\])? ?\(`)
 	// unityFrame is a frame Unity's log prints after "Stack trace:", with no "at": "Namespace.Type.Method (args) (at <module>:0)".
-	unityFrame = regexp.MustCompile(`^([\w.<>` + "`" + `$+]+?)\.([^.\s(:]+)(?:\[[^\]]*\])? ?\(.*\(at .*\)\s*$`)
+	unityFrame = regexp.MustCompile(`^([\w.<>` + "`" + `$+@\[\]-]+?)\.([^.\s(:]+)(?:\[[^\]]*\])? ?\(.*\(at .*\)\s*$`)
 	// patchFrame is a Harmony-generated method: DMD<...> wrapper frames, or a patched method renamed "..._Patch1".
 	patchFrame = regexp.MustCompile(`^\s+at (?:\(wrapper [^)]*\) )?(?:DMD<|[\w.<>+]*_Patch\d*\()`)
 	// dmdTarget is the method a Harmony wrapper stands in for: "DMD<Namespace.Type::Method>".
@@ -26,8 +26,18 @@ var (
 	harmonyID = regexp.MustCompile(`(?i)(?:harmony ?id|patch ?owner|patched by)\W+([A-Za-z0-9_][\w.\-]*)`)
 	stackEnd  = regexp.MustCompile(`^\s*--- End of (?:inner exception )?stack trace`)
 	logPrefix = regexp.MustCompile(`^\[\d\d:\d\d:\d\d `)
-	// inFile is what closes a frame: a file and line, or Mono's offset and module, or Unity's "(at module:0)".
-	inFile = regexp.MustCompile(` (?:in .*:line \d+|\[0x[0-9a-f]+\] in .*:\d+|\(at .*\))$`)
+	// inFile is what closes a frame: a file and line, or Mono's offset and module, or Unity's "(at module:0)". Mono
+	// writes "<mvid>:IL_003F" for a method it has no symbols for, and a space after it.
+	inFile = regexp.MustCompile(` (?:in .*:line \d+|\[0x[0-9a-f]+\] in .*:(?:\d+|IL_[0-9A-Fa-f]+)|\(at .*\))\s*$`)
+	// wrapperFrame is a runtime-made method in Unity's format, which has no "at" and no location: MonoMod's
+	// "(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Trampoline<T::M>?123(args)".
+	wrapperFrame = regexp.MustCompile(`^\(wrapper [^)]*\) ([\w.<>` + "`" + `$+@\[\]-]+?)\.([^.\s(]+) ?\(`)
+	// colonFrame is Unity's own trace format for a Debug.Log call: "Namespace.Type:Method(args)".
+	colonFrame = regexp.MustCompile(`^([\w.<>` + "`" + `$+@\[\]-]+):([^.\s(:]+) ?\(`)
+	// location is where a frame says its code is: .NET's "in path:line N", Mono's "[0x2e] in path:180" or
+	// "in <mvid>:IL_002E", Unity's "(at path:17)" or "(at <mvid>:IL_01D0)".
+	location = regexp.MustCompile(`(?: in (.+):line (\d+)| \[0x[0-9a-f]+\] in (.+):(\d+|IL_[0-9A-Fa-f]+)| \(at (.+):(\d+|IL_[0-9A-Fa-f]+)\))$`)
+	mvid     = regexp.MustCompile(`^<([0-9a-f]{32})>$`)
 )
 
 // SMAPI is the root namespaces of code that is not a SMAPI mod's: SMAPI, its libraries, the game and the runtime.
@@ -129,31 +139,70 @@ func firstPatch(stack []string) string {
 	return ""
 }
 
-// Methods names the methods the stack below an exception line runs through, innermost first, as Harmony targets name
-// them ("Namespace.Type::Method"): each frame's method, and for a Harmony wrapper the method it stands in for. lines
-// start at the first line after the exception; the stack ends at the first line that is no frame.
-func Methods(lines []string) []string {
-	var out []string
+// Frame is one frame of a stack. Method is "Namespace.Type::Method", for a Harmony wrapper (DMD) the method it stands
+// in for. Source is the file's base name and line when the runtime printed them; Module is the assembly's MVID, 32
+// lowercase hex digits, when it printed that instead because it had no symbols for the method.
+type Frame struct {
+	Method string
+	DMD    bool
+	Source string
+	Module string
+}
+
+// Frames reads the stack below an exception line, innermost first. lines start at the first line after the exception;
+// the stack ends at the first line that is no frame.
+func Frames(lines []string) []Frame {
+	var out []Frame
 	for i, l := range lines {
-		l = strings.TrimRight(l, "\r")
+		l = strings.TrimRight(l, "\r ")
 		if i == 0 && strings.TrimSpace(l) == "Stack trace:" {
 			continue
 		}
-		if m := dmdTarget.FindStringSubmatch(l); m != nil {
-			out = append(out, m[1])
-			continue
-		}
-		m := frameLine.FindStringSubmatch(l)
-		if m == nil {
-			m = unityFrame.FindStringSubmatch(l)
-		}
-		if m == nil {
+		f, ok := frameOf(l)
+		if !ok {
 			if stackEnd.MatchString(l) {
 				continue
 			}
 			break
 		}
-		out = append(out, m[1]+"::"+m[2])
+		out = append(out, f)
+	}
+	return out
+}
+
+func frameOf(l string) (Frame, bool) {
+	if m := dmdTarget.FindStringSubmatch(l); m != nil {
+		return Frame{Method: m[1], DMD: true}, true
+	}
+	m := frameLine.FindStringSubmatch(l)
+	for _, re := range []*regexp.Regexp{unityFrame, wrapperFrame, colonFrame} {
+		if m != nil {
+			break
+		}
+		m = re.FindStringSubmatch(l)
+	}
+	if m == nil {
+		return Frame{}, false
+	}
+	f := Frame{Method: m[1] + "::" + m[2]}
+	if loc := location.FindStringSubmatch(l); loc != nil {
+		path, line := loc[1]+loc[3]+loc[5], loc[2]+loc[4]+loc[6]
+		if id := mvid.FindStringSubmatch(path); id != nil {
+			f.Module = id[1]
+		} else if !strings.HasPrefix(path, "<") && !strings.HasPrefix(line, "IL_") && line != "0" {
+			f.Source = path[strings.LastIndexAny(path, `/\`)+1:] + ":" + line
+		}
+	}
+	return f, true
+}
+
+// Methods names the methods the stack below an exception line runs through, innermost first, as Harmony targets name
+// them ("Namespace.Type::Method"): each frame's method, and for a Harmony wrapper the method it stands in for.
+func Methods(lines []string) []string {
+	frames := Frames(lines)
+	out := make([]string, len(frames))
+	for i, f := range frames {
+		out[i] = f.Method
 	}
 	return out
 }

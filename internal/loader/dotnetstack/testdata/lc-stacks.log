@@ -1,0 +1,49 @@
+[Error  : Unity Log] MissingMethodException: Method not found: void .MenuManager.DisplayMenuNotification(string,string)
+Stack trace:
+LethalCasino.Patches.MenuManagerPatch.StartPatch (MenuManager __instance) (at A:/dev/modding/LethalCasino/Solution/LethalCasino/LethalCasino/Patches/MenuManagerPatch.cs:17)
+(wrapper dynamic-method) MenuManager.DMD<MenuManager::Start>(MenuManager)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Trampoline<MenuManager::Start>?659680686(MenuManager)
+Dawn.Internal.SaveDataPatch.LCBetterSaveInit (On.MenuManager+orig_Start orig, MenuManager self) (at ./src/Internal/Patches/SaveDataPatch.cs:93)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Hook<MenuManager::Start>?-119801552(MenuManager)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Trampoline<MenuManager::Start>?646189178(MenuManager)
+Dawn.Internal.SaveDataPatch.SetLastDawnVersion (On.MenuManager+orig_Start orig, MenuManager self) (at ./src/Internal/Patches/SaveDataPatch.cs:87)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Hook<MenuManager::Start>?533444268(MenuManager)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Trampoline<MenuManager::Start>?-1625729600(MenuManager)
+Dawn.Internal.SaveDataPatch.ResetInvalidSaveFiles (On.MenuManager+orig_Start orig, MenuManager self) (at ./src/Internal/Patches/SaveDataPatch.cs:82)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Hook<MenuManager::Start>?1689741524(MenuManager)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Trampoline<MenuManager::Start>?1862323834(MenuManager)
+Dusk.Internal.AchievementRegistrationPatch.LoadAchievementDataWithUI (On.MenuManager+orig_Start orig, MenuManager self) (at ./src/Internal/Patches/AchievementRegistrationPatch.cs:40)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Hook<MenuManager::Start>?1608693552(MenuManager)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Trampoline<MenuManager::Start>?375442246(MenuManager)
+LethalLib.Modules.Utilities.MenuManager_Start (On.MenuManager+orig_Start orig, MenuManager self) (at ./Modules/Utilities.cs:82)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Hook<MenuManager::Start>?-333613676(MenuManager)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Trampoline<MenuManager::Start>?-1154333596(MenuManager)
+Mirage.Hook.Prefab+registerPrefab@14.Invoke (On.MenuManager+orig_Start orig, MenuManager self) (at ./Mirage/Hook/Prefab.fs:15)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Hook<MenuManager::Start>?-2013639736(MenuManager)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Trampoline<MenuManager::Start>?-2083983586(MenuManager)
+Mirage.Hook.Config+syncConfig@23-1.Invoke (On.MenuManager+orig_Start orig, MenuManager self) (at ./Mirage/Hook/Config.fs:24)
+(wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Hook<MenuManager::Start>?1485322568(MenuManager)
+
+
+NullReferenceException: Object reference not set to an instance of an object
+  at FacilityMeltdown.MeltdownSequence.Behaviours.MeltdownHandler+<>c__DisplayClass20_0.<HandleEnemies>b__0 (SpawnableEnemyWithRarity enemy) [0x0002e] in ./MeltdownSequence/Behaviours/MeltdownHandler.cs:180 
+  at System.Linq.Enumerable+WhereListIterator`1[TSource].ToList () [0x00017] in <ea489521390f48908a7ce45cb17a6848>:IL_0017 
+  at System.Linq.Enumerable.ToList[TSource] (System.Collections.Generic.IEnumerable`1[T] source) [0x0001f] in <ea489521390f48908a7ce45cb17a6848>:IL_001F 
+  at FacilityMeltdown.MeltdownSequence.Behaviours.MeltdownHandler.HandleEnemies () [0x00023] in ./MeltdownSequence/Behaviours/MeltdownHandler.cs:175 
+  at FacilityMeltdown.MeltdownSequence.Behaviours.MeltdownHandler.StartMeltdownClientRpc () [0x002d9] in ./MeltdownSequence/Behaviours/MeltdownHandler.cs:151 
+  at FacilityMeltdown.MeltdownSequence.Behaviours.MeltdownHandler.__rpc_handler_3631067672 (Unity.Netcode.NetworkBehaviour target, Unity.Netcode.FastBufferReader reader, Unity.Netcode.__RpcParams rpcParams) [0x0002e] in <f723873df70c4b288182bf3c0363ab12>:IL_002E 
+  at (wrapper delegate-invoke) <Module>.invoke_void_NetworkBehaviour_FastBufferReader___RpcParams(Unity.Netcode.NetworkBehaviour,Unity.Netcode.FastBufferReader,Unity.Netcode.__RpcParams)
+  at Unity.Netcode.RpcMessageHelpers.Handle (Unity.Netcode.NetworkContext& context, Unity.Netcode.RpcMetadata& metadata, Unity.Netcode.FastBufferReader& payload, Unity.Netcode.__RpcParams& rpcParams) [0x000a6] in <97ae41d8913f4f12b6133336c5f4f494>:IL_00A6 
+
+Error while disconnecting: System.NullReferenceException: Object reference not set to an instance of an object
+  at TooManyEmotes.SaveManager.SaveLocalPlayerValues () [0x00001] in <ba9a980d78984b3fb839a44a6ac6a81c>:IL_0001 
+  at (wrapper dynamic-method) GameNetworkManager.DMD<GameNetworkManager::SaveLocalPlayerValues>(GameNetworkManager)
+  at (wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Trampoline<GameNetworkManager::SaveLocalPlayerValues>?-257437922(GameNetworkManager)
+  at Dusk.Internal.AchievementRegistrationPatch.SaveAchievementData (On.GameNetworkManager+orig_SaveLocalPlayerValues orig, GameNetworkManager self) [0x00000] in ./src/Internal/Patches/AchievementRegistrationPatch.cs:75 
+  at (wrapper dynamic-method) MonoMod.Utils.DynamicMethodDefinition.Hook<GameNetworkManager::SaveLocalPlayerValues>?1567988000(GameNetworkManager)
+  at (wrapper dynamic-method) GameNetworkManager.DMD<GameNetworkManager::SaveGame>(GameNetworkManager)
+  at (wrapper dynamic-method) GameNetworkManager.DMD<GameNetworkManager::Disconnect>(GameNetworkManager)
+  at (wrapper dynamic-method) GameNetworkManager.DMD<GameNetworkManager::OnApplicationQuit>(GameNetworkManager)
+
+[Error  :  HarmonyX] Error while running static void loaforcsSoundAPI.LethalCompany.Patches.RoundManagerPatch::Reporting(). Error: System.TypeLoadException: Failure has occurred while loading a type.
+  at (wrapper dynamic-method) RoundManager.DMD<RoundManager::GenerateNewFloor>(RoundManager)
