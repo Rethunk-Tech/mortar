@@ -7,6 +7,7 @@ import (
 	_ "github.com/Rethunk-Tech/mortar/internal/source/itch"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/modrinth"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/nexus"
+	_ "github.com/Rethunk-Tech/mortar/internal/source/paradox"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/patreon"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/vsmoddb"

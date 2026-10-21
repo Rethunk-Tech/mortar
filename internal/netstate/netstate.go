@@ -22,6 +22,7 @@ var probeURL = map[string]string{
 	"curseforge":   "https://api.curseforge.com",
 	"itch":         "https://itch.io",
 	"vsmoddb":      "https://mods.vintagestory.at",
+	"paradox":      "https://api.paradox-interactive.com",
 	"smapi":        "https://smapi.io",
 }
 

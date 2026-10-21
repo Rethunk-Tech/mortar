@@ -195,7 +195,7 @@ func (s *Service) searchUpdates(ctx context.Context, gameID string, src componen
 				u.Package = it.ID
 			case profile.KindNexus:
 				u.NexusID, _ = strconv.Atoi(it.ID)
-			case profile.KindVSModDB:
+			case profile.KindVSModDB, profile.KindParadox:
 				u.Package, u.PackageSource = it.ID, src.ID
 			}
 			out = append(out, u)

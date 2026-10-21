@@ -51,6 +51,8 @@ const (
 	KindItch       = "itch"
 	// KindVSModDB is a Vintage Story Mod DB mod: Name is "<modid>-<assetid>" and FileID the release id.
 	KindVSModDB = "vsmoddb"
+	// KindParadox is a Paradox Mods mod: Name is its mod id and Version its version label.
+	KindParadox = "paradox"
 	// KindPatreon is a file the player saved from a Patreon post: Name is the post id. Nothing fetches or updates it.
 	KindPatreon = "patreon"
 )

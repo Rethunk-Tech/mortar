@@ -162,7 +162,7 @@ type Item struct {
 
 	// Package is "Namespace-Name" of a Thunderstore package, downloaded from URL at Version; ModID and Repo stay empty.
 	Package string `json:"package,omitempty"`
-	// Source is "modrinth", "curseforge", "itch" or "vsmoddb" for a package that site serves: Package is then its project or game id and Digest
+	// Source is "modrinth", "curseforge", "itch", "vsmoddb" or "paradox" for a package that site serves: Package is then its project or game id and Digest
 	// the file's "sha512:<hex>". Empty means Thunderstore.
 	Source       string            `json:"source,omitempty"`
 	PackageFile  int               `json:"packageFile,omitempty"`
@@ -248,7 +248,7 @@ type Request struct {
 	Asset      string `json:"asset"`
 	// Package is a Thunderstore "Namespace-Name"; Add queues it with everything it depends on, at Version or the newest.
 	Package string `json:"package,omitempty"`
-	// Source names the site of a Package other than Thunderstore ("modrinth", "curseforge", "itch" or "vsmoddb"); Add resolves its file and
+	// Source names the site of a Package other than Thunderstore ("modrinth", "curseforge", "itch", "vsmoddb" or "paradox"); Add resolves its file and
 	// required dependencies.
 	Source string `json:"source,omitempty"`
 	// PackageFile is the exact site file id of a Package; it wins over Version, which a site's authors may reuse across files.

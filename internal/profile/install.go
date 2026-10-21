@@ -92,7 +92,7 @@ func (s *Store) InstallSource(ctx context.Context, game, id, path string, source
 	case KindCurseForge:
 		// File display names are author-written and repeat, so the file id keys the store item.
 		key = store.PackageKey(source.Kind+":"+source.Name, strconv.Itoa(source.FileID))
-	case KindModrinth, KindItch, KindVSModDB:
+	case KindModrinth, KindItch, KindVSModDB, KindParadox:
 		key = store.PackageKey(source.Kind+":"+source.Name, source.Version)
 	default:
 		return InstallResult{}, installError(fmt.Errorf("cannot install a %q archive", source.Kind))

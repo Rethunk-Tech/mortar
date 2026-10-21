@@ -84,6 +84,9 @@ func (s *Service) limitFor(ctx context.Context, source string) *sourceLimit {
 	case source == "vsmoddb":
 		// The Vintage Story Mod DB publishes no quota; an update check asks it once per installed mod.
 		l = newSourceLimit(3, 5, 3, now)
+	case source == "paradox":
+		// Paradox Mods publishes no quota; an update check asks it once per installed mod.
+		l = newSourceLimit(3, 5, 3, now)
 	case source == "thunderstore":
 		// Package downloads redirect to Thunderstore's CDN, which mod managers fetch in parallel; the anonymous-GitHub
 		// pace below (one start a second) would leave a batch waiting on the pacer rather than the network.

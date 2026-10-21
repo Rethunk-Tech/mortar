@@ -322,7 +322,7 @@ func sourceFlagCands(words []string, cur string) []string {
 	var ids []string
 	switch {
 	case words[0] == "queue" && len(words) > 1 && words[1] == "add":
-		ids = []string{"nexus", "github", "thunderstore", "modrinth", "curseforge", "itch", "vsmoddb"}
+		ids = []string{"nexus", "github", "thunderstore", "modrinth", "curseforge", "itch", "vsmoddb", "paradox"}
 	case words[0] == "links" && len(words) > 1 && (words[1] == "enable" || words[1] == "disable"):
 		ids = []string{"nexus", "thunderstore", "curseforge", "vsmoddb"}
 	default:

@@ -294,7 +294,7 @@ func restoreRequest(game, profileID string, e profile.Entry) (queue.Request, boo
 	switch src.Kind {
 	case profile.KindThunderstore:
 		r.Package = src.Name
-	case profile.KindModrinth, profile.KindCurseForge, profile.KindItch, profile.KindVSModDB:
+	case profile.KindModrinth, profile.KindCurseForge, profile.KindItch, profile.KindVSModDB, profile.KindParadox:
 		r.Package, r.Source, r.PackageFile = src.Name, src.Kind, src.FileID
 	case profile.KindGitHub:
 		r.Repo, r.Tag, r.Asset, r.FileName = src.Repo, src.Tag, src.Asset, src.Asset
