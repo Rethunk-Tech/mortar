@@ -76,6 +76,7 @@ export function TileGrid<Id extends string>({
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'flex-start',
+              position: 'relative',
               gap: space.gap,
               p: space.pad,
               textAlign: 'left',
@@ -95,12 +96,21 @@ export function TileGrid<Id extends string>({
                   {tile.disabled}
                 </Typography>
               ) : null}
-              {tile.id === lastUsed ? (
-                <Typography sx={{ fontSize: 11, color: 'var(--mortar-accent-ink)', mt: 0.5 }}>
-                  {t`Last used`}
-                </Typography>
-              ) : null}
             </Box>
+            {/* In the corner, so marking a tile never changes its height. */}
+            {tile.id === lastUsed ? (
+              <Typography
+                sx={{
+                  position: 'absolute',
+                  top: space.pad,
+                  right: space.pad,
+                  fontSize: 11,
+                  color: 'var(--mortar-accent-ink)',
+                }}
+              >
+                {t`Last used`}
+              </Typography>
+            ) : null}
           </ButtonBase>
         </Box>
       ))}
