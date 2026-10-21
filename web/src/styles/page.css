@@ -102,7 +102,7 @@
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: #0e0e11;
+  background: rgb(14, 14, 17);
   font-size: 14px;
   line-height: 1.65;
 }
@@ -305,7 +305,7 @@ a.fact-icon:hover {
   padding: 11px 14px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #0e0e11;
+  background: rgb(14, 14, 17);
   color: var(--ink);
   font: inherit;
 }

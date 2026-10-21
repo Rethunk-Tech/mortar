@@ -96,7 +96,7 @@ h1.words em > span:nth-child(3) {
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   transform: rotate(-8deg);
-  mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 62%, transparent 86%);
+  mask-image: linear-gradient(to bottom, transparent, rgb(0, 0, 0) 16%, rgb(0, 0, 0) 62%, transparent 86%);
   opacity: 0;
   animation: wallin 0.9s ease 0.5s forwards;
 }

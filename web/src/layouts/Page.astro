@@ -38,14 +38,16 @@ const {
   <header class="wrap pagehead">
     {
       
+      
+      
       crumbs && crumbs.length > 1 && (
         <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore={true}>
           <a href="/">Mortar</a>
           {crumbs.slice(0, -1).map((c) => (
-            <Fragment>
-              {' › '}
+            <>
+               › 
               <a href={c.href}>{c.name}</a>
-            </Fragment>
+            </>
           ))}
         </nav>
       )

@@ -1,15 +1,15 @@
 /* What every page shares: colour, type, the nav and buttons. */
 :root {
-  --bg: #111114;
-  --raised: #1b1b21;
-  --raised2: #24242c;
-  --sand: #d6b17a;
-  --sand-ink: #19191e;
+  --bg: rgb(17, 17, 20);
+  --raised: rgb(27, 27, 33);
+  --raised2: rgb(36, 36, 44);
+  --sand: rgb(214, 177, 122);
+  --sand-ink: rgb(25, 25, 30);
   --ink: rgba(255, 255, 255, 0.93);
   --dim: rgba(210, 210, 215, 0.82);
   --faint: rgba(210, 210, 215, 0.62);
   --line: rgba(255, 255, 255, 0.09);
-  --good: #93b86a;
+  --good: rgb(147, 184, 106);
   --warn: rgb(240, 180, 60);
   --error: rgb(220, 60, 60);
   --gap: 200px;
@@ -290,7 +290,7 @@ h3 {
 .discordghost svg {
   width: 22px;
   height: 22px;
-  color: #5865f2;
+  color: rgb(88, 101, 242);
 }
 
 .icons svg,
@@ -398,8 +398,8 @@ h3 {
 }
 
 .btn.discord {
-  background: #5865f2;
-  color: #fff;
+  background: rgb(88, 101, 242);
+  color: rgb(255, 255, 255);
   font-size: 19px;
   padding: 16px 26px;
   margin-top: 8px;
@@ -407,17 +407,17 @@ h3 {
 }
 
 .btn.discord:hover {
-  background: #4752c4;
+  background: rgb(71, 82, 196);
 }
 
 .btn.discord svg {
   width: 30px;
   height: 30px;
-  color: #fff;
+  color: rgb(255, 255, 255);
 }
 
 .btn.discordghost:hover {
-  border-color: #5865f2;
+  border-color: rgb(88, 101, 242);
 }
 
 .cta {

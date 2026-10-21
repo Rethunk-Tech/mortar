@@ -49,7 +49,7 @@ const groups: [string, Row[]][] = [
     </thead>
     <tbody>
       {groups.map(([g, rows]) => (
-        <Fragment>
+        <>
           <tr class="group"><th colspan={ms.length + 1} scope="colgroup">{g}</th></tr>
           {rows.map(([label, cell]) => (
             <tr>
@@ -64,7 +64,7 @@ const groups: [string, Row[]][] = [
               })}
             </tr>
           ))}
-        </Fragment>
+        </>
       ))}
     </tbody>
   </table>

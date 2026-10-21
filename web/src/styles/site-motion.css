@@ -177,7 +177,7 @@
   padding: 64px 0 100px;
   color: var(--dim);
   font-size: 15px;
-  background: #0d0d10;
+  background: rgb(13, 13, 16);
 }
 
 .fcta {
@@ -273,7 +273,7 @@
   padding: 12px 14px;
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #0e0e11;
+  background: rgb(14, 14, 17);
   color: var(--ink);
   font: inherit;
 }

@@ -129,7 +129,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #0e0e11;
+  background: rgb(14, 14, 17);
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 14px 16px;
@@ -329,7 +329,7 @@ html.js .dl .panel[hidden] {
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: #0e0e11;
+  background: rgb(14, 14, 17);
   font-size: 14px;
   line-height: 1.65;
 }
