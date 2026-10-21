@@ -151,8 +151,21 @@ func TestCacheHitThenRefresh(t *testing.T) {
 		t.Fatalf("hit: err %v index %d chunks %d", err, f.indexHits.Load(), f.chunkHit.Load())
 	}
 	now = now.Add(time.Hour)
-	if _, err := d.Search(t.Context(), q); err != nil || f.indexHits.Load() != 2 || f.chunkHit.Load() != 2 {
-		t.Fatalf("unchanged index must not refetch chunks: err %v index %d chunks %d", err, f.indexHits.Load(), f.chunkHit.Load())
+	if _, err := d.Search(t.Context(), q); err != nil {
+		t.Fatal(err)
+	}
+	waitFor(t, func() bool { return f.indexHits.Load() == 2 })
+	if f.chunkHit.Load() != 2 {
+		t.Fatalf("unchanged index must not refetch chunks: chunks %d", f.chunkHit.Load())
+	}
+}
+
+func waitFor(t *testing.T, ok func() bool) {
+	t.Helper()
+	for deadline := time.Now().Add(5 * time.Second); !ok(); time.Sleep(5 * time.Millisecond) {
+		if time.Now().After(deadline) {
+			t.Fatal("timed out waiting for the background refresh")
+		}
 	}
 }
 
@@ -166,9 +179,14 @@ func TestChangedIndexRebuilds(t *testing.T) {
 	}
 	f.third.Store(true)
 	now = now.Add(2 * time.Hour)
-	if p, err := d.Search(t.Context(), q); err != nil || p.Total != 1 {
-		t.Fatalf("after refresh: %v %v", err, p.Total)
+	// The stale listing answers at once and a rebuild starts behind it.
+	if p, err := d.Search(t.Context(), q); err != nil || p.Total != 0 {
+		t.Fatalf("stale answer: %v %v", err, p.Total)
 	}
+	waitFor(t, func() bool {
+		p, err := d.Search(t.Context(), q)
+		return err == nil && p.Total == 1
+	})
 }
 
 func TestIndexCannotSendMortarElsewhere(t *testing.T) {

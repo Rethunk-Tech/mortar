@@ -67,7 +67,7 @@ func (d Driver) sideVersions(ctx context.Context, key, namespace, name, mortarVe
 		return nil, false
 	}
 	if d.now().Sub(meta.Fetched) >= refreshAfter {
-		d.refreshInBackground(ctx, key, mortarVersion)
+		d.refreshInBackground(ctx, key, source.UserAgentWithSite(mortarVersion))
 	}
 	return slices.Clone(v), true
 }
@@ -79,7 +79,7 @@ var (
 
 // refreshInBackground refreshes the community's index once per refreshAfter, which rewrites the side file when the
 // listing changes. A refresh that fails (offline) is not retried until the next window.
-func (d Driver) refreshInBackground(ctx context.Context, key, mortarVersion string) {
+func (d Driver) refreshInBackground(ctx context.Context, key, ua string) {
 	tried := d.cacheRoot() + "|" + key
 	refreshMu.Lock()
 	defer refreshMu.Unlock()
@@ -90,7 +90,7 @@ func (d Driver) refreshInBackground(ctx context.Context, key, mortarVersion stri
 	bg, cancel := context.WithTimeout(context.WithoutCancel(ctx), refreshTimeout)
 	go func() {
 		defer cancel()
-		_, _ = d.listingFile(bg, key, source.UserAgentWithSite(mortarVersion))
+		_, _ = d.buildListing(bg, key, ua)
 	}()
 }
 

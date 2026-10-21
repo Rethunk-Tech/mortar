@@ -321,12 +321,31 @@ func (d Driver) packages(ctx context.Context, key, ua string) ([]pkg, error) {
 	return loadPackages(key, path)
 }
 
-// listingFile is the path of the community's stored listing, downloaded and built first when the cached one is older
-// than refreshAfter, kept when the site cannot be reached.
+// listingFile is the path of the community's stored listing. A stored listing is answered at once, however old: when
+// it is older than refreshAfter a rebuild runs in the background, so a start never waits on the download. Only a
+// community with no stored listing blocks on the build.
 func (d Driver) listingFile(ctx context.Context, key, ua string) (string, error) {
 	if !communityKey.MatchString(key) {
 		return "", fmt.Errorf("%q is not a Thunderstore community key", key)
 	}
+	dir := filepath.Join(d.cacheRoot(), "thunderstore")
+	var meta cacheMeta
+	if b, err := fsx.ReadFile(filepath.Join(dir, key+".meta.json")); err == nil {
+		_ = json.Unmarshal(b, &meta)
+	}
+	path := listingPath(dir, key, meta.Hash)
+	if _, err := os.Stat(path); meta.Hash != "" && err == nil {
+		if d.now().Sub(meta.Fetched) >= refreshAfter {
+			d.refreshInBackground(ctx, key, ua)
+		}
+		return path, nil
+	}
+	return d.buildListing(ctx, key, ua)
+}
+
+// buildListing is the community's stored listing, downloaded and built first when the cached one is older than
+// refreshAfter, kept when the site cannot be reached.
+func (d Driver) buildListing(ctx context.Context, key, ua string) (string, error) {
 	// One build per community: a second caller waits, then finds the listing the first one wrote.
 	mu := buildLock(key)
 	mu.Lock()
