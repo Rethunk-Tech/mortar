@@ -1,23 +1,22 @@
 package control
 
 import (
+	"cmp"
 	"context"
 	"errors"
+	"os"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/packsvc"
+	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 )
 
 // packImport reads another manager's pack (an r2modman code or key, a .r2z, a profile folder, a Thunderstore
-// modpack): with Preview it only reports what the pack holds; otherwise it queues the pack's packages into Profile, or
-// into a new profile named Name (the pack's own name when Name is empty). Value is pasted text, Path a file or folder.
+// modpack) through the share import: with Preview it only reports what the pack holds; otherwise it queues the pack's
+// packages into Profile, or into a new profile named Name (the pack's own name when Name is empty). Value is pasted
+// text, Path a file or folder.
 func (s *Services) packImport(ctx context.Context, p Params) (any, error) {
-	if s.Packs == nil {
+	if s.Shares == nil {
 		return nil, errors.New("pack import is unavailable")
-	}
-	src := packsvc.Source{Path: p.Path, Text: p.Value}
-	if p.Preview {
-		return s.Packs.Preview(ctx, src)
 	}
 	profileID := ""
 	if p.Profile != "" {
@@ -27,12 +26,26 @@ func (s *Services) packImport(ctx context.Context, p Params) (any, error) {
 		}
 		profileID = prof.ID
 	}
-	res, err := s.Packs.Import(ctx, src, p.Game, profileID)
-	if err == nil && profileID == "" && strings.TrimSpace(p.Name) != "" {
-		_, err = s.Profiles.Rename(res.Game, res.Profile, p.Name)
+	var pv sharesvc.Preview
+	var err error
+	switch st, serr := os.Stat(p.Path); {
+	case p.Path == "":
+		pv, err = s.Shares.PreviewLink(ctx, p.Game, p.Value, profileID)
+	case serr == nil && st.IsDir():
+		pv, err = s.Shares.PreviewLocalProfile(ctx, p.Game, p.Path, profileID)
+	default:
+		pv, err = s.Shares.PreviewFile(ctx, p.Game, p.Path, profileID)
 	}
-	if res.Profile != "" && s.Emit != nil {
-		s.Emit(ChangedEvent, res.Game)
+	if err != nil || p.Preview {
+		return pv, err
+	}
+	game := cmp.Or(p.Game, pv.Game)
+	res, err := s.Shares.Import(ctx, game, pv.Session, profileID, nil)
+	if err == nil && profileID == "" && strings.TrimSpace(p.Name) != "" {
+		_, err = s.Profiles.Rename(game, res.Profile.ID, p.Name)
+	}
+	if res.Profile.ID != "" && s.Emit != nil {
+		s.Emit(ChangedEvent, game)
 	}
 	return res, err
 }

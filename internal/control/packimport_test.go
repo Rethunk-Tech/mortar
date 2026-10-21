@@ -9,11 +9,13 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/pack"
-	"github.com/Rethunk-Tech/mortar/internal/packsvc"
+	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 )
 
 type recordQueue struct{ got []queue.Request }
@@ -21,10 +23,6 @@ type recordQueue struct{ got []queue.Request }
 func (q *recordQueue) Add(_ context.Context, reqs []queue.Request) ([]queue.Item, error) {
 	q.got = append(q.got, reqs...)
 	return make([]queue.Item, len(reqs)), nil
-}
-
-func (*recordQueue) Unresolvable(context.Context, string, string, []queue.Request) map[string]string {
-	return nil
 }
 
 func TestPackImportFetchesACodeAndQueuesItIntoANamedProfile(t *testing.T) {
@@ -55,14 +53,18 @@ func TestPackImportFetchesACodeAndQueuesItIntoANamedProfile(t *testing.T) {
 
 	s := services(t)
 	q := &recordQueue{}
-	s.Packs = &packsvc.Service{Profiles: s.Store, Queue: q, Code: pack.Code{URL: srv.URL}}
+	s.Shares = sharesvc.NewService(sharesvc.Deps{
+		Profiles: s.Store, Queue: q, PackCode: pack.Code{URL: srv.URL},
+		SignedIn: func() bool { return true }, Premium: func() bool { return false },
+		Env: func(string) problems.Environment { return problems.Environment{} },
+	})
 	ctx := context.Background()
 
-	pv, err := s.Handle(ctx, "pack.import", Params{Value: key, Preview: true})
-	if got, ok := pv.(packsvc.Preview); err != nil || !ok || got.Name != "Just some mods" || len(got.Packages) != 2 || len(q.got) != 0 {
+	pv, err := s.Handle(ctx, "pack.import", Params{Game: "lethal-company", Value: key, Preview: true})
+	if got, ok := pv.(sharesvc.Preview); err != nil || !ok || got.Name != "Just some mods" || len(got.Mods) < 2 || len(q.got) != 0 {
 		t.Fatalf("preview = %+v, %v; queued %d", pv, err, len(q.got))
 	}
-	if _, err := s.Handle(ctx, "pack.import", Params{Value: key}); err == nil {
+	if _, err := s.Handle(ctx, "pack.import", Params{Value: key, Preview: true}); err == nil {
 		t.Fatal("a code that names no game needs --game")
 	}
 
@@ -70,12 +72,12 @@ func TestPackImportFetchesACodeAndQueuesItIntoANamedProfile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, ok := out.(packsvc.Result)
-	if !ok || res.Queued != 2 || len(q.got) != 2 || q.got[0].Profile != res.Profile || len(q.got[1].Disabled) != 1 {
+	res, ok := out.(sharesvc.Result)
+	if !ok || res.Queued != len(q.got) || len(q.got) < 2 || q.got[0].Profile != res.Profile.ID || !slices.ContainsFunc(q.got, func(r queue.Request) bool { return len(r.Disabled) == 1 }) {
 		t.Fatalf("result %+v, queued %+v", res, q.got)
 	}
 	prof, err := s.resolve("lethal-company", "Regress R2")
-	if err != nil || prof.ID != res.Profile {
+	if err != nil || prof.ID != res.Profile.ID {
 		t.Fatalf("named profile %+v, %v", prof, err)
 	}
 	dir, err := s.Store.ProfileDir("lethal-company", prof.ID)

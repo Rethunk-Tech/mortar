@@ -32,26 +32,26 @@ func (c *cmd) profileImport() error {
 		p.Value = ""
 	}
 	if c.previewFlag {
-		return show(c, "pack.import", p, func(pv packsvc.Preview) {
-			fmt.Fprintf(c.out, "%s (%s): %d packages, %d config files\n", pv.Name, cmp.Or(pv.Game, c.game), len(pv.Packages), pv.Configs)
-			for _, pkg := range pv.Packages {
-				off := ""
-				if pkg.Disabled {
-					off = "  (disabled)"
+		return show(c, "pack.import", p, func(pv sharesvc.Preview) {
+			fmt.Fprintf(c.out, "%s (%s): %d mods, %d config files\n", pv.Name, cmp.Or(pv.Game, c.game), len(pv.Mods), pv.Settings)
+			for _, m := range pv.Mods {
+				note := ""
+				switch {
+				case m.State == sharesvc.StateUnavailable:
+					note = "  (unavailable: " + cmp.Or(m.Detail, m.Reason) + ")"
+				case len(m.Disabled) > 0:
+					note = "  (disabled)"
 				}
-				fmt.Fprintf(c.out, "  %s %s%s\n", pkg.Native, pkg.Version, off)
+				fmt.Fprintf(c.out, "  %s %s%s\n", cmp.Or(m.Package, m.Name), m.Version, note)
 			}
 		})
 	}
-	var res packsvc.Result
+	var res sharesvc.Result
 	if err := c.call("pack.import", p, &res, installTimeout); err != nil {
 		return err
 	}
 	return c.emit(res, func() {
-		fmt.Fprintf(c.out, "%s\tqueued %d downloads\n", res.Profile, res.Queued)
-		if len(res.Unsupported) > 0 {
-			fmt.Fprintf(c.out, "Not installable from here: %s\n", strings.Join(res.Unsupported, ", "))
-		}
+		fmt.Fprintf(c.out, "%s\tqueued %d downloads\n", res.Profile.ID, res.Queued)
 	})
 }
 

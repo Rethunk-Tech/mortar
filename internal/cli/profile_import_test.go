@@ -7,11 +7,13 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/packsvc"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
+	"github.com/Rethunk-Tech/mortar/internal/sharesvc"
 )
 
 func TestProfilePackVerbsCallTheirMethods(t *testing.T) {
 	results := map[string]any{
-		"pack.import":        packsvc.Result{Profile: "p2", Queued: 16},
+		"pack.import":        sharesvc.Result{Profile: profile.Profile{ID: "p2"}, Queued: 16},
 		"pack.exportModpack": packsvc.ModpackResult{Path: "/x/pack.zip", Dependencies: []string{"A-B-1.0.0"}, LeftOut: []string{"Nexus Thing"}},
 		"pack.exportR2z":     map[string]string{"path": "/x/friends.r2z"},
 		"profile.backup":     map[string]string{"path": "/x/farm.zip"},
