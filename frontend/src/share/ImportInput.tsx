@@ -1,15 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
-import {
-  Box,
-  Button,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import { Box, Button, IconButton, InputAdornment, TextField, Typography } from '@mui/material'
 import { ClipboardPaste, FolderOpen } from 'lucide-react'
 import { liveHandoff, useHandoff } from '../install/handoff.ts'
+import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import type { ImportFlow } from './useImportFlow.ts'
@@ -69,7 +62,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
                 input: {
                   endAdornment: (
                     <InputAdornment position="end">
-                      <Tooltip title={t`Paste`}>
+                      <Tooltip title={t`Paste`} describeChild={true}>
                         <span>
                           <IconButton
                             edge="end"
