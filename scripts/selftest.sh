@@ -1152,6 +1152,7 @@ fake_game() {
     repo) echo "3241660|REPO|REPO.exe|5.4.2305" ;;
     peak) echo "3527290|PEAK|PEAK.exe|5.4.75301" ;;
     riskofrain2) echo "632360|Risk of Rain 2|Risk of Rain 2.exe|5.4.2122" ;;
+    cities-skylines-ii) echo "949230|Cities Skylines II|Cities2.exe|5.4.2305" ;;
     *) return 1 ;;
   esac
 }
