@@ -436,6 +436,8 @@ function createMortarTheme(
       MuiButtonBase: {
         styleOverrides: {
           root: {
+            // A native button takes the system font; every clickable reads in the font chosen in Appearance.
+            fontFamily: 'inherit',
             '&.Mui-focusVisible': {
               outline: `${FOCUS_OUTLINE_PX}px solid ${pal.primaryMain}`,
               outlineOffset: FOCUS_OUTLINE_PX,

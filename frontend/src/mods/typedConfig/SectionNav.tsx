@@ -7,7 +7,9 @@ import { readStored, writeStored } from '../../shell/useStoredState.ts'
 import { space } from '../../theme/density.ts'
 
 const OPEN_KEY = 'mortar.configSectionNav'
-const WIDTH_PX = 220
+// The list is as wide as its longest name between these, so a maximised window shows whole names.
+const MIN_WIDTH_PX = 220
+const MAX_WIDTH = 'min(380px, 30vw)'
 const ACTIVE_WEIGHT = 600
 const IDLE_WEIGHT = 400
 // A section counts as the one in view once its heading is within this far of the list's top.
@@ -63,7 +65,9 @@ export function SectionNav({
       component="nav"
       aria-label={t`Sections`}
       sx={{
-        width: open ? WIDTH_PX : 'auto',
+        width: open ? 'max-content' : 'auto',
+        minWidth: open ? MIN_WIDTH_PX : 0,
+        maxWidth: MAX_WIDTH,
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
