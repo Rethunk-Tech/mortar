@@ -83,3 +83,20 @@ func TestVersionsOnAColdCacheLeavesNoListingInMemory(t *testing.T) {
 		t.Fatal("a version lookup kept the whole listing in memory")
 	}
 }
+
+func TestItemsOnAColdCacheLeaveNoListingInMemory(t *testing.T) {
+	f := newFake(t)
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	memoMu.Lock()
+	clear(memo)
+	memoMu.Unlock()
+	got, err := d.Items(t.Context(), "lethal-company", "1.2.3", []string{"alice-morecompany"})
+	if err != nil || got["alice-morecompany"].Name != "MoreCompany" {
+		t.Fatalf("items = %v, %v", got, err)
+	}
+	memoMu.Lock()
+	defer memoMu.Unlock()
+	if _, held := memo["lethal-company"]; held {
+		t.Fatal("an item lookup kept the whole listing in memory")
+	}
+}

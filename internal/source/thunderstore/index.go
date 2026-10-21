@@ -537,6 +537,14 @@ func keepsOver(o, p pkg) bool {
 	return o.Hidden != p.Hidden && p.Hidden || o.Hidden == p.Hidden && o.Updated >= p.Updated
 }
 
+// memoized is the listing of key read from path when it is already in memory, without loading it.
+func memoized(key, path string) ([]pkg, bool) {
+	memoMu.Lock()
+	defer memoMu.Unlock()
+	m, ok := memo[key]
+	return m.pk, ok && m.path == path
+}
+
 // releaseListing drops the loaded listing of key when it is still the one read from path.
 func releaseListing(key, path string) {
 	memoMu.Lock()

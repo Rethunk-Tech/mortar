@@ -138,9 +138,11 @@ func (d Driver) item(p pkg) source.Item {
 	}
 }
 
-// Items returns the community's packages named by ids ("Namespace-Name", in any case) from the cached listing.
+// Items returns the community's packages named by ids ("Namespace-Name", in any case) from the cached listing. The
+// update check asks at every start, so unless Browse already holds the listing it is read a package at a time rather
+// than loaded and kept for listingIdle.
 func (d Driver) Items(ctx context.Context, key, mortarVersion string, ids []string) (map[string]source.Item, error) {
-	pk, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
+	path, err := d.listingFile(ctx, key, source.UserAgentWithSite(mortarVersion))
 	if err != nil {
 		return nil, err
 	}
@@ -148,11 +150,23 @@ func (d Driver) Items(ctx context.Context, key, mortarVersion string, ids []stri
 	for _, id := range ids {
 		want[strings.ToLower(id)] = true
 	}
-	out := make(map[string]source.Item, len(ids))
-	for _, p := range pk {
-		if id := packageID(p.Owner, p.Name); want[id] {
-			out[id] = d.item(p)
+	found := make(map[string]pkg, len(ids))
+	keep := func(p *pkg) {
+		id := packageID(p.Owner, p.Name)
+		if o, seen := found[id]; want[id] && (!seen || !keepsOver(o, *p)) {
+			found[id] = *p
 		}
+	}
+	if pk, ok := memoized(key, path); ok {
+		for i := range pk {
+			keep(&pk[i])
+		}
+	} else if err := eachListed(path, keep); err != nil {
+		return nil, err
+	}
+	out := make(map[string]source.Item, len(found))
+	for id, p := range found {
+		out[id] = d.item(p)
 	}
 	return out, nil
 }
