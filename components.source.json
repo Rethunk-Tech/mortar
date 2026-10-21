@@ -4146,6 +4146,9 @@
           "windows": "{localLow}/Colossal Order/Cities Skylines II/Player.log"
         }
       },
+      "saveFiles": ["*.cok"],
+      "saveCompanions": [".cok.cid"],
+      "saveUserFolders": true,
       "deploy": "profile",
       "targets": [
         {

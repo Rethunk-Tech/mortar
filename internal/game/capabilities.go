@@ -133,7 +133,7 @@ func StartupPreferencesPath(home string, s settings.Settings, id, pin string) (s
 // folder per save when it names none.
 func SaveLayout(id, dir string) saves.Layout {
 	g, _ := catalogGame(id)
-	return saves.Layout{Dir: dir, Files: g.SaveFiles, Companions: g.SaveCompanions, Copies: g.SaveCopies, CopyFolders: g.SaveCopyFolders, Linked: g.SaveLinked}
+	return saves.Layout{Dir: dir, Files: g.SaveFiles, Companions: g.SaveCompanions, Copies: g.SaveCopies, CopyFolders: g.SaveCopyFolders, Linked: g.SaveLinked, UserFolders: g.SaveUserFolders}
 }
 
 // FindSourceSites are the sites Mortar can look up a source-less mod on for the game: Nexus where the Stardew mod

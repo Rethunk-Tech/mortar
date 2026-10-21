@@ -167,6 +167,9 @@ type GameInfo struct {
 	// world's own identifier (Vintage Story's minimap, "Maps/{uuid}.db"); backups and restores carry them with the save.
 	// An older Mortar ignores the field.
 	SaveLinked []string `json:"saveLinked,omitempty"`
+	// SaveUserFolders means the saves folder holds a folder per platform user with the SaveFiles inside each (Cities:
+	// Skylines II's Saves/<Steam id>/<city>.cok). An older Mortar ignores the field and finds no saves.
+	SaveUserFolders bool `json:"saveUserFolders,omitempty"`
 	// FolderNames lists, by a folder name Paths uses, the names the game gives that folder on some installs (The Sims
 	// 4 names its user folder after the game's language). An older Mortar ignores the field and uses the name in Paths.
 	FolderNames map[string][]string `json:"folderNames,omitempty"`
@@ -900,6 +903,9 @@ func (g GameInfo) Validate() error {
 		if !saveFilePattern(p) {
 			return fmt.Errorf("game %q has an unusable save file pattern %q", g.ID, p)
 		}
+	}
+	if g.SaveUserFolders && (len(g.SaveFiles) == 0 || slices.ContainsFunc(g.SaveFiles, func(p string) bool { return strings.Contains(p, "/") })) {
+		return fmt.Errorf("game %q keeps saves in user folders, so its save file patterns must name files in one", g.ID)
 	}
 	for _, ext := range g.SaveCompanions {
 		if len(ext) < 2 || ext[0] != '.' || strings.ContainsAny(ext, "/\\*?[") {

@@ -429,6 +429,13 @@ func TestSaveFilePatternsStayInTheSavesFolder(t *testing.T) {
 	if g.Validate() == nil {
 		t.Error("companion without a dot passed")
 	}
+	g.SaveCompanions, g.SaveUserFolders = nil, true
+	for _, files := range [][]string{nil, {"worlds_local/*.fwl"}} {
+		if g.SaveFiles = files; g.Validate() == nil {
+			t.Errorf("user folders with save files %q passed", files)
+		}
+	}
+	g.SaveFiles, g.SaveUserFolders = nil, false
 	lc, ok := bundledGame("lethal-company")
 	if !ok || !slices.Equal(lc.SaveFiles, []string{"LCSaveFile*", "LCChallengeFile", "!*.bac", "!*.tmp", "!*.bak", "!*.moddata"}) {
 		t.Fatalf("bundled Lethal Company save files = %v", lc.SaveFiles)

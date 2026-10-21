@@ -86,13 +86,14 @@ type Scanner struct {
 	Copies      []string
 	CopyFolders []string
 	Linked      []string
+	UserFolders bool
 	CacheDir    string
 	mu          sync.Mutex
 }
 
 // Layout is the scanned folder and its save shape.
 func (s *Scanner) Layout() Layout {
-	return Layout{Dir: s.Dir, Files: s.Files, Companions: s.Companions, Copies: s.Copies, CopyFolders: s.CopyFolders, Linked: s.Linked}
+	return Layout{Dir: s.Dir, Files: s.Files, Companions: s.Companions, Copies: s.Copies, CopyFolders: s.CopyFolders, Linked: s.Linked, UserFolders: s.UserFolders}
 }
 
 // Scan returns every save in Dir, newest first. A save that cannot be read is left out and reported in the
@@ -198,6 +199,9 @@ type Layout struct {
 	CopyFolders []string
 	// Linked are patterns for files outside Dir that belong to a save (components.GameInfo.SaveLinked); see LinkedOf.
 	Linked []string
+	// UserFolders means Dir holds a folder per platform user with the saves Files names inside each
+	// (components.GameInfo.SaveUserFolders); a save's name then starts with its user's folder.
+	UserFolders bool
 }
 
 // Copy is one copy of a save that the game itself keeps beside it, named by its slash path under Dir.
@@ -281,6 +285,13 @@ func (l Layout) IsSave(name string) bool {
 
 // Matches reports whether name, a slash path under Dir, is named by Files, whether or not it exists.
 func (l Layout) Matches(name string) bool {
+	if l.UserFolders {
+		user, rest, ok := strings.Cut(name, "/")
+		if !ok || user == "" || user == "." || user == ".." {
+			return false
+		}
+		name = rest
+	}
 	in := false
 	for _, p := range l.Files {
 		if not, ok := strings.CutPrefix(p, "!"); ok {
@@ -319,6 +330,19 @@ func (l Layout) Names() ([]string, error) {
 			dirs = append(dirs, d)
 		}
 	}
+	if l.UserFolders {
+		users, err := l.userFolders()
+		if err != nil {
+			return nil, err
+		}
+		var under []string
+		for _, u := range users {
+			for _, d := range dirs {
+				under = append(under, path.Join(u, d))
+			}
+		}
+		dirs = under
+	}
 	var out []string
 	for _, d := range dirs {
 		ents, err := os.ReadDir(filepath.Join(l.Dir, filepath.FromSlash(d)))
@@ -332,6 +356,24 @@ func (l Layout) Names() ([]string, error) {
 			if name := path.Join(d, e.Name()); l.IsSave(name) {
 				out = append(out, name)
 			}
+		}
+	}
+	return out, nil
+}
+
+// userFolders are the folders directly in Dir, each one platform user's saves.
+func (l Layout) userFolders() ([]string, error) {
+	ents, err := os.ReadDir(l.Dir)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var out []string
+	for _, e := range ents {
+		if e.IsDir() {
+			out = append(out, e.Name())
 		}
 	}
 	return out, nil

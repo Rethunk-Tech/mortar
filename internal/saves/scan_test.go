@@ -252,6 +252,30 @@ func TestFileSavesAreFoundWithAnUnknownFit(t *testing.T) {
 	}
 }
 
+func TestUserFolderSavesAreFoundInEachUsersFolder(t *testing.T) {
+	dir := t.TempDir()
+	write(t, filepath.Join(dir, "76561198000000001", "Metropolis.cok"), "x")
+	write(t, filepath.Join(dir, "76561198000000001", "Metropolis.cok.cid"), "guid")
+	write(t, filepath.Join(dir, "76561198000000002", "Harbour.cok"), "x")
+	write(t, filepath.Join(dir, "Loose.cok"), "x")
+	l := Layout{Dir: dir, Files: []string{"*.cok"}, Companions: []string{".cok.cid"}, UserFolders: true}
+	want := []string{"76561198000000001/Metropolis.cok", "76561198000000002/Harbour.cok"}
+	if names, err := l.Names(); err != nil || !reflect.DeepEqual(names, want) {
+		t.Fatalf("Names = %v, %v; want %v", names, err, want)
+	}
+	if got := l.Paths(want[0]); !reflect.DeepEqual(got, []string{want[0], "76561198000000001/Metropolis.cok.cid"}) {
+		t.Fatalf("Paths = %v, want the city with its content id", got)
+	}
+	for _, name := range []string{"Loose.cok", "../x/Metropolis.cok", "76561198000000001/Metropolis.cok.cid"} {
+		if l.IsSave(name) {
+			t.Errorf("IsSave(%q) = true", name)
+		}
+	}
+	if names, err := (Layout{Dir: filepath.Join(dir, "missing"), Files: l.Files, UserFolders: true}).Names(); err != nil || names != nil {
+		t.Fatalf("Names of a missing folder = %v, %v", names, err)
+	}
+}
+
 func TestFolderSavesStayStardewShaped(t *testing.T) {
 	dir := t.TempDir()
 	write(t, filepath.Join(dir, "Farm_1", "Farm_1"), "<SaveGame/>")

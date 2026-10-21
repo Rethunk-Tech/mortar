@@ -28,7 +28,7 @@ func Restore(ctx context.Context, zipPath string, l saves.Layout, backupsDir str
 		return err
 	}
 	defer func() { _ = fsx.RemoveAll(tmp) }()
-	got := saves.Layout{Dir: filepath.Join(tmp, "Saves"), Files: l.Files, Companions: l.Companions, Linked: l.Linked}
+	got := saves.Layout{Dir: filepath.Join(tmp, "Saves"), Files: l.Files, Companions: l.Companions, Linked: l.Linked, UserFolders: l.UserFolders}
 	want, err := extractSaves(zipPath, got, folders)
 	if err != nil {
 		return err

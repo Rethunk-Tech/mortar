@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Mortar is a desktop mod manager for several games (`mortar games` lists the catalog; Stardew Valley, Lethal Company and The Sims 4 each exercise a different loader). Docs: [architecture](docs/architecture.md) (how it works), [design](docs/design.md) (decided, unbuilt work), [gui-design](docs/gui-design.md) (read before any UI change), [security](docs/security.md) (threat model, guard and test per untrusted input), [testing](docs/testing.md), game facts ([Lethal Company](docs/lethal-company.md), [Valheim](docs/valheim.md), [R.E.P.O.](docs/repo.md), [Risk of Rain 2](docs/riskofrain2.md), [PEAK](docs/peak.md), [The Sims 4](docs/sims4.md), [Vintage Story](docs/vintage-story.md)).
+Mortar is a desktop mod manager for several games (`mortar games` lists the catalog; Stardew Valley, Lethal Company and The Sims 4 each exercise a different loader). Docs: [architecture](docs/architecture.md) (how it works), [design](docs/design.md) (decided, unbuilt work), [gui-design](docs/gui-design.md) (read before any UI change), [security](docs/security.md) (threat model, guard and test per untrusted input), [testing](docs/testing.md), game facts ([Lethal Company](docs/lethal-company.md), [Valheim](docs/valheim.md), [R.E.P.O.](docs/repo.md), [Risk of Rain 2](docs/riskofrain2.md), [PEAK](docs/peak.md), [The Sims 4](docs/sims4.md), [Vintage Story](docs/vintage-story.md), [Cities: Skylines II](docs/cities-skylines-ii.md)).
 
 ## Testing
 
