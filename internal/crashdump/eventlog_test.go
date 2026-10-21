@@ -1,6 +1,8 @@
 package crashdump
 
 import (
+	"os"
+	"strings"
 	"testing"
 )
 
@@ -42,5 +44,30 @@ func TestParseEventLogKeepsEventsBeforeATruncation(t *testing.T) {
 	}
 	if got := ParseEventLog([]byte("not xml \x00<<"), []string{"a.exe"}); got != nil {
 		t.Errorf("garbage gave %+v", got)
+	}
+}
+
+// testdata/wevtutil-win11.xml is wevtutil's answer to EventLog's own query on Windows 11 26H2 after a .NET
+// Framework program died of a NullReferenceException: real events quote attributes with ' and carry both providers.
+func TestEventLogReadsRealWevtutilOutput(t *testing.T) {
+	raw, err := os.ReadFile("testdata/wevtutil-win11.xml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	faults := ParseEventLog(raw, []string{"CrashTest.exe"})
+	if len(faults) != 2 {
+		t.Fatalf("faults %+v", faults)
+	}
+	var managed bool
+	for _, f := range faults {
+		if strings.Contains(f.Detail, "System.NullReferenceException") {
+			managed = true
+		}
+	}
+	if !managed {
+		t.Errorf("no managed exception in %+v", faults)
+	}
+	if got := ParseEventLog(raw, []string{"Other.exe"}); len(got) != 0 {
+		t.Errorf("another exe's events were kept: %+v", got)
 	}
 }
