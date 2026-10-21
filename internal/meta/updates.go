@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"maps"
 	"net/http"
 	"strings"
 	"sync"
@@ -242,7 +243,7 @@ func (c *Client) askBatches(ctx context.Context, req UpdateRequest, batches [][]
 		}
 		wg.Go(func() {
 			defer func() { <-slots }()
-			got, err := c.askUpdates(ctx, req, asked)
+			got, err := c.askUpdatesRetrying(ctx, req, asked)
 			answers[b] = updatesAnswer{got, err}
 			// The window's offline banner then names smapi.io, as it does any source that stops answering.
 			netstate.Record("smapi", err)
@@ -256,6 +257,26 @@ func (c *Client) askBatches(ctx context.Context, req UpdateRequest, batches [][]
 	}
 	wg.Wait()
 	return answers
+}
+
+// askUpdatesRetrying asks once more, in two halves, when a batch fails: smapi.io sometimes runs past the request
+// timeout on a full batch, and one slow answer would otherwise leave every mod in it unknown and pause all checks.
+func (c *Client) askUpdatesRetrying(ctx context.Context, req UpdateRequest, mods []InstalledMod) (map[string]UpdateResult, error) {
+	got, err := c.askUpdates(ctx, req, mods)
+	if err == nil || ctx.Err() != nil || len(mods) < 2 {
+		return got, err
+	}
+	half := len(mods) / 2
+	first, err := c.askUpdates(ctx, req, mods[:half])
+	if err != nil {
+		return nil, err
+	}
+	second, err := c.askUpdates(ctx, req, mods[half:])
+	if err != nil {
+		return nil, err
+	}
+	maps.Copy(first, second)
+	return first, nil
 }
 
 func (c *Client) askUpdates(ctx context.Context, req UpdateRequest, mods []InstalledMod) (map[string]UpdateResult, error) {

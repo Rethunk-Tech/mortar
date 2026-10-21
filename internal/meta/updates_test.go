@@ -2,6 +2,7 @@ package meta
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -92,5 +93,34 @@ func TestCheckUpdatesServesAnOldAnswerAndAsksAgainInTheBackground(t *testing.T) 
 			t.Fatalf("no background refresh: asked %d times", asked.Load())
 		}
 		time.Sleep(10 * time.Millisecond)
+	}
+}
+
+// smapi.io sometimes fails one full batch; the mods in it are asked again in halves instead of all becoming unknown.
+func TestAFailedBatchIsAskedAgainInHalves(t *testing.T) {
+	var asked atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if asked.Add(1) == 1 {
+			http.Error(w, "busy", http.StatusBadGateway)
+			return
+		}
+		var body apiRequest
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		out := make([]map[string]string, 0, len(body.Mods))
+		for _, m := range body.Mods {
+			out = append(out, map[string]string{"id": m.ID})
+		}
+		_ = json.NewEncoder(w).Encode(out)
+	}))
+	t.Cleanup(srv.Close)
+	c := &Client{HTTP: srv.Client(), CacheDir: t.TempDir(), UpdatesURL: srv.URL}
+	got := c.CheckUpdates(context.Background(), UpdateRequest{Mods: []InstalledMod{{ID: "A.Mod", Version: "1"}, {ID: "B.Mod", Version: "1"}, {ID: "C.Mod", Version: "1"}}})
+	for _, r := range got {
+		if !r.Known {
+			t.Fatalf("%s is unknown after the retry: %+v", r.ID, got)
+		}
+	}
+	if n := asked.Load(); n != 3 {
+		t.Errorf("asked %d times, want the failed batch then its two halves", n)
 	}
 }
