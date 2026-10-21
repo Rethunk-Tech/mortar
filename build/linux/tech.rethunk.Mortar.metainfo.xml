@@ -65,6 +65,11 @@
           <li>Open profile folder in the Profile menu</li>
           <li>A link to a mod opens the Mods list filtered to that mod</li>
           <li>Home puts Saves beside Notes, with the changes since the last run below at full width</li>
+          <li>One Import dialog for every source: a link or code, a file, another mod manager, or the game's Mods folder, each ending in the same preview</li>
+          <li>Gale share codes import, in the short form and the older 22-character form</li>
+          <li>The import preview shows each mod's icon</li>
+          <li>Save folders for 46 more Unity games, so their saves list and back up</li>
+          <li>The browser extension talks protocol 4 and reports updates from every site</li>
         </ul>
         <p>Changed</p>
         <ul>
@@ -72,6 +77,9 @@
           <li>Opening Game Select runs no Problems or Updates checks, and Storage measures disk use only once its section is on screen</li>
           <li>The category pickers say why categories could not load instead of that the site has none</li>
           <li>The integrity check shows its outcome as a green, warning or red result</li>
+          <li>Importing a file also reads Thunderstore modpack zips and local profile folders, and the file picker offers .r2z files and modpacks</li>
+          <li>An import shows a progress bar while a link, code or file is read</li>
+          <li>A link or code that cannot be read says what was wrong with it</li>
         </ul>
         <p>Fixed</p>
         <ul>
@@ -82,6 +90,11 @@
           <li>Settings pages end with a gap, and launchers sit in two columns</li>
           <li>Before you play names a disabled requirement by the copy you have installed</li>
           <li>Two sites that share a driver no longer show each other's top mods</li>
+          <li>Thunderstore packages whose names differ only in case no longer replace each other, and the live package wins over a deprecated twin</li>
+          <li>BepInEx mods keep their manifest.json, icon.png and readme, so in-game mod menus such as Cat Mail Co.'s can read them, and no stray .complete file is added</li>
+          <li>A game without a save folder has no Saves page, no Saves card on Home and no Save backups page in its settings</li>
+          <li>An import skips packages the Thunderstore index cannot resolve instead of failing</li>
+          <li>The command line labels only mods in the Tray folder as (Tray)</li>
         </ul>
       </description>
     </release>
