@@ -19,6 +19,7 @@ import { initPlayRequests } from './launch/playRequests.ts'
 import { initLoader } from './loader/store.ts'
 import { initNexusSeen } from './mods/nexusDetails.ts'
 import { initUpdateDigestToast } from './mods/updateDigestToast.ts'
+import { initFollowLoadedGame } from './nav/followLoadedGame.ts'
 import { initNavHistory } from './nav/history.ts'
 import { initNxm } from './nxm/store.ts'
 import { initProfilesChanged } from './profiles/store.ts'
@@ -65,6 +66,7 @@ initLoader()
 initNxm().catch(reportUnexpected)
 initQueue().catch(reportUnexpected)
 initProfilesChanged()
+initFollowLoadedGame()
 // Play mode is known before the first render, so the full window never draws behind the play prompt.
 await initPlayMode().catch(reportUnexpected)
 initPlayRequests()

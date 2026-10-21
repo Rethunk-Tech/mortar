@@ -103,8 +103,8 @@ export async function showImported(game: string, intoOpen: boolean, id: string) 
   } else {
     await useProfiles.getState().load(game)
     useProfiles.getState().open(id)
-    await SetLastGame(game)
     useNav.getState().openGame(game)
+    await SetLastGame(game)
     RegisterLinks().catch(reportUnexpected)
   }
 }
