@@ -14,16 +14,15 @@ import { modLinksOf } from './modLinks.ts'
 import { DriftButtons, FixButton } from './problemFixButtons.tsx'
 import { type DismissedRow, isInfoRow, type Row, rowKeys } from './problemGroups.ts'
 import { isDismissedRow, useRowText } from './problemText.ts'
-import { problemGuideUrl, problemWhy } from './problemWhy.ts'
+import { problemGuideUrl, whyFor } from './problemWhy.ts'
 
 function WhyBody({ row }: { row: Row }) {
   const { t } = useLingui()
-  // A plugin that loaded and then threw is explained like a run's errors, not as one that never started.
-  const why = row.kind === 'loadFailure' && row.loadFailure.ran ? 'runError' : row.kind
+  const why = whyFor(row)
   return (
     <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
       <Typography sx={{ fontSize: 13, color: 'text.secondary', whiteSpace: 'normal' }}>
-        {problemWhy[why].text()}
+        {why.text()}
       </Typography>
       <Link
         component="button"

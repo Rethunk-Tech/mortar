@@ -11,7 +11,7 @@ interface Why {
 
 // One plain paragraph per kind of row, and the heading of docs/user-guide.md that expands on it. The record is
 // keyed by every Row kind, so a new kind does not compile until it has both.
-export const problemWhy: Record<Row['kind'], Why> = {
+const problemWhy: Record<Row['kind'], Why> = {
   missing: {
     anchor: 'missing-requirement',
     text: () =>
@@ -103,4 +103,13 @@ export const problemWhy: Record<Row['kind'], Why> = {
   },
 }
 
-export const problemGuideUrl = (kind: Row['kind']): string => `${GUIDE}#${problemWhy[kind].anchor}`
+// A plugin that loaded and then threw is a run's error, not one that never started; the guide gives it its own section.
+const ranWhy: Why = {
+  anchor: 'errors-while-running',
+  text: problemWhy.runError.text,
+}
+
+export const whyFor = (row: Row): Why =>
+  row.kind === 'loadFailure' && row.loadFailure.ran ? ranWhy : problemWhy[row.kind]
+
+export const problemGuideUrl = (why: Why): string => `${GUIDE}#${why.anchor}`

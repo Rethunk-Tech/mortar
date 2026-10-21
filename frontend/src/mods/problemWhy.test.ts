@@ -30,3 +30,16 @@ test('every problem row kind has a why paragraph and a user-guide section', () =
     expect(anchors.has(block?.[1] ?? ''), `${kind} anchor ${block?.[1]} is in the guide`).toBe(true)
   }
 })
+
+test('every guide anchor the explanations link to is a heading in the guide', () => {
+  const anchors = new Set(
+    [...read('../../../docs/user-guide.md').matchAll(/^#{2,4} (.+)$/gm)].map((m) =>
+      slug(m[1] ?? ''),
+    ),
+  )
+  const linked = [...read('problemWhy.ts').matchAll(/anchor: '([a-z-]+)'/g)].map((m) => m[1] ?? '')
+  expect(linked).toContain('errors-while-running')
+  for (const anchor of linked) {
+    expect(anchors.has(anchor), `${anchor} is in the guide`).toBe(true)
+  }
+})
