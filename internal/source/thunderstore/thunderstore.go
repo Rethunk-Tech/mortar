@@ -182,7 +182,7 @@ func (d Driver) Categories(ctx context.Context, key string) ([]string, error) {
 // deprecated package's own summary points to, as "Namespace-Name" or as a bare name of the same author's, or empty:
 // Thunderstore has no replacement field.
 type Deprecation struct {
-	Replacement string
+	Replacement string `json:"replacement,omitempty"`
 }
 
 var (

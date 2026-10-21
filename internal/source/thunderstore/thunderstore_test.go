@@ -235,7 +235,7 @@ func TestDeprecatedListsPackagesAndTheirNamedReplacement(t *testing.T) {
 	if got["fay-legacy"].Replacement != "Alice-MoreCompany" || len(got) != 6 {
 		t.Fatalf("got %+v", got)
 	}
-	if listingHeld("lethal-company") {
+	if listingHeld() {
 		t.Fatal("the deprecation check kept the whole listing in memory")
 	}
 }

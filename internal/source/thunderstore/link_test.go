@@ -63,7 +63,7 @@ func TestDependenciesListsPackageIdsOfEachVersion(t *testing.T) {
 	if _, ok := got[ghost]; ok {
 		t.Error("a version the index lacks was listed")
 	}
-	if listingHeld("lethal-company") {
+	if listingHeld() {
 		t.Error("the dependency check kept the whole listing in memory")
 	}
 }

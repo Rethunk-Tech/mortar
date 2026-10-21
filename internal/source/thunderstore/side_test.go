@@ -108,10 +108,10 @@ func clearMemo() {
 	memoMu.Unlock()
 }
 
-func listingHeld(key string) bool {
+func listingHeld() bool {
 	memoMu.Lock()
 	defer memoMu.Unlock()
-	_, held := memo[key]
+	_, held := memo["lethal-company"]
 	return held
 }
 
@@ -126,7 +126,7 @@ func TestCategoriesAndDeprecatedAnswerFromTheDerivedFileWithoutTheListing(t *tes
 	if _, err := d.Categories(t.Context(), "lethal-company"); err != nil {
 		t.Fatal(err)
 	}
-	if listingHeld("lethal-company") {
+	if listingHeld() {
 		t.Fatal("a category lookup kept the whole listing in memory")
 	}
 	dir := filepath.Join(cache, "thunderstore")
@@ -149,7 +149,7 @@ func TestCategoriesAndDeprecatedAnswerFromTheDerivedFileWithoutTheListing(t *tes
 	if err != nil || dep["x-y"].Replacement != "a-b" || len(dep) != 1 {
 		t.Fatalf("deprecated = %v, %v", dep, err)
 	}
-	if listingHeld("lethal-company") {
+	if listingHeld() {
 		t.Fatal("a deprecation lookup kept the whole listing in memory")
 	}
 }
