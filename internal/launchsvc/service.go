@@ -1061,6 +1061,9 @@ func (s *Service) playedSavesDir(set settings.Settings, gameID, profileID, insta
 }
 
 func (s *Service) backupChangedSaves(ctx context.Context, gameID, profileID, installID, installDir string) error {
+	if !game.HasSaves(gameID) {
+		return nil
+	}
 	events, err := s.profiles.History(gameID, profileID)
 	if err != nil {
 		return err

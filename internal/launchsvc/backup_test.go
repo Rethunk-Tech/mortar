@@ -72,3 +72,9 @@ func TestBackupNeededWhenTheGameWasUpdated(t *testing.T) {
 		t.Fatal("always must take a launch backup")
 	}
 }
+
+func TestAGameWithNoSaveFolderSkipsTheBackupBeforePlay(t *testing.T) {
+	if err := (&Service{}).backupChangedSaves(t.Context(), "cities-skylines-ii", "p", "", t.TempDir()); err != nil {
+		t.Fatalf("backup = %v, want nothing to do", err)
+	}
+}
