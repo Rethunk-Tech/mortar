@@ -446,7 +446,7 @@ jobs:
   # Publishes the signed package repository and the tagged site to the `packages` branch, which mortar.rethunk.tech deploys.
   package-repo:
     needs: finalize
-    if: github.ref_type == 'tag'
+    if: ${{ !cancelled() && needs.finalize.result == 'success' && github.ref_type == 'tag' }}
     permissions:
       contents: write
     uses: ./.github/workflows/package-repo.yml
@@ -457,7 +457,7 @@ jobs:
 
   announce:
     needs: finalize
-    if: github.ref_type == 'tag'
+    if: ${{ !cancelled() && needs.finalize.result == 'success' && github.ref_type == 'tag' }}
     uses: ./.github/workflows/release-discord.yml
     with:
       tag: ${{ github.ref_name }}
