@@ -62,8 +62,9 @@ function FittedChips({
         display: 'flex',
         alignItems: 'center',
         gap: `${CHIP_GAP_PX}px`,
-        // Autocomplete's own margin on its chips would set them off from the +N chip, which is not one of its tags.
-        '& .MuiAutocomplete-tag': { m: 0 },
+        // Autocomplete's own margin on its chips would set them off from the +N chip, which is not one of its tags, and
+        // its width cap is relative to this row, which is only as wide as the chips.
+        '& .MuiAutocomplete-tag': { m: 0, maxWidth: 'none' },
         minWidth: 0,
         flex: '0 1 auto',
         overflow: 'hidden',
@@ -124,6 +125,7 @@ function CategoryPicker({
   return (
     <Autocomplete
       multiple={true}
+      autoHighlight={true}
       size="small"
       options={options}
       value={value}
