@@ -90,10 +90,9 @@ build() {
     cp "$BUILD_CACHE/$key" "$ROOT/mortar-server.new"
   else
     echo "building frontend and server-mode binary"
-    # A fresh clone has no generated bindings, which the frontend build imports.
-    if [ ! -d "$REPO/frontend/bindings" ]; then
-      (cd "$REPO" && wails3 generate bindings -clean=true -ts -i >"$ROOT/bindings.log" 2>&1)
-    fi
+    # The frontend build imports the generated bindings, which go stale the moment a Go type the window reads
+    # changes, so they are generated on every build, not only when missing.
+    (cd "$REPO" && bun run bindings >"$ROOT/bindings.log" 2>&1)
     (cd "$REPO" && bun run --cwd frontend build >"$ROOT/frontend-build.log" 2>&1)
     # Stamped past the release like build/linux/Taskfile.yml, so entries for the next patch (minVersion) are read.
     since=$(cd "$REPO" && git rev-list --count "v$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)..HEAD" 2>/dev/null || true)
