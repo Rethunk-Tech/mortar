@@ -435,7 +435,7 @@ func (s *Service) PreviewLink(ctx context.Context, game, text, profileID string)
 	if domain, modID, ok := nexus.ParseModURL(text); ok {
 		return s.previewModPage(ctx, game, domain, modID, profileID)
 	}
-	if in := (pack.Input{Text: text}); s.d.PackCode.Detect(in) {
+	if in := (pack.Input{Text: text}); s.isPackCode(in) {
 		d, err := s.readPack(ctx, in)
 		if err != nil {
 			return Preview{}, err

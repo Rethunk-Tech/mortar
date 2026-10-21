@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -15,15 +16,26 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
-// readPack reads in with the pack formats: an r2modman code or key, a .r2z, a profile folder of r2modman or Gale, a
+// packCodes are the pack formats a pasted text can be: an r2modman code or key, or a Gale code.
+func (s *Service) packCodes() []pack.Format {
+	return []pack.Format{s.d.PackCode, pack.GaleCode{HTTP: s.d.PackCode.HTTP}}
+}
+
+// isPackCode reports whether pasted text is a profile code one of the pack formats reads.
+func (s *Service) isPackCode(in pack.Input) bool {
+	return slices.ContainsFunc(s.packCodes(), func(f pack.Format) bool { return f.Detect(in) })
+}
+
+// readPack reads in with the pack formats: the profile codes, a .r2z, a profile folder of r2modman or Gale, a
 // Thunderstore modpack zip.
 func (s *Service) readPack(ctx context.Context, in pack.Input) (pack.Draft, error) {
 	folder := ""
 	if s.d.PackFolder != nil {
 		folder = s.d.PackFolder()
 	}
-	return pack.Read(ctx, in, s.d.PackCode, pack.GaleCode{HTTP: s.d.PackCode.HTTP}, pack.Profile{GameByFolder: gamepkg.ByR2modmanFolder},
+	formats := append(s.packCodes(), pack.Profile{GameByFolder: gamepkg.ByR2modmanFolder},
 		pack.Gale{GameBySlug: gameByThunderstoreKey, DB: pack.GaleDB(folder)}, pack.Modpack{})
+	return pack.Read(ctx, in, formats...)
 }
 
 // gameByThunderstoreKey is the catalog game whose Thunderstore community key is slug, which is what Gale names a game.

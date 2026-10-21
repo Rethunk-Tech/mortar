@@ -32,14 +32,15 @@ type GaleCode struct {
 // ID names the format.
 func (GaleCode) ID() string { return "gale-code" }
 
-// Detect accepts only a pasted text of exactly Gale's code shape.
+// Detect accepts only a pasted text of exactly Gale's code shape, in either case: people retype codes, and the server
+// stores them upper-case.
 func (GaleCode) Detect(in Input) bool {
-	return in.Path == "" && galeCodeID.MatchString(strings.TrimSpace(in.Text))
+	return in.Path == "" && galeCodeID.MatchString(strings.ToUpper(strings.TrimSpace(in.Text)))
 }
 
 // Parse downloads the code's profile and reads it like an .r2z.
 func (g GaleCode) Parse(ctx context.Context, in Input) (Draft, error) {
-	id := strings.TrimSpace(in.Text)
+	id := strings.ToUpper(strings.TrimSpace(in.Text))
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, cmp.Or(g.URL, GaleBaseURL)+"/profile/"+id, nil)

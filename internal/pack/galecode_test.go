@@ -28,7 +28,7 @@ func TestGaleCodeFollowsTheRedirectAndReadsTheProfile(t *testing.T) {
 
 func TestGaleCodeDetectsOnlyItsOwnShape(t *testing.T) {
 	for text, want := range map[string]bool{
-		"E5RG8F": true, "e5rg8f": false, "E5RG8": false, "E5RG8FX": false, "E5RG-8": false, "hello": false,
+		"E5RG8F": true, "e5rg8f": true, "E5RG8": false, "E5RG8FX": false, "E5RG-8": false, "hello": false,
 		"0123abcd-0123-0123-0123-0123456789ab": false, "#r2modman": false,
 	} {
 		if got := (GaleCode{}).Detect(Input{Text: text}); got != want {
