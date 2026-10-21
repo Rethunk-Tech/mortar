@@ -107,7 +107,7 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
       }}
     >
       <Box sx={{ position: 'relative', display: 'flex', flexShrink: 0 }}>
-        <LetterTile mod={{ id: mod.key, name: mod.name }} size={52} />
+        <LetterTile mod={{ id: mod.key, name: mod.name, picture: mod.icon ?? '' }} size={52} />
         <Checkbox
           size="small"
           checked={checked && !fixed}

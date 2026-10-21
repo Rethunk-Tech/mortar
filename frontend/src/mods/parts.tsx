@@ -238,6 +238,8 @@ export function LetterTile({
           <Box
             component="img"
             alt=""
+            loading="lazy"
+            referrerPolicy="no-referrer"
             src={`/mod-picture/?u=${encodeURIComponent(picture)}`}
             onError={() => setFailed(picture)}
             sx={{ width: '100%', height: '100%', objectFit: 'cover' }}

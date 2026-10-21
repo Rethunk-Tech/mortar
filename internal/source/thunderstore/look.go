@@ -34,6 +34,46 @@ func Category(cats []string) string {
 	return ""
 }
 
+func (d Driver) cachedMeta(key string) (dir string, meta cacheMeta, err error) {
+	if !communityKey.MatchString(key) {
+		return "", meta, errors.New("not a Thunderstore community key")
+	}
+	dir = filepath.Join(d.cacheRoot(), "thunderstore")
+	b, err := fsx.ReadFile(filepath.Join(dir, key+".meta.json"))
+	if err != nil {
+		return "", meta, err
+	}
+	if err := json.Unmarshal(b, &meta); err != nil || meta.Hash == "" {
+		return "", meta, errors.New("no cached Thunderstore listing")
+	}
+	return dir, meta, nil
+}
+
+// CachedIcons returns the icon address of each package named (Namespace-Name, any case) that the community's cached
+// listing holds, keyed by the lower-case name. Unlike CachedLooks it keeps no record of what it was asked, so asking
+// again answers again. It never asks the network.
+func (d Driver) CachedIcons(key string, names []string) (map[string]string, error) {
+	dir, meta, err := d.cachedMeta(key)
+	if err != nil {
+		return nil, err
+	}
+	want := map[string]bool{}
+	for _, n := range names {
+		want[strings.ToLower(n)] = true
+	}
+	list, err := loadPackages(key, listingPath(dir, key, meta.Hash))
+	if err != nil {
+		return nil, err
+	}
+	out := map[string]string{}
+	for _, p := range list {
+		if id := packageID(p.Owner, p.Name); want[id] && p.Icon != "" {
+			out[id] = p.Icon
+		}
+	}
+	return out, nil
+}
+
 // lookedUp is what CachedLooks already asked of one listing: the listing's index hash and the names it looked up.
 type lookedUp struct {
 	Hash  string   `json:"hash"`
@@ -45,17 +85,9 @@ type lookedUp struct {
 // in this listing are not looked up again: a package added from disk is never in it, and decoding the listing costs
 // most of a CPU second.
 func (d Driver) CachedLooks(key string, names []string) (map[string]Look, error) {
-	if !communityKey.MatchString(key) {
-		return nil, errors.New("not a Thunderstore community key")
-	}
-	dir := filepath.Join(d.cacheRoot(), "thunderstore")
-	var meta cacheMeta
-	b, err := fsx.ReadFile(filepath.Join(dir, key+".meta.json"))
+	dir, meta, err := d.cachedMeta(key)
 	if err != nil {
 		return nil, err
-	}
-	if err := json.Unmarshal(b, &meta); err != nil || meta.Hash == "" {
-		return nil, errors.New("no cached Thunderstore listing")
 	}
 	markPath := filepath.Join(dir, key+".looked.json")
 	var mark lookedUp

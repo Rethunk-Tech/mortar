@@ -102,6 +102,9 @@ type Deps struct {
 	// Unresolvable maps each Thunderstore package of reqs the community's index cannot resolve to why, so the preview
 	// shows it as unavailable instead of the import failing; nil checks nothing.
 	Unresolvable func(ctx context.Context, game, profileID string, reqs []queue.Request) map[string]string
+	// PackageIcons gives the icon address of each Thunderstore package (Namespace-Name) the game's cached index holds,
+	// keyed by lower-case name; nil leaves previewed packages without icons.
+	PackageIcons func(game string, names []string) map[string]string
 	// PackCode reads r2modman codes; the zero value talks to the real Thunderstore.
 	PackCode pack.Code
 	// PackFolder is the player's own r2modman or Gale data folder, for managers kept outside their default places.
@@ -675,6 +678,9 @@ func (s *Service) resolverFor(game, profileID string) (*resolver, error) {
 		r.unresolvable = func(ctx context.Context, reqs []queue.Request) map[string]string {
 			return s.d.Unresolvable(ctx, game, profileID, reqs)
 		}
+	}
+	if s.d.PackageIcons != nil {
+		r.packageIcons = func(names []string) map[string]string { return s.d.PackageIcons(game, names) }
 	}
 	if profileID == "" {
 		return r, nil

@@ -35,6 +35,11 @@ func TestLooksComeFromTheIndexAndTheCacheAlone(t *testing.T) {
 	if err != nil || len(looks) != 1 || looks["ns-gen"] != (Look{Icon: icon, Category: "Tools"}) {
 		t.Fatalf("cached looks %+v %v", looks, err)
 	}
+	for range 2 {
+		if icons, err := d.CachedIcons("lethal-company", []string{"NS-GEN", "Ns-Missing"}); err != nil || len(icons) != 1 || icons["ns-gen"] != icon {
+			t.Fatalf("cached icons %+v %v", icons, err)
+		}
+	}
 	// A name the listing lacks was looked up once; asking again must not read the listing, so a damaged one goes
 	// unnoticed.
 	listings, _ := filepath.Glob(filepath.Join(d.CacheDir, "thunderstore", "lethal-company-"+listingTag+"-*.json"))

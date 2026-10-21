@@ -83,6 +83,8 @@ type Mod struct {
 	Reason  string `json:"reason"`
 	// Detail is the specific cause of an unavailable mod, when Reason alone does not say.
 	Detail string `json:"detail,omitempty"`
+	// Icon is the address of the mod's picture, when its source gave one.
+	Icon   string `json:"icon,omitempty"`
 	ModID  int    `json:"modId"`
 	FileID int    `json:"fileId"`
 	Repo   string `json:"repo"`
@@ -199,6 +201,9 @@ type resolver struct {
 	// unresolvable names the Thunderstore packages the index cannot resolve (see Deps.Unresolvable); unresolved is its answer.
 	unresolvable func(ctx context.Context, reqs []queue.Request) map[string]string
 	unresolved   map[string]string
+	// packageIcons reads Thunderstore icons from the cached index in one pass; nil asks nothing. icons holds its answer.
+	packageIcons func(names []string) map[string]string
+	icons        map[string]string
 	meta         problems.Meta
 	files        func(ctx context.Context, t nexus.Title, modID int) ([]nexus.File, error)
 	signedIn     bool
@@ -463,7 +468,7 @@ func (r *resolver) vsmoddb(ctx context.Context, ref share.Ref) Mod {
 	}
 	if r.vsmoddbRelease != nil {
 		if found, err := r.vsmoddbRelease(ctx, ref.VSModDB, strconv.Itoa(ref.FileID)); err == nil && found.Name != "" {
-			m.Name = found.Name
+			m.Name, m.Icon = found.Name, found.Picture
 		}
 	}
 	return m
@@ -503,6 +508,7 @@ func (r *resolver) thunderstore(ref share.Ref) Mod {
 		Package: ref.Package, PageURL: thunderstore.Driver{}.ModPageURL(share.SourceKeys(r.game)["thunderstore"], ref.Package),
 		State: StateDownload, IDs: []mod.ID{}, Disabled: append([]mod.ID{}, ref.Disabled...),
 	}
+	m.Icon = r.icons[strings.ToLower(ref.Package)]
 	if why, bad := r.unresolved[ref.Package]; bad {
 		m.State, m.Reason, m.Detail = StateUnavailable, ReasonNotInIndex, why
 	} else if r.hasPackage(ref.Package, ref.Version) {
@@ -768,8 +774,25 @@ func (r *resolver) catalogHas(id string) bool {
 	return ok
 }
 
+// loadIcons reads every Thunderstore ref's icon at once: decoding the cached index costs most of a CPU second.
+func (r *resolver) loadIcons(refs []share.Ref) {
+	if r.packageIcons == nil {
+		return
+	}
+	var names []string
+	for _, ref := range refs {
+		if ref.Package != "" {
+			names = append(names, ref.Package)
+		}
+	}
+	if len(names) > 0 {
+		r.icons = r.packageIcons(names)
+	}
+}
+
 // checkPackages asks which of the refs' Thunderstore packages the index cannot resolve; the profile's own are not asked.
 func (r *resolver) checkPackages(ctx context.Context, refs []share.Ref) {
+	r.loadIcons(refs)
 	if r.unresolvable == nil {
 		return
 	}

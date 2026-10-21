@@ -28,3 +28,21 @@ func TestThunderstoreRefsQueueAsPackages(t *testing.T) {
 		t.Errorf("token %q", modToken(m))
 	}
 }
+
+func TestThunderstoreRowCarriesTheIndexIcon(t *testing.T) {
+	const icon = "https://gcdn.thunderstore.io/live/repository/icons/Alice-MoreCompany-1.2.3.png"
+	r := &resolver{game: "lethal-company", packageIcons: func(names []string) map[string]string {
+		if len(names) != 2 {
+			t.Errorf("icons asked per ref, not once: %v", names)
+		}
+		return map[string]string{"alice-morecompany": icon}
+	}}
+	refs := []share.Ref{{Package: "Alice-MoreCompany", Version: "1.2.3"}, {Package: "Bob-NoIcon"}}
+	r.checkPackages(t.Context(), refs)
+	if got := r.thunderstore(refs[0]).Icon; got != icon {
+		t.Errorf("icon %q", got)
+	}
+	if got := r.thunderstore(refs[1]).Icon; got != "" {
+		t.Errorf("a package the index lacks has icon %q", got)
+	}
+}

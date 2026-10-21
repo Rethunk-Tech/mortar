@@ -773,7 +773,18 @@ func run() error {
 		Env:          problemsSvc.Environment,
 		Queue:        queueSvc,
 		Unresolvable: queueSvc.Unresolvable,
-		PackFolder:   func() string { return store.Get().PackFolder },
+		PackageIcons: func(gameID string, names []string) map[string]string {
+			key := share.SourceKeys(gameID)["thunderstore"]
+			if key == "" {
+				return nil
+			}
+			icons, err := thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}.CachedIcons(key, names)
+			if err != nil {
+				return nil
+			}
+			return icons
+		},
+		PackFolder: func() string { return store.Get().PackFolder },
 		Stored: func(gameID, key string) bool {
 			_, err := items.Path(gameID, key)
 			return err == nil
