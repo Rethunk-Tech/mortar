@@ -104,6 +104,51 @@ const commOf = (pid: number) => {
   }
 }
 
+/** MiB of PSS per process role in a tree (a Chromium child's --type, else its command name), biggest first. */
+export function byRole(root: number): [string, number][] {
+  const roles = new Map<string, number>()
+  for (const pid of tree(root)) {
+    const role = commOf(pid)
+    roles.set(role, (roles.get(role) ?? 0) + pssKiB(pid) / MIB)
+  }
+  return [...roles].sort((a, b) => b[1] - a[1])
+}
+
+/** MiB of PSS per mapping of one process: its own executable, anonymous memory (the Go heap and stacks live there),
+ * shared libraries and other files. */
+export function mappings(pid: number, exe: string): Record<string, number> {
+  const out: Record<string, number> = {
+    executable: 0,
+    anonymous: 0,
+    libraries: 0,
+    'other files': 0,
+  }
+  let kind = 'anonymous'
+  try {
+    for (const line of readFileSync(`/proc/${pid}/smaps`, 'utf8').split('\n')) {
+      const head = /^[0-9a-f]+-[0-9a-f]+ \S+ \S+ \S+ \S+\s*(.*)$/.exec(line)
+      if (head) {
+        const path = (head[1] ?? '').replace(/ \(deleted\)$/, '')
+        if (path === exe) {
+          kind = 'executable'
+        } else if (path === '' || path.startsWith('[')) {
+          kind = 'anonymous'
+        } else {
+          kind = /\.so(\.|$)/.test(path) ? 'libraries' : 'other files'
+        }
+        continue
+      }
+      const pss = /^Pss:\s+(\d+) kB/.exec(line)
+      if (pss) {
+        out[kind] = (out[kind] ?? 0) + Number(pss[1]) / MIB
+      }
+    }
+  } catch {
+    // Gone already.
+  }
+  return out
+}
+
 interface Proc {
   pid: number
   comm: string

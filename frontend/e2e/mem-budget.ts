@@ -3,6 +3,7 @@ import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { chromium, type Page } from '@playwright/test'
 import { openProfile } from './app.ts'
+import { browserBreakdown, goBreakdown } from './mem-breakdown.ts'
 import { browserRoot, cpuSeconds, MIB, pssKiB, sample, serverPid, tree } from './mem-proc.ts'
 import { sandboxPort, selftest, serverEnv } from './sandbox.ts'
 
@@ -11,10 +12,13 @@ import { sandboxPort, selftest, serverEnv } from './sandbox.ts'
 // stands in for it. PSS divides shared pages between the processes sharing them, so the sum counts each page once.
 //
 //   MORTAR_MEM_DATA=<a Mortar data folder>   copy of the data to measure on (else the seeded sandbox, a small smoke run)
-//   MORTAR_MEM_ONLY=browse,problems          run only those scenarios (browse, install, problems, launch, games)
+//   MORTAR_MEM_ONLY=idle,browse              run only those scenarios (idle, browse, after-browse, install, problems,
+//                                            launch, games); after-browse means something only after browse
 //   MORTAR_MEM_PROFILE=<id or name>          the Stardew profile (else the one with the most mods)
 //   MORTAR_MEM_BUDGET_MIB=1152               the limit for Go and browser together, per scenario
-// Exits 1 when a scenario's total is over the budget.
+// Exits 1 when a scenario's total is over the budget. Each scenario's breakdown (Go memory classes, GOGC and the memory
+// limit in effect, the top of its heap profile by package, the browser's JS heap, DOM and per-process split) goes to
+// $MORTAR_MEM_OUT/report.md; the Go parts need MORTAR_PPROF.
 
 const BASE = '/var/tmp'
 const BUDGET_MIB = Number(process.env.MORTAR_MEM_BUDGET_MIB ?? '1152')
@@ -32,6 +36,16 @@ const GAME_SCROLLS = 70
 const GAME_SCROLL_PX = 800
 const GAME_SCROLL_WAIT_MS = 150
 const LAUNCH_TIMEOUT_MS = 240_000
+// Idle means the server has spent under QUIET_CPU_S of CPU in each of QUIET_SECONDS straight seconds: the catalog, index
+// loads and update checks that follow a start or a screen change are done. QUIET_MIN_S covers work that waits on the
+// network at near-zero CPU before it decodes; MORTAR_MEM_SETTLE_S raises it past the idle releases (Content Patcher
+// packs after 2 minutes, a Thunderstore listing after 10) to see what stays for good. A server that never gets there is sampled after QUIET_MAX_S anyway, and
+// the report says so.
+const QUIET_CPU_S = 0.05
+const QUIET_SECONDS = 5
+const QUIET_MIN_S = Number(process.env.MORTAR_MEM_SETTLE_S ?? '30')
+const QUIET_MAX_S = QUIET_MIN_S + 150
+const IDLE_SAMPLE_MS = 5000
 
 const dir = `${BASE}/mortar-mem-${process.pid}`
 
@@ -218,10 +232,47 @@ interface Profile {
 
 interface Scenario {
   name: string
+  /** Runs before sampling starts, so the figure is what is held afterwards rather than the peak of getting there. */
+  settle?: (page: Page) => Promise<string>
   run: (page: Page, profile: Profile) => Promise<void>
 }
 
+/** Waits until the server's CPU goes flat (see QUIET_CPU_S) and says how long that took. */
+async function waitQuiet(): Promise<string> {
+  const start = Date.now()
+  let last = cpuSeconds(serverPid())
+  let quiet = 0
+  const elapsed = () => Date.now() - start
+  while (
+    (quiet < QUIET_SECONDS || elapsed() < QUIET_MIN_S * 1000) &&
+    elapsed() < QUIET_MAX_S * 1000
+  ) {
+    await sleep(1000)
+    const now = cpuSeconds(serverPid())
+    quiet = now - last < QUIET_CPU_S ? quiet + 1 : 0
+    last = now
+  }
+  const s = ((Date.now() - start) / 1000).toFixed(0)
+  return quiet < QUIET_SECONDS
+    ? `server CPU still busy after ${s} s`
+    : `server CPU quiet after ${s} s`
+}
+
+/** The open profile's Home, left until the server is idle. */
+const idleScenario = (name: string): Scenario => ({
+  name,
+  async settle(page) {
+    await page.keyboard.press('Escape')
+    await page.getByRole('tab', { name: 'Home' }).click()
+    return waitQuiet()
+  },
+  async run() {
+    await sleep(IDLE_SAMPLE_MS)
+  },
+})
+
 const scenarios: Scenario[] = [
+  idleScenario('idle'),
   {
     name: 'browse',
     async run(page) {
@@ -237,6 +288,8 @@ const scenarios: Scenario[] = [
       await page.getByRole('tab', { name: 'Mods' }).click()
     },
   },
+  // Whether browsing's memory is given back. browse's pressure purge has already dropped the browser's caches by then.
+  idleScenario('after-browse'),
   {
     name: 'install',
     async run(page, profile) {
@@ -295,9 +348,10 @@ async function measureScenario(
   profile: Profile,
   scenario: Scenario,
   browserPid: number,
-): Promise<{ rows: string[]; failed: boolean }> {
+): Promise<{ rows: string[]; report: string; failed: boolean }> {
   const rows: string[] = []
   let failed = false
+  const settled = scenario.settle ? await scenario.settle(page) : ''
   const before = await domStats(page)
   const wallStart = Date.now()
   const cpuStart = cpuSeconds(serverPid())
@@ -330,7 +384,11 @@ async function measureScenario(
     `          top at peak: ${p.top.map((t) => `${t.comm}[${t.pid}] ${t.mib.toFixed(0)}`).join(', ')}`,
   )
   rows.push(`          Wall ${wall.toFixed(1)} s, Go CPU ${cpu.toFixed(1)} s${gcNote}`)
+  if (settled) {
+    rows.push(`          Settle: ${settled}`)
+  }
   rows.push(`          Before: ${before}`)
+  const [webReport, webLine] = await browserBreakdown(page, browserPid)
   rows.push(`          ${await browserHeap(page, scenario.name, browserPid)}`)
   if (peakNote) {
     rows.push(`          ${peakNote}`)
@@ -338,7 +396,24 @@ async function measureScenario(
   if (process.env.MORTAR_PPROF) {
     rows.push(`          ${await saveProfiles(process.env.MORTAR_PPROF, scenario.name)}`)
   }
-  return { rows, failed }
+  const [goReport, goLine] = await goBreakdown(
+    process.env.MORTAR_PPROF,
+    scenario.name,
+    `${dir}/mortar-server`,
+    outDir,
+  )
+  rows.push(`          ${goLine}`, `          ${webLine}`)
+  const report = [
+    `## ${scenario.name}`,
+    '',
+    `Peak PSS: Go ${p.go.toFixed(0)} MiB, browser ${p.browser.toFixed(0)} MiB, total ${p.total.toFixed(0)} MiB (${verdict(failure, over)}).${settled ? ` Sampled for ${IDLE_SAMPLE_MS / 1000} s once the ${settled}.` : ''}`,
+    '',
+    goReport,
+    '',
+    webReport,
+    '',
+  ].join('\n')
+  return { rows, report, failed }
 }
 
 async function main(): Promise<number> {
@@ -354,6 +429,7 @@ async function main(): Promise<number> {
   mkdirSync(dir, { recursive: true })
   let code = 0
   const rows: string[] = []
+  const reports: string[] = []
   try {
     const data = process.env.MORTAR_MEM_DATA
     if (data) {
@@ -383,6 +459,7 @@ async function main(): Promise<number> {
     for (const scenario of chosen) {
       const result = await measureScenario(page, profile, scenario, browserPid)
       rows.push(...result.rows)
+      reports.push(result.report)
       if (result.failed) {
         code = 1
       }
@@ -402,6 +479,9 @@ async function main(): Promise<number> {
     `${'scenario'.padEnd(9)} ${'Go'.padStart(8)} ${'browser'.padStart(8)} ${'total'.padStart(8)} ${'game'.padStart(8)}   (game: a launched game, not in the total)`,
   )
   console.log(rows.join('\n'))
+  mkdirSync(outDir, { recursive: true })
+  writeFileSync(`${outDir}/report.md`, `# Mortar memory breakdown\n\n${reports.join('\n')}`)
+  console.log(`Breakdown: ${outDir}/report.md`)
   return code
 }
 
