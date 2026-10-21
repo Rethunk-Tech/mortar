@@ -31,7 +31,7 @@ const what = [
 
 <Base
   title="Mortar browser extension"
-  description="The Mortar browser extension marks Nexus Mods, Thunderstore, CurseForge and Vintage Story Mod DB pages with what your Mortar profile already has and hands their install buttons to Mortar. For Firefox, Chrome and Edge."
+  description="The Mortar browser extension marks Nexus Mods, Thunderstore, CurseForge, Vintage Story Mod DB, Paradox Mods and Modrinth pages with what your Mortar profile already has and hands their install buttons to Mortar. For Firefox, Chrome and Edge."
   current="extension"
   crumbs={[{ name: 'Browser extension', href: '/extension/' }]}
 >
@@ -40,14 +40,14 @@ const what = [
       <div>
         <p class="kicker">Browser extension</p>
         <h1>Mod sites, aware of <em>your profile.</em></h1>
-        <p class="lede">See which mods your Mortar profile already has while you browse Nexus Mods, Thunderstore, CurseForge or the Vintage Story Mod DB, and send their install buttons straight to Mortar. For Firefox, Chrome, Edge and other Chromium browsers.</p>
+        <p class="lede">See which mods your Mortar profile already has while you browse Nexus Mods, Thunderstore, CurseForge, the Vintage Story Mod DB, Paradox Mods or Modrinth, and send their install buttons straight to Mortar. For Firefox, Chrome, Edge and other Chromium browsers.</p>
         <div class="cta">
           <a class="btn primary" href={XPI}>Get it for Firefox</a>
           <a class="store-badge" href={CHROME}><img src="/img/chrome-web-store.png" alt="Available in the Chrome Web Store" width="165" height="50" /></a>
         </div>
         <p class="cta-sub">Free and open source. Needs Mortar on the same computer.</p>
       </div>
-      <div class="ext-shot"><img class="shot zoom" src="/img/extension.webp" width="380" height="264" alt="The extension popup connected to Mortar: 660 Nexus mods in the Main profile and the updates available for them" /></div>
+      <div class="ext-shot"><img class="shot zoom" src="/img/extension.webp" width="368" height="232" alt="The extension popup connected to Mortar with the Main profile open, listing updates from Thunderstore and Nexus Mods" /></div>
     </div>
   </div>
 
@@ -87,11 +87,11 @@ const what = [
       <div class="faq">
         <details open>
           <summary>Privacy policy</summary>
-          <div class="a"><p>Mortar's browser extension reads Nexus Mods, Thunderstore, CurseForge and Vintage Story Mod DB pages in your browser to mark mods and to pass their install links to the Mortar desktop app installed on your own computer, using the browser's native messaging. The only data exchanged is Nexus mod ids, file ids and nxm:// links, Thunderstore package names, CurseForge project ids, mod names and curseforge:// links, and Mod DB mod ids and install links, going to Mortar, and installed-mod and update information coming back. It runs only on https://www.nexusmods.com, Thunderstore community and package pages (https://thunderstore.io/c/*), https://www.curseforge.com and https://mods.vintagestory.at. The extension makes no network requests of its own, has no server, analytics or telemetry, and sends nothing to the developers or any third party. Your display choice and filter settings are stored in your browser's extension storage and never leave it. Uninstalling the extension removes them.</p></div>
+          <div class="a"><p>Mortar's browser extension reads Nexus Mods, Thunderstore, CurseForge, Vintage Story Mod DB, Paradox Mods and Modrinth pages in your browser to mark mods and to pass their install links to the Mortar desktop app installed on your own computer, using the browser's native messaging. The only data exchanged is Nexus mod ids, file ids and nxm:// links, Thunderstore package names, CurseForge project ids, mod names and curseforge:// links, Mod DB mod ids and install links, and Paradox Mods and Modrinth project ids, going to Mortar, and installed-mod and update information coming back. It runs only on https://www.nexusmods.com, Thunderstore community and package pages (https://thunderstore.io/c/*), https://www.curseforge.com, https://mods.vintagestory.at, https://mods.paradoxplaza.com and https://modrinth.com. The extension makes no network requests of its own, has no server, analytics or telemetry, and sends nothing to the developers or any third party. Your display choice and filter settings are stored in your browser's extension storage and never leave it. Uninstalling the extension removes them.</p></div>
         </details>
         <details>
           <summary>Permissions it asks for</summary>
-          <div class="a"><p><code>nativeMessaging</code> to reach Mortar on your computer; access to <code>www.nexusmods.com</code>, to read and mark its pages, to Thunderstore pages, to mark a package and add its Install in Mortar button, and to <code>www.curseforge.com</code> and <code>mods.vintagestory.at</code>, to mark mods and hand their Install buttons to Mortar; <code>scripting</code> to add its marks to Nexus tabs that were already open when it was installed; <code>storage</code> for your display settings; <code>alarms</code> to refresh the update check.</p></div>
+          <div class="a"><p><code>nativeMessaging</code> to reach Mortar on your computer; access to <code>www.nexusmods.com</code>, to read and mark its pages, to Thunderstore pages, to mark a package and add its Install in Mortar button, to <code>www.curseforge.com</code> and <code>mods.vintagestory.at</code>, to mark mods and hand their Install buttons to Mortar, and to <code>mods.paradoxplaza.com</code> and <code>modrinth.com</code>, to mark mods and add Install in Mortar; <code>scripting</code> to add its marks to tabs of those sites that were already open when it was installed; <code>storage</code> for your display settings; <code>alarms</code> to refresh the update check.</p></div>
         </details>
         <details>
           <summary>Source code</summary>
