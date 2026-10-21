@@ -70,6 +70,8 @@
           <li>The import preview shows each mod's icon</li>
           <li>Save folders for 46 more Unity games, so their saves list and back up</li>
           <li>The browser extension talks protocol 4 and reports updates from every site</li>
+          <li>After a game crashes, its crash card also reads CatLib's crash report and opens its folder, and on Windows the Windows event log</li>
+          <li>Mortar's own process holds about a third of the memory at idle that it did, returning what start-up used once it goes quiet</li>
         </ul>
         <p>Changed</p>
         <ul>
@@ -80,6 +82,9 @@
           <li>Importing a file also reads Thunderstore modpack zips and local profile folders, and the file picker offers .r2z files and modpacks</li>
           <li>An import shows a progress bar while a link, code or file is read</li>
           <li>A link or code that cannot be read says what was wrong with it</li>
+          <li>The Launch menu on Home is called Tools, so it no longer reads as starting the game</li>
+          <li>Share and Import close with their own X and have no Cancel or Close beside it, each Share destination is as tall as what it shows, and Last used sits in a tile's corner</li>
+          <li>The mod list offers its Thunderstore format only for games modded from Thunderstore</li>
         </ul>
         <p>Fixed</p>
         <ul>
@@ -95,6 +100,10 @@
           <li>A game without a save folder has no Saves page, no Saves card on Home and no Save backups page in its settings</li>
           <li>An import skips packages the Thunderstore index cannot resolve instead of failing</li>
           <li>The command line labels only mods in the Tray folder as (Tray)</li>
+          <li>Report to author opens the GitHub issue with as much of the report as fits in its link, and says to paste the rest</li>
+          <li>Open log on an error opens Mortar's own log, and only a failed game launch opens the game's</li>
+          <li>Opening a profile of another game, from an import or elsewhere, switches the game in the title bar to match</li>
+          <li>Windows Task Manager lists Mortar by name instead of by a description</li>
         </ul>
       </description>
     </release>
