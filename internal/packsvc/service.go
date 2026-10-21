@@ -3,18 +3,13 @@
 package packsvc
 
 import (
-	"bytes"
-	"cmp"
 	"context"
 	"errors"
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/bridge"
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -26,10 +21,7 @@ import (
 
 // profiles is the part of profile.Store the service uses.
 type profiles interface {
-	Create(game, name string) (profile.Profile, error)
 	List(game string) ([]profile.Profile, error)
-	SetImportedFrom(game, id, path string) (profile.Profile, error)
-	WriteFiles(game, id string, files map[string][]byte) error
 	ProfileDir(game, id string) (string, error)
 	SetModpackDraft(game, id string, d profile.ModpackDraft) (profile.Profile, error)
 	Backup(game, id string) (profile.Profile, map[string][]byte, error)
@@ -40,7 +32,6 @@ type profiles interface {
 // downloads is the part of queue.Service the service uses.
 type downloads interface {
 	Add(ctx context.Context, reqs []queue.Request) ([]queue.Item, error)
-	Unresolvable(ctx context.Context, gameID, profileID string, reqs []queue.Request) map[string]string
 }
 
 // Service reads packs and puts their packages in the download queue.
@@ -63,32 +54,7 @@ func (s *Service) folder() string {
 	return s.Folder()
 }
 
-// Source is what the player handed over: a file or folder path, or pasted text (a code or a bare key).
-type Source struct {
-	Path string `json:"path"`
-	Text string `json:"text"`
-	// Replace lets an import into an existing profile overwrite the config files the player already has there.
-	Replace bool `json:"replace,omitempty"`
-}
-
-// Package is one package of a pack.
-type Package struct {
-	Source   string `json:"source"`
-	Native   string `json:"native"`
-	Version  string `json:"version"`
-	Disabled bool   `json:"disabled"`
-}
-
-// Preview is what a pack holds, before anything is imported.
-type Preview struct {
-	Name     string    `json:"name"`
-	Game     string    `json:"game"`
-	Packages []Package `json:"packages"`
-	// Configs counts the pack's config files.
-	Configs int `json:"configs"`
-}
-
-// Result is what Import queued. Unsupported names packages from a source Mortar cannot install a pack's package
+// Result is what MirrorClient queued. Unsupported names packages from a source Mortar cannot install a pack's package
 // from; Disabled names packages the pack switched off, which install in the profile switched off too.
 type Result struct {
 	Game        string   `json:"game"`
@@ -96,14 +62,10 @@ type Result struct {
 	Queued      int      `json:"queued"`
 	Unsupported []string `json:"unsupported"`
 	Disabled    []string `json:"disabled"`
-	// Skipped names packages Thunderstore's index could not resolve, each with the reason; the rest of the pack imported.
-	Skipped []string `json:"skipped"`
-	// Kept names the pack's files an existing profile already holds with other contents, left as the player has them.
-	Kept []string `json:"kept"`
 }
 
-func (s *Service) read(ctx context.Context, src Source) (pack.Draft, error) {
-	return pack.Read(ctx, pack.Input{Path: src.Path, Text: src.Text},
+func (s *Service) read(ctx context.Context, path string) (pack.Draft, error) {
+	return pack.Read(ctx, pack.Input{Path: path},
 		s.Code, pack.GaleCode{HTTP: s.Code.HTTP}, pack.Profile{GameByFolder: game.ByR2modmanFolder}, pack.Gale{GameBySlug: gameByThunderstoreKey, DB: pack.GaleDB(s.folder())}, pack.Modpack{})
 }
 
@@ -132,7 +94,6 @@ type LocalProfile struct {
 // LocalProfiles lists the game's profiles in the data folders of r2modman (the folders below
 // <data>/<the game's r2modman folder>/profiles that hold a mods.yml) and in Gale's database, found on this computer or
 // in the folder the player chose.
-// Pass a profile's Path as Source.Path.
 func (s *Service) LocalProfiles(gameID string) ([]LocalProfile, error) {
 	info, ok := components.Game(gameID)
 	if !ok {
@@ -185,161 +146,9 @@ func (s *Service) LocalProfiles(gameID string) ([]LocalProfile, error) {
 }
 
 func (s *Service) local(name, path, from string) LocalProfile {
-	d, _ := s.read(context.Background(), Source{Path: path})
+	d, _ := s.read(context.Background(), path)
 	return LocalProfile{Name: name, Path: path, Source: from, Mods: len(d.Packages)}
 }
-
-// Preview reads the pack without importing it.
-func (s *Service) Preview(ctx context.Context, src Source) (Preview, error) {
-	d, err := s.read(ctx, src)
-	if err != nil {
-		return Preview{}, err
-	}
-	p := Preview{Name: d.Name, Game: d.Game, Packages: make([]Package, len(d.Packages)), Configs: len(d.Configs)}
-	for i, r := range d.Packages {
-		p.Packages[i] = Package{Source: r.Source, Native: r.Native, Version: r.Version, Disabled: r.Disabled}
-	}
-	return p, nil
-}
-
-// Import queues the pack's Thunderstore packages, with their dependencies, into profileID of gameID, or into a new
-// profile named after the pack when profileID is empty. gameID may be empty when the pack names its game.
-func (s *Service) Import(ctx context.Context, src Source, gameID, profileID string) (Result, error) {
-	return s.importPack(ctx, src, gameID, profileID, "")
-}
-
-// ImportAs is Import into a new profile called name (the pack's own name when name is blank).
-func (s *Service) ImportAs(ctx context.Context, src Source, gameID, name string) (Result, error) {
-	return s.importPack(ctx, src, gameID, "", name)
-}
-
-func (s *Service) importPack(ctx context.Context, src Source, gameID, profileID, name string) (Result, error) {
-	d, err := s.read(ctx, src)
-	if err != nil {
-		return Result{}, err
-	}
-	gameID = strings.TrimSpace(gameID)
-	gameID = cmp.Or(gameID, d.Game)
-	if !slices.ContainsFunc(game.Catalog(), func(g components.GameInfo) bool { return g.ID == gameID }) {
-		return Result{}, errors.New("choose which game this pack is for")
-	}
-	res := Result{Game: gameID, Unsupported: []string{}, Disabled: []string{}, Skipped: []string{}, Kept: []string{}}
-	var reqs []queue.Request
-	for _, r := range d.Packages {
-		if bridge.IsOwnListing(r.Native) {
-			continue
-		}
-		if r.Source != "thunderstore" {
-			res.Unsupported = append(res.Unsupported, r.Native)
-			continue
-		}
-		req := queue.Request{Kind: queue.KindInstall, Game: gameID, Package: r.Native, Version: r.Version, InferReason: true}
-		if r.Disabled {
-			res.Disabled = append(res.Disabled, r.Native)
-			req.Disabled = []mod.ID{mod.NewID(mod.FormatThunderstore, r.Native)}
-		}
-		reqs = append(reqs, req)
-	}
-	if bad := s.Queue.Unresolvable(ctx, gameID, profileID, reqs); len(bad) > 0 {
-		reqs = slices.DeleteFunc(reqs, func(r queue.Request) bool {
-			why, skip := bad[r.Package]
-			if skip {
-				res.Skipped = append(res.Skipped, r.Package+": "+why)
-				res.Disabled = slices.DeleteFunc(res.Disabled, func(n string) bool { return n == r.Package })
-			}
-			return skip
-		})
-	}
-	if len(reqs) == 0 {
-		return res, errors.New("the pack holds no Thunderstore packages to install")
-	}
-	files, _ := pack.ProfileFiles(d, pack.ImportRoots(gameID))
-	if profileID == "" {
-		p, err := s.Profiles.Create(gameID, cmpName(cmp.Or(strings.TrimSpace(name), d.Name)))
-		if err != nil {
-			return res, err
-		}
-		profileID = p.ID
-		if src.Path != "" {
-			if _, err := s.Profiles.SetImportedFrom(gameID, profileID, filepath.Clean(src.Path)); err != nil {
-				return res, err
-			}
-		}
-	} else if !src.Replace {
-		dir, err := s.Profiles.ProfileDir(gameID, profileID)
-		if err != nil {
-			return res, err
-		}
-		res.Kept = dropDiffering(dir, files)
-	}
-	res.Profile = profileID
-	if err := s.Profiles.WriteFiles(gameID, profileID, files); err != nil {
-		return res, err
-	}
-	for i := range reqs {
-		reqs[i].Profile = profileID
-	}
-	items, err := s.Queue.Add(ctx, reqs)
-	res.Queued = len(items)
-	return res, err
-}
-
-// dropDiffering removes from files, and returns sorted, each file the profile at dir already holds with other contents.
-// A path that leaves dir stays in files for WriteFiles to refuse.
-func dropDiffering(dir string, files map[string][]byte) []string {
-	kept := []string{}
-	for rel, data := range files {
-		if !filepath.IsLocal(filepath.FromSlash(rel)) {
-			continue
-		}
-		have, err := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(rel)))
-		if err == nil && !bytes.Equal(have, data) {
-			kept = append(kept, rel)
-			delete(files, rel)
-		}
-	}
-	slices.Sort(kept)
-	return kept
-}
-
-// Extra is an installed Thunderstore package a pack does not list.
-type Extra struct {
-	Key     string `json:"key"`
-	Name    string `json:"name"`
-	Version string `json:"version"`
-}
-
-// Extras lists the packages profileID holds that the pack does not: what Import into that profile would leave
-// beside the pack's own, for the player to remove when the profile should match the pack. Packages Mortar brought
-// in as dependencies are left out, since a pack that names only its top-level mods still needs them.
-func (s *Service) Extras(ctx context.Context, src Source, gameID, profileID string) ([]Extra, error) {
-	d, err := s.read(ctx, src)
-	if err != nil {
-		return nil, err
-	}
-	listed := map[string]bool{}
-	for _, r := range d.Packages {
-		listed[strings.ToLower(r.Native)] = true
-	}
-	all, err := s.Profiles.List(gameID)
-	if err != nil {
-		return nil, err
-	}
-	i := slices.IndexFunc(all, func(p profile.Profile) bool { return p.ID == profileID })
-	if i < 0 {
-		return nil, errors.New("that profile does not exist")
-	}
-	out := []Extra{}
-	for _, e := range all[i].Entries {
-		if !e.Package || e.Implicit || e.Source.Kind != profile.KindThunderstore || listed[strings.ToLower(e.Source.Name)] || bridge.IsOwnListing(e.Source.Name) {
-			continue
-		}
-		out = append(out, Extra{Key: e.Key, Name: e.Source.Name, Version: e.Source.Version})
-	}
-	return out, nil
-}
-
-func cmpName(n string) string { return cmp.Or(strings.TrimSpace(n), "Imported pack") }
 
 // ExportCode publishes the profile's Thunderstore packages to thunderstore.io as an r2modman code and returns the
 // code's key. It sends the mod list to a public service, so it refuses unless the player confirmed.

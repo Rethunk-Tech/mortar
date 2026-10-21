@@ -16,32 +16,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
-	"github.com/Rethunk-Tech/mortar/internal/store"
 
 	_ "github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 )
 
 type fakeProfiles struct {
-	created  []string
-	written  map[string][]byte
-	writeErr error
-	list     []profile.Profile
-	dir      string
-	drafts   []profile.ModpackDraft
-}
-
-func (f *fakeProfiles) WriteFiles(_, _ string, files map[string][]byte) error {
-	f.written = files
-	return f.writeErr
-}
-
-func (f *fakeProfiles) Create(_, name string) (profile.Profile, error) {
-	f.created = append(f.created, name)
-	return profile.Profile{ID: "p1", Name: name}, nil
+	list   []profile.Profile
+	dir    string
+	drafts []profile.ModpackDraft
 }
 
 func (f *fakeProfiles) List(string) ([]profile.Profile, error) { return f.list, nil }
@@ -78,11 +63,6 @@ func (*fakeProfiles) RestoreBackup(context.Context, string, profile.Profile, map
 
 type fakeQueue struct {
 	got []queue.Request
-	bad map[string]string
-}
-
-func (f *fakeQueue) Unresolvable(context.Context, string, string, []queue.Request) map[string]string {
-	return f.bad
 }
 
 func (f *fakeQueue) Add(_ context.Context, reqs []queue.Request) ([]queue.Item, error) {
@@ -90,111 +70,9 @@ func (f *fakeQueue) Add(_ context.Context, reqs []queue.Request) ([]queue.Item, 
 	return make([]queue.Item, len(reqs)), nil
 }
 
-func writeR2z(t *testing.T) string {
-	t.Helper()
-	var buf bytes.Buffer
-	zw := zip.NewWriter(&buf)
-	w, _ := zw.Create("export.r2x")
-	_, _ = w.Write([]byte(`profileName: Friends
-mods:
-  - name: BepInEx-BepInExPack
-    version: {major: 5, minor: 4, patch: 2100}
-    enabled: true
-  - name: Alice-MoreCompany
-    version: {major: 1, minor: 2, patch: 3}
-    enabled: false
-`))
-	if err := zw.Close(); err != nil {
-		t.Fatal(err)
-	}
-	path := filepath.Join(t.TempDir(), "friends.r2z")
-	if err := os.WriteFile(path, buf.Bytes(), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	return path
-}
-
-func TestImportQueuesThePacksPackagesIntoANewProfile(t *testing.T) {
-	ps, q := &fakeProfiles{}, &fakeQueue{}
-	s := &Service{Profiles: ps, Queue: q}
-	src := Source{Path: writeR2z(t)}
-	pv, err := s.Preview(context.Background(), src)
-	if err != nil || pv.Name != "Friends" || len(pv.Packages) != 2 {
-		t.Fatalf("preview %+v, %v", pv, err)
-	}
-	if _, err := s.Import(context.Background(), src, "", ""); err == nil {
-		t.Error("a pack without a game imported")
-	}
-	res, err := s.Import(context.Background(), src, "stardew", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if res.Queued != 2 || res.Profile != "p1" || !slices.Equal(res.Disabled, []string{"Alice-MoreCompany"}) || !slices.Equal(ps.created, []string{"Friends"}) {
-		t.Errorf("result %+v, created %v", res, ps.created)
-	}
-	if q.got[1].Disabled == nil || q.got[0].Disabled != nil {
-		t.Errorf("disabled flags %+v", q.got)
-	}
-	if len(q.got) != 2 || q.got[1].Package != "Alice-MoreCompany" || q.got[1].Version != "1.2.3" || q.got[1].Profile != "p1" || q.got[1].Game != "stardew" {
-		t.Errorf("queued %+v", q.got)
-	}
-}
-
-func TestImportQueuesNothingWhenThePacksFilesCannotBeWritten(t *testing.T) {
-	ps, q := &fakeProfiles{writeErr: errors.New("disk full")}, &fakeQueue{}
-	if _, err := (&Service{Profiles: ps, Queue: q}).Import(context.Background(), Source{Path: writeR2z(t)}, "stardew", "p1"); err == nil {
-		t.Fatal("a failed write reported success")
-	}
-	if len(q.got) != 0 || len(ps.created) != 0 {
-		t.Fatalf("queued %+v, created %v after a failed write", q.got, ps.created)
-	}
-}
-
 func TestExportNeedsTheConfirmation(t *testing.T) {
 	if _, err := (&Service{}).ExportCode(context.Background(), "stardew", "p1", false); err == nil {
 		t.Error("an unconfirmed export ran")
-	}
-}
-
-func TestImportWritesNothingOutsideTheLoaderFolder(t *testing.T) {
-	base := t.TempDir()
-	ps := profile.OpenIn(filepath.Join(base, "profiles"), store.OpenAt(filepath.Join(base, "store")))
-	target, err := ps.Create("lethal-company", "Mine")
-	if err != nil {
-		t.Fatal(err)
-	}
-	var buf bytes.Buffer
-	zw := zip.NewWriter(&buf)
-	for name, body := range map[string]string{
-		"export.r2x":            "profileName: Friends\nmods:\n  - name: BepInEx-BepInExPack\n    version: {major: 5, minor: 4, patch: 2100}\n    enabled: true\n",
-		"profile.json":          `{"id":"zzz","name":"Mine","entries":[],"launchPrefix":"sh -c 'touch /tmp/pwned' --"}`,
-		"Profile.JSON":          `{}`,
-		"saves/slot":            "x",
-		"bepinex/plugins/a.txt": "a",
-	} {
-		w, _ := zw.Create(name)
-		_, _ = w.Write([]byte(body))
-	}
-	if err := zw.Close(); err != nil {
-		t.Fatal(err)
-	}
-	path := filepath.Join(t.TempDir(), "friends.r2z")
-	if err := os.WriteFile(path, buf.Bytes(), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := (&Service{Profiles: ps, Queue: &fakeQueue{}}).Import(context.Background(), Source{Path: path}, "lethal-company", target.ID); err != nil {
-		t.Fatal(err)
-	}
-	all, err := ps.List("lethal-company")
-	if err != nil || len(all) != 1 || all[0].ID != target.ID || all[0].LaunchPrefix != "" {
-		t.Fatalf("the pack rewrote the profile: %+v, %v", all, err)
-	}
-	dir, _ := ps.ProfileDir("lethal-company", target.ID)
-	if _, err := os.Stat(filepath.Join(dir, "saves", "slot")); err == nil {
-		t.Error("the pack wrote into the profile's saves")
-	}
-	if b, err := fsx.ReadFile(filepath.Join(dir, "BepInEx", "plugins", "a.txt")); err != nil || string(b) != "a" {
-		t.Errorf("a file under the loader folder was not written under its spelling: %q, %v", b, err)
 	}
 }
 
@@ -301,44 +179,6 @@ func TestExportCodeCarriesTheConfigFolder(t *testing.T) {
 	}
 }
 
-func TestImportAsNamesTheNewProfile(t *testing.T) {
-	ps, q := &fakeProfiles{}, &fakeQueue{}
-	s := &Service{Profiles: ps, Queue: q}
-	if _, err := s.ImportAs(context.Background(), Source{Path: writeR2z(t)}, "stardew", "  Crew night "); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := s.ImportAs(context.Background(), Source{Path: writeR2z(t)}, "stardew", " "); err != nil {
-		t.Fatal(err)
-	}
-	if !slices.Equal(ps.created, []string{"Crew night", "Friends"}) {
-		t.Errorf("created %v", ps.created)
-	}
-}
-
-func TestUpdatingAProfileQueuesIntoItAndExtrasListsWhatThePackLacks(t *testing.T) {
-	ts := func(key, name string, implicit bool) profile.Entry {
-		return profile.Entry{Key: key, Package: true, Implicit: implicit, Source: profile.Source{Kind: profile.KindThunderstore, Name: name, Version: "1.0.0"}}
-	}
-	target := profile.Profile{ID: "p9", Entries: []profile.Entry{
-		ts("k1", "alice-morecompany", false), ts("k2", "Bob-Cheaty", false), ts("k3", "Carol-Lib", true),
-		{Key: "k4", Source: profile.Source{Kind: profile.KindNexus, Name: "Nexus mod"}},
-	}}
-	ps, q := &fakeProfiles{list: []profile.Profile{target}}, &fakeQueue{}
-	s := &Service{Profiles: ps, Queue: q}
-	src := Source{Path: writeR2z(t)}
-	res, err := s.Import(context.Background(), src, "stardew", "p9")
-	if err != nil || res.Profile != "p9" || len(ps.created) != 0 || q.got[0].Profile != "p9" {
-		t.Fatalf("update %+v %v created %v queued %+v", res, err, ps.created, q.got)
-	}
-	extras, err := s.Extras(context.Background(), src, "stardew", "p9")
-	if err != nil || len(extras) != 1 || extras[0].Key != "k2" {
-		t.Fatalf("a package the pack lacks is offered, a listed one (any case), a dependency and a non-Thunderstore entry are not: %+v %v", extras, err)
-	}
-	if _, err := s.Extras(context.Background(), src, "stardew", "nope"); err == nil {
-		t.Error("extras of a missing profile")
-	}
-}
-
 func TestMirrorClientQueuesTheClientsPackagesIntoTheServerProfile(t *testing.T) {
 	ps, q := &fakeProfiles{dir: t.TempDir(), list: []profile.Profile{{ID: "c1", Name: "Crew", Entries: []profile.Entry{
 		{Source: profile.Source{Kind: profile.KindThunderstore, Name: "Alice-Mod", Version: "1.0.0"}},
@@ -387,67 +227,5 @@ func TestServerSettingsFormKeepsSecretsInsideMortar(t *testing.T) {
 	}
 	if plain, err := s.ServerSettings("valheim", "p"); err != nil || plain.Clients != "" || len(plain.Settings) != 0 {
 		t.Fatalf("client game form = %+v, %v", plain, err)
-	}
-}
-
-func TestImportOverAProfileKeepsDifferingFilesUnlessReplaceIsChosen(t *testing.T) {
-	base := t.TempDir()
-	ps := profile.OpenIn(filepath.Join(base, "profiles"), store.OpenAt(filepath.Join(base, "store")))
-	target, err := ps.Create("lethal-company", "Mine")
-	if err != nil {
-		t.Fatal(err)
-	}
-	dir, _ := ps.ProfileDir("lethal-company", target.ID)
-	cfg := filepath.Join(dir, "BepInEx", "plugins", "a.txt")
-	if err := os.MkdirAll(filepath.Dir(cfg), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(cfg, []byte("mine"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	var buf bytes.Buffer
-	zw := zip.NewWriter(&buf)
-	for name, body := range map[string]string{
-		"export.r2x":            "profileName: Friends\nmods:\n  - name: BepInEx-BepInExPack\n    version: {major: 5, minor: 4, patch: 2100}\n    enabled: true\n",
-		"bepinex/plugins/a.txt": "pack",
-		"bepinex/plugins/b.txt": "new",
-	} {
-		w, _ := zw.Create(name)
-		_, _ = w.Write([]byte(body))
-	}
-	if err := zw.Close(); err != nil {
-		t.Fatal(err)
-	}
-	path := filepath.Join(t.TempDir(), "friends.r2z")
-	if err := os.WriteFile(path, buf.Bytes(), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	s := &Service{Profiles: ps, Queue: &fakeQueue{}}
-	res, err := s.Import(context.Background(), Source{Path: path}, "lethal-company", target.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if b, _ := fsx.ReadFile(cfg); string(b) != "mine" || !slices.Equal(res.Kept, []string{"BepInEx/plugins/a.txt"}) {
-		t.Fatalf("the player's file was replaced or not reported: %q, kept %v", b, res.Kept)
-	}
-	if b, _ := fsx.ReadFile(filepath.Join(dir, "BepInEx", "plugins", "b.txt")); string(b) != "new" {
-		t.Errorf("a file the profile lacked was not written: %q", b)
-	}
-	if _, err := s.Import(context.Background(), Source{Path: path, Replace: true}, "lethal-company", target.ID); err != nil {
-		t.Fatal(err)
-	}
-	if b, _ := fsx.ReadFile(cfg); string(b) != "pack" {
-		t.Errorf("Replace did not write the pack's file: %q", b)
-	}
-}
-
-func TestImportSkipsUnresolvablePackagesAndKeepsTheRest(t *testing.T) {
-	q := &fakeQueue{bad: map[string]string{"Alice-MoreCompany": "alice-morecompany 1.2.3 is not in the index"}}
-	res, err := (&Service{Profiles: &fakeProfiles{}, Queue: q}).Import(context.Background(), Source{Path: writeR2z(t)}, "stardew", "")
-	if err != nil || res.Queued != 1 || len(q.got) != 1 || q.got[0].Package != "BepInEx-BepInExPack" {
-		t.Fatalf("queued %+v, %+v, %v", q.got, res, err)
-	}
-	if !slices.Equal(res.Skipped, []string{"Alice-MoreCompany: alice-morecompany 1.2.3 is not in the index"}) || len(res.Disabled) != 0 {
-		t.Errorf("result %+v", res)
 	}
 }

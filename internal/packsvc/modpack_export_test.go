@@ -45,7 +45,7 @@ func TestExportModpackReimportsAsTheSamePackages(t *testing.T) {
 		t.Fatalf("result %+v", res)
 	}
 
-	pv, err := s.Preview(context.Background(), Source{Path: dest})
+	pv, err := s.read(context.Background(), dest)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +53,7 @@ func TestExportModpackReimportsAsTheSamePackages(t *testing.T) {
 	for _, p := range pv.Packages {
 		got = append(got, p.Native+"-"+p.Version)
 	}
-	if pv.Name != "Friday_Night" || !slices.Equal(got, res.Dependencies) || len(got) != 2 || pv.Configs != 1 {
+	if pv.Name != "Friday_Night" || !slices.Equal(got, res.Dependencies) || len(got) != 2 || len(pv.Configs) != 1 {
 		t.Fatalf("re-imported %+v, want %v", pv, res.Dependencies)
 	}
 }
@@ -73,7 +73,7 @@ func TestExportR2zReimportsAsTheSameModList(t *testing.T) {
 	if _, err := s.ExportR2z("lethal-company", "p1", dest); err != nil {
 		t.Fatal(err)
 	}
-	pv, err := s.Preview(context.Background(), Source{Path: dest})
+	pv, err := s.read(context.Background(), dest)
 	if err != nil {
 		t.Fatal(err)
 	}
