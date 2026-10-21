@@ -15,6 +15,7 @@ import {
   Get as GetSettings,
   SetAskEndorseMods,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { space } from '../../theme/density.ts'
@@ -223,7 +224,7 @@ export function NexusSignIn() {
       .catch((err: unknown) =>
         setError(
           errorKind(err) === 'invalid'
-            ? inlineError(err, t`Nexus rejected your API key`)
+            ? inlineError(err, t`${{ site: sourceLabel('nexus') }} rejected your API key`)
             : inlineError(err),
         ),
       )

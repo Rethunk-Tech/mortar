@@ -23,6 +23,7 @@ import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { openPage } from './menu.ts'
+import { openPageLabel } from './modActions.ts'
 import type { TrackedMod } from './nexusAccount.ts'
 import { nexusDomain } from './nexusDomain.ts'
 import { nexusModUrl } from './nexusUrl.ts'
@@ -41,7 +42,7 @@ function TrackedRow({
   premium: boolean
   locked: boolean
 }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const fallback = `${FALLBACK_PREFIX}${mod.modId}`
   const { data: name } = useLoaded(
     () => ModName(currentGame(), mod.modId).then((n) => n || fallback),
@@ -68,7 +69,7 @@ function TrackedRow({
           openPage(url)
         }}
       >
-        {t`Open on Nexus`}
+        {openPageLabel(i18n, 'nexus')}
       </Button>
       {premium ? (
         <LockedReason locked={locked}>

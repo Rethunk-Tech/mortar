@@ -1,5 +1,6 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 
 export type PageHost =
   | 'nexus'
@@ -71,22 +72,13 @@ export const hostOf = (url: string | undefined): PageHost => {
 }
 
 // The action that opens a mod's page, named for its site.
-export const openPageLabel = (i18n: I18n, host: PageHost): string =>
-  i18n._(
-    {
-      github: msg`Open on GitHub`,
-      nexus: msg`Open on Nexus`,
-      thunderstore: msg`Open on Thunderstore`,
-      curseforge: msg`Open on CurseForge`,
-      modrinth: msg`Open on Modrinth`,
-      itch: msg`Open on itch.io`,
-      patreon: msg`Open on Patreon`,
-      vsmoddb: msg`Open on the Mod DB`,
-      paradox: msg`Open on Paradox Mods`,
-      web: msg`Open page`,
-      '': msg`Open page`,
-    }[host],
-  )
+export const openPageLabel = (i18n: I18n, host: PageHost): string => {
+  if (host === 'web' || host === '') {
+    return i18n._(msg`Open page`)
+  }
+  const site = sourceLabel(host)
+  return i18n._(msg`Open on ${site}`)
+}
 
 // The actions of a mod's menu, in menu order; Remove is the last and is set apart by a divider.
 export function modActions(s: MenuState): ModAction[] {

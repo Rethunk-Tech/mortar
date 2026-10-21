@@ -160,7 +160,7 @@ function GitHubQuota() {
   }, [])
   const detail = rate?.known
     ? t`${rate.remaining} of ${rate.limit} requests left · resets ${formatWhen(rate.reset)}`
-    : t`Request counts appear after Mortar talks to GitHub.`
+    : t`Request counts appear after Mortar talks to ${{ site: sourceLabel('github') }}.`
   return (
     <SettingRow label={t`Requests`} description={detail}>
       {null}

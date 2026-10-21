@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNexus } from './nexus.ts'
 
@@ -11,7 +12,7 @@ export function NexusMeter() {
   if (!limits.known) {
     return (
       <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
-        {t`Request counts appear after Mortar talks to Nexus.`}
+        {t`Request counts appear after Mortar talks to ${{ site: sourceLabel('nexus') }}.`}
       </Box>
     )
   }

@@ -1,6 +1,7 @@
 import { i18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 
 const PERCENT = 100
 const MS_PER_SECOND = 1000
@@ -118,4 +119,4 @@ export const displayName = (i: Item, pageName = ''): string =>
   i.repo ||
   i.package ||
   pageName ||
-  (i.modId ? i18n._(msg`Nexus mod ${{ id: i.modId }}`) : '')
+  (i.modId ? i18n._(msg`${{ site: sourceLabel('nexus') }} mod ${{ id: i.modId }}`) : '')

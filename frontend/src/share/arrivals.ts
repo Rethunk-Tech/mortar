@@ -4,6 +4,7 @@ import { ModName } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/
 import { Get } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import type { Arrival } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
 import { Inbox } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { useDetail } from '../mods/detail.ts'
@@ -52,7 +53,7 @@ async function openMod(a: Arrival): Promise<void> {
     const modsState = useMods.getState()
     if (!selected && current && modsState.loaded && modsState.modsFor === current.id) {
       const name = await ModName(game, modID).catch(() => '')
-      const label = name || i18n._(msg`Nexus mod ${{ id: modID }}`)
+      const label = name || i18n._(msg`${{ site: sourceLabel('nexus') }} mod ${{ id: modID }}`)
       useToasts.getState().push({
         kind: 'warning',
         title: i18n._(msg`${label} is not in ${current.name}`),

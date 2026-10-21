@@ -19,6 +19,7 @@ import {
   BugURL,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { openPage } from '../mods/menu.ts'
+import { openPageLabel } from '../mods/modActions.ts'
 import { copyText } from '../share/copyText.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -30,7 +31,7 @@ import { useDiscardGuard } from './useDiscardGuard.tsx'
 const empty = { title: '', happened: '', expected: '', steps: '' }
 
 export function BugReportDialog() {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const destinationLabel = useId()
   const game = useBugReport((s) => s.game)
   const [form, setForm] = useState(empty)
@@ -152,7 +153,7 @@ export function BugReportDialog() {
         <DialogActions>
           <Button onClick={guard.request}>{t`Cancel`}</Button>
           <Button type="submit" variant="contained" disabled={form.happened.trim() === ''}>
-            {discord ? t`Copy and open Discord` : t`Open on GitHub`}
+            {discord ? t`Copy and open Discord` : openPageLabel(i18n, 'github')}
           </Button>
         </DialogActions>
       </form>

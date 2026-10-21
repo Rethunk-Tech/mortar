@@ -21,6 +21,7 @@ import { i18n } from '../i18n/index.ts'
 import { useLaunch } from '../launch/store.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
+import { openPageLabel } from '../mods/modActions.ts'
 import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { openMod } from '../mods/openMod.ts'
@@ -131,7 +132,7 @@ function MoreActions({
         {nexusID > 0 ? (
           <MenuAction
             icon={<ExternalLink size={16} />}
-            label={t`Open on Nexus`}
+            label={openPageLabel(i18n, 'nexus')}
             onClick={() => {
               close()
               openPage(nexusModUrl(nexusID, nexusDomain())).catch(reportUnexpected)

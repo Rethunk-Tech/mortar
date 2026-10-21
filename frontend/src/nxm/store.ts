@@ -17,6 +17,7 @@ import {
   RegisterNotificationCategory,
   SendNotificationWithActions,
 } from '../../bindings/github.com/wailsapp/wails/v3/pkg/services/notifications/notificationservice.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 import { useNav } from '../nav/store.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -98,7 +99,7 @@ const arrivalSite = (a: Arrival): string => {
 const packageName = (a: Arrival): string => {
   const id = a.package ?? ''
   if (a.source === 'curseforge') {
-    return a.name || i18n._(msg`CurseForge mod ${id}`)
+    return a.name || i18n._(msg`${{ site: sourceLabel('curseforge') }} mod ${{ id }}`)
   }
   return a.source === 'vsmoddb' ? a.name || id : id
 }
@@ -106,7 +107,8 @@ const packageName = (a: Arrival): string => {
 const arrivalName = (a: Arrival): Promise<string> =>
   a.package ? Promise.resolve(packageName(a)) : modName(a.link.game, a.link.modId)
 
-const fallbackName = (modId: number) => i18n._(msg`Nexus mod ${{ id: modId }}`)
+const fallbackName = (modId: number) =>
+  i18n._(msg`${{ site: sourceLabel('nexus') }} mod ${{ id: modId }}`)
 
 // The mod's Nexus page title, fetched once per mod; the fallback stands in when signed out or offline.
 function modName(game: string, modId: number): Promise<string> {

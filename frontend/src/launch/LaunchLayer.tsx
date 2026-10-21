@@ -24,6 +24,7 @@ import { useTab } from '../game/tab.ts'
 import { useGameInfo, useGameName } from '../games/info.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
+import { openPageLabel } from '../mods/modActions.ts'
 import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
@@ -181,7 +182,7 @@ function Overlay({ game }: { game: string }) {
 }
 
 function Failure({ game }: { game: string }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const theme = useTheme()
   const info = useProfiles((s) => s.game)
   const failure = useLaunch((s) => s.failure)
@@ -238,7 +239,7 @@ function Failure({ game }: { game: string }) {
           <Button
             onClick={() => openPage(nexusModUrl(nexusID, nexusDomain())).catch(reportUnexpected)}
           >
-            {t`Open on Nexus`}
+            {openPageLabel(i18n, 'nexus')}
           </Button>
         ) : null}
         <Button

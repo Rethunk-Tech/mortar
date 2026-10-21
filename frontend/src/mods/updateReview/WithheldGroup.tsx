@@ -7,12 +7,13 @@ import { reportUnexpected } from '../../toasts/report.ts'
 import { sameId } from '../lookup.ts'
 import { ModNameLink } from '../ModNameLink.tsx'
 import { openPage } from '../menu.ts'
+import { openPageLabel } from '../modActions.ts'
 import { useMods } from '../store.ts'
 import { Version } from './Version.tsx'
 
 /** Updates SMAPI reports that Mortar cannot install because their Nexus page is hidden or removed, with the reason. */
 export function WithheldGroup({ withheld, mods }: { withheld: Update[]; mods: Mod[] }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   if (withheld.length === 0) {
     return null
@@ -45,7 +46,9 @@ export function WithheldGroup({ withheld, mods }: { withheld: Update[]; mods: Mo
               </Box>
               <Version>{u.installed}</Version>
               <Version isNew={true}>{u.version}</Version>
-              {u.url ? <Button onClick={() => openPage(u.url)}>{t`Open on Nexus`}</Button> : null}
+              {u.url ? (
+                <Button onClick={() => openPage(u.url)}>{openPageLabel(i18n, 'nexus')}</Button>
+              ) : null}
               {mod ? (
                 <Button onClick={() => setSkipVersion(mod, u.version).catch(reportUnexpected)}>
                   {t`Skip this version`}

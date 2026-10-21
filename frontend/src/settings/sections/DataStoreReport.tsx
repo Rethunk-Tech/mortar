@@ -26,6 +26,7 @@ import type {
   Item,
   Report as StoreReport,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/store/models.ts'
+import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { gameInfo } from '../../games/info.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { When } from '../../i18n/When.tsx'
@@ -122,7 +123,7 @@ function itemName(i18n: I18n, game: string, item: Item): string {
   }
   const id = NEXUS_KEY.exec(item.key)?.[1]
   if (id) {
-    return i18n._(msg`Nexus mod ${id}`)
+    return i18n._(msg`${{ site: sourceLabel('nexus') }} mod ${{ id }}`)
   }
   const loader = gameInfo(game)?.loaders?.find((l) => item.key.startsWith(`${l.id}-`))
   if (loader) {

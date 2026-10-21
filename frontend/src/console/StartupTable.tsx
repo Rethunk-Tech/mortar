@@ -362,7 +362,7 @@ export function ModTable({
         ) : null}
         <TableRow>
           <TableCell sx={{ color: 'text.secondary', pl: NAME_INDENT }}>
-            {smapi ? t`Game and SMAPI` : t`Game and BepInEx`}
+            {t`Game and ${{ loader: smapi ? 'SMAPI' : 'BepInEx' }}`}
           </TableCell>
           <TableCell align="right">{duration(report.otherMs)}</TableCell>
           <TableCell colSpan={comparing ? 2 : 1} />

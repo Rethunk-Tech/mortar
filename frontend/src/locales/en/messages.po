@@ -1147,10 +1147,6 @@ msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it
 msgid "Send only links to {name}?"
 msgstr "Send only links to {name}?"
 
-#: src/mods/modActions.ts
-msgid "Open on Modrinth"
-msgstr "Open on Modrinth"
-
 #: src/firstrun/FirstRun.tsx
 msgid "Join our Discord"
 msgstr "Join our Discord"
@@ -2567,10 +2563,6 @@ msgstr "Its Nexus file is not known. Group the Mods list by Source and choose Fi
 msgid "Use folder"
 msgstr "Use folder"
 
-#: src/mods/modActions.ts
-msgid "Open on itch.io"
-msgstr "Open on itch.io"
-
 #: src/settings/sections/Storage.tsx
 msgid "Could not measure disk use"
 msgstr "Could not measure disk use"
@@ -3730,10 +3722,6 @@ msgstr "{count, plural, one {# mod will be moved into a new profile and out of t
 #: src/console/StartupTable.tsx
 msgid "Show details"
 msgstr "Show details"
-
-#: src/mods/modActions.ts
-msgid "Open on Thunderstore"
-msgstr "Open on Thunderstore"
 
 #. placeholder {0}: active.label(i18n)
 #: src/mods/Toolbar.tsx
@@ -5250,10 +5238,6 @@ msgstr "Choose a profile…"
 msgid "You started this download on {site}, but you have no {gameName} profile yet."
 msgstr "You started this download on {site}, but you have no {gameName} profile yet."
 
-#: src/console/StartupTable.tsx
-msgid "Game and BepInEx"
-msgstr "Game and BepInEx"
-
 #: src/commandPalette/CommandPalette.tsx
 msgid "Search actions and destinations"
 msgstr "Search actions and destinations"
@@ -5526,10 +5510,6 @@ msgstr "A portable copy keeps its data beside the program."
 #: src/mods/GameModsReviewDialog.tsx
 msgid "Not in this profile ({0})"
 msgstr "Not in this profile ({0})"
-
-#: src/mods/modActions.ts
-msgid "Open on Paradox Mods"
-msgstr "Open on Paradox Mods"
 
 #: src/settings/sections/General.tsx
 msgid "Save these settings to a file, or load them on another computer."
@@ -6436,11 +6416,6 @@ msgstr "Updated from {0}"
 msgid "Open mod"
 msgstr "Open mod"
 
-#: src/mods/modActions.ts
-#: src/shell/BugReportDialog.tsx
-msgid "Open on GitHub"
-msgstr "Open on GitHub"
-
 #: src/mods/GameModsReviewDialog.tsx
 msgid "Move into profile"
 msgstr "Move into profile"
@@ -6687,10 +6662,6 @@ msgstr "This is no longer the latest change to that mod."
 msgid "Chosen in the game's Steam properties."
 msgstr "Chosen in the game's Steam properties."
 
-#: src/console/StartupTable.tsx
-msgid "Game and SMAPI"
-msgstr "Game and SMAPI"
-
 #: src/commandPalette/paletteLabels.ts
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Stream overlay"
@@ -6711,10 +6682,6 @@ msgstr "Retry failed"
 #: src/profiles/GameSettings.tsx
 msgid "Zoom ({value}%)"
 msgstr "Zoom ({value}%)"
-
-#: src/mods/modActions.ts
-msgid "Open on Patreon"
-msgstr "Open on Patreon"
 
 #: src/saves/SaveBackupsButton.tsx
 msgid "Allow cleanup before deleting."
@@ -6962,6 +6929,10 @@ msgstr "Config files"
 msgid "Older copy skipped"
 msgstr "Older copy skipped"
 
+#: src/mods/modActions.ts
+msgid "Open on {site}"
+msgstr "Open on {site}"
+
 #: src/browse/stats.ts
 msgid "{endorsements, plural, one {# like} other {# likes}}"
 msgstr "{endorsements, plural, one {# like} other {# likes}}"
@@ -7045,6 +7016,13 @@ msgstr "Choose where {0} lives"
 #: src/game/ProfileMenuItems.tsx
 msgid "Freeze this profile"
 msgstr "Freeze this profile"
+
+#: src/nxm/store.ts
+#: src/queue/totals.ts
+#: src/settings/sections/DataStoreReport.tsx
+#: src/share/arrivals.ts
+msgid "{site} mod {id}"
+msgstr "{site} mod {id}"
 
 #: src/saves/SaveListRow.tsx
 msgid "This save has no SaveGameInfo date, so Mortar cannot tell when it is in the game."
@@ -7351,10 +7329,6 @@ msgstr "Removed {0}"
 #: src/profiles/ProfileRow.tsx
 msgid "imported from a link"
 msgstr "imported from a link"
-
-#: src/settings/NexusMeter.tsx
-msgid "Request counts appear after Mortar talks to Nexus."
-msgstr "Request counts appear after Mortar talks to Nexus."
 
 #: src/console/StartupSections.tsx
 msgid "Unity starts"
@@ -7773,10 +7747,6 @@ msgstr "More actions"
 #: src/launch/GraphicsDialog.tsx
 msgid "Choose a graphics API for {name}"
 msgstr "Choose a graphics API for {name}"
-
-#: src/mods/modActions.ts
-msgid "Open on CurseForge"
-msgstr "Open on CurseForge"
 
 #: src/settings/sections/DataMods.tsx
 msgid "Clears cached Nexus and SMAPI details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower."
@@ -8310,6 +8280,12 @@ msgstr "Nothing selected would change {0}."
 msgid "Something went wrong."
 msgstr "Something went wrong."
 
+#: src/queue/store.ts
+#: src/settings/sections/ItchAccount.tsx
+#: src/settings/sections/NexusMods.tsx
+msgid "{site} rejected your API key"
+msgstr "{site} rejected your API key"
+
 #: src/queue/LargeDownloadDialog.tsx
 msgid "{name} is a very large download"
 msgstr "{name} is a very large download"
@@ -8399,11 +8375,6 @@ msgstr "Note"
 #: src/mods/ModNoteTags.tsx
 msgid "Add a tag"
 msgstr "Add a tag"
-
-#: src/queue/store.ts
-#: src/settings/sections/NexusMods.tsx
-msgid "Nexus rejected your API key"
-msgstr "Nexus rejected your API key"
 
 #. placeholder {0}: profile.name
 #: src/game/BackupMenuItems.tsx
@@ -8622,10 +8593,6 @@ msgstr "Could not read the saved change {change} from {when}"
 #: src/settings/prefCopy.ts
 msgid "Days to keep downloaded mods that no profile uses. 0 keeps them forever."
 msgstr "Days to keep downloaded mods that no profile uses. 0 keeps them forever."
-
-#: src/settings/sections/Sources.tsx
-msgid "Request counts appear after Mortar talks to GitHub."
-msgstr "Request counts appear after Mortar talks to GitHub."
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Run again"
@@ -9050,13 +9017,6 @@ msgstr "Could not skip the update for {0}"
 #: src/console/StartupSections.tsx
 msgid "Plugins load"
 msgstr "Plugins load"
-
-#: src/nxm/store.ts
-#: src/queue/totals.ts
-#: src/settings/sections/DataStoreReport.tsx
-#: src/share/arrivals.ts
-msgid "Nexus mod {id}"
-msgstr "Nexus mod {id}"
 
 #: src/console/outcome.ts
 msgid "Crashed"
@@ -9581,10 +9541,6 @@ msgstr "Problems in this run"
 #: src/mods/ModSections.tsx
 msgid "No config file yet"
 msgstr "No config file yet"
-
-#: src/mods/modActions.ts
-msgid "Open on the Mod DB"
-msgstr "Open on the Mod DB"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Your download is already {have}; the mod's manifest still carries the old number, so SMAPI keeps asking."
@@ -10930,14 +10886,6 @@ msgstr "Restoring from before Update all also reverts these later changes:"
 #: src/mods/NexusAccountActions.tsx
 msgid "You endorsed this mod."
 msgstr "You endorsed this mod."
-
-#: src/console/CrashDialog.tsx
-#: src/launch/LaunchLayer.tsx
-#: src/mods/modActions.ts
-#: src/mods/TrackedNotInProfile.tsx
-#: src/mods/updateReview/WithheldGroup.tsx
-msgid "Open on Nexus"
-msgstr "Open on Nexus"
 
 #: src/mods/ModList.tsx
 msgid "overrides {count, plural, one {# file} other {# files}}"
@@ -12866,10 +12814,6 @@ msgstr "Include pre-release mod versions"
 msgid "Status"
 msgstr "Status"
 
-#: src/settings/sections/ItchAccount.tsx
-msgid "itch.io rejected your API key"
-msgstr "itch.io rejected your API key"
-
 #: src/share/MethodPanes.tsx
 msgid "They see the profile name, the mod list and where each mod comes from."
 msgstr "They see the profile name, the mod list and where each mod comes from."
@@ -13030,10 +12974,6 @@ msgstr "Automatic port"
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Health"
 msgstr "Health"
-
-#: src/nxm/store.ts
-msgid "CurseForge mod {id}"
-msgstr "CurseForge mod {id}"
 
 #: src/console/PerformanceTab.tsx
 #: src/console/StartupTable.tsx
@@ -14249,6 +14189,10 @@ msgstr "Handle links"
 msgid "Season"
 msgstr "Season"
 
+#: src/console/StartupTable.tsx
+msgid "Game and {loader}"
+msgstr "Game and {loader}"
+
 #: src/mods/problemWhy.ts
 msgid "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
 msgstr "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
@@ -14281,6 +14225,11 @@ msgstr "Could not update tags for the selected mods"
 #: src/firstrun/NexusStep.tsx
 msgid "Continue"
 msgstr "Continue"
+
+#: src/settings/NexusMeter.tsx
+#: src/settings/sections/Sources.tsx
+msgid "Request counts appear after Mortar talks to {site}."
+msgstr "Request counts appear after Mortar talks to {site}."
 
 #: src/settings/prefCopyGame.ts
 msgid "Profile sync"

@@ -18,6 +18,7 @@ import {
   State as fetchState,
   Retry,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 import { sentence } from '../i18n/sentence.ts'
 import { considerMissing } from '../install/store.ts'
@@ -132,7 +133,7 @@ function downloadFailCopy(error: string): { body: string; detail?: string } {
 function failureToast(item: Item) {
   if (item.errorKind === 'auth') {
     return {
-      title: i18n._(msg`Nexus rejected your API key`),
+      title: i18n._(msg`${{ site: sourceLabel('nexus') }} rejected your API key`),
       action: { label: i18n._(msg`Open Nexus settings`), run: () => openSettings('accounts') },
     }
   }

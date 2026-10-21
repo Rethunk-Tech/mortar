@@ -6,6 +6,7 @@ import {
   SignIn,
   SignOut,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/source/itch/service.ts'
+import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { space } from '../../theme/density.ts'
 import { errorKind } from '../../toasts/errorKind.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
@@ -36,7 +37,7 @@ function ItchRow() {
       .catch((err: unknown) =>
         setError(
           errorKind(err) === 'invalid'
-            ? inlineError(err, t`itch.io rejected your API key`)
+            ? inlineError(err, t`${{ site: sourceLabel('itch') }} rejected your API key`)
             : inlineError(err),
         ),
       )
