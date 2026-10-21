@@ -22,7 +22,7 @@ func (s *Service) readPack(ctx context.Context, in pack.Input) (pack.Draft, erro
 	if s.d.PackFolder != nil {
 		folder = s.d.PackFolder()
 	}
-	return pack.Read(ctx, in, s.d.PackCode, pack.Profile{GameByFolder: gamepkg.ByR2modmanFolder},
+	return pack.Read(ctx, in, s.d.PackCode, pack.GaleCode{HTTP: s.d.PackCode.HTTP}, pack.Profile{GameByFolder: gamepkg.ByR2modmanFolder},
 		pack.Gale{GameBySlug: gameByThunderstoreKey, DB: pack.GaleDB(folder)}, pack.Modpack{})
 }
 
