@@ -22,7 +22,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
-	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 // profiles is the part of profile.Store the service uses.
@@ -254,7 +253,7 @@ func (s *Service) importPack(ctx context.Context, src Source, gameID, profileID,
 	if len(reqs) == 0 {
 		return res, errors.New("the pack holds no Thunderstore packages to install")
 	}
-	files := packFiles(d, importRoots(gameID))
+	files, _ := pack.ProfileFiles(d, pack.ImportRoots(gameID))
 	if profileID == "" {
 		p, err := s.Profiles.Create(gameID, cmpName(cmp.Or(strings.TrimSpace(name), d.Name)))
 		if err != nil {
@@ -338,72 +337,6 @@ func (s *Service) Extras(ctx context.Context, src Source, gameID, profileID stri
 		out = append(out, Extra{Key: e.Key, Name: e.Source.Name, Version: e.Source.Version})
 	}
 	return out, nil
-}
-
-// blockedExtensions are the executable types r2modman refuses to extract from an imported profile
-// (ProfileUtils.ts:44-50).
-var blockedExtensions = []string{
-	".dll", ".exe", ".scr", ".com", ".pif", ".bat", ".cmd", ".ps1", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".wsh",
-	".hta", ".msi", ".msix", ".sys", ".drv", ".cpl", ".ocx", ".lnk", ".reg", ".inf",
-}
-
-// packFiles is the pack's config files and loose files as the profile holds them, by r2modman's import rule
-// (ProfileUtils.ts:56-67): a config/ entry goes below BepInEx/, any other path is relative to the profile, and
-// executable types are skipped. Mortar's profile folder also holds its own records (profile.json, history, saves), so
-// only a file below one of roots, the game's loaders' import folders, is kept, written under the root's own spelling. A
-// file the pack lists twice keeps its config.
-func packFiles(d pack.Draft, roots []string) map[string][]byte {
-	out := map[string][]byte{}
-	keep := func(p string, data []byte) {
-		p, ok := winPath(p)
-		if !ok {
-			return
-		}
-		first, rest, ok := strings.Cut(p, "/")
-		if !ok {
-			return
-		}
-		i := slices.IndexFunc(roots, func(r string) bool { return strings.EqualFold(r, first) })
-		if i < 0 || slices.ContainsFunc(blockedExtensions, func(e string) bool { return strings.HasSuffix(strings.ToLower(p), e) }) {
-			return
-		}
-		out[roots[i]+"/"+rest] = data
-	}
-	for _, f := range d.Loose {
-		keep(f.Path, f.Data)
-	}
-	for _, f := range d.Configs {
-		keep("BepInEx/"+f.Path, f.Data)
-	}
-	return out
-}
-
-// winPath is p with each segment's trailing dots and spaces removed, as Windows stores it, so "evil.dll." is judged as
-// the evil.dll it becomes there. A segment with nothing else, or a name Windows cannot hold, refuses the path.
-func winPath(p string) (string, bool) {
-	segs := strings.Split(p, "/")
-	for i, seg := range segs {
-		segs[i] = strings.TrimRight(seg, ". ")
-		if !winname.Valid(segs[i]) {
-			return "", false
-		}
-	}
-	return strings.Join(segs, "/"), true
-}
-
-// importRoots are the folders the game's loaders let an imported pack write loose files into.
-func importRoots(gameID string) []string {
-	info, ok := components.Game(gameID)
-	if !ok {
-		return nil
-	}
-	var out []string
-	for _, l := range loader.For(info) {
-		if r, ok := l.(loader.ImportRoots); ok {
-			out = append(out, r.ImportRoots()...)
-		}
-	}
-	return out
 }
 
 func cmpName(n string) string { return cmp.Or(strings.TrimSpace(n), "Imported pack") }

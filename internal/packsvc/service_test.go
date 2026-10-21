@@ -8,7 +8,6 @@ import (
 	"errors"
 	"io"
 	"io/fs"
-	"maps"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -154,29 +153,6 @@ func TestImportQueuesNothingWhenThePacksFilesCannotBeWritten(t *testing.T) {
 func TestExportNeedsTheConfirmation(t *testing.T) {
 	if _, err := (&Service{}).ExportCode(context.Background(), "stardew", "p1", false); err == nil {
 		t.Error("an unconfirmed export ran")
-	}
-}
-
-func TestPackFilesLandUnderBepInEx(t *testing.T) {
-	got := packFiles(pack.Draft{
-		Loose:   []pack.File{{Path: "BepInEx/plugins/a.txt", Data: []byte("a")}, {Path: "BepInEx/plugins/b.dll", Data: []byte("b")}},
-		Configs: []pack.File{{Path: "config/x.cfg", Data: []byte("x")}},
-	}, importRoots("lethal-company"))
-	if string(got["BepInEx/config/x.cfg"]) != "x" || string(got["BepInEx/plugins/a.txt"]) != "a" || len(got) != 2 {
-		t.Fatalf("files = %v", got)
-	}
-}
-
-func TestPackFilesJudgeNamesAsWindowsStoresThem(t *testing.T) {
-	got := packFiles(pack.Draft{Loose: []pack.File{
-		{Path: "BepInEx/plugins/evil.dll.", Data: []byte("MZ")},
-		{Path: "BepInEx/plugins/evil2.dll ", Data: []byte("MZ")},
-		{Path: "BepInEx/plugins/. ./x.txt", Data: []byte("x")},
-		{Path: "BepInEx/plugins/CON", Data: []byte("x")},
-		{Path: "BepInEx/plugins/notes.txt. ", Data: []byte("n")},
-	}}, importRoots("lethal-company"))
-	if len(got) != 1 || string(got["BepInEx/plugins/notes.txt"]) != "n" {
-		t.Fatalf("files = %v", slices.Collect(maps.Keys(got)))
 	}
 }
 
