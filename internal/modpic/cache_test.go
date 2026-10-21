@@ -147,8 +147,10 @@ func TestSizedURLEmptyWhenInvalid(t *testing.T) {
 }
 
 func TestSizedURLTakesEveryBrowseSourcesPictureHost(t *testing.T) {
-	for _, host := range []string{"cdn.modrinth.com", "media.forgecdn.net", "avatars.githubusercontent.com", "img.itch.zone",
-		"moddbcdn.vintagestory.at", "modscontent.paradox-interactive.com"} {
+	for _, host := range []string{
+		"cdn.modrinth.com", "media.forgecdn.net", "avatars.githubusercontent.com", "img.itch.zone",
+		"moddbcdn.vintagestory.at", "modscontent.paradox-interactive.com",
+	} {
 		if SizedURL(pictureURL(host, "/a.png"), Thumb) == "" {
 			t.Errorf("%s is not cacheable", host)
 		}
