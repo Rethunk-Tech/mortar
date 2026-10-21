@@ -3048,7 +3048,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 
-go4.org@v0.0.0-20260112195520-a5071408f32f
+go4.org@v0.0.0-20261019143151-5b882263cdaf
 licence: Apache-2.0
 https://pkg.go.dev/go4.org
 
@@ -3680,7 +3680,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-lucide-react@1.59.0
+lucide-react@1.61.0
 licence: MIT
 https://lucide.dev
 
