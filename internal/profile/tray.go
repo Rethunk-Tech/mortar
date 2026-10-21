@@ -47,6 +47,11 @@ func trayEntryKey(item string) string { return item + fileKeySep + "/tray" }
 // isTrayEntry reports the entry that holds an archive's Tray files; it lays nothing out in the profile.
 func (e Entry) isTrayEntry() bool { return e.Tray }
 
+// InTray reports whether the entry's shared files are in the game's Tray folder, rather than another shared folder.
+func (e Entry) InTray() bool {
+	return e.Tray && !slices.ContainsFunc(e.TrayFiles, func(f TrayFile) bool { return cmp.Or(f.Role, trayRole) != trayRole })
+}
+
 // TrayRestoreError reports Tray files a restored profile's entries could not place again, because the Tray folder holds
 // a different file of that name. The profile itself is restored.
 type TrayRestoreError struct{ Files []string }

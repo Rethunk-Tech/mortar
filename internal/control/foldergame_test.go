@@ -17,12 +17,16 @@ func folderProfile() profile.Profile {
 		Key: "pkg-1#/tray", Item: "pkg-1", Package: true, Tray: true, TrayFiles: []profile.TrayFile{{Rel: "H.trayitem"}},
 		Mods: []profile.Component{{ID: mod.NewID(mod.FormatFolder, "pkg-1#tray"), Name: "Tray files"}},
 	}
-	return profile.Profile{Name: "S", Entries: []profile.Entry{file("pkg-1", "a.package"), file("pkg-1", "b.package"), tray, file("pkg-2", "c.package")}}
+	shared := profile.Entry{
+		Key: "pkg-3", Item: "pkg-3", Tray: true, TrayFiles: []profile.TrayFile{{Rel: "paradox-1/a.dll", Role: "pdxMods"}},
+		Mods: []profile.Component{{ID: mod.NewID(mod.FormatFolder, "pkg-3"), Name: "Shared"}},
+	}
+	return profile.Profile{Name: "S", Entries: []profile.Entry{file("pkg-1", "a.package"), file("pkg-1", "b.package"), tray, file("pkg-2", "c.package"), shared}}
 }
 
 func TestModRowsNameTheArchiveAndMarkTrayEntries(t *testing.T) {
 	rows := modRows(folderProfile())
-	if rows[0].Item != "pkg-1" || rows[0].File != "a.package" || rows[0].Tray || !rows[2].Tray {
+	if rows[0].Item != "pkg-1" || rows[0].File != "a.package" || rows[0].Tray || !rows[2].Tray || rows[4].Tray {
 		t.Fatalf("rows = %+v", rows)
 	}
 }
