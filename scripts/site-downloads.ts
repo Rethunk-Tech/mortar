@@ -164,6 +164,14 @@ async function main() {
       problems.push(`${repo} has no latest release the API returns`)
     }
   }
+  // The site names the version build/config.yml sets, which has no release until its tag publishes; the publish after
+  // that release checks the site again, so a main commit ahead of the latest release has nothing to check yet.
+  const configured = /^\s+version: "([^"]+)"/m.exec(readFileSync('build/config.yml', 'utf8'))?.[1]
+  const released = latest[ASSET_REPO]?.tag_name.replace(/^v/, '')
+  if (configured && released && configured !== released) {
+    console.log(`site downloads: ${configured} is not released yet (latest is ${released}); checked when it publishes`)
+    return
+  }
   const all = Object.values(html).join('\n')
   problems.push(
     ...anchorProblems(anchors, latest),
