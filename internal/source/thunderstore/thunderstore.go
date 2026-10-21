@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
@@ -199,41 +200,33 @@ var (
 
 // Deprecated lists the community's deprecated packages by lower-cased "Namespace-Name", from the cached index.
 func (d Driver) Deprecated(ctx context.Context, key, version string) (map[string]Deprecation, error) {
-	pk, err := d.unkeptPackages(ctx, key, source.UserAgentWithSite(version))
-	if err != nil {
-		return nil, err
+	s, err := d.derived(ctx, key, source.UserAgentWithSite(version))
+	return s.Deprecation, err
+}
+
+// replacementFor is the live package p's summary points to, or empty.
+func replacementFor(p pkg, self string, live map[string]string) string {
+	if !replaceHint.MatchString(p.Summary) {
+		return ""
 	}
-	live := map[string]string{}
-	for _, p := range pk {
-		if !p.Hidden {
-			live[strings.ToLower(p.Owner+"-"+p.Name)] = p.Owner + "-" + p.Name
-		}
-	}
-	out := map[string]Deprecation{}
-	for _, p := range pk {
-		if !p.Hidden {
-			continue
-		}
-		self := strings.ToLower(p.Owner + "-" + p.Name)
-		dep := Deprecation{}
-		if replaceHint.MatchString(p.Summary) {
-			summary := packageURL.ReplaceAllString(p.Summary, " $1-$2 ")
-			toks := strings.FieldsFunc(summary, func(r rune) bool { return strings.ContainsRune(" \t\n,;:()[]\"'", r) })
-			// Authors mostly name the successor bare ("use WeatherInjector instead"); a bare name is only trusted
-			// among the author's own packages, since across the whole index it matches common words.
-			for _, prefix := range []string{"", strings.ToLower(p.Owner) + "-"} {
-				for _, tok := range toks {
-					if name, ok := live[prefix+strings.ToLower(strings.Trim(tok, ".!?"))]; ok && strings.ToLower(name) != self {
-						dep.Replacement = name
-						break
-					}
-				}
-				if dep.Replacement != "" {
-					break
-				}
+	summary := packageURL.ReplaceAllString(p.Summary, " $1-$2 ")
+	toks := strings.FieldsFunc(summary, func(r rune) bool { return strings.ContainsRune(" \t\n,;:()[]\"'", r) })
+	// Authors mostly name the successor bare ("use WeatherInjector instead"); a bare name is only trusted
+	// among the author's own packages, since across the whole index it matches common words.
+	for _, prefix := range []string{"", strings.ToLower(p.Owner) + "-"} {
+		for _, tok := range toks {
+			if name, ok := live[prefix+strings.ToLower(strings.Trim(tok, ".!?"))]; ok && strings.ToLower(name) != self {
+				return name
 			}
 		}
-		out[self] = dep
 	}
-	return out, nil
+	return ""
+}
+
+func (d Driver) derived(ctx context.Context, key, ua string) (derivedFile, error) {
+	path, err := d.listingFile(ctx, key, ua)
+	if err != nil {
+		return derivedFile{}, err
+	}
+	return derivedFor(filepath.Join(d.cacheRoot(), "thunderstore"), key, path)
 }

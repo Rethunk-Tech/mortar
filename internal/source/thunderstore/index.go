@@ -379,6 +379,7 @@ func (d Driver) listingFile(ctx context.Context, key, ua string) (string, error)
 		return "", err
 	}
 	refreshSide(dir, key, hash, path)
+	refreshDerived(dir, key, path)
 	return path, nil
 }
 

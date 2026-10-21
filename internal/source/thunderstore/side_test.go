@@ -1,6 +1,7 @@
 package thunderstore
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"slices"
@@ -112,4 +113,32 @@ func listingHeld(key string) bool {
 	defer memoMu.Unlock()
 	_, held := memo[key]
 	return held
+}
+
+func TestDeprecatedAnswersFromTheDerivedFileWithoutTheListing(t *testing.T) {
+	f := newFake(t)
+	cache := t.TempDir()
+	d := Driver{URL: f.srv.URL, CacheDir: cache}
+	clearMemo()
+	if _, err := d.Deprecated(t.Context(), "lethal-company", "1.2.3"); err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(cache, "thunderstore")
+	s := readDerived(dir, "lethal-company")
+	if s.Listing == "" || len(s.Deprecation) == 0 {
+		t.Fatalf("derived file = %+v", s)
+	}
+	// Only the file can say this: the listing holds no such package.
+	s.Deprecation = map[string]Deprecation{"x-y": {Replacement: "a-b"}}
+	b, _ := json.Marshal(s)
+	if err := os.WriteFile(derivedPath(dir, "lethal-company"), b, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	dep, err := d.Deprecated(t.Context(), "lethal-company", "1.2.3")
+	if err != nil || dep["x-y"].Replacement != "a-b" || len(dep) != 1 {
+		t.Fatalf("deprecated = %v, %v", dep, err)
+	}
+	if listingHeld("lethal-company") {
+		t.Fatal("a deprecation lookup kept the whole listing in memory")
+	}
 }
