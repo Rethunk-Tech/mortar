@@ -30,6 +30,7 @@ func TestGaleCodeDetectsOnlyItsOwnShape(t *testing.T) {
 	for text, want := range map[string]bool{
 		"E5RG8F": true, "e5rg8f": true, "E5RG8": false, "E5RG8FX": false, "E5RG-8": false, "hello": false,
 		"0123abcd-0123-0123-0123-0123456789ab": false, "#r2modman": false,
+		"ASNFZ4mrze8BI0VniavN7w": true, "ASNFZ4mrze8BI0VniavN7": false, "ASNFZ4mrze8BI0VniavN7w=": false,
 	} {
 		if got := (GaleCode{}).Detect(Input{Text: text}); got != want {
 			t.Errorf("Detect(%q) = %v", text, got)
