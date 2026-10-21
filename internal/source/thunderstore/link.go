@@ -138,7 +138,7 @@ func versionsOf(p pkg) []string {
 // Dependencies reads the dependencies of the listed package versions from the community's index, one package per
 // "Namespace-Name" id, with no request beyond the index's own refresh.
 func (d Driver) Dependencies(ctx context.Context, key, mortarVersion string, refs []source.VersionRef) (map[source.VersionRef][]string, error) {
-	pk, err := d.packages(ctx, key, source.UserAgentWithSite(mortarVersion))
+	pk, err := d.unkeptPackages(ctx, key, source.UserAgentWithSite(mortarVersion))
 	if err != nil {
 		return nil, err
 	}

@@ -467,6 +467,32 @@ func loadPackages(key, path string) ([]pkg, error) {
 		m.idle.Reset(listingIdle)
 		return m.pk, nil
 	}
+	pk, err := readPackages(path)
+	if err != nil {
+		return nil, err
+	}
+	if old, ok := memo[key]; ok {
+		old.idle.Stop()
+	}
+	memo[key] = memoEntry{path, pk, time.AfterFunc(listingIdle, func() { releaseListing(key, path) })}
+	return pk, nil
+}
+
+// unkeptPackages is the community's listing for one pass of a check that runs at every start: the copy Browse holds
+// when it holds one, else read from disk and left to the collector rather than kept for listingIdle.
+func (d Driver) unkeptPackages(ctx context.Context, key, ua string) ([]pkg, error) {
+	path, err := d.listingFile(ctx, key, ua)
+	if err != nil {
+		return nil, err
+	}
+	if pk, ok := memoized(key, path); ok {
+		return pk, nil
+	}
+	return readPackages(path)
+}
+
+// readPackages decodes the stored listing at path.
+func readPackages(path string) ([]pkg, error) {
 	f, err := fsx.Open(path)
 	if err != nil {
 		return nil, err
@@ -495,12 +521,7 @@ func loadPackages(key, path string) ([]pkg, error) {
 	if !c.known() {
 		return nil, errors.New("the listing names a dependency it does not hold")
 	}
-	pk = dedupeIDs(pk)
-	if old, ok := memo[key]; ok {
-		old.idle.Stop()
-	}
-	memo[key] = memoEntry{path, pk, time.AfterFunc(listingIdle, func() { releaseListing(key, path) })}
-	return pk, nil
+	return dedupeIDs(pk), nil
 }
 
 // dedupeIDs keeps one listing per case-folded id. Thunderstore treats names case-insensitively but lets a deprecated

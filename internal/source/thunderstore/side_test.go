@@ -100,3 +100,16 @@ func TestItemsOnAColdCacheLeaveNoListingInMemory(t *testing.T) {
 		t.Fatal("an item lookup kept the whole listing in memory")
 	}
 }
+
+func clearMemo() {
+	memoMu.Lock()
+	clear(memo)
+	memoMu.Unlock()
+}
+
+func listingHeld(key string) bool {
+	memoMu.Lock()
+	defer memoMu.Unlock()
+	_, held := memo[key]
+	return held
+}

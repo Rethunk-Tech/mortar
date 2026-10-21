@@ -214,6 +214,7 @@ func TestDeprecatedListsPackagesAndTheirNamedReplacement(t *testing.T) {
 		listing("Gus", "Horn", "Airhorn is replaced with MoreCompany", 5, true, false),
 		listing("Hal", "Warn", "[DEPRECATED] Please use https://thunderstore.io/c/lethal-company/p/Alice/MoreCompany/ instead!", 5, true, false),
 		listing("Alice", "MoreCompanyFix", "[V69]Replace with MoreCompany -> (see its page)", 5, true, false))
+	clearMemo()
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
 	got, err := d.Deprecated(t.Context(), "lethal-company", "1.2.3")
 	if err != nil {
@@ -233,6 +234,9 @@ func TestDeprecatedListsPackagesAndTheirNamedReplacement(t *testing.T) {
 	}
 	if got["fay-legacy"].Replacement != "Alice-MoreCompany" || len(got) != 6 {
 		t.Fatalf("got %+v", got)
+	}
+	if listingHeld("lethal-company") {
+		t.Fatal("the deprecation check kept the whole listing in memory")
 	}
 }
 

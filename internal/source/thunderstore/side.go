@@ -90,7 +90,7 @@ func (d Driver) refreshInBackground(ctx context.Context, key, mortarVersion stri
 	bg, cancel := context.WithTimeout(context.WithoutCancel(ctx), refreshTimeout)
 	go func() {
 		defer cancel()
-		_, _ = d.packages(bg, key, source.UserAgentWithSite(mortarVersion))
+		_, _ = d.listingFile(bg, key, source.UserAgentWithSite(mortarVersion))
 	}()
 }
 

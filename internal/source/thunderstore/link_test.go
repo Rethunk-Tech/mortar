@@ -48,6 +48,7 @@ func TestDependenciesListsPackageIdsOfEachVersion(t *testing.T) {
 	f := newFake(t)
 	f.chunk0 = append(f.chunk0, custom("Ns", "A", v("2.0.0", "Ns-B-1.0.0", "BepInEx-BepInExPack-5.4.2100"), v("1.0.0")))
 	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	clearMemo()
 	two, one, ghost := source.VersionRef{ID: "ns-a", Version: "2.0.0"}, source.VersionRef{ID: "Ns-A", Version: "1.0.0"}, source.VersionRef{ID: "Ns-A", Version: "9"}
 	got, err := d.Dependencies(t.Context(), "lethal-company", "1.2.3", []source.VersionRef{two, one, ghost})
 	if err != nil {
@@ -61,5 +62,8 @@ func TestDependenciesListsPackageIdsOfEachVersion(t *testing.T) {
 	}
 	if _, ok := got[ghost]; ok {
 		t.Error("a version the index lacks was listed")
+	}
+	if listingHeld("lethal-company") {
+		t.Error("the dependency check kept the whole listing in memory")
 	}
 }

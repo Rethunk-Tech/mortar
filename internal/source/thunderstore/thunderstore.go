@@ -199,7 +199,7 @@ var (
 
 // Deprecated lists the community's deprecated packages by lower-cased "Namespace-Name", from the cached index.
 func (d Driver) Deprecated(ctx context.Context, key, version string) (map[string]Deprecation, error) {
-	pk, err := d.packages(ctx, key, source.UserAgentWithSite(version))
+	pk, err := d.unkeptPackages(ctx, key, source.UserAgentWithSite(version))
 	if err != nil {
 		return nil, err
 	}
