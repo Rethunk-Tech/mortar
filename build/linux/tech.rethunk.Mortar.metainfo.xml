@@ -93,6 +93,9 @@
         </ul>
         <p>Fixed</p>
         <ul>
+          <li>Mortar reopens maximised when it was closed maximised, at the right size instead of past the screen's edges</li>
+          <li>Buttons, lists and menus use the font chosen in Appearance, and a config's Sections list is wide enough for its names</li>
+          <li>When some update checks do not answer in time, a notice says so with Check again and Dismiss, and a slow smapi.io batch is asked again before its mods are left unknown</li>
           <li>Category chips show their full names, the caret sits right after them, and Enter picks the first match</li>
           <li>A search handed from Mortar's settings to a game's settings no longer says nothing matches</li>
           <li>A game with no save folder no longer warns before Play that its saves could not be backed up</li>
