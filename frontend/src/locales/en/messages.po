@@ -11887,6 +11887,10 @@ msgstr "newer in folder"
 msgid "README"
 msgstr "README"
 
+#: src/toasts/report.ts
+msgid "Could not open Mortar's log"
+msgstr "Could not open Mortar's log"
+
 #. placeholder {0}: row.name
 #. placeholder {1}: row.framework
 #: src/mods/SlowStartupSection.tsx

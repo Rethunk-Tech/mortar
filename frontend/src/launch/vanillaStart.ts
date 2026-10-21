@@ -3,7 +3,8 @@ import { StartVanilla } from '../../bindings/github.com/Rethunk-Tech/mortar/inte
 import { i18n } from '../i18n/index.ts'
 import { toastError } from '../toasts/report.ts'
 
-const reportFailure = (error: unknown) => toastError(i18n._(msg`Could not launch the game`), error)
+const reportFailure = (error: unknown) =>
+  toastError(i18n._(msg`Could not launch the game`), error, { log: 'game' })
 
 export async function startVanillaGame(opts: {
   get: () => { starting: boolean }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"maps"
+	"os"
 	"path/filepath"
 	"slices"
 
@@ -273,6 +274,20 @@ func (s *Service) OpenDataFolder() error {
 		return err
 	}
 	return datadir.Open(dir)
+}
+
+// OpenAppLog opens Mortar's own log, where errors that did not come from a game are written. When the log file is
+// missing it shows the data folder instead.
+func (s *Service) OpenAppLog() error {
+	dir, err := datadir.Dir()
+	if err != nil {
+		return err
+	}
+	log := filepath.Join(dir, "mortar.log")
+	if _, err := os.Stat(log); err != nil {
+		return datadir.Open(dir)
+	}
+	return datadir.Open(log)
 }
 
 // ExportSettings writes a redacted settings JSON through the native save dialog. It returns "" when cancelled.

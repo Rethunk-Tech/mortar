@@ -42,6 +42,7 @@ const OUTSIDE = new Set([
   'savessvc.OpenSaveFolder',
   'settings.ChooseBackgroundImage',
   'settings.ChooseGameFolder',
+  'settings.OpenAppLog',
   'settings.OpenDataFolder',
   'sharesvc.ShowExportedCollection',
   'source/itch.SignIn',

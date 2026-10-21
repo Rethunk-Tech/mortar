@@ -132,7 +132,7 @@ async function startProfile(opts: {
   } catch (error) {
     pendingPreset = ''
     opts.set({ starting: false, startingProfile: '', updateRollback: null })
-    reportError(i18n._(msg`Could not launch the game`))(error)
+    toastError(i18n._(msg`Could not launch the game`), error, { log: 'game' })
   }
 }
 

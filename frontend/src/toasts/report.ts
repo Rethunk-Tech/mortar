@@ -1,4 +1,5 @@
 import { msg } from '@lingui/core/macro'
+import { OpenAppLog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
 import { openSettings, routeGame, useNav } from '../nav/store.ts'
@@ -55,9 +56,24 @@ function openLog(): boolean {
   return true
 }
 
+/** Which log an error toast's Open log shows: the game's run log for a failure of a game run, else Mortar's own. */
+type LogSource = 'game' | 'app'
+
+/** Opens the log that holds the error: the game's console tab for a game run's failure while a game is open, else Mortar's own log file. */
+function openLogFor(source: LogSource): void {
+  if (source === 'game' && openLog()) {
+    return
+  }
+  OpenAppLog().catch((e: unknown) =>
+    toastError(i18n._(msg`Could not open Mortar's log`), e, {
+      action: { label: i18n._(msg`Save diagnostics…`), run: () => openSettings('about') },
+    }),
+  )
+}
+
 // Every error toast offers a next step: the caller's own action, Retry for a repeatable one, Settings for
-// permission and storage failures, else the game's log, or the diagnostics when no game is open.
-function nextStep(e: unknown, retry: (() => unknown) | undefined): ToastAction {
+// permission and storage failures, else the log that holds the error.
+function nextStep(e: unknown, retry: (() => unknown) | undefined, log: LogSource): ToastAction {
   const kind = kindOf(e)
   if (kind === 'permission' || kind === 'disk_full') {
     return { label: i18n._(msg`Open storage settings`), run: () => openSettings('storage') }
@@ -65,16 +81,12 @@ function nextStep(e: unknown, retry: (() => unknown) | undefined): ToastAction {
   if (retry !== undefined) {
     return { label: i18n._(msg`Retry`), run: retry }
   }
-  if (routeGame(useNav.getState().route) === null) {
-    // No game, so no run log: Mortar's own log goes out with the diagnostics on About.
-    return { label: i18n._(msg`Save diagnostics…`), run: () => openSettings('about') }
-  }
-  return { label: i18n._(msg`Open log`), run: openLog }
+  return { label: i18n._(msg`Open log`), run: () => openLogFor(log) }
 }
 
-/** The next step an error toast with no error object offers: the game's log, or the diagnostics with no game open. */
+/** The next step an error toast with no error object offers: Mortar's own log. */
 export function logAction(): ToastAction {
-  return nextStep(null, undefined)
+  return nextStep(null, undefined, 'app')
 }
 
 /** A failure shown in place: the plain sentence to read, the cause for its title tooltip. */
@@ -96,12 +108,12 @@ export function inlineError(e: unknown, message = errorMessage(e)): InlineError 
 export function toastError(
   title: string,
   e: unknown,
-  extra: { action?: ToastAction; detail?: string; retry?: () => unknown } = {},
+  extra: { action?: ToastAction; detail?: string; retry?: () => unknown; log?: LogSource } = {},
 ): void {
   const details = [errorDetails(e), extra.detail ?? '']
     .filter((part) => part !== '' && part !== title)
     .join('\n')
-  const action = extra.action ?? nextStep(e, extra.retry)
+  const action = extra.action ?? nextStep(e, extra.retry, extra.log ?? 'app')
   // An untagged error has no plain sentence of its own: the title names what failed and the detail its cause.
   const body = kindOf(e) === 'unknown' ? '' : errorMessage(e)
   useToasts.getState().push({
