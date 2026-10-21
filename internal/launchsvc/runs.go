@@ -126,6 +126,16 @@ func (s *Service) Runs(gameID, profileID string) ([]Run, error) {
 	return idx.Runs, nil
 }
 
+// LastRunStarted is when the newest recorded launch began, "" when the profile never ran. Home needs only this,
+// and Runs carries every recorded run's mod list.
+func (s *Service) LastRunStarted(gameID, profileID string) (string, error) {
+	runs, err := s.Runs(gameID, profileID)
+	if err != nil || len(runs) == 0 {
+		return "", err
+	}
+	return runs[0].Started, nil
+}
+
 // RunLog returns the stored SMAPI log of a recorded run, or "" when it is gone.
 func (s *Service) RunLog(gameID, profileID, runID string) (string, error) {
 	path, err := s.runFile(gameID, profileID, runID)

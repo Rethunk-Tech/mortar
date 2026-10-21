@@ -158,3 +158,16 @@ func TestACleanExitAddsNoProcessOutput(t *testing.T) {
 		t.Fatalf("clean exit run log = %q, cause %#v", text, runs[0].Cause)
 	}
 }
+
+func TestLastRunStartedIsTheNewestRunsStart(t *testing.T) {
+	svc, p, _, _ := runEnv(t)
+	if got, err := svc.LastRunStarted("stardew", p.ID); err != nil || got != "" {
+		t.Fatalf("no runs: %q, %v", got, err)
+	}
+	g := game.Find("stardew")
+	svc.record(g, p.ID, time.Now(), false)
+	runs, _ := svc.Runs("stardew", p.ID)
+	if got, err := svc.LastRunStarted("stardew", p.ID); err != nil || len(runs) != 1 || got != runs[0].Started {
+		t.Fatalf("got %q, %v; runs %#v", got, err, runs)
+	}
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Runs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { LastRunStarted } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 
@@ -27,8 +27,7 @@ export function useProfileCardsMeta(
           next[id] = playedAt
         } else {
           try {
-            const runs = await Runs(gameId, id)
-            const started = runs?.[0]?.started ?? ''
+            const started = await LastRunStarted(gameId, id)
             if (started) {
               next[id] = started
             }

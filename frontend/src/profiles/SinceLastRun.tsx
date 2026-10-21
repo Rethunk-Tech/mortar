@@ -2,10 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { History, List } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import {
-  Runs,
-  StartupReports,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { StartupReports } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import type { HistoryDiff } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { ChangesSince } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import {
@@ -15,6 +12,7 @@ import {
 } from '../console/startupView.ts'
 import { HomePanel } from '../game/HomePanel.tsx'
 import { changesView } from '../game/homeView.ts'
+import { lastRunStarted } from '../game/useLastRun.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { changesSinceCache } from './changesSinceCache.ts'
@@ -54,9 +52,8 @@ function useSinceLastRun(game: string, profileId: string): string[] {
       return
     }
     let live = true
-    Runs(game, profileId)
-      .then(async (runs) => {
-        const since = runs?.[0]?.started ?? ''
+    lastRunStarted(game, profileId, String(updated))
+      .then(async (since) => {
         const next = await ChangesSince(game, profileId, since)
         changesSinceCache.set(key, next)
         if (live) {
