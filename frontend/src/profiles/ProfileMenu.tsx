@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
-import { ChevronDown, LayoutTemplate, ListOrdered, Plus, Search } from 'lucide-react'
+import { ChevronDown, Download, LayoutTemplate, ListOrdered, Plus, Search } from 'lucide-react'
 import { memo, useCallback, useMemo, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { compact } from '../game/compact.ts'
@@ -10,6 +10,7 @@ import { useOrderedProfiles } from '../game/useSidebarProfiles.ts'
 import { useGameName } from '../games/info.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { useNav } from '../nav/store.ts'
+import { openImport } from '../share/store.ts'
 import { MenuHeading, MenuRule, TitleMenu, TitleMenuItem } from '../shell/TitleMenu.tsx'
 import { closeTitleMenu, useTitleMenu } from '../shell/titleMenus.ts'
 import { visuallyHidden } from '../shell/visuallyHidden.ts'
@@ -20,7 +21,6 @@ import { userModCount } from './count.ts'
 import { requestFindAllFocus } from './findMod.ts'
 import { ProfileMark } from './ProfileMark.tsx'
 import { openProfileOf, useProfiles } from './store.ts'
-import { type ImportEntry, useProfileImport } from './useProfileImport.tsx'
 
 const ICON_PX = 18
 
@@ -137,7 +137,6 @@ interface MenuListProps {
   gameName: string
   profiles: Profile[]
   openId: string
-  entries: ImportEntry[]
   hasTemplates: boolean
   onCreate: () => void
   onManage: () => void
@@ -149,7 +148,6 @@ function ProfileMenuListView({
   gameName,
   profiles,
   openId,
-  entries,
   hasTemplates,
   onCreate,
   onManage,
@@ -193,18 +191,14 @@ function ProfileMenuListView({
           onCreate()
         }}
       />
-      <MenuHeading>{t`Import`}</MenuHeading>
-      {entries.map((entry) => (
-        <TitleMenuItem
-          key={entry.key}
-          icon={<entry.icon size={ICON_PX} />}
-          label={entry.label}
-          onClick={() => {
-            closeTitleMenu()
-            entry.run()
-          }}
-        />
-      ))}
+      <TitleMenuItem
+        icon={<Download size={ICON_PX} />}
+        label={t`Import…`}
+        onClick={() => {
+          closeTitleMenu()
+          openImport()
+        }}
+      />
       <MenuRule />
       <TitleMenuItem
         icon={<Search size={ICON_PX} />}
@@ -238,7 +232,7 @@ function ProfileMenuListView({
 }
 
 // The menu's items, memoised: opening or closing the menu (and navigating, which closes it) re-renders the menu around
-// them but not every item. The import entries are rebuilt each render with the same actions, so only their keys count.
+// them but not every item.
 const ProfileMenuList = memo(
   ProfileMenuListView,
   (a, b) =>
@@ -249,8 +243,7 @@ const ProfileMenuList = memo(
     a.hasTemplates === b.hasTemplates &&
     a.onCreate === b.onCreate &&
     a.onManage === b.onManage &&
-    a.onContext === b.onContext &&
-    a.entries.map((e) => e.key).join() === b.entries.map((e) => e.key).join(),
+    a.onContext === b.onContext,
 )
 
 // The title bar's profile switcher for the open game: the open profile and its mod count over a menu that switches,
@@ -266,7 +259,6 @@ export const ProfileMenu = memo(function ProfileMenuView({ game }: { game: strin
   const [creating, setCreating] = useState(false)
   const [managing, setManaging] = useState(false)
   const [context, setContext] = useState<{ id: string; position: Position | null } | null>(null)
-  const entries = useProfileImport()
   const { templates, reload } = useTemplates(game, anchor !== null || managing)
   const contextProfile = context ? profiles.find((p) => p.id === context.id) : undefined
   const showContext = useCallback(
@@ -306,7 +298,6 @@ export const ProfileMenu = memo(function ProfileMenuView({ game }: { game: strin
           gameName={gameName}
           profiles={profiles}
           openId={openId}
-          entries={entries}
           hasTemplates={templates.length > 0}
           onCreate={onCreate}
           onManage={onManage}

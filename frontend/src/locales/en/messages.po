@@ -8588,7 +8588,6 @@ msgstr "Four Corners farm"
 
 #: src/commandPalette/paletteLabels.ts
 #: src/profiles/GameModsDialog.tsx
-#: src/profiles/ProfileMenu.tsx
 msgid "Import"
 msgstr "Import"
 
@@ -11901,8 +11900,8 @@ msgstr "{0} adds {time} to startup (through {1})"
 msgid "Overrides"
 msgstr "Overrides"
 
+#: src/profiles/ProfileMenu.tsx
 #: src/profiles/ProfilesPage.tsx
-#: src/profiles/useProfileImport.tsx
 #: src/settings/sections/General.tsx
 msgid "Import…"
 msgstr "Import…"
