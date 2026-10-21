@@ -933,6 +933,9 @@
       "r2modmanFolder": "BombRushCyberfunk",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Team Reptile/Bomb Rush Cyberfunk"
+        },
         "unityLog": {
           "windows": "{localLow}/Team Reptile/Bomb Rush Cyberfunk/Player.log"
         }
@@ -979,6 +982,9 @@
       "r2modmanFolder": "BoplBattle",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Johan Gronvall/BoplBattle"
+        },
         "unityLog": {
           "windows": "{localLow}/Johan Gronvall/BoplBattle/Player.log"
         }
@@ -1055,6 +1061,9 @@
       "r2modmanFolder": "ChronoArk",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/AlFine/ChronoArk"
+        },
         "unityLog": {
           "windows": "{localLow}/AlFine/ChronoArk/Player.log"
         }
@@ -1254,6 +1263,9 @@
       "r2modmanFolder": "HowToFish",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Dazed Games/How to Fish/Saves"
+        },
         "unityLog": {
           "windows": "{localLow}/Dazed Games/How to Fish/Player.log"
         }
@@ -1627,6 +1639,9 @@
       "r2modmanFolder": "Receiver2",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Wolfire Games/Receiver2"
+        },
         "unityLog": {
           "windows": "{localLow}/Wolfire Games/Receiver2/Player.log"
         }
@@ -1704,6 +1719,9 @@
       "r2modmanFolder": "Sailwind",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Raw Lion Workshop/Sailwind"
+        },
         "unityLog": {
           "windows": "{localLow}/Raw Lion Workshop/Sailwind/Player.log"
         }
@@ -1747,6 +1765,9 @@
       "r2modmanFolder": "SkulTheHeroSlayer",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Southpaw Games/Skul"
+        },
         "unityLog": {
           "windows": "{localLow}/Southpaw Games/Skul/Player.log"
         }
@@ -1786,6 +1807,10 @@
       "r2modmanFolder": "STRAFTAT",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/LemaitreBros/STRAFTAT",
+          "linux": "{xdgConfig}/unity3d/LemaitreBros/STRAFTAT"
+        },
         "unityLog": {
           "windows": "{localLow}/LemaitreBros/STRAFTAT/Player.log"
         }
@@ -1867,6 +1892,9 @@
       "r2modmanFolder": "SupermarketTogether",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/DDTNL/Supermarket Together"
+        },
         "unityLog": {
           "windows": "{localLow}/DDTNL/Supermarket Together/Player.log"
         }
@@ -1949,6 +1977,9 @@
       "r2modmanFolder": "Techtonica",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Fire Hose Games/Techtonica"
+        },
         "unityLog": {
           "windows": "{localLow}/Fire Hose Games/Techtonica/Player.log"
         }
@@ -1992,6 +2023,9 @@
       "r2modmanFolder": "TABS",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Landfall Games/Totally Accurate Battle Simulator/Saved"
+        },
         "unityLog": {
           "windows": "{localLow}/Landfall Games/Totally Accurate Battle Simulator/Player.log"
         }
@@ -2039,6 +2073,9 @@
       "r2modmanFolder": "TouhouLostBranchOfLegend",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/AliothStudio/LBoL"
+        },
         "unityLog": {
           "windows": "{localLow}/AliothStudio/LBoL/Player.log"
         }
@@ -2077,6 +2114,9 @@
       "r2modmanFolder": "TromboneChamp",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Holy Wow/TromboneChamp"
+        },
         "unityLog": {
           "windows": "{localLow}/Holy Wow/TromboneChamp/Player.log"
         }
@@ -2116,6 +2156,10 @@
       "r2modmanFolder": "UltimateChickenHorse",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Clever Endeavour Games/Ultimate Chicken Horse",
+          "linux": "{xdgConfig}/unity3d/Clever Endeavour Games/Ultimate Chicken Horse"
+        },
         "unityLog": {
           "windows": "{localLow}/Clever Endeavour Games/Ultimate Chicken Horse/Player.log"
         }
@@ -2324,6 +2368,9 @@
       "r2modmanFolder": "WhiteKnuckle",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Dark Machine/White Knuckle"
+        },
         "unityLog": {
           "windows": "{localLow}/Dark Machine/White Knuckle/Player.log"
         }
@@ -2780,6 +2827,9 @@
       "r2modmanFolder": "DeepRockGalacticSurvivor",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Funday Games/DRG Survivor"
+        },
         "unityLog": {
           "windows": "{localLow}/Funday Games/DRG Survivor/Player.log"
         }
@@ -3145,6 +3195,9 @@
       "r2modmanFolder": "MiSide",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/AIHASTO/MiSideFull/Save"
+        },
         "unityLog": {
           "windows": "{localLow}/AIHASTO/MiSideFull/Player.log"
         }
@@ -3518,6 +3571,9 @@
       "r2modmanFolder": "VampireCrawlers",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Nosebleed Interactive/Vampire Crawlers/Save"
+        },
         "unityLog": {
           "windows": "{localLow}/Nosebleed Interactive/Vampire Crawlers/Player.log"
         }
@@ -3785,6 +3841,9 @@
       "r2modmanFolder": "Atomicrops",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Bird Bath Games/Atomicrops"
+        },
         "unityLog": {
           "windows": "{localLow}/Bird Bath Games/Atomicrops/Player.log"
         }
@@ -3855,6 +3914,9 @@
       "r2modmanFolder": "BadNorth",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Plausible Concept/Bad North/Saves"
+        },
         "unityLog": {
           "windows": "{localLow}/Plausible Concept/Bad North/Player.log"
         }
@@ -3996,6 +4058,10 @@
       "r2modmanFolder": "BookOfTravels",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/MightAndDelight/BookOfTravels",
+          "linux": "{xdgConfig}/unity3d/MightAndDelight/BookOfTravels"
+        },
         "unityLog": {
           "windows": "{localLow}/MightAndDelight/BookOfTravels/Player.log"
         }
@@ -4070,6 +4136,9 @@
       "r2modmanFolder": "CitiesSkylines2",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Colossal Order/Cities Skylines II/Saves"
+        },
         "pdxMods": {
           "windows": "{localLow}/Colossal Order/Cities Skylines II/Mods"
         },
@@ -4167,6 +4236,9 @@
       "r2modmanFolder": "CrashoutCrew",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Aggro Crab/Crashout Crew/saves"
+        },
         "unityLog": {
           "windows": "{localLow}/Aggro Crab/Crashout Crew/Player.log"
         }
@@ -4638,6 +4710,10 @@
       "r2modmanFolder": "ForTheKing",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/IronOak Games/FTK/save",
+          "linux": "{xdgConfig}/unity3d/IronOak Games/FTK/save"
+        },
         "unityLog": {
           "windows": "{localLow}/IronOak Games/FTK/Player.log"
         }
@@ -4684,6 +4760,9 @@
       "r2modmanFolder": "GarfieldKartFuriousRacing",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Microids/Garfield Kart Furious Racing"
+        },
         "unityLog": {
           "windows": "{localLow}/Microids/Garfield Kart Furious Racing/Player.log"
         }
@@ -4924,6 +5003,9 @@
       "r2modmanFolder": "GraveyardKeeper2",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Lazy Bear Games/Graveyard Keeper 2"
+        },
         "unityLog": {
           "windows": "{localLow}/Lazy Bear Games/Graveyard Keeper 2/Player.log"
         }
@@ -5684,6 +5766,10 @@
       "r2modmanFolder": "Moonlighter",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/11BitStudios/Moonlighter",
+          "linux": "{xdgConfig}/unity3d/11BitStudios/Moonlighter"
+        },
         "unityLog": {
           "windows": "{localLow}/11BitStudios/Moonlighter/Player.log"
         }
@@ -5758,6 +5844,9 @@
       "r2modmanFolder": "Necropolis",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Harebrained Schemes/Necropolis"
+        },
         "unityLog": {
           "windows": "{localLow}/Harebrained Schemes/Necropolis/Player.log"
         }
@@ -5865,6 +5954,9 @@
       "r2modmanFolder": "Ostranauts",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Blue Bottle Games/Ostranauts"
+        },
         "unityLog": {
           "windows": "{localLow}/Blue Bottle Games/Ostranauts/Player.log"
         }
@@ -5977,6 +6069,9 @@
       "r2modmanFolder": "PeaksOfYore",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/TraipseWare/Peaks of Yore"
+        },
         "unityLog": {
           "windows": "{localLow}/TraipseWare/Peaks of Yore/Player.log"
         }
@@ -6019,6 +6114,9 @@
       "r2modmanFolder": "Peglin",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Red Nexus Games Inc/Peglin"
+        },
         "unityLog": {
           "windows": "{localLow}/Red Nexus Games Inc/Peglin/Player.log"
         }
@@ -6094,6 +6192,10 @@
       "r2modmanFolder": "Pikuniku",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Sectordub/Pikuniku/saves",
+          "linux": "{xdgConfig}/unity3d/Sectordub/Pikuniku"
+        },
         "unityLog": {
           "windows": "{localLow}/Sectordub/Pikuniku/Player.log"
         }
@@ -6134,6 +6236,9 @@
       "r2modmanFolder": "Plasma",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/DryLicorice/Plasma/User Data"
+        },
         "unityLog": {
           "windows": "{localLow}/DryLicorice/Plasma/Player.log"
         }
@@ -6240,6 +6345,10 @@
       "r2modmanFolder": "Ravenfield",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/SteelRaven7/RavenfieldSteam",
+          "linux": "{xdgConfig}/unity3d/SteelRaven7/RavenfieldSteam"
+        },
         "unityLog": {
           "windows": "{localLow}/SteelRaven7/RavenfieldSteam/Player.log"
         }
@@ -6283,6 +6392,9 @@
       "r2modmanFolder": "ReLegend",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Magnus Games Studio/ReLegend"
+        },
         "unityLog": {
           "windows": "{localLow}/Magnus Games Studio/ReLegend/Player.log"
         }
@@ -6320,6 +6432,9 @@
       "r2modmanFolder": "ObraDinn",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/3909/ObraDinn"
+        },
         "unityLog": {
           "windows": "{localLow}/3909/ObraDinn/Player.log"
         }
@@ -6429,6 +6544,10 @@
       "r2modmanFolder": "Shapez2",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/tobspr Games/shapez 2/savegames",
+          "linux": "{xdgConfig}/unity3d/tobspr Games/shapez 2/savegames"
+        },
         "unityLog": {
           "windows": "{localLow}/tobspr Games/shapez 2/Player.log"
         }
@@ -6986,6 +7105,9 @@
       "r2modmanFolder": "ThePlanetCrafter",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/MijuGames/Planet Crafter"
+        },
         "unityLog": {
           "windows": "{localLow}/MijuGames/Planet Crafter/Player.log"
         }
@@ -7135,6 +7257,10 @@
       "r2modmanFolder": "WestofLoathing",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Asymmetric Software/West of Loathing",
+          "linux": "{xdgConfig}/unity3d/Asymmetric Software/West of Loathing"
+        },
         "unityLog": {
           "windows": "{localLow}/Asymmetric Software/West of Loathing/Player.log"
         }
@@ -7205,6 +7331,10 @@
       "r2modmanFolder": "WizardOfLegend",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Contingent99/Wizard of Legend",
+          "linux": "{xdgConfig}/unity3d/Contingent99/Wizard of Legend"
+        },
         "unityLog": {
           "windows": "{localLow}/Contingent99/Wizard of Legend/Player.log"
         }
@@ -7315,6 +7445,9 @@
       "r2modmanFolder": "WordPlay",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Game Maker's Toolkit/Word Play"
+        },
         "unityLog": {
           "windows": "{localLow}/Game Maker's Toolkit/Word Play/Player.log"
         }
@@ -7874,6 +8007,9 @@
       "r2modmanFolder": "NASB",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/GameMill Entertainment/Nickelodeon All-Star Brawl"
+        },
         "unityLog": {
           "windows": "{localLow}/GameMill Entertainment/Nickelodeon All-Star Brawl/Player.log"
         }
@@ -8389,6 +8525,9 @@
       "r2modmanFolder": "BONELAB",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Stress Level Zero/BONELAB/Saves"
+        },
         "unityLog": {
           "windows": "{localLow}/Stress Level Zero/BONELAB/Player.log"
         }
@@ -8508,6 +8647,9 @@
       "r2modmanFolder": "BONEWORKS",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Stress Level Zero/BONEWORKS"
+        },
         "unityLog": {
           "windows": "{localLow}/Stress Level Zero/BONEWORKS/Player.log"
         }
@@ -8819,6 +8961,9 @@
       "r2modmanFolder": "PatchQuest",
       "metadata": [],
       "paths": {
+        "saves": {
+          "windows": "{localLow}/Lychee Game Labs/Patch Quest/SaveData"
+        },
         "unityLog": {
           "windows": "{localLow}/Lychee Game Labs/Patch Quest/Player.log"
         }
