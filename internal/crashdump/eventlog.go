@@ -62,9 +62,9 @@ type applicationEvent struct {
 	System struct {
 		Provider struct {
 			Name string `xml:"Name,attr"`
-		}
-		EventID int
-	}
+		} `xml:"Provider"`
+		EventID int `xml:"EventID"`
+	} `xml:"System"`
 	Data []string `xml:"EventData>Data"`
 }
 
