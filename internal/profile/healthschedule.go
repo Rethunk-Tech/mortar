@@ -26,6 +26,10 @@ const (
 	HealthEvent = "profile:health"
 )
 
+// healthIdleDelay is how long after startup settles the first pass waits: a pass sizes the whole store, which the
+// first screens should not compete with. A variable so a test can shorten it.
+var healthIdleDelay = 3 * time.Minute
+
 type healthCheck struct {
 	At       time.Time `json:"at"`
 	Findings int       `json:"findings"`
@@ -137,8 +141,8 @@ func (s *Service) FlagHealth(games ...string) {
 	}
 }
 
-// RunHealthChecks checks each profile quietly once a week until ctx ends. It does nothing before settled closes (or
-// healthTick passes), so it adds no work to startup.
+// RunHealthChecks checks each profile quietly once a week until ctx ends. It does nothing until healthIdleDelay after
+// settled closes (or healthTick passes), so it adds no work to startup.
 //
 //wails:ignore
 func (s *Service) RunHealthChecks(ctx context.Context, settled <-chan struct{}) {
@@ -148,6 +152,13 @@ func (s *Service) RunHealthChecks(ctx context.Context, settled <-chan struct{}) 
 	case <-ctx.Done():
 		return
 	case <-settled:
+		idle := time.NewTimer(healthIdleDelay)
+		defer idle.Stop()
+		select {
+		case <-ctx.Done():
+			return
+		case <-idle.C:
+		}
 	case <-wait.C:
 	}
 	tick := time.NewTicker(healthTick)

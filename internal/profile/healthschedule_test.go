@@ -100,10 +100,12 @@ func TestHealthBadgeFollowsTheLatestCheck(t *testing.T) {
 }
 
 func TestRunHealthChecksWaitsForStartupToSettle(t *testing.T) {
-	t.Parallel()
 	_, svc, _ := healthEnv(t)
 	seen := &counted{}
 	svc.Emit = seen.emit
+	old := healthIdleDelay
+	healthIdleDelay = 300 * time.Millisecond
+	t.Cleanup(func() { healthIdleDelay = old })
 	ctx, cancel := context.WithCancel(context.Background())
 	settled := make(chan struct{})
 	done := make(chan struct{})
@@ -116,6 +118,10 @@ func TestRunHealthChecksWaitsForStartupToSettle(t *testing.T) {
 		t.Fatal("checked before startup settled")
 	}
 	close(settled)
+	time.Sleep(100 * time.Millisecond)
+	if seen.len() != 0 {
+		t.Fatal("checked right after startup settled instead of waiting for it to stay quiet")
+	}
 	deadline := time.Now().Add(5 * time.Second)
 	for seen.len() == 0 && time.Now().Before(deadline) {
 		time.Sleep(10 * time.Millisecond)
