@@ -29,18 +29,25 @@ function useFirstRunTour() {
   const [dismissed, setDismissed] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
+  const unseen = tourShouldRun(seen)
+  // Whether the tour may still open, so a player who has seen it pays for no polling.
+  const pending = (unseen && !dismissed) || replay
+
   // MUI keeps no open-dialog store, so watch the DOM; the tour waits while one is open.
   useEffect(() => {
+    if (!pending) {
+      return
+    }
     const sync = () => setModalOpen(anyModalOpen())
     sync()
     const id = globalThis.setInterval(sync, ANCHOR_POLL_MS)
     return () => globalThis.clearInterval(id)
-  }, [])
+  }, [pending])
 
   const onGameWithProfile = route.name === 'game' && loaded && openId !== '' && hasProfile
   const eligible = tourEligible({
     onGameWithProfile,
-    unseen: tourShouldRun(seen),
+    unseen,
     dismissed,
     replay,
     modalOpen,
