@@ -405,7 +405,8 @@ func (d Driver) buildListing(ctx context.Context, key, ua string) (string, error
 // build downloads every chunk and writes the slimmed listing to path as it goes, so neither a chunk nor the whole
 // listing is held in memory. The file is two JSON values: the packages, then the dependency names their versions
 // index, each name once (the same "Owner-Name-1.2.3" pin is named by most versions of most packages).
-// ponytail: a changed index rebuilds the listing from every chunk; reuse unchanged chunks if the download matters.
+// A changed index rebuilds the listing from every chunk (~35 MB downloaded, ~63 MB rewritten per refresh): chunks are
+// content-addressed, so none survive an index change. The lever is refreshAfter.
 func (d Driver) build(ctx context.Context, chunks []string, path, ua string) error {
 	return datadir.WriteStream(path, 0o644, func(w io.Writer) error {
 		bw := bufio.NewWriter(w)
