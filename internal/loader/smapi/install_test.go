@@ -17,7 +17,6 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -26,12 +25,7 @@ import (
 
 func write(t *testing.T, path, body string) {
 	t.Helper()
-	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(path, []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, path, []byte(body))
 }
 
 func recorded(t *testing.T) []byte {

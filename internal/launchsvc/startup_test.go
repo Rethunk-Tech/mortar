@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
@@ -78,12 +80,7 @@ func TestPrepareStartupLeavesALoaderWithoutTimingsAlone(t *testing.T) {
 	profile := t.TempDir()
 	mods := filepath.Join(profile, "mods")
 	marker := filepath.Join(profile, startupDir, measureMarker)
-	if err := os.MkdirAll(filepath.Dir(marker), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(marker, nil, 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, marker, nil)
 	if measure, err := prepareStartup(untimed{bepinex5.Loader{}}, "lethal-company", mods); err != nil || measure {
 		t.Fatalf("measure %v err %v", measure, err)
 	}

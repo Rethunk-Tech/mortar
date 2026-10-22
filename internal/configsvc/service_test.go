@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
@@ -281,12 +283,7 @@ func TestTextFilesAreMatchedByPackageAndEditedWhole(t *testing.T) {
 		"Ex-BetterStuff/icon.png":   "png",
 	} {
 		p := filepath.Join(cfg, filepath.FromSlash(name))
-		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte(body))
 	}
 	const id = "thunderstore:Ex-BetterStuff"
 	files, err := s.Files("g", "p", id)

@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // A profile moved to a folder on another filesystem (/var/tmp is not the tmpfs the store lives on here) keeps working
@@ -13,12 +15,7 @@ func TestProfileMovesToAFolderAndHome(t *testing.T) {
 	p := mustCreate(t, s, "Farm")
 	home := filepath.Join(s.root, "stardew", p.ID)
 	mod := filepath.Join(home, "mods", "x", "file.dll")
-	if err := os.MkdirAll(filepath.Dir(mod), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(mod, []byte("dll"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, mod, []byte("dll"))
 	parent := t.TempDir()
 
 	if _, err := s.MoveToFolder("stardew", p.ID, "relative"); err == nil {

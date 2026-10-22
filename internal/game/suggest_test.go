@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"slices"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestSuggestFoldersFindsACopyTwoLevelsDown(t *testing.T) {
@@ -15,12 +17,7 @@ func TestSuggestFoldersFindsACopyTwoLevelsDown(t *testing.T) {
 	}
 	want := filepath.Join(home, "Games", "Heroic", "Stardew Valley")
 	marker := filepath.Join(want, filepath.FromSlash(info.MarkerPath()))
-	if err := os.MkdirAll(filepath.Dir(marker), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(marker, nil, 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, marker, nil)
 	if err := os.MkdirAll(filepath.Join(home, "Desktop", "notes"), 0o700); err != nil {
 		t.Fatal(err)
 	}

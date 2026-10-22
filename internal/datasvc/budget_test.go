@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestMeasureBudgetsSplitsStoreSharedDeployedAndSaves(t *testing.T) {
@@ -12,12 +14,7 @@ func TestMeasureBudgetsSplitsStoreSharedDeployedAndSaves(t *testing.T) {
 	write := func(rel, body string) {
 		t.Helper()
 		p := filepath.Join(root, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte(body))
 	}
 	a, b := "0123456789abcdef", "fedcba9876543210"
 	write("profiles/stardew/"+a+"/profile.json", `{"entries":[{"key":"one"},{"key":"two","extraStoreKeys":["extra"]}]}`)

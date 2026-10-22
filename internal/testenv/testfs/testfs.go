@@ -44,13 +44,19 @@ func WriteZip(t testing.TB, path string, files map[string]string) string {
 func WriteFile(t testing.TB, root, rel, body string) string {
 	t.Helper()
 	p := filepath.Join(root, filepath.FromSlash(rel))
-	if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(p, []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	WriteAt(t, p, []byte(body))
 	return p
+}
+
+// WriteAt writes body at path, creating its folder.
+func WriteAt(t testing.TB, path string, body []byte) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := fsx.WriteFile(path, body, 0o600); err != nil {
+		t.Fatal(err)
+	}
 }
 
 // DataHome points the per-user data folder at a fresh temp dir on every platform and returns it.

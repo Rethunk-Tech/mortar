@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -59,12 +61,7 @@ func TestACatalogOnlyGameNeedsNoCode(t *testing.T) {
 		filepath.Join(root, "steamapps", "libraryfolders.vdf"):     "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \"" + root + "\"\n}\n}\n",
 		filepath.Join(root, "steamapps", "appmanifest_999999.acf"): "\"AppState\"\n{\n\"installdir\" \"Catalog Only\"\n}\n",
 	} {
-		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, path, []byte(body))
 	}
 	if err := g.ValidInstall(dir); err != nil {
 		t.Fatal(err)

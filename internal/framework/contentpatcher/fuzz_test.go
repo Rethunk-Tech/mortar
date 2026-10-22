@@ -1,10 +1,11 @@
 package contentpatcher
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // FuzzContentPack feeds a pack's content.json and one file it can name (as an Include, a Load or EditData source, a
@@ -38,12 +39,7 @@ func FuzzContentPack(f *testing.F) {
 			files[filepath.Join(root, name)] = data
 		}
 		for p, b := range files {
-			if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-				t.Fatal(err)
-			}
-			if err := os.WriteFile(p, b, 0o600); err != nil {
-				t.Fatal(err)
-			}
+			testfs.WriteAt(t, p, b)
 		}
 		pack := cachedPack{mentions: map[string]bool{}}
 		pack.schema = readConfigSchema(root)

@@ -14,12 +14,7 @@ import (
 
 func writeTimed(t *testing.T, path, body string, when time.Time) {
 	t.Helper()
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, path, []byte(body))
 	if !when.IsZero() {
 		if err := os.Chtimes(path, when, when); err != nil {
 			t.Fatal(err)

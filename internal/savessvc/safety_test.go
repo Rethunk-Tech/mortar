@@ -2,12 +2,12 @@ package savessvc
 
 import (
 	"context"
-	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -100,12 +100,7 @@ func (e saveEnv) alphaItem(t *testing.T) {
 	src := t.TempDir()
 	for rel, body := range files {
 		p := filepath.Join(src, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := fsx.WriteFile(p, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte(body))
 	}
 	if err := e.items.AddDir(t.Context(), "stardew", key, src); err != nil {
 		t.Fatal(err)

@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -111,12 +113,7 @@ func TestScheduledIgnoresBackupsStampedInTheFuture(t *testing.T) {
 func TestNoBackupWithoutASave(t *testing.T) {
 	saves := filepath.Join(t.TempDir(), "Lethal Company")
 	for _, p := range []string{"Player.log", "LCGeneralSaveData", "InputUtils/binds.json", "Empty_1/notes.txt"} {
-		if err := os.MkdirAll(filepath.Dir(filepath.Join(saves, p)), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := fsx.WriteFile(filepath.Join(saves, p), []byte("x"), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, filepath.Join(saves, p), []byte("x"))
 	}
 	out := filepath.Join(t.TempDir(), "backups")
 	now := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)

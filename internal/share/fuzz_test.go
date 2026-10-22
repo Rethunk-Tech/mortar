@@ -6,10 +6,11 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
-	"os"
 	"path"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/andybalholm/brotli"
 
@@ -133,12 +134,7 @@ func fuzzFile(f *testing.F) []byte {
 	dir := f.TempDir()
 	for name, body := range map[string]string{"one/config.json": `{"a":1}`, "two/data/deep.json": `{"b":2}`} {
 		p := filepath.Join(dir, filepath.FromSlash(name))
-		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-			f.Fatal(err)
-		}
-		if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
-			f.Fatal(err)
-		}
+		testfs.WriteAt(f, p, []byte(body))
 	}
 	var buf bytes.Buffer
 	if _, err := Write(&buf, "stardew", p, dir); err != nil {

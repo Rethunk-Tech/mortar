@@ -6,6 +6,8 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
@@ -91,12 +93,7 @@ func TestSettingRowsFollowTheProfilesGameSettingsMode(t *testing.T) {
 	p := testenv.Profile(t, profiles, id, "A")
 	home := t.TempDir()
 	opts := filepath.Join(home, "Documents", "G", "Options.ini")
-	if err := os.MkdirAll(filepath.Dir(opts), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(opts, []byte("[o]\nModsDisabled = 1\n"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, opts, []byte("[o]\nModsDisabled = 1\n"))
 	s := NewService(home, set, profiles, nil)
 
 	if got := s.gameSettingFailures(id, p.ID); len(got) != 0 {

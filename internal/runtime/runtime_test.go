@@ -7,8 +7,9 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 var stardewSaves = components.PathTemplate{
@@ -93,12 +94,7 @@ func TestVersionReadsConfigInfoThenCompatToolMapping(t *testing.T) {
 	inst := Install{Store: "steam", Dir: dir, AppID: "1966720", Platform: "windows", GOOS: "linux"}
 	write := func(rel, body string) {
 		p := filepath.Join(root, rel)
-		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := fsx.WriteFile(p, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte(body))
 	}
 	if got := Version(inst); got != "" {
 		t.Fatalf("no Steam data: %q", got)

@@ -2,11 +2,12 @@ package backup
 
 import (
 	"archive/zip"
-	"os"
 	"path/filepath"
 	"slices"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
@@ -17,12 +18,7 @@ func lethalCompany(t *testing.T) saves.Layout {
 	t.Helper()
 	dir := filepath.Join(t.TempDir(), "Lethal Company")
 	for _, name := range []string{"LCSaveFile1", "LCSaveFile2", "LCChallengeFile", "LCGeneralSaveData", "Player.log", "InputUtils/binds.json"} {
-		if err := os.MkdirAll(filepath.Dir(filepath.Join(dir, name)), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := fsx.WriteFile(filepath.Join(dir, name), []byte("v1 "+name), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, filepath.Join(dir, name), []byte("v1 "+name))
 	}
 	return saves.Layout{Dir: dir, Files: []string{"LCSaveFile*", "LCChallengeFile"}}
 }
@@ -96,12 +92,7 @@ func TestFileSetSavesInFoldersBackUpAndRestore(t *testing.T) {
 		"worlds_local/Midgard_backup_auto-20260101120000.fwl", "worlds_local/Midgard_backup_auto-20260101120000.db",
 		"Player.log",
 	} {
-		if err := os.MkdirAll(filepath.Dir(filepath.Join(dir, name)), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := fsx.WriteFile(filepath.Join(dir, name), []byte("v1 "+name), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, filepath.Join(dir, name), []byte("v1 "+name))
 	}
 	l := saves.Layout{Dir: dir, Files: []string{"characters_local/*.fch", "worlds_local/*.fwl", "!*_backup_*"}, Companions: []string{".db", ".db-wal"}}
 	if names, err := l.Names(); err != nil || !slices.Equal(names, []string{"characters_local/Ragnar.fch", "worlds_local/Midgard.fwl"}) {

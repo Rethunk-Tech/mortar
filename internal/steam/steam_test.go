@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
@@ -110,12 +112,7 @@ func TestFixture(t *testing.T) {
 		t.Fatalf("missing hero = %q", got)
 	}
 	nested := filepath.Join(root, "appcache", "librarycache", "2", "4e1706e4", "library_hero.jpg")
-	if err := os.MkdirAll(filepath.Dir(nested), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(nested, []byte("jpg"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, nested, []byte("jpg"))
 	if got := s.HeroArt("2"); got != nested {
 		t.Fatalf("nested hero = %q", got)
 	}
@@ -125,12 +122,7 @@ func TestLaunchOptions(t *testing.T) {
 	root := t.TempDir()
 	write := func(rel, body string) {
 		p := filepath.Join(root, rel)
-		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte(body))
 	}
 	write("config/loginusers.vdf", `"users" { "76561198000000001" { "AccountName" "a" "MostRecent" "0" } "76561198000000002" { "AccountName" "b" "MostRecent" "1" } }`)
 	s := Steam{Root: root}

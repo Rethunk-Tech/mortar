@@ -1,10 +1,11 @@
 package backup
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/saves"
@@ -14,12 +15,7 @@ func TestRestoreCopyPutsTheGamesOwnCopyBack(t *testing.T) {
 	dir, backups := t.TempDir(), t.TempDir()
 	write := func(name, body string) {
 		p := filepath.Join(dir, filepath.FromSlash(name))
-		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte(body))
 	}
 	read := func(name string) string {
 		b, err := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(name)))

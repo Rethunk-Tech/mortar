@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/gamesettings"
@@ -101,12 +103,7 @@ func TestGameSettingsRestoreKeepsGameChanges(t *testing.T) {
 func TestGameSettingsLeftoverRestoreRunsAtStartup(t *testing.T) {
 	svc, p, config := newGameSettingsService(t)
 	startup := filepath.Join(config, "StardewValley", "startup_preferences")
-	if err := os.MkdirAll(filepath.Dir(startup), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(startup, []byte(`<startup_preferences><windowMode>fullscreen</windowMode></startup_preferences>`), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, startup, []byte(`<startup_preferences><windowMode>fullscreen</windowMode></startup_preferences>`))
 	mode := "windowed"
 	if err := svc.SetGameSettings("stardew", p.ID, gamesettings.Settings{WindowMode: &mode}); err != nil {
 		t.Fatal(err)

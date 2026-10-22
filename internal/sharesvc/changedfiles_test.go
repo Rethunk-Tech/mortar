@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 )
@@ -30,12 +32,7 @@ func changedSender(t *testing.T, s *Service) (id string) {
 		"changed/Mods/old/old_settings.cfg": "held",
 	} {
 		to := filepath.Join(dir, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(to, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, to, []byte(body))
 	}
 	return p.ID
 }

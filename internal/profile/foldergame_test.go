@@ -623,12 +623,7 @@ func TestFolderGameMovesThePlayersModsFolderInWhereEachFileSat(t *testing.T) {
 		"Old/old.packageoff":        "8",
 	} {
 		p := filepath.Join(mods, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte(body))
 	}
 	preview, err := e.PreviewGameMods(folderGame, mods)
 	if err != nil {

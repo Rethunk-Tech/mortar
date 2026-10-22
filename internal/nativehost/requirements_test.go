@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
 )
 
@@ -30,12 +32,7 @@ func TestModReplyCarriesRequirements(t *testing.T) {
 	dir := listenControl(t, `{"global":{"lastProfile":{"stardew":"p1"}}}`)
 	cache := []byte(`{"fetched":"2026-01-01T00:00:00Z","value":{"page":{"requirements":[{"modId":1915,"name":"Content Patcher"},{"modId":2400,"name":"GMCM"},{"name":"SMAPI","external":true}]},"partial":true}}`)
 	path := filepath.Join(dir, "cache", filepath.FromSlash(nexussvc.PageName("stardewvalley", 2400)))
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, cache, 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, path, cache)
 	pdir := filepath.Join(dir, "profiles", "stardew", "p1")
 	if err := os.MkdirAll(pdir, 0o700); err != nil {
 		t.Fatal(err)

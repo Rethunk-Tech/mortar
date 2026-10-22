@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/sandbox"
 )
@@ -175,12 +177,7 @@ func TestStopAsksAWineGameToCloseFirst(t *testing.T) {
 func TestLinkedFromMatchesALoaderDeployedAsALink(t *testing.T) {
 	game, staging := t.TempDir(), t.TempDir()
 	target := filepath.Join(staging, "SMAPI 4.3.2", "StardewModdingAPI")
-	if err := os.MkdirAll(filepath.Dir(target), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(target, []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, target, []byte("x"))
 	if err := os.Symlink(target, filepath.Join(game, "StardewModdingAPI")); err != nil {
 		t.Fatal(err)
 	}

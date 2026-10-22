@@ -25,12 +25,7 @@ func replacedService(t *testing.T) (*Service, string, string, string) {
 		t.Fatal(err)
 	}
 	kept := filepath.Join(dir, "replaced", "BepInEx", "config", "x.cfg")
-	if err := os.MkdirAll(filepath.Dir(kept), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(kept, []byte("old"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, kept, []byte("old"))
 	return NewService(t.TempDir(), set, profiles, nil), p.ID, dir, kept
 }
 

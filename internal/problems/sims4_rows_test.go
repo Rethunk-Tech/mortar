@@ -3,11 +3,12 @@
 package problems
 
 import (
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
@@ -34,12 +35,7 @@ func sims4Rows(t *testing.T, mode, body string) []LoadFailure {
 	home := t.TempDir()
 	root := filepath.Join(home, ".local", "share", "Steam")
 	put := func(p, s string) {
-		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, []byte(s), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte(s))
 	}
 	put(filepath.Join(root, "steamapps", "libraryfolders.vdf"), "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \""+root+"\"\n}\n}\n")
 	put(filepath.Join(root, "steamapps", "appmanifest_1222670.acf"), "\"AppState\"\n{\n\"installdir\" \"The Sims 4\"\n}\n")

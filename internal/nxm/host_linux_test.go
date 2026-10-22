@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/nativehost"
 )
@@ -75,12 +77,7 @@ func TestFlatpakRestoreDropsOurDefaultFromTheHostsMimeapps(t *testing.T) {
 func TestFlatpakForwardsToThePreviousHandlerOnTheHost(t *testing.T) {
 	l, launched := flatpakLinux(t, "")
 	entry := filepath.Join(l.dataHome, "applications", "other.desktop")
-	if err := os.MkdirAll(filepath.Dir(entry), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(entry, []byte("[Desktop Entry]\nExec=other %u\n"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, entry, []byte("[Desktop Entry]\nExec=other %u\n"))
 	if err := l.ForwardOther("nxm://stardewvalley/mods/1", "other.desktop"); err != nil {
 		t.Fatal(err)
 	}

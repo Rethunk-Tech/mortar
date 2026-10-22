@@ -1,10 +1,11 @@
 package launchsvc
 
 import (
-	"os"
 	"path/filepath"
 	"slices"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
@@ -41,12 +42,7 @@ func TestPlanRootsResolvesEachRoleOnceAndRefusesAnUnknownOne(t *testing.T) {
 		filepath.Join(steamRoot, "steamapps", "libraryfolders.vdf"):   "\"libraryfolders\"\n{\n\"0\"\n{\n\"path\" \"" + steamRoot + "\"\n}\n}\n",
 		filepath.Join(steamRoot, "steamapps", "appmanifest_4242.acf"): "\"AppState\"\n{\n\"installdir\" \"Roots Game\"\n}\n",
 	} {
-		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, path, []byte(body))
 	}
 	set, err := settings.Open()
 	if err != nil {

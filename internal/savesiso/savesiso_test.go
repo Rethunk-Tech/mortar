@@ -6,17 +6,14 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func write(t *testing.T, p, body string) {
 	t.Helper()
-	if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, p, []byte(body))
 }
 
 func read(t *testing.T, p string) string {

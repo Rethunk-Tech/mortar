@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/gamestore"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
@@ -61,12 +63,7 @@ func steamWithSMAPILine(t *testing.T, gameDir string) *steam.Steam {
 			strings.ReplaceAll(filepath.Join(gameDir, "StardewModdingAPI.exe"), `\`, `\\`) + `\" %command%" } } } } } }`,
 	} {
 		path := filepath.Join(root, rel)
-		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, path, []byte(body))
 	}
 	return &steam.Steam{Root: root}
 }
@@ -224,12 +221,7 @@ func TestWindowsStartsSMAPIDirectlyUntilSteamNamesIt(t *testing.T) {
 	root := t.TempDir()
 	write := func(rel, body string) {
 		p := filepath.Join(root, rel)
-		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte(body))
 	}
 	write("config/loginusers.vdf", `"users" { "76561198000000002" { "AccountName" "b" "MostRecent" "1" } }`)
 	write("userdata/39734274/config/localconfig.vdf", `"UserLocalConfigStore" { "Software" { "Valve" { "Steam" { "apps" { "413150" { "LaunchOptions" "-novid" } } } } } }`)

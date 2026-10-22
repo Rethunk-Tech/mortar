@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -15,12 +17,7 @@ import (
 func TestSharedSMAPIIsDetectedAndUnsharedBeforeInstall(t *testing.T) {
 	staging, game := t.TempDir(), t.TempDir()
 	write := func(path, body string) {
-		if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, path, []byte(body))
 	}
 	write(filepath.Join(staging, "StardewModdingAPI.dll"), "dll")
 	write(filepath.Join(staging, "StardewModdingAPI.deps.json"), "deps")

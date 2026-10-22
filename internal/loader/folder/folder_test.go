@@ -214,12 +214,7 @@ func TestAModsFolderInsideTheInstallIsFilledAndPurgedWithTheInstallUnchanged(t *
 		"mods/modX/own.bundle":  "player's mod",
 	} {
 		full := filepath.Join(install, filepath.FromSlash(path))
-		if err := os.MkdirAll(filepath.Dir(full), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(full, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, full, []byte(body))
 	}
 	info, _ := components.Game(gameID)
 	modsDir, err := runtime.Resolve(runtime.Install{Game: gameID, Dir: install, Platform: goruntime.GOOS, Home: t.TempDir()}, info.Paths["mods"])

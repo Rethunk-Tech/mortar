@@ -90,12 +90,7 @@ func TestOnlyLongFilesOfTheModsFolderAreListedWithTheirMod(t *testing.T) {
 	// A switched-off mod's folder starts with a dot, and the game never reads it.
 	off := pathOf(t, filepath.Join(modsDir, "nexus-3-4", ".Off"), maxPath+3)
 	for _, p := range []string{long, off, filepath.Join(modsDir, "loose", "short.json")} {
-		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, []byte("{}"), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte("{}"))
 	}
 	got := longModsFolderPaths(modsDir, []framework.Mod{{Key: "nexus-1-2", Folder: deep}})
 	if len(got) != 1 || got[0].key != "nexus-1-2" || got[0].path != long {
@@ -114,12 +109,7 @@ func TestAModsFolderFileIsHeldByTheNearestModFolderOrByNone(t *testing.T) {
 		pathOf(t, filepath.Join(modsDir, "Unknown", "deep"), maxPath+3),
 	}
 	for _, p := range files {
-		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, []byte("x"), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte("x"))
 	}
 	got := longModsFolderPaths(modsDir, []framework.Mod{{Key: "nexus-1-2", Folder: outer}, {Key: "nexus-3-4", Folder: inner}})
 	want := []readPath{
@@ -271,12 +261,7 @@ func TestProblemsWaitsForTheLongPathWalk(t *testing.T) {
 		t.Fatal(err)
 	}
 	long := pathOf(t, filepath.Join(modsDir, "Loose"), maxPath+2)
-	if err := os.MkdirAll(filepath.Dir(long), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(long, []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, long, []byte("x"))
 	defer func(was bool) { checkLongPaths = was }(checkLongPaths)
 	checkLongPaths = true
 	s := NewService(t.TempDir(), set, profiles, nil)

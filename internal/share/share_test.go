@@ -16,6 +16,8 @@ import (
 	"testing"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/andybalholm/brotli"
@@ -330,12 +332,7 @@ func modsDirWith(t *testing.T, files map[string]string) string {
 	dir := t.TempDir()
 	for name, body := range files {
 		p := filepath.Join(dir, filepath.FromSlash(name))
-		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte(body))
 	}
 	return dir
 }

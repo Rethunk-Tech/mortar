@@ -21,12 +21,7 @@ func TestMeasureReflinkCountedOnce(t *testing.T) {
 		buf[i] = byte(i)
 	}
 	store := filepath.Join(root, "store", "g", "k", "m.bin")
-	if err := os.MkdirAll(filepath.Dir(store), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(store, buf, 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, store, buf)
 	prof := filepath.Join(root, "profiles", "g", "0123456789abcdef", "mods", "k", "m.bin")
 	if err := os.MkdirAll(filepath.Dir(prof), 0o700); err != nil {
 		t.Fatal(err)

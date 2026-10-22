@@ -4,11 +4,12 @@ import (
 	"archive/zip"
 	"bytes"
 	"errors"
-	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -16,12 +17,7 @@ import (
 func writeIn(t *testing.T, root, rel string, body []byte) {
 	t.Helper()
 	to := filepath.Join(root, filepath.FromSlash(rel))
-	if err := os.MkdirAll(filepath.Dir(to), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(to, body, 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, to, body)
 }
 
 func changedProfile(t *testing.T) (dir string, p profile.Profile) {

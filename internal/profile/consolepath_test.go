@@ -6,6 +6,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // samePath compares paths the way the OS does: Windows ignores case, and EvalSymlinks may normalise it.
@@ -21,12 +23,7 @@ func TestConsoleRevealDirAllowsModsAndGameRoots(t *testing.T) {
 	mods := t.TempDir()
 	gameDir := t.TempDir()
 	file := filepath.Join(mods, "FTM", "manifest.json")
-	if err := os.MkdirAll(filepath.Dir(file), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(file, []byte("{}"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, file, []byte("{}"))
 	got, err := ConsoleRevealDir(file, []string{mods, gameDir})
 	if err != nil {
 		t.Fatal(err)

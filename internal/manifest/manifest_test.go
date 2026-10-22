@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestParseLenient(t *testing.T) {
@@ -68,12 +68,7 @@ func TestParseLenient(t *testing.T) {
 func write(t *testing.T, root, rel, body string) {
 	t.Helper()
 	p := filepath.Join(root, filepath.FromSlash(rel))
-	if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(p, []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, p, []byte(body))
 }
 
 func TestScan(t *testing.T) {

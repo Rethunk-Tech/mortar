@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -25,12 +27,7 @@ func item(key string) string {
 
 func write(t *testing.T, path, body string) {
 	t.Helper()
-	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, path, []byte(body))
 }
 
 func TestUniqueIDBoundaries(t *testing.T) {
@@ -311,12 +308,7 @@ func TestWrittenSinceNamesTheSavesARunWrote(t *testing.T) {
 	start := time.Now().Add(-time.Minute)
 	write := func(name string, at time.Time) {
 		path := filepath.Join(dir, filepath.FromSlash(name))
-		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(path, []byte("x"), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, path, []byte("x"))
 		if err := os.Chtimes(path, at, at); err != nil {
 			t.Fatal(err)
 		}

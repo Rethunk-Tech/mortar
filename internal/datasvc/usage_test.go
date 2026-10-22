@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -13,12 +15,7 @@ func TestMeasureSizesSkipSymlinks(t *testing.T) {
 	write := func(rel string, n int) {
 		t.Helper()
 		p := filepath.Join(root, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, make([]byte, n), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, make([]byte, n))
 	}
 	write("profiles/stardew/0123456789abcdef/profile.json", 20)
 	write("profiles/stardew/0123456789abcdef/mods/a.bin", 100)
@@ -52,12 +49,7 @@ func TestMeasureGameTotals(t *testing.T) {
 	write := func(rel string, n int) {
 		t.Helper()
 		p := filepath.Join(root, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, make([]byte, n), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, make([]byte, n))
 	}
 	write("profiles/alpha/p1/profile.json", 4)
 	write("profiles/alpha/p1/mods/a.bin", 100)
@@ -127,12 +119,7 @@ func TestMeasureGameTotals(t *testing.T) {
 func TestMeasureSharedSavedHardlink(t *testing.T) {
 	root := t.TempDir()
 	store := filepath.Join(root, "store", "g", "k", "m.bin")
-	if err := os.MkdirAll(filepath.Dir(store), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(store, make([]byte, 8192), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, store, make([]byte, 8192))
 	prof := filepath.Join(root, "profiles", "g", "0123456789abcdef", "mods", "k", "m.bin")
 	if err := os.MkdirAll(filepath.Dir(prof), 0o700); err != nil {
 		t.Fatal(err)
@@ -154,12 +141,7 @@ func TestMeasureModUsageAggregatesStoreAndProfileCopies(t *testing.T) {
 	write := func(rel string, n int) {
 		t.Helper()
 		p := filepath.Join(root, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, make([]byte, n), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, make([]byte, n))
 	}
 	items := store.OpenAt(filepath.Join(root, "store"))
 	for key, n := range map[string]int{"nexus-1-1": 100, "local-aa": 40} {
@@ -218,12 +200,7 @@ func TestMeasureModUsageAggregatesStoreAndProfileCopies(t *testing.T) {
 func TestMeasureReportsProgress(t *testing.T) {
 	root := t.TempDir()
 	p := filepath.Join(root, "store", "f.bin")
-	if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(p, []byte("abc"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, p, []byte("abc"))
 	var last Progress
 	if _, err := Measure(root, func(p Progress) { last = p }); err != nil {
 		t.Fatal(err)

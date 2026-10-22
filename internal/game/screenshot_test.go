@@ -3,9 +3,10 @@ package game
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
@@ -19,12 +20,7 @@ func TestScreenshotMiddlewareServesOnlyTheFolder(t *testing.T) {
 		t.Fatal(err)
 	}
 	for path, body := range map[string]string{filepath.Join(dir, "farm.png"): "farm", filepath.Join(filepath.Dir(dir), "secret.png"): "secret"} {
-		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, path, []byte(body))
 	}
 	serve := ScreenshotMiddleware(home, func() settings.Settings { return settings.Settings{} })(http.NotFoundHandler())
 	for url, want := range map[string]int{

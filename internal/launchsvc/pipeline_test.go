@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/datadir/datadirtest"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -59,12 +61,7 @@ func TestEnsureRuntimeEditsAnExistingProtonPrefix(t *testing.T) {
 	if err := svc.ensureRuntime(inst, reqs, false); !errors.Is(err, errNoPrefix) {
 		t.Fatalf("a Steam launch cannot carry it without a prefix: %v", err)
 	}
-	if err := os.MkdirAll(filepath.Dir(reg), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(reg, []byte("WINE REGISTRY Version 2\n"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, reg, []byte("WINE REGISTRY Version 2\n"))
 	if err := svc.ensureRuntime(inst, reqs, false); err != nil {
 		t.Fatal(err)
 	}

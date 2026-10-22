@@ -6,11 +6,12 @@ import (
 	"errors"
 	"io"
 	"net"
-	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 // eicar is the standard antivirus test string, assembled at run time so no file in the repo holds it whole.
@@ -23,12 +24,7 @@ func writeTree(t *testing.T, files map[string]string) string {
 	dir := t.TempDir()
 	for rel, body := range files {
 		p := filepath.Join(dir, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte(body))
 	}
 	return dir
 }

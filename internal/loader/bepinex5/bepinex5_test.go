@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -93,12 +95,7 @@ func TestAnOlderPackOverANewerOneKeepsNoneOfItsFiles(t *testing.T) {
 		"BepInEx/config/BepInEx.cfg":     "[Logging.Console]\nEnabled = true\n",
 		"BepInEx/plugins/Ns-Mod/Mod.dll": "plugin",
 	} {
-		if err := os.MkdirAll(filepath.Dir(filepath.Join(root, name)), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := fsx.WriteFile(filepath.Join(root, name), []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, filepath.Join(root, name), []byte(body))
 	}
 	got, err := InstallPack(buildPack(t, ""), root)
 	if err != nil || got.Doorstop != 3 {
@@ -345,12 +342,7 @@ func TestLaunchSettingsEditOnlyTheirLines(t *testing.T) {
 	}
 	cfg := configFile(dir)
 	orig := "## kept\r\n[Logging.Console]\r\n\r\nEnabled = true\r\nLogLevels = Fatal, Error, Warning, Message, Info\r\n\r\n[Other]\r\nX = 1\r\n"
-	if err := os.MkdirAll(filepath.Dir(cfg), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(cfg, []byte(orig), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, cfg, []byte(orig))
 	if err := l.SetLaunchSetting(dir, "console", "false"); err != nil {
 		t.Fatal(err)
 	}
@@ -377,12 +369,7 @@ func TestLaunchHidesTheConsoleWindowUnlessChosen(t *testing.T) {
 	ctx := t.Context()
 	dir := t.TempDir()
 	cfg := configFile(dir)
-	if err := os.MkdirAll(filepath.Dir(cfg), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(cfg, []byte("[Logging.Console]\n\nEnabled = true\n"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, cfg, []byte("[Logging.Console]\n\nEnabled = true\n"))
 	l := Loader{}
 	before, _ := readConfig(dir)
 	if err := l.Contribute(ctx, launchplan.New(launchplan.ModeProfile), loader.ProfileView{Dir: dir}); err != nil {

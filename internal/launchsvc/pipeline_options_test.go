@@ -4,7 +4,6 @@ package launchsvc
 
 import (
 	"context"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -67,12 +66,7 @@ func optionsEnv(t *testing.T, mode string) (svc *Service, profileID, target stri
 
 func writeFile(t *testing.T, p, body string) {
 	t.Helper()
-	if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := fsx.WriteFile(p, []byte(body), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, p, []byte(body))
 }
 
 func readFile(t *testing.T, p string) string {

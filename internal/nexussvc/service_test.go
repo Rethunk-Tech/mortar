@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -184,12 +183,7 @@ func TestDetailsRefetchesUnversionedCache(t *testing.T) {
 		t.Fatal(err)
 	}
 	path := filepath.Join(m.CacheDir, "nexus", "details-stardewvalley-541.json")
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, b, 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, path, b)
 	hits.Store(0)
 	d, err := s.Details(ctx, "stardew", 541)
 	if err != nil || d.Changelogs[0].Version != "1.8.2" {

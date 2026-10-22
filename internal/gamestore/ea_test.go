@@ -1,11 +1,12 @@
 package gamestore
 
 import (
-	"os"
 	"path/filepath"
 	"runtime"
 	"slices"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 )
@@ -19,12 +20,7 @@ func eaGame() components.GameInfo {
 
 func touchFile(t *testing.T, p string) {
 	t.Helper()
-	if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(p, nil, 0o600); err != nil {
-		t.Fatal(err)
-	}
+	testfs.WriteAt(t, p, nil)
 }
 
 func TestEADirsAreWindowsOnlyAndUserFoldersComeFirst(t *testing.T) {

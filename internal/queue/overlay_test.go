@@ -3,10 +3,11 @@ package queue
 import (
 	"archive/zip"
 	"context"
-	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -99,12 +100,7 @@ func TestStoredOptionalFileInstallsOverItsMainFile(t *testing.T) {
 	add := func(key string, files map[string]string) {
 		dir := t.TempDir()
 		for rel, body := range files {
-			if err := os.MkdirAll(filepath.Dir(filepath.Join(dir, rel)), 0o700); err != nil {
-				t.Fatal(err)
-			}
-			if err := os.WriteFile(filepath.Join(dir, rel), []byte(body), 0o600); err != nil {
-				t.Fatal(err)
-			}
+			testfs.WriteAt(t, filepath.Join(dir, rel), []byte(body))
 		}
 		if err := items.AddDir(t.Context(), "stardew", key, dir); err != nil {
 			t.Fatal(err)

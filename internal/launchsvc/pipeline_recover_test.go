@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/deploy"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -31,12 +33,7 @@ func leaveCrashedLaunch(t *testing.T, svc *Service) crashedLaunch {
 	c.dll = filepath.Join(c.install, "winhttp.dll")
 	src := filepath.Join(root, "store", "winhttp.dll")
 	for path, body := range map[string]string{c.dll: "the player's own", src: "proxy", filepath.Join(c.saves, "shared.sav"): "shared"} {
-		if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := fsx.WriteFile(path, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, path, []byte(body))
 	}
 	var err error
 	if c.deployDir, err = journalDir(sl.inst); err != nil {
@@ -189,12 +186,7 @@ func TestAFailedDeployTakesBackWhatItPlaced(t *testing.T) {
 	inst := game.Install{ID: "install-a", Dir: filepath.Join(root, "game")}
 	good, missing := filepath.Join(root, "good.dll"), filepath.Join(root, "missing.dll")
 	for path, body := range map[string]string{good: "proxy", filepath.Join(inst.Dir, "a.dll"): "the player's own"} {
-		if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
-			t.Fatal(err)
-		}
-		if err := fsx.WriteFile(path, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, path, []byte(body))
 	}
 	plan := &launchplan.Plan{Files: []launchplan.PlanFile{{Src: good, Dst: "a.dll"}}}
 	// Canceled once the journal is written: the deploy fails with its record on disk and nothing placed yet.

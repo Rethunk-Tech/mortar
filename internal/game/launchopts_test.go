@@ -1,9 +1,10 @@
 package game
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestLaunchOptions(t *testing.T) {
@@ -22,12 +23,7 @@ func TestLaunchOptions(t *testing.T) {
 	root := filepath.Join(h, ".local", "share", "Steam")
 	write := func(rel, body string) {
 		p := filepath.Join(root, rel)
-		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte(body))
 	}
 	write("config/loginusers.vdf", `"users" { "76561198000000002" { "AccountName" "b" "MostRecent" "1" } }`)
 	write("userdata/39734274/config/localconfig.vdf", `"UserLocalConfigStore" { "Software" { "Valve" { "Steam" { "apps" {

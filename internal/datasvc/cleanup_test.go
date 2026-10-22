@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
+
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -17,12 +19,7 @@ func TestSelectKeepsReferencedAndApplyRemovesTheRest(t *testing.T) {
 	put := func(rel string, body []byte) {
 		t.Helper()
 		p := filepath.Join(root, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, body, 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, body)
 	}
 	addItem(t, items, "keep", map[string]string{"x/a.bin": "keep"})
 	addItem(t, items, "gone", map[string]string{"b.bin": "gone!"})
@@ -118,12 +115,7 @@ func TestSelectDropsRetiredCacheAndExpiresNexusPages(t *testing.T) {
 	}
 	for rel, body := range files {
 		p := filepath.Join(root, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(p, body, 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, body)
 	}
 	preview, err := Select(root, items, nil, now, nil)
 	if err != nil {

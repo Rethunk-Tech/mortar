@@ -1,9 +1,10 @@
 package savedgroups
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
@@ -17,12 +18,7 @@ func addFiles(t *testing.T, items *modstore.Store, key string, files map[string]
 	src := t.TempDir()
 	for rel, body := range files {
 		p := filepath.Join(src, filepath.FromSlash(rel))
-		if err := os.MkdirAll(filepath.Dir(p), 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := fsx.WriteFile(p, []byte(body), 0o600); err != nil {
-			t.Fatal(err)
-		}
+		testfs.WriteAt(t, p, []byte(body))
 	}
 	if err := items.AddDir(t.Context(), "stardew", key, src); err != nil {
 		t.Fatal(err)
