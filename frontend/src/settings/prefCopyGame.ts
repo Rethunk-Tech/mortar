@@ -14,7 +14,7 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
           value: 'edit',
           label: i18n._(msg`Edit`),
           hint: i18n._(
-            msg`Switch them on in this profile's own copy of the file before each launch. Your own file is never changed.`,
+            msg`Enable them in this profile's own copy of the file before each launch. Your own file is never changed.`,
           ),
         },
         {

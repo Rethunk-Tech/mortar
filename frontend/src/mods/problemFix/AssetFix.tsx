@@ -49,7 +49,7 @@ export function AssetFix({
   const fixes = (problem.asset.fixes ?? []).map((fix) => (
     <Tooltip
       key={`${fix.id}/${fix.field}`}
-      title={t`In ${fix.name}; turns off its edits here`}
+      title={t`In ${fix.name}; disables its edits here`}
       describeChild={true}
     >
       <span>

@@ -14,7 +14,7 @@ export function shortcutLabels(i18n: I18n): Record<ShortcutId, string> {
     'select-all-mods': i18n._(msg`Select all mods`),
     'mod-up': i18n._(msg`Focus the previous mod`),
     'mod-down': i18n._(msg`Focus the next mod`),
-    'mod-toggle': i18n._(msg`Switch the focused mod on or off`),
+    'mod-toggle': i18n._(msg`Enable or disable the focused mod`),
     'mod-details': i18n._(msg`Open focused mod details`),
     'mod-remove': i18n._(msg`Remove the focused mod`),
     'tab-browse': i18n._(msg`Switch to Browse`),

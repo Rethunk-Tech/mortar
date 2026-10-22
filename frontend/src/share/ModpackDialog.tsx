@@ -240,7 +240,7 @@ function Fields({
                 onChange={(e) => set('includeDisabled', e.target.checked)}
               />
             }
-            label={t`Include mods that are switched off`}
+            label={t`Include disabled mods`}
           />
           <ConfigFiles
             all={form.configs ?? []}

@@ -254,6 +254,10 @@ msgstr "On Windows, Steam starts the game without {loader} unless told to. With 
 msgid "Config"
 msgstr "Config"
 
+#: src/share/MethodPanes.tsx
+msgid "Enable and continue"
+msgstr "Enable and continue"
+
 #. placeholder {0}: listNames(carried.map((c) => carriedLabels[c]))
 #: src/share/ImportPreview.tsx
 msgid "Includes: {0}"
@@ -493,10 +497,6 @@ msgstr "{0, plural, one {Adds # mod} other {Adds # mods}}"
 msgid "Waiting for you to unlock the keyring."
 msgstr "Waiting for you to unlock the keyring."
 
-#: src/share/MethodPanes.tsx
-msgid "Turn on sharing nearby?"
-msgstr "Turn on sharing nearby?"
-
 #: src/queue/QueueBody.tsx
 msgid "Dismiss {name}"
 msgstr "Dismiss {name}"
@@ -672,10 +672,6 @@ msgstr "Sort: best match"
 msgid "Updated {0}"
 msgstr "Updated {0}"
 
-#: src/share/ListFormat.tsx
-msgid "Left out (not on Thunderstore, or switched off): {names}"
-msgstr "Left out (not on Thunderstore, or switched off): {names}"
-
 #. placeholder {0}: cause.modName
 #: src/launch/LaunchLayer.tsx
 msgid "Caused by {0}"
@@ -762,6 +758,10 @@ msgstr "No supported game was found in your launchers."
 #: src/shell/AppMenu.tsx
 msgid "Could not restart Mortar"
 msgstr "Could not restart Mortar"
+
+#: src/sync/pins.tsx
+msgid "Enable or disable on this computer only"
+msgstr "Enable or disable on this computer only"
 
 #: src/shell/BugReportDialog.tsx
 msgid "What you expected"
@@ -957,10 +957,6 @@ msgstr "A short summary"
 #: src/share/CollectionNotes.tsx
 msgid "Curator's instructions"
 msgstr "Curator's instructions"
-
-#: src/share/MethodPanes.tsx
-msgid "Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General."
-msgstr "Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General."
 
 #: src/lan/PairedComputers.tsx
 #: src/lan/SendPanel.tsx
@@ -2027,10 +2023,6 @@ msgstr " · {cause} · {size}"
 msgid "{rest, plural, one {# more} other {# more}}"
 msgstr "{rest, plural, one {# more} other {# more}}"
 
-#: src/share/ListFormat.tsx
-msgid "{off} switched off"
-msgstr "{off} switched off"
-
 #: src/queue/QueueBody.tsx
 msgid "Very large download"
 msgstr "Very large download"
@@ -2079,6 +2071,7 @@ msgid "Skip every waiting download"
 msgstr "Skip every waiting download"
 
 #: src/share/IncludeOptions.tsx
+#: src/share/ModpackDialog.tsx
 msgid "Include disabled mods"
 msgstr "Include disabled mods"
 
@@ -2412,10 +2405,6 @@ msgstr "Filter by profile"
 msgid "· revision {0}"
 msgstr "· revision {0}"
 
-#: src/share/MethodPanes.tsx
-msgid "Turn on and continue"
-msgstr "Turn on and continue"
-
 #: src/toasts/report.ts
 msgid "That data could not be read."
 msgstr "That data could not be read."
@@ -2743,6 +2732,10 @@ msgstr "Choose the game's program"
 #: src/shell/FlatpakGrant.tsx
 msgid "Copy"
 msgstr "Copy"
+
+#: src/share/MethodPanes.tsx
+msgid "Other Mortar users on your local network will be able to find this computer and send you profiles. You can disable it again in Settings › General."
+msgstr "Other Mortar users on your local network will be able to find this computer and send you profiles. You can disable it again in Settings › General."
 
 #: src/install/NeedsRootCallout.tsx
 msgid "Choose variant…"
@@ -3881,6 +3874,10 @@ msgstr "Restart now"
 msgid "Backed up {label}"
 msgstr "Backed up {label}"
 
+#: src/share/MethodPanes.tsx
+msgid "Enable sharing nearby?"
+msgstr "Enable sharing nearby?"
+
 #: src/firstrunTour/TourPopover.tsx
 msgid "A mod with a config file has an Edit config button in its details: a typed editor with presets and Reset all."
 msgstr "A mod with a config file has an Edit config button in its details: a typed editor with presets and Reset all."
@@ -3999,6 +3996,10 @@ msgstr "Executable"
 msgid "Play anyway"
 msgstr "Play anyway"
 
+#: src/share/ListFormat.tsx
+msgid "{off, plural, one {# mod disabled} other {# mods disabled}}"
+msgstr "{off, plural, one {# mod disabled} other {# mods disabled}}"
+
 #. placeholder {0}: size === null ? '…' : formatBytes(size)
 #: src/game/BackupMenuItems.tsx
 msgid "The backup holds up to {0}: the profile, its settings and config files, and its own saves when it keeps them."
@@ -4076,10 +4077,6 @@ msgstr "Categories"
 #: src/firstrun/ProfileStep.tsx
 msgid "Copy the mods already in {gameName}'s Mods folder into a new profile. The game folder is not changed."
 msgstr "Copy the mods already in {gameName}'s Mods folder into a new profile. The game folder is not changed."
-
-#: src/share/MethodPanes.tsx
-msgid "Could not turn on sharing nearby"
-msgstr "Could not turn on sharing nearby"
 
 #: src/queue/actions.ts
 msgid "The download queue is empty."
@@ -5127,9 +5124,9 @@ msgstr "Hide from Browse"
 msgid "Launching {name}"
 msgstr "Launching {name}"
 
-#: src/sync/pins.tsx
-msgid "Switch on or off on this computer only"
-msgstr "Switch on or off on this computer only"
+#: src/share/MethodPanes.tsx
+msgid "Could not enable sharing nearby"
+msgstr "Could not enable sharing nearby"
 
 #. placeholder {0}: offer.dependentName
 #. placeholder {1}: listNames(names)
@@ -5229,10 +5226,6 @@ msgstr "Copies"
 #: src/game/Sidebar.tsx
 msgid "Health"
 msgstr "Health"
-
-#: src/share/ModpackDialog.tsx
-msgid "Include mods that are switched off"
-msgstr "Include mods that are switched off"
 
 #: src/toasts/ToastHost.tsx
 msgid "Details"
@@ -5507,6 +5500,10 @@ msgstr "Opened the Patreon post. Save the file from it; Mortar offers it from yo
 #: src/share/useShareBuild.ts
 msgid "Could not build the link"
 msgstr "Could not build the link"
+
+#: src/share/ListFormat.tsx
+msgid "Left out (not on Thunderstore, or disabled): {names}"
+msgstr "Left out (not on Thunderstore, or disabled): {names}"
 
 #: src/saves/SaveRow.tsx
 msgid "New profile from this save"

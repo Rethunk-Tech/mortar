@@ -373,9 +373,9 @@ export function NearbyPane({
   }
   return (
     <Pane>
-      <Typography sx={{ fontSize: 15, fontWeight: 600 }}>{t`Turn on sharing nearby?`}</Typography>
+      <Typography sx={{ fontSize: 15, fontWeight: 600 }}>{t`Enable sharing nearby?`}</Typography>
       <Typography sx={note}>
-        {t`Other Mortar users on your local network will be able to find this computer and send you profiles. You can turn it off again in Settings › General.`}
+        {t`Other Mortar users on your local network will be able to find this computer and send you profiles. You can disable it again in Settings › General.`}
       </Typography>
       <Box>
         <Button
@@ -384,12 +384,12 @@ export function NearbyPane({
           onClick={() => {
             setEnabling(true)
             SetLanSharing(true)
-              .catch(reportError(t`Could not turn on sharing nearby`))
+              .catch(reportError(t`Could not enable sharing nearby`))
               .finally(() => setEnabling(false))
           }}
           sx={{ height: 40 }}
         >
-          {t`Turn on and continue`}
+          {t`Enable and continue`}
         </Button>
       </Box>
     </Pane>

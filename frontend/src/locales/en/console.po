@@ -192,10 +192,6 @@ msgstr "Failed"
 msgid "Mods add {mods}. Nothing stands out in this start."
 msgstr "Mods add {mods}. Nothing stands out in this start."
 
-#: src/console/BisectDialog.tsx
-msgid "A mod's files are missing from this profile's folder, so Mortar cannot switch it off for the test."
-msgstr "A mod's files are missing from this profile's folder, so Mortar cannot switch it off for the test."
-
 #: src/console/RunsPicker.tsx
 msgid "Runs: {button}"
 msgstr "Runs: {button}"
@@ -246,6 +242,10 @@ msgstr "Fix all"
 #: src/console/outcome.ts
 msgid "Ran"
 msgstr "Ran"
+
+#: src/console/BisectDialog.tsx
+msgid "A mod's files are missing from this profile's folder, so Mortar cannot disable it for the test."
+msgstr "A mod's files are missing from this profile's folder, so Mortar cannot disable it for the test."
 
 #: src/console/PerformanceCards.tsx
 msgid "{total} to the title screen"
@@ -431,10 +431,6 @@ msgstr "This profile skips updates from this source for this mod."
 #: src/console/BisectDialog.tsx
 msgid "The original profile was not changed."
 msgstr "The original profile was not changed."
-
-#: src/console/BisectDialog.tsx
-msgid "Every mod in this profile is already off, so there is nothing to turn off and test."
-msgstr "Every mod in this profile is already off, so there is nothing to turn off and test."
 
 #: src/console/HelpDialog.tsx
 msgid "Link copied"
@@ -1028,6 +1024,10 @@ msgstr "Preparing a temporary copy of this profile…"
 #: src/console/StartupTable.tsx
 msgid "Sampled"
 msgstr "Sampled"
+
+#: src/console/BisectDialog.tsx
+msgid "Every mod in this profile is already disabled, so there is nothing to disable and test."
+msgstr "Every mod in this profile is already disabled, so there is nothing to disable and test."
 
 #: src/console/ConsoleTab.tsx
 msgid "No game output yet"

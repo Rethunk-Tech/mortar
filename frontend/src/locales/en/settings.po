@@ -434,6 +434,10 @@ msgstr "Copper"
 msgid "Mortar's data"
 msgstr "Mortar's data"
 
+#: src/settings/prefCopy.ts
+msgid "Share disabled mods"
+msgstr "Share disabled mods"
+
 #: src/settings/sections/DataBackups.tsx
 #: src/settings/sections/DataHistory.tsx
 msgid "Trim…"
@@ -524,9 +528,9 @@ msgstr "Console timestamps"
 msgid "Skip the game's boot animations on Play. Choices the game asks at start-up stay yours."
 msgstr "Skip the game's boot animations on Play. Choices the game asks at start-up stay yours."
 
-#: src/settings/shortcutLabels.ts
-msgid "Switch the focused mod on or off"
-msgstr "Switch the focused mod on or off"
+#: src/settings/prefCopyGame.ts
+msgid "Enable them in this profile's own copy of the file before each launch. Your own file is never changed."
+msgstr "Enable them in this profile's own copy of the file before each launch. Your own file is never changed."
 
 #: src/settings/sections/Storage.tsx
 msgid "Could not measure disk use"
@@ -743,6 +747,10 @@ msgstr "Switch to Mods"
 #: src/settings/shortcutLabels.ts
 msgid "Open the next profile"
 msgstr "Open the next profile"
+
+#: src/settings/shortcutLabels.ts
+msgid "Enable or disable the focused mod"
+msgstr "Enable or disable the focused mod"
 
 #: src/settings/sections/Appearance.tsx
 #: src/settings/sections/Notifications.tsx
@@ -1839,10 +1847,6 @@ msgid "Console log cap"
 msgstr "Console log cap"
 
 #: src/settings/prefCopy.ts
-msgid "Off, only computers on your local network can connect. Turn on to allow others, such as over a VPN."
-msgstr "Off, only computers on your local network can connect. Turn on to allow others, such as over a VPN."
-
-#: src/settings/prefCopy.ts
 msgid "Pick up where you left off."
 msgstr "Pick up where you left off."
 
@@ -2008,10 +2012,6 @@ msgstr "Group"
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Credits"
 msgstr "Credits"
-
-#: src/settings/prefCopyGame.ts
-msgid "Switch them on in this profile's own copy of the file before each launch. Your own file is never changed."
-msgstr "Switch them on in this profile's own copy of the file before each launch. Your own file is never changed."
 
 #: src/settings/prefCopy.ts
 msgid "Skip the intro"
@@ -2205,10 +2205,6 @@ msgstr "Nothing to clean up."
 #: src/settings/usePerProfileRelated.tsx
 msgid "Edit {0}"
 msgstr "Edit {0}"
-
-#: src/settings/prefCopy.ts
-msgid "Share switched-off mods"
-msgstr "Share switched-off mods"
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "Take back"
@@ -3266,6 +3262,10 @@ msgstr "Downloading and verifying Mortar {0}…"
 #: src/settings/sections/General.tsx
 msgid "Tips"
 msgstr "Tips"
+
+#: src/settings/prefCopy.ts
+msgid "Off, only computers on your local network can connect. Enable to allow others, such as over a VPN."
+msgstr "Off, only computers on your local network can connect. Enable to allow others, such as over a VPN."
 
 #: src/settings/sections/Appearance.tsx
 msgid "Quiet grey-blue"

@@ -49,7 +49,7 @@ function ListHint({ skipped, total }: { skipped: string[]; total: number }) {
   const names = listNames(skipped)
   let hint = t`Paste it into a chat or a forum post, or send the file.`
   if (skipped.length > 0) {
-    hint = t`Left out (not on Thunderstore, or switched off): ${names}`
+    hint = t`Left out (not on Thunderstore, or disabled): ${names}`
   } else if (total > 1) {
     hint = t`Discord takes 2,000 characters a message: paste each one in turn.`
   }
@@ -79,7 +79,7 @@ export function ListFormat() {
   const count = items.length
   const summary = [
     plural(count, { one: '# mod', other: '# mods' }),
-    off > 0 ? t`${off} switched off` : '',
+    off > 0 ? plural(off, { one: '# mod disabled', other: '# mods disabled' }) : '',
     total > 1 ? t`${total} messages` : '',
   ]
     .filter(Boolean)

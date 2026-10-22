@@ -66,6 +66,6 @@ export async function setGroupEnabled(name: string, on: boolean) {
   try {
     useProfiles.getState().replace(await SetGroupEnabled(target.game, target.id, name, on))
   } catch (e) {
-    reportError(i18n._(msg`Could not switch the group`))(e)
+    reportError(i18n._(on ? msg`Could not enable the group` : msg`Could not disable the group`))(e)
   }
 }

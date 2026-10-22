@@ -67,7 +67,7 @@ export function OnlyHereMenuItem({
   return (
     <MenuAction
       icon={<Laptop size={ICON_SIZE} />}
-      label={on ? t`Follow the sync again` : t`Switch on or off on this computer only`}
+      label={on ? t`Follow the sync again` : t`Enable or disable on this computer only`}
       onClick={() => {
         close()
         toggle().catch(reportUnexpected)

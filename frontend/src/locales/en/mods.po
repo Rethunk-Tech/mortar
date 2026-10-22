@@ -43,9 +43,10 @@ msgstr "Author · {author}"
 msgid "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
 
-#: src/mods/storeEntries.ts
-msgid "Could not switch the selected mods"
-msgstr "Could not switch the selected mods"
+#. placeholder {0}: unneeded.length
+#: src/mods/disableUnneeded.ts
+msgid "{0, plural, one {# library only the disabled mods needed is still enabled} other {# libraries only the disabled mods needed are still enabled}}"
+msgstr "{0, plural, one {# library only the disabled mods needed is still enabled} other {# libraries only the disabled mods needed are still enabled}}"
 
 #: src/mods/ConfigPresets.tsx
 msgid "Presets"
@@ -135,11 +136,6 @@ msgstr "No mods in the extra mods folders"
 msgid "It was thrown in {thrown}, called from its {kind} {method} on {target}"
 msgstr "It was thrown in {thrown}, called from its {kind} {method} on {target}"
 
-#. placeholder {0}: unneeded.length
-#: src/mods/disableUnneeded.ts
-msgid "{0, plural, one {# library only the switched-off mods needed is still on} other {# libraries only the switched-off mods needed are still on}}"
-msgstr "{0, plural, one {# library only the switched-off mods needed is still on} other {# libraries only the switched-off mods needed are still on}}"
-
 #: src/mods/ExtraFolderMenu.tsx
 msgid "The downloads folder…"
 msgstr "The downloads folder…"
@@ -194,10 +190,6 @@ msgstr "Could not change mods"
 #: src/mods/EndorsePrompt.tsx
 msgid "Never for this mod"
 msgstr "Never for this mod"
-
-#: src/mods/ProblemsTab.tsx
-msgid "Turns mods off in halves and relaunches until the crash stops"
-msgstr "Turns mods off in halves and relaunches until the crash stops"
 
 #: src/mods/overlayActions.ts
 msgid "It replaces the same files, so this is disabled: {names}"
@@ -498,6 +490,10 @@ msgstr "Changelog unavailable"
 #: src/mods/overlayActions.ts
 msgid "Its main file is no longer in this profile."
 msgstr "Its main file is no longer in this profile."
+
+#: src/mods/storeGroups.ts
+msgid "Could not disable the group"
+msgstr "Could not disable the group"
 
 #: src/mods/problemText.ts
 msgid "Missing requirements"
@@ -924,8 +920,10 @@ msgstr "No custom categories yet"
 msgid "{who} both edit {target}.{winner}"
 msgstr "{who} both edit {target}.{winner}"
 
+#. placeholder {0}: mod.name
 #. placeholder {0}: row.label
 #: src/mods/overlayActions.ts
+#: src/mods/storeEntries.ts
 msgid "Could not disable {0}"
 msgstr "Could not disable {0}"
 
@@ -1125,6 +1123,7 @@ msgid "Could not read the game log"
 msgstr "Could not read the game log"
 
 #: src/mods/AssetMapDialog.tsx
+#: src/mods/disableUnneeded.ts
 #: src/mods/ModMenu.tsx
 #: src/mods/problemFix/AssetFix.tsx
 #: src/mods/problemFix/BrokenFix.tsx
@@ -1303,6 +1302,7 @@ msgid "Review updates"
 msgstr "Review updates"
 
 #: src/mods/AuthorDialog.tsx
+#: src/mods/columnLabel.ts
 #: src/mods/listRows.ts
 #: src/mods/ModDependencyTree.tsx
 #: src/mods/OptionalFileRows.tsx
@@ -1317,6 +1317,10 @@ msgstr "Disabled"
 #: src/mods/ModMenu.tsx
 msgid "{0, plural, one {Remove # mod} other {Remove # mods}}"
 msgstr "{0, plural, one {Remove # mod} other {Remove # mods}}"
+
+#: src/mods/storeEntries.ts
+msgid "Could not enable the selected mods"
+msgstr "Could not enable the selected mods"
 
 #: src/mods/SelectionBarDialogs.tsx
 msgid "Add or remove the tag"
@@ -1338,6 +1342,10 @@ msgstr "{name} was changed outside Mortar."
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Could not open: {error}"
 msgstr "Could not open: {error}"
+
+#: src/mods/storeEntries.ts
+msgid "Could not disable the selected mods"
+msgstr "Could not disable the selected mods"
 
 #: src/mods/ModDependencyTree.tsx
 #: src/mods/Toolbar.tsx
@@ -1733,10 +1741,6 @@ msgstr "Remove {name}"
 msgid "Hidden inside this mod"
 msgstr "Hidden inside this mod"
 
-#: src/mods/disableUnneeded.ts
-msgid "Switch them off too"
-msgstr "Switch them off too"
-
 #: src/mods/updateReview/undoAll.ts
 msgid "Downloaded versions stay in the store for re-use."
 msgstr "Downloaded versions stay in the store for re-use."
@@ -1822,6 +1826,10 @@ msgstr "Load {0} after the other mods here, so its edit applies last"
 #: src/mods/updateReview/Row.tsx
 msgid "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
 msgstr "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
+
+#: src/mods/ProblemsTab.tsx
+msgid "Disables mods in halves and relaunches until the crash stops"
+msgstr "Disables mods in halves and relaunches until the crash stops"
 
 #. placeholder {0}: first.mods[0].name
 #. placeholder {0}: row.label
@@ -1990,11 +1998,6 @@ msgstr "Mods"
 #: src/mods/problemText.ts
 msgid "Incompatible with another plugin"
 msgstr "Incompatible with another plugin"
-
-#. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts
-msgid "Could not switch {0}"
-msgstr "Could not switch {0}"
 
 #: src/mods/AssetMapDialog.tsx
 #: src/mods/ProblemsTab.tsx
@@ -2208,6 +2211,10 @@ msgstr "Group"
 #: src/mods/ModMenu.tsx
 msgid "Remove {0} from other profiles"
 msgstr "Remove {0} from other profiles"
+
+#: src/mods/disableUnneeded.ts
+msgid "Disable them too"
+msgstr "Disable them too"
 
 #: src/mods/describe.ts
 msgid "{dependentName} needs {dep}, which is disabled."
@@ -2556,10 +2563,6 @@ msgstr "Unofficial update available: {0}"
 msgid "Added this week"
 msgstr "Added this week"
 
-#: src/mods/storeGroups.ts
-msgid "Could not switch the group"
-msgstr "Could not switch the group"
-
 #. placeholder {0}: dup.name
 #: src/mods/DuplicateDialog.tsx
 msgid "{profileName} has {0} more than once. {loader} loads only one, so pick which to keep. The others are disabled, not removed."
@@ -2580,6 +2583,11 @@ msgstr "Stop the game first."
 #: src/mods/useListHeading.ts
 msgid "Mods with problems"
 msgstr "Mods with problems"
+
+#. placeholder {0}: fix.name
+#: src/mods/problemFix/AssetFix.tsx
+msgid "In {0}; disables its edits here"
+msgstr "In {0}; disables its edits here"
 
 #: src/mods/updateReview/CautionAck.tsx
 msgid "Update despite this"
@@ -2759,12 +2767,18 @@ msgstr "{0, plural, one {+# library} other {+# libraries}}"
 msgid "Always shown"
 msgstr "Always shown"
 
+#: src/mods/storeGroups.ts
+msgid "Could not enable the group"
+msgstr "Could not enable the group"
+
 #: src/mods/problemWhy.ts
 msgid "Two enabled mods carry the same plugin. The loader starts only one of them, so you may be running the older copy."
 msgstr "Two enabled mods carry the same plugin. The loader starts only one of them, so you may be running the older copy."
 
+#. placeholder {0}: mod.name
 #. placeholder {0}: row.label
 #: src/mods/overlayActions.ts
+#: src/mods/storeEntries.ts
 msgid "Could not enable {0}"
 msgstr "Could not enable {0}"
 
@@ -2877,6 +2891,11 @@ msgstr "Could not set the update channel for {0}"
 msgid "Error in a patch"
 msgstr "Error in a patch"
 
+#. placeholder {0}: dependents.length
+#: src/mods/disableUnneeded.ts
+msgid "{0, plural, one {# enabled mod needs a mod you disabled} other {# enabled mods need a mod you disabled}}"
+msgstr "{0, plural, one {# enabled mod needs a mod you disabled} other {# enabled mods need a mod you disabled}}"
+
 #: src/mods/OverlayRow.tsx
 msgid "Optional file"
 msgstr "Optional file"
@@ -2985,11 +3004,6 @@ msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
 msgid "Combined"
 msgstr "Combined"
 
-#. placeholder {0}: fix.name
-#: src/mods/problemFix/AssetFix.tsx
-msgid "In {0}; turns off its edits here"
-msgstr "In {0}; turns off its edits here"
-
 #: src/mods/storeEntries.ts
 msgid "None of these mods was found on a site"
 msgstr "None of these mods was found on a site"
@@ -3021,10 +3035,6 @@ msgstr "{0} adds {time} to startup (through {1})"
 #: src/mods/describe.ts
 msgid "{name} is deprecated on Thunderstore; its page points to {replacement}."
 msgstr "{name} is deprecated on Thunderstore; its page points to {replacement}."
-
-#: src/mods/disableUnneeded.ts
-msgid "Switch off"
-msgstr "Switch off"
 
 #: src/mods/problemFix/DamagedFix.tsx
 msgid "Could not repair {name}"
@@ -3549,10 +3559,6 @@ msgstr "Last run"
 msgid "More setting values"
 msgstr "More setting values"
 
-#: src/mods/columnLabel.ts
-msgid "Switched off"
-msgstr "Switched off"
-
 #. placeholder {0}: mod.name
 #: src/mods/storeEntries.ts
 msgid "Could not save the note and tags for {0}"
@@ -3759,11 +3765,6 @@ msgstr "Disable {0}"
 #: src/mods/ConfigPresets.tsx
 msgid "Delete {name}"
 msgstr "Delete {name}"
-
-#. placeholder {0}: dependents.length
-#: src/mods/disableUnneeded.ts
-msgid "{0, plural, one {# mod still on needs a mod you switched off} other {# mods still on need a mod you switched off}}"
-msgstr "{0, plural, one {# mod still on needs a mod you switched off} other {# mods still on need a mod you switched off}}"
 
 #: src/mods/LoadOrderTab.tsx
 msgid "Last launch"

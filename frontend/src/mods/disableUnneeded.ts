@@ -76,11 +76,11 @@ export function offerUnneeded(
   useToasts.getState().push({
     kind: 'info',
     title: plural(unneeded.length, {
-      one: '# library only the switched-off mods needed is still on',
-      other: '# libraries only the switched-off mods needed are still on',
+      one: '# library only the disabled mods needed is still enabled',
+      other: '# libraries only the disabled mods needed are still enabled',
     }),
     action: {
-      label: i18n._(msg`Switch off`),
+      label: i18n._(msg`Disable`),
       run: () => switchOff(unneeded).catch(reportUnexpected),
     },
   })
@@ -115,12 +115,12 @@ export function offerDependents(
   useToasts.getState().push({
     kind: 'warning',
     title: plural(dependents.length, {
-      one: '# mod still on needs a mod you switched off',
-      other: '# mods still on need a mod you switched off',
+      one: '# enabled mod needs a mod you disabled',
+      other: '# enabled mods need a mod you disabled',
     }),
     body: listNames(dependents.map((m) => m.name)),
     action: {
-      label: i18n._(msg`Switch them off too`),
+      label: i18n._(msg`Disable them too`),
       run: () => switchOff(dependents).catch(reportUnexpected),
     },
   })

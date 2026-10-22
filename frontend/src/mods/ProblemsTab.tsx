@@ -372,7 +372,7 @@ function ProblemActions() {
   return (
     <PageActions>
       <Tooltip
-        title={bisectBlocked ?? t`Turns mods off in halves and relaunches until the crash stops`}
+        title={bisectBlocked ?? t`Disables mods in halves and relaunches until the crash stops`}
       >
         {/* A disabled button fires no pointer events, so the tooltip needs a live wrapper. */}
         <span>

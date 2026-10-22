@@ -79,7 +79,7 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
     lanAllowAnyAddress: {
       label: i18n._(msg`Accept connections from any network address`),
       description: i18n._(
-        msg`Off, only computers on your local network can connect. Turn on to allow others, such as over a VPN.`,
+        msg`Off, only computers on your local network can connect. Enable to allow others, such as over a VPN.`,
       ),
     },
     browseCardStats: {
@@ -414,7 +414,7 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
       ],
     },
     shareIncludeDisabledMods: {
-      label: i18n._(msg`Share switched-off mods`),
+      label: i18n._(msg`Share disabled mods`),
       description: i18n._(msg`Default for Share and Export. You can change it per share.`),
     },
     shareIncludeFomodChoices: {

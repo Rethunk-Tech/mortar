@@ -190,7 +190,13 @@ export async function enableMany(
         return was === undefined ? m : { ...m, enabled: was }
       }),
     }))
-    reportError(i18n._(msg`Could not switch the selected mods`))(e)
+    reportError(
+      i18n._(
+        enabled
+          ? msg`Could not enable the selected mods`
+          : msg`Could not disable the selected mods`,
+      ),
+    )(e)
     return
   }
   if (enabled) {
@@ -271,7 +277,9 @@ export async function setEnabledAction(
     }
     await get().loadProblems()
   } catch (e) {
-    reportError(i18n._(msg`Could not switch ${mod.name}`))(e)
+    reportError(
+      i18n._(enabled ? msg`Could not enable ${mod.name}` : msg`Could not disable ${mod.name}`),
+    )(e)
   }
 }
 

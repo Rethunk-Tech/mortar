@@ -791,6 +791,10 @@ msgstr "Deleted {name}"
 msgid "Nothing to add: {targetName} already has every mod at the same or a newer version."
 msgstr "Nothing to add: {targetName} already has every mod at the same or a newer version."
 
+#: src/profiles/GameModsDialog.tsx
+msgid "If they stay there, the game goes on loading them even when a profile disables them."
+msgstr "If they stay there, the game goes on loading them even when a profile disables them."
+
 #: src/profiles/historyLabel.ts
 msgid "{count, plural, one {Merged # mod from {name}} other {Merged # mods from {name}}}"
 msgstr "{count, plural, one {Merged # mod from {name}} other {Merged # mods from {name}}}"
@@ -1376,10 +1380,6 @@ msgstr "Sparkles"
 #: src/profiles/historyLabel.ts
 msgid "Set {detail} of {name} for the next start"
 msgstr "Set {detail} of {name} for the next start"
-
-#: src/profiles/GameModsDialog.tsx
-msgid "If they stay there, the game goes on loading them even when a profile switches them off."
-msgstr "If they stay there, the game goes on loading them even when a profile switches them off."
 
 #. placeholder {0}: profile.name
 #: src/profiles/CompareDialog.tsx

@@ -53,8 +53,8 @@ interface Props {
 function FailureText({ error }: { error: string | undefined }) {
   const { t } = useLingui()
   const sentences = {
-    'no-mods': t`Every mod in this profile is already off, so there is nothing to turn off and test.`,
-    'missing-files': t`A mod's files are missing from this profile's folder, so Mortar cannot switch it off for the test.`,
+    'no-mods': t`Every mod in this profile is already disabled, so there is nothing to disable and test.`,
+    'missing-files': t`A mod's files are missing from this profile's folder, so Mortar cannot disable it for the test.`,
     other: t`The crash check could not finish.`,
   }
   const details = error ? errorDetails(error) : ''
