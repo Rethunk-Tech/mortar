@@ -38,7 +38,13 @@ export function screenCases(h: Helpers): Case[] {
         .click(),
   })
   return [
-    { name: 'browse-list', setup: (p) => tab(p, 'Browse'), run: (p) => browseView(p, 'List view') },
+    {
+      name: 'browse-list',
+      // A list row lays out differently from a grid card, so every result card renders again.
+      budget: { updates: 1200 },
+      setup: (p) => tab(p, 'Browse'),
+      run: (p) => browseView(p, 'List view'),
+    },
     {
       name: 'browse-details',
       setup: async (p) => {

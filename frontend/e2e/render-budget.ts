@@ -154,6 +154,8 @@ const cases: Case[] = [
   // One switch per case, each its own action; the second puts the mod back as the first found it.
   {
     name: 'mods-list-toggle-off',
+    // Its toast offering to switch off dependents or now-unneeded libraries leaves once, inside the idle watch.
+    budget: { idleUpdates: 10, idleCommits: 1 },
     setup: (p) => view(p, 'List view'),
     run: async (p) => {
       const target = row(p, 8)
@@ -163,6 +165,8 @@ const cases: Case[] = [
   },
   {
     name: 'mods-list-toggle-on',
+    // The toast naming what came on with it goes once, inside the idle watch.
+    budget: { idleUpdates: 10, idleCommits: 1 },
     // The switched-off mod moves to the Disabled group, below the rendered window, so it is found by its name.
     setup: async (p) => {
       await view(p, 'List view')
