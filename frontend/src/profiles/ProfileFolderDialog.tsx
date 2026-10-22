@@ -51,16 +51,16 @@ export function ProfileFolderDialog({
   }
   const openFolder = useProfiles((s) => s.openFolder)
   const pick = () =>
-    PickFolder(t`Choose where ${profile.name} lives`)
+    PickFolder(t`Choose where ${{ name: profile.name }} lives`)
       .then((parent) => parent && run(() => MoveToFolder(game, profile.id, parent)))
       .catch(reportError(t`Could not choose the folder`))
   return (
     <Dialog open={open} onClose={busy ? undefined : onClose} fullWidth={true} maxWidth="sm">
-      <DialogTitle>{t`Folder of ${profile.name}`}</DialogTitle>
+      <DialogTitle>{t`Folder of ${{ name: profile.name }}`}</DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           <Typography sx={{ overflowWrap: 'anywhere' }}>
-            {folder ? t`Kept in ${folder}.` : t`Kept in Mortar's data folder.`}
+            {folder ? t`Kept in ${{ path: folder }}.` : t`Kept in Mortar's data folder.`}
           </Typography>
           {check && !check.ok ? <Alert severity="error">{check.problem}</Alert> : null}
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>

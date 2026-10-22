@@ -166,7 +166,7 @@ export function HistoryEventRow({
                     size="small"
                     disabled={busy}
                     onClick={() => onRevertItem(itemModKey(item))}
-                    aria-label={t`Revert this mod: ${sentence(item.detail)}`}
+                    aria-label={t`Revert this mod: ${{ detail: sentence(item.detail) }}`}
                   >
                     {t`Revert this mod`}
                   </Button>

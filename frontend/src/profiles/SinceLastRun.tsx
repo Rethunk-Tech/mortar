@@ -73,7 +73,8 @@ function useSinceLastRun(game: string, profileId: string): string[] {
   const regressions = useStartupRegressions(game, profileId, updated)
   const lines = [
     ...regressions.map(
-      (r) => t`Startup: ${r.name} ${r.version} added ${formatDuration(r.addedMs, i18n.locale)}`,
+      (r) =>
+        t`Startup: ${{ name: r.name }} ${{ version: r.version }} added ${{ duration: formatDuration(r.addedMs, i18n.locale) }}`,
     ),
     ...(diff ? diffLines(diff) : []),
   ]

@@ -60,7 +60,7 @@ function TrashRow({ item }: { item: TrashItem }) {
   const purge = useProfiles((s) => s.purge)
   const [pending, run] = usePending()
   const [confirming, setConfirming] = useState(false)
-  const days = plural(item.daysLeft, { one: '# day left', other: '# days left' })
+  const days = plural({ count: item.daysLeft }, { one: '# day left', other: '# days left' })
   return (
     <Box
       sx={{
@@ -81,14 +81,14 @@ function TrashRow({ item }: { item: TrashItem }) {
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{days}</Typography>
       </Box>
       <TipIconButton
-        label={t`Restore ${{ label: item.name }}`}
+        label={t`Restore ${{ name: item.name }}`}
         disabled={pending}
         onClick={() => run(() => restore(item.id))}
       >
         <RotateCcw size={16} />
       </TipIconButton>
       <TipIconButton
-        label={t`Delete ${item.name} permanently`}
+        label={t`Delete ${{ name: item.name }} permanently`}
         color="error"
         disabled={pending}
         onClick={() => setConfirming(true)}
@@ -97,7 +97,7 @@ function TrashRow({ item }: { item: TrashItem }) {
       </TipIconButton>
       <ConfirmDialog
         open={confirming}
-        title={t`Delete ${item.name} permanently?`}
+        title={t`Delete ${{ name: item.name }} permanently?`}
         body={t`This cannot be undone.`}
         confirmLabel={t`Delete permanently`}
         color="error"

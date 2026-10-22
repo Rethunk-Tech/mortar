@@ -101,11 +101,13 @@ export function CrashHintCard({
           </Box>
           <Box sx={{ flex: 1, minWidth: 220, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
             <Typography sx={{ fontWeight: 700 }}>
-              {crashedAt ? t`The game crashed ${formatWhen(crashedAt)}` : t`The game crashed`}
+              {crashedAt
+                ? t`The game crashed ${{ when: formatWhen(crashedAt) }}`
+                : t`The game crashed`}
             </Typography>
             <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
               {culprit
-                ? t`Most likely cause: ${hint.modName} (${hint.reason || named})`
+                ? t`Most likely cause: ${{ name: hint.modName }} (${{ reason: hint.reason || named }})`
                 : hint.reason || t`The log does not name a mod.`}
             </Typography>
             {hint.nativeFrame ? (
@@ -118,7 +120,7 @@ export function CrashHintCard({
                   wordBreak: 'break-all',
                 }}
               >
-                {t`Crashed in ${hint.nativeFrame}`}
+                {t`Crashed in ${{ nativeFrame: hint.nativeFrame }}`}
               </Typography>
             ) : null}
             {culprit && hint.evidence ? (
@@ -131,7 +133,7 @@ export function CrashHintCard({
                   wordBreak: 'break-all',
                 }}
               >
-                {t`Stack frame: ${hint.evidence}`}
+                {t`Stack frame: ${{ evidence: hint.evidence }}`}
               </Typography>
             ) : null}
           </Box>

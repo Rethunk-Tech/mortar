@@ -3,6 +3,7 @@ import { Box, Button, TextField, Typography } from '@mui/material'
 import { System } from '@wailsio/runtime'
 import { useState } from 'react'
 import { TestLaunch } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { STEAM } from '../brand/productNames.ts'
 import { useGameBusy } from '../launch/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { space } from '../theme/density.ts'
@@ -63,7 +64,7 @@ function TestLaunchRow({
                   setResult(t`Reached the title screen`)
                   return
                 }
-                setResult(t`Crashed: ${outcome.cause}`)
+                setResult(t`Crashed: ${{ cause: outcome.cause }}`)
               } catch (error) {
                 setResult(errorMessage(error))
               }
@@ -156,7 +157,7 @@ function LaunchOptionsBlock({
         error={launchError?.field === 'settings'}
         helperText={
           (launchError?.field === 'settings' && launchError.message) ||
-          t`One VAR=value per line, for direct launches only; Steam launches ignore them.`
+          t`One VAR=value per line, for direct launches only; ${{ launcher: STEAM }} launches ignore them.`
         }
         slotProps={{ root: { sx: { userSelect: 'text' } } }}
       />

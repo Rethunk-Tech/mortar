@@ -105,7 +105,7 @@ function CoverField({
         <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1 }}>
           {staged === null
             ? t`The automatic cover is used after Save.`
-            : t`${pickedName} is used after Save.`}
+            : t`${{ name: pickedName }} is used after Save.`}
         </Typography>
       )}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: space.gap, mb: 2 }}>

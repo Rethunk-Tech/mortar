@@ -108,7 +108,7 @@ export function ServerSettings({ gameId, profileId }: { gameId: string; profileI
           label={t`Use mods from…`}
           value={from}
           onChange={(event) => setFrom(event.target.value)}
-          helperText={t`Queues the mods of a ${form.clientName} profile into this server profile.`}
+          helperText={t`Queues the mods of a ${{ clientName: form.clientName }} profile into this server profile.`}
         >
           {clients.map((c) => (
             <MenuItem key={c.id} value={c.id}>

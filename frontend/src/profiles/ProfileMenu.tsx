@@ -161,7 +161,7 @@ function ProfileMenuListView({
   }
   return (
     <>
-      <MenuHeading>{t`${gameName} profiles`}</MenuHeading>
+      <MenuHeading>{t`${{ game: gameName }} profiles`}</MenuHeading>
       {profiles.map((p) => (
         <TitleMenuItem
           key={p.id}

@@ -3,6 +3,7 @@ import { Button, Typography } from '@mui/material'
 import { useState } from 'react'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { GALE, R2MODMAN } from '../brand/productNames.ts'
 import { TypedFolder } from '../shell/TypedFolder.tsx'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 
@@ -23,17 +24,22 @@ export function PackFolderPrompt({ onChosen }: { onChosen: () => void }) {
   }
   // Without a native folder dialog (server mode) the path is typed instead.
   const choose = () => {
-    PickFolder(t`r2modman or Gale data folder`)
+    PickFolder(t`${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} data folder`)
       .then((dir) => (dir ? apply(dir) : undefined))
       .catch(() => setTyping(true))
   }
   return (
     <Typography variant="body2" color="text.secondary">
-      {t`r2modman or Gale in another folder?`}{' '}
+      {t`${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} in another folder?`}{' '}
       <Button size="small" onClick={choose}>
         {t`Choose folder…`}
       </Button>
-      {typing ? <TypedFolder label={t`r2modman or Gale data folder`} onUse={apply} /> : null}
+      {typing ? (
+        <TypedFolder
+          label={t`${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} data folder`}
+          onUse={apply}
+        />
+      ) : null}
       {error ? (
         <Typography
           component="span"

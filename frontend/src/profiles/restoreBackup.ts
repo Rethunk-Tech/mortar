@@ -21,13 +21,16 @@ export async function restoreBackup(): Promise<void> {
     const missing = r.unavailable ?? []
     let body = i18n._(msg`Every mod is in place.`)
     if (missing.length > 0) {
-      body = i18n._(msg`Install by hand: ${listNames(missing)}`)
+      body = i18n._(msg`Install by hand: ${{ names: listNames(missing) }}`)
     } else if (r.queued > 0) {
-      body = plural(r.queued, { one: '# mod is downloading.', other: '# mods are downloading.' })
+      body = plural(
+        { count: r.queued },
+        { one: '# mod is downloading.', other: '# mods are downloading.' },
+      )
     }
     useToasts.getState().push({
       kind: missing.length > 0 ? 'warning' : 'success',
-      title: i18n._(msg`Restored as ${r.name}`),
+      title: i18n._(msg`Restored as ${{ name: r.name }}`),
       body,
     })
   } catch (e) {

@@ -3,6 +3,7 @@ import {
   HistoryChange,
   type HistoryEvent,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { i18n } from '../i18n/index.ts'
 
@@ -17,14 +18,14 @@ export function historyLabel(ev: Worded): string {
     case HistoryChange.ChangeAdded:
       return i18n._(msg`Added ${name}`)
     case HistoryChange.ChangeRemoved:
-      return i18n._(msg`Removed ${ev.name ?? ''}`)
+      return i18n._(msg`Removed ${{ name: ev.name ?? '' }}`)
     case HistoryChange.ChangeUpdated: {
       const from = ev.from ?? ''
       const to = ev.to ?? ''
       return i18n._(msg`Updated ${name} from ${from} to ${to}`)
     }
     case HistoryChange.ChangeEnabled:
-      return i18n._(msg`Enabled ${ev.name ?? ''}`)
+      return i18n._(msg`Enabled ${{ name: ev.name ?? '' }}`)
     case HistoryChange.ChangeDisabled:
       return i18n._(msg`Disabled ${{ names: name }}`)
     case HistoryChange.ChangePinned:
@@ -46,15 +47,14 @@ export function historyLabel(ev: Worded): string {
         : i18n._(msg`Changed mods`)
     case HistoryChange.ChangeSourced:
       return name === ''
-        ? i18n._(msg`Found mods on Nexus`)
-        : i18n._(msg`Set the Nexus page of ${name}`)
+        ? i18n._(msg`Found mods on ${{ source: sourceLabel('nexus') }}`)
+        : i18n._(msg`Set the ${{ source: sourceLabel('nexus') }} page of ${name}`)
     case HistoryChange.ChangeImported:
       return plural(count, { one: 'Imported # mod', other: 'Imported # mods' })
     case HistoryChange.ChangeMoved:
-      return plural(count, {
-        one: "Moved # mod from the game's Mods folder",
-        other: "Moved # mods from the game's Mods folder",
-      })
+      return i18n._(
+        msg`Moved ${plural({ count }, { one: '# mod', other: '# mods' })} from the game's Mods folder`,
+      )
     case HistoryChange.ChangeMerged:
       return plural(count, {
         one: `Merged # mod from ${name}`,
@@ -95,10 +95,9 @@ export function historyLabel(ev: Worded): string {
         ? i18n._(msg`Unlinked collection`)
         : i18n._(msg`Unlinked collection ${name}`)
     case HistoryChange.ChangeTrimmed:
-      return plural(count, {
-        one: 'Trimmed history, dropped # older change',
-        other: 'Trimmed history, dropped # older changes',
-      })
+      return i18n._(
+        msg`Trimmed history, dropped ${plural({ count }, { one: '# older change', other: '# older changes' })}`,
+      )
     case HistoryChange.ChangeUnscanned:
       return i18n._(msg`Installed ${name} although the antivirus flagged it: ${detail}`)
     case HistoryChange.ChangeKnownGood:

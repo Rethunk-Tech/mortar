@@ -45,10 +45,13 @@ function AddsLine({ adds, targetName }: { adds: Preview['adds']; targetName: str
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Typography>
-          {plural(adds.length, {
-            one: `${targetName} gets # new mod`,
-            other: `${targetName} gets # new mods`,
-          })}
+          {plural(
+            { count: adds.length },
+            {
+              one: `${{ name: targetName }} gets # new mod`,
+              other: `${{ name: targetName }} gets # new mods`,
+            },
+          )}
         </Typography>
         {adds.length > 0 ? (
           <Button
@@ -94,7 +97,7 @@ function Summary({
   // button has its reason in view.
   if (preview.adds.length === 0 && updates === 0) {
     return (
-      <Typography color="text.secondary">{t`Nothing to add: ${targetName} already has every mod at the same or a newer version.`}</Typography>
+      <Typography color="text.secondary">{t`Nothing to add: ${{ name: targetName }} already has every mod at the same or a newer version.`}</Typography>
     )
   }
   return (
@@ -102,15 +105,18 @@ function Summary({
       {preview.adds.length > 0 ? <AddsLine adds={preview.adds} targetName={targetName} /> : null}
       {both > 0 ? (
         <Typography>
-          {plural(both, { one: '# mod is in both', other: '# mods are in both' })}
+          {plural({ count: both }, { one: '# mod is in both', other: '# mods are in both' })}
         </Typography>
       ) : null}
       {preview.targetOnly > 0 ? (
         <Typography>
-          {plural(preview.targetOnly, {
-            one: `Keeps # mod only ${targetName} has`,
-            other: `Keeps # mods only ${targetName} has`,
-          })}
+          {plural(
+            { count: preview.targetOnly },
+            {
+              one: `Keeps # mod only ${{ name: targetName }} has`,
+              other: `Keeps # mods only ${{ name: targetName }} has`,
+            },
+          )}
         </Typography>
       ) : null}
       {updates > 0 ? (
@@ -124,15 +130,12 @@ function Summary({
             <FormControlLabel
               value="keep"
               control={<Radio size="small" />}
-              label={t`Keep ${targetName}'s versions`}
+              label={t`Keep ${{ name: targetName }}'s versions`}
             />
             <FormControlLabel
               value="newer"
               control={<Radio size="small" />}
-              label={plural(updates, {
-                one: 'Use the newer version (# mod updates)',
-                other: 'Use the newer version (# mods update)',
-              })}
+              label={t`Use the newer version (${plural({ count: updates }, { one: '# mod updates', other: '# mods update' })})`}
             />
           </RadioGroup>
         </FormControl>
@@ -192,17 +195,17 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
         useToasts.getState().push({
           kind: 'success',
           title: plural(changes, {
-            one: `Added # mod from ${source.name} to ${targetName}`,
-            other: `Added # mods from ${source.name} to ${targetName}`,
+            one: `Added # mod from ${{ profile: source.name }} to ${{ name: targetName }}`,
+            other: `Added # mods from ${{ profile: source.name }} to ${{ name: targetName }}`,
           }),
         })
       },
-      { errorTitle: t`Could not add the mods to ${targetName}` },
+      { errorTitle: t`Could not add the mods to ${{ name: targetName }}` },
     )
   }
   return (
     <>
-      <DialogTitle>{t`Add ${source.name}'s mods to…`}</DialogTitle>
+      <DialogTitle>{t`Add ${{ name: source.name }}'s mods to…`}</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
         <TextField
           select={true}
@@ -221,7 +224,7 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
         </TextField>
         {target ? (
           <Typography color="text.secondary" variant="body2">
-            {t`${source.name} stays as it is.`}
+            {t`${{ name: source.name }} stays as it is.`}
           </Typography>
         ) : null}
         {preview && target ? (

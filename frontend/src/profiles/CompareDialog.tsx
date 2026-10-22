@@ -38,7 +38,7 @@ function useMatch(profileA: Profile, profileB: Profile, selected: CompareRow[]) 
   const launch = useLaunchLocks()
   const lockedReason = (profile: Profile) =>
     lockedIn(launch, profile.id)
-      ? t`${profile.name} is in use by the running game. Close the game to change its mods.`
+      ? t`${{ name: profile.name }} is in use by the running game. Close the game to change its mods.`
       : ''
   const apply = (to: Profile, change: () => Promise<Profile>, title: string) =>
     applyWithUndo(gameId, to.id, change, (undo) =>
@@ -57,25 +57,31 @@ function useMatch(profileA: Profile, profileB: Profile, selected: CompareRow[]) 
           await apply(
             to,
             () => CopyMods(gameId, from.id, to.id, plan.copy),
-            plural(plan.copy.length, {
-              one: `Copied # mod to ${to.name}`,
-              other: `Copied # mods to ${to.name}`,
-            }),
+            plural(
+              { count: plan.copy.length },
+              {
+                one: `Copied # mod to ${{ name: to.name }}`,
+                other: `Copied # mods to ${{ name: to.name }}`,
+              },
+            ),
           )
         }
         if (plan.moves.length > 0) {
           await apply(
             to,
             () => UpdateEntries(gameId, to.id, plan.moves),
-            plural(plan.moves.length, {
-              one: `Matched # version in ${to.name}`,
-              other: `Matched # versions in ${to.name}`,
-            }),
+            plural(
+              { count: plan.moves.length },
+              {
+                one: `Matched # version in ${{ name: to.name }}`,
+                other: `Matched # versions in ${{ name: to.name }}`,
+              },
+            ),
           )
         }
         await refresh()
       },
-      { errorTitle: t`Could not change ${to.name}` },
+      { errorTitle: t`Could not change ${{ name: to.name }}` },
     )
   }
   return { pending, lockedReason, matchTo }
@@ -102,12 +108,12 @@ function CompareFooter({
     {
       toB: true,
       icon: <ArrowRight size={16} />,
-      label: t`Make ${profileB.name} match ${profileA.name}`,
+      label: t`Make ${{ name: profileB.name }} match ${{ other: profileA.name }}`,
     },
     {
       toB: false,
       icon: <ArrowLeft size={16} />,
-      label: t`Make ${profileA.name} match ${profileB.name}`,
+      label: t`Make ${{ name: profileA.name }} match ${{ other: profileB.name }}`,
     },
   ]
   return (
@@ -131,7 +137,8 @@ function CompareFooter({
         const plan = applyPlan(selected, toB)
         const idle = plan.copy.length + plan.moves.length === 0
         const reason =
-          lockedReason(target) || (idle ? t`Nothing selected would change ${target.name}.` : '')
+          lockedReason(target) ||
+          (idle ? t`Nothing selected would change ${{ name: target.name }}.` : '')
         return (
           <DisabledReason key={String(toB)} title={reason} disabled={reason !== ''}>
             <Button
@@ -164,8 +171,8 @@ function Summary({
 }) {
   const { t } = useLingui()
   const hideable: { kind: HideableKind; label: string }[] = [
-    { kind: 'onlyA', label: t`${view.onlyA} only in ${aName}` },
-    { kind: 'identical', label: t`${view.identical} identical` },
+    { kind: 'onlyA', label: t`${{ onlyA: view.onlyA }} only in ${{ name: aName }}` },
+    { kind: 'identical', label: t`${{ identical: view.identical }} identical` },
   ]
   return (
     <Typography
@@ -175,7 +182,7 @@ function Summary({
       <span>
         {view.differences === 0
           ? t`No differences.`
-          : plural(view.differences, { one: '# difference', other: '# differences' })}
+          : plural({ count: view.differences }, { one: '# difference', other: '# differences' })}
       </span>
       {hideable
         .filter(({ kind }) => view[kind] > 0)
@@ -380,7 +387,7 @@ function CompareChoose({
         <EmptyState
           compact={true}
           icon={<GitCompare size={28} />}
-          title={t`Pick what to compare ${profileA.name} with`}
+          title={t`Pick what to compare ${{ name: profileA.name }} with`}
           action={
             <Box
               sx={{ display: 'flex', gap: space.gap, flexWrap: 'wrap', justifyContent: 'center' }}

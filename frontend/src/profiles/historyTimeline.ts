@@ -58,13 +58,13 @@ export function historySummary(
   }
   const parts: string[] = []
   if (added > 0) {
-    parts.push(plural(added, { one: 'Added # mod', other: 'Added # mods' }))
+    parts.push(plural({ count: added }, { one: 'Added # mod', other: 'Added # mods' }))
   }
   if (removed > 0) {
-    parts.push(plural(removed, { one: 'Removed # mod', other: 'Removed # mods' }))
+    parts.push(plural({ count: removed }, { one: 'Removed # mod', other: 'Removed # mods' }))
   }
   if (updated > 0) {
-    parts.push(plural(updated, { one: 'Updated # mod', other: 'Updated # mods' }))
+    parts.push(plural({ count: updated }, { one: 'Updated # mod', other: 'Updated # mods' }))
   }
   return parts.join(' · ')
 }

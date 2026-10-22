@@ -68,7 +68,7 @@ export function CompareGroupView({
   const cellText = (row: CompareRow, side: CompareSide | null, other: Profile) => {
     if (!side) {
       return (
-        <Tooltip title={t`Not in ${other.name}`} describeChild={true}>
+        <Tooltip title={t`Not in ${{ name: other.name }}`} describeChild={true}>
           <span>{MISSING}</span>
         </Tooltip>
       )

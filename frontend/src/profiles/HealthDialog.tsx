@@ -78,10 +78,9 @@ function findingText(f: HealthFinding): string {
           )
     default: {
       const count = f.items?.length ?? 0
-      return plural(count, {
-        one: '# stored mod is not used by any profile',
-        other: '# stored mods are not used by any profile',
-      })
+      return i18n._(
+        msg`${plural({ count }, { one: '# stored mod is', other: '# stored mods are' })} not used by any profile`,
+      )
     }
   }
 }
@@ -147,7 +146,7 @@ function confirmTitle(chosen: HealthFinding[]): string {
   const name = reverts[0]?.items?.[0] ?? ''
   return reverts.length === 1
     ? i18n._(msg`Revert ${name} to the installed copy?`)
-    : plural(reverts.length, { one: 'Revert # mod?', other: 'Revert # mods?' })
+    : plural({ count: reverts.length }, { one: 'Revert # mod?', other: 'Revert # mods?' })
 }
 
 function confirmBody(chosen: HealthFinding[]): string {

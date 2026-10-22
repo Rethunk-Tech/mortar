@@ -41,19 +41,13 @@ function Plan({
   onMove: (on: boolean) => void
 }) {
   const { t } = useLingui()
+  const mods = plural({ count }, { one: '# mod', other: '# mods' })
   return (
     <>
       <Typography sx={{ mb: 1.5, color: 'text.secondary' }}>
         {canMove && move
-          ? plural(count, {
-              one: "# mod will be moved into a new profile and out of the game's Mods folder. Mortar puts the profile's mods there each time you play.",
-              other:
-                "# mods will be moved into a new profile and out of the game's Mods folder. Mortar puts the profile's mods there each time you play.",
-            })
-          : plural(count, {
-              one: '# mod will be copied into a new profile. The game folder is left as it is.',
-              other: '# mods will be copied into a new profile. The game folder is left as it is.',
-            })}
+          ? t`${mods} will be moved into a new profile and out of the game's Mods folder. Mortar puts the profile's mods there each time you play.`
+          : t`${mods} will be copied into a new profile. The game folder is left as it is.`}
       </Typography>
       {canMove ? (
         <>
@@ -159,9 +153,9 @@ export function GameModsDialog({
         kind: 'success' as const,
         title: t`Created ${{ name: res.profile.name }}`,
         body: [
-          plural(res.imported, { one: '# imported', other: '# imported' }),
-          plural(res.skipped, { one: '# skipped', other: '# skipped' }),
-          plural(res.failed, { one: '# failed', other: '# failed' }),
+          plural({ count: res.imported }, { one: '# imported', other: '# imported' }),
+          plural({ count: res.skipped }, { one: '# skipped', other: '# skipped' }),
+          plural({ count: res.failed }, { one: '# failed', other: '# failed' }),
         ].join(' · '),
       }
       useToasts.getState().push(detail === '' ? toast : { ...toast, detail })

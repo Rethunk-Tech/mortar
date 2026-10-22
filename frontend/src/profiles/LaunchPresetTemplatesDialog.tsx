@@ -75,7 +75,7 @@ export function LaunchPresetTemplatesDialog({
       </DialogActions>
       <ConfirmDialog
         open={removing !== null}
-        title={t`Delete ${removing?.name ?? ''}?`}
+        title={t`Delete ${{ name: removing?.name ?? '' }}?`}
         body={t`This template will be deleted. Presets already copied into profiles stay.`}
         confirmLabel={t`Delete template`}
         color="error"

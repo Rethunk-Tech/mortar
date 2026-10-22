@@ -48,7 +48,7 @@ export function HistoryPanel({
   }
   const errorText =
     h.missingNames.length > 0
-      ? t`Could not restore ${listNames(h.missingNames)}`
+      ? t`Could not restore ${{ names: listNames(h.missingNames) }}`
       : errorMessage(h.error)
   return (
     <Dialog

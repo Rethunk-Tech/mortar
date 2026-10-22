@@ -67,7 +67,9 @@ function pushMissingToast(outcome: RevertOutcome) {
     title: i18n._(msg`Could not undo. Missing from the store: ${list}`),
     ...(outcome.missingUnfetchable.length > 0
       ? {
-          body: i18n._(msg`Mortar cannot download ${listNames(outcome.missingUnfetchable)} again.`),
+          body: i18n._(
+            msg`Mortar cannot download ${{ names: listNames(outcome.missingUnfetchable) }} again.`,
+          ),
         }
       : {}),
     ...(wants.length > 0
@@ -106,7 +108,7 @@ async function missingFromError(
 function pushRevertUndo(game: string, profileId: string, beforeId: string, next: Profile) {
   useToasts.getState().push({
     kind: 'success',
-    title: i18n._(msg`Restored ${next.name} to before that change`),
+    title: i18n._(msg`Restored ${{ name: next.name }} to before that change`),
     action: {
       label: i18n._(msg`Undo`),
       profileId,

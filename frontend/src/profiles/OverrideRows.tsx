@@ -10,6 +10,8 @@ import {
   Select,
   Typography,
 } from '@mui/material'
+import { PROTON, SMAPI } from '../brand/productNames.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useGameInfo } from '../games/info.ts'
 import { gamePrefs } from '../settings/gamePrefs.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -49,7 +51,7 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
     case 'defaultLaunchMethod':
       return i18n._(msg`Launch method`)
     case 'showSmapiConsole':
-      return i18n._(msg`SMAPI console window`)
+      return i18n._(msg`${{ loader: SMAPI }} console window`)
     case 'backupBeforePlay':
       return i18n._(msg`Back up saves before Play`)
     case 'saveBackupsKept':
@@ -63,7 +65,7 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
     case 'graphicsApi':
       return i18n._(msg`Graphics API`)
     case 'protonVersion':
-      return i18n._(msg`Proton version`)
+      return i18n._(msg`${{ app: PROTON }} version`)
     case 'gameSettingsMode':
       return i18n._(msg`Game settings file`)
     default:
@@ -154,7 +156,7 @@ export function OverridesSection({
               </Select>
               {key === 'updateModsBeforePlayDefault' && nexus && !premium ? (
                 <FormHelperText>
-                  {t`Free Nexus accounts click each download on Nexus; those updates do not block Play.`}
+                  {t`Free ${{ source: sourceLabel('nexus') }} accounts click each download on ${{ source: sourceLabel('nexus') }}; those updates do not block Play.`}
                 </FormHelperText>
               ) : null}
             </FormControl>

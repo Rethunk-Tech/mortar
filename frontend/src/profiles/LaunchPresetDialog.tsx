@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type { LaunchPreset } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { SMAPI } from '../brand/productNames.ts'
 import { useGameInfo } from '../games/info.ts'
 import { presetNameError } from './profilePresets.ts'
 
@@ -75,7 +76,7 @@ export function LaunchPresetDialog({
             select={true}
             fullWidth={true}
             margin="dense"
-            label={t`SMAPI console window`}
+            label={t`${{ loader: SMAPI }} console window`}
             value={draft.showConsole || FOLLOW}
             onChange={(e) =>
               setDraft({ ...draft, showConsole: e.target.value === FOLLOW ? '' : e.target.value })

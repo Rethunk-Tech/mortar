@@ -122,7 +122,7 @@ function BudgetLine({ budget }: { budget: ProfileBudget | undefined }) {
       ? t`${store} in the store (${shared} shared with other profiles)`
       : t`${store} in the store`,
     t`${deployed} deployed`,
-    budget.saves > 0 ? t`${formatBytes(budget.saves)} of saves` : undefined,
+    budget.saves > 0 ? t`${{ size: formatBytes(budget.saves) }} of saves` : undefined,
   ])
   return (
     <Typography noWrap={true} title={line} sx={{ fontSize: 13, color: 'text.secondary' }}>
@@ -181,10 +181,10 @@ export const ProfileRow = memo(function ProfileRowView({
         zIndex: isDragging ? 1 : 0,
       }}
     >
-      <Tooltip title={t`Reorder ${profile.name}`}>
+      <Tooltip title={t`Reorder ${{ name: profile.name }}`}>
         <IconButton
           ref={setActivatorNodeRef}
-          aria-label={t`Reorder ${profile.name}`}
+          aria-label={t`Reorder ${{ name: profile.name }}`}
           {...attributes}
           {...listeners}
           sx={{
@@ -233,17 +233,17 @@ export const ProfileRow = memo(function ProfileRowView({
         variant="outlined"
         color="inherit"
         startIcon={<Share2 size={15} />}
-        aria-label={t`Share ${profile.name}`}
+        aria-label={t`Share ${{ name: profile.name }}`}
         onClick={() => openShare(profile.id)}
         sx={{ height: 40 }}
       >
         {t`Share`}
       </Button>
-      <Tooltip title={t`Actions for ${profile.name}`}>
+      <Tooltip title={t`Actions for ${{ name: profile.name }}`}>
         <IconButton
           ref={more}
           data-actions={profile.id}
-          aria-label={t`Actions for ${profile.name}`}
+          aria-label={t`Actions for ${{ name: profile.name }}`}
           aria-haspopup="menu"
           aria-expanded={anchor !== null}
           onClick={(e) => setAnchor(e.currentTarget)}

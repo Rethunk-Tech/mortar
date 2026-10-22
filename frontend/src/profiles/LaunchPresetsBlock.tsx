@@ -193,7 +193,7 @@ function LaunchPresetsBlock({
       />
       <ConfirmDialog
         open={removing !== null}
-        title={t`Delete ${removing?.name ?? ''}?`}
+        title={t`Delete ${{ name: removing?.name ?? '' }}?`}
         body={t`This launch preset will be deleted.`}
         confirmLabel={t`Delete preset`}
         color="error"

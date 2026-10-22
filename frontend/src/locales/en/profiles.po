@@ -7,6 +7,10 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
+#: src/profiles/CompareDialog.tsx
+msgid "{count, plural, one {Copied # mod to {name}} other {Copied # mods to {name}}}"
+msgstr "{count, plural, one {Copied # mod to {name}} other {Copied # mods to {name}}}"
+
 #: src/profiles/historyLabel.ts
 msgid "Switched {name} to the {detail} update channel"
 msgstr "Switched {name} to the {detail} update channel"
@@ -27,11 +31,6 @@ msgstr "Saved in the profile's config folder and applied the next time the game 
 msgid "Start muted"
 msgstr "Start muted"
 
-#. placeholder {0}: r.queued
-#: src/profiles/restoreBackup.ts
-msgid "{0, plural, one {# mod is downloading.} other {# mods are downloading.}}"
-msgstr "{0, plural, one {# mod is downloading.} other {# mods are downloading.}}"
-
 #: src/profiles/CompareTop.tsx
 msgid "Choose…"
 msgstr "Choose…"
@@ -43,13 +42,6 @@ msgstr "Revert {name} to the installed copy?"
 #: src/profiles/MergeDialog.tsx
 msgid "Stop the game to change mods."
 msgstr "Stop the game to change mods."
-
-#. placeholder {0}: plan.copy.length
-#. placeholder {1}: to.name
-#. placeholder {2}: to.name
-#: src/profiles/CompareDialog.tsx
-msgid "{0, plural, one {Copied # mod to {1}} other {Copied # mods to {2}}}"
-msgstr "{0, plural, one {Copied # mod to {1}} other {Copied # mods to {2}}}"
 
 #: src/profiles/historyRevert.ts
 msgid "That profile is gone."
@@ -87,16 +79,17 @@ msgstr "Deleted profile"
 msgid "{chosen} chosen"
 msgstr "{chosen} chosen"
 
-#: src/profiles/historyLabel.ts
-msgid "{count, plural, one {Moved # mod from the game's Mods folder} other {Moved # mods from the game's Mods folder}}"
-msgstr "{count, plural, one {Moved # mod from the game's Mods folder} other {Moved # mods from the game's Mods folder}}"
+#: src/profiles/GameModsDialog.tsx
+msgid "{count, plural, one {# imported} other {# imported}}"
+msgstr "{count, plural, one {# imported} other {# imported}}"
 
-#. placeholder {0}: r.name
-#. placeholder {1}: r.version
-#. placeholder {2}: formatDuration(r.addedMs, i18n.locale)
-#: src/profiles/SinceLastRun.tsx
-msgid "Startup: {0} {1} added {2}"
-msgstr "Startup: {0} {1} added {2}"
+#: src/profiles/MergeDialog.tsx
+msgid "{count, plural, one {{name} gets # new mod} other {{name} gets # new mods}}"
+msgstr "{count, plural, one {{name} gets # new mod} other {{name} gets # new mods}}"
+
+#: src/profiles/EditProfileDialog.tsx
+msgid "{name} is used after Save."
+msgstr "{name} is used after Save."
 
 #: src/profiles/HealthDialog.tsx
 #: src/profiles/ProfilesPage.tsx
@@ -115,10 +108,13 @@ msgstr "Dismiss"
 msgid "Everything looks fine"
 msgstr "Everything looks fine"
 
-#. placeholder {0}: profile.name
-#: src/profiles/ProfileRow.tsx
-msgid "Reorder {0}"
-msgstr "Reorder {0}"
+#: src/profiles/MergeDialog.tsx
+msgid "Use the newer version ({count, plural, one {# mod updates} other {# mods update}})"
+msgstr "Use the newer version ({count, plural, one {# mod updates} other {# mods update}})"
+
+#: src/profiles/ProfilesPage.tsx
+msgid "Delete {name} permanently"
+msgstr "Delete {name} permanently"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Pink"
@@ -132,16 +128,9 @@ msgstr "Mark a known good point first."
 msgid "This profile"
 msgstr "This profile"
 
-#. placeholder {0}: hint.nativeFrame
-#: src/profiles/CrashHintCard.tsx
-msgid "Crashed in {0}"
-msgstr "Crashed in {0}"
-
-#. placeholder {0}: p.name
-#. placeholder {1}: modsLabel(userModCount(p))
-#: src/profiles/CompareTop.tsx
-msgid "{0} · {1}"
-msgstr "{0} · {1}"
+#: src/profiles/GameModsDialog.tsx
+msgid "{mods} will be moved into a new profile and out of the game's Mods folder. Mortar puts the profile's mods there each time you play."
+msgstr "{mods} will be moved into a new profile and out of the game's Mods folder. Mortar puts the profile's mods there each time you play."
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Star"
@@ -150,11 +139,6 @@ msgstr "Star"
 #: src/profiles/ProfileRow.tsx
 msgid "Rename"
 msgstr "Rename"
-
-#. placeholder {0}: listNames(missing)
-#: src/profiles/restoreBackup.ts
-msgid "Install by hand: {0}"
-msgstr "Install by hand: {0}"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Find a mod in all profiles"
@@ -180,29 +164,21 @@ msgstr "{queued} to install."
 msgid "Revert this mod"
 msgstr "Revert this mod"
 
-#. placeholder {0}: listNames(h.missingNames)
-#: src/profiles/HistoryPanel.tsx
-msgid "Could not restore {0}"
-msgstr "Could not restore {0}"
+#: src/profiles/CrashHintCard.tsx
+msgid "Stack frame: {evidence}"
+msgstr "Stack frame: {evidence}"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Orange"
 msgstr "Orange"
 
-#. placeholder {0}: adds.length
-#: src/profiles/MergeDialog.tsx
-msgid "{0, plural, one {{targetName} gets # new mod} other {{targetName} gets # new mods}}"
-msgstr "{0, plural, one {{targetName} gets # new mod} other {{targetName} gets # new mods}}"
+#: src/profiles/ProfileRow.tsx
+msgid "{size} of saves"
+msgstr "{size} of saves"
 
-#. placeholder {0}: res.failed
-#: src/profiles/GameModsDialog.tsx
-msgid "{0, plural, one {# failed} other {# failed}}"
-msgstr "{0, plural, one {# failed} other {# failed}}"
-
-#. placeholder {0}: progress.name
-#: src/profiles/GameModsProgress.tsx
-msgid "{verb} {n} of {total} · {0}"
-msgstr "{verb} {n} of {total} · {0}"
+#: src/profiles/historyLabel.ts
+msgid "Enabled {name}"
+msgstr "Enabled {name}"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Sprout"
@@ -217,12 +193,12 @@ msgid "Moving copies the whole profile, then removes the old copy, so it needs r
 msgstr "Moving copies the whole profile, then removes the old copy, so it needs room for both. On another drive the mods are copies, not links to the shared store, so the profile takes its full size there. Stop the game first."
 
 #: src/profiles/HealthDialog.tsx
-msgid "{count, plural, one {# stored mod is not used by any profile} other {# stored mods are not used by any profile}}"
-msgstr "{count, plural, one {# stored mod is not used by any profile} other {# stored mods are not used by any profile}}"
-
-#: src/profiles/HealthDialog.tsx
 msgid "Repair all"
 msgstr "Repair all"
+
+#: src/profiles/GameModsDialog.tsx
+msgid "{mods} will be copied into a new profile. The game folder is left as it is."
+msgstr "{mods} will be copied into a new profile. The game folder is left as it is."
 
 #: src/profiles/GameModsDialog.tsx
 #: src/profiles/HealthDialog.tsx
@@ -230,14 +206,13 @@ msgstr "Repair all"
 msgid "Retry"
 msgstr "Retry"
 
-#. placeholder {0}: hint.evidence
-#: src/profiles/CrashHintCard.tsx
-msgid "Stack frame: {0}"
-msgstr "Stack frame: {0}"
-
 #: src/profiles/historyLabel.ts
 msgid "Unpinned {name}"
 msgstr "Unpinned {name}"
+
+#: src/profiles/HistoryPanel.tsx
+msgid "Could not restore {names}"
+msgstr "Could not restore {names}"
 
 #: src/profiles/HealthDialog.tsx
 msgid "{name} is missing from the store, and Mortar cannot download it again"
@@ -247,10 +222,18 @@ msgstr "{name} is missing from the store, and Mortar cannot download it again"
 msgid "Saved {name} as a launch preset template"
 msgstr "Saved {name} as a launch preset template"
 
+#: src/profiles/ProfilesPage.tsx
+msgid "Delete {name} permanently?"
+msgstr "Delete {name} permanently?"
+
 #: src/profiles/EditProfileDialog.tsx
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Name"
 msgstr "Name"
+
+#: src/profiles/ProfilesPage.tsx
+msgid "{count, plural, one {# day left} other {# days left}}"
+msgstr "{count, plural, one {# day left} other {# days left}}"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Could not add the launch preset"
@@ -268,14 +251,17 @@ msgstr "Changed game install"
 msgid "Launch presets"
 msgstr "Launch presets"
 
-#: src/profiles/EditProfileDialog.tsx
-msgid "{pickedName} is used after Save."
-msgstr "{pickedName} is used after Save."
+#: src/profiles/historyRevert.ts
+msgid "Mortar cannot download {names} again."
+msgstr "Mortar cannot download {names} again."
 
-#. placeholder {0}: view.onlyA
 #: src/profiles/CompareDialog.tsx
-msgid "{0} only in {aName}"
-msgstr "{0} only in {aName}"
+msgid "{count, plural, one {# difference} other {# differences}}"
+msgstr "{count, plural, one {# difference} other {# differences}}"
+
+#: src/profiles/VortexFolderPrompt.tsx
+msgid "This {manager} folder has no profiles for {game}: found {found}."
+msgstr "This {manager} folder has no profiles for {game}: found {found}."
 
 #: src/profiles/GameSettings.tsx
 msgid "Fullscreen resolution width"
@@ -284,6 +270,10 @@ msgstr "Fullscreen resolution width"
 #: src/profiles/OverrideRows.tsx
 msgid "Update mods before Play"
 msgstr "Update mods before Play"
+
+#: src/profiles/restoreBackup.ts
+msgid "Restored as {name}"
+msgstr "Restored as {name}"
 
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "Uses the saved options"
@@ -294,14 +284,11 @@ msgstr "Uses the saved options"
 msgid "Filter mods"
 msgstr "Filter mods"
 
-#: src/profiles/historyLabel.ts
-msgid "Found mods on Nexus"
-msgstr "Found mods on Nexus"
-
 #: src/profiles/CompareDialog.tsx
 msgid "{count} selected"
 msgstr "{count} selected"
 
+#: src/profiles/CompareTop.tsx
 #: src/profiles/ProfileMenu.tsx
 msgid "{name} · {mods}"
 msgstr "{name} · {mods}"
@@ -310,14 +297,13 @@ msgstr "{name} · {mods}"
 msgid "Stop comparing"
 msgstr "Stop comparing"
 
-#: src/profiles/PackFolderPrompt.tsx
-msgid "r2modman or Gale in another folder?"
-msgstr "r2modman or Gale in another folder?"
+#: src/profiles/VortexFolderPrompt.tsx
+msgid "{manager} data folder"
+msgstr "{manager} data folder"
 
-#. placeholder {0}: view.identical
-#: src/profiles/CompareDialog.tsx
-msgid "{0} identical"
-msgstr "{0} identical"
+#: src/profiles/ProfileRow.tsx
+msgid "Reorder {name}"
+msgstr "Reorder {name}"
 
 #: src/profiles/CompareDialog.tsx
 #: src/profiles/LaunchPresetDialog.tsx
@@ -336,9 +322,9 @@ msgstr "Repaired {name}"
 msgid "Lime"
 msgstr "Lime"
 
-#: src/profiles/OverrideRows.tsx
-msgid "Free Nexus accounts click each download on Nexus; those updates do not block Play."
-msgstr "Free Nexus accounts click each download on Nexus; those updates do not block Play."
+#: src/profiles/ProfileRow.tsx
+msgid "Actions for {name}"
+msgstr "Actions for {name}"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "Edit profile"
@@ -363,11 +349,6 @@ msgstr "Undo"
 msgid "Changed loader"
 msgstr "Changed loader"
 
-#. placeholder {0}: form.clientName
-#: src/profiles/ServerSettings.tsx
-msgid "Queues the mods of a {0} profile into this server profile."
-msgstr "Queues the mods of a {0} profile into this server profile."
-
 #: src/profiles/CompareTop.tsx
 msgid "Your profiles"
 msgstr "Your profiles"
@@ -375,6 +356,10 @@ msgstr "Your profiles"
 #: src/profiles/ProfilesPage.tsx
 msgid "No mod matches"
 msgstr "No mod matches"
+
+#: src/profiles/ProfileRow.tsx
+msgid "Share {name}"
+msgstr "Share {name}"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "Appearance"
@@ -392,17 +377,25 @@ msgstr "Check this profile"
 msgid "Compare {summary}"
 msgstr "Compare {summary}"
 
-#: src/profiles/MergeDialog.tsx
-msgid "Could not add the mods to {targetName}"
-msgstr "Could not add the mods to {targetName}"
+#: src/profiles/HealthDialog.tsx
+msgid "{count, plural, one {# stored mod is} other {# stored mods are}} not used by any profile"
+msgstr "{count, plural, one {# stored mod is} other {# stored mods are}} not used by any profile"
 
 #: src/profiles/ProfileMenu.tsx
 msgid "Find a mod in all profiles…"
 msgstr "Find a mod in all profiles…"
 
+#: src/profiles/historyLabel.ts
+msgid "Set the {source} page of {name}"
+msgstr "Set the {source} page of {name}"
+
 #: src/profiles/CompareTop.tsx
 msgid "with"
 msgstr "with"
+
+#: src/profiles/MergeDialog.tsx
+msgid "Keep {name}'s versions"
+msgstr "Keep {name}'s versions"
 
 #: src/profiles/overrideValue.ts
 msgid "Off"
@@ -416,11 +409,6 @@ msgstr "Before this change"
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Launch prefix"
 msgstr "Launch prefix"
-
-#. placeholder {0}: reverts.length
-#: src/profiles/HealthDialog.tsx
-msgid "{0, plural, one {Revert # mod?} other {Revert # mods?}}"
-msgstr "{0, plural, one {Revert # mod?} other {Revert # mods?}}"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Left in the shared folder"
@@ -451,10 +439,6 @@ msgstr "Save as template"
 msgid "Neither profile has a mod that matches the filter."
 msgstr "Neither profile has a mod that matches the filter."
 
-#: src/profiles/GameModsDialog.tsx
-msgid "{count, plural, one {# mod will be moved into a new profile and out of the game's Mods folder. Mortar puts the profile's mods there each time you play.} other {# mods will be moved into a new profile and out of the game's Mods folder. Mortar puts the profile's mods there each time you play.}}"
-msgstr "{count, plural, one {# mod will be moved into a new profile and out of the game's Mods folder. Mortar puts the profile's mods there each time you play.} other {# mods will be moved into a new profile and out of the game's Mods folder. Mortar puts the profile's mods there each time you play.}}"
-
 #: src/profiles/store.ts
 msgid "Could not open the profile folder"
 msgstr "Could not open the profile folder"
@@ -468,14 +452,21 @@ msgstr "Game settings"
 msgid "Only in {name}"
 msgstr "Only in {name}"
 
-#: src/profiles/VortexFolderPrompt.tsx
-msgid "This Vortex folder has no profiles for {gameName}: found {found}."
-msgstr "This Vortex folder has no profiles for {gameName}: found {found}."
-
-#. placeholder {0}: profileA.name
 #: src/profiles/CompareDialog.tsx
-msgid "Pick what to compare {0} with"
-msgstr "Pick what to compare {0} with"
+msgid "Pick what to compare {name} with"
+msgstr "Pick what to compare {name} with"
+
+#: src/profiles/HistoryEventRow.tsx
+msgid "Revert this mod: {detail}"
+msgstr "Revert this mod: {detail}"
+
+#: src/profiles/OverrideRows.tsx
+msgid "{app} version"
+msgstr "{app} version"
+
+#: src/profiles/GameModsDialog.tsx
+msgid "{count, plural, one {# skipped} other {# skipped}}"
+msgstr "{count, plural, one {# skipped} other {# skipped}}"
 
 #: src/profiles/store.ts
 msgid "Could not read your profiles"
@@ -489,10 +480,6 @@ msgstr "Your edits to its files are replaced with the installed copy."
 msgid "Compare against a friend's profile or a multiplayer host's list."
 msgstr "Compare against a friend's profile or a multiplayer host's list."
 
-#: src/profiles/MergeDialog.tsx
-msgid "{both, plural, one {# mod is in both} other {# mods are in both}}"
-msgstr "{both, plural, one {# mod is in both} other {# mods are in both}}"
-
 #: src/profiles/LaunchPresetDialog.tsx
 msgid "Edit launch preset"
 msgstr "Edit launch preset"
@@ -504,9 +491,17 @@ msgstr "Edit launch preset"
 msgid "Delete"
 msgstr "Delete"
 
+#: src/profiles/CompareDialog.tsx
+msgid "{count, plural, one {Matched # version in {name}} other {Matched # versions in {name}}}"
+msgstr "{count, plural, one {Matched # version in {name}} other {Matched # versions in {name}}}"
+
 #: src/profiles/historyLabel.ts
 msgid "Marked {name} implicit"
 msgstr "Marked {name} implicit"
+
+#: src/profiles/MergeDialog.tsx
+msgid "{count, plural, one {# mod is in both} other {# mods are in both}}"
+msgstr "{count, plural, one {# mod is in both} other {# mods are in both}}"
 
 #: src/profiles/store.ts
 msgid "Could not duplicate the profile"
@@ -539,27 +534,25 @@ msgstr "Cancel"
 msgid "The saved change {change} from {when} is missing its config files"
 msgstr "The saved change {change} from {when} is missing its config files"
 
+#: src/profiles/CrashHintCard.tsx
+msgid "The game crashed {when}"
+msgstr "The game crashed {when}"
+
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 msgid "Delete template"
 msgstr "Delete template"
-
-#: src/profiles/historyTimeline.ts
-msgid "{updated, plural, one {Updated # mod} other {Updated # mods}}"
-msgstr "{updated, plural, one {Updated # mod} other {Updated # mods}}"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "Choose image…"
 msgstr "Choose image…"
 
-#. placeholder {0}: profile.name
-#: src/profiles/ProfileFolderDialog.tsx
-msgid "Folder of {0}"
-msgstr "Folder of {0}"
+#: src/profiles/CrashHintCard.tsx
+msgid "Crashed in {nativeFrame}"
+msgstr "Crashed in {nativeFrame}"
 
-#. placeholder {0}: preview.targetOnly
-#: src/profiles/MergeDialog.tsx
-msgid "{0, plural, one {Keeps # mod only {targetName} has} other {Keeps # mods only {targetName} has}}"
-msgstr "{0, plural, one {Keeps # mod only {targetName} has} other {Keeps # mods only {targetName} has}}"
+#: src/profiles/ProfileFolderDialog.tsx
+msgid "Choose where {name} lives"
+msgstr "Choose where {name} lives"
 
 #: src/profiles/CompareTable.tsx
 #: src/profiles/GameModsDialog.tsx
@@ -570,6 +563,10 @@ msgstr "Disabled"
 #: src/profiles/HistoryPanel.tsx
 msgid "Profile changes will appear here."
 msgstr "Profile changes will appear here."
+
+#: src/profiles/PackFolderPrompt.tsx
+msgid "{manager} or {otherManager} in another folder?"
+msgstr "{manager} or {otherManager} in another folder?"
 
 #: src/profiles/HistoryTimeline.tsx
 msgid "Today"
@@ -587,13 +584,17 @@ msgstr "History…"
 msgid "Wheat"
 msgstr "Wheat"
 
+#: src/profiles/historyLabel.ts
+msgid "Moved {count, plural, one {# mod} other {# mods}} from the game's Mods folder"
+msgstr "Moved {count, plural, one {# mod} other {# mods}} from the game's Mods folder"
+
 #: src/profiles/store.ts
 msgid "Could not read recently deleted profiles"
 msgstr "Could not read recently deleted profiles"
 
-#: src/profiles/GameModsDialog.tsx
-msgid "{count, plural, one {# mod will be copied into a new profile. The game folder is left as it is.} other {# mods will be copied into a new profile. The game folder is left as it is.}}"
-msgstr "{count, plural, one {# mod will be copied into a new profile. The game folder is left as it is.} other {# mods will be copied into a new profile. The game folder is left as it is.}}"
+#: src/profiles/HealthDialog.tsx
+msgid "{count, plural, one {Revert # mod?} other {Revert # mods?}}"
+msgstr "{count, plural, one {Revert # mod?} other {Revert # mods?}}"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Edit"
@@ -652,19 +653,14 @@ msgstr "Could not permanently delete the profile"
 msgid "Heart"
 msgstr "Heart"
 
-#. placeholder {0}: source.name
-#: src/profiles/MergeDialog.tsx
-msgid "{0} stays as it is."
-msgstr "{0} stays as it is."
-
 #: src/profiles/HealthDialog.tsx
 msgid "Files of {name} changed outside Mortar"
 msgstr "Files of {name} changed outside Mortar"
 
-#. placeholder {0}: formatBytes(budget.saves)
-#: src/profiles/ProfileRow.tsx
-msgid "{0} of saves"
-msgstr "{0} of saves"
+#: src/profiles/LaunchPresetsBlock.tsx
+#: src/profiles/LaunchPresetTemplatesDialog.tsx
+msgid "Delete {name}?"
+msgstr "Delete {name}?"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "No profile holds a mod by that name or id."
@@ -695,22 +691,21 @@ msgstr "A friend's link or file…"
 msgid "Could not save the launch presets"
 msgstr "Could not save the launch presets"
 
+#: src/profiles/ProfileMenu.tsx
+msgid "{game} profiles"
+msgstr "{game} profiles"
+
 #: src/profiles/AppearancePickers.tsx
 msgid "Gold"
 msgstr "Gold"
-
-#. placeholder {0}: r.name
-#: src/profiles/restoreBackup.ts
-msgid "Restored as {0}"
-msgstr "Restored as {0}"
 
 #: src/profiles/ServerSettings.tsx
 msgid "Saved. Type to change it."
 msgstr "Saved. Type to change it."
 
-#: src/profiles/MergeDialog.tsx
-msgid "{updates, plural, one {Use the newer version (# mod updates)} other {Use the newer version (# mods update)}}"
-msgstr "{updates, plural, one {Use the newer version (# mod updates)} other {Use the newer version (# mods update)}}"
+#: src/profiles/LaunchOptionsBlock.tsx
+msgid "One VAR=value per line, for direct launches only; {launcher} launches ignore them."
+msgstr "One VAR=value per line, for direct launches only; {launcher} launches ignore them."
 
 #: src/profiles/historyLabel.ts
 msgid "Tagged {name} with {detail}"
@@ -724,6 +719,10 @@ msgstr "Changed profile settings"
 #: src/profiles/ProfilesPage.tsx
 msgid "New profile…"
 msgstr "New profile…"
+
+#: src/profiles/MergeDialog.tsx
+msgid "Add {name}'s mods to…"
+msgstr "Add {name}'s mods to…"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Mortar found nothing to repair in this profile."
@@ -758,11 +757,6 @@ msgstr "Changed the profile"
 msgid "Launch options"
 msgstr "Launch options"
 
-#. placeholder {0}: listNames(outcome.missingUnfetchable)
-#: src/profiles/historyRevert.ts
-msgid "Mortar cannot download {0} again."
-msgstr "Mortar cannot download {0} again."
-
 #: src/profiles/EditProfileDialog.tsx
 msgid "The automatic cover is used after Save."
 msgstr "The automatic cover is used after Save."
@@ -775,6 +769,10 @@ msgstr "The folder of {name} was deleted outside Mortar"
 msgid "Zoom ({value}%)"
 msgstr "Zoom ({value}%)"
 
+#: src/profiles/CompareDialog.tsx
+msgid "Nothing selected would change {name}."
+msgstr "Nothing selected would change {name}."
+
 #: src/profiles/collectionUnlink.ts
 msgid "Could not unlink the collection"
 msgstr "Could not unlink the collection"
@@ -783,13 +781,13 @@ msgstr "Could not unlink the collection"
 msgid "Deleted {name}"
 msgstr "Deleted {name}"
 
-#: src/profiles/MergeDialog.tsx
-msgid "Nothing to add: {targetName} already has every mod at the same or a newer version."
-msgstr "Nothing to add: {targetName} already has every mod at the same or a newer version."
-
 #: src/profiles/GameModsDialog.tsx
 msgid "If they stay there, the game goes on loading them even when a profile disables them."
 msgstr "If they stay there, the game goes on loading them even when a profile disables them."
+
+#: src/profiles/GameModsDialog.tsx
+msgid "{count, plural, one {# failed} other {# failed}}"
+msgstr "{count, plural, one {# failed} other {# failed}}"
 
 #: src/profiles/historyLabel.ts
 msgid "{count, plural, one {Merged # mod from {name}} other {Merged # mods from {name}}}"
@@ -803,14 +801,13 @@ msgstr "Disable it and play"
 msgid "Delete the unreadable changes from history?"
 msgstr "Delete the unreadable changes from history?"
 
+#: src/profiles/historyRevert.ts
+msgid "Restored {name} to before that change"
+msgstr "Restored {name} to before that change"
+
 #: src/profiles/store.ts
 msgid "Could not save the profile order"
 msgstr "Could not save the profile order"
-
-#. placeholder {0}: profile.name
-#: src/profiles/ProfileFolderDialog.tsx
-msgid "Choose where {0} lives"
-msgstr "Choose where {0} lives"
 
 #: src/profiles/ProfileRow.tsx
 msgid "Edit profile…"
@@ -832,19 +829,13 @@ msgstr "named in the crash log"
 msgid "Undo these changes: {summary}"
 msgstr "Undo these changes: {summary}"
 
-#. placeholder {0}: res.skipped
-#: src/profiles/GameModsDialog.tsx
-msgid "{0, plural, one {# skipped} other {# skipped}}"
-msgstr "{0, plural, one {# skipped} other {# skipped}}"
-
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "Reached the title screen"
 msgstr "Reached the title screen"
 
-#. placeholder {0}: ev.name ?? ''
-#: src/profiles/historyLabel.ts
-msgid "Removed {0}"
-msgstr "Removed {0}"
+#: src/profiles/restoreBackup.ts
+msgid "{count, plural, one {# mod is downloading.} other {# mods are downloading.}}"
+msgstr "{count, plural, one {# mod is downloading.} other {# mods are downloading.}}"
 
 #: src/profiles/ProfileRow.tsx
 msgid "imported from a link"
@@ -863,10 +854,6 @@ msgstr "Back"
 msgid "Download missing"
 msgstr "Download missing"
 
-#: src/profiles/VortexFolderPrompt.tsx
-msgid "Use Vortex from another folder?"
-msgstr "Use Vortex from another folder?"
-
 #: src/profiles/historyLabel.ts
 msgid "Deleted a custom category"
 msgstr "Deleted a custom category"
@@ -878,6 +865,10 @@ msgstr "Another preset already has this name."
 #: src/profiles/AppearancePickers.tsx
 msgid "Moon"
 msgstr "Moon"
+
+#: src/profiles/CompareDialog.tsx
+msgid "Could not change {name}"
+msgstr "Could not change {name}"
 
 #: src/profiles/CrashHintCard.tsx
 msgid "The log does not name a mod."
@@ -895,6 +886,10 @@ msgstr "Kept in Mortar's data folder."
 msgid "Edited the settings of {name}"
 msgstr "Edited the settings of {name}"
 
+#: src/profiles/ProfileFolderDialog.tsx
+msgid "Folder of {name}"
+msgstr "Folder of {name}"
+
 #: src/profiles/GameModsDialog.tsx
 msgid "Nothing to import"
 msgstr "Nothing to import"
@@ -911,16 +906,6 @@ msgstr "Direct launch preview"
 msgid "imported from the game's Mods folder"
 msgstr "imported from the game's Mods folder"
 
-#. placeholder {0}: sentence(item.detail)
-#: src/profiles/HistoryEventRow.tsx
-msgid "Revert this mod: {0}"
-msgstr "Revert this mod: {0}"
-
-#. placeholder {0}: item.name
-#: src/profiles/ProfilesPage.tsx
-msgid "Delete {0} permanently"
-msgstr "Delete {0} permanently"
-
 #: src/profiles/historyLabel.ts
 msgid "Updated {name} from {from} to {to}"
 msgstr "Updated {name} from {from} to {to}"
@@ -933,15 +918,6 @@ msgstr "Changed launch settings"
 msgid "Show the console window"
 msgstr "Show the console window"
 
-#: src/profiles/ProfileFolderDialog.tsx
-msgid "Kept in {folder}."
-msgstr "Kept in {folder}."
-
-#. placeholder {0}: target.name
-#: src/profiles/CompareDialog.tsx
-msgid "Nothing selected would change {0}."
-msgstr "Nothing selected would change {0}."
-
 #: src/profiles/CompareTop.tsx
 msgid "Someone else's"
 msgstr "Someone else's"
@@ -950,21 +926,15 @@ msgstr "Someone else's"
 msgid "Colour"
 msgstr "Colour"
 
-#: src/profiles/OverrideRows.tsx
-msgid "Proton version"
-msgstr "Proton version"
-
 #: src/profiles/EditProfileDialog.tsx
 #: src/profiles/GameSettings.tsx
 #: src/profiles/OverrideRows.tsx
 msgid "Use default"
 msgstr "Use default"
 
-#. placeholder {0}: source.name
-#. placeholder {1}: source.name
-#: src/profiles/MergeDialog.tsx
-msgid "{changes, plural, one {Added # mod from {0} to {targetName}} other {Added # mods from {1} to {targetName}}}"
-msgstr "{changes, plural, one {Added # mod from {0} to {targetName}} other {Added # mods from {1} to {targetName}}}"
+#: src/profiles/GameModsProgress.tsx
+msgid "{verb} {count} of {total} · {name}"
+msgstr "{verb} {count} of {total} · {name}"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Could not read the saved change {change} from {when}"
@@ -990,6 +960,10 @@ msgstr "{count, plural, one {Marked # mod explicit} other {Marked # mods explici
 msgid "{store} in the store ({shared} shared with other profiles)"
 msgstr "{store} in the store ({shared} shared with other profiles)"
 
+#: src/profiles/CompareTable.tsx
+msgid "Not in {name}"
+msgstr "Not in {name}"
+
 #: src/profiles/AppearancePickers.tsx
 msgid "Mountain"
 msgstr "Mountain"
@@ -997,10 +971,6 @@ msgstr "Mountain"
 #: src/profiles/OverrideRows.tsx
 msgid "Skip the intro"
 msgstr "Skip the intro"
-
-#: src/profiles/MergeDialog.tsx
-msgid "Keep {targetName}'s versions"
-msgstr "Keep {targetName}'s versions"
 
 #: src/profiles/historyLabel.ts
 msgid "Added {name}"
@@ -1018,6 +988,10 @@ msgstr "The profile itself stays as it is."
 msgid "Created {name}"
 msgstr "Created {name}"
 
+#: src/profiles/GameModsDialog.tsx
+msgid "{count, plural, one {# mod} other {# mods}}"
+msgstr "{count, plural, one {# mod} other {# mods}}"
+
 #: src/profiles/SinceLastRun.tsx
 msgid "Show all"
 msgstr "Show all"
@@ -1034,16 +1008,17 @@ msgstr "Game settings file"
 msgid "Every mod is in place."
 msgstr "Every mod is in place."
 
-#. placeholder {0}: plan.moves.length
-#. placeholder {1}: to.name
-#. placeholder {2}: to.name
-#: src/profiles/CompareDialog.tsx
-msgid "{0, plural, one {Matched # version in {1}} other {Matched # versions in {2}}}"
-msgstr "{0, plural, one {Matched # version in {1}} other {Matched # versions in {2}}}"
+#: src/profiles/LaunchOptionsBlock.tsx
+msgid "Crashed: {cause}"
+msgstr "Crashed: {cause}"
 
 #: src/profiles/ProfileMenu.tsx
 msgid "No profile"
 msgstr "No profile"
+
+#: src/profiles/CompareDialog.tsx
+msgid "{onlyA} only in {name}"
+msgstr "{onlyA} only in {name}"
 
 #: src/profiles/LaunchPreview.tsx
 msgid "Command copied"
@@ -1106,13 +1081,9 @@ msgstr "This cannot be undone."
 msgid "Profile settings"
 msgstr "Profile settings"
 
-#. placeholder {0}: profileA.name
-#. placeholder {0}: profileB.name
-#. placeholder {1}: profileA.name
-#. placeholder {1}: profileB.name
-#: src/profiles/CompareDialog.tsx
-msgid "Make {0} match {1}"
-msgstr "Make {0} match {1}"
+#: src/profiles/MergeDialog.tsx
+msgid "{count, plural, one {Keeps # mod only {name} has} other {Keeps # mods only {name} has}}"
+msgstr "{count, plural, one {Keeps # mod only {name} has} other {Keeps # mods only {name} has}}"
 
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "Prefix for direct launches only (for example, gamemoderun mangohud)."
@@ -1135,9 +1106,17 @@ msgstr "{count, plural, one {# thing to repair} other {# things to repair}}"
 msgid "Default"
 msgstr "Default"
 
+#: src/profiles/historyTimeline.ts
+msgid "{count, plural, one {Added # mod} other {Added # mods}}"
+msgstr "{count, plural, one {Added # mod} other {Added # mods}}"
+
 #: src/profiles/historyLabel.ts
 msgid "{count, plural, one {Imported # mod} other {Imported # mods}}"
 msgstr "{count, plural, one {Imported # mod} other {Imported # mods}}"
+
+#: src/profiles/historyTimeline.ts
+msgid "{count, plural, one {Updated # mod} other {Updated # mods}}"
+msgstr "{count, plural, one {Updated # mod} other {Updated # mods}}"
 
 #: src/profiles/SeparateSavesRow.tsx
 msgid "Enable"
@@ -1147,22 +1126,9 @@ msgstr "Enable"
 msgid "Graphics API"
 msgstr "Graphics API"
 
-#: src/profiles/VortexFolderPrompt.tsx
-msgid "Vortex data folder"
-msgstr "Vortex data folder"
-
-#: src/profiles/VortexFolderPrompt.tsx
-msgid "The Vortex folder {folder} has no profiles."
-msgstr "The Vortex folder {folder} has no profiles."
-
 #: src/profiles/HealthDialog.tsx
 msgid "Could not check profile"
 msgstr "Could not check profile"
-
-#. placeholder {0}: source.name
-#: src/profiles/MergeDialog.tsx
-msgid "Add {0}'s mods to…"
-msgstr "Add {0}'s mods to…"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Set as default"
@@ -1193,19 +1159,21 @@ msgstr "Window mode"
 msgid "Create a profile to manage a set of mods."
 msgstr "Create a profile to manage a set of mods."
 
-#. placeholder {0}: other.name
-#: src/profiles/CompareTable.tsx
-msgid "Not in {0}"
-msgstr "Not in {0}"
-
-#. placeholder {0}: view.differences
 #: src/profiles/CompareDialog.tsx
-msgid "{0, plural, one {# difference} other {# differences}}"
-msgstr "{0, plural, one {# difference} other {# differences}}"
+msgid "{identical} identical"
+msgstr "{identical} identical"
+
+#: src/profiles/PackFolderPrompt.tsx
+msgid "{manager} or {otherManager} data folder"
+msgstr "{manager} or {otherManager} data folder"
 
 #: src/profiles/GameSettings.tsx
 msgid "Music volume ({value}%)"
 msgstr "Music volume ({value}%)"
+
+#: src/profiles/ServerSettings.tsx
+msgid "Queues the mods of a {clientName} profile into this server profile."
+msgstr "Queues the mods of a {clientName} profile into this server profile."
 
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Moving…"
@@ -1221,8 +1189,8 @@ msgstr "A launch ended without Mortar putting the game folder back as it was"
 
 #: src/profiles/LaunchPresetDialog.tsx
 #: src/profiles/OverrideRows.tsx
-msgid "SMAPI console window"
-msgstr "SMAPI console window"
+msgid "{loader} console window"
+msgstr "{loader} console window"
 
 #: src/profiles/GameModsDialog.tsx
 msgid "Move them out of the game's Mods folder"
@@ -1244,6 +1212,10 @@ msgstr "These profiles have the same mods."
 msgid "Marked {name} explicit"
 msgstr "Marked {name} explicit"
 
+#: src/profiles/VortexFolderPrompt.tsx
+msgid "The {manager} folder {path} has no profiles."
+msgstr "The {manager} folder {path} has no profiles."
+
 #: src/profiles/GameSettings.tsx
 msgid "Use my normal settings"
 msgstr "Use my normal settings"
@@ -1261,18 +1233,9 @@ msgstr "{count, plural, one {Marked # mod implicit} other {Marked # mods implici
 msgid "Borderless"
 msgstr "Borderless"
 
-#: src/profiles/historyLabel.ts
-msgid "{count, plural, one {Trimmed history, dropped # older change} other {Trimmed history, dropped # older changes}}"
-msgstr "{count, plural, one {Trimmed history, dropped # older change} other {Trimmed history, dropped # older changes}}"
-
 #: src/profiles/OverrideRows.tsx
 msgid "Save backups kept"
 msgstr "Save backups kept"
-
-#. placeholder {0}: profile.name
-#: src/profiles/ProfileRow.tsx
-msgid "Actions for {0}"
-msgstr "Actions for {0}"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Add from game presets…"
@@ -1311,11 +1274,6 @@ msgstr "Manage profiles…"
 msgid "Enabled"
 msgstr "Enabled"
 
-#. placeholder {0}: ev.name ?? ''
-#: src/profiles/historyLabel.ts
-msgid "Enabled {0}"
-msgstr "Enabled {0}"
-
 #: src/profiles/AppearancePickers.tsx
 msgid "Pickaxe"
 msgstr "Pickaxe"
@@ -1336,14 +1294,13 @@ msgstr "Disabled {names}"
 msgid "Could not set the default launch preset"
 msgstr "Could not set the default launch preset"
 
+#: src/profiles/CompareDialog.tsx
+msgid "Make {name} match {other}"
+msgstr "Make {name} match {other}"
+
 #: src/profiles/ServerSettings.tsx
 msgid "Server"
 msgstr "Server"
-
-#: src/profiles/HistoryDiffView.tsx
-#: src/profiles/ProfilesPage.tsx
-msgid "Restore {label}"
-msgstr "Restore {label}"
 
 #: src/profiles/historyLabel.ts
 msgid "Changed separate saves"
@@ -1383,19 +1340,9 @@ msgstr "Sparkles"
 msgid "Set {detail} of {name} for the next start"
 msgstr "Set {detail} of {name} for the next start"
 
-#. placeholder {0}: profile.name
-#: src/profiles/CompareDialog.tsx
-msgid "{0} is in use by the running game. Close the game to change its mods."
-msgstr "{0} is in use by the running game. Close the game to change its mods."
-
 #: src/profiles/LaunchOptionsBlock.tsx
 msgid "Stop the game to test a launch."
 msgstr "Stop the game to test a launch."
-
-#. placeholder {0}: item.name
-#: src/profiles/ProfilesPage.tsx
-msgid "Delete {0} permanently?"
-msgstr "Delete {0} permanently?"
 
 #: src/profiles/CrashHintCard.tsx
 msgid "The game crashed"
@@ -1404,12 +1351,6 @@ msgstr "The game crashed"
 #: src/profiles/CompareTable.tsx
 msgid "Mod"
 msgstr "Mod"
-
-#. placeholder {0}: removing?.name ?? ''
-#: src/profiles/LaunchPresetsBlock.tsx
-#: src/profiles/LaunchPresetTemplatesDialog.tsx
-msgid "Delete {0}?"
-msgstr "Delete {0}?"
 
 #: src/profiles/EditProfileDialog.tsx
 #: src/profiles/LaunchPresetDialog.tsx
@@ -1445,14 +1386,17 @@ msgstr "History that cannot be read"
 msgid "{count, plural, one {Restored # mod} other {Restored # mods}}"
 msgstr "{count, plural, one {Restored # mod} other {Restored # mods}}"
 
-#. placeholder {0}: formatWhen(crashedAt)
-#: src/profiles/CrashHintCard.tsx
-msgid "The game crashed {0}"
-msgstr "The game crashed {0}"
+#: src/profiles/SinceLastRun.tsx
+msgid "Startup: {name} {version} added {duration}"
+msgstr "Startup: {name} {version} added {duration}"
 
 #: src/profiles/ServerSettings.tsx
 msgid "Use mods from…"
 msgstr "Use mods from…"
+
+#: src/profiles/historyLabel.ts
+msgid "Trimmed history, dropped {count, plural, one {# older change} other {# older changes}}"
+msgstr "Trimmed history, dropped {count, plural, one {# older change} other {# older changes}}"
 
 #: src/profiles/historyLabel.ts
 msgid "{count, plural, one {Changed # mod} other {Changed # mods}}"
@@ -1466,17 +1410,22 @@ msgstr "Follow the setting"
 msgid "Could not delete the profile"
 msgstr "Could not delete the profile"
 
+#: src/profiles/HistoryDiffView.tsx
+#: src/profiles/ProfilesPage.tsx
+msgid "Restore {name}"
+msgstr "Restore {name}"
+
 #: src/profiles/EditProfileDialog.tsx
 msgid "The automatic cover is already in use."
 msgstr "The automatic cover is already in use."
 
+#: src/profiles/CompareDialog.tsx
+msgid "{name} is in use by the running game. Close the game to change its mods."
+msgstr "{name} is in use by the running game. Close the game to change its mods."
+
 #: src/profiles/GameModsDialog.tsx
 msgid "Reading the Mods folder…"
 msgstr "Reading the Mods folder…"
-
-#: src/profiles/PackFolderPrompt.tsx
-msgid "r2modman or Gale data folder"
-msgstr "r2modman or Gale data folder"
 
 #: src/profiles/HistoryEventRow.tsx
 #: src/profiles/MergeDialog.tsx
@@ -1495,6 +1444,10 @@ msgstr "Launch preset templates"
 msgid "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 msgstr "Templates are shared by every profile of this game. Adding one copies it into this profile's launch presets."
 
+#: src/profiles/CrashHintCard.tsx
+msgid "Most likely cause: {name} ({reason})"
+msgstr "Most likely cause: {name} ({reason})"
+
 #: src/profiles/historyLabel.ts
 msgid "Edited the note of {name}"
 msgstr "Edited the note of {name}"
@@ -1502,10 +1455,6 @@ msgstr "Edited the note of {name}"
 #: src/profiles/ServerSettings.tsx
 msgid "This value is not allowed."
 msgstr "This value is not allowed."
-
-#: src/profiles/historyTimeline.ts
-msgid "{added, plural, one {Added # mod} other {Added # mods}}"
-msgstr "{added, plural, one {Added # mod} other {Added # mods}}"
 
 #: src/profiles/LoaderLaunchSettings.tsx
 msgid "Warnings and errors"
@@ -1536,10 +1485,18 @@ msgstr "Hide"
 msgid "This launch preset will be deleted."
 msgstr "This launch preset will be deleted."
 
+#: src/profiles/MergeDialog.tsx
+msgid "{name} stays as it is."
+msgstr "{name} stays as it is."
+
 #: src/profiles/ProfileMenu.tsx
 #: src/profiles/ProfilesPage.tsx
 msgid "Profiles"
 msgstr "Profiles"
+
+#: src/profiles/VortexFolderPrompt.tsx
+msgid "Use {manager} from another folder?"
+msgstr "Use {manager} from another folder?"
 
 #: src/profiles/restoreBackup.ts
 msgid "Could not restore the backup"
@@ -1557,6 +1514,14 @@ msgstr "Could not read this profile"
 msgid "Mark current as known good"
 msgstr "Mark current as known good"
 
+#: src/profiles/historyLabel.ts
+msgid "Found mods on {source}"
+msgstr "Found mods on {source}"
+
+#: src/profiles/MergeDialog.tsx
+msgid "{changes, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"
+msgstr "{changes, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"
+
 #: src/profiles/compareTitle.ts
 msgid "Enabled in one only"
 msgstr "Enabled in one only"
@@ -1565,18 +1530,9 @@ msgstr "Enabled in one only"
 msgid "Everything"
 msgstr "Everything"
 
-#: src/profiles/LaunchOptionsBlock.tsx
-msgid "One VAR=value per line, for direct launches only; Steam launches ignore them."
-msgstr "One VAR=value per line, for direct launches only; Steam launches ignore them."
-
 #: src/profiles/OverrideRows.tsx
 msgid "Back up saves before Play"
 msgstr "Back up saves before Play"
-
-#. placeholder {0}: next.name
-#: src/profiles/historyRevert.ts
-msgid "Restored {0} to before that change"
-msgstr "Restored {0} to before that change"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Icon"
@@ -1585,6 +1541,10 @@ msgstr "Icon"
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Delete preset"
 msgstr "Delete preset"
+
+#: src/profiles/MergeDialog.tsx
+msgid "Nothing to add: {name} already has every mod at the same or a newer version."
+msgstr "Nothing to add: {name} already has every mod at the same or a newer version."
 
 #: src/profiles/CompareDialog.tsx
 #: src/profiles/HistoryDiffView.tsx
@@ -1602,10 +1562,6 @@ msgstr "This is no longer the latest change."
 #: src/profiles/historyLabel.ts
 msgid "Changed mods"
 msgstr "Changed mods"
-
-#: src/profiles/ProfileMenu.tsx
-msgid "{gameName} profiles"
-msgstr "{gameName} profiles"
 
 #: src/profiles/historyRevert.ts
 msgid "Could not undo: some mods are missing, and the change's record could not be read."
@@ -1627,37 +1583,25 @@ msgstr "Import from the game's Mods folder"
 msgid "Leaf"
 msgstr "Leaf"
 
-#: src/profiles/historyTimeline.ts
-msgid "{removed, plural, one {Removed # mod} other {Removed # mods}}"
-msgstr "{removed, plural, one {Removed # mod} other {Removed # mods}}"
+#: src/profiles/OverrideRows.tsx
+msgid "Free {source} accounts click each download on {source}; those updates do not block Play."
+msgstr "Free {source} accounts click each download on {source}; those updates do not block Play."
 
 #: src/profiles/LaunchPresetTemplatesDialog.tsx
 msgid "This template will be deleted. Presets already copied into profiles stay."
 msgstr "This template will be deleted. Presets already copied into profiles stay."
 
-#. placeholder {0}: res.imported
-#: src/profiles/GameModsDialog.tsx
-msgid "{0, plural, one {# imported} other {# imported}}"
-msgstr "{0, plural, one {# imported} other {# imported}}"
-
-#. placeholder {0}: profile.name
-#: src/profiles/ProfileRow.tsx
-msgid "Share {0}"
-msgstr "Share {0}"
-
 #: src/profiles/HistoryTimeline.tsx
 msgid "Yesterday"
 msgstr "Yesterday"
 
+#: src/profiles/ProfileFolderDialog.tsx
+msgid "Kept in {path}."
+msgstr "Kept in {path}."
+
 #: src/profiles/historyLabel.ts
 msgid "Went back to {when}"
 msgstr "Went back to {when}"
-
-#. placeholder {0}: hint.modName
-#. placeholder {1}: hint.reason || named
-#: src/profiles/CrashHintCard.tsx
-msgid "Most likely cause: {0} ({1})"
-msgstr "Most likely cause: {0} ({1})"
 
 #: src/profiles/ProfileRow.tsx
 msgid "imported from a .mortar file"
@@ -1676,16 +1620,6 @@ msgstr "UI scale ({value}%)"
 #: src/profiles/SinceLastRun.tsx
 msgid "Changes since last run"
 msgstr "Changes since last run"
-
-#. placeholder {0}: outcome.cause
-#: src/profiles/LaunchOptionsBlock.tsx
-msgid "Crashed: {0}"
-msgstr "Crashed: {0}"
-
-#. placeholder {0}: item.daysLeft
-#: src/profiles/ProfilesPage.tsx
-msgid "{0, plural, one {# day left} other {# days left}}"
-msgstr "{0, plural, one {# day left} other {# days left}}"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Deleted profiles stay here, mods and settings included."
@@ -1720,18 +1654,21 @@ msgstr "Applied the next time the server starts. The password stays in this prof
 msgid "Close"
 msgstr "Close"
 
+#: src/profiles/restoreBackup.ts
+msgid "Install by hand: {names}"
+msgstr "Install by hand: {names}"
+
 #: src/profiles/overrideValue.ts
 msgid "On"
 msgstr "On"
 
+#: src/profiles/historyTimeline.ts
+msgid "{count, plural, one {Removed # mod} other {Removed # mods}}"
+msgstr "{count, plural, one {Removed # mod} other {Removed # mods}}"
+
 #: src/profiles/ProfileRow.tsx
 msgid "Share"
 msgstr "Share"
-
-#. placeholder {0}: to.name
-#: src/profiles/CompareDialog.tsx
-msgid "Could not change {0}"
-msgstr "Could not change {0}"
 
 #: src/profiles/historyLabel.ts
 msgid "Unlinked collection {name}"
@@ -1750,8 +1687,12 @@ msgid "Compare two…"
 msgstr "Compare two…"
 
 #: src/profiles/historyLabel.ts
-msgid "Set the Nexus page of {name}"
-msgstr "Set the Nexus page of {name}"
+msgid "Removed {name}"
+msgstr "Removed {name}"
+
+#: src/profiles/MergeDialog.tsx
+msgid "Could not add the mods to {name}"
+msgstr "Could not add the mods to {name}"
 
 #: src/profiles/GameSettings.tsx
 msgid "Sound volume ({value}%)"
