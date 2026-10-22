@@ -31,7 +31,7 @@ export function ProblemGroup({ tab }: { tab: ProblemTab }) {
       aria-label={tab.label}
       sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minHeight: space.control }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography component="h2" sx={{ fontSize: 16, fontWeight: 600 }}>
           {tab.label}
         </Typography>

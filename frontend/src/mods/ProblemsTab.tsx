@@ -293,6 +293,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
   return (
     <>
       <ProblemActions />
+      <LockedNote />
       <Box
         sx={{
           flex: empty ? 1 : '0 0 auto',
@@ -303,9 +304,6 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
           gap: space.pad,
         }}
       >
-        <Box sx={{ mx: `calc(-1 * ${space.gutter})`, mb: -1 }}>
-          <LockedNote />
-        </Box>
         {listed.length === 0 ? (
           <EmptyState
             icon={<ShieldCheck size={40} aria-hidden={true} />}
