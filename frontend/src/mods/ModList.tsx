@@ -42,7 +42,7 @@ import {
   sanitizeListColumns,
   visibleListColumns,
 } from './listColumns.ts'
-import { entryOf, modId } from './lookup.ts'
+import { entryOf, modId, useLocalMark } from './lookup.ts'
 import { ModListTable } from './ModListVirtual.tsx'
 import { useMarked, useRowFocus, useTabStop } from './marked.ts'
 import { contextMenuProps, openModPage } from './menu.ts'
@@ -317,6 +317,7 @@ function ModRowView({ row, cols, locale, first, orderedRef, profile, onArrow }: 
   const tabStop = useTabStop(rowId, first)
   const menu = contextMenuProps(m)
   const fresh = useModFresh(profile, m)
+  const local = useLocalMark(profile, m)
   return (
     <TableRow
       role="row"
@@ -371,6 +372,7 @@ function ModRowView({ row, cols, locale, first, orderedRef, profile, onArrow }: 
         cursor: 'pointer',
         bgcolor: (th) => (marked ? alpha(th.palette.primary.main, SELECTED_ALPHA) : 'transparent'),
         ...(marked ? {} : { '[data-striped] > &': { bgcolor: 'var(--mortar-hairline-ghost)' } }),
+        ...(local ? { boxShadow: (th) => `inset 3px 0 0 ${th.palette.info.main}` } : {}),
       }}
     >
       {cols.flatMap((id) =>

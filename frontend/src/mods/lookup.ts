@@ -91,6 +91,12 @@ export const entryOf = (profile: Profile | null | undefined, key: string): Entry
 export const sourceKind = (profile: Profile, mod: Mod) =>
   entryOf(profile, mod.key)?.source.kind ?? ''
 
+/** A mod added from a file or folder: no site updates it, so the card and list views mark it unless turned off. */
+export const useLocalMark = (profile: Profile, mod: Mod): boolean => {
+  const on = useSettings((s) => s.markLocalMods !== false)
+  return on && sourceKind(profile, mod) === 'local'
+}
+
 // The Nexus mod ID a mod was installed from, or 0 for any other source.
 export const nexusIdOf = (profile: Profile, mod: Mod) => {
   const source = entryOf(profile, mod.key)?.source

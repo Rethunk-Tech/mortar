@@ -329,6 +329,7 @@ export function Appearance() {
             'defaultModsView',
             'gridCardSize',
             'showAuthorOnCards',
+            'markLocalMods',
             'listGroupBy',
             'implicitModsView',
           ]}

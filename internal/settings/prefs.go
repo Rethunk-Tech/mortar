@@ -188,6 +188,7 @@ func defaultPrefs() Settings {
 		Theme:                      ThemeDark,
 		GridCardSize:               GridCardMedium,
 		ShowAuthorOnCards:          on(),
+		MarkLocalMods:              on(),
 		BrowseCardStats:            defaultBrowseCardStats,
 		ReduceMotion:               ReduceMotionSystem,
 		ProfileHero:                HeroFull,
@@ -296,6 +297,9 @@ func normalizePrefs(s *Settings) {
 	}
 	if s.ShowAuthorOnCards == nil {
 		s.ShowAuthorOnCards = on()
+	}
+	if s.MarkLocalMods == nil {
+		s.MarkLocalMods = on()
 	}
 	s.BrowseCardStats = sanitizeBrowseCardStats(s.BrowseCardStats)
 	if !slices.Contains(reduceMotionValues, s.ReduceMotion) {

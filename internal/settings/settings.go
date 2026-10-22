@@ -196,6 +196,8 @@ type Settings struct {
 	Theme             string `json:"theme"`
 	GridCardSize      string `json:"gridCardSize"`
 	ShowAuthorOnCards *bool  `json:"showAuthorOnCards"`
+	// MarkLocalMods outlines mods added from a file or folder, which no site updates; on when unset.
+	MarkLocalMods *bool `json:"markLocalMods"`
 	// CenterConfigControls sets each config entry's control mid-row, nearer its name on a wide window.
 	CenterConfigControls bool `json:"centerConfigControls"`
 	// BrowseCardStats is the stats Browse cards show under the summary: comma-separated ids from browseCardStatValues,

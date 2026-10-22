@@ -34,6 +34,12 @@ export function modsViewPrefs(i18n: I18n): Record<string, PrefCopy> {
       label: i18n._(msg`Author on cards`),
       description: i18n._(msg`Show the author line on grid cards`),
     },
+    markLocalMods: {
+      label: i18n._(msg`Mark local mods`),
+      description: i18n._(
+        msg`Outline mods added from a file or folder, which no site updates, in cards and the list`,
+      ),
+    },
     centerConfigControls: {
       label: i18n._(msg`Centre config controls`),
       description: i18n._(

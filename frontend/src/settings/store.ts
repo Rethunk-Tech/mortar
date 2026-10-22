@@ -99,6 +99,7 @@ const defaults: Settings = {
   theme: 'dark',
   gridCardSize: 'medium',
   showAuthorOnCards: true,
+  markLocalMods: true,
   centerConfigControls: false,
   browseCardStats: 'popularity,downloads',
   reduceMotion: 'system',

@@ -3092,6 +3092,10 @@ msgstr "Add tool"
 msgid "Appearance"
 msgstr "Appearance"
 
+#: src/settings/prefCopyModsView.ts
+msgid "Outline mods added from a file or folder, which no site updates, in cards and the list"
+msgstr "Outline mods added from a file or folder, which no site updates, in cards and the list"
+
 #. placeholder {0}: status.error
 #: src/launch/store.ts
 msgid "The program to start {name} was not found. Check that the game is still installed and the launch prefix names a real command. {0}"
@@ -13427,6 +13431,10 @@ msgstr "Could not load your tracked Nexus mods"
 #: src/mods/ConfigPresets.tsx
 msgid "A preset with this name already exists."
 msgstr "A preset with this name already exists."
+
+#: src/settings/prefCopyModsView.ts
+msgid "Mark local mods"
+msgstr "Mark local mods"
 
 #. placeholder {0}: installable.length
 #. placeholder {0}: wants.length

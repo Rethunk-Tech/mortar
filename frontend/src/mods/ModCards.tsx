@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Card, Chip, Typography, useMediaQuery } from '@mui/material'
-import { alpha } from '@mui/material/styles'
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type {
   Mod,
@@ -16,12 +15,13 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { actingMods, toggleActing } from './actingMods.ts'
 import { CardMeta } from './CardMeta.tsx'
 import { CompatChip } from './CompatChip.tsx'
+import { cardMarks } from './cardMarks.ts'
 import { showModId, useDetail } from './detail.ts'
 import { ExtraFilesChip } from './ExtraFilesChip.tsx'
 import { firstTag } from './group.ts'
 import { LibrariesChip } from './LibrariesChip.tsx'
 import type { ListRow } from './listColumns.ts'
-import { entryOf, modId } from './lookup.ts'
+import { entryOf, modId, useLocalMark } from './lookup.ts'
 import { ModMenu } from './ModMenu.tsx'
 import { GroupHeaderRow, StickyGroupSlot } from './ModsGroupHeader.tsx'
 import { useMarked, useRowFocus, useTabStop } from './marked.ts'
@@ -71,8 +71,6 @@ const TILE_MARGIN_PX = 8
 const TILE_COMPACT_FONT_PX = 19
 const CARD_GAP_PX = '10px'
 const CARD_RADIUS_PX = '6px'
-// A selected card is tinted as well as outlined, so a selection reads at a glance across a full grid.
-const MARKED_FILL = 0.28
 const NAME_FONT_PX = 14
 const NAME_WEIGHT = 600
 const TAG_MAX_PX = 96
@@ -132,6 +130,7 @@ function ModCardView({
   const askRemove = useMods((s) => s.askRemove)
   const id = modId(m)
   const marked = useMarked(id)
+  const local = useLocalMark(profile, m)
   const tabStop = useTabStop(id, first)
   const fresh = useModFresh(profile, m)
   const tag = firstTag(entryOf(profile, m.key)?.tags)
@@ -153,9 +152,7 @@ function ModCardView({
         gap: CARD_GAP_PX,
         minWidth: 0,
         borderRadius: CARD_RADIUS_PX,
-        outline: marked ? '1px solid' : 'none',
-        outlineColor: 'primary.main',
-        bgcolor: marked ? (theme) => alpha(theme.palette.primary.main, MARKED_FILL) : undefined,
+        ...cardMarks(marked, local),
         // The title button's ::after covers the card, so it is the card's one click target; everything else that
         // is interactive sits above it.
         position: 'relative',
