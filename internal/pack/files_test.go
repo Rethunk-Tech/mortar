@@ -36,9 +36,10 @@ func TestPackFilesNameOnlyTheProgramsTheyLeaveOut(t *testing.T) {
 		{Path: "doorstop_config.ini", Data: []byte("[General]")},
 		{Path: "profile.json", Data: []byte("{}")},
 		{Path: "BepInEx/plugins/run.dll", Data: []byte("MZ")},
+		{Path: "BepInEx/plugins/off.DLL.old", Data: []byte("MZ")},
 		{Path: "BepInEx/plugins/readme.txt", Data: []byte("r")},
 	}}, ImportRoots("lethal-company"))
-	if len(got) != 1 || !slices.Equal(programs, []string{"BepInEx/plugins/run.dll"}) {
+	if len(got) != 1 || !slices.Equal(programs, []string{"BepInEx/plugins/off.DLL.old", "BepInEx/plugins/run.dll"}) {
 		t.Fatalf("files = %v, programs = %v", slices.Collect(maps.Keys(got)), programs)
 	}
 }

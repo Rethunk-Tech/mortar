@@ -50,8 +50,14 @@ func ProfileFiles(d Draft, roots []string) (out map[string][]byte, programs []st
 	return out, programs
 }
 
+// blocked judges a file by the name it runs under: r2modman and Gale switch a mod off by adding ".old", and switching it
+// back on takes that away, so "x.dll.old" is a program too.
 func blocked(p string) bool {
-	return slices.ContainsFunc(blockedExtensions, func(e string) bool { return strings.HasSuffix(strings.ToLower(p), e) })
+	name := strings.ToLower(p)
+	for strings.HasSuffix(name, ".old") {
+		name = strings.TrimSuffix(name, ".old")
+	}
+	return slices.ContainsFunc(blockedExtensions, func(e string) bool { return strings.HasSuffix(name, e) })
 }
 
 // winPath is p with each segment's trailing dots and spaces removed, as Windows stores it, so "evil.dll." is judged as
