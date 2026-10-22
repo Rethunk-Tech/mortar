@@ -185,8 +185,8 @@ func parseModList(text string) FarmList {
 	for line := range strings.Lines(text) {
 		line = strings.TrimSpace(line)
 		name, version, page, ok := listLine(line)
-		// ponytail: the headings are matched in English, the one language Mortar ships; with a second locale,
-		// treat the second heading as the switched-off group.
+		// ponytail: the headings are matched in English; if the Share mod exports them localized, a list from a host in
+		// another language reads as all enabled. Then treat any heading after the first as the switched-off group.
 		if !ok {
 			off = off && !strings.EqualFold(line, "Enabled") || strings.EqualFold(line, "Disabled")
 			continue
