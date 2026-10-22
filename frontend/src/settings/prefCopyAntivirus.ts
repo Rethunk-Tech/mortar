@@ -1,6 +1,6 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
-import { LINUX, WINDOWS } from '../brand/productNames.ts'
+import { CLAMAV, LINUX, WINDOWS } from '../brand/productNames.ts'
 
 export interface PrefCopy {
   label: string
@@ -27,7 +27,7 @@ export function antivirusPrefs(i18n: I18n): Record<string, PrefCopy> {
         {
           value: 'clamd',
           label: i18n._(msg`clamd socket`),
-          hint: i18n._(msg`Ask a ClamAV daemon at the socket path below.`),
+          hint: i18n._(msg`Ask a ${{ app: CLAMAV }} daemon at the socket path below.`),
         },
         {
           value: 'command',

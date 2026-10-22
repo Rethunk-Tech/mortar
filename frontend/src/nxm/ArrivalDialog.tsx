@@ -89,13 +89,13 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
       .catch((e: unknown) => setError(inlineError(e)))
       .finally(() => setBusy(false))
   }
-  let text = t`You started this download on ${site}. Choose the profile it goes into.`
+  let text = t`You started this download on ${{ source: site }}. Choose the profile it goes into.`
   if (profiles === null) {
     text = t`Loading profiles…`
   } else if (profiles.length === 0) {
     text = canCreate
-      ? t`You started this download on ${site}. Create a profile to put it in first.`
-      : t`You started this download on ${site}, but you have no ${gameName} profile yet.`
+      ? t`You started this download on ${{ source: site }}. Create a profile to put it in first.`
+      : t`You started this download on ${{ source: site }}, but you have no ${{ game: gameName }} profile yet.`
   }
   return (
     <Dialog
@@ -111,12 +111,12 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
       <DialogContent>
         {file ? (
           <DialogContentText sx={{ mb: 1 }}>
-            {t`${file.fileName} · ${formatKb(file.sizeKb)}`}
+            {t`${{ fileName: file.fileName }} · ${{ size: formatKb(file.sizeKb) }}`}
           </DialogContentText>
         ) : null}
         {arrivals.length > 1 ? (
           <DialogContentText sx={{ mb: 1 }}>
-            {t`${arrivals.length - 1} more waiting`}
+            {t`${{ count: arrivals.length - 1 }} more waiting`}
           </DialogContentText>
         ) : null}
         {profiles === null ? (
@@ -159,7 +159,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
         ) : null}
         {open ? (
           <Button variant="contained" disabled={busy} onClick={() => pick(open.id)}>
-            {t`Install into ${open.name}`}
+            {t`Install into ${{ name: open.name }}`}
           </Button>
         ) : null}
         {profiles?.length === 0 && canCreate ? (

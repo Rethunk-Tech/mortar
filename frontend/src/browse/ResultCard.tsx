@@ -179,7 +179,7 @@ function CardTitle(props: { name: string; flag: 'error' | 'warning' | null; onOp
   const { name, flag, onOpen } = props
   const { t } = useLingui()
   const flagText = flag === 'error' ? t`Marked broken` : t`Deprecated or obsolete`
-  const details = t`Details of ${props.name}`
+  const details = t`Details of ${{ name: props.name }}`
   return (
     <ButtonBase
       aria-label={flag ? `${flagText}. ${details}` : details}

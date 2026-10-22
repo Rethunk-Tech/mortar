@@ -8,6 +8,7 @@ import {
   SetOverlayEnabled,
   SetOverlayPort,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { OBS } from '../../brand/productNames.ts'
 import { copyText } from '../../share/copyText.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { TipIconButton } from '../../shell/TipIconButton.tsx'
@@ -185,7 +186,7 @@ function OverlayValues({
           {preview.kind === 'value' ? preview.text : '\u2014'}
         </Box>
         <TipIconButton
-          label={copiedKey === key ? copied : t`Copy OBS URL`}
+          label={copiedKey === key ? copied : t`Copy ${{ app: OBS }} URL`}
           disabled={!token}
           onClick={() => copyRow(field, key)}
         >
@@ -218,7 +219,7 @@ function OverlayHowTo({ copied }: { copied: string }) {
   const [done, setDone] = useState(false)
   return (
     <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
-      {t`In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS.`}
+      {t`In ${{ app: OBS }}: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS.`}
       <Button
         variant="text"
         size="small"
@@ -251,7 +252,7 @@ function OverlayRegenDialog({
     <ConfirmDialog
       open={open}
       title={t`Regenerate token?`}
-      body={t`Existing OBS sources stop working until their URLs are copied again.`}
+      body={t`Existing ${{ app: OBS }} sources stop working until their URLs are copied again.`}
       confirmLabel={t`Regenerate token`}
       color="error"
       onCancel={onClose}
@@ -295,7 +296,10 @@ function OverlayConnection({
   }
   return (
     <>
-      <SettingRow label={t`Port`} description={t`The local port OBS reads the overlay from`}>
+      <SettingRow
+        label={t`Port`}
+        description={t`The local port ${{ app: OBS }} reads the overlay from`}
+      >
         <TextField
           type="number"
           size="small"
@@ -317,7 +321,7 @@ function OverlayConnection({
       </SettingRow>
       <SettingRow
         label={t`Token`}
-        description={t`Part of the OBS address; regenerate it if it leaks`}
+        description={t`Part of the ${{ app: OBS }} address; regenerate it if it leaks`}
       >
         <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center' }}>
           <TextField
@@ -429,7 +433,7 @@ export function StreamOverlay({ game }: { game: string }) {
       <SettingRow
         label={t`Stream overlay`}
         hideTitle={true}
-        description={t`Show live game info in OBS. Changes apply the next time you press Play.`}
+        description={t`Show live game info in ${{ app: OBS }}. Changes apply the next time you press Play.`}
       >
         <PrefSwitch
           checked={enabled}

@@ -83,7 +83,7 @@ function NotesEditor({ profile, onDone }: { profile: Profile; onDone: () => void
         }}
         placeholder={t`Your notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods before playing together. Notes travel in a shared .mortar file, not in a share link.`}
         slotProps={{
-          htmlInput: { 'aria-label': t`Notes for ${profile.name}`, maxLength: MAX_NOTES },
+          htmlInput: { 'aria-label': t`Notes for ${{ name: profile.name }}`, maxLength: MAX_NOTES },
         }}
       />
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>

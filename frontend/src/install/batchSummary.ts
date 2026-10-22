@@ -47,10 +47,13 @@ export function pushBatchSummary(game: string, profile: Profile, landed: Landed[
   const names = landed.flatMap((l) => l.mods)
   useToasts.getState().push({
     kind: failed > 0 ? 'warning' : 'success',
-    title: plural(names.length, {
-      one: `Added # mod to ${profile.name}`,
-      other: `Added # mods to ${profile.name}`,
-    }),
+    title: plural(
+      { count: names.length },
+      {
+        one: `Added # mod to ${{ name: profile.name }}`,
+        other: `Added # mods to ${{ name: profile.name }}`,
+      },
+    ),
     ...(failed > 0 ? { body: i18n._(msg`${failed} could not be added`) } : {}),
     detail: names.join('\n'),
     action: {

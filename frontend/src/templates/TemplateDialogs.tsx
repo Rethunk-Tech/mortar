@@ -109,7 +109,11 @@ function TemplateRow({
       secondaryAction={
         <>
           <Tooltip title={t`Rename`}>
-            <IconButton size="small" aria-label={t`Rename ${template.name}`} onClick={onRename}>
+            <IconButton
+              size="small"
+              aria-label={t`Rename ${{ name: template.name }}`}
+              onClick={onRename}
+            >
               <Pencil size={16} />
             </IconButton>
           </Tooltip>
@@ -202,7 +206,7 @@ function ManageTemplatesDialog({
       />
       <ConfirmDialog
         open={deleting !== null}
-        title={t`Delete the template ${deleting?.name ?? ''}?`}
+        title={t`Delete the template ${{ name: deleting?.name ?? '' }}?`}
         body={t`Profiles already made from it are not changed.`}
         confirmLabel={t`Delete`}
         color="error"

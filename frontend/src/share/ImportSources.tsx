@@ -1,8 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
 import { FileUp, FolderInput, Layers, Link2 } from 'lucide-react'
+import { GALE, MOD_ORGANIZER_2, R2MODMAN, STARDROP, VORTEX } from '../brand/productNames.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { listNames } from '../i18n/list.ts'
 import { type Tile, TileGrid } from './TileGrid.tsx'
 
 const ICON = 32
+const MANAGERS = [R2MODMAN, GALE, VORTEX, MOD_ORGANIZER_2, STARDROP]
 
 export type ImportSource = 'link' | 'file' | 'manager' | 'folder'
 
@@ -14,19 +18,19 @@ export function ImportSources({ onChoose }: { onChoose: (source: ImportSource) =
       id: 'link',
       icon: <Link2 size={ICON} />,
       name: t`Link or code`,
-      hint: t`A Mortar link, a Nexus collection or an r2modman or Gale code`,
+      hint: t`A Mortar link, a ${{ source: sourceLabel('nexus') }} collection or an ${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} code`,
     },
     {
       id: 'file',
       icon: <FileUp size={ICON} />,
       name: t`File`,
-      hint: t`A .mortar file, an .r2z or a Thunderstore modpack`,
+      hint: t`A .mortar file, an .r2z or a ${{ source: sourceLabel('thunderstore') }} modpack`,
     },
     {
       id: 'manager',
       icon: <Layers size={ICON} />,
       name: t`Another mod manager`,
-      hint: t`r2modman, Gale, Vortex, Mod Organizer 2 or Stardrop on this computer`,
+      hint: t`${{ managers: listNames(MANAGERS, MANAGERS.length) }} on this computer`,
     },
     {
       id: 'folder',

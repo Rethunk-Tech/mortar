@@ -98,7 +98,7 @@ function StartFromSelect({
       </TextField>
       {chosen ? (
         <Typography sx={{ mt: 0.75, fontSize: 13, color: 'text.secondary' }}>
-          {t`${chosen.description} Adds ${listNames((chosen.packages ?? []).map((p) => p.name))}.`}
+          {t`${{ description: chosen.description }} Adds ${{ names: listNames((chosen.packages ?? []).map((p) => p.name)) }}.`}
         </Typography>
       ) : null}
       <Button size="small" onClick={onManage} disabled={disabled} sx={{ mt: 0.5 }}>
@@ -116,14 +116,20 @@ async function createFromStarter(name: string, starter: StarterTemplate) {
   useToasts.getState().push({
     kind: queued ? 'success' : 'warning',
     title: queued
-      ? plural(mods.length, {
-          one: `Created ${name}; downloading # mod`,
-          other: `Created ${name}; downloading # mods`,
-        })
-      : plural(mods.length, {
-          one: `Created ${name}; # mod still to download`,
-          other: `Created ${name}; # mods still to download`,
-        }),
+      ? plural(
+          { count: mods.length },
+          {
+            one: `Created ${name}; downloading # mod`,
+            other: `Created ${name}; downloading # mods`,
+          },
+        )
+      : plural(
+          { count: mods.length },
+          {
+            one: `Created ${name}; # mod still to download`,
+            other: `Created ${name}; # mods still to download`,
+          },
+        ),
   })
 }
 
@@ -145,14 +151,20 @@ async function createFromTemplate(game: string, template: Template, name: string
   let title = created
   if (missing.length > 0) {
     title = queued
-      ? plural(missing.length, {
-          one: `Created ${name}; downloading # mod`,
-          other: `Created ${name}; downloading # mods`,
-        })
-      : plural(missing.length, {
-          one: `Created ${name}; # mod still to download`,
-          other: `Created ${name}; # mods still to download`,
-        })
+      ? plural(
+          { count: missing.length },
+          {
+            one: `Created ${name}; downloading # mod`,
+            other: `Created ${name}; downloading # mods`,
+          },
+        )
+      : plural(
+          { count: missing.length },
+          {
+            one: `Created ${name}; # mod still to download`,
+            other: `Created ${name}; # mods still to download`,
+          },
+        )
   }
   useToasts.getState().push({
     kind: missing.length > 0 && !queued ? 'warning' : 'success',

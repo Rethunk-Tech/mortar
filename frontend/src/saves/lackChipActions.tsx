@@ -7,6 +7,7 @@ import type {
   Fit,
   Lack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { openPage } from '../mods/menu.ts'
 import { download } from '../queue/actions.ts'
@@ -67,7 +68,7 @@ export function LackChipActions(p: {
             size="small"
             disabled={copying || locked}
             title={source.name}
-            aria-label={t`Copy ${source.name}`}
+            aria-label={t`Copy ${{ name: source.name }}`}
             onClick={() => runCopy(() => CopyMods(game, source.id, profile.id, [lack.id]))}
             sx={{ minWidth: 0, px: 0.5, ...nowrap }}
           >
@@ -77,7 +78,11 @@ export function LackChipActions(p: {
       ) : null}
       {!(lack.disabled || want) && url ? (
         <TipIconButton
-          label={nexusPage ? t`Open ${name} on Nexus` : t`Open the page of ${name}`}
+          label={
+            nexusPage
+              ? t`Open ${name} on ${{ source: sourceLabel('nexus') }}`
+              : t`Open the page of ${name}`
+          }
           onClick={() => {
             openPage(url)
           }}

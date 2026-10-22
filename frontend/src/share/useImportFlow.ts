@@ -116,10 +116,13 @@ function announceCollection(applied: Result['collection']) {
   useToasts.getState().push({
     kind: applied.error ? 'warning' : 'success',
     title: i18n._(
-      msg`${plural(applied.fomodMods, {
-        one: `Applied the curator's choices for # mod and ${plural(applied.configs, { one: '# config file', other: '# config files' })}`,
-        other: `Applied the curator's choices for # mods and ${plural(applied.configs, { one: '# config file', other: '# config files' })}`,
-      })}`,
+      msg`${plural(
+        { count: applied.fomodMods },
+        {
+          one: `Applied the curator's choices for # mod and ${plural({ configs: applied.configs }, { one: '# config file', other: '# config files' })}`,
+          other: `Applied the curator's choices for # mods and ${plural({ configs: applied.configs }, { one: '# config file', other: '# config files' })}`,
+        },
+      )}`,
     ),
     ...(applied.error ? { body: applied.error } : {}),
   })
@@ -143,7 +146,7 @@ function announce(
   const renamed = !intoOpen && sharedName !== undefined && name !== sharedName
   const body = [
     queued > 0
-      ? plural(queued, { one: '# download queued', other: '# downloads queued' })
+      ? plural({ count: queued }, { one: '# download queued', other: '# downloads queued' })
       : i18n._(msg`Nothing to download`),
     renamed ? i18n._(msg`A profile with that name already exists, so this one is "${name}"`) : '',
   ]

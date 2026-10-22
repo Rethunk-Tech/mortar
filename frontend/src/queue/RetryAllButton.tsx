@@ -14,15 +14,20 @@ function skippedSummary(skipped: RetryAllResult['skipped']): string {
   const superseded = skipped?.superseded ?? 0
   const incomplete = skipped?.incomplete ?? 0
   return [
-    queued > 0 ? plural(queued, { one: '# already queued', other: '# already queued' }) : '',
+    queued > 0
+      ? plural({ count: queued }, { one: '# already queued', other: '# already queued' })
+      : '',
     superseded > 0
-      ? plural(superseded, {
-          one: '# superseded by a newer download',
-          other: '# superseded by a newer download',
-        })
+      ? plural(
+          { count: superseded },
+          {
+            one: '# superseded by a newer download',
+            other: '# superseded by a newer download',
+          },
+        )
       : '',
     incomplete > 0
-      ? plural(incomplete, { one: '# incomplete entry', other: '# incomplete entries' })
+      ? plural({ count: incomplete }, { one: '# incomplete entry', other: '# incomplete entries' })
       : '',
   ]
     .filter((s) => s !== '')
@@ -30,7 +35,7 @@ function skippedSummary(skipped: RetryAllResult['skipped']): string {
 }
 
 function retriedTitle(requeued: number): string {
-  return plural(requeued, { one: 'Retried # download', other: 'Retried # downloads' })
+  return plural({ count: requeued }, { one: 'Retried # download', other: 'Retried # downloads' })
 }
 
 export function RetryAllButton({ failed }: { failed: number }) {

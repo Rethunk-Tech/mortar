@@ -5,6 +5,7 @@ import {
   AnswerMerge,
   Skip,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { Callout } from '../queue/Callout.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -39,7 +40,7 @@ export function MergeCallout({ item }: { item: Item }) {
     <Callout
       item={item}
       label={t`Another file from a mod you have`}
-      text={t`This file is from the same Nexus page as ${ask.label}. Install it with that mod to update them as one, or as a separate mod.`}
+      text={t`This file is from the same ${{ source: sourceLabel('nexus') }} page as ${{ name: ask.label }}. Install it with that mod to update them as one, or as a separate mod.`}
       actions={null}
     >
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', flexWrap: 'wrap' }}>

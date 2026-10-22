@@ -15,6 +15,7 @@ import {
 } from '@mui/material'
 import { SetSkipPlayCheck } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { LastSaveGap } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
+import { WINDOWS } from '../brand/productNames.ts'
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -33,23 +34,23 @@ function GroupHeading({ group }: { group: PlayIssueGroup }) {
   const { t } = useLingui()
   switch (group.kind) {
     case 'missing':
-      return t`Missing required dependencies (${group.count})`
+      return t`Missing required dependencies (${{ count: group.count }})`
     case 'conflicts':
-      return t`Conflicts (${group.count})`
+      return t`Conflicts (${{ count: group.count }})`
     case 'updates':
-      return t`Pending updates (${group.count})`
+      return t`Pending updates (${{ count: group.count }})`
     case 'broken':
-      return t`Broken or obsolete (${group.count})`
+      return t`Broken or obsolete (${{ count: group.count }})`
     case 'longPaths':
-      return t`Paths too long for Windows (${group.count})`
+      return t`Paths too long for ${{ os: WINDOWS }} (${{ count: group.count }})`
     case 'lastProfile':
-      return t`${group.save} was last played with ${group.profileName}`
+      return t`${{ save: group.save }} was last played with ${{ profile: group.profileName }}`
     case 'changes':
-      return t`Changed since last run (${group.count})`
+      return t`Changed since last run (${{ count: group.count }})`
     case 'saveMods':
-      return t`This save was last played with ${plural(group.count, { one: '# mod this profile lacks', other: '# mods this profile lacks' })}`
+      return t`This save was last played with ${plural({ count: group.count }, { one: '# mod this profile lacks', other: '# mods this profile lacks' })}`
     case 'saveModsOff':
-      return t`This save was last played with ${plural(group.count, { one: '# mod that is disabled here', other: '# mods that are disabled here' })}`
+      return t`This save was last played with ${plural({ count: group.count }, { one: '# mod that is disabled here', other: '# mods that are disabled here' })}`
     default:
       return ''
   }
@@ -159,7 +160,7 @@ export function PrePlayDialog() {
               })
             }
           >
-            {switchName ? t`Switch to ${switchName}` : t`Switch profile`}
+            {switchName ? t`Switch to ${{ name: switchName }}` : t`Switch profile`}
           </Button>
         ) : null}
         {saveModsOff && check ? (
@@ -177,7 +178,10 @@ export function PrePlayDialog() {
                   cancel()
                   useToasts.getState().push({
                     kind: 'success',
-                    title: plural(enabled, { one: 'Enabled # mod', other: 'Enabled # mods' }),
+                    title: plural(
+                      { count: enabled },
+                      { one: 'Enabled # mod', other: 'Enabled # mods' },
+                    ),
                     body: i18n._(msg`Press Play to start.`),
                     changes,
                   })

@@ -76,7 +76,7 @@ export function PlayInstances({
             </Field>
           </Box>
           <Button variant="contained" color="primary" onClick={onLaunch}>
-            {plural(copies, { one: 'Launch # copy', other: 'Launch all # copies' })}
+            {plural({ count: copies }, { one: 'Launch # copy', other: 'Launch all # copies' })}
           </Button>
         </Box>
       ) : (

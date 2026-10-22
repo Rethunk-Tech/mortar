@@ -17,6 +17,7 @@ import type {
   Mod,
   Problem,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { modsLabel } from '../i18n/counts.ts'
 import { openPage } from '../mods/menu.ts'
 import { LetterTile } from '../mods/parts.tsx'
@@ -131,9 +132,13 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
     mod.different ? t`different file` : '',
     mod.unverified ? t`unverified until downloaded` : '',
     mod.site === 'local' && !mod.enabled ? t`Disabled`.toLowerCase() : '',
-    needsPatreonFile(mod) ? t`Needs a file from its Patreon post` : '',
-    needsItchFile(mod) ? t`Needs a file from its itch.io page` : '',
-    needsCurseForgeKey(mod) ? t`Needs a CurseForge key, or the file from its page` : '',
+    needsPatreonFile(mod)
+      ? t`Needs a file from its ${{ source: sourceLabel('patreon') }} post`
+      : '',
+    needsItchFile(mod) ? t`Needs a file from its ${{ source: sourceLabel('itch') }} page` : '',
+    needsCurseForgeKey(mod)
+      ? t`Needs a ${{ source: sourceLabel('curseforge') }} key, or the file from its page`
+      : '',
     mod.filesFrom === 'code' ? t`program files from this code` : '',
     mod.filesFrom === 'computer' ? t`copied from this computer` : '',
   ].filter(Boolean)
@@ -245,15 +250,15 @@ function ProblemRow({
   const theme = useTheme()
   const { name, detail } = problem
   const texts: Record<string, string> = {
-    removed: t`${name} was removed from Nexus`,
+    removed: t`${name} was removed from ${{ source: sourceLabel('nexus') }}`,
     'no-file': t`${name} has no file Mortar can use in place of the one shared`,
     broken: t`${name} is broken for ${detail}`,
     missing: t`${name} needs ${detail}, which Mortar cannot install`,
-    free: t`Free account: one click on Nexus per download`,
+    free: t`Free account: one click on ${{ source: sourceLabel('nexus') }} per download`,
   }
   const text =
     texts[problem.kind] ??
-    t`Some files could not be checked against Nexus, so a few may differ from what was shared.`
+    t`Some files could not be checked against ${{ source: sourceLabel('nexus') }}, so a few may differ from what was shared.`
   const info = problem.kind === 'free' || problem.kind === 'unconfirmed'
   const tone = info ? 'info' : 'warning'
   let icon = <TriangleAlert size={16} color={theme.palette.warning.main} />
@@ -384,7 +389,7 @@ export function Tiles({
     <>
       {carried.length > 0 ? (
         <Alert severity="warning" sx={{ mb: 1 }}>
-          {t`${listNames(carried)} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it.`}
+          {t`${{ names: listNames(carried) }} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it.`}
         </Alert>
       ) : null}
       <Box
@@ -459,10 +464,13 @@ export function StatusBar({
     status = t`Sign in to import`
   }
   const size = formatKb(summary.sizeKb)
-  const settings = plural(preview.settings, {
-    one: 'with # settings file, written once its mod is installed',
-    other: 'with # settings files, written once their mods are installed',
-  })
+  const settings = plural(
+    { count: preview.settings },
+    {
+      one: 'with # settings file, written once its mod is installed',
+      other: 'with # settings files, written once their mods are installed',
+    },
+  )
   const skippedSettings = preview.skippedSettings ?? []
   const skippedPrograms = preview.skippedPrograms ?? []
   const carried = carriedBy(preview)
@@ -475,13 +483,12 @@ export function StatusBar({
   const detail = [
     // A mod whose source reports no size adds 0, so a 0 total means unknown rather than nothing to fetch.
     ready && summary.sizeKb > 0
-      ? plural(total, {
-          one: `# mod · about ${size} to download`,
-          other: `# mods · about ${size} to download`,
-        })
+      ? t`${plural({ count: total }, { one: '# mod', other: '# mods' })} · about ${size} to download`
       : modsLabel(total),
     preview.settings > 0 ? settings : '',
-    carried.length > 0 ? t`Includes: ${listNames(carried.map((c) => carriedLabels[c]))}` : '',
+    carried.length > 0
+      ? t`Includes: ${{ names: listNames(carried.map((c) => carriedLabels[c])) }}`
+      : '',
   ]
     .filter(Boolean)
     .join(' · ')
@@ -523,19 +530,19 @@ export function StatusBar({
         </Typography>
         {skippedSettings.length > 0 ? (
           <LeftOut
-            title={plural(skippedSettings.length, {
-              one: '# settings file was left out (too large):',
-              other: '# settings files were left out (too large):',
-            })}
+            title={plural(
+              { count: skippedSettings.length },
+              {
+                one: '# settings file was left out (too large):',
+                other: '# settings files were left out (too large):',
+              },
+            )}
             paths={skippedSettings}
           />
         ) : null}
         {skippedPrograms.length > 0 ? (
           <LeftOut
-            title={plural(skippedPrograms.length, {
-              one: '# program file was left out; Mortar copies settings, not programs:',
-              other: '# program files were left out; Mortar copies settings, not programs:',
-            })}
+            title={t`${plural({ count: skippedPrograms.length }, { one: '# program file was', other: '# program files were' })} left out; Mortar copies settings, not programs:`}
             paths={skippedPrograms}
           />
         ) : null}
@@ -548,7 +555,7 @@ export function StatusBar({
           </Pill>
         ))}
         {summary.leftOut > 0 ? (
-          <Pill {...SHARE_CARD.leftOut}>{t`${summary.leftOut} left out`}</Pill>
+          <Pill {...SHARE_CARD.leftOut}>{t`${{ leftOut: summary.leftOut }} left out`}</Pill>
         ) : null}
       </Box>
     </Box>

@@ -61,7 +61,7 @@ export function GraphicsDialog() {
                   variant={o.recommended ? 'contained' : 'text'}
                   onClick={() => answer(o.id).catch(reportUnexpected)}
                 >
-                  {o.recommended ? t`${o.label} (Recommended)` : o.label}
+                  {o.recommended ? t`${{ name: o.label }} (Recommended)` : o.label}
                 </Button>
               ))
           : null}

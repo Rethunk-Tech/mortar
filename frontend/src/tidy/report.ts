@@ -18,7 +18,7 @@ async function show() {
   useToasts.getState().push({
     kind: 'info',
     title: i18n._(
-      msg`Mortar tidied up ${plural(report.total, { one: '# thing', other: '# things' })}`,
+      msg`Mortar tidied up ${plural({ count: report.total }, { one: '# thing', other: '# things' })}`,
     ),
     detail: lines.join('\n'),
   })

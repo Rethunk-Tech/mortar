@@ -13,6 +13,7 @@ import {
   SetLastGame,
   SetLastProfile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useGameLoader, useGameName } from '../games/info.ts'
 import { type GameId, useNav } from '../nav/store.ts'
 import { useExternalImportSources } from '../profiles/externalImportSources.ts'
@@ -53,11 +54,7 @@ function ManagerImportCard({ game }: { game: GameId }) {
       </Box>
       <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{t`From another mod manager`}</Typography>
       <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-        {plural(found, {
-          one: '# profile from another mod manager is on this computer. Its mods download from their own sites.',
-          other:
-            '# profiles from other mod managers are on this computer. Their mods download from their own sites.',
-        })}
+        {`${t`${plural({ count: found }, { one: '# profile from another mod manager is', other: '# profiles from other mod managers are' })} on this computer.`} ${plural({ count: found }, { one: 'Its mods download from their own sites.', other: 'Their mods download from their own sites.' })}`}
       </Typography>
       <Box sx={{ flex: 1 }} />
       <Button variant="outlined" size="large" onClick={() => openImport({ managers: true })}>
@@ -128,7 +125,7 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
               {t`Import from the game's Mods folder`}
             </Typography>
             <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-              {t`Copy the mods already in ${gameName}'s Mods folder into a new profile. The game folder is not changed.`}
+              {t`Copy the mods already in ${{ game: gameName }}'s Mods folder into a new profile. The game folder is not changed.`}
             </Typography>
             <Box sx={{ flex: 1 }} />
             <Button variant="contained" onClick={() => setImportOpen(true)} size="large">
@@ -151,8 +148,8 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
           <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{t`Start empty`}</Typography>
           <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
             {loader
-              ? t`A profile with only ${loader}. Add mods from ${site} or from archives.`
-              : t`An empty profile. Add mods from ${site} or from archives.`}
+              ? t`A profile with only ${loader}. Add mods from ${{ source: site }} or from archives.`
+              : t`An empty profile. Add mods from ${{ source: site }} or from archives.`}
           </Typography>
           <TextField
             autoFocus={true}
@@ -190,7 +187,7 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
           </Box>
           <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{t`From a shared link`}</Typography>
           <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-            {t`Got a Mortar link? You see what it holds first. Nexus mods need your Nexus sign-in; Mortar asks then.`}
+            {t`Got a Mortar link? You see what it holds first. ${{ source: sourceLabel('nexus') }} mods need your ${{ source: sourceLabel('nexus') }} sign-in; Mortar asks then.`}
           </Typography>
           <TextField
             fullWidth={true}

@@ -16,7 +16,7 @@ import {
   SetNxmRedirectOtherGames,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ExtensionContact } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
-import { CHROME, FIREFOX } from '../../brand/productNames.ts'
+import { CHROME, CHROMIUM, EDGE, FIREFOX } from '../../brand/productNames.ts'
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { When } from '../../i18n/When.tsx'
 import { openPage } from '../../mods/menu.ts'
@@ -164,7 +164,7 @@ function ExtensionSteps() {
       sx={{ m: 0, mt: 1, pl: 2.5 }}
     >
       <li>
-        {t`${{ app: CHROME }}, Edge or another Chromium browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder.`}
+        {t`${{ app: CHROME }}, ${{ otherApp: EDGE }} or another ${{ thirdApp: CHROMIUM }} browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder.`}
       </li>
       <li>
         {t`${{ app: FIREFOX }}:`}{' '}
@@ -204,7 +204,7 @@ const SourceLinks = memo(function SourceLinksView() {
           const done = on ? EnableSource(source.id) : DisableSource(source.id)
           done
             .catch((error: unknown) =>
-              toastError(t`Could not change how ${{ name: source.name }} links open`, error),
+              toastError(t`Could not change how ${{ source: source.name }} links open`, error),
             )
             .finally(load)
         }}

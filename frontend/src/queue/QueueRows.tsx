@@ -73,7 +73,7 @@ export function PauseButton({ item }: { item: Item }) {
   const { t } = useLingui()
   return (
     <TipIconButton
-      label={t`Pause ${item.name}`}
+      label={t`Pause ${{ name: item.name }}`}
       onClick={() => PauseItem(item.id).catch(reportUnexpected)}
     >
       <Pause size={14} />
@@ -85,7 +85,7 @@ export function NowButton({ item }: { item: Item }) {
   const { t } = useLingui()
   return (
     <TipIconButton
-      label={t`Download ${item.name} now`}
+      label={t`Download ${{ name: item.name }} now`}
       onClick={() => Top(item.id).catch(reportUnexpected)}
     >
       <ArrowUpToLine size={14} />
@@ -98,13 +98,13 @@ export function MoveButtons({ item }: { item: Item }) {
   return (
     <>
       <TipIconButton
-        label={t`Move ${item.name} up`}
+        label={t`Move ${{ name: item.name }} up`}
         onClick={() => Move(item.id, -1).catch(reportUnexpected)}
       >
         <ChevronUp size={14} />
       </TipIconButton>
       <TipIconButton
-        label={t`Move ${item.name} down`}
+        label={t`Move ${{ name: item.name }} down`}
         onClick={() => Move(item.id, 1).catch(reportUnexpected)}
       >
         <ChevronDown size={14} />
@@ -121,7 +121,7 @@ export function Paused({ items }: { items: Item[] }) {
   }
   return (
     <>
-      <SectionTitle>{t`Paused (${items.length})`}</SectionTitle>
+      <SectionTitle>{t`Paused (${{ count: items.length }})`}</SectionTitle>
       {items.map((i) => {
         const done = formatBytes(i.partial ?? 0)
         const total = formatKb(i.sizeKb)
@@ -140,14 +140,14 @@ export function Paused({ items }: { items: Item[] }) {
             actions={
               <>
                 <TipIconButton
-                  label={t`Resume ${i.name}`}
+                  label={t`Resume ${{ name: i.name }}`}
                   onClick={() => ResumeItem(i.id).catch(reportUnexpected)}
                 >
                   <Play size={14} />
                 </TipIconButton>
                 <NowButton item={i} />
                 <TipIconButton
-                  label={t`Skip ${i.name}`}
+                  label={t`Skip ${{ name: i.name }}`}
                   onClick={() => Skip(i.id).catch(reportUnexpected)}
                 >
                   <X size={14} />

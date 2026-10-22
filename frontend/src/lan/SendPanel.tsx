@@ -17,6 +17,7 @@ import { Inbox, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import type { Peer } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
 import { Peers, Send } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { includeAvailability } from '../share/methods.ts'
@@ -115,7 +116,7 @@ function LinksOnlyView({
       <Box>
         <Stack spacing={1.5}>
           <Typography variant="body2">
-            {t`${name} is not paired with this computer, so Mortar sends the list of mods, not their files. ${name} will download each mod from its site, one click per mod on a free Nexus account.`}
+            {t`${name} is not paired with this computer, so Mortar sends the list of mods, not their files. ${name} will download each mod from its site, one click per mod on a free ${{ source: sourceLabel('nexus') }} account.`}
           </Typography>
           {heldBack ? (
             <Typography variant="body2">
@@ -179,8 +180,8 @@ function useSend(game: string, profileId: string, include: ShareInclude, onSent:
         useToasts.getState().push({
           kind: 'success',
           title: target.paired
-            ? t`Sent ${profileName} to ${target.name}; they will copy the files from you`
-            : t`Sent to ${target.name}`,
+            ? t`Sent ${{ profile: profileName }} to ${{ name: target.name }}; they will copy the files from you`
+            : t`Sent to ${{ name: target.name }}`,
         })
         onSent()
       })
@@ -189,13 +190,13 @@ function useSend(game: string, profileId: string, include: ShareInclude, onSent:
         if (errorKind(error) === 'busy') {
           useToasts.getState().push({
             kind: 'error',
-            title: t`${target.name} is still taking your last share`,
+            title: t`${{ name: target.name }} is still taking your last share`,
             body: t`Try again in a few seconds.`,
             action: { label: t`Retry`, run: () => send(target) },
           })
           return
         }
-        toastError(t`Could not send to ${target.name}`, error)
+        toastError(t`Could not send to ${{ name: target.name }}`, error)
       })
       .finally(() => setSending(null))
   }

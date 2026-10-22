@@ -100,7 +100,7 @@ function TourPopover({
 
   const { title, body } = useTourCopy(step, paletteKeys)
 
-  const stepLabel = t`Step ${shown.indexOf(step) + 1} of ${shown.length}`
+  const stepLabel = t`Step ${{ step: shown.indexOf(step) + 1 }} of ${{ count: shown.length }}`
 
   return (
     <>

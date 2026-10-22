@@ -30,18 +30,26 @@ const rejectionText = ({ reason, name = '' }: Rejection): string => {
   switch (reason) {
     case 'restricted':
       return i18n._(
-        msg`${name}'s author only allows downloads from its CurseForge page. Choose Download there instead of Install, then drop the file on Mortar.`,
+        msg`${name}'s author only allows downloads from its ${{ source: sourceLabel('curseforge') }} page. Choose Download there instead of Install, then drop the file on Mortar.`,
       )
     case 'game':
       return i18n._(msg`Mortar does not manage mods for that game.`)
     case 'expired':
-      return i18n._(msg`The link has expired. Click Mod Manager Download on Nexus again.`)
+      return i18n._(
+        msg`The link has expired. Click Mod Manager Download on ${{ source: sourceLabel('nexus') }} again.`,
+      )
     case 'user':
-      return i18n._(msg`The link was made for another Nexus account than the one signed in.`)
+      return i18n._(
+        msg`The link was made for another ${{ source: sourceLabel('nexus') }} account than the one signed in.`,
+      )
     case 'signedIn':
-      return i18n._(msg`Sign in to Nexus Mods in Settings before downloading from a link.`)
+      return i18n._(
+        msg`Sign in to ${{ source: sourceLabel('nexus') }} in Settings before downloading from a link.`,
+      )
     default:
-      return i18n._(msg`This is not a Mod Manager Download link from Nexus.`)
+      return i18n._(
+        msg`This is not a Mod Manager Download link from ${{ source: sourceLabel('nexus') }}.`,
+      )
   }
 }
 
@@ -73,7 +81,7 @@ async function install(arrival: Arrival, profile: Profile) {
   }
   const name = await arrivalName(arrival)
   const profileName = profile.name
-  const title = i18n._(msg`Downloading ${name} into ${profileName}`)
+  const title = i18n._(msg`Downloading ${name} into ${{ profile: profileName }}`)
   useToasts.getState().push({ kind: 'info', title })
   await notify(arrival, title, '')
 }
@@ -99,7 +107,7 @@ const arrivalSite = (a: Arrival): string => {
 const packageName = (a: Arrival): string => {
   const id = a.package ?? ''
   if (a.source === 'curseforge') {
-    return a.name || i18n._(msg`${{ site: sourceLabel('curseforge') }} mod ${{ id }}`)
+    return a.name || i18n._(msg`${{ source: sourceLabel('curseforge') }} mod ${{ id }}`)
   }
   return a.source === 'vsmoddb' ? a.name || id : id
 }
@@ -108,7 +116,7 @@ const arrivalName = (a: Arrival): Promise<string> =>
   a.package ? Promise.resolve(packageName(a)) : modName(a.link.game, a.link.modId)
 
 const fallbackName = (modId: number) =>
-  i18n._(msg`${{ site: sourceLabel('nexus') }} mod ${{ id: modId }}`)
+  i18n._(msg`${{ source: sourceLabel('nexus') }} mod ${{ id: modId }}`)
 
 // The mod's Nexus page title, fetched once per mod; the fallback stands in when signed out or offline.
 function modName(game: string, modId: number): Promise<string> {
@@ -179,7 +187,7 @@ async function initNxm(): Promise<void> {
           a,
           i18n._(msg`Mortar · Install ${name}?`),
           i18n._(
-            msg`You started this download on Nexus. Show Mortar to choose the profile it goes into.`,
+            msg`You started this download on ${{ source: sourceLabel('nexus') }}. Show Mortar to choose the profile it goes into.`,
           ),
           true,
         ),

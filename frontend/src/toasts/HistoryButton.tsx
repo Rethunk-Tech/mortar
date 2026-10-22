@@ -244,7 +244,10 @@ export const HistoryButton = memo(function HistoryButtonView() {
         ref={bell}
         aria-label={
           unread > 0
-            ? plural(unread, { one: 'Notifications, # unread', other: 'Notifications, # unread' })
+            ? plural(
+                { count: unread },
+                { one: 'Notifications, # unread', other: 'Notifications, # unread' },
+              )
             : t`Notifications`
         }
         aria-haspopup="dialog"

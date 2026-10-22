@@ -28,7 +28,7 @@ export function NeedsRootCallout({ item }: { item: Item }) {
   if (overlay) {
     label = t`Place the optional file`
     button = t`Place…`
-    text = t`This optional file replaces files of ${overlay.baseLabel}. Pick where its files go.`
+    text = t`This optional file replaces files of ${{ baseLabel: overlay.baseLabel }}. Pick where its files go.`
   }
   return (
     <Callout

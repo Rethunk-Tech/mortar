@@ -93,8 +93,8 @@ function installTitle(
     return i18n._(msg`Added ${mods} to ${{ profile: profileName }}`)
   }
   return versionChanged
-    ? i18n._(msg`Updated ${mods} in ${profileName}`)
-    : i18n._(msg`Replaced ${mods} in ${profileName}`)
+    ? i18n._(msg`Updated ${mods} in ${{ profile: profileName }}`)
+    : i18n._(msg`Replaced ${mods} in ${{ profile: profileName }}`)
 }
 
 function shouldConsiderMissing(openId: string, installedProfileId: string): boolean {
@@ -299,7 +299,7 @@ async function runInstalls(
     } catch (e) {
       failed += 1
       const flagged = detectionOf(e)
-      const title = i18n._(msg`Could not add ${fileName(item)}`)
+      const title = i18n._(msg`Could not add ${{ name: fileName(item) }}`)
       if (flagged) {
         offerInstallAnyway({
           title,

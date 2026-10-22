@@ -50,8 +50,8 @@ function OfferRow({ offer }: { offer: Offer }) {
     <Box sx={{ py: space.gap, borderBottom: '1px solid var(--mortar-hairline)' }}>
       <Typography sx={{ fontWeight: 600 }}>
         {offer.conflict
-          ? t`${offer.name} was changed on ${offer.machine} and on this machine`
-          : t`${offer.name} was changed on ${offer.machine}`}
+          ? t`${{ name: offer.name }} was changed on ${{ machine: offer.machine }} and on this machine`
+          : t`${{ name: offer.name }} was changed on ${{ machine: offer.machine }}`}
       </Typography>
       {offer.conflict ? (
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
@@ -76,7 +76,9 @@ function OfferRow({ offer }: { offer: Offer }) {
       {diff ? (
         <Box sx={{ mt: 1, fontSize: 13 }}>
           {updated ? (
-            <Box sx={{ color: 'text.secondary', mb: 0.5 }}>{t`Updated from ${offer.machine}`}</Box>
+            <Box
+              sx={{ color: 'text.secondary', mb: 0.5 }}
+            >{t`Updated from ${{ machine: offer.machine }}`}</Box>
           ) : null}
           {(diff.add ?? []).map((name) => (
             <Box key={`add-${name}`}>{t`Adds ${name}`}</Box>
@@ -116,15 +118,17 @@ export function SyncOffers() {
             key={`stalled-${st.game}/${st.remote}`}
             sx={{ py: space.gap, borderBottom: '1px solid var(--mortar-hairline)' }}
           >
-            <Typography sx={{ fontWeight: 600 }}>{t`${st.name} is not syncing yet`}</Typography>
+            <Typography
+              sx={{ fontWeight: 600 }}
+            >{t`${{ name: st.name }} is not syncing yet`}</Typography>
             <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-              {t`Waiting for ${st.machine}'s profile file to finish syncing. Changes made here are written out once it arrives.`}
+              {t`Waiting for ${{ machine: st.machine }}'s profile file to finish syncing. Changes made here are written out once it arrives.`}
             </Typography>
           </Box>
         ))}
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setOpen(false)}>{t`Later`}</Button>
+        <Button onClick={() => setOpen(false)}>{t`Close`}</Button>
       </DialogActions>
     </Dialog>
   )

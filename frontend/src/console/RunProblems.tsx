@@ -195,7 +195,7 @@ function ProblemRow({
                   other: `Keep ${{ name: copies.keep.name }} and remove # other copies.`,
                 },
               )
-            : t`Remove ${{ other: copies.remove[0]?.name ?? '' }}`
+            : t`Remove ${{ name: copies.remove[0]?.name ?? '' }}`
         }
         confirmLabel={t`Remove`}
         onCancel={() => setConfirmDup(false)}

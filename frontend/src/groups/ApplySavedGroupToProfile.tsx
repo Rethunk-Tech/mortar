@@ -52,7 +52,7 @@ export function ApplySavedGroupToProfile({
   }
   return (
     <Dialog open={open} onClose={busy ? undefined : onClose}>
-      <DialogTitle>{t`Add ${group?.name ?? ''} to a profile`}</DialogTitle>
+      <DialogTitle>{t`Add ${{ name: group?.name ?? '' }} to a profile`}</DialogTitle>
       <DialogContent sx={{ minWidth: 340 }}>
         <TextField
           select={true}

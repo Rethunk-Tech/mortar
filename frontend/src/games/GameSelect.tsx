@@ -225,7 +225,7 @@ function RowView({
   const content = (
     <>
       {art ? <Art src={art} openable={openable} /> : null}
-      {openable ? <CoverButton onClick={open} aria-label={t`Open ${game.name}`} /> : null}
+      {openable ? <CoverButton onClick={open} aria-label={t`Open ${{ name: game.name }}`} /> : null}
       <Box
         sx={{
           ...aboveOpen,
@@ -271,7 +271,7 @@ function RowView({
             type="button"
             variant="contained"
             size="large"
-            aria-label={t`Play ${playName}`}
+            aria-label={t`Play ${{ name: playName }}`}
             startIcon={<Play size={18} fill="currentColor" />}
             onClick={playLast}
             sx={actionSx}
@@ -284,7 +284,7 @@ function RowView({
             type="button"
             variant="contained"
             size="large"
-            aria-label={t`Set up ${game.name}`}
+            aria-label={t`Set up ${{ name: game.name }}`}
             startIcon={<Settings size={18} />}
             onClick={open}
             sx={actionSx}

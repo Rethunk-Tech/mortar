@@ -147,14 +147,16 @@ export function BugReportDialog() {
           />
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
             {discord
-              ? t`Copies the report for you to paste into a new post in the bug-reports forum on Mortar's Discord, and saves the diagnostics zip to attach.`
-              : t`Opens a GitHub issue with these filled in. You review it before posting.`}
+              ? t`Copies the report for you to paste into a new post in the bug-reports forum on Mortar's ${{ app: sourceLabel('discord') }}, and saves the diagnostics zip to attach.`
+              : t`Opens a ${{ source: sourceLabel('github') }} issue with these filled in. You review it before posting.`}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={guard.request}>{t`Cancel`}</Button>
           <Button type="submit" variant="contained" disabled={form.happened.trim() === ''}>
-            {discord ? t`Copy and open Discord` : openPageLabel(i18n, 'github')}
+            {discord
+              ? t`Copy and open ${{ app: sourceLabel('discord') }}`
+              : openPageLabel(i18n, 'github')}
           </Button>
         </DialogActions>
       </form>

@@ -27,6 +27,7 @@ import {
   Exists as ShortcutExists,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/shortcut/service.ts'
 import { AddResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/steam/models.ts'
+import { STEAM } from '../brand/productNames.ts'
 import { setFrozen } from '../mods/freeze.ts'
 import { isFrozen } from '../mods/frozen.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -131,7 +132,7 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
       {steamShortcut ? (
         <ProfileMenuItem
           icon={<Gamepad2 size={16} />}
-          label={t`Add this profile to Steam`}
+          label={t`Add this profile to ${{ launcher: STEAM }}`}
           onClick={() => {
             close()
             const g = currentGame
@@ -140,16 +141,18 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
                 .then((result) =>
                   useToasts.getState().push(
                     result === AddResult.Unchanged
-                      ? { kind: 'success', title: t`Already in Steam` }
+                      ? { kind: 'success', title: t`Already in ${{ launcher: STEAM }}` }
                       : {
                           kind: 'success',
                           title:
-                            result === AddResult.Updated ? t`Updated in Steam` : t`Added to Steam`,
-                          body: t`It shows in your Steam library the next time Steam starts.`,
+                            result === AddResult.Updated
+                              ? t`Updated in ${{ launcher: STEAM }}`
+                              : t`Added to ${{ launcher: STEAM }}`,
+                          body: t`It shows in your ${{ launcher: STEAM }} library the next time ${{ launcher: STEAM }} starts.`,
                         },
                   ),
                 )
-                .catch(reportError(t`Could not add it to Steam`))
+                .catch(reportError(t`Could not add it to ${{ launcher: STEAM }}`))
             }
           }}
         />

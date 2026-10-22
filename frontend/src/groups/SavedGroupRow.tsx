@@ -37,7 +37,9 @@ export function SavedGroupRow({
     <Box sx={{ p: space.gap, bgcolor: 'var(--mortar-raised)', borderRadius: '6px' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
         <TipIconButton
-          label={open ? t`Hide mods of ${group.name}` : t`Show mods of ${group.name}`}
+          label={
+            open ? t`Hide mods of ${{ name: group.name }}` : t`Show mods of ${{ name: group.name }}`
+          }
           aria-expanded={open}
           onClick={() => setOpen(!open)}
         >
@@ -46,10 +48,10 @@ export function SavedGroupRow({
         <Typography noWrap={true} title={group.name} sx={{ flex: 1, minWidth: 0, fontWeight: 600 }}>
           {group.name}
         </Typography>
-        <TipIconButton label={t`Add ${group.name} to a profile`} onClick={onApply}>
+        <TipIconButton label={t`Add ${{ name: group.name }} to a profile`} onClick={onApply}>
           <PackagePlus size={ICON_SIZE} />
         </TipIconButton>
-        <TipIconButton label={t`Rename ${group.name}`} onClick={onRename}>
+        <TipIconButton label={t`Rename ${{ name: group.name }}`} onClick={onRename}>
           <Pencil size={ICON_SIZE} />
         </TipIconButton>
         <TipIconButton label={t`Delete ${{ name: group.name }}`} color="error" onClick={onDelete}>
@@ -73,14 +75,14 @@ export function SavedGroupRow({
                 title={mod.name}
                 sx={{ flex: 1, minWidth: 0, fontSize: 13 }}
               >
-                {mod.overlayOf ? t`${mod.name} (optional file)` : mod.name}
+                {mod.overlayOf ? t`${{ name: mod.name }} (optional file)` : mod.name}
               </Typography>
               {mod.overlayOf ? null : (
                 <TipIconButton
                   label={
                     mods.length === 1
                       ? t`A saved group keeps at least one mod; delete the saved group instead`
-                      : t`Remove ${mod.name} from ${group.name}`
+                      : t`Remove ${{ name: mod.name }} from ${{ group: group.name }}`
                   }
                   disabled={mods.length === 1}
                   onClick={() => {

@@ -3,7 +3,7 @@ import { Alert, AlertTitle, Box, Button, Typography } from '@mui/material'
 import { Gauge, Timer } from 'lucide-react'
 import { type ReactNode, useRef, useState } from 'react'
 import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
-import { BEPINEX, SMAPI, UNITY } from '../brand/productNames.ts'
+import { BEPINEX, MONO_RUNTIME, SMAPI, UNITY } from '../brand/productNames.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { useGameBusy } from '../launch/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -36,7 +36,7 @@ function MeasureBanner({ onCancel }: { onCancel: () => void }) {
       <AlertTitle>{t`The next launch will be measured`}</AlertTitle>
       {smapi
         ? t`Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column.`
-        : t`Press Play. The ${{ loader: BEPINEX }} Bridge times each plugin's load and the start up to the main menu, and shows the results here. ${{ app: UNITY }}'s Mono runtime cannot be sampled, so there is no Sampled column.`}
+        : t`Press Play. The ${{ loader: BEPINEX }} Bridge times each plugin's load and the start up to the main menu, and shows the results here. ${{ app: UNITY }}'s ${{ otherApp: MONO_RUNTIME }} runtime cannot be sampled, so there is no Sampled column.`}
     </Alert>
   )
 }

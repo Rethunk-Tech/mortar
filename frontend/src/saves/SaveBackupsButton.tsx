@@ -47,7 +47,7 @@ function CopyRow({
       <Typography noWrap={true} title={copy.name} sx={{ flex: 1, minWidth: 0, fontSize: 12 }}>
         <When value={copy.at} withTime={true} />
         <Box component="span" sx={{ color: 'text.secondary' }}>
-          {t` · Kept by the game · ${formatBytes(copy.size)}`}
+          {t` · Kept by the game · ${{ size: formatBytes(copy.size) }}`}
         </Box>
       </Typography>
       <TipIconButton
@@ -152,11 +152,11 @@ export function SaveBackupsButton({
   if (ask) {
     when = formatWhen(ask.kind === 'copy' ? ask.copy.at : ask.backup.at, { withTime: true })
   }
-  let body = t`${label} is replaced by the copy in this backup. The current ${label} is backed up first.`
+  let body = t`${{ name: label }} is replaced by the copy in this backup. The current ${{ name: label }} is backed up first.`
   if (ask?.kind === 'delete') {
     body = t`The backup from ${when} is deleted for good, with every save in it.`
   } else if (ask?.kind === 'copy') {
-    body = t`${label} is replaced by the game's own copy from ${when}. The current ${label} is backed up first.`
+    body = t`${{ name: label }} is replaced by the game's own copy from ${when}. The current ${{ name: label }} is backed up first.`
   }
   return (
     <>
@@ -176,7 +176,7 @@ export function SaveBackupsButton({
         onClose={() => setAnchor(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-        slotProps={{ paper: { role: 'dialog', 'aria-label': t`Backups of ${label}` } }}
+        slotProps={{ paper: { role: 'dialog', 'aria-label': t`Backups of ${{ name: label }}` } }}
       >
         <Box
           sx={{
@@ -213,7 +213,11 @@ export function SaveBackupsButton({
       </Popover>
       <ConfirmDialog
         open={ask !== null}
-        title={ask?.kind === 'delete' ? t`Delete this backup?` : t`Restore ${label} to ${when}?`}
+        title={
+          ask?.kind === 'delete'
+            ? t`Delete this backup?`
+            : t`Restore ${{ name: label }} to ${when}?`
+        }
         confirmLabel={ask?.kind === 'delete' ? t`Delete` : t`Restore`}
         color={ask?.kind === 'delete' ? 'error' : 'primary'}
         busy={pending || (ask?.kind !== 'delete' && busyGame)}

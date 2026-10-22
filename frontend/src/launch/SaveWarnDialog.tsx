@@ -29,7 +29,7 @@ export function SaveWarnDialog() {
       <DialogTitle>{t`Your last save needs other mods`}</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          {t`${save?.farmer ?? ''}'s farm (${save?.folder ?? ''}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save.`}
+          {t`${{ farmer: save?.farmer ?? '' }}'s farm (${{ path: save?.folder ?? '' }}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save.`}
         </DialogContentText>
         <List dense={true} sx={{ mt: 1 }}>
           {missing.map((m) => (

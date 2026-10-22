@@ -17,7 +17,7 @@ export function savedGroupApplied(result: ApplyResult, profileId: string): void 
     useMods.getState().load().catch(reportUnexpected)
   }
   const missing = result.missing ?? []
-  const added = plural(result.added, { one: '# mod added', other: '# mods added' })
+  const added = plural({ count: result.added }, { one: '# mod added', other: '# mods added' })
   const wants = open ? savedGroupWants(result.missingMods) : []
   const { group } = result
   useToasts.getState().push({
@@ -26,7 +26,7 @@ export function savedGroupApplied(result: ApplyResult, profileId: string): void 
     changes: [result.profile.lastChange ?? ''],
     body:
       missing.length > 0
-        ? `${added}\n${i18n._(msg`Not downloaded yet: ${listNames(missing, missing.length)}`)}`
+        ? `${added}\n${i18n._(msg`Not downloaded yet: ${{ names: listNames(missing, missing.length) }}`)}`
         : added,
     ...(wants.length > 0
       ? {

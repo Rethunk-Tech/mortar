@@ -111,8 +111,8 @@ function ResultFooter({ result }: { result: BrowseResult }) {
         borderTop: '1px solid var(--mortar-hairline-muted)',
       }}
     >
-      {plural(result.total, { one: '# result', other: '# results' })}
-      {result.hidden ? ` · ${t`${result.hidden} hidden`}` : ''}
+      {plural({ count: result.total }, { one: '# result', other: '# results' })}
+      {result.hidden ? ` · ${t`${{ hidden: result.hidden }} hidden`}` : ''}
       {result.failed && result.failed.length > 0 ? ` · ${unreachableNote(result.failed)}` : ''}
       {result.unsorted && result.unsorted.length > 0 ? ` · ${unsortedNote(result.unsorted)}` : ''}
     </Typography>

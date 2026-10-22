@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { ChevronRight } from 'lucide-react'
 import { useState } from 'react'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { LockedReason } from '../mods/LockedReason.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
@@ -58,9 +59,11 @@ export function ImportFooter({
             fontSize: 13,
           }}
         >
-          <Box sx={{ flex: 1 }}>{t`Sign in to Nexus Mods to download these mods.`}</Box>
+          <Box
+            sx={{ flex: 1 }}
+          >{t`Sign in to ${{ source: sourceLabel('nexus') }} to download these mods.`}</Box>
           <Button size="small" variant="outlined" color="inherit" onClick={flow.signIn}>
-            {t`Open Nexus settings`}
+            {t`Open ${{ source: sourceLabel('nexus') }} settings`}
           </Button>
         </Box>
       ) : null}
@@ -93,7 +96,7 @@ export function ImportFooter({
               }}
               sx={{ height: 40 }}
             >
-              {t`Add to ${targetName}`}
+              {t`Add to ${{ name: targetName }}`}
             </Button>
           </LockedReason>
         ) : null}
@@ -106,7 +109,7 @@ export function ImportFooter({
               onClick={() => setAskReplace(true)}
               sx={{ height: 40 }}
             >
-              {t`Replace ${targetName}`}
+              {t`Replace ${{ name: targetName }}`}
             </Button>
           </LockedReason>
         ) : null}
@@ -126,7 +129,7 @@ export function ImportFooter({
         open={askReplace}
         color="error"
         title={t`Replace ${{ name: targetName }}?`}
-        confirmLabel={t`Replace ${targetName}`}
+        confirmLabel={t`Replace ${{ name: targetName }}`}
         onCancel={() => setAskReplace(false)}
         onConfirm={() => {
           setAskReplace(false)
@@ -134,7 +137,9 @@ export function ImportFooter({
         }}
       >
         {(preview.replace?.remove ?? []).length > 0 ? (
-          <Fold title={t`These will be removed (${(preview.replace?.remove ?? []).length})`}>
+          <Fold
+            title={t`These will be removed (${{ count: (preview.replace?.remove ?? []).length }})`}
+          >
             <Typography
               tabIndex={0}
               sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
@@ -146,7 +151,9 @@ export function ImportFooter({
           <Typography sx={{ fontSize: 13 }}>{t`Nothing will be removed.`}</Typography>
         )}
         {(preview.replace?.keepLocal ?? []).length > 0 ? (
-          <Fold title={t`Local-only mods kept (${(preview.replace?.keepLocal ?? []).length})`}>
+          <Fold
+            title={t`Local-only mods kept (${{ count: (preview.replace?.keepLocal ?? []).length }})`}
+          >
             <Typography
               tabIndex={0}
               sx={{ fontSize: 13, maxHeight: 120, overflowY: 'auto', mt: 0.5 }}

@@ -23,6 +23,7 @@ import { OpenDataFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import { RestartProfilingStartup } from '../../bindings/github.com/Rethunk-Tech/mortar/quitservice.ts'
 import { DiscordLogo } from '../brand/Discord.tsx'
 import { Logo } from '../brand/Logo.tsx'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useConsole } from '../console/store.ts'
 import { compact } from '../game/compact.ts'
 import { useTab } from '../game/tab.ts'
@@ -66,7 +67,9 @@ function NexusLines({ close }: { close: () => void }) {
   return (
     <>
       <Box sx={{ px: '14px', py: '6px', fontSize: 13 }}>
-        {signedIn ? t`Nexus Mods · Signed in as ${name}` : t`Nexus Mods · Not signed in`}
+        {signedIn
+          ? t`${{ source: sourceLabel('nexus') }} · Signed in as ${name}`
+          : t`${{ source: sourceLabel('nexus') }} · Not signed in`}
         {signedIn && premium ? (
           <Box
             component="span"
@@ -80,7 +83,7 @@ function NexusLines({ close }: { close: () => void }) {
         <TitleMenuItem
           dim={true}
           icon={<LogOut size={ICON_PX} />}
-          label={t`Sign out of Nexus`}
+          label={t`Sign out of ${{ source: sourceLabel('nexus') }}`}
           onClick={() => {
             close()
             SignOut().catch(reportUnexpected)
@@ -89,7 +92,7 @@ function NexusLines({ close }: { close: () => void }) {
       ) : (
         <TitleMenuItem
           icon={<LogIn size={ICON_PX} />}
-          label={t`Sign in to Nexus…`}
+          label={t`Sign in to ${{ source: sourceLabel('nexus') }}…`}
           onClick={() => {
             close()
             openSettings('accounts')
@@ -111,7 +114,7 @@ function ProjectLinks({ close, game }: { close: () => void; game: string }) {
     <>
       <TitleMenuItem
         icon={<DiscordLogo size={ICON_PX} />}
-        label={t`Ask on Discord`}
+        label={t`Ask on ${{ app: sourceLabel('discord') }}`}
         onClick={open(`${GO}help/`)}
       />
       <TitleMenuItem

@@ -15,7 +15,7 @@ export function HandoffDialog() {
   return (
     <ConfirmDialog
       open={asking !== undefined}
-      title={t`Install ${asking?.file ?? ''} as from ${asking?.page ?? ''}?`}
+      title={t`Install ${{ file: asking?.file ?? '' }} as from ${{ page: asking?.page ?? '' }}?`}
       body={t`Mortar records the file against that page, so the mod's page link and shares point there. Choose No to add it as a plain local file.`}
       confirmLabel={t`Yes`}
       cancelLabel={t`No`}

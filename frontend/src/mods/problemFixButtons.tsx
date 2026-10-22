@@ -217,7 +217,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
           t`Delete`,
           () =>
             setConfirm({
-              title: t`Delete ${{ path: drift.folder }}?`,
+              title: t`Delete ${{ name: drift.folder }}?`,
               body: t`Mortar did not install this folder. It moves to Mortar's trash.`,
               label: t`Delete`,
               act: () => run(() => removeUntracked(drift.folder)),

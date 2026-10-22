@@ -53,7 +53,7 @@ async function importEach(game: string, folders: string[], failed: string): Prom
   if (done > 0) {
     useToasts.getState().push({
       kind: 'success',
-      title: plural(done, { one: 'Imported # profile', other: 'Imported # profiles' }),
+      title: plural({ count: done }, { one: 'Imported # profile', other: 'Imported # profiles' }),
     })
   }
   return first
@@ -139,7 +139,7 @@ export function ManagerPane({
           <FoundProfileRow
             key={f.key}
             name={f.name}
-            source={f.imported ? t`${f.source} · Imported` : f.source}
+            source={f.imported ? t`${{ source: f.source }} · Imported` : f.source}
             mods={f.mods}
             disabled={busy || f.imported === true}
             {...(f.folder && !f.imported
@@ -177,7 +177,10 @@ export function ManagerPane({
             disabled={busy}
             onClick={() => importChosen().catch(reportUnexpected)}
           >
-            {plural(chosen.length, { one: 'Import # profile', other: 'Import # profiles' })}
+            {plural(
+              { count: chosen.length },
+              { one: 'Import # profile', other: 'Import # profiles' },
+            )}
           </Button>
         ) : null}
       </Box>

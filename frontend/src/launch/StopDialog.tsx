@@ -21,7 +21,7 @@ export function StopDialog({
       maxWidth={420}
       color="error"
       title={t`Stop game?`}
-      body={t`${gameName} will close now, and any progress since your last save is lost.`}
+      body={t`${{ game: gameName }} will close now, and any progress since your last save is lost.`}
       confirmLabel={t`Stop game`}
       onCancel={onClose}
       onConfirm={() => {

@@ -85,7 +85,7 @@ function ProfileCards({
       ))}
       {more > 0 ? (
         <ButtonBase
-          aria-label={t`Open ${gameName} (${plural(more, { one: '# more profile', other: '# more profiles' })})`}
+          aria-label={t`Open ${{ game: gameName }} (${plural({ count: more }, { one: '# more profile', other: '# more profiles' })})`}
           onClick={openGame}
           sx={{
             flexShrink: 0,

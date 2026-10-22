@@ -112,7 +112,8 @@ function cautionAcknowledged(profileId: string, update: Pick<Update, 'key' | 've
 
 function itemFailure(item: Item): Error {
   return new Error(
-    item.error || i18n._(msg`The update for ${item.name || i18n._(msg`the mod`)} did not finish`),
+    item.error ||
+      i18n._(msg`The update for ${{ name: item.name || i18n._(msg`the mod`) }} did not finish`),
   )
 }
 

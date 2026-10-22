@@ -37,7 +37,9 @@ function notifyExpired(expired: Expired): void {
   }
   useToasts.getState().push({
     kind: 'warning',
-    title: i18n._(msg`A share from ${expired.sender} expired. Ask them to send it again.`),
+    title: i18n._(
+      msg`A share from ${{ sender: expired.sender }} expired. Ask them to send it again.`,
+    ),
   })
 }
 

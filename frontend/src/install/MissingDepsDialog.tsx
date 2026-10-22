@@ -36,11 +36,11 @@ export function MissingDepsDialog() {
   const wants = wantsOf(missing)
   return (
     <Dialog open={true} onClose={dismissOffer}>
-      <DialogTitle>{t`${offer.dependentName} needs ${listNames(names)}`}</DialogTitle>
+      <DialogTitle>{t`${{ name: offer.dependentName }} needs ${{ names: listNames(names) }}`}</DialogTitle>
       {wants.length === 0 ? (
         <DialogContent>
           <DialogContentText>
-            {t`No download source is known for ${listNames(names, names.length)}.`}
+            {t`No download source is known for ${{ names: listNames(names, names.length) }}.`}
           </DialogContentText>
         </DialogContent>
       ) : null}

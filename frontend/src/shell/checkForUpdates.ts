@@ -56,7 +56,7 @@ export async function checkForUpdates() {
   if (found !== null) {
     parts.push(
       found > 0
-        ? plural(found, { one: '# mod update', other: '# mod updates' })
+        ? plural({ count: found }, { one: '# mod update', other: '# mod updates' })
         : i18n._(msg`Mods are up to date`),
     )
   }

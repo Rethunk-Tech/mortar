@@ -49,9 +49,9 @@ function ListHint({ skipped, total }: { skipped: string[]; total: number }) {
   const names = listNames(skipped)
   let hint = t`Paste it into a chat or a forum post, or send the file.`
   if (skipped.length > 0) {
-    hint = t`Left out (not on Thunderstore, or disabled): ${names}`
+    hint = t`Left out (not on ${{ source: sourceLabel('thunderstore') }}, or disabled): ${names}`
   } else if (total > 1) {
-    hint = t`Discord takes 2,000 characters a message: paste each one in turn.`
+    hint = t`${{ app: sourceLabel('discord') }} takes 2,000 characters a message: paste each one in turn.`
   }
   return <Typography sx={{ flex: 1, fontSize: 13, color: 'text.secondary' }}>{hint}</Typography>
 }
@@ -79,13 +79,13 @@ export function ListFormat() {
   const count = items.length
   const summary = [
     plural(count, { one: '# mod', other: '# mods' }),
-    off > 0 ? plural(off, { one: '# mod disabled', other: '# mods disabled' }) : '',
+    off > 0 ? plural({ count: off }, { one: '# mod disabled', other: '# mods disabled' }) : '',
     total > 1 ? t`${total} messages` : '',
   ]
     .filter(Boolean)
     .join(' · ')
   const copyOne = (n: number, body: string) =>
-    copyText(body, total > 1 ? t`Message ${n} of ${total} copied` : t`Mod list copied`)
+    copyText(body, total > 1 ? t`Message ${{ count: n }} of ${total} copied` : t`Mod list copied`)
   const copyNext = () => {
     copyOne(next + 1, parts[next]?.text ?? '')
     setCopied(next + 1)
@@ -162,16 +162,16 @@ export function ListFormat() {
               >
                 {part.n <= copied ? <Check size={14} aria-label={t`Copied`} /> : null}
                 <Typography sx={{ flex: 1, fontSize: 12, fontWeight: 600 }}>
-                  {t`Message ${part.n} of ${total}`}
+                  {t`Message ${{ count: part.n }} of ${total}`}
                   <Typography
                     component="span"
                     sx={{ ml: 1, fontSize: 12, color: 'text.secondary' }}
                   >
-                    {t`${part.text.length.toLocaleString(i18n.locale)} characters`}
+                    {t`${{ count: part.text.length.toLocaleString(i18n.locale) }} characters`}
                   </Typography>
                 </Typography>
                 <TipIconButton
-                  label={t`Copy message ${part.n}`}
+                  label={t`Copy message ${{ count: part.n }}`}
                   onClick={() => copyOne(part.n, part.text)}
                 >
                   <Copy size={14} />
@@ -201,7 +201,7 @@ export function ListFormat() {
           onClick={copyNext}
           sx={{ height: 40, px: '18px', fontSize: 14, whiteSpace: 'nowrap' }}
         >
-          {total > 1 ? t`Copy message ${next + 1} of ${total}` : t`Copy mod list`}
+          {total > 1 ? t`Copy message ${{ current: next + 1 }} of ${total}` : t`Copy mod list`}
         </Button>
       </Box>
     </Box>

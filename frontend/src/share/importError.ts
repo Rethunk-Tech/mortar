@@ -1,4 +1,6 @@
 import { msg } from '@lingui/core/macro'
+import { GALE, R2MODMAN } from '../brand/productNames.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 import { errorKind } from '../toasts/errorKind.ts'
 import { errorMessage } from '../toasts/report.ts'
@@ -8,7 +10,7 @@ export function importErrorMessage(e: unknown): string {
   switch (errorKind(e)) {
     case 'invalid':
       return i18n._(
-        msg`Mortar does not recognise this. Paste a Mortar link, a Nexus collection, or an r2modman or Gale code.`,
+        msg`Mortar does not recognise this. Paste a Mortar link, a ${{ source: sourceLabel('nexus') }} collection, or an ${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} code.`,
       )
     case 'damaged':
       return i18n._(

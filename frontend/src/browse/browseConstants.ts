@@ -1,4 +1,5 @@
 import { msg } from '@lingui/core/macro'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 
 const ALL = 'all'
@@ -24,14 +25,16 @@ function searchHint(source: string, premium: boolean): string {
   }
   if (source === GITHUB) {
     return i18n._(
-      msg`Search GitHub for mods published as releases. Add puts the latest release in this profile.`,
+      msg`Search ${{ source: sourceLabel('github') }} for mods published as releases. Add puts the latest release in this profile.`,
     )
   }
   if (source === NEXUS && premium) {
-    return i18n._(msg`Search Nexus Mods. Download installs the mod into this profile.`)
+    return i18n._(
+      msg`Search ${{ source: sourceLabel('nexus') }}. Download installs the mod into this profile.`,
+    )
   }
   return i18n._(
-    msg`Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download.`,
+    msg`Search ${{ source: sourceLabel('nexus') }}. Free accounts download from the mod's page with Mod Manager Download.`,
   )
 }
 

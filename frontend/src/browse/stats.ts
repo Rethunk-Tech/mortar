@@ -32,15 +32,15 @@ function usePopularity(item: BrowseItem): string {
   const { endorsements, stars } = item
   switch (item.source) {
     case NEXUS:
-      return plural(endorsements, { one: '# endorsement', other: '# endorsements' })
+      return plural({ count: endorsements }, { one: '# endorsement', other: '# endorsements' })
     case GITHUB:
-      return plural(stars, { one: '# star', other: '# stars' })
+      return plural({ count: stars }, { one: '# star', other: '# stars' })
     case THUNDERSTORE:
     case PARADOX:
-      return plural(endorsements, { one: '# like', other: '# likes' })
+      return plural({ count: endorsements }, { one: '# like', other: '# likes' })
     case MODRINTH:
     case VSMODDB:
-      return plural(endorsements, { one: '# follower', other: '# followers' })
+      return plural({ count: endorsements }, { one: '# follower', other: '# followers' })
     default:
       return ''
   }
@@ -50,7 +50,7 @@ function usePopularity(item: BrowseItem): string {
 function useStats(item: BrowseItem): string {
   const { t } = useLingui()
   const popularity = usePopularity(item)
-  const dl = plural(item.downloads, { one: '# download', other: '# downloads' })
+  const dl = plural({ count: item.downloads }, { one: '# download', other: '# downloads' })
   if (item.source === GITHUB) {
     return popularity
   }
@@ -66,10 +66,11 @@ function useCardStats(item: BrowseItem, stats: readonly CardStat[]): string[] {
     downloads:
       item.source === GITHUB
         ? ''
-        : plural(item.downloads, { one: '# download', other: '# downloads' }),
+        : plural({ count: item.downloads }, { one: '# download', other: '# downloads' }),
     size: item.size > 0 ? formatBytes(item.size) : '',
-    version: item.version === '' ? '' : t`Version ${item.version.replace(leadingV, '')}`,
-    updated: item.updated === '' ? '' : t`Updated ${formatWhen(item.updated)}`,
+    version:
+      item.version === '' ? '' : t`Version ${{ version: item.version.replace(leadingV, '') }}`,
+    updated: item.updated === '' ? '' : t`Updated ${{ when: formatWhen(item.updated) }}`,
   }
   return stats.map((s) => parts[s]).filter((p) => p !== '')
 }
@@ -83,12 +84,14 @@ function useModCardStats(row: ListRow, stats: readonly CardStat[]): string[] {
   const parts: Record<CardStat, string> = {
     popularity:
       endorsements > 0
-        ? plural(endorsements, { one: '# endorsement', other: '# endorsements' })
+        ? plural({ count: endorsements }, { one: '# endorsement', other: '# endorsements' })
         : '',
-    downloads: page ? plural(page.downloads, { one: '# download', other: '# downloads' }) : '',
+    downloads: page
+      ? plural({ count: page.downloads }, { one: '# download', other: '# downloads' })
+      : '',
     size: row.size !== undefined && row.size > 0 ? formatBytes(row.size) : '',
     version: '',
-    updated: page?.updated ? t`Updated ${formatWhen(page.updated)}` : '',
+    updated: page?.updated ? t`Updated ${{ when: formatWhen(page.updated) }}` : '',
   }
   return stats.map((s) => parts[s]).filter((p) => p !== '')
 }

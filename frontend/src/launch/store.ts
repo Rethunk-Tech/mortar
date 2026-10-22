@@ -12,6 +12,7 @@ import {
   Runs,
   Stop,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { EPIC_GAMES, FLATPAK, HEROIC, LUTRIS, STEAM, WINE } from '../brand/productNames.ts'
 import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
 import { gameName } from '../games/info.ts'
@@ -60,34 +61,38 @@ function resetConsole(status: Status, prev: Status | null) {
 function failureBody(status: Status): string {
   const name = gameName(status.game)
   if (status.hint === Hint.HintSteam) {
-    return i18n._(msg`Steam may not be running or signed in. Start Steam, sign in and try again.`)
+    return i18n._(
+      msg`${{ launcher: STEAM }} may not be running or signed in. Start ${{ launcher: STEAM }}, sign in and try again.`,
+    )
   }
   if (status.hint === Hint.HintEpic) {
     return i18n._(
-      msg`The Epic Games Launcher may not be running or signed in. Start it, sign in and try again.`,
+      msg`The ${{ launcher: EPIC_GAMES }} Launcher may not be running or signed in. Start it, sign in and try again.`,
     )
   }
   if (status.hint === Hint.HintLauncher) {
     return i18n._(
-      msg`Heroic or Lutris may not have started the game. Start it, sign in if it asks, and try again, or set the game's Default launch to Direct.`,
+      msg`${{ launcher: HEROIC }} or ${{ otherLauncher: LUTRIS }} may not have started the game. Start it, sign in if it asks, and try again, or set the game's Default launch to Direct.`,
     )
   }
   if (status.hint === Hint.HintSteamClient) {
     return i18n._(
-      msg`Steam must be installed and signed in for this game. Install Steam, sign in once and try again.`,
+      msg`${{ launcher: STEAM }} must be installed and signed in for this game. Install ${{ launcher: STEAM }}, sign in once and try again.`,
     )
   }
   if (status.hint === Hint.HintWine) {
-    return i18n._(msg`Wine stopped on an error before ${name} started: ${status.error}`)
+    return i18n._(
+      msg`${{ app: WINE }} stopped on an error before ${name} started: ${{ error: status.error }}`,
+    )
   }
   if (status.hint === Hint.HintMissingExe) {
     return i18n._(
-      msg`The program to start ${name} was not found. Check that the game is still installed and the launch prefix names a real command. ${status.error}`,
+      msg`The program to start ${name} was not found. Check that the game is still installed and the launch prefix names a real command. ${{ error: status.error }}`,
     )
   }
   if (status.hint === Hint.HintFlatpakFS) {
     return i18n._(
-      msg`Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › ${name}) or the game will not see this profile.`,
+      msg`${{ app: FLATPAK }} ${{ launcher: STEAM }} cannot read Mortar's mods folder. Grant the sandbox access (Settings › ${name}) or the game will not see this profile.`,
     )
   }
   return errorDetails(status.error)
@@ -135,7 +140,7 @@ async function checkUpdatedRun(
         if (latest.errors > previousErrors) {
           useToasts.getState().push({
             kind: 'warning',
-            title: i18n._(msg`New errors after updating ${profileName(rollback)}`),
+            title: i18n._(msg`New errors after updating ${{ profile: profileName(rollback) }}`),
             body: await erroredMods(rollback.game, rollback.profile),
             action: {
               label: i18n._(msg`Roll back`),

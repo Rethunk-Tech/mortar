@@ -72,7 +72,7 @@ function Items({
       <MenuAction
         key={`open-${c.source}`}
         icon={<ExternalLink size={16} />}
-        label={t`Open page on ${sourceNames.get(c.source) ?? c.source}`}
+        label={t`Open page on ${{ source: sourceNames.get(c.source) ?? c.source }}`}
         onClick={run(() => card.openUrl(c.url))}
       />
     )),
@@ -99,7 +99,7 @@ function Items({
           <MenuAction
             key="hide-author"
             icon={<EyeOff size={16} />}
-            label={t`Hide everything by ${item.author}`}
+            label={t`Hide everything by ${{ author: item.author }}`}
             onClick={run(() => {
               HideBrowseAuthor(game, item.author)
                 .then(() => useBrowseView.getState().noteHide())

@@ -30,7 +30,7 @@ async function offer(game: string) {
         .catch(reportError(i18n._(msg`Could not add the archive`), add))
     push({
       kind: 'info',
-      title: i18n._(msg`Add ${first.name} to ${profile.name}?`),
+      title: i18n._(msg`Add ${{ name: first.name }} to ${{ profile: profile.name }}?`),
       action: {
         label: i18n._(msg`Add`),
         run: add,
@@ -41,7 +41,7 @@ async function offer(game: string) {
   push({
     kind: 'info',
     title: i18n._(
-      msg`${plural(found.length, { one: '# new archive', other: '# new archives' })} in your downloads folder`,
+      msg`${plural({ count: found.length }, { one: '# new archive', other: '# new archives' })} in your downloads folder`,
     ),
     action: { label: i18n._(msg`Review`), run: openDownloadsDialog },
   })

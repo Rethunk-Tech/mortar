@@ -77,8 +77,8 @@ export const TabHeader = memo(function TabHeaderView() {
   // A save that records no mod list cannot fit or miss, so a game with only those shows the plain count.
   const savesLabel = (s: typeof saves) =>
     s.recorded > 0
-      ? t`${s.fitting} of ${s.recorded} saves fit`
-      : plural(s.total, { one: '# save', other: '# saves' })
+      ? t`${{ fitting: s.fitting }} of ${{ recorded: s.recorded }} saves fit`
+      : plural({ count: s.total }, { one: '# save', other: '# saves' })
   return (
     <Box
       component="header"

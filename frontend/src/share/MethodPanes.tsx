@@ -14,6 +14,8 @@ import {
   SaveFile,
   ShowExportedCollection,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
+import { R2MODMAN } from '../brand/productNames.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { listNames } from '../i18n/list.ts'
 import { SendPanel } from '../lan/SendPanel.tsx'
 import { useSettings } from '../settings/store.ts'
@@ -49,9 +51,9 @@ function Meter({ info }: { info: ShownInfo }) {
   const length = info.length.toLocaleString(i18n.locale)
   const limit = info.limit.toLocaleString(i18n.locale)
   const verdict = {
-    ok: t`${length} of ${limit} characters · fits one Discord message`,
-    warn: t`${length} of ${limit} characters · close to the Discord message limit`,
-    over: t`${length} of ${limit} characters · too long for one Discord message`,
+    ok: t`${length} of ${limit} characters · fits one ${{ app: sourceLabel('discord') }} message`,
+    warn: t`${length} of ${limit} characters · close to the ${{ app: sourceLabel('discord') }} message limit`,
+    over: t`${length} of ${limit} characters · too long for one ${{ app: sourceLabel('discord') }} message`,
   }[level]
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
@@ -195,15 +197,12 @@ export function FilePane({
       {saved?.path ? (
         <Typography
           sx={{ ...note, wordBreak: 'break-all' }}
-        >{t`Saved to ${saved.path}`}</Typography>
+        >{t`Saved to ${{ path: saved.path }}`}</Typography>
       ) : null}
       {skipped.length > 0 ? (
         <Box>
           <Typography sx={{ fontSize: 13, fontWeight: 600 }}>
-            {plural(skipped.length, {
-              one: '# settings file was left out (too large or an unusual name):',
-              other: '# settings files were left out (too large or an unusual name):',
-            })}
+            {t`${plural({ count: skipped.length }, { one: '# settings file was', other: '# settings files were' })} left out (too large or an unusual name):`}
           </Typography>
           <Box component="ul" sx={{ m: 0, pl: space.pad, ...note }}>
             {skipped.map((p) => (
@@ -224,13 +223,13 @@ export function NexusPane({ game, profileId }: { game: string; profileId: string
       return
     }
     const skipped = r.skipped ?? []
-    const next = t`Nexus expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading.`
+    const next = t`${{ source: sourceLabel('nexus') }} expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading.`
     useToasts.getState().push({
       kind: skipped.length > 0 ? 'warning' : 'success',
       title: t`Collection draft saved`,
       body:
         skipped.length > 0
-          ? `${next}\n${t`Left out: ${listNames(skipped, skipped.length)}`}`
+          ? `${next}\n${t`Left out: ${{ names: listNames(skipped, skipped.length) }}`}`
           : next,
       action: {
         label: t`Show file`,
@@ -241,7 +240,7 @@ export function NexusPane({ game, profileId }: { game: string; profileId: string
   return (
     <Pane>
       <Typography sx={note}>
-        {t`Saves this profile as a collection draft to finish and upload on Nexus Mods.`}
+        {t`Saves this profile as a collection draft to finish and upload on ${{ source: sourceLabel('nexus') }}.`}
       </Typography>
       <Box>
         <Button
@@ -252,7 +251,7 @@ export function NexusPane({ game, profileId }: { game: string; profileId: string
           }}
           sx={{ height: 40 }}
         >
-          {t`Export as Nexus collection draft…`}
+          {t`Export as ${{ source: sourceLabel('nexus') }} collection draft…`}
         </Button>
       </Box>
     </Pane>
@@ -290,7 +289,7 @@ export function ThunderstorePane({ game, profileId }: { game: string; profileId:
   return (
     <Pane>
       <Typography sx={note}>
-        {t`For r2modman and other Thunderstore managers: a code anyone can enter, a .r2z file, or a modpack zip with your config folder.`}
+        {t`For ${{ manager: R2MODMAN }} and other ${{ source: sourceLabel('thunderstore') }} managers: a code anyone can enter, a .r2z file, or a modpack zip with your config folder.`}
       </Typography>
       <Box sx={{ display: 'flex', gap: space.gap, flexWrap: 'wrap' }}>
         <Button
@@ -299,7 +298,7 @@ export function ThunderstorePane({ game, profileId }: { game: string; profileId:
           onClick={() => setAsking(true)}
           sx={{ height: 40 }}
         >
-          {t`Share as r2modman code…`}
+          {t`Share as ${{ manager: R2MODMAN }} code…`}
         </Button>
         <Button
           variant="outlined"
@@ -319,7 +318,7 @@ export function ThunderstorePane({ game, profileId }: { game: string; profileId:
           onClick={() => setPacking(true)}
           sx={{ height: 40 }}
         >
-          {t`Export as Thunderstore modpack…`}
+          {t`Export as ${{ source: sourceLabel('thunderstore') }} modpack…`}
         </Button>
       </Box>
       {packing ? (
@@ -327,8 +326,8 @@ export function ThunderstorePane({ game, profileId }: { game: string; profileId:
       ) : null}
       <ConfirmDialog
         open={asking}
-        title={t`Share as r2modman code?`}
-        body={t`This uploads the profile to Thunderstore and gives a public code.`}
+        title={t`Share as ${{ manager: R2MODMAN }} code?`}
+        body={t`This uploads the profile to ${{ source: sourceLabel('thunderstore') }} and gives a public code.`}
         confirmLabel={t`Upload`}
         onCancel={() => setAsking(false)}
         onConfirm={publish}

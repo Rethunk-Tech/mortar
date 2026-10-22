@@ -19,6 +19,7 @@ import {
   DownloadsArchives,
   DownloadsFolders,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { listNames } from '../i18n/list.ts'
@@ -91,7 +92,7 @@ function FolderLine({ open, onClose }: { open: boolean; onClose: () => void }) {
         title={dirs.join('\n')}
         sx={{ color: 'text.secondary', minWidth: 0 }}
       >
-        {t`Reading ${listNames(dirs)}`}
+        {t`Reading ${{ names: listNames(dirs) }}`}
       </Typography>
       <Button
         size="small"
@@ -141,7 +142,9 @@ function ArchiveRows({
             secondary={`${formatBytes(a.size)} · ${formatWhen(a.mtime)}`}
             slotProps={{ primary: { noWrap: true, title: a.name } }}
           />
-          {a.knownNexus ? <Chip size="small" label={t`From Nexus`} sx={{ ml: 1 }} /> : null}
+          {a.knownNexus ? (
+            <Chip size="small" label={t`From ${{ source: sourceLabel('nexus') }}`} sx={{ ml: 1 }} />
+          ) : null}
         </ListItemButton>
       ))}
     </List>

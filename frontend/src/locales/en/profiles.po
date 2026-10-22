@@ -172,6 +172,10 @@ msgstr "Stack frame: {evidence}"
 msgid "Orange"
 msgstr "Orange"
 
+#: src/profiles/MergeDialog.tsx
+msgid "{count, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"
+msgstr "{count, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"
+
 #: src/profiles/ProfileRow.tsx
 msgid "{size} of saves"
 msgstr "{size} of saves"
@@ -460,10 +464,6 @@ msgstr "Pick what to compare {name} with"
 msgid "Revert this mod: {detail}"
 msgstr "Revert this mod: {detail}"
 
-#: src/profiles/OverrideRows.tsx
-msgid "{app} version"
-msgstr "{app} version"
-
 #: src/profiles/GameModsDialog.tsx
 msgid "{count, plural, one {# skipped} other {# skipped}}"
 msgstr "{count, plural, one {# skipped} other {# skipped}}"
@@ -599,6 +599,10 @@ msgstr "{count, plural, one {Revert # mod?} other {Revert # mods?}}"
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Edit"
 msgstr "Edit"
+
+#: src/profiles/OverrideRows.tsx
+msgid "{name} version"
+msgstr "{name} version"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Duplicate"
@@ -1517,10 +1521,6 @@ msgstr "Mark current as known good"
 #: src/profiles/historyLabel.ts
 msgid "Found mods on {source}"
 msgstr "Found mods on {source}"
-
-#: src/profiles/MergeDialog.tsx
-msgid "{changes, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"
-msgstr "{changes, plural, one {Added # mod from {profile} to {name}} other {Added # mods from {profile} to {name}}}"
 
 #: src/profiles/compareTitle.ts
 msgid "Enabled in one only"

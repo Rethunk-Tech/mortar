@@ -15,5 +15,8 @@ export function listNames(
     return format.format(names)
   }
   const rest = total - shown
-  return format.format([...names.slice(0, shown), plural(rest, { one: '# more', other: '# more' })])
+  return format.format([
+    ...names.slice(0, shown),
+    plural({ count: rest }, { one: '# more', other: '# more' }),
+  ])
 }

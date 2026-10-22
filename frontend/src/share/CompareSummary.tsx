@@ -20,7 +20,7 @@ export function CompareSummary({ preview, targetName }: { preview: Preview; targ
   const matching = mods.filter((m) => m.state === 'installed' && !m.different)
   const onlyYours = preview.replace?.remove ?? []
   const rows: { label: string; items: string[] }[] = [
-    { label: t`Missing in ${targetName}`, items: names(missing) },
+    { label: t`Missing in ${{ name: targetName }}`, items: names(missing) },
     { label: t`Different version`, items: names(different) },
     { label: t`Only in ${{ name: targetName }}`, items: onlyYours },
   ]
@@ -36,7 +36,7 @@ export function CompareSummary({ preview, targetName }: { preview: Preview; targ
       }}
     >
       <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-        {t`${plural(matching.length, { one: '# mod already matches', other: '# mods already match' })} ${targetName}.`}
+        {t`${plural({ count: matching.length }, { one: '# mod already matches', other: '# mods already match' })} ${{ name: targetName }}.`}
       </Typography>
       {rows
         .filter((r) => r.items.length > 0)

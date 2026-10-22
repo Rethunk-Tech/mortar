@@ -8,13 +8,13 @@ export function AvOverrideDialog() {
   const { t } = useLingui()
   const asking = useOverride((s) => s.asking)
   const close = useOverride((s) => s.close)
-  const where = asking?.file ? t` in ${asking.file}` : ''
+  const where = asking?.file ? t` in ${{ file: asking.file }}` : ''
   return (
     <ConfirmDialog
       open={asking !== null}
       color="error"
-      title={t`Install ${asking?.title ?? ''} anyway?`}
-      body={t`Your antivirus (${asking?.scanner ?? ''}) reports ${asking?.name ?? ''}${where}. Mod loaders and their DLLs often trip heuristics, but a real detection can harm your computer. Install only a file you trust. Mortar records this choice in the profile's history.`}
+      title={t`Install ${{ name: asking?.title ?? '' }} anyway?`}
+      body={t`Your antivirus (${{ scanner: asking?.scanner ?? '' }}) reports ${{ name: asking?.name ?? '' }}${where}. Mod loaders and their DLLs often trip heuristics, but a real detection can harm your computer. Install only a file you trust. Mortar records this choice in the profile's history.`}
       confirmLabel={t`Install anyway`}
       onCancel={close}
       onConfirm={() => {

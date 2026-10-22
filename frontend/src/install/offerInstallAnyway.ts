@@ -1,5 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { AllowUnscanned } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { WINDOWS } from '../brand/productNames.ts'
 import { i18n } from '../i18n/index.ts'
 import { type DetectedFile, useOverride } from '../toasts/avOverride.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -19,7 +20,7 @@ export function offerInstallAnyway(o: {
       kind: 'error',
       title,
       body: i18n._(
-        msg`Windows removed the file as malware without saying which. If you trust it, restore it from Windows Security's protection history and add it again.`,
+        msg`${{ os: WINDOWS }} removed the file as malware without saying which. If you trust it, restore it from ${{ os: WINDOWS }} Security's protection history and add it again.`,
       ),
     })
     return

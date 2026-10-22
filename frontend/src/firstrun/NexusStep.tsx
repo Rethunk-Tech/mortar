@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import { useEffect, useRef } from 'react'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { NexusSignIn } from '../settings/sections/NexusMods.tsx'
 import { Panel } from './Panel.tsx'
@@ -18,9 +19,12 @@ export function NexusStep({ onDone }: { onDone: () => void }) {
   }, [signedIn])
   return (
     <Panel>
-      <Typography variant="h6" component="h2">{t`Sign in to Nexus Mods`}</Typography>
+      <Typography
+        variant="h6"
+        component="h2"
+      >{t`Sign in to ${{ source: sourceLabel('nexus') }}`}</Typography>
       <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-        {t`Mod Manager Download on Nexus Mods only works in Mortar when you are signed in.`}
+        {t`Mod Manager Download on ${{ source: sourceLabel('nexus') }} only works in Mortar when you are signed in.`}
       </Typography>
       <NexusSignIn />
       <Box role="status">

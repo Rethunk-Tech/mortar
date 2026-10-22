@@ -127,7 +127,10 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
             value={query}
             onChange={setQuery}
             label={t`Filter saves`}
-            placeholder={plural(fits.length, { one: 'Filter # save', other: 'Filter # saves' })}
+            placeholder={plural(
+              { count: fits.length },
+              { one: 'Filter # save', other: 'Filter # saves' },
+            )}
             grow={true}
           />
         </ControlsRow>

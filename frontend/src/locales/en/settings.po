@@ -64,6 +64,10 @@ msgstr "Move data folder…"
 msgid "Allow shows {source} pages what Mortar has. Off hides that; download links still arrive"
 msgstr "Allow shows {source} pages what Mortar has. Off hides that; download links still arrive"
 
+#: src/settings/sections/SyncFolder.tsx
+msgid "Profile settings, mod lists and configs are written here and offered to other machines using the same folder (through {app}, {otherApp} or a NAS). Mod files are not copied; each machine downloads them from their sources. Each game syncs into its own subfolder, and a game can use a folder of its own or turn sync off in its settings."
+msgstr "Profile settings, mod lists and configs are written here and offered to other machines using the same folder (through {app}, {otherApp} or a NAS). Mod files are not copied; each machine downloads them from their sources. Each game syncs into its own subfolder, and a game can use a folder of its own or turn sync off in its settings."
+
 #: src/settings/sections/Downloads.tsx
 msgid "Connected from {browser}, last seen "
 msgstr "Connected from {browser}, last seen "
@@ -128,6 +132,10 @@ msgstr "How many times to retry a failed download"
 msgid "{name} {latest} is available"
 msgstr "{name} {latest} is available"
 
+#: src/settings/sections/StreamOverlay.tsx
+msgid "In {app}: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
+msgstr "In {app}: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
+
 #: src/settings/sections/WatchFolders.tsx
 msgid "Folder to watch"
 msgstr "Folder to watch"
@@ -164,13 +172,13 @@ msgstr "Repair"
 msgid "This computer"
 msgstr "This computer"
 
+#: src/settings/sections/NxmReclaim.tsx
+msgid "{name} now opens {source} \"1-click install\" links."
+msgstr "{name} now opens {source} \"1-click install\" links."
+
 #: src/settings/prefCopy.ts
 msgid "Light"
 msgstr "Light"
-
-#: src/settings/sections/SyncFolder.tsx
-msgid "Profile settings, mod lists and configs are written here and offered to other machines using the same folder (through {app}, Dropbox or a NAS). Mod files are not copied; each machine downloads them from their sources. Each game syncs into its own subfolder, and a game can use a folder of its own or turn sync off in its settings."
-msgstr "Profile settings, mod lists and configs are written here and offered to other machines using the same folder (through {app}, Dropbox or a NAS). Mod files are not copied; each machine downloads them from their sources. Each game syncs into its own subfolder, and a game can use a folder of its own or turn sync off in its settings."
 
 #: src/settings/sections/Notifications.tsx
 msgid "When"
@@ -745,6 +753,10 @@ msgstr "Data folder"
 msgid "Switch to Mods"
 msgstr "Switch to Mods"
 
+#: src/settings/sections/StreamOverlay.tsx
+msgid "The local port {app} reads the overlay from"
+msgstr "The local port {app} reads the overlay from"
+
 #: src/settings/shortcutLabels.ts
 msgid "Open the next profile"
 msgstr "Open the next profile"
@@ -849,9 +861,9 @@ msgstr "Help"
 msgid "Use it anyway; {name} becomes unbound"
 msgstr "Use it anyway; {name} becomes unbound"
 
-#: src/settings/ProtonRow.tsx
-msgid "{app} version"
-msgstr "{app} version"
+#: src/settings/prefCopyAntivirus.ts
+msgid "Ask a {app} daemon at the socket path below."
+msgstr "Ask a {app} daemon at the socket path below."
 
 #: src/settings/usePerProfileRelated.tsx
 msgid "Music volume"
@@ -987,10 +999,6 @@ msgstr "System"
 msgid "Hidden"
 msgstr "Hidden"
 
-#: src/settings/sections/StreamOverlay.tsx
-msgid "Part of the OBS address; regenerate it if it leaks"
-msgstr "Part of the OBS address; regenerate it if it leaks"
-
 #: src/settings/sections/Updates.tsx
 msgid "Review mod updates"
 msgstr "Review mod updates"
@@ -1106,10 +1114,6 @@ msgstr "Offer installs: new archives (.zip, .7z, .rar, .tar.gz and the like) tha
 msgid "Delete the game folder, then reinstall {game} from your launcher."
 msgstr "Delete the game folder, then reinstall {game} from your launcher."
 
-#: src/settings/sections/StreamOverlay.tsx
-msgid "Show live game info in OBS. Changes apply the next time you press Play."
-msgstr "Show live game info in OBS. Changes apply the next time you press Play."
-
 #: src/settings/sections/About.tsx
 #: src/settings/sections/Updates.tsx
 msgid "Mortar"
@@ -1178,6 +1182,8 @@ msgstr "Accept connections from any network address"
 msgid "Edit"
 msgstr "Edit"
 
+#: src/settings/prefCopy.ts
+#: src/settings/ProtonRow.tsx
 #: src/settings/sections/LoaderRow.tsx
 msgid "{name} version"
 msgstr "{name} version"
@@ -1207,10 +1213,6 @@ msgstr "Could not save that setting"
 #: src/settings/sections/DataBackups.tsx
 msgid "No backups to delete"
 msgstr "No backups to delete"
-
-#: src/settings/sections/StreamOverlay.tsx
-msgid "The local port OBS reads the overlay from"
-msgstr "The local port OBS reads the overlay from"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "A portable copy keeps its data beside the program."
@@ -1440,6 +1442,10 @@ msgstr "Start minimised to tray"
 msgid "{name} (Recommended)"
 msgstr "{name} (Recommended)"
 
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Show live game info in {app}. Changes apply the next time you press Play."
+msgstr "Show live game info in {app}. Changes apply the next time you press Play."
+
 #: src/settings/sections/Appearance.tsx
 msgid "Rose"
 msgstr "Rose"
@@ -1505,6 +1511,10 @@ msgstr "Download folder"
 #: src/settings/startupChecks.ts
 msgid "Mortar closed unexpectedly last time"
 msgstr "Mortar closed unexpectedly last time"
+
+#: src/settings/sections/Downloads.tsx
+msgid "{app}, {otherApp} or another {thirdApp} browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
+msgstr "{app}, {otherApp} or another {thirdApp} browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Stream overlay"
@@ -1585,10 +1595,6 @@ msgstr "Image"
 #: src/settings/prefCopy.ts
 msgid "Trace"
 msgstr "Trace"
-
-#: src/settings/prefCopyAntivirus.ts
-msgid "Ask a ClamAV daemon at the socket path below."
-msgstr "Ask a ClamAV daemon at the socket path below."
 
 #: src/settings/sections/ItchAccount.tsx
 #: src/settings/sections/NexusMods.tsx
@@ -1739,10 +1745,6 @@ msgstr "Share FOMOD choices"
 #: src/settings/prefCopyGame.ts
 msgid "Delete the caches once after the mod set changes; the game rebuilds them."
 msgstr "Delete the caches once after the mod set changes; the game rebuilds them."
-
-#: src/settings/prefCopy.ts
-msgid "{loader} version"
-msgstr "{loader} version"
 
 #: src/settings/sections/NexusSSO.tsx
 msgid "Sign in to {source}"
@@ -2099,10 +2101,6 @@ msgstr "{name} is set per profile"
 msgid "Free space at destination: {size}"
 msgstr "Free space at destination: {size}"
 
-#: src/settings/sections/StreamOverlay.tsx
-msgid "Copy OBS URL"
-msgstr "Copy OBS URL"
-
 #: src/settings/sections/DataMove.tsx
 msgid "Data to copy: {size}"
 msgstr "Data to copy: {size}"
@@ -2389,10 +2387,6 @@ msgstr "Downloads and updates"
 msgid "Mortar stays on screen beside the game."
 msgstr "Mortar stays on screen beside the game."
 
-#: src/settings/sections/Downloads.tsx
-msgid "Could not change how {name} links open"
-msgstr "Could not change how {name} links open"
-
 #: src/settings/prefCopyGame.ts
 msgid "Where this game's profiles are shared between your computers"
 msgstr "Where this game's profiles are shared between your computers"
@@ -2510,10 +2504,6 @@ msgstr "Change shortcut for {name}, currently {shown}"
 msgid "{loader} console window"
 msgstr "{loader} console window"
 
-#: src/settings/sections/StreamOverlay.tsx
-msgid "Existing OBS sources stop working until their URLs are copied again."
-msgstr "Existing OBS sources stop working until their URLs are copied again."
-
 #: src/settings/sections/Appearance.tsx
 msgid "Slate"
 msgstr "Slate"
@@ -2591,6 +2581,10 @@ msgstr "Integrity"
 msgid "Move"
 msgstr "Move"
 
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Copy {app} URL"
+msgstr "Copy {app} URL"
+
 #: src/settings/prefCopy.ts
 msgid "Hide to tray"
 msgstr "Hide to tray"
@@ -2655,6 +2649,7 @@ msgstr "Report it so it can be fixed."
 msgid "Checking…"
 msgstr "Checking…"
 
+#: src/settings/sections/Downloads.tsx
 #: src/settings/sections/nxmHandler.tsx
 msgid "Could not change how {source} links open"
 msgstr "Could not change how {source} links open"
@@ -2704,6 +2699,10 @@ msgstr "Premium"
 #: src/settings/sections/About.tsx
 msgid "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. For a bug report, Save diagnostics below puts them in one zip with personal paths removed."
 msgstr "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. For a bug report, Save diagnostics below puts them in one zip with personal paths removed."
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Existing {app} sources stop working until their URLs are copied again."
+msgstr "Existing {app} sources stop working until their URLs are copied again."
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Game version"
@@ -2794,10 +2793,6 @@ msgstr "When a mod is on several sites, its card installs from the first one her
 #: src/settings/sections/Appearance.tsx
 msgid "Window background"
 msgstr "Window background"
-
-#: src/settings/sections/NxmReclaim.tsx
-msgid "{name} now opens Mod DB \"1-click install\" links."
-msgstr "{name} now opens Mod DB \"1-click install\" links."
 
 #: src/settings/prefCopyGame.ts
 msgid "Carry them into the new version's folder."
@@ -3087,6 +3082,10 @@ msgstr "Language"
 msgid "The {app} build from {launcher} that runs this copy, which {launcher} does not start"
 msgstr "The {app} build from {launcher} that runs this copy, which {launcher} does not start"
 
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Part of the {app} address; regenerate it if it leaks"
+msgstr "Part of the {app} address; regenerate it if it leaks"
+
 #: src/settings/sections/About.tsx
 msgid "Logs"
 msgstr "Logs"
@@ -3094,10 +3093,6 @@ msgstr "Logs"
 #: src/settings/prefCopy.ts
 msgid "How profiles are ordered in the sidebar"
 msgstr "How profiles are ordered in the sidebar"
-
-#: src/settings/sections/StreamOverlay.tsx
-msgid "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
-msgstr "In OBS: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
 
 #: src/settings/prefCopyModsView.ts
 msgid "Framework"
@@ -3372,10 +3367,6 @@ msgstr "The game crashes"
 #: src/settings/prefCopy.ts
 msgid "Back up saves only if the profile's mods changed since the last run."
 msgstr "Back up saves only if the profile's mods changed since the last run."
-
-#: src/settings/sections/Downloads.tsx
-msgid "{app}, Edge or another Chromium browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
-msgstr "{app}, Edge or another Chromium browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
 
 #: src/settings/loaderToast.ts
 msgid "{name} {latest} is out"

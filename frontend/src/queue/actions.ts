@@ -4,6 +4,7 @@ import type {
   Request,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import { Add } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 import { openTarget } from '../mods/storeView.ts'
 import { openSettings } from '../nav/store.ts'
@@ -61,9 +62,9 @@ export async function queueWants(reqs: Want[], showQueue = false): Promise<Item[
   if (!useNexus.getState().signedIn && reqs.some((r) => !(r.repo || r.package))) {
     toasts.push({
       kind: 'warning',
-      title: i18n._(msg`Sign in to Nexus Mods to download`),
+      title: i18n._(msg`Sign in to ${{ source: sourceLabel('nexus') }} to download`),
       body: i18n._(
-        msg`Downloads come from Nexus with your account, so Mortar needs your API key first.`,
+        msg`Downloads come from ${{ source: sourceLabel('nexus') }} with your account, so Mortar needs your API key first.`,
       ),
       action: { label: i18n._(msg`Open settings`), run: () => openSettings('accounts') },
     })
@@ -109,7 +110,7 @@ export async function queueWants(reqs: Want[], showQueue = false): Promise<Item[
     toasts.push({
       kind: 'info',
       title: i18n._(
-        msg`${plural(reqs.length, { one: '# download added', other: '# downloads added' })}`,
+        msg`${plural({ count: reqs.length }, { one: '# download added', other: '# downloads added' })}`,
       ),
       action: {
         label: i18n._(msg`Show`),

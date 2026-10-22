@@ -23,6 +23,8 @@ import {
   SkipAll,
   SkipProfile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
+import { WINDOWS } from '../brand/productNames.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatBytes, formatKb } from '../i18n/bytes.ts'
 import { QueueNeedsMerge } from '../install/QueueNeedsMerge.tsx'
 import { QueueNeedsRoot } from '../install/QueueNeedsRoot.tsx'
@@ -68,7 +70,7 @@ function Click({ item }: { item: Item }) {
     <Callout
       item={item}
       label={t`Needs your click`}
-      text={t`Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page.`}
+      text={t`Press Mod Manager Download on ${{ source: sourceLabel('nexus') }}. Mortar picks it up and opens the next page.`}
       actions={
         <Box sx={{ display: 'flex', gap: space.gap }}>
           <SkipButton item={item} />
@@ -105,7 +107,7 @@ function Choice({ item }: { item: Item }) {
     <Callout
       item={item}
       label={t`Choose a file`}
-      text={t`${item.repo} ${item.tag} has several archives. Which one should Mortar install?`}
+      text={t`${{ repo: item.repo }} ${{ tag: item.tag }} has several archives. Which one should Mortar install?`}
       actions={<SkipButton item={item} />}
     >
       {(item.assets ?? []).map((asset) => (
@@ -130,7 +132,7 @@ function Confirmation({ item }: { item: Item }) {
     <Callout
       item={item}
       label={t`Check this download`}
-      text={t`This download's mod is not known to come from ${item.repo}.`}
+      text={t`This download's mod is not known to come from ${{ repo: item.repo }}.`}
       actions={
         <>
           <SkipButton item={item} />
@@ -207,7 +209,7 @@ function Failed({ items }: { items: Item[] }) {
           </TipIconButton>
         }
       >
-        {t`Failed (${items.length})`}
+        {t`Failed (${{ count: items.length }})`}
       </SectionTitle>
       {items.map((i) => (
         <Row
@@ -254,9 +256,9 @@ function FailureText({ item }: { item: Item }) {
     return errorMessage(item.error)
   }
   if (det.removed) {
-    return t`Windows removed the file as malware without saying which. If you trust it, restore it from Windows Security's protection history.`
+    return t`${{ os: WINDOWS }} removed the file as malware without saying which. If you trust it, restore it from ${{ os: WINDOWS }} Security's protection history.`
   }
-  return t`Flagged by ${det.scanner}: ${det.name}${det.file ? ` in ${det.file}` : ''}`
+  return t`Flagged by ${{ scanner: det.scanner }}: ${{ name: det.name }}${{ where: det.file ? ` in ${det.file}` : '' }}`
 }
 
 // The antivirus flagged this download; installing it anyway is the player's call, behind a confirm.
@@ -289,7 +291,7 @@ function Active({ item }: { item: Item }) {
   const { t } = useLingui()
   const downloading = item.state === 'downloading'
   const text = downloading
-    ? t`${formatKb(downloadedKb(item))} of ${formatKb(item.sizeKb)} · ${formatBytes(item.speed)}/s`
+    ? t`${{ done: formatKb(downloadedKb(item)) }} of ${{ total: formatKb(item.sizeKb) }} · ${{ size: formatBytes(item.speed) }}/s`
     : t`Installing`
   return (
     <Box sx={{ ...ROW, bgcolor: 'var(--mortar-raised)' }}>
@@ -303,7 +305,7 @@ function Active({ item }: { item: Item }) {
           variant="determinate"
           color="info"
           value={item.progress}
-          aria-label={t`Download progress for ${item.name}`}
+          aria-label={t`Download progress for ${{ name: item.name }}`}
           sx={{
             height: 4,
             borderRadius: '2px',
@@ -316,7 +318,7 @@ function Active({ item }: { item: Item }) {
         <>
           <PauseButton item={item} />
           <TipIconButton
-            label={t`Cancel ${item.name}`}
+            label={t`Cancel ${{ name: item.name }}`}
             onClick={() => Cancel(item.id).catch(reportUnexpected)}
           >
             <X size={14} />
@@ -349,6 +351,39 @@ function NextActions({ item }: { item: Item }) {
   )
 }
 
+function Skipped({ items }: { items: Item[] }) {
+  const { t } = useLingui()
+  const droppedReason = (i: Item) => {
+    if (i.state === 'cancelled') {
+      return t`Cancelled`
+    }
+    return i.error === 'Already the newest file'
+      ? t`Already the newest file`
+      : i.error || t`Skipped`
+  }
+  if (items.length === 0) {
+    return null
+  }
+  return (
+    <Fold
+      bg="var(--mortar-raised-60)"
+      line={t`Skipped (${{ count: items.length }}): ${{ names: names(items) }}`}
+    >
+      {items.map((i) => (
+        <Row
+          key={i.id}
+          item={i}
+          sx={{ bgcolor: 'var(--mortar-raised-60)' }}
+          sub={
+            <Typography sx={{ ...detail, color: 'text.secondary' }}>{droppedReason(i)}</Typography>
+          }
+          actions={<DismissButton item={i} />}
+        />
+      ))}
+    </Fold>
+  )
+}
+
 export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void }) {
   const { t } = useLingui()
   const theme = useTheme()
@@ -363,14 +398,6 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
   const next = items.filter((i) => i.state === 'queued')
   const paused = items.filter((i) => i.state === 'paused')
   const done = items.filter((i) => i.state === 'done')
-  const droppedReason = (i: Item) => {
-    if (i.state === 'cancelled') {
-      return t`Cancelled`
-    }
-    return i.error === 'Already the newest file'
-      ? t`Already the newest file`
-      : i.error || t`Skipped`
-  }
   const dropped = items.filter((i) => i.state === 'skipped' || i.state === 'cancelled')
   if (
     click.length +
@@ -413,7 +440,9 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
       <QueueNeedsRoot items={items} />
       <QueueNeedsMerge items={items} />
       <Failed items={failed} />
-      {active.length > 0 ? <SectionTitle>{t`In progress (${active.length})`}</SectionTitle> : null}
+      {active.length > 0 ? (
+        <SectionTitle>{t`In progress (${{ count: active.length }})`}</SectionTitle>
+      ) : null}
       {active.map((i) => (
         <Active key={i.id} item={i} />
       ))}
@@ -421,7 +450,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
       {next.length > 0 ? (
         <Fold
           bg="var(--mortar-raised-60)"
-          line={t`Up next: ${names(next)}`}
+          line={t`Up next: ${{ names: names(next) }}`}
           action={firstProfile ? <NextActions item={firstProfile} /> : null}
         >
           {next.map((i) => (
@@ -438,7 +467,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
                   <NowButton item={i} />
                   <PauseButton item={i} />
                   <TipIconButton
-                    label={t`Skip ${i.name}`}
+                    label={t`Skip ${{ name: i.name }}`}
                     onClick={() => Skip(i.id).catch(reportUnexpected)}
                   >
                     <X size={14} />
@@ -453,7 +482,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
         <Fold
           bg={doneBg}
           color={theme.palette.success.light}
-          line={t`Done (${done.length}): ${names(done)}`}
+          line={t`Done (${{ count: done.length }}): ${{ names: names(done) }}`}
         >
           {done.map((i) => (
             <Row
@@ -472,23 +501,7 @@ export function Body({ items, onBrowse }: { items: Item[]; onBrowse: () => void 
           ))}
         </Fold>
       ) : null}
-      {dropped.length > 0 ? (
-        <Fold bg="var(--mortar-raised-60)" line={t`Skipped (${dropped.length}): ${names(dropped)}`}>
-          {dropped.map((i) => (
-            <Row
-              key={i.id}
-              item={i}
-              sx={{ bgcolor: 'var(--mortar-raised-60)' }}
-              sub={
-                <Typography sx={{ ...detail, color: 'text.secondary' }}>
-                  {droppedReason(i)}
-                </Typography>
-              }
-              actions={<DismissButton item={i} />}
-            />
-          ))}
-        </Fold>
-      ) : null}
+      <Skipped items={dropped} />
     </>
   )
 }

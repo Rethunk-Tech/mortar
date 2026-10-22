@@ -11,9 +11,9 @@ msgstr ""
 msgid "No saves match"
 msgstr "No saves match"
 
-#: src/launchers/LauncherList.tsx
-msgid "Windows only. On this computer its games come in through Heroic, Lutris or Bottles."
-msgstr "Windows only. On this computer its games come in through Heroic, Lutris or Bottles."
+#: src/launch/SmapiWarnDialog.tsx
+msgid "{game}'s {launcher} launch options run {loader} in place of the game. {launcher} will still start {loader} unless that launch option is removed. Mortar will not change it."
+msgstr "{game}'s {launcher} launch options run {loader} in place of the game. {launcher} will still start {loader} unless that launch option is removed. Mortar will not change it."
 
 #: src/game/Sidebar.tsx
 msgid "Performance"
@@ -40,30 +40,46 @@ msgstr "Template"
 msgid "These changes will be reverted too:"
 msgstr "These changes will be reverted too:"
 
-#. placeholder {0}: items.length
-#: src/queue/QueueBody.tsx
-msgid "Failed ({0})"
-msgstr "Failed ({0})"
-
 #: src/commandPalette/paletteLabels.ts
 msgid "Open profile"
 msgstr "Open profile"
+
+#: src/sync/store.ts
+#: src/sync/SyncOffers.tsx
+msgid "{name} was changed on {machine}"
+msgstr "{name} was changed on {machine}"
+
+#: src/queue/QueueBody.tsx
+msgid "Press Mod Manager Download on {source}. Mortar picks it up and opens the next page."
+msgstr "Press Mod Manager Download on {source}. Mortar picks it up and opens the next page."
 
 #: src/share/importCompletion.ts
 msgid "Show failed"
 msgstr "Show failed"
 
+#: src/launchers/LauncherList.tsx
+msgid "{os} only. On this computer its games come in through {launcher}, {otherLauncher} or {thirdLauncher}."
+msgstr "{os} only. On this computer its games come in through {launcher}, {otherLauncher} or {thirdLauncher}."
+
 #: src/game/FarmMenuItem.tsx
 msgid "This profile matches that list."
 msgstr "This profile matches that list."
 
-#: src/saves/SaveRow.tsx
-msgid "Could not back up {label}"
-msgstr "Could not back up {label}"
+#: src/install/NeedsRootCallout.tsx
+msgid "This optional file replaces files of {baseLabel}. Pick where its files go."
+msgstr "This optional file replaces files of {baseLabel}. Pick where its files go."
 
 #: src/game/FarmMenuItem.tsx
 msgid "Could not read that file"
 msgstr "Could not read that file"
+
+#: src/share/MethodPanes.tsx
+msgid "This uploads the profile to {source} and gives a public code."
+msgstr "This uploads the profile to {source} and gives a public code."
+
+#: src/share/ImportFooter.tsx
+msgid "Local-only mods kept ({count})"
+msgstr "Local-only mods kept ({count})"
 
 #: src/firstrunTour/TourPopover.tsx
 msgid "Launch the game with this profile's mods. Mortar applies your list before the game starts."
@@ -78,6 +94,10 @@ msgstr "Choose Save as template… from a profile's menu."
 msgid "Allow cleanup"
 msgstr "Allow cleanup"
 
+#: src/queue/QueueSheet.tsx
+msgid "{installing} installing"
+msgstr "{installing} installing"
+
 #: src/queue/QueueBody.tsx
 msgid "Skip this profile"
 msgstr "Skip this profile"
@@ -91,6 +111,10 @@ msgstr "Open storage settings"
 #: src/game/LaunchMenu.tsx
 msgid "Manage tools…"
 msgstr "Manage tools…"
+
+#: src/install/OverlayPlaceDialog.tsx
+msgid "This optional file has no manifest and replaces files of {baseLabel}. Mortar could not tell where they go: pick the folder to take from it and the main mod folder it goes into."
+msgstr "This optional file has no manifest and replaces files of {baseLabel}. Mortar could not tell where they go: pick the folder to take from it and the main mod folder it goes into."
 
 #: src/game/HeroGlance.tsx
 msgid "Updated"
@@ -111,6 +135,10 @@ msgstr "Stop the game to change mods."
 msgid "Could not delete the template"
 msgstr "Could not delete the template"
 
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "Different version {count} (kept as is)"
+msgstr "Different version {count} (kept as is)"
+
 #: src/game/FarmMenuItem.tsx
 msgid "Could not queue the downloads"
 msgstr "Could not queue the downloads"
@@ -119,10 +147,13 @@ msgstr "Could not queue the downloads"
 msgid "That profile is gone."
 msgstr "That profile is gone."
 
-#. placeholder {0}: part.n
-#: src/share/ListFormat.tsx
-msgid "Copy message {0}"
-msgstr "Copy message {0}"
+#: src/queue/QueueBody.tsx
+msgid "Up next: {names}"
+msgstr "Up next: {names}"
+
+#: src/share/CollectionNotes.tsx
+msgid "These come from outside {source}, so Mortar does not download them."
+msgstr "These come from outside {source}, so Mortar does not download them."
 
 #: src/game/HomeNotes.tsx
 msgid "Edit notes"
@@ -152,9 +183,9 @@ msgstr "Found, with no supported games yet"
 msgid "Copying mod files"
 msgstr "Copying mod files"
 
-#: src/shell/AppMenu.tsx
-msgid "Sign out of Nexus"
-msgstr "Sign out of Nexus"
+#: src/games/ProfileCards.tsx
+msgid "Open {game} ({count, plural, one {# more profile} other {# more profiles}})"
+msgstr "Open {game} ({count, plural, one {# more profile} other {# more profiles}})"
 
 #: src/share/ImportPreview.tsx
 msgid "{name} is broken for {detail}"
@@ -164,19 +195,21 @@ msgstr "{name} is broken for {detail}"
 msgid "Switch game"
 msgstr "Switch game"
 
-#. placeholder {0}: failed.length
 #: src/queue/store.ts
-msgid "{0, plural, one {# download failed} other {# downloads failed}}"
-msgstr "{0, plural, one {# download failed} other {# downloads failed}}"
-
-#. placeholder {0}: r.version
-#: src/updates/WhatsNewDialog.tsx
-msgid "Also in Mortar {0}"
-msgstr "Also in Mortar {0}"
+msgid "{name} needs its main file first"
+msgstr "{name} needs its main file first"
 
 #: src/share/ImportPreview.tsx
 msgid "{name} needs {detail}, which Mortar cannot install"
 msgstr "{name} needs {detail}, which Mortar cannot install"
+
+#: src/toasts/AvOverrideDialog.tsx
+msgid "Your antivirus ({scanner}) reports {name}{where}. Mod loaders and their DLLs often trip heuristics, but a real detection can harm your computer. Install only a file you trust. Mortar records this choice in the profile's history."
+msgstr "Your antivirus ({scanner}) reports {name}{where}. Mod loaders and their DLLs often trip heuristics, but a real detection can harm your computer. Install only a file you trust. Mortar records this choice in the profile's history."
+
+#: src/groups/applied.ts
+msgid "{count, plural, one {# mod added} other {# mods added}}"
+msgstr "{count, plural, one {# mod added} other {# mods added}}"
 
 #: src/queue/store.ts
 msgid "The download could not finish. Retry or skip it from the queue."
@@ -221,16 +254,13 @@ msgstr "Switch to Console"
 msgid "Deleted profile"
 msgstr "Deleted profile"
 
-#. placeholder {0}: group.name
-#. placeholder {0}: template.name
-#: src/groups/SavedGroupRow.tsx
-#: src/templates/TemplateDialogs.tsx
-msgid "Rename {0}"
-msgstr "Rename {0}"
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "{count, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
+msgstr "{count, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
 
-#: src/screenshots/ScreenshotsTab.tsx
-msgid "Open Steam's folder"
-msgstr "Open Steam's folder"
+#: src/loader/Banner.tsx
+msgid "{name} {latest} is available"
+msgstr "{name} {latest} is available"
 
 #: src/install/DropOverlay.tsx
 msgid "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows you what was added."
@@ -240,17 +270,6 @@ msgstr "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods
 msgid "Could not add the chosen folder"
 msgstr "Could not add the chosen folder"
 
-#. placeholder {0}: loader.name
-#. placeholder {1}: status.linkedFrom
-#. placeholder {2}: loader.name
-#: src/loader/Banner.tsx
-msgid "{0} here is another mod manager's copy, linked from {1}. Removing that manager removes {2}."
-msgstr "{0} here is another mod manager's copy, linked from {1}. Removing that manager removes {2}."
-
-#: src/firstrun/LoaderStep.tsx
-msgid "On Windows, Steam starts the game without {loader} unless told to. With Steam closed, Mortar can set that up; or in Steam, right-click {gameName}, choose Properties and paste this line into Launch Options:"
-msgstr "On Windows, Steam starts the game without {loader} unless told to. With Steam closed, Mortar can set that up; or in Steam, right-click {gameName}, choose Properties and paste this line into Launch Options:"
-
 #: src/game/Sidebar.tsx
 msgid "Config"
 msgstr "Config"
@@ -259,10 +278,9 @@ msgstr "Config"
 msgid "Enable and continue"
 msgstr "Enable and continue"
 
-#. placeholder {0}: listNames(carried.map((c) => carriedLabels[c]))
-#: src/share/ImportPreview.tsx
-msgid "Includes: {0}"
-msgstr "Includes: {0}"
+#: src/groups/SavedGroupRow.tsx
+msgid "Remove {name} from {group}"
+msgstr "Remove {name} from {group}"
 
 #: src/game/HomeNotes.tsx
 #: src/share/ImportPreview.tsx
@@ -275,36 +293,21 @@ msgstr "Notes"
 msgid "Last played {when}"
 msgstr "Last played {when}"
 
-#. placeholder {0}: applied.fomodMods
-#. placeholder {1}: applied.configs
-#. placeholder {2}: applied.configs
-#: src/share/useImportFlow.ts
-msgid "{0, plural, one {Applied the curator's choices for # mod and {1, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {2, plural, one {# config file} other {# config files}}}}"
-msgstr "{0, plural, one {Applied the curator's choices for # mod and {1, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {2, plural, one {# config file} other {# config files}}}}"
+#: src/screenshots/ScreenshotsTab.tsx
+msgid "{name} has a new cover"
+msgstr "{name} has a new cover"
 
-#: src/game/ProfileMenuItems.tsx
-msgid "Could not add it to Steam"
-msgstr "Could not add it to Steam"
+#: src/nxm/ArrivalDialog.tsx
+msgid "You started this download on {source}. Choose the profile it goes into."
+msgstr "You started this download on {source}. Choose the profile it goes into."
 
-#: src/queue/RetryAllButton.tsx
-msgid "{superseded, plural, one {# superseded by a newer download} other {# superseded by a newer download}}"
-msgstr "{superseded, plural, one {# superseded by a newer download} other {# superseded by a newer download}}"
+#: src/queue/QueueRows.tsx
+msgid "Move {name} up"
+msgstr "Move {name} up"
 
-#. placeholder {0}: first.name
-#. placeholder {1}: profile.name
-#: src/downloads/newDownloads.ts
-msgid "Add {0} to {1}?"
-msgstr "Add {0} to {1}?"
-
-#. placeholder {0}: incoming.sender
-#. placeholder {1}: incoming.profileName
-#: src/lan/IncomingPrompt.tsx
-msgid "{0} sent you {1} ({gameName})"
-msgstr "{0} sent you {1} ({gameName})"
-
-#: src/games/GameMenu.tsx
-msgid "Switch game: {gameLabel}"
-msgstr "Switch game: {gameLabel}"
+#: src/share/DestinationGrid.tsx
+msgid "An {manager} code or modpack"
+msgstr "An {manager} code or modpack"
 
 #: src/tools/ToolsManageDialog.tsx
 msgid "Add tool…"
@@ -314,6 +317,10 @@ msgstr "Add tool…"
 msgid "Showing the first 2,000 files"
 msgstr "Showing the first 2,000 files"
 
+#: src/shell/SuggestDialog.tsx
+msgid "Post your idea where you prefer. {app} lets others vote on it; {source} keeps it next to the code."
+msgstr "Post your idea where you prefer. {app} lets others vote on it; {source} keeps it next to the code."
+
 #: src/toasts/HistoryButton.tsx
 msgid "Downloads…"
 msgstr "Downloads…"
@@ -322,6 +329,10 @@ msgstr "Downloads…"
 #: src/launch/PlayControl.tsx
 msgid "Mod loader"
 msgstr "Mod loader"
+
+#: src/share/importCompletion.ts
+msgid "{skipped} skipped"
+msgstr "{skipped} skipped"
 
 #: src/tips/TipBanner.tsx
 #: src/toasts/ToastHost.tsx
@@ -344,13 +355,9 @@ msgstr "Mods in this profile"
 msgid "Apply this profile to all waiting"
 msgstr "Apply this profile to all waiting"
 
-#: src/games/AddGameDialog.tsx
-msgid "For a game that is not in Mortar's list. It stays on this computer, and its mods come from its Thunderstore community."
-msgstr "For a game that is not in Mortar's list. It stays on this computer, and its mods come from its Thunderstore community."
-
-#: src/nxm/ArrivalDialog.tsx
-msgid "You started this download on {site}. Create a profile to put it in first."
-msgstr "You started this download on {site}. Create a profile to put it in first."
+#: src/game/FarmMenuItem.tsx
+msgid "Host {host}"
+msgstr "Host {host}"
 
 #: src/toasts/report.ts
 msgid "A network request failed."
@@ -360,19 +367,13 @@ msgstr "A network request failed."
 msgid "No"
 msgstr "No"
 
-#: src/launch/events.ts
-msgid "{name} updated to {version}: {n, plural, one {# profile needs attention} other {# profiles need attention}}"
-msgstr "{name} updated to {version}: {n, plural, one {# profile needs attention} other {# profiles need attention}}"
-
 #: src/share/ModpackDialog.tsx
 msgid "The website must start with http:// or https://."
 msgstr "The website must start with http:// or https://."
 
-#. placeholder {0}: o.name
-#. placeholder {1}: o.machine
-#: src/sync/store.ts
-msgid "{0} was changed on {1} and here"
-msgstr "{0} was changed on {1} and here"
+#: src/share/ListFormat.tsx
+msgid "Left out (not on {source}, or disabled): {names}"
+msgstr "Left out (not on {source}, or disabled): {names}"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Remove the shortcut"
@@ -382,18 +383,25 @@ msgstr "Remove the shortcut"
 msgid "Could not choose the program"
 msgstr "Could not choose the program"
 
+#: src/queue/QueueBody.tsx
+msgid "{repo} {tag} has several archives. Which one should Mortar install?"
+msgstr "{repo} {tag} has several archives. Which one should Mortar install?"
+
 #: src/browse/BrowseBody.tsx
 msgid "Find mods to add"
 msgstr "Find mods to add"
 
+#: src/share/ImportFooter.tsx
+msgid "Add to {name}"
+msgstr "Add to {name}"
+
+#: src/browse/CardProgress.tsx
+msgid "Downloading {percent}%"
+msgstr "Downloading {percent}%"
+
 #: src/game/FarmMenuItem.tsx
 msgid "Copy this profile's list"
 msgstr "Copy this profile's list"
-
-#. placeholder {0}: ask.label
-#: src/install/MergeCallout.tsx
-msgid "This file is from the same Nexus page as {0}. Install it with that mod to update them as one, or as a separate mod."
-msgstr "This file is from the same Nexus page as {0}. Install it with that mod to update them as one, or as a separate mod."
 
 #: src/game/ProfileContextMenu.tsx
 #: src/game/ProfileMenu.tsx
@@ -412,40 +420,17 @@ msgstr "Installed by Mortar"
 msgid "Check mods and Mortar for updates"
 msgstr "Check mods and Mortar for updates"
 
-#. placeholder {0}: group.save
-#. placeholder {1}: group.profileName
-#: src/launch/PrePlayDialog.tsx
-msgid "{0} was last played with {1}"
-msgstr "{0} was last played with {1}"
-
 #: src/firstrun/ProfileStep.tsx
 msgid "Make your first profile"
 msgstr "Make your first profile"
-
-#: src/share/CompareSummary.tsx
-msgid "Missing in {targetName}"
-msgstr "Missing in {targetName}"
-
-#: src/firstrun/LoaderStep.tsx
-msgid "Mortar found it in Steam's settings."
-msgstr "Mortar found it in Steam's settings."
-
-#: src/share/ImportFooter.tsx
-msgid "Sign in to Nexus Mods to download these mods."
-msgstr "Sign in to Nexus Mods to download these mods."
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Configure {name}…"
 msgstr "Configure {name}…"
 
-#. placeholder {0}: causeLabel(backup, profiles)
-#. placeholder {0}: file.fileName
-#. placeholder {1}: formatBytes(backup.size)
-#. placeholder {1}: formatKb(file.sizeKb)
-#: src/nxm/ArrivalDialog.tsx
-#: src/saves/BackupsDialog.tsx
-msgid "{0} · {1}"
-msgstr "{0} · {1}"
+#: src/install/DownloadsDialog.tsx
+msgid "From {source}"
+msgstr "From {source}"
 
 #: src/share/PreviewDialog.tsx
 msgid "What they see"
@@ -456,26 +441,9 @@ msgstr "What they see"
 msgid "Rename"
 msgstr "Rename"
 
-#. placeholder {0}: listNames(manual)
-#: src/game/FarmMenuItem.tsx
-msgid "Install by hand: {0}"
-msgstr "Install by hand: {0}"
-
-#: src/share/ImportFooter.tsx
-msgid "Add to {targetName}"
-msgstr "Add to {targetName}"
-
 #: src/lan/SendPanel.tsx
 msgid "Send only links to {name}?"
 msgstr "Send only links to {name}?"
-
-#: src/firstrun/FirstRun.tsx
-msgid "Join our Discord"
-msgstr "Join our Discord"
-
-#: src/nxm/store.ts
-msgid "{name}'s author only allows downloads from its CurseForge page. Choose Download there instead of Install, then drop the file on Mortar."
-msgstr "{name}'s author only allows downloads from its CurseForge page. Choose Download there instead of Install, then drop the file on Mortar."
 
 #: src/browse/BrowseShow.tsx
 msgid "Broken"
@@ -486,22 +454,21 @@ msgstr "Broken"
 msgid "Bundled mods added"
 msgstr "Bundled mods added"
 
+#: src/downloads/newDownloads.ts
+msgid "Add {name} to {profile}?"
+msgstr "Add {name} to {profile}?"
+
 #: src/saves/scheduledBackups.ts
 msgid "A scheduled save backup failed"
 msgstr "A scheduled save backup failed"
 
-#: src/firstrun/LoaderStep.tsx
-msgid "{loader} is the loader every {gameName} mod needs. Mortar puts it in each profile; the game folder stays as it is."
-msgstr "{loader} is the loader every {gameName} mod needs. Mortar puts it in each profile; the game folder stays as it is."
-
-#. placeholder {0}: preview.add?.length ?? 0
-#: src/templates/ApplyTemplateDialog.tsx
-msgid "{0, plural, one {Adds # mod} other {Adds # mods}}"
-msgstr "{0, plural, one {Adds # mod} other {Adds # mods}}"
-
 #: src/toasts/report.ts
 msgid "Waiting for you to unlock the keyring."
 msgstr "Waiting for you to unlock the keyring."
+
+#: src/queue/RetryAllButton.tsx
+msgid "{count, plural, one {# already queued} other {# already queued}}"
+msgstr "{count, plural, one {# already queued} other {# already queued}}"
 
 #: src/queue/QueueBody.tsx
 msgid "Dismiss {name}"
@@ -510,6 +477,10 @@ msgstr "Dismiss {name}"
 #: src/nxm/store.ts
 msgid "Mortar does not manage mods for that game."
 msgstr "Mortar does not manage mods for that game."
+
+#: src/share/ImportPreview.tsx
+msgid "Free account: one click on {source} per download"
+msgstr "Free account: one click on {source} per download"
 
 #: src/firstrun/ProfileStep.tsx
 msgid "Start empty"
@@ -523,13 +494,17 @@ msgstr "That item could not be found."
 msgid "Switch to Problems"
 msgstr "Switch to Problems"
 
+#: src/game/ProfileMenuItems.tsx
+msgid "It shows in your {launcher} library the next time {launcher} starts."
+msgstr "It shows in your {launcher} library the next time {launcher} starts."
+
 #: src/share/ListFormat.tsx
 msgid "Mod list copied"
 msgstr "Mod list copied"
 
-#: src/game/ProfileMenuItems.tsx
-msgid "Already in Steam"
-msgstr "Already in Steam"
+#: src/toasts/AvOverrideDialog.tsx
+msgid " in {file}"
+msgstr " in {file}"
 
 #: src/browse/BrowseFilters.tsx
 msgid "Exclude categories"
@@ -539,33 +514,25 @@ msgstr "Exclude categories"
 msgid "Filter by outcome"
 msgstr "Filter by outcome"
 
-#. placeholder {0}: sum.done
-#: src/queue/QueueSheet.tsx
-msgid "{0} done"
-msgstr "{0} done"
-
 #: src/share/MethodPanes.tsx
 msgid "Could not export the collection draft"
 msgstr "Could not export the collection draft"
 
-#. placeholder {0}: sourceNames.get(c.source) ?? c.source
-#: src/browse/BrowseMenu.tsx
-msgid "Open page on {0}"
-msgstr "Open page on {0}"
+#: src/toasts/EarlierChanges.tsx
+msgid "Undo this and {count, plural, one {# later change} other {# later changes}}?"
+msgstr "Undo this and {count, plural, one {# later change} other {# later changes}}?"
+
+#: src/saves/SaveBackupsButton.tsx
+msgid " · Kept by the game · {size}"
+msgstr " · Kept by the game · {size}"
 
 #: src/share/DestinationGrid.tsx
 msgid "Local archives cannot go here"
 msgstr "Local archives cannot go here"
 
-#. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx
-msgid "This save was last played with {0, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
-msgstr "This save was last played with {0, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
-
-#. placeholder {0}: formatWhen(played.at)
-#: src/games/GameMenu.tsx
-msgid "played {0}"
-msgstr "played {0}"
+#: src/launch/SweepDialog.tsx
+msgid "{name}: {fix}"
+msgstr "{name}: {fix}"
 
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most downloaded"
@@ -580,21 +547,17 @@ msgstr "Update an existing profile…"
 msgid "Loading saved groups…"
 msgstr "Loading saved groups…"
 
-#: src/share/DestinationGrid.tsx
-msgid "An r2modman code or modpack"
-msgstr "An r2modman code or modpack"
-
 #: src/saves/backups.ts
 msgid "Scheduled"
 msgstr "Scheduled"
 
-#: src/firstrun/NexusStep.tsx
-msgid "Mod Manager Download on Nexus Mods only works in Mortar when you are signed in."
-msgstr "Mod Manager Download on Nexus Mods only works in Mortar when you are signed in."
-
 #: src/launch/autoUpdate.ts
 msgid "Could not add the update downloads"
 msgstr "Could not add the update downloads"
+
+#: src/queue/QueueHistory.tsx
+msgid "Show {name} in its profile"
+msgstr "Show {name} in its profile"
 
 #: src/share/MethodPanes.tsx
 msgid "Could not publish the code"
@@ -618,6 +581,10 @@ msgstr "All outcomes"
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{count, plural, one {# mod installed} other {# mods installed}}"
 
+#: src/tidy/report.ts
+msgid "Mortar tidied up {count, plural, one {# thing} other {# things}}"
+msgstr "Mortar tidied up {count, plural, one {# thing} other {# things}}"
+
 #: src/shell/FlatpakGrant.tsx
 msgid "Grant access…"
 msgstr "Grant access…"
@@ -629,11 +596,6 @@ msgstr "Config files stay here: only a paired computer gets them. Everything els
 #: src/games/ProfileCards.tsx
 msgid "+{more} more"
 msgstr "+{more} more"
-
-#. placeholder {0}: batch.pendingSettings
-#: src/share/importCompletion.ts
-msgid "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
-msgstr "{0, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
 
 #: src/shell/AppMenu.tsx
 msgid "Mortar settings…"
@@ -651,42 +613,37 @@ msgstr "Restart and record startup profile"
 msgid "From a shared link"
 msgstr "From a shared link"
 
-#. placeholder {0}: n.paused
-#: src/queue/QueueSheet.tsx
-msgid "{0} paused"
-msgstr "{0} paused"
-
 #: src/game/ProfileMenuItems.tsx
 msgid "Use the automatic cover"
 msgstr "Use the automatic cover"
 
-#: src/firstrun/ProfileStep.tsx
-msgid "{found, plural, one {# profile from another mod manager is on this computer. Its mods download from their own sites.} other {# profiles from other mod managers are on this computer. Their mods download from their own sites.}}"
-msgstr "{found, plural, one {# profile from another mod manager is on this computer. Its mods download from their own sites.} other {# profiles from other mod managers are on this computer. Their mods download from their own sites.}}"
+#: src/share/ListFormat.tsx
+msgid "Message {count} of {total} copied"
+msgstr "Message {count} of {total} copied"
 
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: best match"
 msgstr "Sort: best match"
 
-#. placeholder {0}: formatWhen(item.updated)
-#. placeholder {0}: formatWhen(page.updated)
-#: src/browse/stats.ts
-msgid "Updated {0}"
-msgstr "Updated {0}"
+#: src/share/ImportInput.tsx
+msgid "Open a .mortar file, an {manager} or {otherManager} .r2z, or a {source} modpack. You see what it holds before anything downloads."
+msgstr "Open a .mortar file, an {manager} or {otherManager} .r2z, or a {source} modpack. You see what it holds before anything downloads."
 
-#. placeholder {0}: cause.modName
-#: src/launch/LaunchLayer.tsx
-msgid "Caused by {0}"
-msgstr "Caused by {0}"
+#: src/firstrun/LoaderStep.tsx
+msgid "{loader} is the loader every {game} mod needs. Mortar puts it in each profile; the game folder stays as it is."
+msgstr "{loader} is the loader every {game} mod needs. Mortar puts it in each profile; the game folder stays as it is."
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Pending updates ({count})"
+msgstr "Pending updates ({count})"
 
 #: src/shell/checkForUpdates.ts
 msgid "Update check skipped"
 msgstr "Update check skipped"
 
-#. placeholder {0}: listNames(names)
-#: src/saves/BackupsDialog.tsx
-msgid "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
-msgstr "None of {0} are in Saves yet; they will be added. The current Saves folder is backed up first."
+#: src/sync/store.ts
+msgid "{name} was changed on {machine} and here"
+msgstr "{name} was changed on {machine} and here"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Copies and sharing"
@@ -713,10 +670,6 @@ msgstr "Grid view"
 msgid "Review"
 msgstr "Review"
 
-#: src/firstrun/LoaderStep.tsx
-msgid "Launch options set in Steam"
-msgstr "Launch options set in Steam"
-
 #: src/lan/OutgoingProgress.tsx
 msgid "Sending to {peer}: {current} of {total} files"
 msgstr "Sending to {peer}: {current} of {total} files"
@@ -740,10 +693,6 @@ msgstr "Could not apply the template"
 #: src/templates/TemplateDialogs.tsx
 msgid "Template name"
 msgstr "Template name"
-
-#: src/shell/offlineText.ts
-msgid "{name} as of {at}"
-msgstr "{name} as of {at}"
 
 #: src/share/MethodPanes.tsx
 msgid "Link length"
@@ -769,15 +718,6 @@ msgstr "Enable or disable on this computer only"
 msgid "What you expected"
 msgstr "What you expected"
 
-#. placeholder {0}: o.name
-#. placeholder {0}: offer.name
-#. placeholder {1}: o.machine
-#. placeholder {1}: offer.machine
-#: src/sync/store.ts
-#: src/sync/SyncOffers.tsx
-msgid "{0} was changed on {1}"
-msgstr "{0} was changed on {1}"
-
 #: src/launch/StopDialog.tsx
 msgid "Stop game?"
 msgstr "Stop game?"
@@ -790,6 +730,10 @@ msgstr "No mods to share"
 msgid "Roll back"
 msgstr "Roll back"
 
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "{count, plural, one {Added # mod from {name}; downloading {left, plural, one {# mod} other {# mods}}} other {Added # mods from {name}; downloading {left, plural, one {# mod} other {# mods}}}}"
+msgstr "{count, plural, one {Added # mod from {name}; downloading {left, plural, one {# mod} other {# mods}}} other {Added # mods from {name}; downloading {left, plural, one {# mod} other {# mods}}}}"
+
 #: src/groups/SavedGroupsSection.tsx
 msgid "Could not rename the saved group"
 msgstr "Could not rename the saved group"
@@ -798,6 +742,10 @@ msgstr "Could not rename the saved group"
 msgid "The antivirus flagged this download, so Mortar did not install it."
 msgstr "The antivirus flagged this download, so Mortar did not install it."
 
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "{count, plural, one {Added # mod from {name}; {left, plural, one {# mod} other {# mods}} still to download} other {Added # mods from {name}; {left, plural, one {# mod} other {# mods}} still to download}}"
+msgstr "{count, plural, one {Added # mod from {name}; {left, plural, one {# mod} other {# mods}} still to download} other {Added # mods from {name}; {left, plural, one {# mod} other {# mods}} still to download}}"
+
 #: src/game/Hero.tsx
 msgid "Unlink"
 msgstr "Unlink"
@@ -805,6 +753,10 @@ msgstr "Unlink"
 #: src/queue/QueueHistory.tsx
 msgid "Download again"
 msgstr "Download again"
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Step {step} of {count}"
+msgstr "Step {step} of {count}"
 
 #: src/browse/BrowseBody.tsx
 #: src/firstrun/LoaderStep.tsx
@@ -824,10 +776,13 @@ msgstr "Download again"
 msgid "Retry"
 msgstr "Retry"
 
-#. placeholder {0}: game.name
-#: src/firstrun/FindStep.tsx
-msgid "found, without {0}"
-msgstr "found, without {0}"
+#: src/shell/BugReportDialog.tsx
+msgid "Opens a {source} issue with these filled in. You review it before posting."
+msgstr "Opens a {source} issue with these filled in. You review it before posting."
+
+#: src/share/ImportPreview.tsx
+msgid "{name} was removed from {source}"
+msgstr "{name} was removed from {source}"
 
 #: src/browse/ResultCard.tsx
 msgid "Marked broken"
@@ -844,6 +799,14 @@ msgstr "Could not update mods before Play"
 #: src/toasts/report.ts
 msgid "Mortar does not have permission to do that."
 msgstr "Mortar does not have permission to do that."
+
+#: src/nxm/store.ts
+msgid "You started this download on {source}. Show Mortar to choose the profile it goes into."
+msgstr "You started this download on {source}. Show Mortar to choose the profile it goes into."
+
+#: src/share/useImportFlow.ts
+msgid "{count, plural, one {# download queued} other {# downloads queued}}"
+msgstr "{count, plural, one {# download queued} other {# downloads queued}}"
 
 #: src/queue/actions.ts
 msgid "Could not add the download"
@@ -892,18 +855,13 @@ msgstr "Your build changed; it is added when the game stops"
 msgid "Name"
 msgstr "Name"
 
-#. placeholder {0}: item.name
-#: src/queue/store.ts
-msgid "{0} needs its main file first"
-msgstr "{0} needs its main file first"
-
 #: src/install/ArchivePreview.tsx
 msgid "Reading the archive…"
 msgstr "Reading the archive…"
 
-#: src/shell/FlatpakGrant.tsx
-msgid "Grant Flatpak Steam access?"
-msgstr "Grant Flatpak Steam access?"
+#: src/launch/store.ts
+msgid "The program to start {name} was not found. Check that the game is still installed and the launch prefix names a real command. {error}"
+msgstr "The program to start {name} was not found. Check that the game is still installed and the launch prefix names a real command. {error}"
 
 #: src/launch/PrePlayDialog.tsx
 msgid "Do not check before Play"
@@ -947,11 +905,6 @@ msgstr "Continue anyway"
 msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
 
-#. placeholder {0}: i.name
-#: src/queue/QueueRows.tsx
-msgid "Resume {0}"
-msgstr "Resume {0}"
-
 #: src/shell/BugReportDialog.tsx
 msgid "A short summary"
 msgstr "A short summary"
@@ -960,10 +913,18 @@ msgstr "A short summary"
 msgid "Curator's instructions"
 msgstr "Curator's instructions"
 
+#: src/share/MethodPanes.tsx
+msgid "Share as {manager} code…"
+msgstr "Share as {manager} code…"
+
 #: src/lan/PairedComputers.tsx
 #: src/lan/SendPanel.tsx
 msgid "Host:port"
 msgstr "Host:port"
+
+#: src/share/ImportFooter.tsx
+msgid "These will be removed ({count})"
+msgstr "These will be removed ({count})"
 
 #: src/saves/SaveBackupsButton.tsx
 msgid " · {cause} · {size} · Kept"
@@ -994,20 +955,6 @@ msgstr "This game has no compatibility list, so no mod is known to be broken."
 msgid "Install anyway…"
 msgstr "Install anyway…"
 
-#. placeholder {0}: mod.name
-#: src/groups/SavedGroupRow.tsx
-msgid "{0} (optional file)"
-msgstr "{0} (optional file)"
-
-#: src/install/store.ts
-msgid "Replaced {mods} in {profileName}"
-msgstr "Replaced {mods} in {profileName}"
-
-#. placeholder {0}: game.name
-#: src/firstrun/FindStep.tsx
-msgid "has {0}"
-msgstr "has {0}"
-
 #: src/commandPalette/paletteLabels.ts
 msgid "Switch to Browse"
 msgstr "Switch to Browse"
@@ -1033,37 +980,39 @@ msgstr "Mortar is up to date"
 msgid "Rename template"
 msgstr "Rename template"
 
-#. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx
-msgid "This save was last played with {0, plural, one {# mod that is disabled here} other {# mods that are disabled here}}"
-msgstr "This save was last played with {0, plural, one {# mod that is disabled here} other {# mods that are disabled here}}"
+#: src/loader/Banner.tsx
+msgid "A game update replaced {name}'s launcher"
+msgstr "A game update replaced {name}'s launcher"
 
-#. placeholder {0}: row.missingDeps
-#: src/launch/SweepDialog.tsx
-msgid "{0, plural, one {# missing dependency} other {# missing dependencies}}"
-msgstr "{0, plural, one {# missing dependency} other {# missing dependencies}}"
+#: src/groups/ApplySavedGroupToProfile.tsx
+#: src/groups/SavedGroupRow.tsx
+msgid "Add {name} to a profile"
+msgstr "Add {name} to a profile"
+
+#: src/shell/offlineText.ts
+msgid "{name} as of {when}"
+msgstr "{name} as of {when}"
+
+#: src/share/ImportSources.tsx
+msgid "A .mortar file, an .r2z or a {source} modpack"
+msgstr "A .mortar file, an .r2z or a {source} modpack"
 
 #: src/firstrunTour/TourPopover.tsx
 msgid "Skip tour"
 msgstr "Skip tour"
-
-#: src/share/Included.tsx
-msgid "Its Nexus file is not known. Group the Mods list by Source and choose Find on Nexus."
-msgstr "Its Nexus file is not known. Group the Mods list by Source and choose Find on Nexus."
 
 #: src/install/RemapDialog.tsx
 #: src/shell/TypedFolder.tsx
 msgid "Use folder"
 msgstr "Use folder"
 
-#: src/share/ImportPreview.tsx
-msgid "{name} was removed from Nexus"
-msgstr "{name} was removed from Nexus"
+#: src/install/DownloadsDialog.tsx
+msgid "Reading {names}"
+msgstr "Reading {names}"
 
-#. placeholder {0}: target.name
-#: src/lan/SendPanel.tsx
-msgid "Sent to {0}"
-msgstr "Sent to {0}"
+#: src/share/ModpackDialog.tsx
+msgid "A plain icon ({source} needs a 256x256 PNG)"
+msgstr "A plain icon ({source} needs a 256x256 PNG)"
 
 #: src/browse/BrowseShow.tsx
 #: src/nxm/store.ts
@@ -1086,37 +1035,9 @@ msgstr "Include libraries and supporting mods"
 msgid "Queued"
 msgstr "Queued"
 
-#. placeholder {0}: part.n
-#: src/share/ListFormat.tsx
-msgid "Message {0} of {total}"
-msgstr "Message {0} of {total}"
-
-#. placeholder {0}: n.waiting
-#: src/queue/QueueSheet.tsx
-msgid "{0} waiting"
-msgstr "{0} waiting"
-
-#. placeholder {0}: skippedPrograms.length
-#: src/share/ImportPreview.tsx
-msgid "{0, plural, one {# program file was left out; Mortar copies settings, not programs:} other {# program files were left out; Mortar copies settings, not programs:}}"
-msgstr "{0, plural, one {# program file was left out; Mortar copies settings, not programs:} other {# program files were left out; Mortar copies settings, not programs:}}"
-
-#. placeholder {0}: i.name
-#: src/queue/QueueBody.tsx
-#: src/queue/QueueRows.tsx
-msgid "Skip {0}"
-msgstr "Skip {0}"
-
 #: src/lan/SendPanel.tsx
 msgid "Not paired · only links"
 msgstr "Not paired · only links"
-
-#. placeholder {0}: seasons[fit.season] ?? ''
-#. placeholder {1}: fit.day
-#. placeholder {2}: fit.year
-#: src/saves/SaveDetails.tsx
-msgid "{0} {1}, year {2}"
-msgstr "{0} {1}, year {2}"
 
 #: src/commandPalette/paletteLabels.ts
 #: src/firstrun/ProfileStep.tsx
@@ -1137,10 +1058,6 @@ msgstr "Open profile first."
 msgid "Try a different search."
 msgstr "Try a different search."
 
-#: src/share/MethodPanes.tsx
-msgid "For r2modman and other Thunderstore managers: a code anyone can enter, a .r2z file, or a modpack zip with your config folder."
-msgstr "For r2modman and other Thunderstore managers: a code anyone can enter, a .r2z file, or a modpack zip with your config folder."
-
 #: src/queue/QueueHistory.tsx
 msgid "{game} profile"
 msgstr "{game} profile"
@@ -1150,34 +1067,29 @@ msgstr "{game} profile"
 msgid "Game folder"
 msgstr "Game folder"
 
+#: src/share/ListFormat.tsx
+msgid "Copy message {current} of {total}"
+msgstr "Copy message {current} of {total}"
+
 #: src/saves/SaveRow.tsx
 msgid "Hill-top farm"
 msgstr "Hill-top farm"
 
-#: src/launch/LaunchLayer.tsx
-msgid "Launch without Steam"
-msgstr "Launch without Steam"
-
-#: src/share/ImportSources.tsx
-msgid "r2modman, Gale, Vortex, Mod Organizer 2 or Stardrop on this computer"
-msgstr "r2modman, Gale, Vortex, Mod Organizer 2 or Stardrop on this computer"
-
-#. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx
-msgid "Conflicts ({0})"
-msgstr "Conflicts ({0})"
+#: src/launch/store.ts
+msgid "{launcher} or {otherLauncher} may not have started the game. Start it, sign in if it asks, and try again, or set the game's Default launch to Direct."
+msgstr "{launcher} or {otherLauncher} may not have started the game. Start it, sign in if it asks, and try again, or set the game's Default launch to Direct."
 
 #: src/tools/ToolEditorDialog.tsx
 msgid "Choose executable"
 msgstr "Choose executable"
 
-#: src/firstrun/LoaderStep.tsx
-msgid "One step in Steam"
-msgstr "One step in Steam"
+#: src/browse/CardProgress.tsx
+msgid "Paused {percent}%"
+msgstr "Paused {percent}%"
 
-#: src/shell/AppMenu.tsx
-msgid "Sign in to Nexus…"
-msgstr "Sign in to Nexus…"
+#: src/launch/PrePlayDialog.tsx
+msgid "This save was last played with {count, plural, one {# mod that is disabled here} other {# mods that are disabled here}}"
+msgstr "This save was last played with {count, plural, one {# mod that is disabled here} other {# mods that are disabled here}}"
 
 #: src/sync/SyncOffers.tsx
 msgid "Removes {name}"
@@ -1196,6 +1108,10 @@ msgstr "The host's list"
 msgid "The game closed right after starting last time."
 msgstr "The game closed right after starting last time."
 
+#: src/firstrun/FindStep.tsx
+msgid "Use {path}"
+msgstr "Use {path}"
+
 #: src/game/FarmMenuItem.tsx
 msgid "Check"
 msgstr "Check"
@@ -1213,31 +1129,31 @@ msgstr "Undo"
 msgid "Mods a site can download again are left out; restoring downloads them."
 msgstr "Mods a site can download again are left out; restoring downloads them."
 
+#: src/saves/SaveGapLine.tsx
+msgid "Needs {count, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
+msgstr "Needs {count, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
+
 #: src/launch/events.ts
 msgid "Could not restore profile game settings"
 msgstr "Could not restore profile game settings"
-
-#. placeholder {0}: asking?.title ?? ''
-#: src/toasts/AvOverrideDialog.tsx
-msgid "Install {0} anyway?"
-msgstr "Install {0} anyway?"
 
 #: src/share/IncludeOptions.tsx
 msgid "Include problem choices"
 msgstr "Include problem choices"
 
-#: src/share/MethodPanes.tsx
-msgid "{length} of {limit} characters · fits one Discord message"
-msgstr "{length} of {limit} characters · fits one Discord message"
+#: src/firstrun/GameSetup.tsx
+#: src/share/DestinationGrid.tsx
+#: src/share/ShareDialog.tsx
+msgid "{source}"
+msgstr "{source}"
 
 #: src/install/MergeCallout.tsx
 msgid "Install together"
 msgstr "Install together"
 
-#. placeholder {0}: status.version
-#: src/loader/store.ts
-msgid "{name} {0} is installed"
-msgstr "{name} {0} is installed"
+#: src/share/ShareDialog.tsx
+msgid "Share {name}"
+msgstr "Share {name}"
 
 #: src/tools/ToolEditorDialog.tsx
 msgid "Add tool"
@@ -1246,11 +1162,6 @@ msgstr "Add tool"
 #: src/commandPalette/CommandPalette.tsx
 msgid "Appearance"
 msgstr "Appearance"
-
-#. placeholder {0}: status.error
-#: src/launch/store.ts
-msgid "The program to start {name} was not found. Check that the game is still installed and the launch prefix names a real command. {0}"
-msgstr "The program to start {name} was not found. Check that the game is still installed and the launch prefix names a real command. {0}"
 
 #: src/game/FarmMenuItem.tsx
 msgid "Fix all"
@@ -1272,29 +1183,37 @@ msgstr "Both sides changed it, so Mortar will not merge them. Pick one side."
 msgid "Installing {loader} {latest}"
 msgstr "Installing {loader} {latest}"
 
+#: src/browse/browseConstants.ts
+msgid "Search {source}. Free accounts download from the mod's page with Mod Manager Download."
+msgstr "Search {source}. Free accounts download from the mod's page with Mod Manager Download."
+
 #: src/browse/BrowseDetails.tsx
 msgid "Support the author"
 msgstr "Support the author"
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "Restore {name} to {when}?"
+msgstr "Restore {name} to {when}?"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Check this profile"
 msgstr "Check this profile"
 
-#: src/saves/SaveBackupsButton.tsx
-msgid "{label} is replaced by the copy in this backup. The current {label} is backed up first."
-msgstr "{label} is replaced by the copy in this backup. The current {label} is backed up first."
+#: src/games/GameSelect.tsx
+msgid "Play {name}"
+msgstr "Play {name}"
 
-#. placeholder {0}: open.name
-#: src/nxm/ArrivalDialog.tsx
-msgid "Install into {0}"
-msgstr "Install into {0}"
+#: src/game/BackupMenuItems.tsx
+msgid "Back up {name}?"
+msgstr "Back up {name}?"
 
-#. placeholder {0}: index + 1
-#. placeholder {1}: steps.length
-#. placeholder {2}: step.name
-#: src/fomod/Dialog.tsx
-msgid "Step {0} of {1}: {2}"
-msgstr "Step {0} of {1}: {2}"
+#: src/install/MergeCallout.tsx
+msgid "This file is from the same {source} page as {name}. Install it with that mod to update them as one, or as a separate mod."
+msgstr "This file is from the same {source} page as {name}. Install it with that mod to update them as one, or as a separate mod."
+
+#: src/groups/applied.ts
+msgid "Not downloaded yet: {names}"
+msgstr "Not downloaded yet: {names}"
 
 #: src/launch/SweepDialog.tsx
 msgid "No fix yet"
@@ -1309,9 +1228,17 @@ msgstr "A saved group with this name already exists."
 msgid "Could not find Mortar users"
 msgstr "Could not find Mortar users"
 
-#: src/lan/SendPanel.tsx
-msgid "{name} is not paired with this computer, so Mortar sends the list of mods, not their files. {name} will download each mod from its site, one click per mod on a free Nexus account."
-msgstr "{name} is not paired with this computer, so Mortar sends the list of mods, not their files. {name} will download each mod from its site, one click per mod on a free Nexus account."
+#: src/install/store.ts
+msgid "Updated {mods} in {profile}"
+msgstr "Updated {mods} in {profile}"
+
+#: src/firstrun/FindStep.tsx
+msgid "{name} folder"
+msgstr "{name} folder"
+
+#: src/firstrun/ProfileStep.tsx
+msgid "Copy the mods already in {game}'s Mods folder into a new profile. The game folder is not changed."
+msgstr "Copy the mods already in {game}'s Mods folder into a new profile. The game folder is not changed."
 
 #: src/share/MethodPanes.tsx
 msgid "Collection draft saved"
@@ -1326,19 +1253,21 @@ msgstr "{count} checked later"
 msgid "Compare…"
 msgstr "Compare…"
 
+#: src/share/ImportSources.tsx
+msgid "A Mortar link, a {source} collection or an {manager} or {otherManager} code"
+msgstr "A Mortar link, a {source} collection or an {manager} or {otherManager} code"
+
+#: src/queue/QueueRows.tsx
+msgid "Move {name} down"
+msgstr "Move {name} down"
+
 #: src/saves/SaveRow.tsx
 msgid "Last played with {profile}"
 msgstr "Last played with {profile}"
 
-#. placeholder {0}: arrivals.length - 1
-#: src/nxm/ArrivalDialog.tsx
-msgid "{0} more waiting"
-msgstr "{0} more waiting"
-
-#. placeholder {0}: st.machine
-#: src/sync/SyncOffers.tsx
-msgid "Waiting for {0}'s profile file to finish syncing. Changes made here are written out once it arrives."
-msgstr "Waiting for {0}'s profile file to finish syncing. Changes made here are written out once it arrives."
+#: src/shell/AppMenu.tsx
+msgid "{source} · Signed in as {name}"
+msgstr "{source} · Signed in as {name}"
 
 #: src/saves/SaveRow.tsx
 msgid "All mods present"
@@ -1352,18 +1281,22 @@ msgstr "Get help"
 msgid "Instances"
 msgstr "Instances"
 
-#: src/shell/saveDiagnostics.ts
-msgid "Drag {path} into the GitHub issue to attach it."
-msgstr "Drag {path} into the GitHub issue to attach it."
-
 #: src/lan/PairedComputers.tsx
 #: src/lan/SendPanel.tsx
 msgid "Pair"
 msgstr "Pair"
 
+#: src/loader/store.ts
+msgid "Could not install {loader}"
+msgstr "Could not install {loader}"
+
 #: src/share/ImportFooter.tsx
 msgid "New profile from link"
 msgstr "New profile from link"
+
+#: src/share/MethodPanes.tsx
+msgid "Export as {source} modpack…"
+msgstr "Export as {source} modpack…"
 
 #: src/browse/BrowseShow.tsx
 msgid "Off"
@@ -1381,9 +1314,9 @@ msgstr "Queue"
 msgid "Not found in the Mods folder"
 msgstr "Not found in the Mods folder"
 
-#: src/share/ImportInput.tsx
-msgid "Paste a Mortar link, a Nexus collection, an r2modman or Gale code, a Patreon post, an itch.io page or (Premium) a Nexus mod link."
-msgstr "Paste a Mortar link, a Nexus collection, an r2modman or Gale code, a Patreon post, an itch.io page or (Premium) a Nexus mod link."
+#: src/install/store.ts
+msgid "Replaced {mods} in {profile}"
+msgstr "Replaced {mods} in {profile}"
 
 #: src/share/ImportDialog.tsx
 msgid "Import from {manager}"
@@ -1397,9 +1330,26 @@ msgstr "Working"
 msgid "Switch to Mods"
 msgstr "Switch to Mods"
 
+#: src/share/MethodPanes.tsx
+#: src/share/ModpackDialog.tsx
+msgid "Left out: {names}"
+msgstr "Left out: {names}"
+
 #: src/shell/BugReportDialog.tsx
 msgid "What happened"
 msgstr "What happened"
+
+#: src/shell/AppMenu.tsx
+msgid "{source} · Not signed in"
+msgstr "{source} · Not signed in"
+
+#: src/share/ModpackDialog.tsx
+msgid "Export as {source} modpack"
+msgstr "Export as {source} modpack"
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "{name} is replaced by the copy in this backup. The current {name} is backed up first."
+msgstr "{name} is replaced by the copy in this backup. The current {name} is backed up first."
 
 #: src/browse/BrowseShow.tsx
 msgid "Flag"
@@ -1409,27 +1359,29 @@ msgstr "Flag"
 msgid "Could not pair"
 msgstr "Could not pair"
 
-#. placeholder {0}: result.added
-#: src/groups/applied.ts
-msgid "{0, plural, one {# mod added} other {# mods added}}"
-msgstr "{0, plural, one {# mod added} other {# mods added}}"
+#: src/install/MissingDepsDialog.tsx
+msgid "No download source is known for {names}."
+msgstr "No download source is known for {names}."
 
 #: src/shell/BugReportDialog.tsx
 msgid "Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you drag it into the issue)"
 msgstr "Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you drag it into the issue)"
 
-#. placeholder {0}: state.percent
-#: src/browse/CardProgress.tsx
-msgid "Paused {0}%"
-msgstr "Paused {0}%"
-
 #: src/game/detailStates.tsx
 msgid "A profile holds one set of mods for this game."
 msgstr "A profile holds one set of mods for this game."
 
+#: src/saves/SavesTab.tsx
+msgid "{count, plural, one {Filter # save} other {Filter # saves}}"
+msgstr "{count, plural, one {Filter # save} other {Filter # saves}}"
+
 #: src/share/ModpackDialog.tsx
 msgid "Left empty, a README is written from what the profile holds."
 msgstr "Left empty, a README is written from what the profile holds."
+
+#: src/install/offerInstallAnyway.ts
+msgid "{os} removed the file as malware without saying which. If you trust it, restore it from {os} Security's protection history and add it again."
+msgstr "{os} removed the file as malware without saying which. If you trust it, restore it from {os} Security's protection history and add it again."
 
 #: src/install/store.ts
 msgid "Could not open the file dialog"
@@ -1441,10 +1393,9 @@ msgstr "Could not open the file dialog"
 msgid "Choose folder…"
 msgstr "Choose folder…"
 
-#. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx
-msgid "Changed since last run ({0})"
-msgstr "Changed since last run ({0})"
+#: src/share/ImportPreview.tsx
+msgid "{count, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
+msgstr "{count, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 
 #: src/share/CompareSummary.tsx
 msgid "Different version"
@@ -1466,19 +1417,13 @@ msgstr "Gray out"
 msgid "No crash to investigate: the last run ended normally."
 msgstr "No crash to investigate: the last run ended normally."
 
-#: src/lan/IncomingPrompt.tsx
-msgid "Update {localName} from {sender}"
-msgstr "Update {localName} from {sender}"
-
-#. placeholder {0}: row.host
-#. placeholder {1}: row.mine
-#: src/game/FarmMenuItem.tsx
-msgid "Host {0}, yours {1}"
-msgstr "Host {0}, yours {1}"
-
 #: src/game/Sidebar.tsx
 msgid "Profile sections"
 msgstr "Profile sections"
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Updated in {launcher}"
+msgstr "Updated in {launcher}"
 
 #: src/firstrunTour/TourAgainButton.tsx
 msgid "Show the tour again"
@@ -1488,17 +1433,9 @@ msgstr "Show the tour again"
 msgid "Check again"
 msgstr "Check again"
 
-#: src/saves/SaveRow.tsx
-msgid "{label} is no longer in the saves folder"
-msgstr "{label} is no longer in the saves folder"
-
 #: src/share/ImportPreview.tsx
 msgid "different file"
 msgstr "different file"
-
-#: src/firstrun/LoaderStep.tsx
-msgid "Set it in Steam for me"
-msgstr "Set it in Steam for me"
 
 #: src/share/ModpackDialog.tsx
 msgid "Modpack saved"
@@ -1508,10 +1445,6 @@ msgstr "Modpack saved"
 #: src/templates/TemplateDialogs.tsx
 msgid "Save as template"
 msgstr "Save as template"
-
-#: src/browse/browseConstants.ts
-msgid "Search GitHub for mods published as releases. Add puts the latest release in this profile."
-msgstr "Search GitHub for mods published as releases. Add puts the latest release in this profile."
 
 #: src/games/ListFooter.tsx
 msgid "Add a game…"
@@ -1525,43 +1458,37 @@ msgstr "Show details"
 msgid "Accounts"
 msgstr "Accounts"
 
-#: src/browse/BrowsePage.tsx
-msgid "Search GitHub releases"
-msgstr "Search GitHub releases"
+#: src/share/ImportFooter.tsx
+msgid "Replace {name}"
+msgstr "Replace {name}"
 
-#: src/game/ProfileMenuItems.tsx
-msgid "It shows in your Steam library the next time Steam starts."
-msgstr "It shows in your Steam library the next time Steam starts."
+#: src/games/AddGameDialog.tsx
+msgid "For a game that is not in Mortar's list. It stays on this computer, and its mods come from its {source} community."
+msgstr "For a game that is not in Mortar's list. It stays on this computer, and its mods come from its {source} community."
 
 #: src/saves/backups.ts
 msgid "Before updating a deleted profile"
 msgstr "Before updating a deleted profile"
 
-#. placeholder {0}: (preview.replace?.keepLocal ?? []).length
-#: src/share/ImportFooter.tsx
-msgid "Local-only mods kept ({0})"
-msgstr "Local-only mods kept ({0})"
-
 #: src/commandPalette/CommandPalette.tsx
 msgid "Storage"
 msgstr "Storage"
-
-#: src/share/Included.tsx
-msgid "{local, plural, one {# mod you added from an archive cannot go in the file} other {# mods you added from archives cannot go in the file}}"
-msgstr "{local, plural, one {# mod you added from an archive cannot go in the file} other {# mods you added from archives cannot go in the file}}"
 
 #: src/lan/PairedComputers.tsx
 msgid "Could not start pairing"
 msgstr "Could not start pairing"
 
-#. placeholder {0}: part.text.length.toLocaleString(i18n.locale)
-#: src/share/ListFormat.tsx
-msgid "{0} characters"
-msgstr "{0} characters"
+#: src/saves/SaveDetails.tsx
+msgid "Saved on version {gameVersion}"
+msgstr "Saved on version {gameVersion}"
 
 #: src/share/CompareSummary.tsx
 msgid "Only in {name}"
 msgstr "Only in {name}"
+
+#: src/launch/PrePlayDialog.tsx
+msgid "This save was last played with {count, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
+msgstr "This save was last played with {count, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
 
 #: src/browse/BrowseMenu.tsx
 #: src/browse/CardAction.tsx
@@ -1577,13 +1504,13 @@ msgstr "Manual"
 msgid "Save to a file…"
 msgstr "Save to a file…"
 
-#: src/nxm/store.ts
-msgid "The link was made for another Nexus account than the one signed in."
-msgstr "The link was made for another Nexus account than the one signed in."
-
 #: src/shell/useDiscardGuard.tsx
 msgid "Discard"
 msgstr "Discard"
+
+#: src/queue/QueueRows.tsx
+msgid "Download {name} now"
+msgstr "Download {name} now"
 
 #: src/i18n/counts.ts
 msgid "{count, plural, one {# error} other {# errors}}"
@@ -1609,16 +1536,6 @@ msgstr "Last updated"
 msgid "Included"
 msgstr "Included"
 
-#. placeholder {0}: sourceNames(ids)
-#: src/shell/offlineText.ts
-msgid "{0} cannot sort this way: pick it as the source to see its mods"
-msgstr "{0} cannot sort this way: pick it as the source to see its mods"
-
-#. placeholder {0}: reqs.length
-#: src/queue/actions.ts
-msgid "{0, plural, one {# download added} other {# downloads added}}"
-msgstr "{0, plural, one {# download added} other {# downloads added}}"
-
 #: src/firstrun/LoaderStep.tsx
 msgid "Launch options copied"
 msgstr "Launch options copied"
@@ -1637,20 +1554,14 @@ msgstr "Preview what they see"
 msgid "Disabled in this profile"
 msgstr "Disabled in this profile"
 
-#: src/launch/StopDialog.tsx
-msgid "{gameName} will close now, and any progress since your last save is lost."
-msgstr "{gameName} will close now, and any progress since your last save is lost."
+#: src/share/MethodPanes.tsx
+msgid "For {manager} and other {source} managers: a code anyone can enter, a .r2z file, or a modpack zip with your config folder."
+msgstr "For {manager} and other {source} managers: a code anyone can enter, a .r2z file, or a modpack zip with your config folder."
 
 #: src/install/OverlayPlaceDialog.tsx
 #: src/queue/Callout.tsx
 msgid "Into {profile}"
 msgstr "Into {profile}"
-
-#. placeholder {0}: batch.name
-#. placeholder {1}: importCountsLine(counts)
-#: src/share/importCompletion.ts
-msgid "Imported {0}: {1}"
-msgstr "Imported {0}: {1}"
 
 #: src/firstrun/FindStep.tsx
 msgid "Found in {path}"
@@ -1659,6 +1570,10 @@ msgstr "Found in {path}"
 #: src/firstrunTour/TourPopover.tsx
 msgid "Enable and disable mods, and update them for the open profile."
 msgstr "Enable and disable mods, and update them for the open profile."
+
+#: src/launch/SaveWarnDialog.tsx
+msgid "{farmer}'s farm ({path}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save."
+msgstr "{farmer}'s farm ({path}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save."
 
 #: src/game/detailStates.tsx
 #: src/games/ProfileCards.tsx
@@ -1671,6 +1586,10 @@ msgstr "Could not read your profiles"
 msgid "Add to profile"
 msgstr "Add to profile"
 
+#: src/saves/SaveGapLine.tsx
+msgid "older, profile has {have}"
+msgstr "older, profile has {have}"
+
 #: src/commandPalette/CommandPalette.tsx
 msgid "Recent"
 msgstr "Recent"
@@ -1679,10 +1598,6 @@ msgstr "Recent"
 #: src/shell/ErrorBoundary.tsx
 msgid "Report a bug"
 msgstr "Report a bug"
-
-#: src/share/DestinationGrid.tsx
-msgid "Text for Discord or a forum"
-msgstr "Text for Discord or a forum"
 
 #: src/share/IncludeOptions.tsx
 msgid "Include FOMOD choices"
@@ -1704,15 +1619,13 @@ msgstr "Console"
 msgid "Search did not work"
 msgstr "Search did not work"
 
-#. placeholder {0}: causeLabel(backup, profiles)
-#. placeholder {1}: formatBytes(backup.size)
-#: src/saves/BackupsDialog.tsx
-msgid "{0} · {1} · {farms}"
-msgstr "{0} · {1} · {farms}"
-
 #: src/share/Included.tsx
 msgid "FOMOD choices"
 msgstr "FOMOD choices"
+
+#: src/share/ListFormat.tsx
+msgid "Copy message {count}"
+msgstr "Copy message {count}"
 
 #: src/games/gameList.ts
 #: src/games/GameMenu.tsx
@@ -1730,6 +1643,10 @@ msgstr "The name may hold only letters, digits and underscores."
 #: src/launch/SweepDialog.tsx
 msgid "Update available"
 msgstr "Update available"
+
+#: src/queue/QueueBody.tsx
+msgid "{done} of {total} · {size}/s"
+msgstr "{done} of {total} · {size}/s"
 
 #: src/browse/BrowseShow.tsx
 msgid "Size"
@@ -1758,10 +1675,6 @@ msgstr "Default launch preset"
 msgid "Delete"
 msgstr "Delete"
 
-#: src/share/Included.tsx
-msgid "{local, plural, one {# mod you added from an archive cannot be linked} other {# mods you added from archives cannot be linked}}"
-msgstr "{local, plural, one {# mod you added from an archive cannot be linked} other {# mods you added from archives cannot be linked}}"
-
 #: src/updates/WhatsNewDialog.tsx
 msgid "Changed"
 msgstr "Changed"
@@ -1775,14 +1688,9 @@ msgstr "Added {mods} to {profile}"
 msgid "Timed out waiting for mod updates"
 msgstr "Timed out waiting for mod updates"
 
-#: src/share/ImportPreview.tsx
-msgid "Needs a file from its Patreon post"
-msgstr "Needs a file from its Patreon post"
-
-#. placeholder {0}: state.percent
-#: src/browse/CardProgress.tsx
-msgid "Downloading {0}%"
-msgstr "Downloading {0}%"
+#: src/firstrun/ProfileStep.tsx
+msgid "Got a Mortar link? You see what it holds first. {source} mods need your {source} sign-in; Mortar asks then."
+msgstr "Got a Mortar link? You see what it holds first. {source} mods need your {source} sign-in; Mortar asks then."
 
 #: src/commandPalette/CommandPalette.tsx
 #: src/game/LaunchMenu.tsx
@@ -1794,37 +1702,22 @@ msgstr "Shortcuts"
 msgid "{names} cannot be reached; showing what Mortar saved ({asOf})"
 msgstr "{names} cannot be reached; showing what Mortar saved ({asOf})"
 
-#: src/shell/SuggestDialog.tsx
-msgid "Post your idea where you prefer. Discord lets others vote on it; GitHub keeps it next to the code."
-msgstr "Post your idea where you prefer. Discord lets others vote on it; GitHub keeps it next to the code."
-
 #: src/games/useGameTiles.ts
 msgid "Coming in a later Mortar version"
 msgstr "Coming in a later Mortar version"
-
-#. placeholder {0}: preview.alreadyHave?.length ?? 0
-#: src/templates/ApplyTemplateDialog.tsx
-msgid "Already has {0}"
-msgstr "Already has {0}"
 
 #: src/browse/BrowseDetails.tsx
 #: src/share/ModpackDialog.tsx
 msgid "Changelog"
 msgstr "Changelog"
 
-#. placeholder {0}: listNames(dirs)
-#: src/install/DownloadsDialog.tsx
-msgid "Reading {0}"
-msgstr "Reading {0}"
+#: src/share/ShareDialog.tsx
+msgid "Try my Mortar profile \"{name}\" for {game} ({count, plural, one {# mod} other {# mods}}): {web}"
+msgstr "Try my Mortar profile \"{name}\" for {game} ({count, plural, one {# mod} other {# mods}}): {web}"
 
-#: src/launch/PlayControl.tsx
-msgid "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
-msgstr "{updating, plural, one {Updating # mod…} other {Updating # mods…}}"
-
-#. placeholder {0}: f.source
 #: src/share/ManagerPane.tsx
-msgid "{0} · Imported"
-msgstr "{0} · Imported"
+msgid "{source} · Imported"
+msgstr "{source} · Imported"
 
 #: src/install/DownloadsDialog.tsx
 msgid "Search archives"
@@ -1841,10 +1734,6 @@ msgstr "The game started without errors"
 #: src/nxm/store.ts
 msgid "Mortar · Install {name}?"
 msgstr "Mortar · Install {name}?"
-
-#: src/share/ImportFooter.tsx
-msgid "Replace {targetName}"
-msgstr "Replace {targetName}"
 
 #: src/firstrun/ProfileStep.tsx
 msgid "Main"
@@ -1869,6 +1758,10 @@ msgstr "Play the open profile"
 msgid "Apply"
 msgstr "Apply"
 
+#: src/share/CompareSummary.tsx
+msgid "Missing in {name}"
+msgstr "Missing in {name}"
+
 #: src/games/ListFooter.tsx
 msgid "Check launchers…"
 msgstr "Check launchers…"
@@ -1880,10 +1773,6 @@ msgstr "Set up"
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: name (A to Z)"
 msgstr "Sort: name (A to Z)"
-
-#: src/share/MethodPanes.tsx
-msgid "Share as r2modman code?"
-msgstr "Share as r2modman code?"
 
 #: src/commandPalette/crashBisect.ts
 msgid "Mortar already named the likely mod for the last crash."
@@ -1915,10 +1804,6 @@ msgstr "Mortar already named the likely mod for the last crash."
 msgid "Cancel"
 msgstr "Cancel"
 
-#: src/firstrun/ProfileStep.tsx
-msgid "A profile with only {loader}. Add mods from {site} or from archives."
-msgstr "A profile with only {loader}. Add mods from {site} or from archives."
-
 #: src/share/ImportPreview.tsx
 #: src/share/useImportFlow.ts
 msgid "Nothing to download"
@@ -1948,6 +1833,14 @@ msgstr "Added by you"
 msgid "Save slot"
 msgstr "Save slot"
 
+#: src/sync/SyncOffers.tsx
+msgid "{name} was changed on {machine} and on this machine"
+msgstr "{name} was changed on {machine} and on this machine"
+
+#: src/queue/store.ts
+msgid "{first} installed into {name}"
+msgstr "{first} installed into {name}"
+
 #: src/share/Included.tsx
 msgid "Mod notes"
 msgstr "Mod notes"
@@ -1961,6 +1854,14 @@ msgstr "Could not preview the template"
 #: src/queue/QueueHistory.tsx
 msgid "Done"
 msgstr "Done"
+
+#: src/saves/SaveRow.tsx
+msgid "{name} is no longer in the saves folder"
+msgstr "{name} is no longer in the saves folder"
+
+#: src/nxm/store.ts
+msgid "{name}'s author only allows downloads from its {source} page. Choose Download there instead of Install, then drop the file on Mortar."
+msgstr "{name}'s author only allows downloads from its {source} page. Choose Download there instead of Install, then drop the file on Mortar."
 
 #: src/game/FarmMenuItem.tsx
 msgid "Could not read that list"
@@ -1978,9 +1879,21 @@ msgstr "Downloads paused"
 msgid "Open the host's list"
 msgstr "Open the host's list"
 
+#: src/launch/store.ts
+msgid "{launcher} may not be running or signed in. Start {launcher}, sign in and try again."
+msgstr "{launcher} may not be running or signed in. Start {launcher}, sign in and try again."
+
 #: src/firstrun/GameSetup.tsx
 msgid "Back to {name}"
 msgstr "Back to {name}"
+
+#: src/share/importCompletion.ts
+msgid "Imported {name}: {counts}"
+msgstr "Imported {name}: {counts}"
+
+#: src/share/MethodPanes.tsx
+msgid "{source} expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
+msgstr "{source} expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
 
 #: src/lan/SendPanel.tsx
 msgid "Send to…"
@@ -1991,6 +1904,10 @@ msgstr "Send to…"
 msgid "Could not undo the install"
 msgstr "Could not undo the install"
 
+#: src/browse/stats.ts
+msgid "Updated {when}"
+msgstr "Updated {when}"
+
 #: src/share/useImportFlow.ts
 msgid "Importing into {name}"
 msgstr "Importing into {name}"
@@ -1999,18 +1916,17 @@ msgstr "Importing into {name}"
 msgid "Save to library"
 msgstr "Save to library"
 
-#. placeholder {0}: active.length
-#: src/queue/QueueBody.tsx
-msgid "In progress ({0})"
-msgstr "In progress ({0})"
+#: src/sync/SyncOffers.tsx
+msgid "Waiting for {machine}'s profile file to finish syncing. Changes made here are written out once it arrives."
+msgstr "Waiting for {machine}'s profile file to finish syncing. Changes made here are written out once it arrives."
 
 #: src/saves/SaveBackupsButton.tsx
 msgid " · {cause} · {size}"
 msgstr " · {cause} · {size}"
 
-#: src/i18n/list.ts
-msgid "{rest, plural, one {# more} other {# more}}"
-msgstr "{rest, plural, one {# more} other {# more}}"
+#: src/lan/IncomingPrompt.tsx
+msgid "Update {name} from {sender}"
+msgstr "Update {name} from {sender}"
 
 #: src/queue/QueueBody.tsx
 msgid "Very large download"
@@ -2032,10 +1948,6 @@ msgstr "Show in queue"
 msgid "{names} cannot be reached; showing what Mortar saved at {time}"
 msgstr "{names} cannot be reached; showing what Mortar saved at {time}"
 
-#: src/share/ImportPreview.tsx
-msgid "Needs a CurseForge key, or the file from its page"
-msgstr "Needs a CurseForge key, or the file from its page"
-
 #: src/saves/SaveGapLine.tsx
 #: src/share/ImportPreview.tsx
 #: src/share/ListFormat.tsx
@@ -2050,14 +1962,13 @@ msgstr "The author only allows this download on the source's own page. Download 
 msgid "Mortar installs this itself."
 msgstr "Mortar installs this itself."
 
-#. placeholder {0}: matching.length
-#: src/share/CompareSummary.tsx
-msgid "{0, plural, one {# mod already matches} other {# mods already match}} {targetName}."
-msgstr "{0, plural, one {# mod already matches} other {# mods already match}} {targetName}."
-
 #: src/queue/QueueBody.tsx
 msgid "Skip every waiting download"
 msgstr "Skip every waiting download"
+
+#: src/share/ModpackDialog.tsx
+msgid "Config files ({count} of {total})"
+msgstr "Config files ({count} of {total})"
 
 #: src/share/IncludeOptions.tsx
 #: src/share/ModpackDialog.tsx
@@ -2074,20 +1985,9 @@ msgstr "program files from this code"
 msgid "Mortar"
 msgstr "Mortar"
 
-#. placeholder {0}: item.repo
-#. placeholder {1}: item.tag
-#: src/queue/QueueBody.tsx
-msgid "{0} {1} has several archives. Which one should Mortar install?"
-msgstr "{0} {1} has several archives. Which one should Mortar install?"
-
 #: src/toasts/report.ts
 msgid "Open log"
 msgstr "Open log"
-
-#. placeholder {0}: skippedSettings.length
-#: src/share/ImportPreview.tsx
-msgid "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
-msgstr "{0, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 
 #: src/queue/QueueBody.tsx
 msgid "Needs your click"
@@ -2112,31 +2012,35 @@ msgstr "Link copied"
 msgid "Version"
 msgstr "Version"
 
-#: src/share/ListFormat.tsx
-msgid "Message {n} of {total} copied"
-msgstr "Message {n} of {total} copied"
-
 #: src/queue/QueueBody.tsx
 msgid "This download is {size}, which is unusually large for a mod."
 msgstr "This download is {size}, which is unusually large for a mod."
+
+#: src/browse/BrowseBody.tsx
+msgid "{hidden} hidden"
+msgstr "{hidden} hidden"
 
 #: src/saves/backups.ts
 #: src/saves/SaveListRow.tsx
 msgid "Unknown"
 msgstr "Unknown"
 
-#: src/firstrun/LoaderStep.tsx
-msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
-msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual."
-
 #: src/game/ProfileMenu.tsx
 #: src/game/ProfileMenuItems.tsx
 msgid "History…"
 msgstr "History…"
 
+#: src/launch/PrePlayDialog.tsx
+msgid "Switch to {name}"
+msgstr "Switch to {name}"
+
 #: src/game/TemplateMenuItems.tsx
 msgid "Apply a template…"
 msgstr "Apply a template…"
+
+#: src/queue/actions.ts
+msgid "Sign in to {source} to download"
+msgstr "Sign in to {source} to download"
 
 #: src/groups/applied.ts
 msgid "Added the group {group}"
@@ -2150,10 +2054,6 @@ msgstr "Folder chosen by you"
 msgid "Choose a profile…"
 msgstr "Choose a profile…"
 
-#: src/nxm/ArrivalDialog.tsx
-msgid "You started this download on {site}, but you have no {gameName} profile yet."
-msgstr "You started this download on {site}, but you have no {gameName} profile yet."
-
 #: src/commandPalette/CommandPalette.tsx
 msgid "Search actions and destinations"
 msgstr "Search actions and destinations"
@@ -2161,11 +2061,6 @@ msgstr "Search actions and destinations"
 #: src/share/ImportFooter.tsx
 msgid "Nothing will be removed."
 msgstr "Nothing will be removed."
-
-#. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx
-msgid "Missing required dependencies ({0})"
-msgstr "Missing required dependencies ({0})"
 
 #: src/game/FarmMenuItem.tsx
 #: src/loader/Banner.tsx
@@ -2180,21 +2075,6 @@ msgstr "Access granted"
 msgid "Back up to a file…"
 msgstr "Back up to a file…"
 
-#. placeholder {0}: row.host
-#: src/game/FarmMenuItem.tsx
-msgid "Host {0}"
-msgstr "Host {0}"
-
-#. placeholder {0}: overlay.baseLabel
-#: src/install/OverlayPlaceDialog.tsx
-msgid "This optional file has no manifest and replaces files of {0}. Mortar could not tell where they go: pick the folder to take from it and the main mod folder it goes into."
-msgstr "This optional file has no manifest and replaces files of {0}. Mortar could not tell where they go: pick the folder to take from it and the main mod folder it goes into."
-
-#. placeholder {0}: listNames(names, names.length)
-#: src/install/MissingDepsDialog.tsx
-msgid "No download source is known for {0}."
-msgstr "No download source is known for {0}."
-
 #: src/share/ImportSources.tsx
 msgid "Where the profile comes from"
 msgstr "Where the profile comes from"
@@ -2203,11 +2083,6 @@ msgstr "Where the profile comes from"
 #: src/install/RemapDialog.tsx
 msgid "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 msgstr "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
-
-#. placeholder {0}: fileName(item)
-#: src/install/store.ts
-msgid "Could not add {0}"
-msgstr "Could not add {0}"
 
 #: src/tools/ToolEditorDialog.tsx
 msgid "Working directory"
@@ -2244,13 +2119,13 @@ msgstr "File saved"
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
-#: src/game/ProfileMenuItems.tsx
-msgid "Added to Steam"
-msgstr "Added to Steam"
-
 #: src/toasts/report.ts
 msgid "That is for another game. Open that game and import it there."
 msgstr "That is for another game. Open that game and import it there."
+
+#: src/shell/checkForUpdates.ts
+msgid "{count, plural, one {# mod update} other {# mod updates}}"
+msgstr "{count, plural, one {# mod update} other {# mod updates}}"
 
 #: src/game/ProfileMenu.tsx
 #: src/game/ProfileMenuItems.tsx
@@ -2263,27 +2138,33 @@ msgstr "Duplicate"
 msgid "and {count} more"
 msgstr "and {count} more"
 
+#: src/browse/stats.ts
+msgid "{count, plural, one {# like} other {# likes}}"
+msgstr "{count, plural, one {# like} other {# likes}}"
+
+#: src/firstrun/ProfileStep.tsx
+msgid "A profile with only {loader}. Add mods from {source} or from archives."
+msgstr "A profile with only {loader}. Add mods from {source} or from archives."
+
 #: src/share/ModpackDialog.tsx
 msgid "Choose icon…"
 msgstr "Choose icon…"
 
-#. placeholder {0}: profile.name
-#: src/screenshots/ScreenshotsTab.tsx
-msgid "{0} has a new cover"
-msgstr "{0} has a new cover"
+#: src/launch/UpdateWarnDialog.tsx
+msgid "{game} is now {installed}. This profile last launched on {recorded}."
+msgstr "{game} is now {installed}. This profile last launched on {recorded}."
 
 #: src/install/OverlayPlaceDialog.tsx
 msgid "Main mod's folder"
 msgstr "Main mod's folder"
 
+#: src/nxm/store.ts
+msgid "The link was made for another {source} account than the one signed in."
+msgstr "The link was made for another {source} account than the one signed in."
+
 #: src/lan/PairedComputers.tsx
 msgid "Code"
 msgstr "Code"
-
-#. placeholder {0}: game.name
-#: src/firstrun/FindStep.tsx
-msgid "{0} folder"
-msgstr "{0} folder"
 
 #: src/saves/SaveRow.tsx
 msgid "Meadowlands farm"
@@ -2292,6 +2173,18 @@ msgstr "Meadowlands farm"
 #: src/game/Sidebar.tsx
 msgid "Library"
 msgstr "Library"
+
+#: src/firstrun/FindStep.tsx
+msgid "{loader} not installed yet"
+msgstr "{loader} not installed yet"
+
+#: src/groups/SavedGroupRow.tsx
+msgid "{name} (optional file)"
+msgstr "{name} (optional file)"
+
+#: src/queue/QueueBody.tsx
+msgid "Flagged by {scanner}: {name}{where}"
+msgstr "Flagged by {scanner}: {name}{where}"
 
 #: src/launch/UpdateWarnDialog.tsx
 msgid "None of this profile's mods are marked broken for the new version."
@@ -2326,6 +2219,23 @@ msgstr "Start from"
 msgid "Sort"
 msgstr "Sort"
 
+#: src/browse/BrowseMenu.tsx
+msgid "Hide everything by {author}"
+msgstr "Hide everything by {author}"
+
+#: src/games/GameMenu.tsx
+msgid "played {when}"
+msgstr "played {when}"
+
+#: src/i18n/list.ts
+msgid "{count, plural, one {# more} other {# more}}"
+msgstr "{count, plural, one {# more} other {# more}}"
+
+#: src/queue/QueueSheet.tsx
+#: src/share/importCompletion.ts
+msgid "{failed} failed"
+msgstr "{failed} failed"
+
 #: src/share/ListFormat.tsx
 msgid "Paste it into a chat or a forum post, or send the file."
 msgstr "Paste it into a chat or a forum post, or send the file."
@@ -2339,15 +2249,14 @@ msgstr "Play without mods"
 msgid "Homo Sapiens"
 msgstr "Homo Sapiens"
 
-#. placeholder {0}: counts.skipped
-#: src/share/importCompletion.ts
-msgid "{0} skipped"
-msgstr "{0} skipped"
+#: src/queue/QueueBody.tsx
+#: src/queue/QueueRows.tsx
+msgid "Skip {name}"
+msgstr "Skip {name}"
 
-#. placeholder {0}: skipped.length
-#: src/share/MethodPanes.tsx
-msgid "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
-msgstr "{0, plural, one {# settings file was left out (too large or an unusual name):} other {# settings files were left out (too large or an unusual name):}}"
+#: src/firstrun/LoaderStep.tsx
+msgid "Set it in {launcher} for me"
+msgstr "Set it in {launcher} for me"
 
 #: src/share/DestinationGrid.tsx
 msgid "Send over your network"
@@ -2356,18 +2265,6 @@ msgstr "Send over your network"
 #: src/game/FarmMenuItem.tsx
 msgid "This profile matches {host}."
 msgstr "This profile matches {host}."
-
-#: src/share/ListFormat.tsx
-msgid "Discord takes 2,000 characters a message: paste each one in turn."
-msgstr "Discord takes 2,000 characters a message: paste each one in turn."
-
-#: src/browse/browseConstants.ts
-msgid "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
-msgstr "Search Nexus Mods. Free accounts download from the mod's page with Mod Manager Download."
-
-#: src/share/ModpackDialog.tsx
-msgid "A plain icon (Thunderstore needs a 256x256 PNG)"
-msgstr "A plain icon (Thunderstore needs a 256x256 PNG)"
 
 #: src/games/GameMenu.tsx
 msgid "Choose a game"
@@ -2381,22 +2278,22 @@ msgstr "Character"
 msgid "Show hidden games"
 msgstr "Show hidden games"
 
-#: src/browse/BrowsePage.tsx
-msgid "Search {sourceName}"
-msgstr "Search {sourceName}"
+#: src/nxm/ArrivalDialog.tsx
+msgid "Install into {name}"
+msgstr "Install into {name}"
 
 #: src/queue/QueueHistory.tsx
 msgid "Filter by profile"
 msgstr "Filter by profile"
 
-#. placeholder {0}: line.revision
-#: src/game/Hero.tsx
-msgid "· revision {0}"
-msgstr "· revision {0}"
-
 #: src/toasts/report.ts
 msgid "That data could not be read."
 msgstr "That data could not be read."
+
+#: src/game/ProfileDialogHost.tsx
+#: src/groups/SavedGroupsSection.tsx
+msgid "Delete {name}?"
+msgstr "Delete {name}?"
 
 #: src/launch/UpdateWarnDialog.tsx
 msgid "Broken for this version"
@@ -2405,10 +2302,6 @@ msgstr "Broken for this version"
 #: src/share/ImportPreview.tsx
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr "{count, plural, one {# dependency} other {# dependencies}}"
-
-#: src/nxm/ArrivalDialog.tsx
-msgid "You started this download on {site}. Choose the profile it goes into."
-msgstr "You started this download on {site}. Choose the profile it goes into."
 
 #: src/share/ModpackDialog.tsx
 msgid "Could not export the modpack"
@@ -2434,6 +2327,14 @@ msgstr "Downloads"
 msgid "Could not unpair"
 msgstr "Could not unpair"
 
+#: src/share/CompareSummary.tsx
+msgid "{count, plural, one {# mod already matches} other {# mods already match}} {name}."
+msgstr "{count, plural, one {# mod already matches} other {# mods already match}} {name}."
+
+#: src/games/AddGameDialog.tsx
+msgid "{source} community"
+msgstr "{source} community"
+
 #: src/share/MethodPanes.tsx
 msgid "Save .r2z…"
 msgstr "Save .r2z…"
@@ -2454,10 +2355,6 @@ msgstr "Replace"
 msgid "Report a bug…"
 msgstr "Report a bug…"
 
-#: src/updates/WhatsNewDialog.tsx
-msgid "Read the release notes on GitHub"
-msgstr "Read the release notes on GitHub"
-
 #: src/game/ProfileMenu.tsx
 #: src/game/ProfileMenuItems.tsx
 msgid "Delete profile…"
@@ -2475,15 +2372,9 @@ msgstr "Switch to Home"
 msgid "Reading your screenshots…"
 msgstr "Reading your screenshots…"
 
-#. placeholder {0}: count('fixed')
-#: src/updates/WhatsNewDialog.tsx
-msgid "{0, plural, one {# fix} other {# fixes}}"
-msgstr "{0, plural, one {# fix} other {# fixes}}"
-
-#. placeholder {0}: formatBytes(copy.size)
-#: src/saves/SaveBackupsButton.tsx
-msgid " · Kept by the game · {0}"
-msgstr " · Kept by the game · {0}"
+#: src/browse/BrowsePage.tsx
+msgid "Search {source}"
+msgstr "Search {source}"
 
 #: src/queue/QueueHistory.tsx
 msgid "No downloads in history."
@@ -2497,9 +2388,17 @@ msgstr "{latest} (latest)"
 msgid "Clear finished"
 msgstr "Clear finished"
 
+#: src/queue/QueueRows.tsx
+msgid "Paused ({count})"
+msgstr "Paused ({count})"
+
 #: src/saves/SavesTab.tsx
 msgid "Save backups…"
 msgstr "Save backups…"
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Add this profile to {launcher}"
+msgstr "Add this profile to {launcher}"
 
 #: src/share/ListFormat.tsx
 msgid "{total} messages"
@@ -2513,18 +2412,17 @@ msgstr "Screenshots you take while playing show here, newest first."
 msgid "No Mortar users found nearby."
 msgstr "No Mortar users found nearby."
 
-#. placeholder {0}: profileName(rollback)
-#: src/launch/store.ts
-msgid "New errors after updating {0}"
-msgstr "New errors after updating {0}"
-
 #: src/games/AddGameDialog.tsx
 msgid "For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it."
 msgstr "For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it."
 
-#: src/saves/SaveGapLine.tsx
-msgid "Needs {need, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
-msgstr "Needs {need, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
+#: src/share/Included.tsx
+msgid "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot be linked"
+msgstr "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot be linked"
+
+#: src/share/ImportPreview.tsx
+msgid "{names} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it."
+msgstr "{names} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it."
 
 #: src/share/DestinationPanel.tsx
 msgid "A share link names this profile and where each mod comes from, not the files themselves."
@@ -2538,6 +2436,10 @@ msgstr "Template saved"
 msgid "Ignore"
 msgstr "Ignore"
 
+#: src/saves/SaveRow.tsx
+msgid "Back up {name} now"
+msgstr "Back up {name} now"
+
 #: src/install/MergeCallout.tsx
 msgid "Another file from a mod you have"
 msgstr "Another file from a mod you have"
@@ -2550,35 +2452,33 @@ msgstr "About Mortar"
 msgid "The files will download from each mod's source."
 msgstr "The files will download from each mod's source."
 
-#: src/saves/SaveRow.tsx
-msgid "Has used {missing, plural, one {# mod it lacks} other {# mods it lacks}}"
-msgstr "Has used {missing, plural, one {# mod it lacks} other {# mods it lacks}}"
-
 #: src/groups/SavedGroupRow.tsx
 msgid "Profiles: {holderNames}"
 msgstr "Profiles: {holderNames}"
 
-#. placeholder {0}: count('changed')
-#: src/updates/WhatsNewDialog.tsx
-msgid "{0, plural, one {# change} other {# changes}}"
-msgstr "{0, plural, one {# change} other {# changes}}"
-
-#: src/nxm/store.ts
-msgid "You started this download on Nexus. Show Mortar to choose the profile it goes into."
-msgstr "You started this download on Nexus. Show Mortar to choose the profile it goes into."
+#: src/launch/GraphicsDialog.tsx
+msgid "{name} (Recommended)"
+msgstr "{name} (Recommended)"
 
 #: src/launch/LaunchLayer.tsx
 msgid "Open console"
 msgstr "Open console"
 
-#. placeholder {0}: offer.machine
-#: src/sync/SyncOffers.tsx
-msgid "Updated from {0}"
-msgstr "Updated from {0}"
+#: src/firstrun/FindStep.tsx
+msgid "has {name}"
+msgstr "has {name}"
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Open mod"
 msgstr "Open mod"
+
+#: src/groups/SavedGroupRow.tsx
+msgid "Hide mods of {name}"
+msgstr "Hide mods of {name}"
+
+#: src/updates/WhatsNewDialog.tsx
+msgid "{count, plural, one {# fix} other {# fixes}}"
+msgstr "{count, plural, one {# fix} other {# fixes}}"
 
 #: src/game/Hero.tsx
 #: src/game/NewProfileDialog.tsx
@@ -2598,25 +2498,13 @@ msgstr "Could not add the archive"
 msgid "Sort: recently updated"
 msgstr "Sort: recently updated"
 
-#. placeholder {0}: mod.name
-#. placeholder {1}: group.name
-#: src/groups/SavedGroupRow.tsx
-msgid "Remove {0} from {1}"
-msgstr "Remove {0} from {1}"
-
-#. placeholder {0}: tool.name
-#: src/tools/ToolsManageDialog.tsx
-msgid "Could not remove {0}"
-msgstr "Could not remove {0}"
+#: src/launch/store.ts
+msgid "{launcher} must be installed and signed in for this game. Install {launcher}, sign in once and try again."
+msgstr "{launcher} must be installed and signed in for this game. Install {launcher}, sign in once and try again."
 
 #: src/groups/SaveGroupToLibrary.tsx
 msgid "Saved to the library"
 msgstr "Saved to the library"
-
-#. placeholder {0}: names(next)
-#: src/queue/QueueBody.tsx
-msgid "Up next: {0}"
-msgstr "Up next: {0}"
 
 #: src/browse/CardAction.tsx
 msgid "Get"
@@ -2626,18 +2514,19 @@ msgstr "Get"
 msgid "What is new in {version}"
 msgstr "What is new in {version}"
 
-#: src/launch/LaunchLayer.tsx
-msgid "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
-msgstr "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
+#: src/saves/SaveRow.tsx
+msgid "Open the folder of {name}"
+msgstr "Open the folder of {name}"
+
+#: src/nxm/store.ts
+#: src/queue/totals.ts
+#: src/share/arrivals.ts
+msgid "{source} mod {id}"
+msgstr "{source} mod {id}"
 
 #: src/share/DestinationGrid.tsx
 msgid "Where to share"
 msgstr "Where to share"
-
-#. placeholder {0}: item.name
-#: src/queue/QueueRows.tsx
-msgid "Move {0} up"
-msgstr "Move {0} up"
 
 #: src/share/ImportPreview.tsx
 msgid "Ready to import"
@@ -2655,6 +2544,14 @@ msgstr "How to send it"
 msgid "Could not start the download"
 msgstr "Could not start the download"
 
+#: src/share/ModpackDialog.tsx
+msgid "Depends on {dependencies} {source} packages. Left out: {names}."
+msgstr "Depends on {dependencies} {source} packages. Left out: {names}."
+
+#: src/launch/PlayControl.tsx
+msgid "{count, plural, one {Updating # mod…} other {Updating # mods…}}"
+msgstr "{count, plural, one {Updating # mod…} other {Updating # mods…}}"
+
 #: src/share/CollectionNotes.tsx
 msgid "Install yourself"
 msgstr "Install yourself"
@@ -2662,6 +2559,14 @@ msgstr "Install yourself"
 #: src/launchers/LauncherList.tsx
 msgid "Found"
 msgstr "Found"
+
+#: src/queue/QueueBody.tsx
+msgid "Download progress for {name}"
+msgstr "Download progress for {name}"
+
+#: src/install/DropOverlay.tsx
+msgid "Drop to install into {name}"
+msgstr "Drop to install into {name}"
 
 #: src/launch/PrePlayDialog.tsx
 msgid "Before you play"
@@ -2695,10 +2600,9 @@ msgstr "Starter templates"
 msgid "Allow it in your antivirus, then Retry."
 msgstr "Allow it in your antivirus, then Retry."
 
-#. placeholder {0}: profile.name
-#: src/queue/store.ts
-msgid "{first} installed into {0}"
-msgstr "{first} installed into {0}"
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "Settings changes {count}"
+msgstr "Settings changes {count}"
 
 #: src/game/Sidebar.tsx
 msgid "Collapse"
@@ -2712,28 +2616,48 @@ msgstr "No notifications yet"
 msgid "Choose the game's program"
 msgstr "Choose the game's program"
 
+#: src/queue/QueueSheet.tsx
+msgid "{paused} paused"
+msgstr "{paused} paused"
+
 #: src/firstrun/LoaderStep.tsx
 #: src/saves/lackChipActions.tsx
 #: src/shell/FlatpakGrant.tsx
 msgid "Copy"
 msgstr "Copy"
 
+#: src/share/Included.tsx
+msgid "{count, plural, one {# more mod is left out} other {# more mods are left out}}"
+msgstr "{count, plural, one {# more mod is left out} other {# more mods are left out}}"
+
+#: src/queue/store.ts
+msgid "{source} rejected your API key"
+msgstr "{source} rejected your API key"
+
 #: src/share/MethodPanes.tsx
 msgid "Other Mortar users on your local network will be able to find this computer and send you profiles. You can disable it again in Settings › General."
 msgstr "Other Mortar users on your local network will be able to find this computer and send you profiles. You can disable it again in Settings › General."
+
+#: src/game/FarmMenuItem.tsx
+msgid "Host {host}, yours {mine}"
+msgstr "Host {host}, yours {mine}"
 
 #: src/install/NeedsRootCallout.tsx
 msgid "Choose variant…"
 msgstr "Choose variant…"
 
-#: src/share/importError.ts
-msgid "Mortar does not recognise this. Paste a Mortar link, a Nexus collection, or an r2modman or Gale code."
-msgstr "Mortar does not recognise this. Paste a Mortar link, a Nexus collection, or an r2modman or Gale code."
+#: src/lan/SendPanel.tsx
+msgid "{name} is still taking your last share"
+msgstr "{name} is still taking your last share"
 
 #: src/launchers/LauncherList.tsx
 #: src/tools/ToolsManageDialog.tsx
 msgid "Remove {name}"
 msgstr "Remove {name}"
+
+#: src/install/batchSummary.ts
+msgid "{count, plural, one {Added # mod to {name}} other {Added # mods to {name}}}"
+msgstr "{count, plural, one {Added # mod to {name}} other {Added # mods to {name}}}"
 
 #: src/saves/BackupsDialog.tsx
 #: src/saves/SaveBackupsButton.tsx
@@ -2749,32 +2673,14 @@ msgstr "Skip for now"
 msgid "How it is modded"
 msgstr "How it is modded"
 
-#. placeholder {0}: fit.gameVersion
-#: src/saves/SaveDetails.tsx
-msgid "Saved on version {0}"
-msgstr "Saved on version {0}"
-
 #: src/share/ImportPreview.tsx
 #: src/share/Included.tsx
 msgid "Config files"
 msgstr "Config files"
 
-#: src/browse/stats.ts
-msgid "{endorsements, plural, one {# like} other {# likes}}"
-msgstr "{endorsements, plural, one {# like} other {# likes}}"
-
 #: src/browse/CardAction.tsx
 msgid "Added"
 msgstr "Added"
-
-#: src/launch/SmapiWarnDialog.tsx
-msgid "Steam will still start {loader}"
-msgstr "Steam will still start {loader}"
-
-#. placeholder {0}: item.name
-#: src/queue/QueueBody.tsx
-msgid "Download progress for {0}"
-msgstr "Download progress for {0}"
 
 #: src/shell/win.ts
 msgid "Could not close the window"
@@ -2796,6 +2702,10 @@ msgstr "Include {name}"
 msgid "Could not choose the icon"
 msgstr "Could not choose the icon"
 
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "{count, plural, one {Adds # mod} other {Adds # mods}}"
+msgstr "{count, plural, one {Adds # mod} other {Adds # mods}}"
+
 #: src/install/OverlayPlaceDialog.tsx
 msgid "Place {file}"
 msgstr "Place {file}"
@@ -2803,12 +2713,6 @@ msgstr "Place {file}"
 #: src/game/ProfileMenuItems.tsx
 msgid "Freeze this profile"
 msgstr "Freeze this profile"
-
-#: src/nxm/store.ts
-#: src/queue/totals.ts
-#: src/share/arrivals.ts
-msgid "{site} mod {id}"
-msgstr "{site} mod {id}"
 
 #: src/saves/SaveListRow.tsx
 msgid "This save has no SaveGameInfo date, so Mortar cannot tell when it is in the game."
@@ -2823,25 +2727,13 @@ msgstr "Edit profile…"
 msgid "{name} settings"
 msgstr "{name} settings"
 
-#: src/shell/checkForUpdates.ts
-msgid "{found, plural, one {# mod update} other {# mod updates}}"
-msgstr "{found, plural, one {# mod update} other {# mod updates}}"
-
 #: src/share/ManagerPane.tsx
 msgid "No profiles found."
 msgstr "No profiles found."
 
-#. placeholder {0}: game.name
-#: src/games/GameSelect.tsx
-msgid "Open {0}"
-msgstr "Open {0}"
-
-#. placeholder {0}: names.length
-#. placeholder {1}: profile.name
-#. placeholder {2}: profile.name
-#: src/install/batchSummary.ts
-msgid "{0, plural, one {Added # mod to {1}} other {Added # mods to {2}}}"
-msgstr "{0, plural, one {Added # mod to {1}} other {Added # mods to {2}}}"
+#: src/firstrun/FirstRun.tsx
+msgid "{found} of {count, plural, one {# launcher} other {# launchers}} found."
+msgstr "{found} of {count, plural, one {# launcher} other {# launchers}} found."
 
 #: src/firstrun/FirstRun.tsx
 msgid "Mortar finds games through their launchers. A game installed anywhere else works too: choose its folder when you set it up."
@@ -2860,6 +2752,10 @@ msgstr "Could not save the open profile"
 #: src/share/Included.tsx
 msgid "Problem choices"
 msgstr "Problem choices"
+
+#: src/share/ModpackDialog.tsx
+msgid "Depends on {dependencies} {source} packages."
+msgstr "Depends on {dependencies} {source} packages."
 
 #: src/firstrunTour/TourPopover.tsx
 #: src/fomod/Dialog.tsx
@@ -2882,33 +2778,13 @@ msgstr "Paste"
 msgid "Could not delete the saved group"
 msgstr "Could not delete the saved group"
 
-#. placeholder {0}: item.downloads
-#. placeholder {0}: page.downloads
-#: src/browse/stats.ts
-msgid "{0, plural, one {# download} other {# downloads}}"
-msgstr "{0, plural, one {# download} other {# downloads}}"
+#: src/downloads/newDownloads.ts
+msgid "{count, plural, one {# new archive} other {# new archives}} in your downloads folder"
+msgstr "{count, plural, one {# new archive} other {# new archives}} in your downloads folder"
 
 #: src/game/Sidebar.tsx
 msgid "Home"
 msgstr "Home"
-
-#. placeholder {0}: formatKb(sum.sizeKb)
-#: src/queue/QueueSheet.tsx
-msgid "{summary} · {0}"
-msgstr "{summary} · {0}"
-
-#. placeholder {0}: n.installing
-#: src/queue/QueueSheet.tsx
-msgid "{0} installing"
-msgstr "{0} installing"
-
-#: src/queue/QueueBody.tsx
-msgid "Windows removed the file as malware without saying which. If you trust it, restore it from Windows Security's protection history."
-msgstr "Windows removed the file as malware without saying which. If you trust it, restore it from Windows Security's protection history."
-
-#: src/share/MethodPanes.tsx
-msgid "Share as r2modman code…"
-msgstr "Share as r2modman code…"
 
 #: src/game/Sidebar.tsx
 msgid "Load order"
@@ -2917,6 +2793,10 @@ msgstr "Load order"
 #: src/browse/ResultCard.tsx
 msgid "Deprecated or obsolete"
 msgstr "Deprecated or obsolete"
+
+#: src/share/MethodPanes.tsx
+msgid "{length} of {limit} characters · close to the {app} message limit"
+msgstr "{length} of {limit} characters · close to the {app} message limit"
 
 #: src/share/ImportPreview.tsx
 msgid "copied from this computer"
@@ -2933,13 +2813,25 @@ msgstr "Open page"
 msgid "{count} to download"
 msgstr "{count} to download"
 
+#: src/firstrun/LoaderStep.tsx
+msgid "{loader} is the loader every {game} mod needs. It goes into the game folder."
+msgstr "{loader} is the loader every {game} mod needs. It goes into the game folder."
+
+#: src/queue/actions.ts
+msgid "{count, plural, one {# download added} other {# downloads added}}"
+msgstr "{count, plural, one {# download added} other {# downloads added}}"
+
+#: src/browse/stats.ts
+msgid "{count, plural, one {# download} other {# downloads}}"
+msgstr "{count, plural, one {# download} other {# downloads}}"
+
 #: src/install/DownloadsDialog.tsx
 msgid "Archives"
 msgstr "Archives"
 
-#: src/queue/RetryAllButton.tsx
-msgid "{queued, plural, one {# already queued} other {# already queued}}"
-msgstr "{queued, plural, one {# already queued} other {# already queued}}"
+#: src/nxm/ArrivalDialog.tsx
+msgid "{fileName} · {size}"
+msgstr "{fileName} · {size}"
 
 #: src/game/HomeNotes.tsx
 msgid "Saved"
@@ -2950,15 +2842,6 @@ msgstr "Saved"
 #: src/toasts/ToastHost.tsx
 msgid "Notifications"
 msgstr "Notifications"
-
-#: src/firstrun/FirstRun.tsx
-msgid "Want help, news or a say in what comes next? Mortar has a Discord server."
-msgstr "Want help, news or a say in what comes next? Mortar has a Discord server."
-
-#. placeholder {0}: item.repo
-#: src/queue/QueueBody.tsx
-msgid "This download's mod is not known to come from {0}."
-msgstr "This download's mod is not known to come from {0}."
 
 #: src/saves/SaveBackupsButton.tsx
 msgid "No backup contains this save yet."
@@ -2993,20 +2876,17 @@ msgstr "Selected mod"
 msgid "Profiles already made from it are not changed."
 msgstr "Profiles already made from it are not changed."
 
-#. placeholder {0}: chosen.description
-#. placeholder {1}: listNames((chosen.packages ?? []).map((p) => p.name))
-#: src/game/NewProfileDialog.tsx
-msgid "{0} Adds {1}."
-msgstr "{0} Adds {1}."
-
 #: src/queue/store.ts
 msgid "That download is no longer waiting to retry."
 msgstr "That download is no longer waiting to retry."
 
-#. placeholder {0}: ids.length
-#: src/launch/SweepDialog.tsx
-msgid "{0, plural, one {Update # mod} other {Update # mods}}"
-msgstr "{0, plural, one {Update # mod} other {Update # mods}}"
+#: src/queue/QueueBody.tsx
+msgid "This download's mod is not known to come from {repo}."
+msgstr "This download's mod is not known to come from {repo}."
+
+#: src/toasts/AvOverrideDialog.tsx
+msgid "Install {name} anyway?"
+msgstr "Install {name} anyway?"
 
 #: src/game/BackupMenuItems.tsx
 msgid "Could not back up the profile"
@@ -3016,17 +2896,29 @@ msgstr "Could not back up the profile"
 msgid "Change version…"
 msgstr "Change version…"
 
+#: src/queue/QueueBody.tsx
+msgid "Failed ({count})"
+msgstr "Failed ({count})"
+
 #: src/browse/CardAction.tsx
 msgid "In this profile"
 msgstr "In this profile"
 
-#: src/share/MethodPanes.tsx
-msgid "{length} of {limit} characters · too long for one Discord message"
-msgstr "{length} of {limit} characters · too long for one Discord message"
+#: src/share/ManagerPane.tsx
+msgid "{count, plural, one {Imported # profile} other {Imported # profiles}}"
+msgstr "{count, plural, one {Imported # profile} other {Imported # profiles}}"
+
+#: src/firstrun/LoaderStep.tsx
+msgid "Launch options set in {launcher}"
+msgstr "Launch options set in {launcher}"
 
 #: src/templates/TemplateDialogs.tsx
 msgid "Could not rename the template"
 msgstr "Could not rename the template"
+
+#: src/queue/QueueSheet.tsx
+msgid "{count} waiting"
+msgstr "{count} waiting"
 
 #: src/saves/backups.ts
 msgid "Before updating {name}"
@@ -3049,6 +2941,10 @@ msgstr "New"
 msgid "pins"
 msgstr "pins"
 
+#: src/game/NewProfileDialog.tsx
+msgid "{count, plural, one {Created {name}; downloading # mod} other {Created {name}; downloading # mods}}"
+msgstr "{count, plural, one {Created {name}; downloading # mod} other {Created {name}; downloading # mods}}"
+
 #: src/lan/IncomingPrompt.tsx
 msgid "Create a profile first."
 msgstr "Create a profile first."
@@ -3061,14 +2957,13 @@ msgstr "Which?"
 msgid "Open data folder"
 msgstr "Open data folder"
 
-#: src/queue/RetryAllButton.tsx
-msgid "{requeued, plural, one {Retried # download} other {Retried # downloads}}"
-msgstr "{requeued, plural, one {Retried # download} other {Retried # downloads}}"
+#: src/share/ImportInput.tsx
+msgid "Opened the {source} page. Save the file from it; Mortar offers it from your Downloads folder."
+msgstr "Opened the {source} page. Save the file from it; Mortar offers it from your Downloads folder."
 
-#. placeholder {0}: result.hidden
-#: src/browse/BrowseBody.tsx
-msgid "{0} hidden"
-msgstr "{0} hidden"
+#: src/firstrun/NexusStep.tsx
+msgid "Sign in to {source}"
+msgstr "Sign in to {source}"
 
 #: src/games/AddGameDialog.tsx
 msgid "Could not add the game"
@@ -3078,22 +2973,17 @@ msgstr "Could not add the game"
 msgid "{failed} could not be added"
 msgstr "{failed} could not be added"
 
+#: src/firstrun/ProfileStep.tsx
+msgid "{count, plural, one {Its mods download from their own sites.} other {Their mods download from their own sites.}}"
+msgstr "{count, plural, one {Its mods download from their own sites.} other {Their mods download from their own sites.}}"
+
 #: src/browse/BrowseDetails.tsx
 msgid "Versions"
 msgstr "Versions"
 
-#: src/toasts/EarlierChanges.tsx
-msgid "Undo this change: {label}"
-msgstr "Undo this change: {label}"
-
 #: src/firstrunTour/TourPopover.tsx
 msgid "Click the game's name in the title bar to open the game menu and jump to another game."
 msgstr "Click the game's name in the title bar to open the game menu and jump to another game."
-
-#. placeholder {0}: e.name
-#: src/queue/QueueHistory.tsx
-msgid "Show {0} in its profile"
-msgstr "Show {0} in its profile"
 
 #: src/share/ListFormat.tsx
 msgid "Mod list format"
@@ -3113,19 +3003,29 @@ msgstr "Could not check whether the game is running"
 msgid "File"
 msgstr "File"
 
-#. placeholder {0}: item.name || i18n._(msg`the mod`)
-#: src/launch/autoUpdate.ts
-msgid "The update for {0} did not finish"
-msgstr "The update for {0} did not finish"
+#: src/toasts/EarlierChanges.tsx
+msgid "Undo this change: {name}"
+msgstr "Undo this change: {name}"
+
+#: src/queue/store.ts
+msgid "Retrying in {count} s."
+msgstr "Retrying in {count} s."
 
 #: src/launch/PlayInstances.tsx
 msgid "This game starts through its store, which runs one copy. A Direct launch can start several."
 msgstr "This game starts through its store, which runs one copy. A Direct launch can start several."
 
-#. placeholder {0}: items.length
-#: src/queue/QueueRows.tsx
-msgid "Paused ({0})"
-msgstr "Paused ({0})"
+#: src/share/MethodPanes.tsx
+msgid "{length} of {limit} characters · too long for one {app} message"
+msgstr "{length} of {limit} characters · too long for one {app} message"
+
+#: src/tools/ToolsManageDialog.tsx
+msgid "Edit {name}"
+msgstr "Edit {name}"
+
+#: src/shell/AppMenu.tsx
+msgid "Sign out of {source}"
+msgstr "Sign out of {source}"
 
 #: src/lan/IncomingPrompt.tsx
 msgid "Decline"
@@ -3143,10 +3043,13 @@ msgstr "Choose icon"
 msgid "Mortar records the file against that page, so the mod's page link and shares point there. Choose No to add it as a plain local file."
 msgstr "Mortar records the file against that page, so the mod's page link and shares point there. Choose No to add it as a plain local file."
 
-#. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx
-msgid "Paths too long for Windows ({0})"
-msgstr "Paths too long for Windows ({0})"
+#: src/share/DestinationGrid.tsx
+msgid "Text for {app} or a forum"
+msgstr "Text for {app} or a forum"
+
+#: src/nxm/ArrivalDialog.tsx
+msgid "{count} more waiting"
+msgstr "{count} more waiting"
 
 #: src/share/TileGrid.tsx
 msgid "Last used"
@@ -3163,11 +3066,6 @@ msgstr "Multiplayer mod list…"
 #: src/share/ModpackDialog.tsx
 msgid "Could not write the changelog"
 msgstr "Could not write the changelog"
-
-#. placeholder {0}: profile.name
-#: src/game/HomeNotes.tsx
-msgid "Notes for {0}"
-msgstr "Notes for {0}"
 
 #: src/toasts/report.ts
 msgid "The disk is full."
@@ -3195,6 +3093,10 @@ msgstr "Games starting with {letter}"
 msgid "{sites} is not moderated"
 msgstr "{sites} is not moderated"
 
+#: src/saves/SaveRow.tsx
+msgid "Has used {count, plural, one {# mod it lacks} other {# mods it lacks}}"
+msgstr "Has used {count, plural, one {# mod it lacks} other {# mods it lacks}}"
+
 #: src/shell/AppMenu.tsx
 msgid "Source code"
 msgstr "Source code"
@@ -3212,14 +3114,13 @@ msgstr "The service may be busy. Try again in a minute."
 msgid "Mortar cannot read this. Check that the whole link, code or file came through."
 msgstr "Mortar cannot read this. Check that the whole link, code or file came through."
 
+#: src/updates/WhatsNewDialog.tsx
+msgid "What is new in Mortar {version}"
+msgstr "What is new in Mortar {version}"
+
 #: src/share/ImportPreview.tsx
 msgid "Unavailable"
 msgstr "Unavailable"
-
-#. placeholder {0}: form.dependencies
-#: src/share/ModpackDialog.tsx
-msgid "Depends on {0} Thunderstore packages."
-msgstr "Depends on {0} Thunderstore packages."
 
 #: src/browse/BrowseBody.tsx
 msgid "No mods match \"{text}\""
@@ -3245,9 +3146,9 @@ msgstr "Run with this profile"
 msgid "No game program chosen"
 msgstr "No game program chosen"
 
-#: src/queue/store.ts
-msgid "Could not reach Nexus"
-msgstr "Could not reach Nexus"
+#: src/updates/WhatsNewDialog.tsx
+msgid "Also in Mortar {version}"
+msgstr "Also in Mortar {version}"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Could not remove the shortcut"
@@ -3270,6 +3171,10 @@ msgstr "Mods already in the game's folder"
 msgid "Stop game"
 msgstr "Stop game"
 
+#: src/queue/QueueBody.tsx
+msgid "{os} removed the file as malware without saying which. If you trust it, restore it from {os} Security's protection history."
+msgstr "{os} removed the file as malware without saying which. If you trust it, restore it from {os} Security's protection history."
+
 #: src/game/HomeNotes.tsx
 msgid "Saving…"
 msgstr "Saving…"
@@ -3281,11 +3186,6 @@ msgstr "The profile stays restorable for 30 days from Recently deleted."
 #: src/browse/CardProgress.tsx
 msgid "Needs input"
 msgstr "Needs input"
-
-#. placeholder {0}: source.name
-#: src/saves/lackChipActions.tsx
-msgid "Copy {0}"
-msgstr "Copy {0}"
 
 #: src/groups/applied.ts
 msgid "Download them"
@@ -3299,14 +3199,17 @@ msgstr "New profile from file"
 msgid "Shortcut added"
 msgstr "Shortcut added"
 
-#. placeholder {0}: group.name
-#: src/groups/SavedGroupRow.tsx
-msgid "Hide mods of {0}"
-msgstr "Hide mods of {0}"
+#: src/tools/ToolsManageDialog.tsx
+msgid "Could not remove {name}"
+msgstr "Could not remove {name}"
 
 #: src/saves/saveName.ts
 msgid "Weekly challenge"
 msgstr "Weekly challenge"
+
+#: src/saves/BackupsDialog.tsx
+msgid "{names} will be overwritten. A backup of the current Saves folder is made first."
+msgstr "{names} will be overwritten. A backup of the current Saves folder is made first."
 
 #: src/lan/PairedComputers.tsx
 msgid "Profiles you send between paired computers carry their mod files, whatever the source."
@@ -3336,10 +3239,6 @@ msgstr "Could not list backups: {error}"
 msgid "Something went wrong."
 msgstr "Something went wrong."
 
-#: src/queue/store.ts
-msgid "{site} rejected your API key"
-msgstr "{site} rejected your API key"
-
 #: src/queue/LargeDownloadDialog.tsx
 msgid "{name} is a very large download"
 msgstr "{name} is a very large download"
@@ -3352,16 +3251,6 @@ msgstr "Add a game"
 msgid "Looking in the downloads folder…"
 msgstr "Looking in the downloads folder…"
 
-#: src/launch/VanillaPlay.tsx
-msgid "Play without Steam overlay"
-msgstr "Play without Steam overlay"
-
-#. placeholder {0}: files.size
-#. placeholder {1}: all.length
-#: src/share/ModpackDialog.tsx
-msgid "Config files ({0} of {1})"
-msgstr "Config files ({0} of {1})"
-
 #: src/commandPalette/paletteLabels.ts
 msgid "Find the mod that crashes the game…"
 msgstr "Find the mod that crashes the game…"
@@ -3369,11 +3258,6 @@ msgstr "Find the mod that crashes the game…"
 #: src/install/NeedsRootCallout.tsx
 msgid "Place…"
 msgstr "Place…"
-
-#. placeholder {0}: profile.name
-#: src/game/BackupMenuItems.tsx
-msgid "Back up {0}?"
-msgstr "Back up {0}?"
 
 #: src/games/GameMenu.tsx
 msgid "All games…"
@@ -3404,12 +3288,6 @@ msgstr "Sign in to import"
 msgid "Folder"
 msgstr "Folder"
 
-#. placeholder {0}: mod.name
-#. placeholder {1}: fixLabel(i18n, mod.fix)
-#: src/launch/SweepDialog.tsx
-msgid "{0}: {1}"
-msgstr "{0}: {1}"
-
 #: src/firstrun/FindStep.tsx
 #: src/launchers/LauncherList.tsx
 msgid "Not found"
@@ -3437,9 +3315,17 @@ msgstr "No templates"
 msgid "Open problems"
 msgstr "Open problems"
 
-#: src/share/useImportFlow.ts
-msgid "{queued, plural, one {# download queued} other {# downloads queued}}"
-msgstr "{queued, plural, one {# download queued} other {# downloads queued}}"
+#: src/firstrun/NexusStep.tsx
+msgid "Mod Manager Download on {source} only works in Mortar when you are signed in."
+msgstr "Mod Manager Download on {source} only works in Mortar when you are signed in."
+
+#: src/firstrun/LoaderStep.tsx
+msgid "Could not set it in {launcher}"
+msgstr "Could not set it in {launcher}"
+
+#: src/firstrun/LoaderStep.tsx
+msgid "Mortar found it in {launcher}'s settings."
+msgstr "Mortar found it in {launcher}'s settings."
 
 #: src/commandPalette/CommandPalette.tsx
 msgid "Results"
@@ -3474,6 +3360,10 @@ msgstr "Hide archive contents"
 msgid "Four Corners farm"
 msgstr "Four Corners farm"
 
+#: src/firstrun/ProfileStep.tsx
+msgid "An empty profile. Add mods from {source} or from archives."
+msgstr "An empty profile. Add mods from {source} or from archives."
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Import"
 msgstr "Import"
@@ -3490,12 +3380,6 @@ msgstr "Completed downloads will appear here."
 msgid "Yes"
 msgstr "Yes"
 
-#. placeholder {0}: asking?.file ?? ''
-#. placeholder {1}: asking?.page ?? ''
-#: src/install/HandoffDialog.tsx
-msgid "Install {0} as from {1}?"
-msgstr "Install {0} as from {1}?"
-
 #: src/tools/ToolEditorDialog.tsx
 msgid "Edit tool"
 msgstr "Edit tool"
@@ -3508,6 +3392,10 @@ msgstr "Found a copy outside your launchers:"
 msgid "All sources"
 msgstr "All sources"
 
+#: src/sync/SyncOffers.tsx
+msgid "Updated from {machine}"
+msgstr "Updated from {machine}"
+
 #: src/toasts/HistoryButton.tsx
 msgid "Notification history"
 msgstr "Notification history"
@@ -3516,14 +3404,13 @@ msgstr "Notification history"
 msgid "Change folder"
 msgstr "Change folder"
 
-#. placeholder {0}: m.have
-#: src/saves/SaveGapLine.tsx
-msgid "older, profile has {0}"
-msgstr "older, profile has {0}"
-
 #: src/lan/SendPanel.tsx
 msgid "Refresh"
 msgstr "Refresh"
+
+#: src/browse/stats.ts
+msgid "Version {version}"
+msgstr "Version {version}"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Choose cover image"
@@ -3533,11 +3420,6 @@ msgstr "Choose cover image"
 msgid "Install separately"
 msgstr "Install separately"
 
-#. placeholder {0}: item.author
-#: src/browse/BrowseMenu.tsx
-msgid "Hide everything by {0}"
-msgstr "Hide everything by {0}"
-
 #: src/firstrun/LoaderStep.tsx
 msgid "Installing {loader}"
 msgstr "Installing {loader}"
@@ -3546,30 +3428,29 @@ msgstr "Installing {loader}"
 msgid "{count} {source}"
 msgstr "{count} {source}"
 
+#: src/launch/PrePlayDialog.tsx
+msgid "Broken or obsolete ({count})"
+msgstr "Broken or obsolete ({count})"
+
 #: src/game/Home.tsx
 msgid "Share…"
 msgstr "Share…"
 
-#. placeholder {0}: (preview.replace?.remove ?? []).length
-#: src/share/ImportFooter.tsx
-msgid "These will be removed ({0})"
-msgstr "These will be removed ({0})"
+#: src/browse/CardProgress.tsx
+msgid "Paused at {percent}%"
+msgstr "Paused at {percent}%"
+
+#: src/share/ImportPreview.tsx
+msgid "Needs a file from its {source} page"
+msgstr "Needs a file from its {source} page"
 
 #: src/game/FarmMenuItem.tsx
 msgid "Send it to the people joining you."
 msgstr "Send it to the people joining you."
 
-#: src/nxm/store.ts
-msgid "The link has expired. Click Mod Manager Download on Nexus again."
-msgstr "The link has expired. Click Mod Manager Download on Nexus again."
-
 #: src/launch/KnownGoodOffer.tsx
 msgid "Marked known good"
 msgstr "Marked known good"
-
-#: src/launch/SmapiWarnDialog.tsx
-msgid "{gameName}'s Steam launch options run {loader} in place of the game. Steam will still start {loader} unless that launch option is removed. Mortar will not change it."
-msgstr "{gameName}'s Steam launch options run {loader} in place of the game. Steam will still start {loader} unless that launch option is removed. Mortar will not change it."
 
 #: src/game/Home.tsx
 #: src/saves/SaveDetails.tsx
@@ -3593,9 +3474,9 @@ msgstr "Could not check the game version"
 msgid "Choose an option in {invalidGroup}."
 msgstr "Choose an option in {invalidGroup}."
 
-#: src/launch/VanillaPlay.tsx
-msgid "Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running."
-msgstr "Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running."
+#: src/launch/LaunchLayer.tsx
+msgid "Mortar can start {name} directly instead, without the {launcher} overlay or {launcher}'s playtime tracking."
+msgstr "Mortar can start {name} directly instead, without the {launcher} overlay or {launcher}'s playtime tracking."
 
 #: src/share/CollectionNotes.tsx
 msgid "Your Premium account also applies the curator's installer choices and config files."
@@ -3610,9 +3491,13 @@ msgstr "This pack has files that always install."
 msgid "Mod list"
 msgstr "Mod list"
 
-#: src/share/ManagerPane.tsx
-msgid "{done, plural, one {Imported # profile} other {Imported # profiles}}"
-msgstr "{done, plural, one {Imported # profile} other {Imported # profiles}}"
+#: src/lan/incoming.ts
+msgid "A share from {sender} expired. Ask them to send it again."
+msgstr "A share from {sender} expired. Ask them to send it again."
+
+#: src/browse/BrowseBody.tsx
+msgid "{count, plural, one {# result} other {# results}}"
+msgstr "{count, plural, one {# result} other {# results}}"
 
 #: src/commandPalette/CommandPalette.tsx
 msgid "Go to"
@@ -3634,6 +3519,14 @@ msgstr "Open in Mortar"
 msgid "Enter code"
 msgstr "Enter code"
 
+#: src/share/ListFormat.tsx
+msgid "{count} characters"
+msgstr "{count} characters"
+
+#: src/share/ImportInput.tsx
+msgid "Paste a Mortar link, a {source} collection, an {manager} or {otherManager} code, a {otherSource} post, an {thirdSource} page or (Premium) a {source} mod link."
+msgstr "Paste a Mortar link, a {source} collection, an {manager} or {otherManager} code, a {otherSource} post, an {thirdSource} page or (Premium) a {source} mod link."
+
 #: src/game/Sidebar.tsx
 msgid "Screenshots"
 msgstr "Screenshots"
@@ -3646,11 +3539,6 @@ msgstr "Something went wrong in this view"
 msgid "Could not import"
 msgstr "Could not import"
 
-#. placeholder {0}: result.added
-#: src/templates/ApplyTemplateDialog.tsx
-msgid "{0, plural, one {Added # mod from {name}; {left, plural, one {# mod} other {# mods}} still to download} other {Added # mods from {name}; {left, plural, one {# mod} other {# mods}} still to download}}"
-msgstr "{0, plural, one {Added # mod from {name}; {left, plural, one {# mod} other {# mods}} still to download} other {Added # mods from {name}; {left, plural, one {# mod} other {# mods}} still to download}}"
-
 #: src/games/gameList.ts
 #: src/games/GameMenu.tsx
 msgid "Recently played"
@@ -3660,18 +3548,18 @@ msgstr "Recently played"
 msgid "Created {name}"
 msgstr "Created {name}"
 
-#: src/install/store.ts
-msgid "Updated {mods} in {profileName}"
-msgstr "Updated {mods} in {profileName}"
-
-#: src/share/ImportPreview.tsx
-msgid "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
-msgstr "{total, plural, one {# mod · about {size} to download} other {# mods · about {size} to download}}"
-
 #: src/i18n/counts.ts
 #: src/share/ListFormat.tsx
 msgid "{count, plural, one {# mod} other {# mods}}"
 msgstr "{count, plural, one {# mod} other {# mods}}"
+
+#: src/launch/SweepDialog.tsx
+msgid "{count, plural, one {# missing dependency} other {# missing dependencies}}"
+msgstr "{count, plural, one {# missing dependency} other {# missing dependencies}}"
+
+#: src/browse/BrowsePage.tsx
+msgid "Search {source} releases"
+msgstr "Search {source} releases"
 
 #: src/queue/store.ts
 msgid "{cause}. Retry or skip it from the queue."
@@ -3680,6 +3568,10 @@ msgstr "{cause}. Retry or skip it from the queue."
 #: src/saves/SaveRow.tsx
 msgid "Wilderness farm"
 msgstr "Wilderness farm"
+
+#: src/game/TabHeader.tsx
+msgid "{fitting} of {recorded} saves fit"
+msgstr "{fitting} of {recorded} saves fit"
 
 #: src/games/GameMenu.tsx
 #: src/games/GameSelect.tsx
@@ -3702,17 +3594,6 @@ msgstr "Saved .r2z"
 msgid "Add"
 msgstr "Add"
 
-#. placeholder {0}: fits.length
-#: src/saves/SavesTab.tsx
-msgid "{0, plural, one {Filter # save} other {Filter # saves}}"
-msgstr "{0, plural, one {Filter # save} other {Filter # saves}}"
-
-#. placeholder {0}: warn?.installed ?? ''
-#. placeholder {1}: warn?.recorded ?? ''
-#: src/launch/UpdateWarnDialog.tsx
-msgid "{gameName} is now {0}. This profile last launched on {1}."
-msgstr "{gameName} is now {0}. This profile last launched on {1}."
-
 #: src/browse/BrowseMenu.tsx
 msgid "Could not hide that author"
 msgstr "Could not hide that author"
@@ -3729,6 +3610,10 @@ msgstr "Save mod list"
 msgid "Choose cover image…"
 msgstr "Choose cover image…"
 
+#: src/lan/SendPanel.tsx
+msgid "{name} is not paired with this computer, so Mortar sends the list of mods, not their files. {name} will download each mod from its site, one click per mod on a free {source} account."
+msgstr "{name} is not paired with this computer, so Mortar sends the list of mods, not their files. {name} will download each mod from its site, one click per mod on a free {source} account."
+
 #: src/toasts/HistoryButton.tsx
 msgid "Results of installs, updates and launches appear here."
 msgstr "Results of installs, updates and launches appear here."
@@ -3737,33 +3622,30 @@ msgstr "Results of installs, updates and launches appear here."
 msgid "You can change this later in {name}'s settings, under Play."
 msgstr "You can change this later in {name}'s settings, under Play."
 
-#: src/share/MethodPanes.tsx
-msgid "{length} of {limit} characters · close to the Discord message limit"
-msgstr "{length} of {limit} characters · close to the Discord message limit"
+#: src/queue/QueueSheet.tsx
+msgid "{downloading} downloading"
+msgstr "{downloading} downloading"
 
 #: src/tools/ToolsManageDialog.tsx
 msgid "Add a program to run alongside the game, such as a save editor or map viewer."
 msgstr "Add a program to run alongside the game, such as a save editor or map viewer."
 
-#: src/queue/store.ts
-msgid "Retrying in {n} s."
-msgstr "Retrying in {n} s."
+#: src/firstrun/LoaderStep.tsx
+msgid "Mortar checks {launcher}'s settings for it: not found yet."
+msgstr "Mortar checks {launcher}'s settings for it: not found yet."
 
 #: src/firstrunTour/TourPopover.tsx
 msgid "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
 msgstr "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
 
-#. placeholder {0}: overlay.baseLabel
-#: src/install/NeedsRootCallout.tsx
-msgid "This optional file replaces files of {0}. Pick where its files go."
-msgstr "This optional file replaces files of {0}. Pick where its files go."
+#: src/sync/store.ts
+#: src/sync/SyncOffers.tsx
+msgid "{name} is not syncing yet"
+msgstr "{name} is not syncing yet"
 
-#. placeholder {0}: group.name
-#. placeholder {0}: group?.name ?? ''
-#: src/groups/ApplySavedGroupToProfile.tsx
-#: src/groups/SavedGroupRow.tsx
-msgid "Add {0} to a profile"
-msgstr "Add {0} to a profile"
+#: src/share/Included.tsx
+msgid "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot go in the file"
+msgstr "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot go in the file"
 
 #: src/shell/ErrorBoundary.tsx
 msgid "The rest of Mortar still works. Try again, or copy the details for a bug report."
@@ -3773,10 +3655,6 @@ msgstr "The rest of Mortar still works. Try again, or copy the details for a bug
 msgid "Title"
 msgstr "Title"
 
-#: src/shell/AppMenu.tsx
-msgid "Ask on Discord"
-msgstr "Ask on Discord"
-
 #: src/commandPalette/CommandPalette.tsx
 msgid "Source health"
 msgstr "Source health"
@@ -3785,18 +3663,13 @@ msgstr "Source health"
 msgid "All saves"
 msgstr "All saves"
 
-#. placeholder {0}: later.length
-#: src/toasts/EarlierChanges.tsx
-msgid "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
-msgstr "{0, plural, one {Undo this and # later change?} other {Undo this and # later changes?}}"
-
 #: src/game/Sidebar.tsx
 msgid "Collapse sidebar"
 msgstr "Collapse sidebar"
 
-#: src/nxm/store.ts
-msgid "Downloading {name} into {profileName}"
-msgstr "Downloading {name} into {profileName}"
+#: src/loader/Banner.tsx
+msgid "{name} here is another mod manager's copy, linked from {linkedFrom}. Removing that manager removes {name}."
+msgstr "{name} here is another mod manager's copy, linked from {linkedFrom}. Removing that manager removes {name}."
 
 #: src/launch/SweepDialog.tsx
 msgid "Disable suggested"
@@ -3806,23 +3679,13 @@ msgstr "Disable suggested"
 msgid "Command copied"
 msgstr "Command copied"
 
-#. placeholder {0}: loader.name
-#: src/loader/Banner.tsx
-msgid "A game update replaced {0}'s launcher"
-msgstr "A game update replaced {0}'s launcher"
-
-#: src/shell/AppMenu.tsx
-msgid "Nexus Mods · Not signed in"
-msgstr "Nexus Mods · Not signed in"
-
 #: src/firstrun/FirstRun.tsx
 msgid "No launchers found. Continue and choose each game's folder when you open it."
 msgstr "No launchers found. Continue and choose each game's folder when you open it."
 
-#. placeholder {0}: status.error
-#: src/launch/store.ts
-msgid "Wine stopped on an error before {name} started: {0}"
-msgstr "Wine stopped on an error before {name} started: {0}"
+#: src/saves/lackChipActions.tsx
+msgid "Copy {name}"
+msgstr "Copy {name}"
 
 #: src/browse/BrowseDetails.tsx
 msgid "Reading the mod's page…"
@@ -3840,6 +3703,14 @@ msgstr "Update check failed"
 msgid "Manage templates"
 msgstr "Manage templates"
 
+#: src/queue/QueueBody.tsx
+msgid "Done ({count}): {names}"
+msgstr "Done ({count}): {names}"
+
+#: src/loader/Banner.tsx
+msgid "{name} is not installed"
+msgstr "{name} is not installed"
+
 #: src/share/PreviewDialog.tsx
 msgid "The page reads the profile from the link itself. Nothing is uploaded or stored on a server."
 msgstr "The page reads the profile from the link itself. Nothing is uploaded or stored on a server."
@@ -3847,10 +3718,6 @@ msgstr "The page reads the profile from the link itself. Nothing is uploaded or 
 #: src/updates/UpdateReadyBanner.tsx
 msgid "Restart now"
 msgstr "Restart now"
-
-#: src/saves/SaveRow.tsx
-msgid "Backed up {label}"
-msgstr "Backed up {label}"
 
 #: src/share/MethodPanes.tsx
 msgid "Enable sharing nearby?"
@@ -3872,10 +3739,9 @@ msgstr "Show archive contents"
 msgid "Undo all"
 msgstr "Undo all"
 
-#. placeholder {0}: preview.versionDiffers?.length ?? 0
-#: src/templates/ApplyTemplateDialog.tsx
-msgid "Different version {0} (kept as is)"
-msgstr "Different version {0} (kept as is)"
+#: src/game/HomeNotes.tsx
+msgid "Notes for {name}"
+msgstr "Notes for {name}"
 
 #: src/browse/CardAction.tsx
 #: src/queue/UnmoderatedDialog.tsx
@@ -3883,9 +3749,13 @@ msgstr "Different version {0} (kept as is)"
 msgid "Download"
 msgstr "Download"
 
-#: src/share/CollectionNotes.tsx
-msgid "These come from outside Nexus, so Mortar does not download them."
-msgstr "These come from outside Nexus, so Mortar does not download them."
+#: src/browse/ResultCard.tsx
+msgid "Details of {name}"
+msgstr "Details of {name}"
+
+#: src/shell/offlineText.ts
+msgid "{sources} cannot be reached"
+msgstr "{sources} cannot be reached"
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Switch to Load order"
@@ -3904,14 +3774,13 @@ msgstr "Delay between"
 msgid "{name} installed"
 msgstr "{name} installed"
 
-#. placeholder {0}: tool.name
-#: src/tools/ToolsManageDialog.tsx
-msgid "Edit {0}"
-msgstr "Edit {0}"
-
 #: src/games/ListFooter.tsx
 msgid "Hide hidden games"
 msgstr "Hide hidden games"
+
+#: src/launch/LaunchLayer.tsx
+msgid "Launch without {launcher}"
+msgstr "Launch without {launcher}"
 
 #: src/install/noModText.ts
 msgid "This archive has no {loader} mod where Mortar expects one. Pick the folder that holds the mod."
@@ -3925,15 +3794,6 @@ msgstr "Follow the sync again"
 msgid "All changes…"
 msgstr "All changes…"
 
-#. placeholder {0}: page.id
-#: src/install/handoff.ts
-msgid "Patreon post {0}"
-msgstr "Patreon post {0}"
-
-#: src/share/ImportInput.tsx
-msgid "Open a .mortar file, an r2modman or Gale .r2z, or a Thunderstore modpack. You see what it holds before anything downloads."
-msgstr "Open a .mortar file, an r2modman or Gale .r2z, or a Thunderstore modpack. You see what it holds before anything downloads."
-
 #: src/nxm/ArrivalDialog.tsx
 msgid "Other profile…"
 msgstr "Other profile…"
@@ -3942,11 +3802,27 @@ msgstr "Other profile…"
 msgid "Could not make the list"
 msgstr "Could not make the list"
 
+#: src/saves/BackupsDialog.tsx
+msgid "None of {names} are in Saves yet; they will be added. The current Saves folder is backed up first."
+msgstr "None of {names} are in Saves yet; they will be added. The current Saves folder is backed up first."
+
+#: src/queue/actions.ts
+msgid "Downloads come from {source} with your account, so Mortar needs your API key first."
+msgstr "Downloads come from {source} with your account, so Mortar needs your API key first."
+
+#: src/share/ListFormat.tsx
+msgid "{app} takes 2,000 characters a message: paste each one in turn."
+msgstr "{app} takes 2,000 characters a message: paste each one in turn."
+
 #: src/share/ImportDialog.tsx
 #: src/share/ImportInput.tsx
 #: src/share/ImportSources.tsx
 msgid "Link or code"
 msgstr "Link or code"
+
+#: src/launch/PrePlayDialog.tsx
+msgid "{count, plural, one {Enabled # mod} other {Enabled # mods}}"
+msgstr "{count, plural, one {Enabled # mod} other {Enabled # mods}}"
 
 #: src/commandPalette/CommandPalette.tsx
 msgid "Launchers"
@@ -3955,11 +3831,6 @@ msgstr "Launchers"
 #: src/templates/TemplateDialogs.tsx
 msgid "Could not save the template"
 msgstr "Could not save the template"
-
-#. placeholder {0}: o.label
-#: src/launch/GraphicsDialog.tsx
-msgid "{0} (Recommended)"
-msgstr "{0} (Recommended)"
 
 #: src/tools/ToolEditorDialog.tsx
 msgid "Executable"
@@ -3972,66 +3843,37 @@ msgstr "Executable"
 msgid "Play anyway"
 msgstr "Play anyway"
 
-#: src/share/ListFormat.tsx
-msgid "{off, plural, one {# mod disabled} other {# mods disabled}}"
-msgstr "{off, plural, one {# mod disabled} other {# mods disabled}}"
-
-#. placeholder {0}: size === null ? '…' : formatBytes(size)
-#: src/game/BackupMenuItems.tsx
-msgid "The backup holds up to {0}: the profile, its settings and config files, and its own saves when it keeps them."
-msgstr "The backup holds up to {0}: the profile, its settings and config files, and its own saves when it keeps them."
-
-#. placeholder {0}: group.name
-#: src/groups/SavedGroupRow.tsx
-msgid "Show mods of {0}"
-msgstr "Show mods of {0}"
-
-#. placeholder {0}: asking.file
-#: src/toasts/AvOverrideDialog.tsx
-msgid " in {0}"
-msgstr " in {0}"
-
-#: src/shell/FlatpakGrant.tsx
-msgid "Grant the Steam sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
-msgstr "Grant the Steam sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
-
 #: src/share/MethodPanes.tsx
 msgid "Copy code"
 msgstr "Copy code"
-
-#: src/saves/lackChipActions.tsx
-msgid "Open {name} on Nexus"
-msgstr "Open {name} on Nexus"
 
 #: src/shell/offlineText.ts
 msgid "nothing saved yet from {name}"
 msgstr "nothing saved yet from {name}"
 
-#: src/browse/stats.ts
-msgid "{stars, plural, one {# star} other {# stars}}"
-msgstr "{stars, plural, one {# star} other {# stars}}"
-
 #: src/saves/backups.ts
 msgid "Before playing"
 msgstr "Before playing"
-
-#: src/launch/store.ts
-msgid "Heroic or Lutris may not have started the game. Start it, sign in if it asks, and try again, or set the game's Default launch to Direct."
-msgstr "Heroic or Lutris may not have started the game. Start it, sign in if it asks, and try again, or set the game's Default launch to Direct."
 
 #: src/share/ImportSources.tsx
 msgid "The game's Mods folder"
 msgstr "The game's Mods folder"
 
-#. placeholder {0}: missing.length
-#. placeholder {0}: mods.length
-#: src/game/NewProfileDialog.tsx
-msgid "{0, plural, one {Created {name}; downloading # mod} other {Created {name}; downloading # mods}}"
-msgstr "{0, plural, one {Created {name}; downloading # mod} other {Created {name}; downloading # mods}}"
+#: src/games/GameMenu.tsx
+msgid "{count, plural, one {# profile} other {# profiles}}"
+msgstr "{count, plural, one {# profile} other {# profiles}}"
+
+#: src/browse/stats.ts
+msgid "{count, plural, one {# star} other {# stars}}"
+msgstr "{count, plural, one {# star} other {# stars}}"
 
 #: src/saves/SaveBackupsButton.tsx
 msgid "No backups yet"
 msgstr "No backups yet"
+
+#: src/queue/QueueRows.tsx
+msgid "Resume {name}"
+msgstr "Resume {name}"
 
 #: src/toasts/report.ts
 msgid "That request was not valid."
@@ -4042,17 +3884,17 @@ msgstr "That request was not valid."
 msgid "Description"
 msgstr "Description"
 
-#: src/queue/QueueBody.tsx
-msgid "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
-msgstr "Press Mod Manager Download on Nexus. Mortar picks it up and opens the next page."
-
 #: src/browse/BrowseDetails.tsx
 msgid "Categories"
 msgstr "Categories"
 
-#: src/firstrun/ProfileStep.tsx
-msgid "Copy the mods already in {gameName}'s Mods folder into a new profile. The game folder is not changed."
-msgstr "Copy the mods already in {gameName}'s Mods folder into a new profile. The game folder is not changed."
+#: src/saves/SaveRow.tsx
+msgid "Could not back up {name}"
+msgstr "Could not back up {name}"
+
+#: src/queue/RetryAllButton.tsx
+msgid "{count, plural, one {# incomplete entry} other {# incomplete entries}}"
+msgstr "{count, plural, one {# incomplete entry} other {# incomplete entries}}"
 
 #: src/queue/actions.ts
 msgid "The download queue is empty."
@@ -4061,6 +3903,14 @@ msgstr "The download queue is empty."
 #: src/share/ImportPreview.tsx
 msgid "unverified until downloaded"
 msgstr "unverified until downloaded"
+
+#: src/launch/store.ts
+msgid "New errors after updating {profile}"
+msgstr "New errors after updating {profile}"
+
+#: src/shell/AppMenu.tsx
+msgid "Sign in to {source}…"
+msgstr "Sign in to {source}…"
 
 #: src/games/GameRowMenu.tsx
 msgid "Hide this game"
@@ -4080,12 +3930,6 @@ msgstr "Manage tools"
 msgid "Change"
 msgstr "Change"
 
-#. placeholder {0}: offer.name
-#. placeholder {1}: offer.machine
-#: src/sync/SyncOffers.tsx
-msgid "{0} was changed on {1} and on this machine"
-msgstr "{0} was changed on {1} and on this machine"
-
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
 msgid "Browse"
@@ -4095,51 +3939,37 @@ msgstr "Browse"
 msgid "Message copied"
 msgstr "Message copied"
 
-#. placeholder {0}: result.added
-#: src/templates/ApplyTemplateDialog.tsx
-msgid "{0, plural, one {Added # mod from {name}; downloading {left, plural, one {# mod} other {# mods}}} other {Added # mods from {name}; downloading {left, plural, one {# mod} other {# mods}}}}"
-msgstr "{0, plural, one {Added # mod from {name}; downloading {left, plural, one {# mod} other {# mods}}} other {Added # mods from {name}; downloading {left, plural, one {# mod} other {# mods}}}}"
-
-#: src/queue/actions.ts
-msgid "Downloads come from Nexus with your account, so Mortar needs your API key first."
-msgstr "Downloads come from Nexus with your account, so Mortar needs your API key first."
-
 #: src/install/ArchivePreview.tsx
 msgid "Archive contents"
 msgstr "Archive contents"
 
-#: src/share/Included.tsx
-msgid "{other, plural, one {# more mod is left out} other {# more mods are left out}}"
-msgstr "{other, plural, one {# more mod is left out} other {# more mods are left out}}"
+#: src/share/ImportPreview.tsx
+msgid "Includes: {names}"
+msgstr "Includes: {names}"
 
-#. placeholder {0}: expired.sender
-#: src/lan/incoming.ts
-msgid "A share from {0} expired. Ask them to send it again."
-msgstr "A share from {0} expired. Ask them to send it again."
+#: src/queue/QueueBody.tsx
+msgid "Skipped ({count}): {names}"
+msgstr "Skipped ({count}): {names}"
 
-#: src/games/AddGameDialog.tsx
-msgid "The game's name in its Thunderstore address (thunderstore.io/c/…). Mortar gets Shimloader and the game's mods from it. Choose the game's shipping program, in Binaries/Win64."
-msgstr "The game's name in its Thunderstore address (thunderstore.io/c/…). Mortar gets Shimloader and the game's mods from it. Choose the game's shipping program, in Binaries/Win64."
+#: src/launch/StopDialog.tsx
+msgid "{game} will close now, and any progress since your last save is lost."
+msgstr "{game} will close now, and any progress since your last save is lost."
+
+#: src/queue/QueueRows.tsx
+msgid "Pause {name}"
+msgstr "Pause {name}"
 
 #: src/lan/SendPanel.tsx
 msgid "Send to an address…"
 msgstr "Send to an address…"
 
-#. placeholder {0}: preview.settingsChanges?.length ?? 0
-#: src/templates/ApplyTemplateDialog.tsx
-msgid "Settings changes {0}"
-msgstr "Settings changes {0}"
+#: src/game/NewProfileDialog.tsx
+msgid "{count, plural, one {Created {name}; # mod still to download} other {Created {name}; # mods still to download}}"
+msgstr "{count, plural, one {Created {name}; # mod still to download} other {Created {name}; # mods still to download}}"
 
-#. placeholder {0}: form.dependencies
-#. placeholder {1}: listNames(left)
-#: src/share/ModpackDialog.tsx
-msgid "Depends on {0} Thunderstore packages. Left out: {1}."
-msgstr "Depends on {0} Thunderstore packages. Left out: {1}."
-
-#. placeholder {0}: current.name
-#: src/share/arrivals.ts
-msgid "{label} is not in {0}"
-msgstr "{label} is not in {0}"
+#: src/queue/QueueBody.tsx
+msgid "Cancel {name}"
+msgstr "Cancel {name}"
 
 #: src/game/Home.tsx
 #: src/saves/SaveDetails.tsx
@@ -4155,22 +3985,13 @@ msgstr "Arguments"
 msgid "Set default preset…"
 msgstr "Set default preset…"
 
-#. placeholder {0}: deleting?.name ?? ''
-#: src/tools/ToolsManageDialog.tsx
-msgid "Remove {0}?"
-msgstr "Remove {0}?"
+#: src/queue/DownloadsPill.tsx
+msgid "{count, plural, one {# downloading} other {# downloading}}"
+msgstr "{count, plural, one {# downloading} other {# downloading}}"
 
 #: src/shell/win.ts
 msgid "Could not read the window state"
 msgstr "Could not read the window state"
-
-#: src/launch/LaunchLayer.tsx
-msgid "Steam was not found"
-msgstr "Steam was not found"
-
-#: src/nxm/store.ts
-msgid "Sign in to Nexus Mods in Settings before downloading from a link."
-msgstr "Sign in to Nexus Mods in Settings before downloading from a link."
 
 #: src/share/importError.ts
 msgid "Nothing was found for that link or code. Codes expire, so ask for a new one."
@@ -4192,13 +4013,13 @@ msgstr "Upload"
 msgid "Choose an archive to see what is inside"
 msgstr "Choose an archive to see what is inside"
 
+#: src/game/LaunchMenu.tsx
+msgid "Could not start {name}"
+msgstr "Could not start {name}"
+
 #: src/share/ImportPreview.tsx
 msgid "Check later"
 msgstr "Check later"
-
-#: src/share/ImportInput.tsx
-msgid "Opened the itch.io page. Save the file from it; Mortar offers it from your Downloads folder."
-msgstr "Opened the itch.io page. Save the file from it; Mortar offers it from your Downloads folder."
 
 #: src/share/useImportFlow.ts
 msgid "A profile with that name already exists, so this one is \"{name}\""
@@ -4207,15 +4028,6 @@ msgstr "A profile with that name already exists, so this one is \"{name}\""
 #: src/queue/QueueHistory.tsx
 msgid "Clear history"
 msgstr "Clear history"
-
-#. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx
-msgid "Broken or obsolete ({0})"
-msgstr "Broken or obsolete ({0})"
-
-#: src/shell/BugReportDialog.tsx
-msgid "Copy and open Discord"
-msgstr "Copy and open Discord"
 
 #: src/queue/DownloadsPill.tsx
 msgid "Downloads: {downloading} {percent}%"
@@ -4229,17 +4041,13 @@ msgstr "Default"
 msgid "Choose where to save…"
 msgstr "Choose where to save…"
 
-#. placeholder {0}: preview.settings
-#: src/share/ImportPreview.tsx
-msgid "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
-msgstr "{0, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
+#: src/browse/browseConstants.ts
+msgid "Search {source} for mods published as releases. Add puts the latest release in this profile."
+msgstr "Search {source} for mods published as releases. Add puts the latest release in this profile."
 
-#. placeholder {0}: counts.failed
-#. placeholder {0}: sum.failed
-#: src/queue/QueueSheet.tsx
-#: src/share/importCompletion.ts
-msgid "{0} failed"
-msgstr "{0} failed"
+#: src/browse/stats.ts
+msgid "{count, plural, one {# follower} other {# followers}}"
+msgstr "{count, plural, one {# follower} other {# followers}}"
 
 #: src/firstrunTour/TourPopover.tsx
 #: src/game/Sidebar.tsx
@@ -4250,14 +4058,17 @@ msgstr "Problems"
 msgid "Create your first profile"
 msgstr "Create your first profile"
 
-#. placeholder {0}: report?.gameName ?? ''
-#: src/launch/SweepDialog.tsx
-msgid "{0} was updated: mods to check"
-msgstr "{0} was updated: mods to check"
+#: src/launch/store.ts
+msgid "The {launcher} Launcher may not be running or signed in. Start it, sign in and try again."
+msgstr "The {launcher} Launcher may not be running or signed in. Start it, sign in and try again."
 
 #: src/firstrunTour/TourPopover.tsx
 msgid "Click a mod to open its details: versions, what it needs and what needs it, and its update."
 msgstr "Click a mod to open its details: versions, what it needs and what needs it, and its update."
+
+#: src/shell/AppMenu.tsx
+msgid "Ask on {app}"
+msgstr "Ask on {app}"
 
 #: src/share/MethodPanes.tsx
 msgid "Code published"
@@ -4267,13 +4078,13 @@ msgstr "Code published"
 msgid "Could not add the optional file"
 msgstr "Could not add the optional file"
 
-#: src/browse/CardProgress.tsx
-msgid "Waiting for Nexus…"
-msgstr "Waiting for Nexus…"
-
 #: src/saves/lackChipActions.tsx
 msgid "Open the page of {name}"
 msgstr "Open the page of {name}"
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "Already has {count}"
+msgstr "Already has {count}"
 
 #: src/saves/saveName.ts
 msgid "Exploration"
@@ -4295,6 +4106,10 @@ msgstr "Challenge moon"
 msgid "No notes yet."
 msgstr "No notes yet."
 
+#: src/share/ListFormat.tsx
+msgid "Message {count} of {total}"
+msgstr "Message {count} of {total}"
+
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most endorsed"
 msgstr "Sort: most endorsed"
@@ -4303,6 +4118,10 @@ msgstr "Sort: most endorsed"
 #: src/toasts/ToastHost.tsx
 msgid "Details copied"
 msgstr "Details copied"
+
+#: src/shell/BugReportDialog.tsx
+msgid "Copy and open {app}"
+msgstr "Copy and open {app}"
 
 #: src/launch/PlayInstances.tsx
 msgid "Copies of the game"
@@ -4316,9 +4135,17 @@ msgstr "Use as profile cover"
 msgid "From this file"
 msgstr "From this file"
 
+#: src/updates/WhatsNewDialog.tsx
+msgid "Read the release notes on {source}"
+msgstr "Read the release notes on {source}"
+
 #: src/install/MissingDepsDialog.tsx
 msgid "Not now"
 msgstr "Not now"
+
+#: src/launch/SweepDialog.tsx
+msgid "{count, plural, one {Update # mod} other {Update # mods}}"
+msgstr "{count, plural, one {Update # mod} other {Update # mods}}"
 
 #: src/queue/QueueRows.tsx
 msgid "Waiting for a free slot · {done} of {total}"
@@ -4328,28 +4155,41 @@ msgstr "Waiting for a free slot · {done} of {total}"
 msgid "{more} more large downloads are waiting after this one."
 msgstr "{more} more large downloads are waiting after this one."
 
-#. placeholder {0}: st.name
-#: src/sync/store.ts
-#: src/sync/SyncOffers.tsx
-msgid "{0} is not syncing yet"
-msgstr "{0} is not syncing yet"
+#: src/share/ImportPreview.tsx
+msgid "Some files could not be checked against {source}, so a few may differ from what was shared."
+msgstr "Some files could not be checked against {source}, so a few may differ from what was shared."
+
+#: src/shell/FlatpakGrant.tsx
+msgid "{app} {launcher} cannot read your mods"
+msgstr "{app} {launcher} cannot read your mods"
 
 #: src/groups/SavedGroupRow.tsx
 msgid "A saved group keeps at least one mod; delete the saved group instead"
 msgstr "A saved group keeps at least one mod; delete the saved group instead"
 
+#: src/nxm/store.ts
+msgid "The link has expired. Click Mod Manager Download on {source} again."
+msgstr "The link has expired. Click Mod Manager Download on {source} again."
+
+#: src/firstrun/FirstRun.tsx
+msgid "Want help, news or a say in what comes next? Mortar has a {app} server."
+msgstr "Want help, news or a say in what comes next? Mortar has a {app} server."
+
 #: src/games/gameList.ts
 msgid "Other games"
 msgstr "Other games"
+
+#: src/firstrun/FindStep.tsx
+msgid "found, without {name}"
+msgstr "found, without {name}"
 
 #: src/launch/VanillaPlay.tsx
 msgid "Play with"
 msgstr "Play with"
 
-#. placeholder {0}: result.added
-#: src/templates/ApplyTemplateDialog.tsx
-msgid "{0, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
-msgstr "{0, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
+#: src/lan/SendPanel.tsx
+msgid "Sent to {name}"
+msgstr "Sent to {name}"
 
 #: src/App.tsx
 #: src/games/useGameTiles.ts
@@ -4369,27 +4209,42 @@ msgstr "Open a profile to install mods"
 msgid "What the person opening the link sees"
 msgstr "What the person opening the link sees"
 
+#: src/share/ModpackDialog.tsx
+msgid "Last export {lastVersion}"
+msgstr "Last export {lastVersion}"
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Switch to Performance"
 msgstr "Switch to Performance"
-
-#. placeholder {0}: loader.name
-#. placeholder {1}: status.latest
-#: src/loader/Banner.tsx
-msgid "{0} {1} is available"
-msgstr "{0} {1} is available"
 
 #: src/share/IncludeOptions.tsx
 msgid "Include config files"
 msgstr "Include config files"
 
+#: src/share/ImportSources.tsx
+msgid "{managers} on this computer"
+msgstr "{managers} on this computer"
+
 #: src/share/ListFormat.tsx
 msgid "Plain text"
 msgstr "Plain text"
 
+#: src/install/RemapDialog.tsx
+msgid "Collapse {name}"
+msgstr "Collapse {name}"
+
+#: src/groups/SavedGroupRow.tsx
+#: src/templates/TemplateDialogs.tsx
+msgid "Rename {name}"
+msgstr "Rename {name}"
+
 #: src/saves/SaveListRow.tsx
 msgid "Fits {name}"
 msgstr "Fits {name}"
+
+#: src/launch/events.ts
+msgid "{name} updated to {version}: {count, plural, one {# profile needs attention} other {# profiles need attention}}"
+msgstr "{name} updated to {version}: {count, plural, one {# profile needs attention} other {# profiles need attention}}"
 
 #: src/shell/BugReportDialog.tsx
 msgid "Report copied"
@@ -4399,15 +4254,9 @@ msgstr "Report copied"
 msgid "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
 msgstr "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
 
-#. placeholder {0}: shown.indexOf(step) + 1
-#. placeholder {1}: shown.length
-#: src/firstrunTour/TourPopover.tsx
-msgid "Step {0} of {1}"
-msgstr "Step {0} of {1}"
-
-#: src/shell/FlatpakGrant.tsx
-msgid "This runs the command below once for your user, so Steam can read Mortar's data folder."
-msgstr "This runs the command below once for your user, so Steam can read Mortar's data folder."
+#: src/nxm/ArrivalDialog.tsx
+msgid "You started this download on {source}, but you have no {game} profile yet."
+msgstr "You started this download on {source}, but you have no {game} profile yet."
 
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Open folder"
@@ -4420,15 +4269,13 @@ msgstr "Open folder"
 msgid "Loading…"
 msgstr "Loading…"
 
-#. placeholder {0}: st.machine
-#: src/sync/store.ts
-msgid "Waiting for {0}'s profile file to finish syncing"
-msgstr "Waiting for {0}'s profile file to finish syncing"
+#: src/nxm/store.ts
+msgid "Downloading {name} into {profile}"
+msgstr "Downloading {name} into {profile}"
 
-#. placeholder {0}: listNames(hit)
-#: src/saves/BackupsDialog.tsx
-msgid "{0} will be overwritten. A backup of the current Saves folder is made first."
-msgstr "{0} will be overwritten. A backup of the current Saves folder is made first."
+#: src/launch/PlayInstances.tsx
+msgid "{count, plural, one {Launch # copy} other {Launch all # copies}}"
+msgstr "{count, plural, one {Launch # copy} other {Launch all # copies}}"
 
 #: src/shell/BugReportDialog.tsx
 msgid "Steps to reproduce"
@@ -4438,40 +4285,21 @@ msgstr "Steps to reproduce"
 msgid "Choose the game's program…"
 msgstr "Choose the game's program…"
 
-#. placeholder {0}: game.loader
-#: src/firstrun/FindStep.tsx
-msgid "{0} not installed yet"
-msgstr "{0} not installed yet"
+#: src/shell/saveDiagnostics.ts
+msgid "Drag {path} into the {source} issue to attach it."
+msgstr "Drag {path} into the {source} issue to attach it."
 
-#. placeholder {0}: s.total
-#: src/game/TabHeader.tsx
-msgid "{0, plural, one {# save} other {# saves}}"
-msgstr "{0, plural, one {# save} other {# saves}}"
-
-#: src/games/GameMenu.tsx
-msgid "{profiles, plural, one {# profile} other {# profiles}}"
-msgstr "{profiles, plural, one {# profile} other {# profiles}}"
-
-#: src/browse/stats.ts
-msgid "{endorsements, plural, one {# endorsement} other {# endorsements}}"
-msgstr "{endorsements, plural, one {# endorsement} other {# endorsements}}"
+#: src/share/ManagerPane.tsx
+msgid "{count, plural, one {Import # profile} other {Import # profiles}}"
+msgstr "{count, plural, one {Import # profile} other {Import # profiles}}"
 
 #: src/launch/playStart.ts
 msgid "Could not check the graphics setting"
 msgstr "Could not check the graphics setting"
 
-#: src/games/ProfileCards.tsx
-msgid "Open {gameName} ({more, plural, one {# more profile} other {# more profiles}})"
-msgstr "Open {gameName} ({more, plural, one {# more profile} other {# more profiles}})"
-
 #: src/saves/lackChips.tsx
 msgid "{name} (disabled)"
 msgstr "{name} (disabled)"
-
-#. placeholder {0}: item.name
-#: src/queue/QueueRows.tsx
-msgid "Pause {0}"
-msgstr "Pause {0}"
 
 #: src/commandPalette/CommandPalette.tsx
 msgid "Updates"
@@ -4489,6 +4317,14 @@ msgstr "Nothing downloading"
 msgid "Restore from a file…"
 msgstr "Restore from a file…"
 
+#: src/lan/IncomingPrompt.tsx
+msgid "{sender} sent you {profile} ({game})"
+msgstr "{sender} sent you {profile} ({game})"
+
+#: src/share/MethodPanes.tsx
+msgid "Saved to {path}"
+msgstr "Saved to {path}"
+
 #: src/games/GameRowMenu.tsx
 msgid "Unhide"
 msgstr "Unhide"
@@ -4497,30 +4333,21 @@ msgstr "Unhide"
 msgid "Preview link…"
 msgstr "Preview link…"
 
-#. placeholder {0}: game.name
-#: src/firstrun/FindStep.tsx
-msgid "{0} was not found in your launchers"
-msgstr "{0} was not found in your launchers"
-
-#: src/share/ImportPreview.tsx
-msgid "Free account: one click on Nexus per download"
-msgstr "Free account: one click on Nexus per download"
+#: src/share/MethodPanes.tsx
+msgid "{length} of {limit} characters · fits one {app} message"
+msgstr "{length} of {limit} characters · fits one {app} message"
 
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Could not set the cover"
 msgstr "Could not set the cover"
 
-#: src/share/MethodPanes.tsx
-msgid "Export as Nexus collection draft…"
-msgstr "Export as Nexus collection draft…"
-
 #: src/commandPalette/paletteLabels.ts
 msgid "Review collection update"
 msgstr "Review collection update"
 
-#: src/share/ImportPreview.tsx
-msgid "Needs a file from its itch.io page"
-msgstr "Needs a file from its itch.io page"
+#: src/launch/VanillaPlay.tsx
+msgid "Mortar starts the unmodded game directly, outside {launcher}. The {launcher} overlay and playtime tracking do not work; {launcher} still supplies its API if running."
+msgstr "Mortar starts the unmodded game directly, outside {launcher}. The {launcher} overlay and playtime tracking do not work; {launcher} still supplies its API if running."
 
 #: src/queue/RetryAllButton.tsx
 msgid "Retry all failed"
@@ -4529,11 +4356,6 @@ msgstr "Retry all failed"
 #: src/share/arrivals.ts
 msgid "Add it"
 msgstr "Add it"
-
-#. placeholder {0}: target.name
-#: src/lan/SendPanel.tsx
-msgid "Could not send to {0}"
-msgstr "Could not send to {0}"
 
 #: src/lan/IncomingPrompt.tsx
 msgid "Import as new profile"
@@ -4551,6 +4373,10 @@ msgstr "This update changed its install options. Your earlier picks are kept whe
 msgid "Open download page"
 msgstr "Open download page"
 
+#: src/nxm/store.ts
+msgid "Sign in to {source} in Settings before downloading from a link."
+msgstr "Sign in to {source} in Settings before downloading from a link."
+
 #: src/share/Included.tsx
 msgid "Show mods"
 msgstr "Show mods"
@@ -4559,54 +4385,37 @@ msgstr "Show mods"
 msgid "Could not read the templates"
 msgstr "Could not read the templates"
 
-#: src/share/MethodPanes.tsx
-msgid "Export as Thunderstore modpack…"
-msgstr "Export as Thunderstore modpack…"
-
-#: src/share/ModpackDialog.tsx
-msgid "Export as Thunderstore modpack"
-msgstr "Export as Thunderstore modpack"
-
-#. placeholder {0}: formatBytes(preview.totalSize)
-#: src/install/ArchivePreview.tsx
-msgid "{0} in total"
-msgstr "{0} in total"
+#: src/browse/browseConstants.ts
+msgid "Search {source}. Download installs the mod into this profile."
+msgstr "Search {source}. Download installs the mod into this profile."
 
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most forks"
 msgstr "Sort: most forks"
 
-#. placeholder {0}: version ?? ''
-#: src/updates/WhatsNewDialog.tsx
-msgid "What is new in Mortar {0}"
-msgstr "What is new in Mortar {0}"
-
 #: src/share/MethodPanes.tsx
 msgid "A .mortar file suits a profile this size better, and carries your mod settings too."
 msgstr "A .mortar file suits a profile this size better, and carries your mod settings too."
+
+#: src/queue/RetryAllButton.tsx
+msgid "{count, plural, one {Retried # download} other {Retried # downloads}}"
+msgstr "{count, plural, one {Retried # download} other {Retried # downloads}}"
 
 #: src/shell/TitleBar.tsx
 msgid "Setup"
 msgstr "Setup"
 
-#. placeholder {0}: formatKb(downloadedKb(item))
-#. placeholder {1}: formatKb(item.sizeKb)
-#. placeholder {2}: formatBytes(item.speed)
-#: src/queue/QueueBody.tsx
-msgid "{0} of {1} · {2}/s"
-msgstr "{0} of {1} · {2}/s"
-
 #: src/share/ImportInput.tsx
 msgid "Preview"
 msgstr "Preview"
 
-#: src/game/ProfileMenuItems.tsx
-msgid "Updated in Steam"
-msgstr "Updated in Steam"
-
 #: src/lan/SendPanel.tsx
 msgid "Recent address"
 msgstr "Recent address"
+
+#: src/nxm/ArrivalDialog.tsx
+msgid "You started this download on {source}. Create a profile to put it in first."
+msgstr "You started this download on {source}. Create a profile to put it in first."
 
 #: src/install/OverlayPlaceDialog.tsx
 msgid "Whole file"
@@ -4624,22 +4433,21 @@ msgstr "Running"
 msgid "The antivirus flagged it, so Mortar did not install it."
 msgstr "The antivirus flagged it, so Mortar did not install it."
 
-#. placeholder {0}: chosen.length
-#: src/share/ManagerPane.tsx
-msgid "{0, plural, one {Import # profile} other {Import # profiles}}"
-msgstr "{0, plural, one {Import # profile} other {Import # profiles}}"
+#: src/updates/WhatsNewDialog.tsx
+msgid "{count, plural, one {# change} other {# changes}}"
+msgstr "{count, plural, one {# change} other {# changes}}"
 
-#: src/share/MethodPanes.tsx
-msgid "Nexus expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
-msgstr "Nexus expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
-
-#: src/saves/SaveBackupsButton.tsx
-msgid "{label} is replaced by the game's own copy from {when}. The current {label} is backed up first."
-msgstr "{label} is replaced by the game's own copy from {when}. The current {label} is backed up first."
+#: src/games/GameMenu.tsx
+msgid "Switch game: {game}"
+msgstr "Switch game: {game}"
 
 #: src/share/IncludeOptions.tsx
 msgid "Include notes"
 msgstr "Include notes"
+
+#: src/saves/lackChips.tsx
+msgid "Add all {count}"
+msgstr "Add all {count}"
 
 #: src/queue/QueueSheet.tsx
 msgid "Pause all"
@@ -4649,13 +4457,25 @@ msgstr "Pause all"
 msgid "No other profile to add them to."
 msgstr "No other profile to add them to."
 
-#: src/groups/dialogs.tsx
-msgid "Add a saved group to {profileName}"
-msgstr "Add a saved group to {profileName}"
+#: src/saves/BackupsDialog.tsx
+msgid "{cause} · {size} · {farms}"
+msgstr "{cause} · {size} · {farms}"
+
+#: src/share/ImportPreview.tsx
+msgid "{leftOut} left out"
+msgstr "{leftOut} left out"
+
+#: src/browse/CardProgress.tsx
+msgid "Waiting for {source}…"
+msgstr "Waiting for {source}…"
 
 #: src/game/HeroGlance.tsx
 msgid "Not played yet"
 msgstr "Not played yet"
+
+#: src/shell/FlatpakGrant.tsx
+msgid "This runs the command below once for your user, so {launcher} can read Mortar's data folder."
+msgstr "This runs the command below once for your user, so {launcher} can read Mortar's data folder."
 
 #: src/groups/dialogs.tsx
 #: src/groups/SavedGroupsSection.tsx
@@ -4670,14 +4490,14 @@ msgstr "{peer} cancelled it"
 msgid "No save backups yet."
 msgstr "No save backups yet."
 
+#: src/game/Home.tsx
+#: src/saves/SaveListRow.tsx
+msgid "Year {year} {season}"
+msgstr "Year {year} {season}"
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Recent changes"
 msgstr "Recent changes"
-
-#. placeholder {0}: deleting?.name ?? ''
-#: src/templates/TemplateDialogs.tsx
-msgid "Delete the template {0}?"
-msgstr "Delete the template {0}?"
 
 #: src/queue/QueueSheet.tsx
 msgid "Close downloads"
@@ -4691,17 +4511,17 @@ msgstr "A .mortar file holds the link's mods plus their settings files. Send it;
 msgid "A collection draft"
 msgstr "A collection draft"
 
-#: src/share/ImportSources.tsx
-msgid "A Mortar link, a Nexus collection or an r2modman or Gale code"
-msgstr "A Mortar link, a Nexus collection or an r2modman or Gale code"
+#: src/share/Included.tsx
+msgid "Its {source} file is not known. Group the Mods list by Source and choose Find on {source}."
+msgstr "Its {source} file is not known. Group the Mods list by Source and choose Find on {source}."
 
-#: src/saves/SaveRow.tsx
-msgid "Open the folder of {label}"
-msgstr "Open the folder of {label}"
+#: src/launch/PrePlayDialog.tsx
+msgid "{save} was last played with {profile}"
+msgstr "{save} was last played with {profile}"
 
-#: src/queue/actions.ts
-msgid "Sign in to Nexus Mods to download"
-msgstr "Sign in to Nexus Mods to download"
+#: src/shell/FlatpakGrant.tsx
+msgid "Grant the {launcher} sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
+msgstr "Grant the {launcher} sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
 
 #: src/share/ListFormat.tsx
 msgid "Enabled"
@@ -4731,6 +4551,11 @@ msgstr "Maximise"
 msgid "A link has no room for it. Use a file or a nearby computer."
 msgstr "A link has no room for it. Use a file or a nearby computer."
 
+#: src/firstrun/GameSetup.tsx
+#: src/games/GameSelect.tsx
+msgid "Set up {name}"
+msgstr "Set up {name}"
+
 #: src/shell/offlineText.ts
 msgid "{names} cannot be reached; nothing saved to show yet"
 msgstr "{names} cannot be reached; nothing saved to show yet"
@@ -4747,10 +4572,6 @@ msgstr "Searching…"
 msgid "Multiplayer mod list"
 msgstr "Multiplayer mod list"
 
-#: src/share/ImportPreview.tsx
-msgid "Some files could not be checked against Nexus, so a few may differ from what was shared."
-msgstr "Some files could not be checked against Nexus, so a few may differ from what was shared."
-
 #: src/launch/PlayControl.tsx
 msgid "Could not set the default launch preset"
 msgstr "Could not set the default launch preset"
@@ -4759,17 +4580,13 @@ msgstr "Could not set the default launch preset"
 msgid "{name} did not start"
 msgstr "{name} did not start"
 
-#: src/firstrun/ProfileStep.tsx
-msgid "An empty profile. Add mods from {site} or from archives."
-msgstr "An empty profile. Add mods from {site} or from archives."
+#: src/firstrun/FirstRun.tsx
+msgid "Join our {app}"
+msgstr "Join our {app}"
 
-#: src/firstrun/LoaderStep.tsx
-msgid "Mortar checks Steam's settings for it: not found yet."
-msgstr "Mortar checks Steam's settings for it: not found yet."
-
-#: src/saves/BackupsDialog.tsx
-msgid "Restore {label}"
-msgstr "Restore {label}"
+#: src/lan/IncomingPrompt.tsx
+msgid "{count, plural, one {{current} of # mod · {size} · {rate}/s} other {{current} of # mods · {size} · {rate}/s}}"
+msgstr "{count, plural, one {{current} of # mod · {size} · {rate}/s} other {{current} of # mods · {size} · {rate}/s}}"
 
 #: src/share/ModpackDialog.tsx
 msgid "README"
@@ -4783,31 +4600,21 @@ msgstr "Could not open Mortar's log"
 msgid "Install {name}?"
 msgstr "Install {name}?"
 
-#. placeholder {0}: info.name
-#. placeholder {1}: info.web
-#. placeholder {2}: info.name
-#. placeholder {3}: info.web
-#: src/share/ShareDialog.tsx
-msgid "{count, plural, one {Try my Mortar profile \"{0}\" for {gameName} (# mod): {1}} other {Try my Mortar profile \"{2}\" for {gameName} (# mods): {3}}}"
-msgstr "{count, plural, one {Try my Mortar profile \"{0}\" for {gameName} (# mod): {1}} other {Try my Mortar profile \"{2}\" for {gameName} (# mods): {3}}}"
-
-#. placeholder {0}: item.name
-#: src/queue/store.ts
-msgid "Could not download {0}"
-msgstr "Could not download {0}"
+#: src/launch/PrePlayDialog.tsx
+msgid "Paths too long for {os} ({count})"
+msgstr "Paths too long for {os} ({count})"
 
 #: src/lan/SendPanel.tsx
 msgid "Ask another Mortar user to open sharing nearby."
 msgstr "Ask another Mortar user to open sharing nearby."
 
+#: src/share/ListFormat.tsx
+msgid "{count, plural, one {# mod disabled} other {# mods disabled}}"
+msgstr "{count, plural, one {# mod disabled} other {# mods disabled}}"
+
 #: src/toasts/EarlierChanges.tsx
 msgid "No changes yet"
 msgstr "No changes yet"
-
-#. placeholder {0}: loader.name
-#: src/loader/Banner.tsx
-msgid "Stop the game to change {0}."
-msgstr "Stop the game to change {0}."
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Paste a link…"
@@ -4817,6 +4624,10 @@ msgstr "Paste a link…"
 msgid "Already in this profile."
 msgstr "Already in this profile."
 
+#: src/share/ImportPreview.tsx
+msgid "{count, plural, one {# mod} other {# mods}} · about {size} to download"
+msgstr "{count, plural, one {# mod} other {# mods}} · about {size} to download"
+
 #: src/saves/saveName.ts
 msgid "Creative Building"
 msgstr "Creative Building"
@@ -4824,11 +4635,6 @@ msgstr "Creative Building"
 #: src/QuitPrompt.tsx
 msgid "Quit"
 msgstr "Quit"
-
-#. placeholder {0}: props.name
-#: src/browse/ResultCard.tsx
-msgid "Details of {0}"
-msgstr "Details of {0}"
 
 #: src/saves/SaveBackupsButton.tsx
 msgid "Delete this backup?"
@@ -4843,6 +4649,14 @@ msgstr "Show file"
 msgid "Save backups"
 msgstr "Save backups"
 
+#: src/firstrun/LoaderStep.tsx
+msgid "One step in {launcher}"
+msgstr "One step in {launcher}"
+
+#: src/sync/store.ts
+msgid "Waiting for {machine}'s profile file to finish syncing"
+msgstr "Waiting for {machine}'s profile file to finish syncing"
+
 #: src/shell/AppMenu.tsx
 msgid "Mortar menu"
 msgstr "Mortar menu"
@@ -4850,6 +4664,10 @@ msgstr "Mortar menu"
 #: src/saves/BackupsDialog.tsx
 msgid "Kept forever"
 msgstr "Kept forever"
+
+#: src/saves/BackupsDialog.tsx
+msgid "{cause} · {size}"
+msgstr "{cause} · {size}"
 
 #: src/nxm/store.ts
 msgid "Mod link not used"
@@ -4859,6 +4677,10 @@ msgstr "Mod link not used"
 msgid "Only a paired computer gets it."
 msgstr "Only a paired computer gets it."
 
+#: src/launch/LaunchLayer.tsx
+msgid "{launcher} was not found"
+msgstr "{launcher} was not found"
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Switch to Saves"
 msgstr "Switch to Saves"
@@ -4867,25 +4689,22 @@ msgstr "Switch to Saves"
 msgid "Search every mod site at once or pick one; with nothing typed you see the top mods. Add installs into this profile. You can also drop a downloaded archive anywhere on this window."
 msgstr "Search every mod site at once or pick one; with nothing typed you see the top mods. Add installs into this profile. You can also drop a downloaded archive anywhere on this window."
 
-#: src/firstrun/ProfileStep.tsx
-msgid "Got a Mortar link? You see what it holds first. Nexus mods need your Nexus sign-in; Mortar asks then."
-msgstr "Got a Mortar link? You see what it holds first. Nexus mods need your Nexus sign-in; Mortar asks then."
+#: src/launch/PrePlayDialog.tsx
+msgid "Conflicts ({count})"
+msgstr "Conflicts ({count})"
 
 #: src/games/AddGameDialog.tsx
 #: src/tools/ToolsManageDialog.tsx
 msgid "Remove"
 msgstr "Remove"
 
+#: src/firstrun/FindStep.tsx
+msgid "{name} was not found in your launchers"
+msgstr "{name} was not found in your launchers"
+
 #: src/launch/PlayControl.tsx
 msgid "Running {who}"
 msgstr "Running {who}"
-
-#. placeholder {0}: det.scanner
-#. placeholder {1}: det.name
-#. placeholder {2}: det.file ? ` in ${det.file}` : ''
-#: src/queue/QueueBody.tsx
-msgid "Flagged by {0}: {1}{2}"
-msgstr "Flagged by {0}: {1}{2}"
 
 #: src/game/Sidebar.tsx
 msgid "Get mods"
@@ -4894,10 +4713,6 @@ msgstr "Get mods"
 #: src/game/HeroGlance.tsx
 msgid "No problems"
 msgstr "No problems"
-
-#: src/share/MethodPanes.tsx
-msgid "Saves this profile as a collection draft to finish and upload on Nexus Mods."
-msgstr "Saves this profile as a collection draft to finish and upload on Nexus Mods."
 
 #: src/commandPalette/paletteLabels.ts
 msgid "Switch to Config"
@@ -4911,9 +4726,9 @@ msgstr "Preview Mods folder import…"
 msgid "Could not save the graphics choice"
 msgstr "Could not save the graphics choice"
 
-#: src/launch/store.ts
-msgid "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
-msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
+#: src/share/ImportInput.tsx
+msgid "Opened the {source} post. Save the file from it; Mortar offers it from your Downloads folder."
+msgstr "Opened the {source} post. Save the file from it; Mortar offers it from your Downloads folder."
 
 #: src/firstrunTour/TourPopover.tsx
 #: src/games/GameSelect.tsx
@@ -4921,31 +4736,25 @@ msgstr "Flatpak Steam cannot read Mortar's mods folder. Grant the sandbox access
 msgid "Play"
 msgstr "Play"
 
+#: src/games/GameSelect.tsx
+msgid "Open {name}"
+msgstr "Open {name}"
+
 #: src/launch/PlayInstances.tsx
 msgid "Use Direct launch"
 msgstr "Use Direct launch"
 
-#. placeholder {0}: group.count
-#: src/launch/PrePlayDialog.tsx
-msgid "Pending updates ({0})"
-msgstr "Pending updates ({0})"
+#: src/tools/ToolsManageDialog.tsx
+msgid "Remove {name}?"
+msgstr "Remove {name}?"
 
 #: src/saves/saveName.ts
 msgid "Wilderness Survival"
 msgstr "Wilderness Survival"
 
-#. placeholder {0}: done.length
-#. placeholder {1}: names(done)
-#: src/queue/QueueBody.tsx
-msgid "Done ({0}): {1}"
-msgstr "Done ({0}): {1}"
-
-#. placeholder {0}: deleting?.name ?? ''
-#. placeholder {0}: profile.name
-#: src/game/ProfileDialogHost.tsx
-#: src/groups/SavedGroupsSection.tsx
-msgid "Delete {0}?"
-msgstr "Delete {0}?"
+#: src/templates/TemplateDialogs.tsx
+msgid "Delete the template {name}?"
+msgstr "Delete the template {name}?"
 
 #: src/saves/SaveRow.tsx
 msgid "Beach farm"
@@ -4962,10 +4771,6 @@ msgstr "Save"
 #: src/install/NeedsRootCallout.tsx
 msgid "Choose folder"
 msgstr "Choose folder"
-
-#: src/install/DownloadsDialog.tsx
-msgid "From Nexus"
-msgstr "From Nexus"
 
 #: src/install/OverlayPlaceDialog.tsx
 msgid "Place here"
@@ -4998,6 +4803,10 @@ msgstr "Install"
 msgid "Copy details"
 msgstr "Copy details"
 
+#: src/screenshots/ScreenshotsTab.tsx
+msgid "Open {launcher}'s folder"
+msgstr "Open {launcher}'s folder"
+
 #: src/shell/checkForUpdates.ts
 msgid "Mods are up to date"
 msgstr "Mods are up to date"
@@ -5019,14 +4828,13 @@ msgstr "Fixed"
 msgid "Keep mine"
 msgstr "Keep mine"
 
-#: src/game/Hero.tsx
-msgid "From the Nexus collection \"{name}\""
-msgstr "From the Nexus collection \"{name}\""
+#: src/lan/SendPanel.tsx
+msgid "Could not send to {name}"
+msgstr "Could not send to {name}"
 
-#. placeholder {0}: result.total
-#: src/browse/BrowseBody.tsx
-msgid "{0, plural, one {# result} other {# results}}"
-msgstr "{0, plural, one {# result} other {# results}}"
+#: src/share/importError.ts
+msgid "Mortar does not recognise this. Paste a Mortar link, a {source} collection, or an {manager} or {otherManager} code."
+msgstr "Mortar does not recognise this. Paste a Mortar link, a {source} collection, or an {manager} or {otherManager} code."
 
 #: src/saves/SaveRow.tsx
 msgid "Riverland farm"
@@ -5041,15 +4849,9 @@ msgstr "Toggle {name}"
 msgid "All games"
 msgstr "All games"
 
-#. placeholder {0}: item.name
-#: src/queue/QueueRows.tsx
-msgid "Move {0} down"
-msgstr "Move {0} down"
-
-#. placeholder {0}: node.name
-#: src/install/RemapDialog.tsx
-msgid "Collapse {0}"
-msgstr "Collapse {0}"
+#: src/firstrun/LoaderStep.tsx
+msgid "{loader} is the loader every {game} mod needs. It goes into the game folder, and {launcher} keeps launching the game as usual."
+msgstr "{loader} is the loader every {game} mod needs. It goes into the game folder, and {launcher} keeps launching the game as usual."
 
 #: src/game/Sidebar.tsx
 msgid "Expand sidebar"
@@ -5059,18 +4861,25 @@ msgstr "Expand sidebar"
 msgid "This saved group will be deleted. Groups already added to profiles stay."
 msgstr "This saved group will be deleted. Groups already added to profiles stay."
 
+#: src/lan/SendPanel.tsx
+msgid "Sent {profile} to {name}; they will copy the files from you"
+msgstr "Sent {profile} to {name}; they will copy the files from you"
+
 #: src/share/ImportPreview.tsx
 msgid "Dependency"
 msgstr "Dependency"
+
+#: src/queue/QueueBody.tsx
+msgid "In progress ({count})"
+msgstr "In progress ({count})"
 
 #: src/sync/SyncOffers.tsx
 msgid "Changes from your other machines"
 msgstr "Changes from your other machines"
 
-#. placeholder {0}: loader.name
-#: src/loader/Banner.tsx
-msgid "{0} is not installed"
-msgstr "{0} is not installed"
+#: src/launch/UpdateWarnDialog.tsx
+msgid "Broke in {brokeIn}"
+msgstr "Broke in {brokeIn}"
 
 #: src/commandPalette/CommandPalette.tsx
 #: src/commandPalette/paletteLabels.ts
@@ -5090,16 +4899,13 @@ msgstr "Launching {name}"
 msgid "Could not enable sharing nearby"
 msgstr "Could not enable sharing nearby"
 
-#. placeholder {0}: offer.dependentName
-#. placeholder {1}: listNames(names)
-#: src/install/MissingDepsDialog.tsx
-msgid "{0} needs {1}"
-msgstr "{0} needs {1}"
+#: src/game/ProfileMenuItems.tsx
+msgid "Already in {launcher}"
+msgstr "Already in {launcher}"
 
-#. placeholder {0}: form.lastVersion
-#: src/share/ModpackDialog.tsx
-msgid "Last export {0}"
-msgstr "Last export {0}"
+#: src/launch/VanillaPlay.tsx
+msgid "Play without {launcher} overlay"
+msgstr "Play without {launcher} overlay"
 
 #: src/share/ListFormat.tsx
 msgid "Markdown"
@@ -5129,6 +4935,22 @@ msgstr "Dismissed for this save"
 msgid "They see the profile name, the mod list and where each mod comes from."
 msgstr "They see the profile name, the mod list and where each mod comes from."
 
+#: src/saves/SaveBackupsButton.tsx
+msgid "{name} is replaced by the game's own copy from {when}. The current {name} is backed up first."
+msgstr "{name} is replaced by the game's own copy from {when}. The current {name} is backed up first."
+
+#: src/saves/BackupsDialog.tsx
+msgid "Restore {name}"
+msgstr "Restore {name}"
+
+#: src/fomod/Dialog.tsx
+msgid "Step {step} of {count}: {name}"
+msgstr "Step {step} of {count}: {name}"
+
+#: src/share/useImportFlow.ts
+msgid "{count, plural, one {Applied the curator's choices for # mod and {configs, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {configs, plural, one {# config file} other {# config files}}}}"
+msgstr "{count, plural, one {Applied the curator's choices for # mod and {configs, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {configs, plural, one {# config file} other {# config files}}}}"
+
 #: src/firstrun/GameSetup.tsx
 msgid "Install {loader}"
 msgstr "Install {loader}"
@@ -5141,14 +4963,13 @@ msgstr "Include mod files (larger, works offline)"
 msgid "First profile"
 msgstr "First profile"
 
-#. placeholder {0}: saved.path
-#: src/share/MethodPanes.tsx
-msgid "Saved to {0}"
-msgstr "Saved to {0}"
-
 #: src/share/Included.tsx
 msgid "{shared} of {total} mods"
 msgstr "{shared} of {total} mods"
+
+#: src/updates/WhatsNewDialog.tsx
+msgid "{count, plural, one {# new feature} other {# new features}}"
+msgstr "{count, plural, one {# new feature} other {# new features}}"
 
 #: src/saves/saveName.ts
 msgid "Extra slot added by a mod"
@@ -5171,18 +4992,13 @@ msgstr "Mortar backs up your saves before playing and before updates. Use Back u
 msgid "Stop the game to restore saves."
 msgstr "Stop the game to restore saves."
 
-#. placeholder {0}: listNames(carried)
-#: src/share/ImportPreview.tsx
-msgid "{0} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it."
-msgstr "{0} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it."
-
 #: src/commandPalette/paletteLabels.ts
 msgid "Diagnostics"
 msgstr "Diagnostics"
 
-#: src/firstrun/LoaderStep.tsx
-msgid "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
-msgstr "{loader} is the loader every {gameName} mod needs. It goes into the game folder."
+#: src/game/Hero.tsx
+msgid "From the {source} collection \"{name}\""
+msgstr "From the {source} collection \"{name}\""
 
 #: src/game/ProfileMenu.tsx
 #: src/launch/PlayInstances.tsx
@@ -5193,33 +5009,17 @@ msgstr "Copies"
 msgid "Health"
 msgstr "Health"
 
+#: src/queue/store.ts
+msgid "{name} was blocked by your antivirus"
+msgstr "{name} was blocked by your antivirus"
+
 #: src/toasts/ToastHost.tsx
 msgid "Details"
 msgstr "Details"
 
-#: src/saves/SaveBackupsButton.tsx
-msgid "Restore {label} to {when}?"
-msgstr "Restore {label} to {when}?"
-
 #: src/shell/TitleBar.tsx
 msgid "Minimise"
 msgstr "Minimise"
-
-#. placeholder {0}: progress.total
-#. placeholder {1}: progress.current
-#. placeholder {2}: formatBytes(progress.bytes)
-#. placeholder {3}: formatBytes(progress.rate)
-#. placeholder {4}: progress.current
-#. placeholder {5}: formatBytes(progress.bytes)
-#. placeholder {6}: formatBytes(progress.rate)
-#: src/lan/IncomingPrompt.tsx
-msgid "{0, plural, one {{1} of # mod · {2} · {3}/s} other {{4} of # mods · {5} · {6}/s}}"
-msgstr "{0, plural, one {{1} of # mod · {2} · {3}/s} other {{4} of # mods · {5} · {6}/s}}"
-
-#. placeholder {0}: profile.name
-#: src/install/DropOverlay.tsx
-msgid "Drop to install into {0}"
-msgstr "Drop to install into {0}"
 
 #: src/launch/KnownGoodOffer.tsx
 msgid "Mark known good"
@@ -5229,19 +5029,13 @@ msgstr "Mark known good"
 msgid "No archives to add"
 msgstr "No archives to add"
 
-#. placeholder {0}: formatWhen(limitedUntil * UNIX_MS_PER_SECOND)
-#: src/queue/QueueSheet.tsx
-msgid "Downloads resume {0}."
-msgstr "Downloads resume {0}."
-
 #: src/lan/SendPanel.tsx
 msgid "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
 msgstr "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
 
-#. placeholder {0}: target.name
-#: src/lan/SendPanel.tsx
-msgid "{0} is still taking your last share"
-msgstr "{0} is still taking your last share"
+#: src/game/ProfileMenuItems.tsx
+msgid "Added to {launcher}"
+msgstr "Added to {launcher}"
 
 #: src/lan/PairedComputers.tsx
 msgid "Pick the computer showing the code, then type it."
@@ -5263,6 +5057,10 @@ msgstr "About"
 msgid "Updated fixable mods"
 msgstr "Updated fixable mods"
 
+#: src/launch/autoUpdate.ts
+msgid "The update for {name} did not finish"
+msgstr "The update for {name} did not finish"
+
 #: src/games/LetterRail.tsx
 msgid "Jump to a letter"
 msgstr "Jump to a letter"
@@ -5270,10 +5068,6 @@ msgstr "Jump to a letter"
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: newest"
 msgstr "Sort: newest"
-
-#: src/games/GameSelect.tsx
-msgid "Play {playName}"
-msgstr "Play {playName}"
 
 #: src/game/Home.tsx
 #: src/game/Sidebar.tsx
@@ -5284,12 +5078,6 @@ msgstr "Saves"
 #: src/saves/saveName.ts
 msgid "World"
 msgstr "World"
-
-#. placeholder {0}: s.fitting
-#. placeholder {1}: s.recorded
-#: src/game/TabHeader.tsx
-msgid "{0} of {1} saves fit"
-msgstr "{0} of {1} saves fit"
 
 #: src/groups/SavedGroupsSection.tsx
 msgid "Rename saved group"
@@ -5304,14 +5092,9 @@ msgstr "Mod details"
 msgid "Resume"
 msgstr "Resume"
 
-#: src/launch/store.ts
-msgid "Steam may not be running or signed in. Start Steam, sign in and try again."
-msgstr "Steam may not be running or signed in. Start Steam, sign in and try again."
-
-#. placeholder {0}: n.downloading
-#: src/queue/QueueSheet.tsx
-msgid "{0} downloading"
-msgstr "{0} downloading"
+#: src/share/MethodPanes.tsx
+msgid "Share as {manager} code?"
+msgstr "Share as {manager} code?"
 
 #: src/launch/playStart.ts
 msgid "You can roll back the completed updates from the profile history."
@@ -5321,9 +5104,9 @@ msgstr "You can roll back the completed updates from the profile history."
 msgid "Its source is not known."
 msgstr "Its source is not known."
 
-#: src/share/MethodPanes.tsx
-msgid "This uploads the profile to Thunderstore and gives a public code."
-msgstr "This uploads the profile to Thunderstore and gives a public code."
+#: src/install/MissingDepsDialog.tsx
+msgid "{name} needs {names}"
+msgstr "{name} needs {names}"
 
 #: src/browse/BrowseBody.tsx
 msgid "Clear search"
@@ -5341,19 +5124,17 @@ msgstr "Unknown mod"
 msgid "Import a profile"
 msgstr "Import a profile"
 
-#. placeholder {0}: next + 1
-#: src/share/ListFormat.tsx
-msgid "Copy message {0} of {total}"
-msgstr "Copy message {0} of {total}"
+#: src/queue/QueueSheet.tsx
+msgid "{done} done"
+msgstr "{done} done"
+
+#: src/queue/store.ts
+msgid "{count, plural, one {# download needs your decision} other {# downloads need your decision}}"
+msgstr "{count, plural, one {# download needs your decision} other {# downloads need your decision}}"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Could not use that image"
 msgstr "Could not use that image"
-
-#. placeholder {0}: item.name
-#: src/queue/QueueRows.tsx
-msgid "Download {0} now"
-msgstr "Download {0} now"
 
 #: src/install/DownloadsDialog.tsx
 msgid "From the downloads folder"
@@ -5368,23 +5149,46 @@ msgstr "Profile"
 msgid "Change folder…"
 msgstr "Change folder…"
 
-#. placeholder {0}: wants.length
-#: src/saves/lackChips.tsx
-msgid "Add all {0}"
-msgstr "Add all {0}"
+#: src/share/ImportPreview.tsx
+msgid "Needs a {source} key, or the file from its page"
+msgstr "Needs a {source} key, or the file from its page"
+
+#: src/queue/store.ts
+msgid "{count, plural, one {# download failed} other {# downloads failed}}"
+msgstr "{count, plural, one {# download failed} other {# downloads failed}}"
+
+#: src/share/MethodPanes.tsx
+msgid "{count, plural, one {# settings file was} other {# settings files were}} left out (too large or an unusual name):"
+msgstr "{count, plural, one {# settings file was} other {# settings files were}} left out (too large or an unusual name):"
+
+#: src/install/HandoffDialog.tsx
+msgid "Install {file} as from {page}?"
+msgstr "Install {file} as from {page}?"
+
+#: src/game/Hero.tsx
+msgid "· revision {revision}"
+msgstr "· revision {revision}"
 
 #: src/game/NewProfileDialog.tsx
 #: src/game/TemplateMenuItems.tsx
 msgid "Manage templates…"
 msgstr "Manage templates…"
 
-#: src/saves/SaveBackupsButton.tsx
-msgid "Backups of {label}"
-msgstr "Backups of {label}"
+#: src/install/RemapDialog.tsx
+msgid "Expand {name}"
+msgstr "Expand {name}"
+
+#: src/saves/lackChipActions.tsx
+msgid "Open {name} on {source}"
+msgstr "Open {name} on {source}"
 
 #: src/queue/store.ts
 msgid "Not enough disk space"
 msgstr "Not enough disk space"
+
+#: src/share/MethodPanes.tsx
+msgid "Export as {source} collection draft…"
+msgstr "Export as {source} collection draft…"
 
 #: src/browse/BrowseShow.tsx
 #: src/launch/LaunchLayer.tsx
@@ -5430,15 +5234,6 @@ msgstr "Cancelled"
 msgid "Games"
 msgstr "Games"
 
-#: src/firstrun/FindStep.tsx
-msgid "Use {folder}"
-msgstr "Use {folder}"
-
-#. placeholder {0}: summary.leftOut
-#: src/share/ImportPreview.tsx
-msgid "{0} left out"
-msgstr "{0} left out"
-
 #: src/game/NewProfileDialog.tsx
 msgid "Could not create the profile"
 msgstr "Could not create the profile"
@@ -5459,17 +5254,13 @@ msgstr "Looking for Mortar users…"
 msgid "Could not save the mod list"
 msgstr "Could not save the mod list"
 
-#: src/share/ImportInput.tsx
-msgid "Opened the Patreon post. Save the file from it; Mortar offers it from your Downloads folder."
-msgstr "Opened the Patreon post. Save the file from it; Mortar offers it from your Downloads folder."
+#: src/game/ProfileMenuItems.tsx
+msgid "Could not add it to {launcher}"
+msgstr "Could not add it to {launcher}"
 
 #: src/share/useShareBuild.ts
 msgid "Could not build the link"
 msgstr "Could not build the link"
-
-#: src/share/ListFormat.tsx
-msgid "Left out (not on Thunderstore, or disabled): {names}"
-msgstr "Left out (not on Thunderstore, or disabled): {names}"
 
 #: src/saves/SaveRow.tsx
 msgid "New profile from this save"
@@ -5484,20 +5275,17 @@ msgstr "Empty profile"
 msgid "{loader} {version} installed"
 msgstr "{loader} {version} installed"
 
-#. placeholder {0}: gameInfo(game)?.loader ?? ''
-#: src/loader/store.ts
-msgid "Could not install {0}"
-msgstr "Could not install {0}"
+#: src/launch/PrePlayDialog.tsx
+msgid "Changed since last run ({count})"
+msgstr "Changed since last run ({count})"
 
 #: src/launch/LaunchLayer.tsx
 msgid "The game exited before it started. The console has its output."
 msgstr "The game exited before it started. The console has its output."
 
-#. placeholder {0}: missing.length
-#. placeholder {0}: mods.length
-#: src/game/NewProfileDialog.tsx
-msgid "{0, plural, one {Created {name}; # mod still to download} other {Created {name}; # mods still to download}}"
-msgstr "{0, plural, one {Created {name}; # mod still to download} other {Created {name}; # mods still to download}}"
+#: src/launch/SweepDialog.tsx
+msgid "{game} was updated: mods to check"
+msgstr "{game} was updated: mods to check"
 
 #: src/browse/BrowseToolbar.tsx
 msgid "Source"
@@ -5515,10 +5303,6 @@ msgstr "Skip the waiting downloads of this profile"
 msgid "Open downloads"
 msgstr "Open downloads"
 
-#: src/queue/RetryAllButton.tsx
-msgid "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
-msgstr "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
-
 #: src/game/Home.tsx
 msgid "All saves ({total})"
 msgstr "All saves ({total})"
@@ -5527,17 +5311,13 @@ msgstr "All saves ({total})"
 msgid "Download progress"
 msgstr "Download progress"
 
-#: src/nxm/store.ts
-msgid "This is not a Mod Manager Download link from Nexus."
-msgstr "This is not a Mod Manager Download link from Nexus."
-
 #: src/queue/QueueBody.tsx
 msgid "Updates, missing dependencies and links from mod sites land here."
 msgstr "Updates, missing dependencies and links from mod sites land here."
 
-#: src/launch/store.ts
-msgid "The Epic Games Launcher may not be running or signed in. Start it, sign in and try again."
-msgstr "The Epic Games Launcher may not be running or signed in. Start it, sign in and try again."
+#: src/loader/Banner.tsx
+msgid "{name} here is another mod manager's copy. Removing that manager removes {name}."
+msgstr "{name} here is another mod manager's copy. Removing that manager removes {name}."
 
 #: src/firstrun/NexusStep.tsx
 msgid "Signed in as {name}"
@@ -5552,11 +5332,6 @@ msgstr "Launcher replaced"
 msgid "{peer} has all the files for {profile}"
 msgstr "{peer} has all the files for {profile}"
 
-#. placeholder {0}: mod.brokeIn
-#: src/launch/UpdateWarnDialog.tsx
-msgid "Broke in {0}"
-msgstr "Broke in {0}"
-
 #: src/game/TabHeader.tsx
 msgid "Saves whose recorded mod list this profile covers, out of the saves that record one"
 msgstr "Saves whose recorded mod list this profile covers, out of the saves that record one"
@@ -5564,10 +5339,6 @@ msgstr "Saves whose recorded mod list this profile covers, out of the saves that
 #: src/game/ProfileMenuItems.tsx
 msgid "Unfreeze"
 msgstr "Unfreeze"
-
-#: src/install/offerInstallAnyway.ts
-msgid "Windows removed the file as malware without saying which. If you trust it, restore it from Windows Security's protection history and add it again."
-msgstr "Windows removed the file as malware without saying which. If you trust it, restore it from Windows Security's protection history and add it again."
 
 #: src/install/ArchivePreview.tsx
 msgid "FOMOD installer"
@@ -5578,14 +5349,6 @@ msgstr "FOMOD installer"
 msgid "Installing"
 msgstr "Installing"
 
-#: src/share/ImportSources.tsx
-msgid "A .mortar file, an .r2z or a Thunderstore modpack"
-msgstr "A .mortar file, an .r2z or a Thunderstore modpack"
-
-#: src/launch/PrePlayDialog.tsx
-msgid "Switch to {switchName}"
-msgstr "Switch to {switchName}"
-
 #: src/queue/LargeDownloadDialog.tsx
 msgid "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive. Make sure you meant to get it."
 msgstr "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive. Make sure you meant to get it."
@@ -5594,41 +5357,21 @@ msgstr "This download is {size}, far larger than a mod normally is. It will take
 msgid "On the other computer, choose Enter code and type this. It works once, for five minutes."
 msgstr "On the other computer, choose Enter code and type this. It works once, for five minutes."
 
-#. placeholder {0}: target.name
-#: src/lan/SendPanel.tsx
-msgid "Sent {profileName} to {0}; they will copy the files from you"
-msgstr "Sent {profileName} to {0}; they will copy the files from you"
+#: src/queue/QueueSheet.tsx
+msgid "{summary} · {size}"
+msgstr "{summary} · {size}"
 
 #: src/saves/SavesTab.tsx
 msgid "Play this profile and save a game. Each save shows here, with its backups."
 msgstr "Play this profile and save a game. Each save shows here, with its backups."
 
-#. placeholder {0}: node.name
-#: src/install/RemapDialog.tsx
-msgid "Expand {0}"
-msgstr "Expand {0}"
-
 #: src/share/Included.tsx
 msgid "install reasons"
 msgstr "install reasons"
 
-#: src/firstrun/GameSetup.tsx
-#: src/share/DestinationGrid.tsx
-#: src/share/ShareDialog.tsx
-msgid "Nexus Mods"
-msgstr "Nexus Mods"
-
-#: src/browse/browseConstants.ts
-msgid "Search Nexus Mods. Download installs the mod into this profile."
-msgstr "Search Nexus Mods. Download installs the mod into this profile."
-
 #: src/lan/OutgoingProgress.tsx
 msgid "Sending to {peer} stopped: {why}"
 msgstr "Sending to {peer} stopped: {why}"
-
-#: src/toasts/HistoryButton.tsx
-msgid "{unread, plural, one {Notifications, # unread} other {Notifications, # unread}}"
-msgstr "{unread, plural, one {Notifications, # unread} other {Notifications, # unread}}"
 
 #: src/groups/SaveGroupToLibrary.tsx
 #: src/share/ImportFooter.tsx
@@ -5636,10 +5379,9 @@ msgstr "{unread, plural, one {Notifications, # unread} other {Notifications, # u
 msgid "Replace {name}?"
 msgstr "Replace {name}?"
 
-#. placeholder {0}: sourceNames(ids)
-#: src/shell/offlineText.ts
-msgid "{0} cannot be reached"
-msgstr "{0} cannot be reached"
+#: src/game/BackupMenuItems.tsx
+msgid "The backup holds up to {size}: the profile, its settings and config files, and its own saves when it keeps them."
+msgstr "The backup holds up to {size}: the profile, its settings and config files, and its own saves when it keeps them."
 
 #: src/share/ModpackDialog.tsx
 msgid "Write the changelog against the last export"
@@ -5649,26 +5391,21 @@ msgstr "Write the changelog against the last export"
 msgid "Failed, retry"
 msgstr "Failed, retry"
 
-#: src/shell/AppMenu.tsx
-msgid "Nexus Mods · Signed in as {name}"
-msgstr "Nexus Mods · Signed in as {name}"
+#: src/game/NewProfileDialog.tsx
+msgid "{description} Adds {names}."
+msgstr "{description} Adds {names}."
 
 #: src/browse/CardAction.tsx
 msgid "Sign in to download"
 msgstr "Sign in to download"
 
-#: src/shell/FlatpakGrant.tsx
-msgid "Flatpak Steam cannot read your mods"
-msgstr "Flatpak Steam cannot read your mods"
-
-#. placeholder {0}: item.name
-#: src/queue/QueueBody.tsx
-msgid "Cancel {0}"
-msgstr "Cancel {0}"
-
 #: src/launch/PlayControl.tsx
 msgid "Installing {installing}…"
 msgstr "Installing {installing}…"
+
+#: src/share/MethodPanes.tsx
+msgid "Saves this profile as a collection draft to finish and upload on {source}."
+msgstr "Saves this profile as a collection draft to finish and upload on {source}."
 
 #: src/toasts/report.ts
 msgid "That was made by a newer Mortar. Update Mortar to open it."
@@ -5677,6 +5414,14 @@ msgstr "That was made by a newer Mortar. Update Mortar to open it."
 #: src/saves/SaveDetails.tsx
 msgid "{hours}h played"
 msgstr "{hours}h played"
+
+#: src/queue/store.ts
+msgid "Could not download {name}"
+msgstr "Could not download {name}"
+
+#: src/share/ImportPreview.tsx
+msgid "{count, plural, one {# program file was} other {# program files were}} left out; Mortar copies settings, not programs:"
+msgstr "{count, plural, one {# program file was} other {# program files were}} left out; Mortar copies settings, not programs:"
 
 #: src/toasts/HistoryButton.tsx
 msgid "Clear"
@@ -5689,6 +5434,10 @@ msgstr "Season"
 #: src/game/LaunchMenu.tsx
 msgid "Tools"
 msgstr "Tools"
+
+#: src/launch/store.ts
+msgid "{app} stopped on an error before {name} started: {error}"
+msgstr "{app} stopped on an error before {name} started: {error}"
 
 #: src/firstrun/FindStep.tsx
 #: src/firstrun/FirstRun.tsx
@@ -5713,13 +5462,6 @@ msgstr "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 msgid "Could not save the last game"
 msgstr "Could not save the last game"
 
-#. placeholder {0}: listNames(left)
-#. placeholder {0}: listNames(skipped, skipped.length)
-#: src/share/MethodPanes.tsx
-#: src/share/ModpackDialog.tsx
-msgid "Left out: {0}"
-msgstr "Left out: {0}"
-
 #: src/firstrun/FirstRun.tsx
 msgid "Welcome to Mortar"
 msgstr "Welcome to Mortar"
@@ -5728,23 +5470,21 @@ msgstr "Welcome to Mortar"
 msgid "{unblocked} can load now."
 msgstr "{unblocked} can load now."
 
-#. placeholder {0}: report.total
-#: src/tidy/report.ts
-msgid "Mortar tidied up {0, plural, one {# thing} other {# things}}"
-msgstr "Mortar tidied up {0, plural, one {# thing} other {# things}}"
-
 #: src/nxm/ArrivalDialog.tsx
 msgid "Loading profiles…"
 msgstr "Loading profiles…"
+
+#: src/share/importCompletion.ts
+msgid "{count, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
+msgstr "{count, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
 
 #: src/firstrun/ProfileStep.tsx
 msgid "Import from the game's Mods folder"
 msgstr "Import from the game's Mods folder"
 
-#. placeholder {0}: item.name
-#: src/queue/store.ts
-msgid "{0} was blocked by your antivirus"
-msgstr "{0} was blocked by your antivirus"
+#: src/queue/RetryAllButton.tsx
+msgid "{count, plural, one {# superseded by a newer download} other {# superseded by a newer download}}"
+msgstr "{count, plural, one {# superseded by a newer download} other {# superseded by a newer download}}"
 
 #: src/queue/QueueBody.tsx
 msgid "Check this download"
@@ -5768,16 +5508,6 @@ msgstr "Fall"
 msgid "Try fewer words, or the mod's exact name."
 msgstr "Try fewer words, or the mod's exact name."
 
-#: src/game/ProfileMenuItems.tsx
-msgid "Add this profile to Steam"
-msgstr "Add this profile to Steam"
-
-#. placeholder {0}: game.name
-#: src/firstrun/GameSetup.tsx
-#: src/games/GameSelect.tsx
-msgid "Set up {0}"
-msgstr "Set up {0}"
-
 #: src/share/ImportPreview.tsx
 msgid "Open post"
 msgstr "Open post"
@@ -5790,18 +5520,17 @@ msgstr "Mark these mods known good so History can restore them if a later change
 msgid "Get Mortar"
 msgstr "Get Mortar"
 
-#: src/launch/PlayInstances.tsx
-msgid "{copies, plural, one {Launch # copy} other {Launch all # copies}}"
-msgstr "{copies, plural, one {Launch # copy} other {Launch all # copies}}"
+#: src/launch/store.ts
+msgid "{app} {launcher} cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
+msgstr "{app} {launcher} cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
 
-#. placeholder {0}: info.name
-#: src/share/ShareDialog.tsx
-msgid "Share {0}"
-msgstr "Share {0}"
+#: src/saves/SaveBackupsButton.tsx
+msgid "Backups of {name}"
+msgstr "Backups of {name}"
 
-#: src/games/AddGameDialog.tsx
-msgid "Thunderstore community"
-msgstr "Thunderstore community"
+#: src/share/ImportPreview.tsx
+msgid "{count, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
+msgstr "{count, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 
 #: src/game/Home.tsx
 #: src/saves/SavesTab.tsx
@@ -5813,10 +5542,17 @@ msgstr "Reading your saves…"
 msgid "Copy link"
 msgstr "Copy link"
 
-#. placeholder {0}: state.percent
-#: src/browse/CardProgress.tsx
-msgid "Paused at {0}%"
-msgstr "Paused at {0}%"
+#: src/saves/SaveDetails.tsx
+msgid "{season} {day}, year {year}"
+msgstr "{season} {day}, year {year}"
+
+#: src/browse/stats.ts
+msgid "{count, plural, one {# endorsement} other {# endorsements}}"
+msgstr "{count, plural, one {# endorsement} other {# endorsements}}"
+
+#: src/games/AddGameDialog.tsx
+msgid "The game's name in its {source} address (thunderstore.io/c/…). Mortar gets {loader} and the game's mods from it. Choose the game's shipping program, in Binaries/Win64."
+msgstr "The game's name in its {source} address (thunderstore.io/c/…). Mortar gets {loader} and the game's mods from it. Choose the game's shipping program, in Binaries/Win64."
 
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: top rated"
@@ -5825,10 +5561,6 @@ msgstr "Sort: top rated"
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most popular"
 msgstr "Sort: most popular"
-
-#: src/queue/DownloadsPill.tsx
-msgid "{active, plural, one {# downloading} other {# downloading}}"
-msgstr "{active, plural, one {# downloading} other {# downloading}}"
 
 #: src/i18n/formatWhen.ts
 msgid "a few seconds ago"
@@ -5842,11 +5574,6 @@ msgstr "Delete {name}"
 #: src/browse/BrowseDetails.tsx
 msgid "Choose a version…"
 msgstr "Choose a version…"
-
-#. placeholder {0}: found.length
-#: src/downloads/newDownloads.ts
-msgid "{0, plural, one {# new archive} other {# new archives}} in your downloads folder"
-msgstr "{0, plural, one {# new archive} other {# new archives}} in your downloads folder"
 
 #: src/queue/QueueSheet.tsx
 msgid "Download history"
@@ -5864,14 +5591,9 @@ msgstr "Your notes for this profile, for example: Friday co-op profile. Keep eve
 msgid "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
 msgstr "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
 
-#: src/queue/store.ts
-#: src/share/ImportFooter.tsx
-msgid "Open Nexus settings"
-msgstr "Open Nexus settings"
-
-#: src/shell/BugReportDialog.tsx
-msgid "Opens a GitHub issue with these filled in. You review it before posting."
-msgstr "Opens a GitHub issue with these filled in. You review it before posting."
+#: src/share/arrivals.ts
+msgid "{name} is not in {profile}"
+msgstr "{name} is not in {profile}"
 
 #: src/commandPalette/crashBisect.ts
 msgid "Start the game once so Mortar can see the crash."
@@ -5893,6 +5615,15 @@ msgstr "Reinstall"
 msgid "Reading…"
 msgstr "Reading…"
 
+#: src/install/handoff.ts
+msgid "{source} post {id}"
+msgstr "{source} post {id}"
+
+#: src/queue/store.ts
+#: src/share/ImportFooter.tsx
+msgid "Open {source} settings"
+msgstr "Open {source} settings"
+
 #: src/shell/checkForUpdates.ts
 msgid "Checking for updates…"
 msgstr "Checking for updates…"
@@ -5911,9 +5642,25 @@ msgstr "Installers ask as usual; Premium accounts also get the curator's choices
 msgid "Restore"
 msgstr "Restore"
 
+#: src/launch/SmapiWarnDialog.tsx
+msgid "{launcher} will still start {loader}"
+msgstr "{launcher} will still start {loader}"
+
+#: src/loader/Banner.tsx
+msgid "Stop the game to change {name}."
+msgstr "Stop the game to change {name}."
+
+#: src/toasts/HistoryButton.tsx
+msgid "{count, plural, one {Notifications, # unread} other {Notifications, # unread}}"
+msgstr "{count, plural, one {Notifications, # unread} other {Notifications, # unread}}"
+
 #: src/saves/BackupsDialog.tsx
 msgid "Restore all"
 msgstr "Restore all"
+
+#: src/saves/SaveRow.tsx
+msgid "Backed up {name}"
+msgstr "Backed up {name}"
 
 #: src/share/MethodPanes.tsx
 msgid "This profile is too large for a link."
@@ -5927,20 +5674,17 @@ msgstr "Leave empty to use the game folder. Same placeholders as arguments."
 msgid "Open settings"
 msgstr "Open settings"
 
-#. placeholder {0}: save?.farmer ?? ''
-#. placeholder {1}: save?.folder ?? ''
-#: src/launch/SaveWarnDialog.tsx
-msgid "{0}'s farm ({1}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save."
-msgstr "{0}'s farm ({1}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save."
+#: src/share/ImportFooter.tsx
+msgid "Sign in to {source} to download these mods."
+msgstr "Sign in to {source} to download these mods."
+
+#: src/queue/store.ts
+msgid "Could not reach {source}"
+msgstr "Could not reach {source}"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Could not add the shortcut"
 msgstr "Could not add the shortcut"
-
-#. placeholder {0}: waiting.length
-#: src/queue/store.ts
-msgid "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
-msgstr "{0, plural, one {# download needs your decision} other {# downloads need your decision}}"
 
 #: src/share/ModpackDialog.tsx
 msgid "The version must look like 1.0.0."
@@ -5954,30 +5698,21 @@ msgstr "groups"
 msgid "Quit Mortar"
 msgstr "Quit Mortar"
 
-#: src/launch/store.ts
-msgid "Steam must be installed and signed in for this game. Install Steam, sign in once and try again."
-msgstr "Steam must be installed and signed in for this game. Install Steam, sign in once and try again."
+#: src/shell/BugReportDialog.tsx
+msgid "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
+msgstr "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
 
-#: src/saves/SaveRow.tsx
-msgid "Back up {label} now"
-msgstr "Back up {label} now"
+#: src/shell/FlatpakGrant.tsx
+msgid "Grant {app} {launcher} access?"
+msgstr "Grant {app} {launcher} access?"
 
-#. placeholder {0}: tool.name
-#: src/game/LaunchMenu.tsx
-msgid "Could not start {0}"
-msgstr "Could not start {0}"
+#: src/launch/PrePlayDialog.tsx
+msgid "Missing required dependencies ({count})"
+msgstr "Missing required dependencies ({count})"
 
-#. placeholder {0}: calendar.year
-#. placeholder {1}: seasons[calendar.season] ?? ''
-#: src/game/Home.tsx
-#: src/saves/SaveListRow.tsx
-msgid "Year {0} {1}"
-msgstr "Year {0} {1}"
-
-#. placeholder {0}: item.version.replace(leadingV, '')
-#: src/browse/stats.ts
-msgid "Version {0}"
-msgstr "Version {0}"
+#: src/browse/BrowseMenu.tsx
+msgid "Open page on {source}"
+msgstr "Open page on {source}"
 
 #: src/i18n/counts.ts
 msgid "{count, plural, one {# update} other {# updates}}"
@@ -6003,9 +5738,17 @@ msgstr "Close"
 msgid "Link"
 msgstr "Link"
 
+#: src/groups/SavedGroupRow.tsx
+msgid "Show mods of {name}"
+msgstr "Show mods of {name}"
+
 #: src/launch/PrePlayDialog.tsx
 msgid "Update and play"
 msgstr "Update and play"
+
+#: src/game/FarmMenuItem.tsx
+msgid "Install by hand: {names}"
+msgstr "Install by hand: {names}"
 
 #: src/shell/offlineText.ts
 msgid "{names} cannot be reached, so Mortar cannot check for mod updates"
@@ -6015,13 +5758,17 @@ msgstr "{names} cannot be reached, so Mortar cannot check for mod updates"
 msgid "Already the newest file"
 msgstr "Already the newest file"
 
-#: src/firstrun/NexusStep.tsx
-msgid "Sign in to Nexus Mods"
-msgstr "Sign in to Nexus Mods"
+#: src/share/ImportPreview.tsx
+msgid "Needs a file from its {source} post"
+msgstr "Needs a file from its {source} post"
 
 #: src/lan/SendPanel.tsx
 msgid "Send links only"
 msgstr "Send links only"
+
+#: src/groups/dialogs.tsx
+msgid "Add a saved group to {profile}"
+msgstr "Add a saved group to {profile}"
 
 #: src/games/AddGameDialog.tsx
 msgid "Games you added"
@@ -6035,11 +5782,6 @@ msgstr "Share"
 msgid "Leave out"
 msgstr "Leave out"
 
-#. placeholder {0}: count('new')
-#: src/updates/WhatsNewDialog.tsx
-msgid "{0, plural, one {# new feature} other {# new features}}"
-msgstr "{0, plural, one {# new feature} other {# new features}}"
-
 #: src/game/Home.tsx
 #: src/saves/SavesTab.tsx
 msgid "No saves yet"
@@ -6048,6 +5790,10 @@ msgstr "No saves yet"
 #: src/share/ShareFooter.tsx
 msgid "Copy as a message"
 msgstr "Copy as a message"
+
+#: src/loader/store.ts
+msgid "{name} {version} is installed"
+msgstr "{name} {version} is installed"
 
 #: src/saves/backups.ts
 msgid "Before a restore"
@@ -6061,15 +5807,13 @@ msgstr "The game was updated"
 msgid "Could not load categories: {why}"
 msgstr "Could not load categories: {why}"
 
+#: src/launch/LaunchLayer.tsx
+msgid "Caused by {name}"
+msgstr "Caused by {name}"
+
 #: src/share/MethodPanes.tsx
 msgid "Could not save the .r2z file"
 msgstr "Could not save the .r2z file"
-
-#. placeholder {0}: asking?.scanner ?? ''
-#. placeholder {1}: asking?.name ?? ''
-#: src/toasts/AvOverrideDialog.tsx
-msgid "Your antivirus ({0}) reports {1}{where}. Mod loaders and their DLLs often trip heuristics, but a real detection can harm your computer. Install only a file you trust. Mortar records this choice in the profile's history."
-msgstr "Your antivirus ({0}) reports {1}{where}. Mod loaders and their DLLs often trip heuristics, but a real detection can harm your computer. Install only a file you trust. Mortar records this choice in the profile's history."
 
 #: src/saves/BackupsDialog.tsx
 #: src/saves/SaveBackupsButton.tsx
@@ -6088,20 +5832,21 @@ msgstr "Search all mod sites"
 msgid "Saved group deleted"
 msgstr "Saved group deleted"
 
-#. placeholder {0}: listNames(missing, missing.length)
-#: src/groups/applied.ts
-msgid "Not downloaded yet: {0}"
-msgstr "Not downloaded yet: {0}"
+#: src/firstrun/ProfileStep.tsx
+msgid "{count, plural, one {# profile from another mod manager is} other {# profiles from other mod managers are}} on this computer."
+msgstr "{count, plural, one {# profile from another mod manager is} other {# profiles from other mod managers are}} on this computer."
 
 #: src/groups/SavedGroupsSection.tsx
 msgid "Save a group from the Mods tab to reuse it in other profiles."
 msgstr "Save a group from the Mods tab to reuse it in other profiles."
 
-#. placeholder {0}: loader.name
-#. placeholder {1}: loader.name
-#: src/loader/Banner.tsx
-msgid "{0} here is another mod manager's copy. Removing that manager removes {1}."
-msgstr "{0} here is another mod manager's copy. Removing that manager removes {1}."
+#: src/nxm/store.ts
+msgid "This is not a Mod Manager Download link from {source}."
+msgstr "This is not a Mod Manager Download link from {source}."
+
+#: src/install/store.ts
+msgid "Could not add {name}"
+msgstr "Could not add {name}"
 
 #: src/game/Hero.tsx
 msgid "· revision {review} is out"
@@ -6116,13 +5861,25 @@ msgstr "Paused at {done} of {total}"
 msgid "Command palette"
 msgstr "Command palette"
 
+#: src/queue/QueueSheet.tsx
+msgid "Downloads resume {when}."
+msgstr "Downloads resume {when}."
+
 #: src/install/MissingDepsDialog.tsx
 msgid "Add them"
 msgstr "Add them"
 
+#: src/install/ArchivePreview.tsx
+msgid "{size} in total"
+msgstr "{size} in total"
+
 #: src/saves/SaveRow.tsx
 msgid "Forest farm"
 msgstr "Forest farm"
+
+#: src/game/TabHeader.tsx
+msgid "{count, plural, one {# save} other {# saves}}"
+msgstr "{count, plural, one {# save} other {# saves}}"
 
 #: src/install/DownloadsDialog.tsx
 msgid "Choose an archive first."
@@ -6136,23 +5893,9 @@ msgstr "Could not remove the game"
 msgid "A link or .mortar file"
 msgstr "A link or .mortar file"
 
-#: src/shell/BugReportDialog.tsx
-msgid "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's Discord, and saves the diagnostics zip to attach."
-msgstr "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's Discord, and saves the diagnostics zip to attach."
-
-#: src/firstrun/LoaderStep.tsx
-msgid "Could not set it in Steam"
-msgstr "Could not set it in Steam"
-
 #: src/games/storeName.ts
 msgid "Default folder"
 msgstr "Default folder"
-
-#. placeholder {0}: dropped.length
-#. placeholder {1}: names(dropped)
-#: src/queue/QueueBody.tsx
-msgid "Skipped ({0}): {1}"
-msgstr "Skipped ({0}): {1}"
 
 #: src/queue/QueueBody.tsx
 #: src/toasts/AvOverrideDialog.tsx
@@ -6175,23 +5918,18 @@ msgstr "{name} via {launcher}"
 msgid "Template deleted"
 msgstr "Template deleted"
 
-#: src/browse/stats.ts
-msgid "{endorsements, plural, one {# follower} other {# followers}}"
-msgstr "{endorsements, plural, one {# follower} other {# followers}}"
+#: src/shell/offlineText.ts
+msgid "{sources} cannot sort this way: pick it as the source to see its mods"
+msgstr "{sources} cannot sort this way: pick it as the source to see its mods"
 
 #: src/tools/ToolsManageDialog.tsx
 msgid "This tool will be removed from Mortar."
 msgstr "This tool will be removed from Mortar."
 
-#: src/launch/PrePlayDialog.tsx
-msgid "{enabled, plural, one {Enabled # mod} other {Enabled # mods}}"
-msgstr "{enabled, plural, one {Enabled # mod} other {Enabled # mods}}"
-
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most stars"
 msgstr "Sort: most stars"
 
-#. placeholder {0}: here.length
-#: src/firstrun/FirstRun.tsx
-msgid "{found} of {0, plural, one {# launcher} other {# launchers}} found."
-msgstr "{found} of {0, plural, one {# launcher} other {# launchers}} found."
+#: src/firstrun/LoaderStep.tsx
+msgid "On {os}, {launcher} starts the game without {loader} unless told to. With {launcher} closed, Mortar can set that up; or in {launcher}, right-click {game}, choose Properties and paste this line into Launch Options:"
+msgstr "On {os}, {launcher} starts the game without {loader} unless told to. With {launcher} closed, Mortar can set that up; or in {launcher}, right-click {game}, choose Properties and paste this line into Launch Options:"

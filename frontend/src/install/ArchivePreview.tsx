@@ -100,7 +100,7 @@ export function ArchivePreview({ path }: { path: string }) {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, gap: space.gap }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexWrap: 'wrap' }}>
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-          {t`${formatBytes(preview.totalSize)} in total`}
+          {t`${{ size: formatBytes(preview.totalSize) }} in total`}
         </Typography>
         {preview.fomod ? <Chip size="small" color="info" label={t`FOMOD installer`} /> : null}
       </Box>

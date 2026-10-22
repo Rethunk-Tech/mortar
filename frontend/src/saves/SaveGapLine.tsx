@@ -22,7 +22,7 @@ function stateText(kind: 'missing' | 'disabled' | 'older', m: GapMod): string {
     return i18n._(msg`Disabled`).toLowerCase()
   }
   if (kind === 'older') {
-    return i18n._(msg`older, profile has ${m.have}`)
+    return i18n._(msg`older, profile has ${{ have: m.have }}`)
   }
   return i18n._(msg`Missing`).toLowerCase()
 }
@@ -51,7 +51,7 @@ export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Typography sx={{ flex: 1, fontSize: 12, color: 'warning.main' }}>
-          {t`Needs ${plural(need, { one: '# mod this profile lacks', other: '# mods this profile lacks' })}`}
+          {t`Needs ${plural({ count: need }, { one: '# mod this profile lacks', other: '# mods this profile lacks' })}`}
         </Typography>
         <Button size="small" onClick={() => setShown(!shown)}>
           {shown ? t`Hide` : t`Show`}

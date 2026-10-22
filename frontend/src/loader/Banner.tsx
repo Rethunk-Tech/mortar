@@ -26,21 +26,21 @@ export function LoaderBanner({ game }: { game: string }) {
   if (!status || (!installing && status.installed && !status.updateAvailable && !status.shared)) {
     return null
   }
-  let message = t`${loader.name} is not installed`
+  let message = t`${{ name: loader.name }} is not installed`
   let action = t`Install`
   // Reinstall the version in use, so only where it lives changes.
   let version: string | undefined
   if (status.shared) {
     message = status.linkedFrom
-      ? t`${loader.name} here is another mod manager's copy, linked from ${status.linkedFrom}. Removing that manager removes ${loader.name}.`
-      : t`${loader.name} here is another mod manager's copy. Removing that manager removes ${loader.name}.`
+      ? t`${{ name: loader.name }} here is another mod manager's copy, linked from ${{ linkedFrom: status.linkedFrom }}. Removing that manager removes ${{ name: loader.name }}.`
+      : t`${{ name: loader.name }} here is another mod manager's copy. Removing that manager removes ${{ name: loader.name }}.`
     action = t`Install Mortar's copy`
     version = status.version || undefined
   } else if (status.broken) {
-    message = t`A game update replaced ${loader.name}'s launcher`
+    message = t`A game update replaced ${{ name: loader.name }}'s launcher`
     action = t`Reinstall`
   } else if (status.installed) {
-    message = t`${loader.name} ${status.latest} is available`
+    message = t`${{ name: loader.name }} ${{ latest: status.latest }} is available`
     action = t`Update`
   }
   return (
@@ -66,7 +66,7 @@ export function LoaderBanner({ game }: { game: string }) {
         <InstallSteps steps={steps} />
       ) : (
         <DisabledReason
-          title={t`Stop the game to change ${loader.name}.`}
+          title={t`Stop the game to change ${{ name: loader.name }}.`}
           disabled={pending || playing}
         >
           <Button

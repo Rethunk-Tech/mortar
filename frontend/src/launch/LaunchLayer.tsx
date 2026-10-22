@@ -17,6 +17,7 @@ import { CircleAlert } from 'lucide-react'
 import { useEffect } from 'react'
 import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { STEAM } from '../brand/productNames.ts'
 import { CrashDialog, SwitchOffButton } from '../console/CrashDialog.tsx'
 import { format } from '../console/filter.ts'
 import { useConsole } from '../console/store.ts'
@@ -217,7 +218,7 @@ function Failure({ game }: { game: string }) {
         </DialogContentText>
         {cause ? (
           <DialogContentText>
-            <strong>{t`Caused by ${cause.modName}`}</strong>
+            <strong>{t`Caused by ${{ name: cause.modName }}`}</strong>
             <br />
             {cause.detail}
           </DialogContentText>
@@ -263,13 +264,13 @@ function DirectDialog() {
   return (
     <ConfirmDialog
       open={ask !== null}
-      title={t`Steam was not found`}
+      title={t`${{ launcher: STEAM }} was not found`}
       body={
         ask?.profile === ''
-          ? t`Mortar can start ${{ name: gameName }} directly instead, without the Steam overlay or Steam's playtime tracking.`
-          : t`Mortar can start ${{ name: loader }} directly instead, without the Steam overlay or Steam's playtime tracking.`
+          ? t`Mortar can start ${{ name: gameName }} directly instead, without the ${{ launcher: STEAM }} overlay or ${{ launcher: STEAM }}'s playtime tracking.`
+          : t`Mortar can start ${{ name: loader }} directly instead, without the ${{ launcher: STEAM }} overlay or ${{ launcher: STEAM }}'s playtime tracking.`
       }
-      confirmLabel={t`Launch without Steam`}
+      confirmLabel={t`Launch without ${{ launcher: STEAM }}`}
       onCancel={cancelling(() => {
         answer(false).catch(reportUnexpected)
       })}

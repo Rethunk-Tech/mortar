@@ -194,10 +194,13 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
         openProfile(target.id)
         useToasts.getState().push({
           kind: 'success',
-          title: plural(changes, {
-            one: `Added # mod from ${{ profile: source.name }} to ${{ name: targetName }}`,
-            other: `Added # mods from ${{ profile: source.name }} to ${{ name: targetName }}`,
-          }),
+          title: plural(
+            { count: changes },
+            {
+              one: `Added # mod from ${{ profile: source.name }} to ${{ name: targetName }}`,
+              other: `Added # mods from ${{ profile: source.name }} to ${{ name: targetName }}`,
+            },
+          ),
         })
       },
       { errorTitle: t`Could not add the mods to ${{ name: targetName }}` },

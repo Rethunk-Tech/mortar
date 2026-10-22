@@ -1,8 +1,9 @@
-import { plural } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, Typography } from '@mui/material'
 import { ArrowLeft, X } from 'lucide-react'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { i18n } from '../i18n/index.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
@@ -16,10 +17,9 @@ import { useShareBuild } from './useShareBuild.ts'
 
 function shareMessage(info: ShownInfo, gameName: string): string {
   const count = sharedMods(info)
-  return plural(count, {
-    one: `Try my Mortar profile "${info.name}" for ${gameName} (# mod): ${info.web}`,
-    other: `Try my Mortar profile "${info.name}" for ${gameName} (# mods): ${info.web}`,
-  })
+  return i18n._(
+    msg`Try my Mortar profile "${{ name: info.name }}" for ${{ game: gameName }} (${plural({ count }, { one: '# mod', other: '# mods' })}): ${{ web: info.web }}`,
+  )
 }
 
 export function ShareDialog() {
@@ -40,7 +40,7 @@ export function ShareDialog() {
   })
   const names = {
     mortar: t`Mortar`,
-    nexus: t`Nexus Mods`,
+    nexus: t`${{ source: sourceLabel('nexus') }}`,
     thunderstore: sourceLabel('thunderstore'),
     nearby: t`Nearby computer`,
     list: t`Mod list`,
@@ -59,7 +59,7 @@ export function ShareDialog() {
       maxWidth={false}
       slotProps={{
         paper: {
-          'aria-label': info ? t`Share ${info.name}` : undefined,
+          'aria-label': info ? t`Share ${{ name: info.name }}` : undefined,
           sx: {
             bgcolor: 'var(--mortar-panel-solid)',
             border: '1px solid var(--mortar-hairline-12)',
@@ -83,7 +83,7 @@ export function ShareDialog() {
             ) : null}
             <Box sx={{ minWidth: 0 }}>
               <Typography noWrap={true} title={info.name} sx={{ fontSize: 20, fontWeight: 700 }}>
-                {t`Share ${info.name}`}
+                {t`Share ${{ name: info.name }}`}
               </Typography>
               <Typography noWrap={true} sx={{ color: 'text.secondary', fontSize: 14 }}>
                 {destination

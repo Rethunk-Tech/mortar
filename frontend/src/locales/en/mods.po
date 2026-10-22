@@ -35,10 +35,6 @@ msgstr "prefix"
 msgid "Could not open the folder"
 msgstr "Could not open the folder"
 
-#: src/mods/problemFixButtons.tsx
-msgid "Delete {path}?"
-msgstr "Delete {path}?"
-
 #: src/mods/AuthorDialog.tsx
 msgid "Author · {author}"
 msgstr "Author · {author}"
@@ -1453,6 +1449,7 @@ msgstr "{plugin} failed to load."
 
 #: src/mods/CategoryEditor.tsx
 #: src/mods/ConfigPresets.tsx
+#: src/mods/problemFixButtons.tsx
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Delete {name}?"
 msgstr "Delete {name}?"

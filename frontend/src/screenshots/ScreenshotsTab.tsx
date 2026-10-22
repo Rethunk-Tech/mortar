@@ -54,7 +54,9 @@ function Viewer({
     try {
       const file = await ScreenshotFile(game, shot.source, shot.name)
       useProfiles.getState().replace(await SetCover(game, profile.id, file))
-      useToasts.getState().push({ kind: 'success', title: t`${profile.name} has a new cover` })
+      useToasts
+        .getState()
+        .push({ kind: 'success', title: t`${{ name: profile.name }} has a new cover` })
     } catch (e) {
       reportError(t`Could not set the cover`)(e)
     }
@@ -124,7 +126,9 @@ export function ScreenshotsTab({ game }: { game: string }) {
     if (!both) {
       return t`Open folder`
     }
-    return source === STEAM ? t`Open Steam's folder` : t`Open the game's folder`
+    return source === STEAM
+      ? t`Open ${{ launcher: storeName('steam') }}'s folder`
+      : t`Open the game's folder`
   }
   let body: ReactNode
   if (error !== null) {

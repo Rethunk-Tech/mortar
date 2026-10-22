@@ -60,7 +60,9 @@ function SavesList() {
             color="text.secondary"
             sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}
           >
-            {calendar ? t`Year ${calendar.year} ${seasons[calendar.season] ?? ''}` : ''}
+            {calendar
+              ? t`Year ${{ year: calendar.year }} ${{ season: seasons[calendar.season] ?? '' }}`
+              : ''}
           </Typography>
         </ListItem>
       ))}

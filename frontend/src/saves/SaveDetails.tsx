@@ -60,13 +60,15 @@ export function SaveDetails({
       <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2, rowGap: 0.75 }}>
         {fit.day > 0 ? (
           <Stat icon={<CalendarDays size={14} />}>
-            {t`${seasons[fit.season] ?? ''} ${fit.day}, year ${fit.year}`}
+            {t`${{ season: seasons[fit.season] ?? '' }} ${{ day: fit.day }}, year ${{ year: fit.year }}`}
           </Stat>
         ) : null}
         {hours > 0 ? <Stat icon={<Clock size={14} />}>{t`${hours}h played`}</Stat> : null}
         {fit.money ? <Stat icon={<Coins size={14} />}>{goldText(fit.money)}</Stat> : null}
         {fit.gameVersion ? (
-          <Stat icon={<Tag size={14} />}>{t`Saved on version ${fit.gameVersion}`}</Stat>
+          <Stat
+            icon={<Tag size={14} />}
+          >{t`Saved on version ${{ gameVersion: fit.gameVersion }}`}</Stat>
         ) : null}
       </Box>
       <Box

@@ -71,10 +71,13 @@ function CopyingDialog({
           <CircularProgress size={24} />
           <Typography>
             {progress
-              ? plural(progress.total, {
-                  one: `${progress.current} of # mod · ${formatBytes(progress.bytes)} · ${formatBytes(progress.rate)}/s`,
-                  other: `${progress.current} of # mods · ${formatBytes(progress.bytes)} · ${formatBytes(progress.rate)}/s`,
-                })
+              ? plural(
+                  { count: progress.total },
+                  {
+                    one: `${{ current: progress.current }} of # mod · ${{ size: formatBytes(progress.bytes) }} · ${{ rate: formatBytes(progress.rate) }}/s`,
+                    other: `${{ current: progress.current }} of # mods · ${{ size: formatBytes(progress.bytes) }} · ${{ rate: formatBytes(progress.rate) }}/s`,
+                  },
+                )
               : t`Preparing transfer…`}
           </Typography>
         </Box>
@@ -236,7 +239,7 @@ export function IncomingPrompt() {
     <>
       <Dialog open={!(choosing || transferring)}>
         <DialogTitle title={incomingGame}>
-          {t`${incoming.sender} sent you ${incoming.profileName} (${gameName})`}
+          {t`${{ sender: incoming.sender }} sent you ${{ profile: incoming.profileName }} (${{ game: gameName }})`}
         </DialogTitle>
         <DialogContent>
           <Typography color="text.secondary">
@@ -268,7 +271,7 @@ export function IncomingPrompt() {
                 {t`Import as new profile`}
               </Button>
               <Button variant="contained" onClick={() => compare(choice.profileId)}>
-                {t`Update ${localName} from ${sender}`}
+                {t`Update ${{ name: localName }} from ${sender}`}
               </Button>
             </>
           ) : (

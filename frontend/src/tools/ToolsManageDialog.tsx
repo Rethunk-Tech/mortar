@@ -54,7 +54,7 @@ export function ToolsManageDialog({
                 secondaryAction={
                   <>
                     <TipIconButton
-                      label={t`Edit ${tool.name}`}
+                      label={t`Edit ${{ name: tool.name }}`}
                       edge="end"
                       onClick={() => setEditing(tool)}
                     >
@@ -84,7 +84,7 @@ export function ToolsManageDialog({
       </Dialog>
       <ConfirmDialog
         open={deleting !== null}
-        title={t`Remove ${deleting?.name ?? ''}?`}
+        title={t`Remove ${{ name: deleting?.name ?? '' }}?`}
         body={t`This tool will be removed from Mortar.`}
         confirmLabel={t`Remove`}
         color="error"
@@ -97,7 +97,7 @@ export function ToolsManageDialog({
           const drop = (): void => {
             remove(game, tool.id)
               .then(() => setDeleting(null))
-              .catch(reportError(t`Could not remove ${tool.name}`, drop))
+              .catch(reportError(t`Could not remove ${{ name: tool.name }}`, drop))
           }
           drop()
         }}

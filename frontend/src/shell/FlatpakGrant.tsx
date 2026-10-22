@@ -6,6 +6,7 @@ import {
   GrantSteamAccess,
   SteamAccess,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
+import { FLATPAK, STEAM } from '../brand/productNames.ts'
 import { copyText } from '../share/copyText.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
@@ -43,9 +44,11 @@ export function FlatpakGrant() {
           py: space.pad,
         }}
       >
-        <Box sx={{ fontSize: 16 }}>{t`Flatpak Steam cannot read your mods`}</Box>
+        <Box
+          sx={{ fontSize: 16 }}
+        >{t`${{ app: FLATPAK }} ${{ launcher: STEAM }} cannot read your mods`}</Box>
         <Box sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)' }}>
-          {t`Grant the Steam sandbox read access to Mortar's data folder, or the game will not see this profile's mods.`}
+          {t`Grant the ${{ launcher: STEAM }} sandbox read access to Mortar's data folder, or the game will not see this profile's mods.`}
         </Box>
         <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-start' }}>
           <Box
@@ -82,8 +85,8 @@ export function FlatpakGrant() {
       </Box>
       <ConfirmDialog
         open={ask}
-        title={t`Grant Flatpak Steam access?`}
-        body={t`This runs the command below once for your user, so Steam can read Mortar's data folder.`}
+        title={t`Grant ${{ app: FLATPAK }} ${{ launcher: STEAM }} access?`}
+        body={t`This runs the command below once for your user, so ${{ launcher: STEAM }} can read Mortar's data folder.`}
         confirmLabel={t`Grant access`}
         onCancel={() => setAsk(false)}
         onConfirm={() => {

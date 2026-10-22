@@ -80,16 +80,19 @@ function ProfileRows({
           </Link>
           {(row.broken ?? []).map((mod) => (
             <Typography key={`${row.profile}-${mod.key}`} sx={{ fontSize: 13 }}>
-              {i18n._(msg`${mod.name}: ${fixLabel(i18n, mod.fix)}`)}
+              {i18n._(msg`${{ name: mod.name }}: ${{ fix: fixLabel(i18n, mod.fix) }}`)}
             </Typography>
           ))}
           {(row.missingDeps ?? 0) > 0 ? (
             <Typography sx={{ fontSize: 13 }} color="text.secondary">
               {i18n._(
-                msg`${plural(row.missingDeps, {
-                  one: '# missing dependency',
-                  other: '# missing dependencies',
-                })}`,
+                msg`${plural(
+                  { count: row.missingDeps },
+                  {
+                    one: '# missing dependency',
+                    other: '# missing dependencies',
+                  },
+                )}`,
               )}
             </Typography>
           ) : null}
@@ -128,7 +131,7 @@ function SweepDialog() {
         paper: { sx: { width: DIALOG_WIDTH, maxWidth: `calc(100% - ${EDGE}px)` } },
       }}
     >
-      <DialogTitle>{t`${report?.gameName ?? ''} was updated: mods to check`}</DialogTitle>
+      <DialogTitle>{t`${{ game: report?.gameName ?? '' }} was updated: mods to check`}</DialogTitle>
       <DialogContent>
         {report ? <ProfileRows report={report} i18n={i18n} close={close} /> : null}
       </DialogContent>
@@ -137,7 +140,7 @@ function SweepDialog() {
           {t`Close`}
         </Button>
         <Button variant="contained" onClick={apply} disabled={pending || ids.length === 0}>
-          {t`${plural(ids.length, { one: 'Update # mod', other: 'Update # mods' })}`}
+          {plural({ count: ids.length }, { one: 'Update # mod', other: 'Update # mods' })}
         </Button>
       </DialogActions>
     </Dialog>

@@ -83,9 +83,9 @@ function Looked({ game, launchers }: { game: GameInfo; launchers: StoreApp[] }) 
           const has = (l.games ?? []).some((g) => g.id === game.id)
           let line = t`Not found`.toLowerCase()
           if (l.found && !has) {
-            line = t`found, without ${game.name}`
+            line = t`found, without ${{ name: game.name }}`
           } else if (has) {
-            line = t`has ${game.name}`
+            line = t`has ${{ name: game.name }}`
           }
           return (
             <Box
@@ -139,7 +139,7 @@ function Suggested({ gameId, onUse }: { gameId: string; onUse: (dir: string) => 
             component="span"
             sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
           >
-            {t`Use ${folder}`}
+            {t`Use ${{ path: folder }}`}
           </Box>
         </Button>
       ))}
@@ -200,7 +200,7 @@ export function FindStep({
     }
     return smapi?.installed
       ? t`${{ loader: game.loader }} ${{ version: smapi.version }} installed`
-      : t`${game.loader} not installed yet`
+      : t`${{ loader: game.loader }} not installed yet`
   }
   const details = [smapi?.gameVersion ? `${game.name} ${smapi.gameVersion}` : '', loaderLine()]
     .filter(Boolean)
@@ -255,7 +255,7 @@ export function FindStep({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
             <TriangleAlert size={18} color={warning.main} />
             <Typography sx={{ fontSize: 16, fontWeight: 600 }}>
-              {t`${game.name} was not found in your launchers`}
+              {t`${{ name: game.name }} was not found in your launchers`}
             </Typography>
           </Box>
           <Looked game={game} launchers={launchers} />
@@ -280,7 +280,7 @@ export function FindStep({
           </Box>
         </Box>
       )}
-      {typing ? <TypedFolder label={t`${game.name} folder`} onUse={use} /> : null}
+      {typing ? <TypedFolder label={t`${{ name: game.name }} folder`} onUse={use} /> : null}
       {error ? (
         <Typography role="alert" title={error.details} sx={{ fontSize: 13, color: 'error.light' }}>
           {error.message}

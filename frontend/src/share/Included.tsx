@@ -117,7 +117,7 @@ export function Included({
       case 'local':
         return t`Added from an archive, so it only exists on this computer.`
       case 'file':
-        return t`Its Nexus file is not known. Group the Mods list by Source and choose Find on Nexus.`
+        return t`Its ${{ source: sourceLabel('nexus') }} file is not known. Group the Mods list by Source and choose Find on ${{ source: sourceLabel('nexus') }}.`
       case 'off':
         return t`Disabled in this profile`
       default:
@@ -125,15 +125,12 @@ export function Included({
     }
   }
   const archive = file
-    ? plural(local, {
-        one: '# mod you added from an archive cannot go in the file',
-        other: '# mods you added from archives cannot go in the file',
-      })
-    : plural(local, {
-        one: '# mod you added from an archive cannot be linked',
-        other: '# mods you added from archives cannot be linked',
-      })
-  const rest = plural(other, { one: '# more mod is left out', other: '# more mods are left out' })
+    ? t`${plural({ count: local }, { one: '# mod you added from an archive', other: '# mods you added from archives' })} cannot go in the file`
+    : t`${plural({ count: local }, { one: '# mod you added from an archive', other: '# mods you added from archives' })} cannot be linked`
+  const rest = plural(
+    { count: other },
+    { one: '# more mod is left out', other: '# more mods are left out' },
+  )
   const warning = [local > 0 ? archive : '', other > 0 ? rest : ''].filter(Boolean).join(' · ')
   const link = { minWidth: 0, p: 0, ml: 1, fontSize: 14 }
   return (

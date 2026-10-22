@@ -110,7 +110,7 @@ function SaveListRow({
   const unknown = saveCalendarUnknown(fit)
   let when = ''
   if (calendar) {
-    when = t`Year ${calendar.year} ${seasons[calendar.season] ?? ''}`
+    when = t`Year ${{ year: calendar.year }} ${{ season: seasons[calendar.season] ?? '' }}`
   } else if (unknown) {
     when = t`Unknown`
   }

@@ -33,8 +33,8 @@ function present(offers: Offer[]) {
   useSync.setState({ offers })
   for (const o of offers.filter((x) => !before.has(offerKey(x)))) {
     const title = o.conflict
-      ? i18n._(msg`${o.name} was changed on ${o.machine} and here`)
-      : i18n._(msg`${o.name} was changed on ${o.machine}`)
+      ? i18n._(msg`${{ name: o.name }} was changed on ${{ machine: o.machine }} and here`)
+      : i18n._(msg`${{ name: o.name }} was changed on ${{ machine: o.machine }}`)
     useToasts.getState().push({
       kind: 'info',
       title,
@@ -50,8 +50,8 @@ function presentStalled(stalled: Stall[]) {
   for (const st of stalled.filter((x) => !before.has(offerKey(x)))) {
     useToasts.getState().push({
       kind: 'info',
-      title: i18n._(msg`${st.name} is not syncing yet`),
-      body: i18n._(msg`Waiting for ${st.machine}'s profile file to finish syncing`),
+      title: i18n._(msg`${{ name: st.name }} is not syncing yet`),
+      body: i18n._(msg`Waiting for ${{ machine: st.machine }}'s profile file to finish syncing`),
       action: { label: i18n._(msg`Review`), run: () => useSync.getState().setOpen(true) },
     })
   }

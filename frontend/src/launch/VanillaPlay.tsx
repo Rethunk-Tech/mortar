@@ -15,6 +15,7 @@ import {
 } from '@mui/material'
 import { ChevronDown, Gamepad2, Play, Star } from 'lucide-react'
 import { type MouseEvent, type ReactNode, useState } from 'react'
+import { STEAM } from '../brand/productNames.ts'
 import { routeGame, useNav } from '../nav/store.ts'
 import type { PlayPreset } from '../profiles/profilePresets.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
@@ -137,8 +138,8 @@ export function VanillaPlayDialogs() {
       <ConfirmDialog
         open={linuxDirect}
         maxWidth={440}
-        title={t`Play without Steam overlay`}
-        body={t`Mortar starts the unmodded game directly, outside Steam. The Steam overlay and playtime tracking do not work; Steam still supplies its API if running.`}
+        title={t`Play without ${{ launcher: STEAM }} overlay`}
+        body={t`Mortar starts the unmodded game directly, outside ${{ launcher: STEAM }}. The ${{ launcher: STEAM }} overlay and playtime tracking do not work; ${{ launcher: STEAM }} still supplies its API if running.`}
         confirmLabel={t`Play without mods`}
         onCancel={() => setLinuxDirect(false)}
         onConfirm={() => {

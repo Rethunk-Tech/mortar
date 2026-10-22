@@ -34,7 +34,7 @@ export function SuggestDialog() {
       <DialogTitle>{t`Suggest a feature`}</DialogTitle>
       <DialogContent>
         <Typography>
-          {t`Post your idea where you prefer. Discord lets others vote on it; GitHub keeps it next to the code.`}
+          {t`Post your idea where you prefer. ${{ app: sourceLabel('discord') }} lets others vote on it; ${{ source: sourceLabel('github') }} keeps it next to the code.`}
         </Typography>
       </DialogContent>
       <DialogActions>

@@ -20,7 +20,7 @@ export const DownloadsPill = memo(function DownloadsPillView() {
     return null
   }
   const { active, percent } = progress
-  const downloading = plural(active, { one: '# downloading', other: '# downloading' })
+  const downloading = plural({ count: active }, { one: '# downloading', other: '# downloading' })
   return (
     <ButtonBase
       onClick={() => {

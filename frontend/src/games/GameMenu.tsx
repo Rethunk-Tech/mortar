@@ -65,8 +65,8 @@ function GameStrip({
   const art = gameArt(game, MENU_PX)
   const playtime = formatPlaytime(played?.playtimeMs ?? 0, i18n.locale)
   const line = [
-    profiles ? i18n._(plural(profiles, { one: '# profile', other: '# profiles' })) : '',
-    played?.at ? t`played ${formatWhen(played.at)}` : '',
+    profiles ? i18n._(plural({ count: profiles }, { one: '# profile', other: '# profiles' })) : '',
+    played?.at ? t`played ${{ when: formatWhen(played.at) }}` : '',
     playtime ? t`${playtime} played` : '',
   ]
     .filter(Boolean)
@@ -173,7 +173,7 @@ export const GameMenu = memo(function GameMenuView() {
   return (
     <>
       <ButtonBase
-        aria-label={game ? t`Switch game: ${gameLabel}` : t`Choose a game`}
+        aria-label={game ? t`Switch game: ${{ game: gameLabel }}` : t`Choose a game`}
         data-tour="game-tab"
         aria-haspopup="menu"
         aria-expanded={anchor !== null}

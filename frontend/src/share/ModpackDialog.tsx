@@ -22,6 +22,7 @@ import {
   ModpackForm as ReadForm,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import { PickImage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { listNames } from '../i18n/list.ts'
 import { ErrorRetry } from '../shell/ErrorRetry.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
@@ -43,7 +44,7 @@ function IconRow({ path, onChange }: { path: string; onChange: (path: string) =>
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
       <Typography sx={{ flex: 1, fontSize: 13, overflowWrap: 'anywhere' }}>
-        {path || t`A plain icon (Thunderstore needs a 256x256 PNG)`}
+        {path || t`A plain icon (${{ source: sourceLabel('thunderstore') }} needs a 256x256 PNG)`}
       </Typography>
       <Button
         size="small"
@@ -81,7 +82,7 @@ function ConfigFiles({
   return (
     <Box>
       <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
-        {t`Config files (${files.size} of ${all.length})`}
+        {t`Config files (${{ count: files.size }} of ${{ total: all.length }})`}
       </Typography>
       <Box sx={{ display: 'flex', gap: space.gap }}>
         <Button size="small" onClick={() => onChange(all)}>
@@ -155,7 +156,7 @@ function Fields({
         useToasts.getState().push({
           kind: left.length > 0 ? 'warning' : 'success',
           title: t`Modpack saved`,
-          body: left.length > 0 ? t`Left out: ${listNames(left)}` : r.path,
+          body: left.length > 0 ? t`Left out: ${{ names: listNames(left) }}` : r.path,
         })
         onClose()
       })
@@ -182,7 +183,9 @@ function Fields({
               value={o.version}
               onChange={(e) => set('version', e.target.value)}
               error={!VERSION_PATTERN.test(o.version)}
-              helperText={form.lastVersion ? t`Last export ${form.lastVersion}` : undefined}
+              helperText={
+                form.lastVersion ? t`Last export ${{ lastVersion: form.lastVersion }}` : undefined
+              }
               sx={{ width: 150 }}
             />
           </Box>
@@ -249,8 +252,8 @@ function Fields({
           />
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
             {left.length > 0
-              ? t`Depends on ${form.dependencies} Thunderstore packages. Left out: ${listNames(left)}.`
-              : t`Depends on ${form.dependencies} Thunderstore packages.`}
+              ? t`Depends on ${{ dependencies: form.dependencies }} ${{ source: sourceLabel('thunderstore') }} packages. Left out: ${{ names: listNames(left) }}.`
+              : t`Depends on ${{ dependencies: form.dependencies }} ${{ source: sourceLabel('thunderstore') }} packages.`}
           </Typography>
           {bad ? <Typography sx={{ fontSize: 13, color: 'error.main' }}>{bad}</Typography> : null}
         </Box>
@@ -283,7 +286,7 @@ export function ModpackDialog({
   )
   return (
     <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="sm">
-      <DialogTitle>{t`Export as Thunderstore modpack`}</DialogTitle>
+      <DialogTitle>{t`Export as ${{ source: sourceLabel('thunderstore') }} modpack`}</DialogTitle>
       {error === null ? null : (
         <DialogContent>
           <ErrorRetry error={inlineError(error)} onRetry={reload} />

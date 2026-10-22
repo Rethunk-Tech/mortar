@@ -1,6 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, InputAdornment, TextField, Typography } from '@mui/material'
 import { ClipboardPaste, FolderOpen } from 'lucide-react'
+import { GALE, R2MODMAN } from '../brand/productNames.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { liveHandoff, useHandoff } from '../install/handoff.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
@@ -17,7 +19,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
       {flow.tab === 'file' ? (
         <>
           <Typography sx={{ fontSize: 14, textAlign: 'center' }}>
-            {t`Open a .mortar file, an r2modman or Gale .r2z, or a Thunderstore modpack. You see what it holds before anything downloads.`}
+            {t`Open a .mortar file, an ${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} .r2z, or a ${{ source: sourceLabel('thunderstore') }} modpack. You see what it holds before anything downloads.`}
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Button
@@ -35,7 +37,7 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
       ) : (
         <>
           <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-            {t`Paste a Mortar link, a Nexus collection, an r2modman or Gale code, a Patreon post, an itch.io page or (Premium) a Nexus mod link.`}
+            {t`Paste a Mortar link, a ${{ source: sourceLabel('nexus') }} collection, an ${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} code, a ${{ otherSource: sourceLabel('patreon') }} post, an ${{ thirdSource: sourceLabel('itch') }} page or (Premium) a ${{ source: sourceLabel('nexus') }} mod link.`}
           </Typography>
           <Box
             component="form"
@@ -97,8 +99,8 @@ export function ImportInput({ flow }: { flow: ImportFlow }) {
       {handoff ? (
         <Typography role="status" sx={{ fontSize: 14, color: 'text.secondary' }}>
           {handoff.kind === 'patreon'
-            ? t`Opened the Patreon post. Save the file from it; Mortar offers it from your Downloads folder.`
-            : t`Opened the itch.io page. Save the file from it; Mortar offers it from your Downloads folder.`}
+            ? t`Opened the ${{ source: sourceLabel('patreon') }} post. Save the file from it; Mortar offers it from your Downloads folder.`
+            : t`Opened the ${{ source: sourceLabel('itch') }} page. Save the file from it; Mortar offers it from your Downloads folder.`}
         </Typography>
       ) : null}
       {flow.tab === 'file' && flow.error ? (

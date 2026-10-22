@@ -66,13 +66,14 @@ export const useLoader = create<{
         return
       }
       const name = gameInfo(game)?.loader ?? ''
-      useToasts
-        .getState()
-        .push({ kind: 'success', title: i18n._(msg`${name} ${status.version} is installed`) })
+      useToasts.getState().push({
+        kind: 'success',
+        title: i18n._(msg`${name} ${{ version: status.version }} is installed`),
+      })
     } catch (e) {
       set({ error: errorMessage(e), errorDetail: errorDetails(e) })
       if (!onSetup()) {
-        toastError(i18n._(msg`Could not install ${gameInfo(game)?.loader ?? ''}`), e)
+        toastError(i18n._(msg`Could not install ${{ loader: gameInfo(game)?.loader ?? '' }}`), e)
       }
     } finally {
       set({ pending: false })

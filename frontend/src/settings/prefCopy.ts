@@ -321,7 +321,7 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
       ],
     },
     smapiPin: {
-      label: i18n._(msg`${{ loader: SMAPI }} version`),
+      label: i18n._(msg`${{ name: SMAPI }} version`),
       description: i18n._(msg`Empty follows the latest release`),
     },
     autoTrackNexus: {

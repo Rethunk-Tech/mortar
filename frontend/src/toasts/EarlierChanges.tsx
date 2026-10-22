@@ -51,7 +51,7 @@ function EarlierRow({
             size="small"
             disabled={panel.busy !== ''}
             onClick={() => onUndo(ev)}
-            aria-label={t`Undo this change: ${label}`}
+            aria-label={t`Undo this change: ${{ name: label }}`}
           >
             {t`Undo`}
           </Button>
@@ -101,10 +101,7 @@ export function EarlierChanges({ panel, hide }: { panel: Panel; hide: ReadonlySe
         ))}
       <ConfirmDialog
         open={target !== null}
-        title={plural(later.length, {
-          one: 'Undo this and # later change?',
-          other: 'Undo this and # later changes?',
-        })}
+        title={t`Undo this and ${plural({ count: later.length }, { one: '# later change', other: '# later changes' })}?`}
         confirmLabel={t`Undo`}
         color="warning"
         onCancel={() => setTarget(null)}

@@ -188,7 +188,7 @@ function FomodWizard({ session }: { session: FomodSession }) {
         {step ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
             <Typography variant="subtitle2">
-              {t`Step ${index + 1} of ${steps.length}: ${step.name}`}
+              {t`Step ${{ step: index + 1 }} of ${{ count: steps.length }}: ${{ name: step.name }}`}
             </Typography>
             {(step.groups ?? []).map((g) => {
               const selected = choices[step.name]?.[g.name] ?? []

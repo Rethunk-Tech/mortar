@@ -7,6 +7,7 @@ import { Launchers } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import { ConfirmLaunchers } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { DiscordLogo } from '../brand/Discord.tsx'
 import { DISCORD_INVITE } from '../brand/discordInvite.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { LauncherList } from '../launchers/LauncherList.tsx'
 import { openPage } from '../mods/menu.ts'
 import { useNav } from '../nav/store.ts'
@@ -97,7 +98,7 @@ export function FirstRun() {
       >
         <Typography sx={{ fontSize: 14, color: 'text.secondary', flex: 1 }}>
           {found > 0
-            ? t`${found} of ${plural(here.length, { one: '# launcher', other: '# launchers' })} found.`
+            ? t`${found} of ${plural({ count: here.length }, { one: '# launcher', other: '# launchers' })} found.`
             : t`No launchers found. Continue and choose each game's folder when you open it.`}
         </Typography>
         <Button variant="contained" disabled={busy} onClick={finish} size="large" sx={{ px: 4 }}>
@@ -114,7 +115,7 @@ export function FirstRun() {
       >
         <DiscordLogo size={20} />
         <Typography sx={{ fontSize: 14, color: 'text.secondary', flex: 1 }}>
-          {t`Want help, news or a say in what comes next? Mortar has a Discord server.`}
+          {t`Want help, news or a say in what comes next? Mortar has a ${{ app: sourceLabel('discord') }} server.`}
         </Typography>
         <Button
           variant="outlined"
@@ -124,7 +125,7 @@ export function FirstRun() {
             openPage(DISCORD_INVITE)
           }}
         >
-          {t`Join our Discord`}
+          {t`Join our ${{ app: sourceLabel('discord') }}`}
         </Button>
       </Box>
     </Box>

@@ -27,7 +27,7 @@ export function UpdateWarnDialog() {
       <DialogTitle>{t`The game was updated`}</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          {t`${gameName} is now ${warn?.installed ?? ''}. This profile last launched on ${warn?.recorded ?? ''}.`}
+          {t`${{ game: gameName }} is now ${{ installed: warn?.installed ?? '' }}. This profile last launched on ${{ recorded: warn?.recorded ?? '' }}.`}
         </DialogContentText>
         {(warn?.broken.length ?? 0) > 0 ? (
           <List dense={true} sx={{ mt: 1 }}>
@@ -35,7 +35,11 @@ export function UpdateWarnDialog() {
               <ListItem key={`${mod.key}/${mod.id}`} disableGutters={true}>
                 <ListItemText
                   primary={mod.name}
-                  secondary={mod.brokeIn ? t`Broke in ${mod.brokeIn}` : t`Broken for this version`}
+                  secondary={
+                    mod.brokeIn
+                      ? t`Broke in ${{ brokeIn: mod.brokeIn }}`
+                      : t`Broken for this version`
+                  }
                 />
               </ListItem>
             ))}

@@ -32,16 +32,22 @@ function PreviewGroups({ preview }: { preview: Preview }) {
   const { t } = useLingui()
   const groups = [
     {
-      title: plural(preview.add?.length ?? 0, { one: 'Adds # mod', other: 'Adds # mods' }),
+      title: plural(
+        { count: preview.add?.length ?? 0 },
+        { one: 'Adds # mod', other: 'Adds # mods' },
+      ),
       names: preview.add ?? [],
     },
-    { title: t`Already has ${preview.alreadyHave?.length ?? 0}`, names: preview.alreadyHave ?? [] },
     {
-      title: t`Different version ${preview.versionDiffers?.length ?? 0} (kept as is)`,
+      title: t`Already has ${{ count: preview.alreadyHave?.length ?? 0 }}`,
+      names: preview.alreadyHave ?? [],
+    },
+    {
+      title: t`Different version ${{ count: preview.versionDiffers?.length ?? 0 }} (kept as is)`,
       names: preview.versionDiffers ?? [],
     },
     {
-      title: t`Settings changes ${preview.settingsChanges?.length ?? 0}`,
+      title: t`Settings changes ${{ count: preview.settingsChanges?.length ?? 0 }}`,
       names: preview.settingsChanges ?? [],
     },
   ]
@@ -74,20 +80,29 @@ function useApply(game: string, profileId: string, onClose: () => void) {
         const wants = savedGroupWants(result.missingMods)
         const queued = wants.length > 0 && (await download(wants))
         const left = missing.length
-        let title = plural(result.added, {
-          one: `Added # mod from ${name}`,
-          other: `Added # mods from ${name}`,
-        })
+        let title = plural(
+          { count: result.added },
+          {
+            one: `Added # mod from ${name}`,
+            other: `Added # mods from ${name}`,
+          },
+        )
         if (left > 0) {
           title = queued
-            ? plural(result.added, {
-                one: `Added # mod from ${name}; downloading ${plural(left, { one: '# mod', other: '# mods' })}`,
-                other: `Added # mods from ${name}; downloading ${plural(left, { one: '# mod', other: '# mods' })}`,
-              })
-            : plural(result.added, {
-                one: `Added # mod from ${name}; ${plural(left, { one: '# mod', other: '# mods' })} still to download`,
-                other: `Added # mods from ${name}; ${plural(left, { one: '# mod', other: '# mods' })} still to download`,
-              })
+            ? plural(
+                { count: result.added },
+                {
+                  one: `Added # mod from ${name}; downloading ${plural(left, { one: '# mod', other: '# mods' })}`,
+                  other: `Added # mods from ${name}; downloading ${plural(left, { one: '# mod', other: '# mods' })}`,
+                },
+              )
+            : plural(
+                { count: result.added },
+                {
+                  one: `Added # mod from ${name}; ${plural(left, { one: '# mod', other: '# mods' })} still to download`,
+                  other: `Added # mods from ${name}; ${plural(left, { one: '# mod', other: '# mods' })} still to download`,
+                },
+              )
         }
         useToasts.getState().push({
           kind: missing.length > 0 && !queued ? 'warning' : 'success',

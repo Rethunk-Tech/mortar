@@ -92,8 +92,8 @@ export function BackupProfileDialog({
   return (
     <ConfirmDialog
       open={open}
-      title={t`Back up ${profile.name}?`}
-      body={t`The backup holds up to ${size === null ? '…' : formatBytes(size)}: the profile, its settings and config files, and its own saves when it keeps them.`}
+      title={t`Back up ${{ name: profile.name }}?`}
+      body={t`The backup holds up to ${{ size: size === null ? '…' : formatBytes(size) }}: the profile, its settings and config files, and its own saves when it keeps them.`}
       confirmLabel={t`Choose where to save…`}
       confirmDisabled={size === null}
       onCancel={onClose}

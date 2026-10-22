@@ -23,8 +23,8 @@ function importCountsLine(counts: SettledImportCounts) {
   return [
     counts.installed > 0 &&
       i18n._(msg`${plural(count, { one: '# mod installed', other: '# mods installed' })}`),
-    counts.failed > 0 && i18n._(msg`${counts.failed} failed`),
-    counts.skipped > 0 && i18n._(msg`${counts.skipped} skipped`),
+    counts.failed > 0 && i18n._(msg`${{ failed: counts.failed }} failed`),
+    counts.skipped > 0 && i18n._(msg`${{ skipped: counts.skipped }} skipped`),
   ]
     .filter(Boolean)
     .join(', ')
@@ -135,15 +135,20 @@ export function observeImportState(items: readonly Row[]) {
     if (counts) {
       useToasts.getState().push({
         kind: counts.failed > 0 ? 'warning' : 'success',
-        title: i18n._(msg`Imported ${batch.name}: ${importCountsLine(counts)}`),
+        title: i18n._(
+          msg`Imported ${{ name: batch.name }}: ${{ counts: importCountsLine(counts) }}`,
+        ),
         changes: counts.changes,
         ...(batch.pendingSettings > 0
           ? {
               body: i18n._(
-                msg`${plural(batch.pendingSettings, {
-                  one: '# setting is still waiting for its mod to install.',
-                  other: '# settings are still waiting for their mods to install.',
-                })}`,
+                msg`${plural(
+                  { count: batch.pendingSettings },
+                  {
+                    one: '# setting is still waiting for its mod to install.',
+                    other: '# settings are still waiting for their mods to install.',
+                  },
+                )}`,
               ),
             }
           : {}),

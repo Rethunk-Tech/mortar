@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { contractions, duplicates, variants } from './i18n-dupes.ts'
+import { contractions, duplicates, positionals, products, variants } from './i18n-dupes.ts'
 
 test('messages that differ only in case, punctuation or placeholder names collide', () => {
   expect(duplicates(['Restore {when}', 'Restore {label}', 'Disk space', 'disk space.'])).toEqual([
@@ -47,4 +47,29 @@ test('an article is not a different message', () => {
   expect(
     duplicates(['Add the missing mods', 'Add missing mods', 'Stop a game', 'Stop game?']),
   ).toEqual([['Add the missing mods', 'Add missing mods']])
+})
+
+test('a positional placeholder is caught, a named one is not', () => {
+  expect(
+    positionals([
+      'Delete {0}?',
+      '{0, plural, one {# mod} other {# mods}}',
+      'Delete {name}?',
+      '{count, plural, one {# a} other {# b}}',
+    ]),
+  ).toEqual(['Delete {0}?', '{0, plural, one {# mod} other {# mods}}'])
+})
+
+test('a product name is caught by word, Mortar and placeholder names are not', () => {
+  expect(
+    products([
+      'Sign in to Nexus Mods',
+      'Hidden on {source}',
+      'Mortar can start {game}',
+      'Windows-format symbols',
+      'Version {version}',
+      '{launcher} was not found',
+      'Open {steam}',
+    ]),
+  ).toEqual(['Sign in to Nexus Mods', 'Windows-format symbols'])
 })

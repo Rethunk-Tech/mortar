@@ -53,16 +53,16 @@ function Header({
   const n = { downloading, installing, waiting, paused: pausedItems }
   // Each state once, none that is empty: the sheet is too narrow for more.
   const summary = [
-    downloading > 0 && t`${n.downloading} downloading`,
-    installing > 0 && t`${n.installing} installing`,
-    waiting > 0 && t`${n.waiting} waiting`,
-    pausedItems > 0 && t`${n.paused} paused`,
-    sum.failed > 0 && t`${sum.failed} failed`,
-    sum.done > 0 && t`${sum.done} done`,
+    downloading > 0 && t`${{ downloading: n.downloading }} downloading`,
+    installing > 0 && t`${{ installing: n.installing }} installing`,
+    waiting > 0 && t`${{ count: n.waiting }} waiting`,
+    pausedItems > 0 && t`${{ paused: n.paused }} paused`,
+    sum.failed > 0 && t`${{ failed: sum.failed }} failed`,
+    sum.done > 0 && t`${{ done: sum.done }} done`,
   ]
     .filter(Boolean)
     .join(' · ')
-  const line = sum.sizeKb > 0 ? t`${summary} · ${formatKb(sum.sizeKb)}` : summary
+  const line = sum.sizeKb > 0 ? t`${summary} · ${{ size: formatKb(sum.sizeKb) }}` : summary
   const idle = !paused && sum.active === 0 && sum.left === 0
   const finished = items.filter((i) => isClearableFinished(i.state))
   return (
@@ -140,7 +140,7 @@ function Header({
           title={clockTime(limitedUntil)}
           sx={{ mx: space.pad, mt: 1, fontSize: 13, color: 'warning.main' }}
         >
-          {t`Downloads resume ${formatWhen(limitedUntil * UNIX_MS_PER_SECOND)}.`}
+          {t`Downloads resume ${{ when: formatWhen(limitedUntil * UNIX_MS_PER_SECOND) }}.`}
         </Typography>
       ) : null}
     </>

@@ -54,7 +54,7 @@ export function LaunchMenu({ game, profile }: { game: string; profile: Profile }
               close()
               const start = (): void => {
                 launch(game, profile.id, tool.id).catch(
-                  reportError(t`Could not start ${tool.name}`, start),
+                  reportError(t`Could not start ${{ name: tool.name }}`, start),
                 )
               }
               start()

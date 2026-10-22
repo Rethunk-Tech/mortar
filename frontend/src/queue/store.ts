@@ -133,13 +133,16 @@ function downloadFailCopy(error: string): { body: string; detail?: string } {
 function failureToast(item: Item) {
   if (item.errorKind === 'auth') {
     return {
-      title: i18n._(msg`${{ site: sourceLabel('nexus') }} rejected your API key`),
-      action: { label: i18n._(msg`Open Nexus settings`), run: () => openSettings('accounts') },
+      title: i18n._(msg`${{ source: sourceLabel('nexus') }} rejected your API key`),
+      action: {
+        label: i18n._(msg`Open ${{ source: sourceLabel('nexus') }} settings`),
+        run: () => openSettings('accounts'),
+      },
     }
   }
   if (item.errorKind === 'nobase') {
     return {
-      title: i18n._(msg`${item.name} needs its main file first`),
+      title: i18n._(msg`${{ name: item.name }} needs its main file first`),
       body: item.error,
       action: {
         label: i18n._(msg`Open files page`),
@@ -156,14 +159,14 @@ function failureToast(item: Item) {
   const showQueue = { label: i18n._(msg`Show in queue`), run: show, live: showLive }
   if (item.errorKind === 'blocked') {
     return {
-      title: i18n._(msg`${item.name} was blocked by your antivirus`),
+      title: i18n._(msg`${{ name: item.name }} was blocked by your antivirus`),
       body: i18n._(msg`Allow it in your antivirus, then Retry.`),
       action: showQueue,
     }
   }
   if (item.errorKind === 'network') {
     return {
-      title: i18n._(msg`Could not reach Nexus`),
+      title: i18n._(msg`Could not reach ${{ source: sourceLabel('nexus') }}`),
       action: {
         label: i18n._(msg`Retry`),
         run: () => Retry(item.id),
@@ -171,7 +174,7 @@ function failureToast(item: Item) {
       },
     }
   }
-  return { title: i18n._(msg`Could not download ${item.name}`), action: showQueue }
+  return { title: i18n._(msg`Could not download ${{ name: item.name }}`), action: showQueue }
 }
 
 function matchesItem(e: Entry, item: Pick<Item, 'modId' | 'name' | 'repo'>) {
@@ -243,7 +246,7 @@ function pushDownloadFailures(failed: Item[]) {
   useToasts.getState().push({
     kind: 'error',
     title: i18n._(
-      msg`${plural(failed.length, { one: '# download failed', other: '# downloads failed' })}`,
+      msg`${plural({ count: failed.length }, { one: '# download failed', other: '# downloads failed' })}`,
     ),
     ...downloadFailCopy(firstFail?.error ?? ''),
     action: { label: i18n._(msg`Show`), run: show, live: showLive },
@@ -256,7 +259,7 @@ function pushRateLimitPause(prev: Snapshot, next: Snapshot) {
     useToasts.getState().push({
       kind: 'warning',
       title: i18n._(msg`Downloads paused`),
-      body: i18n._(msg`Retrying in ${n} s.`),
+      body: i18n._(msg`Retrying in ${{ count: n }} s.`),
     })
   }
 }
@@ -290,7 +293,7 @@ function toastInstalls(shownDone: Item[], unblocked: string | undefined) {
     installToast = useToasts.getState().push({
       kind: 'success',
       title: profile
-        ? i18n._(msg`${first} installed into ${profile.name}`)
+        ? i18n._(msg`${first} installed into ${{ name: profile.name }}`)
         : i18n._(msg`${{ name: first }} installed`),
       ...(unblocked ? { body: i18n._(msg`${unblocked} can load now.`) } : {}),
       changes: [item.change ?? ''],
@@ -363,7 +366,7 @@ function announce(prev: Snapshot, next: Snapshot) {
     useToasts.getState().push({
       kind: 'info',
       title: i18n._(
-        msg`${plural(waiting.length, { one: '# download needs your decision', other: '# downloads need your decision' })}`,
+        msg`${plural({ count: waiting.length }, { one: '# download needs your decision', other: '# downloads need your decision' })}`,
       ),
       action: { label: i18n._(msg`Show`), run: show, live: showLive },
     })

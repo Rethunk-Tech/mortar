@@ -5,6 +5,7 @@ import {
   InstallHandoffDownload,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts'
 import type { InstallResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 import { openWeb } from '../shell/openWeb.ts'
 import { askHandoff } from './handoffConfirm.ts'
@@ -51,7 +52,9 @@ export async function startHandoff(text: string): Promise<boolean> {
 }
 
 const pageName = (page: HandoffRef) =>
-  page.kind === 'patreon' ? i18n._(msg`Patreon post ${page.id}`) : page.id
+  page.kind === 'patreon'
+    ? i18n._(msg`${{ source: sourceLabel('patreon') }} post ${{ id: page.id }}`)
+    : page.id
 
 // The install call for a file offered from Downloads: recorded under the remembered page when the file was saved
 // after the page was opened and the page has not expired, else `install` as it is.

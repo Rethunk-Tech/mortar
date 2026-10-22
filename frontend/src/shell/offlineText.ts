@@ -15,13 +15,13 @@ function sourceNames(ids: readonly string[]): string {
 
 // The note for sources that did not answer, by id.
 function unreachableNote(ids: readonly string[]): string {
-  return i18n._(msg`${sourceNames(ids)} cannot be reached`)
+  return i18n._(msg`${{ sources: sourceNames(ids) }} cannot be reached`)
 }
 
 // A merged search sorted by something these sources cannot sort by leaves them out; choosing one as the source lists it.
 function unsortedNote(ids: readonly string[]): string {
   return i18n._(
-    msg`${sourceNames(ids)} cannot sort this way: pick it as the source to see its mods`,
+    msg`${{ sources: sourceNames(ids) }} cannot sort this way: pick it as the source to see its mods`,
   )
 }
 
@@ -42,7 +42,9 @@ function offlineMessage(unsorted: State[], locale: string): string {
     down.map((s, i) => {
       const name = sourceLabel(s.id)
       const at = times[i] ?? ''
-      return at ? i18n._(msg`${name} as of ${at}`) : i18n._(msg`nothing saved yet from ${name}`)
+      return at
+        ? i18n._(msg`${name} as of ${{ when: at }}`)
+        : i18n._(msg`nothing saved yet from ${name}`)
     }),
     down.length,
   )

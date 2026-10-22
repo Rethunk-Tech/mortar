@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Link, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { useBadges } from '../mods/badges.ts'
 import { unlinkCollection } from '../profiles/collectionUnlink.ts'
@@ -62,9 +63,11 @@ function CollectionLine({ profile, game }: { profile: Profile; game: string }) {
         gap: 0.75,
       }}
     >
-      <span>{t`From the Nexus collection "${{ name: line.name }}"`}</span>
+      <span>{t`From the ${{ source: sourceLabel('nexus') }} collection "${{ name: line.name }}"`}</span>
       <span>
-        {review === null ? t`· revision ${line.revision}` : t`· revision ${review} is out`}
+        {review === null
+          ? t`· revision ${{ revision: line.revision }}`
+          : t`· revision ${review} is out`}
       </span>
       {review === null ? null : (
         <>

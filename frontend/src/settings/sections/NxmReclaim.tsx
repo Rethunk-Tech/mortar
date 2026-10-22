@@ -46,7 +46,7 @@ export function NxmReclaim() {
       return t`${name} now opens ${{ source: sourceLabel('curseforge') }} "Install" links.`
     }
     return source === 'vsmoddb'
-      ? t`${name} now opens Mod DB "1-click install" links.`
+      ? t`${name} now opens ${{ source: sourceLabel('vsmoddb') }} "1-click install" links.`
       : t`${name} now opens ${{ source: sourceLabel('thunderstore') }} "Install with Mod Manager" links.`
   })
   const names = listNames([...new Set(taken.map((x) => x.name))])

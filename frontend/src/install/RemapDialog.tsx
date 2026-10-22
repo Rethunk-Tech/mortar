@@ -58,7 +58,7 @@ function NodeRow({
       <ListItem disablePadding={true}>
         <IconButton
           size="small"
-          aria-label={open ? t`Collapse ${node.name}` : t`Expand ${node.name}`}
+          aria-label={open ? t`Collapse ${{ name: node.name }}` : t`Expand ${{ name: node.name }}`}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
           sx={{ p: 0, ml: 2, mr: 0.5, height: 'auto', minHeight: 0, minWidth: 0 }}

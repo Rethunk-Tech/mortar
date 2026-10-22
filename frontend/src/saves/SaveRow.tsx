@@ -68,7 +68,7 @@ export function FitStatus({ missing }: { missing: number }) {
   const { t } = useLingui()
   let color = 'warning.main'
   let icon = <TriangleAlert size={13} />
-  let text = t`Has used ${plural(missing, { one: '# mod it lacks', other: '# mods it lacks' })}`
+  let text = t`Has used ${plural({ count: missing }, { one: '# mod it lacks', other: '# mods it lacks' })}`
   if (missing === 0) {
     color = 'success.main'
     icon = <CircleCheck size={13} />
@@ -143,30 +143,31 @@ export function SaveButtons({
         </DisabledReason>
       )}
       <TipIconButton
-        label={t`Back up ${label} now`}
+        label={t`Back up ${{ name: label }} now`}
         disabled={backingUp}
         onClick={() => {
           runBackup(
             async () => {
               if (!(await CreateBackup(game, profileId, fit.folder))) {
-                useToasts
-                  .getState()
-                  .push({ kind: 'info', title: t`${label} is no longer in the saves folder` })
+                useToasts.getState().push({
+                  kind: 'info',
+                  title: t`${{ name: label }} is no longer in the saves folder`,
+                })
                 // The save left the folder since the list was read, so the list drops its row.
                 await useSaves.getState().reload()
                 return
               }
               await Promise.all([useSaveBackups.getState().reload(), onBackupsChanged()])
-              useToasts.getState().push({ kind: 'success', title: t`Backed up ${label}` })
+              useToasts.getState().push({ kind: 'success', title: t`Backed up ${{ name: label }}` })
             },
-            { errorTitle: t`Could not back up ${label}` },
+            { errorTitle: t`Could not back up ${{ name: label }}` },
           )
         }}
       >
         <Archive size={16} />
       </TipIconButton>
       <TipIconButton
-        label={t`Open the folder of ${label}`}
+        label={t`Open the folder of ${{ name: label }}`}
         onClick={() => {
           OpenSaveFolder(game, profileId, fit.folder).catch(reportUnexpected)
         }}

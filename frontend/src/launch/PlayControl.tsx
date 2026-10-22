@@ -73,7 +73,7 @@ function useOpenPresets() {
 // Play's label says what holds it back: mods updating first, else the loader installing.
 function playLabel(installing: string, updating: number): string {
   if (updating > 0) {
-    return plural(updating, { one: 'Updating # mod…', other: 'Updating # mods…' })
+    return plural({ count: updating }, { one: 'Updating # mod…', other: 'Updating # mods…' })
   }
   return installing ? i18n._(msg`Installing ${installing}…`) : i18n._(msg`Play`)
 }

@@ -380,6 +380,10 @@ msgstr "Performance report"
 msgid "Cancel"
 msgstr "Cancel"
 
+#: src/console/StartupPanel.tsx
+msgid "Press Play. The {loader} Bridge times each plugin's load and the start up to the main menu, and shows the results here. {app}'s {otherApp} runtime cannot be sampled, so there is no Sampled column."
+msgstr "Press Play. The {loader} Bridge times each plugin's load and the start up to the main menu, and shows the results here. {app}'s {otherApp} runtime cannot be sampled, so there is no Sampled column."
+
 #: src/console/startupHooks.ts
 msgid "time in its patches {ms}"
 msgstr "time in its patches {ms}"
@@ -427,10 +431,6 @@ msgstr "This mod is pinned in this profile, so Mortar does not offer updates for
 #: src/console/RunProblems.tsx
 msgid "Update"
 msgstr "Update"
-
-#: src/console/RunProblems.tsx
-msgid "Remove {other}"
-msgstr "Remove {other}"
 
 #: src/console/LogActions.tsx
 msgid "Jump to previous error"
@@ -516,6 +516,10 @@ msgstr "Copy"
 #: src/console/logHooks.ts
 msgid "Trace"
 msgstr "Trace"
+
+#: src/console/RunProblems.tsx
+msgid "Remove {name}"
+msgstr "Remove {name}"
 
 #: src/console/StartupTable.tsx
 msgid "{count, plural, one {Show all # mod} other {Show all # mods}}"
@@ -933,10 +937,6 @@ msgstr "The game loads its own content"
 #: src/console/StartupTable.tsx
 msgid "In game"
 msgstr "In game"
-
-#: src/console/StartupPanel.tsx
-msgid "Press Play. The {loader} Bridge times each plugin's load and the start up to the main menu, and shows the results here. {app}'s Mono runtime cannot be sampled, so there is no Sampled column."
-msgstr "Press Play. The {loader} Bridge times each plugin's load and the start up to the main menu, and shows the results here. {app}'s Mono runtime cannot be sampled, so there is no Sampled column."
 
 #: src/console/StartupSections.tsx
 msgid "{loader}'s preloader patches the game, then {app} starts it"

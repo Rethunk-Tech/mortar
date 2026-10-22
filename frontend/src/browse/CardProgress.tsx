@@ -3,6 +3,7 @@ import { Box, Button, Chip, LinearProgress, Typography } from '@mui/material'
 import { Check, RotateCw } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Retry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useQueue } from '../queue/store.ts'
 import { BUTTON_SMALL_HEIGHT } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -66,19 +67,22 @@ function CardProgress({ state }: { state: Exclude<CardState, { kind: 'idle' }> }
       )
     case 'downloading':
       return (
-        <Block label={`${state.percent}%`} title={t`Downloading ${state.percent}%`}>
+        <Block label={`${state.percent}%`} title={t`Downloading ${{ percent: state.percent }}%`}>
           <LinearProgress variant="determinate" value={state.percent} />
         </Block>
       )
     case 'paused':
       return (
-        <Block label={t`Paused ${state.percent}%`} title={t`Paused at ${state.percent}%`}>
+        <Block
+          label={t`Paused ${{ percent: state.percent }}%`}
+          title={t`Paused at ${{ percent: state.percent }}%`}
+        >
           <LinearProgress variant="determinate" color="inherit" value={state.percent} />
         </Block>
       )
     default: {
       const label = {
-        'waiting-nexus': t`Waiting for Nexus…`,
+        'waiting-nexus': t`Waiting for ${{ source: sourceLabel('nexus') }}…`,
         queued: t`Queued`,
         installing: t`Installing`,
       }[state.kind]

@@ -20,6 +20,8 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { PickExecutable } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { SetGameFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { SHIMLOADER } from '../brand/productNames.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
@@ -59,7 +61,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap, pt: 0.5 }}>
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
             {loader === 'shimloader'
-              ? t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from its Thunderstore community.`
+              ? t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from its ${{ source: sourceLabel('thunderstore') }} community.`
               : t`For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it.`}
           </Typography>
           <TextField
@@ -98,9 +100,9 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
           {loader === 'shimloader' ? (
             <TextField
               size="small"
-              label={t`Thunderstore community`}
+              label={t`${{ source: sourceLabel('thunderstore') }} community`}
               placeholder="voices-of-the-void"
-              helperText={t`The game's name in its Thunderstore address (thunderstore.io/c/…). Mortar gets Shimloader and the game's mods from it. Choose the game's shipping program, in Binaries/Win64.`}
+              helperText={t`The game's name in its ${{ source: sourceLabel('thunderstore') }} address (thunderstore.io/c/…). Mortar gets ${{ loader: SHIMLOADER }} and the game's mods from it. Choose the game's shipping program, in Binaries/Win64.`}
               value={community}
               onChange={(e) => setCommunity(e.target.value)}
             />

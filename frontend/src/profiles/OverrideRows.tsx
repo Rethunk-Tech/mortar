@@ -65,7 +65,7 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
     case 'graphicsApi':
       return i18n._(msg`Graphics API`)
     case 'protonVersion':
-      return i18n._(msg`${{ app: PROTON }} version`)
+      return i18n._(msg`${{ name: PROTON }} version`)
     case 'gameSettingsMode':
       return i18n._(msg`Game settings file`)
     default:

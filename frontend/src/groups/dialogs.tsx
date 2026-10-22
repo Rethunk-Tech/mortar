@@ -122,7 +122,7 @@ function ApplySavedGroupDialog({
   const [busy, run] = usePending()
   return (
     <Dialog open={open} onClose={busy ? undefined : onClose}>
-      <DialogTitle>{t`Add a saved group to ${profileName}`}</DialogTitle>
+      <DialogTitle>{t`Add a saved group to ${{ profile: profileName }}`}</DialogTitle>
       <DialogContent sx={{ minWidth: 420, maxWidth: 'calc(100vw - 64px)' }}>
         <SavedGroupPickList
           loading={loading}

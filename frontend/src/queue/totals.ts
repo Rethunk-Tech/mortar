@@ -119,4 +119,4 @@ export const displayName = (i: Item, pageName = ''): string =>
   i.repo ||
   i.package ||
   pageName ||
-  (i.modId ? i18n._(msg`${{ site: sourceLabel('nexus') }} mod ${{ id: i.modId }}`) : '')
+  (i.modId ? i18n._(msg`${{ source: sourceLabel('nexus') }} mod ${{ id: i.modId }}`) : '')

@@ -41,11 +41,11 @@ function overwriteMessage(snaps: Snap[], have: Set<string>): string {
   const hit = snaps.filter((s) => have.has(s.folder)).map(saveName)
   if (hit.length === 0) {
     return i18n._(
-      msg`None of ${listNames(names)} are in Saves yet; they will be added. The current Saves folder is backed up first.`,
+      msg`None of ${{ names: listNames(names) }} are in Saves yet; they will be added. The current Saves folder is backed up first.`,
     )
   }
   return i18n._(
-    msg`${listNames(hit)} will be overwritten. A backup of the current Saves folder is made first.`,
+    msg`${{ names: listNames(hit) }} will be overwritten. A backup of the current Saves folder is made first.`,
   )
 }
 
@@ -68,8 +68,8 @@ function BackupRow({
   const when = backup.at > 0 ? <When value={backup.at} withTime={true} /> : backup.name
   const farms = (backup.saves ?? []).map(saveName).join(', ')
   const meta = farms
-    ? t`${causeLabel(backup, profiles)} · ${formatBytes(backup.size)} · ${farms}`
-    : t`${causeLabel(backup, profiles)} · ${formatBytes(backup.size)}`
+    ? t`${{ cause: causeLabel(backup, profiles) }} · ${{ size: formatBytes(backup.size) }} · ${farms}`
+    : t`${{ cause: causeLabel(backup, profiles) }} · ${{ size: formatBytes(backup.size) }}`
   return (
     <Box
       sx={{
@@ -107,7 +107,7 @@ function BackupRow({
         </Tooltip>
       ) : null}
       <TipIconButton
-        label={busyGame ? t`Stop the game to restore saves.` : t`Restore ${{ label: when }}`}
+        label={busyGame ? t`Stop the game to restore saves.` : t`Restore ${{ name: when }}`}
         disabled={busyGame || pending}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
@@ -238,7 +238,7 @@ export function BackupsDialog({
           <MenuAction
             key={snap.folder}
             icon={<RotateCcw size={16} />}
-            label={t`Restore ${{ label: saveName(snap) }}`}
+            label={t`Restore ${{ name: saveName(snap) }}`}
             onClick={() => {
               if (menu) {
                 setConfirm({ backup: menu.backup, snaps: [snap] })

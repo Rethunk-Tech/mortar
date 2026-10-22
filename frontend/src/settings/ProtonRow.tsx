@@ -15,7 +15,7 @@ export function ProtonRow({ game }: { game: string }) {
   if (builds.length === 0) {
     return null
   }
-  const label = t`${{ app: PROTON }} version`
+  const label = t`${{ name: PROTON }} version`
   return (
     <SettingRow
       label={label}

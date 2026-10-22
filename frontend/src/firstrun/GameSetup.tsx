@@ -75,7 +75,9 @@ function SetupStepper({
   }
   const steps = [
     { key: 'find', label: t`Game folder`, state: stateOf(FIND) },
-    ...(nexus ? [{ key: 'nexus', label: t`Nexus Mods`, state: stateOf(NEXUS) }] : []),
+    ...(nexus
+      ? [{ key: 'nexus', label: t`${{ source: sourceLabel('nexus') }}`, state: stateOf(NEXUS) }]
+      : []),
     ...(loader === null
       ? []
       : [
@@ -173,7 +175,7 @@ export function GameSetup({ game: id }: { game: GameId }) {
         <BackButton />
       </Box>
       <Typography component="h1" sx={{ fontSize: 34, fontWeight: 700 }}>
-        {t`Set up ${game.name}`}
+        {t`Set up ${{ name: game.name }}`}
       </Typography>
       <SetupStepper
         step={step}

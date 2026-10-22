@@ -3,6 +3,8 @@
 // Also fails on a contraction: messages spell out "cannot" and "do not", so translators see one form. And on a
 // typographic variant (curly quotes, dashes, arrows): messages use plain quotes and words, keeping only "…" and the
 // "·" and "›" separators.
+// And on a positional placeholder ({0}) or the name of a product other than Mortar: translators see {name} and
+// {source}, {loader}, {launcher}, {os}, {manager} or {app}, filled in by code, so one message serves every product.
 // The messages are extracted from the source into a scratch catalog, so a committed catalog that is behind cannot hide
 // one.
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -95,6 +97,70 @@ function variants(ids: string[]): string[] {
   return ids.filter((id) => VARIANT.test(id))
 }
 
+const POSITIONAL = /\{\d+[,}]/
+
+function positionals(ids: string[]): string[] {
+  return ids.filter((id) => POSITIONAL.test(id))
+}
+
+// Products other than Mortar; frontend/src/brand/productNames.ts and sourceLabel() hold the names code passes in.
+const PRODUCTS = [
+  'Nexus',
+  'Thunderstore',
+  'GitHub',
+  'CurseForge',
+  'Modrinth',
+  'Patreon',
+  'itch',
+  'VS Mod DB',
+  'Paradox Mods',
+  'Discord',
+  'SMAPI',
+  'BepInEx',
+  'MelonLoader',
+  'Shimloader',
+  'Steam',
+  'GOG',
+  'Epic Games',
+  'Xbox',
+  'Heroic',
+  'Lutris',
+  'Bottles',
+  'Windows',
+  'Linux',
+  'r2modman',
+  'Gale',
+  'Vortex',
+  'Mod Organizer',
+  'Stardrop',
+  'Unity',
+  'Mono',
+  'Harmony',
+  'Content Patcher',
+  'Flatpak',
+  'Proton',
+  'Wine',
+  'Chrome',
+  'Chromium',
+  'Edge',
+  'Firefox',
+  'Syncthing',
+  'Dropbox',
+  'ClamAV',
+  'OBS',
+]
+const PRODUCT = new RegExp(`\\b(?:${PRODUCTS.join('|')})\\b`)
+
+function products(ids: string[]): string[] {
+  return ids.filter((id) =>
+    PRODUCT.test(
+      id
+        .replace(/\{[\w.]+(?=, (?:plural|select|selectordinal),)/g, '{')
+        .replace(/\{[\w.]+\}/g, '{}'),
+    ),
+  )
+}
+
 if (import.meta.main) {
   const ids = msgids(extractedCatalog())
   const contracted = contractions(ids)
@@ -109,6 +175,18 @@ if (import.meta.main) {
       `i18n: typographic variant in ${JSON.stringify(id)}; use plain characters (docs/gui-design.md, Copy)`,
     )
   }
+  const positional = positionals(ids)
+  for (const id of positional) {
+    console.error(
+      `i18n: positional placeholder in ${JSON.stringify(id)}; name it (docs/gui-design.md, Copy)`,
+    )
+  }
+  const named = products(ids)
+  for (const id of named) {
+    console.error(
+      `i18n: product name in ${JSON.stringify(id)}; pass it as a placeholder (docs/gui-design.md, Copy)`,
+    )
+  }
   const dupes = duplicates(ids)
   for (const group of dupes) {
     console.error(
@@ -120,9 +198,15 @@ if (import.meta.main) {
       `i18n: ${dupes.length} duplicate messages; use one wording (docs/gui-design.md, Copy)`,
     )
   }
-  if (dupes.length > 0 || contracted.length > 0 || variant.length > 0) {
+  if (
+    dupes.length > 0 ||
+    contracted.length > 0 ||
+    variant.length > 0 ||
+    positional.length > 0 ||
+    named.length > 0
+  ) {
     process.exit(1)
   }
 }
 
-export { contractions, duplicates, variants }
+export { contractions, duplicates, positionals, products, variants }

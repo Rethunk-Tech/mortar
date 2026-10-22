@@ -265,7 +265,7 @@ export function HistoryList({
               </Box>
               {e.game && profiles.some((p) => p.id === e.profileId) ? (
                 <TipIconButton
-                  label={t`Show ${e.name} in its profile`}
+                  label={t`Show ${{ name: e.name }} in its profile`}
                   onClick={() => showInProfile(e.game, e.profileId, e.modId, e.name)}
                 >
                   <ArrowUpRight size={16} />

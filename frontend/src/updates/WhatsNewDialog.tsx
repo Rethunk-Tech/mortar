@@ -32,6 +32,7 @@ import {
   WhatsNew as LoadWhatsNew,
   ReleaseNotes,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/updatesvc/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openPage } from '../mods/menu.ts'
 import { PageLink } from '../share/CollectionNotes.tsx'
 import { space } from '../theme/density.ts'
@@ -133,9 +134,13 @@ function Notes({ text }: { text: string }) {
   const items = areas.flatMap((a) => a.items)
   const count = (kind: NoteKind) => items.filter((i) => i.kind === kind).length
   const summary = [
-    count('new') ? plural(count('new'), { one: '# new feature', other: '# new features' }) : '',
-    count('changed') ? plural(count('changed'), { one: '# change', other: '# changes' }) : '',
-    count('fixed') ? plural(count('fixed'), { one: '# fix', other: '# fixes' }) : '',
+    count('new')
+      ? plural({ count: count('new') }, { one: '# new feature', other: '# new features' })
+      : '',
+    count('changed')
+      ? plural({ count: count('changed') }, { one: '# change', other: '# changes' })
+      : '',
+    count('fixed') ? plural({ count: count('fixed') }, { one: '# fix', other: '# fixes' }) : '',
   ].filter(Boolean)
   if (areas.length === 0) {
     return (
@@ -199,7 +204,7 @@ export function WhatsNewDialog() {
   }
   return (
     <Dialog open={shown !== null} onClose={close} fullWidth={true} maxWidth="md">
-      <DialogTitle>{t`What is new in Mortar ${version ?? ''}`}</DialogTitle>
+      <DialogTitle>{t`What is new in Mortar ${{ version: version ?? '' }}`}</DialogTitle>
       <DialogContent>
         <Notes text={release?.available ? release.notes : (shown?.fallback ?? '')} />
         {release && !release.available ? (
@@ -211,7 +216,7 @@ export function WhatsNewDialog() {
               openPage(`https://github.com/Rethunk-Tech/mortar/releases/tag/v${version}`)
             }
           >
-            {t`Read the release notes on GitHub`}
+            {t`Read the release notes on ${{ source: sourceLabel('github') }}`}
           </Link>
         ) : null}
         {(shown?.earlier ?? []).map((r) => (
@@ -225,7 +230,7 @@ export function WhatsNewDialog() {
             }}
           >
             <Typography component="h2" sx={{ fontSize: 16, fontWeight: 700, mb: 1.5 }}>
-              {t`Also in Mortar ${r.version}`}
+              {t`Also in Mortar ${{ version: r.version }}`}
             </Typography>
             <Notes text={r.notes} />
           </Box>
@@ -233,7 +238,7 @@ export function WhatsNewDialog() {
       </DialogContent>
       <DialogActions>
         <Button variant="contained" onClick={close}>
-          {t`Got it`}
+          {t`Close`}
         </Button>
       </DialogActions>
     </Dialog>

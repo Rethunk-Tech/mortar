@@ -17,6 +17,7 @@ import {
   RemoveLauncherRoot,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { LauncherLogo } from '../brand/launchers/LauncherLogo.tsx'
+import { BOTTLES, HEROIC, LUTRIS, WINDOWS } from '../brand/productNames.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
@@ -75,7 +76,7 @@ function FixedRow({ launcher }: { launcher: StoreApp }) {
   const { success } = useTheme().palette
   const other = Boolean(launcher.platform)
   const summary = other
-    ? t`Windows only. On this computer its games come in through Heroic, Lutris or Bottles.`
+    ? t`${{ os: WINDOWS }} only. On this computer its games come in through ${{ launcher: HEROIC }}, ${{ otherLauncher: LUTRIS }} or ${{ thirdLauncher: BOTTLES }}.`
     : (launcher.games ?? []).map((g) => g.name).join(', ')
   return (
     <Box

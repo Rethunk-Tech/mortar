@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { List, Wifi } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Logo } from '../brand/Logo.tsx'
+import { R2MODMAN } from '../brand/productNames.ts'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import type { Destination, DestinationEntry } from './methods.ts'
@@ -29,13 +30,13 @@ export function DestinationGrid({
     },
     nexus: {
       icon: <SourceLogo id={NEXUS} size={ICON} />,
-      name: t`Nexus Mods`,
+      name: t`${{ source: sourceLabel('nexus') }}`,
       hint: t`A collection draft`,
     },
     thunderstore: {
       icon: <SourceLogo id={THUNDERSTORE} size={ICON} />,
       name: sourceLabel('thunderstore'),
-      hint: t`An r2modman code or modpack`,
+      hint: t`An ${{ manager: R2MODMAN }} code or modpack`,
     },
     nearby: {
       icon: <Wifi size={ICON} />,
@@ -45,7 +46,7 @@ export function DestinationGrid({
     list: {
       icon: <List size={ICON} />,
       name: t`Mod list`,
-      hint: t`Text for Discord or a forum`,
+      hint: t`Text for ${{ app: sourceLabel('discord') }} or a forum`,
     },
   }
   const reasons = {

@@ -110,7 +110,7 @@ export function AddAll({ missing, profile }: { missing: Lack[]; profile: Profile
         disabled={pending || locked}
         onClick={() => run(() => download(wants))}
       >
-        {t`Add all ${wants.length}`}
+        {t`Add all ${{ count: wants.length }}`}
       </Button>
     </LockedReason>
   )

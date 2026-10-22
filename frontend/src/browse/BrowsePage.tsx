@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box } from '@mui/material'
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { persist } from '../settings/persist.ts'
 import { useOfflineEmpty } from '../shell/offlineText.ts'
 import { space } from '../theme/density.ts'
@@ -173,6 +174,16 @@ function useBrowseHandlers(
   return { onSource, onText, onFilter, onModes }
 }
 
+function useSearchPlaceholder(source: string, sourceName: string): string {
+  const { t } = useLingui()
+  return (
+    {
+      [ALL]: t`Search all mod sites`,
+      [GITHUB]: t`Search ${{ source: sourceLabel(GITHUB) }} releases`,
+    }[source] ?? t`Search ${{ source: sourceName }}`
+  )
+}
+
 function BrowsePage({
   game,
   profileID,
@@ -244,9 +255,7 @@ function BrowsePage({
       sourceNames,
     ],
   )
-  const placeholder =
-    { [ALL]: t`Search all mod sites`, [GITHUB]: t`Search GitHub releases` }[source] ??
-    t`Search ${sourceName}`
+  const placeholder = useSearchPlaceholder(source, sourceName)
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <BrowseToolbar

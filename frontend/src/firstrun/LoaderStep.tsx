@@ -11,6 +11,7 @@ import {
   NeedsLaunchOption,
   SetLaunchOption,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
+import { STEAM, WINDOWS } from '../brand/productNames.ts'
 import { useGameName } from '../games/info.ts'
 import { useLoader } from '../loader/store.ts'
 import type { GameId } from '../nav/store.ts'
@@ -99,17 +100,21 @@ function LaunchLine({
     setWriting(true)
     SetLaunchOption(game)
       .then(() => {
-        useToasts.getState().push({ kind: 'success', title: t`Launch options set in Steam` })
+        useToasts
+          .getState()
+          .push({ kind: 'success', title: t`Launch options set in ${{ launcher: STEAM }}` })
         recheck()
       })
-      .catch(reportError(t`Could not set it in Steam`, write))
+      .catch(reportError(t`Could not set it in ${{ launcher: STEAM }}`, write))
       .finally(() => setWriting(false))
   }
   return (
     <>
-      <Typography sx={{ fontSize: 22, fontWeight: 700 }}>{t`One step in Steam`}</Typography>
+      <Typography
+        sx={{ fontSize: 22, fontWeight: 700 }}
+      >{t`One step in ${{ launcher: STEAM }}`}</Typography>
       <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>
-        {t`On Windows, Steam starts the game without ${loader} unless told to. With Steam closed, Mortar can set that up; or in Steam, right-click ${gameName}, choose Properties and paste this line into Launch Options:`}
+        {t`On ${{ os: WINDOWS }}, ${{ launcher: STEAM }} starts the game without ${loader} unless told to. With ${{ launcher: STEAM }} closed, Mortar can set that up; or in ${{ launcher: STEAM }}, right-click ${{ game: gameName }}, choose Properties and paste this line into Launch Options:`}
       </Typography>
       <Box sx={{ display: 'flex', gap: space.gap }}>
         <Box
@@ -144,7 +149,7 @@ function LaunchLine({
       </Box>
       <Box>
         <Button variant="outlined" disabled={set || writing} onClick={write}>
-          {t`Set it in Steam for me`}
+          {t`Set it in ${{ launcher: STEAM }} for me`}
         </Button>
       </Box>
       <Box
@@ -168,8 +173,8 @@ function LaunchLine({
           <Clock size={16} color={theme.palette.warning.main} />
         )}
         {set
-          ? t`Mortar found it in Steam's settings.`
-          : t`Mortar checks Steam's settings for it: not found yet.`}
+          ? t`Mortar found it in ${{ launcher: STEAM }}'s settings.`
+          : t`Mortar checks ${{ launcher: STEAM }}'s settings for it: not found yet.`}
       </Box>
       <Box
         sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: space.gap }}
@@ -394,11 +399,11 @@ export function LoaderStep({
   const latest = status?.latest ?? ''
   const introText = () => {
     if (status?.perProfile) {
-      return t`${loader} is the loader every ${gameName} mod needs. Mortar puts it in each profile; the game folder stays as it is.`
+      return t`${loader} is the loader every ${{ game: gameName }} mod needs. Mortar puts it in each profile; the game folder stays as it is.`
     }
     return windows
-      ? t`${loader} is the loader every ${gameName} mod needs. It goes into the game folder.`
-      : t`${loader} is the loader every ${gameName} mod needs. It goes into the game folder, and Steam keeps launching the game as usual.`
+      ? t`${loader} is the loader every ${{ game: gameName }} mod needs. It goes into the game folder.`
+      : t`${loader} is the loader every ${{ game: gameName }} mod needs. It goes into the game folder, and ${{ launcher: STEAM }} keeps launching the game as usual.`
   }
   return (
     <Panel width={680}>

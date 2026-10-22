@@ -30,7 +30,7 @@ function DeleteProfileDialog({ profile, open }: DialogProps) {
   return (
     <ConfirmDialog
       open={open}
-      title={t`Delete ${profile.name}?`}
+      title={t`Delete ${{ name: profile.name }}?`}
       body={t`The profile stays restorable for 30 days from Recently deleted.`}
       confirmLabel={t`Delete`}
       color="error"

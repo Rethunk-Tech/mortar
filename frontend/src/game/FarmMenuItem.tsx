@@ -84,7 +84,9 @@ export function FarmDialog({
         push({
           kind: manual.length > 0 ? 'warning' : 'success',
           title: t`${count} to download`,
-          ...(manual.length > 0 ? { body: t`Install by hand: ${listNames(manual)}` } : {}),
+          ...(manual.length > 0
+            ? { body: t`Install by hand: ${{ names: listNames(manual) }}` }
+            : {}),
         })
       })
       .catch((error: unknown) => toastError(t`Could not queue the downloads`, error))
@@ -99,7 +101,9 @@ export function FarmDialog({
     if (row.state === 'off') {
       return t`Disabled in this profile`
     }
-    return row.state === 'different' ? t`Host ${row.host}, yours ${row.mine}` : t`Host ${row.host}`
+    return row.state === 'different'
+      ? t`Host ${{ host: row.host }}, yours ${{ mine: row.mine }}`
+      : t`Host ${{ host: row.host }}`
   }
   const action = (row: FarmRow) => (row.state === 'different' ? t`Update` : t`Add`)
   return (
