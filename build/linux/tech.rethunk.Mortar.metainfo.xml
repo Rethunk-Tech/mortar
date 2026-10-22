@@ -52,6 +52,42 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.3.11" date="2026-10-22">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>Local mods are marked in cards and the list, behind a Mark local mods setting that is on by default</li>
+          <li>A selected card is tinted as well as outlined</li>
+          <li>Errors while running rows say which patch threw, on what, and at which source line</li>
+          <li>The profile actions menu is grouped under headings</li>
+          <li>Import preview tiles show the full name and tint the whole tile instead of a checkbox over the icon</li>
+          <li>The profile menu opens the profile folder, and moving it is labelled as a move</li>
+          <li>A mod's name in the import preview opens its page in the browser</li>
+          <li>A mod's Needs and Used by include what its plugins' attributes name</li>
+          <li>A ran error names the Harmony patch it ran in, its target, and the mod frame's source line or why there is none</li>
+          <li>Cities: Skylines II's cities are listed and backed up per profile from its per-user save folders</li>
+          <li>Use the system title bar, applied live, for desktops with their own window decorations</li>
+          <li>Summary cards switch Startup and In game, a labelled phase bar, and the top six mods with their share</li>
+          <li>Time each startup step in mortar.log, and record a startup profile from the Mortar menu</li>
+          <li>Startup and In game are tabs at the top of the page, In game first while the game runs</li>
+          <li>Name the native function a game died in from Unity's and Microsoft's symbol servers</li>
+          <li>…and 1 more</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>A game opened only for its setup page is not listed under Recently played</li>
+          <li>A card's meta line drops the separator when the mod has no version</li>
+          <li>Installed mods in the import preview take a quieter green</li>
+          <li>Match a Linux process name exactly, so /bin/sh is not SUPERHOT's SH</li>
+          <li>A library a plugin names in its own attributes is not offered for removal</li>
+          <li>An error while running links to its own guide section, not the SMAPI run-errors one</li>
+          <li>List host processes in two programs instead of two forks per process</li>
+          <li>Select the cached catalog from disk at startup, the built-in one only when none is cached</li>
+          <li>Open the window before the bundled-mods check, read Xbox packages from the registry, cache installs</li>
+          <li>Keep the space a heading line break stands for in link-preview titles</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3.10" date="2026-10-20">
       <description>
         <p>New</p>
