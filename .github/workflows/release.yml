@@ -84,8 +84,20 @@ jobs:
                 ok=true
               fi
             fi
+          else
+            # A dry run publishes nothing and the tag run waits for CI's verdict, so a dry run of a commit CI is
+            # gating (not one CI already failed) leaves the gate to CI instead of running it a second time.
+            runs="repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&event=push"
+            for _ in 1 2 3; do
+              verdict="$(gh api "$runs" --jq '.workflow_runs[0] | select(.) | .conclusion // "running"' || true)"
+              [ -n "$verdict" ] && break
+              sleep 3
+            done
+            case "${verdict:-}" in
+              success | running) ok=true ;;
+            esac
           fi
-          echo "CI passed on $GITHUB_SHA: $ok"
+          echo "CI gates $GITHUB_SHA: $ok"
           echo "ok=$ok" >>"$GITHUB_OUTPUT"
 
   # Dispatch runs, and a tag whose CI run failed or was cancelled, gate here, beside packaging rather than before it.
