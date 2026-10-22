@@ -10,6 +10,7 @@ import {
   ServerSettings as ReadForm,
   SetServerSetting,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
+import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { listProfiles } from './listProfiles.ts'
 import { serverFieldChanged, serverFieldError } from './serverForm.ts'
@@ -100,7 +101,7 @@ export function ServerSettings({ gameId, profileId }: { gameId: string; profileI
       <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
         {t`Applied the next time the server starts. The password stays in this profile's folder.`}
       </Typography>
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 1 }}>
+      <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center', mt: 1 }}>
         <TextField
           select={true}
           size="small"

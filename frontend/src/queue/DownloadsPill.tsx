@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase } from '@mui/material'
+import { Box, ButtonBase, LinearProgress } from '@mui/material'
 import { Download } from 'lucide-react'
 import { memo } from 'react'
 import { compact } from '../game/compact.ts'
@@ -49,28 +49,18 @@ export const DownloadsPill = memo(function DownloadsPillView() {
       <Box component="span" sx={{ [compact]: { display: 'none' } }}>
         {downloading}
       </Box>
-      <Box
-        component="span"
+      <LinearProgress
+        variant="determinate"
+        value={percent}
         aria-hidden={true}
         sx={{
           width: 72,
           height: 4,
           borderRadius: '2px',
-          overflow: 'hidden',
           bgcolor: 'var(--mortar-hairline-12)',
           [compact]: { display: 'none' },
         }}
-      >
-        <Box
-          component="span"
-          sx={{
-            display: 'block',
-            height: '100%',
-            width: `${`${percent}%`}`,
-            bgcolor: 'primary.main',
-          }}
-        />
-      </Box>
+      />
       <Box component="span" sx={{ fontSize: 12, color: 'var(--mortar-ink-90)' }}>
         {`${percent}%`}
       </Box>

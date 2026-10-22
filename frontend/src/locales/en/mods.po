@@ -318,6 +318,10 @@ msgstr "Enable mods in the Mods tab to see the order {loader} loads them."
 msgid "Make a pack win"
 msgstr "Make a pack win"
 
+#: src/mods/typedConfig/StringWidgets.tsx
+msgid "Record {name}"
+msgstr "Record {name}"
+
 #: src/mods/CompatChip.tsx
 #: src/mods/ModDependencyTree.tsx
 msgid "Broken"

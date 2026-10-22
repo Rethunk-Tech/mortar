@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Dialog, Typography } from '@mui/material'
 import { Camera, FolderOpen } from 'lucide-react'
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useId, useState } from 'react'
 import {
   OpenScreenshotsFolder,
   ScreenshotFile,
@@ -42,6 +42,7 @@ function Viewer({
   onClose: () => void
 }) {
   const { t } = useLingui()
+  const titleId = useId()
   const profile = useProfiles(openProfileOf)
   const shot = shots[index]
   if (!shot) {
@@ -66,6 +67,7 @@ function Viewer({
       open={true}
       onClose={onClose}
       maxWidth="xl"
+      aria-labelledby={titleId}
       onKeyDown={(e) => {
         if (e.key === 'ArrowRight' && index < shots.length - 1) {
           onIndex(index + 1)
@@ -92,6 +94,7 @@ function Viewer({
         }}
       >
         <Typography
+          id={titleId}
           noWrap={true}
           sx={{ flex: 1, minWidth: 0, fontSize: 'inherit' }}
           title={shot.name}

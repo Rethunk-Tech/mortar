@@ -19,6 +19,7 @@ export function ResizableAside({ label, children }: { label: string; children: R
   const ref = useRef<HTMLElement>(null)
   const available = () => ref.current?.parentElement?.clientWidth ?? Number.POSITIVE_INFINITY
   const width = clampPanelWidth(drag ?? stored, available())
+  const widest = clampPanelWidth(Number.POSITIVE_INFINITY, available())
   const onMove = (e: PointerEvent<HTMLElement>) => {
     if (drag !== null && ref.current) {
       setDrag(clampPanelWidth(ref.current.getBoundingClientRect().right - e.clientX, available()))
@@ -49,6 +50,7 @@ export function ResizableAside({ label, children }: { label: string; children: R
         aria-label={t`Resize details`}
         aria-valuenow={Math.round(width)}
         aria-valuemin={PANEL_MIN_PX}
+        aria-valuemax={Number.isFinite(widest) ? Math.round(widest) : undefined}
         tabIndex={0}
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId)

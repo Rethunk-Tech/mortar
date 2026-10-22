@@ -7,6 +7,7 @@ import type { GameInfo } from '../../bindings/github.com/Rethunk-Tech/mortar/int
 import { ProfileCounts } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type { Played } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { compact } from '../game/compact.ts'
+import { ON_ART_TEXT } from '../game/onArt.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNow } from '../i18n/useNow.ts'
 import { routeGame, useNav } from '../nav/store.ts'
@@ -86,7 +87,7 @@ function GameStrip({
         borderRadius: '6px',
         borderLeft: '3px solid',
         borderColor: current ? 'primary.main' : 'transparent',
-        color: '#fff',
+        color: ON_ART_TEXT,
         bgcolor: 'var(--mortar-raised)',
         '&::before': {
           content: '""',

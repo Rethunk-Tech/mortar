@@ -15,6 +15,7 @@ import { useLaunch } from '../launch/store.ts'
 import { useMods } from '../mods/store.ts'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
+import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useProfiles } from './store.ts'
@@ -77,7 +78,7 @@ export function CrashHintCard({
             alignItems: 'center',
             gap: 1.5,
             flexWrap: 'wrap',
-            px: 2,
+            px: space.pad,
             py: 1.75,
             bgcolor: (theme) => calloutFill('error')(theme),
             border: (theme) => `1px solid ${calloutLine('error')(theme)}`,

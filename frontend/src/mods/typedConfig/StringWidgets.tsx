@@ -54,6 +54,8 @@ function KeybindWidget({ entry, label, onChange }: WidgetProps) {
       <Button
         size="small"
         variant={recording ? 'contained' : 'outlined'}
+        aria-label={t`Record ${{ name: label }}`}
+        aria-pressed={recording}
         startIcon={<Circle size={12} />}
         onClick={() => setRecording((r) => !r)}
         onBlur={() => setRecording(false)}

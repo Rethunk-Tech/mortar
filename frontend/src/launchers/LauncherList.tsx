@@ -84,7 +84,7 @@ function FixedRow({ launcher }: { launcher: StoreApp }) {
         display: 'flex',
         alignItems: 'center',
         gap: space.pad,
-        px: 2,
+        px: space.pad,
         py: 1.25,
         bgcolor: 'var(--mortar-paper-78)',
         borderRadius: 1,

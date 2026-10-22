@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box'
-import Tooltip from '@mui/material/Tooltip'
 import { type ReactNode, useId } from 'react'
+import { Tooltip } from './Tooltip.tsx'
 
 /** Tooltip around a span so a disabled control can still show why. */
 export function DisabledReason({

@@ -32,7 +32,7 @@ function Card({
         flexDirection: 'column',
         alignItems: 'flex-start',
         gap: 0.5,
-        px: 2,
+        px: space.pad,
         py: 1.5,
         textAlign: 'left',
         borderRadius: '10px',

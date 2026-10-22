@@ -318,6 +318,10 @@ msgstr ""
 msgid "Make a pack win"
 msgstr ""
 
+#: src/mods/typedConfig/StringWidgets.tsx
+msgid "Record {name}"
+msgstr ""
+
 #: src/mods/CompatChip.tsx
 #: src/mods/ModDependencyTree.tsx
 msgid "Broken"
