@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase } from '@mui/material'
+import { Box, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Layers } from 'lucide-react'
 import { memo, type ReactNode, useEffect, useRef } from 'react'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
@@ -7,6 +7,7 @@ import { hasSourceLogo } from '../brand/sources/sourceIcons.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { OfflineGate } from '../shell/OfflineGate.tsx'
 import { useOfflineReason } from '../shell/offlineText.ts'
+import { pillButtonSx, pillGroupSx } from '../shell/pillToggle.ts'
 import { SearchField } from '../shell/SearchField.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
@@ -21,30 +22,19 @@ interface SourceOption {
   unavailable?: string | undefined
 }
 
-const sourceButton = (active: boolean) => ({
+const HAIRLINE = 'var(--mortar-hairline-16)'
+const sourceButton = {
+  ...pillButtonSx('text.secondary', { bg: HAIRLINE, hover: HAIRLINE }),
   minWidth: 34,
   height: `calc(${space.control} - 6px)`,
   px: space.gap,
-  borderRadius: '6px',
   fontSize: 13,
-  bgcolor: active ? 'var(--mortar-hairline-16)' : 'transparent',
-  color: active ? 'var(--mortar-ink)' : 'text.secondary',
-  '&:hover': { bgcolor: active ? 'var(--mortar-hairline-16)' : 'var(--mortar-hairline-muted)' },
-  '&.Mui-disabled': { opacity: 0.4 },
-})
+}
 
 // The source picker shows each site's logo, named in its tooltip; a source with no logo shows its name.
 // One source in the picker. A source that cannot be used says why to keyboard users too; one that can only names
 // itself.
-function SourceButton({
-  option,
-  active,
-  onChange,
-}: {
-  option: SourceOption
-  active: boolean
-  onChange: (next: string) => void
-}) {
+function SourceButton({ option }: { option: SourceOption }) {
   let mark: ReactNode = option.label
   if (option.value === ALL) {
     mark = <Layers size={15} />
@@ -52,15 +42,14 @@ function SourceButton({
     mark = <SourceLogo id={option.value} size={16} />
   }
   const button = (
-    <ButtonBase
+    <ToggleButton
+      value={option.value}
       aria-label={option.label}
-      aria-pressed={active}
       disabled={Boolean(option.unavailable)}
-      onClick={() => onChange(option.value)}
-      sx={sourceButton(active)}
+      sx={sourceButton}
     >
       {mark}
-    </ButtonBase>
+    </ToggleButton>
   )
   return option.unavailable ? (
     <DisabledReason title={option.unavailable} disabled={true}>
@@ -82,22 +71,21 @@ function SourceToggle({
 }) {
   const { t } = useLingui()
   return (
-    <Box
-      role="group"
+    <ToggleButtonGroup
+      exclusive={true}
+      value={value}
       aria-label={t`Source`}
-      sx={{
-        display: 'flex',
-        p: '3px',
-        gap: '2px',
-        bgcolor: 'var(--mortar-overlay-30)',
-        borderRadius: '8px',
-        flexShrink: 0,
+      onChange={(_, next: string | null) => {
+        if (next !== null) {
+          onChange(next)
+        }
       }}
+      sx={pillGroupSx}
     >
       {sources.map((o) => (
-        <SourceButton key={o.value} option={o} active={o.value === value} onChange={onChange} />
+        <SourceButton key={o.value} option={o} />
       ))}
-    </Box>
+    </ToggleButtonGroup>
   )
 }
 

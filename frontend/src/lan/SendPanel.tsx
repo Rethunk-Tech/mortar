@@ -53,6 +53,9 @@ interface SendTarget {
   paired?: boolean
 }
 
+// Room the row's text leaves for the Pair button, which sits over the row's right edge.
+const PAIR_RESERVE = 10
+
 interface PeerRowProps {
   peer: Peer
   sharedName: boolean
@@ -65,8 +68,21 @@ interface PeerRowProps {
 function PeerRow({ peer, sharedName, disabled, sending, onSend, onPair }: PeerRowProps) {
   const { t } = useLingui()
   return (
-    <ListItem disablePadding={true}>
-      <ListItemButton disabled={disabled} onClick={onSend}>
+    <ListItem
+      disablePadding={true}
+      secondaryAction={
+        peer.paired ? undefined : (
+          <Button size="small" variant="text" onClick={onPair}>
+            {t`Pair`}
+          </Button>
+        )
+      }
+    >
+      <ListItemButton
+        disabled={disabled}
+        onClick={onSend}
+        sx={peer.paired ? undefined : { pr: PAIR_RESERVE }}
+      >
         <ListItemText
           primary={peer.name}
           secondary={peerSecondary(
@@ -76,18 +92,6 @@ function PeerRow({ peer, sharedName, disabled, sending, onSend, onPair }: PeerRo
             [t`Not paired`, lowerFirst(t`Only links`)].join(' · '),
           )}
         />
-        {peer.paired ? null : (
-          <Button
-            size="small"
-            variant="text"
-            onClick={(event) => {
-              event.stopPropagation()
-              onPair()
-            }}
-          >
-            {t`Pair`}
-          </Button>
-        )}
         {sending ? <CircularProgress size={18} /> : null}
       </ListItemButton>
     </ListItem>

@@ -1,11 +1,20 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Checkbox, Menu, MenuItem } from '@mui/material'
+import {
+  Box,
+  ButtonBase,
+  Checkbox,
+  Menu,
+  MenuItem,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { ChevronDown } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { formatCount } from '../mods/nexusFormat.ts'
+import { pillButtonSx, pillGroupSx } from '../shell/pillToggle.ts'
 import { space } from '../theme/density.ts'
 import { countByLevel, LEVELS } from './filter.ts'
 import { levelSwatch } from './levelPalette.ts'
@@ -24,61 +33,58 @@ export function LevelToggles() {
   const counts = useMemo(() => countByLevel(entries), [entries])
   const [more, setMore] = useState<HTMLElement | null>(null)
   const names = useLevelNames()
+  const everyday = LEVELS.filter((level) => !QUIET_LEVELS.includes(level))
   return (
-    <Box
-      role="group"
-      aria-label={t`Levels`}
-      sx={{
-        display: 'flex',
-        flexWrap: 'nowrap',
-        flexShrink: 0,
-        p: '3px',
-        gap: '2px',
-        bgcolor: 'var(--mortar-overlay-30)',
-        borderRadius: '8px',
-      }}
-    >
-      {LEVELS.filter((level) => !QUIET_LEVELS.includes(level)).map((level) => {
-        const pressed = on.includes(level)
-        const n = counts.get(level) ?? 0
-        return (
-          <ButtonBase
-            key={level}
-            aria-pressed={pressed}
-            aria-label={plural(
-              { count: n },
-              {
-                one: `${{ level: names[level] }}: # line`,
-                other: `${{ level: names[level] }}: # lines`,
-              },
-            )}
-            onClick={() => toggle(level)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              height: 28,
-              px: space.gap,
-              borderRadius: '6px',
-              fontSize: 13,
-              whiteSpace: 'nowrap',
-              bgcolor: pressed ? 'var(--mortar-hairline-14)' : 'transparent',
-              color: pressed ? 'var(--mortar-ink)' : 'var(--mortar-ink-dim)',
-              '&:hover': {
-                bgcolor: pressed ? 'var(--mortar-hairline-18)' : 'var(--mortar-hairline-muted)',
-              },
-            }}
-          >
-            <Box
-              sx={{ width: 8, height: 8, borderRadius: '4px', bgcolor: levelSwatch(theme, level) }}
-            />
-            {names[level]}
-            <Box component="span" sx={{ opacity: 0.75 }} aria-hidden={true}>
-              {formatCount(n, i18n.locale)}
-            </Box>
-          </ButtonBase>
-        )
-      })}
+    <Box sx={pillGroupSx}>
+      <ToggleButtonGroup
+        value={everyday.filter((level) => on.includes(level))}
+        aria-label={t`Levels`}
+        sx={{ display: 'flex', flexWrap: 'nowrap', gap: '2px', borderRadius: 0 }}
+      >
+        {everyday.map((level) => {
+          const n = counts.get(level) ?? 0
+          return (
+            <ToggleButton
+              key={level}
+              value={level}
+              aria-label={plural(
+                { count: n },
+                {
+                  one: `${{ level: names[level] }}: # line`,
+                  other: `${{ level: names[level] }}: # lines`,
+                },
+              )}
+              onClick={() => toggle(level)}
+              sx={{
+                ...pillButtonSx('var(--mortar-ink-dim)', {
+                  bg: 'var(--mortar-hairline-14)',
+                  hover: 'var(--mortar-hairline-18)',
+                }),
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                height: 28,
+                px: space.gap,
+                fontSize: 13,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '4px',
+                  bgcolor: levelSwatch(theme, level),
+                }}
+              />
+              {names[level]}
+              <Box component="span" sx={{ opacity: 0.75 }} aria-hidden={true}>
+                {formatCount(n, i18n.locale)}
+              </Box>
+            </ToggleButton>
+          )
+        })}
+      </ToggleButtonGroup>
       <ButtonBase
         aria-label={t`More levels`}
         aria-haspopup="menu"

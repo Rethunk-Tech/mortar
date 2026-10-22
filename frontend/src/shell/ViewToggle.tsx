@@ -1,51 +1,39 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase } from '@mui/material'
+import { ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { LayoutGrid, List } from 'lucide-react'
 import { space } from '../theme/density.ts'
+import { pillButtonSx, pillGroupSx } from './pillToggle.ts'
 import type { ViewMode } from './viewMode.ts'
 
-const viewButton = (active: boolean) => ({
+const HAIRLINE = 'var(--mortar-hairline-16)'
+const viewButton = {
+  ...pillButtonSx('text.secondary', { bg: HAIRLINE, hover: HAIRLINE }),
   width: 34,
   height: `calc(${space.control} - 6px)`,
-  borderRadius: '6px',
-  bgcolor: active ? 'var(--mortar-hairline-16)' : 'transparent',
-  color: active ? 'var(--mortar-ink)' : 'text.secondary',
-  '&:hover': { bgcolor: active ? 'var(--mortar-hairline-16)' : 'var(--mortar-hairline-muted)' },
-})
+}
 
 /** The grid/list switch at the start of a toolbar. */
 function ViewToggle({ value, onChange }: { value: ViewMode; onChange: (next: ViewMode) => void }) {
   const { t } = useLingui()
   return (
-    <Box
-      role="group"
+    <ToggleButtonGroup
+      exclusive={true}
+      value={value}
       aria-label={t`View`}
-      sx={{
-        display: 'flex',
-        p: '3px',
-        gap: '2px',
-        bgcolor: 'var(--mortar-overlay-30)',
-        borderRadius: '8px',
-        flexShrink: 0,
+      onChange={(_, next: ViewMode | null) => {
+        if (next !== null) {
+          onChange(next)
+        }
       }}
+      sx={pillGroupSx}
     >
-      <ButtonBase
-        aria-label={t`Grid view`}
-        aria-pressed={value === 'grid'}
-        onClick={() => onChange('grid')}
-        sx={viewButton(value === 'grid')}
-      >
+      <ToggleButton value="grid" aria-label={t`Grid view`} sx={viewButton}>
         <LayoutGrid size={15} />
-      </ButtonBase>
-      <ButtonBase
-        aria-label={t`List view`}
-        aria-pressed={value === 'list'}
-        onClick={() => onChange('list')}
-        sx={viewButton(value === 'list')}
-      >
+      </ToggleButton>
+      <ToggleButton value="list" aria-label={t`List view`} sx={viewButton}>
         <List size={15} />
-      </ButtonBase>
-    </Box>
+      </ToggleButton>
+    </ToggleButtonGroup>
   )
 }
 
