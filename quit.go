@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"os"
 	"os/signal"
@@ -10,9 +11,13 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/datasvc"
 	"github.com/Rethunk-Tech/mortar/internal/lan"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/support"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -89,6 +94,22 @@ func (s *QuitService) RequestQuit() {
 	}
 	s.show()
 	s.app.Event.Emit(quitRequestedEvent, summary)
+}
+
+// RestartProfilingStartup restarts Mortar so that the new start records a startup profile into the data folder. It
+// refuses while a restart would cut off a download, an install or a running game.
+func (s *QuitService) RestartProfilingStartup() error {
+	if summary := s.BusySummary(); summary != "" {
+		return usererr.Wrap(usererr.Busy, errors.New(summary))
+	}
+	dir, err := datadir.Dir()
+	if err != nil {
+		return err
+	}
+	if err := support.RequestStartupProfile(dir); err != nil {
+		return err
+	}
+	return datasvc.RestartSelf()
 }
 
 // PendingQuit hands a newly loaded page the quit question asked while the window was closed, once.

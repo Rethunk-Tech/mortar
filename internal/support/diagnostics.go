@@ -16,6 +16,8 @@ import (
 	"strings"
 	"time"
 
+	pprofile "github.com/google/pprof/profile"
+
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
@@ -167,6 +169,14 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 			files[name] = []byte(hideHomeIn(lastLines(string(b), diagnosticsLogLines), s.home))
 			included = append(included, name+": last "+fmt.Sprint(diagnosticsLogLines)+" lines, home folder written as ~")
 		}
+	}
+	if b, err := cpuProfileWithoutPaths(readFile(filepath.Join(dir, StartupProfileDir, "cpu.pprof"))); err == nil {
+		files[StartupProfileDir+"/cpu.pprof"] = b
+		included = append(included, StartupProfileDir+"/cpu.pprof: the last recorded startup's CPU profile (Mortar's function names and timings; program file paths cut to the file name)")
+	}
+	if b := readFile(filepath.Join(dir, StartupProfileDir, "trace.out")); len(b) > 0 {
+		files[StartupProfileDir+"/trace.out"] = b
+		included = append(included, StartupProfileDir+"/trace.out: the last recorded startup's execution trace (what Mortar's code waited on, and for how long)")
 	}
 	if profileID == "" {
 		profileID = lastRunProfile(runs, gameID)
@@ -526,4 +536,24 @@ func recentRuns(profilesRoot string, n int) []map[string]any {
 		all = all[:n]
 	}
 	return all
+}
+
+// cpuProfileWithoutPaths cuts each program file a CPU profile names to its file name, since Mortar and its libraries
+// usually live under the home folder.
+func cpuProfileWithoutPaths(b []byte) ([]byte, error) {
+	if len(b) == 0 {
+		return nil, os.ErrNotExist
+	}
+	p, err := pprofile.ParseData(b)
+	if err != nil {
+		return nil, err
+	}
+	for _, m := range p.Mapping {
+		m.File = filepath.Base(m.File)
+	}
+	var out bytes.Buffer
+	if err := p.Write(&out); err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
 }

@@ -397,6 +397,8 @@ func run() error {
 	}
 	// A user's log is often the only report there is, so it starts by naming the build.
 	log.Printf("mortar %s (build %s) on %s/%s", version, cmp.Or(appversion.Commit(), "unknown"), runtime.GOOS, runtime.GOARCH)
+	support.StartStartupProfile(dataDir)
+	startupStep("log open")
 	tidied := &tidy.Collector{}
 	if checkCrashLog(dataDir) {
 		tidied.Add("Emptied the crash log after it was reported", "data folder", 1, "crash.log")
@@ -440,6 +442,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	startupStep("settings, mod store and profiles open")
 	if err := profiles.PurgeScratch(); err != nil {
 		log.Printf("profiles: remove leftover crash-check copies: %v", err)
 	}
@@ -496,7 +499,11 @@ func run() error {
 	componentClient := components.NewClient(&http.Client{Timeout: 30 * time.Second})
 	game.ConfigureComponents(componentClient)
 	// The catalog an earlier run cached answers from the start; the network check (Load, below) runs behind the window.
-	componentClient.UseCached(modMeta, updateKey)
+	catalogFrom := "built-in"
+	if componentClient.UseCached(modMeta, updateKey) {
+		catalogFrom = "cached"
+	}
+	log.Printf("catalog: starting with the %s copy, serial %d", catalogFrom, game.CatalogSerial())
 	game.CacheInstalls(installCacheTTL)
 	loaders := loadersvc.NewService(home, store, items, profiles, componentClient)
 	implemented := game.Implemented()
@@ -1134,14 +1141,17 @@ func run() error {
 		})
 		return w
 	}
+	startupStep("services ready")
 	window = newWindow(store.Get().StartMinimised || plays.PlayMode())
+	pageLoaded := sync.OnceFunc(func() { startupStep("page loaded") })
+	window.OnWindowEvent(events.Common.WindowRuntimeReady, func(*application.WindowEvent) { pageLoaded() })
 	// Bundled mods are checked behind the open window: the check finds every game's installs, and may download a bridge.
 	go func() {
 		start := time.Now()
 		for _, id := range implemented {
 			loadersvc.SyncBundled(context.Background(), loaders, id)
 		}
-		log.Printf("bundled mods: %d games checked in %s", len(implemented), time.Since(start).Round(time.Millisecond))
+		log.Printf("bundled mods: %d games checked in %s", len(implemented), since(start))
 	}()
 	plays.Window = func(m shortcut.WindowMode) {
 		switch m {
@@ -1169,7 +1179,9 @@ func run() error {
 		})
 	}
 	go func() {
+		start := time.Now()
 		defer func() {
+			log.Printf("store maintenance: done in %s", since(start))
 			if tidied.Pending() > 0 {
 				emit(tidy.ReportEvent, nil)
 			}
@@ -1238,10 +1250,14 @@ func run() error {
 		failurePath := filepath.Join(dataDir, "cache", "components-failure")
 		if b, err := fsx.ReadFile(failurePath); err == nil {
 			if at, err := time.Parse(time.RFC3339Nano, strings.TrimSpace(string(b))); err == nil && time.Since(at) < time.Hour {
+				log.Printf("catalog: not checked, the last check failed at %s; serial %d in use", at.Format(time.RFC3339), game.CatalogSerial())
 				return
 			}
 		}
-		if _, err := componentClient.Load(context.Background(), modMeta, updateKey); err != nil {
+		start := time.Now()
+		m, err := componentClient.Load(context.Background(), modMeta, updateKey)
+		log.Printf("catalog: serial %d after %s", m.Serial, since(start))
+		if err != nil {
 			if errors.Is(err, components.ErrBadSignature) || errors.Is(err, components.ErrRollback) {
 				slog.Warn("components manifest refused; keeping the last trusted copy", "err", err)
 			} else {

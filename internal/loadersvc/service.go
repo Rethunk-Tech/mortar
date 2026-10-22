@@ -104,7 +104,9 @@ func EnsureExisting(s *Service, id string) {
 // bundles returns the store items every profile of the game holds, building any that is missing.
 func (s *Service) bundles(ctx context.Context, id string) []profile.Bundle {
 	var out []profile.Bundle
-	if key, err := s.ensureBundled(ctx, id); err != nil {
+	if key, err := s.ensureBundled(ctx, id); errors.Is(err, errNotInstalled) {
+		return nil
+	} else if err != nil {
 		log.Printf("bundled mods for %s: %v", id, err)
 	} else if key != "" {
 		l, _ := game.PrimaryLoader(id)
@@ -257,10 +259,14 @@ func (s *Service) target(id string) (game.Game, string, error) {
 		return nil, "", err
 	}
 	if dir == "" {
-		return nil, "", fmt.Errorf("%s is not installed", g.Name())
+		return nil, "", fmt.Errorf("%s is %w", g.Name(), errNotInstalled)
 	}
 	return g, dir, nil
 }
+
+// errNotInstalled is target's answer for a game with no install folder: the usual state of most of the catalog, so
+// the startup pass over every game does not log it.
+var errNotInstalled = errors.New("not installed")
 
 // LocalStatus reports the state on disk of the game's loader (loaderID, "" for the primary) without any network call.
 func (s *Service) LocalStatus(id, loaderID string) (loader.Status, error) {

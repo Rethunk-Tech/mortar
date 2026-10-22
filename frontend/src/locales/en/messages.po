@@ -1588,6 +1588,10 @@ msgstr "Save diagnostics…"
 msgid "Small"
 msgstr "Small"
 
+#: src/shell/AppMenu.tsx
+msgid "Restart and record startup profile"
+msgstr "Restart and record startup profile"
+
 #: src/firstrun/ProfileStep.tsx
 msgid "From a shared link"
 msgstr "From a shared link"
@@ -1859,6 +1863,10 @@ msgstr "{checked}. All files are intact."
 #: src/mods/problemText.ts
 msgid "Missing requirements"
 msgstr "Missing requirements"
+
+#: src/shell/AppMenu.tsx
+msgid "Could not restart Mortar"
+msgstr "Could not restart Mortar"
 
 #: src/settings/prefCopy.ts
 #: src/settings/sections/Appearance.tsx

@@ -15,10 +15,12 @@ import {
   RefreshCw,
   Settings,
   Sparkles,
+  Timer,
 } from 'lucide-react'
 import { memo, type ReactNode, useEffect } from 'react'
 import { SignOut } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { OpenDataFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { RestartProfilingStartup } from '../../bindings/github.com/Rethunk-Tech/mortar/quitservice.ts'
 import { DiscordLogo } from '../brand/Discord.tsx'
 import { Logo } from '../brand/Logo.tsx'
 import { useConsole } from '../console/store.ts'
@@ -118,6 +120,16 @@ function ProjectLinks({ close, game }: { close: () => void; game: string }) {
         onClick={() => {
           close()
           reportBug(game)
+        }}
+      />
+      <TitleMenuItem
+        icon={<Timer size={ICON_PX} />}
+        label={t`Restart and record startup profile`}
+        onClick={() => {
+          close()
+          RestartProfilingStartup().catch((e: unknown) =>
+            toastError(t`Could not restart Mortar`, e),
+          )
         }}
       />
       <TitleMenuItem
