@@ -192,10 +192,6 @@ msgstr "How timestamps are shown"
 msgid "List"
 msgstr "List"
 
-#: src/settings/sections/General.tsx
-msgid "More languages are coming."
-msgstr "More languages are coming."
-
 #: src/settings/sections/Updates.tsx
 msgid "Installed: Mortar {version}"
 msgstr "Installed: Mortar {version}"

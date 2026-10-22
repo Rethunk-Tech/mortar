@@ -41,7 +41,7 @@ Mortar is a desktop mod manager for several games (`mortar games` lists the cata
 - Mortar never re-hosts mod files; downloads come from each mod's own source. Exception: a profile sent between the user's own computers over the LAN, paired with a code, carries its mod files from every source.
 - An imported profile brings its local mods (files added from disk, DLLs included) as Local entries: a Gale profile on this computer from its folder, and a profile code or file from any plugins folder no package in it names (r2modman's and Gale's own codes carry config files only). The import preview warns before a code's program files install.
 - Nexus downloads start only from Nexus's own Mod Manager Download button (or a Premium API download the user asked for in Mortar). The browser extension reads and marks Nexus pages and relays those clicks; it never starts downloads or opens Nexus pages itself.
-- Translations come through Hosted Weblate, one component per catalog ([HUMANS.md](HUMANS.md#translations)). A language ships once its locale is in `frontend/src/i18n/locales.ts`; Mortar follows the system language.
+- Translations come through Hosted Weblate, one component per catalog ([HUMANS.md](HUMANS.md#translations)). A language ships once its locale is in `frontend/src/i18n/locales.ts` and has a `native.po` under `internal/i18n/locales/` (a test keeps the two lists equal); Mortar follows the system language, taking the closest locale.
 - The browser extension lives in Rethunk-Tech/mortar-browser-extension with its own version; the native-messaging protocol is versioned in the handshake (`internal/nativehost` `Protocol`, `MinProtocol`, `MaxProtocol`).
 
 ## Verify

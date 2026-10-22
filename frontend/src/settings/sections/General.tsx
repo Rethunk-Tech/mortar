@@ -102,18 +102,12 @@ function Language() {
   const { t } = useLingui()
   const reportFailure = useReportFailure()
   const language = useSettings((s) => s.language)
-  const single = availableLocales.length === 1
   return (
     <SettingsSection title={t`Language`}>
-      <SettingRow
-        label={t`Language`}
-        hideTitle={true}
-        {...(single ? { description: t`More languages are coming.` } : {})}
-      >
+      <SettingRow label={t`Language`} hideTitle={true}>
         <Select
           size="small"
           value={language}
-          disabled={single}
           displayEmpty={true}
           inputProps={{ 'aria-label': t`Language` }}
           onChange={(event) => {

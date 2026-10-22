@@ -73,13 +73,54 @@ msgstr ""
 	}
 }
 
+func TestRegionalCatalogFallsBackToItsBaseLanguage(t *testing.T) {
+	t.Parallel()
+	cats := map[string]catalog{
+		"en":    {},
+		"es":    {"Quit": "Salir", "Close": "Cerrar"},
+		"es-AR": {"Close": "Cerrá"},
+		"pt-BR": {"Quit": "Sair"},
+	}
+	for _, c := range []struct{ locale, msgid, want string }{
+		{"es-AR", "Close", "Cerrá"},
+		{"es-AR", "Quit", "Salir"},
+		{"es-AR", "Open", ""},
+		{"pt-BR", "Quit", "Sair"},
+		{"pt-BR", "Close", ""},
+	} {
+		if got := translation(cats, c.locale, c.msgid); got != c.want {
+			t.Errorf("translation(%q, %q) = %q, want %q", c.locale, c.msgid, got, c.want)
+		}
+	}
+}
+
+func TestLocalesAreTheEmbeddedDirectories(t *testing.T) {
+	t.Parallel()
+	got := Locales()
+	if got[0] != "en" || !Valid("") || !Valid("es-AR") || Valid("de") {
+		t.Fatalf("locales = %v", got)
+	}
+	for locale := range catalogs() {
+		if !slices.Contains(got, locale) {
+			t.Errorf("%s has a catalog but is not in Locales", locale)
+		}
+	}
+}
+
 func TestLocaleAndFormat(t *testing.T) {
 	t.Parallel()
-	cats := map[string]catalog{"en": {}, "de": {"Quit": "Beenden"}, "pt-BR": {}}
+	cats := map[string]catalog{"en": {}, "de": {"Quit": "Beenden"}, "pt-BR": {}, "es": {}, "es-AR": {}, "es-PA": {}}
 	cases := []struct{ setting, system, want string }{
 		{"", "de-DE", "de"},
 		{"", "pt-BR", "pt-BR"},
-		{"", "pt-PT", "en"},
+		{"", "pt-PT", "pt-BR"},
+		{"", "pt", "pt-BR"},
+		{"", "es-AR", "es-AR"},
+		{"", "es-pa", "es-PA"},
+		{"", "es-MX", "es"},
+		{"", "es-419", "es"},
+		{"", "es", "es"},
+		{"", "en-US", "en"},
 		{"", "fr-FR", "en"},
 		{"", "", "en"},
 		{"de", "fr-FR", "de"},

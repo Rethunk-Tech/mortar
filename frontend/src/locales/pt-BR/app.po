@@ -1,0 +1,6063 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-10-22 10:43-0700\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: pt-BR\n"
+
+#: src/saves/SavesTab.tsx
+msgid "No saves match"
+msgstr ""
+
+#: src/launch/SmapiWarnDialog.tsx
+msgid "{game}'s {launcher} launch options run {loader} in place of the game. {launcher} will still start {loader} unless that launch option is removed. Mortar will not change it."
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Performance"
+msgstr ""
+
+#: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
+msgid "Open profile folder"
+msgstr ""
+
+#: src/browse/ResultCard.tsx
+msgid "Possibly a re-upload of {reuploadOf}"
+msgstr ""
+
+#: src/share/IncludeOptions.tsx
+msgid "Include mod notes"
+msgstr ""
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "Template"
+msgstr ""
+
+#: src/toasts/EarlierChanges.tsx
+msgid "These changes will be reverted too:"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Open profile"
+msgstr ""
+
+#: src/sync/store.ts
+#: src/sync/SyncOffers.tsx
+msgid "{name} was changed on {machine}"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Press Mod Manager Download on {source}. Mortar picks it up and opens the next page."
+msgstr ""
+
+#: src/share/importCompletion.ts
+msgid "Show failed"
+msgstr ""
+
+#: src/launchers/LauncherList.tsx
+msgid "{os} only. On this computer its games come in through {launcher}, {otherLauncher} or {thirdLauncher}."
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "This profile matches that list."
+msgstr ""
+
+#: src/install/NeedsRootCallout.tsx
+msgid "This optional file replaces files of {baseLabel}. Pick where its files go."
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Could not read that file"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "This uploads the profile to {source} and gives a public code."
+msgstr ""
+
+#: src/share/ImportFooter.tsx
+msgid "Local-only mods kept ({count})"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Launch the game with this profile's mods. Mortar applies your list before the game starts."
+msgstr ""
+
+#: src/templates/TemplateDialogs.tsx
+msgid "Choose Save as template… from a profile's menu."
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+#: src/saves/SaveBackupsButton.tsx
+msgid "Allow cleanup"
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+msgid "{installing} installing"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Skip this profile"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+#: src/queue/store.ts
+#: src/toasts/report.ts
+msgid "Open storage settings"
+msgstr ""
+
+#: src/game/LaunchMenu.tsx
+msgid "Manage tools…"
+msgstr ""
+
+#: src/install/OverlayPlaceDialog.tsx
+msgid "This optional file has no manifest and replaces files of {baseLabel}. Mortar could not tell where they go: pick the folder to take from it and the main mod folder it goes into."
+msgstr ""
+
+#: src/game/HeroGlance.tsx
+msgid "Updated"
+msgstr ""
+
+#: src/install/DropOverlay.tsx
+#: src/install/store.ts
+#: src/saves/lackChipActions.tsx
+#: src/saves/lackChips.tsx
+#: src/saves/SaveRow.tsx
+#: src/share/usePasteLink.ts
+#: src/toasts/HistoryButton.tsx
+#: src/toasts/ToastHost.tsx
+msgid "Stop the game to change mods."
+msgstr ""
+
+#: src/templates/TemplateDialogs.tsx
+msgid "Could not delete the template"
+msgstr ""
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "Different version {count} (kept as is)"
+msgstr ""
+
+#: src/game/Hero.tsx
+msgid "revision {review} is out"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Could not queue the downloads"
+msgstr ""
+
+#: src/toasts/history.ts
+msgid "That profile is gone."
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Up next: {names}"
+msgstr ""
+
+#: src/share/CollectionNotes.tsx
+msgid "These come from outside {source}, so Mortar does not download them."
+msgstr ""
+
+#: src/game/HomeNotes.tsx
+msgid "Edit notes"
+msgstr ""
+
+#: src/updates/WhatsNewDialog.tsx
+msgid "No notes for this release."
+msgstr ""
+
+#: src/share/ListFormat.tsx
+#: src/share/MethodPanes.tsx
+msgid "Could not save the file"
+msgstr ""
+
+#: src/saves/lackChipActions.tsx
+msgid "Enable {name} in this profile"
+msgstr ""
+
+#: src/templates/TemplateDialogs.tsx
+msgid "A template with this name already exists."
+msgstr ""
+
+#: src/launchers/LauncherList.tsx
+msgid "Found, with no supported games yet"
+msgstr ""
+
+#: src/lan/IncomingPrompt.tsx
+msgid "Copying mod files"
+msgstr ""
+
+#: src/games/ProfileCards.tsx
+msgid "Open {game} ({count, plural, one {# more profile} other {# more profiles}})"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "{name} is broken for {detail}"
+msgstr ""
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "Kept by the game"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Switch game"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "{name} needs its main file first"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "{name} needs {detail}, which Mortar cannot install"
+msgstr ""
+
+#: src/tidy/report.ts
+msgid "Removed a leftover mod folder"
+msgstr ""
+
+#: src/toasts/AvOverrideDialog.tsx
+msgid "Your antivirus ({scanner}) reports {name}{where}. Mod loaders and their DLLs often trip heuristics, but a real detection can harm your computer. Install only a file you trust. Mortar records this choice in the profile's history."
+msgstr ""
+
+#: src/groups/applied.ts
+msgid "{count, plural, one {# mod added} other {# mods added}}"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "The download could not finish. Retry or skip it from the queue."
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+msgid "Could not hide that mod"
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+msgid "History"
+msgstr ""
+
+#: src/shell/useDiscardGuard.tsx
+msgid "Discard changes?"
+msgstr ""
+
+#: src/shell/checkForUpdates.ts
+msgid "a new Mortar is ready"
+msgstr ""
+
+#: src/tidy/report.ts
+msgid "Rebuilt a mod folder from the store"
+msgstr ""
+
+#: src/share/ImportDialog.tsx
+#: src/share/ImportSources.tsx
+msgid "Another mod manager"
+msgstr ""
+
+#: src/share/DestinationGrid.tsx
+#: src/share/ShareDialog.tsx
+msgid "Nearby computer"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Use a file"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Switch to Console"
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+#: src/saves/SaveRow.tsx
+msgid "Deleted profile"
+msgstr ""
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "{count, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
+msgstr ""
+
+#: src/tidy/report.ts
+msgid "Mod store"
+msgstr ""
+
+#: src/loader/Banner.tsx
+msgid "{name} {latest} is available"
+msgstr ""
+
+#: src/install/DropOverlay.tsx
+msgid "Zip, RAR, 7z, tar, gzip, xz, lzma, zstd and bzip2. Mortar reads the mods inside and shows you what was added."
+msgstr ""
+
+#: src/install/store.ts
+msgid "Could not add the chosen folder"
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Config"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Not paired"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Enable and continue"
+msgstr ""
+
+#: src/groups/SavedGroupRow.tsx
+msgid "Remove {name} from {group}"
+msgstr ""
+
+#: src/game/HomeNotes.tsx
+#: src/share/ImportPreview.tsx
+#: src/share/Included.tsx
+msgid "Notes"
+msgstr ""
+
+#: src/game/HeroGlance.tsx
+#: src/saves/SaveDetails.tsx
+msgid "Last played {when}"
+msgstr ""
+
+#: src/screenshots/ScreenshotsTab.tsx
+msgid "{name} has a new cover"
+msgstr ""
+
+#: src/nxm/ArrivalDialog.tsx
+msgid "You started this download on {source}. Choose the profile it goes into."
+msgstr ""
+
+#: src/queue/QueueRows.tsx
+msgid "Move {name} up"
+msgstr ""
+
+#: src/share/DestinationGrid.tsx
+msgid "An {manager} code or modpack"
+msgstr ""
+
+#: src/tools/ToolsManageDialog.tsx
+msgid "Add tool…"
+msgstr ""
+
+#: src/install/ArchivePreview.tsx
+msgid "Showing the first 2,000 files"
+msgstr ""
+
+#: src/shell/SuggestDialog.tsx
+msgid "Post your idea where you prefer. {app} lets others vote on it; {source} keeps it next to the code."
+msgstr ""
+
+#: src/toasts/HistoryButton.tsx
+msgid "Downloads…"
+msgstr ""
+
+#: src/install/noModText.ts
+#: src/launch/PlayControl.tsx
+msgid "Mod loader"
+msgstr ""
+
+#: src/share/importCompletion.ts
+msgid "{skipped} skipped"
+msgstr ""
+
+#: src/tips/TipBanner.tsx
+#: src/toasts/ToastHost.tsx
+msgid "Dismiss"
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+msgid "All profiles"
+msgstr ""
+
+#: src/screenshots/ScreenshotsTab.tsx
+msgid "Open the game's folder"
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+msgid "Mods in this profile"
+msgstr ""
+
+#: src/nxm/ArrivalDialog.tsx
+msgid "Apply this profile to all waiting"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Host {host}"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "A network request failed."
+msgstr ""
+
+#: src/install/HandoffDialog.tsx
+msgid "No"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "The website must start with http:// or https://."
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Left out (not on {source}, or disabled): {names}"
+msgstr ""
+
+#: src/tidy/report.ts
+msgid "Removed leftover temporary folders"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Remove the shortcut"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "{repo} {tag} has several archives. Which one should Mortar install?"
+msgstr ""
+
+#: src/browse/BrowseBody.tsx
+msgid "Find mods to add"
+msgstr ""
+
+#: src/share/ImportFooter.tsx
+msgid "Add to {name}"
+msgstr ""
+
+#: src/browse/CardProgress.tsx
+msgid "Downloading {percent}%"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Copy this profile's list"
+msgstr ""
+
+#: src/game/ProfileContextMenu.tsx
+#: src/game/ProfileMenu.tsx
+msgid "This profile"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Add a desktop shortcut"
+msgstr ""
+
+#: src/browse/CardAction.tsx
+msgid "Installed by Mortar"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Check mods and Mortar for updates"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "Make your first profile"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Configure {name}…"
+msgstr ""
+
+#: src/install/DownloadsDialog.tsx
+msgid "From {source}"
+msgstr ""
+
+#: src/share/PreviewDialog.tsx
+msgid "What they see"
+msgstr ""
+
+#: src/game/ProfileContextMenu.tsx
+#: src/templates/TemplateDialogs.tsx
+msgid "Rename"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Only links"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Send only links to {name}?"
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+msgid "Broken"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+#: src/loader/InstallSteps.tsx
+msgid "Bundled mods added"
+msgstr ""
+
+#: src/downloads/newDownloads.ts
+msgid "Add {name} to {profile}?"
+msgstr ""
+
+#: src/saves/scheduledBackups.ts
+msgid "A scheduled save backup failed"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "Waiting for you to unlock the keyring."
+msgstr ""
+
+#: src/queue/RetryAllButton.tsx
+msgid "{count, plural, one {# already queued} other {# already queued}}"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Dismiss {name}"
+msgstr ""
+
+#: src/nxm/store.ts
+msgid "Mortar does not manage mods for that game."
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Free account: one click on {source} per download"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "Start empty"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "That item could not be found."
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Switch to Problems"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "It shows in your {launcher} library the next time {launcher} starts."
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Mod list copied"
+msgstr ""
+
+#: src/toasts/AvOverrideDialog.tsx
+msgid " in {file}"
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Exclude categories"
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+msgid "Filter by outcome"
+msgstr ""
+
+#: src/tidy/report.ts
+msgid "Put back a mod folder an interrupted install or update left aside"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Could not export the collection draft"
+msgstr ""
+
+#: src/toasts/EarlierChanges.tsx
+msgid "Undo this and {count, plural, one {# later change} other {# later changes}}?"
+msgstr ""
+
+#: src/share/DestinationGrid.tsx
+msgid "Local archives cannot go here"
+msgstr ""
+
+#: src/launch/SweepDialog.tsx
+msgid "{name}: {fix}"
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Sort: most downloaded"
+msgstr ""
+
+#: src/lan/IncomingPrompt.tsx
+msgid "Update an existing profile…"
+msgstr ""
+
+#: src/groups/dialogs.tsx
+#: src/groups/SavedGroupsSection.tsx
+msgid "Loading saved groups…"
+msgstr ""
+
+#: src/saves/backups.ts
+msgid "Scheduled"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "No antivirus found"
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+msgid "Show {name} in its profile"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Could not publish the code"
+msgstr ""
+
+#: src/launch/VanillaPlay.tsx
+msgid "More play options"
+msgstr ""
+
+#: src/loader/Banner.tsx
+msgid "Install Mortar's copy"
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+msgid "All outcomes"
+msgstr ""
+
+#: src/queue/store.ts
+#: src/share/importCompletion.ts
+#: src/share/ImportPreview.tsx
+msgid "{count, plural, one {# mod installed} other {# mods installed}}"
+msgstr ""
+
+#: src/tidy/report.ts
+msgid "Mortar tidied up {count, plural, one {# thing} other {# things}}"
+msgstr ""
+
+#: src/shell/FlatpakGrant.tsx
+msgid "Grant access…"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Config files stay here: only a paired computer gets them. Everything else you ticked is sent."
+msgstr ""
+
+#: src/games/ProfileCards.tsx
+msgid "+{more} more"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Mortar settings…"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "Save diagnostics…"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Restart and record startup profile"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "From a shared link"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Use the automatic cover"
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Message {count} of {total} copied"
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Sort: best match"
+msgstr ""
+
+#: src/share/ImportInput.tsx
+msgid "Open a .mortar file, an {manager} or {otherManager} .r2z, or a {source} modpack. You see what it holds before anything downloads."
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "{loader} is the loader every {game} mod needs. Mortar puts it in each profile; the game folder stays as it is."
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Pending updates ({count})"
+msgstr ""
+
+#: src/shell/checkForUpdates.ts
+msgid "Update check skipped"
+msgstr ""
+
+#: src/sync/store.ts
+msgid "{name} was changed on {machine} and here"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Copies and sharing"
+msgstr ""
+
+#: src/lan/IncomingPrompt.tsx
+msgid "The mod files can be copied directly from this Mortar."
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "The game crashed inside this mod's code."
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "{count} unavailable"
+msgstr ""
+
+#: src/shell/ViewToggle.tsx
+msgid "Grid view"
+msgstr ""
+
+#: src/downloads/newDownloads.ts
+#: src/game/Hero.tsx
+#: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
+#: src/launch/events.ts
+#: src/sync/store.ts
+msgid "Review"
+msgstr ""
+
+#: src/lan/OutgoingProgress.tsx
+msgid "Sending to {peer}: {current} of {total} files"
+msgstr ""
+
+#: src/browse/CardAction.tsx
+msgid "Sign in"
+msgstr ""
+
+#: src/shell/ViewToggle.tsx
+msgid "List view"
+msgstr ""
+
+#: src/toasts/HistoryButton.tsx
+msgid "Earlier"
+msgstr ""
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "Could not apply the template"
+msgstr ""
+
+#: src/templates/TemplateDialogs.tsx
+msgid "Template name"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Link length"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "See load errors, missing dependencies, and other issues before you play."
+msgstr ""
+
+#: src/games/ListFooter.tsx
+msgid "No supported game was found in your launchers."
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Could not restart Mortar"
+msgstr ""
+
+#: src/sync/pins.tsx
+msgid "Enable or disable on this computer only"
+msgstr ""
+
+#: src/shell/BugReportDialog.tsx
+msgid "What you expected"
+msgstr ""
+
+#: src/launch/StopDialog.tsx
+msgid "Stop game?"
+msgstr ""
+
+#: src/share/DestinationGrid.tsx
+msgid "No mods to share"
+msgstr ""
+
+#: src/launch/store.ts
+msgid "Roll back"
+msgstr ""
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "{count, plural, one {Added # mod from {name}; downloading {left, plural, one {# mod} other {# mods}}} other {Added # mods from {name}; downloading {left, plural, one {# mod} other {# mods}}}}"
+msgstr ""
+
+#: src/groups/SavedGroupsSection.tsx
+msgid "Could not rename the saved group"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "The antivirus flagged this download, so Mortar did not install it."
+msgstr ""
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "{count, plural, one {Added # mod from {name}; {left, plural, one {# mod} other {# mods}} still to download} other {Added # mods from {name}; {left, plural, one {# mod} other {# mods}} still to download}}"
+msgstr ""
+
+#: src/game/Hero.tsx
+msgid "Unlink"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "It could not load an asset."
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+msgid "Download again"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Step {step} of {count}"
+msgstr ""
+
+#: src/browse/BrowseBody.tsx
+#: src/firstrun/LoaderStep.tsx
+#: src/game/detailStates.tsx
+#: src/lan/SendPanel.tsx
+#: src/launch/LaunchLayer.tsx
+#: src/queue/QueueBody.tsx
+#: src/queue/store.ts
+#: src/saves/BackupsDialog.tsx
+#: src/saves/SavesTab.tsx
+#: src/screenshots/ScreenshotsTab.tsx
+#: src/shell/ErrorBoundary.tsx
+#: src/shell/ErrorRetry.tsx
+#: src/shell/LoadingRow.tsx
+#: src/shell/OfflineBanner.tsx
+#: src/toasts/report.ts
+msgid "Retry"
+msgstr ""
+
+#: src/shell/BugReportDialog.tsx
+msgid "Opens a {source} issue with these filled in. You review it before posting."
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "{name} was removed from {source}"
+msgstr ""
+
+#: src/browse/ResultCard.tsx
+msgid "Marked broken"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Paired"
+msgstr ""
+
+#: src/groups/SaveGroupToLibrary.tsx
+msgid "Could not save the group"
+msgstr ""
+
+#: src/launch/playStart.ts
+msgid "Could not update mods before Play"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "Mortar does not have permission to do that."
+msgstr ""
+
+#: src/nxm/store.ts
+msgid "You started this download on {source}. Show Mortar to choose the profile it goes into."
+msgstr ""
+
+#: src/share/useImportFlow.ts
+msgid "{count, plural, one {# download queued} other {# downloads queued}}"
+msgstr ""
+
+#: src/launch/autoUpdate.ts
+#: src/queue/actions.ts
+msgid "Could not add the download"
+msgstr ""
+
+#: src/saves/saveName.ts
+msgid "Save file {slot}"
+msgstr ""
+
+#: src/install/MergeCallout.tsx
+#: src/install/NeedsRootCallout.tsx
+#: src/queue/QueueBody.tsx
+msgid "Skip"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "Nothing in the queue needs a decision."
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Copy mod list"
+msgstr ""
+
+#: src/share/ListFormat.tsx
+#: src/toasts/ToastHost.tsx
+msgid "Copied"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Page"
+msgstr ""
+
+#: src/launch/PlayControl.tsx
+msgid "Running for {time}"
+msgstr ""
+
+#: src/downloads/autoInstall.ts
+msgid "Your build changed; it is added when the game stops"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+#: src/games/AddGameDialog.tsx
+#: src/groups/dialogs.tsx
+#: src/share/ModpackDialog.tsx
+#: src/tools/ToolEditorDialog.tsx
+msgid "Name"
+msgstr ""
+
+#: src/install/ArchivePreview.tsx
+msgid "Reading the archive…"
+msgstr ""
+
+#: src/launch/store.ts
+msgid "The program to start {name} was not found. Check that the game is still installed and the launch prefix names a real command. {error}"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Do not check before Play"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Paired computers"
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+msgid "Failed"
+msgstr ""
+
+#: src/sync/SyncOffers.tsx
+msgid "Adds {name}"
+msgstr ""
+
+#: src/shell/win.ts
+msgid "Could not resize the window"
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+msgid "Clears the list of past downloads; downloads in progress are unaffected. Failed items lose Retry until downloaded again."
+msgstr ""
+
+#: src/groups/SaveGroupToLibrary.tsx
+msgid "Saved group name"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+#: src/saves/SaveListRow.tsx
+msgid "Actions"
+msgstr ""
+
+#: src/queue/LargeDownloadDialog.tsx
+#: src/queue/QueueBody.tsx
+msgid "Continue anyway"
+msgstr ""
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "Kept"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Could not quit Mortar"
+msgstr ""
+
+#: src/shell/BugReportDialog.tsx
+msgid "A short summary"
+msgstr ""
+
+#: src/share/CollectionNotes.tsx
+msgid "Curator's instructions"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Share as {manager} code…"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+#: src/lan/SendPanel.tsx
+msgid "Host:port"
+msgstr ""
+
+#: src/share/ImportFooter.tsx
+msgid "These will be removed ({count})"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "Enter a name for the profile."
+msgstr ""
+
+#: src/saves/SavesTab.tsx
+msgid "Filter saves"
+msgstr ""
+
+#: src/queue/RetryAllButton.tsx
+msgid "Already retrying failed downloads"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+#: src/loader/InstallSteps.tsx
+msgid "Files added"
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+msgid "This game has no compatibility list, so no mod is known to be broken."
+msgstr ""
+
+#: src/install/offerInstallAnyway.ts
+msgid "Install anyway…"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Switch to Browse"
+msgstr ""
+
+#: src/tools/ToolEditorDialog.tsx
+msgid "Could not save the tool"
+msgstr ""
+
+#: src/game/LaunchMenu.tsx
+#: src/tools/ToolsManageDialog.tsx
+msgid "No tools yet"
+msgstr ""
+
+#: src/groups/SavedGroupRow.tsx
+msgid "Could not remove the mod from the saved group"
+msgstr ""
+
+#: src/shell/checkForUpdates.ts
+msgid "Mortar is up to date"
+msgstr ""
+
+#: src/templates/TemplateDialogs.tsx
+msgid "Rename template"
+msgstr ""
+
+#: src/loader/Banner.tsx
+msgid "A game update replaced {name}'s launcher"
+msgstr ""
+
+#: src/groups/ApplySavedGroupToProfile.tsx
+#: src/groups/SavedGroupRow.tsx
+msgid "Add {name} to a profile"
+msgstr ""
+
+#: src/shell/offlineText.ts
+msgid "{name} as of {when}"
+msgstr ""
+
+#: src/share/ImportSources.tsx
+msgid "A .mortar file, an .r2z or a {source} modpack"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Skip tour"
+msgstr ""
+
+#: src/install/RemapDialog.tsx
+#: src/shell/TypedFolder.tsx
+msgid "Use folder"
+msgstr ""
+
+#: src/install/DownloadsDialog.tsx
+msgid "Reading {names}"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "A plain icon ({source} needs a 256x256 PNG)"
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+#: src/nxm/store.ts
+#: src/queue/actions.ts
+#: src/queue/store.ts
+#: src/saves/SaveGapLine.tsx
+msgid "Show"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Open its page in the browser"
+msgstr ""
+
+#: src/share/IncludeOptions.tsx
+msgid "Include libraries and supporting mods"
+msgstr ""
+
+#: src/browse/CardProgress.tsx
+#: src/saves/lackChips.tsx
+msgid "Queued"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+#: src/firstrun/ProfileStep.tsx
+#: src/game/NewProfileDialog.tsx
+#: src/nxm/ArrivalDialog.tsx
+#: src/share/ImportFooter.tsx
+msgid "New profile"
+msgstr ""
+
+#: src/commandPalette/crashBisect.ts
+#: src/commandPalette/paletteLabels.ts
+#: src/game/ProfileMenuItems.tsx
+#: src/install/DownloadsDialog.tsx
+msgid "Open profile first."
+msgstr ""
+
+#: src/saves/SavesTab.tsx
+msgid "Try a different search."
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Not signed in"
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+msgid "{game} profile"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+#: src/firstrun/GameSetup.tsx
+msgid "Game folder"
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Copy message {current} of {total}"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Hill-top farm"
+msgstr ""
+
+#: src/launch/store.ts
+msgid "{launcher} or {otherLauncher} may not have started the game. Start it, sign in if it asks, and try again, or set the game's Default launch to Direct."
+msgstr ""
+
+#: src/tools/ToolEditorDialog.tsx
+msgid "Choose executable"
+msgstr ""
+
+#: src/browse/CardProgress.tsx
+msgid "Paused {percent}%"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "This save was last played with {count, plural, one {# mod that is disabled here} other {# mods that are disabled here}}"
+msgstr ""
+
+#: src/sync/SyncOffers.tsx
+msgid "Removes {name}"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+#: src/queue/QueueHistory.tsx
+msgid "Skipped"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "The host's list"
+msgstr ""
+
+#: src/launch/GraphicsDialog.tsx
+msgid "The game closed right after starting last time."
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+msgid "Use {path}"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Check"
+msgstr ""
+
+#: src/install/store.ts
+#: src/queue/store.ts
+#: src/saves/store.ts
+#: src/templates/ApplyTemplateDialog.tsx
+#: src/templates/TemplateDialogs.tsx
+#: src/toasts/EarlierChanges.tsx
+msgid "Undo"
+msgstr ""
+
+#: src/game/BackupMenuItems.tsx
+msgid "Mods a site can download again are left out; restoring downloads them."
+msgstr ""
+
+#: src/saves/SaveGapLine.tsx
+msgid "Needs {count, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
+msgstr ""
+
+#: src/launch/events.ts
+msgid "Could not restore profile game settings"
+msgstr ""
+
+#: src/share/IncludeOptions.tsx
+msgid "Include problem choices"
+msgstr ""
+
+#: src/firstrun/GameSetup.tsx
+#: src/share/DestinationGrid.tsx
+#: src/share/ShareDialog.tsx
+msgid "{source}"
+msgstr ""
+
+#: src/install/MergeCallout.tsx
+msgid "Install together"
+msgstr ""
+
+#: src/share/ShareDialog.tsx
+msgid "Share {name}"
+msgstr ""
+
+#: src/tools/ToolEditorDialog.tsx
+msgid "Add tool"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+msgid "Appearance"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Fix all"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+msgid "Mods and profiles"
+msgstr ""
+
+#: src/share/useImportFlow.ts
+msgid "Imported {name}"
+msgstr ""
+
+#: src/sync/SyncOffers.tsx
+msgid "Both sides changed it, so Mortar will not merge them. Pick one side."
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "Installing {loader} {latest}"
+msgstr ""
+
+#: src/browse/browseConstants.ts
+msgid "Search {source}. Free accounts download from the mod's page with Mod Manager Download."
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+msgid "Support the author"
+msgstr ""
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "Restore {name} to {when}?"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Check this profile"
+msgstr ""
+
+#: src/games/GameSelect.tsx
+msgid "Play {name}"
+msgstr ""
+
+#: src/game/BackupMenuItems.tsx
+msgid "Back up {name}?"
+msgstr ""
+
+#: src/install/MergeCallout.tsx
+msgid "This file is from the same {source} page as {name}. Install it with that mod to update them as one, or as a separate mod."
+msgstr ""
+
+#: src/groups/applied.ts
+msgid "Not downloaded yet: {names}"
+msgstr ""
+
+#: src/launch/SweepDialog.tsx
+msgid "No fix yet"
+msgstr ""
+
+#: src/groups/SaveGroupToLibrary.tsx
+msgid "A saved group with this name already exists."
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+#: src/lan/SendPanel.tsx
+msgid "Could not find Mortar users"
+msgstr ""
+
+#: src/install/store.ts
+msgid "Updated {mods} in {profile}"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "a newer copy loaded instead: {version}"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+msgid "{name} folder"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "Copy the mods already in {game}'s Mods folder into a new profile. The game folder is not changed."
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Collection draft saved"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "{count} checked later"
+msgstr ""
+
+#: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
+msgid "Compare…"
+msgstr ""
+
+#: src/share/ImportSources.tsx
+msgid "A Mortar link, a {source} collection or an {manager} or {otherManager} code"
+msgstr ""
+
+#: src/queue/QueueRows.tsx
+msgid "Move {name} down"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Last played with {profile}"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "All mods present"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Get help"
+msgstr ""
+
+#: src/launch/PlayInstances.tsx
+msgid "Instances"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+#: src/lan/SendPanel.tsx
+msgid "Pair"
+msgstr ""
+
+#: src/loader/store.ts
+msgid "Could not install {loader}"
+msgstr ""
+
+#: src/share/ImportFooter.tsx
+msgid "New profile from link"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Export as {source} modpack…"
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+msgid "Off"
+msgstr ""
+
+#: src/launch/PlayInstances.tsx
+msgid "s"
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+msgid "Queue"
+msgstr ""
+
+#: src/share/ImportDialog.tsx
+msgid "Not found in the Mods folder"
+msgstr ""
+
+#: src/tidy/report.ts
+msgid "Data folder"
+msgstr ""
+
+#: src/install/store.ts
+msgid "Replaced {mods} in {profile}"
+msgstr ""
+
+#: src/share/ImportDialog.tsx
+msgid "Import from {manager}"
+msgstr ""
+
+#: src/share/ImportDialog.tsx
+msgid "Working"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Switch to Mods"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+#: src/share/ModpackDialog.tsx
+msgid "Left out: {names}"
+msgstr ""
+
+#: src/shell/BugReportDialog.tsx
+msgid "What happened"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Export as {source} modpack"
+msgstr ""
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "{name} is replaced by the copy in this backup. The current {name} is backed up first."
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+msgid "Flag"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Could not pair"
+msgstr ""
+
+#: src/install/MissingDepsDialog.tsx
+msgid "No download source is known for {names}."
+msgstr ""
+
+#: src/shell/BugReportDialog.tsx
+msgid "Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you drag it into the issue)"
+msgstr ""
+
+#: src/game/detailStates.tsx
+msgid "A profile holds one set of mods for this game."
+msgstr ""
+
+#: src/saves/SavesTab.tsx
+msgid "{count, plural, one {Filter # save} other {Filter # saves}}"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Left empty, a README is written from what the profile holds."
+msgstr ""
+
+#: src/install/offerInstallAnyway.ts
+msgid "{os} removed the file as malware without saying which. If you trust it, restore it from {os} Security's protection history and add it again."
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+#: src/install/store.ts
+#: src/share/ModpackDialog.tsx
+msgid "Could not open the file dialog"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+#: src/install/NeedsRootCallout.tsx
+#: src/tools/ToolEditorDialog.tsx
+msgid "Choose folder…"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "{count, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
+msgstr ""
+
+#: src/share/CompareSummary.tsx
+msgid "Different version"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Suggest a feature…"
+msgstr ""
+
+#: src/install/NeedsRootCallout.tsx
+msgid "Place the optional file"
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+msgid "Gray out"
+msgstr ""
+
+#: src/commandPalette/crashBisect.ts
+msgid "No crash to investigate: the last run ended normally."
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Profile sections"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Updated in {launcher}"
+msgstr ""
+
+#: src/firstrunTour/TourAgainButton.tsx
+msgid "Show the tour again"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "Check again"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "different file"
+msgstr ""
+
+#: src/queue/QueueRows.tsx
+msgid "Waiting for a free slot"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Modpack saved"
+msgstr ""
+
+#: src/share/useImportFlow.ts
+#: src/templates/TemplateDialogs.tsx
+msgid "Save as template"
+msgstr ""
+
+#: src/games/ListFooter.tsx
+msgid "Add a game…"
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+msgid "Show details"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+msgid "Accounts"
+msgstr ""
+
+#: src/share/ImportFooter.tsx
+msgid "Replace {name}"
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "For a game that is not in Mortar's list. It stays on this computer, and its mods come from its {source} community."
+msgstr ""
+
+#: src/saves/backups.ts
+msgid "Before updating a deleted profile"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+msgid "Storage"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Could not start pairing"
+msgstr ""
+
+#: src/saves/SaveDetails.tsx
+msgid "Saved on version {gameVersion}"
+msgstr ""
+
+#: src/share/CompareSummary.tsx
+msgid "Only in {name}"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "This save was last played with {count, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+#: src/browse/CardAction.tsx
+#: src/queue/store.ts
+msgid "Open files page"
+msgstr ""
+
+#: src/saves/backups.ts
+msgid "Manual"
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Save to a file…"
+msgstr ""
+
+#: src/shell/useDiscardGuard.tsx
+msgid "Discard"
+msgstr ""
+
+#: src/queue/QueueRows.tsx
+msgid "Download {name} now"
+msgstr ""
+
+#: src/i18n/counts.ts
+msgid "{count, plural, one {# error} other {# errors}}"
+msgstr ""
+
+#: src/share/ManagerPane.tsx
+msgid "Mortar found no other mod manager's profiles for this game on this computer."
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Try again in a few seconds."
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Help"
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+msgid "Last updated"
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "Included"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "Launch options copied"
+msgstr ""
+
+#: src/shell/SuggestDialog.tsx
+msgid "Suggest a feature"
+msgstr ""
+
+#: src/share/DestinationPanel.tsx
+msgid "Preview what they see"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+#: src/launch/SaveWarnDialog.tsx
+#: src/share/Included.tsx
+msgid "Disabled in this profile"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "For {manager} and other {source} managers: a code anyone can enter, a .r2z file, or a modpack zip with your config folder."
+msgstr ""
+
+#: src/install/OverlayPlaceDialog.tsx
+#: src/queue/Callout.tsx
+msgid "Into {profile}"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+msgid "Found in {path}"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Enable and disable mods, and update them for the open profile."
+msgstr ""
+
+#: src/launch/SaveWarnDialog.tsx
+msgid "{farmer}'s farm ({path}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save."
+msgstr ""
+
+#: src/groups/ApplySavedGroupToProfile.tsx
+#: src/install/DownloadsDialog.tsx
+#: src/saves/lackChips.tsx
+msgid "Add to profile"
+msgstr ""
+
+#: src/saves/SaveGapLine.tsx
+msgid "older, profile has {have}"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+msgid "Recent"
+msgstr ""
+
+#: src/shell/BugReportDialog.tsx
+#: src/shell/ErrorBoundary.tsx
+msgid "Report a bug"
+msgstr ""
+
+#: src/share/IncludeOptions.tsx
+msgid "Include FOMOD choices"
+msgstr ""
+
+#: src/fomod/Dialog.tsx
+msgid "This option cannot be used."
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Add a saved group…"
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Console"
+msgstr ""
+
+#: src/browse/BrowseBody.tsx
+msgid "Search did not work"
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "FOMOD choices"
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Copy message {count}"
+msgstr ""
+
+#: src/games/gameList.ts
+#: src/games/GameMenu.tsx
+msgid "On this computer"
+msgstr ""
+
+#: src/launch/PlayInstances.tsx
+msgid "Delay seconds"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "The name may hold only letters, digits and underscores."
+msgstr ""
+
+#: src/launch/SweepDialog.tsx
+msgid "Update available"
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+msgid "Size"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "already up to date in this profile"
+msgstr ""
+
+#: src/QuitPrompt.tsx
+msgid "Quit Mortar?"
+msgstr ""
+
+#: src/launch/events.ts
+msgid "Could not back up saves before Play"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Computer paired"
+msgstr ""
+
+#: src/launch/VanillaPlay.tsx
+msgid "Default launch preset"
+msgstr ""
+
+#: src/game/ProfileDialogHost.tsx
+#: src/groups/SavedGroupsSection.tsx
+#: src/saves/SaveBackupsButton.tsx
+#: src/templates/TemplateDialogs.tsx
+msgid "Delete"
+msgstr ""
+
+#: src/updates/WhatsNewDialog.tsx
+msgid "Changed"
+msgstr ""
+
+#: src/install/overlayPlace.ts
+#: src/install/store.ts
+msgid "Added {mods} to {profile}"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Whole files"
+msgstr ""
+
+#: src/launch/autoUpdate.ts
+msgid "Timed out waiting for mod updates"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "Got a Mortar link? You see what it holds first. {source} mods need your {source} sign-in; Mortar asks then."
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+#: src/game/LaunchMenu.tsx
+#: src/game/ProfileMenuItems.tsx
+msgid "Shortcuts"
+msgstr ""
+
+#: src/shell/offlineText.ts
+msgid "{names} cannot be reached; showing what Mortar saved ({asOf})"
+msgstr ""
+
+#: src/games/useGameTiles.ts
+msgid "Coming in a later Mortar version"
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+#: src/share/ModpackDialog.tsx
+msgid "Changelog"
+msgstr ""
+
+#: src/share/ShareDialog.tsx
+msgid "Try my Mortar profile \"{name}\" for {game} ({count, plural, one {# mod} other {# mods}}): {web}"
+msgstr ""
+
+#: src/lan/IncomingPrompt.tsx
+#: src/queue/QueueBody.tsx
+msgid "{rate}/s"
+msgstr ""
+
+#: src/install/DownloadsDialog.tsx
+msgid "Search archives"
+msgstr ""
+
+#: src/game/HeroGlance.tsx
+msgid "Created"
+msgstr ""
+
+#: src/launch/KnownGoodOffer.tsx
+msgid "The game started without errors"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "Main"
+msgstr ""
+
+#: src/launch/playStart.ts
+#: src/launch/vanillaStart.ts
+msgid "Could not launch the game"
+msgstr ""
+
+#: src/tidy/report.ts
+msgid "Repaired mod folder records"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+#: src/launchers/LauncherList.tsx
+msgid "Choose {name} folder"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Play the open profile"
+msgstr ""
+
+#: src/sync/SyncOffers.tsx
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "Apply"
+msgstr ""
+
+#: src/share/CompareSummary.tsx
+msgid "Missing in {name}"
+msgstr ""
+
+#: src/games/ListFooter.tsx
+msgid "Check launchers…"
+msgstr ""
+
+#: src/games/GameSelect.tsx
+msgid "Set up"
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Sort: name (A to Z)"
+msgstr ""
+
+#: src/commandPalette/crashBisect.ts
+msgid "Mortar already named the likely mod for the last crash."
+msgstr ""
+
+#: src/fomod/Dialog.tsx
+#: src/game/NewProfileDialog.tsx
+#: src/groups/ApplySavedGroupToProfile.tsx
+#: src/groups/dialogs.tsx
+#: src/install/DownloadsDialog.tsx
+#: src/install/OverlayPlaceDialog.tsx
+#: src/install/RemapDialog.tsx
+#: src/lan/IncomingPrompt.tsx
+#: src/lan/PairedComputers.tsx
+#: src/launch/GraphicsDialog.tsx
+#: src/launch/PrePlayDialog.tsx
+#: src/launch/SaveWarnDialog.tsx
+#: src/launch/UpdateWarnDialog.tsx
+#: src/launch/VanillaPlay.tsx
+#: src/queue/LargeDownloadDialog.tsx
+#: src/queue/QueueBody.tsx
+#: src/share/ModpackDialog.tsx
+#: src/shell/BugReportDialog.tsx
+#: src/shell/ConfirmDialog.tsx
+#: src/shell/PromptDialog.tsx
+#: src/shell/SuggestDialog.tsx
+#: src/templates/ApplyTemplateDialog.tsx
+#: src/tools/ToolEditorDialog.tsx
+msgid "Cancel"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+#: src/share/useImportFlow.ts
+msgid "Nothing to download"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Standard farm"
+msgstr ""
+
+#: src/shell/BugReportDialog.tsx
+msgid "Post on"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Move profile folder…"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "List copied"
+msgstr ""
+
+#: src/launchers/LauncherList.tsx
+msgid "Added by you"
+msgstr ""
+
+#: src/saves/saveName.ts
+msgid "Save slot"
+msgstr ""
+
+#: src/sync/SyncOffers.tsx
+msgid "{name} was changed on {machine} and on this machine"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "{first} installed into {name}"
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "Mod notes"
+msgstr ""
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "Could not preview the template"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+#: src/game/HomeNotes.tsx
+#: src/queue/QueueHistory.tsx
+msgid "Done"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "{name} is no longer in the saves folder"
+msgstr ""
+
+#: src/nxm/store.ts
+msgid "{name}'s author only allows downloads from its {source} page. Choose Download there instead of Install, then drop the file on Mortar."
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Could not read that list"
+msgstr ""
+
+#: src/groups/applied.ts
+msgid "Saved group added"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "Downloads paused"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "module {name} failed"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Open the host's list"
+msgstr ""
+
+#: src/launch/store.ts
+msgid "{launcher} may not be running or signed in. Start {launcher}, sign in and try again."
+msgstr ""
+
+#: src/firstrun/GameSetup.tsx
+msgid "Back to {name}"
+msgstr ""
+
+#: src/share/importCompletion.ts
+msgid "Imported {name}: {counts}"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "{source} expects a 7z. Repack collection.zip as a 7z with 7-Zip before uploading."
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Send to…"
+msgstr ""
+
+#: src/install/batchSummary.ts
+#: src/install/store.ts
+msgid "Could not undo the install"
+msgstr ""
+
+#: src/browse/stats.ts
+msgid "Updated {when}"
+msgstr ""
+
+#: src/share/useImportFlow.ts
+msgid "Importing into {name}"
+msgstr ""
+
+#: src/groups/SaveGroupToLibrary.tsx
+msgid "Save to library"
+msgstr ""
+
+#: src/sync/SyncOffers.tsx
+msgid "Waiting for {machine}'s profile file to finish syncing. Changes made here are written out once it arrives."
+msgstr ""
+
+#: src/lan/IncomingPrompt.tsx
+msgid "Update {name} from {sender}"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Very large download"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Code copied"
+msgstr ""
+
+#: src/i18n/counts.ts
+msgid "{count, plural, one {# problem} other {# problems}}"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "Show in queue"
+msgstr ""
+
+#: src/shell/offlineText.ts
+msgid "{names} cannot be reached; showing what Mortar saved at {time}"
+msgstr ""
+
+#: src/saves/SaveGapLine.tsx
+#: src/share/ImportPreview.tsx
+#: src/share/ListFormat.tsx
+msgid "Disabled"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "The author only allows this download on the source's own page. Download the file there and add it from your computer."
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+msgid "Mortar installs this itself."
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Skip every waiting download"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Config files ({count} of {total})"
+msgstr ""
+
+#: src/share/IncludeOptions.tsx
+#: src/share/ModpackDialog.tsx
+msgid "Include disabled mods"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "program files from this code"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "incompatible dependencies: {list}"
+msgstr ""
+
+#: src/tidy/report.ts
+msgid "Emptied the crash log after it was reported"
+msgstr ""
+
+#: src/share/DestinationGrid.tsx
+#: src/share/ShareDialog.tsx
+#: src/shell/AppMenu.tsx
+msgid "Mortar"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "Open log"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Needs your click"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "This save has no recorded mod list yet."
+msgstr ""
+
+#: src/groups/SavedGroupsSection.tsx
+#: src/share/ModpackDialog.tsx
+msgid "None"
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+#: src/share/MethodPanes.tsx
+msgid "Link copied"
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+#: src/share/ModpackDialog.tsx
+msgid "Version"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "This download is {size}, which is unusually large for a mod."
+msgstr ""
+
+#: src/browse/BrowseBody.tsx
+msgid "{hidden} hidden"
+msgstr ""
+
+#: src/saves/backups.ts
+#: src/saves/SaveListRow.tsx
+msgid "Unknown"
+msgstr ""
+
+#: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
+msgid "History…"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Switch to {name}"
+msgstr ""
+
+#: src/game/TemplateMenuItems.tsx
+msgid "Apply a template…"
+msgstr ""
+
+#: src/queue/actions.ts
+msgid "Sign in to {source} to download"
+msgstr ""
+
+#: src/groups/applied.ts
+msgid "Added the group {group}"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+msgid "Folder chosen by you"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "Choose a profile…"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+msgid "Search actions and destinations"
+msgstr ""
+
+#: src/share/ImportFooter.tsx
+msgid "Nothing will be removed."
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+#: src/loader/Banner.tsx
+msgid "Update"
+msgstr ""
+
+#: src/shell/FlatpakGrant.tsx
+msgid "Access granted"
+msgstr ""
+
+#: src/game/BackupMenuItems.tsx
+msgid "Back up to a file…"
+msgstr ""
+
+#: src/share/ImportSources.tsx
+msgid "Where the profile comes from"
+msgstr ""
+
+#: src/install/NeedsRootCallout.tsx
+#: src/install/RemapDialog.tsx
+msgid "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
+msgstr ""
+
+#: src/tidy/report.ts
+msgid "Repaired mod file names"
+msgstr ""
+
+#: src/tools/ToolEditorDialog.tsx
+msgid "Working directory"
+msgstr ""
+
+#: src/browse/CardProgress.tsx
+#: src/share/ImportPreview.tsx
+msgid "Installed"
+msgstr ""
+
+#: src/browse/BrowsePage.tsx
+#: src/browse/BrowseShow.tsx
+#: src/firstrunTour/TourAgainButton.tsx
+#: src/firstrunTour/useFirstRunTour.ts
+#: src/games/GameRowMenu.tsx
+#: src/launch/PlayInstances.tsx
+#: src/tips/TipBanner.tsx
+msgid "Could not save that setting"
+msgstr ""
+
+#: src/share/DestinationPanel.tsx
+msgid "There are no mods to share."
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Browse mods"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "File saved"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "{name} has no file Mortar can use in place of the one shared"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "That is for another game. Open that game and import it there."
+msgstr ""
+
+#: src/shell/checkForUpdates.ts
+msgid "{count, plural, one {# mod update} other {# mod updates}}"
+msgstr ""
+
+#: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
+msgid "Duplicate"
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+#: src/launch/PrePlayDialog.tsx
+#: src/share/Included.tsx
+msgid "and {count} more"
+msgstr ""
+
+#: src/browse/stats.ts
+msgid "{count, plural, one {# like} other {# likes}}"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "A profile with only {loader}. Add mods from {source} or from archives."
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Choose icon…"
+msgstr ""
+
+#: src/launch/UpdateWarnDialog.tsx
+msgid "{game} is now {installed}. This profile last launched on {recorded}."
+msgstr ""
+
+#: src/install/OverlayPlaceDialog.tsx
+msgid "Main mod's folder"
+msgstr ""
+
+#: src/nxm/store.ts
+msgid "The link was made for another {source} account than the one signed in."
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Code"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Meadowlands farm"
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Library"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+msgid "{loader} not installed yet"
+msgstr ""
+
+#: src/groups/SavedGroupRow.tsx
+msgid "{name} (optional file)"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Flagged by {scanner}: {name}{where}"
+msgstr ""
+
+#: src/launch/UpdateWarnDialog.tsx
+msgid "None of this profile's mods are marked broken for the new version."
+msgstr ""
+
+#: src/tools/ToolEditorDialog.tsx
+msgid "One argument per line. Placeholders: {placeholders}."
+msgstr ""
+
+#: src/game/NewProfileDialog.tsx
+msgid "Copy of {name}"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Export…"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Choose a file"
+msgstr ""
+
+#: src/game/NewProfileDialog.tsx
+#: src/groups/SavedGroupsSection.tsx
+msgid "Saved groups"
+msgstr ""
+
+#: src/game/NewProfileDialog.tsx
+msgid "Start from"
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Sort"
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+msgid "Hide everything by {author}"
+msgstr ""
+
+#: src/games/GameMenu.tsx
+msgid "played {when}"
+msgstr ""
+
+#: src/i18n/list.ts
+msgid "{count, plural, one {# more} other {# more}}"
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+#: src/share/importCompletion.ts
+msgid "{failed} failed"
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Paste it into a chat or a forum post, or send the file."
+msgstr ""
+
+#: src/launch/SmapiWarnDialog.tsx
+#: src/launch/VanillaPlay.tsx
+msgid "Play without mods"
+msgstr ""
+
+#: src/saves/saveName.ts
+msgid "Homo Sapiens"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+#: src/queue/QueueRows.tsx
+msgid "Skip {name}"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "Set it in {launcher} for me"
+msgstr ""
+
+#: src/share/DestinationGrid.tsx
+msgid "Send over your network"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "This profile matches {host}."
+msgstr ""
+
+#: src/games/GameMenu.tsx
+msgid "Choose a game"
+msgstr ""
+
+#: src/saves/saveName.ts
+msgid "Character"
+msgstr ""
+
+#: src/games/ListFooter.tsx
+msgid "Show hidden games"
+msgstr ""
+
+#: src/nxm/ArrivalDialog.tsx
+msgid "Install into {name}"
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+msgid "Filter by profile"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "That data could not be read."
+msgstr ""
+
+#: src/game/ProfileDialogHost.tsx
+#: src/groups/SavedGroupsSection.tsx
+msgid "Delete {name}?"
+msgstr ""
+
+#: src/launch/UpdateWarnDialog.tsx
+msgid "Broken for this version"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "{count, plural, one {# dependency} other {# dependencies}}"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Could not export the modpack"
+msgstr ""
+
+#: src/groups/ApplySavedGroupToProfile.tsx
+#: src/groups/dialogs.tsx
+msgid "Could not add the saved group"
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "Added from an archive, so it only exists on this computer."
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+#: src/commandPalette/CommandPalette.tsx
+#: src/queue/QueueSheet.tsx
+#: src/shell/AppMenu.tsx
+msgid "Downloads"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Could not unpair"
+msgstr ""
+
+#: src/share/CompareSummary.tsx
+msgid "{count, plural, one {# mod already matches} other {# mods already match}} {name}."
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "{source} community"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Save .r2z…"
+msgstr ""
+
+#: src/share/ImportInput.tsx
+msgid "Choose a file…"
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Sort: most followed"
+msgstr ""
+
+#: src/groups/SaveGroupToLibrary.tsx
+msgid "Replace"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Report a bug…"
+msgstr ""
+
+#: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
+msgid "Delete profile…"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Add from the downloads folder…"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Switch to Home"
+msgstr ""
+
+#: src/screenshots/ScreenshotsTab.tsx
+msgid "Reading your screenshots…"
+msgstr ""
+
+#: src/browse/BrowsePage.tsx
+msgid "Search {source}"
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+msgid "No downloads in history."
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+msgid "{latest} (latest)"
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+msgid "Clear finished"
+msgstr ""
+
+#: src/queue/QueueRows.tsx
+msgid "Paused ({count})"
+msgstr ""
+
+#: src/saves/SavesTab.tsx
+msgid "Save backups…"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Add this profile to {launcher}"
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "{total} messages"
+msgstr ""
+
+#: src/screenshots/ScreenshotsTab.tsx
+msgid "Screenshots you take while playing show here, newest first."
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "No Mortar users found nearby."
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "For a game that is not in Mortar's list. It stays on this computer, and its mods come from archives you add, since Mortar knows no site for it."
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot be linked"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "{names} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it."
+msgstr ""
+
+#: src/share/DestinationPanel.tsx
+msgid "A share link names this profile and where each mod comes from, not the files themselves."
+msgstr ""
+
+#: src/templates/TemplateDialogs.tsx
+msgid "Template saved"
+msgstr ""
+
+#: src/nxm/ArrivalDialog.tsx
+msgid "Ignore"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Back up {name} now"
+msgstr ""
+
+#: src/install/MergeCallout.tsx
+msgid "Another file from a mod you have"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "About Mortar"
+msgstr ""
+
+#: src/lan/IncomingPrompt.tsx
+msgid "The files will download from each mod's source."
+msgstr ""
+
+#: src/groups/SavedGroupRow.tsx
+msgid "Profiles: {holderNames}"
+msgstr ""
+
+#: src/launch/GraphicsDialog.tsx
+msgid "{name} (Recommended)"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "{os} antivirus (AMSI)"
+msgstr ""
+
+#: src/launch/LaunchLayer.tsx
+msgid "Open console"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+msgid "has {name}"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Open mod"
+msgstr ""
+
+#: src/groups/SavedGroupRow.tsx
+msgid "Hide mods of {name}"
+msgstr ""
+
+#: src/updates/WhatsNewDialog.tsx
+msgid "{count, plural, one {# fix} other {# fixes}}"
+msgstr ""
+
+#: src/game/Hero.tsx
+#: src/game/NewProfileDialog.tsx
+msgid "Profile name"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Could not save the profile"
+msgstr ""
+
+#: src/downloads/newDownloads.ts
+#: src/install/DownloadsDialog.tsx
+msgid "Could not add the archive"
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Sort: recently updated"
+msgstr ""
+
+#: src/launch/store.ts
+msgid "{launcher} must be installed and signed in for this game. Install {launcher}, sign in once and try again."
+msgstr ""
+
+#: src/groups/SaveGroupToLibrary.tsx
+msgid "Saved to the library"
+msgstr ""
+
+#: src/browse/CardAction.tsx
+msgid "Get"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "What is new in {version}"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Open the folder of {name}"
+msgstr ""
+
+#: src/nxm/store.ts
+#: src/queue/totals.ts
+#: src/share/arrivals.ts
+msgid "{source} mod {id}"
+msgstr ""
+
+#: src/share/DestinationGrid.tsx
+msgid "Where to share"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Ready to import"
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "This source has no categories to filter by"
+msgstr ""
+
+#: src/share/DestinationPanel.tsx
+msgid "How to send it"
+msgstr ""
+
+#: src/nxm/store.ts
+msgid "Could not start the download"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Depends on {dependencies} {source} packages. Left out: {names}."
+msgstr ""
+
+#: src/launch/PlayControl.tsx
+msgid "{count, plural, one {Updating # mod…} other {Updating # mods…}}"
+msgstr ""
+
+#: src/share/CollectionNotes.tsx
+msgid "Install yourself"
+msgstr ""
+
+#: src/launchers/LauncherList.tsx
+msgid "Found"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Download progress for {name}"
+msgstr ""
+
+#: src/install/DropOverlay.tsx
+msgid "Drop to install into {name}"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Before you play"
+msgstr ""
+
+#: src/toasts/history.ts
+msgid "This is no longer the latest change to that mod."
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Stream overlay"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Adding the missing mods"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Retry failed"
+msgstr ""
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "Allow cleanup before deleting."
+msgstr ""
+
+#: src/game/NewProfileDialog.tsx
+msgid "Starter templates"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "Allow it in your antivirus, then Retry."
+msgstr ""
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "Settings changes {count}"
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Collapse"
+msgstr ""
+
+#: src/toasts/HistoryButton.tsx
+msgid "No notifications yet"
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "Choose the game's program"
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+msgid "{paused} paused"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+#: src/saves/lackChipActions.tsx
+#: src/shell/FlatpakGrant.tsx
+msgid "Copy"
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "{count, plural, one {# more mod is left out} other {# more mods are left out}}"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "{source} rejected your API key"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Other Mortar users on your local network will be able to find this computer and send you profiles. You can disable it again in Settings › General."
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Host {host}, yours {mine}"
+msgstr ""
+
+#: src/install/NeedsRootCallout.tsx
+msgid "Choose variant…"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "{name} is still taking your last share"
+msgstr ""
+
+#: src/launchers/LauncherList.tsx
+#: src/tools/ToolsManageDialog.tsx
+msgid "Remove {name}"
+msgstr ""
+
+#: src/install/batchSummary.ts
+msgid "{count, plural, one {Added # mod to {name}} other {Added # mods to {name}}}"
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+#: src/saves/SaveBackupsButton.tsx
+msgid "Keep forever"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+#: src/firstrun/NexusStep.tsx
+msgid "Skip for now"
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "How it is modded"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+#: src/share/Included.tsx
+msgid "Config files"
+msgstr ""
+
+#: src/browse/CardAction.tsx
+msgid "Added"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "Made for {name}, which is not enabled"
+msgstr ""
+
+#: src/shell/win.ts
+msgid "Could not close the window"
+msgstr ""
+
+#: src/game/BackupMenuItems.tsx
+msgid "Profile backed up"
+msgstr ""
+
+#: src/share/ImportDialog.tsx
+msgid "This profile has no mods to download"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Include {name}"
+msgstr ""
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "{count, plural, one {Adds # mod} other {Adds # mods}}"
+msgstr ""
+
+#: src/install/OverlayPlaceDialog.tsx
+msgid "Place {file}"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Freeze this profile"
+msgstr ""
+
+#: src/saves/SaveListRow.tsx
+msgid "This save has no SaveGameInfo date, so Mortar cannot tell when it is in the game."
+msgstr ""
+
+#: src/share/ManagerPane.tsx
+msgid "Imported"
+msgstr ""
+
+#: src/game/ProfileContextMenu.tsx
+#: src/game/ProfileMenu.tsx
+msgid "Edit profile…"
+msgstr ""
+
+#: src/game/Home.tsx
+msgid "{name} settings"
+msgstr ""
+
+#: src/share/ManagerPane.tsx
+msgid "No profiles found."
+msgstr ""
+
+#: src/firstrun/FirstRun.tsx
+msgid "{found} of {count, plural, one {# launcher} other {# launchers}} found."
+msgstr ""
+
+#: src/firstrun/FirstRun.tsx
+msgid "Mortar finds games through their launchers. A game installed anywhere else works too: choose its folder when you set it up."
+msgstr ""
+
+#: src/game/detailStates.tsx
+msgid "No profiles yet"
+msgstr ""
+
+#: src/games/GameSelect.tsx
+#: src/games/ProfileCards.tsx
+msgid "Could not save the open profile"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+#: src/share/Included.tsx
+msgid "Problem choices"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Depends on {dependencies} {source} packages."
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+#: src/fomod/Dialog.tsx
+msgid "Next"
+msgstr ""
+
+#: src/install/RemapDialog.tsx
+msgid "Choose mod folder"
+msgstr ""
+
+#: src/game/NewProfileDialog.tsx
+msgid "Create"
+msgstr ""
+
+#: src/share/ImportInput.tsx
+msgid "Paste"
+msgstr ""
+
+#: src/groups/SavedGroupsSection.tsx
+msgid "Could not delete the saved group"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "the same copy loaded instead from {path}"
+msgstr ""
+
+#: src/downloads/newDownloads.ts
+msgid "{count, plural, one {# new archive} other {# new archives}} in your downloads folder"
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Home"
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Load order"
+msgstr ""
+
+#: src/browse/ResultCard.tsx
+msgid "Deprecated or obsolete"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "copied from this computer"
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+#: src/browse/CardAction.tsx
+#: src/share/ImportPreview.tsx
+msgid "Open page"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+#: src/share/ImportPreview.tsx
+msgid "{count} to download"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "{loader} is the loader every {game} mod needs. It goes into the game folder."
+msgstr ""
+
+#: src/queue/actions.ts
+msgid "{count, plural, one {# download added} other {# downloads added}}"
+msgstr ""
+
+#: src/browse/stats.ts
+msgid "{count, plural, one {# download} other {# downloads}}"
+msgstr ""
+
+#: src/install/DownloadsDialog.tsx
+msgid "Archives"
+msgstr ""
+
+#: src/game/HomeNotes.tsx
+msgid "Saved"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+#: src/toasts/HistoryButton.tsx
+#: src/toasts/ToastHost.tsx
+msgid "Notifications"
+msgstr ""
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "No backup contains this save yet."
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Mod config"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+#: src/launchers/LauncherList.tsx
+msgid "Rescan"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+#: src/fomod/Dialog.tsx
+#: src/lan/SendPanel.tsx
+#: src/share/ImportDialog.tsx
+#: src/share/ShareDialog.tsx
+msgid "Back"
+msgstr ""
+
+#: src/game/TemplateMenuItems.tsx
+msgid "Save as template…"
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+msgid "Selected mod"
+msgstr ""
+
+#: src/templates/TemplateDialogs.tsx
+msgid "Profiles already made from it are not changed."
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "{names} (AMSI)"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "That download is no longer waiting to retry."
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "This download's mod is not known to come from {repo}."
+msgstr ""
+
+#: src/toasts/AvOverrideDialog.tsx
+msgid "Install {name} anyway?"
+msgstr ""
+
+#: src/game/BackupMenuItems.tsx
+msgid "Could not back up the profile"
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+msgid "Change version…"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Failed ({count})"
+msgstr ""
+
+#: src/browse/CardAction.tsx
+msgid "In this profile"
+msgstr ""
+
+#: src/share/ManagerPane.tsx
+msgid "{count, plural, one {Imported # profile} other {Imported # profiles}}"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "Launch options set in {launcher}"
+msgstr ""
+
+#: src/templates/TemplateDialogs.tsx
+msgid "Could not rename the template"
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+msgid "{count} waiting"
+msgstr ""
+
+#: src/saves/backups.ts
+msgid "Before updating {name}"
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+msgid "Card details"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Press Play to start."
+msgstr ""
+
+#: src/toasts/HistoryButton.tsx
+#: src/updates/WhatsNewDialog.tsx
+msgid "New"
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "pins"
+msgstr ""
+
+#: src/game/NewProfileDialog.tsx
+msgid "{count, plural, one {Created {name}; downloading # mod} other {Created {name}; downloading # mods}}"
+msgstr ""
+
+#: src/lan/IncomingPrompt.tsx
+msgid "Create a profile first."
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "Which?"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Open data folder"
+msgstr ""
+
+#: src/share/ImportInput.tsx
+msgid "Opened the {source} page. Save the file from it; Mortar offers it from your Downloads folder."
+msgstr ""
+
+#: src/firstrun/NexusStep.tsx
+msgid "Sign in to {source}"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "close to the {app} message limit"
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "Could not add the game"
+msgstr ""
+
+#: src/install/batchSummary.ts
+msgid "{failed} could not be added"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "{count, plural, one {Its mods download from their own sites.} other {Their mods download from their own sites.}}"
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+msgid "Versions"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Click the game's name in the title bar to open the game menu and jump to another game."
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Mod list format"
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Mod list saved"
+msgstr ""
+
+#: src/launch/store.ts
+msgid "Could not check whether the game is running"
+msgstr ""
+
+#: src/share/DestinationPanel.tsx
+#: src/share/ImportDialog.tsx
+#: src/share/ImportSources.tsx
+msgid "File"
+msgstr ""
+
+#: src/toasts/EarlierChanges.tsx
+msgid "Undo this change: {name}"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "Retrying in {count} s."
+msgstr ""
+
+#: src/lan/IncomingPrompt.tsx
+msgid "{count, plural, one {{current} of # mod} other {{current} of # mods}}"
+msgstr ""
+
+#: src/launch/PlayInstances.tsx
+msgid "This game starts through its store, which runs one copy. A Direct launch can start several."
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "Antivirus scanning is off"
+msgstr ""
+
+#: src/tools/ToolsManageDialog.tsx
+msgid "Edit {name}"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Sign out of {source}"
+msgstr ""
+
+#: src/lan/IncomingPrompt.tsx
+msgid "Decline"
+msgstr ""
+
+#: src/launch/GraphicsDialog.tsx
+msgid "Choose a graphics API for {name}"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Choose icon"
+msgstr ""
+
+#: src/install/HandoffDialog.tsx
+msgid "Mortar records the file against that page, so the mod's page link and shares point there. Choose No to add it as a plain local file."
+msgstr ""
+
+#: src/share/DestinationGrid.tsx
+msgid "Text for {app} or a forum"
+msgstr ""
+
+#: src/nxm/ArrivalDialog.tsx
+msgid "{count} more waiting"
+msgstr ""
+
+#: src/share/TileGrid.tsx
+msgid "Last used"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Pair a computer"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Multiplayer mod list…"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Could not write the changelog"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "The disk is full."
+msgstr ""
+
+#: src/sync/SyncOffers.tsx
+msgid "Use theirs"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Send"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+#: src/firstrunTour/TourPopover.tsx
+#: src/game/Sidebar.tsx
+msgid "Mods"
+msgstr ""
+
+#: src/games/LetterRail.tsx
+msgid "Games starting with {letter}"
+msgstr ""
+
+#: src/queue/UnmoderatedDialog.tsx
+msgid "{sites} is not moderated"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Has used {count, plural, one {# mod it lacks} other {# mods it lacks}}"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Source code"
+msgstr ""
+
+#: src/shell/checkForUpdates.ts
+#: src/shell/ViewToggle.tsx
+msgid "View"
+msgstr ""
+
+#: src/browse/BrowseBody.tsx
+msgid "The service may be busy. Try again in a minute."
+msgstr ""
+
+#: src/share/importError.ts
+msgid "Mortar cannot read this. Check that the whole link, code or file came through."
+msgstr ""
+
+#: src/updates/WhatsNewDialog.tsx
+msgid "What is new in Mortar {version}"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Unavailable"
+msgstr ""
+
+#: src/browse/BrowseBody.tsx
+msgid "No mods match \"{text}\""
+msgstr ""
+
+#: src/game/ProfileMenu.tsx
+msgid "Add these mods to another profile…"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Shortcut removed"
+msgstr ""
+
+#: src/launch/SaveWarnDialog.tsx
+msgid "Open saves"
+msgstr ""
+
+#: src/game/LaunchMenu.tsx
+msgid "Run with this profile"
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "No game program chosen"
+msgstr ""
+
+#: src/updates/WhatsNewDialog.tsx
+msgid "Also in Mortar {version}"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Could not remove the shortcut"
+msgstr ""
+
+#: src/install/DownloadsDialog.tsx
+msgid "Every archive in the downloads folder is already in a profile or Mortar's store."
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+msgid "Clear download history?"
+msgstr ""
+
+#: src/share/ImportSources.tsx
+msgid "Mods already in the game's folder"
+msgstr ""
+
+#: src/launch/PlayControl.tsx
+#: src/launch/StopDialog.tsx
+msgid "Stop game"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "{os} removed the file as malware without saying which. If you trust it, restore it from {os} Security's protection history."
+msgstr ""
+
+#: src/game/HomeNotes.tsx
+msgid "Saving…"
+msgstr ""
+
+#: src/game/ProfileDialogHost.tsx
+msgid "The profile stays restorable for 30 days from Recently deleted."
+msgstr ""
+
+#: src/browse/CardProgress.tsx
+msgid "Needs input"
+msgstr ""
+
+#: src/groups/applied.ts
+msgid "Download them"
+msgstr ""
+
+#: src/share/ImportFooter.tsx
+msgid "New profile from file"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Shortcut added"
+msgstr ""
+
+#: src/tools/ToolsManageDialog.tsx
+msgid "Could not remove {name}"
+msgstr ""
+
+#: src/saves/saveName.ts
+msgid "Weekly challenge"
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+msgid "{names} will be overwritten. A backup of the current Saves folder is made first."
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Profiles you send between paired computers carry their mod files, whatever the source."
+msgstr ""
+
+#: src/sync/SyncOffers.tsx
+msgid "Only settings and options differ."
+msgstr ""
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "{count, plural, one {# backup} other {# backups}}"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "From another mod manager"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Skip all"
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+msgid "Could not list backups: {error}"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "Something went wrong."
+msgstr ""
+
+#: src/queue/LargeDownloadDialog.tsx
+msgid "{name} is a very large download"
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "Add a game"
+msgstr ""
+
+#: src/install/DownloadsDialog.tsx
+msgid "Looking in the downloads folder…"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Find the mod that crashes the game…"
+msgstr ""
+
+#: src/install/NeedsRootCallout.tsx
+msgid "Place…"
+msgstr ""
+
+#: src/games/GameMenu.tsx
+msgid "All games…"
+msgstr ""
+
+#: src/launch/store.ts
+msgid "Could not roll back updates"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+#: src/saves/SaveGapLine.tsx
+msgid "Add missing mods"
+msgstr ""
+
+#: src/updates/UpdateReadyBanner.tsx
+msgid "Update ready: applies when you close Mortar."
+msgstr ""
+
+#: src/sync/pins.tsx
+msgid "Only on this computer"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Sign in to import"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Folder"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+#: src/launchers/LauncherList.tsx
+msgid "Not found"
+msgstr ""
+
+#: src/sync/SyncOffers.tsx
+#: src/toasts/EarlierChanges.tsx
+msgid "Show diff"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Use the plain icon"
+msgstr ""
+
+#: src/share/useImportFlow.ts
+msgid "Imported, but could not show the profile"
+msgstr ""
+
+#: src/templates/TemplateDialogs.tsx
+msgid "No templates"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+#: src/launch/UpdateWarnDialog.tsx
+msgid "Open problems"
+msgstr ""
+
+#: src/firstrun/NexusStep.tsx
+msgid "Mod Manager Download on {source} only works in Mortar when you are signed in."
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "Could not set it in {launcher}"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "Mortar found it in {launcher}'s settings."
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+msgid "Results"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "The game itself crashed ({module}), not a mod's code."
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Press {paletteKeys} to jump anywhere: profiles, settings, downloads and more."
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+#: src/saves/scheduledBackups.ts
+msgid "Open backups folder"
+msgstr ""
+
+#: src/lan/IncomingPrompt.tsx
+msgid "Preparing transfer…"
+msgstr ""
+
+#: src/screenshots/ScreenshotsTab.tsx
+msgid "No screenshots yet"
+msgstr ""
+
+#: src/launch/store.ts
+msgid "Could not stop the game"
+msgstr ""
+
+#: src/install/RemapDialog.tsx
+msgid "Hide archive contents"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Four Corners farm"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "An empty profile. Add mods from {source} or from archives."
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Import"
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+msgid "Obsolete"
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+msgid "Completed downloads will appear here."
+msgstr ""
+
+#: src/install/HandoffDialog.tsx
+msgid "Yes"
+msgstr ""
+
+#: src/tools/ToolEditorDialog.tsx
+msgid "Edit tool"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+msgid "Found a copy outside your launchers:"
+msgstr ""
+
+#: src/browse/BrowsePage.tsx
+msgid "All sources"
+msgstr ""
+
+#: src/sync/SyncOffers.tsx
+msgid "Updated from {machine}"
+msgstr ""
+
+#: src/toasts/HistoryButton.tsx
+msgid "Notification history"
+msgstr ""
+
+#: src/install/DownloadsDialog.tsx
+msgid "Change folder"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Refresh"
+msgstr ""
+
+#: src/browse/stats.ts
+msgid "Version {version}"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Choose cover image"
+msgstr ""
+
+#: src/install/MergeCallout.tsx
+msgid "Install separately"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "Installing {loader}"
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "{count} {source}"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Broken or obsolete ({count})"
+msgstr ""
+
+#: src/game/Home.tsx
+msgid "Share…"
+msgstr ""
+
+#: src/browse/CardProgress.tsx
+msgid "Paused at {percent}%"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Needs a file from its {source} page"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Send it to the people joining you."
+msgstr ""
+
+#: src/launch/KnownGoodOffer.tsx
+msgid "Marked known good"
+msgstr ""
+
+#: src/game/Home.tsx
+#: src/saves/SaveDetails.tsx
+#: src/saves/SaveListRow.tsx
+msgid "Summer"
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+msgid "Endorsements, likes or stars"
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+msgid "Restore this backup?"
+msgstr ""
+
+#: src/launch/playStart.ts
+msgid "Could not check the game version"
+msgstr ""
+
+#: src/fomod/Dialog.tsx
+msgid "Choose an option in {invalidGroup}."
+msgstr ""
+
+#: src/launch/LaunchLayer.tsx
+msgid "Mortar can start {name} directly instead, without the {launcher} overlay or {launcher}'s playtime tracking."
+msgstr ""
+
+#: src/share/CollectionNotes.tsx
+msgid "Your Premium account also applies the curator's installer choices and config files."
+msgstr ""
+
+#: src/fomod/Dialog.tsx
+msgid "This pack has files that always install."
+msgstr ""
+
+#: src/share/DestinationGrid.tsx
+#: src/share/ShareDialog.tsx
+msgid "Mod list"
+msgstr ""
+
+#: src/lan/incoming.ts
+msgid "A share from {sender} expired. Ask them to send it again."
+msgstr ""
+
+#: src/browse/BrowseBody.tsx
+msgid "{count, plural, one {# result} other {# results}}"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+msgid "Go to"
+msgstr ""
+
+#: src/launchers/LauncherList.tsx
+msgid "Add folder…"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Reading the profile…"
+msgstr ""
+
+#: src/share/PreviewDialog.tsx
+msgid "Open in Mortar"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Enter code"
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "{count} characters"
+msgstr ""
+
+#: src/share/ImportInput.tsx
+msgid "Paste a Mortar link, a {source} collection, an {manager} or {otherManager} code, a {otherSource} post, an {thirdSource} page or (Premium) a {source} mod link."
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Screenshots"
+msgstr ""
+
+#: src/shell/ErrorBoundary.tsx
+msgid "Something went wrong in this view"
+msgstr ""
+
+#: src/share/ManagerPane.tsx
+msgid "Could not import"
+msgstr ""
+
+#: src/games/gameList.ts
+#: src/games/GameMenu.tsx
+msgid "Recently played"
+msgstr ""
+
+#: src/game/NewProfileDialog.tsx
+msgid "Created {name}"
+msgstr ""
+
+#: src/i18n/counts.ts
+#: src/share/ListFormat.tsx
+msgid "{count, plural, one {# mod} other {# mods}}"
+msgstr ""
+
+#: src/launch/SweepDialog.tsx
+msgid "{count, plural, one {# missing dependency} other {# missing dependencies}}"
+msgstr ""
+
+#: src/browse/BrowsePage.tsx
+msgid "Search {source} releases"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "{cause}. Retry or skip it from the queue."
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Wilderness farm"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "No {loader} mod was found"
+msgstr ""
+
+#: src/game/TabHeader.tsx
+msgid "{fitting} of {recorded} saves fit"
+msgstr ""
+
+#: src/games/GameMenu.tsx
+#: src/games/GameSelect.tsx
+msgid "{playtime} played"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Remove from favourites"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Saved .r2z"
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+#: src/browse/CardAction.tsx
+#: src/downloads/newDownloads.ts
+#: src/game/FarmMenuItem.tsx
+#: src/games/AddGameDialog.tsx
+msgid "Add"
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+msgid "Could not hide that author"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Add to favourites"
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Save mod list"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Choose cover image…"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "{name} is not paired with this computer, so Mortar sends the list of mods, not their files. {name} will download each mod from its site, one click per mod on a free {source} account."
+msgstr ""
+
+#: src/toasts/HistoryButton.tsx
+msgid "Results of installs, updates and launches appear here."
+msgstr ""
+
+#: src/launch/GraphicsDialog.tsx
+msgid "You can change this later in {name}'s settings, under Play."
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+msgid "{downloading} downloading"
+msgstr ""
+
+#: src/tools/ToolsManageDialog.tsx
+msgid "Add a program to run alongside the game, such as a save editor or map viewer."
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "Mortar checks {launcher}'s settings for it: not found yet."
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Switch mod sets here. Right-click a profile for rename, duplicate, and more."
+msgstr ""
+
+#: src/sync/store.ts
+#: src/sync/SyncOffers.tsx
+msgid "{name} is not syncing yet"
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "{count, plural, one {# mod you added from an archive} other {# mods you added from archives}} cannot go in the file"
+msgstr ""
+
+#: src/shell/ErrorBoundary.tsx
+msgid "The rest of Mortar still works. Try again, or copy the details for a bug report."
+msgstr ""
+
+#: src/shell/BugReportDialog.tsx
+msgid "Title"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+msgid "Source health"
+msgstr ""
+
+#: src/game/Home.tsx
+msgid "All saves"
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Collapse sidebar"
+msgstr ""
+
+#: src/loader/Banner.tsx
+msgid "{name} here is another mod manager's copy, linked from {linkedFrom}. Removing that manager removes {name}."
+msgstr ""
+
+#: src/launch/SweepDialog.tsx
+msgid "Disable suggested"
+msgstr ""
+
+#: src/shell/FlatpakGrant.tsx
+msgid "Command copied"
+msgstr ""
+
+#: src/firstrun/FirstRun.tsx
+msgid "No launchers found. Continue and choose each game's folder when you open it."
+msgstr ""
+
+#: src/saves/lackChipActions.tsx
+msgid "Copy {name}"
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+msgid "Reading the mod's page…"
+msgstr ""
+
+#: src/shell/BugReportDialog.tsx
+msgid "Attach diagnostics (a zip of checks, logs and settings with secrets and your home folder removed; you attach it to the post)"
+msgstr ""
+
+#: src/shell/checkForUpdates.ts
+msgid "Update check failed"
+msgstr ""
+
+#: src/templates/TemplateDialogs.tsx
+msgid "Manage templates"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Done ({count}): {names}"
+msgstr ""
+
+#: src/loader/Banner.tsx
+msgid "{name} is not installed"
+msgstr ""
+
+#: src/share/PreviewDialog.tsx
+msgid "The page reads the profile from the link itself. Nothing is uploaded or stored on a server."
+msgstr ""
+
+#: src/updates/UpdateReadyBanner.tsx
+msgid "Restart now"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Enable sharing nearby?"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "A mod with a config file has an Edit config button in its details: a typed editor with presets and Reset all."
+msgstr ""
+
+#: src/browse/CardAction.tsx
+msgid "Built in"
+msgstr ""
+
+#: src/install/RemapDialog.tsx
+msgid "Show archive contents"
+msgstr ""
+
+#: src/install/batchSummary.ts
+msgid "Undo all"
+msgstr ""
+
+#: src/game/HomeNotes.tsx
+msgid "Notes for {name}"
+msgstr ""
+
+#: src/browse/CardAction.tsx
+#: src/queue/UnmoderatedDialog.tsx
+#: src/share/ImportPreview.tsx
+msgid "Download"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "added, but it could not be removed from the game's Mods folder: {error}"
+msgstr ""
+
+#: src/browse/ResultCard.tsx
+msgid "Details of {name}"
+msgstr ""
+
+#: src/shell/offlineText.ts
+msgid "{sources} cannot be reached"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "fits one {app} message"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Switch to Load order"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "All"
+msgstr ""
+
+#: src/game/detailStates.tsx
+#: src/games/ProfileCards.tsx
+msgid "Could not read profiles"
+msgstr ""
+
+#: src/launch/PlayInstances.tsx
+msgid "Delay between"
+msgstr ""
+
+#: src/firstrun/GameSetup.tsx
+#: src/queue/store.ts
+msgid "{name} installed"
+msgstr ""
+
+#: src/games/ListFooter.tsx
+msgid "Hide hidden games"
+msgstr ""
+
+#: src/launch/LaunchLayer.tsx
+msgid "Launch without {launcher}"
+msgstr ""
+
+#: src/install/noModText.ts
+msgid "This archive has no {loader} mod where Mortar expects one. Pick the folder that holds the mod."
+msgstr ""
+
+#: src/sync/pins.tsx
+msgid "Follow the sync again"
+msgstr ""
+
+#: src/toasts/HistoryButton.tsx
+msgid "All changes…"
+msgstr ""
+
+#: src/nxm/ArrivalDialog.tsx
+msgid "Other profile…"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "A file it needs could not be opened."
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Could not make the list"
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+msgid "None of {names} are in Saves yet; they will be added. The current Saves folder is backed up first."
+msgstr ""
+
+#: src/queue/actions.ts
+msgid "Downloads come from {source} with your account, so Mortar needs your API key first."
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "{app} takes 2,000 characters a message: paste each one in turn."
+msgstr ""
+
+#: src/share/ImportDialog.tsx
+#: src/share/ImportInput.tsx
+#: src/share/ImportSources.tsx
+msgid "Link or code"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "{count, plural, one {Enabled # mod} other {Enabled # mods}}"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+msgid "Launchers"
+msgstr ""
+
+#: src/templates/TemplateDialogs.tsx
+msgid "Could not save the template"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "game version {version} is older than the loader accepts ({otherVersion})"
+msgstr ""
+
+#: src/tools/ToolEditorDialog.tsx
+msgid "Executable"
+msgstr ""
+
+#: src/launch/playStart.ts
+#: src/launch/PrePlayDialog.tsx
+#: src/launch/SaveWarnDialog.tsx
+#: src/launch/UpdateWarnDialog.tsx
+msgid "Play anyway"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "{length} of {limit} characters"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Copy code"
+msgstr ""
+
+#: src/shell/offlineText.ts
+msgid "nothing saved yet from {name}"
+msgstr ""
+
+#: src/saves/backups.ts
+msgid "Before playing"
+msgstr ""
+
+#: src/share/ImportSources.tsx
+msgid "The game's Mods folder"
+msgstr ""
+
+#: src/games/GameMenu.tsx
+msgid "{count, plural, one {# profile} other {# profiles}}"
+msgstr ""
+
+#: src/browse/stats.ts
+msgid "{count, plural, one {# star} other {# stars}}"
+msgstr ""
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "No backups yet"
+msgstr ""
+
+#: src/queue/QueueRows.tsx
+msgid "Resume {name}"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "That request was not valid."
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+#: src/share/ModpackDialog.tsx
+msgid "Description"
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+msgid "Categories"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Could not back up {name}"
+msgstr ""
+
+#: src/queue/RetryAllButton.tsx
+msgid "{count, plural, one {# incomplete entry} other {# incomplete entries}}"
+msgstr ""
+
+#: src/queue/actions.ts
+msgid "The download queue is empty."
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "unverified until downloaded"
+msgstr ""
+
+#: src/launch/store.ts
+msgid "New errors after updating {profile}"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "missing dependencies: {list}"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Sign in to {source}…"
+msgstr ""
+
+#: src/games/GameRowMenu.tsx
+msgid "Hide this game"
+msgstr ""
+
+#: src/game/Home.tsx
+#: src/saves/SaveDetails.tsx
+#: src/saves/SaveListRow.tsx
+msgid "Winter"
+msgstr ""
+
+#: src/tools/ToolsManageDialog.tsx
+msgid "Manage tools"
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "Change"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+#: src/game/Sidebar.tsx
+msgid "Browse"
+msgstr ""
+
+#: src/share/ShareFooter.tsx
+msgid "Message copied"
+msgstr ""
+
+#: src/install/ArchivePreview.tsx
+msgid "Archive contents"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Includes: {names}"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Skipped ({count}): {names}"
+msgstr ""
+
+#: src/launch/StopDialog.tsx
+msgid "{game} will close now, and any progress since your last save is lost."
+msgstr ""
+
+#: src/queue/QueueRows.tsx
+msgid "Pause {name}"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Send to an address…"
+msgstr ""
+
+#: src/game/NewProfileDialog.tsx
+msgid "{count, plural, one {Created {name}; # mod still to download} other {Created {name}; # mods still to download}}"
+msgstr ""
+
+#: src/game/Hero.tsx
+msgid "revision {revision}"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Cancel {name}"
+msgstr ""
+
+#: src/game/Home.tsx
+#: src/saves/SaveDetails.tsx
+#: src/saves/SaveListRow.tsx
+msgid "Spring"
+msgstr ""
+
+#: src/tools/ToolEditorDialog.tsx
+msgid "Arguments"
+msgstr ""
+
+#: src/launch/VanillaPlay.tsx
+msgid "Set default preset…"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "Tilesheets not used by any installed mod"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "already in this profile as {name}"
+msgstr ""
+
+#: src/queue/DownloadsPill.tsx
+msgid "{count, plural, one {# downloading} other {# downloading}}"
+msgstr ""
+
+#: src/shell/win.ts
+msgid "Could not read the window state"
+msgstr ""
+
+#: src/share/importError.ts
+msgid "Nothing was found for that link or code. Codes expire, so ask for a new one."
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Website"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "No Mortar computers found nearby."
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Upload"
+msgstr ""
+
+#: src/install/DownloadsDialog.tsx
+msgid "Choose an archive to see what is inside"
+msgstr ""
+
+#: src/game/LaunchMenu.tsx
+msgid "Could not start {name}"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Check later"
+msgstr ""
+
+#: src/share/useImportFlow.ts
+msgid "A profile with that name already exists, so this one is \"{name}\""
+msgstr ""
+
+#: src/queue/QueueHistory.tsx
+msgid "Clear history"
+msgstr ""
+
+#: src/queue/DownloadsPill.tsx
+msgid "Downloads: {downloading} {percent}%"
+msgstr ""
+
+#: src/launch/VanillaPlay.tsx
+msgid "Default"
+msgstr ""
+
+#: src/game/BackupMenuItems.tsx
+msgid "Choose where to save…"
+msgstr ""
+
+#: src/browse/browseConstants.ts
+msgid "Search {source} for mods published as releases. Add puts the latest release in this profile."
+msgstr ""
+
+#: src/browse/stats.ts
+msgid "{count, plural, one {# follower} other {# followers}}"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+#: src/game/Sidebar.tsx
+msgid "Problems"
+msgstr ""
+
+#: src/game/detailStates.tsx
+msgid "Create your first profile"
+msgstr ""
+
+#: src/launch/store.ts
+msgid "The {launcher} Launcher may not be running or signed in. Start it, sign in and try again."
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Click a mod to open its details: versions, what it needs and what needs it, and its update."
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Ask on {app}"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Code published"
+msgstr ""
+
+#: src/install/overlayPlace.ts
+msgid "Could not add the optional file"
+msgstr ""
+
+#: src/saves/lackChipActions.tsx
+msgid "Open the page of {name}"
+msgstr ""
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "Already has {count}"
+msgstr ""
+
+#: src/saves/saveName.ts
+msgid "Exploration"
+msgstr ""
+
+#: src/shell/FlatpakGrant.tsx
+msgid "Grant access"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Press Play when the downloads finish."
+msgstr ""
+
+#: src/saves/saveName.ts
+msgid "Challenge moon"
+msgstr ""
+
+#: src/game/HomeNotes.tsx
+msgid "No notes yet."
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Message {count} of {total}"
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Sort: most endorsed"
+msgstr ""
+
+#: src/shell/ErrorBoundary.tsx
+#: src/toasts/ToastHost.tsx
+msgid "Details copied"
+msgstr ""
+
+#: src/shell/BugReportDialog.tsx
+msgid "Copy and open {app}"
+msgstr ""
+
+#: src/launch/PlayInstances.tsx
+msgid "Copies of the game"
+msgstr ""
+
+#: src/screenshots/ScreenshotsTab.tsx
+msgid "Use as profile cover"
+msgstr ""
+
+#: src/install/OverlayPlaceDialog.tsx
+msgid "From this file"
+msgstr ""
+
+#: src/updates/WhatsNewDialog.tsx
+msgid "Read the release notes on {source}"
+msgstr ""
+
+#: src/install/MissingDepsDialog.tsx
+msgid "Not now"
+msgstr ""
+
+#: src/launch/SweepDialog.tsx
+msgid "{count, plural, one {Update # mod} other {Update # mods}}"
+msgstr ""
+
+#: src/queue/LargeDownloadDialog.tsx
+msgid "{more} more large downloads are waiting after this one."
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Some files could not be checked against {source}, so a few may differ from what was shared."
+msgstr ""
+
+#: src/shell/FlatpakGrant.tsx
+msgid "{app} {launcher} cannot read your mods"
+msgstr ""
+
+#: src/groups/SavedGroupRow.tsx
+msgid "A saved group keeps at least one mod; delete the saved group instead"
+msgstr ""
+
+#: src/nxm/store.ts
+msgid "The link has expired. Click Mod Manager Download on {source} again."
+msgstr ""
+
+#: src/firstrun/FirstRun.tsx
+msgid "Want help, news or a say in what comes next? Mortar has a {app} server."
+msgstr ""
+
+#: src/games/gameList.ts
+msgid "Other games"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+msgid "found, without {name}"
+msgstr ""
+
+#: src/launch/VanillaPlay.tsx
+msgid "Play with"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Sent to {name}"
+msgstr ""
+
+#: src/App.tsx
+#: src/games/useGameTiles.ts
+#: src/games/useOpenGame.ts
+msgid "Could not read your games"
+msgstr ""
+
+#: src/launch/playStart.ts
+msgid "Could not check profile"
+msgstr ""
+
+#: src/install/DropOverlay.tsx
+msgid "Open a profile to install mods"
+msgstr ""
+
+#: src/share/PreviewDialog.tsx
+msgid "What the person opening the link sees"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Last export {lastVersion}"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Switch to Performance"
+msgstr ""
+
+#: src/share/IncludeOptions.tsx
+msgid "Include config files"
+msgstr ""
+
+#: src/share/ImportSources.tsx
+msgid "{managers} on this computer"
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Plain text"
+msgstr ""
+
+#: src/install/RemapDialog.tsx
+msgid "Collapse {name}"
+msgstr ""
+
+#: src/groups/SavedGroupRow.tsx
+#: src/templates/TemplateDialogs.tsx
+msgid "Rename {name}"
+msgstr ""
+
+#: src/saves/SaveListRow.tsx
+msgid "Fits {name}"
+msgstr ""
+
+#: src/launch/events.ts
+msgid "{name} updated to {version}: {count, plural, one {# profile needs attention} other {# profiles need attention}}"
+msgstr ""
+
+#: src/shell/BugReportDialog.tsx
+msgid "Report copied"
+msgstr ""
+
+#: src/queue/UnmoderatedDialog.tsx
+msgid "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
+msgstr ""
+
+#: src/nxm/ArrivalDialog.tsx
+msgid "You started this download on {source}, but you have no {game} profile yet."
+msgstr ""
+
+#: src/screenshots/ScreenshotsTab.tsx
+msgid "Open folder"
+msgstr ""
+
+#: src/firstrun/FirstRun.tsx
+#: src/firstrun/GameSetup.tsx
+#: src/firstrun/LoaderStep.tsx
+#: src/games/GameSelect.tsx
+msgid "Loading…"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+#: src/queue/QueueRows.tsx
+msgid "{done} of {total}"
+msgstr ""
+
+#: src/nxm/store.ts
+msgid "Downloading {name} into {profile}"
+msgstr ""
+
+#: src/launch/PlayInstances.tsx
+msgid "{count, plural, one {Launch # copy} other {Launch all # copies}}"
+msgstr ""
+
+#: src/shell/BugReportDialog.tsx
+msgid "Steps to reproduce"
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "Choose the game's program…"
+msgstr ""
+
+#: src/shell/saveDiagnostics.ts
+msgid "Drag {path} into the {source} issue to attach it."
+msgstr ""
+
+#: src/share/ManagerPane.tsx
+msgid "{count, plural, one {Import # profile} other {Import # profiles}}"
+msgstr ""
+
+#: src/launch/playStart.ts
+msgid "Could not check the graphics setting"
+msgstr ""
+
+#: src/saves/lackChips.tsx
+msgid "{name} (disabled)"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+msgid "Updates"
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "The text that is copied"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Nothing downloading"
+msgstr ""
+
+#: src/game/BackupMenuItems.tsx
+msgid "Restore from a file…"
+msgstr ""
+
+#: src/lan/IncomingPrompt.tsx
+msgid "{sender} sent you {profile} ({game})"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Saved to {path}"
+msgstr ""
+
+#: src/games/GameRowMenu.tsx
+msgid "Unhide"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "Preview link…"
+msgstr ""
+
+#: src/screenshots/ScreenshotsTab.tsx
+msgid "Could not set the cover"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Review collection update"
+msgstr ""
+
+#: src/launch/VanillaPlay.tsx
+msgid "Mortar starts the unmodded game directly, outside {launcher}. The {launcher} overlay and playtime tracking do not work; {launcher} still supplies its API if running."
+msgstr ""
+
+#: src/queue/RetryAllButton.tsx
+msgid "Retry all failed"
+msgstr ""
+
+#: src/share/arrivals.ts
+msgid "Add it"
+msgstr ""
+
+#: src/lan/IncomingPrompt.tsx
+msgid "Import as new profile"
+msgstr ""
+
+#: src/templates/ApplyTemplateDialog.tsx
+msgid "Apply a template"
+msgstr ""
+
+#: src/fomod/Dialog.tsx
+msgid "This update changed its install options. Your earlier picks are kept where they still exist."
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Open download page"
+msgstr ""
+
+#: src/nxm/store.ts
+msgid "Sign in to {source} in Settings before downloading from a link."
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "Show mods"
+msgstr ""
+
+#: src/templates/useTemplates.ts
+msgid "Could not read the templates"
+msgstr ""
+
+#: src/browse/browseConstants.ts
+msgid "Search {source}. Download installs the mod into this profile."
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Sort: most forks"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "A .mortar file suits a profile this size better, and carries your mod settings too."
+msgstr ""
+
+#: src/queue/RetryAllButton.tsx
+msgid "{count, plural, one {Retried # download} other {Retried # downloads}}"
+msgstr ""
+
+#: src/shell/TitleBar.tsx
+msgid "Setup"
+msgstr ""
+
+#: src/share/ImportInput.tsx
+msgid "Preview"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Recent address"
+msgstr ""
+
+#: src/nxm/ArrivalDialog.tsx
+msgid "You started this download on {source}. Create a profile to put it in first."
+msgstr ""
+
+#: src/install/OverlayPlaceDialog.tsx
+msgid "Whole file"
+msgstr ""
+
+#: src/games/useGameTiles.ts
+msgid "Not set up"
+msgstr ""
+
+#: src/launch/PlayControl.tsx
+msgid "Running"
+msgstr ""
+
+#: src/install/offerInstallAnyway.ts
+msgid "The antivirus flagged it, so Mortar did not install it."
+msgstr ""
+
+#: src/updates/WhatsNewDialog.tsx
+msgid "{count, plural, one {# change} other {# changes}}"
+msgstr ""
+
+#: src/games/GameMenu.tsx
+msgid "Switch game: {game}"
+msgstr ""
+
+#: src/share/IncludeOptions.tsx
+msgid "Include notes"
+msgstr ""
+
+#: src/saves/lackChips.tsx
+msgid "Add all {count}"
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+msgid "Pause all"
+msgstr ""
+
+#: src/game/ProfileMenu.tsx
+msgid "No other profile to add them to."
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "{leftOut} left out"
+msgstr ""
+
+#: src/browse/CardProgress.tsx
+msgid "Waiting for {source}…"
+msgstr ""
+
+#: src/game/HeroGlance.tsx
+msgid "Not played yet"
+msgstr ""
+
+#: src/shell/FlatpakGrant.tsx
+msgid "This runs the command below once for your user, so {launcher} can read Mortar's data folder."
+msgstr ""
+
+#: src/groups/dialogs.tsx
+#: src/groups/SavedGroupsSection.tsx
+msgid "No saved groups yet."
+msgstr ""
+
+#: src/lan/OutgoingProgress.tsx
+msgid "{peer} cancelled it"
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+msgid "No save backups yet."
+msgstr ""
+
+#: src/game/Home.tsx
+#: src/saves/SaveListRow.tsx
+msgid "Year {year} {season}"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Recent changes"
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+msgid "Close downloads"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "A .mortar file holds the link's mods plus their settings files. Send it; they open it from Mortar's Import."
+msgstr ""
+
+#: src/share/DestinationGrid.tsx
+msgid "A collection draft"
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "Its {source} file is not known. Group the Mods list by Source and choose Find on {source}."
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "{save} was last played with {profile}"
+msgstr ""
+
+#: src/shell/FlatpakGrant.tsx
+msgid "Grant the {launcher} sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Enabled"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Premium"
+msgstr ""
+
+#: src/browse/browseConstants.ts
+msgid "Search every site this game's mods come from at once. Each result installs into this profile from wherever its author published it."
+msgstr ""
+
+#: src/game/detailStates.tsx
+msgid "Mortar could not load the profiles for this game."
+msgstr ""
+
+#: src/fomod/Dialog.tsx
+msgid "Install options"
+msgstr ""
+
+#: src/shell/TitleBar.tsx
+msgid "Maximise"
+msgstr ""
+
+#: src/share/IncludeOptions.tsx
+msgid "A link has no room for it. Use a file or a nearby computer."
+msgstr ""
+
+#: src/firstrun/GameSetup.tsx
+#: src/games/GameSelect.tsx
+msgid "Set up {name}"
+msgstr ""
+
+#: src/shell/offlineText.ts
+msgid "{names} cannot be reached; nothing saved to show yet"
+msgstr ""
+
+#: src/launch/autoUpdate.ts
+msgid "the mod"
+msgstr ""
+
+#: src/browse/BrowseBody.tsx
+msgid "Searching…"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Multiplayer mod list"
+msgstr ""
+
+#: src/launch/PlayControl.tsx
+msgid "Could not set the default launch preset"
+msgstr ""
+
+#: src/launch/LaunchLayer.tsx
+msgid "{name} did not start"
+msgstr ""
+
+#: src/firstrun/FirstRun.tsx
+msgid "Join our {app}"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "README"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "Could not open Mortar's log"
+msgstr ""
+
+#: src/nxm/ArrivalDialog.tsx
+#: src/nxm/store.ts
+msgid "Install {name}?"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Paths too long for {os} ({count})"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Ask another Mortar user to open sharing nearby."
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "{count, plural, one {# mod disabled} other {# mods disabled}}"
+msgstr ""
+
+#: src/toasts/EarlierChanges.tsx
+msgid "No changes yet"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "Used only by disabled mods: {names}"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Paste a link…"
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+msgid "Already in this profile."
+msgstr ""
+
+#: src/saves/saveName.ts
+msgid "Creative Building"
+msgstr ""
+
+#: src/QuitPrompt.tsx
+msgid "Quit"
+msgstr ""
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "Delete this backup?"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+#: src/shell/saveDiagnostics.ts
+msgid "Show file"
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+msgid "Save backups"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "One step in {launcher}"
+msgstr ""
+
+#: src/sync/store.ts
+msgid "Waiting for {machine}'s profile file to finish syncing"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Mortar menu"
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+msgid "Kept forever"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "same mod as {name}"
+msgstr ""
+
+#: src/nxm/store.ts
+msgid "Mod link not used"
+msgstr ""
+
+#: src/share/IncludeOptions.tsx
+msgid "Only a paired computer gets it."
+msgstr ""
+
+#: src/launch/LaunchLayer.tsx
+msgid "{launcher} was not found"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Switch to Saves"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Search every mod site at once or pick one; with nothing typed you see the top mods. Add installs into this profile. You can also drop a downloaded archive anywhere on this window."
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Conflicts ({count})"
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+#: src/tools/ToolsManageDialog.tsx
+msgid "Remove"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+msgid "{name} was not found in your launchers"
+msgstr ""
+
+#: src/launch/PlayControl.tsx
+msgid "Running {who}"
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Get mods"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "It encountered an error."
+msgstr ""
+
+#: src/game/HeroGlance.tsx
+msgid "No problems"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Switch to Config"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "Preview Mods folder import…"
+msgstr ""
+
+#: src/launch/playStart.ts
+msgid "Could not save the graphics choice"
+msgstr ""
+
+#: src/share/ImportInput.tsx
+msgid "Opened the {source} post. Save the file from it; Mortar offers it from your Downloads folder."
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+#: src/games/GameSelect.tsx
+#: src/launch/PlayControl.tsx
+msgid "Play"
+msgstr ""
+
+#: src/games/GameSelect.tsx
+msgid "Open {name}"
+msgstr ""
+
+#: src/launch/PlayInstances.tsx
+msgid "Use Direct launch"
+msgstr ""
+
+#: src/tools/ToolsManageDialog.tsx
+msgid "Remove {name}?"
+msgstr ""
+
+#: src/saves/saveName.ts
+msgid "Wilderness Survival"
+msgstr ""
+
+#: src/templates/TemplateDialogs.tsx
+msgid "Delete the template {name}?"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Beach farm"
+msgstr ""
+
+#: src/groups/SavedGroupsSection.tsx
+#: src/groups/SaveGroupToLibrary.tsx
+#: src/saves/SaveListRow.tsx
+#: src/templates/TemplateDialogs.tsx
+#: src/tools/ToolEditorDialog.tsx
+msgid "Save"
+msgstr ""
+
+#: src/install/NeedsRootCallout.tsx
+msgid "Choose folder"
+msgstr ""
+
+#: src/install/OverlayPlaceDialog.tsx
+msgid "Place here"
+msgstr ""
+
+#: src/launch/VanillaPlay.tsx
+#: src/saves/saveName.ts
+msgid "Standard"
+msgstr ""
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "The backup from {when} is deleted for good, with every save in it."
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Could not verify its source"
+msgstr ""
+
+#: src/fomod/Dialog.tsx
+#: src/loader/Banner.tsx
+msgid "Install"
+msgstr ""
+
+#: src/shell/ErrorBoundary.tsx
+#: src/toasts/ToastHost.tsx
+msgid "Copy details"
+msgstr ""
+
+#: src/screenshots/ScreenshotsTab.tsx
+msgid "Open {launcher}'s folder"
+msgstr ""
+
+#: src/shell/checkForUpdates.ts
+msgid "Mods are up to date"
+msgstr ""
+
+#: src/install/NeedsRootCallout.tsx
+#: src/install/RemapDialog.tsx
+msgid "Choose variant"
+msgstr ""
+
+#: src/saves/lackChipActions.tsx
+msgid "Dismiss {name} for this save"
+msgstr ""
+
+#: src/updates/WhatsNewDialog.tsx
+msgid "Fixed"
+msgstr ""
+
+#: src/sync/SyncOffers.tsx
+msgid "Keep mine"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Could not send to {name}"
+msgstr ""
+
+#: src/share/importError.ts
+msgid "Mortar does not recognise this. Paste a Mortar link, a {source} collection, or an {manager} or {otherManager} code."
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Riverland farm"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Toggle {name}"
+msgstr ""
+
+#: src/firstrun/GameSetup.tsx
+#: src/games/gameList.ts
+msgid "All games"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "{loader} is the loader every {game} mod needs. It goes into the game folder, and {launcher} keeps launching the game as usual."
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Expand sidebar"
+msgstr ""
+
+#: src/groups/SavedGroupsSection.tsx
+msgid "This saved group will be deleted. Groups already added to profiles stay."
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Sent {profile} to {name}; they will copy the files from you"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Dependency"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "In progress ({count})"
+msgstr ""
+
+#: src/sync/SyncOffers.tsx
+msgid "Changes from your other machines"
+msgstr ""
+
+#: src/launch/UpdateWarnDialog.tsx
+msgid "Broke in {brokeIn}"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+#: src/commandPalette/paletteLabels.ts
+#: src/shell/TitleBar.tsx
+msgid "Settings"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "The {app} runtime crashed ({module}), not a mod's code."
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+msgid "Hide from Browse"
+msgstr ""
+
+#: src/launch/LaunchLayer.tsx
+msgid "Launching {name}"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Could not enable sharing nearby"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Already in {launcher}"
+msgstr ""
+
+#: src/launch/VanillaPlay.tsx
+msgid "Play without {launcher} overlay"
+msgstr ""
+
+#: src/share/ListFormat.tsx
+msgid "Markdown"
+msgstr ""
+
+#: src/lan/IncomingPrompt.tsx
+msgid "Could not cancel transfer"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Load the host's list from a file…"
+msgstr ""
+
+#: src/saves/SavesTab.tsx
+msgid "Clear filters"
+msgstr ""
+
+#: src/shell/win.ts
+msgid "Could not minimise the window"
+msgstr ""
+
+#: src/saves/store.ts
+msgid "Dismissed for this save"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "They see the profile name, the mod list and where each mod comes from."
+msgstr ""
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "{name} is replaced by the game's own copy from {when}. The current {name} is backed up first."
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+msgid "Restore {name}"
+msgstr ""
+
+#: src/fomod/Dialog.tsx
+msgid "Step {step} of {count}: {name}"
+msgstr ""
+
+#: src/share/useImportFlow.ts
+msgid "{count, plural, one {Applied the curator's choices for # mod and {configs, plural, one {# config file} other {# config files}}} other {Applied the curator's choices for # mods and {configs, plural, one {# config file} other {# config files}}}}"
+msgstr ""
+
+#: src/firstrun/GameSetup.tsx
+msgid "Install {loader}"
+msgstr ""
+
+#: src/game/BackupMenuItems.tsx
+msgid "Include mod files (larger, works offline)"
+msgstr ""
+
+#: src/firstrun/GameSetup.tsx
+msgid "First profile"
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "{shared} of {total} mods"
+msgstr ""
+
+#: src/updates/WhatsNewDialog.tsx
+msgid "{count, plural, one {# new feature} other {# new features}}"
+msgstr ""
+
+#: src/saves/saveName.ts
+msgid "Extra slot added by a mod"
+msgstr ""
+
+#: src/shell/saveDiagnostics.ts
+msgid "Diagnostics saved"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "Share link"
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+msgid "Mortar backs up your saves before playing and before updates. Use Back up now on a save to make one yourself."
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+#: src/saves/SaveBackupsButton.tsx
+msgid "Stop the game to restore saves."
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Diagnostics"
+msgstr ""
+
+#: src/game/Hero.tsx
+msgid "From the {source} collection \"{name}\""
+msgstr ""
+
+#: src/game/ProfileMenu.tsx
+#: src/launch/PlayInstances.tsx
+msgid "Copies"
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Health"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "{name} was blocked by your antivirus"
+msgstr ""
+
+#: src/toasts/ToastHost.tsx
+msgid "Details"
+msgstr ""
+
+#: src/shell/TitleBar.tsx
+msgid "Minimise"
+msgstr ""
+
+#: src/launch/KnownGoodOffer.tsx
+msgid "Mark known good"
+msgstr ""
+
+#: src/install/DownloadsDialog.tsx
+msgid "No archives to add"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Pair the two computers to send whole files instead. Pairing takes a one-time code shown here and typed on {name}."
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Added to {launcher}"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Pick the computer showing the code, then type it."
+msgstr ""
+
+#: src/groups/useSavedGroups.ts
+msgid "Could not read saved groups"
+msgstr ""
+
+#: src/launch/events.ts
+msgid "The antivirus scan could not finish, so a mod was installed unscanned"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+msgid "About"
+msgstr ""
+
+#: src/launch/SweepDialog.tsx
+msgid "Updated fixable mods"
+msgstr ""
+
+#: src/launch/autoUpdate.ts
+msgid "The update for {name} did not finish"
+msgstr ""
+
+#: src/games/LetterRail.tsx
+msgid "Jump to a letter"
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Sort: newest"
+msgstr ""
+
+#: src/game/Home.tsx
+#: src/game/Sidebar.tsx
+#: src/saves/SaveListRow.tsx
+msgid "Saves"
+msgstr ""
+
+#: src/saves/saveName.ts
+msgid "World"
+msgstr ""
+
+#: src/groups/SavedGroupsSection.tsx
+msgid "Rename saved group"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+msgid "Mod details"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+#: src/queue/QueueSheet.tsx
+msgid "Resume"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Share as {manager} code?"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "No command set"
+msgstr ""
+
+#: src/launch/playStart.ts
+msgid "You can roll back the completed updates from the profile history."
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "Its source is not known."
+msgstr ""
+
+#: src/install/MissingDepsDialog.tsx
+msgid "{name} needs {names}"
+msgstr ""
+
+#: src/browse/BrowseBody.tsx
+msgid "Clear search"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Author"
+msgstr ""
+
+#: src/launch/SaveWarnDialog.tsx
+msgid "Unknown mod"
+msgstr ""
+
+#: src/share/ImportDialog.tsx
+msgid "Import a profile"
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+msgid "{done} done"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "{count, plural, one {# download needs your decision} other {# downloads need your decision}}"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Could not use that image"
+msgstr ""
+
+#: src/install/DownloadsDialog.tsx
+msgid "From the downloads folder"
+msgstr ""
+
+#: src/game/ProfileMenu.tsx
+#: src/groups/ApplySavedGroupToProfile.tsx
+#: src/tidy/report.ts
+msgid "Profile"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+msgid "Change folder…"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Needs a {source} key, or the file from its page"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "{count, plural, one {# download failed} other {# downloads failed}}"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "{count, plural, one {# settings file was} other {# settings files were}} left out (too large or an unusual name):"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "module {name} failed: {error}"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "a patch for {name} matched nothing in the game's code"
+msgstr ""
+
+#: src/install/HandoffDialog.tsx
+msgid "Install {file} as from {page}?"
+msgstr ""
+
+#: src/game/NewProfileDialog.tsx
+#: src/game/TemplateMenuItems.tsx
+msgid "Manage templates…"
+msgstr ""
+
+#: src/install/RemapDialog.tsx
+msgid "Expand {name}"
+msgstr ""
+
+#: src/saves/lackChipActions.tsx
+msgid "Open {name} on {source}"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "Not enough disk space"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Export as {source} collection draft…"
+msgstr ""
+
+#: src/browse/BrowseShow.tsx
+#: src/launch/LaunchLayer.tsx
+#: src/saves/SaveGapLine.tsx
+msgid "Hide"
+msgstr ""
+
+#: src/toasts/ToastHost.tsx
+msgid "Hide details"
+msgstr ""
+
+#: src/toasts/HistoryButton.tsx
+msgid "Nothing new"
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "Unpair"
+msgstr ""
+
+#: src/firstrunTour/TourPopover.tsx
+#: src/tidy/report.ts
+msgid "Profiles"
+msgstr ""
+
+#: src/launch/SaveWarnDialog.tsx
+msgid "Your last save needs other mods"
+msgstr ""
+
+#: src/saves/SaveGapLine.tsx
+msgid "Missing"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+#: src/loader/InstallSteps.tsx
+msgid "Downloaded"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+#: src/queue/QueueHistory.tsx
+msgid "Cancelled"
+msgstr ""
+
+#: src/games/GameMenu.tsx
+msgid "Games"
+msgstr ""
+
+#: src/game/NewProfileDialog.tsx
+msgid "Could not create the profile"
+msgstr ""
+
+#: src/queue/Callout.tsx
+msgid "Into a deleted profile"
+msgstr ""
+
+#: src/game/Sidebar.tsx
+msgid "Logs"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Looking for Mortar users…"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Could not add it to {launcher}"
+msgstr ""
+
+#: src/share/useShareBuild.ts
+msgid "Could not build the link"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "New profile from this save"
+msgstr ""
+
+#: src/game/NewProfileDialog.tsx
+msgid "Empty profile"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+#: src/firstrun/LoaderStep.tsx
+msgid "{loader} {version} installed"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Changed since last run ({count})"
+msgstr ""
+
+#: src/launch/LaunchLayer.tsx
+msgid "The game exited before it started. The console has its output."
+msgstr ""
+
+#: src/launch/SweepDialog.tsx
+msgid "{game} was updated: mods to check"
+msgstr ""
+
+#: src/browse/BrowseToolbar.tsx
+msgid "Source"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+msgid "General"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Skip the waiting downloads of this profile"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Open downloads"
+msgstr ""
+
+#: src/game/Home.tsx
+msgid "All saves ({total})"
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+msgid "Download progress"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Updates, missing dependencies and links from mod sites land here."
+msgstr ""
+
+#: src/loader/Banner.tsx
+msgid "{name} here is another mod manager's copy. Removing that manager removes {name}."
+msgstr ""
+
+#: src/firstrun/NexusStep.tsx
+#: src/shell/AppMenu.tsx
+msgid "Signed in as {name}"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+#: src/loader/InstallSteps.tsx
+msgid "Launcher replaced"
+msgstr ""
+
+#: src/lan/OutgoingProgress.tsx
+msgid "{peer} has all the files for {profile}"
+msgstr ""
+
+#: src/game/TabHeader.tsx
+msgid "Saves whose recorded mod list this profile covers, out of the saves that record one"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Unfreeze"
+msgstr ""
+
+#: src/install/ArchivePreview.tsx
+msgid "FOMOD installer"
+msgstr ""
+
+#: src/browse/CardProgress.tsx
+#: src/queue/QueueBody.tsx
+msgid "Installing"
+msgstr ""
+
+#: src/queue/LargeDownloadDialog.tsx
+msgid "This download is {size}, far larger than a mod normally is. It will take a long time and fill a lot of your drive. Make sure you meant to get it."
+msgstr ""
+
+#: src/lan/PairedComputers.tsx
+msgid "On the other computer, choose Enter code and type this. It works once, for five minutes."
+msgstr ""
+
+#: src/saves/SavesTab.tsx
+msgid "Play this profile and save a game. Each save shows here, with its backups."
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "install reasons"
+msgstr ""
+
+#: src/lan/OutgoingProgress.tsx
+msgid "Sending to {peer} stopped: {why}"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "about {size} to download"
+msgstr ""
+
+#: src/groups/SaveGroupToLibrary.tsx
+#: src/share/ImportFooter.tsx
+#: src/templates/TemplateDialogs.tsx
+msgid "Replace {name}?"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "{exception} at {frame}"
+msgstr ""
+
+#: src/game/BackupMenuItems.tsx
+msgid "The backup holds up to {size}: the profile, its settings and config files, and its own saves when it keeps them."
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "Write the changelog against the last export"
+msgstr ""
+
+#: src/browse/CardProgress.tsx
+msgid "Failed, retry"
+msgstr ""
+
+#: src/game/NewProfileDialog.tsx
+msgid "{description} Adds {names}."
+msgstr ""
+
+#: src/browse/CardAction.tsx
+msgid "Sign in to download"
+msgstr ""
+
+#: src/launch/PlayControl.tsx
+msgid "Installing {installing}…"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Saves this profile as a collection draft to finish and upload on {source}."
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "That was made by a newer Mortar. Update Mortar to open it."
+msgstr ""
+
+#: src/saves/SaveDetails.tsx
+msgid "{hours}h played"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "Could not download {name}"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "{count, plural, one {# program file was} other {# program files were}} left out; Mortar copies settings, not programs:"
+msgstr ""
+
+#: src/toasts/HistoryButton.tsx
+msgid "Clear"
+msgstr ""
+
+#: src/saves/SaveListRow.tsx
+msgid "Season"
+msgstr ""
+
+#: src/game/LaunchMenu.tsx
+msgid "Tools"
+msgstr ""
+
+#: src/launch/store.ts
+msgid "{app} stopped on an error before {name} started: {error}"
+msgstr ""
+
+#: src/firstrun/FindStep.tsx
+#: src/firstrun/FirstRun.tsx
+#: src/firstrun/LoaderStep.tsx
+#: src/firstrun/NexusStep.tsx
+msgid "Continue"
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+msgid "Dependencies"
+msgstr ""
+
+#: src/games/GameSelect.tsx
+#: src/games/ProfileCards.tsx
+#: src/games/useOpenGame.ts
+msgid "Could not save the last game"
+msgstr ""
+
+#: src/firstrun/FirstRun.tsx
+msgid "Welcome to Mortar"
+msgstr ""
+
+#: src/queue/store.ts
+msgid "{unblocked} can load now."
+msgstr ""
+
+#: src/nxm/ArrivalDialog.tsx
+msgid "Loading profiles…"
+msgstr ""
+
+#: src/share/importCompletion.ts
+msgid "{count, plural, one {# setting is still waiting for its mod to install.} other {# settings are still waiting for their mods to install.}}"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "Import from the game's Mods folder"
+msgstr ""
+
+#: src/queue/RetryAllButton.tsx
+msgid "{count, plural, one {# superseded by a newer download} other {# superseded by a newer download}}"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Check this download"
+msgstr ""
+
+#: src/groups/dialogs.tsx
+msgid "Open a group's menu on the Mods tab and choose Save to library."
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "Save…"
+msgstr ""
+
+#: src/game/Home.tsx
+#: src/saves/SaveDetails.tsx
+#: src/saves/SaveListRow.tsx
+msgid "Fall"
+msgstr ""
+
+#: src/browse/BrowseBody.tsx
+msgid "Try fewer words, or the mod's exact name."
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Open post"
+msgstr ""
+
+#: src/launch/KnownGoodOffer.tsx
+msgid "Mark these mods known good so History can restore them if a later change breaks the game."
+msgstr ""
+
+#: src/share/PreviewDialog.tsx
+msgid "Get Mortar"
+msgstr ""
+
+#: src/launch/store.ts
+msgid "{app} {launcher} cannot read Mortar's mods folder. Grant the sandbox access (Settings › {name}) or the game will not see this profile."
+msgstr ""
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "Backups of {name}"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "{count, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
+msgstr ""
+
+#: src/game/Home.tsx
+#: src/saves/SavesTab.tsx
+msgid "Reading your saves…"
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+#: src/share/MethodPanes.tsx
+msgid "Copy link"
+msgstr ""
+
+#: src/saves/SaveDetails.tsx
+msgid "{season} {day}, year {year}"
+msgstr ""
+
+#: src/browse/stats.ts
+msgid "{count, plural, one {# endorsement} other {# endorsements}}"
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "The game's name in its {source} address (thunderstore.io/c/…). Mortar gets {loader} and the game's mods from it. Choose the game's shipping program, in Binaries/Win64."
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Sort: top rated"
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Sort: most popular"
+msgstr ""
+
+#: src/i18n/formatWhen.ts
+msgid "a few seconds ago"
+msgstr ""
+
+#: src/groups/SavedGroupRow.tsx
+#: src/templates/TemplateDialogs.tsx
+msgid "Delete {name}"
+msgstr ""
+
+#: src/browse/BrowseDetails.tsx
+msgid "Choose a version…"
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+msgid "Download history"
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Include categories"
+msgstr ""
+
+#: src/game/HomeNotes.tsx
+msgid "Your notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods before playing together. Notes travel in a shared .mortar file, not in a share link."
+msgstr ""
+
+#: src/saves/SavesTab.tsx
+msgid "Play this profile and save a game. Each save shows here with how well it fits {name}, so you know which mods it needs."
+msgstr ""
+
+#: src/share/arrivals.ts
+msgid "{name} is not in {profile}"
+msgstr ""
+
+#: src/commandPalette/crashBisect.ts
+msgid "Start the game once so Mortar can see the crash."
+msgstr ""
+
+#: src/install/DownloadsDialog.tsx
+msgid "No archives match"
+msgstr ""
+
+#: src/loader/Banner.tsx
+msgid "Reinstall"
+msgstr ""
+
+#: src/share/ImportInput.tsx
+msgid "Reading…"
+msgstr ""
+
+#: src/install/handoff.ts
+msgid "{source} post {id}"
+msgstr ""
+
+#: src/queue/store.ts
+#: src/share/ImportFooter.tsx
+msgid "Open {source} settings"
+msgstr ""
+
+#: src/shell/checkForUpdates.ts
+msgid "Checking for updates…"
+msgstr ""
+
+#: src/toasts/report.ts
+msgid "The game is already running."
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "{app} crashed ({module}), not a mod's code."
+msgstr ""
+
+#: src/share/CollectionNotes.tsx
+msgid "Installers ask as usual; Premium accounts also get the curator's choices and configs."
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+#: src/saves/SaveBackupsButton.tsx
+#: src/shell/TitleBar.tsx
+msgid "Restore"
+msgstr ""
+
+#: src/launch/SmapiWarnDialog.tsx
+msgid "{launcher} will still start {loader}"
+msgstr ""
+
+#: src/loader/Banner.tsx
+msgid "Stop the game to change {name}."
+msgstr ""
+
+#: src/toasts/HistoryButton.tsx
+msgid "{count, plural, one {Notifications, # unread} other {Notifications, # unread}}"
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+msgid "Restore all"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Backed up {name}"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "This profile is too large for a link."
+msgstr ""
+
+#: src/tools/ToolEditorDialog.tsx
+msgid "Leave empty to use the game folder. Same placeholders as arguments."
+msgstr ""
+
+#: src/queue/actions.ts
+msgid "Open settings"
+msgstr ""
+
+#: src/share/ImportFooter.tsx
+msgid "Sign in to {source} to download these mods."
+msgstr ""
+
+#: src/queue/store.ts
+msgid "Could not reach {source}"
+msgstr ""
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Could not add the shortcut"
+msgstr ""
+
+#: src/share/ModpackDialog.tsx
+msgid "The version must look like 1.0.0."
+msgstr ""
+
+#: src/share/Included.tsx
+msgid "groups"
+msgstr ""
+
+#: src/shell/AppMenu.tsx
+msgid "Quit Mortar"
+msgstr ""
+
+#: src/shell/BugReportDialog.tsx
+msgid "Copies the report for you to paste into a new post in the bug-reports forum on Mortar's {app}, and saves the diagnostics zip to attach."
+msgstr ""
+
+#: src/shell/FlatpakGrant.tsx
+msgid "Grant {app} {launcher} access?"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Missing required dependencies ({count})"
+msgstr ""
+
+#: src/share/MethodPanes.tsx
+msgid "too long for one {app} message"
+msgstr ""
+
+#: src/browse/BrowseMenu.tsx
+msgid "Open page on {source}"
+msgstr ""
+
+#: src/i18n/counts.ts
+msgid "{count, plural, one {# update} other {# updates}}"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+#: src/games/AddGameDialog.tsx
+#: src/launch/LaunchLayer.tsx
+#: src/launch/SweepDialog.tsx
+#: src/saves/BackupsDialog.tsx
+#: src/share/ImportDialog.tsx
+#: src/share/PreviewDialog.tsx
+#: src/share/ShareDialog.tsx
+#: src/shell/TitleBar.tsx
+#: src/sync/SyncOffers.tsx
+#: src/templates/TemplateDialogs.tsx
+#: src/tools/ToolsManageDialog.tsx
+#: src/updates/WhatsNewDialog.tsx
+msgid "Close"
+msgstr ""
+
+#: src/share/DestinationPanel.tsx
+msgid "Link"
+msgstr ""
+
+#: src/groups/SavedGroupRow.tsx
+msgid "Show mods of {name}"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Update and play"
+msgstr ""
+
+#: src/game/FarmMenuItem.tsx
+msgid "Install by hand: {names}"
+msgstr ""
+
+#: src/shell/offlineText.ts
+msgid "{names} cannot be reached, so Mortar cannot check for mod updates"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+msgid "Already the newest file"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "incompatible with: {list}"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Needs a file from its {source} post"
+msgstr ""
+
+#: src/lan/SendPanel.tsx
+msgid "Send links only"
+msgstr ""
+
+#: src/groups/dialogs.tsx
+msgid "Add a saved group to {profile}"
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "Games you added"
+msgstr ""
+
+#: src/commandPalette/paletteLabels.ts
+msgid "Share"
+msgstr ""
+
+#: src/share/ImportPreview.tsx
+msgid "Leave out"
+msgstr ""
+
+#: src/game/Home.tsx
+#: src/saves/SavesTab.tsx
+msgid "No saves yet"
+msgstr ""
+
+#: src/share/ShareFooter.tsx
+msgid "Copy as a message"
+msgstr ""
+
+#: src/loader/store.ts
+msgid "{name} {version} is installed"
+msgstr ""
+
+#: src/saves/backups.ts
+msgid "Before a restore"
+msgstr ""
+
+#: src/launch/UpdateWarnDialog.tsx
+msgid "The game was updated"
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Could not load categories: {why}"
+msgstr ""
+
+#: src/launch/LaunchLayer.tsx
+msgid "Caused by {name}"
+msgstr ""
+
+#: src/saves/BackupsDialog.tsx
+#: src/saves/SaveBackupsButton.tsx
+msgid "Reading backups…"
+msgstr ""
+
+#: src/i18n/reasonText.ts
+msgid "Brought in for other mods, and none that is enabled needs it"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Enable them"
+msgstr ""
+
+#: src/browse/BrowsePage.tsx
+msgid "Search all mod sites"
+msgstr ""
+
+#: src/groups/SavedGroupsSection.tsx
+msgid "Saved group deleted"
+msgstr ""
+
+#: src/firstrun/ProfileStep.tsx
+msgid "{count, plural, one {# profile from another mod manager is} other {# profiles from other mod managers are}} on this computer."
+msgstr ""
+
+#: src/groups/SavedGroupsSection.tsx
+msgid "Save a group from the Mods tab to reuse it in other profiles."
+msgstr ""
+
+#: src/nxm/store.ts
+msgid "This is not a Mod Manager Download link from {source}."
+msgstr ""
+
+#: src/install/store.ts
+msgid "Could not add {name}"
+msgstr ""
+
+#: src/queue/QueueRows.tsx
+msgid "Paused at {done} of {total}"
+msgstr ""
+
+#: src/commandPalette/CommandPalette.tsx
+#: src/firstrunTour/TourPopover.tsx
+msgid "Command palette"
+msgstr ""
+
+#: src/queue/QueueSheet.tsx
+msgid "Downloads resume {when}."
+msgstr ""
+
+#: src/install/MissingDepsDialog.tsx
+msgid "Add them"
+msgstr ""
+
+#: src/install/ArchivePreview.tsx
+msgid "{size} in total"
+msgstr ""
+
+#: src/saves/SaveRow.tsx
+msgid "Forest farm"
+msgstr ""
+
+#: src/game/TabHeader.tsx
+msgid "{count, plural, one {# save} other {# saves}}"
+msgstr ""
+
+#: src/install/DownloadsDialog.tsx
+msgid "Choose an archive first."
+msgstr ""
+
+#: src/games/AddGameDialog.tsx
+msgid "Could not remove the game"
+msgstr ""
+
+#: src/share/DestinationGrid.tsx
+msgid "A link or .mortar file"
+msgstr ""
+
+#: src/games/storeName.ts
+msgid "Default folder"
+msgstr ""
+
+#: src/queue/QueueBody.tsx
+#: src/toasts/AvOverrideDialog.tsx
+msgid "Install anyway"
+msgstr ""
+
+#: src/launch/SaveWarnDialog.tsx
+msgid "Not in this profile"
+msgstr ""
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Switch profile"
+msgstr ""
+
+#: src/games/storeName.ts
+msgid "{name} via {launcher}"
+msgstr ""
+
+#: src/templates/TemplateDialogs.tsx
+msgid "Template deleted"
+msgstr ""
+
+#: src/shell/offlineText.ts
+msgid "{sources} cannot sort this way: pick it as the source to see its mods"
+msgstr ""
+
+#: src/tools/ToolsManageDialog.tsx
+msgid "This tool will be removed from Mortar."
+msgstr ""
+
+#: src/browse/BrowseFilters.tsx
+msgid "Sort: most stars"
+msgstr ""
+
+#: src/firstrun/LoaderStep.tsx
+msgid "On {os}, {launcher} starts the game without {loader} unless told to. With {launcher} closed, Mortar can set that up; or in {launcher}, right-click {game}, choose Properties and paste this line into Launch Options:"
+msgstr ""

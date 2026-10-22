@@ -283,3 +283,15 @@ func TestUpdateNeverWritesIntoSnapshots(t *testing.T) {
 		t.Fatal("a rejected update stayed in memory")
 	}
 }
+
+func TestLanguageAcceptsOnlyShippedLocales(t *testing.T) {
+	s, _ := open(t)
+	for _, language := range []string{"", "en", "es", "es-AR", "pt-BR"} {
+		if _, err := s.Update(func(v *Settings) { v.Language = language }); err != nil {
+			t.Errorf("language %q: %v", language, err)
+		}
+	}
+	if _, err := s.Update(func(v *Settings) { v.Language = "de" }); err == nil {
+		t.Error("language de accepted")
+	}
+}

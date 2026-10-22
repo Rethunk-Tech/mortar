@@ -7,7 +7,9 @@ package i18n
 import (
 	"embed"
 	"log"
+	"maps"
 	"path"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -42,6 +44,27 @@ var catalogs = sync.OnceValue(func() map[string]catalog {
 	return out
 })
 
+// Locales are the locales Mortar ships, one directory each under locales/ and English first. The language setting
+// accepts exactly these (and the empty string, which follows the system), and a test keeps them equal to the frontend's
+// availableLocales.
+var Locales = sync.OnceValue(func() []string {
+	dirs, err := files.ReadDir("locales")
+	if err != nil {
+		log.Printf("i18n: %v", err)
+		return []string{"en"}
+	}
+	out := []string{"en"}
+	for _, d := range dirs {
+		if d.Name() != "en" {
+			out = append(out, d.Name())
+		}
+	}
+	return out
+})
+
+// Valid reports whether language is a setting value: "" for the system language, or a shipped locale.
+func Valid(language string) bool { return language == "" || slices.Contains(Locales(), language) }
+
 var languageSource atomic.Pointer[func() string]
 
 // SetLanguageSource sets where the user's language setting is read from; it is read on every call, so a change takes
@@ -60,24 +83,49 @@ func Current() string {
 // T returns msgid in the current locale, with each {key} replaced by the value after it in kv. The msgid must be a
 // string literal: a test checks every one against locales/en/native.po.
 func T(msgid string, kv ...string) string {
-	return format(catalogs()[Current()][msgid], msgid, kv)
+	cats := catalogs()
+	return format(translation(cats, Current(), msgid), msgid, kv)
 }
 
-// resolve picks the setting when it names a catalog, else the closest catalog to the system language, else en. This
-// is the frontend's rule (src/i18n/index.ts).
+// translation is msgid in locale, else in its base language (es-AR falls back to es), else "" for the English msgid.
+func translation(cats map[string]catalog, locale, msgid string) string {
+	if t := cats[locale][msgid]; t != "" {
+		return t
+	}
+	if base, _, regional := strings.Cut(locale, "-"); regional {
+		return cats[base][msgid]
+	}
+	return ""
+}
+
+// resolve picks the setting when it names a catalog, else the closest catalog to the system language: the same code,
+// else the longest locale that is a prefix of it (es-MX takes es), else a locale of the same base language (pt-PT takes
+// pt-BR), else en. This is the frontend's rule (bestLocale in src/i18n/locales.ts).
 func resolve(cats map[string]catalog, setting, system string) string {
 	if _, ok := cats[setting]; ok {
 		return setting
 	}
 	system = strings.ToLower(system)
-	best := "en"
-	for locale := range cats {
-		l := strings.ToLower(locale)
-		if (system == l || strings.HasPrefix(system, l+"-")) && (best == "en" || len(locale) > len(best)) {
+	locales := slices.Sorted(maps.Keys(cats))
+	if i := slices.IndexFunc(locales, func(l string) bool { return strings.ToLower(l) == system }); i >= 0 {
+		return locales[i]
+	}
+	best := ""
+	for _, locale := range locales {
+		if strings.HasPrefix(system, strings.ToLower(locale)+"-") && len(locale) > len(best) {
 			best = locale
 		}
 	}
-	return best
+	if best != "" {
+		return best
+	}
+	base, _, _ := strings.Cut(system, "-")
+	for _, locale := range locales {
+		if b, _, _ := strings.Cut(strings.ToLower(locale), "-"); b == base {
+			return locale
+		}
+	}
+	return "en"
 }
 
 func format(translated, msgid string, kv []string) string {

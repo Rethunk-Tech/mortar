@@ -191,7 +191,7 @@ Weblate project settings:
 - Glossary: upload `frontend/src/locales/glossary.tbx` to the project glossary; it explains each recurring term once.
 - **Adding new translation:** contact maintainers. Weblate must not run msgmerge; `lingui extract` keeps every locale's catalogs in step with the source.
 
-Starting a language: add its code to `availableLocales` in `frontend/src/i18n/locales.ts`, run `bun run --cwd frontend i18n:extract`, and commit the new `frontend/src/locales/<locale>/` catalogs; Weblate picks them up. It reaches players with the next release.
+Starting a language: add its code to `availableLocales` in `frontend/src/i18n/locales.ts`, copy `en/native.po` to `internal/i18n/locales/<locale>/native.po` with empty msgstr and its `Language` and `Plural-Forms` header (a test keeps the two lists equal; the language setting and Go's lookup read the embedded one), run `bun run --cwd frontend i18n:extract` and commit the new catalogs; Weblate picks them up. A regional locale (`es-AR`) needs only the messages where its region differs: empty ones fall back to its base language (`es`), then English. It reaches players with the next release.
 
 ## Adding a game
 

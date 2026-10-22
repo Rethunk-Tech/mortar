@@ -10,6 +10,7 @@
     "frontend": {
       "entry": [
         "src/main.tsx",
+        "src/locales/*/messages.ts",
         "lingui.config.ts",
         "vite.config.ts",
         "e2e/mem-budget.ts",

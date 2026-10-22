@@ -14,6 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 )
 
 // FileName is the settings file in the data folder.
@@ -374,7 +375,7 @@ func (s *Store) normalize() {
 	if !validAccent(s.cur.Accent) {
 		s.cur.Accent = Defaults().Accent
 	}
-	if s.cur.Language != "" && s.cur.Language != "en" {
+	if !i18n.Valid(s.cur.Language) {
 		s.cur.Language = Defaults().Language
 	}
 	if !slices.Contains(backgrounds, s.cur.Background) {
@@ -442,7 +443,7 @@ func (s *Store) Update(fn func(*Settings)) (Settings, error) {
 	if !validAccent(next.Accent) {
 		return s.cur, fmt.Errorf("unknown accent %q", next.Accent)
 	}
-	if next.Language != "" && next.Language != "en" {
+	if !i18n.Valid(next.Language) {
 		return s.cur, fmt.Errorf("unknown language %q", next.Language)
 	}
 	if !slices.Contains(backgrounds, next.Background) {

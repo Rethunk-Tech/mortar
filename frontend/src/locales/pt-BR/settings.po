@@ -1,0 +1,3638 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-10-22 10:43-0700\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: pt-BR\n"
+
+#: src/settings/sections/Notifications.tsx
+msgid "{name}: desktop notification"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Gentle violet"
+msgstr ""
+
+#: src/settings/usePerProfileRelated.tsx
+msgid "Start muted"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Interface tour"
+msgstr ""
+
+#: src/settings/sections/Accounts.tsx
+msgid "{source} CLI login"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "Other"
+msgstr ""
+
+#: src/settings/sections/GameSync.tsx
+#: src/settings/sections/SyncFolder.tsx
+msgid "Choose…"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Auto-track installed mods"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Sidebar badge counts"
+msgstr ""
+
+#: src/settings/GameSettingsPage.tsx
+msgid "Streaming"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Mod updates show on each profile's mod list."
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "with {loader} {version}"
+msgstr ""
+
+#: src/settings/sections/DataImport.tsx
+msgid "Settings imported"
+msgstr ""
+
+#: src/settings/sections/DataMove.tsx
+msgid "Move data folder…"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Allow shows {source} pages what Mortar has. Off hides that; download links still arrive"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Connected from {browser}, last seen "
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Sand"
+msgstr ""
+
+#: src/settings/sections/Notifications.tsx
+msgid "{name}: in Mortar"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Duplicate the open profile"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Mortar leaves the taskbar and waits in the tray until the game exits."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Always"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "Clean up…"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Switch to Console"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Run checks…"
+msgstr ""
+
+#: src/settings/sections/HiddenMods.tsx
+msgid "Left out of Browse. Links and imports still install them."
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Untrack mods"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Density"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Mod store"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Older copies of the same mod"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "How many times to retry a failed download"
+msgstr ""
+
+#: src/settings/sections/LoaderRow.tsx
+msgid "{name} {latest} is available"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "In {app}: Sources, +, Browser, paste the URL. Width 400, height 80. Style with Custom CSS."
+msgstr ""
+
+#: src/settings/sections/WatchFolders.tsx
+msgid "Folder to watch"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Back up saves every time the game starts."
+msgstr ""
+
+#: src/settings/sections/NxmReclaim.tsx
+msgid "{name} now opens {source} \"Mod Manager Download\" links."
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Show token"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Allow through firewall"
+msgstr ""
+
+#: src/settings/SettingsNav.tsx
+msgid "Search settings"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Startup and window"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Repair"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "This computer"
+msgstr ""
+
+#: src/settings/sections/NxmReclaim.tsx
+msgid "{name} now opens {source} \"1-click install\" links."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Light"
+msgstr ""
+
+#: src/settings/sections/Notifications.tsx
+msgid "When"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "How timestamps are shown"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "List"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Installed: Mortar {version}"
+msgstr ""
+
+#: src/settings/sections/ItchAccount.tsx
+msgid "Your API key is kept in your system keyring."
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Mod loader updates"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Use the system title bar"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Check mods and Mortar for updates"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Opening a {scheme}:// link, such as Install with Mod Manager, installs the mod in Mortar."
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "and open it in {app}. If that release has none, unzip the download, open about:debugging, choose This {app}, then Load Temporary Add-on and pick manifest.json; {app} removes it when it restarts."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Start the game without a backup."
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Free"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
+msgstr ""
+
+#: src/settings/NexusMeter.tsx
+msgid "{remaining} of {limit} this hour"
+msgstr ""
+
+#: src/settings/sections/Shortcuts.tsx
+msgid "Tabs"
+msgstr ""
+
+#: src/settings/sections/About.tsx
+msgid "build {commit}"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "Clear cache…"
+msgstr ""
+
+#: src/settings/sections/DismissedFolders.tsx
+msgid "Not offered for moving into a profile."
+msgstr ""
+
+#: src/settings/sections/Notifications.tsx
+msgid "Mod updates are found"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Find a mod in all profiles"
+msgstr ""
+
+#: src/settings/sections/SourceOrder.tsx
+msgid "Move down"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Tell me when a new mod loader version is out"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Switch to Problems"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Year"
+msgstr ""
+
+#: src/settings/sections/DataMove.tsx
+msgid "{count, plural, one {{files}/# file} other {{files}/# files}}"
+msgstr ""
+
+#: src/settings/prefCopyAntivirus.ts
+msgid "Used with Custom command. {path} stands for the folder to scan; exit code 0 means clean, any other code a detection, and the first line it prints names it."
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Follows your desktop"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Recheck"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Shorter animations. Honour the OS unless you override it."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+#: src/settings/sections/Downloads.tsx
+msgid "Last opened profile"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Untrack every {game} mod on {source}"
+msgstr ""
+
+#: src/settings/prefCopyAntivirus.ts
+msgid "Scan command"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "How thoroughly Mortar analyses overlapping files"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Select all mods"
+msgstr ""
+
+#: src/settings/sections/DataStoreCheck.tsx
+msgid "{count, plural, one {# mod checked} other {# mods checked}}"
+msgstr ""
+
+#: src/settings/sections/NxmReclaim.tsx
+msgid "Take them back for Mortar?"
+msgstr ""
+
+#: src/settings/sections/Accounts.tsx
+msgid "In use"
+msgstr ""
+
+#: src/settings/sections/DataMods.tsx
+msgid "Clears cached {source} and {loader} details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower."
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Fishing skill"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Enable scheduled save backups first."
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Save diagnostics…"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Small"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Notify when updates are found"
+msgstr ""
+
+#: src/settings/store.ts
+msgid "Your settings could not be read"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "At most once a day"
+msgstr ""
+
+#: src/settings/sections/DataStoreCheck.tsx
+msgid "{checked}; {bad}. Repair them from each profile's Problems tab."
+msgstr ""
+
+#: src/settings/prefCopyAntivirus.ts
+msgid "No scanning. The mod sites' own scans still apply."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Off, a share names only the mods you chose, and the receiver gets what they need. Default for Share and Export."
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "the connection failed"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Solid"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Font"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Mortar's colours. Follow system matches your computer."
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "{os} Firewall blocks incoming sends to Mortar"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Newest lines kept in the Console"
+msgstr ""
+
+#: src/settings/sections/Shortcuts.tsx
+msgid "Reset all"
+msgstr ""
+
+#: src/settings/sections/DataMods.tsx
+msgid "Clear cache?"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Review"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+msgid "Could not trim save backups"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Sign in"
+msgstr ""
+
+#: src/settings/sections/NxmReclaim.tsx
+msgid "{name} now opens {source} \"Install with Mod Manager\" links."
+msgstr ""
+
+#: src/settings/sections/DataHistory.tsx
+msgid "Trimmed {profile}'s history, freed {size}"
+msgstr ""
+
+#: src/settings/SettingsShell.tsx
+msgid "Search results"
+msgstr ""
+
+#: src/settings/sections/DataStoreCheck.tsx
+msgid "{checked}. All files are intact."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+#: src/settings/sections/Appearance.tsx
+msgid "Default sort"
+msgstr ""
+
+#: src/settings/sections/DataStoreCheck.tsx
+msgid "Compares every stored mod's files with what was saved when it was added. Mortar also runs it slowly in the background, about weekly."
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+#: src/settings/sections/Storage.tsx
+#: src/settings/sections/Updates.tsx
+msgid "Retry"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "What Mortar does while the game runs."
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Copper"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "Mortar's data"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Share disabled mods"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+#: src/settings/sections/DataHistory.tsx
+msgid "Trim…"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+msgid "Trim"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Not connected yet"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Copied"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Name"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Dependency versions"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Could not recheck {source}"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "Usage"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Start screen"
+msgstr ""
+
+#: src/settings/sections/NexusSSO.tsx
+msgid "Could not sign in with {source}"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game}: not installed"
+msgstr ""
+
+#: src/settings/prefCopyAntivirus.ts
+msgid "Scan every mod after it is extracted and before it enters Mortar's store. This applies to every game."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Launch Mortar at login"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Switch to Browse"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Mortar is up to date"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Remember window size and position"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Console timestamps"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Skip the game's boot animations on Play. Choices the game asks at start-up stay yours."
+msgstr ""
+
+#: src/settings/sections/LoaderRow.tsx
+msgid "A game update replaced {name}'s launcher"
+msgstr ""
+
+#: src/settings/loaderToast.ts
+msgid "Your profiles have {version}. Update replaces each profile's copy."
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "{count} selected"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Enable them in this profile's own copy of the file before each launch. Your own file is never changed."
+msgstr ""
+
+#: src/settings/sections/Storage.tsx
+msgid "Could not measure disk use"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Show the first-run tips again"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+#: src/settings/sections/Updates.tsx
+msgid "Show"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Leave the caches alone."
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Scales text, controls and spacing together"
+msgstr ""
+
+#: src/settings/sections/Accounts.tsx
+msgid "Not signed in"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+#: src/settings/sections/Launchers.tsx
+msgid "Game folder"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Boss names"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "Data folder has free space"
+msgstr ""
+
+#: src/settings/NexusMeter.tsx
+msgid "{remaining} of {limit} requests left today"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "List mods inside a folder whose name starts with a dot, which {loader} skips"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Shared by all downloads, and applied to running ones. 0 is unlimited."
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Writes a zip with logs and settings, personal paths removed, to attach to a bug report."
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Downloading"
+msgstr ""
+
+#: src/settings/sections/ScheduledStatus.tsx
+msgid "No scheduled backup has run yet."
+msgstr ""
+
+#: src/settings/prefCopyAntivirus.ts
+msgid "Run your own scanner with the command below."
+msgstr ""
+
+#: src/settings/sections/DataMove.tsx
+msgid "Could not prepare the data folder move"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Compact"
+msgstr ""
+
+#: src/settings/sections/GameSync.tsx
+msgid "No folder chosen"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Pre-releases and unofficial {loader} updates. Show lists them; Include lets Update all install them."
+msgstr ""
+
+#: src/settings/sections/About.tsx
+msgid "Open-source licences"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Scan the mods folder for changes Mortar did not make"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Check Mortar"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{count} settings temporary or copy file is present"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "{source}"
+msgstr ""
+
+#: src/settings/sections/DataImport.tsx
+#: src/settings/SettingsPage.tsx
+msgid "Appearance"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Outline mods added from a file or folder, which no site updates, in cards and the list"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+#: src/settings/usePerProfileRelated.tsx
+msgid "Zoom"
+msgstr ""
+
+#: src/settings/SettingsPage.tsx
+msgid "Mods and profiles"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Mortar {version} is available."
+msgstr ""
+
+#: src/settings/sections/ItchAccount.tsx
+#: src/settings/sections/Sources.tsx
+msgid "Account"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Offer to add new mod archives that land in your Downloads folder or Mortar's download folder"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Empty follows the latest release"
+msgstr ""
+
+#: src/settings/sections/Shortcuts.tsx
+msgid "Every key returns to its default."
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Medium"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Mods no profile uses"
+msgstr ""
+
+#: src/settings/sections/DismissedFolders.tsx
+msgid "Dismissed folders"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+msgid "{game} save backups: {size}"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Live log starts at this level and above"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Downloading and verifying Mortar {version}…"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Load a save to see values"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Nearby computers cannot reach Mortar. Set the network to Private in {os} network settings."
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Not signed in. Add your API key in Accounts."
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "Measuring… {size}"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Get help"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Instances"
+msgstr ""
+
+#: src/settings/sections/nxmHandler.tsx
+msgid "Should Mortar open {source} \"Mod Manager Download\" links, so a click on {source} starts the download here?"
+msgstr ""
+
+#: src/settings/usePerProfileRelated.tsx
+msgid "Sound volume"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+#: src/settings/prefCopyAntivirus.ts
+#: src/settings/prefCopyGame.ts
+#: src/settings/sections/SyncFolder.tsx
+msgid "Off"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Default grouping"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Toggle downloads"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Data folder"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Switch to Mods"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "The local port {app} reads the overlay from"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Open the next profile"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Enable or disable the focused mod"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+#: src/settings/sections/Notifications.tsx
+msgid "Desktop"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+#: src/settings/sections/ExtraModsFolders.tsx
+msgid "Extra mods folders"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Copy token"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Comfortable"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Scale"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Sky"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "Shared by every game"
+msgstr ""
+
+#: src/settings/nexus.ts
+msgid "{source} API requests are running low"
+msgstr ""
+
+#: src/settings/SettingsPage.tsx
+msgid "Accounts"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Download and stage a found update without asking"
+msgstr ""
+
+#: src/settings/sections/DataImport.tsx
+#: src/settings/sections/DataUsage.tsx
+#: src/settings/SettingsPage.tsx
+msgid "Storage"
+msgstr ""
+
+#: src/settings/sections/About.tsx
+msgid "Licence"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Unreachable"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Update mods before Play on new profiles"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "a newer copy is kept"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Manual"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Install reason"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "History events kept"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Exact"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Downloaded mods no profile uses"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Help"
+msgstr ""
+
+#: src/settings/sections/Shortcuts.tsx
+msgid "Use it anyway; {name} becomes unbound"
+msgstr ""
+
+#: src/settings/prefCopyAntivirus.ts
+msgid "Ask a {app} daemon at the socket path below."
+msgstr ""
+
+#: src/settings/usePerProfileRelated.tsx
+msgid "Music volume"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Grid or list for new sessions"
+msgstr ""
+
+#: src/settings/sections/DataStoreCheck.tsx
+msgid "Check store files"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Found in {path}"
+msgstr ""
+
+#: src/settings/startupChecks.ts
+msgid "Report a bug"
+msgstr ""
+
+#: src/settings/sections/DataMods.tsx
+msgid "{size} in {path}"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Info"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Open notification history"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "The browser extension is too old for this Mortar"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Grid card size"
+msgstr ""
+
+#: src/settings/GameSettingsPage.tsx
+msgid "Console"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Device name"
+msgstr ""
+
+#: src/settings/sections/DataMoveRun.ts
+msgid "Data folder moved"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Keep downloaded archives"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Delay seconds"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Collapsed"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "How mods Mortar brought in for other mods appear in the mod list"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Size"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Go back"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Unfinished downloads and temporary files"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Delete"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Not checked yet."
+msgstr ""
+
+#: src/settings/sections/SyncFolder.tsx
+msgid "Disable"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Card details in Browse"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Could not copy"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "Browser extension cannot reach Mortar in {app} (manifest missing)"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Ask me to endorse mods I keep using"
+msgstr ""
+
+#: src/settings/SettingsPage.tsx
+msgid "Shortcuts"
+msgstr ""
+
+#: src/settings/sections/nxmHandler.tsx
+msgid "Take {source} links from {owner}?"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Grid"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Copy CSS"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "Browser extension cannot reach Mortar in {app} (manifest unreadable)"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+msgid "{game} save backups"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "System"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+#: src/settings/prefCopyModsView.ts
+msgid "Hidden"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Review mod updates"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Download the extension"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Reset game install?"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Play the open profile"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Days a deleted profile stays restorable"
+msgstr ""
+
+#: src/settings/sections/DataHistory.tsx
+msgid "Could not trim history"
+msgstr ""
+
+#: src/settings/sections/NexusSSO.tsx
+#: src/settings/sections/nxmHandler.tsx
+msgid "Cancel"
+msgstr ""
+
+#: src/settings/prefCopyAntivirus.ts
+msgid "Custom command"
+msgstr ""
+
+#: src/settings/sections/DataMods.tsx
+msgid "Cache cleared"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Parallel downloads"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "The stats each Browse card shows under its summary; choose them from Browse's Show menu"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Choose image…"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "By game"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "This game's folder"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+#: src/settings/prefCopyAntivirus.ts
+#: src/settings/sections/Downloads.tsx
+msgid "Automatic"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "settings.json is corrupt"
+msgstr ""
+
+#: src/settings/ProtonRow.tsx
+msgid "The newest {launcher} has"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Biome"
+msgstr ""
+
+#: src/settings/GameSettingsPage.tsx
+msgid "Back to {name}"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Newest"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Share libraries and supporting mods"
+msgstr ""
+
+#: src/settings/SettingsPage.tsx
+msgid "Search {game} settings"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Which version of a {source} mod's dependency to install when the mod names one"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Download speed limit (MB/s)"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "Store index.json is readable"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Delete the game folder, then reinstall {game} from your launcher."
+msgstr ""
+
+#: src/settings/sections/About.tsx
+#: src/settings/sections/Updates.tsx
+msgid "Mortar"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Focus the next mod"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+#: src/settings/sections/ExtraModsFolders.tsx
+msgid "Folders of unpacked mods to add from the Add menu"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Offer new downloads"
+msgstr ""
+
+#: src/settings/sections/ExtraModsFolders.tsx
+msgid "Extra mods folder"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Links for games Mortar does not manage open in the app that had them before."
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Get the extension"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "None"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "This is a development build of Mortar {version}, so it does not check for updates."
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+#: src/settings/sections/Downloads.tsx
+msgid "Browser extension"
+msgstr ""
+
+#: src/settings/loaderToast.ts
+#: src/settings/sections/LoaderRow.tsx
+msgid "Update"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Send other games' links to {name}"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "{count, plural, one {# file} other {# files}}"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Accept connections from any network address"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Edit"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+#: src/settings/ProtonRow.tsx
+#: src/settings/sections/LoaderRow.tsx
+msgid "{name} version"
+msgstr ""
+
+#: src/settings/GraphicsApiRow.tsx
+#: src/settings/PrefControls.tsx
+#: src/settings/PrefRow.tsx
+#: src/settings/ProtonRow.tsx
+#: src/settings/sections/Appearance.tsx
+#: src/settings/sections/Downloads.tsx
+#: src/settings/sections/ExtraModsFolders.tsx
+#: src/settings/sections/GameSettings.tsx
+#: src/settings/sections/GameSync.tsx
+#: src/settings/sections/General.tsx
+#: src/settings/sections/HiddenMods.tsx
+#: src/settings/sections/LoaderRow.tsx
+#: src/settings/sections/ModsProfiles.tsx
+#: src/settings/sections/Notifications.tsx
+#: src/settings/sections/SourceOrder.tsx
+#: src/settings/sections/StreamOverlay.tsx
+#: src/settings/sections/SyncFolder.tsx
+#: src/settings/sections/Updates.tsx
+#: src/settings/sections/WatchFolders.tsx
+msgid "Could not save that setting"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+msgid "No backups to delete"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "A portable copy keeps its data beside the program."
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Save these settings to a file, or load them on another computer."
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Include beta releases"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+#: src/settings/sections/Sources.tsx
+msgid "Connection"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+#: src/settings/prefCopyGame.ts
+msgid "Ask"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Per profile"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "All checks passed"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "API key not set. Itch.io search is off until you add one."
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Export…"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Seconds to wait between those processes"
+msgstr ""
+
+#: src/settings/sections/Shortcuts.tsx
+msgid "Reset {name}"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "This network is set to Public in {os}"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "The banner at the top of a profile"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Sign out"
+msgstr ""
+
+#: src/settings/sections/DataStoreCheck.tsx
+msgid "Could not check the store files"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+#: src/settings/sections/Appearance.tsx
+msgid "Theme"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "When Mortar makes a save backup before launching"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Settings backups"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Untrack all…"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "No account needed"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Pause downloads while the game runs"
+msgstr ""
+
+#: src/settings/SettingsShell.tsx
+msgid "Try another word, or clear the search."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Automatic tries {source}'s hosts in turn when one fails or stalls; choosing one uses only that host."
+msgstr ""
+
+#: src/settings/sections/About.tsx
+msgid "Open log folder"
+msgstr ""
+
+#: src/settings/SettingsPage.tsx
+msgid "Downloads"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Delete them; rolling back still restores the old version."
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Could not read this Mortar build's version: {failed}"
+msgstr ""
+
+#: src/settings/usePerProfileRelated.tsx
+msgid "Resolution"
+msgstr ""
+
+#: src/settings/sections/Notifications.tsx
+msgid "Mod updates"
+msgstr ""
+
+#: src/settings/nexus.ts
+msgid "{remaining} of {limit} left this hour; the count resets {when}."
+msgstr ""
+
+#: src/settings/prefCopyAntivirus.ts
+msgid "clamd socket path"
+msgstr ""
+
+#: src/settings/sections/DataStoreCheck.tsx
+msgid "{name}: {missing} missing, {changed} changed, {extra} extra"
+msgstr ""
+
+#: src/settings/sections/LoaderRow.tsx
+msgid "Stop the game to install {name}."
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Background preview"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Restarting…"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+#: src/settings/prefCopyGame.ts
+msgid "Warn"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "Browser extension cannot reach Mortar in {app} (manifest points elsewhere)"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{launcher} library {path} is not reachable: unmounted, or outside the folders Mortar's {app} may read"
+msgstr ""
+
+#: src/settings/GameSettingsPage.tsx
+msgid "{name} profile history"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Values"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Direct"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "LAN port"
+msgstr ""
+
+#: src/settings/sections/DataMove.tsx
+msgid "Stop the game before moving the data folder."
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Earthy green"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Show hidden mods"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Full"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "Cache"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Browse hides mods their site marks as adult unless this is on. Installed mods are never hidden."
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "It marks {source} pages with what your profile already has and sends Mod Manager Download links to Mortar."
+msgstr ""
+
+#: src/settings/sections/LoaderRow.tsx
+msgid "{name} {version}"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "How this Mortar appears to nearby installations"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Show {loader}'s own window on a direct launch"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Cosmetic overlaps on the Problems tab"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Signed out of {source}"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Lavender"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Start minimised to tray"
+msgstr ""
+
+#: src/settings/GraphicsApiRow.tsx
+msgid "{name} (Recommended)"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Show live game info in {app}. Changes apply the next time you press Play."
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "Gamescope session: {launcher} starts {app} games here, so a direct launch from Mortar may not show a window"
+msgstr ""
+
+#: src/settings/updates.ts
+msgid "Could not check for updates"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Rose"
+msgstr ""
+
+#: src/settings/sections/NxmReclaim.tsx
+msgid "{names} took over mod links"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Skip the installer wizard when saved choices still fit"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "This image is {size}, which costs memory and GPU while Mortar is open. The same picture or animation saved as WebP is often a tenth of the size."
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game} in {path}"
+msgstr ""
+
+#: src/settings/sections/About.tsx
+msgid "Libraries, icons and artwork built into Mortar, with their licences."
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "{count, plural, one {# {game} mod tracked on {source}} other {# {game} mods tracked on {source}}}"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "Portable copy: data is kept in {portableDir}"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Crew"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "{size} saved by sharing files"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "What is new in {version}"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "{source} mod {id}"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Background"
+msgstr ""
+
+#: src/settings/NexusMeter.tsx
+#: src/settings/sections/Sources.tsx
+msgid "Request counts appear after Mortar talks to {source}."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "{source} download host"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+#: src/settings/sections/Downloads.tsx
+msgid "Download folder"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "{remaining} of {limit} requests left"
+msgstr ""
+
+#: src/settings/startupChecks.ts
+msgid "Mortar closed unexpectedly last time"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "{app}, {otherApp} or another {thirdApp} browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder."
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Stream overlay"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Remove the focused mod"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Logs of past runs stored per profile"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Backup location"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Day"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Allow"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "{game} was not found. Browse to its folder."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Scheduled save backups"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Show again"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Farming skill"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{app}: Desktop Mode launches games from Mortar"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Cached {source} mod details"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "download the signed add-on"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Conflict scan depth"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "No release is published yet."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "When you enable a mod, also enable its required mods already in the profile"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "What happens to files the new version of a mod leaves out"
+msgstr ""
+
+#: src/settings/SettingsShell.tsx
+msgid "No settings match"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Open the command palette"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Image"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Trace"
+msgstr ""
+
+#: src/settings/sections/ItchAccount.tsx
+#: src/settings/sections/NexusMods.tsx
+msgid "{source} rejected your API key"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "{count, plural, one {Untracked # mod} other {Untracked # mods}}"
+msgstr ""
+
+#: src/settings/sections/WatchFolders.tsx
+msgid "What to do with {path}"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Absolute"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+msgid "Enter 1 or more"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Endorsements"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "Mortar {version} (this command {otherVersion})"
+msgstr ""
+
+#: src/settings/prefCopyAntivirus.ts
+msgid "{os}' antivirus through AMSI; clamd on {otherOs} when it is running."
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Reset install"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Honour OS"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Relative"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Rename the open profile"
+msgstr ""
+
+#: src/settings/sections/Notifications.tsx
+msgid "In Mortar"
+msgstr ""
+
+#: src/settings/GameSettingsPage.tsx
+msgid "{name} settings"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "When you press Play"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Console level"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "All values"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Port"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Skip image overlap analysis"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Token regenerated"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Read from the game's install."
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Start the game to see values"
+msgstr ""
+
+#: src/settings/sections/DataImport.tsx
+#: src/settings/SettingsPage.tsx
+msgid "Notifications"
+msgstr ""
+
+#: src/settings/sections/DataStoreCheck.tsx
+msgid "{checked}. {count, plural, one {# could not be read.} other {# could not be read.}}"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Stamina"
+msgstr ""
+
+#: src/settings/sections/DataMove.tsx
+msgid "There is not enough free space at the destination."
+msgstr ""
+
+#: src/settings/store.ts
+msgid "Mortar started with default settings. The damaged file was kept at {path}."
+msgstr ""
+
+#: src/settings/SettingsPage.tsx
+msgid "Back"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Install the newest version; the mod's version is a minimum."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Modified outside Mortar"
+msgstr ""
+
+#: src/settings/sections/DataImport.tsx
+msgid "Nothing would change."
+msgstr ""
+
+#: src/settings/sections/DataMove.tsx
+msgid "Move…"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Harmless conflicts"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "Open recently deleted"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Moon"
+msgstr ""
+
+#: src/settings/sections/ItchAccount.tsx
+msgid "API key"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Share FOMOD choices"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Delete the caches once after the mod set changes; the game rebuilds them."
+msgstr ""
+
+#: src/settings/sections/NexusSSO.tsx
+msgid "Sign in to {source}"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Chosen by you"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Days left"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "{name} ({game})"
+msgstr ""
+
+#: src/settings/sections/Accounts.tsx
+msgid "Mortar sends {source} requests without a login. Run gh auth login to raise the rate limit."
+msgstr ""
+
+#: src/settings/usePerProfileRelated.tsx
+msgid "Edit {name}"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Kept in your system keyring. Find it on {source} under Settings, API Keys."
+msgstr ""
+
+#: src/settings/NexusMeter.tsx
+msgid "Daily count resets {when}"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game}: {app} {launcher} cannot see the library that holds its {otherApp} prefix"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "App font"
+msgstr ""
+
+#: src/settings/sections/DataMods.tsx
+msgid "Clear cache"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "{owner} opens these links now."
+msgstr ""
+
+#: src/settings/sections/NxmReclaim.tsx
+msgid "{name} now opens {source} \"Install\" links."
+msgstr ""
+
+#: src/settings/sections/WatchFolders.tsx
+msgid "Offer installs: new archives in the folder are offered for install. Auto-install: the folder is installed into the open profile as one mod and replaced each time its files change, for a mod's build output. Subfolders are not watched."
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Clicking these links on {source} starts the download in Mortar."
+msgstr ""
+
+#: src/settings/GameSettingsPage.tsx
+#: src/settings/sections/Updates.tsx
+msgid "Mods"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Auto-retry failed downloads"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Stopped at the API limit; {remaining} left"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "color"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Could not load what can be cleaned up"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Compatibility tool"
+msgstr ""
+
+#: src/settings/sections/NexusSSO.tsx
+msgid "Connecting…"
+msgstr ""
+
+#: src/settings/sections/WatchFolders.tsx
+msgid "Auto-install"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Console log cap"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Pick up where you left off."
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Do not sync this game's profiles."
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Other cached data"
+msgstr ""
+
+#: src/settings/usePerProfileRelated.tsx
+msgid "UI scale"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Auto-accept from paired computers"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Default for a profile you just created"
+msgstr ""
+
+#: src/settings/sections/ItchAccount.tsx
+msgid "Kept in your system keyring. Create one on {source} under Settings, API keys."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Download them"
+msgstr ""
+
+#: src/settings/sections/LoaderRow.tsx
+msgid "Installed and up to date"
+msgstr ""
+
+#: src/settings/sections/Shortcuts.tsx
+msgid "Already used by {name}"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Regenerate token"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Nested"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Large"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Category"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Clear game caches"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Warm and bold"
+msgstr ""
+
+#: src/settings/sections/DataImport.tsx
+msgid "{count, plural, one {Import # change} other {Import # changes}}"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Badge checks for other profiles"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "Browser extension can reach Mortar in {app}"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Export or share the open profile"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "{count, plural, one {Untrack all # tracked {game} mod} other {Untrack all # tracked {game} mods}} on {source}? {source} has no undo for this."
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Untrack on {source}"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+msgid "Backups to keep per save"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Update ready: applies when you close Mortar."
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Default mods view"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Reachable"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Colour"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "What Mortar does about game settings that mods need enabled in the game's options file"
+msgstr ""
+
+#: src/settings/sections/SyncFolder.tsx
+msgid "Sync folder"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "No account"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Not found"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+#: src/settings/sections/GameSettings.tsx
+msgid "Use default"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Open game settings"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Handle {name} links"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Check for mod updates when Mortar starts"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "{name}, ascending"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Game select"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Days to keep downloaded mods that no profile uses. 0 keeps them forever."
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Run again"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Remove {loader} from {launcher}'s launch options"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "resets {when}"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Group"
+msgstr ""
+
+#: src/settings/sections/About.tsx
+msgid "Version {version}"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Credits"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Skip the intro"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Run logs kept"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Time"
+msgstr ""
+
+#: src/settings/sections/DataImport.tsx
+msgid "{name}: {from} to {to}"
+msgstr ""
+
+#: src/settings/sections/Shortcuts.tsx
+msgid "Mod list"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "{source} download links"
+msgstr ""
+
+#: src/settings/sections/Notifications.tsx
+msgid "A download fails"
+msgstr ""
+
+#: src/settings/sections/ExtraModsFolders.tsx
+#: src/settings/sections/WatchFolders.tsx
+msgid "Add folder…"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Download and install"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Check interval"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Default launch"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "Profiles are readable"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "Recently deleted"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Game"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Minutes between background update checks"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Could not run diagnostics"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Bosses defeated"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Game settings file"
+msgstr ""
+
+#: src/settings/sections/NexusSSO.tsx
+msgid "Approve Mortar in your browser…"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Spacing of buttons and lists"
+msgstr ""
+
+#: src/settings/SettingsPage.tsx
+msgid "Source health"
+msgstr ""
+
+#: src/settings/updates.ts
+msgid "Check your connection and try again."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "How many backups to keep of each kind: before Play, before a mod update, before a restore. Pinned backups are never deleted."
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Weather"
+msgstr ""
+
+#: src/settings/usePerProfileRelated.tsx
+msgid "{name} is set per profile"
+msgstr ""
+
+#: src/settings/sections/DataMove.tsx
+msgid "Free space at destination: {size}"
+msgstr ""
+
+#: src/settings/sections/ScheduledStatus.tsx
+msgid "next in {next} h"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "settings.json is unreadable or missing"
+msgstr ""
+
+#: src/settings/sections/DataMove.tsx
+msgid "Data to copy: {size}"
+msgstr ""
+
+#: src/settings/sections/HiddenMods.tsx
+msgid "Everything by {a}"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "API key set for {key}"
+msgstr ""
+
+#: src/settings/sections/LoaderRow.tsx
+msgid "{name} is not installed"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "{launcher} build"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Restart now"
+msgstr ""
+
+#: src/settings/sections/Shortcuts.tsx
+msgid "Not set"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Premium downloads come from this {source} server when it offers the file."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Mortar minimises while you play and comes back when the game exits."
+msgstr ""
+
+#: src/settings/sections/DataHistory.tsx
+msgid "No changes to trim"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Date"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "The browser extension is too new for this Mortar"
+msgstr ""
+
+#: src/settings/sections/DismissedFolders.tsx
+msgid "Could not offer the folder again"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Problems and updates"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "Store"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Download"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Create a new profile"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Switch to Load order"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Nothing to clean up."
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "control.json is current"
+msgstr ""
+
+#: src/settings/sections/NxmReclaim.tsx
+msgid "Take back"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "How often background checks report new mod updates. The In Mortar and desktop switches choose where."
+msgstr ""
+
+#: src/settings/sections/Storage.tsx
+msgid "Retention"
+msgstr ""
+
+#: src/settings/sections/ScheduledStatus.tsx
+msgid "next one is due"
+msgstr ""
+
+#: src/settings/sections/LoaderRow.tsx
+msgid "Install {name} {version}?"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Hide token"
+msgstr ""
+
+#: src/settings/nexus.ts
+msgid "{remaining} of {limit} left today; the count resets {when}."
+msgstr ""
+
+#: src/settings/sections/Launchers.tsx
+#: src/settings/SettingsPage.tsx
+msgid "Launchers"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Implicit mods"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Let the operating system choose a free port"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "Damaged profile.json: {path}"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Reduce motion"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Untrack the {game} mods none of your profiles use, out of {trackedCount} tracked? {source} has no undo for this."
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Show the author line on grid cards"
+msgstr ""
+
+#: src/settings/sections/ItchAccount.tsx
+msgid "Test"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+msgid "Keep the newest backups of each save and delete the rest. Pinned backups are never deleted."
+msgstr ""
+
+#: src/settings/sections/LoaderRow.tsx
+msgid "An install is already running."
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Money"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Regenerate token?"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Could not untrack mods"
+msgstr ""
+
+#: src/settings/sections/ScheduledStatus.tsx
+msgid "Last scheduled backup {when}"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "What Mortar shows when it opens."
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "control.json is stale"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game}: {app} {launcher} can reach the {otherApp} prefix"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Open the import dialog"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Empty uses the default."
+msgstr ""
+
+#: src/settings/sections/Shortcuts.tsx
+msgid "Press a key"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Could not update {launcher}'s launch options"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+#: src/settings/sections/Shortcuts.tsx
+msgid "Reset"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "No settings temporary or copy files"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "its address could not be looked up"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Play the game without mods"
+msgstr ""
+
+#: src/settings/sections/NexusSSO.tsx
+msgid "Signed in to {source}"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Reset…"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "A game's mod loader version and its update notice are in that game's settings."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Debug"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "On a wide window, each config setting's control sits mid-row, nearer its name"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Default"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Moss"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Combat skill"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Tips will show again"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Untrack every mod you track on {source}"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Grant access"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Install Mortar updates automatically"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Share notes"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "Data folder has no free space"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Freed {size}"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Free accounts click Download on {source} for each file; Mortar opens each page in turn."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Check updates and problems in the background for profiles you are not looking at"
+msgstr ""
+
+#: src/settings/sections/nxmHandler.tsx
+msgid "Not now"
+msgstr ""
+
+#: src/settings/GraphicsApiRow.tsx
+msgid "Graphics API"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Whether Mortar deletes the game's rebuildable cache files on the first launch after this profile's mods change"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Skills"
+msgstr ""
+
+#: src/settings/sections/ModsProfiles.tsx
+msgid "Enable mods when installed"
+msgstr ""
+
+#: src/settings/sections/DataImport.tsx
+msgid "Downloads and updates"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Mortar stays on screen beside the game."
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Where this game's profiles are shared between your computers"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "The port Mortar uses for local sharing"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "No answer {when}: {reason}"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Default for Share and Export. You can change it per share."
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Switch to Performance"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{count} settings temporary or copy files are present"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Report copied"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Problems only"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Restore the last window bounds on startup"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+msgid "Trim save backups"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Expanded"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Dark"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "Open folder"
+msgstr ""
+
+#: src/settings/sections/SyncFolder.tsx
+msgid "Profile settings, mod lists and configs sync through this folder (with {app}, {otherApp} or a NAS); each computer downloads the mod files itself. Each game has its own subfolder, or its own folder or no sync, set in the game's settings."
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Requests"
+msgstr ""
+
+#: src/settings/sections/Shortcuts.tsx
+msgid "Reset every shortcut?"
+msgstr ""
+
+#: src/settings/usePerProfileRelated.tsx
+msgid "Window mode"
+msgstr ""
+
+#: src/settings/sections/DataStoreCheck.tsx
+msgid "{done} of {total}"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Allow Mortar through the firewall so nearby users can send profiles."
+msgstr ""
+
+#: src/settings/sections/nxmHandler.tsx
+msgid "Handle {source} download links?"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Keep"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+#: src/settings/sections/General.tsx
+msgid "Settings file"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Signed in"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "Store index.json is unreadable or corrupt"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Copy report"
+msgstr ""
+
+#: src/settings/sections/nxmHandler.tsx
+msgid "Mortar downloads and installs a mod when you click Mod Manager Download on {source}."
+msgstr ""
+
+#: src/settings/NexusMeter.tsx
+msgid "Hourly count resets {when}"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game}: {name} is overridden to native in the {app} prefix"
+msgstr ""
+
+#: src/settings/sections/DataHistory.tsx
+msgid "Changes to keep"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Always shown"
+msgstr ""
+
+#: src/settings/sections/Shortcuts.tsx
+msgid "Change shortcut for {name}, currently {shown}"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "{loader} console window"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Slate"
+msgstr ""
+
+#: src/settings/SettingsPage.tsx
+msgid "Updates"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "What the sidebar shows on profile badges"
+msgstr ""
+
+#: src/settings/sections/DataImport.tsx
+#: src/settings/sections/General.tsx
+msgid "Sharing"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Follow system"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Every Play"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Reset game install"
+msgstr ""
+
+#: src/settings/sections/DataHistory.tsx
+msgid "Profile history: {profile}"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Save backup folder"
+msgstr ""
+
+#: src/settings/sections/HiddenMods.tsx
+msgid "Unhide"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Where Mod Manager Download links install. Empty uses the last opened profile."
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Updated by your package manager"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Never"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{app} Game Mode: {otherApp} games start through {launcher} here, not from Mortar's Play"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Focus the search"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "No app opens these links now."
+msgstr ""
+
+#: src/settings/sections/ScheduledStatus.tsx
+msgid "Scheduled backup status"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+#: src/settings/sections/nxmHandler.tsx
+#: src/settings/sections/NxmReclaim.tsx
+msgid "Could not change how mod links open"
+msgstr ""
+
+#: src/settings/sections/Storage.tsx
+msgid "Integrity"
+msgstr ""
+
+#: src/settings/sections/DataMove.tsx
+msgid "Move"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Copy {app} URL"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Hide to tray"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Use the sync folder set under Mods and profiles, if any."
+msgstr ""
+
+#: src/settings/sections/SourceOrder.tsx
+msgid "Move up"
+msgstr ""
+
+#: src/settings/sections/Launchers.tsx
+msgid "Mortar finds your games through these launchers. Choose a folder for a game it missed or you moved."
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Could not reset the game install"
+msgstr ""
+
+#: src/settings/sections/Notifications.tsx
+msgid "A download finishes"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Download failed"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Auto"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Follow live log"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "nxm:// links: Mortar"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Not set up"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Save backups kept"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Keep the zip after installing"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Links"
+msgstr ""
+
+#: src/settings/sections/DataHistory.tsx
+msgid "{count, plural, one {# change} other {# changes}}"
+msgstr ""
+
+#: src/settings/startupChecks.ts
+msgid "Report it so it can be fixed."
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Checking…"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Skip pre-Play check"
+msgstr ""
+
+#: src/settings/sections/LoaderRow.tsx
+msgid "Install {version}…"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Mortar bridge"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Mortar has not asked {source} this session."
+msgstr ""
+
+#: src/settings/PrefControls.tsx
+#: src/settings/sections/General.tsx
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Enter a number from {min} to {max}"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Open focused mod details"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Typeface"
+msgstr ""
+
+#: src/settings/sections/LoaderRow.tsx
+msgid "Latest (recommended)"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Auto-enable requirements"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Premium"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game}: the {app} prefix does not load {name} natively, so its loader will not start"
+msgstr ""
+
+#: src/settings/sections/About.tsx
+msgid "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. For a bug report, Save diagnostics below puts them in one zip with personal paths removed."
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Existing {app} sources stop working until their URLs are copied again."
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Game version"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Handle \"Mod Manager Download\" links"
+msgstr ""
+
+#: src/settings/sections/HiddenMods.tsx
+msgid "Hidden mods"
+msgstr ""
+
+#: src/settings/sections/Storage.tsx
+msgid "Could not inspect the destination folder"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Hold the download queue until the game exits; a download under way continues afterwards. Pauses you made yourself stay paused."
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Files"
+msgstr ""
+
+#: src/settings/sections/DataStoreCheck.tsx
+msgid "{count, plural, one {# has damaged files} other {# have damaged files}}"
+msgstr ""
+
+#: src/settings/sections/Accounts.tsx
+msgid "Mortar uses your gh login for {source} requests, which raises the rate limit."
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Show labels"
+msgstr ""
+
+#: src/settings/sections/DataStoreCheck.tsx
+#: src/settings/sections/Updates.tsx
+msgid "Check now"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "How Play starts the game. Direct skips {launcher}'s overlay and playtime."
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Import…"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game}: {app} has not created its prefix yet, so a {launcher} launch cannot load the loader"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Delete the selected items?"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+#: src/settings/sections/GameSync.tsx
+msgid "Sync folder for this game"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Error"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Sync into a folder chosen for this game alone."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "3 times"
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+msgid "{size} used"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Author on cards"
+msgstr ""
+
+#: src/settings/sections/SourceOrder.tsx
+msgid "When a mod is on several sites, its card installs from the first one here."
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Window background"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Carry them into the new version's folder."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Ask before removing mods from a profile"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Lets nearby Mortar users find this installation and exchange profile links."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Premium and {source} downloads at once"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "{app}:"
+msgstr ""
+
+#: src/settings/store.ts
+msgid "Show file"
+msgstr ""
+
+#: src/settings/GameSettingsPage.tsx
+#: src/settings/sections/DataUsage.tsx
+#: src/settings/sections/GameSettings.tsx
+msgid "Save backups"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Set them aside and ask whether to keep or delete them."
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Switch to Saves"
+msgstr ""
+
+#: src/settings/sections/ExtraModsFolders.tsx
+#: src/settings/sections/WatchFolders.tsx
+msgid "Remove"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Switch to Config"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+msgid "{count, plural, one {Deleted # backup} other {Deleted # backups}}, freed {size}"
+msgstr ""
+
+#: src/settings/GameSettingsPage.tsx
+msgid "Play"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Luck skill"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "the connection was refused"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Regenerate…"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Keep Mortar in the tray"
+msgstr ""
+
+#: src/settings/GameSettingsPage.tsx
+#: src/settings/sections/LoaderRow.tsx
+msgid "Install"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Centre config controls"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Token"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "nxm:// links: Mortar (other games go to {app})"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Mining skill"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Not contacted yet"
+msgstr ""
+
+#: src/settings/GraphicsApiRow.tsx
+msgid "Ask when I press Play"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Include"
+msgstr ""
+
+#: src/settings/SettingsPage.tsx
+msgid "Settings"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Cached {source} release lists"
+msgstr ""
+
+#: src/settings/sections/About.tsx
+msgid "View licences…"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Tracking"
+msgstr ""
+
+#: src/settings/sections/SourceOrder.tsx
+msgid "Preferred source"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Include pre-release mod versions"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Status"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Dates"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "When mods changed"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Accept profiles sent from computers you paired, and copy their mod files"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Tag"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Diagnostics"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Automatic port"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Health"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Leave the file alone and list the settings under Problems."
+msgstr ""
+
+#: src/settings/sections/nxmHandler.tsx
+msgid "{owner} opens these links now. Mortar takes them over and gives them back when you disable this in Settings."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Minimise"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "settings.json is readable"
+msgstr ""
+
+#: src/settings/sections/DataHistory.tsx
+msgid "Older changes are dropped and can no longer be undone."
+msgstr ""
+
+#: src/settings/prefCopyAntivirus.ts
+msgid "Used with clamd. Empty tries the usual places, such as /run/clamav/clamd.ctl."
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Game install deleted"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Sidebar"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Cool and calm"
+msgstr ""
+
+#: src/settings/sections/Shortcuts.tsx
+msgid "Navigation"
+msgstr ""
+
+#: src/settings/SettingsPage.tsx
+msgid "About"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "it took too long to answer"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "World"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Fresh and clear"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Author"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Reinstall {game} from your game launcher."
+msgstr ""
+
+#: src/settings/sections/DataImport.tsx
+msgid "Import settings"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Chosen in the game's {launcher} properties."
+msgstr ""
+
+#: src/settings/sections/DataMove.tsx
+msgid "Move data folder"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Quota"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+#: src/settings/sections/GameSettings.tsx
+msgid "Change folder…"
+msgstr ""
+
+#: src/settings/sections/DismissedFolders.tsx
+msgid "Offer again"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Mark local mods"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Mortar version"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Clean up storage"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Mods view"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Accent colour"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "control.json is absent"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Player"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+#: src/settings/sections/DataUsage.tsx
+#: src/settings/sections/Shortcuts.tsx
+msgid "Profiles"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Update digest notification"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+#: src/settings/sections/DataImport.tsx
+msgid "Games"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Language"
+msgstr ""
+
+#: src/settings/ProtonRow.tsx
+msgid "The {app} build from {launcher} that runs this copy, which {launcher} does not start"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Part of the {app} address; regenerate it if it leaks"
+msgstr ""
+
+#: src/settings/sections/About.tsx
+msgid "Logs"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "How profiles are ordered in the sidebar"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Framework"
+msgstr ""
+
+#: src/settings/prefCopyModsView.ts
+msgid "Source"
+msgstr ""
+
+#: src/settings/sections/DataImport.tsx
+#: src/settings/sections/Shortcuts.tsx
+#: src/settings/SettingsPage.tsx
+msgid "General"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Teal"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Select all"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Foraging skill"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Closing the window hides Mortar instead of quitting."
+msgstr ""
+
+#: src/settings/sections/DataUsage.tsx
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Location"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "Game install"
+msgstr ""
+
+#: src/settings/sections/GameSettings.tsx
+msgid "This deletes the game folder at {path}, with every file in it, including {loader} and mods placed there. Your saves and your profiles' mods are stored elsewhere and are kept."
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+#: src/settings/sections/Sources.tsx
+msgid "Signed in as {name}"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "System default"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Open the previous profile"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Share problem choices"
+msgstr ""
+
+#: src/settings/sections/WatchFolders.tsx
+msgid "Also watch these folders"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Share config files"
+msgstr ""
+
+#: src/settings/sections/ModsProfiles.tsx
+msgid "Installing"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Back up saves before Play"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Run crashed"
+msgstr ""
+
+#: src/settings/sections/NxmReclaim.tsx
+msgid "Leave them"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Check only enabled mods"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Close dialog or clear selection"
+msgstr ""
+
+#: src/settings/sections/LoaderRow.tsx
+msgid "Every profile of this game runs the {name} installed for it, so they all switch to {version}."
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Tips"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Off, only computers on your local network can connect. Enable to allow others, such as over a VPN."
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Quiet grey-blue"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "Data folder: {path}"
+msgstr ""
+
+#: src/settings/sections/nxmHandler.tsx
+msgid "Handle links"
+msgstr ""
+
+#: src/settings/sections/StreamOverlay.tsx
+msgid "Season"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Soft and warm"
+msgstr ""
+
+#: src/settings/NexusMeter.tsx
+msgid "{source} is throttling requests until the window resets."
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Collapse or expand the sidebar"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Profile sync"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Command-line control"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Mortar-wide folder"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Display"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Show adult mods in browse"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Missing requirements on install"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+#: src/settings/sections/DataUsage.tsx
+msgid "Measuring…"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Hours between backups of saves that changed, while Mortar is open (24 is daily, 0 is Off). Waits until the game closes."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "What to do when an installed mod still needs other mods"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Scanner in use"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "After each check"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Save…"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Walk through profiles, Play, mods, and the command palette"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Verify downloads with {source} MD5"
+msgstr ""
+
+#: src/settings/prefCopyAntivirus.ts
+msgid "clamd socket"
+msgstr ""
+
+#: src/settings/SettingsNav.tsx
+msgid "Settings sections"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Default profile for {source} links"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "How many game processes a direct Play starts. Hidden for {launcher} and store URL launches."
+msgstr ""
+
+#: src/settings/prefCopyAntivirus.ts
+#: src/settings/sections/General.tsx
+msgid "Antivirus"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Files an update no longer includes"
+msgstr ""
+
+#: src/settings/sections/DataMove.tsx
+msgid "Moving data"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "{name}, descending"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Scheduled backups kept per save"
+msgstr ""
+
+#: src/settings/sections/LoaderRow.tsx
+msgid "Reinstall"
+msgstr ""
+
+#: src/settings/sections/Updates.tsx
+msgid "Checking for updates…"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Leftover files"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Stay open"
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Open settings"
+msgstr ""
+
+#: src/settings/sections/nxmHandler.tsx
+msgid "Take over"
+msgstr ""
+
+#: src/settings/updates.ts
+msgid "Could not reach {source}"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Untrack unused…"
+msgstr ""
+
+#: src/settings/sections/Notifications.tsx
+msgid "The game crashes"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Back up saves only if the profile's mods changed since the last run."
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "nxm:// links: off"
+msgstr ""
+
+#: src/settings/loaderToast.ts
+msgid "{name} {latest} is out"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Browser extension connection"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Downloads finished"
+msgstr ""
+
+#: src/settings/sections/About.tsx
+#: src/settings/sections/AboutDiagnostics.tsx
+#: src/settings/sections/DataStoreReport.tsx
+msgid "Close"
+msgstr ""
+
+#: src/settings/sections/DataHistory.tsx
+msgid "Trim history of {profile}"
+msgstr ""
+
+#: src/settings/sections/Appearance.tsx
+msgid "Bundled font"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+msgid "Stop the game to change save backups."
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "Install the version the mod's author named, as {manager} does."
+msgstr ""
+
+#: src/settings/sections/WatchFolders.tsx
+msgid "Offer installs"
+msgstr ""
+
+#: src/settings/sections/DataImport.tsx
+msgid "Ignored fields Mortar does not import: {names}"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "{loader} unofficial builds"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Profile hero"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "1 time"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Checks the data folder, games, {source} download links and the browser extension."
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "{source} account"
+msgstr ""
+
+#: src/settings/sections/ItchAccount.tsx
+msgid "Remove key"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+msgid "Save diagnostics"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Choose a game and profile each time."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Confirm removals"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Recently deleted retention"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Could not be reached: {reason}"
+msgstr ""
+
+#: src/settings/updates.ts
+msgid "Could not update: {error}"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Using your gh login"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Share profiles on the local network"
+msgstr ""
+
+#: src/settings/sections/AboutDiagnostics.tsx
+#: src/settings/sections/DataUsage.tsx
+msgid "Disk space"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Reuse FOMOD choices"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Personal API key"
+msgstr ""
+
+#: src/settings/sections/DataStoreReport.tsx
+msgid "This frees {size}. Deleted mods download again if a profile needs them later."
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Last played"
+msgstr ""
+
+#: src/settings/sections/DataBackups.tsx
+#: src/settings/sections/DataHistory.tsx
+msgid "Nothing to trim yet."
+msgstr ""
+
+#: src/settings/shortcutLabels.ts
+msgid "Focus the previous mod"
+msgstr ""
+
+#: src/settings/prefCopyGame.ts
+msgid "The folder this game's profiles sync into"
+msgstr ""
+
+#: src/settings/sections/NexusMods.tsx
+msgid "Untrack mods?"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Sidebar profile order"
+msgstr ""
+
+#: src/settings/sections/Sources.tsx
+msgid "Last answered {when}"
+msgstr ""
+
+#: src/settings/sections/Downloads.tsx
+msgid "Preferred download server"
+msgstr ""
