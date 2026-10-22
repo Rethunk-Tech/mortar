@@ -113,9 +113,11 @@ func startTime(procDir, pid string) time.Time {
 	return time.Time{}
 }
 
-// hostScript prints "pid<TAB>start-unix<TAB>arg<US>arg..." for every host process; /proc inside the sandbox
-// shows only Mortar's own. The proc entry's mtime is the process start for a process that has not changed owner.
-const hostScript = `for d in /proc/[0-9]*; do [ -r "$d/cmdline" ] || continue; printf '%s\t%s\t' "${d#/proc/}" "$(stat -c %Y "$d")"; tr '\0' '\037' <"$d/cmdline"; echo; done`
+// hostScript lists every host process, since /proc inside the sandbox shows only Mortar's own. It runs two programs
+// in all, not one per process: every profile change asks, and a desktop runs hundreds of processes. It prints
+// "pid start-unix" lines (the proc entry's mtime is the start of a process that has not changed owner), a NUL, then
+// grep's "pid/cmdline:arg" record per argument, NUL-terminated so an argument may hold any other byte.
+const hostScript = `cd /proc && stat -c '%n %Y' [0-9]* 2>/dev/null; printf '\0'; grep -Hasz '' [0-9]*/cmdline 2>/dev/null; exit 0`
 
 func hostProcesses(names []string) ([]Process, error) {
 	out, err := sandbox.HostOutput("sh", "-c", hostScript)
@@ -126,25 +128,37 @@ func hostProcesses(names []string) ([]Process, error) {
 }
 
 func parseHostProcesses(out string, names ...string) []Process {
-	var procs []Process
-	for line := range strings.SplitSeq(out, "\n") {
-		f := strings.SplitN(line, "\t", 3)
-		if len(f) != 3 {
-			continue
+	starts, cmdlines, _ := strings.Cut(out, "\x00")
+	start := map[int]time.Time{}
+	for line := range strings.SplitSeq(starts, "\n") {
+		pid, sec, _ := strings.Cut(line, " ")
+		p, perr := strconv.Atoi(pid)
+		s, serr := strconv.ParseInt(sec, 10, 64)
+		if perr == nil && serr == nil {
+			start[p] = time.Unix(s, 0)
 		}
-		pid, err := strconv.Atoi(f[0])
-		if err != nil {
-			continue
-		}
-		args := strings.Split(strings.TrimRight(f[2], "\x1f"), "\x1f")
-		if !runsAny(args, names) {
-			continue
-		}
-		p := Process{PID: pid, Args: args}
-		if sec, err := strconv.ParseInt(f[1], 10, 64); err == nil {
-			p.Start = time.Unix(sec, 0)
-		}
-		procs = append(procs, p)
 	}
+	var procs []Process
+	cur := Process{PID: -1}
+	flush := func() {
+		if cur.PID >= 0 && runsAny(cur.Args, names) {
+			cur.Start = start[cur.PID]
+			procs = append(procs, cur)
+		}
+	}
+	for rec := range strings.SplitSeq(cmdlines, "\x00") {
+		file, arg, ok := strings.Cut(rec, ":")
+		pidText, isCmdline := strings.CutSuffix(file, "/cmdline")
+		pid, err := strconv.Atoi(pidText)
+		if !ok || !isCmdline || err != nil {
+			continue
+		}
+		if pid != cur.PID {
+			flush()
+			cur = Process{PID: pid}
+		}
+		cur.Args = append(cur.Args, arg)
+	}
+	flush()
 	return procs
 }

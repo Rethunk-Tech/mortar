@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -90,11 +91,28 @@ func TestProcessStartTime(t *testing.T) {
 	}
 }
 
-func TestParseHostProcesses(t *testing.T) {
-	out := "12\t1700000000\t/usr/bin/steam\x1f-silent\n34\t1700000100\t/g/Stardew Valley/StardewModdingAPI\x1f--mods-path\x1f/m\x1f\nx\ty\n"
-	got := parseHostProcesses(out, "StardewModdingAPI")
-	if len(got) != 1 || got[0].PID != 34 || got[0].Start.Unix() != 1700000100 || !got[0].UsesModsPath("/m") {
-		t.Fatalf("%+v", got)
+func TestHostScriptListsRealProcesses(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("reads /proc")
+	}
+	// Matched by its arguments: the test may run in a PID namespace whose pids /proc does not show.
+	// read is a builtin, so the shell waits on its stdin with no child to leave behind.
+	cmd := exec.CommandContext(t.Context(), "sh", "-c", "read -r _", "--mods-path", "/m\nx:y", "")
+	if _, err := cmd.StdinPipe(); err != nil {
+		t.Fatal(err)
+	}
+	if err := cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = cmd.Process.Kill(); _ = cmd.Wait() })
+	out, err := exec.CommandContext(t.Context(), "sh", "-c", hostScript).Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := parseHostProcesses(string(out), "sh")
+	i := slices.IndexFunc(got, func(p Process) bool { return slices.Equal(p.Args, cmd.Args) })
+	if i < 0 || got[i].PID <= 0 || time.Since(got[i].Start) > time.Minute {
+		t.Fatalf("not listed with args %q: %+v", cmd.Args, got)
 	}
 }
 
