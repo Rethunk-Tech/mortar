@@ -150,7 +150,7 @@ func TestAdultHitsAreDroppedUnlessOptedIn(t *testing.T) {
 func TestEmptySearchListsTopModsAndIsCached(t *testing.T) {
 	c := &Client{}
 	fake.calls = 0
-	topCache = map[string]topEntry{}
+	topCache = map[string]topEntry{"expired": {}}
 	for range 3 {
 		if _, err := c.search(context.Background(), catalog, "fake", "", 1, Filter{}); err != nil {
 			t.Fatal(err)
@@ -158,6 +158,9 @@ func TestEmptySearchListsTopModsAndIsCached(t *testing.T) {
 	}
 	if fake.calls != 1 {
 		t.Fatalf("empty search hit the source %d times, want 1", fake.calls)
+	}
+	if _, kept := topCache["expired"]; kept {
+		t.Fatal("an expired top answer survived an insert")
 	}
 	if _, err := c.search(context.Background(), catalog, "fake", "x", 1, Filter{}); err != nil || fake.calls != 2 {
 		t.Fatalf("a text search must not be cached: calls %d err %v", fake.calls, err)

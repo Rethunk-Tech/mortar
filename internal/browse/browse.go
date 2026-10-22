@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"slices"
 	"strconv"
 	"strings"
@@ -247,8 +248,10 @@ func searchCached(ctx context.Context, id string, s source.Searcher, q source.Qu
 			page.Items = slices.Clone(page.Items)
 			return page, nil
 		}
-		e = topEntry{page: page, until: time.Now().Add(topTTL)}
+		now := time.Now()
+		e = topEntry{page: page, until: now.Add(topTTL)}
 		topMu.Lock()
+		maps.DeleteFunc(topCache, func(_ string, old topEntry) bool { return !now.Before(old.until) })
 		topCache[key] = e
 		topMu.Unlock()
 	}

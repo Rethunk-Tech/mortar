@@ -3,17 +3,24 @@ package browse
 import (
 	"context"
 	"fmt"
+	"maps"
 	"sync"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
-// details remembers each mod's Details for the session, so reopening a card asks no site again. It is keyed by
-// game, source and id; Mortar runs one browse service.
+type detailsEntry struct {
+	details source.Details
+	until   time.Time
+}
+
+// details remembers each mod's Details for topTTL, so reopening a card asks no site again but one left open in the
+// tray for days does not show old versions. It is keyed by game, source and id; Mortar runs one browse service.
 var details = struct {
 	sync.Mutex
-	m map[string]source.Details
-}{m: map[string]source.Details{}}
+	m map[string]detailsEntry
+}{m: map[string]detailsEntry{}}
 
 // Details reads the fuller page of one hit: its README, versions, dependencies and categories. A source that keeps no
 // such page answers empty Details; a Nexus mod's page comes from the Nexus details the window already loads.
@@ -22,8 +29,8 @@ func (s *Service) Details(ctx context.Context, game, sourceID, id string) (sourc
 	details.Lock()
 	hit, ok := details.m[key]
 	details.Unlock()
-	if ok {
-		return hit, nil
+	if ok && time.Now().Before(hit.until) {
+		return hit.details, nil
 	}
 	info, ok := catalogGame(game)
 	if !ok {
@@ -45,8 +52,10 @@ func (s *Service) Details(ctx context.Context, game, sourceID, id string) (sourc
 	if err != nil {
 		return source.Details{}, err
 	}
+	now := time.Now()
 	details.Lock()
-	details.m[key] = got
+	maps.DeleteFunc(details.m, func(_ string, e detailsEntry) bool { return !now.Before(e.until) })
+	details.m[key] = detailsEntry{details: got, until: now.Add(topTTL)}
 	details.Unlock()
 	return got, nil
 }
