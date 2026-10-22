@@ -50,27 +50,11 @@ function Overlay() {
   return <LaunchLayer game={game} />
 }
 
-function Routes({ ready }: { ready: boolean }) {
-  const route = useNav((s) => s.route)
-  return (
-    <ErrorBoundary resetKey={route.name}>
-      {route.name === 'settings' ? <SettingsPage section={route.section} /> : null}
-      {route.name === 'game-settings' ? <GameSettingsPage /> : null}
-      {route.name === 'profiles' ? <ProfilesPage /> : null}
-      {route.name === 'game' ? <MainScreen game={route.game} /> : null}
-      {route.name === 'setup' ? <FirstRun /> : null}
-      {route.name === 'game-setup' ? <GameSetup game={route.game} /> : null}
-      {ready && route.name === 'game-select' ? <GameSelect /> : null}
-    </ErrorBoundary>
-  )
-}
-
-export function App() {
-  useAppShortcuts()
-  useStartupChecks()
+// Opens the first page (setup, the last game, or Game select) and says when that is decided. Kept in Routes, the only
+// reader, so becoming ready re-renders the page rather than every dialog the app hosts.
+function useBoot(): boolean {
   const { t } = useLingui()
   const [ready, setReady] = useState(false)
-  const solo = usePlayMode((s) => s.solo)
   const boot = useCallback((): void => {
     // Play mode opens the played profile's game itself, and a later jump to the last game would race it.
     if (usePlayMode.getState().solo) {
@@ -95,6 +79,29 @@ export function App() {
       .finally(() => setReady(true))
   }, [t])
   useEffect(boot, [boot])
+  return ready
+}
+
+function Routes() {
+  const ready = useBoot()
+  const route = useNav((s) => s.route)
+  return (
+    <ErrorBoundary resetKey={route.name}>
+      {route.name === 'settings' ? <SettingsPage section={route.section} /> : null}
+      {route.name === 'game-settings' ? <GameSettingsPage /> : null}
+      {route.name === 'profiles' ? <ProfilesPage /> : null}
+      {route.name === 'game' ? <MainScreen game={route.game} /> : null}
+      {route.name === 'setup' ? <FirstRun /> : null}
+      {route.name === 'game-setup' ? <GameSetup game={route.game} /> : null}
+      {ready && route.name === 'game-select' ? <GameSelect /> : null}
+    </ErrorBoundary>
+  )
+}
+
+export function App() {
+  useAppShortcuts()
+  useStartupChecks()
+  const solo = usePlayMode((s) => s.solo)
   if (solo) {
     return <Overlay />
   }
@@ -102,7 +109,7 @@ export function App() {
     <>
       <AppFrame>
         <UpdateReadyBanner />
-        <Routes ready={ready} />
+        <Routes />
       </AppFrame>
       <Overlay />
       <ArrivalDialog />
