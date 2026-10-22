@@ -22,7 +22,8 @@ runs:
   using: composite
   steps:
     # The downloaded .debs are cached per runner image, architecture and package list: the runners' apt mirror can
-    # stall for many minutes serving packages one by one, and a cached run fetches only what changed.
+    # stall for many minutes serving packages one by one, and a cached run fetches only what changed. A new runner
+    # image starts from the previous image's packages: the mirror served one cold run at 64 kB/s for 15 minutes.
     - name: Apt package cache key
       id: apt-key
       if: inputs.native == 'true'
@@ -39,6 +40,8 @@ runs:
       with:
         path: ~/apt-archives/*.deb
         key: ${{ steps.apt-key.outputs.key }}
+        restore-keys: |
+          apt-${{ runner.os }}-${{ runner.arch }}-
 
     # One apt transaction: every package a job needs comes through apt-packages, so a later step never pays for
     # a second dpkg run.
