@@ -1451,7 +1451,8 @@ func run() error {
 	return err
 }
 
-func releaseLinks() error {
+// withLinks runs fn with the settings and the system's link handler, the player's link choices applied.
+func withLinks(fn func(*settings.Store, nxm.Handler) error) error {
 	store, err := settings.Open()
 	if err != nil {
 		return err
@@ -1465,25 +1466,14 @@ func releaseLinks() error {
 		return err
 	}
 	applyLinkChoices(store.Get())
-	return nxmsvc.ReleaseLinks(store, h)
+	return fn(store, h)
 }
+
+func releaseLinks() error { return withLinks(nxmsvc.ReleaseLinks) }
 
 // claimLinks is the installer's link checkbox: Mortar takes one source's links.
 func claimLinks(id string) error {
-	store, err := settings.Open()
-	if err != nil {
-		return err
-	}
-	exe, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	h, err := nxm.New(exe)
-	if err != nil {
-		return err
-	}
-	applyLinkChoices(store.Get())
-	return nxmsvc.ClaimLinks(store, h, id)
+	return withLinks(func(store *settings.Store, h nxm.Handler) error { return nxmsvc.ClaimLinks(store, h, id) })
 }
 
 // serveNativeHost runs Mortar as the browser extension's native messaging host: each nxm link or Nexus collection
