@@ -2666,6 +2666,10 @@ msgstr "Show"
 msgid "In-game menu"
 msgstr "In-game menu"
 
+#: src/share/ImportPreview.tsx
+msgid "Open its page in the browser"
+msgstr "Open its page in the browser"
+
 #: src/share/IncludeOptions.tsx
 msgid "Include libraries and supporting mods"
 msgstr "Include libraries and supporting mods"

@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Checkbox, Typography } from '@mui/material'
+import { Box, Button, Checkbox, Link, Typography } from '@mui/material'
 import { alpha, type Theme, useTheme } from '@mui/material/styles'
 import { formatKb } from '../i18n/bytes.ts'
 import { listNames } from '../i18n/list.ts'
@@ -127,7 +127,20 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography noWrap={true} sx={{ fontSize: 13, lineHeight: 1.4 }} title={mod.name}>
-          {mod.name}
+          {mod.pageUrl ? (
+            <Link
+              component="button"
+              underline="hover"
+              color="inherit"
+              title={t`Open its page in the browser`}
+              onClick={() => openPage(mod.pageUrl)}
+              sx={{ font: 'inherit', textAlign: 'left', verticalAlign: 'baseline' }}
+            >
+              {mod.name}
+            </Link>
+          ) : (
+            mod.name
+          )}
         </Typography>
         <Typography
           noWrap={true}
