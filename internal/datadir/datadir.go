@@ -30,10 +30,6 @@ func Dir() (string, error) {
 
 // DefaultDir is the OS default location, ignoring a relocation pointer.
 func DefaultDir() (string, error) {
-	return defaultDir()
-}
-
-func defaultDir() (string, error) {
 	if runtime.GOOS == "windows" {
 		base := os.Getenv("LOCALAPPDATA")
 		if base == "" {
@@ -65,7 +61,7 @@ func resolve() (string, error) {
 		}
 		return dir, nil
 	}
-	def, err := defaultDir()
+	def, err := DefaultDir()
 	if err != nil {
 		return "", err
 	}
@@ -99,7 +95,7 @@ func (e *MissingLocationError) Error() string {
 
 // UseDefaultLocation drops the relocation pointer so Dir returns the OS default again.
 func UseDefaultLocation() error {
-	def, err := defaultDir()
+	def, err := DefaultDir()
 	if err != nil {
 		return err
 	}
@@ -112,7 +108,7 @@ func UseDefaultLocation() error {
 
 // SetLocation points Mortar at an existing folder that already holds (or will hold) its data.
 func SetLocation(dir string) error {
-	def, err := defaultDir()
+	def, err := DefaultDir()
 	if err != nil {
 		return err
 	}

@@ -68,7 +68,7 @@ func TestResolveFollowsThePointerFile(t *testing.T) {
 	t.Setenv("XDG_DATA_HOME", home)
 	t.Setenv("LOCALAPPDATA", home)
 	dest := t.TempDir()
-	def, err := defaultDir()
+	def, err := DefaultDir()
 	if err != nil {
 		t.Fatal(err)
 	}

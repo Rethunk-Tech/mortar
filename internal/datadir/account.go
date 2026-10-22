@@ -28,7 +28,7 @@ func SharesAccountData() bool {
 	if home, err := os.UserHomeDir(); err != nil || fsx.SamePath(home, acct) {
 		return true
 	}
-	def, err := defaultDir()
+	def, err := DefaultDir()
 	if err != nil {
 		return true
 	}

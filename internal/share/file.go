@@ -163,7 +163,7 @@ func Write(w io.Writer, gameID string, p profile.Profile, modsDir string, includ
 				continue
 			}
 			doc.IDs = append(doc.IDs, m.ID)
-			found, skip, err := readConfigs(modsDir, e.Key, m)
+			found, skip, err := ReadConfigs(modsDir, e.Key, m)
 			if err != nil {
 				return nil, err
 			}
@@ -254,11 +254,6 @@ func putFile(zw *zip.Writer, name string, data []byte) error {
 // ReadConfigs collects the .json files of one mod's folder, except its manifest; skipped are the ones left out for
 // their size or name.
 func ReadConfigs(modsDir, key string, m profile.Component) (found []Config, skipped []string, err error) {
-	return readConfigs(modsDir, key, m)
-}
-
-// readConfigs collects the .json files under one enabled mod's folder, except its manifest.
-func readConfigs(modsDir, key string, m profile.Component) (found []Config, skipped []string, err error) {
 	folder := filepath.Join(modsDir, key)
 	if m.Folder != "." {
 		if !filepath.IsLocal(filepath.FromSlash(m.Folder)) {
