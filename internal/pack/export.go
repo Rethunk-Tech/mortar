@@ -1,8 +1,6 @@
 package pack
 
 import (
-	"archive/zip"
-	"bytes"
 	"cmp"
 	"context"
 	"encoding/base64"
@@ -57,22 +55,7 @@ func ExportZip(d Draft) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	var buf bytes.Buffer
-	zw := zip.NewWriter(&buf)
-	files := append([]File{{Path: exportFile, Data: raw}}, d.Configs...)
-	for _, f := range files {
-		w, err := zw.Create(f.Path)
-		if err != nil {
-			return nil, err
-		}
-		if _, err := w.Write(f.Data); err != nil {
-			return nil, err
-		}
-	}
-	if err := zw.Close(); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return Zip(append([]File{{Path: exportFile, Data: raw}}, d.Configs...))
 }
 
 // ExportCode stores d on Thunderstore as an r2modman profile code and returns its key. It publishes the profile's

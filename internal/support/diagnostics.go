@@ -1,12 +1,10 @@
 package support
 
 import (
-	"archive/zip"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"maps"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -28,6 +26,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/picker"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -188,7 +187,7 @@ func (s *Service) bundle(gameID, profileID string) ([]byte, error) {
 	}
 
 	files["manifest.txt"] = []byte(diagnosticsManifest(included, removed))
-	return zipFiles(files)
+	return pack.Zip(pack.SortedFiles(files))
 }
 
 func (s *Service) recentLines(gameID, profileID string) string {
@@ -476,27 +475,6 @@ func collectProfiles(root string) []bundleProfile {
 		return strings.Compare(a.ID, b.ID)
 	})
 	return out
-}
-
-func zipFiles(files map[string][]byte) ([]byte, error) {
-	var buf bytes.Buffer
-	zw := zip.NewWriter(&buf)
-	names := slices.Sorted(maps.Keys(files))
-	for _, name := range names {
-		w, err := zw.Create(name)
-		if err != nil {
-			_ = zw.Close()
-			return nil, err
-		}
-		if _, err := w.Write(files[name]); err != nil {
-			_ = zw.Close()
-			return nil, err
-		}
-	}
-	if err := zw.Close(); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
 }
 
 // lastRunProfile is the profile of the newest run of gameID, so a bundle made without an open profile still carries

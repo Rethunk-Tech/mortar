@@ -1,8 +1,6 @@
 package sharesvc
 
 import (
-	"archive/zip"
-	"bytes"
 	"cmp"
 	"context"
 	"encoding/json"
@@ -18,6 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
@@ -138,21 +137,15 @@ func modOf(e profile.Entry, domain string, facts fileFacts) collectionMod {
 	return m
 }
 
-// bundledFile is one file of the export's bundled/ folder, in the layout readCollectionArchive reads.
-type bundledFile struct {
-	Path string
-	Data []byte
-}
-
 // buildCollection is the draft of a profile: its enabled mods and notes, plus each mod's .json config files with
 // its manifest (which names the mod to the importer). Mortar cannot fill info.author, and a Nexus file's md5 and
 // size only when facts knows it.
-func buildCollection(p profile.Profile, domain, modsDir string, facts fileFacts) (collectionDoc, []bundledFile, []string, error) {
+func buildCollection(p profile.Profile, domain, modsDir string, facts fileFacts) (collectionDoc, []pack.File, []string, error) {
 	doc := collectionDoc{
 		Info: collectionInfo{Name: p.Name, Description: p.Description, InstallInstructions: p.Notes, DomainName: domain},
 		Mods: []collectionMod{}, ModRules: []struct{}{},
 	}
-	var files []bundledFile
+	var files []pack.File
 	var skipped []string
 	for _, e := range p.Entries {
 		if e.Source.Bundled() || !share.Enabled(e) {
@@ -181,9 +174,9 @@ func buildCollection(p profile.Profile, domain, modsDir string, facts fileFacts)
 				continue
 			}
 			dir := "bundled/" + m.ID.Local() + "/"
-			files = append(files, bundledFile{dir + manifest.FileName, raw})
+			files = append(files, pack.File{Path: dir + manifest.FileName, Data: raw})
 			for _, c := range found {
-				files = append(files, bundledFile{dir + c.Path, c.Data})
+				files = append(files, pack.File{Path: dir + c.Path, Data: c.Data})
 			}
 		}
 	}
@@ -192,23 +185,8 @@ func buildCollection(p profile.Profile, domain, modsDir string, facts fileFacts)
 
 // zipCollection packs collection.json and the bundled/ files into one archive. Vortex packs a 7z and no Go library
 // here writes one, so the curator repacks this zip before uploading it to Nexus.
-func zipCollection(manifestJSON []byte, files []bundledFile) ([]byte, error) {
-	var buf bytes.Buffer
-	zw := zip.NewWriter(&buf)
-	all := append([]bundledFile{{collectionManifestName, manifestJSON}}, files...)
-	for _, f := range all {
-		w, err := zw.Create(f.Path)
-		if err != nil {
-			return nil, err
-		}
-		if _, err := w.Write(f.Data); err != nil {
-			return nil, err
-		}
-	}
-	if err := zw.Close(); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+func zipCollection(manifestJSON []byte, files []pack.File) ([]byte, error) {
+	return pack.Zip(append([]pack.File{{Path: collectionManifestName, Data: manifestJSON}}, files...))
 }
 
 // ExportedCollection is the outcome of ExportCollection. Path is empty when the dialog was cancelled; Skipped lists

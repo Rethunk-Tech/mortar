@@ -1,7 +1,6 @@
 package packsvc
 
 import (
-	"archive/zip"
 	"bytes"
 	"cmp"
 	"context"
@@ -279,7 +278,11 @@ func (s *Service) ExportModpack(gameID, profileID, dest string, o ModpackOptions
 	if files["icon.png"], err = iconFile(o.IconPath); err != nil {
 		return res, err
 	}
-	if err := writeZip(dest, files); err != nil {
+	zipped, err := pack.Zip(pack.SortedFiles(files))
+	if err != nil {
+		return res, err
+	}
+	if err := fsx.WriteFile(dest, zipped, 0o600); err != nil {
 		return res, err
 	}
 	_, err = s.Profiles.SetModpackDraft(gameID, profileID, profile.ModpackDraft{
@@ -405,22 +408,4 @@ func plainIcon() ([]byte, error) {
 	var buf bytes.Buffer
 	err := png.Encode(&buf, img)
 	return buf.Bytes(), err
-}
-
-func writeZip(dest string, files map[string][]byte) error {
-	var buf bytes.Buffer
-	zw := zip.NewWriter(&buf)
-	for name, data := range files {
-		w, err := zw.Create(name)
-		if err != nil {
-			return err
-		}
-		if _, err := w.Write(data); err != nil {
-			return err
-		}
-	}
-	if err := zw.Close(); err != nil {
-		return err
-	}
-	return fsx.WriteFile(dest, buf.Bytes(), 0o600)
 }

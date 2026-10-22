@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
+	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -82,7 +83,7 @@ func TestCollectionExportRoundTrip(t *testing.T) {
 	files = files[:0]
 	for name, data := range read {
 		if name != collectionManifestName {
-			files = append(files, bundledFile{name, data})
+			files = append(files, pack.File{Path: name, Data: data})
 		}
 	}
 
