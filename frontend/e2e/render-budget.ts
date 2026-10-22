@@ -154,8 +154,8 @@ const cases: Case[] = [
   // One switch per case, each its own action; the second puts the mod back as the first found it.
   {
     name: 'mods-list-toggle-off',
-    // Its toast offering to switch off dependents or now-unneeded libraries leaves once, inside the idle watch.
-    budget: { idleUpdates: 10, idleCommits: 1 },
+    // Its toasts offering to switch off dependents and now-unneeded libraries each leave inside the idle watch.
+    budget: { idleUpdates: 20, idleCommits: 2 },
     setup: (p) => view(p, 'List view'),
     run: async (p) => {
       const target = row(p, 8)

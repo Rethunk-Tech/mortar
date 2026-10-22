@@ -11,7 +11,7 @@ import {
   TriangleAlert,
   X,
 } from 'lucide-react'
-import { type FocusEvent, type MouseEvent, useState } from 'react'
+import { type FocusEvent, type MouseEvent, memo, useState } from 'react'
 import { LetterTile } from '../mods/parts.tsx'
 import { useProfileLocked } from '../mods/useLocked.ts'
 import { copyText } from '../share/copyText.ts'
@@ -114,7 +114,8 @@ function useHoldWhilePresent(id: number) {
   }
 }
 
-function ToastCard({ toast }: { toast: Toast }) {
+// Memoised: a toast keeps its object while others come and go, so it does not redraw when one beside it leaves.
+const ToastCard = memo(function ToastCardView({ toast }: { toast: Toast }) {
   const holdProps = useHoldWhilePresent(toast.id)
   const { t } = useLingui()
   const dismiss = useToasts((s) => s.dismiss)
@@ -221,7 +222,7 @@ function ToastCard({ toast }: { toast: Toast }) {
       </IconButton>
     </Box>
   )
-}
+})
 
 export function ToastHost() {
   const { t } = useLingui()
