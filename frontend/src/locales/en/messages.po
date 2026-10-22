@@ -1004,7 +1004,9 @@ msgstr "Mods' Entry is timed only on a measured launch."
 msgid "Mark a known good point first."
 msgstr "Mark a known good point first."
 
+#: src/game/ProfileContextMenu.tsx
 #: src/game/ProfileMenu.tsx
+#: src/profiles/ProfileRow.tsx
 msgid "This profile"
 msgstr "This profile"
 
@@ -1729,6 +1731,10 @@ msgstr "the connection failed"
 msgid "Solid"
 msgstr "Solid"
 
+#: src/game/ProfileMenuItems.tsx
+msgid "Copies and sharing"
+msgstr "Copies and sharing"
+
 #: src/settings/sections/Appearance.tsx
 msgid "Font"
 msgstr "Font"
@@ -1784,6 +1790,7 @@ msgstr "Share log…"
 #: src/downloads/newDownloads.ts
 #: src/game/Hero.tsx
 #: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
 #: src/launch/events.ts
 #: src/mods/updateDigestToast.ts
 #: src/mods/updates.ts
@@ -4414,6 +4421,7 @@ msgstr "Optional for ({0})"
 
 #: src/commandPalette/CommandPalette.tsx
 #: src/game/LaunchMenu.tsx
+#: src/game/ProfileMenuItems.tsx
 #: src/settings/SettingsPage.tsx
 msgid "Shortcuts"
 msgstr "Shortcuts"
@@ -8496,6 +8504,10 @@ msgstr "Pinned"
 #: src/mods/storeProblems.ts
 msgid "Could not dismiss the overlap"
 msgstr "Could not dismiss the overlap"
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Folder"
+msgstr "Folder"
 
 #: src/profiles/OverrideRows.tsx
 #: src/settings/ProtonRow.tsx

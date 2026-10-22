@@ -3,7 +3,7 @@ import { Menu } from '@mui/material'
 import { Palette, Pencil } from 'lucide-react'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { MenuRule } from '../shell/TitleMenu.tsx'
+import { MenuHeading } from '../shell/TitleMenu.tsx'
 import { CoverMenuItems, MoreMenuItems, ProfileMenuItem } from './ProfileMenuItems.tsx'
 import { openProfileDialog } from './profileDialog.ts'
 import { useRenameRequest } from './renameRequest.ts'
@@ -28,6 +28,7 @@ export function ProfileContextMenu({
       anchorReference="anchorPosition"
       anchorPosition={position ?? undefined}
     >
+      <MenuHeading>{t`This profile`}</MenuHeading>
       <ProfileMenuItem
         icon={<Pencil size={16} />}
         label={t`Rename`}
@@ -46,7 +47,6 @@ export function ProfileContextMenu({
         }}
       />
       <CoverMenuItems game={game} profile={profile} close={onClose} />
-      <MenuRule />
       <MoreMenuItems profile={profile} close={onClose} />
     </Menu>
   )

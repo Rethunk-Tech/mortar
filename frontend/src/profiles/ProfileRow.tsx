@@ -14,7 +14,7 @@ import { formatBytes } from '../i18n/bytes.ts'
 import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
 import { useBadges } from '../mods/badges.ts'
 import { openShare } from '../share/store.ts'
-import { MenuRule } from '../shell/TitleMenu.tsx'
+import { MenuHeading } from '../shell/TitleMenu.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { chosenModCount, userModCount } from './count.ts'
@@ -68,6 +68,7 @@ function RowMenu({
         },
       }}
     >
+      <MenuHeading>{t`This profile`}</MenuHeading>
       <ProfileMenuItem
         icon={<Pencil size={16} />}
         label={t`Rename`}
@@ -79,7 +80,6 @@ function RowMenu({
         onClick={choose(() => openProfileDialog('edit', profile.id), false)}
       />
       <CoverMenuItems game={game} profile={profile} close={choose(() => undefined)} />
-      <MenuRule />
       <MoreMenuItems profile={profile} close={choose(() => undefined)} />
     </Menu>
   )

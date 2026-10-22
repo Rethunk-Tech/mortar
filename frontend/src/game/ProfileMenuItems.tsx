@@ -31,7 +31,7 @@ import { setFrozen } from '../mods/freeze.ts'
 import { isFrozen } from '../mods/frozen.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
-import { MenuRule } from '../shell/TitleMenu.tsx'
+import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BackupMenuItem, RestoreMenuItem } from './BackupMenuItems.tsx'
@@ -230,35 +230,9 @@ function MoreMenuItems({ profile, close }: { profile: Profile; close: () => void
   const duplicate = useProfiles((s) => s.duplicate)
   const openId = useProfiles((s) => s.openId)
   const openFolder = useProfiles((s) => s.openFolder)
+  // Grouped under headings: the list grew past what a reader scans, and an unlabelled run of actions hid the one
+  // that opens the folder.
   return [
-    <ProfileMenuItem
-      key="history"
-      icon={<History size={16} />}
-      label={t`History…`}
-      onClick={() => {
-        close()
-        openProfileDialog('history', profile.id)
-      }}
-    />,
-    <ProfileMenuItem
-      key="open-folder"
-      icon={<FolderOpen size={16} />}
-      label={t`Open profile folder`}
-      onClick={() => {
-        close()
-        openFolder(profile.id).catch(reportUnexpected)
-      }}
-    />,
-    <ProfileMenuItem
-      key="folder"
-      icon={<FolderInput size={16} />}
-      label={t`Move profile folder…`}
-      onClick={() => {
-        close()
-        openProfileDialog('folder', profile.id)
-      }}
-    />,
-    <CheckProfileMenuItem key="check" profile={profile} close={close} />,
     <ProfileMenuItem
       key="favourite"
       icon={<Star size={16} fill={profile.favourite ? 'currentColor' : 'none'} />}
@@ -285,27 +259,6 @@ function MoreMenuItems({ profile, close }: { profile: Profile; close: () => void
       }}
     />,
     <ProfileMenuItem
-      key="duplicate"
-      icon={<Copy size={16} />}
-      label={t`Duplicate`}
-      onClick={() => {
-        close()
-        duplicate(profile.id).catch(reportUnexpected)
-      }}
-    />,
-    <MenuRule key="sharing-divider" />,
-    <ProfileMenuItem
-      key="compare"
-      icon={<GitCompare size={16} />}
-      label={t`Compare…`}
-      onClick={() => {
-        close()
-        openProfileDialog('compare', profile.id)
-      }}
-    />,
-    <ShareMenuItems key="share" profile={profile} close={close} />,
-    <MenuRule key="saved-group-divider" />,
-    <ProfileMenuItem
       key="saved-group"
       icon={<PackagePlus size={16} />}
       label={t`Add a saved group…`}
@@ -315,8 +268,62 @@ function MoreMenuItems({ profile, close }: { profile: Profile; close: () => void
         openProfileDialog('savedGroup', profile.id)
       }}
     />,
+    <MenuRule key="folder-divider" />,
+    <MenuHeading key="folder-heading">{t`Folder`}</MenuHeading>,
+    <ProfileMenuItem
+      key="open-folder"
+      icon={<FolderOpen size={16} />}
+      label={t`Open profile folder`}
+      onClick={() => {
+        close()
+        openFolder(profile.id).catch(reportUnexpected)
+      }}
+    />,
+    <ProfileMenuItem
+      key="folder"
+      icon={<FolderInput size={16} />}
+      label={t`Move profile folder…`}
+      onClick={() => {
+        close()
+        openProfileDialog('folder', profile.id)
+      }}
+    />,
+    <MenuRule key="review-divider" />,
+    <MenuHeading key="review-heading">{t`Review`}</MenuHeading>,
+    <ProfileMenuItem
+      key="history"
+      icon={<History size={16} />}
+      label={t`History…`}
+      onClick={() => {
+        close()
+        openProfileDialog('history', profile.id)
+      }}
+    />,
+    <ProfileMenuItem
+      key="compare"
+      icon={<GitCompare size={16} />}
+      label={t`Compare…`}
+      onClick={() => {
+        close()
+        openProfileDialog('compare', profile.id)
+      }}
+    />,
+    <CheckProfileMenuItem key="check" profile={profile} close={close} />,
+    <MenuRule key="copies-divider" />,
+    <MenuHeading key="copies-heading">{t`Copies and sharing`}</MenuHeading>,
+    <ProfileMenuItem
+      key="duplicate"
+      icon={<Copy size={16} />}
+      label={t`Duplicate`}
+      onClick={() => {
+        close()
+        duplicate(profile.id).catch(reportUnexpected)
+      }}
+    />,
+    <ShareMenuItems key="share" profile={profile} close={close} />,
     <TemplateMenuItems key="templates" profile={profile} close={close} />,
-    <MenuRule key="shortcut-divider" />,
+    <MenuRule key="shortcuts-divider" />,
+    <MenuHeading key="shortcuts-heading">{t`Shortcuts`}</MenuHeading>,
     <ShortcutMenuItems key="shortcuts" profile={profile} close={close} />,
     <MenuRule key="delete-divider" />,
     <ProfileMenuItem
