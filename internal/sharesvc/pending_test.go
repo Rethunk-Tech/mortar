@@ -114,6 +114,25 @@ func TestPendingAppliesWhenTheDoneSetChangesAndSavesOnlyOnChange(t *testing.T) {
 	}
 }
 
+func TestPendingIsDroppedWhenItsProfileIsDeleted(t *testing.T) {
+	s, prof := pendingService(t)
+	s.pending = []*pending{{
+		Game: "stardew", Profile: prof.ID, Wanted: []wantedFile{{ModID: 100, FileID: 1}},
+		Configs: []share.Config{{ID: "smapi:A.Mod", Path: "config.json", Data: []byte("a")}},
+	}}
+	s.savePending()
+	if err := s.d.Profiles.Delete("stardew", prof.ID); err != nil {
+		t.Fatal(err)
+	}
+	s.QueueChanged(queue.State{})
+	if len(s.pending) != 0 {
+		t.Fatalf("pending import of a deleted profile kept: %d", len(s.pending))
+	}
+	if _, err := os.Stat(filepath.Join(s.d.Dir, pendingFile)); err == nil {
+		t.Fatal("the pending file still names the deleted profile")
+	}
+}
+
 func TestPendingWaitsWhileTheGameRunsTheProfile(t *testing.T) {
 	s, prof := pendingService(t)
 	s.pending = []*pending{{

@@ -1301,27 +1301,21 @@ func (p *pending) wants(e profile.Entry) bool {
 	return slices.ContainsFunc(p.Wanted, func(w wantedFile) bool { return w.entry(e) })
 }
 
-func (s *Service) wantedInstalled(p *pending) bool {
-	if len(p.Wanted) == 0 {
-		return false
-	}
+// wantedState reports whether every wanted file is already on the profile, and whether the profile is gone (listed
+// without error, absent from the list), so nothing it waits on can ever land.
+func (s *Service) wantedState(p *pending) (installed, gone bool) {
 	all, err := s.d.Profiles.List(p.Game)
 	if err != nil {
-		return false
+		return false, false
 	}
-	var entries []profile.Entry
-	for _, pr := range all {
-		if pr.Error == "" && pr.ID == p.Profile {
-			entries = pr.Entries
-			break
-		}
+	i := slices.IndexFunc(all, func(pr profile.Profile) bool { return pr.ID == p.Profile })
+	if i < 0 {
+		return false, true
 	}
-	for _, w := range p.Wanted {
-		if !slices.ContainsFunc(entries, w.entry) {
-			return false
-		}
+	if len(p.Wanted) == 0 || all[i].Error != "" {
+		return false, false
 	}
-	return true
+	return !slices.ContainsFunc(p.Wanted, func(w wantedFile) bool { return !slices.ContainsFunc(all[i].Entries, w.entry) }), false
 }
 
 // queueChanged runs on every full queue state, which progress ticks do not publish, and saves only when a pending import changed.
@@ -1353,7 +1347,15 @@ func (s *Service) queueChanged(st queue.State) {
 		// The queue drops old finished items, so apply also when every wanted file is already on the profile.
 		slices.Sort(done)
 		seen := strings.Join(done, ",")
-		if s.wantedInstalled(p) {
+		installed, gone := s.wantedState(p)
+		if gone {
+			s.mu.Lock()
+			s.pending = slices.DeleteFunc(s.pending, func(x *pending) bool { return x == p })
+			s.mu.Unlock()
+			changed = true
+			continue
+		}
+		if installed {
 			seen = "on-profile"
 		}
 		if len(p.Configs) > 0 && seen != p.seen && (len(done) > 0 || settled >= len(p.Wanted) || seen == "on-profile") {
