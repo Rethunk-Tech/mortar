@@ -38,6 +38,9 @@ const DIMMED = 0.5
 const LATER_CHIP = 0.18
 const TILE_FILL = 0.28
 const TILE_LINE = 0.7
+// Installed mods are most of a familiar profile, so their green stays quiet beside the tint of a mod coming in.
+const INSTALLED_FILL = 0.1
+const INSTALLED_LINE = 0.3
 
 const CHIP = (th: Theme): Record<ModState, { bg: string; fg: string }> => ({
   installed: { bg: alpha(th.palette.success.main, SUCCESS_CHIP), fg: th.palette.success.light },
@@ -81,11 +84,17 @@ function useStateLabel() {
 
 // The whole tile is the checkbox, so nothing covers the icon: an installed mod is tinted green, one coming in the
 // primary colour, and one left out is dimmed.
-function tileTint(theme: Theme, state: ModState, selected: boolean): string | null {
+function tileTint(
+  theme: Theme,
+  state: ModState,
+  selected: boolean,
+): { fill: string; line: string } | null {
   if (state === 'installed') {
-    return theme.palette.success.main
+    const green = theme.palette.success.main
+    return { fill: alpha(green, INSTALLED_FILL), line: alpha(green, INSTALLED_LINE) }
   }
-  return selected ? theme.palette.primary.main : null
+  const primary = theme.palette.primary.main
+  return selected ? { fill: alpha(primary, TILE_FILL), line: alpha(primary, TILE_LINE) } : null
 }
 
 // The name in full (it wraps rather than cuts off, so it can be copied), opening the mod's page when it has one.
@@ -147,9 +156,9 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
         minHeight: 52,
         pr: space.gap,
         minWidth: 0,
-        bgcolor: tint ? alpha(tint, TILE_FILL) : 'var(--mortar-card-hover)',
+        bgcolor: tint?.fill ?? 'var(--mortar-card-hover)',
         border: '1px solid',
-        borderColor: tint ? alpha(tint, TILE_LINE) : 'transparent',
+        borderColor: tint?.line ?? 'transparent',
         borderRadius: '3px',
         overflow: 'hidden',
         cursor: fixed ? 'default' : 'pointer',
