@@ -51,11 +51,7 @@ func TestRecordUserStopIsACrashOnlyWhenTheLogCrashedFirst(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			svc, p, cfg, home := runEnv(t)
-			mods, err := svc.profiles.ModsDir("stardew", p.ID)
-			if err != nil {
-				t.Fatal(err)
-			}
-			writeOwnedLog(t, cfg, home, mods, "[19:43:51 ALERT SMAPI] The game crashed: boom\n")
+			writeOwnedLog(t, svc, p, cfg, home, "[19:43:51 ALERT SMAPI] The game crashed: boom\n")
 			stopAt, err := time.ParseInLocation(time.DateTime, time.Now().Format(time.DateOnly)+" "+tc.stopAt, time.Local)
 			if err != nil {
 				t.Fatal(err)

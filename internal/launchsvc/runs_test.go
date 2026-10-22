@@ -43,8 +43,12 @@ func TestMissingFileCauseNamesKyuyaPack(t *testing.T) {
 	}
 }
 
-func writeOwnedLog(t *testing.T, cfg, home, modsDir, extra string) {
+func writeOwnedLog(t *testing.T, svc *Service, p profile.Profile, cfg, home, extra string) {
 	t.Helper()
+	modsDir, err := svc.profiles.ModsDir("stardew", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
 	dir := filepath.Join(cfg, "StardewValley", "ErrorLogs")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
@@ -67,7 +71,7 @@ func TestRecordStoresOwnedLogAndBoundsHistory(t *testing.T) {
 		t.Fatal(err)
 	}
 	g := game.Find("stardew")
-	writeOwnedLog(t, cfg, home, mods, "[19:43:50 ERROR Content Patcher] boom\n"+
+	writeOwnedLog(t, svc, p, cfg, home, "[19:43:50 ERROR Content Patcher] boom\n"+
 		"[19:43:51 WARN  Pet Against Crows] Possible conflicts with this mod detected.\n")
 	started := time.Now().Add(-2 * time.Second)
 	svc.record(g, p.ID, started, false)
@@ -104,7 +108,7 @@ func TestRecordStoresOwnedLogAndBoundsHistory(t *testing.T) {
 	}
 
 	for range maxRuns {
-		writeOwnedLog(t, cfg, home, mods, "[19:43:50 ERROR Content Patcher] n\n")
+		writeOwnedLog(t, svc, p, cfg, home, "[19:43:50 ERROR Content Patcher] n\n")
 		svc.record(g, p.ID, time.Now(), false)
 	}
 	runs, err = svc.Runs("stardew", p.ID)
@@ -129,11 +133,7 @@ func TestRecordStoresOwnedLogAndBoundsHistory(t *testing.T) {
 
 func TestLastRunSummaryIncludesModSnapshot(t *testing.T) {
 	svc, p, cfg, home := runEnv(t)
-	mods, err := svc.profiles.ModsDir("stardew", p.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	writeOwnedLog(t, cfg, home, mods, "[19:43:50 ERROR Alpha] old error\n")
+	writeOwnedLog(t, svc, p, cfg, home, "[19:43:50 ERROR Alpha] old error\n")
 	g := game.Find("stardew")
 	ref := launch.ModRef{Name: "Alpha", ID: "smapi:me.mod", Key: "old-key", Version: "1.0", SourceVersion: "1.0"}
 	svc.record(g, p.ID, time.Now(), false, []launch.ModRef{ref})
@@ -190,11 +190,7 @@ func TestLastRunSummaryNamesWhyAFailedRunWithoutALogNeverStarted(t *testing.T) {
 
 func TestClosedRunWithCrashMarksCrashed(t *testing.T) {
 	svc, p, cfg, home := runEnv(t)
-	mods, err := svc.profiles.ModsDir("stardew", p.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	writeOwnedLog(t, cfg, home, mods, "[19:43:51 ALERT SMAPI] The game crashed: boom\n")
+	writeOwnedLog(t, svc, p, cfg, home, "[19:43:51 ALERT SMAPI] The game crashed: boom\n")
 	g := game.Find("stardew")
 	svc.record(g, p.ID, time.Now(), false)
 	runs, err := svc.Runs("stardew", p.ID)
@@ -251,11 +247,7 @@ func mustJSON(t *testing.T, value any) []byte {
 
 func TestRecordKeepsThePresetName(t *testing.T) {
 	svc, p, cfg, home := runEnv(t)
-	mods, err := svc.profiles.ModsDir("stardew", p.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	writeOwnedLog(t, cfg, home, mods, "")
+	writeOwnedLog(t, svc, p, cfg, home, "")
 	svc.mu.Lock()
 	svc.logs["stardew/"] = session{profile: p.ID, preset: "Debug"}
 	svc.mu.Unlock()
@@ -309,11 +301,7 @@ func TestUnityCrashMarkers(t *testing.T) {
 
 func TestFailureBeforeTheGameStartsIsARunOfItsOwn(t *testing.T) {
 	svc, p, cfg, home := runEnv(t)
-	mods, err := svc.profiles.ModsDir("stardew", p.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	writeOwnedLog(t, cfg, home, mods, "[19:43:51 ERROR Farm] last run's error\n")
+	writeOwnedLog(t, svc, p, cfg, home, "[19:43:51 ERROR Farm] last run's error\n")
 	old := time.Now().Add(-time.Hour)
 	if err := os.Chtimes(filepath.Join(cfg, "StardewValley", "ErrorLogs", "SMAPI-latest.txt"), old, old); err != nil {
 		t.Fatal(err)
@@ -358,12 +346,8 @@ func TestRunEndNoticeOnlyForACrash(t *testing.T) {
 	svc, p, cfg, home := runEnv(t)
 	var notices []RunEndNotice
 	svc.NotifyRunEnd = func(n RunEndNotice) { notices = append(notices, n) }
-	mods, err := svc.profiles.ModsDir("stardew", p.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
 	g := game.Find("stardew")
-	writeOwnedLog(t, cfg, home, mods, "[19:43:50 ERROR Farm] broke\n")
+	writeOwnedLog(t, svc, p, cfg, home, "[19:43:50 ERROR Farm] broke\n")
 	svc.record(g, p.ID, time.Now(), false)
 	svc.logs["stardew/"] = session{profile: p.ID, haveExit: true, exit: launch.Exit{Signal: "SIGTERM", Stopped: true}}
 	svc.record(g, p.ID, time.Now(), false)
