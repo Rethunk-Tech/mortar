@@ -157,7 +157,7 @@ function ProfileMenuListView({
   const profileRowLabel = (p: Profile) => {
     const { name } = p
     const mods = modsLabel(userModCount(p))
-    return t`${name} · ${mods}`
+    return `${name} · ${mods}`
   }
   return (
     <>

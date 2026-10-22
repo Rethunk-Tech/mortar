@@ -62,7 +62,7 @@ function Header({
   ]
     .filter(Boolean)
     .join(' · ')
-  const line = sum.sizeKb > 0 ? t`${summary} · ${{ size: formatKb(sum.sizeKb) }}` : summary
+  const line = sum.sizeKb > 0 ? `${summary} · ${formatKb(sum.sizeKb)}` : summary
   const idle = !paused && sum.active === 0 && sum.left === 0
   const finished = items.filter((i) => isClearableFinished(i.state))
   return (

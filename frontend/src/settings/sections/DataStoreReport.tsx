@@ -419,7 +419,7 @@ function CleanupDialog({
       <DialogActions>
         <Box sx={{ flex: 1, pl: space.gap, fontSize: 15 }}>
           {picked.size > 0
-            ? t`${{ count: picked.size }} selected · ${{ size: formatBytes(bytes) }}`
+            ? `${t`${{ count: picked.size }} selected`} · ${formatBytes(bytes)}`
             : ''}
         </Box>
         <Button onClick={close}>{t`Close`}</Button>

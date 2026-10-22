@@ -1,8 +1,8 @@
 // Fails when two messages in the source say the same thing: they differ only in case, punctuation, an article or
 // placeholder names. "…" and "?" stay significant, since a control that opens a dialog and the dialog's title are two messages.
 // Also fails on a contraction: messages spell out "cannot" and "do not", so translators see one form. And on a
-// typographic variant (curly quotes, dashes, arrows): messages use plain quotes and words, keeping only "…" and the
-// "·" and "›" separators.
+// typographic variant (curly quotes, dashes, arrows) or a "·": messages use plain quotes and words, keeping only "…"
+// and the "›" separator, and code joins parts with " · ".
 // And on a positional placeholder ({0}) or the name of a product other than Mortar: translators see {name} and
 // {source}, {loader}, {launcher}, {os}, {manager} or {app}, filled in by code, so one message serves every product.
 // The messages are extracted from the source into a scratch catalog, so a committed catalog that is behind cannot hide
@@ -68,7 +68,7 @@ function normalise(id: string): string | null {
   }
   return flat
     .replace(/\b(?:a|an|the) /g, '')
-    .replace(/[.,:;!'"‘’“”—–·()]/g, '')
+    .replace(/[.,:;!'"‘’“”—–()]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
 }
@@ -91,7 +91,7 @@ function contractions(ids: string[]): string[] {
   return ids.filter((id) => CONTRACTION.test(id))
 }
 
-const VARIANT = /[“”‘’—–→←]/
+const VARIANT = /[“”‘’—–→←·]/
 
 function variants(ids: string[]): string[] {
   return ids.filter((id) => VARIANT.test(id))
@@ -172,7 +172,7 @@ if (import.meta.main) {
   const variant = variants(ids)
   for (const id of variant) {
     console.error(
-      `i18n: typographic variant in ${JSON.stringify(id)}; use plain characters (docs/gui-design.md, Copy)`,
+      `i18n: typographic variant in ${JSON.stringify(id)}; use plain characters and join parts in code (docs/gui-design.md, Copy)`,
     )
   }
   const positional = positionals(ids)

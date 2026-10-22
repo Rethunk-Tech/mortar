@@ -185,7 +185,7 @@ async function initNxm(): Promise<void> {
       .then((name) =>
         notify(
           a,
-          i18n._(msg`Mortar · Install ${name}?`),
+          `Mortar · ${i18n._(msg`Install ${name}?`)}`,
           i18n._(
             msg`You started this download on ${{ source: sourceLabel('nexus') }}. Show Mortar to choose the profile it goes into.`,
           ),

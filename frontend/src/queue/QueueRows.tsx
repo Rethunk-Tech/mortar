@@ -133,7 +133,7 @@ export function Paused({ items }: { items: Item[] }) {
             sub={
               <Typography sx={{ ...detail, color: 'text.secondary' }}>
                 {i.autoResume
-                  ? t`Waiting for a free slot · ${done} of ${total}`
+                  ? [t`Waiting for a free slot`, t`${done} of ${total}`].join(' · ')
                   : t`Paused at ${done} of ${total}`}
               </Typography>
             }

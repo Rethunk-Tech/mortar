@@ -76,7 +76,7 @@ function ReviewLists({
                 <>
                   {m.name}
                   <Typography component="span" sx={{ fontSize: 13, color: 'text.secondary' }}>
-                    {` · ${t`folder ${{ folderVersion: m.folderVersion }} · profile ${{ profileVersion: m.profileVersion }}`}`}
+                    {` · ${t`folder ${{ version: m.folderVersion }}`} · ${t`profile ${{ version: m.profileVersion }}`}`}
                     {m.newer === 'folder' ? ` · ${t`newer in folder`}` : null}
                     {m.newer === 'profile' ? ` · ${t`newer in profile`}` : null}
                   </Typography>

@@ -134,7 +134,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
                   sx={{ fontSize: 13, fontWeight: 700, color: 'text.secondary', mb: 0.5 }}
                 >
                   {hits[0]
-                    ? t`${{ when: formatWhen(hits[0].started, { withTime: true }) }} · ${{ outcome: outcome(hits[0].outcome) }}`
+                    ? `${formatWhen(hits[0].started, { withTime: true })} · ${outcome(hits[0].outcome)}`
                     : null}
                 </Typography>
                 {hits.map((hit) => (

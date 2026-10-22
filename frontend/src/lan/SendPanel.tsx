@@ -18,6 +18,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Peer } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/models.ts'
 import { Peers, Send } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/lan/service.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { includeAvailability } from '../share/methods.ts'
@@ -71,8 +72,8 @@ function PeerRow({ peer, sharedName, disabled, sending, onSend, onPair }: PeerRo
           secondary={peerSecondary(
             peer,
             sharedName,
-            t`Paired · whole files`,
-            t`Not paired · only links`,
+            [t`Paired`, lowerFirst(t`Whole files`)].join(' · '),
+            [t`Not paired`, lowerFirst(t`Only links`)].join(' · '),
           )}
         />
         {peer.paired ? null : (

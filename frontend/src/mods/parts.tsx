@@ -362,9 +362,7 @@ export function NexusGoneBadge({ mod }: { mod: Mod }) {
   }
   const text = goneCaption(mark, {
     hidden: t`Hidden on ${{ source: sourceLabel('nexus') }}`,
-    hiddenDated: t`Hidden on ${{ source: sourceLabel('nexus') }} · ${{ when: mark.date }}`,
     removed: t`Removed from ${{ source: sourceLabel('nexus') }}`,
-    removedDated: t`Removed from ${{ source: sourceLabel('nexus') }} · ${{ when: mark.date }}`,
   })
   return (
     <Tooltip title={text}>

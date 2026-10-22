@@ -94,13 +94,16 @@ export function MoveDialog({
                 aria-label={t`Moving data`}
               />
               <Box role="status" sx={{ ...mono }}>
-                {plural(
-                  { count: progress.totalFiles },
-                  {
-                    one: `${{ files: progress.files }}/# file · ${{ done: formatBytes(progress.bytes) }} / ${{ total: formatBytes(progress.totalBytes) }}`,
-                    other: `${{ files: progress.files }}/# files · ${{ done: formatBytes(progress.bytes) }} / ${{ total: formatBytes(progress.totalBytes) }}`,
-                  },
-                )}
+                {[
+                  plural(
+                    { count: progress.totalFiles },
+                    {
+                      one: `${{ files: progress.files }}/# file`,
+                      other: `${{ files: progress.files }}/# files`,
+                    },
+                  ),
+                  `${formatBytes(progress.bytes)} / ${formatBytes(progress.totalBytes)}`,
+                ].join(' · ')}
               </Box>
             </>
           ) : null}

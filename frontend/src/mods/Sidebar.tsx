@@ -139,9 +139,7 @@ function NexusFields({
   const gone = nexusPageMark(page.status, page.available, page.updated, page.created)
   const goneLabel = goneCaption(gone, {
     hidden: t`Hidden on ${{ source: sourceLabel('nexus') }}`,
-    hiddenDated: t`Hidden on ${{ source: sourceLabel('nexus') }} · ${{ when: gone.date }}`,
     removed: t`Removed from ${{ source: sourceLabel('nexus') }}`,
-    removedDated: t`Removed from ${{ source: sourceLabel('nexus') }} · ${{ when: gone.date }}`,
   })
   return (
     <>

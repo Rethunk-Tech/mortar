@@ -67,9 +67,9 @@ function BackupRow({
   const { t } = useLingui()
   const when = backup.at > 0 ? <When value={backup.at} withTime={true} /> : backup.name
   const farms = (backup.saves ?? []).map(saveName).join(', ')
-  const meta = farms
-    ? t`${{ cause: causeLabel(backup, profiles) }} · ${{ size: formatBytes(backup.size) }} · ${farms}`
-    : t`${{ cause: causeLabel(backup, profiles) }} · ${{ size: formatBytes(backup.size) }}`
+  const meta = [causeLabel(backup, profiles), formatBytes(backup.size), farms]
+    .filter(Boolean)
+    .join(' · ')
   return (
     <Box
       sx={{

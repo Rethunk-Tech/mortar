@@ -80,16 +80,19 @@ export function About() {
               {t`Mortar`}
             </Box>
             <Box component="span" sx={{ color: 'var(--mortar-ink-sec)', fontSize: 14 }}>
-              {t`AGPL-3.0 · Rethunk-Tech/mortar`}
+              AGPL-3.0 · Rethunk-Tech/mortar
             </Box>
             {info?.version ? (
               <Box
                 component="span"
                 sx={{ color: 'var(--mortar-ink-sec)', fontSize: 14, userSelect: 'text' }}
               >
-                {info.commit
-                  ? t`Version ${{ version: info.version }} · build ${{ commit: info.commit }}`
-                  : t`Version ${{ version: info.version }}`}
+                {[
+                  t`Version ${{ version: info.version }}`,
+                  info.commit ? t`build ${{ commit: info.commit }}` : '',
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
               </Box>
             ) : null}
           </Box>

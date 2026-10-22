@@ -96,7 +96,7 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
       {evidence.map((e) => (
         <Box key={evidenceKey(e)}>
           <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{e.packName || e.packId}</Typography>
-          <EvidenceLine>{t`${{ source: e.source }} · ${{ index: e.index }}`}</EvidenceLine>
+          <EvidenceLine>{`${e.source} · ${e.index}`}</EvidenceLine>
           <EvidenceLine>{t`${{ action: e.action }} ${{ target: e.target }}`}</EvidenceLine>
           {e.keys && e.keys.length > 0 ? (
             <Typography

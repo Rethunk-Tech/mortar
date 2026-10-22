@@ -26,7 +26,7 @@ export function GameModsProgressLine({
       <Typography sx={{ fontSize: 14, color: 'text.secondary', overflowWrap: 'anywhere' }}>
         {progress === null
           ? `${verb}…`
-          : t`${verb} ${{ count: n }} of ${total} · ${{ name: progress.name }}`}
+          : `${t`${verb} ${{ count: n }} of ${total}`} · ${progress.name}`}
       </Typography>
     </Box>
   )

@@ -47,7 +47,7 @@ function CopyRow({
       <Typography noWrap={true} title={copy.name} sx={{ flex: 1, minWidth: 0, fontSize: 12 }}>
         <When value={copy.at} withTime={true} />
         <Box component="span" sx={{ color: 'text.secondary' }}>
-          {t` · Kept by the game · ${{ size: formatBytes(copy.size) }}`}
+          {` · ${[t`Kept by the game`, formatBytes(copy.size)].join(' · ')}`}
         </Box>
       </Typography>
       <TipIconButton
@@ -83,7 +83,7 @@ function Row({
       <Typography noWrap={true} sx={{ flex: 1, minWidth: 0, fontSize: 12 }}>
         {backup.at > 0 ? <When value={backup.at} withTime={true} /> : backup.name}
         <Box component="span" sx={{ color: 'text.secondary' }}>
-          {backup.pinned ? t` · ${cause} · ${size} · Kept` : t` · ${cause} · ${size}`}
+          {` · ${[cause, size, backup.pinned ? t`Kept` : ''].filter(Boolean).join(' · ')}`}
         </Box>
       </Typography>
       <TipIconButton

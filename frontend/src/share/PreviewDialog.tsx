@@ -1,8 +1,8 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, IconButton, Typography } from '@mui/material'
 import { X } from 'lucide-react'
 import { Logo } from '../brand/Logo.tsx'
+import { modsLabel } from '../i18n/counts.ts'
 import { heading } from '../mods/paper.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { space } from '../theme/density.ts'
@@ -76,10 +76,7 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
           {info.name}
         </Typography>
         <Typography sx={{ fontSize: 13, color: 'inherit' }}>
-          {plural(count, {
-            one: `${{ name: gameName }} · # mod`,
-            other: `${{ name: gameName }} · # mods`,
-          })}
+          {`${gameName} · ${modsLabel(count)}`}
         </Typography>
         <Box sx={{ ...button, bgcolor: '#1b1a17', color: '#f4f1ea', fontWeight: 700 }}>
           {t`Open in Mortar`}

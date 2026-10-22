@@ -291,7 +291,10 @@ function Active({ item }: { item: Item }) {
   const { t } = useLingui()
   const downloading = item.state === 'downloading'
   const text = downloading
-    ? t`${{ done: formatKb(downloadedKb(item)) }} of ${{ total: formatKb(item.sizeKb) }} · ${{ size: formatBytes(item.speed) }}/s`
+    ? [
+        t`${{ done: formatKb(downloadedKb(item)) }} of ${{ total: formatKb(item.sizeKb) }}`,
+        t`${{ rate: formatBytes(item.speed) }}/s`,
+      ].join(' · ')
     : t`Installing`
   return (
     <Box sx={{ ...ROW, bgcolor: 'var(--mortar-raised)' }}>

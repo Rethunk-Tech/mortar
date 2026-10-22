@@ -139,7 +139,7 @@ export function ManagerPane({
           <FoundProfileRow
             key={f.key}
             name={f.name}
-            source={f.imported ? t`${{ source: f.source }} · Imported` : f.source}
+            source={f.imported ? [f.source, t`Imported`].join(' · ') : f.source}
             mods={f.mods}
             disabled={busy || f.imported === true}
             {...(f.folder && !f.imported

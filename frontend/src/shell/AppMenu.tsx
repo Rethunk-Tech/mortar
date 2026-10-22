@@ -67,9 +67,7 @@ function NexusLines({ close }: { close: () => void }) {
   return (
     <>
       <Box sx={{ px: '14px', py: '6px', fontSize: 13 }}>
-        {signedIn
-          ? t`${{ source: sourceLabel('nexus') }} · Signed in as ${name}`
-          : t`${{ source: sourceLabel('nexus') }} · Not signed in`}
+        {[sourceLabel('nexus'), signedIn ? t`Signed in as ${name}` : t`Not signed in`].join(' · ')}
         {signedIn && premium ? (
           <Box
             component="span"

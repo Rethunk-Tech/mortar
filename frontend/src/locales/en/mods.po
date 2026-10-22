@@ -35,10 +35,6 @@ msgstr "prefix"
 msgid "Could not open the folder"
 msgstr "Could not open the folder"
 
-#: src/mods/AuthorDialog.tsx
-msgid "Author · {author}"
-msgstr "Author · {author}"
-
 #: src/mods/parts.tsx
 msgid "Remove {name} from this profile?"
 msgstr "Remove {name} from this profile?"
@@ -69,6 +65,7 @@ msgstr "Updated categories"
 msgid "Open storage settings"
 msgstr "Open storage settings"
 
+#: src/mods/NexusDetails.tsx
 #: src/mods/Sidebar.tsx
 msgid "Updated"
 msgstr "Updated"
@@ -137,10 +134,6 @@ msgstr "It was thrown in {thrown}, called from its {kind} {method} on {target}"
 #: src/mods/ExtraFolderMenu.tsx
 msgid "The downloads folder…"
 msgstr "The downloads folder…"
-
-#: src/mods/LoadOrderTab.tsx
-msgid " · {count} more required"
-msgstr " · {count} more required"
 
 #: src/mods/NexusDetails.tsx
 msgid "Sign in to {source} in Settings to see more from this mod's page."
@@ -276,10 +269,6 @@ msgstr "Resolve"
 msgid "Untrack"
 msgstr "Untrack"
 
-#: src/mods/GameModsReviewDialog.tsx
-msgid "folder {folderVersion} · profile {profileVersion}"
-msgstr "folder {folderVersion} · profile {profileVersion}"
-
 #: src/mods/problemText.ts
 msgid "Game version not supported"
 msgstr "Game version not supported"
@@ -340,10 +329,6 @@ msgstr "Dismiss {name}"
 #: src/mods/problemWhy.ts
 msgid "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
 msgstr "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
-
-#: src/mods/ModSections.tsx
-msgid "{version} · kept for rollback"
-msgstr "{version} · kept for rollback"
 
 #: src/mods/updateReview/NeedsChoice.tsx
 msgid "Needs your choice ({count})"
@@ -588,10 +573,6 @@ msgstr "{name}'s {field} is {current}, made for {currentFor}, which this profile
 msgid "No installed mods for this author."
 msgstr "No installed mods for this author."
 
-#: src/mods/ConflictWhy.tsx
-msgid "{source} · {index}"
-msgstr "{source} · {index}"
-
 #: src/mods/OtherProfilesDialog.tsx
 msgid "Already has it"
 msgstr "Already has it"
@@ -789,6 +770,10 @@ msgstr "The new version of {name} no longer includes {lost}."
 msgid "{name} needs {dep}, which is disabled."
 msgstr "{name} needs {dep}, which is disabled."
 
+#: src/mods/NexusDetails.tsx
+msgid "{unique} unique"
+msgstr "{unique} unique"
+
 #: src/mods/LoadOrderTab.tsx
 msgid "No enabled mods"
 msgstr "No enabled mods"
@@ -804,6 +789,10 @@ msgstr "Group by"
 #: src/mods/LoadOrderTab.tsx
 msgid "Needs {name} (missing)"
 msgstr "Needs {name} (missing)"
+
+#: src/mods/OptionalFileRows.tsx
+msgid "{count, plural, one {adds # file} other {adds # files}}"
+msgstr "{count, plural, one {adds # file} other {adds # files}}"
 
 #: src/mods/Toolbar.tsx
 msgid "Filter mods, filter active"
@@ -860,6 +849,10 @@ msgstr "{names} needs this version or newer."
 #: src/mods/describe.ts
 msgid "{name} has a file path {count} characters long, more than most {os} games can open."
 msgstr "{name} has a file path {count} characters long, more than most {os} games can open."
+
+#: src/mods/ModSections.tsx
+msgid "kept for rollback"
+msgstr "kept for rollback"
 
 #: src/mods/listRows.ts
 #: src/mods/Sidebar.tsx
@@ -1065,6 +1058,10 @@ msgstr "Could not read the game log"
 msgid "Disable"
 msgstr "Disable"
 
+#: src/mods/GameModsReviewDialog.tsx
+msgid "folder {version}"
+msgstr "folder {version}"
+
 #: src/mods/LegacyReview.tsx
 msgid "Supplies tilesheets for other mods"
 msgstr "Supplies tilesheets for other mods"
@@ -1091,6 +1088,10 @@ msgstr "Kept at this version ({count})"
 #: src/mods/updateReview/Row.tsx
 msgid "{source} does not allow downloads outside its own page: get it there."
 msgstr "{source} does not allow downloads outside its own page: get it there."
+
+#: src/mods/NexusDetails.tsx
+msgid "Created"
+msgstr "Created"
 
 #: src/mods/Toolbar.tsx
 msgid "Hidden"
@@ -1404,12 +1405,6 @@ msgstr "{failed} failed"
 msgid "{name} lists itself as a dependency, so {loader} skips it."
 msgstr "{name} lists itself as a dependency, so {loader} skips it."
 
-#: src/mods/NexusDetails.tsx
-#: src/mods/parts.tsx
-#: src/mods/Sidebar.tsx
-msgid "Removed from {source} · {when}"
-msgstr "Removed from {source} · {when}"
-
 #: src/mods/problemWhy.ts
 msgid "The author marked this mod as deprecated. It will not get fixes and may break with the next game update."
 msgstr "The author marked this mod as deprecated. It will not get fixes and may break with the next game update."
@@ -1501,10 +1496,6 @@ msgstr "Reinstall with options…"
 #: src/mods/OtherProfilesDialog.tsx
 msgid "Could not read other profiles"
 msgstr "Could not read other profiles"
-
-#: src/mods/NexusDetails.tsx
-msgid "Created · updated"
-msgstr "Created · updated"
 
 #: src/mods/ProblemsTab.tsx
 msgid "Problem sections"
@@ -2017,12 +2008,6 @@ msgstr "Error in {name}"
 #: src/mods/NexusDetails.tsx
 #: src/mods/parts.tsx
 #: src/mods/Sidebar.tsx
-msgid "Hidden on {source} · {when}"
-msgstr "Hidden on {source} · {when}"
-
-#: src/mods/NexusDetails.tsx
-#: src/mods/parts.tsx
-#: src/mods/Sidebar.tsx
 msgid "Hidden on {source}"
 msgstr "Hidden on {source}"
 
@@ -2108,6 +2093,10 @@ msgstr "Restored the profile from before Update all"
 #: src/mods/Sidebar.tsx
 msgid "Show skipped update"
 msgstr "Show skipped update"
+
+#: src/mods/OptionalFileRows.tsx
+msgid "{count, plural, one {Replaces # file} other {Replaces # files}}"
+msgstr "{count, plural, one {Replaces # file} other {Replaces # files}}"
 
 #: src/mods/ChangeVersionDialog.tsx
 msgid "No versions are listed."
@@ -2206,10 +2195,6 @@ msgstr "{count, plural, one {# update ready} other {# updates ready}}"
 #: src/mods/ModDependencyTree.tsx
 msgid "Optional"
 msgstr "Optional"
-
-#: src/mods/NexusDetails.tsx
-msgid "{downloads} · {unique} unique"
-msgstr "{downloads} · {unique} unique"
 
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Contents of {name}"
@@ -2366,10 +2351,6 @@ msgstr "Details of {name}"
 #: src/mods/typedConfig/ConfigTab.tsx
 msgid "All"
 msgstr "All"
-
-#: src/mods/OptionalFileRows.tsx
-msgid "{count, plural, one {Replaces # file · adds {added}} other {Replaces # files · adds {added}}}"
-msgstr "{count, plural, one {Replaces # file · adds {added}} other {Replaces # files · adds {added}}}"
 
 #: src/mods/GroupMenu.tsx
 msgid "The mods in it stay in the profile; only the group is deleted."
@@ -2841,10 +2822,6 @@ msgstr "Abstain"
 msgid "Add an item"
 msgstr "Add an item"
 
-#: src/mods/updates.ts
-msgid "Checked for updates · {when}"
-msgstr "Checked for updates · {when}"
-
 #: src/mods/AuthorDialog.tsx
 #: src/mods/listRows.ts
 #: src/mods/ModDependencyTree.tsx
@@ -2872,6 +2849,10 @@ msgstr "winner"
 #: src/mods/updates.ts
 msgid "Checked for updates"
 msgstr "Checked for updates"
+
+#: src/mods/LoadOrderTab.tsx
+msgid "{count} more required"
+msgstr "{count} more required"
 
 #: src/mods/ModActionItems.tsx
 msgid "Other profiles"
@@ -3183,6 +3164,10 @@ msgstr "Adult content"
 msgid "Mods in this category will move to Uncategorised."
 msgstr "Mods in this category will move to Uncategorised."
 
+#: src/mods/GameModsReviewDialog.tsx
+msgid "profile {version}"
+msgstr "profile {version}"
+
 #: src/mods/columnLabel.ts
 msgid "Order"
 msgstr "Order"
@@ -3219,6 +3204,7 @@ msgstr "Move down (wins files)"
 msgid "{name} is obsolete: {summary}"
 msgstr "{name} is obsolete: {summary}"
 
+#: src/mods/AuthorDialog.tsx
 #: src/mods/columnLabel.ts
 #: src/mods/ModDisplayEdit.tsx
 #: src/mods/Toolbar.tsx

@@ -482,9 +482,8 @@ export function StatusBar({
   const counts = MOD_STATES.filter((s) => summary.counts[s] > 0)
   const detail = [
     // A mod whose source reports no size adds 0, so a 0 total means unknown rather than nothing to fetch.
-    ready && summary.sizeKb > 0
-      ? t`${plural({ count: total }, { one: '# mod', other: '# mods' })} · about ${size} to download`
-      : modsLabel(total),
+    modsLabel(total),
+    ready && summary.sizeKb > 0 ? t`about ${size} to download` : '',
     preview.settings > 0 ? settings : '',
     carried.length > 0
       ? t`Includes: ${{ names: listNames(carried.map((c) => carriedLabels[c])) }}`

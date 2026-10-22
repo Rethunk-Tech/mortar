@@ -71,13 +71,17 @@ function CopyingDialog({
           <CircularProgress size={24} />
           <Typography>
             {progress
-              ? plural(
-                  { count: progress.total },
-                  {
-                    one: `${{ current: progress.current }} of # mod · ${{ size: formatBytes(progress.bytes) }} · ${{ rate: formatBytes(progress.rate) }}/s`,
-                    other: `${{ current: progress.current }} of # mods · ${{ size: formatBytes(progress.bytes) }} · ${{ rate: formatBytes(progress.rate) }}/s`,
-                  },
-                )
+              ? [
+                  plural(
+                    { count: progress.total },
+                    {
+                      one: `${{ current: progress.current }} of # mod`,
+                      other: `${{ current: progress.current }} of # mods`,
+                    },
+                  ),
+                  formatBytes(progress.bytes),
+                  t`${{ rate: formatBytes(progress.rate) }}/s`,
+                ].join(' · ')
               : t`Preparing transfer…`}
           </Typography>
         </Box>

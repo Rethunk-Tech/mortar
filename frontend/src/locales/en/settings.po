@@ -236,9 +236,17 @@ msgstr "Free"
 msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
 msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it."
 
+#: src/settings/NexusMeter.tsx
+msgid "{remaining} of {limit} this hour"
+msgstr "{remaining} of {limit} this hour"
+
 #: src/settings/sections/Shortcuts.tsx
 msgid "Tabs"
 msgstr "Tabs"
+
+#: src/settings/sections/About.tsx
+msgid "build {commit}"
+msgstr "build {commit}"
 
 #: src/settings/sections/DataUsage.tsx
 msgid "Clear cache…"
@@ -271,6 +279,10 @@ msgstr "Switch to Problems"
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Year"
 msgstr "Year"
+
+#: src/settings/sections/DataMove.tsx
+msgid "{count, plural, one {{files}/# file} other {{files}/# files}}"
+msgstr "{count, plural, one {{files}/# file} other {{files}/# files}}"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "Used with Custom command. {path} stands for the folder to scan; exit code 0 means clean, any other code a detection, and the first line it prints names it."
@@ -533,6 +545,10 @@ msgstr "A game update replaced {name}'s launcher"
 msgid "Your profiles have {version}. Update replaces each profile's copy."
 msgstr "Your profiles have {version}. Update replaces each profile's copy."
 
+#: src/settings/sections/DataStoreReport.tsx
+msgid "{count} selected"
+msgstr "{count} selected"
+
 #: src/settings/prefCopyGame.ts
 msgid "Enable them in this profile's own copy of the file before each launch. Your own file is never changed."
 msgstr "Enable them in this profile's own copy of the file before each launch. Your own file is never changed."
@@ -570,6 +586,10 @@ msgstr "Game folder"
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Boss names"
 msgstr "Boss names"
+
+#: src/settings/NexusMeter.tsx
+msgid "{remaining} of {limit} requests left today"
+msgstr "{remaining} of {limit} requests left today"
 
 #: src/settings/prefCopy.ts
 msgid "List mods inside a folder whose name starts with a dot, which {loader} skips"
@@ -685,10 +705,6 @@ msgstr "Dismissed folders"
 #: src/settings/sections/DataBackups.tsx
 msgid "{game} save backups: {size}"
 msgstr "{game} save backups: {size}"
-
-#: src/settings/NexusMeter.tsx
-msgid "{remaining} of {limit} requests left today · {hourlyRemaining} of {hourlyLimit} this hour"
-msgstr "{remaining} of {limit} requests left today · {hourlyRemaining} of {hourlyLimit} this hour"
 
 #: src/settings/prefCopy.ts
 msgid "Live log starts at this level and above"
@@ -1102,10 +1118,6 @@ msgstr "Which version of a {source} mod's dependency to install when the mod nam
 msgid "Download speed limit (MB/s)"
 msgstr "Download speed limit (MB/s)"
 
-#: src/settings/sections/DataStoreReport.tsx
-msgid "{count} selected · {size}"
-msgstr "{count} selected · {size}"
-
 #: src/settings/sections/WatchFolders.tsx
 msgid "Offer installs: new archives (.zip, .7z, .rar, .tar.gz and the like) that land in the folder are offered for install. Auto-install: the folder itself is installed into the open profile as one mod each time its files change, for a mod's build output; a rebuild replaces the last one. Subfolders are not watched."
 msgstr "Offer installs: new archives (.zip, .7z, .rar, .tar.gz and the like) that land in the folder are offered for install. Auto-install: the folder itself is installed into the open profile as one mod each time its files change, for a mod's build output; a rebuild replaces the last one. Subfolders are not watched."
@@ -1135,10 +1147,6 @@ msgstr "Offer new downloads"
 #: src/settings/sections/ExtraModsFolders.tsx
 msgid "Extra mods folder"
 msgstr "Extra mods folder"
-
-#: src/settings/sections/ScheduledStatus.tsx
-msgid "Last scheduled backup {when} · next one is due"
-msgstr "Last scheduled backup {when} · next one is due"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Links for games Mortar does not manage open in the app that had them before."
@@ -1508,6 +1516,10 @@ msgstr "{source} download host"
 msgid "Download folder"
 msgstr "Download folder"
 
+#: src/settings/sections/Sources.tsx
+msgid "{remaining} of {limit} requests left"
+msgstr "{remaining} of {limit} requests left"
+
 #: src/settings/startupChecks.ts
 msgid "Mortar closed unexpectedly last time"
 msgstr "Mortar closed unexpectedly last time"
@@ -1774,6 +1786,10 @@ msgstr "Edit {name}"
 msgid "Kept in your system keyring. Find it on {source} under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on {source} under Settings, API Keys."
 
+#: src/settings/NexusMeter.tsx
+msgid "Daily count resets {when}"
+msgstr "Daily count resets {when}"
+
 #: src/settings/sections/Appearance.tsx
 msgid "App font"
 msgstr "App font"
@@ -1903,10 +1919,6 @@ msgstr "{count, plural, one {Import # change} other {Import # changes}}"
 msgid "Badge checks for other profiles"
 msgstr "Badge checks for other profiles"
 
-#: src/settings/sections/About.tsx
-msgid "Version {version} · build {commit}"
-msgstr "Version {version} · build {commit}"
-
 #: src/settings/shortcutLabels.ts
 msgid "Export or share the open profile"
 msgstr "Export or share the open profile"
@@ -1987,6 +1999,10 @@ msgstr "Run again"
 #: src/settings/sections/GameSettings.tsx
 msgid "Remove {loader} from {launcher}'s launch options"
 msgstr "Remove {loader} from {launcher}'s launch options"
+
+#: src/settings/sections/Sources.tsx
+msgid "resets {when}"
+msgstr "resets {when}"
 
 #: src/settings/prefCopyModsView.ts
 msgid "Group"
@@ -2077,10 +2093,6 @@ msgstr "Approve Mortar in your browser…"
 msgid "Spacing of buttons and lists"
 msgstr "Spacing of buttons and lists"
 
-#: src/settings/sections/DataMove.tsx
-msgid "{count, plural, one {{files}/# file · {done} / {total}} other {{files}/# files · {done} / {total}}}"
-msgstr "{count, plural, one {{files}/# file · {done} / {total}} other {{files}/# files · {done} / {total}}}"
-
 #: src/settings/SettingsPage.tsx
 msgid "Source health"
 msgstr "Source health"
@@ -2100,6 +2112,10 @@ msgstr "{name} is set per profile"
 #: src/settings/sections/DataMove.tsx
 msgid "Free space at destination: {size}"
 msgstr "Free space at destination: {size}"
+
+#: src/settings/sections/ScheduledStatus.tsx
+msgid "next in {next} h"
+msgstr "next in {next} h"
 
 #: src/settings/sections/DataMove.tsx
 msgid "Data to copy: {size}"
@@ -2181,10 +2197,6 @@ msgstr "Nothing to clean up."
 msgid "Take back"
 msgstr "Take back"
 
-#: src/settings/sections/ScheduledStatus.tsx
-msgid "Last scheduled backup {when} · next in {next} h"
-msgstr "Last scheduled backup {when} · next in {next} h"
-
 #: src/settings/prefCopy.ts
 msgid "How often background checks report new mod updates. The In Mortar and desktop switches choose where."
 msgstr "How often background checks report new mod updates. The In Mortar and desktop switches choose where."
@@ -2193,13 +2205,13 @@ msgstr "How often background checks report new mod updates. The In Mortar and de
 msgid "Retention"
 msgstr "Retention"
 
+#: src/settings/sections/ScheduledStatus.tsx
+msgid "next one is due"
+msgstr "next one is due"
+
 #: src/settings/sections/LoaderRow.tsx
 msgid "Install {name} {version}?"
 msgstr "Install {name} {version}?"
-
-#: src/settings/GameSettingsPage.tsx
-msgid " · {name} {version}"
-msgstr " · {name} {version}"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Hide token"
@@ -2237,10 +2249,6 @@ msgstr "Show the author line on grid cards"
 #: src/settings/sections/ItchAccount.tsx
 msgid "Test"
 msgstr "Test"
-
-#: src/settings/NexusMeter.tsx
-msgid "Hourly count resets {hourlyReset} · daily count resets {dailyReset}"
-msgstr "Hourly count resets {hourlyReset} · daily count resets {dailyReset}"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "Keep the newest backups of each save and delete the rest. Pinned backups are never deleted."
@@ -2423,10 +2431,6 @@ msgstr "Restore the last window bounds on startup"
 msgid "Trim save backups"
 msgstr "Trim save backups"
 
-#: src/settings/sections/About.tsx
-msgid "AGPL-3.0 · Rethunk-Tech/mortar"
-msgstr "AGPL-3.0 · Rethunk-Tech/mortar"
-
 #: src/settings/prefCopy.ts
 msgid "Expanded"
 msgstr "Expanded"
@@ -2484,6 +2488,10 @@ msgstr "Copy report"
 msgid "Mortar downloads and installs a mod when you click Mod Manager Download on {source}."
 msgstr "Mortar downloads and installs a mod when you click Mod Manager Download on {source}."
 
+#: src/settings/NexusMeter.tsx
+msgid "Hourly count resets {when}"
+msgstr "Hourly count resets {when}"
+
 #: src/settings/sections/DataHistory.tsx
 msgid "Changes to keep"
 msgstr "Changes to keep"
@@ -2491,10 +2499,6 @@ msgstr "Changes to keep"
 #: src/settings/prefCopyModsView.ts
 msgid "Always shown"
 msgstr "Always shown"
-
-#: src/settings/sections/Sources.tsx
-msgid "{remaining} of {limit} requests left · resets {when}"
-msgstr "{remaining} of {limit} requests left · resets {when}"
 
 #: src/settings/sections/Shortcuts.tsx
 msgid "Change shortcut for {name}, currently {shown}"

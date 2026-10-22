@@ -48,13 +48,12 @@ function usePopularity(item: BrowseItem): string {
 
 /** A hit's popularity line for its details: popularity and downloads (GitHub counts no downloads). */
 function useStats(item: BrowseItem): string {
-  const { t } = useLingui()
   const popularity = usePopularity(item)
   const dl = plural({ count: item.downloads }, { one: '# download', other: '# downloads' })
   if (item.source === GITHUB) {
     return popularity
   }
-  return popularity === '' ? dl : t`${popularity} · ${dl}`
+  return popularity === '' ? dl : `${popularity} · ${dl}`
 }
 
 /** The parts of a card's stats line for the chosen stats, leaving out what the hit's site does not say. */

@@ -18,10 +18,10 @@ export function ScheduledStatus() {
     if (hours === 0) {
       text = t`Last scheduled backup ${when}`
     } else {
-      text =
-        next === 0
-          ? t`Last scheduled backup ${when} · next one is due`
-          : t`Last scheduled backup ${when} · next in ${next} h`
+      text = [
+        t`Last scheduled backup ${when}`,
+        next === 0 ? t`next one is due` : t`next in ${next} h`,
+      ].join(' · ')
     }
   }
   return (

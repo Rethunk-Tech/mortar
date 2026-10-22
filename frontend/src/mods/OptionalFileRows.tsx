@@ -52,7 +52,7 @@ function FileFacts({ file }: { file: File | undefined }) {
 
 /** The main mod's files an optional file replaces, and the files it adds. */
 function FilePaths({ set }: { set: OverlayFileSet | undefined }) {
-  const { i18n, t } = useLingui()
+  const { t } = useLingui()
   const replaces = set?.replaces ?? []
   const adds = set?.adds ?? []
   const added = adds.length
@@ -67,15 +67,10 @@ function FilePaths({ set }: { set: OverlayFileSet | undefined }) {
     ))
   return (
     <Fold
-      title={i18n._(
-        plural(
-          { count: replaces.length },
-          {
-            one: `Replaces # file · adds ${added}`,
-            other: `Replaces # files · adds ${added}`,
-          },
-        ),
-      )}
+      title={[
+        plural({ count: replaces.length }, { one: 'Replaces # file', other: 'Replaces # files' }),
+        plural({ count: added }, { one: 'adds # file', other: 'adds # files' }),
+      ].join(' · ')}
     >
       {replaces.length > 0 ? (
         <Typography sx={{ ...muted, fontWeight: 700 }}>{t`Replaces`}</Typography>

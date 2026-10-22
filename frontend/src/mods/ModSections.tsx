@@ -71,7 +71,7 @@ function Versions({
       {state?.previousVersion ? (
         <Box sx={row}>
           <Typography sx={{ flex: 1, ...text }}>
-            {t`${{ version: state.previousVersion }} · kept for rollback`}
+            {`${state.previousVersion} · ${t`kept for rollback`}`}
           </Typography>
           <LockedReason locked={locked}>
             <Button size="small" variant="outlined" disabled={locked} onClick={ask}>

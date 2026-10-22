@@ -139,6 +139,10 @@ msgstr "Could not delete the template"
 msgid "Different version {count} (kept as is)"
 msgstr "Different version {count} (kept as is)"
 
+#: src/game/Hero.tsx
+msgid "revision {review} is out"
+msgstr "revision {review} is out"
+
 #: src/game/FarmMenuItem.tsx
 msgid "Could not queue the downloads"
 msgstr "Could not queue the downloads"
@@ -190,6 +194,10 @@ msgstr "Open {game} ({count, plural, one {# more profile} other {# more profiles
 #: src/share/ImportPreview.tsx
 msgid "{name} is broken for {detail}"
 msgstr "{name} is broken for {detail}"
+
+#: src/saves/SaveBackupsButton.tsx
+msgid "Kept by the game"
+msgstr "Kept by the game"
 
 #: src/firstrunTour/TourPopover.tsx
 msgid "Switch game"
@@ -273,6 +281,10 @@ msgstr "Could not add the chosen folder"
 #: src/game/Sidebar.tsx
 msgid "Config"
 msgstr "Config"
+
+#: src/lan/SendPanel.tsx
+msgid "Not paired"
+msgstr "Not paired"
 
 #: src/share/MethodPanes.tsx
 msgid "Enable and continue"
@@ -442,6 +454,10 @@ msgid "Rename"
 msgstr "Rename"
 
 #: src/lan/SendPanel.tsx
+msgid "Only links"
+msgstr "Only links"
+
+#: src/lan/SendPanel.tsx
 msgid "Send only links to {name}?"
 msgstr "Send only links to {name}?"
 
@@ -521,10 +537,6 @@ msgstr "Could not export the collection draft"
 #: src/toasts/EarlierChanges.tsx
 msgid "Undo this and {count, plural, one {# later change} other {# later changes}}?"
 msgstr "Undo this and {count, plural, one {# later change} other {# later changes}}?"
-
-#: src/saves/SaveBackupsButton.tsx
-msgid " · Kept by the game · {size}"
-msgstr " · Kept by the game · {size}"
 
 #: src/share/DestinationGrid.tsx
 msgid "Local archives cannot go here"
@@ -788,6 +800,10 @@ msgstr "{name} was removed from {source}"
 msgid "Marked broken"
 msgstr "Marked broken"
 
+#: src/lan/SendPanel.tsx
+msgid "Paired"
+msgstr "Paired"
+
 #: src/groups/SaveGroupToLibrary.tsx
 msgid "Could not save the group"
 msgstr "Could not save the group"
@@ -901,6 +917,10 @@ msgstr "Actions"
 msgid "Continue anyway"
 msgstr "Continue anyway"
 
+#: src/saves/SaveBackupsButton.tsx
+msgid "Kept"
+msgstr "Kept"
+
 #: src/shell/AppMenu.tsx
 msgid "Could not quit Mortar"
 msgstr "Could not quit Mortar"
@@ -925,10 +945,6 @@ msgstr "Host:port"
 #: src/share/ImportFooter.tsx
 msgid "These will be removed ({count})"
 msgstr "These will be removed ({count})"
-
-#: src/saves/SaveBackupsButton.tsx
-msgid " · {cause} · {size} · Kept"
-msgstr " · {cause} · {size} · Kept"
 
 #: src/firstrun/ProfileStep.tsx
 msgid "Enter a name for the profile."
@@ -1035,10 +1051,6 @@ msgstr "Include libraries and supporting mods"
 msgid "Queued"
 msgstr "Queued"
 
-#: src/lan/SendPanel.tsx
-msgid "Not paired · only links"
-msgstr "Not paired · only links"
-
 #: src/commandPalette/paletteLabels.ts
 #: src/firstrun/ProfileStep.tsx
 #: src/game/NewProfileDialog.tsx
@@ -1057,6 +1069,10 @@ msgstr "Open profile first."
 #: src/saves/SavesTab.tsx
 msgid "Try a different search."
 msgstr "Try a different search."
+
+#: src/shell/AppMenu.tsx
+msgid "Not signed in"
+msgstr "Not signed in"
 
 #: src/queue/QueueHistory.tsx
 msgid "{game} profile"
@@ -1265,10 +1281,6 @@ msgstr "Move {name} down"
 msgid "Last played with {profile}"
 msgstr "Last played with {profile}"
 
-#: src/shell/AppMenu.tsx
-msgid "{source} · Signed in as {name}"
-msgstr "{source} · Signed in as {name}"
-
 #: src/saves/SaveRow.tsx
 msgid "All mods present"
 msgstr "All mods present"
@@ -1338,10 +1350,6 @@ msgstr "Left out: {names}"
 #: src/shell/BugReportDialog.tsx
 msgid "What happened"
 msgstr "What happened"
-
-#: src/shell/AppMenu.tsx
-msgid "{source} · Not signed in"
-msgstr "{source} · Not signed in"
 
 #: src/share/ModpackDialog.tsx
 msgid "Export as {source} modpack"
@@ -1436,6 +1444,10 @@ msgstr "Check again"
 #: src/share/ImportPreview.tsx
 msgid "different file"
 msgstr "different file"
+
+#: src/queue/QueueRows.tsx
+msgid "Waiting for a free slot"
+msgstr "Waiting for a free slot"
 
 #: src/share/ModpackDialog.tsx
 msgid "Modpack saved"
@@ -1644,10 +1656,6 @@ msgstr "The name may hold only letters, digits and underscores."
 msgid "Update available"
 msgstr "Update available"
 
-#: src/queue/QueueBody.tsx
-msgid "{done} of {total} · {size}/s"
-msgstr "{done} of {total} · {size}/s"
-
 #: src/browse/BrowseShow.tsx
 msgid "Size"
 msgstr "Size"
@@ -1684,6 +1692,10 @@ msgstr "Changed"
 msgid "Added {mods} to {profile}"
 msgstr "Added {mods} to {profile}"
 
+#: src/lan/SendPanel.tsx
+msgid "Whole files"
+msgstr "Whole files"
+
 #: src/launch/autoUpdate.ts
 msgid "Timed out waiting for mod updates"
 msgstr "Timed out waiting for mod updates"
@@ -1715,9 +1727,10 @@ msgstr "Changelog"
 msgid "Try my Mortar profile \"{name}\" for {game} ({count, plural, one {# mod} other {# mods}}): {web}"
 msgstr "Try my Mortar profile \"{name}\" for {game} ({count, plural, one {# mod} other {# mods}}): {web}"
 
-#: src/share/ManagerPane.tsx
-msgid "{source} · Imported"
-msgstr "{source} · Imported"
+#: src/lan/IncomingPrompt.tsx
+#: src/queue/QueueBody.tsx
+msgid "{rate}/s"
+msgstr "{rate}/s"
 
 #: src/install/DownloadsDialog.tsx
 msgid "Search archives"
@@ -1730,10 +1743,6 @@ msgstr "Created"
 #: src/launch/KnownGoodOffer.tsx
 msgid "The game started without errors"
 msgstr "The game started without errors"
-
-#: src/nxm/store.ts
-msgid "Mortar · Install {name}?"
-msgstr "Mortar · Install {name}?"
 
 #: src/firstrun/ProfileStep.tsx
 msgid "Main"
@@ -1919,10 +1928,6 @@ msgstr "Save to library"
 #: src/sync/SyncOffers.tsx
 msgid "Waiting for {machine}'s profile file to finish syncing. Changes made here are written out once it arrives."
 msgstr "Waiting for {machine}'s profile file to finish syncing. Changes made here are written out once it arrives."
-
-#: src/saves/SaveBackupsButton.tsx
-msgid " · {cause} · {size}"
-msgstr " · {cause} · {size}"
 
 #: src/lan/IncomingPrompt.tsx
 msgid "Update {name} from {sender}"
@@ -2718,6 +2723,10 @@ msgstr "Freeze this profile"
 msgid "This save has no SaveGameInfo date, so Mortar cannot tell when it is in the game."
 msgstr "This save has no SaveGameInfo date, so Mortar cannot tell when it is in the game."
 
+#: src/share/ManagerPane.tsx
+msgid "Imported"
+msgstr "Imported"
+
 #: src/game/ProfileContextMenu.tsx
 #: src/game/ProfileMenu.tsx
 msgid "Edit profile…"
@@ -2794,10 +2803,6 @@ msgstr "Load order"
 msgid "Deprecated or obsolete"
 msgstr "Deprecated or obsolete"
 
-#: src/share/MethodPanes.tsx
-msgid "{length} of {limit} characters · close to the {app} message limit"
-msgstr "{length} of {limit} characters · close to the {app} message limit"
-
 #: src/share/ImportPreview.tsx
 msgid "copied from this computer"
 msgstr "copied from this computer"
@@ -2828,10 +2833,6 @@ msgstr "{count, plural, one {# download} other {# downloads}}"
 #: src/install/DownloadsDialog.tsx
 msgid "Archives"
 msgstr "Archives"
-
-#: src/nxm/ArrivalDialog.tsx
-msgid "{fileName} · {size}"
-msgstr "{fileName} · {size}"
 
 #: src/game/HomeNotes.tsx
 msgid "Saved"
@@ -2965,6 +2966,10 @@ msgstr "Opened the {source} page. Save the file from it; Mortar offers it from y
 msgid "Sign in to {source}"
 msgstr "Sign in to {source}"
 
+#: src/share/MethodPanes.tsx
+msgid "close to the {app} message limit"
+msgstr "close to the {app} message limit"
+
 #: src/games/AddGameDialog.tsx
 msgid "Could not add the game"
 msgstr "Could not add the game"
@@ -3011,13 +3016,13 @@ msgstr "Undo this change: {name}"
 msgid "Retrying in {count} s."
 msgstr "Retrying in {count} s."
 
+#: src/lan/IncomingPrompt.tsx
+msgid "{count, plural, one {{current} of # mod} other {{current} of # mods}}"
+msgstr "{count, plural, one {{current} of # mod} other {{current} of # mods}}"
+
 #: src/launch/PlayInstances.tsx
 msgid "This game starts through its store, which runs one copy. A Direct launch can start several."
 msgstr "This game starts through its store, which runs one copy. A Direct launch can start several."
-
-#: src/share/MethodPanes.tsx
-msgid "{length} of {limit} characters · too long for one {app} message"
-msgstr "{length} of {limit} characters · too long for one {app} message"
 
 #: src/tools/ToolsManageDialog.tsx
 msgid "Edit {name}"
@@ -3757,6 +3762,10 @@ msgstr "Details of {name}"
 msgid "{sources} cannot be reached"
 msgstr "{sources} cannot be reached"
 
+#: src/share/MethodPanes.tsx
+msgid "fits one {app} message"
+msgstr "fits one {app} message"
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Switch to Load order"
 msgstr "Switch to Load order"
@@ -3842,6 +3851,10 @@ msgstr "Executable"
 #: src/launch/UpdateWarnDialog.tsx
 msgid "Play anyway"
 msgstr "Play anyway"
+
+#: src/share/MethodPanes.tsx
+msgid "{length} of {limit} characters"
+msgstr "{length} of {limit} characters"
 
 #: src/share/MethodPanes.tsx
 msgid "Copy code"
@@ -3966,6 +3979,10 @@ msgstr "Send to an address…"
 #: src/game/NewProfileDialog.tsx
 msgid "{count, plural, one {Created {name}; # mod still to download} other {Created {name}; # mods still to download}}"
 msgstr "{count, plural, one {Created {name}; # mod still to download} other {Created {name}; # mods still to download}}"
+
+#: src/game/Hero.tsx
+msgid "revision {revision}"
+msgstr "revision {revision}"
 
 #: src/queue/QueueBody.tsx
 msgid "Cancel {name}"
@@ -4147,10 +4164,6 @@ msgstr "Not now"
 msgid "{count, plural, one {Update # mod} other {Update # mods}}"
 msgstr "{count, plural, one {Update # mod} other {Update # mods}}"
 
-#: src/queue/QueueRows.tsx
-msgid "Waiting for a free slot · {done} of {total}"
-msgstr "Waiting for a free slot · {done} of {total}"
-
 #: src/queue/LargeDownloadDialog.tsx
 msgid "{more} more large downloads are waiting after this one."
 msgstr "{more} more large downloads are waiting after this one."
@@ -4269,6 +4282,11 @@ msgstr "Open folder"
 msgid "Loading…"
 msgstr "Loading…"
 
+#: src/queue/QueueBody.tsx
+#: src/queue/QueueRows.tsx
+msgid "{done} of {total}"
+msgstr "{done} of {total}"
+
 #: src/nxm/store.ts
 msgid "Downloading {name} into {profile}"
 msgstr "Downloading {name} into {profile}"
@@ -4332,10 +4350,6 @@ msgstr "Unhide"
 #: src/firstrun/ProfileStep.tsx
 msgid "Preview link…"
 msgstr "Preview link…"
-
-#: src/share/MethodPanes.tsx
-msgid "{length} of {limit} characters · fits one {app} message"
-msgstr "{length} of {limit} characters · fits one {app} message"
 
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Could not set the cover"
@@ -4456,10 +4470,6 @@ msgstr "Pause all"
 #: src/game/ProfileMenu.tsx
 msgid "No other profile to add them to."
 msgstr "No other profile to add them to."
-
-#: src/saves/BackupsDialog.tsx
-msgid "{cause} · {size} · {farms}"
-msgstr "{cause} · {size} · {farms}"
 
 #: src/share/ImportPreview.tsx
 msgid "{leftOut} left out"
@@ -4584,10 +4594,6 @@ msgstr "{name} did not start"
 msgid "Join our {app}"
 msgstr "Join our {app}"
 
-#: src/lan/IncomingPrompt.tsx
-msgid "{count, plural, one {{current} of # mod · {size} · {rate}/s} other {{current} of # mods · {size} · {rate}/s}}"
-msgstr "{count, plural, one {{current} of # mod · {size} · {rate}/s} other {{current} of # mods · {size} · {rate}/s}}"
-
 #: src/share/ModpackDialog.tsx
 msgid "README"
 msgstr "README"
@@ -4597,6 +4603,7 @@ msgid "Could not open Mortar's log"
 msgstr "Could not open Mortar's log"
 
 #: src/nxm/ArrivalDialog.tsx
+#: src/nxm/store.ts
 msgid "Install {name}?"
 msgstr "Install {name}?"
 
@@ -4623,10 +4630,6 @@ msgstr "Paste a link…"
 #: src/browse/BrowseMenu.tsx
 msgid "Already in this profile."
 msgstr "Already in this profile."
-
-#: src/share/ImportPreview.tsx
-msgid "{count, plural, one {# mod} other {# mods}} · about {size} to download"
-msgstr "{count, plural, one {# mod} other {# mods}} · about {size} to download"
 
 #: src/saves/saveName.ts
 msgid "Creative Building"
@@ -4664,10 +4667,6 @@ msgstr "Mortar menu"
 #: src/saves/BackupsDialog.tsx
 msgid "Kept forever"
 msgstr "Kept forever"
-
-#: src/saves/BackupsDialog.tsx
-msgid "{cause} · {size}"
-msgstr "{cause} · {size}"
 
 #: src/nxm/store.ts
 msgid "Mod link not used"
@@ -4784,10 +4783,6 @@ msgstr "Standard"
 #: src/saves/SaveBackupsButton.tsx
 msgid "The backup from {when} is deleted for good, with every save in it."
 msgstr "The backup from {when} is deleted for good, with every save in it."
-
-#: src/browse/stats.ts
-msgid "{popularity} · {dl}"
-msgstr "{popularity} · {dl}"
 
 #: src/queue/QueueBody.tsx
 msgid "Could not verify its source"
@@ -5165,10 +5160,6 @@ msgstr "{count, plural, one {# settings file was} other {# settings files were}}
 msgid "Install {file} as from {page}?"
 msgstr "Install {file} as from {page}?"
 
-#: src/game/Hero.tsx
-msgid "· revision {revision}"
-msgstr "· revision {revision}"
-
 #: src/game/NewProfileDialog.tsx
 #: src/game/TemplateMenuItems.tsx
 msgid "Manage templates…"
@@ -5320,6 +5311,7 @@ msgid "{name} here is another mod manager's copy. Removing that manager removes 
 msgstr "{name} here is another mod manager's copy. Removing that manager removes {name}."
 
 #: src/firstrun/NexusStep.tsx
+#: src/shell/AppMenu.tsx
 msgid "Signed in as {name}"
 msgstr "Signed in as {name}"
 
@@ -5357,10 +5349,6 @@ msgstr "This download is {size}, far larger than a mod normally is. It will take
 msgid "On the other computer, choose Enter code and type this. It works once, for five minutes."
 msgstr "On the other computer, choose Enter code and type this. It works once, for five minutes."
 
-#: src/queue/QueueSheet.tsx
-msgid "{summary} · {size}"
-msgstr "{summary} · {size}"
-
 #: src/saves/SavesTab.tsx
 msgid "Play this profile and save a game. Each save shows here, with its backups."
 msgstr "Play this profile and save a game. Each save shows here, with its backups."
@@ -5372,6 +5360,10 @@ msgstr "install reasons"
 #: src/lan/OutgoingProgress.tsx
 msgid "Sending to {peer} stopped: {why}"
 msgstr "Sending to {peer} stopped: {why}"
+
+#: src/share/ImportPreview.tsx
+msgid "about {size} to download"
+msgstr "about {size} to download"
 
 #: src/groups/SaveGroupToLibrary.tsx
 #: src/share/ImportFooter.tsx
@@ -5449,12 +5441,6 @@ msgstr "Continue"
 #: src/browse/BrowseDetails.tsx
 msgid "Dependencies"
 msgstr "Dependencies"
-
-#: src/launch/LaunchLayer.tsx
-#: src/share/PreviewDialog.tsx
-#: src/share/ShareDialog.tsx
-msgid "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
-msgstr "{count, plural, one {{name} · # mod} other {{name} · # mods}}"
 
 #: src/games/GameSelect.tsx
 #: src/games/ProfileCards.tsx
@@ -5599,10 +5585,6 @@ msgstr "{name} is not in {profile}"
 msgid "Start the game once so Mortar can see the crash."
 msgstr "Start the game once so Mortar can see the crash."
 
-#: src/lan/SendPanel.tsx
-msgid "Paired · whole files"
-msgstr "Paired · whole files"
-
 #: src/install/DownloadsDialog.tsx
 msgid "No archives match"
 msgstr "No archives match"
@@ -5709,6 +5691,10 @@ msgstr "Grant {app} {launcher} access?"
 #: src/launch/PrePlayDialog.tsx
 msgid "Missing required dependencies ({count})"
 msgstr "Missing required dependencies ({count})"
+
+#: src/share/MethodPanes.tsx
+msgid "too long for one {app} message"
+msgstr "too long for one {app} message"
 
 #: src/browse/BrowseMenu.tsx
 msgid "Open page on {source}"
@@ -5847,10 +5833,6 @@ msgstr "This is not a Mod Manager Download link from {source}."
 #: src/install/store.ts
 msgid "Could not add {name}"
 msgstr "Could not add {name}"
-
-#: src/game/Hero.tsx
-msgid "· revision {review} is out"
-msgstr "· revision {review} is out"
 
 #: src/queue/QueueRows.tsx
 msgid "Paused at {done} of {total}"

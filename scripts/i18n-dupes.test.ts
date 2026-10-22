@@ -8,20 +8,20 @@ test('messages that differ only in case, punctuation or placeholder names collid
   ])
 })
 
-test('dashes, middle dots and parentheses are punctuation too', () => {
+test('dashes and parentheses are punctuation too', () => {
   expect(
     duplicates([
       'Update ready — applies when you close Mortar.',
       'Update ready: applies when you close Mortar.',
       'Sign in (Nexus Mods)',
-      'Sign in · Nexus Mods',
+      'Sign in: Nexus Mods',
     ]),
   ).toEqual([
     [
       'Update ready — applies when you close Mortar.',
       'Update ready: applies when you close Mortar.',
     ],
-    ['Sign in (Nexus Mods)', 'Sign in · Nexus Mods'],
+    ['Sign in (Nexus Mods)', 'Sign in: Nexus Mods'],
   ])
 })
 
@@ -37,10 +37,10 @@ test('contractions are caught, possessives are not', () => {
   ).toEqual(["Mortar can't read this", 'What’s new'])
 })
 
-test('curly quotes, dashes and arrows are variants; the ellipsis and separators are not', () => {
+test('curly quotes, dashes, arrows and middle dots are variants; the ellipsis and menu separator are not', () => {
   expect(
     variants(['the search is “x”', 'Ready — go', '1 → 2', 'Open…', 'A · B', 'Settings › General']),
-  ).toEqual(['the search is “x”', 'Ready — go', '1 → 2'])
+  ).toEqual(['the search is “x”', 'Ready — go', '1 → 2', 'A · B'])
 })
 
 test('an article is not a different message', () => {

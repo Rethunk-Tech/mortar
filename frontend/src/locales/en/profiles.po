@@ -292,11 +292,6 @@ msgstr "Filter mods"
 msgid "{count} selected"
 msgstr "{count} selected"
 
-#: src/profiles/CompareTop.tsx
-#: src/profiles/ProfileMenu.tsx
-msgid "{name} · {mods}"
-msgstr "{name} · {mods}"
-
 #: src/profiles/HistoryToolbar.tsx
 msgid "Stop comparing"
 msgstr "Stop comparing"
@@ -682,6 +677,10 @@ msgstr "Empty trash?"
 msgid "Hammer"
 msgstr "Hammer"
 
+#: src/profiles/GameModsProgress.tsx
+msgid "{verb} {count} of {total}"
+msgstr "{verb} {count} of {total}"
+
 #: src/profiles/LaunchPreview.tsx
 msgid "Copy the command"
 msgstr "Copy the command"
@@ -935,10 +934,6 @@ msgstr "Colour"
 #: src/profiles/OverrideRows.tsx
 msgid "Use default"
 msgstr "Use default"
-
-#: src/profiles/GameModsProgress.tsx
-msgid "{verb} {count} of {total} · {name}"
-msgstr "{verb} {count} of {total} · {name}"
 
 #: src/profiles/HealthDialog.tsx
 msgid "Could not read the saved change {change} from {when}"

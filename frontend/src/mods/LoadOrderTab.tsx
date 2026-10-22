@@ -143,7 +143,7 @@ function DepChips({
               ? t`Show less`
               : plural({ count: users.length }, { one: 'Used by # mod', other: 'Used by # mods' }) +
                 (required.length > INLINE_REQUIRED
-                  ? t` · ${{ count: required.length - INLINE_REQUIRED }} more required`
+                  ? ` · ${t`${{ count: required.length - INLINE_REQUIRED }} more required`}`
                   : '')
           }
           expanded={open}

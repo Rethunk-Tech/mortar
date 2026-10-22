@@ -34,13 +34,10 @@ export function offersNexusDownload(status?: string, available?: boolean): boole
 
 export function goneCaption(
   mark: NexusPageMark,
-  labels: { hidden: string; hiddenDated: string; removed: string; removedDated: string },
+  labels: { hidden: string; removed: string },
 ): string {
-  if (mark.kind === 'hidden') {
-    return mark.date ? labels.hiddenDated : labels.hidden
-  }
-  if (mark.kind === 'removed') {
-    return mark.date ? labels.removedDated : labels.removed
+  if (mark.kind === 'hidden' || mark.kind === 'removed') {
+    return [labels[mark.kind], mark.date].filter(Boolean).join(' · ')
   }
   return ''
 }

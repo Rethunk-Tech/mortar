@@ -157,7 +157,7 @@ export function AuthorDialog({
   const { t } = useLingui()
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="sm">
-      <DialogTitle>{t`Author · ${author}`}</DialogTitle>
+      <DialogTitle>{`${t`Author`} · ${author}`}</DialogTitle>
       <DialogContent>
         {open ? (
           <AuthorDialogBody author={author} seedMod={seedMod} seedProfile={seedProfile} />

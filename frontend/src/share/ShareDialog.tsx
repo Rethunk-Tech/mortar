@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, Typography } from '@mui/material'
 import { ArrowLeft, X } from 'lucide-react'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { i18n } from '../i18n/index.ts'
 import { userModCount } from '../profiles/count.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -86,12 +87,7 @@ export function ShareDialog() {
                 {t`Share ${{ name: info.name }}`}
               </Typography>
               <Typography noWrap={true} sx={{ color: 'text.secondary', fontSize: 14 }}>
-                {destination
-                  ? names[destination]
-                  : plural(count, {
-                      one: `${{ name: gameName }} · # mod`,
-                      other: `${{ name: gameName }} · # mods`,
-                    })}
+                {destination ? names[destination] : `${gameName} · ${modsLabel(count)}`}
               </Typography>
             </Box>
             <Box sx={{ flex: 1 }} />

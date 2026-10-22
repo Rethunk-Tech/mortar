@@ -7,6 +7,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatKb } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { Fold } from '../shell/Fold.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
@@ -117,9 +118,12 @@ function Facts({ details, mod, columns }: { details: Details; mod: Mod; columns:
       </Fact>
       <Fact label={t`Endorsements`}>{formatCount(page.endorsements, i18n.locale)}</Fact>
       <Fact label={t`Downloads`}>
-        {t`${{ downloads: formatCount(page.downloads, i18n.locale) }} · ${{ unique: formatCount(page.uniqueDownloads, i18n.locale) }} unique`}
+        {[
+          formatCount(page.downloads, i18n.locale),
+          t`${{ unique: formatCount(page.uniqueDownloads, i18n.locale) }} unique`,
+        ].join(' · ')}
       </Fact>
-      <Fact label={t`Created · updated`}>
+      <Fact label={[t`Created`, lowerFirst(t`Updated`)].join(' · ')}>
         {`${formatWhen(page.created) || '—'} · ${formatWhen(page.updated) || '—'}`}
       </Fact>
     </Box>
@@ -218,9 +222,7 @@ function Loaded({
             const mark = nexusPageMark(page.status, page.available, page.updated, page.created)
             const labelled = goneCaption(mark, {
               hidden: t`Hidden on ${{ source: sourceLabel('nexus') }}`,
-              hiddenDated: t`Hidden on ${{ source: sourceLabel('nexus') }} · ${{ when: mark.date }}`,
               removed: t`Removed from ${{ source: sourceLabel('nexus') }}`,
-              removedDated: t`Removed from ${{ source: sourceLabel('nexus') }} · ${{ when: mark.date }}`,
             })
             if (labelled === '') {
               return null

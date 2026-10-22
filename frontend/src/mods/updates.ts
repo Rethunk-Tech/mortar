@@ -26,7 +26,7 @@ function checkedLabel(at: number | null, now: number, unknown: boolean): string 
     return i18n._(msg`Checked for updates`)
   }
   const when = formatWhen(at, { now })
-  return i18n._(msg`Checked for updates · ${when}`)
+  return `${i18n._(msg`Checked for updates`)} · ${when}`
 }
 
 const MS_PER_HOUR = 3_600_000

@@ -88,7 +88,7 @@ function OtherPicker({
             <ListItemIcon>
               <Dot profile={p} />
             </ListItemIcon>
-            <ListItemText>{t`${{ name: p.name }} · ${{ mods: modsLabel(userModCount(p)) }}`}</ListItemText>
+            <ListItemText>{`${p.name} · ${modsLabel(userModCount(p))}`}</ListItemText>
             {p.id === profileB?.id ? <Check size={16} aria-hidden={true} /> : null}
           </MenuItem>
         ))}

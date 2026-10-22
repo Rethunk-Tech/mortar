@@ -111,7 +111,7 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
       <DialogContent>
         {file ? (
           <DialogContentText sx={{ mb: 1 }}>
-            {t`${{ fileName: file.fileName }} · ${{ size: formatKb(file.sizeKb) }}`}
+            {`${file.fileName} · ${formatKb(file.sizeKb)}`}
           </DialogContentText>
         ) : null}
         {arrivals.length > 1 ? (

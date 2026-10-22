@@ -159,7 +159,10 @@ function GitHubQuota() {
     GitHubRate().then(setRate).catch(reportUnexpected)
   }, [])
   const detail = rate?.known
-    ? t`${{ remaining: rate.remaining }} of ${{ limit: rate.limit }} requests left · resets ${{ when: formatWhen(rate.reset) }}`
+    ? [
+        t`${{ remaining: rate.remaining }} of ${{ limit: rate.limit }} requests left`,
+        t`resets ${{ when: formatWhen(rate.reset) }}`,
+      ].join(' · ')
     : t`Request counts appear after Mortar talks to ${{ source: sourceLabel('github') }}.`
   return (
     <SettingRow label={t`Requests`} description={detail}>

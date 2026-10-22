@@ -1,4 +1,3 @@
-import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -23,6 +22,7 @@ import { format } from '../console/filter.ts'
 import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
 import { useGameInfo, useGameName } from '../games/info.ts'
+import { modsLabel } from '../i18n/counts.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
 import { openPageLabel } from '../mods/modActions.ts'
@@ -119,12 +119,7 @@ function Overlay({ game }: { game: string }) {
         />
         <Spinner />
         <Typography sx={{ fontSize: 30, fontWeight: 700 }}>{t`Launching ${name}`}</Typography>
-        <Typography sx={{ fontSize: 16 }}>
-          {plural(count, {
-            one: `${{ name: profileName }} · # mod`,
-            other: `${{ name: profileName }} · # mods`,
-          })}
-        </Typography>
+        <Typography sx={{ fontSize: 16 }}>{`${profileName} · ${modsLabel(count)}`}</Typography>
         {/* An empty log would be a blank band between the title and the buttons. */}
         {shown.length > 0 && (
           <Box

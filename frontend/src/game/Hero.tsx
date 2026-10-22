@@ -65,9 +65,7 @@ function CollectionLine({ profile, game }: { profile: Profile; game: string }) {
     >
       <span>{t`From the ${{ source: sourceLabel('nexus') }} collection "${{ name: line.name }}"`}</span>
       <span>
-        {review === null
-          ? t`· revision ${{ revision: line.revision }}`
-          : t`· revision ${review} is out`}
+        {`· ${review === null ? t`revision ${{ revision: line.revision }}` : t`revision ${review} is out`}`}
       </span>
       {review === null ? null : (
         <>
