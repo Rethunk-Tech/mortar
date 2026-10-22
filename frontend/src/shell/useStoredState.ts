@@ -6,10 +6,19 @@ function read<T>(key: string, fallback: T, valid: (value: unknown) => value is T
     if (raw === null) {
       return fallback
     }
-    const parsed: unknown = JSON.parse(raw)
+    const parsed = parseOrRaw(raw)
     return valid(parsed) ? parsed : fallback
   } catch {
     return fallback
+  }
+}
+
+// Keys written before they went through this module hold a bare string, which is not JSON.
+function parseOrRaw(raw: string): unknown {
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return raw
   }
 }
 
