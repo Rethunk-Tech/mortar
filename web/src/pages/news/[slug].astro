@@ -71,7 +71,10 @@ const article = {
   .highlights {
     display: grid;
     gap: 16px;
-    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    /* Each card keeps the width two take in the text column; a third runs past the column into the page's width
+       (the 64px leaves the page's padding and a scrollbar). */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 24rem));
+    width: max(100%, min(calc(72rem + 32px), calc(100vw - 64px)));
     margin-bottom: 24px;
   }
   figure {
