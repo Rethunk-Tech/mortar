@@ -1861,6 +1861,10 @@ msgstr ""
 msgid "Standard farm"
 msgstr ""
 
+#: src/screenshots/ScreenshotsTab.tsx
+msgid "Previous"
+msgstr ""
+
 #: src/shell/BugReportDialog.tsx
 msgid "Post on"
 msgstr ""
@@ -2008,6 +2012,10 @@ msgstr ""
 
 #: src/browse/BrowseMenu.tsx
 msgid "Mortar installs this itself."
+msgstr ""
+
+#: src/share/ManagerPane.tsx
+msgid "{manager} or {otherManager} in another folder?"
 msgstr ""
 
 #: src/queue/QueueBody.tsx
@@ -2826,6 +2834,7 @@ msgstr ""
 
 #: src/firstrunTour/TourPopover.tsx
 #: src/fomod/Dialog.tsx
+#: src/screenshots/ScreenshotsTab.tsx
 msgid "Next"
 msgstr ""
 
@@ -4406,6 +4415,10 @@ msgstr ""
 msgid "Steps to reproduce"
 msgstr ""
 
+#: src/share/ManagerPane.tsx
+msgid "{manager} or {otherManager} data folder"
+msgstr ""
+
 #: src/games/AddGameDialog.tsx
 msgid "Choose the game's program…"
 msgstr ""
@@ -5850,6 +5863,7 @@ msgstr ""
 #: src/launch/LaunchLayer.tsx
 #: src/launch/SweepDialog.tsx
 #: src/saves/BackupsDialog.tsx
+#: src/screenshots/ScreenshotsTab.tsx
 #: src/share/ImportDialog.tsx
 #: src/share/PreviewDialog.tsx
 #: src/share/ShareDialog.tsx

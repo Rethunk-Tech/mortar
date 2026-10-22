@@ -921,6 +921,10 @@ msgstr ""
 msgid "Info"
 msgstr ""
 
+#: src/settings/sections/General.tsx
+msgid "Display language"
+msgstr ""
+
 #: src/settings/shortcutLabels.ts
 msgid "Open notification history"
 msgstr ""
@@ -2091,6 +2095,10 @@ msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Time"
+msgstr ""
+
+#: src/settings/sections/General.tsx
+msgid "Mortar follows the system language unless you pick one"
 msgstr ""
 
 #: src/settings/sections/DataImport.tsx

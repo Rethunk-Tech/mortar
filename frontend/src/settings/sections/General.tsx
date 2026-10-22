@@ -106,7 +106,10 @@ function Language() {
   const language = useSettings((s) => s.language)
   return (
     <SettingsSection title={t`Language`}>
-      <SettingRow label={t`Language`} hideTitle={true}>
+      <SettingRow
+        label={t`Display language`}
+        description={t`Mortar follows the system language unless you pick one`}
+      >
         <Select
           size="small"
           value={language}

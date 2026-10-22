@@ -422,8 +422,7 @@ msgstr ""
 msgid "Could not open the file dialog"
 msgstr ""
 
-#: src/profiles/PackFolderPrompt.tsx
-#: src/profiles/VortexFolderPrompt.tsx
+#: src/profiles/ManagerFolderPrompt.tsx
 msgid "Choose folder…"
 msgstr ""
 
@@ -558,10 +557,6 @@ msgstr ""
 
 #: src/profiles/HistoryPanel.tsx
 msgid "Profile changes will appear here."
-msgstr ""
-
-#: src/profiles/PackFolderPrompt.tsx
-msgid "{manager} or {otherManager} in another folder?"
 msgstr ""
 
 #: src/profiles/HistoryTimeline.tsx
@@ -1163,10 +1158,6 @@ msgstr ""
 
 #: src/profiles/CompareDialog.tsx
 msgid "{identical} identical"
-msgstr ""
-
-#: src/profiles/PackFolderPrompt.tsx
-msgid "{manager} or {otherManager} data folder"
 msgstr ""
 
 #: src/profiles/GameSettings.tsx

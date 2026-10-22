@@ -1861,6 +1861,10 @@ msgstr "Nothing to download"
 msgid "Standard farm"
 msgstr "Standard farm"
 
+#: src/screenshots/ScreenshotsTab.tsx
+msgid "Previous"
+msgstr "Previous"
+
 #: src/shell/BugReportDialog.tsx
 msgid "Post on"
 msgstr "Post on"
@@ -2009,6 +2013,10 @@ msgstr "The author only allows this download on the source's own page. Download 
 #: src/browse/BrowseMenu.tsx
 msgid "Mortar installs this itself."
 msgstr "Mortar installs this itself."
+
+#: src/share/ManagerPane.tsx
+msgid "{manager} or {otherManager} in another folder?"
+msgstr "{manager} or {otherManager} in another folder?"
 
 #: src/queue/QueueBody.tsx
 msgid "Skip every waiting download"
@@ -2826,6 +2834,7 @@ msgstr "Depends on {dependencies} {source} packages."
 
 #: src/firstrunTour/TourPopover.tsx
 #: src/fomod/Dialog.tsx
+#: src/screenshots/ScreenshotsTab.tsx
 msgid "Next"
 msgstr "Next"
 
@@ -4406,6 +4415,10 @@ msgstr "{count, plural, one {Launch # copy} other {Launch all # copies}}"
 msgid "Steps to reproduce"
 msgstr "Steps to reproduce"
 
+#: src/share/ManagerPane.tsx
+msgid "{manager} or {otherManager} data folder"
+msgstr "{manager} or {otherManager} data folder"
+
 #: src/games/AddGameDialog.tsx
 msgid "Choose the game's program…"
 msgstr "Choose the game's program…"
@@ -5850,6 +5863,7 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/launch/LaunchLayer.tsx
 #: src/launch/SweepDialog.tsx
 #: src/saves/BackupsDialog.tsx
+#: src/screenshots/ScreenshotsTab.tsx
 #: src/share/ImportDialog.tsx
 #: src/share/PreviewDialog.tsx
 #: src/share/ShareDialog.tsx

@@ -422,8 +422,7 @@ msgstr "Left in the shared folder"
 msgid "Could not open the file dialog"
 msgstr "Could not open the file dialog"
 
-#: src/profiles/PackFolderPrompt.tsx
-#: src/profiles/VortexFolderPrompt.tsx
+#: src/profiles/ManagerFolderPrompt.tsx
 msgid "Choose folder…"
 msgstr "Choose folder…"
 
@@ -559,10 +558,6 @@ msgstr "Disabled"
 #: src/profiles/HistoryPanel.tsx
 msgid "Profile changes will appear here."
 msgstr "Profile changes will appear here."
-
-#: src/profiles/PackFolderPrompt.tsx
-msgid "{manager} or {otherManager} in another folder?"
-msgstr "{manager} or {otherManager} in another folder?"
 
 #: src/profiles/HistoryTimeline.tsx
 msgid "Today"
@@ -1164,10 +1159,6 @@ msgstr "Create a profile to manage a set of mods."
 #: src/profiles/CompareDialog.tsx
 msgid "{identical} identical"
 msgstr "{identical} identical"
-
-#: src/profiles/PackFolderPrompt.tsx
-msgid "{manager} or {otherManager} data folder"
-msgstr "{manager} or {otherManager} data folder"
 
 #: src/profiles/GameSettings.tsx
 msgid "Music volume ({value}%)"
