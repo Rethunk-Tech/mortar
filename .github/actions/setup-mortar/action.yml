@@ -21,6 +21,25 @@ inputs:
 runs:
   using: composite
   steps:
+    # The downloaded .debs are cached per runner image, architecture and package list: the runners' apt mirror can
+    # stall for many minutes serving packages one by one, and a cached run fetches only what changed.
+    - name: Apt package cache key
+      id: apt-key
+      if: inputs.native == 'true'
+      shell: bash
+      env:
+        APT_PACKAGES: ${{ inputs.apt-packages }}
+      run: |
+        list=$(printf '%s' "libgtk-4-dev libwebkitgtk-6.0-dev $APT_PACKAGES" | sha256sum | cut -c1-16)
+        echo "key=apt-${RUNNER_OS}-${RUNNER_ARCH}-${ImageVersion:-unknown}-${list}" >> "$GITHUB_OUTPUT"
+
+    - name: Restore apt packages
+      if: inputs.native == 'true'
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/apt-archives/*.deb
+        key: ${{ steps.apt-key.outputs.key }}
+
     # One apt transaction: every package a job needs comes through apt-packages, so a later step never pays for
     # a second dpkg run.
     - name: GTK4 and WebKitGTK 6.0
@@ -31,7 +50,9 @@ runs:
       run: |
         # APT_PACKAGES holds space-separated package names.
         read -ra pkgs <<<"$APT_PACKAGES"
-        sudo apt-get update && sudo apt-get install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev "${pkgs[@]}"
+        mkdir -p ~/apt-archives/partial
+        apt=(-o "Dir::Cache::archives=$HOME/apt-archives" -o APT::Keep-Downloaded-Packages=true -o Acquire::Retries=3 -o Acquire::http::Timeout=30)
+        sudo apt-get "${apt[@]}" update && sudo apt-get "${apt[@]}" install -y --no-install-recommends libgtk-4-dev libwebkitgtk-6.0-dev "${pkgs[@]}"
 
     - name: Setup Go
       if: inputs.native == 'true'
