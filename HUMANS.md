@@ -184,6 +184,7 @@ Translators work in Hosted Weblate, which opens pull requests against `main`. Th
 Weblate project settings:
 
 - One component per catalog. Version control **GitHub pull request**, repository `https://github.com/Rethunk-Tech/mortar.git`, branch `main`. File format **gettext PO file**, file mask `frontend/src/locales/*/<name>.po`, source language English. Leave the template for new translations empty.
+- Translation license **MIT** on every component (translations ship inside the AGPL-3.0-only app, and MIT lets the strings be reused elsewhere).
 - Component flag `icu-message-format`, so Weblate checks placeholders and plurals.
 - Project setting **Translation propagation** on: a message used in several folders sits in each of their catalogs.
 - Glossary: upload `frontend/src/locales/glossary.tbx` to the project glossary; it explains each recurring term once.
