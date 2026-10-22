@@ -20,10 +20,12 @@ import {
   SetTipsSeen,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { WINDOWS } from '../../brand/productNames.ts'
+import { TRANSLATE_PROJECT } from '../../brand/translateProject.ts'
 import { TourAgainButton } from '../../firstrunTour/TourAgainButton.tsx'
 import { localeLabel, pickerLocales } from '../../i18n/locales.ts'
 import { useReasonText } from '../../i18n/reasonText.ts'
 import { PairedComputers } from '../../lan/PairedComputers.tsx'
+import { openPage } from '../../mods/menu.ts'
 import { useLoaded } from '../../shell/useLoaded.ts'
 import { space } from '../../theme/density.ts'
 import { reportError, reportUnexpected } from '../../toasts/report.ts'
@@ -122,6 +124,9 @@ function Language() {
             </MenuItem>
           ))}
         </Select>
+        <Button size="small" onClick={() => openPage(TRANSLATE_PROJECT)}>
+          {t`Help translate Mortar`}
+        </Button>
       </SettingRow>
     </SettingsSection>
   )

@@ -1,6 +1,6 @@
 ---
 import { appVersion } from '../lib/faq.ts'
-import { DISCORD, REPO } from '../lib/site.ts'
+import { DISCORD, REPO, TRANSLATE } from '../lib/site.ts'
 
 interface Props {
   band: boolean
@@ -33,6 +33,7 @@ const columns = [
     links: [
       ['/mission/', 'Mission'],
       [REPO, 'Source code'],
+      [TRANSLATE, 'Help translate'],
       ['/extension/', 'Browser extension'],
       ['/code-signing/', 'Code signing'],
       ['/privacy/', 'Privacy'],

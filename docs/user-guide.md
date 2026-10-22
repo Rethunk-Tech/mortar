@@ -323,6 +323,10 @@ A sync folder shares each profile's mod list, sources, settings and mod config f
 
 **Settings › Appearance** sets the theme, accent colour and background (an image, the desktop wallpaper or a solid colour). **Accent colour** can follow your desktop's (**System**), **Font** picks the app's typeface, each shown in itself, and **Size** scales text, controls and spacing together. Animated backgrounds hold still while a game runs or **Reduce motion** is on; WebP animations are often a tenth of a GIF's size.
 
+## Language
+
+Mortar follows your system language once a translation of it is mostly done, and English otherwise. **Settings › General › Language** picks one yourself; a language still being translated shows how much is done, and the rest of it stays in English. Volunteers translate Mortar on [Hosted Weblate](https://hosted.weblate.org/projects/mortar/), and **Help translate Mortar** beside the picker opens it.
+
 ## Save backups and restore
 
 Mortar zips your saves before it changes them: before a profile update, on every game start with **Back up saves before Play**, and on a timer with **Scheduled save backups** (both under the game's **Save backups** in Settings).

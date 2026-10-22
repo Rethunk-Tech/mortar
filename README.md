@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Licence](https://img.shields.io/badge/licence-AGPL--3.0-blue) ![Stack](https://img.shields.io/badge/stack-Go%20%7C%20Wails%20v3%20%7C%20React%20%7C%20MUI-blue)
+![Licence](https://img.shields.io/badge/licence-AGPL--3.0-blue) ![Stack](https://img.shields.io/badge/stack-Go%20%7C%20Wails%20v3%20%7C%20React%20%7C%20MUI-blue) [![Translation status](https://hosted.weblate.org/widget/mortar/svg-badge.svg)](https://hosted.weblate.org/projects/mortar/)
 
 </div>
 
@@ -21,6 +21,8 @@ The games Mortar supports come from its catalog: Stardew Valley, Lethal Company,
 - The [user guide](docs/user-guide.md) covers requirements, SmartScreen on the unsigned Windows builds, first run, Nexus sign-in, profiles, backups and troubleshooting.
 
 The optional browser extension marks Nexus Mods pages with what a profile already has and hands Mod Manager Download clicks to Mortar. It lives in [Rethunk-Tech/mortar-browser-extension](https://github.com/Rethunk-Tech/mortar-browser-extension); the user guide has its install steps.
+
+Volunteers translate Mortar on [Hosted Weblate](https://hosted.weblate.org/projects/mortar/); new translators are welcome.
 
 To build it yourself:
 

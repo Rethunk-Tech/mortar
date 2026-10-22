@@ -3219,6 +3219,10 @@ msgstr "Logs"
 msgid "How profiles are ordered in the sidebar"
 msgstr "How profiles are ordered in the sidebar"
 
+#: src/settings/sections/General.tsx
+msgid "Help translate Mortar"
+msgstr "Help translate Mortar"
+
 #: src/settings/prefCopyModsView.ts
 msgid "Framework"
 msgstr "Framework"
