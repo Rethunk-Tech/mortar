@@ -62,7 +62,10 @@ const (
 
 // Kinds of Problem.
 const (
+	// ProblemRemoved is a page the site took down; ProblemNotOnSource is a package the site's index does not list at
+	// all, such as a mod the other manager added from disk.
 	ProblemRemoved     = "removed"
+	ProblemNotOnSource = "not-on-source"
 	ProblemNoFile      = "no-file"
 	ProblemBroken      = "broken"
 	ProblemMissing     = "missing"
@@ -125,6 +128,8 @@ type Problem struct {
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
 	URL    string `json:"url"`
+	// Site is the site the mod is from, which the problem names.
+	Site string `json:"site"`
 }
 
 // Preview is what an import would do. Settings counts the config files a .mortar file or an external profile carries.
@@ -771,11 +776,15 @@ func (r *resolver) findings(mods []Mod, probs []Problem) []Problem {
 		if m.State != StateUnavailable {
 			continue
 		}
-		kind := ProblemRemoved
-		if m.Reason == ReasonNoFile {
+		kind, url := ProblemRemoved, m.PageURL
+		switch m.Reason {
+		case ReasonNoFile:
 			kind = ProblemNoFile
+		case ReasonNotInIndex:
+			// The index lists no page for it, so a link would only reach a missing one.
+			kind, url = ProblemNotOnSource, ""
 		}
-		out = append(out, Problem{Kind: kind, Key: m.Key, Name: m.Name, URL: m.PageURL})
+		out = append(out, Problem{Kind: kind, Key: m.Key, Name: m.Name, URL: url, Site: m.Site})
 	}
 	out = append(out, probs...)
 	if r.signedIn && !r.premium && needsNexus {

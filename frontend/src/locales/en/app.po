@@ -5943,6 +5943,10 @@ msgstr "Could not load categories: {why}"
 msgid "Caused by {name}"
 msgstr "Caused by {name}"
 
+#: src/share/ImportPreview.tsx
+msgid "{name} is not on {source}"
+msgstr "{name} is not on {source}"
+
 #: src/saves/BackupsDialog.tsx
 #: src/saves/SaveBackupsButton.tsx
 msgid "Reading backups…"

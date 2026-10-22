@@ -10,12 +10,14 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
+	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
 
 // packCodes are the pack formats a pasted text can be: an r2modman code or key, or a Gale code.
@@ -97,12 +99,13 @@ func (s *Service) previewDraft(ctx context.Context, game string, d pack.Draft, p
 			refs = append(refs, ref)
 		}
 	}
-	rows = append(rows, carriedRows(d.Local)...)
 	files, skipped := pack.ProfileFiles(d, pack.ImportRoots(game))
 	out, err := s.preview(ctx, game, share.Shared{Name: cmpName(d.Name), Entries: refs}, "", nil, profileID, "")
 	if err != nil {
 		return Preview{}, err
 	}
+	adoptLocalPlugins(&out, &d, importedFrom)
+	rows = append(rows, carriedRows(d.Local)...)
 	out.Mods = append(rows, out.Mods...)
 	out.Game = game
 	out.Settings += len(files)
@@ -110,6 +113,7 @@ func (s *Service) previewDraft(ctx context.Context, game string, d pack.Draft, p
 	s.mu.Lock()
 	if s.current != nil && s.current.id == out.Session {
 		s.current.preview.Mods = out.Mods
+		s.current.preview.Problems = out.Problems
 		s.current.preview.Game = game
 		s.current.preview.Settings = out.Settings
 		s.current.preview.SkippedPrograms = skipped
@@ -119,6 +123,28 @@ func (s *Service) previewDraft(ctx context.Context, game string, d pack.Draft, p
 	}
 	s.mu.Unlock()
 	return out, nil
+}
+
+// adoptLocalPlugins turns a package the index does not list into a carried local mod when the r2modman profile folder
+// the pack was read from holds its folder: "Import local mod" names such a mod Author-Name like a package, which
+// nothing in mods.yml tells apart. Its files install as a Local entry, as a Gale local mod's do.
+func adoptLocalPlugins(out *Preview, d *pack.Draft, importedFrom string) {
+	if importedFrom == "" {
+		return
+	}
+	adopted := map[string]bool{}
+	kept := out.Mods[:0]
+	for _, m := range out.Mods {
+		dir := filepath.Join(importedFrom, "BepInEx", "plugins", m.Package)
+		if m.Reason != ReasonNotInIndex || !winname.Valid(m.Package) || !fsx.IsDir(dir) {
+			kept = append(kept, m)
+			continue
+		}
+		d.Local = append(d.Local, pack.LocalMod{Name: m.Name, Author: m.Author, Version: m.Version, Disabled: len(m.Disabled) > 0, Dir: dir})
+		adopted[m.Key] = true
+	}
+	out.Mods = kept
+	out.Problems = slices.DeleteFunc(out.Problems, func(p Problem) bool { return adopted[p.Key] })
 }
 
 func packKey(index int) string { return "pack:" + strconv.Itoa(index) }

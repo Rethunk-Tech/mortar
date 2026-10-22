@@ -5943,6 +5943,10 @@ msgstr ""
 msgid "Caused by {name}"
 msgstr ""
 
+#: src/share/ImportPreview.tsx
+msgid "{name} is not on {source}"
+msgstr ""
+
 #: src/saves/BackupsDialog.tsx
 #: src/saves/SaveBackupsButton.tsx
 msgid "Reading backups…"

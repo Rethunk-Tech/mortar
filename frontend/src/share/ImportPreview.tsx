@@ -250,7 +250,8 @@ function ProblemRow({
   const theme = useTheme()
   const { name, detail } = problem
   const texts: Record<string, string> = {
-    removed: t`${name} was removed from ${{ source: sourceLabel('nexus') }}`,
+    removed: t`${name} was removed from ${{ source: sourceLabel(problem.site) }}`,
+    'not-on-source': t`${name} is not on ${{ source: sourceLabel(problem.site) }}`,
     'no-file': t`${name} has no file Mortar can use in place of the one shared`,
     broken: t`${name} is broken for ${detail}`,
     missing: t`${name} needs ${detail}, which Mortar cannot install`,

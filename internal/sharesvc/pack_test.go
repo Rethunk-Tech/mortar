@@ -267,3 +267,48 @@ func TestReplaceFromACodeRemovesThunderstoreModsItLacks(t *testing.T) {
 		t.Fatalf("Old-Extra still present: %+v", got.Entries)
 	}
 }
+
+func TestImportFromAnR2modmanFolderBringsAHandAddedModAsLocal(t *testing.T) {
+	s, _ := packService(t)
+	prof := filepath.Join(t.TempDir(), "LethalCompany", "profiles", "Mine")
+	// r2modman's Import local mod writes Author-Name to mods.yml like a package, and keeps its files under plugins.
+	testfs.WriteFile(t, prof, "BepInEx/plugins/Bob-Gone/Gone.dll", "MZ")
+	testfs.WriteFile(t, prof, "mods.yml", "- name: Alice-MoreCompany\n  versionNumber: {major: 1, minor: 2, patch: 3}\n  enabled: true\n"+
+		"- name: Bob-Gone\n  versionNumber: {major: 9, minor: 9, patch: 9}\n  enabled: true\n")
+	pv, err := s.PreviewLocalProfile(t.Context(), "lethal-company", prof, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if gone := packMods(pv)["Bob-Gone"]; gone.Key != "" {
+		t.Errorf("the folder's mod is still a Thunderstore row: %+v", gone)
+	}
+	i := slices.IndexFunc(pv.Mods, func(m Mod) bool { return m.Name == "Gone" })
+	if i < 0 || pv.Mods[i].Site != SiteLocal || pv.Mods[i].FilesFrom != FilesFromComputer || pv.Mods[i].State != StateDownload {
+		t.Fatalf("Gone is not a carried local mod: %+v", pv.Mods)
+	}
+	if slices.ContainsFunc(pv.Problems, func(p Problem) bool { return p.Name == "Gone" }) {
+		t.Errorf("a problem is left for the adopted mod: %+v", pv.Problems)
+	}
+	res, err := s.Import(t.Context(), "lethal-company", pv.Session, "", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, files := localEntry(t, s, res.Profile.ID, "Gone"); !fsx.IsFile(filepath.Join(files, "BepInEx", "plugins", "Gone.dll")) {
+		t.Errorf("the local mod's files are not in %s", files)
+	}
+}
+
+func TestAPackageTheIndexLacksIsNotRemovedFromTheSite(t *testing.T) {
+	s, _ := packService(t)
+	pv, err := s.PreviewLink(context.Background(), "lethal-company", codeKey, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	i := slices.IndexFunc(pv.Problems, func(p Problem) bool { return p.Name == "Gone" })
+	if i < 0 {
+		t.Fatalf("no problem for Gone: %+v", pv.Problems)
+	}
+	if p := pv.Problems[i]; p.Kind != ProblemNotOnSource || p.Site != SiteThunderstore || p.URL != "" {
+		t.Errorf("problem = %+v", p)
+	}
+}
