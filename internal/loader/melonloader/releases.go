@@ -204,7 +204,7 @@ func (l Loader) checksum(ctx context.Context, url string) (string, error) {
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("the checksum file answered %s", resp.Status)
 	}
-	b, err := io.ReadAll(io.LimitReader(resp.Body, maxChecksum))
+	b, err := fsx.ReadCapped(resp.Body, maxChecksum)
 	if err != nil {
 		return "", err
 	}

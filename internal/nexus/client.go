@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/netstate"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -231,7 +232,7 @@ func (c *Client) roundTrip(ctx context.Context, method, path string, body any) (
 	}
 	defer func() { _ = resp.Body.Close() }()
 	c.record(resp.Header)
-	raw, err := io.ReadAll(io.LimitReader(resp.Body, maxBody))
+	raw, err := fsx.ReadCapped(resp.Body, maxBody)
 	if err != nil {
 		return 0, "", nil, err
 	}

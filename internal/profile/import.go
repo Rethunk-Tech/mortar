@@ -401,7 +401,7 @@ func (s *Store) addResolvingLinks(ctx context.Context, game, dir string) (string
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = os.RemoveAll(scratch) }()
+	defer func() { _ = fsx.RemoveAll(scratch) }()
 	copied := filepath.Join(scratch, "mod")
 	if err := datadir.CopyTreeResolvingLinks(dir, copied); err != nil {
 		return "", err

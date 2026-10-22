@@ -1,11 +1,14 @@
 package source
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
 func TestDoJSON(t *testing.T) {
@@ -25,6 +28,10 @@ func TestDoJSON(t *testing.T) {
 			_, _ = w.Write([]byte(`<html>`))
 		case "/bad":
 			_, _ = w.Write([]byte(`<html>`))
+		case "/big":
+			// Valid JSON that a read cut at MaxBody would still parse.
+			_, _ = w.Write([]byte(`{"n":3}`))
+			_, _ = w.Write(bytes.Repeat([]byte(" "), MaxBody))
 		}
 	}))
 	t.Cleanup(srv.Close)
@@ -50,5 +57,8 @@ func TestDoJSON(t *testing.T) {
 	}
 	if err := call("/bad", &out); err == nil {
 		t.Fatal("a 200 with a body that is not JSON should fail")
+	}
+	if err := call("/big", &out); !errors.Is(err, fsx.ErrTooLarge) {
+		t.Fatalf("an oversize body should be refused, not truncated: %v", err)
 	}
 }

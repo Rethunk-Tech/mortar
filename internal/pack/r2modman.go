@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -14,10 +13,11 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -145,7 +145,7 @@ func (c Code) fetch(ctx context.Context, key string) (string, error) {
 	if resp.StatusCode != http.StatusOK {
 		return "", usererr.Wrap(usererr.Network, fmt.Errorf("thunderstore answered %s for profile code %s", resp.Status, key))
 	}
-	b, err := io.ReadAll(io.LimitReader(resp.Body, 64<<20))
+	b, err := fsx.ReadCapped(resp.Body, 64<<20)
 	return string(b), err
 }
 

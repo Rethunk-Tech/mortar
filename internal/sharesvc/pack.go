@@ -175,7 +175,7 @@ func (s *Service) installCarried(ctx context.Context, game, profileID string, m 
 	if err != nil {
 		return "", err
 	}
-	defer func() { _ = os.RemoveAll(scratch) }()
+	defer func() { _ = fsx.RemoveAll(scratch) }()
 	dir := filepath.Join(scratch, m.Name)
 	if err := m.Stage(dir); err != nil {
 		return "", err

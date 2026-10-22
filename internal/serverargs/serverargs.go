@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -50,15 +51,11 @@ func Set(profileDir string, spec components.ServerSpec, id, value string) error 
 	} else {
 		values[id] = value
 	}
-	b, err := json.MarshalIndent(values, "", "  ")
-	if err != nil {
-		return err
-	}
-	// The file can hold a server password.
+	// The file can hold a server password; WriteJSON creates it 0600.
 	if err := os.MkdirAll(profileDir, 0o700); err != nil {
 		return err
 	}
-	return fsx.WriteFile(filepath.Join(profileDir, File), b, 0o600)
+	return datadir.WriteJSON(filepath.Join(profileDir, File), values)
 }
 
 // value is the setting's value (the profile's, else the default) and whether the argument applies. An error names the

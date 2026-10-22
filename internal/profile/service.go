@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -82,7 +83,7 @@ func (s *Service) importModsDir(id string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if install, err := game.InstallDir(s.home, s.settings.Get(), id); err == nil && install != "" && filepath.Clean(dir) == filepath.Clean(install) {
+		if install, err := game.InstallDir(s.home, s.settings.Get(), id); err == nil && install != "" && fsx.SamePath(dir, install) {
 			return "", errModsFolderIsInstall
 		}
 		return dir, nil

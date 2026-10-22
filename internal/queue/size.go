@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
@@ -43,12 +42,6 @@ func formatBytes(n int64) string {
 	return fmt.Sprintf("%d MB", n>>20)
 }
 
-// within reports whether path lies under dir.
-func within(path, dir string) bool {
-	rel, err := filepath.Rel(dir, path)
-	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
-}
-
 // freeAt is the free bytes on path's volume, measured at its nearest existing parent; ok is false when unknown.
 func (s *Service) freeAt(path string) (int64, bool) {
 	free := s.d.FreeBytes
@@ -82,7 +75,7 @@ func (s *Service) checkSpace(it Item, size int64) error {
 		need int64
 	}
 	vols := []volume{{s.d.Dir, need + extracted + spaceMargin}}
-	if root := s.downloadRoot(); !within(root, s.d.Dir) {
+	if root := s.downloadRoot(); !datadir.UnderRoot(s.d.Dir, root) {
 		vols = []volume{{root, need + spaceMargin}, {s.d.Dir, extracted + spaceMargin}}
 	}
 	for _, v := range vols {

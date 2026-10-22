@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -168,7 +167,7 @@ func (c *Client) do(req *http.Request, limit int64) ([]byte, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, usererr.Wrap(usererr.Network, &StatusError{Code: resp.StatusCode, Status: resp.Status})
 	}
-	return io.ReadAll(io.LimitReader(resp.Body, limit))
+	return fsx.ReadCapped(resp.Body, limit)
 }
 
 // StatusError is a non-200 answer.

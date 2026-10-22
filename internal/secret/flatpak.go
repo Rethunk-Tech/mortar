@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/portal"
 )
@@ -125,7 +126,7 @@ func secureDir(dir string) error {
 	return nil
 }
 
-// save writes atomically: a temp file in the same folder (created 0600), then a rename.
+// save writes atomically (0600) into the vetted secrets folder.
 func save(path string, key []byte, m map[string]string) error {
 	b, err := json.Marshal(m)
 	if err != nil {
@@ -140,23 +141,7 @@ func save(path string, key []byte, m map[string]string) error {
 	if err := secureDir(dir); err != nil {
 		return err
 	}
-	tmp, err := os.CreateTemp(dir, ".secrets-*")
-	if err != nil {
-		return err
-	}
-	_, werr := tmp.Write(b)
-	if cerr := tmp.Close(); werr == nil {
-		werr = cerr
-	}
-	if werr != nil {
-		_ = os.Remove(tmp.Name())
-		return werr
-	}
-	if err := os.Rename(tmp.Name(), path); err != nil {
-		_ = os.Remove(tmp.Name())
-		return err
-	}
-	return nil
+	return datadir.WriteFile(path, b, 0o600)
 }
 
 func gcm(key []byte) (cipher.AEAD, error) {

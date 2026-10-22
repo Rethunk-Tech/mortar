@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"maps"
 	"net/http"
 	"net/url"
@@ -15,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -162,7 +162,7 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 	if resp.StatusCode != http.StatusOK {
 		return source.Page{}, fmt.Errorf("github answered %s", resp.Status)
 	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, source.MaxBody))
+	body, err := fsx.ReadCapped(resp.Body, source.MaxBody)
 	if err != nil {
 		return source.Page{}, err
 	}

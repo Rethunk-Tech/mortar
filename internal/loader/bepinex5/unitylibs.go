@@ -88,7 +88,7 @@ func downloadUnityLibs(ctx context.Context, ver, dst string) error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("unity libraries %s: %s", ver, resp.Status)
 	}
-	b, err := io.ReadAll(io.LimitReader(resp.Body, 256<<20))
+	b, err := fsx.ReadCapped(resp.Body, 256<<20)
 	if err != nil {
 		return err
 	}

@@ -89,7 +89,7 @@ func switchStagedOn(staged string, kinds, keepWhole []string) (off map[string]bo
 			}
 			continue
 		}
-		if err := os.Rename(f.path, f.on); err != nil {
+		if err := fsx.Rename(f.path, f.on); err != nil {
 			return nil, false, err
 		}
 		rel, err := filepath.Rel(staged, f.on)
@@ -155,7 +155,7 @@ func (s *Store) importLoose(ctx context.Context, game, id string, f gameModFolde
 	if err != nil {
 		return "", "", err
 	}
-	defer func() { _ = os.RemoveAll(scratch) }()
+	defer func() { _ = fsx.RemoveAll(scratch) }()
 	staged := filepath.Join(scratch, "mod")
 	dest := filepath.Join(staged, f.label)
 	info, err := os.Stat(f.dir)

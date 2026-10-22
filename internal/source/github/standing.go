@@ -5,11 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -66,7 +66,7 @@ func (d *Driver) archived(ctx context.Context, version, repo string) (bool, erro
 	var repoInfo struct {
 		Archived bool `json:"archived"`
 	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, source.MaxBody))
+	body, err := fsx.ReadCapped(resp.Body, source.MaxBody)
 	if err != nil {
 		return false, err
 	}

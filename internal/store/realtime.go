@@ -3,12 +3,11 @@ package store
 import (
 	"errors"
 	"io/fs"
-	"path/filepath"
 	"runtime"
-	"strings"
 	"syscall"
 
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
+	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -48,7 +47,7 @@ func vanishedFrom(err error, staging []string) bool {
 		return false
 	}
 	for _, dir := range staging {
-		if rel, relErr := filepath.Rel(dir, pe.Path); relErr == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		if datadir.UnderRoot(dir, pe.Path) {
 			return true
 		}
 	}
