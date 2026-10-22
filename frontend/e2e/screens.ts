@@ -45,11 +45,15 @@ async function shot(page: Page, name: string, steps: () => Promise<void>, file =
   try {
     await steps()
     // A list that is still loading, or a toast about the copied data, would be in the picture.
-    await page
-      .getByText('Loading…')
-      .first()
-      .waitFor({ state: 'hidden', timeout: 15_000 })
-      .catch(() => undefined)
+    for (const loader of [
+      page.getByText('Loading…'),
+      page.locator('.MuiSkeleton-root, .MuiCircularProgress-root, .MuiLinearProgress-root'),
+    ]) {
+      await loader
+        .first()
+        .waitFor({ state: 'hidden', timeout: 15_000 })
+        .catch(() => undefined)
+    }
     await page.waitForTimeout(TOAST_MS)
     const toasts = page.getByRole('region', { name: 'Notifications' })
     for (const dismiss of await toasts.getByRole('button', { name: 'Dismiss' }).all()) {
@@ -138,6 +142,8 @@ async function settings(page: Page, section: string) {
 
 const STARDEW = { game: 'Stardew Valley', name: 'Main' }
 const LETHAL = { game: 'Lethal Company', name: 'Main' }
+// The maintainer's measured profile, whose runs logged patch errors.
+const LETHAL_MEASURED = { game: 'Lethal Company', name: 'Guided Test' }
 
 // Steam Deck mode is the roomy theme a gamepad's first press turns on, so the scene drives a fake standard-mapping pad.
 const DPAD_DOWN = 13
@@ -210,8 +216,31 @@ const SITE: Scene[] = [
   {
     name: 'performance',
     ...DESK,
-    profile: STARDEW,
-    steps: (page) => click(page, 'tab', 'Performance'),
+    profile: LETHAL_MEASURED,
+    steps: async (page) => {
+      await click(page, 'tab', 'Performance')
+      await page.getByText('Slowest mods').waitFor({ timeout: STEP_MS })
+    },
+  },
+  {
+    name: 'patch-errors',
+    ...DESK,
+    profile: LETHAL_MEASURED,
+    steps: async (page) => {
+      await click(page, 'tab', 'Problems')
+      // Copied data may hold these errors dismissed; restoring them touches only the sandbox.
+      const dismissed = page.getByRole('tab', { name: /^Dismissed/ })
+      while ((await dismissed.count()) > 0) {
+        await dismissed.click({ timeout: STEP_MS })
+        await click(page, 'button', 'Restore')
+        await page.waitForTimeout(SETTLE_MS)
+      }
+      await click(page, 'tab', /^Errors while running/)
+      await page
+        .getByText(/threw it, at/)
+        .first()
+        .waitFor({ timeout: STEP_MS })
+    },
   },
   {
     name: 'deck',
