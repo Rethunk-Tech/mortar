@@ -498,7 +498,7 @@ func run() error {
 	profiles.Running = launches.Running
 	profiles.GameRunning = launches.Busy
 	bisectSvc := bisect.NewService(profiles, launches)
-	modMeta := &meta.Client{CacheDir: filepath.Join(dataDir, "cache")}
+	modMeta := &meta.Client{CacheDir: filepath.Join(dataDir, "cache"), Version: version}
 	source.Register(thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")})
 	componentClient := components.NewClient(&http.Client{Timeout: 30 * time.Second})
 	game.ConfigureComponents(componentClient)

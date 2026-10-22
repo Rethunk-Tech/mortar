@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
@@ -15,18 +16,10 @@ const (
 	MaxBody        = 16 << 20
 )
 
-// UserAgent names Mortar to a site.
-func UserAgent(version string) string {
-	if version == "" {
-		return "Mortar"
-	}
-	return "Mortar/" + version
-}
-
-// UserAgentWithSite is UserAgent followed by Mortar's address, for a site that asks clients to say where they come
+// UserAgentWithSite is appversion.UserAgent followed by Mortar's address, for a site that asks clients to say where they come
 // from.
 func UserAgentWithSite(version string) string {
-	return UserAgent(version) + " (+https://mortar.rethunk.tech)"
+	return appversion.UserAgent(version) + " (+https://mortar.rethunk.tech)"
 }
 
 // FirstPage is the page number a search starts at.

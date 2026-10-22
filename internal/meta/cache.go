@@ -26,6 +26,8 @@ const requestTimeout = 20 * time.Second
 type Client struct {
 	HTTP     *http.Client
 	CacheDir string
+	// Version is Mortar's, sent to every site so it can say who is asking.
+	Version string
 	// Endpoint overrides, for tests.
 	IndexURL   string
 	PageBase   string
@@ -156,6 +158,7 @@ func Peek[T any](c *Client, name string) (T, bool) {
 func (c *Client) do(req *http.Request, limit int64) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(req.Context(), requestTimeout)
 	defer cancel()
+	req.Header.Set("User-Agent", appversion.UserAgent(c.Version))
 	resp, err := c.client().Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, usererr.Wrap(usererr.Network, err)
@@ -163,6 +166,9 @@ func (c *Client) do(req *http.Request, limit int64) ([]byte, error) {
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, usererr.Wrap(usererr.NotFound, &StatusError{Code: resp.StatusCode, Status: resp.Status})
+	}
+	if resp.StatusCode == http.StatusTooManyRequests {
+		return nil, usererr.Wrap(usererr.Busy, &StatusError{Code: resp.StatusCode, Status: resp.Status})
 	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, usererr.Wrap(usererr.Network, &StatusError{Code: resp.StatusCode, Status: resp.Status})

@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/secret"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -97,7 +98,7 @@ func (d Driver) call(ctx context.Context, key, path string, params url.Values, o
 	var body json.RawMessage
 	err := source.DoJSON(ctx, source.Request{
 		Service: "itch.io", Client: d.HTTP, URL: strings.TrimRight(cmp.Or(d.URL, BaseURL), "/") + path, Params: params,
-		UserAgent: source.UserAgent(""),
+		UserAgent: appversion.UserAgent(""),
 		Header:    func(h http.Header) { h.Set("Authorization", "Bearer "+key) },
 	}, &body)
 	if se, ok := errors.AsType[*source.StatusError](err); ok && se.Auth() {
@@ -130,7 +131,7 @@ func (d Driver) downloadURL(ctx context.Context, key, uploadID string) (string, 
 	if err != nil {
 		return "", err
 	}
-	req.Header.Set("User-Agent", source.UserAgent(""))
+	req.Header.Set("User-Agent", appversion.UserAgent(""))
 	req.Header.Set("Authorization", "Bearer "+key)
 	resp, err := client.Do(req)
 	if err != nil {

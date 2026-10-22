@@ -3,6 +3,7 @@ package updatesvc
 import (
 	"context"
 	"errors"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -256,6 +257,7 @@ func TestClassifyCheckError(t *testing.T) {
 	}{
 		{errors.New("updater: all providers failed: endpoint: endpoint: fetch manifest: Get \"https://github.com/Rethunk-Tech/mortar/releases/latest/download/manifest.json\": wsarecv: A connection attempt failed"), errUnreachable},
 		{errors.New("Get \"https://github.com/...\": i/o timeout"), errUnreachable},
+		{&net.OpError{Op: "dial", Net: "tcp", Err: errors.New("no route to host")}, errUnreachable},
 		{errors.New("endpoint: manifest request failed: HTTP 404"), errNoRelease},
 		{errors.New("endpoint: decode manifest: unexpected end of JSON"), errCheckFailed},
 	} {

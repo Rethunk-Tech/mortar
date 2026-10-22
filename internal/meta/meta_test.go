@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func fixture(t *testing.T, name string) []byte {
@@ -203,6 +204,23 @@ func TestCheckUpdatesStaleThenUnknown(t *testing.T) {
 		if r.Known || r.Suggested != nil || r.ID == "" {
 			t.Fatalf("failure must give unknown, got %+v", r)
 		}
+	}
+}
+
+func TestDoNamesMortarAndMapsTooManyRequestsToBusy(t *testing.T) {
+	var ua string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ua = r.UserAgent()
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer srv.Close()
+	c := &Client{HTTP: srv.Client(), Version: "1.2.3"}
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, srv.URL, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := c.do(req, 1<<10); usererr.KindOf(err) != usererr.Busy || ua != "Mortar/1.2.3" {
+		t.Fatalf("429: kind %v (%v), user agent %q", usererr.KindOf(err), err, ua)
 	}
 }
 

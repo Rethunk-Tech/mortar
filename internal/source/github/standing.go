@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -46,7 +47,7 @@ func (d *Driver) archived(ctx context.Context, version, repo string) (bool, erro
 	if err != nil {
 		return false, err
 	}
-	req.Header.Set("User-Agent", source.UserAgent(version))
+	req.Header.Set("User-Agent", appversion.UserAgent(version))
 	req.Header.Set("Accept", "application/vnd.github+json")
 	ghauth.DefaultAuth.Apply(req)
 	resp, err := cmp.Or(d.HTTP, http.DefaultClient).Do(req)

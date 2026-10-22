@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -148,7 +149,7 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 	if err != nil {
 		return source.Page{}, err
 	}
-	req.Header.Set("User-Agent", source.UserAgent(q.Version))
+	req.Header.Set("User-Agent", appversion.UserAgent(q.Version))
 	req.Header.Set("Accept", "application/vnd.github+json")
 	ghauth.DefaultAuth.Apply(req)
 	resp, err := client.Do(req)

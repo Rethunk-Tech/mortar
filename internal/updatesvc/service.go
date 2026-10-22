@@ -15,6 +15,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // ManifestURL is the signed update manifest attached to the latest GitHub release.
@@ -285,6 +286,9 @@ func classifyCheckError(err error) error {
 		return errUnreachable
 	}
 	if _, ok := errors.AsType[*net.DNSError](err); ok {
+		return errUnreachable
+	}
+	if usererr.KindOf(err) == usererr.Network {
 		return errUnreachable
 	}
 	msg := strings.ToLower(err.Error())

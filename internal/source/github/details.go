@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	ghauth "github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/source"
@@ -29,7 +30,7 @@ func (d *Driver) Details(ctx context.Context, _, id, mortarVersion string) (sour
 	if err != nil {
 		return source.Details{}, err
 	}
-	req.Header.Set("User-Agent", source.UserAgent(mortarVersion))
+	req.Header.Set("User-Agent", appversion.UserAgent(mortarVersion))
 	req.Header.Set("Accept", "application/vnd.github.raw")
 	ghauth.DefaultAuth.Apply(req)
 	resp, err := client.Do(req)

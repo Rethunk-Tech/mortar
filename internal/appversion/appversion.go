@@ -16,6 +16,14 @@ import (
 // Taskfile schema version, not the app's.
 var infoVersion = regexp.MustCompile(`(?m)^info:\n(?:[ \t]+.*\n)*?[ \t]+version:[ \t]*"([^"]+)"`)
 
+// UserAgent names Mortar to a site.
+func UserAgent(version string) string {
+	if version == "" {
+		return "Mortar"
+	}
+	return "Mortar/" + version
+}
+
 // FromConfig returns info.version from the contents of build/config.yml.
 func FromConfig(config []byte) (string, error) {
 	m := infoVersion.FindSubmatch(config)

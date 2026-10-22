@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -142,7 +143,7 @@ func (d Driver) Search(ctx context.Context, q source.Query) (source.Page, error)
 	var parsed searchResp
 	err = source.DoJSON(ctx, source.Request{
 		Service: d.Name(), Client: client, Method: http.MethodPost, URL: strings.TrimRight(base, "/") + graphQL,
-		Body: searchBody{Query: query}, UserAgent: source.UserAgent(q.Version),
+		Body: searchBody{Query: query}, UserAgent: appversion.UserAgent(q.Version),
 		Header: func(h http.Header) {
 			h.Set("Application-Name", "Mortar")
 			h.Set("Application-Version", q.Version)

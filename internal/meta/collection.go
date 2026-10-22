@@ -74,7 +74,8 @@ func (c *Client) fetchCollection(ctx context.Context, domain, slug string, revis
 		return Collection{}, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "Mortar")
+	req.Header.Set("Application-Name", "Mortar")
+	req.Header.Set("Application-Version", c.Version)
 	req.Header.Set("Accept", "application/json")
 	raw, err := c.do(req, maxPage)
 	if err != nil {
