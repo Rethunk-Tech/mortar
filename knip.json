@@ -26,7 +26,6 @@
     "web": {
       "entry": [
         "public/share/app.js",
-        "public/download.js",
         "public/games.js",
         "public/search.js",
         "scripts/*.ts",
