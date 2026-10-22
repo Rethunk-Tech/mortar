@@ -171,8 +171,8 @@ function Body({ request }: { request: ImportRequest }) {
   const hasMods = preview !== null && preview.mods.length > 0
   const steps: Record<TabId, string> = {
     choose: '',
-    link: t`A link or code`,
-    file: t`A file`,
+    link: t`Link or code`,
+    file: t`File`,
     manager: t`Another mod manager`,
   }
   const step = flow.external ? '' : steps[flow.tab]

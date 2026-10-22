@@ -78,7 +78,7 @@ export function SavesTab({ profile, game }: { profile: Profile; game: string }) 
         title={t`No saves match`}
         action={
           <Button variant="outlined" onClick={() => setQuery('')}>
-            {t`Clear filter`}
+            {t`Clear filters`}
           </Button>
         }
       >

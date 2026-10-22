@@ -79,13 +79,9 @@ msgstr "Log level"
 msgid "History"
 msgstr "History"
 
-#: src/profiles/historyLabel.ts
-msgid "Unlinked the collection"
-msgstr "Unlinked the collection"
-
 #: src/profiles/store.ts
-msgid "Deleted a profile"
-msgstr "Deleted a profile"
+msgid "Deleted profile"
+msgstr "Deleted profile"
 
 #: src/profiles/ProfileRow.tsx
 msgid "{chosen} chosen"
@@ -154,6 +150,11 @@ msgstr "Star"
 #: src/profiles/ProfileRow.tsx
 msgid "Rename"
 msgstr "Rename"
+
+#. placeholder {0}: listNames(missing)
+#: src/profiles/restoreBackup.ts
+msgid "Install by hand: {0}"
+msgstr "Install by hand: {0}"
 
 #: src/profiles/ProfilesPage.tsx
 msgid "Find a mod in all profiles"
@@ -615,14 +616,13 @@ msgstr "Launch environment"
 msgid "Open the crash report"
 msgstr "Open the crash report"
 
-#. placeholder {0}: listNames(missing)
-#: src/profiles/restoreBackup.ts
-msgid "Install these again by hand: {0}"
-msgstr "Install these again by hand: {0}"
-
 #: src/profiles/OverrideRows.tsx
 msgid "These apply only to this profile."
 msgstr "These apply only to this profile."
+
+#: src/profiles/ProfileRow.tsx
+msgid "Copy of {name}"
+msgstr "Copy of {name}"
 
 #: src/profiles/HistoryToolbar.tsx
 msgid "Restore known good"
@@ -643,10 +643,6 @@ msgstr "{count, plural, one {Restored # mod from the store} other {Restored # mo
 #: src/profiles/ProfileFolderDialog.tsx
 msgid "Move to a folder…"
 msgstr "Move to a folder…"
-
-#: src/profiles/historyLabel.ts
-msgid "Unlinked the collection {name}"
-msgstr "Unlinked the collection {name}"
 
 #: src/profiles/store.ts
 msgid "Could not permanently delete the profile"
@@ -879,10 +875,6 @@ msgstr "Deleted a custom category"
 msgid "Another preset already has this name."
 msgstr "Another preset already has this name."
 
-#: src/profiles/HealthDialog.tsx
-msgid "Could not check this profile"
-msgstr "Could not check this profile"
-
 #: src/profiles/AppearancePickers.tsx
 msgid "Moon"
 msgstr "Moon"
@@ -1077,11 +1069,8 @@ msgstr "Windowed resolution width"
 msgid "No other profiles with overrides"
 msgstr "No other profiles with overrides"
 
-#: src/profiles/ProfileRow.tsx
-msgid "a copy of {name}"
-msgstr "a copy of {name}"
-
 #: src/profiles/collectionUnlink.ts
+#: src/profiles/historyLabel.ts
 msgid "Unlinked collection"
 msgstr "Unlinked collection"
 
@@ -1129,6 +1118,11 @@ msgstr "Make {0} match {1}"
 msgid "Prefix for direct launches only (for example, gamemoderun mangohud)."
 msgstr "Prefix for direct launches only (for example, gamemoderun mangohud)."
 
+#: src/profiles/HealthDialog.tsx
+#: src/profiles/store.ts
+msgid "Could not repair profile"
+msgstr "Could not repair profile"
+
 #: src/profiles/LoaderLaunchSettings.tsx
 msgid "Debug"
 msgstr "Debug"
@@ -1160,6 +1154,10 @@ msgstr "Vortex data folder"
 #: src/profiles/VortexFolderPrompt.tsx
 msgid "The Vortex folder {folder} has no profiles."
 msgstr "The Vortex folder {folder} has no profiles."
+
+#: src/profiles/HealthDialog.tsx
+msgid "Could not check profile"
+msgstr "Could not check profile"
 
 #. placeholder {0}: source.name
 #: src/profiles/MergeDialog.tsx
@@ -1543,10 +1541,6 @@ msgstr "This launch preset will be deleted."
 msgid "Profiles"
 msgstr "Profiles"
 
-#: src/profiles/store.ts
-msgid "Could not repair the profile"
-msgstr "Could not repair the profile"
-
 #: src/profiles/restoreBackup.ts
 msgid "Could not restore the backup"
 msgstr "Could not restore the backup"
@@ -1604,10 +1598,6 @@ msgstr "Test launch"
 #: src/profiles/historyRevert.ts
 msgid "This is no longer the latest change."
 msgstr "This is no longer the latest change."
-
-#: src/profiles/HealthDialog.tsx
-msgid "Could not repair this profile"
-msgstr "Could not repair this profile"
 
 #: src/profiles/historyLabel.ts
 msgid "Changed mods"
@@ -1742,6 +1732,10 @@ msgstr "Share"
 #: src/profiles/CompareDialog.tsx
 msgid "Could not change {0}"
 msgstr "Could not change {0}"
+
+#: src/profiles/historyLabel.ts
+msgid "Unlinked collection {name}"
+msgstr "Unlinked collection {name}"
 
 #: src/profiles/EditProfileDialog.tsx
 msgid "Launch"

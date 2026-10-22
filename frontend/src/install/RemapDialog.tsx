@@ -175,9 +175,7 @@ function RemapBody() {
       onClose={close}
       sx={{ '& .MuiDialog-paper': { minWidth: 420, maxHeight: '80vh' } }}
     >
-      <DialogTitle>
-        {variants.length > 0 ? t`Choose a variant` : t`Choose the mod folder`}
-      </DialogTitle>
+      <DialogTitle>{variants.length > 0 ? t`Choose variant` : t`Choose mod folder`}</DialogTitle>
       <DialogContent>
         <Typography variant="body2" sx={{ mb: 1 }}>
           {intro}
@@ -215,7 +213,7 @@ function RemapBody() {
           disabled={!dir || selected === ''}
           onClick={() => choose(selected)}
         >
-          {t`Use this folder`}
+          {t`Use folder`}
         </Button>
       </DialogActions>
     </Dialog>

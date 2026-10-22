@@ -212,7 +212,7 @@ async function startWithWarning(opts: {
         }
       } catch (e) {
         opts.set({ starting: false, startingProfile: '' })
-        reportError(i18n._(msg`Could not check the profile`))(e)
+        reportError(i18n._(msg`Could not check profile`))(e)
         return
       }
     }

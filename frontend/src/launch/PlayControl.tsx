@@ -10,6 +10,7 @@ import {
 import { SetDefaultLaunchPreset } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useGameLoader } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useLoader } from '../loader/store.ts'
 import { BASE_PRESET, playPresets } from '../profiles/profilePresets.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
@@ -80,7 +81,7 @@ function playLabel(installing: string, updating: number): string {
 // `rail` is the narrow sidebar: Play and Stop shrink to icons.
 export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
   const { t } = useLingui()
-  const loaderName = useGameLoader(game) || t`the mod loader`
+  const loaderName = useGameLoader(game) || lowerFirst(t`Mod loader`)
   const status = useLaunch((s) => s.status)
   const stopping = useLaunch((s) => s.stopping)
   const updating = useLaunch((s) => s.updating)

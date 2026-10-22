@@ -9,6 +9,7 @@ import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal
 import { useBrowseView } from '../browse/view.ts'
 import { useTab } from '../game/tab.ts'
 import { useGameLoader } from '../games/info.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useLoader } from '../loader/store.ts'
 import { localId } from '../mods/dependents.ts'
 import { sameId } from '../mods/lookup.ts'
@@ -129,7 +130,7 @@ function ProblemRow({
   game: string
 }) {
   const { t, i18n } = useLingui()
-  const loaderName = useGameLoader(game) || t`the mod loader`
+  const loaderName = useGameLoader(game) || lowerFirst(t`Mod loader`)
   const locked = useLocked()
   const lockHint = t`Stop the game to change mods.`
   const [confirmDup, setConfirmDup] = useState(false)

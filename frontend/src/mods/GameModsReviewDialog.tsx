@@ -173,7 +173,7 @@ export function GameModsReviewDialog({
           changes: [res.profile.lastChange ?? ''],
         })
       },
-      { errorTitle: t`Could not change the mods` },
+      { errorTitle: t`Could not change mods` },
     )
   }
   const detail = result === null ? '' : formatOutcomeDetail(result.outcomes ?? [])

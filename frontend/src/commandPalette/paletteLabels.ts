@@ -20,7 +20,7 @@ export function paletteActionLabels(i18n: I18n): PaletteLabels {
     profileHint: i18n._(msg`Open profile`),
     modHint: i18n._(msg`Open mod`),
     settingsHint: i18n._(msg`Settings`),
-    needProfile: i18n._(msg`Open a profile first.`),
+    needProfile: i18n._(msg`Open profile first.`),
     tabs: {
       home: i18n._(msg`Switch to Home`),
       browse: i18n._(msg`Switch to Browse`),

@@ -185,7 +185,7 @@ async function deleteProfile(
   get().ensureOpen()
   useToasts.getState().push({
     kind: 'success',
-    title: gone ? i18n._(msg`Deleted ${{ name: gone.name }}`) : i18n._(msg`Deleted a profile`),
+    title: gone ? i18n._(msg`Deleted ${{ name: gone.name }}`) : i18n._(msg`Deleted profile`),
     action: {
       label: i18n._(msg`Undo`),
       profileId: id,
@@ -424,7 +424,7 @@ export const useProfiles = create<{
     try {
       await repairProfile(get, id)
     } catch (e) {
-      fail(i18n._(msg`Could not repair the profile`))(e)
+      fail(i18n._(msg`Could not repair profile`))(e)
     }
   },
   remove: async (id) => {

@@ -1,5 +1,5 @@
-// Fails when two messages in the source say the same thing: they differ only in case, punctuation or placeholder
-// names. "…" and "?" stay significant, since a control that opens a dialog and the dialog's title are two messages.
+// Fails when two messages in the source say the same thing: they differ only in case, punctuation, an article or
+// placeholder names. "…" and "?" stay significant, since a control that opens a dialog and the dialog's title are two messages.
 // Also fails on a contraction: messages spell out "cannot" and "do not", so translators see one form. And on a
 // typographic variant (curly quotes, dashes, arrows): messages use plain quotes and words, keeping only "…" and the
 // "·" and "›" separators.
@@ -65,6 +65,7 @@ function normalise(id: string): string | null {
     return null
   }
   return flat
+    .replace(/\b(?:a|an|the) /g, '')
     .replace(/[.,:;!'"‘’“”—–·()]/g, '')
     .replace(/\s+/g, ' ')
     .trim()

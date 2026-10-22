@@ -12,6 +12,7 @@ import { openProfileDialog } from '../game/profileDialog.ts'
 import { useRestoreFocus } from '../game/useRestoreFocus.ts'
 import { formatBytes } from '../i18n/bytes.ts'
 import { modsLabel, problemsLabel, updatesLabel } from '../i18n/counts.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useBadges } from '../mods/badges.ts'
 import { openShare } from '../share/store.ts'
 import { MenuHeading } from '../shell/TitleMenu.tsx'
@@ -101,7 +102,7 @@ function useRowSummary(profile: Profile): string {
       link: t`imported from a link`,
       mortar: t`imported from a .mortar file`,
       gameMods: t`imported from the game's Mods folder`,
-      copy: (name) => t`a copy of ${{ name }}`,
+      copy: (name) => lowerFirst(t`Copy of ${{ name }}`),
     }),
   ])
 }

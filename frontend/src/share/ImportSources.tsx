@@ -13,13 +13,13 @@ export function ImportSources({ onChoose }: { onChoose: (source: ImportSource) =
     {
       id: 'link',
       icon: <Link2 size={ICON} />,
-      name: t`A link or code`,
+      name: t`Link or code`,
       hint: t`A Mortar link, a Nexus collection or an r2modman or Gale code`,
     },
     {
       id: 'file',
       icon: <FileUp size={ICON} />,
-      name: t`A file`,
+      name: t`File`,
       hint: t`A .mortar file, an .r2z or a Thunderstore modpack`,
     },
     {

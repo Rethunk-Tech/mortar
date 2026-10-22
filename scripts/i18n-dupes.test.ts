@@ -42,3 +42,9 @@ test('curly quotes, dashes and arrows are variants; the ellipsis and separators 
     variants(['the search is “x”', 'Ready — go', '1 → 2', 'Open…', 'A · B', 'Settings › General']),
   ).toEqual(['the search is “x”', 'Ready — go', '1 → 2'])
 })
+
+test('an article is not a different message', () => {
+  expect(
+    duplicates(['Add the missing mods', 'Add missing mods', 'Stop a game', 'Stop game?']),
+  ).toEqual([['Add the missing mods', 'Add missing mods']])
+})

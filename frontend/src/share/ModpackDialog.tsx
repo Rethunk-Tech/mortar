@@ -48,7 +48,7 @@ function IconRow({ path, onChange }: { path: string; onChange: (path: string) =>
       <Button
         size="small"
         onClick={() =>
-          PickImage(t`Choose the icon`)
+          PickImage(t`Choose icon`)
             .then((picked) => picked && onChange(picked))
             .catch(reportError(t`Could not choose the icon`))
         }

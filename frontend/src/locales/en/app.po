@@ -217,6 +217,7 @@ msgid "Switch to Console"
 msgstr "Switch to Console"
 
 #: src/queue/QueueHistory.tsx
+#: src/saves/SaveRow.tsx
 msgid "Deleted profile"
 msgstr "Deleted profile"
 
@@ -316,6 +317,11 @@ msgstr "Showing the first 2,000 files"
 #: src/toasts/HistoryButton.tsx
 msgid "Downloads…"
 msgstr "Downloads…"
+
+#: src/install/noModText.ts
+#: src/launch/PlayControl.tsx
+msgid "Mod loader"
+msgstr "Mod loader"
 
 #: src/tips/TipBanner.tsx
 #: src/toasts/ToastHost.tsx
@@ -578,10 +584,6 @@ msgstr "Loading saved groups…"
 msgid "An r2modman code or modpack"
 msgstr "An r2modman code or modpack"
 
-#: src/install/RemapDialog.tsx
-msgid "Use this folder"
-msgstr "Use this folder"
-
 #: src/saves/backups.ts
 msgid "Scheduled"
 msgstr "Scheduled"
@@ -776,6 +778,10 @@ msgstr "What you expected"
 msgid "{0} was changed on {1}"
 msgstr "{0} was changed on {1}"
 
+#: src/launch/StopDialog.tsx
+msgid "Stop game?"
+msgstr "Stop game?"
+
 #: src/share/DestinationGrid.tsx
 msgid "No mods to share"
 msgstr "No mods to share"
@@ -963,10 +969,6 @@ msgstr "Curator's instructions"
 msgid "Host:port"
 msgstr "Host:port"
 
-#: src/game/ProfileMenuItems.tsx
-msgid "Open the profile first."
-msgstr "Open the profile first."
-
 #: src/saves/SaveBackupsButton.tsx
 msgid " · {cause} · {size} · Kept"
 msgstr " · {cause} · {size} · Kept"
@@ -1053,6 +1055,7 @@ msgstr "Skip tour"
 msgid "Its Nexus file is not known. Group the Mods list by Source and choose Find on Nexus."
 msgstr "Its Nexus file is not known. Group the Mods list by Source and choose Find on Nexus."
 
+#: src/install/RemapDialog.tsx
 #: src/shell/TypedFolder.tsx
 msgid "Use folder"
 msgstr "Use folder"
@@ -1126,6 +1129,13 @@ msgstr "{0} {1}, year {2}"
 #: src/share/ImportFooter.tsx
 msgid "New profile"
 msgstr "New profile"
+
+#: src/commandPalette/crashBisect.ts
+#: src/commandPalette/paletteLabels.ts
+#: src/game/ProfileMenuItems.tsx
+#: src/install/DownloadsDialog.tsx
+msgid "Open profile first."
+msgstr "Open profile first."
 
 #: src/saves/SavesTab.tsx
 msgid "Try a different search."
@@ -1571,11 +1581,6 @@ msgstr "Manual"
 msgid "Save to a file…"
 msgstr "Save to a file…"
 
-#: src/share/ImportDialog.tsx
-#: src/share/ImportSources.tsx
-msgid "A file"
-msgstr "A file"
-
 #: src/nxm/store.ts
 msgid "The link was made for another Nexus account than the one signed in."
 msgstr "The link was made for another Nexus account than the one signed in."
@@ -1666,6 +1671,7 @@ msgstr "Could not read your profiles"
 
 #: src/groups/ApplySavedGroupToProfile.tsx
 #: src/install/DownloadsDialog.tsx
+#: src/saves/lackChips.tsx
 msgid "Add to profile"
 msgstr "Add to profile"
 
@@ -1732,10 +1738,6 @@ msgstr "Update available"
 #: src/browse/BrowseShow.tsx
 msgid "Size"
 msgstr "Size"
-
-#: src/launch/StopDialog.tsx
-msgid "Stop the game?"
-msgstr "Stop the game?"
 
 #: src/QuitPrompt.tsx
 msgid "Quit Mortar?"
@@ -1857,6 +1859,11 @@ msgstr "Main"
 msgid "Could not launch the game"
 msgstr "Could not launch the game"
 
+#: src/firstrun/FindStep.tsx
+#: src/launchers/LauncherList.tsx
+msgid "Choose {name} folder"
+msgstr "Choose {name} folder"
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Play the open profile"
 msgstr "Play the open profile"
@@ -1924,11 +1931,6 @@ msgstr "Nothing to download"
 #: src/saves/SaveRow.tsx
 msgid "Standard farm"
 msgstr "Standard farm"
-
-#. placeholder {0}: launcher.name
-#: src/launchers/LauncherList.tsx
-msgid "Choose a {0} folder"
-msgstr "Choose a {0} folder"
 
 #: src/shell/BugReportDialog.tsx
 msgid "Post on"
@@ -2005,11 +2007,6 @@ msgstr "Save to library"
 #: src/queue/QueueBody.tsx
 msgid "In progress ({0})"
 msgstr "In progress ({0})"
-
-#. placeholder {0}: game.name
-#: src/firstrun/FindStep.tsx
-msgid "Choose your {0} folder"
-msgstr "Choose your {0} folder"
 
 #: src/saves/SaveBackupsButton.tsx
 msgid " · {cause} · {size}"
@@ -2690,10 +2687,6 @@ msgstr "Stream overlay"
 msgid "Adding the missing mods"
 msgstr "Adding the missing mods"
 
-#: src/saves/lackChips.tsx
-msgid "Add to this profile"
-msgstr "Add to this profile"
-
 #: src/queue/QueueBody.tsx
 msgid "Retry failed"
 msgstr "Retry failed"
@@ -2803,10 +2796,6 @@ msgstr "Profile backed up"
 msgid "This profile has no mods to download"
 msgstr "This profile has no mods to download"
 
-#: src/saves/SaveRow.tsx
-msgid "a deleted profile"
-msgstr "a deleted profile"
-
 #: src/share/ImportPreview.tsx
 msgid "Include {name}"
 msgstr "Include {name}"
@@ -2884,6 +2873,10 @@ msgstr "Problem choices"
 #: src/fomod/Dialog.tsx
 msgid "Next"
 msgstr "Next"
+
+#: src/install/RemapDialog.tsx
+msgid "Choose mod folder"
+msgstr "Choose mod folder"
 
 #: src/game/NewProfileDialog.tsx
 msgid "Create"
@@ -3085,11 +3078,6 @@ msgstr "{requeued, plural, one {Retried # download} other {Retried # downloads}}
 msgid "{0} hidden"
 msgstr "{0} hidden"
 
-#: src/install/NeedsRootCallout.tsx
-#: src/install/RemapDialog.tsx
-msgid "Choose a variant"
-msgstr "Choose a variant"
-
 #: src/games/AddGameDialog.tsx
 msgid "Could not add the game"
 msgstr "Could not add the game"
@@ -3128,6 +3116,8 @@ msgid "Could not check whether the game is running"
 msgstr "Could not check whether the game is running"
 
 #: src/share/DestinationPanel.tsx
+#: src/share/ImportDialog.tsx
+#: src/share/ImportSources.tsx
 msgid "File"
 msgstr "File"
 
@@ -3152,6 +3142,10 @@ msgstr "Decline"
 #: src/launch/GraphicsDialog.tsx
 msgid "Choose a graphics API for {name}"
 msgstr "Choose a graphics API for {name}"
+
+#: src/share/ModpackDialog.tsx
+msgid "Choose icon"
+msgstr "Choose icon"
 
 #: src/install/HandoffDialog.tsx
 msgid "Mortar records the file against that page, so the mod's page link and shares point there. Choose No to add it as a plain local file."
@@ -3250,11 +3244,6 @@ msgstr "Shortcut removed"
 #: src/launch/SaveWarnDialog.tsx
 msgid "Open saves"
 msgstr "Open saves"
-
-#: src/share/ImportDialog.tsx
-#: src/share/ImportSources.tsx
-msgid "A link or code"
-msgstr "A link or code"
 
 #: src/game/LaunchMenu.tsx
 msgid "Run with this profile"
@@ -3403,6 +3392,7 @@ msgid "Could not roll back updates"
 msgstr "Could not roll back updates"
 
 #: src/launch/PrePlayDialog.tsx
+#: src/saves/SaveGapLine.tsx
 msgid "Add missing mods"
 msgstr "Add missing mods"
 
@@ -3659,10 +3649,6 @@ msgstr "Screenshots"
 #: src/shell/ErrorBoundary.tsx
 msgid "Something went wrong in this view"
 msgstr "Something went wrong in this view"
-
-#: src/install/NeedsRootCallout.tsx
-msgid "Choose a folder"
-msgstr "Choose a folder"
 
 #: src/share/ManagerPane.tsx
 msgid "Could not import"
@@ -3939,10 +3925,6 @@ msgstr "Hide hidden games"
 msgid "This archive has no {loader} mod where Mortar expects one. Pick the folder that holds the mod."
 msgstr "This archive has no {loader} mod where Mortar expects one. Pick the folder that holds the mod."
 
-#: src/share/ModpackDialog.tsx
-msgid "Choose the icon"
-msgstr "Choose the icon"
-
 #: src/sync/pins.tsx
 msgid "Follow the sync again"
 msgstr "Follow the sync again"
@@ -3968,7 +3950,9 @@ msgstr "Other profile…"
 msgid "Could not make the list"
 msgstr "Could not make the list"
 
+#: src/share/ImportDialog.tsx
 #: src/share/ImportInput.tsx
+#: src/share/ImportSources.tsx
 msgid "Link or code"
 msgstr "Link or code"
 
@@ -4332,10 +4316,6 @@ msgstr "Details copied"
 msgid "Copies of the game"
 msgstr "Copies of the game"
 
-#: src/install/RemapDialog.tsx
-msgid "Choose the mod folder"
-msgstr "Choose the mod folder"
-
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Use as profile cover"
 msgstr "Use as profile cover"
@@ -4385,6 +4365,10 @@ msgstr "{0, plural, one {Added # mod from {name}} other {Added # mods from {name
 msgid "Could not read your games"
 msgstr "Could not read your games"
 
+#: src/launch/playStart.ts
+msgid "Could not check profile"
+msgstr "Could not check profile"
+
 #: src/install/DropOverlay.tsx
 msgid "Open a profile to install mods"
 msgstr "Open a profile to install mods"
@@ -4423,11 +4407,6 @@ msgstr "Report copied"
 msgid "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
 msgstr "Anyone can publish files on {sites}, and nobody reviews or scans them for malware. Download only from authors you trust. Mortar asks once per site."
 
-#: src/install/noModText.ts
-#: src/launch/PlayControl.tsx
-msgid "the mod loader"
-msgstr "the mod loader"
-
 #. placeholder {0}: shown.indexOf(step) + 1
 #. placeholder {1}: shown.length
 #: src/firstrunTour/TourPopover.tsx
@@ -4462,10 +4441,6 @@ msgstr "{0} will be overwritten. A backup of the current Saves folder is made fi
 #: src/shell/BugReportDialog.tsx
 msgid "Steps to reproduce"
 msgstr "Steps to reproduce"
-
-#: src/saves/SavesTab.tsx
-msgid "Clear filter"
-msgstr "Clear filter"
 
 #: src/games/AddGameDialog.tsx
 msgid "Choose the game's program…"
@@ -4568,12 +4543,6 @@ msgstr "Add it"
 msgid "Could not send to {0}"
 msgstr "Could not send to {0}"
 
-#: src/commandPalette/crashBisect.ts
-#: src/commandPalette/paletteLabels.ts
-#: src/install/DownloadsDialog.tsx
-msgid "Open a profile first."
-msgstr "Open a profile first."
-
 #: src/lan/IncomingPrompt.tsx
 msgid "Import as new profile"
 msgstr "Import as new profile"
@@ -4593,10 +4562,6 @@ msgstr "Open download page"
 #: src/share/Included.tsx
 msgid "Show mods"
 msgstr "Show mods"
-
-#: src/saves/SaveGapLine.tsx
-msgid "Add the missing mods"
-msgstr "Add the missing mods"
 
 #: src/templates/useTemplates.ts
 msgid "Could not read the templates"
@@ -5002,6 +4967,10 @@ msgstr "Beach farm"
 msgid "Save"
 msgstr "Save"
 
+#: src/install/NeedsRootCallout.tsx
+msgid "Choose folder"
+msgstr "Choose folder"
+
 #: src/install/DownloadsDialog.tsx
 msgid "From Nexus"
 msgstr "From Nexus"
@@ -5040,6 +5009,11 @@ msgstr "Copy details"
 #: src/shell/checkForUpdates.ts
 msgid "Mods are up to date"
 msgstr "Mods are up to date"
+
+#: src/install/NeedsRootCallout.tsx
+#: src/install/RemapDialog.tsx
+msgid "Choose variant"
+msgstr "Choose variant"
 
 #: src/saves/lackChipActions.tsx
 msgid "Dismiss {name} for this save"
@@ -5097,10 +5071,6 @@ msgstr "This saved group will be deleted. Groups already added to profiles stay.
 msgid "Dependency"
 msgstr "Dependency"
 
-#: src/launch/playStart.ts
-msgid "Could not check the profile"
-msgstr "Could not check the profile"
-
 #: src/sync/SyncOffers.tsx
 msgid "Changes from your other machines"
 msgstr "Changes from your other machines"
@@ -5150,6 +5120,10 @@ msgstr "Could not cancel transfer"
 #: src/game/FarmMenuItem.tsx
 msgid "Load the host's list from a file…"
 msgstr "Load the host's list from a file…"
+
+#: src/saves/SavesTab.tsx
+msgid "Clear filters"
+msgstr "Clear filters"
 
 #: src/shell/win.ts
 msgid "Could not minimise the window"

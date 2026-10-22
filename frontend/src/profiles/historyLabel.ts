@@ -92,8 +92,8 @@ export function historyLabel(ev: Worded): string {
       return i18n._(msg`Switched ${name} to the ${detail} update channel`)
     case HistoryChange.ChangeCollectionUnlinked:
       return name === ''
-        ? i18n._(msg`Unlinked the collection`)
-        : i18n._(msg`Unlinked the collection ${name}`)
+        ? i18n._(msg`Unlinked collection`)
+        : i18n._(msg`Unlinked collection ${name}`)
     case HistoryChange.ChangeTrimmed:
       return plural(count, {
         one: 'Trimmed history, dropped # older change',

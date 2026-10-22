@@ -83,6 +83,7 @@ How every string reads. One wording per message: `bun run --cwd frontend i18n:du
 
 - **Enable / Disable** a mod, plugin or option; never "Switch on/off", "Turn on/off" or "Activate".
 - **Remove** takes something out of a profile, group or list and leaves the thing itself; **Delete** destroys it on disk (a profile, saved group, template, preset, backup, downloaded file). The button, its confirmation and its toast use the same verb.
+- No article where the meaning holds without it: "Add missing mods", "Could not check profile". A label reused mid-sentence is lowercased in code (`i18n/lowerFirst.ts`).
 - No contractions: "cannot", "do not", "is not", "What is new". `i18n:dupes` fails on one.
 - Plain characters: straight quotes, no dashes or arrows ("1.2 to 1.3"). Only "…", "·" between parts and "›" in a menu path; `i18n:dupes` fails on the rest.
 - Sentence case everywhere: "Open settings", not "Open Settings". A fragment that must be lowercase is lowercased in code, so one msgid serves both.

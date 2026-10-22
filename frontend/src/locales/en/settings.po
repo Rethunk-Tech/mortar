@@ -905,10 +905,6 @@ msgstr "The browser extension is too old for this Mortar"
 msgid "Grid card size"
 msgstr "Grid card size"
 
-#: src/settings/prefCopyGame.ts
-msgid "Skip the pre-Play check"
-msgstr "Skip the pre-Play check"
-
 #. placeholder {0}: result.remaining
 #: src/settings/sections/NexusMods.tsx
 msgid "Stopped at the API limit; {0} left"
@@ -2034,6 +2030,10 @@ msgstr "Time"
 msgid "{name}: {from} to {to}"
 msgstr "{name}: {from} to {to}"
 
+#: src/settings/sections/Shortcuts.tsx
+msgid "Mod list"
+msgstr "Mod list"
+
 #: src/settings/sections/General.tsx
 msgid "This network is set to Public in Windows"
 msgstr "This network is set to Public in Windows"
@@ -2125,10 +2125,6 @@ msgstr "No answer {0}: {reason}"
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Copy OBS URL"
 msgstr "Copy OBS URL"
-
-#: src/settings/sections/Shortcuts.tsx
-msgid "Mods list"
-msgstr "Mods list"
 
 #. placeholder {0}: loader.name
 #: src/settings/sections/LoaderRow.tsx
@@ -2698,6 +2694,10 @@ msgstr "Checking…"
 #: src/settings/NexusMeter.tsx
 msgid "{0} of {1} requests left today · {2} of {3} this hour"
 msgstr "{0} of {1} requests left today · {2} of {3} this hour"
+
+#: src/settings/prefCopyGame.ts
+msgid "Skip pre-Play check"
+msgstr "Skip pre-Play check"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Mortar bridge"

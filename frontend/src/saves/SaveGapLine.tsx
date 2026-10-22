@@ -64,7 +64,7 @@ export function SaveGapLine({ fit, profile, game }: { fit: Fit; profile: Profile
             disabled={pending || locked}
             onClick={() => run(() => addRecordedMods(game, profile.id, fit))}
           >
-            {t`Add the missing mods`}
+            {t`Add missing mods`}
           </Button>
         </LockedReason>
       </Box>

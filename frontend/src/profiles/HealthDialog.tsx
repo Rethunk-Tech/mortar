@@ -219,7 +219,7 @@ export function HealthDialog({
         openSettings('storage')
       }
     } catch (e) {
-      reportError(t`Could not repair this profile`)(e)
+      reportError(t`Could not repair profile`)(e)
       load()
     } finally {
       setBusy(false)
@@ -241,7 +241,7 @@ export function HealthDialog({
         role="alert"
         sx={{ display: 'flex', alignItems: 'center', gap: space.gap, py: space.pad }}
       >
-        {t`Could not check this profile`}
+        {t`Could not check profile`}
         <Button variant="outlined" onClick={load}>
           {t`Retry`}
         </Button>

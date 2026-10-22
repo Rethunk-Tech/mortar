@@ -174,7 +174,7 @@ export function Shortcuts() {
     ['General', t`General`],
     ['Navigation', t`Navigation`],
     ['Profiles', t`Profiles`],
-    ['Mods list', t`Mods list`],
+    ['Mods list', t`Mod list`],
     ['Tabs', t`Tabs`],
   ]
   return (

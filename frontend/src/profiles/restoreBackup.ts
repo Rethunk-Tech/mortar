@@ -21,7 +21,7 @@ export async function restoreBackup(): Promise<void> {
     const missing = r.unavailable ?? []
     let body = i18n._(msg`Every mod is in place.`)
     if (missing.length > 0) {
-      body = i18n._(msg`Install these again by hand: ${listNames(missing)}`)
+      body = i18n._(msg`Install by hand: ${listNames(missing)}`)
     } else if (r.queued > 0) {
       body = plural(r.queued, { one: '# mod is downloading.', other: '# mods are downloading.' })
     }

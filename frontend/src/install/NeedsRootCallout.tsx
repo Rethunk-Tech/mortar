@@ -20,7 +20,7 @@ export function NeedsRootCallout({ item }: { item: Item }) {
   const profileName = profile?.name ?? ''
   const variants = (ask.variants ?? []).length > 0
   const { overlay } = ask
-  let label = variants ? t`Choose a variant` : t`Choose a folder`
+  let label = variants ? t`Choose variant` : t`Choose folder`
   let button = variants ? t`Choose variant…` : t`Choose folder…`
   let text = variants
     ? t`This archive holds several variants of the same mod. Pick the one to install; updates keep it.`

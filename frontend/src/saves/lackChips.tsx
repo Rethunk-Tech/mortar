@@ -52,7 +52,7 @@ function LackChip({
   const queued = useQueue((s) =>
     want ? pendingFor(s.state.items, profile.id, want.modId ?? 0, want.repo ?? '') : false,
   )
-  let plusTitle = t`Add to this profile`
+  let plusTitle = t`Add to profile`
   if (queued) {
     plusTitle = t`Queued`
   }

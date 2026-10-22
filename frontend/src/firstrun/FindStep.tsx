@@ -188,7 +188,7 @@ export function FindStep({
   }
   // Without a native folder dialog (server mode) the path is typed instead.
   const browse = () => {
-    PickFolder(t`Choose your ${game.name} folder`)
+    PickFolder(t`Choose ${{ name: game.name }} folder`)
       .then((picked) => (picked ? use(picked) : undefined))
       .catch(() => setTyping(true))
   }

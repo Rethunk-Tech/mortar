@@ -136,7 +136,7 @@ function LauncherRow({
     )
   const add = async () => {
     try {
-      const picked = await PickFolder(t`Choose a ${launcher.name} folder`)
+      const picked = await PickFolder(t`Choose ${{ name: launcher.name }} folder`)
       if (picked) {
         await run(AddLauncherRoot(launcher.id, picked))
       }

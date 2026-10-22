@@ -20,6 +20,7 @@ import {
   CreateBackup,
   OpenSaveFolder,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savessvc/service.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useLocked } from '../mods/useLocked.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
@@ -200,7 +201,7 @@ export function SaveRow({
   const profiles = useProfiles((s) => s.profiles)
   const lastProfile = profiles.find((p) => p.id === fit.lastProfileId)
   const lastGone = Boolean(fit.lastProfileId) && lastProfile === undefined
-  const lastName = lastProfile?.name ?? (lastGone ? t`a deleted profile` : '')
+  const lastName = lastProfile?.name ?? (lastGone ? lowerFirst(t`Deleted profile`) : '')
   const lastLine = lastName === '' ? '' : t`Last played with ${{ profile: lastName }}`
   return (
     <Box

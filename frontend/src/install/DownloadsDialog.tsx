@@ -268,7 +268,7 @@ export function DownloadsDialog() {
       <DialogActions>
         <Button onClick={close}>{t`Cancel`}</Button>
         <DisabledReason
-          title={hasProfile ? t`Choose an archive first.` : t`Open a profile first.`}
+          title={hasProfile ? t`Choose an archive first.` : t`Open profile first.`}
           disabled={!(selected && hasProfile)}
         >
           <Button

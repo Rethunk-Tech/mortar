@@ -17,7 +17,7 @@ import { useCommandPalette } from './store.ts'
 function blockText(block: BisectBlock, lang: I18n): string {
   switch (block) {
     case 'no-profile':
-      return lang._(msg`Open a profile first.`)
+      return lang._(msg`Open profile first.`)
     case 'no-runs':
       return lang._(msg`Start the game once so Mortar can see the crash.`)
     case 'ended-normally':

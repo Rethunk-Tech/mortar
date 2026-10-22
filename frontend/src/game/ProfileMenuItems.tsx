@@ -252,7 +252,7 @@ function MoreMenuItems({ profile, close }: { profile: Profile; close: () => void
       icon={<Snowflake size={16} />}
       label={isFrozen(profile) ? t`Unfreeze` : t`Freeze this profile`}
       disabled={profile.id !== openId}
-      {...(profile.id === openId ? {} : { tooltip: t`Open the profile first.` })}
+      {...(profile.id === openId ? {} : { tooltip: t`Open profile first.` })}
       onClick={() => {
         close()
         setFrozen(!isFrozen(profile)).catch(reportUnexpected)

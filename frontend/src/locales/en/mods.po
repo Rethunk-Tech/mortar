@@ -179,6 +179,7 @@ msgstr "Reinstall loader"
 msgid "Required: {label}"
 msgstr "Required: {label}"
 
+#: src/mods/GameModsReviewDialog.tsx
 #: src/mods/OtherProfilesDialog.tsx
 msgid "Could not change mods"
 msgstr "Could not change mods"
@@ -2076,10 +2077,6 @@ msgstr "Category"
 #: src/mods/ModUpdateControls.tsx
 msgid "Include prereleases"
 msgstr "Include prereleases"
-
-#: src/mods/GameModsReviewDialog.tsx
-msgid "Could not change the mods"
-msgstr "Could not change the mods"
 
 #: src/mods/SetNexusPageDialog.tsx
 msgid "Paste the address of the mod's page on Nexus Mods. To name the exact file, open that file's Manual Download on the page's Files tab and paste that address instead."

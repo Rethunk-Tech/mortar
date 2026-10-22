@@ -80,6 +80,10 @@ msgstr "The game is running: measure it now"
 msgid "{0, plural, one {# log line Mortar could not classify} other {# log lines Mortar could not classify}}"
 msgstr "{0, plural, one {# log line Mortar could not classify} other {# log lines Mortar could not classify}}"
 
+#: src/console/RunProblems.tsx
+msgid "Mod loader"
+msgstr "Mod loader"
+
 #: src/console/CrashDialog.tsx
 msgid "Dismiss"
 msgstr "Dismiss"
@@ -796,10 +800,6 @@ msgstr "BepInEx patches"
 #: src/console/PerformancePanel.tsx
 msgid "Report copied"
 msgstr "Report copied"
-
-#: src/console/RunProblems.tsx
-msgid "the mod loader"
-msgstr "the mod loader"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Measuring"
