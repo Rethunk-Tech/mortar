@@ -17,6 +17,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Build output does not depend on the ref (the tag only has to match build/config.yml), so a run whose commit
+  # already passed a dry run reuses that run's packages instead of building them again.
+  prebuilt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    outputs:
+      run: ${{ steps.dry.outputs.run }}
+    steps:
+      - name: Dry run on this commit
+        id: dry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          runs="repos/$GITHUB_REPOSITORY/actions/workflows/release.yml/runs?head_sha=$GITHUB_SHA&event=workflow_dispatch&status=success"
+          run="$(gh api "$runs" --jq '.workflow_runs[0].id // empty' || true)"
+          if [ -n "$run" ]; then
+            legs="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run/artifacts" \
+              --jq '[.artifacts[] | select(.expired | not) | .name | select(startswith("mortar-linux-"))] | length' || echo 0)"
+            [ "$legs" = 2 ] || run=
+          fi
+          echo "Dry run with packages for $GITHUB_SHA: ${run:-none}"
+          echo "run=$run" >>"$GITHUB_OUTPUT"
+
   # A tag normally points at a commit CI gates on main, often still running because the tag and main are pushed
   # together. Waiting for that run costs a runner idling; gating again cost twelve minutes of the packaging leg.
   ci-passed:
@@ -79,6 +105,8 @@ jobs:
         run: bun run gate --profile
 
   release:
+    needs: prebuilt
+    if: needs.prebuilt.outputs.run == ''
     strategy:
       fail-fast: false
       matrix:
@@ -255,11 +283,12 @@ jobs:
           if-no-files-found: error
 
   finalize:
-    needs: [release, ci-passed, gate]
-    if: ${{ !cancelled() && needs.release.result == 'success' && (needs.ci-passed.outputs.ok == 'true' || needs.gate.result == 'success') }}
+    needs: [prebuilt, release, ci-passed, gate]
+    if: ${{ !cancelled() && (needs.release.result == 'success' || (needs.release.result == 'skipped' && needs.prebuilt.outputs.run != '')) && (needs.ci-passed.outputs.ok == 'true' || needs.gate.result == 'success') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      actions: read
       contents: write
       id-token: write
       attestations: write
@@ -281,7 +310,10 @@ jobs:
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: bin
+          pattern: mortar-linux-*
           merge-multiple: true
+          run-id: ${{ needs.prebuilt.outputs.run || github.run_id }}
+          github-token: ${{ github.token }}
 
       - name: Signed manifest
         env:
