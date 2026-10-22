@@ -87,12 +87,12 @@ const useNav = create<{
       return game ? { route: { name: 'game-settings', game, query } } : {}
     }),
   openSettings: (section) =>
-    set(({ route }) => ({
-      route:
-        route.name === 'settings'
-          ? { ...route, section: section ?? route.section }
-          : { name: 'settings', section: section ?? 'general', back: route },
-    })),
+    set(({ route }) => {
+      if (route.name !== 'settings') {
+        return { route: { name: 'settings', section: section ?? 'general', back: route } }
+      }
+      return section && section !== route.section ? { route: { ...route, section } } : {}
+    }),
   closeSettings: () => set(({ route }) => (route.name === 'settings' ? { route: route.back } : {})),
 }))
 

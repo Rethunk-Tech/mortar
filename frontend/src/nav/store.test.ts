@@ -19,3 +19,18 @@ test('a setup remembers the game it was opened from', () => {
   useNav.getState().openGameSetup('valheim')
   expect(useNav.getState().route).toEqual({ name: 'game-setup', game: 'valheim', from: 'stardew' })
 })
+
+test('opening the section already shown keeps the route, so nothing re-renders', () => {
+  useNav.setState(useNav.getInitialState(), true)
+  useNav.getState().openSettings('general')
+  const open = useNav.getState().route
+  useNav.getState().openSettings('general')
+  useNav.getState().openSettings()
+  expect(useNav.getState().route).toBe(open)
+  useNav.getState().openSettings('about')
+  expect(useNav.getState().route).toEqual({
+    name: 'settings',
+    section: 'about',
+    back: { name: 'game-select' },
+  })
+})
