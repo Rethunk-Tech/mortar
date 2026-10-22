@@ -15,7 +15,7 @@ import {
   Switch,
 } from '@mui/material'
 import { ArrowUp, Ban, CircleCheck, CircleX, Pin, TriangleAlert } from 'lucide-react'
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import type {
   Mod,
   Profile,
@@ -213,8 +213,9 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
 // The panel footer's two buttons share one height.
 const footerButtonSx = { height: space.control } as const
 
-// source and starKey lay the mod's source mark and its favourite star over the picture's corners.
-export function LetterTile({
+// source and starKey lay the mod's source mark and its favourite star over the picture's corners. Memoised: a card
+// re-renders when its row's size or page details arrive, and the picture does not change with them.
+export const LetterTile = memo(function LetterTileView({
   mod,
   size = DEFAULT_TILE_SIZE,
   fresh = false,
@@ -274,7 +275,7 @@ export function LetterTile({
       {starKey ? <FavouriteStar starKey={starKey} onPicture={true} /> : null}
     </Box>
   )
-}
+})
 
 // A profile's mod with its source and favourite star on the picture.
 export function ProfileModTile({

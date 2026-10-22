@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, ButtonBase, Card, Chip, Typography, useMediaQuery } from '@mui/material'
+import { Box, ButtonBase, Card, Typography, useMediaQuery } from '@mui/material'
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type {
   Mod,
@@ -13,32 +13,21 @@ import { space } from '../theme/density.ts'
 import { PAD_FOCUS } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { actingMods, toggleActing } from './actingMods.ts'
+import { CardBadges } from './CardBadges.tsx'
 import { CardMeta } from './CardMeta.tsx'
-import { CompatChip } from './CompatChip.tsx'
 import { cardMarks } from './cardMarks.ts'
 import { showModId, useDetail } from './detail.ts'
-import { ExtraFilesChip } from './ExtraFilesChip.tsx'
 import { firstTag } from './group.ts'
-import { LibrariesChip } from './LibrariesChip.tsx'
 import type { ListRow } from './listColumns.ts'
+import { sameLibraries } from './listRows.ts'
 import { entryOf, modId, useLocalMark } from './lookup.ts'
-import { ModMenu } from './ModMenu.tsx'
 import { GroupHeaderRow, StickyGroupSlot } from './ModsGroupHeader.tsx'
 import { useMarked, useRowFocus, useTabStop } from './marked.ts'
 import { contextMenuProps, openModPage } from './menu.ts'
 import { useModFresh } from './modFresh.ts'
-import { OverlayCountChip } from './OverlayRow.tsx'
 import { cardSlice } from './overlayRows.ts'
 import { MIDDLE, opensPage } from './pageClick.ts'
-import {
-  LastRunBadge,
-  LiveBadge,
-  NexusGoneBadge,
-  PinBadge,
-  ProblemBadge,
-  ProfileModTile,
-  UpdateBadge,
-} from './parts.tsx'
+import { ProfileModTile } from './parts.tsx'
 import { useSelection } from './selection.ts'
 import { useMods } from './store.ts'
 import { useListHeading } from './useListHeading.ts'
@@ -73,7 +62,6 @@ const CARD_GAP_PX = '10px'
 const CARD_RADIUS_PX = '6px'
 const NAME_FONT_PX = 14
 const NAME_WEIGHT = 600
-const TAG_MAX_PX = 96
 const LANE_GAP_PX = '6px'
 const DIVIDER = '1px solid var(--mortar-hairline-12)'
 
@@ -103,13 +91,8 @@ interface ModCardProps {
   onMove: (id: string, delta: number) => void
 }
 
-const sameLibraries = (a: ListRow['libraries'], b: ListRow['libraries']) =>
-  a === b || (a?.length === b?.length && (a ?? []).every((r, i) => r.mod === b?.[i]?.mod))
-
 const sameCard = (a: ModCardProps, b: ModCardProps) =>
   a.mod === b.mod &&
-  a.row.size === b.row.size &&
-  a.row.details === b.row.details &&
   sameLibraries(a.row.libraries, b.row.libraries) &&
   a.first === b.first &&
   a.orderedRef === b.orderedRef &&
@@ -250,21 +233,10 @@ function ModCardView({
               {m.name}
             </Typography>
           </ButtonBase>
-          <CardMeta mod={m} row={row} profile={profile} statsLine={statsLine} />
+          <CardMeta mod={m} profile={profile} statsLine={statsLine} />
         </Box>
       </Box>
-      <LibrariesChip libraries={row.libraries} />
-      <ExtraFilesChip mod={m} profile={profile} />
-      <OverlayCountChip mod={m} profile={profile} />
-      <PinBadge mod={m} />
-      <CompatChip mod={m} />
-      <UpdateBadge mod={m} />
-      <NexusGoneBadge mod={m} />
-      <ProblemBadge mod={m} />
-      <LiveBadge mod={m} />
-      <LastRunBadge mod={m} />
-      {tag ? <Chip size="small" label={tag} title={tag} sx={{ maxWidth: TAG_MAX_PX }} /> : null}
-      <ModMenu mod={m} />
+      <CardBadges mod={m} profile={profile} libraries={row.libraries} tag={tag} />
     </Card>
   )
 }

@@ -7,26 +7,30 @@ import { parseCardStats, useModCardStats } from '../browse/stats.ts'
 import { useSettings } from '../settings/store.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { formatAuthors } from './authorNormalize.ts'
-import type { ListRow } from './listColumns.ts'
+import { useEntrySize } from './listRows.ts'
+import { nexusIdOf } from './lookup.ts'
+import { useNexusDetails } from './nexusDetails.ts'
 
 const META_FONT_PX = 12
 
 // A card's second line (author and version) and, when Card details are ticked, the line of chosen details under it.
 export function CardMeta({
   mod: m,
-  row,
   profile,
   statsLine,
 }: {
   mod: Mod
-  row: ListRow
   profile: Profile
   statsLine: boolean
 }) {
   const showAuthor = useSettings((s) => s.showAuthorOnCards) !== false
-  const stats = useModCardStats(row, parseCardStats(useSettings((s) => s.browseCardStats))).join(
-    ' · ',
-  )
+  // Read here rather than from the card's row, so their arrival re-renders this line and not the whole card.
+  const size = useEntrySize(m.key)
+  const details = useNexusDetails((s) => s.byId[nexusIdOf(profile, m)]?.details)
+  const stats = useModCardStats(
+    { mod: m, ...(size === undefined ? {} : { size }), ...(details ? { details } : {}) },
+    parseCardStats(useSettings((s) => s.browseCardStats)),
+  ).join(' · ')
   const byline = [formatAuthors(m.author), m.version].filter(Boolean).join(' · ')
   return (
     <>

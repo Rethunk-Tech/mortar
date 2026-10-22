@@ -76,10 +76,13 @@ function useCardStats(item: BrowseItem, stats: readonly CardStat[]): string[] {
 
 /** An installed mod's card line for the same chosen stats: its Nexus page's figures and its size on disk. The card
  * already shows the installed version. */
-function useModCardStats(row: ListRow, stats: readonly CardStat[]): string[] {
+function useModCardStats(
+  { mod, size, details }: Pick<ListRow, 'mod' | 'size' | 'details'>,
+  stats: readonly CardStat[],
+): string[] {
   const { t } = useLingui()
-  const page = row.details?.page
-  const endorsements = page?.endorsements ?? row.mod.endorsements
+  const page = details?.page
+  const endorsements = page?.endorsements ?? mod.endorsements
   const parts: Record<CardStat, string> = {
     popularity:
       endorsements > 0
@@ -88,7 +91,7 @@ function useModCardStats(row: ListRow, stats: readonly CardStat[]): string[] {
     downloads: page
       ? plural({ count: page.downloads }, { one: '# download', other: '# downloads' })
       : '',
-    size: row.size !== undefined && row.size > 0 ? formatBytes(row.size) : '',
+    size: size !== undefined && size > 0 ? formatBytes(size) : '',
     version: '',
     updated: page?.updated ? t`Updated ${{ when: formatWhen(page.updated) }}` : '',
   }

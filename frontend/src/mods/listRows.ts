@@ -52,6 +52,11 @@ function useEntrySizes(): Readonly<Record<string, number>> {
   return useListData((s) => s.sizes)
 }
 
+/** One entry's size, so a card's stats line re-renders alone when the sizes arrive. */
+function useEntrySize(key: string): number | undefined {
+  return useListData((s) => s.sizes[key])
+}
+
 /** Each mod's and content pack's share of the latest measured startup, by lower-cased UniqueID. */
 function useStartupCosts(game: string, profileId: string): Readonly<Record<string, number>> {
   const key = `${game}/${profileId}`
@@ -92,6 +97,10 @@ function usePackageOverrides(
   }, [game, profile, deploy])
   return useListData((s) => s.wins[key]) ?? NONE
 }
+
+// Whether two folded library lists name the same mods in the same order.
+const sameLibraries = (a: ListRow['libraries'], b: ListRow['libraries']) =>
+  a === b || (a?.length === b?.length && (a ?? []).every((r, i) => r.mod === b?.[i]?.mod))
 
 // One pass over the profile serves every row: lookups by key, not a scan of the entries per mod.
 function toListRows(
@@ -192,4 +201,11 @@ function toListRow(
   return row
 }
 
-export { toListRows, useEntrySizes, usePackageOverrides, useStartupCosts }
+export {
+  sameLibraries,
+  toListRows,
+  useEntrySize,
+  useEntrySizes,
+  usePackageOverrides,
+  useStartupCosts,
+}

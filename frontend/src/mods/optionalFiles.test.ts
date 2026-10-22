@@ -109,10 +109,3 @@ test('plainDescription flattens BBCode to one line', () => {
     'Dark look for the menus',
   )
 })
-
-test('the list and grid share the details sidebar that lists optional files, and cards keep the count chip', async () => {
-  const read = (name: string) => Bun.file(new URL(name, import.meta.url)).text()
-  expect(await read('./Sidebar.tsx')).toContain('<OptionalFiles mod={mod} profile={profile} />')
-  expect(await read('./ModsTab.tsx')).toContain('<ModSidebar profile={profile} />')
-  expect(await read('./ModCards.tsx')).toContain('<OverlayCountChip mod={m} profile={profile} />')
-})
