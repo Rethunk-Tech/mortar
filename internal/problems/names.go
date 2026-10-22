@@ -9,7 +9,7 @@ import (
 )
 
 // nameLookups bounds the page reads in flight: a cold cache costs one network round trip per id.
-const nameLookups = 6
+const nameLookups = 16
 
 // DependencyNames maps each id of ids to the name of the Nexus page that ships it, for a dependency that is not
 // installed and so has no name of its own. An id the dataset does not know, or whose page cannot be read, is left out.
