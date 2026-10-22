@@ -1,6 +1,6 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Checkbox, Link, Typography } from '@mui/material'
+import { Alert, Box, Button, Checkbox, Link, Typography } from '@mui/material'
 import { alpha, type Theme, useTheme } from '@mui/material/styles'
 import { formatKb } from '../i18n/bytes.ts'
 import { listNames } from '../i18n/list.ts'
@@ -134,6 +134,8 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
     needsPatreonFile(mod) ? t`Needs a file from its Patreon post` : '',
     needsItchFile(mod) ? t`Needs a file from its itch.io page` : '',
     needsCurseForgeKey(mod) ? t`Needs a CurseForge key, or the file from its page` : '',
+    mod.filesFrom === 'code' ? t`program files from this code` : '',
+    mod.filesFrom === 'computer' ? t`copied from this computer` : '',
   ].filter(Boolean)
   const byline = [formatAuthors(mod.author), ...notes].filter(Boolean).join(' · ')
   const tint = tileTint(theme, state, checked && !fixed)
@@ -373,18 +375,35 @@ export function Tiles({
   excluded: ReadonlySet<string>
   onToggle: (key: string) => void
 }) {
+  const { t } = useLingui()
+  // A code's own files are programs nobody reviewed: no mod site scanned or signed them, so the player decides first.
+  const carried = mods
+    .filter((m) => m.filesFrom === 'code' && !excluded.has(m.key))
+    .map((m) => m.name)
   return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
-        gap: '6px',
-      }}
-    >
-      {mods.map((m) => (
-        <Tile key={m.key} mod={m} checked={!excluded.has(m.key)} onToggle={() => onToggle(m.key)} />
-      ))}
-    </Box>
+    <>
+      {carried.length > 0 ? (
+        <Alert severity="warning" sx={{ mb: 1 }}>
+          {t`${listNames(carried)} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it.`}
+        </Alert>
+      ) : null}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
+          gap: '6px',
+        }}
+      >
+        {mods.map((m) => (
+          <Tile
+            key={m.key}
+            mod={m}
+            checked={!excluded.has(m.key)}
+            onToggle={() => onToggle(m.key)}
+          />
+        ))}
+      </Box>
+    </>
   )
 }
 

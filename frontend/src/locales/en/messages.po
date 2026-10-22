@@ -5086,6 +5086,10 @@ msgstr "Include disabled mods"
 msgid "slow Entry {ms}"
 msgstr "slow Entry {ms}"
 
+#: src/share/ImportPreview.tsx
+msgid "program files from this code"
+msgstr "program files from this code"
+
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Show live game info in OBS. Changes apply the next time you press Play."
 msgstr "Show live game info in OBS. Changes apply the next time you press Play."
@@ -7289,6 +7293,10 @@ msgstr "Pin {name}"
 #: src/browse/ResultCard.tsx
 msgid "Deprecated or obsolete"
 msgstr "Deprecated or obsolete"
+
+#: src/share/ImportPreview.tsx
+msgid "copied from this computer"
+msgstr "copied from this computer"
 
 #: src/settings/sections/Downloads.tsx
 msgid "Premium downloads come from this Nexus server when it offers the file."
@@ -12958,6 +12966,11 @@ msgstr "Stop the game to restore saves."
 #: src/mods/problemFix/BrokenFix.tsx
 msgid "Open replacement"
 msgstr "Open replacement"
+
+#. placeholder {0}: listNames(carried)
+#: src/share/ImportPreview.tsx
+msgid "{0} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it."
+msgstr "{0} bring program files with this code rather than from a mod site. Leave them out unless you trust who sent it."
 
 #: src/console/StartupSections.tsx
 msgid "The game loads its own content"
