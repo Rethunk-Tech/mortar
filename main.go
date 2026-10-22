@@ -206,6 +206,10 @@ const serverShutdownTimeout = time.Second
 // queueQuitWait bounds how long quit waits for the download workers to stop.
 const queueQuitWait = 5 * time.Second
 
+// installCacheTTL is how long a game's discovered installs are reused; a game its launcher installs or removes shows
+// up within it, and the setup screen's launcher list always looks again.
+const installCacheTTL = 30 * time.Second
+
 func run() error {
 	if len(os.Args) > 1 && os.Args[1] == "--release-links" {
 		return releaseLinks()
@@ -491,12 +495,10 @@ func run() error {
 	source.Register(thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")})
 	componentClient := components.NewClient(&http.Client{Timeout: 30 * time.Second})
 	game.ConfigureComponents(componentClient)
+	game.CacheInstalls(installCacheTTL)
 	loaders := loadersvc.NewService(home, store, items, profiles, componentClient)
 	implemented := game.Implemented()
 	loadersvc.Attach(loaders)
-	for _, id := range implemented {
-		loadersvc.SyncBundled(context.Background(), loaders, id)
-	}
 	launches.EnsureLoader = func(ctx context.Context, id, loaderID string, fromStart bool) error {
 		_, err := loaders.Ensure(ctx, id, loaderID, fromStart)
 		return err
@@ -1131,6 +1133,14 @@ func run() error {
 		return w
 	}
 	window = newWindow(store.Get().StartMinimised || plays.PlayMode())
+	// Bundled mods are checked behind the open window: the check finds every game's installs, and may download a bridge.
+	go func() {
+		start := time.Now()
+		for _, id := range implemented {
+			loadersvc.SyncBundled(context.Background(), loaders, id)
+		}
+		log.Printf("bundled mods: %d games checked in %s", len(implemented), time.Since(start).Round(time.Millisecond))
+	}()
 	plays.Window = func(m shortcut.WindowMode) {
 		switch m {
 		case shortcut.WindowPrompt:

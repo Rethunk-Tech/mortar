@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"path/filepath"
 	goruntime "runtime"
+	"slices"
+	"sync"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -146,7 +149,62 @@ const (
 // roots are the folders the user added for a launcher.
 func roots(s settings.Settings, launcher string) []string { return s.LauncherRoots[launcher] }
 
+// installs keeps each game's discovered installs once CacheInstalls turns it on: discovery reads every store's files
+// (and on Windows the Xbox package list) per game, and startup and the library ask for every game several times.
+var installs struct {
+	sync.Mutex
+	ttl  time.Duration
+	byID map[string]cachedInstalls
+}
+
+type cachedInstalls struct {
+	key string
+	at  time.Time
+	all []Install
+}
+
+// CacheInstalls keeps discovered installs for ttl, so a game installed or removed by its launcher shows up within ttl.
+func CacheInstalls(ttl time.Duration) {
+	installs.Lock()
+	defer installs.Unlock()
+	installs.ttl = ttl
+	installs.byID = nil
+	if ttl > 0 {
+		installs.byID = map[string]cachedInstalls{}
+	}
+}
+
+// ForgetInstalls makes the next lookup of every game discover its installs again.
+func ForgetInstalls() {
+	installs.Lock()
+	defer installs.Unlock()
+	if installs.byID != nil {
+		installs.byID = map[string]cachedInstalls{}
+	}
+}
+
 func collect(g Game, home string, s settings.Settings) []Install {
+	// fmt prints a map's keys sorted, so equal launcher folders give equal keys.
+	key := home + "\x00" + fmt.Sprint(s.LauncherRoots)
+	installs.Lock()
+	c, ok := installs.byID[g.ID()]
+	ttl := installs.ttl
+	installs.Unlock()
+	if ok && c.key == key && time.Since(c.at) < ttl {
+		return slices.Clone(c.all)
+	}
+	all := discover(g, home, s)
+	if ttl > 0 {
+		installs.Lock()
+		if installs.byID != nil {
+			installs.byID[g.ID()] = cachedInstalls{key: key, at: time.Now(), all: all}
+		}
+		installs.Unlock()
+	}
+	return slices.Clone(all)
+}
+
+func discover(g Game, home string, s settings.Settings) []Install {
 	info, ok := catalogGame(g.ID())
 	if !ok {
 		return nil

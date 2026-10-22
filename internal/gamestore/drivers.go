@@ -2,21 +2,17 @@ package gamestore
 
 import (
 	"cmp"
-	"context"
 	"encoding/json"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/gog"
 	"github.com/Rethunk-Tech/mortar/internal/lutris"
-	"github.com/Rethunk-Tech/mortar/internal/nowindow"
 	"github.com/Rethunk-Tech/mortar/internal/steam"
 )
 
@@ -330,21 +326,10 @@ const xboxKey = "xbox"
 // appxLocation is the install folder of the Windows app package named pkg, as Gale finds an Xbox copy
 // (Get-AppxPackage), or "" when it is not installed or not on Windows. A test replaces it.
 var appxLocation = func(pkg string) string {
-	if runtime.GOOS != "windows" || !components.PlainPackage(pkg) {
+	if !components.PlainPackage(pkg) {
 		return ""
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-	// The name reaches the script as a variable, never as script text.
-	cmd := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
-		"Get-AppxPackage -Name $env:MORTAR_APPX_PACKAGE | Select-Object -First 1 -ExpandProperty InstallLocation")
-	cmd.Env = append(os.Environ(), "MORTAR_APPX_PACKAGE="+pkg)
-	nowindow.Set(cmd)
-	out, err := cmd.Output()
-	if err != nil {
-		return ""
-	}
-	return strings.TrimSpace(string(out))
+	return appxRoot(pkg)
 }
 
 type xboxStore struct{}

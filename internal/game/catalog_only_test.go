@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -78,7 +79,9 @@ func TestACatalogOnlyGameNeedsNoCode(t *testing.T) {
 	}
 }
 
-func TestACatalogOnlyEAGameIsFoundInAnAddedFolderAndStartsWithoutSteam(t *testing.T) {
+// eaOnly lists a catalog-only EA game and installs it in a folder of its own: the library folder and the game's.
+func eaOnly(t *testing.T) (lib, dir string) {
+	t.Helper()
 	m, err := components.BundledManifest()
 	if err != nil {
 		t.Fatal(err)
@@ -98,14 +101,19 @@ func TestACatalogOnlyEAGameIsFoundInAnAddedFolderAndStartsWithoutSteam(t *testin
 	ConfigureComponents(c)
 	t.Cleanup(func() { ConfigureComponents(nil) })
 
-	lib := t.TempDir()
-	dir := filepath.Join(lib, "EA Only")
+	lib = t.TempDir()
+	dir = filepath.Join(lib, "EA Only")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, "EAOnly.exe"), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
+	return lib, dir
+}
+
+func TestACatalogOnlyEAGameIsFoundInAnAddedFolderAndStartsWithoutSteam(t *testing.T) {
+	lib, dir := eaOnly(t)
 	s := settings.Settings{LauncherRoots: map[string][]string{LauncherEA: {lib}}}
 	got, store, all, err := Resolve(t.TempDir(), s, "ea-only")
 	if err != nil || got != dir || store != StoreEA || len(all) != 1 {
@@ -117,6 +125,31 @@ func TestACatalogOnlyEAGameIsFoundInAnAddedFolderAndStartsWithoutSteam(t *testin
 	}
 	if cmd.Name != filepath.Join(dir, "EAOnly.exe") || cmd.Relay {
 		t.Fatalf("an EA game starts its own executable, not a Steam relay: %+v", cmd)
+	}
+}
+
+func TestCachedInstallsLastUntilForgottenOrTheLauncherFoldersChange(t *testing.T) {
+	lib, dir := eaOnly(t)
+	CacheInstalls(time.Hour)
+	t.Cleanup(func() { CacheInstalls(0) })
+	home := t.TempDir()
+	s := settings.Settings{LauncherRoots: map[string][]string{LauncherEA: {lib}}}
+	if got, _, _, _ := Resolve(home, s, "ea-only"); got != dir {
+		t.Fatalf("first lookup = %q", got)
+	}
+	if err := os.RemoveAll(dir); err != nil {
+		t.Fatal(err)
+	}
+	if got, _, _, _ := Resolve(home, s, "ea-only"); got != dir {
+		t.Fatalf("a cached lookup looked again: %q", got)
+	}
+	other := settings.Settings{LauncherRoots: map[string][]string{LauncherEA: {lib, t.TempDir()}}}
+	if got, _, _, _ := Resolve(home, other, "ea-only"); got != "" {
+		t.Fatalf("new launcher folders reused the cache: %q", got)
+	}
+	ForgetInstalls()
+	if got, _, _, _ := Resolve(home, s, "ea-only"); got != "" {
+		t.Fatalf("a forgotten cache was reused: %q", got)
 	}
 }
 

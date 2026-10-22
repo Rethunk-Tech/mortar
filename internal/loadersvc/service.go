@@ -120,9 +120,15 @@ func (s *Service) bundles(ctx context.Context, id string) []profile.Bundle {
 	return out
 }
 
+// syncMu serialises SyncBundled: the startup pass and the one after a fetched manifest run in the background and
+// would otherwise build the same missing bundle twice.
+var syncMu sync.Mutex
+
 // SyncBundled makes sure the game's bundled mods are in the store and in every profile. It never fails the
 // caller: the loader may be absent or the game not installed.
 func SyncBundled(ctx context.Context, s *Service, id string) {
+	syncMu.Lock()
+	defer syncMu.Unlock()
 	for _, b := range s.bundles(ctx, id) {
 		if err := s.profiles.ApplyBundled(id, b); err != nil {
 			log.Printf("bundled mods for %s: %v", id, err)

@@ -118,4 +118,7 @@ func ValidateLauncherRoot(launcher, dir string) error {
 }
 
 // Launchers lists the launchers on this system for the setup screen.
-func (s *Service) Launchers() ([]StoreApp, error) { return Launchers(s.home, s.store.Get()) }
+func (s *Service) Launchers() ([]StoreApp, error) {
+	ForgetInstalls()
+	return Launchers(s.home, s.store.Get())
+}
