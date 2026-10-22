@@ -814,53 +814,12 @@ func (d Driver) downloadURL(ctx context.Context, id string, file int) (string, e
 	return out.Data, err
 }
 
-// listedCap is how many file dependency lists Latest may remember.
-const listedCap = 4096
-
 // listed holds the required dependencies of files an update check read, keyed by mod id and version, so
 // Dependencies answers without another request. Oldest keys drop once the cap is hit.
-var listed listedStore
-
-type listedStore struct {
-	mu    sync.Mutex
-	m     map[source.VersionRef][]string
-	order []source.VersionRef
-}
-
-func (s *listedStore) put(k source.VersionRef, v []string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.m == nil {
-		s.m = map[source.VersionRef][]string{}
-	}
-	if _, ok := s.m[k]; ok {
-		s.m[k] = v
-		return
-	}
-	for len(s.m) >= listedCap {
-		old := s.order[0]
-		s.order = s.order[1:]
-		delete(s.m, old)
-	}
-	s.m[k] = v
-	s.order = append(s.order, k)
-}
-
-func (s *listedStore) get(k source.VersionRef) ([]string, bool) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	v, ok := s.m[k]
-	return v, ok
-}
-
-func (s *listedStore) len() int {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return len(s.m)
-}
+var listed source.ListedStore
 
 func remember(f fileResp) {
-	listed.put(source.VersionRef{ID: strconv.Itoa(f.ModID), Version: f.version()}, f.required())
+	listed.Put(source.VersionRef{ID: strconv.Itoa(f.ModID), Version: f.version()}, f.required())
 }
 
 // Latest reads each installed mod's newest file through POST /mods, which carries the latest files and their
@@ -915,7 +874,7 @@ func (d Driver) Latest(ctx context.Context, src components.GameSource, _ string,
 func (Driver) Dependencies(_ context.Context, _, _ string, refs []source.VersionRef) (map[source.VersionRef][]string, error) {
 	out := map[source.VersionRef][]string{}
 	for _, r := range refs {
-		if ids, ok := listed.get(r); ok {
+		if ids, ok := listed.Get(r); ok {
 			out[r] = ids
 		}
 	}
