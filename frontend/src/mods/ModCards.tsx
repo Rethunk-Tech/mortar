@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Card, Chip, Typography, useMediaQuery } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { memo, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type {
   Mod,
@@ -70,6 +71,8 @@ const TILE_MARGIN_PX = 8
 const TILE_COMPACT_FONT_PX = 19
 const CARD_GAP_PX = '10px'
 const CARD_RADIUS_PX = '6px'
+// A selected card is tinted as well as outlined, so a selection reads at a glance across a full grid.
+const MARKED_FILL = 0.28
 const NAME_FONT_PX = 14
 const NAME_WEIGHT = 600
 const TAG_MAX_PX = 96
@@ -152,6 +155,7 @@ function ModCardView({
         borderRadius: CARD_RADIUS_PX,
         outline: marked ? '1px solid' : 'none',
         outlineColor: 'primary.main',
+        bgcolor: marked ? (theme) => alpha(theme.palette.primary.main, MARKED_FILL) : undefined,
         // The title button's ::after covers the card, so it is the card's one click target; everything else that
         // is interactive sits above it.
         position: 'relative',
