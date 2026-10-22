@@ -9,6 +9,7 @@ import {
   DialogTitle,
   FormControlLabel,
   MenuItem,
+  MenuList,
   TextField,
 } from '@mui/material'
 import { FolderPlus } from 'lucide-react'
@@ -81,18 +82,21 @@ function AddToGroupDialog({
             <EmptyState compact={true} icon={<FolderPlus size={28} />} title={t`No groups yet`}>
               {t`Name a group below to create it.`}
             </EmptyState>
-          ) : null}
-          {groups.map((g) => (
-            <MenuItem
-              key={g.name}
-              disabled={locked}
-              onClick={() => {
-                add(g.name ?? '').catch(reportUnexpected)
-              }}
-            >
-              {g.name}
-            </MenuItem>
-          ))}
+          ) : (
+            <MenuList dense={true}>
+              {groups.map((g) => (
+                <MenuItem
+                  key={g.name}
+                  disabled={locked}
+                  onClick={() => {
+                    add(g.name ?? '').catch(reportUnexpected)
+                  }}
+                >
+                  {g.name}
+                </MenuItem>
+              ))}
+            </MenuList>
+          )}
           <TextField
             autoFocus={true}
             margin="dense"
@@ -112,10 +116,13 @@ function AddToGroupDialog({
           {needed.length > 0 ? (
             <FormControlLabel
               control={<Checkbox checked={withNeeds} onChange={(_, on) => setWithNeeds(on)} />}
-              label={plural(needed.length, {
-                one: 'Also add the # mod they need',
-                other: 'Also add the # mods they need',
-              })}
+              label={plural(
+                { count: needed.length },
+                {
+                  one: 'Also add the # mod they need',
+                  other: 'Also add the # mods they need',
+                },
+              )}
             />
           ) : null}
         </DialogContent>
