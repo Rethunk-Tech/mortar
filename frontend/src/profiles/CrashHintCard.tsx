@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { alpha, Box, Button, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { FolderOpen, PowerOff, Search, TriangleAlert, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Start as StartBisect } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/bisect/service.ts'
@@ -13,29 +13,15 @@ import { formatWhen } from '../i18n/formatWhen.ts'
 import { useReasonText } from '../i18n/reasonText.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useMods } from '../mods/store.ts'
+import { readStored, writeStored } from '../shell/useStoredState.ts'
+import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useProfiles } from './store.ts'
 
-const TINT_ALPHA = 0.12
-const EDGE_ALPHA = 0.45
 const DISMISSED_KEY = 'mortar.crashHintDismissed'
 
-function dismissedRun(): string {
-  try {
-    return localStorage.getItem(DISMISSED_KEY) ?? ''
-  } catch {
-    return ''
-  }
-}
-
-function rememberDismissed(runId: string) {
-  try {
-    localStorage.setItem(DISMISSED_KEY, runId)
-  } catch {
-    // The card only reappears on the next load.
-  }
-}
+const isText = (v: unknown): v is string => typeof v === 'string'
 
 // Shown at the top of the profile after a crashed run: the mod the log blames with a way to switch it off and play
 // again, or, when the log blames none, a way to find it by halving the mods.
@@ -52,7 +38,7 @@ export function CrashHintCard({
   const updated = useProfiles((s) => s.profiles.find((p) => p.id === profileId)?.updated ?? '')
   const mod = useMods((s) => s.mods)
   const [hint, setHint] = useState<Hint | null>(null)
-  const [hidden, setHidden] = useState(dismissedRun())
+  const [hidden, setHidden] = useState(() => readStored(DISMISSED_KEY, '', isText))
   const [bisectJob, setBisectJob] = useState('')
   const [busy, setBusy] = useState(false)
   // The profile's updated time moves after each run, when a new hint may exist.
@@ -93,8 +79,8 @@ export function CrashHintCard({
             flexWrap: 'wrap',
             px: 2,
             py: 1.75,
-            bgcolor: (theme) => alpha(theme.palette.error.main, TINT_ALPHA),
-            border: (theme) => `1px solid ${alpha(theme.palette.error.main, EDGE_ALPHA)}`,
+            bgcolor: (theme) => calloutFill('error')(theme),
+            border: (theme) => `1px solid ${calloutLine('error')(theme)}`,
             borderRadius: '10px',
           }}
         >
@@ -171,7 +157,7 @@ export function CrashHintCard({
             color="inherit"
             startIcon={<X size={16} />}
             onClick={() => {
-              rememberDismissed(hint.runId)
+              writeStored(DISMISSED_KEY, hint.runId)
               setHidden(hint.runId)
             }}
           >

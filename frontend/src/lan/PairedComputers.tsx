@@ -29,6 +29,7 @@ import {
 import { SettingRow } from '../settings/SettingsSection.tsx'
 import { sameValue } from '../shell/sameValue.ts'
 import { space } from '../theme/density.ts'
+import { MONO } from '../theme/theme.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
@@ -146,10 +147,7 @@ export function ShowCodeDialog({ open, onClose }: { open: boolean; onClose: () =
         <Typography color="text.secondary">
           {t`On the other computer, choose Enter code and type this. It works once, for five minutes.`}
         </Typography>
-        <Typography
-          variant="h4"
-          sx={{ fontFamily: 'monospace', textAlign: 'center', pt: space.pad }}
-        >
+        <Typography variant="h4" sx={{ fontFamily: MONO, textAlign: 'center', pt: space.pad }}>
           {code || '…'}
         </Typography>
       </DialogContent>

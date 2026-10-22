@@ -186,10 +186,7 @@ async function startWithWarning(opts: {
     const skipCheck =
       resolveOverride(
         'skipPlayCheck',
-        String(
-          (useSettings.getState().games?.[opts.game] as { skipPlayCheck?: boolean } | undefined)
-            ?.skipPlayCheck ?? false,
-        ),
+        String(useSettings.getState().games?.[opts.game]?.skipPlayCheck ?? false),
         listed ? foldedOverrides(listed) : undefined,
       ) === 'true'
     if (!skipCheck) {

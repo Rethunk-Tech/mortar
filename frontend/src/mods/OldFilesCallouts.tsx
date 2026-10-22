@@ -20,6 +20,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { i18n } from '../i18n/index.ts'
 import { useProfiles } from '../profiles/store.ts'
+import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
@@ -131,7 +132,7 @@ function OldFilesCallout({
           {files.map((f) => (
             <Typography
               key={`${f.id}/${f.path}`}
-              sx={{ fontSize: 12, fontFamily: 'monospace', overflowWrap: 'anywhere' }}
+              sx={{ fontSize: 12, fontFamily: MONO, overflowWrap: 'anywhere' }}
             >
               {f.path}
             </Typography>

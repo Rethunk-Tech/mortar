@@ -10,6 +10,7 @@ import { SearchField } from '../../shell/SearchField.tsx'
 import { Tooltip } from '../../shell/Tooltip.tsx'
 import { OnlyHereFileButton } from '../../sync/pins.tsx'
 import { space } from '../../theme/density.ts'
+import { MONO } from '../../theme/theme.ts'
 import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
 import { PresetsButton } from '../ConfigPresets.tsx'
 import { localId } from '../dependents.ts'
@@ -346,7 +347,7 @@ function TextFile({ target, name }: { target: Target; name: string }) {
           '& textarea': {
             height: '100% !important',
             overflow: 'auto',
-            fontFamily: 'monospace',
+            fontFamily: MONO,
             fontSize: 13,
           },
         }}

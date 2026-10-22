@@ -4,6 +4,7 @@ import Markdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { cachedPictureSrc } from '../browse/pictureSrc.ts'
 import { space } from '../theme/density.ts'
+import { MONO } from '../theme/theme.ts'
 import { openPage } from './menu.ts'
 
 const WEB = /^https?:\/\//i
@@ -58,7 +59,7 @@ export function MarkdownView({ source }: { source: string }) {
         '& li': { my: 0.25 },
         '& img': { maxWidth: '100%', height: 'auto', verticalAlign: 'middle' },
         '& code': {
-          fontFamily: 'monospace',
+          fontFamily: MONO,
           fontSize: 12,
           px: 0.5,
           borderRadius: '4px',
