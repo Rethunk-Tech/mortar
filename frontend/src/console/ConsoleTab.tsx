@@ -329,7 +329,7 @@ function FilteredEmpty() {
     )
   }
   if (hidden.search !== '') {
-    reasons.push(t`the search is “${hidden.search}”`)
+    reasons.push(t`the search is "${{ search: hidden.search }}"`)
   }
   if (hidden.mods.length > 0) {
     const mods = listNames(hidden.mods)

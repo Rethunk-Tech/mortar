@@ -55,7 +55,7 @@ export function UpdateBanner({ mod }: { mod: Mod }) {
       <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
         {official ? (
           <Typography sx={{ fontSize: 13 }}>
-            {t`Update available: ${official.installed} → ${official.version}`}
+            {t`Update available: ${{ installed: official.installed }} to ${{ version: official.version }}`}
           </Typography>
         ) : null}
         {unofficial ? (

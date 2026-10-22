@@ -62,7 +62,7 @@ function CollectionLine({ profile, game }: { profile: Profile; game: string }) {
         gap: 0.75,
       }}
     >
-      <span>{t`From the Nexus collection “${line.name}”`}</span>
+      <span>{t`From the Nexus collection "${{ name: line.name }}"`}</span>
       <span>
         {review === null ? t`· revision ${line.revision}` : t`· revision ${review} is out`}
       </span>

@@ -84,6 +84,7 @@ How every string reads. One wording per message: `bun run --cwd frontend i18n:du
 - **Enable / Disable** a mod, plugin or option; never "Switch on/off", "Turn on/off" or "Activate".
 - **Remove** takes something out of a profile, group or list and leaves the thing itself; **Delete** destroys it on disk (a profile, saved group, template, preset, backup, downloaded file). The button, its confirmation and its toast use the same verb.
 - No contractions: "cannot", "do not", "is not", "What is new". `i18n:dupes` fails on one.
+- Plain characters: straight quotes, no dashes or arrows ("1.2 to 1.3"). Only "…", "·" between parts and "›" in a menu path; `i18n:dupes` fails on the rest.
 - Sentence case everywhere: "Open settings", not "Open Settings". A fragment that must be lowercase is lowercased in code, so one msgid serves both.
 - Labels, buttons, headings and toast titles take no full stop; a sentence or line of body text does. Change lines and disabled-source reasons start with a capital ("Added <mod>").
 - One placeholder name per concept: `{name}`, `{count}`, `{profile}`, `{game}`, `{version}`, `{path}`, `{when}`, `{min}`, `{max}`. No positional `{0}` and no per-site names (`{aName}`); plurals use `{count}`.

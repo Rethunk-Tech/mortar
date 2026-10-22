@@ -101,7 +101,9 @@ export function ImportSettingsDialog({
             />
             {(s.changes ?? []).map((c) => (
               <Box key={c.key} sx={{ fontSize: 13, pl: 4 }}>
-                {i18n._(msg`${changeLabel(c.key, c.label)}: ${c.from} → ${c.to}`)}
+                {i18n._(
+                  msg`${{ name: changeLabel(c.key, c.label) }}: ${{ from: c.from }} to ${{ to: c.to }}`,
+                )}
               </Box>
             ))}
           </Box>

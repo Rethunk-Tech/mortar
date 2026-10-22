@@ -453,7 +453,7 @@ export function UpdateBadge({ mod }: { mod: Mod }) {
   }
   const text = update.unofficial
     ? t`Unofficial update available: ${update.version}`
-    : t`Update available: ${update.installed} → ${update.version}`
+    : t`Update available: ${{ installed: update.installed }} to ${{ version: update.version }}`
   return (
     <>
       <Tooltip title={text}>

@@ -1,6 +1,8 @@
 // Fails when two messages in the source say the same thing: they differ only in case, punctuation or placeholder
 // names. "…" and "?" stay significant, since a control that opens a dialog and the dialog's title are two messages.
-// Also fails on a contraction: messages spell out "cannot" and "do not", so translators see one form.
+// Also fails on a contraction: messages spell out "cannot" and "do not", so translators see one form. And on a
+// typographic variant (curly quotes, dashes, arrows): messages use plain quotes and words, keeping only "…" and the
+// "·" and "›" separators.
 // The messages are extracted from the source into a scratch catalog, so a committed catalog that is behind cannot hide
 // one.
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -86,12 +88,24 @@ function contractions(ids: string[]): string[] {
   return ids.filter((id) => CONTRACTION.test(id))
 }
 
+const VARIANT = /[“”‘’—–→←]/
+
+function variants(ids: string[]): string[] {
+  return ids.filter((id) => VARIANT.test(id))
+}
+
 if (import.meta.main) {
   const ids = msgids(extractedCatalog())
   const contracted = contractions(ids)
   for (const id of contracted) {
     console.error(
       `i18n: contraction in ${JSON.stringify(id)}; spell it out (docs/gui-design.md, Copy)`,
+    )
+  }
+  const variant = variants(ids)
+  for (const id of variant) {
+    console.error(
+      `i18n: typographic variant in ${JSON.stringify(id)}; use plain characters (docs/gui-design.md, Copy)`,
     )
   }
   const dupes = duplicates(ids)
@@ -105,9 +119,9 @@ if (import.meta.main) {
       `i18n: ${dupes.length} duplicate messages; use one wording (docs/gui-design.md, Copy)`,
     )
   }
-  if (dupes.length > 0 || contracted.length > 0) {
+  if (dupes.length > 0 || contracted.length > 0 || variant.length > 0) {
     process.exit(1)
   }
 }
 
-export { contractions, duplicates }
+export { contractions, duplicates, variants }
