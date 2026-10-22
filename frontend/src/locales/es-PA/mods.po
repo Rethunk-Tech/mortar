@@ -88,9 +88,6 @@ msgstr ""
 #: src/mods/LockedReason.tsx
 #: src/mods/ModActionItems.tsx
 #: src/mods/OtherProfilesDialog.tsx
-#: src/mods/problemFix/AssetFix.tsx
-#: src/mods/problemFix/SettingFix.tsx
-#: src/mods/problemFix/WinFix.tsx
 #: src/mods/SplitCombineItems.tsx
 #: src/mods/Toolbar.tsx
 msgid "Stop the game to change mods."
@@ -337,6 +334,10 @@ msgstr ""
 
 #: src/mods/problemWhy.ts
 msgid "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
+msgstr ""
+
+#: src/mods/problemFix/fixActions.tsx
+msgid "Other fixes"
 msgstr ""
 
 #: src/mods/updateReview/NeedsChoice.tsx
@@ -1183,6 +1184,10 @@ msgstr ""
 msgid "{name} rolled back"
 msgstr ""
 
+#: src/mods/problemFix/FileConflictFix.tsx
+msgid "Make a package win"
+msgstr ""
+
 #: src/mods/SelectionBarActions.tsx
 msgid "Use update source"
 msgstr ""
@@ -1477,6 +1482,10 @@ msgstr ""
 msgid "Edit config"
 msgstr ""
 
+#: src/mods/problemFix/SettingFix.tsx
+msgid "Other values"
+msgstr ""
+
 #: src/mods/NewFoldersCallout.tsx
 msgid "Do not ask about these"
 msgstr ""
@@ -1509,10 +1518,6 @@ msgstr ""
 
 #: src/mods/ModMenu.tsx
 msgid "Reinstall with options…"
-msgstr ""
-
-#: src/mods/ProblemsTab.tsx
-msgid "Problem sections"
 msgstr ""
 
 #: src/mods/columnLabel.ts
@@ -3394,10 +3399,6 @@ msgstr ""
 #: src/mods/columnLabel.ts
 #: src/mods/problemText.ts
 msgid "Last run"
-msgstr ""
-
-#: src/mods/problemFix/SettingFix.tsx
-msgid "More setting values"
 msgstr ""
 
 #: src/mods/OldFilesCallouts.tsx

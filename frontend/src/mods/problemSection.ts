@@ -1,31 +1,24 @@
 import { create } from 'zustand'
 
-interface SectionTab {
-  id: string
-  label: string
-  count: number
-  // Whether the section holds something broken, as against advice such as cleanup or harmless overlaps.
-  errors: boolean
-}
+/** Sections listed as links under the problems, one opened at a time: advice and history rather than problems. */
+const FOOTER_SECTIONS: ReadonlySet<string> = new Set([
+  'slow',
+  'redundant',
+  'cleanup',
+  'replaced',
+  'dismissed',
+])
 
-/** The section shown first: the first with errors, else the first with anything. */
-function defaultSection(tabs: readonly SectionTab[]): string {
-  return (tabs.find((t) => t.errors) ?? tabs[0])?.id ?? ''
-}
-
-/** A remembered choice still counts only while its section exists. */
-function chosenSection(tabs: readonly SectionTab[], remembered: string | undefined): string {
-  return tabs.some((t) => t.id === remembered) ? (remembered ?? '') : defaultSection(tabs)
-}
-
-// The section chosen in each profile, kept for the session.
-const useProblemSection = create<{
+// The footer section opened in each profile, kept for the session; choosing the open one closes it.
+const useProblemFooter = create<{
   byProfile: Record<string, string | undefined>
-  choose: (profileId: string, id: string) => void
+  toggle: (profileId: string, id: string) => void
 }>((set) => ({
   byProfile: {},
-  choose: (profileId, id) => set((s) => ({ byProfile: { ...s.byProfile, [profileId]: id } })),
+  toggle: (profileId, id) =>
+    set((s) => ({
+      byProfile: { ...s.byProfile, [profileId]: s.byProfile[profileId] === id ? undefined : id },
+    })),
 }))
 
-export type { SectionTab }
-export { chosenSection, defaultSection, useProblemSection }
+export { FOOTER_SECTIONS, useProblemFooter }

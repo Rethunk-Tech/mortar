@@ -1,10 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button } from '@mui/material'
 import { reportUnexpected } from '../../toasts/report.ts'
-import { LockedReason } from '../LockedReason.tsx'
 import type { Problem } from '../lookup.ts'
 import { useMods } from '../store.ts'
 import { useLocked } from '../useLocked.ts'
+import { FixAction } from './fixActions.tsx'
 import type { WarningButton } from './warningButton.tsx'
 
 export function DuplicateFix({
@@ -26,18 +25,13 @@ export function DuplicateFix({
         {nexusFiles.map((file) => {
           const mod = mods.find((candidate) => candidate.key === file.key)
           return mod ? (
-            <LockedReason key={file.key} locked={locked}>
-              <Button
-                size="small"
-                variant="outlined"
-                color="warning"
-                disabled={locked}
-                onClick={() => remove(mod).catch(reportUnexpected)}
-                sx={{ flexShrink: 0 }}
-              >
-                {t`Remove ${{ name: file.fileName || file.key }}`}
-              </Button>
-            </LockedReason>
+            <FixAction
+              key={file.key}
+              label={t`Remove ${{ name: file.fileName || file.key }}`}
+              weight="other"
+              locked={locked}
+              onClick={() => remove(mod).catch(reportUnexpected)}
+            />
           ) : null
         })}
       </>

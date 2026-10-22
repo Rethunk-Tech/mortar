@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button } from '@mui/material'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useMods } from '../store.ts'
+import { FixAction } from './fixActions.tsx'
 import { RestoreButton } from './RestoreButton.tsx'
 
 // Dismisses, or once dismissed restores, the advice about a mod's standing: one dismissal covers its broken,
@@ -19,14 +19,10 @@ export function DismissAdvice({
     return <RestoreButton token={dismissedToken} />
   }
   return (
-    <Button
-      size="small"
-      color="inherit"
-      variant="text"
+    <FixAction
+      label={t`Dismiss`}
+      weight="quiet"
       onClick={() => dismissAbandoned(id).catch(reportUnexpected)}
-      sx={{ flexShrink: 0 }}
-    >
-      {t`Dismiss`}
-    </Button>
+    />
   )
 }

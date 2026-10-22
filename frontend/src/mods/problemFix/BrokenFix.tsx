@@ -1,11 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button } from '@mui/material'
 import type { ReactNode } from 'react'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { type Problem, sameId } from '../lookup.ts'
 import { openPage } from '../menu.ts'
 import { useMods } from '../store.ts'
 import { DismissAdvice } from './DismissAdvice.tsx'
+import { FixAction } from './fixActions.tsx'
 import { WhereButtons } from './WhereButtons.tsx'
 import type { WarningButton } from './warningButton.tsx'
 
@@ -33,30 +33,12 @@ export function BrokenFix({
   if (where && replaceName !== '') {
     replace =
       (broken.status === 'obsolete' || broken.status === 'deprecated') && where.url ? (
-        <Button
-          size="small"
-          color="warning"
-          variant="outlined"
-          onClick={() => openPage(where.url)}
-          sx={{ flexShrink: 0 }}
-        >
-          {t`Open replacement`}
-        </Button>
+        <FixAction label={t`Open replacement`} weight="main" onClick={() => openPage(where.url)} />
       ) : (
         <WhereButtons where={where} addLabel={t`Replace with ${{ name: replaceName }}`} />
       )
   } else if (where?.url) {
-    replace = (
-      <Button
-        size="small"
-        color="warning"
-        variant="contained"
-        onClick={() => openPage(where.url)}
-        sx={{ flexShrink: 0 }}
-      >
-        {t`Open page`}
-      </Button>
-    )
+    replace = <FixAction label={t`Open page`} weight="main" onClick={() => openPage(where.url)} />
   }
   const advice =
     dismissedToken !== undefined ||

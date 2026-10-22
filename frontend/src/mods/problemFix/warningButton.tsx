@@ -1,25 +1,18 @@
-import { Button } from '@mui/material'
 import type { ReactNode } from 'react'
-import { LockedReason } from '../LockedReason.tsx'
 import { useLocked } from '../useLocked.ts'
+import { FixAction } from './fixActions.tsx'
 
-/** A warning action; outlined when a stronger fix sits beside it. */
+/** A warning fix; a lesser one when a stronger fix sits beside it. */
 export type WarningButton = (label: string, onClick: () => void, secondary?: boolean) => ReactNode
 
 export function useWarningButton(): WarningButton {
   const locked = useLocked()
   return (label, onClick, secondary = false) => (
-    <LockedReason locked={locked}>
-      <Button
-        size="small"
-        variant={secondary ? 'outlined' : 'contained'}
-        color="warning"
-        disabled={locked}
-        onClick={onClick}
-        sx={{ flexShrink: 0 }}
-      >
-        {label}
-      </Button>
-    </LockedReason>
+    <FixAction
+      label={label}
+      onClick={onClick}
+      weight={secondary ? 'other' : 'main'}
+      locked={locked}
+    />
   )
 }

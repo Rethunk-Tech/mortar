@@ -39,6 +39,18 @@ export function screenCases(h: Helpers): Case[] {
   })
   return [
     {
+      name: 'problems-fixes',
+      setup: (p) => tab(p, 'Problems'),
+      // The first row's other fixes; a profile without problems has no menu, and the case only opens the tab.
+      run: async (p) => {
+        const arrow = p.getByRole('button', { name: 'Other fixes' }).first()
+        if ((await arrow.count()) > 0) {
+          await arrow.click()
+        }
+      },
+      teardown: (p) => p.keyboard.press('Escape'),
+    },
+    {
       name: 'browse-list',
       // A list row lays out differently from a grid card, so every result card renders again.
       budget: { updates: 1200 },

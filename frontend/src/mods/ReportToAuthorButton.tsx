@@ -40,6 +40,8 @@ import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { entryOf, nexusIdOf } from './lookup.ts'
 import { nexusDomain } from './nexusDomain.ts'
+import { FixAction } from './problemFix/fixActions.tsx'
+import { useInSplitFix } from './problemFix/splitContext.ts'
 import { buildModReport, type ModReportFields, modErrorLines } from './reportToAuthor.ts'
 
 const REPORT_SOURCES = ['thunderstore', 'curseforge', 'vsmoddb']
@@ -155,6 +157,7 @@ export function ReportToAuthorButton({
   const loader = useLoader((s) => s.status)
   const mortarVersion = useMortarUpdate((s) => s.info?.version ?? '')
   const [open, setOpen] = useState(false)
+  const inSplit = useInSplitFix()
   const [log, setLog] = useState<string | null>(null)
   const [hideUserName, setHideUserName] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -235,9 +238,13 @@ export function ReportToAuthorButton({
   const bytes = new TextEncoder().encode(log ?? '').length
   return (
     <>
-      <Button size={size} variant={variant} onClick={start} sx={{ height: 28 }}>
-        {t`Report to author…`}
-      </Button>
+      {inSplit ? (
+        <FixAction label={t`Report to author…`} weight="other" onClick={start} />
+      ) : (
+        <Button size={size} variant={variant} onClick={start} sx={{ height: 28 }}>
+          {t`Report to author…`}
+        </Button>
+      )}
       <Dialog
         open={open}
         onClose={close}

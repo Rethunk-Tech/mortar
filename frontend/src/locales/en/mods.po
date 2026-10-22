@@ -88,9 +88,6 @@ msgstr "{list} do the same job: all {count} change {detail}"
 #: src/mods/LockedReason.tsx
 #: src/mods/ModActionItems.tsx
 #: src/mods/OtherProfilesDialog.tsx
-#: src/mods/problemFix/AssetFix.tsx
-#: src/mods/problemFix/SettingFix.tsx
-#: src/mods/problemFix/WinFix.tsx
 #: src/mods/SplitCombineItems.tsx
 #: src/mods/Toolbar.tsx
 msgid "Stop the game to change mods."
@@ -338,6 +335,10 @@ msgstr "Dismiss {name}"
 #: src/mods/problemWhy.ts
 msgid "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
 msgstr "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
+
+#: src/mods/problemFix/fixActions.tsx
+msgid "Other fixes"
+msgstr "Other fixes"
 
 #: src/mods/updateReview/NeedsChoice.tsx
 msgid "Needs your choice ({count})"
@@ -1183,6 +1184,10 @@ msgstr "Only on {value} saves; none of yours is one."
 msgid "{name} rolled back"
 msgstr "{name} rolled back"
 
+#: src/mods/problemFix/FileConflictFix.tsx
+msgid "Make a package win"
+msgstr "Make a package win"
+
 #: src/mods/SelectionBarActions.tsx
 msgid "Use update source"
 msgstr "Use update source"
@@ -1477,6 +1482,10 @@ msgstr "Could not disable {name}"
 msgid "Edit config"
 msgstr "Edit config"
 
+#: src/mods/problemFix/SettingFix.tsx
+msgid "Other values"
+msgstr "Other values"
+
 #: src/mods/NewFoldersCallout.tsx
 msgid "Do not ask about these"
 msgstr "Do not ask about these"
@@ -1510,10 +1519,6 @@ msgstr "Two enabled packages ship a file at the same path. The one later in the 
 #: src/mods/ModMenu.tsx
 msgid "Reinstall with options…"
 msgstr "Reinstall with options…"
-
-#: src/mods/ProblemsTab.tsx
-msgid "Problem sections"
-msgstr "Problem sections"
 
 #: src/mods/columnLabel.ts
 #: src/mods/ModDependencyTree.tsx
@@ -3395,10 +3400,6 @@ msgstr "Could not redo the update"
 #: src/mods/problemText.ts
 msgid "Last run"
 msgstr "Last run"
-
-#: src/mods/problemFix/SettingFix.tsx
-msgid "More setting values"
-msgstr "More setting values"
 
 #: src/mods/OldFilesCallouts.tsx
 msgid "{count, plural, one {Moved # old file to trash} other {Moved # old files to trash}}"

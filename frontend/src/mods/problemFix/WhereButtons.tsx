@@ -1,5 +1,4 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button } from '@mui/material'
 import type { Ref } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { download } from '../../queue/actions.ts'
@@ -8,6 +7,7 @@ import { useQueue } from '../../queue/store.ts'
 import { pendingFor } from '../../queue/totals.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { openPage } from '../menu.ts'
+import { FixAction } from './fixActions.tsx'
 
 export function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string }) {
   const { t } = useLingui()
@@ -17,17 +17,7 @@ export function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string
   if (!url) {
     return null
   }
-  const open = (
-    <Button
-      size="small"
-      color="warning"
-      variant="outlined"
-      onClick={() => openPage(url)}
-      sx={{ flexShrink: 0 }}
-    >
-      {t`Open page`}
-    </Button>
-  )
+  const open = <FixAction label={t`Open page`} weight="other" onClick={() => openPage(url)} />
   const want = refWant(where, 'dependency')
   if (!want) {
     return open
@@ -36,16 +26,12 @@ export function WhereButtons({ where, addLabel }: { where: Ref; addLabel: string
   return (
     <>
       {open}
-      <Button
-        size="small"
-        variant="contained"
-        color="warning"
+      <FixAction
+        label={queued ? t`Queued` : addLabel}
+        weight="main"
         disabled={queued}
         onClick={() => download([want]).catch(reportUnexpected)}
-        sx={{ flexShrink: 0 }}
-      >
-        {queued ? t`Queued` : (addLabel ?? '')}
-      </Button>
+      />
     </>
   )
 }

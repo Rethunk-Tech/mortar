@@ -1,5 +1,4 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button } from '@mui/material'
 import type { ReactNode } from 'react'
 import type { RunError } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { DismissRunError } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
@@ -8,6 +7,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { installableUpdate, sameId, updateFor } from './lookup.ts'
+import { FixAction } from './problemFix/fixActions.tsx'
 import { ReportToAuthorButton } from './ReportToAuthorButton.tsx'
 import { useMods } from './store.ts'
 import { openTarget } from './storeView.ts'
@@ -60,19 +60,10 @@ export function RunErrorButtons({
           modLogName={runError.name}
         />
       ) : null}
-      <Button
-        size="small"
-        color="warning"
-        variant="outlined"
-        onClick={openHelp}
-        sx={{ flexShrink: 0 }}
-      >
-        {t`Show in log`}
-      </Button>
-      <Button
-        size="small"
-        color="inherit"
-        variant="text"
+      <FixAction label={t`Show in log`} weight="other" onClick={openHelp} />
+      <FixAction
+        label={t`Dismiss`}
+        weight="quiet"
         onClick={() => {
           const at = openTarget()
           if (at) {
@@ -81,10 +72,7 @@ export function RunErrorButtons({
               .catch(reportUnexpected)
           }
         }}
-        sx={{ flexShrink: 0 }}
-      >
-        {t`Dismiss`}
-      </Button>
+      />
     </>
   )
 }

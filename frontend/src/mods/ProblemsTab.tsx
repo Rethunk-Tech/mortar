@@ -2,7 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, LinearProgress, Typography } from '@mui/material'
 import { Copy, Map as MapIcon, Plus, ShieldCheck } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import { useState } from 'react'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { findCrashCause, useBisectBlockText } from '../commandPalette/crashBisect.ts'
@@ -18,7 +18,6 @@ import { copyText } from '../share/copyText.ts'
 import { AfterDelay } from '../shell/AfterDelay.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
-import { SectionStrip } from '../shell/SectionStrip.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
@@ -30,10 +29,11 @@ import { CompatSection } from './CompatSection.tsx'
 import { compatReportChunks } from './compatChip.ts'
 import { useFileConflicts } from './fileConflicts.ts'
 import { LockedNote } from './LockedNote.tsx'
+import { FooterLinks, ProblemGroup, type ProblemTab, type SectionAction } from './ProblemGroup.tsx'
 import { ProblemRows } from './ProblemRows.tsx'
 import { problemSections, type Row } from './problemGroups.ts'
 import { formatProblemReport, whyKeysOf } from './problemReport.ts'
-import { chosenSection, type SectionTab, useProblemSection } from './problemSection.ts'
+import { FOOTER_SECTIONS, useProblemFooter } from './problemSection.ts'
 import { ERROR_SECTIONS, isDismissedRow, useRowText, useSectionTitle } from './problemText.ts'
 import { ReplacedSection } from './ReplacedSection.tsx'
 import { useRedundantRows } from './redundantReason.ts'
@@ -59,15 +59,6 @@ function OfflineChecksNote() {
     </Typography>
   )
 }
-
-interface SectionAction {
-  label: string
-  icon?: ReactNode
-  onClick: () => void
-  disabled?: boolean
-}
-
-type ProblemTab = SectionTab & { body: ReactNode; action?: SectionAction; keep?: boolean }
 
 type RedundantRows = ReturnType<ReturnType<typeof useRedundantRows>>
 
@@ -281,8 +272,8 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
 
   const problemsAt = useMods((s) => s.problemsAt)
   const openId = useProfiles((s) => s.openId)
-  const remembered = useProblemSection((s) => s.byProfile[openId])
-  const choose = useProblemSection((s) => s.choose)
+  const opened = useProblemFooter((s) => s.byProfile[openId])
+  const toggle = useProblemFooter((s) => s.toggle)
   const tabs = useProblemTabs({
     sections,
     compat,
@@ -295,32 +286,13 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
     cosmeticConflicts,
     sectionExtras,
   })
-  const current = chosenSection(tabs, remembered)
-  const shown = tabs.find((tab) => tab.id === current)
+  const listed = tabs.filter((tab) => !FOOTER_SECTIONS.has(tab.id))
+  const footer = tabs.filter((tab) => FOOTER_SECTIONS.has(tab.id))
+  const openFooter = footer.find((tab) => tab.id === opened)
 
   return (
     <>
       <ProblemActions />
-      <SectionStrip
-        label={t`Problem sections`}
-        tabs={tabs}
-        current={current}
-        onChoose={(id) => choose(openId, id)}
-        actions={
-          shown?.action ? (
-            <Button
-              variant="outlined"
-              color="inherit"
-              disabled={shown.action.disabled}
-              onClick={shown.action.onClick}
-              startIcon={shown.action.icon}
-              sx={{ height: space.control, borderColor: 'var(--mortar-hairline-20)' }}
-            >
-              {shown.action.label}
-            </Button>
-          ) : null
-        }
-      />
       <Box
         sx={{
           flex: empty ? 1 : '0 0 auto',
@@ -328,13 +300,13 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
           py: space.gutter,
           display: 'flex',
           flexDirection: 'column',
-          gap: space.gap,
+          gap: space.pad,
         }}
       >
         <Box sx={{ mx: `calc(-1 * ${space.gutter})`, mb: -1 }}>
           <LockedNote />
         </Box>
-        {empty && tabs.length === 0 ? (
+        {listed.length === 0 ? (
           <EmptyState
             icon={<ShieldCheck size={40} aria-hidden={true} />}
             title={t`No problems found`}
@@ -342,7 +314,13 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
             {t`Every mod has what it needs and nothing clashes.`}
           </EmptyState>
         ) : null}
-        {shown?.body}
+        {listed.map((tab) => (
+          <ProblemGroup key={tab.id} tab={tab} />
+        ))}
+        {footer.length > 0 ? (
+          <FooterLinks tabs={footer} open={opened} onToggle={(id) => toggle(openId, id)} />
+        ) : null}
+        {openFooter ? <ProblemGroup tab={openFooter} /> : null}
         {result.unknown ? <OfflineChecksNote /> : null}
         {empty ? null : <CheckTimings timings={result.timings ?? []} at={problemsAt} />}
       </Box>
@@ -350,7 +328,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
   )
 }
 
-// ProblemActions ends the section strip's row.
+// ProblemActions fills the tab header's action slot.
 function ProblemActions() {
   const { t } = useLingui()
   const result = useOpenProblems()
@@ -512,13 +490,6 @@ function ProblemsTab() {
     return (
       <>
         <ProblemActions />
-        <SectionStrip
-          label={t`Problem sections`}
-          tabs={[]}
-          current=""
-          onChoose={() => undefined}
-          actions={null}
-        />
         <CheckingLine />
         <SkeletonRows
           label={t`Checking the mods for problems…`}

@@ -169,15 +169,6 @@ export function problemSections(result: Result): ProblemSection[] {
   return sections.filter((s) => s.rows.length > 0)
 }
 
-export function assetFixButtonStyle(cosmetic: boolean): {
-  variant: 'contained' | 'outlined'
-  color: 'warning' | 'inherit'
-} {
-  return cosmetic
-    ? { variant: 'outlined', color: 'inherit' }
-    : { variant: 'contained', color: 'warning' }
-}
-
 // rowKeys gives each row a React key unique within its list. Dismissing a requirement hides every note naming it, so
 // several dismissed rows share one token; duplicate keys leave stale rows behind when the list switches sections.
 export function rowKeys(rows: (Row | DismissedRow)[]): string[] {

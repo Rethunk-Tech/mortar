@@ -1,5 +1,4 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button } from '@mui/material'
 import { useState } from 'react'
 import {
   DismissLoadFailure,
@@ -15,6 +14,7 @@ import type { Problem } from '../lookup.ts'
 import { useMods } from '../store.ts'
 import { openTarget } from '../storeView.ts'
 import { useUpdates } from '../updates.ts'
+import { FixAction } from './fixActions.tsx'
 import { RestoreButton } from './RestoreButton.tsx'
 import type { WarningButton } from './warningButton.tsx'
 
@@ -39,10 +39,9 @@ export function LoadFailureFix({
     <>
       <LoadFailureAction problem={problem} button={button} />
       {dismissable ? (
-        <Button
-          size="small"
-          color="inherit"
-          variant="text"
+        <FixAction
+          label={t`Dismiss`}
+          weight="quiet"
           onClick={() => {
             const at = openTarget()
             if (at) {
@@ -51,10 +50,7 @@ export function LoadFailureFix({
                 .catch(reportUnexpected)
             }
           }}
-          sx={{ flexShrink: 0 }}
-        >
-          {t`Dismiss`}
-        </Button>
+        />
       ) : null}
     </>
   )

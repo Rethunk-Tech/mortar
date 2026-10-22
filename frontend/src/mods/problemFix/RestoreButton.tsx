@@ -1,20 +1,16 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button } from '@mui/material'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { useMods } from '../store.ts'
+import { FixAction } from './fixActions.tsx'
 
 export function RestoreButton({ token }: { token: string }) {
   const { t } = useLingui()
   const restoreDismissed = useMods((s) => s.restoreDismissed)
   return (
-    <Button
-      size="small"
-      color="inherit"
-      variant="text"
+    <FixAction
+      label={t`Restore`}
+      weight="quiet"
       onClick={() => restoreDismissed(token).catch(reportUnexpected)}
-      sx={{ flexShrink: 0 }}
-    >
-      {t`Restore`}
-    </Button>
+    />
   )
 }

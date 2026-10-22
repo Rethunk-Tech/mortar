@@ -1,6 +1,5 @@
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Button } from '@mui/material'
 import { type ComponentType, useState } from 'react'
 import type { Drift } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
@@ -18,7 +17,6 @@ import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { driftEntryName } from './describe.ts'
-import { LockedReason } from './LockedReason.tsx'
 import type { Problem } from './lookup.ts'
 import { AssetFix } from './problemFix/AssetFix.tsx'
 import { BrokenFix } from './problemFix/BrokenFix.tsx'
@@ -26,6 +24,7 @@ import { DamagedFix } from './problemFix/DamagedFix.tsx'
 import { DeprecatedFix } from './problemFix/DeprecatedFix.tsx'
 import { DuplicateFix } from './problemFix/DuplicateFix.tsx'
 import { FileConflictFix } from './problemFix/FileConflictFix.tsx'
+import { FixAction } from './problemFix/fixActions.tsx'
 import { LoadFailureFix } from './problemFix/LoadFailureFix.tsx'
 import { LongPathFix } from './problemFix/LongPathFix.tsx'
 import { MissingFix } from './problemFix/MissingFix.tsx'
@@ -174,18 +173,12 @@ export function DriftButtons({ drift }: { drift: Drift }) {
   } | null>(null)
   // The keeping action is the main one; the one that discards the user's files is secondary and asks first.
   const button = (label: string, onClick: () => void, discard = false) => (
-    <LockedReason locked={locked}>
-      <Button
-        size="small"
-        variant={discard ? 'outlined' : 'contained'}
-        color="warning"
-        disabled={locked}
-        onClick={onClick}
-        sx={{ flexShrink: 0 }}
-      >
-        {label}
-      </Button>
-    </LockedReason>
+    <FixAction
+      label={label}
+      weight={discard ? 'other' : 'main'}
+      locked={locked}
+      onClick={onClick}
+    />
   )
   const confirmDialog = confirm ? (
     <ConfirmDialog

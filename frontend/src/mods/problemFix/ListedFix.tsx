@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { Button } from '@mui/material'
 import { reportUnexpected } from '../../toasts/report.ts'
 import type { Problem } from '../lookup.ts'
+import { FixAction } from './fixActions.tsx'
 import { WhereButtons } from './WhereButtons.tsx'
 
 export function ListedFix({
@@ -16,15 +16,11 @@ export function ListedFix({
   return (
     <>
       {missing.where ? <WhereButtons where={missing.where} addLabel={t`Add`} /> : null}
-      <Button
-        size="small"
-        color="inherit"
-        variant="text"
+      <FixAction
+        label={t`Dismiss`}
+        weight="quiet"
         onClick={() => dismiss(missing.id).catch(reportUnexpected)}
-        sx={{ flexShrink: 0 }}
-      >
-        {t`Dismiss`}
-      </Button>
+      />
     </>
   )
 }

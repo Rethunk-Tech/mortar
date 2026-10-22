@@ -241,11 +241,10 @@ Finds mods to add to the open profile; the shared header has no page actions her
 
 ## Problems tab
 
-A full-height tab showing one section of the profile's problems at a time. Code: `mods/ProblemsTab.tsx`, `problemSection.ts`, `problemGroups.ts`, `ProblemRows.tsx`, `problemFix/`, `problemReport.ts`, `shell/SectionStrip.tsx`; each kind's plain-language explanation is `problemWhy.ts`, backed by [user-guide.md](user-guide.md).
+A full-height tab listing the profile's problems by section. Code: `mods/ProblemsTab.tsx`, `ProblemGroup.tsx`, `problemSection.ts`, `problemGroups.ts`, `ProblemRows.tsx`, `problemFix/` (each row's fixes as one split button: `fixActions.tsx`, `arrangeFixes.ts`), `problemReport.ts`; each kind's plain-language explanation is `problemWhy.ts`, backed by [user-guide.md](user-guide.md).
 
-Under the shared tab header, a full-width **section strip** (one MUI tab per non-empty section, label and count chip) scrolls sideways when it does not fit and never changes height; an empty section is never shown.
+Under the shared tab header, every non-empty section is a heading with its count (in the error colour for a section holding something broken) above its rows on one quiet panel; an empty section is never shown. The advice and history sections (Slow startup, Redundant, Cleanup, Replaced, Dismissed) are links with counts under the list instead; choosing one opens it below them, and choosing it again closes it, remembered per profile while Mortar runs.
 
-- **Which section shows:** the first that holds something broken (missing requirements, broken mods, damaged files, run errors, failed plugins, plugins shipped twice), else the first with anything. A choice is remembered per profile while Mortar runs.
 - **Page actions:** **Find the mod that crashes the game…** (a crash bisect: it turns mods off in halves and relaunches until the crash stops; enabled only when the newest run crashed with no suspected mod, otherwise off with the reason as tooltip, and the palette entry follows the same rule), **Asset map** and **Copy report**.
 - Checks that could not run offline show the connection warning.
 
@@ -263,9 +262,9 @@ Section order and membership: `problemSection.ts`. Rules a change could break:
 
 ### Rows and fixes
 
-- Warnings are amber tiles; information rows (Cleanup included) are neutral tiles with an info icon. A missing or optional-dependency row links to that UniqueID in the Load order tab. The mod list shows the same problem triangle and tooltip as a card, beside the name so it stays visible when the Status column is narrow or hidden.
-- **Fix buttons run in order of weight:** the suggested fix first (a Content Patcher **Set … to …**, or **Make a pack win** when there is none) filled in the warning colour on real conflicts, then **Disable** outlined, then **Dismiss** as a quiet text button last; dismissed rows swap Dismiss for **Restore**. Applying a Content Patcher **Set to** suggestion remembers that field value so the reverse hint stays hidden until the setting changes ([architecture.md](architecture.md#saves)).
-- **Conflict rows** expand a **Why?** section (`mods/ConflictWhy.tsx`) ending with a **Show conflicts** link into the **Asset map** (`mods/AssetMapDialog.tsx`), which lists per asset each mod's edit in load order with the winner marked; a loser offers **Make win** only when loading it later decides the asset.
+- A warning row leads with the warning triangle, an information row (Cleanup included) with an info icon. A missing or optional-dependency row links to that UniqueID in the Load order tab. The mod list shows the same problem triangle and tooltip as a card, beside the name so it stays visible when the Status column is narrow or hidden.
+- **Each row's fixes are one split button** on the right, after a quiet **Why?**: the button is the heaviest fix (the suggested fix, a Content Patcher **Set … to …** or **Make a pack win** when there is none), filled in the warning colour on real conflicts and outlined on cosmetic ones; its arrow opens the other fixes (**Disable**, the other setting values and fixes with the mod each lives in, a pack to make win), then **Dismiss** after a divider. A row with only quiet fixes (a dismissed row's **Restore**) shows them as text. Setting fixes on one conflict are alternatives, so none applies them all at once. Applying a Content Patcher **Set to** suggestion remembers that field value so the reverse hint stays hidden until the setting changes ([architecture.md](architecture.md#saves)).
+- **Why?** opens the row's explanation beneath it; on a conflict row it is the evidence (`mods/ConflictWhy.tsx`) ending with a **Show conflicts** link into the **Asset map** (`mods/AssetMapDialog.tsx`), which lists per asset each mod's edit in load order with the winner marked; a loser offers **Make win** only when loading it later decides the asset.
 - A load-order dependency chip names the dependency: an installed copy's name, else the Nexus page the metadata dataset lists for its id (`DependencyNames`), else the bare id.
 
 ## Load order tab
