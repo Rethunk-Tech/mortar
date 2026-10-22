@@ -12,6 +12,8 @@ import { useMortarUpdate } from '../updates.ts'
 import { Diagnostics } from './AboutDiagnostics.tsx'
 
 const LICENCE = 'https://github.com/Rethunk-Tech/mortar/blob/main/LICENSE'
+// The licence and repository are names, the same in every language.
+const LICENSE_LINE = 'AGPL-3.0 · Rethunk-Tech/mortar'
 
 const body = { color: 'var(--mortar-ink-soft)' }
 
@@ -80,7 +82,7 @@ export function About() {
               {t`Mortar`}
             </Box>
             <Box component="span" sx={{ color: 'var(--mortar-ink-sec)', fontSize: 14 }}>
-              AGPL-3.0 · Rethunk-Tech/mortar
+              {LICENSE_LINE}
             </Box>
             {info?.version ? (
               <Box

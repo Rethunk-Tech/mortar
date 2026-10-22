@@ -31,11 +31,17 @@ export function pickerLocales(selected: string, complete = share): AvailableLoca
   )
 }
 
+const PERCENT = 100
+// An incomplete locale never rounds up to reading as complete.
+const MOST_INCOMPLETE = PERCENT - 1
+
 // The locale's own name, with its percentage until it is complete.
 export function localeLabel(locale: string, complete = share): string {
   const name = new Intl.DisplayNames([locale], { type: 'language' }).of(locale) ?? locale
   const done = complete(locale)
-  return done < 1 ? `${name} (${Math.min(99, Math.max(1, Math.round(done * 100)))}%)` : name
+  return done < 1
+    ? `${name} (${Math.min(MOST_INCOMPLETE, Math.max(1, Math.round(done * PERCENT)))}%)`
+    : name
 }
 
 const baseOf = (locale: string) => locale.toLowerCase().split('-')[0]
