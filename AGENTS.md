@@ -39,6 +39,7 @@ Mortar is a desktop mod manager for several games (`mortar games` lists the cata
 - Store or launcher behaviour the maintainers cannot test (EA/Origin, Epic, Xbox, a game they do not own) follows the source of r2modman (ebkr/r2modmanPlus), Gale (Kesomannen/gale) or another established manager, cited by file.
 - LAN sharing accepts only local-network peers by default; "Accept connections from any network address" opens it to VPN and tailnet peers; the default stays.
 - Mortar never re-hosts mod files; downloads come from each mod's own source. Exception: a profile sent between the user's own computers over the LAN, paired with a code, carries its mod files from every source.
+- A Gale profile or an r2modman/Gale code brings its local mods (files added from disk, DLLs included) as Local entries; the import preview warns before a code's local files are installed.
 - Nexus downloads start only from Nexus's own Mod Manager Download button (or a Premium API download the user asked for in Mortar). The browser extension reads and marks Nexus pages and relays those clicks; it never starts downloads or opens Nexus pages itself.
 - The browser extension lives in Rethunk-Tech/mortar-browser-extension with its own version; the native-messaging protocol is versioned in the handshake (`internal/nativehost` `Protocol`, `MinProtocol`, `MaxProtocol`).
 
