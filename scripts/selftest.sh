@@ -621,19 +621,28 @@ regress_traps() {
   trap 'exit 143' TERM
 }
 
-regress() {
-  ROOT=$(mktemp -d /var/tmp/mortar-regress-XXXXXX)
-  case "$ROOT" in /var/tmp/mortar-regress-??????) ;; *)
+pick_port() {
+  PORT=$((9600 + RANDOM % 300))
+  while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
+}
+
+# regress_sandbox [SUFFIX]: a regress run's own sandbox, /var/tmp/mortar-regress[SUFFIX]-XXXXXX, on a free port. A
+# failed run keeps its folder for the logs; the marker lets reap collect it later.
+regress_sandbox() {
+  ROOT=$(mktemp -d "/var/tmp/mortar-regress${1:-}-XXXXXX")
+  case "$ROOT" in "/var/tmp/mortar-regress${1:-}-"??????) ;; *)
     echo "unexpected sandbox dir $ROOT" >&2
     exit 1
     ;;
   esac
-  # A failed run keeps its folder for the logs; the marker lets reap collect it later.
   mark
-  PORT=$((9600 + RANDOM % 300))
-  while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
+  pick_port
   SANDBOX_HOME=$ROOT/home
   SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
+}
+
+regress() {
+  regress_sandbox
   # game and verdict are read by the EXIT trap, after this function's locals are gone.
   game="$SANDBOX_STEAM/steamapps/common/$GAME_FOLDER"
   gpids=""
@@ -784,18 +793,7 @@ regress_lc() {
     echo "refused: MORTAR_REGRESS_R2_CODE needs launch $(regress_launches), but a session allows $LAUNCH_CAP and the base run and the matrix use $(($(regress_launches) - 1)) of them; unset MORTAR_REGRESS_R2_CODE or MORTAR_REGRESS_MATRIX" >&2
     exit 3
   fi
-  ROOT=$(mktemp -d /var/tmp/mortar-regress-lc-XXXXXX)
-  case "$ROOT" in /var/tmp/mortar-regress-lc-??????) ;; *)
-    echo "unexpected sandbox dir $ROOT" >&2
-    exit 1
-    ;;
-  esac
-  # A failed run keeps its folder for the logs; the marker lets reap collect it later.
-  mark
-  PORT=$((9600 + RANDOM % 300))
-  while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
-  SANDBOX_HOME=$ROOT/home
-  SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
+  regress_sandbox -lc
   verdict=FAIL
   game="$SANDBOX_STEAM/steamapps/common/$rg_folder"
   compat="$SANDBOX_STEAM/steamapps/compatdata/$rg_app"
@@ -1238,17 +1236,7 @@ regress_fake() {
   }
   IFS="|" read -r app folder marker bepinex <<<"$spec"
   need_zenity
-  ROOT=$(mktemp -d /var/tmp/mortar-regress-fake-XXXXXX)
-  case "$ROOT" in /var/tmp/mortar-regress-fake-??????) ;; *)
-    echo "unexpected sandbox dir $ROOT" >&2
-    exit 1
-    ;;
-  esac
-  mark
-  PORT=$((9600 + RANDOM % 300))
-  while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
-  SANDBOX_HOME=$ROOT/home
-  SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
+  regress_sandbox -fake
   export MORTAR_ENABLE_GAMES=$id
   verdict=FAIL
   local game="$SANDBOX_STEAM/steamapps/common/$folder" compat="$SANDBOX_STEAM/steamapps/compatdata/$app"
@@ -1403,17 +1391,7 @@ sims4_wait_idle() {
 # the swap is live, and the next Mortar start must recover. Afterwards the player's Mods, saves and Options.ini hash
 # exactly as before, as does the game folder. The sandbox enables the game for itself through MORTAR_ENABLE_GAMES.
 regress_sims4() {
-  ROOT=$(mktemp -d /var/tmp/mortar-regress-sims4-XXXXXX)
-  case "$ROOT" in /var/tmp/mortar-regress-sims4-??????) ;; *)
-    echo "unexpected sandbox dir $ROOT" >&2
-    exit 1
-    ;;
-  esac
-  mark
-  PORT=$((9600 + RANDOM % 300))
-  while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
-  SANDBOX_HOME=$ROOT/home
-  SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
+  regress_sandbox -sims4
   export MORTAR_ENABLE_GAMES=sims4
   verdict=FAIL
   local game="$SANDBOX_STEAM/steamapps/common/The Sims 4"
@@ -1621,17 +1599,7 @@ curseforge_scenario() {
     echo "SKIP curseforge: MORTAR_CURSEFORGE_KEY is not set"
     return 0
   fi
-  ROOT=$(mktemp -d /var/tmp/mortar-regress-cf-XXXXXX)
-  case "$ROOT" in /var/tmp/mortar-regress-cf-??????) ;; *)
-    echo "unexpected sandbox dir $ROOT" >&2
-    exit 1
-    ;;
-  esac
-  mark
-  PORT=$((9600 + RANDOM % 300))
-  while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
-  SANDBOX_HOME=$ROOT/home
-  SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
+  regress_sandbox -cf
   verdict=FAIL
   local failures=() t0=$SECONDS profile="" top="" blocked="" blocked_name="" mods="" fileid=""
   local data=$SANDBOX_HOME/.local/share/mortar
@@ -1855,8 +1823,7 @@ if [ "${1:-}" = start ] && [ "${2:-}" = --fake ]; then
     SANDBOX_STEAM=$SANDBOX_HOME/.local/share/Steam
   fi
   if [ -z "${MORTAR_SELFTEST_PORT:-}" ]; then
-    PORT=$((9600 + RANDOM % 300))
-    while [ -n "$(ss -ltn "sport = :$PORT" | tail -n +2)" ]; do PORT=$((9600 + RANDOM % 300)); done
+    pick_port
   fi
   export MORTAR_ENABLE_GAMES=$3
 fi
