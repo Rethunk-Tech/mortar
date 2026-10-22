@@ -10,6 +10,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { BisectDialog } from '../console/BisectDialog.tsx'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { useReasonText } from '../i18n/reasonText.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useMods } from '../mods/store.ts'
 import { MONO } from '../theme/theme.ts'
@@ -68,6 +69,7 @@ export function CrashHintCard({
   }, [key])
   const culprit = hint?.modKey ? mod.find((m) => m.key === hint.modKey) : undefined
   const named = t`named in the crash log`
+  const reason = useReasonText()(hint?.code, hint?.params, hint?.reason ?? '')
   const bisect = () => StartBisect(game, profileId).then(setBisectJob).catch(reportUnexpected)
   const retry = (target: NonNullable<typeof culprit>) => {
     setBusy(true)
@@ -107,8 +109,8 @@ export function CrashHintCard({
             </Typography>
             <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
               {culprit
-                ? t`Most likely cause: ${{ name: hint.modName }} (${{ reason: hint.reason || named }})`
-                : hint.reason || t`The log does not name a mod.`}
+                ? t`Most likely cause: ${{ name: hint.modName }} (${{ reason: reason || named }})`
+                : reason || t`The log does not name a mod.`}
             </Typography>
             {hint.nativeFrame ? (
               <Typography

@@ -142,7 +142,10 @@ func (s *Store) syncFolder(ctx context.Context, game, id string, f gameModFolder
 			return fail(err)
 		}
 	case !replace:
-		return GameModOutcome{Name: f.label, Status: outcomeSkipped, Reason: "already in this profile as " + heldName}
+		return GameModOutcome{
+			Name: f.label, Status: outcomeSkipped, Reason: "already in this profile as " + heldName,
+			Code: "alreadyInProfile", Params: map[string]string{"name": heldName},
+		}
 	default:
 		key, err := s.addResolvingLinks(ctx, game, f.dir)
 		if err != nil {
@@ -151,7 +154,7 @@ func (s *Store) syncFolder(ctx context.Context, game, id string, f gameModFolder
 		src := f.source
 		if _, err := s.moveTo(game, id, heldKey, key, &src); err != nil {
 			if _, same := errors.AsType[*DuplicateError](err); same {
-				return GameModOutcome{Name: f.label, Status: outcomeSkipped, Reason: "already up to date in this profile"}
+				return GameModOutcome{Name: f.label, Status: outcomeSkipped, Reason: "already up to date in this profile", Code: "upToDate"}
 			}
 			return fail(err)
 		}
@@ -159,6 +162,7 @@ func (s *Store) syncFolder(ctx context.Context, game, id string, f gameModFolder
 	if move {
 		if err := s.removeFromGameMods(game, id, f.dir); err != nil {
 			out.Reason = "added, but it could not be removed from the game's Mods folder: " + err.Error()
+			out.Code, out.Params = "notRemoved", map[string]string{"error": err.Error()}
 		}
 	}
 	return out
@@ -314,6 +318,7 @@ func (s *Store) GameModsDiff(game, id, modsDir string, dismissed []string) (Game
 			if sl.outcome.Status == outcomeFailed && !hidden {
 				out.Unreadable = append(out.Unreadable, GameModPreview{
 					Name: sl.outcome.Name, Status: outcomeFailed, Reason: sl.outcome.Reason, Folder: sl.folder.dir,
+					Code: sl.outcome.Code, Params: sl.outcome.Params,
 				})
 			}
 			continue

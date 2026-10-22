@@ -180,6 +180,7 @@ msgstr "{count, plural, one {Added # mod from {profile} to {name}} other {Added 
 msgid "{size} of saves"
 msgstr "{size} of saves"
 
+#: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Enabled {name}"
 msgstr "Enabled {name}"
@@ -909,6 +910,7 @@ msgstr "Direct launch preview"
 msgid "imported from the game's Mods folder"
 msgstr "imported from the game's Mods folder"
 
+#: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Updated {name} from {from} to {to}"
 msgstr "Updated {name} from {from} to {to}"
@@ -971,6 +973,7 @@ msgstr "Mountain"
 msgid "Skip the intro"
 msgstr "Skip the intro"
 
+#: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Added {name}"
 msgstr "Added {name}"
@@ -1285,6 +1288,7 @@ msgstr "Could not empty the trash"
 msgid "Loading game settings…"
 msgstr "Loading game settings…"
 
+#: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Disabled {names}"
 msgstr "Disabled {names}"
@@ -1550,6 +1554,10 @@ msgstr "No differences."
 msgid "Test launch"
 msgstr "Test launch"
 
+#: src/profiles/historyDiff.ts
+msgid "Changed {fileName} of {name}"
+msgstr "Changed {fileName} of {name}"
+
 #: src/profiles/historyRevert.ts
 msgid "This is no longer the latest change."
 msgstr "This is no longer the latest change."
@@ -1681,6 +1689,7 @@ msgstr "Start with a copy of my current saves"
 msgid "Compare two…"
 msgstr "Compare two…"
 
+#: src/profiles/historyDiff.ts
 #: src/profiles/historyLabel.ts
 msgid "Removed {name}"
 msgstr "Removed {name}"

@@ -226,13 +226,14 @@ func unusedTilesheetPacks(mods []framework.Mod) []framework.Cleanup {
 		if mapsUnreadable || use.enabled {
 			continue
 		}
-		reason := "Tilesheets not used by any installed mod"
+		reason, code, params := "Tilesheets not used by any installed mod", "tilesheetsUnused", map[string]string(nil)
 		if len(use.names) > 0 {
 			slices.Sort(use.names)
-			reason = "Used only by switched-off mods: " + strings.Join(use.names, ", ")
+			names := strings.Join(use.names, ", ")
+			reason, code, params = "Used only by switched-off mods: "+names, "tilesheetsOnlyDisabled", map[string]string{"names": names}
 		}
 		out = append(out, framework.Cleanup{
-			Key: candidate.Key, ID: candidate.ModID(), Name: candidate.Name, Reason: reason,
+			Key: candidate.Key, ID: candidate.ModID(), Name: candidate.Name, Reason: reason, Code: code, Params: params,
 		})
 	}
 	return out

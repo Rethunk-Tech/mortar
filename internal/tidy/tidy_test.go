@@ -4,9 +4,9 @@ import "testing"
 
 func TestTakeSumsCountsOnceAndDropsEmptyEntries(t *testing.T) {
 	var c Collector
-	c.Add("Removed leftover temporary folders", "store", 0)
-	c.Add("Removed leftover temporary folders", "store/stardew", 0, ".tmp-1", ".tmp-2")
-	c.Add("Repaired file names", "profiles", 5)
+	c.Add("tempFolders", "Removed leftover temporary folders", "store", "", 0)
+	c.Add("tempFolders", "Removed leftover temporary folders", "store", "", 0, ".tmp-1", ".tmp-2")
+	c.Add("modFileNames", "Repaired file names", "profiles", "", 5)
 	got := c.Take()
 	if got.Total != 7 || len(got.Entries) != 2 || got.Entries[0].Count != 2 || got.Entries[1].Names == nil {
 		t.Fatalf("report = %+v", got)

@@ -52,7 +52,7 @@ func cleanupHints(mods []framework.Mod, found []framework.Cleanup, mentioned []s
 			frameworkIDs[id] || enabledNeeds[id] || disabledDependents[id] {
 			continue
 		}
-		out = append(out, framework.Cleanup{Key: im.Key, ID: im.ModID(), Name: im.Name, Reason: orphanReason})
+		out = append(out, framework.Cleanup{Key: im.Key, ID: im.ModID(), Name: im.Name, Reason: orphanReason, Code: "orphan"})
 	}
 	out = append(out, found...)
 	slices.SortFunc(out, func(a, b framework.Cleanup) int {

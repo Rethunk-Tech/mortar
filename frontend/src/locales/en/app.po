@@ -211,6 +211,10 @@ msgstr "{name} needs its main file first"
 msgid "{name} needs {detail}, which Mortar cannot install"
 msgstr "{name} needs {detail}, which Mortar cannot install"
 
+#: src/tidy/report.ts
+msgid "Removed a leftover mod folder"
+msgstr "Removed a leftover mod folder"
+
 #: src/toasts/AvOverrideDialog.tsx
 msgid "Your antivirus ({scanner}) reports {name}{where}. Mod loaders and their DLLs often trip heuristics, but a real detection can harm your computer. Install only a file you trust. Mortar records this choice in the profile's history."
 msgstr "Your antivirus ({scanner}) reports {name}{where}. Mod loaders and their DLLs often trip heuristics, but a real detection can harm your computer. Install only a file you trust. Mortar records this choice in the profile's history."
@@ -239,6 +243,10 @@ msgstr "Discard changes?"
 msgid "a new Mortar is ready"
 msgstr "a new Mortar is ready"
 
+#: src/tidy/report.ts
+msgid "Rebuilt a mod folder from the store"
+msgstr "Rebuilt a mod folder from the store"
+
 #: src/share/ImportDialog.tsx
 #: src/share/ImportSources.tsx
 msgid "Another mod manager"
@@ -265,6 +273,10 @@ msgstr "Deleted profile"
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "{count, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
 msgstr "{count, plural, one {Added # mod from {name}} other {Added # mods from {name}}}"
+
+#: src/tidy/report.ts
+msgid "Mod store"
+msgstr "Mod store"
 
 #: src/loader/Banner.tsx
 msgid "{name} {latest} is available"
@@ -386,6 +398,10 @@ msgstr "The website must start with http:// or https://."
 #: src/share/ListFormat.tsx
 msgid "Left out (not on {source}, or disabled): {names}"
 msgstr "Left out (not on {source}, or disabled): {names}"
+
+#: src/tidy/report.ts
+msgid "Removed leftover temporary folders"
+msgstr "Removed leftover temporary folders"
 
 #: src/game/ProfileMenuItems.tsx
 msgid "Remove the shortcut"
@@ -530,6 +546,10 @@ msgstr "Exclude categories"
 msgid "Filter by outcome"
 msgstr "Filter by outcome"
 
+#: src/tidy/report.ts
+msgid "Put back a mod folder an interrupted install or update left aside"
+msgstr "Put back a mod folder an interrupted install or update left aside"
+
 #: src/share/MethodPanes.tsx
 msgid "Could not export the collection draft"
 msgstr "Could not export the collection draft"
@@ -562,6 +582,10 @@ msgstr "Loading saved groups…"
 #: src/saves/backups.ts
 msgid "Scheduled"
 msgstr "Scheduled"
+
+#: src/i18n/reasonText.ts
+msgid "No antivirus found"
+msgstr "No antivirus found"
 
 #: src/launch/autoUpdate.ts
 msgid "Could not add the update downloads"
@@ -665,6 +689,10 @@ msgstr "Copies and sharing"
 msgid "The mod files can be copied directly from this Mortar."
 msgstr "The mod files can be copied directly from this Mortar."
 
+#: src/i18n/reasonText.ts
+msgid "The game crashed inside this mod's code."
+msgstr "The game crashed inside this mod's code."
+
 #: src/share/ImportPreview.tsx
 msgid "{count} unavailable"
 msgstr "{count} unavailable"
@@ -761,6 +789,10 @@ msgstr "{count, plural, one {Added # mod from {name}; {left, plural, one {# mod}
 #: src/game/Hero.tsx
 msgid "Unlink"
 msgstr "Unlink"
+
+#: src/i18n/reasonText.ts
+msgid "It could not load an asset."
+msgstr "It could not load an asset."
 
 #: src/queue/QueueHistory.tsx
 msgid "Download again"
@@ -1248,6 +1280,10 @@ msgstr "Could not find Mortar users"
 msgid "Updated {mods} in {profile}"
 msgstr "Updated {mods} in {profile}"
 
+#: src/i18n/reasonText.ts
+msgid "a newer copy loaded instead: {version}"
+msgstr "a newer copy loaded instead: {version}"
+
 #: src/firstrun/FindStep.tsx
 msgid "{name} folder"
 msgstr "{name} folder"
@@ -1325,6 +1361,10 @@ msgstr "Queue"
 #: src/share/ImportDialog.tsx
 msgid "Not found in the Mods folder"
 msgstr "Not found in the Mods folder"
+
+#: src/tidy/report.ts
+msgid "Data folder"
+msgstr "Data folder"
 
 #: src/install/store.ts
 msgid "Replaced {mods} in {profile}"
@@ -1660,6 +1700,10 @@ msgstr "Update available"
 msgid "Size"
 msgstr "Size"
 
+#: src/i18n/reasonText.ts
+msgid "already up to date in this profile"
+msgstr "already up to date in this profile"
+
 #: src/QuitPrompt.tsx
 msgid "Quit Mortar?"
 msgstr "Quit Mortar?"
@@ -1752,6 +1796,10 @@ msgstr "Main"
 #: src/launch/vanillaStart.ts
 msgid "Could not launch the game"
 msgstr "Could not launch the game"
+
+#: src/tidy/report.ts
+msgid "Repaired mod folder records"
+msgstr "Repaired mod folder records"
 
 #: src/firstrun/FindStep.tsx
 #: src/launchers/LauncherList.tsx
@@ -1884,6 +1932,10 @@ msgstr "Saved group added"
 msgid "Downloads paused"
 msgstr "Downloads paused"
 
+#: src/i18n/reasonText.ts
+msgid "module {name} failed"
+msgstr "module {name} failed"
+
 #: src/game/FarmMenuItem.tsx
 msgid "Open the host's list"
 msgstr "Open the host's list"
@@ -1983,6 +2035,14 @@ msgstr "Include disabled mods"
 #: src/share/ImportPreview.tsx
 msgid "program files from this code"
 msgstr "program files from this code"
+
+#: src/i18n/reasonText.ts
+msgid "incompatible dependencies: {list}"
+msgstr "incompatible dependencies: {list}"
+
+#: src/tidy/report.ts
+msgid "Emptied the crash log after it was reported"
+msgstr "Emptied the crash log after it was reported"
 
 #: src/share/DestinationGrid.tsx
 #: src/share/ShareDialog.tsx
@@ -2088,6 +2148,10 @@ msgstr "Where the profile comes from"
 #: src/install/RemapDialog.tsx
 msgid "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
 msgstr "This archive holds several variants of the same mod. Pick the one to install; updates keep it."
+
+#: src/tidy/report.ts
+msgid "Repaired mod file names"
+msgstr "Repaired mod file names"
 
 #: src/tools/ToolEditorDialog.tsx
 msgid "Working directory"
@@ -2465,6 +2529,10 @@ msgstr "Profiles: {holderNames}"
 msgid "{name} (Recommended)"
 msgstr "{name} (Recommended)"
 
+#: src/i18n/reasonText.ts
+msgid "{os} antivirus (AMSI)"
+msgstr "{os} antivirus (AMSI)"
+
 #: src/launch/LaunchLayer.tsx
 msgid "Open console"
 msgstr "Open console"
@@ -2687,6 +2755,10 @@ msgstr "Config files"
 msgid "Added"
 msgstr "Added"
 
+#: src/i18n/reasonText.ts
+msgid "Made for {name}, which is not enabled"
+msgstr "Made for {name}, which is not enabled"
+
 #: src/shell/win.ts
 msgid "Could not close the window"
 msgstr "Could not close the window"
@@ -2787,6 +2859,10 @@ msgstr "Paste"
 msgid "Could not delete the saved group"
 msgstr "Could not delete the saved group"
 
+#: src/i18n/reasonText.ts
+msgid "the same copy loaded instead from {path}"
+msgstr "the same copy loaded instead from {path}"
+
 #: src/downloads/newDownloads.ts
 msgid "{count, plural, one {# new archive} other {# new archives}} in your downloads folder"
 msgstr "{count, plural, one {# new archive} other {# new archives}} in your downloads folder"
@@ -2876,6 +2952,10 @@ msgstr "Selected mod"
 #: src/templates/TemplateDialogs.tsx
 msgid "Profiles already made from it are not changed."
 msgstr "Profiles already made from it are not changed."
+
+#: src/i18n/reasonText.ts
+msgid "{names} (AMSI)"
+msgstr "{names} (AMSI)"
 
 #: src/queue/store.ts
 msgid "That download is no longer waiting to retry."
@@ -3023,6 +3103,10 @@ msgstr "{count, plural, one {{current} of # mod} other {{current} of # mods}}"
 #: src/launch/PlayInstances.tsx
 msgid "This game starts through its store, which runs one copy. A Direct launch can start several."
 msgstr "This game starts through its store, which runs one copy. A Direct launch can start several."
+
+#: src/i18n/reasonText.ts
+msgid "Antivirus scanning is off"
+msgstr "Antivirus scanning is off"
 
 #: src/tools/ToolsManageDialog.tsx
 msgid "Edit {name}"
@@ -3336,6 +3420,10 @@ msgstr "Mortar found it in {launcher}'s settings."
 msgid "Results"
 msgstr "Results"
 
+#: src/i18n/reasonText.ts
+msgid "The game itself crashed ({module}), not a mod's code."
+msgstr "The game itself crashed ({module}), not a mod's code."
+
 #: src/firstrunTour/TourPopover.tsx
 msgid "Press {paletteKeys} to jump anywhere: profiles, settings, downloads and more."
 msgstr "Press {paletteKeys} to jump anywhere: profiles, settings, downloads and more."
@@ -3574,6 +3662,10 @@ msgstr "{cause}. Retry or skip it from the queue."
 msgid "Wilderness farm"
 msgstr "Wilderness farm"
 
+#: src/i18n/reasonText.ts
+msgid "No {loader} mod was found"
+msgstr "No {loader} mod was found"
+
 #: src/game/TabHeader.tsx
 msgid "{fitting} of {recorded} saves fit"
 msgstr "{fitting} of {recorded} saves fit"
@@ -3754,6 +3846,10 @@ msgstr "Notes for {name}"
 msgid "Download"
 msgstr "Download"
 
+#: src/i18n/reasonText.ts
+msgid "added, but it could not be removed from the game's Mods folder: {error}"
+msgstr "added, but it could not be removed from the game's Mods folder: {error}"
+
 #: src/browse/ResultCard.tsx
 msgid "Details of {name}"
 msgstr "Details of {name}"
@@ -3807,6 +3903,10 @@ msgstr "All changes…"
 msgid "Other profile…"
 msgstr "Other profile…"
 
+#: src/i18n/reasonText.ts
+msgid "A file it needs could not be opened."
+msgstr "A file it needs could not be opened."
+
 #: src/game/FarmMenuItem.tsx
 msgid "Could not make the list"
 msgstr "Could not make the list"
@@ -3840,6 +3940,10 @@ msgstr "Launchers"
 #: src/templates/TemplateDialogs.tsx
 msgid "Could not save the template"
 msgstr "Could not save the template"
+
+#: src/i18n/reasonText.ts
+msgid "game version {version} is older than the loader accepts ({otherVersion})"
+msgstr "game version {version} is older than the loader accepts ({otherVersion})"
 
 #: src/tools/ToolEditorDialog.tsx
 msgid "Executable"
@@ -3921,6 +4025,10 @@ msgstr "unverified until downloaded"
 msgid "New errors after updating {profile}"
 msgstr "New errors after updating {profile}"
 
+#: src/i18n/reasonText.ts
+msgid "missing dependencies: {list}"
+msgstr "missing dependencies: {list}"
+
 #: src/shell/AppMenu.tsx
 msgid "Sign in to {source}…"
 msgstr "Sign in to {source}…"
@@ -4001,6 +4109,14 @@ msgstr "Arguments"
 #: src/launch/VanillaPlay.tsx
 msgid "Set default preset…"
 msgstr "Set default preset…"
+
+#: src/i18n/reasonText.ts
+msgid "Tilesheets not used by any installed mod"
+msgstr "Tilesheets not used by any installed mod"
+
+#: src/i18n/reasonText.ts
+msgid "already in this profile as {name}"
+msgstr "already in this profile as {name}"
 
 #: src/queue/DownloadsPill.tsx
 msgid "{count, plural, one {# downloading} other {# downloading}}"
@@ -4623,6 +4739,10 @@ msgstr "{count, plural, one {# mod disabled} other {# mods disabled}}"
 msgid "No changes yet"
 msgstr "No changes yet"
 
+#: src/i18n/reasonText.ts
+msgid "Used only by disabled mods: {names}"
+msgstr "Used only by disabled mods: {names}"
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Paste a link…"
 msgstr "Paste a link…"
@@ -4668,6 +4788,10 @@ msgstr "Mortar menu"
 msgid "Kept forever"
 msgstr "Kept forever"
 
+#: src/i18n/reasonText.ts
+msgid "same mod as {name}"
+msgstr "same mod as {name}"
+
 #: src/nxm/store.ts
 msgid "Mod link not used"
 msgstr "Mod link not used"
@@ -4708,6 +4832,10 @@ msgstr "Running {who}"
 #: src/game/Sidebar.tsx
 msgid "Get mods"
 msgstr "Get mods"
+
+#: src/i18n/reasonText.ts
+msgid "It encountered an error."
+msgstr "It encountered an error."
 
 #: src/game/HeroGlance.tsx
 msgid "No problems"
@@ -4881,6 +5009,10 @@ msgstr "Broke in {brokeIn}"
 #: src/shell/TitleBar.tsx
 msgid "Settings"
 msgstr "Settings"
+
+#: src/i18n/reasonText.ts
+msgid "The {app} runtime crashed ({module}), not a mod's code."
+msgstr "The {app} runtime crashed ({module}), not a mod's code."
 
 #: src/browse/BrowseMenu.tsx
 msgid "Hide from Browse"
@@ -5091,6 +5223,10 @@ msgstr "Resume"
 msgid "Share as {manager} code?"
 msgstr "Share as {manager} code?"
 
+#: src/i18n/reasonText.ts
+msgid "No command set"
+msgstr "No command set"
+
 #: src/launch/playStart.ts
 msgid "You can roll back the completed updates from the profile history."
 msgstr "You can roll back the completed updates from the profile history."
@@ -5137,6 +5273,7 @@ msgstr "From the downloads folder"
 
 #: src/game/ProfileMenu.tsx
 #: src/groups/ApplySavedGroupToProfile.tsx
+#: src/tidy/report.ts
 msgid "Profile"
 msgstr "Profile"
 
@@ -5155,6 +5292,14 @@ msgstr "{count, plural, one {# download failed} other {# downloads failed}}"
 #: src/share/MethodPanes.tsx
 msgid "{count, plural, one {# settings file was} other {# settings files were}} left out (too large or an unusual name):"
 msgstr "{count, plural, one {# settings file was} other {# settings files were}} left out (too large or an unusual name):"
+
+#: src/i18n/reasonText.ts
+msgid "module {name} failed: {error}"
+msgstr "module {name} failed: {error}"
+
+#: src/i18n/reasonText.ts
+msgid "a patch for {name} matched nothing in the game's code"
+msgstr "a patch for {name} matched nothing in the game's code"
 
 #: src/install/HandoffDialog.tsx
 msgid "Install {file} as from {page}?"
@@ -5200,6 +5345,7 @@ msgid "Unpair"
 msgstr "Unpair"
 
 #: src/firstrunTour/TourPopover.tsx
+#: src/tidy/report.ts
 msgid "Profiles"
 msgstr "Profiles"
 
@@ -5370,6 +5516,10 @@ msgstr "about {size} to download"
 #: src/templates/TemplateDialogs.tsx
 msgid "Replace {name}?"
 msgstr "Replace {name}?"
+
+#: src/i18n/reasonText.ts
+msgid "{exception} at {frame}"
+msgstr "{exception} at {frame}"
 
 #: src/game/BackupMenuItems.tsx
 msgid "The backup holds up to {size}: the profile, its settings and config files, and its own saves when it keeps them."
@@ -5614,6 +5764,10 @@ msgstr "Checking for updates…"
 msgid "The game is already running."
 msgstr "The game is already running."
 
+#: src/i18n/reasonText.ts
+msgid "{app} crashed ({module}), not a mod's code."
+msgstr "{app} crashed ({module}), not a mod's code."
+
 #: src/share/CollectionNotes.tsx
 msgid "Installers ask as usual; Premium accounts also get the curator's choices and configs."
 msgstr "Installers ask as usual; Premium accounts also get the curator's choices and configs."
@@ -5744,6 +5898,10 @@ msgstr "{names} cannot be reached, so Mortar cannot check for mod updates"
 msgid "Already the newest file"
 msgstr "Already the newest file"
 
+#: src/i18n/reasonText.ts
+msgid "incompatible with: {list}"
+msgstr "incompatible with: {list}"
+
 #: src/share/ImportPreview.tsx
 msgid "Needs a file from its {source} post"
 msgstr "Needs a file from its {source} post"
@@ -5805,6 +5963,10 @@ msgstr "Could not save the .r2z file"
 #: src/saves/SaveBackupsButton.tsx
 msgid "Reading backups…"
 msgstr "Reading backups…"
+
+#: src/i18n/reasonText.ts
+msgid "Brought in for other mods, and none that is enabled needs it"
+msgstr "Brought in for other mods, and none that is enabled needs it"
 
 #: src/launch/PrePlayDialog.tsx
 msgid "Enable them"

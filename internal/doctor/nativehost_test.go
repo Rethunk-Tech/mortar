@@ -16,6 +16,10 @@ func TestAppendNativeHostChecks(t *testing.T) {
 	if len(checks) != 3 {
 		t.Fatalf("len = %d", len(checks))
 	}
+	requireCodes(t, Report{Checks: checks})
+	if checks[1].Params["app"] != "Firefox" {
+		t.Fatalf("params: %+v", checks[1].Params)
+	}
 	if checks[0].Status != Pass || checks[0].Fix != "" {
 		t.Fatalf("ok: %+v", checks[0])
 	}

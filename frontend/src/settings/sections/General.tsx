@@ -22,6 +22,7 @@ import {
 import { WINDOWS } from '../../brand/productNames.ts'
 import { TourAgainButton } from '../../firstrunTour/TourAgainButton.tsx'
 import { availableLocales } from '../../i18n/locales.ts'
+import { useReasonText } from '../../i18n/reasonText.ts'
 import { PairedComputers } from '../../lan/PairedComputers.tsx'
 import { useLoaded } from '../../shell/useLoaded.ts'
 import { space } from '../../theme/density.ts'
@@ -73,10 +74,13 @@ function ScannerName() {
   const { data: product } = useLoaded(
     () => AntivirusProduct(),
     [mode, socket, command],
-    '',
+    { text: '' },
     reportUnexpected,
   )
-  return <Typography sx={{ fontSize: 14 }}>{product || t`Checking…`}</Typography>
+  const reasonText = useReasonText()
+  const line =
+    product.text === '' ? t`Checking…` : reasonText(product.code, product.params, product.text)
+  return <Typography sx={{ fontSize: 14 }}>{line}</Typography>
 }
 
 function Antivirus() {

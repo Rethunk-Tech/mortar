@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Checkbox, FormControlLabel, List, ListItem, ListItemText } from '@mui/material'
 import type { ReactNode } from 'react'
 import type { GameModPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { useReasonText } from '../i18n/reasonText.ts'
 import { formatPreviewRow } from '../profiles/gameModsFormat.ts'
 import { space } from '../theme/density.ts'
 
@@ -21,6 +22,7 @@ export function PreviewPick({
 }) {
   const { t } = useLingui()
   const switchedOff = t`Disabled`.toLowerCase()
+  const reasonText = useReasonText()
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
       {pickable.map((m) => (
@@ -33,7 +35,7 @@ export function PreviewPick({
                 onChange={() => onToggle(m.folder ?? '')}
               />
             }
-            label={formatPreviewRow(m, switchedOff)}
+            label={formatPreviewRow(m, switchedOff, reasonText)}
           />
           {action?.(m)}
         </Box>
@@ -42,7 +44,7 @@ export function PreviewPick({
         {blocked.map((m) => (
           <ListItem key={`${m.name}-${m.folder}`} sx={{ py: 0.5, pl: space.gap }}>
             <ListItemText
-              primary={formatPreviewRow(m, switchedOff)}
+              primary={formatPreviewRow(m, switchedOff, reasonText)}
               slotProps={{
                 primary: {
                   sx: { fontSize: 14, color: 'text.secondary', overflowWrap: 'anywhere' },

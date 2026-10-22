@@ -23,7 +23,20 @@ type Check struct {
 	ID     string `json:"id"`
 	Status string `json:"status"`
 	Detail string `json:"detail"`
-	Fix    string `json:"fix,omitempty"`
+	// Code names the finding for the window, which words it in the user's language from Params; Detail is the
+	// English line the CLI and support bundle print.
+	Code   string            `json:"code,omitempty"`
+	Params map[string]string `json:"params,omitempty"`
+	Fix    string            `json:"fix,omitempty"`
+}
+
+// params builds a Check's Params from alternating names and values.
+func params(kv ...string) map[string]string {
+	m := make(map[string]string, len(kv)/2)
+	for i := 0; i+1 < len(kv); i += 2 {
+		m[kv[i]] = kv[i+1]
+	}
+	return m
 }
 
 // Report is the checks CLI prints and the window shows.
@@ -52,10 +65,14 @@ func FromLive(in Live) Report {
 		ID:     "mortar",
 		Status: Pass,
 		Detail: fmt.Sprintf("Mortar %s (this command %s)", withCommit(in.Version), in.CommandVersion),
+		Code:   "mortar",
+		Params: params("version", withCommit(in.Version), "commandVersion", in.CommandVersion),
 	}, {
 		ID:     "dataDir",
 		Status: Pass,
 		Detail: "Data folder: " + in.DataDir,
+		Code:   "dataDir",
+		Params: params("path", in.DataDir),
 	}}
 	if in.DataDir == "" {
 		checks[1].Status = Fail
@@ -71,19 +88,19 @@ func FromLive(in Live) Report {
 	checks = append(checks, deckChecks()...)
 	checks = append(checks, flatpakLibraryChecks()...)
 	handler := "off"
-	nxmStatus := Warn
+	nxm := Check{ID: "nxm", Status: Warn, Code: "nxmOff"}
 	if in.NxmHandled {
 		handler = "Mortar"
-		nxmStatus = Pass
+		nxm.Status = Pass
+		nxm.Code = "nxmMortar"
 		if in.NxmPrevious != "" {
 			handler += " (other games go to " + in.NxmPrevious + ")"
+			nxm.Code = "nxmMortarPrevious"
+			nxm.Params = params("app", in.NxmPrevious)
 		}
 	}
-	checks = append(checks, Check{
-		ID:     "nxm",
-		Status: nxmStatus,
-		Detail: "nxm:// links: " + handler,
-	})
+	nxm.Detail = "nxm:// links: " + handler
+	checks = append(checks, nxm)
 	return Report{Checks: checks}
 }
 
@@ -102,6 +119,8 @@ func gameCheck(g game.GameInfo, e problems.Environment, anyInstalled bool) Check
 	c := Check{ID: "game:" + g.ID, Status: Pass}
 	if !g.Installed {
 		c.Detail = g.Name + ": not installed"
+		c.Code = "gameNotInstalled"
+		c.Params = params("game", g.Name)
 		if !anyInstalled {
 			c.Status = Warn
 		}
@@ -124,6 +143,9 @@ func gameCheck(g game.GameInfo, e problems.Environment, anyInstalled bool) Check
 	if len(where) > 0 {
 		c.Detail += " (" + strings.Join(where, ", ") + ")"
 	}
+	c.Code = "gameInstalled"
+	c.Params = params("game", g.Name, "gameVersion", e.GameVersion, "apiVersion", e.APIVersion,
+		"path", g.InstallDir, "where", strings.Join(where, ", "))
 	return c
 }
 

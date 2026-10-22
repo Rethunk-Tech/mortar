@@ -157,10 +157,6 @@ msgstr "Share log…"
 msgid "Play this profile and the game's log shows here as it runs. Every run is kept."
 msgstr "Play this profile and the game's log shows here as it runs. Every run is kept."
 
-#: src/console/CrashDialog.tsx
-msgid "It could not load an asset."
-msgstr "It could not load an asset."
-
 #: src/console/PerformanceCards.tsx
 msgid "Startup"
 msgstr "Startup"
@@ -188,6 +184,10 @@ msgstr "Failed"
 #: src/console/PerformanceCards.tsx
 msgid "Mods add {mods}. Nothing stands out in this start."
 msgstr "Mods add {mods}. Nothing stands out in this start."
+
+#: src/console/lineText.ts
+msgid "Could not back up saves before playing: {error}."
+msgstr "Could not back up saves before playing: {error}."
 
 #: src/console/RunsPicker.tsx
 msgid "Runs: {button}"
@@ -306,6 +306,10 @@ msgstr "No log for this profile yet. Play it once, then try again."
 #: src/console/StartupTable.tsx
 msgid "Show details"
 msgstr "Show details"
+
+#: src/console/lineText.ts
+msgid "after {duration}"
+msgstr "after {duration}"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Not downloadable here"
@@ -444,6 +448,10 @@ msgstr "Before"
 msgid "Enter text to search stored runs."
 msgstr "Enter text to search stored runs."
 
+#: src/console/lineText.ts
+msgid "startup_preferences is missing; skipped profile game settings."
+msgstr "startup_preferences is missing; skipped profile game settings."
+
 #: src/console/HelpDialog.tsx
 #: src/console/LogActions.tsx
 msgid "Log copied"
@@ -501,9 +509,17 @@ msgstr "The title screen's intro animation (Mortar skips it on measured launches
 msgid "Title intro"
 msgstr "Title intro"
 
+#: src/console/lineText.ts
+msgid "{game} crashed; exited with {signal}"
+msgstr "{game} crashed; exited with {signal}"
+
 #: src/console/StartupSections.tsx
 msgid "{loader} loads mods"
 msgstr "{loader} loads mods"
+
+#: src/console/lineText.ts
+msgid "{loader} exited with code {code}."
+msgstr "{loader} exited with code {code}."
 
 #: src/console/StartupSections.tsx
 msgid "Show slowest mods"
@@ -625,6 +641,10 @@ msgstr "Pinned"
 msgid "Update {loader}"
 msgstr "Update {loader}"
 
+#: src/console/lineText.ts
+msgid "{game} crashed; exited with code {code} ({signal})"
+msgstr "{game} crashed; exited with code {code} ({signal})"
+
 #: src/console/PerformanceCards.tsx
 msgid "Play this profile to time how long each mod adds to the start"
 msgstr "Play this profile to time how long each mod adds to the start"
@@ -701,10 +721,6 @@ msgstr "After"
 msgid "This session"
 msgstr "This session"
 
-#: src/console/CrashDialog.tsx
-msgid "A file it needs could not be opened."
-msgstr "A file it needs could not be opened."
-
 #: src/console/UpdateNoteTag.tsx
 msgid "Mortar offers this update in the profile's update list."
 msgstr "Mortar offers this update in the profile's update list."
@@ -753,6 +769,10 @@ msgstr "Debug"
 #: src/console/UpdateNoteTag.tsx
 msgid "Source skipped"
 msgstr "Source skipped"
+
+#: src/console/lineText.ts
+msgid "{game} was stopped from Mortar"
+msgstr "{game} was stopped from Mortar"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "Mortar offers prereleases only when Settings allows them."
@@ -818,9 +838,17 @@ msgstr "The log holds folder paths from this computer, which can include your us
 msgid "Share of mod time"
 msgstr "Share of mod time"
 
+#: src/console/lineText.ts
+msgid "Could not restore profile game settings: {error}."
+msgstr "Could not restore profile game settings: {error}."
+
 #: src/console/StartupPanel.tsx
 msgid "The next launch will be measured"
 msgstr "The next launch will be measured"
+
+#: src/console/lineText.ts
+msgid "{game} closed"
+msgstr "{game} closed"
 
 #: src/console/UpdateNoteTag.tsx
 msgid "You skipped this version"
@@ -875,10 +903,6 @@ msgstr "{count, plural, one {Show it} other {Show all # lines}}"
 #: src/console/RunProblems.tsx
 msgid "Remove"
 msgstr "Remove"
-
-#: src/console/CrashDialog.tsx
-msgid "It encountered an error."
-msgstr "It encountered an error."
 
 #: src/console/PerformancePanel.tsx
 msgid "Start the game, then start measuring here to time each plugin per frame."
@@ -986,6 +1010,10 @@ msgstr "Jump to first error"
 msgid "{count, plural, one {# line is} other {# lines are}} hidden by the filters: {why}."
 msgstr "{count, plural, one {# line is} other {# lines are}} hidden by the filters: {why}."
 
+#: src/console/lineText.ts
+msgid "Started without mods"
+msgstr "Started without mods"
+
 #: src/console/StartupSections.tsx
 msgid "Show mod"
 msgstr "Show mod"
@@ -1073,6 +1101,10 @@ msgstr "{game} closed with errors"
 #: src/console/StartupTable.tsx
 msgid "{count, plural, one {# more pack} other {# more packs}}"
 msgstr "{count, plural, one {# more pack} other {# more packs}}"
+
+#: src/console/lineText.ts
+msgid "{game} crashed; exited with code {code}"
+msgstr "{game} crashed; exited with code {code}"
 
 #: src/console/BisectDialog.tsx
 #: src/console/HelpDialog.tsx

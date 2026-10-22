@@ -29,6 +29,9 @@ type LoadFailure struct {
 	Plugin  string `json:"plugin"`
 	Kind    string `json:"kind"`
 	Message string `json:"message"`
+	// Code and Params word Message in the user's language when Mortar wrote it; a Message quoted from a log has no Code.
+	Code   string            `json:"code,omitempty"`
+	Params map[string]string `json:"params,omitempty"`
 	// Dependency is the plugin the failing one lacks, when the log names it.
 	Dependency string `json:"dependency,omitempty"`
 	// Path is a skipped older copy no installed package owns, relative to the profile folder with slashes: a file
@@ -199,7 +202,7 @@ func attribute(found []loader.Finding, owners func() map[string]framework.Mod, e
 	out := make([]LoadFailure, 0, len(found))
 	ranAt := map[string]int{}
 	for _, f := range found {
-		lf := LoadFailure{Plugin: f.Plugin, Kind: f.Kind, Message: f.Message, Dependency: f.Dependency, Line: f.Line}
+		lf := LoadFailure{Plugin: f.Plugin, Kind: f.Kind, Message: f.Message, Code: f.Code, Params: f.Params, Dependency: f.Dependency, Line: f.Line}
 		if owner, ok := byName[strings.ToLower(f.Plugin)]; ok {
 			lf.Key, lf.ID, lf.Name = owner.Key, owner.ModID(), owner.Name
 		}
@@ -234,6 +237,7 @@ func gameVersionFailure(gameID string, l loader.Loader, env Environment) (LoadFa
 	return LoadFailure{
 		Plugin: l.ID(), Kind: KindGameVersion,
 		Message: "game version " + env.GameVersion + " is older than the loader accepts (" + accepted + ")",
+		Code:    "gameVersionOlder", Params: map[string]string{"version": env.GameVersion, "accepted": accepted},
 	}, true
 }
 

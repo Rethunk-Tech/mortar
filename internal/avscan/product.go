@@ -15,19 +15,30 @@ import (
 
 const productTimeout = 5 * time.Second
 
+// ProductLine is the scanner line Settings shows: Text in English for the CLI, and for a line Mortar worded itself a
+// Code (and Params) the window words in the user's language. A product's own name has no Code.
+type ProductLine struct {
+	Text   string            `json:"text"`
+	Code   string            `json:"code,omitempty"`
+	Params map[string]string `json:"params,omitempty"`
+}
+
 // Product names the scanner the settings resolve to, for Settings: the antivirus Windows Security Center lists, the
 // clamd version found, the custom command's program, or what is missing.
-func Product(ctx context.Context, c Config) string {
+func Product(ctx context.Context, c Config) string { return ProductOf(ctx, c).Text }
+
+// ProductOf is Product with the code the window words it from.
+func ProductOf(ctx context.Context, c Config) ProductLine {
 	ctx, cancel := context.WithTimeout(ctx, productTimeout)
 	defer cancel()
 	switch c.Mode {
 	case ModeOff:
-		return "Antivirus scanning is off"
+		return ProductLine{Text: "Antivirus scanning is off", Code: "off"}
 	case ModeCommand:
 		if parts := splitCommand(c.Command); len(parts) > 0 {
-			return filepath.Base(parts[0])
+			return ProductLine{Text: filepath.Base(parts[0])}
 		}
-		return "No command set"
+		return ProductLine{Text: "No command set", Code: "noCommand"}
 	case ModeClamd:
 		return clamdProduct(ctx, clamd{socket: c.Socket})
 	}
@@ -37,19 +48,19 @@ func Product(ctx context.Context, c Config) string {
 	return clamdProduct(ctx, clamd{socket: c.Socket})
 }
 
-func clamdProduct(ctx context.Context, c clamd) string {
+func clamdProduct(ctx context.Context, c clamd) ProductLine {
 	line, err := c.Version(ctx)
 	if err != nil || line == "" {
-		return "No antivirus found"
+		return ProductLine{Text: "No antivirus found", Code: "none"}
 	}
 	version, _, _ := strings.Cut(line, "/")
-	return strings.Replace(version, "ClamAV", "clamd", 1)
+	return ProductLine{Text: strings.Replace(version, "ClamAV", "clamd", 1)}
 }
 
 // windowsProduct reads the product names from Security Center; without a readable answer AMSI still reaches whichever
 // antivirus is registered, so that is what it says.
-func windowsProduct(ctx context.Context) string {
-	const fallback = "Windows antivirus (AMSI)"
+func windowsProduct(ctx context.Context) ProductLine {
+	fallback := ProductLine{Text: "Windows antivirus (AMSI)", Code: "windowsAmsi"}
 	cmd := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
 		"(Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntiVirusProduct).displayName -join ', '")
 	nowindow.Set(cmd)
@@ -58,7 +69,7 @@ func windowsProduct(ctx context.Context) string {
 		return fallback
 	}
 	if name := strings.TrimSpace(string(out)); name != "" {
-		return fmt.Sprintf("%s (AMSI)", name)
+		return ProductLine{Text: fmt.Sprintf("%s (AMSI)", name), Code: "namedAmsi", Params: map[string]string{"names": name}}
 	}
 	return fallback
 }

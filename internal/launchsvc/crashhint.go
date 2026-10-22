@@ -22,8 +22,11 @@ type CrashHint struct {
 	// ModKey and ModName name the mod the log blames; both are empty when it blames none.
 	ModKey  string `json:"modKey"`
 	ModName string `json:"modName"`
-	// Reason is one line from the log, empty when it showed nothing usable.
-	Reason string `json:"reason"`
+	// Reason is one line from the log, empty when it showed nothing usable. Code and Params let the window word it in
+	// the user's language when Mortar wrote it; a line quoted from a log has no Code.
+	Reason string            `json:"reason"`
+	Code   string            `json:"code,omitempty"`
+	Params map[string]string `json:"params,omitempty"`
 	// Evidence is the log line behind the blame, such as the stack frame that runs through the mod's code.
 	Evidence string `json:"evidence"`
 	// NativeFrame is the native function the game died in, from its crash dump or the event log:
@@ -45,6 +48,7 @@ func (s *Service) CrashHint(gameID, profileID string) (*CrashHint, error) {
 	hint := &CrashHint{RunID: run.ID}
 	if run.Cause != nil {
 		hint.ModKey, hint.ModName, hint.Reason = run.Cause.ModKey, run.Cause.ModName, firstLine(run.Cause.Detail)
+		hint.Code, hint.Params = run.Cause.Reason, run.Cause.Params
 		return hint, nil
 	}
 	found := s.loaderFindings(gameID, profileID)
@@ -55,6 +59,7 @@ func (s *Service) CrashHint(gameID, profileID string) (*CrashHint, error) {
 		}
 		if m, f, ok := pickCulprit(found, mods); ok {
 			hint.ModKey, hint.ModName, hint.Reason = m.Key, m.Name, f.Message
+			hint.Code, hint.Params = f.Code, f.Params
 			return hint, nil
 		}
 	}
@@ -63,19 +68,20 @@ func (s *Service) CrashHint(gameID, profileID string) (*CrashHint, error) {
 			hint.ModKey, hint.ModName, hint.Reason, hint.Evidence = m.Key, m.Name, b.Exception, b.Frame
 			return hint, nil
 		}
-		if m, reason, evidence, native, reportDir, ok := s.dumpBlame(gameID, profileID, run, installed); ok {
+		if m, why, evidence, native, reportDir, ok := s.dumpBlame(gameID, profileID, run, installed); ok {
 			hint.Evidence, hint.NativeFrame, hint.ReportDir = evidence, native, reportDir
 			if m.Key != "" {
 				hint.ModKey, hint.ModName, hint.Reason = m.Key, m.Name, "The game crashed inside this mod's code."
+				hint.Code = "modCode"
 				return hint, nil
 			}
 			if len(found) == 0 {
-				hint.Reason = reason
+				hint.Reason, hint.Code, hint.Params = why.text, why.code, why.params
 			}
 		}
 	}
 	if len(found) > 0 {
-		hint.Reason = found[0].Message
+		hint.Reason, hint.Code, hint.Params = found[0].Message, found[0].Code, found[0].Params
 	}
 	return hint, nil
 }

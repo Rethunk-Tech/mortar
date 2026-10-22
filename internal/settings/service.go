@@ -385,7 +385,7 @@ func (s *Service) setReapplying(force bool, fn func(*Settings)) error {
 
 // AntivirusProduct names the scanner the antivirus settings resolve to now: the product Windows Security Center
 // lists, the clamd version found, the custom command's program, or "No antivirus found".
-func (s *Service) AntivirusProduct() string {
+func (s *Service) AntivirusProduct() avscan.ProductLine {
 	v := s.store.Get()
-	return avscan.Product(context.Background(), avscan.Config{Mode: v.Antivirus, Socket: v.AntivirusSocket, Command: v.AntivirusCommand})
+	return avscan.ProductOf(context.Background(), avscan.Config{Mode: v.Antivirus, Socket: v.AntivirusSocket, Command: v.AntivirusCommand})
 }

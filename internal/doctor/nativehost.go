@@ -18,24 +18,28 @@ func AppendNativeHostChecks(checks []Check, rows []nxm.HostStatus) []Check {
 			checks = append(checks, Check{
 				ID: id, Status: Pass,
 				Detail: fmt.Sprintf("Browser extension can reach Mortar in %s", row.Browser),
+				Code:   "nativeHostOK", Params: params("app", row.Browser),
 			})
 		case nxm.HostMissing:
 			checks = append(checks, Check{
 				ID: id, Status: Warn,
 				Detail: fmt.Sprintf("Browser extension cannot reach Mortar in %s (manifest missing)", row.Browser),
-				Fix:    nativeHostFix,
+				Code:   "nativeHostMissing", Params: params("app", row.Browser),
+				Fix: nativeHostFix,
 			})
 		case nxm.HostStale:
 			checks = append(checks, Check{
 				ID: id, Status: Warn,
 				Detail: fmt.Sprintf("Browser extension cannot reach Mortar in %s (manifest points elsewhere)", row.Browser),
-				Fix:    nativeHostFix,
+				Code:   "nativeHostStale", Params: params("app", row.Browser),
+				Fix: nativeHostFix,
 			})
 		case nxm.HostUnreadable:
 			checks = append(checks, Check{
 				ID: id, Status: Warn,
 				Detail: fmt.Sprintf("Browser extension cannot reach Mortar in %s (manifest unreadable)", row.Browser),
-				Fix:    nativeHostFix,
+				Code:   "nativeHostUnreadable", Params: params("app", row.Browser),
+				Fix: nativeHostFix,
 			})
 		}
 	}

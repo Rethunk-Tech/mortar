@@ -119,12 +119,16 @@ type NexusFile struct {
 // flags (Source says which site: archived, removed, hidden...), a mod the catalog's known-broken list names, or, with Status
 // "cycle", one of enabled mods that wait for each other (see dependencyCycles and pluginCycles).
 type Broken struct {
-	Key         string `json:"key"`
-	ID          mod.ID `json:"id"`
-	Name        string `json:"name"`
-	Status      string `json:"status"`
-	BrokeIn     string `json:"brokeIn"`
-	Summary     string `json:"summary,omitempty"`
+	Key     string `json:"key"`
+	ID      mod.ID `json:"id"`
+	Name    string `json:"name"`
+	Status  string `json:"status"`
+	BrokeIn string `json:"brokeIn"`
+	Summary string `json:"summary,omitempty"`
+	// MarkedIn and Quote word an author's own flag in the user's language: where it was found (a markedIn code) and the
+	// sentence quoted; Summary is the English line.
+	MarkedIn    string `json:"markedIn,omitempty"`
+	Quote       string `json:"quote,omitempty"`
 	Replacement *Ref   `json:"replacement,omitempty"`
 	// Source names the site whose own flag makes this row (Nexus Mods, Modrinth, CurseForge, GitHub, Thunderstore);
 	// empty for SMAPI's list, the author's wording and dependency loops.

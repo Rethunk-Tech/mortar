@@ -16,6 +16,7 @@ import {
   ImportGameMods,
   PreviewGameMods,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { useReasonText } from '../i18n/reasonText.ts'
 import type { GameId } from '../nav/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
@@ -84,6 +85,7 @@ export function GameModsDialog({
 }) {
   const { t } = useLingui()
   const switchedOff = t`Disabled`.toLowerCase()
+  const reasonText = useReasonText()
   const load = useProfiles((s) => s.load)
   const [mods, setMods] = useState<GameModPreview[]>([])
   const [canMove, setCanMove] = useState(false)
@@ -148,7 +150,7 @@ export function GameModsDialog({
       if (token !== gen.current || !live.current) {
         return
       }
-      const detail = formatOutcomeDetail(res.outcomes ?? [])
+      const detail = formatOutcomeDetail(res.outcomes ?? [], reasonText)
       const toast = {
         kind: 'success' as const,
         title: t`Created ${{ name: res.profile.name }}`,
@@ -202,7 +204,7 @@ export function GameModsDialog({
                 key={`${m.name}-${m.version}-${m.source}-${m.status}-${m.reason}`}
                 sx={{ fontSize: 14, py: 0.25 }}
               >
-                {formatPreviewRow(m, switchedOff)}
+                {formatPreviewRow(m, switchedOff, reasonText)}
               </Typography>
             ))}
           </>

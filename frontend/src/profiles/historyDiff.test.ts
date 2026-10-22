@@ -3,6 +3,7 @@ import type {
   HistoryDiff,
   HistoryItem,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { i18n } from '../i18n/index.ts'
 import { diffLines, itemModKey, selectedPair } from './historyDiff.ts'
 
 const items: HistoryItem[] = [
@@ -46,12 +47,13 @@ const sample: HistoryDiff = {
   items,
 }
 
-test('diffLines lists each item detail', () => {
+test('diffLines words each item from its kind', () => {
+  i18n.activate('en')
   expect(diffLines(sample)).toEqual([
-    'added Beta',
-    'Alpha 1 → 2',
-    'Gamma enabled → disabled',
-    'Delta config.json',
+    'Added Beta',
+    'Updated Alpha from 1 to 2',
+    'Disabled Gamma',
+    'Changed config.json of Delta',
   ])
   expect(diffLines({ ...sample, items: [] })).toEqual([])
 })

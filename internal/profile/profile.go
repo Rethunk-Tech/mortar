@@ -321,9 +321,9 @@ type Store struct {
 	Created func(game string)
 	// TrayFolder is the game's shared folder for tray content (the catalog's tray path role), or of another shared path role; nil means the game has none.
 	TrayFolder func(game, role string) (string, error)
-	// Tidied is told about each repair rebuild makes to a profile's mods folder (what was done, the profile's name, the
-	// folder); nil means nothing.
-	Tidied func(what, profileName, folder string)
+	// Tidied is told about each repair rebuild makes to a profile's mods folder (a code for what was done and its
+	// English line, the profile's name, the folder); nil means nothing.
+	Tidied func(code, what, profileName, folder string)
 	// Publisher is the Thunderstore namespace of the one package in the game's community index with this name and
 	// version; ok is false when none or several match. Nil means no index.
 	Publisher func(game, name, version string) (namespace string, ok bool)

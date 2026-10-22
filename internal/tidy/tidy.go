@@ -10,12 +10,28 @@ import (
 // ReportEvent is emitted when the startup repairs have finished and the report holds something.
 const ReportEvent = "tidy:report"
 
-// Entry is one kind of repair in one place. Names are what was touched, when it has names.
+// Entry is one kind of repair in one place. Names are what was touched, when it has names. Code, Area and Profile let
+// the window word What and Where in the user's language (Area is "dataFolder", "store" or "profiles", or empty when
+// Profile names the profile); What and Where stay the English the log carries, and the line an entry without a Code shows.
 type Entry struct {
-	What  string   `json:"what"`
-	Where string   `json:"where"`
-	Count int      `json:"count"`
-	Names []string `json:"names"`
+	Code    string   `json:"code"`
+	What    string   `json:"what"`
+	Area    string   `json:"area"`
+	Profile string   `json:"profile"`
+	Where   string   `json:"where"`
+	Count   int      `json:"count"`
+	Names   []string `json:"names"`
+}
+
+// whereOf is the English place of a repair.
+func whereOf(area, profile string) string {
+	switch {
+	case profile != "":
+		return "profile " + profile
+	case area == "dataFolder":
+		return "data folder"
+	}
+	return area
 }
 
 // Summary is everything repaired, with Total the number of things tidied.
@@ -33,7 +49,8 @@ type Collector struct {
 }
 
 // Add records a repair. Count defaults to the number of names; an entry that touched nothing is dropped.
-func (c *Collector) Add(what, where string, count int, names ...string) {
+func (c *Collector) Add(code, what, area, profile string, count int, names ...string) {
+	where := whereOf(area, profile)
 	count = cmp.Or(count, len(names))
 	if count <= 0 {
 		return
@@ -48,13 +65,13 @@ func (c *Collector) Add(what, where string, count int, names ...string) {
 		return
 	}
 	for i := range c.entries {
-		if e := &c.entries[i]; e.What == what && e.Where == where {
+		if e := &c.entries[i]; e.Code == code && e.Where == where {
 			e.Count += count
 			e.Names = append(e.Names, names...)
 			return
 		}
 	}
-	c.entries = append(c.entries, Entry{What: what, Where: where, Count: count, Names: names})
+	c.entries = append(c.entries, Entry{Code: code, What: what, Area: area, Profile: profile, Where: where, Count: count, Names: names})
 }
 
 // Close stops the collector accepting entries.

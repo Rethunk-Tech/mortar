@@ -42,8 +42,19 @@ func TestFromLiveMatchesCLIPrint(t *testing.T) {
 		t.Fatalf("got:\n%s\nwant:\n%s", got, want)
 	}
 	r := FromLive(in)
+	requireCodes(t, r)
 	if r.Checks[0].Status != Pass || r.Checks[2].Status != Pass || r.Checks[3].Status != Pass || r.Checks[5].Status != Pass {
 		t.Fatalf("statuses: %+v", r.Checks)
+	}
+}
+
+// The window words each check from its Code; a check without one would fall back to English there.
+func requireCodes(t *testing.T, r Report) {
+	t.Helper()
+	for _, c := range r.Checks {
+		if c.Code == "" {
+			t.Errorf("check %q has no Code: %+v", c.ID, c)
+		}
 	}
 }
 
@@ -118,7 +129,9 @@ func TestScanStaleControlAndDamagedProfile(t *testing.T) {
 	if err := os.Chtimes(ctrl, old, old); err != nil {
 		t.Fatal(err)
 	}
-	findings, _ := Findings(Scan(dir))
+	scanned := Scan(dir)
+	requireCodes(t, scanned)
+	findings, _ := Findings(scanned)
 	if !slices.Contains(findings, "control.json is stale") {
 		t.Fatalf("stale: %+v", findings)
 	}

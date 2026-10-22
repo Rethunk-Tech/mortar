@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Menu, Typography } from '@mui/material'
 import { ChevronDown, Info, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { useReasonText } from '../i18n/reasonText.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
@@ -16,6 +17,8 @@ interface CleanupItem {
   id: string
   name: string
   reason?: string
+  code?: string
+  params?: { [_ in string]?: string } | null
   text?: string
   choices?: { key: string; name: string }[]
   // A finding the user may judge wrong offers Dismiss; one already dismissed offers only Restore.
@@ -66,10 +69,15 @@ function RemoveOne({ choices }: { choices: { key: string; name: string }[] }) {
 
 function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
   const { t } = useLingui()
+  const reasonText = useReasonText()
   const remove = useMods((s) => s.remove)
   const mod = useMods((s) => s.mods.find((candidate) => candidate.key === cleanup.key))
   const who = cleanup.name.trim() === '' ? t`Unknown mod` : cleanup.name
-  const reason = cleanup.reason || t`Not needed by any enabled mod`
+  const reason = reasonText(
+    cleanup.code,
+    cleanup.params,
+    cleanup.reason || t`Not needed by any enabled mod`,
+  )
   const sentence = cleanup.text ?? t`${who}: ${reason}`
   const removal = cleanup.choices ? (
     <RemoveOne choices={cleanup.choices} />

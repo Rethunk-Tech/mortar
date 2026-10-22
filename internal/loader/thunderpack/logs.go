@@ -160,18 +160,23 @@ func analyzeLovely(text string) []loader.Finding {
 		case lovelyModule.MatchString(line):
 			m := lovelyModule.FindStringSubmatch(line)
 			msg := "module " + m[1] + " failed"
+			code, params := "moduleFailed", map[string]string{"name": m[1]}
 			if i+1 < len(lines) {
 				if e := lovelyError.FindStringSubmatch(strings.TrimRight(lines[i+1], "\r")); e != nil {
 					msg += ": " + e[1]
+					code, params["error"] = "moduleFailedWith", e[1]
 				}
 			}
-			out = append(out, loader.Finding{Kind: kindLoadException, Plugin: modOf(m[2]), Message: msg, Line: i + 1, Source: "lovely.log"})
+			out = append(out, loader.Finding{Kind: kindLoadException, Plugin: modOf(m[2]), Message: msg, Line: i + 1, Source: "lovely.log", Code: code, Params: params})
 		case lovelyNoMatch.MatchString(line), lovelyRegex.MatchString(line):
 			m := lovelyNoMatch.FindStringSubmatch(line)
 			if m == nil {
 				m = lovelyRegex.FindStringSubmatch(line)
 			}
-			out = append(out, loader.Finding{Kind: kindPatchException, Plugin: modOf(m[2]), Message: "a patch for " + m[1] + " matched nothing in the game's code", Line: i + 1, Source: "lovely.log"})
+			out = append(out, loader.Finding{
+				Kind: kindPatchException, Plugin: modOf(m[2]), Message: "a patch for " + m[1] + " matched nothing in the game's code", Line: i + 1, Source: "lovely.log",
+				Code: "patchMatchedNothing", Params: map[string]string{"name": m[1]},
+			})
 		}
 	}
 	return out

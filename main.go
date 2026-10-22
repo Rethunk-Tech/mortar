@@ -403,7 +403,7 @@ func run() error {
 	startupStep("log open")
 	tidied := &tidy.Collector{}
 	if checkCrashLog(dataDir) {
-		tidied.Add("Emptied the crash log after it was reported", "data folder", 1, "crash.log")
+		tidied.Add("crashLog", "Emptied the crash log after it was reported", "dataFolder", "", 1, "crash.log")
 	}
 
 	store, err = settings.Open()
@@ -426,7 +426,7 @@ func run() error {
 	if removed, err := items.Cleanup(); err != nil {
 		log.Printf("store cleanup: %v", err)
 	} else {
-		tidied.Add("Removed leftover temporary folders", "store", 0, removed...)
+		tidied.Add("tempFolders", "Removed leftover temporary folders", "store", "", 0, removed...)
 	}
 
 	items.SetScanner(
@@ -449,7 +449,7 @@ func run() error {
 	if err := profiles.PurgeScratch(); err != nil {
 		log.Printf("profiles: remove leftover crash-check copies: %v", err)
 	}
-	profiles.Tidied = func(what, profileName, folder string) { tidied.Add(what, "profile "+profileName, 1, folder) }
+	profiles.Tidied = func(code, what, profileName, folder string) { tidied.Add(code, what, "", profileName, 1, folder) }
 	profiles.Publisher = func(gameID, name, ver string) (string, bool) {
 		key := share.SourceKeys(gameID)["thunderstore"]
 		if key == "" {
@@ -1201,7 +1201,7 @@ func run() error {
 					log.Printf("repair names under %s: %v", root, err)
 				} else if n > 0 {
 					log.Printf("repaired %d file names under %s", n, root)
-					tidied.Add("Repaired mod file names", filepath.Base(root), n)
+					tidied.Add("modFileNames", "Repaired mod file names", filepath.Base(root), "", n)
 				}
 			}
 			if clean {
@@ -1215,7 +1215,7 @@ func run() error {
 			log.Printf("repair folder records: %v", err)
 		} else if n > 0 {
 			log.Printf("repaired %d mod folder records", n)
-			tidied.Add("Repaired mod folder records", "profiles", n)
+			tidied.Add("folderRecords", "Repaired mod folder records", "profiles", "", n)
 		}
 		// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
 		retention := store.Get().StoreUnusedFor()

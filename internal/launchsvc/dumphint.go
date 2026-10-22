@@ -18,23 +18,29 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/symsrv"
 )
 
+// hintWhy is a crash hint's reason: the English line, and the code and values the window words it from.
+type hintWhy struct {
+	text, code string
+	params     map[string]string
+}
+
 // dumpBlame is what the crash a run left behind says: the enabled mod whose DLL the process died in, or, when it was
 // not a mod's, which part of the game was (reason), and the native frame it died in (see nativeFrame). Windows dumps and the Application event log are looked for in the user's profile, which for a
 // game under Proton is the prefix's; a Linux process is asked of systemd-coredump. Nothing found says nothing.
-func (s *Service) dumpBlame(gameID, profileID string, run Run, mods []profile.Installed) (m profile.Installed, reason, evidence, native, reportDir string, ok bool) {
+func (s *Service) dumpBlame(gameID, profileID string, run Run, mods []profile.Installed) (m profile.Installed, why hintWhy, evidence, native, reportDir string, ok bool) {
 	started, err := time.Parse(time.RFC3339Nano, run.Started)
 	if err != nil {
-		return profile.Installed{}, "", "", "", "", false
+		return profile.Installed{}, hintWhy{}, "", "", "", false
 	}
 	g, err := game.Require(gameID)
 	if err != nil {
-		return profile.Installed{}, "", "", "", "", false
+		return profile.Installed{}, hintWhy{}, "", "", "", false
 	}
 	exes := game.ProcessNames(g)
 	for _, fault := range s.faultsSince(gameID, profileID, exes, started) {
 		if fault.Managed != "" {
 			if m, b, ok := blamedMod(dotnetstack.Blames(fault.Managed, dotnetstack.Unity), mods); ok {
-				return m, "", "Windows event log: " + b.Exception + " at " + b.Frame, "", reportDir, true
+				return m, hintWhy{}, "Windows event log: " + b.Exception + " at " + b.Frame, "", reportDir, true
 			}
 			continue
 		}
@@ -53,17 +59,17 @@ func (s *Service) dumpBlame(gameID, profileID string, run Run, mods []profile.In
 		case faultUnknown:
 			continue
 		case faultMod:
-			return mod, "", evidence, s.nativeFrame(fault), reportDir, true
+			return mod, hintWhy{}, evidence, s.nativeFrame(fault), reportDir, true
 		case faultGame:
-			reason = fmt.Sprintf("The game itself crashed (%s), not a mod's code.", fault.Module)
+			why = hintWhy{fmt.Sprintf("The game itself crashed (%s), not a mod's code.", fault.Module), "gameCrash", map[string]string{"module": fault.Module}}
 		case faultUnity:
-			reason = fmt.Sprintf("Unity crashed (%s), not a mod's code.", fault.Module)
+			why = hintWhy{fmt.Sprintf("Unity crashed (%s), not a mod's code.", fault.Module), "unityCrash", map[string]string{"module": fault.Module}}
 		case faultMono:
-			reason = fmt.Sprintf("The Mono runtime crashed (%s), not a mod's code.", fault.Module)
+			why = hintWhy{fmt.Sprintf("The Mono runtime crashed (%s), not a mod's code.", fault.Module), "monoCrash", map[string]string{"module": fault.Module}}
 		}
-		return profile.Installed{}, reason, evidence, s.nativeFrame(fault), reportDir, true
+		return profile.Installed{}, why, evidence, s.nativeFrame(fault), reportDir, true
 	}
-	return profile.Installed{}, "", evidence, "", reportDir, reportDir != ""
+	return profile.Installed{}, hintWhy{}, evidence, "", reportDir, reportDir != ""
 }
 
 // nativeFrame names where a native crash happened: "UnityPlayer!GfxDeviceD3D11::DrawBuffers (+0x1c)" when a symbol

@@ -3,6 +3,7 @@ package launch
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"sync"
 	"testing"
@@ -28,7 +29,7 @@ func TestParserReadsBepInExLevelsSourcesAndWrappedLines(t *testing.T) {
 	}
 	for _, c := range cases {
 		got, shown := p.Parse(c.line)
-		if !shown || got != c.want {
+		if !shown || !reflect.DeepEqual(got, c.want) {
 			t.Errorf("Parse(%q) = %+v, %v; want %+v", c.line, got, shown, c.want)
 		}
 	}
@@ -128,10 +129,10 @@ func TestRunFollowsBepInExLogIntoParsedEntries(t *testing.T) {
 		return slices.Clone(got)
 	}
 	deadline := time.Now().Add(2 * time.Second)
-	for !slices.Equal(snapshot(), want) && time.Now().Before(deadline) {
+	for !reflect.DeepEqual(snapshot(), want) && time.Now().Before(deadline) {
 		time.Sleep(fast.Poll)
 	}
-	if s := snapshot(); !slices.Equal(s, want) {
+	if s := snapshot(); !reflect.DeepEqual(s, want) {
 		t.Fatalf("entries = %+v\nwant %+v", s, want)
 	}
 }
@@ -148,7 +149,7 @@ func TestParserReadsVintageStoryLevels(t *testing.T) {
 		{"   at Vintagestory.Foo()", Entry{Time: "05:25:47", Level: Error, Message: "   at Vintagestory.Foo()", Cont: true}},
 	}
 	for _, c := range cases {
-		if got, shown := p.Parse(c.line); !shown || got != c.want {
+		if got, shown := p.Parse(c.line); !shown || !reflect.DeepEqual(got, c.want) {
 			t.Errorf("Parse(%q) = %+v, %v; want %+v", c.line, got, shown, c.want)
 		}
 	}
@@ -163,7 +164,7 @@ func TestThunderpackLogLinesParse(t *testing.T) {
 		"[12:3:45.0000001][ERROR/lua_module.cpp:156] X failed to load: e": {Time: "12:3:45", Level: Error, Mod: "lua_module.cpp", Message: "X failed to load: e"},
 		"[2024-05-01] [12:00:00] [NORTHSTAR] [warning] hello":             {Time: "12:00:00", Level: Warn, Mod: "NORTHSTAR", Message: "hello"},
 	} {
-		if got, _ := p.Parse(line); got != want {
+		if got, _ := p.Parse(line); !reflect.DeepEqual(got, want) {
 			t.Errorf("%q: %+v, want %+v", line, got, want)
 		}
 	}

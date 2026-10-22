@@ -7,6 +7,10 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
+#: src/mods/describe.ts
+msgid "Its {source} page summary"
+msgstr "Its {source} page summary"
+
 #: src/mods/storeEntries.ts
 msgid "Could not skip the update for {name}"
 msgstr "Could not skip the update for {name}"
@@ -350,6 +354,10 @@ msgstr "Moved {path} to Mortar's trash"
 msgid "Replaces some files of the mod above"
 msgstr "Replaces some files of the mod above"
 
+#: src/mods/describe.ts
+msgid "Its installed file description"
+msgstr "Its installed file description"
+
 #: src/mods/detail.ts
 msgid "Back to {backTo}. Saves untouched."
 msgstr "Back to {backTo}. Saves untouched."
@@ -560,6 +568,10 @@ msgstr "Could not unhide the mod"
 #: src/mods/describeLoadFailure.ts
 msgid "; the runtime printed no source line for that method (generated code)."
 msgstr "; the runtime printed no source line for that method (generated code)."
+
+#: src/mods/describe.ts
+msgid "Its {source} page description"
+msgstr "Its {source} page description"
 
 #: src/mods/updateReview/NeedsChoice.tsx
 msgid "These come from a different site than you installed them from. Update all skips them."
@@ -938,6 +950,10 @@ msgstr "Other mods require it"
 #: src/mods/OptionalFileRows.tsx
 msgid "Open files page"
 msgstr "Open files page"
+
+#: src/mods/describe.ts
+msgid "Its installed manifest name"
+msgstr "Its installed manifest name"
 
 #: src/mods/columnLabel.ts
 #: src/mods/Toolbar.tsx
@@ -2025,6 +2041,10 @@ msgid "Replaces"
 msgstr "Replaces"
 
 #: src/mods/describe.ts
+msgid "Its {source} mod name"
+msgstr "Its {source} mod name"
+
+#: src/mods/describe.ts
 msgid " The winner is unclear."
 msgstr " The winner is unclear."
 
@@ -2120,6 +2140,7 @@ msgid "Unofficial"
 msgstr "Unofficial"
 
 #: src/mods/CompatChip.tsx
+#: src/mods/describe.ts
 msgid "Obsolete"
 msgstr "Obsolete"
 
@@ -2482,6 +2503,10 @@ msgstr "{name} is pinned at {installed}. Install {version} anyway? The pin stays
 msgid "Favourites"
 msgstr "Favourites"
 
+#: src/mods/describe.ts
+msgid "{place} says it is {flag}: {quote}"
+msgstr "{place} says it is {flag}: {quote}"
+
 #: src/mods/ModSections.tsx
 msgid "Reset"
 msgstr "Reset"
@@ -2750,6 +2775,10 @@ msgstr "Sections"
 msgid "Adds"
 msgstr "Adds"
 
+#: src/mods/describe.ts
+msgid "Its installed file name"
+msgstr "Its installed file name"
+
 #: src/mods/parts.tsx
 msgid "Remove anyway"
 msgstr "Remove anyway"
@@ -2910,6 +2939,7 @@ msgstr "Reading the {source} page…"
 msgid "Change it in the game"
 msgstr "Change it in the game"
 
+#: src/mods/describe.ts
 #: src/mods/problemText.ts
 msgid "Deprecated"
 msgstr "Deprecated"
@@ -3203,6 +3233,10 @@ msgstr "Move down (wins files)"
 #: src/mods/describe.ts
 msgid "{name} is obsolete: {summary}"
 msgstr "{name} is obsolete: {summary}"
+
+#: src/mods/describe.ts
+msgid "Its installed manifest description"
+msgstr "Its installed manifest description"
 
 #: src/mods/AuthorDialog.tsx
 #: src/mods/columnLabel.ts

@@ -7,6 +7,7 @@ import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { ConflictEvidence } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import { findCrashCause, useBisectBlockText } from '../commandPalette/crashBisect.ts'
 import { PageActions } from '../game/PageActions.tsx'
+import { useReasonText } from '../i18n/reasonText.ts'
 import { useOpenOverride } from '../profiles/openOverrides.ts'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { download } from '../queue/actions.ts'
@@ -358,6 +359,7 @@ function ProblemActions() {
   const bisectBlocked = useBisectBlockText()
   const sectionTitle = useSectionTitle()
   const rowText = useRowText()
+  const reasonText = useReasonText()
   const sections = result === null ? [] : problemSections(result)
   const cleanup = result?.cleanup ?? []
   const compat = result?.compat ?? []
@@ -442,7 +444,11 @@ function ProblemActions() {
                           count: cleanup.length,
                           lines: cleanup.map((item) => {
                             const who = item.name.trim() === '' ? t`Unknown mod` : item.name
-                            const reason = item.reason || t`Not needed by any enabled mod`
+                            const reason = reasonText(
+                              item.code,
+                              item.params,
+                              item.reason || t`Not needed by any enabled mod`,
+                            )
                             return `${who}: ${reason}`
                           }),
                         },

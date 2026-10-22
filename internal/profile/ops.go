@@ -901,7 +901,7 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 			if err := fsx.RemoveAll(filepath.Join(modsDir, it.Name())); err != nil {
 				return err
 			}
-			s.tidied("Removed a leftover mod folder", p.Name, it.Name())
+			s.tidied("leftoverModFolder", "Removed a leftover mod folder", p.Name, it.Name())
 		}
 	}
 	for _, e := range p.Entries {
@@ -919,7 +919,7 @@ func (s *Store) rebuild(game, dir string, p Profile) error {
 		if err := s.placeEntry(game, dir, p, e); err != nil {
 			return fmt.Errorf("rebuild %s: %w", e.Key, err)
 		}
-		s.tidied("Rebuilt a mod folder from the store", p.Name, e.Key)
+		s.tidied("rebuiltModFolder", "Rebuilt a mod folder from the store", p.Name, e.Key)
 	}
 	return s.repairSnapshot(game, dir, p)
 }
@@ -936,7 +936,7 @@ func (s *Store) finishInterrupted(modsDir, profileName, key string) error {
 			if err := fsx.Rename(left, filepath.Join(modsDir, name)); err != nil {
 				return err
 			}
-			s.tidied("Put back a mod folder an interrupted install or update left aside", profileName, name)
+			s.tidied("putBackModFolder", "Put back a mod folder an interrupted install or update left aside", profileName, name)
 			return nil
 		}
 	}
@@ -956,9 +956,9 @@ func (s *Store) placeEntry(game, dir string, p Profile, e Entry) error {
 	return applyRestored(dir, modsDir, e.Key)
 }
 
-func (s *Store) tidied(what, profileName, folder string) {
+func (s *Store) tidied(code, what, profileName, folder string) {
 	if s.Tidied != nil {
-		s.Tidied(what, profileName, folder)
+		s.Tidied(code, what, profileName, folder)
 	}
 }
 

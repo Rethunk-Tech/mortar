@@ -23,6 +23,7 @@ import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
 import { useGameInfo, useGameName } from '../games/info.ts'
 import { modsLabel } from '../i18n/counts.ts'
+import { useReasonText } from '../i18n/reasonText.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
 import { openPageLabel } from '../mods/modActions.ts'
@@ -179,6 +180,7 @@ function Overlay({ game }: { game: string }) {
 
 function Failure({ game }: { game: string }) {
   const { t, i18n } = useLingui()
+  const reasonText = useReasonText()
   const theme = useTheme()
   const info = useProfiles((s) => s.game)
   const failure = useLaunch((s) => s.failure)
@@ -215,7 +217,7 @@ function Failure({ game }: { game: string }) {
           <DialogContentText>
             <strong>{t`Caused by ${{ name: cause.modName }}`}</strong>
             <br />
-            {cause.detail}
+            {reasonText(cause.reason, cause.params, cause.detail)}
           </DialogContentText>
         ) : null}
         {showFlatpak ? <FlatpakGrant /> : null}

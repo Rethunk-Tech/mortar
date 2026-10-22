@@ -14,6 +14,7 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { RunCause } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { listNames } from '../i18n/list.ts'
+import { useReasonText } from '../i18n/reasonText.ts'
 import { useGameBusy, useLaunch } from '../launch/store.ts'
 import { useLoader } from '../loader/store.ts'
 import { onFilterFocus } from '../mods/filterFocus.ts'
@@ -120,6 +121,7 @@ const NO_HISTORY: string[] = []
 
 function CauseBanner({ game, profile, run }: { game: string; profile: string; run: string }) {
   const { t } = useLingui()
+  const reasonText = useReasonText()
   const [cause, setCause] = useState<Awaited<ReturnType<typeof RunCause>> | null>(null)
   useEffect(() => {
     if (!run) {
@@ -132,7 +134,7 @@ function CauseBanner({ game, profile, run }: { game: string; profile: string; ru
     <Alert variant="compact" severity="error" sx={{ mx: space.gutter, mb: space.gap }}>
       <strong>{t`Caused by ${{ name: cause.modName }}`}</strong>
       {CAUSE_SEPARATOR}
-      {cause.detail}
+      {reasonText(cause.reason, cause.params, cause.detail)}
     </Alert>
   ) : null
 }

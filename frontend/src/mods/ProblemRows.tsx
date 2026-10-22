@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight, Info, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import type { AssetConflict } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/framework/models.ts'
 import { useTab } from '../game/tab.ts'
+import { useReasonText } from '../i18n/reasonText.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
 import { AssetMapDialog } from './AssetMapDialog.tsx'
@@ -19,6 +20,7 @@ import { problemGuideUrl, whyFor } from './problemWhy.ts'
 function WhyBody({ row }: { row: Row }) {
   const { t } = useLingui()
   const why = whyFor(row)
+  const reasonText = useReasonText()
   return (
     <Box sx={{ mt: 0.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
       <Typography sx={{ fontSize: 13, color: 'text.secondary', whiteSpace: 'normal' }}>
@@ -33,7 +35,7 @@ function WhyBody({ row }: { row: Row }) {
       </Link>
       {row.kind === 'loadFailure' ? (
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-          {`${row.loadFailure.line}: ${row.loadFailure.message}`}
+          {`${row.loadFailure.line}: ${reasonText(row.loadFailure.code, row.loadFailure.params, row.loadFailure.message)}`}
         </Typography>
       ) : null}
       {row.kind === 'asset' ? <AssetConflictWhy asset={row.asset} /> : null}

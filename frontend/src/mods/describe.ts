@@ -5,6 +5,7 @@ import { BEPINEX, CONTENT_PATCHER, SMAPI, WINDOWS } from '../brand/productNames.
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { localId } from './dependents.ts'
 import { describeLoadFailure } from './describeLoadFailure.ts'
 import { type Problem, sameId } from './lookup.ts'
@@ -77,8 +78,44 @@ function describeCycle(loop: readonly { name: string }[], blocksAll: boolean): s
       )
 }
 
+// Where an author's flag was found; the sentence starts with it.
+function markedPlace(code: string): string {
+  switch (code) {
+    case 'manifestName':
+      return i18n._(msg`Its installed manifest name`)
+    case 'manifestDescription':
+      return i18n._(msg`Its installed manifest description`)
+    case 'nexusName':
+      return i18n._(msg`Its ${{ source: sourceLabel('nexus') }} mod name`)
+    case 'nexusSummary':
+      return i18n._(msg`Its ${{ source: sourceLabel('nexus') }} page summary`)
+    case 'nexusDescription':
+      return i18n._(msg`Its ${{ source: sourceLabel('nexus') }} page description`)
+    case 'fileName':
+      return i18n._(msg`Its installed file name`)
+    case 'fileDescription':
+      return i18n._(msg`Its installed file description`)
+    default:
+      return ''
+  }
+}
+
+// What an author's own flag says, worded from where it was found and the sentence quoted; an older row keeps Go's line.
+function markedSummary(b: Extract<Problem, { kind: 'broken' }>['broken']): string {
+  const place = markedPlace(b.markedIn ?? '')
+  if (place === '') {
+    return b.summary ?? ''
+  }
+  const flag = lowerFirst(
+    b.status === 'deprecated' ? i18n._(msg`Deprecated`) : i18n._(msg`Obsolete`),
+  )
+  const quote = b.quote ?? ''
+  return i18n._(msg`${place} says it is ${flag}: ${quote}`)
+}
+
 function describeBroken(p: Extract<Problem, { kind: 'broken' }>): string {
-  const { name, brokeIn, status, summary } = p.broken
+  const { name, brokeIn, status } = p.broken
+  const summary = markedSummary(p.broken)
   if (status === 'cycle') {
     return p.broken.cycleStopsLoader
       ? describeLoaderCycle(p.broken.cycle ?? [])

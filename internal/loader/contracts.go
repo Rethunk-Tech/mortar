@@ -93,6 +93,10 @@ type Finding struct {
 	Line int
 	// Source is the log: LogOutput.log or Player.log.
 	Source string
+	// Code and Params word a finding Mortar wrote itself (not a line quoted from the log) in the user's language;
+	// Message stays the English text that dismissals and the CLI key on.
+	Code   string
+	Params map[string]string
 }
 
 // Logs are a launch's log texts; a loader fills the ones it has.

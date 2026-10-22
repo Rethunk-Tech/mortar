@@ -140,6 +140,9 @@ type Cleanup struct {
 	ID     mod.ID `json:"id"`
 	Name   string `json:"name"`
 	Reason string `json:"reason,omitempty"`
+	// Code and Params word Reason in the user's language; Reason stays the English line the CLI prints.
+	Code   string            `json:"code,omitempty"`
+	Params map[string]string `json:"params,omitempty"`
 }
 
 // Redundant is an enabled mod that adds nothing beside the others: "superseded" when its replacement is enabled too,

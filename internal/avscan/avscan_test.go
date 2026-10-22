@@ -131,11 +131,11 @@ func TestClamdWithoutADaemonIsNoScanner(t *testing.T) {
 
 func TestClamdVersionNamesTheDaemon(t *testing.T) {
 	t.Parallel()
-	if got := clamdProduct(context.Background(), fakeClamd(t, 0)); got != "clamd 1.0.1" {
-		t.Fatalf("product = %q", got)
+	if got := clamdProduct(context.Background(), fakeClamd(t, 0)); got.Text != "clamd 1.0.1" || got.Code != "" {
+		t.Fatalf("product = %+v", got)
 	}
-	if got := clamdProduct(context.Background(), clamd{socket: filepath.Join(t.TempDir(), "none.sock")}); got != "No antivirus found" {
-		t.Fatalf("product = %q", got)
+	if got := clamdProduct(context.Background(), clamd{socket: filepath.Join(t.TempDir(), "none.sock")}); got.Text != "No antivirus found" || got.Code != "none" {
+		t.Fatalf("product = %+v", got)
 	}
 }
 

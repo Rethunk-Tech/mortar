@@ -166,7 +166,10 @@ func recolourAddons(mods []framework.Mod) []framework.Cleanup {
 			if _, on := enabled[f]; on || slices.ContainsFunc(recolourFamilies[f].idParts, func(p string) bool { return strings.Contains(id, p) }) {
 				break
 			}
-			out = append(out, framework.Cleanup{Key: m.Key, ID: m.ModID(), Name: m.Name, Reason: "Made for " + recolourFamilies[f].name + ", which is not enabled"})
+			out = append(out, framework.Cleanup{
+				Key: m.Key, ID: m.ModID(), Name: m.Name, Reason: "Made for " + recolourFamilies[f].name + ", which is not enabled",
+				Code: "recolourMissing", Params: map[string]string{"name": recolourFamilies[f].name},
+			})
 			break
 		}
 	}

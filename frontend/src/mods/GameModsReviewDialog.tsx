@@ -18,6 +18,7 @@ import type {
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { SyncGameModsFolders } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { useReasonText } from '../i18n/reasonText.ts'
 import { GameModsProgressLine } from '../profiles/GameModsProgress.tsx'
 import { formatOutcomeDetail } from '../profiles/gameModsFormat.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -130,6 +131,7 @@ export function GameModsReviewDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
+  const reasonText = useReasonText()
   const locked = useLocked()
   const [off, setOff] = useState<ReadonlySet<string>>(
     () => new Set((diff.different ?? []).filter((m) => m.newer !== 'folder').map((m) => m.id)),
@@ -172,7 +174,7 @@ export function GameModsReviewDialog({
       { errorTitle: t`Could not change mods` },
     )
   }
-  const detail = result === null ? '' : formatOutcomeDetail(result.outcomes ?? [])
+  const detail = result === null ? '' : formatOutcomeDetail(result.outcomes ?? [], reasonText)
   return (
     <Dialog
       open={true}

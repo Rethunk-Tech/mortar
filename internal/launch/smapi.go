@@ -35,6 +35,10 @@ type Entry struct {
 	Mod     string `json:"mod"`
 	Message string `json:"message"`
 	Cont    bool   `json:"cont"`
+	// Code and Params let the window word one of Mortar's own lines in the user's language; Message stays the English
+	// line the log files and the CLI carry. Lines from the game or a mod have no Code.
+	Code   string            `json:"code,omitempty"`
+	Params map[string]string `json:"params,omitempty"`
 }
 
 // SMAPI writes `[HH:MM:SS LEVEL  Mod] message`, padding the level to five characters.

@@ -2,8 +2,46 @@ import { msg, plural } from '@lingui/core/macro'
 import { Events } from '@wailsio/runtime'
 import { Take } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/tidy/service.ts'
 import { i18n } from '../i18n/index.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+
+const what = (code: string, fallback: string): string => {
+  switch (code) {
+    case 'crashLog':
+      return i18n._(msg`Emptied the crash log after it was reported`)
+    case 'tempFolders':
+      return i18n._(msg`Removed leftover temporary folders`)
+    case 'modFileNames':
+      return i18n._(msg`Repaired mod file names`)
+    case 'folderRecords':
+      return i18n._(msg`Repaired mod folder records`)
+    case 'leftoverModFolder':
+      return i18n._(msg`Removed a leftover mod folder`)
+    case 'rebuiltModFolder':
+      return i18n._(msg`Rebuilt a mod folder from the store`)
+    case 'putBackModFolder':
+      return i18n._(msg`Put back a mod folder an interrupted install or update left aside`)
+    default:
+      return fallback
+  }
+}
+
+const where = (entry: { area: string; profile: string; where: string }): string => {
+  if (entry.profile !== '') {
+    return `${lowerFirst(i18n._(msg`Profile`))} ${entry.profile}`
+  }
+  switch (entry.area) {
+    case 'dataFolder':
+      return lowerFirst(i18n._(msg`Data folder`))
+    case 'store':
+      return lowerFirst(i18n._(msg`Mod store`))
+    case 'profiles':
+      return lowerFirst(i18n._(msg`Profiles`))
+    default:
+      return entry.where
+  }
+}
 
 async function show() {
   const report = await Take()
@@ -12,8 +50,9 @@ async function show() {
   }
   const lines = (report.entries ?? []).map((entry) => {
     const names = (entry.names ?? []).join(', ')
-    const what = entry.count > 1 ? `${entry.what} (${entry.count})` : entry.what
-    return names === '' ? `${what}: ${entry.where}` : `${what}: ${entry.where}: ${names}`
+    const label = what(entry.code, entry.what)
+    const line = entry.count > 1 ? `${label} (${entry.count})` : label
+    return names === '' ? `${line}: ${where(entry)}` : `${line}: ${where(entry)}: ${names}`
   })
   useToasts.getState().push({
     kind: 'info',

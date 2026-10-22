@@ -40,7 +40,10 @@ type GameModPreview struct {
 	NexusModID int    `json:"nexusModID,omitempty"`
 	Status     string `json:"status"`
 	Reason     string `json:"reason,omitempty"`
-	Disabled   bool   `json:"disabled,omitempty"`
+	// Code and Params word a Reason Mortar wrote (not an error's text) in the user's language.
+	Code     string            `json:"code,omitempty"`
+	Params   map[string]string `json:"params,omitempty"`
+	Disabled bool              `json:"disabled,omitempty"`
 	// Folder is the absolute path of the top-level folder holding this mod.
 	Folder string `json:"folder,omitempty"`
 }
@@ -58,6 +61,10 @@ type GameModOutcome struct {
 	Name   string `json:"name"`
 	Status string `json:"status"`
 	Reason string `json:"reason,omitempty"`
+	// Code and Params word a Reason Mortar wrote (not an error's text) in the user's language; Reason stays the English
+	// line the CLI prints.
+	Code   string            `json:"code,omitempty"`
+	Params map[string]string `json:"params,omitempty"`
 }
 
 // GameModsResult is the profile ImportGameMods created and per-folder results.
@@ -166,13 +173,14 @@ func classifyFolder(dir, name string) (gameModSlot, bool) {
 	if bundledFolder(name) != "" || strings.EqualFold(label, "smapi-internal") || bridge.IsOwnListing(label) {
 		return gameModSlot{}, false
 	}
-	failed := func(reason string) (gameModSlot, bool) {
+	failedCode := func(reason, code string, params map[string]string) (gameModSlot, bool) {
 		return gameModSlot{
 			folder:     gameModFolder{dir: dir},
-			outcome:    GameModOutcome{Name: label, Status: outcomeFailed, Reason: reason},
+			outcome:    GameModOutcome{Name: label, Status: outcomeFailed, Reason: reason, Code: code, Params: params},
 			hasOutcome: true,
 		}, true
 	}
+	failed := func(reason string) (gameModSlot, bool) { return failedCode(reason, "", nil) }
 	m, hasManifest, err := readTopManifest(dir)
 	if err != nil && hasManifest {
 		return failed(manifest.Invalid{Folder: ".", Err: err}.Error())
@@ -192,7 +200,7 @@ func classifyFolder(dir, name string) (gameModSlot, bool) {
 			if vortexLeftover(dir) {
 				return gameModSlot{}, false
 			}
-			return failed("No SMAPI mod was found")
+			return failedCode("No SMAPI mod was found", "noSmapiMod", nil)
 		}
 		mods = found
 	}
@@ -252,6 +260,7 @@ func resolveDuplicates(slots []gameModSlot) {
 	type skip struct {
 		i      int
 		reason string
+		params map[string]string
 	}
 	var losers []skip
 	seen := map[int]bool{}
@@ -266,13 +275,13 @@ func resolveDuplicates(slots []gameModSlot) {
 				continue
 			}
 			seen[i] = true
-			losers = append(losers, skip{i, fmt.Sprintf("same mod as %s", slots[w].folder.label)})
+			losers = append(losers, skip{i, fmt.Sprintf("same mod as %s", slots[w].folder.label), map[string]string{"name": slots[w].folder.label}})
 		}
 	}
 	for _, l := range losers {
 		slots[l.i].ready = false
 		slots[l.i].hasOutcome = true
-		slots[l.i].outcome = GameModOutcome{Name: slots[l.i].folder.label, Status: outcomeSkipped, Reason: l.reason}
+		slots[l.i].outcome = GameModOutcome{Name: slots[l.i].folder.label, Status: outcomeSkipped, Reason: l.reason, Code: "sameMod", Params: l.params}
 	}
 }
 
@@ -337,6 +346,7 @@ func previewFrom(slots []gameModSlot) GameModsPreview {
 		if s.hasOutcome {
 			mods = append(mods, GameModPreview{
 				Name: s.outcome.Name, Status: s.outcome.Status, Reason: s.outcome.Reason,
+				Code: s.outcome.Code, Params: s.outcome.Params,
 				Disabled: s.folder.disabled,
 			})
 		}
@@ -500,6 +510,7 @@ func (s *Store) ImportGameMods(ctx context.Context, game, modsDir string, move b
 			if move {
 				if err := s.removeFromGameMods(game, created.ID, slot.folder.dir); err != nil {
 					outcome.Reason = "added, but it could not be removed from the game's Mods folder: " + err.Error()
+					outcome.Code, outcome.Params = "notRemoved", map[string]string{"error": err.Error()}
 				}
 			}
 		}

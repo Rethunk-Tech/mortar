@@ -160,13 +160,13 @@ func classify(line string) (f Finding, ok bool) {
 		g := g(missingDeps)
 		dep, _, _ := strings.Cut(g[2], ",")
 		dep, _, _ = strings.Cut(strings.TrimSpace(dep), " ")
-		return Finding{Kind: KindMissingDependency, Plugin: g[1], Message: "missing dependencies: " + g[2], Dependency: dep}, true
+		return Finding{Kind: KindMissingDependency, Plugin: g[1], Message: "missing dependencies: " + g[2], Dependency: dep, Code: "missingDependencies", Params: map[string]string{"list": g[2]}}, true
 	case g(incompatibleDep) != nil:
 		g := g(incompatibleDep)
-		return Finding{Kind: KindIncompatible, Plugin: g[1], Message: "incompatible dependencies: " + g[2]}, true
+		return Finding{Kind: KindIncompatible, Plugin: g[1], Message: "incompatible dependencies: " + g[2], Code: "incompatibleDependencies", Params: map[string]string{"list": g[2]}}, true
 	case g(incompatibleWith) != nil:
 		g := g(incompatibleWith)
-		return Finding{Kind: KindIncompatiblePlugin, Plugin: g[1], Message: "incompatible with: " + g[2]}, true
+		return Finding{Kind: KindIncompatiblePlugin, Plugin: g[1], Message: "incompatible with: " + g[2], Code: "incompatibleWith", Params: map[string]string{"list": g[2]}}, true
 	case g(wrongBepInEx) != nil:
 		g := g(wrongBepInEx)
 		return Finding{Kind: KindLoaderVersion, Plugin: g[1], Message: msg}, true
@@ -175,9 +175,9 @@ func classify(line string) (f Finding, ok bool) {
 	case g(newerExists) != nil:
 		g := g(newerExists)
 		if g[3] != "" {
-			return Finding{Kind: KindDuplicateGUID, Plugin: g[1], Message: "the same copy loaded instead from " + g[3]}, true
+			return Finding{Kind: KindDuplicateGUID, Plugin: g[1], Message: "the same copy loaded instead from " + g[3], Code: "sameCopyLoaded", Params: map[string]string{"path": g[3]}}, true
 		}
-		return Finding{Kind: KindDuplicateGUID, Plugin: g[1], Message: "a newer copy loaded instead: " + g[2]}, true
+		return Finding{Kind: KindDuplicateGUID, Plugin: g[1], Message: "a newer copy loaded instead: " + g[2], Code: "newerCopyLoaded", Params: map[string]string{"version": g[2]}}, true
 	case g(depNotLoaded) != nil:
 		return Finding{Kind: KindDependencyNotLoaded, Plugin: g(depNotLoaded)[1], Message: msg}, true
 	case g(loadError) != nil:

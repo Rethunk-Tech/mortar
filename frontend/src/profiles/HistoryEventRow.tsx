@@ -17,11 +17,10 @@ import type {
   HistoryEvent,
   HistoryItem,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { sentence } from '../i18n/sentence.ts'
 import { When } from '../i18n/When.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
-import { itemModKey } from './historyDiff.ts'
+import { itemLabel, itemModKey } from './historyDiff.ts'
 import { type HistoryKind, historyKind, historySummary } from './historyTimeline.ts'
 
 const ICON_SIZE = 18
@@ -154,9 +153,7 @@ export function HistoryEventRow({
                 py: 0.25,
               }}
             >
-              <Typography sx={{ fontSize: 13, flex: 1, minWidth: 0 }}>
-                {sentence(item.detail)}
-              </Typography>
+              <Typography sx={{ fontSize: 13, flex: 1, minWidth: 0 }}>{itemLabel(item)}</Typography>
               <Tooltip
                 describeChild={true}
                 title={t`Undo only this mod's change from this entry. Everything else stays as it is.`}
@@ -166,7 +163,7 @@ export function HistoryEventRow({
                     size="small"
                     disabled={busy}
                     onClick={() => onRevertItem(itemModKey(item))}
-                    aria-label={t`Revert this mod: ${{ detail: sentence(item.detail) }}`}
+                    aria-label={t`Revert this mod: ${{ detail: itemLabel(item) }}`}
                   >
                     {t`Revert this mod`}
                   </Button>

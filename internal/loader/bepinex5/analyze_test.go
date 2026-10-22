@@ -1,6 +1,7 @@
 package bepinex5
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -120,11 +121,20 @@ func TestAnalyze(t *testing.T) {
 				t.Fatalf("got %+v, want %+v", got, c.want)
 			}
 			for i := range got {
-				if got[i] != c.want[i] {
+				plain := got[i]
+				plain.Code, plain.Params = "", nil
+				if !reflect.DeepEqual(plain, c.want[i]) {
 					t.Errorf("finding %d = %+v, want %+v", i, got[i], c.want[i])
 				}
 			}
 		})
+	}
+}
+
+func TestAnalyzeCodesTheFindingsMortarWording(t *testing.T) {
+	got := Analyze("[Error  :   BepInEx] Could not load [A 1.0.0] because it has missing dependencies: B (>=2.0.0). Install the listed plugin(s) and restart the game.\n", "")
+	if len(got) != 1 || got[0].Code != "missingDependencies" || got[0].Params["list"] != "B (>=2.0.0)" {
+		t.Fatalf("got %+v", got)
 	}
 }
 

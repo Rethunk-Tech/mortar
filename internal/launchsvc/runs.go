@@ -66,6 +66,9 @@ type Cause struct {
 	Reason  string `json:"reason"`
 	Detail  string `json:"detail"`
 	Path    string `json:"path"`
+	// Params are the values the window words Reason with, when the reason alone does not say it all: the exception
+	// and frame of a stack Mortar blamed. Detail stays the English line the log and older builds carry.
+	Params map[string]string `json:"params,omitempty"`
 }
 
 type RunHit struct {
@@ -584,6 +587,7 @@ func (s *Service) outputCause(gameID, profileID, output string) Cause {
 	return Cause{
 		ModKey: m.Key, ModName: m.Name, ID: m.ModID(), Reason: "mod-exception",
 		Detail: fmt.Sprintf("%s: %s at %s.", m.Name, b.Exception, b.Frame),
+		Params: map[string]string{"exception": b.Exception, "frame": b.Frame},
 	}
 }
 

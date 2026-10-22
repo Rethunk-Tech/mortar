@@ -38,6 +38,8 @@ func flatpakLibraryChecks() []Check {
 				ID:     "flatpakLibrary:" + lib,
 				Status: Warn,
 				Detail: "Steam library " + lib + " is not reachable: unmounted, or outside the folders Mortar's Flatpak may read",
+				Code:   "flatpakLibrary",
+				Params: params("path", lib),
 				Fix:    "flatpak override --user --filesystem=" + lib + " " + sandbox.AppID + ", then restart Mortar",
 			})
 		}

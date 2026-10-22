@@ -70,7 +70,10 @@ func protonChecks(g game.GameInfo) []Check {
 }
 
 func overrideCheck(g game.GameInfo, compat, dll string) Check {
-	c := Check{ID: dll + ":" + g.ID, Status: Pass, Detail: g.Name + ": " + dll + " is overridden to native in the Proton prefix"}
+	c := Check{
+		ID: dll + ":" + g.ID, Status: Pass, Detail: g.Name + ": " + dll + " is overridden to native in the Proton prefix",
+		Code: "protonOverride", Params: params("game", g.Name, "name", dll),
+	}
 	reg, err := fsx.ReadFile(filepath.Join(compat, "pfx", "user.reg"))
 	if re := nativeOverride(dll); re.Match(reg) || re.MatchString(launchOptions(g.AppID)) {
 		return c
@@ -79,16 +82,21 @@ func overrideCheck(g game.GameInfo, compat, dll string) Check {
 	if err != nil {
 		// A direct launch passes the override itself; a launch Steam relays needs a prefix to carry it.
 		c.Detail = g.Name + ": Proton has not created its prefix yet, so a Steam launch cannot load the loader"
+		c.Code = "protonNoPrefix"
 		c.Fix = "start " + g.Name + " once from Steam and quit it, or set Default launch to Direct, or set the Steam launch options to " + overrideOption(dll)
 		return c
 	}
 	c.Detail = g.Name + ": the Proton prefix does not load " + dll + " natively, so its loader will not start"
+	c.Code = "protonNotNative"
 	c.Fix = "set the Steam launch options to " + overrideOption(dll)
 	return c
 }
 
 func flatpakCheck(g game.GameInfo, compat string) Check {
-	c := Check{ID: "flatpakCompatdata:" + g.ID, Status: Pass, Detail: g.Name + ": Flatpak Steam can reach the Proton prefix"}
+	c := Check{
+		ID: "flatpakCompatdata:" + g.ID, Status: Pass, Detail: g.Name + ": Flatpak Steam can reach the Proton prefix",
+		Code: "flatpakReach", Params: params("game", g.Name),
+	}
 	home, err := os.UserHomeDir()
 	if err != nil || strings.HasPrefix(compat, steam.FlatpakRoot(home)+string(filepath.Separator)) {
 		return c
@@ -100,6 +108,7 @@ func flatpakCheck(g game.GameInfo, compat string) Check {
 	}
 	c.Status = Warn
 	c.Detail = g.Name + ": Flatpak Steam cannot see the library that holds its Proton prefix"
+	c.Code = "flatpakNoLibrary"
 	c.Fix = steam.OverrideCommand(library)
 	return c
 }

@@ -1,4 +1,3 @@
-import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
@@ -19,6 +18,7 @@ import { useTab } from '../game/tab.ts'
 import { useGameName } from '../games/info.ts'
 import { errorsLabel } from '../i18n/counts.ts'
 import { i18n } from '../i18n/index.ts'
+import { useReasonText } from '../i18n/reasonText.ts'
 import { useLaunch } from '../launch/store.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
@@ -36,7 +36,7 @@ import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BisectDialog } from './BisectDialog.tsx'
-import { crashCauseDetailLine, crashCauseKind } from './crashCause.ts'
+import { crashCauseDetailLine } from './crashCause.ts'
 import { useConsole } from './store.ts'
 
 type Crash = NonNullable<ReturnType<typeof useLaunch.getState>['crash']>
@@ -168,20 +168,6 @@ function MoreActions({
   )
 }
 
-function causeText(cause: { reason: string; detail: string }) {
-  const kind = crashCauseKind(cause.reason)
-  if (kind === 'missing-file') {
-    return i18n._(msg`A file it needs could not be opened.`)
-  }
-  if (kind === 'asset-load') {
-    return i18n._(msg`It could not load an asset.`)
-  }
-  if (kind === 'mod-exception') {
-    return i18n._(msg`It encountered an error.`)
-  }
-  return crashCauseDetailLine(cause.detail)
-}
-
 // The one main action: disable the mod that caused it, find the cause by halving, or read the log.
 function CrashPrimary({
   mod,
@@ -223,6 +209,7 @@ export function CrashDialog() {
   const [bisectError, setBisectError] = useState<string | null>(null)
   const profile = useProfiles((s) => s.profiles.find((p) => p.id === crash?.profile))
   const mod = useMods((s) => s.mods.find((m) => m.key === crash?.cause?.modKey))
+  const reasonText = useReasonText()
   if (!crash) {
     return bisectJob ? (
       <BisectDialog
@@ -245,7 +232,9 @@ export function CrashDialog() {
       setBisectError(errorDetails(error))
     }
   }
-  const causeBody = crash.cause ? causeText(crash.cause) : ''
+  const causeBody = crash.cause
+    ? reasonText(crash.cause.reason, crash.cause.params, crashCauseDetailLine(crash.cause.detail))
+    : ''
   return (
     <>
       <Dialog

@@ -13,6 +13,7 @@ import {
 } from './consoleLinks.ts'
 import { repeatCount } from './filter.ts'
 import { levelChrome } from './levelPalette.ts'
+import { useLineText } from './lineText.ts'
 import type { UpdateNote } from './smapiUpdateNotes.ts'
 import { UpdateNoteTag } from './UpdateNoteTag.tsx'
 
@@ -93,16 +94,14 @@ function Row({
 }) {
   const { t } = useLingui()
   const theme = useTheme()
+  const text = useLineText()(entry)
   const look = levelChrome(theme, entry.level)
   const repeat = repeatCount(entry)
   const modLinks = useMemo(
     () => (entry.cont ? [] : linksForModColumn(entry.mod, mods)),
     [entry.cont, entry.mod, mods],
   )
-  const messageLinks = useMemo(
-    () => linksInText(entry.message, mods, roots),
-    [entry.message, mods, roots],
-  )
+  const messageLinks = useMemo(() => linksInText(text, mods, roots), [text, mods, roots])
   return (
     <Box
       sx={{
@@ -135,10 +134,10 @@ function Row({
       </Box>
       <Box
         sx={{ display: 'flex', alignItems: 'center', minWidth: 0, color: look.text }}
-        title={entry.message}
+        title={text}
       >
         <Box sx={cell}>
-          <Linked text={entry.message} links={messageLinks} onMod={onMod} onPath={onPath} />
+          <Linked text={text} links={messageLinks} onMod={onMod} onPath={onPath} />
         </Box>
         {repeat > 1 ? (
           <Box

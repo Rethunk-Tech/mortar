@@ -30,9 +30,10 @@ func deckChecks() []Check {
 	deck := env["SteamDeck"] == "1" || env["SteamOS"] == "1" || osReleaseID(osRelease()) == "steamos"
 	var checks []Check
 	if deck {
-		c := Check{ID: "steamDeck", Status: Pass, Detail: "Steam Deck or SteamOS: Desktop Mode launches games from Mortar"}
+		c := Check{ID: "steamDeck", Status: Pass, Detail: "Steam Deck or SteamOS: Desktop Mode launches games from Mortar", Code: "steamDeck"}
 		if gamescope {
 			c.Status = Warn
+			c.Code = "steamDeckGameMode"
 			c.Detail = "Steam Deck Game Mode: Proton games start through Steam here, not from Mortar's Play"
 			c.Fix = "switch to Desktop Mode to launch from Mortar, or add the game to Steam and play it from Game Mode"
 		}
@@ -43,6 +44,7 @@ func deckChecks() []Check {
 			ID:     "gamescope",
 			Status: Warn,
 			Detail: "gamescope session: Steam starts Proton games here, so a direct launch from Mortar may not show a window",
+			Code:   "gamescope",
 			Fix:    "launch from a desktop session, or play the game through Steam",
 		})
 	}

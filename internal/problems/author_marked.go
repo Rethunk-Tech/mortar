@@ -48,33 +48,44 @@ func readCachedNexusDetails(home, domain string, pageID int) (nexussvc.Details, 
 
 func markedManifest(im framework.Mod, domain string) *Broken {
 	if match := statusMatch(im.Name, true); match != "" {
-		return authorBroken(im, domain, match, "Its installed manifest name")
+		return authorBroken(im, domain, match, "manifestName")
 	}
 	if match := statusMatch(im.Description, false); match != "" {
-		return authorBroken(im, domain, match, "Its installed manifest description")
+		return authorBroken(im, domain, match, "manifestDescription")
 	}
 	return nil
 }
 
 func markedBroken(im framework.Mod, domain, name, summary, description string, file *nexus.File) *Broken {
 	if match := statusMatch(name, true); match != "" {
-		return authorBroken(im, domain, match, "Its Nexus mod name")
+		return authorBroken(im, domain, match, "nexusName")
 	}
 	if match := statusMatch(summary, false); match != "" {
-		return authorBrokenText(im, domain, match, "Its Nexus page summary", summary)
+		return authorBrokenText(im, domain, match, "nexusSummary", summary)
 	}
 	if match := statusMatch(description, false); match != "" {
-		return authorBrokenText(im, domain, match, "Its Nexus page description", description)
+		return authorBrokenText(im, domain, match, "nexusDescription", description)
 	}
 	if file != nil {
 		if match := statusMatch(file.Name, true); match != "" {
-			return authorBroken(im, domain, match, "Its installed file name")
+			return authorBroken(im, domain, match, "fileName")
 		}
 		if match := statusMatch(file.Description, false); match != "" {
-			return authorBrokenText(im, domain, match, "Its installed file description", file.Description)
+			return authorBrokenText(im, domain, match, "fileDescription", file.Description)
 		}
 	}
 	return nil
+}
+
+// markedIn is where an author's flag was found, by the code the window words it from.
+var markedIn = map[string]string{
+	"manifestName":        "Its installed manifest name",
+	"manifestDescription": "Its installed manifest description",
+	"nexusName":           "Its Nexus mod name",
+	"nexusSummary":        "Its Nexus page summary",
+	"nexusDescription":    "Its Nexus page description",
+	"fileName":            "Its installed file name",
+	"fileDescription":     "Its installed file description",
 }
 
 func statusMatch(text string, name bool) string {
@@ -139,7 +150,8 @@ func authorBrokenWithReplacement(im framework.Mod, domain, quote, where string) 
 	}
 	b := &Broken{
 		Key: im.Key, ID: im.ModID(), Name: im.Name, Status: status,
-		Summary: fmt.Sprintf("%s says it is %s: %q", where, status, quote),
+		Summary:  fmt.Sprintf("%s says it is %s: %q", markedIn[where], status, quote),
+		MarkedIn: where, Quote: quote,
 	}
 	if ids := modPageIDs(quote, domain); len(ids) > 0 {
 		b.Replacement = &Ref{Site: "Nexus", PageID: ids[0], URL: nexus.ModURL(domain, ids[0])}

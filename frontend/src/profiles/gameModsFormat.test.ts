@@ -6,6 +6,8 @@ import {
   withSwitchedOff,
 } from './gameModsFormat.ts'
 
+const keep = (_code: string | undefined, _params: unknown, fallback: string) => fallback
+
 describe('gameModsFormat', () => {
   test('marks switched-off mods and lists skip reasons instead of imports', () => {
     expect(willImport('imported')).toBe(true)
@@ -23,6 +25,7 @@ describe('gameModsFormat', () => {
           disabled: true,
         },
         'disabled',
+        keep,
       ),
     ).toBe('NPC Map Locations (disabled) · 3.3.0 · Nexus')
     expect(
@@ -33,17 +36,21 @@ describe('gameModsFormat', () => {
           reason: 'same mod as NPCMapLocations',
         },
         'disabled',
+        keep,
       ),
     ).toBe('DisabledCopy · same mod as NPCMapLocations')
   })
 
   test('joins skipped and failed outcomes for toast detail', () => {
     expect(
-      formatOutcomeDetail([
-        { name: 'DisabledCopy', status: 'skipped', reason: 'same mod as NPCMapLocations' },
-        { name: 'Loud', status: 'imported' },
-        { name: 'Broken', status: 'failed', reason: 'The manifest is invalid' },
-      ]),
+      formatOutcomeDetail(
+        [
+          { name: 'DisabledCopy', status: 'skipped', reason: 'same mod as NPCMapLocations' },
+          { name: 'Loud', status: 'imported' },
+          { name: 'Broken', status: 'failed', reason: 'The manifest is invalid' },
+        ],
+        keep,
+      ),
     ).toBe('DisabledCopy · same mod as NPCMapLocations\nBroken · The manifest is invalid')
   })
 })

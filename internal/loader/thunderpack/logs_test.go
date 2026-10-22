@@ -37,8 +37,8 @@ func TestAnalyzersReadEachLoadersFailureLines(t *testing.T) {
 				"ERROR - [♥] Failed to load module foo for module patch from /p/mods/Bad/lovely/m.toml:\n" +
 				"ERROR - [♥] Error: [string \"foo\"]:3: unexpected symbol\n",
 			[]f{
-				{Kind: "patch-exception", Plugin: "Steamodded", Message: "a patch for functions/misc_functions.lua matched nothing in the game's code", Line: 2, Source: "lovely.log"},
-				{Kind: "load-exception", Plugin: "Bad", Message: "module foo failed: [string \"foo\"]:3: unexpected symbol", Line: 3, Source: "lovely.log"},
+				{Kind: "patch-exception", Plugin: "Steamodded", Message: "a patch for functions/misc_functions.lua matched nothing in the game's code", Line: 2, Source: "lovely.log", Code: "patchMatchedNothing", Params: map[string]string{"name": "functions/misc_functions.lua"}},
+				{Kind: "load-exception", Plugin: "Bad", Message: "module foo failed: [string \"foo\"]:3: unexpected symbol", Line: 3, Source: "lovely.log", Code: "moduleFailedWith", Params: map[string]string{"name": "foo", "error": "[string \"foo\"]:3: unexpected symbol"}},
 			},
 		},
 		"Northstar": {

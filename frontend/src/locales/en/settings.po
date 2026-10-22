@@ -52,6 +52,10 @@ msgstr "Streaming"
 msgid "Mod updates show on each profile's mod list."
 msgstr "Mod updates show on each profile's mod list."
 
+#: src/settings/sections/checkDetail.ts
+msgid "with {loader} {version}"
+msgstr "with {loader} {version}"
+
 #: src/settings/sections/DataImport.tsx
 msgid "Settings imported"
 msgstr "Settings imported"
@@ -505,6 +509,10 @@ msgstr "Start screen"
 msgid "Could not sign in with {source}"
 msgstr "Could not sign in with {source}"
 
+#: src/settings/sections/checkDetail.ts
+msgid "{game}: not installed"
+msgstr "{game}: not installed"
+
 #: src/settings/prefCopyAntivirus.ts
 msgid "Scan every mod after it is extracted and before it enters Mortar's store. This applies to every game."
 msgstr "Scan every mod after it is extracted and before it enters Mortar's store. This applies to every game."
@@ -587,6 +595,10 @@ msgstr "Game folder"
 msgid "Boss names"
 msgstr "Boss names"
 
+#: src/settings/sections/checkDetail.ts
+msgid "Data folder has free space"
+msgstr "Data folder has free space"
+
 #: src/settings/NexusMeter.tsx
 msgid "{remaining} of {limit} requests left today"
 msgstr "{remaining} of {limit} requests left today"
@@ -642,6 +654,10 @@ msgstr "Scan the mods folder for changes Mortar did not make"
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Check Mortar"
 msgstr "Check Mortar"
+
+#: src/settings/sections/checkDetail.ts
+msgid "{count} settings temporary or copy file is present"
+msgstr "{count} settings temporary or copy file is present"
 
 #: src/settings/sections/NexusMods.tsx
 msgid "{source}"
@@ -982,6 +998,10 @@ msgstr "Card details in Browse"
 msgid "Could not copy"
 msgstr "Could not copy"
 
+#: src/settings/sections/checkDetail.ts
+msgid "Browser extension cannot reach Mortar in {app} (manifest missing)"
+msgstr "Browser extension cannot reach Mortar in {app} (manifest missing)"
+
 #: src/settings/sections/NexusMods.tsx
 msgid "Ask me to endorse mods I keep using"
 msgstr "Ask me to endorse mods I keep using"
@@ -1001,6 +1021,10 @@ msgstr "Grid"
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Copy CSS"
 msgstr "Copy CSS"
+
+#: src/settings/sections/checkDetail.ts
+msgid "Browser extension cannot reach Mortar in {app} (manifest unreadable)"
+msgstr "Browser extension cannot reach Mortar in {app} (manifest unreadable)"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "{game} save backups"
@@ -1086,6 +1110,10 @@ msgstr "This game's folder"
 msgid "Automatic"
 msgstr "Automatic"
 
+#: src/settings/sections/checkDetail.ts
+msgid "settings.json is corrupt"
+msgstr "settings.json is corrupt"
+
 #: src/settings/ProtonRow.tsx
 msgid "The newest {launcher} has"
 msgstr "The newest {launcher} has"
@@ -1117,6 +1145,10 @@ msgstr "Which version of a {source} mod's dependency to install when the mod nam
 #: src/settings/prefCopy.ts
 msgid "Download speed limit (MB/s)"
 msgstr "Download speed limit (MB/s)"
+
+#: src/settings/sections/checkDetail.ts
+msgid "Store index.json is readable"
+msgstr "Store index.json is readable"
 
 #: src/settings/sections/WatchFolders.tsx
 msgid "Offer installs: new archives (.zip, .7z, .rar, .tar.gz and the like) that land in the folder are offered for install. Auto-install: the folder itself is installed into the open profile as one mod each time its files change, for a mod's build output; a rebuild replaces the last one. Subfolders are not watched."
@@ -1374,6 +1406,14 @@ msgstr "Restarting…"
 msgid "Warn"
 msgstr "Warn"
 
+#: src/settings/sections/checkDetail.ts
+msgid "Browser extension cannot reach Mortar in {app} (manifest points elsewhere)"
+msgstr "Browser extension cannot reach Mortar in {app} (manifest points elsewhere)"
+
+#: src/settings/sections/checkDetail.ts
+msgid "{launcher} library {path} is not reachable: unmounted, or outside the folders Mortar's {app} may read"
+msgstr "{launcher} library {path} is not reachable: unmounted, or outside the folders Mortar's {app} may read"
+
 #: src/settings/GameSettingsPage.tsx
 msgid "{name} profile history"
 msgstr "{name} profile history"
@@ -1454,6 +1494,10 @@ msgstr "{name} (Recommended)"
 msgid "Show live game info in {app}. Changes apply the next time you press Play."
 msgstr "Show live game info in {app}. Changes apply the next time you press Play."
 
+#: src/settings/sections/checkDetail.ts
+msgid "Gamescope session: {launcher} starts {app} games here, so a direct launch from Mortar may not show a window"
+msgstr "Gamescope session: {launcher} starts {app} games here, so a direct launch from Mortar may not show a window"
+
 #: src/settings/sections/Appearance.tsx
 msgid "Rose"
 msgstr "Rose"
@@ -1469,6 +1513,10 @@ msgstr "Skip the installer wizard when saved choices still fit"
 #: src/settings/sections/Appearance.tsx
 msgid "This image is {size}, which costs memory and GPU while Mortar is open. The same picture or animation saved as WebP is often a tenth of the size."
 msgstr "This image is {size}, which costs memory and GPU while Mortar is open. The same picture or animation saved as WebP is often a tenth of the size."
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game} in {path}"
+msgstr "{game} in {path}"
 
 #: src/settings/sections/About.tsx
 msgid "Libraries, icons and artwork built into Mortar, with their licences."
@@ -1568,6 +1616,10 @@ msgstr "Show again"
 msgid "Farming skill"
 msgstr "Farming skill"
 
+#: src/settings/sections/checkDetail.ts
+msgid "{app}: Desktop Mode launches games from Mortar"
+msgstr "{app}: Desktop Mode launches games from Mortar"
+
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Cached {source} mod details"
 msgstr "Cached {source} mod details"
@@ -1632,6 +1684,10 @@ msgstr "Enter 1 or more"
 #: src/settings/sections/NexusMods.tsx
 msgid "Endorsements"
 msgstr "Endorsements"
+
+#: src/settings/sections/checkDetail.ts
+msgid "Mortar {version} (this command {otherVersion})"
+msgstr "Mortar {version} (this command {otherVersion})"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "{os}' antivirus through AMSI; clamd on {otherOs} when it is running."
@@ -1790,6 +1846,10 @@ msgstr "Kept in your system keyring. Find it on {source} under Settings, API Key
 msgid "Daily count resets {when}"
 msgstr "Daily count resets {when}"
 
+#: src/settings/sections/checkDetail.ts
+msgid "{game}: {app} {launcher} cannot see the library that holds its {otherApp} prefix"
+msgstr "{game}: {app} {launcher} cannot see the library that holds its {otherApp} prefix"
+
 #: src/settings/sections/Appearance.tsx
 msgid "App font"
 msgstr "App font"
@@ -1918,6 +1978,10 @@ msgstr "{count, plural, one {Import # change} other {Import # changes}}"
 #: src/settings/prefCopy.ts
 msgid "Badge checks for other profiles"
 msgstr "Badge checks for other profiles"
+
+#: src/settings/sections/checkDetail.ts
+msgid "Browser extension can reach Mortar in {app}"
+msgstr "Browser extension can reach Mortar in {app}"
 
 #: src/settings/shortcutLabels.ts
 msgid "Export or share the open profile"
@@ -2061,6 +2125,10 @@ msgstr "Check interval"
 msgid "Default launch"
 msgstr "Default launch"
 
+#: src/settings/sections/checkDetail.ts
+msgid "Profiles are readable"
+msgstr "Profiles are readable"
+
 #: src/settings/sections/DataUsage.tsx
 msgid "Recently deleted"
 msgstr "Recently deleted"
@@ -2116,6 +2184,10 @@ msgstr "Free space at destination: {size}"
 #: src/settings/sections/ScheduledStatus.tsx
 msgid "next in {next} h"
 msgstr "next in {next} h"
+
+#: src/settings/sections/checkDetail.ts
+msgid "settings.json is unreadable or missing"
+msgstr "settings.json is unreadable or missing"
 
 #: src/settings/sections/DataMove.tsx
 msgid "Data to copy: {size}"
@@ -2193,6 +2265,10 @@ msgstr "Switch to Load order"
 msgid "Nothing to clean up."
 msgstr "Nothing to clean up."
 
+#: src/settings/sections/checkDetail.ts
+msgid "control.json is current"
+msgstr "control.json is current"
+
 #: src/settings/sections/NxmReclaim.tsx
 msgid "Take back"
 msgstr "Take back"
@@ -2233,6 +2309,10 @@ msgstr "Implicit mods"
 #: src/settings/sections/General.tsx
 msgid "Let the operating system choose a free port"
 msgstr "Let the operating system choose a free port"
+
+#: src/settings/sections/checkDetail.ts
+msgid "Damaged profile.json: {path}"
+msgstr "Damaged profile.json: {path}"
 
 #: src/settings/prefCopy.ts
 msgid "Reduce motion"
@@ -2278,6 +2358,14 @@ msgstr "Last scheduled backup {when}"
 msgid "What Mortar shows when it opens."
 msgstr "What Mortar shows when it opens."
 
+#: src/settings/sections/checkDetail.ts
+msgid "control.json is stale"
+msgstr "control.json is stale"
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game}: {app} {launcher} can reach the {otherApp} prefix"
+msgstr "{game}: {app} {launcher} can reach the {otherApp} prefix"
+
 #: src/settings/shortcutLabels.ts
 msgid "Open the import dialog"
 msgstr "Open the import dialog"
@@ -2294,6 +2382,10 @@ msgstr "Could not update {launcher}'s launch options"
 #: src/settings/sections/Shortcuts.tsx
 msgid "Reset"
 msgstr "Reset"
+
+#: src/settings/sections/checkDetail.ts
+msgid "No settings temporary or copy files"
+msgstr "No settings temporary or copy files"
 
 #: src/settings/sections/Sources.tsx
 msgid "its address could not be looked up"
@@ -2355,6 +2447,10 @@ msgstr "Install Mortar updates automatically"
 msgid "Share notes"
 msgstr "Share notes"
 
+#: src/settings/sections/checkDetail.ts
+msgid "Data folder has no free space"
+msgstr "Data folder has no free space"
+
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Freed {size}"
 msgstr "Freed {size}"
@@ -2414,6 +2510,10 @@ msgstr "Default for Share and Export. You can change it per share."
 #: src/settings/shortcutLabels.ts
 msgid "Switch to Performance"
 msgstr "Switch to Performance"
+
+#: src/settings/sections/checkDetail.ts
+msgid "{count} settings temporary or copy files are present"
+msgstr "{count} settings temporary or copy files are present"
 
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Report copied"
@@ -2480,6 +2580,10 @@ msgstr "Settings file"
 msgid "Signed in"
 msgstr "Signed in"
 
+#: src/settings/sections/checkDetail.ts
+msgid "Store index.json is unreadable or corrupt"
+msgstr "Store index.json is unreadable or corrupt"
+
 #: src/settings/sections/AboutDiagnostics.tsx
 msgid "Copy report"
 msgstr "Copy report"
@@ -2491,6 +2595,10 @@ msgstr "Mortar downloads and installs a mod when you click Mod Manager Download 
 #: src/settings/NexusMeter.tsx
 msgid "Hourly count resets {when}"
 msgstr "Hourly count resets {when}"
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game}: {name} is overridden to native in the {app} prefix"
+msgstr "{game}: {name} is overridden to native in the {app} prefix"
 
 #: src/settings/sections/DataHistory.tsx
 msgid "Changes to keep"
@@ -2561,6 +2669,10 @@ msgstr "Updated by your package manager"
 msgid "Never"
 msgstr "Never"
 
+#: src/settings/sections/checkDetail.ts
+msgid "{app} Game Mode: {otherApp} games start through {launcher} here, not from Mortar's Play"
+msgstr "{app} Game Mode: {otherApp} games start through {launcher} here, not from Mortar's Play"
+
 #: src/settings/shortcutLabels.ts
 msgid "Focus the search"
 msgstr "Focus the search"
@@ -2624,6 +2736,10 @@ msgstr "Auto"
 #: src/settings/prefCopy.ts
 msgid "Follow live log"
 msgstr "Follow live log"
+
+#: src/settings/sections/checkDetail.ts
+msgid "nxm:// links: Mortar"
+msgstr "nxm:// links: Mortar"
 
 #: src/settings/sections/Sources.tsx
 msgid "Not set up"
@@ -2700,6 +2816,10 @@ msgstr "Auto-enable requirements"
 msgid "Premium"
 msgstr "Premium"
 
+#: src/settings/sections/checkDetail.ts
+msgid "{game}: the {app} prefix does not load {name} natively, so its loader will not start"
+msgstr "{game}: the {app} prefix does not load {name} natively, so its loader will not start"
+
 #: src/settings/sections/About.tsx
 msgid "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. For a bug report, Save diagnostics below puts them in one zip with personal paths removed."
 msgstr "mortar.log, the previous run's mortar.prev.log and crash.log, in Mortar's data folder. For a bug report, Save diagnostics below puts them in one zip with personal paths removed."
@@ -2756,6 +2876,10 @@ msgstr "How Play starts the game. Direct skips {launcher}'s overlay and playtime
 #: src/settings/sections/General.tsx
 msgid "Import…"
 msgstr "Import…"
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game}: {app} has not created its prefix yet, so a {launcher} launch cannot load the loader"
+msgstr "{game}: {app} has not created its prefix yet, so a {launcher} launch cannot load the loader"
 
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Delete the selected items?"
@@ -2882,6 +3006,10 @@ msgstr "Centre config controls"
 msgid "Token"
 msgstr "Token"
 
+#: src/settings/sections/checkDetail.ts
+msgid "nxm:// links: Mortar (other games go to {app})"
+msgstr "nxm:// links: Mortar (other games go to {app})"
+
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Mining skill"
 msgstr "Mining skill"
@@ -2965,6 +3093,10 @@ msgstr "{owner} opens these links now. Mortar takes them over and gives them bac
 #: src/settings/prefCopy.ts
 msgid "Minimise"
 msgstr "Minimise"
+
+#: src/settings/sections/checkDetail.ts
+msgid "settings.json is readable"
+msgstr "settings.json is readable"
 
 #: src/settings/sections/DataHistory.tsx
 msgid "Older changes are dropped and can no longer be undone."
@@ -3058,6 +3190,10 @@ msgstr "Mods view"
 #: src/settings/sections/Appearance.tsx
 msgid "Accent colour"
 msgstr "Accent colour"
+
+#: src/settings/sections/checkDetail.ts
+msgid "control.json is absent"
+msgstr "control.json is absent"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Player"
@@ -3209,6 +3345,10 @@ msgstr "Off, only computers on your local network can connect. Enable to allow o
 #: src/settings/sections/Appearance.tsx
 msgid "Quiet grey-blue"
 msgstr "Quiet grey-blue"
+
+#: src/settings/sections/checkDetail.ts
+msgid "Data folder: {path}"
+msgstr "Data folder: {path}"
 
 #: src/settings/sections/nxmHandler.tsx
 msgid "Handle links"
@@ -3371,6 +3511,10 @@ msgstr "The game crashes"
 #: src/settings/prefCopy.ts
 msgid "Back up saves only if the profile's mods changed since the last run."
 msgstr "Back up saves only if the profile's mods changed since the last run."
+
+#: src/settings/sections/checkDetail.ts
+msgid "nxm:// links: off"
+msgstr "nxm:// links: off"
 
 #: src/settings/loaderToast.ts
 msgid "{name} {latest} is out"

@@ -1,6 +1,9 @@
 package launch
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestParserLevelsModsAndContinuations(t *testing.T) {
 	var p Parser
@@ -21,7 +24,7 @@ func TestParserLevelsModsAndContinuations(t *testing.T) {
 		{"[19:44:05 LOUD SMAPI] not a level", Entry{Time: "19:44:04", Level: Info, Mod: "SMAPI", Message: "[19:44:05 LOUD SMAPI] not a level", Cont: true}},
 	}
 	for _, c := range cases {
-		if got, shown := p.Parse(c.line); !shown || got != c.want {
+		if got, shown := p.Parse(c.line); !shown || !reflect.DeepEqual(got, c.want) {
 			t.Errorf("Parse(%q) = %+v, want %+v", c.line, got, c.want)
 		}
 	}

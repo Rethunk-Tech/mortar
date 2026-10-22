@@ -1035,11 +1035,11 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	s.mu.Unlock()
 	s.set(Status{Game: gameID, State: Launching, Profile: profileID, Install: installOf(g), Since: started.UnixMilli()})
 	if settingsMissing {
-		s.say(g, profileID, "startup_preferences is missing; skipped profile game settings.")
+		s.sayCode(g, profileID, "startup_preferences is missing; skipped profile game settings.", "settingsMissing", nil)
 	}
 	if backupErr != nil {
 		msg := fmt.Sprintf("Could not back up saves before playing: %v.", backupErr)
-		s.say(g, profileID, msg)
+		s.sayCode(g, profileID, msg, "backupFailed", map[string]string{"error": backupErr.Error()})
 		s.emit(BackupWarningEvent, BackupWarning{Game: gameID, Profile: profileID, Error: backupErr.Error()})
 	}
 	s.watch(g)
@@ -1292,7 +1292,7 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, r laun
 	case err == nil:
 		s.set(Status{Game: g.ID(), Install: installOf(g), State: Running, Profile: profileID, Since: time.Now().UnixMilli()})
 		if r.vanilla {
-			s.say(g, profileID, "Started without mods")
+			s.sayCode(g, profileID, "Started without mods", "vanilla", nil)
 		}
 		if !waitOnChild(r.env.Direct, r.vanilla) {
 			s.armReap(g)
@@ -1304,7 +1304,9 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, r laun
 	case errors.As(err, &exited):
 		s.clearReap(g)
 		if len(buf.Lines()) == 0 {
-			s.say(g, profileID, fmt.Sprintf("%s exited with code %d.", game.LoaderName(g.ID(), s.profileLoader(g.ID(), profileID)), exited.Code))
+			loaderName := game.LoaderName(g.ID(), s.profileLoader(g.ID(), profileID))
+			s.sayCode(g, profileID, fmt.Sprintf("%s exited with code %d.", loaderName, exited.Code), "loaderExited",
+				map[string]string{"loader": loaderName, "code": strconv.Itoa(exited.Code)})
 			for _, line := range exited.Output {
 				s.say(g, profileID, line)
 			}
@@ -1427,20 +1429,28 @@ func (s *Service) closed(g game.Game, cur Status, stopped bool) {
 		s.mu.Unlock()
 	}
 	msg := g.Name() + " closed"
+	code := "gameClosed"
+	params := map[string]string{"game": g.Name()}
 	if stopped {
 		msg = g.Name() + " was stopped from Mortar"
+		code = "gameStopped"
 	} else {
 		s.mu.Lock()
 		sessExit := s.logs[keyOf(g)]
 		s.mu.Unlock()
-		if sessExit.haveExit && launch.ExitCrashed(sessExit.exit) {
-			msg = g.Name() + " crashed; " + launch.DescribeExit(sessExit.exit)
+		if x := sessExit.exit; sessExit.haveExit && launch.ExitCrashed(x) {
+			msg = g.Name() + " crashed; " + launch.DescribeExit(x)
+			code = "gameCrashed"
+			params["code"] = strconv.Itoa(x.Code)
+			params["signal"] = x.Signal
 		}
 	}
 	if cur.Since > 0 {
-		msg += " after " + time.Since(time.UnixMilli(cur.Since)).Round(time.Second).String()
+		ran := time.Since(time.UnixMilli(cur.Since)).Round(time.Second).String()
+		msg += " after " + ran
+		params["duration"] = ran
 	}
-	s.say(g, cur.Profile, msg+".")
+	s.sayCode(g, cur.Profile, msg+".", code, params)
 	log.Printf("launch: %s %s: %s", g.ID(), cur.Profile, msg)
 	s.mu.Lock()
 	sess, ok := s.logs[keyOf(g)]
@@ -1473,8 +1483,11 @@ func (s *Service) finishFailed(g game.Game, profileID string, buf *launch.Buffer
 }
 
 // say adds a console line of Mortar's own to the session of the profile the game runs.
-func (s *Service) say(g game.Game, profileID, msg string) {
-	e := launch.Entry{Seq: s.seq.Add(1), Time: time.Now().Format(time.TimeOnly), Level: launch.Info, Mod: "Mortar", Message: msg}
+func (s *Service) say(g game.Game, profileID, msg string) { s.sayCode(g, profileID, msg, "", nil) }
+
+// sayCode is say for a line the window words from code and params.
+func (s *Service) sayCode(g game.Game, profileID, msg, code string, params map[string]string) {
+	e := launch.Entry{Seq: s.seq.Add(1), Time: time.Now().Format(time.TimeOnly), Level: launch.Info, Mod: "Mortar", Message: msg, Code: code, Params: params}
 	s.mu.Lock()
 	sess, ok := s.logs[keyOf(g)]
 	s.mu.Unlock()
@@ -1486,7 +1499,7 @@ func (s *Service) say(g game.Game, profileID, msg string) {
 
 func (s *Service) reportSettingsRestore(g game.Game, profileID string, err error) {
 	msg := fmt.Sprintf("Could not restore profile game settings: %v.", err)
-	s.say(g, profileID, msg)
+	s.sayCode(g, profileID, msg, "settingsRestoreFailed", map[string]string{"error": err.Error()})
 	s.emit(SettingsRestoreWarningEvent, SettingsRestoreWarning{Game: g.ID(), Profile: profileID, Error: err.Error()})
 }
 

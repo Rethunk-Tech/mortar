@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
@@ -19,25 +20,26 @@ func Scan(dir string) Report {
 	settingsPath := filepath.Join(dir, settings.FileName)
 	if b, err := fsx.ReadFile(settingsPath); err != nil {
 		checks = append(checks, Check{
-			ID: "settings", Status: Fail, Detail: "settings.json is unreadable or missing",
+			ID: "settings", Status: Fail, Detail: "settings.json is unreadable or missing", Code: "settingsUnreadable",
 			Fix: "restore settings.json from a known-good copy",
 		})
 	} else if !json.Valid(b) {
 		checks = append(checks, Check{
-			ID: "settings", Status: Fail, Detail: "settings.json is corrupt",
+			ID: "settings", Status: Fail, Detail: "settings.json is corrupt", Code: "settingsCorrupt",
 			Fix: "restore settings.json from a known-good copy",
 		})
 	} else {
-		checks = append(checks, Check{ID: "settings", Status: Pass, Detail: "settings.json is readable"})
+		checks = append(checks, Check{ID: "settings", Status: Pass, Detail: "settings.json is readable", Code: "settingsReadable"})
 	}
 	if copies, _ := filepath.Glob(settingsPath + ".*"); len(copies) > 0 {
 		checks = append(checks, Check{
 			ID: "settingsCopies", Status: Warn,
 			Detail: fmt.Sprintf("%d settings temporary/copy files are present", len(copies)),
-			Fix:    "keep the newest valid settings.json and remove abandoned copies",
+			Code:   "settingsCopies", Params: params("count", strconv.Itoa(len(copies))),
+			Fix: "keep the newest valid settings.json and remove abandoned copies",
 		})
 	} else {
-		checks = append(checks, Check{ID: "settingsCopies", Status: Pass, Detail: "no settings temporary/copy files"})
+		checks = append(checks, Check{ID: "settingsCopies", Status: Pass, Detail: "no settings temporary/copy files", Code: "settingsNoCopies"})
 	}
 	var damaged []string
 	_ = filepath.WalkDir(filepath.Join(dir, "profiles"), func(path string, entry os.DirEntry, walkErr error) error {
@@ -52,40 +54,41 @@ func Scan(dir string) Report {
 		for _, path := range damaged {
 			checks = append(checks, Check{
 				ID: "profile:" + path, Status: Fail, Detail: "damaged profile.json: " + path,
+				Code: "profileDamaged", Params: params("path", path),
 				Fix: "restore or remove the damaged profile",
 			})
 		}
 	} else {
-		checks = append(checks, Check{ID: "profiles", Status: Pass, Detail: "profiles are readable"})
+		checks = append(checks, Check{ID: "profiles", Status: Pass, Detail: "profiles are readable", Code: "profilesReadable"})
 	}
 	if info, statErr := os.Stat(filepath.Join(dir, controlwire.FileName)); statErr == nil && time.Since(info.ModTime()) > 24*time.Hour {
 		checks = append(checks, Check{
-			ID: "control", Status: Warn, Detail: "control.json is stale",
+			ID: "control", Status: Warn, Detail: "control.json is stale", Code: "controlStale",
 			Fix: "start Mortar once to refresh control.json",
 		})
 	} else if statErr == nil {
-		checks = append(checks, Check{ID: "control", Status: Pass, Detail: "control.json is current"})
+		checks = append(checks, Check{ID: "control", Status: Pass, Detail: "control.json is current", Code: "controlCurrent"})
 	} else {
-		checks = append(checks, Check{ID: "control", Status: Pass, Detail: "control.json is absent"})
+		checks = append(checks, Check{ID: "control", Status: Pass, Detail: "control.json is absent", Code: "controlAbsent"})
 	}
 	free, freeErr := datadir.FreeBytes(dir)
 	if freeErr == nil {
 		if free == 0 {
 			checks = append(checks, Check{
-				ID: "disk", Status: Fail, Detail: "data folder has no free space",
+				ID: "disk", Status: Fail, Detail: "data folder has no free space", Code: "diskFull",
 				Fix: "free disk space before starting Mortar",
 			})
 		} else {
-			checks = append(checks, Check{ID: "disk", Status: Pass, Detail: "data folder has free space"})
+			checks = append(checks, Check{ID: "disk", Status: Pass, Detail: "data folder has free space", Code: "diskFree"})
 		}
 	}
 	if b, err := fsx.ReadFile(filepath.Join(dir, "store", "index.json")); err != nil || !json.Valid(b) {
 		checks = append(checks, Check{
-			ID: "store", Status: Fail, Detail: "store index.json is unreadable or corrupt",
+			ID: "store", Status: Fail, Detail: "store index.json is unreadable or corrupt", Code: "storeBad",
 			Fix: "restore the store index or let Mortar rebuild it",
 		})
 	} else {
-		checks = append(checks, Check{ID: "store", Status: Pass, Detail: "store index.json is readable"})
+		checks = append(checks, Check{ID: "store", Status: Pass, Detail: "store index.json is readable", Code: "storeReadable"})
 	}
 	return Report{Checks: checks}
 }

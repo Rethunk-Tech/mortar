@@ -58,6 +58,7 @@ func pluginDeps(pkgs []profile.PackageRef, mods []framework.Mod) ([]Missing, []L
 					clashes = append(clashes, LoadFailure{
 						Key: p.Key, ID: p.ID, Name: p.Name, Plugin: name, Kind: bepinex5.KindIncompatiblePlugin,
 						Dependency: other.pkg.Name, Message: "incompatible with " + r.GUID,
+						Code: "incompatibleWith", Params: map[string]string{"list": r.GUID},
 					})
 				}
 				continue

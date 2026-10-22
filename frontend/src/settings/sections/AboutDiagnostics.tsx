@@ -27,6 +27,7 @@ import { saveDiagnostics } from '../../shell/saveDiagnostics.ts'
 import { space } from '../../theme/density.ts'
 import { usePending } from '../../toasts/usePending.ts'
 import { SettingRow, SettingsSection } from '../SettingsSection.tsx'
+import { useCheckDetail } from './checkDetail.ts'
 
 const detail = { color: 'var(--mortar-ink-soft)' }
 const repairFix = 'Repair'
@@ -57,7 +58,7 @@ interface Group {
 const RANK: Record<string, number> = { pass: 0, warn: 1, fail: 2 }
 
 // One row per kind of check (all browsers under "Browser extension"), showing the worst status.
-function groupChecks(checks: Check[]): Group[] {
+function groupChecks(checks: Check[], detailOf: (c: Check) => string): Group[] {
   const groups = new Map<string, Group>()
   for (const c of checks) {
     const kind = diagnosticKind(c.id)
@@ -65,7 +66,7 @@ function groupChecks(checks: Check[]): Group[] {
     if ((RANK[c.status] ?? 0) > (RANK[g.status] ?? 0)) {
       g.status = c.status
     }
-    g.details.push(c.detail)
+    g.details.push(detailOf(c))
     if (c.fix === repairFix && !g.repair) {
       g.repair = c
     }
@@ -110,6 +111,7 @@ function useCheckTitle() {
 function Diagnostics() {
   const { t } = useLingui()
   const title = useCheckTitle()
+  const detailOf = useCheckDetail()
   const game = useNav((s) => routeGame(s.route) ?? '')
   const profile = useProfiles((s) => s.openId)
   const [open, setOpen] = useState(false)
@@ -130,7 +132,7 @@ function Diagnostics() {
         }),
     )
   const repair = () => runRepair(() => RepairNativeHosts().then(run))
-  const groups = groupChecks(report?.checks ?? [])
+  const groups = groupChecks(report?.checks ?? [], detailOf)
   const copy = () => {
     const text = groups
       .map((g) => `${title(g.kind)} (${g.status})\n${g.details.join('\n')}`)
