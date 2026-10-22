@@ -19,6 +19,7 @@ const arg = (name: string, fallback: string) => {
 const url = arg('url', 'http://127.0.0.1:9455')
 const out = arg('out', '/var/tmp/screens')
 const STEP_MS = 5000
+const CHECK_MS = 60_000
 const SETTLE_MS = 400
 
 const written: string[] = []
@@ -209,7 +210,9 @@ const SITE: Scene[] = [
     profile: STARDEW,
     steps: async (page) => {
       await click(page, 'tab', 'Problems')
-      await click(page, 'button', 'Why?')
+      // A fresh sandbox's first check can wait on smapi.io and Nexus.
+      await page.getByRole('heading', { level: 2 }).first().waitFor({ timeout: CHECK_MS })
+      await click(page, 'button', 'Other fixes')
     },
   },
   {
@@ -228,17 +231,22 @@ const SITE: Scene[] = [
     steps: async (page) => {
       await click(page, 'tab', 'Problems')
       // Copied data may hold these errors dismissed; restoring them touches only the sandbox.
-      const dismissed = page.getByRole('tab', { name: /^Dismissed/ })
-      while ((await dismissed.count()) > 0) {
+      const dismissed = page.getByRole('button', { name: /^Dismissed/ })
+      if ((await dismissed.count()) > 0) {
         await dismissed.click({ timeout: STEP_MS })
-        await click(page, 'button', 'Restore')
-        await page.waitForTimeout(SETTLE_MS)
+        const restore = page.getByRole('button', { name: 'Restore' })
+        while ((await restore.count()) > 0) {
+          await restore.first().click({ timeout: STEP_MS })
+          await page.waitForTimeout(SETTLE_MS)
+        }
       }
-      await click(page, 'tab', /^Errors while running/)
       await page
         .getByText(/threw it, at/)
         .first()
         .waitFor({ timeout: STEP_MS })
+      await page
+        .getByRole('heading', { name: /^Errors while running/ })
+        .evaluate((h) => h.scrollIntoView({ block: 'start' }))
     },
   },
   {
