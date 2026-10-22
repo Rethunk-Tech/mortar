@@ -1,0 +1,1157 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-10-22 09:24-0700\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+
+#: src/console/StartupSections.tsx
+msgid "What to do"
+msgstr "What to do"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Performance"
+msgstr "Performance"
+
+#: src/console/PerformanceCards.tsx
+msgid "Play this profile, then time each mod per frame"
+msgstr "Play this profile, then time each mod per frame"
+
+#: src/console/ConsoleTab.tsx
+msgid "Mod: {mod}"
+msgstr "Mod: {mod}"
+
+#: src/console/LinkedLog.tsx
+msgid "Could not open the folder"
+msgstr "Could not open the folder"
+
+#: src/console/BisectDialog.tsx
+msgid "Open profile"
+msgstr "Open profile"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "Unofficial build"
+msgstr "Unofficial build"
+
+#: src/console/RunProblems.tsx
+msgid "Stop the game to change mods."
+msgstr "Stop the game to change mods."
+
+#: src/console/useStartupReports.ts
+msgid "Could not ask for a measured launch"
+msgstr "Could not ask for a measured launch"
+
+#: src/console/LevelToggles.tsx
+msgid "More levels"
+msgstr "More levels"
+
+#: src/console/PerformanceCards.tsx
+msgid "Not measured yet"
+msgstr "Not measured yet"
+
+#: src/console/StartupPanel.tsx
+msgid "Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu."
+msgstr "Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu."
+
+#: src/console/SearchRunsDialog.tsx
+msgid "Search all runs"
+msgstr "Search all runs"
+
+#: src/console/StartupTable.tsx
+msgid "Assets and packs"
+msgstr "Assets and packs"
+
+#: src/console/shareLog.ts
+msgid "This log is {size}. Sharing uploads it to smapi.io as a public link."
+msgstr "This log is {size}. Sharing uploads it to smapi.io as a public link."
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Show a report first."
+msgstr "Show a report first."
+
+#: src/console/PerformanceCards.tsx
+msgid "The game is running: measure it now"
+msgstr "The game is running: measure it now"
+
+#. placeholder {0}: r.unclassified
+#: src/console/RunsPicker.tsx
+msgid "{0, plural, one {# log line Mortar could not classify} other {# log lines Mortar could not classify}}"
+msgstr "{0, plural, one {# log line Mortar could not classify} other {# log lines Mortar could not classify}}"
+
+#: src/console/CrashDialog.tsx
+msgid "Dismiss"
+msgstr "Dismiss"
+
+#: src/console/HelpDialog.tsx
+msgid "Open"
+msgstr "Open"
+
+#: src/console/ConsoleTab.tsx
+msgid "Type a command, for example help"
+msgstr "Type a command, for example help"
+
+#: src/console/CrashDialog.tsx
+msgid "More"
+msgstr "More"
+
+#: src/console/StartupPanel.tsx
+msgid "Mods' Entry is timed only on a measured launch."
+msgstr "Mods' Entry is timed only on a measured launch."
+
+#: src/console/PerformanceComparison.tsx
+msgid "gone"
+msgstr "gone"
+
+#. placeholder {0}: formatWhen(hits[0].started, { withTime: true })
+#. placeholder {1}: outcome(hits[0].outcome)
+#: src/console/SearchRunsDialog.tsx
+msgid "{0} · {1}"
+msgstr "{0} · {1}"
+
+#: src/console/PerformanceTab.tsx
+msgid "Measure next launch"
+msgstr "Measure next launch"
+
+#: src/console/StartupSections.tsx
+msgid "SMAPI loads mods for {ms}."
+msgstr "SMAPI loads mods for {ms}."
+
+#: src/console/startupHooks.ts
+msgid "slow load {ms}"
+msgstr "slow load {ms}"
+
+#: src/console/StartupSections.tsx
+msgid "Mods start"
+msgstr "Mods start"
+
+#: src/console/SearchRunsDialog.tsx
+msgid "No matches"
+msgstr "No matches"
+
+#. placeholder {0}: cause.modName
+#. placeholder {0}: crash.cause.modName
+#: src/console/ConsoleTab.tsx
+#: src/console/CrashDialog.tsx
+msgid "Caused by {0}"
+msgstr "Caused by {0}"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Play this profile to measure."
+msgstr "Play this profile to measure."
+
+#: src/console/CrashDialog.tsx
+#: src/console/HelpDialog.tsx
+#: src/console/LogActions.tsx
+msgid "Share log…"
+msgstr "Share log…"
+
+#: src/console/ConsoleTab.tsx
+msgid "Play this profile and the game's log shows here as it runs. Every run is kept."
+msgstr "Play this profile and the game's log shows here as it runs. Every run is kept."
+
+#. placeholder {0}: Math.round(frame.fps)
+#. placeholder {1}: Math.round(frame.seconds)
+#. placeholder {2}: ms(frame.avgMs)
+#. placeholder {3}: ms(frame.p95Ms)
+#. placeholder {4}: ms(frame.p99Ms)
+#. placeholder {5}: ms(frame.maxMs)
+#. placeholder {6}: mib(frame.monoUsed)
+#. placeholder {7}: mib(frame.monoHeap)
+#. placeholder {8}: frame.gcCollections
+#: src/console/PerformancePanel.tsx
+msgid "{0} fps over {1} s. Frame ms: average {2}, 95th {3}, 99th {4}, worst {5}. Managed heap {6} of {7} MiB, {8} garbage collections."
+msgstr "{0} fps over {1} s. Frame ms: average {2}, 95th {3}, 99th {4}, worst {5}. Managed heap {6} of {7} MiB, {8} garbage collections."
+
+#: src/console/CrashDialog.tsx
+msgid "It could not load an asset."
+msgstr "It could not load an asset."
+
+#: src/console/PerformanceCards.tsx
+msgid "Startup"
+msgstr "Startup"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Peak ms"
+msgstr "Peak ms"
+
+#: src/console/StartupTable.tsx
+msgid "Total"
+msgstr "Total"
+
+#: src/console/startupHooks.ts
+msgid "time in game {ms}"
+msgstr "time in game {ms}"
+
+#: src/console/outcome.ts
+msgid "Failed"
+msgstr "Failed"
+
+#: src/console/PerformanceCards.tsx
+msgid "Mods add {mods}. Nothing stands out in this start."
+msgstr "Mods add {mods}. Nothing stands out in this start."
+
+#: src/console/BisectDialog.tsx
+msgid "A mod's files are missing from this profile's folder, so Mortar cannot switch it off for the test."
+msgstr "A mod's files are missing from this profile's folder, so Mortar cannot switch it off for the test."
+
+#: src/console/RunsPicker.tsx
+msgid "Runs: {button}"
+msgstr "Runs: {button}"
+
+#. placeholder {0}: hidden.search
+#: src/console/ConsoleTab.tsx
+msgid "the search is “{0}”"
+msgstr "the search is “{0}”"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "Prerelease"
+msgstr "Prerelease"
+
+#: src/console/ConsoleTab.tsx
+msgid "Follow new lines"
+msgstr "Follow new lines"
+
+#: src/console/StartupSections.tsx
+msgid "Each plugin's constructor and Awake, run one after another"
+msgstr "Each plugin's constructor and Awake, run one after another"
+
+#: src/console/StartupTable.tsx
+msgid "Why?"
+msgstr "Why?"
+
+#: src/console/HelpDialog.tsx
+msgid "Upload log"
+msgstr "Upload log"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Calls"
+msgstr "Calls"
+
+#: src/console/BisectDialog.tsx
+#: src/console/CrashDialog.tsx
+#: src/console/RunProblems.tsx
+msgid "Undo"
+msgstr "Undo"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "% of frame"
+msgstr "% of frame"
+
+#: src/console/RunProblems.tsx
+msgid "Fix all"
+msgstr "Fix all"
+
+#: src/console/outcome.ts
+msgid "Ran"
+msgstr "Ran"
+
+#: src/console/PerformanceCards.tsx
+msgid "{total} to the title screen"
+msgstr "{total} to the title screen"
+
+#: src/console/ConsoleTab.tsx
+msgid "The console fills when the game runs."
+msgstr "The console fills when the game runs."
+
+#: src/console/StartupTable.tsx
+msgid "Load"
+msgstr "Load"
+
+#. placeholder {0}: hidden.count
+#: src/console/ConsoleTab.tsx
+msgid "{0, plural, one {# line is hidden by the filters: {why}.} other {# lines are hidden by the filters: {why}.}}"
+msgstr "{0, plural, one {# line is hidden by the filters: {why}.} other {# lines are hidden by the filters: {why}.}}"
+
+#: src/console/RunsPicker.tsx
+msgid "No recorded runs yet"
+msgstr "No recorded runs yet"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Show report"
+msgstr "Show report"
+
+#: src/console/ConsoleTab.tsx
+msgid "Filter by level or mod, and use Share log to copy this run and paste it on a paste site."
+msgstr "Filter by level or mod, and use Share log to copy this run and paste it on a paste site."
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Start measuring"
+msgstr "Start measuring"
+
+#: src/console/LogActions.tsx
+msgid "Search all runs…"
+msgstr "Search all runs…"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Clear comparison"
+msgstr "Clear comparison"
+
+#: src/console/HelpDialog.tsx
+msgid "Reading the log…"
+msgstr "Reading the log…"
+
+#: src/console/useBridgePerf.ts
+msgid "Could not read the measurement"
+msgstr "Could not read the measurement"
+
+#: src/console/PerformancePanel.tsx
+msgid "Each mod's time in its per-frame event handlers (update, render and one-second ticks), summed per frame, averaged over every frame. The 95th percentile and peak are per frame. Harmony patches and work outside events are in the baseline, not in a mod's row."
+msgstr "Each mod's time in its per-frame event handlers (update, render and one-second ticks), summed per frame, averaged over every frame. The 95th percentile and peak are per frame. Harmony patches and work outside events are in the baseline, not in a mod's row."
+
+#: src/console/HelpDialog.tsx
+msgid "No log for this profile yet. Play it once, then try again."
+msgstr "No log for this profile yet. Play it once, then try again."
+
+#: src/console/StartupTable.tsx
+msgid "Show details"
+msgstr "Show details"
+
+#: src/console/RunProblems.tsx
+msgid "Mortar doesn't know where to get {id}"
+msgstr "Mortar doesn't know where to get {id}"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "Not downloadable here"
+msgstr "Not downloadable here"
+
+#: src/console/StartupSections.tsx
+msgid "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice."
+msgstr "From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice."
+
+#: src/console/StartupSections.tsx
+msgid "First updates"
+msgstr "First updates"
+
+#. placeholder {0}: folded.count
+#: src/console/StartupTable.tsx
+msgid "{0, plural, one {# other mod} other {# other mods}}"
+msgstr "{0, plural, one {# other mod} other {# other mods}}"
+
+#. placeholder {0}: hit.lineNumber
+#: src/console/SearchRunsDialog.tsx
+msgid "L{0}"
+msgstr "L{0}"
+
+#: src/console/logHooks.ts
+msgid "Info"
+msgstr "Info"
+
+#: src/console/StartupSections.tsx
+msgid "Show packs"
+msgstr "Show packs"
+
+#: src/console/RunsPicker.tsx
+msgid "Past run"
+msgstr "Past run"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "95th ms"
+msgstr "95th ms"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "This version is only on a site Mortar cannot download from yet; open the link to get it."
+msgstr "This version is only on a site Mortar cannot download from yet; open the link to get it."
+
+#: src/console/HelpDialog.tsx
+#: src/console/store.ts
+msgid "Could not read the game log"
+msgstr "Could not read the game log"
+
+#: src/console/BisectDialog.tsx
+#: src/console/CrashDialog.tsx
+#: src/console/RunProblems.tsx
+msgid "Disable"
+msgstr "Disable"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "No performance data was returned."
+msgstr "No performance data was returned."
+
+#: src/console/UpdateNoteTag.tsx
+msgid "In Mortar's updates"
+msgstr "In Mortar's updates"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "This profile skips this version, so Mortar does not offer it."
+msgstr "This profile skips this version, so Mortar does not offer it."
+
+#: src/console/ConsoleTab.tsx
+msgid "{mods} is hidden"
+msgstr "{mods} is hidden"
+
+#: src/console/HelpDialog.tsx
+#: src/console/VirtualLog.tsx
+msgid "Game log"
+msgstr "Game log"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Performance report"
+msgstr "Performance report"
+
+#: src/console/HelpDialog.tsx
+#: src/console/StartupPanel.tsx
+msgid "Cancel"
+msgstr "Cancel"
+
+#: src/console/startupHooks.ts
+msgid "time in its patches {ms}"
+msgstr "time in its patches {ms}"
+
+#: src/console/StartupTable.tsx
+msgid "Patches"
+msgstr "Patches"
+
+#: src/console/BisectDialog.tsx
+msgid "Stopping…"
+msgstr "Stopping…"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "Mortar: {label}"
+msgstr "Mortar: {label}"
+
+#. placeholder {0}: hidden.count
+#: src/console/ConsoleTab.tsx
+msgid "{0, plural, one {Show it} other {Show all # lines}}"
+msgstr "{0, plural, one {Show it} other {Show all # lines}}"
+
+#: src/console/BisectDialog.tsx
+msgid "{names} seems to cause the crash"
+msgstr "{names} seems to cause the crash"
+
+#: src/console/startupHooks.ts
+msgid "slow Entry {ms}"
+msgstr "slow Entry {ms}"
+
+#: src/console/StartupTable.tsx
+msgid "Mortar"
+msgstr "Mortar"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "This profile skips updates from this source for this mod."
+msgstr "This profile skips updates from this source for this mod."
+
+#: src/console/BisectDialog.tsx
+msgid "The original profile was not changed."
+msgstr "The original profile was not changed."
+
+#: src/console/BisectDialog.tsx
+msgid "Every mod in this profile is already off, so there is nothing to turn off and test."
+msgstr "Every mod in this profile is already off, so there is nothing to turn off and test."
+
+#: src/console/HelpDialog.tsx
+msgid "Link copied"
+msgstr "Link copied"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "This mod is pinned in this profile, so Mortar does not offer updates for it."
+msgstr "This mod is pinned in this profile, so Mortar does not offer updates for it."
+
+#: src/console/RunProblems.tsx
+msgid "Update"
+msgstr "Update"
+
+#: src/console/LogActions.tsx
+msgid "Jump to previous error"
+msgstr "Jump to previous error"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Before"
+msgstr "Before"
+
+#. placeholder {0}: ms(frame.modsMs)
+#. placeholder {1}: ms(frame.avgMs)
+#. placeholder {2}: ms(frame.withoutModsMs)
+#: src/console/PerformancePanel.tsx
+msgid "Baseline: the mods' timed code is {0} ms of the {1} ms average frame; the game and loader alone take about {2} ms."
+msgstr "Baseline: the mods' timed code is {0} ms of the {1} ms average frame; the game and loader alone take about {2} ms."
+
+#: src/console/SearchRunsDialog.tsx
+msgid "Enter text to search stored runs."
+msgstr "Enter text to search stored runs."
+
+#: src/console/HelpDialog.tsx
+#: src/console/LogActions.tsx
+msgid "Log copied"
+msgstr "Log copied"
+
+#: src/console/StartupTable.tsx
+msgid "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
+msgstr "Entry, event handlers and asset work the SMAPI Bridge timed before the title screen"
+
+#: src/console/StartupTable.tsx
+msgid "Mortar's own SMAPI mod; it records these timings"
+msgstr "Mortar's own SMAPI mod; it records these timings"
+
+#: src/console/ConsoleTab.tsx
+msgid "Filter by level or mod, and use Save log or Copy log to pass this run on."
+msgstr "Filter by level or mod, and use Save log or Copy log to pass this run on."
+
+#: src/console/logHooks.ts
+msgid "Warn"
+msgstr "Warn"
+
+#: src/console/CrashDialog.tsx
+msgid "The game log has errors."
+msgstr "The game log has errors."
+
+#: src/console/CrashDialog.tsx
+msgid "{gameName} closed with errors"
+msgstr "{gameName} closed with errors"
+
+#: src/console/RunProblems.tsx
+msgid "Remove duplicate"
+msgstr "Remove duplicate"
+
+#: src/console/ConsoleTab.tsx
+msgid "Filter by level or mod, and use Share log to upload this run to smapi.io."
+msgstr "Filter by level or mod, and use Share log to upload this run to smapi.io."
+
+#: src/console/HelpDialog.tsx
+msgid "Uploading…"
+msgstr "Uploading…"
+
+#: src/console/store.ts
+msgid "Could not run the command"
+msgstr "Could not run the command"
+
+#: src/console/useBridgePerf.ts
+msgid "Could not start measuring"
+msgstr "Could not start measuring"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Start measuring to view a report."
+msgstr "Start measuring to view a report."
+
+#: src/console/StartupSections.tsx
+msgid "The title screen's intro animation (Mortar skips it on measured launches)"
+msgstr "The title screen's intro animation (Mortar skips it on measured launches)"
+
+#: src/console/ConsoleTab.tsx
+msgid "Remove filter {mod}"
+msgstr "Remove filter {mod}"
+
+#: src/console/StartupSections.tsx
+msgid "Title intro"
+msgstr "Title intro"
+
+#: src/console/StartupSections.tsx
+msgid "From launch until SMAPI has loaded every mod's code"
+msgstr "From launch until SMAPI has loaded every mod's code"
+
+#: src/console/StartupSections.tsx
+msgid "Show slowest mods"
+msgstr "Show slowest mods"
+
+#: src/console/HelpDialog.tsx
+msgid "Copy"
+msgstr "Copy"
+
+#: src/console/logHooks.ts
+msgid "Trace"
+msgstr "Trace"
+
+#: src/console/RunProblems.tsx
+msgid "Remove {name}"
+msgstr "Remove {name}"
+
+#: src/console/StartupTable.tsx
+msgid "Startup time by mod"
+msgstr "Startup time by mod"
+
+#: src/console/VirtualLog.tsx
+msgid "Written {repeat} times in a row"
+msgstr "Written {repeat} times in a row"
+
+#: src/console/StartupTable.tsx
+msgid "Each plugin's load (constructor and Awake) the BepInEx Bridge timed; a package's plugins add up. Work a plugin does later, in Start or scene hooks, is not charged to it."
+msgstr "Each plugin's load (constructor and Awake) the BepInEx Bridge timed; a package's plugins add up. Work a plugin does later, in Start or scene hooks, is not charged to it."
+
+#: src/console/ConsoleTab.tsx
+msgid "Console command"
+msgstr "Console command"
+
+#: src/console/StartupSections.tsx
+msgid "Unity starts"
+msgstr "Unity starts"
+
+#. placeholder {0}: why.event ?? ''
+#: src/console/startupHooks.ts
+msgid "slow {0} {ms}"
+msgstr "slow {0} {ms}"
+
+#: src/console/PerformanceComparison.tsx
+msgid "New"
+msgstr "New"
+
+#: src/console/shareLog.ts
+msgid "This log is {size}. Sharing copies it and opens {host}; paste it there to get a public link."
+msgstr "This log is {size}. Sharing copies it and opens {host}; paste it there to get a public link."
+
+#: src/console/LevelToggles.tsx
+msgid "Levels"
+msgstr "Levels"
+
+#: src/console/useStartupReports.ts
+msgid "Could not cancel the measured launch"
+msgstr "Could not cancel the measured launch"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Start the game with this profile, then measure here while you play."
+msgstr "Start the game with this profile, then measure here while you play."
+
+#: src/console/StartupTable.tsx
+msgid "Time in this start minus time in the one before"
+msgstr "Time in this start minus time in the one before"
+
+#: src/console/ConsoleTab.tsx
+msgid "Search the log"
+msgstr "Search the log"
+
+#: src/console/ConsoleTab.tsx
+msgid "only {mods} is shown"
+msgstr "only {mods} is shown"
+
+#: src/console/ConsoleTab.tsx
+msgid "Mods"
+msgstr "Mods"
+
+#: src/console/StartupPanel.tsx
+msgid "Slowest mods"
+msgstr "Slowest mods"
+
+#: src/console/CrashDialog.tsx
+msgid "Mortar could not tell which mod caused this. Finding the mod tries halves of your mods until the crash stops; your profile is not changed."
+msgstr "Mortar could not tell which mod caused this. Finding the mod tries halves of your mods until the crash stops; your profile is not changed."
+
+#: src/console/HelpDialog.tsx
+msgid "Copy log and open {pasteHost}"
+msgstr "Copy log and open {pasteHost}"
+
+#: src/console/ConsoleTab.tsx
+msgid "Stop the game before reinstalling."
+msgstr "Stop the game before reinstalling."
+
+#: src/console/SearchRunsDialog.tsx
+msgid "Showing the first 500 matches."
+msgstr "Showing the first 500 matches."
+
+#: src/console/BisectDialog.tsx
+msgid "Finding the mod that crashes the game"
+msgstr "Finding the mod that crashes the game"
+
+#: src/console/CrashDialog.tsx
+msgid "Find the mod that crashes the game…"
+msgstr "Find the mod that crashes the game…"
+
+#: src/console/HelpDialog.tsx
+msgid "Hide my user name"
+msgstr "Hide my user name"
+
+#: src/console/StartupSections.tsx
+msgid "Each mod's Entry method, run one after another"
+msgstr "Each mod's Entry method, run one after another"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "Pinned"
+msgstr "Pinned"
+
+#: src/console/PerformanceCards.tsx
+msgid "Play this profile to time how long each mod adds to the start"
+msgstr "Play this profile to time how long each mod adds to the start"
+
+#: src/console/HelpDialog.tsx
+msgid "Could not upload the log"
+msgstr "Could not upload the log"
+
+#: src/console/SearchRunsDialog.tsx
+msgid "Search every run"
+msgstr "Search every run"
+
+#: src/console/StartupSections.tsx
+msgid "Plugins load"
+msgstr "Plugins load"
+
+#: src/console/outcome.ts
+msgid "Crashed"
+msgstr "Crashed"
+
+#: src/console/RunProblems.tsx
+msgid "Add"
+msgstr "Add"
+
+#: src/console/RunProblems.tsx
+msgid "Search in Browse"
+msgstr "Search in Browse"
+
+#: src/console/BisectDialog.tsx
+msgid "Crash finding was stopped."
+msgstr "Crash finding was stopped."
+
+#: src/console/RunProblems.tsx
+msgid "Update {loaderName}"
+msgstr "Update {loaderName}"
+
+#: src/console/LogActions.tsx
+msgid "Copy log"
+msgstr "Copy log"
+
+#: src/console/StartupTable.tsx
+msgid "Show in Mods"
+msgstr "Show in Mods"
+
+#: src/console/PerformanceComparison.tsx
+msgid "Performance comparison"
+msgstr "Performance comparison"
+
+#: src/console/LogActions.tsx
+msgid "Save log"
+msgstr "Save log"
+
+#: src/console/RunProblems.tsx
+msgid "Problems in this run"
+msgstr "Problems in this run"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "Your download is already {have}; the mod's manifest still carries the old number, so SMAPI keeps asking."
+msgstr "Your download is already {have}; the mod's manifest still carries the old number, so SMAPI keeps asking."
+
+#. placeholder {0}: row.count
+#: src/console/CrashDialog.tsx
+msgid "{0, plural, one { · # error} other { · # errors}}"
+msgstr "{0, plural, one { · # error} other { · # errors}}"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "After"
+msgstr "After"
+
+#: src/console/RunsPicker.tsx
+msgid "This session"
+msgstr "This session"
+
+#: src/console/CrashDialog.tsx
+msgid "A file it needs could not be opened."
+msgstr "A file it needs could not be opened."
+
+#: src/console/UpdateNoteTag.tsx
+msgid "Mortar offers this update in the profile's update list."
+msgstr "Mortar offers this update in the profile's update list."
+
+#: src/console/startupHooks.ts
+msgid "applying its patches {ms}"
+msgstr "applying its patches {ms}"
+
+#: src/console/StartupTable.tsx
+msgid "Click a mod to show it in Mods"
+msgstr "Click a mod to show it in Mods"
+
+#: src/console/StartupTable.tsx
+msgid "This mod's part of the time all mods add"
+msgstr "This mod's part of the time all mods add"
+
+#: src/console/ConsoleTab.tsx
+msgid "No mods have logged yet"
+msgstr "No mods have logged yet"
+
+#: src/console/LogActions.tsx
+msgid "Jump to next error"
+msgstr "Jump to next error"
+
+#: src/console/PerformanceComparison.tsx
+#: src/console/StartupTable.tsx
+msgid "Change"
+msgstr "Change"
+
+#: src/console/StartupSections.tsx
+msgid "{name} takes {own} of your {total} start."
+msgstr "{name} takes {own} of your {total} start."
+
+#: src/console/StartupSections.tsx
+msgid "SMAPI loads mods"
+msgstr "SMAPI loads mods"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Mod or event"
+msgstr "Mod or event"
+
+#: src/console/logHooks.ts
+msgid "Debug"
+msgstr "Debug"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "Source skipped"
+msgstr "Source skipped"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "Mortar offers prereleases only when Settings allows them."
+msgstr "Mortar offers prereleases only when Settings allows them."
+
+#. placeholder {0}: status.step
+#. placeholder {1}: status.total
+#. placeholder {2}: status.modsLeft
+#: src/console/BisectDialog.tsx
+msgid "Step {0} of ~{1}, {2, plural, one {# mod left} other {# mods left}}"
+msgstr "Step {0} of ~{1}, {2, plural, one {# mod left} other {# mods left}}"
+
+#: src/console/StartupSections.tsx
+msgid "BepInEx patches"
+msgstr "BepInEx patches"
+
+#: src/console/PerformancePanel.tsx
+msgid "Report copied"
+msgstr "Report copied"
+
+#: src/console/RunProblems.tsx
+msgid "the mod loader"
+msgstr "the mod loader"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Measuring"
+msgstr "Measuring"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "Unofficial SMAPI-compatible builds are off in Settings."
+msgstr "Unofficial SMAPI-compatible builds are off in Settings."
+
+#: src/console/UpdateNoteTag.tsx
+msgid "This profile ignores updates for this mod."
+msgstr "This profile ignores updates for this mod."
+
+#: src/console/StartupPanel.tsx
+msgid "Play now"
+msgstr "Play now"
+
+#: src/console/SearchRunsDialog.tsx
+msgid "Search run logs"
+msgstr "Search run logs"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Copy report"
+msgstr "Copy report"
+
+#: src/console/StartupPanel.tsx
+msgid "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
+msgstr "Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column."
+
+#: src/console/UpdateNoteTag.tsx
+msgid "Updates ignored"
+msgstr "Updates ignored"
+
+#: src/console/RunProblems.tsx
+msgid "Remove duplicate?"
+msgstr "Remove duplicate?"
+
+#: src/console/HelpDialog.tsx
+msgid "Log link"
+msgstr "Log link"
+
+#: src/console/startupHooks.ts
+msgid "assets and packs {ms}"
+msgstr "assets and packs {ms}"
+
+#: src/console/HelpDialog.tsx
+msgid "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
+msgstr "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
+
+#: src/console/StartupTable.tsx
+msgid "Share of mod time"
+msgstr "Share of mod time"
+
+#: src/console/CrashDialog.tsx
+msgid "Open Console"
+msgstr "Open Console"
+
+#. placeholder {0}: rows.length + folded.count
+#: src/console/StartupTable.tsx
+msgid "{0, plural, one {Show all # mod} other {Show all # mods}}"
+msgstr "{0, plural, one {Show all # mod} other {Show all # mods}}"
+
+#: src/console/StartupPanel.tsx
+msgid "The next launch will be measured"
+msgstr "The next launch will be measured"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "You skipped this version"
+msgstr "You skipped this version"
+
+#: src/console/StartupTable.tsx
+msgid "Slowest event"
+msgstr "Slowest event"
+
+#: src/console/BisectDialog.tsx
+msgid "The crash check could not finish."
+msgstr "The crash check could not finish."
+
+#. placeholder {0}: hidden.levels.length
+#: src/console/ConsoleTab.tsx
+msgid "{0, plural, one {the {levels} level is off} other {the {levels} levels are off}}"
+msgstr "{0, plural, one {the {levels} level is off} other {the {levels} levels are off}}"
+
+#: src/console/StartupPanel.tsx
+msgid "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
+msgstr "Play this profile. The SMAPI Bridge records how long each mod adds before the title screen."
+
+#: src/console/SearchRunsDialog.tsx
+msgid "Searching…"
+msgstr "Searching…"
+
+#: src/console/BisectDialog.tsx
+#: src/console/CrashDialog.tsx
+#: src/console/RunProblems.tsx
+msgid "Disabled {names}"
+msgstr "Disabled {names}"
+
+#: src/console/StartupPanel.tsx
+msgid "Press Play. The BepInEx Bridge times each plugin's load and the start up to the main menu, and shows the results here. Unity's Mono runtime cannot be sampled, so there is no Sampled column."
+msgstr "Press Play. The BepInEx Bridge times each plugin's load and the start up to the main menu, and shows the results here. Unity's Mono runtime cannot be sampled, so there is no Sampled column."
+
+#: src/console/StartupTable.tsx
+msgid "What costs this mod the most; open the row for every timing"
+msgstr "What costs this mod the most; open the row for every timing"
+
+#: src/console/logHooks.ts
+msgid "Error"
+msgstr "Error"
+
+#: src/console/StartupSections.tsx
+msgid "This start was {by} slower than the one before."
+msgstr "This start was {by} slower than the one before."
+
+#: src/console/StartupSections.tsx
+msgid "The game's first frames; mods doing setup work in update events show up here"
+msgstr "The game's first frames; mods doing setup work in update events show up here"
+
+#: src/console/RunProblems.tsx
+msgid "Remove"
+msgstr "Remove"
+
+#: src/console/CrashDialog.tsx
+msgid "It encountered an error."
+msgstr "It encountered an error."
+
+#: src/console/PerformancePanel.tsx
+msgid "Start the game, then start measuring here to time each plugin per frame."
+msgstr "Start the game, then start measuring here to time each plugin per frame."
+
+#: src/console/PerformancePanel.tsx
+msgid "This BepInEx Bridge measures in game only on a measured launch. Use Measure next launch under Startup and play again."
+msgstr "This BepInEx Bridge measures in game only on a measured launch. Use Measure next launch under Startup and play again."
+
+#: src/console/StartupSections.tsx
+msgid "From launch until BepInEx's preloader runs"
+msgstr "From launch until BepInEx's preloader runs"
+
+#: src/console/PerformanceComparison.tsx
+#: src/console/StartupTable.tsx
+msgid "Mod"
+msgstr "Mod"
+
+#: src/console/StartupPanel.tsx
+msgid "Reading startup reports…"
+msgstr "Reading startup reports…"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Average ms"
+msgstr "Average ms"
+
+#: src/console/StartupPanel.tsx
+msgid "No startup measured yet"
+msgstr "No startup measured yet"
+
+#: src/console/StartupSections.tsx
+msgid "First scene"
+msgstr "First scene"
+
+#: src/console/UpdateNoteTag.tsx
+msgid "Already installed"
+msgstr "Already installed"
+
+#. placeholder {0}: finding.packs
+#: src/console/StartupSections.tsx
+msgid "{name} takes {own} of your {total} start; {0, plural, one {# content pack causes} other {# content packs cause}} most of it."
+msgstr "{name} takes {own} of your {total} start; {0, plural, one {# content pack causes} other {# content packs cause}} most of it."
+
+#: src/console/ConsoleTab.tsx
+msgid "Clear filters"
+msgstr "Clear filters"
+
+#: src/console/PerformanceCards.tsx
+msgid "Mods add {mods}."
+msgstr "Mods add {mods}."
+
+#: src/console/LogActions.tsx
+msgid "Errors"
+msgstr "Errors"
+
+#: src/console/StartupSections.tsx
+msgid "The game loads its own content"
+msgstr "The game loads its own content"
+
+#: src/console/PerformanceCards.tsx
+#: src/console/StartupTable.tsx
+msgid "In game"
+msgstr "In game"
+
+#. placeholder {0}: copies.remove.length
+#. placeholder {1}: copies.keep.name
+#. placeholder {2}: copies.remove[0]?.name ?? ''
+#. placeholder {3}: copies.keep.name
+#: src/console/RunProblems.tsx
+msgid "{0, plural, one {Keep {1} and remove {2}.} other {Keep {3} and remove # other copies.}}"
+msgstr "{0, plural, one {Keep {1} and remove {2}.} other {Keep {3} and remove # other copies.}}"
+
+#: src/console/PerformancePanel.tsx
+msgid "Start the game, then start measuring here to time each mod's event handlers per frame."
+msgstr "Start the game, then start measuring here to time each mod's event handlers per frame."
+
+#: src/console/StartupSections.tsx
+msgid "Until the game's first scene has loaded"
+msgstr "Until the game's first scene has loaded"
+
+#: src/console/CrashDialog.tsx
+msgid "{gameName} crashed"
+msgstr "{gameName} crashed"
+
+#: src/console/StartupTable.tsx
+msgid "Entry"
+msgstr "Entry"
+
+#: src/console/StartupTable.tsx
+msgid "Hide details"
+msgstr "Hide details"
+
+#: src/console/BisectDialog.tsx
+msgid "Preparing a temporary copy of this profile…"
+msgstr "Preparing a temporary copy of this profile…"
+
+#: src/console/StartupTable.tsx
+msgid "Sampled"
+msgstr "Sampled"
+
+#: src/console/ConsoleTab.tsx
+msgid "No game output yet"
+msgstr "No game output yet"
+
+#: src/console/LogActions.tsx
+msgid "Jump to first error"
+msgstr "Jump to first error"
+
+#: src/console/StartupSections.tsx
+msgid "Show mod"
+msgstr "Show mod"
+
+#: src/console/PerformanceCards.tsx
+msgid "{saved, plural, one {# measurement saved} other {# measurements saved}}"
+msgstr "{saved, plural, one {# measurement saved} other {# measurements saved}}"
+
+#: src/console/StartupSections.tsx
+msgid "BepInEx's preloader patches the game, then Unity starts it"
+msgstr "BepInEx's preloader patches the game, then Unity starts it"
+
+#: src/console/PerformanceCards.tsx
+msgid "{total} to the main menu"
+msgstr "{total} to the main menu"
+
+#: src/console/PerformanceComparison.tsx
+msgid "Now ms"
+msgstr "Now ms"
+
+#: src/console/StartupSections.tsx
+msgid "Game content"
+msgstr "Game content"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Compare saved reports"
+msgstr "Compare saved reports"
+
+#. placeholder {0}: packs.length - PACKS_SHOWN
+#: src/console/StartupTable.tsx
+msgid "{0, plural, one {# more pack} other {# more packs}}"
+msgstr "{0, plural, one {# more pack} other {# more packs}}"
+
+#: src/console/LogActions.tsx
+msgid "Clear"
+msgstr "Clear"
+
+#: src/console/StartupTable.tsx
+msgid "Game and {loader}"
+msgstr "Game and {loader}"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Compare with…"
+msgstr "Compare with…"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "See which mods slow the game"
+msgstr "See which mods slow the game"
+
+#: src/console/ConsoleTab.tsx
+msgid "Show times"
+msgstr "Show times"
+
+#: src/console/LogActions.tsx
+msgid "Save log…"
+msgstr "Save log…"
+
+#: src/console/SearchRunsDialog.tsx
+msgid "No stored run contains that text."
+msgstr "No stored run contains that text."
+
+#: src/console/PerformancePanel.tsx
+msgid "Each plugin's main-thread time per frame: its Harmony prefixes, postfixes and finalizers and its own Update, LateUpdate and FixedUpdate, less any timed call inside them. Code a transpiler rewrote and work on other threads are not counted."
+msgstr "Each plugin's main-thread time per frame: its Harmony prefixes, postfixes and finalizers and its own Update, LateUpdate and FixedUpdate, less any timed call inside them. Code a transpiler rewrote and work on other threads are not counted."
+
+#: src/console/StartupSections.tsx
+msgid "To the main menu"
+msgstr "To the main menu"
+
+#: src/console/BisectDialog.tsx
+msgid "Stop"
+msgstr "Stop"
+
+#: src/console/ConsoleTab.tsx
+msgid "Reinstall"
+msgstr "Reinstall"
+
+#: src/console/StartupSections.tsx
+msgid "Compare"
+msgstr "Compare"
+
+#. placeholder {0}: names[level]
+#. placeholder {1}: formatCount(counts.get(level) ?? 0, i18n.locale)
+#: src/console/LevelToggles.tsx
+msgid "{0} ({1})"
+msgstr "{0} ({1})"
+
+#. placeholder {0}: names[level]
+#. placeholder {1}: names[level]
+#: src/console/LevelToggles.tsx
+msgid "{n, plural, one {{0}: # line} other {{1}: # lines}}"
+msgstr "{n, plural, one {{0}: # line} other {{1}: # lines}}"
+
+#: src/console/BisectDialog.tsx
+#: src/console/HelpDialog.tsx
+#: src/console/SearchRunsDialog.tsx
+msgid "Close"
+msgstr "Close"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Start measuring first."
+msgstr "Start measuring first."
+
+#: src/console/PerformanceComparison.tsx
+msgid "Before ms"
+msgstr "Before ms"
+
+#: src/console/logHooks.ts
+msgid "Alert"
+msgstr "Alert"
+
+#: src/console/PerformanceTab.tsx
+msgid "Launch"
+msgstr "Launch"
+
+#: src/console/PerformancePanelParts.tsx
+msgid "Measure while you play, then report the mods that take the most time per frame."
+msgstr "Measure while you play, then report the mods that take the most time per frame."
