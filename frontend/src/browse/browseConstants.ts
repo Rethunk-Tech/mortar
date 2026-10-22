@@ -8,7 +8,6 @@ const GITHUB = 'github'
 const THUNDERSTORE = 'thunderstore'
 const FIRST_PAGE = 1
 const PICTURE_PX = 72
-const ROW_PICTURE_PX = 40
 const CARD_MIN_PX = 340
 const GAP_PX = 6
 // A result card is its picture plus the card's vertical padding.
@@ -59,7 +58,6 @@ export {
   list,
   NEXUS,
   PICTURE_PX,
-  ROW_PICTURE_PX,
   STALE_OPACITY,
   searchHint,
   THUNDERSTORE,

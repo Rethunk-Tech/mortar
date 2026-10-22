@@ -11,7 +11,7 @@ import { MIDDLE, opensPage } from '../mods/pageClick.ts'
 import { useSettings } from '../settings/store.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { BUTTON_RADIUS_PX, BUTTON_SMALL_HEIGHT } from '../theme/theme.ts'
-import { GRAY_OPACITY, PICTURE_PX, ROW_PICTURE_PX, STALE_OPACITY } from './browseConstants.ts'
+import { GRAY_OPACITY, PICTURE_PX, STALE_OPACITY } from './browseConstants.ts'
 import type { BrowseModes } from './browseModes.ts'
 import type { BrowseItem, ResultCardProps } from './browseTypes.ts'
 import { pictureSrc } from './pictureSrc.ts'
@@ -33,7 +33,6 @@ function CardPicture({
   source,
   pick,
   starKey,
-  fill = false,
 }: {
   picture: string
   size: number
@@ -41,14 +40,14 @@ function CardPicture({
   source?: { id: string; name: string }
   pick?: { sources: string[]; names: Map<string, string>; onPick: (source: string) => void }
   starKey?: string
-  // fill stretches a square picture to the height of the row it sits in; size then only scales the marks.
-  fill?: boolean
 }) {
-  // A filled picture is laid over its square, so the image's own size never sets the row's height.
-  const box = fill
-    ? { position: 'absolute', inset: 0, width: '100%', height: '100%' }
-    : { width: size, height: size }
-  const sx = { ...box, flexShrink: 0, borderRadius: '4px', opacity: dim } as const
+  const sx = {
+    width: size,
+    height: size,
+    flexShrink: 0,
+    borderRadius: '4px',
+    opacity: dim,
+  } as const
   const [failed, setFailed] = useState(false)
   const image =
     picture === '' || failed ? (
@@ -74,7 +73,6 @@ function CardPicture({
         position: 'relative',
         flexShrink: 0,
         display: 'flex',
-        ...(fill ? { alignSelf: 'stretch', aspectRatio: '1' } : {}),
       }}
     >
       {image}
@@ -323,11 +321,10 @@ const ResultCard = memo(function BrowseResultCard(props: ResultCardProps) {
       {row ? (
         <CardPicture
           picture={item.picture}
-          size={ROW_PICTURE_PX}
+          size={PICTURE_PX}
           dim={dim}
           source={mark}
           starKey={favouriteKey(item.source, item.id)}
-          fill={true}
         />
       ) : (
         <Box

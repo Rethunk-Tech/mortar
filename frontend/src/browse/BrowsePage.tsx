@@ -19,7 +19,6 @@ import {
   GAP_PX,
   GITHUB,
   PICTURE_PX,
-  ROW_PICTURE_PX,
   searchHint,
 } from './browseConstants.ts'
 import { type BrowseModes, formatModes } from './browseModes.ts'
@@ -95,8 +94,7 @@ function useScreenFit(box: RefObject<HTMLDivElement | null>, view: string): numb
         Number.parseFloat(style.paddingBottom) -
         PAGER_PX
       const rowPx =
-        el.querySelector<HTMLElement>('[data-hit]')?.offsetHeight ??
-        (grid ? PICTURE_PX : ROW_PICTURE_PX) + CARD_PAD_PX
+        el.querySelector<HTMLElement>('[data-hit]')?.offsetHeight ?? PICTURE_PX + CARD_PAD_PX
       const columns = grid ? Math.max(1, Math.floor((width + GAP_PX) / (CARD_MIN_PX + GAP_PX))) : 1
       const rows = Math.max(1, Math.floor((height + GAP_PX) / (rowPx + GAP_PX)))
       setFit(screenSize(columns, rows))

@@ -16,7 +16,6 @@ import {
   ICON_SIZE,
   list,
   PICTURE_PX,
-  ROW_PICTURE_PX,
   STALE_OPACITY,
 } from './browseConstants.ts'
 import type { ResultCardProps } from './browseTypes.ts'
@@ -65,7 +64,7 @@ function BrowseSkeleton({ view }: { view: string }) {
     return () => ro.disconnect()
   }, [])
   const isGrid = view === 'grid'
-  const rowPx = (isGrid ? PICTURE_PX : ROW_PICTURE_PX) + CARD_PAD_PX
+  const rowPx = PICTURE_PX + CARD_PAD_PX
   return (
     <Box ref={box} sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
       <SkeletonRows
