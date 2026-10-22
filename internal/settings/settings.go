@@ -170,8 +170,10 @@ type Settings struct {
 	// BackgroundBadgeChecks fills sidebar badges for other profiles. Nil means on.
 	BackgroundBadgeChecks *bool `json:"backgroundBadgeChecks"`
 	// StartScreen is last (last opened profile) or gameselect.
-	StartScreen        string `json:"startScreen"`
-	Dates              string `json:"dates"`
+	StartScreen string `json:"startScreen"`
+	Dates       string `json:"dates"`
+	// Graphics is how WebKit renders on Linux (GraphicsAutomatic and the rest), read once at start.
+	Graphics           string `json:"graphics"`
 	TrashRetentionDays int    `json:"trashRetentionDays"`
 	HistoryEventsKept  int    `json:"historyEventsKept"`
 	// Antivirus picks the scanner every extracted mod passes before entering the store: automatic, clamd, command or

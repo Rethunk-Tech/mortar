@@ -145,6 +145,7 @@ var registry = withDefaults([]pref{
 	strPref("font", ScopeApp, func(s Settings, _ string) string { return s.Font }, func(s *Settings, _, v string) { s.Font = v }),
 	strPref("antivirusCommand", ScopeApp, func(s Settings, _ string) string { return s.AntivirusCommand }, func(s *Settings, _, v string) { s.AntivirusCommand = v }),
 	enumPref("dates", ScopeApp, datesValues, func(s Settings, _ string) string { return s.Dates }, func(s *Settings, _, v string) { s.Dates = v }),
+	enumPref("graphics", ScopeApp, graphicsValues, func(s Settings, _ string) string { return s.Graphics }, func(s *Settings, _, v string) { s.Graphics = v }),
 	intPref("trashRetentionDays", ScopeApp, MinTrashRetentionDays, MaxTrashRetentionDays, func(s Settings, _ string) int { return s.TrashRetentionDays }, func(s *Settings, _ string, n int) { s.TrashRetentionDays = n }),
 	intPref("historyEventsKept", ScopeApp, MinHistoryEventsKept, MaxHistoryEventsKept, func(s Settings, _ string) int { return s.HistoryEventsKept }, func(s *Settings, _ string, n int) { s.HistoryEventsKept = n }),
 	ptrPref("notifyDownloadFinished", ScopeApp, func(s Settings, _ string) *bool { return s.NotifyDownloadFinished }, func(s *Settings, _ string, on bool) { s.NotifyDownloadFinished = &on }),

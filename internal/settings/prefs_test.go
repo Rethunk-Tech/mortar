@@ -105,7 +105,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"nxmDefaultProfile": "abc", "defaultModsView": "list", "implicitModsView": "nested", "listGroupBy": "author",
 		"listSortColumn": "version", "listSortDir": "desc", "confirmRemovals": "false",
 		"cosmeticConflicts": "hidden", "backgroundBadgeChecks": "false", "startScreen": "gameselect", "antivirus": "clamd", "antivirusSocket": "/var/tmp/clamd.sock", "antivirusCommand": "scan {path}",
-		"dates": "absolute", "trashRetentionDays": "10", "historyEventsKept": "50",
+		"dates": "absolute", "graphics": "smooth", "trashRetentionDays": "10", "historyEventsKept": "50",
 		"notifyDownloadFinished": "false", "notifyDownloadFailed": "false", "notifyRunCrashed": "false",
 		"desktopDownloadFinished": "true", "desktopDownloadFailed": "false", "desktopRunCrashed": "false",
 		"desktopModUpdates": "true",

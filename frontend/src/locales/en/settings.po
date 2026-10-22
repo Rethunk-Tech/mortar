@@ -60,6 +60,10 @@ msgstr "with {loader} {version}"
 msgid "Settings imported"
 msgstr "Settings imported"
 
+#: src/settings/prefCopyGraphics.ts
+msgid "Graphics"
+msgstr "Graphics"
+
 #: src/settings/sections/DataMove.tsx
 msgid "Move data folder…"
 msgstr "Move data folder…"
@@ -231,6 +235,10 @@ msgstr "Free"
 #: src/settings/sections/Sources.tsx
 msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
 msgstr "No login, so the lower rate limit applies. Run gh auth login to raise it."
+
+#: src/settings/prefCopyGraphics.ts
+msgid "Compatible"
+msgstr "Compatible"
 
 #: src/settings/NexusMeter.tsx
 msgid "{remaining} of {limit} this hour"
@@ -528,6 +536,10 @@ msgstr "Mortar is up to date"
 #: src/settings/prefCopy.ts
 msgid "Remember window size and position"
 msgstr "Remember window size and position"
+
+#: src/settings/prefCopyGraphics.ts
+msgid "Try this if scrolling is slow or the fans spin up, as on some graphics cards."
+msgstr "Try this if scrolling is slow or the fans spin up, as on some graphics cards."
 
 #: src/settings/prefCopy.ts
 msgid "Console timestamps"
@@ -1082,6 +1094,7 @@ msgstr "This game's folder"
 
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyAntivirus.ts
+#: src/settings/prefCopyGraphics.ts
 #: src/settings/sections/Downloads.tsx
 msgid "Automatic"
 msgstr "Automatic"
@@ -1758,6 +1771,10 @@ msgstr "Modified outside Mortar"
 msgid "Nothing would change."
 msgstr "Nothing would change."
 
+#: src/settings/prefCopyGraphics.ts
+msgid "Applies after Mortar restarts."
+msgstr "Applies after Mortar restarts."
+
 #: src/settings/sections/DataMove.tsx
 msgid "Move…"
 msgstr "Move…"
@@ -2157,6 +2174,10 @@ msgstr "How many backups to keep of each kind: before Play, before a mod update,
 msgid "Weather"
 msgstr "Weather"
 
+#: src/settings/prefCopyGraphics.ts
+msgid "Try this if the window stays blank or white."
+msgstr "Try this if the window stays blank or white."
+
 #: src/settings/usePerProfileRelated.tsx
 msgid "{name} is set per profile"
 msgstr "{name} is set per profile"
@@ -2434,6 +2455,10 @@ msgstr "Install Mortar updates automatically"
 #: src/settings/prefCopy.ts
 msgid "Share notes"
 msgstr "Share notes"
+
+#: src/settings/prefCopyGraphics.ts
+msgid "Smoother scrolling"
+msgstr "Smoother scrolling"
 
 #: src/settings/sections/checkDetail.ts
 msgid "Data folder has no free space"

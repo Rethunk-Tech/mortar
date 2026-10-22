@@ -5,6 +5,7 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { storeName } from '../games/storeName.ts'
 import { antivirusPrefs, type PrefCopy } from './prefCopyAntivirus.ts'
 import { gamePrefs } from './prefCopyGame.ts'
+import { graphicsPrefs } from './prefCopyGraphics.ts'
 import { modsViewPrefs } from './prefCopyModsView.ts'
 
 function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
@@ -47,6 +48,7 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
       ],
     },
     ...antivirusPrefs(i18n),
+    ...graphicsPrefs(i18n),
     defaultLaunchMethod: {
       label: i18n._(msg`Default launch`),
       description: i18n._(

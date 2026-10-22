@@ -60,6 +60,10 @@ msgstr ""
 msgid "Settings imported"
 msgstr ""
 
+#: src/settings/prefCopyGraphics.ts
+msgid "Graphics"
+msgstr ""
+
 #: src/settings/sections/DataMove.tsx
 msgid "Move data folder…"
 msgstr ""
@@ -230,6 +234,10 @@ msgstr ""
 
 #: src/settings/sections/Sources.tsx
 msgid "No login, so the lower rate limit applies. Run gh auth login to raise it."
+msgstr ""
+
+#: src/settings/prefCopyGraphics.ts
+msgid "Compatible"
 msgstr ""
 
 #: src/settings/NexusMeter.tsx
@@ -527,6 +535,10 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Remember window size and position"
+msgstr ""
+
+#: src/settings/prefCopyGraphics.ts
+msgid "Try this if scrolling is slow or the fans spin up, as on some graphics cards."
 msgstr ""
 
 #: src/settings/prefCopy.ts
@@ -1082,6 +1094,7 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyAntivirus.ts
+#: src/settings/prefCopyGraphics.ts
 #: src/settings/sections/Downloads.tsx
 msgid "Automatic"
 msgstr ""
@@ -1758,6 +1771,10 @@ msgstr ""
 msgid "Nothing would change."
 msgstr ""
 
+#: src/settings/prefCopyGraphics.ts
+msgid "Applies after Mortar restarts."
+msgstr ""
+
 #: src/settings/sections/DataMove.tsx
 msgid "Move…"
 msgstr ""
@@ -2157,6 +2174,10 @@ msgstr ""
 msgid "Weather"
 msgstr ""
 
+#: src/settings/prefCopyGraphics.ts
+msgid "Try this if the window stays blank or white."
+msgstr ""
+
 #: src/settings/usePerProfileRelated.tsx
 msgid "{name} is set per profile"
 msgstr ""
@@ -2433,6 +2454,10 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Share notes"
+msgstr ""
+
+#: src/settings/prefCopyGraphics.ts
+msgid "Smoother scrolling"
 msgstr ""
 
 #: src/settings/sections/checkDetail.ts

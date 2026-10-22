@@ -31,6 +31,13 @@ const (
 	DatesRelative = "relative"
 	DatesAbsolute = "absolute"
 
+	// How WebKit renders on Linux: automatic keeps Wails' choice (the DMA-BUF renderer off where NVIDIA renders),
+	// smooth keeps the DMA-BUF renderer and turns compositing off instead, which scrolls at a third of the CPU,
+	// compatible turns the DMA-BUF renderer off on any GPU, for a blank or white window.
+	GraphicsAutomatic  = "automatic"
+	GraphicsSmooth     = "smooth"
+	GraphicsCompatible = "compatible"
+
 	ModsViewGrid = "grid"
 	ModsViewList = "list"
 	// How the Mods list shows implicit mods: in place, beneath the mods that require them, or not at all.
@@ -177,6 +184,7 @@ func defaultPrefs() Settings {
 		BackgroundBadgeChecks:      on(),
 		StartScreen:                StartScreenLast,
 		Dates:                      DatesRelative,
+		Graphics:                   GraphicsAutomatic,
 		TrashRetentionDays:         DefaultTrashRetentionDays,
 		HistoryEventsKept:          DefaultHistoryEventsKept,
 		Antivirus:                  AntivirusAutomatic,
@@ -270,6 +278,9 @@ func normalizePrefs(s *Settings) {
 	}
 	if !slices.Contains(datesValues, s.Dates) {
 		s.Dates = DatesRelative
+	}
+	if !slices.Contains(graphicsValues, s.Graphics) {
+		s.Graphics = GraphicsAutomatic
 	}
 	if s.TrashRetentionDays < MinTrashRetentionDays || s.TrashRetentionDays > MaxTrashRetentionDays {
 		s.TrashRetentionDays = DefaultTrashRetentionDays
@@ -400,6 +411,9 @@ func validatePrefs(s Settings) error {
 	if !slices.Contains(datesValues, s.Dates) {
 		return fmt.Errorf("dates must be relative or absolute, got %q", s.Dates)
 	}
+	if !slices.Contains(graphicsValues, s.Graphics) {
+		return fmt.Errorf("graphics must be automatic, smooth or compatible, got %q", s.Graphics)
+	}
 	if s.TrashRetentionDays < MinTrashRetentionDays || s.TrashRetentionDays > MaxTrashRetentionDays {
 		return fmt.Errorf("trash retention days must be %d to %d, got %d", MinTrashRetentionDays, MaxTrashRetentionDays, s.TrashRetentionDays)
 	}
@@ -457,6 +471,7 @@ var (
 	startScreenValues         = []string{StartScreenLast, StartScreenGameSelect}
 	antivirusValues           = []string{AntivirusAutomatic, AntivirusClamd, AntivirusCommand, AntivirusOff}
 	datesValues               = []string{DatesRelative, DatesAbsolute}
+	graphicsValues            = []string{GraphicsAutomatic, GraphicsSmooth, GraphicsCompatible}
 	modsViewValues            = []string{ModsViewGrid, ModsViewList}
 	implicitModsValues        = []string{ImplicitModsShown, ImplicitModsNested, ImplicitModsHidden}
 	densityValues             = []string{DensityComfortable, DensityCompact}

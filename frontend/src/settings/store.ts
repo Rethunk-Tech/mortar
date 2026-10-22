@@ -85,6 +85,7 @@ const defaults: Settings = {
   startScreen: 'last',
   antivirus: 'automatic',
   dates: 'relative',
+  graphics: 'automatic',
   trashRetentionDays: 30,
   historyEventsKept: 200,
   notifyDownloadFinished: false,

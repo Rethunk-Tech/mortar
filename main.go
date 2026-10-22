@@ -411,6 +411,7 @@ func run() error {
 		return err
 	}
 	i18n.SetLanguageSource(func() string { return store.Get().Language })
+	applyGraphics(store.Get().Graphics)
 	applyLinkChoices(store.Get())
 	svc := settings.NewService(store)
 	svc.ValidateGameFolder = game.ValidateFolder

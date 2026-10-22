@@ -9,6 +9,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { System } from '@wailsio/runtime'
 import { ImagePlus, RotateCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
@@ -320,6 +321,7 @@ export function Appearance() {
             'profileHero',
             'centerConfigControls',
             'systemTitleBar',
+            ...(System.IsLinux() ? ['graphics'] : []),
           ]}
         />
       </SettingsSection>
