@@ -71,7 +71,7 @@ describe('notes.sh', () => {
         '',
         '- A crash on start',
         '',
-        'The Linux AppImage and portable program need glibc 2.38 or newer (Ubuntu 24.04, Debian 13, Fedora 39 or later); older systems use the Flatpak.',
+        'The Linux AppImage and portable program need glibc 2.35 or newer (Ubuntu 22.04, Linux Mint 21, Debian 12, Fedora 36 or later); older systems use the Flatpak.',
         '',
         '[Full changelog](https://github.com/o/r/compare/v0.1.0...v0.2.0)',
         '',

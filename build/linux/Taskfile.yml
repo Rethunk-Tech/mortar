@@ -66,11 +66,18 @@ tasks:
     cmds:
       - task: create:appimage
 
+  create:appimage:jammy:
+    summary: Creates the release AppImage and portable program in an ubuntu:22.04 container (Docker), so they run on glibc 2.35
+    cmds:
+      - build/linux/appimage/jammy.sh
+
   create:appimage:
-    summary: Creates an AppImage
+    summary: Creates an AppImage (GTK 3) from this system's libraries; create:appimage:jammy is the release build
     dir: build/linux/appimage
     deps:
       - task: build
+        vars:
+          EXTRA_TAGS: gtk3
     cmds:
       - cp "{{.APP_BINARY}}" "{{.APP_NAME}}"
       - mkdir -p "{{.ROOT_DIR}}/build/linux/appimage/build"

@@ -166,10 +166,12 @@ jobs:
           path: ~/.cache/mortar-build
           key: appimage-tools-${{ matrix.appimage_arch }}-${{ hashFiles('build/linux/appimage/pins.txt') }}
 
+      # Built in an ubuntu:22.04 container on this runner rather than on a second runner, so the leg's Go and Bun
+      # setup and caches serve it too; the AppImage then runs on glibc 2.35 and newer.
       - name: Linux AppImage
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-        run: wails3 task linux:create:appimage
+        run: wails3 task linux:create:appimage:jammy
 
       - name: Linux deb, rpm and Arch packages
         env:

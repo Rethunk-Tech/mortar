@@ -106,7 +106,7 @@ markdown() {
   if [ -z "$new$changed$fixed" ]; then
     printf 'No user-facing changes.\n\n'
   fi
-  printf 'The Linux AppImage and portable program need glibc 2.38 or newer (Ubuntu 24.04, Debian 13, Fedora 39 or later); older systems use the Flatpak.\n\n'
+  printf 'The Linux AppImage and portable program need glibc 2.35 or newer (Ubuntu 22.04, Linux Mint 21, Debian 12, Fedora 36 or later); older systems use the Flatpak.\n\n'
   printf '[Full changelog](%s)\n' "$changelog"
 }
 

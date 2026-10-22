@@ -16,8 +16,8 @@ The window needs Microsoft's WebView2 Runtime; the installer adds it when missin
 
 ### Linux
 
-- **AppImage** (`mortar-linux-x86_64.AppImage`, `mortar-linux-aarch64.AppImage`): make it executable (`chmod +x`) and run it. It needs Ubuntu 24.04, Debian 13, Fedora 39 or newer (glibc 2.38+); on an older system use the Flatpak.
-- **Portable program** (`mortar-linux-amd64`, `mortar-linux-arm64`): same requirements plus GTK 4 and WebKitGTK 6.0 (`libwebkitgtk-6.0-4` on Debian and Ubuntu, `webkitgtk6.0` on Fedora, `webkitgtk-6.0` on Arch). It updates itself and on first run adds a menu entry and takes nxm:// links.
+- **AppImage** (`mortar-linux-x86_64.AppImage`, `mortar-linux-aarch64.AppImage`): make it executable (`chmod +x`) and run it. It needs Ubuntu 22.04 (Linux Mint 21), Debian 12, Fedora 36 or newer (glibc 2.35+); on an older system use the Flatpak.
+- **Portable program** (`mortar-linux-amd64`, `mortar-linux-arm64`): same requirements plus GTK 3 and WebKitGTK 4.1 (`libwebkit2gtk-4.1-0` on Debian and Ubuntu, `webkit2gtk4.1` on Fedora, `webkit2gtk-4.1` on Arch). It updates itself and on first run adds a menu entry and takes nxm:// links.
 - **Flatpak:** `flatpak install --user https://mortar.rethunk.tech/packages/flatpak/tech.rethunk.Mortar.flatpakref` adds Mortar's signed repository, so `flatpak update` keeps it current. Each release also has `mortar-linux-x86_64.flatpak` and `mortar-linux-aarch64.flatpak` for a one-time install without updates. Sandbox limits:
   - Folders outside the Flatpak's allowed set (Steam, Heroic, Lutris and the usual game folders) are invisible. Grant one with `flatpak override --user --filesystem=<folder> tech.rethunk.Mortar`.
   - **Add this profile to Steam** is refused; the error shows the `flatpak run tech.rethunk.Mortar --play=<game>/<profile> --steam-session` command to use instead.
