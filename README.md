@@ -44,7 +44,7 @@ Prerequisites (including the `wails3` CLI built from the pinned Wails fork), bui
 ## Screenshots
 
 <table>
-<tr><td align="center"><img src="build/linux/screenshots/problems.png" alt="Problems tab explaining which mod wins each content conflict, with Disable and Make a pack win buttons" width="440"><br><sub>Problems: content conflicts explained, with one-click fixes</sub></td><td align="center"><img src="build/linux/screenshots/performance.png" alt="Performance tab: time to the main menu, each phase of the start, and the slowest mods" width="440"><br><sub>Performance: what each mod costs at startup</sub></td></tr>
+<tr><td align="center"><img src="build/linux/screenshots/problems.png" alt="Problems tab listing conflicts and cosmetic overlaps by section, each with Why? and one fix button whose menu holds Disable and Dismiss" width="440"><br><sub>Problems: every problem on one page, one button to fix each</sub></td><td align="center"><img src="build/linux/screenshots/performance.png" alt="Performance tab: time to the main menu, each phase of the start, and the slowest mods" width="440"><br><sub>Performance: what each mod costs at startup</sub></td></tr>
 <tr><td align="center" colspan="2"><img src="build/linux/screenshots/settings.png" alt="General settings: the antivirus that scans every mod before it is installed" width="600"><br><sub>Every mod scanned by your antivirus before it is installed</sub></td></tr>
 </table>
 

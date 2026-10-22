@@ -7,7 +7,7 @@ highlights:
   - area: Problems
     title: Errors explained
     text: A mod's error names the method that threw and the other mods patching that code.
-    image: /img/problems.webp
+    image: /img/problems-0-3-9.webp
   - area: Downloads
     title: Auto-install folders
     text: Each build of your mod lands in the open profile.

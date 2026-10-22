@@ -52,6 +52,34 @@
     <content_attribute id="social-info">mild</content_attribute>
   </content_rating>
   <releases>
+    <release version="0.3.12" date="2026-10-22">
+      <description>
+        <p>New</p>
+        <ul>
+          <li>Mortar is open for translation on Hosted Weblate; Spanish (with Argentina and Panama variants) and Brazilian Portuguese are under way</li>
+          <li>Settings › General › Language lists a language once part of it is translated, with how much is done; following the system language switches only to a language that is mostly translated</li>
+          <li>The tray menu, desktop notifications, file dialogs and startup messages follow the language too</li>
+          <li>Help translate Mortar, beside the Language setting and in the guide, opens the project on Weblate</li>
+          <li>Graphics in Settings › Appearance: Smoother scrolling for computers where scrolling is slow or the fans spin up in Mortar, as on some graphics cards, and Compatible for a window that stays blank</li>
+          <li>Every section is on one page, each with its count; Slow startup, Redundant, Cleanup, Replaced and Dismissed are links under the list</li>
+          <li>Each problem has one button for its suggested fix, with the other fixes and Dismiss in its menu, and Why? beside it</li>
+          <li>Mortar starts with far less work drawing the Mods page</li>
+          <li>Switching a mod on or off rechecks problems sooner, Load order shows dependency names without waiting, and Settings › Storage sizes the data folder in about half the time</li>
+          <li>One word for each thing throughout: Enable and Disable everywhere, and "cannot" rather than "can't"</li>
+          <li>Error messages that said the same thing in different words now use one headline</li>
+          <li>Settings descriptions that only repeated their setting's name are gone</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>Add to group no longer shows "Something went wrong in this view" when the profile already has a group</li>
+          <li>Opening a mod's details in Browse keeps that mod on screen instead of jumping to another page</li>
+          <li>Browse's list view shows each mod's picture again; it had shrunk to a sliver under the star, which covered the name's first letter</li>
+          <li>Importing an r2modman profile brings a mod you added to it by hand as a local mod, instead of calling it removed from Nexus with a page link that does not exist</li>
+          <li>The What's new and sync dialogs close with Close</li>
+          <li>Adding a mod's zip that does not say who made it installs it, by Unknown as r2modman names it, instead of refusing it</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3.11" date="2026-10-22">
       <description>
         <p>New</p>
