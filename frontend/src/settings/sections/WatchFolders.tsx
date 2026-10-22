@@ -62,7 +62,7 @@ function WatchFolders() {
             <Select
               size="small"
               value={mode}
-              inputProps={{ 'aria-label': t`What to do with ${dir}` }}
+              inputProps={{ 'aria-label': t`What to do with ${{ path: dir }}` }}
               onChange={(e) => {
                 const to = e.target.value as Mode
                 if (to !== mode) {

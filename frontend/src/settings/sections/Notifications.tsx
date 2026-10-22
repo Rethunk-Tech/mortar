@@ -78,8 +78,11 @@ export function Notifications() {
         {events.map((e) => (
           <SettingRow key={e.toast} label={e.label}>
             <Box sx={{ display: 'flex' }}>
-              <ChannelSwitch prefKey={e.toast} label={t`${e.label}: in Mortar`} />
-              <ChannelSwitch prefKey={e.desktop} label={t`${e.label}: desktop notification`} />
+              <ChannelSwitch prefKey={e.toast} label={t`${{ name: e.label }}: in Mortar`} />
+              <ChannelSwitch
+                prefKey={e.desktop}
+                label={t`${{ name: e.label }}: desktop notification`}
+              />
             </Box>
           </SettingRow>
         ))}

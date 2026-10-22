@@ -60,12 +60,15 @@ function UntrackConfirmDialog({
         const result = await UntrackAll(gameId, unused)
         const toast = {
           kind: result.stoppedForLimit ? 'warning' : 'success',
-          title: plural(result.untracked, {
-            one: 'Untracked # mod',
-            other: 'Untracked # mods',
-          }),
+          title: plural(
+            { count: result.untracked },
+            {
+              one: 'Untracked # mod',
+              other: 'Untracked # mods',
+            },
+          ),
           ...(result.stoppedForLimit
-            ? { body: t`Stopped at the API limit; ${result.remaining} left` }
+            ? { body: t`Stopped at the API limit; ${{ remaining: result.remaining }} left` }
             : {}),
         } as const
         pushToast(toast)
@@ -83,8 +86,8 @@ function UntrackConfirmDialog({
       title={t`Untrack mods?`}
       body={
         unused
-          ? t`Untrack the ${gameName} mods none of your profiles use, out of ${trackedCount} tracked? Nexus has no undo for this.`
-          : t`${plural(trackedCount, { one: `Untrack all # tracked ${gameName} mod on Nexus? Nexus has no undo for this.`, other: `Untrack all # tracked ${gameName} mods on Nexus? Nexus has no undo for this.` })}`
+          ? t`Untrack the ${{ game: gameName }} mods none of your profiles use, out of ${trackedCount} tracked? ${{ source: sourceLabel('nexus') }} has no undo for this.`
+          : t`${plural({ count: trackedCount }, { one: `Untrack all # tracked ${{ game: gameName }} mod`, other: `Untrack all # tracked ${{ game: gameName }} mods` })} on ${{ source: sourceLabel('nexus') }}? ${{ source: sourceLabel('nexus') }} has no undo for this.`
       }
       confirmLabel={t`Untrack mods`}
       onCancel={onCancel}
@@ -118,16 +121,24 @@ function NexusModsSignedIn({
   }, [game])
   const gameName = game?.name ?? ''
   const untrackOff = busy || trackedCount === null || trackedCount === 0
-  let trackedText = t`Untrack every mod you track on Nexus`
+  let trackedText = t`Untrack every mod you track on ${{ source: sourceLabel('nexus') }}`
   if (gameName && trackedCount !== null) {
-    trackedText = t`${plural(trackedCount, { one: `# ${gameName} mod tracked on Nexus`, other: `# ${gameName} mods tracked on Nexus` })}`
+    trackedText = plural(
+      { count: trackedCount },
+      {
+        one: `# ${{ game: gameName }} mod tracked on ${{ source: sourceLabel('nexus') }}`,
+        other: `# ${{ game: gameName }} mods tracked on ${{ source: sourceLabel('nexus') }}`,
+      },
+    )
   } else if (gameName) {
-    trackedText = t`Untrack every ${gameName} mod on Nexus`
+    trackedText = t`Untrack every ${{ game: gameName }} mod on ${{ source: sourceLabel('nexus') }}`
   }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
-      <Searchable terms={`${t`Nexus account`} Nexus ${t`Sign out`} ${name}`}>
+      <Searchable
+        terms={`${t`${{ source: sourceLabel('nexus') }} account`} Nexus ${t`Sign out`} ${name}`}
+      >
         <Alert
           variant="compact"
           severity="success"
@@ -140,7 +151,10 @@ function NexusModsSignedIn({
               onClick={() => {
                 SignOut()
                   .then(() =>
-                    useToasts.getState().push({ kind: 'success', title: t`Signed out of Nexus` }),
+                    useToasts.getState().push({
+                      kind: 'success',
+                      title: t`Signed out of ${{ source: sourceLabel('nexus') }}`,
+                    }),
                   )
                   .catch(reportUnexpected)
               }}
@@ -161,7 +175,10 @@ function NexusModsSignedIn({
       </Searchable>
       <SettingsSection title={t`Tracking`}>
         <PrefByKey prefKey="autoTrackNexus" />
-        <SettingRow label={t`Untrack on Nexus`} description={trackedText}>
+        <SettingRow
+          label={t`Untrack on ${{ source: sourceLabel('nexus') }}`}
+          description={trackedText}
+        >
           <Box sx={{ display: 'flex', gap: space.gap }}>
             <Button
               variant="outlined"
@@ -224,7 +241,7 @@ export function NexusSignIn() {
       .catch((err: unknown) =>
         setError(
           errorKind(err) === 'invalid'
-            ? inlineError(err, t`${{ site: sourceLabel('nexus') }} rejected your API key`)
+            ? inlineError(err, t`${{ source: sourceLabel('nexus') }} rejected your API key`)
             : inlineError(err),
         ),
       )
@@ -245,13 +262,15 @@ export function NexusSignIn() {
     return nxm.dialog
   }
   return (
-    <Searchable terms={`${t`Nexus account`} Nexus ${t`Personal API key`} ${t`Sign in`}`}>
+    <Searchable
+      terms={`${t`${{ source: sourceLabel('nexus') }} account`} Nexus ${t`Personal API key`} ${t`Sign in`}`}
+    >
       {nxm.dialog}
       <NexusSSO />
       {keyAllowed ? (
         <SettingRow
           label={t`Personal API key`}
-          description={t`Kept in your system keyring. Find it on Nexus under Settings, API Keys.`}
+          description={t`Kept in your system keyring. Find it on ${{ source: sourceLabel('nexus') }} under Settings, API Keys.`}
         >
           <Box
             component="form"
@@ -310,7 +329,7 @@ export function NexusMods() {
   }
   const { t } = useLingui()
   return (
-    <SettingsSection title={t`Nexus Mods`} tiles={false}>
+    <SettingsSection title={t`${{ source: sourceLabel('nexus') }}`} tiles={false}>
       <NexusSignIn />
       {signedIn ? (
         <NexusModsSignedIn

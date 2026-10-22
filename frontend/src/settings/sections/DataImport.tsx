@@ -111,7 +111,7 @@ export function ImportSettingsDialog({
       )}
       {ignored.length > 0 ? (
         <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 1 }}>
-          {t`Ignored fields Mortar does not import: ${listNames(ignored)}`}
+          {t`Ignored fields Mortar does not import: ${{ names: listNames(ignored) }}`}
         </Typography>
       ) : null}
     </ConfirmDialog>

@@ -2,6 +2,7 @@ import { msg } from '@lingui/core/macro'
 import { create } from 'zustand'
 import type { Account } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
 import { Account as fetchAccount } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { i18n } from '../i18n/index.ts'
 import { follow } from '../shell/follow.ts'
@@ -80,7 +81,7 @@ export const initNexus = () => {
     const when = reset ? formatWhen(reset) : ''
     useToasts.getState().push({
       kind: 'warning',
-      title: i18n._(msg`Nexus API requests are running low`),
+      title: i18n._(msg`${{ source: sourceLabel('nexus') }} API requests are running low`),
       body:
         low.window === 'hourly'
           ? i18n._(msg`${remaining} of ${limit} left this hour; the count resets ${when}.`)

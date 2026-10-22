@@ -32,11 +32,14 @@ function useCheckProgress() {
 function Result({ summary }: { summary: Summary }) {
   const { t } = useLingui()
   const damaged = summary.damaged ?? []
-  const checked = plural(summary.checked, { one: '# mod checked', other: '# mods checked' })
+  const checked = plural(
+    { count: summary.checked },
+    { one: '# mod checked', other: '# mods checked' },
+  )
   if (damaged.length === 0) {
     return summary.failed > 0 ? (
       <Alert variant="compact" severity="warning">
-        {t`${checked}. ${plural(summary.failed, { one: '# could not be read.', other: '# could not be read.' })}`}
+        {t`${checked}. ${plural({ count: summary.failed }, { one: '# could not be read.', other: '# could not be read.' })}`}
       </Alert>
     ) : (
       <Alert variant="compact" severity="success">
@@ -44,14 +47,17 @@ function Result({ summary }: { summary: Summary }) {
       </Alert>
     )
   }
-  const bad = plural(damaged.length, { one: '# has damaged files', other: '# have damaged files' })
+  const bad = plural(
+    { count: damaged.length },
+    { one: '# has damaged files', other: '# have damaged files' },
+  )
   return (
     <Alert variant="compact" severity="error">
       {t`${checked}; ${bad}. Repair them from each profile's Problems tab.`}
       <Box component="ul" sx={{ m: 0, mt: 0.5, pl: space.pad }}>
         {damaged.map((item) => (
           <li key={`${item.game}/${item.key}`}>
-            {t`${item.name}: ${item.missing} missing, ${item.changed} changed, ${item.extra} extra`}
+            {t`${{ name: item.name }}: ${{ missing: item.missing }} missing, ${{ changed: item.changed }} changed, ${{ extra: item.extra }} extra`}
           </li>
         ))}
       </Box>
@@ -84,7 +90,7 @@ export function StoreCheckRow() {
           <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: space.gap }}>
             <LinearProgress variant="determinate" value={percent} sx={{ flex: 1 }} />
             <Typography sx={{ fontSize: 14, fontVariantNumeric: 'tabular-nums' }}>
-              {t`${progress.done} of ${progress.total}`}
+              {t`${{ done: progress.done }} of ${{ total: progress.total }}`}
             </Typography>
           </Box>
         ) : null}

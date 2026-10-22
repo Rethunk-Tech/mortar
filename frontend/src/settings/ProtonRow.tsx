@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { PROTON, STEAM } from '../brand/productNames.ts'
 import { PrefSelect } from './PrefControls.tsx'
 import { persist } from './persist.ts'
 import { useProtonBuilds } from './protonBuilds.ts'
@@ -14,16 +15,16 @@ export function ProtonRow({ game }: { game: string }) {
   if (builds.length === 0) {
     return null
   }
-  const label = t`Proton version`
+  const label = t`${{ app: PROTON }} version`
   return (
     <SettingRow
       label={label}
-      description={t`The Proton build from Steam that runs this copy, which Steam does not start`}
+      description={t`The ${{ app: PROTON }} build from ${{ launcher: STEAM }} that runs this copy, which ${{ launcher: STEAM }} does not start`}
     >
       <PrefSelect
         value={value}
         options={[
-          { value: '', label: t`The newest Steam has` },
+          { value: '', label: t`The newest ${{ launcher: STEAM }} has` },
           ...builds.map((b) => ({ value: b, label: b })),
         ]}
         label={label}

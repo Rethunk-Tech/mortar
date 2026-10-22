@@ -37,7 +37,7 @@ function ItchRow() {
       .catch((err: unknown) =>
         setError(
           errorKind(err) === 'invalid'
-            ? inlineError(err, t`${{ site: sourceLabel('itch') }} rejected your API key`)
+            ? inlineError(err, t`${{ source: sourceLabel('itch') }} rejected your API key`)
             : inlineError(err),
         ),
       )
@@ -58,7 +58,7 @@ function ItchRow() {
   ) : (
     <SettingRow
       label={t`API key`}
-      description={t`Kept in your system keyring. Create one on itch.io under Settings, API keys.`}
+      description={t`Kept in your system keyring. Create one on ${{ source: sourceLabel('itch') }} under Settings, API keys.`}
     >
       <Box
         component="form"

@@ -60,7 +60,7 @@ function LargeBackgroundNote({ src }: { src: string }) {
   const bytes = useBackgroundBytes(src)
   return bytes > LARGE_BACKGROUND_BYTES ? (
     <Typography sx={{ maxWidth: 420, fontSize: 12, textAlign: 'right', color: 'warning.main' }}>
-      {t`This image is ${formatBytes(bytes)}, which costs memory and GPU while Mortar is open. The same picture or animation saved as WebP is often a tenth of the size.`}
+      {t`This image is ${{ size: formatBytes(bytes) }}, which costs memory and GPU while Mortar is open. The same picture or animation saved as WebP is often a tenth of the size.`}
     </Typography>
   ) : null
 }

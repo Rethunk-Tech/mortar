@@ -20,13 +20,15 @@ export function loaderToastShownToday(at: string | undefined, now = Date.now()):
 
 // A loader that lives in each profile is updated in every profile on it, so the toast says so.
 export function loaderUpdateText(name: string, status: Status): { title: string; body?: string } {
-  const title = i18n._(msg`${name} ${status.latest} is out`)
+  const title = i18n._(msg`${name} ${{ latest: status.latest }} is out`)
   if (!status.perProfile) {
     return { title }
   }
   return {
     title,
-    body: i18n._(msg`Your profiles have ${status.version}. Update replaces each profile's copy.`),
+    body: i18n._(
+      msg`Your profiles have ${{ version: status.version }}. Update replaces each profile's copy.`,
+    ),
   }
 }
 

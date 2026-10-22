@@ -16,6 +16,8 @@ import {
   SetNxmRedirectOtherGames,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { ExtensionContact } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
+import { CHROME, FIREFOX } from '../../brand/productNames.ts'
+import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { When } from '../../i18n/When.tsx'
 import { openPage } from '../../mods/menu.ts'
 import { listProfiles } from '../../profiles/listProfiles.ts'
@@ -60,7 +62,10 @@ function NxmDefaultProfile({ game, gameName }: { game: string; gameName: string 
     ...profiles.map((p) => ({ value: p.id, label: p.name })),
   ]
   return (
-    <SettingRow label={t`${copy.label} (${gameName})`} description={copy.description}>
+    <SettingRow
+      label={t`${{ name: copy.label }} (${{ game: gameName }})`}
+      description={copy.description}
+    >
       <PrefSelect
         value={options.some((o) => o.value === value) ? value : ''}
         onChange={(v) =>
@@ -117,7 +122,7 @@ function ExtensionConnection() {
         {mismatch ??
           (connected ? (
             <>
-              {t`Connected from ${contact.browser}, last seen `}
+              {t`Connected from ${{ browser: contact.browser }}, last seen `}
               <When value={contact.lastSeen} withTime={true} />
             </>
           ) : (
@@ -137,7 +142,7 @@ function ExtensionInstall() {
         label={t`Get the extension`}
         description={
           <>
-            {t`It marks Nexus Mods pages with what your profile already has and sends Mod Manager Download links to Mortar.`}
+            {t`It marks ${{ source: sourceLabel('nexus') }} pages with what your profile already has and sends Mod Manager Download links to Mortar.`}
             <ExtensionSteps />
           </>
         }
@@ -159,10 +164,10 @@ function ExtensionSteps() {
       sx={{ m: 0, mt: 1, pl: 2.5 }}
     >
       <li>
-        {t`Chrome, Edge or another Chromium browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder.`}
+        {t`${{ app: CHROME }}, Edge or another Chromium browser: unzip the download, open chrome://extensions, turn on Developer mode and choose Load unpacked on the unzipped folder.`}
       </li>
       <li>
-        {t`Firefox:`}{' '}
+        {t`${{ app: FIREFOX }}:`}{' '}
         <Link
           component="button"
           onClick={() => openPage(EXTENSION_XPI)}
@@ -170,7 +175,7 @@ function ExtensionSteps() {
         >
           {t`download the signed add-on`}
         </Link>{' '}
-        {t`and open it in Firefox. If that release has none, unzip the download, open about:debugging, choose This Firefox, then Load Temporary Add-on and pick manifest.json; Firefox removes it when it restarts.`}
+        {t`and open it in ${{ app: FIREFOX }}. If that release has none, unzip the download, open about:debugging, choose This ${{ app: FIREFOX }}, then Load Temporary Add-on and pick manifest.json; ${{ app: FIREFOX }} removes it when it restarts.`}
       </li>
     </Box>
   )
@@ -190,8 +195,8 @@ const SourceLinks = memo(function SourceLinksView() {
   return sources.map((source) => (
     <SettingRow
       key={source.id}
-      label={t`Handle ${source.name} links`}
-      description={t`Opening a ${source.scheme}:// link, such as Install with Mod Manager, installs the mod in Mortar.`}
+      label={t`Handle ${{ name: source.name }} links`}
+      description={t`Opening a ${{ scheme: source.scheme }}:// link, such as Install with Mod Manager, installs the mod in Mortar.`}
     >
       <PrefSwitch
         checked={source.handled}
@@ -199,11 +204,11 @@ const SourceLinks = memo(function SourceLinksView() {
           const done = on ? EnableSource(source.id) : DisableSource(source.id)
           done
             .catch((error: unknown) =>
-              toastError(t`Could not change how ${source.name} links open`, error),
+              toastError(t`Could not change how ${{ name: source.name }} links open`, error),
             )
             .finally(load)
         }}
-        label={t`Handle ${source.name} links`}
+        label={t`Handle ${{ name: source.name }} links`}
       />
     </SettingRow>
   ))
@@ -221,7 +226,7 @@ function NxmLinks() {
     <>
       <SettingRow
         label={t`Handle "Mod Manager Download" links`}
-        description={`${t`Clicking these links on Nexus starts the download in Mortar.`} ${
+        description={`${t`Clicking these links on ${{ source: sourceLabel('nexus') }} starts the download in Mortar.`} ${
           owner ? t`${owner} opens these links now.` : t`No app opens these links now.`
         }`}
       >
@@ -233,7 +238,7 @@ function NxmLinks() {
       </SettingRow>
       {nxm.handled && nxmPrevious ? (
         <SettingRow
-          label={t`Send other games' links to ${redirectName}`}
+          label={t`Send other games' links to ${{ name: redirectName }}`}
           description={t`Links for games Mortar does not manage open in the app that had them before.`}
         >
           <PrefSwitch
@@ -241,7 +246,7 @@ function NxmLinks() {
             onChange={(on) =>
               persist(() => SetNxmRedirectOtherGames(on), t`Could not save that setting`)
             }
-            label={t`Send other games' links to ${redirectName}`}
+            label={t`Send other games' links to ${{ name: redirectName }}`}
           />
         </SettingRow>
       ) : null}
@@ -265,7 +270,7 @@ function PreferredServer() {
   return (
     <SettingRow
       label={t`Preferred download server`}
-      description={t`Premium downloads come from this Nexus server when it offers the file.`}
+      description={t`Premium downloads come from this ${{ source: sourceLabel('nexus') }} server when it offers the file.`}
     >
       <PrefSelect
         value={options.some((o) => o.value === preferred) ? preferred : ''}

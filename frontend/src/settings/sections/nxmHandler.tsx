@@ -6,6 +6,7 @@ import {
   Enable,
   Owner,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
+import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { useLoaded } from '../../shell/useLoaded.ts'
 import { toastError } from '../../toasts/report.ts'
@@ -33,7 +34,8 @@ export function useNxmHandler(): {
     [handled],
     '',
   )
-  const fail = (e: unknown) => toastError(t`Could not change how Nexus links open`, e)
+  const fail = (e: unknown) =>
+    toastError(t`Could not change how ${{ source: sourceLabel('nexus') }} links open`, e)
   const change = (on: boolean) => {
     const done = on ? Enable() : Disable()
     done.catch(fail)
@@ -48,18 +50,18 @@ export function useNxmHandler(): {
   const close = () => setPrompt(null)
   const intro =
     prompt?.mode === 'offer'
-      ? t`Should Mortar open Nexus "Mod Manager Download" links, so a click on Nexus starts the download here?`
-      : t`Mortar downloads and installs a mod when you click Mod Manager Download on Nexus.`
+      ? t`Should Mortar open ${{ source: sourceLabel('nexus') }} "Mod Manager Download" links, so a click on ${{ source: sourceLabel('nexus') }} starts the download here?`
+      : t`Mortar downloads and installs a mod when you click Mod Manager Download on ${{ source: sourceLabel('nexus') }}.`
   const ownerNote = prompt?.owner
-    ? t`${prompt.owner} opens these links now. Mortar takes them over and gives them back when you disable this in Settings.`
+    ? t`${{ owner: prompt.owner }} opens these links now. Mortar takes them over and gives them back when you disable this in Settings.`
     : ''
   const dialog = (
     <ConfirmDialog
       open={prompt !== null}
       title={
         prompt?.mode === 'offer' || !prompt?.owner
-          ? t`Handle Nexus download links?`
-          : t`Take Nexus links from ${prompt.owner}?`
+          ? t`Handle ${{ source: sourceLabel('nexus') }} download links?`
+          : t`Take ${{ source: sourceLabel('nexus') }} links from ${{ owner: prompt.owner }}?`
       }
       body={[intro, ownerNote].filter(Boolean).join(' ')}
       cancelLabel={prompt?.mode === 'offer' ? t`Not now` : t`Cancel`}

@@ -42,15 +42,15 @@ function HistoryRow({
           title:
             next.events === usage.events
               ? t`No changes to trim`
-              : t`Trimmed ${usage.profileName}'s history, freed ${formatBytes(Math.max(freed, 0))}`,
+              : t`Trimmed ${{ profile: usage.profileName }}'s history, freed ${{ size: formatBytes(Math.max(freed, 0)) }}`,
         })
       },
       { errorTitle: t`Could not trim history` },
     )
-  const events = plural(usage.events, { one: '# change', other: '# changes' })
+  const events = plural({ count: usage.events }, { one: '# change', other: '# changes' })
   return (
     <SettingRow
-      label={t`Profile history: ${usage.profileName}`}
+      label={t`Profile history: ${{ profile: usage.profileName }}`}
       description={`${formatBytes(sizeOf(usage))} · ${events}`}
     >
       <DisabledReason title={t`Nothing to trim yet.`} disabled={usage.events <= 1}>
@@ -59,7 +59,7 @@ function HistoryRow({
         </Button>
       </DisabledReason>
       <TrimDialog
-        title={t`Trim history of ${usage.profileName}`}
+        title={t`Trim history of ${{ profile: usage.profileName }}`}
         body={t`Older changes are dropped and can no longer be undone.`}
         fieldLabel={t`Changes to keep`}
         defaultKeep={50}

@@ -17,11 +17,11 @@ function GitHubLogin() {
   }, [])
   return (
     <SettingRow
-      label={t`GitHub CLI login`}
+      label={t`${{ source: sourceLabel('github') }} CLI login`}
       description={
         loggedIn
-          ? t`Mortar uses your gh login for GitHub requests, which raises the rate limit.`
-          : t`Mortar sends GitHub requests without a login. Run gh auth login to raise the rate limit.`
+          ? t`Mortar uses your gh login for ${{ source: sourceLabel('github') }} requests, which raises the rate limit.`
+          : t`Mortar sends ${{ source: sourceLabel('github') }} requests without a login. Run gh auth login to raise the rate limit.`
       }
     >
       {loggedIn === null ? null : (

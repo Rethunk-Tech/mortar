@@ -61,7 +61,7 @@ function MortarUpdate() {
   if (info.off) {
     return (
       <Alert variant="compact" severity="info">
-        {t`This is a development build of Mortar ${info.version}, so it does not check for updates.`}
+        {t`This is a development build of Mortar ${{ version: info.version }}, so it does not check for updates.`}
       </Alert>
     )
   }
@@ -71,8 +71,8 @@ function MortarUpdate() {
     checking: t`Checking for updates…`,
     current: t`Mortar is up to date`,
     none: t`No release is published yet.`,
-    available: t`Mortar ${release?.version ?? ''} is available.`,
-    installing: t`Downloading and verifying Mortar ${release?.version ?? ''}…`,
+    available: t`Mortar ${{ version: release?.version ?? '' }} is available.`,
+    installing: t`Downloading and verifying Mortar ${{ version: release?.version ?? '' }}…`,
     ready: t`Update ready: applies when you close Mortar.`,
     restarting: t`Restarting…`,
     error,
@@ -115,7 +115,7 @@ function MortarUpdate() {
   return (
     <>
       <SettingRow
-        label={t`Installed: Mortar ${info.version}`}
+        label={t`Installed: Mortar ${{ version: info.version }}`}
         description={
           <Box
             component="span"

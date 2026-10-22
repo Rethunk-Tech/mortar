@@ -12,7 +12,7 @@ export function NexusMeter() {
   if (!limits.known) {
     return (
       <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
-        {t`Request counts appear after Mortar talks to ${{ site: sourceLabel('nexus') }}.`}
+        {t`Request counts appear after Mortar talks to ${{ source: sourceLabel('nexus') }}.`}
       </Box>
     )
   }
@@ -21,16 +21,16 @@ export function NexusMeter() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: 14 }}>
       <Box>
-        {t`${limits.daily.remaining} of ${limits.daily.limit} requests left today · ${limits.hourly.remaining} of ${limits.hourly.limit} this hour`}
+        {t`${{ remaining: limits.daily.remaining }} of ${{ limit: limits.daily.limit }} requests left today · ${{ hourlyRemaining: limits.hourly.remaining }} of ${{ hourlyLimit: limits.hourly.limit }} this hour`}
       </Box>
       {limits.hourly.reset && limits.daily.reset ? (
         <Box sx={{ fontSize: 13, color: 'text.secondary' }}>
-          {t`Hourly count resets ${formatWhen(limits.hourly.reset)} · daily count resets ${formatWhen(limits.daily.reset)}`}
+          {t`Hourly count resets ${{ hourlyReset: formatWhen(limits.hourly.reset) }} · daily count resets ${{ dailyReset: formatWhen(limits.daily.reset) }}`}
         </Box>
       ) : null}
       {throttled ? (
         <Box sx={{ color: 'var(--mortar-ink-sec)' }}>
-          {t`Nexus is throttling requests until the window resets.`}
+          {t`${{ source: sourceLabel('nexus') }} is throttling requests until the window resets.`}
         </Box>
       ) : null}
     </Box>

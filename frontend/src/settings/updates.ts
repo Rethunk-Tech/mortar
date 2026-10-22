@@ -11,6 +11,7 @@ import {
   Restart,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/updatesvc/service.ts'
 import { BusySummary } from '../../bindings/github.com/Rethunk-Tech/mortar/quitservice.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 import { askQuit } from '../quit.ts'
 import { errorDetails } from '../toasts/errorKind.ts'
@@ -35,7 +36,9 @@ function checkFailure(e: unknown): { phase: Phase; error: string } {
   if (raw === 'unreachable') {
     return {
       phase: 'error',
-      error: i18n._(msg`Could not reach GitHub. Check your connection and try again.`),
+      error: i18n._(
+        msg`Could not reach ${{ source: sourceLabel('github') }}. Check your connection and try again.`,
+      ),
     }
   }
   return { phase: 'error', error: i18n._(msg`Could not check for updates.`) }
@@ -64,7 +67,7 @@ export const useMortarUpdate = create<{
       set(
         fail?.(e) ?? {
           phase: 'error',
-          error: i18n._(msg`Could not update: ${errorMessage(e)}`),
+          error: i18n._(msg`Could not update: ${{ error: errorMessage(e) }}`),
         },
       )
     }

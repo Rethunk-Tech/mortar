@@ -122,7 +122,7 @@ function Legend({
 function MeasuringBytes() {
   const { t } = useLingui()
   const bytes = useUsageBytes((s) => s.bytes)
-  return t`Measuring… ${formatBytes(bytes)}`
+  return t`Measuring… ${{ size: formatBytes(bytes) }}`
 }
 
 function StorageBar({
@@ -148,11 +148,11 @@ function StorageBar({
     <Box sx={{ px: space.pad, py: space.pad }}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: space.pad, pb: space.pad }}>
         <Box sx={{ flex: 1, fontSize: 16 }}>
-          {usage ? t`${formatBytes(usage.total)} used` : <MeasuringBytes />}
+          {usage ? t`${{ size: formatBytes(usage.total) }} used` : <MeasuringBytes />}
         </Box>
         {usage?.sharedSavedKnown && usage.sharedSaved > 0 ? (
           <Box sx={{ fontSize: 14, color: 'text.secondary' }}>
-            {t`${formatBytes(usage.sharedSaved)} saved by sharing files`}
+            {t`${{ size: formatBytes(usage.sharedSaved) }} saved by sharing files`}
           </Box>
         ) : null}
       </Box>

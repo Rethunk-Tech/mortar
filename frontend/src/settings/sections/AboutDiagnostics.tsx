@@ -19,6 +19,7 @@ import {
   Doctor,
   RepairNativeHosts,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
+import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { routeGame, useNav } from '../../nav/store.ts'
 import { useProfiles } from '../../profiles/store.ts'
 import { copyText } from '../../share/copyText.ts'
@@ -84,7 +85,7 @@ function useCheckTitle() {
       case 'game':
         return t`Games`
       case 'nxm':
-        return t`Nexus download links`
+        return t`${{ source: sourceLabel('nexus') }} download links`
       case 'nativeHost':
         return t`Browser extension`
       case 'settings':
@@ -144,7 +145,7 @@ function Diagnostics() {
     <SettingsSection title={t`Diagnostics`}>
       <SettingRow
         label={t`Check Mortar`}
-        description={t`Checks the data folder, games, Nexus download links and the browser extension.`}
+        description={t`Checks the data folder, games, ${{ source: sourceLabel('nexus') }} download links and the browser extension.`}
       >
         <Button
           variant="outlined"

@@ -76,7 +76,7 @@ function LoaderRow({
   }, [gameVersion, onVersion])
   const locked = playing || pending || installing
   const lockReason = playing
-    ? t`Stop the game to install ${loader.name}.`
+    ? t`Stop the game to install ${{ name: loader.name }}.`
     : t`An install is already running.`
   const action = smapiAction(
     {
@@ -89,18 +89,18 @@ function LoaderRow({
     LATEST,
   )
   const labels: Record<SmapiAction['kind'], string> = {
-    install: action.version ? t`Install ${action.version}…` : t`Install`,
+    install: action.version ? t`Install ${{ version: action.version }}…` : t`Install`,
     update: t`Update`,
     reinstall: t`Reinstall`,
   }
-  let title = t`${loader.name} is not installed`
+  let title = t`${{ name: loader.name }} is not installed`
   let detail = ''
   if (status?.broken) {
-    title = t`A game update replaced ${loader.name}'s launcher`
+    title = t`A game update replaced ${{ name: loader.name }}'s launcher`
   } else if (status?.installed) {
-    title = t`${loader.name} ${status.version}`
+    title = t`${{ name: loader.name }} ${{ version: status.version }}`
     detail = status.updateAvailable
-      ? t`${loader.name} ${status.latest} is available`
+      ? t`${{ name: loader.name }} ${{ latest: status.latest }} is available`
       : t`Installed and up to date`
   }
   const run = () => {
@@ -124,7 +124,7 @@ function LoaderRow({
               value={selected}
               onChange={savePin}
               options={versionChoices(i18n, pin ? [pin, ...versions] : versions)}
-              label={t`${loader.name} version`}
+              label={t`${{ name: loader.name }} version`}
             />
             <DisabledReason title={lockReason} disabled={locked}>
               <Button
@@ -142,8 +142,8 @@ function LoaderRow({
       </SettingRow>
       <ConfirmDialog
         open={confirm}
-        title={t`Install ${loader.name} ${action.version}?`}
-        body={t`Every profile of this game runs the ${loader.name} installed for it, so they all switch to ${action.version}.`}
+        title={t`Install ${{ name: loader.name }} ${{ version: action.version }}?`}
+        body={t`Every profile of this game runs the ${{ name: loader.name }} installed for it, so they all switch to ${{ version: action.version }}.`}
         confirmLabel={t`Install`}
         busy={busy}
         onCancel={() => setConfirm(false)}

@@ -118,7 +118,7 @@ function GamePages({
             store={g.store}
             installs={g.installs}
             onRefresh={g.load}
-            versionNote={g.version ? t` · ${name} ${g.version}` : ''}
+            versionNote={g.version ? t` · ${name} ${{ version: g.version }}` : ''}
           />
         )
       case 'loader':

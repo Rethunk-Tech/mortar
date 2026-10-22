@@ -106,9 +106,9 @@ function groupLeftovers(preview: Preview | null): LeftoverGroup[] {
 function leftoverLabel(i18n: I18n, kind: LeftoverKind): string {
   switch (kind) {
     case 'nexus':
-      return i18n._(msg`Cached Nexus mod details`)
+      return i18n._(msg`Cached ${{ source: sourceLabel('nexus') }} mod details`)
     case 'github':
-      return i18n._(msg`Cached GitHub release lists`)
+      return i18n._(msg`Cached ${{ source: sourceLabel('github') }} release lists`)
     case 'temp':
       return i18n._(msg`Unfinished downloads and temporary files`)
     default:
@@ -123,7 +123,7 @@ function itemName(i18n: I18n, game: string, item: Item): string {
   }
   const id = NEXUS_KEY.exec(item.key)?.[1]
   if (id) {
-    return i18n._(msg`${{ site: sourceLabel('nexus') }} mod ${{ id }}`)
+    return i18n._(msg`${{ source: sourceLabel('nexus') }} mod ${{ id }}`)
   }
   const loader = gameInfo(game)?.loaders?.find((l) => item.key.startsWith(`${l.id}-`))
   if (loader) {
@@ -316,7 +316,7 @@ function CleanupBody({
               checked={picked.has(g.kind)}
               onToggle={(on) => toggle(g.kind, on)}
               title={leftoverLabel(i18n, g.kind)}
-              detail={plural(g.items.length, { one: '# file', other: '# files' })}
+              detail={plural({ count: g.items.length }, { one: '# file', other: '# files' })}
               size={g.size}
             />
           ))}
@@ -379,7 +379,9 @@ function CleanupDialog({
         load()
         close()
         onChanged()
-        useToasts.getState().push({ kind: 'success', title: t`Freed ${formatBytes(bytes)}` })
+        useToasts
+          .getState()
+          .push({ kind: 'success', title: t`Freed ${{ size: formatBytes(bytes) }}` })
       }),
     )
   }
@@ -416,7 +418,9 @@ function CleanupDialog({
       </DialogContent>
       <DialogActions>
         <Box sx={{ flex: 1, pl: space.gap, fontSize: 15 }}>
-          {picked.size > 0 ? t`${picked.size} selected · ${formatBytes(bytes)}` : ''}
+          {picked.size > 0
+            ? t`${{ count: picked.size }} selected · ${{ size: formatBytes(bytes) }}`
+            : ''}
         </Box>
         <Button onClick={close}>{t`Close`}</Button>
         <Button
@@ -431,7 +435,7 @@ function CleanupDialog({
       <ConfirmDialog
         open={confirm}
         title={t`Delete the selected items?`}
-        body={t`This frees ${formatBytes(bytes)}. Deleted mods download again if a profile needs them later.`}
+        body={t`This frees ${{ size: formatBytes(bytes) }}. Deleted mods download again if a profile needs them later.`}
         confirmLabel={t`Delete`}
         color="error"
         busy={busy}

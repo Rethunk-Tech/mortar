@@ -88,8 +88,8 @@ export function About() {
                 sx={{ color: 'var(--mortar-ink-sec)', fontSize: 14, userSelect: 'text' }}
               >
                 {info.commit
-                  ? t`Version ${info.version} · build ${info.commit}`
-                  : t`Version ${info.version}`}
+                  ? t`Version ${{ version: info.version }} · build ${{ commit: info.commit }}`
+                  : t`Version ${{ version: info.version }}`}
               </Box>
             ) : null}
           </Box>

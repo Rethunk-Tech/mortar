@@ -8,6 +8,7 @@ import {
   SSOAvailable,
   StartSSO,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
+import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected, toastError } from '../../toasts/report.ts'
 import { useToasts } from '../../toasts/store.ts'
@@ -31,9 +32,11 @@ export function NexusSSO() {
         }
         setStage('idle')
         if (state === 'done') {
-          useToasts.getState().push({ kind: 'success', title: t`Signed in to Nexus Mods` })
+          useToasts
+            .getState()
+            .push({ kind: 'success', title: t`Signed in to ${{ source: sourceLabel('nexus') }}` })
         } else if (state === 'failed' && !cancelled) {
-          toastError(t`Could not sign in with Nexus Mods`, error)
+          toastError(t`Could not sign in with ${{ source: sourceLabel('nexus') }}`, error)
         }
       }),
     [t],
@@ -54,7 +57,7 @@ export function NexusSSO() {
         onClick={start}
         sx={{ whiteSpace: 'nowrap' }}
       >
-        {t`Sign in to Nexus Mods`}
+        {t`Sign in to ${{ source: sourceLabel('nexus') }}`}
       </Button>
       {stage === 'connected' ? <Box sx={{ fontSize: 14 }}>{t`Connecting…`}</Box> : null}
       {stage === 'waiting-browser' ? (

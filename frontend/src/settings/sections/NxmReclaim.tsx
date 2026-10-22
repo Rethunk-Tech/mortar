@@ -6,6 +6,7 @@ import {
   Taken,
   Yield,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
+import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { listNames } from '../../i18n/list.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { toastError } from '../../toasts/report.ts'
@@ -39,14 +40,14 @@ export function NxmReclaim() {
   const fail = (e: unknown) => toastError(t`Could not change how mod links open`, e)
   const lines = taken.map(({ source, name }) => {
     if (source === 'nexus') {
-      return t`${name} now opens Nexus "Mod Manager Download" links.`
+      return t`${name} now opens ${{ source: sourceLabel('nexus') }} "Mod Manager Download" links.`
     }
     if (source === 'curseforge') {
-      return t`${name} now opens CurseForge "Install" links.`
+      return t`${name} now opens ${{ source: sourceLabel('curseforge') }} "Install" links.`
     }
     return source === 'vsmoddb'
       ? t`${name} now opens Mod DB "1-click install" links.`
-      : t`${name} now opens Thunderstore "Install with Mod Manager" links.`
+      : t`${name} now opens ${{ source: sourceLabel('thunderstore') }} "Install with Mod Manager" links.`
   })
   const names = listNames([...new Set(taken.map((x) => x.name))])
   return (

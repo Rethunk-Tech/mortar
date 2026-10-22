@@ -55,10 +55,10 @@ function ShortcutRow({
       description={
         conflictName ? (
           <Box component="span" sx={{ color: 'error.main' }}>
-            {t`Already used by ${conflictName}`}
+            {t`Already used by ${{ name: conflictName }}`}
             {onTake ? (
               <Button size="small" onClick={onTake} sx={{ ml: 1 }}>
-                {t`Use it anyway; ${conflictName} becomes unbound`}
+                {t`Use it anyway; ${{ name: conflictName }} becomes unbound`}
               </Button>
             ) : null}
           </Box>
@@ -67,7 +67,7 @@ function ShortcutRow({
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, flexShrink: 0 }}>
         <ButtonBase
-          aria-label={t`Change shortcut for ${label}, currently ${shown}`}
+          aria-label={t`Change shortcut for ${{ name: label }}, currently ${shown}`}
           onClick={onRecord}
           sx={{
             color: 'var(--mortar-ink-sec)',
@@ -87,7 +87,7 @@ function ShortcutRow({
           size="small"
           disabled={keys === defaultBindings()[id]}
           onClick={onReset}
-          aria-label={t`Reset ${label}`}
+          aria-label={t`Reset ${{ name: label }}`}
           sx={{ minWidth: 0 }}
         >
           {t`Reset`}

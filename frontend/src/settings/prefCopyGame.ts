@@ -1,5 +1,7 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
+import { GALE, STEAM } from '../brand/productNames.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import type { PrefCopy } from './prefCopyAntivirus.ts'
 
 export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
@@ -47,7 +49,7 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
     dependencyVersions: {
       label: i18n._(msg`Dependency versions`),
       description: i18n._(
-        msg`Which version of a Thunderstore mod's dependency to install when the mod names one`,
+        msg`Which version of a ${{ source: sourceLabel('thunderstore') }} mod's dependency to install when the mod names one`,
       ),
       options: [
         {
@@ -58,7 +60,9 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
         {
           value: 'exact',
           label: i18n._(msg`Exact`),
-          hint: i18n._(msg`Install the version the mod's author named, as Gale does.`),
+          hint: i18n._(
+            msg`Install the version the mod's author named, as ${{ manager: GALE }} does.`,
+          ),
         },
       ],
     },
@@ -115,7 +119,7 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
     instances: {
       label: i18n._(msg`Instances`),
       description: i18n._(
-        msg`How many game processes a direct Play starts. Hidden for Steam and store URL launches.`,
+        msg`How many game processes a direct Play starts. Hidden for ${{ launcher: STEAM }} and store URL launches.`,
       ),
     },
     delaySeconds: {

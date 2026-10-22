@@ -1,5 +1,7 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
+import { SMAPI, STEAM } from '../brand/productNames.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { storeName } from '../games/storeName.ts'
 import { antivirusPrefs, type PrefCopy } from './prefCopyAntivirus.ts'
 import { gamePrefs } from './prefCopyGame.ts'
@@ -48,7 +50,7 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
     defaultLaunchMethod: {
       label: i18n._(msg`Default launch`),
       description: i18n._(
-        msg`How Play starts the game. Direct skips Steam's overlay and playtime.`,
+        msg`How Play starts the game. Direct skips ${{ launcher: STEAM }}'s overlay and playtime.`,
       ),
       options: [
         { value: 'steam', label: storeName('steam') },
@@ -62,8 +64,8 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
       ),
     },
     showSmapiConsole: {
-      label: i18n._(msg`SMAPI console window`),
-      description: i18n._(msg`Show SMAPI's own window on a direct launch`),
+      label: i18n._(msg`${{ loader: SMAPI }} console window`),
+      description: i18n._(msg`Show ${{ loader: SMAPI }}'s own window on a direct launch`),
     },
     lanName: {
       label: i18n._(msg`Device name`),
@@ -218,7 +220,7 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
     showDotHiddenMods: {
       label: i18n._(msg`Show hidden mods`),
       description: i18n._(
-        msg`List mods inside a folder whose name starts with a dot, which SMAPI skips`,
+        msg`List mods inside a folder whose name starts with a dot, which ${{ loader: SMAPI }} skips`,
       ),
     },
     saveBackupHours: {
@@ -308,9 +310,9 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
     },
     checkModUpdatesOnStart: { label: i18n._(msg`Check for mod updates when Mortar starts`) },
     smapiBuilds: {
-      label: i18n._(msg`SMAPI unofficial builds`),
+      label: i18n._(msg`${{ loader: SMAPI }} unofficial builds`),
       description: i18n._(
-        msg`Pre-releases and unofficial SMAPI updates. Show lists them; Include lets Update all install them.`,
+        msg`Pre-releases and unofficial ${{ loader: SMAPI }} updates. Show lists them; Include lets Update all install them.`,
       ),
       options: [
         { value: 'never', label: i18n._(msg`Never`) },
@@ -319,12 +321,14 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
       ],
     },
     smapiPin: {
-      label: i18n._(msg`SMAPI version`),
+      label: i18n._(msg`${{ loader: SMAPI }} version`),
       description: i18n._(msg`Empty follows the latest release`),
     },
     autoTrackNexus: {
       label: i18n._(msg`Auto-track installed mods`),
-      description: i18n._(msg`Track a Nexus mod when Mortar installs it`),
+      description: i18n._(
+        msg`Track a ${{ source: sourceLabel('nexus') }} mod when Mortar installs it`,
+      ),
     },
     downloadSpeedLimit: {
       label: i18n._(msg`Download speed limit (MB/s)`),
@@ -334,10 +338,10 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
     },
     parallelDownloads: {
       label: i18n._(msg`Parallel downloads`),
-      description: i18n._(msg`Premium and GitHub downloads at once`),
+      description: i18n._(msg`Premium and ${{ source: sourceLabel('github') }} downloads at once`),
     },
     nxmDefaultProfile: {
-      label: i18n._(msg`Default profile for Nexus links`),
+      label: i18n._(msg`Default profile for ${{ source: sourceLabel('nexus') }} links`),
       description: i18n._(
         msg`Where Mod Manager Download links install. Empty uses the last opened profile.`,
       ),
@@ -379,9 +383,9 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
       ],
     },
     thunderstoreHost: {
-      label: i18n._(msg`Thunderstore download host`),
+      label: i18n._(msg`${{ source: sourceLabel('thunderstore') }} download host`),
       description: i18n._(
-        msg`Automatic tries Thunderstore's hosts in turn when one fails or stalls; choosing one uses only that host.`,
+        msg`Automatic tries ${{ source: sourceLabel('thunderstore') }}'s hosts in turn when one fails or stalls; choosing one uses only that host.`,
       ),
       options: [
         { value: 'auto', label: i18n._(msg`Automatic`) },
@@ -446,8 +450,10 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
       ),
     },
     verifyNexusMD5: {
-      label: i18n._(msg`Verify downloads with Nexus MD5`),
-      description: i18n._(msg`Check the file hash when Nexus provides one`),
+      label: i18n._(msg`Verify downloads with ${{ source: sourceLabel('nexus') }} MD5`),
+      description: i18n._(
+        msg`Check the file hash when ${{ source: sourceLabel('nexus') }} provides one`,
+      ),
     },
     launchAtLogin: {
       label: i18n._(msg`Launch Mortar at login`),
@@ -470,7 +476,7 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
     extensionConnection: {
       label: i18n._(msg`Browser extension connection`),
       description: i18n._(
-        msg`Allow shows Nexus pages what Mortar has. Off hides that; download links still arrive`,
+        msg`Allow shows ${{ source: sourceLabel('nexus') }} pages what Mortar has. Off hides that; download links still arrive`,
       ),
       options: [
         { value: 'allow', label: i18n._(msg`Allow`) },

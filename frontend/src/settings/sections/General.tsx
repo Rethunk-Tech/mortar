@@ -19,6 +19,7 @@ import {
   SetLanSharing,
   SetTipsSeen,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
+import { WINDOWS } from '../../brand/productNames.ts'
 import { TourAgainButton } from '../../firstrunTour/TourAgainButton.tsx'
 import { availableLocales } from '../../i18n/locales.ts'
 import { PairedComputers } from '../../lan/PairedComputers.tsx'
@@ -234,15 +235,15 @@ function Sharing() {
       ) : null}
       {lanSharing && networkPublic && !allowAny ? (
         <SettingRow
-          label={t`This network is set to Public in Windows`}
-          description={t`Nearby computers cannot reach Mortar. Set the network to Private in Windows network settings.`}
+          label={t`This network is set to Public in ${{ os: WINDOWS }}`}
+          description={t`Nearby computers cannot reach Mortar. Set the network to Private in ${{ os: WINDOWS }} network settings.`}
         >
           <span />
         </SettingRow>
       ) : null}
       {firewallBlocked ? (
         <SettingRow
-          label={t`Windows Firewall blocks incoming sends to Mortar`}
+          label={t`${{ os: WINDOWS }} Firewall blocks incoming sends to Mortar`}
           description={t`Allow Mortar through the firewall so nearby users can send profiles.`}
         >
           <Button

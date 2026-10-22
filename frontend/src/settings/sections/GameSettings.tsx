@@ -17,6 +17,7 @@ import {
   SetGameStore,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { LauncherLogo } from '../../brand/launchers/LauncherLogo.tsx'
+import { SMAPI, STEAM } from '../../brand/productNames.ts'
 import { gameInfo, useGameInfo, useGameName } from '../../games/info.ts'
 import { storeName } from '../../games/storeName.ts'
 import { currentGame, useCurrentGame } from '../../nav/currentGame.ts'
@@ -65,7 +66,7 @@ function ResetInstallDialog({
     <ConfirmDialog
       open={open}
       title={t`Reset game install?`}
-      body={t`This deletes the game folder at ${folder}, with every file in it, including ${loader} and mods placed there. Your saves and your profiles' mods are stored elsewhere and are kept.`}
+      body={t`This deletes the game folder at ${{ path: folder }}, with every file in it, including ${loader} and mods placed there. Your saves and your profiles' mods are stored elsewhere and are kept.`}
       confirmLabel={t`Reset install`}
       color="error"
       busy={busy}
@@ -176,7 +177,7 @@ function GameFolder({
   }
   const install = installs.find((i) => i.dir === folder)
   const foundIn = storeName(store) || storeName('steam')
-  let source = t`${gameName} was not found. Browse to its folder.`
+  let source = t`${{ game: gameName }} was not found. Browse to its folder.`
   if (override) {
     source = t`Chosen by you`
   } else if (folder) {
@@ -213,7 +214,9 @@ function GameFolder({
         </SettingRow>
         {install?.version ? (
           <SettingRow
-            label={STEAM_BUILD.test(install.version) ? t`Steam build` : t`Game version`}
+            label={
+              STEAM_BUILD.test(install.version) ? t`${{ launcher: STEAM }} build` : t`Game version`
+            }
             description={t`Read from the game's install.`}
           >
             <Box sx={{ fontSize: 14, color: 'var(--mortar-ink-sec)' }}>{install.version}</Box>
@@ -222,7 +225,7 @@ function GameFolder({
         {install?.runtimeVersion ? (
           <SettingRow
             label={t`Compatibility tool`}
-            description={t`Chosen in the game's Steam properties.`}
+            description={t`Chosen in the game's ${{ launcher: STEAM }} properties.`}
           >
             <Box sx={{ fontSize: 14, color: 'var(--mortar-ink-sec)' }}>
               {install.runtimeVersion}
@@ -261,7 +264,7 @@ function GameFolder({
       <SettingsSection title={t`Reset`}>
         <SettingRow
           label={t`Reset game install`}
-          description={t`Delete the game folder, then reinstall ${gameName} from your launcher.`}
+          description={t`Delete the game folder, then reinstall ${{ game: gameName }} from your launcher.`}
         >
           <Button
             variant="outlined"
@@ -292,8 +295,8 @@ function GameFolder({
               await offerLaunchOptionRemoval(
                 useToasts.getState().push,
                 t`Game install deleted`,
-                t`Remove SMAPI from Steam's launch options`,
-                t`Could not update Steam's launch options`,
+                t`Remove ${{ loader: SMAPI }} from ${{ launcher: STEAM }}'s launch options`,
+                t`Could not update ${{ launcher: STEAM }}'s launch options`,
               )
             }
             if (store === 'steam' || store === 'flatpak-steam') {
@@ -302,7 +305,7 @@ function GameFolder({
               useToasts.getState().push({
                 kind: 'info',
                 title: t`Game install deleted`,
-                body: t`Reinstall ${gameName} from your game launcher.`,
+                body: t`Reinstall ${{ game: gameName }} from your game launcher.`,
               })
             }
             onRefresh()

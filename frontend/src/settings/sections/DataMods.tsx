@@ -6,6 +6,8 @@ import {
   CacheInfo,
   ClearCache,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/datasvc/service.ts'
+import { SMAPI } from '../../brand/productNames.ts'
+import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { formatBytes } from '../../i18n/bytes.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { reportUnexpected } from '../../toasts/report.ts'
@@ -36,7 +38,7 @@ function CacheClearDialog({
       title={t`Clear cache?`}
       body={
         <>
-          {t`Clears cached Nexus and SMAPI details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower.`}
+          {t`Clears cached ${{ source: sourceLabel('nexus') }} and ${{ loader: SMAPI }} details and problem scans, for a revoked API key or wrong details. Mortar fetches them again, so the next problem check is slower.`}
           {info === null ? null : (
             <Box component="span" sx={{ display: 'block', mt: 1, wordBreak: 'break-all' }}>
               {t`${size} in ${path}`}

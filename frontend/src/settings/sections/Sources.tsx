@@ -40,7 +40,7 @@ function Connection({ id }: { id: SourceId }) {
   const state = useOffline((s) => s.states.find((x) => x.id === id))
   const [pending, run] = usePending()
   let chip = <Chip size="small" label={t`Not contacted yet`} />
-  let detail: ReactNode = t`Mortar has not asked ${sourceLabel(id)} this session.`
+  let detail: ReactNode = t`Mortar has not asked ${{ source: sourceLabel(id) }} this session.`
   if (state?.unreachable) {
     chip = <Chip size="small" color="error" label={t`Unreachable`} />
     const reasons: Record<string, string> = {
@@ -53,13 +53,13 @@ function Connection({ id }: { id: SourceId }) {
     detail = (
       <span title={state.lastError}>
         {seen(state.lastFail)
-          ? t`No answer ${formatWhen(state.lastFail)}: ${reason}`
+          ? t`No answer ${{ when: formatWhen(state.lastFail) }}: ${reason}`
           : t`Could not be reached: ${reason}`}
       </span>
     )
   } else if (state && seen(state.lastOK)) {
     chip = <Chip size="small" color="success" label={t`Reachable`} />
-    detail = t`Last answered ${formatWhen(state.lastOK)}`
+    detail = t`Last answered ${{ when: formatWhen(state.lastOK) }}`
   }
   return (
     <SettingRow label={t`Connection`} description={detail}>
@@ -71,7 +71,7 @@ function Connection({ id }: { id: SourceId }) {
           disabled={pending}
           onClick={() =>
             run(() => Retry(id).then((next) => useOffline.getState().set(next)), {
-              errorTitle: t`Could not recheck ${sourceLabel(id)}`,
+              errorTitle: t`Could not recheck ${{ source: sourceLabel(id) }}`,
             })
           }
         >
@@ -126,7 +126,7 @@ function useAuth(id: SourceId): { ok: boolean | null; text: ReactNode } {
       return {
         ok: itch === null ? null : itch !== '',
         text: itch ? (
-          t`API key set for ${itch}`
+          t`API key set for ${{ key: itch }}`
         ) : (
           <AccountLink>{t`API key not set. Itch.io search is off until you add one.`}</AccountLink>
         ),
@@ -159,8 +159,8 @@ function GitHubQuota() {
     GitHubRate().then(setRate).catch(reportUnexpected)
   }, [])
   const detail = rate?.known
-    ? t`${rate.remaining} of ${rate.limit} requests left · resets ${formatWhen(rate.reset)}`
-    : t`Request counts appear after Mortar talks to ${{ site: sourceLabel('github') }}.`
+    ? t`${{ remaining: rate.remaining }} of ${{ limit: rate.limit }} requests left · resets ${{ when: formatWhen(rate.reset) }}`
+    : t`Request counts appear after Mortar talks to ${{ source: sourceLabel('github') }}.`
   return (
     <SettingRow label={t`Requests`} description={detail}>
       {null}
@@ -183,7 +183,7 @@ function Quota({ id }: { id: SourceId }) {
       description={
         premium
           ? undefined
-          : t`Free accounts click Download on Nexus for each file; Mortar opens each page in turn.`
+          : t`Free accounts click Download on ${{ source: sourceLabel('nexus') }} for each file; Mortar opens each page in turn.`
       }
       block={true}
     >

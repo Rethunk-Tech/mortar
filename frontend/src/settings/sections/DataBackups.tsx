@@ -106,7 +106,7 @@ export function BackupsUsageRow() {
   }
   if (usage === null) {
     return (
-      <SettingRow label={t`${gameName} save backups`} description={t`Measuring…`}>
+      <SettingRow label={t`${{ game: gameName }} save backups`} description={t`Measuring…`}>
         {null}
       </SettingRow>
     )
@@ -121,14 +121,16 @@ export function BackupsUsageRow() {
           title:
             res.removed === 0
               ? t`No backups to delete`
-              : t`${plural(res.removed, { one: 'Deleted # backup', other: 'Deleted # backups' })}, freed ${formatBytes(res.freedBytes)}`,
+              : t`${plural({ count: res.removed }, { one: 'Deleted # backup', other: 'Deleted # backups' })}, freed ${{ size: formatBytes(res.freedBytes) }}`,
         })
         setUsage(await LoadBackupsUsage(gameId))
       },
       { errorTitle: t`Could not trim save backups` },
     )
   return (
-    <SettingRow label={t`${gameName} save backups: ${formatBytes(usage.totalBytes)}`}>
+    <SettingRow
+      label={t`${{ game: gameName }} save backups: ${{ size: formatBytes(usage.totalBytes) }}`}
+    >
       <DisabledReason
         title={gameBusy ? t`Stop the game to change save backups.` : t`Nothing to trim yet.`}
         disabled={usage.totalBytes === 0 || gameBusy}

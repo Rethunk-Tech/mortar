@@ -79,8 +79,8 @@ export function MoveDialog({
           <Box sx={{ ...mono, overflowWrap: 'anywhere' }} title={move.dest}>
             {move.dest}
           </Box>
-          <Box>{t`Data to copy: ${formatBytes(move.estimate.bytes)}`}</Box>
-          <Box>{t`Free space at destination: ${formatBytes(move.estimate.freeBytes)}`}</Box>
+          <Box>{t`Data to copy: ${{ size: formatBytes(move.estimate.bytes) }}`}</Box>
+          <Box>{t`Free space at destination: ${{ size: formatBytes(move.estimate.freeBytes) }}`}</Box>
           {short ? (
             <Box role="alert" sx={{ color: 'error.main' }}>
               {t`There is not enough free space at the destination.`}
@@ -94,10 +94,13 @@ export function MoveDialog({
                 aria-label={t`Moving data`}
               />
               <Box role="status" sx={{ ...mono }}>
-                {plural(progress.totalFiles, {
-                  one: `${progress.files}/# file · ${formatBytes(progress.bytes)} / ${formatBytes(progress.totalBytes)}`,
-                  other: `${progress.files}/# files · ${formatBytes(progress.bytes)} / ${formatBytes(progress.totalBytes)}`,
-                })}
+                {plural(
+                  { count: progress.totalFiles },
+                  {
+                    one: `${{ files: progress.files }}/# file · ${{ done: formatBytes(progress.bytes) }} / ${{ total: formatBytes(progress.totalBytes) }}`,
+                    other: `${{ files: progress.files }}/# files · ${{ done: formatBytes(progress.bytes) }} / ${{ total: formatBytes(progress.totalBytes) }}`,
+                  },
+                )}
               </Box>
             </>
           ) : null}

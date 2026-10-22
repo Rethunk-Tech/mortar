@@ -76,7 +76,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
       elsewhere={
         gameName
           ? {
-              label: t`Search ${gameName} settings`,
+              label: t`Search ${{ game: gameName }} settings`,
               search: (query) => useNav.getState().searchGameSettings(query),
             }
           : undefined

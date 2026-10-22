@@ -1,5 +1,6 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
+import { LINUX, WINDOWS } from '../brand/productNames.ts'
 
 export interface PrefCopy {
   label: string
@@ -19,7 +20,9 @@ export function antivirusPrefs(i18n: I18n): Record<string, PrefCopy> {
         {
           value: 'automatic',
           label: i18n._(msg`Automatic`),
-          hint: i18n._(msg`Windows' antivirus through AMSI; clamd on Linux when it is running.`),
+          hint: i18n._(
+            msg`${{ os: WINDOWS }}' antivirus through AMSI; clamd on ${{ otherOs: LINUX }} when it is running.`,
+          ),
         },
         {
           value: 'clamd',
