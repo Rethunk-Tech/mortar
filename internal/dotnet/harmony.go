@@ -96,34 +96,21 @@ func Patches(path string) (out []Patch, err error) {
 	typeInfo := map[int]patchInfo{}
 	methodInfo := map[int]patchInfo{}
 	methodKind := map[int]string{}
-	for row := 1; row <= m.rows[tCustomAttr]; row++ {
-		kind, ctor := decode(cCustomAttributeType, m.cell(tCustomAttr, row, 1))
-		if kind != tMemberRef {
-			continue
-		}
-		parent, ref := decode(cMemberRefParent, m.cell(tMemberRef, ctor, 0))
-		if parent != tTypeRef {
-			continue
-		}
-		ns, name := m.typeRef(ref)
-		if ns != "HarmonyLib" {
-			continue
-		}
-		owner, def := decode(cHasCustomAttribute, m.cell(tCustomAttr, row, 0))
+	for a := range m.attributes("HarmonyLib") {
 		switch {
-		case name == "HarmonyPatch":
-			info, ok := m.harmonyPatchArgs(m.blob(m.cell(tMemberRef, ctor, 2)), m.blob(m.cell(tCustomAttr, row, 2)))
+		case a.name == "HarmonyPatch":
+			info, ok := m.harmonyPatchArgs(m.blob(m.cell(tMemberRef, a.ctor, 2)), m.value(a))
 			if !ok {
 				continue
 			}
-			switch owner {
+			switch a.owner {
 			case tTypeDef:
-				typeInfo[def] = typeInfo[def].merge(info)
+				typeInfo[a.def] = typeInfo[a.def].merge(info)
 			case tMethodDef:
-				methodInfo[def] = methodInfo[def].merge(info)
+				methodInfo[a.def] = methodInfo[a.def].merge(info)
 			}
-		case patchKinds[name] != "" && owner == tMethodDef:
-			methodKind[def] = patchKinds[name]
+		case patchKinds[a.name] != "" && a.owner == tMethodDef:
+			methodKind[a.def] = patchKinds[a.name]
 		}
 	}
 	seen := map[Patch]bool{}

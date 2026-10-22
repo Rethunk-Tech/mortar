@@ -45,20 +45,9 @@ func ScanMelon(path string) (out Melon, err error) {
 			out.Refs = append(out.Refs, name)
 		}
 	}
-	for row := 1; row <= m.rows[tCustomAttr]; row++ {
-		if owner, _ := decode(cHasCustomAttribute, m.cell(tCustomAttr, row, 0)); owner != tAssembly {
-			continue
-		}
-		kind, ctor := decode(cCustomAttributeType, m.cell(tCustomAttr, row, 1))
-		if kind != tMemberRef {
-			continue
-		}
-		parent, ref := decode(cMemberRefParent, m.cell(tMemberRef, ctor, 0))
-		if parent != tTypeRef {
-			continue
-		}
-		if ns, name := m.typeRef(ref); ns == "MelonLoader" {
-			out.readAttribute(name, m.blob(m.cell(tCustomAttr, row, 2)))
+	for a := range m.attributes("MelonLoader") {
+		if a.owner == tAssembly {
+			out.readAttribute(a.name, m.value(a))
 		}
 	}
 	return out, nil

@@ -9,6 +9,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"iter"
 	"math/bits"
 	"runtime"
 	"slices"
@@ -377,6 +378,40 @@ func (m *module) typeRef(row int) (ns, name string) {
 	}
 	return m.str(m.cell(tTypeRef, row, 2)), name
 }
+
+// attribute is one custom attribute whose constructor belongs to a type of a given namespace: its row, the
+// constructor's MemberRef row, the attributed element (owner table and row) and the attribute type's name.
+type attribute struct {
+	row, ctor, owner, def int
+	name                  string
+}
+
+// attributes walks the custom attributes constructed through a MemberRef of a TypeRef in namespace ns.
+func (m *module) attributes(ns string) iter.Seq[attribute] {
+	return func(yield func(attribute) bool) {
+		for row := 1; row <= m.rows[tCustomAttr]; row++ {
+			kind, ctor := decode(cCustomAttributeType, m.cell(tCustomAttr, row, 1))
+			if kind != tMemberRef {
+				continue
+			}
+			parent, ref := decode(cMemberRefParent, m.cell(tMemberRef, ctor, 0))
+			if parent != tTypeRef {
+				continue
+			}
+			typeNS, name := m.typeRef(ref)
+			if typeNS != ns {
+				continue
+			}
+			owner, def := decode(cHasCustomAttribute, m.cell(tCustomAttr, row, 0))
+			if !yield(attribute{row, ctor, owner, def, name}) {
+				return
+			}
+		}
+	}
+}
+
+// value is the attribute's serialized arguments.
+func (m *module) value(a attribute) []byte { return m.blob(m.cell(tCustomAttr, a.row, 2)) }
 
 // typeOf names the referenced type a TypeDefOrRef-coded table/row points at, looking through a generic
 // instantiation; the module's own types have no name here.
@@ -806,33 +841,20 @@ func Scan(path string) (out Declared, err error) {
 	}
 	var found []pending
 	guidOf := map[int]string{}
-	for row := 1; row <= m.rows[tCustomAttr]; row++ {
-		kind, ctor := decode(cCustomAttributeType, m.cell(tCustomAttr, row, 1))
-		if kind != tMemberRef {
-			continue
-		}
-		parent, ref := decode(cMemberRefParent, m.cell(tMemberRef, ctor, 0))
-		if parent != tTypeRef {
-			continue
-		}
-		ns, name := m.typeRef(ref)
-		if ns != "BepInEx" {
-			continue
-		}
-		blob := m.blob(m.cell(tCustomAttr, row, 2))
-		owner, def := decode(cHasCustomAttribute, m.cell(tCustomAttr, row, 0))
-		switch name {
+	for a := range m.attributes("BepInEx") {
+		blob := m.value(a)
+		switch a.name {
 		case "BepInPlugin":
 			if p, ok := pluginArgs(blob); ok {
-				if owner == tTypeDef {
-					p.Namespace = m.str(m.cell(tTypeDef, def, 2))
-					guidOf[def] = p.GUID
+				if a.owner == tTypeDef {
+					p.Namespace = m.str(m.cell(tTypeDef, a.def, 2))
+					guidOf[a.def] = p.GUID
 				}
 				out.Plugins = append(out.Plugins, p)
 			}
 		case "BepInDependency", "BepInIncompatibility":
-			if r, ok := relationArgs(blob, name == "BepInIncompatibility"); ok && owner == tTypeDef && len(found) < maxRelations {
-				found = append(found, pending{def, r})
+			if r, ok := relationArgs(blob, a.name == "BepInIncompatibility"); ok && a.owner == tTypeDef && len(found) < maxRelations {
+				found = append(found, pending{a.def, r})
 			}
 		}
 	}
