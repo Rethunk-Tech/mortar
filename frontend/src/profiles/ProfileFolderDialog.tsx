@@ -19,7 +19,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
-import { reportError } from '../toasts/report.ts'
+import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useProfiles } from './store.ts'
 
 /** Where a profile lives: under Mortar's data folder, or in a folder of its own (another drive), with move and check. */
@@ -49,6 +49,7 @@ export function ProfileFolderDialog({
       .catch(reportError(t`Could not move the profile`))
       .finally(() => setBusy(false))
   }
+  const openFolder = useProfiles((s) => s.openFolder)
   const pick = () =>
     PickFolder(t`Choose where ${profile.name} lives`)
       .then((parent) => parent && run(() => MoveToFolder(game, profile.id, parent)))
@@ -70,6 +71,14 @@ export function ProfileFolderDialog({
       <DialogActions>
         <Button onClick={onClose} disabled={busy}>
           {t`Close`}
+        </Button>
+        <Button
+          disabled={busy}
+          onClick={() => {
+            openFolder(profile.id).catch(reportUnexpected)
+          }}
+        >
+          {t`Open folder`}
         </Button>
         {folder ? (
           <Button disabled={busy} onClick={() => run(() => MoveHome(game, profile.id))}>

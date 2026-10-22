@@ -37,6 +37,7 @@ msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
 
 #: src/game/ProfileMenu.tsx
+#: src/game/ProfileMenuItems.tsx
 msgid "Open profile folder"
 msgstr "Open profile folder"
 
@@ -4538,10 +4539,6 @@ msgstr "Part of the OBS address; regenerate it if it leaks"
 msgid "{mods} is hidden"
 msgstr "{mods} is hidden"
 
-#: src/game/ProfileMenuItems.tsx
-msgid "Profile folder…"
-msgstr "Profile folder…"
-
 #: src/profiles/CrashHintCard.tsx
 msgid "Find the cause…"
 msgstr "Find the cause…"
@@ -4790,6 +4787,10 @@ msgstr "Patches"
 #: src/shell/BugReportDialog.tsx
 msgid "Post on"
 msgstr "Post on"
+
+#: src/game/ProfileMenuItems.tsx
+msgid "Move profile folder…"
+msgstr "Move profile folder…"
 
 #: src/game/FarmMenuItem.tsx
 msgid "List copied"
@@ -10820,6 +10821,7 @@ msgid "Dark"
 msgstr "Dark"
 
 #: src/mods/HiddenInside.tsx
+#: src/profiles/ProfileFolderDialog.tsx
 #: src/profiles/ProfilesPage.tsx
 #: src/screenshots/ScreenshotsTab.tsx
 #: src/settings/sections/DataUsage.tsx

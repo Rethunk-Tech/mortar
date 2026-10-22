@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import {
   Copy,
+  FolderInput,
   FolderOpen,
   Gamepad2,
   GitCompare,
@@ -228,6 +229,7 @@ function MoreMenuItems({ profile, close }: { profile: Profile; close: () => void
   const hasGame = useProfiles((s) => s.game !== null)
   const duplicate = useProfiles((s) => s.duplicate)
   const openId = useProfiles((s) => s.openId)
+  const openFolder = useProfiles((s) => s.openFolder)
   return [
     <ProfileMenuItem
       key="history"
@@ -239,9 +241,18 @@ function MoreMenuItems({ profile, close }: { profile: Profile; close: () => void
       }}
     />,
     <ProfileMenuItem
-      key="folder"
+      key="open-folder"
       icon={<FolderOpen size={16} />}
-      label={t`Profile folder…`}
+      label={t`Open profile folder`}
+      onClick={() => {
+        close()
+        openFolder(profile.id).catch(reportUnexpected)
+      }}
+    />,
+    <ProfileMenuItem
+      key="folder"
+      icon={<FolderInput size={16} />}
+      label={t`Move profile folder…`}
       onClick={() => {
         close()
         openProfileDialog('folder', profile.id)
