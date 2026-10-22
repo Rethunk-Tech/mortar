@@ -1737,10 +1737,6 @@ msgstr "Size"
 msgid "Stop the game?"
 msgstr "Stop the game?"
 
-#: src/commandPalette/paletteLabels.ts
-msgid "Open Downloads"
-msgstr "Open Downloads"
-
 #: src/QuitPrompt.tsx
 msgid "Quit Mortar?"
 msgstr "Quit Mortar?"
@@ -2582,6 +2578,10 @@ msgstr "{0, plural, one {# change} other {# changes}}"
 msgid "You started this download on Nexus. Show Mortar to choose the profile it goes into."
 msgstr "You started this download on Nexus. Show Mortar to choose the profile it goes into."
 
+#: src/launch/LaunchLayer.tsx
+msgid "Open console"
+msgstr "Open console"
+
 #. placeholder {0}: offer.machine
 #: src/sync/SyncOffers.tsx
 msgid "Updated from {0}"
@@ -3247,6 +3247,10 @@ msgstr "Add these mods to another profile…"
 msgid "Shortcut removed"
 msgstr "Shortcut removed"
 
+#: src/launch/SaveWarnDialog.tsx
+msgid "Open saves"
+msgstr "Open saves"
+
 #: src/share/ImportDialog.tsx
 #: src/share/ImportSources.tsx
 msgid "A link or code"
@@ -3446,6 +3450,11 @@ msgstr "Imported, but could not show the profile"
 msgid "No templates"
 msgstr "No templates"
 
+#: src/launch/PrePlayDialog.tsx
+#: src/launch/UpdateWarnDialog.tsx
+msgid "Open problems"
+msgstr "Open problems"
+
 #: src/share/useImportFlow.ts
 msgid "{queued, plural, one {# download queued} other {# downloads queued}}"
 msgstr "{queued, plural, one {# download queued} other {# downloads queued}}"
@@ -3619,11 +3628,6 @@ msgstr "This pack has files that always install."
 msgid "Mod list"
 msgstr "Mod list"
 
-#. placeholder {0}: line.name
-#: src/game/Hero.tsx
-msgid "From the Nexus collection “{0}”"
-msgstr "From the Nexus collection “{0}”"
-
 #: src/share/ManagerPane.tsx
 msgid "{done, plural, one {Imported # profile} other {Imported # profiles}}"
 msgstr "{done, plural, one {Imported # profile} other {Imported # profiles}}"
@@ -3794,10 +3798,6 @@ msgstr "Title"
 #: src/shell/AppMenu.tsx
 msgid "Ask on Discord"
 msgstr "Ask on Discord"
-
-#: src/launch/SaveWarnDialog.tsx
-msgid "Open Saves"
-msgstr "Open Saves"
 
 #: src/commandPalette/CommandPalette.tsx
 msgid "Source health"
@@ -4598,10 +4598,6 @@ msgstr "Show mods"
 msgid "Add the missing mods"
 msgstr "Add the missing mods"
 
-#: src/launch/LaunchLayer.tsx
-msgid "Open Console"
-msgstr "Open Console"
-
 #: src/templates/useTemplates.ts
 msgid "Could not read the templates"
 msgstr "Could not read the templates"
@@ -5056,6 +5052,10 @@ msgstr "Fixed"
 #: src/sync/SyncOffers.tsx
 msgid "Keep mine"
 msgstr "Keep mine"
+
+#: src/game/Hero.tsx
+msgid "From the Nexus collection \"{name}\""
+msgstr "From the Nexus collection \"{name}\""
 
 #. placeholder {0}: result.total
 #: src/browse/BrowseBody.tsx
@@ -5545,6 +5545,10 @@ msgstr "General"
 msgid "Skip the waiting downloads of this profile"
 msgstr "Skip the waiting downloads of this profile"
 
+#: src/commandPalette/paletteLabels.ts
+msgid "Open downloads"
+msgstr "Open downloads"
+
 #: src/queue/RetryAllButton.tsx
 msgid "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
 msgstr "{incomplete, plural, one {# incomplete entry} other {# incomplete entries}}"
@@ -5594,11 +5598,6 @@ msgstr "Saves whose recorded mod list this profile covers, out of the saves that
 #: src/game/ProfileMenuItems.tsx
 msgid "Unfreeze"
 msgstr "Unfreeze"
-
-#: src/launch/PrePlayDialog.tsx
-#: src/launch/UpdateWarnDialog.tsx
-msgid "Open Problems"
-msgstr "Open Problems"
 
 #: src/install/offerInstallAnyway.ts
 msgid "Windows removed the file as malware without saying which. If you trust it, restore it from Windows Security's protection history and add it again."

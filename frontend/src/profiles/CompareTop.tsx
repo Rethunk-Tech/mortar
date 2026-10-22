@@ -56,7 +56,13 @@ function OtherPicker({
   const { t } = useLingui()
   const listed = useProfiles((s) => s.profiles)
   const [menu, setMenu] = useState<HTMLElement | null>(null)
-  const heading = { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', lineHeight: '28px' }
+  const heading = {
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+    lineHeight: '28px',
+    textTransform: 'uppercase',
+  } as const
   const others = listed.filter((p) => p.id !== profileA.id)
   const choose = (action: () => void) => () => {
     setMenu(null)
@@ -76,7 +82,7 @@ function OtherPicker({
         {profileB?.name ?? t`Choose…`}
       </Button>
       <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
-        {others.length > 0 ? <ListSubheader sx={heading}>{t`YOUR PROFILES`}</ListSubheader> : null}
+        {others.length > 0 ? <ListSubheader sx={heading}>{t`Your profiles`}</ListSubheader> : null}
         {others.map((p) => (
           <MenuItem key={p.id} onClick={choose(() => onPick(p.id))}>
             <ListItemIcon>
@@ -86,7 +92,7 @@ function OtherPicker({
             {p.id === profileB?.id ? <Check size={16} aria-hidden={true} /> : null}
           </MenuItem>
         ))}
-        <ListSubheader sx={heading}>{t`SOMEONE ELSE'S`}</ListSubheader>
+        <ListSubheader sx={heading}>{t`Someone else's`}</ListSubheader>
         <MenuAction
           icon={<Users size={16} />}
           label={t`A friend's link or file…`}

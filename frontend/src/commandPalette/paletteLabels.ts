@@ -5,7 +5,7 @@ import type { PaletteLabels } from './items.ts'
 export function paletteActionLabels(i18n: I18n): PaletteLabels {
   return {
     play: i18n._(msg`Play the open profile`),
-    downloads: i18n._(msg`Open Downloads`),
+    downloads: i18n._(msg`Open downloads`),
     downloadsFolder: i18n._(msg`Add from the downloads folder…`),
     import: i18n._(msg`Import`),
     pasteLink: i18n._(msg`Paste a link…`),

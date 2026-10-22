@@ -2030,6 +2030,10 @@ msgstr "Free space at destination: {0}"
 msgid "Time"
 msgstr "Time"
 
+#: src/settings/sections/DataImport.tsx
+msgid "{name}: {from} to {to}"
+msgstr "{name}: {from} to {to}"
+
 #: src/settings/sections/General.tsx
 msgid "This network is set to Public in Windows"
 msgstr "This network is set to Public in Windows"
@@ -3483,13 +3487,6 @@ msgstr "Close"
 #: src/settings/sections/Appearance.tsx
 msgid "Bundled font"
 msgstr "Bundled font"
-
-#. placeholder {0}: changeLabel(c.key, c.label)
-#. placeholder {1}: c.from
-#. placeholder {2}: c.to
-#: src/settings/sections/DataImport.tsx
-msgid "{0}: {1} → {2}"
-msgstr "{0}: {1} → {2}"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "Stop the game to change save backups."

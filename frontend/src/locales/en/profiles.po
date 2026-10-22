@@ -367,6 +367,10 @@ msgstr "Changed loader"
 msgid "Queues the mods of a {0} profile into this server profile."
 msgstr "Queues the mods of a {0} profile into this server profile."
 
+#: src/profiles/CompareTop.tsx
+msgid "Your profiles"
+msgstr "Your profiles"
+
 #: src/profiles/ProfilesPage.tsx
 msgid "No mod matches"
 msgstr "No mod matches"
@@ -593,10 +597,6 @@ msgstr "{count, plural, one {# mod will be copied into a new profile. The game f
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Edit"
 msgstr "Edit"
-
-#: src/profiles/CompareTop.tsx
-msgid "YOUR PROFILES"
-msgstr "YOUR PROFILES"
 
 #: src/profiles/LaunchPresetsBlock.tsx
 msgid "Duplicate"
@@ -949,6 +949,10 @@ msgstr "Kept in {folder}."
 #: src/profiles/CompareDialog.tsx
 msgid "Nothing selected would change {0}."
 msgstr "Nothing selected would change {0}."
+
+#: src/profiles/CompareTop.tsx
+msgid "Someone else's"
+msgstr "Someone else's"
 
 #: src/profiles/AppearancePickers.tsx
 msgid "Colour"
@@ -1447,10 +1451,6 @@ msgstr "{count, plural, one {Restored # mod} other {Restored # mods}}"
 #: src/profiles/CrashHintCard.tsx
 msgid "The game crashed {0}"
 msgstr "The game crashed {0}"
-
-#: src/profiles/CompareTop.tsx
-msgid "SOMEONE ELSE'S"
-msgstr "SOMEONE ELSE'S"
 
 #: src/profiles/ServerSettings.tsx
 msgid "Use mods from…"

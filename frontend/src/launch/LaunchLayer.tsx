@@ -170,7 +170,7 @@ function Overlay({ game }: { game: string }) {
               hide()
             }}
           >
-            {t`Open Console`}
+            {t`Open console`}
           </Button>
           <Button variant="outlined" onClick={hide}>
             {t`Hide`}
@@ -232,7 +232,7 @@ function Failure({ game }: { game: string }) {
             useTab.getState().setTab('console')
           }}
         >
-          {t`Open Console`}
+          {t`Open console`}
         </Button>
         {mod ? <SwitchOffButton mod={mod} /> : null}
         {nexusID > 0 ? (

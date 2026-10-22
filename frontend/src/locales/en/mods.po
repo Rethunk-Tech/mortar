@@ -52,10 +52,6 @@ msgstr "{0, plural, one {# library only the disabled mods needed is still enable
 msgid "Presets"
 msgstr "Presets"
 
-#: src/mods/ConflictWhy.tsx
-msgid "Priority Default"
-msgstr "Priority Default"
-
 #: src/mods/listRows.ts
 #: src/mods/Toolbar.tsx
 #: src/mods/useListHeading.ts
@@ -199,15 +195,6 @@ msgstr "It replaces the same files, so this is disabled: {names}"
 #: src/mods/OtherProfilesDialog.tsx
 msgid "Also adds what it needs: {0}"
 msgstr "Also adds what it needs: {0}"
-
-#. placeholder {0}: official.installed
-#. placeholder {0}: update.installed
-#. placeholder {1}: official.version
-#. placeholder {1}: update.version
-#: src/mods/parts.tsx
-#: src/mods/UpdateBanner.tsx
-msgid "Update available: {0} → {1}"
-msgstr "Update available: {0} → {1}"
 
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Paste it on the mod's page."
@@ -2349,6 +2336,11 @@ msgstr "Could not untrack"
 msgid "See startup"
 msgstr "See startup"
 
+#: src/mods/parts.tsx
+#: src/mods/UpdateBanner.tsx
+msgid "Update available: {installed} to {version}"
+msgstr "Update available: {installed} to {version}"
+
 #: src/mods/problemText.ts
 msgid "Cosmetic"
 msgstr "Cosmetic"
@@ -2862,6 +2854,10 @@ msgstr "Remove anyway"
 #: src/mods/AssetMapDialog.tsx
 msgid "More than one mod changes this; the winner's version is used."
 msgstr "More than one mod changes this; the winner's version is used."
+
+#: src/mods/ConflictWhy.tsx
+msgid "Default priority"
+msgstr "Default priority"
 
 #: src/mods/Sidebar.tsx
 msgid "SMAPI UniqueID"

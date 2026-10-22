@@ -115,7 +115,7 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
           {e.fromArea ? <EvidenceLine>{t`FromArea ${e.fromArea}`}</EvidenceLine> : null}
           {e.when ? <EvidenceLine>{t`When ${e.when}`}</EvidenceLine> : null}
           <EvidenceLine>
-            {e.priority === '' ? t`Priority Default` : t`Priority ${e.priority}`}
+            {e.priority === '' ? t`Default priority` : t`Priority ${e.priority}`}
           </EvidenceLine>
         </Box>
       ))}

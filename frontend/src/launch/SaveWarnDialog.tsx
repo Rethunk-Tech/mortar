@@ -48,7 +48,7 @@ export function SaveWarnDialog() {
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap', gap: space.gap }}>
         <Button onClick={quit}>{t`Cancel`}</Button>
-        <Button onClick={useLaunch.getState().openSaves}>{t`Open Saves`}</Button>
+        <Button onClick={useLaunch.getState().openSaves}>{t`Open saves`}</Button>
         <Button variant="contained" onClick={() => playAnyway().catch(reportUnexpected)}>
           {t`Play anyway`}
         </Button>

@@ -149,7 +149,7 @@ export function PrePlayDialog() {
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap', gap: space.gap }}>
         <Button onClick={() => persistThen(quit)}>{t`Cancel`}</Button>
-        <Button onClick={() => persistThen(openProblems)}>{t`Open Problems`}</Button>
+        <Button onClick={() => persistThen(openProblems)}>{t`Open problems`}</Button>
         {lastProfile?.switchProfileId ? (
           <Button
             onClick={() =>

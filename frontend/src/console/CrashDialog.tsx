@@ -154,7 +154,7 @@ function MoreActions({
         {withConsole ? (
           <MenuAction
             icon={<Terminal size={16} />}
-            label={t`Open Console`}
+            label={t`Open console`}
             onClick={() => {
               close()
               openRun(crash, true)
@@ -206,7 +206,7 @@ function CrashPrimary({
   }
   return (
     <Button variant="contained" startIcon={<Terminal size={16} />} onClick={onConsole}>
-      {t`Open Console`}
+      {t`Open console`}
     </Button>
   )
 }

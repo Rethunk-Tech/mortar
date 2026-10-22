@@ -196,11 +196,6 @@ msgstr "Mods add {mods}. Nothing stands out in this start."
 msgid "Runs: {button}"
 msgstr "Runs: {button}"
 
-#. placeholder {0}: hidden.search
-#: src/console/ConsoleTab.tsx
-msgid "the search is “{0}”"
-msgstr "the search is “{0}”"
-
 #: src/console/UpdateNoteTag.tsx
 msgid "Prerelease"
 msgstr "Prerelease"
@@ -508,6 +503,10 @@ msgstr "Uploading…"
 msgid "Could not run the command"
 msgstr "Could not run the command"
 
+#: src/console/CrashDialog.tsx
+msgid "Open console"
+msgstr "Open console"
+
 #: src/console/useBridgePerf.ts
 msgid "Could not start measuring"
 msgstr "Could not start measuring"
@@ -685,6 +684,10 @@ msgstr "Crash finding was stopped."
 msgid "Update {loaderName}"
 msgstr "Update {loaderName}"
 
+#: src/console/ConsoleTab.tsx
+msgid "the search is \"{search}\""
+msgstr "the search is \"{search}\""
+
 #: src/console/LogActions.tsx
 msgid "Copy log"
 msgstr "Copy log"
@@ -849,10 +852,6 @@ msgstr "The log holds folder paths from this computer, which can include your us
 #: src/console/StartupTable.tsx
 msgid "Share of mod time"
 msgstr "Share of mod time"
-
-#: src/console/CrashDialog.tsx
-msgid "Open Console"
-msgstr "Open Console"
 
 #. placeholder {0}: rows.length + folded.count
 #: src/console/StartupTable.tsx
