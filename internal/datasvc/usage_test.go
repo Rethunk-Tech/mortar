@@ -1,6 +1,7 @@
 package datasvc
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -223,5 +224,30 @@ func TestPerFileEntriesCountTheirStoreItemOnce(t *testing.T) {
 	names, uses, _ := profileUse(root)
 	if uses["sims4/k"] != 1 || names["sims4/k"] != "Pack" || len(uses) != 1 {
 		t.Fatalf("uses = %v, names = %v", uses, names)
+	}
+}
+
+func TestMeasureChargesSharedFilesToTheFirstWalkedAcrossBatches(t *testing.T) {
+	root := t.TempDir()
+	const files = probeBatch*2 + 7
+	for i := range files {
+		name := fmt.Sprintf("f%05d.bin", i)
+		store := filepath.Join(root, "store", "alpha", "k", name)
+		testfs.WriteAt(t, store, make([]byte, 8192))
+		link := filepath.Join(root, "profiles", "alpha", "p1", "mods", "k", name)
+		if err := os.MkdirAll(filepath.Dir(link), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Link(store, link); err != nil {
+			t.Skipf("no hard links: %v", err)
+		}
+	}
+	testfs.WriteAt(t, filepath.Join(root, "profiles", "alpha", "p1", "profile.json"), []byte("{}"))
+	got, err := Measure(root, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Store < files*8192 || got.Profiles[0].Size != 0 {
+		t.Fatalf("store=%d profile=%d: a profile's link to a stored file was charged twice", got.Store, got.Profiles[0].Size)
 	}
 }

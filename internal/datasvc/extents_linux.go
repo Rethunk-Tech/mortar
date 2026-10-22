@@ -55,17 +55,38 @@ type fiemapQuery struct {
 	Extents       [fiemapExtentBatch]fiemapExtent
 }
 
-func fileExclusive(path string, info os.FileInfo, s *shareAcc) (int64, bool) {
+// extentRun is one allocated range of a file, as FIEMAP reports it.
+type extentRun struct {
+	physical, length uint64
+}
+
+// fileProbe is a file's extent map, read apart from the sharing accounting so files can be read concurrently.
+type fileProbe struct {
+	runs []extentRun
+	// ok is false when the filesystem cannot say (no FIEMAP, or extents that are not plain allocations).
+	ok bool
+	// endedEmpty is set when the map ended on an empty answer rather than the last extent.
+	endedEmpty bool
+}
+
+func probeFile(path string) fileProbe {
+	f, err := fsx.Open(path)
+	if err != nil {
+		return fileProbe{}
+	}
+	defer func() { _ = f.Close() }()
+	return readExtents(f)
+}
+
+func fileExclusive(info os.FileInfo, p fileProbe, s *shareAcc) (int64, bool) {
 	dev, ino, alloc, ok := fileAlloc(info)
 	if !ok {
 		return info.Size(), false
 	}
-	f, err := fsx.Open(path)
-	if err != nil {
+	if !p.ok {
 		return inodeExclusive(dev, ino, alloc, s)
 	}
-	defer func() { _ = f.Close() }()
-	n, ok := fiemapExclusive(f, dev, info.Size(), s)
+	n, ok := foldExtents(p, dev, info.Size(), s)
 	if !ok {
 		return inodeExclusive(dev, ino, alloc, s)
 	}
@@ -81,10 +102,10 @@ func inodeExclusive(dev, ino uint64, alloc int64, s *shareAcc) (int64, bool) {
 	return alloc, true
 }
 
-func fiemapExclusive(f *os.File, dev uint64, size int64, s *shareAcc) (int64, bool) {
+func readExtents(f *os.File) fileProbe {
 	var (
 		start uint64
-		cost  int64
+		p     fileProbe
 	)
 	for {
 		var q fiemapQuery
@@ -94,33 +115,48 @@ func fiemapExclusive(f *os.File, dev uint64, size int64, s *shareAcc) (int64, bo
 		_, _, errno := unix.Syscall(unix.SYS_IOCTL, f.Fd(), fsIocFiemap, reflect.ValueOf(&q).Pointer())
 		runtime.KeepAlive(&q)
 		if errno != 0 {
-			return 0, false
+			return fileProbe{}
 		}
 		if q.MappedExtents == 0 {
-			return cost, size == 0 || cost > 0
+			p.ok, p.endedEmpty = true, true
+			return p
 		}
 		var last bool
 		for i := uint32(0); i < q.MappedExtents; i++ {
 			e := q.Extents[i]
 			if e.Flags&fiemapExtentBad != 0 {
-				return 0, false
+				return fileProbe{}
 			}
-			k := physKey{dev, e.Physical}
-			if _, dup := s.blocks.phys[k]; !dup {
-				s.blocks.phys[k] = struct{}{}
-				n, err := strconv.ParseInt(strconv.FormatUint(e.Length, 10), 10, 64)
-				if err != nil {
-					return 0, false
-				}
-				cost += n
-			}
+			p.runs = append(p.runs, extentRun{e.Physical, e.Length})
 			if e.Flags&fiemapExtentLast != 0 {
 				last = true
 			}
 			start = e.Logical + e.Length
 		}
 		if last || q.MappedExtents < fiemapExtentBatch {
-			return cost, true
+			p.ok = true
+			return p
 		}
 	}
+}
+
+// foldExtents is the bytes of p's extents no earlier file claimed.
+func foldExtents(p fileProbe, dev uint64, size int64, s *shareAcc) (int64, bool) {
+	var cost int64
+	for _, r := range p.runs {
+		k := physKey{dev, r.physical}
+		if _, dup := s.blocks.phys[k]; dup {
+			continue
+		}
+		s.blocks.phys[k] = struct{}{}
+		n, err := strconv.ParseInt(strconv.FormatUint(r.length, 10), 10, 64)
+		if err != nil {
+			return 0, false
+		}
+		cost += n
+	}
+	if p.endedEmpty {
+		return cost, size == 0 || cost > 0
+	}
+	return cost, true
 }

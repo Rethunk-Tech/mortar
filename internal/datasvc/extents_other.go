@@ -10,8 +10,11 @@ func newShareBlocks() shareBlocks {
 
 type shareBlocks struct{}
 
-func fileExclusive(path string, info os.FileInfo, s *shareAcc) (int64, bool) {
-	_ = path
+type fileProbe struct{}
+
+func probeFile(string) fileProbe { return fileProbe{} }
+
+func fileExclusive(info os.FileInfo, _ fileProbe, s *shareAcc) (int64, bool) {
 	_ = s.blocks
 	dev, ino, _, ok := fileAlloc(info)
 	if !ok {

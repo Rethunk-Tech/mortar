@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -76,6 +78,22 @@ type profileMeta struct {
 	Name string `json:"name"`
 }
 
+const (
+	probeBatch   = 1024
+	probeWorkers = 16
+)
+
+type batchFile struct {
+	path string
+	d    fs.DirEntry
+}
+
+type batchResult struct {
+	info  os.FileInfo
+	probe fileProbe
+	read  bool
+}
+
 // Measure walks root without following symlinks and reports each bucket's exclusive size.
 func Measure(root string, report func(Progress)) (Usage, error) {
 	u := Usage{Path: root, Profiles: []ProfileSize{}, Games: []GameUsage{}}
@@ -85,9 +103,9 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 	cacheSeg := map[[2]string]int64{}
 	share := newShareAcc()
 	root = filepath.Clean(root)
-	account := func(path string, info os.FileInfo) {
+	account := func(path string, info os.FileInfo, probe fileProbe) {
 		share.addFollowed(info)
-		n, known := fileExclusive(path, info, share)
+		n, known := fileExclusive(info, probe, share)
 		if known {
 			share.allocated += n
 		}
@@ -124,6 +142,36 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 		if report != nil {
 			report(Progress{Measuring: true, Bytes: u.Total, Path: slash})
 		}
+	}
+	// Files are read in batches, concurrently, and accounted in walk order, since which file a shared block is
+	// charged to depends on the order.
+	var batch []batchFile
+	flush := func() {
+		probes := make([]batchResult, len(batch))
+		var wg sync.WaitGroup
+		next := atomic.Int64{}
+		for range min(probeWorkers, len(batch)) {
+			wg.Go(func() {
+				for {
+					i := int(next.Add(1)) - 1
+					if i >= len(batch) {
+						return
+					}
+					info, err := batch[i].d.Info()
+					if err != nil {
+						continue
+					}
+					probes[i] = batchResult{info, probeFile(batch[i].path), true}
+				}
+			})
+		}
+		wg.Wait()
+		for i, r := range probes {
+			if r.read {
+				account(batch[i].path, r.info, r.probe)
+			}
+		}
+		batch = batch[:0]
 	}
 	walk := func(path string, skipNamed bool) error {
 		st, err := os.Lstat(path)
@@ -169,18 +217,22 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 			if !d.Type().IsRegular() {
 				return nil
 			}
-			if info, infoErr := d.Info(); infoErr == nil {
-				account(p, info)
+			batch = append(batch, batchFile{p, d})
+			if len(batch) == probeBatch {
+				flush()
 			}
 			return nil
 		})
 	}
 	for _, name := range []string{"store", "profiles", "backups", "cache", "trash"} {
-		if err := walk(filepath.Join(root, name), false); err != nil {
+		err := walk(filepath.Join(root, name), false)
+		flush()
+		if err != nil {
 			return Usage{}, err
 		}
 	}
 	err := walk(root, true)
+	flush()
 	if err != nil {
 		return Usage{}, err
 	}
