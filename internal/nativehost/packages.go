@@ -1,7 +1,6 @@
 package nativehost
 
 import (
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"slices"
@@ -140,19 +139,8 @@ func activePackages(key string) (state, profile string, packages []string) {
 	if err != nil {
 		return state, profile, nil
 	}
-	root, err := os.OpenRoot(dataDir)
-	if err != nil {
-		return state, profile, nil
-	}
-	defer func() { _ = root.Close() }()
-	data, err := root.ReadFile(filepath.Join("profiles", info.ID, openProfile(info), "profile.json"))
-	if err != nil {
-		return state, profile, nil
-	}
-	var p struct {
-		Entries []diskEntry `json:"entries"`
-	}
-	if json.Unmarshal(data, &p) != nil {
+	p, ok := readOpenProfile(dataDir, info)
+	if !ok {
 		return state, profile, nil
 	}
 	for _, e := range p.Entries {
@@ -217,19 +205,8 @@ func activeProjects(src, key string) (state, profile string, projects []hostProj
 	if err != nil {
 		return state, profile, nil
 	}
-	root, err := os.OpenRoot(dataDir)
-	if err != nil {
-		return state, profile, nil
-	}
-	defer func() { _ = root.Close() }()
-	data, err := root.ReadFile(filepath.Join("profiles", info.ID, openProfile(info), "profile.json"))
-	if err != nil {
-		return state, profile, nil
-	}
-	var p struct {
-		Entries []diskEntry `json:"entries"`
-	}
-	if json.Unmarshal(data, &p) != nil {
+	p, ok := readOpenProfile(dataDir, info)
+	if !ok {
 		return state, profile, nil
 	}
 	var driverIDs []string

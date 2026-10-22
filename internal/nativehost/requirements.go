@@ -2,9 +2,6 @@ package nativehost
 
 import (
 	"cmp"
-	"encoding/json"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -13,7 +10,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nexussvc"
-	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
 type requirementItem struct {
@@ -35,11 +31,6 @@ func nexusPageRequirements(domain string, modID int) []requirementItem {
 	if err != nil {
 		return nil
 	}
-	root, err := os.OpenRoot(dataDir)
-	if err != nil {
-		return nil
-	}
-	defer func() { _ = root.Close() }()
 	// The requirements ride on the page data Mortar keeps for the mod: its full details, else the batched page.
 	cache := &meta.Client{}
 	d, ok := nexussvc.PeekDetails(cache, domain, modID)
@@ -50,7 +41,7 @@ func nexusPageRequirements(domain string, modID int) []requirementItem {
 	if len(items) == 0 {
 		return nil
 	}
-	return markRequirementPresence(items, activeProfileNexusIDs(root, info.ID))
+	return markRequirementPresence(items, activeProfileNexusIDs(dataDir, info))
 }
 
 func requirementItems(reqs []nexus.Requirement) []requirementItem {
@@ -92,28 +83,9 @@ func markRequirementPresence(items []requirementItem, installed []int) []require
 	return out
 }
 
-func activeProfileNexusIDs(root *os.Root, gameID string) []int {
-	store, err := settings.Open()
-	if err != nil {
-		return nil
-	}
-	profileID := store.Get().LastProfile[gameID]
-	if profileID == "" || filepath.Base(profileID) != profileID {
-		return nil
-	}
-	data, err := root.ReadFile(filepath.Join("profiles", gameID, profileID, "profile.json"))
-	if err != nil {
-		return nil
-	}
-	var profile struct {
-		Entries []struct {
-			Source struct {
-				Kind  string `json:"kind"`
-				ModID int    `json:"modId"`
-			} `json:"source"`
-		} `json:"entries"`
-	}
-	if json.Unmarshal(data, &profile) != nil {
+func activeProfileNexusIDs(dataDir string, info components.GameInfo) []int {
+	profile, ok := readOpenProfile(dataDir, info)
+	if !ok {
 		return nil
 	}
 	ids := []int{}

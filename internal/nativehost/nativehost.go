@@ -225,6 +225,31 @@ type diskMod struct {
 	ContentPackFor mod.ID   `json:"contentPackFor"`
 }
 
+// diskProfile is the part of a profile.json the extension host reads.
+type diskProfile struct {
+	Name    string      `json:"name"`
+	Entries []diskEntry `json:"entries"`
+}
+
+// readOpenProfile is the profile the game last had open, false when there is none or it cannot be read.
+func readOpenProfile(dataDir string, info components.GameInfo) (diskProfile, bool) {
+	var p diskProfile
+	id := openProfile(info)
+	if id == "" {
+		return p, false
+	}
+	root, err := os.OpenRoot(dataDir)
+	if err != nil {
+		return p, false
+	}
+	defer func() { _ = root.Close() }()
+	data, err := root.ReadFile(filepath.Join("profiles", info.ID, id, "profile.json"))
+	if err != nil || json.Unmarshal(data, &p) != nil {
+		return p, false
+	}
+	return p, true
+}
+
 type diskEntry struct {
 	Pinned      bool     `json:"pinned"`
 	PinReason   string   `json:"pinReason,omitempty"`
@@ -536,34 +561,9 @@ func activeNexusModIDs(domain string) []int {
 	if err != nil || !mortarRunning(dataDir) {
 		return ids
 	}
-	store, err := settings.Open()
-	if err != nil {
-		return ids
-	}
 	// The profile last open for the page's game, even while Mortar shows another game.
-	profileID := store.Get().LastProfile[info.ID]
-	if profileID == "" || filepath.Base(profileID) != profileID {
-		return ids
-	}
-	root, err := os.OpenRoot(dataDir)
-	if err != nil {
-		return ids
-	}
-	data, err := root.ReadFile(filepath.Join("profiles", info.ID, profileID, "profile.json"))
-	_ = root.Close()
-	if err != nil {
-		return ids
-	}
-	var profile struct {
-		Entries []struct {
-			Source struct {
-				Kind  string `json:"kind"`
-				Name  string `json:"name"`
-				ModID int    `json:"modId"`
-			} `json:"source"`
-		} `json:"entries"`
-	}
-	if err := json.Unmarshal(data, &profile); err != nil {
+	profile, ok := readOpenProfile(dataDir, info)
+	if !ok {
 		return ids
 	}
 	seen := make(map[int]struct{}, len(profile.Entries))
@@ -613,12 +613,8 @@ func activeNexusUpdates(domain string) (string, []modUpdate) {
 	if err != nil || !mortarRunning(dataDir) {
 		return "", rows
 	}
-	store, err := settings.Open()
-	if err != nil {
-		return "", rows
-	}
-	profileID := store.Get().LastProfile[info.ID]
-	if profileID == "" || filepath.Base(profileID) != profileID {
+	profile, ok := readOpenProfile(dataDir, info)
+	if !ok {
 		return "", rows
 	}
 	root, err := os.OpenRoot(dataDir)
@@ -626,17 +622,6 @@ func activeNexusUpdates(domain string) (string, []modUpdate) {
 		return "", rows
 	}
 	defer func() { _ = root.Close() }()
-	data, err := root.ReadFile(filepath.Join("profiles", info.ID, profileID, "profile.json"))
-	if err != nil {
-		return "", rows
-	}
-	var profile struct {
-		Name    string      `json:"name"`
-		Entries []diskEntry `json:"entries"`
-	}
-	if err := json.Unmarshal(data, &profile); err != nil {
-		return "", rows
-	}
 	seen := map[int]struct{}{}
 	for _, entry := range profile.Entries {
 		if entry.Source.Kind != "nexus" || entry.Source.ModID < 1 {
@@ -725,24 +710,8 @@ func stateOf(info components.GameInfo) (string, string) {
 	if profileID == "" || filepath.Base(profileID) != profileID {
 		return stateNoProfile, ""
 	}
-	return stateReady, profileName(dataDir, info.ID, profileID)
-}
-
-func profileName(dataDir, gameID, profileID string) string {
-	root, err := os.OpenRoot(dataDir)
-	if err != nil {
-		return ""
-	}
-	defer func() { _ = root.Close() }()
-	data, err := root.ReadFile(filepath.Join("profiles", gameID, profileID, "profile.json"))
-	if err != nil {
-		return ""
-	}
-	var p struct {
-		Name string `json:"name"`
-	}
-	_ = json.Unmarshal(data, &p)
-	return p.Name
+	p, _ := readOpenProfile(dataDir, info)
+	return stateReady, p.Name
 }
 
 func nexusModProfiles(domain string, modID int) (modInProfile, []modInProfile) {
