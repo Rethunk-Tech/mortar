@@ -49,9 +49,12 @@ done
 pkgcase ".rpm on fedora:latest" fedora:latest "dnf install -y /a/*.rpm" "dnf remove -y mortar"
 pkgcase ".pkg.tar.zst on archlinux:latest" archlinux:latest "pacman -Sy --noconfirm && pacman -U --noconfirm /a/*.pkg.tar.zst" "pacman -Rns --noconfirm mortar"
 
-# AppImage: extract-and-run needs no FUSE; the extracted tree must carry the desktop entry, icon, licence and notices.
-if out=$($CT run --rm -i -v "$A":/a:ro -e VERSION="$VERSION" ubuntu:latest bash -s 2>&1 <<'EOS'
+# AppImage on its glibc floor (Ubuntu 22.04): extract-and-run needs no FUSE; the extracted tree must carry the desktop entry,
+# icon, licence and notices. An AppImage leaves X11, GL and text shaping to the desktop, which a bare image lacks.
+if out=$($CT run --rm -i -v "$A":/a:ro -e VERSION="$VERSION" ubuntu:22.04 bash -s 2>&1 <<'EOS'
   set -e
+  apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends libx11-6 libgl1 libegl1 \
+    libgles2 libgbm1 libharfbuzz0b libfribidi0 libfontconfig1 >/dev/null
   cp /a/*.AppImage /tmp/m.AppImage && chmod +x /tmp/m.AppImage && cd /tmp
   out=$(./m.AppImage --appimage-extract-and-run version 2>&1) || { echo "version exit $?: $out"; exit 1; }
   case $out in *"$VERSION"*) ;; *) echo "unexpected: $out"; exit 1 ;; esac
@@ -61,9 +64,9 @@ if out=$($CT run --rm -i -v "$A":/a:ro -e VERSION="$VERSION" ubuntu:latest bash 
   [ -z "$(find /root -iname "*mortar*" 2>/dev/null)" ] || { echo "left in HOME"; exit 1; }
 EOS
 ); then
-  record "AppImage on ubuntu:latest" PASS ""
+  record "AppImage on ubuntu:22.04" PASS ""
 else
-  record "AppImage on ubuntu:latest" FAIL "$(printf '%s' "$out" | tail -3 | tr '\n' ' ')"
+  record "AppImage on ubuntu:22.04" FAIL "$(printf '%s' "$out" | tail -3 | tr '\n' ' ')"
 fi
 
 # The container above only runs the CLI. The window needs WebKit's bubblewrap sandbox, which a container cannot nest, so
