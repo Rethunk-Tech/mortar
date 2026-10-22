@@ -12,6 +12,7 @@
 
 .pagehead .lede {
   margin: 0;
+  max-width: 50rem;
 }
 
 .pagehead .cta {
