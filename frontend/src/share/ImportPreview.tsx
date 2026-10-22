@@ -20,6 +20,7 @@ import type {
 import { modsLabel } from '../i18n/counts.ts'
 import { openPage } from '../mods/menu.ts'
 import { LetterTile } from '../mods/parts.tsx'
+import { visuallyHidden } from '../shell/visuallyHidden.ts'
 import { space } from '../theme/density.ts'
 import {
   carriedBy,
@@ -35,6 +36,8 @@ import {
 
 const DIMMED = 0.5
 const LATER_CHIP = 0.18
+const TILE_FILL = 0.28
+const TILE_LINE = 0.7
 
 const CHIP = (th: Theme): Record<ModState, { bg: string; fg: string }> => ({
   installed: { bg: alpha(th.palette.success.main, SUCCESS_CHIP), fg: th.palette.success.light },
@@ -76,9 +79,42 @@ function useStateLabel() {
     })[state]
 }
 
+// The whole tile is the checkbox, so nothing covers the icon: an installed mod is tinted green, one coming in the
+// primary colour, and one left out is dimmed.
+function tileTint(theme: Theme, state: ModState, selected: boolean): string | null {
+  if (state === 'installed') {
+    return theme.palette.success.main
+  }
+  return selected ? theme.palette.primary.main : null
+}
+
+// The name in full (it wraps rather than cuts off, so it can be copied), opening the mod's page when it has one.
+function TileName({ mod }: { mod: Mod }) {
+  const { t } = useLingui()
+  if (!mod.pageUrl) {
+    return mod.name
+  }
+  return (
+    <Link
+      component="button"
+      underline="hover"
+      color="inherit"
+      title={t`Open its page in the browser`}
+      onClick={(e) => {
+        e.stopPropagation()
+        openPage(mod.pageUrl)
+      }}
+      sx={{ font: 'inherit', textAlign: 'left', verticalAlign: 'baseline', userSelect: 'text' }}
+    >
+      {mod.name}
+    </Link>
+  )
+}
+
 function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle: () => void }) {
   const { t } = useLingui()
-  const chip = CHIP(useTheme())
+  const theme = useTheme()
+  const chip = CHIP(theme)
   const label = useStateLabel()
   const state = isModState(mod.state) ? mod.state : 'later'
   const fixed = state === 'installed' || state === 'unavailable'
@@ -91,61 +127,55 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
     needsCurseForgeKey(mod) ? t`Needs a CurseForge key, or the file from its page` : '',
   ].filter(Boolean)
   const byline = [formatAuthors(mod.author), ...notes].filter(Boolean).join(' · ')
+  const tint = tileTint(theme, state, checked && !fixed)
   return (
     <Box
+      onClick={
+        fixed
+          ? undefined
+          : () => {
+              // A click that ends a text selection (a name being copied) is not a toggle.
+              if (!globalThis.getSelection()?.toString()) {
+                onToggle()
+              }
+            }
+      }
       sx={{
         display: 'flex',
         alignItems: 'center',
         gap: space.gap,
-        height: 52,
+        minHeight: 52,
         pr: space.gap,
         minWidth: 0,
-        bgcolor: 'var(--mortar-card-hover)',
+        bgcolor: tint ? alpha(tint, TILE_FILL) : 'var(--mortar-card-hover)',
+        border: '1px solid',
+        borderColor: tint ? alpha(tint, TILE_LINE) : 'transparent',
         borderRadius: '3px',
         overflow: 'hidden',
+        cursor: fixed ? 'default' : 'pointer',
         opacity: checked || state === 'unavailable' ? 1 : DIMMED,
+        '&:focus-within': { outline: `2px solid ${theme.palette.primary.main}`, outlineOffset: 1 },
       }}
     >
-      <Box sx={{ position: 'relative', display: 'flex', flexShrink: 0 }}>
+      <Checkbox
+        checked={checked && !fixed}
+        disabled={fixed}
+        onChange={onToggle}
+        onClick={(e) => e.stopPropagation()}
+        slotProps={{ input: { 'aria-label': t`Include ${{ name: mod.name }}` } }}
+        sx={visuallyHidden}
+      />
+      <Box sx={{ display: 'flex', flexShrink: 0, alignSelf: 'flex-start' }}>
         <LetterTile mod={{ id: mod.key, name: mod.name, picture: mod.icon ?? '' }} size={52} />
-        <Checkbox
-          size="small"
-          checked={checked && !fixed}
-          disabled={fixed}
-          onChange={onToggle}
-          slotProps={{ input: { 'aria-label': t`Include ${{ name: mod.name }}` } }}
-          sx={{
-            position: 'absolute',
-            top: 3,
-            left: 3,
-            p: 0,
-            bgcolor: 'var(--mortar-overlay-80)',
-            borderRadius: '3px',
-            '& .MuiSvgIcon-root': { fontSize: 16 },
-          }}
-        />
       </Box>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography noWrap={true} sx={{ fontSize: 13, lineHeight: 1.4 }} title={mod.name}>
-          {mod.pageUrl ? (
-            <Link
-              component="button"
-              underline="hover"
-              color="inherit"
-              title={t`Open its page in the browser`}
-              onClick={() => openPage(mod.pageUrl)}
-              sx={{ font: 'inherit', textAlign: 'left', verticalAlign: 'baseline' }}
-            >
-              {mod.name}
-            </Link>
-          ) : (
-            mod.name
-          )}
+      <Box sx={{ flex: 1, minWidth: 0, py: 0.5 }}>
+        <Typography
+          sx={{ fontSize: 13, lineHeight: 1.4, overflowWrap: 'anywhere', userSelect: 'text' }}
+        >
+          <TileName mod={mod} />
         </Typography>
         <Typography
-          noWrap={true}
-          sx={{ fontSize: 12, lineHeight: 1.4, color: 'text.secondary' }}
-          title={byline}
+          sx={{ fontSize: 12, lineHeight: 1.4, color: 'text.secondary', userSelect: 'text' }}
         >
           {byline}
         </Typography>
@@ -166,12 +196,26 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
         {label(state)}
       </Box>
       {mod.site === 'patreon' && mod.pageUrl ? (
-        <Button size="small" color="inherit" onClick={() => openPage(mod.pageUrl)}>
+        <Button
+          size="small"
+          color="inherit"
+          onClick={(e) => {
+            e.stopPropagation()
+            openPage(mod.pageUrl)
+          }}
+        >
           {t`Open post`}
         </Button>
       ) : null}
       {(needsItchFile(mod) || needsCurseForgeKey(mod)) && mod.pageUrl ? (
-        <Button size="small" color="inherit" onClick={() => openPage(mod.pageUrl)}>
+        <Button
+          size="small"
+          color="inherit"
+          onClick={(e) => {
+            e.stopPropagation()
+            openPage(mod.pageUrl)
+          }}
+        >
           {t`Open page`}
         </Button>
       ) : null}
