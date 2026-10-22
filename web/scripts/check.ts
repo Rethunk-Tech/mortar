@@ -47,6 +47,17 @@ for (const b of broken.slice(0, MAX_LISTED)) {
 for (const u of unused) {
   console.error(`unused picture: public/img/${u}`)
 }
-if (broken.length > 0 || unused.length > 0) {
+
+// The version being released has its news post with highlight cards, so a release cannot ship without them.
+const version =
+  /^\s+version: "([^"]+)"/m.exec(readFileSync('../build/config.yml', 'utf8'))?.[1] ?? ''
+const post = join(OUT, `news/mortar-${version.replaceAll('.', '-')}/index.html`)
+const announced = existsSync(post) && readFileSync(post, 'utf8').includes('class="highlights')
+if (!announced) {
+  console.error(
+    `no news post with highlights for ${version}: add web/src/content/news/mortar-${version.replaceAll('.', '-')}.md, its pictures from bun frontend/e2e/screens.ts --set site`,
+  )
+}
+if (broken.length > 0 || unused.length > 0 || !announced) {
   process.exit(1)
 }
