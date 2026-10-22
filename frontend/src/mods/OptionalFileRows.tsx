@@ -89,23 +89,25 @@ export function InstalledOptional({
   row,
   file,
   set,
-  radio,
+  radioName,
   onChoose,
 }: {
   row: OverlayRow
   file: File | undefined
   set: OverlayFileSet | undefined
-  radio: boolean
+  // Set when the file is one of a set of alternatives: the radios of one set share it.
+  radioName?: string | undefined
   onChoose: () => void
 }) {
   const { t } = useLingui()
   const locked = useLocked()
   return (
     <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-start' }}>
-      {radio ? (
+      {radioName ? (
         <LockedReason locked={locked}>
           <Radio
             size="small"
+            name={radioName}
             checked={row.enabled}
             disabled={locked}
             onChange={onChoose}
@@ -118,7 +120,7 @@ export function InstalledOptional({
         <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'center', flexWrap: 'wrap' }}>
           <Typography sx={text}>{file?.name || row.label}</Typography>
           <Chip size="small" color="primary" variant="outlined" label={t`Installed`} sx={chipSx} />
-          {row.enabled || radio ? null : <Chip size="small" label={t`Disabled`} sx={chipSx} />}
+          {row.enabled || radioName ? null : <Chip size="small" label={t`Disabled`} sx={chipSx} />}
         </Box>
         <FileFacts file={file} />
         <FilePaths set={set} />
