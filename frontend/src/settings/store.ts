@@ -125,6 +125,7 @@ const defaults: Settings = {
   launchAtLogin: false,
   startMinimised: false,
   rememberWindow: true,
+  systemTitleBar: false,
   extensionConnection: 'allow',
 } as Settings
 

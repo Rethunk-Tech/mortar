@@ -207,6 +207,7 @@ var registry = withDefaults([]pref{
 	boolPref("showAdultContent", ScopeApp, func(s Settings, _ string) bool { return s.ShowAdultContent }, func(s *Settings, _ string, on bool) { s.ShowAdultContent = on }),
 	boolPref("startMinimised", ScopeApp, func(s Settings, _ string) bool { return s.StartMinimised }, func(s *Settings, _ string, on bool) { s.StartMinimised = on }),
 	boolPref("rememberWindow", ScopeApp, func(s Settings, _ string) bool { return s.RememberWindow }, func(s *Settings, _ string, on bool) { s.RememberWindow = on }),
+	boolPref("systemTitleBar", ScopeApp, func(s Settings, _ string) bool { return s.SystemTitleBar }, func(s *Settings, _ string, on bool) { s.SystemTitleBar = on }),
 	enumPref("extensionConnection", ScopeApp, extensionConnectionValues, func(s Settings, _ string) string { return s.ExtensionConnection }, func(s *Settings, _, v string) { s.ExtensionConnection = v }),
 
 	overridable(enumPref("backupBeforePlay", ScopeGame, backupBeforePlayValues, func(s Settings, g string) string { return s.GamePrefs(g).BackupBeforePlay }, func(s *Settings, g, v string) { gp := s.GamePrefs(g); gp.BackupBeforePlay = v; putGame(s, g, gp) })),

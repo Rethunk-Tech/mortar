@@ -246,6 +246,8 @@ type Settings struct {
 	LaunchAtLogin    bool `json:"launchAtLogin"`
 	StartMinimised   bool `json:"startMinimised"`
 	RememberWindow   bool `json:"rememberWindow"`
+	// SystemTitleBar gives the window the desktop's own frame and title bar in place of Mortar's window buttons.
+	SystemTitleBar bool `json:"systemTitleBar"`
 	// ExtensionConnection is "allow" or "off"; off makes the native host answer every data request empty with state off,
 	// so the browser extension draws nothing, while link relaying still works.
 	ExtensionConnection string `json:"extensionConnection"`

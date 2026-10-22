@@ -313,7 +313,14 @@ export function Appearance() {
       </SettingsSection>
       <SettingsSection title={t`Display`}>
         <PrefKeys
-          keys={['dates', 'density', 'reduceMotion', 'profileHero', 'centerConfigControls']}
+          keys={[
+            'dates',
+            'density',
+            'reduceMotion',
+            'profileHero',
+            'centerConfigControls',
+            'systemTitleBar',
+          ]}
         />
       </SettingsSection>
       <SettingsSection title={t`Mods view`}>

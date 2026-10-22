@@ -28,6 +28,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
   const showBackdrop = useSettings((s) => s.background !== 'solid')
   const backdropImage = useSettings((s) => s.backgroundImage)
   const backdropMode = useSettings((s) => s.background)
+  const framed = useSettings((s) => s.systemTitleBar) || maximised
   const [width] = useState(backdropWidth)
   const [frame, setFrame] = useState<HTMLElement | null>(null)
   useEffect(() => {
@@ -47,8 +48,8 @@ export function AppFrame({ children }: { children: ReactNode }) {
         // A hidden overflow is still a scroll container: focusing a child below the fold slid the whole window up.
         overflow: 'clip',
         boxSizing: 'border-box',
-        border: maximised ? 0 : '1px solid var(--mortar-hairline-12)',
-        borderRadius: maximised ? 0 : '10px',
+        border: framed ? 0 : '1px solid var(--mortar-hairline-12)',
+        borderRadius: framed ? 0 : '10px',
         userSelect: 'none',
       }}
     >

@@ -999,6 +999,10 @@ msgstr "This profile"
 msgid "Game version not supported"
 msgstr "Game version not supported"
 
+#: src/settings/prefCopy.ts
+msgid "Use the system title bar"
+msgstr "Use the system title bar"
+
 #: src/mods/ExtraFolderDialog.tsx
 msgid "Reading the extra mods folders…"
 msgstr "Reading the extra mods folders…"
@@ -4671,6 +4675,10 @@ msgstr "Cancel"
 #: src/firstrun/ProfileStep.tsx
 msgid "A profile with only {loader}. Add mods from {site} or from archives."
 msgstr "A profile with only {loader}. Add mods from {site} or from archives."
+
+#: src/settings/prefCopy.ts
+msgid "Show your desktop's own title bar and window buttons instead of Mortar's"
+msgstr "Show your desktop's own title bar and window buttons instead of Mortar's"
 
 #: src/profiles/HealthDialog.tsx
 msgid "The saved change {change} from {when} is missing its config files"

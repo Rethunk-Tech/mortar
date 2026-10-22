@@ -1092,7 +1092,7 @@ func run() error {
 			Height:           defaultWindowHeight,
 			MinWidth:         minWindowWidth,
 			MinHeight:        minWindowHeight,
-			Frameless:        true,
+			Frameless:        !store.Get().SystemTitleBar,
 			BackgroundType:   application.BackgroundTypeSolid,
 			BackgroundColour: application.NewRGBA(25, 25, 30, 255),
 			EnableFileDrop:   true,
@@ -1399,7 +1399,15 @@ func run() error {
 	}
 	syncTray()
 	trayShown := trayWanted(store.Get())
+	systemTitleBar := store.Get().SystemTitleBar
 	app.Event.On(settings.ChangedEvent, func(*application.CustomEvent) {
+		if want := store.Get().SystemTitleBar; want != systemTitleBar {
+			systemTitleBar = want
+			// A window closed to the tray is rebuilt with the setting when shown.
+			if !windowClosed() {
+				window.SetFrameless(!want)
+			}
+		}
 		// Only the tray settings change what the tray is; a rebuild reads every game's launches.
 		if want := trayWanted(store.Get()); want != trayShown {
 			trayShown = want

@@ -461,6 +461,12 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
       label: i18n._(msg`Remember window size and position`),
       description: i18n._(msg`Restore the last window bounds on startup`),
     },
+    systemTitleBar: {
+      label: i18n._(msg`Use the system title bar`),
+      description: i18n._(
+        msg`Show your desktop's own title bar and window buttons instead of Mortar's`,
+      ),
+    },
     extensionConnection: {
       label: i18n._(msg`Browser extension connection`),
       description: i18n._(

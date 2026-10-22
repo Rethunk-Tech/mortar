@@ -26,7 +26,7 @@ var portableFields = []string{
 	"lanSharing", "lanPort", "lanAllowAnyAddress", "lanName", "lanAutoAcceptPaired", "downloadFolder", "watchFolders", "autoInstallFolders", "syncFolder", "vortexFolder", "packFolder",
 	"profileOrder", "autoRetryDownloads", "thunderstoreHost", "sidebarBadges",
 	"shareIncludeDisabledMods", "shareIncludeFomodChoices", "shareIncludeNotes", "shareIncludeConfigFiles", "shareIncludeProblemChoices", "shareIncludeLibraries",
-	"updateDigest", "verifyNexusMD5", "showAdultContent", "launchAtLogin", "startMinimised", "rememberWindow", "extensionConnection",
+	"updateDigest", "verifyNexusMD5", "showAdultContent", "launchAtLogin", "startMinimised", "rememberWindow", "systemTitleBar", "extensionConnection",
 	"games",
 }
 

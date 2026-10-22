@@ -6,6 +6,7 @@ import { GameMenu } from '../games/GameMenu.tsx'
 import { routeGame, useNav } from '../nav/store.ts'
 import { ProfileMenu } from '../profiles/ProfileMenu.tsx'
 import { DownloadsPill } from '../queue/DownloadsPill.tsx'
+import { useSettings } from '../settings/store.ts'
 import { HistoryButton } from '../toasts/HistoryButton.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { AppMenu } from './AppMenu.tsx'
@@ -56,22 +57,25 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
   const { t } = useLingui()
   const routeName = useNav((s) => s.route.name)
   const game = useNav((s) => routeGame(s.route))
+  // With the desktop's own title bar above it, this row is a toolbar: the desktop moves and sizes the window.
+  const systemTitleBar = useSettings((s) => s.systemTitleBar)
   return (
     <Box
       component="header"
       onDoubleClick={(e) => {
-        if (e.target instanceof Element && !e.target.closest('button, a')) {
+        if (!systemTitleBar && e.target instanceof Element && !e.target.closest('button, a')) {
           win.toggleMaximise().catch(reportUnexpected)
         }
       }}
       sx={{
-        '--wails-draggable': 'drag',
+        '--wails-draggable': systemTitleBar ? 'no-drag' : 'drag',
         height: 'var(--title-bar)',
         flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
         pl: '14px',
+        pr: systemTitleBar ? '8px' : 0,
         bgcolor: 'var(--mortar-title-bar)',
       }}
     >
@@ -101,20 +105,22 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
       <Box sx={{ flexGrow: 1 }} />
       <DownloadsPill />
       <HistoryButton />
-      <Box
-        data-window-controls=""
-        sx={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch', ml: '6px' }}
-      >
-        <WindowButton label={t`Minimise`} onClick={win.minimise}>
-          <Minus size={14} />
-        </WindowButton>
-        <WindowButton label={maximised ? t`Restore` : t`Maximise`} onClick={win.toggleMaximise}>
-          {maximised ? <Copy size={12} /> : <Square size={12} />}
-        </WindowButton>
-        <WindowButton label={t`Close`} onClick={win.close} danger={true}>
-          <X size={14} />
-        </WindowButton>
-      </Box>
+      {systemTitleBar ? null : (
+        <Box
+          data-window-controls=""
+          sx={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch', ml: '6px' }}
+        >
+          <WindowButton label={t`Minimise`} onClick={win.minimise}>
+            <Minus size={14} />
+          </WindowButton>
+          <WindowButton label={maximised ? t`Restore` : t`Maximise`} onClick={win.toggleMaximise}>
+            {maximised ? <Copy size={12} /> : <Square size={12} />}
+          </WindowButton>
+          <WindowButton label={t`Close`} onClick={win.close} danger={true}>
+            <X size={14} />
+          </WindowButton>
+        </Box>
+      )}
     </Box>
   )
 }
