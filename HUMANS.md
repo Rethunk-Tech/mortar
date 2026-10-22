@@ -255,7 +255,6 @@ A new store, site, runtime, provider, host, installer, deployer, framework or lo
 | Host | `internal/host` | `Host` (`ID`, `Match`, `Fetch`) in `For` ahead of the direct host, which takes any HTTPS URL |
 | Pack format | `internal/pack` | `Format` reading another manager's list into a `Draft`; pass it to `pack.Read` where the importer lists formats. Writes nothing |
 | Installer | `internal/installer` | `Installer` (`ID`, `Detect`, `Layout`); `installer.Register`; id in `detectionOrder` before `plain`, which takes any archive. Every `Layout` path is validated to stay inside its target |
-| Deployer | `internal/deploy` | `Deployer` (`Plan`, `Apply`, `Purge`, `Recover`); `deploy.Register`; the catalog's `deploy` names the id |
 | Framework | `internal/framework` | `Framework` (`ID`, `Matches`, `Analyze`); `framework.Register`. Content Patcher is the one driver |
 | Loader | `internal/loader` | `Loader` (`ID`, `Formats`, `Status`, `Install`, `Contribute`) in `internal/loader/<id>/`; `loader.Register`; import in `internal/loader/all/all.go`. Capabilities by type assertion: `Vanilla`, `Owner`, `WithLogs`, `WithConfig`, `WithLaunchSettings` (shown in Edit profile), `WithPlayerLog`, `WithCompanion`, `Console`, `Releases`, `ProcessNames`, `SteamExe`. A loader that redirects the game to the profile (SMAPI) declares no install-side files; one that needs files beside the executable (BepInEx's Doorstop `winhttp.dll`, `doorstop_config.ini`) declares them in its plan and the deployer places them |
 

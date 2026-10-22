@@ -18,20 +18,14 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 )
 
-// ID of the deployer that copies files into the install itself.
-const copyID = "copy-into-install"
-
-var _ = Register(place{})
-
 const journalFile = "deploy.json"
 
-// place copies files into the install. The game and its anti-cheat may write to the placed files, so they are copies,
-// never links into the store.
-type place struct{}
+// Place copies a loader's install-side files into the game folder. The game and its anti-cheat may write to the placed
+// files, so they are copies, never links into the store.
+type Place struct{}
 
-func (place) ID() string { return copyID }
-
-func (place) Plan(view View, dir string, files []launchplan.PlanFile) (Plan, error) {
+// Plan resolves the loaders' install-side plan files, whose Dst is relative to dir, the install folder.
+func (Place) Plan(view View, dir string, files []launchplan.PlanFile) (Plan, error) {
 	byDst := map[string]Op{}
 	var owned []Owned
 	for _, f := range files {
@@ -102,7 +96,8 @@ func persist(m Manifest) error {
 // manifest would overwrite the first's record of the player's own files, and they would be lost.
 var ErrUnrecovered = errors.New("an earlier deploy has not been taken back")
 
-func (place) Apply(ctx context.Context, p Plan) (Manifest, error) {
+// Apply persists the manifest, then places the files.
+func (Place) Apply(ctx context.Context, p Plan) (Manifest, error) {
 	if _, err := os.Lstat(journalPath(p.View.JournalDir)); err == nil {
 		return Manifest{}, fmt.Errorf("%w: recover %s first", ErrUnrecovered, p.View.JournalDir)
 	}
@@ -216,7 +211,8 @@ func move(src, dst string) error {
 	return os.Remove(src)
 }
 
-func (place) Purge(ctx context.Context, m Manifest) error {
+// Purge removes the placed files and restores what they displaced, then drops the journal.
+func (Place) Purge(ctx context.Context, m Manifest) error {
 	var log *opLog
 	if m.View.JournalDir != "" {
 		var err error
@@ -352,7 +348,9 @@ func writeBackFile(o Placed, i int, log *opLog) (bool, error) {
 	return true, log.add(step{W: &i}, false)
 }
 
-func (p place) Recover(ctx context.Context, journalDir string, alive func() bool) error {
+// Recover finishes an unfinished deploy found at journalDir: it does nothing while alive reports the game running,
+// else it purges.
+func (p Place) Recover(ctx context.Context, journalDir string, alive func() bool) error {
 	b, err := fsx.ReadFile(journalPath(journalDir))
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil

@@ -17,7 +17,7 @@ func TestPurgeRemovesARewrittenInstallRootFileAndReturnsTheDisplacedOne(t *testi
 	m := r.apply()
 	dll := filepath.Join(r.install, "winhttp.dll")
 	write(t, dll, "rewritten by the game")
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
@@ -43,7 +43,7 @@ func TestRecoverAfterACrashBetweenCheckpointsRemovesTheFoldersApplyMade(t *testi
 	if err := fsx.WriteFile(filepath.Join(r.view.JournalDir, journalFile), b, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Recover(t.Context(), r.view.JournalDir, nil); err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func TestRecoverRemovesATempFileACrashedCopyLeft(t *testing.T) {
 	m := r.apply()
 	tmp := filepath.Join(r.install, "doorstop_config.ini.mortar-tmp")
 	write(t, tmp, "partial")
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}

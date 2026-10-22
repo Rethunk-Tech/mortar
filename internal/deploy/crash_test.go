@@ -52,7 +52,7 @@ func sequence(t *testing.T, fn func(*rig)) []string {
 
 func (r *rig) leftover(t *testing.T, start map[string]string, step string) {
 	t.Helper()
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Recover(t.Context(), r.view.JournalDir, nil); err != nil {
 		t.Fatalf("after a crash at %s: recover: %v", step, err)
 	}
@@ -73,7 +73,7 @@ func TestACrashAfterAnyApplyStepIsRecoveredToTheStartingTree(t *testing.T) {
 		r := crashRig(t)
 		start := snapshot(t, r.install)
 		p := r.plan()
-		d, _ := Get(copyID)
+		d := Place{}
 		got, fired := crashAt(i, func() { _, _ = d.Apply(t.Context(), p) })
 		if !fired {
 			t.Fatalf("the crash at step %d (%s) did not fire", i, steps[i])
@@ -91,7 +91,7 @@ func TestACrashAfterAnyApplyStepIsRecoveredToTheStartingTree(t *testing.T) {
 func TestACrashAfterAnyPurgeStepIsRecoveredToTheStartingTree(t *testing.T) {
 	steps := sequence(t, func(r *rig) {
 		m := r.apply()
-		d, _ := Get(copyID)
+		d := Place{}
 		_ = d.Purge(t.Context(), m)
 	})
 	purge := steps[slices.Index(steps, "logged:2")+1:]
@@ -103,7 +103,7 @@ func TestACrashAfterAnyPurgeStepIsRecoveredToTheStartingTree(t *testing.T) {
 		r := crashRig(t)
 		start := snapshot(t, r.install)
 		m := r.apply()
-		d, _ := Get(copyID)
+		d := Place{}
 		got, fired := crashAt(i, func() { _ = d.Purge(t.Context(), m) })
 		if !fired {
 			t.Fatalf("the crash at purge step %d (%s) did not fire (apply took %d steps)", i, purge[i], applySteps)
@@ -121,7 +121,7 @@ func TestRecoveryOfARewrittenPlacedFileFollowsWhetherSomethingWasDisplaced(t *te
 	write(t, filepath.Join(r.install, "winhttp.dll"), "rewritten by the game")
 	ini := filepath.Join(r.install, "doorstop_config.ini")
 	write(t, ini, "settings the mod wrote")
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Recover(t.Context(), r.view.JournalDir, nil); err != nil {
 		t.Fatal(err)
 	}
@@ -142,7 +142,7 @@ func TestRecoveryOfARewrittenPlacedFileFollowsWhetherSomethingWasDisplaced(t *te
 func TestRecoveryNeverDeletesAFileOfThePlayersThatWasNotPlaced(t *testing.T) {
 	r := crashRig(t)
 	p := r.plan()
-	d, _ := Get(copyID)
+	d := Place{}
 	// Crash before the first copy: nothing is placed, and the player puts a file where one would go.
 	_, _ = crashAt(slices.Index(sequence(t, func(r *rig) { r.apply() }), "before-copy:1"), func() { _, _ = d.Apply(t.Context(), p) })
 	write(t, p.Ops[1].Dst, "the player's new file")

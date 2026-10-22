@@ -71,7 +71,7 @@ func snapshot(t *testing.T, dir string) map[string]string {
 
 func (r *rig) plan() Plan {
 	r.t.Helper()
-	d, _ := Get(copyID)
+	d := Place{}
 	p, err := d.Plan(r.view, r.install, r.files)
 	if err != nil {
 		r.t.Fatal(err)
@@ -81,7 +81,7 @@ func (r *rig) plan() Plan {
 
 func (r *rig) apply() Manifest {
 	r.t.Helper()
-	d, _ := Get(copyID)
+	d := Place{}
 	m, err := d.Apply(r.t.Context(), r.plan())
 	if err != nil {
 		r.t.Fatal(err)
@@ -99,7 +99,7 @@ func TestApplyPurgeRestoresTheInstall(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(r.view.JournalDir, journalFile)); err != nil {
 		t.Fatalf("manifest not persisted: %v", err)
 	}
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +119,7 @@ func TestApplyPurgeRestoresTheInstall(t *testing.T) {
 
 func TestPlanRefusesAFileOutsideTheInstall(t *testing.T) {
 	r := newRig(t)
-	d, _ := Get(copyID)
+	d := Place{}
 	if _, err := d.Plan(r.view, r.install, []launchplan.PlanFile{{Src: "x", Dst: "../escape.dll"}}); err == nil {
 		t.Fatal("a destination outside the install was planned")
 	}
@@ -130,7 +130,7 @@ func TestPurgeLeavesTheGamesOwnFilesAlone(t *testing.T) {
 	m := r.apply()
 	write(t, filepath.Join(r.install, "game.exe"), "patched by Steam")
 	write(t, filepath.Join(r.install, "Data", "new.assets"), "added by an update")
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
@@ -143,7 +143,7 @@ func TestRecoverAfterACrash(t *testing.T) {
 	r := newRig(t)
 	before := snapshot(t, r.install)
 	r.apply()
-	d, _ := Get(copyID)
+	d := Place{}
 	// The game is still running: leave everything.
 	if err := d.Recover(t.Context(), r.view.JournalDir, func() bool { return true }); err != nil {
 		t.Fatal(err)
@@ -171,7 +171,7 @@ func TestRecoverAfterACrash(t *testing.T) {
 func TestApplyRefusesAnUnrecoveredJournal(t *testing.T) {
 	r := newRig(t)
 	r.apply()
-	d, _ := Get(copyID)
+	d := Place{}
 	if _, err := d.Apply(t.Context(), r.plan()); !errors.Is(err, ErrUnrecovered) {
 		t.Fatalf("second apply: %v", err)
 	}
@@ -194,7 +194,7 @@ func TestPurgeKeepsTheFileOfAnOpThatNeverRan(t *testing.T) {
 	write(t, dst, "proxy")
 	hash, _ := fsx.SHA256(dst)
 	m := Manifest{Dir: r.install, View: r.view, Ops: []Placed{{Dst: dst, Src: filepath.Join(r.store, "winhttp.dll"), Hash: hash, Displaced: filepath.Join(r.view.JournalDir, "displaced", "0")}}}
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Purge(t.Context(), m); err != nil || read(dst) != "proxy" {
 		t.Fatalf("purge removed a file it never placed: %q, %v", read(dst), err)
 	}
@@ -202,7 +202,7 @@ func TestPurgeKeepsTheFileOfAnOpThatNeverRan(t *testing.T) {
 
 func TestACanceledApplyRecordsWhatItPlaced(t *testing.T) {
 	r := newRig(t)
-	d, _ := Get(copyID)
+	d := Place{}
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 	m, err := d.Apply(ctx, r.plan())
@@ -224,7 +224,7 @@ func TestAPlacedFileIsACopyOfTheSource(t *testing.T) {
 	}
 	_, _ = f.WriteString("rewritten by the game")
 	_ = f.Close()
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
@@ -244,7 +244,7 @@ func TestPurgeRunAgainKeepsWhatItRestored(t *testing.T) {
 	if err := fsx.Chmod(sub, 0o500); err != nil {
 		t.Fatal(err)
 	}
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Purge(t.Context(), m); err == nil {
 		t.Fatal("the purge removed a file from a read-only folder")
 	}
@@ -268,7 +268,7 @@ func TestPurgeLeavesAnInstallRootFileThatIsNoLongerOurs(t *testing.T) {
 	m := r.apply()
 	ini := filepath.Join(r.install, "doorstop_config.ini")
 	write(t, ini, "the player's edit")
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
@@ -281,7 +281,7 @@ func TestRecoverKeepsAJournalItCannotRead(t *testing.T) {
 	r := newRig(t)
 	r.apply()
 	write(t, filepath.Join(r.view.JournalDir, journalFile), "{not json")
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Recover(t.Context(), r.view.JournalDir, nil); err == nil {
 		t.Fatal("a damaged journal was taken as recovered")
 	}
@@ -294,7 +294,7 @@ func TestACanceledPurgeLeavesTheJournalToFinishLater(t *testing.T) {
 	r := newRig(t)
 	before := snapshot(t, r.install)
 	m := r.apply()
-	d, _ := Get(copyID)
+	d := Place{}
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 	if err := d.Purge(ctx, m); err == nil {
@@ -343,7 +343,7 @@ func TestPurgeRemovesTheFoldersApplyMade(t *testing.T) {
 	if read(filepath.Join(r.install, "sub", "deep", "deep.ini")) != "deep" {
 		t.Fatal("the file is not in its new folder")
 	}
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
@@ -357,7 +357,7 @@ func TestApplyFailsWhenAFolderCannotBeMade(t *testing.T) {
 	write(t, filepath.Join(r.install, "blocker"), "a file where a folder is needed")
 	write(t, filepath.Join(r.store, "x.ini"), "x")
 	r.files = []launchplan.PlanFile{{Src: filepath.Join(r.store, "x.ini"), Dst: "blocker/x.ini"}}
-	d, _ := Get(copyID)
+	d := Place{}
 	if _, err := d.Apply(t.Context(), r.plan()); err == nil {
 		t.Fatal("apply reported success without placing the file")
 	}
@@ -385,7 +385,7 @@ func TestAFailedPurgeRecordsWhatItAlreadyUndid(t *testing.T) {
 	write(t, filepath.Join(blocked, "keep"), "x")
 	write(t, filepath.Join(r.view.JournalDir, "displaced", "kept"), "the player's own")
 	m.Ops[0].Displaced = filepath.Join(r.view.JournalDir, "displaced", "kept")
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Purge(t.Context(), m); err == nil {
 		t.Fatal("purge reported success past a destination it could not clear")
 	}
@@ -432,7 +432,7 @@ func TestAFileForARootIsPlacedOutsideTheInstallAndTakenBack(t *testing.T) {
 	if read(filepath.Join(dir, "Resource.cfg")) != "the player's own" {
 		t.Fatal("a file the plan does not name is left alone")
 	}
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
@@ -456,7 +456,7 @@ func TestACrashWithFilesOutsideTheInstallIsRecovered(t *testing.T) {
 	r.files = files
 	before := snapshot(t, dir)
 	r.apply()
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Recover(t.Context(), r.view.JournalDir, func() bool { return false }); err != nil {
 		t.Fatal(err)
 	}
@@ -468,7 +468,7 @@ func TestACrashWithFilesOutsideTheInstallIsRecovered(t *testing.T) {
 
 func TestAPlanRefusesAnUnknownRootAndAPathThatLeavesTheRoot(t *testing.T) {
 	r := newRig(t)
-	d, _ := Get(copyID)
+	d := Place{}
 	for _, f := range []launchplan.PlanFile{
 		{Src: "s", Dst: "x", Root: "mods"},
 		{Src: "s", Dst: filepath.Join("..", "x"), Root: "mods"},

@@ -1,18 +1,10 @@
 // Package deploy places a loader's install-side files (BepInEx's Doorstop proxy) into a game's folder for a launch and
 // removes them again. The profile holds everything else, so nothing else of the game folder is read, moved or taken
-// back. Games whose loader redirects the game to the profile's folder (SMAPI's --mods-path) need none of this, so no
-// "redirect" deployer is registered.
+// back. Games whose loader redirects the game to the profile's folder (SMAPI's --mods-path) need none of this.
 //
 // A launch is Plan, Apply, play, Purge. Apply persists the manifest in the journal folder before it touches the game
 // folder, so a crash at any point leaves enough to finish the job: Recover purges from it.
 package deploy
-
-import (
-	"context"
-	"sync"
-
-	"github.com/Rethunk-Tech/mortar/internal/launchplan"
-)
 
 // View is the profile's side of a deploy.
 type View struct {
@@ -72,39 +64,4 @@ type Manifest struct {
 	notes []Note
 	// Created are the folders Apply made, removed again by Purge when empty.
 	Created []string `json:"created,omitempty"`
-}
-
-// Deployer places a loader's install-side files into the game folder.
-type Deployer interface {
-	ID() string
-	// Plan resolves the loaders' install-side plan files, whose Dst is relative to dir, the install folder.
-	Plan(view View, dir string, files []launchplan.PlanFile) (Plan, error)
-	// Apply persists the manifest, then places the files.
-	Apply(ctx context.Context, p Plan) (Manifest, error)
-	// Purge removes the placed files and restores what they displaced, then drops the journal.
-	Purge(ctx context.Context, m Manifest) error
-	// Recover finishes an unfinished deploy found at journalDir: it does nothing while alive reports the game running,
-	// else it purges.
-	Recover(ctx context.Context, journalDir string, alive func() bool) error
-}
-
-var (
-	mu       sync.RWMutex
-	registry = map[string]Deployer{}
-)
-
-// Register adds a deployer and reports true; a driver calls it in a blank package variable.
-func Register(d Deployer) bool {
-	mu.Lock()
-	defer mu.Unlock()
-	registry[d.ID()] = d
-	return true
-}
-
-// Get returns the registered deployer with this id.
-func Get(id string) (Deployer, bool) {
-	mu.RLock()
-	defer mu.RUnlock()
-	d, ok := registry[id]
-	return d, ok
 }

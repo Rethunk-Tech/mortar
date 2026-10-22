@@ -45,7 +45,7 @@ func leaveCrashedLaunch(t *testing.T, svc *Service) crashedLaunch {
 	if c.savesDir, err = savesJournal(sl.inst); err != nil {
 		t.Fatal(err)
 	}
-	d, _ := deploy.Get(deployerID)
+	d := &deploy.Place{}
 	plan, err := d.Plan(deploy.View{JournalDir: c.deployDir}, c.install, []launchplan.PlanFile{{Src: src, Dst: "winhttp.dll"}})
 	if err != nil {
 		t.Fatal(err)
@@ -116,7 +116,7 @@ func TestLeftoverJournalsNamesBothJournalsOfAnIdleInstall(t *testing.T) {
 func TestUnwindTakesBackTheDeployAndTheSaveSwap(t *testing.T) {
 	svc, _ := startEnv(t)
 	c := leaveCrashedLaunch(t, svc)
-	d, _ := deploy.Get(deployerID)
+	d := &deploy.Place{}
 	dep := &deployment{d: d, m: c.placed, saves: &c.swapped}
 	dep.unwind(context.Background())
 	dep.unwind(context.Background())
@@ -145,7 +145,7 @@ func TestRecoverGameDeploysFindsEitherJournal(t *testing.T) {
 				t.Fatal(err)
 			}
 		} else {
-			d, _ := deploy.Get(deployerID)
+			d := &deploy.Place{}
 			if err := d.Purge(context.Background(), c.placed); err != nil {
 				t.Fatal(err)
 			}

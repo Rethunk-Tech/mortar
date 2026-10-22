@@ -131,7 +131,7 @@ func TestEnabledModsAreSwappedIntoTheModsFolderAndTakenBack(t *testing.T) {
 	}
 	before := tree(t, mods)
 
-	d, _ := deploy.Get("copy-into-install")
+	d := deploy.Place{}
 	dp, err := d.Plan(deploy.View{JournalDir: filepath.Join(dir, "journal"), Roots: map[string]string{"mods": mods}}, filepath.Join(dir, "install"), plan.Files)
 	if err != nil {
 		t.Fatal(err)
@@ -231,7 +231,7 @@ func TestAModsFolderInsideTheInstallIsFilledAndPurgedWithTheInstallUnchanged(t *
 	}
 	before := tree(t, install)
 
-	d, _ := deploy.Get("copy-into-install")
+	d := deploy.Place{}
 	dp, err := d.Plan(deploy.View{JournalDir: filepath.Join(dir, "journal"), Roots: map[string]string{"mods": modsDir}}, install, plan.Files)
 	if err != nil {
 		t.Fatal(err)

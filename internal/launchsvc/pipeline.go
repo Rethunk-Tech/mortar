@@ -117,13 +117,10 @@ func (s *Service) planProfile(ctx context.Context, g game.Game, inst game.Instal
 	return s.launchPlan(ctx, g, inst, profileID, mode, options, prefix, env)
 }
 
-// deployerID is the deployer that places a plan's install-side files into the game folder. A loader that redirects
-// the game to the profile's folder (SMAPI's --mods-path) declares no such files, so its launches skip the deploy.
-const deployerID = "copy-into-install"
-
-// deployment is the placed files of one launch, taken back once the game has exited.
+// deployment is the placed files of one launch, taken back once the game has exited. A loader that redirects the game
+// to the profile's folder (SMAPI's --mods-path) declares no install-side files, so its launches skip the deploy.
 type deployment struct {
-	d deploy.Deployer
+	d *deploy.Place
 	m deploy.Manifest
 	// finish unwinds under a context that outlives the launch call, for the waiter, which has none of its own.
 	finish func()
@@ -368,10 +365,7 @@ func startDeploy(ctx context.Context, inst game.Install, plan *launchplan.Plan, 
 	if plan.Mode == launchplan.ModeVanilla || len(plan.Files) == 0 {
 		return &deployment{}, nil
 	}
-	d, ok := deploy.Get(deployerID)
-	if !ok {
-		return nil, fmt.Errorf("no deployer %q", deployerID)
-	}
+	d := &deploy.Place{}
 	dir, err := journalDir(inst.ID)
 	if err != nil {
 		return nil, err
@@ -447,9 +441,9 @@ func (s *Service) RecoverDeploys(ctx context.Context) ([]string, error) {
 //
 //wails:ignore
 func (s *Service) RecoverGameDeploys(ctx context.Context, id string) (found bool, err error) {
-	d, ok := deploy.Get(deployerID)
+	d := deploy.Place{}
 	g := game.Find(id)
-	if !ok || g == nil {
+	if g == nil {
 		return false, nil
 	}
 	var errs []error

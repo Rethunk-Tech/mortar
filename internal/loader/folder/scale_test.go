@@ -63,7 +63,7 @@ func TestPlaceAndPurgeAThreeThousandFileProfile(t *testing.T) {
 	if at := os.Getenv("MORTAR_SCALE_MODS"); at != "" {
 		mods = at
 	}
-	d, _ := deploy.Get("copy-into-install")
+	d := deploy.Place{}
 	l, _ := loader.Get("folder")
 	plan := launchplan.New(launchplan.ModeProfile)
 	var m deploy.Manifest

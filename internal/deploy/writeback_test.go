@@ -34,7 +34,7 @@ func newRootRig(t *testing.T) *rootRig {
 
 func (rr *rootRig) purge(m Manifest) {
 	rr.t.Helper()
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Purge(rr.t.Context(), m); err != nil {
 		rr.t.Fatal(err)
 	}
@@ -120,7 +120,7 @@ func TestInstallRootFilesKeepTheirRule(t *testing.T) {
 	ini := filepath.Join(r.install, "doorstop_config.ini")
 	write(t, ini, "rewritten")
 	write(t, filepath.Join(r.install, "created.dat"), "created")
-	d, _ := Get(copyID)
+	d := Place{}
 	if err := d.Purge(t.Context(), m); err != nil {
 		t.Fatal(err)
 	}
@@ -146,7 +146,7 @@ func TestACrashAtAnyWriteBackStepRecoversWithTheBytesInTheProfile(t *testing.T) 
 		return rr, m, start
 	}
 	rr, m, _ := setup()
-	d, _ := Get(copyID)
+	d := Place{}
 	steps, _ := crashAt(-1, func() { _ = d.Purge(t.Context(), m) })
 	if !slices.ContainsFunc(steps, func(s string) bool { return s == "adopted-copy:mc_state.dat" }) || !slices.Contains(steps, "written-back:2") {
 		t.Fatalf("write-back steps missing: %v", steps)
@@ -190,7 +190,7 @@ func TestACrashAtAnyRescueStepKeepsTheChangedBytes(t *testing.T) {
 		return rr, m
 	}
 	rr, m := setup()
-	d, _ := Get(copyID)
+	d := Place{}
 	steps, _ := crashAt(-1, func() { _ = d.Purge(t.Context(), m) })
 	if !slices.Contains(steps, "rescued:2") {
 		t.Fatalf("no rescue step: %v", steps)
