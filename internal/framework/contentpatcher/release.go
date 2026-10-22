@@ -1,10 +1,17 @@
 package contentpatcher
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
+
+// packGrace is how long the packs stay in memory after the last check ends, unless another check starts first.
+var packGrace = 30 * time.Second
 
 // A check reads every pack, then nothing reads them until the next one, which can be hours away; on a large profile
 // they hold around 100 MB, while reading them back from the disk caches costs the next check a fraction of a second.
-// So the packs leave memory as soon as the last check holding them ends.
+// So the packs leave memory once the last check holding them has been over for packGrace: a run of edits to one profile
+// is a run of checks, and each would otherwise decode every pack again.
 
 var packUse struct {
 	sync.Mutex
@@ -23,8 +30,12 @@ func holdPacks() func() {
 		packUse.active--
 		last, gen := packUse.active == 0, packUse.gen
 		packUse.Unlock()
-		if last {
+		switch {
+		case !last:
+		case packGrace <= 0:
 			releasePacks(gen)
+		default:
+			time.AfterFunc(packGrace, func() { releasePacks(gen) })
 		}
 	}
 }

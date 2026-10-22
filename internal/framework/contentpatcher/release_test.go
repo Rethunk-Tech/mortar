@@ -3,6 +3,7 @@ package contentpatcher
 import (
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 )
@@ -46,6 +47,8 @@ func TestPacksLeaveMemoryWhenTheLastCheckEnds(t *testing.T) {
 	t.Setenv("LOCALAPPDATA", t.TempDir())
 	resetContentPackCaches()
 	t.Cleanup(resetContentPackCaches)
+	packGrace = 0
+	t.Cleanup(func() { packGrace = 30 * time.Second })
 	im, _, _ := diskCachePack(t)
 	end := holdPacks()
 	readContentPack(im)
@@ -59,6 +62,39 @@ func TestPacksLeaveMemoryWhenTheLastCheckEnds(t *testing.T) {
 	if packDiskState.entries != nil {
 		t.Fatal("the encoded packs outlived the check")
 	}
+}
+
+// The packs outlive a check by the grace period, so the next check of an edited profile finds them, and a check that
+// starts inside it keeps them past the first release.
+func TestPacksStayForTheGraceAfterACheck(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+	packGrace = 100 * time.Millisecond
+	t.Cleanup(func() { packGrace = 30 * time.Second })
+	im, _, _ := diskCachePack(t)
+	end := holdPacks()
+	readContentPack(im)
+	flushPackDiskCache([]framework.Mod{im})
+	end()
+	if _, held := packCache.Load(cleanFolder(im)); !held {
+		t.Fatal("the packs left memory the moment the check ended")
+	}
+	next := holdPacks()
+	time.Sleep(3 * packGrace)
+	if _, held := packCache.Load(cleanFolder(im)); !held {
+		t.Fatal("the packs were released under a running check")
+	}
+	next()
+	deadline := time.Now().Add(5 * time.Second)
+	for time.Now().Before(deadline) {
+		if _, held := packCache.Load(cleanFolder(im)); !held {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Fatal("the packs stayed in memory after the grace")
 }
 
 func cleanFolder(im framework.Mod) string { return filepath.Clean(im.Folder) }
