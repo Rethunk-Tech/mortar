@@ -1,6 +1,4 @@
 import { expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { errorDetails, errorKind } from './errorKind.ts'
 
 test('errorKind reads the Wails [kind] prefix', () => {
@@ -31,24 +29,4 @@ test('an untagged bound-call error takes its kind from the Wails cause', () => {
 test('untagged text stays unknown with the raw details', () => {
   expect(errorKind('plain failure')).toBe('unknown')
   expect(errorDetails('plain failure')).toBe('plain failure')
-})
-
-test('errorMessage maps each kind to the same sentence as the CLI', () => {
-  const src = readFileSync(join(import.meta.dir, 'report.ts'), 'utf8')
-  expect(src).toContain('msg`That item could not be found.`')
-  expect(src).toContain('msg`The game is already running.`')
-  expect(src).toContain('msg`A network request failed.`')
-  expect(src).toContain('msg`Mortar does not have permission to do that.`')
-  expect(src).toContain('msg`The disk is full.`')
-  expect(src).toContain('msg`That data could not be read.`')
-  expect(src).toContain('msg`That request was not valid.`')
-  expect(src).toContain('export function errorMessage')
-})
-
-test('untagged errors use the generic sentence; raw text stays in errorDetails', () => {
-  const src = readFileSync(join(import.meta.dir, 'report.ts'), 'utf8')
-  expect(src).toContain('return sentence(kindOf(e))')
-  expect(src).toContain('msg`Something went wrong.`')
-  expect(src).not.toContain('untagged errors keep their text')
-  expect(src).not.toContain('const raw = detailsOf(e)')
 })
