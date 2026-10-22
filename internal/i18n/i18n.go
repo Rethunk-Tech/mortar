@@ -98,7 +98,27 @@ func translation(cats map[string]catalog, locale, msgid string) string {
 	return ""
 }
 
-// resolve picks the setting when it names a catalog, else the closest catalog to the system language: the same code,
+// minCompleteness is the share of messages a locale must translate before the system language selects it: a window of
+// mostly English with a few translated strings is worse than all English. Naming a locale in the setting applies it at
+// any share.
+const minCompleteness = 0.8
+
+// completeness is the share of the English messages that locale translates, itself or through its base language.
+func completeness(cats map[string]catalog, locale string) float64 {
+	en := cats["en"]
+	if len(en) == 0 {
+		return 0
+	}
+	done := 0
+	for msgid := range en {
+		if translation(cats, locale, msgid) != "" {
+			done++
+		}
+	}
+	return float64(done) / float64(len(en))
+}
+
+// resolve picks the setting when it names a catalog, else the closest catalog of at least minCompleteness to the system language: the same code,
 // else the longest locale that is a prefix of it (es-MX takes es), else a locale of the same base language (pt-PT takes
 // pt-BR), else en. This is the frontend's rule (bestLocale in src/i18n/locales.ts).
 func resolve(cats map[string]catalog, setting, system string) string {
@@ -106,7 +126,9 @@ func resolve(cats map[string]catalog, setting, system string) string {
 		return setting
 	}
 	system = strings.ToLower(system)
-	locales := slices.Sorted(maps.Keys(cats))
+	locales := slices.DeleteFunc(slices.Sorted(maps.Keys(cats)), func(l string) bool {
+		return completeness(cats, l) < minCompleteness
+	})
 	if i := slices.IndexFunc(locales, func(l string) bool { return strings.ToLower(l) == system }); i >= 0 {
 		return locales[i]
 	}

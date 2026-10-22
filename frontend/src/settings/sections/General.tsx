@@ -21,7 +21,7 @@ import {
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { WINDOWS } from '../../brand/productNames.ts'
 import { TourAgainButton } from '../../firstrunTour/TourAgainButton.tsx'
-import { availableLocales } from '../../i18n/locales.ts'
+import { localeLabel, pickerLocales } from '../../i18n/locales.ts'
 import { useReasonText } from '../../i18n/reasonText.ts'
 import { PairedComputers } from '../../lan/PairedComputers.tsx'
 import { useLoaded } from '../../shell/useLoaded.ts'
@@ -116,9 +116,9 @@ function Language() {
           sx={{ minWidth: 180 }}
         >
           <MenuItem value="">{t`System default`}</MenuItem>
-          {availableLocales.map((locale) => (
+          {pickerLocales(language).map((locale) => (
             <MenuItem key={locale} value={locale}>
-              {new Intl.DisplayNames([locale], { type: 'language' }).of(locale) ?? locale}
+              {localeLabel(locale)}
             </MenuItem>
           ))}
         </Select>

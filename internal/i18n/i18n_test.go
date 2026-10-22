@@ -109,7 +109,22 @@ func TestLocalesAreTheEmbeddedDirectories(t *testing.T) {
 
 func TestLocaleAndFormat(t *testing.T) {
 	t.Parallel()
-	cats := map[string]catalog{"en": {}, "de": {"Quit": "Beenden"}, "pt-BR": {}, "es": {}, "es-AR": {}, "es-PA": {}}
+	full := func(msgids ...string) catalog {
+		c := catalog{}
+		for _, m := range msgids {
+			c[m] = m + "!"
+		}
+		return c
+	}
+	cats := map[string]catalog{
+		"en":    full("Quit", "Close"),
+		"de":    full("Quit", "Close"),
+		"pt-BR": full("Quit", "Close"),
+		"es":    full("Quit", "Close"),
+		"es-AR": {},
+		"es-PA": {},
+		"fr":    full("Quit"),
+	}
 	cases := []struct{ setting, system, want string }{
 		{"", "de-DE", "de"},
 		{"", "pt-BR", "pt-BR"},
@@ -124,7 +139,9 @@ func TestLocaleAndFormat(t *testing.T) {
 		{"", "fr-FR", "en"},
 		{"", "", "en"},
 		{"de", "fr-FR", "de"},
-		{"fr", "de-AT", "de"},
+		{"xx", "de-AT", "de"},
+		{"fr", "de-AT", "fr"},
+		{"", "fr-FR", "en"},
 	}
 	for _, c := range cases {
 		if got := resolve(cats, c.setting, c.system); got != c.want {
