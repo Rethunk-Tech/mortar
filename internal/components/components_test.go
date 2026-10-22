@@ -156,6 +156,38 @@ func TestLoadRefusesSerialRollbackAndKeepsCachedManifest(t *testing.T) {
 	}
 }
 
+func TestUseCachedSelectsAVerifiedCacheNoOlderThanTheBundledManifest(t *testing.T) {
+	public, private := newKey(t)
+	base := bundledSerial(t)
+	cache := &meta.Client{CacheDir: t.TempDir()}
+	if NewClient(nil).UseCached(cache, public) {
+		t.Fatal("an empty cache was selected")
+	}
+	body, signature := signedManifest(t, base+1, private)
+	if _, err := signedServer(t, body, signature).Load(t.Context(), cache, public); err != nil {
+		t.Fatal(err)
+	}
+	client := NewClient(nil)
+	if !client.UseCached(cache, public) || client.Manifest().Serial != base+1 {
+		t.Fatalf("cached manifest not selected: serial %d", client.Manifest().Serial)
+	}
+	wrong, _ := newKey(t)
+	if NewClient(nil).UseCached(cache, wrong) {
+		t.Fatal("a cache signed by another key was selected")
+	}
+	old := &meta.Client{CacheDir: t.TempDir()}
+	body, signature = signedManifest(t, base-1, private)
+	// Load refuses an older serial, so the stale entry is written as an earlier build would have left it.
+	if _, err := meta.CachedForBuild(old, cacheName, day, func() (cachedManifest, error) {
+		return cachedManifest{Manifest: body, Signature: signature}, nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if NewClient(nil).UseCached(old, public) {
+		t.Fatal("a cache older than the bundled manifest was selected")
+	}
+}
+
 func TestLoadTellsABadSignatureFromAnUnavailableManifest(t *testing.T) {
 	public, private := newKey(t)
 	body, signature := signedManifest(t, bundledSerial(t)+1, private)

@@ -495,6 +495,8 @@ func run() error {
 	source.Register(thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")})
 	componentClient := components.NewClient(&http.Client{Timeout: 30 * time.Second})
 	game.ConfigureComponents(componentClient)
+	// The catalog an earlier run cached answers from the start; the network check (Load, below) runs behind the window.
+	componentClient.UseCached(modMeta, updateKey)
 	game.CacheInstalls(installCacheTTL)
 	loaders := loadersvc.NewService(home, store, items, profiles, componentClient)
 	implemented := game.Implemented()

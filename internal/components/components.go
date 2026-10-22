@@ -1493,6 +1493,26 @@ func (c *Client) Load(ctx context.Context, cache *meta.Client, publicKey []byte)
 	return bundled, err
 }
 
+// UseCached selects the manifest an earlier run cached when it verifies and is no older than the bundled one, so
+// startup reads the catalog from disk and Load's network check can run behind the open window. It reports whether
+// it selected one; otherwise the bundled manifest answers until Load.
+func (c *Client) UseCached(cache *meta.Client, publicKey []byte) bool {
+	bundled, err := BundledManifest()
+	if err != nil {
+		return false
+	}
+	entry, ok := meta.Peek[cachedManifest](cache, cacheName)
+	if !ok || Verify(entry.Manifest, entry.Signature, publicKey) != nil {
+		return false
+	}
+	parsed, err := Decode(entry.Manifest)
+	if err != nil || parsed.Serial < bundled.Serial {
+		return false
+	}
+	c.SetManifest(parsed)
+	return true
+}
+
 // fetch returns the manifest's URL, which names its release, with the manifest and its signature.
 func (c *Client) fetch(ctx context.Context) (string, []byte, []byte, error) {
 	url, err := c.manifestURL(ctx)
