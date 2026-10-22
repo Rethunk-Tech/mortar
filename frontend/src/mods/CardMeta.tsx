@@ -27,11 +27,12 @@ export function CardMeta({
   const stats = useModCardStats(row, parseCardStats(useSettings((s) => s.browseCardStats))).join(
     ' · ',
   )
+  const byline = [formatAuthors(m.author), m.version].filter(Boolean).join(' · ')
   return (
     <>
       <Typography
         noWrap={true}
-        title={showAuthor ? `${formatAuthors(m.author)} · ${m.version}` : m.version}
+        title={showAuthor ? byline : m.version}
         sx={{ fontSize: META_FONT_PX, color: 'text.secondary' }}
       >
         {showAuthor ? (
@@ -39,7 +40,7 @@ export function CardMeta({
             <Box component="span" sx={{ position: 'relative', zIndex: 1 }}>
               <AuthorLink authorField={m.author} mod={m} profile={profile} />
             </Box>
-            {` · ${m.version}`}
+            {m.version ? ` · ${m.version}` : null}
           </>
         ) : (
           m.version
