@@ -177,6 +177,19 @@ wails3 task components:refresh
 
 - The workflow writes the secret to a temporary file, runs the generator with `GOTMPDIR=/var/tmp TMPDIR=/var/tmp`, and creates a `components-v2-<serial>` release (not marked latest) holding `components.json` and `components.json.sig`, each published once (releases are immutable). The workflow's token reads only this repo, so a component on a private repo fails the run with a 404.
 
+## Translations
+
+Translators work in Hosted Weblate, which opens pull requests against `main`. The Lingui catalogs are split for them: `frontend/src/locales/<locale>/{app,mods,settings,profiles,console}.po`, merged into one `messages.ts` per locale at compile (`frontend/lingui.config.ts`).
+
+Weblate project settings:
+
+- One component per catalog. Version control **GitHub pull request**, repository `https://github.com/Rethunk-Tech/mortar.git`, branch `main`. File format **gettext PO file**, file mask `frontend/src/locales/*/<name>.po`, source language English. Leave the template for new translations empty.
+- Component flag `icu-message-format`, so Weblate checks placeholders and plurals.
+- Project setting **Translation propagation** on: a message used in several folders sits in each of their catalogs.
+- **Adding new translation:** contact maintainers. Weblate must not run msgmerge; `lingui extract` keeps every locale's catalogs in step with the source.
+
+Starting a language: add its code to `availableLocales` in `frontend/src/i18n/locales.ts`, run `bun run --cwd frontend i18n:extract`, and commit the new `frontend/src/locales/<locale>/` catalogs; Weblate picks them up. It reaches players with the next release.
+
 ## Adding a game
 
 A game is catalog data first and code only where its behaviour differs. `TestEveryCatalogReferenceResolves` (`internal/source/all/catalog_test.go`) fails when an entry names a source, loader, metadata id, store field, path role or path token nothing answers to.
