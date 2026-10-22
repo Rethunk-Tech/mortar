@@ -36,9 +36,10 @@ function screenSpan(page: number, size: number): { first: number; last: number; 
   }
 }
 
-// The screen that starts with the same hit after the screen size changes from one size to another.
-function pageKeeping(page: number, from: number, to: number): number {
-  return Math.floor(((page - FIRST_PAGE) * from) / to) + FIRST_PAGE
+// The screen that starts with the same hit after the screen size changes from one size to another. With an anchor, the
+// index on the current screen of a hit that must stay in view, it is the screen holding that hit instead.
+function pageKeeping(page: number, from: number, to: number, anchor = 0): number {
+  return Math.floor(((page - FIRST_PAGE) * from + anchor) / to) + FIRST_PAGE
 }
 
 export { clampPage, DEBOUNCE_MS, PAGE_SIZE, pageKeeping, screenSize, screenSpan }

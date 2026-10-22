@@ -24,3 +24,11 @@ test('screens are cut from source pages without repeating or skipping a hit', ()
   expect(pageKeeping(3, 20, 24)).toBe(2)
   expect(pageKeeping(2, 49, 20)).toBe(3)
 })
+
+test('a hit that must stay in view picks the screen holding it at the new size', () => {
+  // The 20th hit of screen 2 (size 24) is hit 44, which a screen of 18 puts on screen 3, not on the one starting at hit 24.
+  expect(pageKeeping(2, 24, 18, 19)).toBe(3)
+  expect(pageKeeping(2, 24, 18)).toBe(2)
+  expect(pageKeeping(1, 24, 30, 5)).toBe(1)
+  expect(pageKeeping(3, 20, 40, 15)).toBe(2)
+})

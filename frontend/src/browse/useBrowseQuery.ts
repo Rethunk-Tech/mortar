@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { type Dispatch, type SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { useSettings } from '../settings/store.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
@@ -8,6 +8,7 @@ import { parsePicks } from './browsePicks.ts'
 import { effectiveSort, sortsFor } from './browseSort.ts'
 import { clampPage, PAGE_SIZE, pageKeeping, screenSpan } from './browseState.ts'
 import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts'
+import { hitKey, useBrowseSelection } from './selection.ts'
 import { useBrowseView } from './view.ts'
 
 type Status = 'idle' | 'loading' | 'done' | 'error'
@@ -115,6 +116,27 @@ async function loadScreen(
   return { next: joinPages([head, ...rest], skip, size), whole: false }
 }
 
+// When the screen size changes, the page moves to keep the first hit in view, or the hit whose details are open when it is
+// on the screen: opening them narrows the grid, and the mod clicked must not leave.
+function useKeepScreen(
+  size: number,
+  items: BrowseItem[],
+  setPage: Dispatch<SetStateAction<number>>,
+) {
+  const shown = useRef(size)
+  const onScreen = useRef(items)
+  onScreen.current = items
+  useEffect(() => {
+    const from = shown.current
+    if (from !== size) {
+      const open = useBrowseSelection.getState().selected?.item
+      const anchor = open ? onScreen.current.findIndex((i) => hitKey(i) === hitKey(open)) : -1
+      setPage((current) => pageKeeping(current, from, size, Math.max(anchor, 0)))
+      shown.current = size
+    }
+  }, [size, setPage])
+}
+
 function useBrowseQuery({
   game,
   profileID,
@@ -165,14 +187,7 @@ function useBrowseQuery({
   // as they come, since screens cut from them would skip hits.
   const [whole, setWhole] = useState(false)
   const size = whole ? PAGE_SIZE : fit
-  const shown = useRef(size)
-  useEffect(() => {
-    const from = shown.current
-    if (from !== size) {
-      setPage((current) => pageKeeping(current, from, size))
-      shown.current = size
-    }
-  }, [size])
+  useKeepScreen(size, result.items, setPage)
   const fetched = useRef<Fetched>({ key: '', pages: new Map(), done: new Map() })
 
   const pendingQuery = useBrowseView((s) => s.pendingQuery)
