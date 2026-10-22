@@ -83,6 +83,11 @@ func fileExclusive(info os.FileInfo, p fileProbe, s *shareAcc) (int64, bool) {
 	if !ok {
 		return info.Size(), false
 	}
+	// A hard link to a file already counted shares all of it, however that file was counted: one still in delayed
+	// allocation has no extents to read, and its link may have them by the time it is read.
+	if _, dup := s.seen[inodeKey{dev, ino}]; dup {
+		return 0, true
+	}
 	if !p.ok {
 		return inodeExclusive(dev, ino, alloc, s)
 	}
@@ -90,6 +95,7 @@ func fileExclusive(info os.FileInfo, p fileProbe, s *shareAcc) (int64, bool) {
 	if !ok {
 		return inodeExclusive(dev, ino, alloc, s)
 	}
+	s.seen[inodeKey{dev, ino}] = struct{}{}
 	return n, true
 }
 
