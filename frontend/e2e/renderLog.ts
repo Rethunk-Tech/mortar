@@ -1,7 +1,9 @@
 import type { Page } from '@playwright/test'
 import type { Result } from './render-budget.ts'
-import { methodOf } from './renderMeter.ts'
+import { methodOf, type Sample } from './renderMeter.ts'
 
+// A backend call this slow is felt as a stalled screen.
+const SLOW_CALL_MS = 300
 const oneLine = (text: string) => text.replace(/\s+/g, ' ').slice(0, 240)
 
 /** What the page logs as an error or warning, throws, or gets refused by the backend; the caller empties it per case. */
@@ -24,11 +26,29 @@ export function watchLog(page: Page): string[] {
   return logged
 }
 
+/** A fresh load: how long until the workspace showed, and what the load and its settling did. */
+export function startupLine(shownMs: number, s: Sample): string {
+  const list = (rows: [string, number][], unit = '') =>
+    rows.map(([n, v]) => `${n} ${v}${unit}`).join(', ')
+  return [
+    `startup: tabs shown at ${shownMs} ms, ${s.commits} commits, ${s.mounts} mounted, ${s.updates} re-rendered, script ${s.scriptMs} ms, ${s.longTasks} long tasks (${s.longMs} ms), ${s.calls} backend calls`,
+    `  most called: ${list(s.callsBy)}`,
+    `  slowest: ${list(s.slowest, ' ms')}`,
+    `  most re-rendered: ${list(s.top)}`,
+    `  because: ${list(s.why)}`,
+  ].join('\n')
+}
+
 /** Each case's logged errors, once each, and where the run's time went. */
 export function printExtras(results: Result[]) {
   for (const r of results) {
     for (const e of new Set(r.errors ?? [])) {
       console.log(`LOGGED ${r.name} | ${e}`)
+    }
+    for (const [method, ms] of [...(r.action?.slowest ?? []), ...(r.idle?.slowest ?? [])]) {
+      if (ms >= SLOW_CALL_MS) {
+        console.log(`SLOW ${r.name} | ${method} ${ms} ms`)
+      }
     }
   }
   const secs = (pick: (m: NonNullable<Result['ms']>) => number) =>

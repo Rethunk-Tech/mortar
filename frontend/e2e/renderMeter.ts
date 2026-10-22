@@ -10,7 +10,7 @@ const LIBRARY =
   /^(Insertion|Styled\(|Mui|Box$|Typography$|ButtonBase$|anonymous$|TouchRipple|Ripple$|Popper|Portal$|Grow$|Fade$|Collapse$|Transition|SvgIcon$|Tooltip$|Modal$|Dialog$|Paper$|Button$|IconButton$|InputBase$|FormControl$|Chip$|Menu$|List|TableCell$|TableRow$)/
 const MIB = 1024 * 1024
 const BINDINGS = fileURLToPath(new URL('../bindings', import.meta.url))
-const BINDING_CALL = /export function (\w+)\([^)]*\)[^{]*\{\s*return \$Call\.ByID\((\d+)/g
+const BINDING_CALL = /export function (\w+)\(.*\{\n\s*return \$Call\.ByID\((\d+)/g
 
 // A backend call names its method by a numeric id; the generated bindings say which service method each id is.
 function methodNames(): Map<number, string> {
@@ -52,6 +52,8 @@ export interface Sample {
   longMs: number
   calls: number
   callsBy: [string, number][]
+  /** The slowest backend calls by method, each method's worst wait in ms, slowest first. */
+  slowest: [string, number][]
   layouts: number
   styles: number
   scriptMs: number
@@ -85,6 +87,8 @@ export class Meter {
   private inflight = 0
   private lastCallAt = 0
   private readonly named = new Map<string, number>()
+  private readonly started = new Map<Request, number>()
+  private readonly worst = new Map<string, number>()
   private before: Metrics = {}
   private readonly page: Page
   private readonly cdp: CDPSession
@@ -96,6 +100,10 @@ export class Meter {
       if (new URL(r.url()).pathname.startsWith('/wails/')) {
         this.inflight -= 1
         this.lastCallAt = Date.now()
+        const what = methodOf(r.postData() ?? '')
+        const ms = this.lastCallAt - (this.started.get(r) ?? this.lastCallAt)
+        this.started.delete(r)
+        this.worst.set(what, Math.max(ms, this.worst.get(what) ?? 0))
       }
     }
     page.on('requestfinished', settled)
@@ -104,6 +112,7 @@ export class Meter {
       if (new URL(r.url()).pathname.startsWith('/wails/')) {
         this.inflight += 1
         this.calls += 1
+        this.started.set(r, Date.now())
         const what = methodOf(r.postData() ?? '')
         this.named.set(what, (this.named.get(what) ?? 0) + 1)
       }
@@ -138,6 +147,7 @@ export class Meter {
     await this.page.evaluate(() => (globalThis as unknown as RenderWindow).mortarRenders.reset())
     this.calls = 0
     this.named.clear()
+    this.worst.clear()
     this.before = await this.metrics()
   }
 
@@ -168,6 +178,7 @@ export class Meter {
       lastWhy: c.lastWhy,
       calls: this.calls,
       callsBy: [...this.named].sort((a, b) => b[1] - a[1]).slice(0, TOP),
+      slowest: [...this.worst].sort((a, b) => b[1] - a[1]).slice(0, TOP),
       layouts: delta('LayoutCount'),
       styles: delta('RecalcStyleCount'),
       scriptMs: Math.round(delta('ScriptDuration') * 1000),

@@ -13,7 +13,7 @@ import { newCases } from './renderCases.ts'
 import { unevenSpacing } from './renderGaps.ts'
 import { HOOK } from './renderHook.ts'
 import { type LayoutBreak, layoutBreaks } from './renderLayout.ts'
-import { printExtras, report, watchLog } from './renderLog.ts'
+import { printExtras, report, startupLine, watchLog } from './renderLog.ts'
 import { Meter, type Sample } from './renderMeter.ts'
 import { screenCases } from './renderScreens.ts'
 import { VIEWPORT } from './renderViewport.ts'
@@ -234,17 +234,18 @@ const cases: Case[] = [
   ...screenCases({ toWorkspace, tab, view, row, typeInto, tabs, settleMs: SETTLE_MS }),
 ]
 
-/** Opens the profile the run measures. */
-async function land(page: Page) {
+/** Opens the profile the run measures, and returns how long a fresh load took to show the workspace's tabs. */
+async function land(page: Page): Promise<number | null> {
   const named = process.env.MORTAR_RENDER_PROFILE
   if (named) {
     await openProfile(page, named)
-    return
+    return null
   }
   if (process.env.MORTAR_RENDER_SEEDED) {
     await openSeedFarm(page)
-    return
+    return null
   }
+  const start = Date.now()
   await page.goto('/')
   const welcome = page.getByRole('button', { name: 'Continue' })
   await welcome.or(tabs(page)).first().waitFor({ timeout: 30_000 })
@@ -252,11 +253,13 @@ async function land(page: Page) {
     await welcome.click()
   }
   await tabs(page).waitFor({ timeout: 30_000 })
+  const shownMs = Date.now() - start
   const skip = page.getByRole('button', { name: 'Skip tour' })
   if (await skip.isVisible({ timeout: 1500 }).catch(() => false)) {
     await skip.click()
   }
   await waitForQuietNotices(page)
+  return shownMs
 }
 
 export interface Result {
@@ -353,7 +356,11 @@ async function run(
     const cdp = await page.context().newCDPSession(page)
     await cdp.send('Performance.enable')
     const meter = new Meter(page, cdp)
-    await land(page)
+    const shownMs = await land(page)
+    if (shownMs !== null) {
+      await meter.untilStill(QUIET_MS, QUIET_MAX_MS)
+      console.log(startupLine(shownMs, await meter.read()))
+    }
     const results: Result[] = []
     const breaks: string[] = []
     const shots = process.env.MORTAR_RENDER_SHOTS && `${process.env.MORTAR_RENDER_SHOTS}/chromium`
