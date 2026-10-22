@@ -133,8 +133,12 @@ MORTAR_UPDATE_KEY=/path/to/updater.key wails3 task release:manifest VERSION=1.2.
 
 Per release:
 
-1. Set `info.version` in `build/config.yml` (the only place), then `go run ./cmd/version` copies it into the Windows resources, the Linux metainfo and the AUR `PKGBUILD` (`main.go` reads `build/config.yml` itself). Run `build/release/notes.sh --metainfo build/linux/tech.rethunk.Mortar.metainfo.xml v1.2.3 HEAD` to write the release's user-facing notes into that version's `<release><description>` (software centres and Flathub show it). Gate (it fails on any differing copy, and `appstreamcli validate --strict --no-net` checks the metainfo), commit and push `main`.
-2. `git tag v1.2.3 && git push origin v1.2.3`. The tag must equal that version with a leading `v`, or the release stops before building.
+1. **Check it.** Gate-green is not QA: walk every screen on a `--copy-data` sandbox at the commit to tag ([AGENTS.md](AGENTS.md) § Testing), and after a layout change run `bun run renders`, which checks every screen in Chromium and WebKitGTK.
+2. **Player notes** go in `build/release/notes/v1.2.3.md` ("## New", "## Changed" and "## Fixed" lists, written for players); `notes.sh` prefers them to the commit list, for the GitHub release, the metainfo and the Discord post.
+3. **Version.** Set `info.version` in `build/config.yml` (the only place), then `go run ./cmd/version` copies it into the Windows resources, the Linux metainfo and the AUR `PKGBUILD` (`main.go` reads `build/config.yml` itself). Run `build/release/notes.sh --metainfo build/linux/tech.rethunk.Mortar.metainfo.xml v1.2.3 HEAD` to write the release's user-facing notes into that version's `<release><description>` (software centres and Flathub show it). Gate (it fails on any differing copy, and `appstreamcli validate --strict --no-net` checks the metainfo), commit and push `main`.
+4. **News post and pictures,** in the same commit as the version: `web/src/content/news/mortar-1-2-3.md` with two or three highlights, each with a picture from `bun frontend/e2e/screens.ts --set site --only <scenes>` against a `--copy-data` sandbox (it writes `web/public/img/<scene>.webp`, and the AppStream copies in `build/linux/screenshots/`). The site check refuses a version with no post. An earlier post keeps the picture it shipped with: before retaking a picture an older post shows, copy it to a versioned name and point that post at it.
+5. **Tag:** gate, commit, push `main`, then `git tag v1.2.3 && git push origin v1.2.3`. The tag must equal that version with a leading `v`, or the release stops before building. `release.yml` publishes the site with the packages, and `release-discord.yml` posts the notes.
+6. **Between releases,** a site fix publishes through Actions › Package repository with the latest release's tag and `site` set to the ref to build; that ref's app frontend is the site's demo.
 
 ### Flathub
 
