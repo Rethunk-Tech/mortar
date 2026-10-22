@@ -92,15 +92,8 @@ const arrivalGame = (a: Arrival, open?: string): string =>
   a.link.game || (open && a.games?.includes(open) ? open : (a.games?.[0] ?? ''))
 
 // The site a link came from, by its own name.
-const arrivalSite = (a: Arrival): string => {
-  if (a.source === 'curseforge') {
-    return 'CurseForge'
-  }
-  if (a.source === 'vsmoddb') {
-    return 'the Mod DB'
-  }
-  return a.package ? 'Thunderstore' : 'Nexus'
-}
+const arrivalSite = (a: Arrival): string =>
+  sourceLabel(a.source || (a.package ? 'thunderstore' : 'nexus'))
 
 // What a package arrival is called: a Thunderstore id names the package; a CurseForge link carries only a project
 // number, so its name is the one Mortar read from the site, when it could.

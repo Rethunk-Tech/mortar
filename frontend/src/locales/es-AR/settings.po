@@ -52,10 +52,6 @@ msgstr ""
 msgid "Mod updates show on each profile's mod list."
 msgstr ""
 
-#: src/settings/sections/checkDetail.ts
-msgid "with {loader} {version}"
-msgstr ""
-
 #: src/settings/sections/DataImport.tsx
 msgid "Settings imported"
 msgstr ""
@@ -742,6 +738,10 @@ msgstr ""
 msgid "Not signed in. Add your API key in Accounts."
 msgstr ""
 
+#: src/settings/sections/checkDetail.ts
+msgid "{game} with {loader} {version} in {path} ({where})"
+msgstr ""
+
 #: src/settings/sections/DataUsage.tsx
 msgid "Measuring… {size}"
 msgstr ""
@@ -1201,6 +1201,10 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Accept connections from any network address"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game} in {path} ({where})"
 msgstr ""
 
 #: src/settings/prefCopyGame.ts
@@ -2538,6 +2542,10 @@ msgstr ""
 
 #: src/settings/prefCopy.ts
 msgid "Restore the last window bounds on startup"
+msgstr ""
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game} with {loader} {version} in {path}"
 msgstr ""
 
 #: src/settings/sections/DataBackups.tsx

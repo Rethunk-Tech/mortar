@@ -4,6 +4,7 @@ import { Alert, Box, Button, Checkbox, Link, Typography } from '@mui/material'
 import { alpha, type Theme, useTheme } from '@mui/material/styles'
 import { formatKb } from '../i18n/bytes.ts'
 import { listNames } from '../i18n/list.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { formatAuthors } from '../mods/authorNormalize.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 
@@ -131,7 +132,7 @@ function Tile({ mod, checked, onToggle }: { mod: Mod; checked: boolean; onToggle
   const notes = [
     mod.different ? t`different file` : '',
     mod.unverified ? t`unverified until downloaded` : '',
-    mod.site === 'local' && !mod.enabled ? t`Disabled`.toLowerCase() : '',
+    mod.site === 'local' && !mod.enabled ? lowerFirst(t`Disabled`) : '',
     needsPatreonFile(mod)
       ? t`Needs a file from its ${{ source: sourceLabel('patreon') }} post`
       : '',

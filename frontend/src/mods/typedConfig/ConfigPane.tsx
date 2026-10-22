@@ -10,7 +10,7 @@ import { SearchField } from '../../shell/SearchField.tsx'
 import { Tooltip } from '../../shell/Tooltip.tsx'
 import { OnlyHereFileButton } from '../../sync/pins.tsx'
 import { space } from '../../theme/density.ts'
-import { reportUnexpected } from '../../toasts/report.ts'
+import { type InlineError, inlineError, reportUnexpected } from '../../toasts/report.ts'
 import { PresetsButton } from '../ConfigPresets.tsx'
 import { localId } from '../dependents.ts'
 import { configApi } from './api.ts'
@@ -281,13 +281,13 @@ function TextFile({ target, name }: { target: Target; name: string }) {
   const { t } = useLingui()
   const [saved, setSaved] = useState<string | null>(null)
   const [text, setText] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState<InlineError | null>(null)
   const { game, profile, key, id } = target
   useEffect(() => {
     const at = { game, profile, key, id }
     let live = true
     setSaved(null)
-    setError('')
+    setError(null)
     configApi
       .text(at, name)
       .then((v) => {
@@ -296,17 +296,17 @@ function TextFile({ target, name }: { target: Target; name: string }) {
           setText(v)
         }
       })
-      .catch((e: unknown) => live && setError(String(e)))
+      .catch((e: unknown) => live && setError(inlineError(e)))
     return () => {
       live = false
     }
   }, [game, profile, key, id, name])
   const save = () => {
-    setError('')
+    setError(null)
     configApi
       .setText(target, name, text)
       .then(() => setSaved(text))
-      .catch((e: unknown) => setError(String(e)))
+      .catch((e: unknown) => setError(inlineError(e)))
   }
   const dirty = saved !== null && text !== saved
   return (
@@ -322,8 +322,10 @@ function TextFile({ target, name }: { target: Target; name: string }) {
       }}
     >
       {error ? (
-        <Typography role="alert" sx={{ fontSize: 12, color: 'error.main' }}>
-          {saved === null ? t`Could not open: ${error}` : t`Could not save: ${error}`}
+        <Typography role="alert" title={error.details} sx={{ fontSize: 12, color: 'error.main' }}>
+          {saved === null
+            ? t`Could not open: ${{ error: error.message }}`
+            : t`Could not save: ${{ error: error.message }}`}
         </Typography>
       ) : null}
       {/* MUI sizes a multiline textarea inline to its rows; it is forced to fill the pane instead and scrolls. */}
@@ -356,7 +358,7 @@ function TextFile({ target, name }: { target: Target; name: string }) {
           sx={{ mr: 'auto' }}
           disabled={saved === null}
           onClick={() =>
-            configApi.openText(target, name).catch((e: unknown) => setError(String(e)))
+            configApi.openText(target, name).catch((e: unknown) => setError(inlineError(e)))
           }
         >
           {t`Open in editor`}

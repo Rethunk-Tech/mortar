@@ -5,6 +5,7 @@ import { CONTENT_PATCHER } from '../brand/productNames.ts'
 import { formatDuration, type SlowStartup } from '../console/startupView.ts'
 import { useTab } from '../game/tab.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useNow } from '../i18n/useNow.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
@@ -74,9 +75,9 @@ export function CheckTimings({ timings, at }: { timings: CheckTiming[]; at: numb
   }
   const labels: Record<string, string> = {
     contentPatcher: t`${{ app: CONTENT_PATCHER }} packs`,
-    conflicts: t`Conflicts`.toLowerCase(),
+    conflicts: lowerFirst(t`Conflicts`),
     requirements: t`requirements`,
-    updates: t`Updates`.toLowerCase(),
+    updates: lowerFirst(t`Updates`),
     others: t`other checks`,
   }
   const total = timings.reduce((n, x) => n + x.ms, 0)

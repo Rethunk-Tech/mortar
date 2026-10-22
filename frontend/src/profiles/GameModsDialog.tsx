@@ -16,6 +16,7 @@ import {
   ImportGameMods,
   PreviewGameMods,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useReasonText } from '../i18n/reasonText.ts'
 import type { GameId } from '../nav/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
@@ -84,7 +85,7 @@ export function GameModsDialog({
   onImported: (id: string) => void
 }) {
   const { t } = useLingui()
-  const switchedOff = t`Disabled`.toLowerCase()
+  const switchedOff = lowerFirst(t`Disabled`)
   const reasonText = useReasonText()
   const load = useProfiles((s) => s.load)
   const [mods, setMods] = useState<GameModPreview[]>([])

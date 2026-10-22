@@ -8,6 +8,7 @@ import {
   Delete,
   Rename,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/savedgroups/service.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { idKey } from '../mods/dependents.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -85,7 +86,7 @@ export const SavedGroupsSection = memo(function SavedGroupsSectionView({
             key={group.id}
             game={game}
             group={group}
-            holderNames={holderNamesOf(profiles, group) || t`None`.toLowerCase()}
+            holderNames={holderNamesOf(profiles, group) || lowerFirst(t`None`)}
             onApply={() => setApplying(group)}
             onRename={() => setRenaming(group)}
             onDelete={() => setDeleting(group)}

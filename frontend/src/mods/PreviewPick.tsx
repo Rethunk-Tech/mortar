@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Checkbox, FormControlLabel, List, ListItem, ListItemText } from '@mui/material'
 import type { ReactNode } from 'react'
 import type { GameModPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useReasonText } from '../i18n/reasonText.ts'
 import { formatPreviewRow } from '../profiles/gameModsFormat.ts'
 import { space } from '../theme/density.ts'
@@ -21,7 +22,7 @@ export function PreviewPick({
   action?: (row: GameModPreview) => ReactNode
 }) {
   const { t } = useLingui()
-  const switchedOff = t`Disabled`.toLowerCase()
+  const switchedOff = lowerFirst(t`Disabled`)
   const reasonText = useReasonText()
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column' }}>

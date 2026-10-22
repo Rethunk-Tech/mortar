@@ -10,6 +10,7 @@ import {
   PreviewEverywhere,
   UpdateEverywhere,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { lowerFirst } from '../../i18n/lowerFirst.ts'
 import { ConfirmDialog } from '../../shell/ConfirmDialog.tsx'
 import { ErrorRetry } from '../../shell/ErrorRetry.tsx'
 import { space } from '../../theme/density.ts'
@@ -24,7 +25,7 @@ function PreviewLists({ preview }: { preview: EverywherePreview }) {
   const skipped = preview.skipped ?? []
   const reasonText = (reason: string) => {
     if (reason === 'pinned') {
-      return t`Pinned`.toLowerCase()
+      return lowerFirst(t`Pinned`)
     }
     if (reason === 'skip-version') {
       return t`this version skipped`

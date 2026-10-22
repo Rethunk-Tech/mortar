@@ -12,6 +12,7 @@ import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/intern
 import { SetGameFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { gameArt } from '../games/art.ts'
 import { storeName } from '../games/storeName.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useLoader } from '../loader/store.ts'
 import { TypedFolder } from '../shell/TypedFolder.tsx'
 import { space } from '../theme/density.ts'
@@ -81,7 +82,7 @@ function Looked({ game, launchers }: { game: GameInfo; launchers: StoreApp[] }) 
         .filter((l) => !l.platform)
         .map((l) => {
           const has = (l.games ?? []).some((g) => g.id === game.id)
-          let line = t`Not found`.toLowerCase()
+          let line = lowerFirst(t`Not found`)
           if (l.found && !has) {
             line = t`found, without ${{ name: game.name }}`
           } else if (has) {

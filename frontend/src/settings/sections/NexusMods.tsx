@@ -137,7 +137,7 @@ function NexusModsSignedIn({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
       <Searchable
-        terms={`${t`${{ source: sourceLabel('nexus') }} account`} Nexus ${t`Sign out`} ${name}`}
+        terms={`${t`${{ source: sourceLabel('nexus') }} account`} ${t`Sign out`} ${name}`}
       >
         <Alert
           variant="compact"
@@ -263,7 +263,7 @@ export function NexusSignIn() {
   }
   return (
     <Searchable
-      terms={`${t`${{ source: sourceLabel('nexus') }} account`} Nexus ${t`Personal API key`} ${t`Sign in`}`}
+      terms={`${t`${{ source: sourceLabel('nexus') }} account`} ${t`Personal API key`} ${t`Sign in`}`}
     >
       {nxm.dialog}
       <NexusSSO />

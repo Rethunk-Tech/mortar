@@ -2192,7 +2192,6 @@ msgstr "{count, plural, one {# mod update} other {# mod updates}}"
 msgid "Duplicate"
 msgstr "Duplicate"
 
-#: src/browse/BrowseDetails.tsx
 #: src/launch/PrePlayDialog.tsx
 #: src/share/Included.tsx
 msgid "and {count} more"

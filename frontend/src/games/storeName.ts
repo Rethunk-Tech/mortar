@@ -1,23 +1,32 @@
 import { msg } from '@lingui/core/macro'
-import { EPIC_GAMES, FLATPAK, GOG, STEAM, XBOX } from '../brand/productNames.ts'
+import {
+  BOTTLES,
+  EPIC_GAMES,
+  FLATPAK,
+  GOG,
+  HEROIC,
+  LUTRIS,
+  STEAM,
+  XBOX,
+} from '../brand/productNames.ts'
 import { i18n } from '../i18n/index.ts'
 
 // Store and launcher names are brands, shown as they are; only the words around them are translated.
 const BRANDS: Record<string, string> = {
   steam: STEAM,
-  'flatpak-steam': 'Flatpak Steam',
+  'flatpak-steam': `${FLATPAK} ${STEAM}`,
   gog: GOG,
-  lutris: 'Lutris',
-  bottles: 'Bottles',
+  lutris: LUTRIS,
+  bottles: BOTTLES,
   ea: 'EA App',
   epic: EPIC_GAMES,
   xbox: XBOX,
   flatpak: FLATPAK,
 }
 const VIA: Record<string, [store: string, launcher: string]> = {
-  'gog-heroic': ['GOG', 'Heroic'],
-  'gog-minigalaxy': ['GOG', 'Minigalaxy'],
-  'epic-heroic': ['Epic', 'Heroic'],
+  'gog-heroic': [GOG, HEROIC],
+  'gog-minigalaxy': [GOG, 'Minigalaxy'],
+  'epic-heroic': ['Epic', HEROIC],
 }
 
 // The store an install came from, as the window names it; "" for a folder the user chose.

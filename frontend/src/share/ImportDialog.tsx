@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, IconButton, LinearProgress, Typography } from '@mui/material'
 import { ArrowLeft, X } from 'lucide-react'
 import { useEffect } from 'react'
+import { MOD_ORGANIZER_2, STARDROP, VORTEX } from '../brand/productNames.ts'
 import { localId } from '../mods/dependents.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useGameModsDialog } from '../profiles/gameModsDialog.ts'
@@ -293,9 +294,9 @@ function Body({ request }: { request: ImportRequest }) {
 
 // SOURCE_NAMES are the product names of the mod managers Mortar imports profiles from, keyed by migrate's source kind.
 const SOURCE_NAMES: Record<string, string> = {
-  mo2: 'Mod Organizer 2',
-  stardrop: 'Stardrop',
-  vortex: 'Vortex',
+  mo2: MOD_ORGANIZER_2,
+  stardrop: STARDROP,
+  vortex: VORTEX,
 }
 
 export function ImportDialog() {

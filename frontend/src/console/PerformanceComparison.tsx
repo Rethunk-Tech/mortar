@@ -6,6 +6,7 @@ import type {
   SavedReport,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { formatTiming } from './formatTiming.ts'
 
 const PERCENT = 100
@@ -62,9 +63,7 @@ export function CompareTable({ before, now }: { before: PerformanceRow[]; now: P
           <TableRow key={row.name} hover={true}>
             <TableCell>{row.name}</TableCell>
             <TableCell align="right">
-              {row.beforeMs === null
-                ? t`New`.toLowerCase()
-                : formatTiming(row.beforeMs, i18n.locale)}
+              {row.beforeMs === null ? lowerFirst(t`New`) : formatTiming(row.beforeMs, i18n.locale)}
             </TableCell>
             <TableCell align="right">
               {row.nowMs === null ? t`gone` : formatTiming(row.nowMs, i18n.locale)}

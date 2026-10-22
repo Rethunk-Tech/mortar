@@ -63,6 +63,10 @@ msgstr "More levels"
 msgid "Not measured yet"
 msgstr "Not measured yet"
 
+#: src/console/lineText.ts
+msgid "{game} closed."
+msgstr "{game} closed."
+
 #: src/console/SearchRunsDialog.tsx
 msgid "Search all runs"
 msgstr "Search all runs"
@@ -122,6 +126,10 @@ msgstr "gone"
 #: src/console/PerformanceCards.tsx
 msgid "{count, plural, one {# measurement saved} other {# measurements saved}}"
 msgstr "{count, plural, one {# measurement saved} other {# measurements saved}}"
+
+#: src/console/lineText.ts
+msgid "{game} crashed; exited with code {code} ({signal}) after {duration}."
+msgstr "{game} crashed; exited with code {code} ({signal}) after {duration}."
 
 #: src/console/PerformanceTab.tsx
 msgid "Measure next launch"
@@ -307,10 +315,6 @@ msgstr "No log for this profile yet. Play it once, then try again."
 msgid "Show details"
 msgstr "Show details"
 
-#: src/console/lineText.ts
-msgid "after {duration}"
-msgstr "after {duration}"
-
 #: src/console/UpdateNoteTag.tsx
 msgid "Not downloadable here"
 msgstr "Not downloadable here"
@@ -342,6 +346,10 @@ msgstr "95th ms"
 #: src/console/UpdateNoteTag.tsx
 msgid "This version is only on a site Mortar cannot download from yet; open the link to get it."
 msgstr "This version is only on a site Mortar cannot download from yet; open the link to get it."
+
+#: src/console/lineText.ts
+msgid "{game} crashed; exited with code {code} after {duration}."
+msgstr "{game} crashed; exited with code {code} after {duration}."
 
 #: src/console/HelpDialog.tsx
 #: src/console/store.ts
@@ -461,6 +469,10 @@ msgstr "Log copied"
 msgid "Filter by level or mod, and use Save log or Copy log to pass this run on."
 msgstr "Filter by level or mod, and use Save log or Copy log to pass this run on."
 
+#: src/console/lineText.ts
+msgid "{game} was stopped from Mortar."
+msgstr "{game} was stopped from Mortar."
+
 #: src/console/logHooks.ts
 msgid "Warn"
 msgstr "Warn"
@@ -509,10 +521,6 @@ msgstr "The title screen's intro animation (Mortar skips it on measured launches
 msgid "Title intro"
 msgstr "Title intro"
 
-#: src/console/lineText.ts
-msgid "{game} crashed; exited with {signal}"
-msgstr "{game} crashed; exited with {signal}"
-
 #: src/console/StartupSections.tsx
 msgid "{loader} loads mods"
 msgstr "{loader} loads mods"
@@ -528,6 +536,10 @@ msgstr "Show slowest mods"
 #: src/console/HelpDialog.tsx
 msgid "Copy"
 msgstr "Copy"
+
+#: src/console/lineText.ts
+msgid "{game} was stopped from Mortar after {duration}."
+msgstr "{game} was stopped from Mortar after {duration}."
 
 #: src/console/logHooks.ts
 msgid "Trace"
@@ -629,6 +641,10 @@ msgstr "Find the mod that crashes the game…"
 msgid "Hide my user name"
 msgstr "Hide my user name"
 
+#: src/console/lineText.ts
+msgid "{game} crashed; exited with code {code}."
+msgstr "{game} crashed; exited with code {code}."
+
 #: src/console/StartupSections.tsx
 msgid "Each mod's Entry method, run one after another"
 msgstr "Each mod's Entry method, run one after another"
@@ -640,10 +656,6 @@ msgstr "Pinned"
 #: src/console/RunProblems.tsx
 msgid "Update {loader}"
 msgstr "Update {loader}"
-
-#: src/console/lineText.ts
-msgid "{game} crashed; exited with code {code} ({signal})"
-msgstr "{game} crashed; exited with code {code} ({signal})"
 
 #: src/console/PerformanceCards.tsx
 msgid "Play this profile to time how long each mod adds to the start"
@@ -696,6 +708,10 @@ msgstr "the search is \"{search}\""
 #: src/console/LogActions.tsx
 msgid "Copy log"
 msgstr "Copy log"
+
+#: src/console/lineText.ts
+msgid "{game} crashed; exited with {signal}."
+msgstr "{game} crashed; exited with {signal}."
 
 #: src/console/StartupTable.tsx
 msgid "Show in Mods"
@@ -770,10 +786,6 @@ msgstr "Debug"
 msgid "Source skipped"
 msgstr "Source skipped"
 
-#: src/console/lineText.ts
-msgid "{game} was stopped from Mortar"
-msgstr "{game} was stopped from Mortar"
-
 #: src/console/UpdateNoteTag.tsx
 msgid "Mortar offers prereleases only when Settings allows them."
 msgstr "Mortar offers prereleases only when Settings allows them."
@@ -846,10 +858,6 @@ msgstr "Could not restore profile game settings: {error}."
 msgid "The next launch will be measured"
 msgstr "The next launch will be measured"
 
-#: src/console/lineText.ts
-msgid "{game} closed"
-msgstr "{game} closed"
-
 #: src/console/UpdateNoteTag.tsx
 msgid "You skipped this version"
 msgstr "You skipped this version"
@@ -887,6 +895,10 @@ msgstr "What costs this mod the most; open the row for every timing"
 #: src/console/logHooks.ts
 msgid "Error"
 msgstr "Error"
+
+#: src/console/lineText.ts
+msgid "{game} crashed; exited with {signal} after {duration}."
+msgstr "{game} crashed; exited with {signal} after {duration}."
 
 #: src/console/StartupSections.tsx
 msgid "This start was {by} slower than the one before."
@@ -970,6 +982,10 @@ msgstr "Start the game, then start measuring here to time each mod's event handl
 msgid "Until the game's first scene has loaded"
 msgstr "Until the game's first scene has loaded"
 
+#: src/console/lineText.ts
+msgid "{game} closed after {duration}."
+msgstr "{game} closed after {duration}."
+
 #: src/console/PerformancePanel.tsx
 msgid "This {loader} Bridge measures in game only on a measured launch. Use Measure next launch under Startup and play again."
 msgstr "This {loader} Bridge measures in game only on a measured launch. Use Measure next launch under Startup and play again."
@@ -1050,6 +1066,10 @@ msgstr "Compare with…"
 msgid "Unofficial {loader}-compatible builds are off in Settings."
 msgstr "Unofficial {loader}-compatible builds are off in Settings."
 
+#: src/console/lineText.ts
+msgid "{game} crashed; exited with code {code} ({signal})."
+msgstr "{game} crashed; exited with code {code} ({signal})."
+
 #: src/console/startupHooks.ts
 msgid "slow {event} {ms}"
 msgstr "slow {event} {ms}"
@@ -1101,10 +1121,6 @@ msgstr "{game} closed with errors"
 #: src/console/StartupTable.tsx
 msgid "{count, plural, one {# more pack} other {# more packs}}"
 msgstr "{count, plural, one {# more pack} other {# more packs}}"
-
-#: src/console/lineText.ts
-msgid "{game} crashed; exited with code {code}"
-msgstr "{game} crashed; exited with code {code}"
 
 #: src/console/BisectDialog.tsx
 #: src/console/HelpDialog.tsx

@@ -4,6 +4,7 @@ import { memo, type ReactNode, useEffect, useState } from 'react'
 import { Details as ReadDetails } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/browse/service.ts'
 import type { Changelog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexus/models.ts'
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/source/models.ts'
+import { listNames } from '../i18n/list.ts'
 import { formatAuthors } from '../mods/authorNormalize.ts'
 import { parseBBCode } from '../mods/bbcode.ts'
 import { ChangelogEntries } from '../mods/ChangelogDialog.tsx'
@@ -55,15 +56,12 @@ function Versions({ versions }: { versions: string[] }) {
     return null
   }
   const [latest, ...older] = versions
-  const shown = older.slice(0, VERSIONS_SHOWN - 1)
-  const count = older.length - shown.length
   return (
     <Section title={t`Versions`}>
       <Typography sx={text}>{t`${latest} (latest)`}</Typography>
-      {shown.length > 0 ? (
+      {older.length > 0 ? (
         <Typography sx={{ ...text, color: 'text.secondary' }}>
-          {shown.join(', ')}
-          {count > 0 ? `, ${t`and ${count} more`}` : ''}
+          {listNames(older, VERSIONS_SHOWN - 1)}
         </Typography>
       ) : null}
     </Section>

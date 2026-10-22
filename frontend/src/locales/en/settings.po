@@ -52,10 +52,6 @@ msgstr "Streaming"
 msgid "Mod updates show on each profile's mod list."
 msgstr "Mod updates show on each profile's mod list."
 
-#: src/settings/sections/checkDetail.ts
-msgid "with {loader} {version}"
-msgstr "with {loader} {version}"
-
 #: src/settings/sections/DataImport.tsx
 msgid "Settings imported"
 msgstr "Settings imported"
@@ -742,6 +738,10 @@ msgstr "Nearby computers cannot reach Mortar. Set the network to Private in {os}
 msgid "Not signed in. Add your API key in Accounts."
 msgstr "Not signed in. Add your API key in Accounts."
 
+#: src/settings/sections/checkDetail.ts
+msgid "{game} with {loader} {version} in {path} ({where})"
+msgstr "{game} with {loader} {version} in {path} ({where})"
+
 #: src/settings/sections/DataUsage.tsx
 msgid "Measuring… {size}"
 msgstr "Measuring… {size}"
@@ -1202,6 +1202,10 @@ msgstr "{count, plural, one {# file} other {# files}}"
 #: src/settings/prefCopy.ts
 msgid "Accept connections from any network address"
 msgstr "Accept connections from any network address"
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game} in {path} ({where})"
+msgstr "{game} in {path} ({where})"
 
 #: src/settings/prefCopyGame.ts
 msgid "Edit"
@@ -2539,6 +2543,10 @@ msgstr "Problems only"
 #: src/settings/prefCopy.ts
 msgid "Restore the last window bounds on startup"
 msgstr "Restore the last window bounds on startup"
+
+#: src/settings/sections/checkDetail.ts
+msgid "{game} with {loader} {version} in {path}"
+msgstr "{game} with {loader} {version} in {path}"
 
 #: src/settings/sections/DataBackups.tsx
 msgid "Trim save backups"

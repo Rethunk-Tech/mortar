@@ -2,6 +2,7 @@ import { msg } from '@lingui/core/macro'
 import { OpenAppLog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useTab } from '../game/tab.ts'
 import { i18n } from '../i18n/index.ts'
+import { sentence as capitalised } from '../i18n/sentence.ts'
 import { openSettings, routeGame, useNav } from '../nav/store.ts'
 import { errorDetails, errorKind as kindOf } from './errorKind.ts'
 
@@ -138,5 +139,5 @@ export const reportUnexpected = (e: unknown) => {
   }
   // Nothing named what was being done, so the cause's first line is the title rather than a generic sentence.
   const cause = errorDetails(e).split('\n', 1)[0]?.trim() ?? ''
-  toastError(cause === '' ? errorMessage(null) : cause.charAt(0).toUpperCase() + cause.slice(1), e)
+  toastError(cause === '' ? errorMessage(null) : capitalised(cause), e)
 }

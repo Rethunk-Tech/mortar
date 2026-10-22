@@ -420,7 +420,7 @@ export function ModTable({
           ) : null}
           <TableRow>
             <TableCell sx={{ color: 'text.secondary', pl: NAME_INDENT }}>
-              {t`Game and ${{ loader: smapi ? 'SMAPI' : 'BepInEx' }}`}
+              {t`Game and ${{ loader: smapi ? SMAPI : BEPINEX }}`}
             </TableCell>
             <TableCell />
             <TableCell align="right">{duration(report.otherMs)}</TableCell>

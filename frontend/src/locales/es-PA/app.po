@@ -2192,7 +2192,6 @@ msgstr ""
 msgid "Duplicate"
 msgstr ""
 
-#: src/browse/BrowseDetails.tsx
 #: src/launch/PrePlayDialog.tsx
 #: src/share/Included.tsx
 msgid "and {count} more"

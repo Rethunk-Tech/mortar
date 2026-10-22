@@ -2,10 +2,27 @@ import { useLingui } from '@lingui/react/macro'
 import type { Check } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/doctor/models.ts'
 import { FLATPAK, PROTON, SMAPI, STEAM } from '../../brand/productNames.ts'
 
+function useInstalledLine() {
+  const { t } = useLingui()
+  return (p: Record<string, string | undefined>): string => {
+    const game = p.gameVersion ? `${p.game ?? ''} ${p.gameVersion}` : (p.game ?? '')
+    const path = p.path ?? ''
+    const version = p.apiVersion ?? ''
+    const where = p.where ?? ''
+    if (version === '') {
+      return where === '' ? t`${{ game }} in ${path}` : t`${{ game }} in ${path} (${where})`
+    }
+    return where === ''
+      ? t`${{ game }} with ${{ loader: SMAPI }} ${version} in ${path}`
+      : t`${{ game }} with ${{ loader: SMAPI }} ${version} in ${path} (${where})`
+  }
+}
+
 // A doctor check's line in the user's language: Go sends a code and its values, and a check without a known code
 // (one an older build recorded) keeps the English line Go wrote.
 export function useCheckDetail() {
   const { t } = useLingui()
+  const installed = useInstalledLine()
   return (c: Check): string => {
     const p = c.params ?? {}
     const game = p.game ?? ''
@@ -19,14 +36,8 @@ export function useCheckDetail() {
         return t`Data folder: ${path}`
       case 'gameNotInstalled':
         return t`${game}: not installed`
-      case 'gameInstalled': {
-        const loader = p.apiVersion
-          ? ` ${t`with ${{ loader: SMAPI }} ${{ version: p.apiVersion }}`}`
-          : ''
-        const where = p.where ? ` (${p.where})` : ''
-        const core = `${game}${p.gameVersion ? ` ${p.gameVersion}` : ''}${loader}`
-        return `${t`${{ game: core }} in ${path}`}${where}`
-      }
+      case 'gameInstalled':
+        return installed(p)
       case 'nxmOff':
         return t`nxm:// links: off`
       case 'nxmMortar':
