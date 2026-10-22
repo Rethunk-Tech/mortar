@@ -15,7 +15,7 @@ export function SyncFolder() {
   return (
     <SettingRow
       label={t`Sync folder`}
-      description={t`Profile settings, mod lists and configs are written here and offered to other machines using the same folder (through ${{ app: SYNCTHING }}, ${{ otherApp: DROPBOX }} or a NAS). Mod files are not copied; each machine downloads them from their sources. Each game syncs into its own subfolder, and a game can use a folder of its own or turn sync off in its settings.`}
+      description={t`Profile settings, mod lists and configs sync through this folder (with ${{ app: SYNCTHING }}, ${{ otherApp: DROPBOX }} or a NAS); each computer downloads the mod files itself. Each game has its own subfolder, or its own folder or no sync, set in the game's settings.`}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
         <Typography noWrap={true} title={folder} sx={{ maxWidth: 360 }}>

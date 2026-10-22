@@ -51,7 +51,7 @@ function WatchFolders() {
   return (
     <SettingRow
       label={t`Also watch these folders`}
-      description={t`Offer installs: new archives (.zip, .7z, .rar, .tar.gz and the like) that land in the folder are offered for install. Auto-install: the folder itself is installed into the open profile as one mod each time its files change, for a mod's build output; a rebuild replaces the last one. Subfolders are not watched.`}
+      description={t`Offer installs: new archives in the folder are offered for install. Auto-install: the folder is installed into the open profile as one mod and replaced each time its files change, for a mod's build output. Subfolders are not watched.`}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
         {rows.map(({ dir, mode }) => (

@@ -9,7 +9,7 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
     gameSettingsMode: {
       label: i18n._(msg`Game settings file`),
       description: i18n._(
-        msg`What Mortar does about game settings that mods need switched on in the game's options file`,
+        msg`What Mortar does about game settings that mods need enabled in the game's options file`,
       ),
       options: [
         {
@@ -114,7 +114,6 @@ export function gamePrefs(i18n: I18n): Record<string, PrefCopy> {
     },
     skipPlayCheck: {
       label: i18n._(msg`Skip pre-Play check`),
-      description: i18n._(msg`Start the game without the Before you play dialog`),
     },
     instances: {
       label: i18n._(msg`Instances`),

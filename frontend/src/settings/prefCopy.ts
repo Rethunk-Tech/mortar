@@ -11,7 +11,7 @@ function windowAndMods(i18n: I18n): Record<string, PrefCopy> {
   return {
     onPlay: {
       label: i18n._(msg`When you press Play`),
-      description: i18n._(msg`What Mortar does when the game starts, then restore when it exits.`),
+      description: i18n._(msg`What Mortar does while the game runs.`),
       options: [
         {
           value: 'stay',
@@ -262,9 +262,7 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
     },
     downloadFolder: {
       label: i18n._(msg`Download folder`),
-      description: i18n._(
-        msg`Archives land here instead of Mortar's downloads folder. Empty uses the default.`,
-      ),
+      description: i18n._(msg`Empty uses the default.`),
     },
     driftChecks: {
       label: i18n._(msg`Modified outside Mortar`),
@@ -326,9 +324,6 @@ function logsAndNexus(i18n: I18n): Record<string, PrefCopy> {
     },
     autoTrackNexus: {
       label: i18n._(msg`Auto-track installed mods`),
-      description: i18n._(
-        msg`Track a ${{ source: sourceLabel('nexus') }} mod when Mortar installs it`,
-      ),
     },
     downloadSpeedLimit: {
       label: i18n._(msg`Download speed limit (MB/s)`),
@@ -371,7 +366,7 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
     },
     backupLocation: {
       label: i18n._(msg`Save backup folder`),
-      description: i18n._(msg`Where save backups are kept. Empty uses the default.`),
+      description: i18n._(msg`Empty uses the default.`),
     },
     autoRetryDownloads: {
       label: i18n._(msg`Auto-retry failed downloads`),
@@ -451,17 +446,12 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
     },
     verifyNexusMD5: {
       label: i18n._(msg`Verify downloads with ${{ source: sourceLabel('nexus') }} MD5`),
-      description: i18n._(
-        msg`Check the file hash when ${{ source: sourceLabel('nexus') }} provides one`,
-      ),
     },
     launchAtLogin: {
       label: i18n._(msg`Launch Mortar at login`),
-      description: i18n._(msg`Start Mortar when you sign in to this computer`),
     },
     startMinimised: {
       label: i18n._(msg`Start minimised to tray`),
-      description: i18n._(msg`Open in the tray instead of showing the window`),
     },
     rememberWindow: {
       label: i18n._(msg`Remember window size and position`),
@@ -469,9 +459,6 @@ function batchPrefs(i18n: I18n): Record<string, PrefCopy> {
     },
     systemTitleBar: {
       label: i18n._(msg`Use the system title bar`),
-      description: i18n._(
-        msg`Show your desktop's own title bar and window buttons instead of Mortar's`,
-      ),
     },
     extensionConnection: {
       label: i18n._(msg`Browser extension connection`),

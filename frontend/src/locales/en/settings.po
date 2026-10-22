@@ -68,10 +68,6 @@ msgstr "Move data folder…"
 msgid "Allow shows {source} pages what Mortar has. Off hides that; download links still arrive"
 msgstr "Allow shows {source} pages what Mortar has. Off hides that; download links still arrive"
 
-#: src/settings/sections/SyncFolder.tsx
-msgid "Profile settings, mod lists and configs are written here and offered to other machines using the same folder (through {app}, {otherApp} or a NAS). Mod files are not copied; each machine downloads them from their sources. Each game syncs into its own subfolder, and a game can use a folder of its own or turn sync off in its settings."
-msgstr "Profile settings, mod lists and configs are written here and offered to other machines using the same folder (through {app}, {otherApp} or a NAS). Mod files are not copied; each machine downloads them from their sources. Each game syncs into its own subfolder, and a game can use a folder of its own or turn sync off in its settings."
-
 #: src/settings/sections/Downloads.tsx
 msgid "Connected from {browser}, last seen "
 msgstr "Connected from {browser}, last seen "
@@ -456,6 +452,10 @@ msgstr "Compares every stored mod's files with what was saved when it was added.
 msgid "Retry"
 msgstr "Retry"
 
+#: src/settings/prefCopy.ts
+msgid "What Mortar does while the game runs."
+msgstr "What Mortar does while the game runs."
+
 #: src/settings/sections/Appearance.tsx
 msgid "Copper"
 msgstr "Copper"
@@ -516,10 +516,6 @@ msgstr "{game}: not installed"
 #: src/settings/prefCopyAntivirus.ts
 msgid "Scan every mod after it is extracted and before it enters Mortar's store. This applies to every game."
 msgstr "Scan every mod after it is extracted and before it enters Mortar's store. This applies to every game."
-
-#: src/settings/prefCopyGame.ts
-msgid "What Mortar does about game settings that mods need switched on in the game's options file"
-msgstr "What Mortar does about game settings that mods need switched on in the game's options file"
 
 #: src/settings/prefCopy.ts
 msgid "Launch Mortar at login"
@@ -706,10 +702,6 @@ msgstr "Every key returns to its default."
 msgid "Medium"
 msgstr "Medium"
 
-#: src/settings/prefCopy.ts
-msgid "Start Mortar when you sign in to this computer"
-msgstr "Start Mortar when you sign in to this computer"
-
 #: src/settings/sections/DataStoreReport.tsx
 msgid "Mods no profile uses"
 msgstr "Mods no profile uses"
@@ -806,10 +798,6 @@ msgstr "Desktop"
 #: src/settings/sections/ExtraModsFolders.tsx
 msgid "Extra mods folders"
 msgstr "Extra mods folders"
-
-#: src/settings/prefCopy.ts
-msgid "Track a {source} mod when Mortar installs it"
-msgstr "Track a {source} mod when Mortar installs it"
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Copy token"
@@ -1063,18 +1051,10 @@ msgstr "Days a deleted profile stays restorable"
 msgid "Could not trim history"
 msgstr "Could not trim history"
 
-#: src/settings/prefCopy.ts
-msgid "Where save backups are kept. Empty uses the default."
-msgstr "Where save backups are kept. Empty uses the default."
-
 #: src/settings/sections/NexusSSO.tsx
 #: src/settings/sections/nxmHandler.tsx
 msgid "Cancel"
 msgstr "Cancel"
-
-#: src/settings/prefCopy.ts
-msgid "Show your desktop's own title bar and window buttons instead of Mortar's"
-msgstr "Show your desktop's own title bar and window buttons instead of Mortar's"
 
 #: src/settings/prefCopyAntivirus.ts
 msgid "Custom command"
@@ -1149,10 +1129,6 @@ msgstr "Download speed limit (MB/s)"
 #: src/settings/sections/checkDetail.ts
 msgid "Store index.json is readable"
 msgstr "Store index.json is readable"
-
-#: src/settings/sections/WatchFolders.tsx
-msgid "Offer installs: new archives (.zip, .7z, .rar, .tar.gz and the like) that land in the folder are offered for install. Auto-install: the folder itself is installed into the open profile as one mod each time its files change, for a mod's build output; a rebuild replaces the last one. Subfolders are not watched."
-msgstr "Offer installs: new archives (.zip, .7z, .rar, .tar.gz and the like) that land in the folder are offered for install. Auto-install: the folder itself is installed into the open profile as one mod each time its files change, for a mod's build output; a rebuild replaces the last one. Subfolders are not watched."
 
 #: src/settings/sections/GameSettings.tsx
 msgid "Delete the game folder, then reinstall {game} from your launcher."
@@ -1866,6 +1842,10 @@ msgstr "{owner} opens these links now."
 msgid "{name} now opens {source} \"Install\" links."
 msgstr "{name} now opens {source} \"Install\" links."
 
+#: src/settings/sections/WatchFolders.tsx
+msgid "Offer installs: new archives in the folder are offered for install. Auto-install: the folder is installed into the open profile as one mod and replaced each time its files change, for a mod's build output. Subfolders are not watched."
+msgstr "Offer installs: new archives in the folder are offered for install. Auto-install: the folder is installed into the open profile as one mod and replaced each time its files change, for a mod's build output. Subfolders are not watched."
+
 #: src/settings/sections/Downloads.tsx
 msgid "Clicking these links on {source} starts the download in Mortar."
 msgstr "Clicking these links on {source} starts the download in Mortar."
@@ -2014,6 +1994,10 @@ msgstr "Reachable"
 #: src/settings/sections/Appearance.tsx
 msgid "Colour"
 msgstr "Colour"
+
+#: src/settings/prefCopyGame.ts
+msgid "What Mortar does about game settings that mods need enabled in the game's options file"
+msgstr "What Mortar does about game settings that mods need enabled in the game's options file"
 
 #: src/settings/sections/SyncFolder.tsx
 msgid "Sync folder"
@@ -2374,6 +2358,10 @@ msgstr "{game}: {app} {launcher} can reach the {otherApp} prefix"
 msgid "Open the import dialog"
 msgstr "Open the import dialog"
 
+#: src/settings/prefCopy.ts
+msgid "Empty uses the default."
+msgstr "Empty uses the default."
+
 #: src/settings/sections/Shortcuts.tsx
 msgid "Press a key"
 msgstr "Press a key"
@@ -2546,6 +2534,10 @@ msgstr "Dark"
 #: src/settings/sections/DataUsage.tsx
 msgid "Open folder"
 msgstr "Open folder"
+
+#: src/settings/sections/SyncFolder.tsx
+msgid "Profile settings, mod lists and configs sync through this folder (with {app}, {otherApp} or a NAS); each computer downloads the mod files itself. Each game has its own subfolder, or its own folder or no sync, set in the game's settings."
+msgstr "Profile settings, mod lists and configs sync through this folder (with {app}, {otherApp} or a NAS); each computer downloads the mod files itself. Each game has its own subfolder, or its own folder or no sync, set in the game's settings."
 
 #: src/settings/sections/Sources.tsx
 msgid "Requests"
@@ -2910,10 +2902,6 @@ msgstr "{size} used"
 #: src/settings/prefCopyModsView.ts
 msgid "Author on cards"
 msgstr "Author on cards"
-
-#: src/settings/prefCopy.ts
-msgid "Check the file hash when {source} provides one"
-msgstr "Check the file hash when {source} provides one"
 
 #: src/settings/sections/SourceOrder.tsx
 msgid "When a mod is on several sites, its card installs from the first one here."
@@ -3376,10 +3364,6 @@ msgid "Command-line control"
 msgstr "Command-line control"
 
 #: src/settings/prefCopyGame.ts
-msgid "Start the game without the Before you play dialog"
-msgstr "Start the game without the Before you play dialog"
-
-#: src/settings/prefCopyGame.ts
 msgid "Mortar-wide folder"
 msgstr "Mortar-wide folder"
 
@@ -3493,14 +3477,6 @@ msgstr "Take over"
 msgid "Could not reach {source}"
 msgstr "Could not reach {source}"
 
-#: src/settings/prefCopy.ts
-msgid "Archives land here instead of Mortar's downloads folder. Empty uses the default."
-msgstr "Archives land here instead of Mortar's downloads folder. Empty uses the default."
-
-#: src/settings/prefCopy.ts
-msgid "What Mortar does when the game starts, then restore when it exits."
-msgstr "What Mortar does when the game starts, then restore when it exits."
-
 #: src/settings/sections/NexusMods.tsx
 msgid "Untrack unused…"
 msgstr "Untrack unused…"
@@ -3546,10 +3522,6 @@ msgstr "Bundled font"
 #: src/settings/sections/DataBackups.tsx
 msgid "Stop the game to change save backups."
 msgstr "Stop the game to change save backups."
-
-#: src/settings/prefCopy.ts
-msgid "Open in the tray instead of showing the window"
-msgstr "Open in the tray instead of showing the window"
 
 #: src/settings/prefCopyGame.ts
 msgid "Install the version the mod's author named, as {manager} does."
