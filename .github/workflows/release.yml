@@ -33,8 +33,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          runs="repos/$GITHUB_REPOSITORY/actions/workflows/release.yml/runs?head_sha=$GITHUB_SHA&event=workflow_dispatch&status=success"
-          run="$(gh api "$runs" --jq '.workflow_runs[0].id // empty' || true)"
+          # GitHub sometimes answers a listing with an empty list and 200, so an empty answer is asked again before
+          # the packages are built afresh.
+          runs="repos/$GITHUB_REPOSITORY/actions/workflows/release.yml/runs?head_sha=$GITHUB_SHA&event=workflow_dispatch"
+          run=
+          for _ in 1 2 3; do
+            run="$(gh api "$runs" --jq '[.workflow_runs[] | select(.conclusion == "success")][0].id // empty' || true)"
+            [ -n "$run" ] && break
+            sleep 3
+          done
           if [ -n "$run" ]; then
             legs="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run/artifacts" \
               --jq '[.artifacts[] | select(.expired | not) | .name | select(startswith("mortar-linux-"))] | length' || echo 0)"

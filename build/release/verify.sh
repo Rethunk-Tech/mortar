@@ -46,10 +46,15 @@ check_components() {
     | "https://github.com/\(.source.owner)/\(.source.repo)/releases/download/\(.tag)/\(.asset)"' \
     "$root/internal/components/components.json")
   # The list comes through the token: the API's anonymous limit is shared by every job on a hosted runner's address,
-  # so an anonymous listing fails at random. Reaching the asset itself is what anon checks below.
-  url="$(gh api "repos/$repo/releases?per_page=100" 2>/dev/null |
-    jq -r '[.[] | select(.draft | not) | select(.tag_name | startswith("components-"))][0].assets[]?
-      | select(.name == "components.json") | .browser_download_url' 2>/dev/null || true)"
+  # so an anonymous listing fails at random. Reaching the asset itself is what anon checks below. GitHub sometimes
+  # answers the listing with an empty list and 200, so an empty answer is asked again.
+  for _ in 1 2 3 4 5; do
+    url="$(gh api "repos/$repo/releases?per_page=100" 2>/dev/null |
+      jq -r '[.[] | select(.draft | not) | select(.tag_name | startswith("components-"))][0].assets[]?
+        | select(.name == "components.json") | .browser_download_url' 2>/dev/null || true)"
+    [ -n "$url" ] && break
+    sleep 3
+  done
   if [ -n "$url" ]; then
     anon "$url"
     anon "$url.sig"
