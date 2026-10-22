@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import {
   Categories,
   DefaultExcludes,
@@ -9,11 +8,13 @@ import {
 import { openPage } from '../mods/menu.ts'
 import { download } from '../queue/actions.ts'
 import { useNexus } from '../settings/nexus.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { BrowsePage } from './BrowsePage.tsx'
 import type { BrowseSearch, BrowseSource } from './browseTypes.ts'
 
 const KIND_INSTALL = 'install'
+const NO_SOURCES: BrowseSource[] = []
 
 async function categoryNames(game: string, source: string): Promise<string[]> {
   return (await Categories(game, source)) ?? []
@@ -59,23 +60,24 @@ const addDirect = (source: string, id: string, picture: string) => {
 
 function BrowseHost({ game, profileID }: { game: string; profileID: string }) {
   const premium = useNexus((state) => state.premium)
-  const [sources, setSources] = useState<BrowseSource[]>([])
-  const [hasCompat, setHasCompat] = useState(false)
-  useEffect(() => {
-    HasCompat(game).then(setHasCompat).catch(reportUnexpected)
-  }, [game])
-  useEffect(() => {
-    SearchableSources(game)
-      .then((ids) => setSources(ids ?? []))
-      .catch(reportUnexpected)
-  }, [game])
+  // Both answers arrive before the page mounts, so it renders once with them rather than once per answer.
+  const { data, loading } = useLoaded(
+    () => Promise.all([SearchableSources(game), HasCompat(game)]),
+    [game],
+    null,
+    reportUnexpected,
+  )
+  if (loading) {
+    return null
+  }
+  const [sources, hasCompat] = data ?? [null, false]
   return (
     <BrowsePage
       game={game}
       profileID={profileID}
       premium={premium}
       hasCompat={hasCompat}
-      sources={sources}
+      sources={sources ?? NO_SOURCES}
       search={search}
       categories={categoryNames}
       defaultExcludes={defaultExcludes}
