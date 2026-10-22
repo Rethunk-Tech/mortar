@@ -13,6 +13,7 @@ import { newCases } from './renderCases.ts'
 import { unevenSpacing } from './renderGaps.ts'
 import { HOOK } from './renderHook.ts'
 import { type LayoutBreak, layoutBreaks } from './renderLayout.ts'
+import { printExtras, report, watchLog } from './renderLog.ts'
 import { Meter, type Sample } from './renderMeter.ts'
 import { screenCases } from './renderScreens.ts'
 import { VIEWPORT } from './renderViewport.ts'
@@ -31,7 +32,8 @@ import { webkitWalk } from './webkit-walk.ts'
 //   MORTAR_RENDER_URL=http://…         drive an already running server (selftest.sh start) instead of a new sandbox
 //   MORTAR_RENDER_PROFILE=<name>       open this profile (default: whichever profile Mortar reopens; seeded: Seed Farm)
 //   MORTAR_RENDER_ONLY=mods,config     run only the cases whose names start with these
-//   MORTAR_RENDER_SETTLE_MS / _IDLE_MS how long an action may settle (3000) and how long idle is watched (10000)
+//   MORTAR_RENDER_SETTLE_MS / _IDLE_MS how long a case's own steps wait (3000) and how long idle is watched (10000); setup
+//                                      and action end once nothing has committed or called the backend for 1.5 s
 //   MORTAR_RENDER_GAPS=1              print each screen's unevenly spaced stacks and cards (renderGaps.ts)
 //   MORTAR_RENDER_SHOTS=<dir>          save a PNG of each screen in <dir>/chromium and <dir>/webkit; `bun run renders:diff
 //                                      OLD/chromium NEW/chromium` compares two runs
@@ -253,12 +255,15 @@ async function land(page: Page) {
   await waitForQuietNotices(page)
 }
 
-interface Result {
+export interface Result {
   name: string
   action?: Sample
   idle?: Sample
   over: string[]
   failure?: string
+  // Wall time of the case's phases, and what the page logged or the backend refused while it ran.
+  ms?: { setup: number; action: number; idle: number; check?: number }
+  errors?: string[]
 }
 
 function overBudget(c: Case, action: Sample, idle: Sample): string[] {
@@ -301,68 +306,26 @@ function perIdle(s: Sample): Sample {
 
 async function measure(page: Page, meter: Meter, c: Case): Promise<Result> {
   try {
+    const t0 = Date.now()
     await c.setup?.(page)
-    await page.waitForTimeout(SETTLE_MS)
+    await meter.untilStill(QUIET_MS, QUIET_MAX_MS)
     await meter.reset()
+    const t1 = Date.now()
     await c.run(page)
-    await page.waitForTimeout(SETTLE_MS)
-    // Background checks (a profile's badges) finish after the settle; what they cause belongs to the action, not idle.
-    await meter.untilQuiet(QUIET_MS, QUIET_MAX_MS)
+    // Background checks (a profile's badges) finish after the action; what they cause belongs to it, not to idle.
+    await meter.untilStill(QUIET_MS, QUIET_MAX_MS)
     const action = await meter.read()
     await meter.reset()
+    const t2 = Date.now()
     await page.waitForTimeout(IDLE_MS)
     const idle = perIdle(await meter.read())
-    return { name: c.name, action, idle, over: overBudget(c, action, idle) }
+    const ms = { setup: t1 - t0, action: t2 - t1, idle: Date.now() - t2 }
+    return { name: c.name, action, idle, ms, over: overBudget(c, action, idle) }
   } catch (e) {
     return { name: c.name, over: [], failure: String(e).split('\n')[0] }
   } finally {
     await c.teardown?.(page)
   }
-}
-
-const pad = (v: string | number, n: number) => String(v).padStart(n)
-
-function report(results: Result[]): string {
-  const head = `${'case'.padEnd(18)}${pad('commits', 8)}${pad('mounted', 9)}${pad('re-rend', 9)}${pad('mutate', 8)}${pad('layout', 7)}${pad('script', 8)}${pad('settled', 9)}${pad('long', 6)}${pad('calls', 6)}${pad('heap', 7)}${pad('nodes', 7)} | idle/10s: ${pad('commits', 7)}${pad('re-rend', 8)}${pad('calls', 6)}`
-  const lines = [
-    head,
-    '  action: commits, components mounted and re-rendered, DOM mutations, layouts, script ms, ms until the last commit, long tasks, backend calls, then JS heap MiB and DOM nodes after it',
-  ]
-  for (const r of results) {
-    if (!(r.action && r.idle)) {
-      lines.push(`${r.name.padEnd(18)}FAILED: ${r.failure}`)
-      continue
-    }
-    const a = r.action
-    const i = r.idle
-    lines.push(
-      `${r.name.padEnd(18)}${pad(a.commits, 8)}${pad(a.mounts, 9)}${pad(a.updates, 9)}${pad(a.mutations, 8)}${pad(a.layouts, 7)}${pad(a.scriptMs, 8)}${pad(a.settledMs, 9)}${pad(a.longTasks, 6)}${pad(a.calls, 6)}${pad(a.heapMiB, 7)}${pad(a.nodes, 7)} | ${' '.repeat(10)}${pad(i.commits, 7)}${pad(i.updates, 8)}${pad(i.calls, 6)}${r.over.length > 0 ? `  OVER: ${r.over.join('; ')}` : ''}`,
-    )
-    if (a.lastWhy.length > 0) {
-      lines.push(`${' '.repeat(18)}last commit at ${a.settledMs} ms: ${a.lastWhy.join(' | ')}`)
-    }
-    const top = [...a.top, ...i.top.map(([n, v]) => [`idle ${n}`, v] as [string, number])]
-    if (r.over.length > 0 && top.length > 0) {
-      lines.push(
-        `${' '.repeat(18)}most re-rendered: ${top.map(([n, v]) => `${n} ${v}`).join(', ')}`,
-      )
-    }
-    const started = [
-      ...a.startedBy,
-      ...i.startedBy.map(([n, v]) => [`idle ${n}`, v] as [string, number]),
-    ]
-    if (r.over.length > 0 && started.length > 0) {
-      lines.push(`${' '.repeat(18)}started by: ${started.map(([n, v]) => `${n} ${v}`).join(', ')}`)
-    }
-    const extra = (label: string, rows: [string, number][]) =>
-      r.over.length > 0 && rows.length > 0
-        ? lines.push(`${' '.repeat(18)}${label}: ${rows.map(([n, v]) => `${n} ×${v}`).join(' | ')}`)
-        : 0
-    const idle = (label: string, rows: [string, number][]) =>
-      rows.map(([n, v]): [string, number] => [`idle ${label}${n}`, v])
-    extra('because', [...a.why, ...idle('', i.why), ...idle('call ', i.callsBy)])
-  }
-  return lines.join('\n')
 }
 
 function chosenCases(): Case[] {
@@ -393,9 +356,12 @@ async function run(
     if (shots) {
       mkdirSync(shots, { recursive: true })
     }
+    const logged = watchLog(page)
     for (const c of chosen) {
-      results.push(await measure(page, meter, c))
+      logged.length = 0
+      const result = await measure(page, meter, c)
       console.log(`${c.name} measured`)
+      const t = Date.now()
       breaks.push(
         ...(await layoutBreaks(page)).map(
           (b: LayoutBreak) => `LAYOUT ${c.name} | ${b.kind} | ${b.where} | ${b.text}`,
@@ -404,6 +370,11 @@ async function run(
       if (shots) {
         await page.screenshot({ path: `${shots}/${c.name}.png` })
       }
+      results.push({
+        ...result,
+        ...(result.ms ? { ms: { ...result.ms, check: Date.now() - t } } : {}),
+        errors: logged,
+      })
       if (process.env.MORTAR_RENDER_BOXES) {
         for (const b of await nestedBoxes(page)) {
           console.log(`BOX ${c.name} | ${b.inner} in ${b.outer} | ${b.text}`)
@@ -475,6 +446,7 @@ async function main(): Promise<number> {
   console.log(report(results))
   console.log(`JSON: ${out}/render-budget.json`)
   console.log(breaks.length === 0 ? 'layout: no breaks' : breaks.join('\n'))
+  printExtras(results)
   return results.some((r) => r.failure || r.over.length > 0) || breaks.length > 0 ? 1 : 0
 }
 

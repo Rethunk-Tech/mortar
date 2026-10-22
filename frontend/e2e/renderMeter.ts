@@ -29,7 +29,7 @@ function methodNames(): Map<number, string> {
 
 const METHODS = methodNames()
 
-function methodOf(body: string): string {
+export function methodOf(body: string): string {
   try {
     const id = (JSON.parse(body) as { args?: { methodID?: number } }).args?.methodID
     return id === undefined ? 'unknown' : (METHODS.get(id) ?? String(id))
@@ -110,10 +110,21 @@ export class Meter {
     })
   }
 
-  /** Waits until no backend call is in flight and none finished for quietMs, or maxMs passes. */
-  async untilQuiet(quietMs: number, maxMs: number) {
-    const end = Date.now() + maxMs
-    while (Date.now() < end && (this.inflight > 0 || Date.now() - this.lastCallAt < quietMs)) {
+  /** Waits until React has not committed, no backend call is in flight and none finished for quietMs (counted from the
+   * call at the earliest), or maxMs passes. */
+  async untilStill(quietMs: number, maxMs: number) {
+    const start = Date.now()
+    while (Date.now() - start < maxMs) {
+      const sinceCommit = await this.page.evaluate(() =>
+        (globalThis as unknown as RenderWindow).mortarRenders.stillMs(),
+      )
+      const now = Date.now()
+      if (
+        this.inflight === 0 &&
+        Math.min(sinceCommit, now - this.lastCallAt, now - start) >= quietMs
+      ) {
+        return
+      }
       await this.page.waitForTimeout(QUIET_POLL_MS)
     }
   }
@@ -168,5 +179,5 @@ export class Meter {
 }
 
 interface RenderWindow {
-  mortarRenders: { reset: () => void; read: () => PageCounts }
+  mortarRenders: { reset: () => void; read: () => PageCounts; stillMs: () => number }
 }

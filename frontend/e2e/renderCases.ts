@@ -93,7 +93,7 @@ export function newCases(h: Helpers): Case[] {
     {
       name: 'profile-folder',
       setup: openProfileMenu,
-      run: (p) => pick(p, /^Profile folder…/),
+      run: (p) => pick(p, /^Move profile folder…/),
     },
     {
       name: 'add-game',

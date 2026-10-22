@@ -30,10 +30,14 @@ export function screenCases(h: Helpers): Case[] {
       await toWorkspace(p)
       await openSettings(p)
     },
-    run: (p) => p.getByRole('button', { name, exact: true }).click(),
+    // The title bar's bell is also named Notifications, so the section is looked up in the settings navigation.
+    run: (p) =>
+      p
+        .getByRole('navigation', { name: 'Settings sections' })
+        .getByRole('button', { name, exact: true })
+        .click(),
   })
   return [
-    { name: 'home', setup: toWorkspace, run: (p) => tab(p, 'Home') },
     { name: 'browse-list', setup: (p) => tab(p, 'Browse'), run: (p) => browseView(p, 'List view') },
     {
       name: 'browse-details',

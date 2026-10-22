@@ -91,6 +91,8 @@ export const HOOK = `(() => {
   window.mortarRenders = {
     reset() { Object.assign(st, { commits: 0, mounts: 0, updates: 0, names: {}, roots: {}, why: {}, mutations: 0, longTasks: 0, longMs: 0, t0: performance.now(), last: 0, lastWhy: [] }) },
     // settledMs: from the reset to the last commit, the wall time until the screen stopped changing.
+    // stillMs: how long since the last commit, or since the reset when none came after it.
+    stillMs() { return performance.now() - Math.max(st.last, st.t0) },
     read() { return { ...st, lastWhy: [...st.lastWhy], settledMs: st.last > 0 ? st.last - st.t0 : 0, names: { ...st.names }, roots: { ...st.roots }, why: { ...st.why } } },
   }
 })()`
