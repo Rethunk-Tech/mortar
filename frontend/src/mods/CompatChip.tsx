@@ -54,10 +54,12 @@ export function CompatDetail({ mod }: { mod: Mod }) {
     )
   const replacement =
     row.replacement === '' ? null : (
-      <Typography sx={text}>{t`Replacement: ${row.replacement}`}</Typography>
+      <Typography sx={text}>{t`Replacement: ${{ replacement: row.replacement }}`}</Typography>
     )
   const broke =
-    row.brokeIn === '' ? null : <Typography sx={text}>{t`Broke in ${row.brokeIn}`}</Typography>
+    row.brokeIn === '' ? null : (
+      <Typography sx={text}>{t`Broke in ${{ brokeIn: row.brokeIn }}`}</Typography>
+    )
   const summary = row.summary === '' ? null : <Typography sx={text}>{row.summary}</Typography>
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>

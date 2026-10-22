@@ -1,4 +1,5 @@
 import { msg } from '@lingui/core/macro'
+import { SMAPI, WINDOWS } from '../brand/productNames.ts'
 import { i18n } from '../i18n/index.ts'
 import type { Row } from './problemGroups.ts'
 
@@ -23,7 +24,7 @@ const problemWhy: Record<Row['kind'], Why> = {
     anchor: 'broken-mod',
     text: () =>
       i18n._(
-        msg`SMAPI's list marks this mod as broken, obsolete or abandoned for your game version. It may crash, do nothing, or stop working after the next game update.`,
+        msg`${{ loader: SMAPI }}'s list marks this mod as broken, obsolete or abandoned for your game version. It may crash, do nothing, or stop working after the next game update.`,
       ),
   },
   duplicate: {
@@ -70,7 +71,7 @@ const problemWhy: Record<Row['kind'], Why> = {
     anchor: 'paths-too-long',
     text: () =>
       i18n._(
-        msg`Windows programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Turning on long paths in Windows does not change that for such a game.`,
+        msg`${{ os: WINDOWS }} programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Turning on long paths in ${{ os: WINDOWS }} does not change that for such a game.`,
       ),
   },
   fileConflict: {

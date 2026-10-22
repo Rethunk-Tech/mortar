@@ -65,7 +65,7 @@ function TouchActions({
             variant="outlined"
             color="inherit"
             disabled={locked}
-            title={t`Load ${mod.modName} after the other mods here, so its edit applies last`}
+            title={t`Load ${{ name: mod.modName }} after the other mods here, so its edit applies last`}
             onClick={() => {
               applyWins(mod.modKey, mod.modId, others, true).then(onChanged).catch(reportUnexpected)
             }}
@@ -247,7 +247,7 @@ export function AssetMapDialog({
           />
           {page ? (
             <Typography sx={{ fontSize: 13, color: 'text.secondary', ml: 'auto' }}>
-              {t`${plural(page.all, { one: '# asset', other: '# assets' })}, ${page.shared} changed by more than one mod`}
+              {t`${plural({ count: page.all }, { one: '# asset', other: '# assets' })}, ${{ shared: page.shared }} changed by more than one mod`}
             </Typography>
           ) : null}
         </Box>

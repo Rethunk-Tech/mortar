@@ -54,7 +54,7 @@ const SHOWS: ConfigShow[] = ['all', 'changed', 'menu', 'waiting']
 function ChipLabel({ chip }: { chip: NonNullable<ConfigChip> }) {
   const { t } = useLingui()
   if (chip.kind === 'waiting') {
-    return <>{t`${chip.n} waiting`}</>
+    return <>{t`${{ count: chip.n }} waiting`}</>
   }
   return <>{chip.kind === 'changed' ? t`Changed` : t`In-game menu`}</>
 }
@@ -192,12 +192,10 @@ function ListEntry({
 }
 
 function WithoutConfig({ count }: { count: number }) {
+  const { t } = useLingui()
   return (
     <Typography sx={{ px: space.pad, py: space.gap, fontSize: 12, color: 'text.secondary' }}>
-      {plural(count, {
-        one: '# mod has no config yet; mods create it the first time the game runs.',
-        other: '# mods have no config yet; mods create it the first time the game runs.',
-      })}
+      {t`${plural({ count }, { one: '# mod has', other: '# mods have' })} no config yet; mods create it the first time the game runs.`}
     </Typography>
   )
 }
@@ -326,10 +324,7 @@ function SettingHits({ profileId, hits }: { profileId: string; hits: Hit[] }) {
       ))}
       {hits.length > MAX_SHOWN_HITS ? (
         <Typography sx={{ px: space.pad, py: 0.5, fontSize: 12, color: 'text.secondary' }}>
-          {plural(hits.length - MAX_SHOWN_HITS, {
-            one: '# more setting; type more to narrow the search.',
-            other: '# more settings; type more to narrow the search.',
-          })}
+          {t`${plural({ count: hits.length - MAX_SHOWN_HITS }, { one: '# more setting', other: '# more settings' })}; type more to narrow the search.`}
         </Typography>
       ) : null}
     </Box>
@@ -479,7 +474,7 @@ export function ConfigTab({ profile, game }: { profile: Profile; game: string })
       <ControlsRow>
         <SearchField
           label={t`Filter mods`}
-          placeholder={plural(total, { one: 'Filter # mod', other: 'Filter # mods' })}
+          placeholder={plural({ count: total }, { one: 'Filter # mod', other: 'Filter # mods' })}
           value={query}
           onChange={setQuery}
           grow={true}

@@ -154,7 +154,7 @@ function PresetsButton({ mod }: { mod: Mod }) {
       />
       <ConfirmDialog
         open={pendingDelete !== null}
-        title={t`Delete ${pendingDelete ?? ''}?`}
+        title={t`Delete ${{ name: pendingDelete ?? '' }}?`}
         body={t`This preset will be deleted.`}
         confirmLabel={t`Delete preset`}
         color="error"

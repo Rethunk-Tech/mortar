@@ -13,7 +13,7 @@ export function NeedsChoice(props: ComponentProps<typeof ReviewList>) {
   return (
     <>
       <Typography sx={{ px: space.pad, pt: space.pad, fontWeight: 600 }}>
-        {t`Needs your choice (${props.list.length})`}
+        {t`Needs your choice (${{ count: props.list.length }})`}
       </Typography>
       <Typography sx={{ px: space.pad, fontSize: 13, color: 'text.secondary' }}>
         {t`These come from a different site than you installed them from. Update all skips them.`}

@@ -96,8 +96,8 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
       {evidence.map((e) => (
         <Box key={evidenceKey(e)}>
           <Typography sx={{ fontSize: 13, fontWeight: 600 }}>{e.packName || e.packId}</Typography>
-          <EvidenceLine>{t`${e.source} · ${e.index}`}</EvidenceLine>
-          <EvidenceLine>{t`${e.action} ${e.target}`}</EvidenceLine>
+          <EvidenceLine>{t`${{ source: e.source }} · ${{ index: e.index }}`}</EvidenceLine>
+          <EvidenceLine>{t`${{ action: e.action }} ${{ target: e.target }}`}</EvidenceLine>
           {e.keys && e.keys.length > 0 ? (
             <Typography
               title={e.keys.join('\n')}
@@ -108,14 +108,16 @@ export function ConflictWhy({ asset }: { asset: AssetConflict }) {
                 overflowWrap: 'anywhere',
               }}
             >
-              {t`Both set: ${listNames(e.keys, KEYS_SHOWN)}`}
+              {t`Both set: ${{ names: listNames(e.keys, KEYS_SHOWN) }}`}
             </Typography>
           ) : null}
-          {e.toArea ? <EvidenceLine>{t`ToArea ${e.toArea}`}</EvidenceLine> : null}
-          {e.fromArea ? <EvidenceLine>{t`FromArea ${e.fromArea}`}</EvidenceLine> : null}
-          {e.when ? <EvidenceLine>{t`When ${e.when}`}</EvidenceLine> : null}
+          {e.toArea ? <EvidenceLine>{t`ToArea ${{ toArea: e.toArea }}`}</EvidenceLine> : null}
+          {e.fromArea ? (
+            <EvidenceLine>{t`FromArea ${{ fromArea: e.fromArea }}`}</EvidenceLine>
+          ) : null}
+          {e.when ? <EvidenceLine>{t`When ${{ when: e.when }}`}</EvidenceLine> : null}
           <EvidenceLine>
-            {e.priority === '' ? t`Default priority` : t`Priority ${e.priority}`}
+            {e.priority === '' ? t`Default priority` : t`Priority ${{ priority: e.priority }}`}
           </EvidenceLine>
         </Box>
       ))}

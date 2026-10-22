@@ -30,7 +30,9 @@ function CompatInfoRow({
     )
   const replacement =
     row.replacement === '' ? null : (
-      <Typography sx={{ fontSize: 13 }}>{t`Replacement: ${row.replacement}`}</Typography>
+      <Typography
+        sx={{ fontSize: 13 }}
+      >{t`Replacement: ${{ replacement: row.replacement }}`}</Typography>
     )
   return (
     <Box

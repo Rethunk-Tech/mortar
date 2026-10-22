@@ -55,8 +55,8 @@ export function OverlayListRow({ overlay }: { overlay: OverlayRow }) {
             slotProps={{
               input: {
                 'aria-label': overlay.enabled
-                  ? t`Disable ${overlay.label}`
-                  : t`Enable ${overlay.label}`,
+                  ? t`Disable ${{ name: overlay.label }}`
+                  : t`Enable ${{ name: overlay.label }}`,
               },
             }}
           />
@@ -114,7 +114,7 @@ export function OverlayCountChip({ mod, profile }: { mod: Mod; profile: Profile 
         size="small"
         tabIndex={0}
         label={i18n._(
-          plural(overlays.length, { one: '# optional file', other: '# optional files' }),
+          plural({ count: overlays.length }, { one: '# optional file', other: '# optional files' }),
         )}
         sx={chipSx}
       />

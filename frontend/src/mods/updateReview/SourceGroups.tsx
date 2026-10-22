@@ -36,14 +36,14 @@ export function SourceGroups(props: ComponentProps<typeof ReviewList>) {
         const name = g.name || t`Other`
         return (
           <div key={g.name}>
-            {heading(t`${name} (${g.list.length})`)}
+            {heading(t`${name} (${{ count: g.list.length }})`)}
             <ReviewList {...props} list={g.list} />
           </div>
         )
       })}
       {libraries.length > 0 ? (
         <div>
-          {heading(t`Libraries (${libraries.length})`)}
+          {heading(t`Libraries (${{ count: libraries.length }})`)}
           <ReviewList {...props} list={libraries} />
         </div>
       ) : null}

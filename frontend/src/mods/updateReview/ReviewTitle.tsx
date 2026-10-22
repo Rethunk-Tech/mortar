@@ -23,8 +23,8 @@ export function ReviewTitle({
     <DialogTitle component="div" sx={{ p: space.pad }}>
       <Typography component="h2" sx={{ fontSize: 22, fontWeight: 700 }}>
         {plural(count, {
-          one: `# update for ${profileName}`,
-          other: `# updates for ${profileName}`,
+          one: `# update for ${{ profile: profileName }}`,
+          other: `# updates for ${{ profile: profileName }}`,
         })}
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, minHeight: 30 }}>

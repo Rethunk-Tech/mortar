@@ -49,10 +49,13 @@ export const NewFoldersCallout = memo(function NewFoldersCalloutView({
         reload()
         useToasts.getState().push({
           kind: 'success',
-          title: plural(folders.length, {
-            one: 'Stopped asking about # folder',
-            other: 'Stopped asking about # folders',
-          }),
+          title: plural(
+            { count: folders.length },
+            {
+              one: 'Stopped asking about # folder',
+              other: 'Stopped asking about # folders',
+            },
+          ),
           action: {
             label: i18n._(msg`Undo`),
             run: () => UndismissGameModsFolders(game, folders).then(reload).catch(reportUnexpected),

@@ -7,13 +7,13 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#. placeholder {0}: gone.date
-#. placeholder {0}: mark.date
-#: src/mods/NexusDetails.tsx
-#: src/mods/parts.tsx
-#: src/mods/Sidebar.tsx
-msgid "Hidden on Nexus · {0}"
-msgstr "Hidden on Nexus · {0}"
+#: src/mods/storeEntries.ts
+msgid "Could not skip the update for {name}"
+msgstr "Could not skip the update for {name}"
+
+#: src/mods/updateReview/Row.tsx
+msgid "Now needs {names}"
+msgstr "Now needs {names}"
 
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Keep the game's current value"
@@ -27,7 +27,7 @@ msgstr "Make a group…"
 msgid "Other"
 msgstr "Other"
 
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid "prefix"
 msgstr "prefix"
 
@@ -35,18 +35,17 @@ msgstr "prefix"
 msgid "Could not open the folder"
 msgstr "Could not open the folder"
 
+#: src/mods/problemFixButtons.tsx
+msgid "Delete {path}?"
+msgstr "Delete {path}?"
+
 #: src/mods/AuthorDialog.tsx
 msgid "Author · {author}"
 msgstr "Author · {author}"
 
-#: src/mods/describe.ts
-msgid "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
-msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus."
-
-#. placeholder {0}: unneeded.length
-#: src/mods/disableUnneeded.ts
-msgid "{0, plural, one {# library only the disabled mods needed is still enabled} other {# libraries only the disabled mods needed are still enabled}}"
-msgstr "{0, plural, one {# library only the disabled mods needed is still enabled} other {# libraries only the disabled mods needed are still enabled}}"
+#: src/mods/parts.tsx
+msgid "Remove {name} from this profile?"
+msgstr "Remove {name} from this profile?"
 
 #: src/mods/ConfigPresets.tsx
 msgid "Presets"
@@ -58,13 +57,13 @@ msgstr "Presets"
 msgid "Implicit"
 msgstr "Implicit"
 
-#: src/mods/updateReview/WithheldGroup.tsx
-msgid "Nexus hides or has removed these pages, so there is no download to offer."
-msgstr "Nexus hides or has removed these pages, so there is no download to offer."
-
 #: src/mods/ModMenu.tsx
 msgid "Where it came in one download with other mods, it is disabled instead."
 msgstr "Where it came in one download with other mods, it is disabled instead."
+
+#: src/mods/updateReview/UpdateActions.tsx
+msgid "{name} was installed from another site. Updating installs {version} from {source} instead and keeps your settings."
+msgstr "{name} was installed from another site. Updating installs {version} from {source} instead and keeps your settings."
 
 #: src/mods/storeEntries.ts
 msgid "Updated categories"
@@ -78,15 +77,14 @@ msgstr "Open storage settings"
 msgid "Updated"
 msgstr "Updated"
 
-#. placeholder {0}: sets.length
-#: src/mods/OldFilesCallouts.tsx
-msgid "{0, plural, one {# updated mod} other {# updated mods}}"
-msgstr "{0, plural, one {# updated mod} other {# updated mods}}"
-
 #: src/mods/problemFix/FileConflictFix.tsx
 #: src/mods/problemFix/WinFix.tsx
 msgid "Make {name} win"
 msgstr "Make {name} win"
+
+#: src/mods/redundantReason.ts
+msgid "{list} do the same job: all {count} change {detail}"
+msgstr "{list} do the same job: all {count} change {detail}"
 
 #: src/mods/DuplicateDialog.tsx
 #: src/mods/LockedReason.tsx
@@ -124,11 +122,19 @@ msgstr "Could not freeze the profile"
 msgid "{name} broke in {brokeIn}."
 msgstr "{name} broke in {brokeIn}."
 
+#: src/mods/parts.tsx
+msgid "{count, plural, one {# mod needs this} other {# mods need this}}: {names}"
+msgstr "{count, plural, one {# mod needs this} other {# mods need this}}: {names}"
+
 #: src/mods/ExtraFolderDialog.tsx
 msgid "No mods in the extra mods folders"
 msgstr "No mods in the extra mods folders"
 
-#: src/mods/describe.ts
+#: src/mods/Sidebar.tsx
+msgid "Required by ({count})"
+msgstr "Required by ({count})"
+
+#: src/mods/describeLoadFailure.ts
 msgid "It was thrown in {thrown}, called from its {kind} {method} on {target}"
 msgstr "It was thrown in {thrown}, called from its {kind} {method} on {target}"
 
@@ -136,36 +142,33 @@ msgstr "It was thrown in {thrown}, called from its {kind} {method} on {target}"
 msgid "The downloads folder…"
 msgstr "The downloads folder…"
 
+#: src/mods/LoadOrderTab.tsx
+msgid " · {count} more required"
+msgstr " · {count} more required"
+
+#: src/mods/NexusDetails.tsx
+msgid "Sign in to {source} in Settings to see more from this mod's page."
+msgstr "Sign in to {source} in Settings to see more from this mod's page."
+
 #: src/mods/updateReview/updateAll.ts
 msgid "Nothing to update: those mods already have their newest file"
 msgstr "Nothing to update: those mods already have their newest file"
+
+#: src/mods/updateReview/Row.tsx
+msgid "No longer needs {names}"
+msgstr "No longer needs {names}"
+
+#: src/mods/updateReview/OptionalUpdates.tsx
+msgid "{count, plural, one {Also update # optional file} other {Also update # optional files}}"
+msgstr "{count, plural, one {Also update # optional file} other {Also update # optional files}}"
 
 #: src/mods/describe.ts
 msgid "Balance only: one mod's prices win."
 msgstr "Balance only: one mod's prices win."
 
-#. placeholder {0}: kept.length
-#: src/mods/updateReview/KeptGroup.tsx
-msgid "Kept at this version ({0})"
-msgstr "Kept at this version ({0})"
-
-#: src/mods/describe.ts
-msgid "{name}, a folder no mod owns, has a file path {count} characters long, more than most Windows games can open."
-msgstr "{name}, a folder no mod owns, has a file path {count} characters long, more than most Windows games can open."
-
-#: src/mods/updateReview/Row.tsx
-msgid "Pick the file on Nexus: its page has several downloads and none replaces the one you have."
-msgstr "Pick the file on Nexus: its page has several downloads and none replaces the one you have."
-
-#. placeholder {0}: row.name
-#: src/mods/SlowStartupSection.tsx
-msgid "{0} adds {time} to startup"
-msgstr "{0} adds {time} to startup"
-
-#. placeholder {0}: p.damaged.name
-#: src/mods/describe.ts
-msgid "{0} has damaged files."
-msgstr "{0} has damaged files."
+#: src/mods/DuplicateDialog.tsx
+msgid "{names} needs a newer version than this."
+msgstr "{names} needs a newer version than this."
 
 #: src/mods/problemFix/PluginClashFix.tsx
 msgid "Keep newer"
@@ -175,27 +178,46 @@ msgstr "Keep newer"
 msgid "Reinstall loader"
 msgstr "Reinstall loader"
 
-#: src/mods/LoadOrderTab.tsx
-msgid "Required: {label}"
-msgstr "Required: {label}"
+#: src/mods/storeEntries.ts
+msgid "Could not open config.json of {name}"
+msgstr "Could not open config.json of {name}"
+
+#: src/mods/GameModsReviewDialog.tsx
+msgid "{count, plural, one {# imported} other {# imported}}"
+msgstr "{count, plural, one {# imported} other {# imported}}"
+
+#: src/mods/updateReview/updateAll.ts
+msgid "{count, plural, one {# update failed} other {# updates failed}}"
+msgstr "{count, plural, one {# update failed} other {# updates failed}}"
 
 #: src/mods/GameModsReviewDialog.tsx
 #: src/mods/OtherProfilesDialog.tsx
 msgid "Could not change mods"
 msgstr "Could not change mods"
 
+#: src/mods/useListHeading.ts
+msgid "{loader} mods"
+msgstr "{loader} mods"
+
+#: src/mods/storeEntries.ts
+msgid "Could not show the skipped update for {name}"
+msgstr "Could not show the skipped update for {name}"
+
+#: src/mods/updateReview/WithheldGroup.tsx
+msgid "{source} hides or has removed these pages, so there is no download to offer."
+msgstr "{source} hides or has removed these pages, so there is no download to offer."
+
 #: src/mods/EndorsePrompt.tsx
 msgid "Never for this mod"
 msgstr "Never for this mod"
 
+#: src/mods/parts.tsx
+msgid "Mods from the same download are removed together: {names}. You can undo this."
+msgstr "Mods from the same download are removed together: {names}. You can undo this."
+
 #: src/mods/overlayActions.ts
 msgid "It replaces the same files, so this is disabled: {names}"
 msgstr "It replaces the same files, so this is disabled: {names}"
-
-#. placeholder {0}: listNames(needs.map((n) => n.name))
-#: src/mods/OtherProfilesDialog.tsx
-msgid "Also adds what it needs: {0}"
-msgstr "Also adds what it needs: {0}"
 
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Paste it on the mod's page."
@@ -215,10 +237,6 @@ msgstr "Errors while running"
 msgid "Review…"
 msgstr "Review…"
 
-#: src/mods/columnLabel.ts
-msgid "Updated on Nexus"
-msgstr "Updated on Nexus"
-
 #: src/mods/CleanupSection.tsx
 #: src/mods/problemFix/AssetFix.tsx
 #: src/mods/problemFix/DismissAdvice.tsx
@@ -234,6 +252,10 @@ msgstr "Dismiss"
 msgid "Open"
 msgstr "Open"
 
+#: src/mods/NexusDetails.tsx
+msgid "Current files on {source} ({count})"
+msgstr "Current files on {source} ({count})"
+
 #: src/mods/CategoryEditor.tsx
 msgid "Group mods by these names, or assign one as a mod's primary category."
 msgstr "Group mods by these names, or assign one as a mod's primary category."
@@ -242,17 +264,13 @@ msgstr "Group mods by these names, or assign one as a mod's primary category."
 msgid "Could not change the details"
 msgstr "Could not change the details"
 
-#: src/mods/describe.ts
-msgid "{count, plural, one {{name} logged # error in the last run. First: {first}} other {{name} logged # errors in the last run. First: {first}}}"
-msgstr "{count, plural, one {{name} logged # error in the last run. First: {first}} other {{name} logged # errors in the last run. First: {first}}}"
+#: src/mods/OldFilesCallouts.tsx
+msgid "Delete {name}'s old files"
+msgstr "Delete {name}'s old files"
 
 #: src/mods/SlowStartupSection.tsx
 msgid "other checks"
 msgstr "other checks"
-
-#: src/mods/NexusDetails.tsx
-msgid "Sign in to Nexus Mods in Settings to see more from this mod's page."
-msgstr "Sign in to Nexus Mods in Settings to see more from this mod's page."
 
 #: src/mods/problemFix/DuplicateFix.tsx
 msgid "Resolve"
@@ -262,6 +280,10 @@ msgstr "Resolve"
 msgid "Untrack"
 msgstr "Untrack"
 
+#: src/mods/GameModsReviewDialog.tsx
+msgid "folder {folderVersion} · profile {profileVersion}"
+msgstr "folder {folderVersion} · profile {profileVersion}"
+
 #: src/mods/problemText.ts
 msgid "Game version not supported"
 msgstr "Game version not supported"
@@ -269,15 +291,6 @@ msgstr "Game version not supported"
 #: src/mods/ExtraFolderDialog.tsx
 msgid "Reading the extra mods folders…"
 msgstr "Reading the extra mods folders…"
-
-#: src/mods/updateReview/OptionalUpdates.tsx
-msgid "{n, plural, one {Also update # optional file} other {Also update # optional files}}"
-msgstr "{n, plural, one {Also update # optional file} other {Also update # optional files}}"
-
-#. placeholder {0}: files.length
-#: src/mods/ReplacedSection.tsx
-msgid "{0, plural, one {Replaced # old file Mortar did not install} other {Replaced # old files Mortar did not install}}"
-msgstr "{0, plural, one {Replaced # old file Mortar did not install} other {Replaced # old files Mortar did not install}}"
 
 #: src/mods/NexusDetails.tsx
 msgid "Uploaded by"
@@ -295,15 +308,13 @@ msgstr "Delete group (mods stay)"
 msgid "This preset will be deleted."
 msgstr "This preset will be deleted."
 
-#: src/mods/problemWhy.ts
-msgid "SMAPI's list marks this mod as broken, obsolete or abandoned for your game version. It may crash, do nothing, or stop working after the next game update."
-msgstr "SMAPI's list marks this mod as broken, obsolete or abandoned for your game version. It may crash, do nothing, or stop working after the next game update."
+#: src/mods/DuplicateDialog.tsx
+msgid "From {source}"
+msgstr "From {source}"
 
-#. placeholder {0}: e.source
-#. placeholder {1}: e.index
-#: src/mods/ConflictWhy.tsx
-msgid "{0} · {1}"
-msgstr "{0} · {1}"
+#: src/mods/problemFix/AssetFix.tsx
+msgid "In {name}; disables its edits here"
+msgstr "In {name}; disables its edits here"
 
 #: src/mods/GroupMenu.tsx
 msgid "Rename"
@@ -317,14 +328,14 @@ msgstr "Enable mods in the Mods tab to see the order {loader} loads them."
 msgid "Make a pack win"
 msgstr "Make a pack win"
 
-#: src/mods/useListHeading.ts
-msgid "{loaderName} mods"
-msgstr "{loaderName} mods"
-
 #: src/mods/CompatChip.tsx
 #: src/mods/ModDependencyTree.tsx
 msgid "Broken"
 msgstr "Broken"
+
+#: src/mods/LibrariesChip.tsx
+msgid "{count, plural, one {+# library} other {+# libraries}}"
+msgstr "{count, plural, one {+# library} other {+# libraries}}"
 
 #: src/mods/CleanupSection.tsx
 msgid "Dismiss {name}"
@@ -334,40 +345,29 @@ msgstr "Dismiss {name}"
 msgid "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
 msgstr "Something changed this profile's mods folder without Mortar, by adding, removing or editing a file. Mortar flags it so the profile matches what you expect."
 
-#. placeholder {0}: s.name
-#. placeholder {1}: s.field
-#. placeholder {2}: s.current
-#. placeholder {3}: s.currentFor
-#: src/mods/describe.ts
-msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks."
-msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks."
+#: src/mods/ModSections.tsx
+msgid "{version} · kept for rollback"
+msgstr "{version} · kept for rollback"
+
+#: src/mods/updateReview/NeedsChoice.tsx
+msgid "Needs your choice ({count})"
+msgstr "Needs your choice ({count})"
 
 #: src/mods/storeEntries.ts
 msgid "Could not set the category for the selected mods"
 msgstr "Could not set the category for the selected mods"
 
-#. placeholder {0}: first.name
-#: src/mods/describe.ts
-msgid "{0} lists itself as a dependency, so SMAPI skips it."
-msgstr "{0} lists itself as a dependency, so SMAPI skips it."
+#: src/mods/HiddenInside.tsx
+msgid "Mortar renames the folder {path} without its leading dots, so {loader} loads the mod."
+msgstr "Mortar renames the folder {path} without its leading dots, so {loader} loads the mod."
 
-#: src/mods/describe.ts
-msgid "{path} wait for each other in a loop, so SMAPI skips at least one of them."
-msgstr "{path} wait for each other in a loop, so SMAPI skips at least one of them."
+#: src/mods/problemFixButtons.tsx
+msgid "Moved {path} to Mortar's trash"
+msgstr "Moved {path} to Mortar's trash"
 
 #: src/mods/OverlayRow.tsx
 msgid "Replaces some files of the mod above"
 msgstr "Replaces some files of the mod above"
-
-#: src/mods/describe.ts
-msgid "{a} and {b} each wait for the other, so SMAPI loads neither."
-msgstr "{a} and {b} each wait for the other, so SMAPI loads neither."
-
-#: src/mods/NexusDetails.tsx
-#: src/mods/parts.tsx
-#: src/mods/Sidebar.tsx
-msgid "Hidden on Nexus"
-msgstr "Hidden on Nexus"
 
 #: src/mods/detail.ts
 msgid "Back to {backTo}. Saves untouched."
@@ -381,21 +381,13 @@ msgstr "Show all mods"
 msgid "Could not save that answer"
 msgstr "Could not save that answer"
 
-#: src/mods/DuplicateDialog.tsx
-msgid "Bundled with SMAPI"
-msgstr "Bundled with SMAPI"
+#: src/mods/ModMenu.tsx
+msgid "{name} removed from {count, plural, one {# profile} other {# profiles}}"
+msgstr "{name} removed from {count, plural, one {# profile} other {# profiles}}"
 
-#: src/mods/describe.ts
-msgid "Harmony patch"
-msgstr "Harmony patch"
-
-#: src/mods/updateReview/ReviewTitle.tsx
-msgid "{count, plural, one {# update for {profileName}} other {# updates for {profileName}}}"
-msgstr "{count, plural, one {# update for {profileName}} other {# updates for {profileName}}}"
-
-#: src/mods/OldFilesCallouts.tsx
-msgid "{files, plural, one {# file} other {# files}}"
-msgstr "{files, plural, one {# file} other {# files}}"
+#: src/mods/GameModsReviewDialog.tsx
+msgid "Different version ({count})"
+msgstr "Different version ({count})"
 
 #: src/mods/ModMenu.tsx
 #: src/mods/OldFilesCallouts.tsx
@@ -407,15 +399,11 @@ msgstr "Show files"
 msgid "Mods with settings"
 msgstr "Mods with settings"
 
-#: src/mods/describe.ts
-msgid "{count, plural, one {{name} was updated since this run and logged # error.} other {{name} was updated since this run and logged # errors.}}"
-msgstr "{count, plural, one {{name} was updated since this run and logged # error.} other {{name} was updated since this run and logged # errors.}}"
-
 #: src/mods/ModSections.tsx
 msgid "Settings from the mod's in-game menu"
 msgstr "Settings from the mod's in-game menu"
 
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid "It was thrown in {thrown}; {suspects}"
 msgstr "It was thrown in {thrown}; {suspects}"
 
@@ -423,30 +411,13 @@ msgstr "It was thrown in {thrown}; {suspects}"
 msgid "{name} is marked obsolete and may not work with this game version."
 msgstr "{name} is marked obsolete and may not work with this game version."
 
-#. placeholder {0}: errors ?? 1
-#: src/mods/describe.ts
-msgid "{0, plural, one {{who} loaded and logged an error while running.} other {{who} loaded and logged # errors while running.}}"
-msgstr "{0, plural, one {{who} loaded and logged an error while running.} other {{who} loaded and logged # errors while running.}}"
-
-#. placeholder {0}: first.name
-#. placeholder {1}: first.version
-#: src/mods/updateReview/UpdateBar.tsx
-msgid "including {0} {1}"
-msgstr "including {0} {1}"
+#: src/mods/updateDigestToast.ts
+msgid "{count, plural, one {# update for {profiles, plural, one {# profile} other {# profiles}}} other {# updates for {profiles, plural, one {# profile} other {# profiles}}}}"
+msgstr "{count, plural, one {# update for {profiles, plural, one {# profile} other {# profiles}}} other {# updates for {profiles, plural, one {# profile} other {# profiles}}}}"
 
 #: src/mods/ModUpdateControls.tsx
 msgid "Update channel"
 msgstr "Update channel"
-
-#. placeholder {0}: result.failed
-#: src/mods/GameModsReviewDialog.tsx
-msgid "{0, plural, one {# failed} other {# failed}}"
-msgstr "{0, plural, one {# failed} other {# failed}}"
-
-#. placeholder {0}: set.label
-#: src/mods/OldFilesCallouts.tsx
-msgid "Keep {0}'s old files"
-msgstr "Keep {0}'s old files"
 
 #: src/mods/updateReview/WithheldGroup.tsx
 msgid "Skip this version"
@@ -458,6 +429,10 @@ msgstr "Skip this version"
 msgid "Mark implicit"
 msgstr "Mark implicit"
 
+#: src/mods/storeEntries.ts
+msgid "Could not pin {name}"
+msgstr "Could not pin {name}"
+
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Reset all"
 msgstr "Reset all"
@@ -466,10 +441,22 @@ msgstr "Reset all"
 msgid "newer in profile"
 msgstr "newer in profile"
 
+#: src/mods/SetNexusPageDialog.tsx
+msgid "{source} page address"
+msgstr "{source} page address"
+
+#: src/mods/overlayActions.ts
+msgid "Enabled {name}"
+msgstr "Enabled {name}"
+
 #: src/mods/updateDigestToast.ts
 #: src/mods/updates.ts
 msgid "Review"
 msgstr "Review"
+
+#: src/mods/SetNexusPageDialog.tsx
+msgid "Paste the address of the mod's page on {source}. To name the exact file, open that file's Manual Download on the page's Files tab and paste that address instead."
+msgstr "Paste the address of the mod's page on {source}. To name the exact file, open that file's Manual Download on the page's Files tab and paste that address instead."
 
 #: src/mods/updateReview/Changes.tsx
 msgid "Changelog unavailable"
@@ -483,15 +470,17 @@ msgstr "Its main file is no longer in this profile."
 msgid "Could not disable the group"
 msgstr "Could not disable the group"
 
+#: src/mods/disableUnneeded.ts
+msgid "{count, plural, one {# library only the disabled mods needed is still enabled} other {# libraries only the disabled mods needed are still enabled}}"
+msgstr "{count, plural, one {# library only the disabled mods needed is still enabled} other {# libraries only the disabled mods needed are still enabled}}"
+
+#: src/mods/modActions.ts
+msgid "Open on {source}"
+msgstr "Open on {source}"
+
 #: src/mods/problemText.ts
 msgid "Missing requirements"
 msgstr "Missing requirements"
-
-#. placeholder {0}: mod.name
-#. placeholder {1}: profiles.length
-#: src/mods/ModMenu.tsx
-msgid "{0} removed from {1, plural, one {# profile} other {# profiles}}"
-msgstr "{0} removed from {1, plural, one {# profile} other {# profiles}}"
 
 #: src/mods/ModSections.tsx
 msgid "Roll back"
@@ -505,10 +494,6 @@ msgstr "Could not dismiss the warning"
 msgid "Some mods could not be checked, so more updates may show up later."
 msgstr "Some mods could not be checked, so more updates may show up later."
 
-#: src/mods/describe.ts
-msgid "{path} depend on each other in a loop, so BepInEx stops before loading any plugin."
-msgstr "{path} depend on each other in a loop, so BepInEx stops before loading any plugin."
-
 #: src/mods/LoadOrderTab.tsx
 #: src/mods/ModsTab.tsx
 #: src/mods/typedConfig/ConfigPane.tsx
@@ -516,14 +501,17 @@ msgstr "{path} depend on each other in a loop, so BepInEx stops before loading a
 msgid "Retry"
 msgstr "Retry"
 
+#: src/mods/ExtraFilesChip.tsx
+msgid "{count, plural, one {+# file} other {+# files}}"
+msgstr "{count, plural, one {+# file} other {+# files}}"
+
+#: src/mods/updateReview/SourceGroups.tsx
+msgid "{name} ({count})"
+msgstr "{name} ({count})"
+
 #: src/mods/LoadOrderTab.tsx
 msgid "Show less"
 msgstr "Show less"
-
-#. placeholder {0}: entry.key
-#: src/mods/typedConfig/ConfigPane.tsx
-msgid "Reset {0} to its default"
-msgstr "Reset {0} to its default"
 
 #: src/mods/storeEntries.ts
 msgid "Could not ignore updates from {source}"
@@ -537,9 +525,18 @@ msgstr "Startup"
 msgid "{count, plural, one {# mod in the game's Mods folder differs from this profile} other {# mods in the game's Mods folder differ from this profile}}"
 msgstr "{count, plural, one {# mod in the game's Mods folder differs from this profile} other {# mods in the game's Mods folder differ from this profile}}"
 
-#: src/mods/describe.ts
-msgid "{a} and {b} each depend on the other, so BepInEx stops before loading any plugin."
-msgstr "{a} and {b} each depend on the other, so BepInEx stops before loading any plugin."
+#: src/mods/OverlayRow.tsx
+#: src/mods/parts.tsx
+msgid "Enable {name}"
+msgstr "Enable {name}"
+
+#: src/mods/storeProblems.ts
+msgid "Could not set {field} for {name}"
+msgstr "Could not set {field} for {name}"
+
+#: src/mods/storeEntries.ts
+msgid "Could not unpin {name}"
+msgstr "Could not unpin {name}"
 
 #: src/mods/runErrorFixButtons.tsx
 msgid "Show in log"
@@ -559,16 +556,17 @@ msgstr "Loader and other"
 msgid "Set to automatic"
 msgstr "Set to automatic"
 
+#: src/mods/ConflictWhy.tsx
+msgid "FromArea {fromArea}"
+msgstr "FromArea {fromArea}"
+
 #: src/mods/describe.ts
 msgid "{name} is marked broken for this game version."
 msgstr "{name} is marked broken for this game version."
 
-#. placeholder {0}: copies.length
-#. placeholder {1}: dup.name
-#. placeholder {2}: dup.name
 #: src/mods/DuplicateDialog.tsx
-msgid "{0, plural, one {# copy of {1}} other {# copies of {2}}}"
-msgstr "{0, plural, one {# copy of {1}} other {# copies of {2}}}"
+msgid "Keep the {source} copy"
+msgstr "Keep the {source} copy"
 
 #: src/mods/problemWhy.ts
 msgid "Files of this stored mod went missing, changed or appeared after Mortar stored it. An antivirus, a disk fault or a manual edit can cause that, and the mod may misbehave."
@@ -578,38 +576,25 @@ msgstr "Files of this stored mod went missing, changed or appeared after Mortar 
 msgid "Could not unhide the mod"
 msgstr "Could not unhide the mod"
 
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid "; the runtime printed no source line for that method (generated code)."
 msgstr "; the runtime printed no source line for that method (generated code)."
-
-#. placeholder {0}: unhiding?.folder ?? ''
-#: src/mods/HiddenInside.tsx
-msgid "Mortar renames the folder {0} without its leading dots, so SMAPI loads the mod."
-msgstr "Mortar renames the folder {0} without its leading dots, so SMAPI loads the mod."
-
-#: src/mods/parts.tsx
-msgid "{optional, plural, one {Also removes # optional file that goes on top of it.} other {Also removes # optional files that go on top of it.}}"
-msgstr "{optional, plural, one {Also removes # optional file that goes on top of it.} other {Also removes # optional files that go on top of it.}}"
 
 #: src/mods/updateReview/NeedsChoice.tsx
 msgid "These come from a different site than you installed them from. Update all skips them."
 msgstr "These come from a different site than you installed them from. Update all skips them."
 
-#. placeholder {0}: mod.name
-#. placeholder {0}: update.name
-#: src/mods/ModMenu.tsx
-#: src/mods/updateReview/UpdateActions.tsx
-msgid "More actions for {0}"
-msgstr "More actions for {0}"
-
-#. placeholder {0}: profile.name
-#: src/mods/GameModsReviewDialog.tsx
-msgid "Game Mods folder vs {0}"
-msgstr "Game Mods folder vs {0}"
+#: src/mods/describe.ts
+msgid "{name}'s {field} is {current}, made for {currentFor}, which this profile lacks."
+msgstr "{name}'s {field} is {current}, made for {currentFor}, which this profile lacks."
 
 #: src/mods/AuthorDialog.tsx
 msgid "No installed mods for this author."
 msgstr "No installed mods for this author."
+
+#: src/mods/ConflictWhy.tsx
+msgid "{source} · {index}"
+msgstr "{source} · {index}"
 
 #: src/mods/OtherProfilesDialog.tsx
 msgid "Already has it"
@@ -631,12 +616,6 @@ msgstr "Changes dependencies"
 msgid "The game never started"
 msgstr "The game never started"
 
-#. placeholder {0}: setting.field
-#. placeholder {1}: setting.name
-#: src/mods/storeProblems.ts
-msgid "Could not set {0} for {1}"
-msgstr "Could not set {0} for {1}"
-
 #: src/mods/Toolbar.tsx
 #: src/mods/typedConfig/ConfigTab.tsx
 msgid "Filter mods"
@@ -650,20 +629,9 @@ msgstr "Apply {name}"
 msgid "Will update"
 msgstr "Will update"
 
-#: src/mods/parts.tsx
-msgid "{allCount, plural, one {Remove all # mod} other {Remove all # mods}}"
-msgstr "{allCount, plural, one {Remove all # mod} other {Remove all # mods}}"
-
 #: src/mods/AuthorDialog.tsx
 msgid "Installed in your profiles"
 msgstr "Installed in your profiles"
-
-#. placeholder {0}: res.imported
-#. placeholder {1}: move ? 'Moved # mod' : 'Copied # mod'
-#. placeholder {2}: move ? 'Moved # mods' : 'Copied # mods'
-#: src/mods/GameModsReviewDialog.tsx
-msgid "{0, plural, one {{1}} other {{2}}}"
-msgstr "{0, plural, one {{1}} other {{2}}}"
 
 #: src/mods/updateReview/updateAll.ts
 msgid "{needChoice} need your choice"
@@ -672,16 +640,6 @@ msgstr "{needChoice} need your choice"
 #: src/mods/problemWhy.ts
 msgid "A mod works better, or only works, with a setting changed. Nothing is wrong yet."
 msgstr "A mod works better, or only works, with a setting changed. Nothing is wrong yet."
-
-#. placeholder {0}: selected.length
-#: src/mods/OtherProfilesDialog.tsx
-msgid "{0, plural, one {Remove from # profile} other {Remove from # profiles}}"
-msgstr "{0, plural, one {Remove from # profile} other {Remove from # profiles}}"
-
-#. placeholder {0}: prompt.name
-#: src/mods/EndorsePrompt.tsx
-msgid "Enjoying {0}? Endorse it on Nexus"
-msgstr "Enjoying {0}? Endorse it on Nexus"
 
 #: src/mods/Toolbar.tsx
 #: src/mods/typedConfig/ConfigTab.tsx
@@ -703,16 +661,9 @@ msgstr "Queued"
 msgid "{count, plural, one {Overlaps with {by}: both change {detail}} other {Overlaps with {by}: all change {detail}}}"
 msgstr "{count, plural, one {Overlaps with {by}: both change {detail}} other {Overlaps with {by}: all change {detail}}}"
 
-#. placeholder {0}: chip.n
-#: src/mods/typedConfig/ConfigTab.tsx
-msgid "{0} waiting"
-msgstr "{0} waiting"
-
-#: src/mods/columnLabel.ts
-#: src/mods/NexusDetails.tsx
-#: src/mods/Sidebar.tsx
-msgid "Latest on Nexus"
-msgstr "Latest on Nexus"
+#: src/mods/describe.ts
+msgid "{name} is deprecated on {source}; its page points to {replacement}."
+msgstr "{name} is deprecated on {source}; its page points to {replacement}."
 
 #: src/mods/LoadOrderTab.tsx
 msgid "Dependency cycle"
@@ -742,9 +693,17 @@ msgstr "Remove from other profiles…"
 msgid "Why?"
 msgstr "Why?"
 
+#: src/mods/problemWhy.ts
+msgid "{loader}'s list marks this mod as broken, obsolete or abandoned for your game version. It may crash, do nothing, or stop working after the next game update."
+msgstr "{loader}'s list marks this mod as broken, obsolete or abandoned for your game version. It may crash, do nothing, or stop working after the next game update."
+
 #: src/mods/problemText.ts
 msgid "Error while loading"
 msgstr "Error while loading"
+
+#: src/mods/LoadOrderTab.tsx
+msgid "Used by: {name}"
+msgstr "Used by: {name}"
 
 #: src/mods/DuplicateDialog.tsx
 msgid "No update checks, and it cannot go in a share link."
@@ -754,10 +713,9 @@ msgstr "No update checks, and it cannot go in a share link."
 msgid "No groups yet"
 msgstr "No groups yet"
 
-#. placeholder {0}: mods.length
-#: src/mods/TrackedNotInProfile.tsx
-msgid "{0, plural, one {# tracked mod on Nexus is not in this profile} other {# tracked mods on Nexus are not in this profile}}"
-msgstr "{0, plural, one {# tracked mod on Nexus is not in this profile} other {# tracked mods on Nexus are not in this profile}}"
+#: src/mods/DuplicateDialog.tsx
+msgid "Bundled with {loader}"
+msgstr "Bundled with {loader}"
 
 #: src/mods/updateReview/EverywhereDialog.tsx
 msgid "Skipped"
@@ -781,14 +739,9 @@ msgstr "A mod you enabled needs another mod that is not in this profile, or is d
 msgid "Undo"
 msgstr "Undo"
 
-#. placeholder {0}: neededBy.length.toLocaleString(i18n.locale)
-#: src/mods/Sidebar.tsx
-msgid "Required by ({0})"
-msgstr "Required by ({0})"
-
-#: src/mods/describe.ts
-msgid " Content Patcher applies neither."
-msgstr " Content Patcher applies neither."
+#: src/mods/OldFilesCallouts.tsx
+msgid "Keep {name}'s old files"
+msgstr "Keep {name}'s old files"
 
 #: src/mods/CompatChip.tsx
 #: src/mods/CompatSection.tsx
@@ -799,26 +752,24 @@ msgstr "Unofficial update"
 msgid "No problems to copy."
 msgstr "No problems to copy."
 
-#. placeholder {0}: dependents.length
-#. placeholder {1}: listNames(dependents.map((m) => m.name))
-#: src/mods/parts.tsx
-msgid "{0, plural, one {# mod needs this} other {# mods need this}}: {1}"
-msgstr "{0, plural, one {# mod needs this} other {# mods need this}}: {1}"
+#: src/mods/listRows.ts
+msgid "{source}, file unknown"
+msgstr "{source}, file unknown"
 
-#. placeholder {0}: replaces.length
-#: src/mods/OptionalFileRows.tsx
-msgid "{0, plural, one {Replaces # file · adds {added}} other {Replaces # files · adds {added}}}"
-msgstr "{0, plural, one {Replaces # file · adds {added}} other {Replaces # files · adds {added}}}"
+#: src/mods/listRows.ts
+#: src/mods/Sidebar.tsx
+msgid "{source}"
+msgstr "{source}"
 
-#: src/mods/OldFilesCallouts.tsx
-msgid "{n, plural, one {Moved # old file to trash} other {Moved # old files to trash}}"
-msgstr "{n, plural, one {Moved # old file to trash} other {Moved # old files to trash}}"
+#: src/mods/OtherProfilesDialog.tsx
+msgid "pinned in {name}"
+msgstr "pinned in {name}"
 
 #: src/mods/storeProblems.ts
 msgid "Could not restore the warning"
 msgstr "Could not restore the warning"
 
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid "The last launch failed: {message}."
 msgstr "The last launch failed: {message}."
 
@@ -826,10 +777,21 @@ msgstr "The last launch failed: {message}."
 msgid "Try another spelling, or install a mod by {author} in any profile."
 msgstr "Try another spelling, or install a mod by {author} in any profile."
 
-#. placeholder {0}: update.source
-#: src/mods/updateReview/UpdateActions.tsx
-msgid "Ignore updates from {0}"
-msgstr "Ignore updates from {0}"
+#: src/mods/updateReview/WithheldGroup.tsx
+msgid "Not offered ({count})"
+msgstr "Not offered ({count})"
+
+#: src/mods/describe.ts
+msgid "{path} wait for each other in a loop, so {loader} loads none of them."
+msgstr "{path} wait for each other in a loop, so {loader} loads none of them."
+
+#: src/mods/OldFilesCallouts.tsx
+msgid "The new version of {name} no longer includes {lost}."
+msgstr "The new version of {name} no longer includes {lost}."
+
+#: src/mods/describe.ts
+msgid "{name} needs {dep}, which is disabled."
+msgstr "{name} needs {dep}, which is disabled."
 
 #: src/mods/LoadOrderTab.tsx
 msgid "No enabled mods"
@@ -843,20 +805,17 @@ msgstr "Cleanup"
 msgid "Group by"
 msgstr "Group by"
 
-#: src/mods/DuplicateDialog.tsx
-msgid "Keep the Nexus copy"
-msgstr "Keep the Nexus copy"
+#: src/mods/LoadOrderTab.tsx
+msgid "Needs {name} (missing)"
+msgstr "Needs {name} (missing)"
 
 #: src/mods/Toolbar.tsx
 msgid "Filter mods, filter active"
 msgstr "Filter mods, filter active"
 
-#. placeholder {0}: notice.totalUpdates
-#. placeholder {1}: notice.profilesWith
-#. placeholder {2}: notice.profilesWith
-#: src/mods/updateDigestToast.ts
-msgid "{0, plural, one {# update for {1, plural, one {# profile} other {# profiles}}} other {# updates for {2, plural, one {# profile} other {# profiles}}}}"
-msgstr "{0, plural, one {# update for {1, plural, one {# profile} other {# profiles}}} other {# updates for {2, plural, one {# profile} other {# profiles}}}}"
+#: src/mods/describe.ts
+msgid "{name} needs {dep}, which this profile lacks."
+msgstr "{name} needs {dep}, which this profile lacks."
 
 #: src/mods/CompatChip.tsx
 msgid "Abandoned"
@@ -866,9 +825,9 @@ msgstr "Abandoned"
 msgid "No mod settings yet"
 msgstr "No mod settings yet"
 
-#: src/mods/NexusDetails.tsx
-msgid "Reading the Nexus page…"
-msgstr "Reading the Nexus page…"
+#: src/mods/SetNexusPageDialog.tsx
+msgid "{name} now comes from that {source} page"
+msgstr "{name} now comes from that {source} page"
 
 #: src/mods/updateReview/ReviewFooter.tsx
 msgid "Update in every profile…"
@@ -878,6 +837,10 @@ msgstr "Update in every profile…"
 msgid "Not loaded in the running game"
 msgstr "Not loaded in the running game"
 
+#: src/mods/Sidebar.tsx
+msgid "Content pack for {name}"
+msgstr "Content pack for {name}"
+
 #: src/mods/customCategories.ts
 msgid "Could not set the category"
 msgstr "Could not set the category"
@@ -886,14 +849,21 @@ msgstr "Could not set the category"
 msgid "game running"
 msgstr "game running"
 
-#: src/mods/HiddenInside.tsx
-msgid "SMAPI skips folders whose names start with a dot."
-msgstr "SMAPI skips folders whose names start with a dot."
+#: src/mods/SetNexusPageDialog.tsx
+msgid "Set the {source} page of {name}"
+msgstr "Set the {source} page of {name}"
 
-#. placeholder {0}: diff.same
-#: src/mods/GameModsReviewDialog.tsx
-msgid "{0, plural, one {# mod matches.} other {# mods match.}}"
-msgstr "{0, plural, one {# mod matches.} other {# mods match.}}"
+#: src/mods/describeLoadFailure.ts
+msgid "It was thrown in {thrown}, called from {name}'s {kind} {method} on {target}"
+msgstr "It was thrown in {thrown}, called from {name}'s {kind} {method} on {target}"
+
+#: src/mods/DuplicateDialog.tsx
+msgid "{names} needs this version or newer."
+msgstr "{names} needs this version or newer."
+
+#: src/mods/describe.ts
+msgid "{name} has a file path {count} characters long, more than most {os} games can open."
+msgstr "{name} has a file path {count} characters long, more than most {os} games can open."
 
 #: src/mods/listRows.ts
 #: src/mods/Sidebar.tsx
@@ -904,16 +874,25 @@ msgstr "Archive"
 msgid "No custom categories yet"
 msgstr "No custom categories yet"
 
+#: src/mods/GroupMenu.tsx
+msgid "Remove from {name}"
+msgstr "Remove from {name}"
+
+#: src/mods/describe.ts
+msgid "{name}'s {source} page lists {dep} as a requirement: {note}"
+msgstr "{name}'s {source} page lists {dep} as a requirement: {note}"
+
+#: src/mods/CleanupSection.tsx
+msgid "{count, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
+msgstr "{count, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
+
 #: src/mods/describe.ts
 msgid "{who} both edit {target}.{winner}"
 msgstr "{who} both edit {target}.{winner}"
 
-#. placeholder {0}: mod.name
-#. placeholder {0}: row.label
-#: src/mods/overlayActions.ts
-#: src/mods/storeEntries.ts
-msgid "Could not disable {0}"
-msgstr "Could not disable {0}"
+#: src/mods/ReplacedSection.tsx
+msgid "{count, plural, one {Replaced # old file Mortar did not install} other {Replaced # old files Mortar did not install}}"
+msgstr "{count, plural, one {Replaced # old file Mortar did not install} other {Replaced # old files Mortar did not install}}"
 
 #: src/mods/Toolbar.tsx
 msgid "Edit categories…"
@@ -922,21 +901,6 @@ msgstr "Edit categories…"
 #: src/mods/NexusDetails.tsx
 msgid "Installed file"
 msgstr "Installed file"
-
-#. placeholder {0}: d.name
-#: src/mods/describe.ts
-msgid "{0} has multiple Nexus files installed: {files}."
-msgstr "{0} has multiple Nexus files installed: {files}."
-
-#. placeholder {0}: listNames(e.keys, KEYS_SHOWN)
-#: src/mods/ConflictWhy.tsx
-msgid "Both set: {0}"
-msgstr "Both set: {0}"
-
-#. placeholder {0}: required.length - INLINE_REQUIRED
-#: src/mods/LoadOrderTab.tsx
-msgid " · {0} more required"
-msgstr " · {0} more required"
 
 #: src/mods/problemFixButtons.tsx
 msgid "Keep my changes"
@@ -962,24 +926,9 @@ msgstr "Paths too long"
 msgid "Check again"
 msgstr "Check again"
 
-#: src/mods/Sidebar.tsx
-msgid "More from the Nexus page"
-msgstr "More from the Nexus page"
-
-#. placeholder {0}: others.length - FILES_SHOWN
-#: src/mods/NexusDetails.tsx
-msgid "And {0} more on the Nexus page"
-msgstr "And {0} more on the Nexus page"
-
-#. placeholder {0}: active.label(i18n)
-#: src/mods/Toolbar.tsx
-msgid "Show: {0}"
-msgstr "Show: {0}"
-
-#. placeholder {0}: e.priority
-#: src/mods/ConflictWhy.tsx
-msgid "Priority {0}"
-msgstr "Priority {0}"
+#: src/mods/ModSections.tsx
+msgid "Reset the settings of {name}?"
+msgstr "Reset the settings of {name}?"
 
 #: src/mods/storeEntries.ts
 msgid "Updated tags"
@@ -1001,10 +950,6 @@ msgstr "Other mods require it"
 msgid "Open files page"
 msgstr "Open files page"
 
-#: src/mods/storeEntries.ts
-msgid "{left, plural, one {# mod has no page, or more than one} other {# mods have no page, or more than one}}"
-msgstr "{left, plural, one {# mod has no page, or more than one} other {# mods have no page, or more than one}}"
-
 #: src/mods/columnLabel.ts
 #: src/mods/Toolbar.tsx
 msgid "Install reason"
@@ -1013,6 +958,10 @@ msgstr "Install reason"
 #: src/mods/storeEntries.ts
 msgid "Could not stop ignoring {source} updates"
 msgstr "Could not stop ignoring {source} updates"
+
+#: src/mods/describe.ts
+msgid "{count, plural, one {# error} other {# errors}}"
+msgstr "{count, plural, one {# error} other {# errors}}"
 
 #: src/mods/problemText.ts
 msgid "Needs a newer loader"
@@ -1030,6 +979,10 @@ msgstr "config.json, changed from the mod's own"
 msgid "Disabled in this profile"
 msgstr "Disabled in this profile"
 
+#: src/mods/GameModsReviewDialog.tsx
+msgid "{count, plural, one {# skipped} other {# skipped}}"
+msgstr "{count, plural, one {# skipped} other {# skipped}}"
+
 #: src/mods/problemFixButtons.tsx
 msgid "Your edits to its files are replaced with the installed copy."
 msgstr "Your edits to its files are replaced with the installed copy."
@@ -1042,19 +995,17 @@ msgstr "Skip sharing"
 msgid "The game is using this profile. Stop the game to change mods."
 msgstr "The game is using this profile. Stop the game to change mods."
 
-#: src/mods/describe.ts
-msgid "; {mod} ships Windows-format symbols, which the game cannot read."
-msgstr "; {mod} ships Windows-format symbols, which the game cannot read."
+#: src/mods/describeLoadFailure.ts
+msgid "; {name} ships {os}-format symbols, which the game cannot read."
+msgstr "; {name} ships {os}-format symbols, which the game cannot read."
+
+#: src/mods/DuplicateDialog.tsx
+msgid "{count, plural, one {# copy of {name}} other {# copies of {name}}}"
+msgstr "{count, plural, one {# copy of {name}} other {# copies of {name}}}"
 
 #: src/mods/ExtraFolderMenu.tsx
 msgid "Add a saved group…"
 msgstr "Add a saved group…"
-
-#. placeholder {0}: plural(sets.length, { one: '# updated mod', other: '# updated mods' })
-#. placeholder {1}: plural(files, { one: '# file', other: '# files' })
-#: src/mods/OldFilesCallouts.tsx
-msgid "{0} no longer include {1} from their old versions. Keep them or delete them?"
-msgstr "{0} no longer include {1} from their old versions. Keep them or delete them?"
 
 #: src/mods/ModsTab.tsx
 msgid "Try a different search or filter."
@@ -1072,10 +1023,6 @@ msgstr "Update available"
 #: src/mods/columnLabel.ts
 msgid "Size"
 msgstr "Size"
-
-#: src/mods/describe.ts
-msgid "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
-msgstr "{dependentName}'s Nexus page lists {dep} as a requirement: {note}"
 
 #: src/mods/ModDisplayEdit.tsx
 msgid "Use the mod's own"
@@ -1126,20 +1073,28 @@ msgstr "Disable"
 msgid "Supplies tilesheets for other mods"
 msgstr "Supplies tilesheets for other mods"
 
-#. placeholder {0}: optionalFor.length.toLocaleString(i18n.locale)
-#: src/mods/Sidebar.tsx
-msgid "Optional for ({0})"
-msgstr "Optional for ({0})"
-
-#. placeholder {0}: listNames(also)
-#: src/mods/storeView.ts
-msgid "Also enabled {0}"
-msgstr "Also enabled {0}"
-
 #: src/mods/Sidebar.tsx
 #: src/mods/updateReview/Row.tsx
 msgid "Changelog"
 msgstr "Changelog"
+
+#: src/mods/LoadOrderTab.tsx
+msgid "{count, plural, one {Used by # mod} other {Used by # mods}}"
+msgstr "{count, plural, one {Used by # mod} other {Used by # mods}}"
+
+#: src/mods/columnLabel.ts
+#: src/mods/NexusDetails.tsx
+#: src/mods/Sidebar.tsx
+msgid "Latest on {source}"
+msgstr "Latest on {source}"
+
+#: src/mods/updateReview/KeptGroup.tsx
+msgid "Kept at this version ({count})"
+msgstr "Kept at this version ({count})"
+
+#: src/mods/updateReview/Row.tsx
+msgid "{source} does not allow downloads outside its own page: get it there."
+msgstr "{source} does not allow downloads outside its own page: get it there."
 
 #: src/mods/Toolbar.tsx
 msgid "Hidden"
@@ -1153,12 +1108,6 @@ msgstr "Change folders"
 msgid "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order."
 msgstr "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order."
 
-#. placeholder {0}: page.all
-#. placeholder {1}: page.shared
-#: src/mods/AssetMapDialog.tsx
-msgid "{0, plural, one {# asset} other {# assets}}, {1} changed by more than one mod"
-msgstr "{0, plural, one {# asset} other {# assets}}, {1} changed by more than one mod"
-
 #: src/mods/Toolbar.tsx
 msgid "Local"
 msgstr "Local"
@@ -1166,6 +1115,10 @@ msgstr "Local"
 #: src/mods/problemText.ts
 msgid "Loader failed to start"
 msgstr "Loader failed to start"
+
+#: src/mods/detail.ts
+msgid "Could not roll back {name}"
+msgstr "Could not roll back {name}"
 
 #: src/mods/problemFix/LoadFailureFix.tsx
 msgid "Find {dependency}"
@@ -1199,20 +1152,9 @@ msgstr "{name} needs game version {needs} or newer."
 msgid "Cancel"
 msgstr "Cancel"
 
-#. placeholder {0}: files.length
-#. placeholder {1}: set.label
-#. placeholder {2}: set.label
-#: src/mods/OldFilesCallouts.tsx
-msgid "{0, plural, one {The new version of {1} no longer includes # file. Keep it or delete it?} other {The new version of {2} no longer includes # files. Keep them or delete them?}}"
-msgstr "{0, plural, one {The new version of {1} no longer includes # file. Keep it or delete it?} other {The new version of {2} no longer includes # files. Keep them or delete them?}}"
-
 #: src/mods/storeEntries.ts
 msgid "Could not unpin the selected mods"
 msgstr "Could not unpin the selected mods"
-
-#: src/mods/updateReview/updateAll.ts
-msgid "{updated, plural, one {Updated # mod} other {Updated # mods}}"
-msgstr "{updated, plural, one {Updated # mod} other {Updated # mods}}"
 
 #: src/mods/describe.ts
 msgid "{name} is abandoned: {summary}"
@@ -1222,26 +1164,37 @@ msgstr "{name} is abandoned: {summary}"
 msgid "Only on {value} saves; none of yours is one."
 msgstr "Only on {value} saves; none of yours is one."
 
+#: src/mods/detail.ts
+msgid "{name} rolled back"
+msgstr "{name} rolled back"
+
 #: src/mods/SelectionBarActions.tsx
 msgid "Use update source"
 msgstr "Use update source"
-
-#. placeholder {0}: update.source
-#: src/mods/updateReview/RowCopy.tsx
-msgid "Reported by {0}"
-msgstr "Reported by {0}"
 
 #: src/mods/GameModsReviewDialog.tsx
 msgid "Done"
 msgstr "Done"
 
-#: src/mods/Sidebar.tsx
-msgid "Content pack for {hostName}"
-msgstr "Content pack for {hostName}"
+#: src/mods/describeLoadFailure.ts
+msgid "{app} patch"
+msgstr "{app} patch"
+
+#: src/mods/ConflictWhy.tsx
+msgid "When {when}"
+msgstr "When {when}"
 
 #: src/mods/ExtraFolderMenu.tsx
 msgid "More ways to add mods"
 msgstr "More ways to add mods"
+
+#: src/mods/ModMenu.tsx
+msgid "Remove {name} from other profiles"
+msgstr "Remove {name} from other profiles"
+
+#: src/mods/ExtraFolderDialog.tsx
+msgid "{count, plural, one {Add # mod} other {Add # mods}}"
+msgstr "{count, plural, one {Add # mod} other {Add # mods}}"
 
 #: src/mods/GroupMenu.tsx
 msgid "Enable all"
@@ -1255,11 +1208,6 @@ msgstr "Not needed by any enabled mod"
 #: src/mods/describe.ts
 msgid " {name} wins by load order."
 msgstr " {name} wins by load order."
-
-#. placeholder {0}: cleanup.length
-#: src/mods/CleanupSection.tsx
-msgid "{0, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
-msgstr "{0, plural, one {Remove all # mod from this profile?} other {Remove all # mods from this profile?}}"
 
 #: src/mods/ModCards.tsx
 #: src/mods/ModList.tsx
@@ -1276,10 +1224,9 @@ msgstr "Game setting off"
 msgid "Summary"
 msgstr "Summary"
 
-#. placeholder {0}: listNames(extra)
-#: src/mods/parts.tsx
-msgid "Mods from the same download are removed together: {0}. You can undo this."
-msgstr "Mods from the same download are removed together: {0}. You can undo this."
+#: src/mods/GameModsReviewDialog.tsx
+msgid "{count, plural, one {# profile mod has} other {# profile mods have}} no copy in the game folder."
+msgstr "{count, plural, one {# profile mod has} other {# profile mods have}} no copy in the game folder."
 
 #: src/mods/GameModsReviewDialog.tsx
 msgid "Copy into profile"
@@ -1300,11 +1247,6 @@ msgstr "Review updates"
 #: src/mods/useListHeading.ts
 msgid "Disabled"
 msgstr "Disabled"
-
-#. placeholder {0}: acting.length
-#: src/mods/ModMenu.tsx
-msgid "{0, plural, one {Remove # mod} other {Remove # mods}}"
-msgstr "{0, plural, one {Remove # mod} other {Remove # mods}}"
 
 #: src/mods/storeEntries.ts
 msgid "Could not enable the selected mods"
@@ -1363,6 +1305,10 @@ msgstr "Only assets more than one mod changes"
 msgid "Delete group {name}?"
 msgstr "Delete group {name}?"
 
+#: src/mods/describe.ts
+msgid "{name} has a {field} setting for {installed}; it is {current}, so those patches are off."
+msgstr "{name} has a {field} setting for {installed}; it is {current}, so those patches are off."
+
 #: src/mods/problemFix/LoadFailureFix.tsx
 #: src/mods/runErrorFixButtons.tsx
 #: src/mods/UpdateBanner.tsx
@@ -1371,14 +1317,21 @@ msgstr "Delete group {name}?"
 msgid "Update"
 msgstr "Update"
 
+#: src/mods/describe.ts
+msgid "{name} lists itself as a dependency, so {loader} stops before loading any plugin."
+msgstr "{name} lists itself as a dependency, so {loader} stops before loading any plugin."
+
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "No mod owns this file. It is removed from this profile, and the game makes a new one if it needs it."
 msgstr "No mod owns this file. It is removed from this profile, and the game makes a new one if it needs it."
 
-#. placeholder {0}: unreadable.length
-#: src/mods/GameModsReviewDialog.tsx
-msgid "Could not read ({0})"
-msgstr "Could not read ({0})"
+#: src/mods/OldFilesCallouts.tsx
+msgid "{count, plural, one {Keep it or delete it?} other {Keep them or delete them?}}"
+msgstr "{count, plural, one {Keep it or delete it?} other {Keep them or delete them?}}"
+
+#: src/mods/OldFilesCallouts.tsx
+msgid "{count, plural, one {# file} other {# files}}"
+msgstr "{count, plural, one {# file} other {# files}}"
 
 #: src/mods/useListHeading.ts
 msgid "Unknown download"
@@ -1403,15 +1356,6 @@ msgstr "Browse mods"
 msgid "Set category"
 msgstr "Set category"
 
-#: src/mods/describe.ts
-msgid "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
-msgstr "{dependentName} needs {dep} {minimumVersion} or newer, and this profile has {installedVersion}."
-
-#. placeholder {0}: missing.length
-#: src/mods/GameModsReviewDialog.tsx
-msgid "Not in this profile ({0})"
-msgstr "Not in this profile ({0})"
-
 #: src/mods/useListHeading.ts
 msgid "Ungrouped"
 msgstr "Ungrouped"
@@ -1432,22 +1376,43 @@ msgstr "{list} do the same job: both change {detail}"
 msgid "This mod is not in the profile."
 msgstr "This mod is not in the profile."
 
+#: src/mods/describeLoadFailure.ts
+msgid "{name}'s {kind} {method} on {target} threw it"
+msgstr "{name}'s {kind} {method} on {target} threw it"
+
+#: src/mods/ModMenu.tsx
+msgid "{count, plural, one {Remove # mod} other {Remove # mods}}"
+msgstr "{count, plural, one {Remove # mod} other {Remove # mods}}"
+
 #: src/mods/updateReview/ReviewTitle.tsx
 msgid "Loading changes…"
 msgstr "Loading changes…"
+
+#: src/mods/describe.ts
+msgid "{path} depend on each other in a loop, so {loader} stops before loading any plugin."
+msgstr "{path} depend on each other in a loop, so {loader} stops before loading any plugin."
+
+#: src/mods/parts.tsx
+msgid "{count, plural, one {Remove all # mod} other {Remove all # mods}}"
+msgstr "{count, plural, one {Remove all # mod} other {Remove all # mods}}"
 
 #: src/mods/NexusAccountActions.tsx
 msgid "You chose not to endorse this mod."
 msgstr "You chose not to endorse this mod."
 
-#. placeholder {0}: o.name
-#: src/mods/updateReview/Row.tsx
-msgid "Also updates {0} (same download)"
-msgstr "Also updates {0} (same download)"
+#: src/mods/updateReview/updateAll.ts
+msgid "{failed} failed"
+msgstr "{failed} failed"
+
+#: src/mods/describe.ts
+msgid "{name} lists itself as a dependency, so {loader} skips it."
+msgstr "{name} lists itself as a dependency, so {loader} skips it."
 
 #: src/mods/NexusDetails.tsx
-msgid "Changelog on Nexus"
-msgstr "Changelog on Nexus"
+#: src/mods/parts.tsx
+#: src/mods/Sidebar.tsx
+msgid "Removed from {source} · {when}"
+msgstr "Removed from {source} · {when}"
 
 #: src/mods/problemWhy.ts
 msgid "The author marked this mod as deprecated. It will not get fixes and may break with the next game update."
@@ -1457,12 +1422,7 @@ msgstr "The author marked this mod as deprecated. It will not get fixes and may 
 msgid "Clear selection"
 msgstr "Clear selection"
 
-#. placeholder {0}: props.list.length
-#: src/mods/updateReview/NeedsChoice.tsx
-msgid "Needs your choice ({0})"
-msgstr "Needs your choice ({0})"
-
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid ", at {file} line {line}."
 msgstr ", at {file} line {line}."
 
@@ -1475,6 +1435,10 @@ msgstr "Rename…"
 msgid "Checking profiles…"
 msgstr "Checking profiles…"
 
+#: src/mods/storeEntries.ts
+msgid "{count, plural, one {# mod has} other {# mods have}} no page, or more than one"
+msgstr "{count, plural, one {# mod has} other {# mods have}} no page, or more than one"
+
 #: src/mods/ReplacedSection.tsx
 msgid "Mortar replaced these with the mods' own files. Deleting them cannot be undone."
 msgstr "Mortar replaced these with the mods' own files. Deleting them cannot be undone."
@@ -1483,19 +1447,25 @@ msgstr "Mortar replaced these with the mods' own files. Deleting them cannot be 
 msgid "Disable all"
 msgstr "Disable all"
 
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid "{plugin} failed to load."
 msgstr "{plugin} failed to load."
+
+#: src/mods/CategoryEditor.tsx
+#: src/mods/ConfigPresets.tsx
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "Delete {name}?"
+msgstr "Delete {name}?"
+
+#: src/mods/overlayActions.ts
+#: src/mods/storeEntries.ts
+msgid "Could not disable {name}"
+msgstr "Could not disable {name}"
 
 #: src/mods/ModMenu.tsx
 #: src/mods/typedConfig/EditConfigButton.tsx
 msgid "Edit config"
 msgstr "Edit config"
-
-#. placeholder {0}: copies.length
-#: src/mods/describe.ts
-msgid "{names} all {0} ship the plugin {guid}, and BepInEx loads only one."
-msgstr "{names} all {0} ship the plugin {guid}, and BepInEx loads only one."
 
 #: src/mods/NewFoldersCallout.tsx
 msgid "Do not ask about these"
@@ -1511,36 +1481,21 @@ msgstr "Downloads"
 msgid "Beta / prerelease"
 msgstr "Beta / prerelease"
 
-#: src/mods/describe.ts
-msgid "; {mod} ships no debug symbols, so its source line is unknown."
-msgstr "; {mod} ships no debug symbols, so its source line is unknown."
-
-#. placeholder {0}: chosen.length
-#: src/mods/ExtraFolderDialog.tsx
-msgid "{0, plural, one {Add # mod} other {Add # mods}}"
-msgstr "{0, plural, one {Add # mod} other {Add # mods}}"
+#: src/mods/updateReview/EverywhereDialog.tsx
+msgid "{count, plural, one {Updated in # profile} other {Updated in # profiles}}"
+msgstr "{count, plural, one {Updated in # profile} other {Updated in # profiles}}"
 
 #: src/mods/AssetMapDialog.tsx
 msgid "Show more"
 msgstr "Show more"
 
-#. placeholder {0}: removing.length
-#: src/mods/parts.tsx
-msgid "{0, plural, one {Remove # mod from this profile?} other {Remove # mods from this profile?}}"
-msgstr "{0, plural, one {Remove # mod from this profile?} other {Remove # mods from this profile?}}"
-
 #: src/mods/describe.ts
-msgid "{dependentName} needs {dep}, which this profile lacks."
-msgstr "{dependentName} needs {dep}, which this profile lacks."
+msgid " {app} applies neither."
+msgstr " {app} applies neither."
 
 #: src/mods/problemWhy.ts
 msgid "Two enabled packages ship a file at the same path. The one later in the package order replaces the other's copy, so only its version is in the game."
 msgstr "Two enabled packages ship a file at the same path. The one later in the package order replaces the other's copy, so only its version is in the game."
-
-#. placeholder {0}: patchedBy.length
-#: src/mods/describe.ts
-msgid "{0, plural, one {{mods} also patches code on that path.} other {{mods} also patch code on that path.}}"
-msgstr "{0, plural, one {{mods} also patches code on that path.} other {{mods} also patch code on that path.}}"
 
 #: src/mods/ModMenu.tsx
 msgid "Reinstall with options…"
@@ -1549,10 +1504,6 @@ msgstr "Reinstall with options…"
 #: src/mods/OtherProfilesDialog.tsx
 msgid "Could not read other profiles"
 msgstr "Could not read other profiles"
-
-#: src/mods/ProblemsTab.tsx
-msgid "{count, plural, one {Checking # mod for conflicts, missing requirements and compatibility…} other {Checking # mods for conflicts, missing requirements and compatibility…}}"
-msgstr "{count, plural, one {Checking # mod for conflicts, missing requirements and compatibility…} other {Checking # mods for conflicts, missing requirements and compatibility…}}"
 
 #: src/mods/NexusDetails.tsx
 msgid "Created · updated"
@@ -1571,26 +1522,9 @@ msgstr "Needs"
 msgid "Files set aside"
 msgstr "Files set aside"
 
-#. placeholder {0}: mod.name
-#: src/mods/ReportToAuthorButton.tsx
-msgid "Error in {0}"
-msgstr "Error in {0}"
-
 #: src/mods/Toolbar.tsx
 msgid "Has problems"
 msgstr "Has problems"
-
-#. placeholder {0}: mod.name
-#. placeholder {0}: overlay.label
-#: src/mods/OverlayRow.tsx
-#: src/mods/parts.tsx
-msgid "Enable {0}"
-msgstr "Enable {0}"
-
-#. placeholder {0}: picks.length
-#: src/mods/LegacyReasonsCallout.tsx
-msgid "{0, plural, one {Mortar identified # mod as a library or supporting mod} other {Mortar identified # mods as libraries or supporting mods}}"
-msgstr "{0, plural, one {Mortar identified # mod as a library or supporting mod} other {Mortar identified # mods as libraries or supporting mods}}"
 
 #: src/mods/ChangeVersionDialog.tsx
 msgid "Reading the versions…"
@@ -1599,6 +1533,10 @@ msgstr "Reading the versions…"
 #: src/mods/OptionalFiles.tsx
 msgid "Choose one"
 msgstr "Choose one"
+
+#: src/mods/LoadOrderTab.tsx
+msgid "Required: {name}"
+msgstr "Required: {name}"
 
 #: src/mods/problemText.ts
 msgid "Duplicate plugins"
@@ -1620,6 +1558,10 @@ msgstr "Pin this version"
 msgid "The issue holds the start of it. Paste the whole report over it."
 msgstr "The issue holds the start of it. Paste the whole report over it."
 
+#: src/mods/ConflictWhy.tsx
+msgid "{action} {target}"
+msgstr "{action} {target}"
+
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Uploading…"
 msgstr "Uploading…"
@@ -1628,12 +1570,14 @@ msgstr "Uploading…"
 msgid "Redundant"
 msgstr "Redundant"
 
-#. placeholder {0}: paths.length
-#. placeholder {1}: keyName(winner)
-#. placeholder {2}: keyName(winner)
+#: src/mods/lastRun.ts
+#: src/mods/parts.tsx
+msgid "{count, plural, one {# warning} other {# warnings}}"
+msgstr "{count, plural, one {# warning} other {# warnings}}"
+
 #: src/mods/describe.ts
-msgid "{0, plural, one {{1} wins # file over {losers}.} other {{2} wins # files over {losers}.}}"
-msgstr "{0, plural, one {{1} wins # file over {losers}.} other {{2} wins # files over {losers}.}}"
+msgid "{count, plural, one {{winner} wins # file over {losers}.} other {{winner} wins # files over {losers}.}}"
+msgstr "{count, plural, one {{winner} wins # file over {losers}.} other {{winner} wins # files over {losers}.}}"
 
 #: src/mods/parts.tsx
 msgid "Pinned at this version"
@@ -1643,34 +1587,37 @@ msgstr "Pinned at this version"
 msgid "Move into profile"
 msgstr "Move into profile"
 
+#: src/mods/describe.ts
+msgid "{names} all {count} ship the plugin {guid}, and {loader} loads only one."
+msgstr "{names} all {count} ship the plugin {guid}, and {loader} loads only one."
+
+#: src/mods/OtherProfilesDialog.tsx
+msgid "{count, plural, one {Remove from # profile} other {Remove from # profiles}}"
+msgstr "{count, plural, one {Remove from # profile} other {Remove from # profiles}}"
+
 #: src/mods/Toolbar.tsx
 msgid "All mods"
 msgstr "All mods"
+
+#: src/mods/describeLoadFailure.ts
+msgid "{count, plural, one {{mods} also patches code on that path.} other {{mods} also patch code on that path.}}"
+msgstr "{count, plural, one {{mods} also patches code on that path.} other {{mods} also patch code on that path.}}"
+
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "Reset {key} to its default"
+msgstr "Reset {key} to its default"
 
 #: src/mods/storeGroups.ts
 msgid "Could not make the group"
 msgstr "Could not make the group"
 
-#. placeholder {0}: mod.name
-#. placeholder {0}: row.label
-#: src/mods/overlayActions.ts
-#: src/mods/storeEntries.ts
-msgid "Could not remove {0}"
-msgstr "Could not remove {0}"
+#: src/mods/EndorsePrompt.tsx
+msgid "Enjoying these mods? Endorse them on {source}"
+msgstr "Enjoying these mods? Endorse them on {source}"
 
 #: src/mods/NewFoldersCallout.tsx
 msgid "Could not dismiss those folders"
 msgstr "Could not dismiss those folders"
-
-#. placeholder {0}: mods.length
-#: src/mods/SelectionBarDialogs.tsx
-msgid "{0, plural, one {Tag # mod} other {Tag # mods}}"
-msgstr "{0, plural, one {Tag # mod} other {Tag # mods}}"
-
-#. placeholder {0}: listNames(removed)
-#: src/mods/updateReview/Row.tsx
-msgid "No longer needs {0}"
-msgstr "No longer needs {0}"
 
 #: src/mods/ModsGroupHeader.tsx
 msgid "Could not look these mods up"
@@ -1684,24 +1631,42 @@ msgstr "Import a shared profile…"
 msgid "Replaced"
 msgstr "Replaced"
 
-#. placeholder {0}: first.name
-#: src/mods/describe.ts
-msgid "{0} lists itself as a dependency, so BepInEx stops before loading any plugin."
-msgstr "{0} lists itself as a dependency, so BepInEx stops before loading any plugin."
+#: src/mods/SlowStartupSection.tsx
+msgid "{app} packs"
+msgstr "{app} packs"
 
-#. placeholder {0}: extras.length
-#: src/mods/ExtraFilesChip.tsx
-msgid "{0, plural, one {+# file} other {+# files}}"
-msgstr "{0, plural, one {+# file} other {+# files}}"
+#: src/mods/describe.ts
+msgid "These mods may add the same item: {info}."
+msgstr "These mods may add the same item: {info}."
+
+#: src/mods/OldFilesCallouts.tsx
+msgid "{mods} no longer include {oldFiles} from their old versions. Keep them or delete them?"
+msgstr "{mods} no longer include {oldFiles} from their old versions. Keep them or delete them?"
+
+#: src/mods/HiddenInside.tsx
+msgid "Unhide {name}?"
+msgstr "Unhide {name}?"
+
+#: src/mods/describe.ts
+msgid "{name}'s {source} page lists {dep} as a requirement."
+msgstr "{name}'s {source} page lists {dep} as a requirement."
 
 #: src/mods/ModUpdateControls.tsx
 #: src/mods/OptionalFiles.tsx
 msgid "Optional files"
 msgstr "Optional files"
 
+#: src/mods/SlowStartupSection.tsx
+msgid "{name} adds {time} to startup (through {framework})"
+msgstr "{name} adds {time} to startup (through {framework})"
+
 #: src/mods/LoadOrderTab.tsx
 msgid "Could not read load order"
 msgstr "Could not read load order"
+
+#: src/mods/GameModsReviewDialog.tsx
+msgid "{count, plural, one {# failed} other {# failed}}"
+msgstr "{count, plural, one {# failed} other {# failed}}"
 
 #: src/mods/parts.tsx
 msgid "Problem: {text}"
@@ -1729,27 +1694,26 @@ msgstr "Remove {name}"
 msgid "Hidden inside this mod"
 msgstr "Hidden inside this mod"
 
+#: src/mods/updateReview/UpdateActions.tsx
+msgid "Switch {name} to {source}?"
+msgstr "Switch {name} to {source}?"
+
 #: src/mods/updateReview/undoAll.ts
 msgid "Downloaded versions stay in the store for re-use."
 msgstr "Downloaded versions stay in the store for re-use."
+
+#: src/mods/describe.ts
+msgid "{path} wait for each other in a loop, so {loader} skips at least one of them."
+msgstr "{path} wait for each other in a loop, so {loader} skips at least one of them."
 
 #: src/mods/problemText.ts
 msgid "Older copy skipped"
 msgstr "Older copy skipped"
 
-#: src/mods/modActions.ts
-msgid "Open on {site}"
-msgstr "Open on {site}"
-
 #: src/mods/enableRequirementsApply.ts
 #: src/mods/EnableRequirementsDialog.tsx
 msgid "Could not enable required mods"
 msgstr "Could not enable required mods"
-
-#. placeholder {0}: chosen.length
-#: src/mods/LegacyReview.tsx
-msgid "{0, plural, one {Mark # implicit} other {Mark # implicit}}"
-msgstr "{0, plural, one {Mark # implicit} other {Mark # implicit}}"
 
 #: src/mods/SelectionBarActions.tsx
 msgid "Tag…"
@@ -1767,14 +1731,13 @@ msgstr "Add archive…"
 msgid "Add from the extra mods folder"
 msgstr "Add from the extra mods folder"
 
-#. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts
-msgid "Could not open config.json of {0}"
-msgstr "Could not open config.json of {0}"
-
 #: src/mods/ModSections.tsx
 msgid "config.json, made by the mod"
 msgstr "config.json, made by the mod"
+
+#: src/mods/ProblemsTab.tsx
+msgid "Checking {count, plural, one {# mod} other {# mods}} for conflicts, missing requirements and compatibility…"
+msgstr "Checking {count, plural, one {# mod} other {# mods}} for conflicts, missing requirements and compatibility…"
 
 #: src/mods/ProblemsTab.tsx
 msgid "Slow startup"
@@ -1793,47 +1756,25 @@ msgstr "Pin {name}"
 msgid "Open page"
 msgstr "Open page"
 
-#. placeholder {0}: result.skipped
-#: src/mods/GameModsReviewDialog.tsx
-msgid "{0, plural, one {# skipped} other {# skipped}}"
-msgstr "{0, plural, one {# skipped} other {# skipped}}"
-
-#: src/mods/problemFixButtons.tsx
-msgid "Moved {folder} to Mortar's trash"
-msgstr "Moved {folder} to Mortar's trash"
-
 #: src/mods/storeEntries.ts
 msgid "Could not remove the selected mods"
 msgstr "Could not remove the selected mods"
 
-#. placeholder {0}: mod.modName
-#: src/mods/AssetMapDialog.tsx
-msgid "Load {0} after the other mods here, so its edit applies last"
-msgstr "Load {0} after the other mods here, so its edit applies last"
-
-#: src/mods/updateReview/Row.tsx
-msgid "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
-msgstr "{optional, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
+#: src/mods/typedConfig/ConfigTab.tsx
+msgid "{count, plural, one {# more setting} other {# more settings}}; type more to narrow the search."
+msgstr "{count, plural, one {# more setting} other {# more settings}}; type more to narrow the search."
 
 #: src/mods/ProblemsTab.tsx
 msgid "Disables mods in halves and relaunches until the crash stops"
 msgstr "Disables mods in halves and relaunches until the crash stops"
 
-#. placeholder {0}: first.mods[0].name
-#. placeholder {0}: row.label
-#: src/mods/overlayActions.ts
-#: src/mods/storeEntries.ts
-msgid "Removed {0}"
-msgstr "Removed {0}"
-
-#. placeholder {0}: folders.length
-#: src/mods/NewFoldersCallout.tsx
-msgid "{0, plural, one {Stopped asking about # folder} other {Stopped asking about # folders}}"
-msgstr "{0, plural, one {Stopped asking about # folder} other {Stopped asking about # folders}}"
-
 #: src/mods/ChangeVersionDialog.tsx
 msgid "Back"
 msgstr "Back"
+
+#: src/mods/parts.tsx
+msgid "{count, plural, one {Remove # mod from this profile?} other {Remove # mods from this profile?}}"
+msgstr "{count, plural, one {Remove # mod from this profile?} other {Remove # mods from this profile?}}"
 
 #: src/mods/Sidebar.tsx
 msgid "Selected mod"
@@ -1847,9 +1788,17 @@ msgstr "Load order copied"
 msgid "Open in editor"
 msgstr "Open in editor"
 
+#: src/mods/detail.ts
+msgid "Could not reset the settings of {name}"
+msgstr "Could not reset the settings of {name}"
+
 #: src/mods/ModSections.tsx
 msgid "Change version…"
 msgstr "Change version…"
+
+#: src/mods/storeEntries.ts
+msgid "Could not set the update channel for {name}"
+msgstr "Could not set the update channel for {name}"
 
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Discard the change to {name}"
@@ -1859,18 +1808,17 @@ msgstr "Discard the change to {name}"
 msgid "Unknown author"
 msgstr "Unknown author"
 
-#: src/mods/describe.ts
-msgid "{dependentName}'s Nexus page says it needs {dep} from outside Nexus: {note}"
-msgstr "{dependentName}'s Nexus page says it needs {dep} from outside Nexus: {note}"
-
-#. placeholder {0}: listNames(needed)
-#: src/mods/DuplicateDialog.tsx
-msgid "{0} needs this version or newer."
-msgstr "{0} needs this version or newer."
-
 #: src/mods/problemText.ts
 msgid "Incompatible version"
 msgstr "Incompatible version"
+
+#: src/mods/typedConfig/ConfigTab.tsx
+msgid "{count} waiting"
+msgstr "{count} waiting"
+
+#: src/mods/ConflictWhy.tsx
+msgid "Both set: {names}"
+msgstr "Both set: {names}"
 
 #: src/mods/ChangelogDialog.tsx
 #: src/mods/NewSince.tsx
@@ -1881,16 +1829,6 @@ msgstr "New"
 msgid "Load all changes"
 msgstr "Load all changes"
 
-#. placeholder {0}: choice.version
-#: src/mods/ChangeVersionDialog.tsx
-msgid "{name} is pinned at {installed}. Install {0} anyway? The pin stays on the new version."
-msgstr "{name} is pinned at {installed}. Install {0} anyway? The pin stays on the new version."
-
-#. placeholder {0}: needed.length
-#: src/mods/AddToGroupDialog.tsx
-msgid "{0, plural, one {Also add the # mod they need} other {Also add the # mods they need}}"
-msgstr "{0, plural, one {Also add the # mod they need} other {Also add the # mods they need}}"
-
 #: src/mods/problemWhy.ts
 msgid "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
 msgstr "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
@@ -1898,15 +1836,6 @@ msgstr "The loader's log shows this plugin did not start, so its features are mi
 #: src/mods/ModSections.tsx
 msgid "Versions"
 msgstr "Versions"
-
-#. placeholder {0}: mod.name
-#: src/mods/ModSections.tsx
-msgid "Roll back {0}?"
-msgstr "Roll back {0}?"
-
-#: src/mods/AuthorDialog.tsx
-msgid "Open author page on Nexus"
-msgstr "Open author page on Nexus"
 
 #: src/mods/NexusAccountActions.tsx
 msgid "Track"
@@ -1924,10 +1853,9 @@ msgstr "Dismissed"
 msgid "Also add to…"
 msgstr "Also add to…"
 
-#. placeholder {0}: d.name
-#: src/mods/describe.ts
-msgid "{0} is installed twice, and only one of them loads."
-msgstr "{0} is installed twice, and only one of them loads."
+#: src/mods/ModDisplayEdit.tsx
+msgid "Edit {name}"
+msgstr "Edit {name}"
 
 #: src/mods/SelectionBarActions.tsx
 msgid "More actions"
@@ -1941,14 +1869,13 @@ msgstr "{who} all load {target}.{winner}"
 msgid "Could not check the mods for problems"
 msgstr "Could not check the mods for problems"
 
-#. placeholder {0}: ids.length
-#: src/mods/SelectionBar.tsx
-msgid "{0, plural, one {# mod selected} other {# mods selected}}"
-msgstr "{0, plural, one {# mod selected} other {# mods selected}}"
-
 #: src/mods/ChangelogDialog.tsx
 msgid "Changelog: {name}"
 msgstr "Changelog: {name}"
+
+#: src/mods/OverlayRow.tsx
+msgid "{count, plural, one {# optional file} other {# optional files}}"
+msgstr "{count, plural, one {# optional file} other {# optional files}}"
 
 #: src/mods/ExtraFolderMenu.tsx
 msgid "Add from"
@@ -1957,10 +1884,6 @@ msgstr "Add from"
 #: src/mods/AddToGroupDialog.tsx
 msgid "Add to group…"
 msgstr "Add to group…"
-
-#: src/mods/problemText.ts
-msgid "Unity exception"
-msgstr "Unity exception"
 
 #: src/mods/problemFixButtons.tsx
 #: src/mods/typedConfig/ConfigPane.tsx
@@ -1972,12 +1895,12 @@ msgid " You chose which mod wins each clash."
 msgstr " You chose which mod wins each clash."
 
 #: src/mods/describe.ts
-msgid "{names} both ship the plugin {guid}, and BepInEx loads only one."
-msgstr "{names} both ship the plugin {guid}, and BepInEx loads only one."
+msgid "{name}'s {field} is {current}: {description}"
+msgstr "{name}'s {field} is {current}: {description}"
 
 #: src/mods/describe.ts
-msgid "{name} has a file path {count} characters long, more than most Windows games can open."
-msgstr "{name} has a file path {count} characters long, more than most Windows games can open."
+msgid "{a} and {b} each depend on the other, so {loader} stops before loading any plugin."
+msgstr "{a} and {b} each depend on the other, so {loader} stops before loading any plugin."
 
 #: src/mods/ModListVirtual.tsx
 msgid "Mods"
@@ -2000,6 +1923,11 @@ msgstr "Every change waiting for the next start is discarded."
 msgid "requirements"
 msgstr "requirements"
 
+#: src/mods/ModMenu.tsx
+#: src/mods/updateReview/UpdateActions.tsx
+msgid "More actions for {name}"
+msgstr "More actions for {name}"
+
 #: src/mods/pinReasonDialog.tsx
 msgid "Reason (optional)"
 msgstr "Reason (optional)"
@@ -2011,6 +1939,10 @@ msgstr "Undo all also reverts later changes"
 #: src/mods/ModSections.tsx
 msgid "config.json is deleted, and the mod writes a fresh one with its own defaults the next time the game runs."
 msgstr "config.json is deleted, and the mod writes a fresh one with its own defaults the next time the game runs."
+
+#: src/mods/TrackedNotInProfile.tsx
+msgid "{count, plural, one {# tracked mod on {source} is not in this profile} other {# tracked mods on {source} are not in this profile}}"
+msgstr "{count, plural, one {# tracked mod on {source} is not in this profile} other {# tracked mods on {source} are not in this profile}}"
 
 #: src/mods/ExtraFolderMenu.tsx
 msgid "The extra mods folders…"
@@ -2036,11 +1968,6 @@ msgstr "Files left by updates"
 msgid "New group"
 msgstr "New group"
 
-#. placeholder {0}: unhiding?.name ?? ''
-#: src/mods/HiddenInside.tsx
-msgid "Unhide {0}?"
-msgstr "Unhide {0}?"
-
 #: src/mods/describe.ts
 msgid "{who} all edit {target}.{winner}"
 msgstr "{who} all edit {target}.{winner}"
@@ -2049,22 +1976,30 @@ msgstr "{who} all edit {target}.{winner}"
 msgid "Notes and tags"
 msgstr "Notes and tags"
 
-#. placeholder {0}: others.length
-#: src/mods/NexusDetails.tsx
-msgid "Current files on Nexus ({0})"
-msgstr "Current files on Nexus ({0})"
-
 #: src/mods/updateReview/RowCopy.tsx
 msgid "This update's notes mention breaking changes or new requirements"
 msgstr "This update's notes mention breaking changes or new requirements"
+
+#: src/mods/problemText.ts
+msgid "{app} exception"
+msgstr "{app} exception"
 
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Config of {name}"
 msgstr "Config of {name}"
 
+#: src/mods/GameModsReviewDialog.tsx
+msgid "{count, plural, one {Moved # mod} other {Moved # mods}}"
+msgstr "{count, plural, one {Moved # mod} other {Moved # mods}}"
+
 #: src/mods/Toolbar.tsx
 msgid "Nested"
 msgstr "Nested"
+
+#: src/mods/overlayActions.ts
+#: src/mods/storeEntries.ts
+msgid "Could not remove {name}"
+msgstr "Could not remove {name}"
 
 #: src/mods/columnLabel.ts
 #: src/mods/NexusDetails.tsx
@@ -2078,9 +2013,21 @@ msgstr "Category"
 msgid "Include prereleases"
 msgstr "Include prereleases"
 
-#: src/mods/SetNexusPageDialog.tsx
-msgid "Paste the address of the mod's page on Nexus Mods. To name the exact file, open that file's Manual Download on the page's Files tab and paste that address instead."
-msgstr "Paste the address of the mod's page on Nexus Mods. To name the exact file, open that file's Manual Download on the page's Files tab and paste that address instead."
+#: src/mods/ReportToAuthorButton.tsx
+msgid "Error in {name}"
+msgstr "Error in {name}"
+
+#: src/mods/NexusDetails.tsx
+#: src/mods/parts.tsx
+#: src/mods/Sidebar.tsx
+msgid "Hidden on {source} · {when}"
+msgstr "Hidden on {source} · {when}"
+
+#: src/mods/NexusDetails.tsx
+#: src/mods/parts.tsx
+#: src/mods/Sidebar.tsx
+msgid "Hidden on {source}"
+msgstr "Hidden on {source}"
 
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Could not save: {error}"
@@ -2103,6 +2050,10 @@ msgstr " The winner is unclear."
 msgid "{count, plural, one {# mod update available} other {# mod updates available}}"
 msgstr "{count, plural, one {# mod update available} other {# mod updates available}}"
 
+#: src/mods/typedConfig/StringWidgets.tsx
+msgid "Add {name} item"
+msgstr "Add {name} item"
+
 #: src/mods/ProblemsTab.tsx
 msgid "Find the mod that crashes the game…"
 msgstr "Find the mod that crashes the game…"
@@ -2119,9 +2070,21 @@ msgstr "Note"
 msgid "Add a tag"
 msgstr "Add a tag"
 
-#: src/mods/problemWhy.ts
-msgid "Windows programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Turning on long paths in Windows does not change that for such a game."
-msgstr "Windows programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Turning on long paths in Windows does not change that for such a game."
+#: src/mods/describe.ts
+msgid "{name} was updated since this run and logged {errors}."
+msgstr "{name} was updated since this run and logged {errors}."
+
+#: src/mods/ConflictWhy.tsx
+msgid "Priority {priority}"
+msgstr "Priority {priority}"
+
+#: src/mods/NexusDetails.tsx
+msgid "And {count} more on the {source} page"
+msgstr "And {count} more on the {source} page"
+
+#: src/mods/LoadOrderTab.tsx
+msgid "Optional: {name}"
+msgstr "Optional: {name}"
 
 #: src/mods/Toolbar.tsx
 #: src/mods/updateReview/EverywhereDialog.tsx
@@ -2132,22 +2095,13 @@ msgstr "Pinned"
 msgid "Could not dismiss the overlap"
 msgstr "Could not dismiss the overlap"
 
-#. placeholder {0}: row.name
-#. placeholder {1}: reasonText(row.reason)
-#: src/mods/updateReview/EverywhereDialog.tsx
-msgid "{0}: {1}"
-msgstr "{0}: {1}"
+#: src/mods/AddToGroupDialog.tsx
+msgid "{count, plural, one {Also add the # mod they need} other {Also add the # mods they need}}"
+msgstr "{count, plural, one {Also add the # mod they need} other {Also add the # mods they need}}"
 
-#. placeholder {0}: formatCount(page.downloads, i18n.locale)
-#. placeholder {1}: formatCount(page.uniqueDownloads, i18n.locale)
-#: src/mods/NexusDetails.tsx
-msgid "{0} · {1} unique"
-msgstr "{0} · {1} unique"
-
-#. placeholder {0}: entry.error ?? ''
-#: src/mods/NexusDetails.tsx
-msgid "Could not read the Nexus page: {0}"
-msgstr "Could not read the Nexus page: {0}"
+#: src/mods/ChangeVersionDialog.tsx
+msgid "This profile is frozen, so {name} is held at {installed}. Install {version} anyway? The mod stays held at the new version."
+msgstr "This profile is frozen, so {name} is held at {installed}. Install {version} anyway? The mod stays held at the new version."
 
 #: src/mods/updateReview/undoAll.ts
 msgid "Restored the profile from before Update all"
@@ -2162,9 +2116,17 @@ msgstr "Show skipped update"
 msgid "No versions are listed."
 msgstr "No versions are listed."
 
+#: src/mods/describe.ts
+msgid "{path} was added to this profile's mods folder by hand, not installed by Mortar."
+msgstr "{path} was added to this profile's mods folder by hand, not installed by Mortar."
+
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Reset to default"
 msgstr "Reset to default"
+
+#: src/mods/typedConfig/Widgets.tsx
+msgid "New {name} item"
+msgstr "New {name} item"
 
 #: src/mods/CompatChip.tsx
 #: src/mods/updateReview/Row.tsx
@@ -2187,26 +2149,37 @@ msgstr "Reset to default columns"
 msgid "{count, plural, one {Marked # mod explicit} other {Marked # mods explicit}}"
 msgstr "{count, plural, one {Marked # mod explicit} other {Marked # mods explicit}}"
 
+#: src/mods/DuplicateDialog.tsx
+msgid "{profile} has {name} more than once. {loader} loads only one, so pick which to keep. The others are disabled, not removed."
+msgstr "{profile} has {name} more than once. {loader} loads only one, so pick which to keep. The others are disabled, not removed."
+
 #: src/mods/Toolbar.tsx
 msgid "Group"
 msgstr "Group"
 
-#. placeholder {0}: mod.name
-#: src/mods/ModMenu.tsx
-msgid "Remove {0} from other profiles"
-msgstr "Remove {0} from other profiles"
+#: src/mods/columnLabel.ts
+msgid "Updated on {source}"
+msgstr "Updated on {source}"
 
 #: src/mods/disableUnneeded.ts
 msgid "Disable them too"
 msgstr "Disable them too"
 
-#: src/mods/describe.ts
-msgid "{dependentName} needs {dep}, which is disabled."
-msgstr "{dependentName} needs {dep}, which is disabled."
+#: src/mods/problemWhy.ts
+msgid "{os} programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Turning on long paths in {os} does not change that for such a game."
+msgstr "{os} programs cannot open a file whose full path is 260 characters or more unless they are built for long paths, which most games are not, so the game may not load these files. Turning on long paths in {os} does not change that for such a game."
+
+#: src/mods/DuplicateDialog.tsx
+msgid "Version {version}"
+msgstr "Version {version}"
 
 #: src/mods/SplitCombineItems.tsx
 msgid "Install separately"
 msgstr "Install separately"
+
+#: src/mods/SelectionBarDialogs.tsx
+msgid "{count, plural, one {Set category for # mod} other {Set category for # mods}}"
+msgstr "{count, plural, one {Set category for # mod} other {Set category for # mods}}"
 
 #: src/mods/ModMenu.tsx
 msgid "More details"
@@ -2215,6 +2188,10 @@ msgstr "More details"
 #: src/mods/problemWhy.ts
 msgid "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
 msgstr "This mod wrote errors to the game's log the last time you played. It may be broken, out of date, or missing something it needs."
+
+#: src/mods/typedConfig/ConfigPane.tsx
+msgid "About {key}"
+msgstr "About {key}"
 
 #: src/mods/parts.tsx
 msgid "Its folder is removed from this profile. You can undo this."
@@ -2234,38 +2211,24 @@ msgid "Optional"
 msgstr "Optional"
 
 #: src/mods/NexusDetails.tsx
-#: src/mods/parts.tsx
-#: src/mods/Sidebar.tsx
-msgid "Removed from Nexus"
-msgstr "Removed from Nexus"
-
-#. placeholder {0}: update.source
-#: src/mods/updateReview/Row.tsx
-msgid "{0} does not allow downloads outside its own page: get it there."
-msgstr "{0} does not allow downloads outside its own page: get it there."
+msgid "{downloads} · {unique} unique"
+msgstr "{downloads} · {unique} unique"
 
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Contents of {name}"
 msgstr "Contents of {name}"
 
-#. placeholder {0}: withheld.length
-#: src/mods/updateReview/WithheldGroup.tsx
-msgid "Not offered ({0})"
-msgstr "Not offered ({0})"
+#: src/mods/GameModsReviewDialog.tsx
+msgid "Not in this profile ({count})"
+msgstr "Not in this profile ({count})"
 
-#. placeholder {0}: mod.name
-#: src/mods/ModSections.tsx
-msgid "{0} goes back to {previous}, keeping its settings. Your saves are backed up first."
-msgstr "{0} goes back to {previous}, keeping its settings. Your saves are backed up first."
+#: src/mods/GameModsReviewDialog.tsx
+msgid "{count, plural, one {Copied # mod} other {Copied # mods}}"
+msgstr "{count, plural, one {Copied # mod} other {Copied # mods}}"
 
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
-
-#. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts
-msgid "Could not skip the update for {0}"
-msgstr "Could not skip the update for {0}"
 
 #: src/mods/FavouriteStar.tsx
 msgid "Remove from favourites"
@@ -2296,6 +2259,10 @@ msgstr "No changelog published"
 msgid "Keep this one"
 msgstr "Keep this one"
 
+#: src/mods/describe.ts
+msgid "{a} and {b} each wait for the other, so {loader} skips at least one of them."
+msgstr "{a} and {b} each wait for the other, so {loader} skips at least one of them."
+
 #: src/mods/updateReview/ReviewFooter.tsx
 msgid "Update all ({wantedCount})"
 msgstr "Update all ({wantedCount})"
@@ -2304,22 +2271,24 @@ msgstr "Update all ({wantedCount})"
 msgid "No entries match."
 msgstr "No entries match."
 
-#. placeholder {0}: choice.version
-#: src/mods/ChangeVersionDialog.tsx
-msgid "This profile is frozen, so {name} is held at {installed}. Install {0} anyway? The mod stays held at the new version."
-msgstr "This profile is frozen, so {name} is held at {installed}. Install {0} anyway? The mod stays held at the new version."
+#: src/mods/ModSections.tsx
+msgid "{name} goes back to {previous}, keeping its settings. Your saves are backed up first."
+msgstr "{name} goes back to {previous}, keeping its settings. Your saves are backed up first."
 
-#. placeholder {0}: s.name
-#. placeholder {1}: s.field
-#. placeholder {2}: s.current
-#. placeholder {3}: s.currentFor
-#: src/mods/describe.ts
-msgid "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
-msgstr "{0}'s {1} is {2}, made for {3}, which this profile lacks; it can match {installed} instead."
+#: src/mods/NexusDetails.tsx
+#: src/mods/parts.tsx
+#: src/mods/Sidebar.tsx
+msgid "Removed from {source}"
+msgstr "Removed from {source}"
 
 #: src/mods/NewSince.tsx
 msgid "New since you last looked"
 msgstr "New since you last looked"
+
+#: src/mods/ModMenu.tsx
+#: src/mods/Sidebar.tsx
+msgid "Also add {name} to…"
+msgstr "Also add {name} to…"
 
 #: src/mods/problemFix/SettingFix.tsx
 msgid "Set to {value}"
@@ -2342,9 +2311,17 @@ msgstr "Update available: {installed} to {version}"
 msgid "Cosmetic"
 msgstr "Cosmetic"
 
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid "finalizer"
 msgstr "finalizer"
+
+#: src/mods/storeEntries.ts
+msgid "Could not save the note and tags for {name}"
+msgstr "Could not save the note and tags for {name}"
+
+#: src/mods/SetNexusPageDialog.tsx
+msgid "Set {source} page…"
+msgstr "Set {source} page…"
 
 #: src/mods/redundantReason.ts
 msgid "{count, plural, one {{by} already includes everything it changes} other {{by} together include everything it changes}}"
@@ -2354,32 +2331,14 @@ msgstr "{count, plural, one {{by} already includes everything it changes} other 
 msgid "Could not track"
 msgstr "Could not track"
 
-#. placeholder {0}: mod.name
-#: src/mods/ModMenu.tsx
-#: src/mods/Sidebar.tsx
-msgid "Also add {0} to…"
-msgstr "Also add {0} to…"
-
 #: src/mods/CleanupSection.tsx
 msgid "Remove one…"
 msgstr "Remove one…"
-
-#. placeholder {0}: row.replacement
-#: src/mods/CompatChip.tsx
-#: src/mods/CompatSection.tsx
-msgid "Replacement: {0}"
-msgstr "Replacement: {0}"
 
 #: src/mods/updateReview/UndoAllConfirm.tsx
 #: src/mods/updateReview/updateAll.ts
 msgid "Undo all"
 msgstr "Undo all"
-
-#. placeholder {0}: m.folderVersion
-#. placeholder {1}: m.profileVersion
-#: src/mods/GameModsReviewDialog.tsx
-msgid "folder {0} · profile {1}"
-msgstr "folder {0} · profile {1}"
 
 #: src/mods/problemFix/BrokenFix.tsx
 #: src/mods/problemFix/DeprecatedFix.tsx
@@ -2403,37 +2362,25 @@ msgstr "No config file yet"
 msgid "Switch and update"
 msgstr "Switch and update"
 
-#. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts
-msgid "Could not open the folder of {0}"
-msgstr "Could not open the folder of {0}"
+#: src/mods/ModCards.tsx
+msgid "Details of {name}"
+msgstr "Details of {name}"
 
 #: src/mods/typedConfig/ConfigTab.tsx
 msgid "All"
 msgstr "All"
 
+#: src/mods/OptionalFileRows.tsx
+msgid "{count, plural, one {Replaces # file · adds {added}} other {Replaces # files · adds {added}}}"
+msgstr "{count, plural, one {Replaces # file · adds {added}} other {Replaces # files · adds {added}}}"
+
 #: src/mods/GroupMenu.tsx
 msgid "The mods in it stay in the profile; only the group is deleted."
 msgstr "The mods in it stay in the profile; only the group is deleted."
 
-#. placeholder {0}: overlays.length
-#: src/mods/OverlayRow.tsx
-msgid "{0, plural, one {# optional file} other {# optional files}}"
-msgstr "{0, plural, one {# optional file} other {# optional files}}"
-
 #: src/mods/DetailsHeader.tsx
 msgid "Close details"
 msgstr "Close details"
-
-#. placeholder {0}: mod.name
-#: src/mods/ModDisplayEdit.tsx
-msgid "Edit {0}"
-msgstr "Edit {0}"
-
-#. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts
-msgid "Could not show the skipped update for {0}"
-msgstr "Could not show the skipped update for {0}"
 
 #: src/mods/ModUpdateControls.tsx
 msgid "Main only"
@@ -2448,9 +2395,10 @@ msgstr "Compatibility"
 msgid "Reading the changelog…"
 msgstr "Reading the changelog…"
 
-#: src/mods/problemFix/LoadFailureFix.tsx
-msgid "BepInEx skipped {path} because a newer copy of the plugin loaded. Mortar deletes the file."
-msgstr "BepInEx skipped {path} because a newer copy of the plugin loaded. Mortar deletes the file."
+#: src/mods/CompatChip.tsx
+#: src/mods/CompatSection.tsx
+msgid "Replacement: {replacement}"
+msgstr "Replacement: {replacement}"
 
 #: src/mods/storeGroups.ts
 msgid "Could not remove from the group"
@@ -2460,6 +2408,14 @@ msgstr "Could not remove from the group"
 msgid "Missing dependency"
 msgstr "Missing dependency"
 
+#: src/mods/updateReview/EverywhereDialog.tsx
+msgid "{name}: {reason}"
+msgstr "{name}: {reason}"
+
+#: src/mods/disableUnneeded.ts
+msgid "{count, plural, one {# enabled mod needs a mod you disabled} other {# enabled mods need a mod you disabled}}"
+msgstr "{count, plural, one {# enabled mod needs a mod you disabled} other {# enabled mods need a mod you disabled}}"
+
 #: src/mods/Toolbar.tsx
 msgid "Implicit mods"
 msgstr "Implicit mods"
@@ -2468,7 +2424,7 @@ msgstr "Implicit mods"
 msgid "Could not read the mods: {loadError}"
 msgstr "Could not read the mods: {loadError}"
 
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid "postfix"
 msgstr "postfix"
 
@@ -2476,9 +2432,9 @@ msgstr "postfix"
 msgid "Some update checks did not answer in time, so updates for those mods are unknown."
 msgstr "Some update checks did not answer in time, so updates for those mods are unknown."
 
-#: src/mods/AuthorDialog.tsx
-msgid "On Nexus"
-msgstr "On Nexus"
+#: src/mods/Sidebar.tsx
+msgid "More from the {source} page"
+msgstr "More from the {source} page"
 
 #: src/mods/LoadOrderTab.tsx
 msgid "These mods require each other."
@@ -2492,33 +2448,25 @@ msgstr "Untagged"
 msgid "Could not skip updates for the selected mods"
 msgstr "Could not skip updates for the selected mods"
 
-#. placeholder {0}: set.label
-#: src/mods/OldFilesCallouts.tsx
-msgid "Delete {0}'s old files"
-msgstr "Delete {0}'s old files"
+#: src/mods/GameModsReviewDialog.tsx
+msgid "Could not read ({count})"
+msgstr "Could not read ({count})"
 
 #: src/mods/CleanupSection.tsx
 msgid "{who}: {reason}"
 msgstr "{who}: {reason}"
 
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid "{plugin} failed to load ({name})."
 msgstr "{plugin} failed to load ({name})."
+
+#: src/mods/describeLoadFailure.ts
+msgid "; {name} ships no debug symbols, so its source line is unknown."
+msgstr "; {name} ships no debug symbols, so its source line is unknown."
 
 #: src/mods/CleanupSection.tsx
 msgid "This change can be undone from History."
 msgstr "This change can be undone from History."
-
-#. placeholder {0}: unneeded.length
-#. placeholder {1}: listNames(unneeded.map((m) => m.name))
-#: src/mods/parts.tsx
-msgid "{0, plural, one {Also remove # library only this needed} other {Also remove # libraries only these needed}}: {1}"
-msgstr "{0, plural, one {Also remove # library only this needed} other {Also remove # libraries only these needed}}: {1}"
-
-#. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts
-msgid "Could not pin {0}"
-msgstr "Could not pin {0}"
 
 #: src/mods/NexusDetails.tsx
 msgid "Description"
@@ -2528,7 +2476,7 @@ msgstr "Description"
 msgid "Some checks could not run without a connection, so more problems may show up later."
 msgstr "Some checks could not run without a connection, so more problems may show up later."
 
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 msgstr "{plugin} declares itself incompatible with {dependency}, which is also enabled."
 
@@ -2540,22 +2488,17 @@ msgstr "Unpin"
 msgid "already listed"
 msgstr "already listed"
 
-#. placeholder {0}: unofficial.version
-#. placeholder {0}: update.version
-#: src/mods/parts.tsx
-#: src/mods/UpdateBanner.tsx
-#: src/mods/updateReview/RowCopy.tsx
-msgid "Unofficial update available: {0}"
-msgstr "Unofficial update available: {0}"
+#: src/mods/detail.ts
+msgid "Could not read the details of {name}"
+msgstr "Could not read the details of {name}"
 
 #: src/mods/Toolbar.tsx
 msgid "Added this week"
 msgstr "Added this week"
 
-#. placeholder {0}: dup.name
-#: src/mods/DuplicateDialog.tsx
-msgid "{profileName} has {0} more than once. {loader} loads only one, so pick which to keep. The others are disabled, not removed."
-msgstr "{profileName} has {0} more than once. {loader} loads only one, so pick which to keep. The others are disabled, not removed."
+#: src/mods/ChangeVersionDialog.tsx
+msgid "{name} is pinned at {installed}. Install {version} anyway? The pin stays on the new version."
+msgstr "{name} is pinned at {installed}. Install {version} anyway? The pin stays on the new version."
 
 #: src/mods/Toolbar.tsx
 msgid "Favourites"
@@ -2573,10 +2516,13 @@ msgstr "Stop the game first."
 msgid "Mods with problems"
 msgstr "Mods with problems"
 
-#. placeholder {0}: fix.name
-#: src/mods/problemFix/AssetFix.tsx
-msgid "In {0}; disables its edits here"
-msgstr "In {0}; disables its edits here"
+#: src/mods/ConflictWhy.tsx
+msgid "ToArea {toArea}"
+msgstr "ToArea {toArea}"
+
+#: src/mods/describe.ts
+msgid "{name} has multiple {source} files installed: {files}. One may be an add-on."
+msgstr "{name} has multiple {source} files installed: {files}. One may be an add-on."
 
 #: src/mods/updateReview/CautionAck.tsx
 msgid "Update despite this"
@@ -2592,16 +2538,6 @@ msgstr "Installed separately"
 msgid "Uncategorised"
 msgstr "Uncategorised"
 
-#. placeholder {0}: hits.length - MAX_SHOWN_HITS
-#: src/mods/typedConfig/ConfigTab.tsx
-msgid "{0, plural, one {# more setting; type more to narrow the search.} other {# more settings; type more to narrow the search.}}"
-msgstr "{0, plural, one {# more setting; type more to narrow the search.} other {# more settings; type more to narrow the search.}}"
-
-#. placeholder {0}: p.asset.info
-#: src/mods/describe.ts
-msgid "These mods may add the same item: {0}."
-msgstr "These mods may add the same item: {0}."
-
 #: src/mods/EndorsePrompt.tsx
 #: src/mods/NexusAccountActions.tsx
 msgid "Endorse"
@@ -2611,22 +2547,14 @@ msgstr "Endorse"
 msgid "Change the version of {name}"
 msgstr "Change the version of {name}"
 
-#. placeholder {0}: s.name
-#. placeholder {1}: s.field
-#. placeholder {2}: s.current
-#. placeholder {3}: s.description
-#: src/mods/describe.ts
-msgid "{0}'s {1} is {2}: {3}"
-msgstr "{0}'s {1} is {2}: {3}"
+#: src/mods/overlayActions.ts
+#: src/mods/storeEntries.ts
+msgid "Could not enable {name}"
+msgstr "Could not enable {name}"
 
 #: src/mods/columnLabel.ts
 msgid "UniqueID"
 msgstr "UniqueID"
-
-#. placeholder {0}: counts.failed
-#: src/mods/updateReview/updateAll.ts
-msgid "{0} failed"
-msgstr "{0} failed"
 
 #: src/mods/ModNoteTags.tsx
 msgid "Tags"
@@ -2636,18 +2564,17 @@ msgstr "Tags"
 msgid "Group actions"
 msgstr "Group actions"
 
+#: src/mods/updateReview/Row.tsx
+msgid "From {source}, not the site you installed it from. Updating switches its source."
+msgstr "From {source}, not the site you installed it from. Updating switches its source."
+
 #: src/mods/redundantReason.ts
 msgid "Every edit it makes is overwritten by {by}"
 msgstr "Every edit it makes is overwritten by {by}"
 
-#. placeholder {0}: profile.name
-#: src/mods/OtherProfilesDialog.tsx
-msgid "pinned in {0}"
-msgstr "pinned in {0}"
-
-#: src/mods/describe.ts
-msgid "{count, plural, one {{name} logged # error in the last run.} other {{name} logged # errors in the last run.}}"
-msgstr "{count, plural, one {{name} logged # error in the last run.} other {{name} logged # errors in the last run.}}"
+#: src/mods/updateReview/updateAll.ts
+msgid "{count, plural, one {Updated # mod} other {Updated # mods}}"
+msgstr "{count, plural, one {Updated # mod} other {Updated # mods}}"
 
 #: src/mods/ModMenu.tsx
 #: src/mods/problemFix/MissingFix.tsx
@@ -2667,10 +2594,9 @@ msgstr "Not now"
 msgid "Also add selected mods to…"
 msgstr "Also add selected mods to…"
 
-#. placeholder {0}: mod.name
-#: src/mods/detail.ts
-msgid "Could not reset the settings of {0}"
-msgstr "Could not reset the settings of {0}"
+#: src/mods/describe.ts
+msgid "{names} both ship the plugin {guid}, and {loader} loads only one."
+msgstr "{names} both ship the plugin {guid}, and {loader} loads only one."
 
 #: src/mods/storeGroups.ts
 msgid "Could not rename the group"
@@ -2692,6 +2618,19 @@ msgstr "latest"
 msgid "Skipped updates for selected mods"
 msgstr "Skipped updates for selected mods"
 
+#: src/mods/updateReview/SourceGroups.tsx
+msgid "Libraries ({count})"
+msgstr "Libraries ({count})"
+
+#: src/mods/describe.ts
+msgid "{name} needs {dep} {version} or newer, and this profile has {installed}."
+msgstr "{name} needs {dep} {version} or newer, and this profile has {installed}."
+
+#: src/mods/OverlayRow.tsx
+#: src/mods/parts.tsx
+msgid "Disable {name}"
+msgstr "Disable {name}"
+
 #: src/mods/ProblemsTab.tsx
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Report copied"
@@ -2701,6 +2640,10 @@ msgstr "Report copied"
 msgid "Damaged"
 msgstr "Damaged"
 
+#: src/mods/describe.ts
+msgid "{name}'s {field} is {current}, made for {currentFor}, which this profile lacks; it can match {installed} instead."
+msgstr "{name}'s {field} is {current}, made for {currentFor}, which this profile lacks; it can match {installed} instead."
+
 #: src/mods/DuplicateDialog.tsx
 msgid "From an archive"
 msgstr "From an archive"
@@ -2709,19 +2652,13 @@ msgstr "From an archive"
 msgid "Open folder"
 msgstr "Open folder"
 
-#. placeholder {0}: entry.key
-#: src/mods/typedConfig/ConfigPane.tsx
-msgid "About {0}"
-msgstr "About {0}"
+#: src/mods/GameModsReviewDialog.tsx
+msgid "Game Mods folder vs {name}"
+msgstr "Game Mods folder vs {name}"
 
 #: src/mods/OldFilesCallouts.tsx
 msgid "Keep"
 msgstr "Keep"
-
-#. placeholder {0}: g.name
-#: src/mods/GroupMenu.tsx
-msgid "Remove from {0}"
-msgstr "Remove from {0}"
 
 #: src/mods/updateReview/UndoAllConfirm.tsx
 msgid "Restoring from before Update all also reverts these later changes:"
@@ -2730,6 +2667,10 @@ msgstr "Restoring from before Update all also reverts these later changes:"
 #: src/mods/NexusAccountActions.tsx
 msgid "You endorsed this mod."
 msgstr "You endorsed this mod."
+
+#: src/mods/parts.tsx
+msgid "{count, plural, one {Also removes # optional file that goes on top of it.} other {Also removes # optional files that go on top of it.}}"
+msgstr "{count, plural, one {Also removes # optional file that goes on top of it.} other {Also removes # optional files that go on top of it.}}"
 
 #: src/mods/ModList.tsx
 msgid "overrides {count, plural, one {# file} other {# files}}"
@@ -2747,11 +2688,6 @@ msgstr "Their folders are removed from this profile. You can undo this."
 msgid "Copy report"
 msgstr "Copy report"
 
-#. placeholder {0}: libraries.length
-#: src/mods/LibrariesChip.tsx
-msgid "{0, plural, one {+# library} other {+# libraries}}"
-msgstr "{0, plural, one {+# library} other {+# libraries}}"
-
 #: src/mods/Toolbar.tsx
 msgid "Always shown"
 msgstr "Always shown"
@@ -2764,12 +2700,9 @@ msgstr "Could not enable the group"
 msgid "Two enabled mods carry the same plugin. The loader starts only one of them, so you may be running the older copy."
 msgstr "Two enabled mods carry the same plugin. The loader starts only one of them, so you may be running the older copy."
 
-#. placeholder {0}: mod.name
-#. placeholder {0}: row.label
-#: src/mods/overlayActions.ts
-#: src/mods/storeEntries.ts
-msgid "Could not enable {0}"
-msgstr "Could not enable {0}"
+#: src/mods/describe.ts
+msgid "{name}'s {source} page says it needs {dep} from outside {source}: {note}"
+msgstr "{name}'s {source} page says it needs {dep} from outside {source}: {note}"
 
 #: src/mods/SlowStartupSection.tsx
 msgid "Updates"
@@ -2779,6 +2712,14 @@ msgstr "Updates"
 msgid "Add a set"
 msgstr "Add a set"
 
+#: src/mods/OldFilesCallouts.tsx
+msgid "{count, plural, one {# updated mod} other {# updated mods}}"
+msgstr "{count, plural, one {# updated mod} other {# updated mods}}"
+
+#: src/mods/typedConfig/ConfigTab.tsx
+msgid "{count, plural, one {# mod has} other {# mods have}} no config yet; mods create it the first time the game runs."
+msgstr "{count, plural, one {# mod has} other {# mods have}} no config yet; mods create it the first time the game runs."
+
 #: src/mods/describe.ts
 msgid " {name} wins by load order; {losers} overridden."
 msgstr " {name} wins by load order; {losers} overridden."
@@ -2786,21 +2727,6 @@ msgstr " {name} wins by load order; {losers} overridden."
 #: src/mods/HiddenInside.tsx
 msgid "Unhide"
 msgstr "Unhide"
-
-#. placeholder {0}: e.when
-#: src/mods/ConflictWhy.tsx
-msgid "When {0}"
-msgstr "When {0}"
-
-#. placeholder {0}: g.list.length
-#: src/mods/updateReview/SourceGroups.tsx
-msgid "{name} ({0})"
-msgstr "{name} ({0})"
-
-#. placeholder {0}: d.folder
-#: src/mods/describe.ts
-msgid "{0} was added to this profile's mods folder by hand, not installed by Mortar."
-msgstr "{0} was added to this profile's mods folder by hand, not installed by Mortar."
 
 #: src/mods/LoadOrderTab.tsx
 msgid "Filter load order"
@@ -2810,6 +2736,10 @@ msgstr "Filter load order"
 msgid "Pin"
 msgstr "Pin"
 
+#: src/mods/describe.ts
+msgid "{name} is deprecated on {source}."
+msgstr "{name} is deprecated on {source}."
+
 #: src/mods/storeEntries.ts
 msgid "Pinned selected mods"
 msgstr "Pinned selected mods"
@@ -2818,19 +2748,17 @@ msgstr "Pinned selected mods"
 msgid "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 msgstr "The log holds folder paths from this computer, which can include your user name. Anyone with the link can read it."
 
-#. placeholder {0}: update.source
-#: src/mods/updateReview/Row.tsx
-msgid "From {0}, not the site you installed it from. Updating switches its source."
-msgstr "From {0}, not the site you installed it from. Updating switches its source."
+#: src/mods/problemFixButtons.tsx
+msgid "Revert {name}?"
+msgstr "Revert {name}?"
 
-#: src/mods/SlowStartupSection.tsx
-msgid "Content Patcher packs"
-msgstr "Content Patcher packs"
+#: src/mods/OptionalFileRows.tsx
+msgid "Use {name}"
+msgstr "Use {name}"
 
-#. placeholder {0}: counts.failed
-#: src/mods/updateReview/updateAll.ts
-msgid "{0, plural, one {# update failed} other {# updates failed}}"
-msgstr "{0, plural, one {# update failed} other {# updates failed}}"
+#: src/mods/AuthorDialog.tsx
+msgid "Open author page on {source}"
+msgstr "Open author page on {source}"
 
 #: src/mods/markImplicit.ts
 msgid "{count, plural, one {Marked # mod implicit} other {Marked # mods implicit}}"
@@ -2856,38 +2784,29 @@ msgstr "More than one mod changes this; the winner's version is used."
 msgid "Default priority"
 msgstr "Default priority"
 
-#: src/mods/Sidebar.tsx
-msgid "SMAPI UniqueID"
-msgstr "SMAPI UniqueID"
-
-#: src/mods/describe.ts
-msgid "{name} is deprecated on Thunderstore."
-msgstr "{name} is deprecated on Thunderstore."
+#: src/mods/typedConfig/StringWidgets.tsx
+msgid "Clear {name}"
+msgstr "Clear {name}"
 
 #: src/mods/ProblemRows.tsx
 msgid "Show conflicts"
 msgstr "Show conflicts"
 
-#. placeholder {0}: s.name
-#. placeholder {1}: s.field
-#. placeholder {2}: s.current
-#: src/mods/describe.ts
-msgid "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
-msgstr "{0} has a {1} setting for {installed}; it is {2}, so those patches are off."
-
-#. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts
-msgid "Could not set the update channel for {0}"
-msgstr "Could not set the update channel for {0}"
+#: src/mods/updateReview/Row.tsx
+msgid "Pick the file on {source}: its page has several downloads and none replaces the one you have."
+msgstr "Pick the file on {source}: its page has several downloads and none replaces the one you have."
 
 #: src/mods/problemText.ts
 msgid "Error in a patch"
 msgstr "Error in a patch"
 
-#. placeholder {0}: dependents.length
-#: src/mods/disableUnneeded.ts
-msgid "{0, plural, one {# enabled mod needs a mod you disabled} other {# enabled mods need a mod you disabled}}"
-msgstr "{0, plural, one {# enabled mod needs a mod you disabled} other {# enabled mods need a mod you disabled}}"
+#: src/mods/NexusDetails.tsx
+msgid "Could not read the {source} page: {error}"
+msgstr "Could not read the {source} page: {error}"
+
+#: src/mods/EndorsePrompt.tsx
+msgid "Enjoying {name}? Endorse it on {source}"
+msgstr "Enjoying {name}? Endorse it on {source}"
 
 #: src/mods/OverlayRow.tsx
 msgid "Optional file"
@@ -2901,6 +2820,10 @@ msgstr "Checking…"
 msgid "Copy to keep"
 msgstr "Copy to keep"
 
+#: src/mods/ProblemsTab.tsx
+msgid "Add all {count}"
+msgstr "Add all {count}"
+
 #: src/mods/storeEntries.ts
 msgid "Could not pin the selected mods"
 msgstr "Could not pin the selected mods"
@@ -2909,21 +2832,9 @@ msgstr "Could not pin the selected mods"
 msgid "Error in a preloader patch"
 msgstr "Error in a preloader patch"
 
-#: src/mods/LoadOrderTab.tsx
-msgid "Optional: {label}"
-msgstr "Optional: {label}"
-
 #: src/mods/SplitCombineItems.tsx
 msgid "Combine with…"
 msgstr "Combine with…"
-
-#. placeholder {0}: gone.date
-#. placeholder {0}: mark.date
-#: src/mods/NexusDetails.tsx
-#: src/mods/parts.tsx
-#: src/mods/Sidebar.tsx
-msgid "Removed from Nexus · {0}"
-msgstr "Removed from Nexus · {0}"
 
 #: src/mods/NexusAccountActions.tsx
 msgid "Abstain"
@@ -2933,22 +2844,9 @@ msgstr "Abstain"
 msgid "Add an item"
 msgstr "Add an item"
 
-#: src/mods/describe.ts
-msgid "{count, plural, one {{name} was updated since this run and logged # error. First: {first}} other {{name} was updated since this run and logged # errors. First: {first}}}"
-msgstr "{count, plural, one {{name} was updated since this run and logged # error. First: {first}} other {{name} was updated since this run and logged # errors. First: {first}}}"
-
 #: src/mods/updates.ts
 msgid "Checked for updates · {when}"
 msgstr "Checked for updates · {when}"
-
-#. placeholder {0}: copy.version
-#: src/mods/DuplicateDialog.tsx
-msgid "{source}, version {0}"
-msgstr "{source}, version {0}"
-
-#: src/mods/typedConfig/Widgets.tsx
-msgid "New {label} item"
-msgstr "New {label} item"
 
 #: src/mods/AuthorDialog.tsx
 #: src/mods/listRows.ts
@@ -2958,19 +2856,17 @@ msgstr "New {label} item"
 msgid "Enabled"
 msgstr "Enabled"
 
-#. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts
-msgid "Could not unpin {0}"
-msgstr "Could not unpin {0}"
-
 #: src/mods/Sidebar.tsx
 msgid "In the same download"
 msgstr "In the same download"
 
-#. placeholder {0}: row.label
-#: src/mods/overlayActions.ts
-msgid "Enabled {0}"
-msgstr "Enabled {0}"
+#: src/mods/storeEntries.ts
+msgid "Found a source for {count, plural, one {# mod} other {# mods}}"
+msgstr "Found a source for {count, plural, one {# mod} other {# mods}}"
+
+#: src/mods/NexusAccountActions.tsx
+msgid "You have not endorsed this mod. {source} asks that you download and play it first."
+msgstr "You have not endorsed this mod. {source} asks that you download and play it first."
 
 #: src/mods/AssetMapDialog.tsx
 msgid "winner"
@@ -2985,49 +2881,32 @@ msgid "Other profiles"
 msgstr "Other profiles"
 
 #: src/mods/describe.ts
-msgid "{a} and {b} each wait for the other, so SMAPI skips at least one of them."
-msgstr "{a} and {b} each wait for the other, so SMAPI skips at least one of them."
-
-#. placeholder {0}: users.length
-#: src/mods/LoadOrderTab.tsx
-msgid "{0, plural, one {Used by # mod} other {Used by # mods}}"
-msgstr "{0, plural, one {Used by # mod} other {Used by # mods}}"
+msgid "{name}, a folder no mod owns, has a file path {count} characters long, more than most {os} games can open."
+msgstr "{name}, a folder no mod owns, has a file path {count} characters long, more than most {os} games can open."
 
 #: src/mods/SplitCombineItems.tsx
 msgid "Combined"
 msgstr "Combined"
 
+#: src/mods/describe.ts
+msgid "{name}'s {source} page says it needs {dep} from outside {source}."
+msgstr "{name}'s {source} page says it needs {dep} from outside {source}."
+
 #: src/mods/storeEntries.ts
 msgid "None of these mods was found on a site"
 msgstr "None of these mods was found on a site"
-
-#: src/mods/CleanupSection.tsx
-#: src/mods/ReplacedSection.tsx
-msgid "Restore {label}"
-msgstr "Restore {label}"
 
 #: src/mods/updateReview/withheld.ts
 msgid "No updates to review"
 msgstr "No updates to review"
 
-#. placeholder {0}: mod.name
-#: src/mods/ModSections.tsx
-msgid "Reset the settings of {0}?"
-msgstr "Reset the settings of {0}?"
-
 #: src/mods/GameModsReviewDialog.tsx
 msgid "newer in folder"
 msgstr "newer in folder"
 
-#. placeholder {0}: row.name
-#. placeholder {1}: row.framework
-#: src/mods/SlowStartupSection.tsx
-msgid "{0} adds {time} to startup (through {1})"
-msgstr "{0} adds {time} to startup (through {1})"
-
-#: src/mods/describe.ts
-msgid "{name} is deprecated on Thunderstore; its page points to {replacement}."
-msgstr "{name} is deprecated on Thunderstore; its page points to {replacement}."
+#: src/mods/LegacyReasonsCallout.tsx
+msgid "{count, plural, one {Mortar identified # mod as a library or supporting mod} other {Mortar identified # mods as libraries or supporting mods}}"
+msgstr "{count, plural, one {Mortar identified # mod as a library or supporting mod} other {Mortar identified # mods as libraries or supporting mods}}"
 
 #: src/mods/problemFix/DamagedFix.tsx
 msgid "Could not repair {name}"
@@ -3037,10 +2916,17 @@ msgstr "Could not repair {name}"
 msgid "Delete the replaced files?"
 msgstr "Delete the replaced files?"
 
-#. placeholder {0}: different.length
-#: src/mods/GameModsReviewDialog.tsx
-msgid "Different version ({0})"
-msgstr "Different version ({0})"
+#: src/mods/Sidebar.tsx
+msgid "Optional for ({count})"
+msgstr "Optional for ({count})"
+
+#: src/mods/OtherProfilesDialog.tsx
+msgid "Also adds what it needs: {names}"
+msgstr "Also adds what it needs: {names}"
+
+#: src/mods/NexusDetails.tsx
+msgid "Reading the {source} page…"
+msgstr "Reading the {source} page…"
 
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Change it in the game"
@@ -3050,10 +2936,9 @@ msgstr "Change it in the game"
 msgid "Deprecated"
 msgstr "Deprecated"
 
-#. placeholder {0}: m.name
-#: src/mods/ModCards.tsx
-msgid "Details of {0}"
-msgstr "Details of {0}"
+#: src/mods/SlowStartupSection.tsx
+msgid "Checked in {duration}: {parts}"
+msgstr "Checked in {duration}: {parts}"
 
 #: src/mods/CleanupSection.tsx
 #: src/mods/ModMenu.tsx
@@ -3064,10 +2949,13 @@ msgstr "Details of {0}"
 msgid "Remove"
 msgstr "Remove"
 
-#: src/mods/Toolbar.tsx
-#: src/mods/typedConfig/ConfigTab.tsx
-msgid "{total, plural, one {Filter # mod} other {Filter # mods}}"
-msgstr "{total, plural, one {Filter # mod} other {Filter # mods}}"
+#: src/mods/SlowStartupSection.tsx
+msgid "{name} adds {time} to startup"
+msgstr "{name} adds {time} to startup"
+
+#: src/mods/describe.ts
+msgid "{name} logged {errors} in the last run."
+msgstr "{name} logged {errors} in the last run."
 
 #: src/mods/CategoryEditor.tsx
 msgid "Add one to group your mods your own way."
@@ -3077,14 +2965,14 @@ msgstr "Add one to group your mods your own way."
 msgid "Remove the older copy?"
 msgstr "Remove the older copy?"
 
+#: src/mods/Toolbar.tsx
+#: src/mods/typedConfig/ConfigTab.tsx
+msgid "{count, plural, one {Filter # mod} other {Filter # mods}}"
+msgstr "{count, plural, one {Filter # mod} other {Filter # mods}}"
+
 #: src/mods/typedConfig/ConfigTab.tsx
 msgid "Play"
 msgstr "Play"
-
-#. placeholder {0}: libraries.length
-#: src/mods/updateReview/SourceGroups.tsx
-msgid "Libraries ({0})"
-msgstr "Libraries ({0})"
 
 #: src/mods/markImplicit.ts
 msgid "Could not mark the mods explicit"
@@ -3096,20 +2984,9 @@ msgstr "Could not mark the mods explicit"
 msgid "Explicit"
 msgstr "Explicit"
 
-#. placeholder {0}: diff.profileOnly
-#: src/mods/GameModsReviewDialog.tsx
-msgid "{0, plural, one {# profile mod has no copy in the game folder.} other {# profile mods have no copy in the game folder.}}"
-msgstr "{0, plural, one {# profile mod has no copy in the game folder.} other {# profile mods have no copy in the game folder.}}"
-
-#. placeholder {0}: drift.folder
-#. placeholder {0}: initialFile ?? name
-#. placeholder {0}: pendingDelete ?? ''
-#: src/mods/CategoryEditor.tsx
-#: src/mods/ConfigPresets.tsx
-#: src/mods/problemFixButtons.tsx
-#: src/mods/typedConfig/ConfigPane.tsx
-msgid "Delete {0}?"
-msgstr "Delete {0}?"
+#: src/mods/NexusDetails.tsx
+msgid "Changelog on {source}"
+msgstr "Changelog on {source}"
 
 #: src/mods/CategoryEditor.tsx
 #: src/mods/ConfigPresets.tsx
@@ -3118,48 +2995,37 @@ msgstr "Delete {0}?"
 msgid "Save"
 msgstr "Save"
 
-#: src/mods/DuplicateDialog.tsx
-msgid "From Nexus"
-msgstr "From Nexus"
-
-#. placeholder {0}: dup.name
-#: src/mods/storeProblems.ts
-msgid "Could not disable the other copy of {0}"
-msgstr "Could not disable the other copy of {0}"
-
-#: src/mods/describe.ts
-msgid "{dependentName}'s Nexus page lists {dep} as a requirement."
-msgstr "{dependentName}'s Nexus page lists {dep} as a requirement."
-
 #: src/mods/ChangeVersionDialog.tsx
 msgid "Install"
 msgstr "Install"
-
-#. placeholder {0}: e.fromArea
-#: src/mods/ConflictWhy.tsx
-msgid "FromArea {0}"
-msgstr "FromArea {0}"
 
 #: src/mods/typedConfig/ConfigTab.tsx
 msgid "Mods write their settings the first time the game runs."
 msgstr "Mods write their settings the first time the game runs."
 
+#: src/mods/AssetMapDialog.tsx
+msgid "Load {name} after the other mods here, so its edit applies last"
+msgstr "Load {name} after the other mods here, so its edit applies last"
+
 #: src/mods/ModDependencyTree.tsx
 msgid "Required"
 msgstr "Required"
 
-#. placeholder {0}: choices.length
-#: src/mods/redundantReason.ts
-msgid "{list} do the same job: all {0} change {detail}"
-msgstr "{list} do the same job: all {0} change {detail}"
-
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid "transpiler"
 msgstr "transpiler"
+
+#: src/mods/Sidebar.tsx
+msgid "{loader} UniqueID"
+msgstr "{loader} UniqueID"
 
 #: src/mods/detail.ts
 msgid "Redo update"
 msgstr "Redo update"
+
+#: src/mods/updateReview/Row.tsx
+msgid "Also updates {name} (same download)"
+msgstr "Also updates {name} (same download)"
 
 #: src/mods/ProblemsTab.tsx
 msgid "Checking the mods for problems…"
@@ -3175,15 +3041,21 @@ msgstr "Pinned: {pinned}"
 msgid "Config file"
 msgstr "Config file"
 
-#. placeholder {0}: update.name
-#. placeholder {1}: update.source
-#: src/mods/updateReview/UpdateActions.tsx
-msgid "Switch {0} to {1}?"
-msgstr "Switch {0} to {1}?"
-
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid "It was thrown in {thrown}"
 msgstr "It was thrown in {thrown}"
+
+#: src/mods/problemFix/LoadFailureFix.tsx
+msgid "{loader} skipped {path} because a newer copy of the plugin loaded. Mortar deletes the file."
+msgstr "{loader} skipped {path} because a newer copy of the plugin loaded. Mortar deletes the file."
+
+#: src/mods/parts.tsx
+msgid "{count, plural, one {Also remove # library only this needed} other {Also remove # libraries only these needed}}: {names}"
+msgstr "{count, plural, one {Also remove # library only this needed} other {Also remove # libraries only these needed}}: {names}"
+
+#: src/mods/CompatChip.tsx
+msgid "Broke in {brokeIn}"
+msgstr "Broke in {brokeIn}"
 
 #: src/mods/LoadOrderTab.tsx
 msgid "Reading load order…"
@@ -3194,14 +3066,17 @@ msgstr "Reading load order…"
 msgid "Settings"
 msgstr "Settings"
 
-#. placeholder {0}: mod.name
-#: src/mods/detail.ts
-msgid "Could not read the details of {0}"
-msgstr "Could not read the details of {0}"
+#: src/mods/describe.ts
+msgid "{name} has damaged files."
+msgstr "{name} has damaged files."
 
 #: src/mods/OverlayRow.tsx
 msgid "Disabled while the mod above is disabled"
 msgstr "Disabled while the mod above is disabled"
+
+#: src/mods/updateReview/ReviewTitle.tsx
+msgid "{count, plural, one {# update for {profile}} other {# updates for {profile}}}"
+msgstr "{count, plural, one {# update for {profile}} other {# updates for {profile}}}"
 
 #: src/mods/ModMenu.tsx
 #: src/mods/ModUpdateControls.tsx
@@ -3218,29 +3093,37 @@ msgstr "Waiting for next launch"
 msgid "Releases and betas"
 msgstr "Releases and betas"
 
-#. placeholder {0}: offer.dependentName
-#. placeholder {1}: listNames(names)
-#: src/mods/EnableRequirementsDialog.tsx
-msgid "{0} needs {1}"
-msgstr "{0} needs {1}"
-
 #: src/mods/storeProblems.ts
 msgid "Could not dismiss the setting warning"
 msgstr "Could not dismiss the setting warning"
+
+#: src/mods/SelectionBar.tsx
+msgid "{count, plural, one {# mod selected} other {# mods selected}}"
+msgstr "{count, plural, one {# mod selected} other {# mods selected}}"
 
 #: src/mods/columnLabel.ts
 #: src/mods/Toolbar.tsx
 msgid "Status"
 msgstr "Status"
 
-#: src/mods/SetNexusPageDialog.tsx
-msgid "Set Nexus page…"
-msgstr "Set Nexus page…"
+#: src/mods/describe.ts
+msgid "{name} was updated since this run and logged {errors}. First: {first}"
+msgstr "{name} was updated since this run and logged {errors}. First: {first}"
 
-#. placeholder {0}: formatDuration(total, i18n.locale)
-#: src/mods/SlowStartupSection.tsx
-msgid "Checked in {0}: {parts}"
-msgstr "Checked in {0}: {parts}"
+#: src/mods/CleanupSection.tsx
+#: src/mods/ReplacedSection.tsx
+msgid "Restore {name}"
+msgstr "Restore {name}"
+
+#: src/mods/EverywhereMenuItem.tsx
+#: src/mods/updateReview/EverywhereDialog.tsx
+#: src/mods/updateReview/UpdateActions.tsx
+msgid "Update in all profiles ({count})"
+msgstr "Update in all profiles ({count})"
+
+#: src/mods/updateReview/Row.tsx
+msgid "{count, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
+msgstr "{count, plural, one {# optional file will be re-applied; check it still fits this version} other {# optional files will be re-applied; check they still fit this version}}"
 
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Delete file"
@@ -3254,24 +3137,34 @@ msgstr "Pinned: Mortar offers no update for this mod until you unpin it."
 msgid "Open replacement"
 msgstr "Open replacement"
 
-#. placeholder {0}: merged.updated?.length ?? 0
-#: src/mods/updateReview/EverywhereDialog.tsx
-msgid "{0, plural, one {Updated in # profile} other {Updated in # profiles}}"
-msgstr "{0, plural, one {Updated in # profile} other {Updated in # profiles}}"
+#: src/mods/SlowStartupSection.tsx
+msgid "Checked {when}"
+msgstr "Checked {when}"
 
-#. placeholder {0}: listNames(tooOld)
 #: src/mods/DuplicateDialog.tsx
-msgid "{0} needs a newer version than this."
-msgstr "{0} needs a newer version than this."
+msgid "{source}, version {version}"
+msgstr "{source}, version {version}"
 
 #: src/mods/SelectionBarDialogs.tsx
 #: src/mods/Toolbar.tsx
 msgid "Tag"
 msgstr "Tag"
 
+#: src/mods/updateReview/RowCopy.tsx
+msgid "Reported by {source}"
+msgstr "Reported by {source}"
+
 #: src/mods/CategoryEditor.tsx
 msgid "Add category"
 msgstr "Add category"
+
+#: src/mods/SelectionBarDialogs.tsx
+msgid "{count, plural, one {Tag # mod} other {Tag # mods}}"
+msgstr "{count, plural, one {Tag # mod} other {Tag # mods}}"
+
+#: src/mods/storeView.ts
+msgid "Also enabled {names}"
+msgstr "Also enabled {names}"
 
 #: src/mods/NewFoldersCallout.tsx
 msgid "{count, plural, one {# mod in the game's Mods folder is not in this profile} other {# mods in the game's Mods folder are not in this profile}}"
@@ -3280,10 +3173,6 @@ msgstr "{count, plural, one {# mod in the game's Mods folder is not in this prof
 #: src/mods/Sidebar.tsx
 msgid "Show in Console"
 msgstr "Show in Console"
-
-#: src/mods/describe.ts
-msgid "{mod}'s {kind} {method} on {target} threw it"
-msgstr "{mod}'s {kind} {method} on {target} threw it"
 
 #: src/mods/DuplicateDialog.tsx
 msgid "Newer."
@@ -3297,12 +3186,6 @@ msgstr "Adult content"
 msgid "Mods in this category will move to Uncategorised."
 msgstr "Mods in this category will move to Uncategorised."
 
-#. placeholder {0}: fix.field
-#. placeholder {1}: fix.value
-#: src/mods/problemFix/AssetFix.tsx
-msgid "Set {0} to {1}"
-msgstr "Set {0} to {1}"
-
 #: src/mods/columnLabel.ts
 msgid "Order"
 msgstr "Order"
@@ -3310,11 +3193,6 @@ msgstr "Order"
 #: src/mods/freeze.ts
 msgid "Could not unfreeze the profile"
 msgstr "Could not unfreeze the profile"
-
-#. placeholder {0}: mod.name
-#: src/mods/detail.ts
-msgid "Could not roll back {0}"
-msgstr "Could not roll back {0}"
 
 #: src/mods/ModUpdateControls.tsx
 msgid "Mortar stops offering updates for this mod and keeps the version you have."
@@ -3324,9 +3202,17 @@ msgstr "Mortar stops offering updates for this mod and keeps the version you hav
 msgid "Preset name"
 msgstr "Preset name"
 
-#: src/mods/storeEntries.ts
-msgid "{found, plural, one {Found a source for # mod} other {Found a source for # mods}}"
-msgstr "{found, plural, one {Found a source for # mod} other {Found a source for # mods}}"
+#: src/mods/describe.ts
+msgid "{name}'s {field} is {current}; it can match {installed} instead."
+msgstr "{name}'s {field} is {current}; it can match {installed} instead."
+
+#: src/mods/updateReview/UpdateActions.tsx
+msgid "Ignore updates from {source}"
+msgstr "Ignore updates from {source}"
+
+#: src/mods/EnableRequirementsDialog.tsx
+msgid "{name} needs {names}"
+msgstr "{name} needs {names}"
 
 #: src/mods/ModMenu.tsx
 msgid "Move down (wins files)"
@@ -3336,29 +3222,11 @@ msgstr "Move down (wins files)"
 msgid "{name} is obsolete: {summary}"
 msgstr "{name} is obsolete: {summary}"
 
-#. placeholder {0}: row.label
-#: src/mods/OptionalFileRows.tsx
-msgid "Use {0}"
-msgstr "Use {0}"
-
-#: src/mods/LoadOrderTab.tsx
-msgid "Needs {label} (missing)"
-msgstr "Needs {label} (missing)"
-
-#: src/mods/EndorsePrompt.tsx
-msgid "Enjoying these mods? Endorse them on Nexus"
-msgstr "Enjoying these mods? Endorse them on Nexus"
-
 #: src/mods/columnLabel.ts
 #: src/mods/ModDisplayEdit.tsx
 #: src/mods/Toolbar.tsx
 msgid "Author"
 msgstr "Author"
-
-#. placeholder {0}: u.version
-#: src/mods/updateReview/KeptGroup.tsx
-msgid "newer: {0}"
-msgstr "newer: {0}"
 
 #: src/mods/CleanupSection.tsx
 #: src/mods/EnableRequirementsDialog.tsx
@@ -3371,13 +3239,6 @@ msgstr "Unknown mod"
 msgid "No changelog for this update"
 msgstr "No changelog for this update"
 
-#. placeholder {0}: s.name
-#. placeholder {1}: s.field
-#. placeholder {2}: s.current
-#: src/mods/describe.ts
-msgid "{0}'s {1} is {2}; it can match {installed} instead."
-msgstr "{0}'s {1} is {2}; it can match {installed} instead."
-
 #: src/mods/ModsTab.tsx
 msgid "Loading mods"
 msgstr "Loading mods"
@@ -3386,18 +3247,9 @@ msgstr "Loading mods"
 msgid "Move up (loses files)"
 msgstr "Move up (loses files)"
 
-#: src/mods/NexusAccountActions.tsx
-msgid "Could not load your tracked Nexus mods"
-msgstr "Could not load your tracked Nexus mods"
-
 #: src/mods/ConfigPresets.tsx
 msgid "A preset with this name already exists."
 msgstr "A preset with this name already exists."
-
-#. placeholder {0}: installable.length
-#: src/mods/ProblemsTab.tsx
-msgid "Add all {0}"
-msgstr "Add all {0}"
 
 #: src/mods/ProblemsTab.tsx
 msgid "No problems found"
@@ -3407,11 +3259,6 @@ msgstr "No problems found"
 msgid "{name} was removed from this profile's mods folder."
 msgstr "{name} was removed from this profile's mods folder."
 
-#. placeholder {0}: d.name
-#: src/mods/describe.ts
-msgid "{0} has multiple Nexus files installed: {files}. One may be an add-on."
-msgstr "{0} has multiple Nexus files installed: {files}. One may be an add-on."
-
 #: src/mods/CleanupSection.tsx
 msgid "Remove all"
 msgstr "Remove all"
@@ -3420,11 +3267,21 @@ msgstr "Remove all"
 msgid "Did not load"
 msgstr "Did not load"
 
-#: src/mods/EverywhereMenuItem.tsx
-#: src/mods/updateReview/EverywhereDialog.tsx
-#: src/mods/updateReview/UpdateActions.tsx
-msgid "Update in all profiles ({n})"
-msgstr "Update in all profiles ({n})"
+#: src/mods/describe.ts
+msgid "{name} has multiple {source} files installed: {files}."
+msgstr "{name} has multiple {source} files installed: {files}."
+
+#: src/mods/describeLoadFailure.ts
+msgid "{count, plural, one {{who} loaded and logged an error while running.} other {{who} loaded and logged # errors while running.}}"
+msgstr "{count, plural, one {{who} loaded and logged an error while running.} other {{who} loaded and logged # errors while running.}}"
+
+#: src/mods/problemFix/AssetFix.tsx
+msgid "Set {field} to {value}"
+msgstr "Set {field} to {value}"
+
+#: src/mods/HiddenInside.tsx
+msgid "{loader} skips folders whose names start with a dot."
+msgstr "{loader} skips folders whose names start with a dot."
 
 #: src/mods/CategoryEditor.tsx
 msgid "Delete category"
@@ -3433,6 +3290,10 @@ msgstr "Delete category"
 #: src/mods/redundantReason.ts
 msgid "{count, plural, one {Replaced by {by}, which is also enabled} other {Replaced by {by}, which are also enabled}}"
 msgstr "{count, plural, one {Replaced by {by}, which is also enabled} other {Replaced by {by}, which are also enabled}}"
+
+#: src/mods/updateReview/UpdateBar.tsx
+msgid "including {name} {version}"
+msgstr "including {name} {version}"
 
 #: src/mods/GroupMenu.tsx
 msgid "Rename group"
@@ -3454,20 +3315,9 @@ msgstr " {name} wins; {losers} overridden."
 msgid "Only on {value}."
 msgstr "Only on {value}."
 
-#. placeholder {0}: hit.warnings
-#: src/mods/lastRun.ts
-#: src/mods/parts.tsx
-msgid "{0, plural, one {# warning} other {# warnings}}"
-msgstr "{0, plural, one {# warning} other {# warnings}}"
-
 #: src/mods/LegacyReasonsCallout.tsx
 msgid "Keep explicit"
 msgstr "Keep explicit"
-
-#. placeholder {0}: listNames(added)
-#: src/mods/updateReview/Row.tsx
-msgid "Now needs {0}"
-msgstr "Now needs {0}"
 
 #: src/mods/ModsGroupHeader.tsx
 msgid "Find sources"
@@ -3510,26 +3360,13 @@ msgstr "Share selection"
 msgid "Press a key…"
 msgstr "Press a key…"
 
-#: src/mods/LoadOrderTab.tsx
-msgid "Used by: {label}"
-msgstr "Used by: {label}"
-
 #: src/mods/DuplicateDialog.tsx
 msgid "Gets update checks."
 msgstr "Gets update checks."
 
-#: src/mods/SetNexusPageDialog.tsx
-msgid "Nexus page address"
-msgstr "Nexus page address"
-
 #: src/mods/problemFix/DamagedFix.tsx
 msgid "Downloading {name} again"
 msgstr "Downloading {name} again"
-
-#. placeholder {0}: row.brokeIn
-#: src/mods/CompatChip.tsx
-msgid "Broke in {0}"
-msgstr "Broke in {0}"
 
 #: src/mods/FrozenCallout.tsx
 msgid "Unfreeze"
@@ -3552,14 +3389,17 @@ msgstr "Last run"
 msgid "More setting values"
 msgstr "More setting values"
 
-#. placeholder {0}: mod.name
-#: src/mods/storeEntries.ts
-msgid "Could not save the note and tags for {0}"
-msgstr "Could not save the note and tags for {0}"
+#: src/mods/OldFilesCallouts.tsx
+msgid "{count, plural, one {Moved # old file to trash} other {Moved # old files to trash}}"
+msgstr "{count, plural, one {Moved # old file to trash} other {Moved # old files to trash}}"
 
 #: src/mods/Sidebar.tsx
 msgid "Also in these profiles"
 msgstr "Also in these profiles"
+
+#: src/mods/describe.ts
+msgid "{name} is installed twice, and only one of them loads."
+msgstr "{name} is installed twice, and only one of them loads."
 
 #: src/mods/ListColumnMenu.tsx
 msgid "Icon"
@@ -3569,17 +3409,9 @@ msgstr "Icon"
 msgid "A plugin it needs failed"
 msgstr "A plugin it needs failed"
 
-#. placeholder {0}: update.name
-#. placeholder {1}: update.version
-#. placeholder {2}: update.source
-#: src/mods/updateReview/UpdateActions.tsx
-msgid "{0} was installed from another site. Updating installs {1} from {2} instead and keeps your settings."
-msgstr "{0} was installed from another site. Updating installs {1} from {2} instead and keeps your settings."
-
-#: src/mods/listRows.ts
-#: src/mods/Sidebar.tsx
-msgid "Nexus Mods"
-msgstr "Nexus Mods"
+#: src/mods/describe.ts
+msgid "{name} logged {errors} in the last run. First: {first}"
+msgstr "{name} logged {errors} in the last run. First: {first}"
 
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Applied when the game next starts"
@@ -3605,25 +3437,21 @@ msgstr "Delete preset"
 msgid "Name a group below to create it."
 msgstr "Name a group below to create it."
 
-#: src/mods/typedConfig/StringWidgets.tsx
-msgid "Add {label} item"
-msgstr "Add {label} item"
+#: src/mods/describe.ts
+msgid "{a} and {b} each wait for the other, so {loader} loads neither."
+msgstr "{a} and {b} each wait for the other, so {loader} loads neither."
 
 #: src/mods/OptionalFileRows.tsx
 msgid "Download and add on top"
 msgstr "Download and add on top"
 
-#: src/mods/problemFixButtons.tsx
-msgid "Revert {entryName}?"
-msgstr "Revert {entryName}?"
+#: src/mods/GameModsReviewDialog.tsx
+msgid "{count, plural, one {# mod matches.} other {# mods match.}}"
+msgstr "{count, plural, one {# mod matches.} other {# mods match.}}"
 
 #: src/mods/EnableRequirementsDialog.tsx
 msgid "Enable them too"
 msgstr "Enable them too"
-
-#: src/mods/describe.ts
-msgid "It was thrown in {thrown}, called from {mod}'s {kind} {method} on {target}"
-msgstr "It was thrown in {thrown}, called from {mod}'s {kind} {method} on {target}"
 
 #: src/mods/problemWhy.ts
 msgid "Two enabled copies of the same mod are in this profile. The game loads only one of them, and you do not choose which."
@@ -3651,9 +3479,13 @@ msgstr "Dependencies"
 msgid "Skip this update"
 msgstr "Skip this update"
 
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid "hook"
 msgstr "hook"
+
+#: src/mods/LegacyReview.tsx
+msgid "{count, plural, one {Mark # implicit} other {Mark # implicit}}"
+msgstr "{count, plural, one {Mark # implicit} other {Mark # implicit}}"
 
 #: src/mods/updateReview/EverywhereDialog.tsx
 msgid "this version skipped"
@@ -3674,15 +3506,6 @@ msgstr "Pin selected versions"
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Share log and continue"
 msgstr "Share log and continue"
-
-#: src/mods/storeEntries.ts
-msgid "{removed, plural, one {Removed # mod} other {Removed # mods}}"
-msgstr "{removed, plural, one {Removed # mod} other {Removed # mods}}"
-
-#. placeholder {0}: mods.length
-#: src/mods/SelectionBarDialogs.tsx
-msgid "{0, plural, one {Set category for # mod} other {Set category for # mods}}"
-msgstr "{0, plural, one {Set category for # mod} other {Set category for # mods}}"
 
 #: src/mods/updateReview/EverywhereDialog.tsx
 #: src/mods/updateReview/UpdateActions.tsx
@@ -3705,6 +3528,10 @@ msgstr "Plugin reported an error"
 msgid "{name}: {summary}"
 msgstr "{name}: {summary}"
 
+#: src/mods/storeEntries.ts
+msgid "Could not open the folder of {name}"
+msgstr "Could not open the folder of {name}"
+
 #: src/mods/problemText.ts
 msgid "Broken or outdated mods"
 msgstr "Broken or outdated mods"
@@ -3713,16 +3540,9 @@ msgstr "Broken or outdated mods"
 msgid "Could not check for mod updates"
 msgstr "Could not check for mod updates"
 
-#. placeholder {0}: result.imported
-#: src/mods/GameModsReviewDialog.tsx
-msgid "{0, plural, one {# imported} other {# imported}}"
-msgstr "{0, plural, one {# imported} other {# imported}}"
-
-#. placeholder {0}: e.action
-#. placeholder {1}: e.target
-#: src/mods/ConflictWhy.tsx
-msgid "{0} {1}"
-msgstr "{0} {1}"
+#: src/mods/Toolbar.tsx
+msgid "Show: {filter}"
+msgstr "Show: {filter}"
 
 #: src/mods/Toolbar.tsx
 msgid "No mods yet"
@@ -3747,13 +3567,6 @@ msgstr "This mod is no longer in the profile."
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Search entries"
 msgstr "Search entries"
-
-#. placeholder {0}: mod.name
-#. placeholder {0}: overlay.label
-#: src/mods/OverlayRow.tsx
-#: src/mods/parts.tsx
-msgid "Disable {0}"
-msgstr "Disable {0}"
 
 #: src/mods/ConfigPresets.tsx
 msgid "Delete {name}"
@@ -3783,10 +3596,6 @@ msgstr "Report to author…"
 msgid "Show sections"
 msgstr "Show sections"
 
-#: src/mods/typedConfig/ConfigTab.tsx
-msgid "{count, plural, one {# mod has no config yet; mods create it the first time the game runs.} other {# mods have no config yet; mods create it the first time the game runs.}}"
-msgstr "{count, plural, one {# mod has no config yet; mods create it the first time the game runs.} other {# mods have no config yet; mods create it the first time the game runs.}}"
-
 #: src/mods/CleanupSection.tsx
 #: src/mods/problemFix/RestoreButton.tsx
 #: src/mods/problemFixButtons.tsx
@@ -3794,9 +3603,9 @@ msgstr "{count, plural, one {# mod has no config yet; mods create it the first t
 msgid "Restore"
 msgstr "Restore"
 
-#: src/mods/NexusAccountActions.tsx
-msgid "You have not endorsed this mod. Nexus asks that you download and play it first."
-msgstr "You have not endorsed this mod. Nexus asks that you download and play it first."
+#: src/mods/ModSections.tsx
+msgid "Roll back {name}?"
+msgstr "Roll back {name}?"
 
 #: src/mods/typedConfig/ConfigTab.tsx
 msgid "Matching settings"
@@ -3806,18 +3615,17 @@ msgstr "Matching settings"
 msgid "Save current as…"
 msgstr "Save current as…"
 
-#: src/mods/typedConfig/StringWidgets.tsx
-msgid "Clear {label}"
-msgstr "Clear {label}"
-
 #: src/mods/AssetMapDialog.tsx
 msgid "Make win"
 msgstr "Make win"
 
-#. placeholder {0}: copy.version
-#: src/mods/DuplicateDialog.tsx
-msgid "Version {0}"
-msgstr "Version {0}"
+#: src/mods/NewFoldersCallout.tsx
+msgid "{count, plural, one {Stopped asking about # folder} other {Stopped asking about # folders}}"
+msgstr "{count, plural, one {Stopped asking about # folder} other {Stopped asking about # folders}}"
+
+#: src/mods/NexusAccountActions.tsx
+msgid "Could not load your tracked {source} mods"
+msgstr "Could not load your tracked {source} mods"
 
 #: src/mods/AssetMapDialog.tsx
 #: src/mods/AuthorDialog.tsx
@@ -3828,49 +3636,39 @@ msgstr "Version {0}"
 msgid "Close"
 msgstr "Close"
 
-#: src/mods/SetNexusPageDialog.tsx
-msgid "{name} now comes from that Nexus page"
-msgstr "{name} now comes from that Nexus page"
-
 #: src/mods/Sidebar.tsx
 msgid "Stop ignoring {ignoredSource} updates"
 msgstr "Stop ignoring {ignoredSource} updates"
 
-#. placeholder {0}: e.toArea
-#: src/mods/ConflictWhy.tsx
-msgid "ToArea {0}"
-msgstr "ToArea {0}"
+#: src/mods/updateReview/KeptGroup.tsx
+msgid "newer: {version}"
+msgstr "newer: {version}"
 
 #: src/mods/DuplicateDialog.tsx
 msgid "Older."
 msgstr "Older."
 
-#. placeholder {0}: mod.name
-#: src/mods/detail.ts
-msgid "{0} rolled back"
-msgstr "{0} rolled back"
-
 #: src/mods/Toolbar.tsx
 msgid "Adding…"
 msgstr "Adding…"
-
-#. placeholder {0}: one.name
-#: src/mods/parts.tsx
-msgid "Remove {0} from this profile?"
-msgstr "Remove {0} from this profile?"
 
 #: src/mods/columnLabel.ts
 msgid "On"
 msgstr "On"
 
+#: src/mods/storeEntries.ts
+msgid "{count, plural, one {Removed # mod} other {Removed # mods}}"
+msgstr "{count, plural, one {Removed # mod} other {Removed # mods}}"
+
 #: src/mods/ProblemsTab.tsx
 msgid "File conflicts"
 msgstr "File conflicts"
 
-#. placeholder {0}: formatWhen(at)
-#: src/mods/SlowStartupSection.tsx
-msgid "Checked {0}"
-msgstr "Checked {0}"
+#: src/mods/parts.tsx
+#: src/mods/UpdateBanner.tsx
+#: src/mods/updateReview/RowCopy.tsx
+msgid "Unofficial update available: {version}"
+msgstr "Unofficial update available: {version}"
 
 #: src/mods/ProblemsTab.tsx
 msgid "Every mod has what it needs and nothing clashes."
@@ -3888,11 +3686,6 @@ msgstr "Could not delete the group"
 msgid "Retry now"
 msgstr "Retry now"
 
-#. placeholder {0}: state.previousVersion
-#: src/mods/ModSections.tsx
-msgid "{0} · kept for rollback"
-msgstr "{0} · kept for rollback"
-
 #: src/mods/DuplicateDialog.tsx
 msgid "Decide later"
 msgstr "Decide later"
@@ -3901,22 +3694,31 @@ msgstr "Decide later"
 msgid "No config.json yet"
 msgstr "No config.json yet"
 
-#: src/mods/describe.ts
-msgid "{path} wait for each other in a loop, so SMAPI loads none of them."
-msgstr "{path} wait for each other in a loop, so SMAPI loads none of them."
-
-#: src/mods/describe.ts
+#: src/mods/describeLoadFailure.ts
 msgid "Its {kind} {method} on {target} threw it"
 msgstr "Its {kind} {method} on {target} threw it"
 
-#: src/mods/SetNexusPageDialog.tsx
-msgid "Set the Nexus page of {name}"
-msgstr "Set the Nexus page of {name}"
+#: src/mods/AuthorDialog.tsx
+msgid "On {source}"
+msgstr "On {source}"
+
+#: src/mods/AssetMapDialog.tsx
+msgid "{count, plural, one {# asset} other {# assets}}, {shared} changed by more than one mod"
+msgstr "{count, plural, one {# asset} other {# assets}}, {shared} changed by more than one mod"
+
+#: src/mods/overlayActions.ts
+#: src/mods/storeEntries.ts
+msgid "Removed {name}"
+msgstr "Removed {name}"
 
 #: src/mods/ModMenu.tsx
 #: src/mods/SelectionBarActions.tsx
 msgid "Set category…"
 msgstr "Set category…"
+
+#: src/mods/storeProblems.ts
+msgid "Could not disable the other copy of {name}"
+msgstr "Could not disable the other copy of {name}"
 
 #: src/mods/ChangeVersionDialog.tsx
 msgid "Install anyway"
@@ -3930,10 +3732,6 @@ msgstr "Adopt"
 #: src/mods/typedConfig/ConfigTab.tsx
 msgid "No mods match"
 msgstr "No mods match"
-
-#: src/mods/listRows.ts
-msgid "Nexus Mods, file unknown"
-msgstr "Nexus Mods, file unknown"
 
 #: src/mods/parts.tsx
 msgid "Loaded in the running game"

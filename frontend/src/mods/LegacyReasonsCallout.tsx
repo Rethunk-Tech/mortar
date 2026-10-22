@@ -67,10 +67,13 @@ function LegacyReasonsOffer() {
     )
   return (
     <ListCallout
-      text={plural(picks.length, {
-        one: 'Mortar identified # mod as a library or supporting mod',
-        other: 'Mortar identified # mods as libraries or supporting mods',
-      })}
+      text={plural(
+        { count: picks.length },
+        {
+          one: 'Mortar identified # mod as a library or supporting mod',
+          other: 'Mortar identified # mods as libraries or supporting mods',
+        },
+      )}
       actions={
         <>
           <Button size="small" variant="text" disabled={pending} onClick={() => answer([])}>

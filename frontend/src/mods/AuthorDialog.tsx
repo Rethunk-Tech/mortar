@@ -14,6 +14,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { space } from '../theme/density.ts'
@@ -70,7 +71,7 @@ function NexusAuthorBlock({ nexusName, authorUrl }: { nexusName: string; authorU
   }
   return (
     <Box>
-      <Typography sx={muted}>{t`On Nexus`}</Typography>
+      <Typography sx={muted}>{t`On ${{ source: sourceLabel('nexus') }}`}</Typography>
       <Typography sx={text}>{nexusName}</Typography>
       {authorUrl === '' ? null : (
         <Link
@@ -78,7 +79,7 @@ function NexusAuthorBlock({ nexusName, authorUrl }: { nexusName: string; authorU
           onClick={() => openPage(authorUrl)}
           sx={{ ...text, alignSelf: 'flex-start' }}
         >
-          {t`Open author page on Nexus`}
+          {t`Open author page on ${{ source: sourceLabel('nexus') }}`}
         </Link>
       )}
     </Box>

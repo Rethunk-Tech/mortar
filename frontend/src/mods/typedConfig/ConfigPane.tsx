@@ -51,7 +51,7 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
           <Tooltip title={entry.description} describeChild={true}>
             <IconButton
               size="small"
-              aria-label={t`About ${entry.key}`}
+              aria-label={t`About ${{ key: entry.key }}`}
               sx={{ color: 'text.secondary' }}
             >
               <CircleHelp size={14} />
@@ -77,7 +77,7 @@ function EntryRow({ section, entry }: { section: string; entry: ConfigEntry }) {
             aria-label={
               entry.pending
                 ? t`Discard the change to ${{ name: entry.label || entry.key }}`
-                : t`Reset ${entry.key} to its default`
+                : t`Reset ${{ key: entry.key }} to its default`
             }
             onClick={() => reset(section, entry.key)}
           >
@@ -468,7 +468,7 @@ export function ConfigPane({
       </Box>
       <ConfirmDialog
         open={deleting}
-        title={t`Delete ${initialFile ?? name}?`}
+        title={t`Delete ${{ name: initialFile ?? name }}?`}
         body={t`No mod owns this file. It is removed from this profile, and the game makes a new one if it needs it.`}
         confirmLabel={t`Delete`}
         color="error"

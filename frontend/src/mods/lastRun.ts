@@ -59,7 +59,7 @@ export function showLastRunInConsole(game: string, profileId: string, mod: Mod) 
 export function lastRunSummary(hit: ModRunIssues): string {
   const errors = hit.errors ? errorsLabel(hit.errors) : ''
   const warnings = hit.warnings
-    ? plural(hit.warnings, { one: '# warning', other: '# warnings' })
+    ? plural({ count: hit.warnings }, { one: '# warning', other: '# warnings' })
     : ''
   return [errors, warnings].filter((p) => p !== '').join(', ')
 }

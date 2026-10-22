@@ -40,7 +40,7 @@ export function EnableRequirementsDialog() {
   return (
     <ConfirmDialog
       open={true}
-      title={t`${offer.dependentName} needs ${listNames(names)}`}
+      title={t`${{ name: offer.dependentName }} needs ${{ names: listNames(names) }}`}
       confirmLabel={t`Enable them too`}
       cancelLabel={t`Just this mod`}
       onCancel={dismiss}

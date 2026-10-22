@@ -1,0 +1,13 @@
+// Names of products other than Mortar never sit in a message: they go in as placeholders, so translators see one
+// message per sentence. Mod sites come from sourceLabel(); these are the rest.
+export const SMAPI = 'SMAPI'
+export const BEPINEX = 'BepInEx'
+export const CONTENT_PATCHER = 'Content Patcher'
+export const HARMONY = 'Harmony'
+export const UNITY = 'Unity'
+export const STEAM = 'Steam'
+export const GOG = 'GOG'
+export const EPIC_GAMES = 'Epic Games'
+export const XBOX = 'Xbox'
+export const WINDOWS = 'Windows'
+export const FLATPAK = 'Flatpak'

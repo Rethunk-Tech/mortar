@@ -5,6 +5,7 @@ import {
   DismissLoadFailure,
   RemoveSkippedPlugin,
 } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
+import { BEPINEX } from '../../brand/productNames.ts'
 import { useBrowseView } from '../../browse/view.ts'
 import { useTab } from '../../game/tab.ts'
 import { useLoader } from '../../loader/store.ts'
@@ -91,7 +92,7 @@ function LoadFailureAction({
           <ConfirmDialog
             open={removing}
             title={t`Remove the older copy?`}
-            body={t`BepInEx skipped ${path} because a newer copy of the plugin loaded. Mortar deletes the file.`}
+            body={t`${{ loader: BEPINEX }} skipped ${path} because a newer copy of the plugin loaded. Mortar deletes the file.`}
             confirmLabel={t`Remove`}
             color="error"
             onCancel={() => setRemoving(false)}

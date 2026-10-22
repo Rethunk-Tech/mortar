@@ -77,7 +77,7 @@ export const openPageLabel = (i18n: I18n, host: PageHost): string => {
     return i18n._(msg`Open page`)
   }
   const site = sourceLabel(host)
-  return i18n._(msg`Open on ${site}`)
+  return i18n._(msg`Open on ${{ source: site }}`)
 }
 
 // The actions of a mod's menu, in menu order; Remove is the last and is set apart by a divider.

@@ -4,6 +4,7 @@ import { TriangleAlert } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatKb } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -99,7 +100,7 @@ function Facts({ details, mod, columns }: { details: Details; mod: Mod; columns:
         gap: space.gap,
       }}
     >
-      <Fact label={t`Latest on Nexus`}>
+      <Fact label={t`Latest on ${{ source: sourceLabel('nexus') }}`}>
         <Box component="span" sx={{ color: newer ? 'primary.main' : undefined }}>
           {page.version || '—'}
         </Box>
@@ -116,7 +117,7 @@ function Facts({ details, mod, columns }: { details: Details; mod: Mod; columns:
       </Fact>
       <Fact label={t`Endorsements`}>{formatCount(page.endorsements, i18n.locale)}</Fact>
       <Fact label={t`Downloads`}>
-        {t`${formatCount(page.downloads, i18n.locale)} · ${formatCount(page.uniqueDownloads, i18n.locale)} unique`}
+        {t`${{ downloads: formatCount(page.downloads, i18n.locale) }} · ${{ unique: formatCount(page.uniqueDownloads, i18n.locale) }} unique`}
       </Fact>
       <Fact label={t`Created · updated`}>
         {`${formatWhen(page.created) || '—'} · ${formatWhen(page.updated) || '—'}`}
@@ -160,7 +161,9 @@ function Files({
         </Box>
       ) : null}
       {others.length > 0 ? (
-        <Fold title={t`Current files on Nexus (${others.length})`}>
+        <Fold
+          title={t`Current files on ${{ source: sourceLabel('nexus') }} (${{ count: others.length }})`}
+        >
           {others.slice(0, FILES_SHOWN).map((f) => (
             <Box key={f.fileId} sx={{ display: 'flex', gap: space.gap, alignItems: 'baseline' }}>
               <Typography
@@ -177,7 +180,7 @@ function Files({
           {others.length > FILES_SHOWN ? (
             <Typography
               sx={muted}
-            >{t`And ${others.length - FILES_SHOWN} more on the Nexus page`}</Typography>
+            >{t`And ${{ count: others.length - FILES_SHOWN }} more on the ${{ source: sourceLabel('nexus') }} page`}</Typography>
           ) : null}
         </Fold>
       ) : null}
@@ -214,10 +217,10 @@ function Loaded({
           {(() => {
             const mark = nexusPageMark(page.status, page.available, page.updated, page.created)
             const labelled = goneCaption(mark, {
-              hidden: t`Hidden on Nexus`,
-              hiddenDated: t`Hidden on Nexus · ${mark.date}`,
-              removed: t`Removed from Nexus`,
-              removedDated: t`Removed from Nexus · ${mark.date}`,
+              hidden: t`Hidden on ${{ source: sourceLabel('nexus') }}`,
+              hiddenDated: t`Hidden on ${{ source: sourceLabel('nexus') }} · ${{ when: mark.date }}`,
+              removed: t`Removed from ${{ source: sourceLabel('nexus') }}`,
+              removedDated: t`Removed from ${{ source: sourceLabel('nexus') }} · ${{ when: mark.date }}`,
             })
             if (labelled === '') {
               return null
@@ -247,7 +250,7 @@ function Loaded({
       ) : null}
       <Files details={details} fileId={fileId} looked={looked} />
       {logs.length > 0 ? (
-        <Fold title={t`Changelog on Nexus`}>
+        <Fold title={t`Changelog on ${{ source: sourceLabel('nexus') }}`}>
           {recentChangelogs(logs).map((c) => (
             <Box key={c.version} sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
               <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'baseline' }}>
@@ -301,13 +304,13 @@ export function NexusDetails({
     )
   }
   if (!entry) {
-    return <LoadingRow>{t`Reading the Nexus page…`}</LoadingRow>
+    return <LoadingRow>{t`Reading the ${{ source: sourceLabel('nexus') }} page…`}</LoadingRow>
   }
   return (
     <Typography sx={muted}>
       {signedIn
-        ? t`Could not read the Nexus page: ${entry.error ?? ''}`
-        : t`Sign in to Nexus Mods in Settings to see more from this mod's page.`}
+        ? t`Could not read the ${{ source: sourceLabel('nexus') }} page: ${{ error: entry.error ?? '' }}`
+        : t`Sign in to ${{ source: sourceLabel('nexus') }} in Settings to see more from this mod's page.`}
     </Typography>
   )
 }

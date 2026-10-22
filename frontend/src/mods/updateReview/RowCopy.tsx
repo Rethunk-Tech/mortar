@@ -25,7 +25,7 @@ export function RowCopy({
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
         <Typography sx={{ fontSize: 16, fontWeight: 600, overflowWrap: 'anywhere', minWidth: 0 }}>
           {update.unofficial ? (
-            t`Unofficial update available: ${update.version}`
+            t`Unofficial update available: ${{ version: update.version }}`
           ) : (
             <ModNameLink id={update.id} modKey={update.key} name={update.name} wrap={true} />
           )}
@@ -58,7 +58,7 @@ export function RowCopy({
       ) : null}
       {reportedElsewhere ? (
         <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-          {t`Reported by ${update.source}`}
+          {t`Reported by ${{ source: update.source }}`}
         </Typography>
       ) : null}
       <Changes update={update} />

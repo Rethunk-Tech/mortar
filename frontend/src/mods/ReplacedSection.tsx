@@ -39,7 +39,7 @@ function ReplacedRow({ file, onRestore }: { file: ReplacedFile; onRestore: () =>
       >
         {file.path}
       </Typography>
-      <Button size="small" aria-label={t`Restore ${{ label: file.path }}`} onClick={onRestore}>
+      <Button size="small" aria-label={t`Restore ${{ name: file.path }}`} onClick={onRestore}>
         {t`Restore`}
       </Button>
     </Box>
@@ -64,7 +64,13 @@ export function ReplacedSection({ files }: { files: ReplacedFile[] }) {
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, mb: 1 }}>
         <Typography sx={{ flex: 1, fontSize: 14 }}>
-          {t`${plural(files.length, { one: 'Replaced # old file Mortar did not install', other: 'Replaced # old files Mortar did not install' })}`}
+          {plural(
+            { count: files.length },
+            {
+              one: 'Replaced # old file Mortar did not install',
+              other: 'Replaced # old files Mortar did not install',
+            },
+          )}
         </Typography>
         <Button size="small" color="error" sx={{ height: 26 }} onClick={() => setConfirming(true)}>
           {t`Delete all`}

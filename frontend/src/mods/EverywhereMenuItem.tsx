@@ -32,7 +32,7 @@ export function EverywhereMenuItem({
     <>
       <MenuAction
         icon={<RefreshCcw size={ICON_SIZE} />}
-        label={t`Update in all profiles (${n})`}
+        label={t`Update in all profiles (${{ count: n }})`}
         onClick={() => {
           close()
           setOpen(true)

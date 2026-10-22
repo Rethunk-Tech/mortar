@@ -98,7 +98,7 @@ export const useDetail = create<{
         set({ extras: { id: modId(mod), relations, state, configFiles: configFiles ?? [] } })
       }
     } catch (e) {
-      fail(i18n._(msg`Could not read the details of ${mod.name}`))(e)
+      fail(i18n._(msg`Could not read the details of ${{ name: mod.name }}`))(e)
     }
   },
   rollBack: async (mod) => {
@@ -110,7 +110,7 @@ export const useDetail = create<{
       const rolled = await RollBack(target.game, target.id, mod.key)
       useProfiles.getState().replace(rolled)
     } catch (e) {
-      fail(i18n._(msg`Could not roll back ${mod.name}`))(e)
+      fail(i18n._(msg`Could not roll back ${{ name: mod.name }}`))(e)
       return
     }
     const next = useProfiles.getState().profiles.find((p) => p.id === target.id)
@@ -118,7 +118,7 @@ export const useDetail = create<{
     const key = keyAfterRollBack(next?.entries, mod.id, mod.key)
     useToasts.getState().push({
       kind: 'success',
-      title: i18n._(msg`${mod.name} rolled back`),
+      title: i18n._(msg`${{ name: mod.name }} rolled back`),
       ...(backTo ? { body: i18n._(msg`Back to ${backTo}. Saves untouched.`) } : {}),
       picture: mod.picture,
       action: {
@@ -144,7 +144,7 @@ export const useDetail = create<{
     try {
       await ResetConfig(target.game, target.id, mod.key, mod.id)
     } catch (e) {
-      fail(i18n._(msg`Could not reset the settings of ${mod.name}`))(e)
+      fail(i18n._(msg`Could not reset the settings of ${{ name: mod.name }}`))(e)
     }
     await get().loadExtras(mod)
   },

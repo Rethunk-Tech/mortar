@@ -30,7 +30,7 @@ function toastSwitchedOff(row: OverlayRow, before: Entry[], after: Profile, prof
   const names = listNames(off.map(overlayLabel))
   useToasts.getState().push({
     kind: 'success',
-    title: i18n._(msg`Enabled ${row.label}`),
+    title: i18n._(msg`Enabled ${{ name: row.label }}`),
     body: i18n._(msg`It replaces the same files, so this is disabled: ${names}`),
     action: {
       label: i18n._(msg`Undo`),
@@ -71,8 +71,8 @@ export async function setOverlayEnabled(row: OverlayRow, enabled: boolean) {
   } catch (e) {
     reportError(
       enabled
-        ? i18n._(msg`Could not enable ${row.label}`)
-        : i18n._(msg`Could not disable ${row.label}`),
+        ? i18n._(msg`Could not enable ${{ name: row.label }}`)
+        : i18n._(msg`Could not disable ${{ name: row.label }}`),
     )(e)
   }
 }
@@ -87,7 +87,7 @@ export async function removeOverlay(row: OverlayRow) {
   try {
     useProfiles.getState().replace(await RemoveEntries(target.game, target.id, [row.key]))
   } catch (e) {
-    reportError(i18n._(msg`Could not remove ${row.label}`))(e)
+    reportError(i18n._(msg`Could not remove ${{ name: row.label }}`))(e)
     return
   }
   if (!entry) {
@@ -95,7 +95,7 @@ export async function removeOverlay(row: OverlayRow) {
   }
   useToasts.getState().push({
     kind: 'success',
-    title: i18n._(msg`Removed ${row.label}`),
+    title: i18n._(msg`Removed ${{ name: row.label }}`),
     action: {
       label: i18n._(msg`Undo`),
       profileId: target.id,

@@ -1,17 +1,18 @@
 import { msg } from '@lingui/core/macro'
+import { EPIC_GAMES, FLATPAK, GOG, STEAM, XBOX } from '../brand/productNames.ts'
 import { i18n } from '../i18n/index.ts'
 
 // Store and launcher names are brands, shown as they are; only the words around them are translated.
 const BRANDS: Record<string, string> = {
-  steam: 'Steam',
+  steam: STEAM,
   'flatpak-steam': 'Flatpak Steam',
-  gog: 'GOG',
+  gog: GOG,
   lutris: 'Lutris',
   bottles: 'Bottles',
   ea: 'EA App',
-  epic: 'Epic Games',
-  xbox: 'Xbox',
-  flatpak: 'Flatpak',
+  epic: EPIC_GAMES,
+  xbox: XBOX,
+  flatpak: FLATPAK,
 }
 const VIA: Record<string, [store: string, launcher: string]> = {
   'gog-heroic': ['GOG', 'Heroic'],

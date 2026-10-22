@@ -66,7 +66,7 @@ export function announceAlso(names: string[] | null | undefined) {
   }
   useToasts.getState().push({
     kind: 'info',
-    title: i18n._(msg`Also enabled ${listNames(also)}`),
+    title: i18n._(msg`Also enabled ${{ names: listNames(also) }}`),
   })
 }
 

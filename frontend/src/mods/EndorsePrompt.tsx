@@ -12,6 +12,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useLaunch } from '../launch/store.ts'
 import { currentGame } from '../nav/currentGame.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -117,13 +118,13 @@ export function EndorsePrompt({ profile }: { profile: Profile }) {
     >
       <Card sx={{ p: space.pad, maxWidth: 460, bgcolor: 'var(--mortar-toast)' }}>
         <Typography sx={{ mb: 1, fontSize: 14, fontWeight: 700 }}>
-          {t`Enjoying these mods? Endorse them on Nexus`}
+          {t`Enjoying these mods? Endorse them on ${{ source: sourceLabel('nexus') }}`}
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           {prompts.map((prompt) => (
             <Box key={prompt.modId} sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
               <Typography sx={{ flex: 1, minWidth: 0, fontSize: 13, overflowWrap: 'anywhere' }}>
-                {t`Enjoying ${prompt.name}? Endorse it on Nexus`}
+                {t`Enjoying ${{ name: prompt.name }}? Endorse it on ${{ source: sourceLabel('nexus') }}`}
               </Typography>
               <Button
                 size="small"

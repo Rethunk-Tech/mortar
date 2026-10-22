@@ -38,8 +38,8 @@ function summarize(
   }
   const { installed: updated } = counts
   const parts = [
-    i18n._(msg`${plural(updated, { one: 'Updated # mod', other: 'Updated # mods' })}`),
-    ...(counts.failed > 0 ? [i18n._(msg`${counts.failed} failed`)] : []),
+    i18n._(msg`${plural({ count: updated }, { one: 'Updated # mod', other: 'Updated # mods' })}`),
+    ...(counts.failed > 0 ? [i18n._(msg`${{ failed: counts.failed }} failed`)] : []),
     ...(needChoice > 0 ? [i18n._(msg`${needChoice} need your choice`)] : []),
   ]
   toasts.push({
@@ -60,7 +60,7 @@ function summarize(
     toasts.push({
       kind: 'warning',
       title: i18n._(
-        msg`${plural(counts.failed, { one: '# update failed', other: '# updates failed' })}`,
+        msg`${plural({ count: counts.failed }, { one: '# update failed', other: '# updates failed' })}`,
       ),
       action: { label: i18n._(msg`Retry`), run: () => RetryFailed() },
     })

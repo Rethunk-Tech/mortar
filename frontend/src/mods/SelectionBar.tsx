@@ -38,7 +38,7 @@ function SelectionBar({ profileId, mods }: { profileId: string; mods: Mod[] }) {
   const [category, setCategory] = useState('')
   const selected = mods.filter((m) => ids.includes(modId(m)))
   const keys = [...new Set(selected.map((m) => m.key))]
-  const count = plural(ids.length, { one: '# mod selected', other: '# mods selected' })
+  const count = plural({ count: ids.length }, { one: '# mod selected', other: '# mods selected' })
   const updates = visibleUpdates(
     useUpdates((s) => s.updates),
     useProfiles.getState().profiles.find((p) => p.id === profileId),

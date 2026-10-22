@@ -67,8 +67,8 @@ export function ChangeVersionDialog({
       return (
         <Typography>
           {frozen
-            ? t`This profile is frozen, so ${name} is held at ${installed}. Install ${choice.version} anyway? The mod stays held at the new version.`
-            : t`${name} is pinned at ${installed}. Install ${choice.version} anyway? The pin stays on the new version.`}
+            ? t`This profile is frozen, so ${name} is held at ${installed}. Install ${{ version: choice.version }} anyway? The mod stays held at the new version.`
+            : t`${name} is pinned at ${installed}. Install ${{ version: choice.version }} anyway? The pin stays on the new version.`}
         </Typography>
       )
     }

@@ -191,7 +191,7 @@ export function ReportToAuthorButton({
         profile,
         mod,
         modLogName,
-        issueTitle: t`Error in ${mod.name}`,
+        issueTitle: t`Error in ${{ name: mod.name }}`,
         entries,
         loader,
         mortarVersion,

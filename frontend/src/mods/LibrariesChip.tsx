@@ -18,7 +18,9 @@ export function LibrariesChip({ libraries }: { libraries: readonly ListRow[] | u
   if (!libraries || libraries.length === 0) {
     return null
   }
-  const label = i18n._(plural(libraries.length, { one: '+# library', other: '+# libraries' }))
+  const label = i18n._(
+    plural({ count: libraries.length }, { one: '+# library', other: '+# libraries' }),
+  )
   return (
     <>
       <Chip

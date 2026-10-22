@@ -13,6 +13,7 @@ import { memo, useState } from 'react'
 import { create } from 'zustand'
 import { SetNexusPage } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { type InlineError, inlineError, reportUnexpected } from '../toasts/report.ts'
@@ -45,7 +46,7 @@ export function NexusPageMenuItem({ mod, close }: { mod: Mod; close: () => void 
     <MenuAction
       disabled={locked}
       icon={<Link2 size={16} />}
-      label={t`Set Nexus page…`}
+      label={t`Set ${{ source: sourceLabel('nexus') }} page…`}
       onClick={() => {
         close()
         useNexusPage
@@ -80,7 +81,7 @@ export const SetNexusPageDialog = memo(function SetNexusPageDialogView() {
       useProfiles.getState().replace(profile)
       useToasts.getState().push({
         kind: 'success',
-        title: t`${name} now comes from that Nexus page`,
+        title: t`${name} now comes from that ${{ source: sourceLabel('nexus') }} page`,
         changes: [profile.lastChange ?? ''],
       })
       close()
@@ -92,16 +93,16 @@ export const SetNexusPageDialog = memo(function SetNexusPageDialogView() {
   }
   return (
     <Dialog open={open} onClose={close} fullWidth={true} maxWidth="sm">
-      <DialogTitle>{t`Set the Nexus page of ${name}`}</DialogTitle>
+      <DialogTitle>{t`Set the ${{ source: sourceLabel('nexus') }} page of ${name}`}</DialogTitle>
       <DialogContent>
         <Typography sx={{ mb: 1.5, fontSize: 14, color: 'text.secondary' }}>
-          {t`Paste the address of the mod's page on Nexus Mods. To name the exact file, open that file's Manual Download on the page's Files tab and paste that address instead.`}
+          {t`Paste the address of the mod's page on ${{ source: sourceLabel('nexus') }}. To name the exact file, open that file's Manual Download on the page's Files tab and paste that address instead.`}
         </Typography>
         <TextField
           autoFocus={true}
           fullWidth={true}
           size="small"
-          label={t`Nexus page address`}
+          label={t`${{ source: sourceLabel('nexus') }} page address`}
           placeholder="https://www.nexusmods.com/…/mods/…"
           value={link}
           disabled={busy}

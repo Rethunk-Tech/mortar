@@ -15,6 +15,7 @@ import {
   ModName,
   TrackedMissing,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { currentGame } from '../nav/currentGame.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
@@ -122,10 +123,13 @@ const TrackedNotInProfile = memo(function TrackedNotInProfileView({
   if (!signedIn || mods.length === 0) {
     return null
   }
-  const heading = plural(mods.length, {
-    one: '# tracked mod on Nexus is not in this profile',
-    other: '# tracked mods on Nexus are not in this profile',
-  })
+  const heading = plural(
+    { count: mods.length },
+    {
+      one: `# tracked mod on ${{ source: sourceLabel('nexus') }} is not in this profile`,
+      other: `# tracked mods on ${{ source: sourceLabel('nexus') }} are not in this profile`,
+    },
+  )
   return (
     <Accordion
       disableGutters={true}

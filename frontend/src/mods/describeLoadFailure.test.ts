@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { Result } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
-import { describeLoadFailure } from './describe.ts'
+import { describeLoadFailure } from './describeLoadFailure.ts'
 import { problemCount } from './lookup.ts'
 import { loadKindText } from './problemText.ts'
 

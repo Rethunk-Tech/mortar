@@ -87,8 +87,10 @@ function pushRemovedUndo(
     kind: 'success',
     title:
       removed === 1 && first?.mods?.[0]?.name
-        ? i18n._(msg`Removed ${first.mods[0].name}`)
-        : i18n._(msg`${plural(removed, { one: 'Removed # mod', other: 'Removed # mods' })}`),
+        ? i18n._(msg`Removed ${{ name: first.mods[0].name }}`)
+        : i18n._(
+            msg`${plural({ count: removed }, { one: 'Removed # mod', other: 'Removed # mods' })}`,
+          ),
     action: {
       label: i18n._(msg`Undo`),
       profileId,
@@ -231,7 +233,7 @@ export async function dropMods(
 }
 
 export const dropMod = (get: () => { load: () => Promise<void> }, mod: Mod) =>
-  dropMods(get, [mod], msg`Could not remove ${mod.name}`)
+  dropMods(get, [mod], msg`Could not remove ${{ name: mod.name }}`)
 
 export async function setEntryNoteTags(mod: Mod, note: string, tags: string[]) {
   const target = openTarget()
@@ -243,7 +245,7 @@ export async function setEntryNoteTags(mod: Mod, note: string, tags: string[]) {
       .getState()
       .replace(await SetEntryNoteTags(target.game, target.id, mod.key, note, tags))
   } catch (e) {
-    reportError(i18n._(msg`Could not save the note and tags for ${mod.name}`))(e)
+    reportError(i18n._(msg`Could not save the note and tags for ${{ name: mod.name }}`))(e)
   }
 }
 
@@ -278,7 +280,11 @@ export async function setEnabledAction(
     await get().loadProblems()
   } catch (e) {
     reportError(
-      i18n._(enabled ? msg`Could not enable ${mod.name}` : msg`Could not disable ${mod.name}`),
+      i18n._(
+        enabled
+          ? msg`Could not enable ${{ name: mod.name }}`
+          : msg`Could not disable ${{ name: mod.name }}`,
+      ),
     )(e)
   }
 }
@@ -293,9 +299,13 @@ export async function pinMod(mod: Mod, pinned: boolean, pinReason = '') {
       .getState()
       .replace(await SetPinned(target.game, target.id, mod.key, pinned, pinReason))
   } catch (e) {
-    reportError(i18n._(pinned ? msg`Could not pin ${mod.name}` : msg`Could not unpin ${mod.name}`))(
-      e,
-    )
+    reportError(
+      i18n._(
+        pinned
+          ? msg`Could not pin ${{ name: mod.name }}`
+          : msg`Could not unpin ${{ name: mod.name }}`,
+      ),
+    )(e)
     return
   }
   await useUpdates.getState().load()
@@ -321,8 +331,8 @@ export async function skipVersion(mod: Mod, version: string) {
     reportError(
       i18n._(
         version === ''
-          ? msg`Could not show the skipped update for ${mod.name}`
-          : msg`Could not skip the update for ${mod.name}`,
+          ? msg`Could not show the skipped update for ${{ name: mod.name }}`
+          : msg`Could not skip the update for ${{ name: mod.name }}`,
       ),
     )(e)
     return
@@ -338,7 +348,7 @@ export async function setUpdateChannel(mod: Mod, channel: string) {
   try {
     useProfiles.getState().replace(await SetUpdateChannel(target.game, target.id, mod.key, channel))
   } catch (e) {
-    reportError(i18n._(msg`Could not set the update channel for ${mod.name}`))(e)
+    reportError(i18n._(msg`Could not set the update channel for ${{ name: mod.name }}`))(e)
     return
   }
   await useUpdates.getState().load()
@@ -393,7 +403,7 @@ export async function findSources() {
   }
   const none = i18n._(msg`None of these mods was found on a site`)
   const some = i18n._(
-    msg`${plural(found, { one: 'Found a source for # mod', other: 'Found a source for # mods' })}`,
+    msg`Found a source for ${plural({ count: found }, { one: '# mod', other: '# mods' })}`,
   )
   useToasts.getState().push({
     kind: found > 0 ? 'success' : 'info',
@@ -401,7 +411,7 @@ export async function findSources() {
     ...(found > 0 && left > 0
       ? {
           body: i18n._(
-            msg`${plural(left, { one: '# mod has no page, or more than one', other: '# mods have no page, or more than one' })}`,
+            msg`${plural({ count: left }, { one: '# mod has', other: '# mods have' })} no page, or more than one`,
           ),
         }
       : {}),
@@ -435,7 +445,7 @@ export async function showModFiles(mod: Mod) {
   try {
     await ShowFiles(target.game, target.id, mod.key, mod.id)
   } catch (e) {
-    reportError(i18n._(msg`Could not open the folder of ${mod.name}`))(e)
+    reportError(i18n._(msg`Could not open the folder of ${{ name: mod.name }}`))(e)
   }
 }
 
@@ -447,6 +457,6 @@ export async function openModConfig(mod: Mod) {
   try {
     await OpenConfig(target.game, target.id, mod.key, mod.id)
   } catch (e) {
-    reportError(i18n._(msg`Could not open config.json of ${mod.name}`))(e)
+    reportError(i18n._(msg`Could not open config.json of ${{ name: mod.name }}`))(e)
   }
 }

@@ -68,10 +68,13 @@ function FilePaths({ set }: { set: OverlayFileSet | undefined }) {
   return (
     <Fold
       title={i18n._(
-        plural(replaces.length, {
-          one: `Replaces # file · adds ${added}`,
-          other: `Replaces # files · adds ${added}`,
-        }),
+        plural(
+          { count: replaces.length },
+          {
+            one: `Replaces # file · adds ${added}`,
+            other: `Replaces # files · adds ${added}`,
+          },
+        ),
       )}
     >
       {replaces.length > 0 ? (
@@ -111,7 +114,7 @@ export function InstalledOptional({
             checked={row.enabled}
             disabled={locked}
             onChange={onChoose}
-            slotProps={{ input: { 'aria-label': t`Use ${row.label}` } }}
+            slotProps={{ input: { 'aria-label': t`Use ${{ name: row.label }}` } }}
             sx={{ p: 0.25 }}
           />
         </LockedReason>

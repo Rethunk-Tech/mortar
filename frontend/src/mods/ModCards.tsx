@@ -196,7 +196,7 @@ function ModCardView({
           <ButtonBase
             className="card-title"
             data-mod-id={id}
-            aria-label={t`Details of ${m.name}`}
+            aria-label={t`Details of ${{ name: m.name }}`}
             tabIndex={tabStop ? 0 : -1}
             onKeyDown={(e) => {
               const run: Partial<Record<string, () => void>> = {

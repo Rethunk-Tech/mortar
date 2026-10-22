@@ -167,7 +167,7 @@ function CategoryEditorDialog({ open, onClose }: { open: boolean; onClose: () =>
       </Dialog>
       <ConfirmDialog
         open={pendingDelete !== null}
-        title={t`Delete ${pendingDelete?.name ?? ''}?`}
+        title={t`Delete ${{ name: pendingDelete?.name ?? '' }}?`}
         body={t`Mods in this category will move to Uncategorised.`}
         confirmLabel={t`Delete`}
         color="error"

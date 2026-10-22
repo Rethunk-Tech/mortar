@@ -132,7 +132,7 @@ function CleanupRow({ cleanup }: { cleanup: CleanupItem }) {
       {cleanup.onRestore ? (
         <Button
           size="small"
-          aria-label={t`Restore ${{ label: sentence }}`}
+          aria-label={t`Restore ${{ name: sentence }}`}
           onClick={cleanup.onRestore}
         >
           {t`Restore`}
@@ -181,7 +181,13 @@ export function CleanupSection({
       </Box>
       <ConfirmDialog
         open={confirmCleanup}
-        title={t`${plural(cleanup.length, { one: 'Remove all # mod from this profile?', other: 'Remove all # mods from this profile?' })}`}
+        title={plural(
+          { count: cleanup.length },
+          {
+            one: 'Remove all # mod from this profile?',
+            other: 'Remove all # mods from this profile?',
+          },
+        )}
         body={t`This change can be undone from History.`}
         confirmLabel={t`Remove all`}
         color="error"

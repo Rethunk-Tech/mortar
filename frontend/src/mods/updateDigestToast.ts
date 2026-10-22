@@ -12,10 +12,13 @@ import { useUpdates } from './updates.ts'
 
 function digestTitle(notice: ModUpdateDigestNotice): string {
   return i18n._(
-    msg`${plural(notice.totalUpdates, {
-      one: `# update for ${plural(notice.profilesWith, { one: '# profile', other: '# profiles' })}`,
-      other: `# updates for ${plural(notice.profilesWith, { one: '# profile', other: '# profiles' })}`,
-    })}`,
+    msg`${plural(
+      { count: notice.totalUpdates },
+      {
+        one: `# update for ${plural({ profiles: notice.profilesWith }, { one: '# profile', other: '# profiles' })}`,
+        other: `# updates for ${plural({ profiles: notice.profilesWith }, { one: '# profile', other: '# profiles' })}`,
+      },
+    )}`,
   )
 }
 

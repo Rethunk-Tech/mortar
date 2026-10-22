@@ -909,10 +909,6 @@ msgstr "Grant Flatpak Steam access?"
 msgid "Do not check before Play"
 msgstr "Do not check before Play"
 
-#: src/updates/WhatsNewDialog.tsx
-msgid "Got it"
-msgstr "Got it"
-
 #: src/lan/PairedComputers.tsx
 msgid "Paired computers"
 msgstr "Paired computers"
@@ -2409,10 +2405,6 @@ msgstr "Broken for this version"
 #: src/share/ImportPreview.tsx
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr "{count, plural, one {# dependency} other {# dependencies}}"
-
-#: src/sync/SyncOffers.tsx
-msgid "Later"
-msgstr "Later"
 
 #: src/nxm/ArrivalDialog.tsx
 msgid "You started this download on {site}. Choose the profile it goes into."
@@ -6000,8 +5992,10 @@ msgstr "{count, plural, one {# update} other {# updates}}"
 #: src/share/PreviewDialog.tsx
 #: src/share/ShareDialog.tsx
 #: src/shell/TitleBar.tsx
+#: src/sync/SyncOffers.tsx
 #: src/templates/TemplateDialogs.tsx
 #: src/tools/ToolsManageDialog.tsx
+#: src/updates/WhatsNewDialog.tsx
 msgid "Close"
 msgstr "Close"
 

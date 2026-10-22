@@ -127,7 +127,7 @@ async function removeUntracked(folder: string) {
   const token = await RemoveDriftFolder(open.game, open.id, folder)
   useToasts.getState().push({
     kind: 'success',
-    title: i18n._(msg`Moved ${folder} to Mortar's trash`),
+    title: i18n._(msg`Moved ${{ path: folder }} to Mortar's trash`),
     action: {
       label: i18n._(msg`Undo`),
       profileId: open.id,
@@ -217,7 +217,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
           t`Delete`,
           () =>
             setConfirm({
-              title: t`Delete ${drift.folder}?`,
+              title: t`Delete ${{ path: drift.folder }}?`,
               body: t`Mortar did not install this folder. It moves to Mortar's trash.`,
               label: t`Delete`,
               act: () => run(() => removeUntracked(drift.folder)),
@@ -267,7 +267,7 @@ export function DriftButtons({ drift }: { drift: Drift }) {
         t`Revert`,
         () =>
           setConfirm({
-            title: t`Revert ${entryName}?`,
+            title: t`Revert ${{ name: entryName }}?`,
             body: t`Your edits to its files are replaced with the installed copy.`,
             label: t`Revert`,
             act: () =>

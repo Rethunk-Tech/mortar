@@ -9,6 +9,7 @@ import {
   TrackedMods,
   Untrack,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { currentGame } from '../nav/currentGame.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
@@ -30,7 +31,7 @@ export function NexusAccountActions({
 }) {
   const { t } = useLingui()
   const signedIn = useNexus((s) => s.signedIn)
-  const trackedFail = t`Could not load your tracked Nexus mods`
+  const trackedFail = t`Could not load your tracked ${{ source: sourceLabel('nexus') }} mods`
   const [status, setStatus] = useState(endorsement)
   const { data: mods, setData: setMods } = useLoaded<TrackedMod[] | undefined>(
     signedIn && modId ? () => TrackedMods().then((list) => list ?? []) : null,
@@ -69,7 +70,7 @@ export function NexusAccountActions({
   const tracked = isTracked(mods, modId, nexusDomain())
   const endorsed = isEndorsed(status)
   const abstained = isAbstained(status)
-  let statusLine = t`You have not endorsed this mod. Nexus asks that you download and play it first.`
+  let statusLine = t`You have not endorsed this mod. ${{ source: sourceLabel('nexus') }} asks that you download and play it first.`
   if (endorsed) {
     statusLine = t`You endorsed this mod.`
   } else if (abstained) {

@@ -32,7 +32,10 @@ export function LegacyReview({
     <ConfirmDialog
       open={true}
       title={t`Libraries and supporting mods`}
-      confirmLabel={plural(chosen.length, { one: 'Mark # implicit', other: 'Mark # implicit' })}
+      confirmLabel={plural(
+        { count: chosen.length },
+        { one: 'Mark # implicit', other: 'Mark # implicit' },
+      )}
       confirmDisabled={chosen.length === 0}
       busy={busy}
       onCancel={onCancel}

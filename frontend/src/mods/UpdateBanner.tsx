@@ -60,7 +60,7 @@ export function UpdateBanner({ mod }: { mod: Mod }) {
         ) : null}
         {unofficial ? (
           <Typography sx={{ fontSize: 13 }}>
-            {t`Unofficial update available: ${unofficial.version}`}
+            {t`Unofficial update available: ${{ version: unofficial.version }}`}
             {unofficial.url ? (
               <>
                 {' '}

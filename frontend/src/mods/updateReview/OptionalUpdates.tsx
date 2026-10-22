@@ -27,7 +27,10 @@ export function OptionalUpdates({ update, profileId }: { update: Update; profile
         />
       }
       label={i18n._(
-        plural(n, { one: 'Also update # optional file', other: 'Also update # optional files' }),
+        plural(
+          { count: n },
+          { one: 'Also update # optional file', other: 'Also update # optional files' },
+        ),
       )}
       sx={{ alignSelf: 'flex-start', '& .MuiFormControlLabel-label': { fontSize: 13 } }}
     />

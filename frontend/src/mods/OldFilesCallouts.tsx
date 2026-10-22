@@ -29,7 +29,7 @@ import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
 
 const trashedTitle = (n: number) =>
-  plural(n, { one: 'Moved # old file to trash', other: 'Moved # old files to trash' })
+  plural({ count: n }, { one: 'Moved # old file to trash', other: 'Moved # old files to trash' })
 
 function OldFilesCallout({
   set,
@@ -76,10 +76,12 @@ function OldFilesCallout({
       },
       { errorTitle: t`Could not move the old files to trash` },
     )
-  const text = plural(files.length, {
-    one: `The new version of ${set.label} no longer includes # file. Keep it or delete it?`,
-    other: `The new version of ${set.label} no longer includes # files. Keep them or delete them?`,
-  })
+  const lost = plural({ count: files.length }, { one: '# file', other: '# files' })
+  const question = plural(
+    { count: files.length },
+    { one: 'Keep it or delete it?', other: 'Keep them or delete them?' },
+  )
+  const text = `${t`The new version of ${{ name: set.label }} no longer includes ${lost}.`} ${question}`
   return (
     <ListCallout
       text={text}
@@ -97,7 +99,7 @@ function OldFilesCallout({
             <Button
               size="small"
               variant="text"
-              aria-label={t`Keep ${set.label}'s old files`}
+              aria-label={t`Keep ${{ name: set.label }}'s old files`}
               disabled={pending || locked}
               onClick={keep}
             >
@@ -109,7 +111,7 @@ function OldFilesCallout({
               size="small"
               variant="contained"
               color="error"
-              aria-label={t`Delete ${set.label}'s old files`}
+              aria-label={t`Delete ${{ name: set.label }}'s old files`}
               disabled={pending || locked}
               onClick={trash}
             >
@@ -229,7 +231,9 @@ export const OldFilesCallouts = memo(function OldFilesCalloutsView({
       },
       { errorTitle: t`Could not move the old files to trash` },
     )
-  const text = t`${plural(sets.length, { one: '# updated mod', other: '# updated mods' })} no longer include ${plural(files, { one: '# file', other: '# files' })} from their old versions. Keep them or delete them?`
+  const mods = plural({ count: sets.length }, { one: '# updated mod', other: '# updated mods' })
+  const oldFiles = plural({ count: files }, { one: '# file', other: '# files' })
+  const text = t`${mods} no longer include ${oldFiles} from their old versions. Keep them or delete them?`
   const bulk = (
     <>
       <LockedReason locked={locked}>

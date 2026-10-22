@@ -52,7 +52,7 @@ function ReviewLists({
   return (
     <>
       {missing.length === 0 ? null : (
-        <Section title={t`Not in this profile (${missing.length})`}>
+        <Section title={t`Not in this profile (${{ count: missing.length }})`}>
           {missing.map((m) => (
             <FormControlLabel
               key={m.id}
@@ -66,7 +66,7 @@ function ReviewLists({
         </Section>
       )}
       {different.length === 0 ? null : (
-        <Section title={t`Different version (${different.length})`}>
+        <Section title={t`Different version (${{ count: different.length }})`}>
           {different.map((m) => (
             <FormControlLabel
               key={m.id}
@@ -76,7 +76,7 @@ function ReviewLists({
                 <>
                   {m.name}
                   <Typography component="span" sx={{ fontSize: 13, color: 'text.secondary' }}>
-                    {` · ${t`folder ${m.folderVersion} · profile ${m.profileVersion}`}`}
+                    {` · ${t`folder ${{ folderVersion: m.folderVersion }} · profile ${{ profileVersion: m.profileVersion }}`}`}
                     {m.newer === 'folder' ? ` · ${t`newer in folder`}` : null}
                     {m.newer === 'profile' ? ` · ${t`newer in profile`}` : null}
                   </Typography>
@@ -87,7 +87,7 @@ function ReviewLists({
         </Section>
       )}
       {unreadable.length === 0 ? null : (
-        <Section title={t`Could not read (${unreadable.length})`}>
+        <Section title={t`Could not read (${{ count: unreadable.length }})`}>
           {unreadable.map((m) => (
             <Typography
               key={m.folder}
@@ -102,13 +102,10 @@ function ReviewLists({
         <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
           {[
             diff.same > 0
-              ? plural(diff.same, { one: '# mod matches.', other: '# mods match.' })
+              ? plural({ count: diff.same }, { one: '# mod matches.', other: '# mods match.' })
               : '',
             diff.profileOnly > 0
-              ? plural(diff.profileOnly, {
-                  one: '# profile mod has no copy in the game folder.',
-                  other: '# profile mods have no copy in the game folder.',
-                })
+              ? t`${plural({ count: diff.profileOnly }, { one: '# profile mod has', other: '# profile mods have' })} no copy in the game folder.`
               : '',
           ]
             .filter(Boolean)
@@ -166,10 +163,9 @@ export function GameModsReviewDialog({
         setResult(res)
         useToasts.getState().push({
           kind: res.failed > 0 ? 'warning' : 'success',
-          title: plural(res.imported, {
-            one: move ? 'Moved # mod' : 'Copied # mod',
-            other: move ? 'Moved # mods' : 'Copied # mods',
-          }),
+          title: move
+            ? plural({ count: res.imported }, { one: 'Moved # mod', other: 'Moved # mods' })
+            : plural({ count: res.imported }, { one: 'Copied # mod', other: 'Copied # mods' }),
           changes: [res.profile.lastChange ?? ''],
         })
       },
@@ -183,16 +179,16 @@ export function GameModsReviewDialog({
       onClose={busy ? undefined : onClose}
       slotProps={{ paper: { sx: { minWidth: 420, maxWidth: 'min(640px, calc(100vw - 64px))' } } }}
     >
-      <DialogTitle>{t`Game Mods folder vs ${profile.name}`}</DialogTitle>
+      <DialogTitle>{t`Game Mods folder vs ${{ name: profile.name }}`}</DialogTitle>
       <DialogContent>
         {busy ? <GameModsProgressLine progress={progress} moving={moving} /> : null}
         {result !== null && !busy ? (
           <Section title={t`Done`}>
             <Typography sx={{ fontSize: 14 }}>
               {[
-                plural(result.imported, { one: '# imported', other: '# imported' }),
-                plural(result.skipped, { one: '# skipped', other: '# skipped' }),
-                plural(result.failed, { one: '# failed', other: '# failed' }),
+                plural({ count: result.imported }, { one: '# imported', other: '# imported' }),
+                plural({ count: result.skipped }, { one: '# skipped', other: '# skipped' }),
+                plural({ count: result.failed }, { one: '# failed', other: '# failed' }),
               ].join(' · ')}
             </Typography>
             {detail === '' ? null : (

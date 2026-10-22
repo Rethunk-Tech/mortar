@@ -27,7 +27,7 @@ export function KeptGroup({ kept, mods }: { kept: Update[]; mods: Mod[] }) {
         onClick={() => setOpen(!open)}
         sx={{ px: space.pad, py: space.gap, width: '100%', justifyContent: 'flex-start' }}
       >
-        {t`Kept at this version (${kept.length})`}
+        {t`Kept at this version (${{ count: kept.length }})`}
       </Button>
       {open ? (
         <List disablePadding={true}>
@@ -51,7 +51,7 @@ export function KeptGroup({ kept, mods }: { kept: Update[]; mods: Mod[] }) {
                 </Box>
                 <Version>{u.installed}</Version>
                 <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-                  {t`newer: ${u.version}`}
+                  {t`newer: ${{ version: u.version }}`}
                 </Typography>
                 {mod ? (
                   <Button onClick={() => setPinned(mod, false).catch(reportUnexpected)}>

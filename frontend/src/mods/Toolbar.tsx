@@ -182,7 +182,7 @@ const ShowFilterControl = memo(function ShowFilterMenu({
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const active = FILTERS.find((item) => item.id === filter)
   const tagged = selectedTags.length > 0
-  const showLabel = active ? t`Show: ${active.label(i18n)}` : t`Show`
+  const showLabel = active ? t`Show: ${{ filter: active.label(i18n) }}` : t`Show`
   const choose = (next: ModFilter) => {
     onFilter(next)
     setAnchor(null)
@@ -394,7 +394,7 @@ export const Toolbar = memo(function ToolbarView({
   const inputRef = useRef<HTMLInputElement>(null)
   const loaded = useMods((s) => s.loaded)
   const placeholder = loaded
-    ? plural(total, { one: 'Filter # mod', other: 'Filter # mods' })
+    ? plural({ count: total }, { one: 'Filter # mod', other: 'Filter # mods' })
     : t`Filter mods`
   const collapseIfEmpty = () => {
     if (query === '') {

@@ -108,9 +108,9 @@ function DepChips({
     const known = name !== ''
     const label = known ? name : requirementNameIn(state, id)
     const text = {
-      req: missing ? t`Needs ${label} (missing)` : t`Required: ${label}`,
-      opt: t`Optional: ${label}`,
-      dep: t`Used by: ${label}`,
+      req: missing ? t`Needs ${{ name: label }} (missing)` : t`Required: ${{ name: label }}`,
+      opt: t`Optional: ${{ name: label }}`,
+      dep: t`Used by: ${{ name: label }}`,
     }[prefix]
     return (
       <DepChip
@@ -141,9 +141,9 @@ function DepChips({
           label={
             open
               ? t`Show less`
-              : plural(users.length, { one: 'Used by # mod', other: 'Used by # mods' }) +
+              : plural({ count: users.length }, { one: 'Used by # mod', other: 'Used by # mods' }) +
                 (required.length > INLINE_REQUIRED
-                  ? t` · ${required.length - INLINE_REQUIRED} more required`
+                  ? t` · ${{ count: required.length - INLINE_REQUIRED }} more required`
                   : '')
           }
           expanded={open}

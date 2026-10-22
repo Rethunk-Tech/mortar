@@ -53,7 +53,7 @@ export function useRedundantRows() {
         text:
           choices.length === 2
             ? t`${list} do the same job: both change ${detail}`
-            : t`${list} do the same job: all ${choices.length} change ${detail}`,
+            : t`${list} do the same job: all ${{ count: choices.length }} change ${detail}`,
       })
     }
     for (const item of items.filter((x) => x.kind !== 'sameJob' || x.covered)) {
@@ -63,20 +63,20 @@ export function useRedundantRows() {
       const detail = item.detail ?? ''
       let reason = t`Every edit it makes is overwritten by ${by}`
       if (item.kind === 'superseded') {
-        reason = t`${plural(count, {
+        reason = plural(count, {
           one: `Replaced by ${by}, which is also enabled`,
           other: `Replaced by ${by}, which are also enabled`,
-        })}`
+        })
       } else if (item.kind === 'bundled') {
-        reason = t`${plural(count, {
+        reason = plural(count, {
           one: `${by} already includes everything it changes`,
           other: `${by} together include everything it changes`,
-        })}`
+        })
       } else if (item.covered) {
-        reason = t`${plural(count, {
+        reason = plural(count, {
           one: `Overlaps with ${by}: both change ${detail}`,
           other: `Overlaps with ${by}: all change ${detail}`,
-        })}`
+        })
       }
       rows.push({ key: item.key, id: item.id, name: item.name, reason, items: [item] })
     }

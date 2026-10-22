@@ -75,10 +75,13 @@ export function offerUnneeded(
   }
   useToasts.getState().push({
     kind: 'info',
-    title: plural(unneeded.length, {
-      one: '# library only the disabled mods needed is still enabled',
-      other: '# libraries only the disabled mods needed are still enabled',
-    }),
+    title: plural(
+      { count: unneeded.length },
+      {
+        one: '# library only the disabled mods needed is still enabled',
+        other: '# libraries only the disabled mods needed are still enabled',
+      },
+    ),
     action: {
       label: i18n._(msg`Disable`),
       run: () => switchOff(unneeded).catch(reportUnexpected),
@@ -114,10 +117,13 @@ export function offerDependents(
   }
   useToasts.getState().push({
     kind: 'warning',
-    title: plural(dependents.length, {
-      one: '# enabled mod needs a mod you disabled',
-      other: '# enabled mods need a mod you disabled',
-    }),
+    title: plural(
+      { count: dependents.length },
+      {
+        one: '# enabled mod needs a mod you disabled',
+        other: '# enabled mods need a mod you disabled',
+      },
+    ),
     body: listNames(dependents.map((m) => m.name)),
     action: {
       label: i18n._(msg`Disable them too`),

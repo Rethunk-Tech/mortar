@@ -139,12 +139,14 @@ function toListRow(
   const pageless = entry?.source.kind === 'nexus' && (entry.source.modId ?? 0) <= 0
   const known = kindLabel(entry?.source.kind ?? '', {
     archive: i18n._(msg`Archive`),
-    nexus: i18n._(msg`Nexus Mods`),
+    nexus: i18n._(msg`${{ source: sourceLabel('nexus') }}`),
     github: sourceLabel('github'),
     thunderstore: sourceLabel('thunderstore'),
   })
   const fileless = entry?.source.kind === 'nexus' && !pageless && (entry.source.fileId ?? 0) <= 0
-  const unknownFile = fileless ? i18n._(msg`Nexus Mods, file unknown`) : known
+  const unknownFile = fileless
+    ? i18n._(msg`${{ source: sourceLabel('nexus') }}, file unknown`)
+    : known
   const source = pageless ? i18n._(msg`Unknown source`) : unknownFile
   const nexusId = entry?.source.kind === 'nexus' ? (entry.source.modId ?? 0) : 0
   const details = byId[nexusId]?.details

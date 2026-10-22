@@ -17,7 +17,7 @@ export function useListHeading(groupBy: GroupBy) {
     update: t`Update available`,
     enabled: t`Enabled`,
     disabled: t`Disabled`,
-    smapi: t`${loaderName} mods`,
+    smapi: t`${{ loader: loaderName }} mods`,
     explicit: t`Explicit`,
     implicit: t`Implicit`,
   })

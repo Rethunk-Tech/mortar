@@ -178,7 +178,7 @@ function ModMenuItems({
     remove: {
       label:
         acting.length > 1
-          ? t`${plural(acting.length, { one: 'Remove # mod', other: 'Remove # mods' })}`
+          ? plural({ count: acting.length }, { one: 'Remove # mod', other: 'Remove # mods' })
           : t`Remove`,
       icon: <Trash2 size={ICON_SIZE} />,
       run: () => askRemove(acting),
@@ -276,7 +276,7 @@ function RemoveFromOthersDialog({
       currentProfileId={currentProfileId}
       id={mod.id}
       mode="remove"
-      title={t`Remove ${mod.name} from other profiles`}
+      title={t`Remove ${{ name: mod.name }} from other profiles`}
       helper={t`Where it came in one download with other mods, it is disabled instead.`}
       confirmLabel={t`Remove`}
       onConfirm={async (profiles, _pinned, rows) => {
@@ -298,7 +298,7 @@ function RemoveFromOthersDialog({
         )
         useToasts.getState().push({
           kind: 'success',
-          title: t`${mod.name} removed from ${plural(profiles.length, { one: '# profile', other: '# profiles' })}`,
+          title: t`${{ name: mod.name }} removed from ${plural({ count: profiles.length }, { one: '# profile', other: '# profiles' })}`,
           changes: changed.map((p) => p.lastChange ?? ''),
         })
       }}
@@ -385,7 +385,7 @@ function ModActionMenu({
         game={game}
         currentProfileId={currentProfileId}
         id={mod.id}
-        title={t`Also add ${mod.name} to…`}
+        title={t`Also add ${{ name: mod.name }} to…`}
         confirmLabel={t`Add`}
         onConfirm={async (profiles) => {
           await Promise.all(
@@ -420,7 +420,7 @@ export function ModMenu({ mod }: { mod: Mod }) {
   return (
     <>
       <IconAction
-        label={t`More actions for ${mod.name}`}
+        label={t`More actions for ${{ name: mod.name }}`}
         icon={<Ellipsis size={18} />}
         menu={true}
         onClick={(e) => {

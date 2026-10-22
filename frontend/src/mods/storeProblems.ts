@@ -81,7 +81,9 @@ async function setConfigSetting(
   try {
     await SetConfigValue(target.game, target.id, setting.key, setting.id, setting.field, value)
   } catch (e) {
-    reportError(i18n._(msg`Could not set ${setting.field} for ${setting.name}`))(e)
+    reportError(
+      i18n._(msg`Could not set ${{ field: setting.field }} for ${{ name: setting.name }}`),
+    )(e)
     return
   }
   await get().loadProblems()
@@ -164,7 +166,7 @@ export function problemActions(
             .replace((await SetModEnabled(target.game, target.id, c.key, dup.id, false)).profile)
         }
       } catch (e) {
-        reportError(i18n._(msg`Could not disable the other copy of ${dup.name}`))(e)
+        reportError(i18n._(msg`Could not disable the other copy of ${{ name: dup.name }}`))(e)
       }
       set({ resolving: null })
       await get().load()

@@ -1,9 +1,12 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import type { Drift } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { BEPINEX, CONTENT_PATCHER, SMAPI, WINDOWS } from '../brand/productNames.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
 import { localId } from './dependents.ts'
+import { describeLoadFailure } from './describeLoadFailure.ts'
 import { type Problem, sameId } from './lookup.ts'
 import { useMods } from './store.ts'
 
@@ -11,37 +14,17 @@ type Describe = (p: Problem) => string
 
 function describeRunError(runError: Extract<Problem, { kind: 'runError' }>['runError']): string {
   const { name, first, count, updated } = runError
+  const errors = plural({ count }, { one: '# error', other: '# errors' })
   if (updated) {
     return first === ''
-      ? i18n._(
-          msg`${plural(count, {
-            one: `${name} was updated since this run and logged # error.`,
-            other: `${name} was updated since this run and logged # errors.`,
-          })}`,
-        )
-      : i18n._(
-          msg`${plural(count, {
-            one: `${name} was updated since this run and logged # error. First: ${first}`,
-            other: `${name} was updated since this run and logged # errors. First: ${first}`,
-          })}`,
-        )
+      ? i18n._(msg`${name} was updated since this run and logged ${errors}.`)
+      : i18n._(msg`${name} was updated since this run and logged ${errors}. First: ${first}`)
   }
   return first === ''
-    ? i18n._(
-        msg`${plural(count, {
-          one: `${name} logged # error in the last run.`,
-          other: `${name} logged # errors in the last run.`,
-        })}`,
-      )
-    : i18n._(
-        msg`${plural(count, {
-          one: `${name} logged # error in the last run. First: ${first}`,
-          other: `${name} logged # errors in the last run. First: ${first}`,
-        })}`,
-      )
+    ? i18n._(msg`${name} logged ${errors} in the last run.`)
+    : i18n._(msg`${name} logged ${errors} in the last run. First: ${first}`)
 }
 
-// BepInEx sorts every plugin before loading any, so a loop stops the chainloader itself rather than skipping its mods.
 function describeLoaderCycle(loop: readonly { name: string }[]): string {
   const [first, second] = loop
   if (!first) {
@@ -49,19 +32,19 @@ function describeLoaderCycle(loop: readonly { name: string }[]): string {
   }
   if (!second) {
     return i18n._(
-      msg`${first.name} lists itself as a dependency, so BepInEx stops before loading any plugin.`,
+      msg`${{ name: first.name }} lists itself as a dependency, so ${{ loader: BEPINEX }} stops before loading any plugin.`,
     )
   }
   if (loop.length === 2) {
     const a = first.name
     const b = second.name
     return i18n._(
-      msg`${a} and ${b} each depend on the other, so BepInEx stops before loading any plugin.`,
+      msg`${a} and ${b} each depend on the other, so ${{ loader: BEPINEX }} stops before loading any plugin.`,
     )
   }
   const path = [...loop, first].map((m) => m.name).join(' → ')
   return i18n._(
-    msg`${path} depend on each other in a loop, so BepInEx stops before loading any plugin.`,
+    msg`${path} depend on each other in a loop, so ${{ loader: BEPINEX }} stops before loading any plugin.`,
   )
 }
 
@@ -71,19 +54,27 @@ function describeCycle(loop: readonly { name: string }[], blocksAll: boolean): s
     return ''
   }
   if (!second) {
-    return i18n._(msg`${first.name} lists itself as a dependency, so SMAPI skips it.`)
+    return i18n._(
+      msg`${{ name: first.name }} lists itself as a dependency, so ${{ loader: SMAPI }} skips it.`,
+    )
   }
   if (loop.length === 2) {
     const a = first.name
     const b = second.name
     return blocksAll
-      ? i18n._(msg`${a} and ${b} each wait for the other, so SMAPI loads neither.`)
-      : i18n._(msg`${a} and ${b} each wait for the other, so SMAPI skips at least one of them.`)
+      ? i18n._(msg`${a} and ${b} each wait for the other, so ${{ loader: SMAPI }} loads neither.`)
+      : i18n._(
+          msg`${a} and ${b} each wait for the other, so ${{ loader: SMAPI }} skips at least one of them.`,
+        )
   }
   const path = [...loop, first].map((m) => m.name).join(' → ')
   return blocksAll
-    ? i18n._(msg`${path} wait for each other in a loop, so SMAPI loads none of them.`)
-    : i18n._(msg`${path} wait for each other in a loop, so SMAPI skips at least one of them.`)
+    ? i18n._(
+        msg`${path} wait for each other in a loop, so ${{ loader: SMAPI }} loads none of them.`,
+      )
+    : i18n._(
+        msg`${path} wait for each other in a loop, so ${{ loader: SMAPI }} skips at least one of them.`,
+      )
 }
 
 function describeBroken(p: Extract<Problem, { kind: 'broken' }>): string {
@@ -130,7 +121,7 @@ function winnerSentence(
     case 'per-entry':
       return i18n._(msg` You chose which mod wins each clash.`)
     case 'neither':
-      return i18n._(msg` Content Patcher applies neither.`)
+      return i18n._(msg` ${{ app: CONTENT_PATCHER }} applies neither.`)
     case 'load-order':
       return losers === ''
         ? i18n._(msg` ${name} wins by load order.`)
@@ -163,7 +154,7 @@ function describeAsset(p: Extract<Problem, { kind: 'asset' }>): string {
   }
   const parts = [sentence]
   if (p.asset.info) {
-    parts.push(i18n._(msg`These mods may add the same item: ${p.asset.info}.`))
+    parts.push(i18n._(msg`These mods may add the same item: ${{ info: p.asset.info }}.`))
   }
   const note = noteText(p.asset.note)
   if (note) {
@@ -205,47 +196,59 @@ function describeMissing(
   if (p.missing.external) {
     const note = p.missing.note.trim()
     return note === ''
-      ? i18n._(msg`${dependentName}'s Nexus page says it needs ${dep} from outside Nexus.`)
-      : i18n._(msg`${dependentName}'s Nexus page says it needs ${dep} from outside Nexus: ${note}`)
+      ? i18n._(
+          msg`${{ name: dependentName }}'s ${{ source: sourceLabel('nexus') }} page says it needs ${dep} from outside ${{ source: sourceLabel('nexus') }}.`,
+        )
+      : i18n._(
+          msg`${{ name: dependentName }}'s ${{ source: sourceLabel('nexus') }} page says it needs ${dep} from outside ${{ source: sourceLabel('nexus') }}: ${note}`,
+        )
   }
   if (p.missing.listed) {
     const note = p.missing.note.trim()
     return note === ''
-      ? i18n._(msg`${dependentName}'s Nexus page lists ${dep} as a requirement.`)
-      : i18n._(msg`${dependentName}'s Nexus page lists ${dep} as a requirement: ${note}`)
+      ? i18n._(
+          msg`${{ name: dependentName }}'s ${{ source: sourceLabel('nexus') }} page lists ${dep} as a requirement.`,
+        )
+      : i18n._(
+          msg`${{ name: dependentName }}'s ${{ source: sourceLabel('nexus') }} page lists ${dep} as a requirement: ${note}`,
+        )
   }
   if (reason === 'disabled') {
-    return i18n._(msg`${dependentName} needs ${dep}, which is disabled.`)
+    return i18n._(msg`${{ name: dependentName }} needs ${dep}, which is disabled.`)
   }
   if (reason === 'outdated') {
     return i18n._(
-      msg`${dependentName} needs ${dep} ${minimumVersion} or newer, and this profile has ${installedVersion}.`,
+      msg`${{ name: dependentName }} needs ${dep} ${{ version: minimumVersion }} or newer, and this profile has ${{ installed: installedVersion }}.`,
     )
   }
-  return i18n._(msg`${dependentName} needs ${dep}, which this profile lacks.`)
+  return i18n._(msg`${{ name: dependentName }} needs ${dep}, which this profile lacks.`)
 }
 
 function describeSetting(s: Extract<Problem, { kind: 'setting' }>['setting']): string {
   const installed = listNames(s.forNames ?? [])
   if (!s.variant && installed === '') {
-    return i18n._(msg`${s.name}'s ${s.field} is ${s.current}: ${s.description}`)
+    return i18n._(
+      msg`${{ name: s.name }}'s ${{ field: s.field }} is ${{ current: s.current }}: ${{ description: s.description }}`,
+    )
   }
   if (!s.variant) {
     return i18n._(
-      msg`${s.name} has a ${s.field} setting for ${installed}; it is ${s.current}, so those patches are off.`,
+      msg`${{ name: s.name }} has a ${{ field: s.field }} setting for ${installed}; it is ${{ current: s.current }}, so those patches are off.`,
     )
   }
   if (s.currentFor !== '' && installed !== '') {
     return i18n._(
-      msg`${s.name}'s ${s.field} is ${s.current}, made for ${s.currentFor}, which this profile lacks; it can match ${installed} instead.`,
+      msg`${{ name: s.name }}'s ${{ field: s.field }} is ${{ current: s.current }}, made for ${{ currentFor: s.currentFor }}, which this profile lacks; it can match ${installed} instead.`,
     )
   }
   if (s.currentFor !== '') {
     return i18n._(
-      msg`${s.name}'s ${s.field} is ${s.current}, made for ${s.currentFor}, which this profile lacks.`,
+      msg`${{ name: s.name }}'s ${{ field: s.field }} is ${{ current: s.current }}, made for ${{ currentFor: s.currentFor }}, which this profile lacks.`,
     )
   }
-  return i18n._(msg`${s.name}'s ${s.field} is ${s.current}; it can match ${installed} instead.`)
+  return i18n._(
+    msg`${{ name: s.name }}'s ${{ field: s.field }} is ${{ current: s.current }}; it can match ${installed} instead.`,
+  )
 }
 
 function describeDuplicate(d: Extract<Problem, { kind: 'duplicate' }>['duplicate']): string {
@@ -254,129 +257,14 @@ function describeDuplicate(d: Extract<Problem, { kind: 'duplicate' }>['duplicate
       (d.nexusFiles ?? []).map((file) => `${file.fileName} (${file.version})`),
     )
     return d.nexusOptional
-      ? i18n._(msg`${d.name} has multiple Nexus files installed: ${files}. One may be an add-on.`)
-      : i18n._(msg`${d.name} has multiple Nexus files installed: ${files}.`)
+      ? i18n._(
+          msg`${{ name: d.name }} has multiple ${{ source: sourceLabel('nexus') }} files installed: ${files}. One may be an add-on.`,
+        )
+      : i18n._(
+          msg`${{ name: d.name }} has multiple ${{ source: sourceLabel('nexus') }} files installed: ${files}.`,
+        )
   }
-  return i18n._(msg`${d.name} is installed twice, and only one of them loads.`)
-}
-
-type LoadFailureRow = Extract<Problem, { kind: 'loadFailure' }>['loadFailure']
-
-type RanPatch = NonNullable<LoadFailureRow['patch']>
-
-// The last two parts of a "Namespace.Type.Method" name, which is what a player can match to a mod's code.
-function shortName(name: string): string {
-  return name.split('.').slice(-2).join('.')
-}
-
-function patchKindText(kind: string): string {
-  switch (kind) {
-    case 'prefix':
-    case 'prefix-skip':
-      return i18n._(msg`prefix`)
-    case 'postfix':
-      return i18n._(msg`postfix`)
-    case 'transpiler':
-      return i18n._(msg`transpiler`)
-    case 'finalizer':
-      return i18n._(msg`finalizer`)
-    case 'hook':
-      return i18n._(msg`hook`)
-    default:
-      return i18n._(msg`Harmony patch`)
-  }
-}
-
-// Where the mod's frame is in its code: the source line, or why the log gave none. A module no enabled package ships
-// says nothing.
-function ranLocation(mod: string, source: string, noSource: string): string {
-  const colon = source.lastIndexOf(':')
-  if (colon > 0) {
-    const file = source.slice(0, colon)
-    const line = source.slice(colon + 1)
-    return i18n._(msg`, at ${file} line ${line}.`)
-  }
-  switch (noSource) {
-    case 'no-symbols':
-      return i18n._(msg`; ${mod} ships no debug symbols, so its source line is unknown.`)
-    case 'windows-pdb':
-      return i18n._(msg`; ${mod} ships Windows-format symbols, which the game cannot read.`)
-    case 'no-line':
-      return i18n._(msg`; the runtime printed no source line for that method (generated code).`)
-    default:
-      return '.'
-  }
-}
-
-// The patch that threw the error, or that called the code that threw it.
-function ranPatch(who: string, thrown: string, patch: RanPatch): string {
-  const { target, mod = '' } = patch
-  const kind = patchKindText(patch.kind ?? '')
-  const method = shortName(patch.method)
-  const own = mod === '' || mod === who
-  if (thrown === patch.method) {
-    return own
-      ? i18n._(msg`Its ${kind} ${method} on ${target} threw it`)
-      : i18n._(msg`${mod}'s ${kind} ${method} on ${target} threw it`)
-  }
-  return own
-    ? i18n._(msg`It was thrown in ${thrown}, called from its ${kind} ${method} on ${target}`)
-    : i18n._(msg`It was thrown in ${thrown}, called from ${mod}'s ${kind} ${method} on ${target}`)
-}
-
-// Where a ran error was thrown, and the other mods that patch a method on its stack: those are suspects too.
-function ranWhere(who: string, f: LoadFailureRow): string {
-  const thrown = f.thrown ?? ''
-  const patchedBy = f.patchedBy ?? []
-  if (thrown === '') {
-    return ''
-  }
-  const mods = listNames(patchedBy)
-  const suspects = plural(patchedBy.length, {
-    one: `${mods} also patches code on that path.`,
-    other: `${mods} also patch code on that path.`,
-  })
-  const source = f.source ?? ''
-  const noSource = f.noSource ?? ''
-  if (
-    !f.patch &&
-    source === '' &&
-    (noSource === '' || noSource === 'not-in-profile') &&
-    patchedBy.length > 0
-  ) {
-    return i18n._(msg`It was thrown in ${thrown}; ${suspects}`)
-  }
-  const where = f.patch ? ranPatch(who, thrown, f.patch) : i18n._(msg`It was thrown in ${thrown}`)
-  const owner = f.patch?.mod || who
-  const sentence = where + ranLocation(owner, source, noSource)
-  return patchedBy.length === 0 ? sentence : `${sentence} ${suspects}`
-}
-
-// A game-setting row's message is the catalog's own wording for the setting that is off.
-function describeLoadFailure(f: LoadFailureRow): string {
-  const { plugin, name, kind, dependency, message, ran, errors } = f
-  if (ran) {
-    const who = name === '' ? plugin : name
-    const logged = plural(errors ?? 1, {
-      one: `${who} loaded and logged an error while running.`,
-      other: `${who} loaded and logged # errors while running.`,
-    })
-    return [logged, ranWhere(who, f)].filter(Boolean).join(' ')
-  }
-  if (kind === 'game-setting') {
-    return message
-  }
-  if (kind === 'run-failed') {
-    return i18n._(msg`The last launch failed: ${message}.`)
-  }
-  if (kind === 'incompatible-plugin' && dependency) {
-    return i18n._(
-      msg`${plugin} declares itself incompatible with ${dependency}, which is also enabled.`,
-    )
-  }
-  return name !== '' && name !== plugin
-    ? i18n._(msg`${plugin} failed to load (${name}).`)
-    : i18n._(msg`${plugin} failed to load.`)
+  return i18n._(msg`${{ name: d.name }} is installed twice, and only one of them loads.`)
 }
 
 // The one-line sentence for a problem, shared by the summary rows and the card badges.
@@ -402,12 +290,12 @@ export function useDescribe(): Describe {
       case 'loadFailure':
         return describeLoadFailure(p.loadFailure)
       case 'damaged':
-        return t`${p.damaged.name} has damaged files.`
+        return t`${{ name: p.damaged.name }} has damaged files.`
       case 'longPath': {
         const { key, name, length } = p.longPath
         return key === ''
-          ? t`${name}, a folder no mod owns, has a file path ${{ count: length }} characters long, more than most Windows games can open.`
-          : t`${name} has a file path ${{ count: length }} characters long, more than most Windows games can open.`
+          ? t`${name}, a folder no mod owns, has a file path ${{ count: length }} characters long, more than most ${{ os: WINDOWS }} games can open.`
+          : t`${name} has a file path ${{ count: length }} characters long, more than most ${{ os: WINDOWS }} games can open.`
       }
       case 'fileConflict': {
         const { winner, beaten, paths } = p.fileConflict
@@ -415,25 +303,28 @@ export function useDescribe(): Describe {
           useMods.getState().mods.find((m) => m.key === key)?.name ?? key
         const losers = listNames(beaten.map(keyName))
         return i18n._(
-          plural(paths.length, {
-            one: `${keyName(winner)} wins # file over ${losers}.`,
-            other: `${keyName(winner)} wins # files over ${losers}.`,
-          }),
+          plural(
+            { count: paths.length },
+            {
+              one: `${{ winner: keyName(winner) }} wins # file over ${losers}.`,
+              other: `${{ winner: keyName(winner) }} wins # files over ${losers}.`,
+            },
+          ),
         )
       }
       case 'deprecated': {
         const { name, replacement } = p.deprecated
         return replacement
-          ? t`${name} is deprecated on Thunderstore; its page points to ${replacement}.`
-          : t`${name} is deprecated on Thunderstore.`
+          ? t`${name} is deprecated on ${{ source: sourceLabel('thunderstore') }}; its page points to ${replacement}.`
+          : t`${name} is deprecated on ${{ source: sourceLabel('thunderstore') }}.`
       }
       case 'pluginClash': {
         const copies = p.pluginClash.copies ?? []
         const names = listNames(copies.map((c) => c.name))
         const { guid } = p.pluginClash
         return copies.length === 2
-          ? t`${names} both ship the plugin ${guid}, and BepInEx loads only one.`
-          : t`${names} all ${copies.length} ship the plugin ${guid}, and BepInEx loads only one.`
+          ? t`${names} both ship the plugin ${guid}, and ${{ loader: BEPINEX }} loads only one.`
+          : t`${names} all ${{ count: copies.length }} ship the plugin ${guid}, and ${{ loader: BEPINEX }} loads only one.`
       }
       case 'setting':
         return describeSetting(p.setting)
@@ -462,7 +353,7 @@ export function useDescribeDrift(): (d: Drift) => string {
   const entryName = (key: string) => driftEntryName(mods, key)
   return (d) => {
     if (d.kind === 'unknown') {
-      return t`${d.folder} was added to this profile's mods folder by hand, not installed by Mortar.`
+      return t`${{ path: d.folder }} was added to this profile's mods folder by hand, not installed by Mortar.`
     }
     const name = entryName(d.key)
     if (d.kind === 'deleted') {
@@ -472,4 +363,4 @@ export function useDescribeDrift(): (d: Drift) => string {
   }
 }
 
-export { describeLoadFailure, missingDepName, winnerSentence }
+export { missingDepName, winnerSentence }

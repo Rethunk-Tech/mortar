@@ -1,5 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
+import { UNITY } from '../brand/productNames.ts'
 import { i18n } from '../i18n/index.ts'
 import { useDescribe, useDescribeDrift } from './describe.ts'
 import type { DismissedRow, ProblemSectionId, Row } from './problemGroups.ts'
@@ -96,7 +97,7 @@ function loadKindText(kind: string): string {
     case 'game-version':
       return i18n._(msg`Game version not supported`)
     case 'unity-exception':
-      return i18n._(msg`Unity exception`)
+      return i18n._(msg`${{ app: UNITY }} exception`)
     case 'dependency-not-loaded':
       return i18n._(msg`A plugin it needs failed`)
     case 'duplicate-guid':

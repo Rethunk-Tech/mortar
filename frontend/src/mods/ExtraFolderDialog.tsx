@@ -42,7 +42,7 @@ export function ExtraFolderDialog({
     <ConfirmDialog
       open={open}
       title={t`Add from the extra mods folder`}
-      confirmLabel={plural(chosen.length, { one: 'Add # mod', other: 'Add # mods' })}
+      confirmLabel={plural({ count: chosen.length }, { one: 'Add # mod', other: 'Add # mods' })}
       confirmDisabled={loading || chosen.length === 0}
       maxWidth={520}
       onCancel={onClose}

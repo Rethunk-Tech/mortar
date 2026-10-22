@@ -93,7 +93,7 @@ export function UpdateActions({
         </OfflineGate>
       ) : null}
       <IconButton
-        aria-label={t`More actions for ${update.name}`}
+        aria-label={t`More actions for ${{ name: update.name }}`}
         aria-haspopup="menu"
         aria-expanded={anchor !== null}
         onClick={(e) => setAnchor(e.currentTarget)}
@@ -121,7 +121,7 @@ export function UpdateActions({
                 setEverywhere(true)
               }}
             >
-              {t`Update in all profiles (${n})`}
+              {t`Update in all profiles (${{ count: n }})`}
             </MenuItem>
           </DisabledReason>
         ) : null}
@@ -147,15 +147,15 @@ export function UpdateActions({
               disabled={!mod}
               onClick={act(async () => mod && setSkipSource(mod, update.source, true))}
             >
-              {t`Ignore updates from ${update.source}`}
+              {t`Ignore updates from ${{ source: update.source }}`}
             </MenuItem>
           </DisabledReason>
         ) : null}
       </Menu>
       <ConfirmDialog
         open={confirmSwitch}
-        title={t`Switch ${update.name} to ${update.source}?`}
-        body={t`${update.name} was installed from another site. Updating installs ${update.version} from ${update.source} instead and keeps your settings.`}
+        title={t`Switch ${{ name: update.name }} to ${{ source: update.source }}?`}
+        body={t`${{ name: update.name }} was installed from another site. Updating installs ${{ version: update.version }} from ${{ source: update.source }} instead and keeps your settings.`}
         confirmLabel={t`Switch and update`}
         onCancel={() => setConfirmSwitch(false)}
         onConfirm={() => {

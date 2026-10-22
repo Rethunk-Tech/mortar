@@ -16,6 +16,8 @@ import type {
   Copy,
   Duplicate,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import { SMAPI } from '../brand/productNames.ts'
+import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useGameInfo } from '../games/info.ts'
 import { listNames } from '../i18n/list.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
@@ -30,9 +32,9 @@ function CopyOption({ copy, dup, differ }: { copy: Copy; dup: Duplicate; differ:
   const { t } = useLingui()
   const source = (() => {
     if (copy.nexus) {
-      return t`From Nexus`
+      return t`From ${{ source: sourceLabel('nexus') }}`
     }
-    return copy.source === 'smapi' ? t`Bundled with SMAPI` : t`From an archive`
+    return copy.source === 'smapi' ? t`Bundled with ${{ loader: SMAPI }}` : t`From an archive`
   })()
   const needed = copy.needed ?? []
   const tooOld = copy.tooOld ?? []
@@ -40,8 +42,8 @@ function CopyOption({ copy, dup, differ }: { copy: Copy; dup: Duplicate; differ:
     differ && copy.newest ? t`Newer.` : '',
     differ && !copy.newest ? t`Older.` : '',
     copy.nexus ? t`Gets update checks.` : t`No update checks, and it cannot go in a share link.`,
-    needed.length > 0 ? t`${listNames(needed)} needs this version or newer.` : '',
-    tooOld.length > 0 ? t`${listNames(tooOld)} needs a newer version than this.` : '',
+    needed.length > 0 ? t`${{ names: listNames(needed) }} needs this version or newer.` : '',
+    tooOld.length > 0 ? t`${{ names: listNames(tooOld) }} needs a newer version than this.` : '',
   ].filter(Boolean)
   return (
     <Box
@@ -62,13 +64,15 @@ function CopyOption({ copy, dup, differ }: { copy: Copy; dup: Duplicate; differ:
         <Radio
           value={copy.key}
           sx={{ p: 0 }}
-          slotProps={{ input: { 'aria-label': t`${source}, version ${copy.version}` } }}
+          slotProps={{
+            input: { 'aria-label': t`${source}, version ${{ version: copy.version }}` },
+          }}
         />
         <LetterTile mod={{ id: dup.id, name: copy.name }} size={40} />
         <Box sx={{ minWidth: 0 }}>
           <Typography sx={{ fontSize: 15, fontWeight: 700 }}>{source}</Typography>
           <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-            {t`Version ${copy.version}`}
+            {t`Version ${{ version: copy.version }}`}
           </Typography>
         </Box>
       </Box>
@@ -91,11 +95,14 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
   return (
     <>
       <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>
-        {plural(copies.length, { one: `# copy of ${dup.name}`, other: `# copies of ${dup.name}` })}
+        {plural(
+          { count: copies.length },
+          { one: `# copy of ${{ name: dup.name }}`, other: `# copies of ${{ name: dup.name }}` },
+        )}
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
         <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
-          {t`${profileName} has ${dup.name} more than once. ${loader} loads only one, so pick which to keep. The others are disabled, not removed.`}
+          {t`${{ profile: profileName }} has ${{ name: dup.name }} more than once. ${loader} loads only one, so pick which to keep. The others are disabled, not removed.`}
         </Typography>
         <RadioGroup
           aria-label={t`Copy to keep`}
@@ -136,7 +143,7 @@ function Resolver({ dup, profileName }: { dup: Duplicate; profileName: string })
                 keepCopy(dup, nexusKey).catch(reportUnexpected)
               }}
             >
-              {t`Keep the Nexus copy`}
+              {t`Keep the ${{ source: sourceLabel('nexus') }} copy`}
             </Button>
           </DisabledReason>
         )}

@@ -71,7 +71,7 @@ function Versions({
       {state?.previousVersion ? (
         <Box sx={row}>
           <Typography sx={{ flex: 1, ...text }}>
-            {t`${state.previousVersion} · kept for rollback`}
+            {t`${{ version: state.previousVersion }} · kept for rollback`}
           </Typography>
           <LockedReason locked={locked}>
             <Button size="small" variant="outlined" disabled={locked} onClick={ask}>
@@ -189,10 +189,14 @@ function Confirm({
   return (
     <ConfirmDialog
       open={confirming !== null}
-      title={rolling ? t`Roll back ${mod.name}?` : t`Reset the settings of ${mod.name}?`}
+      title={
+        rolling
+          ? t`Roll back ${{ name: mod.name }}?`
+          : t`Reset the settings of ${{ name: mod.name }}?`
+      }
       body={
         rolling
-          ? t`${mod.name} goes back to ${previous}, keeping its settings. Your saves are backed up first.`
+          ? t`${{ name: mod.name }} goes back to ${previous}, keeping its settings. Your saves are backed up first.`
           : t`config.json is deleted, and the mod writes a fresh one with its own defaults the next time the game runs.`
       }
       confirmLabel={rolling ? t`Roll back` : t`Reset`}

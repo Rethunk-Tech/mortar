@@ -11,6 +11,7 @@ import {
   ShowHiddenMod,
   UnhideMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { SMAPI } from '../brand/productNames.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
@@ -84,12 +85,12 @@ export function HiddenInside({ mod, profile }: { mod: Mod; profile: Profile }) {
         ))}
       </List>
       <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>
-        {t`SMAPI skips folders whose names start with a dot.`}
+        {t`${{ loader: SMAPI }} skips folders whose names start with a dot.`}
       </Typography>
       <ConfirmDialog
         open={unhiding !== null}
-        title={t`Unhide ${unhiding?.name ?? ''}?`}
-        body={t`Mortar renames the folder ${unhiding?.folder ?? ''} without its leading dots, so SMAPI loads the mod.`}
+        title={t`Unhide ${{ name: unhiding?.name ?? '' }}?`}
+        body={t`Mortar renames the folder ${{ path: unhiding?.folder ?? '' }} without its leading dots, so ${{ loader: SMAPI }} loads the mod.`}
         confirmLabel={t`Unhide`}
         busy={busy}
         onCancel={() => setUnhiding(null)}

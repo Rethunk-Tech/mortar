@@ -72,7 +72,7 @@ function KeybindWidget({ entry, label, onChange }: WidgetProps) {
                 <IconButton
                   size="small"
                   edge="end"
-                  aria-label={t`Clear ${label}`}
+                  aria-label={t`Clear ${{ name: label }}`}
                   onClick={() => onChange(clearedKeybind(inputSystem))}
                 >
                   <X size={14} />
@@ -192,7 +192,7 @@ function NumberListWidget({ entry, label, onChange }: WidgetProps) {
     <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: space.gap }}>
       <IconButton
         size="small"
-        aria-label={t`Add ${label} item`}
+        aria-label={t`Add ${{ name: label }} item`}
         onClick={() => write([...items, items.at(-1) ?? '0'])}
       >
         <Plus size={14} />

@@ -12,6 +12,7 @@ import {
   CopyModsWithNeeds,
   ProfilesWithMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { SMAPI } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
@@ -137,10 +138,10 @@ function NexusFields({
   const { page, category } = details
   const gone = nexusPageMark(page.status, page.available, page.updated, page.created)
   const goneLabel = goneCaption(gone, {
-    hidden: t`Hidden on Nexus`,
-    hiddenDated: t`Hidden on Nexus · ${gone.date}`,
-    removed: t`Removed from Nexus`,
-    removedDated: t`Removed from Nexus · ${gone.date}`,
+    hidden: t`Hidden on ${{ source: sourceLabel('nexus') }}`,
+    hiddenDated: t`Hidden on ${{ source: sourceLabel('nexus') }} · ${{ when: gone.date }}`,
+    removed: t`Removed from ${{ source: sourceLabel('nexus') }}`,
+    removedDated: t`Removed from ${{ source: sourceLabel('nexus') }} · ${{ when: gone.date }}`,
   })
   return (
     <>
@@ -152,7 +153,7 @@ function NexusFields({
         sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: space.gap }}
       >
         <Clipped
-          label={t`Latest on Nexus`}
+          label={t`Latest on ${{ source: sourceLabel('nexus') }}`}
           value={page.version || '—'}
           accented={isNewer(page.version, mod.version)}
         />
@@ -260,7 +261,7 @@ function ModChips({ mod }: { mod: Mod }) {
   }
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-      <Chip size="small" variant="outlined" label={t`Content pack for ${hostName}`} />
+      <Chip size="small" variant="outlined" label={t`Content pack for ${{ name: hostName }}`} />
     </Box>
   )
 }
@@ -315,11 +316,11 @@ function ActionRows({
         </Link>
       ) : null}
       <DependentRows
-        label={t`Required by (${neededBy.length.toLocaleString(i18n.locale)})`}
+        label={t`Required by (${{ count: neededBy.length.toLocaleString(i18n.locale) }})`}
         dependents={neededBy}
       />
       <DependentRows
-        label={t`Optional for (${optionalFor.length.toLocaleString(i18n.locale)})`}
+        label={t`Optional for (${{ count: optionalFor.length.toLocaleString(i18n.locale) }})`}
         dependents={optionalFor}
       />
     </Box>
@@ -404,7 +405,11 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
         }}
       >
         {mod.id.startsWith('smapi:') ? (
-          <Field label={t`Mod id`} value={localId(mod.id)} hint={t`SMAPI UniqueID`} />
+          <Field
+            label={t`Mod id`}
+            value={localId(mod.id)}
+            hint={t`${{ loader: SMAPI }} UniqueID`}
+          />
         ) : (
           <Field label={t`Mod id`} value={localId(mod.id)} />
         )}
@@ -433,7 +438,7 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
         thunderstorePackage={entry?.source?.kind === 'thunderstore' ? entry.source.name : ''}
       />
       {entry?.source?.kind === 'nexus' && entry.source.modId ? (
-        <Fold title={t`More from the Nexus page`}>
+        <Fold title={t`More from the ${{ source: sourceLabel('nexus') }} page`}>
           <NexusDetails
             mod={mod}
             modId={entry.source.modId}
@@ -452,7 +457,7 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
         game={game}
         currentProfileId={profile.id}
         id={mod.id}
-        title={t`Also add ${mod.name} to…`}
+        title={t`Also add ${{ name: mod.name }} to…`}
         withNeeds={true}
         confirmLabel={t`Add`}
         onConfirm={async (profiles) => {
@@ -499,7 +504,7 @@ function Inspector({ mod, profile }: { mod: Mod; profile: Profile }) {
   useSourceLooked(profile, mod)
   const sourceName = kindLabel(kind, {
     archive: t`Archive`,
-    nexus: t`Nexus Mods`,
+    nexus: t`${{ source: sourceLabel('nexus') }}`,
     github: sourceLabel('github'),
     thunderstore: sourceLabel('thunderstore'),
   })

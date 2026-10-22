@@ -23,7 +23,7 @@ export function ExtraFilesChip({ mod, profile }: { mod: Mod; profile: Profile })
   }
   const labels = extras.map((key) => extraFileLabel(entry, key, files))
   const title = labels.join('\n')
-  const label = i18n._(plural(extras.length, { one: '+# file', other: '+# files' }))
+  const label = i18n._(plural({ count: extras.length }, { one: '+# file', other: '+# files' }))
   return (
     <Tooltip title={title}>
       <Chip

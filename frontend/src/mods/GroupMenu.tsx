@@ -138,7 +138,7 @@ export function ModGroupItems({
           <MenuAction
             disabled={locked}
             icon={<FolderMinus size={ICON_SIZE} />}
-            label={t`Remove from ${g.name}`}
+            label={t`Remove from ${{ name: g.name }}`}
             onClick={() => {
               close()
               removeModFromGroup(entryKey, g.name ?? '').catch(reportUnexpected)

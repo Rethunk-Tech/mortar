@@ -49,11 +49,11 @@ export function AssetFix({
   const fixes = (problem.asset.fixes ?? []).map((fix) => (
     <Tooltip
       key={`${fix.id}/${fix.field}`}
-      title={t`In ${fix.name}; disables its edits here`}
+      title={t`In ${{ name: fix.name }}; disables its edits here`}
       describeChild={true}
     >
       <span>
-        {assetButton(t`Set ${fix.field} to ${fix.value}`, () =>
+        {assetButton(t`Set ${{ field: fix.field }} to ${{ value: fix.value }}`, () =>
           setConfigValue(fix, fix.value).catch(reportUnexpected),
         )}
       </span>

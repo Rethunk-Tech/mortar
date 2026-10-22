@@ -51,7 +51,7 @@ function PreviewLists({ preview }: { preview: EverywherePreview }) {
           <Typography sx={{ fontSize: 13 }}>{t`Skipped`}</Typography>
           {skipped.map((row) => (
             <Typography key={row.profileId} sx={{ fontSize: 13 }} color="text.secondary">
-              {t`${row.name}: ${reasonText(row.reason)}`}
+              {t`${{ name: row.name }}: ${{ reason: reasonText(row.reason) }}`}
             </Typography>
           ))}
         </>
@@ -130,7 +130,10 @@ export function EverywhereDialog({
       const merged = mergeResults(parts)
       useToasts.getState().push({
         kind: 'success',
-        title: t`${plural(merged.updated?.length ?? 0, { one: 'Updated in # profile', other: 'Updated in # profiles' })}`,
+        title: plural(
+          { count: merged.updated?.length ?? 0 },
+          { one: 'Updated in # profile', other: 'Updated in # profiles' },
+        ),
         changes: (merged.updated ?? []).map((hit) => hit.change ?? ''),
       })
       onClose()
@@ -139,7 +142,7 @@ export function EverywhereDialog({
   return (
     <ConfirmDialog
       open={open}
-      title={t`Update in all profiles (${n})`}
+      title={t`Update in all profiles (${{ count: n }})`}
       confirmLabel={t`Update`}
       busy={pending}
       confirmDisabled={n === 0}

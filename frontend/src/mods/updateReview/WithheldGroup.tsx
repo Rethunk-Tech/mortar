@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, List, ListItem, Typography } from '@mui/material'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { sameId } from '../lookup.ts'
@@ -21,10 +22,10 @@ export function WithheldGroup({ withheld, mods }: { withheld: Update[]; mods: Mo
   return (
     <Box>
       <Typography sx={{ px: space.pad, pt: space.pad, fontWeight: 600 }}>
-        {t`Not offered (${withheld.length})`}
+        {t`Not offered (${{ count: withheld.length }})`}
       </Typography>
       <Typography sx={{ px: space.pad, fontSize: 13, color: 'text.secondary' }}>
-        {t`Nexus hides or has removed these pages, so there is no download to offer.`}
+        {t`${{ source: sourceLabel('nexus') }} hides or has removed these pages, so there is no download to offer.`}
       </Typography>
       <List disablePadding={true}>
         {withheld.map((u) => {

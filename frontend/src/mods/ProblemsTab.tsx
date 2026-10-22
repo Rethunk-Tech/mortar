@@ -262,7 +262,7 @@ function ProblemsContent({ result }: { result: NonNullable<ReturnType<typeof use
     if (section.id === 'missing' && installable.length > 0) {
       return {
         action: {
-          label: t`Add all ${installable.length}`,
+          label: t`Add all ${{ count: installable.length }}`,
           icon: <Plus size={16} />,
           disabled: addingAll,
           onClick: () => {
@@ -489,10 +489,7 @@ function CheckingLine() {
       >
         <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
           {count > 0
-            ? plural(count, {
-                one: 'Checking # mod for conflicts, missing requirements and compatibility…',
-                other: 'Checking # mods for conflicts, missing requirements and compatibility…',
-              })
+            ? t`Checking ${plural({ count }, { one: '# mod', other: '# mods' })} for conflicts, missing requirements and compatibility…`
             : t`Checking the mods for problems…`}
         </Typography>
         <LinearProgress aria-hidden={true} />

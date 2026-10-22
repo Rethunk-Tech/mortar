@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
 import type { CheckTiming } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import { CONTENT_PATCHER } from '../brand/productNames.ts'
 import { formatDuration, type SlowStartup } from '../console/startupView.ts'
 import { useTab } from '../game/tab.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
@@ -19,9 +20,9 @@ function SlowRow({ row }: { row: SlowStartup }) {
   const mod = useMods((s) => s.mods.find((m) => sameId(m.id, row.id)))
   const setEnabled = useMods((s) => s.setEnabled)
   const time = formatDuration(row.ms, i18n.locale)
-  let text = t`${row.name} adds ${time} to startup`
+  let text = t`${{ name: row.name }} adds ${time} to startup`
   if (row.kind === 'pack') {
-    text = t`${row.name} adds ${time} to startup (through ${row.framework})`
+    text = t`${{ name: row.name }} adds ${time} to startup (through ${{ framework: row.framework }})`
   }
   return (
     <Box
@@ -72,7 +73,7 @@ export function CheckTimings({ timings, at }: { timings: CheckTiming[]; at: numb
     return null
   }
   const labels: Record<string, string> = {
-    contentPatcher: t`Content Patcher packs`,
+    contentPatcher: t`${{ app: CONTENT_PATCHER }} packs`,
     conflicts: t`Conflicts`.toLowerCase(),
     requirements: t`requirements`,
     updates: t`Updates`.toLowerCase(),
@@ -84,11 +85,11 @@ export function CheckTimings({ timings, at }: { timings: CheckTiming[]; at: numb
     .join(', ')
   return (
     <Tooltip
-      title={t`Checked in ${formatDuration(total, i18n.locale)}: ${parts}`}
+      title={t`Checked in ${{ duration: formatDuration(total, i18n.locale) }}: ${parts}`}
       describeChild={true}
     >
       <Typography tabIndex={0} sx={{ fontSize: 12, color: 'text.secondary', width: 'fit-content' }}>
-        {t`Checked ${formatWhen(at)}`}
+        {t`Checked ${{ when: formatWhen(at) }}`}
       </Typography>
     </Tooltip>
   )

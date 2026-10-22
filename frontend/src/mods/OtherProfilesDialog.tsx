@@ -64,7 +64,7 @@ function ProfileChoice({
         <span>
           {profile.name}
           {has && mode !== 'remove' && !isPinned ? ` · ${t`Already has it`}` : ''}
-          {isPinned ? ` · ${t`pinned in ${profile.name}`}` : ''}
+          {isPinned ? ` · ${t`pinned in ${{ name: profile.name }}`}` : ''}
           {isLockedProfile ? ` · ${t`Stop the game to change mods.`}` : ''}
         </span>
       }
@@ -241,7 +241,10 @@ export function OtherProfilesDialog({
   }
   const confirmText =
     mode === 'remove'
-      ? t`${plural(selected.length, { one: 'Remove from # profile', other: 'Remove from # profiles' })}`
+      ? plural(
+          { count: selected.length },
+          { one: 'Remove from # profile', other: 'Remove from # profiles' },
+        )
       : confirmLabel
   return (
     <ConfirmDialog
@@ -271,7 +274,7 @@ export function OtherProfilesDialog({
       />
       {needs.length > 0 ? (
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          {t`Also adds what it needs: ${listNames(needs.map((n) => n.name))}`}
+          {t`Also adds what it needs: ${{ names: listNames(needs.map((n) => n.name)) }}`}
         </Typography>
       ) : null}
     </ConfirmDialog>

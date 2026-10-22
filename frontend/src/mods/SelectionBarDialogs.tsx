@@ -55,7 +55,9 @@ export function TagSelectionDialog({
           apply()
         }}
       >
-        <DialogTitle>{plural(mods.length, { one: 'Tag # mod', other: 'Tag # mods' })}</DialogTitle>
+        <DialogTitle>
+          {plural({ count: mods.length }, { one: 'Tag # mod', other: 'Tag # mods' })}
+        </DialogTitle>
         <DialogContent sx={{ minWidth: 320, pt: space.pad }}>
           <Autocomplete
             freeSolo={true}
@@ -115,7 +117,10 @@ export function CategorySelectionDialog({
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>
-        {plural(mods.length, { one: 'Set category for # mod', other: 'Set category for # mods' })}
+        {plural(
+          { count: mods.length },
+          { one: 'Set category for # mod', other: 'Set category for # mods' },
+        )}
       </DialogTitle>
       <DialogContent sx={{ minWidth: 280, pt: space.pad }}>
         <RadioGroup

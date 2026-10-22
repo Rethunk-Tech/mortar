@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Chip, ListItem } from '@mui/material'
 import { ArrowRight } from 'lucide-react'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
+import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { formatKb } from '../../i18n/bytes.ts'
 import { listNames } from '../../i18n/list.ts'
 import { useProfiles } from '../../profiles/store.ts'
@@ -32,26 +33,36 @@ function useRowNotes(update: Update, profileId: string) {
   const entry = entries?.find((e) => e.key === update.key)
   const optional = entries?.filter((e) => e.overlayOf === update.key).length ?? 0
   const notes = [
-    ...(mod ? siblingsOf(mods, mod).map((o) => t`Also updates ${o.name} (same download)`) : []),
+    ...(mod
+      ? siblingsOf(mods, mod).map((o) => t`Also updates ${{ name: o.name }} (same download)`)
+      : []),
     ...(mod && !mod.enabled ? [t`Disabled in this profile`] : []),
     ...(entry?.pinned && entry.pinReason ? [t`Pinned: ${{ pinned: entry.pinReason }}`] : []),
     ...(optional > 0
       ? [
-          t`${plural(optional, { one: '# optional file will be re-applied; check it still fits this version', other: '# optional files will be re-applied; check they still fit this version' })}`,
+          plural(
+            { count: optional },
+            {
+              one: '# optional file will be re-applied; check it still fits this version',
+              other: '# optional files will be re-applied; check they still fit this version',
+            },
+          ),
         ]
       : []),
     ...(update.pickFile
       ? [
-          t`Pick the file on Nexus: its page has several downloads and none replaces the one you have.`,
+          t`Pick the file on ${{ source: sourceLabel('nexus') }}: its page has several downloads and none replaces the one you have.`,
         ]
       : []),
     ...(update.unofficial ? [t`Unofficial`] : []),
     ...(update.notDistributable
-      ? [t`${update.source} does not allow downloads outside its own page: get it there.`]
+      ? [
+          t`${{ source: update.source }} does not allow downloads outside its own page: get it there.`,
+        ]
       : []),
     ...(update.switch && !update.notDistributable
       ? [
-          t`From ${update.source}, not the site you installed it from. Updating switches its source.`,
+          t`From ${{ source: update.source }}, not the site you installed it from. Updating switches its source.`,
         ]
       : []),
   ]
@@ -71,8 +82,10 @@ function VersionLine({ update }: { update: Update }) {
           describeChild={true}
           title={
             <>
-              {added.length > 0 ? <div>{t`Now needs ${listNames(added)}`}</div> : null}
-              {removed.length > 0 ? <div>{t`No longer needs ${listNames(removed)}`}</div> : null}
+              {added.length > 0 ? <div>{t`Now needs ${{ names: listNames(added) }}`}</div> : null}
+              {removed.length > 0 ? (
+                <div>{t`No longer needs ${{ names: listNames(removed) }}`}</div>
+              ) : null}
             </>
           }
         >

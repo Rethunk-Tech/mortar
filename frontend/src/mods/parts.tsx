@@ -109,7 +109,7 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
   const close = () => askRemove(null)
   let body = t`Their folders are removed from this profile. You can undo this.`
   if (extra.length > 0) {
-    body = t`Mods from the same download are removed together: ${listNames(extra)}. You can undo this.`
+    body = t`Mods from the same download are removed together: ${{ names: listNames(extra) }}. You can undo this.`
   } else if (one) {
     body = t`Its folder is removed from this profile. You can undo this.`
   }
@@ -122,15 +122,18 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
   }
   const needLine =
     dependents.length > 0
-      ? t`${plural(dependents.length, { one: '# mod needs this', other: '# mods need this' })}: ${listNames(dependents.map((m) => m.name))}`
+      ? t`${plural({ count: dependents.length }, { one: '# mod needs this', other: '# mods need this' })}: ${{ names: listNames(dependents.map((m) => m.name)) }}`
       : ''
   const allCount = removing.length + dependents.length
   return (
     <>
       <DialogTitle>
         {one
-          ? t`Remove ${one.name} from this profile?`
-          : t`${plural(removing.length, { one: 'Remove # mod from this profile?', other: 'Remove # mods from this profile?' })}`}
+          ? t`Remove ${{ name: one.name }} from this profile?`
+          : plural(
+              { count: removing.length },
+              { one: 'Remove # mod from this profile?', other: 'Remove # mods from this profile?' },
+            )}
       </DialogTitle>
       <DialogContent>
         <DialogContentText>{body}</DialogContentText>
@@ -144,7 +147,13 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
         ) : null}
         {optional > 0 ? (
           <DialogContentText sx={{ mt: 1 }}>
-            {t`${plural(optional, { one: 'Also removes # optional file that goes on top of it.', other: 'Also removes # optional files that go on top of it.' })}`}
+            {plural(
+              { count: optional },
+              {
+                one: 'Also removes # optional file that goes on top of it.',
+                other: 'Also removes # optional files that go on top of it.',
+              },
+            )}
           </DialogContentText>
         ) : null}
         {needLine ? <DialogContentText sx={{ mt: 1 }}>{needLine}</DialogContentText> : null}
@@ -157,7 +166,7 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
                 onChange={(e) => setWithUnneeded(e.target.checked)}
               />
             }
-            label={t`${plural(unneeded.length, { one: 'Also remove # library only this needed', other: 'Also remove # libraries only these needed' })}: ${listNames(unneeded.map((m) => m.name))}`}
+            label={t`${plural({ count: unneeded.length }, { one: 'Also remove # library only this needed', other: 'Also remove # libraries only these needed' })}: ${{ names: listNames(unneeded.map((m) => m.name)) }}`}
           />
         ) : null}
       </DialogContent>
@@ -177,7 +186,10 @@ function RemoveDialogBody({ removing }: { removing: Mod[] }) {
                 disabled={locked}
                 onClick={() => drop([...removing, ...dependents])}
               >
-                {t`${plural(allCount, { one: 'Remove all # mod', other: 'Remove all # mods' })}`}
+                {plural(
+                  { count: allCount },
+                  { one: 'Remove all # mod', other: 'Remove all # mods' },
+                )}
               </Button>
             </LockedReason>
           </>
@@ -349,10 +361,10 @@ export function NexusGoneBadge({ mod }: { mod: Mod }) {
     return null
   }
   const text = goneCaption(mark, {
-    hidden: t`Hidden on Nexus`,
-    hiddenDated: t`Hidden on Nexus · ${mark.date}`,
-    removed: t`Removed from Nexus`,
-    removedDated: t`Removed from Nexus · ${mark.date}`,
+    hidden: t`Hidden on ${{ source: sourceLabel('nexus') }}`,
+    hiddenDated: t`Hidden on ${{ source: sourceLabel('nexus') }} · ${{ when: mark.date }}`,
+    removed: t`Removed from ${{ source: sourceLabel('nexus') }}`,
+    removedDated: t`Removed from ${{ source: sourceLabel('nexus') }} · ${{ when: mark.date }}`,
   })
   return (
     <Tooltip title={text}>
@@ -375,7 +387,7 @@ export function LastRunBadge({ mod }: { mod: Mod }) {
   }
   const errors = hit.errors ? errorsLabel(hit.errors) : ''
   const warnings = hit.warnings
-    ? t`${plural(hit.warnings, { one: '# warning', other: '# warnings' })}`
+    ? plural({ count: hit.warnings }, { one: '# warning', other: '# warnings' })
     : ''
   const text = lastRunSummary(hit)
   const chipSx = {
@@ -452,7 +464,7 @@ export function UpdateBadge({ mod }: { mod: Mod }) {
     return null
   }
   const text = update.unofficial
-    ? t`Unofficial update available: ${update.version}`
+    ? t`Unofficial update available: ${{ version: update.version }}`
     : t`Update available: ${{ installed: update.installed }} to ${{ version: update.version }}`
   return (
     <>
@@ -511,7 +523,7 @@ export function ModSwitch({ mod }: { mod: Mod }) {
         onClick={(e) => e.stopPropagation()}
         slotProps={{
           input: {
-            'aria-label': on ? t`Disable ${mod.name}` : t`Enable ${mod.name}`,
+            'aria-label': on ? t`Disable ${{ name: mod.name }}` : t`Enable ${{ name: mod.name }}`,
           },
         }}
       />

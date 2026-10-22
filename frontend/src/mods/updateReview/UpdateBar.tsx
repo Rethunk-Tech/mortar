@@ -88,7 +88,7 @@ export const UpdateBar = memo(function UpdateBarView() {
         noWrap={true}
         sx={{ flex: 1, minWidth: 0, fontSize: 13, color: 'text.secondary' }}
       >
-        {first ? t`including ${first.name} ${first.version}` : ''}
+        {first ? t`including ${{ name: first.name }} ${{ version: first.version }}` : ''}
       </Typography>
       <Button
         size="small"
