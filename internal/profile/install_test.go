@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -13,6 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 func buildZip(t *testing.T, name string, files map[string]string) string {
@@ -197,15 +199,24 @@ func tsZip(t *testing.T, version string) string {
 	})
 }
 
-func TestDiskThunderstoreZipNeedsAPublisher(t *testing.T) {
+func TestDiskThunderstoreZipPublisher(t *testing.T) {
 	t.Parallel()
 	e := newEnv(t)
 	p, err := e.Create("lethal-company", "LC")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := e.InstallArchive(t.Context(), "lethal-company", p.ID, tsZip(t, "1.0.0")); err == nil || !strings.Contains(err.Error(), "does not say who published") {
-		t.Fatalf("a zip without a publisher: %v", err)
+	// A mod made by hand names no publisher anywhere, and installs under r2modman's name for that.
+	p0, _ := e.Create("lethal-company", "LC0")
+	handMade := testfs.WriteZip(t, filepath.Join(t.TempDir(), "RuntimeIconsUI.zip"), map[string]string{
+		"manifest.json": `{"name":"RuntimeIconsUI","version_number":"0.0.1","website_url":"","description":"manifest",` +
+			`"dependencies":["BepInEx-BepInExPack-5.4.2305","LethalCompanyModding-RuntimeIcons-0.3.3"]}`,
+		"RuntimeIconsUI.dll": "MZ",
+	})
+	res0, err := e.InstallArchive(t.Context(), "lethal-company", p0.ID, handMade)
+	if err != nil || res0.Profile.Entries[0].Mods[0].ID != "thunderstore:Unknown-RuntimeIconsUI" ||
+		!slices.Equal(res0.Profile.Entries[0].Mods[0].Needs, []mod.ID{"thunderstore:LethalCompanyModding-RuntimeIcons"}) {
+		t.Fatalf("a zip without a publisher: %+v, %v", res0, err)
 	}
 	named := func(file, body string) string {
 		return testfs.WriteZip(t, filepath.Join(t.TempDir(), file), map[string]string{"manifest.json": `{"name":"Mod","version_number":"1.0.0"}`, "Mod.dll": body})

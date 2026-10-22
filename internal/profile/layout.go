@@ -19,7 +19,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // driverThunderstore is the installer driver for Thunderstore packages, whose files go to the profile target and are
@@ -131,7 +130,7 @@ func (e Entry) hasFolder() bool { return !e.Package }
 // namePackage records the Namespace-Name of a Thunderstore package added from disk when its manifest does not carry a
 // namespace: from the download's file name, which Thunderstore makes <Namespace>-<Name>-<version>.zip, else from the
 // one package of that name and version in the game's index, else fallback (a GitHub release's owner). Nothing is
-// recorded when none names it; packageMods then refuses the package.
+// recorded when none names it; packageMods then calls the publisher Unknown.
 func (s *Store) namePackage(game, key, fileName, fallback string) error {
 	arch, _, inst, err := s.pick(game, key)
 	if err != nil || inst.ID() != driverThunderstore || arch.Key != "" {
@@ -205,12 +204,10 @@ func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool,
 	author, _, _ := strings.Cut(arch.Key, "-")
 	id := arch.Key
 	if id == "" {
-		// A package added from disk has no index entry, so its Namespace-Name comes from its manifest; Thunderstore
-		// needs that to match the package against the index, so without it the archive is refused.
-		author = cmp.Or(m.Namespace, m.Author)
-		if author == "" {
-			return nil, false, usererr.Wrap(usererr.Invalid, fmt.Errorf("%s does not say who published it, and neither its file name nor the Thunderstore index does, so Mortar cannot tell which package it is: install it from Thunderstore instead", m.Name))
-		}
+		// A package added from disk has no index entry, so its Namespace-Name comes from its manifest. A mod made by hand
+		// and never uploaded names no publisher; r2modman's Import local mod calls it Unknown, and so does Mortar, so a
+		// profile shared between the two names it the same.
+		author = cmp.Or(m.Namespace, m.Author, unknownPublisher)
 		id = author + "-" + m.Name
 	}
 	var needs []mod.ID
@@ -226,6 +223,9 @@ func (s *Store) placesInSharedFolders(game, key string) bool {
 	_, _, inst, err := s.pick(game, key)
 	return err == nil && inst.ID() == installer.DriverSourceTarget
 }
+
+// unknownPublisher is the namespace of a package whose manifest, file name and index entry name no publisher.
+const unknownPublisher = "Unknown"
 
 // folderLoader is the id of the loader of a game whose mods are files in a folder the game reads (internal/loader/folder).
 const folderLoader = "folder"
