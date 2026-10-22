@@ -23,15 +23,7 @@ import {
   Share2,
   User,
 } from 'lucide-react'
-import {
-  Fragment,
-  type KeyboardEvent,
-  type ReactNode,
-  type RefObject,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { Fragment, type KeyboardEvent, type ReactNode, useState } from 'react'
 import { BisectDialog } from '../console/BisectDialog.tsx'
 import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import type { SettingsSection } from '../nav/store.ts'
@@ -155,31 +147,6 @@ function PaletteRows({
   )
 }
 
-function usePaletteWindow(open: boolean) {
-  const searchRef = useRef<HTMLInputElement>(null)
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-    const focus = requestAnimationFrame(() => {
-      searchRef.current?.focus()
-    })
-    const onEsc = (e: globalThis.KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        e.stopPropagation()
-        useCommandPalette.getState().setOpen(false)
-      }
-    }
-    globalThis.addEventListener('keydown', onEsc, true)
-    return () => {
-      cancelAnimationFrame(focus)
-      globalThis.removeEventListener('keydown', onEsc, true)
-    }
-  }, [open])
-  return searchRef
-}
-
 function paletteSections(i18n: I18n) {
   return [
     { id: 'general' as const, label: i18n._(msg`General`) },
@@ -199,7 +166,7 @@ function paletteSections(i18n: I18n) {
 
 const closePalette = () => useCommandPalette.getState().setOpen(false)
 
-function PaletteBody({ searchRef }: { searchRef: RefObject<HTMLInputElement | null> }) {
+function PaletteBody() {
   const { t, i18n } = useLingui()
   const profiles = useProfiles((s) => s.profiles)
   const openId = useProfiles((s) => s.openId)
@@ -229,11 +196,6 @@ function PaletteBody({ searchRef }: { searchRef: RefObject<HTMLInputElement | nu
     closePalette()
   }
   const onKey = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.preventDefault()
-      closePalette()
-      return
-    }
     if (e.key === 'ArrowDown') {
       e.preventDefault()
       setIndex((i) => (shown.length === 0 ? 0 : (i + 1) % shown.length))
@@ -252,7 +214,6 @@ function PaletteBody({ searchRef }: { searchRef: RefObject<HTMLInputElement | nu
   return (
     <>
       <TextField
-        inputRef={searchRef}
         autoFocus={true}
         fullWidth={true}
         value={query}
@@ -284,7 +245,6 @@ export function CommandPalette() {
   const open = useCommandPalette((s) => s.open)
   const creating = useCommandPalette((s) => s.creating)
   const bisect = useCommandPalette((s) => s.bisect)
-  const searchRef = usePaletteWindow(open)
   // The body subscribes to profiles and settings; a closed palette renders none of it, and its query starts empty
   // each time it opens.
   return (
@@ -299,7 +259,7 @@ export function CommandPalette() {
           },
         }}
       >
-        <PaletteBody searchRef={searchRef} />
+        <PaletteBody />
       </Dialog>
       <NewProfileDialog
         open={creating}
