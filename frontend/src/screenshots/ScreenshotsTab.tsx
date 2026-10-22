@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, ButtonBase, Dialog, Typography } from '@mui/material'
-import { Camera, FolderOpen } from 'lucide-react'
+import { Camera, ChevronLeft, ChevronRight, FolderOpen, X } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useId, useState } from 'react'
 import {
   OpenScreenshotsFolder,
@@ -12,18 +12,27 @@ import type {
   Gallery,
   Shot,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/shots/models.ts'
+import { ON_ART_TEXT } from '../game/onArt.ts'
 import { PageActions } from '../game/PageActions.tsx'
 import { storeName } from '../games/storeName.ts'
 import { When } from '../i18n/When.tsx'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 
 const TILE_MIN_PX = 220
 const STEAM = 'steam'
+// The viewer's buttons sit on the screenshot, so they carry their own dark backing to stay legible on any image.
+const overArt = {
+  position: 'absolute',
+  color: ON_ART_TEXT,
+  bgcolor: 'rgba(0, 0, 0, 0.45)',
+  '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.65)' },
+} as const
 
 const shotUrl = (game: string, s: Shot) =>
   `/screenshot/${encodeURIComponent(game)}/${s.source}/${encodeURIComponent(s.name)}`
@@ -76,12 +85,35 @@ function Viewer({
         }
       }}
     >
-      <Box
-        component="img"
-        src={shotUrl(game, shot)}
-        alt={shot.name}
-        sx={{ display: 'block', maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain' }}
-      />
+      <Box sx={{ position: 'relative' }}>
+        <Box
+          component="img"
+          src={shotUrl(game, shot)}
+          alt={shot.name}
+          sx={{ display: 'block', maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain' }}
+        />
+        {index > 0 ? (
+          <TipIconButton
+            label={t`Previous`}
+            onClick={() => onIndex(index - 1)}
+            sx={{ ...overArt, left: 8, top: '50%', transform: 'translateY(-50%)' }}
+          >
+            <ChevronLeft size={20} />
+          </TipIconButton>
+        ) : null}
+        {index < shots.length - 1 ? (
+          <TipIconButton
+            label={t`Next`}
+            onClick={() => onIndex(index + 1)}
+            sx={{ ...overArt, right: 8, top: '50%', transform: 'translateY(-50%)' }}
+          >
+            <ChevronRight size={20} />
+          </TipIconButton>
+        ) : null}
+        <TipIconButton label={t`Close`} onClick={onClose} sx={{ ...overArt, right: 8, top: 8 }}>
+          <X size={20} />
+        </TipIconButton>
+      </Box>
       <Box
         sx={{
           display: 'flex',
