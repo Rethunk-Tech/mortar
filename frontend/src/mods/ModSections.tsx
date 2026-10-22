@@ -30,7 +30,7 @@ const row = {
   ...text,
 } as const
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
       <Typography sx={heading}>{title}</Typography>

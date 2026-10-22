@@ -14,10 +14,10 @@ import { DetailsAside } from '../mods/DetailsAside.tsx'
 import { DetailsHeader } from '../mods/DetailsHeader.tsx'
 import { type Dependency, nexusDependencies } from '../mods/dependencies.ts'
 import { MarkdownView } from '../mods/MarkdownView.tsx'
+import { Section } from '../mods/ModSections.tsx'
 import { openPage } from '../mods/menu.ts'
 import { Rich } from '../mods/NexusDetails.tsx'
 import { loadDetails, useNexusEntry } from '../mods/nexusDetails.ts'
-import { heading } from '../mods/paper.ts'
 import { useReleases } from '../mods/releases.ts'
 import { listsVersions } from '../mods/versionChoices.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
@@ -40,15 +40,6 @@ const PICTURE = 52
 const SKELETON_ROWS = 4
 const SKELETON_PX = 18
 const text = { fontSize: 13 } as const
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-      <Typography sx={heading}>{title}</Typography>
-      {children}
-    </Box>
-  )
-}
 
 function Versions({ versions }: { versions: string[] }) {
   const { t } = useLingui()
