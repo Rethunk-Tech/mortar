@@ -20,8 +20,6 @@ const url = arg('url', 'http://127.0.0.1:9455')
 const out = arg('out', '/var/tmp/screens')
 const STEP_MS = 5000
 const SETTLE_MS = 400
-// The copied data's update check answers a few seconds after the page opens.
-const TOAST_MS = 4000
 
 const written: string[] = []
 const skipped: string[] = []
@@ -54,12 +52,10 @@ async function shot(page: Page, name: string, steps: () => Promise<void>, file =
         .waitFor({ state: 'hidden', timeout: 15_000 })
         .catch(() => undefined)
     }
-    await page.waitForTimeout(TOAST_MS)
-    const toasts = page.getByRole('region', { name: 'Notifications' })
-    for (const dismiss of await toasts.getByRole('button', { name: 'Dismiss' }).all()) {
-      // Clicked in the page: an open dialog's backdrop would take a pointer click.
-      await dismiss.evaluate((el) => (el as HTMLElement).click()).catch(() => undefined)
-    }
+    // Toasts are hidden rather than dismissed: the copied data's checks can raise one at any moment.
+    await page.addStyleTag({
+      content: '[aria-label="Notifications"] { visibility: hidden !important; }',
+    })
     await settle(page)
     const path = `${out}/${file}`
     await page.screenshot({ path })
@@ -113,7 +109,7 @@ interface Scene {
   file?: string
   width: number
   height: number
-  pad?: boolean
+  init?: string
   profile?: { game: string; name: string }
   steps: (page: Page) => Promise<void>
 }
@@ -144,6 +140,9 @@ const STARDEW = { game: 'Stardew Valley', name: 'Main' }
 const LETHAL = { game: 'Lethal Company', name: 'Main' }
 // The maintainer's measured profile, whose runs logged patch errors.
 const LETHAL_MEASURED = { game: 'Lethal Company', name: 'Guided Test' }
+
+// The served sandbox has no Wails environment, so a Linux-only setting needs the runtime told which system it is on.
+const AS_LINUX = `window._wails = { environment: { OS: 'linux' } }`
 
 // Steam Deck mode is the roomy theme a gamepad's first press turns on, so the scene drives a fake standard-mapping pad.
 const DPAD_DOWN = 13
@@ -245,7 +244,7 @@ const SITE: Scene[] = [
   {
     name: 'deck',
     ...DESK,
-    pad: true,
+    init: FAKE_PAD,
     steps: async (page) => {
       await openGameSelect(page)
       await page.evaluate(() => dispatchEvent(new Event('gamepadconnected')))
@@ -295,6 +294,29 @@ const SITE: Scene[] = [
     },
   },
   {
+    name: 'language',
+    ...DESK,
+    profile: STARDEW,
+    steps: async (page) => {
+      await settings(page, 'General')
+      await click(page, 'combobox', 'Language')
+      await page.getByRole('listbox').waitFor({ timeout: STEP_MS })
+    },
+  },
+  {
+    name: 'graphics',
+    ...DESK,
+    profile: STARDEW,
+    init: AS_LINUX,
+    steps: async (page) => {
+      await settings(page, 'Appearance')
+      await page
+        .getByText('Graphics', { exact: true })
+        .first()
+        .evaluate((h) => h.scrollIntoView({ block: 'center' }))
+    },
+  },
+  {
     name: 'config',
     ...DESK,
     profile: STARDEW,
@@ -331,8 +353,8 @@ async function siteShots() {
       colorScheme: 'dark',
     })
     const page = await context.newPage()
-    if (scene.pad) {
-      await page.addInitScript(FAKE_PAD)
+    if (scene.init) {
+      await page.addInitScript(scene.init)
     }
     await shot(
       page,
