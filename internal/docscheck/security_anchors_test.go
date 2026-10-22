@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -75,7 +76,8 @@ func resolve(t *testing.T, root *os.Root, rel string) string {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() && (d.Name() == "node_modules" || d.Name() == ".git" || d.Name() == ".claude" || d.Name() == "tmp") {
+		// Build output is skipped too: the gate rebuilds site/ and dist/ while this test walks.
+		if d.IsDir() && slices.Contains([]string{"node_modules", ".git", ".claude", "tmp", "site", "dist", "bin"}, d.Name()) {
 			return fs.SkipDir
 		}
 		if !d.IsDir() && strings.HasSuffix(path, "/"+rel) {
