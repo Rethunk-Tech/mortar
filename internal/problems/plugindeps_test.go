@@ -277,3 +277,22 @@ func TestProblemsReportsAMissingPackageOnceWhenManifestAndAssemblyBothNameIt(t *
 		t.Fatalf("missing = %+v, err = %v; want Ns-Hard by package once, and the version-pinned GUID", got.Missing, err)
 	}
 }
+
+func TestALibraryAPluginNamesInItsAttributesIsNeeded(t *testing.T) {
+	lib := pkgWith("lethallib", "evaisa.lethallib", "1.0.0", true)
+	extra := pkgWith("extra", "com.x.Extra", "1.0.0", true)
+	clash := pkgWith("clash", "com.x.Clash", "1.0.0", true)
+	unused := pkgWith("unused", "com.x.Unused", "1.0.0", true)
+	// A locally built mod with no manifest: its plugin's attributes are all that name its libraries.
+	local := pkgWith("local", "com.wallet.Local", "0.1.0", true,
+		hard("evaisa.lethallib", ""),
+		dotnet.Relation{GUID: "com.x.extra", Kind: dotnet.SoftDependency},
+		dotnet.Relation{GUID: "com.x.clash", Kind: dotnet.Incompatible})
+	off := pkgWith("off", "com.x.Off", "1.0.0", false, hard("com.x.unused", ""))
+
+	got := pluginNeeded([]profile.PackageRef{lib, extra, clash, unused, local, off})
+
+	if !got["lethallib"] || !got["extra"] || got["clash"] || got["unused"] || got["local"] {
+		t.Fatalf("needed = %v, want lethallib and extra only", got)
+	}
+}

@@ -423,6 +423,8 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 			}
 			r.Broken = append(r.Broken, pluginCycles(all, declared)...)
 			r.Missing = append(r.Missing, dropCovered(missing, r.Missing)...)
+			needed := pluginNeeded(all)
+			r.Cleanup = slices.DeleteFunc(r.Cleanup, func(c framework.Cleanup) bool { return needed[c.Key] })
 			for _, f := range incompatible {
 				if !slices.ContainsFunc(r.LoadFailures, func(x LoadFailure) bool { return x.Key == f.Key && x.Kind == f.Kind }) {
 					r.LoadFailures = append(r.LoadFailures, f)

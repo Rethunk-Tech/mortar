@@ -148,3 +148,33 @@ func dropCovered(rows, reported []Missing) []Missing {
 		})
 	})
 }
+
+// pluginNeeded lists the packages that ship a plugin an enabled package's plugins depend on, hard or soft. A mod with no
+// manifest (one built locally, say) names its libraries only in these attributes, so without them its libraries look
+// unused and are offered for removal.
+func pluginNeeded(pkgs []profile.PackageRef) map[string]bool {
+	byGUID := map[string][]string{}
+	for _, p := range pkgs {
+		for _, pl := range declaredIn(p.Dir).Plugins {
+			g := strings.ToLower(pl.GUID)
+			byGUID[g] = append(byGUID[g], p.Key)
+		}
+	}
+	needed := map[string]bool{}
+	for _, p := range pkgs {
+		if !p.Enabled {
+			continue
+		}
+		for _, r := range declaredIn(p.Dir).Relations {
+			if r.Kind == dotnet.Incompatible {
+				continue
+			}
+			for _, key := range byGUID[strings.ToLower(r.GUID)] {
+				if key != p.Key {
+					needed[key] = true
+				}
+			}
+		}
+	}
+	return needed
+}
