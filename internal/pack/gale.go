@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/winname"
 	_ "modernc.org/sqlite"
 )
 
@@ -23,11 +24,26 @@ const galeAppID = "com.kesomannen.gale"
 // galeDB is Gale's database file (src-tauri/src/db/mod.rs:24).
 const galeDB = "data.sqlite3"
 
-// galeMod is one entry of a profile's mods JSON (src-tauri/src/profile/mod.rs:86 ProfileMod, :106 ThunderstoreMod): a
-// Thunderstore mod names its package as fullName, "Namespace-Name-Version"; a mod added from disk has no fullName.
+// galeMod is one entry of a profile's mods JSON (src-tauri/src/profile/mod.rs:86 ProfileMod, :106 ThunderstoreMod,
+// :400 LocalMod): a Thunderstore mod names its package as fullName, "Namespace-Name-Version"; a mod added from disk has
+// no fullName, and its dependencies are packages named the same way.
 type galeMod struct {
-	FullName string `json:"fullName"`
-	Enabled  *bool  `json:"enabled"`
+	FullName     string   `json:"fullName"`
+	Enabled      *bool    `json:"enabled"`
+	Name         string   `json:"name"`
+	Author       string   `json:"author"`
+	Version      string   `json:"version"`
+	Dependencies []string `json:"dependencies"`
+}
+
+// galeRef is the package a "Namespace-Name-Version" names.
+func galeRef(full string) (Ref, bool) {
+	owner, rest, ok := strings.Cut(full, "-")
+	name, version, ok2 := strings.Cut(rest, "-")
+	if !ok || !ok2 || !nativeID.MatchString(owner+"-"+name) {
+		return Ref{}, false
+	}
+	return Ref{Source: thunderstore, Native: owner + "-" + name, Version: version}, true
 }
 
 // Gale reads the profiles in Gale's database, data.sqlite3 in its data folder. Gale saves a profile with
@@ -116,8 +132,9 @@ func (g Gale) Detect(in Input) bool {
 	return in.Path != "" && ok
 }
 
-// Parse reads the profile's mods from the database and its BepInEx/config files. Mods Gale added from disk carry no
-// package name and are left out.
+// Parse reads the profile's mods from the database and its BepInEx/config files. A mod Gale added from disk is a
+// LocalMod of its folder, BepInEx/plugins/<name> (src-tauri/src/profile/import/local.rs:99-121), and the packages it
+// depends on that the profile lacks are added to Packages.
 func (g Gale) Parse(ctx context.Context, in Input) (Draft, error) {
 	p, ok := g.find(ctx, in.Path)
 	if !ok {
@@ -133,13 +150,26 @@ func (g Gale) Parse(ctx context.Context, in Input) (Draft, error) {
 			d.Game = id
 		}
 	}
+	var deps []string
 	for _, m := range mods {
-		owner, rest, ok := strings.Cut(m.FullName, "-")
-		name, version, ok2 := strings.Cut(rest, "-")
-		if !ok || !ok2 || !nativeID.MatchString(owner+"-"+name) {
+		off := m.Enabled != nil && !*m.Enabled
+		if m.FullName == "" {
+			dir := filepath.Join(p.Path, "BepInEx", "plugins", m.Name)
+			if winname.Valid(m.Name) && fsx.IsDir(dir) {
+				d.Local = append(d.Local, LocalMod{Name: m.Name, Author: m.Author, Version: m.Version, Disabled: off, Dir: dir})
+				deps = append(deps, m.Dependencies...)
+			}
 			continue
 		}
-		d.Packages = append(d.Packages, Ref{Source: thunderstore, Native: owner + "-" + name, Version: version, Disabled: m.Enabled != nil && !*m.Enabled})
+		if ref, ok := galeRef(m.FullName); ok {
+			ref.Disabled = off
+			d.Packages = append(d.Packages, ref)
+		}
+	}
+	for _, dep := range deps {
+		if ref, ok := galeRef(dep); ok && !slices.ContainsFunc(d.Packages, func(r Ref) bool { return strings.EqualFold(r.Native, ref.Native) }) {
+			d.Packages = append(d.Packages, ref)
+		}
 	}
 	var err error
 	if d.Configs, err = bepinexConfigs(p.Path); err != nil {

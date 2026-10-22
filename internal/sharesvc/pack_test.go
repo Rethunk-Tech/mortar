@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/base64"
 	"net/http"
 	"net/http/httptest"
@@ -17,6 +18,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/problems"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
+	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/testenv"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
@@ -31,7 +33,10 @@ func r2z(t *testing.T) []byte {
 	t.Helper()
 	var buf bytes.Buffer
 	zw := zip.NewWriter(&buf)
-	for name, body := range map[string]string{"export.r2x": packExport, "config/alice.cfg": "[General]\n", "BepInEx/plugins/run.dll": "MZ"} {
+	for name, body := range map[string]string{
+		"export.r2x": packExport, "config/alice.cfg": "[General]\n", "BepInEx/plugins/run.dll": "MZ",
+		"BepInEx/plugins/Alice-MoreCompany/extra.dll": "MZ", "BepInEx/plugins/Mine/Mine.dll": "MZ", "BepInEx/plugins/Mine/mine.json": "{}",
+	} {
 		w, _ := zw.Create(name)
 		_, _ = w.Write([]byte(body))
 	}
@@ -97,11 +102,38 @@ func TestPreviewLinkReadsABareCodeAndAHashCode(t *testing.T) {
 		if gone := mods["Bob-Gone"]; gone.State != StateUnavailable || gone.Reason != ReasonNotInIndex || gone.Detail == "" {
 			t.Errorf("an unresolvable package must be an unavailable row: %+v", gone)
 		}
-		// One config file lands; run.dll is an executable type and is listed as left out.
-		if pv.Settings != 1 || !slices.Equal(pv.SkippedPrograms, []string{"BepInEx/plugins/run.dll"}) {
+		// One config file lands. Mine's folder, which no package names, is a local mod whose DLL comes with it; a DLL
+		// anywhere else is listed as left out.
+		if pv.Settings != 1 || !slices.Equal(pv.SkippedPrograms, []string{"BepInEx/plugins/Alice-MoreCompany/extra.dll", "BepInEx/plugins/run.dll"}) {
 			t.Errorf("settings %d, skipped %v", pv.Settings, pv.SkippedPrograms)
 		}
+		if mine := mods[""]; mine.Name != "Mine" || mine.Site != SiteLocal || mine.State != StateDownload || !mine.Enabled ||
+			mine.FilesFrom != FilesFromCode || mine.SizeKB != 1 {
+			t.Errorf("mine = %+v", mine)
+		}
 	}
+}
+
+// localEntry is the profile's local entry named name and the store folder holding its files.
+func localEntry(t *testing.T, s *Service, profileID, name string) (profile.Entry, string) {
+	t.Helper()
+	p, err := s.find("lethal-company", profileID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	i := slices.IndexFunc(p.Entries, func(e profile.Entry) bool { return e.Source.Kind == profile.KindLocal && e.Source.Name == name })
+	if i < 0 {
+		t.Fatalf("no local entry %s in %+v", name, p.Entries)
+	}
+	items, err := store.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, err := items.Path("lethal-company", p.Entries[i].StoreKey())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return p.Entries[i], dir
 }
 
 func TestImportFromACodeWritesConfigsAndQueuesWhatResolves(t *testing.T) {
@@ -123,6 +155,62 @@ func TestImportFromACodeWritesConfigsAndQueuesWhatResolves(t *testing.T) {
 	}
 	if got, err := fsx.ReadFile(filepath.Join(dir, "BepInEx", "config", "alice.cfg")); err != nil || string(got) != "[General]\n" {
 		t.Fatalf("config = %q, %v", got, err)
+	}
+	e, files := localEntry(t, s, res.Profile.ID, "Mine")
+	if len(e.Mods) != 1 || !e.Enabled(e.Mods[0].ID) || !fsx.IsFile(filepath.Join(files, "BepInEx", "plugins", "Mine.dll")) {
+		t.Fatalf("Mine = %+v in %s", e, files)
+	}
+}
+
+func TestImportFromAGaleProfileBringsItsLocalModAndItsDependencies(t *testing.T) {
+	s, rec := packService(t)
+	data := t.TempDir()
+	prof := filepath.Join(data, "lethal-company", "profiles", "Crew")
+	// Gale switches a mod off by adding .old to each of its files.
+	testfs.WriteFile(t, prof, "BepInEx/plugins/Mine/Mine.dll.old", "MZ")
+	testfs.WriteFile(t, prof, "BepInEx/plugins/Mine/data/a.bin.old", "x")
+	db, err := sql.Open("sqlite", filepath.Join(data, "data.sqlite3"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, q := range []string{
+		`CREATE TABLE profiles (id INTEGER PRIMARY KEY, name TEXT NOT NULL, path TEXT NOT NULL, game_slug TEXT NOT NULL, mods JSON NOT NULL)`,
+		`INSERT INTO profiles (name, path, game_slug, mods) VALUES ('Crew', '` + prof + `', 'lethal-company', '[
+			{"enabled":true,"fullName":"Alice-MoreCompany-1.2.3"},
+			{"enabled":false,"name":"Mine","author":"Me","version":"0.1.0","uuid":"x","fileSize":2,
+			 "dependencies":["Alice-MoreCompany-1.2.3","Carol-Lib-2.0.0"]}]')`,
+	} {
+		if _, err := db.ExecContext(t.Context(), q); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := db.Close(); err != nil {
+		t.Fatal(err)
+	}
+	s.d.PackFolder = func() string { return data }
+	pv, err := s.PreviewLocalProfile(t.Context(), "lethal-company", prof, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	mods := packMods(pv)
+	if mine := mods[""]; mine.Name != "Mine" || mine.Author != "Me" || mine.Version != "0.1.0" || mine.State != StateDownload ||
+		mine.Enabled || mine.FilesFrom != FilesFromComputer {
+		t.Errorf("mine = %+v", mine)
+	}
+	if mods["Carol-Lib"].State != StateDownload {
+		t.Errorf("the local mod's dependency is not brought: %+v", pv.Mods)
+	}
+	res, err := s.Import(t.Context(), "lethal-company", pv.Session, "", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rec.reqs) != 2 {
+		t.Errorf("queued %+v", rec.reqs)
+	}
+	e, files := localEntry(t, s, res.Profile.ID, "Mine")
+	if len(e.Mods) != 1 || e.Enabled(e.Mods[0].ID) || !fsx.IsFile(filepath.Join(files, "BepInEx", "plugins", "Mine.dll")) ||
+		!fsx.IsFile(filepath.Join(files, "BepInEx", "plugins", "data", "a.bin")) {
+		t.Fatalf("Mine = %+v in %s", e, files)
 	}
 }
 

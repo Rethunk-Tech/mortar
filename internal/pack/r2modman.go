@@ -175,7 +175,7 @@ func parseR2Zip(data []byte) (Draft, error) {
 	for _, f := range d.Configs {
 		delete(files, f.Path)
 	}
-	d.Loose = filesUnder(files, "")
+	d.Local, d.Loose = carriedPlugins(filesUnder(files, ""), d.Packages)
 	return d, nil
 }
 

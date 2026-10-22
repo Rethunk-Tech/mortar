@@ -66,6 +66,11 @@ func (s *Store) InstallSaved(ctx context.Context, game, id, path string, source 
 
 // InstallFolder copies the folder at path into the store under a content key and adds it to the profile as a local entry.
 func (s *Store) InstallFolder(ctx context.Context, game, id, path string) (InstallResult, error) {
+	return s.InstallLocalFolder(ctx, game, id, path, true)
+}
+
+// InstallLocalFolder is InstallFolder for a mod that may arrive switched off, as another manager's local mod can.
+func (s *Store) InstallLocalFolder(ctx context.Context, game, id, path string, enabled bool) (InstallResult, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return InstallResult{}, err
 	}
@@ -73,7 +78,22 @@ func (s *Store) InstallFolder(ctx context.Context, game, id, path string) (Insta
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
-	return s.installKey(game, id, key, Source{Kind: KindLocal, Name: filepath.Base(path)})
+	res, err := s.installKey(game, id, key, Source{Kind: KindLocal, Name: filepath.Base(path)})
+	if err != nil || enabled {
+		return res, err
+	}
+	var refs []EnableRef
+	for _, e := range res.Profile.Entries {
+		if e.StoreKey() == key {
+			for _, m := range e.Mods {
+				refs = append(refs, EnableRef{Key: e.Key, ID: m.ID})
+			}
+		}
+	}
+	if len(refs) > 0 {
+		res.Profile, err = s.SetModsEnabled(game, id, refs, false)
+	}
+	return res, err
 }
 
 // InstallSource unpacks the archive at path into the store under the key of its source's file and adds it to the profile,

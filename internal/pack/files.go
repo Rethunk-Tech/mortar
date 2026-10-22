@@ -33,7 +33,7 @@ func ProfileFiles(d Draft, roots []string) (out map[string][]byte, programs []st
 			if !cut || i < 0 {
 				return
 			}
-			if slices.ContainsFunc(blockedExtensions, func(e string) bool { return strings.HasSuffix(strings.ToLower(w), e) }) {
+			if blocked(w) {
 				programs = append(programs, p)
 				return
 			}
@@ -48,6 +48,10 @@ func ProfileFiles(d Draft, roots []string) (out map[string][]byte, programs []st
 	}
 	slices.Sort(programs)
 	return out, programs
+}
+
+func blocked(p string) bool {
+	return slices.ContainsFunc(blockedExtensions, func(e string) bool { return strings.HasSuffix(strings.ToLower(p), e) })
 }
 
 // winPath is p with each segment's trailing dots and spaces removed, as Windows stores it, so "evil.dll." is judged as

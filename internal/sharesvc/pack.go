@@ -3,6 +3,7 @@ package sharesvc
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
+	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -95,6 +97,7 @@ func (s *Service) previewDraft(ctx context.Context, game string, d pack.Draft, p
 			refs = append(refs, ref)
 		}
 	}
+	rows = append(rows, carriedRows(d.Local)...)
 	files, skipped := pack.ProfileFiles(d, pack.ImportRoots(game))
 	out, err := s.preview(ctx, game, share.Shared{Name: cmpName(d.Name), Entries: refs}, "", nil, profileID, "")
 	if err != nil {
@@ -111,6 +114,7 @@ func (s *Service) previewDraft(ctx context.Context, game string, d pack.Draft, p
 		s.current.preview.Settings = out.Settings
 		s.current.preview.SkippedPrograms = skipped
 		s.current.packFiles = files
+		s.current.carried = d.Local
 		s.current.importedFrom = importedFrom
 	}
 	s.mu.Unlock()
@@ -118,6 +122,44 @@ func (s *Service) previewDraft(ctx context.Context, game string, d pack.Draft, p
 }
 
 func packKey(index int) string { return "pack:" + strconv.Itoa(index) }
+
+func carriedKey(index int) string { return "carried:" + strconv.Itoa(index) }
+
+// carriedRows are a pack's local mods as installable local rows.
+func carriedRows(local []pack.LocalMod) []Mod {
+	out := make([]Mod, 0, len(local))
+	for i, m := range local {
+		from := FilesFromCode
+		if m.Dir != "" {
+			from = FilesFromComputer
+		}
+		out = append(out, Mod{
+			Key: carriedKey(i), Site: SiteLocal, Name: m.Name, Author: m.Author, Version: m.Version, State: StateDownload,
+			Enabled: !m.Disabled, IDs: []mod.ID{}, SizeKB: (m.Size() + 1023) / 1024, FilesFrom: from,
+		})
+	}
+	return out
+}
+
+// installCarried adds a pack's local mod to the profile as a local entry, switched off when it was; one the profile
+// already holds is left as it is.
+func (s *Service) installCarried(ctx context.Context, game, profileID string, m pack.LocalMod) (string, error) {
+	// The data folder rather than the system temp folder, which may be in memory and too small for a large mod.
+	scratch, err := os.MkdirTemp(s.d.Dir, "mortar-carried-*")
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = os.RemoveAll(scratch) }()
+	dir := filepath.Join(scratch, m.Name)
+	if err := m.Stage(dir); err != nil {
+		return "", err
+	}
+	res, err := s.d.Profiles.InstallLocalFolder(ctx, game, profileID, dir, !m.Disabled)
+	if errors.As(err, new(*profile.DuplicateError)) {
+		return "", nil
+	}
+	return res.Profile.LastChange, err
+}
 
 func cmpName(n string) string {
 	if n = strings.TrimSpace(n); n != "" {

@@ -105,7 +105,17 @@ type Mod struct {
 	Overlay *share.Overlay `json:"overlay,omitempty"`
 	// Implicit is the install reason the share recorded, or the one inferred from the list when it recorded none.
 	Implicit bool `json:"implicit,omitempty"`
+	// FilesFrom is set on a mod the other manager added from disk, whose files the import itself carries and installs
+	// as a local mod: FilesFromCode when a profile code or file brought them, FilesFromComputer when they are copied
+	// from a profile folder on this computer.
+	FilesFrom string `json:"filesFrom,omitempty"`
 }
+
+// Where a carried local mod's files come from.
+const (
+	FilesFromCode     = "code"
+	FilesFromComputer = "computer"
+)
 
 // Problem is something found before any download. Key is the mod it is about, when one is; Detail is a version
 // or a mod id depending on Kind.

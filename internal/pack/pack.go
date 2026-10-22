@@ -49,6 +49,7 @@ type Draft struct {
 	Packages                []Ref
 	Loose                   []File
 	Configs                 []File
+	Local                   []LocalMod
 }
 
 // Format is one pack format.

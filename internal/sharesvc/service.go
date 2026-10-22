@@ -169,8 +169,10 @@ type session struct {
 	// folder it was read from.
 	packFiles    map[string][]byte
 	importedFrom string
-	origin       string
-	collection   *profile.CollectionRef
+	// carried are the pack's local mods, whose rows are keyed by their index (carriedKey).
+	carried    []pack.LocalMod
+	origin     string
+	collection *profile.CollectionRef
 	// archiveLink is the collection's archive path; archiveTried marks that Import already fetched it.
 	archiveLink  string
 	archiveTried bool
@@ -919,7 +921,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			return Result{}, err
 		}
 		mods, _ = r.resolve(ctx, cur.refs)
-		mods = append(externalLocalMods(cur.external), mods...)
+		mods = append(append(externalLocalMods(cur.external), carriedRows(cur.carried)...), mods...)
 		stored = r.storedKeys
 	}
 	var reqs []queue.Request
@@ -932,6 +934,11 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 	for i, im := range cur.external {
 		external[externalKey(i)] = im
 	}
+	var carried []pack.LocalMod
+	carriedByKey := make(map[string]pack.LocalMod, len(cur.carried))
+	for i, lm := range cur.carried {
+		carriedByKey[carriedKey(i)] = lm
+	}
 	for _, m := range mods {
 		if slices.Contains(exclude, m.Key) || m.State == StateUnavailable ||
 			(m.State == StateInstalled && !stored[m.Key]) {
@@ -940,6 +947,8 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		if m.Site == SiteLocal {
 			if im, ok := external[m.Key]; ok {
 				local = append(local, profile.ExternalMod{SourcePath: im.SourcePath, ID: im.ID, Enabled: im.Enabled})
+			} else if lm, ok := carriedByKey[m.Key]; ok {
+				carried = append(carried, lm)
 			} else if stored[m.Key] {
 				fromStore = append(fromStore, storedEntry{key: m.Key, source: profile.Source{Kind: profile.KindLocal, Name: m.Name}.WithDisabled(m.Disabled)})
 			}
@@ -1051,7 +1060,7 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 		}
 		return Result{}, err
 	}
-	if len(local) > 0 || len(reqs) > 0 || len(fromStore) > 0 {
+	if len(local) > 0 || len(carried) > 0 || len(reqs) > 0 || len(fromStore) > 0 {
 		if batchID == "" {
 			batchID = historyBatchID()
 		}
@@ -1086,7 +1095,18 @@ func (s *Service) importWithBatch(ctx context.Context, game, session, profileID 
 			change = imported[len(imported)-1]
 		}
 	}
-	if len(local) > 0 || len(fromStore) > 0 {
+	for _, lm := range carried {
+		added, err := s.installCarried(ctx, game, profileID, lm)
+		if err != nil {
+			_ = s.d.Profiles.CloseHistoryBatch(game, profileID)
+			if created {
+				err = errors.Join(err, s.d.Profiles.Delete(game, profileID))
+			}
+			return Result{}, err
+		}
+		change = cmp.Or(added, change)
+	}
+	if len(local) > 0 || len(carried) > 0 || len(fromStore) > 0 {
 		if p, err := s.find(game, profileID); err == nil {
 			res.Profile = p
 			res.Profile.LastChange = change
