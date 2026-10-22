@@ -186,6 +186,7 @@ Weblate project settings:
 - One component per catalog. Version control **GitHub pull request**, repository `https://github.com/Rethunk-Tech/mortar.git`, branch `main`. File format **gettext PO file**, file mask `frontend/src/locales/*/<name>.po`, source language English. Leave the template for new translations empty.
 - Component flag `icu-message-format`, so Weblate checks placeholders and plurals.
 - Project setting **Translation propagation** on: a message used in several folders sits in each of their catalogs.
+- Glossary: upload `frontend/src/locales/glossary.tbx` to the project glossary; it explains each recurring term once.
 - **Adding new translation:** contact maintainers. Weblate must not run msgmerge; `lingui extract` keeps every locale's catalogs in step with the source.
 
 Starting a language: add its code to `availableLocales` in `frontend/src/i18n/locales.ts`, run `bun run --cwd frontend i18n:extract`, and commit the new `frontend/src/locales/<locale>/` catalogs; Weblate picks them up. It reaches players with the next release.

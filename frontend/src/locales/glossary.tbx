@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<martif type="TBX" xml:lang="en">
+  <martifHeader>
+    <fileDesc>
+      <sourceDesc>
+        <p>Mortar glossary: the terms Mortar's interface uses for one thing each. Upload to the Weblate project glossary.</p>
+      </sourceDesc>
+    </fileDesc>
+  </martifHeader>
+  <text>
+    <body>
+      <termEntry id="mortar">
+        <descrip>The app's name. Do not translate.</descrip>
+        <langSet xml:lang="en"><tig><term>Mortar</term></tig></langSet>
+      </termEntry>
+      <termEntry id="mod">
+        <descrip>An add-on for a game, downloaded from a source or added from a file.</descrip>
+        <langSet xml:lang="en"><tig><term>mod</term></tig></langSet>
+      </termEntry>
+      <termEntry id="profile">
+        <descrip>A set of mods for one game, with their settings and configs. The player switches between profiles; each can have its own saves.</descrip>
+        <langSet xml:lang="en"><tig><term>profile</term></tig></langSet>
+      </termEntry>
+      <termEntry id="source">
+        <descrip>A website mods come from, such as Nexus or Thunderstore. Its name is filled in for {source}.</descrip>
+        <langSet xml:lang="en"><tig><term>source</term></tig></langSet>
+      </termEntry>
+      <termEntry id="mod-loader">
+        <descrip>The program that loads mods into the game, such as BepInEx or SMAPI. Its name is filled in for {loader}.</descrip>
+        <langSet xml:lang="en"><tig><term>mod loader</term></tig></langSet>
+      </termEntry>
+      <termEntry id="library">
+        <descrip>A mod that other mods need in order to work (a dependency); it adds nothing on its own.</descrip>
+        <langSet xml:lang="en"><tig><term>library</term></tig></langSet>
+      </termEntry>
+      <termEntry id="local-mod">
+        <descrip>A mod added from a file on this computer rather than downloaded from a source; Mortar cannot update it.</descrip>
+        <langSet xml:lang="en"><tig><term>local mod</term></tig></langSet>
+      </termEntry>
+      <termEntry id="enable">
+        <descrip>Switch a mod or option on. The mod stays in the profile either way. Opposite: disable.</descrip>
+        <langSet xml:lang="en"><tig><term>enable</term></tig></langSet>
+      </termEntry>
+      <termEntry id="disable">
+        <descrip>Switch a mod or option off without removing it. Opposite: enable.</descrip>
+        <langSet xml:lang="en"><tig><term>disable</term></tig></langSet>
+      </termEntry>
+      <termEntry id="remove">
+        <descrip>Take something out of a profile, group or list; the thing itself stays on disk. Not the same as delete.</descrip>
+        <langSet xml:lang="en"><tig><term>remove</term></tig></langSet>
+      </termEntry>
+      <termEntry id="delete">
+        <descrip>Destroy something on disk (a profile, template, backup or downloaded file). Not the same as remove.</descrip>
+        <langSet xml:lang="en"><tig><term>delete</term></tig></langSet>
+      </termEntry>
+      <termEntry id="install">
+        <descrip>Put a mod's files into a profile. Add is the button that installs a mod into the open profile.</descrip>
+        <langSet xml:lang="en"><tig><term>install</term></tig></langSet>
+      </termEntry>
+      <termEntry id="update">
+        <descrip>Replace a mod (or Mortar) with its newer version.</descrip>
+        <langSet xml:lang="en"><tig><term>update</term></tig></langSet>
+      </termEntry>
+      <termEntry id="play">
+        <descrip>The button that starts the game with the open profile's mods. Keep it short; it is a button label.</descrip>
+        <langSet xml:lang="en"><tig><term>Play</term></tig></langSet>
+      </termEntry>
+      <termEntry id="measure">
+        <descrip>The button that starts the game and times each mod for the Performance tab.</descrip>
+        <langSet xml:lang="en"><tig><term>Measure</term></tig></langSet>
+      </termEntry>
+      <termEntry id="problems">
+        <descrip>The tab listing what is wrong with a profile (missing requirements, conflicts, broken mods), most with a fix.</descrip>
+        <langSet xml:lang="en"><tig><term>Problems</term></tig></langSet>
+      </termEntry>
+      <termEntry id="console">
+        <descrip>The tab showing the game's log while and after it runs.</descrip>
+        <langSet xml:lang="en"><tig><term>Console</term></tig></langSet>
+      </termEntry>
+      <termEntry id="performance">
+        <descrip>The tab showing how long each mod takes at startup and per frame in game.</descrip>
+        <langSet xml:lang="en"><tig><term>Performance</term></tig></langSet>
+      </termEntry>
+      <termEntry id="config">
+        <descrip>A mod's settings file, which the mod creates the first time the game runs.</descrip>
+        <langSet xml:lang="en"><tig><term>config</term></tig></langSet>
+      </termEntry>
+      <termEntry id="group">
+        <descrip>A named set of mods inside a profile, enabled or disabled together.</descrip>
+        <langSet xml:lang="en"><tig><term>group</term></tig></langSet>
+      </termEntry>
+      <termEntry id="template">
+        <descrip>A saved list of mods a new profile can start from.</descrip>
+        <langSet xml:lang="en"><tig><term>template</term></tig></langSet>
+      </termEntry>
+      <termEntry id="trash">
+        <descrip>Where deleted profiles and files wait before Mortar removes them for good; they can be restored from there.</descrip>
+        <langSet xml:lang="en"><tig><term>trash</term></tig></langSet>
+      </termEntry>
+      <termEntry id="share-link">
+        <descrip>A link that carries a whole profile's mod list; a friend opens it to import the profile. Nothing is uploaded.</descrip>
+        <langSet xml:lang="en"><tig><term>share link</term></tig></langSet>
+      </termEntry>
+      <termEntry id="code">
+        <descrip>A profile code another mod manager (r2modman, Gale) gives out to share a profile.</descrip>
+        <langSet xml:lang="en"><tig><term>code</term></tig></langSet>
+      </termEntry>
+      <termEntry id="nearby">
+        <descrip>Another computer on the same local network, for sending profiles directly ("sharing nearby").</descrip>
+        <langSet xml:lang="en"><tig><term>nearby</term></tig></langSet>
+      </termEntry>
+      <termEntry id="data-folder">
+        <descrip>The folder where Mortar keeps its profiles, mods and settings.</descrip>
+        <langSet xml:lang="en"><tig><term>data folder</term></tig></langSet>
+      </termEntry>
+      <termEntry id="bridge">
+        <descrip>The Mortar BepInEx Bridge: a small plugin Mortar adds to a profile to time mods and skip the intro. Product name; do not translate "BepInEx".</descrip>
+        <langSet xml:lang="en"><tig><term>bridge</term></tig></langSet>
+      </termEntry>
+      <termEntry id="collection">
+        <descrip>A list of mods published on Nexus to be installed together.</descrip>
+        <langSet xml:lang="en"><tig><term>collection</term></tig></langSet>
+      </termEntry>
+      <termEntry id="endorse">
+        <descrip>Nexus's way to recommend a mod you used (like a "like").</descrip>
+        <langSet xml:lang="en"><tig><term>endorse</term></tig></langSet>
+      </termEntry>
+      <termEntry id="track">
+        <descrip>Follow a mod on Nexus to hear about its updates. Untrack stops following it.</descrip>
+        <langSet xml:lang="en"><tig><term>track</term></tig></langSet>
+      </termEntry>
+    </body>
+  </text>
+</martif>
