@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 )
 
@@ -25,7 +26,7 @@ type NoSpaceError struct {
 
 func (e *NoSpaceError) Error() string {
 	return fmt.Sprintf("Not enough disk space on %s: this download needs about %s free and only %s is available. Free some space, then Retry.",
-		driveOf(e.Path), formatBytes(e.Need), formatBytes(e.Free))
+		driveOf(e.Path), bytefmt.Format(e.Need), bytefmt.Format(e.Free))
 }
 
 func driveOf(p string) string {
@@ -33,13 +34,6 @@ func driveOf(p string) string {
 		return v
 	}
 	return p
-}
-
-func formatBytes(n int64) string {
-	if n >= 1<<30 {
-		return fmt.Sprintf("%.1f GB", float64(n)/(1<<30))
-	}
-	return fmt.Sprintf("%d MB", n>>20)
 }
 
 // freeAt is the free bytes on path's volume, measured at its nearest existing parent; ok is false when unknown.

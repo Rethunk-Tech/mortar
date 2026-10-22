@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -378,7 +379,7 @@ func (s *Service) settle(id string, err error) {
 	case errors.As(err, &noSpace):
 		it.State, it.Error = StateFailed, noSpace.Error()
 	case errors.As(err, &full):
-		it.State, it.Error = StateFailed, fmt.Sprintf("Not enough disk space: about %d MB is needed", full.NeedMB)
+		it.State, it.Error = StateFailed, fmt.Sprintf("Not enough disk space: about %s is needed", bytefmt.Format(full.NeedMB<<20))
 	case errors.As(err, &detected):
 		it.State, it.Error = StateFailed, detectedText(detected)
 		it.Detection = &Detection{Name: detected.Name, File: detected.File, Scanner: detected.Scanner, Key: detected.Key, Removed: detected.Removed}

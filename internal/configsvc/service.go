@@ -16,6 +16,7 @@ import (
 	"sync"
 	"unicode"
 
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -318,7 +319,7 @@ func (s *Service) Text(game, profileID, modID, file string) (string, error) {
 	if st, err := os.Stat(p); err != nil {
 		return "", err
 	} else if st.Size() > maxTextFile {
-		return "", fmt.Errorf("%s is %d KB, too big to edit here; open its folder instead", file, st.Size()>>10)
+		return "", fmt.Errorf("%s is %s, too big to edit here; open its folder instead", file, bytefmt.Format(st.Size()))
 	}
 	raw, err := fsx.ReadFile(p)
 	return string(bytes.TrimPrefix(raw, utf8BOM)), err

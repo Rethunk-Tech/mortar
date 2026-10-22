@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
@@ -223,7 +224,7 @@ func downloadAsset(ctx context.Context, client *http.Client, address, dest strin
 		return fmt.Errorf("server answered %s", resp.Status)
 	}
 	if resp.ContentLength > maxAsset {
-		return fmt.Errorf("larger than %d MiB", maxAsset>>20)
+		return fmt.Errorf("larger than %s", bytefmt.Format(maxAsset))
 	}
 	file, err := fsx.OpenFile(dest, os.O_WRONLY|os.O_TRUNC, 0o600)
 	if err != nil {
@@ -238,7 +239,7 @@ func downloadAsset(ctx context.Context, client *http.Client, address, dest strin
 		return closeErr
 	}
 	if n > maxAsset {
-		return fmt.Errorf("larger than %d MiB", maxAsset>>20)
+		return fmt.Errorf("larger than %s", bytefmt.Format(maxAsset))
 	}
 	return nil
 }

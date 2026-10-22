@@ -24,6 +24,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
@@ -70,7 +71,7 @@ type DiskFullError struct {
 }
 
 func (e *DiskFullError) Error() string {
-	return fmt.Sprintf("disk full: this item needs about %d MB free: %v", e.NeedMB, e.Err)
+	return fmt.Sprintf("disk full: this item needs about %s free: %v", bytefmt.Format(e.NeedMB<<20), e.Err)
 }
 
 func (e *DiskFullError) Unwrap() error { return e.Err }

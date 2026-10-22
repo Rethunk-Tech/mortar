@@ -7,6 +7,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/archivesvc"
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/datasvc"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -90,7 +91,7 @@ func (c *cmd) historyUsage() error {
 	return show(c, "history.usage", control.Params{Game: a[0]}, func(rows []profile.HistoryUsage) {
 		t := make([][]string, 0, len(rows))
 		for _, u := range rows {
-			t = append(t, []string{u.ProfileID, u.ProfileName, strconv.Itoa(u.Events), humanBytes(u.SnapshotBytes), humanBytes(u.FileBytes)})
+			t = append(t, []string{u.ProfileID, u.ProfileName, strconv.Itoa(u.Events), bytefmt.Format(u.SnapshotBytes), bytefmt.Format(u.FileBytes)})
 		}
 		c.table("ID\tPROFILE\tEVENTS\tSNAPSHOTS\tFILES", t)
 	})
@@ -112,10 +113,10 @@ func (c *cmd) backupsUsage(game string) error {
 	return show(c, "backups.usage", control.Params{Game: game}, func(u savessvc.BackupsUsage) {
 		rows := make([][]string, 0, len(u.PerSave))
 		for _, s := range u.PerSave {
-			rows = append(rows, []string{s.Save, strconv.Itoa(s.Count), humanBytes(s.Bytes)})
+			rows = append(rows, []string{s.Save, strconv.Itoa(s.Count), bytefmt.Format(s.Bytes)})
 		}
 		c.table("SAVE\tBACKUPS\tSIZE", rows)
-		fmt.Fprintf(c.out, "Total %s\n", humanBytes(u.TotalBytes))
+		fmt.Fprintf(c.out, "Total %s\n", bytefmt.Format(u.TotalBytes))
 	})
 }
 
@@ -125,7 +126,7 @@ func (c *cmd) backupsTrim(game string) error {
 		return err
 	}
 	return show(c, "backups.trim", control.Params{Game: game, Keep: keep}, func(r savessvc.TrimResult) {
-		fmt.Fprintf(c.out, "Deleted %d backups, freed %s.\n", r.Removed, humanBytes(r.FreedBytes))
+		fmt.Fprintf(c.out, "Deleted %d backups, freed %s.\n", r.Removed, bytefmt.Format(r.FreedBytes))
 	})
 }
 
@@ -159,7 +160,7 @@ func (c *cmd) archiveCmd() error {
 				rows = append(rows, []string{m.ID.Local(), m.Name, m.Version, m.Folder})
 			}
 			c.table("UNIQUEID\tNAME\tVERSION\tFOLDER", rows)
-			fmt.Fprintf(c.out, "%d entries, %s", len(pv.Entries), humanBytes(pv.TotalSize))
+			fmt.Fprintf(c.out, "%d entries, %s", len(pv.Entries), bytefmt.Format(pv.TotalSize))
 			if pv.Fomod {
 				fmt.Fprint(c.out, ", FOMOD installer")
 			}
@@ -173,7 +174,7 @@ func (c *cmd) archiveCmd() error {
 		return show(c, "archive.downloads", control.Params{Game: a[0]}, func(list []archivesvc.DownloadArchive) {
 			rows := make([][]string, 0, len(list))
 			for _, d := range list {
-				rows = append(rows, []string{d.Name, humanBytes(d.Size), strconv.Itoa(d.ModID), d.Path})
+				rows = append(rows, []string{d.Name, bytefmt.Format(d.Size), strconv.Itoa(d.ModID), d.Path})
 			}
 			c.table("NAME\tSIZE\tNEXUS ID\tPATH", rows)
 		})

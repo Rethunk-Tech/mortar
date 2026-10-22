@@ -19,6 +19,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
 	"github.com/Rethunk-Tech/mortar/internal/avscan"
 	"github.com/Rethunk-Tech/mortar/internal/backup"
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
@@ -2116,7 +2117,7 @@ func (c *cmd) shareLog() error {
 		if info, err := os.Stdin.Stat(); err != nil || info.Mode()&os.ModeCharDevice == 0 {
 			return refusedError{"sharing a log needs --yes when stdin is not a terminal"}
 		}
-		fmt.Fprintf(c.errOut, "This log is %s. Sharing uploads it to smapi.io, where it becomes public at a link. Continue? [y/N] ", humanBytes(int64(len(l.Text))))
+		fmt.Fprintf(c.errOut, "This log is %s. Sharing uploads it to smapi.io, where it becomes public at a link. Continue? [y/N] ", bytefmt.Format(int64(len(l.Text))))
 		var answer string
 		if _, err := fmt.Fscan(os.Stdin, &answer); err != nil {
 			return err
@@ -2307,7 +2308,7 @@ func (c *cmd) cacheCmd() error {
 	switch c.args[1] {
 	case "size":
 		return show(c, "cache.size", control.Params{}, func(info datasvc.CacheInfo) {
-			fmt.Fprintf(c.out, "%s at %s\n", humanBytes(info.Size), info.Path)
+			fmt.Fprintf(c.out, "%s at %s\n", bytefmt.Format(info.Size), info.Path)
 		})
 	case "clear":
 		if err := c.call("cache.clear", control.Params{}, nil, readTimeout); err != nil {
@@ -2433,7 +2434,7 @@ func (c *cmd) backups() error {
 			if b.Pinned {
 				kept = "kept"
 			}
-			rows = append(rows, []string{b.Name, relativeDeleted(time.UnixMilli(b.At)), b.Kind, strings.Join(names, ", "), humanBytes(b.Size), kept})
+			rows = append(rows, []string{b.Name, relativeDeleted(time.UnixMilli(b.At)), b.Kind, strings.Join(names, ", "), bytefmt.Format(b.Size), kept})
 		}
 		c.table("NAME\tTAKEN\tKIND\tSAVES\tSIZE\tKEPT", rows)
 	})

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/winname"
 )
@@ -90,7 +91,7 @@ func (d *Direct) Fetch(ctx context.Context, rawURL, dstDir string) (string, erro
 		return "", fmt.Errorf("server answered %s", resp.Status)
 	}
 	if resp.ContentLength > limit {
-		return "", fmt.Errorf("larger than %d MiB", limit>>20)
+		return "", fmt.Errorf("larger than %s", bytefmt.Format(limit))
 	}
 	tmp, err := os.CreateTemp(dstDir, ".download-*")
 	if err != nil {
@@ -99,7 +100,7 @@ func (d *Direct) Fetch(ctx context.Context, rawURL, dstDir string) (string, erro
 	defer func() { _ = os.Remove(tmp.Name()) }()
 	n, err := io.Copy(tmp, io.LimitReader(resp.Body, limit+1))
 	if err == nil && n > limit {
-		err = fmt.Errorf("larger than %d MiB", limit>>20)
+		err = fmt.Errorf("larger than %s", bytefmt.Format(limit))
 	}
 	if err == nil {
 		err = tmp.Sync()

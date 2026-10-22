@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -367,7 +368,7 @@ func installError(err error) error {
 	case errors.Is(err, archive.ErrTooManyEntries):
 		msg = fmt.Sprintf("The archive holds over %d files, more than Mortar unpacks", archive.DefaultMaxEntries)
 	case errors.As(err, &full):
-		msg = fmt.Sprintf("Not enough disk space: about %d MB is needed", full.NeedMB)
+		msg = fmt.Sprintf("Not enough disk space: about %s is needed", bytefmt.Format(full.NeedMB<<20))
 	case errors.As(err, &dup):
 		msg = fmt.Sprintf("%s is already in this profile", dup.Label)
 	case errors.As(err, &span):

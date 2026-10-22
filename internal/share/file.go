@@ -15,6 +15,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -314,7 +315,7 @@ func Read(file string) (Preview, error) {
 		return Preview{}, err
 	}
 	if info.Size() > MaxFileBytes {
-		return Preview{}, fmt.Errorf("%w: file is larger than %d MiB", ErrBadFile, MaxFileBytes>>20)
+		return Preview{}, fmt.Errorf("%w: file is larger than %s", ErrBadFile, bytefmt.Format(MaxFileBytes))
 	}
 	f, err := fsx.Open(file)
 	if err != nil {
@@ -331,7 +332,7 @@ func Read(file string) (Preview, error) {
 // ReadBytes reads a .mortar zip from memory.
 func ReadBytes(raw []byte) (Preview, error) {
 	if len(raw) > MaxFileBytes {
-		return Preview{}, fmt.Errorf("%w: file is larger than %d MiB", ErrBadFile, MaxFileBytes>>20)
+		return Preview{}, fmt.Errorf("%w: file is larger than %s", ErrBadFile, bytefmt.Format(MaxFileBytes))
 	}
 	zr, err := zip.NewReader(bytes.NewReader(raw), int64(len(raw)))
 	if err != nil {

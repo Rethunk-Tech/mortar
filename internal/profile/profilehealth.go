@@ -2,7 +2,6 @@ package profile
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -51,6 +50,8 @@ type HealthFinding struct {
 	Cause string `json:"cause,omitempty"`
 	// Items name what the finding is about: mods, store items or journal folders.
 	Items []string `json:"items"`
+	// Sizes are the bytes of each item, in Items order, for a finding whose items are files; the window words them.
+	Sizes []int64 `json:"sizes,omitempty"`
 	// Event is the history event a snapshot finding is about.
 	Event *HistoryEvent `json:"event,omitempty"`
 	// At is the history event's time for a snapshot finding.
@@ -356,29 +357,21 @@ func (s *Store) dropHistoryEvent(game, id, eventID string) error {
 // sharedFindings turns the left files into one finding per cause; no repair applies, and each clears when its file is gone.
 func sharedFindings(game string, files []SharedFile) []HealthFinding {
 	var large, rescued []string
+	var sizes []int64
 	for _, f := range files {
 		if f.Rescued {
 			rescued = append(rescued, f.Path)
 		} else {
-			large = append(large, fmt.Sprintf("%s (%s)", f.Path, humanSize(f.Size)))
+			large = append(large, f.Path)
+			sizes = append(sizes, f.Size)
 		}
 	}
 	var out []HealthFinding
 	if len(large) > 0 {
-		out = append(out, HealthFinding{ID: HealthShared + ":toolarge:" + game, Kind: HealthShared, Cause: "toolarge", Items: large})
+		out = append(out, HealthFinding{ID: HealthShared + ":toolarge:" + game, Kind: HealthShared, Cause: "toolarge", Items: large, Sizes: sizes})
 	}
 	if len(rescued) > 0 {
 		out = append(out, HealthFinding{ID: HealthShared + ":rescued:" + game, Kind: HealthShared, Cause: "rescued", Items: rescued})
 	}
 	return out
-}
-
-func humanSize(n int64) string {
-	switch {
-	case n >= 1<<30:
-		return fmt.Sprintf("%.1f GiB", float64(n)/(1<<30))
-	case n >= 1<<20:
-		return fmt.Sprintf("%.0f MiB", float64(n)/(1<<20))
-	}
-	return fmt.Sprintf("%d KiB", (n+1023)/1024)
 }

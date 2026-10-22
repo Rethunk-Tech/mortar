@@ -15,6 +15,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -278,7 +279,7 @@ func readCapped(file string, limit int64) ([]byte, error) {
 		return nil, err
 	}
 	if st.Size() > limit {
-		return nil, fmt.Errorf("%s is larger than %d MiB", filepath.Base(file), limit>>20)
+		return nil, fmt.Errorf("%s is larger than %s", filepath.Base(file), bytefmt.Format(limit))
 	}
 	return fsx.ReadFile(file)
 }

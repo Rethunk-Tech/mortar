@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
@@ -91,7 +92,7 @@ func linksSupported(dir string) bool {
 }
 
 func (e *SpaceError) Error() string {
-	return fmt.Sprintf("not enough free space: this move needs about %d MB free", (e.Need+1024*1024-1)/(1024*1024))
+	return fmt.Sprintf("not enough free space: this move needs about %s free", bytefmt.Format(e.Need))
 }
 
 func (e *SpaceError) Unwrap() error { return ErrNoSpace }

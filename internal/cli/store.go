@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/control"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/storecheck"
@@ -87,5 +88,5 @@ func printStoreReport(c *cmd, rep store.Report) {
 }
 
 func storeReportRow(gameID string, it store.Item, why string) []string {
-	return []string{gameID, it.Key, it.Name, it.Version, humanBytes(it.Size), it.LastUsed.UTC().Format("2006-01-02"), why}
+	return []string{gameID, it.Key, it.Name, it.Version, bytefmt.Format(it.Size), it.LastUsed.UTC().Format("2006-01-02"), why}
 }

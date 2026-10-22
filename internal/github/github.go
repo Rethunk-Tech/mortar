@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/host"
@@ -303,7 +304,7 @@ func downloadOnce(ctx context.Context, hc *http.Client, url, dest string, limit 
 		return fmt.Errorf("server answered %s", resp.Status), false
 	}
 
-	tooLarge := fmt.Errorf("larger than %d MiB", limit>>20)
+	tooLarge := fmt.Errorf("larger than %s", bytefmt.Format(limit))
 	if etag := resp.Header.Get("ETag"); etag != "" {
 		if sameURL && meta.ETag != "" && meta.ETag != etag && offset > 0 && resp.StatusCode == http.StatusPartialContent {
 			return nil, true

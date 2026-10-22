@@ -128,7 +128,7 @@ func TestDiskFullMessage(t *testing.T) {
 	}
 	n, _ := datadir.Size(src)
 	err := s.install(t.Context(), "stardew", "smapi-1", filepath.Join(s.root, loadersDir, "stardew", "smapi", "1"), func(string) error { return syscall.ENOSPC }, func() int64 { return n })
-	if !errors.Is(err, syscall.ENOSPC) || !strings.Contains(err.Error(), "needs about 4 MB") {
+	if !errors.Is(err, syscall.ENOSPC) || !strings.Contains(err.Error(), "needs about 4.0 MB") {
 		t.Fatalf("err = %v", err)
 	}
 }

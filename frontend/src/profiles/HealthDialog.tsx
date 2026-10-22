@@ -20,6 +20,7 @@ import {
   ProfileHealth,
   RepairProfile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { formatBytes } from '../i18n/bytes.ts'
 import { i18n } from '../i18n/index.ts'
 import { absoluteWhen } from '../i18n/when.ts'
 import { openSettings } from '../nav/store.ts'
@@ -125,16 +126,24 @@ function FindingGroups({
             <ListItemText
               primary={findingText(f)}
               secondary={
-                kind === 'unused' || kind === 'journal' || kind === 'shared'
-                  ? f.items?.join(', ')
-                  : null
+                kind === 'unused' || kind === 'journal' || kind === 'shared' ? itemsText(f) : null
               }
-              slotProps={{ secondary: { noWrap: true, title: f.items?.join(', ') } }}
+              slotProps={{ secondary: { noWrap: true, title: itemsText(f) } }}
             />
           </ListItem>
         ))}
     </List>
   ))
+}
+
+// itemsText names a finding's items, a file's size after its name.
+function itemsText(f: HealthFinding): string {
+  return (f.items ?? [])
+    .map((item, i) => {
+      const size = f.sizes?.[i]
+      return size === undefined ? item : `${item} (${formatBytes(size)})`
+    })
+    .join(', ')
 }
 
 // Reverting replaces edited files, so it is asked about even inside Repair all; the unreadable history goes with it.
