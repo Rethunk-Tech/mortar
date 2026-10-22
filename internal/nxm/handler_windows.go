@@ -15,6 +15,7 @@ import (
 
 func classKey(scheme string) string   { return `Software\Classes\` + scheme }
 func commandKey(scheme string) string { return classKey(scheme) + `\shell\open\command` }
+func iconKey(scheme string) string    { return classKey(scheme) + `\DefaultIcon` }
 
 func defaultIcon(exe string) string { return exe + ",0" }
 
@@ -43,7 +44,7 @@ func (w *System) Owner(scheme string) (Owner, error) {
 	if cmd == "" {
 		return Owner{}, nil
 	}
-	return Owner{ID: previousID(cmd, readIcon(scheme), readName(scheme)), Name: exeOf(cmd), Mine: sameExe(exeOf(cmd), w.exe)}, nil
+	return Owner{ID: previousID(cmd, readDefault(iconKey(scheme)), readDefault(classKey(scheme))), Name: exeOf(cmd), Mine: sameExe(exeOf(cmd), w.exe)}, nil
 }
 
 // sameExe compares program paths the way Windows does: case-insensitively, with 8.3 short names expanded.
@@ -111,28 +112,15 @@ func (w *System) registerScheme(scheme string) error {
 	if err := k.SetStringValue("URL Protocol", ""); err != nil {
 		return err
 	}
-	icon, _, err := registry.CreateKey(registry.CURRENT_USER, classKey(scheme)+`\DefaultIcon`, registry.SET_VALUE)
-	if err != nil {
+	if err := setDefault(iconKey(scheme), defaultIcon(w.exe)); err != nil {
 		return err
 	}
-	defer func() { _ = icon.Close() }()
-	if err := icon.SetStringValue("", defaultIcon(w.exe)); err != nil {
-		return err
-	}
-	return setCommand(scheme, w.command())
+	return setDefault(commandKey(scheme), w.command())
 }
 
-func setCommand(scheme, cmd string) error {
-	k, _, err := registry.CreateKey(registry.CURRENT_USER, commandKey(scheme), registry.SET_VALUE)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = k.Close() }()
-	return k.SetStringValue("", cmd)
-}
-
-func readIcon(scheme string) string {
-	k, err := registry.OpenKey(registry.CURRENT_USER, classKey(scheme)+`\DefaultIcon`, registry.QUERY_VALUE)
+// readDefault is the key's default value, or "" when it has none.
+func readDefault(key string) string {
+	k, err := registry.OpenKey(registry.CURRENT_USER, key, registry.QUERY_VALUE)
 	if err != nil {
 		return ""
 	}
@@ -142,15 +130,6 @@ func readIcon(scheme string) string {
 		return ""
 	}
 	return v
-}
-
-func setIcon(scheme, icon string) error {
-	k, _, err := registry.CreateKey(registry.CURRENT_USER, classKey(scheme)+`\DefaultIcon`, registry.SET_VALUE)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = k.Close() }()
-	return k.SetStringValue("", icon)
 }
 
 // Restore hands each claimed scheme back to its previous owner; a scheme with none has its keys deleted. A scheme another
@@ -179,7 +158,7 @@ func (w *System) restoreScheme(scheme, previous string) error {
 	}
 	if previous == "" {
 		class := classKey(scheme)
-		for _, key := range []string{class + `\DefaultIcon`, commandKey(scheme), class + `\shell\open`, class + `\shell`, class} {
+		for _, key := range []string{iconKey(scheme), commandKey(scheme), class + `\shell\open`, class + `\shell`, class} {
 			if err := registry.DeleteKey(registry.CURRENT_USER, key); err != nil && !errors.Is(err, registry.ErrNotExist) {
 				return fmt.Errorf("delete %s: %w", key, err)
 			}
@@ -187,11 +166,11 @@ func (w *System) restoreScheme(scheme, previous string) error {
 		return nil
 	}
 	p := splitPrevious(previous)
-	if err := setCommand(scheme, p.cmd); err != nil {
+	if err := setDefault(commandKey(scheme), p.cmd); err != nil {
 		return err
 	}
 	if p.hasName {
-		if err := setName(scheme, p.name); err != nil {
+		if err := setDefault(classKey(scheme), p.name); err != nil {
 			return err
 		}
 	}
@@ -199,35 +178,12 @@ func (w *System) restoreScheme(scheme, previous string) error {
 		return nil
 	}
 	if p.icon == "" {
-		if err := registry.DeleteKey(registry.CURRENT_USER, classKey(scheme)+`\DefaultIcon`); err != nil && !errors.Is(err, registry.ErrNotExist) {
+		if err := registry.DeleteKey(registry.CURRENT_USER, iconKey(scheme)); err != nil && !errors.Is(err, registry.ErrNotExist) {
 			return err
 		}
 		return nil
 	}
-	return setIcon(scheme, p.icon)
-}
-
-// readName returns the scheme key's own default value, the protocol's display name.
-func readName(scheme string) string {
-	k, err := registry.OpenKey(registry.CURRENT_USER, classKey(scheme), registry.QUERY_VALUE)
-	if err != nil {
-		return ""
-	}
-	defer func() { _ = k.Close() }()
-	v, _, err := k.GetStringValue("")
-	if err != nil {
-		return ""
-	}
-	return v
-}
-
-func setName(scheme, name string) error {
-	k, _, err := registry.CreateKey(registry.CURRENT_USER, classKey(scheme), registry.SET_VALUE)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = k.Close() }()
-	return k.SetStringValue("", name)
+	return setDefault(iconKey(scheme), p.icon)
 }
 
 // RegisterLinks does nothing: the installer registers the mortar scheme and the .mortar file type.
