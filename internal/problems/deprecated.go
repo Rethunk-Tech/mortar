@@ -7,7 +7,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
-	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
@@ -57,13 +56,4 @@ func thunderstoreKey(gameID string) string {
 		}
 	}
 	return ""
-}
-
-func thunderstoreSource() (thunderstore.Driver, bool) {
-	e, ok := source.Get("thunderstore")
-	if !ok {
-		return thunderstore.Driver{}, false
-	}
-	d, ok := e.Source.(thunderstore.Driver)
-	return d, ok
 }

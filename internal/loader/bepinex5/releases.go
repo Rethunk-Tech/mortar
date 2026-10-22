@@ -13,7 +13,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/host"
-	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 )
 
@@ -32,12 +31,8 @@ func (l Loader) thunderstoreDriver() thunderstore.Driver {
 	if l.Index != nil {
 		return *l.Index
 	}
-	if e, ok := source.Get("thunderstore"); ok {
-		if d, ok := e.Source.(thunderstore.Driver); ok {
-			return d
-		}
-	}
-	return thunderstore.Driver{}
+	d, _ := thunderstore.Registered()
+	return d
 }
 
 // pack is the game's BepInEx pack as a Thunderstore namespace and name.

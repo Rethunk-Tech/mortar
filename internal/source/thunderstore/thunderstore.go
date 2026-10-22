@@ -31,6 +31,16 @@ type Driver struct {
 
 var _ = source.Register(Driver{})
 
+// Registered is the Thunderstore driver the source registry holds.
+func Registered() (Driver, bool) {
+	e, ok := source.Get("thunderstore")
+	if !ok {
+		return Driver{}, false
+	}
+	d, ok := e.Source.(Driver)
+	return d, ok
+}
+
 // ID is the catalog id.
 func (Driver) ID() string { return "thunderstore" }
 

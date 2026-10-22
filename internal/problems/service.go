@@ -27,6 +27,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -407,7 +408,7 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 			}
 		}
 		r.LoadFailures = append(r.LoadFailures, settingRows...)
-		if src, ok := thunderstoreSource(); ok {
+		if src, ok := thunderstore.Registered(); ok {
 			r.Deprecated = deprecatedPackages(ctx, src, thunderstoreKey(gameID), "", pkgs)
 		}
 		deprecated := map[string]bool{}
