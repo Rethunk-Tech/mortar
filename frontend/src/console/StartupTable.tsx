@@ -19,6 +19,7 @@ import type {
   StartupMod,
   StartupReport,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { BEPINEX, SMAPI } from '../brand/productNames.ts'
 import { cmpText } from '../mods/cmpText.ts'
 import { openModHandlers } from '../mods/openMod.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
@@ -179,7 +180,10 @@ function ModDetails({ mod, sampled }: { mod: StartupMod; sampled: boolean }) {
           ))}
           {packs.length > PACKS_SHOWN ? (
             <Box sx={{ gridColumn: '1 / -1', color: 'text.secondary' }}>
-              {plural(packs.length - PACKS_SHOWN, { one: '# more pack', other: '# more packs' })}
+              {plural(
+                { count: packs.length - PACKS_SHOWN },
+                { one: '# more pack', other: '# more packs' },
+              )}
             </Box>
           ) : null}
         </Box>
@@ -244,7 +248,7 @@ function ModRow({
           </Link>
           {mod.id === BRIDGE_ID ? (
             <Tooltip
-              title={t`Mortar's own SMAPI mod; it records these timings`}
+              title={t`Mortar's own ${{ loader: SMAPI }} mod; it records these timings`}
               describeChild={true}
             >
               <Box
@@ -325,8 +329,8 @@ export function ModTable({
       id: 'total',
       label: t`Total`,
       help: smapi
-        ? t`Entry, event handlers and asset work the SMAPI Bridge timed before the title screen`
-        : t`Each plugin's load (constructor and Awake) the BepInEx Bridge timed; a package's plugins add up. Work a plugin does later, in Start or scene hooks, is not charged to it.`,
+        ? t`Entry, event handlers and asset work the ${{ loader: SMAPI }} Bridge timed before the title screen`
+        : t`Each plugin's load (constructor and Awake) the ${{ loader: BEPINEX }} Bridge timed; a package's plugins add up. Work a plugin does later, in Start or scene hooks, is not charged to it.`,
       align: 'right',
     },
     ...(comparing
@@ -407,7 +411,7 @@ export function ModTable({
           {all && folded.count > 0 ? (
             <TableRow>
               <TableCell sx={{ color: 'text.secondary', pl: NAME_INDENT }}>
-                {plural(folded.count, { one: '# other mod', other: '# other mods' })}
+                {plural({ count: folded.count }, { one: '# other mod', other: '# other mods' })}
               </TableCell>
               <TableCell />
               <TableCell align="right">{duration(folded.ms)}</TableCell>
@@ -431,7 +435,10 @@ export function ModTable({
           onClick={() => setAll(true)}
           sx={{ alignSelf: 'flex-start' }}
         >
-          {plural(rows.length + folded.count, { one: 'Show all # mod', other: 'Show all # mods' })}
+          {plural(
+            { count: rows.length + folded.count },
+            { one: 'Show all # mod', other: 'Show all # mods' },
+          )}
         </Button>
       ) : null}
     </>

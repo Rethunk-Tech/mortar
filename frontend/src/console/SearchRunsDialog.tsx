@@ -134,7 +134,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
                   sx={{ fontSize: 13, fontWeight: 700, color: 'text.secondary', mb: 0.5 }}
                 >
                   {hits[0]
-                    ? t`${formatWhen(hits[0].started, { withTime: true })} · ${outcome(hits[0].outcome)}`
+                    ? t`${{ when: formatWhen(hits[0].started, { withTime: true }) }} · ${{ outcome: outcome(hits[0].outcome) }}`
                     : null}
                 </Typography>
                 {hits.map((hit) => (
@@ -148,7 +148,7 @@ export function SearchRunsDialog({ open, onClose }: { open: boolean; onClose: ()
                       component="span"
                       sx={{ minWidth: 42, color: 'text.secondary', fontFamily: MONO }}
                     >
-                      {t`L${hit.lineNumber}`}
+                      {t`L${{ lineNumber: hit.lineNumber }}`}
                     </Typography>
                     <Typography
                       component="span"

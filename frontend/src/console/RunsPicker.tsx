@@ -93,7 +93,13 @@ export function RunsPicker({ game }: { game: string }) {
               secondary={
                 r.error ||
                 (r.unclassified
-                  ? t`${plural(r.unclassified, { one: '# log line Mortar could not classify', other: '# log lines Mortar could not classify' })}`
+                  ? plural(
+                      { count: r.unclassified },
+                      {
+                        one: '# log line Mortar could not classify',
+                        other: '# log lines Mortar could not classify',
+                      },
+                    )
                   : undefined)
               }
             />

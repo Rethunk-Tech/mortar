@@ -5,6 +5,7 @@ import type {
   FrameSummary,
   PerformanceRow,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { BEPINEX, HARMONY } from '../brand/productNames.ts'
 import { useProfileLoader, useProfiles } from '../profiles/store.ts'
 import { useStoredState } from '../shell/useStoredState.ts'
 import { space } from '../theme/density.ts'
@@ -89,7 +90,7 @@ function BridgePanel({ game }: { game: string }) {
   if (smapi) {
     hint = t`Start the game, then start measuring here to time each mod's event handlers per frame.`
   } else if (perf.unmeasured) {
-    hint = t`This BepInEx Bridge measures in game only on a measured launch. Use Measure next launch under Startup and play again.`
+    hint = t`This ${{ loader: BEPINEX }} Bridge measures in game only on a measured launch. Use Measure next launch under Startup and play again.`
   }
   return (
     <PanelView
@@ -203,18 +204,18 @@ function FrameLine({ frame, smapi }: { frame: FrameSummary | null; smapi: boolea
     >
       {frame ? (
         <span>
-          {t`${Math.round(frame.fps)} fps over ${Math.round(frame.seconds)} s. Frame ms: average ${ms(frame.avgMs)}, 95th ${ms(frame.p95Ms)}, 99th ${ms(frame.p99Ms)}, worst ${ms(frame.maxMs)}. Managed heap ${mib(frame.monoUsed)} of ${mib(frame.monoHeap)} MiB, ${frame.gcCollections} garbage collections.`}
+          {t`${{ fps: Math.round(frame.fps) }} fps over ${{ seconds: Math.round(frame.seconds) }} s. Frame ms: average ${{ avg: ms(frame.avgMs) }}, 95th ${{ p95: ms(frame.p95Ms) }}, 99th ${{ p99: ms(frame.p99Ms) }}, worst ${{ max: ms(frame.maxMs) }}. Managed heap ${{ monoUsed: mib(frame.monoUsed) }} of ${{ monoHeap: mib(frame.monoHeap) }} MiB, ${{ gcCollections: frame.gcCollections }} garbage collections.`}
         </span>
       ) : null}
       {frame && frame.modsMs > 0 ? (
         <span>
-          {t`Baseline: the mods' timed code is ${ms(frame.modsMs)} ms of the ${ms(frame.avgMs)} ms average frame; the game and loader alone take about ${ms(frame.withoutModsMs)} ms.`}
+          {t`Baseline: the mods' timed code is ${{ mods: ms(frame.modsMs) }} ms of the ${{ avg: ms(frame.avgMs) }} ms average frame; the game and loader alone take about ${{ withoutMods: ms(frame.withoutModsMs) }} ms.`}
         </span>
       ) : null}
       <span>
         {smapi
-          ? t`Each mod's time in its per-frame event handlers (update, render and one-second ticks), summed per frame, averaged over every frame. The 95th percentile and peak are per frame. Harmony patches and work outside events are in the baseline, not in a mod's row.`
-          : t`Each plugin's main-thread time per frame: its Harmony prefixes, postfixes and finalizers and its own Update, LateUpdate and FixedUpdate, less any timed call inside them. Code a transpiler rewrote and work on other threads are not counted.`}
+          ? t`Each mod's time in its per-frame event handlers (update, render and one-second ticks), summed per frame, averaged over every frame. The 95th percentile and peak are per frame. ${{ app: HARMONY }} patches and work outside events are in the baseline, not in a mod's row.`
+          : t`Each plugin's main-thread time per frame: its ${{ app: HARMONY }} prefixes, postfixes and finalizers and its own Update, LateUpdate and FixedUpdate, less any timed call inside them. Code a transpiler rewrote and work on other threads are not counted.`}
       </span>
     </Box>
   )

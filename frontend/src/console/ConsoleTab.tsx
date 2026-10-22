@@ -130,7 +130,7 @@ function CauseBanner({ game, profile, run }: { game: string; profile: string; ru
   }, [game, profile, run])
   return cause?.modName ? (
     <Alert variant="compact" severity="error" sx={{ mx: space.gutter, mb: space.gap }}>
-      <strong>{t`Caused by ${cause.modName}`}</strong>
+      <strong>{t`Caused by ${{ name: cause.modName }}`}</strong>
       {CAUSE_SEPARATOR}
       {cause.detail}
     </Alert>
@@ -322,10 +322,13 @@ function FilteredEmpty() {
       hidden.levels.length,
     )
     reasons.push(
-      plural(hidden.levels.length, {
-        one: `the ${levels} level is off`,
-        other: `the ${levels} levels are off`,
-      }),
+      plural(
+        { count: hidden.levels.length },
+        {
+          one: `the ${levels} level is off`,
+          other: `the ${levels} levels are off`,
+        },
+      ),
     )
   }
   if (hidden.search !== '') {
@@ -342,12 +345,9 @@ function FilteredEmpty() {
   const why = listNames(reasons, reasons.length)
   return (
     <>
-      {plural(hidden.count, {
-        one: `# line is hidden by the filters: ${why}.`,
-        other: `# lines are hidden by the filters: ${why}.`,
-      })}{' '}
+      {t`${plural({ count: hidden.count }, { one: '# line is', other: '# lines are' })} hidden by the filters: ${why}.`}{' '}
       <Button size="small" onClick={showAll} sx={{ verticalAlign: 'baseline' }}>
-        {plural(hidden.count, { one: 'Show it', other: 'Show all # lines' })}
+        {plural({ count: hidden.count }, { one: 'Show it', other: 'Show all # lines' })}
       </Button>
     </>
   )
@@ -480,9 +480,9 @@ export function ConsoleTab({ game }: { game: string }) {
             <Chip
               key={mod}
               size="small"
-              label={t`Mod: ${mod}`}
+              label={t`Mod: ${{ name: mod }}`}
               onDelete={() => setMods(filters.mods.filter((m) => m !== mod))}
-              deleteIcon={<X size={14} aria-label={t`Remove filter ${mod}`} />}
+              deleteIcon={<X size={14} aria-label={t`Remove filter ${{ name: mod }}`} />}
               sx={{ bgcolor: 'var(--mortar-hairline)', fontSize: 13 }}
             />
           ))}

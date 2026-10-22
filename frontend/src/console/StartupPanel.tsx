@@ -3,6 +3,7 @@ import { Alert, AlertTitle, Box, Button, Typography } from '@mui/material'
 import { Gauge, Timer } from 'lucide-react'
 import { type ReactNode, useRef, useState } from 'react'
 import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import { BEPINEX, SMAPI, UNITY } from '../brand/productNames.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
 import { useGameBusy } from '../launch/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -35,7 +36,7 @@ function MeasureBanner({ onCancel }: { onCancel: () => void }) {
       <AlertTitle>{t`The next launch will be measured`}</AlertTitle>
       {smapi
         ? t`Press Play. Mortar samples the game until the title screen, skipping the intro animation, and shows the results here, with a Sampled column.`
-        : t`Press Play. The BepInEx Bridge times each plugin's load and the start up to the main menu, and shows the results here. Unity's Mono runtime cannot be sampled, so there is no Sampled column.`}
+        : t`Press Play. The ${{ loader: BEPINEX }} Bridge times each plugin's load and the start up to the main menu, and shows the results here. ${{ app: UNITY }}'s Mono runtime cannot be sampled, so there is no Sampled column.`}
     </Alert>
   )
 }
@@ -119,8 +120,8 @@ export function StartupPanel({
         <Box sx={{ flex: 1, display: 'flex' }}>
           <EmptyState icon={<Timer size={40} />} title={t`No startup measured yet`}>
             {smapi
-              ? t`Play this profile. The SMAPI Bridge records how long each mod adds before the title screen.`
-              : t`Measure a launch. The BepInEx Bridge records how long each plugin takes to load before the main menu.`}
+              ? t`Play this profile. The ${{ loader: SMAPI }} Bridge records how long each mod adds before the title screen.`
+              : t`Measure a launch. The ${{ loader: BEPINEX }} Bridge records how long each plugin takes to load before the main menu.`}
           </EmptyState>
         </Box>
       )}

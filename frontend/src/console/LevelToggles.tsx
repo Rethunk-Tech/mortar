@@ -45,10 +45,13 @@ export function LevelToggles() {
           <ButtonBase
             key={level}
             aria-pressed={pressed}
-            aria-label={plural(n, {
-              one: `${names[level]}: # line`,
-              other: `${names[level]}: # lines`,
-            })}
+            aria-label={plural(
+              { count: n },
+              {
+                one: `${{ level: names[level] }}: # line`,
+                other: `${{ level: names[level] }}: # lines`,
+              },
+            )}
             onClick={() => toggle(level)}
             sx={{
               display: 'flex',
@@ -108,7 +111,7 @@ export function LevelToggles() {
               slotProps={{ input: { 'aria-hidden': true } }}
               sx={{ p: 0, mr: 1 }}
             />
-            {t`${names[level]} (${formatCount(counts.get(level) ?? 0, i18n.locale)})`}
+            {t`${{ level: names[level] }} (${{ count: formatCount(counts.get(level) ?? 0, i18n.locale) }})`}
           </MenuItem>
         ))}
       </Menu>

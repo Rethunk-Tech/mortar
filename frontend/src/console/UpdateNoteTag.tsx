@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Chip } from '@mui/material'
+import { SMAPI } from '../brand/productNames.ts'
 import { Tooltip } from '../shell/Tooltip.tsx'
 import type { UpdateNote } from './smapiUpdateNotes.ts'
 
@@ -10,7 +11,7 @@ export function UpdateNoteTag({ note }: { note: UpdateNote }) {
   const [label, why] = {
     current: [
       t`Already installed`,
-      t`Your download is already ${have}; the mod's manifest still carries the old number, so SMAPI keeps asking.`,
+      t`Your download is already ${have}; the mod's manifest still carries the old number, so ${{ loader: SMAPI }} keeps asking.`,
     ],
     skipped: [
       t`You skipped this version`,
@@ -23,7 +24,10 @@ export function UpdateNoteTag({ note }: { note: UpdateNote }) {
     ignored: [t`Updates ignored`, t`This profile ignores updates for this mod.`],
     source: [t`Source skipped`, t`This profile skips updates from this source for this mod.`],
     prerelease: [t`Prerelease`, t`Mortar offers prereleases only when Settings allows them.`],
-    unofficial: [t`Unofficial build`, t`Unofficial SMAPI-compatible builds are off in Settings.`],
+    unofficial: [
+      t`Unofficial build`,
+      t`Unofficial ${{ loader: SMAPI }}-compatible builds are off in Settings.`,
+    ],
     listed: [t`In Mortar's updates`, t`Mortar offers this update in the profile's update list.`],
     elsewhere: [
       t`Not downloadable here`,
@@ -36,7 +40,7 @@ export function UpdateNoteTag({ note }: { note: UpdateNote }) {
         size="small"
         variant="outlined"
         tabIndex={0}
-        label={t`Mortar: ${label}`}
+        label={t`Mortar: ${{ name: label }}`}
         sx={{ ml: 1, flexShrink: 0, fontSize: 11, color: 'text.secondary' }}
       />
     </Tooltip>

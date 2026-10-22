@@ -144,7 +144,7 @@ function ProblemRow({
   } else if (problem.fix === 'removeDuplicate') {
     label = t`Remove duplicate`
   } else if (problem.fix === 'updateLoader') {
-    label = t`Update ${loaderName}`
+    label = t`Update ${{ loader: loaderName }}`
   } else if (problem.fix === 'remove') {
     label = t`Remove`
   }
@@ -188,11 +188,14 @@ function ProblemRow({
         title={t`Remove duplicate?`}
         body={
           copies.keep
-            ? plural(copies.remove.length, {
-                one: `Keep ${copies.keep.name} and remove ${copies.remove[0]?.name ?? ''}.`,
-                other: `Keep ${copies.keep.name} and remove # other copies.`,
-              })
-            : t`Remove ${{ name: copies.remove[0]?.name ?? '' }}`
+            ? plural(
+                { count: copies.remove.length },
+                {
+                  one: `Keep ${{ name: copies.keep.name }} and remove ${{ other: copies.remove[0]?.name ?? '' }}.`,
+                  other: `Keep ${{ name: copies.keep.name }} and remove # other copies.`,
+                },
+              )
+            : t`Remove ${{ other: copies.remove[0]?.name ?? '' }}`
         }
         confirmLabel={t`Remove`}
         onCancel={() => setConfirmDup(false)}

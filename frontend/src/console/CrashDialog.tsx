@@ -253,12 +253,14 @@ export function CrashDialog() {
         slotProps={{ paper: { sx: { width: 520, maxWidth: 'calc(100% - 32px)' } } }}
       >
         <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>
-          {crash.crashed ? t`${gameName} crashed` : t`${gameName} closed with errors`}
+          {crash.crashed
+            ? t`${{ game: gameName }} crashed`
+            : t`${{ game: gameName }} closed with errors`}
         </DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
           {crash.cause ? (
             <Box sx={{ fontSize: 14 }}>
-              <Box sx={{ fontWeight: 700 }}>{t`Caused by ${crash.cause.modName}`}</Box>
+              <Box sx={{ fontWeight: 700 }}>{t`Caused by ${{ name: crash.cause.modName }}`}</Box>
               <Box sx={{ color: 'text.secondary', mt: 0.25 }} title={crash.cause.detail}>
                 {causeBody}
               </Box>
@@ -277,7 +279,7 @@ export function CrashDialog() {
                   <Link component="button" type="button" onClick={() => showMod(row.mod, dismiss)}>
                     {row.mod}
                   </Link>
-                  {plural(row.count, { one: ' · # error', other: ' · # errors' })}
+                  {plural({ count: row.count }, { one: ' · # error', other: ' · # errors' })}
                 </Box>
                 <Box sx={{ color: 'text.secondary', mt: 0.25 }}>{row.first}</Box>
               </Box>

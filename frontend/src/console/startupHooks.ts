@@ -31,7 +31,7 @@ export function useWhy() {
     const ms = duration(why.ms)
     switch (why.kind) {
       case 'event':
-        return t`slow ${why.event ?? ''} ${ms}`
+        return t`slow ${{ event: why.event ?? '' }} ${ms}`
       case 'assets':
         return t`assets and packs ${ms}`
       case 'entry':

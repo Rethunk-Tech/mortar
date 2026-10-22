@@ -114,7 +114,10 @@ export function PerformanceCards({
           label={t`In game`}
           value={
             saved > 0
-              ? plural(saved, { one: '# measurement saved', other: '# measurements saved' })
+              ? plural(
+                  { count: saved },
+                  { one: '# measurement saved', other: '# measurements saved' },
+                )
               : t`Not measured yet`
           }
           on={view === 'inGame'}

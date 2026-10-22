@@ -174,7 +174,7 @@ export function BisectDialog({ game, profile, jobID, onClose }: Props) {
     content = (
       <>
         <Typography>
-          {t`Step ${status.step} of ~${status.total}, ${plural(status.modsLeft, { one: '# mod left', other: '# mods left' })}`}
+          {t`Step ${{ step: status.step }} of ~${{ total: status.total }}, ${plural({ count: status.modsLeft }, { one: '# mod left', other: '# mods left' })}`}
         </Typography>
         <LinearProgress />
       </>
