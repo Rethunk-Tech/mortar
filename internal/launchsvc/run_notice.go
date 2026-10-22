@@ -1,9 +1,10 @@
 package launchsvc
 
 import (
-	"fmt"
+	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 )
 
@@ -29,19 +30,15 @@ type NoticeClick struct {
 // worth a notification; ok is false for a run that closed normally.
 func RunEndNotificationText(gameName string, stats launch.Summary) (title, body string, ok bool) {
 	if stats.Crashed {
-		title = gameName + " crashed"
+		title = i18n.T("{game} crashed", "game", gameName)
 		n := len(stats.Mods)
-		if n == 1 {
-			body = "1 mod logged errors"
-		} else {
-			body = fmt.Sprintf("%d mods logged errors", n)
-		}
+		body = i18n.T("Mods with errors: {count}", "count", strconv.Itoa(n))
 		if launch.ExitCrashed(stats.Exit) {
-			desc := launch.DescribeExit(stats.Exit)
+			desc := launch.DescribeExitLocalized(stats.Exit)
 			if n == 0 {
 				body = desc
 			} else {
-				body += "; " + desc
+				body = i18n.T("{errors}. {exit}", "errors", body, "exit", desc)
 			}
 		}
 		return title, body, true

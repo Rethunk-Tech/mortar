@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -42,6 +43,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/lan"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
 	"github.com/Rethunk-Tech/mortar/internal/loadersvc"
@@ -167,7 +169,7 @@ func main() {
 func runShowingFailures() error {
 	defer func() {
 		if r := recover(); r != nil {
-			showStartupError(fmt.Sprintf("Mortar stopped while starting:\n\n%v\n\nThe details are in crash.log in Mortar's data folder.", r), logFolder())
+			showStartupError(i18n.T("Mortar stopped while starting:\n\n{error}\n\nThe details are in crash.log in Mortar's data folder.", "error", fmt.Sprint(r)), logFolder())
 			panic(r)
 		}
 	}()
@@ -408,6 +410,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	i18n.SetLanguageSource(func() string { return store.Get().Language })
 	applyLinkChoices(store.Get())
 	svc := settings.NewService(store)
 	svc.ValidateGameFolder = game.ValidateFolder
@@ -1088,7 +1091,7 @@ func run() error {
 		if !ok || (!windowClosed() && window.IsVisible()) {
 			return
 		}
-		desktopnotify.Send(a.Sender+" wants to share a profile", a.ProfileName, nil)
+		desktopnotify.Send(desktopnotify.KindOther, i18n.T("{name} wants to share a profile", "name", a.Sender), a.ProfileName, nil)
 	})
 
 	var windowMu sync.Mutex
@@ -1331,7 +1334,7 @@ func run() error {
 			return
 		}
 		trayMenu.Clear()
-		trayMenu.Add("Show Mortar").OnClick(func(*application.Context) {
+		trayMenu.Add(i18n.T("Show Mortar")).OnClick(func(*application.Context) {
 			showWindow()
 		})
 		busy := map[string]bool{}
@@ -1346,7 +1349,7 @@ func run() error {
 			if g := game.Find(id); g != nil {
 				name = g.Name()
 			}
-			trayMenu.Add("Stop " + name).OnClick(func(*application.Context) {
+			trayMenu.Add(i18n.T("Stop {game}", "game", name)).OnClick(func(*application.Context) {
 				_ = launches.Stop(context.Background(), id)
 			})
 		}
@@ -1357,14 +1360,14 @@ func run() error {
 			}
 		}
 		if left > 0 {
-			trayMenu.Add(fmt.Sprintf("%d downloads…", left)).OnClick(func(*application.Context) {
+			trayMenu.Add(i18n.T("Downloads: {count}", "count", strconv.Itoa(left))).OnClick(func(*application.Context) {
 				toPage("queue:open", nil)
 			})
 		}
 		for _, id := range implemented {
 			recent, _ := launches.RecentLaunches(id, 3)
 			for _, row := range recent {
-				item := trayMenu.Add("Play " + row.Name)
+				item := trayMenu.Add(i18n.T("Play {profile}", "profile", row.Name))
 				if busy[id] {
 					item.SetEnabled(false)
 				} else {
@@ -1377,7 +1380,7 @@ func run() error {
 			}
 		}
 		trayMenu.AddSeparator()
-		trayMenu.Add("Quit").OnClick(func(*application.Context) {
+		trayMenu.Add(i18n.T("Quit")).OnClick(func(*application.Context) {
 			quitSvc.RequestQuit()
 		})
 		applyTrayMenu(tray, trayMenu)
@@ -1402,10 +1405,10 @@ func run() error {
 				showWindow()
 			})
 			launches.NotifyRunEnd = func(n launchsvc.RunEndNotice) {
-				if strings.HasSuffix(n.Title, " crashed") && !desktopnotify.Pref("desktopRunCrashed") {
+				if !desktopnotify.Pref("desktopRunCrashed") {
 					return
 				}
-				desktopnotify.Send(n.Title, n.Body, map[string]any{"game": n.Game, "profile": n.Profile})
+				desktopnotify.Send(desktopnotify.KindRunEnd, n.Title, n.Body, map[string]any{"game": n.Game, "profile": n.Profile})
 			}
 			// Menus are GTK objects: rebuilding one off the main thread, or twice at once from a burst of
 			// events, leaves items without their native handle and panics.

@@ -23,6 +23,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
@@ -368,7 +369,7 @@ func (s *Service) SaveFile(game, profileID string, keys []string, include share.
 	if err != nil {
 		return Saved{}, err
 	}
-	dest, err := s.App.SaveFile(winhost.Dialog{Filename: fileNameUnsafe.Replace(p.Name) + ".mortar", Filters: []winhost.Filter{{Name: "Mortar profile (.mortar)", Pattern: "*.mortar"}}})
+	dest, err := s.App.SaveFile(winhost.Dialog{Filename: fileNameUnsafe.Replace(p.Name) + ".mortar", Filters: []winhost.Filter{{Name: i18n.T("Mortar profile (.mortar)"), Pattern: "*.mortar"}}})
 	if err != nil || dest == "" {
 		return Saved{Skipped: []string{}}, err
 	}
@@ -410,11 +411,11 @@ func (s *Service) ExportBytes(game, profileID string, include share.Include) ([]
 
 // PickFile asks for a .mortar file and returns its path, or "" when the dialog is cancelled.
 func (s *Service) PickFile() (string, error) {
-	return s.App.OpenFile(winhost.Dialog{Title: "Open a profile file", Filters: []winhost.Filter{
-		{Name: "Profile (.mortar, .r2z, .zip)", Pattern: "*.mortar;*.r2z;*.zip"},
-		{Name: "Mortar profile (.mortar)", Pattern: "*.mortar"},
-		{Name: "r2modman or Gale profile (.r2z)", Pattern: "*.r2z"},
-		{Name: "Thunderstore modpack (.zip)", Pattern: "*.zip"},
+	return s.App.OpenFile(winhost.Dialog{Title: i18n.T("Open a profile file"), Filters: []winhost.Filter{
+		{Name: i18n.T("Profile (.mortar, .r2z, .zip)"), Pattern: "*.mortar;*.r2z;*.zip"},
+		{Name: i18n.T("Mortar profile (.mortar)"), Pattern: "*.mortar"},
+		{Name: i18n.T("{app} profile (.r2z)", "app", "r2modman or Gale"), Pattern: "*.r2z"},
+		{Name: i18n.T("{source} modpack (.zip)", "source", "Thunderstore"), Pattern: "*.zip"},
 	}})
 }
 

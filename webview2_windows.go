@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/opener"
 	"github.com/wailsapp/wails/v3/pkg/w32"
 	"golang.org/x/sys/windows"
@@ -52,8 +53,9 @@ func requireWebView2() error {
 	if webView2Installed() {
 		return nil
 	}
-	text := "Mortar needs the Microsoft Edge WebView2 Runtime, which does not seem to be installed.\n\n" +
-		"Yes: Open Microsoft's download page (install the Evergreen Bootstrapper, then start Mortar again)\nNo: Start anyway"
+	text := i18n.T("Mortar needs the {runtime}, which does not seem to be installed.\n\n"+
+		"Yes: Open the download page (install the {installer}, then start Mortar again)\nNo: Start anyway",
+		"runtime", "Microsoft Edge WebView2 Runtime", "installer", "Evergreen Bootstrapper")
 	if w32.MessageBox(0, text, "Mortar", mbYesNo|mbIconError|mbTopmost) != idYes {
 		return nil
 	}

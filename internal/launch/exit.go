@@ -1,6 +1,11 @@
 package launch
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
+)
 
 // Exit is how the game process ended.
 type Exit struct {
@@ -26,6 +31,21 @@ func DescribeExit(x Exit) string {
 		return fmt.Sprintf("exited with code %d", x.Code)
 	}
 	return "exited with code 0"
+}
+
+// DescribeExitLocalized is DescribeExit in the user's language, for desktop notifications; the CLI and the logs stay
+// English.
+func DescribeExitLocalized(x Exit) string {
+	code := strconv.Itoa(x.Code)
+	switch {
+	case x.Stopped || x.Signal == "" && x.Code == 0:
+		return DescribeExit(x)
+	case x.Signal != "" && x.Code != 0:
+		return i18n.T("Exited with code {code} ({signal})", "code", code, "signal", x.Signal)
+	case x.Signal != "":
+		return i18n.T("Exited with {signal}", "signal", x.Signal)
+	}
+	return i18n.T("Exited with code {code}", "code", code)
 }
 
 // ExitCrashed is a non-zero code or a terminating signal that was not a user Stop.

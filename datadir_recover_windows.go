@@ -3,10 +3,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 
 	"github.com/wailsapp/wails/v3/pkg/w32"
 	"golang.org/x/sys/windows"
@@ -24,8 +24,8 @@ const (
 // askMissingLocation uses a plain message box, since Wails has no window yet. Its buttons cannot be renamed, so
 // the text names what each one does.
 func askMissingLocation(path string) locationChoice {
-	text := fmt.Sprintf("Mortar's data folder was not found:\n\n%s\n\nIts drive may be unplugged. Plug it in and choose "+
-		"Cancel, then start Mortar again, or choose here:\n\nYes: Use the default location\nNo: Choose the data folder...\nCancel: Quit", path)
+	text := i18n.T("Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplugged. Plug it in and choose "+
+		"Cancel, then start Mortar again, or choose here:\n\nYes: Use the default location\nNo: Choose the data folder…\nCancel: Quit", "path", path)
 	switch w32.MessageBox(0, text, "Mortar", mbYesNoCancel|mbIconError|mbTopmost) {
 	case idYes:
 		return choiceDefault
@@ -42,7 +42,7 @@ func showStartupError(msg, folder string) {
 		w32.MessageBox(0, msg, "Mortar", mbOK|mbIconError|mbTopmost)
 		return
 	}
-	text := msg + "\n\nOpen the folder that holds the log? (Ctrl+C copies this message.)"
+	text := msg + "\n\n" + i18n.T("Open the folder that holds the log? (Ctrl+C copies this message.)")
 	if w32.MessageBox(0, text, "Mortar", mbYesNo|mbIconError|mbTopmost) == idYes {
 		if err := datadir.Open(folder); err != nil {
 			log.Printf("open %s: %v", folder, err)
@@ -52,7 +52,7 @@ func showStartupError(msg, folder string) {
 
 // pickDataFolder shows the shell's folder browser; "" means cancelled.
 func pickDataFolder() string {
-	title, err := windows.UTF16PtrFromString("Choose the Mortar data folder")
+	title, err := windows.UTF16PtrFromString(i18n.T("Choose the Mortar data folder"))
 	if err != nil {
 		return ""
 	}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -19,7 +20,7 @@ func (e shownError) Unwrap() error { return e.error }
 // startupFailureText is what the dialog says when Mortar cannot start: a windowsgui build has no console, so without
 // it a failed start looks like nothing happened.
 func startupFailureText(err error) string {
-	return fmt.Sprintf("Mortar could not start:\n\n%v\n\nThe details are in mortar.log in Mortar's data folder.", err)
+	return i18n.T("Mortar could not start:\n\n{error}\n\nThe details are in mortar.log in Mortar's data folder.", "error", err.Error())
 }
 
 // logFolder is the data folder holding mortar.log and crash.log, "" when it cannot be found (the failure may be that).
@@ -42,7 +43,7 @@ func panicHandler(dataDir string) func(*application.PanicDetails) {
 	return func(d *application.PanicDetails) {
 		slog.Error("panic", "err", d.Error)
 		_ = appendCrash(dataDir, d)
-		showStartupError(fmt.Sprintf("Mortar stopped because of an error:\n\n%v\n\nThe details are in crash.log in %s.", d.Error, dataDir), dataDir)
+		showStartupError(i18n.T("Mortar stopped because of an error:\n\n{error}\n\nThe details are in crash.log in {path}.", "error", fmt.Sprint(d.Error), "path", dataDir), dataDir)
 		os.Exit(2)
 	}
 }

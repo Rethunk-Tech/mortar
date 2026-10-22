@@ -19,6 +19,7 @@ import (
 	pprofile "github.com/google/pprof/profile"
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -41,12 +42,12 @@ const (
 // native dialog and the real keyring are never touched. Nil uses App's save dialog.
 func (s *Service) saveZip(filename string, data []byte) (string, error) {
 	if s.SaveZip != nil {
-		return s.SaveZip("Save diagnostics", filename, data)
+		return s.SaveZip(i18n.T("Save diagnostics"), filename, data)
 	}
 	if s.App == nil {
 		return "", errors.New("diagnostics save is not available")
 	}
-	return picker.SaveFile(s.App, "Save diagnostics", filename, "Zip archives", "*.zip", data)
+	return picker.SaveFile(s.App, i18n.T("Save diagnostics"), filename, i18n.T("Zip archives"), "*.zip", data)
 }
 
 func (s *Service) dataDir() (string, error) {

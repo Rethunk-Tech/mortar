@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
@@ -172,7 +173,7 @@ func (s *Service) ExportR2zDialog(ctx context.Context, gameID, profileID string)
 	if err != nil {
 		return "", err
 	}
-	dest, err := s.App.SaveFile(winhost.Dialog{Filename: packageName(p.Name) + ".r2z", Filters: []winhost.Filter{{Name: "r2modman or Gale export (.r2z)", Pattern: "*.r2z"}}})
+	dest, err := s.App.SaveFile(winhost.Dialog{Filename: packageName(p.Name) + ".r2z", Filters: []winhost.Filter{{Name: i18n.T("{app} export (.r2z)", "app", "r2modman or Gale"), Pattern: "*.r2z"}}})
 	if err != nil || dest == "" {
 		return dest, err
 	}

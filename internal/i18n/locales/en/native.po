@@ -1,0 +1,168 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+msgid "Add archive"
+msgstr "Add archive"
+
+msgid "All files"
+msgstr "All files"
+
+msgid "Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lzma)"
+msgstr "Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lzma)"
+
+msgid "Choose background image"
+msgstr "Choose background image"
+
+msgid "Choose game folder"
+msgstr "Choose game folder"
+
+msgid "Choose the Mortar data folder"
+msgstr "Choose the Mortar data folder"
+
+msgid "Choose the data folder…"
+msgstr "Choose the data folder…"
+
+msgid "Close"
+msgstr "Close"
+
+msgid "Download failed"
+msgstr "Download failed"
+
+msgid "Download finished"
+msgstr "Download finished"
+
+msgid "Downloads: {count}"
+msgstr "Downloads: {count}"
+
+msgid "End it"
+msgstr "End it"
+
+msgid "Exited with code {code}"
+msgstr "Exited with code {code}"
+
+msgid "Exited with code {code} ({signal})"
+msgstr "Exited with code {code} ({signal})"
+
+msgid "Exited with {signal}"
+msgstr "Exited with {signal}"
+
+msgid "Export settings"
+msgstr "Export settings"
+
+msgid "Images (PNG, JPEG, GIF, WebP)"
+msgstr "Images (PNG, JPEG, GIF, WebP)"
+
+msgid "Images (PNG, JPEG, WebP)"
+msgstr "Images (PNG, JPEG, WebP)"
+
+msgid "Import settings"
+msgstr "Import settings"
+
+msgid "Leave it"
+msgstr "Leave it"
+
+msgid "Mod updates available: {count}"
+msgstr "Mod updates available: {count}"
+
+msgid "Mods with errors: {count}"
+msgstr "Mods with errors: {count}"
+
+msgid "Mortar could not start:\n\n{error}\n\nThe details are in mortar.log in Mortar's data folder."
+msgstr "Mortar could not start:\n\n{error}\n\nThe details are in mortar.log in Mortar's data folder."
+
+msgid "Mortar is already running but has not answered for {count} seconds.\n\nEnd it and start Mortar again? Anything it was doing stops."
+msgstr "Mortar is already running but has not answered for {count} seconds.\n\nEnd it and start Mortar again? Anything it was doing stops."
+
+msgid "Mortar needs the {runtime}, which does not seem to be installed.\n\nYes: Open the download page (install the {installer}, then start Mortar again)\nNo: Start anyway"
+msgstr "Mortar needs the {runtime}, which does not seem to be installed.\n\nYes: Open the download page (install the {installer}, then start Mortar again)\nNo: Start anyway"
+
+msgid "Mortar profile (.mortar)"
+msgstr "Mortar profile (.mortar)"
+
+msgid "Mortar profile backup"
+msgstr "Mortar profile backup"
+
+msgid "Mortar profile backup (zip)"
+msgstr "Mortar profile backup (zip)"
+
+msgid "Mortar stopped because of an error:\n\n{error}\n\nThe details are in crash.log in {path}."
+msgstr "Mortar stopped because of an error:\n\n{error}\n\nThe details are in crash.log in {path}."
+
+msgid "Mortar stopped while starting:\n\n{error}\n\nThe details are in crash.log in Mortar's data folder."
+msgstr "Mortar stopped while starting:\n\n{error}\n\nThe details are in crash.log in Mortar's data folder."
+
+msgid "Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplugged. Plug it in and choose Cancel, then start Mortar again, or choose here:\n\nYes: Use the default location\nNo: Choose the data folder…\nCancel: Quit"
+msgstr "Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplugged. Plug it in and choose Cancel, then start Mortar again, or choose here:\n\nYes: Use the default location\nNo: Choose the data folder…\nCancel: Quit"
+
+msgid "Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplugged. Plug it in and choose {quit}, then start Mortar again, or choose here."
+msgstr "Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplugged. Plug it in and choose {quit}, then start Mortar again, or choose here."
+
+msgid "Open a profile export"
+msgstr "Open a profile export"
+
+msgid "Open a profile file"
+msgstr "Open a profile file"
+
+msgid "Open the folder that holds the log? (Ctrl+C copies this message.)"
+msgstr "Open the folder that holds the log? (Ctrl+C copies this message.)"
+
+msgid "Open the log folder"
+msgstr "Open the log folder"
+
+msgid "Play {profile}"
+msgstr "Play {profile}"
+
+msgid "Profile (.mortar, .r2z, .zip)"
+msgstr "Profile (.mortar, .r2z, .zip)"
+
+msgid "Quit"
+msgstr "Quit"
+
+msgid "Save diagnostics"
+msgstr "Save diagnostics"
+
+msgid "Show Mortar"
+msgstr "Show Mortar"
+
+msgid "Stop {game}"
+msgstr "Stop {game}"
+
+msgid "Text files"
+msgstr "Text files"
+
+msgid "Use the default location"
+msgstr "Use the default location"
+
+msgid "Zip archives"
+msgstr "Zip archives"
+
+msgid "{app} export (.r2z)"
+msgstr "{app} export (.r2z)"
+
+msgid "{app} export (.r2z, .zip)"
+msgstr "{app} export (.r2z, .zip)"
+
+msgid "{app} profile (.r2z)"
+msgstr "{app} profile (.r2z)"
+
+msgid "{errors}. {exit}"
+msgstr "{errors}. {exit}"
+
+msgid "{game} crashed"
+msgstr "{game} crashed"
+
+msgid "{name} wants to share a profile"
+msgstr "{name} wants to share a profile"
+
+msgid "{source} collection draft (zip)"
+msgstr "{source} collection draft (zip)"
+
+msgid "{source} modpack (.zip)"
+msgstr "{source} modpack (.zip)"
+
+msgid "{source} modpack (zip)"
+msgstr "{source} modpack (zip)"

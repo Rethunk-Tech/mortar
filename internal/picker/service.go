@@ -6,6 +6,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
 )
@@ -21,23 +22,23 @@ type Service struct {
 
 // PickArchives asks for archives and returns the chosen paths, none when the dialog is cancelled.
 func (s *Service) PickArchives() ([]string, error) {
-	return s.App.OpenFiles(winhost.Dialog{Title: "Add archive", Filters: []winhost.Filter{
-		{Name: "Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lzma)", Pattern: archive.PickerPattern()},
-		{Name: "All files", Pattern: "*"},
+	return s.App.OpenFiles(winhost.Dialog{Title: i18n.T("Add archive"), Filters: []winhost.Filter{
+		{Name: i18n.T("Archives (zip, RAR, 7z, tar, gz, xz, zst, bz2, lzma)"), Pattern: archive.PickerPattern()},
+		{Name: i18n.T("All files"), Pattern: "*"},
 	}})
 }
 
 // PickImage asks for one image and returns its path, or "" when the dialog is cancelled.
 func (s *Service) PickImage(title string) (string, error) {
-	return s.App.OpenFile(winhost.Dialog{Title: title, Filters: []winhost.Filter{{Name: "Images (PNG, JPEG, WebP)", Pattern: "*.png;*.jpg;*.jpeg;*.webp"}}})
+	return s.App.OpenFile(winhost.Dialog{Title: title, Filters: []winhost.Filter{{Name: i18n.T("Images (PNG, JPEG, WebP)"), Pattern: "*.png;*.jpg;*.jpeg;*.webp"}}})
 }
 
 // PickPackFile asks for an r2modman profile export (.r2z) or a Thunderstore modpack zip and returns its path, or "" when
 // the dialog is cancelled.
 func (s *Service) PickPackFile() (string, error) {
-	return s.App.OpenFile(winhost.Dialog{Title: "Open a profile export", Filters: []winhost.Filter{
-		{Name: "r2modman or Gale export (.r2z, .zip)", Pattern: "*.r2z;*.zip"},
-		{Name: "All files", Pattern: "*"},
+	return s.App.OpenFile(winhost.Dialog{Title: i18n.T("Open a profile export"), Filters: []winhost.Filter{
+		{Name: i18n.T("{app} export (.r2z, .zip)", "app", "r2modman or Gale"), Pattern: "*.r2z;*.zip"},
+		{Name: i18n.T("All files"), Pattern: "*"},
 	}})
 }
 
@@ -47,8 +48,8 @@ const maxTextBytes = 1 << 20
 // ReadTextFile asks for a text file and returns what it holds, or "" when the dialog is cancelled.
 func (s *Service) ReadTextFile(title string) (string, error) {
 	path, err := s.App.OpenFile(winhost.Dialog{Title: title, Filters: []winhost.Filter{
-		{Name: "Text files", Pattern: "*.txt;*.md;*.json"},
-		{Name: "All files", Pattern: "*"},
+		{Name: i18n.T("Text files"), Pattern: "*.txt;*.md;*.json"},
+		{Name: i18n.T("All files"), Pattern: "*"},
 	}})
 	if err != nil || path == "" {
 		return "", err
@@ -67,13 +68,13 @@ func (s *Service) ReadTextFile(title string) (string, error) {
 
 // SaveFile asks where to write contents and writes them. It returns "" when the dialog is cancelled.
 func (s *Service) SaveFile(title, filename, contents string) (string, error) {
-	return SaveFile(s.App, title, filename, "Text files", "*.txt", []byte(contents))
+	return SaveFile(s.App, title, filename, i18n.T("Text files"), "*.txt", []byte(contents))
 }
 
 // SaveFile asks where to write data through the native save dialog, offering one filter plus all files,
 // and writes it owner-only. It returns "" when the dialog is cancelled.
 func SaveFile(app winhost.Host, title, filename, filterName, pattern string, data []byte) (string, error) {
-	path, err := app.SaveFile(winhost.Dialog{Title: title, Filename: filename, Filters: []winhost.Filter{{Name: filterName, Pattern: pattern}, {Name: "All files", Pattern: "*"}}})
+	path, err := app.SaveFile(winhost.Dialog{Title: title, Filename: filename, Filters: []winhost.Filter{{Name: filterName, Pattern: pattern}, {Name: i18n.T("All files"), Pattern: "*"}}})
 	if err != nil || path == "" {
 		return path, err
 	}

@@ -28,6 +28,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
@@ -1062,11 +1063,11 @@ func (s *Service) FailRoot(id string) {
 }
 
 func notifyDesktopDownload(name, game, profile string, ok bool) {
-	title, key := "Download failed", "desktopDownloadFailed"
+	title, key := i18n.T("Download failed"), "desktopDownloadFailed"
 	if ok {
-		title, key = "Download finished", "desktopDownloadFinished"
+		title, key = i18n.T("Download finished"), "desktopDownloadFinished"
 	}
-	desktopnotify.SendIf(desktopnotify.Pref(key), title, name, map[string]any{"game": game, "profile": profile})
+	desktopnotify.SendIf(desktopnotify.Pref(key), desktopnotify.KindDownload, title, name, map[string]any{"game": game, "profile": profile})
 }
 
 // Cancel stops an item, including a download under way. An install cannot be interrupted.

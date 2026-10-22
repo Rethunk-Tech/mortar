@@ -17,11 +17,11 @@ func TestRunEndNotificationTextCrash(t *testing.T) {
 		Crashed: true,
 		Mods:    []launch.ModError{{Mod: "A"}, {Mod: "B"}},
 	})
-	if !ok || title != "Stardew Valley crashed" || body != "2 mods logged errors" {
+	if !ok || title != "Stardew Valley crashed" || body != "Mods with errors: 2" {
 		t.Fatalf("got %q / %q", title, body)
 	}
 	title, body, _ = RunEndNotificationText("Stardew Valley", launch.Summary{Crashed: true, Mods: []launch.ModError{{Mod: "A"}}})
-	if title != "Stardew Valley crashed" || body != "1 mod logged errors" {
+	if title != "Stardew Valley crashed" || body != "Mods with errors: 1" {
 		t.Fatalf("singular: got %q / %q", title, body)
 	}
 }

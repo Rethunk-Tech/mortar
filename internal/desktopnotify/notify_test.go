@@ -19,11 +19,11 @@ func TestSendIfPrefOffSkips(t *testing.T) {
 	f := &fakeNotifier{}
 	Setup(f, func() string { return "" }, nil)
 	t.Cleanup(func() { Setup(nil, nil, nil) })
-	SendIf(false, "Download finished", "mod", nil)
+	SendIf(false, KindDownload, "Download finished", "mod", nil)
 	if f.n != 0 {
 		t.Fatalf("pref off sent %d", f.n)
 	}
-	SendIf(true, "Download finished", "mod", nil)
+	SendIf(true, KindDownload, "Download finished", "mod", nil)
 	if f.n != 1 || f.title != "Download finished" {
 		t.Fatalf("pref on sent %d %q", f.n, f.title)
 	}

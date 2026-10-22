@@ -16,6 +16,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/queue"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -208,7 +209,7 @@ func (s *Service) BackupDialog(gameID, profileID string, mods bool) (string, err
 	if err != nil {
 		return "", err
 	}
-	dest, err := s.App.SaveFile(winhost.Dialog{Filename: packageName(p.Name) + ".mortar-backup.zip", Filters: []winhost.Filter{{Name: "Mortar profile backup (zip)", Pattern: "*.zip"}}})
+	dest, err := s.App.SaveFile(winhost.Dialog{Filename: packageName(p.Name) + ".mortar-backup.zip", Filters: []winhost.Filter{{Name: i18n.T("Mortar profile backup (zip)"), Pattern: "*.zip"}}})
 	if err != nil || dest == "" {
 		return "", err
 	}
@@ -279,7 +280,7 @@ func (s *Service) RestoreDialog(ctx context.Context, gameID string) (RestoreResu
 	if s.App == nil {
 		return RestoreResult{}, errors.New("no window to ask for the file")
 	}
-	path, err := s.App.OpenFile(winhost.Dialog{Filters: []winhost.Filter{{Name: "Mortar profile backup", Pattern: "*.zip"}}})
+	path, err := s.App.OpenFile(winhost.Dialog{Filters: []winhost.Filter{{Name: i18n.T("Mortar profile backup"), Pattern: "*.zip"}}})
 	if err != nil || path == "" {
 		return RestoreResult{Unavailable: []string{}}, err
 	}

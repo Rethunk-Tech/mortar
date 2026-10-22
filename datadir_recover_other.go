@@ -6,22 +6,20 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"os/exec"
 	"strings"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/godbus/dbus/v5"
 )
 
-const (
-	labelDefault = "Use the default location"
-	labelChoose  = "Choose the data folder…"
-	labelQuit    = "Quit"
-	labelOpenLog = "Open the log folder"
-)
+func labelDefault() string { return i18n.T("Use the default location") }
+func labelChoose() string  { return i18n.T("Choose the data folder…") }
+func labelQuit() string    { return i18n.T("Quit") }
+func labelOpenLog() string { return i18n.T("Open the log folder") }
 
 // Wails has no window yet, so the pre-window dialogs go through zenity or kdialog when one is installed. Without
 // either, the error reaches the terminal and startup.log and the next start can fix data-location by hand.
@@ -37,8 +35,8 @@ func findDialogTool() string {
 }
 
 func missingLocationText(path string) string {
-	return fmt.Sprintf("Mortar's data folder was not found:\n\n%s\n\nIts drive may be unplugged. Plug it in and choose "+
-		"Quit, then start Mortar again, or choose here.", path)
+	return i18n.T("Mortar's data folder was not found:\n\n{path}\n\nIts drive may be unplugged. Plug it in and choose "+
+		"{quit}, then start Mortar again, or choose here.", "path", path, "quit", labelQuit())
 }
 
 // missingLocationArgs builds the three-way question; zenity reports the extra button on stdout, kdialog by exit code.
@@ -46,13 +44,13 @@ func missingLocationArgs(tool, path string) []string {
 	text := missingLocationText(path)
 	if tool == "kdialog" {
 		return []string{
-			"--title", "Mortar", "--yes-label", labelDefault, "--no-label", labelChoose,
-			"--cancel-label", labelQuit, "--yesnocancel", text,
+			"--title", "Mortar", "--yes-label", labelDefault(), "--no-label", labelChoose(),
+			"--cancel-label", labelQuit(), "--yesnocancel", text,
 		}
 	}
 	return []string{
-		"--question", "--title", "Mortar", "--text", text, "--ok-label", labelDefault,
-		"--cancel-label", labelQuit, "--extra-button", labelChoose,
+		"--question", "--title", "Mortar", "--text", text, "--ok-label", labelDefault(),
+		"--cancel-label", labelQuit(), "--extra-button", labelChoose(),
 	}
 }
 
@@ -69,7 +67,7 @@ func parseMissingLocation(tool string, exit int, stdout string) locationChoice {
 	switch {
 	case exit == 0:
 		return choiceDefault
-	case strings.TrimSpace(stdout) == labelChoose:
+	case strings.TrimSpace(stdout) == labelChoose():
 		return choiceChoose
 	}
 	return choiceQuit
@@ -102,11 +100,11 @@ func showStartupError(msg, folder string) {
 func startupErrorArgs(tool, msg, folder string) []string {
 	switch {
 	case tool == "kdialog" && folder != "":
-		return []string{"--title", "Mortar", "--yes-label", labelOpenLog, "--no-label", "Close", "--warningyesno", msg}
+		return []string{"--title", "Mortar", "--yes-label", labelOpenLog(), "--no-label", i18n.T("Close"), "--warningyesno", msg}
 	case tool == "kdialog":
 		return []string{"--title", "Mortar", "--error", msg}
 	case folder != "":
-		return []string{"--error", "--title", "Mortar", "--text", msg, "--extra-button", labelOpenLog}
+		return []string{"--error", "--title", "Mortar", "--text", msg, "--extra-button", labelOpenLog()}
 	}
 	return []string{"--error", "--title", "Mortar", "--text", msg}
 }
@@ -116,7 +114,7 @@ func opensLogFolder(tool string, exit int, stdout string) bool {
 	if tool == "kdialog" {
 		return exit == 0
 	}
-	return strings.TrimSpace(stdout) == labelOpenLog
+	return strings.TrimSpace(stdout) == labelOpenLog()
 }
 
 func notifyStartupError(msg string) {
@@ -144,9 +142,9 @@ func pickDataFolder() string {
 	case "":
 		return ""
 	case "kdialog":
-		args = []string{"--title", "Choose the Mortar data folder", "--getexistingdirectory"}
+		args = []string{"--title", i18n.T("Choose the Mortar data folder"), "--getexistingdirectory"}
 	default:
-		args = []string{"--file-selection", "--directory", "--title", "Choose the Mortar data folder"}
+		args = []string{"--file-selection", "--directory", "--title", i18n.T("Choose the Mortar data folder")}
 	}
 	if exit, out := runDialog(tool, args); exit == 0 {
 		return strings.TrimSpace(out)

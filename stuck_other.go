@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 )
 
 func processExe(pid int) (string, error) {
@@ -28,9 +30,9 @@ func askEndStuck(msg string) bool {
 	if tool == "" {
 		return false
 	}
-	args := []string{"--question", "--title", "Mortar", "--text", msg, "--ok-label", "End it", "--cancel-label", "Leave it"}
+	args := []string{"--question", "--title", "Mortar", "--text", msg, "--ok-label", i18n.T("End it"), "--cancel-label", i18n.T("Leave it")}
 	if tool == "kdialog" {
-		args = []string{"--title", "Mortar", "--yes-label", "End it", "--no-label", "Leave it", "--warningyesno", msg}
+		args = []string{"--title", "Mortar", "--yes-label", i18n.T("End it"), "--no-label", i18n.T("Leave it"), "--warningyesno", msg}
 	}
 	exit, _ := runDialog(tool, args)
 	return exit == 0

@@ -12,6 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fonts"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/picker"
 	"github.com/Rethunk-Tech/mortar/internal/sysaccent"
 	"github.com/Rethunk-Tech/mortar/internal/winhost"
@@ -154,9 +155,9 @@ func (s *Service) SetBackgroundImage(path string) error {
 
 // ChooseBackgroundImage asks for an image and stores it as the wallpaper; cancelling changes nothing.
 func (s *Service) ChooseBackgroundImage() error {
-	path, err := s.App.OpenFile(winhost.Dialog{Title: "Choose background image", Filters: []winhost.Filter{
-		{Name: "Images (PNG, JPEG, GIF, WebP)", Pattern: "*.png;*.jpg;*.jpeg;*.gif;*.webp"},
-		{Name: "All files", Pattern: "*"},
+	path, err := s.App.OpenFile(winhost.Dialog{Title: i18n.T("Choose background image"), Filters: []winhost.Filter{
+		{Name: i18n.T("Images (PNG, JPEG, GIF, WebP)"), Pattern: "*.png;*.jpg;*.jpeg;*.gif;*.webp"},
+		{Name: i18n.T("All files"), Pattern: "*"},
 	}})
 	if err != nil || path == "" {
 		return err
@@ -260,7 +261,7 @@ func (s *Service) SetGameStore(game, store string) error {
 
 // ChooseGameFolder asks for a folder and stores it as the game's install folder; cancelling changes nothing.
 func (s *Service) ChooseGameFolder(game string) error {
-	dir, err := s.App.OpenFile(winhost.Dialog{Title: "Choose game folder", Folder: true})
+	dir, err := s.App.OpenFile(winhost.Dialog{Title: i18n.T("Choose game folder"), Folder: true})
 	if err != nil || dir == "" {
 		return err
 	}
@@ -296,12 +297,12 @@ func (s *Service) ExportSettings() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return picker.SaveFile(s.App, "Export settings", "mortar-settings.json", "JSON", "*.json", body)
+	return picker.SaveFile(s.App, i18n.T("Export settings"), "mortar-settings.json", "JSON", "*.json", body)
 }
 
 // PickImportFile asks for a settings file to import. It returns "" when cancelled.
 func (s *Service) PickImportFile() (string, error) {
-	return s.App.OpenFile(winhost.Dialog{Title: "Import settings", Filters: []winhost.Filter{{Name: "JSON", Pattern: "*.json"}, {Name: "All files", Pattern: "*"}}})
+	return s.App.OpenFile(winhost.Dialog{Title: i18n.T("Import settings"), Filters: []winhost.Filter{{Name: "JSON", Pattern: "*.json"}, {Name: i18n.T("All files"), Pattern: "*"}}})
 }
 
 // PreviewImport validates the export at path and lists, per section, what importing it would change.

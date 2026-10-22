@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -234,7 +235,7 @@ func (s *Service) ExportCollection(ctx context.Context, game, profileID string) 
 		return ExportedCollection{}, fmt.Errorf("%s has no Nexus page to make a collection for", game)
 	}
 	t := nexus.Title{Domain: info.NexusDomain(), ID: info.NexusID()}
-	dest, err := s.App.SaveFile(winhost.Dialog{Filename: "collection.zip", Filters: []winhost.Filter{{Name: "Nexus collection draft (zip)", Pattern: "*.zip"}}})
+	dest, err := s.App.SaveFile(winhost.Dialog{Filename: "collection.zip", Filters: []winhost.Filter{{Name: i18n.T("{source} collection draft (zip)", "source", "Nexus"), Pattern: "*.zip"}}})
 	if err != nil || dest == "" {
 		return ExportedCollection{Skipped: []string{}}, err
 	}

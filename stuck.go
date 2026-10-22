@@ -1,13 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/controlwire"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 )
 
 // stuckWait is how long a running Mortar may take to answer before this start offers to end it.
@@ -21,8 +22,8 @@ func endStuckInstance(dataDir string) {
 		return
 	}
 	log.Printf("mortar (pid %d) holds the data folder but has not answered for %s", pid, stuckWait)
-	if !askEndStuck(fmt.Sprintf("Mortar is already running but has not answered for %d seconds.\n\n"+
-		"End it and start Mortar again? Anything it was doing stops.", int(stuckWait/time.Second))) {
+	if !askEndStuck(i18n.T("Mortar is already running but has not answered for {count} seconds.\n\n"+
+		"End it and start Mortar again? Anything it was doing stops.", "count", strconv.Itoa(int(stuckWait/time.Second)))) {
 		return
 	}
 	p, err := os.FindProcess(pid)

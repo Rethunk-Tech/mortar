@@ -2,11 +2,12 @@ package updatesvc
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 )
 
@@ -63,7 +64,8 @@ func StartModBackground(ctx context.Context, svc *settings.Service, source func(
 				notify(summary)
 				desktopnotify.SendIf(
 					desktopnotify.Pref("desktopModUpdates"),
-					fmt.Sprintf("%d mod updates available", summary.TotalUpdates),
+					desktopnotify.KindModUpdates,
+					i18n.T("Mod updates available: {count}", "count", strconv.Itoa(summary.TotalUpdates)),
 					"",
 					map[string]any{"game": summary.Game, "profile": summary.ProfileID},
 				)

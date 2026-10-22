@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/i18n"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -203,7 +204,7 @@ func (s *Service) ExportModpackDialog(ctx context.Context, gameID, profileID str
 	if _, err := s.find(gameID, profileID); err != nil {
 		return ModpackResult{}, err
 	}
-	dest, err := s.App.SaveFile(winhost.Dialog{Filename: packageName(o.Name) + "-" + o.Version + ".zip", Filters: []winhost.Filter{{Name: "Thunderstore modpack (zip)", Pattern: "*.zip"}}})
+	dest, err := s.App.SaveFile(winhost.Dialog{Filename: packageName(o.Name) + "-" + o.Version + ".zip", Filters: []winhost.Filter{{Name: i18n.T("{source} modpack (zip)", "source", "Thunderstore"), Pattern: "*.zip"}}})
 	if err != nil || dest == "" {
 		return ModpackResult{Dependencies: []string{}, LeftOut: []string{}, Disabled: []string{}}, err
 	}

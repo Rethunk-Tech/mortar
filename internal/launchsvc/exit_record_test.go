@@ -115,7 +115,7 @@ func TestRunEndNotificationTextExit(t *testing.T) {
 		Crashed: true,
 		Exit:    launch.Exit{Code: 134, Signal: "SIGABRT"},
 	})
-	if title != "Stardew Valley crashed" || body != "exited with code 134 (SIGABRT)" {
+	if title != "Stardew Valley crashed" || body != "Exited with code 134 (SIGABRT)" {
 		t.Fatalf("got %q / %q", title, body)
 	}
 }
