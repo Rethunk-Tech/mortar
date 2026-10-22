@@ -286,10 +286,11 @@ The loader's log as it is written, monospace, in columns; warnings and errors ge
 
 ## Performance tab
 
-One scrolling page with no inner switch; the tab header is its only toolbar. Code: `console/PerformanceTab.tsx`, `StartupPanel.tsx`, `StartupSections.tsx`, `StartupTable.tsx`, `PerformancePanel.tsx`, `PerformanceComparison.tsx`, `useBridgePerf.ts`.
+Two summary cards head the page and switch it: **Startup** (time to the title screen or main menu, what mods add, and "nothing stands out" when no finding does) and **In game** (saved measurements, or a prompt to measure while the game runs). In game opens first while the game runs. The tab header holds the launch picker and **Measure next launch** on Startup. Code: `console/PerformanceTab.tsx`, `PerformanceCards.tsx`, `StartupPanel.tsx`, `StartupSections.tsx`, `StartupTable.tsx`, `PerformancePanel.tsx`, `PerformanceComparison.tsx`, `useBridgePerf.ts`.
 
-- **What to do:** up to three one-line findings from the selected run, each with one button (a dominant mod, a slowdown against the previous launch, SMAPI's own mod loading); with none it says nothing stands out. Thresholds: `startupView.ts`.
-- **Slowest mods:** a sortable table with a **Why** phrase from the mod's own timings; mods under 50 ms in both runs fold into **N other mods**, and **Game and SMAPI** holds the unattributed rest. Mortar's bridge row carries a **Mortar** label.
+- **Phases:** one bar of the start's phases, each named inside when wide enough and in its tooltip.
+- **What to do:** up to three one-line findings from the selected run, each with one button (a dominant mod, a slowdown against the previous launch, SMAPI's own mod loading); absent when none. Thresholds: `startupView.ts`.
+- **Slowest mods:** a sortable table with each mod's **Share of mod time** and a **Why** phrase from its own timings; the first six show until **Show all**, and an opened row always shows. Mods under 50 ms in both runs fold into **N other mods**, and **Game and SMAPI** holds the unattributed rest. Mortar's bridge row carries a **Mortar** label.
 - **In game:** a collapsible section of per-profile saved reports compared in the tab. Empty states: before any measured launch, copy that says to play the profile; before an in-game measurement, **Start measuring**.
 
 ### In-game measurement

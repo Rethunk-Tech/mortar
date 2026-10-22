@@ -2,6 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import {
   Box,
+  Button,
   Collapse,
   IconButton,
   Link,
@@ -13,6 +14,7 @@ import {
   TableSortLabel,
 } from '@mui/material'
 import { ChevronDown, ChevronRight } from 'lucide-react'
+import { useState } from 'react'
 import type {
   StartupMod,
   StartupReport,
@@ -23,13 +25,36 @@ import { Tooltip } from '../shell/Tooltip.tsx'
 import { useStoredState } from '../shell/useStoredState.ts'
 import { space } from '../theme/density.ts'
 import { useDuration, useSmapiStartup, useWhy } from './startupHooks.ts'
-import { foldMods, modTotal, rowAnchor, slowestEvent, whyOf } from './startupView.ts'
+import { foldMods, modsMs, modTotal, rowAnchor, slowestEvent, whyOf } from './startupView.ts'
 
 const PACKS_SHOWN = 25
 const BRIDGE_ID = 'Rethunk.MortarSmapiBridge'
 const NAME_INDENT = 4.5
-// Mod, Total and Why; the Change column joins them while comparing.
-const PLAIN_COLUMNS = 3
+// Mod, Share, Total and Why; the Change column joins them while comparing.
+const PLAIN_COLUMNS = 4
+/** Rows shown before Show all: the mods worth acting on are almost always among the first few. */
+const TOP_MODS = 6
+const SHARE_BAR_PX = 100
+
+// A mod's part of all mods' startup time: a bar sized against the largest part, and the percentage.
+function Share({ part, largest }: { part: number; largest: number }) {
+  const { i18n } = useLingui()
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box
+        sx={{
+          width: Math.max(2, Math.round((largest > 0 ? part / largest : 0) * SHARE_BAR_PX)),
+          height: 6,
+          borderRadius: '3px',
+          bgcolor: 'primary.main',
+        }}
+      />
+      <Box component="span" sx={{ color: 'text.secondary', fontSize: 12 }}>
+        {part.toLocaleString(i18n.locale, { style: 'percent', maximumFractionDigits: 1 })}
+      </Box>
+    </Box>
+  )
+}
 
 type ModSort = 'name' | 'total' | 'why' | 'change'
 
@@ -170,6 +195,8 @@ function ModRow({
   open,
   onToggle,
   change,
+  share,
+  largest,
 }: {
   mod: StartupMod
   sampled: boolean
@@ -177,6 +204,8 @@ function ModRow({
   open: boolean
   onToggle: () => void
   change: number | null
+  share: number
+  largest: number
 }) {
   const { t } = useLingui()
   const duration = useDuration()
@@ -227,6 +256,9 @@ function ModRow({
               </Box>
             </Tooltip>
           ) : null}
+        </TableCell>
+        <TableCell>
+          <Share part={share} largest={largest} />
         </TableCell>
         <TableCell align="right" sx={strong('total')}>
           {duration(modTotal(mod))}
@@ -282,6 +314,11 @@ export function ModTable({
     ? { column: 'change', direction: 'desc' }
     : (sort ?? { column: 'total', direction: 'desc' })
   const rows = sortMods(shown, active.column, active.direction, previous)
+  const [all, setAll] = useState(false)
+  // An opened row stays listed, so a finding that opens a mod further down still finds it.
+  const listed = all ? rows : rows.filter((mod, i) => i < TOP_MODS || expanded.has(mod.id))
+  const allMs = modsMs(report)
+  const largestMs = Math.max(0, ...rows.map(modTotal))
   const columns: { id: ModSort; label: string; help: string; align?: 'right' }[] = [
     { id: 'name', label: t`Mod`, help: t`Click a mod to show it in Mods` },
     {
@@ -308,66 +345,95 @@ export function ModTable({
       help: t`What costs this mod the most; open the row for every timing`,
     },
   ]
+  const hidden = rows.length - listed.length
   return (
-    <Table size="small" aria-label={t`Startup time by mod`}>
-      <TableHead>
-        <TableRow>
-          {columns.map((column) => (
-            <TableCell
-              key={column.id}
-              align={column.align}
-              sortDirection={active.column === column.id ? active.direction : false}
-            >
-              <Tooltip title={column.help}>
-                <TableSortLabel
-                  active={active.column === column.id}
-                  direction={active.column === column.id ? active.direction : 'desc'}
-                  onClick={() => {
-                    onSorted()
-                    setSort(nextSort(active, column.id))
-                  }}
-                  sx={{
-                    color: 'inherit',
-                    '&.Mui-active': { color: 'var(--mortar-ink)' },
-                    '& .MuiTableSortLabel-icon': { color: 'inherit !important' },
-                  }}
-                >
-                  {column.label}
-                </TableSortLabel>
-              </Tooltip>
-            </TableCell>
+    <>
+      <Table size="small" aria-label={t`Startup time by mod`}>
+        <TableHead>
+          <TableRow>
+            {columns.flatMap((column) => [
+              ...(column.id === 'total'
+                ? [
+                    <TableCell key="share">
+                      <Tooltip
+                        title={t`This mod's part of the time all mods add`}
+                        describeChild={true}
+                      >
+                        <span>{t`Share of mod time`}</span>
+                      </Tooltip>
+                    </TableCell>,
+                  ]
+                : []),
+              <TableCell
+                key={column.id}
+                align={column.align}
+                sortDirection={active.column === column.id ? active.direction : false}
+              >
+                <Tooltip title={column.help}>
+                  <TableSortLabel
+                    active={active.column === column.id}
+                    direction={active.column === column.id ? active.direction : 'desc'}
+                    onClick={() => {
+                      onSorted()
+                      setSort(nextSort(active, column.id))
+                    }}
+                    sx={{
+                      color: 'inherit',
+                      '&.Mui-active': { color: 'var(--mortar-ink)' },
+                      '& .MuiTableSortLabel-icon': { color: 'inherit !important' },
+                    }}
+                  >
+                    {column.label}
+                  </TableSortLabel>
+                </Tooltip>
+              </TableCell>,
+            ])}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {listed.map((mod) => (
+            <ModRow
+              key={mod.id}
+              mod={mod}
+              sampled={sampled}
+              sort={active.column}
+              open={expanded.has(mod.id)}
+              onToggle={() => onToggle(mod.id)}
+              change={comparing ? changeOf(mod, previous) : null}
+              share={allMs > 0 ? modTotal(mod) / allMs : 0}
+              largest={allMs > 0 ? largestMs / allMs : 0}
+            />
           ))}
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {rows.map((mod) => (
-          <ModRow
-            key={mod.id}
-            mod={mod}
-            sampled={sampled}
-            sort={active.column}
-            open={expanded.has(mod.id)}
-            onToggle={() => onToggle(mod.id)}
-            change={comparing ? changeOf(mod, previous) : null}
-          />
-        ))}
-        {folded.count > 0 ? (
+          {all && folded.count > 0 ? (
+            <TableRow>
+              <TableCell sx={{ color: 'text.secondary', pl: NAME_INDENT }}>
+                {plural(folded.count, { one: '# other mod', other: '# other mods' })}
+              </TableCell>
+              <TableCell />
+              <TableCell align="right">{duration(folded.ms)}</TableCell>
+              <TableCell colSpan={comparing ? 2 : 1} />
+            </TableRow>
+          ) : null}
           <TableRow>
             <TableCell sx={{ color: 'text.secondary', pl: NAME_INDENT }}>
-              {plural(folded.count, { one: '# other mod', other: '# other mods' })}
+              {t`Game and ${{ loader: smapi ? 'SMAPI' : 'BepInEx' }}`}
             </TableCell>
-            <TableCell align="right">{duration(folded.ms)}</TableCell>
+            <TableCell />
+            <TableCell align="right">{duration(report.otherMs)}</TableCell>
             <TableCell colSpan={comparing ? 2 : 1} />
           </TableRow>
-        ) : null}
-        <TableRow>
-          <TableCell sx={{ color: 'text.secondary', pl: NAME_INDENT }}>
-            {t`Game and ${{ loader: smapi ? 'SMAPI' : 'BepInEx' }}`}
-          </TableCell>
-          <TableCell align="right">{duration(report.otherMs)}</TableCell>
-          <TableCell colSpan={comparing ? 2 : 1} />
-        </TableRow>
-      </TableBody>
-    </Table>
+        </TableBody>
+      </Table>
+      {hidden > 0 ? (
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={() => setAll(true)}
+          sx={{ alignSelf: 'flex-start' }}
+        >
+          {plural(rows.length + folded.count, { one: 'Show all # mod', other: 'Show all # mods' })}
+        </Button>
+      ) : null}
+    </>
   )
 }

@@ -89,22 +89,25 @@ function FindingLine({ finding, onAct }: { finding: Finding; onAct: (finding: Fi
   )
 }
 
+// Shown only when something stands out; the Startup card says so when nothing does.
 function Findings({ findings, onAct }: { findings: Finding[]; onAct: (finding: Finding) => void }) {
   const { t } = useLingui()
+  if (findings.length === 0) {
+    return null
+  }
   return (
     <Section title={t`What to do`}>
-      {findings.length === 0 ? (
-        <Typography
-          sx={{ color: 'text.secondary' }}
-        >{t`Nothing stands out in this start.`}</Typography>
-      ) : (
-        findings.map((f) => <FindingLine key={f.kind} finding={f} onAct={onAct} />)
-      )}
+      {findings.map((f) => (
+        <FindingLine key={f.kind} finding={f} onAct={onAct} />
+      ))}
     </Section>
   )
 }
 
-// One row per phase: its name, time and a thin bar sized against the whole start, in the primary colour.
+/** A phase narrower than this share of the bar is named in its tooltip only. */
+const LABELLED_SHARE = 0.12
+
+// The start as one bar of phases, each sized by its time and named inside when it is wide enough.
 function Phases({ report }: { report: StartupReport }) {
   const { t } = useLingui()
   const duration = useDuration()
@@ -140,38 +143,37 @@ function Phases({ report }: { report: StartupReport }) {
         intro: t`From the first scene to the main menu. Plugins' work in Start, coroutines and scene hooks lands here, not on the plugin, and so does any wait for a click, such as Lethal Company's Online or LAN choice.`,
       }
   const segments = phaseSegments(report.phases)
+  const total = segments.reduce((n, s) => n + s.ms, 0)
   return (
-    <Section title={t`Where the time goes`}>
-      <Box
-        aria-hidden={true}
-        sx={{ display: 'flex', height: 12, mt: 1, borderRadius: 1, overflow: 'hidden', gap: '2px' }}
-      >
-        {segments.map((s) => (
-          <Tooltip key={s.id} title={`${labels[s.id]}: ${duration(s.ms)}. ${help[s.id]}`}>
-            <Box sx={{ flexGrow: s.ms, bgcolor: PHASE_COLORS[s.id] }} />
-          </Tooltip>
-        ))}
-      </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2, rowGap: 0.5, mt: 0.5 }}>
-        {segments.map((s) => (
-          <Tooltip key={s.id} title={help[s.id]}>
-            <Box
-              tabIndex={0}
-              sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 13 }}
-            >
-              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: PHASE_COLORS[s.id] }} />
-              <span>{labels[s.id]}</span>
-              <Box
-                component="span"
-                sx={{ color: 'text.secondary', fontVariantNumeric: 'tabular-nums' }}
-              >
-                {duration(s.ms)}
-              </Box>
-            </Box>
-          </Tooltip>
-        ))}
-      </Box>
-    </Section>
+    <Box
+      role="img"
+      aria-label={segments.map((s) => `${labels[s.id]} ${duration(s.ms)}`).join(', ')}
+      sx={{ display: 'flex', height: 30, borderRadius: '6px', overflow: 'hidden', gap: '2px' }}
+    >
+      {segments.map((s) => (
+        <Tooltip key={s.id} title={`${labels[s.id]}: ${duration(s.ms)}. ${help[s.id]}`}>
+          <Box
+            sx={{
+              flexGrow: s.ms,
+              display: 'flex',
+              alignItems: 'center',
+              px: 1,
+              minWidth: 0,
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              fontSize: 12,
+              fontWeight: 600,
+              color: 'background.default',
+              bgcolor: PHASE_COLORS[s.id],
+            }}
+          >
+            {total > 0 && s.ms / total >= LABELLED_SHARE
+              ? `${labels[s.id]} ${duration(s.ms)}`
+              : null}
+          </Box>
+        </Tooltip>
+      ))}
+    </Box>
   )
 }
 

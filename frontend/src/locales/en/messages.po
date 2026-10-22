@@ -28,6 +28,10 @@ msgstr "Windows only. On this computer its games come in through Heroic, Lutris 
 msgid "Performance"
 msgstr "Performance"
 
+#: src/console/PerformanceCards.tsx
+msgid "Play this profile, then time each mod per frame"
+msgstr "Play this profile, then time each mod per frame"
+
 #: src/console/ConsoleTab.tsx
 msgid "Mod: {mod}"
 msgstr "Mod: {mod}"
@@ -490,6 +494,10 @@ msgstr "History"
 msgid "Discard changes?"
 msgstr "Discard changes?"
 
+#: src/console/PerformanceCards.tsx
+msgid "Not measured yet"
+msgstr "Not measured yet"
+
 #: src/shell/checkForUpdates.ts
 msgid "a new Mortar is ready"
 msgstr "a new Mortar is ready"
@@ -787,6 +795,10 @@ msgstr "Light"
 #: src/tools/ToolsManageDialog.tsx
 msgid "Add tool…"
 msgstr "Add tool…"
+
+#: src/console/PerformanceCards.tsx
+msgid "The game is running: measure it now"
+msgstr "The game is running: measure it now"
 
 #: src/install/ArchivePreview.tsx
 msgid "Showing the first 2,000 files"
@@ -2059,7 +2071,7 @@ msgstr "Mortar does not have permission to do that."
 msgid "Could not ignore updates from {source}"
 msgstr "Could not ignore updates from {source}"
 
-#: src/console/PerformanceTab.tsx
+#: src/console/PerformanceCards.tsx
 #: src/mods/columnLabel.ts
 msgid "Startup"
 msgstr "Startup"
@@ -2223,6 +2235,10 @@ msgstr "SMAPI unofficial builds"
 #: src/settings/sections/DataUsage.tsx
 msgid "Usage"
 msgstr "Usage"
+
+#: src/console/PerformanceCards.tsx
+msgid "Mods add {mods}. Nothing stands out in this start."
+msgstr "Mods add {mods}. Nothing stands out in this start."
 
 #: src/queue/QueueHistory.tsx
 msgid "Clears the list of past downloads; downloads in progress are unaffected. Failed items lose Retry until downloaded again."
@@ -2788,10 +2804,6 @@ msgstr "Why?"
 msgid "Upload log"
 msgstr "Upload log"
 
-#: src/console/PerformanceTab.tsx
-msgid "Performance views"
-msgstr "Performance views"
-
 #: src/launch/LaunchLayer.tsx
 msgid "Launch without Steam"
 msgstr "Launch without Steam"
@@ -3248,6 +3260,10 @@ msgstr "{name} is not paired with this computer, so Mortar sends the list of mod
 #: src/mods/Toolbar.tsx
 msgid "Filter mods, filter active"
 msgstr "Filter mods, filter active"
+
+#: src/console/PerformanceCards.tsx
+msgid "{total} to the title screen"
+msgstr "{total} to the title screen"
 
 #. placeholder {0}: notice.totalUpdates
 #. placeholder {1}: notice.profilesWith
@@ -8713,10 +8729,6 @@ msgstr "All sources"
 msgid "Notification history"
 msgstr "Notification history"
 
-#: src/console/StartupSections.tsx
-msgid "Where the time goes"
-msgstr "Where the time goes"
-
 #: src/install/DownloadsDialog.tsx
 msgid "Change folder"
 msgstr "Change folder"
@@ -8801,6 +8813,10 @@ msgstr "Run logs kept"
 #: src/game/FarmMenuItem.tsx
 msgid "Send it to the people joining you."
 msgstr "Send it to the people joining you."
+
+#: src/console/PerformanceCards.tsx
+msgid "Play this profile to time how long each mod adds to the start"
+msgstr "Play this profile to time how long each mod adds to the start"
 
 #. placeholder {0}: formatBytes(move.estimate.freeBytes)
 #: src/settings/sections/DataMove.tsx
@@ -9921,6 +9937,10 @@ msgstr "An install is already running."
 #: src/mods/CleanupSection.tsx
 msgid "This change can be undone from History."
 msgstr "This change can be undone from History."
+
+#: src/console/StartupTable.tsx
+msgid "This mod's part of the time all mods add"
+msgstr "This mod's part of the time all mods add"
 
 #: src/saves/SaveBackupsButton.tsx
 msgid "No backups yet"
@@ -11272,6 +11292,10 @@ msgstr "This update changed its install options. Your earlier picks are kept whe
 msgid "Move up"
 msgstr "Move up"
 
+#: src/console/StartupTable.tsx
+msgid "Share of mod time"
+msgstr "Share of mod time"
+
 #: src/queue/QueueBody.tsx
 msgid "Open download page"
 msgstr "Open download page"
@@ -11350,6 +11374,11 @@ msgstr "Open Console"
 #: src/templates/useTemplates.ts
 msgid "Could not read the templates"
 msgstr "Could not read the templates"
+
+#. placeholder {0}: rows.length + folded.count
+#: src/console/StartupTable.tsx
+msgid "{0, plural, one {Show all # mod} other {Show all # mods}}"
+msgstr "{0, plural, one {Show all # mod} other {Show all # mods}}"
 
 #: src/share/MethodPanes.tsx
 msgid "Export as Thunderstore modpack…"
@@ -12871,6 +12900,10 @@ msgstr "Delete file"
 msgid "Extra slot added by a mod"
 msgstr "Extra slot added by a mod"
 
+#: src/console/PerformanceCards.tsx
+msgid "Mods add {mods}."
+msgstr "Mods add {mods}."
+
 #: src/profiles/GameModsDialog.tsx
 msgid "Reading the Mods folder…"
 msgstr "Reading the Mods folder…"
@@ -12903,10 +12936,6 @@ msgstr "Stop the game to restore saves."
 #: src/mods/problemFix/BrokenFix.tsx
 msgid "Open replacement"
 msgstr "Open replacement"
-
-#: src/console/StartupSections.tsx
-msgid "Nothing stands out in this start."
-msgstr "Nothing stands out in this start."
 
 #: src/console/StartupSections.tsx
 msgid "The game loads its own content"
@@ -12968,7 +12997,7 @@ msgstr "Automatic port"
 msgid "Health"
 msgstr "Health"
 
-#: src/console/PerformanceTab.tsx
+#: src/console/PerformanceCards.tsx
 #: src/console/StartupTable.tsx
 msgid "In game"
 msgstr "In game"
@@ -13799,6 +13828,10 @@ msgstr "Game install"
 msgid "Used by: {label}"
 msgstr "Used by: {label}"
 
+#: src/console/PerformanceCards.tsx
+msgid "{saved, plural, one {# measurement saved} other {# measurements saved}}"
+msgstr "{saved, plural, one {# measurement saved} other {# measurements saved}}"
+
 #: src/launch/store.ts
 msgid "The Epic Games Launcher may not be running or signed in. Start it, sign in and try again."
 msgstr "The Epic Games Launcher may not be running or signed in. Start it, sign in and try again."
@@ -13820,6 +13853,10 @@ msgstr "Gets update checks."
 #: src/console/StartupSections.tsx
 msgid "BepInEx's preloader patches the game, then Unity starts it"
 msgstr "BepInEx's preloader patches the game, then Unity starts it"
+
+#: src/console/PerformanceCards.tsx
+msgid "{total} to the main menu"
+msgstr "{total} to the main menu"
 
 #: src/firstrun/LoaderStep.tsx
 #: src/loader/InstallSteps.tsx

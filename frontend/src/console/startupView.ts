@@ -215,10 +215,16 @@ function foldMods(mods: StartupMod[] | null): {
   return { shown, folded }
 }
 
+/** Every mod's startup time added up: what mods cost this start, beside the game's and the loader's own. */
+function modsMs(report: StartupReport): number {
+  return (report.mods ?? []).reduce((n, mod) => n + modTotal(mod), 0)
+}
+
 export {
   type Finding,
   foldMods,
   formatDuration,
+  modsMs,
   modTotal,
   type PhaseId,
   phaseSegments,

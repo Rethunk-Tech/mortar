@@ -6,12 +6,12 @@ import type { StartupReport } from '../../bindings/github.com/Rethunk-Tech/morta
 import { PageActions } from '../game/PageActions.tsx'
 import { absoluteWhen } from '../i18n/when.ts'
 import { useProfiles } from '../profiles/store.ts'
-import { SectionStrip } from '../shell/SectionStrip.tsx'
 import { space } from '../theme/density.ts'
+import { PerformanceCards, type PerformanceView } from './PerformanceCards.tsx'
 import { PerformancePanel } from './PerformancePanel.tsx'
 import { StartupPanel } from './StartupPanel.tsx'
 import { usePerfQuery, useSmapiStartup } from './startupHooks.ts'
-import { pickReport } from './startupView.ts'
+import { pickReport, startupFindings } from './startupView.ts'
 import { usePerformanceRunning, useSavedReports } from './usePerformancePanel.ts'
 import { useStartupReports } from './useStartupReports.ts'
 
@@ -41,8 +41,6 @@ function ReportPicker({
   )
 }
 
-type View = 'startup' | 'inGame'
-
 // In game reads SMAPI's performance counters through its console, or a companion that measures in game. It opens while
 // the game runs, since that is the only time it can measure, and Startup otherwise; a choice holds until the next visit.
 export function PerformanceTab({ game }: { game: string }) {
@@ -54,10 +52,14 @@ export function PerformanceTab({ game }: { game: string }) {
   const [saved] = useSavedReports(game, openId)
   const { reports, pending, measureNext, cancelMeasure } = useStartupReports(game, openId)
   const [selected, setSelected] = useState('')
-  const [choice, setChoice] = useState<View | null>(null)
+  const [choice, setChoice] = useState<PerformanceView | null>(null)
   const inGame = smapi || perf
-  const view: View = inGame ? (choice ?? (running ? 'inGame' : 'startup')) : 'startup'
+  const view: PerformanceView = inGame ? (choice ?? (running ? 'inGame' : 'startup')) : 'startup'
   const report = reports ? pickReport(reports, selected) : undefined
+  const previous = report && reports ? reports[reports.indexOf(report) + 1] : undefined
+  const calm =
+    report !== undefined &&
+    startupFindings(report, previous).filter((f) => smapi || f.kind !== 'smapi').length === 0
   const actions =
     view !== 'startup' || reports === null ? null : (
       <>
@@ -80,18 +82,19 @@ export function PerformanceTab({ game }: { game: string }) {
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
       <PageActions>{actions}</PageActions>
-      {inGame ? (
-        <SectionStrip
-          label={t`Performance views`}
-          tabs={[
-            { id: 'startup', label: t`Startup`, count: reports?.length ?? 0, errors: false },
-            { id: 'inGame', label: t`In game`, count: saved.length, errors: false },
-          ]}
-          current={view}
-          onChoose={(id) => setChoice(id === 'inGame' ? 'inGame' : 'startup')}
-          actions={null}
-        />
-      ) : null}
+      {reports === null ? null : (
+        <Box sx={{ px: space.pad, pt: space.pad }}>
+          <PerformanceCards
+            view={view}
+            onChoose={setChoice}
+            report={report}
+            calm={calm}
+            inGame={inGame}
+            saved={saved.length}
+            running={running}
+          />
+        </Box>
+      )}
       {view === 'inGame' ? (
         <PerformancePanel game={game} />
       ) : (
