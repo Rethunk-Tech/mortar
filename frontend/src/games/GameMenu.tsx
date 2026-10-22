@@ -1,4 +1,4 @@
-import { plural } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, MenuItem, Typography } from '@mui/material'
 import { ChevronDown } from 'lucide-react'
@@ -66,7 +66,9 @@ function GameStrip({
   const art = gameArt(game, MENU_PX)
   const playtime = formatPlaytime(played?.playtimeMs ?? 0, i18n.locale)
   const line = [
-    profiles ? i18n._(plural({ count: profiles }, { one: '# profile', other: '# profiles' })) : '',
+    profiles
+      ? i18n._(msg`${plural({ count: profiles }, { one: '# profile', other: '# profiles' })}`)
+      : '',
     played?.at ? t`played ${{ when: formatWhen(played.at) }}` : '',
     playtime ? t`${playtime} played` : '',
   ]

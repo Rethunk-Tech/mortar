@@ -1,4 +1,4 @@
-import { plural } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Badge, Box, Popover, Typography } from '@mui/material'
 import { History, Pin, PinOff, RotateCcw, Trash2 } from 'lucide-react'
@@ -143,7 +143,9 @@ export function SaveBackupsButton({
   const count = backups?.length ?? 0
   // The name starts with the badge's number, as a label that names what is shown must.
   const tip =
-    count > 0 ? i18n._(plural(count, { one: '# backup', other: '# backups' })) : t`No backups yet`
+    count > 0
+      ? i18n._(msg`${plural(count, { one: '# backup', other: '# backups' })}`)
+      : t`No backups yet`
   const refresh = async () => {
     await onChanged()
     await useSaveBackups.getState().reload()

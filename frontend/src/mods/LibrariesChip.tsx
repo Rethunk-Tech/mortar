@@ -1,4 +1,4 @@
-import { plural } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Chip, Popover, Typography } from '@mui/material'
 import { useState } from 'react'
@@ -19,7 +19,7 @@ export function LibrariesChip({ libraries }: { libraries: readonly ListRow[] | u
     return null
   }
   const label = i18n._(
-    plural({ count: libraries.length }, { one: '+# library', other: '+# libraries' }),
+    msg`${plural({ count: libraries.length }, { one: '+# library', other: '+# libraries' })}`,
   )
   return (
     <>

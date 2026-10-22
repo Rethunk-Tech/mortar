@@ -1,4 +1,4 @@
-import { plural } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Chip, IconButton, Switch } from '@mui/material'
 import { CornerDownRight, Trash2 } from 'lucide-react'
@@ -114,7 +114,7 @@ export function OverlayCountChip({ mod, profile }: { mod: Mod; profile: Profile 
         size="small"
         tabIndex={0}
         label={i18n._(
-          plural({ count: overlays.length }, { one: '# optional file', other: '# optional files' }),
+          msg`${plural({ count: overlays.length }, { one: '# optional file', other: '# optional files' })}`,
         )}
         sx={chipSx}
       />

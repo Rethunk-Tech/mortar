@@ -1,4 +1,4 @@
-import { plural } from '@lingui/core/macro'
+import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Checkbox, FormControlLabel } from '@mui/material'
 import type { Update } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
@@ -27,10 +27,10 @@ export function OptionalUpdates({ update, profileId }: { update: Update; profile
         />
       }
       label={i18n._(
-        plural(
+        msg`${plural(
           { count: n },
           { one: 'Also update # optional file', other: 'Also update # optional files' },
-        ),
+        )}`,
       )}
       sx={{ alignSelf: 'flex-start', '& .MuiFormControlLabel-label': { fontSize: 13 } }}
     />

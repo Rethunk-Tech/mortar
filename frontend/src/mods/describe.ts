@@ -340,13 +340,13 @@ export function useDescribe(): Describe {
           useMods.getState().mods.find((m) => m.key === key)?.name ?? key
         const losers = listNames(beaten.map(keyName))
         return i18n._(
-          plural(
+          msg`${plural(
             { count: paths.length },
             {
               one: `${{ winner: keyName(winner) }} wins # file over ${losers}.`,
               other: `${{ winner: keyName(winner) }} wins # files over ${losers}.`,
             },
-          ),
+          )}`,
         )
       }
       case 'deprecated': {
