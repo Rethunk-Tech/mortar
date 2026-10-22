@@ -28,7 +28,14 @@ type Phase =
   | 'restarting'
   | 'error'
 
-function checkFailure(e: unknown): { phase: Phase; error: string } {
+interface Failure {
+  phase: Phase
+  error: string
+  // What to try, shown after the headline.
+  errorHint?: string
+}
+
+function checkFailure(e: unknown): Failure {
   const raw = errorDetails(e)
   if (raw === 'none') {
     return { phase: 'none', error: '' }
@@ -36,12 +43,11 @@ function checkFailure(e: unknown): { phase: Phase; error: string } {
   if (raw === 'unreachable') {
     return {
       phase: 'error',
-      error: i18n._(
-        msg`Could not reach ${{ source: sourceLabel('github') }}. Check your connection and try again.`,
-      ),
+      error: i18n._(msg`Could not reach ${{ source: sourceLabel('github') }}`),
+      errorHint: i18n._(msg`Check your connection and try again.`),
     }
   }
-  return { phase: 'error', error: i18n._(msg`Could not check for updates.`) }
+  return { phase: 'error', error: i18n._(msg`Could not check for updates`) }
 }
 
 // Mortar's own update, held here so the app menu's update check and Settings › Updates share one check.
@@ -50,6 +56,7 @@ export const useMortarUpdate = create<{
   phase: Phase
   release: Release | null
   error: string
+  errorHint: string
   load: () => Promise<void>
   check: () => Promise<void>
   install: () => Promise<void>
@@ -58,9 +65,9 @@ export const useMortarUpdate = create<{
   const run = async (
     busy: Phase,
     step: () => Promise<Partial<{ phase: Phase; release: Release | null }>>,
-    fail?: (e: unknown) => { phase: Phase; error: string },
+    fail?: (e: unknown) => Failure,
   ) => {
-    set({ phase: busy, error: '' })
+    set({ phase: busy, error: '', errorHint: '' })
     try {
       set(await step())
     } catch (e) {
@@ -77,6 +84,7 @@ export const useMortarUpdate = create<{
     phase: 'idle',
     release: null,
     error: '',
+    errorHint: '',
     load: async () => {
       if (!get().info) {
         set({ info: await GetInfo() })

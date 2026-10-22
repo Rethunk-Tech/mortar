@@ -51,7 +51,7 @@ function IconRow({ path, onChange }: { path: string; onChange: (path: string) =>
         onClick={() =>
           PickImage(t`Choose icon`)
             .then((picked) => picked && onChange(picked))
-            .catch(reportError(t`Could not choose the icon`))
+            .catch(reportError(t`Could not open the file dialog`))
         }
       >
         {t`Choose icon…`}

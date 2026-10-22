@@ -223,7 +223,7 @@ async function updateBeforePlay(
     onProgress?.(updates.length)
     const added = await Add(requests(game, profileId, wants, batchId))
     if (!added || added.length !== wants.length) {
-      throw new Error(i18n._(msg`Could not add the update downloads`))
+      throw new Error(i18n._(msg`Could not add the download`))
     }
     // Waiting-click is a successful handoff for free Nexus accounts; the user must finish that click on Nexus.
     await waitForUpdates(

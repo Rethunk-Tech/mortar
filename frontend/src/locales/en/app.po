@@ -167,6 +167,7 @@ msgstr "Edit notes"
 msgid "No notes for this release."
 msgstr "No notes for this release."
 
+#: src/share/ListFormat.tsx
 #: src/share/MethodPanes.tsx
 msgid "Could not save the file"
 msgstr "Could not save the file"
@@ -407,10 +408,6 @@ msgstr "Removed leftover temporary folders"
 msgid "Remove the shortcut"
 msgstr "Remove the shortcut"
 
-#: src/games/AddGameDialog.tsx
-msgid "Could not choose the program"
-msgstr "Could not choose the program"
-
 #: src/queue/QueueBody.tsx
 msgid "{repo} {tag} has several archives. Which one should Mortar install?"
 msgstr "{repo} {tag} has several archives. Which one should Mortar install?"
@@ -586,10 +583,6 @@ msgstr "Scheduled"
 #: src/i18n/reasonText.ts
 msgid "No antivirus found"
 msgstr "No antivirus found"
-
-#: src/launch/autoUpdate.ts
-msgid "Could not add the update downloads"
-msgstr "Could not add the update downloads"
 
 #: src/queue/QueueHistory.tsx
 msgid "Show {name} in its profile"
@@ -856,6 +849,7 @@ msgstr "You started this download on {source}. Show Mortar to choose the profile
 msgid "{count, plural, one {# download queued} other {# downloads queued}}"
 msgstr "{count, plural, one {# download queued} other {# downloads queued}}"
 
+#: src/launch/autoUpdate.ts
 #: src/queue/actions.ts
 msgid "Could not add the download"
 msgstr "Could not add the download"
@@ -1431,7 +1425,9 @@ msgstr "Left empty, a README is written from what the profile holds."
 msgid "{os} removed the file as malware without saying which. If you trust it, restore it from {os} Security's protection history and add it again."
 msgstr "{os} removed the file as malware without saying which. If you trust it, restore it from {os} Security's protection history and add it again."
 
+#: src/games/AddGameDialog.tsx
 #: src/install/store.ts
+#: src/share/ModpackDialog.tsx
 msgid "Could not open the file dialog"
 msgstr "Could not open the file dialog"
 
@@ -1626,11 +1622,6 @@ msgstr "Enable and disable mods, and update them for the open profile."
 #: src/launch/SaveWarnDialog.tsx
 msgid "{farmer}'s farm ({path}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save."
 msgstr "{farmer}'s farm ({path}) was last played with mods this profile lacks or has disabled. Playing without them can lose their items or break the save."
-
-#: src/game/detailStates.tsx
-#: src/games/ProfileCards.tsx
-msgid "Could not read your profiles"
-msgstr "Could not read your profiles"
 
 #: src/groups/ApplySavedGroupToProfile.tsx
 #: src/install/DownloadsDialog.tsx
@@ -2775,10 +2766,6 @@ msgstr "This profile has no mods to download"
 msgid "Include {name}"
 msgstr "Include {name}"
 
-#: src/share/ModpackDialog.tsx
-msgid "Could not choose the icon"
-msgstr "Could not choose the icon"
-
 #: src/templates/ApplyTemplateDialog.tsx
 msgid "{count, plural, one {Adds # mod} other {Adds # mods}}"
 msgstr "{count, plural, one {Adds # mod} other {Adds # mods}}"
@@ -3869,6 +3856,11 @@ msgstr "Switch to Load order"
 #: src/share/ModpackDialog.tsx
 msgid "All"
 msgstr "All"
+
+#: src/game/detailStates.tsx
+#: src/games/ProfileCards.tsx
+msgid "Could not read profiles"
+msgstr "Could not read profiles"
 
 #: src/launch/PlayInstances.tsx
 msgid "Delay between"
@@ -5387,10 +5379,6 @@ msgstr "Logs"
 msgid "Looking for Mortar users…"
 msgstr "Looking for Mortar users…"
 
-#: src/share/ListFormat.tsx
-msgid "Could not save the mod list"
-msgstr "Could not save the mod list"
-
 #: src/game/ProfileMenuItems.tsx
 msgid "Could not add it to {launcher}"
 msgstr "Could not add it to {launcher}"
@@ -5954,10 +5942,6 @@ msgstr "Could not load categories: {why}"
 #: src/launch/LaunchLayer.tsx
 msgid "Caused by {name}"
 msgstr "Caused by {name}"
-
-#: src/share/MethodPanes.tsx
-msgid "Could not save the .r2z file"
-msgstr "Could not save the .r2z file"
 
 #: src/saves/BackupsDialog.tsx
 #: src/saves/SaveBackupsButton.tsx

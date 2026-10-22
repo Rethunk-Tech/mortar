@@ -49,7 +49,7 @@ function ProfileCards({
     useProfiles
       .getState()
       .load(gameId, profileId)
-      .catch((err: unknown) => fail(t`Could not read your profiles`, err))
+      .catch((err: unknown) => fail(t`Could not read profiles`, err))
   }
 
   const openGame = (ev: MouseEvent) => {

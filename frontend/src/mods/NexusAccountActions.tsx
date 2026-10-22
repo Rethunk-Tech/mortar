@@ -116,7 +116,7 @@ export function NexusAccountActions({
                 await Untrack(currentGame(), modId)
                 setMods((cur) => (cur ?? []).filter((m) => m.modId !== modId))
               },
-              { errorTitle: t`Could not untrack` },
+              { errorTitle: t`Could not untrack mods` },
             )
           }
         >

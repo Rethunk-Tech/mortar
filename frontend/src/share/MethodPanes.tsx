@@ -308,7 +308,7 @@ export function ThunderstorePane({ game, profileId }: { game: string; profileId:
           color="inherit"
           startIcon={<Save size={16} />}
           onClick={() => {
-            saveR2z().catch(reportError(t`Could not save the .r2z file`))
+            saveR2z().catch(reportError(t`Could not save the file`))
           }}
           sx={{ height: 40 }}
         >

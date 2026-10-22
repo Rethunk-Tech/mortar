@@ -203,9 +203,7 @@ const SourceLinks = memo(function SourceLinksView() {
         onChange={(on) => {
           const done = on ? EnableSource(source.id) : DisableSource(source.id)
           done
-            .catch((error: unknown) =>
-              toastError(t`Could not change how ${{ source: source.name }} links open`, error),
-            )
+            .catch((error: unknown) => toastError(t`Could not change how mod links open`, error))
             .finally(load)
         }}
         label={t`Handle ${{ name: source.name }} links`}

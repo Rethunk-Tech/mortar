@@ -103,7 +103,7 @@ export function ListFormat() {
           useToasts.getState().push({ kind: 'success', title: t`Mod list saved`, body: path })
         }
       })
-      .catch((error: unknown) => toastError(t`Could not save the mod list`, error))
+      .catch((error: unknown) => toastError(t`Could not save the file`, error))
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, gap: space.pad }}>

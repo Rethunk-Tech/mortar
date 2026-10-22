@@ -63,7 +63,7 @@ async function dismissSettingHint(
   try {
     await DismissSetting(target.game, target.id, setting.id, setting.field)
   } catch (e) {
-    reportError(i18n._(msg`Could not dismiss the setting warning`))(e)
+    reportError(i18n._(msg`Could not dismiss the warning`))(e)
     return
   }
   await get().loadProblems()
@@ -100,7 +100,7 @@ async function dismissAssetConflict(
   try {
     await DismissAssetConflict(target.game, target.id, conflict.kind, conflict.target)
   } catch (e) {
-    reportError(i18n._(msg`Could not dismiss the overlap`))(e)
+    reportError(i18n._(msg`Could not dismiss the warning`))(e)
     return
   }
   await get().loadProblems()

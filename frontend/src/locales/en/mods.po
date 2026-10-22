@@ -36,6 +36,7 @@ msgid "prefix"
 msgstr "prefix"
 
 #: src/mods/HiddenInside.tsx
+#: src/mods/storeEntries.ts
 msgid "Could not open the folder"
 msgstr "Could not open the folder"
 
@@ -337,10 +338,6 @@ msgstr "Something changed this profile's mods folder without Mortar, by adding, 
 #: src/mods/updateReview/NeedsChoice.tsx
 msgid "Needs your choice ({count})"
 msgstr "Needs your choice ({count})"
-
-#: src/mods/storeEntries.ts
-msgid "Could not set the category for the selected mods"
-msgstr "Could not set the category for the selected mods"
 
 #: src/mods/HiddenInside.tsx
 msgid "Mortar renames the folder {path} without its leading dots, so {loader} loads the mod."
@@ -839,6 +836,7 @@ msgid "Content pack for {name}"
 msgstr "Content pack for {name}"
 
 #: src/mods/customCategories.ts
+#: src/mods/storeEntries.ts
 msgid "Could not set the category"
 msgstr "Could not set the category"
 
@@ -1509,10 +1507,6 @@ msgstr "Two enabled packages ship a file at the same path. The one later in the 
 msgid "Reinstall with options…"
 msgstr "Reinstall with options…"
 
-#: src/mods/OtherProfilesDialog.tsx
-msgid "Could not read other profiles"
-msgstr "Could not read other profiles"
-
 #: src/mods/ProblemsTab.tsx
 msgid "Problem sections"
 msgstr "Problem sections"
@@ -2093,10 +2087,6 @@ msgstr "Optional: {name}"
 msgid "Pinned"
 msgstr "Pinned"
 
-#: src/mods/storeProblems.ts
-msgid "Could not dismiss the overlap"
-msgstr "Could not dismiss the overlap"
-
 #: src/mods/AddToGroupDialog.tsx
 msgid "{count, plural, one {Also add the # mod they need} other {Also add the # mods they need}}"
 msgstr "{count, plural, one {Also add the # mod they need} other {Also add the # mods they need}}"
@@ -2297,10 +2287,6 @@ msgstr "Also add {name} to…"
 msgid "Set to {value}"
 msgstr "Set to {value}"
 
-#: src/mods/NexusAccountActions.tsx
-msgid "Could not untrack"
-msgstr "Could not untrack"
-
 #: src/mods/SlowStartupSection.tsx
 msgid "See startup"
 msgstr "See startup"
@@ -2376,6 +2362,10 @@ msgstr "All"
 #: src/mods/GroupMenu.tsx
 msgid "The mods in it stay in the profile; only the group is deleted."
 msgstr "The mods in it stay in the profile; only the group is deleted."
+
+#: src/mods/OtherProfilesDialog.tsx
+msgid "Could not read profiles"
+msgstr "Could not read profiles"
 
 #: src/mods/DetailsHeader.tsx
 msgid "Close details"
@@ -2486,6 +2476,10 @@ msgstr "Unpin"
 #: src/mods/ModDependencyTree.tsx
 msgid "already listed"
 msgstr "already listed"
+
+#: src/mods/NexusAccountActions.tsx
+msgid "Could not untrack mods"
+msgstr "Could not untrack mods"
 
 #: src/mods/detail.ts
 msgid "Could not read the details of {name}"
@@ -3101,10 +3095,6 @@ msgstr "Waiting for next launch"
 msgid "Releases and betas"
 msgstr "Releases and betas"
 
-#: src/mods/storeProblems.ts
-msgid "Could not dismiss the setting warning"
-msgstr "Could not dismiss the setting warning"
-
 #: src/mods/SelectionBar.tsx
 msgid "{count, plural, one {# mod selected} other {# mods selected}}"
 msgstr "{count, plural, one {# mod selected} other {# mods selected}}"
@@ -3544,10 +3534,6 @@ msgstr "Plugin reported an error"
 #: src/mods/describe.ts
 msgid "{name}: {summary}"
 msgstr "{name}: {summary}"
-
-#: src/mods/storeEntries.ts
-msgid "Could not open the folder of {name}"
-msgstr "Could not open the folder of {name}"
 
 #: src/mods/problemText.ts
 msgid "Broken or outdated mods"

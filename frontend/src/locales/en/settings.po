@@ -1353,10 +1353,6 @@ msgstr "Automatic tries {source}'s hosts in turn when one fails or stalls; choos
 msgid "Open log folder"
 msgstr "Open log folder"
 
-#: src/settings/updates.ts
-msgid "Could not check for updates."
-msgstr "Could not check for updates."
-
 #: src/settings/SettingsPage.tsx
 msgid "Downloads"
 msgstr "Downloads"
@@ -1497,6 +1493,10 @@ msgstr "Show live game info in {app}. Changes apply the next time you press Play
 #: src/settings/sections/checkDetail.ts
 msgid "Gamescope session: {launcher} starts {app} games here, so a direct launch from Mortar may not show a window"
 msgstr "Gamescope session: {launcher} starts {app} games here, so a direct launch from Mortar may not show a window"
+
+#: src/settings/updates.ts
+msgid "Could not check for updates"
+msgstr "Could not check for updates"
 
 #: src/settings/sections/Appearance.tsx
 msgid "Rose"
@@ -2165,6 +2165,10 @@ msgstr "Spacing of buttons and lists"
 msgid "Source health"
 msgstr "Source health"
 
+#: src/settings/updates.ts
+msgid "Check your connection and try again."
+msgstr "Check your connection and try again."
+
 #: src/settings/prefCopy.ts
 msgid "How many backups to keep of each kind: before Play, before a mod update, before a restore. Pinned backups are never deleted."
 msgstr "How many backups to keep of each kind: before Play, before a mod update, before a restore. Pinned backups are never deleted."
@@ -2685,6 +2689,8 @@ msgstr "No app opens these links now."
 msgid "Scheduled backup status"
 msgstr "Scheduled backup status"
 
+#: src/settings/sections/Downloads.tsx
+#: src/settings/sections/nxmHandler.tsx
 #: src/settings/sections/NxmReclaim.tsx
 msgid "Could not change how mod links open"
 msgstr "Could not change how mod links open"
@@ -2768,11 +2774,6 @@ msgstr "Report it so it can be fixed."
 #: src/settings/sections/General.tsx
 msgid "Checking…"
 msgstr "Checking…"
-
-#: src/settings/sections/Downloads.tsx
-#: src/settings/sections/nxmHandler.tsx
-msgid "Could not change how {source} links open"
-msgstr "Could not change how {source} links open"
 
 #: src/settings/prefCopyGame.ts
 msgid "Skip pre-Play check"
@@ -3334,10 +3335,6 @@ msgstr "Every profile of this game runs the {name} installed for it, so they all
 msgid "Tips"
 msgstr "Tips"
 
-#: src/settings/updates.ts
-msgid "Could not reach {source}. Check your connection and try again."
-msgstr "Could not reach {source}. Check your connection and try again."
-
 #: src/settings/prefCopy.ts
 msgid "Off, only computers on your local network can connect. Enable to allow others, such as over a VPN."
 msgstr "Off, only computers on your local network can connect. Enable to allow others, such as over a VPN."
@@ -3491,6 +3488,10 @@ msgstr "Open settings"
 #: src/settings/sections/nxmHandler.tsx
 msgid "Take over"
 msgstr "Take over"
+
+#: src/settings/updates.ts
+msgid "Could not reach {source}"
+msgstr "Could not reach {source}"
 
 #: src/settings/prefCopy.ts
 msgid "Archives land here instead of Mortar's downloads folder. Empty uses the default."

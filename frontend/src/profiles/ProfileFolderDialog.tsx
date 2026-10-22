@@ -53,7 +53,7 @@ export function ProfileFolderDialog({
   const pick = () =>
     PickFolder(t`Choose where ${{ name: profile.name }} lives`)
       .then((parent) => parent && run(() => MoveToFolder(game, profile.id, parent)))
-      .catch(reportError(t`Could not choose the folder`))
+      .catch(reportError(t`Could not open the file dialog`))
   return (
     <Dialog open={open} onClose={busy ? undefined : onClose} fullWidth={true} maxWidth="sm">
       <DialogTitle>{t`Folder of ${{ name: profile.name }}`}</DialogTitle>

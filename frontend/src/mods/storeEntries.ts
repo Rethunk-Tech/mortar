@@ -423,7 +423,7 @@ export function setCategoryMany(mods: Mod[], category: string) {
   return batchProfile(
     mods,
     (game, id, keys) => SetEntryCategoryMany(game, id, keys, category),
-    i18n._(msg`Could not set the category for the selected mods`),
+    i18n._(msg`Could not set the category`),
     i18n._(msg`Updated categories`),
   )
 }
@@ -445,7 +445,7 @@ export async function showModFiles(mod: Mod) {
   try {
     await ShowFiles(target.game, target.id, mod.key, mod.id)
   } catch (e) {
-    reportError(i18n._(msg`Could not open the folder of ${{ name: mod.name }}`))(e)
+    reportError(i18n._(msg`Could not open the folder`))(e)
   }
 }
 

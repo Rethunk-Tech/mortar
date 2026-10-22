@@ -80,7 +80,7 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
               onClick={() =>
                 PickExecutable(t`Choose the game's program`)
                   .then((path) => path && setExe(path))
-                  .catch(reportError(t`Could not choose the program`))
+                  .catch(reportError(t`Could not open the file dialog`))
               }
             >
               {t`Choose the game's program…`}

@@ -26,6 +26,7 @@ function MortarUpdate() {
   const phase = useMortarUpdate((s) => s.phase)
   const release = useMortarUpdate((s) => s.release)
   const error = useMortarUpdate((s) => s.error)
+  const errorHint = useMortarUpdate((s) => s.errorHint)
   const load = useMortarUpdate((s) => s.load)
   const check = useMortarUpdate((s) => s.check)
   const install = useMortarUpdate((s) => s.install)
@@ -75,7 +76,7 @@ function MortarUpdate() {
     installing: t`Downloading and verifying Mortar ${{ version: release?.version ?? '' }}…`,
     ready: t`Update ready: applies when you close Mortar.`,
     restarting: t`Restarting…`,
-    error,
+    error: errorHint === '' ? error : `${error}. ${errorHint}`,
   }
   let action = (
     <Button

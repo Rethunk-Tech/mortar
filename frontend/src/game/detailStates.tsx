@@ -14,7 +14,7 @@ export function ProfilesFailed() {
   return (
     <EmptyState
       icon={<RotateCcw />}
-      title={t`Could not read your profiles`}
+      title={t`Could not read profiles`}
       action={
         <Button
           variant="contained"

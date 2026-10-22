@@ -34,8 +34,7 @@ export function useNxmHandler(): {
     [handled],
     '',
   )
-  const fail = (e: unknown) =>
-    toastError(t`Could not change how ${{ source: sourceLabel('nexus') }} links open`, e)
+  const fail = (e: unknown) => toastError(t`Could not change how mod links open`, e)
   const change = (on: boolean) => {
     const done = on ? Enable() : Disable()
     done.catch(fail)

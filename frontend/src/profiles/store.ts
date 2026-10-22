@@ -349,7 +349,7 @@ export const useProfiles = create<{
       if (!same) {
         set({ failed: gameId })
       }
-      fail(i18n._(msg`Could not read your profiles`))(e)
+      fail(i18n._(msg`Could not read profiles`))(e)
     }
   },
   open: (id) => {
@@ -404,7 +404,7 @@ export const useProfiles = create<{
           set({ trash })
         }
       } catch (e) {
-        fail(i18n._(msg`Could not read recently deleted profiles`))(e)
+        fail(i18n._(msg`Could not read profiles`))(e)
       }
     }
   },
@@ -417,7 +417,7 @@ export const useProfiles = create<{
     try {
       await OpenFolder(game.id, id)
     } catch (e) {
-      fail(i18n._(msg`Could not open the profile folder`))(e)
+      fail(i18n._(msg`Could not open the folder`))(e)
     }
   },
   repair: async (id) => {

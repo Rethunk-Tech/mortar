@@ -194,7 +194,7 @@ export function OtherProfilesDialog({
             ),
         ),
       )
-      .catch(reportError(t`Could not read other profiles`))
+      .catch(reportError(t`Could not read profiles`))
   }, [currentProfileId, game, open, t, id, ids])
   useEffect(() => {
     if (!open) {
