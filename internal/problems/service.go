@@ -262,6 +262,9 @@ func (s *Service) installed(gameID, id string) ([]framework.Mod, error) {
 			LoadAfter:     m.LoadAfter, Manifest: m.Manifest,
 		}
 	}
+	if pkgs, err := s.profiles.Packages(gameID, id); err == nil {
+		withPluginDependencies(mods, pkgs)
+	}
 	return mods, nil
 }
 
@@ -423,8 +426,6 @@ func (s *Service) problems(ctx context.Context, gameID, id string, wait bool) (R
 			}
 			r.Broken = append(r.Broken, pluginCycles(all, declared)...)
 			r.Missing = append(r.Missing, dropCovered(missing, r.Missing)...)
-			needed := pluginNeeded(all)
-			r.Cleanup = slices.DeleteFunc(r.Cleanup, func(c framework.Cleanup) bool { return needed[c.Key] })
 			for _, f := range incompatible {
 				if !slices.ContainsFunc(r.LoadFailures, func(x LoadFailure) bool { return x.Key == f.Key && x.Kind == f.Kind }) {
 					r.LoadFailures = append(r.LoadFailures, f)

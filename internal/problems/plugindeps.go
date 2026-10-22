@@ -7,6 +7,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -149,32 +150,35 @@ func dropCovered(rows, reported []Missing) []Missing {
 	})
 }
 
-// pluginNeeded lists the packages that ship a plugin an enabled package's plugins depend on, hard or soft. A mod with no
-// manifest (one built locally, say) names its libraries only in these attributes, so without them its libraries look
-// unused and are offered for removal.
-func pluginNeeded(pkgs []profile.PackageRef) map[string]bool {
-	byGUID := map[string][]string{}
+// withPluginDependencies adds to each package's mod the packages its plugins' [BepInDependency] attributes name (hard as
+// required, soft as optional) that its manifest does not list. A mod with no manifest (one built locally, say) names its
+// libraries only there, and without them it would need nothing and its libraries would look unused.
+func withPluginDependencies(mods []framework.Mod, pkgs []profile.PackageRef) {
+	byGUID := map[string][]profile.PackageRef{}
 	for _, p := range pkgs {
 		for _, pl := range declaredIn(p.Dir).Plugins {
 			g := strings.ToLower(pl.GUID)
-			byGUID[g] = append(byGUID[g], p.Key)
+			byGUID[g] = append(byGUID[g], p)
 		}
 	}
-	needed := map[string]bool{}
 	for _, p := range pkgs {
-		if !p.Enabled {
+		i := slices.IndexFunc(mods, func(m framework.Mod) bool { return m.Key == p.Key && mod.Equal(m.ModID(), p.ID) })
+		if i < 0 {
 			continue
 		}
 		for _, r := range declaredIn(p.Dir).Relations {
 			if r.Kind == dotnet.Incompatible {
 				continue
 			}
-			for _, key := range byGUID[strings.ToLower(r.GUID)] {
-				if key != p.Key {
-					needed[key] = true
+			for _, dep := range byGUID[strings.ToLower(r.GUID)] {
+				listed := slices.ContainsFunc(mods[i].Dependencies, func(d manifest.Dependency) bool { return mod.Equal(d.ModID(), dep.ID) })
+				if dep.Key == p.Key || listed {
+					continue
 				}
+				// Clipped: the list may be a parsed manifest's, which the parse cache shares.
+				mods[i].Dependencies = append(slices.Clip(mods[i].Dependencies),
+					manifest.Dependency{UniqueID: dep.ID.Local(), Format: dep.ID.Format(), Required: r.Kind == dotnet.HardDependency})
 			}
 		}
 	}
-	return needed
 }

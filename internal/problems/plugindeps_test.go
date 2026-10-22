@@ -7,6 +7,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -278,21 +279,28 @@ func TestProblemsReportsAMissingPackageOnceWhenManifestAndAssemblyBothNameIt(t *
 	}
 }
 
-func TestALibraryAPluginNamesInItsAttributesIsNeeded(t *testing.T) {
+func TestAPluginsAttributesAddItsDependenciesSoItsLibrariesAreNotOfferedForRemoval(t *testing.T) {
 	lib := pkgWith("lethallib", "evaisa.lethallib", "1.0.0", true)
 	extra := pkgWith("extra", "com.x.Extra", "1.0.0", true)
 	clash := pkgWith("clash", "com.x.Clash", "1.0.0", true)
-	unused := pkgWith("unused", "com.x.Unused", "1.0.0", true)
 	// A locally built mod with no manifest: its plugin's attributes are all that name its libraries.
 	local := pkgWith("local", "com.wallet.Local", "0.1.0", true,
 		hard("evaisa.lethallib", ""),
 		dotnet.Relation{GUID: "com.x.extra", Kind: dotnet.SoftDependency},
 		dotnet.Relation{GUID: "com.x.clash", Kind: dotnet.Incompatible})
-	off := pkgWith("off", "com.x.Off", "1.0.0", false, hard("com.x.unused", ""))
+	pkgs := []profile.PackageRef{lib, extra, clash, local}
+	mods := make([]framework.Mod, len(pkgs))
+	for i, p := range pkgs {
+		mods[i] = framework.Mod{Key: p.Key, Enabled: true, Implicit: p.Key == "lethallib", Manifest: manifest.Manifest{Name: p.Name}.WithModID(p.ID)}
+	}
 
-	got := pluginNeeded([]profile.PackageRef{lib, extra, clash, unused, local, off})
+	withPluginDependencies(mods, pkgs)
 
-	if !got["lethallib"] || !got["extra"] || got["clash"] || got["unused"] || got["local"] {
-		t.Fatalf("needed = %v, want lethallib and extra only", got)
+	deps := mods[3].Dependencies
+	if len(deps) != 2 || !mod.Equal(deps[0].ModID(), lib.ID) || !deps[0].Required || !mod.Equal(deps[1].ModID(), extra.ID) || deps[1].Required {
+		t.Fatalf("local mod's dependencies = %+v, want LethalLib required and Extra optional", deps)
+	}
+	if hints := cleanupHints(mods, nil, nil); len(hints) != 0 {
+		t.Fatalf("cleanup = %+v, want LethalLib kept for the local mod", hints)
 	}
 }
