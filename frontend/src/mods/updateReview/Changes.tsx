@@ -85,7 +85,7 @@ export function Changes({ update }: { update: Update }) {
     return null
   }
   return (
-    <Fold title={t`What's new`}>
+    <Fold title={t`What is new`}>
       <Loaded update={update} />
     </Fold>
   )

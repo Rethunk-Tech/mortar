@@ -48,7 +48,7 @@ async function installDependency(i18n: I18n, id: string) {
   if (!want) {
     useToasts.getState().push({
       kind: 'error',
-      title: i18n._(msg`Mortar doesn't know where to get ${id}`),
+      title: i18n._(msg`Mortar does not know where to get ${id}`),
       action: {
         label: i18n._(msg`Search in Browse`),
         run: () => {

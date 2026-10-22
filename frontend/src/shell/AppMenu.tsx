@@ -236,7 +236,7 @@ export const AppMenu = memo(function AppMenuView() {
         {version ? (
           <TitleMenuItem
             icon={<Sparkles size={ICON_PX} />}
-            label={t`What's new in ${version}`}
+            label={t`What is new in ${version}`}
             onClick={() => {
               close()
               showWhatsNew(version)

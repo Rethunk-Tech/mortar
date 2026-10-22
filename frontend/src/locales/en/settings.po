@@ -1498,6 +1498,10 @@ msgstr "Portable copy: data is kept in {portableDir}"
 msgid "Crew"
 msgstr "Crew"
 
+#: src/settings/sections/Updates.tsx
+msgid "What is new in {version}"
+msgstr "What is new in {version}"
+
 #: src/settings/sections/NexusMods.tsx
 msgid "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
 msgstr "Kept in your system keyring. Find it on Nexus under Settings, API Keys."
@@ -1718,10 +1722,6 @@ msgstr "Modified outside Mortar"
 #: src/settings/sections/DataImport.tsx
 msgid "Nothing would change."
 msgstr "Nothing would change."
-
-#: src/settings/sections/Updates.tsx
-msgid "What's new in {version}"
-msgstr "What's new in {version}"
 
 #: src/settings/sections/DataMove.tsx
 msgid "Move…"
@@ -2642,10 +2642,6 @@ msgstr "Could not reset the game install"
 msgid "Handle Nexus download links?"
 msgstr "Handle Nexus download links?"
 
-#: src/settings/sections/General.tsx
-msgid "Nearby computers can't reach Mortar. Set the network to Private in Windows network settings."
-msgstr "Nearby computers can't reach Mortar. Set the network to Private in Windows network settings."
-
 #: src/settings/sections/Notifications.tsx
 msgid "A download finishes"
 msgstr "A download finishes"
@@ -3126,6 +3122,10 @@ msgstr "Player"
 #: src/settings/sections/Shortcuts.tsx
 msgid "Profiles"
 msgstr "Profiles"
+
+#: src/settings/sections/General.tsx
+msgid "Nearby computers cannot reach Mortar. Set the network to Private in Windows network settings."
+msgstr "Nearby computers cannot reach Mortar. Set the network to Private in Windows network settings."
 
 #: src/settings/prefCopy.ts
 msgid "Update digest notification"

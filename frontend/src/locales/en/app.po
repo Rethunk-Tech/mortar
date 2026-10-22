@@ -96,10 +96,6 @@ msgstr "Manage tools…"
 msgid "Updated"
 msgstr "Updated"
 
-#: src/shell/offlineText.ts
-msgid "{names} can't be reached, so Mortar can't check for mod updates"
-msgstr "{names} can't be reached, so Mortar can't check for mod updates"
-
 #: src/install/DropOverlay.tsx
 #: src/install/store.ts
 #: src/saves/lackChipActions.tsx
@@ -551,6 +547,10 @@ msgstr "Could not export the collection draft"
 msgid "Open page on {0}"
 msgstr "Open page on {0}"
 
+#: src/share/DestinationGrid.tsx
+msgid "Local archives cannot go here"
+msgstr "Local archives cannot go here"
+
 #. placeholder {0}: group.count
 #: src/launch/PrePlayDialog.tsx
 msgid "This save was last played with {0, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
@@ -784,10 +784,6 @@ msgstr "No mods to share"
 msgid "Roll back"
 msgstr "Roll back"
 
-#: src/shell/offlineText.ts
-msgid "{names} can't be reached; showing what Mortar saved at {time}"
-msgstr "{names} can't be reached; showing what Mortar saved at {time}"
-
 #: src/groups/SavedGroupsSection.tsx
 msgid "Could not rename the saved group"
 msgstr "Could not rename the saved group"
@@ -902,6 +898,10 @@ msgstr "Reading the archive…"
 #: src/shell/FlatpakGrant.tsx
 msgid "Grant Flatpak Steam access?"
 msgstr "Grant Flatpak Steam access?"
+
+#: src/launch/PrePlayDialog.tsx
+msgid "Do not check before Play"
+msgstr "Do not check before Play"
 
 #: src/updates/WhatsNewDialog.tsx
 msgid "Got it"
@@ -1262,10 +1262,6 @@ msgstr "Mods and profiles"
 msgid "Imported {name}"
 msgstr "Imported {name}"
 
-#: src/share/DestinationGrid.tsx
-msgid "Local archives can't go here"
-msgstr "Local archives can't go here"
-
 #: src/sync/SyncOffers.tsx
 msgid "Both sides changed it, so Mortar will not merge them. Pick one side."
 msgstr "Both sides changed it, so Mortar will not merge them. Pick one side."
@@ -1548,6 +1544,10 @@ msgstr "Local-only mods kept ({0})"
 msgid "Storage"
 msgstr "Storage"
 
+#: src/share/Included.tsx
+msgid "{local, plural, one {# mod you added from an archive cannot go in the file} other {# mods you added from archives cannot go in the file}}"
+msgstr "{local, plural, one {# mod you added from an archive cannot go in the file} other {# mods you added from archives cannot go in the file}}"
+
 #: src/lan/PairedComputers.tsx
 msgid "Could not start pairing"
 msgstr "Could not start pairing"
@@ -1611,6 +1611,11 @@ msgstr "Last updated"
 #: src/share/Included.tsx
 msgid "Included"
 msgstr "Included"
+
+#. placeholder {0}: sourceNames(ids)
+#: src/shell/offlineText.ts
+msgid "{0} cannot sort this way: pick it as the source to see its mods"
+msgstr "{0} cannot sort this way: pick it as the source to see its mods"
 
 #. placeholder {0}: reqs.length
 #: src/queue/actions.ts
@@ -1763,6 +1768,10 @@ msgstr "Default launch preset"
 msgid "Delete"
 msgstr "Delete"
 
+#: src/share/Included.tsx
+msgid "{local, plural, one {# mod you added from an archive cannot be linked} other {# mods you added from archives cannot be linked}}"
+msgstr "{local, plural, one {# mod you added from an archive cannot be linked} other {# mods you added from archives cannot be linked}}"
+
 #: src/updates/WhatsNewDialog.tsx
 msgid "Changed"
 msgstr "Changed"
@@ -1790,6 +1799,10 @@ msgstr "Downloading {0}%"
 #: src/game/ProfileMenuItems.tsx
 msgid "Shortcuts"
 msgstr "Shortcuts"
+
+#: src/shell/offlineText.ts
+msgid "{names} cannot be reached; showing what Mortar saved ({asOf})"
+msgstr "{names} cannot be reached; showing what Mortar saved ({asOf})"
 
 #: src/shell/SuggestDialog.tsx
 msgid "Post your idea where you prefer. Discord lets others vote on it; GitHub keeps it next to the code."
@@ -2033,6 +2046,10 @@ msgstr "{count, plural, one {# problem} other {# problems}}"
 #: src/queue/store.ts
 msgid "Show in queue"
 msgstr "Show in queue"
+
+#: src/shell/offlineText.ts
+msgid "{names} cannot be reached; showing what Mortar saved at {time}"
+msgstr "{names} cannot be reached; showing what Mortar saved at {time}"
 
 #: src/share/ImportPreview.tsx
 msgid "Needs a CurseForge key, or the file from its page"
@@ -2627,6 +2644,10 @@ msgstr "Up next: {0}"
 msgid "Get"
 msgstr "Get"
 
+#: src/shell/AppMenu.tsx
+msgid "What is new in {version}"
+msgstr "What is new in {version}"
+
 #: src/launch/LaunchLayer.tsx
 msgid "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
 msgstr "Mortar can start {name} directly instead, without the Steam overlay or Steam's playtime tracking."
@@ -2696,10 +2717,6 @@ msgstr "Allow cleanup before deleting."
 msgid "Starter templates"
 msgstr "Starter templates"
 
-#: src/share/Included.tsx
-msgid "{local, plural, one {# mod you added from an archive can't be linked} other {# mods you added from archives can't be linked}}"
-msgstr "{local, plural, one {# mod you added from an archive can't be linked} other {# mods you added from archives can't be linked}}"
-
 #: src/queue/store.ts
 msgid "Allow it in your antivirus, then Retry."
 msgstr "Allow it in your antivirus, then Retry."
@@ -2730,6 +2747,10 @@ msgstr "Copy"
 #: src/install/NeedsRootCallout.tsx
 msgid "Choose variant…"
 msgstr "Choose variant…"
+
+#: src/share/importError.ts
+msgid "Mortar does not recognise this. Paste a Mortar link, a Nexus collection, or an r2modman or Gale code."
+msgstr "Mortar does not recognise this. Paste a Mortar link, a Nexus collection, or an r2modman or Gale code."
 
 #: src/launchers/LauncherList.tsx
 #: src/tools/ToolsManageDialog.tsx
@@ -2990,10 +3011,6 @@ msgstr "Save as template…"
 msgid "Selected mod"
 msgstr "Selected mod"
 
-#: src/shell/AppMenu.tsx
-msgid "What's new in {version}"
-msgstr "What's new in {version}"
-
 #: src/templates/TemplateDialogs.tsx
 msgid "Profiles already made from it are not changed."
 msgstr "Profiles already made from it are not changed."
@@ -3024,10 +3041,6 @@ msgstr "Change version…"
 #: src/browse/CardAction.tsx
 msgid "In this profile"
 msgstr "In this profile"
-
-#: src/share/importError.ts
-msgid "Mortar doesn't recognise this. Paste a Mortar link, a Nexus collection, or an r2modman or Gale code."
-msgstr "Mortar doesn't recognise this. Paste a Mortar link, a Nexus collection, or an r2modman or Gale code."
 
 #: src/share/MethodPanes.tsx
 msgid "{length} of {limit} characters · too long for one Discord message"
@@ -3215,6 +3228,10 @@ msgstr "View"
 #: src/browse/BrowseBody.tsx
 msgid "The service may be busy. Try again in a minute."
 msgstr "The service may be busy. Try again in a minute."
+
+#: src/share/importError.ts
+msgid "Mortar cannot read this. Check that the whole link, code or file came through."
+msgstr "Mortar cannot read this. Check that the whole link, code or file came through."
 
 #: src/share/ImportPreview.tsx
 msgid "Unavailable"
@@ -4090,11 +4107,6 @@ msgstr "Manage tools"
 msgid "Change"
 msgstr "Change"
 
-#. placeholder {0}: target.name
-#: src/lan/SendPanel.tsx
-msgid "Sent {profileName} to {0}; they'll copy the files from you"
-msgstr "Sent {profileName} to {0}; they'll copy the files from you"
-
 #. placeholder {0}: offer.name
 #. placeholder {1}: offer.machine
 #: src/sync/SyncOffers.tsx
@@ -4467,10 +4479,6 @@ msgstr "Choose the game's program…"
 msgid "{0} not installed yet"
 msgstr "{0} not installed yet"
 
-#: src/shell/offlineText.ts
-msgid "{names} can't be reached; nothing saved to show yet"
-msgstr "{names} can't be reached; nothing saved to show yet"
-
 #. placeholder {0}: s.total
 #: src/game/TabHeader.tsx
 msgid "{0, plural, one {# save} other {# saves}}"
@@ -4617,6 +4625,11 @@ msgstr "{0} in total"
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most forks"
 msgstr "Sort: most forks"
+
+#. placeholder {0}: version ?? ''
+#: src/updates/WhatsNewDialog.tsx
+msgid "What is new in Mortar {0}"
+msgstr "What is new in Mortar {0}"
 
 #: src/share/MethodPanes.tsx
 msgid "A .mortar file suits a profile this size better, and carries your mod settings too."
@@ -4768,6 +4781,10 @@ msgstr "Maximise"
 msgid "A link has no room for it. Use a file or a nearby computer."
 msgstr "A link has no room for it. Use a file or a nearby computer."
 
+#: src/shell/offlineText.ts
+msgid "{names} cannot be reached; nothing saved to show yet"
+msgstr "{names} cannot be reached; nothing saved to show yet"
+
 #: src/launch/autoUpdate.ts
 msgid "the mod"
 msgstr "the mod"
@@ -4857,10 +4874,6 @@ msgstr "Creative Building"
 #: src/QuitPrompt.tsx
 msgid "Quit"
 msgstr "Quit"
-
-#: src/share/importError.ts
-msgid "Mortar can't read this. Check that the whole link, code or file came through."
-msgstr "Mortar can't read this. Check that the whole link, code or file came through."
 
 #. placeholder {0}: props.name
 #: src/browse/ResultCard.tsx
@@ -4977,10 +4990,6 @@ msgstr "Wilderness Survival"
 msgid "Done ({0}): {1}"
 msgstr "Done ({0}): {1}"
 
-#: src/share/Included.tsx
-msgid "{local, plural, one {# mod you added from an archive can't go in the file} other {# mods you added from archives can't go in the file}}"
-msgstr "{local, plural, one {# mod you added from an archive can't go in the file} other {# mods you added from archives can't go in the file}}"
-
 #. placeholder {0}: deleting?.name ?? ''
 #. placeholder {0}: profile.name
 #: src/game/ProfileDialogHost.tsx
@@ -5007,10 +5016,6 @@ msgstr "From Nexus"
 #: src/install/OverlayPlaceDialog.tsx
 msgid "Place here"
 msgstr "Place here"
-
-#: src/launch/PrePlayDialog.tsx
-msgid "Don't check before Play"
-msgstr "Don't check before Play"
 
 #: src/launch/VanillaPlay.tsx
 #: src/saves/saveName.ts
@@ -5409,10 +5414,6 @@ msgstr "Change folder…"
 msgid "Add all {0}"
 msgstr "Add all {0}"
 
-#: src/shell/offlineText.ts
-msgid "{names} can't be reached; showing what Mortar saved ({asOf})"
-msgstr "{names} can't be reached; showing what Mortar saved ({asOf})"
-
 #: src/game/NewProfileDialog.tsx
 #: src/game/TemplateMenuItems.tsx
 msgid "Manage templates…"
@@ -5447,11 +5448,6 @@ msgstr "Unpair"
 #: src/firstrunTour/TourPopover.tsx
 msgid "Profiles"
 msgstr "Profiles"
-
-#. placeholder {0}: sourceNames(ids)
-#: src/shell/offlineText.ts
-msgid "{0} can't be reached"
-msgstr "{0} can't be reached"
 
 #: src/launch/SaveWarnDialog.tsx
 msgid "Your last save needs other mods"
@@ -5620,11 +5616,6 @@ msgstr "FOMOD installer"
 msgid "Installing"
 msgstr "Installing"
 
-#. placeholder {0}: version ?? ''
-#: src/updates/WhatsNewDialog.tsx
-msgid "What's new in Mortar {0}"
-msgstr "What's new in Mortar {0}"
-
 #: src/share/ImportSources.tsx
 msgid "A .mortar file, an .r2z or a Thunderstore modpack"
 msgstr "A .mortar file, an .r2z or a Thunderstore modpack"
@@ -5640,6 +5631,11 @@ msgstr "This download is {size}, far larger than a mod normally is. It will take
 #: src/lan/PairedComputers.tsx
 msgid "On the other computer, choose Enter code and type this. It works once, for five minutes."
 msgstr "On the other computer, choose Enter code and type this. It works once, for five minutes."
+
+#. placeholder {0}: target.name
+#: src/lan/SendPanel.tsx
+msgid "Sent {profileName} to {0}; they will copy the files from you"
+msgstr "Sent {profileName} to {0}; they will copy the files from you"
 
 #: src/saves/SavesTab.tsx
 msgid "Play this profile and save a game. Each save shows here, with its backups."
@@ -5677,6 +5673,11 @@ msgstr "{unread, plural, one {Notifications, # unread} other {Notifications, # u
 #: src/templates/TemplateDialogs.tsx
 msgid "Replace {name}?"
 msgstr "Replace {name}?"
+
+#. placeholder {0}: sourceNames(ids)
+#: src/shell/offlineText.ts
+msgid "{0} cannot be reached"
+msgstr "{0} cannot be reached"
 
 #: src/share/ModpackDialog.tsx
 msgid "Write the changelog against the last export"
@@ -5822,11 +5823,6 @@ msgstr "Open post"
 #: src/launch/KnownGoodOffer.tsx
 msgid "Mark these mods known good so History can restore them if a later change breaks the game."
 msgstr "Mark these mods known good so History can restore them if a later change breaks the game."
-
-#. placeholder {0}: sourceNames(ids)
-#: src/shell/offlineText.ts
-msgid "{0} can't sort this way: pick it as the source to see its mods"
-msgstr "{0} can't sort this way: pick it as the source to see its mods"
 
 #: src/share/PreviewDialog.tsx
 msgid "Get Mortar"
@@ -6046,6 +6042,10 @@ msgstr "Link"
 #: src/launch/PrePlayDialog.tsx
 msgid "Update and play"
 msgstr "Update and play"
+
+#: src/shell/offlineText.ts
+msgid "{names} cannot be reached, so Mortar cannot check for mod updates"
+msgstr "{names} cannot be reached, so Mortar cannot check for mod updates"
 
 #: src/queue/QueueBody.tsx
 msgid "Already the newest file"

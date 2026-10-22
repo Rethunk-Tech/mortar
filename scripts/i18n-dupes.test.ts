@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { duplicates } from './i18n-dupes.ts'
+import { contractions, duplicates } from './i18n-dupes.ts'
 
 test('messages that differ only in case, punctuation or placeholder names collide', () => {
   expect(duplicates(['Restore {when}', 'Restore {label}', 'Disk space', 'disk space.'])).toEqual([
@@ -29,4 +29,10 @@ test('a control that opens a dialog and its title stay distinct', () => {
   expect(
     duplicates(['Save as template…', 'Save as template', 'Delete {0}?', 'Delete {name}']),
   ).toEqual([])
+})
+
+test('contractions are caught, possessives are not', () => {
+  expect(
+    contractions(["Mortar can't read this", 'What’s new', "The game's Mods folder", 'Cannot open']),
+  ).toEqual(["Mortar can't read this", 'What’s new'])
 })

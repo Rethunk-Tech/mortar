@@ -199,7 +199,7 @@ export function WhatsNewDialog() {
   }
   return (
     <Dialog open={shown !== null} onClose={close} fullWidth={true} maxWidth="md">
-      <DialogTitle>{t`What's new in Mortar ${version ?? ''}`}</DialogTitle>
+      <DialogTitle>{t`What is new in Mortar ${version ?? ''}`}</DialogTitle>
       <DialogContent>
         <Notes text={release?.available ? release.notes : (shown?.fallback ?? '')} />
         {release && !release.available ? (

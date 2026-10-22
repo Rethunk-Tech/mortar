@@ -134,7 +134,7 @@ function MortarUpdate() {
       >
         {action}
       </SettingRow>
-      <SettingRow label={t`What's new in ${{ version: info.version }}`}>
+      <SettingRow label={t`What is new in ${{ version: info.version }}`}>
         <Button variant="outlined" onClick={() => showWhatsNew(info.version)} sx={button}>
           {t`Show`}
         </Button>

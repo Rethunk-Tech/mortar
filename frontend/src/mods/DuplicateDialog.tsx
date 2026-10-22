@@ -39,7 +39,7 @@ function CopyOption({ copy, dup, differ }: { copy: Copy; dup: Duplicate; differ:
   const lines = [
     differ && copy.newest ? t`Newer.` : '',
     differ && !copy.newest ? t`Older.` : '',
-    copy.nexus ? t`Gets update checks.` : t`No update checks, and it can't go in a share link.`,
+    copy.nexus ? t`Gets update checks.` : t`No update checks, and it cannot go in a share link.`,
     needed.length > 0 ? t`${listNames(needed)} needs this version or newer.` : '',
     tooOld.length > 0 ? t`${listNames(tooOld)} needs a newer version than this.` : '',
   ].filter(Boolean)

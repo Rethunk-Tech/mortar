@@ -144,7 +144,7 @@ export function PrePlayDialog() {
               }}
             />
           }
-          label={t`Don't check before Play`}
+          label={t`Do not check before Play`}
         />
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap', gap: space.gap }}>

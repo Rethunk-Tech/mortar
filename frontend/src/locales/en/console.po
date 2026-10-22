@@ -308,10 +308,6 @@ msgstr "No log for this profile yet. Play it once, then try again."
 msgid "Show details"
 msgstr "Show details"
 
-#: src/console/RunProblems.tsx
-msgid "Mortar doesn't know where to get {id}"
-msgstr "Mortar doesn't know where to get {id}"
-
 #: src/console/UpdateNoteTag.tsx
 msgid "Not downloadable here"
 msgstr "Not downloadable here"
@@ -878,6 +874,10 @@ msgstr "You skipped this version"
 #: src/console/StartupTable.tsx
 msgid "Slowest event"
 msgstr "Slowest event"
+
+#: src/console/RunProblems.tsx
+msgid "Mortar does not know where to get {id}"
+msgstr "Mortar does not know where to get {id}"
 
 #: src/console/BisectDialog.tsx
 msgid "The crash check could not finish."

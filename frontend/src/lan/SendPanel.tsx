@@ -179,7 +179,7 @@ function useSend(game: string, profileId: string, include: ShareInclude, onSent:
         useToasts.getState().push({
           kind: 'success',
           title: target.paired
-            ? t`Sent ${profileName} to ${target.name}; they'll copy the files from you`
+            ? t`Sent ${profileName} to ${target.name}; they will copy the files from you`
             : t`Sent to ${target.name}`,
         })
         onSent()

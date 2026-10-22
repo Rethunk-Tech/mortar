@@ -15,12 +15,14 @@ function sourceNames(ids: readonly string[]): string {
 
 // The note for sources that did not answer, by id.
 function unreachableNote(ids: readonly string[]): string {
-  return i18n._(msg`${sourceNames(ids)} can't be reached`)
+  return i18n._(msg`${sourceNames(ids)} cannot be reached`)
 }
 
 // A merged search sorted by something these sources cannot sort by leaves them out; choosing one as the source lists it.
 function unsortedNote(ids: readonly string[]): string {
-  return i18n._(msg`${sourceNames(ids)} can't sort this way: pick it as the source to see its mods`)
+  return i18n._(
+    msg`${sourceNames(ids)} cannot sort this way: pick it as the source to see its mods`,
+  )
 }
 
 // The sentence for the banner and for the tooltip of each action it disables: every source that is down, each with
@@ -34,7 +36,7 @@ function offlineMessage(unsorted: State[], locale: string): string {
   }
   const [time = ''] = times
   if (down.length === 1) {
-    return i18n._(msg`${names} can't be reached; showing what Mortar saved at ${time}`)
+    return i18n._(msg`${names} cannot be reached; showing what Mortar saved at ${time}`)
   }
   const asOf = listNames(
     down.map((s, i) => {
@@ -44,13 +46,13 @@ function offlineMessage(unsorted: State[], locale: string): string {
     }),
     down.length,
   )
-  return i18n._(msg`${names} can't be reached; showing what Mortar saved (${asOf})`)
+  return i18n._(msg`${names} cannot be reached; showing what Mortar saved (${asOf})`)
 }
 
 // For a view with nothing at all to show, such as a search Mortar has no saved results for.
 function offlineEmptyMessage(down: State[]): string {
   const names = sourceNames(down.map((s) => s.id))
-  return i18n._(msg`${names} can't be reached; nothing saved to show yet`)
+  return i18n._(msg`${names} cannot be reached; nothing saved to show yet`)
 }
 
 // The reason a network action on these sources is off, or '' when it can go ahead. With every, it is off only when
@@ -89,7 +91,7 @@ function updatesReasonOf(states: State[]): string {
     return ''
   }
   const names = sourceNames(unreachable(states, UPDATE_SOURCES).map((s) => s.id))
-  return i18n._(msg`${names} can't be reached, so Mortar can't check for mod updates`)
+  return i18n._(msg`${names} cannot be reached, so Mortar cannot check for mod updates`)
 }
 
 function updatesOfflineReason(): string {

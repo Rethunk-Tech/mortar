@@ -126,12 +126,12 @@ export function Included({
   }
   const archive = file
     ? plural(local, {
-        one: "# mod you added from an archive can't go in the file",
-        other: "# mods you added from archives can't go in the file",
+        one: '# mod you added from an archive cannot go in the file',
+        other: '# mods you added from archives cannot go in the file',
       })
     : plural(local, {
-        one: "# mod you added from an archive can't be linked",
-        other: "# mods you added from archives can't be linked",
+        one: '# mod you added from an archive cannot be linked',
+        other: '# mods you added from archives cannot be linked',
       })
   const rest = plural(other, { one: '# more mod is left out', other: '# more mods are left out' })
   const warning = [local > 0 ? archive : '', other > 0 ? rest : ''].filter(Boolean).join(' · ')

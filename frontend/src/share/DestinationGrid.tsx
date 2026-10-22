@@ -50,7 +50,7 @@ export function DestinationGrid({
   }
   const reasons = {
     empty: t`No mods to share`,
-    'local-only': t`Local archives can't go here`,
+    'local-only': t`Local archives cannot go here`,
   }
   return (
     <TileGrid

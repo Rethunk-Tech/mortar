@@ -72,14 +72,14 @@ export const NewFoldersCallout = memo(function NewFoldersCalloutView({
                   other: "# mods in the game's Mods folder differ from this profile",
                 })
               : plural(count, {
-                  one: "# mod in the game's Mods folder isn't in this profile",
-                  other: "# mods in the game's Mods folder aren't in this profile",
+                  one: "# mod in the game's Mods folder is not in this profile",
+                  other: "# mods in the game's Mods folder are not in this profile",
                 })
           }
           actions={
             <>
               <Button size="small" variant="text" disabled={pending} onClick={dismissAll}>
-                {t`Don't ask about these`}
+                {t`Do not ask about these`}
               </Button>
               <Button size="small" variant="contained" onClick={() => setReview(diff)}>
                 {t`Review…`}

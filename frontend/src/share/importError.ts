@@ -8,11 +8,11 @@ export function importErrorMessage(e: unknown): string {
   switch (errorKind(e)) {
     case 'invalid':
       return i18n._(
-        msg`Mortar doesn't recognise this. Paste a Mortar link, a Nexus collection, or an r2modman or Gale code.`,
+        msg`Mortar does not recognise this. Paste a Mortar link, a Nexus collection, or an r2modman or Gale code.`,
       )
     case 'damaged':
       return i18n._(
-        msg`Mortar can't read this. Check that the whole link, code or file came through.`,
+        msg`Mortar cannot read this. Check that the whole link, code or file came through.`,
       )
     case 'not_found':
       return i18n._(

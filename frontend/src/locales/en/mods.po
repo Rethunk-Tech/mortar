@@ -346,10 +346,6 @@ msgstr "{loaderName} mods"
 msgid "Broken"
 msgstr "Broken"
 
-#: src/mods/updateReview/Changes.tsx
-msgid "What's new"
-msgstr "What's new"
-
 #: src/mods/CleanupSection.tsx
 msgid "Dismiss {name}"
 msgstr "Dismiss {name}"
@@ -762,17 +758,13 @@ msgstr "Remove from other profiles…"
 msgid "Why?"
 msgstr "Why?"
 
-#: src/mods/NewFoldersCallout.tsx
-msgid "Don't ask about these"
-msgstr "Don't ask about these"
-
 #: src/mods/problemText.ts
 msgid "Error while loading"
 msgstr "Error while loading"
 
-#: src/mods/NewFoldersCallout.tsx
-msgid "{count, plural, one {# mod in the game's Mods folder isn't in this profile} other {# mods in the game's Mods folder aren't in this profile}}"
-msgstr "{count, plural, one {# mod in the game's Mods folder isn't in this profile} other {# mods in the game's Mods folder aren't in this profile}}"
+#: src/mods/DuplicateDialog.tsx
+msgid "No update checks, and it cannot go in a share link."
+msgstr "No update checks, and it cannot go in a share link."
 
 #: src/mods/AddToGroupDialog.tsx
 msgid "No groups yet"
@@ -1509,6 +1501,10 @@ msgstr "Edit config"
 msgid "{names} all {0} ship the plugin {guid}, and BepInEx loads only one."
 msgstr "{names} all {0} ship the plugin {guid}, and BepInEx loads only one."
 
+#: src/mods/NewFoldersCallout.tsx
+msgid "Do not ask about these"
+msgstr "Do not ask about these"
+
 #: src/mods/columnLabel.ts
 #: src/mods/NexusDetails.tsx
 #: src/mods/Sidebar.tsx
@@ -2236,10 +2232,6 @@ msgstr "Its folder is removed from this profile. You can undo this."
 #: src/mods/OtherProfilesDialog.tsx
 msgid "No other profile of this game."
 msgstr "No other profile of this game."
-
-#: src/mods/DuplicateDialog.tsx
-msgid "No update checks, and it can't go in a share link."
-msgstr "No update checks, and it can't go in a share link."
 
 #: src/mods/updateReview/UpdateBar.tsx
 msgid "{count, plural, one {# update ready} other {# updates ready}}"
@@ -3278,6 +3270,10 @@ msgstr "Tag"
 msgid "Add category"
 msgstr "Add category"
 
+#: src/mods/NewFoldersCallout.tsx
+msgid "{count, plural, one {# mod in the game's Mods folder is not in this profile} other {# mods in the game's Mods folder are not in this profile}}"
+msgstr "{count, plural, one {# mod in the game's Mods folder is not in this profile} other {# mods in the game's Mods folder are not in this profile}}"
+
 #: src/mods/Sidebar.tsx
 msgid "Show in Console"
 msgstr "Show in Console"
@@ -3885,6 +3881,10 @@ msgstr "Checked {0}"
 #: src/mods/ProblemsTab.tsx
 msgid "Every mod has what it needs and nothing clashes."
 msgstr "Every mod has what it needs and nothing clashes."
+
+#: src/mods/updateReview/Changes.tsx
+msgid "What is new"
+msgstr "What is new"
 
 #: src/mods/storeGroups.ts
 msgid "Could not delete the group"

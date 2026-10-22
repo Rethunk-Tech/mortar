@@ -235,7 +235,7 @@ function Sharing() {
       {lanSharing && networkPublic && !allowAny ? (
         <SettingRow
           label={t`This network is set to Public in Windows`}
-          description={t`Nearby computers can't reach Mortar. Set the network to Private in Windows network settings.`}
+          description={t`Nearby computers cannot reach Mortar. Set the network to Private in Windows network settings.`}
         >
           <span />
         </SettingRow>
