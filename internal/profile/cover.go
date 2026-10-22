@@ -38,18 +38,14 @@ func coverType(name string) string {
 
 // readCover reads the image at path, judging it by its content rather than its name.
 func readCover(path string) ([]byte, string, error) {
-	f, err := fsx.Open(path)
+	f, err := fsx.OpenRegular(path)
+	if errors.Is(err, fsx.ErrNotRegular) {
+		err = fmt.Errorf("%s is not a regular file", filepath.Base(path))
+	}
 	if err != nil {
 		return nil, "", err
 	}
 	defer func() { _ = f.Close() }()
-	info, err := f.Stat()
-	if err != nil {
-		return nil, "", err
-	}
-	if !info.Mode().IsRegular() {
-		return nil, "", fmt.Errorf("%s is not a regular file", filepath.Base(path))
-	}
 	b, err := modpic.ReadCapped(f, MaxCover)
 	if err != nil {
 		return nil, "", err

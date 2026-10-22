@@ -63,14 +63,12 @@ func open(path string) (*os.File, string, error) {
 	if typ == "" {
 		return nil, "", fmt.Errorf("%q is not a PNG, JPEG, GIF, WebP or JPEG XL image", path)
 	}
-	f, err := fsx.Open(path)
+	f, err := fsx.OpenRegular(path)
+	if errors.Is(err, fsx.ErrNotRegular) {
+		err = fmt.Errorf("%q is not a regular file", path)
+	}
 	if err != nil {
 		return nil, "", err
-	}
-	info, err := f.Stat()
-	if err != nil || !info.Mode().IsRegular() {
-		_ = f.Close()
-		return nil, "", errors.Join(err, fmt.Errorf("%q is not a regular file", path))
 	}
 	return f, typ, nil
 }

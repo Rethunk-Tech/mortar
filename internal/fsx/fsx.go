@@ -6,6 +6,7 @@ import (
 	"crypto/md5" // #nosec G501 -- Nexus file hashes are MD5
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -25,6 +26,26 @@ func in[T any](path string, fn func(root *os.Root, name string) (T, error)) (T, 
 // Open opens path for reading.
 func Open(path string) (*os.File, error) {
 	return in(path, func(r *os.Root, name string) (*os.File, error) { return r.Open(name) })
+}
+
+// ErrNotRegular is OpenRegular's refusal of a directory, device, pipe or other non-regular file.
+var ErrNotRegular = errors.New("not a regular file")
+
+// OpenRegular opens path for reading, refusing anything but a regular file.
+func OpenRegular(path string) (*os.File, error) {
+	f, err := Open(path)
+	if err != nil {
+		return nil, err
+	}
+	info, err := f.Stat()
+	if err == nil && !info.Mode().IsRegular() {
+		err = ErrNotRegular
+	}
+	if err != nil {
+		_ = f.Close()
+		return nil, err
+	}
+	return f, nil
 }
 
 // Create creates or truncates path.

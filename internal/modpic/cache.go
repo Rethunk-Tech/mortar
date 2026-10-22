@@ -208,18 +208,14 @@ func (c *Cache) get(ctx context.Context, picture string, px int) ([]byte, string
 }
 
 func readFile(path string) ([]byte, string, error) {
-	f, err := fsx.Open(path)
+	f, err := fsx.OpenRegular(path)
+	if errors.Is(err, fsx.ErrNotRegular) {
+		err = fmt.Errorf("%s is not a regular file", filepath.Base(path))
+	}
 	if err != nil {
 		return nil, "", err
 	}
 	defer func() { _ = f.Close() }()
-	info, err := f.Stat()
-	if err != nil {
-		return nil, "", err
-	}
-	if !info.Mode().IsRegular() {
-		return nil, "", fmt.Errorf("%s is not a regular file", filepath.Base(path))
-	}
 	return readImage(f)
 }
 
