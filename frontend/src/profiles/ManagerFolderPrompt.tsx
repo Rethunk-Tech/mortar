@@ -1,20 +1,29 @@
 import { useLingui } from '@lingui/react/macro'
 import { Button, Typography } from '@mui/material'
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
-import { GALE, R2MODMAN } from '../brand/productNames.ts'
 import { TypedFolder } from '../shell/TypedFolder.tsx'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 
-// Lets the player point Mortar at an r2modman or Gale data folder that is not in its default place.
-export function PackFolderPrompt({ onChosen }: { onChosen: () => void }) {
+// Lets the player point Mortar at a mod manager's data folder that is not in its default place.
+export function ManagerFolderPrompt({
+  settingKey,
+  label,
+  note,
+  onChosen,
+}: {
+  settingKey: string
+  label: string
+  note: ReactNode
+  onChosen: () => void
+}) {
   const { t } = useLingui()
   const [error, setError] = useState<InlineError | null>(null)
   const [typing, setTyping] = useState(false)
   const apply = async (dir: string) => {
     try {
-      await SetByKey('packFolder', dir, '')
+      await SetByKey(settingKey, dir, '')
     } catch (e) {
       setError(inlineError(e))
       return
@@ -24,22 +33,17 @@ export function PackFolderPrompt({ onChosen }: { onChosen: () => void }) {
   }
   // Without a native folder dialog (server mode) the path is typed instead.
   const choose = () => {
-    PickFolder(t`${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} data folder`)
+    PickFolder(label)
       .then((dir) => (dir ? apply(dir) : undefined))
       .catch(() => setTyping(true))
   }
   return (
     <Typography variant="body2" color="text.secondary">
-      {t`${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} in another folder?`}{' '}
+      {note}{' '}
       <Button size="small" onClick={choose}>
         {t`Choose folder…`}
       </Button>
-      {typing ? (
-        <TypedFolder
-          label={t`${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} data folder`}
-          onUse={apply}
-        />
-      ) : null}
+      {typing ? <TypedFolder label={label} onUse={apply} /> : null}
       {error ? (
         <Typography
           component="span"

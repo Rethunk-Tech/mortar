@@ -13,9 +13,10 @@ import {
   Import,
   PreviewLocalProfile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/sharesvc/service.ts'
+import { GALE, R2MODMAN } from '../brand/productNames.ts'
 import { useExternalImportSources } from '../profiles/externalImportSources.ts'
 import { FoundProfileRow } from '../profiles/FoundProfileRow.tsx'
-import { PackFolderPrompt } from '../profiles/PackFolderPrompt.tsx'
+import { ManagerFolderPrompt } from '../profiles/ManagerFolderPrompt.tsx'
 import { VortexFolderPrompt } from '../profiles/VortexFolderPrompt.tsx'
 import { offerVortexFolder } from '../profiles/vortexFolderOffer.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
@@ -166,7 +167,12 @@ export function ManagerPane({
         ))}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, mt: space.gap }}>
         <Box sx={{ mr: 'auto', display: 'flex', flexDirection: 'column' }}>
-          <PackFolderPrompt onChosen={loadFolders} />
+          <ManagerFolderPrompt
+            settingKey="packFolder"
+            label={t`${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} data folder`}
+            note={t`${{ manager: R2MODMAN }} or ${{ otherManager: GALE }} in another folder?`}
+            onChosen={loadFolders}
+          />
           {offerVortexFolder(vortexSupported, external) ? (
             <VortexFolderPrompt game={game} onChosen={reload} />
           ) : null}
