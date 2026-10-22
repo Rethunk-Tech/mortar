@@ -12,9 +12,12 @@ import { nestedBoxes } from './renderBoxes.ts'
 import { newCases } from './renderCases.ts'
 import { unevenSpacing } from './renderGaps.ts'
 import { HOOK } from './renderHook.ts'
+import { type LayoutBreak, layoutBreaks } from './renderLayout.ts'
 import { Meter, type Sample } from './renderMeter.ts'
+import { screenCases } from './renderScreens.ts'
 import { VIEWPORT } from './renderViewport.ts'
 import { sandboxPort, selftest } from './sandbox.ts'
+import { webkitWalk } from './webkit-walk.ts'
 
 // Render budget: walks every screen and the common interactions of a copied (or seeded) profile in headless Chromium and
 // measures, per case, what React did (commits, components mounted, components re-rendered and which), what the browser
@@ -30,6 +33,10 @@ import { sandboxPort, selftest } from './sandbox.ts'
 //   MORTAR_RENDER_ONLY=mods,config     run only the cases whose names start with these
 //   MORTAR_RENDER_SETTLE_MS / _IDLE_MS how long an action may settle (3000) and how long idle is watched (10000)
 //   MORTAR_RENDER_GAPS=1              print each screen's unevenly spaced stacks and cards (renderGaps.ts)
+//   MORTAR_RENDER_SHOTS=<dir>          save a PNG of each screen in <dir>/chromium and <dir>/webkit; `bun run renders:diff
+//                                      OLD/chromium NEW/chromium` compares two runs
+// Every screen is checked for layout breaks (renderLayout.ts) in Chromium, then in WebKitGTK (webkit-walk.ts) on the same
+// sandbox; a break fails the run like a budget.
 //   MORTAR_RENDER_TOP=<n>              how many components, roots and causes each case lists (8)
 // Writes render-budget.json under MORTAR_RENDER_OUT (default /var/tmp/render-budget-<ts>) and exits 1 when a case is
 // over its budget or fails.
@@ -218,6 +225,7 @@ const cases: Case[] = [
   },
   { name: 'game-select', setup: toWorkspace, run: openGameSelect },
   ...newCases({ toWorkspace, tab, view, row, typeInto, tabs, settleMs: SETTLE_MS }),
+  ...screenCases({ toWorkspace, tab, view, row, typeInto, tabs, settleMs: SETTLE_MS }),
 ]
 
 /** Opens the profile the run measures. */
@@ -366,7 +374,10 @@ function chosenCases(): Case[] {
   return chosen
 }
 
-async function run(baseURL: string, chosen: Case[]): Promise<Result[]> {
+async function run(
+  baseURL: string,
+  chosen: Case[],
+): Promise<{ results: Result[]; breaks: string[] }> {
   const browser = await chromium.launch()
   try {
     const page = await browser.newPage({ baseURL, viewport: VIEWPORT })
@@ -377,9 +388,22 @@ async function run(baseURL: string, chosen: Case[]): Promise<Result[]> {
     const meter = new Meter(page, cdp)
     await land(page)
     const results: Result[] = []
+    const breaks: string[] = []
+    const shots = process.env.MORTAR_RENDER_SHOTS && `${process.env.MORTAR_RENDER_SHOTS}/chromium`
+    if (shots) {
+      mkdirSync(shots, { recursive: true })
+    }
     for (const c of chosen) {
       results.push(await measure(page, meter, c))
       console.log(`${c.name} measured`)
+      breaks.push(
+        ...(await layoutBreaks(page)).map(
+          (b: LayoutBreak) => `LAYOUT ${c.name} | ${b.kind} | ${b.where} | ${b.text}`,
+        ),
+      )
+      if (shots) {
+        await page.screenshot({ path: `${shots}/${c.name}.png` })
+      }
       if (process.env.MORTAR_RENDER_BOXES) {
         for (const b of await nestedBoxes(page)) {
           console.log(`BOX ${c.name} | ${b.inner} in ${b.outer} | ${b.text}`)
@@ -391,10 +415,27 @@ async function run(baseURL: string, chosen: Case[]): Promise<Result[]> {
         }
       }
     }
-    return results
+    return { results, breaks }
   } finally {
     await browser.close()
   }
+}
+
+// The Chromium walk, then the WebKitGTK one on the same sandbox while it still runs (webkit-walk.ts).
+async function walk(url: string, sandboxDir: string, chosen: Case[]) {
+  const { results, breaks } = await run(url, chosen)
+  const shots = process.env.MORTAR_RENDER_SHOTS
+  const only = (process.env.MORTAR_RENDER_ONLY ?? '').split(',').filter(Boolean)
+  const webkit = await webkitWalk({
+    sandbox: sandboxDir,
+    url,
+    shots: shots && `${shots}/webkit`,
+    only,
+  })
+  if (webkit === null) {
+    console.log('WebKitGTK walk skipped: no WebKitWebDriver or no hidden display')
+  }
+  return { results, breaks: [...breaks, ...(webkit ?? [])] }
 }
 
 async function main(): Promise<number> {
@@ -402,8 +443,10 @@ async function main(): Promise<number> {
   const external = process.env.MORTAR_RENDER_URL
   const dir = `${BASE}/mortar-render-${process.pid}`
   let results: Result[]
+  let breaks: string[]
   if (external) {
-    results = await run(external, chosen)
+    const sandboxDir = process.env.MORTAR_SELFTEST_DIR ?? `${BASE}/mortar-selftest`
+    ;({ results, breaks } = await walk(external, sandboxDir, chosen))
   } else {
     process.env.MORTAR_E2E_DIR = dir
     mkdirSync(dir, { recursive: true })
@@ -416,7 +459,7 @@ async function main(): Promise<number> {
       if (seeded) {
         selftest(dir, 'seed')
       }
-      results = await run(`http://127.0.0.1:${sandboxPort()}`, chosen)
+      ;({ results, breaks } = await walk(`http://127.0.0.1:${sandboxPort()}`, dir, chosen))
     } finally {
       try {
         selftest(dir, 'destroy')
@@ -431,7 +474,8 @@ async function main(): Promise<number> {
   writeFileSync(`${out}/render-budget.json`, `${JSON.stringify(results, null, 2)}\n`)
   console.log(report(results))
   console.log(`JSON: ${out}/render-budget.json`)
-  return results.some((r) => r.failure || r.over.length > 0) ? 1 : 0
+  console.log(breaks.length === 0 ? 'layout: no breaks' : breaks.join('\n'))
+  return results.some((r) => r.failure || r.over.length > 0) || breaks.length > 0 ? 1 : 0
 }
 
 main().then(
