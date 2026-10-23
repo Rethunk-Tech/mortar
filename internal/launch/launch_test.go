@@ -79,6 +79,16 @@ func TestRunIgnoresStaleLog(t *testing.T) {
 	}
 }
 
+func TestRunStartsWhenTheGameIsUpButItsLogIsLate(t *testing.T) {
+	log := filepath.Join(t.TempDir(), "LogOutput.log")
+	err := Run(t.Context(), func(string, string, ...string) (<-chan error, error) {
+		return make(chan error), nil
+	}, Command{LogFile: log, Failure: HintSteam, Relay: true, Alive: func() bool { return true }}, fast, func([]string) {})
+	if err != nil {
+		t.Fatalf("err = %v, want a game whose process is up to count as started", err)
+	}
+}
+
 func TestRunStartError(t *testing.T) {
 	boom := errors.New("boom")
 	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) { return nil, boom }, Command{Failure: HintFlatpakFS}, fast, nil)

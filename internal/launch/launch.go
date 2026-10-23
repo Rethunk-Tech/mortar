@@ -199,6 +199,9 @@ type Command struct {
 	Relay bool
 	// Ready, when set, is the success rule instead of a rewritten log: a vanilla launch waits for the game process.
 	Ready func() bool
+	// Alive reports that the game's process is running. A game whose log is slow to appear (a big mod list, a slow
+	// disk) has still started when its process is up at the timeout; the log is followed once it comes.
+	Alive func() bool
 	// OnExit reports how the started process ended after the game has started. Ignored for Relay commands.
 	OnExit func(Exit)
 }
@@ -288,6 +291,9 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-deadline.C:
+			if c.Alive != nil && c.Alive() {
+				return started()
+			}
 			return &Failure{Hint: c.Failure, Err: errors.New("the game did not start in time")}
 		case waitErr := <-exited:
 			if ok() {

@@ -33,7 +33,8 @@ type StartEnv struct {
 	HideWindow bool
 	// LogFile is the loader's log, rewritten when the game starts; a profile launch succeeds when it is.
 	LogFile string
-	// Ready reports that a vanilla launch succeeded, when the game process is running.
+	// Ready reports that the game process is running: a vanilla launch has then succeeded, and a profile launch whose
+	// log is late has still started.
 	Ready func() bool
 	// OnExit reports how the started process ended once the game has started. Not used for relays.
 	OnExit func(launch.Exit)
@@ -127,6 +128,7 @@ func (st Starter) startOne(ctx context.Context, inst Install, plan *launchplan.P
 		cmd.Ready = env.Ready
 	} else {
 		cmd.LogFile = env.LogFile
+		cmd.Alive = env.Ready
 	}
 	run := st.Runner
 	if run == nil {
