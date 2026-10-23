@@ -123,80 +123,105 @@ function Mark({ icon: Icon, label, color }: { icon: LucideIcon; label: string; c
 
 // Memoised, with Branch: a framework's Used by list runs to hundreds of rows, and the trees' nodes are kept until the
 // mods or problems change, so a re-render of the panel around them skips every row.
-const NodeRow = memo(function NodeRowView({ node, depth }: { node: DepViewNode; depth: number }) {
-  const { t } = useLingui()
-  const show = useDetail((s) => s.show)
-  const listed = useMods((s) => s.mods.find((m) => sameId(m.id, node.id)))
-  const label = useRequirementName(node.id)
-  const mark = node.required ? t`Required` : t`Optional`
-  const already = t`already listed`
-  const edgeNote = node.cycle ? `${mark} · ${already}` : mark
-  let status = t`Broken`
-  if (node.state === 'enabled') {
-    status = t`Enabled`
-  } else if (node.state === 'disabled') {
-    status = t`Disabled`
-  } else if (node.state === 'missing') {
-    status = t`Missing`
-  }
-  const tone = stateTone(node.state)
-  return (
-    <Box>
-      <Box
-        sx={{
-          pl: depth * indentStep,
-          minHeight: rowMinHeight,
-          display: 'flex',
-          alignItems: 'flex-start',
-          columnGap: rowGap,
-        }}
-      >
-        <Mark
-          icon={node.required ? Asterisk : CircleDashed}
-          label={edgeNote}
-          color="text.secondary"
-        />
-        <Mark icon={stateIcon[node.state]} label={status} color={tone} />
+const NodeRow = memo(
+  function NodeRowView({ node, depth }: { node: DepViewNode; depth: number }) {
+    const { t } = useLingui()
+    const show = useDetail((s) => s.show)
+    // Whether it is listed, not the mod itself: the store rebuilds every mod on each switch, and a node shows none of it.
+    const listed = useMods((s) => s.mods.some((m) => sameId(m.id, node.id)))
+    const label = useRequirementName(node.id)
+    const mark = node.required ? t`Required` : t`Optional`
+    const already = t`already listed`
+    const edgeNote = node.cycle ? `${mark} · ${already}` : mark
+    let status = t`Broken`
+    if (node.state === 'enabled') {
+      status = t`Enabled`
+    } else if (node.state === 'disabled') {
+      status = t`Disabled`
+    } else if (node.state === 'missing') {
+      status = t`Missing`
+    }
+    const tone = stateTone(node.state)
+    return (
+      <Box>
         <Box
           sx={{
-            minWidth: 0,
+            pl: depth * indentStep,
+            minHeight: rowMinHeight,
             display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             columnGap: rowGap,
           }}
         >
-          {listed ? (
-            <Link
-              component="button"
-              onClick={() => show(listed)}
-              sx={{
-                fontSize: nameSize,
-                color: 'text.secondary',
-                textDecoration: 'underline dotted',
-                textAlign: 'left',
-                overflowWrap: 'anywhere',
-              }}
-            >
-              {label}
-            </Link>
-          ) : (
-            <Typography
-              title={localId(node.id)}
-              sx={{ fontSize: nameSize, overflowWrap: 'anywhere' }}
-            >
-              {label}
-            </Typography>
-          )}
-          {node.state === 'missing' ? <MissingAdd id={node.id} /> : null}
+          <Mark
+            icon={node.required ? Asterisk : CircleDashed}
+            label={edgeNote}
+            color="text.secondary"
+          />
+          <Mark icon={stateIcon[node.state]} label={status} color={tone} />
+          <Box
+            sx={{
+              minWidth: 0,
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              columnGap: rowGap,
+            }}
+          >
+            {listed ? (
+              <Link
+                component="button"
+                onClick={() => {
+                  const mod = useMods.getState().mods.find((m) => sameId(m.id, node.id))
+                  if (mod) {
+                    show(mod)
+                  }
+                }}
+                sx={{
+                  fontSize: nameSize,
+                  color: 'text.secondary',
+                  textDecoration: 'underline dotted',
+                  textAlign: 'left',
+                  overflowWrap: 'anywhere',
+                }}
+              >
+                {label}
+              </Link>
+            ) : (
+              <Typography
+                title={localId(node.id)}
+                sx={{ fontSize: nameSize, overflowWrap: 'anywhere' }}
+              >
+                {label}
+              </Typography>
+            )}
+            {node.state === 'missing' ? <MissingAdd id={node.id} /> : null}
+          </Box>
         </Box>
+        {node.children.map((c) => (
+          <NodeRow key={`${c.id}:${c.required}:${c.cycle}`} node={c} depth={depth + 1} />
+        ))}
       </Box>
-      {node.children.map((c) => (
-        <NodeRow key={`${c.id}:${c.required}:${c.cycle}`} node={c} depth={depth + 1} />
-      ))}
-    </Box>
+    )
+  },
+  (a, b) => a.depth === b.depth && sameNode(a.node, b.node),
+)
+
+// A switch rebuilds the trees, so a node is compared by what it shows rather than by identity.
+function sameNode(a: DepViewNode, b: DepViewNode): boolean {
+  return (
+    a === b ||
+    (a.id === b.id &&
+      a.required === b.required &&
+      a.cycle === b.cycle &&
+      a.state === b.state &&
+      a.children.length === b.children.length &&
+      a.children.every((c, i) => {
+        const d = b.children[i]
+        return d !== undefined && sameNode(c, d)
+      }))
   )
-})
+}
 
 const Branch = memo(function BranchView({ title, nodes }: { title: string; nodes: DepViewNode[] }) {
   const { t } = useLingui()

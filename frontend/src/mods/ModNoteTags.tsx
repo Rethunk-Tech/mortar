@@ -30,7 +30,7 @@ export function ModNoteTags({ profile, mod }: { profile: Profile; mod: Mod }) {
     const saved = savedTagsKey === '' ? [] : savedTagsKey.split('\0')
     globalThis.clearTimeout(timer.current)
     setNote(savedNote)
-    setTags(saved)
+    setTags((cur) => (cur.join('\0') === savedTagsKey ? cur : saved))
     latest.current = { note: savedNote, tags: saved }
   }, [savedNote, savedTagsKey])
   const suggestions = profileTags(profile.entries)

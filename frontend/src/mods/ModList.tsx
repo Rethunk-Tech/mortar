@@ -375,22 +375,47 @@ function ModRowView({ row, cols, locale, first, orderedRef, profile, onArrow }: 
         ...(local ? { boxShadow: (th) => `inset 3px 0 0 ${th.palette.info.main}` } : {}),
       }}
     >
-      {cols.flatMap((id) =>
-        id === 'name'
-          ? [
-              <Cell key="tile">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <FavouriteStar starKey={entryFavouriteKey(entryOf(profile, m.key))} />
-                  <LetterTile mod={m} size={26} fresh={fresh} />
-                </Box>
-              </Cell>,
-              cellsFor(id, row, locale, profile),
-            ]
-          : [cellsFor(id, row, locale, profile)],
-      )}
+      <RowCells row={row} cols={cols} locale={locale} profile={profile} fresh={fresh} />
     </TableRow>
   )
 }
+
+interface RowCellsProps {
+  row: ListRow
+  cols: readonly ListColumnId[]
+  locale: string
+  profile: Profile
+  fresh: boolean
+}
+
+function RowCellsView({ row, cols, locale, profile, fresh }: RowCellsProps) {
+  const m = row.mod
+  return cols.flatMap((id) =>
+    id === 'name'
+      ? [
+          <Cell key="tile">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <FavouriteStar starKey={entryFavouriteKey(entryOf(profile, m.key))} />
+              <LetterTile mod={m} size={26} fresh={fresh} />
+            </Box>
+          </Cell>,
+          cellsFor(id, row, locale, profile),
+        ]
+      : [cellsFor(id, row, locale, profile)],
+  )
+}
+
+// Selecting or focusing a row changes only the row's own highlight, so its cells skip that render.
+const RowCells = memo(
+  RowCellsView,
+  (a, b) =>
+    a.locale === b.locale &&
+    a.fresh === b.fresh &&
+    a.cols.join() === b.cols.join() &&
+    sameRowFields(a.row, b.row) &&
+    (a.profile === b.profile ||
+      ownSlice(a.profile, a.row.mod.key) === ownSlice(b.profile, b.row.mod.key)),
+)
 
 const ModRow = memo(ModRowView, sameRow)
 
