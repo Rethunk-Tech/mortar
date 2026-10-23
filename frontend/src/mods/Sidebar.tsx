@@ -473,14 +473,15 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
 
 // A switch changes only the mod's enabled flag, its entry's disabled list and switch-off times, the save time and the last-change line. Nothing below the header
 // shows those, and what does (the dependency tree, problems) reads the store itself, so a switch skips these sections.
+// undefined drops a key wherever it sits, so a field the backend leaves out until it is set compares equal to one it sent.
 const withoutSwitch = (mod: Mod, profile: Profile) =>
   JSON.stringify([
-    { ...mod, enabled: null },
+    { ...mod, enabled: undefined },
     {
       ...profile,
-      updated: null,
-      lastChange: null,
-      entries: profile.entries?.map((e) => ({ ...e, disabled: null, switchedOff: null })),
+      updated: undefined,
+      lastChange: undefined,
+      entries: profile.entries?.map((e) => ({ ...e, disabled: undefined, switchedOff: undefined })),
     },
   ])
 const LowerSections = memo(
