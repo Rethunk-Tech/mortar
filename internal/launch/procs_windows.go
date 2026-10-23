@@ -23,7 +23,9 @@ func Processes(_ string, names ...string) ([]Process, error) {
 	for err = windows.Process32First(snap, &entry); err == nil; err = windows.Process32Next(snap, &entry) {
 		exe := strings.TrimSuffix(windows.UTF16ToString(entry.ExeFile[:]), ".exe")
 		if slices.ContainsFunc(names, func(name string) bool { return strings.EqualFold(exe, name) }) {
-			out = append(out, Process{PID: int(entry.ProcessID), Exe: imagePath(entry.ProcessID)})
+			if path := imagePath(entry.ProcessID); !systemProgram(path) {
+				out = append(out, Process{PID: int(entry.ProcessID), Exe: path})
+			}
 		}
 	}
 	return out, nil

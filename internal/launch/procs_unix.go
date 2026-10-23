@@ -29,10 +29,18 @@ func runs(args []string, name string) bool {
 		return false
 	}
 	if is(args[0]) {
-		return true
+		return !systemProgram(args[0])
+	}
+	return hosted(args) && len(args) > 1 && is(args[1])
+}
+
+// hosted reports whether args run a program through dotnet or mono, which then is the second argument.
+func hosted(args []string) bool {
+	if len(args) < 2 {
+		return false
 	}
 	host := filepath.Base(args[0])
-	return (host == "dotnet" || host == "mono") && len(args) > 1 && is(args[1])
+	return host == "dotnet" || host == "mono"
 }
 
 // runsAny reports whether args start any of names.
@@ -72,6 +80,11 @@ func Processes(procDir string, names ...string) ([]Process, error) {
 		p := Process{PID: pid, Args: args}
 		// Unreadable for another user's process, and the launcher's Args still name the install then.
 		p.Exe, _ = os.Readlink(filepath.Join(procDir, e.Name(), "exe"))
+		// A program named without its folder ("sh") is a system one when its executable is; a hosted game's own
+		// executable is dotnet or mono, which may well be.
+		if systemProgram(p.Exe) && !hosted(args) {
+			continue
+		}
 		p.Start = startTime(procDir, e.Name())
 		out = append(out, p)
 	}

@@ -192,3 +192,60 @@ func TestLinkedFromMatchesALoaderDeployedAsALink(t *testing.T) {
 		t.Fatal("an unrelated executable of the same name matched")
 	}
 }
+
+// Stopping or cancelling a game ends the processes that run it, never Steam or the wrappers Steam starts it through,
+// though those name the game in their arguments.
+func TestSteamAndItsWrappersAreNeverTheGame(t *testing.T) {
+	game := "Lethal Company"
+	for _, args := range [][]string{
+		{"/home/u/.local/share/Steam/ubuntu12_32/steam", "-srt-logger-opened"},
+		{"/home/u/.local/share/Steam/ubuntu12_32/steam", "-applaunch", "1966720"},
+		{"/home/u/.local/share/Steam/ubuntu12_32/steamwebhelper", "-lang=en_US"},
+		{"/home/u/.local/share/Steam/ubuntu12_32/reaper", "SteamLaunch", "AppId=1966720", "--", "/games/Lethal Company/Lethal Company.exe"},
+		{"/usr/bin/python3", "/home/u/.local/share/Steam/steamapps/common/Proton 9.0/proton", "waitforexitandrun", "/games/Lethal Company/Lethal Company.exe"},
+	} {
+		if runs(args, game) {
+			t.Errorf("%q counts as the game", args)
+		}
+	}
+	if !runs([]string{`Z:\games\Lethal Company\Lethal Company.exe`}, game) {
+		t.Error("the game's own process does not count as the game")
+	}
+}
+
+// SUPERHOT's process is "SH": the system's shell, named or resolved from a system folder, is never the game.
+func TestASystemProgramIsNeverTheGame(t *testing.T) {
+	for _, args := range [][]string{{"/bin/sh", "-c", "x"}, {"/usr/bin/SH"}, {"/usr/libexec/SH"}, {"/usr/sbin/SH"}} {
+		if runs(args, "SH") || runs(args, "sh") {
+			t.Errorf("%q counts as the game", args)
+		}
+	}
+	if !runs([]string{"/home/u/games/SUPERHOT/SH"}, "SH") {
+		t.Error("the game's own SH does not count")
+	}
+	if !runs([]string{"/usr/bin/dotnet", "/home/u/Stardew/StardewModdingAPI.dll"}, "StardewModdingAPI") {
+		t.Error("a game run by the system's dotnet does not count")
+	}
+	for path, want := range map[string]bool{"/usr/bin/sh": true, "/lib64/ld-linux.so": true, "/usr/local/bin/game": false, "/home/u/.local/share/Steam/x": false, `C:\Windows\System32\cmd.exe`: true, `D:\Games\SH.exe`: false, "": false} {
+		if got := systemProgram(path); got != want {
+			t.Errorf("systemProgram(%q) = %v", path, got)
+		}
+	}
+}
+
+func TestProcessesSkipsAProgramWhoseExecutableIsTheSystems(t *testing.T) {
+	dir := t.TempDir()
+	proc := filepath.Join(dir, "4242")
+	if err := os.MkdirAll(proc, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(proc, "cmdline"), []byte("sh\x00-c\x00true\x00"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink("/usr/bin/sh", filepath.Join(proc, "exe")); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := Processes(dir, "sh"); err != nil || len(got) != 0 {
+		t.Fatalf("the system shell was found as the game: %+v, %v", got, err)
+	}
+}
