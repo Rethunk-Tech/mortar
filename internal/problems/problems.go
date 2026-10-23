@@ -255,20 +255,40 @@ type RequirementsOf func(ctx context.Context, modIDs []int) (map[int][]nexus.Req
 // requirements Nexus pages list; nil skips that check.
 func Check(ctx context.Context, m Meta, env Environment, mods []framework.Mod, reqs RequirementsOf) Result {
 	enabled := slices.DeleteFunc(slices.Clone(mods), func(x framework.Mod) bool { return !x.Enabled })
-	found, timings := runFrameworks(framework.Input{Enabled: enabled, All: mods})
+	// The analyzers read the disk and the requirements read the network, and neither needs the other's result.
+	type analysis struct {
+		found   framework.Findings
+		timings []CheckTiming
+		failed  any
+	}
+	analyzed := make(chan analysis, 1)
+	go func() {
+		defer func() {
+			if p := recover(); p != nil {
+				analyzed <- analysis{failed: p}
+			}
+		}()
+		found, timings := runFrameworks(framework.Input{Enabled: enabled, All: mods})
+		analyzed <- analysis{found: found, timings: timings}
+	}()
+	reqStart := time.Now()
+	missing := missingDeps(env.VersionScheme, enabled, indexByID(mods))
+	listed, listedNeeded, listedUnknown := listedRequirements(ctx, m, reqs, env.Nexus.Domain, enabled, mods)
+	missing = append(missing, listed...)
+	reqTiming := CheckTiming{Name: "requirements", Ms: time.Since(reqStart).Milliseconds(), Count: len(missing)}
+	a := <-analyzed
+	if a.failed != nil {
+		panic(a.failed) // the caller's recovery, not a bare goroutine, decides what a crash costs
+	}
+	found := a.found
 	r := Result{
 		Missing:        []Missing{},
 		Broken:         []Broken{},
 		AssetConflicts: found.AssetConflicts,
 		Redundant:      found.Redundant,
 		Drift:          []profile.Drift{},
-		Timings:        timings,
+		Timings:        append(a.timings, reqTiming),
 	}
-	reqStart := time.Now()
-	missing := missingDeps(env.VersionScheme, enabled, indexByID(mods))
-	listed, listedNeeded, listedUnknown := listedRequirements(ctx, m, reqs, env.Nexus.Domain, enabled, mods)
-	missing = append(missing, listed...)
-	r.Timings = append(r.Timings, CheckTiming{Name: "requirements", Ms: time.Since(reqStart).Milliseconds(), Count: len(missing)})
 	r.Unknown = fillWhere(ctx, m, env.Nexus.Domain, enabled, missing)
 	r.Unknown = r.Unknown || listedUnknown
 	r.Missing = missing

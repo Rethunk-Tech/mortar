@@ -5,6 +5,7 @@ import (
 	"errors"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
@@ -313,4 +314,46 @@ func TestListedRequirementJudgedAlikeForEveryDependent(t *testing.T) {
 	if !slices.Equal(got, want) {
 		t.Fatalf("listed rows = %v, want %v: the mod whose manifest names the requirement is not owed one", got, want)
 	}
+}
+
+// overlapFramework matches the mod named by marker and runs its analysis only once the requirements lookup has started.
+type overlapFramework struct {
+	t        *testing.T
+	marker   string
+	reqStart <-chan struct{}
+	analyzed chan<- struct{}
+}
+
+func (f overlapFramework) ID() mod.ID { return mod.ID("framework:Overlap.Test") }
+func (f overlapFramework) Matches(m framework.Mod) bool {
+	return m.UniqueID == f.marker
+}
+
+func (f overlapFramework) Analyze(framework.Input) framework.Findings {
+	select {
+	case <-f.reqStart:
+	case <-time.After(5 * time.Second):
+		f.t.Error("the requirements were not being fetched while the analyzers ran")
+	}
+	close(f.analyzed)
+	return framework.Findings{}
+}
+
+func TestCheckRunsTheAnalyzersWhileTheRequirementsAreFetched(t *testing.T) {
+	started := make(chan struct{})
+	analyzed := make(chan struct{})
+	framework.Register(overlapFramework{t: t, marker: "Overlap.Probe", reqStart: started, analyzed: analyzed})
+	probe := listedDependent()
+	probe.UniqueID = "Overlap.Probe"
+	fake := listedFakeMeta{}
+	reqs := func(context.Context, []int) (map[int][]nexus.Requirement, error) {
+		close(started)
+		select {
+		case <-analyzed:
+		case <-time.After(5 * time.Second):
+			t.Error("the analyzers did not run while the requirements were being fetched")
+		}
+		return map[int][]nexus.Requirement{}, nil
+	}
+	Check(context.Background(), fake, testEnv, []framework.Mod{probe}, reqs)
 }
