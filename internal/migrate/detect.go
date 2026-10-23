@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/installer"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 )
@@ -20,6 +22,8 @@ type installation struct {
 	modsPath string
 	// vortexID is the game id Vortex files the profiles under.
 	vortexID string
+	// gameID is the catalog game the import is for.
+	gameID string
 }
 
 // Detect lists the external mod managers whose profiles for the catalog game gameID can be imported.
@@ -89,7 +93,7 @@ func detect(home, modsPath, gameID, vortexFolder string) ([]installation, error)
 	}
 
 	if ids.Vortex != "" {
-		found, ok, err := detectVortex(config, vortexFolder, programData(), ids.Vortex, runtime.GOOS == "windows")
+		found, ok, err := detectVortex(config, vortexFolder, programData(), ids.Vortex, gameID, runtime.GOOS == "windows")
 		if errors.Is(err, ErrVortexRunning) {
 			out = append(out, installation{info: SourceInfo{Kind: KindVortex, Name: "Vortex", Profiles: []ProfileInfo{}, Error: err.Error()}})
 		} else if err != nil {
@@ -99,7 +103,7 @@ func detect(home, modsPath, gameID, vortexFolder string) ([]installation, error)
 		}
 	}
 
-	mo2, err := mo2Installations(base, modsPath, ids.MO2)
+	mo2, err := mo2Installations(base, modsPath, ids.MO2, gameID)
 	if err != nil {
 		return nil, err
 	}
@@ -107,14 +111,18 @@ func detect(home, modsPath, gameID, vortexFolder string) ([]installation, error)
 	return out, nil
 }
 
+func isSMAPIGame(gameID string) bool {
+	return slices.Contains(installer.GameOf(gameID).Loaders, smapi.ID)
+}
+
 func previewInstallation(install installation, id string) (ProfilePreview, error) {
 	switch install.info.Kind {
 	case KindStardrop:
 		return stardropPreview(install.root, install.modsPath, id)
 	case KindVortex:
-		return vortexPreview(install.root, install.vortexID, id)
+		return vortexPreview(install.root, install.vortexID, install.gameID, id)
 	case KindMO2:
-		return mo2Preview(install.root, install.modsPath, id)
+		return mo2Preview(install.root, install.modsPath, install.gameID, id)
 	default:
 		return ProfilePreview{}, fmt.Errorf("unsupported import source %q", install.info.Kind)
 	}
@@ -185,14 +193,14 @@ func vortexRoots(config, chosen, programData string, windows, multiUser bool) []
 }
 
 // detectVortex returns the first Vortex data folder that has profiles for the game.
-func detectVortex(config, chosen, programData, vortexID string, windows bool) (installation, bool, error) {
+func detectVortex(config, chosen, programData, vortexID, gameID string, windows bool) (installation, bool, error) {
 	multiUser := windows && vortexMultiUser(filepath.Join(config, "Vortex"))
 	for _, root := range vortexRoots(config, chosen, programData, windows, multiUser) {
 		// Only a missing state.v2 means no Vortex data here; a path missing inside the staging folder is an error to show.
 		if _, err := os.Stat(filepath.Join(root, "state.v2")); errors.Is(err, os.ErrNotExist) {
 			continue
 		}
-		profiles, modsPath, err := vortexProfiles(root, vortexID)
+		profiles, modsPath, err := vortexProfiles(root, vortexID, gameID)
 		if err != nil {
 			return installation{}, false, err
 		}
@@ -202,6 +210,7 @@ func detectVortex(config, chosen, programData, vortexID string, windows bool) (i
 				root:     root,
 				modsPath: modsPath,
 				vortexID: vortexID,
+				gameID:   gameID,
 			}, true, nil
 		}
 	}

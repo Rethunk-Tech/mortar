@@ -230,14 +230,14 @@ func TestMultiUserPrefersSharedFolder(t *testing.T) {
 	if err := sdb.Close(); err != nil {
 		t.Fatal(err)
 	}
-	got, ok, err := detectVortex(configDir(home), "", programData, "stardewvalley", true)
+	got, ok, err := detectVortex(configDir(home), "", programData, "stardewvalley", "stardew", true)
 	if err != nil || !ok {
 		t.Fatalf("detect = %v, %v", ok, err)
 	}
 	if got.root != filepath.Join(programData, "vortex") || got.info.Profiles[0].ID != "current" {
 		t.Fatalf("used %q with %#v", got.root, got.info.Profiles)
 	}
-	if got, ok, _ := detectVortex(configDir(home), "", programData, "stardewvalley", false); !ok || got.info.Profiles[0].ID != "p1" {
+	if got, ok, _ := detectVortex(configDir(home), "", programData, "stardewvalley", "stardew", false); !ok || got.info.Profiles[0].ID != "p1" {
 		t.Fatalf("per-user only = %#v", got)
 	}
 }

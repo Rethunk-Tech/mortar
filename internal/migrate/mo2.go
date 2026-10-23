@@ -32,7 +32,7 @@ type mo2Meta struct {
 }
 
 // mo2Installations finds the MO2 instances managing the game MO2 calls gameName.
-func mo2Installations(home, modsPath, gameName string) ([]installation, error) {
+func mo2Installations(home, modsPath, gameName, gameID string) ([]installation, error) {
 	if gameName == "" {
 		return nil, nil
 	}
@@ -46,7 +46,7 @@ func mo2Installations(home, modsPath, gameName string) ([]installation, error) {
 		if !entry.IsDir() {
 			continue
 		}
-		inst, ok, instErr := mo2Installation(filepath.Join(root, entry.Name()), mo2Name+" ("+entry.Name()+")", modsPath, gameName)
+		inst, ok, instErr := mo2Installation(filepath.Join(root, entry.Name()), mo2Name+" ("+entry.Name()+")", modsPath, gameName, gameID)
 		if instErr != nil {
 			return nil, instErr
 		}
@@ -55,7 +55,7 @@ func mo2Installations(home, modsPath, gameName string) ([]installation, error) {
 		}
 		out = append(out, inst)
 	}
-	portable, ok, err := mo2Installation(home, mo2Name, modsPath, gameName)
+	portable, ok, err := mo2Installation(home, mo2Name, modsPath, gameName, gameID)
 	if err != nil {
 		return nil, err
 	}
@@ -84,8 +84,8 @@ func mo2LocalAppData(home string) string {
 const mo2Name = "Mod Organizer 2"
 
 // mo2Installation reads the MO2 instance at root; name is what the import list shows as its source.
-func mo2Installation(root, name, fallbackModsPath, gameName string) (installation, bool, error) {
-	profiles, modsPath, err := mo2Profiles(root, fallbackModsPath, gameName)
+func mo2Installation(root, name, fallbackModsPath, gameName, gameID string) (installation, bool, error) {
+	profiles, modsPath, err := mo2Profiles(root, fallbackModsPath, gameName, gameID)
 	if err != nil {
 		return installation{}, false, err
 	}
@@ -96,10 +96,11 @@ func mo2Installation(root, name, fallbackModsPath, gameName string) (installatio
 		info:     SourceInfo{Kind: KindMO2, Name: name, Profiles: profileInfos(profiles)},
 		root:     root,
 		modsPath: modsPath,
+		gameID:   gameID,
 	}, true, nil
 }
 
-func mo2Profiles(root, fallbackModsPath, gameName string) ([]ProfilePreview, string, error) {
+func mo2Profiles(root, fallbackModsPath, gameName, gameID string) ([]ProfilePreview, string, error) {
 	if !mo2IsGameInstance(root, gameName) {
 		return nil, "", nil
 	}
@@ -121,7 +122,7 @@ func mo2Profiles(root, fallbackModsPath, gameName string) ([]ProfilePreview, str
 		if !entry.IsDir() {
 			continue
 		}
-		preview, previewErr := mo2Preview(root, modsPath, entry.Name())
+		preview, previewErr := mo2Preview(root, modsPath, gameID, entry.Name())
 		if previewErr != nil {
 			return nil, "", previewErr
 		}
@@ -138,14 +139,14 @@ func mo2IsGameInstance(root, gameName string) bool {
 	return gameName != "" && strings.EqualFold(iniGeneral(data)[mo2INIGameKey], gameName)
 }
 
-func mo2Preview(root, modsPath, id string) (ProfilePreview, error) {
+func mo2Preview(root, modsPath, gameID, id string) (ProfilePreview, error) {
 	listPath := filepath.Join(root, "profiles", id, "modlist.txt")
 	data, err := fsx.ReadFile(listPath)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
 	listed := parseMO2Modlist(data)
-	staged, err := folderMods(modsPath)
+	staged, err := stagedMods(gameID, modsPath)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
@@ -155,8 +156,9 @@ func mo2Preview(root, modsPath, id string) (ProfilePreview, error) {
 	}
 	var out []ModPreview
 	var missing []string
+	smapiGame := isSMAPIGame(gameID)
 	for _, entry := range listed {
-		out, missing = appendMO2Mod(out, missing, modsPath, byBase, entry)
+		out, missing = appendMO2Mod(out, missing, modsPath, byBase, entry, smapiGame)
 	}
 	if out == nil {
 		out = []ModPreview{}
@@ -166,11 +168,11 @@ func mo2Preview(root, modsPath, id string) (ProfilePreview, error) {
 	}, nil
 }
 
-func appendMO2Mod(out []ModPreview, missing []string, modsPath string, byBase map[string][]folderMod, entry mo2Listed) ([]ModPreview, []string) {
+func appendMO2Mod(out []ModPreview, missing []string, modsPath string, byBase map[string][]folderMod, entry mo2Listed, smapiGame bool) ([]ModPreview, []string) {
 	modDir := filepath.Join(modsPath, entry.name)
 	meta := readMO2Meta(modDir)
 	items := byBase[entry.name]
-	if entry.enabled && len(items) == 0 && meta.modID == 0 && !manifest.LoaderManaged(mod.SMAPI(entry.name)) {
+	if entry.enabled && len(items) == 0 && meta.modID == 0 && (!smapiGame || !manifest.LoaderManaged(mod.SMAPI(entry.name))) {
 		if _, err := os.Stat(modDir); err != nil {
 			return out, append(missing, entry.name)
 		}

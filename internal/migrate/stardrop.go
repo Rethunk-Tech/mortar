@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/modname"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
@@ -227,6 +228,37 @@ func folderMods(modsPath string) ([]folderMod, error) {
 			}
 			out = append(out, folderMod{Mod: item, Path: path})
 		}
+	}
+	return out, nil
+}
+
+// stagedMods lists the mod folders under a manager's staging folder: SMAPI manifests for a SMAPI game, otherwise
+// each folder named the way the game's loader names it, with the folder name when its files name nothing.
+func stagedMods(gameID, modsPath string) ([]folderMod, error) {
+	if isSMAPIGame(gameID) {
+		return folderMods(modsPath)
+	}
+	entries, err := os.ReadDir(modsPath)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var out []folderMod
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		path := filepath.Join(modsPath, entry.Name())
+		info := modname.Of(gameID, path)
+		id := cmp.Or(info.ID, mod.NewID(mod.FormatFolder, entry.Name()))
+		if manifest.LoaderManaged(id) {
+			continue
+		}
+		m := manifest.Manifest{Name: cmp.Or(info.Name, entry.Name()), Version: info.Version, UniqueID: id.Local(), Format: id.Format()}
+		item := manifest.Mod{Manifest: m, Folder: "."}
+		out = append(out, folderMod{Mod: item, Path: path})
 	}
 	return out, nil
 }

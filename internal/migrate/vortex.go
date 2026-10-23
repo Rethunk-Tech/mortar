@@ -39,7 +39,7 @@ type vortexMod struct {
 	Attributes       map[string]json.RawMessage `json:"attributes"`
 }
 
-func vortexProfiles(root, domain string) ([]ProfilePreview, string, error) {
+func vortexProfiles(root, domain, gameID string) ([]ProfilePreview, string, error) {
 	state, err := readVortexState(root)
 	if err != nil {
 		return nil, "", err
@@ -51,7 +51,7 @@ func vortexProfiles(root, domain string) ([]ProfilePreview, string, error) {
 	modsPath := vortexModsPath(root, domain, state)
 	out := make([]ProfilePreview, 0, len(profiles))
 	for _, profile := range profiles {
-		preview, err := vortexPreviewState(modsPath, domain, state, profile.ID)
+		preview, err := vortexPreviewState(modsPath, domain, gameID, state, profile.ID)
 		if err != nil {
 			return nil, "", fmt.Errorf("read Vortex profile %s in %s: %w", profile.Name, modsPath, err)
 		}
@@ -60,16 +60,16 @@ func vortexProfiles(root, domain string) ([]ProfilePreview, string, error) {
 	return out, modsPath, nil
 }
 
-func vortexPreview(root, domain, id string) (ProfilePreview, error) {
+func vortexPreview(root, domain, gameID, id string) (ProfilePreview, error) {
 	state, err := readVortexState(root)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
 	modsPath := vortexModsPath(root, domain, state)
-	return vortexPreviewState(modsPath, domain, state, id)
+	return vortexPreviewState(modsPath, domain, gameID, state, id)
 }
 
-func vortexPreviewState(modsPath, domain string, state map[string]json.RawMessage, id string) (ProfilePreview, error) {
+func vortexPreviewState(modsPath, domain, gameID string, state map[string]json.RawMessage, id string) (ProfilePreview, error) {
 	profiles := vortexProfileList(state, domain)
 	var selected *vortexProfile
 	for i := range profiles {
@@ -86,7 +86,8 @@ func vortexPreviewState(modsPath, domain string, state map[string]json.RawMessag
 	for _, vm := range mods {
 		byID[vm.ID] = vm
 	}
-	staged, err := folderMods(modsPath)
+	staged, err := stagedMods(gameID, modsPath)
+	smapiGame := isSMAPIGame(gameID)
 	if err != nil {
 		return ProfilePreview{}, err
 	}
@@ -108,8 +109,8 @@ func vortexPreviewState(modsPath, domain string, state map[string]json.RawMessag
 		enabled := selected.ModState[modID].Enabled
 		path := vortexModPath(modsPath, vm)
 		items := byPath[filepath.Clean(path)]
-		if enabled && len(items) == 0 && !manifest.LoaderManaged(mod.SMAPI(modID)) &&
-			!manifest.LoaderManaged(mod.SMAPI(rawString(vm.Attributes, "uniqueId", "uniqueID"))) {
+		if enabled && len(items) == 0 && (!smapiGame || !manifest.LoaderManaged(mod.SMAPI(modID)) &&
+			!manifest.LoaderManaged(mod.SMAPI(rawString(vm.Attributes, "uniqueId", "uniqueID")))) {
 			missing = append(missing, modID)
 			continue
 		}
@@ -124,9 +125,12 @@ func vortexPreviewState(modsPath, domain string, state map[string]json.RawMessag
 		}
 		name := rawString(vm.Attributes, "name", "modName")
 		name = cmp.Or(name, modID)
-		uniqueID := rawString(vm.Attributes, "uniqueId", "uniqueID")
+		var id mod.ID
+		if smapiGame {
+			id = mod.SMAPI(rawString(vm.Attributes, "uniqueId", "uniqueID"))
+		}
 		out = append(out, ModPreview{
-			ID: mod.SMAPI(uniqueID), Name: name, Version: rawString(vm.Attributes, "version", "modVersion"),
+			ID: id, Name: name, Version: rawString(vm.Attributes, "version", "modVersion"),
 			Enabled: enabled, NexusModID: rawInt(vm.Attributes, "modId"),
 		})
 	}
