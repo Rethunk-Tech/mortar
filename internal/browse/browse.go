@@ -381,6 +381,10 @@ func categoriesOf(ctx context.Context, info components.GameInfo, sources []sourc
 	var all []string
 	var errs []error
 	for _, s := range sources {
+		// A source browse shows as unavailable (no API key in this build) is not searched, so its categories do not apply.
+		if source.Unavailable(s) != "" {
+			continue
+		}
 		gs, _ := info.Source(s.ID())
 		names, err := categoriesCached(ctx, info.ID, s, gs.Key)
 		if err != nil {

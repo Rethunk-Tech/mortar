@@ -221,6 +221,19 @@ func TestCategoriesSayWhyOnlyWhenNoSourceGaveAny(t *testing.T) {
 	}
 }
 
+type gatedCats struct{ lockedCats }
+
+func (*gatedCats) ID() string          { return "gatedcats" }
+func (*gatedCats) Unavailable() string { return "this build has no API key" }
+
+func TestCategoriesSkipASourceBrowseShowsAsUnavailable(t *testing.T) {
+	game := components.GameInfo{ID: "gated", Sources: []components.GameSource{{ID: "gatedcats"}}}
+	names, err := categoriesOf(context.Background(), game, []source.Source{&gatedCats{}})
+	if err != nil || len(names) != 0 {
+		t.Fatalf("an unavailable source was asked: %v %v", names, err)
+	}
+}
+
 func TestCategoryHelpers(t *testing.T) {
 	if !source.CategoryMatch([]string{"Maps"}, []string{"maps"}, nil) || source.CategoryMatch([]string{"Maps"}, nil, []string{"MAPS"}) {
 		t.Fatal("CategoryMatch is case-insensitive include/exclude")
