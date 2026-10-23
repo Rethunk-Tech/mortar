@@ -13,7 +13,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/jsonc"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/modconfig"
 )
@@ -112,7 +112,7 @@ func (s *Store) ContentSchema(game, id, key string, uniqueID mod.ID) (modconfig.
 	if err != nil {
 		return nil, err
 	}
-	man, err := fsx.ReadFile(filepath.Join(folder, manifest.FileName))
+	man, err := fsx.ReadFile(filepath.Join(folder, smapimanifest.FileName))
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			return modconfig.Schema{}, nil

@@ -4,7 +4,7 @@ import (
 	"log"
 	"slices"
 
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
 // RefreshDependencies re-reads every entry's manifests from the store so the stored needs, optional list and
@@ -65,7 +65,7 @@ func (s *Store) storeMods(game string, e Entry) []Component {
 	if peer == "" {
 		return nil
 	}
-	found, err := manifest.Scan(peer)
+	found, err := smapimanifest.Scan(peer)
 	if err != nil {
 		return nil
 	}

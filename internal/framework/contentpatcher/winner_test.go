@@ -8,7 +8,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -17,7 +16,7 @@ func TestLoadAfterEditConflictIsShownNotCounted(t *testing.T) {
 	b := testdataPack(t, "edit_b")
 	a.Name = "Edit A"
 	a.LoadAfter = []mod.ID{b.ModID()}
-	a.Dependencies = []manifest.Dependency{{UniqueID: b.UniqueID, Required: false}}
+	a.Dependencies = []mod.Dependency{{UniqueID: b.UniqueID, Required: false}}
 	got := check([]framework.Mod{a, b})
 	if len(got.AssetConflicts) != 1 {
 		t.Fatalf("got %+v", got.AssetConflicts)
@@ -87,7 +86,7 @@ func TestADependentPackWinsOverWhatItsDependencyBeat(t *testing.T) {
 	t.Cleanup(resetContentPackCaches)
 	m := editPacks(t, "Data/animationDescriptions", "sleep", "sleep", "sleep")
 	m[0].LoadAfter = []mod.ID{m[2].ModID()}
-	m[1].Dependencies = append(m[1].Dependencies, manifest.Dependency{UniqueID: m[0].UniqueID, Required: true})
+	m[1].Dependencies = append(m[1].Dependencies, mod.Dependency{UniqueID: m[0].UniqueID, Required: true})
 	if c := editConflict(t, m); !c.Cosmetic || !mod.Equal(c.WinnerID, m[1].ModID()) {
 		t.Fatalf("the pack that needs the winner loads after both: %+v", c)
 	}
@@ -98,7 +97,7 @@ func TestAnAddOnByOneAuthorStillClashesWithAStranger(t *testing.T) {
 		return packBy(t, author, `{"Changes":[{"Action":"EditData","Target":"Data/Objects","Entries":{"WalkKey":{"Name":"`+value+`"}}}]}`, nil)
 	}
 	base, child, other := edit("Walk", "Base"), edit("Walk", "Child"), edit("Someone Else", "Other")
-	child.Dependencies = []manifest.Dependency{{UniqueID: base.UniqueID, Required: true}}
+	child.Dependencies = []mod.Dependency{{UniqueID: base.UniqueID, Required: true}}
 	got := check([]framework.Mod{base, child, other})
 	if len(got.Redundant) != 0 {
 		t.Fatalf("neither the add-on nor the base it requires is safe to remove: %+v", got.Redundant)

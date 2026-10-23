@@ -15,7 +15,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -249,7 +248,7 @@ func mayShareJob(a, b framework.Mod, builtOn map[string]bool) bool {
 }
 
 func dependsOn(m framework.Mod, id string) bool {
-	return slices.ContainsFunc(m.Dependencies, func(d manifest.Dependency) bool { return d.ModID().Fold() == id })
+	return slices.ContainsFunc(m.Dependencies, func(d mod.Dependency) bool { return d.ModID().Fold() == id })
 }
 
 // shortMembers names up to three members, most distinctive first, as "Type.Member" from "Namespace.Type::Member".

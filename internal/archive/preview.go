@@ -13,7 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 
 	"github.com/nwaples/rardecode/v2"
 )
@@ -31,6 +31,9 @@ type PreviewEntry struct {
 	Size  int64  `json:"size"`
 	IsDir bool   `json:"isDir"`
 }
+
+// ManifestFile is the manifest every mod format ships: SMAPI's, and a Thunderstore package's.
+const ManifestFile = "manifest.json"
 
 // PreviewManifest is a manifest.json found in an archive: a SMAPI mod's, or a Thunderstore package's, which has no ID.
 type PreviewManifest struct {
@@ -73,7 +76,7 @@ func (v *previewer) add(name string, size int64, isDir bool, open func() (io.Rea
 	if strings.HasSuffix(lower, "fomod/moduleconfig.xml") {
 		v.p.Fomod = true
 	}
-	if path.Base(lower) != manifest.FileName || size > maxManifestBytes || len(v.p.Manifests) >= maxPreviewManifests {
+	if path.Base(lower) != ManifestFile || size > maxManifestBytes || len(v.p.Manifests) >= maxPreviewManifests {
 		return
 	}
 	rc, err := open()
@@ -100,7 +103,7 @@ func (v *previewer) add(name string, size int64, isDir bool, open func() (io.Rea
 // ManifestInfo reads the identity a manifest.json states (Folder is left empty): a SMAPI manifest gives an ID, a Thunderstore
 // package's manifest only its name and version. ok is false when the file is neither.
 func ManifestInfo(b []byte) (PreviewManifest, bool) {
-	if m, err := manifest.Parse(b); err == nil {
+	if m, err := smapimanifest.Parse(b); err == nil {
 		return PreviewManifest{ID: m.ModID(), Name: m.Name, Version: m.Version}, true
 	}
 	var pkg struct {

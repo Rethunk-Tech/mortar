@@ -27,7 +27,6 @@ import (
 	"unique"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
@@ -2284,7 +2283,7 @@ func assetConflictScan(mods []framework.Mod, run *partsRun) ([]framework.AssetCo
 // content pack for.
 func requiredByEnabled(mods []framework.Mod, id mod.ID) bool {
 	return slices.ContainsFunc(mods, func(m framework.Mod) bool {
-		return m.Enabled && slices.ContainsFunc(m.Dependencies, func(d manifest.Dependency) bool { return d.Required && mod.Equal(d.ModID(), id) })
+		return m.Enabled && slices.ContainsFunc(m.Dependencies, func(d mod.Dependency) bool { return d.Required && mod.Equal(d.ModID(), id) })
 	})
 }
 

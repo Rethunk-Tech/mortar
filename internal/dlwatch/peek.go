@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 // maxManifestBytes bounds one manifest.json read: this peek runs before the capped extractor,
@@ -33,7 +32,7 @@ func PeekName(path string) string {
 	best := ""
 	bestDepth := 1 << 20
 	for _, f := range zr.File {
-		if !strings.EqualFold(filepath.Base(f.Name), manifest.FileName) {
+		if !strings.EqualFold(filepath.Base(f.Name), archive.ManifestFile) {
 			continue
 		}
 		depth := strings.Count(filepath.ToSlash(f.Name), "/")

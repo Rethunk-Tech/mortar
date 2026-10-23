@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/game"
+	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/ids"
@@ -27,9 +28,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/desktopnotify"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/github"
+	"github.com/Rethunk-Tech/mortar/internal/ghrepo"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/nxm"
 	"github.com/Rethunk-Tech/mortar/internal/nxmsvc"
@@ -98,7 +98,7 @@ func (r Request) valid() bool {
 	if r.Source != "" {
 		pkg = directIDPattern.MatchString(r.Package)
 	}
-	return r.Game != "" && r.Profile != "" && (r.ModID > 0 || manifest.ValidGitHubRepo(r.Repo) || pkg)
+	return r.Game != "" && r.Profile != "" && (r.ModID > 0 || ghrepo.Valid(r.Repo) || pkg)
 }
 
 const (

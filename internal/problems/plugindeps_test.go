@@ -7,7 +7,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -291,7 +291,7 @@ func TestAPluginsAttributesAddItsDependenciesSoItsLibrariesAreNotOfferedForRemov
 	pkgs := []profile.PackageRef{lib, extra, clash, local}
 	mods := make([]framework.Mod, len(pkgs))
 	for i, p := range pkgs {
-		mods[i] = framework.Mod{Key: p.Key, Enabled: true, Implicit: p.Key == "lethallib", Manifest: manifest.Manifest{Name: p.Name}.WithModID(p.ID)}
+		mods[i] = framework.Mod{Key: p.Key, Enabled: true, Implicit: p.Key == "lethallib", Manifest: smapimanifest.Manifest{Name: p.Name}.WithModID(p.ID)}
 	}
 
 	withPluginDependencies(mods, pkgs)

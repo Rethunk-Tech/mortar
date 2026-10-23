@@ -8,7 +8,7 @@ import (
 	"slices"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -100,7 +100,7 @@ func rewriteLoadAfter(root string, e Entry, m Component, dropped []mod.ID) error
 	if err != nil {
 		return err
 	}
-	rewritten, err := manifest.RewriteDependencies(raw, safeLoadAfter(e, m), dropped)
+	rewritten, err := smapimanifest.RewriteDependencies(raw, safeLoadAfter(e, m), dropped)
 	if err != nil {
 		return err
 	}
@@ -112,7 +112,7 @@ func componentManifest(root, folder string) string {
 	if folder == "." {
 		rel = ""
 	}
-	return filepath.Join(root, rel, manifest.FileName)
+	return filepath.Join(root, rel, smapimanifest.FileName)
 }
 
 // keepLoadAfter carries the recorded wins of prev onto the rebuilt packs with the same id.
@@ -157,15 +157,15 @@ func authorDeclares(peer, folder string, id mod.ID) bool {
 	if peer == "" {
 		return false
 	}
-	raw, err := manifest.ReadFile(filepath.Join(peer, filepath.FromSlash(folder)))
+	raw, err := smapimanifest.ReadFile(filepath.Join(peer, filepath.FromSlash(folder)))
 	if err != nil {
 		return false
 	}
-	m, err := manifest.Parse(raw)
+	m, err := smapimanifest.Parse(raw)
 	if err != nil {
 		return false
 	}
-	return slices.ContainsFunc(m.Dependencies, func(d manifest.Dependency) bool { return mod.Equal(mod.SMAPI(d.UniqueID), id) })
+	return slices.ContainsFunc(m.Dependencies, func(d mod.Dependency) bool { return mod.Equal(mod.SMAPI(d.UniqueID), id) })
 }
 
 // adoptProfileLoadAfter is adoptEntryLoadAfter for a whole profile file.
@@ -213,12 +213,12 @@ func manifestLists(modsDir, key, folder string, id mod.ID) bool {
 		return false
 	}
 	for _, dir := range []string{plain, dotted} {
-		raw, err := manifest.ReadFile(dir)
+		raw, err := smapimanifest.ReadFile(dir)
 		if err != nil {
 			continue
 		}
-		m, err := manifest.Parse(raw)
-		return err == nil && slices.ContainsFunc(m.Dependencies, func(d manifest.Dependency) bool { return mod.Equal(d.ModID(), id) })
+		m, err := smapimanifest.Parse(raw)
+		return err == nil && slices.ContainsFunc(m.Dependencies, func(d mod.Dependency) bool { return mod.Equal(d.ModID(), id) })
 	}
 	return false
 }

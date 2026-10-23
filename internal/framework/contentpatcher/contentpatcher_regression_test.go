@@ -12,7 +12,6 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
@@ -535,7 +534,7 @@ func TestLowLoadUnderAPackThatDependsOnItsPackIsAFallback(t *testing.T) {
 	sve := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Town","FromFile":"town.tmx","Priority":"Low"}]}`, map[string]string{"town.tmx": "sve town"})
 	sve.UniqueID = "FlashShifter.StardewValleyExpandedCP"
 	vpe := syntheticLoadPack(t, `{"Changes":[{"Action":"Load","Target":"Maps/Town","FromFile":"town.tmx","Priority":"Medium"}]}`, map[string]string{"town.tmx": "vpe town"})
-	vpe.Dependencies = []manifest.Dependency{{UniqueID: sve.UniqueID, Required: true}}
+	vpe.Dependencies = []mod.Dependency{{UniqueID: sve.UniqueID, Required: true}}
 	if conflicts := assetConflicts([]framework.Mod{sve, vpe}); len(conflicts) != 0 {
 		t.Fatalf("a Low load under a Medium load from a pack that depends on it is a fallback, got %#v", conflicts)
 	}

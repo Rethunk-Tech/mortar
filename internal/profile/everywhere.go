@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -283,17 +283,17 @@ func (s *Store) latestStoreKey(game, oldKey, modKeyOrID string) (string, error) 
 	return best, nil
 }
 
-func (s *Store) scanKey(game, key string) []manifest.Mod {
+func (s *Store) scanKey(game, key string) []smapimanifest.Mod {
 	root, err := s.items.Path(game, key)
 	if err != nil {
 		return nil
 	}
-	found, _ := manifest.Scan(root)
+	found, _ := smapimanifest.Scan(root)
 	return found
 }
 
 // primaryMod is the mod whose version orders an item: the one asked for when the item holds it, else its first.
-func primaryMod(found []manifest.Mod, want mod.ID) mod.ID {
+func primaryMod(found []smapimanifest.Mod, want mod.ID) mod.ID {
 	for _, m := range found {
 		if want != "" && mod.Equal(m.ModID(), want) {
 			return m.ModID()
@@ -305,7 +305,7 @@ func primaryMod(found []manifest.Mod, want mod.ID) mod.ID {
 	return found[0].ModID()
 }
 
-func heldVersion(found []manifest.Mod, id mod.ID) string {
+func heldVersion(found []smapimanifest.Mod, id mod.ID) string {
 	for _, m := range found {
 		if mod.Equal(m.ModID(), id) {
 			return m.Version

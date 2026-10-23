@@ -11,7 +11,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fomod"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -229,7 +229,7 @@ func (s *Store) replacing(game, id, key string) (Entry, bool, error) {
 	if err != nil {
 		return Entry{}, false, err
 	}
-	found, err := manifest.Scan(root)
+	found, err := smapimanifest.Scan(root)
 	if err != nil {
 		return Entry{}, false, err
 	}
@@ -240,7 +240,7 @@ func (s *Store) replacing(game, id, key string) (Entry, bool, error) {
 	var held []Entry
 	for _, e := range p.Entries {
 		if slices.ContainsFunc(e.Mods, func(m Component) bool {
-			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return mod.Equal(f.ModID(), m.ID) })
+			return slices.ContainsFunc(found, func(f smapimanifest.Mod) bool { return mod.Equal(f.ModID(), m.ID) })
 		}) {
 			held = append(held, e)
 		}
@@ -253,7 +253,7 @@ func (s *Store) replacing(game, id, key string) (Entry, bool, error) {
 
 // scanItem lays out a store item and scans it for mods; an item with none is a NoModError. done removes any temp
 // layout and is always safe to defer.
-func (s *Store) scanItem(game, id, key string, choices map[string]map[string][]string) (src string, found []manifest.Mod, done func(), err error) {
+func (s *Store) scanItem(game, id, key string, choices map[string]map[string][]string) (src string, found []smapimanifest.Mod, done func(), err error) {
 	src, tmp, err := s.layoutItem(game, id, key, choices)
 	done = func() {
 		if tmp != "" {
@@ -263,7 +263,7 @@ func (s *Store) scanItem(game, id, key string, choices map[string]map[string][]s
 	if err != nil {
 		return "", nil, done, err
 	}
-	if found, err = manifest.Scan(src); err != nil {
+	if found, err = smapimanifest.Scan(src); err != nil {
 		return "", nil, done, err
 	}
 	if len(found) == 0 {

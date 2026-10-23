@@ -5,12 +5,11 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
-func opt(id string) manifest.Dependency { return manifest.Dependency{UniqueID: id} }
+func opt(id string) mod.Dependency { return mod.Dependency{UniqueID: id} }
 
 func TestDependencyCycles(t *testing.T) {
 	pack := inst("p", "Pack", "1.0", true)

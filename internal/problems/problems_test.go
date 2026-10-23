@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -46,14 +45,14 @@ func (f fakeMeta) CheckUpdates(_ context.Context, req meta.UpdateRequest) []meta
 	return out
 }
 
-func inst(key, id, version string, enabled bool, deps ...manifest.Dependency) framework.Mod {
+func inst(key, id, version string, enabled bool, deps ...mod.Dependency) framework.Mod {
 	m := framework.Mod{Key: key, SourceKind: profile.KindLocal, Enabled: enabled}
 	m.Name, m.UniqueID, m.Version, m.Dependencies = id, id, version, deps
 	return m
 }
 
-func req(id, minimum string) manifest.Dependency {
-	return manifest.Dependency{UniqueID: id, MinimumVersion: minimum, Required: true}
+func req(id, minimum string) mod.Dependency {
+	return mod.Dependency{UniqueID: id, MinimumVersion: minimum, Required: true}
 }
 
 func TestMissingKinds(t *testing.T) {
@@ -71,7 +70,7 @@ func TestMissingKinds(t *testing.T) {
 		{"release meets prerelease minimum", []framework.Mod{inst("a", "A", "1.0", true, req("B", "1.2-beta.1")), inst("b", "B", "1.2", true)}, nil},
 		{"prerelease meets lower prerelease", []framework.Mod{inst("a", "A", "1.0", true, req("B", "1.2-alpha")), inst("b", "B", "1.2-beta", true)}, nil},
 		{"unparseable version is not flagged", []framework.Mod{inst("a", "A", "1.0", true, req("B", "1.2")), inst("b", "B", "weird", true)}, nil},
-		{"optional ignored", []framework.Mod{inst("a", "A", "1.0", true, manifest.Dependency{UniqueID: "B", Required: false})}, nil},
+		{"optional ignored", []framework.Mod{inst("a", "A", "1.0", true, mod.Dependency{UniqueID: "B", Required: false})}, nil},
 		{"disabled dependent ignored", []framework.Mod{inst("a", "A", "1.0", false, req("B", ""))}, nil},
 		{"one of two copies satisfies", []framework.Mod{
 			inst("a", "A", "1.0", true, req("B", "2.0")), inst("b1", "B", "1.0", true), inst("b2", "B", "2.0", true),
@@ -98,7 +97,7 @@ func TestMissingKinds(t *testing.T) {
 
 func TestContentPackForIsRequired(t *testing.T) {
 	m := inst("a", "A", "1.0", true)
-	m.Dependencies = []manifest.Dependency{{UniqueID: "Pathoschild.ContentPatcher", MinimumVersion: "2.0", Required: true}}
+	m.Dependencies = []mod.Dependency{{UniqueID: "Pathoschild.ContentPatcher", MinimumVersion: "2.0", Required: true}}
 	got := Check(context.Background(), fakeMeta{}, testEnv, []framework.Mod{m}, nil)
 	if len(got.Missing) != 1 || got.Missing[0].ID != "smapi:Pathoschild.ContentPatcher" {
 		t.Fatalf("missing = %+v", got.Missing)

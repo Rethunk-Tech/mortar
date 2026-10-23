@@ -10,7 +10,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/jsonc"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 )
 
@@ -64,7 +64,7 @@ func TestAssetConflicts(t *testing.T) {
 			t.Fatalf("same entry reported: %+v", got.AssetConflicts)
 		}
 		b = editB
-		b.Dependencies = []manifest.Dependency{{UniqueID: a.UniqueID}}
+		b.Dependencies = []mod.Dependency{{UniqueID: a.UniqueID}}
 		if got := check([]framework.Mod{a, b}); len(got.AssetConflicts) != 0 {
 			t.Fatalf("dependency reported: %+v", got.AssetConflicts)
 		}

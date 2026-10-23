@@ -14,7 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -154,15 +154,15 @@ func (s *Store) UnhideMod(game, id, key, folder string) (Profile, error) {
 		if err != nil {
 			return err
 		}
-		b, err := fsx.ReadFile(filepath.Join(root, filepath.FromSlash(newRel), manifest.FileName))
+		b, err := fsx.ReadFile(filepath.Join(root, filepath.FromSlash(newRel), smapimanifest.FileName))
 		if err != nil {
 			return err
 		}
-		m, err := manifest.Parse(b)
+		m, err := smapimanifest.Parse(b)
 		if err != nil {
 			return err
 		}
-		e.Mods = append(e.Mods, entryMods([]manifest.Mod{{Manifest: m, Folder: newRel}})...)
+		e.Mods = append(e.Mods, entryMods([]smapimanifest.Mod{{Manifest: m, Folder: newRel}})...)
 		return nil
 	})
 }
@@ -200,9 +200,9 @@ func hiddenUnder(root string, ours map[string]bool) ([]HiddenMod, error) {
 	var out []HiddenMod
 	var walk func(dir, rel string, hidden bool) error
 	walk = func(dir, rel string, hidden bool) error {
-		b, err := fsx.ReadFile(filepath.Join(dir, manifest.FileName))
+		b, err := fsx.ReadFile(filepath.Join(dir, smapimanifest.FileName))
 		if err == nil {
-			if m, perr := manifest.Parse(b); perr == nil && hidden {
+			if m, perr := smapimanifest.Parse(b); perr == nil && hidden {
 				out = append(out, HiddenMod{Folder: rel, ID: m.ModID(), Name: m.Name, Author: m.Author, Version: m.Version})
 			}
 			return nil

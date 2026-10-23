@@ -1,8 +1,10 @@
-package manifest
+package smapimanifest
 
 import (
 	"slices"
 	"testing"
+
+	"github.com/Rethunk-Tech/mortar/internal/ghrepo"
 )
 
 // FuzzParse feeds SMAPI manifest.json files as mods ship them: BOMs, comments, trailing commas and odd key casing.
@@ -33,11 +35,10 @@ func FuzzParse(f *testing.F) {
 			if d.UniqueID == "" {
 				t.Fatalf("dependency without a UniqueID: %+v", d)
 			}
-			_ = d.Dep()
 		}
 		for _, k := range m.UpdateKeys {
 			_, _ = NexusUpdateKey(k)
-			if repo, ok := GitHubUpdateKey(k); ok && !ValidGitHubRepo(repo) {
+			if repo, ok := GitHubUpdateKey(k); ok && !ghrepo.Valid(repo) {
 				t.Fatalf("update key %q gives repo %q, which would move the GitHub URL's path", k, repo)
 			}
 		}

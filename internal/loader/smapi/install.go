@@ -20,7 +20,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	gamert "github.com/Rethunk-Tech/mortar/internal/runtime"
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
@@ -218,11 +218,11 @@ var bundledMods = []string{"ConsoleCommands", "SaveBackup"}
 
 // bundledVersion reads the version from Console Commands' manifest, which the installer sets to SMAPI's own.
 func bundledVersion(dir string) string {
-	b, err := fsx.ReadFile(filepath.Join(dir, "Mods", bundledMods[0], manifest.FileName))
+	b, err := fsx.ReadFile(filepath.Join(dir, "Mods", bundledMods[0], smapimanifest.FileName))
 	if err != nil {
 		return ""
 	}
-	m, err := manifest.Parse(b)
+	m, err := smapimanifest.Parse(b)
 	if err != nil {
 		return ""
 	}

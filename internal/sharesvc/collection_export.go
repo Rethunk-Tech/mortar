@@ -14,7 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/i18n"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/pack"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -168,13 +168,13 @@ func buildCollection(p profile.Profile, domain, modsDir string, facts fileFacts)
 			if m.Folder != "." {
 				mf = filepath.Join(mf, filepath.FromSlash(m.Folder))
 			}
-			raw, err := fsx.ReadFile(filepath.Join(mf, manifest.FileName))
+			raw, err := fsx.ReadFile(filepath.Join(mf, smapimanifest.FileName))
 			if err != nil {
-				skipped = append(skipped, m.ID.Local()+"/"+manifest.FileName)
+				skipped = append(skipped, m.ID.Local()+"/"+smapimanifest.FileName)
 				continue
 			}
 			dir := "bundled/" + m.ID.Local() + "/"
-			files = append(files, pack.File{Path: dir + manifest.FileName, Data: raw})
+			files = append(files, pack.File{Path: dir + smapimanifest.FileName, Data: raw})
 			for _, c := range found {
 				files = append(files, pack.File{Path: dir + c.Path, Data: c.Data})
 			}

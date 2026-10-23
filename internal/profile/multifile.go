@@ -13,7 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -343,7 +343,7 @@ func (s *Store) fillOneExtraUpdate(game, id, oldDir, tmp, oldProfKey, newKey str
 		if !strings.HasPrefix(oldFolder, oldPrefix) {
 			continue
 		}
-		if !slices.ContainsFunc(found, func(m manifest.Mod) bool { return mod.Equal(m.ModID(), om.ID) }) {
+		if !slices.ContainsFunc(found, func(m smapimanifest.Mod) bool { return mod.Equal(m.ModID(), om.ID) }) {
 			continue
 		}
 		rel := strings.TrimPrefix(oldFolder, oldPrefix)
@@ -413,7 +413,7 @@ func (s *Store) copyExtraInto(game, id, entryDir, extraKey string, choices map[s
 }
 
 func (s *Store) refreshEntryMods(e *Entry, entryDir string) error {
-	found, err := manifest.Scan(entryDir)
+	found, err := smapimanifest.Scan(entryDir)
 	if err != nil {
 		return err
 	}

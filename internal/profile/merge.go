@@ -11,7 +11,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -35,7 +35,7 @@ type MergePreview struct {
 func indexMergeable(p Profile) map[string]DiffSide {
 	out := indexUserMods(p)
 	for k, side := range out {
-		if manifest.LoaderManaged(side.ID) {
+		if smapimanifest.LoaderManaged(side.ID) {
 			delete(out, k)
 		}
 	}

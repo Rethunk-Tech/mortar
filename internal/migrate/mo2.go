@@ -11,7 +11,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
 const (
@@ -172,7 +172,7 @@ func appendMO2Mod(out []ModPreview, missing []string, modsPath string, byBase ma
 	modDir := filepath.Join(modsPath, entry.name)
 	meta := readMO2Meta(modDir)
 	items := byBase[entry.name]
-	if entry.enabled && len(items) == 0 && meta.modID == 0 && (!smapiGame || !manifest.LoaderManaged(mod.SMAPI(entry.name))) {
+	if entry.enabled && len(items) == 0 && meta.modID == 0 && (!smapiGame || !smapimanifest.LoaderManaged(mod.SMAPI(entry.name))) {
 		if _, err := os.Stat(modDir); err != nil {
 			return out, append(missing, entry.name)
 		}

@@ -7,7 +7,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
@@ -41,7 +41,7 @@ func TestCleanupHintsTilesheets(t *testing.T) {
 		other := framework.Mod{
 			Key: "optional-user", Enabled: true,
 			Name: "Optional User", UniqueID: "Other.Optional",
-			Dependencies: []manifest.Dependency{{UniqueID: "Tiles.Optional", Required: false}},
+			Dependencies: []mod.Dependency{{UniqueID: "Tiles.Optional", Required: false}},
 		}
 		if got := cleanup([]framework.Mod{pack, other}); len(got) != 0 {
 			t.Fatalf("optional dependency was flagged: %#v", got)
@@ -59,7 +59,7 @@ func TestCleanupHintsTilesheets(t *testing.T) {
 		other := framework.Mod{
 			Key: "disabled-user", Enabled: false,
 			Name: "Disabled User", UniqueID: "Other.Disabled",
-			Dependencies: []manifest.Dependency{{UniqueID: "Tiles.Disabled", Required: false}},
+			Dependencies: []mod.Dependency{{UniqueID: "Tiles.Disabled", Required: false}},
 		}
 		got := cleanup([]framework.Mod{pack, other})
 		if len(got) != 1 || got[0].Reason != "Used only by switched-off mods: Disabled User" {

@@ -11,7 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/share"
 )
@@ -92,10 +92,10 @@ type bundle struct{ files map[string][]byte }
 func (b *bundle) configs() []share.Config {
 	root, uid := "", mod.ID("")
 	for rel, data := range b.files {
-		if path.Base(rel) != manifest.FileName {
+		if path.Base(rel) != smapimanifest.FileName {
 			continue
 		}
-		m, err := manifest.Parse(data)
+		m, err := smapimanifest.Parse(data)
 		if err != nil {
 			continue
 		}

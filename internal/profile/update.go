@@ -16,7 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamepkg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -250,7 +250,7 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	if err != nil {
 		return Entry{}, swapped{}, err
 	}
-	found, err := manifest.Scan(newSrc)
+	found, err := smapimanifest.Scan(newSrc)
 	if err != nil {
 		return Entry{}, swapped{}, err
 	}
@@ -297,7 +297,7 @@ func (s *Store) swapEntry(game, id, dir string, e Entry, newKey string, source *
 	return ne, sw, nil
 }
 
-func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry, ne *Entry, newManifests []manifest.Mod) (swapped, error) {
+func fillUpdate(s *Store, game, id, tmp, modsDir, oldSrc, newSrc string, e Entry, ne *Entry, newManifests []smapimanifest.Mod) (swapped, error) {
 	if err := datadir.MaterializeTree(newSrc, tmp); err != nil {
 		return swapped{}, err
 	}
@@ -521,7 +521,7 @@ func copyOver(src, dst string) error {
 	return fsx.WriteFile(dst, b, 0o600)
 }
 
-func deleteOldVersion(found []manifest.Mod, uniqueID mod.ID) bool {
+func deleteOldVersion(found []smapimanifest.Mod, uniqueID mod.ID) bool {
 	for _, m := range found {
 		if mod.Equal(m.ModID(), uniqueID) {
 			return m.DeleteOldVersion

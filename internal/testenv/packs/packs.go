@@ -7,7 +7,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -30,11 +30,11 @@ func Disk(t *testing.T, id string, files map[string]string) framework.Mod {
 
 // FromDisk fills in what the profile scan reads from a mod's manifest and the checks rely on.
 func FromDisk(im framework.Mod) framework.Mod {
-	raw, err := fsx.ReadFile(filepath.Join(im.Folder, manifest.FileName))
+	raw, err := fsx.ReadFile(filepath.Join(im.Folder, smapimanifest.FileName))
 	if err != nil {
 		return im
 	}
-	if m, err := manifest.Parse(raw); err == nil {
+	if m, err := smapimanifest.Parse(raw); err == nil {
 		im.ContentPackFor = m.ContentPackFor
 	}
 	return im

@@ -14,7 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -132,7 +132,7 @@ func (s *Store) previousVersion(game string, e Entry, uniqueID mod.ID) string {
 	if err != nil {
 		return ""
 	}
-	found, err := manifest.Scan(src)
+	found, err := smapimanifest.Scan(src)
 	if err != nil {
 		return ""
 	}

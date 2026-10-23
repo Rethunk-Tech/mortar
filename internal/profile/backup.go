@@ -14,7 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -95,7 +95,7 @@ func (s *Store) Backup(game, id string) (Profile, map[string][]byte, error) {
 			folder = filepath.Join(modsDir, "."+e.Key)
 		}
 		err := walk(folder, "mods/"+e.Key+"/", func(rel string, size int64) bool {
-			return strings.EqualFold(filepath.Ext(rel), ".json") && !strings.EqualFold(filepath.Base(rel), manifest.FileName) && size <= maxBackupConfig
+			return strings.EqualFold(filepath.Ext(rel), ".json") && !strings.EqualFold(filepath.Base(rel), smapimanifest.FileName) && size <= maxBackupConfig
 		})
 		if err != nil {
 			return Profile{}, nil, err

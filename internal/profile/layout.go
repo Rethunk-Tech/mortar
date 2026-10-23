@@ -16,7 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -167,7 +167,7 @@ func (s *Store) packageMods(game, key, title string) (mods []Component, ok bool,
 		c := Component{ID: mod.NewID(mod.FormatFolder, key), Name: cmp.Or(title, key), Folder: "."}
 		if file, ok := installer.ModRootFile(arch, g); ok {
 			if b, rerr := fsx.ReadFile(filepath.Join(arch.Dir, filepath.FromSlash(file))); rerr == nil {
-				if info, perr := manifest.ParseModInfo(b); perr == nil {
+				if info, perr := smapimanifest.ParseModInfo(b); perr == nil {
 					c.Name, c.Version, c.Author = cmp.Or(info.Name, info.ModID, title, key), info.Version, strings.Join(info.Authors, ", ")
 					c.ModID, c.Requires, c.MinGame = strings.ToLower(info.ModID), info.Dependencies, info.GameVersion
 				}

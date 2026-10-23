@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
 const ContentPatcherID = "Pathoschild.ContentPatcher"
@@ -61,7 +61,7 @@ func Parse(contentJSON []byte) (Schema, error) {
 
 // IsContentPack reports a Pathoschild.ContentPatcher content pack.
 func IsContentPack(manifestJSON []byte) bool {
-	m, err := manifest.Parse(manifestJSON)
+	m, err := smapimanifest.Parse(manifestJSON)
 	return err == nil && strings.EqualFold(m.ContentPackFor, ContentPatcherID)
 }
 

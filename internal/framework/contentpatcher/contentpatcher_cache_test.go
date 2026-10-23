@@ -21,7 +21,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
 func TestContentPackDiskCache(t *testing.T) {
@@ -433,16 +433,16 @@ func vmHWM() int64 {
 	return 0
 }
 
-func contentPackManifest(folder string) (manifest.Manifest, bool) {
+func contentPackManifest(folder string) (smapimanifest.Manifest, bool) {
 	im := packs.FromDisk(framework.Mod{Folder: folder})
 	if !isContentPatcherPack(im) {
-		return manifest.Manifest{}, false
+		return smapimanifest.Manifest{}, false
 	}
-	raw, err := fsx.ReadFile(filepath.Join(folder, manifest.FileName))
+	raw, err := fsx.ReadFile(filepath.Join(folder, smapimanifest.FileName))
 	if err != nil {
-		return manifest.Manifest{}, false
+		return smapimanifest.Manifest{}, false
 	}
-	man, err := manifest.Parse(raw)
+	man, err := smapimanifest.Parse(raw)
 	return man, err == nil
 }
 

@@ -15,7 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/ids"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -172,7 +172,7 @@ func (s *Store) syncFolder(ctx context.Context, game, id string, f gameModFolder
 func heldBy(p Profile, f gameModFolder) (key, name string) {
 	for _, e := range p.Entries {
 		for _, m := range e.Mods {
-			if slices.ContainsFunc(f.mods, func(x manifest.Mod) bool { return mod.Equal(x.ModID(), m.ID) }) {
+			if slices.ContainsFunc(f.mods, func(x smapimanifest.Mod) bool { return mod.Equal(x.ModID(), m.ID) }) {
 				return e.Key, m.Name
 			}
 		}
@@ -335,7 +335,7 @@ func (s *Store) GameModsDiff(game, id, modsDir string, dismissed []string) (Game
 		}
 		for _, m := range sl.folder.mods {
 			k := m.ModID().Fold()
-			if manifest.LoaderManaged(m.ModID()) {
+			if smapimanifest.LoaderManaged(m.ModID()) {
 				continue
 			}
 			inFolder[k] = true

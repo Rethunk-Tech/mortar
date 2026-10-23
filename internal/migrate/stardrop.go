@@ -15,7 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/modname"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
 type stardropProfile struct {
@@ -190,7 +190,7 @@ func missingEnabledIDs(enabledIDs []mod.ID, found []folderMod) []string {
 	var missing []string
 	for _, id := range enabledIDs {
 		key := id.Fold()
-		if id.Local() == "" || seen[key] || foundIDs[key] || manifest.LoaderManaged(id) {
+		if id.Local() == "" || seen[key] || foundIDs[key] || smapimanifest.LoaderManaged(id) {
 			continue
 		}
 		seen[key] = true
@@ -200,7 +200,7 @@ func missingEnabledIDs(enabledIDs []mod.ID, found []folderMod) []string {
 }
 
 type folderMod struct {
-	manifest.Mod
+	smapimanifest.Mod
 	Path string
 }
 
@@ -218,12 +218,12 @@ func folderMods(modsPath string) ([]folderMod, error) {
 			continue
 		}
 		path := filepath.Join(modsPath, entry.Name())
-		mods, err := manifest.Scan(path)
+		mods, err := smapimanifest.Scan(path)
 		if err != nil {
 			return nil, err
 		}
 		for _, item := range mods {
-			if manifest.LoaderManaged(item.ModID()) {
+			if smapimanifest.LoaderManaged(item.ModID()) {
 				continue
 			}
 			out = append(out, folderMod{Mod: item, Path: path})
@@ -253,11 +253,11 @@ func stagedMods(gameID, modsPath string) ([]folderMod, error) {
 		path := filepath.Join(modsPath, entry.Name())
 		info := modname.Of(gameID, path)
 		id := cmp.Or(info.ID, mod.NewID(mod.FormatFolder, entry.Name()))
-		if manifest.LoaderManaged(id) {
+		if smapimanifest.LoaderManaged(id) {
 			continue
 		}
-		m := manifest.Manifest{Name: cmp.Or(info.Name, entry.Name()), Version: info.Version, UniqueID: id.Local(), Format: id.Format()}
-		item := manifest.Mod{Manifest: m, Folder: "."}
+		m := smapimanifest.Manifest{Name: cmp.Or(info.Name, entry.Name()), Version: info.Version, UniqueID: id.Local(), Format: id.Format()}
+		item := smapimanifest.Mod{Manifest: m, Folder: "."}
 		out = append(out, folderMod{Mod: item, Path: path})
 	}
 	return out, nil
@@ -265,7 +265,7 @@ func stagedMods(gameID, modsPath string) ([]folderMod, error) {
 
 func nexusID(updateKeys []string) int {
 	for _, key := range updateKeys {
-		if id, ok := manifest.NexusUpdateKey(key); ok && id > 0 {
+		if id, ok := smapimanifest.NexusUpdateKey(key); ok && id > 0 {
 			return id
 		}
 	}

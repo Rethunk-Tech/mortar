@@ -16,7 +16,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
@@ -87,7 +87,7 @@ type gameModFolder struct {
 	dir      string
 	label    string
 	disabled bool
-	mods     []manifest.Mod
+	mods     []smapimanifest.Mod
 	source   Source
 	// loose marks a folder game's mod file or folder, which has no manifest: dir may then be a file.
 	loose bool
@@ -112,17 +112,17 @@ func bundledFolder(name string) string {
 	return ""
 }
 
-func sourceFromMods(mods []manifest.Mod, folder string) Source {
+func sourceFromMods(mods []smapimanifest.Mod, folder string) Source {
 	for _, m := range mods {
 		for _, k := range m.UpdateKeys {
-			if n, ok := manifest.NexusUpdateKey(k); ok && n > 0 {
+			if n, ok := smapimanifest.NexusUpdateKey(k); ok && n > 0 {
 				return Source{Kind: KindNexus, Name: folder, ModID: n, Version: m.Version}
 			}
 		}
 	}
 	for _, m := range mods {
 		for _, k := range m.UpdateKeys {
-			if repo, ok := manifest.GitHubUpdateKey(k); ok {
+			if repo, ok := smapimanifest.GitHubUpdateKey(k); ok {
 				return Source{Kind: KindGitHub, Name: folder, Repo: repo, Version: m.Version}
 			}
 		}
@@ -141,15 +141,15 @@ func sourceLabel(s Source) string {
 	}
 }
 
-func readTopManifest(dir string) (manifest.Manifest, bool, error) {
-	b, err := manifest.ReadFile(dir)
+func readTopManifest(dir string) (smapimanifest.Manifest, bool, error) {
+	b, err := smapimanifest.ReadFile(dir)
 	if errors.Is(err, fs.ErrNotExist) {
-		return manifest.Manifest{}, false, nil
+		return smapimanifest.Manifest{}, false, nil
 	}
 	if err != nil {
-		return manifest.Manifest{}, true, err
+		return smapimanifest.Manifest{}, true, err
 	}
-	m, err := manifest.Parse(b)
+	m, err := smapimanifest.Parse(b)
 	return m, true, err
 }
 
@@ -183,13 +183,13 @@ func classifyFolder(dir, name string) (gameModSlot, bool) {
 	failed := func(reason string) (gameModSlot, bool) { return failedCode(reason, "", nil) }
 	m, hasManifest, err := readTopManifest(dir)
 	if err != nil && hasManifest {
-		return failed(manifest.Invalid{Folder: ".", Err: err}.Error())
+		return failed(smapimanifest.Invalid{Folder: ".", Err: err}.Error())
 	}
-	var mods []manifest.Mod
+	var mods []smapimanifest.Mod
 	if hasManifest {
-		mods = []manifest.Mod{{Manifest: m, Folder: "."}}
+		mods = []smapimanifest.Mod{{Manifest: m, Folder: "."}}
 	} else {
-		found, invalid, scanErr := manifest.ScanInvalid(dir)
+		found, invalid, scanErr := smapimanifest.ScanInvalid(dir)
 		if scanErr != nil {
 			return failed(scanErr.Error())
 		}
@@ -206,7 +206,7 @@ func classifyFolder(dir, name string) (gameModSlot, bool) {
 	}
 	allBundled := true
 	for _, im := range mods {
-		if !manifest.LoaderManaged(im.ModID()) {
+		if !smapimanifest.LoaderManaged(im.ModID()) {
 			allBundled = false
 			break
 		}
@@ -321,7 +321,7 @@ func scanGameMods(modsDir string) ([]gameModSlot, error) {
 	return slots, nil
 }
 
-func previewMod(f gameModFolder, m manifest.Mod) GameModPreview {
+func previewMod(f gameModFolder, m smapimanifest.Mod) GameModPreview {
 	name := m.Name
 	name = cmp.Or(name, m.ModID().Local())
 	return GameModPreview{

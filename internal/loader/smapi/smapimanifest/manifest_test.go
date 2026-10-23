@@ -1,4 +1,4 @@
-package manifest
+package smapimanifest
 
 import (
 	"os"
@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
@@ -17,7 +18,7 @@ func TestParseLenient(t *testing.T) {
 	}{
 		"bom comments trailing commas": {
 			"\xef\xbb\xbf{\n  // the mod\n  \"Name\": \"Content Patcher\", /* inline */\n  \"Author\": \"Pathoschild\",\n  \"Version\": \"2.0.0\",\n  \"Description\": \"http://x // not a comment\",\n  \"UniqueID\": \"Pathoschild.ContentPatcher\",\n  \"Dependencies\": [ { \"UniqueID\": \"a\", }, ],\n}\n",
-			Manifest{Name: "Content Patcher", Author: "Pathoschild", Version: "2.0.0", UniqueID: "Pathoschild.ContentPatcher", Description: "http://x // not a comment", Dependencies: []Dependency{{UniqueID: "a", Required: true}}},
+			Manifest{Name: "Content Patcher", Author: "Pathoschild", Version: "2.0.0", UniqueID: "Pathoschild.ContentPatcher", Description: "http://x // not a comment", Dependencies: []mod.Dependency{{UniqueID: "a", Required: true}}},
 		},
 		"lowercase keys": {
 			`{"name":"N","author":"A","version":"1.2","uniqueid":"A.N","description":"d"}`,
@@ -27,8 +28,8 @@ func TestParseLenient(t *testing.T) {
 			`{"UniqueID":"A.P","UpdateKeys":["Nexus:1"," ",7],"Dependencies":[{"UniqueID":"B.Req","MinimumVersion":"1.2-beta"},{"uniqueid":"B.Opt","isrequired":false},{"MinimumVersion":"1"},"junk"],"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher","MinimumVersion":"2.0"}}`,
 			Manifest{
 				UniqueID: "A.P", UpdateKeys: []string{"Nexus:1"}, ContentPackFor: "Pathoschild.ContentPatcher",
-				Dependencies: []Dependency{
-					{"B.Req", "1.2-beta", true, ""}, {"B.Opt", "", false, ""}, {"Pathoschild.ContentPatcher", "2.0", true, ""},
+				Dependencies: []mod.Dependency{
+					{UniqueID: "B.Req", MinimumVersion: "1.2-beta", Required: true}, {UniqueID: "B.Opt"}, {UniqueID: "Pathoschild.ContentPatcher", MinimumVersion: "2.0", Required: true},
 				},
 			},
 		},
@@ -36,7 +37,7 @@ func TestParseLenient(t *testing.T) {
 			`{"UniqueID":"A.P","Dependencies":[{"UniqueID":"pathoschild.contentpatcher","IsRequired":false}],"ContentPackFor":{"UniqueID":"Pathoschild.ContentPatcher","MinimumVersion":"2.0"}}`,
 			Manifest{
 				UniqueID: "A.P", ContentPackFor: "Pathoschild.ContentPatcher",
-				Dependencies: []Dependency{{"pathoschild.contentpatcher", "2.0", true, ""}},
+				Dependencies: []mod.Dependency{{UniqueID: "pathoschild.contentpatcher", MinimumVersion: "2.0", Required: true}},
 			},
 		},
 		"legacy version object": {
@@ -163,17 +164,11 @@ func TestParseAgainReturnsAnUnsharedCopy(t *testing.T) {
 	}
 }
 
-func TestGitHubRepoRefusesWhatMovesTheURL(t *testing.T) {
+func TestGitHubUpdateKeyRefusesWhatMovesTheURL(t *testing.T) {
 	for _, repo := range []string{"me/..", "./mod", "../..", "me/.", "o/r?x", "o/r#x", "o/r/s", "o /r"} {
-		if ValidGitHubRepo(repo) {
-			t.Errorf("ValidGitHubRepo(%q) = true", repo)
-		}
 		if _, ok := GitHubUpdateKey("GitHub:" + repo); ok {
 			t.Errorf("GitHubUpdateKey accepted %q", repo)
 		}
-	}
-	if !ValidGitHubRepo("me/mod.cfg") {
-		t.Error("a dotted repo name was refused")
 	}
 }
 

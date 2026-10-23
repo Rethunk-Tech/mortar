@@ -19,7 +19,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
 type vortexProfile struct {
@@ -109,8 +109,8 @@ func vortexPreviewState(modsPath, domain, gameID string, state map[string]json.R
 		enabled := selected.ModState[modID].Enabled
 		path := vortexModPath(modsPath, vm)
 		items := byPath[filepath.Clean(path)]
-		if enabled && len(items) == 0 && (!smapiGame || !manifest.LoaderManaged(mod.SMAPI(modID)) &&
-			!manifest.LoaderManaged(mod.SMAPI(rawString(vm.Attributes, "uniqueId", "uniqueID")))) {
+		if enabled && len(items) == 0 && (!smapiGame || !smapimanifest.LoaderManaged(mod.SMAPI(modID)) &&
+			!smapimanifest.LoaderManaged(mod.SMAPI(rawString(vm.Attributes, "uniqueId", "uniqueID")))) {
 			missing = append(missing, modID)
 			continue
 		}

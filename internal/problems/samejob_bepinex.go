@@ -7,7 +7,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -91,7 +91,7 @@ func packageFootprints(pkgs []profile.PackageRef, mods []framework.Mod) (map[str
 					continue
 				}
 				oid := mods[byKey[other]].ModID()
-				m.Dependencies = append(m.Dependencies, manifest.Dependency{UniqueID: oid.Local(), Format: oid.Format(), Required: true})
+				m.Dependencies = append(m.Dependencies, mod.Dependency{UniqueID: oid.Local(), Format: oid.Format(), Required: true})
 			}
 		}
 	}

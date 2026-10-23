@@ -22,7 +22,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -969,7 +969,7 @@ func (s *Service) unreadableManifests(gameID, id string) []Damaged {
 	}
 	out := make([]Damaged, 0, len(bad))
 	for _, b := range bad {
-		d := Damaged{Key: b.Key, Name: filepath.Base(b.Folder), Files: []string{manifest.FileName}}
+		d := Damaged{Key: b.Key, Name: filepath.Base(b.Folder), Files: []string{smapimanifest.FileName}}
 		if b.Missing {
 			d.Missing = 1
 		} else {

@@ -3,7 +3,7 @@
 package framework
 
 import (
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -36,7 +36,7 @@ type Mod struct {
 	LoadAfter []mod.ID
 	// Folder is the mod's directory in the profile, used to read Content Patcher content.json.
 	Folder string
-	manifest.Manifest
+	smapimanifest.Manifest
 }
 
 // WinnerKind values of an AssetConflict.

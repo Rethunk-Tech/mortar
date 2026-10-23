@@ -13,7 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/loader/smapi"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -33,7 +33,7 @@ func Of(gameID, dir string) Info {
 	g := installer.GameOf(gameID)
 	switch {
 	case slices.Contains(g.Loaders, smapi.ID):
-		mods, err := manifest.Scan(dir)
+		mods, err := smapimanifest.Scan(dir)
 		if err != nil || len(mods) == 0 {
 			return Info{}
 		}

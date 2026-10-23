@@ -19,7 +19,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/wineoverride"
 )
@@ -383,14 +382,14 @@ type Manifest struct {
 
 // Needs is the packages the manifest depends on, each at least the version it names. The BepInEx pack is left out:
 // the loader install supplies it, so no profile entry ever stands for it.
-func (m Manifest) Needs() []manifest.Dependency {
-	var out []manifest.Dependency
+func (m Manifest) Needs() []mod.Dependency {
+	var out []mod.Dependency
 	for _, s := range m.Dependencies {
 		d, err := deps.Thunderstore(s)
 		if err != nil || components.IsLoaderPackage(strings.TrimPrefix(d.Target.Package, "thunderstore:")) {
 			continue
 		}
-		out = append(out, manifest.NewDependency(mod.ID(d.Target.Package), d.Constraint, true))
+		out = append(out, mod.NewDependency(mod.ID(d.Target.Package), d.Constraint, true))
 	}
 	return out
 }

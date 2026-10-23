@@ -1,24 +1,22 @@
-// Package manifest reads SMAPI mod manifests the way SMAPI does: leniently.
-package manifest
+// Package smapimanifest reads SMAPI mod manifests the way SMAPI does: leniently.
+package smapimanifest
 
 import (
 	"bytes"
-	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strconv"
 	"strings"
 	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/ghrepo"
 	"github.com/Rethunk-Tech/mortar/internal/jsonc"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
@@ -39,7 +37,7 @@ type Manifest struct {
 	// ContentPackFor is the ContentPackFor framework UniqueID when the manifest declares one.
 	ContentPackFor string
 	// Dependencies lists Dependencies[] and, as a required entry, the ContentPackFor framework.
-	Dependencies []Dependency
+	Dependencies []mod.Dependency
 	// UpdateCautionMessage is shown at update time when Stardrop or Mortar cannot read the new version's manifest yet.
 	UpdateCautionMessage string
 	// MinimumGameVersion is the oldest game version the mod runs on, when it declares one.
@@ -47,15 +45,6 @@ type Manifest struct {
 	// DeleteOldVersion tells Mortar to carry over only user-written config (such as config.json), not other edited files.
 	DeleteOldVersion bool
 	// Format is the mod.ID format UniqueID belongs to; empty is SMAPI, the only format a manifest.json is read in.
-	Format string
-}
-
-// Dependency is one mod another mod needs; Required defaults to true when the manifest omits IsRequired.
-type Dependency struct {
-	UniqueID       string
-	MinimumVersion string
-	Required       bool
-	// Format is the mod.ID format UniqueID belongs to; empty is SMAPI.
 	Format string
 }
 
@@ -202,12 +191,12 @@ func texts(v json.RawMessage) []string {
 	return out
 }
 
-func dependency(v json.RawMessage) (Dependency, bool) {
+func dependency(v json.RawMessage) (mod.Dependency, bool) {
 	var obj map[string]json.RawMessage
 	if json.Unmarshal(v, &obj) != nil {
-		return Dependency{}, false
+		return mod.Dependency{}, false
 	}
-	d := Dependency{UniqueID: text(obj, "uniqueid"), MinimumVersion: text(obj, "minimumversion"), Required: true}
+	d := mod.Dependency{UniqueID: text(obj, "uniqueid"), MinimumVersion: text(obj, "minimumversion"), Required: true}
 	if b := field(obj, "isrequired"); b != nil {
 		if required, ok := flexBool(b); ok {
 			d.Required = required
@@ -217,8 +206,8 @@ func dependency(v json.RawMessage) (Dependency, bool) {
 }
 
 // dependencies reads Dependencies[] and ContentPackFor, skipping entries without a UniqueID.
-func dependencies(raw map[string]json.RawMessage) []Dependency {
-	var out []Dependency
+func dependencies(raw map[string]json.RawMessage) []mod.Dependency {
+	var out []mod.Dependency
 	var items []json.RawMessage
 	if json.Unmarshal(field(raw, "dependencies"), &items) == nil {
 		for _, it := range items {
@@ -230,7 +219,7 @@ func dependencies(raw map[string]json.RawMessage) []Dependency {
 	if d, ok := dependency(field(raw, "contentpackfor")); ok {
 		d.Required = true
 		// Packs often list their framework in Dependencies too; it is one dependency, so it is checked and shown once.
-		i := slices.IndexFunc(out, func(o Dependency) bool { return strings.EqualFold(o.UniqueID, d.UniqueID) })
+		i := slices.IndexFunc(out, func(o mod.Dependency) bool { return strings.EqualFold(o.UniqueID, d.UniqueID) })
 		switch {
 		case i < 0:
 			out = append(out, d)
@@ -434,17 +423,7 @@ func CurseForgeUpdateKey(key string) (string, bool) {
 func GitHubUpdateKey(key string) (string, bool) {
 	site, rest, ok := strings.Cut(key, ":")
 	rest = strings.TrimSpace(rest)
-	return rest, ok && strings.EqualFold(strings.TrimSpace(site), "github") && ValidGitHubRepo(rest)
-}
-
-// repoPattern is a GitHub "owner/repo"; it also keeps anything but a name out of the API URL.
-var repoPattern = regexp.MustCompile(`^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$`)
-
-// ValidGitHubRepo reports a GitHub "owner/repo". It also refuses "." and "..", which the pattern admits but would
-// move the API URL's path.
-func ValidGitHubRepo(repo string) bool {
-	owner, name, _ := strings.Cut(repo, "/")
-	return repoPattern.MatchString(repo) && strings.Trim(owner, ".") != "" && strings.Trim(name, ".") != ""
+	return rest, ok && strings.EqualFold(strings.TrimSpace(site), "github") && ghrepo.Valid(rest)
 }
 
 // ModID is the manifest's mod as a mod.ID.
@@ -463,16 +442,6 @@ func (m Manifest) ContentPackForID() mod.ID {
 	return mod.SMAPI(m.ContentPackFor)
 }
 
-// Dep is the dependency in the model every loader shares.
-func (d Dependency) Dep() deps.Dependency {
-	out := deps.SMAPI(d.UniqueID, d.MinimumVersion, d.Required)
-	out.Target.Mod = d.ModID()
-	return out
-}
-
-// ModID is the needed mod as a mod.ID.
-func (d Dependency) ModID() mod.ID { return mod.NewID(cmp.Or(d.Format, mod.FormatSMAPI), d.UniqueID) }
-
 // WithModID returns the manifest naming id, for a manifest built from another source's data.
 func (m Manifest) WithModID(id mod.ID) Manifest {
 	m.UniqueID, m.Format = id.Local(), ""
@@ -480,13 +449,4 @@ func (m Manifest) WithModID(id mod.ID) Manifest {
 		m.Format = f
 	}
 	return m
-}
-
-// NewDependency is a Dependency on id.
-func NewDependency(id mod.ID, minimumVersion string, required bool) Dependency {
-	d := Dependency{UniqueID: id.Local(), MinimumVersion: minimumVersion, Required: required}
-	if f := id.Format(); f != mod.FormatSMAPI {
-		d.Format = f
-	}
-	return d
 }

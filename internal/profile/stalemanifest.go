@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -53,7 +53,7 @@ func (s *Store) FixStaleManifest(game, id, key string, uniqueID mod.ID, version 
 		if slices.Contains(e.ExtraStoreKeys, first) {
 			return errNotFixable
 		}
-		rel := filepath.Join(filepath.FromSlash(e.Mods[mi].Folder), manifest.FileName)
+		rel := filepath.Join(filepath.FromSlash(e.Mods[mi].Folder), smapimanifest.FileName)
 		if err := setManifestVersion(filepath.Join(modsDir, key, rel), uniqueID, version); err != nil {
 			return err
 		}
@@ -86,7 +86,7 @@ func setManifestVersion(path string, uniqueID mod.ID, version string) error {
 	if err != nil {
 		return err
 	}
-	m, err := manifest.Parse(b)
+	m, err := smapimanifest.Parse(b)
 	if err != nil || !mod.Equal(m.ModID(), uniqueID) {
 		return errNotFixable
 	}

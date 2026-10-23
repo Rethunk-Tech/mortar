@@ -19,7 +19,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
 
@@ -36,6 +35,9 @@ const (
 )
 
 const profileFile = "profile.json"
+
+// manifestFile is a mod's own manifest, which a shared config never carries.
+const manifestFile = "manifest.json"
 
 var (
 	uniqueID = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
@@ -276,7 +278,7 @@ func ReadConfigs(modsDir, key string, m profile.Component) (found []Config, skip
 			return err
 		}
 		rel = filepath.ToSlash(rel)
-		if strings.EqualFold(rel, manifest.FileName) {
+		if strings.EqualFold(rel, manifestFile) {
 			return nil
 		}
 		data, err := readCapped(p)

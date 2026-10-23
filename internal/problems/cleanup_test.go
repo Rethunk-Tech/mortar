@@ -4,26 +4,27 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 func TestCleanupHintsFindsUnusedFrameworkNeededOnlyByDisabledMod(t *testing.T) {
-	spaceCore := manifest.Manifest{
+	spaceCore := smapimanifest.Manifest{
 		Name:     "SpaceCore",
 		UniqueID: "spacechase0.SpaceCore",
 	}
-	oldPack := manifest.Manifest{
+	oldPack := smapimanifest.Manifest{
 		UniqueID: "Example.OldPack",
-		Dependencies: []manifest.Dependency{{
+		Dependencies: []mod.Dependency{{
 			UniqueID: "spacechase0.SpaceCore",
 			Required: true,
 		}},
 	}
-	contentFramework := manifest.Manifest{
+	contentFramework := smapimanifest.Manifest{
 		Name:     "Content Framework",
 		UniqueID: "Example.ContentFramework",
 	}
-	oldContentPack := manifest.Manifest{
+	oldContentPack := smapimanifest.Manifest{
 		UniqueID:       "Example.OldContentPack",
 		ContentPackFor: "Example.ContentFramework",
 	}
@@ -57,10 +58,10 @@ func TestCleanupHintsFindsUnusedFrameworkNeededOnlyByDisabledMod(t *testing.T) {
 }
 
 func TestCleanupHintsIgnoresOptionalDependents(t *testing.T) {
-	worldMaps := manifest.Manifest{Name: "World Maps", UniqueID: "Example.WorldMaps"}
-	earthyMaps := manifest.Manifest{
+	worldMaps := smapimanifest.Manifest{Name: "World Maps", UniqueID: "Example.WorldMaps"}
+	earthyMaps := smapimanifest.Manifest{
 		UniqueID:     "Example.EarthyMaps",
-		Dependencies: []manifest.Dependency{{UniqueID: "Example.WorldMaps", Required: false}},
+		Dependencies: []mod.Dependency{{UniqueID: "Example.WorldMaps", Required: false}},
 	}
 	mods := []framework.Mod{
 		{Key: "a", Enabled: true, Manifest: worldMaps},
@@ -80,7 +81,7 @@ func TestCleanupHintsFindsOrphanedImplicitMods(t *testing.T) {
 		return m
 	}
 	user := lib("Me.User", false)
-	user.Dependencies = []manifest.Dependency{{UniqueID: "Lib.Used", Required: true}, {UniqueID: "Lib.Optional"}}
+	user.Dependencies = []mod.Dependency{{UniqueID: "Lib.Used", Required: true}, {UniqueID: "Lib.Optional"}}
 	pack := lib("Lib.Tiles", true)
 	pack.ContentPackFor = "Pathoschild.ContentPatcher"
 	got := cleanupHints([]framework.Mod{user, lib("Lib.Used", true), lib("Lib.Optional", true), lib("Lib.Named", true), lib("Lib.Orphan", true), lib("Me.Chosen", false), pack}, nil, []string{"smapi:lib.named"})

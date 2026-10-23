@@ -16,7 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/problems"
@@ -650,9 +650,9 @@ func (r *resolver) resolve(ctx context.Context, refs []share.Ref) ([]Mod, []Prob
 func asInstalled(m Mod, df *meta.File) []framework.Mod {
 	var out []framework.Mod
 	for _, dm := range df.Mods {
-		mf := manifest.Manifest{Name: dm.Name, Version: dm.Version, UpdateKeys: dm.UpdateKeys}.WithModID(dm.ModID())
+		mf := smapimanifest.Manifest{Name: dm.Name, Version: dm.Version, UpdateKeys: dm.UpdateKeys}.WithModID(dm.ModID())
 		for _, d := range dm.Dependencies {
-			mf.Dependencies = append(mf.Dependencies, manifest.NewDependency(d.ModID(), d.MinimumVersion, d.Required))
+			mf.Dependencies = append(mf.Dependencies, mod.NewDependency(d.ModID(), d.MinimumVersion, d.Required))
 		}
 		out = append(out, framework.Mod{Key: m.Key, SourceKind: profile.KindNexus, Enabled: true, Manifest: mf})
 	}

@@ -5,7 +5,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
@@ -22,7 +22,7 @@ type Installed struct {
 	IgnoreUpdates bool
 	UpdateChannel string
 	LoadAfter     []mod.ID
-	manifest.Manifest
+	smapimanifest.Manifest
 }
 
 // UnreadableManifest is a mod of the profile whose manifest is gone (Missing) or no longer parses.
@@ -71,7 +71,7 @@ func (s *Store) installed(game, id string) ([]Installed, []UnreadableManifest, e
 			if !enabled {
 				folder = dotted
 			}
-			b, err := fsx.ReadFile(filepath.Join(folder, manifest.FileName))
+			b, err := fsx.ReadFile(filepath.Join(folder, smapimanifest.FileName))
 			if err != nil {
 				// A folder that is gone altogether is drift, which offers Restore.
 				if _, statErr := fsx.Stat(folder); statErr == nil {
@@ -79,7 +79,7 @@ func (s *Store) installed(game, id string) ([]Installed, []UnreadableManifest, e
 				}
 				continue
 			}
-			mf, err := manifest.Parse(b)
+			mf, err := smapimanifest.Parse(b)
 			if err != nil {
 				bad = append(bad, UnreadableManifest{Key: e.Key, Folder: folder})
 				continue
@@ -100,7 +100,7 @@ func (s *Store) packageInstalled(game string, e Entry) []Installed {
 	if s.items != nil {
 		dir, _ = s.items.Path(game, e.StoreKey())
 	}
-	var needs []manifest.Dependency
+	var needs []mod.Dependency
 	if dir != "" {
 		if b, err := fsx.ReadFile(filepath.Join(dir, "manifest.json")); err == nil {
 			if m, err := bepinex5.ParseManifest(b); err == nil {
@@ -111,7 +111,7 @@ func (s *Store) packageInstalled(game string, e Entry) []Installed {
 	out := make([]Installed, 0, len(e.Mods))
 	for _, raw := range e.Mods {
 		c := e.Shown(raw)
-		mf := manifest.Manifest{Name: c.Name, Author: c.Author, Version: c.Version, MinimumGameVersion: c.MinGame}.WithModID(c.ID)
+		mf := smapimanifest.Manifest{Name: c.Name, Author: c.Author, Version: c.Version, MinimumGameVersion: c.MinGame}.WithModID(c.ID)
 		mf.Dependencies = needs
 		out = append(out, Installed{
 			Key: e.Key, Folder: dir, Source: e.Source, Enabled: e.Enabled(c.ID),

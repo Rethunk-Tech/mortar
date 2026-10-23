@@ -7,8 +7,8 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
 )
@@ -212,11 +212,11 @@ func TestHideHeldDropsUnofficialWhenNever(t *testing.T) {
 }
 
 func TestRelate(t *testing.T) {
-	a := inst("k1", "me.a", "1.0.0", true, req("me.core", "2.0.0"), manifest.Dependency{UniqueID: "me.opt"})
+	a := inst("k1", "me.a", "1.0.0", true, req("me.core", "2.0.0"), mod.Dependency{UniqueID: "me.opt"})
 	a.UpdateKeys = []string{"Chucklefish:1", "Nexus:42@x"}
 	core := inst("k2", "me.core", "1.0.0", true)
 	user := inst("k3", "me.user", "1.0.0", true, req("me.a", ""))
-	extra := inst("k4", "me.extra", "1.0.0", true, manifest.Dependency{UniqueID: "me.a"})
+	extra := inst("k4", "me.extra", "1.0.0", true, mod.Dependency{UniqueID: "me.a"})
 	r, ok := Relate(deps.SemverSMAPI, []framework.Mod{a, core, user, extra}, "stardew", "k1", "smapi:me.a")
 	if !ok || r.PageURL != "https://www.nexusmods.com/stardewvalley/mods/42" {
 		t.Fatalf("relations = %+v, %v", r, ok)

@@ -13,7 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -362,7 +362,7 @@ func Relate(scheme string, mods []framework.Mod, gameID, key string, uniqueID mo
 		if x.Key == self.Key && mod.Equal(x.ModID(), self.ModID()) {
 			continue
 		}
-		i := slices.IndexFunc(x.Dependencies, func(d manifest.Dependency) bool { return mod.Equal(d.ModID(), self.ModID()) })
+		i := slices.IndexFunc(x.Dependencies, func(d mod.Dependency) bool { return mod.Equal(d.ModID(), self.ModID()) })
 		switch {
 		case i < 0:
 		case x.Dependencies[i].Required:
@@ -428,10 +428,10 @@ func sourcePage(gameID string, m framework.Mod) string {
 // pageURL is the page of the first update key that names one: a Nexus mod or a GitHub repository.
 func pageURL(domain string, keys []string) string {
 	for _, k := range keys {
-		if n, ok := manifest.NexusUpdateKey(k); ok {
+		if n, ok := smapimanifest.NexusUpdateKey(k); ok {
 			return siteURL(domain, meta.Ref{Site: "Nexus", ID: n})
 		}
-		if repo, ok := manifest.GitHubUpdateKey(k); ok {
+		if repo, ok := smapimanifest.GitHubUpdateKey(k); ok {
 			return "https://github.com/" + repo
 		}
 	}
@@ -441,7 +441,7 @@ func pageURL(domain string, keys []string) string {
 // nexusID is the Nexus mod of the first update key that names one, or 0.
 func nexusID(keys []string) int {
 	for _, k := range keys {
-		if n, ok := manifest.NexusUpdateKey(k); ok {
+		if n, ok := smapimanifest.NexusUpdateKey(k); ok {
 			return n
 		}
 	}
@@ -463,7 +463,7 @@ func githubUpdate(keys []string, url string) string {
 		return ""
 	}
 	for _, k := range keys {
-		if repo, ok := manifest.GitHubUpdateKey(k); ok {
+		if repo, ok := smapimanifest.GitHubUpdateKey(k); ok {
 			return repo
 		}
 	}
@@ -485,7 +485,7 @@ func githubFallback(keys []string, url string) string {
 		return ""
 	}
 	for _, k := range keys {
-		if repo, ok := manifest.GitHubUpdateKey(k); ok {
+		if repo, ok := smapimanifest.GitHubUpdateKey(k); ok {
 			return repo
 		}
 	}

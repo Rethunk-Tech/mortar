@@ -10,7 +10,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/launchsvc"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/testenv/packs"
 )
@@ -62,7 +61,7 @@ func TestSameJobWeighsMembersByHowFewModsWriteThem(t *testing.T) {
 		fp[mod.SMAPI(id).Fold()] = set
 		m := framework.Mod{Key: "k-" + id, Enabled: true, UniqueID: id, Name: id, Author: author}
 		for _, d := range deps {
-			m.Dependencies = append(m.Dependencies, manifest.Dependency{UniqueID: d})
+			m.Dependencies = append(m.Dependencies, mod.Dependency{UniqueID: d})
 		}
 		mods = append(mods, m)
 	}

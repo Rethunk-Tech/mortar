@@ -16,7 +16,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fomod"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -95,7 +95,7 @@ func hasManifestFile(root string) (bool, error) {
 		if err != nil {
 			return err
 		}
-		if !d.IsDir() && strings.EqualFold(d.Name(), manifest.FileName) {
+		if !d.IsDir() && strings.EqualFold(d.Name(), smapimanifest.FileName) {
 			found = true
 			return fs.SkipAll
 		}

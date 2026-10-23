@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -33,7 +32,7 @@ func Apply(modsDir string, entries []profile.Entry, configs []Config) (written [
 				continue
 			}
 			for _, c := range configs {
-				if !mod.Equal(c.ID, m.ID) || !validConfigPath(c.Path) || strings.EqualFold(c.Path, manifest.FileName) {
+				if !mod.Equal(c.ID, m.ID) || !validConfigPath(c.Path) || strings.EqualFold(c.Path, manifestFile) {
 					continue
 				}
 				dest := filepath.Join(folder, filepath.FromSlash(c.Path))

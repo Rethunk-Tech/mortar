@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
@@ -71,7 +71,7 @@ func (s *Store) remapAsk(game, id, key string) (RemapAsk, bool, error) {
 		}
 		return RemapAsk{Key: key, Tree: tree}, true, nil
 	}
-	found, err := manifest.Scan(dir)
+	found, err := smapimanifest.Scan(dir)
 	if err != nil {
 		return RemapAsk{}, false, err
 	}
@@ -129,8 +129,8 @@ func hasRawXNB(root string) (bool, error) {
 // variants returns one folder per copy of each mod the archive holds more than once, since SMAPI refuses to load a
 // mod id twice. Each folder is widened to its highest ancestor that still holds a single copy, so a variant that
 // bundles several mods ("Option A/[CP] Mod", "Option A/[JA] Mod") is picked whole.
-func variants(found []manifest.Mod) []RemapVariant {
-	byID := map[string][]manifest.Mod{}
+func variants(found []smapimanifest.Mod) []RemapVariant {
+	byID := map[string][]smapimanifest.Mod{}
 	for _, m := range found {
 		id := m.ModID().Fold()
 		byID[id] = append(byID[id], m)
@@ -168,14 +168,14 @@ func variants(found []manifest.Mod) []RemapVariant {
 
 // priorVariant is the variant folder the profile's current entry for these mods was installed from, when this
 // archive has a folder of the same name, so an update keeps the variant the user chose.
-func (s *Store) priorVariant(game, id string, found []manifest.Mod, vars []RemapVariant) string {
+func (s *Store) priorVariant(game, id string, found []smapimanifest.Mod, vars []RemapVariant) string {
 	p, err := s.read(game, id)
 	if err != nil {
 		return ""
 	}
 	for _, e := range p.Entries {
 		if !slices.ContainsFunc(e.Mods, func(m Component) bool {
-			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return mod.Equal(f.ModID(), m.ID) })
+			return slices.ContainsFunc(found, func(f smapimanifest.Mod) bool { return mod.Equal(f.ModID(), m.ID) })
 		}) {
 			continue
 		}
@@ -261,7 +261,7 @@ func (s *Store) InstallRemap(game, id, key, root string, source Source) (Install
 		return InstallResult{}, &InstallError{Msg: "Choose a folder that holds a SMAPI manifest", Err: fmt.Errorf("root %q", root)}
 	}
 	sub := filepath.Join(dir, filepath.FromSlash(rel))
-	found, err := manifest.Scan(sub)
+	found, err := smapimanifest.Scan(sub)
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}

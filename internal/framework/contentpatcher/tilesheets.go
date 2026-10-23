@@ -14,7 +14,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 // mapFileList is one mod folder's .tmx and .tbin files for its store key. A store item never changes after it is
@@ -276,7 +275,7 @@ func assetBasenames(assets map[string]bool) []string {
 }
 
 func manifestUses(im framework.Mod, uniqueID mod.ID) bool {
-	return slices.ContainsFunc(im.Dependencies, func(dep manifest.Dependency) bool {
+	return slices.ContainsFunc(im.Dependencies, func(dep mod.Dependency) bool {
 		return mod.Equal(dep.ModID(), uniqueID)
 	})
 }

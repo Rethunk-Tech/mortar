@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 )
 
@@ -166,10 +166,10 @@ func TestRemapVariantsAskThenUpdateReuses(t *testing.T) {
 
 func TestRemapVariantsWidenToBundle(t *testing.T) {
 	t.Parallel()
-	m := func(id, folder string) manifest.Mod {
-		return manifest.Mod{UniqueID: id, Folder: folder}
+	m := func(id, folder string) smapimanifest.Mod {
+		return smapimanifest.Mod{UniqueID: id, Folder: folder}
 	}
-	got := variants([]manifest.Mod{
+	got := variants([]smapimanifest.Mod{
 		m("Mod.CP", "Options/Option A/[CP] Mod"), m("Mod.JA", "Options/Option A/[JA] Mod"),
 		m("Mod.CP", "Options/Option B/[CP] Mod"), m("Mod.JA", "Options/Option B/[JA] Mod"),
 		m("Other", "Other"),

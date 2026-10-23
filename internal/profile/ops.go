@@ -22,7 +22,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
 // tempPrefix holds a character no store key can contain, so a leftover temp folder never collides with an
@@ -184,7 +184,7 @@ func (s *Store) placeStaged(game, modsDir string, e Entry, stage func(final stri
 	return final, nil
 }
 
-func entryMods(found []manifest.Mod) []Component {
+func entryMods(found []smapimanifest.Mod) []Component {
 	out := make([]Component, len(found))
 	for i, m := range found {
 		needs := make([]mod.ID, 0, len(m.Dependencies))
@@ -216,7 +216,7 @@ func (e *DuplicateError) Error() string {
 type NoModError struct{ Key string }
 
 func (e *NoModError) Error() string {
-	return fmt.Sprintf("%q holds no mod: no readable %s", e.Key, manifest.FileName)
+	return fmt.Sprintf("%q holds no mod: no readable %s", e.Key, smapimanifest.FileName)
 }
 
 // NoPackageError reports a store item of a game whose loader reads no manifest mods that the installer took for no
@@ -284,7 +284,7 @@ func (s *Store) addToStaged(game string, p *Profile, dir, key string, source Sou
 		if err != nil {
 			return "", "", err
 		}
-		found, err := manifest.Scan(src)
+		found, err := smapimanifest.Scan(src)
 		if err != nil {
 			return "", "", err
 		}

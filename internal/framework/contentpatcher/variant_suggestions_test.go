@@ -4,15 +4,15 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
 func TestVariantSettingsSuggestsOnlyValueMappedToEnabledMod(t *testing.T) {
-	recolourManifest := manifest.Manifest{
+	recolourManifest := smapimanifest.Manifest{
 		Name:     "Recolour Pack",
 		UniqueID: "Example.RecolourPack",
 	}
-	fishManifest := manifest.Manifest{
+	fishManifest := smapimanifest.Manifest{
 		Name:     "Fish Recolour",
 		UniqueID: "Example.FishRecolour",
 	}

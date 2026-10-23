@@ -16,8 +16,8 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/launch"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/loadorder"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 // ID is the catalog's id for this loader.
@@ -188,11 +188,11 @@ func (Loader) SharesLog() {}
 func (Loader) Order(p loader.ProfileView) ([]loadorder.Row, error) {
 	var mods []loadorder.Mod
 	for _, dir := range p.Enabled {
-		b, err := fsx.ReadFile(filepath.Join(dir, manifest.FileName))
+		b, err := fsx.ReadFile(filepath.Join(dir, smapimanifest.FileName))
 		if err != nil {
 			continue
 		}
-		mf, err := manifest.Parse(b)
+		mf, err := smapimanifest.Parse(b)
 		if err != nil {
 			continue
 		}
@@ -225,7 +225,7 @@ func (Loader) GameVersion(log string) string {
 // ModArchive reports an archive holding a SMAPI mod: a manifest.json at any depth.
 func (Loader) ModArchive(names []string) bool {
 	for _, n := range names {
-		if strings.EqualFold(path.Base(strings.ReplaceAll(n, `\`, "/")), manifest.FileName) {
+		if strings.EqualFold(path.Base(strings.ReplaceAll(n, `\`, "/")), smapimanifest.FileName) {
 			return true
 		}
 	}

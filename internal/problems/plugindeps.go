@@ -7,7 +7,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -172,13 +171,13 @@ func withPluginDependencies(mods []framework.Mod, pkgs []profile.PackageRef) {
 				continue
 			}
 			for _, dep := range byGUID[strings.ToLower(r.GUID)] {
-				listed := slices.ContainsFunc(mods[i].Dependencies, func(d manifest.Dependency) bool { return mod.Equal(d.ModID(), dep.ID) })
+				listed := slices.ContainsFunc(mods[i].Dependencies, func(d mod.Dependency) bool { return mod.Equal(d.ModID(), dep.ID) })
 				if dep.Key == p.Key || listed {
 					continue
 				}
 				// Clipped: the list may be a parsed manifest's, which the parse cache shares.
 				mods[i].Dependencies = append(slices.Clip(mods[i].Dependencies),
-					manifest.Dependency{UniqueID: dep.ID.Local(), Format: dep.ID.Format(), Required: r.Kind == dotnet.HardDependency})
+					mod.Dependency{UniqueID: dep.ID.Local(), Format: dep.ID.Format(), Required: r.Kind == dotnet.HardDependency})
 			}
 		}
 	}

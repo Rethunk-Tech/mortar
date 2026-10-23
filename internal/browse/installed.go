@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
 )
@@ -52,11 +52,11 @@ func Hold(info components.GameInfo, prof profile.Profile, installed []profile.In
 	}
 	for _, m := range installed {
 		for _, k := range m.UpdateKeys {
-			if id, ok := manifest.NexusUpdateKey(k); ok {
+			if id, ok := smapimanifest.NexusUpdateKey(k); ok {
 				h.nexus[id] = true
 				h.identify(profile.KindNexus, strconv.Itoa(id), mod.SMAPI(m.UniqueID))
 			}
-			if repo, ok := manifest.GitHubUpdateKey(k); ok {
+			if repo, ok := smapimanifest.GitHubUpdateKey(k); ok {
 				h.github[strings.ToLower(repo)] = true
 				h.identify(profile.KindGitHub, repo, mod.SMAPI(m.UniqueID))
 			}

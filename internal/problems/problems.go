@@ -19,7 +19,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/deps"
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/profile"
@@ -239,8 +239,8 @@ func (r Result) WarningCount() int {
 }
 
 // satisfied reports whether version meets dep's constraint under scheme.
-func satisfied(scheme string, dep manifest.Dependency, version string) bool {
-	return deps.Satisfies(scheme, version, dep.Dep().Constraint)
+func satisfied(scheme string, dep mod.Dependency, version string) bool {
+	return deps.Satisfies(scheme, version, dep.MinimumVersion)
 }
 
 // meets is satisfied for a bare minimum in SMAPI's scheme, which is what the dataset's Nexus files are versioned in.
@@ -688,7 +688,7 @@ func isWordByte(b byte) bool {
 
 // depState says why the mods in all do not satisfy dep: "absent", "disabled" or "outdated", with the highest
 // installed version for the last. An empty reason means the dependency is met.
-func depState(scheme string, byID map[string][]framework.Mod, dep manifest.Dependency) (reason, installedVersion string) {
+func depState(scheme string, byID map[string][]framework.Mod, dep mod.Dependency) (reason, installedVersion string) {
 	installed := byID[dep.ModID().Fold()]
 	switch {
 	case len(installed) == 0:
@@ -863,7 +863,7 @@ func Locate(ctx context.Context, m Meta, domain string, uniqueID mod.ID, minimum
 		return &Ref{Site: other[0].Site, PageID: other[0].ID, URL: siteURL(domain, other[0])}, true
 	}
 	for _, k := range dependentKeys {
-		if n, ok := manifest.NexusUpdateKey(k); ok {
+		if n, ok := smapimanifest.NexusUpdateKey(k); ok {
 			if i := slices.IndexFunc(nexus, func(r meta.Ref) bool { return r.ID == n }); i >= 0 {
 				nexus = []meta.Ref{nexus[i]}
 				break
@@ -899,7 +899,7 @@ func githubRepo(ctx context.Context, m Meta, uniqueID mod.ID) string {
 	if len(got) != 1 || !got[0].Known {
 		return ""
 	}
-	if repo, ok := manifest.GitHubUpdateKey("github:" + got[0].GitHubRepo); ok {
+	if repo, ok := smapimanifest.GitHubUpdateKey("github:" + got[0].GitHubRepo); ok {
 		return repo
 	}
 	return ""

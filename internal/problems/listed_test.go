@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/framework"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
@@ -252,7 +251,7 @@ func TestPageWideOutsideRequirementTheManifestOmitsIsOptional(t *testing.T) {
 	fake := listedFakeMeta{requirements: map[int][]nexus.Requirement{520: {{Name: "Immersive Farm 2 Remastered", URL: "https://example.org", External: true}}}}
 	optionalOutside := func(depID string) bool {
 		dependent := listedDependent()
-		dependent.Dependencies = []manifest.Dependency{{UniqueID: depID}}
+		dependent.Dependencies = []mod.Dependency{{UniqueID: depID}}
 		got := listedCheck(fake, []framework.Mod{dependent})
 		i := slices.IndexFunc(got.Missing, func(m Missing) bool { return m.External })
 		if i < 0 {

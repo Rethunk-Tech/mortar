@@ -12,7 +12,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 )
 
 func TestSetWinnerRewritesManifestIdempotent(t *testing.T) {
@@ -107,7 +107,7 @@ func winnerManifest(t *testing.T, e env, profileID, key string) string {
 
 func assertOptionalDep(t *testing.T, raw, uniqueID string, want bool) {
 	t.Helper()
-	m, err := manifest.Parse([]byte(raw))
+	m, err := smapimanifest.Parse([]byte(raw))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -126,7 +126,7 @@ func assertOptionalDep(t *testing.T, raw, uniqueID string, want bool) {
 func TestRewriteManifestDepsJSONC(t *testing.T) {
 	t.Parallel()
 	raw := []byte("\xef\xbb\xbf{\n  // comment\n  \"Name\": \"Win\",\n  \"UniqueID\": \"Me.Win\",\n}\n")
-	out, err := manifest.RewriteDependencies(raw, []mod.ID{"smapi:Me.Lose"}, nil)
+	out, err := smapimanifest.RewriteDependencies(raw, []mod.ID{"smapi:Me.Lose"}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

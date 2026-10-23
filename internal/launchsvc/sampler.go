@@ -13,7 +13,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/launch"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/sampler"
 )
@@ -195,7 +195,7 @@ func assembliesToMods(modsDir string) (map[string]string, error) {
 		if walkErr != nil {
 			return walkErr
 		}
-		if entry.IsDir() || !strings.EqualFold(entry.Name(), manifest.FileName) {
+		if entry.IsDir() || !strings.EqualFold(entry.Name(), smapimanifest.FileName) {
 			return nil
 		}
 		data, err := fsx.ReadFile(path)
@@ -203,7 +203,7 @@ func assembliesToMods(modsDir string) (map[string]string, error) {
 			return err
 		}
 		// SMAPI skips a mod whose manifest it cannot read, so such a mod has no frames to charge.
-		if parsed, parseErr := manifest.Parse(data); parseErr == nil {
+		if parsed, parseErr := smapimanifest.Parse(data); parseErr == nil {
 			return mapModAssemblies(assemblyToMod, filepath.Dir(path), parsed.ModID())
 		}
 		return nil

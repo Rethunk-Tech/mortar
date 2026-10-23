@@ -12,7 +12,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/github"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -147,7 +147,7 @@ func (s *Store) StageGitHub(ctx context.Context, game string, source Source, pat
 	if err != nil {
 		return "", nil, installError(err)
 	}
-	found, err := manifest.Scan(dir)
+	found, err := smapimanifest.Scan(dir)
 	if err != nil {
 		return "", nil, installError(err)
 	}
@@ -333,7 +333,7 @@ func (s *Store) holding(game, id, key string, choices map[string]map[string][]st
 			return nil, &DuplicateError{Key: key, Label: entryLabel(e)}
 		}
 		if slices.ContainsFunc(e.Mods, func(m Component) bool {
-			return slices.ContainsFunc(found, func(f manifest.Mod) bool { return mod.Equal(f.ModID(), m.ID) })
+			return slices.ContainsFunc(found, func(f smapimanifest.Mod) bool { return mod.Equal(f.ModID(), m.ID) })
 		}) {
 			held = append(held, e)
 		}

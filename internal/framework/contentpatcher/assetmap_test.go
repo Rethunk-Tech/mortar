@@ -11,7 +11,6 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
 func TestAssetIndexFromFixturePacks(t *testing.T) {
@@ -167,7 +166,7 @@ func TestFilesWinnerFollowsSMAPILoadOrder(t *testing.T) {
 		t.Fatalf("tie %+v", objects)
 	}
 
-	early.Dependencies = []manifest.Dependency{{UniqueID: "Pack.Z"}}
+	early.Dependencies = []mod.Dependency{{UniqueID: "Pack.Z"}}
 	objects = findTarget(BuildAssetIndex([]framework.Mod{late, early}), "data/objects", "123")
 	if objects.Winner != "smapi:Pack.A" || touchOf(t, objects, "Pack.Z").CanWin {
 		t.Fatalf("A loads after Z through its dependency, so Z cannot be moved past it: %+v", objects)

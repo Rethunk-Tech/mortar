@@ -5,7 +5,7 @@ import (
 	"regexp"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
+	"github.com/Rethunk-Tech/mortar/internal/loader/smapi/smapimanifest"
 	"github.com/Rethunk-Tech/mortar/internal/meta"
 )
 
@@ -45,14 +45,14 @@ func (s *Store) ShareFacts(game string, p Profile) ShareFacts {
 			if err != nil {
 				continue
 			}
-			b, err := fsx.ReadFile(filepath.Join(plain, manifest.FileName))
+			b, err := fsx.ReadFile(filepath.Join(plain, smapimanifest.FileName))
 			if err != nil {
-				b, err = fsx.ReadFile(filepath.Join(dotted, manifest.FileName))
+				b, err = fsx.ReadFile(filepath.Join(dotted, smapimanifest.FileName))
 			}
 			if err != nil {
 				continue
 			}
-			mf, err := manifest.Parse(b)
+			mf, err := smapimanifest.Parse(b)
 			v := leadingVersion.FindString(mf.MinimumGameVersion)
 			if err != nil || v == "" {
 				continue
