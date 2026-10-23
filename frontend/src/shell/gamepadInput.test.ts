@@ -1,5 +1,11 @@
 import { expect, test } from 'bun:test'
-import { firedActions, heldActions, type PadAction, spatialNext } from './gamepadInput.ts'
+import {
+  firedActions,
+  heldActions,
+  heldElsewhere,
+  type PadAction,
+  spatialNext,
+} from './gamepadInput.ts'
 
 const pad = (pressed: number[], axes: number[] = [0, 0]) => ({
   buttons: Array.from({ length: 17 }, (_, i) => ({
@@ -50,4 +56,14 @@ test('directions pick the nearest control in line', () => {
   expect(spatialNext(rects[3] as (typeof rects)[0], rects, 'up', 3)).toBe(1)
   expect(spatialNext(rects[3] as (typeof rects)[0], rects, 'right', 3)).toBe(4)
   expect(spatialNext(rects[4] as (typeof rects)[0], rects, 'up', 4)).toBe(2)
+})
+
+test('a button pressed in another window does not fire when Mortar comes back while it is held', () => {
+  const due = new Map<PadAction, number>()
+  const held = new Set<PadAction>(['play'])
+  heldElsewhere(held, due)
+  expect(firedActions(held, due, 1000)).toEqual([])
+  // Released and pressed again with Mortar in front, it fires as usual.
+  expect(firedActions(new Set(), due, 1100)).toEqual([])
+  expect(firedActions(held, due, 1200)).toEqual(['play'])
 })

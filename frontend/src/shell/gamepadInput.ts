@@ -84,6 +84,21 @@ function firedActions(held: ReadonlySet<PadAction>, due: Map<PadAction, number>,
   return fired
 }
 
+/**
+ * Marks what is held as already fired, so a button pressed while another window has the pad (a game the player is
+ * in, which shares the controller) does nothing when Mortar comes back while it is still held.
+ */
+function heldElsewhere(held: ReadonlySet<PadAction>, due: Map<PadAction, number>) {
+  for (const action of due.keys()) {
+    if (!held.has(action)) {
+      due.delete(action)
+    }
+  }
+  for (const action of held) {
+    due.set(action, Number.POSITIVE_INFINITY)
+  }
+}
+
 const SLACK_PX = 4
 const ORTHO_WEIGHT = 2
 
@@ -132,4 +147,4 @@ function spatialNext(from: Rect, rects: readonly Rect[], dir: Direction, skip = 
 }
 
 export type { Direction, PadAction }
-export { firedActions, heldActions, spatialNext }
+export { firedActions, heldActions, heldElsewhere, spatialNext }

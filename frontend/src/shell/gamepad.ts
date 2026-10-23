@@ -5,6 +5,7 @@ import {
   type Direction,
   firedActions,
   heldActions,
+  heldElsewhere,
   type PadAction,
   spatialNext,
 } from './gamepadInput.ts'
@@ -130,8 +131,13 @@ function poll(now: number) {
     due.clear()
     return
   }
-  for (const action of firedActions(heldActions(pads), due, now)) {
-    act(action)
+  // The controller is shared with every window: while another one has focus, its presses are that window's.
+  if (document.hasFocus()) {
+    for (const action of firedActions(heldActions(pads), due, now)) {
+      act(action)
+    }
+  } else {
+    heldElsewhere(heldActions(pads), due)
   }
   requestAnimationFrame(poll)
 }
