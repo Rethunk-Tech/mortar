@@ -1319,7 +1319,8 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, r laun
 	var f *launch.Failure
 	var exited *launch.ExitError
 	switch {
-	case errors.Is(err, context.Canceled) && s.cancelledRun(g, buf):
+	// Cancelling ends the game first, so the start may end on the game's exit rather than on the cancel itself.
+	case err != nil && s.cancelledRun(g, buf):
 		s.clearReap(g)
 		s.sayCode(g, profileID, "Launch cancelled.", "launchCancelled", nil)
 		s.set(Status{Game: g.ID(), Install: installOf(g), State: Idle})

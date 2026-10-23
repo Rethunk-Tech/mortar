@@ -49,3 +49,27 @@ func TestACancelledLaunchEndsIdleNotFailed(t *testing.T) {
 		t.Fatal("cancelling a launch that is not starting succeeded")
 	}
 }
+
+func TestALaunchEndedByItsCancelIsNotAFailure(t *testing.T) {
+	svc, p := startEnv(t)
+	sl := svc.selectedSlot(game.Find("stardew"))
+	exited := make(chan error, 1)
+	svc.Starter = game.Starter{
+		Runner:   func(string, string, ...string) (<-chan error, error) { return exited, nil },
+		LookPath: func(string) (string, error) { return "", errors.New("none") },
+	}
+	buf := &launch.Buffer{}
+	svc.mu.Lock()
+	svc.logs[keyOf(sl)] = session{buf: buf, profile: p.ID, started: time.Now(), cancelled: true}
+	svc.mu.Unlock()
+	svc.set(Status{Game: "stardew", Install: installOf(sl), State: Launching, Profile: p.ID})
+	// The cancel ended the game, which exits as a killed process does before the wait is called off.
+	exited <- errors.New("signal: terminated")
+	svc.run(context.Background(), sl, p.ID, launchRun{plan: &launchplan.Plan{Exe: "/bin/game"}, env: game.StartEnv{Direct: true}}, buf)
+	if st := svc.current(sl); st.State != Idle || st.Error != "" {
+		t.Fatalf("status after a cancel = %+v", st)
+	}
+	if why := svc.LaunchFailure("stardew", installOf(sl)); why != "" {
+		t.Fatalf("a cancelled launch was recorded as failing: %q", why)
+	}
+}

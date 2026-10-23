@@ -13,7 +13,8 @@ import (
 )
 
 // CancelLaunch calls off the game's launch in progress: it ends the processes the launch started, then stops
-// waiting for the game, and the launch ends without counting as a failure.
+// waiting for the game, and the launch ends without counting as a failure. A launch that has just come up (the
+// launch screen still shows while its loader loads) is stopped as Stop would.
 func (s *Service) CancelLaunch(ctx context.Context, gameID string) error {
 	g, err := game.Require(gameID)
 	if err != nil {
@@ -21,6 +22,9 @@ func (s *Service) CancelLaunch(ctx context.Context, gameID string) error {
 	}
 	for _, sl := range s.slots(g) {
 		if s.current(sl).State != Launching {
+			if s.stoppable(sl) {
+				return s.stopSlot(ctx, sl)
+			}
 			continue
 		}
 		s.mu.Lock()
