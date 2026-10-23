@@ -2,6 +2,7 @@ import { Box, Divider, Menu, MenuItem } from '@mui/material'
 import { Check } from 'lucide-react'
 import type { MouseEvent, ReactNode } from 'react'
 import { space } from '../theme/density.ts'
+import { useKeptWhileClosed } from './keptWhileClosed.ts'
 
 const ITEM_INSET_PX = 14
 const HEADING_FONT_PX = 11
@@ -23,6 +24,7 @@ export function TitleMenu({
   width: number
   children: ReactNode
 }) {
+  const items = useKeptWhileClosed(anchorEl !== null, children)
   return (
     <Menu
       anchorEl={anchorEl}
@@ -50,7 +52,7 @@ export function TitleMenu({
         list: { 'aria-label': label, sx: { py: space.menuY } },
       }}
     >
-      {children}
+      {items}
     </Menu>
   )
 }
