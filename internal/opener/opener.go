@@ -69,6 +69,10 @@ func (s *Service) OpenWeb(raw string) error {
 	return s.Open(u)
 }
 
+// OpenSteam brings Steam's window forward, for a launch waiting on Steam. The address is fixed, so nothing the window
+// passes reaches the system handler.
+func (s *Service) OpenSteam() error { return s.Open("steam://open/main") }
+
 // OpenSteamValidate asks Steam to verify an app's files. It exists apart from OpenWeb because steam:// is the one
 // non-web scheme the window needs, and only for a numeric app id.
 func (s *Service) OpenSteamValidate(appID string) error {

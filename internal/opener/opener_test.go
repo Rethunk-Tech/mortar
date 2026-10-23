@@ -78,3 +78,11 @@ func TestATooLongAddressSaysSo(t *testing.T) {
 		t.Fatalf("err %v", err)
 	}
 }
+
+func TestOpenSteamOpensOnlySteamsWindow(t *testing.T) {
+	var opened []string
+	s := &Service{Open: func(u string) error { opened = append(opened, u); return nil }}
+	if err := s.OpenSteam(); err != nil || len(opened) != 1 || opened[0] != "steam://open/main" {
+		t.Fatalf("opened %v, %v", opened, err)
+	}
+}
