@@ -11,12 +11,14 @@ export interface GameStatus {
   steam: Awaited<ReturnType<typeof SteamStatus>>
 }
 
-export function loaderCaption(loader: string, status: Status | null): string {
-  if (status?.installed && status.version !== '') {
-    return `${loader} ${status.version}`
-  }
-  return loader
+/** The loader's name with its installed version, when there is one. */
+export function loaderCaption(loader: string, version: string): string {
+  return version === '' ? loader : `${loader} ${version}`
 }
+
+/** The installed version a status names, '' when the loader is not installed. */
+export const installedVersion = (status: Status | null): string =>
+  status?.installed ? status.version : ''
 
 const shared = shareInFlight<GameStatus>()
 

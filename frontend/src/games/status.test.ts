@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { Status } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loader/models.ts'
-import { loaderCaption } from './status.ts'
+import { installedVersion, loaderCaption } from './status.ts'
 
 const installed = (version: string): Status => ({
   installed: true,
@@ -15,7 +15,9 @@ const installed = (version: string): Status => ({
 })
 
 test('game select names the installed SMAPI version, and SMAPI alone when it is missing', () => {
-  expect(loaderCaption('SMAPI', installed('4.5.2'))).toBe('SMAPI 4.5.2')
-  expect(loaderCaption('SMAPI', null)).toBe('SMAPI')
-  expect(loaderCaption('SMAPI', { ...installed(''), installed: false })).toBe('SMAPI')
+  expect(loaderCaption('SMAPI', installedVersion(installed('4.5.2')))).toBe('SMAPI 4.5.2')
+  expect(loaderCaption('SMAPI', installedVersion(null))).toBe('SMAPI')
+  expect(
+    loaderCaption('SMAPI', installedVersion({ ...installed('4.5.2'), installed: false })),
+  ).toBe('SMAPI')
 })

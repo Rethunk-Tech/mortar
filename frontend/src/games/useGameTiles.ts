@@ -13,7 +13,7 @@ import { listProfiles } from '../profiles/listProfiles.ts'
 import { useSettings } from '../settings/store.ts'
 import { sameValue } from '../shell/sameValue.ts'
 import { type InlineError, inlineError, reportError } from '../toasts/report.ts'
-import { type GameStatus, loaderCaption, loadGameStatus } from './status.ts'
+import { type GameStatus, installedVersion, loaderCaption, loadGameStatus } from './status.ts'
 
 type Game = GameInfo
 
@@ -32,7 +32,8 @@ function useGameTiles() {
   const [status, setStatus] = useState<GameStatus | null>(null)
   const [states, setStates] = useState<Record<string, GameState>>({})
   const [loadError, setLoadError] = useState<InlineError | null>(null)
-  const loaderStatus = useLoader((s) => s.status)
+  // The version alone: the newest release arriving after the local status changes nothing a tile shows.
+  const loaderVersion = useLoader((s) => installedVersion(s.status))
   const checkLoader = useLoader((s) => s.check)
   const lastGame = useSettings((s) => s.lastGame)
   const availableGames = status?.games.filter((g) => g.available) ?? []
@@ -101,7 +102,7 @@ function useGameTiles() {
       openable: g.available,
       setupNeeded: g.available && (!st || st.setupNeeded),
       note: noteFor(g),
-      loader: loaderCaption(g.loader, g.id === loaderGame ? loaderStatus : null),
+      loader: loaderCaption(g.loader, g.id === loaderGame ? loaderVersion : ''),
       lastPlayedName: st?.profiles.find((p) => p.id === lastId)?.name ?? '',
       lastPlayedAt: st?.lastPlayedAt ?? '',
       lastPlayedId: st?.setupNeeded ? '' : lastId,
