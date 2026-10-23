@@ -91,8 +91,8 @@ build() {
   else
     echo "building frontend and server-mode binary"
     # The frontend build imports the generated bindings, which go stale the moment a Go type the window reads
-    # changes, so they are generated on every build, not only when missing.
-    (cd "$REPO" && bun run bindings >"$ROOT/bindings.log" 2>&1)
+    # changes; bindings-fresh regenerates them whenever a Go source or the generator changed.
+    (cd "$REPO" && scripts/bindings-fresh.sh >"$ROOT/bindings.log" 2>&1)
     (cd "$REPO" && bun run --cwd frontend build >"$ROOT/frontend-build.log" 2>&1)
     # Stamped past the release like build/linux/Taskfile.yml, so entries for the next patch (minVersion) are read.
     since=$(cd "$REPO" && git rev-list --count "v$(sed -n 's/^  version: "\([^"]*\)".*/\1/p' build/config.yml)..HEAD" 2>/dev/null || true)
