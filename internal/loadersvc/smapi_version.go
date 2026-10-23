@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -55,7 +56,7 @@ func (s *Service) ListVersions(ctx context.Context, id, loaderID string) ([]stri
 	if _, err := game.Require(id); err != nil {
 		return nil, err
 	}
-	remote, err := s.remoteVersions(ctx, id, loaderID)
+	remote, err := s.cachedRemoteVersions(ctx, id, loaderID)
 	if err != nil {
 		return nil, err
 	}
@@ -189,6 +190,41 @@ func (s *Service) ensureKnown(ctx context.Context, id, loaderID, version string)
 		return nil
 	}
 	return fmt.Errorf("%w: %s", errUnknownVersion, version)
+}
+
+// releaseListTTL is how long the release list a settings page shows is reused: opening a game's settings asked
+// GitHub every time, and the newest ten releases change rarely.
+const releaseListTTL = time.Hour
+
+type releaseList struct {
+	at       time.Time
+	versions []string
+}
+
+// cachedRemoteVersions is remoteVersions kept for releaseListTTL per loader; a lookup that fails after the list went
+// stale answers with the stale one. Installing never reads it: ensureKnown asks the release feed itself.
+func (s *Service) cachedRemoteVersions(ctx context.Context, id, loaderID string) ([]string, error) {
+	key := id + "\x00" + loaderID
+	s.releasesMu.Lock()
+	cached, ok := s.releases[key]
+	s.releasesMu.Unlock()
+	if ok && time.Since(cached.at) < releaseListTTL {
+		return cached.versions, nil
+	}
+	versions, err := s.remoteVersions(ctx, id, loaderID)
+	if err != nil {
+		if ok {
+			return cached.versions, nil
+		}
+		return nil, err
+	}
+	s.releasesMu.Lock()
+	if s.releases == nil {
+		s.releases = map[string]releaseList{}
+	}
+	s.releases[key] = releaseList{at: time.Now(), versions: versions}
+	s.releasesMu.Unlock()
+	return versions, nil
 }
 
 func (s *Service) remoteVersions(ctx context.Context, id, loaderID string) ([]string, error) {

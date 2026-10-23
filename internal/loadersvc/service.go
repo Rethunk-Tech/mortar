@@ -68,6 +68,9 @@ type Service struct {
 	// listVersions and fetchInstall let tests supply a release list and skip the installer.
 	listVersions func(context.Context, string) ([]string, error)
 	fetchInstall func(context.Context, string, string) error
+	// releases holds the release lists ListVersions answered, by game and loader.
+	releasesMu sync.Mutex
+	releases   map[string]releaseList
 }
 
 func NewService(home string, s *settings.Store, items *store.Store, profiles *profile.Store, clients ...*components.Client) *Service {

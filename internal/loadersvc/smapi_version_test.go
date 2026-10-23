@@ -108,3 +108,42 @@ func TestInstallVersionReplacesASharedSMAPI(t *testing.T) {
 		t.Fatalf("downloads %d, want the installer to run over the shared copy", fake.downloads)
 	}
 }
+
+func TestListVersionsReusesTheReleaseListUntilItGoesStale(t *testing.T) {
+	svc, fake := testServiceWithReleases(t, []string{"4.1.0"})
+	asks, failing := 0, false
+	svc.listVersions = func(context.Context, string) ([]string, error) {
+		asks++
+		if failing {
+			return nil, errors.New("offline")
+		}
+		return fake.releases, nil
+	}
+	list := func() []string {
+		t.Helper()
+		got, err := svc.ListVersions(context.Background(), "stardew", "smapi")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return got
+	}
+	list()
+	fake.releases = []string{"4.2.0", "4.1.0"}
+	if got := list(); asks != 1 || len(got) != 1 {
+		t.Fatalf("a fresh list was asked for again: %d asks, %v", asks, got)
+	}
+	key := "stardew\x00smapi"
+	stale := svc.releases[key]
+	stale.at = stale.at.Add(-2 * releaseListTTL)
+	svc.releases[key] = stale
+	if got := list(); asks != 2 || len(got) != 2 {
+		t.Fatalf("a stale list was served: %d asks, %v", asks, got)
+	}
+	stale = svc.releases[key]
+	stale.at = stale.at.Add(-2 * releaseListTTL)
+	svc.releases[key] = stale
+	failing = true
+	if got := list(); len(got) != 2 {
+		t.Fatalf("a failed lookup dropped the stale list: %v", got)
+	}
+}
