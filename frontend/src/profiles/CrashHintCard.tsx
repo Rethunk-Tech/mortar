@@ -25,19 +25,9 @@ const DISMISSED_KEY = 'mortar.crashHintDismissed'
 
 const isText = (v: unknown): v is string => typeof v === 'string'
 
-// Shown at the top of the profile after a crashed run: the mod the log blames with a way to switch it off and play
-// again, or, when the log blames none, a way to find it by halving the mods.
-export function CrashHintCard({ game, profileId }: { game: string; profileId: string }) {
-  const { t } = useLingui()
-  const updated = useProfiles((s) => s.profiles.find((p) => p.id === profileId)?.updated ?? '')
-  // Read here, not in Home: the last run arrives after the page draws, and only this card shows it.
-  const crashedAt = useLastRun(game, profileId, String(updated))
-  const mod = useMods((s) => s.mods)
+// The profile's updated time moves after each run, when a new hint may exist.
+function useCrashHint(game: string, profileId: string, updated: string): Hint | null {
   const [hint, setHint] = useState<Hint | null>(null)
-  const [hidden, setHidden] = useState(() => readStored(DISMISSED_KEY, '', isText))
-  const [bisectJob, setBisectJob] = useState('')
-  const [busy, setBusy] = useState(false)
-  // The profile's updated time moves after each run, when a new hint may exist.
   const key = `${game}\0${profileId}\0${updated}`
   useEffect(() => {
     const [g = '', id = ''] = key.split('\0')
@@ -49,6 +39,21 @@ export function CrashHintCard({ game, profileId }: { game: string; profileId: st
       live = false
     }
   }, [key])
+  return hint
+}
+
+// Shown at the top of the profile after a crashed run: the mod the log blames with a way to switch it off and play
+// again, or, when the log blames none, a way to find it by halving the mods.
+// It reads the last run itself, not Home: that arrives after the page draws, and only this card shows it.
+export function CrashHintCard({ game, profileId }: { game: string; profileId: string }) {
+  const { t } = useLingui()
+  const updated = useProfiles((s) => s.profiles.find((p) => p.id === profileId)?.updated ?? '')
+  const crashedAt = useLastRun(game, profileId, String(updated))
+  const mod = useMods((s) => s.mods)
+  const [hidden, setHidden] = useState(() => readStored(DISMISSED_KEY, '', isText))
+  const [bisectJob, setBisectJob] = useState('')
+  const [busy, setBusy] = useState(false)
+  const hint = useCrashHint(game, profileId, updated)
   const culprit = hint?.modKey ? mod.find((m) => m.key === hint.modKey) : undefined
   const named = t`named in the crash log`
   const reason = useReasonText()(hint?.code, hint?.params, hint?.reason ?? '')
