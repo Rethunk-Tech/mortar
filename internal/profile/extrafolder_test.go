@@ -112,4 +112,21 @@ func TestExtraFolderTakesAPackageGamesModsAndABuildOutputFolder(t *testing.T) {
 	if _, err := svc.InstallExtraFolderMod(t.Context(), "lethal-company", p.ID, mods); err == nil {
 		t.Error("installed the folder of mods as one mod")
 	}
+	// A rebuild installed again replaces the plugin's entry rather than adding a second.
+	writeFile(t, build, "MyPlugin.dll", "MZ rebuilt")
+	res, err := svc.InstallExtraFolderMod(t.Context(), "lethal-company", p.ID, build)
+	if err != nil {
+		t.Fatal(err)
+	}
+	n := 0
+	for _, en := range res.Profile.Entries {
+		for _, m := range en.Mods {
+			if m.Name == "MyPlugin" {
+				n++
+			}
+		}
+	}
+	if n != 1 {
+		t.Fatalf("the rebuilt plugin is in the profile %d times: %+v", n, res.Profile.Entries)
+	}
 }

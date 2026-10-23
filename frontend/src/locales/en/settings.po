@@ -1157,7 +1157,6 @@ msgid "Focus the next mod"
 msgstr "Focus the next mod"
 
 #: src/settings/prefCopy.ts
-#: src/settings/sections/ExtraModsFolders.tsx
 msgid "Folders of unpacked mods to add from the Add menu"
 msgstr "Folders of unpacked mods to add from the Add menu"
 
@@ -3351,6 +3350,10 @@ msgstr "Leave them"
 #: src/settings/sections/Updates.tsx
 msgid "Check only enabled mods"
 msgstr "Check only enabled mods"
+
+#: src/settings/sections/ExtraModsFolders.tsx
+msgid "Folders of unpacked mods, or your own build's output, to add from the Add menu; a mod you add follows later changes to its folder"
+msgstr "Folders of unpacked mods, or your own build's output, to add from the Add menu; a mod you add follows later changes to its folder"
 
 #: src/settings/shortcutLabels.ts
 msgid "Close dialog or clear selection"

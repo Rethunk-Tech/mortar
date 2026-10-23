@@ -25,7 +25,7 @@ function ExtraModsFolders() {
   return (
     <SettingRow
       label={t`Extra mods folders`}
-      description={t`Folders of unpacked mods to add from the Add menu`}
+      description={t`Folders of unpacked mods, or your own build's output, to add from the Add menu; a mod you add follows later changes to its folder`}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
         {folders.map((dir) => (

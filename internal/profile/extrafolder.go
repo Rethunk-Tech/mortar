@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"io/fs"
@@ -13,6 +14,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
+	"github.com/Rethunk-Tech/mortar/internal/mod"
 )
 
 func (s *Service) extraModsFolders(game string) []string {
@@ -107,7 +109,8 @@ func packagePreview(folder string, g installer.Game, top bool) (GameModPreview, 
 	}
 	if b, err := fsx.ReadFile(filepath.Join(arch.Dir, "manifest.json")); err == nil {
 		if m, err := bepinex5.ParseManifest(b); err == nil && m.Name != "" {
-			return GameModPreview{Name: m.Name, Version: m.Version, Status: outcomeImported, Folder: folder}, true
+			id := mod.NewID(mod.FormatThunderstore, cmp.Or(m.Namespace, m.Author, unknownPublisher)+"-"+m.Name)
+			return GameModPreview{ID: id, Name: m.Name, Version: m.Version, Status: outcomeImported, Folder: folder}, true
 		}
 	}
 	if top && !topDLL(folder) {

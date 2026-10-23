@@ -153,7 +153,7 @@ func Run(ctx context.Context, d Deps) error {
 				mu.Lock()
 				now := a.t
 				// A build still writing its output waits like a download does.
-				waits := (now.Event == DownloadsEvent || now.Event == AutoInstallEvent) && len(a.writing) > 0
+				waits := (now.Event == DownloadsEvent || now.Event == AutoInstallEvent || now.Event == ExtraFolderEvent) && len(a.writing) > 0
 				mu.Unlock()
 				if waits {
 					settle(a)
