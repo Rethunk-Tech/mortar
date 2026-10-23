@@ -26,7 +26,11 @@ func TestRequestsCarryGhToken(t *testing.T) {
 			t.Errorf("%s: Authorization %q", r.URL.Path, got)
 		}
 		paths = append(paths, r.URL.Path)
-		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader(`{"items":[]}`)), Request: r}, nil
+		body := `{"items":[]}`
+		if r.URL.Path == "/graphql" {
+			body = `{"data":{"s0":{"nodes":[]},"s1":{"nodes":[]}}}`
+		}
+		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader(body)), Request: r}, nil
 	})}}
 	if _, err := d.Search(context.Background(), source.Query{Key: "k", Text: "x", Page: 1}); err != nil {
 		t.Fatal(err)
@@ -34,8 +38,8 @@ func TestRequestsCarryGhToken(t *testing.T) {
 	if _, err := d.Details(context.Background(), "", "o/r", ""); err != nil {
 		t.Fatal(err)
 	}
-	// A one-word search also asks for that word as an owner.
-	if len(paths) != 3 {
+	// Signed in, the topic and the word as an owner are one GraphQL request.
+	if strings.Join(paths, " ") != "/graphql /repos/o/r/readme" {
 		t.Fatalf("requests %v", paths)
 	}
 }

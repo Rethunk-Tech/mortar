@@ -31,7 +31,8 @@ const (
 	cacheTTL  = 10 * time.Minute
 )
 
-// Driver searches GitHub repositories. HTTP, URL, Now and Topics are for tests; the zero value talks to the real site.
+// Driver searches GitHub repositories. HTTP, URL, Web, Now, Topics and LoggedIn are for tests; the zero value talks to
+// the real site.
 type Driver struct {
 	HTTP *http.Client
 	URL  string
@@ -40,12 +41,21 @@ type Driver struct {
 	Topics func(game string) []string
 	// CacheDir is Mortar's cache directory, where the releases lists live; empty means the data folder's.
 	CacheDir string
+	// Web is github.com, whose search page is the last way to search.
+	Web string
+	// LoggedIn reports whether requests carry the user's gh token, which GraphQL needs; nil asks gh.
+	LoggedIn func(context.Context) bool
 
 	mu    sync.Mutex
 	cache map[string]cacheEntry
-	// refused is GitHub's last search refusal while its wait lasts. Asking again before then only extends the
+	// Each way of searching keeps its last refusal while its wait lasts: asking again before then only extends the
 	// limit, and a merged search asks once per topic.
-	refused *source.BusyError
+	restRefused, graphRefused, webRefused *source.BusyError
+
+	// webMu holds github.com's search pages to one at a time, webGap (or the default) apart.
+	webMu   sync.Mutex
+	webLast time.Time
+	webGap  time.Duration
 }
 
 type cacheEntry struct {
@@ -170,6 +180,14 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 		return source.Page{}, nil
 	}
 	topics := d.topics(q)
+	terms := make([]string, 0, len(topics)+1)
+	for _, t := range topics {
+		terms = append(terms, topicTerms(q.Text, t))
+	}
+	if owner := ownerName(q.Text); owner != "" {
+		terms = append(terms, "user:"+owner)
+	}
+	d.warm(ctx, q, terms)
 	if len(topics) == 1 && ownerName(q.Text) == "" {
 		got, err := d.searchTopic(ctx, q, topicTerms(q.Text, topics[0]), q.Page)
 		if err != nil {
@@ -288,19 +306,19 @@ func compareBySort(by string, a, b repo) int {
 	return 0
 }
 
-// waiting is the refusal still in force, or nil when GitHub may be asked.
-func (d *Driver) waiting() error {
+// held is the refusal in *refused while it is in force, else nil.
+func (d *Driver) held(refused **source.BusyError) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	if d.refused != nil && d.now().Before(d.refused.Reset) {
-		return d.refused
+	if *refused != nil && d.now().Before((*refused).Reset) {
+		return *refused
 	}
 	return nil
 }
 
 // refuse records resp's refusal until GitHub's Retry-After, else its rate limit's reset, else a minute (the search
 // limit's window).
-func (d *Driver) refuse(resp *http.Response) error {
+func (d *Driver) refuse(refused **source.BusyError, resp *http.Response) error {
 	busy := source.Busy("GitHub", resp)
 	if busy.Reset.IsZero() {
 		if at, err := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64); err == nil {
@@ -312,17 +330,33 @@ func (d *Driver) refuse(resp *http.Response) error {
 	}
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	d.refused = busy
+	*refused = busy
 	return busy
 }
 
-// searchTopic is page of the search for terms, sorted as q asks.
+// searchTopic is page of the search for terms, sorted as q asks: cached, else from the REST search, else, while that
+// refuses, from github.com's search page.
 func (d *Driver) searchTopic(ctx context.Context, q source.Query, terms string, page int) (topicPage, error) {
-	key := terms + "\n" + q.Sort + "\n" + strconv.Itoa(page) + "\n" + strconv.Itoa(q.Len())
+	key := pageKey(terms, q, page)
 	if hit, ok := d.cached(key); ok {
 		return hit, nil
 	}
-	if err := d.waiting(); err != nil {
+	got, err := d.searchREST(ctx, q, terms, page, key)
+	if !errors.Is(err, source.ErrBusy) {
+		return got, err
+	}
+	web, werr := d.scrape(ctx, q, terms, page)
+	if werr != nil {
+		log.Printf("github: search page for %q: %v", terms, werr)
+		return topicPage{}, err
+	}
+	d.remember(key, web)
+	return web, nil
+}
+
+// searchREST is page of the search for terms from the REST search API.
+func (d *Driver) searchREST(ctx context.Context, q source.Query, terms string, page int, key string) (topicPage, error) {
+	if err := d.held(&d.restRefused); err != nil {
 		return topicPage{}, err
 	}
 	base := cmp.Or(d.URL, apiURL)
@@ -349,7 +383,7 @@ func (d *Driver) searchTopic(ctx context.Context, q source.Query, terms string, 
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
-		return topicPage{}, d.refuse(resp)
+		return topicPage{}, d.refuse(&d.restRefused, resp)
 	}
 	// GitHub refuses a user: qualifier naming no account; the word was then only search text.
 	if resp.StatusCode == http.StatusUnprocessableEntity && strings.HasPrefix(terms, "user:") {
