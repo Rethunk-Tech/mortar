@@ -191,8 +191,10 @@ func sizeOf(px int) int {
 
 // key names one size variant of a picture; the prefix keeps full-size pictures cached before variants existed from
 // being served.
+// key names a cached copy; its prefix changes when the copies change, so older ones (an animated picture frozen on its
+// first frame) are fetched again and the old files age out under the budget.
 func key(picture string, px int) string {
-	sum := sha256.Sum256([]byte("thumb" + strconv.Itoa(px) + ":" + picture))
+	sum := sha256.Sum256([]byte("thumb2-" + strconv.Itoa(px) + ":" + picture))
 	return hex.EncodeToString(sum[:])
 }
 

@@ -2,6 +2,7 @@ package modpic
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
 	"image"
 	_ "image/gif" // registers the GIF decoder for image.Decode
@@ -28,6 +29,31 @@ const maxSourcePixels = 100_000_000
 // decodeMu runs one downscale at a time, so a burst of large pictures holds one decoded original, not one per worker.
 var decodeMu sync.Mutex
 
+// animated reports a GIF with more than one frame, an animated PNG (an acTL chunk before its image data) or an
+// animated WebP (an ANMF frame chunk).
+func animated(b []byte, typ string) bool {
+	switch typ {
+	case "image/gif":
+		// Each frame of an animation carries a graphic control extension.
+		return bytes.Count(b, []byte{0x21, 0xF9, 0x04}) > 1
+	case "image/png":
+		for at := 8; at+8 <= len(b); {
+			size := int(binary.BigEndian.Uint32(b[at:]))
+			switch string(b[at+4 : at+8]) {
+			case "acTL":
+				return true
+			case "IDAT":
+				return false
+			}
+			at += 12 + size
+		}
+		return false
+	case "image/webp":
+		return bytes.Contains(b, []byte("ANMF"))
+	}
+	return false
+}
+
 // Shrink shrinks b to px on its longest side. A picture already that small is returned as it is; a
 // downscaled JPEG stays a JPEG and anything else becomes a PNG, which keeps transparency.
 func Shrink(b []byte, typ string, px int) ([]byte, string, error) {
@@ -35,11 +61,12 @@ func Shrink(b []byte, typ string, px int) ([]byte, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
-	if cfg.Width <= px && cfg.Height <= px {
-		return b, typ, nil
-	}
 	if cfg.Width*cfg.Height > maxSourcePixels {
 		return nil, "", fmt.Errorf("the picture is %dx%d pixels, too large to shrink", cfg.Width, cfg.Height)
+	}
+	// A downscale keeps only the first frame, so an animated picture is kept whole; MaxSize already caps its bytes.
+	if cfg.Width <= px && cfg.Height <= px || animated(b, typ) {
+		return b, typ, nil
 	}
 	decodeMu.Lock()
 	defer decodeMu.Unlock()

@@ -3,6 +3,8 @@ package modpic
 import (
 	"bytes"
 	"image"
+	"image/color"
+	"image/gif"
 	"image/jpeg"
 	"image/png"
 	"strings"
@@ -54,5 +56,34 @@ func TestSizeOfPicksHeroOnlyWhenAsked(t *testing.T) {
 	}
 	if !strings.HasSuffix(SizedURL("https://gcdn.thunderstore.io/a.png", Hero), "&s=1920") {
 		t.Error("a hero URL must name its size")
+	}
+}
+
+func TestAnAnimatedPictureKeepsEveryFrame(t *testing.T) {
+	t.Parallel()
+	frame := image.NewPaletted(image.Rect(0, 0, 400, 400), color.Palette{color.Black, color.White})
+	var gifBuf bytes.Buffer
+	if err := gif.EncodeAll(&gifBuf, &gif.GIF{Image: []*image.Paletted{frame, frame}, Delay: []int{10, 10}}); err != nil {
+		t.Fatal(err)
+	}
+	var pngBuf bytes.Buffer
+	if err := png.Encode(&pngBuf, image.NewNRGBA(image.Rect(0, 0, 400, 400))); err != nil {
+		t.Fatal(err)
+	}
+	// An animated PNG is a PNG with an acTL chunk after its header; the IHDR chunk ends at byte 33.
+	still := pngBuf.Bytes()
+	actl := []byte{0, 0, 0, 8, 'a', 'c', 'T', 'L', 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0}
+	apng := append(append(append([]byte{}, still[:33]...), actl...), still[33:]...)
+	for name, tc := range map[string]struct {
+		b   []byte
+		typ string
+	}{"gif": {gifBuf.Bytes(), "image/gif"}, "apng": {apng, "image/png"}} {
+		out, typ, err := Shrink(tc.b, tc.typ, Thumb)
+		if err != nil || typ != tc.typ || !bytes.Equal(out, tc.b) {
+			t.Errorf("%s: an animated picture was re-encoded (%d -> %d bytes, %s, %v)", name, len(tc.b), len(out), typ, err)
+		}
+	}
+	if out, _, err := Shrink(still, "image/png", Thumb); err != nil || bytes.Equal(out, still) {
+		t.Errorf("a still picture was not shrunk: %v", err)
 	}
 }
