@@ -12,7 +12,6 @@ import {
   CopyModsWithNeeds,
   ProfilesWithMod,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
-import { SMAPI } from '../brand/productNames.ts'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { openModInProfile } from '../profiles/findMod.ts'
@@ -25,16 +24,17 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { AuthorLink } from './AuthorLink.tsx'
 import { ChangelogDialog } from './ChangelogDialog.tsx'
 import { CompatDetail } from './CompatChip.tsx'
+import { useModIdName } from './contributedColumns.ts'
 import { useCustomCategories } from './customCategories.ts'
 import { DetailsAside } from './DetailsAside.tsx'
 import { DetailsHeader } from './DetailsHeader.tsx'
-import { localId } from './dependents.ts'
 import { useDescribe } from './describe.ts'
 import { showModId, useDetail } from './detail.ts'
 import { customCategoryById, resolvedCategoryLabel } from './group.ts'
 import { HiddenInside } from './HiddenInside.tsx'
 import { readsImplicit } from './installReason.ts'
 import { lastRunSummary, showLastRunInConsole, useLastRun } from './lastRun.ts'
+import { useModFacts } from './listFigures.ts'
 import {
   concerns,
   entryOf,
@@ -374,6 +374,9 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
   const game = useProfiles((s) => s.game?.id ?? '')
   const [alsoOpen, setAlsoOpen] = useState(false)
   const nexusId = nexusIdOf(profile, mod)
+  // The mod's own ids under its loader's name for them (UniqueID, GUID), not Mortar's id for the mod.
+  const idName = useModIdName()
+  const ownIds = useModFacts((s) => s.byId[mod.id]?.ids?.join(', ') ?? '')
   const entry = entryOf(profile, mod.key)
   const offered = useUpdates((s) => updateFor(s.updates, mod, profile))
   return (
@@ -402,15 +405,7 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
           gap: space.gap,
         }}
       >
-        {mod.id.startsWith('smapi:') ? (
-          <Field
-            label={t`Mod ID`}
-            value={localId(mod.id)}
-            hint={t`${{ loader: SMAPI }} UniqueID`}
-          />
-        ) : (
-          <Field label={t`Mod ID`} value={localId(mod.id)} />
-        )}
+        {idName !== '' && ownIds !== '' ? <Field label={idName} value={ownIds} /> : null}
         {mod.endorsements > 0 ? (
           <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString(i18n.locale)} />
         ) : null}

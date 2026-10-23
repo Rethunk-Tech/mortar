@@ -2349,7 +2349,6 @@ msgid "{count, plural, one {{by} already includes everything it changes} other {
 msgstr "{count, plural, one {{by} already includes everything it changes} other {{by} together include everything it changes}}"
 
 #: src/mods/columnLabel.ts
-#: src/mods/Sidebar.tsx
 msgid "Mod ID"
 msgstr "Mod ID"
 
@@ -3045,10 +3044,6 @@ msgstr "Required"
 #: src/mods/describeLoadFailure.ts
 msgid "transpiler"
 msgstr "transpiler"
-
-#: src/mods/Sidebar.tsx
-msgid "{loader} UniqueID"
-msgstr "{loader} UniqueID"
 
 #: src/mods/detail.ts
 msgid "Redo update"

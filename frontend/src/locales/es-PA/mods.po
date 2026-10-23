@@ -2349,7 +2349,6 @@ msgid "{count, plural, one {{by} already includes everything it changes} other {
 msgstr ""
 
 #: src/mods/columnLabel.ts
-#: src/mods/Sidebar.tsx
 msgid "Mod ID"
 msgstr ""
 
@@ -3044,10 +3043,6 @@ msgstr ""
 
 #: src/mods/describeLoadFailure.ts
 msgid "transpiler"
-msgstr ""
-
-#: src/mods/Sidebar.tsx
-msgid "{loader} UniqueID"
 msgstr ""
 
 #: src/mods/detail.ts
