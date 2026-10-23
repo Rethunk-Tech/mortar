@@ -63,6 +63,7 @@ func TestVersionsAnswerFromTheSideFileWithoutTheListing(t *testing.T) {
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
+	refreshes.Wait()
 	if f.indexHits.Load() == hits {
 		t.Fatal("nothing refreshed the index")
 	}
