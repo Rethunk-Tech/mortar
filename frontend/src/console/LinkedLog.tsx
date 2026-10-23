@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Typography } from '@mui/material'
-import { type ReactNode, useMemo } from 'react'
+import { type ReactNode, useCallback, useMemo } from 'react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import {
   ModsDir,
@@ -36,7 +36,6 @@ export function LinkedLog({
   follow,
   jump,
   empty,
-  onUnfollow,
 }: {
   game: string
   rows: Entry[]
@@ -44,7 +43,6 @@ export function LinkedLog({
   follow: boolean
   jump: { index: number; n: number } | null
   empty: ReactNode
-  onUnfollow: () => void
 }) {
   const { t } = useLingui()
   const profile = useProfiles((s) => s.openId)
@@ -57,6 +55,19 @@ export function LinkedLog({
     profile === '' ? null : () => ModsDir(game, profile).then((dir) => dir ?? ''),
     [game, profile],
     '',
+  )
+  // Kept between renders, so the memoised rows in view skip a render when lines arrive.
+  const roots = useMemo(() => ({ modsDir, gameDir }), [modsDir, gameDir])
+  const onMod = useCallback((id: string) => {
+    openMod({ id }).catch(reportUnexpected)
+  }, [])
+  const onPath = useCallback(
+    (path: string) => {
+      OpenConsolePath(game, profile, path).catch((e: unknown) => {
+        toastError(t`Could not open the folder`, e)
+      })
+    },
+    [game, profile, t],
   )
   return (
     <Box
@@ -86,18 +97,11 @@ export function LinkedLog({
           notes={notes}
           timestamps={timestamps}
           follow={follow}
-          onUnfollow={onUnfollow}
           jump={jump}
           mods={installed}
-          roots={{ modsDir, gameDir }}
-          onMod={(id) => {
-            openMod({ id }).catch(reportUnexpected)
-          }}
-          onPath={(path) => {
-            OpenConsolePath(game, profile, path).catch((e: unknown) => {
-              toastError(t`Could not open the folder`, e)
-            })
-          }}
+          roots={roots}
+          onMod={onMod}
+          onPath={onPath}
         />
       )}
     </Box>

@@ -469,7 +469,7 @@ export function ConsoleTab({ game }: { game: string }) {
   const timestamps = useConsole((s) => s.timestamps)
   const follow = useConsole((s) => s.follow)
   const jump = useConsole((s) => s.jump)
-  const { load, setFollow } = useConsole.getState()
+  const { load } = useConsole.getState()
   const shown = useConsole((s) => s.shown)
   const openId = useProfiles((s) => s.openId)
   const viewingRun = useConsole((s) => s.viewingRun)
@@ -529,7 +529,6 @@ export function ConsoleTab({ game }: { game: string }) {
         follow={follow}
         jump={jump}
         empty={empty}
-        onUnfollow={() => setFollow(false)}
       />
       <CommandLine game={game} />
     </Box>

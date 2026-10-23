@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Link } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { memo, type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { space } from '../theme/density.ts'
 import {
@@ -75,7 +75,8 @@ function Linked({
   return parts
 }
 
-function Row({
+// Memoised: scrolling moves the window over the rows, and a row already in view need not draw again.
+const Row = memo(function RowView({
   entry,
   timestamps,
   mods,
@@ -161,7 +162,7 @@ function Row({
       </Box>
     </Box>
   )
-}
+})
 
 // A fixed-height window over the rows: only the ones in view (plus a margin) are in the DOM.
 // A BepInEx logger mod's clock carries a fraction the 72px column has no room for; the title keeps it.
@@ -171,7 +172,6 @@ export function VirtualLog({
   rows,
   timestamps,
   follow,
-  onUnfollow,
   jump,
   mods,
   roots,
@@ -182,8 +182,8 @@ export function VirtualLog({
   rows: Entry[]
   notes: ReadonlyMap<number, UpdateNote>
   timestamps: boolean
+  // New lines scroll the log down while it is at the bottom; scrolled up, it keeps its place.
   follow: boolean
-  onUnfollow: () => void
   // Each request carries a fresh n so jumping to the same row twice scrolls twice.
   jump: { index: number; n: number } | null
   mods: readonly InstalledMod[]
@@ -206,10 +206,18 @@ export function VirtualLog({
     return () => measure.disconnect()
   }, [])
 
+  // Whether the view sits at the bottom, kept from each scroll as it happens: lines arriving between a scroll and the
+  // next render must not pull the view back down.
+  const pinned = useRef(true)
+  useLayoutEffect(() => {
+    if (follow) {
+      pinned.current = true
+    }
+  }, [follow])
   const count = rows.length
   useLayoutEffect(() => {
     const el = ref.current
-    if (follow && el) {
+    if (follow && pinned.current && el) {
       // The browser clamps to the real bottom.
       el.scrollTop = count * ROW
     }
@@ -218,6 +226,7 @@ export function VirtualLog({
   useLayoutEffect(() => {
     const el = ref.current
     if (jump && el) {
+      pinned.current = false
       el.scrollTop = Math.max(0, jump.index * ROW - el.clientHeight / JUMP_DIVISOR)
     }
   }, [jump])
@@ -235,9 +244,7 @@ export function VirtualLog({
       onScroll={(e) => {
         const el = e.currentTarget
         setTop(el.scrollTop)
-        if (follow && el.scrollHeight - el.clientHeight - el.scrollTop > ROW) {
-          onUnfollow()
-        }
+        pinned.current = el.scrollHeight - el.clientHeight - el.scrollTop < ROW / 2
       }}
       sx={{ height: '100%', overflowY: 'auto', userSelect: 'text' }}
     >
