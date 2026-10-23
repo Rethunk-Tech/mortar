@@ -79,6 +79,7 @@
           <li>Adding a mod's zip that does not say who made it installs it, by Unknown as r2modman names it, instead of refusing it</li>
           <li>A mod zipped inside its own folder, such as a suit pack with no DLL, installs as its package instead of asking for a mod folder</li>
           <li>Creating a profile while Mortar is adding SMAPI's own mods to every profile no longer fails</li>
+          <li>A controller used in another game no longer controls Mortar in the background: pressing Start to pause that game used to start the open profile's game</li>
         </ul>
       </description>
     </release>
