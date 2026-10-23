@@ -10,7 +10,7 @@ import {
   SquareTerminal,
   X,
 } from 'lucide-react'
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { RunCause } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { listNames } from '../i18n/list.ts'
@@ -139,7 +139,7 @@ function CauseBanner({ game, profile, run }: { game: string; profile: string; ru
   ) : null
 }
 
-function CommandLine({ game }: { game: string }) {
+const CommandLine = memo(function CommandLineView({ game }: { game: string }) {
   const { t } = useLingui()
   const openId = useProfiles((s) => s.openId)
   const viewingRun = useConsole((s) => s.viewingRun)
@@ -244,7 +244,7 @@ function CommandLine({ game }: { game: string }) {
       }}
     />
   )
-}
+})
 
 function ReinstallLoader({ game }: { game: string }) {
   const { t } = useLingui()
@@ -385,59 +385,25 @@ function ViewToggles({ game }: { game: string }) {
   )
 }
 
-export function ConsoleTab({ game }: { game: string }) {
+// Everything above the log, which takes only names: a log that grows by a line skips all of it.
+const ConsoleControls = memo(function ConsoleControlsView({
+  game,
+  profile,
+  runGame,
+  run,
+  offerReinstall,
+}: {
+  game: string
+  profile: string
+  runGame: string
+  run: string
+  offerReinstall: boolean
+}) {
   const { t } = useLingui()
-  const entries = useShownEntries()
   const filters = useConsole((s) => s.filters)
-  const timestamps = useConsole((s) => s.timestamps)
-  const follow = useConsole((s) => s.follow)
-  const jump = useConsole((s) => s.jump)
-  const { load, setMods, clearFilters, setFollow } = useConsole.getState()
-  const shown = useConsole((s) => s.shown)
-  const openId = useProfiles((s) => s.openId)
-  const viewingRun = useConsole((s) => s.viewingRun)
-  // The live log belongs to the open profile; only a past run (e.g. opened from a crash summary) names its own.
-  const target = viewingRun
-    ? { game: shown.game || game, profile: shown.profile }
-    : { game, profile: openId }
-  const rows = useVisible()
-  const offerReinstall = entries.some((e) => incompatibleSMAPI(e.message))
-  // Launching another profile resets the log to it; this one's history is read again once that launch settles.
-  const launchingOther = useLaunch(
-    (s) =>
-      s.status?.state === State.Launching &&
-      s.status.game === game &&
-      s.status.profile !== target.profile,
-  )
-  const [loaded, setLoaded] = useState(false)
-  useEffect(() => {
-    if (launchingOther) {
-      return
-    }
-    let live = true
-    setLoaded(false)
-    load(target.game, target.profile).then(() => {
-      if (live) {
-        setLoaded(true)
-      }
-    })
-    return () => {
-      live = false
-    }
-  }, [target.game, target.profile, launchingOther, load])
-  const total = entries.length
-  const consoleEmpty = useConsoleEmpty(game)
-  if (loaded && consoleEmpty) {
-    return <ConsoleEmpty />
-  }
-  let empty: ReactNode = null
-  if (loaded && total === 0) {
-    empty = t`The console fills when the game runs.`
-  } else if (loaded && rows.length === 0) {
-    empty = <FilteredEmpty />
-  }
+  const { setMods, clearFilters } = useConsole.getState()
   return (
-    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+    <>
       <LogActions game={game} />
       <ConsoleTip />
       <Box
@@ -490,9 +456,72 @@ export function ConsoleTab({ game }: { game: string }) {
           ))}
         </Box>
       ) : null}
-      <CauseBanner game={target.game} profile={target.profile} run={viewingRun} />
-      <RunProblemsStrip game={target.game} profile={target.profile} run={viewingRun} />
+      <CauseBanner game={runGame} profile={profile} run={run} />
+      <RunProblemsStrip game={runGame} profile={profile} run={run} />
       {offerReinstall ? <ReinstallLoader game={game} /> : null}
+    </>
+  )
+})
+
+export function ConsoleTab({ game }: { game: string }) {
+  const { t } = useLingui()
+  const entries = useShownEntries()
+  const timestamps = useConsole((s) => s.timestamps)
+  const follow = useConsole((s) => s.follow)
+  const jump = useConsole((s) => s.jump)
+  const { load, setFollow } = useConsole.getState()
+  const shown = useConsole((s) => s.shown)
+  const openId = useProfiles((s) => s.openId)
+  const viewingRun = useConsole((s) => s.viewingRun)
+  // The live log belongs to the open profile; only a past run (e.g. opened from a crash summary) names its own.
+  const target = viewingRun
+    ? { game: shown.game || game, profile: shown.profile }
+    : { game, profile: openId }
+  const rows = useVisible()
+  const offerReinstall = entries.some((e) => incompatibleSMAPI(e.message))
+  // Launching another profile resets the log to it; this one's history is read again once that launch settles.
+  const launchingOther = useLaunch(
+    (s) =>
+      s.status?.state === State.Launching &&
+      s.status.game === game &&
+      s.status.profile !== target.profile,
+  )
+  const [loaded, setLoaded] = useState(false)
+  useEffect(() => {
+    if (launchingOther) {
+      return
+    }
+    let live = true
+    setLoaded(false)
+    load(target.game, target.profile).then(() => {
+      if (live) {
+        setLoaded(true)
+      }
+    })
+    return () => {
+      live = false
+    }
+  }, [target.game, target.profile, launchingOther, load])
+  const total = entries.length
+  const consoleEmpty = useConsoleEmpty(game)
+  if (loaded && consoleEmpty) {
+    return <ConsoleEmpty />
+  }
+  let empty: ReactNode = null
+  if (loaded && total === 0) {
+    empty = t`The console fills when the game runs.`
+  } else if (loaded && rows.length === 0) {
+    empty = <FilteredEmpty />
+  }
+  return (
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <ConsoleControls
+        game={game}
+        profile={target.profile}
+        runGame={target.game}
+        run={viewingRun}
+        offerReinstall={offerReinstall}
+      />
       <LinkedLog
         game={game}
         rows={rows}
