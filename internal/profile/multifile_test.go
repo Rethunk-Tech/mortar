@@ -10,6 +10,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/nexus"
 
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 )
 
 func TestDefaultMerge(t *testing.T) {
@@ -336,5 +337,24 @@ func TestRenamedModOnFileUpdatesChainIsAnUpdate(t *testing.T) {
 	}}
 	if ask, up, ok := SamePageAsk(Profile{Entries: []Entry{e}}, in); up != 1 {
 		t.Fatalf("file 1 chained to file 2, yet: ask %+v ok %v updates %d", ask, ok, up)
+	}
+}
+
+// A package installs as its own entry, so a second Nexus file for its page is not offered as an addition to it:
+// adding a file to an entry reads SMAPI manifests, which a package has none of.
+func TestSamePageAskOffersNoMergeIntoAPackage(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "A.zip"), map[string]string{"A.dll": "MZ"})
+	res, err := e.InstallSource(t.Context(), "lethal-company", p.ID, zip, Source{Kind: KindNexus, Name: "A.zip", ModID: 7, FileID: 1, Version: "1.0.0"})
+	if err != nil || len(res.Profile.Entries) != 1 || !res.Profile.Entries[0].Package {
+		t.Fatalf("install = %+v, %v", res, err)
+	}
+	if ask, _, ok := SamePageAsk(res.Profile, IncomingFile{ModID: 7, FileID: 2, Category: "OPTIONAL"}); ok {
+		t.Fatalf("a package was offered a merge: %+v", ask)
 	}
 }

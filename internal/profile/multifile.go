@@ -68,6 +68,11 @@ func SamePageAsk(p Profile, in IncomingFile) (ask MergeAsk, updates int, ok bool
 	if e, ok := updatedEntry(page, in); ok {
 		return MergeAsk{}, e.Source.FileID, false
 	}
+	// A package has no manifests to add a file's mods to; its other files install as entries of their own.
+	page = slices.DeleteFunc(page, func(e Entry) bool { return e.Package })
+	if len(page) == 0 {
+		return MergeAsk{}, 0, false
+	}
 	target := page[0]
 	if i := slices.IndexFunc(page, func(e Entry) bool { return sharesMods(e, in.ModIDs) }); i >= 0 {
 		target = page[i]
