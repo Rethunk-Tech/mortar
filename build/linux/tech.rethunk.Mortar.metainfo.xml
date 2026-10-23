@@ -71,6 +71,7 @@
         </ul>
         <p>Fixed</p>
         <ul>
+          <li>A Nexus download of a BepInEx or MelonLoader mod that is only its DLL installs again; it was refused as an optional file of another mod</li>
           <li>Add to group no longer shows "Something went wrong in this view" when the profile already has a group</li>
           <li>Opening a mod's details in Browse keeps that mod on screen instead of jumping to another page</li>
           <li>Browse's list view shows each mod's picture again; it had shrunk to a sliver under the star, which covered the name's first letter</li>
