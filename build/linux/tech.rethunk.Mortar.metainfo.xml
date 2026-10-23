@@ -70,6 +70,7 @@
           <li>One word for each thing throughout: Enable and Disable everywhere, and "cannot" rather than "can't"</li>
           <li>Error messages that said the same thing in different words now use one headline</li>
           <li>Settings descriptions that only repeated their setting's name are gone</li>
+          <li>**Launch options…** in the menu beside Play opens the profile's own launch arguments, command prefix and environment variables</li>
         </ul>
         <p>Fixed</p>
         <ul>

@@ -8,6 +8,7 @@ import {
   type Status,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { SetDefaultLaunchPreset } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
+import { openProfileDialog } from '../game/profileDialog.ts'
 import { useGameLoader } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
@@ -201,6 +202,7 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
         />
       )}
       playWith={(key) => start(game, openId, direct, key)}
+      launchOptions={openId === '' ? undefined : () => openProfileDialog('editLaunch', openId)}
       setDefault={(key) =>
         SetDefaultLaunchPreset(game, openId, key === BASE_PRESET ? '' : key)
           .then(useProfiles.getState().replace)

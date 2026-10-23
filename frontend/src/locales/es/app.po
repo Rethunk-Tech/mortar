@@ -5719,6 +5719,10 @@ msgstr ""
 msgid "Include categories"
 msgstr ""
 
+#: src/launch/VanillaPlay.tsx
+msgid "Launch options…"
+msgstr ""
+
 #: src/game/HomeNotes.tsx
 msgid "Your notes for this profile, for example: Friday co-op profile. Keep everyone on the same version of the big mods before playing together. Notes travel in a shared .mortar file, not in a share link."
 msgstr ""

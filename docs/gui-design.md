@@ -99,7 +99,7 @@ One list of full-width rows of one fixed height, however many games the catalog 
 
 A left sidebar and a detail pane. Code: `frontend/src/game/MainScreen.tsx`.
 - **Sidebar:** one vertical tab list ("Profile sections"): one tab stop on the open section, arrow keys and a gamepad's shoulder buttons move between sections, each tab points at the workspace `tabpanel` by `aria-controls`. A section the loader or game does not support is absent, and a group left empty loses its header. Settings is not in the sidebar (it stays in the Mortar menu and on Ctrl+,).
-- **Play** (`frontend/src/launch/PlayControl.tsx`) is a full-width primary button split with a caret; its menu lists launch presets, **Set default preset…** and **Play without mods** (starts the game with no profile and does not lock mods).
+- **Play** (`frontend/src/launch/PlayControl.tsx`) is a full-width primary button split with a caret; its menu lists launch presets, **Set default preset…**, **Launch options…** (Edit profile, where the launch options are) and **Play without mods** (starts the game with no profile and does not lock mods).
 - **Compact layout** (below 960px wide): the sidebar is always the icon rail, the hero becomes a one-line header, the mods search folds into a filter icon, other actions fold into icon buttons, the mod grid drops to two columns.
 
 ### Home

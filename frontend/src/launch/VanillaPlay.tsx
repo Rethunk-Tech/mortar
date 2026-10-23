@@ -13,7 +13,7 @@ import {
   Radio,
   RadioGroup,
 } from '@mui/material'
-import { ChevronDown, Gamepad2, Play, Star } from 'lucide-react'
+import { ChevronDown, Gamepad2, Play, SlidersHorizontal, Star } from 'lucide-react'
 import { type MouseEvent, type ReactNode, useState } from 'react'
 import { STEAM } from '../brand/productNames.ts'
 import { routeGame, useNav } from '../nav/store.ts'
@@ -161,6 +161,7 @@ export function VanillaPlay({
   presets,
   playWith,
   setDefault,
+  launchOptions,
   options,
 }: {
   game: string
@@ -172,6 +173,8 @@ export function VanillaPlay({
   presets: PlayPreset[]
   playWith: (key: string) => void
   setDefault: (key: string) => void
+  // Opens the profile's launch options, arguments, prefix and environment; absent where there is no profile.
+  launchOptions?: (() => void) | undefined
   // Settings for the next launch, shown under the menu's actions; close shuts the menu.
   options?: (close: () => void) => ReactNode
 }) {
@@ -233,7 +236,19 @@ export function VanillaPlay({
             ]
           }
           return [
-            presets.length > 0 ? <MenuRule key="vanilla-divider" /> : null,
+            presets.length > 0 || launchOptions ? <MenuRule key="vanilla-divider" /> : null,
+            launchOptions ? (
+              <MenuAction
+                key="launch-options"
+                icon={<SlidersHorizontal size={16} />}
+                label={t`Launch options…`}
+                onClick={() => {
+                  setMenu(null)
+                  launchOptions()
+                }}
+              />
+            ) : null,
+            launchOptions ? <MenuRule key="launch-options-divider" /> : null,
             <MenuAction
               key="vanilla"
               disabled={vanillaDisabled}

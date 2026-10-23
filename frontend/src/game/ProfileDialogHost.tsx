@@ -80,6 +80,10 @@ function ProfileDialog({ kind, ...props }: DialogProps & { kind: ProfileDialogKi
   switch (kind) {
     case 'edit':
       return <EditProfileDialog profile={profile} open={open} onClose={onClose} />
+    case 'editLaunch':
+      return (
+        <EditProfileDialog profile={profile} open={open} onClose={onClose} initialTab="launch" />
+      )
     case 'history':
       return <HistoryDialog profileId={profile.id} open={open} onClose={onClose} />
     case 'health':
