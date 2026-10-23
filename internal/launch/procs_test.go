@@ -1,6 +1,9 @@
 package launch
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestRunsFrom(t *testing.T) {
 	cases := []struct {
@@ -19,5 +22,16 @@ func TestRunsFrom(t *testing.T) {
 		if got := c.p.RunsFrom("/lib/common/G"); got != c.want {
 			t.Errorf("%s = %v, want %v", c.name, got, c.want)
 		}
+	}
+}
+
+func TestExitedWithinWaitsForAProcessThatIsStillExiting(t *testing.T) {
+	t.Parallel()
+	polls := 0
+	if !exitedWithin(func() bool { polls++; return polls > 2 }, time.Second) {
+		t.Fatal("a process gone on the third look was reported alive")
+	}
+	if exitedWithin(func() bool { return false }, 120*time.Millisecond) {
+		t.Fatal("a process that never exits was reported gone")
 	}
 }

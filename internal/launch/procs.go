@@ -91,3 +91,15 @@ func (p Process) UsesModsPath(modsDir string) bool {
 	}
 	return false
 }
+
+// exitedWithin reports whether gone turns true within grace.
+func exitedWithin(gone func() bool, grace time.Duration) bool {
+	deadline := time.Now().Add(grace)
+	for !gone() {
+		if !time.Now().Before(deadline) {
+			return false
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+	return true
+}

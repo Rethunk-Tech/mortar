@@ -4,6 +4,7 @@ package launch
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -44,12 +45,12 @@ func Terminate(pid int, grace time.Duration) error {
 	}
 	h, err := windows.OpenProcess(windows.PROCESS_TERMINATE|windows.SYNCHRONIZE, false, id)
 	if err != nil {
-		return err
+		return alreadyExiting(pid, err, grace)
 	}
 	defer func() { _ = windows.CloseHandle(h) }()
 	if !terminateTracked(pid) {
 		if err := windows.TerminateProcess(h, 1); err != nil {
-			return err
+			return alreadyExiting(pid, err, grace)
 		}
 	}
 	ev, err := windows.WaitForSingleObject(h, waitMillis(grace))
@@ -60,6 +61,19 @@ func Terminate(pid int, grace time.Duration) error {
 		return fmt.Errorf("process %d is still exiting after %s", pid, grace)
 	}
 	return nil
+}
+
+// alreadyExiting settles a refused kill: Windows answers access denied for a process that is already terminating (a
+// crashed game still writing its report), and invalid parameter for one that is gone. Either is stopped once the
+// process is gone, so only a process that outlives grace is an error.
+func alreadyExiting(pid int, err error, grace time.Duration) error {
+	if !errors.Is(err, windows.ERROR_ACCESS_DENIED) && !errors.Is(err, windows.ERROR_INVALID_PARAMETER) {
+		return err
+	}
+	if exitedWithin(func() bool { return !Alive(pid) }, grace) {
+		return nil
+	}
+	return fmt.Errorf("process %d is still running after %s: %w", pid, grace, err)
 }
 
 // Alive reports whether a process with this pid is still running.
