@@ -326,7 +326,7 @@ func TestImportKeepsAProfilesOwnConfigUnlessReplaceIsChosen(t *testing.T) {
 	cfg := filepath.Join(dir, "BepInEx", "config", "alice.cfg")
 	testfs.WriteAt(t, cfg, []byte("mine\n"))
 	read := func() string {
-		b, err := os.ReadFile(cfg)
+		b, err := fsx.ReadFile(cfg)
 		if err != nil {
 			t.Fatal(err)
 		}
