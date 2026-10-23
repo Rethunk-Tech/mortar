@@ -1,18 +1,12 @@
 import { expect, type Page, test } from '@playwright/test'
 import { openSeedFarm, openSettings } from './app.ts'
+import { methodOf } from './renderMeter.ts'
 
 /** A task this long freezes the window noticeably; profile switches on a 400-mod profile stay under it. */
 const LONG_TASK_MS = 200
 const SETTLE_MS = 600
 const HTTP_ERROR = 400
-
-async function serverUp(baseURL: string): Promise<boolean> {
-  try {
-    return (await fetch(baseURL)).ok
-  } catch {
-    return false
-  }
-}
+const NEXUS_SIGNED_OUT = 'sign in to Nexus Mods'
 
 function watch(page: Page) {
   const errors: string[] = []
@@ -23,10 +17,19 @@ function watch(page: Page) {
     }
   })
   page.on('pageerror', (e) => errors.push(e.message))
-  page.on('response', (r) => {
-    if (r.status() >= HTTP_ERROR) {
-      errors.push(`${r.status()} ${r.url()}`)
+  page.on('response', async (r) => {
+    if (r.status() < HTTP_ERROR) {
+      return
     }
+    // The sandbox has no Nexus account, so Browse says why Nexus has no categories, as it does for a player who has not
+    // signed in; any other failure is a fault.
+    if ((await r.text().catch(() => '')).includes(NEXUS_SIGNED_OUT)) {
+      return
+    }
+    // A backend call is named by its bound method, which the request body carries.
+    const path = new URL(r.url()).pathname
+    const what = path.startsWith('/wails/') ? methodOf(r.request().postData() ?? '') : r.url()
+    errors.push(`${r.status()} ${what}`)
   })
   return errors
 }
@@ -41,18 +44,8 @@ async function settle(page: Page) {
   await page.waitForTimeout(SETTLE_MS)
 }
 
-test('every tab and settings page opens without errors or long tasks', async ({
-  page,
-  baseURL,
-}) => {
+test('every tab and settings page opens without errors or long tasks', async ({ page }) => {
   test.setTimeout(90_000)
-  // Opt-in: without the self-test server (scripts/selftest.sh start) there is nothing to drive.
-  if (!(await serverUp(baseURL ?? ''))) {
-    test
-      .info()
-      .annotations.push({ type: 'skipped', description: 'self-test server is not running' })
-    return
-  }
   await page.addInitScript(() => {
     const w = globalThis as unknown as { mortarLongTasks: number[] }
     w.mortarLongTasks = []
