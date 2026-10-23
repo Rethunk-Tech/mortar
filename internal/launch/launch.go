@@ -200,7 +200,7 @@ type Command struct {
 	// Ready, when set, is the success rule instead of a rewritten log: a vanilla launch waits for the game process.
 	Ready func() bool
 	// Alive reports that the game's process is running. A game whose log is slow to appear (a big mod list, a slow
-	// disk) has still started when its process is up at the timeout; the log is followed once it comes.
+	// disk) has still started when its process is up once the launch is slow; the log is followed once it comes.
 	Alive func() bool
 	// OnExit reports how the started process ended after the game has started. Ignored for Relay commands.
 	OnExit func(Exit)
@@ -208,14 +208,20 @@ type Command struct {
 
 const clockSlack = 50 * time.Millisecond
 
-// Timing controls how long Run waits for the log; the zero value is 60 s polled every 250 ms.
+// SlowAfter is how long a launch runs before it counts as slow: the player is told it is taking a while, and a game
+// whose process is up has started even without its log.
+const SlowAfter = 90 * time.Second
+
+// Timing controls how long Run waits for the game; the zero value gives up after 5 minutes, polling every 250 ms.
 type Timing struct {
 	Timeout time.Duration
+	Slow    time.Duration
 	Poll    time.Duration
 }
 
 func (t Timing) withDefaults() Timing {
-	t.Timeout = cmp.Or(t.Timeout, 60*time.Second)
+	t.Timeout = cmp.Or(t.Timeout, 5*time.Minute)
+	t.Slow = cmp.Or(t.Slow, SlowAfter)
 	t.Poll = cmp.Or(t.Poll, 250*time.Millisecond)
 	return t
 }
@@ -280,8 +286,9 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 		}
 		return nil
 	}
+	up := func() bool { return c.Alive != nil && c.Alive() }
 	for {
-		if ok() {
+		if ok() || time.Since(began) >= tm.Slow && up() {
 			return started()
 		}
 		if f := stalled(false); f != nil {
@@ -291,7 +298,7 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-deadline.C:
-			if c.Alive != nil && c.Alive() {
+			if up() {
 				return started()
 			}
 			return &Failure{Hint: c.Failure, Err: errors.New("the game did not start in time")}

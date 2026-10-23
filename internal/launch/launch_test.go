@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -81,11 +82,18 @@ func TestRunIgnoresStaleLog(t *testing.T) {
 
 func TestRunStartsWhenTheGameIsUpButItsLogIsLate(t *testing.T) {
 	log := filepath.Join(t.TempDir(), "LogOutput.log")
+	var up atomic.Bool
+	tm := Timing{Timeout: time.Minute, Slow: 50 * time.Millisecond, Poll: 5 * time.Millisecond}
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		up.Store(true)
+	}()
+	began := time.Now()
 	err := Run(t.Context(), func(string, string, ...string) (<-chan error, error) {
 		return make(chan error), nil
-	}, Command{LogFile: log, Failure: HintSteam, Relay: true, Alive: func() bool { return true }}, fast, func([]string) {})
-	if err != nil {
-		t.Fatalf("err = %v, want a game whose process is up to count as started", err)
+	}, Command{LogFile: log, Failure: HintSteam, Relay: true, Alive: up.Load}, tm, func([]string) {})
+	if err != nil || time.Since(began) > 10*time.Second {
+		t.Fatalf("err = %v after %v, want a slow game whose process came up to count as started", err, time.Since(began))
 	}
 }
 

@@ -50,7 +50,7 @@ type StartEnv struct {
 // hands the start to the game and exits, every other store by running the game's executable. The zero value is the
 // real thing; the fields exist so tests can point it elsewhere.
 type Starter struct {
-	// Runner, LookPath and Timing default to the real command, exec.LookPath and 60 s.
+	// Runner, LookPath and Timing default to the real command, exec.LookPath and launch.Timing's defaults.
 	Runner   launch.Runner
 	LookPath func(string) (string, error)
 	Timing   launch.Timing

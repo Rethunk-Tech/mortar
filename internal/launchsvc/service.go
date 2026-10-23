@@ -81,11 +81,13 @@ type Status struct {
 	State   State  `json:"state"`
 	Profile string `json:"profile"`
 	// Install is the id of the game install the launch runs; a game Mortar did not start is credited to the selected install.
-	Install string      `json:"install,omitempty"`
-	Since   int64       `json:"since"`
-	Hint    launch.Hint `json:"hint"`
-	Error   string      `json:"error"`
-	Cause   *Cause      `json:"cause,omitempty"`
+	Install string `json:"install,omitempty"`
+	Since   int64  `json:"since"`
+	// SlowAt (Unix milliseconds) is when a launch starts counting as slow, so the player is told it is taking a while.
+	SlowAt int64       `json:"slowAt,omitempty"`
+	Hint   launch.Hint `json:"hint"`
+	Error  string      `json:"error"`
+	Cause  *Cause      `json:"cause,omitempty"`
 }
 
 // Lines is a batch of new log entries of the profile's session, oldest first.
@@ -1034,7 +1036,10 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 		settingsMissing: settingsMissing,
 	}, cancel
 	s.mu.Unlock()
-	s.set(Status{Game: gameID, State: Launching, Profile: profileID, Install: installOf(g), Since: started.UnixMilli()})
+	s.set(Status{
+		Game: gameID, State: Launching, Profile: profileID, Install: installOf(g),
+		Since: started.UnixMilli(), SlowAt: started.Add(launch.SlowAfter).UnixMilli(),
+	})
 	if settingsMissing {
 		s.sayCode(g, profileID, "startup_preferences is missing; skipped profile game settings.", "settingsMissing", nil)
 	}

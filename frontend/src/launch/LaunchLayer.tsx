@@ -13,7 +13,7 @@ import {
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { CircleAlert } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { STEAM } from '../brand/productNames.ts'
@@ -83,6 +83,20 @@ function Spinner() {
   )
 }
 
+// useSlow reports whether the launch has passed its slow mark, at (Unix milliseconds) from the backend.
+function useSlow(at: number | undefined): boolean {
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    setSlow(false)
+    if (!at) {
+      return
+    }
+    const timer = setTimeout(() => setSlow(true), Math.max(0, at - Date.now()))
+    return () => clearTimeout(timer)
+  }, [at])
+  return slow
+}
+
 function Overlay({ game }: { game: string }) {
   const { t } = useLingui()
   const name = useProfiles((s) => s.game?.name ?? '')
@@ -93,6 +107,10 @@ function Overlay({ game }: { game: string }) {
   const hide = useLaunch((s) => s.hide)
   const hidden = useLaunch((s) => s.hidden)
   const overlayOpen = status?.game === game && status.state === State.Launching && !hidden
+  const slowAt = overlayOpen ? status.slowAt : undefined
+  const slow = useSlow(slowAt)
+  const [keptWaiting, setKeptWaiting] = useState<number>()
+  const notice = slow && keptWaiting !== slowAt
   if (!overlayOpen) {
     return null
   }
@@ -121,6 +139,16 @@ function Overlay({ game }: { game: string }) {
         <Spinner />
         <Typography sx={{ fontSize: 30, fontWeight: 700 }}>{t`Launching ${name}`}</Typography>
         <Typography sx={{ fontSize: 16 }}>{`${profileName} · ${modsLabel(count)}`}</Typography>
+        {notice ? (
+          <Box role="status" sx={{ maxWidth: 720, textAlign: 'center' }}>
+            <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
+              {t`${name} is taking a long time to start`}
+            </Typography>
+            <Typography sx={{ color: 'text.secondary' }}>
+              {t`Its launcher may be updating it, or a long mod list is still loading. Mortar keeps waiting.`}
+            </Typography>
+          </Box>
+        ) : null}
         {/* An empty log would be a blank band between the title and the buttons. */}
         {shown.length > 0 && (
           <Box
@@ -161,7 +189,7 @@ function Overlay({ game }: { game: string }) {
         <Box sx={{ display: 'flex', gap: space.gap }}>
           <Button
             variant="outlined"
-            autoFocus={true}
+            autoFocus={!notice}
             onClick={() => {
               setTab('console')
               hide()
@@ -172,6 +200,11 @@ function Overlay({ game }: { game: string }) {
           <Button variant="outlined" onClick={hide}>
             {t`Hide`}
           </Button>
+          {notice ? (
+            <Button variant="contained" autoFocus={true} onClick={() => setKeptWaiting(slowAt)}>
+              {t`Keep waiting`}
+            </Button>
+          ) : null}
         </Box>
       </Box>
     </Modal>

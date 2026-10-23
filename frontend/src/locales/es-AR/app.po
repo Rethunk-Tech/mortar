@@ -666,6 +666,10 @@ msgstr ""
 msgid "Pending updates ({count})"
 msgstr ""
 
+#: src/launch/LaunchLayer.tsx
+msgid "Its launcher may be updating it, or a long mod list is still loading. Mortar keeps waiting."
+msgstr ""
+
 #: src/shell/checkForUpdates.ts
 msgid "Update check skipped"
 msgstr ""
@@ -4735,6 +4739,10 @@ msgstr ""
 msgid "Install {name}?"
 msgstr ""
 
+#: src/launch/LaunchLayer.tsx
+msgid "{name} is taking a long time to start"
+msgstr ""
+
 #: src/launch/PrePlayDialog.tsx
 msgid "Paths too long for {os} ({count})"
 msgstr ""
@@ -4905,6 +4913,10 @@ msgstr ""
 #: src/templates/TemplateDialogs.tsx
 #: src/tools/ToolEditorDialog.tsx
 msgid "Save"
+msgstr ""
+
+#: src/launch/LaunchLayer.tsx
+msgid "Keep waiting"
 msgstr ""
 
 #: src/install/NeedsRootCallout.tsx

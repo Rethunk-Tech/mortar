@@ -666,6 +666,10 @@ msgstr "{loader} is the loader every {game} mod needs. Mortar puts it in each pr
 msgid "Pending updates ({count})"
 msgstr "Pending updates ({count})"
 
+#: src/launch/LaunchLayer.tsx
+msgid "Its launcher may be updating it, or a long mod list is still loading. Mortar keeps waiting."
+msgstr "Its launcher may be updating it, or a long mod list is still loading. Mortar keeps waiting."
+
 #: src/shell/checkForUpdates.ts
 msgid "Update check skipped"
 msgstr "Update check skipped"
@@ -4735,6 +4739,10 @@ msgstr "Could not open Mortar's log"
 msgid "Install {name}?"
 msgstr "Install {name}?"
 
+#: src/launch/LaunchLayer.tsx
+msgid "{name} is taking a long time to start"
+msgstr "{name} is taking a long time to start"
+
 #: src/launch/PrePlayDialog.tsx
 msgid "Paths too long for {os} ({count})"
 msgstr "Paths too long for {os} ({count})"
@@ -4906,6 +4914,10 @@ msgstr "Beach farm"
 #: src/tools/ToolEditorDialog.tsx
 msgid "Save"
 msgstr "Save"
+
+#: src/launch/LaunchLayer.tsx
+msgid "Keep waiting"
+msgstr "Keep waiting"
 
 #: src/install/NeedsRootCallout.tsx
 msgid "Choose folder"
