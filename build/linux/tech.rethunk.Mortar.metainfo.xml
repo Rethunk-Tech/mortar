@@ -81,6 +81,7 @@
           <li>Creating a profile while Mortar is adding SMAPI's own mods to every profile no longer fails</li>
           <li>A controller used in another game no longer controls Mortar in the background: pressing Start to pause that game used to start the open profile's game</li>
           <li>The extra mods folder lists BepInEx and other Thunderstore games' mods, and a C# project's build folder as one mod, instead of asking each for a SMAPI UniqueID</li>
+          <li>A mod added from an extra mods folder is installed again whenever its folder changes, so a mod you are building stays current in the open profile</li>
         </ul>
       </description>
     </release>
