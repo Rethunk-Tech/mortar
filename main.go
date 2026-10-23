@@ -472,6 +472,17 @@ func run() error {
 		}
 		return looks
 	}
+	profiles.PackageFacts = func(gameID string, installed map[string]string) map[string]thunderstore.Fact {
+		key := share.SourceKeys(gameID)["thunderstore"]
+		if key == "" {
+			return nil
+		}
+		facts, err := thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}.CachedFacts(key, installed)
+		if err != nil {
+			return nil
+		}
+		return facts
+	}
 	profiles.ShortcutRenamed = shortcut.Renamed
 	profiles.ShortcutRemoved = shortcut.Removed
 	plays.Covers = func(gameID, profileID string) ([]string, error) {

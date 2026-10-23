@@ -311,6 +311,8 @@ type Store struct {
 	home            string
 	settings        *settings.Store
 	mu              sync.Mutex
+	// scans are the plugin scans of store items, which never change under their keys.
+	scans scanCache
 	// seeded is each profile's seedSignature as of its last config seed.
 	seededMu sync.Mutex
 	seeded   map[string]string
@@ -333,6 +335,9 @@ type Store struct {
 	// PackageLooks is the icon and category of each named Thunderstore package (Namespace-Name) the game's cached
 	// index holds, keyed by the lower-case name, read without the network. Nil means no index.
 	PackageLooks func(game string, names []string) map[string]thunderstore.Look
+	// PackageFacts is the index's facts on each named Thunderstore package (lower-case Namespace-Name to the installed
+	// version), read without the network. Nil means no index.
+	PackageFacts func(game string, installed map[string]string) map[string]thunderstore.Fact
 	// ShortcutRenamed updates an existing launcher after a profile is renamed; nil means nothing.
 	ShortcutRenamed func(game, id, profileName, gameName string) error
 	// ShortcutRemoved removes launchers after a profile is deleted; nil means nothing.

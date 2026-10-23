@@ -2,6 +2,7 @@ package profile
 
 import (
 	"path/filepath"
+	"slices"
 
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -54,18 +55,11 @@ func (s *Store) pluginGUIDsOf(game string, p Profile, uniqueID mod.ID) []string 
 		// A folder game's mod (Vintage Story) names its config files after the mod id its modinfo.json gives.
 		return []string{c.ModID}
 	}
-	if !ok || !e.Package || s.items == nil {
+	if !ok {
 		return nil
 	}
-	dir, err := s.items.Path(game, e.StoreKey())
-	if err != nil {
-		return nil
-	}
-	var out []string
-	for _, pl := range dotnet.PluginsIn(dir) {
-		out = append(out, pl.GUID)
-	}
-	return out
+	sc, _ := s.scanPackage(game, e)
+	return slices.Clone(sc.ids)
 }
 
 // InstalledPluginGUIDs is the [BepInPlugin] GUID of every plugin the profile holds: each package's, bundled ones
