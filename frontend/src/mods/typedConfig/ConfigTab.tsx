@@ -23,7 +23,6 @@ import { playOpenProfile } from '../../launch/playOpen.ts'
 import { ControlsRow } from '../../shell/ControlsRow.tsx'
 import { EmptyState } from '../../shell/EmptyState.tsx'
 import { LoadErrorRow, LoadingRow } from '../../shell/LoadingRow.tsx'
-import { SearchField } from '../../shell/SearchField.tsx'
 import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
 import { GroupHeaderRow } from '../ModsGroupHeader.tsx'
@@ -33,6 +32,7 @@ import { useListHeading } from '../useListHeading.ts'
 import { useModGroups } from '../useModGroups.ts'
 import { flattenModGroups, useModVirtual, type VirtualRow } from '../virtualRows.ts'
 import { ConfigPane } from './ConfigPane.tsx'
+import { ConfigSearch } from './ConfigSearch.tsx'
 import {
   type ConfigChip,
   type ConfigShow,
@@ -472,12 +472,10 @@ export function ConfigTab({ profile, game }: { profile: Profile; game: string })
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <ControlsRow>
-        <SearchField
+        <ConfigSearch
           label={t`Filter mods`}
           placeholder={plural({ count: total }, { one: 'Filter # mod', other: 'Filter # mods' })}
-          value={query}
-          onChange={setQuery}
-          grow={true}
+          onQuery={setQuery}
         />
         <ShowMenu show={show} onChange={setShow} />
       </ControlsRow>
