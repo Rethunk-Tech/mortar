@@ -312,3 +312,44 @@ func TestAPackageTheIndexLacksIsNotRemovedFromTheSite(t *testing.T) {
 		t.Errorf("problem = %+v", p)
 	}
 }
+
+func TestImportKeepsAProfilesOwnConfigUnlessReplaceIsChosen(t *testing.T) {
+	s, _ := packService(t)
+	prof, err := s.d.Profiles.Create("lethal-company", "Mine")
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, err := s.d.Profiles.ProfileDir("lethal-company", prof.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := filepath.Join(dir, "BepInEx", "config", "alice.cfg")
+	testfs.WriteAt(t, cfg, []byte("mine\n"))
+	read := func() string {
+		b, err := os.ReadFile(cfg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(b)
+	}
+	pv, err := s.PreviewLink(t.Context(), "lethal-company", codeKey, prof.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Import(t.Context(), "lethal-company", pv.Session, prof.ID, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(); got != "mine\n" {
+		t.Fatalf("an import into the profile replaced its own config: %q", got)
+	}
+	pv, err = s.PreviewLink(t.Context(), "lethal-company", codeKey, prof.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Replace(t.Context(), "lethal-company", pv.Session, prof.ID, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(); got != "[General]\n" {
+		t.Fatalf("a Replace kept the profile's config: %q", got)
+	}
+}
