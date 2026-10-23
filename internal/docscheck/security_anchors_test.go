@@ -6,13 +6,9 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
-	"strconv"
 	"strings"
 	"testing"
 )
-
-// anchorRE matches a `file.go:LINE` anchor, and an immediately following `Symbol` when the row names one.
-var anchorRE = regexp.MustCompile("`([\\w./-]+\\.go):(\\d+)`(?: `([\\w.]+)`)?")
 
 // symbolAnchorRE matches a `file.go#Symbol` anchor, which names the symbol and leaves its line to the test, so the note
 // does not drift when code above it changes. Symbol is a name, or Type.Method for a method.
@@ -94,8 +90,8 @@ func resolve(t *testing.T, root *os.Root, rel string) string {
 	return found[0]
 }
 
-// TestSecurityAnchorsPointAtTheirSymbol keeps docs/security.md's file:line index honest: each anchor must land on a line
-// of its file, and when the row names the symbol it guards, that symbol must be on that line.
+// TestSecurityAnchorsPointAtTheirSymbol keeps docs/security.md's file#Symbol index honest: each anchored file must
+// declare its symbol.
 func TestSecurityAnchorsPointAtTheirSymbol(t *testing.T) {
 	t.Parallel()
 	root, err := os.OpenRoot(repoRoot(t))
@@ -106,33 +102,6 @@ func TestSecurityAnchorsPointAtTheirSymbol(t *testing.T) {
 	doc, err := root.ReadFile("docs/security.md")
 	if err != nil {
 		t.Fatal(err)
-	}
-	anchors := anchorRE.FindAllStringSubmatch(string(doc), -1)
-	if len(anchors) == 0 {
-		t.Fatal("no anchors found in docs/security.md")
-	}
-	for _, m := range anchors {
-		rel, sym := m[1], m[3]
-		n, err := strconv.Atoi(m[2])
-		if err != nil {
-			t.Fatal(err)
-		}
-		src, err := root.ReadFile(resolve(t, root, rel))
-		if err != nil {
-			t.Fatal(err)
-		}
-		lines := strings.Split(string(src), "\n")
-		if n < 1 || n > len(lines) {
-			t.Errorf("%s:%d is past the end of the file (%d lines)", rel, n, len(lines))
-			continue
-		}
-		if sym == "" {
-			continue
-		}
-		name := sym[strings.LastIndex(sym, ".")+1:]
-		if !regexp.MustCompile(`\b` + regexp.QuoteMeta(name) + `\b`).MatchString(lines[n-1]) {
-			t.Errorf("%s:%d does not hold %s: %q", rel, n, sym, strings.TrimSpace(lines[n-1]))
-		}
 	}
 	symbols := symbolAnchorRE.FindAllStringSubmatch(string(doc), -1)
 	if len(symbols) == 0 {
