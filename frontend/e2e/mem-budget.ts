@@ -18,12 +18,12 @@ import { sandboxPort, selftest, serverEnv } from './sandbox.ts'
 //   MORTAR_MEM_BUDGET_MIB=1152               the limit for Go and browser together, per scenario
 // Exits 1 when a scenario's total is over the budget. Each scenario's breakdown (Go memory classes, GOGC and the memory
 // limit in effect, the top of its heap profile by package, the browser's JS heap, DOM and per-process split) goes to
-// $MORTAR_MEM_OUT/report.md; the Go parts need MORTAR_PPROF.
+// a markdown report in $MORTAR_MEM_OUT; the Go parts need MORTAR_PPROF.
 
 const BASE = '/var/tmp'
 const BUDGET_MIB = Number(process.env.MORTAR_MEM_BUDGET_MIB ?? '1152')
 const ZIP_MIB = Number(process.env.MORTAR_MEM_ZIP_MIB ?? '500')
-// archive.DefaultMaxEntries: the largest archive in a real 811-mod store holds 2,438 files.
+// Stays under archive.DefaultMaxEntries.
 const MAX_ZIP_ENTRIES = 20_000
 const ZIP_FILE_KIB = Number(process.env.MORTAR_MEM_ZIP_FILE_KIB ?? '100')
 const BROWSE_QUERY = process.env.MORTAR_MEM_QUERY ?? 'content'

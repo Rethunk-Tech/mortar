@@ -58,7 +58,7 @@ export function pssKiB(pid: number): number {
 }
 
 /** The browser's main process: the one of our descendants that is Chromium and has no --type (its helpers do). Playwright
- * no longer hands out the pid. */
+ * does not hand out the pid. */
 export function browserRoot(): number {
   for (const pid of tree(process.pid)) {
     try {

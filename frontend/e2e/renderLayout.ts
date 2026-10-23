@@ -7,7 +7,7 @@ export interface LayoutBreak {
 }
 
 // Layout breaks no baseline is needed to see: a picture or control squeezed to a sliver, the start of a text covered by
-// another element, and a page wider than its window. Each is a bug on any screen, whatever the screen used to look like.
+// another element, and a page wider than its window. Each is a bug on any screen.
 // The checks run in the page, so each carries its own helpers.
 export async function layoutBreaks(page: Page): Promise<LayoutBreak[]> {
   return [

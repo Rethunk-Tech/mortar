@@ -236,7 +236,7 @@ func (s *Store) SyncPackages(gameID, id string) error {
 	s.expireHeldCopies(dir)
 	// Every file this sync may place is named first, with the hash it will have, so one that stops part way is still
 	// taken away by the next. A profile copy with no record that differs from the store is not named here: it is
-	// replaced below, once it has been moved aside.
+	// replaced below, after it is moved aside.
 	srcHash := map[string]string{}
 	hashOf := func(rel string) (string, error) {
 		if h, ok := srcHash[rel]; ok {

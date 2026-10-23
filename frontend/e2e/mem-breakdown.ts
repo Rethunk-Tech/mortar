@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process'
 import type { Page } from '@playwright/test'
 import { byRole, MIB, mappings, serverPid } from './mem-proc.ts'
 
-// The per-scenario breakdown mem-budget.ts writes to report.md: what the Go server's and the browser's memory is made of.
+// The per-scenario breakdown mem-budget.ts writes to its markdown report: what the Go server's and the browser's memory is made of.
 
 const PPROF_TOP = 25
 

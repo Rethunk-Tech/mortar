@@ -227,7 +227,7 @@ func (o ModpackOptions) check() error {
 
 // ExportModpack writes the profile as a Thunderstore modpack zip at dest: manifest.json depending on each enabled
 // Thunderstore package at its installed version (with IncludeDisabled, the switched-off ones too), the icon, README.md,
-// CHANGELOG.md when there is one, and the chosen files of the profile's BepInEx/config folder as config/, where
+// a changelog file when there is one, and the chosen files of the profile's BepInEx/config folder as config/, where
 // r2modman and Mortar's own import read them. The form is remembered on the profile for the next export.
 func (s *Service) ExportModpack(gameID, profileID, dest string, o ModpackOptions) (ModpackResult, error) {
 	p, err := s.find(gameID, profileID)

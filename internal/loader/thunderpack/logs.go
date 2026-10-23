@@ -149,7 +149,7 @@ var (
 )
 
 // analyzeLovely reads a lovely-*.log: a Lua module patch that failed (the next line holds Lua's error) and a patch whose
-// pattern no longer matches the game, which is how a game update breaks a Balatro mod. The mod is the folder of the
+// pattern does not match the game, which is how a game update breaks a Balatro mod. The mod is the folder of the
 // patch file's path.
 func analyzeLovely(text string) []loader.Finding {
 	var out []loader.Finding
