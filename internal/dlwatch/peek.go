@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
@@ -18,14 +19,11 @@ func readManifestName(r io.Reader) string {
 	if err != nil {
 		return ""
 	}
-	m, err := manifest.Parse(b)
-	if err != nil {
-		return ""
-	}
+	m, _ := archive.ManifestInfo(b)
 	return strings.TrimSpace(m.Name)
 }
 
-// PeekName reads a Stardew-style manifest.json Name from a zip, shortest path first.
+// PeekName reads a SMAPI or Thunderstore manifest.json Name from a zip, shortest path first.
 func PeekName(path string) string {
 	zr, err := zip.OpenReader(path)
 	if err != nil {

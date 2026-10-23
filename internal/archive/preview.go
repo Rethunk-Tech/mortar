@@ -2,6 +2,8 @@ package archive
 
 import (
 	"archive/zip"
+	"bytes"
+	"encoding/json"
 	"errors"
 	"io"
 	"math"
@@ -30,7 +32,7 @@ type PreviewEntry struct {
 	IsDir bool   `json:"isDir"`
 }
 
-// PreviewManifest is a SMAPI manifest found in an archive.
+// PreviewManifest is a manifest.json found in an archive: a SMAPI mod's, or a Thunderstore package's, which has no ID.
 type PreviewManifest struct {
 	Folder  string `json:"folder"`
 	ID      mod.ID `json:"id"`
@@ -83,15 +85,32 @@ func (v *previewer) add(name string, size int64, isDir bool, open func() (io.Rea
 	if err != nil {
 		return
 	}
-	m, err := manifest.Parse(b)
-	if err != nil {
+	pm, ok := ManifestInfo(b)
+	if !ok {
 		return
 	}
 	folder := path.Dir(name)
 	if folder == "." {
 		folder = ""
 	}
-	v.p.Manifests = append(v.p.Manifests, PreviewManifest{Folder: folder, ID: m.ModID(), Name: m.Name, Version: m.Version})
+	pm.Folder = folder
+	v.p.Manifests = append(v.p.Manifests, pm)
+}
+
+// ManifestInfo reads the identity a manifest.json states (Folder is left empty): a SMAPI manifest gives an ID, a Thunderstore
+// package's manifest only its name and version. ok is false when the file is neither.
+func ManifestInfo(b []byte) (PreviewManifest, bool) {
+	if m, err := manifest.Parse(b); err == nil {
+		return PreviewManifest{ID: m.ModID(), Name: m.Name, Version: m.Version}, true
+	}
+	var pkg struct {
+		Name    string `json:"name"`
+		Version string `json:"version_number"`
+	}
+	if err := json.Unmarshal(bytes.TrimPrefix(b, []byte("\xef\xbb\xbf")), &pkg); err != nil || pkg.Name == "" {
+		return PreviewManifest{}, false
+	}
+	return PreviewManifest{Name: pkg.Name, Version: pkg.Version}, true
 }
 
 // full reports whether the archive is past the entry cap Extract would refuse.

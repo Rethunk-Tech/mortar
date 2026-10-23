@@ -26,6 +26,19 @@ func TestPreviewArchiveZipFindsManifestsAndFomod(t *testing.T) {
 	}
 }
 
+func TestPreviewArchiveNamesAThunderstoreManifest(t *testing.T) {
+	p, err := PreviewArchive(buildZip(t,
+		zentry{name: "manifest.json", body: "\xef\xbb\xbf" + `{"name":"Pkg","version_number":"1.2.0"}`},
+		zentry{name: "plugins/Pkg.dll", body: "x"},
+	))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(p.Manifests) != 1 || p.Manifests[0] != (PreviewManifest{Name: "Pkg", Version: "1.2.0"}) {
+		t.Fatalf("manifests = %+v", p.Manifests)
+	}
+}
+
 func TestPreviewArchiveTruncatesEntries(t *testing.T) {
 	entries := make([]zentry, MaxPreviewEntries+5)
 	for i := range entries {

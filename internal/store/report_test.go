@@ -139,3 +139,35 @@ func TestReportLeavesALoaderItemUnnamedAndOutOfDuplicates(t *testing.T) {
 		}
 	}
 }
+
+func TestReportNamesAndGroupsAPackageGamesItemsByTheirThunderstoreManifest(t *testing.T) {
+	s := &Store{root: t.TempDir()}
+	for _, key := range []string{"author-pkg", "local-copy"} {
+		src := t.TempDir()
+		testfs.WriteFile(t, src, "manifest.json", `{"name":"Pkg","version_number":"1.2.0","namespace":"Author"}`)
+		testfs.WriteFile(t, src, "plugins/Pkg.dll", "x")
+		if err := s.AddDir(t.Context(), "lethal-company", key, src); err != nil {
+			t.Fatal(err)
+		}
+	}
+	dll := t.TempDir()
+	testfs.WriteFile(t, dll, "Cool.dll", "x")
+	if err := s.AddDir(t.Context(), "lethal-company", "local-dll", dll); err != nil {
+		t.Fatal(err)
+	}
+	rep, err := s.Report(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := rep["lethal-company"]
+	names := map[string]string{}
+	for _, u := range got.Unused {
+		names[u.Key] = u.Name + " " + u.Version
+	}
+	if names["author-pkg"] != "Pkg 1.2.0" || names["local-copy"] != "Pkg 1.2.0" || names["local-dll"] != "Cool " {
+		t.Fatalf("names = %v", names)
+	}
+	if len(got.Duplicates) != 1 || keysOf(got.Duplicates[0]) != "author-pkg,local-copy" {
+		t.Fatalf("duplicates = %+v", got.Duplicates)
+	}
+}

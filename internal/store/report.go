@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
-	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/modname"
 )
 
 // Item is one store folder in a cleanup report.
@@ -36,7 +36,7 @@ type tagged struct {
 	id   mod.ID
 }
 
-// Report lists items no profile names, and groups whose manifest mod id and Version match.
+// Report lists items no profile names, and groups whose mod id (read as the game's loader names it) and Version match.
 func (s *Store) Report(referenced map[string][]string) (Report, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -67,7 +67,8 @@ func (s *Store) gameReport(game string, keys map[string]record, keep map[string]
 		var name, version string
 		var id mod.ID
 		if _, _, isLoader := LoaderOf(key); !isLoader {
-			name, id, version = readManifest(dir)
+			info := modname.Of(game, dir)
+			name, id, version = info.Name, info.ID, info.Version
 		}
 		size, _ := datadir.Size(dir)
 		entry := Item{Key: key, Name: name, Version: version, LastUsed: r.Used, Size: size, InUse: keep[key]}
@@ -101,12 +102,4 @@ func duplicateGroups(items []tagged) [][]Item {
 	}
 	slices.SortFunc(groups, func(a, b []Item) int { return strings.Compare(a[0].Key, b[0].Key) })
 	return groups
-}
-
-func readManifest(dir string) (name string, id mod.ID, version string) {
-	mods, err := manifest.Scan(dir)
-	if err != nil || len(mods) == 0 {
-		return "", "", ""
-	}
-	return mods[0].Name, mods[0].ModID(), mods[0].Version
 }

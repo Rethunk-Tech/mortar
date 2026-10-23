@@ -76,6 +76,22 @@ func TestManifestLess(t *testing.T) {
 	if !manifestLess("stardew", write("opt.zip", "Mod/assets/a.png")) || manifestLess("stardew", write("main.zip", "Mod/manifest.json")) {
 		t.Fatal("manifestLess")
 	}
+	// A Thunderstore manifest is no SMAPI manifest: a Stardew archive holding only that is still an optional file.
+	tsPath := filepath.Join(t.TempDir(), "ts.zip")
+	f, err := fsx.Create(tsPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zw := zip.NewWriter(f)
+	w, _ := zw.Create("manifest.json")
+	_, _ = w.Write([]byte(`{"name":"Pkg","version_number":"1.0.0"}`))
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	_ = f.Close()
+	if !manifestLess("stardew", tsPath) {
+		t.Fatal("a Thunderstore manifest was taken for a SMAPI manifest")
+	}
 	// A BepInEx game's Nexus file without a manifest is a plugin of its own, not an optional file of another mod.
 	if manifestLess("lethal-company", write("plugin.zip", "Foo.dll")) {
 		t.Fatal("a BepInEx plugin was taken for an optional file")

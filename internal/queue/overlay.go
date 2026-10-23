@@ -1,6 +1,8 @@
 package queue
 
 import (
+	"slices"
+
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/installer"
 )
@@ -30,7 +32,7 @@ func manifestLess(game, path string) bool {
 		return false
 	}
 	p, err := archive.PreviewArchive(path)
-	return err == nil && !p.Truncated && !p.Fomod && len(p.Manifests) == 0
+	return err == nil && !p.Truncated && !p.Fomod && !slices.ContainsFunc(p.Manifests, func(m archive.PreviewManifest) bool { return m.ID != "" })
 }
 
 // parkOverlay marks the item as an optional file when optional is true, and puts it back in the queue while an

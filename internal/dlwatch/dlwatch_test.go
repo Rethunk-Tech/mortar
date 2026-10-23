@@ -45,3 +45,24 @@ func TestPeekNameSkipsAnOversizedManifest(t *testing.T) {
 		t.Fatalf("PeekName = %q, want empty for a manifest over the cap", got)
 	}
 }
+
+func TestPeekNameReadsAThunderstoreManifest(t *testing.T) {
+	t.Parallel()
+	path := filepath.Join(t.TempDir(), "pkg.zip")
+	var buf bytes.Buffer
+	zw := zip.NewWriter(&buf)
+	w, err := zw.Create("manifest.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _ = w.Write([]byte(`{"name":"Pkg","version_number":"1.2.0"}`))
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, buf.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := PeekName(path); got != "Pkg" {
+		t.Fatalf("PeekName = %q, want Pkg", got)
+	}
+}
