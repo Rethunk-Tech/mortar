@@ -661,20 +661,20 @@ func (s *Store) createBundled(game, name string) (Profile, error) {
 	if err != nil || s.Bundled == nil {
 		return p, err
 	}
-	out := p
 	for _, b := range s.Bundled(game) {
-		withBundled, err := s.AddEntry(game, p.ID, b.Key, b.Source)
-		if errors.Is(err, store.ErrNotFound) {
-			// The item was collected while no profile used it; the next sync adds it again.
+		_, err := s.AddEntry(game, p.ID, b.Key, b.Source)
+		var dup *DuplicateError
+		if errors.Is(err, store.ErrNotFound) || errors.As(err, &dup) && dup.Key == b.Key {
+			// Collected while no profile used it, the next sync adds it again; or a sync running alongside added it
+			// to the new profile between its creation and this.
 			continue
 		}
 		if err != nil {
 			dir, _ := s.profileDir(game, p.ID)
 			return Profile{}, errors.Join(err, fsx.RemoveAll(dir))
 		}
-		out = withBundled
 	}
-	return out, nil
+	return s.Get(game, p.ID)
 }
 
 func (s *Store) create(game, name string) (Profile, error) {

@@ -846,3 +846,24 @@ func TestAModInstalledAfterAFreezeIsHeldAndUnfreezeLiftsIt(t *testing.T) {
 		}
 	}
 }
+
+func TestCreateWhileASyncAddsTheBundledModsToTheNewProfile(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	e.item(t, "smapi-1.0.0", bundle())
+	b := smapiBundle("smapi-1.0.0")
+	// The sync lands between the profile's creation and Create adding the bundled mods itself.
+	e.Bundled = func(game string) []Bundle {
+		if err := e.ApplyBundled(game, b); err != nil {
+			t.Error(err)
+		}
+		return []Bundle{b}
+	}
+	p, err := e.Create("stardew", "a")
+	if err != nil {
+		t.Fatalf("create failed when a sync had added the bundled mods: %v", err)
+	}
+	if !slices.ContainsFunc(p.Entries, func(en Entry) bool { return en.Key == b.Key }) {
+		t.Errorf("the new profile lacks the bundled mods: %+v", p.Entries)
+	}
+}
