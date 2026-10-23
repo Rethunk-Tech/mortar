@@ -1162,6 +1162,10 @@ msgstr "From launch until {loader}'s preloader runs"
 msgid "Launch"
 msgstr "Launch"
 
+#: src/console/lineText.ts
+msgid "Launch cancelled."
+msgstr "Launch cancelled."
+
 #: src/console/PerformancePanelParts.tsx
 msgid "Measure while you play, then report the mods that take the most time per frame."
 msgstr "Measure while you play, then report the mods that take the most time per frame."

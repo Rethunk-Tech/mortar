@@ -197,6 +197,8 @@ type Command struct {
 	// Relay marks a process that hands the launch to another and exits 0, such as `steam -applaunch`; a zero exit
 	// says nothing about the game, so only the log decides. A non-zero exit is still a failure.
 	Relay bool
+	// Via is the launcher a Relay hands the launch to, by its launcher id (steam, flatpak-steam, heroic, lutris, epic).
+	Via string
 	// Ready, when set, is the success rule instead of a rewritten log: a vanilla launch waits for the game process.
 	Ready func() bool
 	// Alive reports that the game's process is running. A game whose log is slow to appear (a big mod list, a slow
@@ -204,7 +206,21 @@ type Command struct {
 	Alive func() bool
 	// OnExit reports how the started process ended after the game has started. Ignored for Relay commands.
 	OnExit func(Exit)
+	// OnStage reports each Stage the launch reaches, once each and in order.
+	OnStage func(Stage)
 }
+
+// Stage is a step a launch reaches on its way to the game being up.
+type Stage string
+
+const (
+	// StageHanded is a relay such as `steam -applaunch` having handed the launch on.
+	StageHanded Stage = "handed"
+	// StageUp is the game's process running.
+	StageUp Stage = "up"
+	// StageLoader is the loader having started its log.
+	StageLoader Stage = "loader"
+)
 
 const clockSlack = 50 * time.Millisecond
 
@@ -270,7 +286,7 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 		}
 		return tail.poll()
 	}
-	started := func() error {
+	started := func() {
 		if c.LogFile != "" {
 			go follow(ctx, &tail, tm.Poll)
 		}
@@ -284,12 +300,33 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 				c.OnExit(x)
 			}()
 		}
+	}
+	reached := map[Stage]bool{StageHanded: false, StageUp: false, StageLoader: false}
+	stage := func(st Stage) {
+		if !reached[st] && c.OnStage != nil {
+			c.OnStage(st)
+		}
+		reached[st] = true
+	}
+	// The process table is read until the game is first seen; after that it is known to have come up.
+	up := func() bool {
+		if !reached[StageUp] && c.Alive != nil && c.Alive() {
+			stage(StageUp)
+		}
+		return reached[StageUp]
+	}
+	succeed := func() error {
+		stage(StageUp)
+		if c.LogFile != "" {
+			stage(StageLoader)
+		}
+		started()
 		return nil
 	}
-	up := func() bool { return c.Alive != nil && c.Alive() }
 	for {
-		if ok() || time.Since(began) >= tm.Slow && up() {
-			return started()
+		alive := up()
+		if ok() || time.Since(began) >= tm.Slow && alive {
+			return succeed()
 		}
 		if f := stalled(false); f != nil {
 			return f
@@ -299,15 +336,16 @@ func Run(ctx context.Context, run Runner, c Command, tm Timing, onLines func([]s
 			return ctx.Err()
 		case <-deadline.C:
 			if up() {
-				return started()
+				return succeed()
 			}
 			return &Failure{Hint: c.Failure, Err: errors.New("the game did not start in time")}
 		case waitErr := <-exited:
 			if ok() {
-				return started()
+				return succeed()
 			}
 			if c.Relay && waitErr == nil {
 				exited = nil
+				stage(StageHanded)
 				continue
 			}
 			if f := stalled(true); f != nil {

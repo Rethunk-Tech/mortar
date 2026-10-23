@@ -229,3 +229,19 @@ func TestARiskOfRainServerIsConfiguredByFile(t *testing.T) {
 		t.Fatalf("server.cfg = %q, %v", b, err)
 	}
 }
+
+func TestLoadReadsTheChainloaderCountAndEachPlugin(t *testing.T) {
+	for line, want := range map[string]struct {
+		mod   string
+		total int
+	}{
+		"[Info   :   BepInEx] 43 plugins to load":                {"", 43},
+		"[Info   :   BepInEx] Loading [LCMaxSoundsFix 1.2.0]":    {"LCMaxSoundsFix 1.2.0", 0},
+		"[Message:   BepInEx] Chainloader startup complete":      {"", 0},
+		"[Info   : LethalLib] Loading [not the chainloader] now": {"", 0},
+	} {
+		if mod, total := (Loader{}).Load(line); mod != want.mod || total != want.total {
+			t.Errorf("%q: got %q, %d", line, mod, total)
+		}
+	}
+}

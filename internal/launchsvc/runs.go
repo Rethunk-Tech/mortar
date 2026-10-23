@@ -57,6 +57,10 @@ type Run struct {
 	Mods         []launch.ModRef `json:"mods,omitempty"`
 	Cause        *Cause          `json:"cause,omitempty"`
 	Exit         *launch.Exit    `json:"exit,omitempty"`
+	// ReadyMs is how long the loader took to say it was done, Loads how many mods its log named loading; zero when
+	// it said neither.
+	ReadyMs int64 `json:"readyMs,omitempty"`
+	Loads   int   `json:"loads,omitempty"`
 }
 
 type Cause struct {
@@ -471,7 +475,7 @@ func (s *Service) record(g game.Game, profileID string, started time.Time, faile
 		ID: id, Started: started.UTC().Format(time.RFC3339Nano), Ended: ended.UTC().Format(time.RFC3339Nano),
 		DurationMs: ended.Sub(started).Milliseconds(), Loader: ldr, LoaderVersion: stats.SMAPI, GameVersion: cmp.Or(stats.Game, sess.gameVersion),
 		Preset: sess.preset, Outcome: outcome, Errors: stats.Errors, Warnings: stats.Warnings,
-		Unclassified: unclassified,
+		Unclassified: unclassified, ReadyMs: sess.readyMs, Loads: sess.progress.Loaded,
 	}
 	if failed {
 		run.Error = s.LaunchFailure(g.ID(), installOf(g))

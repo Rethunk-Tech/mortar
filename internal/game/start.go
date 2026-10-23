@@ -36,6 +36,11 @@ type StartEnv struct {
 	// Ready reports that the game process is running: a vanilla launch has then succeeded, and a profile launch whose
 	// log is late has still started.
 	Ready func() bool
+	// OnStage reports each launch.Stage a start reaches; a launch of several processes reports each one's.
+	OnStage func(launch.Stage)
+	// OnVia reports the launcher a start hands the game to (launch.Command.Via), before it starts; never called for a
+	// direct start.
+	OnVia func(string)
 	// OnExit reports how the started process ended once the game has started. Not used for relays.
 	OnExit func(launch.Exit)
 	// Proton is the Proton build (its folder name) a Windows copy outside Steam runs through; empty takes the best.
@@ -123,6 +128,10 @@ func (st Starter) startOne(ctx context.Context, inst Install, plan *launchplan.P
 		cmd = onHost(cmd)
 	}
 	cmd.OnExit = env.OnExit
+	cmd.OnStage = env.OnStage
+	if cmd.Relay && env.OnVia != nil {
+		env.OnVia(cmd.Via)
+	}
 	// A game whose loader writes no log (a folder game) is up when its process is.
 	if plan.Mode == launchplan.ModeVanilla || env.LogFile == "" {
 		cmd.Ready = env.Ready
@@ -250,7 +259,7 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 	case env.Steam == nil:
 		return launch.Command{}, launch.ErrNoSteam
 	case goos == "windows":
-		return launch.Command{Name: filepath.Join(env.Steam.Root, "steam.exe"), Args: args, Failure: launch.HintSteam, Relay: true}, nil
+		return launch.Command{Name: filepath.Join(env.Steam.Root, "steam.exe"), Args: args, Failure: launch.HintSteam, Relay: true, Via: "steam"}, nil
 	case env.Steam.Kind == steam.KindFlatpak:
 		if flatpakPath == "" {
 			return launch.Command{}, launch.ErrNoSteam
@@ -259,11 +268,11 @@ func (st Starter) command(goos string, inst Install, plan *launchplan.Plan, env 
 		if !st.flatpakCanReadMods() {
 			hint = launch.HintFlatpakFS
 		}
-		return launch.Command{Name: flatpakPath, Args: append([]string{"run", steam.FlatpakID}, args...), Failure: hint, Relay: true}, nil
+		return launch.Command{Name: flatpakPath, Args: append([]string{"run", steam.FlatpakID}, args...), Failure: hint, Relay: true, Via: "flatpak-steam"}, nil
 	case steamPath == "":
 		return launch.Command{}, launch.ErrNoSteam
 	}
-	return launch.Command{Name: steamPath, Args: args, Failure: launch.HintSteam, Relay: true}, nil
+	return launch.Command{Name: steamPath, Args: args, Failure: launch.HintSteam, Relay: true, Via: "steam"}, nil
 }
 
 // flatpakAppCommand starts a game installed as a Flatpak app through `flatpak run`, which stays until the game exits.

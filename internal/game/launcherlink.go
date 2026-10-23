@@ -40,7 +40,7 @@ func launcherCommand(inst Install, plan *launchplan.Plan, lookPath func(string) 
 		q := url.Values{"appName": {app}, "runner": {runner}, "arg": plan.Args}
 		link := "heroic://launch?" + q.Encode()
 		if opener, err := lookPath("xdg-open"); err == nil {
-			return launch.Command{Name: opener, Args: []string{link}, Failure: launch.HintLauncher, Relay: true}, true, nil
+			return launch.Command{Name: opener, Args: []string{link}, Failure: launch.HintLauncher, Relay: true, Via: "heroic"}, true, nil
 		}
 		return launch.Command{}, false, nil
 	case "lutris":
@@ -48,7 +48,7 @@ func launcherCommand(inst Install, plan *launchplan.Plan, lookPath func(string) 
 			return launch.Command{}, false, nil
 		}
 		if lutris, err := lookPath("lutris"); err == nil {
-			return launch.Command{Name: lutris, Args: []string{"lutris:rungame/" + rest}, Failure: launch.HintLauncher, Relay: true}, true, nil
+			return launch.Command{Name: lutris, Args: []string{"lutris:rungame/" + rest}, Failure: launch.HintLauncher, Relay: true, Via: "lutris"}, true, nil
 		}
 		return launch.Command{}, false, nil
 	}

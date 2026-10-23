@@ -120,6 +120,7 @@ var updateKey []byte
 func registerEvents() {
 	application.RegisterEvent[launchsvc.Status](launchsvc.StateEvent)
 	application.RegisterEvent[launchsvc.Lines](launchsvc.LineEvent)
+	application.RegisterEvent[launchsvc.Progress](launchsvc.ProgressEvent)
 	application.RegisterEvent[launchsvc.Crash](launchsvc.CrashEvent)
 	application.RegisterEvent[launchsvc.LiveRun](launchsvc.LiveEvent)
 	application.RegisterEvent[loadersvc.Progress](loadersvc.ProgressEvent)

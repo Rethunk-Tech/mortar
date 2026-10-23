@@ -21,5 +21,5 @@ func epicCommand(inst Install) (launch.Command, error) {
 		return launch.Command{}, fmt.Errorf("the Epic AppName %q is not a plain name", app)
 	}
 	link := "com.epicgames.launcher://apps/" + app + "?action=launch&silent=true"
-	return launch.Command{Name: "rundll32.exe", Args: []string{"url.dll,FileProtocolHandler", link}, Failure: launch.HintEpic, Relay: true}, nil
+	return launch.Command{Name: "rundll32.exe", Args: []string{"url.dll,FileProtocolHandler", link}, Failure: launch.HintEpic, Relay: true, Via: "epic"}, nil
 }

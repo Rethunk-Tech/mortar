@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
@@ -153,6 +154,17 @@ func (l Loader) Path(loader.ProfileView) (string, error) {
 
 // Ready is true for the line SMAPI logs once it has loaded the mods.
 func (Loader) Ready(line string) bool { return strings.Contains(line, " SMAPI] Loaded ") }
+
+// modLoading is the trace line SMAPI writes as it loads each mod: its name, then where it loads it from.
+var modLoading = regexp.MustCompile(`^\[[^\]]*TRACE\s+SMAPI\]    (\S.*?) \(from `)
+
+// Load reads the trace line SMAPI writes for each mod it loads; SMAPI names no total before it has loaded them.
+func (Loader) Load(line string) (string, int) {
+	if m := modLoading.FindStringSubmatch(line); m != nil {
+		return m[1], 0
+	}
+	return "", 0
+}
 
 // Analyzers is none: SMAPI's log problems are found by internal/launch.
 func (Loader) Analyzers() []loader.Analyzer { return nil }

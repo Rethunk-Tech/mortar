@@ -44,6 +44,9 @@ func (l logged) Path(p loader.ProfileView) (string, error) {
 
 func (l logged) Ready(line string) bool { return l.Log.Ready != nil && l.Log.Ready.MatchString(line) }
 
+// HasReady reports whether the loader's log has a line saying it is done; most thunderpack loaders' logs have none.
+func (l logged) HasReady() bool { return l.Log.Ready != nil }
+
 func (l logged) Analyzers() []loader.Analyzer {
 	return []loader.Analyzer{analyzer{l.LoaderID, l.Log.Analyze}}
 }

@@ -42,6 +42,8 @@ export function useLineText() {
         return t`Could not back up saves before playing: ${error}.`
       case 'vanilla':
         return t`Started without mods`
+      case 'launchCancelled':
+        return t`Launch cancelled.`
       case 'loaderExited':
         return t`${{ loader: p.loader ?? '' }} exited with code ${code}.`
       case 'settingsRestoreFailed':

@@ -116,6 +116,13 @@ type WithLogs interface {
 	Analyzers() []Analyzer
 }
 
+// LoadTracker is a loader whose log names each mod as it loads, so a launch can show its progress.
+type LoadTracker interface {
+	// Load reads one log line: mod is the mod it says is loading, total the number of mods it says will load; each
+	// is empty or zero when the line says neither.
+	Load(line string) (mod string, total int)
+}
+
 // RotatingLog is a loader that starts a log file of a new name each run, so the launch follows a glob instead of a path.
 type RotatingLog interface {
 	// LogGlob matches the loader's log files in the profile.

@@ -39,6 +39,8 @@ type Entry struct {
 	// line the log files and the CLI carry. Lines from the game or a mod have no Code.
 	Code   string            `json:"code,omitempty"`
 	Params map[string]string `json:"params,omitempty"`
+	// Load marks a loader's line for a mod it is loading, which the launch screen counts rather than shows.
+	Load bool `json:"load,omitempty"`
 }
 
 // SMAPI writes `[HH:MM:SS LEVEL  Mod] message`, padding the level to five characters.

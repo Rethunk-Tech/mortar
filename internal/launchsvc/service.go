@@ -135,6 +135,11 @@ type session struct {
 	stoppedAt time.Time
 	// gameVersion is what the running game's companion reported, for a loader whose log names no version.
 	gameVersion string
+	progress    Progress
+	// readyMs is how long the launch took until its loader said it was done; zero until it has.
+	readyMs int64
+	// cancelled is a launch the player called off before the game was up.
+	cancelled bool
 }
 
 // Service exposes launch, status and stop to the frontend.
@@ -1023,9 +1028,17 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	buf := &launch.Buffer{Cap: logCap}
 	started := time.Now()
 	mods := s.profileModRefs(gameID, profileID)
+	copies := 1
+	if env.Direct {
+		copies = min(max(env.Instances, 1), 8)
+	}
+	progress := s.newProgress(g, profileID, copies, vanilla)
+	env.OnStage = s.onStage(g, buf)
+	env.OnVia = func(via string) { s.updateProgress(g, buf, func(p *Progress) { p.Via = via }) }
 	s.mu.Lock()
 	s.logs[keyOf(g)], s.stop[keyOf(g)] = session{
 		buf:             buf,
+		progress:        progress,
 		profile:         profileID,
 		preset:          spec.Name,
 		vanilla:         vanilla,
@@ -1038,8 +1051,9 @@ func (s *Service) begin(ctx context.Context, g game.Game, t launchTarget, direct
 	s.mu.Unlock()
 	s.set(Status{
 		Game: gameID, State: Launching, Profile: profileID, Install: installOf(g),
-		Since: started.UnixMilli(), SlowAt: started.Add(launch.SlowAfter).UnixMilli(),
+		Since: started.UnixMilli(), SlowAt: slowAt(started, progress.UsualMs).UnixMilli(),
 	})
+	s.emit(ProgressEvent, progress)
 	if settingsMissing {
 		s.sayCode(g, profileID, "startup_preferences is missing; skipped profile game settings.", "settingsMissing", nil)
 	}
@@ -1195,11 +1209,21 @@ func changedSinceLastRun(events []profile.HistoryEvent, lastRun time.Time) bool 
 // collect parses log lines into buf and announces them, unless a newer launch has replaced buf.
 func (s *Service) collect(g game.Game, profileID string, buf *launch.Buffer) func([]string) {
 	var p launch.Parser
+	ldr, hasLoader := s.loaderOf(g.ID(), profileID)
 	return func(lines []string) {
+		loads := make([]bool, len(lines))
+		if hasLoader && profileID != "" {
+			s.updateProgress(g, buf, func(pr *Progress) {
+				for i, l := range lines {
+					loads[i] = loadLine(ldr, l, pr)
+				}
+			})
+		}
 		entries := make([]launch.Entry, 0, len(lines))
-		for _, l := range lines {
+		for i, l := range lines {
 			if e, shown := p.Parse(l); shown {
 				e.Seq = s.seq.Add(1)
+				e.Load = loads[i]
 				entries = append(entries, e)
 			}
 		}
@@ -1295,6 +1319,10 @@ func (s *Service) run(ctx context.Context, g game.Game, profileID string, r laun
 	var f *launch.Failure
 	var exited *launch.ExitError
 	switch {
+	case errors.Is(err, context.Canceled) && s.cancelledRun(g, buf):
+		s.clearReap(g)
+		s.sayCode(g, profileID, "Launch cancelled.", "launchCancelled", nil)
+		s.set(Status{Game: g.ID(), Install: installOf(g), State: Idle})
 	case err == nil:
 		s.set(Status{Game: g.ID(), Install: installOf(g), State: Running, Profile: profileID, Since: time.Now().UnixMilli()})
 		if r.vanilla {

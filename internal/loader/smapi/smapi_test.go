@@ -125,3 +125,15 @@ func TestSMAPIMeasuresInGameThroughItsBridge(t *testing.T) {
 		t.Fatal("a profile with no bridge answered a perf query")
 	}
 }
+
+func TestLoadReadsEachModSMAPILoads(t *testing.T) {
+	for line, want := range map[string]string{
+		"[05:22:08 TRACE SMAPI]    Console Commands (from Mods/ConsoleCommands/ConsoleCommands.dll, ID: SMAPI.ConsoleCommands, assembly version: 4.5.2)...": "Console Commands",
+		"[05:22:08 TRACE SMAPI]       Detected direct console access (System.Console type) in assembly SaveBackup.dll.":                                     "",
+		"[05:22:08 INFO  SMAPI]    Save Backup 4.5.2 by SMAPI | Automatically backs up all your saves once per day into its folder.":                        "",
+	} {
+		if mod, total := (Loader{}).Load(line); mod != want || total != 0 {
+			t.Errorf("%q: got %q, %d", line, mod, total)
+		}
+	}
+}

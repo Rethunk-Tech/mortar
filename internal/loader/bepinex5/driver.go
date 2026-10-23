@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
@@ -224,6 +226,20 @@ func (Loader) PasteSite() string { return "https://paste.gg/" }
 func (Loader) Ready(line string) bool { return strings.Contains(line, "Chainloader startup complete") }
 
 func (Loader) Analyzers() []loader.Analyzer { return []loader.Analyzer{analyzer{}} }
+
+var toLoad = regexp.MustCompile(`^\[Info\s*:\s*BepInEx\] (\d+) plugins? to load`)
+
+// Load reads the chainloader's count of plugins to load and its line for each plugin it loads.
+func (Loader) Load(line string) (string, int) {
+	if m := loading.FindStringSubmatch(line); m != nil {
+		return m[1], 0
+	}
+	if m := toLoad.FindStringSubmatch(line); m != nil {
+		n, _ := strconv.Atoi(m[1])
+		return "", n
+	}
+	return "", 0
+}
 
 type analyzer struct{}
 
