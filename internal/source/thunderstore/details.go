@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"sync"
 
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
@@ -33,11 +34,16 @@ func (d Driver) Details(ctx context.Context, key, id, mortarVersion string) (sou
 		}
 		out.Dependencies = append(out.Dependencies, p.depsOf(p.Versions[0])...)
 		latest := p.Versions[0].Number
-		if out.Description, err = d.doc(ctx, p, latest, "readme", ua); err != nil && !errors.Is(err, errNotFound) {
-			return source.Details{}, err
-		}
-		if out.Changelog, err = d.doc(ctx, p, latest, "changelog", ua); err != nil && !errors.Is(err, errNotFound) {
-			return source.Details{}, err
+		// The site answers each document from its origin the first time, so the two are asked together.
+		var readmeErr, changelogErr error
+		var wg sync.WaitGroup
+		wg.Go(func() { out.Description, readmeErr = d.doc(ctx, p, latest, "readme", ua) })
+		wg.Go(func() { out.Changelog, changelogErr = d.doc(ctx, p, latest, "changelog", ua) })
+		wg.Wait()
+		for _, err := range []error{readmeErr, changelogErr} {
+			if err != nil && !errors.Is(err, errNotFound) {
+				return source.Details{}, err
+			}
 		}
 		if out.Categories == nil {
 			out.Categories = []string{}

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"slices"
 	"testing"
+	"time"
 )
 
 func TestDetailsReadsTheIndexAndTheNewestReadme(t *testing.T) {
@@ -60,5 +61,28 @@ func TestDetailsCarryOnlyAWebDonationLink(t *testing.T) {
 		if err != nil || got.Donation != want {
 			t.Errorf("%s: donation %q, err %v, want %q", id, got.Donation, err, want)
 		}
+	}
+}
+
+func TestDetailsAsksTheReadmeAndTheChangelogTogether(t *testing.T) {
+	f := newFake(t)
+	readmeIn, changelogIn := make(chan struct{}), make(chan struct{})
+	serve := func(mine, other chan struct{}, body string) http.HandlerFunc {
+		return func(w http.ResponseWriter, _ *http.Request) {
+			close(mine)
+			select {
+			case <-other:
+				_, _ = w.Write([]byte(body))
+			case <-time.After(5 * time.Second):
+				http.Error(w, "the other document was never asked for while this one was open", http.StatusGatewayTimeout)
+			}
+		}
+	}
+	f.mux.HandleFunc("/api/experimental/package/Alice/MoreCompany/2.0.0/readme/", serve(readmeIn, changelogIn, `{"markdown":"# More"}`))
+	f.mux.HandleFunc("/api/experimental/package/Alice/MoreCompany/2.0.0/changelog/", serve(changelogIn, readmeIn, `{"markdown":"- fixed"}`))
+	d := Driver{URL: f.srv.URL, CacheDir: t.TempDir()}
+	got, err := d.Details(t.Context(), "lethal-company", "Alice-MoreCompany", "1.2.3")
+	if err != nil || got.Description != "# More" || got.Changelog != "- fixed" {
+		t.Fatalf("details = %+v, err %v", got, err)
 	}
 }
