@@ -30,6 +30,27 @@ export const bundledArtwork = [
       'Bundled source icon (frontend/src/brand/vendor/vsmoddb.png) from the Vintage Story Mod DB, Copyright (c) 2021-2025 Anego Studios, licensed under the MIT License: https://opensource.org/license/mit',
   },
   {
+    name: 'BepInEx logo',
+    licence: 'LGPL-2.1',
+    url: 'https://github.com/BepInEx/BepInEx',
+    notice:
+      "Bundled loader icon (frontend/src/brand/vendor/bepinex.png), the BepInEx project's logo, licensed under the GNU Lesser General Public License v2.1: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html",
+  },
+  {
+    name: 'MelonLoader logo',
+    licence: 'Apache-2.0',
+    url: 'https://github.com/LavaGang/MelonLoader',
+    notice:
+      "Bundled loader icon (frontend/src/brand/vendor/melonloader.png), the MelonLoader project's logo, licensed under the Apache License 2.0: https://www.apache.org/licenses/LICENSE-2.0",
+  },
+  {
+    name: 'SMAPI icon',
+    licence: 'LGPL-3.0',
+    url: 'https://github.com/Pathoschild/SMAPI',
+    notice:
+      'Bundled loader icon (frontend/src/brand/vendor/smapi.png) from SMAPI (src/SMAPI.ModBuildConfig/assets/nuget-icon.png), licensed under the GNU Lesser General Public License v3.0: https://www.gnu.org/licenses/lgpl-3.0.html',
+  },
+  {
     name: 'Nexus Mods logo (from Vortex)',
     licence: 'GPL-3.0',
     url: 'https://github.com/Nexus-Mods/Vortex',

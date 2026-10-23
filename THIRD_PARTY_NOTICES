@@ -1001,6 +1001,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
+BepInEx logo
+licence: LGPL-2.1
+https://github.com/BepInEx/BepInEx
+
+Bundled loader icon (frontend/src/brand/vendor/bepinex.png), the BepInEx project's logo, licensed under the GNU Lesser General Public License v2.1: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+
+--------------------------------------------------------------------------------
+
 Bottles icon
 licence: GPL-3.0
 https://github.com/bottlesdevs/Bottles
@@ -4316,6 +4324,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
 
+MelonLoader logo
+licence: Apache-2.0
+https://github.com/LavaGang/MelonLoader
+
+Bundled loader icon (frontend/src/brand/vendor/melonloader.png), the MelonLoader project's logo, licensed under the Apache License 2.0: https://www.apache.org/licenses/LICENSE-2.0
+
+--------------------------------------------------------------------------------
+
 micromark-core-commonmark@2.0.4
 licence: MIT
 https://github.com/micromark/micromark/tree/main/packages/micromark-core-commonmark
@@ -5723,6 +5739,14 @@ For these and/or other purposes and motivations, and without any expectation of 
     4. Affirmer understands and acknowledges that Creative Commons is not a party to this document and has no duty or obligation with respect to this CC0 or use of the Work.
 
 For more information, please see <https://creativecommons.org/publicdomain/zero/1.0>.
+
+--------------------------------------------------------------------------------
+
+SMAPI icon
+licence: LGPL-3.0
+https://github.com/Pathoschild/SMAPI
+
+Bundled loader icon (frontend/src/brand/vendor/smapi.png) from SMAPI (src/SMAPI.ModBuildConfig/assets/nuget-icon.png), licensed under the GNU Lesser General Public License v3.0: https://www.gnu.org/licenses/lgpl-3.0.html
 
 --------------------------------------------------------------------------------
 

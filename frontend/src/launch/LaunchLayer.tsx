@@ -1,28 +1,20 @@
 import { useLingui } from '@lingui/react/macro'
 import {
-  Box,
   Button,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Modal,
-  Typography,
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { CircleAlert } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
-import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { STEAM } from '../brand/productNames.ts'
 import { CrashDialog, SwitchOffButton } from '../console/CrashDialog.tsx'
-import { format } from '../console/filter.ts'
-import { useConsole } from '../console/store.ts'
 import { useTab } from '../game/tab.ts'
 import { useGameInfo, useGameName } from '../games/info.ts'
-import { modsLabel } from '../i18n/counts.ts'
 import { useReasonText } from '../i18n/reasonText.ts'
 import { nexusIdOf } from '../mods/lookup.ts'
 import { openPage } from '../mods/menu.ts'
@@ -30,186 +22,22 @@ import { openPageLabel } from '../mods/modActions.ts'
 import { nexusDomain } from '../mods/nexusDomain.ts'
 import { nexusModUrl } from '../mods/nexusUrl.ts'
 import { useMods } from '../mods/store.ts'
-import { userModCount } from '../profiles/count.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
-import { controlsCutout } from '../shell/controlsCutout.ts'
 import { FlatpakGrant } from '../shell/FlatpakGrant.tsx'
 import { SyncOffers } from '../sync/SyncOffers.tsx'
 import { space } from '../theme/density.ts'
-import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { GraphicsDialog } from './GraphicsDialog.tsx'
 import { KnownGoodOffer } from './KnownGoodOffer.tsx'
+import { LaunchScreen } from './LaunchScreen.tsx'
 import { PrePlayDialog } from './PrePlayDialog.tsx'
 import { cancelling } from './playModeState.ts'
+import { useLaunchView } from './progress.ts'
 import { SaveWarnDialog } from './SaveWarnDialog.tsx'
 import { useLaunch } from './store.ts'
 import { UpdateWarnDialog } from './UpdateWarnDialog.tsx'
 import { VanillaPlayDialogs } from './VanillaPlay.tsx'
-
-const VISIBLE_LINES = 8
-const LINE_HEIGHT = 21
-const LOG_PAD = 12
-const SPINNER = 56
-const SPINNER_THICKNESS = 3.9
-const FULL = 100
-
-const scrim = {
-  position: 'fixed',
-  inset: 0,
-  zIndex: 1200,
-  bgcolor: 'var(--mortar-overlay-80)',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  p: space.pad,
-  clipPath: controlsCutout,
-} as const
-
-function Spinner() {
-  return (
-    <Box sx={{ position: 'relative', width: SPINNER, height: SPINNER }}>
-      <CircularProgress
-        variant="determinate"
-        value={FULL}
-        size={SPINNER}
-        thickness={SPINNER_THICKNESS}
-        sx={{ position: 'absolute', color: 'var(--mortar-hairline-15)' }}
-      />
-      <CircularProgress size={SPINNER} thickness={SPINNER_THICKNESS} />
-    </Box>
-  )
-}
-
-// useSlow reports whether the launch has passed its slow mark, at (Unix milliseconds) from the backend.
-function useSlow(at: number | undefined): boolean {
-  const [slow, setSlow] = useState(false)
-  useEffect(() => {
-    setSlow(false)
-    if (!at) {
-      return
-    }
-    const timer = setTimeout(() => setSlow(true), Math.max(0, at - Date.now()))
-    return () => clearTimeout(timer)
-  }, [at])
-  return slow
-}
-
-function Overlay({ game }: { game: string }) {
-  const { t } = useLingui()
-  const name = useProfiles((s) => s.game?.name ?? '')
-  const status = useLaunch((s) => s.status)
-  const profile = useProfiles((s) => s.profiles.find((p) => p.id === status?.profile))
-  const entries = useConsole((s) => s.entries)
-  const setTab = useTab((s) => s.setTab)
-  const hide = useLaunch((s) => s.hide)
-  const hidden = useLaunch((s) => s.hidden)
-  const overlayOpen = status?.game === game && status.state === State.Launching && !hidden
-  const slowAt = overlayOpen ? status.slowAt : undefined
-  const slow = useSlow(slowAt)
-  const [keptWaiting, setKeptWaiting] = useState<number>()
-  const notice = slow && keptWaiting !== slowAt
-  if (!overlayOpen) {
-    return null
-  }
-  const profileName = profile?.name ?? ''
-  const count = profile ? userModCount(profile) : 0
-  const shown = entries.slice(-VISIBLE_LINES)
-  return (
-    <Modal
-      open={true}
-      onClose={hide}
-      hideBackdrop={true}
-      sx={{ zIndex: scrim.zIndex, clipPath: controlsCutout }}
-    >
-      <Box role="dialog" aria-label={t`Launching ${name}`} sx={{ ...scrim, gap: space.pad }}>
-        <Box
-          aria-hidden={true}
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 'var(--window-controls)',
-            height: 'var(--title-bar)',
-            '--wails-draggable': 'drag',
-          }}
-        />
-        <Spinner />
-        <Typography sx={{ fontSize: 30, fontWeight: 700 }}>{t`Launching ${name}`}</Typography>
-        <Typography sx={{ fontSize: 16 }}>{`${profileName} · ${modsLabel(count)}`}</Typography>
-        {notice ? (
-          <Box role="status" sx={{ maxWidth: 720, textAlign: 'center' }}>
-            <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
-              {t`${name} is taking a long time to start`}
-            </Typography>
-            <Typography sx={{ color: 'text.secondary' }}>
-              {t`Its launcher may be updating it, or a long mod list is still loading. Mortar keeps waiting.`}
-            </Typography>
-          </Box>
-        ) : null}
-        {/* An empty log would be a blank band between the title and the buttons. */}
-        {shown.length > 0 && (
-          <Box
-            role="log"
-            sx={{
-              width: '100%',
-              maxWidth: 720,
-              boxSizing: 'border-box',
-              minHeight: VISIBLE_LINES * LINE_HEIGHT + 2 * LOG_PAD,
-              px: space.pad,
-              py: space.pad,
-              bgcolor: 'var(--mortar-overlay-55)',
-              fontFamily: MONO,
-              fontSize: 13,
-              lineHeight: `${LINE_HEIGHT}px`,
-              color: 'text.secondary',
-              userSelect: 'text',
-            }}
-          >
-            {shown.map((line, i) => {
-              const text = format(line)
-              return (
-                <Typography
-                  key={line.seq}
-                  noWrap={true}
-                  title={text}
-                  sx={{
-                    font: 'inherit',
-                    color: i === shown.length - 1 ? 'var(--mortar-ink)' : 'inherit',
-                  }}
-                >
-                  {text}
-                </Typography>
-              )
-            })}
-          </Box>
-        )}
-        <Box sx={{ display: 'flex', gap: space.gap }}>
-          <Button
-            variant="outlined"
-            autoFocus={!notice}
-            onClick={() => {
-              setTab('console')
-              hide()
-            }}
-          >
-            {t`Open console`}
-          </Button>
-          <Button variant="outlined" onClick={hide}>
-            {t`Hide`}
-          </Button>
-          {notice ? (
-            <Button variant="contained" autoFocus={true} onClick={() => setKeptWaiting(slowAt)}>
-              {t`Keep waiting`}
-            </Button>
-          ) : null}
-        </Box>
-      </Box>
-    </Modal>
-  )
-}
 
 function Failure({ game }: { game: string }) {
   const { t, i18n } = useLingui()
@@ -223,8 +51,14 @@ function Failure({ game }: { game: string }) {
   const cause = failure?.cause
   const mod = useMods((s) => s.mods.find((m) => m.key === cause?.modKey))
   const profile = useProfiles(openProfileOf)
+  // A launch screen that is up shows the failure itself; one that never drew (a launch that failed before it began)
+  // leaves it to this dialog.
+  const onScreen = useLaunchView(
+    (s) => s.phase === 'failed' && s.game === game && s.progress !== null,
+  )
+  const hidden = useLaunch((s) => s.hidden)
   // The dialog unmounts with `failure`, so nothing fades out with stale text.
-  if (!failure) {
+  if (!failure || (onScreen && !hidden)) {
     return null
   }
   const name = info?.name ?? ''
@@ -320,7 +154,7 @@ export function LaunchLayer({ game }: { game: string }) {
   }, [game, refresh])
   return (
     <>
-      <Overlay game={game} />
+      <LaunchScreen game={game} />
       <Failure game={game} />
       <DirectDialog />
       <CrashDialog />

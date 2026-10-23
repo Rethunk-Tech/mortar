@@ -428,6 +428,10 @@ msgstr ""
 msgid "Copy this profile's list"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "{name} has not started yet"
+msgstr ""
+
 #: src/game/ProfileContextMenu.tsx
 #: src/game/ProfileMenu.tsx
 msgid "This profile"
@@ -666,10 +670,6 @@ msgstr ""
 msgid "Pending updates ({count})"
 msgstr ""
 
-#: src/launch/LaunchLayer.tsx
-msgid "Its launcher may be updating it, or a long mod list is still loading. Mortar keeps waiting."
-msgstr ""
-
 #: src/shell/checkForUpdates.ts
 msgid "Update check skipped"
 msgstr ""
@@ -696,6 +696,10 @@ msgstr ""
 
 #: src/shell/ViewToggle.tsx
 msgid "Grid view"
+msgstr ""
+
+#: src/launch/LaunchScreen.tsx
+msgid "A long mod list can take a while on its first start. Mortar keeps waiting."
 msgstr ""
 
 #: src/downloads/newDownloads.ts
@@ -804,6 +808,7 @@ msgstr ""
 #: src/game/detailStates.tsx
 #: src/lan/SendPanel.tsx
 #: src/launch/LaunchLayer.tsx
+#: src/launch/LaunchScreen.tsx
 #: src/queue/QueueBody.tsx
 #: src/queue/store.ts
 #: src/saves/BackupsDialog.tsx
@@ -1043,6 +1048,10 @@ msgstr ""
 msgid "A .mortar file, an .r2z or a {source} modpack"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Mods loaded"
+msgstr ""
+
 #: src/firstrunTour/TourPopover.tsx
 msgid "Skip tour"
 msgstr ""
@@ -1175,6 +1184,10 @@ msgstr ""
 msgid "Mods a site can download again are left out; restoring downloads them."
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Loading {loaded} of {total} mods"
+msgstr ""
+
 #: src/saves/SaveGapLine.tsx
 msgid "Needs {count, plural, one {# mod this profile lacks} other {# mods this profile lacks}}"
 msgstr ""
@@ -1251,6 +1264,10 @@ msgstr ""
 
 #: src/game/BackupMenuItems.tsx
 msgid "Back up {name}?"
+msgstr ""
+
+#: src/launch/LaunchScreen.tsx
+msgid "Usually starts in about {seconds} s"
 msgstr ""
 
 #: src/install/MergeCallout.tsx
@@ -1646,6 +1663,10 @@ msgstr ""
 msgid "Report a bug"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "{count, plural, one {Loaded # mod} other {Loaded # mods}}"
+msgstr ""
+
 #: src/share/IncludeOptions.tsx
 msgid "Include FOMOD choices"
 msgstr ""
@@ -1840,6 +1861,7 @@ msgstr ""
 #: src/lan/IncomingPrompt.tsx
 #: src/lan/PairedComputers.tsx
 #: src/launch/GraphicsDialog.tsx
+#: src/launch/LaunchScreen.tsx
 #: src/launch/PrePlayDialog.tsx
 #: src/launch/SaveWarnDialog.tsx
 #: src/launch/UpdateWarnDialog.tsx
@@ -2345,6 +2367,14 @@ msgstr ""
 msgid "Choose a game"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "{name} stopped the game from starting"
+msgstr ""
+
+#: src/launch/LaunchScreen.tsx
+msgid "{plugin} failed to load."
+msgstr ""
+
 #: src/saves/saveName.ts
 msgid "Character"
 msgstr ""
@@ -2396,6 +2426,10 @@ msgstr ""
 #: src/queue/QueueSheet.tsx
 #: src/shell/AppMenu.tsx
 msgid "Downloads"
+msgstr ""
+
+#: src/launch/LaunchScreen.tsx
+msgid "{name} is running"
 msgstr ""
 
 #: src/lan/PairedComputers.tsx
@@ -2479,12 +2513,20 @@ msgstr ""
 msgid "{total} messages"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Asking {launcher}"
+msgstr ""
+
 #: src/screenshots/ScreenshotsTab.tsx
 msgid "Screenshots you take while playing show here, newest first."
 msgstr ""
 
 #: src/lan/SendPanel.tsx
 msgid "No Mortar users found nearby."
+msgstr ""
+
+#: src/launch/LaunchScreen.tsx
+msgid "{launcher} has not started {name} yet"
 msgstr ""
 
 #: src/games/AddGameDialog.tsx
@@ -2540,6 +2582,7 @@ msgid "{os} antivirus (AMSI)"
 msgstr ""
 
 #: src/launch/LaunchLayer.tsx
+#: src/launch/LaunchScreen.tsx
 msgid "Open console"
 msgstr ""
 
@@ -3091,6 +3134,14 @@ msgstr ""
 msgid "File"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Starting copy {copy} of {copies}"
+msgstr ""
+
+#: src/launch/LaunchScreen.tsx
+msgid "{loaderName} is still loading mods"
+msgstr ""
+
 #: src/toasts/EarlierChanges.tsx
 msgid "Undo this change: {name}"
 msgstr ""
@@ -3472,6 +3523,10 @@ msgstr ""
 msgid "Completed downloads will appear here."
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Starting"
+msgstr ""
+
 #: src/install/HandoffDialog.tsx
 msgid "Yes"
 msgstr ""
@@ -3763,6 +3818,10 @@ msgstr ""
 msgid "All saves"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Still loading {mod}"
+msgstr ""
+
 #: src/game/Sidebar.tsx
 msgid "Collapse sidebar"
 msgstr ""
@@ -3781,6 +3840,10 @@ msgstr ""
 
 #: src/firstrun/FirstRun.tsx
 msgid "No launchers found. Continue and choose each game's folder when you open it."
+msgstr ""
+
+#: src/launch/LaunchScreen.tsx
+msgid "{launcher} may be updating the game, or it is not signed in. Mortar keeps waiting."
 msgstr ""
 
 #: src/saves/lackChipActions.tsx
@@ -4535,6 +4598,10 @@ msgstr ""
 msgid "Search {source}. Download installs the mod into this profile."
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "{name} is running, but {loaderName} has not started"
+msgstr ""
+
 #: src/browse/BrowseFilters.tsx
 msgid "Sort: most forks"
 msgstr ""
@@ -4571,6 +4638,7 @@ msgstr ""
 msgid "Not set up"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
 #: src/launch/PlayControl.tsx
 msgid "Running"
 msgstr ""
@@ -4665,6 +4733,10 @@ msgstr ""
 msgid "Grant the {launcher} sandbox read access to Mortar's data folder, or the game will not see this profile's mods."
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Without mods"
+msgstr ""
+
 #: src/share/ListFormat.tsx
 msgid "Enabled"
 msgstr ""
@@ -4719,6 +4791,7 @@ msgid "Could not set the default launch preset"
 msgstr ""
 
 #: src/launch/LaunchLayer.tsx
+#: src/launch/LaunchScreen.tsx
 msgid "{name} did not start"
 msgstr ""
 
@@ -4737,10 +4810,6 @@ msgstr ""
 #: src/nxm/ArrivalDialog.tsx
 #: src/nxm/store.ts
 msgid "Install {name}?"
-msgstr ""
-
-#: src/launch/LaunchLayer.tsx
-msgid "{name} is taking a long time to start"
 msgstr ""
 
 #: src/launch/PrePlayDialog.tsx
@@ -4865,6 +4934,10 @@ msgstr ""
 msgid "Switch to Config"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Could not cancel the launch"
+msgstr ""
+
 #: src/firstrun/ProfileStep.tsx
 msgid "Preview Mods folder import…"
 msgstr ""
@@ -4884,6 +4957,7 @@ msgid "Play"
 msgstr ""
 
 #: src/games/GameSelect.tsx
+#: src/launch/LaunchScreen.tsx
 msgid "Open {name}"
 msgstr ""
 
@@ -4915,7 +4989,7 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-#: src/launch/LaunchLayer.tsx
+#: src/launch/LaunchScreen.tsx
 msgid "Keep waiting"
 msgstr ""
 
@@ -4987,6 +5061,10 @@ msgstr ""
 msgid "Riverland farm"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "{count, plural, one {# mod loaded} other {# mods loaded}}"
+msgstr ""
+
 #: src/commandPalette/paletteLabels.ts
 msgid "Toggle {name}"
 msgstr ""
@@ -5042,7 +5120,7 @@ msgstr ""
 msgid "Hide from Browse"
 msgstr ""
 
-#: src/launch/LaunchLayer.tsx
+#: src/launch/LaunchScreen.tsx
 msgid "Launching {name}"
 msgstr ""
 
@@ -5172,6 +5250,10 @@ msgstr ""
 msgid "Minimise"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Waiting"
+msgstr ""
+
 #: src/launch/KnownGoodOffer.tsx
 msgid "Mark known good"
 msgstr ""
@@ -5291,6 +5373,10 @@ msgstr ""
 msgid "Could not use that image"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Loading mods"
+msgstr ""
+
 #: src/install/DownloadsDialog.tsx
 msgid "From the downloads folder"
 msgstr ""
@@ -5351,7 +5437,7 @@ msgid "Export as {source} collection draft…"
 msgstr ""
 
 #: src/browse/BrowseShow.tsx
-#: src/launch/LaunchLayer.tsx
+#: src/launch/LaunchScreen.tsx
 #: src/saves/SaveGapLine.tsx
 msgid "Hide"
 msgstr ""
@@ -5391,6 +5477,10 @@ msgstr ""
 msgid "Cancelled"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Did not start"
+msgstr ""
+
 #: src/games/GameMenu.tsx
 msgid "Games"
 msgstr ""
@@ -5415,6 +5505,10 @@ msgstr ""
 msgid "Could not add it to {launcher}"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "The game may still be loading its own files. Mortar keeps waiting."
+msgstr ""
+
 #: src/share/useShareBuild.ts
 msgid "Could not build the link"
 msgstr ""
@@ -5437,6 +5531,7 @@ msgid "Changed since last run ({count})"
 msgstr ""
 
 #: src/launch/LaunchLayer.tsx
+#: src/launch/LaunchScreen.tsx
 msgid "The game exited before it started. The console has its output."
 msgstr ""
 
@@ -5481,6 +5576,10 @@ msgstr ""
 msgid "Signed in as {name}"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "{count, plural, one {# copy running} other {# copies running}}"
+msgstr ""
+
 #: src/firstrun/LoaderStep.tsx
 #: src/loader/InstallSteps.tsx
 msgid "Launcher replaced"
@@ -5513,6 +5612,10 @@ msgstr ""
 
 #: src/lan/PairedComputers.tsx
 msgid "On the other computer, choose Enter code and type this. It works once, for five minutes."
+msgstr ""
+
+#: src/launch/LaunchScreen.tsx
+msgid "Still loading {mod} ({loaded} of {total})"
 msgstr ""
 
 #: src/saves/SavesTab.tsx
@@ -5755,6 +5858,10 @@ msgstr ""
 msgid "{name} is not in {profile}"
 msgstr ""
 
+#: src/launch/LaunchScreen.tsx
+msgid "Handed off"
+msgstr ""
+
 #: src/commandPalette/crashBisect.ts
 msgid "Start the game once so Mortar can see the crash."
 msgstr ""
@@ -5885,6 +5992,7 @@ msgstr ""
 #: src/game/FarmMenuItem.tsx
 #: src/games/AddGameDialog.tsx
 #: src/launch/LaunchLayer.tsx
+#: src/launch/LaunchScreen.tsx
 #: src/launch/SweepDialog.tsx
 #: src/saves/BackupsDialog.tsx
 #: src/screenshots/ScreenshotsTab.tsx

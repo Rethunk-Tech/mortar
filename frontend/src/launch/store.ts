@@ -41,6 +41,7 @@ import {
   type UpdateWarn,
   updateAndPlay,
 } from './playStart.ts'
+import { useLaunchView } from './progress.ts'
 import { startVanillaGame } from './vanillaStart.ts'
 
 const RUN_POLL_ATTEMPTS = 20
@@ -194,12 +195,15 @@ function applyStatus(
     }
   }
   if (status.state === State.Launching) {
-    if (resetConsole(status, previous)) {
+    const isNew = resetConsole(status, previous)
+    if (isNew) {
       set({ hidden: false, failure: null })
     }
+    useLaunchView.getState().onStatus(status, isNew)
     set({ status })
     return
   }
+  useLaunchView.getState().onStatus(status, false)
   if (status.state === State.Failed) {
     set({
       failure: {

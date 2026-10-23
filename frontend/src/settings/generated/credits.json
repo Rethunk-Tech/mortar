@@ -20,6 +20,21 @@
     "url": "https://github.com/anegostudios/vsmoddb"
   },
   {
+    "name": "BepInEx logo",
+    "licence": "LGPL-2.1",
+    "url": "https://github.com/BepInEx/BepInEx"
+  },
+  {
+    "name": "MelonLoader logo",
+    "licence": "Apache-2.0",
+    "url": "https://github.com/LavaGang/MelonLoader"
+  },
+  {
+    "name": "SMAPI icon",
+    "licence": "LGPL-3.0",
+    "url": "https://github.com/Pathoschild/SMAPI"
+  },
+  {
     "name": "Nexus Mods logo (from Vortex)",
     "licence": "GPL-3.0",
     "url": "https://github.com/Nexus-Mods/Vortex"
