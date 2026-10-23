@@ -623,7 +623,7 @@ func (s *Service) download(ctx context.Context, it Item) error {
 		dropDownload(path)
 		return err
 	}
-	optional := manifestLess(path)
+	optional := manifestLess(it.Game, path)
 	if s.parkOverlay(it.ID, optional, true) {
 		return nil
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fomod"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/store"
@@ -106,8 +107,7 @@ func hasManifestFile(root string) (bool, error) {
 // isOverlayItem reports a Nexus store item with no manifest anywhere and no installer: an optional file that
 // replaces files of its mod's main file.
 func (s *Store) isOverlayItem(game, key string, source Source) (bool, error) {
-	// A folder game's files are loose, so a file without a manifest is a mod of its own, never an overlay.
-	if source.Kind != KindNexus || source.ModID <= 0 || slices.Contains(installerGame(game).Loaders, folderLoader) {
+	if source.Kind != KindNexus || source.ModID <= 0 || !installer.OptionalFilesOverlay(installerGame(game)) {
 		return false, nil
 	}
 	dir, err := s.items.Path(game, key)

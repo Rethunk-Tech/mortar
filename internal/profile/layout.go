@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/bridge"
-	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fomod"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
@@ -25,19 +24,8 @@ import (
 // deployed at launch instead of being copied into the profile's mods folder.
 const driverThunderstore = "thunderstore-rules"
 
-// installerGame is the game as the installer sees it: the loaders it runs and the content targets the catalog gives it.
-func installerGame(gameID string) installer.Game {
-	info, _ := components.Game(gameID)
-	var g installer.Game
-	for _, l := range info.Loaders {
-		g.Loaders = append(g.Loaders, l.ID)
-		g.Routes = append(g.Routes, l.Routes...)
-	}
-	for _, t := range info.Targets {
-		g.Targets = append(g.Targets, installer.Target{ID: t.ID, Root: t.Root, MaxDepth: t.MaxDepth, KeepWhole: t.KeepWhole, ModRoot: t.ModRoot, Extensions: t.Extensions, Shared: t.Role != "", Role: t.Role, Sources: t.Sources})
-	}
-	return g
-}
+// installerGame is the game as the installer sees it.
+func installerGame(gameID string) installer.Game { return installer.GameOf(gameID) }
 
 // pick is the archive of the store item key and the installer that takes it.
 func (s *Store) pick(game, key string) (installer.Archive, installer.Game, installer.Installer, error) {

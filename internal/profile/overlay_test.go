@@ -11,6 +11,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/store"
+	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
@@ -327,5 +328,25 @@ func TestOverlayPlacedWithoutAskingAndOff(t *testing.T) {
 	}
 	if got := readLive(t, e, p.ID, store.NexusKey(overlayModID, 1), overlayDir+"/assets/a.png"); got != "A-main" {
 		t.Fatalf("an off optional file was laid: %q", got)
+	}
+}
+
+func TestANexusPluginWithoutAManifestInstallsInABepInExGame(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Nexus's usual BepInEx mod: the plugin's DLL and nothing else, no manifest to say it is a mod.
+	for i, files := range []map[string]string{
+		{"Foo.dll": "MZ"},
+		{"BepInEx/plugins/Bar/Bar.dll": "MZ"},
+	} {
+		z := testfs.WriteZip(t, filepath.Join(t.TempDir(), "p.zip"), files)
+		res, err := e.InstallSource(t.Context(), "lethal-company", p.ID, z, Source{Kind: KindNexus, Name: "p.zip", ModID: 100 + i, FileID: 1})
+		if err != nil || len(res.Added) != 1 {
+			t.Fatalf("%v: %+v, %v", files, res, err)
+		}
 	}
 }

@@ -73,8 +73,12 @@ func TestManifestLess(t *testing.T) {
 		_ = f.Close()
 		return p
 	}
-	if !manifestLess(write("opt.zip", "Mod/assets/a.png")) || manifestLess(write("main.zip", "Mod/manifest.json")) {
+	if !manifestLess("stardew", write("opt.zip", "Mod/assets/a.png")) || manifestLess("stardew", write("main.zip", "Mod/manifest.json")) {
 		t.Fatal("manifestLess")
+	}
+	// A BepInEx game's Nexus file without a manifest is a plugin of its own, not an optional file of another mod.
+	if manifestLess("lethal-company", write("plugin.zip", "Foo.dll")) {
+		t.Fatal("a BepInEx plugin was taken for an optional file")
 	}
 }
 

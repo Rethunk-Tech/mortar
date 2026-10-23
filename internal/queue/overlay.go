@@ -1,6 +1,9 @@
 package queue
 
-import "github.com/Rethunk-Tech/mortar/internal/archive"
+import (
+	"github.com/Rethunk-Tech/mortar/internal/archive"
+	"github.com/Rethunk-Tech/mortar/internal/installer"
+)
 
 // waitsForSameMod reports an earlier item for the same Nexus mod and profile still under way. A file without a
 // manifest waits for it, so a mod's main file installs before the optional files that go on top of it; other files
@@ -20,9 +23,12 @@ func (s *Service) waitsForSameMod(it *Item) bool {
 	return false
 }
 
-// manifestLess reports an archive without a SMAPI manifest or installer: an optional file laid over its mod's main
-// file, which the profile installs as such without asking whether to join or keep it apart.
-func manifestLess(path string) bool {
+// manifestLess reports an archive without a SMAPI manifest or installer for a game whose optional files lie over their
+// mod's main file: the profile installs it as such without asking whether to join or keep it apart.
+func manifestLess(game, path string) bool {
+	if !installer.OptionalFilesOverlay(installer.GameOf(game)) {
+		return false
+	}
 	p, err := archive.PreviewArchive(path)
 	return err == nil && !p.Truncated && !p.Fomod && len(p.Manifests) == 0
 }

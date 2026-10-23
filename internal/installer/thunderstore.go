@@ -66,6 +66,16 @@ func (a Archive) PackageRoot() Archive {
 	return a
 }
 
+// OptionalFilesOverlay reports a game where a Nexus file with no manifest is an optional file laid over its mod's main
+// file, as SMAPI mods ship them. A game modded through packages or plugin DLLs, or one whose mods are loose files,
+// takes such a file as a mod of its own.
+func OptionalFilesOverlay(g Game) bool {
+	return !TakesPackages(g) && !slices.Contains(g.Loaders, folderLoader)
+}
+
+// folderLoader is the loader of a game whose mods are files in a folder the game reads.
+const folderLoader = "folder"
+
 // TakesPackages reports a game whose mods this installer lays out: a BepInEx, MelonLoader or thunderpack game.
 func TakesPackages(g Game) bool {
 	_, pack := thunderpack.Of(g.Loaders)

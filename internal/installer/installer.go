@@ -29,6 +29,20 @@ type Archive struct {
 	Eval fomod.EvalContext
 }
 
+// GameOf is the catalog game gameID as the installer sees it: the loaders it runs and the content targets it has.
+func GameOf(gameID string) Game {
+	info, _ := components.Game(gameID)
+	var g Game
+	for _, l := range info.Loaders {
+		g.Loaders = append(g.Loaders, l.ID)
+		g.Routes = append(g.Routes, l.Routes...)
+	}
+	for _, t := range info.Targets {
+		g.Targets = append(g.Targets, Target{ID: t.ID, Root: t.Root, MaxDepth: t.MaxDepth, KeepWhole: t.KeepWhole, ModRoot: t.ModRoot, Extensions: t.Extensions, Shared: t.Role != "", Role: t.Role, Sources: t.Sources})
+	}
+	return g
+}
+
 // Open makes an Archive of an extracted folder.
 func Open(dir, key string) Archive { return Archive{Dir: dir, FS: os.DirFS(dir), Key: key} }
 
