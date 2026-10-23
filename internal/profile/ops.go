@@ -21,6 +21,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
+	gamereg "github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/manifest"
 )
 
@@ -216,6 +217,21 @@ type NoModError struct{ Key string }
 
 func (e *NoModError) Error() string {
 	return fmt.Sprintf("%q holds no mod: no readable %s", e.Key, manifest.FileName)
+}
+
+// NoPackageError reports a store item of a game whose loader reads no manifest mods that the installer took for no
+// package: it holds no Thunderstore package, plugin DLL or loader folder.
+type NoPackageError struct{ Key string }
+
+func (e *NoPackageError) Error() string {
+	return fmt.Sprintf("%q holds nothing Mortar installs for this game", e.Key)
+}
+
+// readsManifests reports a game whose mods are the manifest folders of its loader (SMAPI); every other game's mods
+// are packages, plugin DLLs or loose files, which no manifest scan finds.
+func readsManifests(gameID string) bool {
+	_, ok := gamereg.ManifestModsFolder(gameID)
+	return ok
 }
 
 // rawXNBError reports an archive that replaces game content rather than carrying a SMAPI mod.

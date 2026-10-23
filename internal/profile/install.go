@@ -240,6 +240,9 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 	} else if isPackage {
 		return s.placePackageLocked(game, id, key, source, mods)
 	}
+	if !readsManifests(game) {
+		return Profile{}, false, false, &NoPackageError{Key: key}
+	}
 	source, ask, need, err := s.installAsk(game, id, key, source)
 	if err != nil {
 		return Profile{}, false, false, err
@@ -377,6 +380,8 @@ func installError(err error) error {
 		msg = "This file replaces game files directly (raw .xnb). Mortar installs SMAPI mods; use the mod's Content Patcher version."
 	case errors.As(err, new(*NoBaseError)):
 		return &InstallError{Msg: err.Error(), Err: usererr.Wrap(usererr.NotFound, err)}
+	case errors.As(err, new(*NoPackageError)):
+		msg = "Mortar found no mod for this game in this archive. It expects a Thunderstore package (a manifest.json with a name and version), or for a BepInEx or MelonLoader game a plugin DLL or the loader's own folder"
 	case errors.As(err, new(*NoModError)):
 		msg = "No SMAPI mod was found in this archive"
 	case errors.Is(err, store.ErrIncomplete):
