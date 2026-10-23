@@ -42,6 +42,8 @@ function sentence(kind: ReturnType<typeof kindOf>): string {
       return i18n._(
         msg`The system would not let Mortar end the game. Close it from its own window or end it in your task manager.`,
       )
+    case 'rate_limited':
+      return i18n._(msg`The site is limiting how often Mortar may ask. Try again in a minute.`)
     default:
       return i18n._(msg`Something went wrong.`)
   }

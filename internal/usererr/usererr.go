@@ -34,11 +34,13 @@ const (
 	Locked Kind = "locked"
 	// ProcessDenied is a running program the system refused to let Mortar end.
 	ProcessDenied Kind = "process_denied"
-	Unknown       Kind = "unknown"
+	// RateLimited is a site refusing Mortar's requests for a while.
+	RateLimited Kind = "rate_limited"
+	Unknown     Kind = "unknown"
 )
 
 // Kinds lists every Kind, so a table over them (the CLI's sentences, the GUI's) can check it leaves none out.
-var Kinds = []Kind{NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Malware, Locked, ProcessDenied, Unknown}
+var Kinds = []Kind{NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Malware, Locked, ProcessDenied, RateLimited, Unknown}
 
 const (
 	prefix = "["
@@ -135,7 +137,7 @@ func Parse(s string) (kind Kind, raw string) {
 		if s[i] == ']' && i+1 < len(s) && s[i+1] == ' ' {
 			k := Kind(s[1:i])
 			switch k {
-			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Malware, Locked, ProcessDenied:
+			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Malware, Locked, ProcessDenied, RateLimited:
 				return k, s[i+2:]
 			case Unknown:
 			}

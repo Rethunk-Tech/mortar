@@ -168,7 +168,7 @@ func (c *Client) do(req *http.Request, limit int64) ([]byte, error) {
 		return nil, usererr.Wrap(usererr.NotFound, &StatusError{Code: resp.StatusCode, Status: resp.Status})
 	}
 	if resp.StatusCode == http.StatusTooManyRequests {
-		return nil, usererr.Wrap(usererr.Busy, &StatusError{Code: resp.StatusCode, Status: resp.Status})
+		return nil, usererr.Wrap(usererr.RateLimited, &StatusError{Code: resp.StatusCode, Status: resp.Status})
 	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, usererr.Wrap(usererr.Network, &StatusError{Code: resp.StatusCode, Status: resp.Status})

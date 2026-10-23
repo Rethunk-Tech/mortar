@@ -14,6 +14,7 @@ import (
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 func TestSearchQueryAndPaging(t *testing.T) {
@@ -64,7 +65,7 @@ func TestSearchRateLimit(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	_, err := (&Driver{URL: srv.URL}).Search(context.Background(), source.Query{Key: "k", Text: "x", Page: 1})
-	if !errors.Is(err, source.ErrBusy) {
+	if !errors.Is(err, source.ErrBusy) || usererr.KindOf(err) != usererr.RateLimited {
 		t.Fatalf("got %v", err)
 	}
 }

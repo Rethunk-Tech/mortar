@@ -31,6 +31,8 @@ func Sentence(kind usererr.Kind) string {
 		return "Waiting for you to unlock the keyring."
 	case usererr.ProcessDenied:
 		return "The system would not let Mortar end the game. Close it from its own window or end it in your task manager."
+	case usererr.RateLimited:
+		return "The site is limiting how often Mortar may ask. Try again in a minute."
 	case usererr.Unknown:
 		fallthrough
 	default:

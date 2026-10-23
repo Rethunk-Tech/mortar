@@ -219,7 +219,7 @@ func TestDoNamesMortarAndMapsTooManyRequestsToBusy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := c.do(req, 1<<10); usererr.KindOf(err) != usererr.Busy || ua != "Mortar/1.2.3" {
+	if _, err := c.do(req, 1<<10); usererr.KindOf(err) != usererr.RateLimited || ua != "Mortar/1.2.3" {
 		t.Fatalf("429: kind %v (%v), user agent %q", usererr.KindOf(err), err, ua)
 	}
 }

@@ -1935,6 +1935,10 @@ msgstr "module {name} failed"
 msgid "Open the host's list"
 msgstr "Open the host's list"
 
+#: src/toasts/report.ts
+msgid "The site is limiting how often Mortar may ask. Try again in a minute."
+msgstr "The site is limiting how often Mortar may ask. Try again in a minute."
+
 #: src/launch/store.ts
 msgid "{launcher} may not be running or signed in. Start {launcher}, sign in and try again."
 msgstr "{launcher} may not be running or signed in. Start {launcher}, sign in and try again."

@@ -16,6 +16,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
+	"github.com/Rethunk-Tech/mortar/internal/usererr"
 )
 
 // Acquire is how a source's mods reach a profile.
@@ -41,6 +42,9 @@ type BusyError struct {
 func (e *BusyError) Error() string { return e.Source + " is busy, try again in a minute" }
 
 func (e *BusyError) Is(target error) bool { return target == ErrBusy }
+
+// Unwrap gives the refusal its user-facing kind.
+func (e *BusyError) Unwrap() error { return usererr.New(usererr.RateLimited, e.Error()) }
 
 // Busy is name refusing resp, waiting as long as its Retry-After asks (seconds or an HTTP date) when it says.
 func Busy(name string, resp *http.Response) *BusyError {
