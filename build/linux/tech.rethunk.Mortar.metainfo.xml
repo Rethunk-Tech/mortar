@@ -73,6 +73,7 @@
           <li>Settings descriptions that only repeated their setting's name are gone</li>
           <li>**Launch options…** in the menu beside Play opens the profile's own launch arguments, command prefix and environment variables</li>
           <li>The list's columns follow each mod's own source and loader: Latest, Released, Updated, Rating and Downloads come from Nexus or Thunderstore, whichever the mod is from, and the id column shows a BepInEx plugin's GUID or a SMAPI mod's UniqueID under that name</li>
+          <li>A mod from GitHub shows its latest release, when its installed release came out and its downloads, once Mortar has checked it for updates</li>
           <li>BepInEx games add Kind (plugin, patcher, library or files only) and Plugin version</li>
           <li>The column menu is grouped: the mod, its versions, its health, its place in the profile, then its source</li>
         </ul>

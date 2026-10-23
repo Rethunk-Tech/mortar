@@ -10,6 +10,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/dotnet"
 	"github.com/Rethunk-Tech/mortar/internal/loader/bepinex5"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 // What a BepInEx package ships, as ModFact.Kind says it.
@@ -41,7 +42,7 @@ type ModFact struct {
 	Latest         string `json:"latest"`
 	LatestReleased string `json:"latestReleased"`
 	// Updated, Rating, Downloads and Categories are the source's own figures for the package (Thunderstore's
-	// date_updated, rating_score, the downloads of all its versions, and its categories).
+	// date_updated, rating_score, the downloads of all its versions, and its categories; GitHub fills only Downloads).
 	Updated    string   `json:"updated"`
 	Rating     int      `json:"rating"`
 	Downloads  int      `json:"downloads"`
@@ -140,21 +141,33 @@ func (s *Store) scanPackage(game string, e Entry) (packageScan, bool) {
 	return sc, true
 }
 
-// ModFacts is the facts of each of the profile's mods, keyed by the mod's id as Mods lists it. A Thunderstore package's
-// source facts come from the cached community index (PackageFacts) and are left empty when it holds none.
+// factRef is how a source's cache names the package of e: a Thunderstore package's lower-case Namespace-Name, a GitHub
+// repository's lower-case owner/repo. It is empty for a source that has no cached facts.
+func factRef(e Entry) string {
+	switch e.Source.Kind {
+	case KindThunderstore:
+		return strings.ToLower(e.Source.Name)
+	case KindGitHub:
+		return strings.ToLower(e.Source.Repo)
+	}
+	return ""
+}
+
+// ModFacts is the facts of each of the profile's mods, keyed by the mod's id as Mods lists it. A package's source facts
+// come from its source's cache (SourceFacts) and are left empty when it holds none.
 func (s *Store) ModFacts(game, id string) (map[string]ModFact, error) {
 	p, err := s.read(game, id)
 	if err != nil {
 		return nil, err
 	}
 	out := map[string]ModFact{}
-	installed := map[string]string{}
+	installed := map[string]map[string]string{}
 	for _, e := range p.Entries {
 		if e.Source.Bundled() {
 			continue
 		}
 		sc, scanned := s.scanPackage(game, e)
-		pkgName := strings.ToLower(e.Source.Name)
+		ref := factRef(e)
 		for _, c := range e.Mods {
 			if _, dup := out[string(c.ID)]; dup {
 				continue
@@ -172,18 +185,24 @@ func (s *Store) ModFacts(game, id string) (map[string]ModFact, error) {
 				f.Kind, f.HardDeps = sc.kind, slices.Clone(sc.hardDeps)
 			}
 			out[string(c.ID)] = f
-			if e.Source.Kind == KindThunderstore && pkgName != "" {
-				installed[pkgName] = cmp.Or(e.Source.Version, c.Version)
+			if ref != "" {
+				if installed[e.Source.Kind] == nil {
+					installed[e.Source.Kind] = map[string]string{}
+				}
+				installed[e.Source.Kind][ref] = cmp.Or(e.Source.Version, c.Version)
 			}
 		}
 	}
-	if s.PackageFacts == nil || len(installed) == 0 {
+	if s.SourceFacts == nil {
 		return out, nil
 	}
-	facts := s.PackageFacts(game, installed)
+	facts := map[string]map[string]source.Facts{}
+	for kind, refs := range installed {
+		facts[kind] = s.SourceFacts(game, kind, refs)
+	}
 	for _, e := range p.Entries {
-		f, ok := facts[strings.ToLower(e.Source.Name)]
-		if !ok || e.Source.Kind != KindThunderstore {
+		f, ok := facts[e.Source.Kind][factRef(e)]
+		if !ok {
 			continue
 		}
 		for _, c := range e.Mods {

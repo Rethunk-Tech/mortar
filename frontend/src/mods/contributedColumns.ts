@@ -14,7 +14,7 @@ interface Offer {
 }
 
 // The sources whose figures (latest, dates, rating, downloads) Mortar reads without a request per mod.
-const FIGURE_SOURCES = ['nexus', 'thunderstore']
+const FIGURE_SOURCES = ['github', 'nexus', 'thunderstore']
 const figures = (o: Offer) => FIGURE_SOURCES.some((s) => o.sources.has(s))
 
 // Columns a deploy method, loader or source contributes appear only where the open profile has them; every other

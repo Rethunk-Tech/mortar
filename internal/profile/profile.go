@@ -26,6 +26,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
 	"github.com/Rethunk-Tech/mortar/internal/store"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"
@@ -335,9 +336,9 @@ type Store struct {
 	// PackageLooks is the icon and category of each named Thunderstore package (Namespace-Name) the game's cached
 	// index holds, keyed by the lower-case name, read without the network. Nil means no index.
 	PackageLooks func(game string, names []string) map[string]thunderstore.Look
-	// PackageFacts is the index's facts on each named Thunderstore package (lower-case Namespace-Name to the installed
-	// version), read without the network. Nil means no index.
-	PackageFacts func(game string, installed map[string]string) map[string]thunderstore.Fact
+	// SourceFacts is the cached facts of one source kind on each of its installed packages (their refs, see factRef, to
+	// the installed version), read without the network. Nil means no caches.
+	SourceFacts func(game, kind string, installed map[string]string) map[string]source.Facts
 	// ShortcutRenamed updates an existing launcher after a profile is renamed; nil means nothing.
 	ShortcutRenamed func(game, id, profileName, gameName string) error
 	// ShortcutRemoved removes launchers after a profile is deleted; nil means nothing.

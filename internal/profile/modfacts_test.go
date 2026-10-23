@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/mortar/internal/mod"
-	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
+	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
 // addPackage puts a Thunderstore package's files in the store under its lower-case name for Lethal Company and records it in p.
@@ -52,10 +52,23 @@ func TestModFactsReadsWhatABepInExPackageShipsAndWhatTheIndexSays(t *testing.T) 
 	addPackage(t, e, p, "Ns-Lib", map[string]string{"lib.dll": "not an assembly"})
 	addPackage(t, e, p, "Ns-Sounds", map[string]string{"manifest.json": "{}", "sounds/a.ogg": "ogg"})
 
-	var asked map[string]string
-	e.PackageFacts = func(game string, installed map[string]string) map[string]thunderstore.Fact {
+	if _, err := e.update("lethal-company", p.ID, func(p *Profile, _ string) error {
+		p.Entries = append(p.Entries, Entry{
+			Key: "gh", Source: Source{Kind: KindGitHub, Repo: "Owner/Repo", Version: "v1.0.0"},
+			Mods: []Component{{ID: "github:Owner/Repo", Name: "Repo", Version: "1.0.0"}},
+		})
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	var asked, askedGitHub map[string]string
+	e.SourceFacts = func(game, kind string, installed map[string]string) map[string]source.Facts {
+		if kind == KindGitHub {
+			askedGitHub = installed
+			return map[string]source.Facts{"owner/repo": {Latest: "1.1.0", Downloads: 40}}
+		}
 		asked = installed
-		return map[string]thunderstore.Fact{"ns-plug": {
+		return map[string]source.Facts{"ns-plug": {
 			Released: "2025-12-01T00:00:00Z", Latest: "2.0.0", LatestReleased: "2026-01-15T10:00:00Z",
 			Updated: "2026-01-16", Rating: 7, Downloads: 900, Categories: []string{"Tools"},
 		}}
@@ -66,6 +79,12 @@ func TestModFactsReadsWhatABepInExPackageShipsAndWhatTheIndexSays(t *testing.T) 
 	}
 	if asked["ns-plug"] != "1.0.0" || len(asked) != 5 {
 		t.Fatalf("the index was asked %v", asked)
+	}
+	if askedGitHub["owner/repo"] != "v1.0.0" || len(askedGitHub) != 1 {
+		t.Fatalf("github was asked %v", askedGitHub)
+	}
+	if g := got["github:Owner/Repo"]; g.Latest != "1.1.0" || g.Downloads != 40 {
+		t.Fatalf("github mod = %+v", g)
 	}
 	plug := got["thunderstore:Ns-Plug"]
 	if !slices.Equal(plug.IDs, []string{"com.fixture.plugin"}) || !slices.Equal(plug.PluginVersions, []string{"1.2.3"}) ||

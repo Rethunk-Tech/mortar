@@ -31,6 +31,8 @@ type Driver struct {
 	HTTP *http.Client
 	URL  string
 	Now  func() time.Time
+	// CacheDir is Mortar's cache directory, where the releases lists live; empty means the data folder's.
+	CacheDir string
 
 	mu    sync.Mutex
 	cache map[string]cacheEntry

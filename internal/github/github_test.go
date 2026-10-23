@@ -97,6 +97,32 @@ func TestReleasesCacheAndStale(t *testing.T) {
 	}
 }
 
+func TestCachedReleasesNeverAsksAndOldFormatsAreFetchedAgain(t *testing.T) {
+	var hits atomic.Int32
+	c := server(t, &hits, serve)
+	if _, _, ok := c.CachedReleases("o", "r"); ok {
+		t.Fatal("an empty cache answered")
+	}
+	if _, err := c.Releases(context.Background(), "o", "r"); err != nil {
+		t.Fatal(err)
+	}
+	got, whole, ok := c.CachedReleases("o", "r")
+	if !ok || !whole || len(got) != 5 || hits.Load() != 1 {
+		t.Fatalf("cached = %d releases, whole %v, ok %v, hits %d", len(got), whole, ok, hits.Load())
+	}
+	// A file an older release wrote lacks the format and the asset counts, so the list is read again however young.
+	path := releasesPath(c.CacheDir, "o", "r")
+	if err := os.WriteFile(path, []byte(`{"fetched":"`+time.Now().UTC().Format(time.RFC3339)+`","releases":[{"tag_name":"v0"}]}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, ok := c.CachedReleases("o", "r"); ok {
+		t.Fatal("an old format was read")
+	}
+	if got, err := c.Releases(context.Background(), "o", "r"); err != nil || len(got) != 5 || hits.Load() != 2 {
+		t.Fatalf("old format: %d releases, hits %d, err %v", len(got), hits.Load(), err)
+	}
+}
+
 func TestRateLimit(t *testing.T) {
 	var hits atomic.Int32
 	c := server(t, &hits, func(w http.ResponseWriter, _ *http.Request) {
@@ -108,6 +134,13 @@ func TestRateLimit(t *testing.T) {
 	var rl *RateLimitError
 	if !errors.As(err, &rl) || !rl.Reset.Equal(time.Unix(1790000000, 0)) || !strings.Contains(err.Error(), "try again after") {
 		t.Fatalf("err = %v", err)
+	}
+	// A file an older release wrote still stands in when the lookup fails.
+	if err := os.WriteFile(releasesPath(c.CacheDir, "o", "r"), []byte(`{"fetched":"2025-01-01T00:00:00Z","releases":[{"tag_name":"v0"}]}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := c.Releases(context.Background(), "o", "r"); err != nil || len(got) != 1 {
+		t.Fatalf("old format under a rate limit: %d releases, err %v", len(got), err)
 	}
 }
 

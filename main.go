@@ -73,6 +73,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/shortcut"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 	_ "github.com/Rethunk-Tech/mortar/internal/source/all"
+	githubsrc "github.com/Rethunk-Tech/mortar/internal/source/github"
 	itchsource "github.com/Rethunk-Tech/mortar/internal/source/itch"
 	nexussource "github.com/Rethunk-Tech/mortar/internal/source/nexus"
 	"github.com/Rethunk-Tech/mortar/internal/source/thunderstore"
@@ -472,12 +473,16 @@ func run() error {
 		}
 		return looks
 	}
-	profiles.PackageFacts = func(gameID string, installed map[string]string) map[string]thunderstore.Fact {
-		key := share.SourceKeys(gameID)["thunderstore"]
-		if key == "" {
+	profiles.SourceFacts = func(gameID, kind string, installed map[string]string) map[string]source.Facts {
+		e, ok := source.Get(kind)
+		if !ok {
 			return nil
 		}
-		facts, err := thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")}.CachedFacts(key, installed)
+		cf, ok := e.Source.(source.CachedFacter)
+		if !ok {
+			return nil
+		}
+		facts, err := cf.CachedFacts(context.Background(), share.SourceKeys(gameID)[kind], installed)
 		if err != nil {
 			return nil
 		}
@@ -511,6 +516,7 @@ func run() error {
 	bisectSvc := bisect.NewService(profiles, launches)
 	modMeta := &meta.Client{CacheDir: filepath.Join(dataDir, "cache"), Version: version}
 	source.Register(thunderstore.Driver{CacheDir: filepath.Join(dataDir, "cache")})
+	source.Register(&githubsrc.Driver{CacheDir: filepath.Join(dataDir, "cache")})
 	componentClient := components.NewClient(&http.Client{Timeout: 30 * time.Second})
 	game.ConfigureComponents(componentClient)
 	// The catalog an earlier run cached answers from the start; the network check (Load, below) runs behind the window.
