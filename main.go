@@ -110,7 +110,7 @@ var assets embed.FS
 //go:embed build/appicon.png
 var appIcon []byte
 
-// updateKey verifies release signatures; its private half never enters the repository (docs/architecture.md § Release).
+// updateKey verifies release signatures; its private half never enters the repository (docs/release.md).
 //
 //go:embed build/updater/public.key
 var updateKey []byte
