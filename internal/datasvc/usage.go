@@ -81,11 +81,49 @@ type profileMeta struct {
 const (
 	probeBatch   = 1024
 	probeWorkers = 16
+	// jobsBuffered is how many batches a walk may run ahead of the accounting, which takes the folders in order.
+	jobsBuffered = 1024
 )
 
+// batchFile is a regular file to size, or (followed set) a symlink target already stat-ed that only marks its inode
+// as seen, kept in the batch so it lands in walk order among the files.
 type batchFile struct {
-	path string
-	d    fs.DirEntry
+	path     string
+	d        fs.DirEntry
+	followed os.FileInfo
+}
+
+// probeJob is one batch of files whose extent maps are being read; wg is done when probes is filled.
+type probeJob struct {
+	files  []batchFile
+	probes []batchResult
+	wg     sync.WaitGroup
+}
+
+// startProbes reads files' extent maps in the background, at most cap(slots) reads at a time across all jobs.
+func startProbes(files []batchFile, slots chan struct{}) *probeJob {
+	j := &probeJob{files: files, probes: make([]batchResult, len(files))}
+	next := atomic.Int64{}
+	for range min(probeWorkers, len(files)) {
+		j.wg.Go(func() {
+			for {
+				i := int(next.Add(1)) - 1
+				if i >= len(files) {
+					return
+				}
+				if files[i].followed != nil {
+					continue
+				}
+				slots <- struct{}{}
+				info, err := files[i].d.Info()
+				if err == nil {
+					j.probes[i] = batchResult{info, probeFile(files[i].path), true}
+				}
+				<-slots
+			}
+		})
+	}
+	return j
 }
 
 type batchResult struct {
@@ -143,37 +181,18 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 			report(Progress{Measuring: true, Bytes: u.Total, Path: slash})
 		}
 	}
-	// Files are read in batches, concurrently, and accounted in walk order, since which file a shared block is
+	// Each folder is walked on its own goroutine and its files' extent maps are read by probeWorkers readers shared by
+	// all the walks. Results are accounted in folder order and then walk order, since which file a shared block is
 	// charged to depends on the order.
-	var batch []batchFile
-	flush := func() {
-		probes := make([]batchResult, len(batch))
-		var wg sync.WaitGroup
-		next := atomic.Int64{}
-		for range min(probeWorkers, len(batch)) {
-			wg.Go(func() {
-				for {
-					i := int(next.Add(1)) - 1
-					if i >= len(batch) {
-						return
-					}
-					info, err := batch[i].d.Info()
-					if err != nil {
-						continue
-					}
-					probes[i] = batchResult{info, probeFile(batch[i].path), true}
-				}
-			})
-		}
-		wg.Wait()
-		for i, r := range probes {
-			if r.read {
-				account(batch[i].path, r.info, r.probe)
+	slots := make(chan struct{}, probeWorkers)
+	walk := func(path string, skipNamed bool, out chan<- *probeJob) error {
+		var batch []batchFile
+		flush := func() {
+			if len(batch) > 0 {
+				out <- startProbes(batch, slots)
+				batch = nil
 			}
 		}
-		batch = batch[:0]
-	}
-	walk := func(path string, skipNamed bool) error {
 		st, err := os.Lstat(path)
 		if err != nil {
 			if errors.Is(err, fs.ErrNotExist) {
@@ -187,7 +206,7 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 		if !st.IsDir() {
 			return nil
 		}
-		return filepath.WalkDir(path, func(p string, d fs.DirEntry, err error) error {
+		err = filepath.WalkDir(path, func(p string, d fs.DirEntry, err error) error {
 			if err != nil {
 				if p == path {
 					return err
@@ -209,7 +228,7 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 				}
 				if info, infoErr := os.Stat(filepath.Clean(p)); infoErr == nil && info.Mode().IsRegular() {
 					if resolved, resErr := fsx.EvalSymlinks(p); resErr == nil && datadir.UnderRoot(root, resolved) {
-						share.addFollowed(info)
+						batch = append(batch, batchFile{followed: info})
 					}
 				}
 				return nil
@@ -217,24 +236,49 @@ func Measure(root string, report func(Progress)) (Usage, error) {
 			if !d.Type().IsRegular() {
 				return nil
 			}
-			batch = append(batch, batchFile{p, d})
+			batch = append(batch, batchFile{path: p, d: d})
 			if len(batch) == probeBatch {
 				flush()
 			}
 			return nil
 		})
-	}
-	for _, name := range []string{"store", "profiles", "backups", "cache", "trash"} {
-		err := walk(filepath.Join(root, name), false)
 		flush()
+		return err
+	}
+	type folder struct {
+		path      string
+		skipNamed bool
+	}
+	var folders []folder
+	for _, name := range []string{"store", "profiles", "backups", "cache", "trash"} {
+		folders = append(folders, folder{filepath.Join(root, name), false})
+	}
+	folders = append(folders, folder{root, true})
+	jobs := make([]chan *probeJob, len(folders))
+	errs := make([]error, len(folders))
+	for i, f := range folders {
+		jobs[i] = make(chan *probeJob, jobsBuffered)
+		go func() {
+			defer close(jobs[i])
+			errs[i] = walk(f.path, f.skipNamed, jobs[i])
+		}()
+	}
+	for _, queue := range jobs {
+		for job := range queue {
+			job.wg.Wait()
+			for i, f := range job.files {
+				if f.followed != nil {
+					share.addFollowed(f.followed)
+				} else if r := job.probes[i]; r.read {
+					account(f.path, r.info, r.probe)
+				}
+			}
+		}
+	}
+	for _, err := range errs {
 		if err != nil {
 			return Usage{}, err
 		}
-	}
-	err := walk(root, true)
-	flush()
-	if err != nil {
-		return Usage{}, err
 	}
 	u.SharedSaved, u.SharedSavedKnown = share.saved()
 	dirs, err := datadir.ProfileDirs(filepath.Join(root, "profiles"))
