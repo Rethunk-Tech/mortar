@@ -244,7 +244,10 @@ export const LetterTile = memo(function LetterTileView({
           overflow: 'hidden',
           fontWeight: 700,
           fontSize: size * TILE_FONT_RATIO,
-          bgcolor: `hsl(${hash(localId(mod.id).toLowerCase()) % HUE_DEGREES} 35% 38% / 0.85)`,
+          // The colour is the letter's; a picture keeps its own transparency over the card, as in Browse.
+          bgcolor: picture
+            ? 'transparent'
+            : `hsl(${hash(localId(mod.id).toLowerCase()) % HUE_DEGREES} 35% 38% / 0.85)`,
         }}
       >
         {picture ? (
