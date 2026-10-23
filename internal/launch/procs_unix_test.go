@@ -248,4 +248,19 @@ func TestProcessesSkipsAProgramWhoseExecutableIsTheSystems(t *testing.T) {
 	if got, err := Processes(dir, "sh"); err != nil || len(got) != 0 {
 		t.Fatalf("the system shell was found as the game: %+v, %v", got, err)
 	}
+
+	// A game a distribution's Wine runs names its .exe though its executable is the system Wine's.
+	wine := filepath.Join(dir, "4343")
+	if err := os.MkdirAll(wine, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(wine, "cmdline"), []byte(`Z:\games\SUPERHOT\SH.exe`+"\x00"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink("/usr/bin/wine64-preloader", filepath.Join(wine, "exe")); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := Processes(dir, "SH"); err != nil || len(got) != 1 || got[0].PID != 4343 {
+		t.Fatalf("a game run by the system's Wine was not found: %+v, %v", got, err)
+	}
 }

@@ -80,9 +80,9 @@ func Processes(procDir string, names ...string) ([]Process, error) {
 		p := Process{PID: pid, Args: args}
 		// Unreadable for another user's process, and the launcher's Args still name the install then.
 		p.Exe, _ = os.Readlink(filepath.Join(procDir, e.Name(), "exe"))
-		// A program named without its folder ("sh") is a system one when its executable is; a hosted game's own
-		// executable is dotnet or mono, which may well be.
-		if systemProgram(p.Exe) && !hosted(args) {
+		// A program named without its folder ("sh") is a system one when its executable is. One named by a path is
+		// judged by that path alone: Wine names the game's .exe, though its executable may be a system Wine's.
+		if !strings.ContainsAny(args[0], `/\`) && systemProgram(p.Exe) && !hosted(args) {
 			continue
 		}
 		p.Start = startTime(procDir, e.Name())
