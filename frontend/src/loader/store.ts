@@ -6,6 +6,7 @@ import {
   Install,
   InstallVersion,
   Status as LoaderStatus,
+  LocalStatus,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadersvc/service.ts'
 import { gameInfo } from '../games/info.ts'
 import { i18n } from '../i18n/index.ts'
@@ -48,7 +49,15 @@ export const useLoader = create<{
       set({ status: null, game })
     }
     try {
-      set({ status: await LoaderStatus(game, '') })
+      // What is installed is read from disk at once; the newest release, which can take seconds on a cold start, follows.
+      const local = await LocalStatus(game, '')
+      if (get().game === game && get().status === null) {
+        set({ status: local })
+      }
+      const full = await LoaderStatus(game, '')
+      if (get().game === game) {
+        set({ status: full })
+      }
     } catch {
       // The game may not be installed; there is nothing to offer then.
     }

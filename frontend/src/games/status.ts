@@ -4,6 +4,7 @@ import {
   SteamStatus,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import type { Status } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loader/models.ts'
+import { shareInFlight } from '../profiles/listProfiles.ts'
 
 export interface GameStatus {
   games: GameInfo[]
@@ -17,7 +18,13 @@ export function loaderCaption(loader: string, status: Status | null): string {
   return loader
 }
 
-export async function loadGameStatus(): Promise<GameStatus> {
-  const [games, steam] = await Promise.all([List(), SteamStatus()])
-  return { games: games ?? [], steam }
+const shared = shareInFlight<GameStatus>()
+
+/** The catalog and Steam's state. Startup asks from several places at once, so callers asking while a read is under
+ * way share it. */
+export function loadGameStatus(): Promise<GameStatus> {
+  return shared('', async () => {
+    const [games, steam] = await Promise.all([List(), SteamStatus()])
+    return { games: games ?? [], steam }
+  })
 }
