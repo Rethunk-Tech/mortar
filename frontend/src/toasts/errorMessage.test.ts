@@ -14,6 +14,7 @@ test('errorKind reads the Wails [kind] prefix', () => {
   expect(errorKind('[other_game] this share is for lethal-company')).toBe('other_game')
   expect(errorKind('[outdated] made by a newer Mortar')).toBe('outdated')
   expect(errorKind('[external] only on the site')).toBe('external')
+  expect(errorKind('[process_denied] Access is denied.')).toBe('process_denied')
 })
 
 test('an untagged bound-call error takes its kind from the Wails cause', () => {

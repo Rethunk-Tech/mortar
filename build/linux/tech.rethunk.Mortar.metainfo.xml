@@ -98,6 +98,8 @@
           <li>An archive Mortar cannot install for a BepInEx, MelonLoader or other non-Stardew game is refused with words that say what Mortar expected, instead of "No SMAPI mod was found" or a question about a SMAPI manifest</li>
           <li>A GitHub release installed for a BepInEx, MelonLoader or other non-Stardew game shows "Could not verify its source" in the queue, since there is no repository check for those games</li>
           <li>A second Nexus file for a BepInEx, MelonLoader or other non-Stardew mod already in the profile installs as its own mod instead of asking to add it to the first</li>
+          <li>On Windows, a game that crashes stays "Running" until its process has fully closed, so its files are cleaned up and it no longer shows up as a second run of another profile</li>
+          <li>Stop game on Windows no longer fails with "Access is denied" for a game that is already closing, and a game Windows will not let Mortar end says so instead of offering Open storage settings</li>
         </ul>
       </description>
     </release>

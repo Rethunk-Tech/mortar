@@ -38,6 +38,10 @@ function sentence(kind: ReturnType<typeof kindOf>): string {
       )
     case 'malware':
       return i18n._(msg`The antivirus flagged this download, so Mortar did not install it.`)
+    case 'process_denied':
+      return i18n._(
+        msg`The system would not let Mortar end the game. Close it from its own window or end it in your task manager.`,
+      )
     default:
       return i18n._(msg`Something went wrong.`)
   }

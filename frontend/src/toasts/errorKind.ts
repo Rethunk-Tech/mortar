@@ -13,6 +13,7 @@ const knownKinds = [
   'outdated',
   'external',
   'malware',
+  'process_denied',
 ] as const
 
 const kinds = new Set<string>(knownKinds)

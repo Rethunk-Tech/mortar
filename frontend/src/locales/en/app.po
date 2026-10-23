@@ -4491,6 +4491,10 @@ msgstr "Retry all failed"
 msgid "Add it"
 msgstr "Add it"
 
+#: src/toasts/report.ts
+msgid "The system would not let Mortar end the game. Close it from its own window or end it in your task manager."
+msgstr "The system would not let Mortar end the game. Close it from its own window or end it in your task manager."
+
 #: src/lan/IncomingPrompt.tsx
 msgid "Import as new profile"
 msgstr "Import as new profile"

@@ -31,12 +31,14 @@ const (
 	// Malware is a download the antivirus flagged; it was not installed.
 	Malware Kind = "malware"
 	// Locked is a keyring read waiting on an unlock prompt the user has not answered yet.
-	Locked  Kind = "locked"
-	Unknown Kind = "unknown"
+	Locked Kind = "locked"
+	// ProcessDenied is a running program the system refused to let Mortar end.
+	ProcessDenied Kind = "process_denied"
+	Unknown       Kind = "unknown"
 )
 
 // Kinds lists every Kind, so a table over them (the CLI's sentences, the GUI's) can check it leaves none out.
-var Kinds = []Kind{NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Malware, Locked, Unknown}
+var Kinds = []Kind{NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Malware, Locked, ProcessDenied, Unknown}
 
 const (
 	prefix = "["
@@ -133,7 +135,7 @@ func Parse(s string) (kind Kind, raw string) {
 		if s[i] == ']' && i+1 < len(s) && s[i+1] == ' ' {
 			k := Kind(s[1:i])
 			switch k {
-			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Malware, Locked:
+			case NotFound, Busy, Network, Permission, DiskFull, Damaged, Invalid, OtherGame, Outdated, External, Malware, Locked, ProcessDenied:
 				return k, s[i+2:]
 			case Unknown:
 			}

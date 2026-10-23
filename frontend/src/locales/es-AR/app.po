@@ -4491,6 +4491,10 @@ msgstr ""
 msgid "Add it"
 msgstr ""
 
+#: src/toasts/report.ts
+msgid "The system would not let Mortar end the game. Close it from its own window or end it in your task manager."
+msgstr ""
+
 #: src/lan/IncomingPrompt.tsx
 msgid "Import as new profile"
 msgstr ""

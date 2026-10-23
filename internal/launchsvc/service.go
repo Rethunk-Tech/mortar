@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -1394,7 +1395,7 @@ func (s *Service) stopSlot(ctx context.Context, g slot) error {
 	s.mu.Unlock()
 	var errs []error
 	for _, p := range procs {
-		errs = append(errs, launch.Stop(ctx, p, stopGrace))
+		errs = append(errs, stopError(launch.Stop(ctx, p, stopGrace)))
 	}
 	if err := errors.Join(errs...); err != nil {
 		return err
@@ -1402,6 +1403,15 @@ func (s *Service) stopSlot(ctx context.Context, g slot) error {
 	// A game that had already exited closed on its own.
 	s.closed(g, cur, len(procs) > 0)
 	return nil
+}
+
+// stopError keeps a refused stop from reading as a storage permission problem, which the toast would answer with the
+// storage settings.
+func stopError(err error) error {
+	if errors.Is(err, fs.ErrPermission) {
+		return usererr.Wrap(usererr.ProcessDenied, err)
+	}
+	return err
 }
 
 // closed ends the game's session with a console line of Mortar's own, so the log does not just stop, then marks

@@ -18,3 +18,10 @@ test('an untagged failure under a named title carries its cause as the detail, w
   expect(last()?.body).toBeUndefined()
   expect(last()?.detail).toBe('open settings.json: read-only file system')
 })
+
+test('a game the system will not let Mortar end gets its own wording, not the storage settings', () => {
+  toastError('Could not stop the game', new Error('[process_denied] Access is denied.'))
+  expect(last()?.action?.label).toBe('Open log')
+  toastError('Could not save', new Error('[permission] open settings.json'))
+  expect(last()?.action?.label).toBe('Open storage settings')
+})
