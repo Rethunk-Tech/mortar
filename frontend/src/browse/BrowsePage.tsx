@@ -11,19 +11,10 @@ import { BrowseDetails } from './BrowseDetails.tsx'
 import { BrowseFilters } from './BrowseFilters.tsx'
 import { BrowseMenu } from './BrowseMenu.tsx'
 import { BrowseToolbar } from './BrowseToolbar.tsx'
-import {
-  ALL,
-  CARD_MIN_PX,
-  CARD_PAD_PX,
-  FIRST_PAGE,
-  GAP_PX,
-  GITHUB,
-  PICTURE_PX,
-  searchHint,
-} from './browseConstants.ts'
+import { ALL, CARD_MIN_PX, FIRST_PAGE, GAP_PX, GITHUB, searchHint } from './browseConstants.ts'
 import { type BrowseModes, formatModes } from './browseModes.ts'
 import { savePicks } from './browsePicks.ts'
-import { PAGE_SIZE, screenSize } from './browseState.ts'
+import { PAGE_SIZE, rowHeight, screenSize } from './browseState.ts'
 import type { BrowseFilter, BrowseItem, BrowsePageProps } from './browseTypes.ts'
 import { hitKey, stepSelection, useBrowseSelection } from './selection.ts'
 import { pagedTotal, useBrowseQuery } from './useBrowseQuery.ts'
@@ -82,6 +73,7 @@ function useScreenFit(box: RefObject<HTMLDivElement | null>, view: string): numb
       return
     }
     const grid = view === 'grid'
+    let seenCard = false
     const measure = () => {
       const style = getComputedStyle(el)
       const width =
@@ -93,8 +85,12 @@ function useScreenFit(box: RefObject<HTMLDivElement | null>, view: string): numb
         Number.parseFloat(style.paddingTop) -
         Number.parseFloat(style.paddingBottom) -
         PAGER_PX
-      const rowPx =
-        el.querySelector<HTMLElement>('[data-hit]')?.offsetHeight ?? PICTURE_PX + CARD_PAD_PX
+      const card = el.querySelector<HTMLElement>('[data-hit]')?.offsetHeight
+      const rowPx = rowHeight(card, seenCard)
+      if (rowPx === null) {
+        return
+      }
+      seenCard ||= card !== undefined
       const columns = grid ? Math.max(1, Math.floor((width + GAP_PX) / (CARD_MIN_PX + GAP_PX))) : 1
       const rows = Math.max(1, Math.floor((height + GAP_PX) / (rowPx + GAP_PX)))
       setFit(screenSize(columns, rows))

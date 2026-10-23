@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import { clampPage, pageKeeping, screenSize, screenSpan } from './browseState.ts'
+import { clampPage, pageKeeping, rowHeight, screenSize, screenSpan } from './browseState.ts'
 
 test('a page clamps to the first and last page', () => {
   expect(clampPage({ page: 9, total: 27 })).toBe(2)
@@ -31,4 +31,10 @@ test('a hit that must stay in view picks the screen holding it at the new size',
   expect(pageKeeping(2, 24, 18)).toBe(2)
   expect(pageKeeping(1, 24, 30, 5)).toBe(1)
   expect(pageKeeping(3, 20, 40, 15)).toBe(2)
+})
+
+test('a view without cards keeps the fit once a card has shown', () => {
+  expect(rowHeight(122, true)).toBe(122)
+  expect(rowHeight(undefined, false)).toBe(96)
+  expect(rowHeight(undefined, true)).toBeNull()
 })
