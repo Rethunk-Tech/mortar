@@ -101,3 +101,31 @@ func TestKillBeforeSnapshotIsRepairedFromProfile(t *testing.T) {
 		t.Fatalf("drift after repair = %v, %v", drift, err)
 	}
 }
+
+func TestAPackageWithNoFolderOfItsOwnHasNothingStagedToMove(t *testing.T) {
+	s := newEnv(t).Store
+	p, err := s.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := buildZip(t, "Ns-Foo-1.0.0.zip", map[string]string{
+		"manifest.json": `{"name":"Foo","version_number":"1.0.0","dependencies":[]}`,
+		"Foo.dll":       "MZ",
+	})
+	key, err := s.items.AddArchive(t.Context(), "lethal-company", zip)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cur, dir, err := s.readDir("lethal-company", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	placed, final, err := s.addToStaged("lethal-company", &cur, dir, key, Source{Kind: KindLocal, Name: "Ns-Foo-1.0.0.zip"}, nil, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// commitPlaced renames only when the two differ; a pending path here named a folder that was never made.
+	if placed != final {
+		t.Fatalf("staged %s for a package laid out from the store", placed)
+	}
+}

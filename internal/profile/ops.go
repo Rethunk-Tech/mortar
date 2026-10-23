@@ -322,7 +322,11 @@ func (s *Store) addToStaged(game string, p *Profile, dir, key string, source Sou
 		e.Pinned, e.PinReason = true, FrozenPinReason
 	}
 	p.Entries = append(p.Entries, e)
-	name = cmp.Or(name, key)
+	if name == "" {
+		// A package lives in the store with no folder of its own here, so nothing was staged to move.
+		final := filepath.Join(modsDir, key)
+		return final, final, nil
+	}
 	return filepath.Join(modsDir, stage(name)), filepath.Join(modsDir, name), nil
 }
 
