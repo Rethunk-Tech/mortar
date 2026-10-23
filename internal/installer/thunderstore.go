@@ -2,7 +2,9 @@ package installer
 
 import (
 	"io/fs"
+	"os"
 	"path"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -29,6 +31,39 @@ func manifestOf(a Archive) (name string, ok bool) {
 		return "", false
 	}
 	return m.Name, true
+}
+
+// PackageRoot is the archive of the Thunderstore package a holds: a itself, or the one folder holding the manifest when the
+// archive holds nothing else. Thunderstore's own downloads have the manifest at the root; a package zipped by hand, such
+// as an asset pack with no DLL, often sits in a folder of its own.
+func (a Archive) PackageRoot() Archive {
+	if _, ok := manifestOf(a); ok {
+		return a
+	}
+	entries, err := fs.ReadDir(a.FS, ".")
+	if err != nil {
+		return a
+	}
+	var dirs []string
+	for _, e := range entries {
+		if skip(e.Name()) {
+			continue
+		}
+		if !e.IsDir() {
+			return a
+		}
+		dirs = append(dirs, e.Name())
+	}
+	if len(dirs) != 1 {
+		return a
+	}
+	inner := a
+	inner.Dir = filepath.Join(a.Dir, dirs[0])
+	inner.FS = os.DirFS(inner.Dir)
+	if _, ok := manifestOf(inner); ok {
+		return inner
+	}
+	return a
 }
 
 // Detect takes a Thunderstore package, and for a BepInEx or MelonLoader game also an archive from another site that

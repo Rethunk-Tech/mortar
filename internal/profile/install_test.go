@@ -301,3 +301,22 @@ func TestGitHubThunderstorePackageTakesTheRepoOwnerAsPublisher(t *testing.T) {
 		t.Fatalf("install = %+v, %v", res, err)
 	}
 }
+
+func TestAnAssetPackZippedInItsOwnFolderInstallsAsItsPackage(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Suit packs and the like ship only assets another mod reads: no DLL, and zipped by hand inside a folder.
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "someMod.zip"), map[string]string{
+		"someMod/manifest.json": `{"name":"SomeMod","version_number":"1.0.0","author":"Ns","dependencies":[]}`,
+		"someMod/icon.png":      "png",
+		"someMod/README.md":     "# SomeMod",
+	})
+	res, err := e.InstallArchive(t.Context(), "lethal-company", p.ID, zip)
+	if err != nil || res.Profile.Entries[0].Mods[0].ID != "thunderstore:Ns-SomeMod" {
+		t.Fatalf("an asset pack in a folder: %+v, %v", res, err)
+	}
+}

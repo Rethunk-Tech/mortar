@@ -45,11 +45,11 @@ func (s *Store) pick(game, key string) (installer.Archive, installer.Game, insta
 	if err != nil {
 		return installer.Archive{}, installer.Game{}, nil, err
 	}
-	arch := installer.Open(root, key)
+	arch := installer.Open(root, key).PackageRoot()
 	arch.Source, arch.Package, _, _ = s.items.Meta(game, key)
 	g := installerGame(game)
 	inst, _ := installer.Pick(arch, g)
-	if _, statErr := os.Stat(filepath.Join(root, "manifest.json")); inst.ID() == driverThunderstore && statErr == nil {
+	if _, statErr := os.Stat(filepath.Join(arch.Dir, "manifest.json")); inst.ID() == driverThunderstore && statErr == nil {
 		// The driver names files by package, Namespace-Name, which is not the store key. An archive from disk has only
 		// the manifest's name, which the driver reads itself. A BepInEx mod without a manifest keeps the store key.
 		var src string
