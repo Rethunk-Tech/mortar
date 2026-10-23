@@ -81,7 +81,7 @@ func Shrink(b []byte, typ string, px int) ([]byte, string, error) {
 		w = max(1, cfg.Width*px/cfg.Height)
 	}
 	dst := image.NewNRGBA(image.Rect(0, 0, w, h))
-	xdraw.CatmullRom.Scale(dst, dst.Bounds(), src, src.Bounds(), xdraw.Src, nil)
+	scaleBanded(dst, src)
 	var out bytes.Buffer
 	if typ == "image/jpeg" {
 		err = jpeg.Encode(&out, dst, &jpeg.Options{Quality: 85})
@@ -89,4 +89,33 @@ func Shrink(b []byte, typ string, px int) ([]byte, string, error) {
 	}
 	err = png.Encode(&out, dst)
 	return out.Bytes(), "image/png", err
+}
+
+// scaleTmpBytes bounds the float scratch a scale passes through at once. A one-shot CatmullRom scale holds 32 bytes for
+// every pixel of the destination width times the source height: 190 MiB for a 5334x3122 banner shrunk to Hero.
+const scaleTmpBytes = 4 << 20
+
+// scaleBanded is CatmullRom scaling of src into dst in two exact passes, each cut into bands that fit scaleTmpBytes:
+// the horizontal pass by rows of src into a dst-wide copy, then the vertical pass by columns of that copy into dst.
+// Bands of one size share a scaler, so its scratch is allocated once.
+func scaleBanded(dst *image.NRGBA, src image.Image) {
+	sr, w, h := src.Bounds(), dst.Bounds().Dx(), dst.Bounds().Dy()
+	mid := image.NewNRGBA(image.Rect(0, 0, w, sr.Dy()))
+	var sc xdraw.Scaler
+	scaleN := 0
+	rows := max(1, scaleTmpBytes/(w*32))
+	for y := 0; y < sr.Dy(); y += rows {
+		if n := min(rows, sr.Dy()-y); n != scaleN {
+			sc, scaleN = xdraw.CatmullRom.NewScaler(w, n, sr.Dx(), n), n
+		}
+		sc.Scale(mid, image.Rect(0, y, w, y+scaleN), src, image.Rect(sr.Min.X, sr.Min.Y+y, sr.Max.X, sr.Min.Y+y+scaleN), xdraw.Src, nil)
+	}
+	sc, scaleN = nil, 0
+	cols := max(1, scaleTmpBytes/(sr.Dy()*32))
+	for x := 0; x < w; x += cols {
+		if n := min(cols, w-x); n != scaleN {
+			sc, scaleN = xdraw.CatmullRom.NewScaler(n, h, n, sr.Dy()), n
+		}
+		sc.Scale(dst, image.Rect(x, 0, x+scaleN, h), mid, image.Rect(x, 0, x+scaleN, sr.Dy()), xdraw.Src, nil)
+	}
 }

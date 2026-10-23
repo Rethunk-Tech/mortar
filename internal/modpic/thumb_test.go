@@ -9,6 +9,8 @@ import (
 	"image/png"
 	"strings"
 	"testing"
+
+	xdraw "golang.org/x/image/draw"
 )
 
 func TestThumbnailShrinksLargePicturesAndKeepsSmallOnes(t *testing.T) {
@@ -85,5 +87,24 @@ func TestAnAnimatedPictureKeepsEveryFrame(t *testing.T) {
 	}
 	if out, _, err := Shrink(still, "image/png", Thumb); err != nil || bytes.Equal(out, still) {
 		t.Errorf("a still picture was not shrunk: %v", err)
+	}
+}
+
+func TestBandedScaleMatchesOneShotAcrossBandEdges(t *testing.T) {
+	src := image.NewNRGBA(image.Rect(0, 0, 800, 1200))
+	for y := range 1200 {
+		for x := range 800 {
+			i := src.PixOffset(x, y)
+			src.Pix[i], src.Pix[i+1], src.Pix[i+2], src.Pix[i+3] = byte(x/7&0xff), byte(y/9&0xff), byte((x+y)/30&0xff), 255
+		}
+	}
+	want := image.NewNRGBA(image.Rect(0, 0, 320, 480))
+	xdraw.CatmullRom.Scale(want, want.Bounds(), src, src.Bounds(), xdraw.Src, nil)
+	got := image.NewNRGBA(want.Bounds())
+	scaleBanded(got, src)
+	for i := range want.Pix {
+		if d := int(want.Pix[i]) - int(got.Pix[i]); d > 2 || d < -2 {
+			t.Fatalf("pixel byte %d differs by %d", i, d)
+		}
 	}
 }
