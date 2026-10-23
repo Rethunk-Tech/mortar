@@ -5,9 +5,10 @@ import (
 	"testing"
 )
 
-func TestListColumnsKeepSizeAndStartup(t *testing.T) {
-	got := sanitizeListColumns([]string{"on", "name", "size", "startup"})
-	if !slices.Contains(got, "size") || !slices.Contains(got, "startup") {
-		t.Fatalf("columns %v", got)
+func TestListColumnsKeepEveryColumnTheListOffers(t *testing.T) {
+	for _, id := range []string{"size", "startup", "released", "kind", "pluginVersion"} {
+		if got := sanitizeListColumns([]string{"on", "name", id}); !slices.Contains(got, id) {
+			t.Errorf("saving %q kept %v", id, got)
+		}
 	}
 }

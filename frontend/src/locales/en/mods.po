@@ -70,6 +70,7 @@ msgstr "Updated categories"
 msgid "Open storage settings"
 msgstr "Open storage settings"
 
+#: src/mods/columnLabel.ts
 #: src/mods/NexusDetails.tsx
 #: src/mods/Sidebar.tsx
 msgid "Updated"
@@ -620,6 +621,10 @@ msgstr "Apply {name}"
 msgid "Will update"
 msgstr "Will update"
 
+#: src/mods/PackageKind.tsx
+msgid "Files only"
+msgstr "Files only"
+
 #: src/mods/AuthorDialog.tsx
 msgid "Installed in your profiles"
 msgstr "Installed in your profiles"
@@ -807,6 +812,10 @@ msgstr "Needs {name} (missing)"
 #: src/mods/OptionalFileRows.tsx
 msgid "{count, plural, one {adds # file} other {adds # files}}"
 msgstr "{count, plural, one {adds # file} other {adds # files}}"
+
+#: src/mods/columnLabel.ts
+msgid "Released"
+msgstr "Released"
 
 #: src/mods/Toolbar.tsx
 msgid "Filter mods, filter active"
@@ -1094,7 +1103,6 @@ msgstr "Changelog"
 msgid "{count, plural, one {Used by # mod} other {Used by # mods}}"
 msgstr "{count, plural, one {Used by # mod} other {Used by # mods}}"
 
-#: src/mods/columnLabel.ts
 #: src/mods/NexusDetails.tsx
 #: src/mods/Sidebar.tsx
 msgid "Latest on {source}"
@@ -1252,6 +1260,10 @@ msgstr "{count, plural, one {# profile mod has} other {# profile mods have}} no 
 msgid "Copy into profile"
 msgstr "Copy into profile"
 
+#: src/mods/columnLabel.ts
+msgid "Plugin version"
+msgstr "Plugin version"
+
 #: src/mods/updateReview/UpdateBar.tsx
 msgid "Review updates"
 msgstr "Review updates"
@@ -1384,6 +1396,10 @@ msgstr "Ungrouped"
 msgid "Save as preset"
 msgstr "Save as preset"
 
+#: src/mods/PackageKind.tsx
+msgid "Library"
+msgstr "Library"
+
 #: src/mods/ProblemsTab.tsx
 msgid "Harmless"
 msgstr "Harmless"
@@ -1511,6 +1527,10 @@ msgstr "Show more"
 #: src/mods/describe.ts
 msgid " {app} applies neither."
 msgstr " {app} applies neither."
+
+#: src/mods/PackageKind.tsx
+msgid "Plugin"
+msgstr "Plugin"
 
 #: src/mods/problemWhy.ts
 msgid "Two enabled packages ship a file at the same path. The one later in the package order replaces the other's copy, so only its version is in the game."
@@ -1679,7 +1699,6 @@ msgstr "{count, plural, one {# failed} other {# failed}}"
 msgid "Problem: {text}"
 msgstr "Problem: {text}"
 
-#: src/mods/columnLabel.ts
 #: src/mods/NexusDetails.tsx
 #: src/mods/Sidebar.tsx
 msgid "Endorsements"
@@ -2104,6 +2123,10 @@ msgstr "{count, plural, one {Also add the # mod they need} other {Also add the #
 msgid "This profile is frozen, so {name} is held at {installed}. Install {version} anyway? The mod stays held at the new version."
 msgstr "This profile is frozen, so {name} is held at {installed}. Install {version} anyway? The mod stays held at the new version."
 
+#: src/mods/columnLabel.ts
+msgid "Kind"
+msgstr "Kind"
+
 #: src/mods/updateReview/undoAll.ts
 msgid "Restored the profile from before Update all"
 msgstr "Restored the profile from before Update all"
@@ -2162,10 +2185,6 @@ msgstr "{profile} has {name} more than once. {loader} loads only one, so pick wh
 #: src/mods/Toolbar.tsx
 msgid "Group"
 msgstr "Group"
-
-#: src/mods/columnLabel.ts
-msgid "Updated on {source}"
-msgstr "Updated on {source}"
 
 #: src/mods/disableUnneeded.ts
 msgid "Disable them too"
@@ -2231,6 +2250,10 @@ msgstr "{count, plural, one {Copied # mod} other {Copied # mods}}"
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Could not upload the log"
 msgstr "Could not upload the log"
+
+#: src/mods/PackageKind.tsx
+msgid "Patcher"
+msgstr "Patcher"
 
 #: src/mods/FavouriteStar.tsx
 msgid "Remove from favourites"
@@ -2324,6 +2347,11 @@ msgstr "Set {source} page…"
 #: src/mods/redundantReason.ts
 msgid "{count, plural, one {{by} already includes everything it changes} other {{by} together include everything it changes}}"
 msgstr "{count, plural, one {{by} already includes everything it changes} other {{by} together include everything it changes}}"
+
+#: src/mods/columnLabel.ts
+#: src/mods/Sidebar.tsx
+msgid "Mod ID"
+msgstr "Mod ID"
 
 #: src/mods/NexusAccountActions.tsx
 msgid "Could not track"
@@ -2558,10 +2586,6 @@ msgstr "Change the version of {name}"
 msgid "Could not enable {name}"
 msgstr "Could not enable {name}"
 
-#: src/mods/columnLabel.ts
-msgid "UniqueID"
-msgstr "UniqueID"
-
 #: src/mods/ModNoteTags.tsx
 msgid "Tags"
 msgstr "Tags"
@@ -2615,10 +2639,6 @@ msgstr "Could not keep the old files"
 #: src/mods/ModUpdateControls.tsx
 msgid "Releases, betas and alphas"
 msgstr "Releases, betas and alphas"
-
-#: src/mods/ChangeVersionDialog.tsx
-msgid "latest"
-msgstr "latest"
 
 #: src/mods/storeEntries.ts
 msgid "Skipped updates for selected mods"
@@ -3376,6 +3396,11 @@ msgstr "Share selection"
 msgid "Press a key…"
 msgstr "Press a key…"
 
+#: src/mods/ChangeVersionDialog.tsx
+#: src/mods/columnLabel.ts
+msgid "Latest"
+msgstr "Latest"
+
 #: src/mods/DuplicateDialog.tsx
 msgid "Gets update checks."
 msgstr "Gets update checks."
@@ -3503,10 +3528,6 @@ msgstr "{count, plural, one {Mark # implicit} other {Mark # implicit}}"
 msgid "this version skipped"
 msgstr "this version skipped"
 
-#: src/mods/Sidebar.tsx
-msgid "Mod id"
-msgstr "Mod id"
-
 #: src/mods/ChangeVersionDialog.tsx
 msgid "Install a version of {name}"
 msgstr "Install a version of {name}"
@@ -3575,6 +3596,10 @@ msgstr "This mod is no longer in the profile."
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Search entries"
 msgstr "Search entries"
+
+#: src/mods/PackageKind.tsx
+msgid "Plugin and patcher"
+msgstr "Plugin and patcher"
 
 #: src/mods/ConfigPresets.tsx
 msgid "Delete {name}"
@@ -3651,6 +3676,10 @@ msgstr "Stop ignoring {ignoredSource} updates"
 #: src/mods/updateReview/KeptGroup.tsx
 msgid "newer: {version}"
 msgstr "newer: {version}"
+
+#: src/mods/columnLabel.ts
+msgid "Rating"
+msgstr "Rating"
 
 #: src/mods/DuplicateDialog.tsx
 msgid "Older."

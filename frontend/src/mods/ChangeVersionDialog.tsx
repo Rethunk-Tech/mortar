@@ -89,7 +89,7 @@ export function ChangeVersionDialog({
       >
         {choices.map((c, i) => {
           const here = isInstalledVersion(c, installed)
-          const tags = [i === 0 ? t`latest` : '', here ? t`Installed` : ''].filter(Boolean)
+          const tags = [i === 0 ? t`Latest` : '', here ? t`Installed` : ''].filter(Boolean)
           return (
             <FormControlLabel
               key={c.key}

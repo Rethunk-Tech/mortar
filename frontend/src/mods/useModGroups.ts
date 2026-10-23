@@ -16,6 +16,7 @@ import {
   sanitizeListGroupBy,
 } from './group.ts'
 import { compareListRows, sanitizeListSort } from './listColumns.ts'
+import { useProfileModFacts } from './listFigures.ts'
 import { toListRows, useEntrySizes, usePackageOverrides, useStartupCosts } from './listRows.ts'
 import { modId, modStatusProblem, nexusIdOf, updateFor } from './lookup.ts'
 import { foldLibraries, nestImplicit } from './nestImplicit.ts'
@@ -75,6 +76,7 @@ export function useModGroups(mods: Mod[], profile: Profile, fold = false) {
   const sizes = useEntrySizes()
   const costs = useStartupCosts(gameId, profile.id)
   const wins = usePackageOverrides(gameId, profile, useProfiles((s) => s.game?.deploy) ?? '')
+  const facts = useProfileModFacts(gameId, profile)
   const problems = useMods((s) => s.problems)
   const updates = useUpdates((s) => s.updates)
   const nested = useSettings((s) => s.implicitModsView) === 'nested'
@@ -90,7 +92,7 @@ export function useModGroups(mods: Mod[], profile: Profile, fold = false) {
     const built = buildModGroups(
       mods,
       profile,
-      { byId, customById, sizes, costs, wins },
+      { byId, customById, sizes, costs, wins, facts },
       { groupBy, sort, problems, updates },
     )
     if (!nested) {
@@ -109,6 +111,7 @@ export function useModGroups(mods: Mod[], profile: Profile, fold = false) {
     sizes,
     costs,
     wins,
+    facts,
     nested,
     fold,
   ])

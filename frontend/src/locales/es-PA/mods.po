@@ -70,6 +70,7 @@ msgstr ""
 msgid "Open storage settings"
 msgstr ""
 
+#: src/mods/columnLabel.ts
 #: src/mods/NexusDetails.tsx
 #: src/mods/Sidebar.tsx
 msgid "Updated"
@@ -620,6 +621,10 @@ msgstr ""
 msgid "Will update"
 msgstr ""
 
+#: src/mods/PackageKind.tsx
+msgid "Files only"
+msgstr ""
+
 #: src/mods/AuthorDialog.tsx
 msgid "Installed in your profiles"
 msgstr ""
@@ -806,6 +811,10 @@ msgstr ""
 
 #: src/mods/OptionalFileRows.tsx
 msgid "{count, plural, one {adds # file} other {adds # files}}"
+msgstr ""
+
+#: src/mods/columnLabel.ts
+msgid "Released"
 msgstr ""
 
 #: src/mods/Toolbar.tsx
@@ -1094,7 +1103,6 @@ msgstr ""
 msgid "{count, plural, one {Used by # mod} other {Used by # mods}}"
 msgstr ""
 
-#: src/mods/columnLabel.ts
 #: src/mods/NexusDetails.tsx
 #: src/mods/Sidebar.tsx
 msgid "Latest on {source}"
@@ -1252,6 +1260,10 @@ msgstr ""
 msgid "Copy into profile"
 msgstr ""
 
+#: src/mods/columnLabel.ts
+msgid "Plugin version"
+msgstr ""
+
 #: src/mods/updateReview/UpdateBar.tsx
 msgid "Review updates"
 msgstr ""
@@ -1384,6 +1396,10 @@ msgstr ""
 msgid "Save as preset"
 msgstr ""
 
+#: src/mods/PackageKind.tsx
+msgid "Library"
+msgstr ""
+
 #: src/mods/ProblemsTab.tsx
 msgid "Harmless"
 msgstr ""
@@ -1510,6 +1526,10 @@ msgstr ""
 
 #: src/mods/describe.ts
 msgid " {app} applies neither."
+msgstr ""
+
+#: src/mods/PackageKind.tsx
+msgid "Plugin"
 msgstr ""
 
 #: src/mods/problemWhy.ts
@@ -1679,7 +1699,6 @@ msgstr ""
 msgid "Problem: {text}"
 msgstr ""
 
-#: src/mods/columnLabel.ts
 #: src/mods/NexusDetails.tsx
 #: src/mods/Sidebar.tsx
 msgid "Endorsements"
@@ -2104,6 +2123,10 @@ msgstr ""
 msgid "This profile is frozen, so {name} is held at {installed}. Install {version} anyway? The mod stays held at the new version."
 msgstr ""
 
+#: src/mods/columnLabel.ts
+msgid "Kind"
+msgstr ""
+
 #: src/mods/updateReview/undoAll.ts
 msgid "Restored the profile from before Update all"
 msgstr ""
@@ -2161,10 +2184,6 @@ msgstr ""
 
 #: src/mods/Toolbar.tsx
 msgid "Group"
-msgstr ""
-
-#: src/mods/columnLabel.ts
-msgid "Updated on {source}"
 msgstr ""
 
 #: src/mods/disableUnneeded.ts
@@ -2230,6 +2249,10 @@ msgstr ""
 
 #: src/mods/ReportToAuthorButton.tsx
 msgid "Could not upload the log"
+msgstr ""
+
+#: src/mods/PackageKind.tsx
+msgid "Patcher"
 msgstr ""
 
 #: src/mods/FavouriteStar.tsx
@@ -2323,6 +2346,11 @@ msgstr ""
 
 #: src/mods/redundantReason.ts
 msgid "{count, plural, one {{by} already includes everything it changes} other {{by} together include everything it changes}}"
+msgstr ""
+
+#: src/mods/columnLabel.ts
+#: src/mods/Sidebar.tsx
+msgid "Mod ID"
 msgstr ""
 
 #: src/mods/NexusAccountActions.tsx
@@ -2558,10 +2586,6 @@ msgstr ""
 msgid "Could not enable {name}"
 msgstr ""
 
-#: src/mods/columnLabel.ts
-msgid "UniqueID"
-msgstr ""
-
 #: src/mods/ModNoteTags.tsx
 msgid "Tags"
 msgstr ""
@@ -2614,10 +2638,6 @@ msgstr ""
 
 #: src/mods/ModUpdateControls.tsx
 msgid "Releases, betas and alphas"
-msgstr ""
-
-#: src/mods/ChangeVersionDialog.tsx
-msgid "latest"
 msgstr ""
 
 #: src/mods/storeEntries.ts
@@ -3376,6 +3396,11 @@ msgstr ""
 msgid "Press a key…"
 msgstr ""
 
+#: src/mods/ChangeVersionDialog.tsx
+#: src/mods/columnLabel.ts
+msgid "Latest"
+msgstr ""
+
 #: src/mods/DuplicateDialog.tsx
 msgid "Gets update checks."
 msgstr ""
@@ -3503,10 +3528,6 @@ msgstr ""
 msgid "this version skipped"
 msgstr ""
 
-#: src/mods/Sidebar.tsx
-msgid "Mod id"
-msgstr ""
-
 #: src/mods/ChangeVersionDialog.tsx
 msgid "Install a version of {name}"
 msgstr ""
@@ -3574,6 +3595,10 @@ msgstr ""
 
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Search entries"
+msgstr ""
+
+#: src/mods/PackageKind.tsx
+msgid "Plugin and patcher"
 msgstr ""
 
 #: src/mods/ConfigPresets.tsx
@@ -3650,6 +3675,10 @@ msgstr ""
 
 #: src/mods/updateReview/KeptGroup.tsx
 msgid "newer: {version}"
+msgstr ""
+
+#: src/mods/columnLabel.ts
+msgid "Rating"
 msgstr ""
 
 #: src/mods/DuplicateDialog.tsx

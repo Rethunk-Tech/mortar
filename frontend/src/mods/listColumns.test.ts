@@ -16,6 +16,7 @@ import {
   toggleListColumn,
   visibleListColumns,
 } from './listColumns.ts'
+import { figureFields } from './listFigures.ts'
 
 const mod = (over: Partial<Mod> & Pick<Mod, 'name'>): Mod => ({
   key: over.key ?? over.name,
@@ -47,7 +48,7 @@ const row = (over: Partial<ListRow> & { name: string }): ListRow => {
   if (over.details) {
     out.details = over.details
   }
-  return out
+  return { ...out, ...figureFields(undefined, over.details, undefined) }
 }
 
 const details = (over: {

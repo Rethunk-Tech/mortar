@@ -109,6 +109,7 @@ const data = {
   sizes: {},
   costs: {},
   wins: {},
+  facts: {},
 }
 
 // About twice the CPU time five groupings took when the budget was set (75 ms); CPU, not wall, so a busy machine does

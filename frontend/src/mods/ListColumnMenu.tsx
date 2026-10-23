@@ -36,7 +36,7 @@ import { visuallyHidden } from '../shell/visuallyHidden.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { columnLabel } from './columnLabel.ts'
-import { useColumnAvailable } from './contributedColumns.ts'
+import { useColumnAvailable, useModIdName } from './contributedColumns.ts'
 import {
   LIST_COLUMN_GROUPS,
   type ListColumnId,
@@ -158,6 +158,7 @@ function HeaderCells({
   onCancel: () => void
 }) {
   const { t } = useLingui()
+  const idName = useModIdName()
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -203,7 +204,7 @@ function HeaderCells({
       <HeaderCell
         key={id}
         id={id}
-        label={columnLabel(id)}
+        label={columnLabel(id, idName)}
         sortColumn={sort.column}
         sortDir={sort.dir}
         onSort={onSort}
@@ -236,7 +237,7 @@ function HeaderCells({
         {cells}
       </SortableContext>
       <DragOverlay dropAnimation={null}>
-        {lifted ? <HeaderGhost label={columnLabel(lifted)} /> : null}
+        {lifted ? <HeaderGhost label={columnLabel(lifted, idName)} /> : null}
       </DragOverlay>
     </DndContext>
   )
@@ -257,6 +258,7 @@ function ListColumnMenu({
 }) {
   const { t } = useLingui()
   const available = useColumnAvailable()
+  const idName = useModIdName()
   return (
     <Menu
       open={anchor !== null}
@@ -282,7 +284,7 @@ function ListColumnMenu({
               <ListItemIcon sx={{ color: 'inherit' }}>
                 {shown ? <Check size={16} aria-hidden={true} /> : null}
               </ListItemIcon>
-              <ListItemText>{columnLabel(id)}</ListItemText>
+              <ListItemText>{columnLabel(id, idName)}</ListItemText>
             </MenuItem>
           )
         }),

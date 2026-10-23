@@ -404,12 +404,12 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
       >
         {mod.id.startsWith('smapi:') ? (
           <Field
-            label={t`Mod id`}
+            label={t`Mod ID`}
             value={localId(mod.id)}
             hint={t`${{ loader: SMAPI }} UniqueID`}
           />
         ) : (
-          <Field label={t`Mod id`} value={localId(mod.id)} />
+          <Field label={t`Mod ID`} value={localId(mod.id)} />
         )}
         {mod.endorsements > 0 ? (
           <Field label={t`Endorsements`} value={mod.endorsements.toLocaleString(i18n.locale)} />

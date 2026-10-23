@@ -8,6 +8,7 @@ import { StartupReports } from '../../bindings/github.com/Rethunk-Tech/mortar/in
 import type {
   Entry,
   Mod,
+  ModFact,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { PackageOverrides } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
@@ -19,6 +20,7 @@ import { idKey } from './dependents.ts'
 import { type customCategoryById, resolvedCategoryLabel } from './group.ts'
 import { partKey, supportParts } from './installReason.ts'
 import type { ListRow } from './listColumns.ts'
+import { figureFields } from './listFigures.ts'
 import { kindLabel } from './lookup.ts'
 import { siteCategory } from './modSearch.ts'
 
@@ -112,6 +114,7 @@ function toListRows(
     sizes: Readonly<Record<string, number>>
     costs: Readonly<Record<string, number>>
     wins: Readonly<Record<string, number | undefined>>
+    facts: Readonly<Record<string, ModFact | undefined>>
   },
 ): ListRow[] {
   const entries = new Map((profile.entries ?? []).map((e) => [e.key, e]))
@@ -143,7 +146,7 @@ function toListRow(
   m: Mod,
   entry: Entry | undefined,
   { groupName, order, implicit }: { groupName: string; order: number; implicit: boolean },
-  { byId, customById, sizes, costs, wins }: Parameters<typeof toListRows>[2],
+  { byId, customById, sizes, costs, wins, facts }: Parameters<typeof toListRows>[2],
 ): ListRow {
   const pageless = entry?.source.kind === 'nexus' && (entry.source.modId ?? 0) <= 0
   const known = kindLabel(entry?.source.kind ?? '', {
@@ -198,6 +201,7 @@ function toListRow(
   if (details) {
     row.details = details
   }
+  Object.assign(row, figureFields(entry, details, facts[m.id]))
   return row
 }
 

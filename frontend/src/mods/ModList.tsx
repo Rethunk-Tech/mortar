@@ -42,6 +42,7 @@ import {
   sanitizeListColumns,
   visibleListColumns,
 } from './listColumns.ts'
+import { figureNumber, figureText } from './listFigures.ts'
 import { entryOf, modId, useLocalMark } from './lookup.ts'
 import { ModListTable } from './ModListVirtual.tsx'
 import { useMarked, useRowFocus, useTabStop } from './marked.ts'
@@ -50,6 +51,7 @@ import { useModFresh } from './modFresh.ts'
 import { formatCount, isNewer } from './nexusFormat.ts'
 import { OverlayCountChip } from './OverlayRow.tsx'
 import { nestOverlays, overlaysByBase, ownSlice } from './overlayRows.ts'
+import { PackageKind } from './PackageKind.tsx'
 import { MIDDLE, opensPage } from './pageClick.ts'
 import {
   LastRunBadge,
@@ -115,6 +117,43 @@ function MeasureCell({
   )
 }
 
+// The columns whose text comes from the mod's own files or its source (listFigures).
+function FigureCell({
+  column,
+  row,
+  locale,
+}: {
+  column:
+    | 'latest'
+    | 'released'
+    | 'updated'
+    | 'pluginVersion'
+    | 'kind'
+    | 'id'
+    | 'endorsements'
+    | 'downloads'
+  row: ListRow
+  locale: string
+}) {
+  if (column === 'endorsements' || column === 'downloads') {
+    const n = figureNumber(row, column)
+    return <ValueCell text={n === undefined ? '—' : formatCount(n, locale)} />
+  }
+  const text = figureText(row, column)
+  if (column === 'released' || column === 'updated') {
+    return <ValueCell text={<When value={text} />} />
+  }
+  if (column === 'kind') {
+    return <ValueCell text={<PackageKind kind={text} />} />
+  }
+  return (
+    <ValueCell
+      text={dash(text)}
+      accent={column === 'latest' && text !== '' && isNewer(text, row.mod.version)}
+    />
+  )
+}
+
 function OverridesNote({ count }: { count: number }) {
   const { t } = useLingui()
   return (
@@ -160,7 +199,6 @@ function NameCell({ row, profile }: { row: ListRow; profile: Profile }) {
 
 function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profile) {
   const m = row.mod
-  const page = row.details?.page
   switch (id) {
     case 'on':
       return (
@@ -181,29 +219,23 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
           </Box>
         </Cell>
       )
-    case 'latest': {
-      const latest = page?.version ?? ''
-      return (
-        <ValueCell
-          key="latest"
-          text={dash(latest)}
-          accent={latest !== '' && isNewer(latest, m.version)}
-        />
-      )
-    }
+    case 'latest':
+    case 'released':
+    case 'updated':
+    case 'pluginVersion':
+    case 'kind':
     case 'id':
+    case 'endorsements':
+    case 'downloads':
+      return <FigureCell key={id} column={id} row={row} locale={locale} />
     case 'author':
     case 'source':
     case 'category':
-    case 'updated':
     case 'installed':
     case 'switchedOff':
     case 'reason':
     case 'notes': {
       const notes = [row.note, row.tags.join(', ')].filter((part) => part !== '').join(' · ')
-      if (id === 'updated') {
-        return <ValueCell key={id} text={<When value={page?.updated ?? ''} />} />
-      }
       if (id === 'installed') {
         return <ValueCell key={id} text={<When value={row.added} />} />
       }
@@ -211,7 +243,6 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
         return <ValueCell key={id} text={<When value={row.switchedOff} />} />
       }
       const text = {
-        id: dash(m.id),
         author: dash(formatAuthors(m.author)),
         source: dash(row.source),
         category: dash(row.categoryLabel),
@@ -220,18 +251,6 @@ function cellsFor(id: ListColumnId, row: ListRow, locale: string, profile: Profi
       }[id]
       return <ValueCell key={id} text={text} />
     }
-    case 'endorsements': {
-      const n = page?.endorsements ?? m.endorsements
-      const missing = page === undefined && m.endorsements === 0
-      return <ValueCell key="endorsements" text={missing ? '—' : formatCount(n, locale)} />
-    }
-    case 'downloads':
-      return (
-        <ValueCell
-          key="downloads"
-          text={page === undefined ? '—' : formatCount(page.downloads, locale)}
-        />
-      )
     case 'needs': {
       const names = m.needs
       if (names === undefined || names === null) {

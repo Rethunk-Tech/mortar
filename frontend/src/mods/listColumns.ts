@@ -1,5 +1,8 @@
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
-import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import type {
+  Mod,
+  ModFact,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import type { GameSettings } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
 import { SetListColumns } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { useProfiles } from '../profiles/store.ts'
@@ -7,13 +10,16 @@ import { useSettings } from '../settings/store.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { cmpText } from './cmpText.ts'
 import { lastRunOf } from './lastRun.ts'
+import { type Figures, figureNumber, figureText } from './listFigures.ts'
 import { isNewer } from './nexusFormat.ts'
 
-// Columns in menu and table order, grouped: the mod itself, its versions and state, dates, then Nexus figures.
+// Columns in menu and table order, grouped: the mod itself, its versions, its health, its place in this profile, then
+// what its source says. Ids are stored in settings, so a column keeps its id when its label or data changes.
 const LIST_COLUMN_GROUPS = [
   ['on', 'name', 'author', 'category', 'notes', 'id'],
-  ['version', 'latest', 'status', 'needs'],
-  ['installed', 'switchedOff', 'reason', 'updated', 'lastRun', 'size', 'startup', 'order'],
+  ['version', 'pluginVersion', 'latest', 'released', 'updated'],
+  ['status', 'needs', 'kind'],
+  ['installed', 'switchedOff', 'reason', 'lastRun', 'startup', 'order', 'size'],
   ['source', 'endorsements', 'downloads'],
 ] as const
 
@@ -36,6 +42,9 @@ const NARROW_HIDE_LIST_COLUMNS: readonly ListColumnId[] = [
   'source',
   'category',
   'latest',
+  'released',
+  'pluginVersion',
+  'kind',
   'id',
   'endorsements',
   'downloads',
@@ -71,7 +80,10 @@ const LIST_COLUMN_WIDTH: Record<ListColumnId, string> = {
   name: 'minmax(0,1fr)',
   version: '88px',
   latest: '110px',
-  id: '140px',
+  released: '140px',
+  pluginVersion: '110px',
+  kind: '120px',
+  id: '180px',
   author: '130px',
   source: '128px',
   category: '130px',
@@ -122,6 +134,10 @@ interface ListRow {
   /** Explicit or Implicit, in the reader's language. */
   reason: string
   details?: Details
+  /** What the mod's own files and its source's cached listing say (ModFacts). */
+  facts?: ModFact
+  /** Latest, release date, update date, rating and downloads from whichever source the mod came from. */
+  figures?: Figures
 }
 
 function sanitizeListColumns(ids: readonly string[] | null | undefined): ListColumnId[] {
@@ -286,10 +302,6 @@ function cmpVersion(a: string, b: string): number {
   return cmpText(a, b)
 }
 
-function pageOf(row: ListRow) {
-  return row.details?.page
-}
-
 function isMissing(value: unknown): boolean {
   return value === undefined || value === null
 }
@@ -346,15 +358,20 @@ function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
         cmpVersion(a.mod.version, b.mod.version),
       )
       break
-    case 'latest': {
-      const av = pageOf(a)?.version ?? ''
-      const bv = pageOf(b)?.version ?? ''
+    case 'latest':
+    case 'pluginVersion': {
+      const av = figureText(a, column)
+      const bv = figureText(b, column)
       primary = missingLast(!av, !bv, dir, cmpVersion(av, bv))
       break
     }
     case 'id':
-      primary = missingLast(!a.mod.id, !b.mod.id, dir, cmpText(a.mod.id, b.mod.id))
+    case 'kind': {
+      const av = figureText(a, column)
+      const bv = figureText(b, column)
+      primary = missingLast(!av, !bv, dir, cmpText(av, bv))
       break
+    }
     case 'author':
       primary = missingLast(!a.mod.author, !b.mod.author, dir, cmpText(a.mod.author, b.mod.author))
       break
@@ -367,23 +384,17 @@ function compareListRows(a: ListRow, b: ListRow, sort: ListColumnSort): number {
       primary = missingLast(!av, !bv, dir, cmpText(av, bv))
       break
     }
-    case 'endorsements': {
-      const av = pageOf(a)?.endorsements ?? a.mod.endorsements
-      const bv = pageOf(b)?.endorsements ?? b.mod.endorsements
-      const aM = isMissing(pageOf(a)) && a.mod.endorsements === 0
-      const bM = isMissing(pageOf(b)) && b.mod.endorsements === 0
-      primary = missingLast(aM, bM, dir, cmpNum(av, bv))
-      break
-    }
+    case 'endorsements':
     case 'downloads': {
-      const av = pageOf(a)?.downloads
-      const bv = pageOf(b)?.downloads
-      primary = missingLast(isMissing(av), isMissing(bv), dir, cmpNum(av ?? 0, bv ?? 0))
+      const av = figureNumber(a, column)
+      const bv = figureNumber(b, column)
+      primary = missingLast(av === undefined, bv === undefined, dir, cmpNum(av ?? 0, bv ?? 0))
       break
     }
-    case 'updated': {
-      const av = Date.parse(pageOf(a)?.updated ?? '')
-      const bv = Date.parse(pageOf(b)?.updated ?? '')
+    case 'updated':
+    case 'released': {
+      const av = Date.parse(figureText(a, column))
+      const bv = Date.parse(figureText(b, column))
       primary = missingLast(Number.isNaN(av), Number.isNaN(bv), dir, cmpNum(av, bv))
       break
     }
