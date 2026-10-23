@@ -8,7 +8,7 @@ import {
   Radio as RadioIcon,
   SquareTerminal,
 } from 'lucide-react'
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useReducer, useState } from 'react'
 import type { Install } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/models.ts'
 import { List } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { useGameInfo } from '../games/info.ts'
@@ -59,7 +59,6 @@ function useGameInstall(game: string) {
   const [folder, setFolder] = useState('')
   const [store, setStore] = useState('')
   const [installs, setInstalls] = useState<Install[]>([])
-  const [version, setVersion] = useState('')
   const load = useCallback(() => {
     // The install list alone; Steam's status is not needed here and its failure must not blank the folder.
     List()
@@ -72,7 +71,32 @@ function useGameInstall(game: string) {
       .catch(reportUnexpected)
   }, [game])
   useEffect(load, [load])
-  return { folder, store, installs, version, setVersion, load }
+  return { folder, store, installs, load }
+}
+
+// The install folder loads here, not in GamePages, so its arrival redraws this page and not every page beside it.
+function InstallPage({
+  game,
+  versionNote,
+  onFolderChanged,
+}: {
+  game: string
+  versionNote: string
+  onFolderChanged: () => void
+}) {
+  const g = useGameInstall(game)
+  return (
+    <GameFolder
+      folder={g.folder}
+      store={g.store}
+      installs={g.installs}
+      onRefresh={() => {
+        g.load()
+        onFolderChanged()
+      }}
+      versionNote={versionNote}
+    />
+  )
 }
 
 function GamePages({
@@ -88,7 +112,9 @@ function GamePages({
   const name = useProfiles((s) => s.game?.name ?? '')
   const close = useNav((s) => s.closeGameSettings)
   const game = useCurrentGame()
-  const g = useGameInstall(game)
+  const [version, setVersion] = useState('')
+  // The Loader page reads the loader's state again once the player points the game at another folder.
+  const [folderChanges, folderChanged] = useReducer((n: number) => n + 1, 0)
   const info = useGameInfo(game)
   const loader = useProfiles((s) => s.game?.loaders?.[0])
   const launchDirect = useSettings((s) => gamePrefs(s, game).defaultLaunchMethod === 'direct')
@@ -112,17 +138,15 @@ function GamePages({
     switch (id) {
       case 'install':
         return (
-          <GameFolder
-            folder={g.folder}
-            store={g.store}
-            installs={g.installs}
-            onRefresh={g.load}
-            versionNote={g.version ? ` · ${name} ${g.version}` : ''}
+          <InstallPage
+            game={game}
+            versionNote={version ? ` · ${name} ${version}` : ''}
+            onFolderChanged={folderChanged}
           />
         )
       case 'loader':
         return loader && !loader.builtin ? (
-          <LoaderPage key={g.folder} loader={loader} onVersion={g.setVersion} />
+          <LoaderPage key={folderChanges} loader={loader} onVersion={setVersion} />
         ) : null
       case 'play':
         return (

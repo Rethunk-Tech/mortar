@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Typography } from '@mui/material'
 import { ArrowLeft } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { memo, type ReactElement, useEffect, useState } from 'react'
 import { SearchField } from '../shell/SearchField.tsx'
 import { space } from '../theme/density.ts'
 import type { ShellPage } from './SettingsShell.tsx'
@@ -44,6 +44,57 @@ function NavSearch() {
     />
   )
 }
+
+interface NavItemProps<Id extends string> {
+  id: Id
+  label: string
+  icon: ShellPage<Id>['icon']
+  groupEnd: boolean
+  active: boolean
+  onPage: (id: Id) => void
+}
+
+// Memoised: a section change redraws only the row leaving and the row taking the highlight.
+const NavItem = memo(function NavItemView<Id extends string>({
+  id,
+  label,
+  icon: Icon,
+  groupEnd,
+  active,
+  onPage,
+}: NavItemProps<Id>) {
+  return (
+    <>
+      <ButtonBase
+        onClick={() => onPage(id)}
+        aria-current={active ? 'page' : undefined}
+        sx={{
+          justifyContent: 'flex-start',
+          gap: space.gap,
+          height: space.nav,
+          px: '12px',
+          borderRadius: '6px',
+          fontSize: 15,
+          fontWeight: active ? ACTIVE_WEIGHT : 'normal',
+          fontFamily: 'inherit',
+          whiteSpace: 'nowrap',
+          bgcolor: active ? 'var(--mortar-hairline-12)' : 'transparent',
+          color: active ? 'var(--mortar-ink)' : 'var(--mortar-ink-sec)',
+          '&:hover': { bgcolor: active ? 'var(--mortar-hairline-12)' : 'action.hover' },
+        }}
+      >
+        <Icon size={ICON_SIZE} aria-hidden={true} />
+        {label}
+      </ButtonBase>
+      {groupEnd ? (
+        <Box
+          role="separator"
+          sx={{ height: '1px', bgcolor: 'var(--mortar-hairline)', mx: 1, my: 0.75 }}
+        />
+      ) : null}
+    </>
+  )
+}) as <Id extends string>(props: NavItemProps<Id>) => ReactElement
 
 export function SettingsNav<Id extends string>({
   title,
@@ -102,41 +153,17 @@ export function SettingsNav<Id extends string>({
         </Typography>
       </Box>
       <NavSearch />
-      {pages.map((s) => {
-        const active = current === s.id
-        const Icon = s.icon
-        return (
-          <Box key={s.id} sx={{ display: 'contents' }}>
-            <ButtonBase
-              onClick={() => onPage(s.id)}
-              aria-current={active ? 'page' : undefined}
-              sx={{
-                justifyContent: 'flex-start',
-                gap: space.gap,
-                height: space.nav,
-                px: '12px',
-                borderRadius: '6px',
-                fontSize: 15,
-                fontWeight: active ? ACTIVE_WEIGHT : 'normal',
-                fontFamily: 'inherit',
-                whiteSpace: 'nowrap',
-                bgcolor: active ? 'var(--mortar-hairline-12)' : 'transparent',
-                color: active ? 'var(--mortar-ink)' : 'var(--mortar-ink-sec)',
-                '&:hover': { bgcolor: active ? 'var(--mortar-hairline-12)' : 'action.hover' },
-              }}
-            >
-              <Icon size={ICON_SIZE} aria-hidden={true} />
-              {s.label}
-            </ButtonBase>
-            {s.groupEnd ? (
-              <Box
-                role="separator"
-                sx={{ height: '1px', bgcolor: 'var(--mortar-hairline)', mx: 1, my: 0.75 }}
-              />
-            ) : null}
-          </Box>
-        )
-      })}
+      {pages.map((s) => (
+        <NavItem
+          key={s.id}
+          id={s.id}
+          label={s.label}
+          icon={s.icon}
+          groupEnd={s.groupEnd === true}
+          active={current === s.id}
+          onPage={onPage}
+        />
+      ))}
     </Box>
   )
 }

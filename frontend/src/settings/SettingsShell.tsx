@@ -68,26 +68,23 @@ function SearchLeads({
 }
 
 // Follows the search text: counts the matching rows after they render, and says when none match or what else does.
-function SearchStatus({
-  results,
-  related,
-  elsewhere,
-}: {
-  results: HTMLDivElement | null
-  related: Related
-  elsewhere: Elsewhere
-}) {
+function SearchStatus({ related, elsewhere }: { related: Related; elsewhere: Elsewhere }) {
   const { t } = useLingui()
   const query = useSettingsSearch()
   const [hits, setHits] = useState(0)
+  // The rows it counts are its siblings; a marker of its own finds them without the shell holding their element in
+  // state, which would draw every page twice on opening.
+  const marker = useRef<HTMLSpanElement>(null)
   useLayoutEffect(() => {
     // Only whether there are none and whether there are few matters, so a larger count stays one value.
+    const results = marker.current?.parentElement
     const found = query ? (results?.querySelectorAll(SEARCH_HIT).length ?? 0) : 0
     setHits(Math.min(found, FEW_HITS + 1))
-  }, [query, results])
+  }, [query])
   const relatedLabels = query && related ? related.match(query) : []
   return (
     <>
+      <span ref={marker} hidden={true} />
       {query && hits === 0 && relatedLabels.length === 0 ? (
         <EmptyState icon={<SearchX />} title={t`No settings match`} compact={true}>
           {t`Try another word, or clear the search.`}
@@ -152,7 +149,6 @@ export function SettingsShell<Id extends string>({
   const pane = useRef<HTMLDivElement>(null)
   // State, not a ref: SearchStatus sits inside this box, and a parent's ref is only set after its children's layout
   // effects run, so the first count would find no box.
-  const [results, setResults] = useState<HTMLDivElement | null>(null)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && settingsQuery()) {
@@ -238,7 +234,6 @@ export function SettingsShell<Id extends string>({
           {searching ? null : actions[current]}
         </Box>
         <Box
-          ref={setResults}
           sx={{
             width: '100%',
             maxWidth: CONTENT_MAX,
@@ -247,7 +242,7 @@ export function SettingsShell<Id extends string>({
             gap: space.pad,
           }}
         >
-          <SearchStatus results={results} related={related} elsewhere={elsewhere} />
+          <SearchStatus related={related} elsewhere={elsewhere} />
           {searching
             ? pages.map((p) => (
                 <Box
