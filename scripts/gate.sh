@@ -55,21 +55,10 @@ step() {
   pids[$name]=$!
 }
 
-# The bindings follow from the Go sources and the generator, so a gate on an unchanged tree keeps the last set instead
-# of spending seconds regenerating it before the steps that read it can start.
-bindings_stamp=frontend/bindings/.gate-inputs
-bindings_inputs() {
-  wails3 version 2>&1
-  git ls-files -co --exclude-standard -z -- '*.go' go.mod go.sum scripts/erasable-bindings.ts | xargs -0 sha1sum
-}
 (
   t=$(date +%s%N)
   rc=0
-  want=$(bindings_inputs | sha1sum)
-  if [ "$(cat "$bindings_stamp" 2>/dev/null)" != "$want" ]; then
-    bun run bindings || rc=$?
-    [ "$rc" = 0 ] && printf '%s\n' "$want" >"$bindings_stamp"
-  fi
+  scripts/bindings-fresh.sh || rc=$?
   profile_log bindings "$t" "$rc"
   exit "$rc"
 ) >"$logs/bindings" 2>&1 &
