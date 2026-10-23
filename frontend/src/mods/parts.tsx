@@ -48,13 +48,12 @@ import {
   problemsOf,
   siblingsOf,
   sourceKind,
-  updateFor,
 } from './lookup.ts'
 import { NewDot } from './NewSince.tsx'
-import { useNexusPage } from './nexusDetails.ts'
-import { goneCaption, nexusPageMark, offersNexusDownload } from './nexusMark.ts'
+import { useNexusDownloadable, useNexusPage } from './nexusDetails.ts'
+import { goneCaption, nexusPageMark } from './nexusMark.ts'
 import { useMods } from './store.ts'
-import { useUpdates } from './updates.ts'
+import { useUpdateFor } from './updates.ts'
 import { useLocked } from './useLocked.ts'
 
 const HASH_MULTIPLIER = 31
@@ -449,20 +448,18 @@ export function PinBadge({ mod }: { mod: Mod }) {
 
 export function UpdateBadge({ mod }: { mod: Mod }) {
   const { t } = useLingui()
-  const updates = useUpdates((s) => s.updates)
-  // updateFor returns the stored update itself, so a profile save that leaves this mod's offer alone changes nothing.
-  const update = useProfiles((s) => updateFor(updates, mod, openProfileOf(s)))
+  const update = useUpdateFor(mod)
   const nexusId = useProfiles((s) => {
     const profile = openProfileOf(s)
     return profile ? nexusIdOf(profile, mod) : 0
   })
-  const page = useNexusPage(nexusId)
+  const downloadable = useNexusDownloadable(nexusId)
   const setSkipVersion = useMods((s) => s.setSkipVersion)
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   if (!update) {
     return null
   }
-  if (update.nexusId > 0 && !offersNexusDownload(page?.status, page?.available)) {
+  if (update.nexusId > 0 && !downloadable) {
     return null
   }
   const text = update.unofficial

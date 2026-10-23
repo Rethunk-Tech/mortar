@@ -5,16 +5,17 @@ import {
   CheckUpdatesNow,
   Updates,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
+import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useTab } from '../game/tab.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { i18n } from '../i18n/index.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { sameValue } from '../shell/sameValue.ts'
 import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { useBadges } from './badges.ts'
-import { updateCount } from './lookup.ts'
+import { updateCount, updateFor } from './lookup.ts'
 import { useNexusDetails } from './nexusDetails.ts'
 import { openTarget } from './storeView.ts'
 
@@ -185,3 +186,10 @@ useNexusDetails.subscribe(syncBadge)
 syncHourlyRecheck()
 
 export { checkedLabel, loadUpdates, useUpdates }
+
+// The mod's own offer, followed in both stores: updateFor returns the stored update itself, so updates loading for
+// other mods, or a profile save that leaves this one's offer alone, redraws nothing.
+export function useUpdateFor(mod: Mod) {
+  useUpdates((s) => updateFor(s.updates, mod, openProfileOf(useProfiles.getState())))
+  return useProfiles((s) => updateFor(useUpdates.getState().updates, mod, openProfileOf(s)))
+}

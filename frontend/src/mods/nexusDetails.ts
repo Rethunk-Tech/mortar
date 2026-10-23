@@ -14,6 +14,7 @@ import { useNexus } from '../settings/nexus.ts'
 import { readStates } from '../shell/offline.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { currentFiles, isNewer } from './nexusFormat.ts'
+import { offersNexusDownload } from './nexusMark.ts'
 
 interface Entry {
   details?: Details
@@ -181,6 +182,13 @@ const useNexusEntry = (id: number) => {
 // request of its own.
 const useNexusPage = (id: number) => useNexusDetails((s) => s.byId[id]?.details?.page)
 
+// Whether the mod's Nexus page offers a download, as a flag: page data arrives for every card at once.
+const useNexusDownloadable = (id: number) =>
+  useNexusDetails((s) => {
+    const page = s.byId[id]?.details?.page
+    return offersNexusDownload(page?.status, page?.available)
+  })
+
 interface SeenWatermark {
   newestFileUnix: number
   newestChange: string
@@ -305,13 +313,13 @@ const useLookedSnapshot = (modId: number, details: Details | undefined) => {
   return looked
 }
 
+// The answer, not the details: details arrive for every card at once, and a card should redraw only when it changes.
 const useNexusFresh = (nexusId: number) => {
-  const details = useNexusDetails((s) => s.byId[nexusId]?.details)
   const seen = useNexusSeen((s) => s.byId[nexusId])
-  if (!(nexusId && details)) {
-    return false
-  }
-  return isNewSinceLooked(seen, watermarkOf(details))
+  return useNexusDetails((s) => {
+    const details = s.byId[nexusId]?.details
+    return nexusId !== 0 && details !== undefined && isNewSinceLooked(seen, watermarkOf(details))
+  })
 }
 
 export {
@@ -328,6 +336,7 @@ export {
   primeDetails,
   useLookedSnapshot,
   useNexusDetails,
+  useNexusDownloadable,
   useNexusEntry,
   useNexusFresh,
   useNexusPage,
