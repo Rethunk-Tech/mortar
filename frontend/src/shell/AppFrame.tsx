@@ -1,6 +1,6 @@
 import { Box } from '@mui/material'
 import { Events } from '@wailsio/runtime'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { DropOverlay } from '../install/DropOverlay.tsx'
 import { SweepDialog } from '../launch/SweepDialog.tsx'
 import { QueueSheet } from '../queue/QueueSheet.tsx'
@@ -30,7 +30,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
   const backdropMode = useSettings((s) => s.background)
   const framed = useSettings((s) => s.systemTitleBar) || maximised
   const [width] = useState(backdropWidth)
-  const [frame, setFrame] = useState<HTMLElement | null>(null)
+  const frame = useRef<HTMLElement>(null)
   useEffect(() => {
     const sync = () => win.reportMaximised(setMaximised)
     sync()
@@ -39,7 +39,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
   return (
     <Box
       data-file-drop-target=""
-      ref={setFrame}
+      ref={frame}
       sx={{
         position: 'fixed',
         inset: 0,

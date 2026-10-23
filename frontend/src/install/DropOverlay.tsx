@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { alpha, Box, Typography } from '@mui/material'
 import { Events } from '@wailsio/runtime'
 import { Download } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { type RefObject, useEffect, useState } from 'react'
 import { EnableRequirementsDialog } from '../mods/EnableRequirementsDialog.tsx'
 import { useLocked } from '../mods/useLocked.ts'
 import { routeGame, useNav } from '../nav/store.ts'
@@ -19,7 +19,8 @@ import { useInstall } from './store.ts'
 const ACTIVE_CLASS = 'file-drop-target-active'
 const TINT_ALPHA = 0.08
 
-export function DropOverlay({ target }: { target: HTMLElement | null }) {
+// target is a ref, not an element in state: the frame holding it would draw everything inside it again once mounted.
+export function DropOverlay({ target: frame }: { target: RefObject<HTMLElement | null> }) {
   const { t } = useLingui()
   const [dragging, setDragging] = useState(false)
   const inGame = useNav((s) => routeGame(s.route) !== null)
@@ -28,6 +29,7 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
   const ready = inGame && profile !== undefined && !locked
 
   useEffect(() => {
+    const target = frame.current
     if (!target) {
       return
     }
@@ -52,7 +54,7 @@ export function DropOverlay({ target }: { target: HTMLElement | null }) {
         globalThis.removeEventListener(e, end)
       }
     }
-  }, [target])
+  }, [frame])
 
   useEffect(
     () =>
