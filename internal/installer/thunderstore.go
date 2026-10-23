@@ -66,6 +66,12 @@ func (a Archive) PackageRoot() Archive {
 	return a
 }
 
+// TakesPackages reports a game whose mods this installer lays out: a BepInEx, MelonLoader or thunderpack game.
+func TakesPackages(g Game) bool {
+	_, pack := thunderpack.Of(g.Loaders)
+	return pack || slices.Contains(g.Loaders, bepinex5.ID) || slices.Contains(g.Loaders, melonloader.ID)
+}
+
 // Detect takes a Thunderstore package, and for a BepInEx or MelonLoader game also an archive from another site that
 // holds no manifest but plainly is a mod of the loader: a DLL or the loader's folder. r2modman installs those by the
 // same rules. A thunderpack game takes only a Thunderstore package.
