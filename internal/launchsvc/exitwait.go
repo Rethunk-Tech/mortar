@@ -55,7 +55,20 @@ func (s *Service) finishWait(g game.Game, x launch.Exit) {
 		return
 	}
 	log.Printf("launch: %s %s: the started process exited (%s)", g.ID(), cur.Profile, launch.DescribeExit(x))
+	s.awaitGone(g)
 	s.closed(g, cur, x.Stopped)
+}
+
+// awaitGone waits while the install still has game processes after the started one exited. A crashed game lingers
+// while Windows writes its report, still holding the loader's files open: ending the run now would fail the purge and
+// let the poll take the dying process for a new run.
+func (s *Service) awaitGone(g game.Game) {
+	for s.current(g).State == Running {
+		if ps, err := s.gameProcs(g); err != nil || len(ps) == 0 {
+			return
+		}
+		time.Sleep(pollEvery)
+	}
 }
 
 // awaitPID waits on the game process a launch Mortar did not start itself (a store relay) and keeps its exit for
