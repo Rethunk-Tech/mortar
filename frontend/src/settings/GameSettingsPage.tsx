@@ -43,9 +43,8 @@ function modsPrefKeys(
   return [
     // Requirements come from mod manifests, which a game with no loader of its own has none of.
     ...(loader?.builtin ? [] : ['enableRequirements', 'missingRequirements']),
-    'cosmeticConflicts',
-    // The scan depth only changes how content packs' asset edits are compared.
-    ...(loader?.assets ? ['conflictScanDepth'] : []),
+    // Both concern content packs' asset edits, which only a loader whose framework indexes them has.
+    ...(loader?.assets ? ['cosmeticConflicts', 'conflictScanDepth'] : []),
     'offerNewDownloads',
     'oldFilesOnUpdate',
     ...(info?.sources?.includes('thunderstore') ? ['dependencyVersions'] : []),
