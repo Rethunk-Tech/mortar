@@ -470,6 +470,17 @@ func listedRequirements(ctx context.Context, m Meta, reqs RequirementsOf, domain
 	pages, pagesUnknown := fetchAll(ctx, reqIDs, m.Page)
 	unknown = unknown || pagesUnknown
 	seenEntries := map[string]bool{}
+	// What the installed mods say about a required page does not depend on which mod lists it.
+	type pageState struct {
+		reason    string
+		satisfied bool
+	}
+	states := map[int]pageState{}
+	switchedOnByEntry := map[string][]framework.Mod{}
+	for _, x := range enabled {
+		key := strings.ToLower(x.Key)
+		switchedOnByEntry[key] = append(switchedOnByEntry[key], x)
+	}
 
 	for _, d := range enabled {
 		pageID, _, ok := nexusFile(d.Key)
@@ -499,15 +510,20 @@ func listedRequirements(ctx context.Context, m Meta, reqs RequirementsOf, domain
 			}
 			seenRequirements[req.ModID] = true
 			page, hasPage := pages[req.ModID]
-			for _, x := range all {
-				if listedMatch(x, req.ModID, page, hasPage) {
-					needed = append(needed, x.ModID().Fold())
+			state, known := states[req.ModID]
+			if !known {
+				for _, x := range all {
+					if listedMatch(x, req.ModID, page, hasPage) {
+						needed = append(needed, x.ModID().Fold())
+					}
 				}
+				state.reason, state.satisfied = listedDepState(all, req.ModID, page, hasPage)
+				states[req.ModID] = state
 			}
-			if hasPage && manifestHasRequirement(all, d.Key, page) {
+			if hasPage && manifestHasRequirement(switchedOnByEntry[entryKey], page) {
 				continue
 			}
-			reason, satisfied := listedDepState(all, req.ModID, page, hasPage)
+			reason, satisfied := state.reason, state.satisfied
 			if satisfied && reason == "" {
 				continue
 			}
@@ -609,9 +625,10 @@ func listedMatch(x framework.Mod, pageID int, page meta.Page, pageKnown bool) bo
 	if !pageKnown {
 		return false
 	}
+	id := x.ModID()
 	for _, file := range page.Downloads {
 		for _, im := range file.Mods {
-			if mod.Equal(x.ModID(), im.ModID()) {
+			if mod.Equal(id, im.ModID()) {
 				return true
 			}
 		}
@@ -619,11 +636,10 @@ func listedMatch(x framework.Mod, pageID int, page meta.Page, pageKnown bool) bo
 	return false
 }
 
-func manifestHasRequirement(all []framework.Mod, entryKey string, page meta.Page) bool {
-	for _, d := range all {
-		if !d.Enabled || !strings.EqualFold(d.Key, entryKey) {
-			continue
-		}
+// manifestHasRequirement reports whether a switched-on mod of one entry (its files share the entry's key) requires a
+// mod the page's downloads hold.
+func manifestHasRequirement(entryMods []framework.Mod, page meta.Page) bool {
+	for _, d := range entryMods {
 		for _, dep := range d.Dependencies {
 			if !dep.Required {
 				continue

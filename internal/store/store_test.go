@@ -717,3 +717,24 @@ func TestDropSupersededKeepsWhatIsReferencedOrNewest(t *testing.T) {
 		t.Fatalf("blobs = %v", got)
 	}
 }
+
+func TestNexusFileParsesTheKeysNexusKeyMakes(t *testing.T) {
+	for _, tc := range []struct {
+		key       string
+		mod, file int
+		ok        bool
+	}{
+		{NexusKey(5098, 145906), 5098, 145906, true},
+		{"nexus-12-34-extra", 12, 34, true},
+		{"nexus-12", 0, 0, false},
+		{"nexus--3-4", 0, 0, false},
+		{"nexus-1-x", 0, 0, false},
+		{"thunderstore-1-2", 0, 0, false},
+		{"", 0, 0, false},
+	} {
+		mod, file, ok := NexusFile(tc.key)
+		if ok != tc.ok || (ok && (mod != tc.mod || file != tc.file)) {
+			t.Errorf("NexusFile(%q) = %d, %d, %v; want %d, %d, %v", tc.key, mod, file, ok, tc.mod, tc.file, tc.ok)
+		}
+	}
+}

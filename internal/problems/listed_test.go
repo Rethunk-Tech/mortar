@@ -279,3 +279,38 @@ func TestOptionalListedRequirementIsNotCounted(t *testing.T) {
 		t.Fatalf("Missing = %#v, Count = %d, want one optional row counting 0", result.Missing, result.Count())
 	}
 }
+
+func TestListedRequirementJudgedAlikeForEveryDependent(t *testing.T) {
+	fake := listedFakeMeta{
+		requirements: map[int][]nexus.Requirement{
+			520: {{ModID: 1915, Name: "Content Patcher"}},
+			521: {{ModID: 1915, Name: "Content Patcher"}},
+			522: {{ModID: 1915, Name: "Content Patcher"}},
+		},
+		pages: map[int]meta.Page{1915: listedPage(1915, "Pathoschild.ContentPatcher")},
+	}
+	named := framework.Mod{
+		Key: "nexus-522-102", Enabled: true, UniqueID: "Example.Third", Name: "Third",
+		Dependencies: []mod.Dependency{{UniqueID: "Pathoschild.ContentPatcher", Required: true}},
+	}
+	mods := []framework.Mod{
+		listedDependent(),
+		{Key: "nexus-521-101", Enabled: true, UniqueID: "Example.Second", Name: "Second"},
+		named,
+		{Key: "local-content-patcher", UniqueID: "Pathoschild.ContentPatcher"},
+	}
+
+	result := listedCheck(fake, mods)
+
+	var got []string
+	for _, m := range result.Missing {
+		if m.Listed {
+			got = append(got, string(m.DependentID)+" "+m.Reason)
+		}
+	}
+	slices.Sort(got)
+	want := []string{"smapi:Example.Dependent disabled", "smapi:Example.Second disabled"}
+	if !slices.Equal(got, want) {
+		t.Fatalf("listed rows = %v, want %v: the mod whose manifest names the requirement is not owed one", got, want)
+	}
+}

@@ -173,8 +173,30 @@ func NexusKey(modID, fileID int) string { return fmt.Sprintf("nexus-%d-%d", modI
 
 // NexusFile parses a NexusKey; ok is false for any other key.
 func NexusFile(key string) (modID, fileID int, ok bool) {
-	n, err := fmt.Sscanf(key, "nexus-%d-%d", &modID, &fileID)
-	return modID, fileID, err == nil && n == 2
+	rest, found := strings.CutPrefix(key, "nexus-")
+	if !found {
+		return 0, 0, false
+	}
+	modID, rest, ok = leadingInt(rest)
+	if !ok {
+		return 0, 0, false
+	}
+	rest, found = strings.CutPrefix(rest, "-")
+	if !found {
+		return 0, 0, false
+	}
+	fileID, _, ok = leadingInt(rest)
+	return modID, fileID, ok
+}
+
+// leadingInt reads the run of digits s starts with and returns the rest.
+func leadingInt(s string) (n int, rest string, ok bool) {
+	end := 0
+	for end < len(s) && s[end] >= '0' && s[end] <= '9' {
+		end++
+	}
+	n, err := strconv.Atoi(s[:end])
+	return n, s[end:], err == nil
 }
 
 // BridgeKey is the key of the bundled console bridge mod for a version and, when supplied, its asset hash.
