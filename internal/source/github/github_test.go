@@ -69,6 +69,36 @@ func TestSearchRateLimit(t *testing.T) {
 	}
 }
 
+func TestSearchWaitsOutARefusal(t *testing.T) {
+	t.Parallel()
+	hits := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		hits++
+		if hits == 1 {
+			w.Header().Set("X-Ratelimit-Reset", "1700000030")
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		_, _ = w.Write([]byte(`{"total_count":0,"items":[]}`))
+	}))
+	t.Cleanup(srv.Close)
+	now := time.Unix(1_700_000_000, 0).UTC()
+	d := &Driver{URL: srv.URL, Now: func() time.Time { return now }, Topics: func(string) []string { return []string{"a", "b", "c"} }}
+	q := source.Query{Key: "a", Text: "x y", Page: 1}
+	for range 3 {
+		if _, err := d.Search(context.Background(), q); !errors.Is(err, source.ErrBusy) {
+			t.Fatalf("got %v", err)
+		}
+	}
+	if hits != 1 {
+		t.Fatalf("asked GitHub %d times while refused", hits)
+	}
+	now = now.Add(30 * time.Second)
+	if _, err := d.Search(context.Background(), q); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestSearchCaches(t *testing.T) {
 	t.Parallel()
 	hits := 0

@@ -43,6 +43,9 @@ type Driver struct {
 
 	mu    sync.Mutex
 	cache map[string]cacheEntry
+	// refused is GitHub's last search refusal while its wait lasts. Asking again before then only extends the
+	// limit, and a merged search asks once per topic.
+	refused *source.BusyError
 }
 
 type cacheEntry struct {
@@ -285,11 +288,42 @@ func compareBySort(by string, a, b repo) int {
 	return 0
 }
 
+// waiting is the refusal still in force, or nil when GitHub may be asked.
+func (d *Driver) waiting() error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.refused != nil && d.now().Before(d.refused.Reset) {
+		return d.refused
+	}
+	return nil
+}
+
+// refuse records resp's refusal until GitHub's Retry-After, else its rate limit's reset, else a minute (the search
+// limit's window).
+func (d *Driver) refuse(resp *http.Response) error {
+	busy := source.Busy("GitHub", resp)
+	if busy.Reset.IsZero() {
+		if at, err := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64); err == nil {
+			busy.Reset = time.Unix(at, 0)
+		}
+	}
+	if !d.now().Before(busy.Reset) {
+		busy.Reset = d.now().Add(time.Minute)
+	}
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.refused = busy
+	return busy
+}
+
 // searchTopic is page of the search for terms, sorted as q asks.
 func (d *Driver) searchTopic(ctx context.Context, q source.Query, terms string, page int) (topicPage, error) {
 	key := terms + "\n" + q.Sort + "\n" + strconv.Itoa(page) + "\n" + strconv.Itoa(q.Len())
 	if hit, ok := d.cached(key); ok {
 		return hit, nil
+	}
+	if err := d.waiting(); err != nil {
+		return topicPage{}, err
 	}
 	base := cmp.Or(d.URL, apiURL)
 	client := cmp.Or(d.HTTP, http.DefaultClient)
@@ -315,7 +349,7 @@ func (d *Driver) searchTopic(ctx context.Context, q source.Query, terms string, 
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
-		return topicPage{}, source.Busy("GitHub", resp)
+		return topicPage{}, d.refuse(resp)
 	}
 	// GitHub refuses a user: qualifier naming no account; the word was then only search text.
 	if resp.StatusCode == http.StatusUnprocessableEntity && strings.HasPrefix(terms, "user:") {
