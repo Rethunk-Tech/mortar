@@ -39,7 +39,7 @@ const LAUNCH_TIMEOUT_MS = 240_000
 // Idle means the server has spent under QUIET_CPU_S of CPU in each of QUIET_SECONDS straight seconds: the catalog, index
 // loads and update checks that follow a start or a screen change are done. QUIET_MIN_S covers work that waits on the
 // network at near-zero CPU before it decodes; MORTAR_MEM_SETTLE_S raises it past the idle releases (Content Patcher
-// packs after 2 minutes, a Thunderstore listing after 10) to see what stays for good. A server that never gets there is sampled after QUIET_MAX_S anyway, and
+// packs after 30 s, a Thunderstore listing after 10 minutes) to see what stays for good. A server that never gets there is sampled after QUIET_MAX_S anyway, and
 // the report says so.
 const QUIET_CPU_S = 0.05
 const QUIET_SECONDS = 5

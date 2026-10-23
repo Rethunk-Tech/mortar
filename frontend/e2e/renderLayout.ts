@@ -107,6 +107,8 @@ export function covered(): LayoutBreak[] {
       owner.contains(hit) ||
       hit.contains(owner) ||
       (pinned(hit) && !pinned(owner)) ||
+      // Notifications float over whatever is under them for a few seconds, a sticky panel included.
+      hit.closest('[aria-live]') !== null ||
       clickArea(hit, x, y)
     ) {
       continue

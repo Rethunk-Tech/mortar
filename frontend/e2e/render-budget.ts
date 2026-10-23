@@ -32,7 +32,7 @@ import { webkitWalk } from './webkit-walk.ts'
 //   MORTAR_RENDER_URL=http://…         drive an already running server (selftest.sh start) instead of a new sandbox
 //   MORTAR_RENDER_PROFILE=<name>       open this profile (default: whichever profile Mortar reopens; seeded: Seed Farm)
 //   MORTAR_RENDER_ONLY=mods,config     run only the cases whose names start with these
-//   MORTAR_RENDER_SETTLE_MS / _IDLE_MS how long a case's own steps wait (3000) and how long idle is watched (10000); setup
+//   MORTAR_RENDER_SETTLE_MS / _IDLE_MS how long a case's own steps wait (3000) and how long idle is watched (3000); setup
 //                                      and action end once nothing has committed or called the backend for 1.5 s
 //   MORTAR_RENDER_GAPS=1              print each screen's unevenly spaced stacks and cards (renderGaps.ts)
 //   MORTAR_RENDER_SHOTS=<dir>          save a PNG of each screen in <dir>/chromium and <dir>/webkit; `bun run renders:diff
@@ -46,7 +46,8 @@ import { webkitWalk } from './webkit-walk.ts'
 const BASE = '/var/tmp'
 
 const SETTLE_MS = Number(process.env.MORTAR_RENDER_SETTLE_MS ?? '3000')
-const IDLE_MS = Number(process.env.MORTAR_RENDER_IDLE_MS ?? '10000')
+// Most cases show nothing idle; a short watch still sees churn, and the walk spends most of its time here.
+const IDLE_MS = Number(process.env.MORTAR_RENDER_IDLE_MS ?? '3000')
 const IDLE_SCALE_MS = 10_000
 const QUIET_MS = 1500
 const QUIET_MAX_MS = 60_000
@@ -273,20 +274,25 @@ export interface Result {
   errors?: string[]
 }
 
+/** idle is the watch's own count: the idle budgets are per 10 s, so they shrink with a shorter watch instead of the
+ * count growing, and one poll caught in a short watch is not read as several. */
 function overBudget(c: Case, action: Sample, idle: Sample): string[] {
   const b = { ...DEFAULT_BUDGET, ...c.budget }
+  const forWatch = (perTen: number) => Math.ceil((perTen * IDLE_MS) / IDLE_SCALE_MS)
   const over: string[] = []
   if (action.updates > b.updates) {
     over.push(`re-rendered ${action.updates} > ${b.updates}`)
   }
-  if (idle.updates > b.idleUpdates) {
-    over.push(`idle re-rendered ${idle.updates} > ${b.idleUpdates}`)
+  if (idle.updates > forWatch(b.idleUpdates)) {
+    over.push(
+      `idle re-rendered ${idle.updates} > ${forWatch(b.idleUpdates)} in ${IDLE_MS / 1000} s`,
+    )
   }
-  if (idle.commits > b.idleCommits) {
-    over.push(`idle commits ${idle.commits} > ${b.idleCommits}`)
+  if (idle.commits > forWatch(b.idleCommits)) {
+    over.push(`idle commits ${idle.commits} > ${forWatch(b.idleCommits)} in ${IDLE_MS / 1000} s`)
   }
-  if (idle.calls > b.idleCalls) {
-    over.push(`idle backend calls ${idle.calls} > ${b.idleCalls}`)
+  if (idle.calls > forWatch(b.idleCalls)) {
+    over.push(`idle backend calls ${idle.calls} > ${forWatch(b.idleCalls)} in ${IDLE_MS / 1000} s`)
   }
   return over
 }
@@ -325,9 +331,15 @@ async function measure(page: Page, meter: Meter, c: Case): Promise<Result> {
     await meter.reset()
     const t2 = Date.now()
     await page.waitForTimeout(IDLE_MS)
-    const idle = perIdle(await meter.read())
+    const watched = await meter.read()
     const ms = { setup: t1 - t0, action: t2 - t1, idle: Date.now() - t2 }
-    return { name: c.name, action, idle, ms, over: overBudget(c, action, idle) }
+    return {
+      name: c.name,
+      action,
+      idle: perIdle(watched),
+      ms,
+      over: overBudget(c, action, watched),
+    }
   } catch (e) {
     return { name: c.name, over: [], failure: String(e).split('\n')[0] }
   } finally {
