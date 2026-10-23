@@ -2,6 +2,7 @@ package contentpatcher
 
 import (
 	"path/filepath"
+	"runtime/debug"
 	"testing"
 	"time"
 
@@ -25,9 +26,18 @@ func TestIdlePacksAreReleasedAndReadBackFromDisk(t *testing.T) {
 		t.Fatal("packs were released before the disk cache was saved")
 	}
 	flushPackDiskCache([]framework.Mod{im})
+	collections := func() int64 {
+		var st debug.GCStats
+		debug.ReadGCStats(&st)
+		return st.NumGC
+	}
+	before := collections()
 	releasePacks(gen)
 	if _, held := packCache.Load(cleanFolder(im)); held {
 		t.Fatal("packs stayed in memory after an idle release")
+	}
+	if collections() == before {
+		t.Fatal("the released packs were left uncollected, so their pages stay with the process")
 	}
 	again := readContentPack(im)
 	if len(again.patches) != len(first.patches) || again.fingerprint != first.fingerprint {

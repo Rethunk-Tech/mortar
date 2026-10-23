@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime/debug"
 	"slices"
 	"strings"
 	"sync"
@@ -590,10 +591,17 @@ func memoized(key, path string) ([]pkg, bool) {
 // releaseListing drops the loaded listing of key when it is still the one read from path.
 func releaseListing(key, path string) {
 	memoMu.Lock()
-	defer memoMu.Unlock()
-	if m, ok := memo[key]; ok && m.path == path {
+	m, ok := memo[key]
+	ok = ok && m.path == path
+	if ok {
 		m.idle.Stop()
 		delete(memo, key)
+	}
+	memoMu.Unlock()
+	if ok {
+		// Nothing allocates enough to collect the dropped listing soon, and its pages stay with the process until the
+		// runtime's slow scavenger returns them.
+		debug.FreeOSMemory()
 	}
 }
 

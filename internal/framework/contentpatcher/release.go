@@ -1,6 +1,7 @@
 package contentpatcher
 
 import (
+	"runtime/debug"
 	"sync"
 	"time"
 )
@@ -43,10 +44,18 @@ func holdPacks() func() {
 // releasePacks drops the parsed packs and map scans when no check has run since gen, but only those the disk caches
 // already hold: a cache with unsaved changes keeps its memory until a later check saves it.
 func releasePacks(gen int) {
+	if dropPacks(gen) {
+		// The dropped packs are garbage nothing allocates enough to collect, and the pages they held stay with the
+		// process until the runtime's slow scavenger returns them.
+		debug.FreeOSMemory()
+	}
+}
+
+func dropPacks(gen int) bool {
 	packUse.Lock()
 	defer packUse.Unlock()
 	if packUse.active > 0 || packUse.gen != gen {
-		return
+		return false
 	}
 	packDiskState.Lock()
 	if !packDiskState.dirty && packDiskState.path != "" {
@@ -64,4 +73,5 @@ func releasePacks(gen int) {
 		parts.entries, parts.loaded = map[string]partEntry{}, false
 	}
 	parts.Unlock()
+	return true
 }

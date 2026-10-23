@@ -3,6 +3,7 @@ package thunderstore
 import (
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"slices"
 	"testing"
 	"time"
@@ -61,10 +62,19 @@ func TestALoadedListingIsReleasedOnceIdleAndReadAgainOnTheNextUse(t *testing.T) 
 	if _, err := loadPackages(key, path); err != nil || !held() {
 		t.Fatalf("load: %v, held = %v", err, held())
 	}
+	var st debug.GCStats
+	debug.ReadGCStats(&st)
+	collections := st.NumGC
 	for deadline := time.Now().Add(5 * time.Second); held(); time.Sleep(5 * time.Millisecond) {
 		if time.Now().After(deadline) {
 			t.Fatal("the idle listing is still held")
 		}
+	}
+	for deadline := time.Now().Add(5 * time.Second); st.NumGC == collections; time.Sleep(5 * time.Millisecond) {
+		if time.Now().After(deadline) {
+			t.Fatal("the released listing was left uncollected, so its pages stay with the process")
+		}
+		debug.ReadGCStats(&st)
 	}
 	pk, err := loadPackages(key, path)
 	if err != nil || len(pk) != 1 || !slices.Equal(pk[0].depsOf(pk[0].Versions[0]), []string{"Only-One-1.0.0"}) {
