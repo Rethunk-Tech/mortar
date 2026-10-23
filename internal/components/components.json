@@ -1,5 +1,5 @@
 {
-  "serial": 1792736989,
+  "serial": 1792784514,
   "components": [
     {
       "game": "melonloader",
@@ -39,10 +39,10 @@
         "owner": "Rethunk-Tech",
         "repo": "mortar-smapi-bridge"
       },
-      "tag": "v0.2.8",
-      "asset": "MortarSmapiBridge-0.2.8.zip",
-      "version": "0.2.8",
-      "sha256": "08b54dea8b945b1f809792d063b46278afe96b457763e8b9516117237d7e261a"
+      "tag": "v0.2.9",
+      "asset": "MortarSmapiBridge-0.2.9.zip",
+      "version": "0.2.9",
+      "sha256": "9ab6f23dccc9310275fff775b4980635970c709a575030771bc07af1d9d3e98e"
     },
     {
       "game": "lethal-company",
