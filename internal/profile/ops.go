@@ -13,7 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/installer"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/modpic"
 
 	"github.com/Rethunk-Tech/mortar/internal/ids"
 
@@ -864,7 +866,7 @@ func (s *Store) mods(game, id string, bundled bool) ([]Mod, error) {
 			out = append(out, Mod{
 				Key: e.Key, ID: m.ID, Name: m.Name, Author: m.Author, Version: m.Version,
 				Enabled: e.Enabled(m.ID),
-				Picture: e.Source.Picture, Endorsements: e.Source.EndorsementCount,
+				Picture: s.pictureOf(game, e), Endorsements: e.Source.EndorsementCount,
 				Needs: m.Needs, Optional: m.Optional, ContentPackFor: m.ContentPackFor, ModID: m.ModID,
 			})
 		}
@@ -1022,4 +1024,28 @@ func modFolderIn(p Profile, dir, key string, uniqueID mod.ID) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("no mod %q in this profile", uniqueID)
+}
+
+// pictureOf is the entry's picture: its site's, else the icon.png a package carries, as Thunderstore shows it.
+func (s *Store) pictureOf(game string, e Entry) string {
+	if e.Source.Picture != "" || !e.Package {
+		return e.Source.Picture
+	}
+	if _, err := s.PackageIcon(game, e.Key); err != nil {
+		return ""
+	}
+	return modpic.LocalIcon(game, e.Key)
+}
+
+// PackageIcon is the path of the icon.png the package in store item key carries.
+func (s *Store) PackageIcon(game, key string) (string, error) {
+	root, err := s.items.Path(game, key)
+	if err != nil {
+		return "", err
+	}
+	icon := filepath.Join(installer.Open(root, key).PackageRoot().Dir, "icon.png")
+	if !fsx.IsFile(icon) {
+		return "", fs.ErrNotExist
+	}
+	return icon, nil
 }

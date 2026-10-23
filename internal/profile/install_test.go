@@ -15,6 +15,7 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/archive"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
+	"github.com/Rethunk-Tech/mortar/internal/modpic"
 )
 
 func buildZip(t *testing.T, name string, files map[string]string) string {
@@ -318,5 +319,31 @@ func TestAnAssetPackZippedInItsOwnFolderInstallsAsItsPackage(t *testing.T) {
 	res, err := e.InstallArchive(t.Context(), "lethal-company", p.ID, zip)
 	if err != nil || res.Profile.Entries[0].Mods[0].ID != "thunderstore:Ns-SomeMod" {
 		t.Fatalf("an asset pack in a folder: %+v, %v", res, err)
+	}
+}
+
+func TestALocalPackageShowsItsOwnIcon(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "SomeLocalMod.zip"), map[string]string{
+		"manifest.json":    `{"name":"SomeLocalMod","version_number":"0.0.1","dependencies":[]}`,
+		"icon.png":         "\x89PNG\r\n\x1a\n",
+		"SomeLocalMod.dll": "MZ",
+	})
+	res, err := e.InstallArchive(t.Context(), "lethal-company", p.ID, zip)
+	if err != nil {
+		t.Fatal(err)
+	}
+	key := res.Profile.Entries[0].Key
+	mods, err := e.Mods("lethal-company", p.ID)
+	if err != nil || len(mods) != 1 || mods[0].Picture != modpic.LocalIcon("lethal-company", key) {
+		t.Fatalf("mods = %+v, %v", mods, err)
+	}
+	if icon, err := e.PackageIcon("lethal-company", key); err != nil || filepath.Base(icon) != "icon.png" {
+		t.Fatalf("icon = %q, %v", icon, err)
 	}
 }

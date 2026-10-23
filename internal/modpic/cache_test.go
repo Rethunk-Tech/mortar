@@ -249,3 +249,24 @@ func TestMiddlewareAnswersAnUnavailableAllowedPictureWithNoContent(t *testing.T)
 		}
 	}
 }
+
+func TestALocalIconIsReadFromTheStoreItemItNames(t *testing.T) {
+	c := New(t.TempDir(), nil)
+	icon := filepath.Join(t.TempDir(), "icon.png")
+	if err := os.WriteFile(icon, png1x1, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	c.Icons = func(game, key string) (string, error) {
+		if game == "lethal-company" && key == "local-a b" {
+			return icon, nil
+		}
+		return "", os.ErrNotExist
+	}
+	b, typ, err := c.get(t.Context(), LocalIcon("lethal-company", "local-a b"), Thumb)
+	if err != nil || typ != "image/png" || len(b) == 0 {
+		t.Fatalf("local icon = %d bytes %q, %v", len(b), typ, err)
+	}
+	if _, _, err := c.get(t.Context(), LocalIcon("lethal-company", "other"), Thumb); err == nil {
+		t.Fatal("an item without an icon was served one")
+	}
+}

@@ -57,6 +57,45 @@ type Cache struct {
 
 	mu   sync.Mutex
 	size int64 // bytes on disk as of the last prune plus writes since
+
+	// Icons finds the icon a store item carries, for a picture LocalIcon named; nil serves none.
+	Icons func(game, key string) (string, error)
+}
+
+// iconScheme marks a picture a mod's own files hold, read from Mortar's store rather than fetched from a CDN.
+const iconScheme = "mortar-icon:"
+
+// LocalIcon is the picture of the icon the store item key holds, for a mod no site gives a picture: a package's own
+// icon.png, as Thunderstore shows it.
+func LocalIcon(game, key string) string {
+	return iconScheme + url.PathEscape(game) + "/" + url.PathEscape(key)
+}
+
+func parseLocalIcon(picture string) (game, key string, ok bool) {
+	rest, ok := strings.CutPrefix(picture, iconScheme)
+	if !ok {
+		return "", "", false
+	}
+	g, k, ok := strings.Cut(rest, "/")
+	game, gerr := url.PathUnescape(g)
+	key, kerr := url.PathUnescape(k)
+	return game, key, ok && gerr == nil && kerr == nil && game != "" && key != ""
+}
+
+// localIcon reads the icon a LocalIcon picture names, shrunk to px; it is the store's own file, so nothing is cached.
+func (c *Cache) localIcon(game, key string, px int) ([]byte, string, error) {
+	if c.Icons == nil {
+		return nil, "", errNotImage
+	}
+	path, err := c.Icons(game, key)
+	if err != nil {
+		return nil, "", err
+	}
+	b, typ, err := readFile(path)
+	if err != nil {
+		return nil, "", err
+	}
+	return Shrink(b, typ, px)
 }
 
 // New keeps pictures in <dataDir>/cache/modpic.
@@ -188,6 +227,9 @@ func (c *Cache) Ensure(ctx context.Context, picture string) {
 }
 
 func (c *Cache) get(ctx context.Context, picture string, px int) ([]byte, string, error) {
+	if game, key, ok := parseLocalIcon(picture); ok {
+		return c.localIcon(game, key, px)
+	}
 	if _, err := parsePicture(picture); err != nil {
 		return nil, "", err
 	}
@@ -299,7 +341,8 @@ func Middleware(cache func() *Cache) func(http.Handler) http.Handler {
 			if err != nil {
 				// A picture a CDN no longer serves is an empty answer, not a failed request: the window falls back
 				// to its placeholder without the browser logging a 404 for every card.
-				if _, perr := parsePicture(picture); perr == nil {
+				_, _, local := parseLocalIcon(picture)
+				if _, perr := parsePicture(picture); perr == nil || local {
 					w.WriteHeader(http.StatusNoContent)
 					return
 				}

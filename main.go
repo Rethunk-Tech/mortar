@@ -566,6 +566,7 @@ func run() error {
 	nxmSvc = nxmsvc.NewService(store, nxmHandler)
 
 	pictures = modpic.New(dataDir, &http.Client{Timeout: 30 * time.Second})
+	pictures.Icons = profiles.PackageIcon
 	if err := nexusSvc.UseDataDir(dataDir); err != nil {
 		return err
 	}
