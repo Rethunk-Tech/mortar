@@ -96,6 +96,7 @@ msgid "Mod loader"
 msgstr ""
 
 #: src/console/CrashDialog.tsx
+#: src/console/RunProblems.tsx
 msgid "Dismiss"
 msgstr ""
 
@@ -892,6 +893,10 @@ msgstr ""
 msgid "What costs this mod the most; open the row for every timing"
 msgstr ""
 
+#: src/console/RunProblems.tsx
+msgid "{hidden, plural, one {# problem in this run is dismissed} other {# problems in this run are dismissed}}"
+msgstr ""
+
 #: src/console/logHooks.ts
 msgid "Error"
 msgstr ""
@@ -1108,6 +1113,10 @@ msgstr ""
 
 #: src/console/StartupSections.tsx
 msgid "Compare"
+msgstr ""
+
+#: src/console/RunProblems.tsx
+msgid "Restore"
 msgstr ""
 
 #: src/console/StartupSections.tsx

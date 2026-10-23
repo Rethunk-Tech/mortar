@@ -2,9 +2,14 @@ import type { I18n } from '@lingui/core'
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { SMAPIProblem } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { RunProblems as FetchRunProblems } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import {
+  DismissedTokens,
+  DismissRunProblem,
+  RestoreDismissed,
+} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import type { Mod } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useBrowseView } from '../browse/view.ts'
 import { useTab } from '../game/tab.ts'
@@ -26,6 +31,7 @@ import { reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { duplicateCopies } from './runProblemsFix.ts'
 import { stillApplies } from './runProblemsLive.ts'
+import { runProblemMod, runProblemToken } from './runProblemToken.ts'
 
 function findMod(problem: SMAPIProblem): Mod | undefined {
   return useMods
@@ -124,10 +130,12 @@ function ProblemRow({
   problem,
   contained,
   game,
+  onDismiss,
 }: {
   problem: SMAPIProblem
   contained: boolean
   game: string
+  onDismiss: (problem: SMAPIProblem) => void
 }) {
   const { t, i18n } = useLingui()
   const loaderName = useGameLoader(game) || lowerFirst(t`Mod loader`)
@@ -182,6 +190,14 @@ function ProblemRow({
           </Button>
         </DisabledReason>
       ) : null}
+      <Button
+        size="small"
+        color="inherit"
+        onClick={() => onDismiss(problem)}
+        sx={{ flexShrink: 0 }}
+      >
+        {t`Dismiss`}
+      </Button>
       <ConfirmDialog
         open={confirmDup}
         color="error"
@@ -226,12 +242,52 @@ export function RunProblemsStrip({
     )
   }, [game, profile, run])
   const mods = useMods((s) => s.mods)
-  const live = found.filter((p) => stillApplies(p, mods))
+  // The problems service keeps dismissals with the profile's other dismissed problems; this strip reads them itself,
+  // as the Problems page does, and again after each change it makes.
+  const [dismissed, setDismissed] = useState<string[]>([])
+  const reloadDismissed = useCallback(() => {
+    DismissedTokens(game, profile).then(
+      (tokens) => setDismissed(tokens ?? []),
+      () => setDismissed([]),
+    )
+  }, [game, profile])
+  useEffect(reloadDismissed, [reloadDismissed])
+  const dismiss = useCallback(
+    (p: SMAPIProblem) => {
+      DismissRunProblem(game, profile, p.kind, runProblemMod(p))
+        .then(reloadDismissed)
+        .catch(reportUnexpected)
+    },
+    [game, profile, reloadDismissed],
+  )
+  const applying = found.filter((p) => stillApplies(p, mods))
+  const live = applying.filter((p) => !dismissed.includes(runProblemToken(p)))
+  const hidden = applying.length - live.length
   const bulk = live.filter(
     (p) => p.fix === 'installDependency' || p.fix === 'update' || p.fix === 'disable',
   )
   if (live.length === 0) {
-    return null
+    return hidden > 0 ? (
+      <Box sx={{ mx: space.gutter, mb: 1, display: 'flex', alignItems: 'center', gap: space.gap }}>
+        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+          {plural(hidden, {
+            one: '# problem in this run is dismissed',
+            other: '# problems in this run are dismissed',
+          })}
+        </Typography>
+        <Button
+          size="small"
+          color="inherit"
+          onClick={() =>
+            Promise.all(applying.map((p) => RestoreDismissed(game, profile, runProblemToken(p))))
+              .then(reloadDismissed)
+              .catch(reportUnexpected)
+          }
+        >
+          {t`Restore`}
+        </Button>
+      </Box>
+    ) : null
   }
   return (
     <Box
@@ -274,6 +330,7 @@ export function RunProblemsStrip({
           problem={problem}
           contained={false}
           game={game}
+          onDismiss={dismiss}
         />
       ))}
     </Box>

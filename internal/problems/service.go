@@ -667,6 +667,15 @@ func (s *Service) dismissForRun(gameID, id, kind string, token func(runID string
 	return err
 }
 
+// DismissRunProblem hides a problem the run logs report for a mod, in this run and every later one, until it is
+// restored: a mod author loading a newer copy of their own mod on purpose is told once.
+func (s *Service) DismissRunProblem(_ context.Context, gameID, id, kind, mod string) error {
+	if kind == "" || mod == "" {
+		return errors.New("missing run problem")
+	}
+	return s.appendDismissed(dismissBucket(gameID, id), runProblemToken(kind, mod))
+}
+
 // DismissRedundant hides one Redundant row for this profile: the mod key, with the keys of the mods that make it
 // redundant, of the given kind. The row returns when a different set of mods makes it redundant.
 func (s *Service) DismissRedundant(_ context.Context, gameID, id, kind, key string, by []string) error {

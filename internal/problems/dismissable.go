@@ -76,6 +76,10 @@ func dismissBucket(gameID, profileID string) string {
 	return "~mortar/cp/" + gameID + "/" + profileID
 }
 
+// runProblemToken names a run problem by its kind and mod, not its text, which carries versions a rebuild changes.
+// The Console builds the same token (frontend/src/console/runProblemToken.ts).
+func runProblemToken(kind, mod string) string { return "runProblem\t" + kind + "\t" + mod }
+
 func dismissToken(kind, target string) string {
 	return kind + "\t" + target
 }

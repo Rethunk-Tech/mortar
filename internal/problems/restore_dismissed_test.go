@@ -37,3 +37,26 @@ func TestDismissThenRestoreALoadConflict(t *testing.T) {
 		t.Fatalf("after restore kept %v, dismissed %d", kept, len(dismissed))
 	}
 }
+
+func TestARunProblemDismissedForAModStaysDismissedUntilRestored(t *testing.T) {
+	testfs.DataHome(t)
+	set, err := settings.Open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := &Service{settings: set, cache: map[string]cached{}}
+	if err := s.DismissRunProblem(context.Background(), "lethal-company", "p", "duplicate", "HatLib"); err != nil {
+		t.Fatal(err)
+	}
+	// The Console builds this token itself, so its spelling is part of the contract.
+	const token = "runProblem\tduplicate\tHatLib"
+	if got := set.Get().Dismissed[dismissBucket("lethal-company", "p")]; len(got) != 1 || got[0] != token {
+		t.Fatalf("dismissed %q, want [%q]", got, token)
+	}
+	if err := s.RestoreDismissed(context.Background(), "lethal-company", "p", token); err != nil {
+		t.Fatal(err)
+	}
+	if got := set.Get().Dismissed[dismissBucket("lethal-company", "p")]; len(got) != 0 {
+		t.Fatalf("still dismissed after restore: %q", got)
+	}
+}

@@ -96,6 +96,7 @@ msgid "Mod loader"
 msgstr "Mod loader"
 
 #: src/console/CrashDialog.tsx
+#: src/console/RunProblems.tsx
 msgid "Dismiss"
 msgstr "Dismiss"
 
@@ -892,6 +893,10 @@ msgstr "Play this profile. The {loader} Bridge records how long each mod adds be
 msgid "What costs this mod the most; open the row for every timing"
 msgstr "What costs this mod the most; open the row for every timing"
 
+#: src/console/RunProblems.tsx
+msgid "{hidden, plural, one {# problem in this run is dismissed} other {# problems in this run are dismissed}}"
+msgstr "{hidden, plural, one {# problem in this run is dismissed} other {# problems in this run are dismissed}}"
+
 #: src/console/logHooks.ts
 msgid "Error"
 msgstr "Error"
@@ -1109,6 +1114,10 @@ msgstr "Reinstall"
 #: src/console/StartupSections.tsx
 msgid "Compare"
 msgstr "Compare"
+
+#: src/console/RunProblems.tsx
+msgid "Restore"
+msgstr "Restore"
 
 #: src/console/StartupSections.tsx
 msgid "From launch until {loader} has loaded every mod's code"
