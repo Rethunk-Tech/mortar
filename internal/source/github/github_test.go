@@ -5,10 +5,14 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -83,5 +87,75 @@ func TestSearchCaches(t *testing.T) {
 	// The second query is cached and the third has no topic, so neither reaches GitHub.
 	if hits != 1 {
 		t.Fatalf("hits %d", hits)
+	}
+}
+
+func TestSearchMergesTopicsOnceEachByStars(t *testing.T) {
+	t.Parallel()
+	refuse := map[string]bool{}
+	var mu sync.Mutex
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query().Get("q")
+		mu.Lock()
+		refused := refuse[q]
+		mu.Unlock()
+		switch {
+		case refused:
+			w.WriteHeader(http.StatusForbidden)
+		case q == "topic:a":
+			_, _ = w.Write([]byte(`{"total_count":2,"items":[{"full_name":"o/shared","stargazers_count":5},{"full_name":"o/low","stargazers_count":1}]}`))
+		case q == "topic:b":
+			_, _ = w.Write([]byte(`{"total_count":2,"items":[{"full_name":"o/top","stargazers_count":9},{"full_name":"O/Shared","stargazers_count":5}]}`))
+		}
+	}))
+	t.Cleanup(srv.Close)
+	d := &Driver{URL: srv.URL, Topics: func(string) []string { return []string{"a", "b"} }}
+	page, err := d.Search(context.Background(), source.Query{Key: "a", Page: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var ids []string
+	for _, it := range page.Items {
+		ids = append(ids, it.ID)
+	}
+	if strings.Join(ids, " ") != "o/top o/shared o/low" || page.Total != 3 {
+		t.Fatalf("merged %v, total %d", ids, page.Total)
+	}
+
+	mu.Lock()
+	refuse["topic:b"] = true
+	mu.Unlock()
+	d = &Driver{URL: srv.URL, Topics: d.Topics}
+	if page, err := d.Search(context.Background(), source.Query{Key: "a", Page: 1}); err != nil || len(page.Items) != 2 {
+		t.Fatalf("one topic refused: %d items, err %v", len(page.Items), err)
+	}
+	mu.Lock()
+	refuse["topic:a"] = true
+	mu.Unlock()
+	d = &Driver{URL: srv.URL, Topics: d.Topics}
+	if _, err := d.Search(context.Background(), source.Query{Key: "a", Page: 1}); !errors.Is(err, source.ErrBusy) {
+		t.Fatalf("every topic refused: %v", err)
+	}
+}
+
+// TestLiveLethalCompanyTopics is the check that the catalog's topics reach the search: LethalCompanyModding tags its
+// mods lethalcompany-mod and lethal-company-community, never the key's lethal-company-mod.
+func TestLiveLethalCompanyTopics(t *testing.T) {
+	if os.Getenv("MORTAR_LIVE_SOURCES") == "" {
+		t.Skip("set MORTAR_LIVE_SOURCES=1 to query GitHub")
+	}
+	g, ok := components.Game("lethal-company")
+	if !ok {
+		t.Fatal("catalog has no lethal-company")
+	}
+	gs, _ := g.Source("github")
+	for _, name := range []string{"Enhancer", "UnityVertexLibrary"} {
+		page, err := (&Driver{}).Search(t.Context(), source.Query{Game: "lethal-company", Key: gs.Key, Text: name, Page: 1})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !slices.ContainsFunc(page.Items, func(it source.Item) bool { return it.ID == "LethalCompanyModding/"+name }) {
+			t.Errorf("%s missing from %d repositories", name, len(page.Items))
+		}
 	}
 }

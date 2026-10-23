@@ -76,6 +76,7 @@
           <li>A mod from GitHub shows its latest release, when its installed release came out and its downloads, once Mortar has checked it for updates</li>
           <li>BepInEx games add Kind (plugin, patcher, library or files only) and Plugin version</li>
           <li>The column menu is grouped: the mod, its versions, its health, its place in the profile, then its source</li>
+          <li>GitHub search finds mods under every topic their authors use: Lethal Company searches five topics instead of one (338 repositories instead of 122), Stardew Valley and Vintage Story three each</li>
         </ul>
         <p>Fixed</p>
         <ul>

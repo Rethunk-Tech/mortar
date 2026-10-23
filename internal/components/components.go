@@ -767,6 +767,9 @@ type GameSource struct {
 	// Classes are the numeric class ids a search covers, for a game whose mods sit in several (CurseForge's Create a
 	// Sim and Build / Buy beside Mods); it lists Key, the class the source is addressed by.
 	Classes []string `json:"classes,omitempty"`
+	// Topics are further GitHub topics a search covers beside Key, for a game whose mods are tagged several ways. It is
+	// not in Classes because releases before 0.3.12 reject a catalog game with a non-numeric class.
+	Topics []string `json:"topics,omitempty"`
 	// Loaders and GameVersions narrow an update check to the files for the game's mod loaders and game versions, on a
 	// site whose files carry them (Modrinth).
 	Loaders      []string `json:"loaders,omitempty"`

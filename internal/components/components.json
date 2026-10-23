@@ -1,5 +1,5 @@
 {
-  "serial": 1792680028,
+  "serial": 1792736989,
   "components": [
     {
       "game": "melonloader",
@@ -205,7 +205,8 @@
         },
         {
           "id": "github",
-          "key": "stardew-valley-mod"
+          "key": "stardew-valley-mod",
+          "topics": ["stardew-valley-mods", "smapi-mod"]
         }
       ],
       "templates": [
@@ -299,7 +300,13 @@
         },
         {
           "id": "github",
-          "key": "lethal-company-mod"
+          "key": "lethal-company-mod",
+          "topics": [
+            "lethalcompany-mod",
+            "lethalcompany",
+            "lethal-company",
+            "lethal-company-community"
+          ]
         }
       ],
       "templates": [
@@ -2318,7 +2325,8 @@
         },
         {
           "id": "github",
-          "key": "vintagestory-mod"
+          "key": "vintagestory-mod",
+          "topics": ["vintage-story-mod", "vintagestory"]
         }
       ],
       "templates": [
