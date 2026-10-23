@@ -5,6 +5,7 @@ import {
   Retry,
   States,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/netstate/service.ts'
+import { shareInFlight } from '../profiles/listProfiles.ts'
 import { sameValue } from './sameValue.ts'
 
 // Local, in-process reads of what the last real requests showed; the only network cost is the Recheck below.
@@ -36,8 +37,16 @@ function savedAt(s: State, locale: string): string {
   return at.getFullYear() < NEVER_YEAR ? '' : at.toLocaleTimeString(locale, { timeStyle: 'short' })
 }
 
+const shared = shareInFlight<State[] | null>()
+
+/** The sources' reachability. A state change reaches the banner and the Nexus details primer at once, so they share
+ * one read. */
+function readStates(): Promise<State[] | null> {
+  return shared('', () => Promise.resolve(States()))
+}
+
 function refresh(): Promise<void> {
-  return States().then(useOffline.getState().set)
+  return readStates().then(useOffline.getState().set)
 }
 
 function retry(down: State[]): Promise<void> {
@@ -48,4 +57,14 @@ function recheck(): Promise<void> {
   return Recheck().then(useOffline.getState().set)
 }
 
-export { RECHECK_MS, recheck, refresh, retry, STATE_POLL_MS, savedAt, unreachable, useOffline }
+export {
+  RECHECK_MS,
+  readStates,
+  recheck,
+  refresh,
+  retry,
+  STATE_POLL_MS,
+  savedAt,
+  unreachable,
+  useOffline,
+}

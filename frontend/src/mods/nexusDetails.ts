@@ -1,7 +1,6 @@
 import { Events } from '@wailsio/runtime'
 import { useEffect, useState } from 'react'
 import { create } from 'zustand'
-import { States } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/netstate/service.ts'
 import type { Details } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/models.ts'
 import {
   CachedDetails,
@@ -12,6 +11,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nexussvc/service.ts'
 import { currentGame } from '../nav/currentGame.ts'
 import { useNexus } from '../settings/nexus.ts'
+import { readStates } from '../shell/offline.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 import { currentFiles, isNewer } from './nexusFormat.ts'
 
@@ -156,7 +156,7 @@ function watchNexusReachable() {
 }
 
 async function nexusChanged() {
-  const states = await States()
+  const states = await readStates()
   if (states?.some((st) => st.id === 'nexus' && !st.unreachable)) {
     await primeDetails(primed)
   }
