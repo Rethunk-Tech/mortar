@@ -30,6 +30,7 @@ type ver struct {
 	Description   string   `json:"description"`
 	Icon          string   `json:"icon"`
 	VersionNumber string   `json:"version_number"`
+	DateCreated   string   `json:"date_created"`
 	Dependencies  []string `json:"dependencies"`
 	Downloads     int      `json:"downloads"`
 	FileSize      int64    `json:"file_size"`
@@ -48,8 +49,8 @@ func listing(owner, name, desc string, downloads int, dep, nsfw bool) map[string
 		"name": name, "owner": owner, "package_url": "https://x/p/" + owner + "/" + name + "/", "date_updated": "2026-01-01", "date_created": created(name),
 		"rating_score": 3, "is_deprecated": dep, "has_nsfw_content": nsfw,
 		"versions": []ver{
-			{Description: desc, VersionNumber: "2.0.0", Dependencies: []string{"BepInEx-BepInExPack-5.4.2100"}, Downloads: downloads, FileSize: 99},
-			{Description: desc, VersionNumber: "1.0.0", Downloads: 1},
+			{Description: desc, VersionNumber: "2.0.0", DateCreated: "2026-01-15T10:00:00.123456Z", Dependencies: []string{"BepInEx-BepInExPack-5.4.2100"}, Downloads: downloads, FileSize: 99},
+			{Description: desc, VersionNumber: "1.0.0", DateCreated: "2025-12-01T00:00:00Z", Downloads: 1},
 		},
 	}
 }

@@ -37,6 +37,8 @@ const refreshAfter = time.Hour
 type version struct {
 	Number string `json:"v"`
 	Size   int64  `json:"size,omitempty"`
+	// Created is when the version was published, as Unix seconds; 0 when the site gave no readable date.
+	Created int64 `json:"t,omitempty"`
 	// Deps are indexes into the listing's dependency names.
 	Deps []uint32 `json:"d,omitempty"`
 }
@@ -81,6 +83,7 @@ type wirePackage struct {
 		Description   string   `json:"description"`
 		Icon          string   `json:"icon"`
 		VersionNumber string   `json:"version_number"`
+		DateCreated   string   `json:"date_created"`
 		Dependencies  []string `json:"dependencies"`
 		Downloads     int      `json:"downloads"`
 		WebsiteURL    string   `json:"website_url"`
@@ -290,7 +293,7 @@ func (d Driver) indexURL(key string) string {
 // unchanged, else rebuilt from the chunks.
 // listingTag names the shape of a stored listing. It changes when the shape does, so a listing built under another
 // shape is never read.
-const listingTag = "c3"
+const listingTag = "c4"
 
 func listingPath(dir, key, hash string) string {
 	return filepath.Join(dir, key+"-"+listingTag+"-"+hash+".json")
@@ -478,6 +481,9 @@ func slim(w *wirePackage, names *depNames) pkg {
 	for i, v := range w.Versions {
 		p.Downloads += v.Downloads
 		p.Versions[i] = version{Number: v.VersionNumber, Size: v.FileSize, Deps: names.ids(v.Dependencies)}
+		if t, err := time.Parse(time.RFC3339, v.DateCreated); err == nil {
+			p.Versions[i].Created = t.Unix()
+		}
 	}
 	return p
 }
