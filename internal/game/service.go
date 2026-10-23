@@ -83,6 +83,8 @@ type LoaderRef struct {
 	IntroSkip bool `json:"introSkip"`
 	// Builtin is whether the loader is part of the game itself, with nothing for Mortar to install.
 	Builtin bool `json:"builtin"`
+	// ModIDName is the loader's term for the id its mods carry (SMAPI's UniqueID, BepInEx's GUID); "" when they have none.
+	ModIDName string `json:"modIdName"`
 }
 
 func loaderRef(gameID string, l components.GameLoader) LoaderRef {
@@ -106,6 +108,9 @@ func loaderRef(gameID string, l components.GameLoader) LoaderRef {
 		ref.Startup, ref.Perf, ref.Overlay, ref.IntroSkip = bridge && ref.Startup, bridge && ref.Perf, bridge && ref.Overlay, bridge && ref.IntroSkip
 		_, ref.Builtin = d.(loader.Builtin)
 		ref.Share = loader.SharesLog(d)
+		if n, ok := d.(loader.ModIDNamer); ok {
+			ref.ModIDName = n.ModIDName(gameID)
+		}
 		if p, ok := d.(loader.LogPaste); ok {
 			ref.Paste = p.PasteSite()
 		}

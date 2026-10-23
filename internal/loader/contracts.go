@@ -165,6 +165,12 @@ type ManifestMods interface {
 	ManifestModsFolder() string
 }
 
+// ModIDNamer is a loader whose mods carry an id of their own that a player would recognise, such as SMAPI's UniqueID.
+type ModIDNamer interface {
+	// ModIDName is the loader's term for that id in game gameID, "" when that game's mods carry none.
+	ModIDName(gameID string) string
+}
+
 // WithConfig is a loader whose mods keep settings files in the profile that Mortar may edit, and that a shared
 // profile carries.
 type WithConfig interface {

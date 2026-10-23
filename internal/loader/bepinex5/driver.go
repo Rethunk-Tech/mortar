@@ -64,6 +64,9 @@ func readMarker(profileDir string) marker {
 
 func (Loader) ID() string { return ID }
 
+// ModIDName is the GUID of a plugin's BepInPlugin attribute.
+func (Loader) ModIDName(string) string { return "GUID" }
+
 // ImportRoots is BepInEx's folder, where an r2modman profile's loose files belong.
 func (Loader) ImportRoots() []string { return []string{"BepInEx"} }
 

@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/components"
 	"github.com/Rethunk-Tech/mortar/internal/launchplan"
@@ -40,6 +41,20 @@ func (Loader) Status(loader.Target) (loader.Status, error) {
 
 func (Loader) Install(context.Context, loader.Target, loader.Package, func(loader.Step)) (string, error) {
 	return "", errors.New("this game has no mod loader to install")
+}
+
+// modInfoFile is the mod-root file whose modid a profile records as the mod's own id.
+const modInfoFile = "modinfo.json"
+
+// ModIDName is the term for the modid a game's modinfo.json gives; a game whose mod-root file is another format (or
+// that has none) has mods with no id of their own.
+func (Loader) ModIDName(gameID string) string {
+	if info, ok := components.Game(gameID); ok {
+		if t, ok := info.Target(TargetID); ok && strings.EqualFold(t.ModRoot, modInfoFile) {
+			return "ModID"
+		}
+	}
+	return ""
 }
 
 // PlacedFolder is the mods target's folder in the profile, whose files Contribute places in the game's mods folder.

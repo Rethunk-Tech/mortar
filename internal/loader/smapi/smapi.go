@@ -61,6 +61,9 @@ func (Loader) VersionScheme() string { return deps.SemverSMAPI }
 
 func (Loader) Formats() []string { return []string{"smapi"} }
 
+// ModIDName is the manifest field a SMAPI mod is known by.
+func (Loader) ModIDName(string) string { return "UniqueID" }
+
 // ManifestModsFolder is the install's Mods folder, where SMAPI loads mods from outside Mortar.
 func (Loader) ManifestModsFolder() string { return "Mods" }
 

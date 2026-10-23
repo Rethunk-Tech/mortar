@@ -289,6 +289,27 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 	}
 }
 
+func TestLoaderRefsNameTheModID(t *testing.T) {
+	games, err := List(t.TempDir(), testStore(t).Get())
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]string{}
+	for _, g := range games {
+		got[g.ID] = g.Loaders[0].ModIDName
+	}
+	for id, want := range map[string]string{
+		"stardew": "UniqueID", "lethal-company": "GUID", "vintage-story": "ModID",
+		// MelonInfo carries no id, Northstar's packages are known by their Thunderstore name, and a folder game whose
+		// mod-root file is not modinfo.json (or that has none) has nothing to read an id from.
+		"backpack-hero": "", "titanfall-2": "", "sims4": "", "darkest-dungeon": "",
+	} {
+		if got[id] != want {
+			t.Errorf("%s: ModIDName %q, want %q", id, got[id], want)
+		}
+	}
+}
+
 type anyFolder struct{ Game }
 
 func (anyFolder) ValidInstall(string) error { return nil }
