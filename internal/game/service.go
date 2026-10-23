@@ -51,8 +51,10 @@ type GameInfo struct {
 	Installed  bool                 `json:"installed"`
 	InstallDir string               `json:"installDir"`
 	ArtURL     string               `json:"artUrl"`
-	Store      string               `json:"store"`
-	Installs   []Install            `json:"installs"`
+	// IconURL is the game's square icon, from Steam's own files; empty for a game without a Steam app id.
+	IconURL  string    `json:"iconUrl"`
+	Store    string    `json:"store"`
+	Installs []Install `json:"installs"`
 }
 
 // LoaderRef names one of a game's loaders.
@@ -253,6 +255,9 @@ func List(home string, cur settings.Settings) ([]GameInfo, error) {
 			}
 		}
 		info.ArtURL = artFor(info.AppID)
+		if info.AppID != "" {
+			info.IconURL = IconURL(info.AppID)
+		}
 		if info.ArtURL == "" && c.Art != "" && info.Installed {
 			info.ArtURL = installArtPrefix + c.ID
 		}

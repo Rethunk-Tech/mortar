@@ -97,6 +97,7 @@ beforeEach(() => {
         deploy: '',
         sourceKeys: {},
         loaderId: '',
+        iconUrl: '',
         loaders: [],
         sources: [],
         available: true,
