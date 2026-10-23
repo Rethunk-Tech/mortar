@@ -67,6 +67,7 @@
           <li>Switching a mod on or off rechecks problems sooner, Load order shows dependency names without waiting, and Settings › Storage sizes the data folder in about half the time</li>
           <li>Searching every mod's settings on the Config page answers in a fraction of the time, most of all for BepInEx games</li>
           <li>Selecting a mod, opening Settings, the Console and the title bar menus do far less redrawing, and a large profile's problem check after a switch takes a fraction of the time</li>
+          <li>The first problem check after Mortar starts takes about a quarter less time, game settings open without waiting on GitHub each time, the loader's state shows at once on start, and the Config tab's search filters once you pause typing</li>
           <li>One word for each thing throughout: Enable and Disable everywhere, and "cannot" rather than "can't"</li>
           <li>Error messages that said the same thing in different words now use one headline</li>
           <li>Settings descriptions that only repeated their setting's name are gone</li>
