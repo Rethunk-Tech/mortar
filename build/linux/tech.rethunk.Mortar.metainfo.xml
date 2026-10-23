@@ -65,6 +65,7 @@
           <li>Each problem has one button for its suggested fix, with the other fixes and Dismiss in its menu, and Why? beside it</li>
           <li>Mortar starts with far less work drawing the Mods page</li>
           <li>Switching a mod on or off rechecks problems sooner, Load order shows dependency names without waiting, and Settings › Storage sizes the data folder in about half the time</li>
+          <li>Searching every mod's settings on the Config page answers in a fraction of the time, most of all for BepInEx games</li>
           <li>One word for each thing throughout: Enable and Disable everywhere, and "cannot" rather than "can't"</li>
           <li>Error messages that said the same thing in different words now use one headline</li>
           <li>Settings descriptions that only repeated their setting's name are gone</li>
