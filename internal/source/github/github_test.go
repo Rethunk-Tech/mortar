@@ -25,7 +25,7 @@ func TestSearchQueryAndPaging(t *testing.T) {
 	}))
 	t.Cleanup(srv.Close)
 	d := &Driver{URL: srv.URL}
-	page, err := d.Search(context.Background(), source.Query{Key: "stardew-valley-mod", Text: "smapi", Page: 2})
+	page, err := d.Search(context.Background(), source.Query{Key: "stardew-valley-mod", Text: "smapi tools", Page: 2})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +79,7 @@ func TestSearchCaches(t *testing.T) {
 	t.Cleanup(srv.Close)
 	now := time.Unix(1_700_000_000, 0).UTC()
 	d := &Driver{URL: srv.URL, Now: func() time.Time { return now }}
-	for _, q := range []source.Query{{Key: "k", Text: "x", Page: 1}, {Key: "k", Text: "x", Page: 1}, {Text: "x", Page: 1}} {
+	for _, q := range []source.Query{{Key: "k", Text: "x y", Page: 1}, {Key: "k", Text: "x y", Page: 1}, {Text: "x y", Page: 1}} {
 		if _, err := d.Search(context.Background(), q); err != nil {
 			t.Fatal(err)
 		}
@@ -138,8 +138,32 @@ func TestSearchMergesTopicsOnceEachByStars(t *testing.T) {
 	}
 }
 
-// TestLiveLethalCompanyTopics is the check that the catalog's topics reach the search: LethalCompanyModding tags its
-// mods lethalcompany-mod and lethal-company-community, never the key's lethal-company-mod.
+func TestSearchTakesAWordAsAnOwnerToo(t *testing.T) {
+	t.Parallel()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Query().Get("q") {
+		case "user:Org":
+			_, _ = w.Write([]byte(`{"total_count":2,"items":[{"full_name":"Org/mod","topics":["b"]},{"full_name":"Org/site","topics":["web"]}]}`))
+		case "user:nobody":
+			w.WriteHeader(http.StatusUnprocessableEntity)
+		default:
+			_, _ = w.Write([]byte(`{"total_count":0,"items":[]}`))
+		}
+	}))
+	t.Cleanup(srv.Close)
+	d := &Driver{URL: srv.URL, Topics: func(string) []string { return []string{"a", "b"} }}
+	page, err := d.Search(context.Background(), source.Query{Key: "a", Text: "Org", Page: 1})
+	if err != nil || len(page.Items) != 1 || page.Items[0].ID != "Org/mod" {
+		t.Fatalf("owner search: %+v, %v", page.Items, err)
+	}
+	if page, err := d.Search(context.Background(), source.Query{Key: "a", Text: "nobody", Page: 1}); err != nil || len(page.Items) != 0 {
+		t.Fatalf("no such owner: %+v, %v", page.Items, err)
+	}
+}
+
+// TestLiveLethalCompanyTopics is the check that the catalog's topics reach the search, since LethalCompanyModding tags
+// its mods lethalcompany-mod and lethal-company-community, never the key's lethal-company-mod, and that its name finds
+// them.
 func TestLiveLethalCompanyTopics(t *testing.T) {
 	if os.Getenv("MORTAR_LIVE_SOURCES") == "" {
 		t.Skip("set MORTAR_LIVE_SOURCES=1 to query GitHub")
@@ -149,13 +173,19 @@ func TestLiveLethalCompanyTopics(t *testing.T) {
 		t.Fatal("catalog has no lethal-company")
 	}
 	gs, _ := g.Source("github")
-	for _, name := range []string{"Enhancer", "UnityVertexLibrary"} {
-		page, err := (&Driver{}).Search(t.Context(), source.Query{Game: "lethal-company", Key: gs.Key, Text: name, Page: 1})
+	d := &Driver{}
+	for _, c := range []struct{ text, want string }{
+		{"Enhancer", "Enhancer"},
+		{"UnityVertexLibrary", "UnityVertexLibrary"},
+		{"LethalCompanyModding", "Enhancer"},
+		{"LethalCompanyModding", "UnityVertexLibrary"},
+	} {
+		page, err := d.Search(t.Context(), source.Query{Game: "lethal-company", Key: gs.Key, Text: c.text, Page: 1})
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !slices.ContainsFunc(page.Items, func(it source.Item) bool { return it.ID == "LethalCompanyModding/"+name }) {
-			t.Errorf("%s missing from %d repositories", name, len(page.Items))
+		if !slices.ContainsFunc(page.Items, func(it source.Item) bool { return it.ID == "LethalCompanyModding/"+c.want }) {
+			t.Errorf("%s: %s missing from %d repositories", c.text, c.want, len(page.Items))
 		}
 	}
 }

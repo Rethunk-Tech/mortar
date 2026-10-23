@@ -11,6 +11,7 @@ import (
 	"maps"
 	"net/http"
 	"net/url"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -72,13 +73,14 @@ type searchResp struct {
 }
 
 type repo struct {
-	FullName        string `json:"full_name"`
-	Name            string `json:"name"`
-	Description     string `json:"description"`
-	HTMLURL         string `json:"html_url"`
-	StargazersCount int    `json:"stargazers_count"`
-	ForksCount      int    `json:"forks_count"`
-	UpdatedAt       string `json:"updated_at"`
+	FullName        string   `json:"full_name"`
+	Name            string   `json:"name"`
+	Description     string   `json:"description"`
+	HTMLURL         string   `json:"html_url"`
+	StargazersCount int      `json:"stargazers_count"`
+	ForksCount      int      `json:"forks_count"`
+	UpdatedAt       string   `json:"updated_at"`
+	Topics          []string `json:"topics"`
 	Owner           struct {
 		Login     string `json:"login"`
 		AvatarURL string `json:"avatar_url"`
@@ -165,8 +167,8 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 		return source.Page{}, nil
 	}
 	topics := d.topics(q)
-	if len(topics) == 1 {
-		got, err := d.searchTopic(ctx, q, topics[0], q.Page)
+	if len(topics) == 1 && ownerName(q.Text) == "" {
+		got, err := d.searchTopic(ctx, q, topicTerms(q.Text, topics[0]), q.Page)
 		if err != nil {
 			return source.Page{}, err
 		}
@@ -175,10 +177,24 @@ func (d *Driver) Search(ctx context.Context, q source.Query) (source.Page, error
 	return d.searchTopics(ctx, q, topics)
 }
 
+func topicTerms(text, topic string) string { return strings.TrimSpace(text + " topic:" + topic) }
+
+var loginRE = regexp.MustCompile(`^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$`)
+
+// ownerName is text when it could be a GitHub user or organisation name, else empty. GitHub's search text never
+// matches a repository's owner, so such a word is also searched as one.
+func ownerName(text string) string {
+	if t := strings.TrimSpace(text); loginRE.MatchString(t) {
+		return t
+	}
+	return ""
+}
+
 // searchTopics merges the topics' results by the query's sort and returns page q.Page of the merge. GitHub's search
 // ORs only text, never topic: qualifiers, so each topic is its own search, read from its first page to q.Page because
 // a merged page needs every topic's leading rows. A repository under several topics is listed once. A topic GitHub
-// refuses is left out while another answers.
+// refuses is left out while another answers. A query that could be an owner adds that owner's first page of
+// repositories carrying any of the topics, one request rather than one per topic.
 func (d *Driver) searchTopics(ctx context.Context, q source.Query, topics []string) (source.Page, error) {
 	type ranked struct {
 		repo        repo
@@ -191,7 +207,7 @@ func (d *Driver) searchTopics(ctx context.Context, q source.Query, topics []stri
 	sum, read := 0, 0
 	for ti, topic := range topics {
 		for p := source.FirstPage; p <= q.Page; p++ {
-			got, err := d.searchTopic(ctx, q, topic, p)
+			got, err := d.searchTopic(ctx, q, topicTerms(q.Text, topic), p)
 			if err != nil {
 				errs, failed = append(errs, err), append(failed, topic)
 				break
@@ -211,7 +227,22 @@ func (d *Driver) searchTopics(ctx context.Context, q source.Query, topics []stri
 			}
 		}
 	}
-	if len(failed) == len(topics) {
+	if owner := ownerName(q.Text); owner != "" {
+		got, err := d.searchTopic(ctx, q, "user:"+owner, source.FirstPage)
+		if err != nil {
+			errs, failed = append(errs, err), append(failed, "user:"+owner)
+		}
+		for i, r := range got.repos {
+			name := strings.ToLower(r.FullName)
+			if seen[name] || !slices.ContainsFunc(r.Topics, func(t string) bool { return slices.Contains(topics, t) }) {
+				continue
+			}
+			seen[name] = true
+			sum, read = sum+1, read+1
+			all = append(all, ranked{r, i, len(topics)})
+		}
+	}
+	if len(all) == 0 && len(failed) >= len(topics) {
 		return source.Page{}, errs[0]
 	}
 	if len(failed) > 0 {
@@ -254,15 +285,14 @@ func compareBySort(by string, a, b repo) int {
 	return 0
 }
 
-// searchTopic is page of q's search within one topic.
-func (d *Driver) searchTopic(ctx context.Context, q source.Query, topic string, page int) (topicPage, error) {
-	key := topic + "\n" + q.Text + "\n" + q.Sort + "\n" + strconv.Itoa(page) + "\n" + strconv.Itoa(q.Len())
+// searchTopic is page of the search for terms, sorted as q asks.
+func (d *Driver) searchTopic(ctx context.Context, q source.Query, terms string, page int) (topicPage, error) {
+	key := terms + "\n" + q.Sort + "\n" + strconv.Itoa(page) + "\n" + strconv.Itoa(q.Len())
 	if hit, ok := d.cached(key); ok {
 		return hit, nil
 	}
 	base := cmp.Or(d.URL, apiURL)
 	client := cmp.Or(d.HTTP, http.DefaultClient)
-	terms := strings.TrimSpace(q.Text + " topic:" + topic)
 	params := url.Values{}
 	params.Set("q", terms)
 	if by := sortParam(q.Sort, q.Text); by != "" {
@@ -286,6 +316,11 @@ func (d *Driver) searchTopic(ctx context.Context, q source.Query, topic string, 
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
 		return topicPage{}, source.Busy("GitHub", resp)
+	}
+	// GitHub refuses a user: qualifier naming no account; the word was then only search text.
+	if resp.StatusCode == http.StatusUnprocessableEntity && strings.HasPrefix(terms, "user:") {
+		d.remember(key, topicPage{})
+		return topicPage{}, nil
 	}
 	if resp.StatusCode != http.StatusOK {
 		return topicPage{}, fmt.Errorf("github answered %s", resp.Status)

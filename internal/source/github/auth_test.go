@@ -34,7 +34,8 @@ func TestRequestsCarryGhToken(t *testing.T) {
 	if _, err := d.Details(context.Background(), "", "o/r", ""); err != nil {
 		t.Fatal(err)
 	}
-	if len(paths) != 2 {
+	// A one-word search also asks for that word as an owner.
+	if len(paths) != 3 {
 		t.Fatalf("requests %v", paths)
 	}
 }
