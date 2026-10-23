@@ -209,6 +209,9 @@ func gameModsBucket(game string) string { return "gameMods:" + game }
 // that hold no usable mod, or repeat a mod another folder holds, are not offered.
 func (s *Service) NewGameModsFolders(game string) (GameModsPreview, error) {
 	dir, err := s.gameModsDir(game)
+	if errors.Is(err, errNoManifestMods) {
+		return GameModsPreview{Mods: []GameModPreview{}}, nil
+	}
 	if err != nil {
 		return GameModsPreview{}, err
 	}
@@ -289,9 +292,16 @@ type GameModsDiff struct {
 	ProfileOnly int `json:"profileOnly"`
 }
 
+func emptyGameModsDiff() GameModsDiff {
+	return GameModsDiff{Missing: []GameModPreview{}, Different: []GameModChange{}, Unreadable: []GameModPreview{}}
+}
+
 // GameModsDiff compares the game's Mods folder with the profile. Dismissed folders are left out of every list.
 func (s *Service) GameModsDiff(game, id string) (GameModsDiff, error) {
 	dir, err := s.gameModsDir(game)
+	if errors.Is(err, errNoManifestMods) {
+		return emptyGameModsDiff(), nil
+	}
 	if err != nil {
 		return GameModsDiff{}, err
 	}
@@ -310,7 +320,7 @@ func (s *Store) GameModsDiff(game, id, modsDir string, dismissed []string) (Game
 	}
 	scheme := gamereg.VersionScheme(game)
 	held := indexMergeable(p)
-	out := GameModsDiff{Missing: []GameModPreview{}, Different: []GameModChange{}, Unreadable: []GameModPreview{}}
+	out := emptyGameModsDiff()
 	inFolder := map[string]bool{}
 	for _, sl := range slots {
 		hidden := slices.Contains(dismissed, filepath.Base(sl.folder.dir))

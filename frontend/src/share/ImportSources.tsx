@@ -6,13 +6,22 @@ import { listNames } from '../i18n/list.ts'
 import { type Tile, TileGrid } from './TileGrid.tsx'
 
 const ICON = 32
-const MANAGERS = [R2MODMAN, GALE, VORTEX, MOD_ORGANIZER_2, STARDROP]
+const MANAGERS = [R2MODMAN, GALE, VORTEX, MOD_ORGANIZER_2]
 
 export type ImportSource = 'link' | 'file' | 'manager' | 'folder'
 
 // The first step of Import: every place a profile can come from, each leading to the same preview.
-export function ImportSources({ onChoose }: { onChoose: (source: ImportSource) => void }) {
+// modsFolder is whether the game has a Mods folder to import from, and Stardrop, which keeps its profiles beside
+// Stardew's Mods folder, comes with it.
+export function ImportSources({
+  modsFolder,
+  onChoose,
+}: {
+  modsFolder: boolean
+  onChoose: (source: ImportSource) => void
+}) {
   const { t } = useLingui()
+  const managers = modsFolder ? [...MANAGERS, STARDROP] : MANAGERS
   const tiles: Tile<ImportSource>[] = [
     {
       id: 'link',
@@ -30,14 +39,18 @@ export function ImportSources({ onChoose }: { onChoose: (source: ImportSource) =
       id: 'manager',
       icon: <Layers size={ICON} />,
       name: t`Another mod manager`,
-      hint: t`${{ managers: listNames(MANAGERS, MANAGERS.length) }} on this computer`,
+      hint: t`${{ managers: listNames(managers, managers.length) }} on this computer`,
     },
-    {
-      id: 'folder',
-      icon: <FolderInput size={ICON} />,
-      name: t`The game's Mods folder`,
-      hint: t`Mods already in the game's folder`,
-    },
+    ...(modsFolder
+      ? [
+          {
+            id: 'folder' as const,
+            icon: <FolderInput size={ICON} />,
+            name: t`The game's Mods folder`,
+            hint: t`Mods already in the game's folder`,
+          },
+        ]
+      : []),
   ]
   return (
     <TileGrid

@@ -61,6 +61,9 @@ func (Loader) VersionScheme() string { return deps.SemverSMAPI }
 
 func (Loader) Formats() []string { return []string{"smapi"} }
 
+// ManifestModsFolder is the install's Mods folder, where SMAPI loads mods from outside Mortar.
+func (Loader) ManifestModsFolder() string { return "Mods" }
+
 // ProcessNames is SMAPI's executable, the process a running profile is found by.
 func (Loader) ProcessNames() []string { return []string{smapiMarker} }
 

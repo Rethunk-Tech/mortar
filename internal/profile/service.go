@@ -59,7 +59,16 @@ func NewService(store *Store, home string, settings *settings.Store) *Service {
 	return svc
 }
 
+// errNoManifestMods is the refusal for a game whose loader reads no manifest mods from a folder of the install, so
+// the install has no Mods folder to import from, compare with a profile or watch.
+var errNoManifestMods = errors.New("this game's loader reads no mods from a Mods folder in the game folder")
+
+// gameModsDir is the install folder the game's loader reads manifest mods from (SMAPI's Mods).
 func (s *Service) gameModsDir(id string) (string, error) {
+	rel, ok := game.ManifestModsFolder(id)
+	if !ok {
+		return "", errNoManifestMods
+	}
 	dir, err := game.InstallDir(s.home, s.settings.Get(), id)
 	if err != nil {
 		return "", err
@@ -67,7 +76,7 @@ func (s *Service) gameModsDir(id string) (string, error) {
 	if dir == "" {
 		return "", fmt.Errorf("%s is not installed", id)
 	}
-	return filepath.Join(dir, "Mods"), nil
+	return filepath.Join(dir, rel), nil
 }
 
 // errModsFolderIsInstall is the refusal for a folder game whose mods are laid out as packed from the install folder
@@ -91,11 +100,19 @@ func (s *Service) importModsDir(id string) (string, error) {
 	return s.gameModsDir(id)
 }
 
+// ImportsModsFolder is whether Import from the game's Mods folder applies to the game: its loader reads manifest mods
+// from a folder of the install, or it is a folder game with a mods folder of its own.
+func (s *Service) ImportsModsFolder(gameID string) bool {
+	_, loose := looseModKinds(gameID)
+	_, manifest := game.ManifestModsFolder(gameID)
+	return loose || manifest
+}
+
 // PreviewGameMods lists mods in the game's Mods folder that ImportGameMods would copy.
 func (s *Service) PreviewGameMods(gameID string) (GameModsPreview, error) {
 	dir, err := s.importModsDir(gameID)
-	if errors.Is(err, errModsFolderIsInstall) {
-		return GameModsPreview{}, nil
+	if errors.Is(err, errModsFolderIsInstall) || errors.Is(err, errNoManifestMods) {
+		return GameModsPreview{Mods: []GameModPreview{}}, nil
 	}
 	if err != nil {
 		return GameModsPreview{}, err

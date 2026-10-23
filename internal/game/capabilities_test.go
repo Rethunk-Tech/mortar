@@ -51,3 +51,15 @@ func TestLethalCompanySideFilesTravelWithTheirSlot(t *testing.T) {
 		t.Fatalf("slot 1 = %v, want %v", got, want)
 	}
 }
+
+// Only a SMAPI game has a Mods folder in its install that Mortar reads manifest mods from and watches.
+func TestManifestModsFolderBelongsToTheSMAPIGameOnly(t *testing.T) {
+	if got, ok := ManifestModsFolder("stardew"); !ok || got != "Mods" {
+		t.Errorf("stardew = %q, %v", got, ok)
+	}
+	for _, id := range []string{"lethal-company", "schedule-i", "sims4"} {
+		if got, ok := ManifestModsFolder(id); ok {
+			t.Errorf("%s = %q, want none", id, got)
+		}
+	}
+}

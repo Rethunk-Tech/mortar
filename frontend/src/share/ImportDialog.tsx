@@ -1,7 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, IconButton, LinearProgress, Typography } from '@mui/material'
 import { ArrowLeft, X } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { ImportsModsFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { MOD_ORGANIZER_2, STARDROP, VORTEX } from '../brand/productNames.ts'
 import { localId } from '../mods/dependents.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
@@ -125,9 +126,14 @@ function ImportPane({
   game: string
   close: () => void
 }) {
+  const [modsFolder, setModsFolder] = useState(false)
+  useEffect(() => {
+    ImportsModsFolder(game).then(setModsFolder).catch(reportUnexpected)
+  }, [game])
   if (flow.tab === 'choose') {
     return (
       <ImportSources
+        modsFolder={modsFolder}
         onChoose={(picked: ImportSource) => {
           if (picked === 'folder') {
             close()

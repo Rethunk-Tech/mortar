@@ -157,6 +157,14 @@ type PlacesFolder interface {
 	PlacedFolder(gameID string) (folder, role string, ok bool)
 }
 
+// ManifestMods is a loader that reads its mods from a folder of the game's install, one folder per mod with a
+// manifest.json naming a UniqueID (SMAPI's). Import from the game's Mods folder, the new-folders callout and the
+// folder watch exist only for a game with such a loader; a manifest in that folder is read as SMAPI's.
+type ManifestMods interface {
+	// ManifestModsFolder is the folder's name below the install.
+	ManifestModsFolder() string
+}
+
 // WithConfig is a loader whose mods keep settings files in the profile that Mortar may edit, and that a shared
 // profile carries.
 type WithConfig interface {

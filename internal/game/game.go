@@ -71,6 +71,17 @@ func Loaders(id string) []loader.Loader {
 	return loader.For(g)
 }
 
+// ManifestModsFolder is the folder below the game's install that its loader reads manifest mods from, when a loader
+// of the game reads them from one (loader.ManifestMods).
+func ManifestModsFolder(id string) (string, bool) {
+	for _, l := range Loaders(id) {
+		if m, ok := l.(loader.ManifestMods); ok {
+			return m.ManifestModsFolder(), true
+		}
+	}
+	return "", false
+}
+
 // VersionScheme is the scheme the game's components are versioned in: its first loader's that names one, else opaque.
 func VersionScheme(id string) string {
 	for _, l := range Loaders(id) {
