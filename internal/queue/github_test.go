@@ -410,3 +410,23 @@ func TestAGitHubFallbackWithoutTheModGoesBackToNexus(t *testing.T) {
 		t.Fatalf("a release holding the mod installs from GitHub: %+v, installed %+v", same, g.final)
 	}
 }
+
+// A game whose loader reads no manifests has no update keys to check the repository against, so its release installs
+// with the note instead of passing as verified.
+func TestGitHubReleaseOfAGameWithoutManifestsInstallsUnverified(t *testing.T) {
+	g := newGitHubFixture(t)
+	g.s.d.Stage = func(_ context.Context, _ string, _ profile.Source, _ string) (string, []mod.ID, error) {
+		return "github-key", nil, nil
+	}
+	g.s.d.Verify = func(context.Context, mod.ID, string, string) (bool, error) {
+		return false, fmt.Errorf("verified a game without manifests")
+	}
+	g.start()
+	req := ghReq("2.0.0")
+	req.Game = "lethal-company"
+	g.add(req)
+	st := g.wait("done", g.item(StateDone))
+	if !st.Items[0].Unverified || len(g.final) != 1 {
+		t.Errorf("item %+v installed %+v", st.Items[0], g.final)
+	}
+}

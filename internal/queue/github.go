@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/mortar/internal/datadir"
+	"github.com/Rethunk-Tech/mortar/internal/game"
 	"github.com/Rethunk-Tech/mortar/internal/github"
 	"github.com/Rethunk-Tech/mortar/internal/loader"
 	"github.com/Rethunk-Tech/mortar/internal/mod"
@@ -245,7 +246,9 @@ func (s *Service) downloadGitHub(ctx context.Context, it Item) error {
 		return nil
 	}
 	owner, repo, _ := strings.Cut(it.Repo, "/")
-	unverified := false
+	// The repository is checked against the update keys in the mods' manifests, which only a manifest game's mods carry.
+	_, checkable := game.ManifestModsFolder(it.Game)
+	unverified := !checkable
 	for _, id := range ids {
 		ok, verr := s.d.Verify(ctx, id, owner, repo)
 		switch {
