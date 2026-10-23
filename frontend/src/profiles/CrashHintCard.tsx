@@ -9,6 +9,7 @@ import {
   OpenCrashReport,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { BisectDialog } from '../console/BisectDialog.tsx'
+import { useLastRun } from '../game/useLastRun.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useReasonText } from '../i18n/reasonText.ts'
 import { useLaunch } from '../launch/store.ts'
@@ -26,17 +27,11 @@ const isText = (v: unknown): v is string => typeof v === 'string'
 
 // Shown at the top of the profile after a crashed run: the mod the log blames with a way to switch it off and play
 // again, or, when the log blames none, a way to find it by halving the mods.
-export function CrashHintCard({
-  game,
-  profileId,
-  crashedAt,
-}: {
-  game: string
-  profileId: string
-  crashedAt: string
-}) {
+export function CrashHintCard({ game, profileId }: { game: string; profileId: string }) {
   const { t } = useLingui()
   const updated = useProfiles((s) => s.profiles.find((p) => p.id === profileId)?.updated ?? '')
+  // Read here, not in Home: the last run arrives after the page draws, and only this card shows it.
+  const crashedAt = useLastRun(game, profileId, String(updated))
   const mod = useMods((s) => s.mods)
   const [hint, setHint] = useState<Hint | null>(null)
   const [hidden, setHidden] = useState(() => readStored(DISMISSED_KEY, '', isText))

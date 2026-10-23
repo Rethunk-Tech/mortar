@@ -25,7 +25,6 @@ import { LaunchMenu } from './LaunchMenu.tsx'
 import { ProfileMenu } from './ProfileMenu.tsx'
 import { useRenameRequest } from './renameRequest.ts'
 import { useTab } from './tab.ts'
-import { useLastRun } from './useLastRun.ts'
 
 function SavesList() {
   const { t } = useLingui()
@@ -106,7 +105,6 @@ export function Home({
       setRenaming(true)
     }
   }, [renameId, profile.id, hero])
-  const crashedAt = useLastRun(game, profile.id, String(profile.updated))
   return (
     <Box
       sx={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}
@@ -146,7 +144,7 @@ export function Home({
           },
         }}
       >
-        <CrashHintCard game={game} profileId={profile.id} crashedAt={crashedAt} />
+        <CrashHintCard game={game} profileId={profile.id} />
         <HomeNotes profile={profile} />
         {hasSaves ? <SavesPanel /> : null}
         <SinceLastRun game={game} profileId={profile.id} />

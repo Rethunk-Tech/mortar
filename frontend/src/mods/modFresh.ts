@@ -24,9 +24,10 @@ const sourceKeyOf = (profile: Profile, mod: Mod) => {
 export function useModFresh(profile: Profile, mod: Mod) {
   const nexus = useNexusFresh(nexusIdOf(profile, mod))
   const key = sourceKeyOf(profile, mod)
-  const seen = useSourceSeen((s) => s.bySource[key])
   const offered = useUpdates((s) => updateFor(s.updates, mod, profile))?.version
-  return nexus || (key !== '' && isNewSource(seen, offered))
+  // The answer, not the seen version: opening the panel records a look, which must not redraw it when nothing is new.
+  const fresh = useSourceSeen((s) => key !== '' && isNewSource(s.bySource[key], offered))
+  return nexus || fresh
 }
 
 // Opening a mod's panel counts as looking at the newest version its source offers.

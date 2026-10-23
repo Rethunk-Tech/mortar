@@ -45,6 +45,7 @@ import { openImport } from '../share/store.ts'
 import { ControlsRow } from '../shell/ControlsRow.tsx'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { useKeptWhileClosed } from '../shell/keptWhileClosed.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { SearchField } from '../shell/SearchField.tsx'
 import { MenuRule } from '../shell/TitleMenu.tsx'
@@ -187,6 +188,33 @@ const ShowFilterControl = memo(function ShowFilterMenu({
     onFilter(next)
     setAnchor(null)
   }
+  const items = useKeptWhileClosed(anchor !== null, [
+    ...[
+      { id: 'all' as const, label: t`All mods` },
+      ...FILTERS.map((item) => ({ id: item.id, label: item.label(i18n) })),
+    ].map((item) => (
+      <MenuItem
+        key={item.id}
+        role="menuitemradio"
+        aria-checked={filter === item.id}
+        selected={filter === item.id}
+        onClick={() => choose(item.id)}
+      >
+        <ListItemIcon sx={{ color: 'inherit' }}>
+          {filter === item.id ? <Check size={16} aria-hidden={true} /> : null}
+        </ListItemIcon>
+        <ListItemText>{item.label}</ListItemText>
+      </MenuItem>
+    )),
+    <MenuRule key="rule" />,
+    <ImplicitViewItems key="implicit" />,
+    ...(tags.length > 0
+      ? [
+          <MenuRule key="tags-rule" />,
+          <TagChips key="tags" tags={tags} selected={selectedTags} onTags={onTags} />,
+        ]
+      : []),
+  ])
   return (
     <>
       <Tooltip title={showLabel}>
@@ -205,27 +233,7 @@ const ShowFilterControl = memo(function ShowFilterMenu({
         </Button>
       </Tooltip>
       <Menu open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
-        {[
-          { id: 'all' as const, label: t`All mods` },
-          ...FILTERS.map((item) => ({ id: item.id, label: item.label(i18n) })),
-        ].map((item) => (
-          <MenuItem
-            key={item.id}
-            role="menuitemradio"
-            aria-checked={filter === item.id}
-            selected={filter === item.id}
-            onClick={() => choose(item.id)}
-          >
-            <ListItemIcon sx={{ color: 'inherit' }}>
-              {filter === item.id ? <Check size={16} aria-hidden={true} /> : null}
-            </ListItemIcon>
-            <ListItemText>{item.label}</ListItemText>
-          </MenuItem>
-        ))}
-        <MenuRule />
-        <ImplicitViewItems />
-        {tags.length > 0 ? <MenuRule /> : null}
-        {tags.length > 0 ? <TagChips tags={tags} selected={selectedTags} onTags={onTags} /> : null}
+        {items}
       </Menu>
     </>
   )
