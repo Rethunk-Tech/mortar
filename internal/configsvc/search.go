@@ -74,7 +74,7 @@ func (s *Service) searchFile(game, profileID, q, modID, modName string, f Config
 		}
 		return textHits(q, modID, modName, f.Name, body)
 	}
-	sc, err := s.Schema(game, profileID, modID, f.Name)
+	sc, err := s.schemaOf(game, profileID, modID, f)
 	if err != nil {
 		return nil
 	}

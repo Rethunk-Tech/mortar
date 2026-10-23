@@ -347,3 +347,45 @@ func TestALocalPackageShowsItsOwnIcon(t *testing.T) {
 		t.Fatalf("icon = %q, %v", icon, err)
 	}
 }
+
+func TestSeedConfigsCopiesAPackagesConfigOnceUntilTheProfileChanges(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	p, err := e.Create("lethal-company", "LC")
+	if err != nil {
+		t.Fatal(err)
+	}
+	zip := testfs.WriteZip(t, filepath.Join(t.TempDir(), "Ns-Foo-1.0.0.zip"), map[string]string{
+		"manifest.json":  `{"name":"Foo","version_number":"1.0.0","dependencies":[]}`,
+		"Foo.dll":        "MZ",
+		"config/Foo.cfg": "x = 1\n",
+	})
+	if _, err := e.InstallArchive(t.Context(), "lethal-company", p.ID, zip); err != nil {
+		t.Fatal(err)
+	}
+	dir, err := e.ProfileDir("lethal-company", p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := filepath.Join(dir, "BepInEx", "config", "Foo.cfg")
+	if err := e.SeedConfigs("lethal-company", p.ID); err != nil || !fsx.IsFile(cfg) {
+		t.Fatalf("the package's config was not seeded: %v", err)
+	}
+	// Unchanged packages are not laid out again, so a seed right after one copies nothing.
+	if err := os.Remove(cfg); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.SeedConfigs("lethal-company", p.ID); err != nil || fsx.IsFile(cfg) {
+		t.Fatalf("a profile that had not changed was seeded again: %v", err)
+	}
+	bar := testfs.WriteZip(t, filepath.Join(t.TempDir(), "Ns-Bar-1.0.0.zip"), map[string]string{
+		"manifest.json": `{"name":"Bar","version_number":"1.0.0","dependencies":[]}`,
+		"Bar.dll":       "MZ",
+	})
+	if _, err := e.InstallArchive(t.Context(), "lethal-company", p.ID, bar); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.SeedConfigs("lethal-company", p.ID); err != nil || !fsx.IsFile(cfg) {
+		t.Fatalf("a changed profile was not seeded: %v", err)
+	}
+}

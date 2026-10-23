@@ -14,6 +14,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 	"unicode"
 
 	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
@@ -65,6 +66,40 @@ type Service struct {
 
 	changedMu sync.Mutex
 	changed   map[changedKey]bool
+
+	// parsed keeps each .cfg file's parse while its size and time are unchanged: a search and every page of the config
+	// view read every file of the profile again.
+	parsedMu sync.Mutex
+	parsed   map[string]parsedCfg
+}
+
+type parsedCfg struct {
+	size int64
+	at   time.Time
+	doc  cfgDoc
+}
+
+// parseCached is the parse of the .cfg file at path, read again only when it changed since the last.
+func (s *Service) parseCached(path string, info fs.FileInfo) (cfgDoc, error) {
+	s.parsedMu.Lock()
+	hit, ok := s.parsed[path]
+	s.parsedMu.Unlock()
+	if ok && hit.size == info.Size() && hit.at.Equal(info.ModTime()) {
+		return hit.doc, nil
+	}
+	raw, err := fsx.ReadFile(path)
+	if err != nil {
+		return cfgDoc{}, err
+	}
+	doc := parseCfg(string(raw))
+	s.parsedMu.Lock()
+	if s.parsed == nil {
+		s.parsed = map[string]parsedCfg{}
+	}
+	// ponytail: entries for deleted files stay until Mortar restarts; one small parse per config file ever seen.
+	s.parsed[path] = parsedCfg{size: info.Size(), at: info.ModTime(), doc: doc}
+	s.parsedMu.Unlock()
+	return doc, nil
 }
 
 func (s *Service) cfgDir(game, id string) (string, error) {
@@ -419,11 +454,15 @@ func (s *Service) cfgDocs(game, profileID string) ([]cfgOnDisk, error) {
 		if e.IsDir() || !strings.EqualFold(filepath.Ext(e.Name()), cfgExt) {
 			continue
 		}
-		raw, err := fsx.ReadFile(filepath.Join(dir, e.Name()))
+		info, err := e.Info()
 		if err != nil {
 			continue
 		}
-		out = append(out, cfgOnDisk{name: e.Name(), stem: strings.TrimSuffix(e.Name(), filepath.Ext(e.Name())), doc: parseCfg(string(raw))})
+		doc, err := s.parseCached(filepath.Join(dir, e.Name()), info)
+		if err != nil {
+			continue
+		}
+		out = append(out, cfgOnDisk{name: e.Name(), stem: strings.TrimSuffix(e.Name(), filepath.Ext(e.Name())), doc: doc})
 	}
 	return out, nil
 }
@@ -447,6 +486,11 @@ func (s *Service) Schema(game, profileID, modID, file string) (Schema, error) {
 	if err != nil {
 		return Schema{}, err
 	}
+	return s.schemaOf(game, profileID, modID, f)
+}
+
+// schemaOf reads a file the caller already found among the profile's config files.
+func (s *Service) schemaOf(game, profileID, modID string, f ConfigFile) (Schema, error) {
 	if f.Format == FormatGMCM {
 		return s.gmcmSchema(game, profileID, mod.ID(modID), f)
 	}
@@ -472,11 +516,15 @@ func (s *Service) Schema(game, profileID, modID, file string) (Schema, error) {
 		if err != nil {
 			return Schema{}, err
 		}
-		raw, err := fsx.ReadFile(path)
+		info, err := os.Stat(path)
 		if err != nil {
 			return Schema{}, err
 		}
-		return parseCfg(string(raw)).schema(f), nil
+		doc, err := s.parseCached(path, info)
+		if err != nil {
+			return Schema{}, err
+		}
+		return doc.schema(f), nil
 	}
 	cur, err := s.Profiles.ReadConfig(game, profileID, "", mod.ID(modID))
 	if err != nil {

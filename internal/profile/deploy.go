@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"io/fs"
 	"maps"
 	"os"
 	"path"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -527,16 +529,44 @@ func restoreChanged(dir, rel string) (bool, error) {
 
 // SeedConfigs copies the config files the enabled packages ship into the profile where it has none yet, so a
 // package's settings can be edited before the first launch lays the rest of it out.
+//
+// Laying out every package is the cost, and the config page asks for it on every read, so a profile whose packages and
+// their switched-off mods have not changed since the last seed is not seeded again.
 func (s *Store) SeedConfigs(gameID, id string) error {
+	p, dir, err := s.readDir(gameID, id)
+	if err != nil {
+		return err
+	}
+	at, sig := gameID+"/"+id, seedSignature(p)
+	s.seededMu.Lock()
+	done := s.seeded[at] == sig
+	s.seededMu.Unlock()
+	if done {
+		return nil
+	}
 	files, _, err := s.packageFiles(gameID, id)
 	if err != nil || files == nil {
 		return err
 	}
-	_, dir, err := s.readDir(gameID, id)
-	if err != nil {
+	if err := seedConfigs(dir, files); err != nil {
 		return err
 	}
-	return seedConfigs(dir, files)
+	s.seededMu.Lock()
+	if s.seeded == nil {
+		s.seeded = map[string]string{}
+	}
+	s.seeded[at] = sig
+	s.seededMu.Unlock()
+	return nil
+}
+
+// seedSignature is what decides which packages' configs a seed copies: each entry and the mods switched off in it.
+func seedSignature(p Profile) string {
+	h := fnv.New64a()
+	for _, e := range p.Entries {
+		_, _ = fmt.Fprintf(h, "%s|%v|", e.Key, e.Disabled)
+	}
+	return strconv.FormatUint(h.Sum64(), 16)
 }
 
 func isConfig(rel string) bool { return strings.HasPrefix(rel, "BepInEx/config/") }
