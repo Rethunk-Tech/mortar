@@ -373,13 +373,18 @@ async function run(
       const result = await measure(page, meter, c)
       console.log(`${c.name} measured`)
       const t = Date.now()
-      breaks.push(
-        ...(await layoutBreaks(page)).map(
-          (b: LayoutBreak) => `LAYOUT ${c.name} | ${b.kind} | ${b.where} | ${b.text}`,
-        ),
-      )
-      if (shots) {
-        await page.screenshot({ path: `${shots}/${c.name}.png` })
+      // A page that reloads under the check is itself a break; the walk goes on with the next case.
+      try {
+        breaks.push(
+          ...(await layoutBreaks(page)).map(
+            (b: LayoutBreak) => `LAYOUT ${c.name} | ${b.kind} | ${b.where} | ${b.text}`,
+          ),
+        )
+        if (shots) {
+          await page.screenshot({ path: `${shots}/${c.name}.png` })
+        }
+      } catch (e) {
+        breaks.push(`LAYOUT ${c.name} | unchecked | ${String(e).split('\n')[0]}`)
       }
       results.push({
         ...result,
