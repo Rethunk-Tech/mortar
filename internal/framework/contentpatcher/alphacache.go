@@ -79,6 +79,11 @@ func readAlphaDisk(path string) (pngAlpha, bool) {
 		releaseAlpha(mask)
 		return pngAlpha{}, false
 	}
+	// The gzip trailer's checksum is read only at the end of the stream, and a write that never synced can be torn.
+	if _, err := io.Copy(io.Discard, br); err != nil {
+		releaseAlpha(mask)
+		return pngAlpha{}, false
+	}
 	if info, err := os.Stat(path); err == nil && time.Since(info.ModTime()) > alphaTouchAge {
 		now := time.Now()
 		_ = os.Chtimes(path, now, now)
@@ -90,7 +95,7 @@ func writeAlphaDisk(path string, pix pngAlpha) {
 	if os.MkdirAll(filepath.Dir(path), 0o700) != nil {
 		return
 	}
-	_ = datadir.WriteStream(path, 0o600, func(w io.Writer) error {
+	_ = datadir.WriteCacheStream(path, 0o600, func(w io.Writer) error {
 		zw, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 		if err != nil {
 			return err

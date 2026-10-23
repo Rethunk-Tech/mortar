@@ -44,7 +44,17 @@ func WriteFile(path string, data []byte, perm os.FileMode) error {
 
 // WriteStream replaces path with write's output through a temp file, fsync, and rename, so a crash never leaves it
 // truncated. write seeing a failure, or returning one, removes the temp file and leaves path unchanged.
-func WriteStream(path string, perm os.FileMode, write func(io.Writer) error) (err error) {
+func WriteStream(path string, perm os.FileMode, write func(io.Writer) error) error {
+	return writeStream(path, perm, true, write)
+}
+
+// WriteCacheStream is WriteStream without the fsyncs, for a file that only memoises a computation: a crash may
+// leave it torn, so the reader must treat an unreadable file as absent. Thousands of small fsyncs cost seconds.
+func WriteCacheStream(path string, perm os.FileMode, write func(io.Writer) error) error {
+	return writeStream(path, perm, false, write)
+}
+
+func writeStream(path string, perm os.FileMode, durable bool, write func(io.Writer) error) (err error) {
 	f, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".*.tmp")
 	if err != nil {
 		return err
@@ -60,8 +70,10 @@ func WriteStream(path string, perm os.FileMode, write func(io.Writer) error) (er
 	if err = f.Chmod(perm); err != nil {
 		return errors.Join(err, f.Close())
 	}
-	if err = f.Sync(); err != nil {
-		return errors.Join(err, f.Close())
+	if durable {
+		if err = f.Sync(); err != nil {
+			return errors.Join(err, f.Close())
+		}
 	}
 	if err = f.Close(); err != nil {
 		return err
@@ -69,6 +81,8 @@ func WriteStream(path string, perm os.FileMode, write func(io.Writer) error) (er
 	if err = fsx.Rename(f.Name(), path); err != nil {
 		return err
 	}
-	_ = fsx.SyncDir(filepath.Dir(path)) // best effort: the rename already landed
+	if durable {
+		_ = fsx.SyncDir(filepath.Dir(path)) // best effort: the rename already landed
+	}
 	return nil
 }

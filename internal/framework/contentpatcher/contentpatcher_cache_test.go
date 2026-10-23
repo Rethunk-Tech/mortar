@@ -592,3 +592,43 @@ func TestOverlayAlphaMaskIsKeptOnDisk(t *testing.T) {
 		t.Fatalf("mask after a restart = %v %dx%d, want the decoded one", ok, got.w, got.h)
 	}
 }
+
+func TestOverlayAlphaMaskWithBadChecksumIsNotServed(t *testing.T) {
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("LOCALAPPDATA", t.TempDir())
+	resetContentPackCaches()
+	t.Cleanup(resetContentPackCaches)
+	loadPackDiskCache()
+
+	im, _, pngPath := diskCachePack(t)
+	key, ok := pngFileKey(im.Folder, "patch.png")
+	if !ok {
+		t.Fatal("pngFileKey")
+	}
+	if _, ok := loadPNGAlpha(im.Folder, "patch.png", key); !ok {
+		t.Fatal("loadPNGAlpha")
+	}
+	disk := alphaDiskPath(key)
+	raw, err := fsx.ReadFile(disk)
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw[len(raw)-8] ^= 0xff // the trailer's CRC
+	if err := fsx.WriteFile(disk, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(pngPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(pngPath, make([]byte, info.Size()), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(pngPath, info.ModTime(), info.ModTime()); err != nil {
+		t.Fatal(err)
+	}
+	pngAlphaCache = sync.Map{}
+	if _, ok := loadPNGAlpha(im.Folder, "patch.png", key); ok {
+		t.Fatal("a mask whose checksum fails was served")
+	}
+}
