@@ -9,7 +9,10 @@ const LOCALES = resolve(import.meta.dir, '../frontend/src/locales')
 const OUT = join(LOCALES, 'completeness.ts')
 const SOURCE_LOCALE = 'en'
 
-export type Count = { translated: number; total: number }
+export interface Count {
+  translated: number
+  total: number
+}
 
 function unquote(lines: string): string {
   return [...lines.matchAll(/^"(.*)"$/gm)].map((m) => JSON.parse(`"${m[1]}"`)).join('')
