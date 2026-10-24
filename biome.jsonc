@@ -137,7 +137,8 @@
         "noUnresolvedImports": "off",
         // canon ts-biome-00005 — rules for frameworks this repository does not use.
         "noSolidDestructuredProps": "off",
-        "useQwikValidLexicalScope": "off"
+        "useQwikValidLexicalScope": "off",
+        "noReactNativeRawText": "off"
       },
 
       "suspicious": {
@@ -145,6 +146,8 @@
         "noExplicitAny": "error",
         // canon ts-biome-00005
         "noReactSpecificProps": "off",
+        "useBaseline": "off",
+        "noLoopFunc": "off",
         // canon ts-biome-00019
         "noUnnecessaryConditions": "error"
       },
