@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 	"time"
 
@@ -37,12 +38,12 @@ func TestOAuthPKCEAndRefresh(t *testing.T) {
 	defer srv.Close()
 
 	now := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	o := OAuth{ClientID: "cid", AuthBase: srv.URL, Now: func() time.Time { return now }}
+	o := OAuth{ClientID: "cid", AuthBase: srv.URL, Now: func() time.Time { return now }, Addr: "127.0.0.1:0"}
 	o.OpenBrowser = func(raw string) error {
 		u, _ := url.Parse(raw)
 		q := u.Query()
 		challenge = q.Get("code_challenge")
-		if q.Get("redirect_uri") != RedirectURI || q.Get("scope") != "public openid profile" {
+		if !strings.HasSuffix(q.Get("redirect_uri"), CallbackPath) || q.Get("scope") != "public openid profile" {
 			t.Errorf("redirect %q scope %q", q.Get("redirect_uri"), q.Get("scope"))
 		}
 		if q.Get("client_id") != "cid" || q.Get("code_challenge_method") != "S256" {
@@ -76,7 +77,7 @@ func TestOAuthPKCEAndRefresh(t *testing.T) {
 }
 
 func TestOAuthTimeoutAndDeniedCallback(t *testing.T) {
-	o := OAuth{ClientID: "c", Timeout: 50 * time.Millisecond, OpenBrowser: func(string) error { return nil }}
+	o := OAuth{ClientID: "c", Timeout: 50 * time.Millisecond, OpenBrowser: func(string) error { return nil }, Addr: "127.0.0.1:0"}
 	if _, err := o.Authorize(context.Background()); !errors.Is(err, ErrTimeout) {
 		t.Fatalf("timeout: %v", err)
 	}

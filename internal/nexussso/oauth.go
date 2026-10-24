@@ -63,6 +63,9 @@ type OAuth struct {
 	OpenBrowser func(url string) error
 	OnState     func(State)
 	Now         func() time.Time
+	// Addr is the loopback address the callback listens on; empty is RedirectPort, the one Nexus registered. Tests
+	// pass "127.0.0.1:0" so they never contend for that port.
+	Addr string
 }
 
 func (o OAuth) base() string {
@@ -96,11 +99,14 @@ func (o OAuth) Authorize(ctx context.Context) (Tokens, error) {
 	runCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	ln, err := (&net.ListenConfig{}).Listen(runCtx, "tcp", redirectAddr)
+	ln, err := (&net.ListenConfig{}).Listen(runCtx, "tcp", cmp.Or(o.Addr, redirectAddr))
 	if err != nil {
 		return Tokens{}, ErrPortBusy
 	}
 	redirect := RedirectURI
+	if o.Addr != "" {
+		redirect = "http://" + ln.Addr().String() + CallbackPath
+	}
 	verifier := rand.Text() + rand.Text()
 	state := rand.Text()
 	sum := sha256.Sum256([]byte(verifier))

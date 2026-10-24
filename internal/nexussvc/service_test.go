@@ -238,7 +238,7 @@ func TestStartSSOPrefersOAuthWhenClientIDSet(t *testing.T) {
 	client.BaseURL = api.URL
 	s := NewService(store, client, &meta.Client{})
 	s.sso = nexussso.Legacy{Slug: "mortar"}
-	s.oauth = nexussso.OAuth{ClientID: "cid", AuthBase: idp.URL, OpenBrowser: func(raw string) error {
+	s.oauth = nexussso.OAuth{ClientID: "cid", AuthBase: idp.URL, Addr: "127.0.0.1:0", OpenBrowser: func(raw string) error {
 		u, _ := url.Parse(raw)
 		go func() {
 			req, _ := http.NewRequestWithContext(context.Background(), http.MethodGet, u.Query().Get("redirect_uri")+"?code=C&state="+u.Query().Get("state"), nil)
