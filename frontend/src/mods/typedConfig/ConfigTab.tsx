@@ -319,7 +319,7 @@ function SettingHits({ profileId, hits }: { profileId: string; hits: Hit[] }) {
         >
           <ListItemText
             primary={h.label || h.key}
-            secondary={h.modName}
+            secondary={h.section ? `${h.section} · ${h.modName}` : h.modName}
             slotProps={{ primary: { noWrap: true }, secondary: { noWrap: true } }}
           />
         </ListItemButton>
