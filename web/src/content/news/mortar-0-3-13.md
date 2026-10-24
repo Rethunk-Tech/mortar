@@ -5,6 +5,10 @@ version: 0.3.13
 title: "A launch you can follow, versions with dates"
 summary: "The launch screen shows each step as it comes up and can be cancelled, Change version lists each version's date, Add a game reads the game's own files, the Multiplayer mod list splits hosting from joining, and Mortar redraws and asks its backend far less."
 highlights:
+- area: Play
+  title: A launch you can follow
+  text: The launch screen fills in as the launcher, the game and its loader come up, counts the mods as they load, and Cancel stops the launch at any step.
+  image: /img/launch.webp
 - area: Mods
   title: Versions with dates
   text: Change version lists each version with its release date, marks Latest and Installed, and names the version it installs.
