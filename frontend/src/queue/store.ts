@@ -37,7 +37,7 @@ import { follow } from '../shell/follow.ts'
 import { sameValue } from '../shell/sameValue.ts'
 import { errorDetails, errorKind } from '../toasts/errorKind.ts'
 import { changeStillLatest, type HistoryActionState } from '../toasts/history.ts'
-import { useToasts } from '../toasts/store.ts'
+import { type ToastInput, useToasts } from '../toasts/store.ts'
 import { displayName } from './totals.ts'
 
 // The binding types a Go slice as nullable; the store keeps it a list.
@@ -133,7 +133,7 @@ function downloadFailCopy(error: string): { body: string; detail?: string } {
   }
 }
 
-function failureToast(item: Item) {
+function failureToast(item: Item): Pick<ToastInput, 'title' | 'body' | 'action'> {
   if (item.errorKind === 'auth') {
     return {
       title: i18n._(msg`${{ source: sourceLabel('nexus') }} rejected your API key`),
@@ -236,7 +236,7 @@ function pushDownloadFailures(failed: Item[]) {
     useToasts.getState().push({
       kind: 'error',
       title: cause.title,
-      ...downloadFailCopy(nexusFail.error ?? ''),
+      ...downloadFailCopy(nexusFail.error),
       ...(cause.body === undefined ? {} : { body: cause.body }),
       ...(cause.action === undefined ? {} : { action: cause.action }),
     })

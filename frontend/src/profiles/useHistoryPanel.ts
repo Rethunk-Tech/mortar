@@ -60,7 +60,7 @@ export function useHistoryPanel(profileId: string, open: boolean, toastMissing =
         const next: Record<string, HistoryDiff['items']> = {}
         await Promise.all(
           rows.map(async (ev) => {
-            next[ev.id] = (await EventDiff(game.id, profileId, ev.id))?.items ?? []
+            next[ev.id] = (await EventDiff(game.id, profileId, ev.id)).items ?? []
           }),
         )
         if (live) {

@@ -44,7 +44,7 @@ function RowMenu({
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
   // An action that moves focus itself (rename, delete) turns the return to the ⋯ button off.
-  const refocus = useRef(true)
+  const refocus = useRef<boolean>(true)
   const choose =
     (run: () => void, keepFocus = true) =>
     () => {

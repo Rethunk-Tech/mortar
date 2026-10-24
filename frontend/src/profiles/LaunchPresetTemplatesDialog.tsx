@@ -80,7 +80,7 @@ export function LaunchPresetTemplatesDialog({
           const gone = removing
           setRemoving(null)
           if (gone) {
-            RemoveLaunchPresetTemplate(gameId, gone.name ?? '')
+            RemoveLaunchPresetTemplate(gameId, gone.name)
               .then(reload)
               .catch(reportUnexpected)
           }

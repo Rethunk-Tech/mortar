@@ -137,29 +137,29 @@ export function ImportFooter({
           flow.runReplace().catch(reportUnexpected)
         }}
       >
-        {(preview.replace?.remove ?? []).length > 0 ? (
+        {(preview.replace.remove ?? []).length > 0 ? (
           <Fold
-            title={t`These will be removed (${{ count: (preview.replace?.remove ?? []).length }})`}
+            title={t`These will be removed (${{ count: (preview.replace.remove ?? []).length }})`}
           >
             <Typography
               tabIndex={0}
               sx={{ fontSize: 'base.fontSize', maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
             >
-              {(preview.replace?.remove ?? []).join(', ')}
+              {(preview.replace.remove ?? []).join(', ')}
             </Typography>
           </Fold>
         ) : (
           <Typography sx={{ fontSize: 'base.fontSize' }}>{t`Nothing will be removed.`}</Typography>
         )}
-        {(preview.replace?.keepLocal ?? []).length > 0 ? (
+        {(preview.replace.keepLocal ?? []).length > 0 ? (
           <Fold
-            title={t`Local-only mods kept (${{ count: (preview.replace?.keepLocal ?? []).length }})`}
+            title={t`Local-only mods kept (${{ count: (preview.replace.keepLocal ?? []).length }})`}
           >
             <Typography
               tabIndex={0}
               sx={{ fontSize: 'base.fontSize', maxHeight: 120, overflowY: 'auto', mt: 0.5 }}
             >
-              {(preview.replace?.keepLocal ?? []).join(', ')}
+              {(preview.replace.keepLocal ?? []).join(', ')}
             </Typography>
           </Fold>
         ) : null}

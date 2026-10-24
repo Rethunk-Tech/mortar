@@ -36,7 +36,7 @@ export function useShareBuild() {
   }
   const [info, setInfo] = useState<ShownInfo | null>(null)
   const [include, setInclude] = useState(() => shareIncludeDefaults(useSettings.getState()))
-  const pickTab = useRef(true)
+  const pickTab = useRef<boolean>(true)
   useEffect(() => {
     if (!profileId) {
       return

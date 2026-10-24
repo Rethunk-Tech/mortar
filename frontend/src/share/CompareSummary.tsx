@@ -18,7 +18,7 @@ export function CompareSummary({ preview, targetName }: { preview: Preview; targ
   const missing = mods.filter((m) => m.state === 'download' || m.state === 'dependency')
   const different = mods.filter((m) => m.different)
   const matching = mods.filter((m) => m.state === 'installed' && !m.different)
-  const onlyYours = preview.replace?.remove ?? []
+  const onlyYours = preview.replace.remove ?? []
   const rows: { label: string; items: string[] }[] = [
     { label: t`Missing in ${{ name: targetName }}`, items: names(missing) },
     { label: t`Different version`, items: names(different) },

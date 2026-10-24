@@ -44,7 +44,7 @@ function causeKind(e: unknown): string | undefined {
 }
 
 export function errorKind(e: unknown): ErrorKind {
-  const kind = kindRe.exec(asText(e) ?? '')?.[1] ?? causeKind(e)
+  const kind = kindRe.exec(asText(e))?.[1] ?? causeKind(e)
   if (kind !== undefined && kinds.has(kind)) {
     return kind as ErrorKind
   }
@@ -53,7 +53,7 @@ export function errorKind(e: unknown): ErrorKind {
 
 /** Cause text for a Details tooltip; strips the `[kind] ` wire prefix when present. */
 export function errorDetails(e: unknown): string {
-  const text = asText(e) ?? ''
+  const text = asText(e)
   const m = kindRe.exec(text)
   const kind = m?.[1]
   if (kind !== undefined && kinds.has(kind)) {

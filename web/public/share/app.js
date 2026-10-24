@@ -171,7 +171,7 @@ async function main() {
   try {
     share = await decodeShare(location.hash)
   } catch (err) {
-    const kind = err?.kind
+    const kind = err.kind
     show(ERRORS[kind] ?? ERRORS.bad)
     return
   }

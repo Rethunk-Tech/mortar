@@ -88,7 +88,8 @@ test('history keeps the last 200 toasts newest first after they leave the stack'
 
 test('history keeps actions and Clear drops the list', () => {
   const run = () => undefined
-  let latest = true
+  let latest: boolean
+  latest = true
   useToasts.getState().push({
     kind: 'success',
     title: 'SpaceCore installed',

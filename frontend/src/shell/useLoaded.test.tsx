@@ -106,7 +106,8 @@ test('a null loader never runs', () => {
 })
 
 test('a failed reload keeps the last good data', async () => {
-  let fail = false
+  let fail: boolean
+  fail = false
   const { result } = testing.renderHook(() =>
     useLoaded(
       () => (fail ? Promise.reject(new Error('offline')) : Promise.resolve('good')),

@@ -36,7 +36,7 @@ export function useStartupChecks() {
           body: t`Report it so it can be fixed.`,
           action: t`Report a bug`,
         },
-        () => reportBug(s.lastGame ?? ''),
+        () => reportBug(s.lastGame),
       )
       if (toast) {
         useToasts.getState().push(toast)

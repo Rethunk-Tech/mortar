@@ -69,7 +69,7 @@ function overrideLabel(key: OverrideKey, i18n: I18n): string {
     case 'gameSettingsMode':
       return i18n._(msg`Game settings file`)
     default:
-      return prefCopy(i18n, key).label ?? key
+      return prefCopy(i18n, key).label
   }
 }
 

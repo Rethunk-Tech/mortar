@@ -30,7 +30,7 @@ function WinFix({
   const tone = asset.cosmetic ? 'plain' : 'warning'
   if (resolved) {
     const undo = async () => {
-      const winnerId = asset.winnerId ?? ''
+      const winnerId = asset.winnerId
       for (const [index, id] of packIds.entries()) {
         const winnerKey = keys[index]
         if (winnerKey && (perEntry || sameId(id, winnerId))) {
