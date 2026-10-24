@@ -40,8 +40,6 @@ func DescribeExitLocalized(x Exit) string {
 	switch {
 	case x.Stopped:
 		return i18n.T("Stopped")
-	case x.Signal == "" && x.Code == 0:
-		return i18n.T("Exited with code 0")
 	case x.Signal != "" && x.Code != 0:
 		return i18n.T("Exited with code {code} ({signal})", "code", code, "signal", x.Signal)
 	case x.Signal != "":

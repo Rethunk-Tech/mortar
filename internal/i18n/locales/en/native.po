@@ -41,9 +41,6 @@ msgstr "Downloads: {count}"
 msgid "End it"
 msgstr "End it"
 
-msgid "Exited with code 0"
-msgstr "Exited with code 0"
-
 msgid "Exited with code {code}"
 msgstr "Exited with code {code}"
 

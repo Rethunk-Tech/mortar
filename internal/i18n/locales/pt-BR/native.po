@@ -42,9 +42,6 @@ msgstr ""
 msgid "End it"
 msgstr ""
 
-msgid "Exited with code 0"
-msgstr ""
-
 msgid "Exited with code {code}"
 msgstr ""
 
