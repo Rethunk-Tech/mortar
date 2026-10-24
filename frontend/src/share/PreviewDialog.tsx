@@ -69,6 +69,7 @@ function PagePreview({ info, onClose }: { info: ShownInfo; onClose: () => void }
           />
         ) : null}
         <Typography
+          component="h2"
           noWrap={true}
           title={info.name}
           sx={{ fontSize: 20, fontWeight: 700, color: 'inherit' }}
