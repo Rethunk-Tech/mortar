@@ -54,7 +54,7 @@ async function scanSettings(page: Page, screen: string, every = true): Promise<s
   const pages = await nav.locator('button:not([aria-label])').all()
   for (const button of every ? pages : pages.slice(0, 1)) {
     await button.click()
-    found.push(...(await scan(page, `${screen} › ${await button.textContent()}`)))
+    found.push(...(await scan(page, `${screen} › ${await button.innerText()}`)))
   }
   await page.keyboard.press('Escape')
   return found
@@ -78,7 +78,7 @@ async function scanGame(
     .filter({ hasNotText: /^Mods$/ })
   for (const tab of await tabs.all()) {
     await tab.click()
-    const [name] = (await tab.textContent()).split('\n')
+    const [name] = (await tab.innerText()).split('\n')
     found.push(...(await scan(page, `${game.name} › ${name}`)))
   }
 
@@ -106,7 +106,7 @@ async function scanGame(
     .all()
   for (const tab of deep ? editorTabs : editorTabs.slice(0, 1)) {
     await tab.click()
-    found.push(...(await scan(page, `${game.name} › Edit profile › ${await tab.textContent()}`)))
+    found.push(...(await scan(page, `${game.name} › Edit profile › ${await tab.innerText()}`)))
   }
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog', { name: 'Edit profile' })).toBeHidden()

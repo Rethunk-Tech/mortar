@@ -186,7 +186,7 @@ async function section(page: Page, id: string) {
 
 async function expectClean(page: Page) {
   const panel = page.getByRole('tabpanel').or(page.locator('main')).first()
-  const text = await panel.textContent()
+  const text = await panel.innerText()
   for (const broken of ['undefined', '{0}', '{1}', 'for ;', ' ;']) {
     expect(text).not.toContain(broken)
   }

@@ -98,7 +98,7 @@ async function brokenIn(page: Page, section: string, sentence: string | RegExp) 
   await page.locator(`[data-section="${section}"]`).click()
   const row = page.getByText(sentence).first()
   await expect(row).toBeVisible()
-  const text = (await row.textContent()) ?? ''
+  const text = await row.innerText()
   return ['undefined', '{0}', '{1}', 'for ;', ' ;'].filter((broken) => text.includes(broken))
 }
 
