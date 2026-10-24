@@ -1,4 +1,10 @@
-import { beforeEach, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, spyOn, test } from 'bun:test'
+import { CancellablePromise } from '@wailsio/runtime'
+import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
+import { State } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
+import * as launchsvc from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import * as problems from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
+import { useLaunch } from './store.ts'
 
 let warnCalls = 0
 let startCalls = 0
@@ -6,48 +12,6 @@ let askGraphics = false
 let graphicsAfterCrash = false
 let warnWait: Promise<void> = Promise.resolve()
 let finishWarn: (() => void) | undefined
-
-mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts', () => ({
-  Problems: async () => ({
-    missing: null,
-    duplicates: null,
-    broken: null,
-    assetConflicts: null,
-    settings: null,
-    runErrors: null,
-    dismissed: [],
-    unknown: false,
-  }),
-  Updates: async () => ({ updates: null, unknown: false }),
-  UpdateWarning: () => {
-    warnCalls += 1
-    return warnWait.then(() => ({
-      changed: true,
-      recorded: '1.6.14',
-      installed: '1.6.15',
-      broken: null,
-    }))
-  },
-}))
-
-mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts', () => ({
-  Status: async () => ({
-    game: 'stardew',
-    state: 0,
-    profile: '',
-    since: 0,
-    hint: 0,
-    error: '',
-  }),
-  GraphicsAsk: async () => ({ ask: askGraphics, afterEarlyExit: graphicsAfterCrash }),
-  Start: async () => {
-    startCalls += 1
-  },
-  StartVanilla: async () => undefined,
-  Stop: async () => undefined,
-}))
-
-const { useLaunch } = await import('./store.ts')
 
 beforeEach(() => {
   warnCalls = 0
@@ -59,6 +23,49 @@ beforeEach(() => {
     finishWarn = resolve
   })
   useLaunch.setState(useLaunch.getInitialState(), true)
+  spyOn(problems, 'Problems').mockImplementation(() =>
+    CancellablePromise.resolve({
+      missing: null,
+      duplicates: null,
+      broken: null,
+      assetConflicts: null,
+      settings: null,
+      runErrors: null,
+      dismissed: [],
+      unknown: false,
+    }),
+  )
+  spyOn(problems, 'UpdateWarning').mockImplementation(() => {
+    warnCalls += 1
+    return CancellablePromise.resolve(
+      warnWait.then(() => ({
+        changed: true,
+        recorded: '1.6.14',
+        installed: '1.6.15',
+        broken: null,
+      })),
+    )
+  })
+  spyOn(launchsvc, 'Status').mockImplementation(() =>
+    CancellablePromise.resolve({
+      game: 'stardew',
+      state: State.Idle,
+      profile: '',
+      since: 0,
+      hint: Hint.$zero,
+      error: '',
+    }),
+  )
+  spyOn(launchsvc, 'GraphicsAsk').mockImplementation(() =>
+    CancellablePromise.resolve({ ask: askGraphics, afterEarlyExit: graphicsAfterCrash }),
+  )
+  spyOn(launchsvc, 'Start').mockImplementation(() => {
+    startCalls += 1
+    return CancellablePromise.resolve()
+  })
+})
+afterEach(() => {
+  mock.restore()
 })
 
 test('a second Start waits until the first UpdateWarning finishes', async () => {
