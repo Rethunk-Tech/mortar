@@ -25,6 +25,7 @@ func folderProfile() profile.Profile {
 }
 
 func TestModRowsNameTheArchiveAndMarkTrayEntries(t *testing.T) {
+	t.Parallel()
 	rows := modRows(folderProfile())
 	if rows[0].Item != "pkg-1" || rows[0].File != "a.package" || rows[0].Tray || !rows[2].Tray || rows[4].Tray {
 		t.Fatalf("rows = %+v", rows)
@@ -32,6 +33,7 @@ func TestModRowsNameTheArchiveAndMarkTrayEntries(t *testing.T) {
 }
 
 func TestModIDsWithAHashAndArchiveNamesReachTheirEntries(t *testing.T) {
+	t.Parallel()
 	p := folderProfile()
 	refs, err := refsFor(p, []string{"folder:pkg-1#b.package"})
 	if err != nil || len(refs) != 1 || refs[0].Key != "pkg-1#b.package" {

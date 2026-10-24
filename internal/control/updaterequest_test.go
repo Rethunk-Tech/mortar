@@ -24,6 +24,7 @@ func TestUpdateRequestTakesTheUpdatesSource(t *testing.T) {
 }
 
 func TestCurseForgeSwitchUpdatesQueueAsPackagesOnlyWhenNamedAndForbiddenOnesNever(t *testing.T) {
+	t.Parallel()
 	sw := problems.Update{
 		Key: "nexus-20619-123175", ID: "smapi:Example.Bush", Installed: "1.0.0", Version: "1.0.1",
 		Package: "998265", PackageSource: "curseforge", PackageVersion: "777", Switch: true, FromSource: "Nexus Mods",

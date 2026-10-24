@@ -31,6 +31,7 @@ func TestSavesCheckTakesAProfileByName(t *testing.T) {
 }
 
 func TestSaveGapWordingAndGroup(t *testing.T) {
+	t.Parallel()
 	msg := launchWarningError{gap: true, save: savessvc.Fit{Folder: "Farm_1"}}.Error()
 	if strings.Contains(msg, "'s farm") || !strings.Contains(msg, "The farm (Farm_1)") {
 		t.Errorf("a save with no farmer name reads %q", msg)

@@ -8,6 +8,7 @@ import (
 
 // The CLI must star the same key the window does (frontend/src/mods/favourites.ts entryFavouriteKey).
 func TestEntryFavouriteKeyMatchesTheWindow(t *testing.T) {
+	t.Parallel()
 	for src, want := range map[profile.Source]string{
 		{Kind: "nexus", ModID: 42}:                  "nexus:42",
 		{Kind: "nexus"}:                             "",

@@ -44,6 +44,7 @@ func waitFile(t *testing.T, path string, present bool) {
 }
 
 func TestModProblemsFiltersByNexusModAndOmitsCosmeticConflicts(t *testing.T) {
+	t.Parallel()
 	p := profile.Profile{Entries: []profile.Entry{
 		{Source: profile.Source{Kind: profile.KindNexus, ModID: 42}, Mods: []profile.Component{{ID: "smapi:Pack.Target", Name: "Target"}}},
 		{Source: profile.Source{Kind: profile.KindNexus, ModID: 99}, Mods: []profile.Component{{ID: "smapi:Pack.Other", Name: "Other"}}},
@@ -66,6 +67,7 @@ func TestModProblemsFiltersByNexusModAndOmitsCosmeticConflicts(t *testing.T) {
 }
 
 func TestPlayCheckNamesEntriesWithLongPaths(t *testing.T) {
+	t.Parallel()
 	result := problems.Result{LongPaths: []problems.LongPath{{Key: "nexus-1-2", Name: "Deep Pack", Files: 3}}}
 	got := playIssueGroups(profile.Profile{}, result, problems.UpdatesResult{}, false)
 	if len(got) != 1 || got[0].Kind != "longPaths" || got[0].Count != 1 || len(got[0].Names) != 1 || got[0].Names[0] != "Deep Pack" {
@@ -74,6 +76,7 @@ func TestPlayCheckNamesEntriesWithLongPaths(t *testing.T) {
 }
 
 func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan error, 1)
@@ -154,6 +157,7 @@ func TestServeAnswersOnlyTokenHoldersAndCleansUp(t *testing.T) {
 }
 
 func TestCheckProtocolRefusesAnotherProtocol(t *testing.T) {
+	t.Parallel()
 	ln, err := (&net.ListenConfig{}).Listen(t.Context(), "tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
@@ -426,6 +430,7 @@ func TestHandleLibraryMethods(t *testing.T) {
 }
 
 func TestModRowsCarryTheEntryNoteAndTags(t *testing.T) {
+	t.Parallel()
 	rows := modRows(profile.Profile{Entries: []profile.Entry{{
 		Key:  "nexus-1-2",
 		Note: "keep",
@@ -438,6 +443,7 @@ func TestModRowsCarryTheEntryNoteAndTags(t *testing.T) {
 }
 
 func TestAnInstanceEndingLeavesTheControlFileOfTheOneThatReplacedIt(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	path := filepath.Join(dir, controlwire.FileName)
 	echo := func(context.Context, string, Params) (any, error) { return true, nil }
@@ -474,6 +480,7 @@ func TestAnInstanceEndingLeavesTheControlFileOfTheOneThatReplacedIt(t *testing.T
 }
 
 func TestQuitRefusesWhileBusyUnlessForced(t *testing.T) {
+	t.Parallel()
 	quits := make(chan struct{}, 1)
 	s := &Services{Quit: func() { quits <- struct{}{} }, QuitBlocker: func() string { return "Downloads will be interrupted" }}
 	if _, err := s.Handle(t.Context(), "app.quit", Params{}); err == nil || !strings.Contains(err.Error(), "downloads will be interrupted") {

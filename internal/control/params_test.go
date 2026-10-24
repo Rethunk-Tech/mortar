@@ -36,6 +36,7 @@ func TestProfileSetRejectsABadFlag(t *testing.T) {
 }
 
 func TestALaunchIsNotRefusedWhenTheSaveGapLookupFails(t *testing.T) {
+	t.Parallel()
 	fit, gap := adviceOnly(savessvc.Fit{LastMissing: []savessvc.Lack{{}}}, true, errors.New("could not reach the mod dataset"))
 	if gap || len(fit.LastMissing) != 0 {
 		t.Fatalf("a failed lookup warned: gap=%v fit=%+v", gap, fit)

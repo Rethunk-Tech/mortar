@@ -27,6 +27,7 @@ func waitLive(t *testing.T, dir string) {
 
 // A second process that takes the discovery file over and ends gives it back to the app that still runs.
 func TestAnEndingSecondServerGivesTheControlFileBackToTheRunningApp(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	ctx, stop := context.WithCancel(t.Context())
 	defer stop()
