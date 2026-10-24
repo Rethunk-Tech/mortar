@@ -1,9 +1,18 @@
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, Chip, Link, Skeleton, Typography } from '@mui/material'
+import { Box, Button, Chip, Link, Skeleton, Typography, useTheme } from '@mui/material'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Copy, ListOrdered, TriangleAlert } from 'lucide-react'
-import { memo, type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  type CSSProperties,
+  memo,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import type { Row } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/loadorder/models.ts'
 import { DependencyNames } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
@@ -229,6 +238,18 @@ const OrderRowBody = memo(function OrderRowContent({ row, names, onScroll }: Row
   )
 }, sameRowBody)
 
+const ROW_STYLE: CSSProperties = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: space.gap,
+  paddingBlock: space.gap,
+  borderBottom: '1px solid var(--mortar-hairline-faint)',
+}
+
 function OrderList({
   rows,
   names,
@@ -239,6 +260,7 @@ function OrderList({
   scrollRef: RefObject<(id: string) => boolean>
 }) {
   const { t } = useLingui()
+  const errorColor = useTheme().palette.error.main
   const [query, setQuery] = useState('')
   const needle = query.trim().toLowerCase()
   const shown =
@@ -295,28 +317,20 @@ function OrderList({
           {virtualizer.getVirtualItems().map((item) => {
             const row = shown[item.index]
             return row ? (
-              <Box
+              // A plain element: the list redraws on every row it measures, and a styled Box would redraw each row's
+              // styling components with it.
+              <div
                 key={item.key}
                 data-index={item.index}
                 ref={virtualizer.measureElement}
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
+                style={{
+                  ...ROW_STYLE,
                   transform: `translateY(${item.start}px)`,
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: space.gap,
-                  py: space.gap,
-                  borderBottom: '1px solid var(--mortar-hairline-faint)',
-                  ...(row.cycle
-                    ? { outline: '1px solid', outlineColor: 'error.main', outlineOffset: -1 }
-                    : {}),
+                  ...(row.cycle ? { outline: `1px solid ${errorColor}`, outlineOffset: -1 } : {}),
                 }}
               >
                 <OrderRowBody row={row} names={names} onScroll={scrollTo} />
-              </Box>
+              </div>
             ) : null
           })}
         </Box>

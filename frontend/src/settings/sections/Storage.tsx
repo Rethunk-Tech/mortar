@@ -13,7 +13,7 @@ import { type MoveState, moveDataFolder } from './DataMoveRun.ts'
 import { StoreCheckRow } from './DataStoreCheck.tsx'
 import { CleanupDialog } from './DataStoreReport.tsx'
 import { Location, UsageRows } from './DataUsage.tsx'
-import { useDataUsage, useShownOnce } from './DataUsageLoad.ts'
+import { useDataUsage } from './DataUsageLoad.ts'
 
 function useMove() {
   const { t } = useLingui()
@@ -79,7 +79,7 @@ export function Storage() {
   const { t } = useLingui()
   const openProfiles = useNav((s) => s.openProfiles)
   const sentinel = useRef<HTMLSpanElement>(null)
-  const { usage, restart, error } = useDataUsage(useShownOnce(sentinel))
+  const { usage, restart, error } = useDataUsage(sentinel)
   const move = useMove()
   const [clearing, setClearing] = useState(false)
   const [cleaning, setCleaning] = useState(false)

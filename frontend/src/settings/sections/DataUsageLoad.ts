@@ -14,8 +14,9 @@ export const useUsageBytes = create<{ bytes: number }>(() => ({ bytes: 0 }))
 const setBytes = (bytes: number) => useUsageBytes.setState({ bytes })
 
 // Settings search renders every page and hides the ones without a hit, so a mounted Storage section is not a shown one;
-// enabled says the section is on screen, and disk use is measured from then on.
-export function useDataUsage(enabled: boolean) {
+// disk use is measured once the sentinel is on screen (a hidden ancestor, display: none, keeps it off). Starting from
+// the observer rather than a "shown" state spares the whole section a render that changes nothing it draws.
+export function useDataUsage(sentinel: RefObject<Element | null>) {
   const [usage, setUsage] = useState<DiskUse | null>(null)
   const [error, setError] = useState(false)
   const stopRef = useRef<() => void>(() => undefined)
@@ -37,30 +38,21 @@ export function useDataUsage(enabled: boolean) {
   }, [])
   const restart = useCallback(() => load(true), [load])
   useEffect(() => {
-    if (!enabled) {
-      return
-    }
-    load(false)
-    return () => stopRef.current()
-  }, [load, enabled])
-  return { usage, restart, error }
-}
-
-/** Whether the element has been on screen at least once; a hidden ancestor (display: none) keeps it false. */
-export function useShownOnce(ref: RefObject<Element | null>): boolean {
-  const [shown, setShown] = useState(false)
-  useEffect(() => {
-    const el = ref.current
-    if (shown || !el) {
+    const el = sentinel.current
+    if (!el) {
       return
     }
     const seen = new IntersectionObserver((entries) => {
       if (entries.some((e) => e.isIntersecting)) {
-        setShown(true)
+        seen.disconnect()
+        load(false)
       }
     })
     seen.observe(el)
-    return () => seen.disconnect()
-  }, [ref, shown])
-  return shown
+    return () => {
+      seen.disconnect()
+      stopRef.current()
+    }
+  }, [load, sentinel])
+  return { usage, restart, error }
 }
