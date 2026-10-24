@@ -317,7 +317,7 @@ func (c *Client) fetchMarked(ctx context.Context, info components.GameInfo, id s
 	if err != nil {
 		return Page{}, false, err
 	}
-	last = result.Total <= q.Page*q.Len() || len(result.Items) == 0
+	last = result.Total <= q.Page*q.Len()
 	if !c.ShowAdult {
 		before := len(result.Items)
 		result.Items = slices.DeleteFunc(result.Items, func(i Item) bool { return i.Adult })
