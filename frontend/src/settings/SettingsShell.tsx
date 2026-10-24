@@ -86,7 +86,7 @@ function SearchStatus({ related, elsewhere }: { related: Related; elsewhere: Els
     <>
       <span ref={marker} hidden={true} />
       {query && hits === 0 && relatedLabels.length === 0 ? (
-        <EmptyState icon={<SearchX />} title={t`No settings match`} compact={true}>
+        <EmptyState icon={<SearchX />} title={t`No settings match`}>
           {t`Try another word, or clear the search.`}
         </EmptyState>
       ) : null}
@@ -235,8 +235,11 @@ export function SettingsShell<Id extends string>({
         </Box>
         <Box
           sx={{
+            // Fills the pane, so an empty search result centres in it.
+            flex: 1,
             width: '100%',
             maxWidth: CONTENT_MAX,
+            '&:has(> .empty-state)': { maxWidth: 'none' },
             display: 'flex',
             flexDirection: 'column',
             gap: space.pad,
