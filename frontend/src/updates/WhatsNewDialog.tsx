@@ -25,7 +25,7 @@ import {
   Users,
   Wrench,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import type { ReleaseNotes as ReleaseNotesResult } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/updatesvc/models.ts'
 import {
   AckWhatsNew,
@@ -35,6 +35,7 @@ import {
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { openPage } from '../mods/menu.ts'
 import { PageLink } from '../share/CollectionNotes.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { groupNotes, type NoteArea, type NoteKind, type NoteLine } from './releaseNotes.ts'
@@ -183,8 +184,13 @@ function Notes({ text }: { text: string }) {
 export function WhatsNewDialog() {
   const { t } = useLingui()
   const shown = useWhatsNew((s) => s)
-  const [release, setRelease] = useState<ReleaseNotesResult | null>(null)
   const version = shown?.version
+  const { data: release } = useLoaded<ReleaseNotesResult | null>(
+    version ? () => ReleaseNotes(version) : null,
+    [version],
+    null,
+    reportUnexpected,
+  )
   useEffect(() => {
     LoadWhatsNew()
       .then((w) =>
@@ -192,12 +198,6 @@ export function WhatsNewDialog() {
       )
       .catch(reportUnexpected)
   }, [])
-  useEffect(() => {
-    setRelease(null)
-    if (version) {
-      ReleaseNotes(version).then(setRelease).catch(reportUnexpected)
-    }
-  }, [version])
   const close = () => {
     useWhatsNew.setState(null, true)
     AckWhatsNew().catch(reportUnexpected)

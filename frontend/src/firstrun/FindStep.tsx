@@ -15,6 +15,7 @@ import { storeName } from '../games/storeName.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useLoader } from '../loader/store.ts'
 import { TypedFolder } from '../shell/TypedFolder.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { type InlineError, inlineError } from '../toasts/report.ts'
 import { Panel } from './Panel.tsx'
@@ -112,12 +113,11 @@ function Looked({ game, launchers }: { game: GameInfo; launchers: StoreApp[] }) 
 function Suggested({ gameId, onUse }: { gameId: string; onUse: (dir: string) => Promise<void> }) {
   const { t } = useLingui()
   const { success } = useTheme().palette
-  const [suggested, setSuggested] = useState<string[]>([])
-  useEffect(() => {
-    SuggestFolders(gameId)
-      .then((dirs) => setSuggested(dirs ?? []))
-      .catch(() => setSuggested([]))
-  }, [gameId])
+  const { data: suggested } = useLoaded<string[]>(
+    () => SuggestFolders(gameId).then((dirs) => dirs ?? []),
+    [gameId],
+    [],
+  )
   if (suggested.length === 0) {
     return null
   }

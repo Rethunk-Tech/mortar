@@ -20,6 +20,7 @@ import { ManagerFolderPrompt } from '../profiles/ManagerFolderPrompt.tsx'
 import { VortexFolderPrompt } from '../profiles/VortexFolderPrompt.tsx'
 import { offerVortexFolder } from '../profiles/vortexFolderOffer.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected, toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
@@ -75,14 +76,16 @@ export function ManagerPane({
 }) {
   const { t } = useLingui()
   const { sources: external, reload } = useExternalImportSources(game, true)
-  const [vortexSupported, setVortexSupported] = useState(false)
+  const { data: vortexSupported } = useLoaded(
+    () => ExternalVortexSupported(game),
+    [game],
+    false,
+    reportUnexpected,
+  )
   // null until this game's profiles are listed, so opening never flashes "No profiles found".
   const [folders, setFolders] = useState<Found[] | null>(null)
   const [chosen, setChosen] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
-  useEffect(() => {
-    ExternalVortexSupported(game).then(setVortexSupported).catch(reportUnexpected)
-  }, [game])
   const loadFolders = useCallback(() => {
     LocalProfiles(game)
       .then((found) =>

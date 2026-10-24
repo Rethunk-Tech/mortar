@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Dialog, IconButton, LinearProgress, Typography } from '@mui/material'
 import { ArrowLeft, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { ImportsModsFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { MOD_ORGANIZER_2, STARDROP, VORTEX } from '../brand/productNames.ts'
 import { localId } from '../mods/dependents.ts'
@@ -11,6 +11,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { useNexus } from '../settings/nexus.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { Tooltip } from '../shell/Tooltip.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -126,10 +127,12 @@ function ImportPane({
   game: string
   close: () => void
 }) {
-  const [modsFolder, setModsFolder] = useState(false)
-  useEffect(() => {
-    ImportsModsFolder(game).then(setModsFolder).catch(reportUnexpected)
-  }, [game])
+  const { data: modsFolder } = useLoaded(
+    () => ImportsModsFolder(game),
+    [game],
+    false,
+    reportUnexpected,
+  )
   if (flow.tab === 'choose') {
     return (
       <ImportSources

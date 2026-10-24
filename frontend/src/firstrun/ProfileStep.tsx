@@ -2,7 +2,7 @@ import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, TextField, Typography } from '@mui/material'
 import { Download, FolderInput, Link2, Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { RegisterLinks } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/nxmsvc/service.ts'
 import { LocalProfiles } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/packsvc/service.ts'
 import {
@@ -19,6 +19,7 @@ import { type GameId, useNav } from '../nav/store.ts'
 import { useExternalImportSources } from '../profiles/externalImportSources.ts'
 import { GameModsDialog } from '../profiles/GameModsDialog.tsx'
 import { openImport } from '../share/store.ts'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { errorMessage, reportUnexpected } from '../toasts/report.ts'
 
@@ -37,12 +38,11 @@ const cardSx = (borderColor: string) => ({
 function ManagerImportCard({ game }: { game: GameId }) {
   const { t } = useLingui()
   const { sources: external } = useExternalImportSources(game, true)
-  const [packs, setPacks] = useState(0)
-  useEffect(() => {
-    LocalProfiles(game)
-      .then((list) => setPacks(list?.length ?? 0))
-      .catch(() => setPacks(0))
-  }, [game])
+  const { data: packs } = useLoaded(
+    () => LocalProfiles(game).then((list) => list?.length ?? 0),
+    [game],
+    0,
+  )
   const found = external.reduce((n, s) => n + (s.profiles?.length ?? 0), packs)
   if (found === 0) {
     return null
@@ -72,13 +72,12 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [link, setLink] = useState('')
-  const [gameMods, setGameMods] = useState(false)
+  const { data: gameMods } = useLoaded(
+    () => PreviewGameMods(game).then((p) => (p.mods ?? []).length > 0),
+    [game],
+    false,
+  )
   const [importOpen, setImportOpen] = useState(false)
-  useEffect(() => {
-    PreviewGameMods(game)
-      .then((p) => setGameMods((p.mods ?? []).length > 0))
-      .catch(() => setGameMods(false))
-  }, [game])
   const submit = async () => {
     const trimmed = name.trim()
     if (!trimmed) {
