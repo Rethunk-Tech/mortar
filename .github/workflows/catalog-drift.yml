@@ -29,6 +29,8 @@ jobs:
 
       - name: Setup Bun
         uses: Rethunk-Tech/gh-actions/setup-bun@5992e857707202bc73acf8a0a854add36ece781e # v1.21
+        with:
+          run-audit: "true"
 
       # The audit prints each finding on an indented line and exits 1 when a catalog community or loader pack is gone.
       - name: Audit the catalog

@@ -65,6 +65,7 @@ jobs:
         if: ${{ !cancelled() && steps.changes.outputs.code != 'true' }}
         uses: Rethunk-Tech/gh-actions/setup-go@5992e857707202bc73acf8a0a854add36ece781e # v1.21
         with:
+          run-govulncheck: "true"
           go-version-file: go.mod
           cache-build: "false"
 
