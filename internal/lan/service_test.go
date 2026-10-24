@@ -75,7 +75,7 @@ func TestValidateRequestCapsPayload(t *testing.T) {
 	_, err := validateRequest(shareRequest{
 		Sender:  "Alex",
 		Game:    "stardew",
-		Payload: base64.RawStdEncoding.EncodeToString(make([]byte, maxPayloadBytes+1)),
+		Payload: strings.Repeat("A", base64.RawStdEncoding.EncodedLen(maxPayloadBytes+1)),
 		Version: protocolVersion,
 	})
 	if !errors.Is(err, errPayloadTooLarge) {
