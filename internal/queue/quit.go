@@ -6,7 +6,7 @@ import (
 )
 
 // installPoll is how often StopWait looks again for installs still under way.
-const installPoll = 100 * time.Millisecond
+var installPoll = 100 * time.Millisecond
 
 // StopWait waits for the workers Run started once its context has ended. Downloads end with the context, but a worker
 // can be stuck where none reaches (a keyring prompt), so after limit Mortar exits without it, naming the items

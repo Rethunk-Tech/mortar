@@ -125,8 +125,11 @@ func (s *Service) wait(key string, reset time.Time, backoff time.Duration) {
 	s.until[key] = reset
 }
 
+// retryBase is the wait before the first fetch retry; each later one doubles it.
+var retryBase = 200 * time.Millisecond
+
 func retryBackoff(n int) time.Duration {
-	d := 200 * time.Millisecond
+	d := retryBase
 	for range n {
 		d *= 2
 	}

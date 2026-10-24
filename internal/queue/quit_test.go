@@ -47,13 +47,16 @@ func TestStopWaitAbandonsAStuckDownload(t *testing.T) {
 }
 
 func TestStopWaitDoesNotAbandonAnInstall(t *testing.T) {
+	prev := installPoll
+	installPoll = 2 * time.Millisecond
+	t.Cleanup(func() { installPoll = prev })
 	s := newQuitService(t, StateInstalling)
 	finish := make(chan struct{})
 	returned := stopWaitReturns(s, func() { <-finish }, 20*time.Millisecond)
 	select {
 	case <-returned:
 		t.Fatal("StopWait gave up on an install under way")
-	case <-time.After(10 * installPoll):
+	case <-time.After(100 * time.Millisecond):
 	}
 	close(finish)
 	select {

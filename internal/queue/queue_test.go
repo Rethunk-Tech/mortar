@@ -792,6 +792,9 @@ func TestAutoRetryFetchesBeforeFailing(t *testing.T) {
 		fmt.Fprint(w, payload)
 	}
 	f.s.d.RetryFetches = func() int { return 2 }
+	prev := retryBase
+	retryBase = time.Millisecond
+	t.Cleanup(func() { retryBase = prev })
 	f.start()
 	f.add(req(10))
 	f.wait("done after retries", f.item(StateDone))
