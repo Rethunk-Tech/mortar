@@ -211,7 +211,12 @@ export const ProfileRow = memo(function ProfileRowView({
         ) : (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}>
             <ProfileMark profile={profile} />
-            <Typography noWrap={true} title={profile.name} sx={{ fontSize: 17, fontWeight: 600 }}>
+            <Typography
+              component="h2"
+              noWrap={true}
+              title={profile.name}
+              sx={{ fontSize: 17, fontWeight: 600 }}
+            >
               {profile.name}
             </Typography>
             <HealthCheckBadge game={game} profileId={profile.id} />
