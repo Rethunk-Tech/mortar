@@ -28,6 +28,9 @@ func TestExplainMapsMissingProvider(t *testing.T) {
 }
 
 func TestGetOutlivesTimeoutThenCaches(t *testing.T) {
+	prev := getTimeout
+	getTimeout = 20 * time.Millisecond
+	t.Cleanup(func() { getTimeout = prev })
 	release := make(chan struct{})
 	var reads atomic.Int32
 	keyringGet = func(string) (string, error) {
@@ -46,7 +49,7 @@ func TestGetOutlivesTimeoutThenCaches(t *testing.T) {
 		t.Fatalf("want ErrWaitingForUnlock, got %v", err)
 	}
 	start := time.Now()
-	if _, err := Get("k"); !errors.Is(err, ErrWaitingForUnlock) || time.Since(start) > getTimeout/2 {
+	if _, err := Get("k"); !errors.Is(err, ErrWaitingForUnlock) || time.Since(start) >= getTimeout {
 		t.Fatalf("a read behind a stuck prompt must fail at once, got %v after %v", err, time.Since(start))
 	}
 	close(release)

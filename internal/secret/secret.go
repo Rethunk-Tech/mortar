@@ -20,7 +20,7 @@ var ErrNotFound = keyring.ErrNotFound
 
 // getTimeout bounds how long a caller waits on a read: Secret Service can hold an unlock prompt open for as long as
 // the user takes (or forever, headless), and a caller holding an HTTP request open on it starves every other one.
-const getTimeout = 3 * time.Second
+var getTimeout = 3 * time.Second
 
 // ErrWaitingForUnlock is a read whose keyring prompt is still open. It is not a failure: the read keeps running
 // and OnUnlocked fires when it completes.
