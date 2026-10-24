@@ -237,7 +237,7 @@ func TestCaps(t *testing.T) {
 		t.Errorf("oversized link: %v", err)
 	}
 	// A bomb: tiny once compressed, enormous inflated. The decompressed cap must trip without inflating it all.
-	bomb := pack(t, `[3,"x","stardew",{},[`+strings.Repeat(" ", 4<<20)+`]]`)
+	bomb := pack(t, `[3,"x","stardew",{},[`+strings.Repeat(" ", 2*MaxDecoded)+`]]`)
 	if len(bomb) > MaxEncoded {
 		t.Fatalf("bomb is %d chars, want it under the encoded cap", len(bomb))
 	}
@@ -264,7 +264,7 @@ func TestCaps(t *testing.T) {
 func TestEncodeRefusesTooLarge(t *testing.T) {
 	t.Parallel()
 	p := profile.Profile{Name: "big"}
-	for i := range 1000 {
+	for i := range 700 {
 		p.Entries = append(p.Entries, nexus(fmt.Sprint(i), pseudo(1, i, 0, 2_000_000_000), pseudo(1, i, 1, 2_000_000_000)))
 	}
 	if _, err := Encode("stardew", p, profile.ShareFacts{}); !errors.Is(err, ErrTooLarge) {
@@ -523,7 +523,7 @@ func zipOf(t *testing.T, files ...[2]string) string {
 	var buf bytes.Buffer
 	zw := zip.NewWriter(&buf)
 	for _, f := range files {
-		w, err := zw.Create(f[0])
+		w, err := zw.CreateHeader(&zip.FileHeader{Name: f[0], Method: zip.Store})
 		if err != nil {
 			t.Fatal(err)
 		}
