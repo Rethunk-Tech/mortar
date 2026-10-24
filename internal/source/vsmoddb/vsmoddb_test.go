@@ -73,3 +73,17 @@ func TestResolvePrefersTheNewestStableReleaseAndMatchesAReleaseID(t *testing.T) 
 		t.Fatalf("page = %q", got)
 	}
 }
+
+func TestCategoriesHandsOutACopyOfTheCachedTags(t *testing.T) {
+	tags.Lock()
+	tags.ids, tags.names = map[string]string{"library": "1"}, []string{"Library"}
+	tags.Unlock()
+	got, err := Driver{}.Categories(context.Background(), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got[0] = "changed"
+	if again, _ := (Driver{}).Categories(context.Background(), ""); again[0] != "Library" {
+		t.Fatalf("the cache changed: %v", again)
+	}
+}

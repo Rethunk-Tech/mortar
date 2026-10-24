@@ -222,7 +222,7 @@ func (d Driver) Categories(ctx context.Context, _ string) ([]string, error) {
 	}
 	tags.Lock()
 	defer tags.Unlock()
-	return tags.names, nil
+	return slices.Clone(tags.names), nil
 }
 
 type release struct {
