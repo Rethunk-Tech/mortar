@@ -93,10 +93,13 @@ const Row = memo(function RowView({
   onMod,
   onPath,
   onMenu,
+  selected,
   note,
 }: {
   entry: Entry
   note: UpdateNote | undefined
+  // The line belongs to the message a right-click menu is open on.
+  selected: boolean
   onMenu: (seq: number, top: number, left: number) => void
   timestamps: boolean
   mods: readonly InstalledMod[]
@@ -129,7 +132,7 @@ const Row = memo(function RowView({
         gap: '10px',
         alignItems: 'center',
         pr: space.pad,
-        bgcolor: look.row,
+        bgcolor: selected ? 'action.selected' : look.row,
       }}
     >
       <Box sx={{ alignSelf: 'stretch', bgcolor: look.bar }} />
@@ -231,6 +234,7 @@ export function VirtualLog({
     [],
   )
   const menuIndex = menu ? rows.findIndex((r) => r.seq === menu.seq) : -1
+  const menuGroup = menuIndex >= 0 ? groupAt(rows, menuIndex) : []
 
   useLayoutEffect(() => {
     const el = ref.current
@@ -297,6 +301,7 @@ export function VirtualLog({
               onMod={onMod}
               onPath={onPath}
               onMenu={onMenu}
+              selected={menuGroup.includes(entry)}
             />
           ))}
         </Box>
@@ -304,7 +309,7 @@ export function VirtualLog({
       <LineMenu
         game={game}
         at={menu && menuIndex >= 0 ? { top: menu.top, left: menu.left } : null}
-        group={menuIndex >= 0 ? groupAt(rows, menuIndex) : []}
+        group={menuGroup}
         onClose={() => setMenu(null)}
       />
     </Box>

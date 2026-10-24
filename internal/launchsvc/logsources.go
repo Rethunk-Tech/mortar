@@ -11,8 +11,9 @@ import (
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 )
 
-// hiddenLogSourcesFile lists, one "source<TAB>object" per line, the call sites whose log lines the bridge drops in the
-// game; an empty object drops the call site's lines about every object. Engine messages are hidden in the Console only.
+// hiddenLogSourcesFile lists, one "method<TAB>text<TAB>object" per line, the log lines the bridge drops in the game:
+// those the method logs whose first line masks to text, about that object or, when it is empty, any. Engine messages
+// are hidden in the Console only.
 const hiddenLogSourcesFile = startupDir + "/hidden-log-sources"
 
 func (s *Service) writeHiddenLogSources(gameID, dir string) error {
@@ -20,7 +21,7 @@ func (s *Service) writeHiddenLogSources(gameID, dir string) error {
 	if s.settings != nil {
 		for _, h := range s.settings.Get().GamePrefs(gameID).HiddenLogSources {
 			if strings.Contains(h.Source, "::") {
-				b.WriteString(h.Source + "\t" + h.Object + "\n")
+				b.WriteString(h.Source + "\t" + h.Text + "\t" + h.Object + "\n")
 			}
 		}
 	}

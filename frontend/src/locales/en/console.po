@@ -570,6 +570,10 @@ msgstr "Startup time by mod"
 msgid "Written {repeat} times in a row"
 msgstr "Written {repeat} times in a row"
 
+#: src/console/LineMenu.tsx
+msgid "Hide this message from {name}"
+msgstr "Hide this message from {name}"
+
 #: src/console/ConsoleTab.tsx
 msgid "Console command"
 msgstr "Console command"
@@ -870,6 +874,10 @@ msgstr "Share of mod time"
 #: src/console/lineText.ts
 msgid "Could not restore profile game settings: {error}."
 msgstr "Could not restore profile game settings: {error}."
+
+#: src/console/LineMenu.tsx
+msgid "Hide this message from every object"
+msgstr "Hide this message from every object"
 
 #: src/console/StartupPanel.tsx
 msgid "The next launch will be measured"

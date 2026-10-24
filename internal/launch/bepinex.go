@@ -64,7 +64,7 @@ func logTag(source, object string) string {
 	return "⟦" + strings.Join(parts, ";") + "⟧ "
 }
 
-// splitLogTag takes the bridge's "⟦src=Type::Method@offset;obj=path⟧ " off the front of a message.
+// splitLogTag takes the bridge's "⟦src=Type::Method;obj=path⟧ " off the front of a message.
 func splitLogTag(message string) (source, object, rest string) {
 	tag, rest, ok := strings.Cut(strings.TrimPrefix(message, "⟦"), "⟧ ")
 	if !ok || !strings.HasPrefix(message, "⟦") {

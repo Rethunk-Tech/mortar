@@ -570,6 +570,10 @@ msgstr ""
 msgid "Written {repeat} times in a row"
 msgstr ""
 
+#: src/console/LineMenu.tsx
+msgid "Hide this message from {name}"
+msgstr ""
+
 #: src/console/ConsoleTab.tsx
 msgid "Console command"
 msgstr ""
@@ -869,6 +873,10 @@ msgstr ""
 
 #: src/console/lineText.ts
 msgid "Could not restore profile game settings: {error}."
+msgstr ""
+
+#: src/console/LineMenu.tsx
+msgid "Hide this message from every object"
 msgstr ""
 
 #: src/console/StartupPanel.tsx

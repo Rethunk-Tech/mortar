@@ -1886,6 +1886,10 @@ msgstr "{owner} opens these links now."
 msgid "{name} now opens {source} \"Install\" links."
 msgstr "{name} now opens {source} \"Install\" links."
 
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Every object"
+msgstr "Every object"
+
 #: src/settings/sections/Downloads.tsx
 msgid "Clicking these links on {source} starts the download in Mortar."
 msgstr "Clicking these links on {source} starts the download in Mortar."

@@ -7,7 +7,8 @@ import { copyText } from '../share/copyText.ts'
 import { reportError } from '../toasts/report.ts'
 import { sourceOf } from './logSource.ts'
 
-/** A Console line's right-click menu: copy its message (with its further lines), or hide every line from its source. */
+/** A Console line's right-click menu: copy its message (with its further lines), or hide the lines its source writes,
+ * about the object it names or about every object. */
 export function LineMenu({
   game,
   at,
@@ -21,6 +22,16 @@ export function LineMenu({
 }) {
   const { t } = useLingui()
   const source = sourceOf(group)
+  const hide = (about: string) => {
+    if (source) {
+      HideLogSource(game, { ...source, object: about }).catch(
+        reportError(t`Could not hide that message`),
+      )
+    }
+    onClose()
+  }
+  const object = source?.object ?? ''
+  const name = object.split('/').at(-1) ?? ''
   return (
     <Menu
       open={at !== null}
@@ -39,17 +50,22 @@ export function LineMenu({
         </ListItemIcon>
         <ListItemText>{t`Copy this message`}</ListItemText>
       </MenuItem>
-      {source ? (
-        <MenuItem
-          onClick={() => {
-            HideLogSource(game, source).catch(reportError(t`Could not hide that message`))
-            onClose()
-          }}
-        >
+      {object ? (
+        <MenuItem title={object} onClick={() => hide(object)}>
           <ListItemIcon>
             <EyeOff size={16} aria-hidden={true} />
           </ListItemIcon>
-          <ListItemText>{t`Hide this message`}</ListItemText>
+          <ListItemText>{t`Hide this message from ${name}`}</ListItemText>
+        </MenuItem>
+      ) : null}
+      {source ? (
+        <MenuItem onClick={() => hide('')}>
+          <ListItemIcon>
+            <EyeOff size={16} aria-hidden={true} />
+          </ListItemIcon>
+          <ListItemText>
+            {object ? t`Hide this message from every object` : t`Hide this message`}
+          </ListItemText>
         </MenuItem>
       ) : null}
     </Menu>

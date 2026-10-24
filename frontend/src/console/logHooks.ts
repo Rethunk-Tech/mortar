@@ -4,27 +4,29 @@ import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/la
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { collapseRepeats, shownLog, visible } from './filter.ts'
+import { withoutHidden } from './logSource.ts'
 import { useConsole } from './store.ts'
 
 function useMine() {
   return useConsole((s) => s.shown.profile) === useProfiles((s) => s.openId)
 }
 
+// The log as shown everywhere (lines, level counts, copies): without what the player hid by its source.
 export function useShownEntries() {
   const entries = useConsole((s) => s.entries)
   const mine = useMine()
-  return useMemo(() => shownLog(entries, mine), [mine, entries])
+  const game = useConsole((s) => s.shown.game)
+  const hidden = useSettings((s) => s.games?.[game]?.hiddenLogSources)
+  return useMemo(
+    () => withoutHidden(shownLog(entries, mine), hidden ?? []),
+    [mine, entries, hidden],
+  )
 }
 
 export function useVisible() {
   const entries = useShownEntries()
   const filters = useConsole((s) => s.filters)
-  const game = useConsole((s) => s.shown.game)
-  const hidden = useSettings((s) => s.games?.[game]?.hiddenLogSources)
-  return useMemo(
-    () => collapseRepeats(visible(entries, filters, hidden ?? [])),
-    [entries, filters, hidden],
-  )
+  return useMemo(() => collapseRepeats(visible(entries, filters)), [entries, filters])
 }
 
 export function useLevelNames(): Record<Level, string> {

@@ -21,12 +21,12 @@ function HiddenLogSources() {
         {hidden.length === 0 ? <Typography color="text.secondary">{t`None`}</Typography> : null}
         {hidden.map((h) => (
           <Box
-            key={`${h.source}\t${h.object}`}
+            key={`${h.source}\t${h.text}\t${h.object}`}
             sx={{ display: 'flex', alignItems: 'center', gap: space.gap }}
           >
             <Typography
               noWrap={true}
-              title={[h.label, h.source, h.object].filter(Boolean).join('\n')}
+              title={[h.label, h.source, h.object || t`Every object`].join('\n')}
               sx={{ maxWidth: 360, fontFamily: 'monospace' }}
             >
               {h.label || h.source}
@@ -36,7 +36,7 @@ function HiddenLogSources() {
               aria-label={t`Show ${{ name: h.label || h.source }} again`}
               onClick={() =>
                 persist(
-                  () => ShowLogSource(game, h.source, h.object ?? ''),
+                  () => ShowLogSource(game, h.source, h.text ?? '', h.object ?? ''),
                   t`Could not save that setting`,
                 )
               }
