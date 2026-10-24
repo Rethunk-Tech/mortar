@@ -176,6 +176,10 @@ display_up() {
   # mutter runs this inside its session, where DISPLAY names the Xwayland it started.
   cat >"$ROOT/display-hold.sh" <<'HOLD'
 echo $$ >display.hold
+# An empty login keyring with no password: unlocked, so a read of a secret the sandbox lacks is simply not found.
+mkdir -p "$1/.local/share/keyrings"
+[ -e "$1/.local/share/keyrings/login.keyring" ] || printf '[keyring]\ndisplay-name=login\nctime=0\nmtime=0\nlock-on-idle=false\nlock-after=false\n' >"$1/.local/share/keyrings/login.keyring"
+[ -e "$1/.local/share/keyrings/default" ] || printf login >"$1/.local/share/keyrings/default"
 HOME=$1 gnome-keyring-daemon --start --components=secrets >/dev/null 2>&1 || true
 printf '%s\n' "$DISPLAY" >"$XDG_RUNTIME_DIR/display.x11"
 printf 'DISPLAY=%s\nWAYLAND_DISPLAY=%s\nDBUS_SESSION_BUS_ADDRESS=%s\nXAUTHORITY=%s\n' "$DISPLAY" "$WAYLAND_DISPLAY" "$DBUS_SESSION_BUS_ADDRESS" "${XAUTHORITY:-}" >"$XDG_RUNTIME_DIR/display.env.new"
