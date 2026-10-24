@@ -50,10 +50,34 @@
 
   "linter": {
     "rules": {
+      "a11y": {
+        "noNoninteractiveElementInteractions": "error"
+      },
       // canon ts-biome-00006
       "preset": "all",
 
       "style": {
+        "useNamedCaptureGroup": "off",
+        "useUnicodeRegex": "off",
+        "noExportedImports": "off",
+        "useVarsOnTop": "off",
+        "useExplicitLengthCheck": "off",
+        "useTestHooksOnTop": "off",
+        "useTestHooksInOrder": "off",
+        "useConsistentMethodSignatures": "off",
+        "noHexColors": "off",
+        "useDestructuring": "off",
+        "noReactNativeLiteralColors": "off",
+        "useThisInClassMethods": "off",
+        "useDomQuerySelector": "off",
+        "noInlineStyles": "off",
+        "useReduceTypeParameter": "error",
+        "noNestedTernary": "error",
+        "useImportsFirst": "error",
+        "useConsistentTestIt": {
+          "level": "error",
+          "options": { "function": "test", "withinDescribe": "test" }
+        },
         // canon ts-biome-00023
         "noNonNullAssertion": "error",
         // canon ts-biome-00022
@@ -110,6 +134,12 @@
       },
 
       "complexity": {
+        "useArraySome": "error",
+        "noExcessiveNestedCallbacks": "error",
+        "noPlaywrightUselessAwait": "error",
+        "noUselessUndefined": "error",
+        "noUselessStringConcat": "error",
+        "noUnnecessaryTemplateExpression": "error",
         // canon ts-biome-00011
         "noExcessiveLinesPerFunction": {
           "level": "error",
@@ -178,6 +208,19 @@
   },
 
   "overrides": [
+    {
+      "includes": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.pw.ts",
+        "**/__tests__/**",
+        "**/test/**",
+        "**/tests/**"
+      ],
+      "linter": { "rules": { "style": { "useImportsFirst": "off" } } }
+    },
     // canon ts-biome-00015 — test files
     {
       "includes": [
