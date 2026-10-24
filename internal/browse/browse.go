@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"maps"
 	"slices"
 	"strconv"
@@ -410,6 +411,8 @@ func (c *Client) searchFilled(ctx context.Context, info components.GameInfo, id 
 		out.Total = max(out.Total-dropped, 0)
 	}
 	storeEnds(key, ends)
+	log.Printf("browse: %s page %d (sort %q): %d hits from upstream pages %d to %d (resumed at %d+%d), %d hidden, %d dropped, total %d",
+		id, first, q.Sort, len(out.Items), pos.page, q.Page, pos.page, pos.offset, out.Hidden, dropped, out.Total)
 	return out, nil
 }
 
