@@ -425,6 +425,10 @@ msgstr "Sign in"
 msgid "{name} now opens {source} \"Install with Mod Manager\" links."
 msgstr "{name} now opens {source} \"Install with Mod Manager\" links."
 
+#: src/settings/sections/Launchers.tsx
+msgid "Looking for launchers…"
+msgstr "Looking for launchers…"
+
 #: src/settings/sections/DataHistory.tsx
 msgid "Trimmed {profile}'s history, freed {size}"
 msgstr "Trimmed {profile}'s history, freed {size}"

@@ -5,13 +5,18 @@ import type { StoreApp } from '../../../bindings/github.com/Rethunk-Tech/mortar/
 import { Launchers as ListLaunchers } from '../../../bindings/github.com/Rethunk-Tech/mortar/internal/game/service.ts'
 import { useRefreshOnFocus } from '../../firstrun/useRefreshOnFocus.ts'
 import { LauncherList } from '../../launchers/LauncherList.tsx'
+import { SkeletonRows } from '../../shell/SkeletonRows.tsx'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
 import { Searchable } from '../SettingsSection.tsx'
 
+const SKELETON_LAUNCHERS = 10
+const SKELETON_LAUNCHER_PX = 60
+
 export function Launchers() {
   const { t } = useLingui()
-  const [launchers, setLaunchers] = useState<StoreApp[]>([])
+  // null until the first answer, so the page shows where the launchers will be rather than nothing.
+  const [launchers, setLaunchers] = useState<StoreApp[] | null>(null)
   const refresh = useCallback(() => {
     ListLaunchers()
       .then((ls) => setLaunchers(ls ?? []))
@@ -21,13 +26,26 @@ export function Launchers() {
   useRefreshOnFocus(refresh)
   return (
     <Searchable
-      terms={`${t`Launchers`} Steam GOG Flatpak ${t`Game folder`} ${launchers.map((l) => l.name).join(' ')}`}
+      terms={`${t`Launchers`} Steam GOG Flatpak ${t`Game folder`} ${(launchers ?? []).map((l) => l.name).join(' ')}`}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
         <Box sx={{ fontSize: 'base.fontSize', color: 'var(--mortar-ink-sec)' }}>
           {t`Mortar finds your games through these launchers. Choose a folder for a game it missed or you moved.`}
         </Box>
-        <LauncherList launchers={launchers} refresh={refresh} />
+        {launchers ? (
+          <LauncherList launchers={launchers} refresh={refresh} />
+        ) : (
+          <SkeletonRows
+            label={t`Looking for launchers…`}
+            count={SKELETON_LAUNCHERS}
+            height={SKELETON_LAUNCHER_PX}
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+              gap: space.gap,
+            }}
+          />
+        )}
       </Box>
     </Searchable>
   )

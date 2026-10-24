@@ -18,7 +18,7 @@ import { storeName } from '../games/storeName.ts'
 import { When } from '../i18n/When.tsx'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { EmptyState } from '../shell/EmptyState.tsx'
-import { LoadingRow } from '../shell/LoadingRow.tsx'
+import { SkeletonRows } from '../shell/SkeletonRows.tsx'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
@@ -26,6 +26,14 @@ import { errorMessage, reportError, reportUnexpected } from '../toasts/report.ts
 import { useToasts } from '../toasts/store.ts'
 
 const TILE_MIN_PX = 220
+const SKELETON_TILES = 8
+// A tile's 16:9 picture at about its smallest width.
+const SKELETON_TILE_PX = 124
+const tileGrid = {
+  display: 'grid',
+  gridTemplateColumns: `repeat(auto-fill, minmax(${TILE_MIN_PX}px, 1fr))`,
+  gap: space.gap,
+} as const
 const STEAM = 'steam'
 // The viewer's buttons sit on the screenshot, so they carry their own dark backing to stay legible on any image.
 const overArt = {
@@ -177,7 +185,14 @@ export function ScreenshotsTab({ game }: { game: string }) {
       </Box>
     )
   } else if (gallery === null) {
-    body = <LoadingRow>{t`Reading your screenshots…`}</LoadingRow>
+    body = (
+      <SkeletonRows
+        label={t`Reading your screenshots…`}
+        count={SKELETON_TILES}
+        height={SKELETON_TILE_PX}
+        sx={tileGrid}
+      />
+    )
   } else if (shots.length === 0) {
     body = (
       <EmptyState icon={<Camera size={40} aria-hidden={true} />} title={t`No screenshots yet`}>
@@ -186,13 +201,7 @@ export function ScreenshotsTab({ game }: { game: string }) {
     )
   } else {
     body = (
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(auto-fill, minmax(${TILE_MIN_PX}px, 1fr))`,
-          gap: space.gap,
-        }}
-      >
+      <Box sx={tileGrid}>
         {shots.map((s, i) => (
           <ButtonBase
             key={`${s.source}/${s.name}`}
