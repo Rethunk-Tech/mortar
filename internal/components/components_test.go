@@ -461,7 +461,17 @@ func TestSaveFilePatternsStayInTheSavesFolder(t *testing.T) {
 	if g.Validate() == nil {
 		t.Error("companion without a dot passed")
 	}
-	g.SaveCompanions, g.SaveUserFolders = nil, true
+	g.SaveCompanions = nil
+	for _, p := range []string{"CatLibSaves", "../{stem}", "/{stem}", `a\{stem}`} {
+		if g.SaveCompanionPaths = []string{p}; g.Validate() == nil {
+			t.Errorf("companion path %q passed", p)
+		}
+	}
+	g.SaveCompanionPaths = []string{"CatLibSaves/{stem}"}
+	if err := g.Validate(); err != nil {
+		t.Errorf("companion path: %v", err)
+	}
+	g.SaveCompanionPaths, g.SaveUserFolders = nil, true
 	for _, files := range [][]string{nil, {"worlds_local/*.fwl"}} {
 		if g.SaveFiles = files; g.Validate() == nil {
 			t.Errorf("user folders with save files %q passed", files)

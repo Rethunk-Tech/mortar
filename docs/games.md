@@ -6,7 +6,7 @@ Per game, the decisions and sources behind its catalog entry that the catalog ca
 
 Source for the save layout: CatLib's docs (`okatodev/CatLib` `docs/Saves.md`) and the maintainer's report of a real save folder.
 - Each save is one file, `GameSaves/GameSave_<date>_<time>_Cat-Mail-Co.bin`, under the game's LocalLow folder. The saves path stays that folder (where 0.3.12 put it, so a profile's own saves copy keeps its shape) and `saveFiles` reaches one folder down.
-- CatLib keeps a save's mod data in `CatLibSaves/<save name>/` beside `GameSaves`; it is inside the saves path, so a swap carries it, but a backup of one save does not yet.
+- CatLib keeps a save's mod data in `CatLibSaves/<save name>/` beside `GameSaves` (JSON per mod: `mod`, `save`, `values`; a CatLib user's report), so `saveCompanionPaths` carries that folder with its save in backups and restores. A backup made before keeps the current mod data on restore rather than deleting it.
 
 ## Cities: Skylines II
 

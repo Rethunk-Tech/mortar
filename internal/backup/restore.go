@@ -28,7 +28,7 @@ func Restore(ctx context.Context, zipPath string, l saves.Layout, backupsDir str
 		return err
 	}
 	defer func() { _ = fsx.RemoveAll(tmp) }()
-	got := saves.Layout{Dir: filepath.Join(tmp, "Saves"), Files: l.Files, Companions: l.Companions, Linked: l.Linked, UserFolders: l.UserFolders}
+	got := saves.Layout{Dir: filepath.Join(tmp, "Saves"), Files: l.Files, Companions: l.Companions, CompanionPaths: l.CompanionPaths, Linked: l.Linked, UserFolders: l.UserFolders}
 	want, err := extractSaves(zipPath, got, folders)
 	if err != nil {
 		return err
@@ -87,10 +87,11 @@ func RestoreCopy(ctx context.Context, l saves.Layout, backupsDir, save, kept str
 }
 
 // dropCompanions deletes the companions of save in l's folder that the restored files do not replace: SQLite replays a
-// leftover -wal over the restored database, undoing the restore.
+// leftover -wal over the restored database, undoing the restore. Companion paths stay: a backup made before they were
+// carried holds none, and a restore must not delete a mod's data it cannot put back.
 func dropCompanions(l saves.Layout, save string, restored []string) error {
 	for _, p := range l.Paths(save)[1:] {
-		if !slices.Contains(restored, p) {
+		if !slices.Contains(restored, p) && !slices.Contains(l.CompanionPathsOf(save), p) {
 			if err := fsx.RemoveAll(filepath.Join(l.Dir, filepath.FromSlash(p))); err != nil {
 				return err
 			}

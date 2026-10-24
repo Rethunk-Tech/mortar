@@ -336,7 +336,7 @@ func TestWrittenSinceNamesTheSavesARunWrote(t *testing.T) {
 }
 
 // Cat Mail Co. keeps each save as one file under GameSaves (layout per okatodev/CatLib docs/Saves.md), beside CatLib's
-// per-save mod data and the Unity log; the bundled catalog entry must find the save and nothing else.
+// per-save mod data and the Unity log; the bundled catalog entry must find the save, carry its mod data and nothing else.
 func TestCatMailCoSavesAreFoundUnderGameSaves(t *testing.T) {
 	info, ok := components.Game("cat-mail-co")
 	if !ok {
@@ -350,8 +350,12 @@ func TestCatMailCoSavesAreFoundUnderGameSaves(t *testing.T) {
 	} {
 		write(t, filepath.Join(dir, name), name)
 	}
-	names, err := Layout{Dir: dir, Files: info.SaveFiles, Companions: info.SaveCompanions}.Names()
+	l := Layout{Dir: dir, Files: info.SaveFiles, Companions: info.SaveCompanions, CompanionPaths: info.SaveCompanionPaths}
+	names, err := l.Names()
 	if want := []string{"GameSaves/GameSave_20260923_201740_Cat-Mail-Co.bin"}; err != nil || !reflect.DeepEqual(names, want) {
 		t.Fatalf("Names = %v, %v; want %v", names, err, want)
+	}
+	if got, want := l.Paths(names[0]), []string{names[0], "CatLibSaves/GameSave_20260923_201740_Cat-Mail-Co"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("Paths = %v, want the save with its CatLib mod data", got)
 	}
 }

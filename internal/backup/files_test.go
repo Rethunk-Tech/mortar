@@ -132,3 +132,48 @@ func TestFileSetSavesInFoldersBackUpAndRestore(t *testing.T) {
 		}
 	}
 }
+
+// A save's companion folder (Cat Mail Co.'s CatLib mod data) travels with it, and a backup made without it leaves the
+// current folder in place on restore.
+func TestASavesCompanionFolderBacksUpAndRestoresWithIt(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "CatMailCo")
+	save, data := "GameSaves/GameSave_1.bin", "CatLibSaves/GameSave_1/catlib.labels.json"
+	write := func(v string) {
+		for _, name := range []string{save, data} {
+			testfs.WriteAt(t, filepath.Join(dir, filepath.FromSlash(name)), []byte(v))
+		}
+	}
+	read := func(name string) string {
+		b, _ := fsx.ReadFile(filepath.Join(dir, filepath.FromSlash(name)))
+		return string(b)
+	}
+	l := saves.Layout{Dir: dir, Files: []string{"GameSaves/GameSave_*.bin"}, CompanionPaths: []string{"CatLibSaves/{stem}"}}
+	out := t.TempDir()
+	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	write("v1")
+	with, err := Folder(t.Context(), l, out, save, DefaultKeep, start, Cause{Kind: KindManual})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := zipNames(t, with); !slices.Equal(got, []string{"Saves/" + data, "Saves/" + save}) {
+		t.Fatalf("zip = %v, want the save with its mod data", got)
+	}
+	without, err := Folder(t.Context(), saves.Layout{Dir: dir, Files: l.Files}, out, save, DefaultKeep, start.Add(time.Minute), Cause{Kind: KindManual})
+	if err != nil {
+		t.Fatal(err)
+	}
+	write("v2")
+	if err := Restore(t.Context(), with, l, out, []string{save}, DefaultKeep, start.Add(time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if read(save) != "v1" || read(data) != "v1" {
+		t.Fatalf("restored save %q, mod data %q; want both v1", read(save), read(data))
+	}
+	write("v2")
+	if err := Restore(t.Context(), without, l, out, []string{save}, DefaultKeep, start.Add(2*time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if read(save) != "v1" || read(data) != "v2" {
+		t.Fatalf("restored save %q, mod data %q; want the save back and the mod data kept", read(save), read(data))
+	}
+}

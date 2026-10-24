@@ -2466,6 +2466,7 @@
         }
       },
       "saveFiles": ["GameSaves/GameSave_*.bin"],
+      "saveCompanionPaths": ["CatLibSaves/{stem}"],
       "deploy": "profile",
       "targets": [
         {

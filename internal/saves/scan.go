@@ -80,20 +80,21 @@ type cached struct {
 
 // Scanner scans the saves in Dir, laid out as Files and Companions say (see Layout), and caches results in CacheDir.
 type Scanner struct {
-	Dir         string
-	Files       []string
-	Companions  []string
-	Copies      []string
-	CopyFolders []string
-	Linked      []string
-	UserFolders bool
-	CacheDir    string
-	mu          sync.Mutex
+	Dir            string
+	Files          []string
+	Companions     []string
+	CompanionPaths []string
+	Copies         []string
+	CopyFolders    []string
+	Linked         []string
+	UserFolders    bool
+	CacheDir       string
+	mu             sync.Mutex
 }
 
 // Layout is the scanned folder and its save shape.
 func (s *Scanner) Layout() Layout {
-	return Layout{Dir: s.Dir, Files: s.Files, Companions: s.Companions, Copies: s.Copies, CopyFolders: s.CopyFolders, Linked: s.Linked, UserFolders: s.UserFolders}
+	return Layout{Dir: s.Dir, Files: s.Files, Companions: s.Companions, CompanionPaths: s.CompanionPaths, Copies: s.Copies, CopyFolders: s.CopyFolders, Linked: s.Linked, UserFolders: s.UserFolders}
 }
 
 // Scan returns every save in Dir, newest first. A save that cannot be read is left out and reported in the
@@ -192,6 +193,8 @@ type Layout struct {
 	Dir        string
 	Files      []string
 	Companions []string
+	// CompanionPaths are files or folders under Dir that belong to one save (components.GameInfo.SaveCompanionPaths).
+	CompanionPaths []string
 	// Copies are the patterns for the copies of a save the game keeps beside it (components.GameInfo.SaveCopies).
 	Copies []string
 	// CopyFolders are folders beside Dir that also hold copies (components.GameInfo.SaveCopyFolders); a copy there is
@@ -315,6 +318,20 @@ func (l Layout) Paths(name string) []string {
 	for _, ext := range l.Companions {
 		if c := stem + ext; c != name {
 			if fsx.IsFile(filepath.Join(l.Dir, filepath.FromSlash(c))) {
+				out = append(out, c)
+			}
+		}
+	}
+	return append(out, l.CompanionPathsOf(name)...)
+}
+
+// CompanionPathsOf lists the CompanionPaths of save name that exist, as slash paths under Dir.
+func (l Layout) CompanionPathsOf(name string) []string {
+	var out []string
+	stem := path.Base(strings.TrimSuffix(name, path.Ext(name)))
+	for _, p := range l.CompanionPaths {
+		if c := strings.ReplaceAll(p, "{stem}", stem); c != name {
+			if _, err := os.Stat(filepath.Join(l.Dir, filepath.FromSlash(c))); err == nil {
 				out = append(out, c)
 			}
 		}

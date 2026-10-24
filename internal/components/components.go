@@ -156,6 +156,10 @@ type GameInfo struct {
 	// SaveCompanions are extensions of files beside a save file, sharing its stem, that belong to that save (a Valheim
 	// world's .db beside its .fwl).
 	SaveCompanions []string `json:"saveCompanions,omitempty"`
+	// SaveCompanionPaths are slash paths under the saves folder, files or folders, that belong to one save: {stem} is
+	// the save file's name without its extension (a Cat Mail Co. save's CatLib mod data, "CatLibSaves/{stem}"). A
+	// backup carries them and a restore puts back those it holds. An older Mortar ignores the field.
+	SaveCompanionPaths []string `json:"saveCompanionPaths,omitempty"`
 	// SaveCopies are patterns for the copies of a save the game keeps itself beside it, which restore over the save:
 	// {name} is the save's file name, {stem} the name without its extension and {ext} the extension (a Valheim world's
 	// "{stem}_backup_auto-*{ext}", a Sims 4 slot's "{name}.ver?"). An older Mortar ignores the field.
@@ -913,6 +917,11 @@ func (g GameInfo) Validate() error {
 	for _, ext := range g.SaveCompanions {
 		if len(ext) < 2 || ext[0] != '.' || strings.ContainsAny(ext, "/\\*?[") {
 			return fmt.Errorf("game %q has an unusable save companion %q", g.ID, ext)
+		}
+	}
+	for _, p := range g.SaveCompanionPaths {
+		if !strings.Contains(p, "{stem}") || strings.Contains(p, "\\") || !fs.ValidPath(strings.ReplaceAll(p, "{stem}", "x")) {
+			return fmt.Errorf("game %q has an unusable save companion path %q", g.ID, p)
 		}
 	}
 	for _, p := range g.SaveCopies {
