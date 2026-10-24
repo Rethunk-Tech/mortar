@@ -148,10 +148,10 @@ function OldFilesCallout({
 // update cannot push the mod list off the page, and a dialog listing each entry.
 export const OldFilesCallouts = memo(function OldFilesCalloutsView({
   profileId,
-  updated,
+  stamp,
 }: {
   profileId: string
-  updated: string
+  stamp: string
 }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
@@ -163,10 +163,10 @@ export const OldFilesCallouts = memo(function OldFilesCalloutsView({
     setData: setSets,
     reload: refetch,
   } = useLoaded<OldFiles[]>(
-    game !== '' && updated !== ''
+    game !== '' && stamp !== ''
       ? () => PendingOldFiles(game, profileId).then((list) => list ?? [])
       : null,
-    [game, profileId, updated],
+    [game, profileId, stamp],
     [],
     reportUnexpected,
   )

@@ -26,16 +26,16 @@ function ReviewNewFolders(props: Omit<ComponentProps<typeof GameModsReviewDialog
 
 export const NewFoldersCallout = memo(function NewFoldersCalloutView({
   profileId,
-  updated,
+  stamp,
 }: {
   profileId: string
-  updated: string
+  stamp: string
 }) {
   const { t } = useLingui()
   const game = useProfiles((s) => s.game?.id ?? '')
   const [review, setReview] = useState<GameModsDiff | null>(null)
   const [pending, run] = usePending()
-  const { diff, reload } = useGameModsDiff(game, profileId, updated)
+  const { diff, reload } = useGameModsDiff(game, profileId, stamp)
   const missing = diff?.missing ?? []
   const different = diff?.different ?? []
   const count = missing.length + different.length

@@ -348,6 +348,11 @@ function FilteredMods({ profile }: { profile: Profile }) {
   )
 }
 
+// What the old-files and game-folder comparisons read of a profile: which mods at which versions, not whether they
+// are switched on, so a toggle leaves it equal.
+const foldersKey = (p: Profile) =>
+  `${p.id}|${(p.entries ?? []).map((e) => `${e.key}:${(e.mods ?? []).map((m) => `${m.id}@${m.version}`).join(',')}`).join('|')}`
+
 export function ModsTab({ profile }: { profile: Profile }) {
   const { t } = useLingui()
   const load = useMods((s) => s.load)
@@ -355,6 +360,7 @@ export function ModsTab({ profile }: { profile: Profile }) {
   const gameId = useProfiles((s) => s.game?.id)
   const gameBusy = useGameBusy(gameId)
   const loading = useRef<boolean>(false)
+  const latestKey = useRef('')
   useEffect(() => {
     if (!gameId) {
       return
@@ -395,30 +401,39 @@ export function ModsTab({ profile }: { profile: Profile }) {
     if (loadKey === '') {
       return
     }
+    latestKey.current = loadKey
     if (loading.current) {
       return
     }
-    loading.current = true
-    load()
-      .then(() => {
-        const id = useDetail.getState().takePending()
-        const pending = id ? useMods.getState().mods.find((m) => modId(m) === id) : undefined
-        if (pending) {
-          focusMod(pending)
-        }
-      })
-      .catch(reportUnexpected)
-      .finally(() => {
-        loading.current = false
-      })
+    const run = () => {
+      loading.current = true
+      const key = latestKey.current
+      load()
+        .then(() => {
+          const id = useDetail.getState().takePending()
+          const pending = id ? useMods.getState().mods.find((m) => modId(m) === id) : undefined
+          if (pending) {
+            focusMod(pending)
+          }
+        })
+        .catch(reportUnexpected)
+        .finally(() => {
+          loading.current = false
+          // A save that landed while this load ran asks again, so its problems are not left stale.
+          if (latestKey.current !== key) {
+            run()
+          }
+        })
+    }
+    run()
   }, [load, loadKey])
 
   if (userModCount(profile) === 0) {
     return (
       <>
         <TrackedNotInProfile profileId={profile.id} />
-        <OldFilesCallouts profileId={profile.id} updated={String(profile.updated)} />
-        <NewFoldersCallout profileId={profile.id} updated={String(profile.updated)} />
+        <OldFilesCallouts profileId={profile.id} stamp={foldersKey(profile)} />
+        <NewFoldersCallout profileId={profile.id} stamp={foldersKey(profile)} />
         <EmptyMods profileId={profile.id} />
       </>
     )
@@ -433,8 +448,8 @@ export function ModsTab({ profile }: { profile: Profile }) {
       </TipBanner>
       <ModsHeaderActions />
       <UpdateBar />
-      <OldFilesCallouts profileId={profile.id} updated={String(profile.updated)} />
-      <NewFoldersCallout profileId={profile.id} updated={String(profile.updated)} />
+      <OldFilesCallouts profileId={profile.id} stamp={foldersKey(profile)} />
+      <NewFoldersCallout profileId={profile.id} stamp={foldersKey(profile)} />
       <FrozenCallout />
       <LegacyReasonsCallout />
       <FilteredMods profile={profile} />

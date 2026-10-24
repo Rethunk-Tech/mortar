@@ -277,7 +277,6 @@ export async function setEnabledAction(
       offerDependents(get().mods, [mod], (list) => enableMany(set, get, list, false))
       offerUnneeded(get().mods, [mod], (list) => enableMany(set, get, list, false))
     }
-    await get().loadProblems()
   } catch (e) {
     reportError(
       i18n._(
