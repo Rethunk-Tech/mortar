@@ -65,6 +65,7 @@ func TestRunStartsWhenLogRewritten(t *testing.T) {
 }
 
 func TestRunIgnoresStaleLog(t *testing.T) {
+	t.Parallel()
 	log := filepath.Join(t.TempDir(), "SMAPI-latest.txt")
 	if err := os.WriteFile(log, []byte("old\n"), 0o600); err != nil {
 		t.Fatal(err)
@@ -81,6 +82,7 @@ func TestRunIgnoresStaleLog(t *testing.T) {
 }
 
 func TestRunStartsWhenTheGameIsUpButItsLogIsLate(t *testing.T) {
+	t.Parallel()
 	log := filepath.Join(t.TempDir(), "LogOutput.log")
 	var up atomic.Bool
 	tm := Timing{Timeout: time.Minute, Slow: 50 * time.Millisecond, Poll: 5 * time.Millisecond}
@@ -183,6 +185,7 @@ func TestRunStartsWhenReadyWithoutALog(t *testing.T) {
 }
 
 func TestRunFailsWhenReadyNeverSeesAProcess(t *testing.T) {
+	t.Parallel()
 	err := Run(context.Background(), func(string, string, ...string) (<-chan error, error) {
 		return make(chan error), nil
 	}, Command{Failure: HintSteam, Ready: func() bool { return false }}, fast, nil)

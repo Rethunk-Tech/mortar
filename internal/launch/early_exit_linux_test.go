@@ -99,6 +99,7 @@ func TestAStalledLaunchIsEndedWithItsChildren(t *testing.T) {
 
 // SMAPI's console loop spins on an input at end of file, so a launched process must see one that stays open.
 func TestStdinStaysOpenWhileTheProcessRuns(t *testing.T) {
+	t.Parallel()
 	exited, err := Start("", "sh", "-c", "timeout 0.3 cat; echo status=$?")
 	if err != nil {
 		t.Fatal(err)

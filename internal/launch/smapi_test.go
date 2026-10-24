@@ -39,6 +39,7 @@ func TestParserHeaderlessFirstLine(t *testing.T) {
 }
 
 func TestBufferKeepsNewestMaxLines(t *testing.T) {
+	t.Parallel()
 	var b Buffer
 	total := MaxLines*2 + 7
 	for i := 1; i <= total; i++ {

@@ -142,6 +142,7 @@ func TestHostTerminateSignalsThroughHostKill(t *testing.T) {
 }
 
 func TestStopAsksAWineGameToCloseFirst(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 	pidFile, closeLog := filepath.Join(dir, "pid"), filepath.Join(dir, "close")
 	wine := "#!/bin/sh\necho \"$@\" $WINESERVERSOCKET >\"$CLOSE_LOG\"\nkill \"$(cat \"$PID_FILE\")\"\n"
