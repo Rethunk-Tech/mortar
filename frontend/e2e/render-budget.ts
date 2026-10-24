@@ -40,8 +40,8 @@ import { webkitWalk } from './webkit-walk.ts'
 //   MORTAR_RENDER_SHOTS=<dir>          where each screen's pictures go (default <out>/shots): settled in <dir>/chromium
 //                                      and <dir>/webkit, loading (just after the action) in their loading/ folders;
 //                                      `bun run renders:diff OLD/chromium NEW/chromium` compares two runs' settled ones
-// Every screen is checked for layout breaks (renderLayout.ts) in Chromium, then in WebKitGTK (webkit-walk.ts) on the same
-// sandbox; a break fails the run like a budget.
+// Every screen is checked for layout breaks (renderLayout.ts) in Chromium, and with MORTAR_RENDER_WEBKIT=1 (renders:release)
+// in WebKitGTK too (webkit-walk.ts) on the same sandbox; a break fails the run like a budget.
 //   MORTAR_RENDER_MOTION=1             measure with motion (by default reduced, so no ripple or animation is counted)
 //   MORTAR_RENDER_TOP=<n>              how many components, roots and causes each case lists (8)
 // Writes render-budget.json and index.html (every screen loading and settled, in both engines, beside its figures and
@@ -432,16 +432,14 @@ async function run(
   }
 }
 
-// The Chromium walk, then the WebKitGTK one on the same sandbox while it still runs (webkit-walk.ts).
+// The Chromium walk, then, before a release, the WebKitGTK one on the same sandbox while it still runs (webkit-walk.ts).
 async function walk(url: string, sandboxDir: string, chosen: Case[], shots: string) {
   const { results, breaks } = await run(url, chosen, shots)
+  if (process.env.MORTAR_RENDER_WEBKIT !== '1') {
+    return { results, breaks }
+  }
   const only = (process.env.MORTAR_RENDER_ONLY ?? '').split(',').filter(Boolean)
-  const webkit = await webkitWalk({
-    sandbox: sandboxDir,
-    url,
-    shots: `${shots}/webkit`,
-    only,
-  })
+  const webkit = await webkitWalk({ sandbox: sandboxDir, url, shots: `${shots}/webkit`, only })
   if (webkit === null) {
     console.log('WebKitGTK walk skipped: no WebKitWebDriver or no hidden display')
   }

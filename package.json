@@ -19,6 +19,7 @@
     "mem": "scripts/mem-budget.sh",
     "renders": "scripts/render-budget.sh",
     "renders:diff": "bun frontend/e2e/render-diff.ts",
+    "renders:release": "MORTAR_RENDER_WEBKIT=1 scripts/render-budget.sh",
     "renders:webkit": "bun frontend/e2e/webkit-walk.ts",
     "vuln": "govulncheck ./...",
     "site": "bun run --cwd web build",
