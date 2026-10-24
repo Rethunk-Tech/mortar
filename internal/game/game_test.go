@@ -12,7 +12,6 @@ import (
 	"strings"
 	"testing"
 
-
 	"github.com/Rethunk-Tech/mortar/internal/opener"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
 	"github.com/Rethunk-Tech/mortar/internal/usererr"

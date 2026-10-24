@@ -109,6 +109,7 @@ func TestSenderSeesWhyThePullStopped(t *testing.T) {
 		{"failed", outgoingReport{State: OutgoingFailed, Reason: "disk full"}, OutgoingTransfer{State: OutgoingFailed, Reason: "disk full"}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			r := sentRig(t)
 			incoming := r.receiver.incoming[r.arrival.ID]
 			r.receiver.reportOutgoing(t.Context(), incoming, tc.report)

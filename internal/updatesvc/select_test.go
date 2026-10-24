@@ -43,7 +43,10 @@ func (p checkOnly) Name() string { return p.name }
 func (p checkOnly) Check(context.Context, updater.CheckRequest) (*updater.Release, error) {
 	return p.rel, p.err
 }
-func (p checkOnly) Download(context.Context, *updater.Release, io.Writer, func(int64, int64)) error { return nil }
+
+func (p checkOnly) Download(context.Context, *updater.Release, io.Writer, func(int64, int64)) error {
+	return nil
+}
 
 // The updater counts any error as a failed check, so a prerelease lookup GitHub refuses must not hide a stable release.
 func TestChannelOffersStableWhenThePrereleaseCheckFails(t *testing.T) {

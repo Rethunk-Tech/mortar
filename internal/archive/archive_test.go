@@ -98,6 +98,7 @@ func TestValidExtractsAndNormalisesModes(t *testing.T) {
 	wantFile := map[string]string{"zip": "mod/sub/data.json", "7z": "sub/b.txt", "rar": "asd.go", "rar5": "sub/a.txt"}
 	for name, p := range cases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			dest, err := extract(t, p, options{})
 			if err != nil {
 				t.Fatal(err)
@@ -149,10 +150,12 @@ func TestUnsafeEntriesRejected(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run("zip "+c.name, func(t *testing.T) {
+			t.Parallel()
 			_, err := extract(t, buildZip(t, zentry{name: c.entry, body: "x"}), options{})
 			wantReason(t, err, c.reason, c.entry)
 		})
 		t.Run("rar "+c.name, func(t *testing.T) {
+			t.Parallel()
 			_, err := extract(t, buildRar(t, rarFile{name: c.entry, data: "x"}), options{})
 			wantReason(t, err, c.reason, c.entry)
 		})
@@ -497,6 +500,7 @@ func TestStreamFormatsExtractATarByMagicBytes(t *testing.T) {
 	t.Parallel()
 	for _, name := range []string{"valid.tar", "valid.tar.gz", "valid.tar.xz", "valid.tar.zst", "valid.tar.bz2", "valid.tar.lzma"} {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			// A copy with no extension: only the bytes may decide.
 			src, err := fsx.ReadFile(filepath.Join("testdata", name))
 			if err != nil {
@@ -520,6 +524,7 @@ func TestStreamFormatsExtractABareFileNamedWithoutItsSuffix(t *testing.T) {
 	t.Parallel()
 	for _, name := range []string{"bare.txt.gz", "bare.txt.xz", "bare.txt.zst", "bare.txt.bz2", "bare.txt.lzma"} {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			dest, err := extract(t, filepath.Join("testdata", name), options{})
 			if err != nil {
 				t.Fatal(err)
@@ -540,6 +545,7 @@ func TestStreamFormatsRefuseUnsafeEntries(t *testing.T) {
 		"traversal.tar.gz": ErrTraversal, "symlink.tar.gz": ErrLink, "hardlink.tar.gz": ErrLink, "fifo.tar.gz": ErrSpecialFile,
 	} {
 		t.Run(file, func(t *testing.T) {
+			t.Parallel()
 			_, err := extract(t, filepath.Join("testdata", file), options{})
 			if !errors.Is(err, reason) {
 				t.Fatalf("got %v, want %v", err, reason)
