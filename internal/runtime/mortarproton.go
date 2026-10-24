@@ -95,7 +95,14 @@ func protonRank(a, b string) int {
 		}
 		return 1
 	}
-	return strings.Compare(b, a)
+	return strings.Compare(padNumbers(b), padNumbers(a))
+}
+
+var digits = regexp.MustCompile(`\d+`)
+
+// padNumbers zero-pads each run of digits so names compare by their numbers: GE-Proton10 after GE-Proton9.
+func padNumbers(s string) string {
+	return digits.ReplaceAllStringFunc(s, func(d string) string { return strings.Repeat("0", max(0, 20-len(d))) + d })
 }
 
 // ProtonBuilds are the Proton builds a native Steam on this computer has, in its libraries' steamapps/common or its

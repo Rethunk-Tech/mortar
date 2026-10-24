@@ -60,3 +60,12 @@ func TestMortarProtonRunsAFolderCopyThroughSteamsBestProtonInMortarsPrefix(t *te
 		t.Fatalf("path = %q %v, want %q", got, err, want)
 	}
 }
+
+// Builds outside Valve's numbered releases rank by the numbers in their names, so GE-Proton10 is newer than GE-Proton9.
+func TestProtonRankOrdersOtherBuildsByTheirNumbers(t *testing.T) {
+	got := []string{"GE-Proton9-27", "GE-Proton10-9", "GE-Proton10-10"}
+	slices.SortFunc(got, protonRank)
+	if want := []string{"GE-Proton10-10", "GE-Proton10-9", "GE-Proton9-27"}; !slices.Equal(got, want) {
+		t.Fatalf("order = %v, want %v", got, want)
+	}
+}
