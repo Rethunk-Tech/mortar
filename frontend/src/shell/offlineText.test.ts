@@ -33,7 +33,11 @@ test('the offline sentence gives each down source its own saved time, or says no
 })
 
 test('a skipped update check says why without promising saved data', () => {
-  const reason = updatesReasonOf([down('nexus', NEVER), down('github', '2026-10-05T12:00:00Z')])
+  const reason = updatesReasonOf([
+    down('thunderstore', NEVER),
+    down('nexus', NEVER),
+    down('github', '2026-10-05T12:00:00Z'),
+  ])
   expect(reason).toBe('GitHub and Nexus cannot be reached, so Mortar cannot check for mod updates')
   expect(
     updatesReasonOf([down('nexus', NEVER), { ...down('github', NEVER), unreachable: false }]),
