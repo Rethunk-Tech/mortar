@@ -207,7 +207,8 @@ func (d Driver) open(ctx context.Context, url, ua string) (body io.Reader, done 
 		done()
 		return nil, nil, fmt.Errorf("thunderstore answered %s", resp.Status)
 	}
-	return io.LimitReader(resp.Body, source.MaxBody), done, nil
+	// One byte past the cap lets get tell an oversize body from one that fits exactly.
+	return io.LimitReader(resp.Body, source.MaxBody+1), done, nil
 }
 
 func (d Driver) get(ctx context.Context, url, ua string) ([]byte, error) {
@@ -216,7 +217,7 @@ func (d Driver) get(ctx context.Context, url, ua string) ([]byte, error) {
 		return nil, err
 	}
 	defer done()
-	return io.ReadAll(body)
+	return fsx.ReadCapped(body, source.MaxBody)
 }
 
 // streamPackages decodes a package-list chunk one package at a time, so only the package being read is held.
@@ -277,7 +278,7 @@ func (d Driver) getJSON(ctx context.Context, url, ua string, out any) (hash stri
 		if err != nil {
 			return "", err
 		}
-		if body, err = io.ReadAll(io.LimitReader(zr, source.MaxBody*4)); err != nil {
+		if body, err = fsx.ReadCapped(zr, source.MaxBody*4); err != nil {
 			return "", err
 		}
 	}
