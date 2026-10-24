@@ -1,6 +1,17 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase, Card, Typography } from '@mui/material'
-import { TriangleAlert } from 'lucide-react'
+import {
+  Clock,
+  Download,
+  HardDrive,
+  Heart,
+  type LucideIcon,
+  Star,
+  Tag,
+  ThumbsUp,
+  TriangleAlert,
+  Users,
+} from 'lucide-react'
 import { type MouseEvent, memo, useState } from 'react'
 import { SourceLogo } from '../brand/sources/SourceLogo.tsx'
 import { hasSourceLogo, PICTURE_MARK_PX, pictureMarkSx } from '../brand/sources/sourceIcons.ts'
@@ -17,7 +28,7 @@ import type { BrowseItem, ResultCardProps } from './browseTypes.ts'
 import { pictureSrc } from './pictureSrc.ts'
 import { SourceBadges } from './SourceBadges.tsx'
 import { hitKey, useBrowseSelection } from './selection.ts'
-import { parseCardStats, useCardStats } from './stats.ts'
+import { type CardStatPart, parseCardStats, type StatIcon, useCardStats } from './stats.ts'
 import { useCardAction } from './useCardAction.tsx'
 
 // The source mark in the picture's corner is about a third of the picture, within what stays legible.
@@ -238,28 +249,53 @@ function Byline({ author, reuploadOf }: { author: string; reuploadOf: string }) 
   )
 }
 
-// Each stat stays whole and the line wraps between them on a narrow card.
-function StatsLine({ stats }: { stats: string[] }) {
+const STAT_ICONS: Record<StatIcon, LucideIcon> = {
+  like: Heart,
+  endorsement: ThumbsUp,
+  star: Star,
+  follower: Users,
+  download: Download,
+  size: HardDrive,
+  version: Tag,
+  updated: Clock,
+}
+
+// Icons and short figures, at the card's bottom right; each stat's tooltip and accessible name has its whole wording.
+function StatsLine({ stats }: { stats: CardStatPart[] }) {
   if (stats.length === 0) {
     return null
   }
   return (
-    <Typography
+    <Box
       sx={{
+        mt: 'auto',
+        alignSelf: 'flex-end',
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'flex-end',
+        columnGap: 1,
         fontSize: 'small.fontSize',
         color: 'var(--mortar-ink-dim-60)',
         fontVariantNumeric: 'tabular-nums',
-        display: 'flex',
-        flexWrap: 'wrap',
-        columnGap: 0.75,
       }}
     >
-      {stats.map((s, i) => (
-        <Box component="span" key={s} sx={{ whiteSpace: 'nowrap' }}>
-          {i === 0 ? s : `· ${s}`}
-        </Box>
-      ))}
-    </Typography>
+      {stats.map(({ id, icon, short, full }) => {
+        const Icon = STAT_ICONS[icon]
+        return (
+          <Box
+            component="span"
+            key={id}
+            role="img"
+            aria-label={full}
+            title={full}
+            sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.375, whiteSpace: 'nowrap' }}
+          >
+            <Icon size={12} aria-hidden={true} />
+            {short}
+          </Box>
+        )
+      })}
+    </Box>
   )
 }
 

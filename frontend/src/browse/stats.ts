@@ -1,3 +1,4 @@
+import { i18n } from '@lingui/core'
 import { plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { formatBytes } from '../i18n/bytes.ts'
@@ -56,22 +57,73 @@ function useStats(item: BrowseItem): string {
   return popularity === '' ? dl : `${popularity} · ${dl}`
 }
 
-/** The parts of a card's stats line for the chosen stats, leaving out what the hit's site does not say. */
-function useCardStats(item: BrowseItem, stats: readonly CardStat[]): string[] {
+/** One stat on a Browse card: an icon, a short figure, and the whole wording for its tooltip and screen readers. */
+type CardStatPart = { id: CardStat; icon: StatIcon; short: string; full: string }
+
+/** Which mark a stat shows; popularity's depends on what the hit's site counts. */
+type StatIcon =
+  | 'like'
+  | 'endorsement'
+  | 'star'
+  | 'follower'
+  | 'download'
+  | 'size'
+  | 'version'
+  | 'updated'
+
+const POPULARITY_ICON: Record<string, StatIcon> = {
+  [NEXUS]: 'endorsement',
+  [GITHUB]: 'star',
+  [THUNDERSTORE]: 'like',
+  [PARADOX]: 'like',
+  [MODRINTH]: 'follower',
+  [VSMODDB]: 'follower',
+}
+
+function compact(n: number): string {
+  return new Intl.NumberFormat(i18n.locale || 'en', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(n)
+}
+
+/** A card's chosen stats, leaving out what the hit's site does not say. */
+function useCardStats(item: BrowseItem, stats: readonly CardStat[]): CardStatPart[] {
   const { t } = useLingui()
   const popularity = usePopularity(item)
-  const parts: Record<CardStat, string> = {
-    popularity,
+  const version = item.version.replace(leadingV, '')
+  const size = item.size > 0 ? formatBytes(item.size) : ''
+  const updated = item.updated === '' ? '' : formatWhen(item.updated)
+  const parts: Record<CardStat, CardStatPart | null> = {
+    popularity:
+      popularity === ''
+        ? null
+        : {
+            id: 'popularity',
+            icon: POPULARITY_ICON[item.source] ?? 'like',
+            short: compact(item.source === GITHUB ? item.stars : item.endorsements),
+            full: popularity,
+          },
     downloads:
       item.source === GITHUB
-        ? ''
-        : plural({ count: item.downloads }, { one: '# download', other: '# downloads' }),
-    size: item.size > 0 ? formatBytes(item.size) : '',
+        ? null
+        : {
+            id: 'downloads',
+            icon: 'download',
+            short: compact(item.downloads),
+            full: plural({ count: item.downloads }, { one: '# download', other: '# downloads' }),
+          },
+    size: size === '' ? null : { id: 'size', icon: 'size', short: size, full: size },
     version:
-      item.version === '' ? '' : t`Version ${{ version: item.version.replace(leadingV, '') }}`,
-    updated: item.updated === '' ? '' : t`Updated ${{ when: formatWhen(item.updated) }}`,
+      version === ''
+        ? null
+        : { id: 'version', icon: 'version', short: version, full: t`Version ${{ version }}` },
+    updated:
+      updated === ''
+        ? null
+        : { id: 'updated', icon: 'updated', short: updated, full: t`Updated ${{ when: updated }}` },
   }
-  return stats.map((s) => parts[s]).filter((p) => p !== '')
+  return stats.flatMap((s) => parts[s] ?? [])
 }
 
 /** An installed mod's card line for the same chosen stats: its Nexus page's figures and its size on disk. The card
@@ -98,5 +150,5 @@ function useModCardStats(
   return stats.map((s) => parts[s]).filter((p) => p !== '')
 }
 
-export type { CardStat }
+export type { CardStat, CardStatPart, StatIcon }
 export { CARD_STATS, formatCardStats, parseCardStats, useCardStats, useModCardStats, useStats }

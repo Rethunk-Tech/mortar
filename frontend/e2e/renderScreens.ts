@@ -52,8 +52,9 @@ export function screenCases(h: Helpers): Case[] {
     },
     {
       name: 'browse-list',
-      // A list row lays out differently from a grid card, so every result card renders again.
-      budget: { updates: 1200 },
+      // A list row lays out differently from a grid card, so every result card renders again, and a list screen holds
+      // every row its height fits.
+      budget: { updates: 2600 },
       setup: (p) => tab(p, 'Browse'),
       run: (p) => browseView(p, 'List view'),
     },
@@ -65,7 +66,7 @@ export function screenCases(h: Helpers): Case[] {
       },
       run: (p) =>
         p
-          .getByText(/endorsements|downloads/)
+          .getByRole('img', { name: /endorsements|downloads/ })
           .first()
           .click(),
     },

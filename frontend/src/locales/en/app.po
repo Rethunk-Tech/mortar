@@ -384,6 +384,10 @@ msgstr "Mods in this profile"
 msgid "Apply this profile to all waiting"
 msgstr "Apply this profile to all waiting"
 
+#: src/browse/CardAction.tsx
+msgid "Open"
+msgstr "Open"
+
 #: src/game/FarmMenuItem.tsx
 msgid "Host {host}"
 msgstr "Host {host}"

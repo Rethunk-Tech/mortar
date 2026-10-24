@@ -384,6 +384,10 @@ msgstr ""
 msgid "Apply this profile to all waiting"
 msgstr ""
 
+#: src/browse/CardAction.tsx
+msgid "Open"
+msgstr ""
+
 #: src/game/FarmMenuItem.tsx
 msgid "Host {host}"
 msgstr ""

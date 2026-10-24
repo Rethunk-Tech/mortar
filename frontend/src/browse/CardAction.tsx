@@ -129,8 +129,13 @@ function CardAction(props: CardActionProps) {
   }
   if (item.external === true) {
     return (
-      <Button size="small" variant="outlined" onClick={() => openPage(item.url)}>
-        {t`Open page`}
+      <Button
+        size="small"
+        variant="outlined"
+        title={t`Open page`}
+        onClick={() => openPage(item.url)}
+      >
+        {t`Open`}
       </Button>
     )
   }
