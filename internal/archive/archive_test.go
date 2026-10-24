@@ -83,6 +83,7 @@ func readFile(t *testing.T, p string) string {
 }
 
 func TestValidExtractsAndNormalisesModes(t *testing.T) {
+	t.Parallel()
 	zipPath := buildZip(t,
 		zentry{name: "mod/", mode: os.ModeDir | 0o700},
 		zentry{name: "mod/run.sh", body: "x", mode: 0o4755},
@@ -125,6 +126,7 @@ func TestValidExtractsAndNormalisesModes(t *testing.T) {
 }
 
 func TestUnsafeEntriesRejected(t *testing.T) {
+	t.Parallel()
 	cases := []struct {
 		name   string
 		entry  string
@@ -165,6 +167,7 @@ func TestUnsafeEntriesRejected(t *testing.T) {
 }
 
 func TestNothingWrittenOutsideDest(t *testing.T) {
+	t.Parallel()
 	parent := t.TempDir()
 	dest := filepath.Join(parent, "dest")
 	if err := os.Mkdir(dest, 0o750); err != nil {
@@ -180,6 +183,7 @@ func TestNothingWrittenOutsideDest(t *testing.T) {
 }
 
 func TestLinksAndSpecialFilesRejected(t *testing.T) {
+	t.Parallel()
 	_, err := extract(t, buildZip(t, zentry{name: "l", body: "target", mode: os.ModeSymlink | 0o777}), options{})
 	wantReason(t, err, ErrLink, "l")
 	_, err = extract(t, buildZip(t, zentry{name: "d", mode: os.ModeDevice | 0o666}), options{})
@@ -193,6 +197,7 @@ func TestLinksAndSpecialFilesRejected(t *testing.T) {
 }
 
 func TestCaseCollision(t *testing.T) {
+	t.Parallel()
 	_, err := extract(t, buildZip(t, zentry{name: "Mod/a.txt", body: "1"}, zentry{name: "mod/b.txt", body: "2"}), options{})
 	wantReason(t, err, ErrCaseCollision, "mod/b.txt")
 	_, err = extract(t, buildZip(t, zentry{name: "a.txt", body: "1"}, zentry{name: "a.txt", body: "2"}), options{})
@@ -202,6 +207,7 @@ func TestCaseCollision(t *testing.T) {
 }
 
 func TestCaps(t *testing.T) {
+	t.Parallel()
 	big := string(make([]byte, 100))
 	_, err := extract(t, buildZip(t, zentry{name: "big", body: big}), options{MaxEntryBytes: 99})
 	wantReason(t, err, ErrEntryTooLarge, "big")
@@ -219,6 +225,7 @@ func TestCaps(t *testing.T) {
 }
 
 func TestCapCountsActualBytesNotDeclared(t *testing.T) {
+	t.Parallel()
 	// Declare 1 byte in the local header and central directory, store 100.
 	p := buildZip(t, zentry{name: "big", body: string(make([]byte, 100))})
 	b, err := fsx.ReadFile(p)
@@ -240,6 +247,7 @@ func TestCapCountsActualBytesNotDeclared(t *testing.T) {
 }
 
 func TestChecksumMismatch(t *testing.T) {
+	t.Parallel()
 	zb, err := os.ReadFile(buildZip(t, zentry{name: "f", body: "payload"}))
 	if err != nil {
 		t.Fatal(err)
@@ -266,6 +274,7 @@ func TestChecksumMismatch(t *testing.T) {
 }
 
 func TestEncryptedRejected(t *testing.T) {
+	t.Parallel()
 	for _, p := range []string{"testdata/encrypted.7z", "testdata/encrypted-headers.7z"} {
 		_, err := extract(t, p, options{})
 		if !errors.Is(err, ErrEncrypted) {
@@ -290,6 +299,7 @@ func TestEncryptedRejected(t *testing.T) {
 }
 
 func TestFormatDetectionIgnoresExtension(t *testing.T) {
+	t.Parallel()
 	b, err := os.ReadFile("testdata/valid.7z")
 	if err != nil {
 		t.Fatal(err)
@@ -302,6 +312,7 @@ func TestFormatDetectionIgnoresExtension(t *testing.T) {
 }
 
 func TestDiskFullIsDistinguishable(t *testing.T) {
+	t.Parallel()
 	err := wrap("f", &os.PathError{Op: "write", Path: "f", Err: syscall.ENOSPC})
 	if !errors.Is(err, syscall.ENOSPC) {
 		t.Fatal("ENOSPC lost in the error chain")
@@ -471,6 +482,7 @@ func buildRar(t *testing.T, files ...rarFile) string {
 }
 
 func TestZipNamesInALegacyEncodingBecomeUTF8(t *testing.T) {
+	t.Parallel()
 	// GBK bytes for a left curly quote, as a Chinese-locale zip tool writes them without the UTF-8 flag.
 	dest, err := extract(t, buildZip(t, zentry{name: "[FS]Kyuya\xa1\xaes hats Pack/manifest.json", body: "{}"}), options{})
 	if err != nil {
@@ -482,6 +494,7 @@ func TestZipNamesInALegacyEncodingBecomeUTF8(t *testing.T) {
 }
 
 func TestStreamFormatsExtractATarByMagicBytes(t *testing.T) {
+	t.Parallel()
 	for _, name := range []string{"valid.tar", "valid.tar.gz", "valid.tar.xz", "valid.tar.zst", "valid.tar.bz2", "valid.tar.lzma"} {
 		t.Run(name, func(t *testing.T) {
 			// A copy with no extension: only the bytes may decide.
@@ -504,6 +517,7 @@ func TestStreamFormatsExtractATarByMagicBytes(t *testing.T) {
 }
 
 func TestStreamFormatsExtractABareFileNamedWithoutItsSuffix(t *testing.T) {
+	t.Parallel()
 	for _, name := range []string{"bare.txt.gz", "bare.txt.xz", "bare.txt.zst", "bare.txt.bz2", "bare.txt.lzma"} {
 		t.Run(name, func(t *testing.T) {
 			dest, err := extract(t, filepath.Join("testdata", name), options{})
@@ -521,6 +535,7 @@ func TestStreamFormatsExtractABareFileNamedWithoutItsSuffix(t *testing.T) {
 }
 
 func TestStreamFormatsRefuseUnsafeEntries(t *testing.T) {
+	t.Parallel()
 	for file, reason := range map[string]error{
 		"traversal.tar.gz": ErrTraversal, "symlink.tar.gz": ErrLink, "hardlink.tar.gz": ErrLink, "fifo.tar.gz": ErrSpecialFile,
 	} {
@@ -534,6 +549,7 @@ func TestStreamFormatsRefuseUnsafeEntries(t *testing.T) {
 }
 
 func TestStreamFormatsHonourTheSizeAndEntryCaps(t *testing.T) {
+	t.Parallel()
 	src := filepath.Join("testdata", "valid.tar.xz")
 	_, err := extract(t, src, options{MaxEntryBytes: 2})
 	if !errors.Is(err, ErrEntryTooLarge) {
@@ -548,6 +564,7 @@ func TestStreamFormatsHonourTheSizeAndEntryCaps(t *testing.T) {
 
 // A gzip of zeros unpacks to far more than the cap; the stream's own budget stops it before the disk fills.
 func TestStreamBombIsStoppedByTheDecompressionBudget(t *testing.T) {
+	t.Parallel()
 	var buf bytes.Buffer
 	zw := gzip.NewWriter(&buf)
 	if _, err := zw.Write(make([]byte, 8<<20)); err != nil {
@@ -563,6 +580,7 @@ func TestStreamBombIsStoppedByTheDecompressionBudget(t *testing.T) {
 }
 
 func TestExtensionsStripLongestEndingFirst(t *testing.T) {
+	t.Parallel()
 	for in, want := range map[string]string{
 		"Mod.TAR.GZ": "Mod", "mod.tgz": "mod", "mod.zip": "mod", "notes.txt.xz": "notes.txt", "plain": "plain", "mod.tar.zst": "mod",
 	} {
@@ -579,6 +597,7 @@ func TestExtensionsStripLongestEndingFirst(t *testing.T) {
 }
 
 func TestSavedNameKeepsABareFilesOriginalNameForExtraction(t *testing.T) {
+	t.Parallel()
 	saved := SavedName("0a1b2c", "notes.txt.gz")
 	if SavedID(saved) != "0a1b2c" || SavedID("0a1b2c.partial.json") != "0a1b2c.partial" {
 		t.Fatalf("SavedID = %q", SavedID(saved))
@@ -603,6 +622,7 @@ func TestSavedNameKeepsABareFilesOriginalNameForExtraction(t *testing.T) {
 }
 
 func TestDefaultCapsAreFarAboveRealPackagesAndDecoderMemoryStaysSmall(t *testing.T) {
+	t.Parallel()
 	if DefaultMaxTotalBytes != 64<<30 || DefaultMaxEntryBytes != 32<<30 || DefaultMaxEntries != 20000 {
 		t.Fatalf("caps are %d/%d/%d", DefaultMaxEntryBytes, DefaultMaxTotalBytes, DefaultMaxEntries)
 	}
@@ -622,6 +642,7 @@ func TestDefaultCapsAreFarAboveRealPackagesAndDecoderMemoryStaysSmall(t *testing
 }
 
 func TestRatioGuardStopsATinyArchiveClaimingALot(t *testing.T) {
+	t.Parallel()
 	var buf bytes.Buffer
 	zw := gzip.NewWriter(&buf)
 	if _, err := zw.Write(make([]byte, 8<<20)); err != nil {

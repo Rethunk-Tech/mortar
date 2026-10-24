@@ -6,6 +6,7 @@ import (
 )
 
 func TestPreviewArchiveZipFindsManifestsAndFomod(t *testing.T) {
+	t.Parallel()
 	p, err := PreviewArchive(buildZip(t,
 		zentry{name: "Mod/"},
 		zentry{name: "Mod/manifest.json", body: `{"Name":"Mod","UniqueID":"A.Mod","Version":"1.2.0"}`},
@@ -27,6 +28,7 @@ func TestPreviewArchiveZipFindsManifestsAndFomod(t *testing.T) {
 }
 
 func TestPreviewArchiveNamesAThunderstoreManifest(t *testing.T) {
+	t.Parallel()
 	p, err := PreviewArchive(buildZip(t,
 		zentry{name: "manifest.json", body: "\xef\xbb\xbf" + `{"name":"Pkg","version_number":"1.2.0"}`},
 		zentry{name: "plugins/Pkg.dll", body: "x"},
@@ -40,6 +42,7 @@ func TestPreviewArchiveNamesAThunderstoreManifest(t *testing.T) {
 }
 
 func TestPreviewArchiveTruncatesEntries(t *testing.T) {
+	t.Parallel()
 	entries := make([]zentry, MaxPreviewEntries+5)
 	for i := range entries {
 		entries[i] = zentry{name: fmt.Sprintf("f%d.txt", i), body: "x"}
@@ -54,6 +57,7 @@ func TestPreviewArchiveTruncatesEntries(t *testing.T) {
 }
 
 func TestPreviewArchiveSevenZipRarAndUnsupported(t *testing.T) {
+	t.Parallel()
 	for _, path := range []string{"testdata/valid.7z", "testdata/real.rar"} {
 		p, err := PreviewArchive(path)
 		if err != nil || len(p.Entries) == 0 {
