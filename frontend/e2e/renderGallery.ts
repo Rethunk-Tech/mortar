@@ -29,6 +29,8 @@ function picture(
   return `<figure><figcaption>${label}</figcaption><a href="${src}"><img src="${src}" loading="lazy" alt="${esc(`${name}, ${label}`)}"></a></figure>`
 }
 
+const count = (n: number, noun: string): string => `${n} ${noun}${n === 1 ? '' : 's'}`
+
 function figures(r: Result | undefined): string {
   if (!r) {
     return '<p class="meta">WebKitGTK only: no React figures</p>'
@@ -38,7 +40,7 @@ function figures(r: Result | undefined): string {
   }
   const a = r.action
   const parts = a
-    ? [`${a.updates} re-renders`, `${a.calls} backend calls`, `settled ${a.settledMs} ms`]
+    ? [count(a.updates, 're-render'), count(a.calls, 'backend call'), `settled ${a.settledMs} ms`]
     : []
   return `<p class="meta">${esc(parts.join(' · '))}</p>${r.over.map((o) => `<p class="bad">over: ${esc(o)}</p>`).join('')}`
 }
