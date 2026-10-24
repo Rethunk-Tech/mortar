@@ -234,7 +234,12 @@ export function SaveRow({
           <style.Icon size={26} />
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography noWrap={true} title={label} sx={{ fontSize: 17, fontWeight: 700 }}>
+          <Typography
+            component="h2"
+            noWrap={true}
+            title={label}
+            sx={{ fontSize: 17, fontWeight: 700 }}
+          >
             {label}
           </Typography>
           <Typography title={subtitle} noWrap={true} sx={{ fontSize: 13, color: 'text.secondary' }}>
