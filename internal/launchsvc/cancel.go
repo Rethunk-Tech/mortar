@@ -39,14 +39,16 @@ func (s *Service) CancelLaunch(ctx context.Context, gameID string) error {
 		if !ok || cancel == nil {
 			return usererr.Wrap(usererr.Busy, fmt.Errorf("%s is still getting ready to start", g.Name()))
 		}
-		// The game is ended first: the launch unwinds the profile from the game folder once it stops waiting.
+		// The game is ended first: the launch unwinds the profile from the game folder once it stops waiting. It is
+		// ended outright rather than asked to close: a game still loading its mods answers a close only once they
+		// have all loaded, and a launch being called off has nothing to save.
 		procs, err := s.gameProcs(sl)
 		var errs []error
 		if err != nil {
 			errs = append(errs, err)
 		}
 		for _, p := range procs {
-			errs = append(errs, stopError(launch.Stop(ctx, p, stopGrace)))
+			errs = append(errs, stopError(launch.Terminate(p.PID, stopGrace)))
 		}
 		cancel()
 		if handedOnly {
@@ -91,7 +93,7 @@ func (s *Service) endLateStart(ctx context.Context, sl slot) {
 			continue
 		}
 		for _, p := range procs {
-			if err := launch.Stop(ctx, p, stopGrace); err != nil {
+			if err := launch.Terminate(p.PID, stopGrace); err != nil {
 				log.Printf("launch: %s: ending the game started after its launch was cancelled: %v", sl.ID(), err)
 			}
 		}
