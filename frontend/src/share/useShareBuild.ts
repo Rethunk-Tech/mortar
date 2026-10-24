@@ -5,6 +5,7 @@ import { useCurrentGame } from '../nav/currentGame.ts'
 import { hasThunderstore } from '../profiles/hasThunderstore.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
+import { sameValue } from '../shell/sameValue.ts'
 import { readStored, writeStored } from '../shell/useStoredState.ts'
 import { toastError } from '../toasts/report.ts'
 import { type ShownInfo, shownInfo, suggestFile } from './logic.ts'
@@ -41,7 +42,9 @@ export function useShareBuild() {
     if (!profileId) {
       return
     }
-    setInclude(shareIncludeDefaults(useSettings.getState()))
+    // An equal set keeps its object, so opening the dialog builds the share once, not again for the reset.
+    const defaults = shareIncludeDefaults(useSettings.getState())
+    setInclude((cur) => (sameValue(cur, defaults) ? cur : defaults))
     setDestination(null)
     setFormat('link')
     setLastUsed(null)

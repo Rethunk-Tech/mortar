@@ -4,12 +4,12 @@ import { Box, Button, ListItemText, Menu, MenuItem } from '@mui/material'
 import { ChevronDown, History } from 'lucide-react'
 import { useState } from 'react'
 import type { Run } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
-import { Runs } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
+import { listRuns } from './listRuns.ts'
 import { useOutcomeLabel } from './outcome.ts'
 import { runExitText } from './runExit.ts'
 import { useConsole } from './store.ts'
@@ -22,7 +22,7 @@ export function RunsPicker({ game }: { game: string }) {
   const crashId = useLaunch((s) => s.crash?.runId ?? '')
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const { data: runs } = useLoaded<Run[]>(
-    profile ? () => Runs(game, profile).then((list) => list ?? []) : null,
+    profile ? () => listRuns(game, profile) : null,
     [game, profile, crashId],
     [],
   )

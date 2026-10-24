@@ -12,10 +12,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Level } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
-import {
-  RunLog,
-  Runs,
-} from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
+import { RunLog } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { SaveFile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import { Log } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/support/service.ts'
 import { PageActions } from '../game/PageActions.tsx'
@@ -24,6 +21,7 @@ import { copyText } from '../share/copyText.ts'
 import { IconAction } from '../shell/IconAction.tsx'
 import { reportUnexpected } from '../toasts/report.ts'
 import { firstError, formatAll } from './filter.ts'
+import { listRuns } from './listRuns.ts'
 import { useShownEntries, useVisible } from './logHooks.ts'
 import { SearchRunsDialog } from './SearchRunsDialog.tsx'
 import { logFileName, saveLogText } from './save.ts'
@@ -66,9 +64,9 @@ export function LogActions({ game }: { game: string }) {
       setViewedStart(null)
       return
     }
-    Runs(shown.game, shown.profile)
+    listRuns(shown.game, shown.profile)
       .then((runs) => {
-        const run = (runs ?? []).find((item) => item.id === viewingRun)
+        const run = runs.find((item) => item.id === viewingRun)
         setViewedStart(run?.started ? new Date(run.started) : null)
       })
       .catch(() => setViewedStart(null))
