@@ -5,7 +5,7 @@ import type { Mod } from '../../../bindings/github.com/Rethunk-Tech/mortar/inter
 import { sourceLabel } from '../../brand/sources/sourceLabel.ts'
 import { space } from '../../theme/density.ts'
 import { reportUnexpected } from '../../toasts/report.ts'
-import { sameId } from '../lookup.ts'
+import { modId, sameId } from '../lookup.ts'
 import { ModNameLink } from '../ModNameLink.tsx'
 import { openPage } from '../menu.ts'
 import { openPageLabel } from '../modActions.ts'
@@ -32,7 +32,7 @@ export function WithheldGroup({ withheld, mods }: { withheld: Update[]; mods: Mo
           const mod = mods.find((m) => m.key === u.key && sameId(m.id, u.id))
           return (
             <ListItem
-              key={`${u.key}/${u.id}`}
+              key={modId(u)}
               disablePadding={true}
               sx={{
                 display: 'flex',

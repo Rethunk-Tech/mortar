@@ -345,7 +345,7 @@ function DependentRows({ label, dependents }: { label: string; dependents: reado
         <Box sx={{ pl: space.pad, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
           {dependents.map((d) => (
             <Link
-              key={`${d.key}/${d.id}`}
+              key={modId(d)}
               component="button"
               onClick={() => showModId(modId(d))}
               onContextMenu={(e) => {

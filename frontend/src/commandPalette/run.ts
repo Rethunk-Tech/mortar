@@ -1,6 +1,7 @@
 import { type TabId, useTab } from '../game/tab.ts'
 import { openDownloadsDialog } from '../install/downloadsDialog.ts'
 import { playOpenProfile } from '../launch/playOpen.ts'
+import { parseModId } from '../mods/lookup.ts'
 import { useMods } from '../mods/store.ts'
 import { openConfigPage } from '../mods/typedConfig/configList.ts'
 import { type GameId, isGameId, type SettingsSection, useNav } from '../nav/store.ts'
@@ -59,18 +60,17 @@ function runAction(id: string): void {
     return
   }
   if (id.startsWith('configure-mod:')) {
-    const rest = id.slice('configure-mod:'.length)
-    openConfigPage(rest.slice(rest.indexOf('/') + 1))
+    const target = parseModId(id.slice('configure-mod:'.length))
+    if (target) {
+      openConfigPage(target.id)
+    }
     return
   }
   if (id.startsWith('toggle-mod:')) {
-    const rest = id.slice('toggle-mod:'.length)
-    const cut = rest.indexOf('/')
+    const target = parseModId(id.slice('toggle-mod:'.length))
     const mod = useMods
       .getState()
-      .mods.find(
-        (candidate) => candidate.key === rest.slice(0, cut) && candidate.id === rest.slice(cut + 1),
-      )
+      .mods.find((candidate) => candidate.key === target?.key && candidate.id === target.id)
     if (mod) {
       useMods.getState().setEnabled(mod, !mod.enabled).catch(reportUnexpected)
     }
@@ -134,17 +134,11 @@ export function runPaletteItem(id: string): void {
     return
   }
   if (id.startsWith('mod:')) {
-    const rest = id.slice('mod:'.length)
-    const cut = rest.indexOf('/')
-    if (cut < 0) {
+    const target = parseModId(id.slice('mod:'.length))
+    if (!target) {
       return
     }
-    const { openId } = useProfiles.getState()
-    openModInProfile({
-      profileId: openId,
-      key: rest.slice(0, cut),
-      id: rest.slice(cut + 1),
-    })
+    openModInProfile({ profileId: useProfiles.getState().openId, ...target })
     leaveShellPages()
     return
   }

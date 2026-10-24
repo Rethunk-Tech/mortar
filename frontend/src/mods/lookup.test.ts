@@ -11,9 +11,11 @@ import {
   kindLabel,
   listedAgainstNexus,
   missingCount,
+  modId,
   modStatusProblem,
   nexusKeepKey,
   offersUpdate,
+  parseModId,
   preselect,
   problemCount,
   reshow,
@@ -309,4 +311,12 @@ test('a direct source shows its brand name, not its id', () => {
   }
   expect(kindLabel('curseforge', labels)).toBe('CurseForge')
   expect(kindLabel('nexus', labels)).toBe('Nexus Mods')
+})
+
+test('parseModId reads modId back', () => {
+  expect(parseModId(modId({ key: 'nexus-1-2', id: 'Me.Mod' }))).toEqual({
+    key: 'nexus-1-2',
+    id: 'Me.Mod',
+  })
+  expect(parseModId('no-separator')).toBeNull()
 })

@@ -1,12 +1,12 @@
 import { SetOverrides } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { SetByKey } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/service.ts'
 import { foldedOverrides, resolveOverride } from './overrideValue.ts'
-import { useProfiles } from './store.ts'
+import { openProfileOf, useProfiles } from './store.ts'
 
 type ProfilesState = ReturnType<typeof useProfiles.getState>
 
 const overridesOf = (s: ProfilesState) => {
-  const open = s.profiles.find((p) => p.id === s.openId)
+  const open = openProfileOf(s)
   return open ? foldedOverrides(open) : undefined
 }
 
@@ -28,7 +28,7 @@ export async function saveOpenPref(game: string, key: string, value: string): Pr
     await SetByKey(key, value, game)
     return
   }
-  const open = s.profiles.find((p) => p.id === s.openId)
+  const open = openProfileOf(s)
   if (open) {
     s.replace(await SetOverrides(game, open.id, { ...foldedOverrides(open), [key]: value }))
   }

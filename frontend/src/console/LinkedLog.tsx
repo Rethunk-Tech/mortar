@@ -8,7 +8,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { openMod } from '../mods/openMod.ts'
 import { useUpdates } from '../mods/updates.ts'
-import { useProfiles } from '../profiles/store.ts'
+import { openProfileOf, useProfiles } from '../profiles/store.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
@@ -47,7 +47,7 @@ export function LinkedLog({
   const { t } = useLingui()
   const profile = useProfiles((s) => s.openId)
   const gameDir = useProfiles((s) => s.game?.installDir ?? '')
-  const profileEntries = useProfiles((s) => s.profiles.find((p) => p.id === s.openId)?.entries)
+  const profileEntries = useProfiles((s) => openProfileOf(s)?.entries)
   const installed = useMemo(() => installedOf(profileEntries), [profileEntries])
   const updates = useUpdates((s) => s.updates)
   const notes = useMemo(() => smapiUpdateNotes(rows, updates), [rows, updates])

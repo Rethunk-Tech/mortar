@@ -124,6 +124,12 @@ export const kindLabel = (
 // A mod is told apart by its entry too, since two entries can hold the same UniqueID.
 export const modId = (mod: Pick<Mod, 'key' | 'id'>) => `${mod.key}/${mod.id}`
 
+// parseModId reads modId back; entry keys hold no '/', so the first one ends the key.
+export const parseModId = (text: string): Pick<Mod, 'key' | 'id'> | null => {
+  const cut = text.indexOf('/')
+  return cut < 0 ? null : { key: text.slice(0, cut), id: text.slice(cut + 1) }
+}
+
 // Showing the mod already open keeps what the panel loaded: it will not load again, since the mod is unchanged.
 export const reshow = <E extends { id: string }>(
   s: { detailId: string; extras: E | null },

@@ -3,7 +3,7 @@ import type {
   Mod,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { idKey } from './dependents.ts'
+import { idKey, localId } from './dependents.ts'
 
 // The site categories that hold libraries: Thunderstore's Libraries and Nexus's Modding Tools.
 const LIBRARY_CATEGORIES = new Set(['libraries', 'modding tools'])
@@ -23,7 +23,7 @@ const MIN_NAMED = 4
 
 // A mod id's own name, without its format and author: smapi:Bouhm.NPCMapLocations is npcmaplocations.
 const idName = (id: string) => {
-  const local = idKey(id).slice(idKey(id).indexOf(':') + 1)
+  const local = localId(idKey(id))
   const cut = local.search(ID_SEPARATOR)
   return cut < 0 ? local : local.slice(cut + 1)
 }

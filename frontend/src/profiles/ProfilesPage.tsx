@@ -36,6 +36,7 @@ import { NewProfileDialog } from '../game/NewProfileDialog.tsx'
 import { useProfilePageBadges } from '../game/useSidebarProfiles.ts'
 import { SavedGroupsSection } from '../groups/SavedGroupsSection.tsx'
 import { localId } from '../mods/dependents.ts'
+import { modId } from '../mods/lookup.ts'
 import { useCurrentGame } from '../nav/currentGame.ts'
 import { useNav } from '../nav/store.ts'
 import { dialogOpen, isTypingTarget } from '../settings/shortcuts.ts'
@@ -263,7 +264,7 @@ const FindModSearch = memo(function FindModSearchView({ profiles }: { profiles: 
         <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
           {hits.map((h) => (
             <Button
-              key={`${h.profileId}/${h.key}/${h.id}`}
+              key={`${h.profileId}/${modId(h)}`}
               onClick={() => openModInProfile(h)}
               title={`${h.name} · ${localId(h.id)} · ${h.profileName} · ${h.version} · ${h.enabled ? t`Enabled` : t`Disabled`}`}
               sx={{

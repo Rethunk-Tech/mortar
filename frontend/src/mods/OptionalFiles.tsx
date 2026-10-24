@@ -81,7 +81,7 @@ export function OptionalFiles({ mod, profile }: { mod: Mod; profile: Profile }) 
   const groups = alternativeGroups(sets)
   const grouped = new Set(groups.flat())
   const fileOf = (row: OverlayRow): File | undefined => {
-    const fileId = profile.entries?.find((e) => e.key === row.key)?.source.fileId ?? 0
+    const fileId = entryOf(profile, row.key)?.source.fileId ?? 0
     return files.find((f) => f.fileId === fileId)
   }
   const installed = (row: OverlayRow, radioName?: string) => (

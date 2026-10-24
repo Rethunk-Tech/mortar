@@ -11,6 +11,7 @@ import {
   ListItemText,
 } from '@mui/material'
 import { useGameName } from '../games/info.ts'
+import { modId } from '../mods/lookup.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { cancelling } from './playModeState.ts'
 import { useLaunch } from './store.ts'
@@ -32,7 +33,7 @@ export function UpdateWarnDialog() {
         {(warn?.broken.length ?? 0) > 0 ? (
           <List dense={true} sx={{ mt: 1 }}>
             {warn?.broken.map((mod) => (
-              <ListItem key={`${mod.key}/${mod.id}`} disableGutters={true}>
+              <ListItem key={modId(mod)} disableGutters={true}>
                 <ListItemText
                   primary={mod.name}
                   secondary={

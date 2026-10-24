@@ -26,6 +26,7 @@ import { LoadErrorRow, LoadingRow } from '../../shell/LoadingRow.tsx'
 import { useDebouncedLoad } from '../../shell/useDebouncedLoad.ts'
 import { space } from '../../theme/density.ts'
 import { type InlineError, inlineError } from '../../toasts/report.ts'
+import { modId } from '../lookup.ts'
 import { GroupHeaderRow } from '../ModsGroupHeader.tsx'
 import { LetterTile } from '../parts.tsx'
 import { useMods } from '../store.ts'
@@ -206,12 +207,12 @@ function WithoutConfig({ count }: { count: number }) {
 // The list follows the Mods page's grouping and sort: its groups, filtered to the mods with a config source.
 function useListed(view: GroupsView, shown: ModConfig[]) {
   const listed = useMemo(() => {
-    const byMod = new Map(shown.map((c) => [`${c.key}/${c.id}`, c]))
+    const byMod = new Map(shown.map((c) => [modId(c), c]))
     const rows = view.groups
       .map((g) => ({
         key: g.key,
         items: g.items.flatMap((r) => {
-          const config = byMod.get(`${r.mod.key}/${r.mod.id}`)
+          const config = byMod.get(modId(r.mod))
           return config ? [config] : []
         }),
       }))

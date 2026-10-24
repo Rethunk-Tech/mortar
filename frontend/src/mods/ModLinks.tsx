@@ -2,6 +2,7 @@ import { Link } from '@mui/material'
 import type { ReactNode } from 'react'
 import { useTab } from '../game/tab.ts'
 import { useDetail } from './detail.ts'
+import { modId } from './lookup.ts'
 import type { ModLink } from './modLinks.ts'
 import { useMods } from './store.ts'
 import { openTarget } from './storeView.ts'
@@ -29,7 +30,7 @@ export function LinkedText({ text, links }: { text: string; links: ModLink[] }) 
       parts.push(rest.slice(0, at))
       parts.push(
         <Link
-          key={`${link.key}/${link.id}`}
+          key={modId(link)}
           component="button"
           color="inherit"
           onClick={() => showInMods(link)}

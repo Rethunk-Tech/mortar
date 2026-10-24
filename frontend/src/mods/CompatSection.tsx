@@ -3,6 +3,7 @@ import { Box, Link, Typography } from '@mui/material'
 import type { Compat } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/problems/models.ts'
 import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
+import { modId } from './lookup.ts'
 import { LinkedText } from './ModLinks.tsx'
 import { openPage } from './menu.ts'
 import { DismissAdvice } from './problemFix/DismissAdvice.tsx'
@@ -80,7 +81,7 @@ export function CompatSection({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: space.gap }}>
       {rows.map((row) => (
-        <CompatInfoRow key={`${row.key}/${row.id}`} row={row} />
+        <CompatInfoRow key={modId(row)} row={row} />
       ))}
       {dismissed.length > 0 ? (
         <Typography sx={{ fontSize: 13, color: 'var(--mortar-ink-sec)', mt: space.gap }}>

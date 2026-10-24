@@ -1,4 +1,5 @@
 import { localId } from '../mods/dependents.ts'
+import { modId } from '../mods/lookup.ts'
 import type { SettingsSection } from '../nav/store.ts'
 import type { Shortcut, ShortcutId } from '../settings/shortcuts.ts'
 import type { PaletteItem } from './match.ts'
@@ -118,14 +119,14 @@ export function buildPaletteItems(input: {
   }
   for (const mod of mods) {
     items.push({
-      id: `mod:${mod.key}/${mod.id}`,
+      id: `mod:${modId(mod)}`,
       kind: 'mod',
       label: mod.name,
       hint: labels.modHint,
       match: localId(mod.id),
     })
     items.push({
-      id: `toggle-mod:${mod.key}/${mod.id}`,
+      id: `toggle-mod:${modId(mod)}`,
       kind: 'action',
       label: labels.toggle(mod.name),
       hint: labels.modHint,
@@ -133,7 +134,7 @@ export function buildPaletteItems(input: {
     })
     if (configurable?.has(mod.id)) {
       items.push({
-        id: `configure-mod:${mod.key}/${mod.id}`,
+        id: `configure-mod:${modId(mod)}`,
         kind: 'action',
         label: labels.configureMod(mod.name),
         hint: labels.modHint,
