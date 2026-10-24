@@ -392,7 +392,6 @@ export {
   newestOffered,
   nexusChanged,
   nexusEntryOf,
-  nexusKey,
   primeDetails,
   useGameNexusDetails,
   useLookedSnapshot,
