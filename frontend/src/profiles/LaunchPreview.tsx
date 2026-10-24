@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Button, IconButton, Typography } from '@mui/material'
 import { Copy } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CommandPreview } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import { PreviewCommand } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/service.ts'
 import { copyText } from '../share/copyText.ts'
@@ -37,16 +37,20 @@ export function LaunchPreview({
   const { t } = useLingui()
   const [preview, setPreview] = useState<CommandPreview>({ env: [], argv: [], error: '' })
   const [loadError, setLoadError] = useState('')
-  const read = useCallback(
-    () =>
-      PreviewCommand(gameId, profileId, options, prefix, env)
-        .then((next) => {
+  // Only the newest read may show: an older one answering late would preview options the player has since edited.
+  const latest = useRef(0)
+  const read = useCallback(() => {
+    latest.current += 1
+    const mine = latest.current
+    return PreviewCommand(gameId, profileId, options, prefix, env)
+      .then((next) => {
+        if (mine === latest.current) {
           setLoadError('')
           setPreview(next)
-        })
-        .catch((e: unknown) => setLoadError(errorMessage(e))),
-    [env, gameId, options, prefix, profileId],
-  )
+        }
+      })
+      .catch((e: unknown) => mine === latest.current && setLoadError(errorMessage(e)))
+  }, [env, gameId, options, prefix, profileId])
   useEffect(() => {
     const timer = setTimeout(read, PREVIEW_DEBOUNCE_MS)
     return () => clearTimeout(timer)
