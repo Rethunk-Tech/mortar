@@ -1736,6 +1736,10 @@ msgstr ""
 msgid "Size"
 msgstr ""
 
+#: src/downloads/autoInstall.ts
+msgid "{name} needs a choice to install; drop it on the window instead"
+msgstr ""
+
 #: src/i18n/reasonText.ts
 msgid "already up to date in this profile"
 msgstr ""
@@ -4179,6 +4183,10 @@ msgstr ""
 msgid "{game} will close now, and any progress since your last save is lost."
 msgstr ""
 
+#: src/downloads/autoInstall.ts
+msgid "Installed {mods} into {profile}"
+msgstr ""
+
 #: src/queue/QueueRows.tsx
 msgid "Pause {name}"
 msgstr ""
@@ -6177,6 +6185,7 @@ msgstr ""
 msgid "This is not a Mod Manager Download link from {source}."
 msgstr ""
 
+#: src/downloads/autoInstall.ts
 #: src/install/store.ts
 msgid "Could not add {name}"
 msgstr ""

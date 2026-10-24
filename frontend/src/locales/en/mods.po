@@ -122,10 +122,6 @@ msgstr "{name} broke in {brokeIn}."
 msgid "{count, plural, one {# mod needs this} other {# mods need this}}: {names}"
 msgstr "{count, plural, one {# mod needs this} other {# mods need this}}: {names}"
 
-#: src/mods/ExtraFolderDialog.tsx
-msgid "No mods in the extra mods folders"
-msgstr "No mods in the extra mods folders"
-
 #: src/mods/Sidebar.tsx
 msgid "Required by ({count})"
 msgstr "Required by ({count})"
@@ -134,7 +130,7 @@ msgstr "Required by ({count})"
 msgid "It was thrown in {thrown}, called from its {kind} {method} on {target}"
 msgstr "It was thrown in {thrown}, called from its {kind} {method} on {target}"
 
-#: src/mods/ExtraFolderMenu.tsx
+#: src/mods/AddMenu.tsx
 msgid "The downloads folder…"
 msgstr "The downloads folder…"
 
@@ -275,10 +271,6 @@ msgstr "Untrack"
 #: src/mods/problemText.ts
 msgid "Game version not supported"
 msgstr "Game version not supported"
-
-#: src/mods/ExtraFolderDialog.tsx
-msgid "Reading the extra mods folders…"
-msgstr "Reading the extra mods folders…"
 
 #: src/mods/NexusDetails.tsx
 msgid "Uploaded by"
@@ -1020,7 +1012,7 @@ msgstr "; {name} ships {os}-format symbols, which the game cannot read."
 msgid "{count, plural, one {# copy of {name}} other {# copies of {name}}}"
 msgstr "{count, plural, one {# copy of {name}} other {# copies of {name}}}"
 
-#: src/mods/ExtraFolderMenu.tsx
+#: src/mods/AddMenu.tsx
 msgid "Add a saved group…"
 msgstr "Add a saved group…"
 
@@ -1124,10 +1116,6 @@ msgstr "Created"
 msgid "Hidden"
 msgstr "Hidden"
 
-#: src/mods/ExtraFolderDialog.tsx
-msgid "Change folders"
-msgstr "Change folders"
-
 #: src/mods/AssetMapDialog.tsx
 msgid "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order."
 msgstr "Every game asset the profile's mods change, and which mod wins it. Open one to see each mod's edit in load order."
@@ -1212,17 +1200,13 @@ msgstr "{app} patch"
 msgid "When {when}"
 msgstr "When {when}"
 
-#: src/mods/ExtraFolderMenu.tsx
+#: src/mods/AddMenu.tsx
 msgid "More ways to add mods"
 msgstr "More ways to add mods"
 
 #: src/mods/ModMenu.tsx
 msgid "Remove {name} from other profiles"
 msgstr "Remove {name} from other profiles"
-
-#: src/mods/ExtraFolderDialog.tsx
-msgid "{count, plural, one {Add # mod} other {Add # mods}}"
-msgstr "{count, plural, one {Add # mod} other {Add # mods}}"
 
 #: src/mods/GroupMenu.tsx
 msgid "Enable all"
@@ -1273,7 +1257,6 @@ msgstr "Review updates"
 #: src/mods/listRows.ts
 #: src/mods/ModDependencyTree.tsx
 #: src/mods/OptionalFileRows.tsx
-#: src/mods/PreviewPick.tsx
 #: src/mods/Sidebar.tsx
 #: src/mods/Toolbar.tsx
 #: src/mods/useListHeading.ts
@@ -1753,10 +1736,6 @@ msgstr "Could not move the old files to trash"
 msgid "Add archive…"
 msgstr "Add archive…"
 
-#: src/mods/ExtraFolderDialog.tsx
-msgid "Add from the extra mods folder"
-msgstr "Add from the extra mods folder"
-
 #: src/mods/ModSections.tsx
 msgid "config.json, made by the mod"
 msgstr "config.json, made by the mod"
@@ -1907,7 +1886,7 @@ msgstr "Changelog: {name}"
 msgid "{count, plural, one {# optional file} other {# optional files}}"
 msgstr "{count, plural, one {# optional file} other {# optional files}}"
 
-#: src/mods/ExtraFolderMenu.tsx
+#: src/mods/AddMenu.tsx
 msgid "Add from"
 msgstr "Add from"
 
@@ -1973,10 +1952,6 @@ msgstr "config.json is deleted, and the mod writes a fresh one with its own defa
 #: src/mods/TrackedNotInProfile.tsx
 msgid "{count, plural, one {# tracked mod on {source} is not in this profile} other {# tracked mods on {source} are not in this profile}}"
 msgstr "{count, plural, one {# tracked mod on {source} is not in this profile} other {# tracked mods on {source} are not in this profile}}"
-
-#: src/mods/ExtraFolderMenu.tsx
-msgid "The extra mods folders…"
-msgstr "The extra mods folders…"
 
 #: src/mods/UpdateBanner.tsx
 msgid "Update in all profiles that have it"
@@ -2741,7 +2716,7 @@ msgstr "{name}'s {source} page says it needs {dep} from outside {source}: {note}
 msgid "Updates"
 msgstr "Updates"
 
-#: src/mods/ExtraFolderMenu.tsx
+#: src/mods/AddMenu.tsx
 msgid "Add a set"
 msgstr "Add a set"
 
@@ -3460,10 +3435,6 @@ msgstr "Applied when the game next starts"
 #: src/mods/ConfigPresets.tsx
 msgid "Replace {name}?"
 msgstr "Replace {name}?"
-
-#: src/mods/ExtraFolderDialog.tsx
-msgid "Mods you put there show up here to add."
-msgstr "Mods you put there show up here to add."
 
 #: src/mods/typedConfig/ConfigPane.tsx
 msgid "Reset all entries?"

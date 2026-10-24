@@ -2,6 +2,8 @@ import {
   type Entry,
   Level,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
+import type { HiddenLogSource } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/settings/models.ts'
+import { hides } from './logSource.ts'
 
 const LEVEL_WIDTH = 5
 const INCOMPATIBLE_GAME = 'this version of SMAPI is only compatible up to Stardew Valley'
@@ -66,7 +68,11 @@ export function isFiltered(f: Filters): boolean {
   )
 }
 
-export function visible(entries: Entry[], f: Filters): Entry[] {
+export function visible(
+  entries: Entry[],
+  f: Filters,
+  hidden: readonly HiddenLogSource[] = [],
+): Entry[] {
   const needle = f.search.trim().toLowerCase()
   const groups: Entry[][] = []
   for (const entry of entries) {
@@ -81,6 +87,7 @@ export function visible(entries: Entry[], f: Filters): Entry[] {
       return []
     }
     const matches =
+      !hides(hidden, group) &&
       group.every((e) => f.levels.includes(e.level)) &&
       (f.mods.length === 0 || f.mods.includes(header.mod)) &&
       !f.excludeMods.includes(header.mod) &&

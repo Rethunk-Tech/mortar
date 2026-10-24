@@ -441,6 +441,10 @@ msgstr ""
 msgid "This mod is pinned in this profile, so Mortar does not offer updates for it."
 msgstr ""
 
+#: src/console/LineMenu.tsx
+msgid "Hide this message"
+msgstr ""
+
 #: src/console/RunProblems.tsx
 msgid "Update"
 msgstr ""
@@ -455,6 +459,10 @@ msgstr ""
 
 #: src/console/SearchRunsDialog.tsx
 msgid "Enter text to search stored runs."
+msgstr ""
+
+#: src/console/LineMenu.tsx
+msgid "Could not hide that message"
 msgstr ""
 
 #: src/console/lineText.ts
@@ -710,6 +718,10 @@ msgstr ""
 msgid "Copy log"
 msgstr ""
 
+#: src/console/LineMenu.tsx
+msgid "Copy this message"
+msgstr ""
+
 #: src/console/lineText.ts
 msgid "{game} crashed; exited with {signal}."
 msgstr ""
@@ -769,6 +781,10 @@ msgstr ""
 
 #: src/console/StartupSections.tsx
 msgid "{name} takes {own} of your {total} start."
+msgstr ""
+
+#: src/console/LineMenu.tsx
+msgid "Message copied"
 msgstr ""
 
 #: src/console/PerformancePanelParts.tsx

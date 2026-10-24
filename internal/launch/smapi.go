@@ -41,6 +41,10 @@ type Entry struct {
 	Params map[string]string `json:"params,omitempty"`
 	// Load marks a loader's line for a mod it is loading, which the launch screen counts rather than shows.
 	Load bool `json:"load,omitempty"`
+	// Source is the call site that logged a game line through Unity (Type::Method@offset), and Object the hierarchy
+	// path of the object it named, from the tag the BepInEx bridge starts the line with.
+	Source string `json:"source,omitempty"`
+	Object string `json:"object,omitempty"`
 }
 
 // SMAPI writes `[HH:MM:SS LEVEL  Mod] message`, padding the level to five characters.

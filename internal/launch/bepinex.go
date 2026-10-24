@@ -47,11 +47,45 @@ func parseBepInEx(line string) (Entry, bool) {
 	if m == nil {
 		return Entry{}, false
 	}
-	return Entry{Time: stamp, Level: bepinexLevels[m[1]], Mod: strings.TrimSpace(m[2]), Message: m[3]}, true
+	e := Entry{Time: stamp, Level: bepinexLevels[m[1]], Mod: strings.TrimSpace(m[2]), Message: m[3]}
+	e.Source, e.Object, e.Message = splitLogTag(e.Message)
+	return e, true
+}
+
+// logTag writes the bridge's tag back, so a run log read again keeps each line's source.
+func logTag(source, object string) string {
+	var parts []string
+	if source != "" {
+		parts = append(parts, "src="+source)
+	}
+	if object != "" {
+		parts = append(parts, "obj="+object)
+	}
+	return "⟦" + strings.Join(parts, ";") + "⟧ "
+}
+
+// splitLogTag takes the bridge's "⟦src=Type::Method@offset;obj=path⟧ " off the front of a message.
+func splitLogTag(message string) (source, object, rest string) {
+	tag, rest, ok := strings.Cut(strings.TrimPrefix(message, "⟦"), "⟧ ")
+	if !ok || !strings.HasPrefix(message, "⟦") {
+		return "", "", message
+	}
+	for part := range strings.SplitSeq(tag, ";") {
+		if v, ok := strings.CutPrefix(part, "src="); ok {
+			source = v
+		} else if v, ok := strings.CutPrefix(part, "obj="); ok {
+			object = v
+		}
+	}
+	return source, object, rest
 }
 
 func formatBepInEx(e Entry) string {
-	head := fmt.Sprintf("[%-7s:%10s] %s", bepinexNames[e.Level], e.Mod, e.Message)
+	message := e.Message
+	if !e.Cont && (e.Source != "" || e.Object != "") {
+		message = logTag(e.Source, e.Object) + message
+	}
+	head := fmt.Sprintf("[%-7s:%10s] %s", bepinexNames[e.Level], e.Mod, message)
 	if e.Time != "" {
 		return "[" + e.Time + "] " + head
 	}

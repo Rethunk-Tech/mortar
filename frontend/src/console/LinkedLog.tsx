@@ -93,6 +93,7 @@ export function LinkedLog({
         </Typography>
       ) : (
         <VirtualLog
+          game={game}
           rows={rows}
           notes={notes}
           timestamps={timestamps}

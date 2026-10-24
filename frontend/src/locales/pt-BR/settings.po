@@ -44,6 +44,10 @@ msgstr ""
 msgid "Sidebar badge counts"
 msgstr ""
 
+#: src/settings/sections/ExtraModsFolders.tsx
+msgid "Open profile"
+msgstr ""
+
 #: src/settings/GameSettingsPage.tsx
 msgid "Streaming"
 msgstr ""
@@ -58,6 +62,10 @@ msgstr ""
 
 #: src/settings/prefCopyGraphics.ts
 msgid "Graphics"
+msgstr ""
+
+#: src/settings/prefCopy.ts
+msgid "Folders of unpacked mods, or your own build's output, whose mods install into a profile and again whenever they change"
 msgstr ""
 
 #: src/settings/sections/DataMove.tsx
@@ -106,6 +114,10 @@ msgstr ""
 
 #: src/settings/sections/HiddenMods.tsx
 msgid "Left out of Browse. Links and imports still install them."
+msgstr ""
+
+#: src/settings/sections/ExtraModsFolders.tsx
+msgid "Deleted profile"
 msgstr ""
 
 #: src/settings/sections/NexusMods.tsx
@@ -1161,10 +1173,6 @@ msgid "Focus the next mod"
 msgstr ""
 
 #: src/settings/prefCopy.ts
-msgid "Folders of unpacked mods to add from the Add menu"
-msgstr ""
-
-#: src/settings/prefCopy.ts
 msgid "Offer new downloads"
 msgstr ""
 
@@ -1181,6 +1189,7 @@ msgid "Get the extension"
 msgstr ""
 
 #: src/settings/prefCopyModsView.ts
+#: src/settings/sections/HiddenLogSources.tsx
 msgid "None"
 msgstr ""
 
@@ -1234,6 +1243,7 @@ msgstr ""
 #: src/settings/sections/GameSettings.tsx
 #: src/settings/sections/GameSync.tsx
 #: src/settings/sections/General.tsx
+#: src/settings/sections/HiddenLogSources.tsx
 #: src/settings/sections/HiddenMods.tsx
 #: src/settings/sections/LoaderRow.tsx
 #: src/settings/sections/ModsProfiles.tsx
@@ -1270,6 +1280,10 @@ msgstr ""
 #: src/settings/prefCopy.ts
 #: src/settings/prefCopyGame.ts
 msgid "Ask"
+msgstr ""
+
+#: src/settings/sections/ExtraModsFolders.tsx
+msgid "Folders of unpacked mods, or your own build's output. Their mods install into the profile beside each folder, and again whenever their files change."
 msgstr ""
 
 #: src/settings/prefCopy.ts
@@ -1551,6 +1565,10 @@ msgstr ""
 msgid "Request counts appear after Mortar talks to {source}."
 msgstr ""
 
+#: src/settings/sections/ExtraModsFolders.tsx
+msgid "Profile {path} installs into"
+msgstr ""
+
 #: src/settings/prefCopy.ts
 msgid "{source} download host"
 msgstr ""
@@ -1605,6 +1623,7 @@ msgid "Scheduled save backups"
 msgstr ""
 
 #: src/settings/sections/General.tsx
+#: src/settings/sections/HiddenLogSources.tsx
 msgid "Show again"
 msgstr ""
 
@@ -1663,10 +1682,6 @@ msgstr ""
 
 #: src/settings/sections/NexusMods.tsx
 msgid "{count, plural, one {Untracked # mod} other {Untracked # mods}}"
-msgstr ""
-
-#: src/settings/sections/WatchFolders.tsx
-msgid "What to do with {path}"
 msgstr ""
 
 #: src/settings/prefCopy.ts
@@ -1871,10 +1886,6 @@ msgstr ""
 msgid "{name} now opens {source} \"Install\" links."
 msgstr ""
 
-#: src/settings/sections/WatchFolders.tsx
-msgid "Offer installs: new archives in the folder are offered for install. Auto-install: the folder is installed into the open profile as one mod and replaced each time its files change, for a mod's build output. Subfolders are not watched."
-msgstr ""
-
 #: src/settings/sections/Downloads.tsx
 msgid "Clicking these links on {source} starts the download in Mortar."
 msgstr ""
@@ -1906,10 +1917,6 @@ msgstr ""
 
 #: src/settings/sections/NexusSSO.tsx
 msgid "Connecting…"
-msgstr ""
-
-#: src/settings/sections/WatchFolders.tsx
-msgid "Auto-install"
 msgstr ""
 
 #: src/settings/prefCopy.ts
@@ -2359,6 +2366,10 @@ msgstr ""
 msgid "Keep the newest backups of each save and delete the rest. Pinned backups are never deleted."
 msgstr ""
 
+#: src/settings/sections/WatchFolders.tsx
+msgid "New archives in these folders are offered for install. Subfolders are not watched. For a mod's build output, use the game's Extra mods folders."
+msgstr ""
+
 #: src/settings/sections/LoaderRow.tsx
 msgid "An install is already running."
 msgstr ""
@@ -2736,6 +2747,10 @@ msgstr ""
 msgid "Integrity"
 msgstr ""
 
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Right-click a line in the Console to hide every line from where it came from. The game stops writing them where its bridge can."
+msgstr ""
+
 #: src/settings/sections/DataMove.tsx
 msgid "Move"
 msgstr ""
@@ -2856,6 +2871,10 @@ msgstr ""
 
 #: src/settings/sections/checkDetail.ts
 msgid "{game}: the {app} prefix does not load {name} natively, so its loader will not start"
+msgstr ""
+
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Hidden messages"
 msgstr ""
 
 #: src/settings/sections/About.tsx
@@ -3360,10 +3379,6 @@ msgstr ""
 msgid "Check only enabled mods"
 msgstr ""
 
-#: src/settings/sections/ExtraModsFolders.tsx
-msgid "Folders of unpacked mods, or your own build's output, to add from the Add menu; a mod you add follows later changes to its folder"
-msgstr ""
-
 #: src/settings/shortcutLabels.ts
 msgid "Close dialog or clear selection"
 msgstr ""
@@ -3580,10 +3595,6 @@ msgstr ""
 msgid "Install the version the mod's author named, as {manager} does."
 msgstr ""
 
-#: src/settings/sections/WatchFolders.tsx
-msgid "Offer installs"
-msgstr ""
-
 #: src/settings/sections/DataImport.tsx
 msgid "Ignored fields Mortar does not import: {names}"
 msgstr ""
@@ -3655,6 +3666,10 @@ msgstr ""
 
 #: src/settings/sections/NexusMods.tsx
 msgid "Personal API key"
+msgstr ""
+
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Show {name} again"
 msgstr ""
 
 #: src/settings/sections/DataStoreReport.tsx

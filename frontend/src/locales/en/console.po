@@ -441,6 +441,10 @@ msgstr "Link copied"
 msgid "This mod is pinned in this profile, so Mortar does not offer updates for it."
 msgstr "This mod is pinned in this profile, so Mortar does not offer updates for it."
 
+#: src/console/LineMenu.tsx
+msgid "Hide this message"
+msgstr "Hide this message"
+
 #: src/console/RunProblems.tsx
 msgid "Update"
 msgstr "Update"
@@ -456,6 +460,10 @@ msgstr "Before"
 #: src/console/SearchRunsDialog.tsx
 msgid "Enter text to search stored runs."
 msgstr "Enter text to search stored runs."
+
+#: src/console/LineMenu.tsx
+msgid "Could not hide that message"
+msgstr "Could not hide that message"
 
 #: src/console/lineText.ts
 msgid "startup_preferences is missing; skipped profile game settings."
@@ -710,6 +718,10 @@ msgstr "the search is \"{search}\""
 msgid "Copy log"
 msgstr "Copy log"
 
+#: src/console/LineMenu.tsx
+msgid "Copy this message"
+msgstr "Copy this message"
+
 #: src/console/lineText.ts
 msgid "{game} crashed; exited with {signal}."
 msgstr "{game} crashed; exited with {signal}."
@@ -770,6 +782,10 @@ msgstr "Change"
 #: src/console/StartupSections.tsx
 msgid "{name} takes {own} of your {total} start."
 msgstr "{name} takes {own} of your {total} start."
+
+#: src/console/LineMenu.tsx
+msgid "Message copied"
+msgstr "Message copied"
 
 #: src/console/PerformancePanelParts.tsx
 msgid "Mod or event"

@@ -26,6 +26,9 @@ func TestParserReadsBepInExLevelsSourcesAndWrappedLines(t *testing.T) {
 		{"[Error  : Unity Log] NullReferenceException: Object reference not set", Entry{Level: Error, Mod: "Unity Log", Message: "NullReferenceException: Object reference not set"}},
 		{"  at Foo.Bar () [0x00000] in <abc>:0", Entry{Level: Error, Mod: "Unity Log", Message: "  at Foo.Bar () [0x00000] in <abc>:0", Cont: true}},
 		{"[Fatal  :   BepInEx] Error occurred starting the game", Entry{Level: Alert, Mod: "BepInEx", Message: "Error occurred starting the game"}},
+		// The bridge's source tag is taken off the message.
+		{"[Info   : Unity Log] ⟦src=StartOfRound::Awake@1a;obj=Systems/StartOfRound⟧ 1", Entry{Level: Info, Mod: "Unity Log", Message: "1", Source: "StartOfRound::Awake@1a", Object: "Systems/StartOfRound"}},
+		{"[Info   : Unity Log] ⟦src=Terminal::Start@2c⟧ Returning week num: 3", Entry{Level: Info, Mod: "Unity Log", Message: "Returning week num: 3", Source: "Terminal::Start@2c"}},
 	}
 	for _, c := range cases {
 		got, shown := p.Parse(c.line)
@@ -37,8 +40,8 @@ func TestParserReadsBepInExLevelsSourcesAndWrappedLines(t *testing.T) {
 
 // The run log is formatted from the console's entries, and BepInEx's analyzers read it back as LogOutput.log.
 func TestFormatLogWritesBepInExLinesBackInItsFormat(t *testing.T) {
-	log := "[Error  :   BepInEx] Could not load [A 1.0.0] because it has missing dependencies: B\n  at X.Y ()\n[Warning:CullFactory] Portal has no renderer"
-	want := "[Error  :   BepInEx] Could not load [A 1.0.0] because it has missing dependencies: B\n  at X.Y ()\n[Warning:CullFactory] Portal has no renderer"
+	log := "[Error  :   BepInEx] Could not load [A 1.0.0] because it has missing dependencies: B\n  at X.Y ()\n[Warning:CullFactory] Portal has no renderer\n[Info   : Unity Log] ⟦src=T::M@1;obj=A/B⟧ 1"
+	want := log
 	if got := FormatLog(ParseLog(log)); got != want {
 		t.Fatalf("FormatLog = %q\nwant %q", got, want)
 	}

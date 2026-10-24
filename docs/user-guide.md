@@ -94,8 +94,8 @@ The extension is optional. It marks Nexus pages with what your profile already h
 
 - **GitHub:** **Add** installs the latest release; `gh auth login`, when present, raises GitHub's rate limits. Nobody reviews or scans what is published on GitHub or itch.io, and the first download from either says so once.
 - **Card details:** **Show › Card details** picks what cards list; the Mods tab uses the same choice.
-- **Downloads folder:** an archive saved to Downloads, Mortar's download folder or a folder under **Settings › Downloads › Also watch these folders** is offered for install. A watched folder set to **Auto-install** instead adds its files to the open profile as one mod, replaced on each rebuild (for a mod you are building); a change while the game runs waits for it to stop.
-- **Extra mods folders** (the game's settings): unpacked mods, or the output folder of a mod you are building, that **Add** offers. A mod you add from one is installed again whenever its folder changes, so the game loads your latest build; a change while the game runs waits for it to stop.
+- **Downloads folder:** an archive saved to Downloads, Mortar's download folder or a folder under **Settings › Downloads › Also watch these folders** is offered for install.
+- **Extra mods folders** (the game's settings): unpacked mods, or the output folder of a mod you are building. Each folder names the profile its mods install into (or the open one); they install when you add the folder and again whenever its files change, so the game loads your latest build. A change while the game runs waits for it to stop.
 - **Hide from Browse:** a card's menu has **Hide from Browse** and **Hide everything by \<author\>**; the game's settings list **Hidden mods** with **Unhide**. Links and imports still install a hidden mod.
 - **Modpacks, translations and cheats:** the **Exclude categories** picker starts with them; remove a chip to see them.
 - **Open a mod's page:** Ctrl+click a card in Browse, or middle-click a mod in the Mods tab.
@@ -241,6 +241,8 @@ Two mods change the same file or asset and only one change wins, so the other ma
 #### Errors in the last run
 
 A mod wrote errors to the game's log last time you played; it may be broken, out of date or missing something. Open the log to read them.
+
+Right-click a Console line to **Copy this message**, or to **Hide this message**: every line from the same place in the game's code (or, for an engine warning, the same warning about the same object) leaves the Console, and in a BepInEx game the bridge stops the game writing it. The game's settings › **Console** › **Hidden messages** shows them again.
 
 The Console's **Problems in this run** strip reads SMAPI's log and offers one fix per mod: **Add** a missing requirement, **Update** the mod, **Update SMAPI**, **Disable** a mod that crashed or is obsolete, and **Remove duplicate** or **Remove** (a mod installed twice, or one SMAPI flags as malicious).
 

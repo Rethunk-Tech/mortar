@@ -1,7 +1,15 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, Link } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { memo, type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import {
+  memo,
+  type ReactNode,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import type { Entry } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { space } from '../theme/density.ts'
 import {
@@ -12,6 +20,7 @@ import {
   linksInText,
 } from './consoleLinks.ts'
 import { repeatCount } from './filter.ts'
+import { LineMenu } from './LineMenu.tsx'
 import { levelChrome } from './levelPalette.ts'
 import { useLineText } from './lineText.ts'
 import type { UpdateNote } from './smapiUpdateNotes.ts'
@@ -83,10 +92,12 @@ const Row = memo(function RowView({
   roots,
   onMod,
   onPath,
+  onMenu,
   note,
 }: {
   entry: Entry
   note: UpdateNote | undefined
+  onMenu: (seq: number, top: number, left: number) => void
   timestamps: boolean
   mods: readonly InstalledMod[]
   roots: ConsoleLinkRoots
@@ -105,6 +116,10 @@ const Row = memo(function RowView({
   const messageLinks = useMemo(() => linksInText(text, mods, roots), [text, mods, roots])
   return (
     <Box
+      onContextMenu={(e) => {
+        e.preventDefault()
+        onMenu(entry.seq, e.clientY, e.clientX)
+      }}
       sx={{
         height: ROW,
         display: 'grid',
@@ -168,7 +183,21 @@ const Row = memo(function RowView({
 // A BepInEx logger mod's clock carries a fraction the 72px column has no room for; the title keeps it.
 const FRACTION = /^(\d\d:\d\d:\d\d)\.\d+$/
 
+// The message the row at index belongs to: its header line and the continuation lines after it.
+function groupAt(rows: Entry[], index: number): Entry[] {
+  let start = index
+  while (start > 0 && rows[start]?.cont) {
+    start -= 1
+  }
+  let end = start + 1
+  while (rows[end]?.cont) {
+    end += 1
+  }
+  return rows.slice(start, end)
+}
+
 export function VirtualLog({
+  game,
   rows,
   timestamps,
   follow,
@@ -179,6 +208,7 @@ export function VirtualLog({
   onPath,
   notes,
 }: {
+  game: string
   rows: Entry[]
   notes: ReadonlyMap<number, UpdateNote>
   timestamps: boolean
@@ -195,6 +225,12 @@ export function VirtualLog({
   const ref = useRef<HTMLDivElement>(null)
   const [top, setTop] = useState(0)
   const [height, setHeight] = useState(0)
+  const [menu, setMenu] = useState<{ seq: number; top: number; left: number } | null>(null)
+  const onMenu = useCallback(
+    (seq: number, y: number, x: number) => setMenu({ seq, top: y, left: x }),
+    [],
+  )
+  const menuIndex = menu ? rows.findIndex((r) => r.seq === menu.seq) : -1
 
   useLayoutEffect(() => {
     const el = ref.current
@@ -260,10 +296,17 @@ export function VirtualLog({
               roots={roots}
               onMod={onMod}
               onPath={onPath}
+              onMenu={onMenu}
             />
           ))}
         </Box>
       </Box>
+      <LineMenu
+        game={game}
+        at={menu && menuIndex >= 0 ? { top: menu.top, left: menu.left } : null}
+        group={menuIndex >= 0 ? groupAt(rows, menuIndex) : []}
+        onClose={() => setMenu(null)}
+      />
     </Box>
   )
 }

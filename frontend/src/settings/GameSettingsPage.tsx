@@ -27,6 +27,7 @@ import { DismissedFolders } from './sections/DismissedFolders.tsx'
 import { ExtraModsFolders } from './sections/ExtraModsFolders.tsx'
 import { BackupsPage, GameFolder, LoaderPage } from './sections/GameSettings.tsx'
 import { GameSync } from './sections/GameSync.tsx'
+import { HiddenLogSources } from './sections/HiddenLogSources.tsx'
 import { HiddenMods } from './sections/HiddenMods.tsx'
 import { SourceOrder } from './sections/SourceOrder.tsx'
 import { StreamOverlay } from './sections/StreamOverlay.tsx'
@@ -198,6 +199,7 @@ function GamePages({
               ]}
               game={game}
             />
+            <HiddenLogSources />
           </SettingsSection>
         )
       default:
