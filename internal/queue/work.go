@@ -342,7 +342,9 @@ func (s *Service) dropIfEnded(snap Item) {
 func (s *Service) settle(id string, err error) {
 	s.mu.Lock()
 	it := s.find(id)
-	if it == nil || err == nil {
+	// A step stopped by Pause or Cancel can still end in an error of its own (a reset connection) after the player's
+	// choice set the state; that choice stands.
+	if it == nil || err == nil || it.State == StatePaused || finished(it.State) {
 		s.mu.Unlock()
 		return
 	}

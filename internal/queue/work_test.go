@@ -83,3 +83,20 @@ func TestABusySourceHoldsOnlyItsOwnItemsAndGivesUp(t *testing.T) {
 		t.Fatalf("a retried item starts its count over and keeps the source's own reset: %+v until %v", it, s.until["modrinth"])
 	}
 }
+
+// A step's error that lands after the player paused or cancelled the item leaves the player's choice standing.
+func TestAnErrorAfterPauseOrCancelKeepsTheItemPausedOrCancelled(t *testing.T) {
+	for _, state := range []string{StatePaused, StateCancelled} {
+		s := &Service{
+			d:       Deps{Now: func() time.Time { return time.Unix(1, 0).UTC() }, Dir: t.TempDir()},
+			kick:    make(chan struct{}, 1),
+			cancels: map[string]context.CancelFunc{},
+			items:   []*Item{{ID: "a", Game: "g", Profile: "p", State: state}},
+		}
+		s.settle("a", fmt.Errorf("read: connection reset by peer"))
+		s.settle("a", &source.BusyError{Source: "nexus"})
+		if got := s.items[0].State; got != state {
+			t.Fatalf("%s item became %s", state, got)
+		}
+	}
+}
