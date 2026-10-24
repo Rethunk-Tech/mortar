@@ -12,7 +12,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Rethunk-Tech/mortar/internal/testenv/testfs"
 
 	"github.com/Rethunk-Tech/mortar/internal/opener"
 	"github.com/Rethunk-Tech/mortar/internal/settings"
@@ -21,8 +20,7 @@ import (
 
 func testStore(t *testing.T) *settings.Store {
 	t.Helper()
-	testfs.DataHome(t)
-	store, err := settings.Open()
+	store, err := settings.OpenIn(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,6 +125,7 @@ func testJPEG(t *testing.T, w, h int) []byte {
 }
 
 func TestNoSteam(t *testing.T) {
+	t.Parallel()
 	svc := NewService(t.TempDir(), testStore(t))
 	list, err := svc.List()
 	if err != nil || list[0].Installed || svc.SteamStatus() != "not-found" {
@@ -144,6 +143,7 @@ func stardewFolder(t *testing.T) string {
 }
 
 func TestDiscoveryPrecedence(t *testing.T) {
+	t.Parallel()
 	h := home(t)
 	steamDir := filepath.Join(h, ".local", "share", "Steam", "steamapps", "common", "Stardew Valley")
 	override := stardewFolder(t)
@@ -167,6 +167,7 @@ func TestDiscoveryPrecedence(t *testing.T) {
 }
 
 func TestGOGAndPreferredStore(t *testing.T) {
+	t.Parallel()
 	if runtime.GOOS == "windows" {
 		t.Skip("GOG offline path is a Linux home tree")
 	}
@@ -208,6 +209,7 @@ func TestGOGAndPreferredStore(t *testing.T) {
 }
 
 func TestOverrideWithoutSteam(t *testing.T) {
+	t.Parallel()
 	override := stardewFolder(t)
 	store := testStore(t)
 	if _, err := store.Update(func(s *settings.Settings) { s.GameFolders["stardew"] = override }); err != nil {
@@ -257,6 +259,7 @@ func TestByR2modmanFolderNamesTheCatalogGame(t *testing.T) {
 }
 
 func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
+	t.Parallel()
 	st := testStore(t)
 	games, err := List(t.TempDir(), st.Get())
 	if err != nil {
@@ -290,6 +293,7 @@ func TestLoaderRefsSayWhichTabsApply(t *testing.T) {
 }
 
 func TestLoaderRefsNameTheModID(t *testing.T) {
+	t.Parallel()
 	games, err := List(t.TempDir(), testStore(t).Get())
 	if err != nil {
 		t.Fatal(err)

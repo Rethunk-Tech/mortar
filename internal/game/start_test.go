@@ -239,6 +239,7 @@ func TestWindowsStartsSMAPIDirectlyUntilSteamNamesIt(t *testing.T) {
 }
 
 func TestStart(t *testing.T) {
+	t.Parallel()
 	logDir := t.TempDir()
 	logFile := filepath.Join(logDir, "SMAPI-latest.txt")
 	dir := t.TempDir()

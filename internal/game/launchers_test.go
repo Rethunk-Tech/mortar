@@ -23,6 +23,7 @@ func find(t *testing.T, list []StoreApp, id string) StoreApp {
 }
 
 func TestLaunchersReportFoundFoldersGamesAndWhereTheyLooked(t *testing.T) {
+	t.Parallel()
 	if runtime.GOOS != "linux" {
 		t.Skip("the launcher set differs per OS; Linux has every kind")
 	}

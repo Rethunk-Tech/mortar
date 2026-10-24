@@ -44,6 +44,7 @@ func TestResetInstallRemovesGameFolder(t *testing.T) {
 }
 
 func TestListComesFromTheCatalog(t *testing.T) {
+	t.Parallel()
 	list, err := NewService(t.TempDir(), testStore(t)).List()
 	if err != nil || len(list) != len(Catalog()) {
 		t.Fatalf("List = %+v, %v", list, err)
