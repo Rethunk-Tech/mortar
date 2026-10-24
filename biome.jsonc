@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.2/schema.json",
 
   // canon ts-biome-00001
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
@@ -146,7 +146,7 @@
         "noExplicitAny": "error",
         // canon ts-biome-00005
         "noReactSpecificProps": "off",
-        "noUnnecessaryConditions": "off"
+        "noUnnecessaryConditions": "error"
       },
 
       // canon ts-biome-00013 — an unhandled promise is a silent failure, not a style issue.
