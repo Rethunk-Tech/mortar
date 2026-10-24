@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Box, ButtonBase } from '@mui/material'
 import { Copy, Minus, Square, X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { memo, type ReactNode } from 'react'
 import { GameMenu } from '../games/GameMenu.tsx'
 import { routeGame, useNav } from '../nav/store.ts'
 import { ProfileMenu } from '../profiles/ProfileMenu.tsx'
@@ -43,7 +43,7 @@ function WindowButton({
 
 const rule = { width: '1px', height: 22, flexShrink: 0, bgcolor: 'var(--mortar-hairline-14)' }
 
-function Slash() {
+const Slash = memo(function SlashView() {
   return (
     <Box
       component="span"
@@ -51,7 +51,28 @@ function Slash() {
       sx={{ color: 'var(--mortar-ink-dim-60)', '&::before': { content: '"/"' } }}
     />
   )
-}
+})
+
+// Memoised apart from the bar, which repaints on every route change while the buttons stay as they were.
+const WindowControls = memo(function WindowControlsView({ maximised }: { maximised: boolean }) {
+  const { t } = useLingui()
+  return (
+    <Box
+      data-window-controls=""
+      sx={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch', ml: '6px' }}
+    >
+      <WindowButton label={t`Minimise`} onClick={win.minimise}>
+        <Minus size={14} />
+      </WindowButton>
+      <WindowButton label={maximised ? t`Restore` : t`Maximise`} onClick={win.toggleMaximise}>
+        {maximised ? <Copy size={12} /> : <Square size={12} />}
+      </WindowButton>
+      <WindowButton label={t`Close`} onClick={win.close} danger={true}>
+        <X size={14} />
+      </WindowButton>
+    </Box>
+  )
+})
 
 export function TitleBar({ maximised }: { maximised: boolean }) {
   const { t } = useLingui()
@@ -105,22 +126,7 @@ export function TitleBar({ maximised }: { maximised: boolean }) {
       <Box sx={{ flexGrow: 1 }} />
       <DownloadsPill />
       <HistoryButton />
-      {systemTitleBar ? null : (
-        <Box
-          data-window-controls=""
-          sx={{ display: 'flex', alignItems: 'stretch', alignSelf: 'stretch', ml: '6px' }}
-        >
-          <WindowButton label={t`Minimise`} onClick={win.minimise}>
-            <Minus size={14} />
-          </WindowButton>
-          <WindowButton label={maximised ? t`Restore` : t`Maximise`} onClick={win.toggleMaximise}>
-            {maximised ? <Copy size={12} /> : <Square size={12} />}
-          </WindowButton>
-          <WindowButton label={t`Close`} onClick={win.close} danger={true}>
-            <X size={14} />
-          </WindowButton>
-        </Box>
-      )}
+      {systemTitleBar ? null : <WindowControls maximised={maximised} />}
     </Box>
   )
 }

@@ -30,6 +30,9 @@ import { Sources } from './sections/Sources.tsx'
 import { Storage } from './sections/Storage.tsx'
 import { Updates } from './sections/Updates.tsx'
 
+// One function for the page's life, so the memoised nav rows keep their memo across page switches.
+const openPage = (id: SettingsSection) => useNav.getState().openSettings(id)
+
 export function SettingsPage({ section }: { section: SettingsSection }) {
   const { t } = useLingui()
   const closeSettings = useNav((s) => s.closeSettings)
@@ -70,7 +73,7 @@ export function SettingsPage({ section }: { section: SettingsSection }) {
       onBack={closeSettings}
       pages={pages}
       current={section}
-      onPage={(id) => useNav.getState().openSettings(id)}
+      onPage={openPage}
       render={(id) => body[id]}
       actions={{ shortcuts: <ResetAllShortcuts /> }}
       elsewhere={
