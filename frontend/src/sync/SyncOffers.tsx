@@ -16,6 +16,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/syncsvc/service.ts'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { diffIsStale, revisionToAnswer, type ShownDiff } from './revision.ts'
 import { useSync } from './store.ts'
 
@@ -23,7 +24,7 @@ function OfferRow({ offer }: { offer: Offer }) {
   const { t } = useLingui()
   const [shown, setShown] = useState<ShownDiff | null>(null)
   const [updated, setUpdated] = useState(false)
-  const [busy, setBusy] = useState(false)
+  const [busy, run] = usePending()
   const diff = shown?.diff
   const { game, remote, revision } = offer
   const load = useCallback(
@@ -40,12 +41,8 @@ function OfferRow({ offer }: { offer: Offer }) {
       load()
     }
   }, [offer.revision, shown, load])
-  const answer = (choice: string) => {
-    setBusy(true)
-    Resolve(offer.game, offer.remote, revisionToAnswer(offer.revision, shown), choice)
-      .catch(reportUnexpected)
-      .finally(() => setBusy(false))
-  }
+  const answer = (choice: string) =>
+    run(() => Resolve(offer.game, offer.remote, revisionToAnswer(offer.revision, shown), choice))
   return (
     <Box sx={{ py: space.gap, borderBottom: '1px solid var(--mortar-hairline)' }}>
       <Typography sx={{ fontWeight: 600 }}>

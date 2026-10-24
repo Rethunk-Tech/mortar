@@ -25,6 +25,7 @@ import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { reloadGames, useGames } from './info.ts'
 
 const CUSTOM_PREFIX = 'custom-'
@@ -36,22 +37,22 @@ export function AddGameDialog({ open, onClose }: { open: boolean; onClose: () =>
   const [exe, setExe] = useState('')
   const [loader, setLoader] = useState('bepinex5')
   const [community, setCommunity] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [busy, run] = usePending()
   const { data: loaders } = useLoaded(() => CustomLoaders(), [], [])
   const mine = useGames().filter((g) => g.id.startsWith(CUSTOM_PREFIX))
-  const add = () => {
-    setBusy(true)
-    AddCustomGame(name, exe, loader, loader === 'shimloader' ? community.trim() : '')
-      .then((game) => SetGameFolder(game.id, game.folder))
-      .then(() => {
-        reloadGames()
-        setName('')
-        setExe('')
-        onClose()
-      })
-      .catch(reportError(t`Could not add the game`))
-      .finally(() => setBusy(false))
-  }
+  const add = () =>
+    run(
+      () =>
+        AddCustomGame(name, exe, loader, loader === 'shimloader' ? community.trim() : '')
+          .then((game) => SetGameFolder(game.id, game.folder))
+          .then(() => {
+            reloadGames()
+            setName('')
+            setExe('')
+            onClose()
+          }),
+      { errorTitle: t`Could not add the game` },
+    )
   const remove = (id: string) =>
     RemoveCustomGame(id).then(reloadGames).catch(reportError(t`Could not remove the game`))
   return (

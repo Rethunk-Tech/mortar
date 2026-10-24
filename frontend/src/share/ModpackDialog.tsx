@@ -31,6 +31,7 @@ import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { inlineError, reportError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { usePending } from '../toasts/usePending.ts'
 
 const DESCRIPTION_MAX = 250
 const NAME_PATTERN = /^[A-Za-z0-9_]+$/
@@ -127,7 +128,7 @@ function Fields({
 }) {
   const { t } = useLingui()
   const [o, setO] = useState<ModpackOptions>(form.options)
-  const [busy, setBusy] = useState(false)
+  const [busy, run] = usePending()
   const set = <K extends keyof ModpackOptions>(key: K, value: ModpackOptions[K]) =>
     setO((cur) => ({ ...cur, [key]: value }))
   const bad = (() => {
@@ -145,24 +146,23 @@ function Fields({
     ModpackChangelog(game, profileId, o.version, o.includeDisabled)
       .then((text) => set('changelog', text))
       .catch(reportError(t`Could not write the changelog`))
-  const save = () => {
-    setBusy(true)
-    ExportModpackDialog(game, profileId, o)
-      .then((r) => {
-        if (!r.path) {
-          return
-        }
-        const left = [...(r.leftOut ?? []), ...(r.disabled ?? [])]
-        useToasts.getState().push({
-          kind: left.length > 0 ? 'warning' : 'success',
-          title: t`Modpack saved`,
-          body: left.length > 0 ? t`Left out: ${{ names: listNames(left) }}` : r.path,
-        })
-        onClose()
-      })
-      .catch(reportError(t`Could not export the modpack`))
-      .finally(() => setBusy(false))
-  }
+  const save = () =>
+    run(
+      () =>
+        ExportModpackDialog(game, profileId, o).then((r) => {
+          if (!r.path) {
+            return
+          }
+          const left = [...(r.leftOut ?? []), ...(r.disabled ?? [])]
+          useToasts.getState().push({
+            kind: left.length > 0 ? 'warning' : 'success',
+            title: t`Modpack saved`,
+            body: left.length > 0 ? t`Left out: ${{ names: listNames(left) }}` : r.path,
+          })
+          onClose()
+        }),
+      { errorTitle: t`Could not export the modpack` },
+    )
   const left = [...(form.leftOut ?? []), ...(o.includeDisabled ? [] : (form.disabled ?? []))]
   return (
     <>

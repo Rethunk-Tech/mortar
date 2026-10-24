@@ -19,6 +19,7 @@ import { calloutFill, calloutLine } from '../theme/callout.ts'
 import { space } from '../theme/density.ts'
 import { MONO } from '../theme/theme.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { useProfiles } from './store.ts'
 
 const DISMISSED_KEY = 'mortar.crashHintDismissed'
@@ -52,21 +53,19 @@ export function CrashHintCard({ game, profileId }: { game: string; profileId: st
   const mod = useMods((s) => s.mods)
   const [hidden, setHidden] = useState(() => readStored(DISMISSED_KEY, '', isText))
   const [bisectJob, setBisectJob] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [busy, run] = usePending()
   const hint = useCrashHint(game, profileId, updated)
   const culprit = hint?.modKey ? mod.find((m) => m.key === hint.modKey) : undefined
   const named = t`named in the crash log`
   const reason = useReasonText()(hint?.code, hint?.params, hint?.reason ?? '')
   const bisect = () => StartBisect(game, profileId).then(setBisectJob).catch(reportUnexpected)
-  const retry = (target: NonNullable<typeof culprit>) => {
-    setBusy(true)
-    useMods
-      .getState()
-      .setEnabled(target, false)
-      .then(() => useLaunch.getState().start(game, profileId, false))
-      .catch(reportUnexpected)
-      .finally(() => setBusy(false))
-  }
+  const retry = (target: NonNullable<typeof culprit>) =>
+    run(() =>
+      useMods
+        .getState()
+        .setEnabled(target, false)
+        .then(() => useLaunch.getState().start(game, profileId, false)),
+    )
   return (
     <>
       {hint && hint.runId !== hidden ? (

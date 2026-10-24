@@ -9,7 +9,6 @@ import {
   DialogTitle,
   Typography,
 } from '@mui/material'
-import { useState } from 'react'
 import { PickFolder } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/picker/service.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import {
@@ -20,6 +19,7 @@ import {
 import { useLoaded } from '../shell/useLoaded.ts'
 import { space } from '../theme/density.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { useProfiles } from './store.ts'
 
 /** Where a profile lives: under Mortar's data folder, or in a folder of its own (another drive), with move and check. */
@@ -35,20 +35,17 @@ export function ProfileFolderDialog({
   onClose: () => void
 }) {
   const { t } = useLingui()
-  const [busy, setBusy] = useState(false)
+  const [busy, runPending] = usePending()
   const folder = profile.folder ?? ''
   const { data: check } = useLoaded(
     open && folder !== '' ? () => CheckFolder(game, profile.id) : null,
     [open, folder, profile.id, game],
     null,
   )
-  const run = (work: () => Promise<Profile>) => {
-    setBusy(true)
-    work()
-      .then((next) => useProfiles.getState().replace(next))
-      .catch(reportError(t`Could not move the profile`))
-      .finally(() => setBusy(false))
-  }
+  const run = (work: () => Promise<Profile>) =>
+    runPending(() => work().then((next) => useProfiles.getState().replace(next)), {
+      errorTitle: t`Could not move the profile`,
+    })
   const openFolder = useProfiles((s) => s.openFolder)
   const pick = () =>
     PickFolder(t`Choose where ${{ name: profile.name }} lives`)

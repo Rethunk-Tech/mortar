@@ -26,6 +26,7 @@ import { MenuAction } from '../shell/MenuAction.tsx'
 import { space } from '../theme/density.ts'
 import { toastError } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
+import { usePending } from '../toasts/usePending.ts'
 import { hasModList } from './modList.ts'
 import { openProfileDialog } from './profileDialog.ts'
 
@@ -43,7 +44,7 @@ export function FarmDialog({
   const [text, setText] = useState('')
   const [host, setHost] = useState('')
   const [rows, setRows] = useState<FarmRow[] | null>(null)
-  const [busy, setBusy] = useState(false)
+  const [busy, run] = usePending()
   const { push } = useToasts.getState()
   const copyList = () =>
     ExportFarm(game, profile.id)
@@ -65,33 +66,31 @@ export function FarmDialog({
         }
       })
       .catch((error: unknown) => toastError(t`Could not read that file`, error))
-  const check = () => {
-    setBusy(true)
-    CheckFarm(game, profile.id, text)
-      .then((result) => {
-        setHost(result.host)
-        setRows(result.rows ?? [])
-      })
-      .catch((error: unknown) => toastError(t`Could not read that list`, error))
-      .finally(() => setBusy(false))
-  }
-  const fix = (only: FarmRow | null) => {
-    setBusy(true)
-    FixFarm(game, profile.id, text, only ? [only.id] : null)
-      .then((result) => {
-        const manual = result.manual ?? []
-        const count = result.queued
-        push({
-          kind: manual.length > 0 ? 'warning' : 'success',
-          title: t`${count} to download`,
-          ...(manual.length > 0
-            ? { body: t`Install by hand: ${{ names: listNames(manual) }}` }
-            : {}),
-        })
-      })
-      .catch((error: unknown) => toastError(t`Could not queue the downloads`, error))
-      .finally(() => setBusy(false))
-  }
+  const check = () =>
+    run(
+      () =>
+        CheckFarm(game, profile.id, text).then((result) => {
+          setHost(result.host)
+          setRows(result.rows ?? [])
+        }),
+      { errorTitle: t`Could not read that list` },
+    )
+  const fix = (only: FarmRow | null) =>
+    run(
+      () =>
+        FixFarm(game, profile.id, text, only ? [only.id] : null).then((result) => {
+          const manual = result.manual ?? []
+          const count = result.queued
+          push({
+            kind: manual.length > 0 ? 'warning' : 'success',
+            title: t`${count} to download`,
+            ...(manual.length > 0
+              ? { body: t`Install by hand: ${{ names: listNames(manual) }}` }
+              : {}),
+          })
+        }),
+      { errorTitle: t`Could not queue the downloads` },
+    )
   const done = () => {
     setText('')
     setRows(null)
