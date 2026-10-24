@@ -123,6 +123,19 @@ export async function waitForQuietNotices(page: Page) {
     } else if (Date.now() - lastSeen > NOTICE_QUIET_MS) {
       return
     }
-    await page.waitForTimeout(NOTICE_POLL_MS)
+    await dwell(page, NOTICE_POLL_MS)
   }
+}
+
+// Holds for ms on the page's own clock, polled in the page so a hung renderer fails the wait instead of passing it. For
+// dwells that wait on the absence of an event, where no state change exists to wait for.
+export async function dwell(page: Page, ms: number) {
+  await page.waitForFunction(
+    ([t0, span]) => Date.now() - (t0 ?? 0) >= (span ?? 0),
+    [Date.now(), ms],
+    {
+      polling: 100,
+      timeout: ms + 30_000,
+    },
+  )
 }

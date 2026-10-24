@@ -2,6 +2,7 @@ import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { chromium, type Page } from '@playwright/test'
 import {
+  dwell,
   openGameSelect,
   openProfile,
   openSeedFarm,
@@ -83,7 +84,9 @@ const tabs = (page: Page) => page.getByRole('tablist', { name: 'Profile sections
 async function toWorkspace(page: Page) {
   for (let i = 0; i < 2 && !(await tabs(page).isVisible()); i++) {
     await page.keyboard.press('Escape')
-    await page.waitForTimeout(300)
+    await tabs(page)
+      .waitFor({ state: 'visible', timeout: 300 })
+      .catch(() => undefined)
   }
   if (!(await tabs(page).isVisible())) {
     await land(page)
@@ -338,7 +341,7 @@ async function measure(
     const action = await meter.read()
     await meter.reset()
     const t2 = Date.now()
-    await page.waitForTimeout(IDLE_MS)
+    await dwell(page, IDLE_MS)
     const watched = await meter.read()
     const ms = { setup: t1 - t0, action: t2 - t1, idle: Date.now() - t2 }
     return {

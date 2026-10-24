@@ -67,8 +67,8 @@ async function openSims(page: Page) {
     await page.getByRole('button', { name: 'Continue' }).click()
     await page.getByLabel('Name', { exact: true }).fill(PROFILE)
     await page.getByRole('button', { name: 'New profile', exact: true }).click()
-    await expect(switcher).toBeVisible()
   }
+  await expect(switcher).toBeVisible()
 }
 
 /** Opens the Mods section of the open game's settings. */

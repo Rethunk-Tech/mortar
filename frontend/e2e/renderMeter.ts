@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { CDPSession, Page, Request } from '@playwright/test'
+import { dwell } from './app.ts'
 
 const QUIET_POLL_MS = 100
 const TOP = Number(process.env.MORTAR_RENDER_TOP ?? '8')
@@ -134,7 +135,7 @@ export class Meter {
       ) {
         return
       }
-      await this.page.waitForTimeout(QUIET_POLL_MS)
+      await dwell(this.page, QUIET_POLL_MS)
     }
   }
 

@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, type Page, test } from '@playwright/test'
-import { openSeedFarm } from './app.ts'
+import { dwell, openSeedFarm } from './app.ts'
 import { serverEnv } from './sandbox.ts'
 
 const dir = process.env.MORTAR_E2E_DIR ?? ''
@@ -61,7 +61,7 @@ test('Seed Beta renders its in-game menu capture and the page stays responsive',
   await expect(pane.getByRole('switch', { name: 'Enabled' })).toBeVisible()
   await expect(pane.getByText('Count', { exact: true })).toBeVisible()
   // A render loop would starve the compositor while script still ran; both round trips must finish.
-  await page.waitForTimeout(2000)
+  await dwell(page, 2000)
   expect(await page.evaluate(() => 1 + 1)).toBe(2)
   const shot = await page.screenshot({ timeout: 5000 })
   expect(shot.length).toBeGreaterThan(0)

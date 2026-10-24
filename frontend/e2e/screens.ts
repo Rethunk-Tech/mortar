@@ -4,6 +4,7 @@ import { basename, join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { chromium, type Page } from '@playwright/test'
+import { dwell } from './app.ts'
 
 // Headless screenshots of the main screens, for a person whose own browser cannot capture the sandbox. Not a spec:
 //   bun frontend/e2e/screens.ts --url http://127.0.0.1:9455 --out /var/tmp/screens
@@ -37,7 +38,7 @@ async function settle(page: Page) {
     undefined,
     { timeout: 15_000 },
   )
-  await page.waitForTimeout(SETTLE_MS)
+  await dwell(page, SETTLE_MS)
 }
 
 async function shot(page: Page, name: string, steps: () => Promise<void>, file = `${name}.png`) {
@@ -71,8 +72,8 @@ const click = (page: Page, role: Parameters<Page['getByRole']>[0], name: string 
   page.getByRole(role, { name }).first().click({ timeout: STEP_MS })
 
 async function openGameSelect(page: Page) {
-  await click(page, 'button', /^(Switch game|Choose a game)/)
-  await click(page, 'menuitem', /^All games/)
+  await click(page, 'button', /^(Switch game|Choose a game)/u)
+  await click(page, 'menuitem', /^All games/u)
 }
 
 async function openProfile(page: Page, profile: RegExp) {
@@ -86,7 +87,7 @@ async function start(page: Page) {
   await page.goto(url)
   const welcome = page.getByRole('button', { name: 'Continue' })
   const tabs = page.getByRole('tablist', { name: 'Profile sections' })
-  const farm = page.getByRole('button', { name: /^(Open )?Seed Farm/ }).first()
+  const farm = page.getByRole('button', { name: /^(Open )?Seed Farm/u }).first()
   await welcome.or(farm).or(tabs).first().waitFor({ timeout: 30_000 })
   if (await welcome.isVisible()) {
     await welcome.click()
@@ -120,20 +121,20 @@ const WIDE = { width: 1400, height: 840 }
 
 // The sandbox remembers the last opened profile, so each scene names the one it needs.
 async function openNamedProfile(page: Page, game: string, name: string) {
-  const gameButton = page.getByRole('button', { name: /^Switch game/ })
+  const gameButton = page.getByRole('button', { name: /^Switch game/u })
   await gameButton.waitFor({ timeout: STEP_MS })
   if (!(await gameButton.getAttribute('aria-label'))?.includes(game)) {
     await gameButton.click()
     await click(page, 'menuitemradio', game)
   }
-  await click(page, 'button', /^Switch profile/)
+  await click(page, 'button', /^Switch profile/u)
   await click(page, 'menuitemradio', new RegExp(`^${name} ·`))
   await page.getByRole('tab', { name: 'Mods' }).waitFor({ timeout: STEP_MS })
 }
 
 async function settings(page: Page, section: string) {
   await click(page, 'button', 'Mortar menu')
-  await click(page, 'menuitem', /^Mortar settings/)
+  await click(page, 'menuitem', /^Mortar settings/u)
   await click(page, 'button', section)
 }
 
@@ -160,11 +161,11 @@ async function padPress(page: Page, button: number) {
   await page.evaluate((b) => {
     ;(globalThis as unknown as { padDown: number }).padDown = b
   }, button)
-  await page.waitForTimeout(150)
+  await dwell(page, 150)
   await page.evaluate(() => {
     ;(globalThis as unknown as { padDown: number }).padDown = -1
   })
-  await page.waitForTimeout(150)
+  await dwell(page, 150)
 }
 
 const WEBP_QUALITY = '82'
@@ -181,7 +182,7 @@ const SITE: Scene[] = [
       await click(page, 'tab', 'Mods')
       // The list is virtualised, so a mod far down it has no row yet: the first row's details stand in.
       await page
-        .getByRole('button', { name: /^Details of / })
+        .getByRole('button', { name: /^Details of /u })
         .first()
         .click({ timeout: STEP_MS })
       await page
@@ -235,17 +236,17 @@ const SITE: Scene[] = [
       if ((await dismissed.count()) > 0) {
         await dismissed.click({ timeout: STEP_MS })
         const restore = page.getByRole('button', { name: 'Restore' })
-        while ((await restore.count()) > 0) {
+        for (let left = await restore.count(); left > 0; left = await restore.count()) {
           await restore.first().click({ timeout: STEP_MS })
-          await page.waitForTimeout(SETTLE_MS)
+          await restore.nth(left - 1).waitFor({ state: 'detached', timeout: STEP_MS })
         }
       }
       await page
-        .getByText(/threw it, at/)
+        .getByText(/threw it, at/u)
         .first()
         .waitFor({ timeout: STEP_MS })
       await page
-        .getByRole('heading', { name: /^Errors while running/ })
+        .getByRole('heading', { name: /^Errors while running/u })
         .evaluate((h) => h.scrollIntoView({ block: 'start' }))
     },
   },
@@ -258,7 +259,7 @@ const SITE: Scene[] = [
       await page.evaluate(() => dispatchEvent(new Event('gamepadconnected')))
       await padPress(page, DPAD_DOWN)
       await page
-        .getByRole('button', { name: /Lethal Company/ })
+        .getByRole('button', { name: /Lethal Company/u })
         .first()
         .focus()
     },
@@ -272,7 +273,7 @@ const SITE: Scene[] = [
       await click(page, 'button', 'Pair a computer')
       await page
         .getByRole('dialog')
-        .getByText(/works once/)
+        .getByText(/works once/u)
         .waitFor({ timeout: STEP_MS })
     },
   },
@@ -402,7 +403,7 @@ async function main() {
   await shot(page, 'seed-farm-home', async () => {
     if (!(await page.getByRole('tab', { name: 'Mods' }).isVisible())) {
       await openGameSelect(page)
-      await openProfile(page, /^(Open )?Seed Farm/)
+      await openProfile(page, /^(Open )?Seed Farm/u)
     }
     await click(page, 'tab', 'Home')
   })
@@ -415,28 +416,30 @@ async function main() {
   await shot(page, 'share-dialog', async () => {
     await click(page, 'tab', 'Home')
     await click(page, 'button', 'Share…')
-    await page.getByRole('dialog', { name: /^Share / }).waitFor({ timeout: STEP_MS })
+    await page.getByRole('dialog', { name: /^Share /u }).waitFor({ timeout: STEP_MS })
   })
   await shot(page, 'merge-dialog', async () => {
     await click(page, 'tab', 'Home')
     await click(page, 'button', /^Profile\b/)
-    await click(page, 'menuitem', /^Add these mods to another profile/)
-    const dialog = page.getByRole('dialog', { name: /^Add .+'s mods to/ })
+    await click(page, 'menuitem', /^Add these mods to another profile/u)
+    const dialog = page.getByRole('dialog', { name: /^Add .+'s mods to/u })
     await dialog
       .getByRole('combobox', { name: 'Profile to add them to' })
       .click({ timeout: STEP_MS })
     await click(page, 'option', 'Seed From Template')
-    await dialog.getByText(/^(\S+ gets \d+ new mods?|Nothing to add)/).waitFor({ timeout: STEP_MS })
+    await dialog
+      .getByText(/^(\S+ gets \d+ new mods?|Nothing to add)/u)
+      .waitFor({ timeout: STEP_MS })
   })
   await shot(page, 'game-mods-review', async () => {
     await openGameSelect(page)
-    await openProfile(page, /^(Open )?Seed Farm/)
+    await openProfile(page, /^(Open )?Seed Farm/u)
     await click(page, 'tab', 'Mods')
     await click(page, 'button', 'Review…')
-    await page.getByRole('dialog', { name: /^Game Mods folder vs / }).waitFor({ timeout: STEP_MS })
+    await page.getByRole('dialog', { name: /^Game Mods folder vs /u }).waitFor({ timeout: STEP_MS })
   })
-  await shot(page, 'seed-farm-config-alpha', () => configOf(page, /Seed Alpha/))
-  await shot(page, 'seed-farm-config-beta', () => configOf(page, /Seed Beta/))
+  await shot(page, 'seed-farm-config-alpha', () => configOf(page, /Seed Alpha/u))
+  await shot(page, 'seed-farm-config-beta', () => configOf(page, /Seed Beta/u))
   await shot(page, 'seed-farm-problems', () => click(page, 'tab', 'Problems'))
   await shot(page, 'seed-farm-performance', () => click(page, 'tab', 'Performance'))
   await shot(page, 'seed-farm-saves', () => click(page, 'tab', 'Saves'))
@@ -447,7 +450,7 @@ async function main() {
   })
   await shot(page, 'settings-general', async () => {
     await click(page, 'button', 'Mortar menu')
-    await click(page, 'menuitem', /^Mortar settings/)
+    await click(page, 'menuitem', /^Mortar settings/u)
     await click(page, 'button', 'General')
     await page.getByText('Antivirus', { exact: true }).first().scrollIntoViewIfNeeded()
   })
@@ -465,10 +468,10 @@ async function main() {
   await shot(page, 'game-mods-import-progress', async () => {
     await page.goto(url)
     await openGameSelect(page)
-    await openProfile(page, /^(Open )?Seed Farm/)
-    await click(page, 'button', /^Switch profile/)
-    await click(page, 'menuitem', /^From the game's Mods folder/)
-    const dialog = page.getByRole('dialog', { name: /^Import from the game's Mods folder/ })
+    await openProfile(page, /^(Open )?Seed Farm/u)
+    await click(page, 'button', /^Switch profile/u)
+    await click(page, 'menuitem', /^From the game's Mods folder/u)
+    const dialog = page.getByRole('dialog', { name: /^Import from the game's Mods folder/u })
     await dialog.getByRole('button', { name: 'Import', exact: true }).waitFor({ timeout: STEP_MS })
     await page.route('**/wails/runtime', () => new Promise<void>(() => undefined))
     await dialog.getByRole('button', { name: 'Import', exact: true }).click()

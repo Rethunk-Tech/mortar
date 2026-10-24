@@ -1,5 +1,6 @@
 // The views the website demo replays, walked on the recorder's sandbox so each one's backend answers are recorded.
 import type { Locator, Page } from '@playwright/test'
+import { dwell } from './app.ts'
 
 const STEP_MS = 10_000
 // Calls a click starts land a moment after the view shows.
@@ -13,13 +14,13 @@ let current: Page | undefined
 
 // Closes whatever dialogs and menus a step left open.
 async function closeAll(page: Page) {
-  for (
-    let i = 0;
-    i < CLOSE_TRIES && (await page.locator('[role="dialog"], [role="menu"]').count()) > 0;
-    i++
-  ) {
+  const open = page.locator('[role="dialog"], [role="menu"]')
+  for (let i = 0; i < CLOSE_TRIES && (await open.count()) > 0; i++) {
     await page.keyboard.press('Escape')
-    await page.waitForTimeout(SETTLE_MS)
+    await open
+      .first()
+      .waitFor({ state: 'hidden', timeout: SETTLE_MS })
+      .catch(() => undefined)
   }
 }
 
@@ -34,7 +35,7 @@ async function step(name: string, run: () => Promise<void>) {
   }
 }
 
-const settle = (page: Page) => page.waitForTimeout(SETTLE_MS)
+const settle = (page: Page) => dwell(page, SETTLE_MS)
 
 async function clickAll(page: Page, buttons: Locator) {
   for (const button of await buttons.all()) {

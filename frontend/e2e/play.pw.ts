@@ -2,6 +2,7 @@ import { type ChildProcess, execFileSync, spawn } from 'node:child_process'
 import { chmodSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { expect, type Page, test } from '@playwright/test'
+import { dwell } from './app.ts'
 import { selftest, serverEnv } from './sandbox.ts'
 
 // A --play start runs its own server on the sandbox's port, so each test stops the shared one and starts its binary again
@@ -126,7 +127,7 @@ test('a Steam session with a blocked profile turns into a normal session when th
     const prompt = page.getByRole('dialog', { name: 'Before you play' })
     await prompt.getByRole('button', { name: 'Open Problems' }).click()
     await expect(page.getByRole('button', { name: 'Mortar menu' })).toBeVisible()
-    await expect(page.getByRole('tab', { name: /^Problems/ })).toHaveAttribute(
+    await expect(page.getByRole('tab', { name: /^Problems/u })).toHaveAttribute(
       'aria-selected',
       'true',
     )
@@ -195,7 +196,7 @@ test('a play request the window already ran does not run again when the window r
     await page.reload()
     await served(page)
     // The stand-in game runs for 3s, so a replayed request would have started a second run by now.
-    await page.waitForTimeout(4000)
+    await dwell(page, 4000)
     expect(runs().length).toBe(before + 1)
   } finally {
     stop(child)

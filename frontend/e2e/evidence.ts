@@ -19,7 +19,7 @@ export function describeExits(text: string): string[] {
     .split('\n')
     .filter((line) => line.trim() !== '')
     .map((line) => {
-      const [pid = '', code = ''] = line.trim().split(/\s+/)
+      const [pid = '', code = ''] = line.trim().split(/\s+/u)
       const n = Number(code)
       return n < 0 ? `pid ${pid} killed by signal ${-n}` : `pid ${pid} exited with status ${code}`
     })

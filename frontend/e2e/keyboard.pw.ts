@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { openSeedFarm } from './app.ts'
+import { dwell, openSeedFarm } from './app.ts'
 
 /** The focused element, or the card around it, draws a visible ring: an outline with a real width. */
 async function expectFocusRing(page: Page) {
@@ -81,7 +81,7 @@ test('the main flows work with the keyboard alone and focus stays visible and re
   // Switching the open mod off saves the profile, which keeps the details open; the save lands after the switch flips.
   await page.getByLabel('Disable Seed Alpha').first().click()
   await expect(page.getByLabel('Enable Seed Alpha').first()).toBeVisible()
-  await page.waitForTimeout(1000)
+  await dwell(page, 1000)
   await expect(details).toBeVisible()
   await page.getByLabel('Enable Seed Alpha').first().click()
   await expect(page.getByLabel('Disable Seed Alpha').first()).toBeVisible()

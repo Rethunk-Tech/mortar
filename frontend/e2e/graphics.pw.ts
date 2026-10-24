@@ -80,10 +80,8 @@ async function openPeak(page: Page) {
     }
     await tile.click({ position: { x: 8, y: 8 } })
     const card = page.getByRole('button', { name: /^(Open )?Graphics/ }).first()
-    await expect(onGraphics.or(card).first()).toBeVisible()
-    await expect(onGraphics)
-      .toBeVisible({ timeout: 8000 })
-      .catch(() => card.click())
+    await onGraphics.or(card).first().waitFor()
+    await onGraphics.waitFor({ timeout: 8000 }).catch(() => card.click())
   }
   await expect(playButton(page)).toBeVisible()
 }

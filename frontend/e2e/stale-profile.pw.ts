@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import process from 'node:process'
 import { expect, test } from '@playwright/test'
-import { openGameSelect, openSeedFarm } from './app.ts'
+import { dwell, openGameSelect, openSeedFarm } from './app.ts'
 import { serverEnv } from './sandbox.ts'
 
 const dir = process.env.MORTAR_E2E_DIR ?? ''
@@ -32,6 +32,6 @@ test('a remembered profile deleted behind the app falls back without an error', 
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
   await expect(page.getByRole('button', { name: /^Switch profile: Seed Lobby/ })).toBeVisible()
   // Startup checks and the profile load both read the remembered profile.
-  await page.waitForLoadState('networkidle')
+  await dwell(page, 1000)
   expect(errors).toEqual([])
 })

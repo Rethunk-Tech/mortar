@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { openSettings } from './app.ts'
+import { dwell, openSettings } from './app.ts'
 
 // The tour opens from an effect once the reloaded app has its profile; this covers a slow first render.
 const REOPEN_MS = 500
@@ -68,6 +68,6 @@ test('the replayed tour spotlights each step and Skip keeps it closed after a re
   await expect(dialog).toBeHidden()
   await page.reload()
   await expect(page.getByRole('tab').first()).toBeVisible({ timeout: 30_000 })
-  await page.waitForTimeout(REOPEN_MS)
+  await dwell(page, REOPEN_MS)
   await expect(page.getByRole('dialog')).toBeHidden()
 })

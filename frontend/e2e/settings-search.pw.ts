@@ -9,7 +9,7 @@ async function rowLabels(page: Page): Promise<string[]> {
   // The page buttons; Back is the only one named by aria-label.
   for (const button of await nav.locator('button:not([aria-label])').all()) {
     await button.click()
-    await page.waitForTimeout(50)
+    await expect(page.locator('[data-setting-label]').first()).toBeVisible()
     for (const text of await page.locator('[data-setting-label]').allInnerTexts()) {
       labels.add(text.trim())
     }

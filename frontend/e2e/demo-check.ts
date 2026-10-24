@@ -45,7 +45,9 @@ async function check(name: string, run: () => Promise<void>) {
 
 /** Fails a view that, once settled, shows the error screen or anything still loading. */
 async function settled(page: Page, where: string) {
-  await page.waitForTimeout(SETTLED_MS)
+  await expect(page.locator('[role="progressbar"]:visible'))
+    .toHaveCount(0, { timeout: SETTLED_MS })
+    .catch(() => undefined)
   if ((await page.getByText('Something went wrong').count()) > 0) {
     problems.push(`${where}: Something went wrong`)
   }

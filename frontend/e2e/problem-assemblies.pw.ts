@@ -93,14 +93,13 @@ test.afterAll(() => {
   }
 })
 
-async function expectSentence(page: Page, section: string, sentence: string | RegExp) {
+/** The placeholder debris found in the row a section shows for the sentence. */
+async function brokenIn(page: Page, section: string, sentence: string | RegExp) {
   await page.locator(`[data-section="${section}"]`).click()
   const row = page.getByText(sentence).first()
   await expect(row).toBeVisible()
-  const text = await row.innerText()
-  for (const broken of ['undefined', '{0}', '{1}', 'for ;', ' ;']) {
-    expect(text).not.toContain(broken)
-  }
+  const text = (await row.textContent()) ?? ''
+  return ['undefined', '{0}', '{1}', 'for ;', ' ;'].filter((broken) => text.includes(broken))
 }
 
 test('an overlapping C# mod and a BepInEx incompatibility read as whole sentences', async ({
@@ -109,14 +108,18 @@ test('an overlapping C# mod and a BepInEx incompatibility read as whole sentence
   await openSeedFarm(page)
   await switchProfile(page, FARM)
   await page.getByRole('tab', { name: /^Problems/ }).click()
-  await expectSentence(page, 'redundant', /Overlaps with Asm Large: both change \S.*\S/)
+  expect(await brokenIn(page, 'redundant', /Overlaps with Asm Large: both change \S.*\S/)).toEqual(
+    [],
+  )
 
   await openGameSelect(page)
   await page.getByRole('button', { name: new RegExp(`^${LOBBY}`) }).click()
   await page.getByRole('tab', { name: /^Problems/ }).click()
-  await expectSentence(
-    page,
-    'loadFailures',
-    'E2E Alpha declares itself incompatible with E2EBeta, which is also enabled.',
-  )
+  expect(
+    await brokenIn(
+      page,
+      'loadFailures',
+      'E2E Alpha declares itself incompatible with E2EBeta, which is also enabled.',
+    ),
+  ).toEqual([])
 })

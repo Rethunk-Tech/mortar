@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { chromium, type Page } from '@playwright/test'
-import { openProfile } from './app.ts'
+import { dwell, openProfile } from './app.ts'
 import { CREW, dropBlank, SOLO, seedBlank, seedDemo, standInPath, switchOff } from './demo-seed.ts'
 import { Tape } from './demo-tape.ts'
 import { missed, switchTo, tab, walkChrome, walkSections } from './demo-walk.ts'
@@ -22,13 +22,13 @@ async function toggled(page: Page, tape: Tape) {
   await tab(page, 'Problems')
   tape.phase = 'toggle'
   await page.getByRole('button', { name: 'Enable' }).first().click({ timeout: STEP_MS })
-  await page.waitForTimeout(SETTLE_MS)
+  await dwell(page, SETTLE_MS)
   for (const name of ['Problems', 'Mods', 'Home', 'Load order']) {
     await tab(page, name)
   }
   tape.phase = 'off'
   switchOff()
-  await page.waitForTimeout(SETTLE_MS)
+  await dwell(page, SETTLE_MS)
 }
 
 async function played(page: Page, tape: Tape) {
@@ -39,17 +39,17 @@ async function played(page: Page, tape: Tape) {
   await page.getByRole('button', { name: 'Play anyway' }).click({ timeout: STEP_MS })
   const stop = page.getByRole('button', { name: 'Stop game' }).first()
   await stop.waitFor({ timeout: LOADED_MS })
-  await page.waitForTimeout(PLAY_MS)
+  await dwell(page, PLAY_MS)
   await tab(page, 'Performance')
   await tab(page, 'Console')
-  await page.waitForTimeout(PLAY_MS)
+  await dwell(page, PLAY_MS)
   await stop.click({ timeout: STEP_MS })
   await page
     .getByRole('dialog')
     .getByRole('button', { name: 'Stop game' })
     .click({ timeout: STEP_MS })
   await page.getByRole('button', { name: 'Play', exact: true }).waitFor({ timeout: LOADED_MS })
-  await page.waitForTimeout(SETTLE_MS)
+  await dwell(page, SETTLE_MS)
   tape.phase = 'after'
   await walkSections(page, false)
 }
@@ -57,7 +57,7 @@ async function played(page: Page, tape: Tape) {
 async function blank(page: Page, tape: Tape): Promise<string> {
   tape.phase = 'off'
   const id = seedBlank(BLANK)
-  await page.waitForTimeout(SETTLE_MS)
+  await dwell(page, SETTLE_MS)
   tape.phase = 'blank'
   await switchTo(page, BLANK)
   await walkSections(page, false)

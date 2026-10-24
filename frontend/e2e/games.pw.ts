@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { openGameSelect, openSeedFarm, openSettings } from './app.ts'
+import { dwell, openGameSelect, openSeedFarm, openSettings } from './app.ts'
 
 // Browse reaches the real Nexus and GitHub search endpoints from the sandbox; the suite has no offline network
 // fixture, so that spec skips itself when they cannot be reached.
@@ -75,7 +75,7 @@ test('switching games asks nothing about the previous game’s profiles', async 
   await page.getByRole('menuitemradio', { name: 'Lethal Company' }).click()
   await expect(page.getByRole('button', { name: 'Seed Lobby' }).first()).toBeVisible()
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
-  await page.waitForLoadState('networkidle')
+  await dwell(page, 1000)
   expect(refused).toEqual([])
 })
 

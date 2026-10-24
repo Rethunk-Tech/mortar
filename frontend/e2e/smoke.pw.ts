@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { openSeedFarm, openSettings } from './app.ts'
+import { dwell, openSeedFarm, openSettings } from './app.ts'
 import { methodOf } from './renderMeter.ts'
 
 /** A task this long freezes the window noticeably; profile switches on a 400-mod profile stay under it. */
@@ -41,7 +41,7 @@ function longTasks(page: Page): Promise<number[]> {
 }
 
 async function settle(page: Page) {
-  await page.waitForTimeout(SETTLE_MS)
+  await dwell(page, SETTLE_MS)
 }
 
 test('every tab and settings page opens without errors or long tasks', async ({ page }) => {
