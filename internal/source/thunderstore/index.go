@@ -220,7 +220,6 @@ func (d Driver) get(ctx context.Context, url, ua string) ([]byte, error) {
 	return fsx.ReadCapped(body, source.MaxBody)
 }
 
-// streamPackages decodes a package-list chunk one package at a time, so only the package being read is held.
 func expectArray(dec *json.Decoder) error {
 	tok, err := dec.Token()
 	if err != nil {
@@ -232,6 +231,7 @@ func expectArray(dec *json.Decoder) error {
 	return nil
 }
 
+// streamPackages decodes a package-list chunk one package at a time, so only the package being read is held.
 func (d Driver) streamPackages(ctx context.Context, url, ua string, fn func(*wirePackage) error) error {
 	body, done, err := d.open(ctx, url, ua)
 	if err != nil {
@@ -245,7 +245,7 @@ func (d Driver) streamPackages(ctx context.Context, url, ua string, fn func(*wir
 		if err != nil {
 			return err
 		}
-		r = io.LimitReader(zr, source.MaxBody*4)
+		r = fsx.CapReader(zr, source.MaxBody*4)
 	}
 	dec := json.NewDecoder(r)
 	if err := expectArray(dec); err != nil {

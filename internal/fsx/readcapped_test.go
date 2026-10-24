@@ -2,6 +2,7 @@ package fsx
 
 import (
 	"errors"
+	"io"
 	"strings"
 	"testing"
 )
@@ -16,5 +17,15 @@ func TestReadCappedTakesInputUpToTheLimitAndRefusesOneByteMore(t *testing.T) {
 	}
 	if b, err := ReadCapped(strings.NewReader(""), 0); err != nil || len(b) != 0 {
 		t.Fatalf("empty at a zero limit: %q, %v", b, err)
+	}
+}
+
+func TestCapReaderFailsOnceTheInputRunsOver(t *testing.T) {
+	t.Parallel()
+	if b, err := io.ReadAll(CapReader(strings.NewReader("abcd"), 4)); err != nil || string(b) != "abcd" {
+		t.Fatalf("at the limit: %q, %v", b, err)
+	}
+	if _, err := io.ReadAll(CapReader(strings.NewReader("abcde"), 4)); !errors.Is(err, ErrTooLarge) {
+		t.Fatalf("one byte over: %v", err)
 	}
 }

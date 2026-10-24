@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/source"
 )
 
@@ -275,5 +277,21 @@ func TestStandingsFlagOnlyPackagesTheIndexNoLongerLists(t *testing.T) {
 	defer memoMu.Unlock()
 	if _, held := memo["lethal-company"]; held {
 		t.Fatal("a standing check kept the whole listing in memory")
+	}
+}
+
+// A chunk that unpacks past the cap is refused as too large, not read as a list cut short.
+func TestAChunkOverTheCapIsRefusedAsTooLarge(t *testing.T) {
+	var packed bytes.Buffer
+	zw, _ := gzip.NewWriterLevel(&packed, gzip.BestSpeed)
+	_, _ = zw.Write([]byte("["))
+	_, _ = zw.Write(bytes.Repeat([]byte(" "), source.MaxBody*4))
+	_, _ = zw.Write([]byte("]"))
+	_ = zw.Close()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write(packed.Bytes()) }))
+	defer srv.Close()
+	err := Driver{HTTP: srv.Client()}.streamPackages(t.Context(), srv.URL, "ua", func(*wirePackage) error { return nil })
+	if !errors.Is(err, fsx.ErrTooLarge) {
+		t.Fatalf("err = %v, want ErrTooLarge", err)
 	}
 }
