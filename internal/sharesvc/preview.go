@@ -734,7 +734,26 @@ func (r *resolver) dependencies(ctx context.Context, mods []Mod) ([]Mod, []Probl
 			probs = append(probs, Problem{Kind: ProblemBroken, Key: b.Key, Name: b.Name, Detail: b.BrokeIn})
 		}
 	}
+	known := components.KnownBrokenFor(ctx, r.game)
+	for _, m := range mods {
+		if e, ok := known.Find(brokenModOf(m), r.env.GameVersion); ok {
+			probs = append(probs, Problem{Kind: ProblemBroken, Key: m.Key, Name: m.Name, Detail: e.Reason})
+		}
+	}
 	return deps, probs
+}
+
+// brokenModOf is a shared mod as a known-broken list names it; a package without a version takes the newest, which
+// cannot be judged before it is fetched.
+func brokenModOf(m Mod) components.BrokenMod {
+	b := components.BrokenMod{GitHub: m.Repo, Version: m.Version}
+	switch m.Site {
+	case SiteThunderstore:
+		b.ID = mod.NewID(mod.FormatThunderstore, m.Package)
+	case SiteNexus:
+		b.NexusID = m.ModID
+	}
+	return b
 }
 
 // addDependency adds the file that satisfies a missing dependency to deps, unless the import already has it, and

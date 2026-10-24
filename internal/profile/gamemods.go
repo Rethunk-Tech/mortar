@@ -207,7 +207,11 @@ func gameModsBucket(game string) string { return "gameMods:" + game }
 // NewGameModsFolders lists the mod folders in the game's own Mods folder that Mortar did not put there (SMAPI's
 // bundled mods and Mortar's bridge are left out) and the user has not dismissed, as PreviewGameMods rows. Folders
 // that hold no usable mod, or repeat a mod another folder holds, are not offered.
-func (s *Service) NewGameModsFolders(game string) (GameModsPreview, error) {
+func (s *Service) NewGameModsFolders(ctx context.Context, game string) (GameModsPreview, error) {
+	return withKnownBroken(ctx, game)(s.newGameModsFolders(game))
+}
+
+func (s *Service) newGameModsFolders(game string) (GameModsPreview, error) {
 	dir, err := s.gameModsDir(game)
 	if errors.Is(err, errNoManifestMods) {
 		return GameModsPreview{Mods: []GameModPreview{}}, nil

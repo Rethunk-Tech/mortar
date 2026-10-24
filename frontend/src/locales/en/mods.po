@@ -313,6 +313,7 @@ msgid "Record {name}"
 msgstr "Record {name}"
 
 #: src/mods/CompatChip.tsx
+#: src/mods/GameModsReviewDialog.tsx
 #: src/mods/ModDependencyTree.tsx
 msgid "Broken"
 msgstr "Broken"

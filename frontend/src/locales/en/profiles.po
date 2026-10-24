@@ -144,6 +144,10 @@ msgstr "Star"
 msgid "Rename"
 msgstr "Rename"
 
+#: src/profiles/GameModsDialog.tsx
+msgid "Broken"
+msgstr "Broken"
+
 #: src/profiles/ProfilesPage.tsx
 msgid "Find a mod in all profiles"
 msgstr "Find a mod in all profiles"

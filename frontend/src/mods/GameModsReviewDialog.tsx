@@ -61,7 +61,9 @@ function ReviewLists({
               control={
                 <Checkbox checked={!off.has(m.id ?? '')} onChange={() => onToggle(m.id ?? '')} />
               }
-              label={[m.name, m.version].filter((p) => p !== undefined && p !== '').join(' · ')}
+              label={[m.name, m.version, m.broken ? t`Broken` : '']
+                .filter((p) => p !== undefined && p !== '')
+                .join(' · ')}
             />
           ))}
         </Section>

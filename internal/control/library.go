@@ -20,7 +20,7 @@ func (s *Services) handleLibrary(ctx context.Context, method string, p Params) (
 	case "backups.usage", "backups.trim":
 		res, err = s.backupSize(method, p)
 	case "library.extra":
-		res, err = s.Profiles.ExtraFolderMods(p.Game)
+		res, err = s.Profiles.ExtraFolderMods(ctx, p.Game)
 	case "library.hidden":
 		res, err = s.profileCall(p, func(id string) (any, error) { return s.Profiles.DotHiddenMods(p.Game, id, p.Key) })
 	case "library.old-files":
@@ -30,7 +30,7 @@ func (s *Services) handleLibrary(ctx context.Context, method string, p Params) (
 			return nil, s.Profiles.ResolveOldFiles(p.Game, id, p.Key, p.Set)
 		})
 	case "library.strays":
-		res, err = s.Profiles.NewGameModsFolders(p.Game)
+		res, err = s.Profiles.NewGameModsFolders(ctx, p.Game)
 	case "library.strays.move":
 		res, err = s.profileCall(p, func(id string) (any, error) {
 			return s.changed(p.Game, func() (any, error) { return s.Profiles.MoveGameModsFolders(ctx, p.Game, id, p.IDs) })

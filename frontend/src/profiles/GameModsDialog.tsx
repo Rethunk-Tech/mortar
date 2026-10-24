@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import {
   Button,
   Checkbox,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -202,6 +203,9 @@ export function GameModsDialog({
                 sx={{ fontSize: 'medium.fontSize', py: 0.25 }}
               >
                 {formatPreviewRow(m, switchedOff, reasonText)}
+                {m.broken ? (
+                  <Chip size="small" label={t`Broken`} title={m.broken} sx={{ ml: 1 }} />
+                ) : null}
               </Typography>
             ))}
           </>

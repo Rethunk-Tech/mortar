@@ -23,7 +23,11 @@ func (s *Service) extraModsFolders(game string) []string {
 
 // ExtraFolderMods lists the mods in the game's extra mods folders (setting extraModsFolder) as Import from the game's
 // Mods folder previews them, each mod's Folder inside the folder it came from; none set lists none.
-func (s *Service) ExtraFolderMods(game string) (GameModsPreview, error) {
+func (s *Service) ExtraFolderMods(ctx context.Context, game string) (GameModsPreview, error) {
+	return withKnownBroken(ctx, game)(s.extraFolderMods(game))
+}
+
+func (s *Service) extraFolderMods(game string) (GameModsPreview, error) {
 	out := GameModsPreview{Mods: []GameModPreview{}}
 	for _, dir := range s.extraModsFolders(game) {
 		got, err := s.store.previewExtraFolder(game, dir)

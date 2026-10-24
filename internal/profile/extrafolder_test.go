@@ -16,7 +16,7 @@ func TestExtraFolderListsAndInstallsOnlyItsOwnFolders(t *testing.T) {
 	}
 	svc := NewService(e.Store, t.TempDir(), st)
 	p := mustCreate(t, e, "P")
-	if got, err := svc.ExtraFolderMods("stardew"); err != nil || len(got.Mods) != 0 {
+	if got, err := svc.ExtraFolderMods(t.Context(), "stardew"); err != nil || len(got.Mods) != 0 {
 		t.Fatalf("unset folder = %+v, %v", got, err)
 	}
 	extra := t.TempDir()
@@ -25,7 +25,7 @@ func TestExtraFolderListsAndInstallsOnlyItsOwnFolders(t *testing.T) {
 	second := t.TempDir()
 	writeFile(t, second, "C/manifest.json", manifestJSON("me.c"))
 	setGamePref(t, st, "extraModsFolder", extra+string(filepath.ListSeparator)+second)
-	got, err := svc.ExtraFolderMods("stardew")
+	got, err := svc.ExtraFolderMods(t.Context(), "stardew")
 	if err != nil || len(got.Mods) != 3 {
 		t.Fatalf("listed = %+v, %v", got, err)
 	}
@@ -66,7 +66,7 @@ func TestExtraFolderTakesABuildOutputFolderWithItsManifest(t *testing.T) {
 	writeFile(t, build, "manifest.json", manifestJSON("me.build"))
 	writeFile(t, build, "Build.dll", "MZ")
 	setGamePref(t, st, "extraModsFolder", build)
-	got, err := svc.ExtraFolderMods("stardew")
+	got, err := svc.ExtraFolderMods(t.Context(), "stardew")
 	if err != nil || len(got.Mods) != 1 || got.Mods[0].Folder != build {
 		t.Fatalf("listed = %+v, %v", got, err)
 	}
@@ -116,7 +116,7 @@ func TestExtraFolderTakesAPackageGamesModsAndABuildOutputFolder(t *testing.T) {
 	writeFile(t, build, "MyPlugin.dll", "MZ")
 	writeFile(t, build, "MyPlugin.pdb", "pdb")
 	setPrefOf(t, st, "lethal-company", "extraModsFolder", mods+string(filepath.ListSeparator)+build)
-	got, err := svc.ExtraFolderMods("lethal-company")
+	got, err := svc.ExtraFolderMods(t.Context(), "lethal-company")
 	if err != nil || len(got.Mods) != 3 {
 		t.Fatalf("listed = %+v, %v", got, err)
 	}

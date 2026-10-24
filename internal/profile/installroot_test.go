@@ -26,7 +26,7 @@ func TestAFolderGameWhoseModsFolderIsTheInstallOffersNothingToImport(t *testing.
 		t.Fatal(err)
 	}
 	svc := NewService(e.Store, t.TempDir(), st)
-	preview, err := svc.PreviewGameMods("witcher3")
+	preview, err := svc.PreviewGameMods(t.Context(), "witcher3")
 	if err != nil || len(preview.Mods) != 0 {
 		t.Fatalf("preview = %+v, %v; want nothing", preview, err)
 	}

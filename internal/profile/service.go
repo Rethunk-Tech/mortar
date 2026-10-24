@@ -109,7 +109,11 @@ func (s *Service) ImportsModsFolder(gameID string) bool {
 }
 
 // PreviewGameMods lists mods in the game's Mods folder that ImportGameMods would copy.
-func (s *Service) PreviewGameMods(gameID string) (GameModsPreview, error) {
+func (s *Service) PreviewGameMods(ctx context.Context, gameID string) (GameModsPreview, error) {
+	return withKnownBroken(ctx, gameID)(s.previewGameMods(gameID))
+}
+
+func (s *Service) previewGameMods(gameID string) (GameModsPreview, error) {
 	dir, err := s.importModsDir(gameID)
 	if errors.Is(err, errModsFolderIsInstall) || errors.Is(err, errNoManifestMods) {
 		return GameModsPreview{Mods: []GameModPreview{}}, nil

@@ -40,14 +40,14 @@ func TestModsFolderImportAppliesOnlyToGamesWhoseLoaderReadsManifestMods(t *testi
 			if got := svc.ImportsModsFolder(tc.game); got != tc.want {
 				t.Fatalf("ImportsModsFolder = %v, want %v", got, tc.want)
 			}
-			preview, err := svc.PreviewGameMods(tc.game)
+			preview, err := svc.PreviewGameMods(t.Context(), tc.game)
 			if err != nil {
 				t.Fatal(err)
 			}
 			if got := len(preview.Mods) > 0; got != tc.want {
 				t.Errorf("preview rows = %+v, want rows: %v", preview.Mods, tc.want)
 			}
-			fresh, err := svc.NewGameModsFolders(tc.game)
+			fresh, err := svc.NewGameModsFolders(t.Context(), tc.game)
 			if err != nil || fresh.Mods == nil {
 				t.Fatalf("new folders = %+v, %v", fresh, err)
 			}

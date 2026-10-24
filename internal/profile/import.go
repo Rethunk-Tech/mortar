@@ -46,6 +46,8 @@ type GameModPreview struct {
 	Disabled bool              `json:"disabled,omitempty"`
 	// Folder is the absolute path of the top-level folder holding this mod.
 	Folder string `json:"folder,omitempty"`
+	// Broken is why the game's known-broken list flags this version, empty when it does not.
+	Broken string `json:"broken,omitempty"`
 }
 
 // GameModsPreview is the list PreviewGameMods returns, including skips and failures.
