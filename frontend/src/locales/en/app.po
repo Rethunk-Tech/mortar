@@ -192,7 +192,7 @@ msgstr "Copying mod files"
 msgid "Open {game} ({count, plural, one {# more profile} other {# more profiles}})"
 msgstr "Open {game} ({count, plural, one {# more profile} other {# more profiles}})"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{name} is broken for {detail}"
 msgstr "{name} is broken for {detail}"
 
@@ -208,7 +208,7 @@ msgstr "Switch game"
 msgid "{name} needs its main file first"
 msgstr "{name} needs its main file first"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{name} needs {detail}, which Mortar cannot install"
 msgstr "{name} needs {detail}, which Mortar cannot install"
 
@@ -308,7 +308,7 @@ msgid "Remove {name} from {group}"
 msgstr "Remove {name} from {group}"
 
 #: src/game/HomeNotes.tsx
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 #: src/share/Included.tsx
 msgid "Notes"
 msgstr "Notes"
@@ -515,7 +515,7 @@ msgstr "Dismiss {name}"
 msgid "Mortar does not manage mods for that game."
 msgstr "Mortar does not manage mods for that game."
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "Free account: one click on {source} per download"
 msgstr "Free account: one click on {source} per download"
 
@@ -618,7 +618,7 @@ msgstr "All outcomes"
 
 #: src/queue/store.ts
 #: src/share/importCompletion.ts
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{count, plural, one {# mod installed} other {# mods installed}}"
 msgstr "{count, plural, one {# mod installed} other {# mods installed}}"
 
@@ -698,7 +698,7 @@ msgstr "The mod files can be copied directly from this Mortar."
 msgid "The game crashed inside this mod's code."
 msgstr "The game crashed inside this mod's code."
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{count} unavailable"
 msgstr "{count} unavailable"
 
@@ -834,7 +834,7 @@ msgstr "Retry"
 msgid "Opens a {source} issue with these filled in. You review it before posting."
 msgstr "Opens a {source} issue with these filled in. You review it before posting."
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{name} was removed from {source}"
 msgstr "{name} was removed from {source}"
 
@@ -894,7 +894,7 @@ msgstr "Copy mod list"
 msgid "Copied"
 msgstr "Copied"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "Page"
 msgstr "Page"
 
@@ -1319,7 +1319,7 @@ msgstr "Copy the mods already in {game}'s Mods folder into a new profile. The ga
 msgid "Collection draft saved"
 msgstr "Collection draft saved"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{count} checked later"
 msgstr "{count} checked later"
 
@@ -1466,7 +1466,7 @@ msgstr "Could not open the file dialog"
 msgid "Choose folder…"
 msgstr "Choose folder…"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{count, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 msgstr "{count, plural, one {with # settings file, written once its mod is installed} other {with # settings files, written once their mods are installed}}"
 
@@ -1882,7 +1882,7 @@ msgstr "Mortar already named the likely mod for the last crash."
 msgid "Cancel"
 msgstr "Cancel"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 #: src/share/useImportFlow.ts
 msgid "Nothing to download"
 msgstr "Nothing to download"
@@ -2213,7 +2213,7 @@ msgstr "Browse mods"
 msgid "File saved"
 msgstr "File saved"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{name} has no file Mortar can use in place of the one shared"
 msgstr "{name} has no file Mortar can use in place of the one shared"
 
@@ -2404,7 +2404,7 @@ msgstr "Delete {name}?"
 msgid "Broken for this version"
 msgstr "Broken for this version"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{count, plural, one {# dependency} other {# dependencies}}"
 msgstr "{count, plural, one {# dependency} other {# dependencies}}"
 
@@ -2650,7 +2650,7 @@ msgstr "{source} mod {id}"
 msgid "Where to share"
 msgstr "Where to share"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "Ready to import"
 msgstr "Ready to import"
 
@@ -2795,7 +2795,7 @@ msgstr "Skip for now"
 msgid "How it is modded"
 msgstr "How it is modded"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 #: src/share/Included.tsx
 msgid "Config files"
 msgstr "Config files"
@@ -2874,7 +2874,7 @@ msgstr "No profiles yet"
 msgid "Could not save the open profile"
 msgstr "Could not save the open profile"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 #: src/share/Included.tsx
 msgid "Problem choices"
 msgstr "Problem choices"
@@ -2936,7 +2936,7 @@ msgid "Open page"
 msgstr "Open page"
 
 #: src/game/FarmMenuItem.tsx
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{count} to download"
 msgstr "{count} to download"
 
@@ -3423,7 +3423,7 @@ msgstr "Update ready: applies when you close Mortar."
 msgid "Only on this computer"
 msgstr "Only on this computer"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "Sign in to import"
 msgstr "Sign in to import"
 
@@ -4135,7 +4135,7 @@ msgstr "Message copied"
 msgid "Archive contents"
 msgstr "Archive contents"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "Includes: {names}"
 msgstr "Includes: {names}"
 
@@ -4359,7 +4359,7 @@ msgstr "{count, plural, one {Update # mod} other {Update # mods}}"
 msgid "{more} more large downloads are waiting after this one."
 msgstr "{more} more large downloads are waiting after this one."
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "Some files could not be checked against {source}, so a few may differ from what was shared."
 msgstr "Some files could not be checked against {source}, so a few may differ from what was shared."
 
@@ -4675,7 +4675,7 @@ msgstr "Pause all"
 msgid "No other profile to add them to."
 msgstr "No other profile to add them to."
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{leftOut} left out"
 msgstr "{leftOut} left out"
 
@@ -5634,7 +5634,7 @@ msgstr "install reasons"
 msgid "Sending to {peer} stopped: {why}"
 msgstr "Sending to {peer} stopped: {why}"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "about {size} to download"
 msgstr "about {size} to download"
 
@@ -5688,7 +5688,7 @@ msgstr "{hours}h played"
 msgid "Could not download {name}"
 msgstr "Could not download {name}"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{count, plural, one {# program file was} other {# program files were}} left out; Mortar copies settings, not programs:"
 msgstr "{count, plural, one {# program file was} other {# program files were}} left out; Mortar copies settings, not programs:"
 
@@ -5791,7 +5791,7 @@ msgstr "{app} {launcher} cannot read Mortar's mods folder. Grant the sandbox acc
 msgid "Backups of {name}"
 msgstr "Backups of {name}"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{count, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 msgstr "{count, plural, one {# settings file was left out (too large):} other {# settings files were left out (too large):}}"
 
@@ -6059,7 +6059,7 @@ msgstr "Games you added"
 msgid "Share"
 msgstr "Share"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "Leave out"
 msgstr "Leave out"
 
@@ -6092,7 +6092,7 @@ msgstr "Could not load categories: {why}"
 msgid "Caused by {name}"
 msgstr "Caused by {name}"
 
-#: src/share/ImportPreview.tsx
+#: src/share/ImportProblems.tsx
 msgid "{name} is not on {source}"
 msgstr "{name} is not on {source}"
 
