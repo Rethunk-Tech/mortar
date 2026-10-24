@@ -205,7 +205,7 @@ type RecentEvent struct {
 	HistoryEvent
 }
 
-// RecentHistory lists the newest change events across this game's usable, non-hidden profiles.
+// RecentHistory lists the newest change events across this game's usable profiles.
 func (s *Store) RecentHistory(game string) ([]RecentEvent, error) {
 	return s.recentHistory(game, recentHistoryCap)
 }
