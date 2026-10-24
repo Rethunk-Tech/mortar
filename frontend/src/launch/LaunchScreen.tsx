@@ -240,7 +240,9 @@ function SlowNotice({ p, stage, onKeep }: { p: Progress; stage: StageId; onKeep:
   const body = slowBody(p, stage)
   return (
     <Panel>
-      <Typography sx={{ fontSize: 17, fontWeight: 600 }}>{title}</Typography>
+      <Typography component="h3" sx={{ fontSize: 17, fontWeight: 600 }}>
+        {title}
+      </Typography>
       <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>{body}</Typography>
       <Box sx={{ display: 'flex', gap: space.gap, mt: 0.5 }}>
         {stage === 'via' && launcherNames[p.via] === STEAM ? (
@@ -274,7 +276,7 @@ function FailurePanel({ game }: { game: string }) {
     : failure.body || t`The game exited before it started. The console has its output.`
   return (
     <Panel error={true}>
-      <Typography sx={{ fontSize: 17, fontWeight: 600 }}>
+      <Typography component="h3" sx={{ fontSize: 17, fontWeight: 600 }}>
         {cause
           ? t`${{ name: cause.modName }} stopped the game from starting`
           : t`${name} did not start`}
@@ -501,7 +503,9 @@ export function LaunchScreen({ game }: { game: string }) {
             '--wails-draggable': 'drag',
           }}
         />
-        <Typography sx={{ fontSize: 30, fontWeight: 700 }}>{title}</Typography>
+        <Typography component="h2" sx={{ fontSize: 30, fontWeight: 700 }}>
+          {title}
+        </Typography>
         <Typography sx={{ fontSize: 16 }}>{sub}</Typography>
         <Typography sx={{ fontSize: 13.5, color: 'text.secondary', minHeight: 19 }}>
           {[usual, elapsed].filter(Boolean).join(' · ')}
