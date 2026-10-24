@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="darkreader-lock">
+    <meta name="referrer" content="no-referrer">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111114">
+    
+    <title>Mortar user guide</title>
+    <meta name="description" content="How to install Mortar, add and update mods, keep profiles, share them, play and read Problems, for every game Mortar supports.">
+    <link rel="canonical" href="https://mortar.rethunk.tech/guide/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mortar">
+    <meta property="og:url" content="https://mortar.rethunk.tech/guide/">
+    <meta property="og:title" content="Mortar user guide">
+    <meta property="og:description" content="How to install Mortar, add and update mods, keep profiles, share them, play and read Problems, for every game Mortar supports.">
+    <meta property="og:image" content="https://mortar.rethunk.tech/og/guide.png?v=0.3.13">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="alternate" type="application/rss+xml" title="Mortar news" href="https://mortar.rethunk.tech/news/rss.xml">
+    <link rel="alternate" type="application/atom+xml" title="Mortar releases" href="https://mortar.rethunk.tech/changelog/feed.xml">
+    <!-- Body and heading text arrive before first paint, so the page does not shift when they swap in. -->
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-400-normal.FfmJh7DR.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-800-normal.D32lleIF.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="icon" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
+    <link rel="sitemap" href="/sitemap-index.xml">
+    <script async src="https://plausible.io/js/pa-Q6uQ-Ve40xbXZhAAHIlnr.js"></script>
+    <!-- Plausible's queue: calls made before its script loads wait in plausible.q, and init's options in plausible.o. -->
+    <script>
+      {
+        const p =
+          globalThis.plausible ||
+          ((...args) => {
+            p.q = p.q || []
+            p.q.push(args)
+          })
+        p.init =
+          p.init ||
+          ((options) => {
+            p.o = options || {}
+          })
+        globalThis.plausible = p
+        // A share link carries the whole profile after the #, and its Open in Mortar link carries it in a mortar://
+        // address that Plausible would report as an outbound click; that click has its own event instead.
+        p.init({
+          transformRequest: (request) =>
+            String(request.p?.url ?? '').startsWith('mortar:') ? null : { ...request, u: request.u.split('#')[0] },
+        })
+      }
+    </script>
+    <script>document.documentElement.classList.remove('no-js')</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Mortar","applicationCategory":"GameApplication","operatingSystem":"Windows, Linux","softwareVersion":"0.3.13","url":"https://mortar.rethunk.tech/","downloadUrl":"https://mortar.rethunk.tech/download/","license":"https://www.gnu.org/licenses/agpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Mortar","item":"https://mortar.rethunk.tech/"},{"@type":"ListItem","position":2,"name":"Guide","item":"https://mortar.rethunk.tech/guide/"}]}</script>
+    
+  <link rel="stylesheet" href="/_astro/page-lists.CjCmpW7e.css">
+<style>.start[data-astro-cid-fn5ai6td]{grid-template-columns:repeat(3,1fr);gap:16px;margin:0 0 56px;padding:0;list-style:none;display:grid}.start[data-astro-cid-fn5ai6td] a[data-astro-cid-fn5ai6td]{border:1px solid var(--line);border-left:3px solid var(--sand);background:var(--raised);border-radius:16px;grid-template-columns:44px 1fr;gap:4px 16px;height:100%;padding:22px 24px;transition:border-color .2s,transform .2s;display:grid}.start[data-astro-cid-fn5ai6td] a[data-astro-cid-fn5ai6td]:hover{border-color:var(--sand);transform:translateY(-3px)}.step[data-astro-cid-fn5ai6td]{border:2px solid var(--sand);width:44px;height:44px;color:var(--sand);border-radius:50%;grid-row:1/span 2;place-items:center;font-weight:800;display:grid}.start[data-astro-cid-fn5ai6td] b[data-astro-cid-fn5ai6td]{font-size:19px}.groups[data-astro-cid-fn5ai6td]{grid-template-columns:repeat(auto-fill,minmax(min(100%,24rem),1fr));align-items:start;gap:20px;display:grid}.group[data-astro-cid-fn5ai6td]{border:1px solid var(--line);background:var(--raised);border-radius:18px;padding:22px 22px 10px}.group[data-astro-cid-fn5ai6td] h2[data-astro-cid-fn5ai6td]{align-items:center;gap:12px;margin:0 0 10px;font-size:20px;display:flex}.group[data-astro-cid-fn5ai6td] .ico[data-astro-cid-fn5ai6td]{border-radius:10px;width:36px;height:36px;margin:0}.group[data-astro-cid-fn5ai6td] .ico[data-astro-cid-fn5ai6td] svg[data-astro-cid-fn5ai6td]{width:20px;height:20px}.group[data-astro-cid-fn5ai6td] ul[data-astro-cid-fn5ai6td]{margin:0;padding:0;list-style:none}.group[data-astro-cid-fn5ai6td] li[data-astro-cid-fn5ai6td]+li[data-astro-cid-fn5ai6td]{border-top:1px solid var(--line)}.group[data-astro-cid-fn5ai6td] a[data-astro-cid-fn5ai6td]{border-radius:10px;gap:2px;margin:0 -10px;padding:12px 10px;display:grid}.group[data-astro-cid-fn5ai6td] b[data-astro-cid-fn5ai6td]{font-size:16px}.group[data-astro-cid-fn5ai6td] a[data-astro-cid-fn5ai6td]:hover{background:#ffffff0a}.group[data-astro-cid-fn5ai6td] a[data-astro-cid-fn5ai6td]:hover b[data-astro-cid-fn5ai6td]{color:var(--sand)}.sum[data-astro-cid-fn5ai6td]{color:var(--dim);-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical;font-size:14px;display:-webkit-box;overflow:hidden}.start[data-astro-cid-fn5ai6td] .sum[data-astro-cid-fn5ai6td]{-webkit-line-clamp:2;line-clamp:2}.about[data-astro-cid-fn5ai6td]{max-width:50rem;margin-top:48px;font-size:15px}@media (width<=900px){.start[data-astro-cid-fn5ai6td]{grid-template-columns:1fr}}
+</style>
+<link rel="stylesheet" href="/_astro/Base.BBQBtV-n.css"></head>
+  <body id="top">
+    <a class="skip" href="#main">Skip to content</a>
+    <nav class="nav" aria-label="Main">
+  <div class="progress" id="progress"></div>
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/img/icon-192.png" width="30" height="30" alt="">Mortar</a>
+    <div class="links">
+      <a href="/games/" data-sec="games">
+            Games
+          </a><a href="/#features" data-sec="features">
+            Features
+          </a><a href="/news/" data-sec="news">
+            News
+          </a><a href="/why/" data-sec="compare">
+            Compare
+          </a><a href="/guide/" aria-current="page">
+            Guide
+          </a><a href="/faq/">
+            FAQ
+          </a>
+    </div>
+    <span class="tools">
+      <button type="button" class="nav-search" aria-label="Search" aria-keyshortcuts="Control+K Meta+K">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      </button>
+      <a class="optional" href="https://github.com/Rethunk-Tech/mortar" title="GitHub">
+            <svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg>
+            <span class="visually-hidden">GitHub</span>
+          </a><a class="optional" href="https://discord.gg/TfecaTm8J2" title="Discord">
+            <svg aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg>
+            <span class="visually-hidden">Discord</span>
+          </a>
+      <button type="button" class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+    </span>
+    <a class="btn primary" href="/download/">Download</a>
+  </div>
+  <div class="nav-drawer" id="nav-drawer" hidden>
+    <a href="/games/">Games</a><a href="/#features">Features</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/guide/">Guide</a><a href="/faq/">FAQ</a>
+    <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a><a href="https://discord.gg/TfecaTm8J2">Discord</a>
+    <a href="/download/">Download</a>
+  </div>
+</nav>
+    
+    <main id="main" data-pagefind-body>
+      
+  <header class="wrap pagehead">
+    
+    <p class="kicker">Guide</p>
+    <h1>User guide</h1>
+    <p class="lede">Everything Mortar does, a page per topic. New here? Start with the first three.</p>
+    
+  </header>
+  <div class="wrap pagebody">
+    <div class="prose full">
+      
+  <ol class="start" data-astro-cid-fn5ai6td>
+    <li data-astro-cid-fn5ai6td>
+          <a class="start-link" href="/guide/install/" data-astro-cid-fn5ai6td>
+            <span class="step" data-astro-cid-fn5ai6td>1</span>
+            <b data-astro-cid-fn5ai6td>Install</b>
+            <span class="sum" data-astro-cid-fn5ai6td>Download from mortar.rethunk.tech/download, or every file from Releases.</span>
+          </a>
+        </li><li data-astro-cid-fn5ai6td>
+          <a class="start-link" href="/guide/first-run/" data-astro-cid-fn5ai6td>
+            <span class="step" data-astro-cid-fn5ai6td>2</span>
+            <b data-astro-cid-fn5ai6td>First run</b>
+            <span class="sum" data-astro-cid-fn5ai6td>Continue past the welcome screen (it lists the launchers found: Steam, GOG, Heroic, Lutris, Bottles) and open Stardew Valley. Setup has three steps.</span>
+          </a>
+        </li><li data-astro-cid-fn5ai6td>
+          <a class="start-link" href="/guide/find-and-add-mods/" data-astro-cid-fn5ai6td>
+            <span class="step" data-astro-cid-fn5ai6td>3</span>
+            <b data-astro-cid-fn5ai6td>Find and add mods</b>
+            <span class="sum" data-astro-cid-fn5ai6td>Browse searches every site the game&#39;s mods come from at once (for Stardew Valley, Nexus Mods, CurseForge and GitHub). A mod several sites list is one card; its badge picks the site to install from, and Preferred source (the game&#39;s settings, Mods page) sets the default. The chips beside All sources narrow to one site.</span>
+          </a>
+        </li>
+  </ol>
+
+  <div class="groups" data-astro-cid-fn5ai6td>
+    <section class="group" data-astro-cid-fn5ai6td>
+          <h2 data-astro-cid-fn5ai6td>
+            <span class="ico" data-astro-cid-fn5ai6td>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-fn5ai6td>
+                <path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14" data-astro-cid-fn5ai6td></path>
+              </svg>
+            </span>
+            Set up
+          </h2>
+          <ul data-astro-cid-fn5ai6td>
+            <li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/install/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Install</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Download from mortar.rethunk.tech/download, or every file from Releases.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/first-run/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>First run</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Continue past the welcome screen (it lists the launchers found: Steam, GOG, Heroic, Lutris, Bottles) and open Stardew Valley. Setup has three steps.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/sign-in-to-nexus-mods/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Sign in to Nexus Mods</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>In Settings › Accounts, choose Sign in to Nexus Mods and approve Mortar in your browser. If that section shows Personal API key instead, copy your key from nexusmods.com (Settings, then API Keys), paste it in and choose Sign in. The key is kept in your system keyring.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/browser-extension/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Browser extension</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>The extension is optional. It marks Nexus pages with what your profile already has and sends Mod Manager Download clicks to Mortar. Settings › Downloads has a Download the extension button for mortar-browser-extension.zip from its releases, and says The browser extension is too old for this Mortar (or too new) when versions drift.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/switch-games/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Switch games</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Click the game&#39;s name in the title bar; it opens on the profile you used last. All games… opens Game select, where right-clicking a game offers Hide this game (and Unhide) and clicking a section&#39;s heading folds it away. The mouse&#39;s back and forward buttons, and Alt with the left and right arrows, move through the pages you opened.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/game-installs/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Game installs</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>A game installed more than once (Steam and GOG, a beta branch, another folder) has a separate install for each. A profile uses the selected install unless you pin it in the game&#39;s settings; profiles pinned to different installs can run at once.</span>
+                </a>
+              </li>
+          </ul>
+        </section><section class="group" data-astro-cid-fn5ai6td>
+          <h2 data-astro-cid-fn5ai6td>
+            <span class="ico" data-astro-cid-fn5ai6td>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-fn5ai6td>
+                <path d="M10 3h4v3a2 2 0 1 0 4 0V3h3v7h-3a2 2 0 1 0 0 4h3v7h-7v-3a2 2 0 1 0-4 0v3H3v-7h3a2 2 0 1 0 0-4H3V3z" data-astro-cid-fn5ai6td></path>
+              </svg>
+            </span>
+            Mods
+          </h2>
+          <ul data-astro-cid-fn5ai6td>
+            <li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/find-and-add-mods/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Find and add mods</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Browse searches every site the game&#39;s mods come from at once (for Stardew Valley, Nexus Mods, CurseForge and GitHub). A mod several sites list is one card; its badge picks the site to install from, and Preferred source (the game&#39;s settings, Mods page) sets the default. The chips beside All sources narrow to one site.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/modrinth-and-itchio/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Modrinth and itch.io</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>A game whose catalog entry lists Modrinth or itch.io gets a chip for it beside All sources, and its results join the merged search. Stardew Valley lists neither.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/lethal-company-and-thunderstore/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Lethal Company and Thunderstore</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Lethal Company&#39;s mods are Thunderstore packages on BepInEx. Mortar installs BepInEx, searches Thunderstore alongside Nexus Mods, CurseForge and GitHub, and Add installs a package with its dependencies. A dependency still missing is flagged on the Load order tab and in Before you play.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/your-mod-list/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Your mod list</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Favourites: the star on a mod marks it; the profile menu&#39;s Add to favourites does the same for a profile.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/edit-a-mods-settings/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Edit a mod's settings</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Mortar edits a mod&#39;s config as a form, and other files a BepInEx mod keeps (YAML, TOML, XML, INI, JSON, text) as text. A mod that has not run yet has no config.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/antivirus-scan/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Antivirus scan</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Before a mod enters Mortar&#39;s store, Mortar scans it with Windows Security or, on Linux, ClamAV&#39;s clamd when running. A flagged file refuses the install and deletes the extracted files. The error (Flagged by &amp;lt;scanner&amp;gt;: &amp;lt;name&amp;gt; in &amp;lt;file&amp;gt;) offers Install anyway, which asks to confirm, installs that mod once without a scan and records it in the profile&#39;s history. A scan that cannot finish installs the mod and warns you.</span>
+                </a>
+              </li>
+          </ul>
+        </section><section class="group" data-astro-cid-fn5ai6td>
+          <h2 data-astro-cid-fn5ai6td>
+            <span class="ico" data-astro-cid-fn5ai6td>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-fn5ai6td>
+                <path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" data-astro-cid-fn5ai6td></path>
+              </svg>
+            </span>
+            Profiles and sharing
+          </h2>
+          <ul data-astro-cid-fn5ai6td>
+            <li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/profiles/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Profiles</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>A profile is one set of mods. Switching profiles never touches the game folder&#39;s own Mods folder.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/pair-your-computers/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Pair your computers</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Pairing lets a profile sent between two of your computers carry its mod files. An unpaired computer still receives the profile and downloads each mod from its source.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/sync-your-profiles-between-computers/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Sync your profiles between computers</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>A sync folder shares each profile&#39;s mod list, sources, settings and mod config files between your computers through a folder another tool carries (Syncthing, Dropbox, a NAS). Mod files are never copied; each computer downloads them from their sources.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/save-backups-and-restore/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Save backups and restore</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Mortar zips your saves before it changes them: before a profile update, on every game start with Back up saves before Play, and on a timer with Scheduled save backups (both under the game&#39;s Save backups in Settings). A game whose catalog entry has no save folder shows no Saves tab, no Saves card on Home and no Save backups page.</span>
+                </a>
+              </li>
+          </ul>
+        </section><section class="group" data-astro-cid-fn5ai6td>
+          <h2 data-astro-cid-fn5ai6td>
+            <span class="ico" data-astro-cid-fn5ai6td>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-fn5ai6td>
+                <path d="M6 4l14 8-14 8z" data-astro-cid-fn5ai6td></path>
+              </svg>
+            </span>
+            Play and fix
+          </h2>
+          <ul data-astro-cid-fn5ai6td>
+            <li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/play/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Play</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Play applies the profile&#39;s mod list and starts the game through its loader. Direct Play (not a Steam or store URL launch) can start more than one instance, spaced by a delay, for local multiplayer: set both in the menu beside Play. A Heroic or Lutris copy starts through its own launcher, so the game runs in the prefix and runner the launcher keeps for it. In a BepInEx game whose bridge has a console, the Console tab takes commands. Skip the intro in Stardew Valley&#39;s settings skips the title intro. Launch options… in the menu beside Play opens the profile&#39;s own launch options: extra arguments for the game, a command prefix (for example gamemoderun mangohud) and environment variables; the prefix and the environment apply to direct launches only. Launch presets keep several sets, each a Play with choice in that menu.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/problems/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Problems</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>The Problems tab checks the open profile for missing requirements, conflicts, broken or outdated mods, damaged files, duplicates and more. It warns and never blocks Play.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/troubleshooting/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Troubleshooting</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Mortar does not start: it shows why, with a button that opens the folder holding mortar.log. Starting Mortar again while a copy is stuck offers to end it.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/notifications-and-change-history/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Notifications and change history</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>The bell in the title bar (Ctrl+Shift+N) opens Notifications. New holds this session&#39;s unread toasts. Earlier is the open profile&#39;s change history, newest first: Show diff lists what changed and Undo restores the profile to before that change. All changes… opens the full history, which lives with the profile and survives restarts.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/screenshots/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Screenshots</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>The Screenshots tab shows the game&#39;s own screenshots and, for a Steam game, Steam&#39;s. Use as profile cover sets the open profile&#39;s cover.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/stream-overlay/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Stream overlay</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>For OBS, Mortar&#39;s in-game bridge serves live values (Stardew Valley, Lethal Company, Valheim) to a browser source. In the game&#39;s settings open Stream overlay, turn it on and press Play (it is read at game start). The page has previews, a copy button for each OBS URL, the OBS steps, the Port and the Token. It listens on this computer only.</span>
+                </a>
+              </li>
+          </ul>
+        </section><section class="group" data-astro-cid-fn5ai6td>
+          <h2 data-astro-cid-fn5ai6td>
+            <span class="ico" data-astro-cid-fn5ai6td>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-fn5ai6td>
+                <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" data-astro-cid-fn5ai6td></path>
+              </svg>
+            </span>
+            Mortar itself
+          </h2>
+          <ul data-astro-cid-fn5ai6td>
+            <li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/updates/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Updates</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Mortar: the Mortar menu&#39;s Check mods and Mortar for updates, or Settings › Updates (which can include betas). An update applies when you close Mortar, or choose Restart now. The Mortar menu&#39;s What is new in &amp;lt;version&amp;gt; shows what changed.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/appearance/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Appearance</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Settings › Appearance sets the theme, accent colour (System follows your desktop&#39;s), font, Size and background (an image, the desktop wallpaper or a solid colour). Animated backgrounds hold still while a game runs or Reduce motion is on.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/language/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Language</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Mortar follows your system language once a translation of it is mostly done, and English otherwise. Settings › General › Language picks one yourself; a language still being translated shows how much is done, and the rest stays in English. Volunteers translate Mortar on Hosted Weblate, and Help translate Mortar beside the picker opens it.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/where-your-data-lives/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Where your data lives</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>The Mortar menu&#39;s Open data folder opens the first row.</span>
+                </a>
+              </li><li data-astro-cid-fn5ai6td>
+                <a class="topic" href="/guide/uninstall/" data-astro-cid-fn5ai6td>
+                  <b data-astro-cid-fn5ai6td>Uninstall</b>
+                  <span class="sum" data-astro-cid-fn5ai6td>Close Steam first so the Steam cleanup sticks: Steam rewrites its shortcut list on exit.</span>
+                </a>
+              </li>
+          </ul>
+        </section>
+  </div>
+
+  <div class="about prose" data-astro-cid-fn5ai6td><p>Mortar manages mods for the PC games its catalog enables. It finds the game, installs its mod loader (SMAPI for Stardew Valley), keeps each set of mods in its own profile and starts the game with the profile you pick. Internals: <a href="https://github.com/Rethunk-Tech/mortar/blob/main/docs/architecture.md">architecture.md</a>.</p>
+</div>
+  <script type="application/json" id="guide-anchors">{"install":"install","windows":"install","linux":"install","linux-package-repository":"install","first-run":"first-run","sign-in-to-nexus-mods":"sign-in-to-nexus-mods","downloads":"sign-in-to-nexus-mods","browser-extension":"browser-extension","find-and-add-mods":"find-and-add-mods","narrow-and-sort-the-results":"find-and-add-mods","modrinth-and-itchio":"modrinth-and-itchio","edit-a-mods-settings":"edit-a-mods-settings","your-mod-list":"your-mod-list","lethal-company-and-thunderstore":"lethal-company-and-thunderstore","pair-your-computers":"pair-your-computers","switch-games":"switch-games","game-installs":"game-installs","bottles":"game-installs","profiles":"profiles","import":"profiles","multiplayer":"profiles","play":"play","after-a-crash":"play","problems":"problems","what-each-problem-means":"problems","missing-requirement":"problems","broken-mod":"problems","duplicate-mod":"problems","conflicting-files":"problems","errors-in-the-last-run":"problems","errors-while-running":"problems","failed-to-load":"problems","setting-suggestion":"problems","damaged-files":"problems","paths-too-long":"problems","files-two-packages-ship":"problems","plugins-shipped-twice":"problems","deprecated-packages":"problems","changed-outside-mortar":"problems","notifications-and-change-history":"notifications-and-change-history","sync-your-profiles-between-computers":"sync-your-profiles-between-computers","updates":"updates","appearance":"appearance","language":"language","save-backups-and-restore":"save-backups-and-restore","screenshots":"screenshots","where-your-data-lives":"where-your-data-lives","uninstall":"uninstall","stream-overlay":"stream-overlay","antivirus-scan":"antivirus-scan","troubleshooting":"troubleshooting"}</script>
+    </div>
+  </div>
+
+    </main>
+    <footer class="foot">
+<a class="totop" href="#top"><span class="visually-hidden">Back to top</span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"></path></svg></a>
+  <div class="wrap">
+    <div class="fcta reveal">
+          <div>
+            <h2>Ready to mod?</h2>
+            <p class="dim">Free and open source. Setup takes a minute.</p>
+          </div>
+          <a class="btn primary big" href="/download/">
+            Download Mortar
+          </a>
+        </div>
+    <div class="cols">
+      <div>
+        <b class="fbrand"><img src="/img/icon-192.png" width="34" height="34" alt="">Mortar</b>
+        <p class="dim">A free, open source mod manager for Windows, Linux and the Steam Deck.</p>
+        <div class="social">
+          <a href="https://github.com/Rethunk-Tech/mortar"><span class="visually-hidden">GitHub</span><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg></a>
+          <a href="https://discord.gg/TfecaTm8J2"><span class="visually-hidden">Discord</span><svg style="color:rgb(88, 101, 242)" aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg></a>
+          <a href="/news/rss.xml"><span class="visually-hidden">News feed</span><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#F99830" stroke-width="2.4" stroke-linecap="round"><path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14"></path><circle cx="5.5" cy="18.5" r="1.2" fill="#F99830"></circle></g></svg></a>
+        </div>
+      </div>
+      <div>
+            <b>Product</b>
+            <a href="/download/">Download</a><a href="/games/">Games</a><a href="/sources/">Mod sites</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/changelog/">Changelog</a>
+          </div><div>
+            <b>Help</b>
+            <a href="/guide/">Guide</a><a href="/faq/">FAQ</a><a href="https://discord.gg/TfecaTm8J2">Discord</a><a href="/go/bug-reports/">Report a bug</a>
+          </div><div>
+            <b>Project</b>
+            <a href="/mission/">Mission</a><a href="https://github.com/Rethunk-Tech/mortar">Source code</a><a href="https://hosted.weblate.org/projects/mortar/">Help translate</a><a href="/extension/">Browser extension</a><a href="/code-signing/">Code signing</a><a href="/privacy/">Privacy</a>
+          </div>
+    </div>
+    <div class="fbar">
+      <span><a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a> · Version 0.3.13</span>
+      <span>Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not affiliated with any game developer or mod site.</span>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+    <div class="lightbox" id="lightbox" aria-hidden="true"><img alt=""></div>
+    <script type="module">var e=.5,t=matchMedia(`(prefers-reduced-motion: reduce)`).matches,n=document.querySelector(`.nav`),r=document.getElementById(`progress`),i=[...document.querySelectorAll(`.nav .links a[data-sec]`)],a=i.flatMap(e=>document.getElementById(e.dataset.sec??``)??[]);function o(){n?.classList.toggle(`scrolled`,scrollY>10);let e=document.documentElement.scrollHeight-innerHeight;r&&(r.style.width=`${e>0?scrollY/e*100:0}%`);let t=``;for(let e of a)e.getBoundingClientRect().top<innerHeight/3&&(t=e.id);for(let e of i)e.classList.toggle(`on`,e.dataset.sec===t)}addEventListener(`scroll`,o,{passive:!0}),o();var s=document.querySelector(`.nav-menu`),c=document.getElementById(`nav-drawer`);function l(e){c&&s&&(c.hidden=!e,s.setAttribute(`aria-expanded`,String(e)))}s?.addEventListener(`click`,()=>l(c?.hidden===!0)),document.addEventListener(`click`,e=>{let t=e.target;c&&!c.hidden&&t instanceof Node&&!c.contains(t)&&!s?.contains(t)&&l(!1)});var u=new IntersectionObserver(e=>{for(let t of e)t.isIntersecting&&(t.target.classList.add(`in`),u.unobserve(t.target))},{threshold:.1});for(let e of document.querySelectorAll(`.reveal`))u.observe(e);var d=5;for(let n of document.querySelectorAll(`.card.tilt`))n.addEventListener(`pointermove`,r=>{if(t)return;let i=n.getBoundingClientRect(),a=(r.clientX-i.left)/i.width-e,o=(r.clientY-i.top)/i.height-e;n.style.transform=`perspective(1000px) rotateY(${a*d}deg) rotateX(${-o*d}deg) translateZ(0)`}),n.addEventListener(`pointerleave`,()=>{n.style.transform=``});for(let e of document.querySelectorAll(`pre`))e.tabIndex=0;var f=document.getElementById(`lightbox`),p=f?.querySelector(`img`);function m(){f?.classList.remove(`open`),f?.setAttribute(`aria-hidden`,`true`)}document.addEventListener(`click`,e=>{let t=e.target instanceof Element?e.target:null,n=t?.closest(`img.zoom`);n&&f&&p?(e.preventDefault(),p.src=n.currentSrc||n.src,p.alt=n.alt,f.classList.add(`open`),f.setAttribute(`aria-hidden`,`false`)):t?.closest(`#lightbox`)&&m()}),globalThis.addEventListener(`keydown`,e=>{e.key===`Escape`&&(m(),l(!1))});</script>
+    <script src="/search.js" defer></script>
+  </body>
+</html>
+
+<script type="module">var e=decodeURIComponent(location.hash.slice(1)),t=JSON.parse(document.getElementById(`guide-anchors`)?.textContent??`{}`)[e];t&&location.replace(t===e?`/guide/${t}/`:`/guide/${t}/#${e}`);</script>

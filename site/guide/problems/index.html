@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="darkreader-lock">
+    <meta name="referrer" content="no-referrer">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111114">
+    
+    <title>Problems: Mortar user guide</title>
+    <meta name="description" content="The Problems tab checks the open profile for missing requirements, conflicts, broken or outdated mods, damaged files, duplicates and more. It warns and nev">
+    <link rel="canonical" href="https://mortar.rethunk.tech/guide/problems/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mortar">
+    <meta property="og:url" content="https://mortar.rethunk.tech/guide/problems/">
+    <meta property="og:title" content="Problems: Mortar user guide">
+    <meta property="og:description" content="The Problems tab checks the open profile for missing requirements, conflicts, broken or outdated mods, damaged files, duplicates and more. It warns and nev">
+    <meta property="og:image" content="https://mortar.rethunk.tech/og/guide/problems.png?v=0.3.13">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="alternate" type="application/rss+xml" title="Mortar news" href="https://mortar.rethunk.tech/news/rss.xml">
+    <link rel="alternate" type="application/atom+xml" title="Mortar releases" href="https://mortar.rethunk.tech/changelog/feed.xml">
+    <!-- Body and heading text arrive before first paint, so the page does not shift when they swap in. -->
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-400-normal.FfmJh7DR.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-800-normal.D32lleIF.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="icon" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
+    <link rel="sitemap" href="/sitemap-index.xml">
+    <script async src="https://plausible.io/js/pa-Q6uQ-Ve40xbXZhAAHIlnr.js"></script>
+    <!-- Plausible's queue: calls made before its script loads wait in plausible.q, and init's options in plausible.o. -->
+    <script>
+      {
+        const p =
+          globalThis.plausible ||
+          ((...args) => {
+            p.q = p.q || []
+            p.q.push(args)
+          })
+        p.init =
+          p.init ||
+          ((options) => {
+            p.o = options || {}
+          })
+        globalThis.plausible = p
+        // A share link carries the whole profile after the #, and its Open in Mortar link carries it in a mortar://
+        // address that Plausible would report as an outbound click; that click has its own event instead.
+        p.init({
+          transformRequest: (request) =>
+            String(request.p?.url ?? '').startsWith('mortar:') ? null : { ...request, u: request.u.split('#')[0] },
+        })
+      }
+    </script>
+    <script>document.documentElement.classList.remove('no-js')</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Mortar","applicationCategory":"GameApplication","operatingSystem":"Windows, Linux","softwareVersion":"0.3.13","url":"https://mortar.rethunk.tech/","downloadUrl":"https://mortar.rethunk.tech/download/","license":"https://www.gnu.org/licenses/agpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Mortar","item":"https://mortar.rethunk.tech/"},{"@type":"ListItem","position":2,"name":"Guide","item":"https://mortar.rethunk.tech/guide/"},{"@type":"ListItem","position":3,"name":"Problems","item":"https://mortar.rethunk.tech/guide/problems/"}]}</script>
+    
+  <link rel="stylesheet" href="/_astro/Base.BBQBtV-n.css">
+<link rel="stylesheet" href="/_astro/page-lists.CjCmpW7e.css"></head>
+  <body id="top">
+    <a class="skip" href="#main">Skip to content</a>
+    <nav class="nav" aria-label="Main">
+  <div class="progress" id="progress"></div>
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/img/icon-192.png" width="30" height="30" alt="">Mortar</a>
+    <div class="links">
+      <a href="/games/" data-sec="games">
+            Games
+          </a><a href="/#features" data-sec="features">
+            Features
+          </a><a href="/news/" data-sec="news">
+            News
+          </a><a href="/why/" data-sec="compare">
+            Compare
+          </a><a href="/guide/" aria-current="page">
+            Guide
+          </a><a href="/faq/">
+            FAQ
+          </a>
+    </div>
+    <span class="tools">
+      <button type="button" class="nav-search" aria-label="Search" aria-keyshortcuts="Control+K Meta+K">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      </button>
+      <a class="optional" href="https://github.com/Rethunk-Tech/mortar" title="GitHub">
+            <svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg>
+            <span class="visually-hidden">GitHub</span>
+          </a><a class="optional" href="https://discord.gg/TfecaTm8J2" title="Discord">
+            <svg aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg>
+            <span class="visually-hidden">Discord</span>
+          </a>
+      <button type="button" class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+    </span>
+    <a class="btn primary" href="/download/">Download</a>
+  </div>
+  <div class="nav-drawer" id="nav-drawer" hidden>
+    <a href="/games/">Games</a><a href="/#features">Features</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/guide/">Guide</a><a href="/faq/">FAQ</a>
+    <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a><a href="https://discord.gg/TfecaTm8J2">Discord</a>
+    <a href="/download/">Download</a>
+  </div>
+</nav>
+    
+    <main id="main" data-pagefind-body>
+      
+  <header class="wrap pagehead">
+    <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore><a href="/">Mortar</a> › <a href="/guide/">Guide</a></nav>
+    <h1>Problems</h1>
+  </header>
+  <div class="wrap pagebody">
+    <div class="guide-layout">
+      <nav class="toc" aria-label="Guide pages" data-pagefind-ignore>
+        <ol>
+          <li><a href="/guide/install/">Install</a></li><li><a href="/guide/first-run/">First run</a></li><li><a href="/guide/sign-in-to-nexus-mods/">Sign in to Nexus Mods</a></li><li><a href="/guide/browser-extension/">Browser extension</a></li><li><a href="/guide/find-and-add-mods/">Find and add mods</a></li><li><a href="/guide/modrinth-and-itchio/">Modrinth and itch.io</a></li><li><a href="/guide/edit-a-mods-settings/">Edit a mod's settings</a></li><li><a href="/guide/your-mod-list/">Your mod list</a></li><li><a href="/guide/lethal-company-and-thunderstore/">Lethal Company and Thunderstore</a></li><li><a href="/guide/pair-your-computers/">Pair your computers</a></li><li><a href="/guide/switch-games/">Switch games</a></li><li><a href="/guide/game-installs/">Game installs</a></li><li><a href="/guide/profiles/">Profiles</a></li><li><a href="/guide/play/">Play</a></li><li><a href="/guide/problems/" aria-current="page">Problems</a></li><li><a href="/guide/notifications-and-change-history/">Notifications and change history</a></li><li><a href="/guide/sync-your-profiles-between-computers/">Sync your profiles between computers</a></li><li><a href="/guide/updates/">Updates</a></li><li><a href="/guide/appearance/">Appearance</a></li><li><a href="/guide/language/">Language</a></li><li><a href="/guide/save-backups-and-restore/">Save backups and restore</a></li><li><a href="/guide/screenshots/">Screenshots</a></li><li><a href="/guide/where-your-data-lives/">Where your data lives</a></li><li><a href="/guide/uninstall/">Uninstall</a></li><li><a href="/guide/stream-overlay/">Stream overlay</a></li><li><a href="/guide/antivirus-scan/">Antivirus scan</a></li><li><a href="/guide/troubleshooting/">Troubleshooting</a></li>
+        </ol>
+      </nav>
+      <article class="prose">
+        <p>The <strong>Problems</strong> tab checks the open profile for missing requirements, conflicts, broken or outdated mods, damaged files, duplicates and more. It warns and never blocks Play.</p>
+<ul>
+<li>Each kind of problem is a section with a count (red when it holds something broken); an empty section is not shown. <strong>Add all</strong> in the missing-requirements section installs every requirement Mortar can find.</li>
+<li>Advice and history (Slow startup, Redundant, Cleanup, Replaced, Dismissed) are links under the list; choose one to open it below, and again to close it.</li>
+<li>A mod's name in a row filters the <strong>Mods</strong> tab to it. <strong>Why?</strong> on a row explains it and links to its section below. A row's fix is a button; its arrow opens the alternatives and <strong>Dismiss</strong>.</li>
+</ul>
+<h3 id="what-each-problem-means">What each problem means</h3>
+<h4 id="missing-requirement">Missing requirement</h4>
+<p>A mod you enabled needs another mod that is not in the profile or is disabled, so it may fail to load or lose features. <strong>Add</strong> installs the missing one when Mortar can find it.</p>
+<h4 id="broken-mod">Broken mod</h4>
+<p>SMAPI's list for your game version, Mortar's list of known-broken mods or the mod's own site marks it broken, obsolete, abandoned or gone (a hidden, removed or moderated Nexus page; an archived, inactive, abandoned or deleted Modrinth, CurseForge or GitHub project; a Thunderstore package taken off the site). The row names who said so. The mod may crash, do nothing, or break at the next game update. Update it, or replace it with the mod the row names.</p>
+<h4 id="duplicate-mod">Duplicate mod</h4>
+<p>Two enabled copies of one mod are in the profile. The game loads only one, and you do not control which. Remove the one you do not want.</p>
+<h4 id="conflicting-files">Conflicting files</h4>
+<p>Two mods change the same file or asset and only one change wins, so the other may look or behave wrongly. The row says which wins; disable the one you prefer to lose, or dismiss the row if the overlap is harmless. <strong>Why?</strong> then <strong>Show conflicts</strong> lists every mod touching the asset in load order, with each change's kind and the winner.</p>
+<h4 id="errors-in-the-last-run">Errors in the last run</h4>
+<p>A mod wrote errors to the game's log last time you played; it may be broken, out of date or missing something. Open the log to read them.</p>
+<p>The Console's <strong>Problems in this run</strong> strip reads SMAPI's log and offers one fix per mod: <strong>Add</strong> a missing requirement, <strong>Update</strong> the mod, <strong>Update SMAPI</strong>, <strong>Disable</strong> a mod that crashed or is obsolete, and <strong>Remove duplicate</strong> or <strong>Remove</strong> (a mod installed twice, or one SMAPI flags as malicious).</p>
+<h4 id="errors-while-running">Errors while running</h4>
+<p>A plugin that loaded and then logged errors or threw an exception is listed once, with its error count. The row names the method that threw and the other enabled mods that patch code on that path, since one of them may be the cause. The plugin ran, so these rows do not count as problems. <strong>Disable</strong> or <strong>Update</strong> it if the game misbehaves, or <strong>Dismiss</strong> the row for that run.</p>
+<h4 id="failed-to-load">Failed to load</h4>
+<p>The loader's log shows a plugin did not start, so its features are missing. The row quotes the log line; usual causes are a wrong game version or a missing requirement. The button follows the cause: <strong>Find</strong> a plugin that is not installed, <strong>Update</strong> one built for other versions, <strong>Reinstall loader</strong> when a plugin needs a newer BepInEx or the loader failed to start, or <strong>Disable</strong> a plugin that is incompatible, skipped for a newer copy, or keeps reporting errors.</p>
+<h4 id="setting-suggestion">Setting suggestion</h4>
+<p>A mod works better, or only works, with a setting changed. Nothing is wrong yet. The row names the setting and the button changes it.</p>
+<h4 id="damaged-files">Damaged files</h4>
+<p>Files of a stored mod went missing, changed or appeared since Mortar stored it (an antivirus, a disk fault, a manual edit). <strong>Repair</strong> downloads the mod again from its source; a local mod is re-extracted from its archive if that is still in Downloads.</p>
+<h4 id="paths-too-long">Paths too long</h4>
+<p>On Windows, a mod file's full path, where the game reads it, is 260 characters or more. Most games cannot open such a file, and turning on long paths in Windows does not change that. The row names the longest path. For a file the game reads from the profile, move Mortar's data folder somewhere shorter (<strong>Open storage settings</strong>, then <strong>Move…</strong>); a file placed in the game's own mods folder needs the game in a shorter folder. Linux, including games under Proton, is not affected.</p>
+<h4 id="files-two-packages-ship">Files two packages ship</h4>
+<p>Two enabled packages ship a file at the same path, and the one later in the package order replaces the other's copy. The row names the winner, the packages it beats and the files. <strong>Make … win</strong> moves a beaten package to just after the winner. These rows are information and do not count as problems.</p>
+<h4 id="plugins-shipped-twice">Plugins shipped twice</h4>
+<p>Two enabled packages carry the same plugin. The loader starts only one, so you may be running the older. <strong>Keep newer</strong> leaves the newest enabled.</p>
+<h4 id="deprecated-packages">Deprecated packages</h4>
+<p>The author marked the package deprecated on Thunderstore. It gets no fixes and may break at the next game update. <strong>Replace with</strong> swaps in the package the row names, when it names one.</p>
+<h4 id="changed-outside-mortar">Changed outside Mortar</h4>
+<p>A profile's mods folder changed without Mortar (a file added, removed or edited by hand or another tool). Keep the change or put the file back.</p>
+
+        <nav class="pager" aria-label="Previous and next guide page" data-pagefind-ignore>
+          <a class="prev" href="/guide/play/"><span>Previous</span>Play</a>
+          <a class="next" href="/guide/notifications-and-change-history/"><span>Next</span>Notifications and change history</a>
+        </nav>
+      </article>
+    </div>
+  </div>
+
+    </main>
+    <footer class="foot">
+<a class="totop" href="#top"><span class="visually-hidden">Back to top</span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"></path></svg></a>
+  <div class="wrap">
+    <div class="fcta reveal">
+          <div>
+            <h2>Ready to mod?</h2>
+            <p class="dim">Free and open source. Setup takes a minute.</p>
+          </div>
+          <a class="btn primary big" href="/download/">
+            Download Mortar
+          </a>
+        </div>
+    <div class="cols">
+      <div>
+        <b class="fbrand"><img src="/img/icon-192.png" width="34" height="34" alt="">Mortar</b>
+        <p class="dim">A free, open source mod manager for Windows, Linux and the Steam Deck.</p>
+        <div class="social">
+          <a href="https://github.com/Rethunk-Tech/mortar"><span class="visually-hidden">GitHub</span><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg></a>
+          <a href="https://discord.gg/TfecaTm8J2"><span class="visually-hidden">Discord</span><svg style="color:rgb(88, 101, 242)" aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg></a>
+          <a href="/news/rss.xml"><span class="visually-hidden">News feed</span><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#F99830" stroke-width="2.4" stroke-linecap="round"><path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14"></path><circle cx="5.5" cy="18.5" r="1.2" fill="#F99830"></circle></g></svg></a>
+        </div>
+      </div>
+      <div>
+            <b>Product</b>
+            <a href="/download/">Download</a><a href="/games/">Games</a><a href="/sources/">Mod sites</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/changelog/">Changelog</a>
+          </div><div>
+            <b>Help</b>
+            <a href="/guide/">Guide</a><a href="/faq/">FAQ</a><a href="https://discord.gg/TfecaTm8J2">Discord</a><a href="/go/bug-reports/">Report a bug</a>
+          </div><div>
+            <b>Project</b>
+            <a href="/mission/">Mission</a><a href="https://github.com/Rethunk-Tech/mortar">Source code</a><a href="https://hosted.weblate.org/projects/mortar/">Help translate</a><a href="/extension/">Browser extension</a><a href="/code-signing/">Code signing</a><a href="/privacy/">Privacy</a>
+          </div>
+    </div>
+    <div class="fbar">
+      <span><a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a> · Version 0.3.13</span>
+      <span>Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not affiliated with any game developer or mod site.</span>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+    <div class="lightbox" id="lightbox" aria-hidden="true"><img alt=""></div>
+    <script type="module">var e=.5,t=matchMedia(`(prefers-reduced-motion: reduce)`).matches,n=document.querySelector(`.nav`),r=document.getElementById(`progress`),i=[...document.querySelectorAll(`.nav .links a[data-sec]`)],a=i.flatMap(e=>document.getElementById(e.dataset.sec??``)??[]);function o(){n?.classList.toggle(`scrolled`,scrollY>10);let e=document.documentElement.scrollHeight-innerHeight;r&&(r.style.width=`${e>0?scrollY/e*100:0}%`);let t=``;for(let e of a)e.getBoundingClientRect().top<innerHeight/3&&(t=e.id);for(let e of i)e.classList.toggle(`on`,e.dataset.sec===t)}addEventListener(`scroll`,o,{passive:!0}),o();var s=document.querySelector(`.nav-menu`),c=document.getElementById(`nav-drawer`);function l(e){c&&s&&(c.hidden=!e,s.setAttribute(`aria-expanded`,String(e)))}s?.addEventListener(`click`,()=>l(c?.hidden===!0)),document.addEventListener(`click`,e=>{let t=e.target;c&&!c.hidden&&t instanceof Node&&!c.contains(t)&&!s?.contains(t)&&l(!1)});var u=new IntersectionObserver(e=>{for(let t of e)t.isIntersecting&&(t.target.classList.add(`in`),u.unobserve(t.target))},{threshold:.1});for(let e of document.querySelectorAll(`.reveal`))u.observe(e);var d=5;for(let n of document.querySelectorAll(`.card.tilt`))n.addEventListener(`pointermove`,r=>{if(t)return;let i=n.getBoundingClientRect(),a=(r.clientX-i.left)/i.width-e,o=(r.clientY-i.top)/i.height-e;n.style.transform=`perspective(1000px) rotateY(${a*d}deg) rotateX(${-o*d}deg) translateZ(0)`}),n.addEventListener(`pointerleave`,()=>{n.style.transform=``});for(let e of document.querySelectorAll(`pre`))e.tabIndex=0;var f=document.getElementById(`lightbox`),p=f?.querySelector(`img`);function m(){f?.classList.remove(`open`),f?.setAttribute(`aria-hidden`,`true`)}document.addEventListener(`click`,e=>{let t=e.target instanceof Element?e.target:null,n=t?.closest(`img.zoom`);n&&f&&p?(e.preventDefault(),p.src=n.currentSrc||n.src,p.alt=n.alt,f.classList.add(`open`),f.setAttribute(`aria-hidden`,`false`)):t?.closest(`#lightbox`)&&m()}),globalThis.addEventListener(`keydown`,e=>{e.key===`Escape`&&(m(),l(!1))});</script>
+    <script src="/search.js" defer></script>
+  </body>
+</html>

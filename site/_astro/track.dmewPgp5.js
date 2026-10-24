@@ -1,0 +1,1 @@
+function e(e,t){globalThis.plausible?.(e,t?{props:t}:void 0)}export{e as t};

@@ -1,0 +1,1 @@
+import{t as e}from"./track.dmewPgp5.js";e(`404`,{path:location.pathname});

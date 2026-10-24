@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="darkreader-lock">
+    <meta name="referrer" content="no-referrer">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111114">
+    
+    <title>Megabonk mod manager: Mortar</title>
+    <meta name="description" content="Mortar is a free, open source mod manager for Megabonk on Linux, Windows and Steam Deck: it installs BepInEx 6 (IL2CPP), keeps each set of mods in its own profile and downloads from Thunderstore and Nexus Mods.">
+    <link rel="canonical" href="https://mortar.rethunk.tech/megabonk/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mortar">
+    <meta property="og:url" content="https://mortar.rethunk.tech/megabonk/">
+    <meta property="og:title" content="Megabonk mod manager: Mortar">
+    <meta property="og:description" content="Mortar is a free, open source mod manager for Megabonk on Linux, Windows and Steam Deck: it installs BepInEx 6 (IL2CPP), keeps each set of mods in its own profile and downloads from Thunderstore and Nexus Mods.">
+    <meta property="og:image" content="https://mortar.rethunk.tech/og/megabonk.png?v=0.3.13">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="alternate" type="application/rss+xml" title="Mortar news" href="https://mortar.rethunk.tech/news/rss.xml">
+    <link rel="alternate" type="application/atom+xml" title="Mortar releases" href="https://mortar.rethunk.tech/changelog/feed.xml">
+    <!-- Body and heading text arrive before first paint, so the page does not shift when they swap in. -->
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-400-normal.FfmJh7DR.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-800-normal.D32lleIF.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="icon" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
+    <link rel="sitemap" href="/sitemap-index.xml">
+    <script async src="https://plausible.io/js/pa-Q6uQ-Ve40xbXZhAAHIlnr.js"></script>
+    <!-- Plausible's queue: calls made before its script loads wait in plausible.q, and init's options in plausible.o. -->
+    <script>
+      {
+        const p =
+          globalThis.plausible ||
+          ((...args) => {
+            p.q = p.q || []
+            p.q.push(args)
+          })
+        p.init =
+          p.init ||
+          ((options) => {
+            p.o = options || {}
+          })
+        globalThis.plausible = p
+        // A share link carries the whole profile after the #, and its Open in Mortar link carries it in a mortar://
+        // address that Plausible would report as an outbound click; that click has its own event instead.
+        p.init({
+          transformRequest: (request) =>
+            String(request.p?.url ?? '').startsWith('mortar:') ? null : { ...request, u: request.u.split('#')[0] },
+        })
+      }
+    </script>
+    <script>document.documentElement.classList.remove('no-js')</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Mortar","applicationCategory":"GameApplication","operatingSystem":"Windows, Linux","softwareVersion":"0.3.13","url":"https://mortar.rethunk.tech/","downloadUrl":"https://mortar.rethunk.tech/download/","license":"https://www.gnu.org/licenses/agpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Mortar","item":"https://mortar.rethunk.tech/"},{"@type":"ListItem","position":2,"name":"Games","item":"https://mortar.rethunk.tech/games/"},{"@type":"ListItem","position":3,"name":"Megabonk","item":"https://mortar.rethunk.tech/megabonk/"}]}</script>
+    
+  <link rel="stylesheet" href="/_astro/Base.BBQBtV-n.css">
+<link rel="stylesheet" href="/_astro/page-lists.CjCmpW7e.css">
+<style>.more-title[data-astro-cid-nxxgixeg]{margin:56px 0 18px;font-size:30px}.allq[data-astro-cid-nxxgixeg]{color:var(--sand);font-weight:700}
+</style></head>
+  <body id="top">
+    <a class="skip" href="#main">Skip to content</a>
+    <nav class="nav" aria-label="Main">
+  <div class="progress" id="progress"></div>
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/img/icon-192.png" width="30" height="30" alt="">Mortar</a>
+    <div class="links">
+      <a href="/games/" data-sec="games" aria-current="page">
+            Games
+          </a><a href="/#features" data-sec="features">
+            Features
+          </a><a href="/news/" data-sec="news">
+            News
+          </a><a href="/why/" data-sec="compare">
+            Compare
+          </a><a href="/guide/">
+            Guide
+          </a><a href="/faq/">
+            FAQ
+          </a>
+    </div>
+    <span class="tools">
+      <button type="button" class="nav-search" aria-label="Search" aria-keyshortcuts="Control+K Meta+K">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      </button>
+      <a class="optional" href="https://github.com/Rethunk-Tech/mortar" title="GitHub">
+            <svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg>
+            <span class="visually-hidden">GitHub</span>
+          </a><a class="optional" href="https://discord.gg/TfecaTm8J2" title="Discord">
+            <svg aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg>
+            <span class="visually-hidden">Discord</span>
+          </a>
+      <button type="button" class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+    </span>
+    <a class="btn primary" href="/download/">Download</a>
+  </div>
+  <div class="nav-drawer" id="nav-drawer" hidden>
+    <a href="/games/">Games</a><a href="/#features">Features</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/guide/">Guide</a><a href="/faq/">FAQ</a>
+    <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a><a href="https://discord.gg/TfecaTm8J2">Discord</a>
+    <a href="/download/">Download</a>
+  </div>
+</nav>
+    <header class="banner" style="--hero: url('https://shared.steamstatic.com/store_item_assets/steam/apps/3405340/4baa233ec40338d2799ac714eb852dd4bc2e6a5c/library_hero.jpg?t=1760445338')" data-pagefind-body data-astro-cid-nxxgixeg>
+    <div class="wrap" data-astro-cid-nxxgixeg>
+      <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore data-astro-cid-nxxgixeg><a href="/" data-astro-cid-nxxgixeg>Mortar</a> › <a href="/games/" data-astro-cid-nxxgixeg>Games</a> › Megabonk</nav>
+      <h1 data-astro-cid-nxxgixeg>Megabonk</h1>
+      <p class="lede" data-astro-cid-nxxgixeg>Mod Megabonk with Mortar, the free and open source mod manager for Linux, Windows and Steam Deck.</p>
+      <div class="cta" data-astro-cid-nxxgixeg>
+        <a class="btn primary" href="/download/" data-astro-cid-nxxgixeg>Download Mortar</a>
+        <a class="btn ghost" href="/guide/" data-astro-cid-nxxgixeg>User guide</a>
+      </div>
+    </div>
+  </header>
+    <main id="main" data-pagefind-body>
+      
+  
+  <div class="wrap pagebody" data-astro-cid-nxxgixeg>
+    <div class="facts-strip" data-astro-cid-nxxgixeg>
+      <div class="facts-group" data-astro-cid-nxxgixeg><span class="facts-label" data-astro-cid-nxxgixeg>Mod loader</span><span class="fact-icon" data-astro-cid-nxxgixeg>BepInEx 6 (IL2CPP)</span></div>
+      <span class="facts-sep" aria-hidden="true" data-astro-cid-nxxgixeg></span>
+      <div class="facts-group" data-astro-cid-nxxgixeg>
+        <span class="facts-label" data-astro-cid-nxxgixeg>Mods from</span>
+        <a class="fact-icon" href="https://thunderstore.io/c/megabonk/" title="Thunderstore">
+<svg class role="img" aria-label="Thunderstore" style="color:rgb(35, 255, 176)">
+      <title>Thunderstore</title>
+      <use href="/img/brands.svg#thunderstore"></use>
+    </svg>
+
+</a><a class="fact-icon" href="https://www.nexusmods.com/games/megabonk/mods" title="Nexus Mods">
+
+<img class src="/img/vendor/nexusmods.svg" alt="Nexus Mods" title="Nexus Mods" width="22" height="22">
+</a>
+      </div>
+      <span class="facts-sep" aria-hidden="true" data-astro-cid-nxxgixeg></span>
+      <div class="facts-group" data-astro-cid-nxxgixeg>
+        <span class="facts-label" data-astro-cid-nxxgixeg>Finds the game in</span>
+        <a class="fact-icon" href="https://store.steampowered.com/app/3405340/" title="Steam">
+<svg class role="img" aria-label="Steam" style="color:rgb(26, 159, 255)">
+      <title>Steam</title>
+      <use href="/img/brands.svg#steam"></use>
+    </svg>
+
+</a>
+      </div>
+    </div>
+    <div class="prose" data-astro-cid-nxxgixeg>
+      <h2 data-astro-cid-nxxgixeg>Start modding Megabonk</h2>
+      <ol class="steps-list" data-astro-cid-nxxgixeg>
+        <li data-astro-cid-nxxgixeg>Download Mortar for Linux or Windows and open it.</li>
+        <li data-astro-cid-nxxgixeg>Pick Megabonk. Mortar installs BepInEx 6 (IL2CPP) and makes your first profile.</li>
+        <li data-astro-cid-nxxgixeg>Open Browse, add the mods you want, and press Play. Each profile keeps its own mods and settings.</li>
+      </ol>
+      <h2 data-astro-cid-nxxgixeg>Share a profile</h2>
+      <p data-astro-cid-nxxgixeg>A profile for Megabonk shared from Mortar is a link to <code data-astro-cid-nxxgixeg>mortar.rethunk.tech/megabonk/p</code>. Whoever opens it sees the mod list and imports it into Mortar in one click. The whole profile is inside the link, so nothing is uploaded anywhere.</p>
+    </div>
+    <div data-pagefind-ignore="true" data-astro-cid-nxxgixeg>
+          <h2 class="more-title" data-astro-cid-nxxgixeg>More games on BepInEx 6 (IL2CPP)</h2>
+          <ul class="game-grid" data-astro-cid-nxxgixeg>
+            <li>
+  <a class="cover" href="/miside/">
+    <img class="cover-art" src="https://shared.steamstatic.com/store_item_assets/steam/apps/2527500/library_600x900.jpg?t=1792204652" srcset="https://shared.steamstatic.com/store_item_assets/steam/apps/2527500/library_600x900.jpg?t=1792204652 1x, https://shared.steamstatic.com/store_item_assets/steam/apps/2527500/library_600x900_2x.jpg?t=1792204652 2x" width="300" height="450" alt="" loading="lazy" referrerpolicy="no-referrer">
+    
+    
+    <span class="cover-text"><span class="game-name">MiSide</span><span class="game-meta">BepInEx 6 (IL2CPP)</span></span>
+  </a>
+</li><li>
+  <a class="cover" href="/nearly-dead/">
+    <img class="cover-art" src="https://shared.steamstatic.com/store_item_assets/steam/apps/1268900/library_600x900.jpg?t=1648090043" srcset="https://shared.steamstatic.com/store_item_assets/steam/apps/1268900/library_600x900.jpg?t=1648090043 1x, https://shared.steamstatic.com/store_item_assets/steam/apps/1268900/library_600x900_2x.jpg?t=1648090043 2x" width="300" height="450" alt="" loading="lazy" referrerpolicy="no-referrer">
+    
+    
+    <span class="cover-text"><span class="game-name">Nearly Dead</span><span class="game-meta">BepInEx 6 (IL2CPP)</span></span>
+  </a>
+</li><li>
+  <a class="cover" href="/nivalis-nights/">
+    <img class="cover-art" src="https://shared.steamstatic.com/store_item_assets/steam/apps/1488490/e25b42e7c39f2812efff13cd4ce8281299234c9d/library_capsule.jpg?t=1790855080" srcset="https://shared.steamstatic.com/store_item_assets/steam/apps/1488490/e25b42e7c39f2812efff13cd4ce8281299234c9d/library_capsule.jpg?t=1790855080 1x, https://shared.steamstatic.com/store_item_assets/steam/apps/1488490/e25b42e7c39f2812efff13cd4ce8281299234c9d/library_capsule_2x.jpg?t=1790855080 2x" width="300" height="450" alt="" loading="lazy" referrerpolicy="no-referrer">
+    
+    
+    <span class="cover-text"><span class="game-name">Nivalis Nights</span><span class="game-meta">BepInEx 6 (IL2CPP)</span></span>
+  </a>
+</li><li>
+  <a class="cover" href="/pac-man-world-re-pac/">
+    <img class="cover-art" src="https://shared.steamstatic.com/store_item_assets/steam/apps/1859470/library_600x900.jpg?t=1708327445" srcset="https://shared.steamstatic.com/store_item_assets/steam/apps/1859470/library_600x900.jpg?t=1708327445 1x, https://shared.steamstatic.com/store_item_assets/steam/apps/1859470/library_600x900_2x.jpg?t=1708327445 2x" width="300" height="450" alt="" loading="lazy" referrerpolicy="no-referrer">
+    
+    
+    <span class="cover-text"><span class="game-name">PAC-MAN WORLD Re-PAC</span><span class="game-meta">BepInEx 6 (IL2CPP)</span></span>
+  </a>
+</li>
+          </ul>
+          <p data-astro-cid-nxxgixeg><a class="allq" href="/games/" data-astro-cid-nxxgixeg>All 333 supported games →</a></p>
+        </div>
+  </div>
+
+    </main>
+    <footer class="foot">
+<a class="totop" href="#top"><span class="visually-hidden">Back to top</span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"></path></svg></a>
+  <div class="wrap">
+    <div class="fcta reveal">
+          <div>
+            <h2>Ready to mod?</h2>
+            <p class="dim">Free and open source. Setup takes a minute.</p>
+          </div>
+          <a class="btn primary big" href="/download/">
+            Download Mortar
+          </a>
+        </div>
+    <div class="cols">
+      <div>
+        <b class="fbrand"><img src="/img/icon-192.png" width="34" height="34" alt="">Mortar</b>
+        <p class="dim">A free, open source mod manager for Windows, Linux and the Steam Deck.</p>
+        <div class="social">
+          <a href="https://github.com/Rethunk-Tech/mortar"><span class="visually-hidden">GitHub</span><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg></a>
+          <a href="https://discord.gg/TfecaTm8J2"><span class="visually-hidden">Discord</span><svg style="color:rgb(88, 101, 242)" aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg></a>
+          <a href="/news/rss.xml"><span class="visually-hidden">News feed</span><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#F99830" stroke-width="2.4" stroke-linecap="round"><path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14"></path><circle cx="5.5" cy="18.5" r="1.2" fill="#F99830"></circle></g></svg></a>
+        </div>
+      </div>
+      <div>
+            <b>Product</b>
+            <a href="/download/">Download</a><a href="/games/">Games</a><a href="/sources/">Mod sites</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/changelog/">Changelog</a>
+          </div><div>
+            <b>Help</b>
+            <a href="/guide/">Guide</a><a href="/faq/">FAQ</a><a href="https://discord.gg/TfecaTm8J2">Discord</a><a href="/go/bug-reports/">Report a bug</a>
+          </div><div>
+            <b>Project</b>
+            <a href="/mission/">Mission</a><a href="https://github.com/Rethunk-Tech/mortar">Source code</a><a href="https://hosted.weblate.org/projects/mortar/">Help translate</a><a href="/extension/">Browser extension</a><a href="/code-signing/">Code signing</a><a href="/privacy/">Privacy</a>
+          </div>
+    </div>
+    <div class="fbar">
+      <span><a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a> · Version 0.3.13</span>
+      <span>Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not affiliated with any game developer or mod site.</span>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+    <div class="lightbox" id="lightbox" aria-hidden="true"><img alt=""></div>
+    <script type="module">var e=.5,t=matchMedia(`(prefers-reduced-motion: reduce)`).matches,n=document.querySelector(`.nav`),r=document.getElementById(`progress`),i=[...document.querySelectorAll(`.nav .links a[data-sec]`)],a=i.flatMap(e=>document.getElementById(e.dataset.sec??``)??[]);function o(){n?.classList.toggle(`scrolled`,scrollY>10);let e=document.documentElement.scrollHeight-innerHeight;r&&(r.style.width=`${e>0?scrollY/e*100:0}%`);let t=``;for(let e of a)e.getBoundingClientRect().top<innerHeight/3&&(t=e.id);for(let e of i)e.classList.toggle(`on`,e.dataset.sec===t)}addEventListener(`scroll`,o,{passive:!0}),o();var s=document.querySelector(`.nav-menu`),c=document.getElementById(`nav-drawer`);function l(e){c&&s&&(c.hidden=!e,s.setAttribute(`aria-expanded`,String(e)))}s?.addEventListener(`click`,()=>l(c?.hidden===!0)),document.addEventListener(`click`,e=>{let t=e.target;c&&!c.hidden&&t instanceof Node&&!c.contains(t)&&!s?.contains(t)&&l(!1)});var u=new IntersectionObserver(e=>{for(let t of e)t.isIntersecting&&(t.target.classList.add(`in`),u.unobserve(t.target))},{threshold:.1});for(let e of document.querySelectorAll(`.reveal`))u.observe(e);var d=5;for(let n of document.querySelectorAll(`.card.tilt`))n.addEventListener(`pointermove`,r=>{if(t)return;let i=n.getBoundingClientRect(),a=(r.clientX-i.left)/i.width-e,o=(r.clientY-i.top)/i.height-e;n.style.transform=`perspective(1000px) rotateY(${a*d}deg) rotateX(${-o*d}deg) translateZ(0)`}),n.addEventListener(`pointerleave`,()=>{n.style.transform=``});for(let e of document.querySelectorAll(`pre`))e.tabIndex=0;var f=document.getElementById(`lightbox`),p=f?.querySelector(`img`);function m(){f?.classList.remove(`open`),f?.setAttribute(`aria-hidden`,`true`)}document.addEventListener(`click`,e=>{let t=e.target instanceof Element?e.target:null,n=t?.closest(`img.zoom`);n&&f&&p?(e.preventDefault(),p.src=n.currentSrc||n.src,p.alt=n.alt,f.classList.add(`open`),f.setAttribute(`aria-hidden`,`false`)):t?.closest(`#lightbox`)&&m()}),globalThis.addEventListener(`keydown`,e=>{e.key===`Escape`&&(m(),l(!1))});</script>
+    <script src="/search.js" defer></script>
+  </body>
+</html>

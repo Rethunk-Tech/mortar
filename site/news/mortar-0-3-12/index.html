@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="darkreader-lock">
+    <meta name="referrer" content="no-referrer">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#111114">
+    
+    <title>Mortar 0.3.12: Problems on one page, Mortar in your language</title>
+    <meta name="description" content="Every problem section on one page with one button for each fix, Mortar open for translation with a Display language setting, a Graphics setting on Linux, a faster start, and a mod made by hand installs from its zip.">
+    <link rel="canonical" href="https://mortar.rethunk.tech/news/mortar-0-3-12/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mortar">
+    <meta property="og:url" content="https://mortar.rethunk.tech/news/mortar-0-3-12/">
+    <meta property="og:title" content="Mortar 0.3.12: Problems on one page, Mortar in your language">
+    <meta property="og:description" content="Every problem section on one page with one button for each fix, Mortar open for translation with a Display language setting, a Graphics setting on Linux, a faster start, and a mod made by hand installs from its zip.">
+    <meta property="og:image" content="https://mortar.rethunk.tech/og/news/mortar-0-3-12.png?v=0.3.13">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="alternate" type="application/rss+xml" title="Mortar news" href="https://mortar.rethunk.tech/news/rss.xml">
+    <link rel="alternate" type="application/atom+xml" title="Mortar releases" href="https://mortar.rethunk.tech/changelog/feed.xml">
+    <!-- Body and heading text arrive before first paint, so the page does not shift when they swap in. -->
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-400-normal.FfmJh7DR.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/_astro/atkinson-hyperlegible-next-latin-800-normal.D32lleIF.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="icon" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
+    <link rel="sitemap" href="/sitemap-index.xml">
+    <script async src="https://plausible.io/js/pa-Q6uQ-Ve40xbXZhAAHIlnr.js"></script>
+    <!-- Plausible's queue: calls made before its script loads wait in plausible.q, and init's options in plausible.o. -->
+    <script>
+      {
+        const p =
+          globalThis.plausible ||
+          ((...args) => {
+            p.q = p.q || []
+            p.q.push(args)
+          })
+        p.init =
+          p.init ||
+          ((options) => {
+            p.o = options || {}
+          })
+        globalThis.plausible = p
+        // A share link carries the whole profile after the #, and its Open in Mortar link carries it in a mortar://
+        // address that Plausible would report as an outbound click; that click has its own event instead.
+        p.init({
+          transformRequest: (request) =>
+            String(request.p?.url ?? '').startsWith('mortar:') ? null : { ...request, u: request.u.split('#')[0] },
+        })
+      }
+    </script>
+    <script>document.documentElement.classList.remove('no-js')</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Mortar","applicationCategory":"GameApplication","operatingSystem":"Windows, Linux","softwareVersion":"0.3.13","url":"https://mortar.rethunk.tech/","downloadUrl":"https://mortar.rethunk.tech/download/","license":"https://www.gnu.org/licenses/agpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Mortar","item":"https://mortar.rethunk.tech/"},{"@type":"ListItem","position":2,"name":"News","item":"https://mortar.rethunk.tech/news/"},{"@type":"ListItem","position":3,"name":"Problems on one page, Mortar in your language","item":"https://mortar.rethunk.tech/news/mortar-0-3-12/"}]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Problems on one page, Mortar in your language","description":"Every problem section on one page with one button for each fix, Mortar open for translation with a Display language setting, a Graphics setting on Linux, a faster start, and a mod made by hand installs from its zip.","datePublished":"2026-10-22T00:00:00.000Z","url":"https://mortar.rethunk.tech/news/mortar-0-3-12/","author":{"@type":"Organization","name":"Rethunk.Tech","url":"https://we.rethunk.tech/"}}</script>
+    
+  <link rel="stylesheet" href="/_astro/page-lists.CjCmpW7e.css">
+<style>.highlights[data-astro-cid-hqq7p32a]{grid-template-columns:repeat(auto-fill,minmax(min(100%,24rem),24rem));gap:16px;width:max(100%,min(72rem + 32px,100vw - 64px));margin-bottom:24px;display:grid}figure[data-astro-cid-hqq7p32a]{background:var(--raised);border:1px solid var(--line);border-radius:14px;margin:0;overflow:hidden}figure[data-astro-cid-hqq7p32a] img[data-astro-cid-hqq7p32a]{aspect-ratio:16/10;object-fit:cover;object-position:top left;border:0;border-radius:0}figcaption[data-astro-cid-hqq7p32a]{color:var(--dim);gap:4px;padding:14px 16px;font-size:15px;display:grid}figcaption[data-astro-cid-hqq7p32a] b[data-astro-cid-hqq7p32a]{color:var(--ink)}.area[data-astro-cid-hqq7p32a]{letter-spacing:.08em;text-transform:uppercase;color:var(--sand);font-size:12px;font-weight:700}
+</style>
+<link rel="stylesheet" href="/_astro/Base.BBQBtV-n.css"></head>
+  <body id="top">
+    <a class="skip" href="#main">Skip to content</a>
+    <nav class="nav" aria-label="Main">
+  <div class="progress" id="progress"></div>
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/img/icon-192.png" width="30" height="30" alt="">Mortar</a>
+    <div class="links">
+      <a href="/games/" data-sec="games">
+            Games
+          </a><a href="/#features" data-sec="features">
+            Features
+          </a><a href="/news/" data-sec="news" aria-current="page">
+            News
+          </a><a href="/why/" data-sec="compare">
+            Compare
+          </a><a href="/guide/">
+            Guide
+          </a><a href="/faq/">
+            FAQ
+          </a>
+    </div>
+    <span class="tools">
+      <button type="button" class="nav-search" aria-label="Search" aria-keyshortcuts="Control+K Meta+K">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      </button>
+      <a class="optional" href="https://github.com/Rethunk-Tech/mortar" title="GitHub">
+            <svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg>
+            <span class="visually-hidden">GitHub</span>
+          </a><a class="optional" href="https://discord.gg/TfecaTm8J2" title="Discord">
+            <svg aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg>
+            <span class="visually-hidden">Discord</span>
+          </a>
+      <button type="button" class="nav-menu" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+    </span>
+    <a class="btn primary" href="/download/">Download</a>
+  </div>
+  <div class="nav-drawer" id="nav-drawer" hidden>
+    <a href="/games/">Games</a><a href="/#features">Features</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/guide/">Guide</a><a href="/faq/">FAQ</a>
+    <a href="https://github.com/Rethunk-Tech/mortar">GitHub</a><a href="https://discord.gg/TfecaTm8J2">Discord</a>
+    <a href="/download/">Download</a>
+  </div>
+</nav>
+    
+    <main id="main" data-pagefind-body>
+      
+  <header class="wrap pagehead">
+    <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore="true">
+          <a href="/">Mortar</a>
+          
+               › 
+              <a href="/news/">News</a>
+            
+        </nav>
+    <p class="kicker">Mortar 0.3.12 · October 22, 2026</p>
+    <h1>Problems on one page, Mortar in your language</h1>
+    <p class="lede">Every problem section on one page with one button for each fix, Mortar open for translation with a Display language setting, a Graphics setting on Linux, a faster start, and a mod made by hand installs from its zip.</p>
+    
+  </header>
+  <div class="wrap pagebody">
+    <div class="prose">
+      <div class="highlights" data-astro-cid-hqq7p32a>
+        <figure data-astro-cid-hqq7p32a>
+            <img class="zoom" src="/img/problems.webp" alt="One page, one button each" width="1280" height="800" loading="lazy" data-astro-cid-hqq7p32a>
+            <figcaption data-astro-cid-hqq7p32a>
+              <span class="area" data-astro-cid-hqq7p32a>Problems</span>
+              <b data-astro-cid-hqq7p32a>One page, one button each</b>
+              Every section is on one page; each problem has its suggested fix on one button, the other fixes in its menu, and Why? beside it.
+            </figcaption>
+          </figure><figure data-astro-cid-hqq7p32a>
+            <img class="zoom" src="/img/language.webp" alt="Display language" width="1280" height="800" loading="lazy" data-astro-cid-hqq7p32a>
+            <figcaption data-astro-cid-hqq7p32a>
+              <span class="area" data-astro-cid-hqq7p32a>Languages</span>
+              <b data-astro-cid-hqq7p32a>Display language</b>
+              Mortar follows the system language, and Settings lists a language once part of it is translated. Help translate Mortar opens the project on Weblate.
+            </figcaption>
+          </figure><figure data-astro-cid-hqq7p32a>
+            <img class="zoom" src="/img/graphics.webp" alt="Graphics" width="1280" height="800" loading="lazy" data-astro-cid-hqq7p32a>
+            <figcaption data-astro-cid-hqq7p32a>
+              <span class="area" data-astro-cid-hqq7p32a>Linux</span>
+              <b data-astro-cid-hqq7p32a>Graphics</b>
+              Smoother scrolling for computers where scrolling is slow or the fans spin up, and Compatible for a window that stays blank.
+            </figcaption>
+          </figure>
+      </div><h2 data-astro-cid-hqq7p32a>What changed in 0.3.12</h2><div class="notes" data-astro-cid-hqq7p32a>        <h3>New</h3>
+        <h4>Languages</h4>
+        <ul>
+        <li>Mortar is open for translation on Hosted Weblate; Spanish (with Argentina and Panama variants) and Brazilian Portuguese are under way</li>
+        <li>Settings › General › Language lists a language once part of it is translated, with how much is done; following the system language switches only to a language that is mostly translated</li>
+        <li>The tray menu, desktop notifications, file dialogs and startup messages follow the language too</li>
+        <li>Help translate Mortar, beside the Language setting and in the guide, opens the project on Weblate</li>
+        </ul>
+        <h4>Linux</h4>
+        <ul>
+        <li>Graphics in Settings › Appearance: Smoother scrolling for computers where scrolling is slow or the fans spin up in Mortar, as on some graphics cards, and Compatible for a window that stays blank</li>
+        </ul>
+        <h4>Problems</h4>
+        <ul>
+        <li>Every section is on one page, each with its count; Slow startup, Redundant, Cleanup, Replaced and Dismissed are links under the list</li>
+        <li>Each problem has one button for its suggested fix, with the other fixes and Dismiss in its menu, and Why? beside it</li>
+        </ul>
+        <h4>Faster</h4>
+        <ul>
+        <li>Mortar starts with far less work drawing the Mods page</li>
+        <li>Switching a mod on or off rechecks problems sooner, Load order shows dependency names without waiting, and Settings › Storage sizes the data folder in about half the time</li>
+        <li>Searching every mod&#39;s settings on the Config page answers in a fraction of the time, most of all for BepInEx games</li>
+        <li>Selecting a mod, opening Settings, the Console and the title bar menus do far less redrawing, and a large profile&#39;s problem check after a switch takes a fraction of the time</li>
+        <li>The first problem check after Mortar starts takes about a quarter less time, game settings open without waiting on GitHub each time, the loader&#39;s state shows at once on start, and the Config tab&#39;s search filters once you pause typing</li>
+        </ul>
+        <h4>Wording</h4>
+        <ul>
+        <li>One word for each thing throughout: Enable and Disable everywhere, and &#34;cannot&#34; rather than &#34;can&#39;t&#34;</li>
+        <li>Error messages that said the same thing in different words now use one headline</li>
+        <li>Settings descriptions that only repeated their setting&#39;s name are gone</li>
+        </ul>
+        <h4>Play</h4>
+        <ul>
+        <li>**Launch options…** in the menu beside Play opens the profile&#39;s own launch arguments, command prefix and environment variables</li>
+        </ul>
+        <h4>Mods list</h4>
+        <ul>
+        <li>The list&#39;s columns follow each mod&#39;s own source and loader: Latest, Released, Updated, Rating and Downloads come from Nexus or Thunderstore, whichever the mod is from, and the id column shows a BepInEx plugin&#39;s GUID or a SMAPI mod&#39;s UniqueID under that name</li>
+        <li>A mod from GitHub shows its latest release, when its installed release came out and its downloads, once Mortar has checked it for updates</li>
+        <li>BepInEx games add Kind (plugin, patcher, library or files only) and Plugin version</li>
+        <li>The column menu is grouped: the mod, its versions, its health, its place in the profile, then its source</li>
+        </ul>
+        <h4>Browse</h4>
+        <ul>
+        <li>GitHub search finds mods under every topic their authors use: Lethal Company searches five topics instead of one (338 repositories instead of 122), Stardew Valley and Vintage Story three each</li>
+        <li>Searching for an author or organisation, such as LethalCompanyModding, lists their GitHub mods too</li>
+        </ul>
+        <h3>Fixed</h3>
+        <ul>
+        <li>Skip the intro for Stardew Valley skips it: the Mortar SMAPI Bridge 0.2.9 that reads the setting now comes with every profile</li>
+        <li>A problem the Console shows for a run, such as a newer copy of a mod you are building loading in place of the installed one, has Dismiss; it stays dismissed in later runs until you choose Restore</li>
+        <li>The Console keeps your place while you read back through the log; new lines scroll it only when it is at the bottom, and dragging its scroll bar keeps up</li>
+        <li>A Nexus download of a BepInEx or MelonLoader mod that is only its DLL installs again; it was refused as an optional file of another mod</li>
+        <li>Add to group no longer shows &#34;Something went wrong in this view&#34; when the profile already has a group</li>
+        <li>Opening a mod&#39;s details in Browse keeps that mod on screen instead of jumping to another page</li>
+        <li>Browse&#39;s list view shows each mod&#39;s picture again; it had shrunk to a sliver under the star, which covered the name&#39;s first letter</li>
+        <li>Importing an r2modman profile brings a mod you added to it by hand as a local mod, instead of calling it removed from Nexus with a page link that does not exist</li>
+        <li>The What&#39;s new and sync dialogs close with Close</li>
+        <li>Adding a mod&#39;s zip that does not say who made it installs it, by Unknown as r2modman names it, instead of refusing it</li>
+        <li>A mod zipped inside its own folder, such as a suit pack with no DLL, installs as its package instead of asking for a mod folder</li>
+        <li>A mod added from a file shows its own icon.png when no site gives it a picture</li>
+        <li>A mod picture with a transparent background shows the card behind it on the Mods tab, as it does in Browse, instead of a coloured square</li>
+        <li>Animated mod pictures (GIF, animated PNG and WebP) play instead of stopping on their first frame</li>
+        <li>Creating a profile while Mortar is adding SMAPI&#39;s own mods to every profile no longer fails</li>
+        <li>A controller used in another game no longer controls Mortar in the background: pressing Start to pause that game used to start the open profile&#39;s game</li>
+        <li>The extra mods folder lists BepInEx and other Thunderstore games&#39; mods, and a C# project&#39;s build folder as one mod, instead of asking each for a SMAPI UniqueID</li>
+        <li>A mod added from an extra mods folder is installed again whenever its folder changes, so a mod you are building stays current in the open profile</li>
+        <li>Importing a Vortex or Mod Organizer 2 profile for a game other than Stardew Valley names each mod from its own package or plugin instead of showing it blank</li>
+        <li>A BepInEx or MelonLoader game no longer offers Import from the game&#39;s Mods folder, shows new folders from it on the Mods tab or watches it, which only a Stardew Valley install has</li>
+        <li>The Cleanup list in Settings › Storage and the archive preview name BepInEx, MelonLoader and other Thunderstore mods, and group copies of one package, instead of showing them blank; the Downloads watcher names a Thunderstore zip by its package</li>
+        <li>An archive Mortar cannot install for a BepInEx, MelonLoader or other non-Stardew game is refused with words that say what Mortar expected, instead of &#34;No SMAPI mod was found&#34; or a question about a SMAPI manifest</li>
+        <li>A GitHub release installed for a BepInEx, MelonLoader or other non-Stardew game shows &#34;Could not verify its source&#34; in the queue, since there is no repository check for those games</li>
+        <li>A second Nexus file for a BepInEx, MelonLoader or other non-Stardew mod already in the profile installs as its own mod instead of asking to add it to the first</li>
+        <li>On Windows, a game that crashes stays &#34;Running&#34; until its process has fully closed, so its files are cleaned up and it no longer shows up as a second run of another profile</li>
+        <li>Stop game on Windows no longer fails with &#34;Access is denied&#34; for a game that is already closing, and a game Windows will not let Mortar end says so instead of offering Open storage settings</li>
+        </ul></div><p data-astro-cid-hqq7p32a>
+        <a href="https://github.com/Rethunk-Tech/mortar/releases/tag/v0.3.12" data-astro-cid-hqq7p32a>Downloads and checksums for 0.3.12</a> · <a href="/changelog/" data-astro-cid-hqq7p32a>Every release</a>
+      </p><div class="cta" style="margin-top:40px" data-astro-cid-hqq7p32a>
+    <a class="btn primary" href="/download/" data-astro-cid-hqq7p32a>Download Mortar</a>
+    <a class="btn ghost" href="/news/" data-astro-cid-hqq7p32a>All news</a>
+  </div>
+
+    </div>
+  </div>
+
+    </main>
+    <footer class="foot">
+<a class="totop" href="#top"><span class="visually-hidden">Back to top</span><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"></path></svg></a>
+  <div class="wrap">
+    <div class="fcta reveal">
+          <div>
+            <h2>Ready to mod?</h2>
+            <p class="dim">Free and open source. Setup takes a minute.</p>
+          </div>
+          <a class="btn primary big" href="/download/">
+            Download Mortar
+          </a>
+        </div>
+    <div class="cols">
+      <div>
+        <b class="fbrand"><img src="/img/icon-192.png" width="34" height="34" alt="">Mortar</b>
+        <p class="dim">A free, open source mod manager for Windows, Linux and the Steam Deck.</p>
+        <div class="social">
+          <a href="https://github.com/Rethunk-Tech/mortar"><span class="visually-hidden">GitHub</span><svg aria-hidden="true"><use href="/img/brands.svg#github"></use></svg></a>
+          <a href="https://discord.gg/TfecaTm8J2"><span class="visually-hidden">Discord</span><svg style="color:rgb(88, 101, 242)" aria-hidden="true"><use href="/img/brands.svg#discord"></use></svg></a>
+          <a href="/news/rss.xml"><span class="visually-hidden">News feed</span><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="#F99830" stroke-width="2.4" stroke-linecap="round"><path d="M5 11a8 8 0 0 1 8 8M5 5a14 14 0 0 1 14 14"></path><circle cx="5.5" cy="18.5" r="1.2" fill="#F99830"></circle></g></svg></a>
+        </div>
+      </div>
+      <div>
+            <b>Product</b>
+            <a href="/download/">Download</a><a href="/games/">Games</a><a href="/sources/">Mod sites</a><a href="/news/">News</a><a href="/why/">Compare</a><a href="/changelog/">Changelog</a>
+          </div><div>
+            <b>Help</b>
+            <a href="/guide/">Guide</a><a href="/faq/">FAQ</a><a href="https://discord.gg/TfecaTm8J2">Discord</a><a href="/go/bug-reports/">Report a bug</a>
+          </div><div>
+            <b>Project</b>
+            <a href="/mission/">Mission</a><a href="https://github.com/Rethunk-Tech/mortar">Source code</a><a href="https://hosted.weblate.org/projects/mortar/">Help translate</a><a href="/extension/">Browser extension</a><a href="/code-signing/">Code signing</a><a href="/privacy/">Privacy</a>
+          </div>
+    </div>
+    <div class="fbar">
+      <span><a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0</a> · Version 0.3.13</span>
+      <span>Mortar by <a href="https://we.rethunk.tech/">Rethunk.Tech</a>. Not affiliated with any game developer or mod site.</span>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+    <div class="lightbox" id="lightbox" aria-hidden="true"><img alt=""></div>
+    <script type="module">var e=.5,t=matchMedia(`(prefers-reduced-motion: reduce)`).matches,n=document.querySelector(`.nav`),r=document.getElementById(`progress`),i=[...document.querySelectorAll(`.nav .links a[data-sec]`)],a=i.flatMap(e=>document.getElementById(e.dataset.sec??``)??[]);function o(){n?.classList.toggle(`scrolled`,scrollY>10);let e=document.documentElement.scrollHeight-innerHeight;r&&(r.style.width=`${e>0?scrollY/e*100:0}%`);let t=``;for(let e of a)e.getBoundingClientRect().top<innerHeight/3&&(t=e.id);for(let e of i)e.classList.toggle(`on`,e.dataset.sec===t)}addEventListener(`scroll`,o,{passive:!0}),o();var s=document.querySelector(`.nav-menu`),c=document.getElementById(`nav-drawer`);function l(e){c&&s&&(c.hidden=!e,s.setAttribute(`aria-expanded`,String(e)))}s?.addEventListener(`click`,()=>l(c?.hidden===!0)),document.addEventListener(`click`,e=>{let t=e.target;c&&!c.hidden&&t instanceof Node&&!c.contains(t)&&!s?.contains(t)&&l(!1)});var u=new IntersectionObserver(e=>{for(let t of e)t.isIntersecting&&(t.target.classList.add(`in`),u.unobserve(t.target))},{threshold:.1});for(let e of document.querySelectorAll(`.reveal`))u.observe(e);var d=5;for(let n of document.querySelectorAll(`.card.tilt`))n.addEventListener(`pointermove`,r=>{if(t)return;let i=n.getBoundingClientRect(),a=(r.clientX-i.left)/i.width-e,o=(r.clientY-i.top)/i.height-e;n.style.transform=`perspective(1000px) rotateY(${a*d}deg) rotateX(${-o*d}deg) translateZ(0)`}),n.addEventListener(`pointerleave`,()=>{n.style.transform=``});for(let e of document.querySelectorAll(`pre`))e.tabIndex=0;var f=document.getElementById(`lightbox`),p=f?.querySelector(`img`);function m(){f?.classList.remove(`open`),f?.setAttribute(`aria-hidden`,`true`)}document.addEventListener(`click`,e=>{let t=e.target instanceof Element?e.target:null,n=t?.closest(`img.zoom`);n&&f&&p?(e.preventDefault(),p.src=n.currentSrc||n.src,p.alt=n.alt,f.classList.add(`open`),f.setAttribute(`aria-hidden`,`false`)):t?.closest(`#lightbox`)&&m()}),globalThis.addEventListener(`keydown`,e=>{e.key===`Escape`&&(m(),l(!1))});</script>
+    <script src="/search.js" defer></script>
+  </body>
+</html>

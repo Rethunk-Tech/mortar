@@ -1,0 +1,1 @@
+deb [signed-by=/usr/share/keyrings/mortar-archive-keyring.gpg] https://mortar.rethunk.tech/packages/deb stable main
