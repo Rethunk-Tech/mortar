@@ -3,6 +3,7 @@ package gmcm
 import (
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -91,7 +92,7 @@ func coerceValue(opt Option, raw string) (any, error) {
 			n = float64(i)
 		} else {
 			f, err := strconv.ParseFloat(raw, 64)
-			if err != nil {
+			if err != nil || math.IsNaN(f) || math.IsInf(f, 0) {
 				return nil, errors.New("not a number")
 			}
 			n = f

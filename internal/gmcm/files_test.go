@@ -173,3 +173,14 @@ func TestReadsTheBridgeFixtures(t *testing.T) {
 		t.Fatalf("edit = %+v, %v", edit, err)
 	}
 }
+
+// A float the pending file cannot hold as JSON is refused as not a number, not left to fail the write.
+func TestEditFromCaptureRefusesNonFiniteFloats(t *testing.T) {
+	t.Parallel()
+	menu := Capture{Pages: []Page{{Options: []Option{{Index: 1, Kind: "float", Name: "Speed", Editable: true}}}}}
+	for _, raw := range []string{"NaN", "Inf", "-Infinity"} {
+		if edit, err := EditFromCapture(menu, "", 1, raw); err == nil {
+			t.Errorf("%s accepted: %+v", raw, edit)
+		}
+	}
+}
