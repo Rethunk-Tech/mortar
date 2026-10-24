@@ -111,6 +111,7 @@ function LaunchLine({
   return (
     <>
       <Typography
+        component="h2"
         sx={{ fontSize: 22, fontWeight: 700 }}
       >{t`One step in ${{ launcher: STEAM }}`}</Typography>
       <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>
@@ -407,7 +408,7 @@ export function LoaderStep({
   }
   return (
     <Panel width={680}>
-      <Typography sx={{ fontSize: 22, fontWeight: 700 }}>
+      <Typography component="h2" sx={{ fontSize: 22, fontWeight: 700 }}>
         {latest ? t`Installing ${loader} ${latest}` : t`Installing ${loader}`}
       </Typography>
       <Typography sx={{ fontSize: 15, lineHeight: 1.5 }}>{introText()}</Typography>

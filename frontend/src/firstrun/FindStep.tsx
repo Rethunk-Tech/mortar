@@ -61,6 +61,7 @@ function Hero({ game, dim }: { game: GameInfo; dim?: boolean }) {
         />
       ) : null}
       <Typography
+        component="h2"
         title={game.name}
         sx={{ position: 'relative', fontSize: 34, fontWeight: 600, textShadow: shadow }}
         noWrap={true}

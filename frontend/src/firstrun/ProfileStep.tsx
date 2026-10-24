@@ -52,7 +52,10 @@ function ManagerImportCard({ game }: { game: GameId }) {
       <Box sx={{ color: 'var(--mortar-accent-ink)', display: 'flex' }}>
         <Download size={28} />
       </Box>
-      <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{t`From another mod manager`}</Typography>
+      <Typography
+        component="h3"
+        sx={{ fontSize: 18, fontWeight: 700 }}
+      >{t`From another mod manager`}</Typography>
       <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
         {`${t`${plural({ count: found }, { one: '# profile from another mod manager is', other: '# profiles from other mod managers are' })} on this computer.`} ${plural({ count: found }, { one: 'Its mods download from their own sites.', other: 'Their mods download from their own sites.' })}`}
       </Typography>
@@ -104,7 +107,7 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
         gap: space.pad,
       }}
     >
-      <Typography sx={{ textAlign: 'center', fontSize: 24, fontWeight: 700 }}>
+      <Typography component="h2" sx={{ textAlign: 'center', fontSize: 24, fontWeight: 700 }}>
         {t`Make your first profile`}
       </Typography>
       <Box
@@ -120,7 +123,7 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
             <Box sx={{ color: 'var(--mortar-accent-ink)', display: 'flex' }}>
               <FolderInput size={28} />
             </Box>
-            <Typography sx={{ fontSize: 18, fontWeight: 700 }}>
+            <Typography component="h3" sx={{ fontSize: 18, fontWeight: 700 }}>
               {t`Import from the game's Mods folder`}
             </Typography>
             <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
@@ -144,7 +147,10 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
           <Box sx={{ color: 'var(--mortar-accent-ink)', display: 'flex' }}>
             <Plus size={28} />
           </Box>
-          <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{t`Start empty`}</Typography>
+          <Typography
+            component="h3"
+            sx={{ fontSize: 18, fontWeight: 700 }}
+          >{t`Start empty`}</Typography>
           <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
             {loader
               ? t`A profile with only ${loader}. Add mods from ${{ source: site }} or from archives.`
@@ -184,7 +190,10 @@ export function ProfileStep({ game, site }: { game: GameId; site: string }) {
           <Box sx={{ color: 'var(--mortar-accent-ink)', display: 'flex' }}>
             <Link2 size={28} />
           </Box>
-          <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{t`From a shared link`}</Typography>
+          <Typography
+            component="h3"
+            sx={{ fontSize: 18, fontWeight: 700 }}
+          >{t`From a shared link`}</Typography>
           <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
             {t`Got a Mortar link? You see what it holds first. ${{ source: sourceLabel('nexus') }} mods need your ${{ source: sourceLabel('nexus') }} sign-in; Mortar asks then.`}
           </Typography>
