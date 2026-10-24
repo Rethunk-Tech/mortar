@@ -1316,7 +1316,7 @@ msgstr ""
 
 #: src/mods/columnLabel.ts
 #: src/mods/ModDisplayEdit.tsx
-#: src/mods/Sidebar.tsx
+#: src/mods/ModSections.tsx
 msgid "Version"
 msgstr ""
 
@@ -1575,7 +1575,7 @@ msgid "Unknown source"
 msgstr ""
 
 #: src/mods/ModMenu.tsx
-#: src/mods/ModUpdateControls.tsx
+#: src/mods/ModSections.tsx
 #: src/mods/SelectionBarActions.tsx
 #: src/mods/updateReview/UpdateActions.tsx
 msgid "Pin this version"
@@ -1857,10 +1857,6 @@ msgstr ""
 
 #: src/mods/problemWhy.ts
 msgid "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
-msgstr ""
-
-#: src/mods/ModSections.tsx
-msgid "Versions"
 msgstr ""
 
 #: src/mods/NexusAccountActions.tsx
@@ -3109,7 +3105,7 @@ msgid "{count, plural, one {# update for {profile}} other {# updates for {profil
 msgstr ""
 
 #: src/mods/ModMenu.tsx
-#: src/mods/ModUpdateControls.tsx
+#: src/mods/ModSections.tsx
 #: src/mods/SelectionBarActions.tsx
 #: src/mods/updateReview/UpdateActions.tsx
 msgid "Unpin version"
@@ -3155,7 +3151,7 @@ msgstr ""
 msgid "Delete file"
 msgstr ""
 
-#: src/mods/ModUpdateControls.tsx
+#: src/mods/ModSections.tsx
 msgid "Pinned: Mortar offers no update for this mod until you unpin it."
 msgstr ""
 
@@ -3224,7 +3220,7 @@ msgstr ""
 msgid "Could not unfreeze the profile"
 msgstr ""
 
-#: src/mods/ModUpdateControls.tsx
+#: src/mods/ModSections.tsx
 msgid "Mortar stops offering updates for this mod and keeps the version you have."
 msgstr ""
 

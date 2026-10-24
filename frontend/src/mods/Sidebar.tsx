@@ -49,8 +49,7 @@ import {
 import { ModDependencyTree } from './ModDependencyTree.tsx'
 import { ModDisplayEdit } from './ModDisplayEdit.tsx'
 import { ModNoteTags } from './ModNoteTags.tsx'
-import { ModVersionsAndSettings } from './ModSections.tsx'
-import { ModUpdateControls } from './ModUpdateControls.tsx'
+import { ModSettings, ModVersion } from './ModSections.tsx'
 import { openPage } from './menu.ts'
 import { hostOf, openPageLabel } from './modActions.ts'
 import { useModFresh, useSourceLooked } from './modFresh.ts'
@@ -61,7 +60,7 @@ import { goneCaption, nexusPageMark } from './nexusMark.ts'
 import { OptionalFiles } from './OptionalFiles.tsx'
 import { OtherProfilesDialog } from './OtherProfilesDialog.tsx'
 import { usePackageChangelog } from './packageChangelog.ts'
-import { heading } from './paper.ts'
+import { heading, rowLink } from './paper.ts'
 import { LetterTile, ModSwitch, RemoveButton, ShowFilesButton } from './parts.tsx'
 import { useRequirementName } from './requirementName.ts'
 import { useMods } from './store.ts'
@@ -294,7 +293,7 @@ function ActionRows({
   const neededBy = mine?.relations.neededBy ?? []
   const optionalFor = mine?.relations.optionalFor ?? []
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+    <>
       {nexusId > 0 || githubRepo !== '' || packageChangelog !== '' ? (
         <>
           <Link component="button" onClick={() => setShowChangelog(true)} sx={rowLink}>
@@ -324,7 +323,7 @@ function ActionRows({
         label={t`Optional for (${{ count: optionalFor.length.toLocaleString(i18n.locale) }})`}
         dependents={optionalFor}
       />
-    </Box>
+    </>
   )
 }
 
@@ -366,8 +365,6 @@ function DependentRows({ label, dependents }: { label: string; dependents: reado
   )
 }
 
-const rowLink = { display: 'block', fontSize: 'medium.fontSize', textAlign: 'left' } as const
-
 // Opening or switching paints the panel's header and actions at once; the sections between follow in a render that
 // never blocks input, and a toggle or profile save re-renders them there too.
 function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
@@ -384,23 +381,32 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
   const offered = useUpdates((s) => updateFor(s.updates, mod, profile))
   return (
     <>
-      <Field label={t`Version`} value={mod.version} />
-      <UpdateBanner mod={mod} />
-      <ModUpdateControls mod={mod} entry={entry} />
-      {entry?.skipVersion && !offered ? (
-        <Button variant="outlined" onClick={() => setSkipVersion(mod, '').catch(reportUnexpected)}>
-          {t`Show skipped update`}
-        </Button>
-      ) : null}
-      {(entry?.skipSources ?? []).map((ignoredSource) => (
-        <Button
-          key={ignoredSource}
-          variant="outlined"
-          onClick={() => setSkipSource(mod, ignoredSource, false).catch(reportUnexpected)}
-        >
-          {t`Stop ignoring ${ignoredSource} updates`}
-        </Button>
-      ))}
+      <ModVersion
+        mod={mod}
+        profile={profile}
+        notices={
+          <>
+            <UpdateBanner mod={mod} />
+            {entry?.skipVersion && !offered ? (
+              <Button
+                variant="outlined"
+                onClick={() => setSkipVersion(mod, '').catch(reportUnexpected)}
+              >
+                {t`Show skipped update`}
+              </Button>
+            ) : null}
+            {(entry?.skipSources ?? []).map((ignoredSource) => (
+              <Button
+                key={ignoredSource}
+                variant="outlined"
+                onClick={() => setSkipSource(mod, ignoredSource, false).catch(reportUnexpected)}
+              >
+                {t`Stop ignoring ${ignoredSource} updates`}
+              </Button>
+            ))}
+          </>
+        }
+      />
       <Box
         sx={{
           display: 'grid',
@@ -425,14 +431,20 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
       <ProblemLine mod={mod} />
       <LastRunLine mod={mod} profile={profile} />
       <ModDependencyTree mod={mod} />
-      <ModVersionsAndSettings mod={mod} profile={profile} />
+      <ModSettings mod={mod} profile={profile} />
       <CompatDetail mod={mod} />
-      <ActionRows
-        mod={mod}
-        nexusId={nexusId}
-        githubRepo={entry?.source?.kind === 'github' ? (entry.source.repo ?? '') : ''}
-        thunderstorePackage={entry?.source?.kind === 'thunderstore' ? entry.source.name : ''}
-      />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, alignItems: 'flex-start' }}>
+        <ActionRows
+          mod={mod}
+          nexusId={nexusId}
+          githubRepo={entry?.source?.kind === 'github' ? (entry.source.repo ?? '') : ''}
+          thunderstorePackage={entry?.source?.kind === 'thunderstore' ? entry.source.name : ''}
+        />
+        <Link component="button" onClick={() => setAlsoOpen(true)} sx={rowLink}>
+          {t`Also add to…`}
+        </Link>
+        <ModDisplayEdit profile={profile} mod={mod} />
+      </Box>
       {entry?.source?.kind === 'nexus' && entry.source.modId ? (
         <Fold title={t`More from the ${{ source: sourceLabel('nexus') }} page`}>
           <NexusDetails
@@ -444,9 +456,6 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
         </Fold>
       ) : null}
       <AlsoInProfiles mod={mod} profile={profile} />
-      <Button variant="outlined" onClick={() => setAlsoOpen(true)}>
-        {t`Also add to…`}
-      </Button>
       <OtherProfilesDialog
         open={alsoOpen}
         onClose={() => setAlsoOpen(false)}
@@ -463,7 +472,6 @@ function LowerSectionsView({ mod, profile }: { mod: Mod; profile: Profile }) {
         }}
       />
       <HiddenInside mod={mod} profile={profile} />
-      <ModDisplayEdit profile={profile} mod={mod} />
       <ModNoteTags profile={profile} mod={mod} />
     </>
   )

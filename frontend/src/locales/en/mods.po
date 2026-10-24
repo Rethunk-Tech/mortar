@@ -1316,7 +1316,7 @@ msgstr "None"
 
 #: src/mods/columnLabel.ts
 #: src/mods/ModDisplayEdit.tsx
-#: src/mods/Sidebar.tsx
+#: src/mods/ModSections.tsx
 msgid "Version"
 msgstr "Version"
 
@@ -1575,7 +1575,7 @@ msgid "Unknown source"
 msgstr "Unknown source"
 
 #: src/mods/ModMenu.tsx
-#: src/mods/ModUpdateControls.tsx
+#: src/mods/ModSections.tsx
 #: src/mods/SelectionBarActions.tsx
 #: src/mods/updateReview/UpdateActions.tsx
 msgid "Pin this version"
@@ -1858,10 +1858,6 @@ msgstr "Load all changes"
 #: src/mods/problemWhy.ts
 msgid "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
 msgstr "The loader's log shows this plugin did not start, so its features are missing in the game. A wrong game version or a missing requirement is the usual cause."
-
-#: src/mods/ModSections.tsx
-msgid "Versions"
-msgstr "Versions"
 
 #: src/mods/NexusAccountActions.tsx
 msgid "Track"
@@ -3109,7 +3105,7 @@ msgid "{count, plural, one {# update for {profile}} other {# updates for {profil
 msgstr "{count, plural, one {# update for {profile}} other {# updates for {profile}}}"
 
 #: src/mods/ModMenu.tsx
-#: src/mods/ModUpdateControls.tsx
+#: src/mods/ModSections.tsx
 #: src/mods/SelectionBarActions.tsx
 #: src/mods/updateReview/UpdateActions.tsx
 msgid "Unpin version"
@@ -3155,7 +3151,7 @@ msgstr "{count, plural, one {# optional file will be re-applied; check it still 
 msgid "Delete file"
 msgstr "Delete file"
 
-#: src/mods/ModUpdateControls.tsx
+#: src/mods/ModSections.tsx
 msgid "Pinned: Mortar offers no update for this mod until you unpin it."
 msgstr "Pinned: Mortar offers no update for this mod until you unpin it."
 
@@ -3224,7 +3220,7 @@ msgstr "Order"
 msgid "Could not unfreeze the profile"
 msgstr "Could not unfreeze the profile"
 
-#: src/mods/ModUpdateControls.tsx
+#: src/mods/ModSections.tsx
 msgid "Mortar stops offering updates for this mod and keeps the version you have."
 msgstr "Mortar stops offering updates for this mod and keeps the version you have."
 

@@ -6,6 +6,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Link,
   TextField,
 } from '@mui/material'
 import { useState } from 'react'
@@ -18,6 +19,7 @@ import { useProfiles } from '../profiles/store.ts'
 import { space } from '../theme/density.ts'
 import { toastError } from '../toasts/report.ts'
 import { entryOf } from './lookup.ts'
+import { rowLink } from './paper.ts'
 import { useMods } from './store.ts'
 import { openTarget } from './storeView.ts'
 
@@ -69,9 +71,9 @@ export function ModDisplayEdit({ profile, mod }: { profile: Profile; mod: Mod })
     shown === stockValue ? '' : shown
   return (
     <>
-      <Button size="small" onClick={begin} sx={{ alignSelf: 'flex-start' }}>
+      <Link component="button" onClick={begin} sx={rowLink}>
         {t`Edit name, author and version…`}
-      </Button>
+      </Link>
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth={true} maxWidth="xs">
         <DialogTitle>{t`Edit ${{ name: mod.name }}`}</DialogTitle>
         <DialogContent dividers={true}>

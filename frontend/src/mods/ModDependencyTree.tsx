@@ -224,15 +224,14 @@ function sameNode(a: DepViewNode, b: DepViewNode): boolean {
 }
 
 const Branch = memo(function BranchView({ title, nodes }: { title: string; nodes: DepViewNode[] }) {
-  const { t } = useLingui()
   return (
     <Box>
-      <Typography sx={{ ...heading, mt: headingGap }}>{title}</Typography>
-      {nodes.length === 0 ? (
-        <Typography sx={{ fontSize: nameSize, color: 'text.secondary' }}>{t`None`}</Typography>
-      ) : (
-        nodes.map((n) => <NodeRow key={`${n.id}:${n.required}:${n.cycle}`} node={n} depth={0} />)
-      )}
+      <Typography sx={{ fontSize: nameSize, color: 'text.secondary', mt: headingGap }}>
+        {title}
+      </Typography>
+      {nodes.map((n) => (
+        <NodeRow key={`${n.id}:${n.required}:${n.cycle}`} node={n} depth={0} />
+      ))}
     </Box>
   )
 })
@@ -269,8 +268,11 @@ function TreesView({
   return (
     <Box>
       <Typography sx={heading}>{t`Dependencies`}</Typography>
-      <Branch title={t`Needs`} nodes={needs} />
-      <Branch title={t`Used by`} nodes={neededBy} />
+      {needs.length === 0 && neededBy.length === 0 ? (
+        <Typography sx={{ fontSize: nameSize, color: 'text.secondary' }}>{t`None`}</Typography>
+      ) : null}
+      {needs.length > 0 ? <Branch title={t`Needs`} nodes={needs} /> : null}
+      {neededBy.length > 0 ? <Branch title={t`Used by`} nodes={neededBy} /> : null}
     </Box>
   )
 }

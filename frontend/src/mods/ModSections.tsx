@@ -9,12 +9,14 @@ import type {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
+import { Tooltip } from '../shell/Tooltip.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
 import { ChangeVersionDialog } from './ChangeVersionDialog.tsx'
 import { useDetail } from './detail.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { entryOf, modId } from './lookup.ts'
+import { ModUpdateControls } from './ModUpdateControls.tsx'
 import { heading } from './paper.ts'
 import { useMods } from './store.ts'
 import { EditConfigButton } from './typedConfig/EditConfigButton.tsx'
@@ -41,47 +43,34 @@ export function Section({ title, children }: { title: string; children: ReactNod
 
 type Confirming = 'rollback' | 'reset' | null
 
-// The pin's reason and the earlier version kept for a rollback; the current version is the panel's own Version field.
-function Versions({
+// The installed version with what changes it: another version, the pin, a rollback and the update channel. notices
+// (an update on offer, a skipped one) sit under the version they are about.
+export function ModVersion({
   mod,
   profile,
-  state,
-  ask,
+  notices,
 }: {
   mod: Mod
   profile: Profile
-  state: ModState | undefined
-  ask: () => void
+  notices: ReactNode
 }) {
   const { t } = useLingui()
   const locked = useLocked()
+  const extras = useDetail((s) => s.extras)
+  const setPinned = useMods((s) => s.setPinned)
+  const [confirming, setConfirming] = useState<Confirming>(null)
+  const state = extras?.id === modId(mod) ? extras.state : undefined
   const entry = entryOf(profile, mod.key)
   const pinned = entry?.pinned && entry.pinReason ? entry.pinReason : ''
   const target = entry ? targetOfSource(entry.source) : null
   const [choosing, setChoosing] = useState(false)
   const game = useProfiles((s) => s.game?.id ?? '')
-  if (!(pinned || state?.previousVersion || target)) {
-    return null
-  }
   return (
-    <Section title={t`Versions`}>
-      {pinned ? (
-        <Typography sx={{ ...row, color: 'text.secondary' }}>{t`Pinned: ${pinned}`}</Typography>
-      ) : null}
-      {state?.previousVersion ? (
-        <Box sx={row}>
-          <Typography sx={{ flex: 1, ...text }}>
-            {`${state.previousVersion} · ${t`kept for rollback`}`}
-          </Typography>
-          <LockedReason locked={locked}>
-            <Button size="small" variant="outlined" disabled={locked} onClick={ask}>
-              {t`Roll back`}
-            </Button>
-          </LockedReason>
-        </Box>
-      ) : null}
-      {target && entry ? (
-        <Box sx={row}>
+    <Section title={t`Version`}>
+      <Typography sx={{ ...text, overflowWrap: 'anywhere' }}>{mod.version}</Typography>
+      {notices}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: space.gap }}>
+        {target && entry ? (
           <LockedReason locked={locked}>
             <Button
               size="small"
@@ -92,8 +81,45 @@ function Versions({
               {t`Change version…`}
             </Button>
           </LockedReason>
+        ) : null}
+        <Tooltip
+          describeChild={true}
+          title={
+            entry?.pinned
+              ? t`Pinned: Mortar offers no update for this mod until you unpin it.`
+              : t`Mortar stops offering updates for this mod and keeps the version you have.`
+          }
+        >
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => setPinned(mod, !entry?.pinned).catch(reportUnexpected)}
+          >
+            {entry?.pinned ? t`Unpin version` : t`Pin this version`}
+          </Button>
+        </Tooltip>
+      </Box>
+      {pinned ? (
+        <Typography sx={{ ...row, color: 'text.secondary' }}>{t`Pinned: ${pinned}`}</Typography>
+      ) : null}
+      {state?.previousVersion ? (
+        <Box sx={row}>
+          <Typography sx={{ flex: 1, ...text }}>
+            {`${state.previousVersion} · ${t`kept for rollback`}`}
+          </Typography>
+          <LockedReason locked={locked}>
+            <Button
+              size="small"
+              variant="outlined"
+              disabled={locked}
+              onClick={() => setConfirming('rollback')}
+            >
+              {t`Roll back`}
+            </Button>
+          </LockedReason>
         </Box>
       ) : null}
+      <ModUpdateControls mod={mod} entry={entry} />
       {choosing && target && entry ? (
         <ChangeVersionDialog
           game={game}
@@ -107,6 +133,12 @@ function Versions({
           onClose={() => setChoosing(false)}
         />
       ) : null}
+      <Confirm
+        mod={mod}
+        confirming={confirming}
+        previous={state?.previousVersion ?? ''}
+        onClose={() => setConfirming(null)}
+      />
     </Section>
   )
 }
@@ -211,19 +243,13 @@ function Confirm({
   )
 }
 
-// What the details panel adds for a mod: its earlier version, its settings file and whether either can be reset.
-export function ModVersionsAndSettings({ mod, profile }: { mod: Mod; profile: Profile }) {
+// The mod's settings file and its reset.
+export function ModSettings({ mod, profile }: { mod: Mod; profile: Profile }) {
   const extras = useDetail((s) => s.extras)
   const [confirming, setConfirming] = useState<Confirming>(null)
   const mine = extras?.id === modId(mod) ? extras : null
   return (
     <>
-      <Versions
-        mod={mod}
-        profile={profile}
-        state={mine?.state}
-        ask={() => setConfirming('rollback')}
-      />
       <Settings
         mod={mod}
         state={mine?.state}
@@ -231,12 +257,7 @@ export function ModVersionsAndSettings({ mod, profile }: { mod: Mod; profile: Pr
         isPackage={entryOf(profile, mod.key)?.package === true}
         ask={() => setConfirming('reset')}
       />
-      <Confirm
-        mod={mod}
-        confirming={confirming}
-        previous={mine?.state.previousVersion ?? ''}
-        onClose={() => setConfirming(null)}
-      />
+      <Confirm mod={mod} confirming={confirming} previous="" onClose={() => setConfirming(null)} />
     </>
   )
 }

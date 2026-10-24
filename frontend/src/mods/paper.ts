@@ -13,6 +13,9 @@ export const accent = {
   chip: tint(ACCENT_CHIP),
 }
 
+// A link that leads out of the details panel, one to a row.
+export const rowLink = { display: 'block', fontSize: 'medium.fontSize', textAlign: 'left' } as const
+
 export const heading = {
   fontSize: 'small.fontSize',
   fontWeight: 700,
