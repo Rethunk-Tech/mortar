@@ -93,7 +93,7 @@ func Shrink(b []byte, typ string, px int) ([]byte, string, error) {
 
 // scaleTmpBytes bounds the float scratch a scale passes through at once. A one-shot CatmullRom scale holds 32 bytes for
 // every pixel of the destination width times the source height: 190 MiB for a 5334x3122 banner shrunk to Hero.
-const scaleTmpBytes = 4 << 20
+var scaleTmpBytes = 4 << 20
 
 // scaleBanded is CatmullRom scaling of src into dst in two exact passes, each cut into bands that fit scaleTmpBytes:
 // the horizontal pass by rows of src into a dst-wide copy, then the vertical pass by columns of that copy into dst.

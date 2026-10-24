@@ -31,8 +31,8 @@ func TestThumbnailShrinksLargePicturesAndKeepsSmallOnes(t *testing.T) {
 		typ, wantTyp string
 		w, h         int
 	}{
-		{"wide jpeg", encode(1920, 1080, true), "image/jpeg", "image/jpeg", Thumb, Thumb * 1080 / 1920},
-		{"tall png", encode(500, 2000, false), "image/png", "image/png", Thumb * 500 / 2000, Thumb},
+		{"wide jpeg", encode(384, 216, true), "image/jpeg", "image/jpeg", Thumb, Thumb * 216 / 384},
+		{"tall png", encode(100, 400, false), "image/png", "image/png", Thumb * 100 / 400, Thumb},
 	} {
 		out, typ, err := Shrink(tc.src, tc.typ, Thumb)
 		if err != nil || typ != tc.wantTyp {
@@ -91,14 +91,18 @@ func TestAnAnimatedPictureKeepsEveryFrame(t *testing.T) {
 }
 
 func TestBandedScaleMatchesOneShotAcrossBandEdges(t *testing.T) {
-	src := image.NewNRGBA(image.Rect(0, 0, 800, 1200))
-	for y := range 1200 {
-		for x := range 800 {
+	// Bands of 41 rows and 10 columns: each pass has several, the last one shorter.
+	prev := scaleTmpBytes
+	scaleTmpBytes = 41 << 10
+	t.Cleanup(func() { scaleTmpBytes = prev })
+	src := image.NewNRGBA(image.Rect(0, 0, 80, 120))
+	for y := range 120 {
+		for x := range 80 {
 			i := src.PixOffset(x, y)
 			src.Pix[i], src.Pix[i+1], src.Pix[i+2], src.Pix[i+3] = byte(x/7&0xff), byte(y/9&0xff), byte((x+y)/30&0xff), 255
 		}
 	}
-	want := image.NewNRGBA(image.Rect(0, 0, 320, 480))
+	want := image.NewNRGBA(image.Rect(0, 0, 32, 48))
 	xdraw.CatmullRom.Scale(want, want.Bounds(), src, src.Bounds(), xdraw.Src, nil)
 	got := image.NewNRGBA(want.Bounds())
 	scaleBanded(got, src)
