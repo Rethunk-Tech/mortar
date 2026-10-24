@@ -11,6 +11,7 @@ import {
 import { i18n } from '../i18n/index.ts'
 import { listNames } from '../i18n/list.ts'
 import { download } from '../queue/actions.ts'
+import { errorDetails } from '../toasts/errorKind.ts'
 import { errorMessage, logAction } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
@@ -82,9 +83,11 @@ async function missingFromError(
   game: string,
   profileId: string,
   eventId: string,
-  message: string,
+  e: unknown,
 ): Promise<Omit<RevertOutcome, 'events'>> {
-  const listed = parseMissingStoreList(message)
+  const message = errorMessage(e)
+  // The sentence names only the error's kind; the mods are listed in Go's own text.
+  const listed = parseMissingStoreList(errorDetails(e))
   if (listed.length === 0) {
     return { error: message, ...emptyMissing }
   }
@@ -148,7 +151,7 @@ export async function revertHistoryEvent(
   } catch (e) {
     return {
       events,
-      ...(await missingFromError(game, profileId, eventId, errorMessage(e))),
+      ...(await missingFromError(game, profileId, eventId, e)),
     }
   }
 }
