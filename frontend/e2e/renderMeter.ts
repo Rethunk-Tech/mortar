@@ -85,7 +85,6 @@ type Metrics = Partial<Record<string, number>>
 
 export class Meter {
   calls = 0
-  private inflight = 0
   private lastCallAt = 0
   private readonly named = new Map<string, number>()
   private readonly started = new Map<Request, number>()
@@ -99,7 +98,6 @@ export class Meter {
     this.cdp = cdp
     const settled = (r: Request) => {
       if (new URL(r.url()).pathname.startsWith('/wails/')) {
-        this.inflight -= 1
         this.lastCallAt = Date.now()
         const what = methodOf(r.postData() ?? '')
         const ms = this.lastCallAt - (this.started.get(r) ?? this.lastCallAt)
@@ -107,11 +105,16 @@ export class Meter {
         this.worst.set(what, Math.max(ms, this.worst.get(what) ?? 0))
       }
     }
+    // A reload cancels the old document's calls, sometimes with no requestfailed, so they are not left in flight.
+    page.on('framenavigated', (frame) => {
+      if (frame === page.mainFrame()) {
+        this.started.clear()
+      }
+    })
     page.on('requestfinished', settled)
     page.on('requestfailed', settled)
     page.on('request', (r) => {
       if (new URL(r.url()).pathname.startsWith('/wails/')) {
-        this.inflight += 1
         this.calls += 1
         this.started.set(r, Date.now())
         const what = methodOf(r.postData() ?? '')
@@ -130,13 +133,17 @@ export class Meter {
       )
       const now = Date.now()
       if (
-        this.inflight === 0 &&
+        this.started.size === 0 &&
         Math.min(sinceCommit, now - this.lastCallAt, now - start) >= quietMs
       ) {
         return
       }
       await dwell(this.page, QUIET_POLL_MS)
     }
+    const open = [...this.started].map(
+      ([r, at]) => `${methodOf(r.postData() ?? '')} (${Date.now() - at} ms)`,
+    )
+    console.log(`  not still after ${maxMs} ms; calls in flight: ${open.join(', ') || 'none'}`)
   }
 
   private async metrics(): Promise<Metrics> {
