@@ -71,7 +71,7 @@ function FolderRow({
 }
 
 // A row with nothing to search or add: a launcher of another OS, or the games found outside any launcher.
-function FixedRow({ launcher }: { launcher: StoreApp }) {
+function FixedRow({ launcher, heading }: { launcher: StoreApp; heading: Heading }) {
   const { t } = useLingui()
   const { success } = useTheme().palette
   const other = Boolean(launcher.platform)
@@ -95,7 +95,7 @@ function FixedRow({ launcher }: { launcher: StoreApp }) {
         <LauncherLogo id={launcher.id} size={STATUS_ICON} />
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography component="h3" sx={{ fontSize: 17, fontWeight: 700 }}>
+        <Typography component={heading} sx={{ fontSize: 17, fontWeight: 700 }}>
           {launcher.name}
         </Typography>
         <Typography title={summary} sx={{ fontSize: 13, color: 'text.secondary' }} noWrap={true}>
@@ -115,10 +115,12 @@ function LauncherRow({
   launcher,
   refresh,
   open,
+  heading,
 }: {
   launcher: StoreApp
   refresh: () => void
   open?: boolean
+  heading: Heading
 }) {
   const { t } = useLingui()
   const { success, text } = useTheme().palette
@@ -148,7 +150,7 @@ function LauncherRow({
     }
   }
   if (fixed) {
-    return <FixedRow launcher={launcher} />
+    return <FixedRow launcher={launcher} heading={heading} />
   }
   let summary = t`Not found`
   if (launcher.found) {
@@ -178,7 +180,7 @@ function LauncherRow({
           <LauncherLogo id={launcher.id} size={STATUS_ICON} />
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography component="h3" sx={{ fontSize: 17, fontWeight: 700 }}>
+          <Typography component={heading} sx={{ fontSize: 17, fontWeight: 700 }}>
             {launcher.name}
           </Typography>
           <Typography title={summary} sx={{ fontSize: 13, color: 'text.secondary' }} noWrap={true}>
@@ -260,12 +262,18 @@ function LauncherRow({
 
 // The launchers Mortar reads, one row each. When the list is wide enough for two columns they stack independently,
 // so opening a row only pushes down the rows below it in its own column; otherwise one column in order.
+// Each launcher's name is a heading one level under the page's own: h3 below a Settings page's h2, h2 on the
+// first-run welcome screen.
+type Heading = 'h2' | 'h3'
+
 export function LauncherList({
   launchers,
   refresh,
+  heading = 'h3',
 }: {
   launchers: StoreApp[]
   refresh: () => void
+  heading?: Heading
 }) {
   const columns = [
     { side: 'left', rows: launchers.filter((_, i) => i % 2 === 0) },
@@ -289,14 +297,26 @@ export function LauncherList({
         {columns.map(({ side, rows }) => (
           <Box key={side} sx={stack}>
             {rows.map((l) => (
-              <LauncherRow key={l.id} launcher={l} refresh={refresh} open={l.id === first} />
+              <LauncherRow
+                key={l.id}
+                launcher={l}
+                refresh={refresh}
+                open={l.id === first}
+                heading={heading}
+              />
             ))}
           </Box>
         ))}
       </Box>
       <Box sx={{ ...stack, [`@container (min-width: ${2 * COLUMN_MIN}px)`]: { display: 'none' } }}>
         {launchers.map((l) => (
-          <LauncherRow key={l.id} launcher={l} refresh={refresh} open={l.id === first} />
+          <LauncherRow
+            key={l.id}
+            launcher={l}
+            refresh={refresh}
+            open={l.id === first}
+            heading={heading}
+          />
         ))}
       </Box>
     </Box>

@@ -85,7 +85,7 @@ export function FirstRun() {
         </Typography>
       </Box>
       <Box sx={{ width: 'min(1200px, 100%)' }}>
-        <LauncherList launchers={launchers} refresh={refresh} />
+        <LauncherList launchers={launchers} refresh={refresh} heading="h2" />
       </Box>
       <Box
         sx={{
