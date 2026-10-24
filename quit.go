@@ -141,6 +141,9 @@ func (s *QuitService) WatchSignals() {
 	}()
 }
 
+// watchdogPoll is how often the watchdog looks again while an install holds off the exit.
+var watchdogPoll = 100 * time.Millisecond
+
 // armWatchdog exits the process quitGrace after the first quit request unless the graceful path got there first,
 // holding off while an install runs.
 func (s *QuitService) armWatchdog() {
@@ -148,7 +151,7 @@ func (s *QuitService) armWatchdog() {
 		go func() {
 			time.Sleep(s.grace)
 			for s.busy() {
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(watchdogPoll)
 			}
 			log.Printf("quit: graceful shutdown took over %s; finishing it directly", s.grace)
 			s.finish()

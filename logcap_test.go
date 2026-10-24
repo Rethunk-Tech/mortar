@@ -68,15 +68,16 @@ func TestCappedLogReadsAsCleanShutdown(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	lg := slog.New(slog.NewTextHandler(&cappedWriter{w: f, left: maxLogBytes}, nil))
+	const limit = 4 << 10
+	lg := slog.New(slog.NewTextHandler(&cappedWriter{w: f, left: limit}, nil))
 	pad := strings.Repeat("x", 200)
-	for range maxLogBytes/250 + 10 {
+	for range limit/250 + 10 {
 		lg.Info("control: install stardew p", "pad", pad)
 	}
 	lg.Info("shutdown", "clean", true)
 	_ = f.Close()
 	if support.DetectLastRunCrashed(dir) {
-		t.Errorf("clean shutdown after %d MB of log was reported as a crash", maxLogBytes>>20)
+		t.Errorf("clean shutdown after a capped log was reported as a crash")
 	}
 }
 

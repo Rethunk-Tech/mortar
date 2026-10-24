@@ -7,6 +7,9 @@ import (
 )
 
 func TestWatchdogExitsOnceAfterGraceAndWaitsForInstalls(t *testing.T) {
+	prev := watchdogPoll
+	watchdogPoll = time.Millisecond
+	t.Cleanup(func() { watchdogPoll = prev })
 	var installing atomic.Bool
 	installing.Store(true)
 	finished := make(chan struct{}, 2)
@@ -22,7 +25,7 @@ func TestWatchdogExitsOnceAfterGraceAndWaitsForInstalls(t *testing.T) {
 	select {
 	case <-exited:
 		t.Fatal("exited while an install was running")
-	case <-time.After(150 * time.Millisecond):
+	case <-time.After(50 * time.Millisecond):
 	}
 	installing.Store(false)
 	select {
@@ -36,7 +39,7 @@ func TestWatchdogExitsOnceAfterGraceAndWaitsForInstalls(t *testing.T) {
 	select {
 	case <-exited:
 		t.Fatal("armed twice")
-	case <-time.After(100 * time.Millisecond):
+	case <-time.After(30 * time.Millisecond):
 	}
 }
 
