@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
-  IconButton,
   Menu,
   Radio,
   RadioGroup,
@@ -20,8 +19,8 @@ import { routeGame, useNav } from '../nav/store.ts'
 import type { PlayPreset } from '../profiles/profilePresets.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
-import { Tooltip } from '../shell/Tooltip.tsx'
 import { PLAY_HEIGHT_PX } from './playHeight.ts'
 import { playMenuEntries } from './playMenu.ts'
 import { playVanillaOpen, rememberLinuxVanillaDirect, useVanillaPrompt } from './playOpen.ts'
@@ -50,29 +49,25 @@ function PlayButtons({
 }) {
   const { t } = useLingui()
   return rail ? (
-    // The button carries its own name; a plain span may not take the label Tooltip would give it.
-    <Tooltip title={label} describeChild={true}>
-      <span style={{ display: 'flex' }}>
-        <IconButton
-          aria-label={label}
-          title={label}
-          disabled={playDisabled}
-          onClick={onPlay}
-          onContextMenu={onContext}
-          sx={{
-            display: 'flex',
-            width: '100%',
-            height: PLAY_HEIGHT_PX,
-            borderRadius: 0,
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
-            '&:hover': { bgcolor: 'primary.dark' },
-          }}
-        >
-          <Play size={28} fill="currentColor" />
-        </IconButton>
-      </span>
-    </Tooltip>
+    <TipIconButton
+      label={label}
+      size="medium"
+      fill={true}
+      disabled={playDisabled}
+      onClick={onPlay}
+      onContextMenu={onContext}
+      sx={{
+        display: 'flex',
+        width: '100%',
+        height: PLAY_HEIGHT_PX,
+        borderRadius: 0,
+        bgcolor: 'primary.main',
+        color: 'primary.contrastText',
+        '&:hover': { bgcolor: 'primary.dark' },
+      }}
+    >
+      <Play size={28} fill="currentColor" />
+    </TipIconButton>
   ) : (
     <ButtonGroup
       variant="contained"

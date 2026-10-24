@@ -1,6 +1,6 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Button, IconButton, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { Square } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
@@ -15,7 +15,7 @@ import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useLoader } from '../loader/store.ts'
 import { BASE_PRESET, playPresets } from '../profiles/profilePresets.ts'
 import { openProfileOf, useProfiles } from '../profiles/store.ts'
-import { Tooltip } from '../shell/Tooltip.tsx'
+import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import { reportError } from '../toasts/report.ts'
 import { usePlayDirect } from './directPref.ts'
@@ -77,6 +77,39 @@ function playLabel(installing: string, updating: number): string {
     return plural({ count: updating }, { one: 'Updating # mod…', other: 'Updating # mods…' })
   }
   return installing ? i18n._(msg`Installing ${installing}…`) : i18n._(msg`Play`)
+}
+
+// RailStop is Stop as the narrow sidebar's full-width icon; its tooltip also says how long the game has run.
+function RailStop({
+  time,
+  stopping,
+  onStop,
+}: {
+  time: string
+  stopping: boolean
+  onStop: () => void
+}) {
+  const { t } = useLingui()
+  return (
+    <TipIconButton
+      label={t`Stop game`}
+      tip={
+        <>
+          {t`Stop game`}
+          <br />
+          {t`Running for ${time}`}
+        </>
+      }
+      size="medium"
+      fill={true}
+      color="error"
+      disabled={stopping}
+      onClick={onStop}
+      sx={{ width: '100%', height: PLAY_HEIGHT_PX, borderRadius: 0 }}
+    >
+      <Square size={24} />
+    </TipIconButton>
+  )
 }
 
 // `rail` is the narrow sidebar: Play and Stop shrink to icons.
@@ -146,20 +179,7 @@ export function PlayControl({ game, rail }: { game: string; rail: boolean }) {
             </Box>
           )}
           {rail ? (
-            <Tooltip title={t`Stop game`} describeChild={true}>
-              <span style={{ display: 'flex' }}>
-                <IconButton
-                  aria-label={t`Stop game`}
-                  title={t`Running for ${time}`}
-                  color="error"
-                  disabled={stopping}
-                  onClick={() => setConfirming(true)}
-                  sx={{ width: '100%', height: PLAY_HEIGHT_PX, borderRadius: 0 }}
-                >
-                  <Square size={24} />
-                </IconButton>
-              </span>
-            </Tooltip>
+            <RailStop time={time} stopping={stopping} onStop={() => setConfirming(true)} />
           ) : (
             <Button
               variant="contained"
