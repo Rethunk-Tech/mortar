@@ -33,7 +33,7 @@ test('Game Select lists Stardew Valley before Lethal Company', async ({ page }) 
   await expect(page.getByRole('tab', { name: 'Mods' })).toBeVisible()
 })
 
-test('Browse defaults to All sources and a search shows results from more than one source', async ({
+test('Browse defaults to All sources and a best-match search shows results from more than one source', async ({
   page,
 }, testInfo) => {
   testInfo.skip(!(await online()), 'Nexus and GitHub are not reachable from here')
@@ -43,6 +43,12 @@ test('Browse defaults to All sources and a search shows results from more than o
     'aria-pressed',
     'true',
   )
+  // The default sort, most downloaded, leaves out GitHub, which cannot rank by downloads; best match merges every site.
+  // The sort is kept in the game's settings, so it is put back for the specs after this one.
+  const sort = page.getByRole('combobox', { name: 'Sort' })
+  const chosen = ((await sort.textContent()) ?? '').trim()
+  await sort.click()
+  await page.getByRole('option', { name: 'Sort: best match' }).click()
   await page.getByLabel('Search all mod sites').fill('farm')
   // A grid card has no open-page button; each card is keyed by its source.
   await expect(page.locator('[data-hit^="nexus:"]').first()).toBeVisible({
@@ -51,6 +57,8 @@ test('Browse defaults to All sources and a search shows results from more than o
   await expect(page.locator('[data-hit^="github:"]').first()).toBeVisible({
     timeout: SEARCH_WAIT_MS,
   })
+  await sort.click()
+  await page.getByRole('option', { name: chosen, exact: true }).click()
 })
 
 test('the game title opens a switcher listing both playable games', async ({ page }) => {
