@@ -152,8 +152,13 @@ func (l Loader) Path(loader.ProfileView) (string, error) {
 	return filepath.Join(dir, "SMAPI-latest.txt"), nil
 }
 
-// Ready is true for the line SMAPI logs once it has loaded the mods.
-func (Loader) Ready(line string) bool { return strings.Contains(line, " SMAPI] Loaded ") }
+// Ready is true once the game's window is up: the game logs its first window resize as it opens, and the Mortar bridge
+// says when the title screen has settled. SMAPI's own "Loaded N mods" comes before any mod has run or any content has
+// loaded, a minute early on a large profile.
+func (Loader) Ready(line string) bool {
+	return strings.Contains(line, " game] Window_ClientSizeChanged()") ||
+		strings.Contains(line, " Mortar SMAPI Bridge] Title screen reached.")
+}
 
 // modLoading is the trace line SMAPI writes as it loads each mod: its name, then where it loads it from.
 var modLoading = regexp.MustCompile(`^\[[^\]]*TRACE\s+SMAPI\]    (\S.*?) \(from `)

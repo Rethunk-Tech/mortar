@@ -59,6 +59,7 @@
           <li>The launch screen fills in as the launcher, the game and its loader come up, and stays until the mods have loaded</li>
           <li>A slow launch says so with Keep waiting, gives up only after five minutes, and Cancel stops a launch at any step</li>
           <li>A launch waiting on Steam can open Steam's window</li>
+          <li>For Stardew Valley the launch screen stays until the game's window opens, not just until SMAPI has found the mods</li>
           <li>Change version lists each version with its release date, marks Latest and Installed, and names the version it installs</li>
           <li>The details panel keeps a mod's version and what changes it in one section, and leads out through one column of links</li>
           <li>Add a game starts from the game's program, takes its name and how it is modded from the game's files, and says what each loader suits</li>

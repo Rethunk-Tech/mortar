@@ -52,7 +52,9 @@ func TestOwnsAndReady(t *testing.T) {
 	if !l.Owns(loader.Process{Args: []string{"--mods-path", mods}}, prof) || l.Owns(loader.Process{Args: []string{"--mods-path", "/other"}}, prof) {
 		t.Fatal("a process belongs to the profile whose mods folder it was started with")
 	}
-	if !l.Ready("[12:00:01 INFO  SMAPI] Loaded 2 mods") || l.Ready("[12:00:01 INFO  SMAPI] Starting") {
+	if !l.Ready("[06:43:00 TRACE game] Window_ClientSizeChanged(); Window.ClientBounds={X:0 Y:0 Width:1280 Height:720}") ||
+		!l.Ready("[06:43:01 INFO  Mortar SMAPI Bridge] Title screen reached.") ||
+		l.Ready("[12:00:01 INFO  SMAPI] Loaded 2 mods") || l.Ready("[12:00:01 INFO  SMAPI] Starting") {
 		t.Fatal("ready line")
 	}
 }
