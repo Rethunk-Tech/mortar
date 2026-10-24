@@ -190,7 +190,7 @@ func TestWrongForms(t *testing.T) {
 func pack(t *testing.T, doc string) string {
 	t.Helper()
 	var buf bytes.Buffer
-	w := brotli.NewWriterLevel(&buf, brotli.BestCompression)
+	w := brotli.NewWriterLevel(&buf, brotli.BestSpeed)
 	if _, err := w.Write([]byte(doc)); err != nil {
 		t.Fatal(err)
 	}
