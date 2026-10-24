@@ -1,6 +1,6 @@
 import { msg, plural } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import { Box, Dialog, Typography } from '@mui/material'
+import { Box, Dialog, DialogTitle, Typography } from '@mui/material'
 import { ArrowLeft, X } from 'lucide-react'
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 import { modsLabel } from '../i18n/counts.ts'
@@ -61,7 +61,6 @@ export function ShareDialog() {
       fullWidth={true}
       slotProps={{
         paper: {
-          'aria-label': info ? t`Share ${{ name: info.name }}` : undefined,
           sx: {
             bgcolor: 'var(--mortar-panel-solid)',
             border: '1px solid var(--mortar-hairline-12)',
@@ -75,26 +74,42 @@ export function ShareDialog() {
     >
       {info ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: space.gap, p: '20px 24px 16px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: space.gap,
+              pr: space.pad,
+              pb: space.pad,
+            }}
+          >
             {destination ? (
-              <TipIconButton label={t`Back`} onClick={() => setDestination(null)}>
-                <ArrowLeft size={18} />
-              </TipIconButton>
+              <Box sx={{ display: 'flex', pl: space.pad }}>
+                <TipIconButton label={t`Back`} onClick={() => setDestination(null)}>
+                  <ArrowLeft size={18} />
+                </TipIconButton>
+              </Box>
             ) : null}
-            <Box sx={{ minWidth: 0 }}>
-              <Typography
-                component="h2"
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+              <DialogTitle
                 noWrap={true}
                 title={info.name}
-                sx={{ fontSize: 20, fontWeight: 700 }}
+                sx={{ fontSize: 20, fontWeight: 700, ...(destination ? { pl: 0 } : {}) }}
               >
                 {t`Share ${{ name: info.name }}`}
-              </Typography>
-              <Typography noWrap={true} sx={{ color: 'text.secondary', fontSize: 14 }}>
+              </DialogTitle>
+              <Typography
+                noWrap={true}
+                sx={{
+                  color: 'text.secondary',
+                  fontSize: 14,
+                  px: space.pad,
+                  ...(destination ? { pl: 0 } : {}),
+                }}
+              >
                 {destination ? names[destination] : `${gameName} · ${modsLabel(count)}`}
               </Typography>
             </Box>
-            <Box sx={{ flex: 1 }} />
             <TipIconButton label={t`Close`} onClick={close}>
               <X size={18} />
             </TipIconButton>
