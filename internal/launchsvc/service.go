@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -557,7 +558,7 @@ func (s *Service) AnyBusy() bool {
 
 // BusyAmong lists the games among ids that are launching or running. Asking Busy of each reads the whole process
 // table once per game, which for the catalog's few hundred games is over a second; this reads it once, and asks Busy
-// only of a game with a state of its own or, when any game's process is alive, of every game.
+// only of a game with a state of its own or a process of its own in that read (of every game when the read failed).
 func (s *Service) BusyAmong(ids []string) []string {
 	var names []string
 	for _, id := range ids {
@@ -566,10 +567,13 @@ func (s *Service) BusyAmong(ids []string) []string {
 		}
 	}
 	procs, err := launch.Processes(s.procDir, names...)
-	anyAlive := err != nil || len(procs) > 0
+	alive := func(id string) bool {
+		g := game.Find(id)
+		return err != nil || g != nil && slices.ContainsFunc(procs, func(p launch.Process) bool { return p.Named(game.ProcessNames(g)...) })
+	}
 	var out []string
 	for _, id := range ids {
-		if (anyAlive || s.hasActiveState(id)) && s.Busy(id) {
+		if (s.hasActiveState(id) || alive(id)) && s.Busy(id) {
 			out = append(out, id)
 		}
 	}

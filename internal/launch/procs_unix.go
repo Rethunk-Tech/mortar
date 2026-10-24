@@ -53,6 +53,9 @@ func runsAny(args, names []string) bool {
 	return false
 }
 
+// Named reports whether p is one of names, as Processes matched it.
+func (p Process) Named(names ...string) bool { return runsAny(p.Args, names) }
+
 // Processes lists running processes whose executable is one of names, from procDir (/proc) on Linux, in one pass
 // over the process table.
 func Processes(procDir string, names ...string) ([]Process, error) {

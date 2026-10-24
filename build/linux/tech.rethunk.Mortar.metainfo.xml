@@ -79,6 +79,7 @@
         </ul>
         <p>Fixed</p>
         <ul>
+          <li>Mortar no longer freezes for a second or more each time a game starts, stops or changes state, which was worst right after Play</li>
           <li>Every Browse page holds 20 mods after adult and hidden mods are dropped, the page count stays put between pages, and pages past the tenth fill</li>
           <li>A Browse source that leaves mods out for excluded categories counts them as hidden; CurseForge sorted by thumbs-up neither repeats nor skips a mod</li>
           <li>Signed out of Nexus, Browse and Settings › Accounts no longer raise an error toast</li>

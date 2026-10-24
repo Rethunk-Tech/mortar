@@ -3,6 +3,7 @@
 package launch
 
 import (
+	"path/filepath"
 	"slices"
 	"strings"
 	"unsafe"
@@ -29,6 +30,13 @@ func Processes(_ string, names ...string) ([]Process, error) {
 		}
 	}
 	return out, nil
+}
+
+// Named reports whether p is one of names, as Processes matched it. A process whose image path was unreadable may be
+// any of them.
+func (p Process) Named(names ...string) bool {
+	exe := strings.TrimSuffix(filepath.Base(p.Exe), ".exe")
+	return p.Exe == "" || slices.ContainsFunc(names, func(name string) bool { return strings.EqualFold(exe, name) })
 }
 
 // imagePath is the executable path of pid, or "" when the process cannot be opened.
