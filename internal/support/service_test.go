@@ -174,3 +174,20 @@ func TestUploadRefusesALoaderSmapiIoCannotRead(t *testing.T) {
 		t.Fatal("the refusal still contacted the server")
 	}
 }
+
+func TestAnOversizeLogNamesItsSizeWithoutRoundingBelowTheCap(t *testing.T) {
+	cfg := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", cfg)
+	s := NewService("1.2.3", func(string) problems.Environment { return problems.Environment{} }, "/home/u",
+		func(string, string) (string, error) { return "", nil })
+	dir := filepath.Join(cfg, "StardewValley", "ErrorLogs")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "SMAPI-latest.txt"), make([]byte, MaxLog+1), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Log("stardew", "a"); err == nil || !strings.Contains(err.Error(), "4.9 MB") {
+		t.Fatalf("got %v", err)
+	}
+}

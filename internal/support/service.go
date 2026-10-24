@@ -15,6 +15,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Rethunk-Tech/mortar/internal/appversion"
+	"github.com/Rethunk-Tech/mortar/internal/bytefmt"
 	"github.com/Rethunk-Tech/mortar/internal/doctor"
 	"github.com/Rethunk-Tech/mortar/internal/fsx"
 	"github.com/Rethunk-Tech/mortar/internal/game"
@@ -94,7 +95,7 @@ func (s *Service) Log(gameID, profileID string) (string, error) {
 		return "", err
 	}
 	if len(data) > MaxLog {
-		return "", fmt.Errorf("the log is %d MB, too large to upload", len(data)>>20)
+		return "", fmt.Errorf("the log is %s, too large to upload", bytefmt.Format(int64(len(data))))
 	}
 	modsDir, err := s.modsDir(gameID, profileID)
 	if err != nil {
