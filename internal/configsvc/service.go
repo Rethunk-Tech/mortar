@@ -216,12 +216,23 @@ type cfgOnDisk struct {
 // claim unrelated files.
 const minConfigName = 3
 
+// packageNames is the package ("Namespace-Name") and its name of a "source:Namespace-Name" id; a plugin GUID, which
+// names no source, has neither.
+func packageNames(n string) (pkg, name string) {
+	id := mod.ID(n)
+	if id.Format() == "" {
+		return "", ""
+	}
+	pkg = id.Local()
+	_, name, _ = strings.Cut(pkg, "-")
+	return pkg, name
+}
+
 func (d cfgOnDisk) ownedBy(names []string) bool {
 	if d.text {
 		return slices.ContainsFunc(names, func(n string) bool {
 			// A Thunderstore id is source:Namespace-Name; the package's folder is Namespace-Name, its file the Name.
-			_, pkg, _ := strings.Cut(n, ":")
-			_, name, _ := strings.Cut(pkg, "-")
+			pkg, name := packageNames(n)
 			for _, k := range []string{squash(n), squash(pkg), squash(name)} {
 				if len(k) >= minConfigName && (squash(d.folder) == k || strings.Contains(squash(d.stem), k)) {
 					return true
@@ -244,8 +255,7 @@ func (d cfgOnDisk) ownedBy(names []string) bool {
 		}
 		// A ConfigFile a plugin builds itself has no GUID header and is often named after the package
 		// (LethalLevelLoader.cfg for thunderstore:IAmBatby-LethalLevelLoader).
-		_, pkg, _ := strings.Cut(n, ":")
-		_, name, _ := strings.Cut(pkg, "-")
+		_, name := packageNames(n)
 		return d.doc.guid == "" && name != "" && strings.EqualFold(d.stem, name)
 	})
 }
