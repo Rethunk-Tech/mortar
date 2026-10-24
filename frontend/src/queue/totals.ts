@@ -4,7 +4,6 @@ import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/interna
 import { sourceLabel } from '../brand/sources/sourceLabel.ts'
 
 const PERCENT = 100
-const MS_PER_SECOND = 1000
 
 interface Totals {
   done: number
@@ -83,13 +82,6 @@ export function pillProgress(items: Item[]): { active: number; percent: number }
 }
 
 export const downloadedKb = (i: Item) => (i.sizeKb * i.progress) / PERCENT
-
-// The wall-clock time of a Unix timestamp, as "14:05".
-export const clockTime = (unix: number) =>
-  new Date(unix * MS_PER_SECOND).toLocaleTimeString(i18n.locale, {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 
 // The name of the profile an item installs into: '' when the open game's list no longer has it, null when the
 // list loaded is another game's and cannot tell.

@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { absoluteWhen, relativeWhen } from './when.ts'
+import { absoluteWhen, clockWhen, relativeWhen } from './when.ts'
 
 const now = Date.parse('2026-10-02T12:00:00Z')
 const at = (ms: number) => now - ms
@@ -25,4 +25,9 @@ test('absoluteWhen uses a medium date and short time and skips a zero date', () 
       new Date('2026-03-15T02:54:41Z'),
     ),
   )
+})
+
+test('clockWhen writes the hour as the locale does', () => {
+  expect(clockWhen(new Date(2026, 9, 2, 9, 5), 'en-US')).toMatch(/^9:05\sAM$/)
+  expect(clockWhen('0001-01-01T00:00:00Z')).toBe('')
 })

@@ -5,6 +5,7 @@ import {
   Retry,
   States,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/netstate/service.ts'
+import { clockWhen } from '../i18n/when.ts'
 import { shareInFlight } from '../profiles/listProfiles.ts'
 import { sameValue } from './sameValue.ts'
 
@@ -13,8 +14,6 @@ const STATE_POLL_MS = 15_000
 const MINUTE_MS = 60_000
 const RECHECK_MINUTES = 5
 const RECHECK_MS = RECHECK_MINUTES * MINUTE_MS
-// Go's zero time.
-const NEVER_YEAR = 2000
 
 const useOffline = create<{ states: State[]; set: (states: State[] | null) => void }>(
   (set, get) => ({
@@ -33,8 +32,7 @@ function unreachable(states: State[], ids?: string[]): State[] {
 }
 
 function savedAt(s: State, locale: string): string {
-  const at = new Date(s.lastOK)
-  return at.getFullYear() < NEVER_YEAR ? '' : at.toLocaleTimeString(locale, { timeStyle: 'short' })
+  return clockWhen(s.lastOK, locale)
 }
 
 const shared = shareInFlight<State[] | null>()

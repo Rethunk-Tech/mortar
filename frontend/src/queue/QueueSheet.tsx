@@ -17,6 +17,7 @@ import {
 import { useTab } from '../game/tab.ts'
 import { formatKb } from '../i18n/bytes.ts'
 import { formatWhen } from '../i18n/formatWhen.ts'
+import { clockWhen } from '../i18n/when.ts'
 import { TipIconButton } from '../shell/TipIconButton.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -30,7 +31,7 @@ import {
 import { Body } from './QueueBody.tsx'
 import { HistoryList } from './QueueHistory.tsx'
 import { useQueue } from './store.ts'
-import { clockTime, isClearableFinished, parallelDownloads, totals } from './totals.ts'
+import { isClearableFinished, parallelDownloads, totals } from './totals.ts'
 
 const UNIX_MS_PER_SECOND = 1000
 const WIDTH = 500
@@ -44,7 +45,7 @@ function Header({
   view: 'queue' | 'history'
   onView: (view: 'queue' | 'history') => void
 }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const { items, paused, limitedUntil } = useQueue((s) => s.state)
   const sum = totals(items)
   const { downloading, waiting } = parallelDownloads(items)
@@ -137,7 +138,7 @@ function Header({
       )}
       {limitedUntil > 0 ? (
         <Typography
-          title={clockTime(limitedUntil)}
+          title={clockWhen(limitedUntil * UNIX_MS_PER_SECOND, i18n.locale)}
           sx={{ mx: space.pad, mt: 1, fontSize: 13, color: 'warning.main' }}
         >
           {t`Downloads resume ${{ when: formatWhen(limitedUntil * UNIX_MS_PER_SECOND) }}.`}

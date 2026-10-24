@@ -22,6 +22,12 @@ export interface WhenOptions {
   absolute?: boolean
 }
 
+// clockWhen is the time of day as the locale writes it ("9:05 AM", "09:05"), '' for a zero or unparseable time.
+export function clockWhen(value: string | number | Date, locale = 'en'): string {
+  const d = parseWhen(value)
+  return d ? new Intl.DateTimeFormat(locale, { timeStyle: 'short' }).format(d) : ''
+}
+
 export function absoluteWhen(value: string | number | Date, locale = 'en'): string {
   const d = parseWhen(value)
   if (!d) {
