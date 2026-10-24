@@ -450,6 +450,8 @@ function createMortarTheme(
         },
       },
       MuiButtonBase: {
+        // The press ripple is motion too.
+        defaultProps: { disableRipple: reduceMotion },
         styleOverrides: {
           root: {
             // A native button takes the system font; every clickable reads in the font chosen in Appearance.

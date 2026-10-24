@@ -42,6 +42,7 @@ import { webkitWalk } from './webkit-walk.ts'
 //                                      `bun run renders:diff OLD/chromium NEW/chromium` compares two runs' settled ones
 // Every screen is checked for layout breaks (renderLayout.ts) in Chromium, then in WebKitGTK (webkit-walk.ts) on the same
 // sandbox; a break fails the run like a budget.
+//   MORTAR_RENDER_MOTION=1             measure with motion (by default reduced, so no ripple or animation is counted)
 //   MORTAR_RENDER_TOP=<n>              how many components, roots and causes each case lists (8)
 // Writes render-budget.json and index.html (every screen loading and settled, in both engines, beside its figures and
 // breaks) under MORTAR_RENDER_OUT (default /var/tmp/render-budget-<ts>) and exits 1 when a case is over its budget or fails.
@@ -49,6 +50,8 @@ import { webkitWalk } from './webkit-walk.ts'
 const BASE = '/var/tmp'
 
 const SETTLE_MS = Number(process.env.MORTAR_RENDER_SETTLE_MS ?? '3000')
+const MOTION = process.env.MORTAR_RENDER_MOTION === '1' ? 'no-preference' : 'reduce'
+const PAGE = { viewport: VIEWPORT, reducedMotion: MOTION } as const
 // Most cases show nothing idle; a short watch still sees churn, and the walk spends most of its time here.
 const IDLE_MS = Number(process.env.MORTAR_RENDER_IDLE_MS ?? '3000')
 const IDLE_SCALE_MS = 10_000
@@ -374,7 +377,7 @@ async function run(
 ): Promise<{ results: Result[]; breaks: string[] }> {
   const browser = await chromium.launch()
   try {
-    const page = await browser.newPage({ baseURL, viewport: VIEWPORT })
+    const page = await browser.newPage({ baseURL, ...PAGE })
     page.setDefaultTimeout(STEP_TIMEOUT_MS)
     await page.addInitScript(HOOK)
     const cdp = await page.context().newCDPSession(page)
