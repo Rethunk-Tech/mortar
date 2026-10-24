@@ -192,6 +192,10 @@ msgstr "{name} now opens {source} \"1-click install\" links."
 msgid "Light"
 msgstr "Light"
 
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Engine"
+msgstr "Engine"
+
 #: src/settings/sections/Notifications.tsx
 msgid "When"
 msgstr "When"
@@ -704,6 +708,10 @@ msgstr "Mods and profiles"
 #: src/settings/sections/Updates.tsx
 msgid "Mortar {version} is available."
 msgstr "Mortar {version} is available."
+
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "every object"
+msgstr "every object"
 
 #: src/settings/sections/ItchAccount.tsx
 #: src/settings/sections/Sources.tsx
@@ -1890,10 +1898,6 @@ msgstr "{owner} opens these links now."
 msgid "{name} now opens {source} \"Install\" links."
 msgstr "{name} now opens {source} \"Install\" links."
 
-#: src/settings/sections/HiddenLogSources.tsx
-msgid "Every object"
-msgstr "Every object"
-
 #: src/settings/sections/Downloads.tsx
 msgid "Clicking these links on {source} starts the download in Mortar."
 msgstr "Clicking these links on {source} starts the download in Mortar."
@@ -2316,6 +2320,10 @@ msgstr "control.json is current"
 #: src/settings/sections/NxmReclaim.tsx
 msgid "Take back"
 msgstr "Take back"
+
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "every message"
+msgstr "every message"
 
 #: src/settings/prefCopy.ts
 msgid "How often background checks report new mod updates. The In Mortar and desktop switches choose where."
@@ -2759,10 +2767,6 @@ msgstr "Could not change how mod links open"
 msgid "Integrity"
 msgstr "Integrity"
 
-#: src/settings/sections/HiddenLogSources.tsx
-msgid "Right-click a line in the Console to hide every line from where it came from. The game stops writing them where its bridge can."
-msgstr "Right-click a line in the Console to hide every line from where it came from. The game stops writing them where its bridge can."
-
 #: src/settings/sections/DataMove.tsx
 msgid "Move"
 msgstr "Move"
@@ -3045,6 +3049,10 @@ msgstr "Play"
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Luck skill"
 msgstr "Luck skill"
+
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Right-click a line in the Console to hide every line from where it came from, in every profile of this game. The game stops writing them where its bridge can."
+msgstr "Right-click a line in the Console to hide every line from where it came from, in every profile of this game. The game stops writing them where its bridge can."
 
 #: src/settings/sections/Sources.tsx
 msgid "the connection was refused"

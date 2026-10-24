@@ -192,6 +192,10 @@ msgstr ""
 msgid "Light"
 msgstr ""
 
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Engine"
+msgstr ""
+
 #: src/settings/sections/Notifications.tsx
 msgid "When"
 msgstr ""
@@ -703,6 +707,10 @@ msgstr ""
 
 #: src/settings/sections/Updates.tsx
 msgid "Mortar {version} is available."
+msgstr ""
+
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "every object"
 msgstr ""
 
 #: src/settings/sections/ItchAccount.tsx
@@ -1890,10 +1898,6 @@ msgstr ""
 msgid "{name} now opens {source} \"Install\" links."
 msgstr ""
 
-#: src/settings/sections/HiddenLogSources.tsx
-msgid "Every object"
-msgstr ""
-
 #: src/settings/sections/Downloads.tsx
 msgid "Clicking these links on {source} starts the download in Mortar."
 msgstr ""
@@ -2315,6 +2319,10 @@ msgstr ""
 
 #: src/settings/sections/NxmReclaim.tsx
 msgid "Take back"
+msgstr ""
+
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "every message"
 msgstr ""
 
 #: src/settings/prefCopy.ts
@@ -2759,10 +2767,6 @@ msgstr ""
 msgid "Integrity"
 msgstr ""
 
-#: src/settings/sections/HiddenLogSources.tsx
-msgid "Right-click a line in the Console to hide every line from where it came from. The game stops writing them where its bridge can."
-msgstr ""
-
 #: src/settings/sections/DataMove.tsx
 msgid "Move"
 msgstr ""
@@ -3044,6 +3048,10 @@ msgstr ""
 
 #: src/settings/sections/StreamOverlay.tsx
 msgid "Luck skill"
+msgstr ""
+
+#: src/settings/sections/HiddenLogSources.tsx
+msgid "Right-click a line in the Console to hide every line from where it came from, in every profile of this game. The game stops writing them where its bridge can."
 msgstr ""
 
 #: src/settings/sections/Sources.tsx
