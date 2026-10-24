@@ -15,6 +15,7 @@ import (
 // A random run of two machines editing, scanning and answering offers must never lose or invent a change, and once
 // the offers are answered both machines hold the newest edit. Seeds are fixed; MORTAR_SYNC_SEEDS raises the count.
 func TestSyncTwoMachinesProperty(t *testing.T) {
+	t.Parallel()
 	seeds := syncSeeds()
 	for seed := range seeds {
 		runSyncSequence(t, seed, 40, false)
@@ -23,6 +24,7 @@ func TestSyncTwoMachinesProperty(t *testing.T) {
 
 // The same with a sync tool that delivers each file of a profile on its own schedule.
 func TestSyncLaggingDeliveryProperty(t *testing.T) {
+	t.Parallel()
 	seeds := syncSeeds()
 	for seed := range seeds {
 		runSyncSequence(t, seed, 50, true)
