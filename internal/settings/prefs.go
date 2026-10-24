@@ -255,6 +255,7 @@ func normalizePrefs(s *Settings) {
 		s.NotifyModUpdates = on()
 	}
 	normalizeUpdateDigest(s)
+	moveAutoInstallFolders(s)
 	if s.StoreRetentionDays < MinStoreRetentionDays || s.StoreRetentionDays > MaxStoreRetentionDays {
 		s.StoreRetentionDays = DefaultStoreRetentionDays
 	}
@@ -559,15 +560,30 @@ func (s Settings) AutoInstallMortar() bool {
 	return ToggleOn(s.AutoInstallMortarUpdates)
 }
 
-// WatchedFolders lists the extra archive folders: absolute paths only, each once, none that auto-installs.
+// WatchedFolders lists the extra archive folders: absolute paths only, each once.
 func (s Settings) WatchedFolders() []string {
-	auto := s.AutoInstalledFolders()
-	return slices.DeleteFunc(pathList(s.WatchFolders), func(d string) bool { return slices.Contains(auto, d) })
+	return pathList(s.WatchFolders)
 }
 
-// AutoInstalledFolders lists the folders installed as a mod whenever they change: absolute paths only, each once.
-func (s Settings) AutoInstalledFolders() []string {
-	return pathList(s.AutoInstallFolders)
+// moveAutoInstallFolders makes each folder the player set to auto-install an extra mods folder of the game they last
+// had open, the one it installed into, and drops it from the archive folders it could also be in.
+func moveAutoInstallFolders(s *Settings) {
+	auto := pathList(s.AutoInstallFolders)
+	s.AutoInstallFolders = ""
+	if len(auto) == 0 || s.LastGame == "" {
+		return
+	}
+	gp := s.GamePrefs(s.LastGame)
+	extra := gp.ExtraModsFolderList()
+	for _, d := range auto {
+		if !slices.Contains(extra, d) {
+			extra = append(extra, d)
+		}
+	}
+	gp.ExtraModsFolder = strings.Join(extra, string(filepath.ListSeparator))
+	putGame(s, s.LastGame, gp)
+	watched := slices.DeleteFunc(pathList(s.WatchFolders), func(d string) bool { return slices.Contains(auto, d) })
+	s.WatchFolders = strings.Join(watched, string(filepath.ListSeparator))
 }
 
 // SyncFolderFor is the folder the game's profiles sync into; empty means sync is off for the game.
@@ -585,6 +601,11 @@ func (s Settings) SyncFolderFor(game string) string {
 // ExtraModsFolderList lists the game's extra mods folders: absolute paths only, each once.
 func (g GameSettings) ExtraModsFolderList() []string {
 	return pathList(g.ExtraModsFolder)
+}
+
+// ExtraModsProfile is the id of the profile the extra mods folder dir installs into; empty is the open profile.
+func (g GameSettings) ExtraModsProfile(dir string) string {
+	return g.ExtraModsProfiles[dir]
 }
 
 func pathList(joined string) []string {

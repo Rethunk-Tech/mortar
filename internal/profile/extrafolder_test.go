@@ -52,6 +52,32 @@ func TestExtraFolderListsAndInstallsOnlyItsOwnFolders(t *testing.T) {
 	}
 }
 
+// A mod's build output, its manifest at the top, is one mod for a game whose mods are folders too.
+func TestExtraFolderTakesABuildOutputFolderWithItsManifest(t *testing.T) {
+	t.Parallel()
+	e := newEnv(t)
+	st, err := settings.OpenIn(e.dataDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	svc := NewService(e.Store, t.TempDir(), st)
+	p := mustCreate(t, e, "P")
+	build := t.TempDir()
+	writeFile(t, build, "manifest.json", manifestJSON("me.build"))
+	writeFile(t, build, "Build.dll", "MZ")
+	setGamePref(t, st, "extraModsFolder", build)
+	got, err := svc.ExtraFolderMods("stardew")
+	if err != nil || len(got.Mods) != 1 || got.Mods[0].Folder != build {
+		t.Fatalf("listed = %+v, %v", got, err)
+	}
+	if res, err := svc.InstallExtraFolderMod(t.Context(), "stardew", p.ID, build); err != nil || len(res.Added) != 1 {
+		t.Fatalf("install = %+v, %v", res, err)
+	}
+	if res, err := svc.InstallExtraFolderMod(t.Context(), "stardew", p.ID, build); err != nil || len(res.Added) != 0 || len(res.Profile.Entries) != 1 {
+		t.Fatalf("install of the unchanged folder = %+v, %v", res, err)
+	}
+}
+
 func setGamePref(t *testing.T, st *settings.Store, key, value string) {
 	t.Helper()
 	setPrefOf(t, st, "stardew", key, value)
@@ -128,5 +154,14 @@ func TestExtraFolderTakesAPackageGamesModsAndABuildOutputFolder(t *testing.T) {
 	}
 	if n != 1 {
 		t.Fatalf("the rebuilt plugin is in the profile %d times: %+v", n, res.Profile.Entries)
+	}
+	// A package renamed in its folder replaces the entry that folder installed.
+	renamed := filepath.Join(mods, "Wallet-OuterWildsItems")
+	writeFile(t, mods, "Wallet-OuterWildsItems/manifest.json", `{"name":"OuterWildsThings","version_number":"1.3.0","author":"Wallet"}`)
+	if res, err = svc.InstallExtraFolderMod(t.Context(), "lethal-company", p.ID, renamed); err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Profile.Entries) != 2 {
+		t.Fatalf("entries after the rename = %+v", res.Profile.Entries)
 	}
 }

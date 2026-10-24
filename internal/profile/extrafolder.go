@@ -37,7 +37,7 @@ func (s *Service) ExtraFolderMods(game string) (GameModsPreview, error) {
 }
 
 // InstallExtraFolderMod installs folder, a top-level folder of one extra mods folder as ExtraFolderMods returned it,
-// into the profile the way a dropped folder is installed.
+// into the profile the way a dropped folder is installed. A folder the profile already holds unchanged adds nothing.
 func (s *Service) InstallExtraFolderMod(ctx context.Context, game, id, folder string) (InstallResult, error) {
 	roots := s.extraModsFolders(game)
 	if len(roots) == 0 {
@@ -53,9 +53,15 @@ func (s *Service) InstallExtraFolderMod(ctx context.Context, game, id, folder st
 		if err != nil {
 			return InstallResult{}, err
 		}
-		if datadir.RealDirUnder(resolved, folder) {
-			return s.store.InstallFolder(ctx, game, id, folder)
+		if !datadir.RealDirUnder(resolved, folder) {
+			continue
 		}
+		res, err := s.store.InstallExtraFolder(ctx, game, id, folder)
+		if _, same := errors.AsType[*DuplicateError](err); same {
+			p, err := s.store.Get(game, id)
+			return InstallResult{Profile: p}, err
+		}
+		return res, err
 	}
 	return InstallResult{}, errors.New("that folder is not in an extra mods folder")
 }
@@ -65,21 +71,18 @@ func placeIn(folder, root string) (self, child bool) {
 	return fsx.SamePath(folder, root), fsx.SamePath(filepath.Dir(filepath.Clean(folder)), root)
 }
 
-// InstallBuildFolder installs folder, one of the folders set to auto-install, into the profile as one local mod; a
-// rebuild replaces the entry the previous install added, since both hold the same mods.
-func (s *Service) InstallBuildFolder(ctx context.Context, game, id, folder string) (InstallResult, error) {
-	if !slices.Contains(s.settings.Get().AutoInstalledFolders(), folder) {
-		return InstallResult{}, errors.New("that folder is not set to auto-install")
-	}
-	return s.store.InstallFolder(ctx, game, id, folder)
-}
-
 // previewExtraFolder lists the mods in dir the way the game's loader keeps them: a game modded through Thunderstore
 // packages and plugin DLLs takes dir itself when its top holds a manifest or a DLL (a C# project's build output), else
-// each folder in it that holds a mod; any other game lists dir as Import from the game's Mods folder would.
+// each folder in it that holds a mod; any other game takes dir itself when its top holds a mod manifest, else lists dir
+// as Import from the game's Mods folder would.
 func (s *Store) previewExtraFolder(game, dir string) (GameModsPreview, error) {
 	g := installerGame(game)
 	if !installer.TakesPackages(g) {
+		if buildOutput(game, dir) {
+			if slot, keep := classifyFolder(dir, filepath.Base(dir)); keep {
+				return previewFrom([]gameModSlot{slot}), nil
+			}
+		}
 		return s.PreviewGameMods(game, dir)
 	}
 	out := GameModsPreview{Mods: []GameModPreview{}}
@@ -129,7 +132,11 @@ func packagePreview(folder string, g installer.Game, top bool) (GameModPreview, 
 func buildOutput(game, dir string) bool {
 	g := installerGame(game)
 	if !installer.TakesPackages(g) {
-		return false
+		if _, loose := looseModKinds(game); loose {
+			return false
+		}
+		_, err := os.Stat(filepath.Join(dir, "manifest.json"))
+		return err == nil
 	}
 	_, ok := packagePreview(dir, g, true)
 	return ok

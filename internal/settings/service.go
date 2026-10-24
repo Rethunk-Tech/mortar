@@ -179,6 +179,23 @@ func (s *Service) SetLastProfile(game, id string) error {
 	})
 }
 
+// SetExtraModsProfile sets the profile the game's extra mods folder dir installs into; empty is the open profile.
+func (s *Service) SetExtraModsProfile(game, dir, profile string) error {
+	return s.set(func(v *Settings) {
+		gp := v.GamePrefs(game)
+		gp.ExtraModsProfiles = maps.Clone(gp.ExtraModsProfiles)
+		if gp.ExtraModsProfiles == nil {
+			gp.ExtraModsProfiles = map[string]string{}
+		}
+		if profile == "" {
+			delete(gp.ExtraModsProfiles, dir)
+		} else {
+			gp.ExtraModsProfiles[dir] = profile
+		}
+		putGame(v, game, gp)
+	})
+}
+
 // SetGameFolder stores dir as the game's install folder, or clears the override when dir is empty. The folder is kept
 // cleaned: a trailing separator would reach installers' command lines as part of the path.
 func (s *Service) SetGameFolder(game, dir string) error {

@@ -116,6 +116,7 @@ var updateKey []byte
 
 // registerEvents declares the custom events for the binding generator and the runtime's payload checks.
 func registerEvents() {
+	application.RegisterEvent[uint64](game.CatalogChangedEvent)
 	application.RegisterEvent[launchsvc.Status](launchsvc.StateEvent)
 	application.RegisterEvent[launchsvc.Lines](launchsvc.LineEvent)
 	application.RegisterEvent[launchsvc.Progress](launchsvc.ProgressEvent)
@@ -137,9 +138,8 @@ func registerEvents() {
 	application.RegisterEvent[nxmsvc.Arrival](nxmsvc.ArrivedEvent)
 	application.RegisterEvent[nxmsvc.Rejection](nxmsvc.RejectedEvent)
 	application.RegisterEvent[string](folderwatch.ModsFolderEvent)
-	application.RegisterEvent[string](folderwatch.ExtraFolderEvent)
+	application.RegisterEvent[folderwatch.ExtraFolder](folderwatch.ExtraFolderEvent)
 	application.RegisterEvent[string](folderwatch.DownloadsEvent)
-	application.RegisterEvent[folderwatch.AutoInstall](folderwatch.AutoInstallEvent)
 	application.RegisterEvent[[]syncsvc.Offer](syncsvc.OffersEvent)
 	application.RegisterEvent[[]syncsvc.Stall](syncsvc.StalledEvent)
 	application.RegisterEvent[sharesvc.Arrival](sharesvc.ArrivedEvent)

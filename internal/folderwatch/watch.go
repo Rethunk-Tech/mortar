@@ -19,19 +19,18 @@ const (
 	ModsFolderEvent  = "library:mods-folder"
 	ExtraFolderEvent = "library:extra-folder"
 	DownloadsEvent   = "library:downloads"
-	AutoInstallEvent = "library:auto-install"
 )
 
-// AutoInstall is AutoInstallEvent's data: the folder that changed, so the window installs that one.
-type AutoInstall struct {
+// ExtraFolder is ExtraFolderEvent's data: the folder that changed, so the window installs its mods.
+type ExtraFolder struct {
 	Game string `json:"game"`
 	Dir  string `json:"dir"`
 }
 
-// data is what an event carries: the game, or for a folder that auto-installs, the folder too.
+// data is what an event carries: the game, or for an extra mods folder, the folder too.
 func (t Target) data() any {
-	if t.Event == AutoInstallEvent {
-		return AutoInstall{Game: t.Game, Dir: t.Dir}
+	if t.Event == ExtraFolderEvent {
+		return ExtraFolder{Game: t.Game, Dir: t.Dir}
 	}
 	return t.Game
 }
@@ -153,7 +152,7 @@ func Run(ctx context.Context, d Deps) error {
 				mu.Lock()
 				now := a.t
 				// A build still writing its output waits like a download does.
-				waits := (now.Event == DownloadsEvent || now.Event == AutoInstallEvent || now.Event == ExtraFolderEvent) && len(a.writing) > 0
+				waits := (now.Event == DownloadsEvent || now.Event == ExtraFolderEvent) && len(a.writing) > 0
 				mu.Unlock()
 				if waits {
 					settle(a)

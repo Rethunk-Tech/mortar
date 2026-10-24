@@ -181,6 +181,9 @@ func TestMergeGameKeepsEverySetField(t *testing.T) {
 			f.Set(reflect.ValueOf(&on))
 		} else if k == reflect.Slice {
 			f.Set(reflect.MakeSlice(f.Type(), 1, 1))
+		} else if k == reflect.Map {
+			f.Set(reflect.MakeMapWithSize(f.Type(), 1))
+			f.SetMapIndex(reflect.Zero(f.Type().Key()), reflect.Zero(f.Type().Elem()))
 		} else {
 			t.Fatalf("%s: give this test a value for a %s field", sf.Name, f.Type())
 		}

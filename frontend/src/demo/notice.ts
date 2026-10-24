@@ -27,7 +27,6 @@ const OUTSIDE = new Set([
   'picker.ReadTextFile',
   'picker.SaveFile',
   'profile.InstallArchive',
-  'profile.InstallBuildFolder',
   'profile.InstallExtraFolderMod',
   'profile.InstallFomod',
   'profile.InstallOverlay',

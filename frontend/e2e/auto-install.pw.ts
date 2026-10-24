@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test'
 import { openSeedFarm, switchProfile } from './app.ts'
 import { serverEnv } from './sandbox.ts'
 
-// A watched folder set to Auto-install lands in the open profile when its files change, and a rebuild replaces it.
+// An extra mods folder's mod lands in the open profile when its files change, and a rebuild replaces it.
 
 const dir = process.env.MORTAR_E2E_DIR ?? ''
 const PROFILE = 'Build Output'
@@ -35,11 +35,11 @@ test.beforeAll(() => {
   rmSync(`${dir}/auto-install`, { recursive: true, force: true })
   mkdirSync(folder(), { recursive: true })
   profileId = cli('profile', 'create', 'stardew', PROFILE).split('\t')[0] ?? ''
-  cli('settings', 'set', 'autoInstallFolders', folder())
+  cli('settings', 'set', '--game', 'stardew', 'extraModsFolder', folder())
 })
 
 test.afterAll(() => {
-  cli('settings', 'set', 'autoInstallFolders', '')
+  cli('settings', 'set', '--game', 'stardew', 'extraModsFolder', '')
   if (profileId !== '') {
     cli('profile', 'delete', 'stardew', profileId)
   }

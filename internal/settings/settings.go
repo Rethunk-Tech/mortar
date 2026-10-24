@@ -221,8 +221,8 @@ type Settings struct {
 	DownloadFolder string `json:"downloadFolder"`
 	// WatchFolders are extra folders, joined by the OS path-list separator, that new archives are offered from.
 	WatchFolders string `json:"watchFolders,omitempty"`
-	// AutoInstallFolders are folders, joined the same way, whose contents are installed into the open profile as one
-	// local mod each time they change: a mod author's build output.
+	// AutoInstallFolders is read only to move each folder into the last game's extra mods folders, which install
+	// themselves the same way (written by 0.3.9 to 0.3.13).
 	AutoInstallFolders string `json:"autoInstallFolders,omitempty"`
 	// SyncFolder is the folder profile state is shared through between this machine and others; empty is off.
 	SyncFolder string `json:"syncFolder,omitempty"`

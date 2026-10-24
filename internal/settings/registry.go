@@ -2,6 +2,7 @@ package settings
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -62,13 +63,17 @@ type GameSettings struct {
 	LastDownloadsSeen     int64                  `json:"lastDownloadsSeen,omitempty"`
 	LastSweepGameVersion  string                 `json:"lastSweepGameVersion,omitempty"`
 	LaunchPresetTemplates []LaunchPresetTemplate `json:"launchPresetTemplates,omitempty"`
-	// ExtraModsFolder is a path list (the OS separator between folders) of unpacked-mod folders to add from.
-	ExtraModsFolder    string `json:"extraModsFolder,omitempty"`
-	ShowDotHiddenMods  bool   `json:"showDotHiddenMods,omitempty"`
-	OldFilesOnUpdate   string `json:"oldFilesOnUpdate,omitempty"`
-	GameSettingsMode   string `json:"gameSettingsMode,omitempty"`
-	CacheClearing      string `json:"cacheClearing,omitempty"`
-	DependencyVersions string `json:"dependencyVersions,omitempty"`
+	// ExtraModsFolder is a path list (the OS separator between folders) of unpacked-mod folders whose mods install
+	// themselves, and again whenever their files change.
+	ExtraModsFolder string `json:"extraModsFolder,omitempty"`
+	// ExtraModsProfiles is the profile id each extra mods folder installs into, by folder; a folder it does not name
+	// installs into the open profile.
+	ExtraModsProfiles  map[string]string `json:"extraModsProfiles,omitempty"`
+	ShowDotHiddenMods  bool              `json:"showDotHiddenMods,omitempty"`
+	OldFilesOnUpdate   string            `json:"oldFilesOnUpdate,omitempty"`
+	GameSettingsMode   string            `json:"gameSettingsMode,omitempty"`
+	CacheClearing      string            `json:"cacheClearing,omitempty"`
+	DependencyVersions string            `json:"dependencyVersions,omitempty"`
 	// SyncMode is whether the game's profiles sync into the Mortar-wide sync folder, into SyncOwnFolder, or not at all.
 	SyncMode      string `json:"syncMode,omitempty"`
 	SyncOwnFolder string `json:"syncOwnFolder,omitempty"`
@@ -83,6 +88,8 @@ type GameSettings struct {
 	BrowsePicks string `json:"browsePicks,omitempty"`
 	// HiddenMods are the mods the player hid from Browse; they stay installable from links and imports.
 	HiddenMods []HiddenMod `json:"hiddenMods,omitempty"`
+	// HiddenLogSources are the sources of game log lines the player hid from the Console.
+	HiddenLogSources []HiddenLogSource `json:"hiddenLogSources,omitempty"`
 	// FavouriteMods are the mods the player starred, as "source:id" keys in lower case; see FavouriteKey.
 	FavouriteMods []string `json:"favouriteMods,omitempty"`
 	// HiddenAuthors are the authors whose mods Browse leaves out, compared without case.
@@ -179,7 +186,6 @@ var registry = withDefaults([]pref{
 	vortexFolderPref(),
 	packFolderPref(),
 	strPref("watchFolders", ScopeApp, func(s Settings, _ string) string { return s.WatchFolders }, func(s *Settings, _, v string) { s.WatchFolders = v }),
-	strPref("autoInstallFolders", ScopeApp, func(s Settings, _ string) string { return s.AutoInstallFolders }, func(s *Settings, _, v string) { s.AutoInstallFolders = v }),
 	enumPref("profileOrder", ScopeApp, profileOrderValues, func(s Settings, _ string) string { return s.ProfileOrder }, func(s *Settings, _, v string) { s.ProfileOrder = v }),
 	enumPref("thunderstoreHost", ScopeApp, thunderstoreHostValues, func(s Settings, _ string) string { return s.ThunderstoreHost }, func(s *Settings, _, v string) { s.ThunderstoreHost = v }),
 	enumPref("autoRetryDownloads", ScopeApp, autoRetryValues, func(s Settings, _ string) string { return s.AutoRetryDownloads }, func(s *Settings, _, v string) { s.AutoRetryDownloads = v }),
@@ -455,9 +461,11 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 	}
 	dst.LaunchPresetTemplates = append([]LaunchPresetTemplate(nil), src.LaunchPresetTemplates...)
 	dst.ExtraModsFolder = src.ExtraModsFolder
+	dst.ExtraModsProfiles = maps.Clone(src.ExtraModsProfiles)
 	dst.ShowDotHiddenMods = src.ShowDotHiddenMods
 	dst.ListColumns = slices.Clone(src.ListColumns)
 	dst.HiddenMods = slices.Clone(src.HiddenMods)
+	dst.HiddenLogSources = slices.Clone(src.HiddenLogSources)
 	dst.HiddenAuthors = slices.Clone(src.HiddenAuthors)
 	dst.FavouriteMods = slices.Clone(src.FavouriteMods)
 	if src.OldFilesOnUpdate != "" {
@@ -480,6 +488,7 @@ func mergeGame(dst *GameSettings, src GameSettings) {
 
 func normalizeGame(id string, g *GameSettings) {
 	d := defaultGameSettingsFor(id)
+	maps.DeleteFunc(g.ExtraModsProfiles, func(dir, _ string) bool { return !slices.Contains(g.ExtraModsFolderList(), dir) })
 	if len(g.ListColumns) > 0 {
 		g.ListColumns = sanitizeListColumns(g.ListColumns)
 	}

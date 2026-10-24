@@ -63,16 +63,13 @@ func watchLibraryFolders(ctx context.Context, home, dataDir string, store *setti
 					id = ids[0]
 				}
 				var out []folderwatch.Target
-				for _, dir := range cur.GamePrefs(id).ExtraModsFolderList() {
-					out = append(out, folderwatch.Target{Event: folderwatch.ExtraFolderEvent, Game: id, Dir: dir})
-				}
 				for _, dir := range downloadDirs(store, dataDir) {
 					out = append(out, folderwatch.Target{Event: folderwatch.DownloadsEvent, Game: id, Dir: dir})
 				}
-				for _, dir := range cur.AutoInstalledFolders() {
-					out = append(out, folderwatch.Target{Event: folderwatch.AutoInstallEvent, Game: id, Dir: dir})
-				}
 				for _, g := range game.Implemented() {
+					for _, dir := range cur.GamePrefs(g).ExtraModsFolderList() {
+						out = append(out, folderwatch.Target{Event: folderwatch.ExtraFolderEvent, Game: g, Dir: dir})
+					}
 					if dir := cur.SyncFolderFor(g); dir != "" {
 						out = append(out, folderwatch.Target{Event: syncsvc.FolderEvent, Game: g, Dir: filepath.Join(dir, g)})
 					}

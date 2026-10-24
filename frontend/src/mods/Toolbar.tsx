@@ -38,7 +38,6 @@ import {
 import { compact, compactQuery, searchFieldOpen } from '../game/compact.ts'
 import { useTab } from '../game/tab.ts'
 import { useInstall } from '../install/store.ts'
-import { useCurrentGame } from '../nav/currentGame.ts'
 import { useProfileLoader } from '../profiles/store.ts'
 import { useSettings } from '../settings/store.ts'
 import { openImport } from '../share/store.ts'
@@ -53,8 +52,8 @@ import { Tooltip } from '../shell/Tooltip.tsx'
 import { ViewToggle } from '../shell/ViewToggle.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
+import { AddMenu } from './AddMenu.tsx'
 import { CategoryEditorDialog } from './CategoryEditor.tsx'
-import { ExtraFolderMenu } from './ExtraFolderMenu.tsx'
 import { onFilterFocus } from './filterFocus.ts'
 import type { GroupBy } from './group.ts'
 import { useMods } from './store.ts'
@@ -342,8 +341,6 @@ export function AddArchive({
   const pick = useInstall((s) => s.pick)
   const locked = useLocked()
   const blocked = installing || locked
-  const game = useCurrentGame()
-  const extraFolder = useSettings((s) => s.games?.[game]?.extraModsFolder ?? '')
   const reason = locked ? t`Stop the game to change mods.` : t`Adding…`
   const add = (
     <DisabledReason title={reason} disabled={blocked}>
@@ -363,15 +360,9 @@ export function AddArchive({
     </DisabledReason>
   )
   return (
-    <ExtraFolderMenu
-      folder={extraFolder}
-      blocked={blocked}
-      blockedReason={reason}
-      variant={variant}
-      size={size}
-    >
+    <AddMenu blocked={blocked} blockedReason={reason} variant={variant} size={size}>
       {add}
-    </ExtraFolderMenu>
+    </AddMenu>
   )
 }
 

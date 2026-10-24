@@ -72,6 +72,15 @@ func (s *Store) InstallFolder(ctx context.Context, game, id, path string) (Insta
 
 // InstallLocalFolder is InstallFolder for a mod that may arrive switched off, as another manager's local mod can.
 func (s *Store) InstallLocalFolder(ctx context.Context, game, id, path string, enabled bool) (InstallResult, error) {
+	return s.installDir(ctx, game, id, path, Source{Kind: KindLocal, Name: filepath.Base(path)}, enabled)
+}
+
+// InstallExtraFolder is InstallFolder for a mod in an extra mods folder, whose entry remembers the folder.
+func (s *Store) InstallExtraFolder(ctx context.Context, game, id, path string) (InstallResult, error) {
+	return s.installDir(ctx, game, id, path, Source{Kind: KindLocal, Name: filepath.Base(path), Folder: path}, true)
+}
+
+func (s *Store) installDir(ctx context.Context, game, id, path string, source Source, enabled bool) (InstallResult, error) {
 	if err := s.unlocked(game, id); err != nil {
 		return InstallResult{}, err
 	}
@@ -79,7 +88,7 @@ func (s *Store) InstallLocalFolder(ctx context.Context, game, id, path string, e
 	if err != nil {
 		return InstallResult{}, installError(err)
 	}
-	res, err := s.installKey(game, id, key, Source{Kind: KindLocal, Name: filepath.Base(path)})
+	res, err := s.installKey(game, id, key, source)
 	if err != nil || enabled {
 		return res, err
 	}
@@ -262,16 +271,12 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 	if err != nil {
 		return Profile{}, false, false, err
 	}
-	if len(held) == 0 && source.replacing > 0 {
-		// replacing names the entry this file updates: one the queue matched by file_updates or as the page's only
-		// retired main file, when the archive's mods were unknown, or one the user is updating.
+	if len(held) == 0 && (source.replacing > 0 || source.Folder != "") {
 		p, err := s.read(game, id)
 		if err != nil {
 			return Profile{}, false, false, err
 		}
-		if i := slices.IndexFunc(p.Entries, func(e Entry) bool {
-			return !e.IsOverlay() && e.Source.Kind == KindNexus && e.Source.ModID == source.ModID && e.Source.FileID == source.replacing
-		}); i >= 0 {
+		if i := slices.IndexFunc(p.Entries, source.replaces); i >= 0 {
 			held = p.Entries[i : i+1]
 		}
 	}
@@ -299,6 +304,19 @@ func (s *Store) placeKey(game, id, key string, source Source) (Profile, bool, bo
 		labels[i] = entryLabel(e)
 	}
 	return Profile{}, false, false, &SpansEntriesError{Labels: labels}
+}
+
+// replaces reports whether e is the entry this install updates though none of its mods match: the Nexus file it is a
+// newer version of (replacing: one the queue matched by file_updates or as the page's only retired main file, or one
+// the user is updating), or the mod last installed from the same extra mods folder.
+func (s Source) replaces(e Entry) bool {
+	if e.IsOverlay() {
+		return false
+	}
+	if s.replacing > 0 {
+		return e.Source.Kind == KindNexus && e.Source.ModID == s.ModID && e.Source.FileID == s.replacing
+	}
+	return s.Folder != "" && e.Source.Kind == KindLocal && e.Source.Folder == s.Folder
 }
 
 func modsVersionChanged(old, neu []Component) bool {

@@ -290,7 +290,7 @@ const SITE: Scene[] = [
         .evaluate((h) => h.scrollIntoView({ block: 'start' }))
     },
   },
-  // Needs a folder in autoInstallFolders: the folder picker is native, so the sandbox's setting is set beforehand.
+  // Needs a folder in watchFolders: the folder picker is native, so the sandbox's setting is set beforehand.
   {
     name: 'watch-folders',
     ...DESK,

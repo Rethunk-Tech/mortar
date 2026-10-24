@@ -1,6 +1,7 @@
 package settings
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"slices"
@@ -122,7 +123,7 @@ func TestPrefsExportImportRoundTrip(t *testing.T) {
 		"shareIncludeConfigFiles": "false", "shareIncludeProblemChoices": "false", "shareIncludeLibraries": "false", "verifyNexusMD5": "true", "launchAtLogin": "true",
 		"startMinimised": "true", "rememberWindow": "true", "systemTitleBar": "true", "extensionConnection": "off",
 		"offerNewDownloads": "false", "updateDigest": "each", "extraModsFolder": "/var/tmp/mortar-extra", "showDotHiddenMods": "true", "oldFilesOnUpdate": "keep", "gameSettingsMode": "warn", "font": "Open Sans", "cacheClearing": "off", "dependencyVersions": "exact", "thunderstoreHost": "gcdn.thunderstore.io",
-		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "watchFolders": "/var/tmp/mortar-watch", "autoInstallFolders": "/var/tmp/mortar-build", "syncFolder": "/var/tmp/mortar-sync", "browseFilters": "installed=hide", "browsePicks": `{"include":["Maps"],"exclude":[],"sort":"downloads"}`, "showAdultContent": "true",
+		"saveBackupHours": "6", "saveBackupKeep": "3", "sourceOrder": "github,nexus", "watchFolders": "/var/tmp/mortar-watch", "syncFolder": "/var/tmp/mortar-sync", "browseFilters": "installed=hide", "browsePicks": `{"include":["Maps"],"exclude":[],"sort":"downloads"}`, "showAdultContent": "true",
 		"keepInTray": "false", "includeBetaReleases": "false", "includePrereleaseModVersions": "true", "askEndorseMods": "true", "listColumns": "on,name,version",
 		"checkOnlyEnabledMods": "true", "enableModsWhenInstalled": "false", "tellWhenLoaderOut": "false", "syncMode": "own", "syncOwnFolder": "/var/tmp/mortar-sync-own",
 	}
@@ -277,10 +278,30 @@ func TestWatchedFoldersKeepsAbsoluteUniquePaths(t *testing.T) {
 	if got := s.WatchedFolders(); !slices.Equal(got, []string{a, b}) {
 		t.Errorf("WatchedFolders = %v", got)
 	}
-	// A folder that auto-installs is not also offered from.
-	s.AutoInstallFolders = b
-	if got := s.WatchedFolders(); !slices.Equal(got, []string{a}) {
-		t.Errorf("WatchedFolders with %s auto-installing = %v", b, got)
+}
+
+func TestAutoInstallFoldersBecomeTheLastGamesExtraModsFolders(t *testing.T) {
+	root := t.TempDir()
+	build, kept, extra := filepath.Join(root, "build"), filepath.Join(root, "kept"), filepath.Join(root, "extra")
+	raw, err := json.Marshal(map[string]any{
+		"lastGame":           "lethal-company",
+		"watchFolders":       kept + string(os.PathListSeparator) + build,
+		"autoInstallFolders": build,
+		"games":              map[string]any{"lethal-company": map[string]any{"extraModsFolder": extra}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var s Settings
+	if err := json.Unmarshal(raw, &s); err != nil {
+		t.Fatal(err)
+	}
+	normalizePrefs(&s)
+	if got := s.GamePrefs("lethal-company").ExtraModsFolderList(); !slices.Equal(got, []string{extra, build}) {
+		t.Errorf("extra mods folders = %v", got)
+	}
+	if got := s.WatchedFolders(); !slices.Equal(got, []string{kept}) || s.AutoInstallFolders != "" {
+		t.Errorf("watched = %v, auto-install = %q", got, s.AutoInstallFolders)
 	}
 }
 

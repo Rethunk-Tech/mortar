@@ -79,7 +79,10 @@ type Source struct {
 	Category string `json:"category,omitempty"`
 	// Digest is the downloaded file's "sha512:<hex>" where the site published one (Modrinth, CurseForge as "sha1:<hex>"), which its update
 	// check is keyed by.
-	Digest   string `json:"digest,omitempty"`
+	Digest string `json:"digest,omitempty"`
+	// Folder is the extra mods folder a local mod was installed from, so the next install from it replaces this entry
+	// even when the mod's id changed.
+	Folder   string `json:"folder,omitempty"`
 	fomod    *fomodChoices
 	disabled *disabledMods
 	overlay  *overlayPlace

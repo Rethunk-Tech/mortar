@@ -217,7 +217,9 @@ function displayAndData(i18n: I18n): Record<string, PrefCopy> {
     },
     extraModsFolder: {
       label: i18n._(msg`Extra mods folders`),
-      description: i18n._(msg`Folders of unpacked mods to add from the Add menu`),
+      description: i18n._(
+        msg`Folders of unpacked mods, or your own build's output, whose mods install into a profile and again whenever they change`,
+      ),
     },
     showDotHiddenMods: {
       label: i18n._(msg`Show hidden mods`),
