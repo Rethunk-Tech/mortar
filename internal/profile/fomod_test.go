@@ -204,8 +204,8 @@ func TestAnEntryPlacedByTheOldFomodRuleUpdatesToTheSpecLayoutCleanly(t *testing.
 	}
 	ne := got.Entries[0]
 	dir := liveEntryDir(e.mods(p.ID), ne.Key)
-	dll, _ := os.ReadFile(filepath.Join(dir, "m.dll"))
-	cfg, _ := os.ReadFile(filepath.Join(dir, "config.json"))
+	dll, _ := fsx.ReadFile(filepath.Join(dir, "m.dll"))
+	cfg, _ := fsx.ReadFile(filepath.Join(dir, "config.json"))
 	if files := filesUnder(dir); !ne.FomodSpec || ne.Mods[0].Folder != "." || string(dll) != "two" || string(cfg) != "mine" ||
 		files != "config.json,m.dll,manifest.json" {
 		t.Fatalf("entry %+v, m.dll %q, config %q, files %v", ne, dll, cfg, files)

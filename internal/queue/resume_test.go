@@ -111,12 +111,14 @@ func TestFetchContentMD5(t *testing.T) {
 	sum := md5.Sum([]byte(rangeBody)) // #nosec G401 -- Content-MD5 is MD5 by RFC 1864
 
 	t.Run("match", func(t *testing.T) {
+		t.Parallel()
 		if _, err := fetchFrom(t, bodyServer(t, map[string]string{"Content-MD5": base64.StdEncoding.EncodeToString(sum[:])})); err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	t.Run("mismatch", func(t *testing.T) {
+		t.Parallel()
 		path, err := fetchFrom(t, bodyServer(t, map[string]string{"Content-MD5": base64.StdEncoding.EncodeToString(make([]byte, md5.Size))}))
 		if err == nil || !strings.Contains(err.Error(), "Content-MD5") {
 			t.Fatalf("err = %v", err)
@@ -127,6 +129,7 @@ func TestFetchContentMD5(t *testing.T) {
 	})
 
 	t.Run("absent", func(t *testing.T) {
+		t.Parallel()
 		if _, err := fetchFrom(t, bodyServer(t, nil)); err != nil {
 			t.Fatal(err)
 		}

@@ -46,7 +46,7 @@ func (s *Service) InstallExtraFolderMod(ctx context.Context, game, id, folder st
 	for _, root := range roots {
 		// A mod is a folder in the extra folder, or the extra folder itself when it is one mod's build output.
 		self, child := placeIn(folder, root)
-		if !(self && buildOutput(game, root)) && !child {
+		if (!self || !buildOutput(game, root)) && !child {
 			continue
 		}
 		resolved, err := fsx.EvalSymlinks(root)

@@ -313,8 +313,8 @@ func TestSkipCancelsAFetch(t *testing.T) {
 	}
 }
 
+// Not parallel: its subtests share one fixture's premium flag.
 func TestFetchSlotsCapPremiumAndFreeSources(t *testing.T) {
-	t.Parallel()
 	f := newFixture(t)
 	for _, tc := range []struct {
 		name    string
