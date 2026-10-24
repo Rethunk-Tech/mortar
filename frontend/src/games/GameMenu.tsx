@@ -96,9 +96,9 @@ function GameStrip({
           position: 'absolute',
           inset: 0,
           zIndex: 1,
-          bgcolor: 'rgba(0, 0, 0, 0.58)',
+          bgcolor: 'var(--mortar-art-dim-55)',
         },
-        '&:hover::before, &.Mui-focusVisible::before': { bgcolor: 'rgba(0, 0, 0, 0.42)' },
+        '&:hover::before, &.Mui-focusVisible::before': { bgcolor: 'var(--mortar-art-dim-45)' },
       }}
     >
       <Box

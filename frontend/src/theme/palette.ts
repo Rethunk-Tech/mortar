@@ -47,6 +47,13 @@ interface Surfaces {
   overlay80: string
   overlay85: string
   overlay90: string
+  // Dims laid over game art and screenshots: the art is the same in both themes, so these are too.
+  artDim28: string
+  artDim45: string
+  artDim55: string
+  artDim65: string
+  // Text and icons on art.
+  onArtInk: string
   panel: string
   panel85: string
   panelSolid: string
@@ -105,6 +112,11 @@ const darkSurfaces: Surfaces = {
   overlay80: 'rgba(0,0,0,0.80)',
   overlay85: 'rgba(0,0,0,0.85)',
   overlay90: 'rgba(0,0,0,0.9)',
+  artDim28: 'rgba(0,0,0,0.28)',
+  artDim45: 'rgba(0,0,0,0.45)',
+  artDim55: 'rgba(0,0,0,0.55)',
+  artDim65: 'rgba(0,0,0,0.65)',
+  onArtInk: 'rgba(255,255,255,0.95)',
   panel: 'rgba(40,40,48,0.78)',
   panel85: 'rgba(40,40,48,0.85)',
   panelSolid: 'rgb(40,40,48)',
@@ -164,6 +176,11 @@ const lightSurfaces: Surfaces = {
   overlay80: 'rgba(0,0,0,0.55)',
   overlay85: 'rgba(0,0,0,0.5)',
   overlay90: 'rgba(0,0,0,0.45)',
+  artDim28: 'rgba(0,0,0,0.28)',
+  artDim45: 'rgba(0,0,0,0.45)',
+  artDim55: 'rgba(0,0,0,0.55)',
+  artDim65: 'rgba(0,0,0,0.65)',
+  onArtInk: 'rgba(255,255,255,0.95)',
   panel: '#ffffff',
   panel85: '#ffffff',
   panelSolid: '#ffffff',

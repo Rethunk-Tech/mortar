@@ -101,7 +101,7 @@ function Art({ src, openable }: { src: string; openable: boolean }) {
         sx={{
           position: 'absolute',
           inset: 0,
-          bgcolor: openable ? 'var(--mortar-overlay-28)' : 'var(--mortar-overlay-55)',
+          bgcolor: openable ? 'var(--mortar-art-dim-28)' : 'var(--mortar-art-dim-55)',
         }}
       />
     </>

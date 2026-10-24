@@ -31,8 +31,8 @@ const STEAM = 'steam'
 const overArt = {
   position: 'absolute',
   color: ON_ART_TEXT,
-  bgcolor: 'rgba(0, 0, 0, 0.45)',
-  '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.65)' },
+  bgcolor: 'var(--mortar-art-dim-45)',
+  '&:hover': { bgcolor: 'var(--mortar-art-dim-65)' },
 } as const
 
 const shotUrl = (game: string, s: Shot) =>
