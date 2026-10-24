@@ -6,20 +6,17 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
   TextField,
   Typography,
 } from '@mui/material'
 import { Plus, Tags, Trash2 } from 'lucide-react'
 import { useEffect, useLayoutEffect, useState } from 'react'
 import type { CustomCategory } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { colorHex, PROFILE_COLORS } from '../profiles/appearance.ts'
+import { ColorSwatches } from '../profiles/Swatches.tsx'
 import { useProfiles } from '../profiles/store.ts'
-import { useColorName } from '../profiles/useColorName.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { EmptyState } from '../shell/EmptyState.tsx'
 import { IconAction } from '../shell/IconAction.tsx'
-import { Tooltip } from '../shell/Tooltip.tsx'
 import { useDiscardGuard } from '../shell/useDiscardGuard.tsx'
 import { space } from '../theme/density.ts'
 import { reportUnexpected } from '../toasts/report.ts'
@@ -36,7 +33,6 @@ function CategoryRow({
   onDelete: () => void
 }) {
   const { t } = useLingui()
-  const colorName = useColorName()
   return (
     <Box sx={{ display: 'flex', gap: space.gap, alignItems: 'flex-start', mb: 1.5 }}>
       <TextField
@@ -46,25 +42,12 @@ function CategoryRow({
         onChange={(e) => onChange({ ...row, name: e.target.value })}
         sx={{ flex: 1 }}
       />
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, pt: 0.5, maxWidth: 180 }}>
-        {PROFILE_COLORS.map((token) => (
-          <Tooltip key={token} title={colorName(token)}>
-            <IconButton
-              aria-label={colorName(token)}
-              aria-pressed={row.color === token}
-              size="small"
-              onClick={() => onChange({ ...row, color: row.color === token ? '' : token })}
-              sx={{
-                width: 28,
-                height: 28,
-                bgcolor: colorHex(token),
-                outline:
-                  row.color === token ? '2px solid var(--mortar-ink)' : '2px solid transparent',
-                outlineOffset: 1,
-              }}
-            />
-          </Tooltip>
-        ))}
+      <Box sx={{ pt: 0.5, maxWidth: 180 }}>
+        <ColorSwatches
+          label={t`Colour`}
+          value={row.color ?? ''}
+          onChange={(color) => onChange({ ...row, color })}
+        />
       </Box>
       <IconAction label={t`Delete category`} icon={<Trash2 size={16} />} onClick={onDelete} />
     </Box>

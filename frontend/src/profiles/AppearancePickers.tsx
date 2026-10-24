@@ -1,11 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { Box, IconButton, Typography } from '@mui/material'
-import { Check } from 'lucide-react'
+import { Box, Typography } from '@mui/material'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
-import { Tooltip } from '../shell/Tooltip.tsx'
-import { colorHex, PROFILE_COLORS, PROFILE_ICONS } from './appearance.ts'
+import { PROFILE_ICONS } from './appearance.ts'
 import { ProfileMark } from './ProfileMark.tsx'
-import { useColorName } from './useColorName.ts'
+import { ColorSwatches, IconSwatches } from './Swatches.tsx'
 
 export function AppearancePickers({
   profile,
@@ -21,7 +19,6 @@ export function AppearancePickers({
   onIcon: (next: string) => void
 }) {
   const { t } = useLingui()
-  const colorName = useColorName()
   const iconName = (token: string) => {
     switch (token) {
       case 'sprout':
@@ -55,48 +52,21 @@ export function AppearancePickers({
   return (
     <>
       <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Colour`}</Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
-        {PROFILE_COLORS.map((token) => (
-          <Tooltip key={token} title={colorName(token)}>
-            <IconButton
-              aria-label={colorName(token)}
-              aria-pressed={color === token}
-              onClick={() => onColor(color === token ? '' : token)}
-              sx={{
-                width: 32,
-                height: 32,
-                bgcolor: colorHex(token),
-                outline: color === token ? '2px solid var(--mortar-ink)' : '2px solid transparent',
-                outlineOffset: 2,
-                '&:hover': { bgcolor: colorHex(token) },
-              }}
-            >
-              {color === token ? <Check size={16} color="#1a1a1a" aria-hidden={true} /> : null}
-            </IconButton>
-          </Tooltip>
-        ))}
+      <Box sx={{ mb: 2 }}>
+        <ColorSwatches label={t`Colour`} value={color} onChange={onColor} />
       </Box>
       <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>{t`Icon`}</Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
-        {PROFILE_ICONS.map((name) => (
-          <Tooltip key={name} title={iconName(name)}>
-            <IconButton
-              aria-label={iconName(name)}
-              aria-pressed={icon === name}
-              onClick={() => onIcon(icon === name ? '' : name)}
-              sx={{
-                width: 36,
-                height: 36,
-                borderRadius: '6px',
-                bgcolor: icon === name ? 'var(--mortar-hairline-12)' : 'transparent',
-                outline: icon === name ? '2px solid var(--mortar-ink)' : '2px solid transparent',
-                outlineOffset: 1,
-              }}
-            >
-              <ProfileMark profile={{ ...profile, color, icon: name }} size={28} />
-            </IconButton>
-          </Tooltip>
-        ))}
+      <Box sx={{ mb: 2 }}>
+        <IconSwatches
+          label={t`Icon`}
+          value={icon}
+          onChange={onIcon}
+          options={PROFILE_ICONS.map((name) => ({
+            value: name,
+            name: iconName(name),
+            face: <ProfileMark profile={{ ...profile, color, icon: name }} size={28} />,
+          }))}
+        />
       </Box>
     </>
   )

@@ -2110,6 +2110,10 @@ msgstr ""
 msgid "Optional: {name}"
 msgstr ""
 
+#: src/mods/CategoryEditor.tsx
+msgid "Colour"
+msgstr ""
+
 #: src/mods/Toolbar.tsx
 #: src/mods/updateReview/EverywhereDialog.tsx
 msgid "Pinned"
