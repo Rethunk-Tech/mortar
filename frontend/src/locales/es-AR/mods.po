@@ -312,8 +312,8 @@ msgstr ""
 msgid "Record {name}"
 msgstr ""
 
+#: src/mods/brokenKind.ts
 #: src/mods/CompatChip.tsx
-#: src/mods/GameModsReviewDialog.tsx
 #: src/mods/ModDependencyTree.tsx
 msgid "Broken"
 msgstr ""
@@ -3294,6 +3294,11 @@ msgstr ""
 msgid "Set {field} to {value}"
 msgstr ""
 
+#: src/mods/brokenKind.ts
+#: src/mods/CompatChip.tsx
+msgid "Superseded"
+msgstr ""
+
 #: src/mods/HiddenInside.tsx
 msgid "{loader} skips folders whose names start with a dot."
 msgstr ""
@@ -3324,6 +3329,11 @@ msgstr ""
 
 #: src/mods/describe.ts
 msgid " {name} wins; {losers} overridden."
+msgstr ""
+
+#: src/mods/brokenKind.ts
+#: src/mods/CompatChip.tsx
+msgid "Not recommended"
 msgstr ""
 
 #: src/mods/describe.ts

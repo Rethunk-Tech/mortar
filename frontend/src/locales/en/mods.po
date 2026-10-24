@@ -312,8 +312,8 @@ msgstr "Make a pack win"
 msgid "Record {name}"
 msgstr "Record {name}"
 
+#: src/mods/brokenKind.ts
 #: src/mods/CompatChip.tsx
-#: src/mods/GameModsReviewDialog.tsx
 #: src/mods/ModDependencyTree.tsx
 msgid "Broken"
 msgstr "Broken"
@@ -3294,6 +3294,11 @@ msgstr "{count, plural, one {{who} loaded and logged an error while running.} ot
 msgid "Set {field} to {value}"
 msgstr "Set {field} to {value}"
 
+#: src/mods/brokenKind.ts
+#: src/mods/CompatChip.tsx
+msgid "Superseded"
+msgstr "Superseded"
+
 #: src/mods/HiddenInside.tsx
 msgid "{loader} skips folders whose names start with a dot."
 msgstr "{loader} skips folders whose names start with a dot."
@@ -3325,6 +3330,11 @@ msgstr "Check mods and Mortar for updates (F5)"
 #: src/mods/describe.ts
 msgid " {name} wins; {losers} overridden."
 msgstr " {name} wins; {losers} overridden."
+
+#: src/mods/brokenKind.ts
+#: src/mods/CompatChip.tsx
+msgid "Not recommended"
+msgstr "Not recommended"
 
 #: src/mods/describe.ts
 msgid "Only on {value}."

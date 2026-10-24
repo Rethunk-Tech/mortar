@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -40,10 +41,22 @@ type BrokenEntry struct {
 	IDs          BrokenIDs `json:"ids"`
 	Through      string    `json:"through"`
 	GameVersions string    `json:"gameVersions,omitempty"`
-	Reason       string    `json:"reason"`
+	// Kind is BrokenKindBroken (the default), BrokenKindSuperseded or BrokenKindNotRecommended.
+	Kind   string `json:"kind,omitempty"`
+	Reason string `json:"reason"`
 	// Replacement is a package ("Namespace-Name") to use instead, optional.
 	Replacement string `json:"replacement,omitempty"`
 }
+
+// Kinds of known-broken entry: it does not work, another mod does its job now, or it works but is best avoided.
+const (
+	BrokenKindBroken         = "broken"
+	BrokenKindSuperseded     = "superseded"
+	BrokenKindNotRecommended = "notRecommended"
+)
+
+// Status is the entry's kind, BrokenKindBroken when it names none.
+func (e BrokenEntry) Status() string { return cmp.Or(e.Kind, BrokenKindBroken) }
 
 // BrokenList is one game's signed known-broken list.
 type BrokenList struct {
@@ -164,6 +177,9 @@ func DecodeBrokenList(body []byte, game string) (BrokenList, error) {
 	for i, e := range l.Entries {
 		if e.Through == "" || e.Reason == "" || e.IDs == (BrokenIDs{}) {
 			return BrokenList{}, fmt.Errorf("known-broken entry %d needs ids, through and a reason", i)
+		}
+		if !slices.Contains([]string{BrokenKindBroken, BrokenKindSuperseded, BrokenKindNotRecommended}, e.Status()) {
+			return BrokenList{}, fmt.Errorf("known-broken entry %d has an unknown kind %q", i, e.Kind)
 		}
 		for c := range strings.FieldsSeq(e.GameVersions) {
 			if !versionConstraint.MatchString(c) {

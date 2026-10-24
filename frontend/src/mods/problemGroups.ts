@@ -15,7 +15,8 @@ export interface DismissedRow {
 export const isInfoRow = (p: Row): boolean =>
   (p.kind === 'asset' && p.asset.kind === 'edit') ||
   (p.kind === 'duplicate' && p.duplicate.nexusOptional === true) ||
-  (p.kind === 'broken' && p.broken.status === 'abandoned') ||
+  (p.kind === 'broken' &&
+    (p.broken.status === 'abandoned' || p.broken.status === 'notRecommended')) ||
   (p.kind === 'missing' && p.missing.listed) ||
   p.kind === 'setting' ||
   p.kind === 'deprecated' ||

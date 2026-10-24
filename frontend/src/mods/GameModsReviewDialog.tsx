@@ -26,6 +26,7 @@ import { useGameModsProgress } from '../profiles/useGameModsProgress.ts'
 import { space } from '../theme/density.ts'
 import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
+import { brokenKindLabel } from './brokenKind.ts'
 import { LockedReason } from './LockedReason.tsx'
 import { useMods } from './store.ts'
 import { useLocked } from './useLocked.ts'
@@ -61,7 +62,7 @@ function ReviewLists({
               control={
                 <Checkbox checked={!off.has(m.id ?? '')} onChange={() => onToggle(m.id ?? '')} />
               }
-              label={[m.name, m.version, m.broken ? t`Broken` : '']
+              label={[m.name, m.version, m.broken ? brokenKindLabel(m.brokenKind) : '']
                 .filter((p) => p !== undefined && p !== '')
                 .join(' · ')}
             />

@@ -25,8 +25,13 @@ func (c *Client) mark(ctx context.Context, info components.GameInfo, items []Ite
 	for i := range items {
 		it := &items[i]
 		it.Obsolete = it.Obsolete || problems.ObsoleteText(it.Name, it.Summary)
-		if _, listed := known.Find(brokenModOf(*it), ""); listed {
-			it.Broken = true
+		if e, listed := known.Find(brokenModOf(*it), ""); listed {
+			switch e.Status() {
+			case components.BrokenKindBroken:
+				it.Broken = true
+			case components.BrokenKindSuperseded:
+				it.Obsolete = true
+			}
 		}
 		switch it.Source {
 		case "nexus":

@@ -19,6 +19,7 @@ import {
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { lowerFirst } from '../i18n/lowerFirst.ts'
 import { useReasonText } from '../i18n/reasonText.ts'
+import { brokenKindLabel } from '../mods/brokenKind.ts'
 import type { GameId } from '../nav/store.ts'
 import { DisabledReason } from '../shell/DisabledReason.tsx'
 import { SkeletonRows } from '../shell/SkeletonRows.tsx'
@@ -204,7 +205,12 @@ export function GameModsDialog({
               >
                 {formatPreviewRow(m, switchedOff, reasonText)}
                 {m.broken ? (
-                  <Chip size="small" label={t`Broken`} title={m.broken} sx={{ ml: 1 }} />
+                  <Chip
+                    size="small"
+                    label={brokenKindLabel(m.brokenKind)}
+                    title={m.broken}
+                    sx={{ ml: 1 }}
+                  />
                 ) : null}
               </Typography>
             ))}

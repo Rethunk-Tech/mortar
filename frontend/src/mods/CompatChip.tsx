@@ -30,7 +30,7 @@ function useCompatRow(mod: Mod): Compat | undefined {
     key: curated.key,
     id: curated.id,
     name: curated.name,
-    status: 'broken',
+    status: curated.status,
     summary: curated.summary ?? '',
     brokeIn: '',
     unofficialUrl: '',
@@ -53,6 +53,8 @@ export function CompatChip({ mod }: { mod: Mod }) {
     broken: t`Broken`,
     obsolete: t`Obsolete`,
     abandoned: t`Abandoned`,
+    superseded: t`Superseded`,
+    notRecommended: t`Not recommended`,
   }
   const status = (row?.status ?? '').toLowerCase()
   const label = labels[status] ?? status

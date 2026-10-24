@@ -15,7 +15,7 @@ func withKnownBroken(ctx context.Context, game string) func(GameModsPreview, err
 		list := components.KnownBrokenFor(ctx, game)
 		for i, m := range pv.Mods {
 			if e, ok := list.Find(components.BrokenMod{ID: m.ID, NexusID: m.NexusModID, Version: m.Version}, ""); ok {
-				pv.Mods[i].Broken = e.Reason
+				pv.Mods[i].Broken, pv.Mods[i].BrokenKind = e.Reason, e.Status()
 			}
 		}
 		return pv, nil

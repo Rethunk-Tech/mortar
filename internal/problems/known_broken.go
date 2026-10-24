@@ -32,7 +32,7 @@ func curatedBroken(list components.BrokenList, gameVersion, tsKey string, pkgs [
 		}
 		seen[key] = true
 		out = append(out, Broken{
-			Key: key, ID: m.ID, Name: name, Status: "broken", Source: mortarSiteName,
+			Key: key, ID: m.ID, Name: name, Status: k.Status(), Source: mortarSiteName,
 			Summary: k.Reason, Replacement: curatedReplacement(k.Replacement, tsKey),
 		})
 	}
