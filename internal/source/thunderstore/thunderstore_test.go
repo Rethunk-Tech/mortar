@@ -282,10 +282,13 @@ func TestStandingsFlagOnlyPackagesTheIndexNoLongerLists(t *testing.T) {
 
 // A chunk that unpacks past the cap is refused as too large, not read as a list cut short.
 func TestAChunkOverTheCapIsRefusedAsTooLarge(t *testing.T) {
+	prev := maxUnpacked
+	maxUnpacked = 16
+	t.Cleanup(func() { maxUnpacked = prev })
 	var packed bytes.Buffer
 	zw, _ := gzip.NewWriterLevel(&packed, gzip.BestSpeed)
 	_, _ = zw.Write([]byte("["))
-	_, _ = zw.Write(bytes.Repeat([]byte(" "), source.MaxBody*4))
+	_, _ = zw.Write(bytes.Repeat([]byte(" "), 16))
 	_, _ = zw.Write([]byte("]"))
 	_ = zw.Close()
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write(packed.Bytes()) }))

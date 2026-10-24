@@ -220,6 +220,9 @@ func (d Driver) get(ctx context.Context, url, ua string) ([]byte, error) {
 	return fsx.ReadCapped(body, source.MaxBody)
 }
 
+// maxUnpacked is the most a gzipped answer may unpack to; a variable so a test can lower it.
+var maxUnpacked int64 = source.MaxBody * 4
+
 func expectArray(dec *json.Decoder) error {
 	tok, err := dec.Token()
 	if err != nil {
@@ -245,7 +248,7 @@ func (d Driver) streamPackages(ctx context.Context, url, ua string, fn func(*wir
 		if err != nil {
 			return err
 		}
-		r = fsx.CapReader(zr, source.MaxBody*4)
+		r = fsx.CapReader(zr, maxUnpacked)
 	}
 	dec := json.NewDecoder(r)
 	if err := expectArray(dec); err != nil {
@@ -278,7 +281,7 @@ func (d Driver) getJSON(ctx context.Context, url, ua string, out any) (hash stri
 		if err != nil {
 			return "", err
 		}
-		if body, err = fsx.ReadCapped(zr, source.MaxBody*4); err != nil {
+		if body, err = fsx.ReadCapped(zr, maxUnpacked); err != nil {
 			return "", err
 		}
 	}
