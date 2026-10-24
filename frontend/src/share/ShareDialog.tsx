@@ -57,17 +57,16 @@ export function ShareDialog() {
         }
         close()
       }}
-      maxWidth={false}
+      maxWidth="md"
+      fullWidth={true}
       slotProps={{
         paper: {
           'aria-label': info ? t`Share ${{ name: info.name }}` : undefined,
           sx: {
             bgcolor: 'var(--mortar-panel-solid)',
             border: '1px solid var(--mortar-hairline-12)',
-            width: 'min(880px, calc(100% - 48px))',
             // Only the mod list's text needs the room; every other destination is as tall as what it shows.
-            height: destination === 'list' ? 'min(600px, calc(100% - 48px))' : 'auto',
-            maxHeight: 'calc(100% - 48px)',
+            height: destination === 'list' ? 'min(600px, calc(100% - 64px))' : 'auto',
             overflow: 'hidden',
             borderRadius: '12px',
           },
@@ -83,7 +82,12 @@ export function ShareDialog() {
               </TipIconButton>
             ) : null}
             <Box sx={{ minWidth: 0 }}>
-              <Typography noWrap={true} title={info.name} sx={{ fontSize: 20, fontWeight: 700 }}>
+              <Typography
+                component="h2"
+                noWrap={true}
+                title={info.name}
+                sx={{ fontSize: 20, fontWeight: 700 }}
+              >
                 {t`Share ${{ name: info.name }}`}
               </Typography>
               <Typography noWrap={true} sx={{ color: 'text.secondary', fontSize: 14 }}>

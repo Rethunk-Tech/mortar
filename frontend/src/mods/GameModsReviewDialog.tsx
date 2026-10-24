@@ -176,11 +176,7 @@ export function GameModsReviewDialog({
   }
   const detail = result === null ? '' : formatOutcomeDetail(result.outcomes ?? [], reasonText)
   return (
-    <Dialog
-      open={true}
-      onClose={busy ? undefined : onClose}
-      slotProps={{ paper: { sx: { minWidth: 420, maxWidth: 'min(640px, calc(100vw - 64px))' } } }}
-    >
+    <Dialog open={true} onClose={busy ? undefined : onClose} maxWidth="sm" fullWidth={true}>
       <DialogTitle>{t`Game Mods folder vs ${{ name: profile.name }}`}</DialogTitle>
       <DialogContent>
         {busy ? <GameModsProgressLine progress={progress} moving={moving} /> : null}

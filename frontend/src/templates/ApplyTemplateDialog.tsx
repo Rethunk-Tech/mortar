@@ -149,9 +149,9 @@ export function ApplyTemplateDialog({
     }
   }, [open, templates])
   return (
-    <Dialog open={open} onClose={busy ? undefined : onClose}>
+    <Dialog open={open} onClose={busy ? undefined : onClose} maxWidth="xs" fullWidth={true}>
       <DialogTitle>{t`Apply a template`}</DialogTitle>
-      <DialogContent sx={{ minWidth: 380, maxWidth: 'calc(100vw - 64px)' }}>
+      <DialogContent>
         <TextField
           select={true}
           fullWidth={true}

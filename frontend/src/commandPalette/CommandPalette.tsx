@@ -252,12 +252,9 @@ export function CommandPalette() {
       <Dialog
         open={open}
         onClose={closePalette}
-        slotProps={{
-          paper: {
-            'aria-label': t`Command palette`,
-            sx: { width: 560, maxWidth: 'calc(100% - 48px)' },
-          },
-        }}
+        maxWidth="sm"
+        fullWidth={true}
+        slotProps={{ paper: { 'aria-label': t`Command palette` } }}
       >
         <PaletteBody />
       </Dialog>

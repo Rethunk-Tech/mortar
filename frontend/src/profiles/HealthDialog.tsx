@@ -275,11 +275,7 @@ export function HealthDialog({
   }
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      slotProps={{ paper: { sx: { minWidth: 440, maxWidth: 'calc(100vw - 64px)' } } }}
-    >
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth={true}>
       <DialogTitle>{t`Check this profile`}</DialogTitle>
       <DialogContent>{body}</DialogContent>
       <DialogActions>

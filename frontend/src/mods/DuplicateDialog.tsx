@@ -156,12 +156,7 @@ export function DuplicateDialog({ profileName }: { profileName: string }) {
   const dup = useMods((s) => s.resolving)
   const resolve = useMods((s) => s.resolve)
   return (
-    <Dialog
-      open={dup !== null}
-      onClose={() => resolve(null)}
-      maxWidth={false}
-      slotProps={{ paper: { sx: { width: 780, maxWidth: 'calc(100% - 32px)' } } }}
-    >
+    <Dialog open={dup !== null} onClose={() => resolve(null)} maxWidth="md" fullWidth={true}>
       {dup ? <Resolver key={dup.id} dup={dup} profileName={profileName} /> : null}
     </Dialog>
   )

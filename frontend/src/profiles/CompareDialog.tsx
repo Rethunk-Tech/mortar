@@ -212,17 +212,9 @@ function CompareFrame({
     <Dialog
       open={open}
       onClose={onClose}
-      slotProps={{
-        paper: {
-          'aria-label': t`Compare`,
-          sx: {
-            width: 880,
-            maxWidth: 'calc(100vw - 64px)',
-            height: 600,
-            maxHeight: 'calc(100vh - 64px)',
-          },
-        },
-      }}
+      maxWidth="md"
+      fullWidth={true}
+      slotProps={{ paper: { 'aria-label': t`Compare`, sx: { height: 600 } } }}
     >
       {children}
     </Dialog>

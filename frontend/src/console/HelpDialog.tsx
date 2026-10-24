@@ -229,11 +229,7 @@ export function HelpDialog({ game }: { game: string }) {
   }
 
   return (
-    <Dialog
-      open={open}
-      onClose={uploading ? undefined : close}
-      slotProps={{ paper: { sx: { width: 780, maxWidth: 'calc(100% - 32px)' } } }}
-    >
+    <Dialog open={open} onClose={uploading ? undefined : close} maxWidth="md" fullWidth={true}>
       <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Share log…`}</DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
         {body ? (

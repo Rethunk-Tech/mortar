@@ -22,9 +22,6 @@ import { useToasts } from '../toasts/store.ts'
 import { usePending } from '../toasts/usePending.ts'
 import { useSweepUi } from './events.ts'
 
-const DIALOG_WIDTH = 480
-const EDGE = 32
-
 function fixLabel(i18n: I18n, fix: string): string {
   if (fix === 'update') {
     return i18n._(msg`Update available`)
@@ -127,9 +124,8 @@ function SweepDialog() {
     <Dialog
       open={open && report !== null}
       onClose={pending ? undefined : close}
-      slotProps={{
-        paper: { sx: { width: DIALOG_WIDTH, maxWidth: `calc(100% - ${EDGE}px)` } },
-      }}
+      maxWidth="xs"
+      fullWidth={true}
     >
       <DialogTitle>{t`${{ game: report?.gameName ?? '' }} was updated: mods to check`}</DialogTitle>
       <DialogContent>

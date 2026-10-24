@@ -245,11 +245,7 @@ export function ReportToAuthorButton({
           {t`Report to author…`}
         </Button>
       )}
-      <Dialog
-        open={open}
-        onClose={close}
-        slotProps={{ paper: { sx: { width: 520, maxWidth: 'calc(100% - 32px)' } } }}
-      >
+      <Dialog open={open} onClose={close} maxWidth="sm" fullWidth={true}>
         <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>{t`Report to author`}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: space.pad }}>
           {log === null ? (

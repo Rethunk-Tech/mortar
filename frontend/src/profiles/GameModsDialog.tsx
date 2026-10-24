@@ -176,11 +176,7 @@ export function GameModsDialog({
     }
   }
   return (
-    <Dialog
-      open={open}
-      onClose={busy ? undefined : onClose}
-      slotProps={{ paper: { sx: { minWidth: 420, maxWidth: 'calc(100vw - 64px)' } } }}
-    >
+    <Dialog open={open} onClose={busy ? undefined : onClose} maxWidth="sm" fullWidth={true}>
       <DialogTitle>{t`Import from the game's Mods folder`}</DialogTitle>
       <DialogContent>
         {error === null ? null : (

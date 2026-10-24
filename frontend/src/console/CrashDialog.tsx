@@ -237,11 +237,7 @@ export function CrashDialog() {
     : ''
   return (
     <>
-      <Dialog
-        open={true}
-        onClose={dismiss}
-        slotProps={{ paper: { sx: { width: 520, maxWidth: 'calc(100% - 32px)' } } }}
-      >
+      <Dialog open={true} onClose={dismiss} maxWidth="sm" fullWidth={true}>
         <DialogTitle sx={{ fontSize: 22, fontWeight: 700 }}>
           {crash.crashed
             ? t`${{ game: gameName }} crashed`

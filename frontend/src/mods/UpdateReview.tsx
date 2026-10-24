@@ -12,7 +12,6 @@ import type { NexusById } from './nexusDetails.ts'
 import { isFull, mergeCachedDetails, useGameNexusDetails } from './nexusDetails.ts'
 import { useOptionalSkips } from './optionalFiles.ts'
 import { useMods } from './store.ts'
-import { DIALOG_WIDTH } from './updateReview/constants.ts'
 import { EverywhereDialog } from './updateReview/EverywhereDialog.tsx'
 import { KeptGroup } from './updateReview/KeptGroup.tsx'
 import { keptUpdates } from './updateReview/kept.ts'
@@ -105,10 +104,8 @@ function UpdateReviewDialog({ profile }: { profile: Profile }) {
     <Dialog
       open={open && (list.length > 0 || withheld.length > 0)}
       onClose={close}
-      maxWidth={false}
-      slotProps={{
-        paper: { sx: { width: DIALOG_WIDTH, maxWidth: 'calc(100% - 32px)' } },
-      }}
+      maxWidth="md"
+      fullWidth={true}
     >
       <ReviewTitle
         count={list.length}

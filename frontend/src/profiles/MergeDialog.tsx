@@ -252,11 +252,7 @@ function MergeBody({ source, onClose }: { source: Profile; onClose: () => void }
 
 export function MergeDialog({ source, onClose }: { source: Profile | null; onClose: () => void }) {
   return (
-    <Dialog
-      open={source !== null}
-      onClose={onClose}
-      slotProps={{ paper: { sx: { width: 460, maxWidth: 'calc(100vw - 64px)' } } }}
-    >
+    <Dialog open={source !== null} onClose={onClose} maxWidth="xs" fullWidth={true}>
       {source ? <MergeBody source={source} onClose={onClose} /> : null}
     </Dialog>
   )

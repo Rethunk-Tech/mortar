@@ -110,7 +110,8 @@ function ArrivalPrompt({ arrival }: { arrival: Arrival }) {
           dismiss(arrival.id)
         }
       }}
-      slotProps={{ paper: { sx: { width: 460, maxWidth: 'calc(100% - 32px)' } } }}
+      maxWidth="xs"
+      fullWidth={true}
     >
       <DialogTitle>{t`Install ${name}?`}</DialogTitle>
       <DialogContent>

@@ -158,9 +158,9 @@ function ManageTemplatesDialog({
   const closeRef = useRef<HTMLButtonElement>(null)
   return (
     <>
-      <Dialog open={open} onClose={onClose}>
+      <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth={true}>
         <DialogTitle>{t`Manage templates`}</DialogTitle>
-        <DialogContent sx={{ minWidth: 380, maxWidth: 'calc(100vw - 64px)' }}>
+        <DialogContent>
           {templates.length === 0 ? (
             <EmptyState compact={true} icon={<LayoutTemplate size={28} />} title={t`No templates`}>
               {t`Choose Save as template… from a profile's menu.`}
