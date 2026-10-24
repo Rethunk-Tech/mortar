@@ -68,9 +68,8 @@ export function ServerSettings({ gameId, profileId }: { gameId: string; profileI
   const [from, setFrom] = useState('')
   const [queued, setQueued] = useState<number | null>(null)
   const reload = () => ReadForm(gameId, profileId).then(setForm).catch(reportUnexpected)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reload closes over the same two ids
   useEffect(() => {
-    reload()
+    ReadForm(gameId, profileId).then(setForm).catch(reportUnexpected)
   }, [gameId, profileId])
   const clientGame = form?.clients ?? ''
   useEffect(() => {
