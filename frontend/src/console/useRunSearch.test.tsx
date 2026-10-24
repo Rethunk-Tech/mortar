@@ -25,17 +25,7 @@ const answer = (line: string): RunSearch => ({
   truncated: false,
 })
 
-test('clearing the query before the search starts stops the spinner', async () => {
-  const search = () => Promise.resolve(answer('x'))
-  const { result, rerender } = testing.renderHook(({ q }) => useRunSearch(true, q, search), {
-    initialProps: { q: 'a' },
-  })
-  expect(result.current.loading).toBe(true)
-  rerender({ q: '' })
-  await wait(300)
-  expect(result.current.loading).toBe(false)
-})
-
+// The pure loader test covers the guard itself; this one covers useDebouncedLoad's timer and React state wiring.
 test('a slow answer for an older query does not replace the newer one', async () => {
   const slow = Promise.withResolvers<RunSearch>()
   const search = (text: string) => (text === 'ab' ? Promise.resolve(answer('ab')) : slow.promise)
