@@ -392,12 +392,9 @@ func duplicatesWithNexus(ctx context.Context, m Meta, scheme string, enabled []f
 }
 
 func newerNexusFile(a, b NexusFile) bool {
-	if c, ok := meta.CompareVersions(a.Version, b.Version); ok && c != 0 {
-		return c > 0
-	}
 	_, aID, _ := nexusFile(a.Key)
 	_, bID, _ := nexusFile(b.Key)
-	return aID > bID
+	return meta.NewerFile(a.Version, int64(aID), b.Version, int64(bID))
 }
 
 // indexByID groups mods by folded ID, keeping list order within a group.
@@ -976,12 +973,8 @@ func fileIn(page meta.Page, domain string, r meta.Ref, uniqueID mod.ID, minimum 
 	return nil, ""
 }
 
-// newer orders two files of one mod by version, then by file ID.
 func newer(a, b Ref) bool {
-	if c, ok := meta.CompareVersions(a.Version, b.Version); ok && c != 0 {
-		return c > 0
-	}
-	return a.FileID > b.FileID
+	return meta.NewerFile(a.Version, a.FileID, b.Version, b.FileID)
 }
 
 // ConflictRows counts non-cosmetic conflicts as the Problems tab shows them: conflicts between the same mods with the

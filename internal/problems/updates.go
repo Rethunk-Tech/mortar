@@ -518,7 +518,7 @@ func newerPreviewFile(candidate, current meta.File) bool {
 	if candidateOld != currentOld {
 		return currentOld
 	}
-	return candidate.ID > current.ID
+	return meta.NewerFile(candidate.Version, candidate.ID, current.Version, current.ID)
 }
 
 func containsPreviewMod(file meta.File, uniqueID mod.ID) bool {

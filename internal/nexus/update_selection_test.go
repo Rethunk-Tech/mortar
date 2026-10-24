@@ -132,3 +132,14 @@ func TestSupersedesFallsBackToCategoryThenTheOneMainFile(t *testing.T) {
 		t.Errorf("two main files: got %d; want none", got.FileID)
 	}
 }
+
+// An author who re-uploads a fix under the same version leaves a later file of the same download.
+func TestSupersedesTakesAReuploadUnderTheSameVersion(t *testing.T) {
+	files := []File{
+		{FileID: 10, Name: "Mod", Version: "1.0", Category: "MAIN"},
+		{FileID: 11, Name: "Mod", Version: "1.0", Category: "MAIN"},
+	}
+	if got, ok := Supersedes(files, files[0], "1.0", ""); !ok || got.FileID != 11 {
+		t.Fatalf("got %d, %v; want the re-upload 11", got.FileID, ok)
+	}
+}

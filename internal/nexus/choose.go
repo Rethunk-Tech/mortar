@@ -49,7 +49,7 @@ func betterFile(candidate, current File) bool {
 	if candidateOld != currentOld {
 		return currentOld
 	}
-	return candidate.FileID > current.FileID
+	return meta.NewerFile(candidate.Version, int64(candidate.FileID), current.Version, int64(current.FileID))
 }
 
 // Stale reports a file Nexus keeps listed only as history.
@@ -73,12 +73,8 @@ func sameVersion(f File, want string) bool {
 	return false
 }
 
-// newer reports whether f is a later version than than, by version number where both parse, else by upload order.
 func newer(f, than File) bool {
-	if c, ok := meta.CompareVersions(f.Version, than.Version); ok {
-		return c > 0
-	}
-	return f.FileID > than.FileID
+	return meta.NewerFile(f.Version, int64(f.FileID), than.Version, int64(than.FileID))
 }
 
 // only is the one file match accepts, if exactly one does.
