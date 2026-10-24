@@ -8,7 +8,7 @@ test("errorKind reads the Wails [kind] prefix for every kind Go's usererr sends"
   const sent = [...go.matchAll(/^\t\w+\s+Kind = "(\w+)"$/gm)].map((m) => m[1] ?? '')
   expect(sent.length).toBeGreaterThan(10)
   for (const kind of sent) {
-    expect(errorKind(`[${kind}] x`)).toBe(kind)
+    expect<string>(errorKind(`[${kind}] x`)).toBe(kind)
   }
   expect(errorKind(new Error('[busy] stardew is running'))).toBe('busy')
   expect(errorDetails('[not_found] profile abc')).toBe('profile abc')
