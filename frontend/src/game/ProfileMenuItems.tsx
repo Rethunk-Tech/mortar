@@ -33,6 +33,7 @@ import { isFrozen } from '../mods/frozen.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { MenuAction } from '../shell/MenuAction.tsx'
 import { MenuHeading, MenuRule } from '../shell/TitleMenu.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { BackupMenuItem, RestoreMenuItem } from './BackupMenuItems.tsx'
@@ -74,7 +75,11 @@ function ProfileMenuItem({
 function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => void }) {
   const { t } = useLingui()
   const currentGame = useProfiles((s) => s.game)
-  const [hasShortcut, setHasShortcut] = useState(false)
+  const { data: hasShortcut, setData: setHasShortcut } = useLoaded(
+    currentGame ? () => ShortcutExists(currentGame.id, profile.id) : null,
+    [currentGame, profile.id],
+    false,
+  )
   // Steam on the host cannot start Mortar inside a Flatpak, so the action is left out there.
   const [steamShortcut, setSteamShortcut] = useState(true)
   useEffect(() => {
@@ -82,16 +87,6 @@ function ShortcutMenuItems({ profile, close }: { profile: Profile; close: () => 
       .then((c) => setSteamShortcut(c.addToSteam))
       .catch(reportUnexpected)
   }, [])
-  useEffect(() => {
-    const g = currentGame
-    if (!g) {
-      setHasShortcut(false)
-      return
-    }
-    ShortcutExists(g.id, profile.id)
-      .then(setHasShortcut)
-      .catch(() => setHasShortcut(false))
-  }, [currentGame, profile.id])
   return (
     <>
       <ProfileMenuItem

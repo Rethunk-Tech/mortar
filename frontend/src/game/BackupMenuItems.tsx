@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { Checkbox, DialogContentText, FormControlLabel } from '@mui/material'
 import { ArchiveRestore, HardDriveDownload } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   BackupDialog,
   BackupSize,
@@ -12,6 +12,7 @@ import { restoreBackup } from '../profiles/restoreBackup.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { ConfirmDialog } from '../shell/ConfirmDialog.tsx'
 import { MenuAction } from '../shell/MenuAction.tsx'
+import { useLoaded } from '../shell/useLoaded.ts'
 import { reportError, reportUnexpected } from '../toasts/report.ts'
 import { useToasts } from '../toasts/store.ts'
 import { openProfileDialog } from './profileDialog.ts'
@@ -65,20 +66,12 @@ export function BackupProfileDialog({
   const { t } = useLingui()
   const game = useProfiles((s) => s.game)
   const [mods, setMods] = useState(true)
-  const [size, setSize] = useState<number | null>(null)
-  useEffect(() => {
-    if (!(open && game)) {
-      return
-    }
-    let stale = false
-    setSize(null)
-    BackupSize(game.id, profile.id, mods)
-      .then((n) => !stale && setSize(n))
-      .catch(reportError(t`Could not back up the profile`))
-    return () => {
-      stale = true
-    }
-  }, [open, game, profile.id, mods, t])
+  const { data: size } = useLoaded<number | null>(
+    open && game ? () => BackupSize(game.id, profile.id, mods) : null,
+    [open, game, profile.id, mods],
+    null,
+    reportError(t`Could not back up the profile`),
+  )
   if (!game) {
     return null
   }
