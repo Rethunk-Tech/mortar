@@ -1,5 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.6.2/schema.json",
+  "markdown": { "formatter": { "enabled": false } },
 
   // canon ts-biome-00001
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
