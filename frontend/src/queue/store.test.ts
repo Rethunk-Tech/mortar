@@ -1,15 +1,17 @@
-import { beforeEach, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { State as LaunchState } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import type {
   Entry,
   Profile,
 } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import * as profileService from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import type { Item } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/queue/models.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { testProfile } from '../profiles/testProfile.ts'
+import { stubBinding } from '../testing/stubBinding.ts'
 import {
   applyProgress,
   downloadFailCopy,
@@ -25,16 +27,19 @@ import {
 
 const calls = { remove: [] as string[], roll: [] as string[] }
 
-mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts', () => ({
-  RemoveEntry: async (_game: string, _id: string, key: string) => {
+beforeEach(() => {
+  stubBinding(profileService, 'RemoveEntry', (_game: string, _id: string, key: string) => {
     calls.remove.push(key)
     return baseProfile()
-  },
-  RollBack: async (_game: string, _id: string, key: string) => {
+  })
+  stubBinding(profileService, 'RollBack', (_game: string, _id: string, key: string) => {
     calls.roll.push(key)
     return baseProfile()
-  },
-}))
+  })
+})
+afterEach(() => {
+  mock.restore()
+})
 
 const entry = (): Entry => ({
   key: 'k1',

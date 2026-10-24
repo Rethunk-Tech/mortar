@@ -1,11 +1,13 @@
-import { beforeEach, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import { Hint } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launch/models.ts'
 import { State as LaunchState } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/launchsvc/models.ts'
 import type { Profile } from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/models.ts'
+import * as profileService from '../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts'
 import { useLaunch } from '../launch/store.ts'
 import { useMods } from '../mods/store.ts'
 import { useProfiles } from '../profiles/store.ts'
 import { testProfile } from '../profiles/testProfile.ts'
+import { stubBinding } from '../testing/stubBinding.ts'
 import { useToasts } from '../toasts/store.ts'
 import {
   dropInstallGate,
@@ -19,29 +21,6 @@ const calls = {
   remove: [] as string[],
   roll: [] as string[],
 }
-
-mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/profile/service.ts', () => ({
-  InstallArchive: async () => ({
-    profile: baseProfile(),
-    added: ['SpaceCore'],
-    updated: false,
-    versionChanged: false,
-  }),
-  InstallRemap: async () => ({
-    profile: baseProfile(),
-    added: ['SpaceCore'],
-    updated: false,
-    versionChanged: false,
-  }),
-  RemoveEntry: async (_game: string, _id: string, key: string) => {
-    calls.remove.push(key)
-    return baseProfile()
-  },
-  RollBack: async (_game: string, _id: string, key: string) => {
-    calls.roll.push(key)
-    return baseProfile()
-  },
-}))
 
 function baseProfile(): Profile {
   return testProfile({
@@ -60,6 +39,22 @@ function baseProfile(): Profile {
 }
 
 beforeEach(() => {
+  const installed = () => ({
+    profile: baseProfile(),
+    added: ['SpaceCore'],
+    updated: false,
+    versionChanged: false,
+  })
+  stubBinding(profileService, 'InstallArchive', installed)
+  stubBinding(profileService, 'InstallRemap', installed)
+  stubBinding(profileService, 'RemoveEntry', (_game: string, _id: string, key: string) => {
+    calls.remove.push(key)
+    return baseProfile()
+  })
+  stubBinding(profileService, 'RollBack', (_game: string, _id: string, key: string) => {
+    calls.roll.push(key)
+    return baseProfile()
+  })
   calls.remove = []
   calls.roll = []
   useToasts.setState(useToasts.getInitialState(), true)
@@ -70,6 +65,10 @@ beforeEach(() => {
     { ...useProfiles.getInitialState(), profiles: [baseProfile()], openId: 'p1' },
     true,
   )
+})
+
+afterEach(() => {
+  mock.restore()
 })
 
 test('undo of a new archive install removes the entry', async () => {

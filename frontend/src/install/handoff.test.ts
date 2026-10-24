@@ -1,14 +1,20 @@
-import { beforeEach, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
+import * as archivesvc from '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts'
+import * as opener from '../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts'
+import { stubBinding } from '../testing/stubBinding.ts'
+import {
+  downloadInstaller,
+  HANDOFF_TTL_MS,
+  liveHandoff,
+  startHandoff,
+  useHandoff,
+} from './handoff.ts'
+import { useHandoffAsk } from './handoffConfirm.ts'
 
 const calls = { opened: [] as string[], installed: [] as unknown[][] }
 
-// mock.module outlives this file in the one bun test process, so the mock keeps the module's other exports for the files that import them.
-const archivesvc = await import(
-  '../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts'
-)
-mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/service.ts', () => ({
-  ...archivesvc,
-  HandoffPage: async (text: string) => {
+beforeEach(() => {
+  stubBinding(archivesvc, 'HandoffPage', (text: string) => {
     const post = /^https:\/\/www\.patreon\.com\/posts\/[\w-]*?-?(\d+)$/.exec(text)
     if (post) {
       return { kind: 'patreon', id: post[1], url: `https://www.patreon.com/posts/${post[1]}` }
@@ -22,22 +28,18 @@ mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/archivesvc/s
       }
     }
     throw new Error('not a handoff page')
-  },
-  InstallHandoffDownload: async (...args: unknown[]) => {
+  })
+  stubBinding(archivesvc, 'InstallHandoffDownload', (...args: unknown[]) => {
     calls.installed.push(args)
     return { added: [] }
-  },
-}))
-mock.module('../../bindings/github.com/Rethunk-Tech/mortar/internal/opener/service.ts', () => ({
-  OpenWeb: async (url: string) => {
+  })
+  stubBinding(opener, 'OpenWeb', (url: string) => {
     calls.opened.push(url)
-  },
-}))
-
-const { useHandoffAsk } = await import('./handoffConfirm.ts')
-const { downloadInstaller, liveHandoff, HANDOFF_TTL_MS, startHandoff, useHandoff } = await import(
-  './handoff.ts'
-)
+  })
+})
+afterEach(() => {
+  mock.restore()
+})
 
 // The player's answer to the "Install <file> as from <page>?" question the claiming install is waiting on.
 const answer = (yes: boolean) => {
