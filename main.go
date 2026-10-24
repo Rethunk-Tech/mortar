@@ -1237,6 +1237,8 @@ func run() error {
 			log.Printf("repaired %d mod folder records", n)
 			tidied.Add("folderRecords", "Repaired mod folder records", "profiles", "", n)
 		}
+		r := profiles.RelayoutFomod(launches.Busy)
+		log.Printf("fomod relayout: %d moved, %d unchanged, %d left without their archive, %d failed", r.Moved, r.Unchanged, r.NoArchive, r.Failed)
 		// An unreadable profile.json stops collection: its keys are unknown, and their items must not be deleted.
 		retention := store.Get().StoreUnusedFor()
 		if keys, err := datasvc.KeepSet(profiles, retention != 0, keepSources); err != nil {
