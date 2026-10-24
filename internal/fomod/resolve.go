@@ -208,7 +208,8 @@ func Resolve(cfg Config, choices Choices, ctx EvalContext) []Op {
 			continue
 		}
 		for _, g := range s.Groups {
-			for _, name := range selected(choices, s.Name, g.Name, g) {
+			chosen := selected(choices, s.Name, g.Name, g)
+			for _, name := range chosen {
 				p, ok := plugin(g, name)
 				if !ok {
 					continue
@@ -216,6 +217,17 @@ func Resolve(cfg Config, choices Choices, ctx EvalContext) []Op {
 				ops = append(ops, p.Files...)
 				for _, f := range p.Flags {
 					flags[f.Name] = f.Value
+				}
+			}
+			for _, p := range g.Plugins {
+				if slices.Contains(chosen, p.Name) {
+					continue
+				}
+				usable := PluginType(p, flags, ctx) != TypeNotUsable
+				for _, f := range p.Files {
+					if f.Always || (f.IfUsable && usable) {
+						ops = append(ops, f)
+					}
 				}
 			}
 		}

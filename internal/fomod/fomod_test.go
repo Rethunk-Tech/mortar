@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"unicode/utf16"
 )
@@ -92,6 +93,26 @@ func TestRequiredPluginIsResolvedWithoutChoice(t *testing.T) {
 	}
 	if !Match(cfg, nil, EvalContext{}) {
 		t.Fatal("required-only group should match")
+	}
+}
+
+func TestUnchosenPluginsInstallTheirAlwaysAndUsableFiles(t *testing.T) {
+	cfg, err := Parse([]byte(`<config><installSteps><installStep name="S"><optionalFileGroups>
+		<group name="G" type="SelectAny"><plugins>
+			<plugin name="Usable"><files><file source="always.txt" alwaysInstall="true"/><file source="usable.txt" installIfUsable="1"/>
+				<file source="chosen.txt"/></files><typeDescriptor><type name="Optional"/></typeDescriptor></plugin>
+			<plugin name="Unusable"><files><file source="always2.txt" alwaysInstall="true"/><file source="usable2.txt" installIfUsable="true"/></files>
+				<typeDescriptor><type name="NotUsable"/></typeDescriptor></plugin>
+		</plugins></group></optionalFileGroups></installStep></installSteps></config>`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, op := range Resolve(cfg, Choices{"S": {"G": nil}}, EvalContext{}) {
+		got = append(got, op.Source)
+	}
+	if strings.Join(got, ",") != "always.txt,usable.txt,always2.txt" {
+		t.Fatalf("ops = %v", got)
 	}
 }
 

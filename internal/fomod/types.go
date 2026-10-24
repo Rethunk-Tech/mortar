@@ -34,6 +34,9 @@ type Op struct {
 	Destination *string
 	Priority    int
 	Folder      bool
+	// Always and IfUsable install a plugin's file even when the plugin is not chosen, IfUsable only while the plugin's
+	// type is not NotUsable.
+	Always, IfUsable bool
 }
 
 // FileIndex reports a dependency file's state in the profile's mods folder.

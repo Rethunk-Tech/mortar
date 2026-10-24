@@ -64,9 +64,16 @@ func appendOps(dst []Op, items []xmlFile, folder bool) []Op {
 			Destination: it.Destination,
 			Priority:    atoi(it.Priority),
 			Folder:      folder,
+			Always:      isTrue(it.AlwaysInstall),
+			IfUsable:    isTrue(it.InstallIfUsable),
 		})
 	}
 	return dst
+}
+
+func isTrue(s string) bool {
+	b, _ := strconv.ParseBool(strings.TrimSpace(s))
+	return b
 }
 
 func atoi(s string) int {
@@ -128,9 +135,11 @@ type xmlFiles struct {
 }
 
 type xmlFile struct {
-	Source      string  `xml:"source,attr"`
-	Destination *string `xml:"destination,attr"`
-	Priority    string  `xml:"priority,attr"`
+	Source          string  `xml:"source,attr"`
+	Destination     *string `xml:"destination,attr"`
+	Priority        string  `xml:"priority,attr"`
+	AlwaysInstall   string  `xml:"alwaysInstall,attr"`
+	InstallIfUsable string  `xml:"installIfUsable,attr"`
 }
 
 type xmlFlags struct {
